@@ -1,11 +1,21 @@
 import { createHmac, timingSafeEqual } from 'node:crypto';
 import { z } from 'zod';
+import type { ErrorClass } from '../idp/error-classifier.js';
+import { classifyError } from '../idp/error-classifier.js';
+import type { ImpactPreview } from '../idp/impact-preview.js';
+import { SLACK_DEPROVISION_SCOPES } from '../scopes/slack-deprovision-scopes.js';
 import type { LimitFunction } from '../services/concurrency.js';
 import { pLimit } from '../services/concurrency.js';
 import { fetchWithTimeout } from '../services/fetch-helpers.js';
 import { parseJsonResponse, safeParseJsonResponse } from '../services/parse-json-response.js';
 import { withResilience } from '../services/resilience.js';
+import {
+  canonicalizeRequest,
+  canonicalizeResponse,
+  sha256Hex,
+} from '../services/saga-canonicalize.js';
 import type { CredentialBlob } from '../types/credentials.js';
+import type { Deprovisionable, DeprovisionResult } from '../types/deprovisionable.js';
 import type { OAuthConfig } from '../types/provider.js';
 import type { WebhookVerificationResult } from '../types/webhook.js';
 import { BaseAdapter } from './base-adapter.js';
@@ -106,11 +116,26 @@ export function resetSlackThrottleForTests(): void {
  * - SLACK_SIGNING_SECRET — for webhook signature verification
  * - SLACK_CLIENT_ID, SLACK_CLIENT_SECRET — for OAuth
  */
-export class SlackAdapter extends BaseAdapter {
+export class SlackAdapter extends BaseAdapter implements Deprovisionable {
   readonly slug = 'slack';
   readonly displayName = 'Slack';
   readonly supportsOAuth = true;
   readonly supportsWebhooks = true;
+
+  /**
+   * Phase 77 D-14 — the org-grid (org-level) token used EXCLUSIVELY by the
+   * Deprovisionable methods (SCIM deactivate + admin.users.session.invalidate).
+   * The saga step-runner (77-04) resolves it from the SLACK_ORG_GRID connection
+   * and configures it via {@link withOrgGridToken}. The deprovision methods NEVER
+   * fall back to the workspace bot token (D-14 / T-77-03-01).
+   */
+  #orgGridToken = '';
+
+  /** Configure the org-grid token for the Deprovisionable methods (saga step-runner). */
+  withOrgGridToken(token: string): this {
+    this.#orgGridToken = token;
+    return this;
+  }
 
   // -------------------------------------------------------------------------
   // OAuth
@@ -124,6 +149,23 @@ export class SlackAdapter extends BaseAdapter {
       tokenUrl: 'https://slack.com/api/oauth.v2.access',
       scopes: ['chat:write', 'users:read', 'users:read.email', 'im:write'],
       redirectPath: '/api/oauth/slack/callback',
+    };
+  }
+
+  /**
+   * Phase 77 D-14 — org-grid OAuth config for the deprovisioning connection.
+   * Distinct from the workspace {@link getOAuthConfig}: org-level scopes from the
+   * typed-const ({@link SLACK_DEPROVISION_SCOPES}) and a separate redirect path.
+   */
+  getOrgGridOAuthConfig(): OAuthConfig {
+    return {
+      clientIdEnvVar: 'SLACK_CLIENT_ID',
+      clientSecretEnvVar: 'SLACK_CLIENT_SECRET',
+      authorizationUrl: 'https://slack.com/oauth/v2/authorize',
+      tokenUrl: 'https://slack.com/api/oauth.v2.access',
+      scopes: [...SLACK_DEPROVISION_SCOPES],
+      redirectPath: '/api/oauth/slack-org-grid/callback',
+      connectionSubKind: 'SLACK_ORG_GRID',
     };
   }
 
@@ -340,5 +382,276 @@ export class SlackAdapter extends BaseAdapter {
   ): Promise<void> {
     const _typedPayload = payload as { type?: string };
     // Plan 03 will wire processBlockAction and processViewSubmission here
+  }
+
+  // -------------------------------------------------------------------------
+  // Deprovisionable (Phase 77 D-05/D-08/D-14) — SCIM deactivate + session invalidate.
+  // SCIM + admin.session calls use the ORG-GRID token exclusively (never the
+  // workspace bot token). Errors map through the closed-enum classifier.
+  // -------------------------------------------------------------------------
+
+  /** Raw SCIM fetch (Enterprise Grid SCIM v2) with the org-grid bearer token. */
+  async #scimFetch(path: string, init: RequestInit): Promise<Response> {
+    return withResilience(
+      () =>
+        fetchWithTimeout(
+          `https://api.slack.com/scim/v2${path}`,
+          {
+            ...init,
+            headers: {
+              Authorization: `Bearer ${this.#orgGridToken}`,
+              'Content-Type': 'application/scim+json',
+              ...(init.headers ?? {}),
+            },
+          },
+          { timeoutMs: 15_000, retries: 0 },
+        ),
+      { provider: 'slack' },
+    );
+  }
+
+  /** Slack admin Web-API call (JSON body, org-grid bearer token). */
+  async #adminApi(method: string, body: Record<string, unknown>): Promise<Response> {
+    return withResilience(
+      () =>
+        fetchWithTimeout(
+          `https://slack.com/api/${method}`,
+          {
+            method: 'POST',
+            headers: {
+              Authorization: `Bearer ${this.#orgGridToken}`,
+              'Content-Type': 'application/json; charset=utf-8',
+            },
+            body: JSON.stringify(body),
+          },
+          { timeoutMs: 15_000, retries: 0 },
+        ),
+      { provider: 'slack' },
+    );
+  }
+
+  /** Maps a Slack web-API `{ ok:false, error }` code to an ErrorClass. */
+  static #classifySlackError(httpStatus: number, slackError?: string): ErrorClass {
+    if (slackError === 'ratelimited') return classifyError({ httpStatus: 429 });
+    if (slackError === 'users_not_found' || slackError === 'user_not_found') {
+      return classifyError({ httpStatus: 404 });
+    }
+    if (
+      slackError === 'not_authed' ||
+      slackError === 'token_expired' ||
+      slackError === 'invalid_auth'
+    ) {
+      return classifyError({ httpStatus: 401 });
+    }
+    if (
+      slackError === 'missing_scope' ||
+      slackError === 'cannot_perform_operation' ||
+      slackError === 'not_allowed_token_type'
+    ) {
+      return classifyError({ httpStatus: 403, providerErrorCode: slackError });
+    }
+    return classifyError({ httpStatus, providerErrorCode: slackError });
+  }
+
+  /** Resolves a SCIM user id from an email or passes through a Slack user id. */
+  async #resolveScimUserId(externalUserId: string): Promise<string | null> {
+    if (!externalUserId.includes('@')) return externalUserId; // already a Slack user id
+    const res = await this.#scimFetch(
+      `/Users?filter=${encodeURIComponent(`userName eq "${externalUserId}"`)}`,
+      { method: 'GET' },
+    );
+    if (!res.ok) return null;
+    const body = (await res.json().catch(() => ({}))) as { Resources?: Array<{ id?: string }> };
+    return body.Resources?.[0]?.id ?? null;
+  }
+
+  async suspendAccount(externalUserId: string): Promise<DeprovisionResult> {
+    const patchBody = {
+      schemas: ['urn:ietf:params:scim:api:messages:2.0:PatchOp'],
+      Operations: [{ op: 'replace', path: 'active', value: false }],
+    };
+    const requestSha256 = sha256Hex(
+      canonicalizeRequest({ method: 'PATCH', target: 'scim.active', body: patchBody }),
+    );
+
+    const scimUserId = await this.#resolveScimUserId(externalUserId);
+    if (scimUserId === null) {
+      return {
+        status: 'LIKELY_GONE',
+        skipped: false,
+        reason: 'user_not_found',
+        failureKind: 'USER_NOT_FOUND',
+        errorClass: 'PERMANENT_NOT_FOUND',
+        requestSha256,
+        responseSha256: sha256Hex(canonicalizeResponse({ resolved: false })),
+      };
+    }
+
+    const res = await this.#scimFetch(`/Users/${encodeURIComponent(scimUserId)}`, {
+      method: 'PATCH',
+      body: JSON.stringify(patchBody),
+    });
+    const body = await res.json().catch(() => ({}));
+    const responseSha256 = sha256Hex(canonicalizeResponse({ status: res.status, body }));
+
+    if (res.ok) return { status: 'SUCCEEDED', requestSha256, responseSha256 };
+
+    const scimError = (body as { detail?: string; scimType?: string }).scimType;
+    return this.#mapSlackFailure(res.status, scimError, requestSha256, responseSha256);
+  }
+
+  async revokeAllSessions(externalUserId: string): Promise<DeprovisionResult> {
+    const requestSha256 = sha256Hex(
+      canonicalizeRequest({ method: 'POST', target: 'admin.users.session.invalidate' }),
+    );
+    const res = await this.#adminApi('admin.users.session.invalidate', { user_id: externalUserId });
+    const body = (await res.json().catch(() => ({}))) as { ok?: boolean; error?: string };
+    const responseSha256 = sha256Hex(canonicalizeResponse({ ok: body.ok, error: body.error }));
+
+    if (res.ok && body.ok) return { status: 'SUCCEEDED', requestSha256, responseSha256 };
+    return this.#mapSlackFailure(res.status, body.error, requestSha256, responseSha256);
+  }
+
+  async verifyDeprovisioned(externalUserId: string): Promise<boolean> {
+    const res = await this.#adminApi('users.info', { user: externalUserId });
+    const body = (await res.json().catch(() => ({}))) as {
+      ok?: boolean;
+      error?: string;
+      user?: { deleted?: boolean };
+    };
+    if (body.ok && body.user?.deleted === true) return true;
+    // user_not_found / users_not_found ⇒ already gone (LIKELY_GONE precursor).
+    return body.error === 'user_not_found' || body.error === 'users_not_found';
+  }
+
+  async describeImpact(externalUserId: string): Promise<ImpactPreview> {
+    const cacheKey = `co:idp:preview:SLACK:${externalUserId}`;
+    const fetchedAt = new Date().toISOString();
+
+    const baseCommon = {
+      externalUserId,
+      externalUserDisplayName: externalUserId,
+      accountStatus: 'ACTIVE' as const,
+      sessionCount: null,
+    };
+
+    // users.info — accountStatus + admin/owner booleans + display name.
+    const infoRes = await this.#adminApi('users.info', { user: externalUserId });
+    const info = (await infoRes.json().catch(() => ({}))) as {
+      ok?: boolean;
+      error?: string;
+      user?: {
+        deleted?: boolean;
+        is_admin?: boolean;
+        is_owner?: boolean;
+        is_primary_owner?: boolean;
+        profile?: { real_name?: string; display_name?: string };
+      };
+    };
+
+    // Enterprise-Grid pre-flight: cannot_perform_operation ⇒ not on Grid (non-fatal, D-08/D-16).
+    if (info.error === 'cannot_perform_operation') {
+      return {
+        provider: 'SLACK',
+        commonMetrics: { ...baseCommon, accountStatus: 'NOT_FOUND' },
+        customMetrics: {
+          channelsMemberCount: null,
+          ownedChannelCount: null,
+          installedAppCount: null,
+          isWorkspaceAdmin: false,
+          isOrgOwner: false,
+          error: 'NOT_ON_ENTERPRISE_GRID',
+        },
+        fetchedAt,
+        cacheKey,
+      };
+    }
+
+    const user = info.user;
+    const accountStatus: 'ACTIVE' | 'SUSPENDED' | 'NOT_FOUND' = info.ok
+      ? user?.deleted
+        ? 'SUSPENDED'
+        : 'ACTIVE'
+      : 'NOT_FOUND';
+
+    // users.conversations — channelsMemberCount (capped, best-effort → null on failure).
+    let channelsMemberCount: number | null = null;
+    try {
+      const convRes = await this.#adminApi('users.conversations', {
+        user: externalUserId,
+        types: 'public_channel,private_channel',
+        limit: 200,
+      });
+      const conv = (await convRes.json().catch(() => ({}))) as {
+        ok?: boolean;
+        channels?: unknown[];
+      };
+      if (conv.ok && Array.isArray(conv.channels)) channelsMemberCount = conv.channels.length;
+    } catch {
+      channelsMemberCount = null;
+    }
+
+    // apps.permissions.users.list — installedAppCount (best-effort → null).
+    let installedAppCount: number | null = null;
+    try {
+      const appsRes = await this.#adminApi('apps.permissions.users.list', { user: externalUserId });
+      const apps = (await appsRes.json().catch(() => ({}))) as { ok?: boolean; apps?: unknown[] };
+      if (apps.ok && Array.isArray(apps.apps)) installedAppCount = apps.apps.length;
+    } catch {
+      installedAppCount = null;
+    }
+
+    return {
+      provider: 'SLACK',
+      commonMetrics: {
+        ...baseCommon,
+        accountStatus,
+        externalUserDisplayName:
+          user?.profile?.real_name ?? user?.profile?.display_name ?? externalUserId,
+      },
+      customMetrics: {
+        channelsMemberCount,
+        ownedChannelCount: null,
+        installedAppCount,
+        isWorkspaceAdmin: Boolean(user?.is_admin),
+        isOrgOwner: Boolean(user?.is_owner || user?.is_primary_owner),
+        error: null,
+      },
+      fetchedAt,
+      cacheKey,
+    };
+  }
+
+  /** Maps a non-OK Slack deprovision outcome to a DeprovisionResult (TRANSIENT_* throws). */
+  #mapSlackFailure(
+    httpStatus: number,
+    slackError: string | undefined,
+    requestSha256: string,
+    responseSha256: string,
+  ): DeprovisionResult {
+    const errorClass = SlackAdapter.#classifySlackError(httpStatus, slackError);
+
+    if (errorClass === 'TRANSIENT_RATE_LIMIT' || errorClass === 'TRANSIENT_NETWORK') {
+      throw new Error(`slack transient failure (${httpStatus}/${slackError ?? errorClass})`);
+    }
+    if (errorClass === 'PERMANENT_NOT_FOUND') {
+      return {
+        status: 'LIKELY_GONE',
+        skipped: false,
+        reason: 'user_not_found',
+        failureKind: 'USER_NOT_FOUND',
+        errorClass,
+        requestSha256,
+        responseSha256,
+      };
+    }
+    return {
+      status: 'FAILED',
+      failureKind: errorClass === 'PERMANENT_AUTH_EXPIRED' ? 'AUTH_REVOKED' : 'PROVIDER_ERROR',
+      errorClass,
+      errorMessage: `slack deprovision failed (${httpStatus}/${slackError ?? errorClass})`,
+      requestSha256,
+      responseSha256,
+    };
   }
 }

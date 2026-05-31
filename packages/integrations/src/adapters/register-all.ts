@@ -150,7 +150,12 @@ export function registerAllAdapters(): void {
   registered = true;
 
   // ESSENTIAL tier — eagerly registered synchronously.
-  registerAdapter(new SlackAdapter());
+  // Phase 77 D-14 — the SAME Slack instance is registered with both the provider
+  // registry (workspace connection lifecycle + webhooks) and the Deprovisionable
+  // registry (org-grid SCIM deactivate + session invalidate). Separate Maps.
+  const slackAdapter = new SlackAdapter();
+  registerAdapter(slackAdapter);
+  registerDeprovisionableAdapter('SLACK', slackAdapter);
   registerAdapter(new ResendAdapter());
   registerAdapter(new KsefAdapter());
   registerOcrAdapter(new ClaudeOcrAdapter());
