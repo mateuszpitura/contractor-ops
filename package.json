@@ -24,6 +24,7 @@
     "standards:check": "bash scripts/sync-standards-check.sh",
     "lint:schema": "tsx scripts/lint-schema.mjs",
     "lint:logs": "tsx scripts/lint-logs.mjs",
+    "lint:scopes": "tsx scripts/lint-scopes.mjs",
     "lint:raw-sql": "tsx scripts/check-raw-sql-tenant-scoped.ts",
     "lint:audit-log": "node scripts/lint-audit-log.mjs",
     "lint:raw-fetch": "node scripts/lint-raw-fetch.mjs",

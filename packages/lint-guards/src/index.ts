@@ -24,3 +24,9 @@ export {
   type SchemaGuardOffence,
   type SchemaGuardOptions,
 } from './schema-guard/run-guard';
+export { formatScopesOffences } from './scopes-guard/format-offence';
+export {
+  runScopesGuard,
+  type ScopesGuardOffence,
+  type ScopesGuardOptions,
+} from './scopes-guard/run-guard';

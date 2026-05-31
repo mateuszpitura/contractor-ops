@@ -9,11 +9,13 @@
 # createHash('sha256') idempotency keys outside deriveIdempotencyKey().
 # production-hardening B.7.b — lint:silent-catch forbids empty / silent
 # catch blocks without a `// safe-swallow: <reason>` annotation.
+# Phase 76 D-15 — lint:scopes traces every IdP-adapter write scope to a typed-const.
 # Lint + format check are quick. Typecheck and full build are too slow for
 # every push, so they are left to CI.
 
 pnpm run format:check && pnpm run lint && pnpm run check:no-process-env \
-  && pnpm run lint:schema && pnpm run lint:logs && pnpm run lint:raw-sql \
+  && pnpm run lint:schema && pnpm run lint:logs && pnpm run lint:scopes \
+  && pnpm run lint:raw-sql \
   && pnpm run lint:audit-log && pnpm run lint:raw-fetch \
   && pnpm run lint:idempotency && pnpm run lint:silent-catch \
   && pnpm run i18n:parity

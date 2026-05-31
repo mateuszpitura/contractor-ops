@@ -53,6 +53,9 @@ jobs:
       - name: Lint logger call sites for body-redaction drift (FOUND6-02 / P28)
         run: pnpm run lint:logs
 
+      - name: Lint IdP adapter OAuth scopes for typed-const drift (IDP-14 / D-15)
+        run: pnpm run lint:scopes
+
       - name: Verify i18n message-key parity (FOUND6-03 / P29)
         run: pnpm run i18n:parity
 
