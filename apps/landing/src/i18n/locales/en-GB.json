@@ -265,6 +265,16 @@
         "title": "Spend analytics",
         "description": "Real-time dashboards showing contractor spend, budget burn rate, and cost breakdowns by team, project, or period."
       }
+    },
+    "spotlight": {
+      "title": "Why contractor-ops",
+      "summary": "One source of truth across contracts, invoices, approvals, and payments.",
+      "bullets": [
+        "Contracts & e-sign in one timeline",
+        "KSeF-native invoice reconciliation",
+        "Approval chains with full audit trail",
+        "Payments orchestrated, not chased"
+      ]
     }
   },
   "howItWorks": {
@@ -316,7 +326,27 @@
         "value": "0",
         "label": "missed offboarding steps"
       }
-    }
+    },
+    "testimonials": [
+      {
+        "quote": "We went from chasing invoices in Slack to having everything matched and approved in minutes. KSeF integration alone saved us 6 hours a week.",
+        "author": "Katarzyna M.",
+        "role": "Head of Operations",
+        "company": "A fintech startup, 28 contractors"
+      },
+      {
+        "quote": "Offboarding used to be a nightmare — we'd find open access months later. Now it's a checklist that just works. Peace of mind we never had.",
+        "author": "Pawel R.",
+        "role": "CTO",
+        "company": "A SaaS company, 40+ contractors"
+      },
+      {
+        "quote": "The approval workflow replaced our entire Slack-based system. Every invoice has a clear owner, a clear deadline, and a clear audit trail.",
+        "author": "Marta D.",
+        "role": "Finance Manager",
+        "company": "A consulting firm, 15 contractors"
+      }
+    ]
   },
   "pricing": {
     "label": "Pricing",
@@ -339,6 +369,13 @@
     "trust": "No credit card required · 14-day Pro trial · Cancel anytime"
   },
   "footer": {
+    "newsletter": {
+      "headline": "Quarterly memo",
+      "description": "One email every three months. Product changes, audit-survival tips, and the occasional rant about Excel.",
+      "placeholder": "you@company.com",
+      "submit": "Subscribe",
+      "success": "Subscribed. Welcome aboard."
+    },
     "description": "B2B contractor management built for EU companies. Contracts, invoices, approvals, payments — one system.",
     "product": "Product",
     "company": "Company",

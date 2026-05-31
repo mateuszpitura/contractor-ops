@@ -265,6 +265,16 @@
         "title": "تحليلات الإنفاق",
         "description": "لوحات معلومات فورية تعرض إنفاق المقاولين ومعدل استهلاك الميزانية وتفاصيل التكاليف."
       }
+    },
+    "spotlight": {
+      "title": "لماذا contractor-ops",
+      "summary": "مصدر واحد للحقيقة عبر العقود والفواتير والموافقات والمدفوعات.",
+      "bullets": [
+        "العقود والتوقيع الإلكتروني في خط زمني واحد",
+        "مطابقة فواتير KSeF الأصلية",
+        "سلاسل موافقة مع سجل تدقيق كامل",
+        "مدفوعات منسقة، لا مطاردة"
+      ]
     }
   },
   "howItWorks": {
@@ -316,7 +326,27 @@
         "value": "0",
         "label": "خطوات إنهاء خدمة ضائعة"
       }
-    }
+    },
+    "testimonials": [
+      {
+        "quote": "We went from chasing invoices in Slack to having everything matched and approved in minutes. KSeF integration alone saved us 6 hours a week.",
+        "author": "Katarzyna M.",
+        "role": "Head of Operations",
+        "company": "A fintech startup, 28 contractors"
+      },
+      {
+        "quote": "Offboarding used to be a nightmare — we'd find open access months later. Now it's a checklist that just works. Peace of mind we never had.",
+        "author": "Pawel R.",
+        "role": "CTO",
+        "company": "A SaaS company, 40+ contractors"
+      },
+      {
+        "quote": "The approval workflow replaced our entire Slack-based system. Every invoice has a clear owner, a clear deadline, and a clear audit trail.",
+        "author": "Marta D.",
+        "role": "Finance Manager",
+        "company": "A consulting firm, 15 contractors"
+      }
+    ]
   },
   "pricing": {
     "label": "الأسعار",
@@ -339,6 +369,13 @@
     "trust": "لا حاجة لبطاقة ائتمان · تجربة Pro لمدة 14 يوماً · ألغِ في أي وقت"
   },
   "footer": {
+    "newsletter": {
+      "headline": "Quarterly memo",
+      "description": "One email every three months. Product changes, audit-survival tips, and the occasional rant about Excel.",
+      "placeholder": "you@company.com",
+      "submit": "Subscribe",
+      "success": "Subscribed. Welcome aboard."
+    },
     "description": "إدارة مقاولين B2B مصممة للشركات. العقود والفواتير والموافقات والمدفوعات — نظام واحد.",
     "product": "المنتج",
     "company": "الشركة",
