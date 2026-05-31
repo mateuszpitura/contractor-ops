@@ -3183,25 +3183,69 @@
           "right_to_work": "[pl] UK Right-to-Work share code",
           "utr": "[pl] HMRC UTR",
           "business_registration": "[pl] Companies House registration",
-          "sds": "[pl] Status Determination Statement"
+          "sds": "[pl] Status Determination Statement",
+          "ip_assignment": "Przeniesienie praw własności intelektualnej (UK)"
         },
         "de": {
           "a1": "[pl] A1-Bescheinigung",
           "aufenthaltstitel": "[pl] Aufenthaltstitel residence permit",
-          "eight_b_estg": "[pl] §48b EStG Freistellungsbescheinigung"
+          "eight_b_estg": "[pl] §48b EStG Freistellungsbescheinigung",
+          "werkvertrag_ip": "DE Werkvertrag — udzielenie praw do korzystania"
         },
         "pl": {
           "zus_a1": "[pl] ZUS A1",
-          "udt": "[pl] UDT certification"
+          "udt": "[pl] UDT certification",
+          "ip_assignment": "PL — Przeniesienie autorskich praw majątkowych"
         },
         "ksa": {
           "iqama": "[pl] Iqama residency permit",
-          "work_permit_qiwa": "[pl] Work permit + Qiwa authorisation"
+          "work_permit_qiwa": "[pl] Work permit + Qiwa authorisation",
+          "ip_assignment": "KSA — przeniesienie praw majątkowych"
         },
         "uae": {
           "emirates_id": "[pl] Emirates ID",
-          "free_zone_license": "[pl] Free-zone trade license"
+          "free_zone_license": "[pl] Free-zone trade license",
+          "ip_assignment": "UAE — rozporządzenie prawami majątkowymi"
+        },
+        "us": {
+          "ip_assignment": "Przeniesienie praw własności intelektualnej (US)"
         }
+      }
+    },
+    "dashboard": {
+      "title": "Zgodność",
+      "kpiGroupLabel": "Podsumowanie zgodności",
+      "errorLoading": "Nie udało się załadować pulpitu zgodności",
+      "daysValue": "{count, plural, one {# dzień} few {# dni} many {# dni} other {# dnia}}",
+      "atRisk": {
+        "label": "Zagrożone",
+        "entityLabel": "{count, plural, one {# pozycja} few {# pozycje} many {# pozycji} other {# pozycji}}",
+        "empty": "Brak zagrożonych pozycji zgodności"
+      },
+      "upcomingRenewals": {
+        "label": "Nadchodzące odnowienia",
+        "entityLabel": "{count, plural, one {# pozycja} few {# pozycje} many {# pozycji} other {# pozycji}}",
+        "empty": "Brak nadchodzących odnowień"
+      },
+      "blockedPayments": {
+        "label": "Zablokowane płatności",
+        "entityLabel": "{count, plural, one {# wykonawca} few {# wykonawców} many {# wykonawców} other {# wykonawcy}}",
+        "empty": "Brak zablokowanych płatności",
+        "sourceLive": "Na żywo",
+        "sourceHistorical": "Ostatnie"
+      },
+      "columns": {
+        "contractor": "Wykonawca",
+        "document": "Dokument",
+        "status": "Status",
+        "expiresAt": "Wygasa",
+        "daysUntilExpiry": "Pozostałe dni",
+        "blockedDocuments": "Zablokowane dokumenty",
+        "source": "Źródło"
+      },
+      "empty": {
+        "heading": "Wszystko w porządku",
+        "body": "Żaden wykonawca nie jest zagrożony i żadne płatności nie są zablokowane."
       }
     }
   },

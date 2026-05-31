@@ -299,6 +299,8 @@ export {
   saveJiraStatusMappingInputSchema,
   saveJiraTaskConfigInputSchema,
 } from './jira.js';
+// Phase 73 D-14/D-16 — COMPL doc-name locked-phrase registry + signoff state
+export { complDocNameSignoffKey, isComplDocNamePending } from './legal/compl-doc-name-signoff.js';
 export type { LockedDePhraseKey } from './legal/de.js';
 export {
   CLASSIFICATION_SCHEIN_ASSESSMENT_LABEL,
@@ -365,6 +367,14 @@ export {
   LPCDA_STATUTORY_RATE_LABEL,
   RESERVED_GB_LEGAL_KEYS,
 } from './legal/gb.js';
+export {
+  LOCKED_COMPL_NAMES_DE,
+  LOCKED_COMPL_NAMES_KSA,
+  LOCKED_COMPL_NAMES_PL,
+  LOCKED_COMPL_NAMES_UAE,
+  LOCKED_COMPL_NAMES_UK,
+  LOCKED_COMPL_NAMES_US,
+} from './legal/index.js';
 // Phase 75 D-13/D-14 — IP-clause phrase libraries + aggregate registry
 export type { IpClausePhraseId, Jurisdiction } from './legal/ip-clauses-index.js';
 export {

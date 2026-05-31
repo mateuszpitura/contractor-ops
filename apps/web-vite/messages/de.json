@@ -3183,25 +3183,69 @@
           "right_to_work": "[de] UK Right-to-Work share code",
           "utr": "[de] HMRC UTR",
           "business_registration": "[de] Companies House registration",
-          "sds": "[de] Status Determination Statement"
+          "sds": "[de] Status Determination Statement",
+          "ip_assignment": "UK Übertragung geistigen Eigentums"
         },
         "de": {
           "a1": "[de] A1-Bescheinigung",
           "aufenthaltstitel": "[de] Aufenthaltstitel residence permit",
-          "eight_b_estg": "[de] §48b EStG Freistellungsbescheinigung"
+          "eight_b_estg": "[de] §48b EStG Freistellungsbescheinigung",
+          "werkvertrag_ip": "DE Werkvertrag — Einräumung von Nutzungsrechten"
         },
         "pl": {
           "zus_a1": "[de] ZUS A1",
-          "udt": "[de] UDT certification"
+          "udt": "[de] UDT certification",
+          "ip_assignment": "PL — Übertragung wirtschaftlicher Urheberrechte"
         },
         "ksa": {
           "iqama": "[de] Iqama residency permit",
-          "work_permit_qiwa": "[de] Work permit + Qiwa authorisation"
+          "work_permit_qiwa": "[de] Work permit + Qiwa authorisation",
+          "ip_assignment": "KSA — Übertragung wirtschaftlicher Rechte"
         },
         "uae": {
           "emirates_id": "[de] Emirates ID",
-          "free_zone_license": "[de] Free-zone trade license"
+          "free_zone_license": "[de] Free-zone trade license",
+          "ip_assignment": "UAE — Verfügung über wirtschaftliche Rechte"
+        },
+        "us": {
+          "ip_assignment": "US Übertragung geistigen Eigentums"
         }
+      }
+    },
+    "dashboard": {
+      "title": "Compliance",
+      "kpiGroupLabel": "Compliance-Übersicht",
+      "errorLoading": "Compliance-Dashboard konnte nicht geladen werden",
+      "daysValue": "{count, plural, one {# Tag} other {# Tage}}",
+      "atRisk": {
+        "label": "Gefährdet",
+        "entityLabel": "{count, plural, one {# Eintrag} other {# Einträge}}",
+        "empty": "Keine gefährdeten Compliance-Einträge"
+      },
+      "upcomingRenewals": {
+        "label": "Anstehende Verlängerungen",
+        "entityLabel": "{count, plural, one {# Eintrag} other {# Einträge}}",
+        "empty": "Keine anstehenden Verlängerungen"
+      },
+      "blockedPayments": {
+        "label": "Blockierte Zahlungen",
+        "entityLabel": "{count, plural, one {# Auftragnehmer} other {# Auftragnehmer}}",
+        "empty": "Keine blockierten Zahlungen",
+        "sourceLive": "Live",
+        "sourceHistorical": "Kürzlich"
+      },
+      "columns": {
+        "contractor": "Auftragnehmer",
+        "document": "Dokument",
+        "status": "Status",
+        "expiresAt": "Läuft ab",
+        "daysUntilExpiry": "Verbleibende Tage",
+        "blockedDocuments": "Blockierte Dokumente",
+        "source": "Quelle"
+      },
+      "empty": {
+        "heading": "Alles in Ordnung",
+        "body": "Keine Auftragnehmer gefährdet und keine Zahlungen blockiert."
       }
     }
   },

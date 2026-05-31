@@ -34,6 +34,7 @@ const WorkflowsPage = lazy(() => import('../pages/dashboard/workflows.js'));
 const TimePage = lazy(() => import('../pages/dashboard/time.js'));
 const ReportsPage = lazy(() => import('../pages/dashboard/reports.js'));
 const ClassificationPage = lazy(() => import('../pages/dashboard/classification.js'));
+const ComplianceDashboardPage = lazy(() => import('../pages/dashboard/compliance-dashboard.js'));
 const OnboardingImportPage = lazy(() => import('../pages/dashboard/onboarding-import.js'));
 const ContractorDetailPage = lazy(() => import('../pages/dashboard/contractor-detail.js'));
 const InvoiceDetailPage = lazy(() => import('../pages/dashboard/invoice-detail.js'));
@@ -98,6 +99,7 @@ export const dashboardRoutes = [
   { path: 'time', element: page(<TimePage />) },
   { path: 'reports', element: page(<ReportsPage />) },
   { path: 'classification', element: page(<ClassificationPage />) },
+  { path: 'compliance/dashboard', element: page(<ComplianceDashboardPage />) },
   { path: 'onboarding/import', element: page(<OnboardingImportPage />) },
   { path: 'contractors/:id', element: page(<ContractorDetailPage />) },
   { path: 'invoices/:id', element: page(<InvoiceDetailPage />) },

@@ -3183,25 +3183,69 @@
           "right_to_work": "UK Right-to-Work share code",
           "utr": "HMRC UTR",
           "business_registration": "Companies House registration",
-          "sds": "Status Determination Statement"
+          "sds": "Status Determination Statement",
+          "ip_assignment": "UK Intellectual Property Assignment"
         },
         "de": {
           "a1": "A1-Bescheinigung",
           "aufenthaltstitel": "Aufenthaltstitel residence permit",
-          "eight_b_estg": "§48b EStG Freistellungsbescheinigung"
+          "eight_b_estg": "§48b EStG Freistellungsbescheinigung",
+          "werkvertrag_ip": "DE Werkvertrag — grant of usage rights"
         },
         "pl": {
           "zus_a1": "ZUS A1",
-          "udt": "UDT certification"
+          "udt": "UDT certification",
+          "ip_assignment": "PL — assignment of economic copyright"
         },
         "ksa": {
           "iqama": "Iqama residency permit",
-          "work_permit_qiwa": "Work permit + Qiwa authorisation"
+          "work_permit_qiwa": "Work permit + Qiwa authorisation",
+          "ip_assignment": "KSA — transfer of economic rights"
         },
         "uae": {
           "emirates_id": "Emirates ID",
-          "free_zone_license": "Free-zone trade license"
+          "free_zone_license": "Free-zone trade license",
+          "ip_assignment": "UAE — disposition of economic rights"
+        },
+        "us": {
+          "ip_assignment": "US Intellectual Property Assignment"
         }
+      }
+    },
+    "dashboard": {
+      "title": "Compliance",
+      "kpiGroupLabel": "Compliance summary",
+      "errorLoading": "Failed to load the compliance dashboard",
+      "daysValue": "{count, plural, one {# day} other {# days}}",
+      "atRisk": {
+        "label": "At risk",
+        "entityLabel": "{count, plural, one {# item} other {# items}}",
+        "empty": "No at-risk compliance items"
+      },
+      "upcomingRenewals": {
+        "label": "Upcoming renewals",
+        "entityLabel": "{count, plural, one {# item} other {# items}}",
+        "empty": "No upcoming renewals"
+      },
+      "blockedPayments": {
+        "label": "Blocked payments",
+        "entityLabel": "{count, plural, one {# contractor} other {# contractors}}",
+        "empty": "No blocked payments",
+        "sourceLive": "Live",
+        "sourceHistorical": "Recent"
+      },
+      "columns": {
+        "contractor": "Contractor",
+        "document": "Document",
+        "status": "Status",
+        "expiresAt": "Expires",
+        "daysUntilExpiry": "Days left",
+        "blockedDocuments": "Blocked documents",
+        "source": "Source"
+      },
+      "empty": {
+        "heading": "All clear",
+        "body": "No contractors are at risk and no payments are blocked."
       }
     }
   },
