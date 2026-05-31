@@ -4,6 +4,8 @@
  */
 import type { Prisma } from '@contractor-ops/db';
 import { workflowTaskSkipReason } from '@contractor-ops/validators';
+import { TRPCError } from '@trpc/server';
+import * as E from '../../errors';
 import type { ResolveAssigneeWithPtoArgs } from '../../services/pto-detector';
 import { resolveAssigneeWithPto } from '../../services/pto-detector';
 
@@ -239,10 +241,22 @@ export async function unblockDependentsAndRecomputeRun(
     };
     workflowRun: {
       update: (args: Prisma.WorkflowRunUpdateArgs) => Promise<unknown>;
+      findUniqueOrThrow?: (
+        args: Prisma.WorkflowRunFindUniqueOrThrowArgs,
+      ) => Promise<{ overrideMetadata: unknown }>;
+    };
+    credentialReference?: {
+      findMany: (
+        args: Prisma.CredentialReferenceFindManyArgs,
+      ) => Promise<Array<{ id: string; label: string; vaultProvider: string }>>;
     };
   },
   closedTask: { id: string; workflowRun: { id: string } },
   completedAt: Date,
+  // Phase 75 D-08/D-12 — when supplied, run-completion is gated on open
+  // IP_VERIFICATION tasks (hard-block) + PENDING credentials (soft-warning).
+  // Omitted by callers that do not need the gate (preserves existing behaviour).
+  gate?: { organizationId: string },
 ): Promise<void> {
   await tx.workflowTaskRun.updateMany({
     where: {
@@ -258,6 +272,14 @@ export async function unblockDependentsAndRecomputeRun(
   const progress = calculateProgress(allTasks);
   const isComplete = progress.done === progress.total && progress.total > 0;
 
+  if (isComplete && gate && tx.workflowRun.findUniqueOrThrow && tx.credentialReference) {
+    await assertRunCompletable(
+      tx as unknown as RunGateClient,
+      closedTask.workflowRun.id,
+      gate.organizationId,
+    );
+  }
+
   await tx.workflowRun.update({
     where: { id: closedTask.workflowRun.id },
     data: {
@@ -265,4 +287,82 @@ export async function unblockDependentsAndRecomputeRun(
       ...(isComplete ? { status: 'COMPLETED', completedAt } : {}),
     },
   });
+}
+
+interface RunGateClient {
+  workflowTaskRun: {
+    findMany: (args: Prisma.WorkflowTaskRunFindManyArgs) => Promise<Array<{ id: string }>>;
+  };
+  workflowRun: {
+    findUniqueOrThrow: (
+      args: Prisma.WorkflowRunFindUniqueOrThrowArgs,
+    ) => Promise<{ overrideMetadata: unknown }>;
+  };
+  credentialReference: {
+    findMany: (
+      args: Prisma.CredentialReferenceFindManyArgs,
+    ) => Promise<Array<{ id: string; label: string; vaultProvider: string }>>;
+  };
+}
+
+/**
+ * Phase 75 D-08 + D-12 — gate offboarding-run completion.
+ * Throws PRECONDITION_FAILED with a structured `cause` when an IP_VERIFICATION
+ * task is still open (unless the Phase 74 override is applied) or when PENDING
+ * credentials remain. The UI inspects `cause.blockedTaskKind` to route the
+ * admin to the e-sign / override / force-complete flow.
+ */
+export async function assertRunCompletable(
+  tx: RunGateClient,
+  workflowRunId: string,
+  organizationId: string,
+): Promise<void> {
+  const fullRun = await tx.workflowRun.findUniqueOrThrow({
+    where: { id: workflowRunId },
+    select: { overrideMetadata: true },
+  });
+  const meta = fullRun.overrideMetadata;
+  const overrideApplied =
+    typeof meta === 'object' &&
+    meta !== null &&
+    'blockedTaskKind' in meta &&
+    (meta as { blockedTaskKind?: string }).blockedTaskKind === 'IP_VERIFICATION';
+
+  if (!overrideApplied) {
+    const openIpTasks = await tx.workflowTaskRun.findMany({
+      where: {
+        workflowRunId,
+        organizationId,
+        taskType: 'IP_VERIFICATION',
+        status: { in: ['TODO', 'IN_PROGRESS', 'BLOCKED'] },
+      },
+      select: { id: true },
+    });
+    if (openIpTasks.length > 0) {
+      throw new TRPCError({
+        code: 'PRECONDITION_FAILED',
+        message: E.WORKFLOW_IP_VERIFICATION_OPEN,
+        cause: {
+          blockedTaskKind: 'IP_VERIFICATION' as const,
+          openTaskIds: openIpTasks.map(t => t.id),
+        } as never,
+      });
+    }
+  }
+
+  const pendingCreds = await tx.credentialReference.findMany({
+    where: { workflowRunId, organizationId, status: 'PENDING' },
+    select: { id: true, label: true, vaultProvider: true },
+  });
+  if (pendingCreds.length > 0) {
+    throw new TRPCError({
+      code: 'PRECONDITION_FAILED',
+      message: E.WORKFLOW_CREDENTIALS_PENDING,
+      cause: {
+        blockedTaskKind: 'PENDING_CREDENTIALS' as const,
+        pendingCredentials: pendingCreds,
+        pendingCount: pendingCreds.length,
+      } as never,
+    });
+  }
 }

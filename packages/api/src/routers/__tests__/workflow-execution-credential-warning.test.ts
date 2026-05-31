@@ -1,13 +1,66 @@
-import { describe, it } from 'vitest';
+import { TRPCError } from '@trpc/server';
+import { describe, expect, it } from 'vitest';
+import { assertRunCompletable } from '../workflow/workflow-shared';
 
-describe('completeTask — soft-credential-warning gate (Phase 75 D-12)', () => {
-  it.todo('completing a workflow with PENDING CredentialReference rows returns warning payload');
-  it.todo('warning payload includes count + list of { vaultProvider, label } per pending row');
+function makeGateClient(pendingCreds: Array<{ id: string; label: string; vaultProvider: string }>) {
+  return {
+    workflowTaskRun: { findMany: async () => [] },
+    workflowRun: { findUniqueOrThrow: async () => ({ overrideMetadata: null }) },
+    credentialReference: { findMany: async () => pendingCreds },
+  } as never;
+}
+
+describe('assertRunCompletable — soft-credential-warning gate (Phase 75 D-12)', () => {
+  it('raises PRECONDITION_FAILED with cause.blockedTaskKind=PENDING_CREDENTIALS when PENDING credentials exist', async () => {
+    const client = makeGateClient([
+      { id: 'cr_1', label: 'AWS root', vaultProvider: 'ONE_PASSWORD' },
+      { id: 'cr_2', label: 'GitHub PAT', vaultProvider: 'ONE_PASSWORD' },
+      { id: 'cr_3', label: 'Stripe key', vaultProvider: 'ONE_PASSWORD' },
+    ]);
+    try {
+      await assertRunCompletable(client, 'run_1', 'org_1');
+      throw new Error('expected throw');
+    } catch (err) {
+      expect(err).toBeInstanceOf(TRPCError);
+      const cause = (err as TRPCError).cause as {
+        blockedTaskKind: string;
+        pendingCredentials: unknown[];
+      };
+      expect(cause.blockedTaskKind).toBe('PENDING_CREDENTIALS');
+      expect(cause.pendingCredentials).toHaveLength(3);
+    }
+  });
+
+  it('warning payload contains id + label + vaultProvider per row but NOT vaultUrl or notes (privacy)', async () => {
+    const client = makeGateClient([
+      { id: 'cr_1', label: 'AWS root', vaultProvider: 'ONE_PASSWORD' },
+    ]);
+    try {
+      await assertRunCompletable(client, 'run_1', 'org_1');
+      throw new Error('expected throw');
+    } catch (err) {
+      const cause = (err as TRPCError).cause as {
+        pendingCredentials: Array<Record<string, unknown>>;
+      };
+      const row = cause.pendingCredentials[0];
+      expect(row).toHaveProperty('label');
+      expect(row).toHaveProperty('vaultProvider');
+      expect(row).not.toHaveProperty('vaultUrl');
+      expect(row).not.toHaveProperty('notes');
+    }
+  });
+
+  it('zero PENDING credentials → no warning, completable', async () => {
+    const client = makeGateClient([]);
+    await expect(assertRunCompletable(client, 'run_1', 'org_1')).resolves.toBeUndefined();
+  });
+
+  it.todo('forceCompleteRunWithPendingCredentials requires reason >= 20 chars (Zod min(20))');
   it.todo(
-    'admin confirmation requires reason (audit field) — empty reason rejected with BAD_REQUEST',
+    'audit row workflow.completed_with_pending_credentials written with reason + count (full integration)',
   );
-  it.todo('audit log row workflow.completed_with_pending_credentials written with reason + count');
-  it.todo('zero PENDING credentials → no warning, normal completion');
-  it.todo('all credentials ROTATED or NOT_APPLICABLE → no warning');
-  it.todo('admin choosing NOT to confirm → completion is cancelled, workflow stays in IN_PROGRESS');
+  it.todo('all credentials ROTATED or NOT_APPLICABLE → no warning (full integration)');
+  it.todo(
+    'forceCompleteRunWithPendingCredentials still respects IP_VERIFICATION block (defence-in-depth)',
+  );
 });

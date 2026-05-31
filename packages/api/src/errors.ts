@@ -380,3 +380,9 @@ export const VALIDATION_CONTRACT_TYPE_REQUIRED = 'validationContractTypeRequired
 export const VALIDATION_START_DATE_REQUIRED = 'validationStartDateRequired';
 export const VALIDATION_DATE_INVALID = 'validationDateInvalid';
 export const VALIDATION_TAX_ID_FK_REQUIRED = 'validationTaxIdFkRequired';
+
+// ─── Phase 75 — Credential vault + IP-verification gate ─────────
+export const CREDENTIAL_REFERENCE_NOT_FOUND = 'credentialReferenceNotFound';
+export const CREDENTIAL_REFERENCE_OFFBOARDING_ONLY = 'credentialReferenceOffboardingOnly';
+export const WORKFLOW_IP_VERIFICATION_OPEN = 'workflowIpVerificationOpen';
+export const WORKFLOW_CREDENTIALS_PENDING = 'workflowCredentialsPending';

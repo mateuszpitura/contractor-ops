@@ -936,7 +936,9 @@ export const workflowExecutionRouter = router({
           },
         });
 
-        await unblockDependentsAndRecomputeRun(tx, task, now);
+        await unblockDependentsAndRecomputeRun(tx, task, now, {
+          organizationId: ctx.organizationId,
+        });
 
         return updated;
       });
@@ -986,7 +988,9 @@ export const workflowExecutionRouter = router({
           },
         });
 
-        await unblockDependentsAndRecomputeRun(tx, task, new Date());
+        await unblockDependentsAndRecomputeRun(tx, task, new Date(), {
+          organizationId: ctx.organizationId,
+        });
 
         return updated;
       });
@@ -1147,6 +1151,104 @@ export const workflowExecutionRouter = router({
       });
 
       return { count };
+    }),
+
+  /**
+   * Phase 75 D-12 — admin confirms completion of an offboarding run that still
+   * has PENDING credentials. Requires a >=20-char reason and the IP_VERIFICATION
+   * precondition to be satisfied (or overridden) — this mutation does NOT bypass
+   * the IP block. Emits a single `workflow.completed_with_pending_credentials`
+   * audit row.
+   */
+  forceCompleteRunWithPendingCredentials: tenantProcedure
+    .use(requirePermission({ workflow: ['execute'] }))
+    .input(
+      z.object({
+        workflowRunId: z.string().min(1),
+        reason: z.string().min(20).max(2000),
+        acknowledged: z.literal(true),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      return ctx.db.$transaction(async tx => {
+        const run = await tx.workflowRun.findFirst({
+          where: { id: input.workflowRunId, organizationId: ctx.organizationId },
+          select: { id: true, status: true },
+        });
+        if (!run) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: E.WORKFLOW_RUN_NOT_FOUND });
+        }
+
+        // Defence-in-depth: the credential warning may be force-confirmed, but
+        // the IP_VERIFICATION hard-block is NOT bypassed here (only via the
+        // OWNER override mutation). Re-assert the IP precondition.
+        const openIpTasks = await tx.workflowTaskRun.findMany({
+          where: {
+            workflowRunId: input.workflowRunId,
+            organizationId: ctx.organizationId,
+            taskType: 'IP_VERIFICATION',
+            status: { in: ['TODO', 'IN_PROGRESS', 'BLOCKED'] },
+          },
+          select: { id: true },
+        });
+        if (openIpTasks.length > 0) {
+          const fullRun = await tx.workflowRun.findUniqueOrThrow({
+            where: { id: input.workflowRunId },
+            select: { overrideMetadata: true },
+          });
+          const meta = fullRun.overrideMetadata;
+          const overrideApplied =
+            typeof meta === 'object' &&
+            meta !== null &&
+            'blockedTaskKind' in meta &&
+            (meta as { blockedTaskKind?: string }).blockedTaskKind === 'IP_VERIFICATION';
+          if (!overrideApplied) {
+            throw new TRPCError({
+              code: 'PRECONDITION_FAILED',
+              message: E.WORKFLOW_IP_VERIFICATION_OPEN,
+              cause: {
+                blockedTaskKind: 'IP_VERIFICATION' as const,
+                openTaskIds: openIpTasks.map(t => t.id),
+              } as never,
+            });
+          }
+        }
+
+        const pendingCount = await tx.credentialReference.count({
+          where: {
+            workflowRunId: input.workflowRunId,
+            organizationId: ctx.organizationId,
+            status: 'PENDING',
+          },
+        });
+
+        const now = new Date();
+        await tx.workflowRun.update({
+          where: { id: input.workflowRunId },
+          data: { status: 'COMPLETED', completedAt: now },
+        });
+
+        await writeAuditLog({
+          organizationId: ctx.organizationId,
+          actorType: 'USER',
+          actorId: ctx.user?.id ?? null,
+          action: 'workflow.completed_with_pending_credentials',
+          resourceType: 'WORKFLOW_RUN',
+          resourceId: input.workflowRunId,
+          newValues: {
+            reason: input.reason,
+            pendingCredentialsCount: pendingCount,
+            completedAt: now.toISOString(),
+          },
+          tx,
+        });
+
+        return {
+          workflowRunId: input.workflowRunId,
+          completedAt: now,
+          pendingCredentialsCount: pendingCount,
+        };
+      });
     }),
 
   /**
