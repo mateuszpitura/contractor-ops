@@ -21,7 +21,10 @@ export interface CooldownInput {
 }
 
 export type RunStatus = 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'PARTIAL_FAILURE' | 'FAILED';
-export type StepStatus = 'PENDING' | 'IN_PROGRESS' | 'SUCCEEDED' | 'FAILED';
+// Phase 77 D-10 — MANUAL_COMPLETED added to mirror the Prisma DeprovisioningStepStatus
+// enum (recomputeRunStatus selects `status` straight off the regenerated client).
+// deriveRunStatus treats it as SUCCEEDED-equivalent for COMPLETED/PARTIAL_FAILURE (D-11).
+export type StepStatus = 'PENDING' | 'IN_PROGRESS' | 'SUCCEEDED' | 'FAILED' | 'MANUAL_COMPLETED';
 
 export interface StepRow {
   status: StepStatus;

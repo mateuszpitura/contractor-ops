@@ -45,6 +45,31 @@ describe('deriveRunStatus (Phase 76 D-02)', () => {
   it('empty steps → PENDING', () => {
     expect(deriveRunStatus([])).toBe('PENDING');
   });
+  // Phase 77 D-11 — MANUAL_COMPLETED counts as terminal-success.
+  it('all MANUAL_COMPLETED → COMPLETED', () => {
+    expect(
+      deriveRunStatus([
+        { status: 'MANUAL_COMPLETED', attempts: 3 },
+        { status: 'MANUAL_COMPLETED', attempts: 3 },
+      ]),
+    ).toBe('COMPLETED');
+  });
+  it('mix of SUCCEEDED + MANUAL_COMPLETED → COMPLETED', () => {
+    expect(
+      deriveRunStatus([
+        { status: 'SUCCEEDED', attempts: 1 },
+        { status: 'MANUAL_COMPLETED', attempts: 3 },
+      ]),
+    ).toBe('COMPLETED');
+  });
+  it('mix of MANUAL_COMPLETED + FAILED-at-max → PARTIAL_FAILURE', () => {
+    expect(
+      deriveRunStatus([
+        { status: 'MANUAL_COMPLETED', attempts: 3 },
+        { status: 'FAILED', attempts: 3 },
+      ]),
+    ).toBe('PARTIAL_FAILURE');
+  });
 });
 
 describe('recomputeRunStatus (Phase 76 D-02 async wrapper)', () => {
