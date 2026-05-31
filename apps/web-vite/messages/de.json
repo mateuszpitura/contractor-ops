@@ -3158,7 +3158,11 @@
     "zatcaTaxDetailsRequiredForCompliance": "Steuerdaten für die Compliance erforderlich.",
     "zatcaInvoiceNotResubmittable": "Rechnung nicht gefunden oder nicht für eine erneute Übermittlung berechtigt. Nur abgelehnte oder ausstehende Rechnungen können erneut übermittelt werden.",
     "ocrExtractionNotFound": "OCR-Extraktion nicht gefunden.",
-    "compliancePaymentBlocked": "Zahlung blockiert: Ein ausgewählter Auftragnehmer hat ein abgelaufenes, blockierendes Compliance-Dokument."
+    "compliancePaymentBlocked": "Zahlung blockiert: Ein ausgewählter Auftragnehmer hat ein abgelaufenes, blockierendes Compliance-Dokument.",
+    "approvalFlowNotFound": "Genehmigungsablauf nicht gefunden.",
+    "approvalNotPendingCompliance": "Diese Genehmigung befindet sich nicht in einer Compliance-Sperre.",
+    "approvalCannotResolveContractor": "Der Auftragnehmer für diese Genehmigung kann nicht ermittelt werden.",
+    "approvalStillComplianceBlocked": "Der Auftragnehmer hat weiterhin ein abgelaufenes, blockierendes Compliance-Dokument; die Genehmigung kann nicht fortgesetzt werden."
   },
   "GoogleWorkspace": {
     "import": {

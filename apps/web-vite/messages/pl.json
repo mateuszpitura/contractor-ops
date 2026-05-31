@@ -3158,7 +3158,11 @@
     "zatcaTaxDetailsRequiredForCompliance": "Wymagane dane podatkowe dla zgodności.",
     "zatcaInvoiceNotResubmittable": "Nie znaleziono faktury lub nie kwalifikuje się do ponownego przesłania. Ponownie przesłać można tylko faktury odrzucone lub oczekujące.",
     "ocrExtractionNotFound": "Nie znaleziono ekstrakcji OCR.",
-    "compliancePaymentBlocked": "Płatność zablokowana: wybrany wykonawca ma wygasły, blokujący dokument zgodności."
+    "compliancePaymentBlocked": "Płatność zablokowana: wybrany wykonawca ma wygasły, blokujący dokument zgodności.",
+    "approvalFlowNotFound": "Nie znaleziono procesu zatwierdzania.",
+    "approvalNotPendingCompliance": "To zatwierdzenie nie jest wstrzymane z powodu zgodności.",
+    "approvalCannotResolveContractor": "Nie można ustalić wykonawcy dla tego zatwierdzenia.",
+    "approvalStillComplianceBlocked": "Wykonawca nadal ma wygasły, blokujący dokument zgodności; nie można wznowić zatwierdzenia."
   },
   "GoogleWorkspace": {
     "import": {

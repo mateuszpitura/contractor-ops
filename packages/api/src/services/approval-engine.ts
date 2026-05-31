@@ -1,6 +1,8 @@
 import type { Prisma, PrismaClient } from '@contractor-ops/db';
 import { TRPCError } from '@trpc/server';
 import { APPROVAL_NO_USER_WITH_ROLE } from '../errors';
+import './approval-engine/operators/index'; // side-effect: registers all condition operators
+import { evaluateOperator } from './approval-engine/operators/registry';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -263,7 +265,25 @@ export async function advanceFlow(tx: TxClient, flowId: string): Promise<Advance
   const nextStep = flow.steps.find(s => s.status === 'NOT_STARTED' && s.stepOrder > currentOrder);
 
   if (!nextStep) {
-    // All steps complete — mark flow as APPROVED
+    // Phase 72 D-13 — Final-step compliance gate. This runs AFTER all approver
+    // steps complete and is orthogonal to the chain-config conditions evaluated
+    // at routing time (evaluateConditions). complianceCritical is the canonical
+    // pre-APPROVE check: if the resource's contractor has a BLOCKING+EXPIRED
+    // compliance item, hold the flow in PENDING_COMPLIANCE instead of approving.
+    // An approver must still act once the hold is released (never auto-APPROVE).
+    const complianceHold = await checkComplianceHoldAtFinalStep(tx, flow);
+    if (complianceHold) {
+      await tx.approvalFlow.update({
+        where: { id: flowId },
+        data: {
+          status: 'PENDING_COMPLIANCE',
+          complianceHoldsJson: complianceHold as unknown as Prisma.InputJsonValue,
+        },
+      });
+      return { completed: false, flowStatus: 'PENDING_COMPLIANCE' };
+    }
+
+    // All steps complete and no compliance hold — mark flow as APPROVED.
     await tx.approvalFlow.update({
       where: { id: flowId },
       data: {
@@ -294,6 +314,49 @@ export async function advanceFlow(tx: TxClient, flowId: string): Promise<Advance
   });
 
   return { completed: false, nextStepOrder: nextStep.stepOrder };
+}
+
+/** Phase 72 D-14 — linkage stored on a held flow's complianceHoldsJson. */
+export interface ComplianceHold {
+  itemIds: string[];
+  heldAt: string;
+  heldByOperator: string;
+}
+
+/**
+ * Phase 72 D-13 — evaluates complianceCritical(EXPIRED) at an invoice approval's
+ * final step. Returns the hold linkage when the resource's contractor has at
+ * least one BLOCKING+EXPIRED compliance item, or null when the flow may proceed
+ * to APPROVED. Only invoice approvals are gated in Phase 72.
+ */
+async function checkComplianceHoldAtFinalStep(
+  tx: TxClient,
+  flow: { resourceType: string; resourceId: string; organizationId: string },
+): Promise<ComplianceHold | null> {
+  if (flow.resourceType !== 'INVOICE') return null;
+
+  const invoice = await tx.invoice.findUniqueOrThrow({
+    where: { id: flow.resourceId },
+    select: { contractorId: true },
+  });
+  if (!invoice.contractorId) return null;
+
+  const blocked = await evaluateOperator(
+    'complianceCritical',
+    { status: 'EXPIRED' },
+    { tx, contractorId: invoice.contractorId, organizationId: flow.organizationId },
+  );
+  if (!blocked) return null;
+
+  const items = await tx.contractorComplianceItem.findMany({
+    where: { contractorId: invoice.contractorId, severity: 'BLOCKING', status: 'EXPIRED' },
+    select: { id: true },
+  });
+  return {
+    itemIds: items.map(i => i.id),
+    heldAt: new Date().toISOString(),
+    heldByOperator: 'complianceCritical',
+  };
 }
 
 // ---------------------------------------------------------------------------

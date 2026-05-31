@@ -25,7 +25,22 @@ import { createLogger } from '@contractor-ops/logger';
 import { TRPCError } from '@trpc/server';
 import * as E from '../errors';
 
-type TxClient = Prisma.TransactionClient;
+/**
+ * Structural client interface — works with the full PrismaClient, a `tx` from
+ * `$transaction`, AND the tenant-scoped extended client. Loose `Promise<unknown>`
+ * returns avoid the deep-generic instantiation that the concrete Prisma client
+ * union triggers. Mirrors compliance-supersession.ts SupersessionClient.
+ */
+export interface PaymentGateClient {
+  contractorComplianceItem: {
+    findMany: (args: Prisma.ContractorComplianceItemFindManyArgs) => Promise<unknown>;
+  };
+  auditLog: {
+    create: (args: Prisma.AuditLogCreateArgs) => Promise<unknown>;
+  };
+}
+
+type TxClient = PaymentGateClient;
 
 const log = createLogger({ service: 'compliance-payment-gate' });
 
@@ -68,10 +83,10 @@ export async function assertContractorPaymentEligibility(
   opts: AssertOptions = {},
 ): Promise<EligibilityResult> {
   const { tx, throwOnFail = true, flagEnabled, organizationId } = opts;
-  const db = tx ?? prisma;
+  const db: PaymentGateClient = tx ?? (prisma as unknown as PaymentGateClient);
   if (contractorIds.length === 0) return EMPTY_RESULT;
 
-  const items = await db.contractorComplianceItem.findMany({
+  const items = (await db.contractorComplianceItem.findMany({
     where: {
       contractorId: { in: contractorIds },
       severity: 'BLOCKING',
@@ -80,7 +95,7 @@ export async function assertContractorPaymentEligibility(
     include: {
       contractor: { select: { id: true, displayName: true, organizationId: true } },
     },
-  });
+  })) as ComplianceItemWithContractor[];
 
   const contractorReasons = groupReasons(items);
   const enforce = flagEnabled ?? isPaymentBlockEnforced();
@@ -146,7 +161,7 @@ function groupReasons(items: ComplianceItemWithContractor[]): ContractorReason[]
  * best-effort AuditLog row (never aborts the caller). T-72-04-07.
  */
 async function recordWouldBlock(
-  db: TxClient | typeof prisma,
+  db: PaymentGateClient,
   contractorIds: string[],
   contractorReasons: ContractorReason[],
   organizationId: string | undefined,

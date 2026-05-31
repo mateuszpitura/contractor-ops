@@ -34,6 +34,7 @@ import {
   syncApprovalSlaDeadline,
   syncPaymentDueDeadline,
 } from '../../services/calendar-deadline-sync';
+import { assertContractorPaymentEligibility } from '../../services/compliance-payment-gate';
 import { dispatch } from '../../services/notification-service';
 import type { ApprovalQueueStepRow } from './approval-types';
 import { approvalStepQueueInclude } from './approval-types';
@@ -1431,5 +1432,89 @@ export const approvalRouter = router({
       const events = buildAuditEvents(flow, chainName);
 
       return plain({ events, flow: flowSummary });
+    }),
+
+  // Phase 72 D-15 — manual escape hatch: release a PENDING_COMPLIANCE flow back
+  // to PENDING. Re-asserts eligibility first (throwOnFail:false) and REJECTS when
+  // the contractor is still blocked — admin cannot override an active block.
+  resumeFromCompliance: tenantProcedure
+    .use(requirePermission({ invoice: ['approve'] }))
+    .input(
+      z.object({
+        approvalFlowId: z.string().cuid(),
+        reason: z.string().min(1).max(500),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      return await ctx.db.$transaction(async tx => {
+        const flow = await tx.approvalFlow.findUniqueOrThrow({
+          where: { id: input.approvalFlowId },
+          select: {
+            id: true,
+            organizationId: true,
+            status: true,
+            resourceType: true,
+            resourceId: true,
+          },
+        });
+        if (flow.organizationId !== ctx.organizationId) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: E.APPROVAL_FLOW_NOT_FOUND });
+        }
+        if (flow.status !== 'PENDING_COMPLIANCE') {
+          throw new TRPCError({
+            code: 'PRECONDITION_FAILED',
+            message: E.APPROVAL_NOT_PENDING_COMPLIANCE,
+          });
+        }
+
+        let contractorId: string | null = null;
+        if (flow.resourceType === 'INVOICE') {
+          const inv = await tx.invoice.findUniqueOrThrow({
+            where: { id: flow.resourceId },
+            select: { contractorId: true },
+          });
+          contractorId = inv.contractorId;
+        }
+        if (!contractorId) {
+          throw new TRPCError({
+            code: 'PRECONDITION_FAILED',
+            message: E.APPROVAL_CANNOT_RESOLVE_CONTRACTOR,
+          });
+        }
+
+        const eligibility = await assertContractorPaymentEligibility([contractorId], {
+          tx,
+          throwOnFail: false,
+          organizationId: ctx.organizationId,
+        });
+        if (eligibility.blocked) {
+          throw new TRPCError({
+            code: 'PRECONDITION_FAILED',
+            message: E.APPROVAL_STILL_COMPLIANCE_BLOCKED,
+            cause: { contractorReasons: eligibility.contractorReasons },
+          });
+        }
+
+        await tx.approvalFlow.update({
+          where: { id: input.approvalFlowId },
+          data: { status: 'PENDING', complianceHoldsJson: PrismaClient.DbNull },
+        });
+        await tx.auditLog.create({
+          data: {
+            organizationId: ctx.organizationId,
+            actorType: 'USER',
+            actorId: ctx.user.id,
+            action: 'approval.compliance_resolved',
+            resourceType: flow.resourceType,
+            resourceId: flow.resourceId,
+            metadataJson: {
+              manualOverride: true,
+              reason: input.reason,
+              resolverEvent: 'admin_manual',
+            },
+          },
+        });
+        return { resumed: true, approvalFlowId: input.approvalFlowId };
+      });
     }),
 });

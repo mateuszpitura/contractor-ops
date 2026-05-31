@@ -54,6 +54,7 @@ import { classificationSaveAnswerRateLimit } from '../../middleware/classificati
 import { adminProcedure, requirePermission } from '../../middleware/rbac';
 import { classificationProcedure } from '../../middleware/require-classification-flag';
 import { writeAuditLog } from '../../services/audit-writer';
+import { onComplianceItemSatisfied } from '../../services/compliance-recovery';
 import {
   extractOutcomeKind,
   materialiseFromPolicy,
@@ -78,6 +79,27 @@ const COUNTRY_TO_JURISDICTION: Record<string, Jurisdiction> = {
 
 function mapCountryCodeToJurisdiction(countryCode: string): Jurisdiction | null {
   return COUNTRY_TO_JURISDICTION[countryCode] ?? null;
+}
+
+/**
+ * Phase 72 D-15 — fires the PENDING_COMPLIANCE recovery hook for each of the
+ * contractor's BLOCKING items currently SATISFIED. Called after a supersession
+ * carries items forward to SATISFIED so any approval flow held by one of those
+ * items re-asserts eligibility and resumes to PENDING. Runs inside the caller's
+ * transaction so the recovery is atomic with the supersession.
+ */
+async function releaseHeldApprovalsForContractor(
+  tx: Parameters<typeof onComplianceItemSatisfied>[0],
+  organizationId: string,
+  contractorId: string,
+): Promise<void> {
+  const satisfied = (await tx.contractorComplianceItem.findMany({
+    where: { contractorId, severity: 'BLOCKING', status: 'SATISFIED' },
+    select: { id: true },
+  })) as Array<{ id: string }>;
+  for (const item of satisfied) {
+    await onComplianceItemSatisfied(tx, { itemId: item.id, contractorId, organizationId });
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -462,6 +484,10 @@ export const classificationRouter = router({
               data: { policyRuleSetVersion: POLICY_RULE_SET_VERSION },
             });
 
+            // Phase 72 D-15 — recompute can carry items forward to SATISFIED;
+            // release any approval flow held by a now-satisfied BLOCKING item.
+            await releaseHeldApprovalsForContractor(tx, ctx.organizationId, contractorId);
+
             return {
               contractorId,
               noop: false as const,
@@ -728,6 +754,14 @@ export const classificationRouter = router({
               engagement,
               reason: 'CLASSIFICATION_OUTCOME_CHANGE',
             });
+            // Phase 72 D-15 — supersession can carry items forward to SATISFIED.
+            // Fire the recovery hook for each now-satisfied BLOCKING item so any
+            // PENDING_COMPLIANCE approval flow held by it can re-assert + resume.
+            await releaseHeldApprovalsForContractor(
+              tx,
+              row.organizationId,
+              assignment.contractorId,
+            );
           }
           // else: same outcome kind — no row churn (D-10 atomicity preserved by skipping).
         }

@@ -3158,7 +3158,11 @@
     "zatcaTaxDetailsRequiredForCompliance": "يلزم تفاصيل الضرائب للامتثال.",
     "zatcaInvoiceNotResubmittable": "لم يتم العثور على الفاتورة أو أنها غير مؤهلة لإعادة الإرسال. يمكن إعادة إرسال الفواتير المرفوضة أو المعلّقة فقط.",
     "ocrExtractionNotFound": "لم يُعثر على استخراج OCR.",
-    "compliancePaymentBlocked": "تم حظر الدفع: لدى أحد المقاولين المحددين مستند امتثال منتهٍ يمنع الدفع."
+    "compliancePaymentBlocked": "تم حظر الدفع: لدى أحد المقاولين المحددين مستند امتثال منتهٍ يمنع الدفع.",
+    "approvalFlowNotFound": "لم يُعثر على مسار الموافقة.",
+    "approvalNotPendingCompliance": "هذه الموافقة ليست معلّقة بسبب الامتثال.",
+    "approvalCannotResolveContractor": "تعذّر تحديد المقاول لهذه الموافقة.",
+    "approvalStillComplianceBlocked": "لا يزال لدى المقاول مستند امتثال منتهٍ يمنع الدفع؛ لا يمكن استئناف الموافقة."
   },
   "GoogleWorkspace": {
     "import": {

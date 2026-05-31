@@ -399,3 +399,9 @@ export const DEPROVISIONING_NO_EXTERNAL_USER = 'deprovisioningNoExternalUser';
 
 // ─── Phase 72 — F1 compliance payment block (COMPL-05) ─────────────
 export const COMPLIANCE_PAYMENT_BLOCKED = 'compliancePaymentBlocked';
+
+// ─── Phase 72 — F1 PENDING_COMPLIANCE recovery (COMPL-06) ──────────
+export const APPROVAL_FLOW_NOT_FOUND = 'approvalFlowNotFound';
+export const APPROVAL_NOT_PENDING_COMPLIANCE = 'approvalNotPendingCompliance';
+export const APPROVAL_CANNOT_RESOLVE_CONTRACTOR = 'approvalCannotResolveContractor';
+export const APPROVAL_STILL_COMPLIANCE_BLOCKED = 'approvalStillComplianceBlocked';

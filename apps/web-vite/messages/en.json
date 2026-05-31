@@ -3158,7 +3158,11 @@
     "zatcaTaxDetailsRequiredForCompliance": "Tax details are required for compliance.",
     "zatcaInvoiceNotResubmittable": "Invoice not found or not eligible for resubmission. Only rejected or pending invoices can be resubmitted.",
     "ocrExtractionNotFound": "OCR extraction not found.",
-    "compliancePaymentBlocked": "Payment blocked: a selected contractor has an expired blocking compliance document."
+    "compliancePaymentBlocked": "Payment blocked: a selected contractor has an expired blocking compliance document.",
+    "approvalFlowNotFound": "Approval flow not found.",
+    "approvalNotPendingCompliance": "This approval is not on a compliance hold.",
+    "approvalCannotResolveContractor": "Cannot resolve the contractor for this approval.",
+    "approvalStillComplianceBlocked": "Contractor still has an expired blocking compliance document; cannot resume the approval."
   },
   "GoogleWorkspace": {
     "import": {
