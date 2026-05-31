@@ -4,7 +4,7 @@ import { resolvePolicyRules } from '../registry';
 import type { EngagementContext } from '../types';
 
 describe('resolvePolicyRules — ROADMAP success criteria fixtures', () => {
-  it('UK B2B classified IR35-INSIDE materialises 4 rows (RTW + UTR + business-registration + SDS)', () => {
+  it('UK B2B classified IR35-INSIDE materialises RTW + UTR + business-registration + SDS + Phase 75 IP-assignment', () => {
     const ctx: EngagementContext = {
       jurisdiction: 'UK',
       outcome: 'IR35-INSIDE',
@@ -16,6 +16,7 @@ describe('resolvePolicyRules — ROADMAP success criteria fixtures', () => {
     const ids = rules.map(r => r.policyRuleId).sort();
     expect(ids).toEqual([
       'uk.business_registration@v1',
+      'uk.ip_assignment@v1', // Phase 75 D-07 — universal at offboarding
       'uk.right_to_work@v1',
       'uk.sds@v1',
       'uk.utr@v1',
@@ -48,7 +49,12 @@ describe('resolvePolicyRules — ROADMAP success criteria fixtures', () => {
     };
     const rules = resolvePolicyRules(ctx);
     const ids = rules.map(r => r.policyRuleId).sort();
-    expect(ids).toEqual(['de.a1@v1', 'de.aufenthaltstitel@v1', 'de.eight_b_estg@v1']);
+    expect(ids).toEqual([
+      'de.a1@v1',
+      'de.aufenthaltstitel@v1',
+      'de.eight_b_estg@v1',
+      'de.werkvertrag_ip@v1', // Phase 75 D-07/D-15 — universal at offboarding
+    ]);
   });
 
   it('KSA cross-border resolves Iqama (Asia/Riyadh) + work-permit + Qiwa', () => {

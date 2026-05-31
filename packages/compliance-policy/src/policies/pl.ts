@@ -29,3 +29,16 @@ registerPolicyRule({
   draftLegalText:
     'Required for contractors operating regulated industrial equipment (cranes, lifts, pressure vessels). Validity varies per equipment class; expiry is typed on the certification. (UDT; PENDING legal review)',
 });
+
+// Phase 75 D-07 — IP-assignment requirement surfaced at offboarding (WARNING; non-blocking).
+registerPolicyRule({
+  policyRuleId: 'pl.ip_assignment@v1',
+  jurisdiction: 'PL',
+  documentType: 'IP_RATIFICATION',
+  displayName: 'PL — Przeniesienie autorskich praw majątkowych',
+  severity: 'WARNING',
+  expiryJurisdictionTz: 'Europe/Warsaw',
+  appliesIf: () => true,
+  draftLegalText:
+    'Polish contracts must transfer or license autorskie prawa majątkowe (economic copyright) under Ustawa o prawie autorskim i prawach pokrewnych (1994). Art. 41 covers the transfer; Art. 50 enumerates the pola eksploatacji (fields of exploitation) that must be specified explicitly; Art. 67 governs licencja wyłączna (exclusive licence) as an alternative. Personal moral rights (autorskie prawa osobiste) are NON-transferable under Art. 16. (PENDING legal review by doradca podatkowy)',
+});

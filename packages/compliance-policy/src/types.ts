@@ -3,7 +3,7 @@
 
 export type Severity = 'BLOCKING' | 'WARNING' | 'INFO';
 
-export type Jurisdiction = 'UK' | 'DE' | 'PL' | 'KSA' | 'UAE';
+export type Jurisdiction = 'UK' | 'DE' | 'PL' | 'US' | 'KSA' | 'UAE';
 
 /**
  * Stable semantic ID + monotonic version. Format: `<jurisdiction>.<doc_namespace>@v<N>`

@@ -29,3 +29,16 @@ registerPolicyRule({
   draftLegalText:
     'Two artefacts in one row: the Saudi work-permit document AND a verifiable boolean from the Qiwa portal. Phase 71 stores the boolean as a notes field; Phase 79 wires the Qiwa API for live verification. (Qiwa portal / MHRSD; PENDING legal review)',
 });
+
+// Phase 75 D-07 — IP-assignment requirement surfaced at offboarding (WARNING; non-blocking).
+registerPolicyRule({
+  policyRuleId: 'ksa.ip_assignment@v1',
+  jurisdiction: 'KSA',
+  documentType: 'IP_RATIFICATION',
+  displayName: 'KSA — Transfer of Economic Rights',
+  severity: 'WARNING',
+  expiryJurisdictionTz: 'Asia/Riyadh',
+  appliesIf: () => true,
+  draftLegalText:
+    'KSA-jurisdiction contracts must transfer economic rights under the Saudi Copyright Law (Royal Decree M/41 of 2003), Article 22, which requires (a) writing, (b) specification of scope/purpose/term/territory of exploitation, and (c) explicit identification of the rights transferred. (PENDING legal review by local adviser)',
+});

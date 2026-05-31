@@ -7,6 +7,7 @@
 import './policies/uk';
 import './policies/de';
 import './policies/pl';
+import './policies/us';
 import './policies/ksa';
 import './policies/uae';
 

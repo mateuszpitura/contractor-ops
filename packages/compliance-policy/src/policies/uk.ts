@@ -59,3 +59,16 @@ registerPolicyRule({
   draftLegalText:
     'Required by Chapter 10 ITEPA 2003 when the engagement is determined to be inside IR35. Without a written SDS the deemed-employer rule does not engage and PAYE deductions cannot be made; payment must be held until the SDS is produced. (HMRC ESM10000; PENDING legal review)',
 });
+
+// Phase 75 D-07 — IP-assignment requirement surfaced at offboarding (WARNING; non-blocking).
+registerPolicyRule({
+  policyRuleId: 'uk.ip_assignment@v1',
+  jurisdiction: 'UK',
+  documentType: 'IP_RATIFICATION',
+  displayName: 'UK Intellectual Property Assignment',
+  severity: 'WARNING',
+  expiryJurisdictionTz: 'Europe/London',
+  appliesIf: () => true,
+  draftLegalText:
+    "UK contractors must execute an IP-assignment under Copyright, Designs and Patents Act 1988 s.90(1) (assignment) and s.91 (future copyright). Best practice includes: 'hereby (absolutely and irrevocably) assigns', 'present and future rights', and an explicit waiver of moral rights under CDPA 1988 s.87. (PENDING legal review by UK adviser)",
+});

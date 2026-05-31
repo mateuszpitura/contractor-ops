@@ -79,3 +79,18 @@ registerPolicyRule({
   draftLegalText:
     'Required for construction-sector engagements. Without §48b, the principal must withhold 15% Bauabzugsteuer at source. Issued by the Finanzamt; valid up to 3 years. (EStG §48b; PENDING legal review)',
 });
+
+// Phase 75 D-07 + D-15 — Werkvertrag IP-rights as Nutzungsrechte, NOT assignment.
+// RESEARCH §5.1: §7 UrhG Schöpferprinzip makes authorship inalienable; UK-style
+// "hereby assigns" boilerplate is INSUFFICIENT under DE law.
+registerPolicyRule({
+  policyRuleId: 'de.werkvertrag_ip@v1',
+  jurisdiction: 'DE',
+  documentType: 'IP_RATIFICATION',
+  displayName: 'DE Werkvertrag — Einräumung von Nutzungsrechten',
+  severity: 'WARNING',
+  expiryJurisdictionTz: 'Europe/Berlin',
+  appliesIf: () => true,
+  draftLegalText:
+    "DE-jurisdiction contracts MUST grant Nutzungsrechte per UrhG §31 (Einräumung von Nutzungsrechten — exclusive `ausschließliches Nutzungsrecht` or non-exclusive `einfaches Nutzungsrecht`) rather than transfer authorship. UrhG §7 (Schöpferprinzip) makes authorship inalienable: only natural persons can be authors and rights cannot be assigned. UK-style 'hereby assigns' boilerplate is INSUFFICIENT under DE law — Phase 75 verdict engine triggers MANUAL_REVIEW_REQUIRED with crossJurisdictionMismatch flag (D-15) when only UK-namespace phrases match a DE contract. UrhG §31 Abs. 5 (Zweckübertragungsregel) further constrains the scope of granted rights to what the contractual purpose requires. (PENDING legal review by Steuerberater + Werkvertrag-aware adviser)",
+});

@@ -29,3 +29,16 @@ registerPolicyRule({
   draftLegalText:
     'Required for freelancers operating from UAE free zones (DMCC, ADGM, DIFC, etc.). License number is the canonical identifier; renewal cadence is yearly. (Free-zone authority; PENDING legal review)',
 });
+
+// Phase 75 D-07 — IP-assignment requirement surfaced at offboarding (WARNING; non-blocking).
+registerPolicyRule({
+  policyRuleId: 'uae.ip_assignment@v1',
+  jurisdiction: 'UAE',
+  documentType: 'IP_RATIFICATION',
+  displayName: 'UAE — Disposition of Economic Rights',
+  severity: 'WARNING',
+  expiryJurisdictionTz: 'Asia/Dubai',
+  appliesIf: () => true,
+  draftLegalText:
+    'UAE-jurisdiction contracts must dispose of economic rights under UAE Federal Law No. 38 of 2021 on Copyright and Neighbouring Rights, Article 9, which requires the disposition (a) be in writing, (b) specify the rights, (c) specify the purpose, duration and place of exploitation. Moral rights are NON-disposable. (PENDING legal review by local adviser)',
+});
