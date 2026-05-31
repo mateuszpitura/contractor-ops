@@ -22,6 +22,8 @@ registerPolicyRule({
   appliesIf: () => true,
   draftLegalText:
     "Employer must verify the contractor's right to work in the UK via a Home Office share code prior to engagement. Share codes expire 90 days from generation; the verification record (not the underlying status) is the artefact tracked here. (Border Security Act 2025 / gov.uk/right-to-work-checks; PENDING legal review)",
+  expirySemantic: 'fixed_days', // Phase 73 D-07 — share code valid 90 days from generation
+  expiryDays: 90,
 });
 
 registerPolicyRule({
@@ -34,6 +36,7 @@ registerPolicyRule({
   appliesIf: () => true,
   draftLegalText:
     'Sole traders and limited-company contractors must hold a 10-digit HMRC UTR. Non-expiring — once issued, the UTR is valid for the lifetime of the entity. (HMRC; PENDING legal review)',
+  expirySemantic: 'no_expiry', // Phase 73 D-07 — UTR is non-expiring
 });
 
 registerPolicyRule({
@@ -46,6 +49,7 @@ registerPolicyRule({
   appliesIf: () => true,
   draftLegalText:
     'UK limited-company contractors must be active in Companies House. The 8-digit company number is the canonical identifier; status is re-verified on cadence by the Phase 72 cron worker. (Companies House; PENDING legal review)',
+  expirySemantic: 'no_expiry', // Phase 73 D-07 — registration is non-expiring (status re-verified on cadence, not a fixed doc expiry)
 });
 
 registerPolicyRule({
@@ -58,6 +62,7 @@ registerPolicyRule({
   appliesIf: ctx => ctx.outcome === 'IR35-INSIDE',
   draftLegalText:
     'Required by Chapter 10 ITEPA 2003 when the engagement is determined to be inside IR35. Without a written SDS the deemed-employer rule does not engage and PAYE deductions cannot be made; payment must be held until the SDS is produced. (HMRC ESM10000; PENDING legal review)',
+  expirySemantic: 'no_expiry', // Phase 73 D-07 — SDS tied to the engagement, not a fixed-term doc
 });
 
 // Phase 75 D-07 — IP-assignment requirement surfaced at offboarding (WARNING; non-blocking).
@@ -71,4 +76,5 @@ registerPolicyRule({
   appliesIf: () => true,
   draftLegalText:
     "UK contractors must execute an IP-assignment under Copyright, Designs and Patents Act 1988 s.90(1) (assignment) and s.91 (future copyright). Best practice includes: 'hereby (absolutely and irrevocably) assigns', 'present and future rights', and an explicit waiver of moral rights under CDPA 1988 s.87. (PENDING legal review by UK adviser)",
+  expirySemantic: 'no_expiry', // Phase 73 D-07 — executed IP assignment is permanent
 });

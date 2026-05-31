@@ -57,6 +57,13 @@ import { adminProcedure, requirePermission } from '../../middleware/rbac';
 import { classificationProcedure } from '../../middleware/require-classification-flag';
 import { tenantProcedure } from '../../middleware/tenant';
 import { writeAuditLog } from '../../services/audit-writer';
+import {
+  countAtRiskContractors,
+  countUpcomingRenewals,
+  listAtRiskItems,
+  listBlockedPayments,
+  listUpcomingRenewals,
+} from '../../services/compliance-dashboard';
 import { onComplianceItemSatisfied } from '../../services/compliance-recovery';
 import {
   extractOutcomeKind,
@@ -635,6 +642,37 @@ export const classificationRouter = router({
         take: input.limit,
       });
     }),
+
+  // -------------------------------------------------------------------------
+  // Admin compliance dashboard (D-01..D-05). All read-gated. KPI counts run in
+  // a single Promise.all; the three list endpoints back the dashboard tables.
+  // -------------------------------------------------------------------------
+  dashboardKpis: tenantProcedure
+    .use(requirePermission({ compliance: ['read'] }))
+    .query(async ({ ctx }) => {
+      const [atRisk, upcomingRenewals, blockedPayments] = await Promise.all([
+        countAtRiskContractors(ctx.db, ctx.organizationId),
+        countUpcomingRenewals(ctx.db, ctx.organizationId),
+        listBlockedPayments(ctx.db, ctx.organizationId).then(rows => rows.length),
+      ]);
+      return {
+        atRisk: { value: atRisk },
+        upcomingRenewals: { value: upcomingRenewals },
+        blockedPayments: { value: blockedPayments },
+      };
+    }),
+
+  dashboardAtRisk: tenantProcedure
+    .use(requirePermission({ compliance: ['read'] }))
+    .query(async ({ ctx }) => listAtRiskItems(ctx.db, ctx.organizationId)),
+
+  dashboardUpcomingRenewals: tenantProcedure
+    .use(requirePermission({ compliance: ['read'] }))
+    .query(async ({ ctx }) => listUpcomingRenewals(ctx.db, ctx.organizationId)),
+
+  dashboardBlockedPayments: tenantProcedure
+    .use(requirePermission({ compliance: ['read'] }))
+    .query(async ({ ctx }) => listBlockedPayments(ctx.db, ctx.organizationId)),
 
   // -------------------------------------------------------------------------
   // getDraft — fetch the current draft for an engagement.

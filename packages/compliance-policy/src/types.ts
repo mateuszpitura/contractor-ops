@@ -34,6 +34,15 @@ export interface EngagementContext {
  * One row in the registry. Maps a (jurisdiction, outcome, sector, …) tuple to
  * a single ContractorComplianceItem requirement.
  */
+/**
+ * Phase 73 D-07 — how a contractor-uploaded document's default `expiresAt` is
+ * derived from its upload date:
+ *   - `fixed_days`   + `expiryDays`   → uploadDate + N days
+ *   - `fixed_months` + `expiryMonths` → uploadDate + N months
+ *   - `no_expiry`                     → sentinel far-future date
+ */
+export type ExpirySemantic = 'fixed_days' | 'fixed_months' | 'no_expiry';
+
 export interface PolicyRule {
   policyRuleId: PolicyRuleId;
   jurisdiction: Jurisdiction;
@@ -52,6 +61,14 @@ export interface PolicyRule {
    * via individual PRs that update signoff-registry-flags.json.
    */
   draftLegalText: string;
+  /**
+   * Phase 73 D-07 — auto-fill expiry on portal upload-replacement. Optional so
+   * existing call sites that do not read it stay unaffected; the registry
+   * populates it for every rule (asserted by the expiry-semantic-coverage test).
+   */
+  expirySemantic?: ExpirySemantic;
+  expiryDays?: number;
+  expiryMonths?: number;
 }
 
 /**

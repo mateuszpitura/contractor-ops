@@ -20,4 +20,5 @@ registerPolicyRule({
   appliesIf: () => true,
   draftLegalText:
     "US contractors must execute an IP-assignment with a work-made-for-hire backstop. Under 17 U.S.C. §201(b), works qualify as 'work made for hire' only when (a) the work falls into one of nine statutory categories AND (b) the parties expressly agree in writing. Where the work-made-for-hire doctrine does not apply, 17 U.S.C. §204(a) requires a written assignment signed by the rights-holder. Best practice is a dual clause: 'work made for hire to the extent permissible; otherwise hereby assigned'. (PENDING legal review by US tax/IP adviser)",
+  expirySemantic: 'no_expiry', // Phase 73 D-07 — executed IP assignment is permanent (non-expiring)
 });

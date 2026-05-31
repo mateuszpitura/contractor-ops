@@ -8,7 +8,8 @@
 // resolve at 00:00 Asia/Riyadh, regardless of where the org's HQ is.
 
 import { TZDate } from '@date-fns/tz';
-import { differenceInDays, isAfter, startOfDay } from 'date-fns';
+import { addDays, addMonths, addYears, differenceInDays, isAfter, startOfDay } from 'date-fns';
+import type { PolicyRule } from './types.js';
 
 /**
  * Returns true iff `expiresAt` (a calendar date stored as `@db.Date`) has
@@ -54,4 +55,39 @@ export function daysUntilExpiryInTz(
  */
 export function jurisdictionDate(now: Date, tz: string): string {
   return startOfDay(new TZDate(now, tz)).toISOString().slice(0, 10);
+}
+
+/**
+ * Phase 73 D-07 — auto-derive the default `expiresAt` for a contractor-uploaded
+ * document from the rule's expiry semantic. Used by the portal upload form
+ * (auto-fill the expiresAt input) and the admin review modal (default on approve).
+ *
+ * Examples:
+ *   uk.right_to_work@v1 → expirySemantic='fixed_days', expiryDays=90 → +90d
+ *   de.a1@v1            → expirySemantic='fixed_months', expiryMonths=24 → +24mo
+ *   uk.utr@v1           → expirySemantic='no_expiry' → sentinel +100y
+ *
+ * Throws on rules without `expirySemantic` set — the registry populates it for
+ * every rule (asserted by the expiry-semantic-coverage test).
+ */
+export function defaultExpiryFromUploadDate(rule: PolicyRule, uploadDate: Date = new Date()): Date {
+  switch (rule.expirySemantic) {
+    case 'fixed_days':
+      if (typeof rule.expiryDays !== 'number') {
+        throw new Error(`Rule ${rule.policyRuleId} has fixed_days but no expiryDays`);
+      }
+      return addDays(uploadDate, rule.expiryDays);
+    case 'fixed_months':
+      if (typeof rule.expiryMonths !== 'number') {
+        throw new Error(`Rule ${rule.policyRuleId} has fixed_months but no expiryMonths`);
+      }
+      return addMonths(uploadDate, rule.expiryMonths);
+    case 'no_expiry':
+      // Sentinel — UI may display "no expiry" instead of the literal year.
+      return addYears(uploadDate, 100);
+    default:
+      throw new Error(
+        `Rule ${rule.policyRuleId} has unknown or missing expirySemantic: ${rule.expirySemantic ?? 'undefined'}`,
+      );
+  }
 }
