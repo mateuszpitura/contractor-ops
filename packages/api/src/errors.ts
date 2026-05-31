@@ -396,3 +396,6 @@ export const DEPROVISIONING_ASSIGNMENT_NOT_FOUND = 'deprovisioningAssignmentNotF
 export const DEPROVISIONING_STEP_NOT_FOUND = 'deprovisioningStepNotFound';
 export const DEPROVISIONING_COOLDOWN_ACTIVE = 'deprovisioningCooldownActive';
 export const DEPROVISIONING_NO_EXTERNAL_USER = 'deprovisioningNoExternalUser';
+
+// ─── Phase 72 — F1 compliance payment block (COMPL-05) ─────────────
+export const COMPLIANCE_PAYMENT_BLOCKED = 'compliancePaymentBlocked';

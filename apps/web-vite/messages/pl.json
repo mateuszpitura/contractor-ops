@@ -3157,7 +3157,8 @@
     "zatcaTaxDetailsRequired": "Wymagane dane podatkowe.",
     "zatcaTaxDetailsRequiredForCompliance": "Wymagane dane podatkowe dla zgodności.",
     "zatcaInvoiceNotResubmittable": "Nie znaleziono faktury lub nie kwalifikuje się do ponownego przesłania. Ponownie przesłać można tylko faktury odrzucone lub oczekujące.",
-    "ocrExtractionNotFound": "Nie znaleziono ekstrakcji OCR."
+    "ocrExtractionNotFound": "Nie znaleziono ekstrakcji OCR.",
+    "compliancePaymentBlocked": "Płatność zablokowana: wybrany wykonawca ma wygasły, blokujący dokument zgodności."
   },
   "GoogleWorkspace": {
     "import": {

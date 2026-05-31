@@ -3157,7 +3157,8 @@
     "zatcaTaxDetailsRequired": "Tax details are required.",
     "zatcaTaxDetailsRequiredForCompliance": "Tax details are required for compliance.",
     "zatcaInvoiceNotResubmittable": "Invoice not found or not eligible for resubmission. Only rejected or pending invoices can be resubmitted.",
-    "ocrExtractionNotFound": "OCR extraction not found."
+    "ocrExtractionNotFound": "OCR extraction not found.",
+    "compliancePaymentBlocked": "Payment blocked: a selected contractor has an expired blocking compliance document."
   },
   "GoogleWorkspace": {
     "import": {

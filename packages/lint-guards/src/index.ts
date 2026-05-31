@@ -14,6 +14,13 @@ export {
   type LogsGuardOptions,
   runLogsGuard,
 } from './logs-guard/run-guard';
+export { formatPaymentGateOffences } from './payment-gate-guard/format-offence';
+export {
+  PAYMENT_WRITE_PROCEDURES,
+  type PaymentGateGuardOptions,
+  type PaymentGateOffence,
+  runPaymentGateGuard,
+} from './payment-gate-guard/run-guard';
 export { formatSchemaOffences } from './schema-guard/format-offence';
 export {
   GLOBAL_LOOKUP_MODELS_ALLOWLIST,

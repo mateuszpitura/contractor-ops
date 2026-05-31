@@ -3157,7 +3157,8 @@
     "zatcaTaxDetailsRequired": "Steuerdaten erforderlich.",
     "zatcaTaxDetailsRequiredForCompliance": "Steuerdaten für die Compliance erforderlich.",
     "zatcaInvoiceNotResubmittable": "Rechnung nicht gefunden oder nicht für eine erneute Übermittlung berechtigt. Nur abgelehnte oder ausstehende Rechnungen können erneut übermittelt werden.",
-    "ocrExtractionNotFound": "OCR-Extraktion nicht gefunden."
+    "ocrExtractionNotFound": "OCR-Extraktion nicht gefunden.",
+    "compliancePaymentBlocked": "Zahlung blockiert: Ein ausgewählter Auftragnehmer hat ein abgelaufenes, blockierendes Compliance-Dokument."
   },
   "GoogleWorkspace": {
     "import": {

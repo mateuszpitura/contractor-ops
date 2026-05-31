@@ -28,6 +28,7 @@ export {
   FLAGS,
   type FlagKey,
   getFlagDefinition,
+  isPaymentBlockEnforced,
 } from './registry';
 export {
   type EvalContext,

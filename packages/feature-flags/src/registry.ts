@@ -83,3 +83,19 @@ export function assertFlagSignoffsOrExit(): boolean {
 
   return satisfied;
 }
+
+/**
+ * Phase 72 D-11 — resolves the runtime state of the `compliance-payment-block` flag.
+ * Honours the `FLAG_SIGNOFF_BYPASS=local` engineer-bypass (forces ON) per Phase 70 D-10.
+ *
+ * Returns true when the bypass is active OR the registry entry is APPROVED. Until
+ * legal sign-off flips the entry from PENDING to APPROVED (and Plan 72-08 registers
+ * it), production returns false — the payment-gate helper takes the "would-block"
+ * soft-warn path instead of hard-blocking.
+ */
+export function isPaymentBlockEnforced(): boolean {
+  if (process.env.FLAG_SIGNOFF_BYPASS === 'local') return true;
+  const entry = getFlagSignoff('compliance-payment-block');
+  if (!entry) return false; // flag not registered yet (Plan 72-08 adds the PENDING entry)
+  return entry.status === 'APPROVED';
+}

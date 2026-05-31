@@ -27,6 +27,7 @@ import { requirePermission } from '../../middleware/rbac';
 import { tenantProcedure } from '../../middleware/tenant';
 import { writeAuditLog, writeAuditLogMany } from '../../services/audit-writer';
 import { matchStatementToRun, parseBankStatement } from '../../services/bank-statement';
+import { assertContractorPaymentEligibility } from '../../services/compliance-payment-gate';
 import type { ExportItem, OrgBankInfo } from '../../services/payment-export';
 import {
   generateCsv,
@@ -521,6 +522,22 @@ export const paymentRouter = router({
         }
         // MISS: reservation acquired; fall through to normal processing.
       }
+
+      // Phase 72 D-08 — payment-block hard-gate: throws PRECONDITION_FAILED if any
+      // contractor on these invoices has BLOCKING+EXPIRED compliance items. The
+      // helper handles the flag-OFF "would_block" soft-warn path internally.
+      const eligibilityInvoices = await ctx.db.invoice.findMany({
+        where: { id: { in: input.invoiceIds }, organizationId: ctx.organizationId },
+        select: { contractorId: true },
+      });
+      const distinctContractorIds = Array.from(
+        new Set(
+          eligibilityInvoices.map(i => i.contractorId).filter((x): x is string => Boolean(x)),
+        ),
+      );
+      await assertContractorPaymentEligibility(distinctContractorIds, {
+        organizationId: ctx.organizationId,
+      });
 
       let result: PaymentRun[];
       try {
