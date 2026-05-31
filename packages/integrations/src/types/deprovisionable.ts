@@ -57,6 +57,18 @@ export interface DeprovisionResult {
   reason?: string;
   /** Closed-enum failure classification (D-07) used by the reconcile queue. */
   errorClass?: ErrorClass;
+  /**
+   * Phase 77 D-05 — extra per-sub-action audit rows (e.g. GWS `revokeAllSessions`
+   * does an OAuth-grant revoke + a sign-out; each gets its own SHA-256 pair). The
+   * step-runner (77-04) persists these as additional audit rows beyond the step's
+   * own request/response hashes. Each entry's hashes are PII-free.
+   */
+  subActions?: Array<{
+    /** Stable label, e.g. `'revoke_oauth_grants'` / `'sign_out_sessions'`. */
+    kind: string;
+    requestSha256: string;
+    responseSha256: string;
+  }>;
 }
 
 /**

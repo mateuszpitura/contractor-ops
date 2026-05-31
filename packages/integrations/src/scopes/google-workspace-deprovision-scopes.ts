@@ -15,6 +15,9 @@ import type { CapabilityEnum } from '@contractor-ops/db';
 
 export const GOOGLE_WORKSPACE_DEPROVISION_SCOPES = [
   'https://www.googleapis.com/auth/admin.directory.user',
+  // Phase 77 D-07 — required for the OAuth-grant revoke (tokens.list/delete) and
+  // the sign-out-all-sessions (users.signOut) sub-actions of revokeAllSessions.
+  'https://www.googleapis.com/auth/admin.directory.user.security',
 ] as const;
 
 export type GoogleWorkspaceDeprovisionScope = (typeof GOOGLE_WORKSPACE_DEPROVISION_SCOPES)[number];

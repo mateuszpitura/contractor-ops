@@ -1,8 +1,11 @@
 import { prisma } from '@contractor-ops/db';
 import { provenanceLookup } from '@contractor-ops/idp-saga';
 import { z } from 'zod';
+import type { ErrorClass } from '../idp/error-classifier.js';
+import { classifyError } from '../idp/error-classifier.js';
 import type { ImpactPreview } from '../idp/impact-preview.js';
 import { GOOGLE_WORKSPACE_DEPROVISION_SCOPES } from '../scopes/google-workspace-deprovision-scopes.js';
+import { pLimit } from '../services/concurrency.js';
 import { fetchWithTimeout } from '../services/fetch-helpers.js';
 import { parseJsonResponse } from '../services/parse-json-response.js';
 import { withResilience } from '../services/resilience.js';
@@ -375,87 +378,254 @@ export class GoogleWorkspaceAdapter extends BaseAdapter implements Deprovisionab
   }
 
   // -------------------------------------------------------------------------
-  // Deprovisionable (Phase 76 D-13) — first concrete implementation.
-  // Phase 77 refines real-traffic quirks against a GWS sandbox; Phase 76 ships
-  // the typed implementation + the D-16 test template.
+  // Deprovisionable (Phase 76 D-13 / Phase 77 D-04/D-05) — Admin SDK Directory API.
+  // Errors are classified via `classifyError` (77-01): TRANSIENT_* are re-thrown
+  // so the QStash step-runner retries the whole step; PERMANENT_NOT_FOUND maps to
+  // an idempotent LIKELY_GONE success; other PERMANENT classes return FAILED.
   // -------------------------------------------------------------------------
+
+  #usersUrl(externalUserId: string): string {
+    return `https://admin.googleapis.com/admin/directory/v1/users/${encodeURIComponent(externalUserId)}`;
+  }
+
+  #authHeaders(): Record<string, string> {
+    return { Authorization: `Bearer ${this.#deprovisionAccessToken}` };
+  }
+
+  /** Best-effort provider error code from a non-2xx Admin SDK error body. */
+  static #providerErrorCode(body: unknown): string | undefined {
+    const errors = (body as { error?: { errors?: Array<{ reason?: string }>; status?: string } })
+      ?.error;
+    return errors?.errors?.[0]?.reason ?? errors?.status ?? undefined;
+  }
 
   async suspendAccount(externalUserId: string): Promise<DeprovisionResult> {
     const requestPayload = { suspended: true };
-    const requestSha256 = sha256Hex(canonicalizeRequest(requestPayload));
-    const url = `https://admin.googleapis.com/admin/directory/v1/users/${encodeURIComponent(externalUserId)}`;
+    const requestSha256 = sha256Hex(canonicalizeRequest({ method: 'PATCH', body: requestPayload }));
 
-    let res: Response;
-    try {
-      res = await fetch(url, {
-        method: 'PATCH',
-        headers: {
-          Authorization: `Bearer ${this.#deprovisionAccessToken}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(requestPayload),
-      });
-    } catch (err) {
-      return {
-        status: 'FAILED',
-        failureKind: 'NETWORK',
-        errorMessage: String(err instanceof Error ? err.message : err).slice(0, 1024),
-        requestSha256,
-        responseSha256: sha256Hex(canonicalizeResponse({ error: 'network' })),
-      };
+    const res = await fetch(this.#usersUrl(externalUserId), {
+      method: 'PATCH',
+      headers: { ...this.#authHeaders(), 'Content-Type': 'application/json' },
+      body: JSON.stringify(requestPayload),
+    });
+
+    const body = await res.json().catch(() => ({}));
+    const responseSha256 = sha256Hex(canonicalizeResponse({ status: res.status, body }));
+
+    if (res.ok) {
+      return { status: 'SUCCEEDED', requestSha256, responseSha256 };
     }
-
-    const responseBody = await res.json().catch(() => ({}));
-    const responseSha256 = sha256Hex(canonicalizeResponse(responseBody));
-    return mapStatus(res.status, requestSha256, responseSha256, 'suspendAccount');
+    return this.#mapDeprovisionFailure(res.status, body, requestSha256, responseSha256, {
+      notFoundReason: 'user_not_found',
+    });
   }
 
   async revokeAllSessions(externalUserId: string): Promise<DeprovisionResult> {
-    const requestSha256 = sha256Hex(canonicalizeRequest({ method: 'POST', target: 'signOut' }));
-    const url = `https://admin.googleapis.com/admin/directory/v1/users/${encodeURIComponent(externalUserId)}/signOut`;
+    // Sub-action (a) — revoke OAuth grants: list tokens, delete each (idempotent).
+    const tokensReqSha = sha256Hex(canonicalizeRequest({ method: 'GET', target: 'tokens.list' }));
+    const listRes = await fetch(`${this.#usersUrl(externalUserId)}/tokens`, {
+      headers: this.#authHeaders(),
+    });
+    const listBody = await listRes.json().catch(() => ({}));
 
-    let res: Response;
-    try {
-      res = await fetch(url, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${this.#deprovisionAccessToken}` },
+    if (!listRes.ok && listRes.status !== 404) {
+      const tokensResSha = sha256Hex(canonicalizeResponse({ status: listRes.status }));
+      return this.#mapDeprovisionFailure(listRes.status, listBody, tokensReqSha, tokensResSha, {
+        notFoundReason: 'user_not_found',
       });
-    } catch (err) {
-      return {
-        status: 'FAILED',
-        failureKind: 'NETWORK',
-        errorMessage: String(err instanceof Error ? err.message : err).slice(0, 1024),
-        requestSha256,
-        responseSha256: sha256Hex(canonicalizeResponse({ error: 'network' })),
-      };
     }
 
-    const responseText = await res.text().catch(() => '');
-    const responseSha256 = sha256Hex(
-      canonicalizeResponse({ status: res.status, bodyLength: responseText.length }),
+    const tokens = (listBody as { items?: Array<{ clientId?: string }> }).items ?? [];
+    const limit = pLimit(5);
+    const deleteOutcomes = await Promise.all(
+      tokens
+        .map(t => t.clientId)
+        .filter((c): c is string => typeof c === 'string')
+        .map(clientId =>
+          limit(async () => {
+            const delRes = await fetch(
+              `${this.#usersUrl(externalUserId)}/tokens/${encodeURIComponent(clientId)}`,
+              { method: 'DELETE', headers: this.#authHeaders() },
+            );
+            // 404 ⇒ token already revoked (idempotent success).
+            return { status: delRes.status, ok: delRes.ok || delRes.status === 404 };
+          }),
+        ),
     );
-    return mapStatus(res.status, requestSha256, responseSha256, 'revokeAllSessions');
+    const failedDelete = deleteOutcomes.find(o => !o.ok);
+    const tokensResSha = sha256Hex(
+      canonicalizeResponse({ deleted: deleteOutcomes.length, allOk: !failedDelete }),
+    );
+    if (failedDelete) {
+      const failed = this.#mapDeprovisionFailure(
+        failedDelete.status,
+        {},
+        tokensReqSha,
+        tokensResSha,
+        {
+          notFoundReason: 'user_not_found',
+        },
+      );
+      // Already-gone on the token list is still a clean LIKELY_GONE outcome.
+      if (failed.status === 'FAILED') return failed;
+    }
+
+    // Sub-action (b) — sign out of all sessions.
+    const signOutReqSha = sha256Hex(canonicalizeRequest({ method: 'POST', target: 'signOut' }));
+    const signOutRes = await fetch(`${this.#usersUrl(externalUserId)}/signOut`, {
+      method: 'POST',
+      headers: this.#authHeaders(),
+    });
+    const signOutText = await signOutRes.text().catch(() => '');
+    const signOutResSha = sha256Hex(
+      canonicalizeResponse({ status: signOutRes.status, bodyLength: signOutText.length }),
+    );
+
+    const subActions = [
+      { kind: 'revoke_oauth_grants', requestSha256: tokensReqSha, responseSha256: tokensResSha },
+      { kind: 'sign_out_sessions', requestSha256: signOutReqSha, responseSha256: signOutResSha },
+    ];
+
+    if (signOutRes.ok) {
+      return {
+        status: 'SUCCEEDED',
+        requestSha256: signOutReqSha,
+        responseSha256: signOutResSha,
+        subActions,
+      };
+    }
+    const result = this.#mapDeprovisionFailure(
+      signOutRes.status,
+      {},
+      signOutReqSha,
+      signOutResSha,
+      { notFoundReason: 'user_not_found' },
+    );
+    return { ...result, subActions };
   }
 
   async verifyDeprovisioned(externalUserId: string): Promise<boolean> {
-    try {
-      const res = await fetch(
-        `https://admin.googleapis.com/admin/directory/v1/users/${encodeURIComponent(externalUserId)}`,
-        { headers: { Authorization: `Bearer ${this.#deprovisionAccessToken}` } },
-      );
-      if (res.status === 404) return true; // user gone is also "deprovisioned"
-      const data = (await res.json().catch(() => ({}))) as { suspended?: boolean };
-      return Boolean(data?.suspended);
-    } catch {
-      return false;
-    }
+    const res = await fetch(this.#usersUrl(externalUserId), { headers: this.#authHeaders() });
+    if (res.status === 404) return true; // user gone is also "deprovisioned"
+    const data = (await res.json().catch(() => ({}))) as { suspended?: boolean };
+    return Boolean(data?.suspended);
   }
 
-  // Phase 77 D-01 — real impact-preview implementation lands in Plan 77-02
-  // (live + cached Admin SDK reads). This placeholder satisfies the interface
-  // obligation so the package compiles after 77-01 extends the contract.
-  describeImpact(_externalUserId: string): Promise<ImpactPreview> {
-    throw new Error('GoogleWorkspaceAdapter.describeImpact is not implemented yet (Plan 77-02)');
+  async describeImpact(externalUserId: string): Promise<ImpactPreview> {
+    const cacheKey = `co:idp:preview:GOOGLE_WORKSPACE:${externalUserId}`;
+    const fetchedAt = new Date().toISOString();
+
+    // users.get — accountStatus + isSuperAdmin + displayName.
+    const userRes = await fetch(this.#usersUrl(externalUserId), { headers: this.#authHeaders() });
+    if (userRes.status === 404) {
+      return {
+        provider: 'GOOGLE_WORKSPACE',
+        commonMetrics: {
+          externalUserId,
+          externalUserDisplayName: externalUserId,
+          accountStatus: 'NOT_FOUND',
+          sessionCount: null,
+        },
+        customMetrics: { oauthGrants: [], isSuperAdmin: false, drivesOwnedCount: null },
+        fetchedAt,
+        cacheKey,
+      };
+    }
+    const user = (await userRes.json().catch(() => ({}))) as {
+      suspended?: boolean;
+      isAdmin?: boolean;
+      name?: { fullName?: string };
+    };
+
+    // tokens.list — oauthGrants (best-effort; degrade to [] on failure).
+    let oauthGrants: Array<{ appName: string; scopes: string[] }> = [];
+    try {
+      const tokRes = await fetch(`${this.#usersUrl(externalUserId)}/tokens`, {
+        headers: this.#authHeaders(),
+      });
+      if (tokRes.ok) {
+        const tok = (await tokRes.json().catch(() => ({}))) as {
+          items?: Array<{ displayText?: string; clientId?: string; scopes?: string[] }>;
+        };
+        oauthGrants = (tok.items ?? []).map(t => ({
+          appName: t.displayText ?? t.clientId ?? 'unknown',
+          scopes: t.scopes ?? [],
+        }));
+      }
+    } catch {
+      oauthGrants = [];
+    }
+
+    // drives.list — drivesOwnedCount (best-effort; null when Drive API/scope absent).
+    let drivesOwnedCount: number | null = null;
+    try {
+      const driveRes = await fetch(
+        'https://www.googleapis.com/drive/v3/drives?useDomainAdminAccess=false&pageSize=100',
+        { headers: this.#authHeaders() },
+      );
+      if (driveRes.ok) {
+        const drives = (await driveRes.json().catch(() => ({}))) as { drives?: unknown[] };
+        drivesOwnedCount = Array.isArray(drives.drives) ? drives.drives.length : null;
+      }
+    } catch {
+      drivesOwnedCount = null;
+    }
+
+    return {
+      provider: 'GOOGLE_WORKSPACE',
+      commonMetrics: {
+        externalUserId,
+        externalUserDisplayName: user.name?.fullName ?? externalUserId,
+        accountStatus: user.suspended ? 'SUSPENDED' : 'ACTIVE',
+        sessionCount: null, // no live Admin SDK session-count endpoint (D-04)
+      },
+      customMetrics: {
+        oauthGrants,
+        isSuperAdmin: Boolean(user.isAdmin),
+        drivesOwnedCount,
+      },
+      fetchedAt,
+      cacheKey,
+    };
+  }
+
+  /**
+   * Maps a non-2xx Admin SDK deprovision response to a DeprovisionResult via the
+   * closed-enum classifier (77-01). TRANSIENT_* THROWS (QStash retries the step).
+   */
+  #mapDeprovisionFailure(
+    httpStatus: number,
+    body: unknown,
+    requestSha256: string,
+    responseSha256: string,
+    opts: { notFoundReason: string },
+  ): DeprovisionResult {
+    const providerErrorCode = GoogleWorkspaceAdapter.#providerErrorCode(body);
+    const errorClass: ErrorClass = classifyError({ httpStatus, providerErrorCode });
+
+    if (errorClass === 'TRANSIENT_RATE_LIMIT' || errorClass === 'TRANSIENT_NETWORK') {
+      // Re-throw so the QStash step-runner retries the whole step with backoff.
+      throw new Error(`google-workspace transient failure (${httpStatus}/${errorClass})`);
+    }
+    if (errorClass === 'PERMANENT_NOT_FOUND') {
+      return {
+        status: 'LIKELY_GONE',
+        skipped: false,
+        reason: opts.notFoundReason,
+        failureKind: 'USER_NOT_FOUND',
+        errorClass,
+        requestSha256,
+        responseSha256,
+      };
+    }
+    return {
+      status: 'FAILED',
+      failureKind: errorClass === 'PERMANENT_AUTH_EXPIRED' ? 'AUTH_REVOKED' : 'PROVIDER_ERROR',
+      errorClass,
+      errorMessage: `google-workspace deprovision failed (${httpStatus}/${errorClass})`,
+      requestSha256,
+      responseSha256,
+    };
   }
 
   // -------------------------------------------------------------------------
@@ -489,56 +659,4 @@ export class GoogleWorkspaceAdapter extends BaseAdapter implements Deprovisionab
   // -------------------------------------------------------------------------
   // Health Status — uses BaseAdapter default (no custom behavior).
   // -------------------------------------------------------------------------
-}
-
-/**
- * Maps a Google Admin SDK HTTP status to a DeprovisionResult.
- * USER_NOT_FOUND (404) is success-equivalent — the goal state (no active account) is met.
- */
-function mapStatus(
-  status: number,
-  requestSha256: string,
-  responseSha256: string,
-  op: string,
-): DeprovisionResult {
-  if (status === 404) {
-    return {
-      status: 'SUCCEEDED',
-      failureKind: 'USER_NOT_FOUND',
-      errorMessage: 'User not found at provider — already absent',
-      requestSha256,
-      responseSha256,
-    };
-  }
-  if (status === 429) {
-    return { status: 'FAILED', failureKind: 'RATE_LIMITED', requestSha256, responseSha256 };
-  }
-  if (status === 401 || status === 403) {
-    return {
-      status: 'FAILED',
-      failureKind: 'AUTH_REVOKED',
-      errorMessage: 'Auth rejected by provider — re-OAuth required',
-      requestSha256,
-      responseSha256,
-    };
-  }
-  if (status >= 500) {
-    return {
-      status: 'FAILED',
-      failureKind: 'PROVIDER_ERROR',
-      errorMessage: `Provider error ${status}`,
-      requestSha256,
-      responseSha256,
-    };
-  }
-  if (status >= 200 && status < 300) {
-    return { status: 'SUCCEEDED', requestSha256, responseSha256 };
-  }
-  return {
-    status: 'FAILED',
-    failureKind: 'UNKNOWN',
-    errorMessage: `Unexpected status ${status} from ${op}`,
-    requestSha256,
-    responseSha256,
-  };
 }
