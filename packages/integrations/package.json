@@ -146,6 +146,8 @@
     "@contractor-ops/logger": "workspace:*",
     "@contractor-ops/secrets": "workspace:*",
     "@infisical/sdk": "^5.0.2",
+    "@octokit/rest": "^22.0.1",
+    "@okta/okta-sdk-nodejs": "8.0.0",
     "@upstash/qstash": "^2.10.1",
     "@upstash/redis": "^1.38.0",
     "arctic": "^3.7.0",
