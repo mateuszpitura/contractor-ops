@@ -5,6 +5,7 @@ import { Navigate } from 'react-router-dom';
 import { usePermissions } from '../../../hooks/use-permissions.js';
 import { useLocale } from '../../../i18n/navigation.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
+import { OverrideComplianceItemButton } from '../../contractors/compliance/override-compliance-item-button.js';
 import { renderEmptyStateAction } from '../../shared/atelier-bridges.js';
 import { AtRiskTable } from './at-risk-table/data-table.js';
 import { BlockedPaymentsTable } from './blocked-payments-table/data-table.js';
@@ -68,7 +69,18 @@ export function ComplianceDashboardContainer() {
 
       <section aria-label={t(`${tab.replace('-', '')}.label`)}>
         {tab === 'at-risk' && (
-          <AtRiskTable rows={dash.atRiskProps.rows} totalRows={dash.atRiskProps.totalRows} />
+          <AtRiskTable
+            rows={dash.atRiskProps.rows}
+            totalRows={dash.atRiskProps.totalRows}
+            renderRowActions={row => (
+              <OverrideComplianceItemButton
+                itemId={row.id}
+                contractorId={row.contractorId}
+                severity={row.severity}
+                status={row.status}
+              />
+            )}
+          />
         )}
         {tab === 'upcoming-renewals' && (
           <UpcomingRenewalsTable

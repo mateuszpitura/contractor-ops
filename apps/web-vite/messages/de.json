@@ -1312,7 +1312,9 @@
       },
       "expires": "Expires",
       "expiringSoon": "Läuft bald ab",
-      "noRequirementsHint": "Compliance-Anforderungen können in den Organisationseinstellungen je Auftragnehmertyp konfiguriert werden."
+      "noRequirementsHint": "Compliance-Anforderungen können in den Organisationseinstellungen je Auftragnehmertyp konfiguriert werden.",
+      "waivedTooltip": "Überschrieben — Grund: {category}",
+      "waivedTooltipGeneric": "Von einem Admin überschrieben"
     },
     "rightRail": {
       "activity": "Aktivität",
@@ -3246,6 +3248,78 @@
       "empty": {
         "heading": "Alles in Ordnung",
         "body": "Keine Auftragnehmer gefährdet und keine Zahlungen blockiert."
+      }
+    },
+    "override": {
+      "title": "Compliance-Eintrag überschreiben",
+      "description": "Diese Anforderung mit dokumentierter Begründung als erlassen markieren.",
+      "categoryLabel": "Begründungskategorie",
+      "categoryPlaceholder": "Begründung wählen",
+      "noteLabel": "Begründung",
+      "notePlaceholder": "Begründen Sie, warum dieser Eintrag erlassen wird…",
+      "noteMinHint": "Mindestens {min} Zeichen.",
+      "cancel": "Abbrechen",
+      "submit": "Eintrag erlassen",
+      "buttonLabel": "Überschreiben",
+      "buttonAriaLabel": "Diesen Compliance-Eintrag überschreiben",
+      "category": {
+        "CONTRACTOR_OFFBOARDED": "Auftragnehmer offboardet",
+        "ENGAGEMENT_CHANGED": "Engagement geändert",
+        "REGULATORY_EXEMPTION": "Regulatorische Ausnahme",
+        "TEMPORARY_GRACE_PERIOD": "Vorübergehende Karenzzeit",
+        "ADMIN_CORRECTION": "Admin-Korrektur",
+        "OTHER": "Sonstiges"
+      },
+      "toast": {
+        "success": "Eintrag erlassen",
+        "error": "Eintrag konnte nicht erlassen werden"
+      }
+    },
+    "uploadReview": {
+      "title": "Hochgeladenes Dokument prüfen",
+      "description": "Genehmigen, um die Anforderung zu erfüllen, oder mit Begründung ablehnen.",
+      "approveTab": "Genehmigen",
+      "rejectTab": "Ablehnen",
+      "expiresAtLabel": "Ablaufdatum",
+      "reasonLabel": "Ablehnungsgrund",
+      "reasonPlaceholder": "Grund wählen",
+      "freeTextLabel": "Notizen (optional)",
+      "cancel": "Abbrechen",
+      "confirmApprove": "Genehmigen",
+      "confirmReject": "Ablehnen",
+      "reason": {
+        "wrong_document_type": "Falscher Dokumenttyp",
+        "illegible": "Unleserlich",
+        "already_expired": "Bereits abgelaufen",
+        "forged_or_altered": "Gefälscht oder verändert",
+        "other": "Sonstiges"
+      },
+      "toast": {
+        "approved": "Upload genehmigt",
+        "rejected": "Upload abgelehnt",
+        "error": "Prüfung fehlgeschlagen"
+      }
+    },
+    "history": {
+      "toggle": "Verlauf",
+      "empty": "Noch kein Verlauf",
+      "error": "Verlauf konnte nicht geladen werden",
+      "action": {
+        "compliance.item.overridden": "Überschrieben",
+        "compliance.upload.submitted": "Upload eingereicht",
+        "compliance.upload.approved": "Upload genehmigt",
+        "compliance.upload.rejected": "Upload abgelehnt",
+        "compliance.recompute": "Neu berechnet"
+      }
+    },
+    "notifications": {
+      "uploadApproved": {
+        "title": "Compliance-Dokument genehmigt",
+        "body": "Ihr hochgeladenes Compliance-Dokument wurde genehmigt."
+      },
+      "uploadRejected": {
+        "title": "Compliance-Dokument erfordert Aufmerksamkeit",
+        "body": "Ihr hochgeladenes Compliance-Dokument wurde abgelehnt — bitte erneut hochladen."
       }
     }
   },

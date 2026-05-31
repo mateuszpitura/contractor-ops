@@ -1,10 +1,18 @@
 import { AtelierEmptyState, ComplianceGapsIllustration } from '@contractor-ops/ui';
 import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@contractor-ops/ui/components/shadcn/tooltip';
+import { ShieldCheck } from 'lucide-react';
 import { tDynLoose } from '../../../i18n/typed-keys.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { enumKey } from '../../../lib/enum-key.js';
 import { useDateFormatter } from '../../../lib/format/use-date-formatter.js';
 import { renderEmptyStateAction } from '../../shared/atelier-bridges.js';
+import { ComplianceItemHistory } from '../compliance/compliance-item-history.js';
+import { OverrideComplianceItemButton } from '../compliance/override-compliance-item-button.js';
 import { ContractorEInvoicingSectionContainer } from '../contractor-e-invoicing-section-container.js';
 import { CountryComplianceSectionContainer } from '../country-compliance-section-container.js';
 
@@ -13,9 +21,11 @@ type ComplianceItem = {
   name: string;
   documentType: string | null;
   status: string;
+  severity: string | null;
   dueDate: string | Date | null;
   expiresAt: string | Date | null;
   requirementTemplateId: string | null;
+  waivedReasonCategory: string | null;
   contract: { id: string; title: string | null } | null;
 };
 
@@ -43,6 +53,7 @@ function isExpiringSoon(expiresAt: string | Date | null): boolean {
 
 export function TabCompliance({ contractor }: TabComplianceProps) {
   const t = useTranslations('ContractorProfile.compliance');
+  const tOverride = useTranslations('Compliance.override');
   const { formatDate } = useDateFormatter();
 
   if (contractor.complianceItems.length === 0) {
@@ -98,11 +109,39 @@ export function TabCompliance({ contractor }: TabComplianceProps) {
                     ) : null}
                   </div>
                 ) : null}
+                <div className="mt-1">
+                  <ComplianceItemHistory itemId={item.id} />
+                </div>
               </div>
 
-              <Badge variant="secondary" className={statusBadgeStyles[statusKey] ?? ''}>
-                {tDynLoose(t, 'status', enumKey(statusKey))}
-              </Badge>
+              <div className="flex shrink-0 items-center gap-2">
+                <OverrideComplianceItemButton
+                  itemId={item.id}
+                  contractorId={contractor.id}
+                  severity={item.severity}
+                  status={item.status}
+                />
+                {item.status === 'WAIVED' ? (
+                  <Tooltip>
+                    <TooltipTrigger
+                      className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium ${statusBadgeStyles[statusKey] ?? ''}`}>
+                      <ShieldCheck className="mr-1 size-3" aria-hidden />
+                      {tDynLoose(t, 'status', enumKey(statusKey))}
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      {item.waivedReasonCategory
+                        ? t('waivedTooltip', {
+                            category: tDynLoose(tOverride, 'category', item.waivedReasonCategory),
+                          })
+                        : t('waivedTooltipGeneric')}
+                    </TooltipContent>
+                  </Tooltip>
+                ) : (
+                  <Badge variant="secondary" className={statusBadgeStyles[statusKey] ?? ''}>
+                    {tDynLoose(t, 'status', enumKey(statusKey))}
+                  </Badge>
+                )}
+              </div>
             </div>
           );
         })}

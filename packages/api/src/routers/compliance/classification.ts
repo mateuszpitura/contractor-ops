@@ -70,6 +70,8 @@ import {
   materialiseFromPolicy,
   supersedeAndMaterialise,
 } from '../../services/compliance-supersession';
+import { dispatch } from '../../services/notification-service';
+import { resolveRbacRecipients } from '../../services/rbac-recipients';
 
 // ---------------------------------------------------------------------------
 // Phase 71 — country code → policy registry Jurisdiction enum mapping
@@ -89,6 +91,56 @@ const COUNTRY_TO_JURISDICTION: Record<string, Jurisdiction> = {
 
 function mapCountryCodeToJurisdiction(countryCode: string): Jurisdiction | null {
   return COUNTRY_TO_JURISDICTION[countryCode] ?? null;
+}
+
+/**
+ * Phase 73 D-08 — best-effort contractor-upload-outcome notification. Contractors
+ * authenticate via portal sessions (email-based), not the platform `User` table,
+ * so there is no direct contractor `recipientUserId`; we notify the org's
+ * compliance admins (the actors who review uploads) and the contractor sees the
+ * outcome in their portal list. Wrapped so a dispatch failure never rolls back
+ * (or surfaces from) the approve/reject mutation (T-73-08-04).
+ */
+async function dispatchComplianceUploadOutcome(
+  organizationId: string,
+  contractorId: string,
+  payload: {
+    type: 'compliance.upload.approved' | 'compliance.upload.rejected';
+    itemId: string;
+    policyRuleId?: string | null;
+    reasonCategory?: string;
+  },
+): Promise<void> {
+  try {
+    // Contractors lack a platform User; notify the staff who manage contractors
+    // (contractor:read RBAC set) best-effort. The contractor sees the outcome in
+    // their portal list regardless.
+    const recipientUserIds = await resolveRbacRecipients(organizationId, 'contractor:read');
+    if (recipientUserIds.length === 0) return;
+    const reuploadPath =
+      payload.type === 'compliance.upload.rejected'
+        ? `/portal/compliance/upload-replacement?itemId=${payload.itemId}&policyRuleId=${payload.policyRuleId ?? ''}`
+        : undefined;
+    await dispatch({
+      organizationId,
+      type: payload.type,
+      recipientUserIds,
+      title: `Compliance.notifications.${payload.type === 'compliance.upload.approved' ? 'uploadApproved' : 'uploadRejected'}.title`,
+      body: `Compliance.notifications.${payload.type === 'compliance.upload.approved' ? 'uploadApproved' : 'uploadRejected'}.body`,
+      entityType: 'CONTRACTOR',
+      entityId: contractorId,
+      metadata: {
+        itemId: payload.itemId,
+        reasonCategory: payload.reasonCategory,
+        reuploadPath,
+      },
+    });
+  } catch (err) {
+    logger.warn(
+      { event: 'compliance.upload.notification_failed', err: String(err) },
+      'best-effort compliance upload-outcome notification failed',
+    );
+  }
 }
 
 /**
@@ -673,6 +725,133 @@ export const classificationRouter = router({
   dashboardBlockedPayments: tenantProcedure
     .use(requirePermission({ compliance: ['read'] }))
     .query(async ({ ctx }) => listBlockedPayments(ctx.db, ctx.organizationId)),
+
+  // -------------------------------------------------------------------------
+  // approveUploadReplacement — admin approve of a contractor PENDING_REVIEW
+  // upload (D-08). One $transaction: item -> SATISFIED + satisfiedByDocumentId
+  // + admin-confirmed expiresAt; Document -> ACTIVE; forensic audit row. The
+  // contractor notification is best-effort (post-tx) so a dispatch failure
+  // never rolls back the approval (T-73-08-04).
+  // -------------------------------------------------------------------------
+  approveUploadReplacement: tenantProcedure
+    .use(requirePermission({ compliance: ['override'] }))
+    .input(
+      z.object({
+        itemId: z.string().min(1),
+        documentId: z.string().min(1),
+        expiresAt: z.string().date(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const result = await ctx.db.$transaction(async tx => {
+        const before = await tx.contractorComplianceItem.findFirst({
+          where: { id: input.itemId, organizationId: ctx.organizationId },
+          select: { id: true, contractorId: true, status: true },
+        });
+        if (!before) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: COMPLIANCE_ITEM_NOT_FOUND });
+        }
+        const updated = await tx.contractorComplianceItem.update({
+          where: { id: input.itemId },
+          data: {
+            status: 'SATISFIED',
+            satisfiedByDocumentId: input.documentId,
+            expiresAt: new Date(input.expiresAt),
+          },
+        });
+        await tx.document.update({
+          where: { id: input.documentId },
+          data: { status: 'ACTIVE' },
+        });
+        await writeAuditLog({
+          tx,
+          organizationId: ctx.organizationId,
+          actorType: 'USER',
+          actorId: ctx.user.id,
+          actorName: ctx.user.name ?? null,
+          action: 'compliance.upload.approved',
+          resourceType: 'CONTRACTOR',
+          resourceId: before.contractorId,
+          metadata: {
+            itemId: input.itemId,
+            documentId: input.documentId,
+            expiresAt: input.expiresAt,
+          },
+        });
+        return { item: updated, contractorId: before.contractorId };
+      });
+
+      await dispatchComplianceUploadOutcome(ctx.organizationId, result.contractorId, {
+        type: 'compliance.upload.approved',
+        itemId: input.itemId,
+      });
+      return result.item;
+    }),
+
+  // -------------------------------------------------------------------------
+  // rejectUploadReplacement — admin reject of a PENDING_REVIEW upload (D-08).
+  // One $transaction: Document -> ARCHIVED; item status UNCHANGED; forensic
+  // audit row with closed-enum reason + free text. Best-effort contractor
+  // notification carries a re-upload deep link. `Document.rejectionReason`
+  // schema column is DEFERRED — the reason is captured in the audit log only.
+  // -------------------------------------------------------------------------
+  rejectUploadReplacement: tenantProcedure
+    .use(requirePermission({ compliance: ['override'] }))
+    .input(
+      z.object({
+        itemId: z.string().min(1),
+        documentId: z.string().min(1),
+        reasonCategory: z.enum([
+          'wrong_document_type',
+          'illegible',
+          'already_expired',
+          'forged_or_altered',
+          'other',
+        ]),
+        freeText: z.string().max(1000).optional(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const result = await ctx.db.$transaction(async tx => {
+        const item = await tx.contractorComplianceItem.findFirst({
+          where: { id: input.itemId, organizationId: ctx.organizationId },
+          select: { id: true, contractorId: true, policyRuleId: true, status: true },
+        });
+        if (!item) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: COMPLIANCE_ITEM_NOT_FOUND });
+        }
+        await tx.document.update({
+          where: { id: input.documentId },
+          data: { status: 'ARCHIVED' },
+        });
+        await writeAuditLog({
+          tx,
+          organizationId: ctx.organizationId,
+          actorType: 'USER',
+          actorId: ctx.user.id,
+          actorName: ctx.user.name ?? null,
+          action: 'compliance.upload.rejected',
+          resourceType: 'CONTRACTOR',
+          resourceId: item.contractorId,
+          metadata: {
+            itemId: input.itemId,
+            documentId: input.documentId,
+            reasonCategory: input.reasonCategory,
+            freeText: input.freeText ?? null,
+          },
+        });
+        // Item status intentionally unchanged (D-08) — stays MISSING/EXPIRED.
+        return { item, contractorId: item.contractorId, policyRuleId: item.policyRuleId };
+      });
+
+      await dispatchComplianceUploadOutcome(ctx.organizationId, result.contractorId, {
+        type: 'compliance.upload.rejected',
+        itemId: input.itemId,
+        policyRuleId: result.policyRuleId,
+        reasonCategory: input.reasonCategory,
+      });
+      return { itemId: result.item.id, status: result.item.status };
+    }),
 
   // -------------------------------------------------------------------------
   // getDraft — fetch the current draft for an engagement.

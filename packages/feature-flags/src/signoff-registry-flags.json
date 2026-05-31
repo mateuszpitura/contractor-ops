@@ -82,5 +82,9 @@
   "compliance-policy-engine.uae.free_zone_license": {
     "status": "PENDING",
     "notes": "Free-zone trade license (DMCC, ADGM, etc.); annually renewed"
+  },
+  "compliance-portal-self-service": {
+    "status": "PENDING",
+    "notes": "F1 Compliance Phase 73 — contractor portal compliance self-service (upload-replacement + admin review). Ship dark; flip to APPROVED post-deploy after legal review of the self-service flow + notification copy. Engineers develop with FLAG_SIGNOFF_BYPASS=local."
   }
 }

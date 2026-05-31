@@ -1312,7 +1312,9 @@
       },
       "expires": "Expires",
       "expiringSoon": "ينتهي قريبًا",
-      "noRequirementsHint": "يمكن تكوين متطلبات الامتثال في إعدادات المؤسسة لكل نوع مقاول."
+      "noRequirementsHint": "يمكن تكوين متطلبات الامتثال في إعدادات المؤسسة لكل نوع مقاول.",
+      "waivedTooltip": "Overridden — reason: {category}",
+      "waivedTooltipGeneric": "Overridden by an admin"
     },
     "rightRail": {
       "activity": "النشاط",
@@ -3246,6 +3248,78 @@
       "empty": {
         "heading": "All clear",
         "body": "No contractors are at risk and no payments are blocked."
+      }
+    },
+    "override": {
+      "title": "Override compliance item",
+      "description": "Mark this requirement as waived with a documented reason.",
+      "categoryLabel": "Reason category",
+      "categoryPlaceholder": "Select a reason",
+      "noteLabel": "Rationale",
+      "notePlaceholder": "Explain why this item is being waived…",
+      "noteMinHint": "Minimum {min} characters.",
+      "cancel": "Cancel",
+      "submit": "Waive item",
+      "buttonLabel": "Override",
+      "buttonAriaLabel": "Override this compliance item",
+      "category": {
+        "CONTRACTOR_OFFBOARDED": "Contractor offboarded",
+        "ENGAGEMENT_CHANGED": "Engagement changed",
+        "REGULATORY_EXEMPTION": "Regulatory exemption",
+        "TEMPORARY_GRACE_PERIOD": "Temporary grace period",
+        "ADMIN_CORRECTION": "Admin correction",
+        "OTHER": "Other"
+      },
+      "toast": {
+        "success": "Item waived",
+        "error": "Could not waive the item"
+      }
+    },
+    "uploadReview": {
+      "title": "Review uploaded document",
+      "description": "Approve to satisfy the requirement, or reject with a reason.",
+      "approveTab": "Approve",
+      "rejectTab": "Reject",
+      "expiresAtLabel": "Expiry date",
+      "reasonLabel": "Rejection reason",
+      "reasonPlaceholder": "Select a reason",
+      "freeTextLabel": "Notes (optional)",
+      "cancel": "Cancel",
+      "confirmApprove": "Approve",
+      "confirmReject": "Reject",
+      "reason": {
+        "wrong_document_type": "Wrong document type",
+        "illegible": "Illegible",
+        "already_expired": "Already expired",
+        "forged_or_altered": "Forged or altered",
+        "other": "Other"
+      },
+      "toast": {
+        "approved": "Upload approved",
+        "rejected": "Upload rejected",
+        "error": "Review failed"
+      }
+    },
+    "history": {
+      "toggle": "History",
+      "empty": "No history yet",
+      "error": "Could not load history",
+      "action": {
+        "compliance.item.overridden": "Overridden",
+        "compliance.upload.submitted": "Upload submitted",
+        "compliance.upload.approved": "Upload approved",
+        "compliance.upload.rejected": "Upload rejected",
+        "compliance.recompute": "Recomputed"
+      }
+    },
+    "notifications": {
+      "uploadApproved": {
+        "title": "Compliance document approved",
+        "body": "Your uploaded compliance document was approved."
+      },
+      "uploadRejected": {
+        "title": "Compliance document needs attention",
+        "body": "Your uploaded compliance document was rejected — please re-upload."
       }
     }
   },

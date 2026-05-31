@@ -1312,7 +1312,9 @@
       },
       "expires": "Wygasa",
       "expiringSoon": "Wkrótce wygasa",
-      "noRequirementsHint": "Wymagania zgodności można skonfigurować w ustawieniach organizacji dla każdego typu kontrahenta."
+      "noRequirementsHint": "Wymagania zgodności można skonfigurować w ustawieniach organizacji dla każdego typu kontrahenta.",
+      "waivedTooltip": "Nadpisano — powód: {category}",
+      "waivedTooltipGeneric": "Nadpisane przez administratora"
     },
     "rightRail": {
       "activity": "Aktywność",
@@ -3246,6 +3248,78 @@
       "empty": {
         "heading": "Wszystko w porządku",
         "body": "Żaden wykonawca nie jest zagrożony i żadne płatności nie są zablokowane."
+      }
+    },
+    "override": {
+      "title": "Nadpisz pozycję zgodności",
+      "description": "Oznacz to wymaganie jako zwolnione z udokumentowanym powodem.",
+      "categoryLabel": "Kategoria powodu",
+      "categoryPlaceholder": "Wybierz powód",
+      "noteLabel": "Uzasadnienie",
+      "notePlaceholder": "Wyjaśnij, dlaczego ta pozycja jest zwalniana…",
+      "noteMinHint": "Minimum {min} znaków.",
+      "cancel": "Anuluj",
+      "submit": "Zwolnij pozycję",
+      "buttonLabel": "Nadpisz",
+      "buttonAriaLabel": "Nadpisz tę pozycję zgodności",
+      "category": {
+        "CONTRACTOR_OFFBOARDED": "Wykonawca offboardowany",
+        "ENGAGEMENT_CHANGED": "Zmiana zaangażowania",
+        "REGULATORY_EXEMPTION": "Zwolnienie regulacyjne",
+        "TEMPORARY_GRACE_PERIOD": "Tymczasowy okres karencji",
+        "ADMIN_CORRECTION": "Korekta administratora",
+        "OTHER": "Inne"
+      },
+      "toast": {
+        "success": "Pozycja zwolniona",
+        "error": "Nie udało się zwolnić pozycji"
+      }
+    },
+    "uploadReview": {
+      "title": "Przejrzyj przesłany dokument",
+      "description": "Zatwierdź, aby spełnić wymaganie, lub odrzuć z podaniem powodu.",
+      "approveTab": "Zatwierdź",
+      "rejectTab": "Odrzuć",
+      "expiresAtLabel": "Data ważności",
+      "reasonLabel": "Powód odrzucenia",
+      "reasonPlaceholder": "Wybierz powód",
+      "freeTextLabel": "Uwagi (opcjonalnie)",
+      "cancel": "Anuluj",
+      "confirmApprove": "Zatwierdź",
+      "confirmReject": "Odrzuć",
+      "reason": {
+        "wrong_document_type": "Nieprawidłowy typ dokumentu",
+        "illegible": "Nieczytelny",
+        "already_expired": "Już wygasł",
+        "forged_or_altered": "Sfałszowany lub zmieniony",
+        "other": "Inne"
+      },
+      "toast": {
+        "approved": "Przesłanie zatwierdzone",
+        "rejected": "Przesłanie odrzucone",
+        "error": "Weryfikacja nie powiodła się"
+      }
+    },
+    "history": {
+      "toggle": "Historia",
+      "empty": "Brak historii",
+      "error": "Nie udało się załadować historii",
+      "action": {
+        "compliance.item.overridden": "Nadpisano",
+        "compliance.upload.submitted": "Przesłano",
+        "compliance.upload.approved": "Przesłanie zatwierdzone",
+        "compliance.upload.rejected": "Przesłanie odrzucone",
+        "compliance.recompute": "Przeliczono"
+      }
+    },
+    "notifications": {
+      "uploadApproved": {
+        "title": "Dokument zgodności zatwierdzony",
+        "body": "Twój przesłany dokument zgodności został zatwierdzony."
+      },
+      "uploadRejected": {
+        "title": "Dokument zgodności wymaga uwagi",
+        "body": "Twój przesłany dokument zgodności został odrzucony — prześlij ponownie."
       }
     }
   },
