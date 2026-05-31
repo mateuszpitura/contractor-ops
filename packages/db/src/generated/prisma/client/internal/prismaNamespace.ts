@@ -416,6 +416,7 @@ export const ModelName = {
   ContractRatePeriod: 'ContractRatePeriod',
   Document: 'Document',
   DocumentLink: 'DocumentLink',
+  ContractHealthCheckRun: 'ContractHealthCheckRun',
   Contractor: 'Contractor',
   ContractorContact: 'ContractorContact',
   ContractorBillingProfile: 'ContractorBillingProfile',
@@ -498,6 +499,7 @@ export const ModelName = {
   WorkflowTaskRun: 'WorkflowTaskRun',
   WorkflowComment: 'WorkflowComment',
   WorkflowAttachment: 'WorkflowAttachment',
+  CredentialReference: 'CredentialReference',
   ZatcaInvoiceChain: 'ZatcaInvoiceChain'
 } as const
 
@@ -514,7 +516,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "organizationApiKey" | "approvalChainConfig" | "approvalFlow" | "approvalStep" | "approvalDecision" | "auditLog" | "user" | "userPinnedView" | "session" | "account" | "verification" | "subscription" | "ocrCreditLedger" | "stripeEvent" | "classificationAssessment" | "classificationDocument" | "ir35ChainParticipant" | "ir35OtherClientAttestation" | "economicDependencyAlertState" | "reassessmentTrigger" | "cronScanState" | "statusfeststellungsverfahren" | "classificationEscalationEvent" | "sdsApproval" | "consentRecord" | "privacyNotice" | "consentEvent" | "contract" | "contractAmendment" | "contractRatePeriod" | "document" | "documentLink" | "contractor" | "contractorContact" | "contractorBillingProfile" | "contractorAssignment" | "contractorTag" | "contractorTagLink" | "complianceRequirementTemplate" | "contractorComplianceItem" | "leitwegId" | "eInvoiceLifecycle" | "eInvoiceLifecycleEvent" | "peppolCapabilityCache" | "equipment" | "equipmentAssignment" | "shipment" | "shipmentEvent" | "returnRequest" | "courierConfig" | "signingEnvelope" | "signingRecipient" | "signingEvent" | "exchangeRate" | "export" | "boEBaseRateHistory" | "skontoTerm" | "skontoSnapshot" | "skontoApplication" | "govApiAuditLog" | "integrationConnection" | "externalLink" | "integrationSyncLog" | "webhookDelivery" | "invoice" | "invoiceFile" | "invoiceLine" | "invoiceMatchResult" | "invoiceIntakeRequest" | "invoicePayment" | "invoiceInterestCompensation" | "invoiceInterestWaiver" | "invoiceInterestClaim" | "notification" | "userNotificationPreference" | "comment" | "reminderRule" | "reminderInstance" | "notificationCronDedup" | "oAuthChallenge" | "ocrExtraction" | "organization" | "member" | "invitation" | "team" | "project" | "pendingProjectMerge" | "projectExternalLink" | "costCenter" | "outboxEvent" | "paymentRun" | "paymentRunItem" | "paymentExport" | "peppolParticipant" | "peppolTransmission" | "portalSession" | "portalMagicToken" | "contractorChangeRequest" | "contractorNotificationPreference" | "pendingUpload" | "taxRate" | "withholdingTaxRate" | "whtCertificate" | "taxIdValidation" | "timesheet" | "timeEntry" | "workflowTemplate" | "workflowTaskTemplate" | "workflowRoleTemplate" | "workflowRoleTaskTemplate" | "workflowRun" | "workflowTaskRun" | "workflowComment" | "workflowAttachment" | "zatcaInvoiceChain"
+    modelProps: "organizationApiKey" | "approvalChainConfig" | "approvalFlow" | "approvalStep" | "approvalDecision" | "auditLog" | "user" | "userPinnedView" | "session" | "account" | "verification" | "subscription" | "ocrCreditLedger" | "stripeEvent" | "classificationAssessment" | "classificationDocument" | "ir35ChainParticipant" | "ir35OtherClientAttestation" | "economicDependencyAlertState" | "reassessmentTrigger" | "cronScanState" | "statusfeststellungsverfahren" | "classificationEscalationEvent" | "sdsApproval" | "consentRecord" | "privacyNotice" | "consentEvent" | "contract" | "contractAmendment" | "contractRatePeriod" | "document" | "documentLink" | "contractHealthCheckRun" | "contractor" | "contractorContact" | "contractorBillingProfile" | "contractorAssignment" | "contractorTag" | "contractorTagLink" | "complianceRequirementTemplate" | "contractorComplianceItem" | "leitwegId" | "eInvoiceLifecycle" | "eInvoiceLifecycleEvent" | "peppolCapabilityCache" | "equipment" | "equipmentAssignment" | "shipment" | "shipmentEvent" | "returnRequest" | "courierConfig" | "signingEnvelope" | "signingRecipient" | "signingEvent" | "exchangeRate" | "export" | "boEBaseRateHistory" | "skontoTerm" | "skontoSnapshot" | "skontoApplication" | "govApiAuditLog" | "integrationConnection" | "externalLink" | "integrationSyncLog" | "webhookDelivery" | "invoice" | "invoiceFile" | "invoiceLine" | "invoiceMatchResult" | "invoiceIntakeRequest" | "invoicePayment" | "invoiceInterestCompensation" | "invoiceInterestWaiver" | "invoiceInterestClaim" | "notification" | "userNotificationPreference" | "comment" | "reminderRule" | "reminderInstance" | "notificationCronDedup" | "oAuthChallenge" | "ocrExtraction" | "organization" | "member" | "invitation" | "team" | "project" | "pendingProjectMerge" | "projectExternalLink" | "costCenter" | "outboxEvent" | "paymentRun" | "paymentRunItem" | "paymentExport" | "peppolParticipant" | "peppolTransmission" | "portalSession" | "portalMagicToken" | "contractorChangeRequest" | "contractorNotificationPreference" | "pendingUpload" | "taxRate" | "withholdingTaxRate" | "whtCertificate" | "taxIdValidation" | "timesheet" | "timeEntry" | "workflowTemplate" | "workflowTaskTemplate" | "workflowRoleTemplate" | "workflowRoleTaskTemplate" | "workflowRun" | "workflowTaskRun" | "workflowComment" | "workflowAttachment" | "credentialReference" | "zatcaInvoiceChain"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -2883,6 +2885,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.DocumentLinkCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.DocumentLinkCountAggregateOutputType> | number
+        }
+      }
+    }
+    ContractHealthCheckRun: {
+      payload: Prisma.$ContractHealthCheckRunPayload<ExtArgs>
+      fields: Prisma.ContractHealthCheckRunFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ContractHealthCheckRunFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ContractHealthCheckRunPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ContractHealthCheckRunFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ContractHealthCheckRunPayload>
+        }
+        findFirst: {
+          args: Prisma.ContractHealthCheckRunFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ContractHealthCheckRunPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ContractHealthCheckRunFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ContractHealthCheckRunPayload>
+        }
+        findMany: {
+          args: Prisma.ContractHealthCheckRunFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ContractHealthCheckRunPayload>[]
+        }
+        create: {
+          args: Prisma.ContractHealthCheckRunCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ContractHealthCheckRunPayload>
+        }
+        createMany: {
+          args: Prisma.ContractHealthCheckRunCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ContractHealthCheckRunCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ContractHealthCheckRunPayload>[]
+        }
+        delete: {
+          args: Prisma.ContractHealthCheckRunDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ContractHealthCheckRunPayload>
+        }
+        update: {
+          args: Prisma.ContractHealthCheckRunUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ContractHealthCheckRunPayload>
+        }
+        deleteMany: {
+          args: Prisma.ContractHealthCheckRunDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ContractHealthCheckRunUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ContractHealthCheckRunUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ContractHealthCheckRunPayload>[]
+        }
+        upsert: {
+          args: Prisma.ContractHealthCheckRunUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ContractHealthCheckRunPayload>
+        }
+        aggregate: {
+          args: Prisma.ContractHealthCheckRunAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateContractHealthCheckRun>
+        }
+        groupBy: {
+          args: Prisma.ContractHealthCheckRunGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ContractHealthCheckRunGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ContractHealthCheckRunCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ContractHealthCheckRunCountAggregateOutputType> | number
         }
       }
     }
@@ -8954,6 +9030,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    CredentialReference: {
+      payload: Prisma.$CredentialReferencePayload<ExtArgs>
+      fields: Prisma.CredentialReferenceFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.CredentialReferenceFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CredentialReferencePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.CredentialReferenceFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CredentialReferencePayload>
+        }
+        findFirst: {
+          args: Prisma.CredentialReferenceFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CredentialReferencePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.CredentialReferenceFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CredentialReferencePayload>
+        }
+        findMany: {
+          args: Prisma.CredentialReferenceFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CredentialReferencePayload>[]
+        }
+        create: {
+          args: Prisma.CredentialReferenceCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CredentialReferencePayload>
+        }
+        createMany: {
+          args: Prisma.CredentialReferenceCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.CredentialReferenceCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CredentialReferencePayload>[]
+        }
+        delete: {
+          args: Prisma.CredentialReferenceDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CredentialReferencePayload>
+        }
+        update: {
+          args: Prisma.CredentialReferenceUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CredentialReferencePayload>
+        }
+        deleteMany: {
+          args: Prisma.CredentialReferenceDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.CredentialReferenceUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.CredentialReferenceUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CredentialReferencePayload>[]
+        }
+        upsert: {
+          args: Prisma.CredentialReferenceUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CredentialReferencePayload>
+        }
+        aggregate: {
+          args: Prisma.CredentialReferenceAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateCredentialReference>
+        }
+        groupBy: {
+          args: Prisma.CredentialReferenceGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CredentialReferenceGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.CredentialReferenceCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CredentialReferenceCountAggregateOutputType> | number
+        }
+      }
+    }
     ZatcaInvoiceChain: {
       payload: Prisma.$ZatcaInvoiceChainPayload<ExtArgs>
       fields: Prisma.ZatcaInvoiceChainFieldRefs
@@ -9547,6 +9697,11 @@ export const ContractScalarFieldEnum = {
   signedAt: 'signedAt',
   terminatedAt: 'terminatedAt',
   terminationReason: 'terminationReason',
+  complianceFlagsJson: 'complianceFlagsJson',
+  complianceFlagsCheckedAt: 'complianceFlagsCheckedAt',
+  complianceFlagsModelVer: 'complianceFlagsModelVer',
+  latestHealthCheckRunId: 'latestHealthCheckRunId',
+  jurisdiction: 'jurisdiction',
   metadataJson: 'metadataJson',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
@@ -9621,6 +9776,25 @@ export const DocumentLinkScalarFieldEnum = {
 } as const
 
 export type DocumentLinkScalarFieldEnum = (typeof DocumentLinkScalarFieldEnum)[keyof typeof DocumentLinkScalarFieldEnum]
+
+
+export const ContractHealthCheckRunScalarFieldEnum = {
+  id: 'id',
+  organizationId: 'organizationId',
+  contractId: 'contractId',
+  contentHash: 'contentHash',
+  modelVer: 'modelVer',
+  verdict: 'verdict',
+  resultsJson: 'resultsJson',
+  status: 'status',
+  errorMessage: 'errorMessage',
+  startedAt: 'startedAt',
+  completedAt: 'completedAt',
+  triggeredBy: 'triggeredBy',
+  triggeredByUserId: 'triggeredByUserId'
+} as const
+
+export type ContractHealthCheckRunScalarFieldEnum = (typeof ContractHealthCheckRunScalarFieldEnum)[keyof typeof ContractHealthCheckRunScalarFieldEnum]
 
 
 export const ContractorScalarFieldEnum = {
@@ -11167,6 +11341,26 @@ export const WorkflowAttachmentScalarFieldEnum = {
 export type WorkflowAttachmentScalarFieldEnum = (typeof WorkflowAttachmentScalarFieldEnum)[keyof typeof WorkflowAttachmentScalarFieldEnum]
 
 
+export const CredentialReferenceScalarFieldEnum = {
+  id: 'id',
+  organizationId: 'organizationId',
+  workflowRunId: 'workflowRunId',
+  label: 'label',
+  vaultProvider: 'vaultProvider',
+  vaultUrl: 'vaultUrl',
+  accessType: 'accessType',
+  successorUserId: 'successorUserId',
+  status: 'status',
+  rotatedAt: 'rotatedAt',
+  rotatedByUserId: 'rotatedByUserId',
+  notes: 'notes',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type CredentialReferenceScalarFieldEnum = (typeof CredentialReferenceScalarFieldEnum)[keyof typeof CredentialReferenceScalarFieldEnum]
+
+
 export const ZatcaInvoiceChainScalarFieldEnum = {
   id: 'id',
   organizationId: 'organizationId',
@@ -11750,6 +11944,48 @@ export type EnumDocumentLinkRoleFieldRefInput<$PrismaModel> = FieldRefInputType<
  * Reference to a field of type 'DocumentLinkRole[]'
  */
 export type ListEnumDocumentLinkRoleFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DocumentLinkRole[]'>
+    
+
+
+/**
+ * Reference to a field of type 'IpAssignmentVerdict'
+ */
+export type EnumIpAssignmentVerdictFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'IpAssignmentVerdict'>
+    
+
+
+/**
+ * Reference to a field of type 'IpAssignmentVerdict[]'
+ */
+export type ListEnumIpAssignmentVerdictFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'IpAssignmentVerdict[]'>
+    
+
+
+/**
+ * Reference to a field of type 'RunStatus'
+ */
+export type EnumRunStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'RunStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'RunStatus[]'
+ */
+export type ListEnumRunStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'RunStatus[]'>
+    
+
+
+/**
+ * Reference to a field of type 'RunTrigger'
+ */
+export type EnumRunTriggerFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'RunTrigger'>
+    
+
+
+/**
+ * Reference to a field of type 'RunTrigger[]'
+ */
+export type ListEnumRunTriggerFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'RunTrigger[]'>
     
 
 
@@ -12734,6 +12970,48 @@ export type ListEnumWorkflowTaskStatusFieldRefInput<$PrismaModel> = FieldRefInpu
 
 
 /**
+ * Reference to a field of type 'VaultProvider'
+ */
+export type EnumVaultProviderFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'VaultProvider'>
+    
+
+
+/**
+ * Reference to a field of type 'VaultProvider[]'
+ */
+export type ListEnumVaultProviderFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'VaultProvider[]'>
+    
+
+
+/**
+ * Reference to a field of type 'AccessType'
+ */
+export type EnumAccessTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AccessType'>
+    
+
+
+/**
+ * Reference to a field of type 'AccessType[]'
+ */
+export type ListEnumAccessTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AccessType[]'>
+    
+
+
+/**
+ * Reference to a field of type 'CredentialStatus'
+ */
+export type EnumCredentialStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'CredentialStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'CredentialStatus[]'
+ */
+export type ListEnumCredentialStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'CredentialStatus[]'>
+    
+
+
+/**
  * Reference to a field of type 'ZatcaSubmissionStatus'
  */
 export type EnumZatcaSubmissionStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ZatcaSubmissionStatus'>
@@ -12902,6 +13180,7 @@ export type GlobalOmitConfig = {
   contractRatePeriod?: Prisma.ContractRatePeriodOmit
   document?: Prisma.DocumentOmit
   documentLink?: Prisma.DocumentLinkOmit
+  contractHealthCheckRun?: Prisma.ContractHealthCheckRunOmit
   contractor?: Prisma.ContractorOmit
   contractorContact?: Prisma.ContractorContactOmit
   contractorBillingProfile?: Prisma.ContractorBillingProfileOmit
@@ -12984,6 +13263,7 @@ export type GlobalOmitConfig = {
   workflowTaskRun?: Prisma.WorkflowTaskRunOmit
   workflowComment?: Prisma.WorkflowCommentOmit
   workflowAttachment?: Prisma.WorkflowAttachmentOmit
+  credentialReference?: Prisma.CredentialReferenceOmit
   zatcaInvoiceChain?: Prisma.ZatcaInvoiceChainOmit
 }
 

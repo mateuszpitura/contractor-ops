@@ -83,6 +83,7 @@ export const ModelName = {
   ContractRatePeriod: 'ContractRatePeriod',
   Document: 'Document',
   DocumentLink: 'DocumentLink',
+  ContractHealthCheckRun: 'ContractHealthCheckRun',
   Contractor: 'Contractor',
   ContractorContact: 'ContractorContact',
   ContractorBillingProfile: 'ContractorBillingProfile',
@@ -165,6 +166,7 @@ export const ModelName = {
   WorkflowTaskRun: 'WorkflowTaskRun',
   WorkflowComment: 'WorkflowComment',
   WorkflowAttachment: 'WorkflowAttachment',
+  CredentialReference: 'CredentialReference',
   ZatcaInvoiceChain: 'ZatcaInvoiceChain'
 } as const
 
@@ -664,6 +666,11 @@ export const ContractScalarFieldEnum = {
   signedAt: 'signedAt',
   terminatedAt: 'terminatedAt',
   terminationReason: 'terminationReason',
+  complianceFlagsJson: 'complianceFlagsJson',
+  complianceFlagsCheckedAt: 'complianceFlagsCheckedAt',
+  complianceFlagsModelVer: 'complianceFlagsModelVer',
+  latestHealthCheckRunId: 'latestHealthCheckRunId',
+  jurisdiction: 'jurisdiction',
   metadataJson: 'metadataJson',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
@@ -738,6 +745,25 @@ export const DocumentLinkScalarFieldEnum = {
 } as const
 
 export type DocumentLinkScalarFieldEnum = (typeof DocumentLinkScalarFieldEnum)[keyof typeof DocumentLinkScalarFieldEnum]
+
+
+export const ContractHealthCheckRunScalarFieldEnum = {
+  id: 'id',
+  organizationId: 'organizationId',
+  contractId: 'contractId',
+  contentHash: 'contentHash',
+  modelVer: 'modelVer',
+  verdict: 'verdict',
+  resultsJson: 'resultsJson',
+  status: 'status',
+  errorMessage: 'errorMessage',
+  startedAt: 'startedAt',
+  completedAt: 'completedAt',
+  triggeredBy: 'triggeredBy',
+  triggeredByUserId: 'triggeredByUserId'
+} as const
+
+export type ContractHealthCheckRunScalarFieldEnum = (typeof ContractHealthCheckRunScalarFieldEnum)[keyof typeof ContractHealthCheckRunScalarFieldEnum]
 
 
 export const ContractorScalarFieldEnum = {
@@ -2282,6 +2308,26 @@ export const WorkflowAttachmentScalarFieldEnum = {
 } as const
 
 export type WorkflowAttachmentScalarFieldEnum = (typeof WorkflowAttachmentScalarFieldEnum)[keyof typeof WorkflowAttachmentScalarFieldEnum]
+
+
+export const CredentialReferenceScalarFieldEnum = {
+  id: 'id',
+  organizationId: 'organizationId',
+  workflowRunId: 'workflowRunId',
+  label: 'label',
+  vaultProvider: 'vaultProvider',
+  vaultUrl: 'vaultUrl',
+  accessType: 'accessType',
+  successorUserId: 'successorUserId',
+  status: 'status',
+  rotatedAt: 'rotatedAt',
+  rotatedByUserId: 'rotatedByUserId',
+  notes: 'notes',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type CredentialReferenceScalarFieldEnum = (typeof CredentialReferenceScalarFieldEnum)[keyof typeof CredentialReferenceScalarFieldEnum]
 
 
 export const ZatcaInvoiceChainScalarFieldEnum = {

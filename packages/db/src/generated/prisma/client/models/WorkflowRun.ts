@@ -348,6 +348,7 @@ export type WorkflowRunWhereInput = {
   tasks?: Prisma.WorkflowTaskRunListRelationFilter
   comments?: Prisma.WorkflowCommentListRelationFilter
   attachments?: Prisma.WorkflowAttachmentListRelationFilter
+  credentialReferences?: Prisma.CredentialReferenceListRelationFilter
 }
 
 export type WorkflowRunOrderByWithRelationInput = {
@@ -380,6 +381,7 @@ export type WorkflowRunOrderByWithRelationInput = {
   tasks?: Prisma.WorkflowTaskRunOrderByRelationAggregateInput
   comments?: Prisma.WorkflowCommentOrderByRelationAggregateInput
   attachments?: Prisma.WorkflowAttachmentOrderByRelationAggregateInput
+  credentialReferences?: Prisma.CredentialReferenceOrderByRelationAggregateInput
 }
 
 export type WorkflowRunWhereUniqueInput = Prisma.AtLeast<{
@@ -415,6 +417,7 @@ export type WorkflowRunWhereUniqueInput = Prisma.AtLeast<{
   tasks?: Prisma.WorkflowTaskRunListRelationFilter
   comments?: Prisma.WorkflowCommentListRelationFilter
   attachments?: Prisma.WorkflowAttachmentListRelationFilter
+  credentialReferences?: Prisma.CredentialReferenceListRelationFilter
 }, "id">
 
 export type WorkflowRunOrderByWithAggregationInput = {
@@ -498,6 +501,7 @@ export type WorkflowRunCreateInput = {
   tasks?: Prisma.WorkflowTaskRunCreateNestedManyWithoutWorkflowRunInput
   comments?: Prisma.WorkflowCommentCreateNestedManyWithoutWorkflowRunInput
   attachments?: Prisma.WorkflowAttachmentCreateNestedManyWithoutWorkflowRunInput
+  credentialReferences?: Prisma.CredentialReferenceCreateNestedManyWithoutWorkflowRunInput
 }
 
 export type WorkflowRunUncheckedCreateInput = {
@@ -525,6 +529,7 @@ export type WorkflowRunUncheckedCreateInput = {
   tasks?: Prisma.WorkflowTaskRunUncheckedCreateNestedManyWithoutWorkflowRunInput
   comments?: Prisma.WorkflowCommentUncheckedCreateNestedManyWithoutWorkflowRunInput
   attachments?: Prisma.WorkflowAttachmentUncheckedCreateNestedManyWithoutWorkflowRunInput
+  credentialReferences?: Prisma.CredentialReferenceUncheckedCreateNestedManyWithoutWorkflowRunInput
 }
 
 export type WorkflowRunUpdateInput = {
@@ -552,6 +557,7 @@ export type WorkflowRunUpdateInput = {
   tasks?: Prisma.WorkflowTaskRunUpdateManyWithoutWorkflowRunNestedInput
   comments?: Prisma.WorkflowCommentUpdateManyWithoutWorkflowRunNestedInput
   attachments?: Prisma.WorkflowAttachmentUpdateManyWithoutWorkflowRunNestedInput
+  credentialReferences?: Prisma.CredentialReferenceUpdateManyWithoutWorkflowRunNestedInput
 }
 
 export type WorkflowRunUncheckedUpdateInput = {
@@ -579,6 +585,7 @@ export type WorkflowRunUncheckedUpdateInput = {
   tasks?: Prisma.WorkflowTaskRunUncheckedUpdateManyWithoutWorkflowRunNestedInput
   comments?: Prisma.WorkflowCommentUncheckedUpdateManyWithoutWorkflowRunNestedInput
   attachments?: Prisma.WorkflowAttachmentUncheckedUpdateManyWithoutWorkflowRunNestedInput
+  credentialReferences?: Prisma.CredentialReferenceUncheckedUpdateManyWithoutWorkflowRunNestedInput
 }
 
 export type WorkflowRunCreateManyInput = {
@@ -997,6 +1004,20 @@ export type WorkflowRunUpdateOneRequiredWithoutAttachmentsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.WorkflowRunUpdateToOneWithWhereWithoutAttachmentsInput, Prisma.WorkflowRunUpdateWithoutAttachmentsInput>, Prisma.WorkflowRunUncheckedUpdateWithoutAttachmentsInput>
 }
 
+export type WorkflowRunCreateNestedOneWithoutCredentialReferencesInput = {
+  create?: Prisma.XOR<Prisma.WorkflowRunCreateWithoutCredentialReferencesInput, Prisma.WorkflowRunUncheckedCreateWithoutCredentialReferencesInput>
+  connectOrCreate?: Prisma.WorkflowRunCreateOrConnectWithoutCredentialReferencesInput
+  connect?: Prisma.WorkflowRunWhereUniqueInput
+}
+
+export type WorkflowRunUpdateOneRequiredWithoutCredentialReferencesNestedInput = {
+  create?: Prisma.XOR<Prisma.WorkflowRunCreateWithoutCredentialReferencesInput, Prisma.WorkflowRunUncheckedCreateWithoutCredentialReferencesInput>
+  connectOrCreate?: Prisma.WorkflowRunCreateOrConnectWithoutCredentialReferencesInput
+  upsert?: Prisma.WorkflowRunUpsertWithoutCredentialReferencesInput
+  connect?: Prisma.WorkflowRunWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.WorkflowRunUpdateToOneWithWhereWithoutCredentialReferencesInput, Prisma.WorkflowRunUpdateWithoutCredentialReferencesInput>, Prisma.WorkflowRunUncheckedUpdateWithoutCredentialReferencesInput>
+}
+
 export type WorkflowRunCreateWithoutStartedByInput = {
   id?: string
   entityType: $Enums.EntityType
@@ -1021,6 +1042,7 @@ export type WorkflowRunCreateWithoutStartedByInput = {
   tasks?: Prisma.WorkflowTaskRunCreateNestedManyWithoutWorkflowRunInput
   comments?: Prisma.WorkflowCommentCreateNestedManyWithoutWorkflowRunInput
   attachments?: Prisma.WorkflowAttachmentCreateNestedManyWithoutWorkflowRunInput
+  credentialReferences?: Prisma.CredentialReferenceCreateNestedManyWithoutWorkflowRunInput
 }
 
 export type WorkflowRunUncheckedCreateWithoutStartedByInput = {
@@ -1047,6 +1069,7 @@ export type WorkflowRunUncheckedCreateWithoutStartedByInput = {
   tasks?: Prisma.WorkflowTaskRunUncheckedCreateNestedManyWithoutWorkflowRunInput
   comments?: Prisma.WorkflowCommentUncheckedCreateNestedManyWithoutWorkflowRunInput
   attachments?: Prisma.WorkflowAttachmentUncheckedCreateNestedManyWithoutWorkflowRunInput
+  credentialReferences?: Prisma.CredentialReferenceUncheckedCreateNestedManyWithoutWorkflowRunInput
 }
 
 export type WorkflowRunCreateOrConnectWithoutStartedByInput = {
@@ -1126,6 +1149,7 @@ export type WorkflowRunCreateWithoutContractInput = {
   tasks?: Prisma.WorkflowTaskRunCreateNestedManyWithoutWorkflowRunInput
   comments?: Prisma.WorkflowCommentCreateNestedManyWithoutWorkflowRunInput
   attachments?: Prisma.WorkflowAttachmentCreateNestedManyWithoutWorkflowRunInput
+  credentialReferences?: Prisma.CredentialReferenceCreateNestedManyWithoutWorkflowRunInput
 }
 
 export type WorkflowRunUncheckedCreateWithoutContractInput = {
@@ -1152,6 +1176,7 @@ export type WorkflowRunUncheckedCreateWithoutContractInput = {
   tasks?: Prisma.WorkflowTaskRunUncheckedCreateNestedManyWithoutWorkflowRunInput
   comments?: Prisma.WorkflowCommentUncheckedCreateNestedManyWithoutWorkflowRunInput
   attachments?: Prisma.WorkflowAttachmentUncheckedCreateNestedManyWithoutWorkflowRunInput
+  credentialReferences?: Prisma.CredentialReferenceUncheckedCreateNestedManyWithoutWorkflowRunInput
 }
 
 export type WorkflowRunCreateOrConnectWithoutContractInput = {
@@ -1204,6 +1229,7 @@ export type WorkflowRunCreateWithoutContractorInput = {
   tasks?: Prisma.WorkflowTaskRunCreateNestedManyWithoutWorkflowRunInput
   comments?: Prisma.WorkflowCommentCreateNestedManyWithoutWorkflowRunInput
   attachments?: Prisma.WorkflowAttachmentCreateNestedManyWithoutWorkflowRunInput
+  credentialReferences?: Prisma.CredentialReferenceCreateNestedManyWithoutWorkflowRunInput
 }
 
 export type WorkflowRunUncheckedCreateWithoutContractorInput = {
@@ -1230,6 +1256,7 @@ export type WorkflowRunUncheckedCreateWithoutContractorInput = {
   tasks?: Prisma.WorkflowTaskRunUncheckedCreateNestedManyWithoutWorkflowRunInput
   comments?: Prisma.WorkflowCommentUncheckedCreateNestedManyWithoutWorkflowRunInput
   attachments?: Prisma.WorkflowAttachmentUncheckedCreateNestedManyWithoutWorkflowRunInput
+  credentialReferences?: Prisma.CredentialReferenceUncheckedCreateNestedManyWithoutWorkflowRunInput
 }
 
 export type WorkflowRunCreateOrConnectWithoutContractorInput = {
@@ -1282,6 +1309,7 @@ export type WorkflowRunCreateWithoutOrganizationInput = {
   tasks?: Prisma.WorkflowTaskRunCreateNestedManyWithoutWorkflowRunInput
   comments?: Prisma.WorkflowCommentCreateNestedManyWithoutWorkflowRunInput
   attachments?: Prisma.WorkflowAttachmentCreateNestedManyWithoutWorkflowRunInput
+  credentialReferences?: Prisma.CredentialReferenceCreateNestedManyWithoutWorkflowRunInput
 }
 
 export type WorkflowRunUncheckedCreateWithoutOrganizationInput = {
@@ -1308,6 +1336,7 @@ export type WorkflowRunUncheckedCreateWithoutOrganizationInput = {
   tasks?: Prisma.WorkflowTaskRunUncheckedCreateNestedManyWithoutWorkflowRunInput
   comments?: Prisma.WorkflowCommentUncheckedCreateNestedManyWithoutWorkflowRunInput
   attachments?: Prisma.WorkflowAttachmentUncheckedCreateNestedManyWithoutWorkflowRunInput
+  credentialReferences?: Prisma.CredentialReferenceUncheckedCreateNestedManyWithoutWorkflowRunInput
 }
 
 export type WorkflowRunCreateOrConnectWithoutOrganizationInput = {
@@ -1360,6 +1389,7 @@ export type WorkflowRunCreateWithoutWorkflowTemplateInput = {
   tasks?: Prisma.WorkflowTaskRunCreateNestedManyWithoutWorkflowRunInput
   comments?: Prisma.WorkflowCommentCreateNestedManyWithoutWorkflowRunInput
   attachments?: Prisma.WorkflowAttachmentCreateNestedManyWithoutWorkflowRunInput
+  credentialReferences?: Prisma.CredentialReferenceCreateNestedManyWithoutWorkflowRunInput
 }
 
 export type WorkflowRunUncheckedCreateWithoutWorkflowTemplateInput = {
@@ -1386,6 +1416,7 @@ export type WorkflowRunUncheckedCreateWithoutWorkflowTemplateInput = {
   tasks?: Prisma.WorkflowTaskRunUncheckedCreateNestedManyWithoutWorkflowRunInput
   comments?: Prisma.WorkflowCommentUncheckedCreateNestedManyWithoutWorkflowRunInput
   attachments?: Prisma.WorkflowAttachmentUncheckedCreateNestedManyWithoutWorkflowRunInput
+  credentialReferences?: Prisma.CredentialReferenceUncheckedCreateNestedManyWithoutWorkflowRunInput
 }
 
 export type WorkflowRunCreateOrConnectWithoutWorkflowTemplateInput = {
@@ -1438,6 +1469,7 @@ export type WorkflowRunCreateWithoutTasksInput = {
   startedBy: Prisma.UserCreateNestedOneWithoutStartedWorkflowRunsInput
   comments?: Prisma.WorkflowCommentCreateNestedManyWithoutWorkflowRunInput
   attachments?: Prisma.WorkflowAttachmentCreateNestedManyWithoutWorkflowRunInput
+  credentialReferences?: Prisma.CredentialReferenceCreateNestedManyWithoutWorkflowRunInput
 }
 
 export type WorkflowRunUncheckedCreateWithoutTasksInput = {
@@ -1464,6 +1496,7 @@ export type WorkflowRunUncheckedCreateWithoutTasksInput = {
   updatedAt?: Date | string
   comments?: Prisma.WorkflowCommentUncheckedCreateNestedManyWithoutWorkflowRunInput
   attachments?: Prisma.WorkflowAttachmentUncheckedCreateNestedManyWithoutWorkflowRunInput
+  credentialReferences?: Prisma.CredentialReferenceUncheckedCreateNestedManyWithoutWorkflowRunInput
 }
 
 export type WorkflowRunCreateOrConnectWithoutTasksInput = {
@@ -1506,6 +1539,7 @@ export type WorkflowRunUpdateWithoutTasksInput = {
   startedBy?: Prisma.UserUpdateOneRequiredWithoutStartedWorkflowRunsNestedInput
   comments?: Prisma.WorkflowCommentUpdateManyWithoutWorkflowRunNestedInput
   attachments?: Prisma.WorkflowAttachmentUpdateManyWithoutWorkflowRunNestedInput
+  credentialReferences?: Prisma.CredentialReferenceUpdateManyWithoutWorkflowRunNestedInput
 }
 
 export type WorkflowRunUncheckedUpdateWithoutTasksInput = {
@@ -1532,6 +1566,7 @@ export type WorkflowRunUncheckedUpdateWithoutTasksInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   comments?: Prisma.WorkflowCommentUncheckedUpdateManyWithoutWorkflowRunNestedInput
   attachments?: Prisma.WorkflowAttachmentUncheckedUpdateManyWithoutWorkflowRunNestedInput
+  credentialReferences?: Prisma.CredentialReferenceUncheckedUpdateManyWithoutWorkflowRunNestedInput
 }
 
 export type WorkflowRunCreateWithoutCommentsInput = {
@@ -1558,6 +1593,7 @@ export type WorkflowRunCreateWithoutCommentsInput = {
   startedBy: Prisma.UserCreateNestedOneWithoutStartedWorkflowRunsInput
   tasks?: Prisma.WorkflowTaskRunCreateNestedManyWithoutWorkflowRunInput
   attachments?: Prisma.WorkflowAttachmentCreateNestedManyWithoutWorkflowRunInput
+  credentialReferences?: Prisma.CredentialReferenceCreateNestedManyWithoutWorkflowRunInput
 }
 
 export type WorkflowRunUncheckedCreateWithoutCommentsInput = {
@@ -1584,6 +1620,7 @@ export type WorkflowRunUncheckedCreateWithoutCommentsInput = {
   updatedAt?: Date | string
   tasks?: Prisma.WorkflowTaskRunUncheckedCreateNestedManyWithoutWorkflowRunInput
   attachments?: Prisma.WorkflowAttachmentUncheckedCreateNestedManyWithoutWorkflowRunInput
+  credentialReferences?: Prisma.CredentialReferenceUncheckedCreateNestedManyWithoutWorkflowRunInput
 }
 
 export type WorkflowRunCreateOrConnectWithoutCommentsInput = {
@@ -1626,6 +1663,7 @@ export type WorkflowRunUpdateWithoutCommentsInput = {
   startedBy?: Prisma.UserUpdateOneRequiredWithoutStartedWorkflowRunsNestedInput
   tasks?: Prisma.WorkflowTaskRunUpdateManyWithoutWorkflowRunNestedInput
   attachments?: Prisma.WorkflowAttachmentUpdateManyWithoutWorkflowRunNestedInput
+  credentialReferences?: Prisma.CredentialReferenceUpdateManyWithoutWorkflowRunNestedInput
 }
 
 export type WorkflowRunUncheckedUpdateWithoutCommentsInput = {
@@ -1652,6 +1690,7 @@ export type WorkflowRunUncheckedUpdateWithoutCommentsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   tasks?: Prisma.WorkflowTaskRunUncheckedUpdateManyWithoutWorkflowRunNestedInput
   attachments?: Prisma.WorkflowAttachmentUncheckedUpdateManyWithoutWorkflowRunNestedInput
+  credentialReferences?: Prisma.CredentialReferenceUncheckedUpdateManyWithoutWorkflowRunNestedInput
 }
 
 export type WorkflowRunCreateWithoutAttachmentsInput = {
@@ -1678,6 +1717,7 @@ export type WorkflowRunCreateWithoutAttachmentsInput = {
   startedBy: Prisma.UserCreateNestedOneWithoutStartedWorkflowRunsInput
   tasks?: Prisma.WorkflowTaskRunCreateNestedManyWithoutWorkflowRunInput
   comments?: Prisma.WorkflowCommentCreateNestedManyWithoutWorkflowRunInput
+  credentialReferences?: Prisma.CredentialReferenceCreateNestedManyWithoutWorkflowRunInput
 }
 
 export type WorkflowRunUncheckedCreateWithoutAttachmentsInput = {
@@ -1704,6 +1744,7 @@ export type WorkflowRunUncheckedCreateWithoutAttachmentsInput = {
   updatedAt?: Date | string
   tasks?: Prisma.WorkflowTaskRunUncheckedCreateNestedManyWithoutWorkflowRunInput
   comments?: Prisma.WorkflowCommentUncheckedCreateNestedManyWithoutWorkflowRunInput
+  credentialReferences?: Prisma.CredentialReferenceUncheckedCreateNestedManyWithoutWorkflowRunInput
 }
 
 export type WorkflowRunCreateOrConnectWithoutAttachmentsInput = {
@@ -1746,6 +1787,7 @@ export type WorkflowRunUpdateWithoutAttachmentsInput = {
   startedBy?: Prisma.UserUpdateOneRequiredWithoutStartedWorkflowRunsNestedInput
   tasks?: Prisma.WorkflowTaskRunUpdateManyWithoutWorkflowRunNestedInput
   comments?: Prisma.WorkflowCommentUpdateManyWithoutWorkflowRunNestedInput
+  credentialReferences?: Prisma.CredentialReferenceUpdateManyWithoutWorkflowRunNestedInput
 }
 
 export type WorkflowRunUncheckedUpdateWithoutAttachmentsInput = {
@@ -1772,6 +1814,131 @@ export type WorkflowRunUncheckedUpdateWithoutAttachmentsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   tasks?: Prisma.WorkflowTaskRunUncheckedUpdateManyWithoutWorkflowRunNestedInput
   comments?: Prisma.WorkflowCommentUncheckedUpdateManyWithoutWorkflowRunNestedInput
+  credentialReferences?: Prisma.CredentialReferenceUncheckedUpdateManyWithoutWorkflowRunNestedInput
+}
+
+export type WorkflowRunCreateWithoutCredentialReferencesInput = {
+  id?: string
+  entityType: $Enums.EntityType
+  entityId: string
+  status?: $Enums.WorkflowRunStatus
+  startedAt?: Date | string
+  dueAt?: Date | string | null
+  completedAt?: Date | string | null
+  cancelledAt?: Date | string | null
+  cancelReason?: string | null
+  progressPercent?: number | null
+  overriddenTemplateId?: string | null
+  overriddenByUserId?: string | null
+  overriddenAt?: Date | string | null
+  overrideMetadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  organization: Prisma.OrganizationCreateNestedOneWithoutWorkflowRunsInput
+  workflowTemplate: Prisma.WorkflowTemplateCreateNestedOneWithoutRunsInput
+  contractor?: Prisma.ContractorCreateNestedOneWithoutWorkflowRunsInput
+  contract?: Prisma.ContractCreateNestedOneWithoutWorkflowRunsInput
+  startedBy: Prisma.UserCreateNestedOneWithoutStartedWorkflowRunsInput
+  tasks?: Prisma.WorkflowTaskRunCreateNestedManyWithoutWorkflowRunInput
+  comments?: Prisma.WorkflowCommentCreateNestedManyWithoutWorkflowRunInput
+  attachments?: Prisma.WorkflowAttachmentCreateNestedManyWithoutWorkflowRunInput
+}
+
+export type WorkflowRunUncheckedCreateWithoutCredentialReferencesInput = {
+  id?: string
+  organizationId: string
+  workflowTemplateId: string
+  entityType: $Enums.EntityType
+  entityId: string
+  contractorId?: string | null
+  contractId?: string | null
+  status?: $Enums.WorkflowRunStatus
+  startedByUserId: string
+  startedAt?: Date | string
+  dueAt?: Date | string | null
+  completedAt?: Date | string | null
+  cancelledAt?: Date | string | null
+  cancelReason?: string | null
+  progressPercent?: number | null
+  overriddenTemplateId?: string | null
+  overriddenByUserId?: string | null
+  overriddenAt?: Date | string | null
+  overrideMetadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  tasks?: Prisma.WorkflowTaskRunUncheckedCreateNestedManyWithoutWorkflowRunInput
+  comments?: Prisma.WorkflowCommentUncheckedCreateNestedManyWithoutWorkflowRunInput
+  attachments?: Prisma.WorkflowAttachmentUncheckedCreateNestedManyWithoutWorkflowRunInput
+}
+
+export type WorkflowRunCreateOrConnectWithoutCredentialReferencesInput = {
+  where: Prisma.WorkflowRunWhereUniqueInput
+  create: Prisma.XOR<Prisma.WorkflowRunCreateWithoutCredentialReferencesInput, Prisma.WorkflowRunUncheckedCreateWithoutCredentialReferencesInput>
+}
+
+export type WorkflowRunUpsertWithoutCredentialReferencesInput = {
+  update: Prisma.XOR<Prisma.WorkflowRunUpdateWithoutCredentialReferencesInput, Prisma.WorkflowRunUncheckedUpdateWithoutCredentialReferencesInput>
+  create: Prisma.XOR<Prisma.WorkflowRunCreateWithoutCredentialReferencesInput, Prisma.WorkflowRunUncheckedCreateWithoutCredentialReferencesInput>
+  where?: Prisma.WorkflowRunWhereInput
+}
+
+export type WorkflowRunUpdateToOneWithWhereWithoutCredentialReferencesInput = {
+  where?: Prisma.WorkflowRunWhereInput
+  data: Prisma.XOR<Prisma.WorkflowRunUpdateWithoutCredentialReferencesInput, Prisma.WorkflowRunUncheckedUpdateWithoutCredentialReferencesInput>
+}
+
+export type WorkflowRunUpdateWithoutCredentialReferencesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  entityType?: Prisma.EnumEntityTypeFieldUpdateOperationsInput | $Enums.EntityType
+  entityId?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumWorkflowRunStatusFieldUpdateOperationsInput | $Enums.WorkflowRunStatus
+  startedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  dueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancelReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  progressPercent?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  overriddenTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  overriddenByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  overriddenAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  overrideMetadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  organization?: Prisma.OrganizationUpdateOneRequiredWithoutWorkflowRunsNestedInput
+  workflowTemplate?: Prisma.WorkflowTemplateUpdateOneRequiredWithoutRunsNestedInput
+  contractor?: Prisma.ContractorUpdateOneWithoutWorkflowRunsNestedInput
+  contract?: Prisma.ContractUpdateOneWithoutWorkflowRunsNestedInput
+  startedBy?: Prisma.UserUpdateOneRequiredWithoutStartedWorkflowRunsNestedInput
+  tasks?: Prisma.WorkflowTaskRunUpdateManyWithoutWorkflowRunNestedInput
+  comments?: Prisma.WorkflowCommentUpdateManyWithoutWorkflowRunNestedInput
+  attachments?: Prisma.WorkflowAttachmentUpdateManyWithoutWorkflowRunNestedInput
+}
+
+export type WorkflowRunUncheckedUpdateWithoutCredentialReferencesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  organizationId?: Prisma.StringFieldUpdateOperationsInput | string
+  workflowTemplateId?: Prisma.StringFieldUpdateOperationsInput | string
+  entityType?: Prisma.EnumEntityTypeFieldUpdateOperationsInput | $Enums.EntityType
+  entityId?: Prisma.StringFieldUpdateOperationsInput | string
+  contractorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contractId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumWorkflowRunStatusFieldUpdateOperationsInput | $Enums.WorkflowRunStatus
+  startedByUserId?: Prisma.StringFieldUpdateOperationsInput | string
+  startedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  dueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancelReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  progressPercent?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  overriddenTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  overriddenByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  overriddenAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  overrideMetadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  tasks?: Prisma.WorkflowTaskRunUncheckedUpdateManyWithoutWorkflowRunNestedInput
+  comments?: Prisma.WorkflowCommentUncheckedUpdateManyWithoutWorkflowRunNestedInput
+  attachments?: Prisma.WorkflowAttachmentUncheckedUpdateManyWithoutWorkflowRunNestedInput
 }
 
 export type WorkflowRunCreateManyStartedByInput = {
@@ -1821,6 +1988,7 @@ export type WorkflowRunUpdateWithoutStartedByInput = {
   tasks?: Prisma.WorkflowTaskRunUpdateManyWithoutWorkflowRunNestedInput
   comments?: Prisma.WorkflowCommentUpdateManyWithoutWorkflowRunNestedInput
   attachments?: Prisma.WorkflowAttachmentUpdateManyWithoutWorkflowRunNestedInput
+  credentialReferences?: Prisma.CredentialReferenceUpdateManyWithoutWorkflowRunNestedInput
 }
 
 export type WorkflowRunUncheckedUpdateWithoutStartedByInput = {
@@ -1847,6 +2015,7 @@ export type WorkflowRunUncheckedUpdateWithoutStartedByInput = {
   tasks?: Prisma.WorkflowTaskRunUncheckedUpdateManyWithoutWorkflowRunNestedInput
   comments?: Prisma.WorkflowCommentUncheckedUpdateManyWithoutWorkflowRunNestedInput
   attachments?: Prisma.WorkflowAttachmentUncheckedUpdateManyWithoutWorkflowRunNestedInput
+  credentialReferences?: Prisma.CredentialReferenceUncheckedUpdateManyWithoutWorkflowRunNestedInput
 }
 
 export type WorkflowRunUncheckedUpdateManyWithoutStartedByInput = {
@@ -1919,6 +2088,7 @@ export type WorkflowRunUpdateWithoutContractInput = {
   tasks?: Prisma.WorkflowTaskRunUpdateManyWithoutWorkflowRunNestedInput
   comments?: Prisma.WorkflowCommentUpdateManyWithoutWorkflowRunNestedInput
   attachments?: Prisma.WorkflowAttachmentUpdateManyWithoutWorkflowRunNestedInput
+  credentialReferences?: Prisma.CredentialReferenceUpdateManyWithoutWorkflowRunNestedInput
 }
 
 export type WorkflowRunUncheckedUpdateWithoutContractInput = {
@@ -1945,6 +2115,7 @@ export type WorkflowRunUncheckedUpdateWithoutContractInput = {
   tasks?: Prisma.WorkflowTaskRunUncheckedUpdateManyWithoutWorkflowRunNestedInput
   comments?: Prisma.WorkflowCommentUncheckedUpdateManyWithoutWorkflowRunNestedInput
   attachments?: Prisma.WorkflowAttachmentUncheckedUpdateManyWithoutWorkflowRunNestedInput
+  credentialReferences?: Prisma.CredentialReferenceUncheckedUpdateManyWithoutWorkflowRunNestedInput
 }
 
 export type WorkflowRunUncheckedUpdateManyWithoutContractInput = {
@@ -2017,6 +2188,7 @@ export type WorkflowRunUpdateWithoutContractorInput = {
   tasks?: Prisma.WorkflowTaskRunUpdateManyWithoutWorkflowRunNestedInput
   comments?: Prisma.WorkflowCommentUpdateManyWithoutWorkflowRunNestedInput
   attachments?: Prisma.WorkflowAttachmentUpdateManyWithoutWorkflowRunNestedInput
+  credentialReferences?: Prisma.CredentialReferenceUpdateManyWithoutWorkflowRunNestedInput
 }
 
 export type WorkflowRunUncheckedUpdateWithoutContractorInput = {
@@ -2043,6 +2215,7 @@ export type WorkflowRunUncheckedUpdateWithoutContractorInput = {
   tasks?: Prisma.WorkflowTaskRunUncheckedUpdateManyWithoutWorkflowRunNestedInput
   comments?: Prisma.WorkflowCommentUncheckedUpdateManyWithoutWorkflowRunNestedInput
   attachments?: Prisma.WorkflowAttachmentUncheckedUpdateManyWithoutWorkflowRunNestedInput
+  credentialReferences?: Prisma.CredentialReferenceUncheckedUpdateManyWithoutWorkflowRunNestedInput
 }
 
 export type WorkflowRunUncheckedUpdateManyWithoutContractorInput = {
@@ -2115,6 +2288,7 @@ export type WorkflowRunUpdateWithoutOrganizationInput = {
   tasks?: Prisma.WorkflowTaskRunUpdateManyWithoutWorkflowRunNestedInput
   comments?: Prisma.WorkflowCommentUpdateManyWithoutWorkflowRunNestedInput
   attachments?: Prisma.WorkflowAttachmentUpdateManyWithoutWorkflowRunNestedInput
+  credentialReferences?: Prisma.CredentialReferenceUpdateManyWithoutWorkflowRunNestedInput
 }
 
 export type WorkflowRunUncheckedUpdateWithoutOrganizationInput = {
@@ -2141,6 +2315,7 @@ export type WorkflowRunUncheckedUpdateWithoutOrganizationInput = {
   tasks?: Prisma.WorkflowTaskRunUncheckedUpdateManyWithoutWorkflowRunNestedInput
   comments?: Prisma.WorkflowCommentUncheckedUpdateManyWithoutWorkflowRunNestedInput
   attachments?: Prisma.WorkflowAttachmentUncheckedUpdateManyWithoutWorkflowRunNestedInput
+  credentialReferences?: Prisma.CredentialReferenceUncheckedUpdateManyWithoutWorkflowRunNestedInput
 }
 
 export type WorkflowRunUncheckedUpdateManyWithoutOrganizationInput = {
@@ -2213,6 +2388,7 @@ export type WorkflowRunUpdateWithoutWorkflowTemplateInput = {
   tasks?: Prisma.WorkflowTaskRunUpdateManyWithoutWorkflowRunNestedInput
   comments?: Prisma.WorkflowCommentUpdateManyWithoutWorkflowRunNestedInput
   attachments?: Prisma.WorkflowAttachmentUpdateManyWithoutWorkflowRunNestedInput
+  credentialReferences?: Prisma.CredentialReferenceUpdateManyWithoutWorkflowRunNestedInput
 }
 
 export type WorkflowRunUncheckedUpdateWithoutWorkflowTemplateInput = {
@@ -2239,6 +2415,7 @@ export type WorkflowRunUncheckedUpdateWithoutWorkflowTemplateInput = {
   tasks?: Prisma.WorkflowTaskRunUncheckedUpdateManyWithoutWorkflowRunNestedInput
   comments?: Prisma.WorkflowCommentUncheckedUpdateManyWithoutWorkflowRunNestedInput
   attachments?: Prisma.WorkflowAttachmentUncheckedUpdateManyWithoutWorkflowRunNestedInput
+  credentialReferences?: Prisma.CredentialReferenceUncheckedUpdateManyWithoutWorkflowRunNestedInput
 }
 
 export type WorkflowRunUncheckedUpdateManyWithoutWorkflowTemplateInput = {
@@ -2273,12 +2450,14 @@ export type WorkflowRunCountOutputType = {
   tasks: number
   comments: number
   attachments: number
+  credentialReferences: number
 }
 
 export type WorkflowRunCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   tasks?: boolean | WorkflowRunCountOutputTypeCountTasksArgs
   comments?: boolean | WorkflowRunCountOutputTypeCountCommentsArgs
   attachments?: boolean | WorkflowRunCountOutputTypeCountAttachmentsArgs
+  credentialReferences?: boolean | WorkflowRunCountOutputTypeCountCredentialReferencesArgs
 }
 
 /**
@@ -2312,6 +2491,13 @@ export type WorkflowRunCountOutputTypeCountAttachmentsArgs<ExtArgs extends runti
   where?: Prisma.WorkflowAttachmentWhereInput
 }
 
+/**
+ * WorkflowRunCountOutputType without action
+ */
+export type WorkflowRunCountOutputTypeCountCredentialReferencesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.CredentialReferenceWhereInput
+}
+
 
 export type WorkflowRunSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -2343,6 +2529,7 @@ export type WorkflowRunSelect<ExtArgs extends runtime.Types.Extensions.InternalA
   tasks?: boolean | Prisma.WorkflowRun$tasksArgs<ExtArgs>
   comments?: boolean | Prisma.WorkflowRun$commentsArgs<ExtArgs>
   attachments?: boolean | Prisma.WorkflowRun$attachmentsArgs<ExtArgs>
+  credentialReferences?: boolean | Prisma.WorkflowRun$credentialReferencesArgs<ExtArgs>
   _count?: boolean | Prisma.WorkflowRunCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["workflowRun"]>
 
@@ -2438,6 +2625,7 @@ export type WorkflowRunInclude<ExtArgs extends runtime.Types.Extensions.Internal
   tasks?: boolean | Prisma.WorkflowRun$tasksArgs<ExtArgs>
   comments?: boolean | Prisma.WorkflowRun$commentsArgs<ExtArgs>
   attachments?: boolean | Prisma.WorkflowRun$attachmentsArgs<ExtArgs>
+  credentialReferences?: boolean | Prisma.WorkflowRun$credentialReferencesArgs<ExtArgs>
   _count?: boolean | Prisma.WorkflowRunCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type WorkflowRunIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -2466,6 +2654,7 @@ export type $WorkflowRunPayload<ExtArgs extends runtime.Types.Extensions.Interna
     tasks: Prisma.$WorkflowTaskRunPayload<ExtArgs>[]
     comments: Prisma.$WorkflowCommentPayload<ExtArgs>[]
     attachments: Prisma.$WorkflowAttachmentPayload<ExtArgs>[]
+    credentialReferences: Prisma.$CredentialReferencePayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -2891,6 +3080,7 @@ export interface Prisma__WorkflowRunClient<T, Null = never, ExtArgs extends runt
   tasks<T extends Prisma.WorkflowRun$tasksArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.WorkflowRun$tasksArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$WorkflowTaskRunPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   comments<T extends Prisma.WorkflowRun$commentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.WorkflowRun$commentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$WorkflowCommentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   attachments<T extends Prisma.WorkflowRun$attachmentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.WorkflowRun$attachmentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$WorkflowAttachmentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  credentialReferences<T extends Prisma.WorkflowRun$credentialReferencesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.WorkflowRun$credentialReferencesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$CredentialReferencePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -3449,6 +3639,30 @@ export type WorkflowRun$attachmentsArgs<ExtArgs extends runtime.Types.Extensions
   take?: number
   skip?: number
   distinct?: Prisma.WorkflowAttachmentScalarFieldEnum | Prisma.WorkflowAttachmentScalarFieldEnum[]
+}
+
+/**
+ * WorkflowRun.credentialReferences
+ */
+export type WorkflowRun$credentialReferencesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the CredentialReference
+   */
+  select?: Prisma.CredentialReferenceSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the CredentialReference
+   */
+  omit?: Prisma.CredentialReferenceOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.CredentialReferenceInclude<ExtArgs> | null
+  where?: Prisma.CredentialReferenceWhereInput
+  orderBy?: Prisma.CredentialReferenceOrderByWithRelationInput | Prisma.CredentialReferenceOrderByWithRelationInput[]
+  cursor?: Prisma.CredentialReferenceWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.CredentialReferenceScalarFieldEnum | Prisma.CredentialReferenceScalarFieldEnum[]
 }
 
 /**

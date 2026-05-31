@@ -1,29 +1,29 @@
 // Contract, ContractAmendment, ContractRatePeriod, Document, DocumentLink
 
 model Contract {
-  id                            String                   @id @default(cuid())
+  id                            String               @id @default(cuid())
   organizationId                String
   contractorId                  String
   contractNumber                String?
   title                         String
   type                          ContractType
-  status                        ContractStatus           @default(DRAFT)
-  startDate                     DateTime                 @db.Date
-  endDate                       DateTime?                @db.Date
+  status                        ContractStatus       @default(DRAFT)
+  startDate                     DateTime             @db.Date
+  endDate                       DateTime?            @db.Date
   noticePeriodDays              Int?
-  autoRenewal                   Boolean                  @default(false)
+  autoRenewal                   Boolean              @default(false)
   renewalTerms                  String?
-  currency                      String                   @db.Char(3)
+  currency                      String               @db.Char(3)
   billingModel                  BillingModel
   rateType                      RateType
   rateValueMinor                Int?
-  expectedHoursPerPeriod        Decimal?                 @db.Decimal(10, 2)
+  expectedHoursPerPeriod        Decimal?             @db.Decimal(10, 2)
   retainerAmountMinor           Int?
   paymentTermsDays              Int?
   invoiceCycle                  InvoiceCycle?
-  expenseReimbursementAllowed   Boolean                  @default(false)
-  requiresTimesheet             Boolean                  @default(false)
-  requiresDeliverableAcceptance Boolean                  @default(false)
+  expenseReimbursementAllowed   Boolean              @default(false)
+  requiresTimesheet             Boolean              @default(false)
+  requiresDeliverableAcceptance Boolean              @default(false)
   internalOwnerUserId           String?
   teamId                        String?
   projectId                     String?
@@ -33,11 +33,24 @@ model Contract {
   signedAt                      DateTime?
   terminatedAt                  DateTime?
   terminationReason             String?
-  metadataJson                  Json?
-  createdAt                     DateTime                 @default(now())
-  updatedAt                     DateTime                 @updatedAt
-  deletedAt                     DateTime?
-  searchVector                  Unsupported("tsvector")?
+
+  // Phase 75 D-01..D-04 — Contract health check denormalised state.
+  // `complianceFlagsJson` mirrors `latestHealthCheckRun.resultsJson` for query speed (Phase 73 dashboard).
+  // `complianceFlagsCheckedAt` and `complianceFlagsModelVer` mirror the same row for audit-friendly column-level reads.
+  complianceFlagsJson      Json?
+  complianceFlagsCheckedAt DateTime?
+  complianceFlagsModelVer  String?
+  latestHealthCheckRunId   String?
+
+  // Phase 75 D-15 — contract jurisdiction drives per-jurisdiction phrase library.
+  // Nullable for backfill — RESEARCH §3 fallback chain: contract.jurisdiction → contractor.countryCode → organization country.
+  jurisdiction String? @db.Char(3) // 3-char ISO country code
+
+  metadataJson Json?
+  createdAt    DateTime                 @default(now())
+  updatedAt    DateTime                 @updatedAt
+  deletedAt    DateTime?
+  searchVector Unsupported("tsvector")?
 
   organization  Organization @relation(fields: [organizationId], references: [id])
   contractor    Contractor   @relation(fields: [contractorId], references: [id])
@@ -55,6 +68,10 @@ model Contract {
   leitwegIds      LeitwegId[]
   intakes         InvoiceIntakeRequest[]     @relation("InvoiceIntakeMatchedContract")
 
+  // Phase 75 — contract health check (D-02)
+  latestHealthCheckRun ContractHealthCheckRun?  @relation("ContractLatestHealthCheckRun", fields: [latestHealthCheckRunId], references: [id])
+  healthCheckRuns      ContractHealthCheckRun[] @relation("ContractHealthCheckRuns")
+
   @@index([organizationId])
   @@index([organizationId, contractorId, status])
   @@index([organizationId, endDate])
@@ -63,6 +80,8 @@ model Contract {
   @@index([organizationId, billingModel])
   @@index([organizationId, teamId])
   @@index([organizationId, projectId])
+  @@index([organizationId, latestHealthCheckRunId])
+  @@index([organizationId, jurisdiction])
 }
 
 model ContractAmendment {
@@ -211,6 +230,7 @@ enum DocumentType {
   AMENDMENT
   NDA
   IP_ASSIGNMENT
+  IP_RATIFICATION // Phase 75 — post-sign artefact created by e-sign completion (D-08)
   DPA
   TAX_CERTIFICATE
   BUSINESS_REGISTRATION
@@ -275,4 +295,55 @@ enum DocumentLinkRole {
   SUPPORTING
   GENERATED_OUTPUT
   SIGNED_COPY
+}
+
+// =============================================================================
+// Phase 75 — Contract health check (D-02)
+// =============================================================================
+
+model ContractHealthCheckRun {
+  id                String              @id @default(cuid())
+  organizationId    String
+  contractId        String
+  contentHash       String              @db.VarChar(64) // SHA-256 hex of contract PDF bytes at run time
+  modelVer          String // typed-const value: CONTRACT_HEALTH_MODEL_VER (D-04)
+  verdict           IpAssignmentVerdict
+  resultsJson       Json // full structured payload per D-06
+  status            RunStatus
+  errorMessage      String?
+  startedAt         DateTime            @default(now())
+  completedAt       DateTime?
+  triggeredBy       RunTrigger
+  triggeredByUserId String?
+
+  organization       Organization @relation(fields: [organizationId], references: [id])
+  contract           Contract     @relation("ContractHealthCheckRuns", fields: [contractId], references: [id], onDelete: Cascade)
+  // Inverse of Contract.latestHealthCheckRun — points back to "the contract that has me as latest"
+  latestForContracts Contract[]   @relation("ContractLatestHealthCheckRun")
+  // NOTE: D-03 partial unique index is added via raw SQL in the migration body
+  // (Prisma cannot express filtered unique indexes natively):
+  //   CREATE UNIQUE INDEX "ContractHealthCheckRun_dedup_succeeded"
+  //     ON "ContractHealthCheckRun"("contractId", "contentHash", "modelVer")
+  //     WHERE status = 'SUCCEEDED';
+
+  @@index([organizationId, contractId, startedAt(sort: Desc)])
+  @@index([organizationId, status])
+}
+
+enum IpAssignmentVerdict {
+  LIKELY_PRESENT
+  LIKELY_MISSING
+  MANUAL_REVIEW_REQUIRED
+}
+
+enum RunStatus {
+  PENDING
+  SUCCEEDED
+  FAILED
+}
+
+enum RunTrigger {
+  UPLOAD
+  MANUAL
+  MODEL_BUMP_BULK
 }

@@ -178,6 +178,11 @@ export type Document = Prisma.DocumentModel
  */
 export type DocumentLink = Prisma.DocumentLinkModel
 /**
+ * Model ContractHealthCheckRun
+ * 
+ */
+export type ContractHealthCheckRun = Prisma.ContractHealthCheckRunModel
+/**
  * Model Contractor
  * 
  */
@@ -588,6 +593,11 @@ export type WorkflowComment = Prisma.WorkflowCommentModel
  * 
  */
 export type WorkflowAttachment = Prisma.WorkflowAttachmentModel
+/**
+ * Model CredentialReference
+ * 
+ */
+export type CredentialReference = Prisma.CredentialReferenceModel
 /**
  * Model ZatcaInvoiceChain
  * 

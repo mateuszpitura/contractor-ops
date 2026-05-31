@@ -45,6 +45,10 @@ model User {
   assignedWorkflowTasks  WorkflowTaskRun[] @relation("WorkflowTaskAssignee")
   completedWorkflowTasks WorkflowTaskRun[] @relation("WorkflowTaskCompleter")
 
+  // Phase 75 D-10 — credential-rotation vault inverse relations
+  credentialReferencesAsSuccessor CredentialReference[] @relation("CredentialReferenceSuccessor")
+  credentialReferencesRotated     CredentialReference[] @relation("CredentialReferenceRotatedBy")
+
   // Approval relations
   createdApprovalFlows ApprovalFlow[]     @relation("ApprovalFlowCreator")
   approvalSteps        ApprovalStep[]     @relation("ApprovalStepApprover")

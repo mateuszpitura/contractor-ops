@@ -295,6 +295,8 @@ export type UserWhereInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunListRelationFilter
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunListRelationFilter
   completedWorkflowTasks?: Prisma.WorkflowTaskRunListRelationFilter
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceListRelationFilter
+  credentialReferencesRotated?: Prisma.CredentialReferenceListRelationFilter
   createdApprovalFlows?: Prisma.ApprovalFlowListRelationFilter
   approvalSteps?: Prisma.ApprovalStepListRelationFilter
   approvalDecisions?: Prisma.ApprovalDecisionListRelationFilter
@@ -349,6 +351,8 @@ export type UserOrderByWithRelationInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunOrderByRelationAggregateInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunOrderByRelationAggregateInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunOrderByRelationAggregateInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceOrderByRelationAggregateInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceOrderByRelationAggregateInput
   createdApprovalFlows?: Prisma.ApprovalFlowOrderByRelationAggregateInput
   approvalSteps?: Prisma.ApprovalStepOrderByRelationAggregateInput
   approvalDecisions?: Prisma.ApprovalDecisionOrderByRelationAggregateInput
@@ -406,6 +410,8 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   startedWorkflowRuns?: Prisma.WorkflowRunListRelationFilter
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunListRelationFilter
   completedWorkflowTasks?: Prisma.WorkflowTaskRunListRelationFilter
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceListRelationFilter
+  credentialReferencesRotated?: Prisma.CredentialReferenceListRelationFilter
   createdApprovalFlows?: Prisma.ApprovalFlowListRelationFilter
   approvalSteps?: Prisma.ApprovalStepListRelationFilter
   approvalDecisions?: Prisma.ApprovalDecisionListRelationFilter
@@ -502,6 +508,8 @@ export type UserCreateInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunCreateNestedManyWithoutStartedByInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunCreateNestedManyWithoutAssigneeInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunCreateNestedManyWithoutCompletedByInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceCreateNestedManyWithoutSuccessorInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceCreateNestedManyWithoutRotatedByInput
   createdApprovalFlows?: Prisma.ApprovalFlowCreateNestedManyWithoutCreatedByInput
   approvalSteps?: Prisma.ApprovalStepCreateNestedManyWithoutApproverInput
   approvalDecisions?: Prisma.ApprovalDecisionCreateNestedManyWithoutActorInput
@@ -556,6 +564,8 @@ export type UserUncheckedCreateInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunUncheckedCreateNestedManyWithoutStartedByInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedCreateNestedManyWithoutAssigneeInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedCreateNestedManyWithoutCompletedByInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUncheckedCreateNestedManyWithoutSuccessorInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUncheckedCreateNestedManyWithoutRotatedByInput
   createdApprovalFlows?: Prisma.ApprovalFlowUncheckedCreateNestedManyWithoutCreatedByInput
   approvalSteps?: Prisma.ApprovalStepUncheckedCreateNestedManyWithoutApproverInput
   approvalDecisions?: Prisma.ApprovalDecisionUncheckedCreateNestedManyWithoutActorInput
@@ -610,6 +620,8 @@ export type UserUpdateInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunUpdateManyWithoutStartedByNestedInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunUpdateManyWithoutAssigneeNestedInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunUpdateManyWithoutCompletedByNestedInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUpdateManyWithoutSuccessorNestedInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUpdateManyWithoutRotatedByNestedInput
   createdApprovalFlows?: Prisma.ApprovalFlowUpdateManyWithoutCreatedByNestedInput
   approvalSteps?: Prisma.ApprovalStepUpdateManyWithoutApproverNestedInput
   approvalDecisions?: Prisma.ApprovalDecisionUpdateManyWithoutActorNestedInput
@@ -664,6 +676,8 @@ export type UserUncheckedUpdateInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunUncheckedUpdateManyWithoutStartedByNestedInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedUpdateManyWithoutAssigneeNestedInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedUpdateManyWithoutCompletedByNestedInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUncheckedUpdateManyWithoutSuccessorNestedInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUncheckedUpdateManyWithoutRotatedByNestedInput
   createdApprovalFlows?: Prisma.ApprovalFlowUncheckedUpdateManyWithoutCreatedByNestedInput
   approvalSteps?: Prisma.ApprovalStepUncheckedUpdateManyWithoutApproverNestedInput
   approvalDecisions?: Prisma.ApprovalDecisionUncheckedUpdateManyWithoutActorNestedInput
@@ -1360,6 +1374,38 @@ export type UserUpdateOneRequiredWithoutWorkflowCommentsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutWorkflowCommentsInput, Prisma.UserUpdateWithoutWorkflowCommentsInput>, Prisma.UserUncheckedUpdateWithoutWorkflowCommentsInput>
 }
 
+export type UserCreateNestedOneWithoutCredentialReferencesAsSuccessorInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutCredentialReferencesAsSuccessorInput, Prisma.UserUncheckedCreateWithoutCredentialReferencesAsSuccessorInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutCredentialReferencesAsSuccessorInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserCreateNestedOneWithoutCredentialReferencesRotatedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutCredentialReferencesRotatedInput, Prisma.UserUncheckedCreateWithoutCredentialReferencesRotatedInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutCredentialReferencesRotatedInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneWithoutCredentialReferencesAsSuccessorNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutCredentialReferencesAsSuccessorInput, Prisma.UserUncheckedCreateWithoutCredentialReferencesAsSuccessorInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutCredentialReferencesAsSuccessorInput
+  upsert?: Prisma.UserUpsertWithoutCredentialReferencesAsSuccessorInput
+  disconnect?: Prisma.UserWhereInput | boolean
+  delete?: Prisma.UserWhereInput | boolean
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutCredentialReferencesAsSuccessorInput, Prisma.UserUpdateWithoutCredentialReferencesAsSuccessorInput>, Prisma.UserUncheckedUpdateWithoutCredentialReferencesAsSuccessorInput>
+}
+
+export type UserUpdateOneWithoutCredentialReferencesRotatedNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutCredentialReferencesRotatedInput, Prisma.UserUncheckedCreateWithoutCredentialReferencesRotatedInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutCredentialReferencesRotatedInput
+  upsert?: Prisma.UserUpsertWithoutCredentialReferencesRotatedInput
+  disconnect?: Prisma.UserWhereInput | boolean
+  delete?: Prisma.UserWhereInput | boolean
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutCredentialReferencesRotatedInput, Prisma.UserUpdateWithoutCredentialReferencesRotatedInput>, Prisma.UserUncheckedUpdateWithoutCredentialReferencesRotatedInput>
+}
+
 export type UserCreateWithoutApiKeysInput = {
   id?: string
   name: string
@@ -1386,6 +1432,8 @@ export type UserCreateWithoutApiKeysInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunCreateNestedManyWithoutStartedByInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunCreateNestedManyWithoutAssigneeInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunCreateNestedManyWithoutCompletedByInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceCreateNestedManyWithoutSuccessorInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceCreateNestedManyWithoutRotatedByInput
   createdApprovalFlows?: Prisma.ApprovalFlowCreateNestedManyWithoutCreatedByInput
   approvalSteps?: Prisma.ApprovalStepCreateNestedManyWithoutApproverInput
   approvalDecisions?: Prisma.ApprovalDecisionCreateNestedManyWithoutActorInput
@@ -1439,6 +1487,8 @@ export type UserUncheckedCreateWithoutApiKeysInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunUncheckedCreateNestedManyWithoutStartedByInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedCreateNestedManyWithoutAssigneeInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedCreateNestedManyWithoutCompletedByInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUncheckedCreateNestedManyWithoutSuccessorInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUncheckedCreateNestedManyWithoutRotatedByInput
   createdApprovalFlows?: Prisma.ApprovalFlowUncheckedCreateNestedManyWithoutCreatedByInput
   approvalSteps?: Prisma.ApprovalStepUncheckedCreateNestedManyWithoutApproverInput
   approvalDecisions?: Prisma.ApprovalDecisionUncheckedCreateNestedManyWithoutActorInput
@@ -1508,6 +1558,8 @@ export type UserUpdateWithoutApiKeysInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunUpdateManyWithoutStartedByNestedInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunUpdateManyWithoutAssigneeNestedInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunUpdateManyWithoutCompletedByNestedInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUpdateManyWithoutSuccessorNestedInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUpdateManyWithoutRotatedByNestedInput
   createdApprovalFlows?: Prisma.ApprovalFlowUpdateManyWithoutCreatedByNestedInput
   approvalSteps?: Prisma.ApprovalStepUpdateManyWithoutApproverNestedInput
   approvalDecisions?: Prisma.ApprovalDecisionUpdateManyWithoutActorNestedInput
@@ -1561,6 +1613,8 @@ export type UserUncheckedUpdateWithoutApiKeysInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunUncheckedUpdateManyWithoutStartedByNestedInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedUpdateManyWithoutAssigneeNestedInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedUpdateManyWithoutCompletedByNestedInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUncheckedUpdateManyWithoutSuccessorNestedInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUncheckedUpdateManyWithoutRotatedByNestedInput
   createdApprovalFlows?: Prisma.ApprovalFlowUncheckedUpdateManyWithoutCreatedByNestedInput
   approvalSteps?: Prisma.ApprovalStepUncheckedUpdateManyWithoutApproverNestedInput
   approvalDecisions?: Prisma.ApprovalDecisionUncheckedUpdateManyWithoutActorNestedInput
@@ -1614,6 +1668,8 @@ export type UserCreateWithoutCreatedApprovalFlowsInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunCreateNestedManyWithoutStartedByInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunCreateNestedManyWithoutAssigneeInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunCreateNestedManyWithoutCompletedByInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceCreateNestedManyWithoutSuccessorInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceCreateNestedManyWithoutRotatedByInput
   approvalSteps?: Prisma.ApprovalStepCreateNestedManyWithoutApproverInput
   approvalDecisions?: Prisma.ApprovalDecisionCreateNestedManyWithoutActorInput
   createdPaymentRuns?: Prisma.PaymentRunCreateNestedManyWithoutCreatedByInput
@@ -1667,6 +1723,8 @@ export type UserUncheckedCreateWithoutCreatedApprovalFlowsInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunUncheckedCreateNestedManyWithoutStartedByInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedCreateNestedManyWithoutAssigneeInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedCreateNestedManyWithoutCompletedByInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUncheckedCreateNestedManyWithoutSuccessorInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUncheckedCreateNestedManyWithoutRotatedByInput
   approvalSteps?: Prisma.ApprovalStepUncheckedCreateNestedManyWithoutApproverInput
   approvalDecisions?: Prisma.ApprovalDecisionUncheckedCreateNestedManyWithoutActorInput
   createdPaymentRuns?: Prisma.PaymentRunUncheckedCreateNestedManyWithoutCreatedByInput
@@ -1736,6 +1794,8 @@ export type UserUpdateWithoutCreatedApprovalFlowsInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunUpdateManyWithoutStartedByNestedInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunUpdateManyWithoutAssigneeNestedInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunUpdateManyWithoutCompletedByNestedInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUpdateManyWithoutSuccessorNestedInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUpdateManyWithoutRotatedByNestedInput
   approvalSteps?: Prisma.ApprovalStepUpdateManyWithoutApproverNestedInput
   approvalDecisions?: Prisma.ApprovalDecisionUpdateManyWithoutActorNestedInput
   createdPaymentRuns?: Prisma.PaymentRunUpdateManyWithoutCreatedByNestedInput
@@ -1789,6 +1849,8 @@ export type UserUncheckedUpdateWithoutCreatedApprovalFlowsInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunUncheckedUpdateManyWithoutStartedByNestedInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedUpdateManyWithoutAssigneeNestedInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedUpdateManyWithoutCompletedByNestedInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUncheckedUpdateManyWithoutSuccessorNestedInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUncheckedUpdateManyWithoutRotatedByNestedInput
   approvalSteps?: Prisma.ApprovalStepUncheckedUpdateManyWithoutApproverNestedInput
   approvalDecisions?: Prisma.ApprovalDecisionUncheckedUpdateManyWithoutActorNestedInput
   createdPaymentRuns?: Prisma.PaymentRunUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -1842,6 +1904,8 @@ export type UserCreateWithoutApprovalStepsInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunCreateNestedManyWithoutStartedByInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunCreateNestedManyWithoutAssigneeInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunCreateNestedManyWithoutCompletedByInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceCreateNestedManyWithoutSuccessorInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceCreateNestedManyWithoutRotatedByInput
   createdApprovalFlows?: Prisma.ApprovalFlowCreateNestedManyWithoutCreatedByInput
   approvalDecisions?: Prisma.ApprovalDecisionCreateNestedManyWithoutActorInput
   createdPaymentRuns?: Prisma.PaymentRunCreateNestedManyWithoutCreatedByInput
@@ -1895,6 +1959,8 @@ export type UserUncheckedCreateWithoutApprovalStepsInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunUncheckedCreateNestedManyWithoutStartedByInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedCreateNestedManyWithoutAssigneeInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedCreateNestedManyWithoutCompletedByInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUncheckedCreateNestedManyWithoutSuccessorInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUncheckedCreateNestedManyWithoutRotatedByInput
   createdApprovalFlows?: Prisma.ApprovalFlowUncheckedCreateNestedManyWithoutCreatedByInput
   approvalDecisions?: Prisma.ApprovalDecisionUncheckedCreateNestedManyWithoutActorInput
   createdPaymentRuns?: Prisma.PaymentRunUncheckedCreateNestedManyWithoutCreatedByInput
@@ -1964,6 +2030,8 @@ export type UserUpdateWithoutApprovalStepsInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunUpdateManyWithoutStartedByNestedInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunUpdateManyWithoutAssigneeNestedInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunUpdateManyWithoutCompletedByNestedInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUpdateManyWithoutSuccessorNestedInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUpdateManyWithoutRotatedByNestedInput
   createdApprovalFlows?: Prisma.ApprovalFlowUpdateManyWithoutCreatedByNestedInput
   approvalDecisions?: Prisma.ApprovalDecisionUpdateManyWithoutActorNestedInput
   createdPaymentRuns?: Prisma.PaymentRunUpdateManyWithoutCreatedByNestedInput
@@ -2017,6 +2085,8 @@ export type UserUncheckedUpdateWithoutApprovalStepsInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunUncheckedUpdateManyWithoutStartedByNestedInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedUpdateManyWithoutAssigneeNestedInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedUpdateManyWithoutCompletedByNestedInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUncheckedUpdateManyWithoutSuccessorNestedInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUncheckedUpdateManyWithoutRotatedByNestedInput
   createdApprovalFlows?: Prisma.ApprovalFlowUncheckedUpdateManyWithoutCreatedByNestedInput
   approvalDecisions?: Prisma.ApprovalDecisionUncheckedUpdateManyWithoutActorNestedInput
   createdPaymentRuns?: Prisma.PaymentRunUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -2070,6 +2140,8 @@ export type UserCreateWithoutApprovalDecisionsInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunCreateNestedManyWithoutStartedByInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunCreateNestedManyWithoutAssigneeInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunCreateNestedManyWithoutCompletedByInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceCreateNestedManyWithoutSuccessorInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceCreateNestedManyWithoutRotatedByInput
   createdApprovalFlows?: Prisma.ApprovalFlowCreateNestedManyWithoutCreatedByInput
   approvalSteps?: Prisma.ApprovalStepCreateNestedManyWithoutApproverInput
   createdPaymentRuns?: Prisma.PaymentRunCreateNestedManyWithoutCreatedByInput
@@ -2123,6 +2195,8 @@ export type UserUncheckedCreateWithoutApprovalDecisionsInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunUncheckedCreateNestedManyWithoutStartedByInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedCreateNestedManyWithoutAssigneeInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedCreateNestedManyWithoutCompletedByInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUncheckedCreateNestedManyWithoutSuccessorInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUncheckedCreateNestedManyWithoutRotatedByInput
   createdApprovalFlows?: Prisma.ApprovalFlowUncheckedCreateNestedManyWithoutCreatedByInput
   approvalSteps?: Prisma.ApprovalStepUncheckedCreateNestedManyWithoutApproverInput
   createdPaymentRuns?: Prisma.PaymentRunUncheckedCreateNestedManyWithoutCreatedByInput
@@ -2192,6 +2266,8 @@ export type UserUpdateWithoutApprovalDecisionsInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunUpdateManyWithoutStartedByNestedInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunUpdateManyWithoutAssigneeNestedInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunUpdateManyWithoutCompletedByNestedInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUpdateManyWithoutSuccessorNestedInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUpdateManyWithoutRotatedByNestedInput
   createdApprovalFlows?: Prisma.ApprovalFlowUpdateManyWithoutCreatedByNestedInput
   approvalSteps?: Prisma.ApprovalStepUpdateManyWithoutApproverNestedInput
   createdPaymentRuns?: Prisma.PaymentRunUpdateManyWithoutCreatedByNestedInput
@@ -2245,6 +2321,8 @@ export type UserUncheckedUpdateWithoutApprovalDecisionsInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunUncheckedUpdateManyWithoutStartedByNestedInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedUpdateManyWithoutAssigneeNestedInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedUpdateManyWithoutCompletedByNestedInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUncheckedUpdateManyWithoutSuccessorNestedInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUncheckedUpdateManyWithoutRotatedByNestedInput
   createdApprovalFlows?: Prisma.ApprovalFlowUncheckedUpdateManyWithoutCreatedByNestedInput
   approvalSteps?: Prisma.ApprovalStepUncheckedUpdateManyWithoutApproverNestedInput
   createdPaymentRuns?: Prisma.PaymentRunUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -2298,6 +2376,8 @@ export type UserCreateWithoutPinnedViewsInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunCreateNestedManyWithoutStartedByInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunCreateNestedManyWithoutAssigneeInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunCreateNestedManyWithoutCompletedByInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceCreateNestedManyWithoutSuccessorInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceCreateNestedManyWithoutRotatedByInput
   createdApprovalFlows?: Prisma.ApprovalFlowCreateNestedManyWithoutCreatedByInput
   approvalSteps?: Prisma.ApprovalStepCreateNestedManyWithoutApproverInput
   approvalDecisions?: Prisma.ApprovalDecisionCreateNestedManyWithoutActorInput
@@ -2351,6 +2431,8 @@ export type UserUncheckedCreateWithoutPinnedViewsInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunUncheckedCreateNestedManyWithoutStartedByInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedCreateNestedManyWithoutAssigneeInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedCreateNestedManyWithoutCompletedByInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUncheckedCreateNestedManyWithoutSuccessorInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUncheckedCreateNestedManyWithoutRotatedByInput
   createdApprovalFlows?: Prisma.ApprovalFlowUncheckedCreateNestedManyWithoutCreatedByInput
   approvalSteps?: Prisma.ApprovalStepUncheckedCreateNestedManyWithoutApproverInput
   approvalDecisions?: Prisma.ApprovalDecisionUncheckedCreateNestedManyWithoutActorInput
@@ -2420,6 +2502,8 @@ export type UserUpdateWithoutPinnedViewsInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunUpdateManyWithoutStartedByNestedInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunUpdateManyWithoutAssigneeNestedInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunUpdateManyWithoutCompletedByNestedInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUpdateManyWithoutSuccessorNestedInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUpdateManyWithoutRotatedByNestedInput
   createdApprovalFlows?: Prisma.ApprovalFlowUpdateManyWithoutCreatedByNestedInput
   approvalSteps?: Prisma.ApprovalStepUpdateManyWithoutApproverNestedInput
   approvalDecisions?: Prisma.ApprovalDecisionUpdateManyWithoutActorNestedInput
@@ -2473,6 +2557,8 @@ export type UserUncheckedUpdateWithoutPinnedViewsInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunUncheckedUpdateManyWithoutStartedByNestedInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedUpdateManyWithoutAssigneeNestedInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedUpdateManyWithoutCompletedByNestedInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUncheckedUpdateManyWithoutSuccessorNestedInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUncheckedUpdateManyWithoutRotatedByNestedInput
   createdApprovalFlows?: Prisma.ApprovalFlowUncheckedUpdateManyWithoutCreatedByNestedInput
   approvalSteps?: Prisma.ApprovalStepUncheckedUpdateManyWithoutApproverNestedInput
   approvalDecisions?: Prisma.ApprovalDecisionUncheckedUpdateManyWithoutActorNestedInput
@@ -2525,6 +2611,8 @@ export type UserCreateWithoutSessionsInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunCreateNestedManyWithoutStartedByInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunCreateNestedManyWithoutAssigneeInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunCreateNestedManyWithoutCompletedByInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceCreateNestedManyWithoutSuccessorInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceCreateNestedManyWithoutRotatedByInput
   createdApprovalFlows?: Prisma.ApprovalFlowCreateNestedManyWithoutCreatedByInput
   approvalSteps?: Prisma.ApprovalStepCreateNestedManyWithoutApproverInput
   approvalDecisions?: Prisma.ApprovalDecisionCreateNestedManyWithoutActorInput
@@ -2578,6 +2666,8 @@ export type UserUncheckedCreateWithoutSessionsInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunUncheckedCreateNestedManyWithoutStartedByInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedCreateNestedManyWithoutAssigneeInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedCreateNestedManyWithoutCompletedByInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUncheckedCreateNestedManyWithoutSuccessorInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUncheckedCreateNestedManyWithoutRotatedByInput
   createdApprovalFlows?: Prisma.ApprovalFlowUncheckedCreateNestedManyWithoutCreatedByInput
   approvalSteps?: Prisma.ApprovalStepUncheckedCreateNestedManyWithoutApproverInput
   approvalDecisions?: Prisma.ApprovalDecisionUncheckedCreateNestedManyWithoutActorInput
@@ -2647,6 +2737,8 @@ export type UserUpdateWithoutSessionsInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunUpdateManyWithoutStartedByNestedInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunUpdateManyWithoutAssigneeNestedInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunUpdateManyWithoutCompletedByNestedInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUpdateManyWithoutSuccessorNestedInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUpdateManyWithoutRotatedByNestedInput
   createdApprovalFlows?: Prisma.ApprovalFlowUpdateManyWithoutCreatedByNestedInput
   approvalSteps?: Prisma.ApprovalStepUpdateManyWithoutApproverNestedInput
   approvalDecisions?: Prisma.ApprovalDecisionUpdateManyWithoutActorNestedInput
@@ -2700,6 +2792,8 @@ export type UserUncheckedUpdateWithoutSessionsInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunUncheckedUpdateManyWithoutStartedByNestedInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedUpdateManyWithoutAssigneeNestedInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedUpdateManyWithoutCompletedByNestedInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUncheckedUpdateManyWithoutSuccessorNestedInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUncheckedUpdateManyWithoutRotatedByNestedInput
   createdApprovalFlows?: Prisma.ApprovalFlowUncheckedUpdateManyWithoutCreatedByNestedInput
   approvalSteps?: Prisma.ApprovalStepUncheckedUpdateManyWithoutApproverNestedInput
   approvalDecisions?: Prisma.ApprovalDecisionUncheckedUpdateManyWithoutActorNestedInput
@@ -2753,6 +2847,8 @@ export type UserCreateWithoutAccountsInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunCreateNestedManyWithoutStartedByInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunCreateNestedManyWithoutAssigneeInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunCreateNestedManyWithoutCompletedByInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceCreateNestedManyWithoutSuccessorInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceCreateNestedManyWithoutRotatedByInput
   createdApprovalFlows?: Prisma.ApprovalFlowCreateNestedManyWithoutCreatedByInput
   approvalSteps?: Prisma.ApprovalStepCreateNestedManyWithoutApproverInput
   approvalDecisions?: Prisma.ApprovalDecisionCreateNestedManyWithoutActorInput
@@ -2806,6 +2902,8 @@ export type UserUncheckedCreateWithoutAccountsInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunUncheckedCreateNestedManyWithoutStartedByInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedCreateNestedManyWithoutAssigneeInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedCreateNestedManyWithoutCompletedByInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUncheckedCreateNestedManyWithoutSuccessorInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUncheckedCreateNestedManyWithoutRotatedByInput
   createdApprovalFlows?: Prisma.ApprovalFlowUncheckedCreateNestedManyWithoutCreatedByInput
   approvalSteps?: Prisma.ApprovalStepUncheckedCreateNestedManyWithoutApproverInput
   approvalDecisions?: Prisma.ApprovalDecisionUncheckedCreateNestedManyWithoutActorInput
@@ -2875,6 +2973,8 @@ export type UserUpdateWithoutAccountsInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunUpdateManyWithoutStartedByNestedInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunUpdateManyWithoutAssigneeNestedInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunUpdateManyWithoutCompletedByNestedInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUpdateManyWithoutSuccessorNestedInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUpdateManyWithoutRotatedByNestedInput
   createdApprovalFlows?: Prisma.ApprovalFlowUpdateManyWithoutCreatedByNestedInput
   approvalSteps?: Prisma.ApprovalStepUpdateManyWithoutApproverNestedInput
   approvalDecisions?: Prisma.ApprovalDecisionUpdateManyWithoutActorNestedInput
@@ -2928,6 +3028,8 @@ export type UserUncheckedUpdateWithoutAccountsInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunUncheckedUpdateManyWithoutStartedByNestedInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedUpdateManyWithoutAssigneeNestedInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedUpdateManyWithoutCompletedByNestedInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUncheckedUpdateManyWithoutSuccessorNestedInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUncheckedUpdateManyWithoutRotatedByNestedInput
   createdApprovalFlows?: Prisma.ApprovalFlowUncheckedUpdateManyWithoutCreatedByNestedInput
   approvalSteps?: Prisma.ApprovalStepUncheckedUpdateManyWithoutApproverNestedInput
   approvalDecisions?: Prisma.ApprovalDecisionUncheckedUpdateManyWithoutActorNestedInput
@@ -2982,6 +3084,8 @@ export type UserCreateWithoutGeneratedClassificationDocumentsInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunCreateNestedManyWithoutStartedByInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunCreateNestedManyWithoutAssigneeInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunCreateNestedManyWithoutCompletedByInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceCreateNestedManyWithoutSuccessorInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceCreateNestedManyWithoutRotatedByInput
   createdApprovalFlows?: Prisma.ApprovalFlowCreateNestedManyWithoutCreatedByInput
   approvalSteps?: Prisma.ApprovalStepCreateNestedManyWithoutApproverInput
   approvalDecisions?: Prisma.ApprovalDecisionCreateNestedManyWithoutActorInput
@@ -3035,6 +3139,8 @@ export type UserUncheckedCreateWithoutGeneratedClassificationDocumentsInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunUncheckedCreateNestedManyWithoutStartedByInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedCreateNestedManyWithoutAssigneeInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedCreateNestedManyWithoutCompletedByInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUncheckedCreateNestedManyWithoutSuccessorInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUncheckedCreateNestedManyWithoutRotatedByInput
   createdApprovalFlows?: Prisma.ApprovalFlowUncheckedCreateNestedManyWithoutCreatedByInput
   approvalSteps?: Prisma.ApprovalStepUncheckedCreateNestedManyWithoutApproverInput
   approvalDecisions?: Prisma.ApprovalDecisionUncheckedCreateNestedManyWithoutActorInput
@@ -3104,6 +3210,8 @@ export type UserUpdateWithoutGeneratedClassificationDocumentsInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunUpdateManyWithoutStartedByNestedInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunUpdateManyWithoutAssigneeNestedInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunUpdateManyWithoutCompletedByNestedInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUpdateManyWithoutSuccessorNestedInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUpdateManyWithoutRotatedByNestedInput
   createdApprovalFlows?: Prisma.ApprovalFlowUpdateManyWithoutCreatedByNestedInput
   approvalSteps?: Prisma.ApprovalStepUpdateManyWithoutApproverNestedInput
   approvalDecisions?: Prisma.ApprovalDecisionUpdateManyWithoutActorNestedInput
@@ -3157,6 +3265,8 @@ export type UserUncheckedUpdateWithoutGeneratedClassificationDocumentsInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunUncheckedUpdateManyWithoutStartedByNestedInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedUpdateManyWithoutAssigneeNestedInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedUpdateManyWithoutCompletedByNestedInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUncheckedUpdateManyWithoutSuccessorNestedInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUncheckedUpdateManyWithoutRotatedByNestedInput
   createdApprovalFlows?: Prisma.ApprovalFlowUncheckedUpdateManyWithoutCreatedByNestedInput
   approvalSteps?: Prisma.ApprovalStepUncheckedUpdateManyWithoutApproverNestedInput
   approvalDecisions?: Prisma.ApprovalDecisionUncheckedUpdateManyWithoutActorNestedInput
@@ -3210,6 +3320,8 @@ export type UserCreateWithoutAcknowledgedReassessmentTriggersInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunCreateNestedManyWithoutStartedByInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunCreateNestedManyWithoutAssigneeInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunCreateNestedManyWithoutCompletedByInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceCreateNestedManyWithoutSuccessorInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceCreateNestedManyWithoutRotatedByInput
   createdApprovalFlows?: Prisma.ApprovalFlowCreateNestedManyWithoutCreatedByInput
   approvalSteps?: Prisma.ApprovalStepCreateNestedManyWithoutApproverInput
   approvalDecisions?: Prisma.ApprovalDecisionCreateNestedManyWithoutActorInput
@@ -3263,6 +3375,8 @@ export type UserUncheckedCreateWithoutAcknowledgedReassessmentTriggersInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunUncheckedCreateNestedManyWithoutStartedByInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedCreateNestedManyWithoutAssigneeInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedCreateNestedManyWithoutCompletedByInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUncheckedCreateNestedManyWithoutSuccessorInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUncheckedCreateNestedManyWithoutRotatedByInput
   createdApprovalFlows?: Prisma.ApprovalFlowUncheckedCreateNestedManyWithoutCreatedByInput
   approvalSteps?: Prisma.ApprovalStepUncheckedCreateNestedManyWithoutApproverInput
   approvalDecisions?: Prisma.ApprovalDecisionUncheckedCreateNestedManyWithoutActorInput
@@ -3321,6 +3435,8 @@ export type UserCreateWithoutDismissedReassessmentTriggersInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunCreateNestedManyWithoutStartedByInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunCreateNestedManyWithoutAssigneeInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunCreateNestedManyWithoutCompletedByInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceCreateNestedManyWithoutSuccessorInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceCreateNestedManyWithoutRotatedByInput
   createdApprovalFlows?: Prisma.ApprovalFlowCreateNestedManyWithoutCreatedByInput
   approvalSteps?: Prisma.ApprovalStepCreateNestedManyWithoutApproverInput
   approvalDecisions?: Prisma.ApprovalDecisionCreateNestedManyWithoutActorInput
@@ -3374,6 +3490,8 @@ export type UserUncheckedCreateWithoutDismissedReassessmentTriggersInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunUncheckedCreateNestedManyWithoutStartedByInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedCreateNestedManyWithoutAssigneeInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedCreateNestedManyWithoutCompletedByInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUncheckedCreateNestedManyWithoutSuccessorInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUncheckedCreateNestedManyWithoutRotatedByInput
   createdApprovalFlows?: Prisma.ApprovalFlowUncheckedCreateNestedManyWithoutCreatedByInput
   approvalSteps?: Prisma.ApprovalStepUncheckedCreateNestedManyWithoutApproverInput
   approvalDecisions?: Prisma.ApprovalDecisionUncheckedCreateNestedManyWithoutActorInput
@@ -3443,6 +3561,8 @@ export type UserUpdateWithoutAcknowledgedReassessmentTriggersInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunUpdateManyWithoutStartedByNestedInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunUpdateManyWithoutAssigneeNestedInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunUpdateManyWithoutCompletedByNestedInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUpdateManyWithoutSuccessorNestedInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUpdateManyWithoutRotatedByNestedInput
   createdApprovalFlows?: Prisma.ApprovalFlowUpdateManyWithoutCreatedByNestedInput
   approvalSteps?: Prisma.ApprovalStepUpdateManyWithoutApproverNestedInput
   approvalDecisions?: Prisma.ApprovalDecisionUpdateManyWithoutActorNestedInput
@@ -3496,6 +3616,8 @@ export type UserUncheckedUpdateWithoutAcknowledgedReassessmentTriggersInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunUncheckedUpdateManyWithoutStartedByNestedInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedUpdateManyWithoutAssigneeNestedInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedUpdateManyWithoutCompletedByNestedInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUncheckedUpdateManyWithoutSuccessorNestedInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUncheckedUpdateManyWithoutRotatedByNestedInput
   createdApprovalFlows?: Prisma.ApprovalFlowUncheckedUpdateManyWithoutCreatedByNestedInput
   approvalSteps?: Prisma.ApprovalStepUncheckedUpdateManyWithoutApproverNestedInput
   approvalDecisions?: Prisma.ApprovalDecisionUncheckedUpdateManyWithoutActorNestedInput
@@ -3560,6 +3682,8 @@ export type UserUpdateWithoutDismissedReassessmentTriggersInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunUpdateManyWithoutStartedByNestedInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunUpdateManyWithoutAssigneeNestedInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunUpdateManyWithoutCompletedByNestedInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUpdateManyWithoutSuccessorNestedInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUpdateManyWithoutRotatedByNestedInput
   createdApprovalFlows?: Prisma.ApprovalFlowUpdateManyWithoutCreatedByNestedInput
   approvalSteps?: Prisma.ApprovalStepUpdateManyWithoutApproverNestedInput
   approvalDecisions?: Prisma.ApprovalDecisionUpdateManyWithoutActorNestedInput
@@ -3613,6 +3737,8 @@ export type UserUncheckedUpdateWithoutDismissedReassessmentTriggersInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunUncheckedUpdateManyWithoutStartedByNestedInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedUpdateManyWithoutAssigneeNestedInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedUpdateManyWithoutCompletedByNestedInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUncheckedUpdateManyWithoutSuccessorNestedInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUncheckedUpdateManyWithoutRotatedByNestedInput
   createdApprovalFlows?: Prisma.ApprovalFlowUncheckedUpdateManyWithoutCreatedByNestedInput
   approvalSteps?: Prisma.ApprovalStepUncheckedUpdateManyWithoutApproverNestedInput
   approvalDecisions?: Prisma.ApprovalDecisionUncheckedUpdateManyWithoutActorNestedInput
@@ -3666,6 +3792,8 @@ export type UserCreateWithoutClassificationEscalationEventsInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunCreateNestedManyWithoutStartedByInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunCreateNestedManyWithoutAssigneeInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunCreateNestedManyWithoutCompletedByInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceCreateNestedManyWithoutSuccessorInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceCreateNestedManyWithoutRotatedByInput
   createdApprovalFlows?: Prisma.ApprovalFlowCreateNestedManyWithoutCreatedByInput
   approvalSteps?: Prisma.ApprovalStepCreateNestedManyWithoutApproverInput
   approvalDecisions?: Prisma.ApprovalDecisionCreateNestedManyWithoutActorInput
@@ -3719,6 +3847,8 @@ export type UserUncheckedCreateWithoutClassificationEscalationEventsInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunUncheckedCreateNestedManyWithoutStartedByInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedCreateNestedManyWithoutAssigneeInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedCreateNestedManyWithoutCompletedByInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUncheckedCreateNestedManyWithoutSuccessorInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUncheckedCreateNestedManyWithoutRotatedByInput
   createdApprovalFlows?: Prisma.ApprovalFlowUncheckedCreateNestedManyWithoutCreatedByInput
   approvalSteps?: Prisma.ApprovalStepUncheckedCreateNestedManyWithoutApproverInput
   approvalDecisions?: Prisma.ApprovalDecisionUncheckedCreateNestedManyWithoutActorInput
@@ -3788,6 +3918,8 @@ export type UserUpdateWithoutClassificationEscalationEventsInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunUpdateManyWithoutStartedByNestedInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunUpdateManyWithoutAssigneeNestedInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunUpdateManyWithoutCompletedByNestedInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUpdateManyWithoutSuccessorNestedInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUpdateManyWithoutRotatedByNestedInput
   createdApprovalFlows?: Prisma.ApprovalFlowUpdateManyWithoutCreatedByNestedInput
   approvalSteps?: Prisma.ApprovalStepUpdateManyWithoutApproverNestedInput
   approvalDecisions?: Prisma.ApprovalDecisionUpdateManyWithoutActorNestedInput
@@ -3841,6 +3973,8 @@ export type UserUncheckedUpdateWithoutClassificationEscalationEventsInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunUncheckedUpdateManyWithoutStartedByNestedInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedUpdateManyWithoutAssigneeNestedInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedUpdateManyWithoutCompletedByNestedInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUncheckedUpdateManyWithoutSuccessorNestedInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUncheckedUpdateManyWithoutRotatedByNestedInput
   createdApprovalFlows?: Prisma.ApprovalFlowUncheckedUpdateManyWithoutCreatedByNestedInput
   approvalSteps?: Prisma.ApprovalStepUncheckedUpdateManyWithoutApproverNestedInput
   approvalDecisions?: Prisma.ApprovalDecisionUncheckedUpdateManyWithoutActorNestedInput
@@ -3894,6 +4028,8 @@ export type UserCreateWithoutSdsApprovalsInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunCreateNestedManyWithoutStartedByInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunCreateNestedManyWithoutAssigneeInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunCreateNestedManyWithoutCompletedByInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceCreateNestedManyWithoutSuccessorInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceCreateNestedManyWithoutRotatedByInput
   createdApprovalFlows?: Prisma.ApprovalFlowCreateNestedManyWithoutCreatedByInput
   approvalSteps?: Prisma.ApprovalStepCreateNestedManyWithoutApproverInput
   approvalDecisions?: Prisma.ApprovalDecisionCreateNestedManyWithoutActorInput
@@ -3947,6 +4083,8 @@ export type UserUncheckedCreateWithoutSdsApprovalsInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunUncheckedCreateNestedManyWithoutStartedByInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedCreateNestedManyWithoutAssigneeInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedCreateNestedManyWithoutCompletedByInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUncheckedCreateNestedManyWithoutSuccessorInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUncheckedCreateNestedManyWithoutRotatedByInput
   createdApprovalFlows?: Prisma.ApprovalFlowUncheckedCreateNestedManyWithoutCreatedByInput
   approvalSteps?: Prisma.ApprovalStepUncheckedCreateNestedManyWithoutApproverInput
   approvalDecisions?: Prisma.ApprovalDecisionUncheckedCreateNestedManyWithoutActorInput
@@ -4016,6 +4154,8 @@ export type UserUpdateWithoutSdsApprovalsInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunUpdateManyWithoutStartedByNestedInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunUpdateManyWithoutAssigneeNestedInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunUpdateManyWithoutCompletedByNestedInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUpdateManyWithoutSuccessorNestedInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUpdateManyWithoutRotatedByNestedInput
   createdApprovalFlows?: Prisma.ApprovalFlowUpdateManyWithoutCreatedByNestedInput
   approvalSteps?: Prisma.ApprovalStepUpdateManyWithoutApproverNestedInput
   approvalDecisions?: Prisma.ApprovalDecisionUpdateManyWithoutActorNestedInput
@@ -4069,6 +4209,8 @@ export type UserUncheckedUpdateWithoutSdsApprovalsInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunUncheckedUpdateManyWithoutStartedByNestedInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedUpdateManyWithoutAssigneeNestedInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedUpdateManyWithoutCompletedByNestedInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUncheckedUpdateManyWithoutSuccessorNestedInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUncheckedUpdateManyWithoutRotatedByNestedInput
   createdApprovalFlows?: Prisma.ApprovalFlowUncheckedUpdateManyWithoutCreatedByNestedInput
   approvalSteps?: Prisma.ApprovalStepUncheckedUpdateManyWithoutApproverNestedInput
   approvalDecisions?: Prisma.ApprovalDecisionUncheckedUpdateManyWithoutActorNestedInput
@@ -4122,6 +4264,8 @@ export type UserCreateWithoutConsentRecordsInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunCreateNestedManyWithoutStartedByInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunCreateNestedManyWithoutAssigneeInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunCreateNestedManyWithoutCompletedByInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceCreateNestedManyWithoutSuccessorInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceCreateNestedManyWithoutRotatedByInput
   createdApprovalFlows?: Prisma.ApprovalFlowCreateNestedManyWithoutCreatedByInput
   approvalSteps?: Prisma.ApprovalStepCreateNestedManyWithoutApproverInput
   approvalDecisions?: Prisma.ApprovalDecisionCreateNestedManyWithoutActorInput
@@ -4175,6 +4319,8 @@ export type UserUncheckedCreateWithoutConsentRecordsInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunUncheckedCreateNestedManyWithoutStartedByInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedCreateNestedManyWithoutAssigneeInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedCreateNestedManyWithoutCompletedByInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUncheckedCreateNestedManyWithoutSuccessorInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUncheckedCreateNestedManyWithoutRotatedByInput
   createdApprovalFlows?: Prisma.ApprovalFlowUncheckedCreateNestedManyWithoutCreatedByInput
   approvalSteps?: Prisma.ApprovalStepUncheckedCreateNestedManyWithoutApproverInput
   approvalDecisions?: Prisma.ApprovalDecisionUncheckedCreateNestedManyWithoutActorInput
@@ -4244,6 +4390,8 @@ export type UserUpdateWithoutConsentRecordsInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunUpdateManyWithoutStartedByNestedInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunUpdateManyWithoutAssigneeNestedInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunUpdateManyWithoutCompletedByNestedInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUpdateManyWithoutSuccessorNestedInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUpdateManyWithoutRotatedByNestedInput
   createdApprovalFlows?: Prisma.ApprovalFlowUpdateManyWithoutCreatedByNestedInput
   approvalSteps?: Prisma.ApprovalStepUpdateManyWithoutApproverNestedInput
   approvalDecisions?: Prisma.ApprovalDecisionUpdateManyWithoutActorNestedInput
@@ -4297,6 +4445,8 @@ export type UserUncheckedUpdateWithoutConsentRecordsInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunUncheckedUpdateManyWithoutStartedByNestedInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedUpdateManyWithoutAssigneeNestedInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedUpdateManyWithoutCompletedByNestedInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUncheckedUpdateManyWithoutSuccessorNestedInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUncheckedUpdateManyWithoutRotatedByNestedInput
   createdApprovalFlows?: Prisma.ApprovalFlowUncheckedUpdateManyWithoutCreatedByNestedInput
   approvalSteps?: Prisma.ApprovalStepUncheckedUpdateManyWithoutApproverNestedInput
   approvalDecisions?: Prisma.ApprovalDecisionUncheckedUpdateManyWithoutActorNestedInput
@@ -4350,6 +4500,8 @@ export type UserCreateWithoutConsentEventsInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunCreateNestedManyWithoutStartedByInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunCreateNestedManyWithoutAssigneeInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunCreateNestedManyWithoutCompletedByInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceCreateNestedManyWithoutSuccessorInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceCreateNestedManyWithoutRotatedByInput
   createdApprovalFlows?: Prisma.ApprovalFlowCreateNestedManyWithoutCreatedByInput
   approvalSteps?: Prisma.ApprovalStepCreateNestedManyWithoutApproverInput
   approvalDecisions?: Prisma.ApprovalDecisionCreateNestedManyWithoutActorInput
@@ -4403,6 +4555,8 @@ export type UserUncheckedCreateWithoutConsentEventsInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunUncheckedCreateNestedManyWithoutStartedByInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedCreateNestedManyWithoutAssigneeInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedCreateNestedManyWithoutCompletedByInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUncheckedCreateNestedManyWithoutSuccessorInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUncheckedCreateNestedManyWithoutRotatedByInput
   createdApprovalFlows?: Prisma.ApprovalFlowUncheckedCreateNestedManyWithoutCreatedByInput
   approvalSteps?: Prisma.ApprovalStepUncheckedCreateNestedManyWithoutApproverInput
   approvalDecisions?: Prisma.ApprovalDecisionUncheckedCreateNestedManyWithoutActorInput
@@ -4472,6 +4626,8 @@ export type UserUpdateWithoutConsentEventsInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunUpdateManyWithoutStartedByNestedInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunUpdateManyWithoutAssigneeNestedInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunUpdateManyWithoutCompletedByNestedInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUpdateManyWithoutSuccessorNestedInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUpdateManyWithoutRotatedByNestedInput
   createdApprovalFlows?: Prisma.ApprovalFlowUpdateManyWithoutCreatedByNestedInput
   approvalSteps?: Prisma.ApprovalStepUpdateManyWithoutApproverNestedInput
   approvalDecisions?: Prisma.ApprovalDecisionUpdateManyWithoutActorNestedInput
@@ -4525,6 +4681,8 @@ export type UserUncheckedUpdateWithoutConsentEventsInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunUncheckedUpdateManyWithoutStartedByNestedInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedUpdateManyWithoutAssigneeNestedInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedUpdateManyWithoutCompletedByNestedInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUncheckedUpdateManyWithoutSuccessorNestedInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUncheckedUpdateManyWithoutRotatedByNestedInput
   createdApprovalFlows?: Prisma.ApprovalFlowUncheckedUpdateManyWithoutCreatedByNestedInput
   approvalSteps?: Prisma.ApprovalStepUncheckedUpdateManyWithoutApproverNestedInput
   approvalDecisions?: Prisma.ApprovalDecisionUncheckedUpdateManyWithoutActorNestedInput
@@ -4577,6 +4735,8 @@ export type UserCreateWithoutOwnedContractsInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunCreateNestedManyWithoutStartedByInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunCreateNestedManyWithoutAssigneeInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunCreateNestedManyWithoutCompletedByInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceCreateNestedManyWithoutSuccessorInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceCreateNestedManyWithoutRotatedByInput
   createdApprovalFlows?: Prisma.ApprovalFlowCreateNestedManyWithoutCreatedByInput
   approvalSteps?: Prisma.ApprovalStepCreateNestedManyWithoutApproverInput
   approvalDecisions?: Prisma.ApprovalDecisionCreateNestedManyWithoutActorInput
@@ -4630,6 +4790,8 @@ export type UserUncheckedCreateWithoutOwnedContractsInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunUncheckedCreateNestedManyWithoutStartedByInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedCreateNestedManyWithoutAssigneeInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedCreateNestedManyWithoutCompletedByInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUncheckedCreateNestedManyWithoutSuccessorInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUncheckedCreateNestedManyWithoutRotatedByInput
   createdApprovalFlows?: Prisma.ApprovalFlowUncheckedCreateNestedManyWithoutCreatedByInput
   approvalSteps?: Prisma.ApprovalStepUncheckedCreateNestedManyWithoutApproverInput
   approvalDecisions?: Prisma.ApprovalDecisionUncheckedCreateNestedManyWithoutActorInput
@@ -4699,6 +4861,8 @@ export type UserUpdateWithoutOwnedContractsInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunUpdateManyWithoutStartedByNestedInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunUpdateManyWithoutAssigneeNestedInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunUpdateManyWithoutCompletedByNestedInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUpdateManyWithoutSuccessorNestedInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUpdateManyWithoutRotatedByNestedInput
   createdApprovalFlows?: Prisma.ApprovalFlowUpdateManyWithoutCreatedByNestedInput
   approvalSteps?: Prisma.ApprovalStepUpdateManyWithoutApproverNestedInput
   approvalDecisions?: Prisma.ApprovalDecisionUpdateManyWithoutActorNestedInput
@@ -4752,6 +4916,8 @@ export type UserUncheckedUpdateWithoutOwnedContractsInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunUncheckedUpdateManyWithoutStartedByNestedInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedUpdateManyWithoutAssigneeNestedInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedUpdateManyWithoutCompletedByNestedInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUncheckedUpdateManyWithoutSuccessorNestedInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUncheckedUpdateManyWithoutRotatedByNestedInput
   createdApprovalFlows?: Prisma.ApprovalFlowUncheckedUpdateManyWithoutCreatedByNestedInput
   approvalSteps?: Prisma.ApprovalStepUncheckedUpdateManyWithoutApproverNestedInput
   approvalDecisions?: Prisma.ApprovalDecisionUncheckedUpdateManyWithoutActorNestedInput
@@ -4805,6 +4971,8 @@ export type UserCreateWithoutOwnedContractorsInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunCreateNestedManyWithoutStartedByInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunCreateNestedManyWithoutAssigneeInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunCreateNestedManyWithoutCompletedByInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceCreateNestedManyWithoutSuccessorInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceCreateNestedManyWithoutRotatedByInput
   createdApprovalFlows?: Prisma.ApprovalFlowCreateNestedManyWithoutCreatedByInput
   approvalSteps?: Prisma.ApprovalStepCreateNestedManyWithoutApproverInput
   approvalDecisions?: Prisma.ApprovalDecisionCreateNestedManyWithoutActorInput
@@ -4858,6 +5026,8 @@ export type UserUncheckedCreateWithoutOwnedContractorsInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunUncheckedCreateNestedManyWithoutStartedByInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedCreateNestedManyWithoutAssigneeInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedCreateNestedManyWithoutCompletedByInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUncheckedCreateNestedManyWithoutSuccessorInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUncheckedCreateNestedManyWithoutRotatedByInput
   createdApprovalFlows?: Prisma.ApprovalFlowUncheckedCreateNestedManyWithoutCreatedByInput
   approvalSteps?: Prisma.ApprovalStepUncheckedCreateNestedManyWithoutApproverInput
   approvalDecisions?: Prisma.ApprovalDecisionUncheckedCreateNestedManyWithoutActorInput
@@ -4927,6 +5097,8 @@ export type UserUpdateWithoutOwnedContractorsInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunUpdateManyWithoutStartedByNestedInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunUpdateManyWithoutAssigneeNestedInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunUpdateManyWithoutCompletedByNestedInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUpdateManyWithoutSuccessorNestedInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUpdateManyWithoutRotatedByNestedInput
   createdApprovalFlows?: Prisma.ApprovalFlowUpdateManyWithoutCreatedByNestedInput
   approvalSteps?: Prisma.ApprovalStepUpdateManyWithoutApproverNestedInput
   approvalDecisions?: Prisma.ApprovalDecisionUpdateManyWithoutActorNestedInput
@@ -4980,6 +5152,8 @@ export type UserUncheckedUpdateWithoutOwnedContractorsInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunUncheckedUpdateManyWithoutStartedByNestedInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedUpdateManyWithoutAssigneeNestedInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedUpdateManyWithoutCompletedByNestedInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUncheckedUpdateManyWithoutSuccessorNestedInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUncheckedUpdateManyWithoutRotatedByNestedInput
   createdApprovalFlows?: Prisma.ApprovalFlowUncheckedUpdateManyWithoutCreatedByNestedInput
   approvalSteps?: Prisma.ApprovalStepUncheckedUpdateManyWithoutApproverNestedInput
   approvalDecisions?: Prisma.ApprovalDecisionUncheckedUpdateManyWithoutActorNestedInput
@@ -5034,6 +5208,8 @@ export type UserCreateWithoutSentSigningEnvelopesInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunCreateNestedManyWithoutStartedByInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunCreateNestedManyWithoutAssigneeInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunCreateNestedManyWithoutCompletedByInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceCreateNestedManyWithoutSuccessorInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceCreateNestedManyWithoutRotatedByInput
   createdApprovalFlows?: Prisma.ApprovalFlowCreateNestedManyWithoutCreatedByInput
   approvalSteps?: Prisma.ApprovalStepCreateNestedManyWithoutApproverInput
   approvalDecisions?: Prisma.ApprovalDecisionCreateNestedManyWithoutActorInput
@@ -5087,6 +5263,8 @@ export type UserUncheckedCreateWithoutSentSigningEnvelopesInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunUncheckedCreateNestedManyWithoutStartedByInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedCreateNestedManyWithoutAssigneeInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedCreateNestedManyWithoutCompletedByInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUncheckedCreateNestedManyWithoutSuccessorInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUncheckedCreateNestedManyWithoutRotatedByInput
   createdApprovalFlows?: Prisma.ApprovalFlowUncheckedCreateNestedManyWithoutCreatedByInput
   approvalSteps?: Prisma.ApprovalStepUncheckedCreateNestedManyWithoutApproverInput
   approvalDecisions?: Prisma.ApprovalDecisionUncheckedCreateNestedManyWithoutActorInput
@@ -5156,6 +5334,8 @@ export type UserUpdateWithoutSentSigningEnvelopesInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunUpdateManyWithoutStartedByNestedInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunUpdateManyWithoutAssigneeNestedInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunUpdateManyWithoutCompletedByNestedInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUpdateManyWithoutSuccessorNestedInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUpdateManyWithoutRotatedByNestedInput
   createdApprovalFlows?: Prisma.ApprovalFlowUpdateManyWithoutCreatedByNestedInput
   approvalSteps?: Prisma.ApprovalStepUpdateManyWithoutApproverNestedInput
   approvalDecisions?: Prisma.ApprovalDecisionUpdateManyWithoutActorNestedInput
@@ -5209,6 +5389,8 @@ export type UserUncheckedUpdateWithoutSentSigningEnvelopesInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunUncheckedUpdateManyWithoutStartedByNestedInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedUpdateManyWithoutAssigneeNestedInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedUpdateManyWithoutCompletedByNestedInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUncheckedUpdateManyWithoutSuccessorNestedInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUncheckedUpdateManyWithoutRotatedByNestedInput
   createdApprovalFlows?: Prisma.ApprovalFlowUncheckedUpdateManyWithoutCreatedByNestedInput
   approvalSteps?: Prisma.ApprovalStepUncheckedUpdateManyWithoutApproverNestedInput
   approvalDecisions?: Prisma.ApprovalDecisionUncheckedUpdateManyWithoutActorNestedInput
@@ -5262,6 +5444,8 @@ export type UserCreateWithoutIntegrationConnectionsInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunCreateNestedManyWithoutStartedByInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunCreateNestedManyWithoutAssigneeInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunCreateNestedManyWithoutCompletedByInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceCreateNestedManyWithoutSuccessorInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceCreateNestedManyWithoutRotatedByInput
   createdApprovalFlows?: Prisma.ApprovalFlowCreateNestedManyWithoutCreatedByInput
   approvalSteps?: Prisma.ApprovalStepCreateNestedManyWithoutApproverInput
   approvalDecisions?: Prisma.ApprovalDecisionCreateNestedManyWithoutActorInput
@@ -5315,6 +5499,8 @@ export type UserUncheckedCreateWithoutIntegrationConnectionsInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunUncheckedCreateNestedManyWithoutStartedByInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedCreateNestedManyWithoutAssigneeInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedCreateNestedManyWithoutCompletedByInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUncheckedCreateNestedManyWithoutSuccessorInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUncheckedCreateNestedManyWithoutRotatedByInput
   createdApprovalFlows?: Prisma.ApprovalFlowUncheckedCreateNestedManyWithoutCreatedByInput
   approvalSteps?: Prisma.ApprovalStepUncheckedCreateNestedManyWithoutApproverInput
   approvalDecisions?: Prisma.ApprovalDecisionUncheckedCreateNestedManyWithoutActorInput
@@ -5373,6 +5559,8 @@ export type UserCreateWithoutPersonalConnectionsInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunCreateNestedManyWithoutStartedByInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunCreateNestedManyWithoutAssigneeInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunCreateNestedManyWithoutCompletedByInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceCreateNestedManyWithoutSuccessorInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceCreateNestedManyWithoutRotatedByInput
   createdApprovalFlows?: Prisma.ApprovalFlowCreateNestedManyWithoutCreatedByInput
   approvalSteps?: Prisma.ApprovalStepCreateNestedManyWithoutApproverInput
   approvalDecisions?: Prisma.ApprovalDecisionCreateNestedManyWithoutActorInput
@@ -5426,6 +5614,8 @@ export type UserUncheckedCreateWithoutPersonalConnectionsInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunUncheckedCreateNestedManyWithoutStartedByInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedCreateNestedManyWithoutAssigneeInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedCreateNestedManyWithoutCompletedByInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUncheckedCreateNestedManyWithoutSuccessorInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUncheckedCreateNestedManyWithoutRotatedByInput
   createdApprovalFlows?: Prisma.ApprovalFlowUncheckedCreateNestedManyWithoutCreatedByInput
   approvalSteps?: Prisma.ApprovalStepUncheckedCreateNestedManyWithoutApproverInput
   approvalDecisions?: Prisma.ApprovalDecisionUncheckedCreateNestedManyWithoutActorInput
@@ -5495,6 +5685,8 @@ export type UserUpdateWithoutIntegrationConnectionsInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunUpdateManyWithoutStartedByNestedInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunUpdateManyWithoutAssigneeNestedInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunUpdateManyWithoutCompletedByNestedInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUpdateManyWithoutSuccessorNestedInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUpdateManyWithoutRotatedByNestedInput
   createdApprovalFlows?: Prisma.ApprovalFlowUpdateManyWithoutCreatedByNestedInput
   approvalSteps?: Prisma.ApprovalStepUpdateManyWithoutApproverNestedInput
   approvalDecisions?: Prisma.ApprovalDecisionUpdateManyWithoutActorNestedInput
@@ -5548,6 +5740,8 @@ export type UserUncheckedUpdateWithoutIntegrationConnectionsInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunUncheckedUpdateManyWithoutStartedByNestedInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedUpdateManyWithoutAssigneeNestedInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedUpdateManyWithoutCompletedByNestedInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUncheckedUpdateManyWithoutSuccessorNestedInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUncheckedUpdateManyWithoutRotatedByNestedInput
   createdApprovalFlows?: Prisma.ApprovalFlowUncheckedUpdateManyWithoutCreatedByNestedInput
   approvalSteps?: Prisma.ApprovalStepUncheckedUpdateManyWithoutApproverNestedInput
   approvalDecisions?: Prisma.ApprovalDecisionUncheckedUpdateManyWithoutActorNestedInput
@@ -5612,6 +5806,8 @@ export type UserUpdateWithoutPersonalConnectionsInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunUpdateManyWithoutStartedByNestedInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunUpdateManyWithoutAssigneeNestedInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunUpdateManyWithoutCompletedByNestedInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUpdateManyWithoutSuccessorNestedInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUpdateManyWithoutRotatedByNestedInput
   createdApprovalFlows?: Prisma.ApprovalFlowUpdateManyWithoutCreatedByNestedInput
   approvalSteps?: Prisma.ApprovalStepUpdateManyWithoutApproverNestedInput
   approvalDecisions?: Prisma.ApprovalDecisionUpdateManyWithoutActorNestedInput
@@ -5665,6 +5861,8 @@ export type UserUncheckedUpdateWithoutPersonalConnectionsInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunUncheckedUpdateManyWithoutStartedByNestedInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedUpdateManyWithoutAssigneeNestedInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedUpdateManyWithoutCompletedByNestedInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUncheckedUpdateManyWithoutSuccessorNestedInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUncheckedUpdateManyWithoutRotatedByNestedInput
   createdApprovalFlows?: Prisma.ApprovalFlowUncheckedUpdateManyWithoutCreatedByNestedInput
   approvalSteps?: Prisma.ApprovalStepUncheckedUpdateManyWithoutApproverNestedInput
   approvalDecisions?: Prisma.ApprovalDecisionUncheckedUpdateManyWithoutActorNestedInput
@@ -5718,6 +5916,8 @@ export type UserCreateWithoutUploadedIntakesInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunCreateNestedManyWithoutStartedByInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunCreateNestedManyWithoutAssigneeInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunCreateNestedManyWithoutCompletedByInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceCreateNestedManyWithoutSuccessorInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceCreateNestedManyWithoutRotatedByInput
   createdApprovalFlows?: Prisma.ApprovalFlowCreateNestedManyWithoutCreatedByInput
   approvalSteps?: Prisma.ApprovalStepCreateNestedManyWithoutApproverInput
   approvalDecisions?: Prisma.ApprovalDecisionCreateNestedManyWithoutActorInput
@@ -5771,6 +5971,8 @@ export type UserUncheckedCreateWithoutUploadedIntakesInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunUncheckedCreateNestedManyWithoutStartedByInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedCreateNestedManyWithoutAssigneeInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedCreateNestedManyWithoutCompletedByInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUncheckedCreateNestedManyWithoutSuccessorInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUncheckedCreateNestedManyWithoutRotatedByInput
   createdApprovalFlows?: Prisma.ApprovalFlowUncheckedCreateNestedManyWithoutCreatedByInput
   approvalSteps?: Prisma.ApprovalStepUncheckedCreateNestedManyWithoutApproverInput
   approvalDecisions?: Prisma.ApprovalDecisionUncheckedCreateNestedManyWithoutActorInput
@@ -5829,6 +6031,8 @@ export type UserCreateWithoutAcknowledgedIntakesInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunCreateNestedManyWithoutStartedByInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunCreateNestedManyWithoutAssigneeInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunCreateNestedManyWithoutCompletedByInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceCreateNestedManyWithoutSuccessorInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceCreateNestedManyWithoutRotatedByInput
   createdApprovalFlows?: Prisma.ApprovalFlowCreateNestedManyWithoutCreatedByInput
   approvalSteps?: Prisma.ApprovalStepCreateNestedManyWithoutApproverInput
   approvalDecisions?: Prisma.ApprovalDecisionCreateNestedManyWithoutActorInput
@@ -5882,6 +6086,8 @@ export type UserUncheckedCreateWithoutAcknowledgedIntakesInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunUncheckedCreateNestedManyWithoutStartedByInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedCreateNestedManyWithoutAssigneeInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedCreateNestedManyWithoutCompletedByInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUncheckedCreateNestedManyWithoutSuccessorInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUncheckedCreateNestedManyWithoutRotatedByInput
   createdApprovalFlows?: Prisma.ApprovalFlowUncheckedCreateNestedManyWithoutCreatedByInput
   approvalSteps?: Prisma.ApprovalStepUncheckedCreateNestedManyWithoutApproverInput
   approvalDecisions?: Prisma.ApprovalDecisionUncheckedCreateNestedManyWithoutActorInput
@@ -5951,6 +6157,8 @@ export type UserUpdateWithoutUploadedIntakesInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunUpdateManyWithoutStartedByNestedInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunUpdateManyWithoutAssigneeNestedInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunUpdateManyWithoutCompletedByNestedInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUpdateManyWithoutSuccessorNestedInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUpdateManyWithoutRotatedByNestedInput
   createdApprovalFlows?: Prisma.ApprovalFlowUpdateManyWithoutCreatedByNestedInput
   approvalSteps?: Prisma.ApprovalStepUpdateManyWithoutApproverNestedInput
   approvalDecisions?: Prisma.ApprovalDecisionUpdateManyWithoutActorNestedInput
@@ -6004,6 +6212,8 @@ export type UserUncheckedUpdateWithoutUploadedIntakesInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunUncheckedUpdateManyWithoutStartedByNestedInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedUpdateManyWithoutAssigneeNestedInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedUpdateManyWithoutCompletedByNestedInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUncheckedUpdateManyWithoutSuccessorNestedInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUncheckedUpdateManyWithoutRotatedByNestedInput
   createdApprovalFlows?: Prisma.ApprovalFlowUncheckedUpdateManyWithoutCreatedByNestedInput
   approvalSteps?: Prisma.ApprovalStepUncheckedUpdateManyWithoutApproverNestedInput
   approvalDecisions?: Prisma.ApprovalDecisionUncheckedUpdateManyWithoutActorNestedInput
@@ -6068,6 +6278,8 @@ export type UserUpdateWithoutAcknowledgedIntakesInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunUpdateManyWithoutStartedByNestedInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunUpdateManyWithoutAssigneeNestedInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunUpdateManyWithoutCompletedByNestedInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUpdateManyWithoutSuccessorNestedInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUpdateManyWithoutRotatedByNestedInput
   createdApprovalFlows?: Prisma.ApprovalFlowUpdateManyWithoutCreatedByNestedInput
   approvalSteps?: Prisma.ApprovalStepUpdateManyWithoutApproverNestedInput
   approvalDecisions?: Prisma.ApprovalDecisionUpdateManyWithoutActorNestedInput
@@ -6121,6 +6333,8 @@ export type UserUncheckedUpdateWithoutAcknowledgedIntakesInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunUncheckedUpdateManyWithoutStartedByNestedInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedUpdateManyWithoutAssigneeNestedInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedUpdateManyWithoutCompletedByNestedInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUncheckedUpdateManyWithoutSuccessorNestedInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUncheckedUpdateManyWithoutRotatedByNestedInput
   createdApprovalFlows?: Prisma.ApprovalFlowUncheckedUpdateManyWithoutCreatedByNestedInput
   approvalSteps?: Prisma.ApprovalStepUncheckedUpdateManyWithoutApproverNestedInput
   approvalDecisions?: Prisma.ApprovalDecisionUncheckedUpdateManyWithoutActorNestedInput
@@ -6174,6 +6388,8 @@ export type UserCreateWithoutNotificationsInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunCreateNestedManyWithoutStartedByInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunCreateNestedManyWithoutAssigneeInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunCreateNestedManyWithoutCompletedByInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceCreateNestedManyWithoutSuccessorInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceCreateNestedManyWithoutRotatedByInput
   createdApprovalFlows?: Prisma.ApprovalFlowCreateNestedManyWithoutCreatedByInput
   approvalSteps?: Prisma.ApprovalStepCreateNestedManyWithoutApproverInput
   approvalDecisions?: Prisma.ApprovalDecisionCreateNestedManyWithoutActorInput
@@ -6227,6 +6443,8 @@ export type UserUncheckedCreateWithoutNotificationsInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunUncheckedCreateNestedManyWithoutStartedByInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedCreateNestedManyWithoutAssigneeInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedCreateNestedManyWithoutCompletedByInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUncheckedCreateNestedManyWithoutSuccessorInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUncheckedCreateNestedManyWithoutRotatedByInput
   createdApprovalFlows?: Prisma.ApprovalFlowUncheckedCreateNestedManyWithoutCreatedByInput
   approvalSteps?: Prisma.ApprovalStepUncheckedCreateNestedManyWithoutApproverInput
   approvalDecisions?: Prisma.ApprovalDecisionUncheckedCreateNestedManyWithoutActorInput
@@ -6296,6 +6514,8 @@ export type UserUpdateWithoutNotificationsInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunUpdateManyWithoutStartedByNestedInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunUpdateManyWithoutAssigneeNestedInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunUpdateManyWithoutCompletedByNestedInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUpdateManyWithoutSuccessorNestedInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUpdateManyWithoutRotatedByNestedInput
   createdApprovalFlows?: Prisma.ApprovalFlowUpdateManyWithoutCreatedByNestedInput
   approvalSteps?: Prisma.ApprovalStepUpdateManyWithoutApproverNestedInput
   approvalDecisions?: Prisma.ApprovalDecisionUpdateManyWithoutActorNestedInput
@@ -6349,6 +6569,8 @@ export type UserUncheckedUpdateWithoutNotificationsInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunUncheckedUpdateManyWithoutStartedByNestedInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedUpdateManyWithoutAssigneeNestedInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedUpdateManyWithoutCompletedByNestedInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUncheckedUpdateManyWithoutSuccessorNestedInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUncheckedUpdateManyWithoutRotatedByNestedInput
   createdApprovalFlows?: Prisma.ApprovalFlowUncheckedUpdateManyWithoutCreatedByNestedInput
   approvalSteps?: Prisma.ApprovalStepUncheckedUpdateManyWithoutApproverNestedInput
   approvalDecisions?: Prisma.ApprovalDecisionUncheckedUpdateManyWithoutActorNestedInput
@@ -6402,6 +6624,8 @@ export type UserCreateWithoutNotificationPrefsInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunCreateNestedManyWithoutStartedByInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunCreateNestedManyWithoutAssigneeInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunCreateNestedManyWithoutCompletedByInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceCreateNestedManyWithoutSuccessorInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceCreateNestedManyWithoutRotatedByInput
   createdApprovalFlows?: Prisma.ApprovalFlowCreateNestedManyWithoutCreatedByInput
   approvalSteps?: Prisma.ApprovalStepCreateNestedManyWithoutApproverInput
   approvalDecisions?: Prisma.ApprovalDecisionCreateNestedManyWithoutActorInput
@@ -6455,6 +6679,8 @@ export type UserUncheckedCreateWithoutNotificationPrefsInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunUncheckedCreateNestedManyWithoutStartedByInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedCreateNestedManyWithoutAssigneeInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedCreateNestedManyWithoutCompletedByInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUncheckedCreateNestedManyWithoutSuccessorInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUncheckedCreateNestedManyWithoutRotatedByInput
   createdApprovalFlows?: Prisma.ApprovalFlowUncheckedCreateNestedManyWithoutCreatedByInput
   approvalSteps?: Prisma.ApprovalStepUncheckedCreateNestedManyWithoutApproverInput
   approvalDecisions?: Prisma.ApprovalDecisionUncheckedCreateNestedManyWithoutActorInput
@@ -6524,6 +6750,8 @@ export type UserUpdateWithoutNotificationPrefsInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunUpdateManyWithoutStartedByNestedInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunUpdateManyWithoutAssigneeNestedInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunUpdateManyWithoutCompletedByNestedInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUpdateManyWithoutSuccessorNestedInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUpdateManyWithoutRotatedByNestedInput
   createdApprovalFlows?: Prisma.ApprovalFlowUpdateManyWithoutCreatedByNestedInput
   approvalSteps?: Prisma.ApprovalStepUpdateManyWithoutApproverNestedInput
   approvalDecisions?: Prisma.ApprovalDecisionUpdateManyWithoutActorNestedInput
@@ -6577,6 +6805,8 @@ export type UserUncheckedUpdateWithoutNotificationPrefsInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunUncheckedUpdateManyWithoutStartedByNestedInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedUpdateManyWithoutAssigneeNestedInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedUpdateManyWithoutCompletedByNestedInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUncheckedUpdateManyWithoutSuccessorNestedInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUncheckedUpdateManyWithoutRotatedByNestedInput
   createdApprovalFlows?: Prisma.ApprovalFlowUncheckedUpdateManyWithoutCreatedByNestedInput
   approvalSteps?: Prisma.ApprovalStepUncheckedUpdateManyWithoutApproverNestedInput
   approvalDecisions?: Prisma.ApprovalDecisionUncheckedUpdateManyWithoutActorNestedInput
@@ -6630,6 +6860,8 @@ export type UserCreateWithoutCommentsInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunCreateNestedManyWithoutStartedByInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunCreateNestedManyWithoutAssigneeInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunCreateNestedManyWithoutCompletedByInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceCreateNestedManyWithoutSuccessorInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceCreateNestedManyWithoutRotatedByInput
   createdApprovalFlows?: Prisma.ApprovalFlowCreateNestedManyWithoutCreatedByInput
   approvalSteps?: Prisma.ApprovalStepCreateNestedManyWithoutApproverInput
   approvalDecisions?: Prisma.ApprovalDecisionCreateNestedManyWithoutActorInput
@@ -6683,6 +6915,8 @@ export type UserUncheckedCreateWithoutCommentsInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunUncheckedCreateNestedManyWithoutStartedByInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedCreateNestedManyWithoutAssigneeInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedCreateNestedManyWithoutCompletedByInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUncheckedCreateNestedManyWithoutSuccessorInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUncheckedCreateNestedManyWithoutRotatedByInput
   createdApprovalFlows?: Prisma.ApprovalFlowUncheckedCreateNestedManyWithoutCreatedByInput
   approvalSteps?: Prisma.ApprovalStepUncheckedCreateNestedManyWithoutApproverInput
   approvalDecisions?: Prisma.ApprovalDecisionUncheckedCreateNestedManyWithoutActorInput
@@ -6752,6 +6986,8 @@ export type UserUpdateWithoutCommentsInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunUpdateManyWithoutStartedByNestedInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunUpdateManyWithoutAssigneeNestedInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunUpdateManyWithoutCompletedByNestedInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUpdateManyWithoutSuccessorNestedInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUpdateManyWithoutRotatedByNestedInput
   createdApprovalFlows?: Prisma.ApprovalFlowUpdateManyWithoutCreatedByNestedInput
   approvalSteps?: Prisma.ApprovalStepUpdateManyWithoutApproverNestedInput
   approvalDecisions?: Prisma.ApprovalDecisionUpdateManyWithoutActorNestedInput
@@ -6805,6 +7041,8 @@ export type UserUncheckedUpdateWithoutCommentsInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunUncheckedUpdateManyWithoutStartedByNestedInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedUpdateManyWithoutAssigneeNestedInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedUpdateManyWithoutCompletedByNestedInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUncheckedUpdateManyWithoutSuccessorNestedInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUncheckedUpdateManyWithoutRotatedByNestedInput
   createdApprovalFlows?: Prisma.ApprovalFlowUncheckedUpdateManyWithoutCreatedByNestedInput
   approvalSteps?: Prisma.ApprovalStepUncheckedUpdateManyWithoutApproverNestedInput
   approvalDecisions?: Prisma.ApprovalDecisionUncheckedUpdateManyWithoutActorNestedInput
@@ -6857,6 +7095,8 @@ export type UserCreateWithoutMembersInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunCreateNestedManyWithoutStartedByInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunCreateNestedManyWithoutAssigneeInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunCreateNestedManyWithoutCompletedByInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceCreateNestedManyWithoutSuccessorInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceCreateNestedManyWithoutRotatedByInput
   createdApprovalFlows?: Prisma.ApprovalFlowCreateNestedManyWithoutCreatedByInput
   approvalSteps?: Prisma.ApprovalStepCreateNestedManyWithoutApproverInput
   approvalDecisions?: Prisma.ApprovalDecisionCreateNestedManyWithoutActorInput
@@ -6910,6 +7150,8 @@ export type UserUncheckedCreateWithoutMembersInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunUncheckedCreateNestedManyWithoutStartedByInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedCreateNestedManyWithoutAssigneeInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedCreateNestedManyWithoutCompletedByInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUncheckedCreateNestedManyWithoutSuccessorInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUncheckedCreateNestedManyWithoutRotatedByInput
   createdApprovalFlows?: Prisma.ApprovalFlowUncheckedCreateNestedManyWithoutCreatedByInput
   approvalSteps?: Prisma.ApprovalStepUncheckedCreateNestedManyWithoutApproverInput
   approvalDecisions?: Prisma.ApprovalDecisionUncheckedCreateNestedManyWithoutActorInput
@@ -6979,6 +7221,8 @@ export type UserUpdateWithoutMembersInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunUpdateManyWithoutStartedByNestedInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunUpdateManyWithoutAssigneeNestedInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunUpdateManyWithoutCompletedByNestedInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUpdateManyWithoutSuccessorNestedInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUpdateManyWithoutRotatedByNestedInput
   createdApprovalFlows?: Prisma.ApprovalFlowUpdateManyWithoutCreatedByNestedInput
   approvalSteps?: Prisma.ApprovalStepUpdateManyWithoutApproverNestedInput
   approvalDecisions?: Prisma.ApprovalDecisionUpdateManyWithoutActorNestedInput
@@ -7032,6 +7276,8 @@ export type UserUncheckedUpdateWithoutMembersInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunUncheckedUpdateManyWithoutStartedByNestedInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedUpdateManyWithoutAssigneeNestedInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedUpdateManyWithoutCompletedByNestedInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUncheckedUpdateManyWithoutSuccessorNestedInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUncheckedUpdateManyWithoutRotatedByNestedInput
   createdApprovalFlows?: Prisma.ApprovalFlowUncheckedUpdateManyWithoutCreatedByNestedInput
   approvalSteps?: Prisma.ApprovalStepUncheckedUpdateManyWithoutApproverNestedInput
   approvalDecisions?: Prisma.ApprovalDecisionUncheckedUpdateManyWithoutActorNestedInput
@@ -7085,6 +7331,8 @@ export type UserCreateWithoutInvitationsInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunCreateNestedManyWithoutStartedByInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunCreateNestedManyWithoutAssigneeInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunCreateNestedManyWithoutCompletedByInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceCreateNestedManyWithoutSuccessorInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceCreateNestedManyWithoutRotatedByInput
   createdApprovalFlows?: Prisma.ApprovalFlowCreateNestedManyWithoutCreatedByInput
   approvalSteps?: Prisma.ApprovalStepCreateNestedManyWithoutApproverInput
   approvalDecisions?: Prisma.ApprovalDecisionCreateNestedManyWithoutActorInput
@@ -7138,6 +7386,8 @@ export type UserUncheckedCreateWithoutInvitationsInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunUncheckedCreateNestedManyWithoutStartedByInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedCreateNestedManyWithoutAssigneeInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedCreateNestedManyWithoutCompletedByInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUncheckedCreateNestedManyWithoutSuccessorInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUncheckedCreateNestedManyWithoutRotatedByInput
   createdApprovalFlows?: Prisma.ApprovalFlowUncheckedCreateNestedManyWithoutCreatedByInput
   approvalSteps?: Prisma.ApprovalStepUncheckedCreateNestedManyWithoutApproverInput
   approvalDecisions?: Prisma.ApprovalDecisionUncheckedCreateNestedManyWithoutActorInput
@@ -7207,6 +7457,8 @@ export type UserUpdateWithoutInvitationsInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunUpdateManyWithoutStartedByNestedInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunUpdateManyWithoutAssigneeNestedInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunUpdateManyWithoutCompletedByNestedInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUpdateManyWithoutSuccessorNestedInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUpdateManyWithoutRotatedByNestedInput
   createdApprovalFlows?: Prisma.ApprovalFlowUpdateManyWithoutCreatedByNestedInput
   approvalSteps?: Prisma.ApprovalStepUpdateManyWithoutApproverNestedInput
   approvalDecisions?: Prisma.ApprovalDecisionUpdateManyWithoutActorNestedInput
@@ -7260,6 +7512,8 @@ export type UserUncheckedUpdateWithoutInvitationsInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunUncheckedUpdateManyWithoutStartedByNestedInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedUpdateManyWithoutAssigneeNestedInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedUpdateManyWithoutCompletedByNestedInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUncheckedUpdateManyWithoutSuccessorNestedInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUncheckedUpdateManyWithoutRotatedByNestedInput
   createdApprovalFlows?: Prisma.ApprovalFlowUncheckedUpdateManyWithoutCreatedByNestedInput
   approvalSteps?: Prisma.ApprovalStepUncheckedUpdateManyWithoutApproverNestedInput
   approvalDecisions?: Prisma.ApprovalDecisionUncheckedUpdateManyWithoutActorNestedInput
@@ -7313,6 +7567,8 @@ export type UserCreateWithoutManagedTeamsInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunCreateNestedManyWithoutStartedByInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunCreateNestedManyWithoutAssigneeInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunCreateNestedManyWithoutCompletedByInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceCreateNestedManyWithoutSuccessorInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceCreateNestedManyWithoutRotatedByInput
   createdApprovalFlows?: Prisma.ApprovalFlowCreateNestedManyWithoutCreatedByInput
   approvalSteps?: Prisma.ApprovalStepCreateNestedManyWithoutApproverInput
   approvalDecisions?: Prisma.ApprovalDecisionCreateNestedManyWithoutActorInput
@@ -7366,6 +7622,8 @@ export type UserUncheckedCreateWithoutManagedTeamsInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunUncheckedCreateNestedManyWithoutStartedByInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedCreateNestedManyWithoutAssigneeInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedCreateNestedManyWithoutCompletedByInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUncheckedCreateNestedManyWithoutSuccessorInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUncheckedCreateNestedManyWithoutRotatedByInput
   createdApprovalFlows?: Prisma.ApprovalFlowUncheckedCreateNestedManyWithoutCreatedByInput
   approvalSteps?: Prisma.ApprovalStepUncheckedCreateNestedManyWithoutApproverInput
   approvalDecisions?: Prisma.ApprovalDecisionUncheckedCreateNestedManyWithoutActorInput
@@ -7424,6 +7682,8 @@ export type UserCreateWithoutFallbackApprovedTeamsInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunCreateNestedManyWithoutStartedByInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunCreateNestedManyWithoutAssigneeInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunCreateNestedManyWithoutCompletedByInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceCreateNestedManyWithoutSuccessorInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceCreateNestedManyWithoutRotatedByInput
   createdApprovalFlows?: Prisma.ApprovalFlowCreateNestedManyWithoutCreatedByInput
   approvalSteps?: Prisma.ApprovalStepCreateNestedManyWithoutApproverInput
   approvalDecisions?: Prisma.ApprovalDecisionCreateNestedManyWithoutActorInput
@@ -7477,6 +7737,8 @@ export type UserUncheckedCreateWithoutFallbackApprovedTeamsInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunUncheckedCreateNestedManyWithoutStartedByInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedCreateNestedManyWithoutAssigneeInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedCreateNestedManyWithoutCompletedByInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUncheckedCreateNestedManyWithoutSuccessorInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUncheckedCreateNestedManyWithoutRotatedByInput
   createdApprovalFlows?: Prisma.ApprovalFlowUncheckedCreateNestedManyWithoutCreatedByInput
   approvalSteps?: Prisma.ApprovalStepUncheckedCreateNestedManyWithoutApproverInput
   approvalDecisions?: Prisma.ApprovalDecisionUncheckedCreateNestedManyWithoutActorInput
@@ -7546,6 +7808,8 @@ export type UserUpdateWithoutManagedTeamsInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunUpdateManyWithoutStartedByNestedInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunUpdateManyWithoutAssigneeNestedInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunUpdateManyWithoutCompletedByNestedInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUpdateManyWithoutSuccessorNestedInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUpdateManyWithoutRotatedByNestedInput
   createdApprovalFlows?: Prisma.ApprovalFlowUpdateManyWithoutCreatedByNestedInput
   approvalSteps?: Prisma.ApprovalStepUpdateManyWithoutApproverNestedInput
   approvalDecisions?: Prisma.ApprovalDecisionUpdateManyWithoutActorNestedInput
@@ -7599,6 +7863,8 @@ export type UserUncheckedUpdateWithoutManagedTeamsInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunUncheckedUpdateManyWithoutStartedByNestedInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedUpdateManyWithoutAssigneeNestedInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedUpdateManyWithoutCompletedByNestedInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUncheckedUpdateManyWithoutSuccessorNestedInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUncheckedUpdateManyWithoutRotatedByNestedInput
   createdApprovalFlows?: Prisma.ApprovalFlowUncheckedUpdateManyWithoutCreatedByNestedInput
   approvalSteps?: Prisma.ApprovalStepUncheckedUpdateManyWithoutApproverNestedInput
   approvalDecisions?: Prisma.ApprovalDecisionUncheckedUpdateManyWithoutActorNestedInput
@@ -7663,6 +7929,8 @@ export type UserUpdateWithoutFallbackApprovedTeamsInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunUpdateManyWithoutStartedByNestedInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunUpdateManyWithoutAssigneeNestedInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunUpdateManyWithoutCompletedByNestedInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUpdateManyWithoutSuccessorNestedInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUpdateManyWithoutRotatedByNestedInput
   createdApprovalFlows?: Prisma.ApprovalFlowUpdateManyWithoutCreatedByNestedInput
   approvalSteps?: Prisma.ApprovalStepUpdateManyWithoutApproverNestedInput
   approvalDecisions?: Prisma.ApprovalDecisionUpdateManyWithoutActorNestedInput
@@ -7716,6 +7984,8 @@ export type UserUncheckedUpdateWithoutFallbackApprovedTeamsInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunUncheckedUpdateManyWithoutStartedByNestedInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedUpdateManyWithoutAssigneeNestedInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedUpdateManyWithoutCompletedByNestedInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUncheckedUpdateManyWithoutSuccessorNestedInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUncheckedUpdateManyWithoutRotatedByNestedInput
   createdApprovalFlows?: Prisma.ApprovalFlowUncheckedUpdateManyWithoutCreatedByNestedInput
   approvalSteps?: Prisma.ApprovalStepUncheckedUpdateManyWithoutApproverNestedInput
   approvalDecisions?: Prisma.ApprovalDecisionUncheckedUpdateManyWithoutActorNestedInput
@@ -7770,6 +8040,8 @@ export type UserCreateWithoutCreatedPaymentRunsInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunCreateNestedManyWithoutStartedByInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunCreateNestedManyWithoutAssigneeInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunCreateNestedManyWithoutCompletedByInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceCreateNestedManyWithoutSuccessorInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceCreateNestedManyWithoutRotatedByInput
   createdApprovalFlows?: Prisma.ApprovalFlowCreateNestedManyWithoutCreatedByInput
   approvalSteps?: Prisma.ApprovalStepCreateNestedManyWithoutApproverInput
   approvalDecisions?: Prisma.ApprovalDecisionCreateNestedManyWithoutActorInput
@@ -7823,6 +8095,8 @@ export type UserUncheckedCreateWithoutCreatedPaymentRunsInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunUncheckedCreateNestedManyWithoutStartedByInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedCreateNestedManyWithoutAssigneeInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedCreateNestedManyWithoutCompletedByInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUncheckedCreateNestedManyWithoutSuccessorInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUncheckedCreateNestedManyWithoutRotatedByInput
   createdApprovalFlows?: Prisma.ApprovalFlowUncheckedCreateNestedManyWithoutCreatedByInput
   approvalSteps?: Prisma.ApprovalStepUncheckedCreateNestedManyWithoutApproverInput
   approvalDecisions?: Prisma.ApprovalDecisionUncheckedCreateNestedManyWithoutActorInput
@@ -7881,6 +8155,8 @@ export type UserCreateWithoutApprovedPaymentRunsInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunCreateNestedManyWithoutStartedByInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunCreateNestedManyWithoutAssigneeInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunCreateNestedManyWithoutCompletedByInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceCreateNestedManyWithoutSuccessorInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceCreateNestedManyWithoutRotatedByInput
   createdApprovalFlows?: Prisma.ApprovalFlowCreateNestedManyWithoutCreatedByInput
   approvalSteps?: Prisma.ApprovalStepCreateNestedManyWithoutApproverInput
   approvalDecisions?: Prisma.ApprovalDecisionCreateNestedManyWithoutActorInput
@@ -7934,6 +8210,8 @@ export type UserUncheckedCreateWithoutApprovedPaymentRunsInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunUncheckedCreateNestedManyWithoutStartedByInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedCreateNestedManyWithoutAssigneeInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedCreateNestedManyWithoutCompletedByInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUncheckedCreateNestedManyWithoutSuccessorInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUncheckedCreateNestedManyWithoutRotatedByInput
   createdApprovalFlows?: Prisma.ApprovalFlowUncheckedCreateNestedManyWithoutCreatedByInput
   approvalSteps?: Prisma.ApprovalStepUncheckedCreateNestedManyWithoutApproverInput
   approvalDecisions?: Prisma.ApprovalDecisionUncheckedCreateNestedManyWithoutActorInput
@@ -8003,6 +8281,8 @@ export type UserUpdateWithoutCreatedPaymentRunsInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunUpdateManyWithoutStartedByNestedInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunUpdateManyWithoutAssigneeNestedInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunUpdateManyWithoutCompletedByNestedInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUpdateManyWithoutSuccessorNestedInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUpdateManyWithoutRotatedByNestedInput
   createdApprovalFlows?: Prisma.ApprovalFlowUpdateManyWithoutCreatedByNestedInput
   approvalSteps?: Prisma.ApprovalStepUpdateManyWithoutApproverNestedInput
   approvalDecisions?: Prisma.ApprovalDecisionUpdateManyWithoutActorNestedInput
@@ -8056,6 +8336,8 @@ export type UserUncheckedUpdateWithoutCreatedPaymentRunsInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunUncheckedUpdateManyWithoutStartedByNestedInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedUpdateManyWithoutAssigneeNestedInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedUpdateManyWithoutCompletedByNestedInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUncheckedUpdateManyWithoutSuccessorNestedInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUncheckedUpdateManyWithoutRotatedByNestedInput
   createdApprovalFlows?: Prisma.ApprovalFlowUncheckedUpdateManyWithoutCreatedByNestedInput
   approvalSteps?: Prisma.ApprovalStepUncheckedUpdateManyWithoutApproverNestedInput
   approvalDecisions?: Prisma.ApprovalDecisionUncheckedUpdateManyWithoutActorNestedInput
@@ -8120,6 +8402,8 @@ export type UserUpdateWithoutApprovedPaymentRunsInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunUpdateManyWithoutStartedByNestedInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunUpdateManyWithoutAssigneeNestedInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunUpdateManyWithoutCompletedByNestedInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUpdateManyWithoutSuccessorNestedInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUpdateManyWithoutRotatedByNestedInput
   createdApprovalFlows?: Prisma.ApprovalFlowUpdateManyWithoutCreatedByNestedInput
   approvalSteps?: Prisma.ApprovalStepUpdateManyWithoutApproverNestedInput
   approvalDecisions?: Prisma.ApprovalDecisionUpdateManyWithoutActorNestedInput
@@ -8173,6 +8457,8 @@ export type UserUncheckedUpdateWithoutApprovedPaymentRunsInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunUncheckedUpdateManyWithoutStartedByNestedInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedUpdateManyWithoutAssigneeNestedInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedUpdateManyWithoutCompletedByNestedInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUncheckedUpdateManyWithoutSuccessorNestedInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUncheckedUpdateManyWithoutRotatedByNestedInput
   createdApprovalFlows?: Prisma.ApprovalFlowUncheckedUpdateManyWithoutCreatedByNestedInput
   approvalSteps?: Prisma.ApprovalStepUncheckedUpdateManyWithoutApproverNestedInput
   approvalDecisions?: Prisma.ApprovalDecisionUncheckedUpdateManyWithoutActorNestedInput
@@ -8226,6 +8512,8 @@ export type UserCreateWithoutPaymentExportsInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunCreateNestedManyWithoutStartedByInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunCreateNestedManyWithoutAssigneeInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunCreateNestedManyWithoutCompletedByInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceCreateNestedManyWithoutSuccessorInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceCreateNestedManyWithoutRotatedByInput
   createdApprovalFlows?: Prisma.ApprovalFlowCreateNestedManyWithoutCreatedByInput
   approvalSteps?: Prisma.ApprovalStepCreateNestedManyWithoutApproverInput
   approvalDecisions?: Prisma.ApprovalDecisionCreateNestedManyWithoutActorInput
@@ -8279,6 +8567,8 @@ export type UserUncheckedCreateWithoutPaymentExportsInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunUncheckedCreateNestedManyWithoutStartedByInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedCreateNestedManyWithoutAssigneeInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedCreateNestedManyWithoutCompletedByInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUncheckedCreateNestedManyWithoutSuccessorInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUncheckedCreateNestedManyWithoutRotatedByInput
   createdApprovalFlows?: Prisma.ApprovalFlowUncheckedCreateNestedManyWithoutCreatedByInput
   approvalSteps?: Prisma.ApprovalStepUncheckedCreateNestedManyWithoutApproverInput
   approvalDecisions?: Prisma.ApprovalDecisionUncheckedCreateNestedManyWithoutActorInput
@@ -8348,6 +8638,8 @@ export type UserUpdateWithoutPaymentExportsInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunUpdateManyWithoutStartedByNestedInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunUpdateManyWithoutAssigneeNestedInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunUpdateManyWithoutCompletedByNestedInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUpdateManyWithoutSuccessorNestedInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUpdateManyWithoutRotatedByNestedInput
   createdApprovalFlows?: Prisma.ApprovalFlowUpdateManyWithoutCreatedByNestedInput
   approvalSteps?: Prisma.ApprovalStepUpdateManyWithoutApproverNestedInput
   approvalDecisions?: Prisma.ApprovalDecisionUpdateManyWithoutActorNestedInput
@@ -8401,6 +8693,8 @@ export type UserUncheckedUpdateWithoutPaymentExportsInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunUncheckedUpdateManyWithoutStartedByNestedInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedUpdateManyWithoutAssigneeNestedInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedUpdateManyWithoutCompletedByNestedInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUncheckedUpdateManyWithoutSuccessorNestedInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUncheckedUpdateManyWithoutRotatedByNestedInput
   createdApprovalFlows?: Prisma.ApprovalFlowUncheckedUpdateManyWithoutCreatedByNestedInput
   approvalSteps?: Prisma.ApprovalStepUncheckedUpdateManyWithoutApproverNestedInput
   approvalDecisions?: Prisma.ApprovalDecisionUncheckedUpdateManyWithoutActorNestedInput
@@ -8454,6 +8748,8 @@ export type UserCreateWithoutReviewedChangeRequestsInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunCreateNestedManyWithoutStartedByInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunCreateNestedManyWithoutAssigneeInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunCreateNestedManyWithoutCompletedByInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceCreateNestedManyWithoutSuccessorInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceCreateNestedManyWithoutRotatedByInput
   createdApprovalFlows?: Prisma.ApprovalFlowCreateNestedManyWithoutCreatedByInput
   approvalSteps?: Prisma.ApprovalStepCreateNestedManyWithoutApproverInput
   approvalDecisions?: Prisma.ApprovalDecisionCreateNestedManyWithoutActorInput
@@ -8507,6 +8803,8 @@ export type UserUncheckedCreateWithoutReviewedChangeRequestsInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunUncheckedCreateNestedManyWithoutStartedByInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedCreateNestedManyWithoutAssigneeInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedCreateNestedManyWithoutCompletedByInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUncheckedCreateNestedManyWithoutSuccessorInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUncheckedCreateNestedManyWithoutRotatedByInput
   createdApprovalFlows?: Prisma.ApprovalFlowUncheckedCreateNestedManyWithoutCreatedByInput
   approvalSteps?: Prisma.ApprovalStepUncheckedCreateNestedManyWithoutApproverInput
   approvalDecisions?: Prisma.ApprovalDecisionUncheckedCreateNestedManyWithoutActorInput
@@ -8576,6 +8874,8 @@ export type UserUpdateWithoutReviewedChangeRequestsInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunUpdateManyWithoutStartedByNestedInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunUpdateManyWithoutAssigneeNestedInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunUpdateManyWithoutCompletedByNestedInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUpdateManyWithoutSuccessorNestedInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUpdateManyWithoutRotatedByNestedInput
   createdApprovalFlows?: Prisma.ApprovalFlowUpdateManyWithoutCreatedByNestedInput
   approvalSteps?: Prisma.ApprovalStepUpdateManyWithoutApproverNestedInput
   approvalDecisions?: Prisma.ApprovalDecisionUpdateManyWithoutActorNestedInput
@@ -8629,6 +8929,8 @@ export type UserUncheckedUpdateWithoutReviewedChangeRequestsInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunUncheckedUpdateManyWithoutStartedByNestedInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedUpdateManyWithoutAssigneeNestedInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedUpdateManyWithoutCompletedByNestedInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUncheckedUpdateManyWithoutSuccessorNestedInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUncheckedUpdateManyWithoutRotatedByNestedInput
   createdApprovalFlows?: Prisma.ApprovalFlowUncheckedUpdateManyWithoutCreatedByNestedInput
   approvalSteps?: Prisma.ApprovalStepUncheckedUpdateManyWithoutApproverNestedInput
   approvalDecisions?: Prisma.ApprovalDecisionUncheckedUpdateManyWithoutActorNestedInput
@@ -8682,6 +8984,8 @@ export type UserCreateWithoutReviewedTimesheetsInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunCreateNestedManyWithoutStartedByInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunCreateNestedManyWithoutAssigneeInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunCreateNestedManyWithoutCompletedByInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceCreateNestedManyWithoutSuccessorInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceCreateNestedManyWithoutRotatedByInput
   createdApprovalFlows?: Prisma.ApprovalFlowCreateNestedManyWithoutCreatedByInput
   approvalSteps?: Prisma.ApprovalStepCreateNestedManyWithoutApproverInput
   approvalDecisions?: Prisma.ApprovalDecisionCreateNestedManyWithoutActorInput
@@ -8735,6 +9039,8 @@ export type UserUncheckedCreateWithoutReviewedTimesheetsInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunUncheckedCreateNestedManyWithoutStartedByInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedCreateNestedManyWithoutAssigneeInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedCreateNestedManyWithoutCompletedByInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUncheckedCreateNestedManyWithoutSuccessorInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUncheckedCreateNestedManyWithoutRotatedByInput
   createdApprovalFlows?: Prisma.ApprovalFlowUncheckedCreateNestedManyWithoutCreatedByInput
   approvalSteps?: Prisma.ApprovalStepUncheckedCreateNestedManyWithoutApproverInput
   approvalDecisions?: Prisma.ApprovalDecisionUncheckedCreateNestedManyWithoutActorInput
@@ -8804,6 +9110,8 @@ export type UserUpdateWithoutReviewedTimesheetsInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunUpdateManyWithoutStartedByNestedInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunUpdateManyWithoutAssigneeNestedInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunUpdateManyWithoutCompletedByNestedInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUpdateManyWithoutSuccessorNestedInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUpdateManyWithoutRotatedByNestedInput
   createdApprovalFlows?: Prisma.ApprovalFlowUpdateManyWithoutCreatedByNestedInput
   approvalSteps?: Prisma.ApprovalStepUpdateManyWithoutApproverNestedInput
   approvalDecisions?: Prisma.ApprovalDecisionUpdateManyWithoutActorNestedInput
@@ -8857,6 +9165,8 @@ export type UserUncheckedUpdateWithoutReviewedTimesheetsInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunUncheckedUpdateManyWithoutStartedByNestedInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedUpdateManyWithoutAssigneeNestedInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedUpdateManyWithoutCompletedByNestedInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUncheckedUpdateManyWithoutSuccessorNestedInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUncheckedUpdateManyWithoutRotatedByNestedInput
   createdApprovalFlows?: Prisma.ApprovalFlowUncheckedUpdateManyWithoutCreatedByNestedInput
   approvalSteps?: Prisma.ApprovalStepUncheckedUpdateManyWithoutApproverNestedInput
   approvalDecisions?: Prisma.ApprovalDecisionUncheckedUpdateManyWithoutActorNestedInput
@@ -8909,6 +9219,8 @@ export type UserCreateWithoutStartedWorkflowRunsInput = {
   ownedContracts?: Prisma.ContractCreateNestedManyWithoutInternalOwnerInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunCreateNestedManyWithoutAssigneeInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunCreateNestedManyWithoutCompletedByInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceCreateNestedManyWithoutSuccessorInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceCreateNestedManyWithoutRotatedByInput
   createdApprovalFlows?: Prisma.ApprovalFlowCreateNestedManyWithoutCreatedByInput
   approvalSteps?: Prisma.ApprovalStepCreateNestedManyWithoutApproverInput
   approvalDecisions?: Prisma.ApprovalDecisionCreateNestedManyWithoutActorInput
@@ -8962,6 +9274,8 @@ export type UserUncheckedCreateWithoutStartedWorkflowRunsInput = {
   ownedContracts?: Prisma.ContractUncheckedCreateNestedManyWithoutInternalOwnerInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedCreateNestedManyWithoutAssigneeInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedCreateNestedManyWithoutCompletedByInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUncheckedCreateNestedManyWithoutSuccessorInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUncheckedCreateNestedManyWithoutRotatedByInput
   createdApprovalFlows?: Prisma.ApprovalFlowUncheckedCreateNestedManyWithoutCreatedByInput
   approvalSteps?: Prisma.ApprovalStepUncheckedCreateNestedManyWithoutApproverInput
   approvalDecisions?: Prisma.ApprovalDecisionUncheckedCreateNestedManyWithoutActorInput
@@ -9031,6 +9345,8 @@ export type UserUpdateWithoutStartedWorkflowRunsInput = {
   ownedContracts?: Prisma.ContractUpdateManyWithoutInternalOwnerNestedInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunUpdateManyWithoutAssigneeNestedInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunUpdateManyWithoutCompletedByNestedInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUpdateManyWithoutSuccessorNestedInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUpdateManyWithoutRotatedByNestedInput
   createdApprovalFlows?: Prisma.ApprovalFlowUpdateManyWithoutCreatedByNestedInput
   approvalSteps?: Prisma.ApprovalStepUpdateManyWithoutApproverNestedInput
   approvalDecisions?: Prisma.ApprovalDecisionUpdateManyWithoutActorNestedInput
@@ -9084,6 +9400,8 @@ export type UserUncheckedUpdateWithoutStartedWorkflowRunsInput = {
   ownedContracts?: Prisma.ContractUncheckedUpdateManyWithoutInternalOwnerNestedInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedUpdateManyWithoutAssigneeNestedInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedUpdateManyWithoutCompletedByNestedInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUncheckedUpdateManyWithoutSuccessorNestedInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUncheckedUpdateManyWithoutRotatedByNestedInput
   createdApprovalFlows?: Prisma.ApprovalFlowUncheckedUpdateManyWithoutCreatedByNestedInput
   approvalSteps?: Prisma.ApprovalStepUncheckedUpdateManyWithoutApproverNestedInput
   approvalDecisions?: Prisma.ApprovalDecisionUncheckedUpdateManyWithoutActorNestedInput
@@ -9137,6 +9455,8 @@ export type UserCreateWithoutAssignedWorkflowTasksInput = {
   ownedContracts?: Prisma.ContractCreateNestedManyWithoutInternalOwnerInput
   startedWorkflowRuns?: Prisma.WorkflowRunCreateNestedManyWithoutStartedByInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunCreateNestedManyWithoutCompletedByInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceCreateNestedManyWithoutSuccessorInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceCreateNestedManyWithoutRotatedByInput
   createdApprovalFlows?: Prisma.ApprovalFlowCreateNestedManyWithoutCreatedByInput
   approvalSteps?: Prisma.ApprovalStepCreateNestedManyWithoutApproverInput
   approvalDecisions?: Prisma.ApprovalDecisionCreateNestedManyWithoutActorInput
@@ -9190,6 +9510,8 @@ export type UserUncheckedCreateWithoutAssignedWorkflowTasksInput = {
   ownedContracts?: Prisma.ContractUncheckedCreateNestedManyWithoutInternalOwnerInput
   startedWorkflowRuns?: Prisma.WorkflowRunUncheckedCreateNestedManyWithoutStartedByInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedCreateNestedManyWithoutCompletedByInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUncheckedCreateNestedManyWithoutSuccessorInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUncheckedCreateNestedManyWithoutRotatedByInput
   createdApprovalFlows?: Prisma.ApprovalFlowUncheckedCreateNestedManyWithoutCreatedByInput
   approvalSteps?: Prisma.ApprovalStepUncheckedCreateNestedManyWithoutApproverInput
   approvalDecisions?: Prisma.ApprovalDecisionUncheckedCreateNestedManyWithoutActorInput
@@ -9248,6 +9570,8 @@ export type UserCreateWithoutCompletedWorkflowTasksInput = {
   ownedContracts?: Prisma.ContractCreateNestedManyWithoutInternalOwnerInput
   startedWorkflowRuns?: Prisma.WorkflowRunCreateNestedManyWithoutStartedByInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunCreateNestedManyWithoutAssigneeInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceCreateNestedManyWithoutSuccessorInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceCreateNestedManyWithoutRotatedByInput
   createdApprovalFlows?: Prisma.ApprovalFlowCreateNestedManyWithoutCreatedByInput
   approvalSteps?: Prisma.ApprovalStepCreateNestedManyWithoutApproverInput
   approvalDecisions?: Prisma.ApprovalDecisionCreateNestedManyWithoutActorInput
@@ -9301,6 +9625,8 @@ export type UserUncheckedCreateWithoutCompletedWorkflowTasksInput = {
   ownedContracts?: Prisma.ContractUncheckedCreateNestedManyWithoutInternalOwnerInput
   startedWorkflowRuns?: Prisma.WorkflowRunUncheckedCreateNestedManyWithoutStartedByInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedCreateNestedManyWithoutAssigneeInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUncheckedCreateNestedManyWithoutSuccessorInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUncheckedCreateNestedManyWithoutRotatedByInput
   createdApprovalFlows?: Prisma.ApprovalFlowUncheckedCreateNestedManyWithoutCreatedByInput
   approvalSteps?: Prisma.ApprovalStepUncheckedCreateNestedManyWithoutApproverInput
   approvalDecisions?: Prisma.ApprovalDecisionUncheckedCreateNestedManyWithoutActorInput
@@ -9370,6 +9696,8 @@ export type UserUpdateWithoutAssignedWorkflowTasksInput = {
   ownedContracts?: Prisma.ContractUpdateManyWithoutInternalOwnerNestedInput
   startedWorkflowRuns?: Prisma.WorkflowRunUpdateManyWithoutStartedByNestedInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunUpdateManyWithoutCompletedByNestedInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUpdateManyWithoutSuccessorNestedInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUpdateManyWithoutRotatedByNestedInput
   createdApprovalFlows?: Prisma.ApprovalFlowUpdateManyWithoutCreatedByNestedInput
   approvalSteps?: Prisma.ApprovalStepUpdateManyWithoutApproverNestedInput
   approvalDecisions?: Prisma.ApprovalDecisionUpdateManyWithoutActorNestedInput
@@ -9423,6 +9751,8 @@ export type UserUncheckedUpdateWithoutAssignedWorkflowTasksInput = {
   ownedContracts?: Prisma.ContractUncheckedUpdateManyWithoutInternalOwnerNestedInput
   startedWorkflowRuns?: Prisma.WorkflowRunUncheckedUpdateManyWithoutStartedByNestedInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedUpdateManyWithoutCompletedByNestedInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUncheckedUpdateManyWithoutSuccessorNestedInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUncheckedUpdateManyWithoutRotatedByNestedInput
   createdApprovalFlows?: Prisma.ApprovalFlowUncheckedUpdateManyWithoutCreatedByNestedInput
   approvalSteps?: Prisma.ApprovalStepUncheckedUpdateManyWithoutApproverNestedInput
   approvalDecisions?: Prisma.ApprovalDecisionUncheckedUpdateManyWithoutActorNestedInput
@@ -9487,6 +9817,8 @@ export type UserUpdateWithoutCompletedWorkflowTasksInput = {
   ownedContracts?: Prisma.ContractUpdateManyWithoutInternalOwnerNestedInput
   startedWorkflowRuns?: Prisma.WorkflowRunUpdateManyWithoutStartedByNestedInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunUpdateManyWithoutAssigneeNestedInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUpdateManyWithoutSuccessorNestedInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUpdateManyWithoutRotatedByNestedInput
   createdApprovalFlows?: Prisma.ApprovalFlowUpdateManyWithoutCreatedByNestedInput
   approvalSteps?: Prisma.ApprovalStepUpdateManyWithoutApproverNestedInput
   approvalDecisions?: Prisma.ApprovalDecisionUpdateManyWithoutActorNestedInput
@@ -9540,6 +9872,8 @@ export type UserUncheckedUpdateWithoutCompletedWorkflowTasksInput = {
   ownedContracts?: Prisma.ContractUncheckedUpdateManyWithoutInternalOwnerNestedInput
   startedWorkflowRuns?: Prisma.WorkflowRunUncheckedUpdateManyWithoutStartedByNestedInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedUpdateManyWithoutAssigneeNestedInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUncheckedUpdateManyWithoutSuccessorNestedInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUncheckedUpdateManyWithoutRotatedByNestedInput
   createdApprovalFlows?: Prisma.ApprovalFlowUncheckedUpdateManyWithoutCreatedByNestedInput
   approvalSteps?: Prisma.ApprovalStepUncheckedUpdateManyWithoutApproverNestedInput
   approvalDecisions?: Prisma.ApprovalDecisionUncheckedUpdateManyWithoutActorNestedInput
@@ -9594,6 +9928,8 @@ export type UserCreateWithoutWorkflowCommentsInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunCreateNestedManyWithoutStartedByInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunCreateNestedManyWithoutAssigneeInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunCreateNestedManyWithoutCompletedByInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceCreateNestedManyWithoutSuccessorInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceCreateNestedManyWithoutRotatedByInput
   createdApprovalFlows?: Prisma.ApprovalFlowCreateNestedManyWithoutCreatedByInput
   approvalSteps?: Prisma.ApprovalStepCreateNestedManyWithoutApproverInput
   approvalDecisions?: Prisma.ApprovalDecisionCreateNestedManyWithoutActorInput
@@ -9647,6 +9983,8 @@ export type UserUncheckedCreateWithoutWorkflowCommentsInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunUncheckedCreateNestedManyWithoutStartedByInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedCreateNestedManyWithoutAssigneeInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedCreateNestedManyWithoutCompletedByInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUncheckedCreateNestedManyWithoutSuccessorInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUncheckedCreateNestedManyWithoutRotatedByInput
   createdApprovalFlows?: Prisma.ApprovalFlowUncheckedCreateNestedManyWithoutCreatedByInput
   approvalSteps?: Prisma.ApprovalStepUncheckedCreateNestedManyWithoutApproverInput
   approvalDecisions?: Prisma.ApprovalDecisionUncheckedCreateNestedManyWithoutActorInput
@@ -9716,6 +10054,8 @@ export type UserUpdateWithoutWorkflowCommentsInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunUpdateManyWithoutStartedByNestedInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunUpdateManyWithoutAssigneeNestedInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunUpdateManyWithoutCompletedByNestedInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUpdateManyWithoutSuccessorNestedInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUpdateManyWithoutRotatedByNestedInput
   createdApprovalFlows?: Prisma.ApprovalFlowUpdateManyWithoutCreatedByNestedInput
   approvalSteps?: Prisma.ApprovalStepUpdateManyWithoutApproverNestedInput
   approvalDecisions?: Prisma.ApprovalDecisionUpdateManyWithoutActorNestedInput
@@ -9769,6 +10109,8 @@ export type UserUncheckedUpdateWithoutWorkflowCommentsInput = {
   startedWorkflowRuns?: Prisma.WorkflowRunUncheckedUpdateManyWithoutStartedByNestedInput
   assignedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedUpdateManyWithoutAssigneeNestedInput
   completedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedUpdateManyWithoutCompletedByNestedInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUncheckedUpdateManyWithoutSuccessorNestedInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUncheckedUpdateManyWithoutRotatedByNestedInput
   createdApprovalFlows?: Prisma.ApprovalFlowUncheckedUpdateManyWithoutCreatedByNestedInput
   approvalSteps?: Prisma.ApprovalStepUncheckedUpdateManyWithoutApproverNestedInput
   approvalDecisions?: Prisma.ApprovalDecisionUncheckedUpdateManyWithoutActorNestedInput
@@ -9780,6 +10122,478 @@ export type UserUncheckedUpdateWithoutWorkflowCommentsInput = {
   notificationPrefs?: Prisma.UserNotificationPreferenceUncheckedUpdateManyWithoutUserNestedInput
   comments?: Prisma.CommentUncheckedUpdateManyWithoutAuthorNestedInput
   paymentExports?: Prisma.PaymentExportUncheckedUpdateManyWithoutGeneratedByNestedInput
+  reviewedChangeRequests?: Prisma.ContractorChangeRequestUncheckedUpdateManyWithoutReviewedByNestedInput
+  sentSigningEnvelopes?: Prisma.SigningEnvelopeUncheckedUpdateManyWithoutSentByNestedInput
+  consentRecords?: Prisma.ConsentRecordUncheckedUpdateManyWithoutUserNestedInput
+  reviewedTimesheets?: Prisma.TimesheetUncheckedUpdateManyWithoutReviewedByNestedInput
+  apiKeys?: Prisma.OrganizationApiKeyUncheckedUpdateManyWithoutCreatedByNestedInput
+  generatedClassificationDocuments?: Prisma.ClassificationDocumentUncheckedUpdateManyWithoutGeneratedByNestedInput
+  acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedUpdateManyWithoutAcknowledgedByUserNestedInput
+  dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedUpdateManyWithoutDismissedByUserNestedInput
+  uploadedIntakes?: Prisma.InvoiceIntakeRequestUncheckedUpdateManyWithoutUploadedByNestedInput
+  acknowledgedIntakes?: Prisma.InvoiceIntakeRequestUncheckedUpdateManyWithoutValidationAcknowledgedByNestedInput
+  classificationEscalationEvents?: Prisma.ClassificationEscalationEventUncheckedUpdateManyWithoutUserNestedInput
+  sdsApprovals?: Prisma.SdsApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
+  consentEvents?: Prisma.ConsentEventUncheckedUpdateManyWithoutUserNestedInput
+  pinnedViews?: Prisma.UserPinnedViewUncheckedUpdateManyWithoutUserNestedInput
+}
+
+export type UserCreateWithoutCredentialReferencesAsSuccessorInput = {
+  id?: string
+  name: string
+  email: string
+  emailVerified?: boolean
+  image?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  role?: string | null
+  banned?: boolean | null
+  banReason?: string | null
+  banExpires?: Date | string | null
+  failedLoginAttempts?: number
+  lockedUntil?: Date | string | null
+  outOfOffice?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+  members?: Prisma.MemberCreateNestedManyWithoutUserInput
+  invitations?: Prisma.InvitationCreateNestedManyWithoutInviterInput
+  ownedContractors?: Prisma.ContractorCreateNestedManyWithoutOwnerInput
+  managedTeams?: Prisma.TeamCreateNestedManyWithoutManagerInput
+  fallbackApprovedTeams?: Prisma.TeamCreateNestedManyWithoutFallbackApproverInput
+  ownedContracts?: Prisma.ContractCreateNestedManyWithoutInternalOwnerInput
+  startedWorkflowRuns?: Prisma.WorkflowRunCreateNestedManyWithoutStartedByInput
+  assignedWorkflowTasks?: Prisma.WorkflowTaskRunCreateNestedManyWithoutAssigneeInput
+  completedWorkflowTasks?: Prisma.WorkflowTaskRunCreateNestedManyWithoutCompletedByInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceCreateNestedManyWithoutRotatedByInput
+  createdApprovalFlows?: Prisma.ApprovalFlowCreateNestedManyWithoutCreatedByInput
+  approvalSteps?: Prisma.ApprovalStepCreateNestedManyWithoutApproverInput
+  approvalDecisions?: Prisma.ApprovalDecisionCreateNestedManyWithoutActorInput
+  createdPaymentRuns?: Prisma.PaymentRunCreateNestedManyWithoutCreatedByInput
+  approvedPaymentRuns?: Prisma.PaymentRunCreateNestedManyWithoutApprovedByInput
+  integrationConnections?: Prisma.IntegrationConnectionCreateNestedManyWithoutConnectedByInput
+  personalConnections?: Prisma.IntegrationConnectionCreateNestedManyWithoutUserInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
+  notificationPrefs?: Prisma.UserNotificationPreferenceCreateNestedManyWithoutUserInput
+  comments?: Prisma.CommentCreateNestedManyWithoutAuthorInput
+  paymentExports?: Prisma.PaymentExportCreateNestedManyWithoutGeneratedByInput
+  workflowComments?: Prisma.WorkflowCommentCreateNestedManyWithoutAuthorInput
+  reviewedChangeRequests?: Prisma.ContractorChangeRequestCreateNestedManyWithoutReviewedByInput
+  sentSigningEnvelopes?: Prisma.SigningEnvelopeCreateNestedManyWithoutSentByInput
+  consentRecords?: Prisma.ConsentRecordCreateNestedManyWithoutUserInput
+  reviewedTimesheets?: Prisma.TimesheetCreateNestedManyWithoutReviewedByInput
+  apiKeys?: Prisma.OrganizationApiKeyCreateNestedManyWithoutCreatedByInput
+  generatedClassificationDocuments?: Prisma.ClassificationDocumentCreateNestedManyWithoutGeneratedByInput
+  acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerCreateNestedManyWithoutAcknowledgedByUserInput
+  dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerCreateNestedManyWithoutDismissedByUserInput
+  uploadedIntakes?: Prisma.InvoiceIntakeRequestCreateNestedManyWithoutUploadedByInput
+  acknowledgedIntakes?: Prisma.InvoiceIntakeRequestCreateNestedManyWithoutValidationAcknowledgedByInput
+  classificationEscalationEvents?: Prisma.ClassificationEscalationEventCreateNestedManyWithoutUserInput
+  sdsApprovals?: Prisma.SdsApprovalCreateNestedManyWithoutApprovedByInput
+  consentEvents?: Prisma.ConsentEventCreateNestedManyWithoutUserInput
+  pinnedViews?: Prisma.UserPinnedViewCreateNestedManyWithoutUserInput
+}
+
+export type UserUncheckedCreateWithoutCredentialReferencesAsSuccessorInput = {
+  id?: string
+  name: string
+  email: string
+  emailVerified?: boolean
+  image?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  role?: string | null
+  banned?: boolean | null
+  banReason?: string | null
+  banExpires?: Date | string | null
+  failedLoginAttempts?: number
+  lockedUntil?: Date | string | null
+  outOfOffice?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+  members?: Prisma.MemberUncheckedCreateNestedManyWithoutUserInput
+  invitations?: Prisma.InvitationUncheckedCreateNestedManyWithoutInviterInput
+  ownedContractors?: Prisma.ContractorUncheckedCreateNestedManyWithoutOwnerInput
+  managedTeams?: Prisma.TeamUncheckedCreateNestedManyWithoutManagerInput
+  fallbackApprovedTeams?: Prisma.TeamUncheckedCreateNestedManyWithoutFallbackApproverInput
+  ownedContracts?: Prisma.ContractUncheckedCreateNestedManyWithoutInternalOwnerInput
+  startedWorkflowRuns?: Prisma.WorkflowRunUncheckedCreateNestedManyWithoutStartedByInput
+  assignedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedCreateNestedManyWithoutAssigneeInput
+  completedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedCreateNestedManyWithoutCompletedByInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUncheckedCreateNestedManyWithoutRotatedByInput
+  createdApprovalFlows?: Prisma.ApprovalFlowUncheckedCreateNestedManyWithoutCreatedByInput
+  approvalSteps?: Prisma.ApprovalStepUncheckedCreateNestedManyWithoutApproverInput
+  approvalDecisions?: Prisma.ApprovalDecisionUncheckedCreateNestedManyWithoutActorInput
+  createdPaymentRuns?: Prisma.PaymentRunUncheckedCreateNestedManyWithoutCreatedByInput
+  approvedPaymentRuns?: Prisma.PaymentRunUncheckedCreateNestedManyWithoutApprovedByInput
+  integrationConnections?: Prisma.IntegrationConnectionUncheckedCreateNestedManyWithoutConnectedByInput
+  personalConnections?: Prisma.IntegrationConnectionUncheckedCreateNestedManyWithoutUserInput
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
+  notificationPrefs?: Prisma.UserNotificationPreferenceUncheckedCreateNestedManyWithoutUserInput
+  comments?: Prisma.CommentUncheckedCreateNestedManyWithoutAuthorInput
+  paymentExports?: Prisma.PaymentExportUncheckedCreateNestedManyWithoutGeneratedByInput
+  workflowComments?: Prisma.WorkflowCommentUncheckedCreateNestedManyWithoutAuthorInput
+  reviewedChangeRequests?: Prisma.ContractorChangeRequestUncheckedCreateNestedManyWithoutReviewedByInput
+  sentSigningEnvelopes?: Prisma.SigningEnvelopeUncheckedCreateNestedManyWithoutSentByInput
+  consentRecords?: Prisma.ConsentRecordUncheckedCreateNestedManyWithoutUserInput
+  reviewedTimesheets?: Prisma.TimesheetUncheckedCreateNestedManyWithoutReviewedByInput
+  apiKeys?: Prisma.OrganizationApiKeyUncheckedCreateNestedManyWithoutCreatedByInput
+  generatedClassificationDocuments?: Prisma.ClassificationDocumentUncheckedCreateNestedManyWithoutGeneratedByInput
+  acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedCreateNestedManyWithoutAcknowledgedByUserInput
+  dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedCreateNestedManyWithoutDismissedByUserInput
+  uploadedIntakes?: Prisma.InvoiceIntakeRequestUncheckedCreateNestedManyWithoutUploadedByInput
+  acknowledgedIntakes?: Prisma.InvoiceIntakeRequestUncheckedCreateNestedManyWithoutValidationAcknowledgedByInput
+  classificationEscalationEvents?: Prisma.ClassificationEscalationEventUncheckedCreateNestedManyWithoutUserInput
+  sdsApprovals?: Prisma.SdsApprovalUncheckedCreateNestedManyWithoutApprovedByInput
+  consentEvents?: Prisma.ConsentEventUncheckedCreateNestedManyWithoutUserInput
+  pinnedViews?: Prisma.UserPinnedViewUncheckedCreateNestedManyWithoutUserInput
+}
+
+export type UserCreateOrConnectWithoutCredentialReferencesAsSuccessorInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutCredentialReferencesAsSuccessorInput, Prisma.UserUncheckedCreateWithoutCredentialReferencesAsSuccessorInput>
+}
+
+export type UserCreateWithoutCredentialReferencesRotatedInput = {
+  id?: string
+  name: string
+  email: string
+  emailVerified?: boolean
+  image?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  role?: string | null
+  banned?: boolean | null
+  banReason?: string | null
+  banExpires?: Date | string | null
+  failedLoginAttempts?: number
+  lockedUntil?: Date | string | null
+  outOfOffice?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+  members?: Prisma.MemberCreateNestedManyWithoutUserInput
+  invitations?: Prisma.InvitationCreateNestedManyWithoutInviterInput
+  ownedContractors?: Prisma.ContractorCreateNestedManyWithoutOwnerInput
+  managedTeams?: Prisma.TeamCreateNestedManyWithoutManagerInput
+  fallbackApprovedTeams?: Prisma.TeamCreateNestedManyWithoutFallbackApproverInput
+  ownedContracts?: Prisma.ContractCreateNestedManyWithoutInternalOwnerInput
+  startedWorkflowRuns?: Prisma.WorkflowRunCreateNestedManyWithoutStartedByInput
+  assignedWorkflowTasks?: Prisma.WorkflowTaskRunCreateNestedManyWithoutAssigneeInput
+  completedWorkflowTasks?: Prisma.WorkflowTaskRunCreateNestedManyWithoutCompletedByInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceCreateNestedManyWithoutSuccessorInput
+  createdApprovalFlows?: Prisma.ApprovalFlowCreateNestedManyWithoutCreatedByInput
+  approvalSteps?: Prisma.ApprovalStepCreateNestedManyWithoutApproverInput
+  approvalDecisions?: Prisma.ApprovalDecisionCreateNestedManyWithoutActorInput
+  createdPaymentRuns?: Prisma.PaymentRunCreateNestedManyWithoutCreatedByInput
+  approvedPaymentRuns?: Prisma.PaymentRunCreateNestedManyWithoutApprovedByInput
+  integrationConnections?: Prisma.IntegrationConnectionCreateNestedManyWithoutConnectedByInput
+  personalConnections?: Prisma.IntegrationConnectionCreateNestedManyWithoutUserInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
+  notificationPrefs?: Prisma.UserNotificationPreferenceCreateNestedManyWithoutUserInput
+  comments?: Prisma.CommentCreateNestedManyWithoutAuthorInput
+  paymentExports?: Prisma.PaymentExportCreateNestedManyWithoutGeneratedByInput
+  workflowComments?: Prisma.WorkflowCommentCreateNestedManyWithoutAuthorInput
+  reviewedChangeRequests?: Prisma.ContractorChangeRequestCreateNestedManyWithoutReviewedByInput
+  sentSigningEnvelopes?: Prisma.SigningEnvelopeCreateNestedManyWithoutSentByInput
+  consentRecords?: Prisma.ConsentRecordCreateNestedManyWithoutUserInput
+  reviewedTimesheets?: Prisma.TimesheetCreateNestedManyWithoutReviewedByInput
+  apiKeys?: Prisma.OrganizationApiKeyCreateNestedManyWithoutCreatedByInput
+  generatedClassificationDocuments?: Prisma.ClassificationDocumentCreateNestedManyWithoutGeneratedByInput
+  acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerCreateNestedManyWithoutAcknowledgedByUserInput
+  dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerCreateNestedManyWithoutDismissedByUserInput
+  uploadedIntakes?: Prisma.InvoiceIntakeRequestCreateNestedManyWithoutUploadedByInput
+  acknowledgedIntakes?: Prisma.InvoiceIntakeRequestCreateNestedManyWithoutValidationAcknowledgedByInput
+  classificationEscalationEvents?: Prisma.ClassificationEscalationEventCreateNestedManyWithoutUserInput
+  sdsApprovals?: Prisma.SdsApprovalCreateNestedManyWithoutApprovedByInput
+  consentEvents?: Prisma.ConsentEventCreateNestedManyWithoutUserInput
+  pinnedViews?: Prisma.UserPinnedViewCreateNestedManyWithoutUserInput
+}
+
+export type UserUncheckedCreateWithoutCredentialReferencesRotatedInput = {
+  id?: string
+  name: string
+  email: string
+  emailVerified?: boolean
+  image?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  role?: string | null
+  banned?: boolean | null
+  banReason?: string | null
+  banExpires?: Date | string | null
+  failedLoginAttempts?: number
+  lockedUntil?: Date | string | null
+  outOfOffice?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+  members?: Prisma.MemberUncheckedCreateNestedManyWithoutUserInput
+  invitations?: Prisma.InvitationUncheckedCreateNestedManyWithoutInviterInput
+  ownedContractors?: Prisma.ContractorUncheckedCreateNestedManyWithoutOwnerInput
+  managedTeams?: Prisma.TeamUncheckedCreateNestedManyWithoutManagerInput
+  fallbackApprovedTeams?: Prisma.TeamUncheckedCreateNestedManyWithoutFallbackApproverInput
+  ownedContracts?: Prisma.ContractUncheckedCreateNestedManyWithoutInternalOwnerInput
+  startedWorkflowRuns?: Prisma.WorkflowRunUncheckedCreateNestedManyWithoutStartedByInput
+  assignedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedCreateNestedManyWithoutAssigneeInput
+  completedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedCreateNestedManyWithoutCompletedByInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUncheckedCreateNestedManyWithoutSuccessorInput
+  createdApprovalFlows?: Prisma.ApprovalFlowUncheckedCreateNestedManyWithoutCreatedByInput
+  approvalSteps?: Prisma.ApprovalStepUncheckedCreateNestedManyWithoutApproverInput
+  approvalDecisions?: Prisma.ApprovalDecisionUncheckedCreateNestedManyWithoutActorInput
+  createdPaymentRuns?: Prisma.PaymentRunUncheckedCreateNestedManyWithoutCreatedByInput
+  approvedPaymentRuns?: Prisma.PaymentRunUncheckedCreateNestedManyWithoutApprovedByInput
+  integrationConnections?: Prisma.IntegrationConnectionUncheckedCreateNestedManyWithoutConnectedByInput
+  personalConnections?: Prisma.IntegrationConnectionUncheckedCreateNestedManyWithoutUserInput
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
+  notificationPrefs?: Prisma.UserNotificationPreferenceUncheckedCreateNestedManyWithoutUserInput
+  comments?: Prisma.CommentUncheckedCreateNestedManyWithoutAuthorInput
+  paymentExports?: Prisma.PaymentExportUncheckedCreateNestedManyWithoutGeneratedByInput
+  workflowComments?: Prisma.WorkflowCommentUncheckedCreateNestedManyWithoutAuthorInput
+  reviewedChangeRequests?: Prisma.ContractorChangeRequestUncheckedCreateNestedManyWithoutReviewedByInput
+  sentSigningEnvelopes?: Prisma.SigningEnvelopeUncheckedCreateNestedManyWithoutSentByInput
+  consentRecords?: Prisma.ConsentRecordUncheckedCreateNestedManyWithoutUserInput
+  reviewedTimesheets?: Prisma.TimesheetUncheckedCreateNestedManyWithoutReviewedByInput
+  apiKeys?: Prisma.OrganizationApiKeyUncheckedCreateNestedManyWithoutCreatedByInput
+  generatedClassificationDocuments?: Prisma.ClassificationDocumentUncheckedCreateNestedManyWithoutGeneratedByInput
+  acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedCreateNestedManyWithoutAcknowledgedByUserInput
+  dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedCreateNestedManyWithoutDismissedByUserInput
+  uploadedIntakes?: Prisma.InvoiceIntakeRequestUncheckedCreateNestedManyWithoutUploadedByInput
+  acknowledgedIntakes?: Prisma.InvoiceIntakeRequestUncheckedCreateNestedManyWithoutValidationAcknowledgedByInput
+  classificationEscalationEvents?: Prisma.ClassificationEscalationEventUncheckedCreateNestedManyWithoutUserInput
+  sdsApprovals?: Prisma.SdsApprovalUncheckedCreateNestedManyWithoutApprovedByInput
+  consentEvents?: Prisma.ConsentEventUncheckedCreateNestedManyWithoutUserInput
+  pinnedViews?: Prisma.UserPinnedViewUncheckedCreateNestedManyWithoutUserInput
+}
+
+export type UserCreateOrConnectWithoutCredentialReferencesRotatedInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutCredentialReferencesRotatedInput, Prisma.UserUncheckedCreateWithoutCredentialReferencesRotatedInput>
+}
+
+export type UserUpsertWithoutCredentialReferencesAsSuccessorInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutCredentialReferencesAsSuccessorInput, Prisma.UserUncheckedUpdateWithoutCredentialReferencesAsSuccessorInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutCredentialReferencesAsSuccessorInput, Prisma.UserUncheckedCreateWithoutCredentialReferencesAsSuccessorInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutCredentialReferencesAsSuccessorInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutCredentialReferencesAsSuccessorInput, Prisma.UserUncheckedUpdateWithoutCredentialReferencesAsSuccessorInput>
+}
+
+export type UserUpdateWithoutCredentialReferencesAsSuccessorInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  role?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  banned?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  banReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  failedLoginAttempts?: Prisma.IntFieldUpdateOperationsInput | number
+  lockedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  outOfOffice?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+  members?: Prisma.MemberUpdateManyWithoutUserNestedInput
+  invitations?: Prisma.InvitationUpdateManyWithoutInviterNestedInput
+  ownedContractors?: Prisma.ContractorUpdateManyWithoutOwnerNestedInput
+  managedTeams?: Prisma.TeamUpdateManyWithoutManagerNestedInput
+  fallbackApprovedTeams?: Prisma.TeamUpdateManyWithoutFallbackApproverNestedInput
+  ownedContracts?: Prisma.ContractUpdateManyWithoutInternalOwnerNestedInput
+  startedWorkflowRuns?: Prisma.WorkflowRunUpdateManyWithoutStartedByNestedInput
+  assignedWorkflowTasks?: Prisma.WorkflowTaskRunUpdateManyWithoutAssigneeNestedInput
+  completedWorkflowTasks?: Prisma.WorkflowTaskRunUpdateManyWithoutCompletedByNestedInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUpdateManyWithoutRotatedByNestedInput
+  createdApprovalFlows?: Prisma.ApprovalFlowUpdateManyWithoutCreatedByNestedInput
+  approvalSteps?: Prisma.ApprovalStepUpdateManyWithoutApproverNestedInput
+  approvalDecisions?: Prisma.ApprovalDecisionUpdateManyWithoutActorNestedInput
+  createdPaymentRuns?: Prisma.PaymentRunUpdateManyWithoutCreatedByNestedInput
+  approvedPaymentRuns?: Prisma.PaymentRunUpdateManyWithoutApprovedByNestedInput
+  integrationConnections?: Prisma.IntegrationConnectionUpdateManyWithoutConnectedByNestedInput
+  personalConnections?: Prisma.IntegrationConnectionUpdateManyWithoutUserNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
+  notificationPrefs?: Prisma.UserNotificationPreferenceUpdateManyWithoutUserNestedInput
+  comments?: Prisma.CommentUpdateManyWithoutAuthorNestedInput
+  paymentExports?: Prisma.PaymentExportUpdateManyWithoutGeneratedByNestedInput
+  workflowComments?: Prisma.WorkflowCommentUpdateManyWithoutAuthorNestedInput
+  reviewedChangeRequests?: Prisma.ContractorChangeRequestUpdateManyWithoutReviewedByNestedInput
+  sentSigningEnvelopes?: Prisma.SigningEnvelopeUpdateManyWithoutSentByNestedInput
+  consentRecords?: Prisma.ConsentRecordUpdateManyWithoutUserNestedInput
+  reviewedTimesheets?: Prisma.TimesheetUpdateManyWithoutReviewedByNestedInput
+  apiKeys?: Prisma.OrganizationApiKeyUpdateManyWithoutCreatedByNestedInput
+  generatedClassificationDocuments?: Prisma.ClassificationDocumentUpdateManyWithoutGeneratedByNestedInput
+  acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUpdateManyWithoutAcknowledgedByUserNestedInput
+  dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUpdateManyWithoutDismissedByUserNestedInput
+  uploadedIntakes?: Prisma.InvoiceIntakeRequestUpdateManyWithoutUploadedByNestedInput
+  acknowledgedIntakes?: Prisma.InvoiceIntakeRequestUpdateManyWithoutValidationAcknowledgedByNestedInput
+  classificationEscalationEvents?: Prisma.ClassificationEscalationEventUpdateManyWithoutUserNestedInput
+  sdsApprovals?: Prisma.SdsApprovalUpdateManyWithoutApprovedByNestedInput
+  consentEvents?: Prisma.ConsentEventUpdateManyWithoutUserNestedInput
+  pinnedViews?: Prisma.UserPinnedViewUpdateManyWithoutUserNestedInput
+}
+
+export type UserUncheckedUpdateWithoutCredentialReferencesAsSuccessorInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  role?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  banned?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  banReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  failedLoginAttempts?: Prisma.IntFieldUpdateOperationsInput | number
+  lockedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  outOfOffice?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+  members?: Prisma.MemberUncheckedUpdateManyWithoutUserNestedInput
+  invitations?: Prisma.InvitationUncheckedUpdateManyWithoutInviterNestedInput
+  ownedContractors?: Prisma.ContractorUncheckedUpdateManyWithoutOwnerNestedInput
+  managedTeams?: Prisma.TeamUncheckedUpdateManyWithoutManagerNestedInput
+  fallbackApprovedTeams?: Prisma.TeamUncheckedUpdateManyWithoutFallbackApproverNestedInput
+  ownedContracts?: Prisma.ContractUncheckedUpdateManyWithoutInternalOwnerNestedInput
+  startedWorkflowRuns?: Prisma.WorkflowRunUncheckedUpdateManyWithoutStartedByNestedInput
+  assignedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedUpdateManyWithoutAssigneeNestedInput
+  completedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedUpdateManyWithoutCompletedByNestedInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUncheckedUpdateManyWithoutRotatedByNestedInput
+  createdApprovalFlows?: Prisma.ApprovalFlowUncheckedUpdateManyWithoutCreatedByNestedInput
+  approvalSteps?: Prisma.ApprovalStepUncheckedUpdateManyWithoutApproverNestedInput
+  approvalDecisions?: Prisma.ApprovalDecisionUncheckedUpdateManyWithoutActorNestedInput
+  createdPaymentRuns?: Prisma.PaymentRunUncheckedUpdateManyWithoutCreatedByNestedInput
+  approvedPaymentRuns?: Prisma.PaymentRunUncheckedUpdateManyWithoutApprovedByNestedInput
+  integrationConnections?: Prisma.IntegrationConnectionUncheckedUpdateManyWithoutConnectedByNestedInput
+  personalConnections?: Prisma.IntegrationConnectionUncheckedUpdateManyWithoutUserNestedInput
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
+  notificationPrefs?: Prisma.UserNotificationPreferenceUncheckedUpdateManyWithoutUserNestedInput
+  comments?: Prisma.CommentUncheckedUpdateManyWithoutAuthorNestedInput
+  paymentExports?: Prisma.PaymentExportUncheckedUpdateManyWithoutGeneratedByNestedInput
+  workflowComments?: Prisma.WorkflowCommentUncheckedUpdateManyWithoutAuthorNestedInput
+  reviewedChangeRequests?: Prisma.ContractorChangeRequestUncheckedUpdateManyWithoutReviewedByNestedInput
+  sentSigningEnvelopes?: Prisma.SigningEnvelopeUncheckedUpdateManyWithoutSentByNestedInput
+  consentRecords?: Prisma.ConsentRecordUncheckedUpdateManyWithoutUserNestedInput
+  reviewedTimesheets?: Prisma.TimesheetUncheckedUpdateManyWithoutReviewedByNestedInput
+  apiKeys?: Prisma.OrganizationApiKeyUncheckedUpdateManyWithoutCreatedByNestedInput
+  generatedClassificationDocuments?: Prisma.ClassificationDocumentUncheckedUpdateManyWithoutGeneratedByNestedInput
+  acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedUpdateManyWithoutAcknowledgedByUserNestedInput
+  dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedUpdateManyWithoutDismissedByUserNestedInput
+  uploadedIntakes?: Prisma.InvoiceIntakeRequestUncheckedUpdateManyWithoutUploadedByNestedInput
+  acknowledgedIntakes?: Prisma.InvoiceIntakeRequestUncheckedUpdateManyWithoutValidationAcknowledgedByNestedInput
+  classificationEscalationEvents?: Prisma.ClassificationEscalationEventUncheckedUpdateManyWithoutUserNestedInput
+  sdsApprovals?: Prisma.SdsApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
+  consentEvents?: Prisma.ConsentEventUncheckedUpdateManyWithoutUserNestedInput
+  pinnedViews?: Prisma.UserPinnedViewUncheckedUpdateManyWithoutUserNestedInput
+}
+
+export type UserUpsertWithoutCredentialReferencesRotatedInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutCredentialReferencesRotatedInput, Prisma.UserUncheckedUpdateWithoutCredentialReferencesRotatedInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutCredentialReferencesRotatedInput, Prisma.UserUncheckedCreateWithoutCredentialReferencesRotatedInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutCredentialReferencesRotatedInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutCredentialReferencesRotatedInput, Prisma.UserUncheckedUpdateWithoutCredentialReferencesRotatedInput>
+}
+
+export type UserUpdateWithoutCredentialReferencesRotatedInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  role?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  banned?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  banReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  failedLoginAttempts?: Prisma.IntFieldUpdateOperationsInput | number
+  lockedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  outOfOffice?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+  members?: Prisma.MemberUpdateManyWithoutUserNestedInput
+  invitations?: Prisma.InvitationUpdateManyWithoutInviterNestedInput
+  ownedContractors?: Prisma.ContractorUpdateManyWithoutOwnerNestedInput
+  managedTeams?: Prisma.TeamUpdateManyWithoutManagerNestedInput
+  fallbackApprovedTeams?: Prisma.TeamUpdateManyWithoutFallbackApproverNestedInput
+  ownedContracts?: Prisma.ContractUpdateManyWithoutInternalOwnerNestedInput
+  startedWorkflowRuns?: Prisma.WorkflowRunUpdateManyWithoutStartedByNestedInput
+  assignedWorkflowTasks?: Prisma.WorkflowTaskRunUpdateManyWithoutAssigneeNestedInput
+  completedWorkflowTasks?: Prisma.WorkflowTaskRunUpdateManyWithoutCompletedByNestedInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUpdateManyWithoutSuccessorNestedInput
+  createdApprovalFlows?: Prisma.ApprovalFlowUpdateManyWithoutCreatedByNestedInput
+  approvalSteps?: Prisma.ApprovalStepUpdateManyWithoutApproverNestedInput
+  approvalDecisions?: Prisma.ApprovalDecisionUpdateManyWithoutActorNestedInput
+  createdPaymentRuns?: Prisma.PaymentRunUpdateManyWithoutCreatedByNestedInput
+  approvedPaymentRuns?: Prisma.PaymentRunUpdateManyWithoutApprovedByNestedInput
+  integrationConnections?: Prisma.IntegrationConnectionUpdateManyWithoutConnectedByNestedInput
+  personalConnections?: Prisma.IntegrationConnectionUpdateManyWithoutUserNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
+  notificationPrefs?: Prisma.UserNotificationPreferenceUpdateManyWithoutUserNestedInput
+  comments?: Prisma.CommentUpdateManyWithoutAuthorNestedInput
+  paymentExports?: Prisma.PaymentExportUpdateManyWithoutGeneratedByNestedInput
+  workflowComments?: Prisma.WorkflowCommentUpdateManyWithoutAuthorNestedInput
+  reviewedChangeRequests?: Prisma.ContractorChangeRequestUpdateManyWithoutReviewedByNestedInput
+  sentSigningEnvelopes?: Prisma.SigningEnvelopeUpdateManyWithoutSentByNestedInput
+  consentRecords?: Prisma.ConsentRecordUpdateManyWithoutUserNestedInput
+  reviewedTimesheets?: Prisma.TimesheetUpdateManyWithoutReviewedByNestedInput
+  apiKeys?: Prisma.OrganizationApiKeyUpdateManyWithoutCreatedByNestedInput
+  generatedClassificationDocuments?: Prisma.ClassificationDocumentUpdateManyWithoutGeneratedByNestedInput
+  acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUpdateManyWithoutAcknowledgedByUserNestedInput
+  dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUpdateManyWithoutDismissedByUserNestedInput
+  uploadedIntakes?: Prisma.InvoiceIntakeRequestUpdateManyWithoutUploadedByNestedInput
+  acknowledgedIntakes?: Prisma.InvoiceIntakeRequestUpdateManyWithoutValidationAcknowledgedByNestedInput
+  classificationEscalationEvents?: Prisma.ClassificationEscalationEventUpdateManyWithoutUserNestedInput
+  sdsApprovals?: Prisma.SdsApprovalUpdateManyWithoutApprovedByNestedInput
+  consentEvents?: Prisma.ConsentEventUpdateManyWithoutUserNestedInput
+  pinnedViews?: Prisma.UserPinnedViewUpdateManyWithoutUserNestedInput
+}
+
+export type UserUncheckedUpdateWithoutCredentialReferencesRotatedInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  role?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  banned?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  banReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  failedLoginAttempts?: Prisma.IntFieldUpdateOperationsInput | number
+  lockedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  outOfOffice?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+  members?: Prisma.MemberUncheckedUpdateManyWithoutUserNestedInput
+  invitations?: Prisma.InvitationUncheckedUpdateManyWithoutInviterNestedInput
+  ownedContractors?: Prisma.ContractorUncheckedUpdateManyWithoutOwnerNestedInput
+  managedTeams?: Prisma.TeamUncheckedUpdateManyWithoutManagerNestedInput
+  fallbackApprovedTeams?: Prisma.TeamUncheckedUpdateManyWithoutFallbackApproverNestedInput
+  ownedContracts?: Prisma.ContractUncheckedUpdateManyWithoutInternalOwnerNestedInput
+  startedWorkflowRuns?: Prisma.WorkflowRunUncheckedUpdateManyWithoutStartedByNestedInput
+  assignedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedUpdateManyWithoutAssigneeNestedInput
+  completedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedUpdateManyWithoutCompletedByNestedInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUncheckedUpdateManyWithoutSuccessorNestedInput
+  createdApprovalFlows?: Prisma.ApprovalFlowUncheckedUpdateManyWithoutCreatedByNestedInput
+  approvalSteps?: Prisma.ApprovalStepUncheckedUpdateManyWithoutApproverNestedInput
+  approvalDecisions?: Prisma.ApprovalDecisionUncheckedUpdateManyWithoutActorNestedInput
+  createdPaymentRuns?: Prisma.PaymentRunUncheckedUpdateManyWithoutCreatedByNestedInput
+  approvedPaymentRuns?: Prisma.PaymentRunUncheckedUpdateManyWithoutApprovedByNestedInput
+  integrationConnections?: Prisma.IntegrationConnectionUncheckedUpdateManyWithoutConnectedByNestedInput
+  personalConnections?: Prisma.IntegrationConnectionUncheckedUpdateManyWithoutUserNestedInput
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
+  notificationPrefs?: Prisma.UserNotificationPreferenceUncheckedUpdateManyWithoutUserNestedInput
+  comments?: Prisma.CommentUncheckedUpdateManyWithoutAuthorNestedInput
+  paymentExports?: Prisma.PaymentExportUncheckedUpdateManyWithoutGeneratedByNestedInput
+  workflowComments?: Prisma.WorkflowCommentUncheckedUpdateManyWithoutAuthorNestedInput
   reviewedChangeRequests?: Prisma.ContractorChangeRequestUncheckedUpdateManyWithoutReviewedByNestedInput
   sentSigningEnvelopes?: Prisma.SigningEnvelopeUncheckedUpdateManyWithoutSentByNestedInput
   consentRecords?: Prisma.ConsentRecordUncheckedUpdateManyWithoutUserNestedInput
@@ -9813,6 +10627,8 @@ export type UserCountOutputType = {
   startedWorkflowRuns: number
   assignedWorkflowTasks: number
   completedWorkflowTasks: number
+  credentialReferencesAsSuccessor: number
+  credentialReferencesRotated: number
   createdApprovalFlows: number
   approvalSteps: number
   approvalDecisions: number
@@ -9853,6 +10669,8 @@ export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.I
   startedWorkflowRuns?: boolean | UserCountOutputTypeCountStartedWorkflowRunsArgs
   assignedWorkflowTasks?: boolean | UserCountOutputTypeCountAssignedWorkflowTasksArgs
   completedWorkflowTasks?: boolean | UserCountOutputTypeCountCompletedWorkflowTasksArgs
+  credentialReferencesAsSuccessor?: boolean | UserCountOutputTypeCountCredentialReferencesAsSuccessorArgs
+  credentialReferencesRotated?: boolean | UserCountOutputTypeCountCredentialReferencesRotatedArgs
   createdApprovalFlows?: boolean | UserCountOutputTypeCountCreatedApprovalFlowsArgs
   approvalSteps?: boolean | UserCountOutputTypeCountApprovalStepsArgs
   approvalDecisions?: boolean | UserCountOutputTypeCountApprovalDecisionsArgs
@@ -9966,6 +10784,20 @@ export type UserCountOutputTypeCountAssignedWorkflowTasksArgs<ExtArgs extends ru
  */
 export type UserCountOutputTypeCountCompletedWorkflowTasksArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.WorkflowTaskRunWhereInput
+}
+
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountCredentialReferencesAsSuccessorArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.CredentialReferenceWhereInput
+}
+
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountCredentialReferencesRotatedArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.CredentialReferenceWhereInput
 }
 
 /**
@@ -10177,6 +11009,8 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   startedWorkflowRuns?: boolean | Prisma.User$startedWorkflowRunsArgs<ExtArgs>
   assignedWorkflowTasks?: boolean | Prisma.User$assignedWorkflowTasksArgs<ExtArgs>
   completedWorkflowTasks?: boolean | Prisma.User$completedWorkflowTasksArgs<ExtArgs>
+  credentialReferencesAsSuccessor?: boolean | Prisma.User$credentialReferencesAsSuccessorArgs<ExtArgs>
+  credentialReferencesRotated?: boolean | Prisma.User$credentialReferencesRotatedArgs<ExtArgs>
   createdApprovalFlows?: boolean | Prisma.User$createdApprovalFlowsArgs<ExtArgs>
   approvalSteps?: boolean | Prisma.User$approvalStepsArgs<ExtArgs>
   approvalDecisions?: boolean | Prisma.User$approvalDecisionsArgs<ExtArgs>
@@ -10270,6 +11104,8 @@ export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   startedWorkflowRuns?: boolean | Prisma.User$startedWorkflowRunsArgs<ExtArgs>
   assignedWorkflowTasks?: boolean | Prisma.User$assignedWorkflowTasksArgs<ExtArgs>
   completedWorkflowTasks?: boolean | Prisma.User$completedWorkflowTasksArgs<ExtArgs>
+  credentialReferencesAsSuccessor?: boolean | Prisma.User$credentialReferencesAsSuccessorArgs<ExtArgs>
+  credentialReferencesRotated?: boolean | Prisma.User$credentialReferencesRotatedArgs<ExtArgs>
   createdApprovalFlows?: boolean | Prisma.User$createdApprovalFlowsArgs<ExtArgs>
   approvalSteps?: boolean | Prisma.User$approvalStepsArgs<ExtArgs>
   approvalDecisions?: boolean | Prisma.User$approvalDecisionsArgs<ExtArgs>
@@ -10315,6 +11151,8 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     startedWorkflowRuns: Prisma.$WorkflowRunPayload<ExtArgs>[]
     assignedWorkflowTasks: Prisma.$WorkflowTaskRunPayload<ExtArgs>[]
     completedWorkflowTasks: Prisma.$WorkflowTaskRunPayload<ExtArgs>[]
+    credentialReferencesAsSuccessor: Prisma.$CredentialReferencePayload<ExtArgs>[]
+    credentialReferencesRotated: Prisma.$CredentialReferencePayload<ExtArgs>[]
     createdApprovalFlows: Prisma.$ApprovalFlowPayload<ExtArgs>[]
     approvalSteps: Prisma.$ApprovalStepPayload<ExtArgs>[]
     approvalDecisions: Prisma.$ApprovalDecisionPayload<ExtArgs>[]
@@ -10762,6 +11600,8 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   startedWorkflowRuns<T extends Prisma.User$startedWorkflowRunsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$startedWorkflowRunsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$WorkflowRunPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   assignedWorkflowTasks<T extends Prisma.User$assignedWorkflowTasksArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$assignedWorkflowTasksArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$WorkflowTaskRunPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   completedWorkflowTasks<T extends Prisma.User$completedWorkflowTasksArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$completedWorkflowTasksArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$WorkflowTaskRunPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  credentialReferencesAsSuccessor<T extends Prisma.User$credentialReferencesAsSuccessorArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$credentialReferencesAsSuccessorArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$CredentialReferencePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  credentialReferencesRotated<T extends Prisma.User$credentialReferencesRotatedArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$credentialReferencesRotatedArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$CredentialReferencePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   createdApprovalFlows<T extends Prisma.User$createdApprovalFlowsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$createdApprovalFlowsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ApprovalFlowPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   approvalSteps<T extends Prisma.User$approvalStepsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$approvalStepsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ApprovalStepPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   approvalDecisions<T extends Prisma.User$approvalDecisionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$approvalDecisionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ApprovalDecisionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -11485,6 +12325,54 @@ export type User$completedWorkflowTasksArgs<ExtArgs extends runtime.Types.Extens
   take?: number
   skip?: number
   distinct?: Prisma.WorkflowTaskRunScalarFieldEnum | Prisma.WorkflowTaskRunScalarFieldEnum[]
+}
+
+/**
+ * User.credentialReferencesAsSuccessor
+ */
+export type User$credentialReferencesAsSuccessorArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the CredentialReference
+   */
+  select?: Prisma.CredentialReferenceSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the CredentialReference
+   */
+  omit?: Prisma.CredentialReferenceOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.CredentialReferenceInclude<ExtArgs> | null
+  where?: Prisma.CredentialReferenceWhereInput
+  orderBy?: Prisma.CredentialReferenceOrderByWithRelationInput | Prisma.CredentialReferenceOrderByWithRelationInput[]
+  cursor?: Prisma.CredentialReferenceWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.CredentialReferenceScalarFieldEnum | Prisma.CredentialReferenceScalarFieldEnum[]
+}
+
+/**
+ * User.credentialReferencesRotated
+ */
+export type User$credentialReferencesRotatedArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the CredentialReference
+   */
+  select?: Prisma.CredentialReferenceSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the CredentialReference
+   */
+  omit?: Prisma.CredentialReferenceOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.CredentialReferenceInclude<ExtArgs> | null
+  where?: Prisma.CredentialReferenceWhereInput
+  orderBy?: Prisma.CredentialReferenceOrderByWithRelationInput | Prisma.CredentialReferenceOrderByWithRelationInput[]
+  cursor?: Prisma.CredentialReferenceWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.CredentialReferenceScalarFieldEnum | Prisma.CredentialReferenceScalarFieldEnum[]
 }
 
 /**

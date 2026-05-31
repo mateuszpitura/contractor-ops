@@ -55,6 +55,9 @@ model Organization {
   contracts                      Contract[]
   contractAmendments             ContractAmendment[]
   contractRatePeriods            ContractRatePeriod[]
+  // Phase 75 — contract health check + credential vault inverse relations
+  contractHealthCheckRuns        ContractHealthCheckRun[]
+  credentialReferences           CredentialReference[]
   documents                      Document[]
   documentLinks                  DocumentLink[]
   complianceTemplates            ComplianceRequirementTemplate[]

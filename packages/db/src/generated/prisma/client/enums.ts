@@ -245,6 +245,7 @@ export const DocumentType = {
   AMENDMENT: 'AMENDMENT',
   NDA: 'NDA',
   IP_ASSIGNMENT: 'IP_ASSIGNMENT',
+  IP_RATIFICATION: 'IP_RATIFICATION',
   DPA: 'DPA',
   TAX_CERTIFICATE: 'TAX_CERTIFICATE',
   BUSINESS_REGISTRATION: 'BUSINESS_REGISTRATION',
@@ -330,6 +331,33 @@ export const DocumentLinkRole = {
 } as const
 
 export type DocumentLinkRole = (typeof DocumentLinkRole)[keyof typeof DocumentLinkRole]
+
+
+export const IpAssignmentVerdict = {
+  LIKELY_PRESENT: 'LIKELY_PRESENT',
+  LIKELY_MISSING: 'LIKELY_MISSING',
+  MANUAL_REVIEW_REQUIRED: 'MANUAL_REVIEW_REQUIRED'
+} as const
+
+export type IpAssignmentVerdict = (typeof IpAssignmentVerdict)[keyof typeof IpAssignmentVerdict]
+
+
+export const RunStatus = {
+  PENDING: 'PENDING',
+  SUCCEEDED: 'SUCCEEDED',
+  FAILED: 'FAILED'
+} as const
+
+export type RunStatus = (typeof RunStatus)[keyof typeof RunStatus]
+
+
+export const RunTrigger = {
+  UPLOAD: 'UPLOAD',
+  MANUAL: 'MANUAL',
+  MODEL_BUMP_BULK: 'MODEL_BUMP_BULK'
+} as const
+
+export type RunTrigger = (typeof RunTrigger)[keyof typeof RunTrigger]
 
 
 export const ContractorType = {
@@ -1049,6 +1077,42 @@ export const WorkflowTaskType = {
 } as const
 
 export type WorkflowTaskType = (typeof WorkflowTaskType)[keyof typeof WorkflowTaskType]
+
+
+export const VaultProvider = {
+  ONE_PASSWORD: 'ONE_PASSWORD',
+  BITWARDEN: 'BITWARDEN',
+  HASHICORP_VAULT: 'HASHICORP_VAULT',
+  AWS_SECRETS_MANAGER: 'AWS_SECRETS_MANAGER',
+  GCP_SECRET_MANAGER: 'GCP_SECRET_MANAGER',
+  AZURE_KEY_VAULT: 'AZURE_KEY_VAULT',
+  OTHER: 'OTHER'
+} as const
+
+export type VaultProvider = (typeof VaultProvider)[keyof typeof VaultProvider]
+
+
+export const AccessType = {
+  AWS: 'AWS',
+  GITHUB: 'GITHUB',
+  GCP: 'GCP',
+  AZURE: 'AZURE',
+  DATABASE: 'DATABASE',
+  API_KEY: 'API_KEY',
+  SSH_KEY: 'SSH_KEY',
+  OTHER: 'OTHER'
+} as const
+
+export type AccessType = (typeof AccessType)[keyof typeof AccessType]
+
+
+export const CredentialStatus = {
+  PENDING: 'PENDING',
+  ROTATED: 'ROTATED',
+  NOT_APPLICABLE: 'NOT_APPLICABLE'
+} as const
+
+export type CredentialStatus = (typeof CredentialStatus)[keyof typeof CredentialStatus]
 
 
 export const AssigneeMode = {

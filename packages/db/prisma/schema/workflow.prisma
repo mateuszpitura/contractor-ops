@@ -137,6 +137,8 @@ model WorkflowRun {
   comments    WorkflowComment[]
   attachments WorkflowAttachment[]
 
+  credentialReferences CredentialReference[] // Phase 75 D-10
+
   @@index([organizationId])
   @@index([organizationId, status])
   @@index([organizationId, contractorId])
@@ -212,6 +214,42 @@ model WorkflowAttachment {
   @@index([organizationId, workflowRunId])
 }
 
+// =============================================================================
+// Phase 75 — Credential rotation tracking (D-10..D-12)
+//
+// Stores POINTERS only — never secrets. Secret-shape detector (Plan 75-05)
+// rejects raw secrets at every input field. Re-targeted from CONTEXT.md
+// `offboardingRecordId` to `workflowRunId` per RESEARCH §4 (no OffboardingRecord
+// model exists; offboarding is a WorkflowRun(workflowTemplate.type=OFFBOARDING)).
+// =============================================================================
+
+model CredentialReference {
+  id              String           @id @default(cuid())
+  organizationId  String
+  workflowRunId   String
+  label           String // e.g. "Production AWS root account" — pointer description, not the secret
+  vaultProvider   VaultProvider
+  vaultUrl        String // pointer URL — validated server-side per D-11
+  accessType      AccessType
+  successorUserId String? // nullable — sometimes "rotated to nobody, decommissioned"
+  status          CredentialStatus @default(PENDING)
+  rotatedAt       DateTime?
+  rotatedByUserId String?
+  notes           String? // free-text — also runs through secret-shape detector
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  workflowRun  WorkflowRun  @relation(fields: [workflowRunId], references: [id], onDelete: Cascade)
+  successor    User?        @relation("CredentialReferenceSuccessor", fields: [successorUserId], references: [id])
+  rotatedBy    User?        @relation("CredentialReferenceRotatedBy", fields: [rotatedByUserId], references: [id])
+
+  @@index([organizationId])
+  @@index([organizationId, workflowRunId])
+  @@index([organizationId, successorUserId])
+  @@index([organizationId, workflowRunId, status])
+}
+
 // --- Enums ---
 
 enum WorkflowTemplateType {
@@ -243,6 +281,34 @@ enum WorkflowTaskType {
   IP_VERIFICATION
   // Phase 74 — recurring contract-health-check task surfaced during offboarding
   CONTRACT_HEALTH_CHECK
+}
+
+// Phase 75 D-10 — credential-rotation vault tracking enums.
+enum VaultProvider {
+  ONE_PASSWORD
+  BITWARDEN
+  HASHICORP_VAULT
+  AWS_SECRETS_MANAGER
+  GCP_SECRET_MANAGER
+  AZURE_KEY_VAULT
+  OTHER
+}
+
+enum AccessType {
+  AWS
+  GITHUB
+  GCP
+  AZURE
+  DATABASE
+  API_KEY
+  SSH_KEY
+  OTHER
+}
+
+enum CredentialStatus {
+  PENDING
+  ROTATED
+  NOT_APPLICABLE
 }
 
 enum AssigneeMode {

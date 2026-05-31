@@ -62,3 +62,39 @@ filter excludes already-backfilled rows.
 
 Manual recompute via the admin UI (`recreateComplianceAssessment`, Phases 71-05/06)
 can refine these after deploy.
+
+## Phase 75 — Contract health check + Credential vault
+
+**Migration:** `20260531124933_phase75_contract_health_credentials`
+
+This migration is **additive** (5 new nullable columns on Contract; 2 new tables; 6 new enums; 1 new DocumentType enum value). It carries the LOCAL-ONLY constraint — engineers DO NOT apply automatically. After merging this PR:
+
+1. **Verify migration SQL:**
+   ```sh
+   cat packages/db/prisma/schema/migrations/20260531124933_phase75_contract_health_credentials/migration.sql
+   ```
+   Inspect the partial unique index (`ContractHealthCheckRun_dedup_succeeded` `WHERE status = 'SUCCEEDED'`) — Prisma cannot express this in the schema; it lives in raw SQL in the migration body. It deliberately constrains only SUCCEEDED rows so FAILED/PENDING re-runs are always allowed (D-03).
+
+2. **Apply to all regions** (the runner iterates `DATABASE_URL_EU` + `DATABASE_URL_ME` and runs `prisma migrate deploy`, failing fast on the first region error):
+   ```sh
+   npx tsx packages/db/scripts/migrate-all-regions.ts
+   # or via npm script:
+   cd packages/db && pnpm run db:migrate:all
+   ```
+   To apply against a single region, set the regional URL as `DATABASE_URL` and run `prisma migrate deploy` directly:
+   ```sh
+   DATABASE_URL=$DATABASE_URL_EU pnpm --filter @contractor-ops/db exec prisma migrate deploy --schema prisma/schema
+   ```
+
+**On failure:** `migrate-all-regions.ts` logs which region failed and stops. Re-run after fixing the underlying cause; re-running against an already-migrated region is idempotent (Prisma's `_prisma_migrations` table records applied migrations).
+
+**Backfill:** `Contract.jurisdiction` is left null for pre-Phase-75 rows. The health-check engine (Plan 75-06) falls back to `Contractor.countryCode` per RESEARCH §3 — no immediate backfill required. A post-deploy backfill PR can populate `Contract.jurisdiction` from `Contractor.countryCode` at any cadence without schema change.
+
+> NOTE — the original Plan 75-02 referenced a `push-all-regions.ts` script; the current
+> tree's multi-region runner is `migrate-all-regions.ts` (see 75-DRIFT-MAP). Usage adapted above.
+
+**Plan 75-02 status (post-execute):**
+- pnpm lint:schema: PASS for the 2 new models (both declare `organizationId`); the suite reports one PRE-EXISTING offence on `UserPinnedView` (auth.prisma, commit a1efc484 — unrelated to Phase 75, out of scope).
+- pnpm typecheck: PASS
+- pnpm --filter @contractor-ops/db test phase-75-schema: PASS (was RED in Plan 75-01)
+- All other Phase 75 Wave 0 RED tests: still RED (preserved baseline)
