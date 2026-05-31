@@ -32,6 +32,8 @@ export const NOTIFICATION_TYPES = [
   'classification.drv_expiry_90d',
   'classification.drv_expiry_30d',
   'classification.drv_expiry_7d',
+  // Phase 72 COMPL-03 — per-recipient daily compliance-expiry digest (band cascade 90/60/30/15/7)
+  'compliance.expiry_digest',
 ] as const;
 
 export const notificationTypeEnum = z.enum(NOTIFICATION_TYPES);

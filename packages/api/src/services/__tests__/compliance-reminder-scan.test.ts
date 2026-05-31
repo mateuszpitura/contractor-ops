@@ -1,30 +1,402 @@
-// Phase 72 Wave 0 — Nyquist failing scaffold
-// Maps to COMPL-03 reminder cascade engine; helper lives in
-// packages/api/src/services/compliance-reminder-scan.ts (Plan 72-03).
+// Phase 72 Wave 2 — GREEN tests for compliance-reminder-scan
+//
+// Exercises the band classifier, TZ day-math, the two-pass digest orchestrator,
+// per-band + per-recipient dedup, optimistic-concurrency loss, and the
+// renewal-reset listener. Mirrors the economic-dependency-scan test shape.
 
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+const {
+  mockPrismaRaw,
+  mockPrisma,
+  mockDispatch,
+  mockResolveRecipients,
+  mockClaimDedup,
+  mockMetricsGauge,
+  itemsFixture,
+  reminderStateByItem,
+  contractorsById,
+  claimedKeys,
+  auditLogCreates,
+} = vi.hoisted(() => {
+  interface ReminderStateRow {
+    itemId: string;
+    organizationId: string;
+    currentBand: string;
+    lastBandFired: string | null;
+    lastBandFiredAt: Date | null;
+    version: number;
+  }
+
+  const itemsFixture: Array<Record<string, unknown>> = [];
+  const reminderStateByItem = new Map<string, ReminderStateRow>();
+  const contractorsById = new Map<string, { displayName: string }>();
+  const claimedKeys = new Set<string>();
+  const auditLogCreates: Array<Record<string, unknown>> = [];
+
+  const reminderStateDelegate = {
+    findUnique: vi.fn(async (args: { where: { itemId: string } }) => {
+      return reminderStateByItem.get(args.where.itemId) ?? null;
+    }),
+    updateMany: vi.fn(
+      async (args: {
+        where: { itemId: string; version: number };
+        data: Record<string, unknown>;
+      }) => {
+        const row = reminderStateByItem.get(args.where.itemId);
+        if (!row || row.version !== args.where.version) return { count: 0 };
+        const next = { ...row };
+        for (const [k, v] of Object.entries(args.data)) {
+          if (v && typeof v === 'object' && 'increment' in (v as Record<string, unknown>)) {
+            (next as Record<string, unknown>)[k] =
+              (row as Record<string, number>)[k] + (v as { increment: number }).increment;
+          } else {
+            (next as Record<string, unknown>)[k] = v;
+          }
+        }
+        reminderStateByItem.set(args.where.itemId, next);
+        return { count: 1 };
+      },
+    ),
+    create: vi.fn(async (args: { data: ReminderStateRow }) => {
+      if (reminderStateByItem.has(args.data.itemId)) {
+        throw Object.assign(new Error('unique'), { code: 'P2002' });
+      }
+      reminderStateByItem.set(args.data.itemId, { ...args.data });
+      return args.data;
+    }),
+    upsert: vi.fn(
+      async (args: {
+        where: { itemId: string };
+        create: ReminderStateRow;
+        update: Record<string, unknown>;
+      }) => {
+        const existing = reminderStateByItem.get(args.where.itemId);
+        if (existing) {
+          const next = { ...existing };
+          for (const [k, v] of Object.entries(args.update)) {
+            if (v && typeof v === 'object' && 'increment' in (v as Record<string, unknown>)) {
+              (next as Record<string, unknown>)[k] =
+                (existing as Record<string, number>)[k] + (v as { increment: number }).increment;
+            } else {
+              (next as Record<string, unknown>)[k] = v;
+            }
+          }
+          reminderStateByItem.set(args.where.itemId, next);
+          return next;
+        }
+        reminderStateByItem.set(args.where.itemId, { ...args.create });
+        return args.create;
+      },
+    ),
+  };
+
+  const mockPrisma = {
+    contractorComplianceReminderState: reminderStateDelegate,
+    contractor: {
+      findUniqueOrThrow: vi.fn(async (args: { where: { id: string } }) => {
+        const c = contractorsById.get(args.where.id);
+        if (!c) throw new Error(`contractor ${args.where.id} not found`);
+        return c;
+      }),
+    },
+    auditLog: {
+      create: vi.fn(async (args: { data: Record<string, unknown> }) => {
+        auditLogCreates.push(args.data);
+        return args.data;
+      }),
+    },
+  };
+
+  const mockPrismaRaw = {
+    contractorComplianceItem: {
+      findMany: vi.fn(async () => itemsFixture),
+    },
+  };
+
+  return {
+    mockPrismaRaw,
+    mockPrisma,
+    mockDispatch: vi.fn(async () => undefined),
+    mockResolveRecipients: vi.fn(async () => ['user-admin-1']),
+    mockClaimDedup: vi.fn(async (key: string) => {
+      if (claimedKeys.has(key)) return false;
+      claimedKeys.add(key);
+      return true;
+    }),
+    mockMetricsGauge: vi.fn(),
+    itemsFixture,
+    reminderStateByItem,
+    contractorsById,
+    claimedKeys,
+    auditLogCreates,
+  };
+});
+
+vi.mock('@contractor-ops/db', () => ({
+  prisma: mockPrisma,
+  prismaRaw: mockPrismaRaw,
+}));
+
+vi.mock('@contractor-ops/logger', () => ({
+  createCronLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
+}));
+
+vi.mock('@contractor-ops/logger/metrics', () => ({
+  metrics: { gauge: mockMetricsGauge, increment: vi.fn(), distribution: vi.fn() },
+}));
+
+vi.mock('../notification-service', () => ({ dispatch: mockDispatch }));
+vi.mock('../rbac-recipients', () => ({ resolveRbacRecipients: mockResolveRecipients }));
+vi.mock('../cron-dedup', () => ({ claimCronNotificationDedup: mockClaimDedup }));
+
+import {
+  bandFor,
+  bandIndex,
+  onComplianceItemExpiresAtChanged,
+  runComplianceReminderScan,
+} from '../compliance-reminder-scan';
+
+const ORG = 'clorgaaaaaaaaaaaaaaaaaaaaaa';
+const TZ_BERLIN = 'Europe/Berlin';
+
+function makeItem(over: Partial<Record<string, unknown>> = {}): Record<string, unknown> {
+  return {
+    id: `item-${itemsFixture.length + 1}`,
+    organizationId: ORG,
+    contractorId: 'ctr-1',
+    documentType: 'A1_CERTIFICATE',
+    policyRuleId: 'compliance-policy-engine.de.a1',
+    expiresAt: new Date('2026-08-01T00:00:00Z'),
+    expiryJurisdictionTz: TZ_BERLIN,
+    ...over,
+  };
+}
+
+function resetFixtures() {
+  itemsFixture.length = 0;
+  reminderStateByItem.clear();
+  contractorsById.clear();
+  claimedKeys.clear();
+  auditLogCreates.length = 0;
+  mockPrismaRaw.contractorComplianceItem.findMany.mockClear();
+  mockPrisma.contractorComplianceReminderState.findUnique.mockClear();
+  mockPrisma.contractorComplianceReminderState.updateMany.mockClear();
+  mockPrisma.contractorComplianceReminderState.create.mockClear();
+  mockPrisma.contractorComplianceReminderState.upsert.mockClear();
+  mockPrisma.contractor.findUniqueOrThrow.mockClear();
+  mockPrisma.auditLog.create.mockClear();
+  mockDispatch.mockClear();
+  mockResolveRecipients.mockReset();
+  mockResolveRecipients.mockResolvedValue(['user-admin-1']);
+  mockClaimDedup.mockClear();
+  mockMetricsGauge.mockClear();
+  contractorsById.set('ctr-1', { displayName: 'Acme GmbH' });
+  contractorsById.set('ctr-2', { displayName: 'Beta Ltd' });
+  contractorsById.set('ctr-3', { displayName: 'Gamma SARL' });
+}
+
+beforeEach(resetFixtures);
+
+// ---------------------------------------------------------------------------
+// Pure helpers
+// ---------------------------------------------------------------------------
+
+describe('compliance-reminder-scan bandFor', () => {
+  it('maps daysUntilExpiry to the correct band across the cascade boundaries', () => {
+    expect(bandFor(Number.NaN)).toBe('NONE');
+    expect(bandFor(-1)).toBe('EXPIRED');
+    expect(bandFor(0)).toBe('D7');
+    expect(bandFor(7)).toBe('D7');
+    expect(bandFor(8)).toBe('D15');
+    expect(bandFor(15)).toBe('D15');
+    expect(bandFor(16)).toBe('D30');
+    expect(bandFor(30)).toBe('D30');
+    expect(bandFor(31)).toBe('D60');
+    expect(bandFor(60)).toBe('D60');
+    expect(bandFor(61)).toBe('D90');
+    expect(bandFor(90)).toBe('D90');
+    expect(bandFor(91)).toBe('NONE');
+  });
+
+  it('bandIndex is monotonically increasing along the cascade', () => {
+    expect(bandIndex('NONE')).toBeLessThan(bandIndex('D90'));
+    expect(bandIndex('D90')).toBeLessThan(bandIndex('D60'));
+    expect(bandIndex('D7')).toBeLessThan(bandIndex('EXPIRED'));
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Orchestrator
+// ---------------------------------------------------------------------------
 
 describe('compliance-reminder-scan band-state-machine', () => {
   it('fires D90 band on first cron tick after 90d threshold', async () => {
-    const mod = await import('../compliance-reminder-scan.js');
-    expect(mod.runComplianceReminderScan).toBeTypeOf('function');
-    // Stub assertion — production helper missing today.
-    throw new Error('runComplianceReminderScan not yet implemented');
+    // now = 90 days before expiry → exactly D90 band, no prior state.
+    const now = new Date('2026-05-03T09:00:00Z'); // ~90d before 2026-08-01
+    itemsFixture.push(makeItem({ id: 'item-d90', expiresAt: new Date('2026-08-01T00:00:00Z') }));
+
+    const result = await runComplianceReminderScan(now);
+
+    expect(result.fires).toBe(1);
+    expect(result.digests).toBe(1);
+    const state = reminderStateByItem.get('item-d90');
+    expect(state?.lastBandFired).toBe('D90');
+    expect(mockDispatch).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not re-fire the same or earlier band on a subsequent tick', async () => {
+    reminderStateByItem.set('item-x', {
+      itemId: 'item-x',
+      organizationId: ORG,
+      currentBand: 'D90',
+      lastBandFired: 'D90',
+      lastBandFiredAt: new Date('2026-05-03T09:00:00Z'),
+      version: 1,
+    });
+    itemsFixture.push(makeItem({ id: 'item-x', expiresAt: new Date('2026-08-01T00:00:00Z') }));
+    const now = new Date('2026-05-10T09:00:00Z'); // still in the D90 window
+
+    const result = await runComplianceReminderScan(now);
+    expect(result.fires).toBe(0);
+    expect(mockDispatch).not.toHaveBeenCalled();
   });
 });
 
 describe('compliance-reminder-scan digest', () => {
   it('emits exactly ONE digest per (recipient, jurisdictionDate) when claim succeeds', async () => {
-    throw new Error('digest aggregation not yet implemented');
+    // Three items in different bands for the same single admin recipient.
+    itemsFixture.push(
+      makeItem({ id: 'i1', contractorId: 'ctr-1', expiresAt: new Date('2026-08-01T00:00:00Z') }),
+      makeItem({ id: 'i2', contractorId: 'ctr-2', expiresAt: new Date('2026-06-20T00:00:00Z') }),
+      makeItem({ id: 'i3', contractorId: 'ctr-3', expiresAt: new Date('2026-05-15T00:00:00Z') }),
+    );
+    const now = new Date('2026-05-03T09:00:00Z');
+
+    const result = await runComplianceReminderScan(now);
+
+    expect(result.fires).toBe(3);
+    expect(result.digests).toBe(1); // ONE digest, not three
+    expect(mockDispatch).toHaveBeenCalledTimes(1);
+    const call = mockDispatch.mock.calls[0]?.[0] as {
+      type: string;
+      metadata: { fires: unknown[] };
+    };
+    expect(call.type).toBe('compliance.expiry_digest');
+    expect(call.metadata.fires).toHaveLength(3);
   });
 });
 
 describe('compliance-reminder-scan renewal-reset', () => {
   it('atomically resets state with version bump on expires_at_changed event', async () => {
-    throw new Error('renewal listener not yet implemented');
+    reminderStateByItem.set('item-r', {
+      itemId: 'item-r',
+      organizationId: ORG,
+      currentBand: 'D30',
+      lastBandFired: 'D30',
+      lastBandFiredAt: new Date('2026-05-01T00:00:00Z'),
+      version: 3,
+    });
+    const tx = mockPrisma as unknown as Parameters<typeof onComplianceItemExpiresAtChanged>[0];
+
+    await onComplianceItemExpiresAtChanged(tx, {
+      itemId: 'item-r',
+      organizationId: ORG,
+      triggerEvent: 'expires_at_changed',
+    });
+
+    const state = reminderStateByItem.get('item-r');
+    expect(state?.currentBand).toBe('NONE');
+    expect(state?.lastBandFired).toBeNull();
+    expect(state?.lastBandFiredAt).toBeNull();
+    expect(state?.version).toBe(4); // 3 + 1
+    expect(auditLogCreates).toHaveLength(1);
+    expect(auditLogCreates[0]?.action).toBe('compliance.reminder.reset');
+    expect((auditLogCreates[0]?.metadataJson as { previousBand: string }).previousBand).toBe('D30');
   });
 
   it('cron upsert with stale version is no-op (optimistic-concurrency loss)', async () => {
-    throw new Error('optimistic-concurrency check not yet implemented');
+    // State row exists at version 5; cron reads version 5 but a renewal-reset
+    // bumps it to 6 before the cron writes. Simulate by making updateMany see a
+    // mismatched version: we set version to 6 AFTER the findUnique returns 5.
+    reminderStateByItem.set('item-c', {
+      itemId: 'item-c',
+      organizationId: ORG,
+      currentBand: 'NONE',
+      lastBandFired: null,
+      lastBandFiredAt: null,
+      version: 5,
+    });
+    // findUnique returns the row at version 5; then a concurrent reset bumps it.
+    mockPrisma.contractorComplianceReminderState.findUnique.mockImplementationOnce(async () => {
+      const row = reminderStateByItem.get('item-c');
+      // Concurrent renewal-reset increments version between read and write.
+      reminderStateByItem.set('item-c', { ...row!, version: 6 });
+      return { ...row! }; // returns stale version 5 snapshot
+    });
+    itemsFixture.push(makeItem({ id: 'item-c', expiresAt: new Date('2026-08-01T00:00:00Z') }));
+    const now = new Date('2026-05-03T09:00:00Z');
+
+    const result = await runComplianceReminderScan(now);
+
+    expect(result.fires).toBe(0); // updateMany count=0 → no fire
+    expect(mockDispatch).not.toHaveBeenCalled();
+  });
+});
+
+describe('compliance-reminder-scan filtering + resilience', () => {
+  it('skips items where severity is WARNING or INFO', async () => {
+    // The cron query filters severity=BLOCKING at the DB layer; assert the
+    // findMany where-clause carries that filter so non-BLOCKING never reaches us.
+    itemsFixture.push(makeItem({ id: 'i-blocking' }));
+    await runComplianceReminderScan(new Date('2026-05-03T09:00:00Z'));
+    const where = mockPrismaRaw.contractorComplianceItem.findMany.mock.calls[0]?.[0]
+      ?.where as Record<string, unknown>;
+    expect(where.severity).toBe('BLOCKING');
+  });
+
+  it('skips items where status is WAIVED or SATISFIED', async () => {
+    await runComplianceReminderScan(new Date('2026-05-03T09:00:00Z'));
+    const where = mockPrismaRaw.contractorComplianceItem.findMany.mock.calls[0]?.[0]?.where as {
+      status: { in: string[] };
+    };
+    expect(where.status.in).toEqual(['PENDING', 'EXPIRED']);
+    expect(where.status.in).not.toContain('WAIVED');
+    expect(where.status.in).not.toContain('SATISFIED');
+  });
+
+  it('does not process items with a null expiryJurisdictionTz (filtered by query)', async () => {
+    await runComplianceReminderScan(new Date('2026-05-03T09:00:00Z'));
+    const where = mockPrismaRaw.contractorComplianceItem.findMany.mock.calls[0]?.[0]?.where as {
+      expiryJurisdictionTz: unknown;
+    };
+    expect(where.expiryJurisdictionTz).toEqual({ not: null });
+  });
+
+  it('logs error and continues on per-item failure (does not abort whole scan)', async () => {
+    itemsFixture.push(
+      makeItem({ id: 'bad', contractorId: 'missing-ctr' }), // findUniqueOrThrow will throw
+      makeItem({ id: 'good', contractorId: 'ctr-1' }),
+    );
+    const now = new Date('2026-05-03T09:00:00Z');
+    const result = await runComplianceReminderScan(now);
+    // 'bad' throws during contractor lookup; 'good' still fires.
+    expect(result.scanned).toBe(2);
+    expect(result.fires).toBe(1);
+  });
+
+  it('handles dispatch() rejection gracefully (per-recipient try/catch)', async () => {
+    mockDispatch.mockRejectedValueOnce(new Error('email provider down'));
+    itemsFixture.push(makeItem({ id: 'i-dispatch-fail', contractorId: 'ctr-1' }));
+    const now = new Date('2026-05-03T09:00:00Z');
+    const result = await runComplianceReminderScan(now);
+    expect(result.fires).toBe(1);
+    expect(result.digests).toBe(0); // dispatch threw → digest count not incremented, no throw
+  });
+
+  it('returns zero counts on a top-level infra failure (never throws to caller)', async () => {
+    mockPrismaRaw.contractorComplianceItem.findMany.mockRejectedValueOnce(new Error('db down'));
+    const result = await runComplianceReminderScan(new Date('2026-05-03T09:00:00Z'));
+    expect(result).toEqual({ scanned: 0, fires: 0, digests: 0 });
   });
 });

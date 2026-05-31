@@ -31,6 +31,16 @@
       "import": "./src/services/notification-service.ts",
       "default": "./src/services/notification-service.ts"
     },
+    "./services/cron-dedup": {
+      "types": "./src/services/cron-dedup.ts",
+      "import": "./src/services/cron-dedup.ts",
+      "default": "./src/services/cron-dedup.ts"
+    },
+    "./services/compliance-reminder-scan": {
+      "types": "./src/services/compliance-reminder-scan.ts",
+      "import": "./src/services/compliance-reminder-scan.ts",
+      "default": "./src/services/compliance-reminder-scan.ts"
+    },
     "./services/portal-session": {
       "types": "./src/services/portal-session.ts",
       "import": "./src/services/portal-session.ts",

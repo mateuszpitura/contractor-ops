@@ -8,7 +8,7 @@
 // resolve at 00:00 Asia/Riyadh, regardless of where the org's HQ is.
 
 import { TZDate } from '@date-fns/tz';
-import { isAfter, startOfDay } from 'date-fns';
+import { differenceInDays, isAfter, startOfDay } from 'date-fns';
 
 /**
  * Returns true iff `expiresAt` (a calendar date stored as `@db.Date`) has
@@ -31,4 +31,27 @@ export function isExpired(
   const startOfToday = startOfDay(new TZDate(now, expiryJurisdictionTz));
   const expiryBoundary = startOfDay(new TZDate(expiresAt, expiryJurisdictionTz));
   return isAfter(startOfToday, expiryBoundary);
+}
+
+/**
+ * Phase 72 D-07 — integer days from `now` (in TZ) to `expiresAt` (in TZ),
+ * comparing start-of-day boundaries in `expiryJurisdictionTz`. Negative when
+ * already expired. Used by the COMPL-03 reminder-band classifier.
+ */
+export function daysUntilExpiryInTz(
+  expiresAt: Date,
+  expiryJurisdictionTz: string,
+  now: Date = new Date(),
+): number {
+  const nowInTz = startOfDay(new TZDate(now, expiryJurisdictionTz));
+  const expiryInTz = startOfDay(new TZDate(expiresAt, expiryJurisdictionTz));
+  return differenceInDays(expiryInTz, nowInTz);
+}
+
+/**
+ * Phase 72 — YYYY-MM-DD in `tz` for `now`. Used as the per-band fire dedup-key
+ * date component and the per-recipient digest dedup-key date component.
+ */
+export function jurisdictionDate(now: Date, tz: string): string {
+  return startOfDay(new TZDate(now, tz)).toISOString().slice(0, 10);
 }
