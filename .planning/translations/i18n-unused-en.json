@@ -1,0 +1,14 @@
+{
+  "Classification._NOTE": "Legal-locked phrases live in packages/validators/src/legal/{de,disclaimers}.ts. Do NOT duplicate CLASSIFICATION_* or DISCLAIMER_* values here.",
+  "ContractorWizard.fields.nipError": "Could not fetch data from GUS. Enter details manually.",
+  "ContractorWizard.fields.nipSuccess": "Company data loaded from GUS",
+  "Portal.return.cancelConfirmDescription": "This will cancel your return request. You can request a return again later. Continue?",
+  "Portal.return.cancelConfirmTitle": "Cancel return",
+  "Workflows.overrideBlockingTask.acknowledge": "I understand this action is recorded and audited.",
+  "Workflows.overrideBlockingTask.confirmCta": "Override and skip",
+  "Workflows.overrideBlockingTask.reasonHelp": "Required, {min}–{max} characters.",
+  "Workflows.overrideBlockingTask.reasonLabel": "Reason for override",
+  "Workflows.overrideBlockingTask.toastFailure": "Could not override workflow task.",
+  "Workflows.overrideBlockingTask.toastSuccess": "Workflow override recorded.",
+  "Workflows.overrideBlockingTask.warning": "This bypasses the verification gate. The reason and your user identity are permanently recorded for compliance review."
+}

@@ -1,0 +1,21 @@
+{
+  "Equipment.dpd.countryCode": "Country code",
+  "ContractorProfile.actions.activate": "Activate",
+  "Portal.contracts.noticePeriodDays": "{days} days",
+  "Time.entryEntityLabel": "{count, plural, one {entry} other {entries}}",
+  "Import.confirm.completeHeading": "Import complete",
+  "Classification.AdvisoryBanner.label": "Legal notice",
+  "Billing.billingTab.manageBilling": "Manage billing",
+  "Integrations.GoogleWorkspaceReconnect.dismissAria": "Dismiss reconnect banner",
+  "Documents.compliance.complianceTypes": "Tax certificate, business registration, insurance",
+  "GoogleWorkspace.disconnect.body": "This will stop directory sync and remove stored credentials. Existing imported users are not affected. Continue?",
+  "Users.deactivateDialog.body": "This will immediately revoke their access. They will be logged out of all sessions. This action can be reversed.",
+  "ContractDetail.actions.addAmendment": "Add amendment",
+  "Validation.contractor.billingModelRequired": "Select a billing model",
+  "commandPalette.empty": "No results.",
+  "Reports.custom": "Custom",
+  "contractor.vatValidation.invalid": "Invalid",
+  "CalendarSettings.duration1h": "1 hour",
+  "invoice.reverseCharge.autoDetectedChip": "RC auto-detected",
+  "organization.kleinunternehmer.confirmDisableBody": "Future invoices will resume standard German VAT handling (19% / 7% / RC). Existing invoices are unaffected."
+}

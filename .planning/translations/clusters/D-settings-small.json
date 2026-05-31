@@ -1,0 +1,15 @@
+{
+  "Settings.reminderRules.active": "Active",
+  "Settings.changeRequest.approveChanges": "Approve Changes",
+  "Settings.provider.connectedBy": "Connected by",
+  "Settings.branding.accentColor": "Accent Color",
+  "Settings.gdpr.description": "Per GDPR Articles 15, 17, and 20 you can export all data held about your organization or request full erasure.",
+  "Settings.outOfOffice.applyCta": "Apply",
+  "Settings.featureFlags.description": "Read-only view of resolved Unleash flag state for this organization. Use the Unleash admin UI to flip toggles.",
+  "Settings.carriers.accountNumber": "Account Number",
+  "Settings.approvals.activeToggle": "Active",
+  "Settings.PtoKeywords.addCta": "Add keyword",
+  "Settings.WorkflowRoles.addCta": "Add role template",
+  "Settings.userConsent.currentEmpty": "No consent records yet for this user.",
+  "Settings.notifications.eventApprovalDecision": "Approval decision"
+}

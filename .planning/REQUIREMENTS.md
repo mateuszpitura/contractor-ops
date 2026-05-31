@@ -96,6 +96,10 @@ Requirements for the v6.0 milestone. Each maps to exactly one phase (filled by r
 
 Acknowledged but not in v6.0 roadmap.
 
+> **v7.0 GTM Expansion milestone planned** — US cross-border + Workforce management.
+> Full backlog spec: [`milestones/v7.0-BACKLOG.md`](milestones/v7.0-BACKLOG.md). Gates pre-prod release alongside v6.0.
+> Requirement IDs below grouped by milestone target.
+
 ### Compliance & Governance
 
 - **COMPL-FUTURE-01**: AI-suggested document policies based on past contracts
@@ -120,6 +124,91 @@ Acknowledged but not in v6.0 roadmap.
 
 - **OFFB-FUTURE-01**: Embedding-similarity contract-clause matching (vs regex)
 - **OFFB-FUTURE-02**: AI-generated KT documentation drafts
+
+### v7.0 — US Cross-Border Expansion
+
+Wedge thesis: *Bill.com for cross-border, without the Deel EOR markup.* Theme A in [`milestones/v7.0-BACKLOG.md`](milestones/v7.0-BACKLOG.md). NOT a US-domestic-AP head-on play.
+
+- **US-FORM-01**: W-9 collection wizard for US-resident contractors with audit trail
+- **US-FORM-02**: W-8BEN / W-8BEN-E collection for foreign contractors of US clients with treaty article picker
+- **US-FORM-03**: IRS TIN-matching API (e-Services) integration with retry + admin escalation on mismatch
+- **US-FORM-04**: 1099-NEC year-end generation per recipient (threshold $600 USD-eq) with corrections + PDF + audit archive
+- **US-FORM-05**: IRS FIRE e-file integration (with IRIS-ready cutover per IRS roadmap; FIRE as fallback)
+- **US-FORM-06**: 1042-S generation for US-source payments to foreign contractors (treaty-rate withholding)
+- **US-FORM-07**: Per-state 1099 filing handler (7 states; CFSF participation where eligible)
+- **US-PAY-01**: ACH NACHA file generator (PPD/CCD/CTX) reusing v4.0/v5.0 payment-export factory
+- **US-PAY-02**: USD as first-class currency with per-org default + exchange-rate sourcing
+- **US-PAY-03**: Modern Treasury / Stripe Treasury adapter for programmatic ACH initiation
+- **US-PAY-04**: Wire-transfer (Fedwire) export for high-value cross-border payouts
+- **US-PAY-05**: Plaid Identity verification for US contractor bank-account linking
+- **US-CLASS-01**: Generic classification engine extension with US rule set (federal common-law, CA ABC test / AB5, §530 safe harbor)
+- **US-CLASS-02**: California AB5 watchlist with stricter ABC test by default + admin override with reason
+- **US-CLASS-03**: 1099-K threshold tracker (informational; surfaces on cumulative engagement payouts)
+- **US-CLASS-04**: Classification Determination Letter PDF generator (mirrors UK SDS from v5.0 Phase 59)
+- **US-FIELD-01**: EIN validator (XX-XXXXXXX + IRS prefix table)
+- **US-FIELD-02**: SSN intake with PII-grade masking + RBAC-gated full-display
+- **US-FIELD-03**: US address validation via USPS Address API (CASS-certified)
+- **US-FIELD-04**: US contractor profile component dispatched from CountryComplianceSection
+- **US-LOC-01**: en-US locale full key parity (date/currency/measure formatting, American English copy)
+- **US-LOC-02**: US tax-treaty rate table (PL/DE/UK/UAE/KSA/IE/NL) auto-applied on cross-border
+- **US-LOC-03**: W-8BEN treaty-article auto-populate based on contractor home jurisdiction
+- **US-INFRA-01**: `us-east-1` Neon region added to per-org region routing (v4.0 pattern)
+- **US-INFRA-02**: US-specific R2 storage bucket for tax-form archives (data-residency)
+- **US-INFRA-03**: IRS-mandated retention (4-year 1099-NEC, 7-year backup-withholding) via soft-delete + scheduled archive
+
+### v7.0 — Workforce Management (Employee Lite + HRIS Sync)
+
+Positioning: *One tool for your whole workforce — contractors AND employees. Payroll stays with your accountant.* Theme B in [`milestones/v7.0-BACKLOG.md`](milestones/v7.0-BACKLOG.md). Ścieżka A (lite) — explicitly NO own payroll engine; integration adapters only.
+
+- **WORKER-01**: `Worker` discriminated-union model (Contractor | Employee) with non-breaking migration (defaults to CONTRACTOR for back-compat)
+- **WORKER-02**: tRPC namespace split — workerRouter + contractorRouter + employeeRouter (preserve v1–v6 route shapes)
+- **WORKER-03**: RLS / tenant-isolation extension; HR-only fields gated by per-type RBAC
+- **WORKER-04**: New roles HR_ADMIN, HR_MANAGER, PAYROLL_OFFICER, LEAVE_APPROVER (existing 8 roles unchanged)
+- **WORKER-05**: Feature flag `workforce-employees` with render-tree removal + tRPC FORBIDDEN on flag-off (v5.0 classification pattern)
+- **EMP-REG-PL-01**: PL employee fields — PESEL (mod-11), urząd skarbowy, ZUS oddział, stanowisko, wymiar etatu, stawka brutto, ZUS title code, NFZ oddział
+- **EMP-REG-DE-01**: DE employee fields — Steuer-IdNr (11-digit mod-11), Sozialversicherungsnummer, Krankenkasse ID, Lohnsteuerklasse, Kinderfreibetrag, Kirchensteuer flag, ELStAM hook
+- **EMP-REG-UK-01**: UK employee fields — NI number (DWP-validated), PAYE reference, tax code with emergency/W1/M1/K flags, student-loan plan, pension auto-enrol
+- **EMP-REG-US-01**: US employee fields — SSN (PII-masked), W-4 step 1c filing status, state withholding (10-state matrix + free-text fallback for v7.0)
+- **EMP-REG-AE-01**: UAE employee fields — Emirates ID, visa type, WPS Establishment ID
+- **EMP-REG-SA-01**: KSA employee fields — Iqama / National ID, GOSI registration, Saudization category contribution flag
+- **AKTA-01**: 4-section personnel file (PL cz. A/B/C/D; equiv DE/UK/US) with per-section RBAC
+- **AKTA-02**: Per-jurisdiction retention engine (PL 10/50 yr, DE 10/30 yr, UK 6/7 yr, US I-9 3-yr-post-hire)
+- **AKTA-03**: RODO / GDPR erasure handler with statutory-retention exemption layer
+- **AKTA-04**: Document classification at upload (A/B/C/D taxonomy + admin classify-step on ambiguity)
+- **LEAVE-01**: Leave-balance engine per market (PL 20/26, DE BUrlG, UK 5.6-week, US per-state, UAE/SA per-MOL/MHRSD)
+- **LEAVE-02**: Leave-request workflow on v1.0 approval-chain; per-org leave types; blackout periods
+- **LEAVE-03**: Team calendar with capacity heatmap + overlap warnings
+- **LEAVE-04**: PL e-ZLA pull via ZUS OAuth; auto-create sick-leave + payroll-integration push
+- **LEAVE-05**: DE eAU pull from Krankenkasse via TI-Messenger / KIM (post-2023 mandatory digital)
+- **TIME-EMP-01**: KP-grade time tracking distinct from v2.0 B2B time (overtime PL 50/100%, DE §3 ArbZG, UK WTR opt-out, night/weekend/holiday premiums)
+- **TIME-EMP-02**: Per-jurisdiction working-time-limit alerts (PL 8h/48h, DE ArbZG, UK 48h opt-out, US FLSA OT)
+- **TIME-EMP-03**: PL ewidencja czasu pracy report per KP §149 + 3-year audit-immutable archive
+- **EMP-ON-01**: Per-market onboarding workflow templates (PL badania/PIT-2/PPK/świadectwo, DE Personalfragebogen/Steuer-ID/SV/bAV, UK P45-P46/RTI/pension, US W-4/I-9 E-Verify/state W-4/direct-deposit)
+- **EMP-OFF-01**: Per-market offboarding workflow (PL świadectwo/ekwiwalent/ZUS ZWUA/PIT-11, DE Arbeitszeugnis/Abmeldung/Lohnsteuerbescheinigung, UK P45/final RTI/pension/P11D, US final-paycheck/COBRA/W-2/401(k))
+- **EMP-OFF-02**: Composes with v6.0 F4 offboarding hardening (extends rather than duplicates)
+- **PAYROLL-PL-01**: Symfonia Kadry i Płace export adapter (CSV + XML)
+- **PAYROLL-PL-02**: Comarch ERP XL / Optima export adapter
+- **PAYROLL-PL-03**: Enova365 export adapter
+- **PAYROLL-DE-01**: DATEV Lohn und Gehalt export adapter (ASCII + DATEVconnect where subscribed)
+- **PAYROLL-DE-02**: Sage HR / Personalwirtschaft export adapter
+- **PAYROLL-UK-01**: Sage Payroll / BrightPay / Moneysoft export adapters (RTI-compatible FPS/EPS)
+- **PAYROLL-UK-02**: HMRC RTI direct submission (deferred to v7.5 — complexity warrants separate slice)
+- **PAYROLL-US-01**: Gusto / QuickBooks Payroll / ADP export adapters (CSV + native API where available)
+- **HRIS-SYNC-01**: Personio adapter on v2.0 integration framework (OAuth, webhooks, health)
+- **HRIS-SYNC-02**: Personio → Contractor Ops one-way pull (people/contracts/departments/custom attrs) hourly + on-demand
+- **HRIS-SYNC-03**: Contractor Ops → Personio one-way push (invoice paid, payment status, classification outcome) on event
+- **HRIS-SYNC-04**: BambooHR adapter (same shape as Personio)
+- **HRIS-SYNC-05**: Conflict-resolution policy — HRIS source of truth for registry fields; Contractor Ops source of truth for invoice/payment/compliance fields; on conflict, registry updates from HRIS, financial/compliance fields lock against HRIS overwrite
+- **HRIS-SYNC-06**: Per-org single-adapter choice (Personio OR BambooHR, not both — prevents three-way sync hell)
+- **EMP-PORTAL-01**: Employee self-service portal extends v2.0 contractor portal (magic-link, subdomain routing, `/employee/*` routes)
+- **EMP-PORTAL-02**: Employee dashboard — pay stubs (from payroll integration), leave balance, time-off request, document upload, personal akta view
+- **EMP-PORTAL-03**: Manager dashboard — direct reports' leave requests, time entries to approve, document expiry flags
+- **EMP-PORTAL-04**: Portal i18n parity — en/pl/de/ar/en-US (Arabic RTL from v4.0, formal-Sie from v5.0)
+- **HR-DASH-01**: Headcount widget (total / dept / jurisdiction / employment-type / contract-end-date)
+- **HR-DASH-02**: Vacation-utilization widget with under-utilization flag (>10 days unused at year-end)
+- **HR-DASH-03**: Document-expiry widget (visa/work-permit/contract/medical/training) composes with v6.0 F1 compliance-document engine
+- **HR-DASH-04**: Probation-end watchlist (14/7/0 days)
+- **HR-DASH-05**: Saudization / Emiratisation rollup composes with v6.0 F3 Gulf operational polish
 
 ## Out of Scope
 

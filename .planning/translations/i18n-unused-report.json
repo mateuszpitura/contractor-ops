@@ -1,0 +1,433 @@
+{
+  "totalLeaves": 5972,
+  "usedStatic": 3130,
+  "usedBareLiteral": 87,
+  "coveredDynamic": 566,
+  "coveredWildcard": 1394,
+  "coveredFloating": 783,
+  "unused": 12,
+  "wildcardNamespaces": [
+    "Approvals",
+    "Billing.planCard",
+    "Classification.documents",
+    "Classification.ir35.step",
+    "Classification.likert",
+    "Classification.polish.drvClearance",
+    "Classification.polish.economicDependency",
+    "Classification.schein.step",
+    "Classification.score03",
+    "ContractDetail",
+    "ContractDetail.signing.toast",
+    "ContractorProfile",
+    "ContractorProfile.overview",
+    "ContractorWizard.billingModelOptions",
+    "Contractors",
+    "Contractors.bulkActions",
+    "Contractors.health",
+    "Contracts",
+    "Contracts.bulkActions",
+    "Dashboard",
+    "Dashboard.greeting",
+    "EInvoice.Errors",
+    "EInvoice.InvoiceTab",
+    "EInvoice.InvoicesList.Cell",
+    "EInvoice.InvoicesList.Filter",
+    "EInvoice.intake.filter",
+    "EInvoice.intake.level",
+    "EInvoice.intake.status",
+    "EInvoice.intake.validation",
+    "Equipment.carrier",
+    "Equipment.detail",
+    "Equipment.shipment.status",
+    "Equipment.status",
+    "Equipment.ups",
+    "Errors",
+    "Invoices",
+    "Invoices.bulkActions",
+    "Invoices.detail",
+    "Navigation",
+    "Organization",
+    "Payments",
+    "Payments.lateInterest.status",
+    "Payments.skonto.eligibility",
+    "Portal.nav",
+    "Reports",
+    "Search",
+    "Search.time",
+    "Settings",
+    "Settings.tabs",
+    "Users.roleDescriptions",
+    "Users.roles",
+    "Validation.invoice",
+    "Zatca.onboarding",
+    "contractors.detail"
+  ],
+  "hookCount": 71,
+  "unresolvedCallSites": 61,
+  "perNamespace": [
+    {
+      "ns": "Workflows",
+      "total": 269,
+      "unused": 7,
+      "unusedKeys": [
+        "Workflows.overrideBlockingTask.acknowledge",
+        "Workflows.overrideBlockingTask.confirmCta",
+        "Workflows.overrideBlockingTask.reasonHelp",
+        "Workflows.overrideBlockingTask.reasonLabel",
+        "Workflows.overrideBlockingTask.toastFailure",
+        "Workflows.overrideBlockingTask.toastSuccess",
+        "Workflows.overrideBlockingTask.warning"
+      ]
+    },
+    {
+      "ns": "ContractorWizard",
+      "total": 48,
+      "unused": 2,
+      "unusedKeys": [
+        "ContractorWizard.fields.nipError",
+        "ContractorWizard.fields.nipSuccess"
+      ]
+    },
+    {
+      "ns": "Portal",
+      "total": 290,
+      "unused": 2,
+      "unusedKeys": [
+        "Portal.return.cancelConfirmDescription",
+        "Portal.return.cancelConfirmTitle"
+      ]
+    },
+    {
+      "ns": "Classification",
+      "total": 240,
+      "unused": 1,
+      "unusedKeys": [
+        "Classification._NOTE"
+      ]
+    },
+    {
+      "ns": "Admin",
+      "total": 62,
+      "unused": 0,
+      "unusedKeys": []
+    },
+    {
+      "ns": "Api",
+      "total": 42,
+      "unused": 0,
+      "unusedKeys": []
+    },
+    {
+      "ns": "Approvals",
+      "total": 106,
+      "unused": 0,
+      "unusedKeys": []
+    },
+    {
+      "ns": "Auth",
+      "total": 45,
+      "unused": 0,
+      "unusedKeys": []
+    },
+    {
+      "ns": "Billing",
+      "total": 64,
+      "unused": 0,
+      "unusedKeys": []
+    },
+    {
+      "ns": "CalendarSettings",
+      "total": 37,
+      "unused": 0,
+      "unusedKeys": []
+    },
+    {
+      "ns": "Common",
+      "total": 119,
+      "unused": 0,
+      "unusedKeys": []
+    },
+    {
+      "ns": "Consent",
+      "total": 47,
+      "unused": 0,
+      "unusedKeys": []
+    },
+    {
+      "ns": "ContractDetail",
+      "total": 176,
+      "unused": 0,
+      "unusedKeys": []
+    },
+    {
+      "ns": "ContractorProfile",
+      "total": 100,
+      "unused": 0,
+      "unusedKeys": []
+    },
+    {
+      "ns": "Contractors",
+      "total": 184,
+      "unused": 0,
+      "unusedKeys": []
+    },
+    {
+      "ns": "Contracts",
+      "total": 259,
+      "unused": 0,
+      "unusedKeys": []
+    },
+    {
+      "ns": "CookieConsent",
+      "total": 3,
+      "unused": 0,
+      "unusedKeys": []
+    },
+    {
+      "ns": "Dashboard",
+      "total": 101,
+      "unused": 0,
+      "unusedKeys": []
+    },
+    {
+      "ns": "Documents",
+      "total": 46,
+      "unused": 0,
+      "unusedKeys": []
+    },
+    {
+      "ns": "EInvoice",
+      "total": 273,
+      "unused": 0,
+      "unusedKeys": []
+    },
+    {
+      "ns": "EmptyStates",
+      "total": 37,
+      "unused": 0,
+      "unusedKeys": []
+    },
+    {
+      "ns": "Equipment",
+      "total": 218,
+      "unused": 0,
+      "unusedKeys": []
+    },
+    {
+      "ns": "Errors",
+      "total": 277,
+      "unused": 0,
+      "unusedKeys": []
+    },
+    {
+      "ns": "GoogleWorkspace",
+      "total": 55,
+      "unused": 0,
+      "unusedKeys": []
+    },
+    {
+      "ns": "Import",
+      "total": 73,
+      "unused": 0,
+      "unusedKeys": []
+    },
+    {
+      "ns": "Integrations",
+      "total": 87,
+      "unused": 0,
+      "unusedKeys": []
+    },
+    {
+      "ns": "Invoices",
+      "total": 209,
+      "unused": 0,
+      "unusedKeys": []
+    },
+    {
+      "ns": "Ir35Chain",
+      "total": 30,
+      "unused": 0,
+      "unusedKeys": []
+    },
+    {
+      "ns": "Layout",
+      "total": 3,
+      "unused": 0,
+      "unusedKeys": []
+    },
+    {
+      "ns": "Legal",
+      "total": 155,
+      "unused": 0,
+      "unusedKeys": []
+    },
+    {
+      "ns": "Navigation",
+      "total": 23,
+      "unused": 0,
+      "unusedKeys": []
+    },
+    {
+      "ns": "Notifications",
+      "total": 71,
+      "unused": 0,
+      "unusedKeys": []
+    },
+    {
+      "ns": "OcrReview",
+      "total": 68,
+      "unused": 0,
+      "unusedKeys": []
+    },
+    {
+      "ns": "Offboarding",
+      "total": 73,
+      "unused": 0,
+      "unusedKeys": []
+    },
+    {
+      "ns": "Onboarding",
+      "total": 21,
+      "unused": 0,
+      "unusedKeys": []
+    },
+    {
+      "ns": "OnboardingImport",
+      "total": 64,
+      "unused": 0,
+      "unusedKeys": []
+    },
+    {
+      "ns": "OtherClientAttestation",
+      "total": 8,
+      "unused": 0,
+      "unusedKeys": []
+    },
+    {
+      "ns": "Payments",
+      "total": 496,
+      "unused": 0,
+      "unusedKeys": []
+    },
+    {
+      "ns": "Peppol",
+      "total": 60,
+      "unused": 0,
+      "unusedKeys": []
+    },
+    {
+      "ns": "Reports",
+      "total": 56,
+      "unused": 0,
+      "unusedKeys": []
+    },
+    {
+      "ns": "Search",
+      "total": 31,
+      "unused": 0,
+      "unusedKeys": []
+    },
+    {
+      "ns": "Settings",
+      "total": 704,
+      "unused": 0,
+      "unusedKeys": []
+    },
+    {
+      "ns": "Teams",
+      "total": 3,
+      "unused": 0,
+      "unusedKeys": []
+    },
+    {
+      "ns": "Time",
+      "total": 141,
+      "unused": 0,
+      "unusedKeys": []
+    },
+    {
+      "ns": "TopBar",
+      "total": 6,
+      "unused": 0,
+      "unusedKeys": []
+    },
+    {
+      "ns": "Users",
+      "total": 51,
+      "unused": 0,
+      "unusedKeys": []
+    },
+    {
+      "ns": "Validation",
+      "total": 10,
+      "unused": 0,
+      "unusedKeys": []
+    },
+    {
+      "ns": "TaxAdmin",
+      "total": 86,
+      "unused": 0,
+      "unusedKeys": []
+    },
+    {
+      "ns": "WorkflowRoles",
+      "total": 50,
+      "unused": 0,
+      "unusedKeys": []
+    },
+    {
+      "ns": "Workflow",
+      "total": 3,
+      "unused": 0,
+      "unusedKeys": []
+    },
+    {
+      "ns": "Zatca",
+      "total": 190,
+      "unused": 0,
+      "unusedKeys": []
+    },
+    {
+      "ns": "contractor",
+      "total": 2,
+      "unused": 0,
+      "unusedKeys": []
+    },
+    {
+      "ns": "invoice",
+      "total": 1,
+      "unused": 0,
+      "unusedKeys": []
+    },
+    {
+      "ns": "ksef",
+      "total": 43,
+      "unused": 0,
+      "unusedKeys": []
+    },
+    {
+      "ns": "organization",
+      "total": 6,
+      "unused": 0,
+      "unusedKeys": []
+    },
+    {
+      "ns": "boundaries",
+      "total": 2,
+      "unused": 0,
+      "unusedKeys": []
+    },
+    {
+      "ns": "Organization",
+      "total": 47,
+      "unused": 0,
+      "unusedKeys": []
+    },
+    {
+      "ns": "commandPalette",
+      "total": 1,
+      "unused": 0,
+      "unusedKeys": []
+    }
+  ]
+}

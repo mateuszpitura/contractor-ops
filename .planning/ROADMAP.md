@@ -8,6 +8,7 @@
 - v4.0 International Foundation & Gulf Expansion - Phases 45-55 (shipped 2026-04-12)
 - v5.0 UK & Germany Expansion - Phases 56-69 (shipped 2026-04-26)
 - v6.0 Platform Maturity & Operational Hardening - Phases 70-80 (planned)
+- v7.0 GTM Expansion — US Cross-Border + Workforce Management - Phases 81+ (backlog, pre-prod gate; see `.planning/milestones/v7.0-BACKLOG.md`)
 
 ## Phases
 

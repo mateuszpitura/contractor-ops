@@ -1,0 +1,20 @@
+{
+  "Legal.DrvUpload.downloadLetter": "Download decision letter",
+  "Legal.SdsApproval.approved": "Approved — you can now generate the SDS",
+  "Legal.privacyIndex.jurisdictions.de.label": "Deutschland",
+  "Legal.privacyIndex.jurisdictions.de.subtitle": "DSGVO · BDSG",
+  "Legal.privacyIndex.jurisdictions.eu.label": "European Union",
+  "Legal.privacyIndex.jurisdictions.eu.subtitle": "GDPR · general fallback",
+  "Legal.privacyIndex.jurisdictions.gb.label": "United Kingdom",
+  "Legal.privacyIndex.jurisdictions.gb.subtitle": "UK GDPR · DPA 2018",
+  "Offboarding.OverrideDialog.reasonServerError": "The reason must be at least 20 characters and contain a substantive explanation.",
+  "Offboarding.PtoBadge.label": "No fallback approver — manager on PTO",
+  "Offboarding.PtoBadge.tooltip": "Configure a fallback approver in Settings > Teams to avoid routing to organization owners by default.",
+  "OnboardingImport.oauthError": "Could not connect to {tool}. Check your permissions and try again.",
+  "OnboardingImport.settingsReimport": "Re-import from tools",
+  "OnboardingImport.step4.errorPrefix": "Failed to import {name}. Click Retry to try again, or skip this person.",
+  "ContractorWizard.fields.nipError": "Could not fetch data from GUS. Enter details manually.",
+  "ContractorWizard.fields.nipSuccess": "Company data loaded from GUS",
+  "Onboarding.completed": "Completed",
+  "Onboarding.toast.stepComplete": "Step completed: {stepTitle}"
+}
