@@ -383,7 +383,7 @@ Phase artifacts: `.planning/milestones/v5.0-phases/`
 | 70. v6.0 Foundation — CI Guards                | v6.0      | 0/?            | Not started | -          |
 | 71. F1 Compliance — Policy Package + Schema   | v6.0      | 7/7 | Complete   | 2026-04-27 |
 | 72. F1 Compliance — Reminder + Payment Block  | v6.0      | 8/8 | Complete    | 2026-05-31 |
-| 73. F1 Compliance — Dashboard + Portal + i18n | v6.0      | 8/8 | Complete   | 2026-05-31 |
+| 73. F1 Compliance — Dashboard + Portal + i18n | v6.0      | 8/8 | Complete    | 2026-05-31 |
 | 74. F4 Offboarding — Workflow + KT            | v6.0      | 8/8 | Complete    | 2026-04-27 |
 | 75. F4 Offboarding — IP Verify + Credentials  | v6.0      | 7.x/8 | Partial (esign deferred) | 2026-05-31 |
 | 76. F2 IdP — Capability + Saga + Cooldown     | v6.0      | 10/10 | Complete    | 2026-05-31 |
