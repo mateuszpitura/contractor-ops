@@ -1,6 +1,7 @@
 import { prisma } from '@contractor-ops/db';
 import { provenanceLookup } from '@contractor-ops/idp-saga';
 import { z } from 'zod';
+import type { ImpactPreview } from '../idp/impact-preview.js';
 import { GOOGLE_WORKSPACE_DEPROVISION_SCOPES } from '../scopes/google-workspace-deprovision-scopes.js';
 import { fetchWithTimeout } from '../services/fetch-helpers.js';
 import { parseJsonResponse } from '../services/parse-json-response.js';
@@ -448,6 +449,13 @@ export class GoogleWorkspaceAdapter extends BaseAdapter implements Deprovisionab
     } catch {
       return false;
     }
+  }
+
+  // Phase 77 D-01 — real impact-preview implementation lands in Plan 77-02
+  // (live + cached Admin SDK reads). This placeholder satisfies the interface
+  // obligation so the package compiles after 77-01 extends the contract.
+  describeImpact(_externalUserId: string): Promise<ImpactPreview> {
+    throw new Error('GoogleWorkspaceAdapter.describeImpact is not implemented yet (Plan 77-02)');
   }
 
   // -------------------------------------------------------------------------

@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { BaseAdapter } from '../adapters/base-adapter.js';
+import type { ImpactPreview } from '../idp/impact-preview.js';
 import {
   _resetDeprovisionableAdapters,
   getDeprovisionableAdapter,
@@ -11,8 +12,9 @@ import {
 } from '../scopes/google-workspace-deprovision-scopes.js';
 import type { Deprovisionable, DeprovisionResult } from '../types/deprovisionable.js';
 
-// Compile-time guarantee (D-13 / SC#5): this class only compiles if Deprovisionable
-// requires all three methods. Removing any method below would fail typecheck.
+// Compile-time guarantee (D-13 / SC#5 + Phase 77 D-01): this class only compiles
+// if Deprovisionable requires all four methods. Removing any method below would
+// fail typecheck.
 class TestDeprovisionableAdapter extends BaseAdapter implements Deprovisionable {
   readonly slug = 'test-deprovisionable';
   readonly displayName = 'Test Deprovisionable';
@@ -27,6 +29,20 @@ class TestDeprovisionableAdapter extends BaseAdapter implements Deprovisionable 
   }
   async verifyDeprovisioned(_externalUserId: string): Promise<boolean> {
     return true;
+  }
+  async describeImpact(externalUserId: string): Promise<ImpactPreview> {
+    return {
+      provider: 'GOOGLE_WORKSPACE',
+      commonMetrics: {
+        externalUserId,
+        externalUserDisplayName: 'Test User',
+        accountStatus: 'ACTIVE',
+        sessionCount: null,
+      },
+      customMetrics: { oauthGrants: [], isSuperAdmin: false, drivesOwnedCount: null },
+      fetchedAt: new Date().toISOString(),
+      cacheKey: `co:idp:preview:GOOGLE_WORKSPACE:${externalUserId}`,
+    };
   }
 }
 

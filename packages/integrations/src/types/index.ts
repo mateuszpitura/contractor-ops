@@ -1,3 +1,13 @@
+export type { ClassifyErrorInput, ErrorClass } from '../idp/error-classifier.js';
+// Phase 77 — IdP impact-preview + error-classifier public types.
+export { classifyError } from '../idp/error-classifier.js';
+export type {
+  GwsImpactCustomMetrics,
+  ImpactCommonMetrics,
+  ImpactPreview,
+  ImpactPreviewProvider,
+  SlackImpactCustomMetrics,
+} from '../idp/impact-preview.js';
 export type { CredentialBlob } from './credentials.js';
 export type {
   Deprovisionable,

@@ -3,12 +3,20 @@
 // Every IdP-capable adapter MUST implement this interface. Compile-time enforcement
 // happens at the registry boundary: `registerDeprovisionableAdapter(provider, adapter)`
 // only accepts an adapter typed as `BaseAdapter & Deprovisionable` — a class that
-// forgets one of the three methods will not compile when registered.
+// forgets one of the methods will not compile when registered.
+
+import type { ErrorClass } from '../idp/error-classifier.js';
+import type { ImpactPreview } from '../idp/impact-preview.js';
 
 /**
  * Status of an individual deprovisioning method call.
+ *
+ * Phase 77 D-06 — additively extended with `LIKELY_GONE`: the provider returned
+ * a not-found signal (PERMANENT_NOT_FOUND), so the user is treated as already
+ * deprovisioned. The saga's run-status derivation treats LIKELY_GONE as a
+ * terminal-success equivalent (D-11).
  */
-export type DeprovisionResultStatus = 'SUCCEEDED' | 'FAILED';
+export type DeprovisionResultStatus = 'SUCCEEDED' | 'FAILED' | 'LIKELY_GONE';
 
 /**
  * Classification of failure modes for retry-policy + admin-reconcile-queue UX.
@@ -42,6 +50,13 @@ export interface DeprovisionResult {
   requestSha256: string;
   /** SHA-256 hex of the canonicalised response payload (PII removed first). */
   responseSha256: string;
+  // Phase 77 D-06 — additive optional fields.
+  /** Set when the operation was a no-op because the user was already gone. */
+  skipped?: boolean;
+  /** Sanitised, non-PII reason for a skip / LIKELY_GONE outcome. */
+  reason?: string;
+  /** Closed-enum failure classification (D-07) used by the reconcile queue. */
+  errorClass?: ErrorClass;
 }
 
 /**
@@ -81,4 +96,13 @@ export interface Deprovisionable {
    * Production saga relies on `suspendAccount`'s SUCCEEDED status.
    */
   verifyDeprovisioned(externalUserId: string): Promise<boolean>;
+
+  /**
+   * Phase 77 D-01 — pre-flight impact preview. Makes live (cached) provider
+   * read calls to describe what deprovisioning the user will affect (account
+   * status, session count, OAuth grants, channel/drive ownership, …). Returns
+   * a discriminated {@link ImpactPreview} narrowed on `provider`. Never mutates
+   * provider state; safe to call before the admin confirms the run.
+   */
+  describeImpact(externalUserId: string): Promise<ImpactPreview>;
 }
