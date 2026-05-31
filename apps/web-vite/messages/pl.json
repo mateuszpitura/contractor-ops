@@ -6196,6 +6196,10 @@
       "syncing": "Synchronizowanie…",
       "jira": {
         "descriptionDisconnected": "Connect Jira to sync issues, comments, and worklogs with your projects."
+      },
+      "idpDeprovisioning": {
+        "heading": "IdP deprovisioning",
+        "description": "Enable contractor identity deprovisioning per provider. Each provider ships disabled until its sign-off is approved."
       }
     },
     "disconnectConfirmGeneric": {
@@ -7798,5 +7802,103 @@
     "noResultsTitle": "No matches",
     "noResultsBody": "Try a different search term.",
     "noResultsCta": "Clear search"
+  },
+  "Idp": {
+    "preview": {
+      "provider.GOOGLE_WORKSPACE": "Google Workspace",
+      "provider.SLACK": "Slack",
+      "accountStatus.ACTIVE": "Active",
+      "accountStatus.SUSPENDED": "Suspended",
+      "accountStatus.NOT_FOUND": "Not found",
+      "refresh": "Refresh preview",
+      "gws.suspend": "Suspend {email}",
+      "gws.revokeGrants": "Revoke {count} OAuth grants ({apps})",
+      "gws.signOut": "Sign out of {count} active sessions",
+      "gws.superAdmin": "This user is a super-admin — review before deprovisioning",
+      "slack.notOnEnterpriseGrid": "This Slack workspace is not on Enterprise Grid — deprovisioning is unavailable.",
+      "slack.channels": "Member of {count} channels",
+      "slack.apps": "{count} installed apps",
+      "slack.workspaceAdmin": "Workspace admin",
+      "slack.orgOwner": "Org owner — review before deprovisioning",
+      "freshness.justNow": "Last refreshed: just now",
+      "freshness.minutesAgo": "Last refreshed: {count} min ago",
+      "empty": "No impact preview available.",
+      "failure.title": "Impact preview unavailable",
+      "failure.body": "Could not load the preview ({reason}). Deprovisioning can still proceed without it.",
+      "failure.retry": "Retry",
+      "failure.proceed": "Continue without preview"
+    },
+    "runView": {
+      "provider.GOOGLE_WORKSPACE": "Google Workspace",
+      "provider.SLACK": "Slack",
+      "stepKind.SUSPEND_ACCOUNT": "Suspend account",
+      "stepKind.REVOKE_ALL_SESSIONS": "Revoke all sessions",
+      "status.PENDING": "Pending",
+      "status.IN_PROGRESS": "In progress",
+      "status.SUCCEEDED": "Succeeded",
+      "status.LIKELY_GONE": "Already gone",
+      "status.FAILED": "Failed",
+      "status.MANUAL_COMPLETED": "Manually completed",
+      "markComplete": "Mark complete",
+      "overrideSuccess": "Step marked complete",
+      "overrideFailure": "Could not mark the step complete",
+      "error": "Could not load the deprovisioning run.",
+      "retry": "Retry",
+      "empty": "No deprovisioning steps for this run."
+    },
+    "OverrideStepDialog": {
+      "title": "Mark step complete",
+      "description": "Record why this failed step is complete by out-of-band verification. This unblocks the offboarding workflow while preserving the failure record.",
+      "categoryLabel": "Reason category",
+      "categoryPlaceholder": "Select a reason",
+      "category.verified_via_vendor_console": "Verified in the vendor console",
+      "category.user_already_inactive": "User was already inactive",
+      "category.provider_endpoint_deprecated": "Provider endpoint deprecated",
+      "category.transient_provider_issue_resolved": "Transient provider issue resolved",
+      "category.other": "Other",
+      "noteLabel": "Rationale",
+      "notePlaceholder": "Explain how you verified this step is complete (min 20 characters)",
+      "noteClientError": "Please enter at least 20 characters.",
+      "cancel": "Cancel",
+      "cta": "Mark complete",
+      "ctaLoading": "Saving…"
+    },
+    "StepOverrideBadge": {
+      "label": "Manually completed",
+      "tooltipActor": "Manually completed by {name} on {date}",
+      "tooltipCategory": "Reason: {category}",
+      "category.verified_via_vendor_console": "Verified in the vendor console",
+      "category.user_already_inactive": "User was already inactive",
+      "category.provider_endpoint_deprecated": "Provider endpoint deprecated",
+      "category.transient_provider_issue_resolved": "Transient provider issue resolved",
+      "category.other": "Other"
+    },
+    "slackOrgGrid": {
+      "title": "Slack Org Grid (deprovisioning)",
+      "description": "Org-level connection used to deactivate and sign out contractors across the Slack Enterprise Grid.",
+      "connected": "Connected",
+      "connect": "Connect Slack Org Grid",
+      "requiresEnterpriseGrid": "Requires a Slack Enterprise Grid plan.",
+      "learnMore": "Learn more"
+    },
+    "toggleTable": {
+      "columns.provider": "Provider",
+      "columns.connection": "Connection",
+      "columns.flag": "Flag status",
+      "columns.action": "Enabled",
+      "provider.GOOGLE_WORKSPACE": "Google Workspace",
+      "provider.SLACK": "Slack",
+      "connectionStatus.connected": "Connected",
+      "connectionStatus.notConnected": "Not connected",
+      "flagStatus.approved": "Approved",
+      "flagStatus.pending": "Pending sign-off",
+      "disabledTooltip": "Enable is available once the provider sign-off is approved.",
+      "toggleAria": "Enable {provider} deprovisioning",
+      "toggleSuccess": "Provider updated",
+      "toggleFailure": "Could not update the provider",
+      "error": "Could not load provider settings.",
+      "retry": "Retry",
+      "empty": "No deprovisioning providers available."
+    }
   }
 }
