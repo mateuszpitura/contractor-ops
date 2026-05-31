@@ -1,5 +1,7 @@
 import { createHmac, timingSafeEqual } from 'node:crypto';
+import { z } from 'zod';
 import { fetchWithTimeout } from '../services/fetch-helpers.js';
+import { parseJsonResponse } from '../services/parse-json-response.js';
 import { withResilience } from '../services/resilience.js';
 import type { CredentialBlob } from '../types/credentials.js';
 import type { OAuthConfig } from '../types/provider.js';
@@ -39,6 +41,22 @@ export const JIRA_EXTRA_AUTH_PARAMS: Record<string, string> = {
   audience: 'api.atlassian.com',
   prompt: 'consent',
 };
+
+/**
+ * Atlassian OAuth 2.0 token response (authorization_code + refresh_token grants).
+ * Validated at the credential-persist boundary so a malformed/changed payload
+ * fails closed instead of persisting a corrupt CredentialBlob. Only fields the
+ * adapter reads are required; refresh_token is optional (absent on refresh when
+ * Atlassian does not rotate it). expires_in must be a finite non-negative number
+ * so the derived expiresAt is a valid ISO timestamp rather than `Invalid Date`.
+ */
+const jiraTokenResponseSchema = z.object({
+  access_token: z.string().min(1),
+  refresh_token: z.string().min(1).optional(),
+  expires_in: z.number().finite().nonnegative(),
+  token_type: z.string().min(1),
+  scope: z.string(),
+});
 
 // ---------------------------------------------------------------------------
 // Jira Adapter
@@ -108,13 +126,11 @@ export class JiraAdapter extends BaseAdapter {
       throw new Error(`Jira OAuth exchange failed: ${text}`);
     }
 
-    const data = (await response.json()) as {
-      access_token: string;
-      refresh_token?: string;
-      expires_in: number;
-      token_type: string;
-      scope: string;
-    };
+    const data = await parseJsonResponse(
+      response,
+      jiraTokenResponseSchema,
+      'jira:exchangeCodeForTokens',
+    );
 
     return {
       accessToken: data.access_token,
@@ -163,13 +179,7 @@ export class JiraAdapter extends BaseAdapter {
       throw new Error(`Jira token refresh failed: ${text}`);
     }
 
-    const data = (await response.json()) as {
-      access_token: string;
-      refresh_token?: string;
-      expires_in: number;
-      token_type: string;
-      scope: string;
-    };
+    const data = await parseJsonResponse(response, jiraTokenResponseSchema, 'jira:refreshToken');
 
     return {
       accessToken: data.access_token,

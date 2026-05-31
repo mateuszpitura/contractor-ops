@@ -1,12 +1,26 @@
 import { createHmac, timingSafeEqual } from 'node:crypto';
+import { z } from 'zod';
 import type { LimitFunction } from '../services/concurrency.js';
 import { pLimit } from '../services/concurrency.js';
 import { fetchWithTimeout } from '../services/fetch-helpers.js';
+import { parseJsonResponse } from '../services/parse-json-response.js';
 import { withResilience } from '../services/resilience.js';
 import type { CredentialBlob } from '../types/credentials.js';
 import type { OAuthConfig } from '../types/provider.js';
 import type { WebhookVerificationResult } from '../types/webhook.js';
 import { BaseAdapter } from './base-adapter.js';
+
+/**
+ * Slack OAuth v2 access response (oauth.v2.access). Validated at the
+ * credential-persist boundary so a malformed payload fails closed before the
+ * access token is encrypted into the CredentialBlob.
+ */
+const SlackOAuthAccessResponse = z.object({
+  ok: z.boolean(),
+  access_token: z.string().optional(),
+  team: z.object({ id: z.string().optional(), name: z.string().optional() }).optional(),
+  error: z.string().optional(),
+});
 
 // ---------------------------------------------------------------------------
 // F-INT-12 — per-channel self-throttle for chat.postMessage
@@ -126,12 +140,11 @@ export class SlackAdapter extends BaseAdapter {
       { timeoutMs: 30_000, retries: 0 },
     );
 
-    const data = (await response.json()) as {
-      ok: boolean;
-      access_token?: string;
-      team?: { id?: string; name?: string };
-      error?: string;
-    };
+    const data = await parseJsonResponse(
+      response,
+      SlackOAuthAccessResponse,
+      'slack:exchangeCodeForTokens',
+    );
 
     if (!(data.ok && data.access_token)) {
       throw new Error(`Slack OAuth exchange failed: ${data.error ?? 'unknown error'}`);
