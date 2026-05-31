@@ -1,21 +1,13 @@
 /**
- * Phase 76 D-16 — Per-provider Deprovisionable adapter integration-test STUB TEMPLATE.
+ * Phase 77 D-04/D-05 — GoogleWorkspaceAdapter Deprovisionable behavior.
  *
- * This file is the canonical template for Phases 77 (Slack) and 78 (Entra, Okta, GitHub).
- * When implementing a new Deprovisionable adapter:
+ * Replaces the Phase 76 D-16 stub-template assertions (404→SUCCEEDED,
+ * 429→RATE_LIMITED-FAILED) with the real 77-02 contract: errors classified via
+ * the closed-enum classifier — 404→LIKELY_GONE, 429/503→THROW (QStash retries),
+ * 401→PERMANENT_AUTH_EXPIRED, 403→PERMANENT_FORBIDDEN — and revokeAllSessions as
+ * two sub-actions (OAuth-grant revoke + sign-out), both required for SUCCEEDED.
  *
- *   1. Copy this file to `packages/integrations/src/adapters/__tests__/{provider}-deprovision.test.ts`.
- *   2. Replace `GoogleWorkspaceAdapter` with the new adapter class.
- *   3. Replace the MSW URL predicates (isUserPath / isSignOutPath) with the provider's API endpoints.
- *   4. Adapt the credential shape (withAccessToken vs workspace token vs OAuth bearer).
- *   5. Keep the case structure: interface-shape sanity, suspend, revoke, mocked-clock 5-min
- *      verifyDeprovisioned, USER_NOT_FOUND→SUCCEEDED, 5xx→PROVIDER_ERROR, 429→RATE_LIMITED.
- *
- * The `vi.useFakeTimers()` + `vi.advanceTimersByTime(5 * 60 * 1000)` is the SC#5 contract:
- * revocation must be verifiable within 5 minutes — do not omit. Provider-specific URL
- * patterns and credential shapes may differ; adapt the MSW handlers, keep the contract.
- *
- * LOCAL-ONLY constraint: tests run against MSW handlers, never live provider sandboxes.
+ * LOCAL-ONLY constraint: tests run against MSW handlers, never live sandboxes.
  */
 
 import { createMockServer, HttpResponse, http } from '@contractor-ops/test-utils';
@@ -28,13 +20,24 @@ beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
 afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
 
-// URL predicates instead of string/regex paths — MSW v2 + path-to-regexp v8 crashes on
-// regex/glob path literals (see packages/test-utils CLAUDE.md qstash note). The Admin SDK
-// user endpoint is `/admin/directory/v1/users/<id>`; signOut is the same path + `/signOut`.
+// URL predicates (MSW v2 + path-to-regexp v8 crashes on regex/glob path literals).
 const ADMIN_HOST = 'admin.googleapis.com';
 const isUserPath = (url: string) => {
   const u = new URL(url);
   return u.hostname === ADMIN_HOST && /^\/admin\/directory\/v1\/users\/[^/]+$/.test(u.pathname);
+};
+const isTokensListPath = (url: string) => {
+  const u = new URL(url);
+  return (
+    u.hostname === ADMIN_HOST && /^\/admin\/directory\/v1\/users\/[^/]+\/tokens$/.test(u.pathname)
+  );
+};
+const isTokenDeletePath = (url: string) => {
+  const u = new URL(url);
+  return (
+    u.hostname === ADMIN_HOST &&
+    /^\/admin\/directory\/v1\/users\/[^/]+\/tokens\/[^/]+$/.test(u.pathname)
+  );
 };
 const isSignOutPath = (url: string) => {
   const u = new URL(url);
@@ -44,43 +47,159 @@ const isSignOutPath = (url: string) => {
 };
 
 const adapter = () => new GoogleWorkspaceAdapter().withAccessToken('fake-token');
+const USER = 'u@example.com';
 
-describe('GoogleWorkspaceAdapter — Deprovisionable contract (Phase 76 D-13/D-16)', () => {
-  it('class GoogleWorkspaceAdapter implements Deprovisionable', () => {
+describe('GoogleWorkspaceAdapter — Deprovisionable contract (Phase 77 D-04/D-05)', () => {
+  it('implements all four Deprovisionable methods', () => {
     const a = adapter();
     expect(typeof a.suspendAccount).toBe('function');
     expect(typeof a.revokeAllSessions).toBe('function');
     expect(typeof a.verifyDeprovisioned).toBe('function');
+    expect(typeof a.describeImpact).toBe('function');
   });
 
-  it('suspendAccount → PATCH user.update(suspended=true) → { status: SUCCEEDED } + SHA hashes', async () => {
+  it('suspendAccount → PATCH suspended=true → SUCCEEDED + SHA hashes', async () => {
     server.use(
       http.patch(
         ({ request }) => isUserPath(request.url),
         async ({ request }) => {
           expect(await request.json()).toEqual({ suspended: true });
-          return HttpResponse.json({ primaryEmail: 'u@example.com', suspended: true });
+          return HttpResponse.json({ suspended: true });
         },
       ),
     );
-    const result = await adapter().suspendAccount('u@example.com');
+    const result = await adapter().suspendAccount(USER);
     expect(result.status).toBe('SUCCEEDED');
     expect(result.requestSha256).toMatch(/^[a-f0-9]{64}$/);
     expect(result.responseSha256).toMatch(/^[a-f0-9]{64}$/);
   });
 
-  it('revokeAllSessions → POST signOut → { status: SUCCEEDED }', async () => {
+  it('suspendAccount 404 → LIKELY_GONE (PERMANENT_NOT_FOUND)', async () => {
     server.use(
+      http.patch(
+        ({ request }) => isUserPath(request.url),
+        () => new HttpResponse('not found', { status: 404 }),
+      ),
+    );
+    const result = await adapter().suspendAccount(USER);
+    expect(result.status).toBe('LIKELY_GONE');
+    expect(result.errorClass).toBe('PERMANENT_NOT_FOUND');
+  });
+
+  it('suspendAccount 401 → FAILED PERMANENT_AUTH_EXPIRED', async () => {
+    server.use(
+      http.patch(
+        ({ request }) => isUserPath(request.url),
+        () => new HttpResponse('unauthorized', { status: 401 }),
+      ),
+    );
+    const result = await adapter().suspendAccount(USER);
+    expect(result.status).toBe('FAILED');
+    expect(result.errorClass).toBe('PERMANENT_AUTH_EXPIRED');
+  });
+
+  it('suspendAccount 403 forbidden → FAILED PERMANENT_FORBIDDEN', async () => {
+    server.use(
+      http.patch(
+        ({ request }) => isUserPath(request.url),
+        () => HttpResponse.json({ error: { errors: [{ reason: 'forbidden' }] } }, { status: 403 }),
+      ),
+    );
+    const result = await adapter().suspendAccount(USER);
+    expect(result.status).toBe('FAILED');
+    expect(result.errorClass).toBe('PERMANENT_FORBIDDEN');
+  });
+
+  it('suspendAccount 429 → THROWS (QStash retries the step)', async () => {
+    server.use(
+      http.patch(
+        ({ request }) => isUserPath(request.url),
+        () => new HttpResponse('rate limited', { status: 429 }),
+      ),
+    );
+    await expect(adapter().suspendAccount(USER)).rejects.toThrow(/transient/i);
+  });
+
+  it('suspendAccount hash does not embed the access token (token-independent)', async () => {
+    server.use(
+      http.patch(
+        ({ request }) => isUserPath(request.url),
+        () => HttpResponse.json({}),
+      ),
+    );
+    const a = await new GoogleWorkspaceAdapter().withAccessToken('secret-A').suspendAccount(USER);
+    const b = await new GoogleWorkspaceAdapter().withAccessToken('secret-B').suspendAccount(USER);
+    expect(a.requestSha256).toBe(b.requestSha256);
+  });
+
+  it('revokeAllSessions → list tokens, delete each, signOut → SUCCEEDED + 2 sub-actions', async () => {
+    server.use(
+      http.get(
+        ({ request }) => isTokensListPath(request.url),
+        () => HttpResponse.json({ items: [{ clientId: 'app-1' }, { clientId: 'app-2' }] }),
+      ),
+      http.delete(
+        ({ request }) => isTokenDeletePath(request.url),
+        () => new HttpResponse(null, { status: 204 }),
+      ),
       http.post(
         ({ request }) => isSignOutPath(request.url),
         () => new HttpResponse(null, { status: 204 }),
       ),
     );
-    const result = await adapter().revokeAllSessions('u@example.com');
+    const result = await adapter().revokeAllSessions(USER);
+    expect(result.status).toBe('SUCCEEDED');
+    expect(result.subActions?.map(s => s.kind)).toEqual([
+      'revoke_oauth_grants',
+      'sign_out_sessions',
+    ]);
+    for (const sub of result.subActions ?? []) {
+      expect(sub.requestSha256).toMatch(/^[a-f0-9]{64}$/);
+      expect(sub.responseSha256).toMatch(/^[a-f0-9]{64}$/);
+    }
+  });
+
+  it('revokeAllSessions: token-delete 404 is idempotent success', async () => {
+    server.use(
+      http.get(
+        ({ request }) => isTokensListPath(request.url),
+        () => HttpResponse.json({ items: [{ clientId: 'gone' }] }),
+      ),
+      http.delete(
+        ({ request }) => isTokenDeletePath(request.url),
+        () => new HttpResponse(null, { status: 404 }),
+      ),
+      http.post(
+        ({ request }) => isSignOutPath(request.url),
+        () => new HttpResponse(null, { status: 204 }),
+      ),
+    );
+    const result = await adapter().revokeAllSessions(USER);
     expect(result.status).toBe('SUCCEEDED');
   });
 
-  it('verifyDeprovisioned returns true within 5 min after suspend (mocked clock)', async () => {
+  it('revokeAllSessions: signOut failure ⇒ FAILED even if all token deletes succeeded', async () => {
+    server.use(
+      http.get(
+        ({ request }) => isTokensListPath(request.url),
+        () => HttpResponse.json({ items: [{ clientId: 'app-1' }] }),
+      ),
+      http.delete(
+        ({ request }) => isTokenDeletePath(request.url),
+        () => new HttpResponse(null, { status: 204 }),
+      ),
+      http.post(
+        ({ request }) => isSignOutPath(request.url),
+        () => HttpResponse.json({ error: { errors: [{ reason: 'forbidden' }] } }, { status: 403 }),
+      ),
+    );
+    const result = await adapter().revokeAllSessions(USER);
+    expect(result.status).toBe('FAILED');
+    expect(result.errorClass).toBe('PERMANENT_FORBIDDEN');
+    expect(result.subActions).toHaveLength(2);
+  });
+
+  it('verifyDeprovisioned true within 5 min after suspend (mocked clock)', async () => {
     server.use(
       http.patch(
         ({ request }) => isUserPath(request.url),
@@ -88,54 +207,27 @@ describe('GoogleWorkspaceAdapter — Deprovisionable contract (Phase 76 D-13/D-1
       ),
       http.get(
         ({ request }) => isUserPath(request.url),
-        () => HttpResponse.json({ primaryEmail: 'u@example.com', suspended: true }),
+        () => HttpResponse.json({ suspended: true }),
       ),
     );
     vi.useFakeTimers();
     try {
       const a = adapter();
-      const sus = await a.suspendAccount('u@example.com');
-      expect(sus.status).toBe('SUCCEEDED');
+      expect((await a.suspendAccount(USER)).status).toBe('SUCCEEDED');
       vi.advanceTimersByTime(5 * 60 * 1000);
-      expect(await a.verifyDeprovisioned('u@example.com')).toBe(true);
+      expect(await a.verifyDeprovisioned(USER)).toBe(true);
     } finally {
       vi.useRealTimers();
     }
   });
 
-  it('USER_NOT_FOUND (404) maps to status: SUCCEEDED with failureKind USER_NOT_FOUND', async () => {
+  it('verifyDeprovisioned true on 404', async () => {
     server.use(
-      http.patch(
+      http.get(
         ({ request }) => isUserPath(request.url),
-        () => new HttpResponse('not found', { status: 404 }),
+        () => new HttpResponse('gone', { status: 404 }),
       ),
     );
-    const result = await adapter().suspendAccount('u@example.com');
-    expect(result.status).toBe('SUCCEEDED');
-    expect(result.failureKind).toBe('USER_NOT_FOUND');
-  });
-
-  it('5xx maps to status: FAILED with failureKind: PROVIDER_ERROR', async () => {
-    server.use(
-      http.patch(
-        ({ request }) => isUserPath(request.url),
-        () => new HttpResponse('server error', { status: 503 }),
-      ),
-    );
-    const result = await adapter().suspendAccount('u@example.com');
-    expect(result.status).toBe('FAILED');
-    expect(result.failureKind).toBe('PROVIDER_ERROR');
-  });
-
-  it('429 maps to status: FAILED with failureKind: RATE_LIMITED', async () => {
-    server.use(
-      http.patch(
-        ({ request }) => isUserPath(request.url),
-        () => new HttpResponse('rate limited', { status: 429 }),
-      ),
-    );
-    const result = await adapter().suspendAccount('u@example.com');
-    expect(result.status).toBe('FAILED');
-    expect(result.failureKind).toBe('RATE_LIMITED');
+    expect(await adapter().verifyDeprovisioned(USER)).toBe(true);
   });
 });

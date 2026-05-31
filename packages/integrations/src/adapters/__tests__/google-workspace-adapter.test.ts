@@ -57,6 +57,8 @@ describe('GoogleWorkspaceAdapter', () => {
       'https://www.googleapis.com/auth/admin.directory.group.readonly',
       // Phase 76 SC#3 — additive write scope for contractor deprovisioning.
       'https://www.googleapis.com/auth/admin.directory.user',
+      // Phase 77 D-07 — token revoke + sign-out sub-actions of revokeAllSessions.
+      'https://www.googleapis.com/auth/admin.directory.user.security',
     ]);
     expect(c.redirectPath).toBe('/api/oauth/google_workspace/callback');
     expect(c.extraAuthParams?.access_type).toBe('offline');
