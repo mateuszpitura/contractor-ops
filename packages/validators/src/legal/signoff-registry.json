@@ -84,5 +84,87 @@
   "legal-signoff.ip_clauses.uae.written_form@v1": {
     "status": "PENDING",
     "notes": "Phase 75 — UAE Federal Law No. 38 of 2021 Art. 9 (form requirements)."
+  },
+
+  "COMPL_DOCNAME_uk_right_to_work_v1": {
+    "status": "PENDING",
+    "notes": "Phase 73 D-16 — UK adviser sign-off."
+  },
+  "COMPL_DOCNAME_uk_utr_v1": {
+    "status": "PENDING",
+    "notes": "Phase 73 D-16 — UK adviser sign-off."
+  },
+  "COMPL_DOCNAME_uk_business_registration_v1": {
+    "status": "PENDING",
+    "notes": "Phase 73 D-16 — UK adviser sign-off."
+  },
+  "COMPL_DOCNAME_uk_sds_v1": {
+    "status": "PENDING",
+    "notes": "Phase 73 D-16 — UK adviser sign-off."
+  },
+  "COMPL_DOCNAME_uk_ip_assignment_v1": {
+    "status": "PENDING",
+    "notes": "Phase 73 D-16 — UK adviser sign-off."
+  },
+
+  "COMPL_DOCNAME_de_a1_v1": {
+    "status": "PENDING",
+    "notes": "Phase 73 D-16 — Steuerberater sign-off."
+  },
+  "COMPL_DOCNAME_de_aufenthaltstitel_v1": {
+    "status": "PENDING",
+    "notes": "Phase 73 D-16 — Steuerberater sign-off."
+  },
+  "COMPL_DOCNAME_de_eight_b_estg_v1": {
+    "status": "PENDING",
+    "notes": "Phase 73 D-16 — Steuerberater sign-off."
+  },
+  "COMPL_DOCNAME_de_werkvertrag_ip_v1": {
+    "status": "PENDING",
+    "notes": "Phase 73 D-16 — Steuerberater sign-off."
+  },
+
+  "COMPL_DOCNAME_pl_zus_a1_v1": {
+    "status": "PENDING",
+    "notes": "Phase 73 D-16 — PL adviser sign-off."
+  },
+  "COMPL_DOCNAME_pl_udt_v1": {
+    "status": "PENDING",
+    "notes": "Phase 73 D-16 — PL adviser sign-off."
+  },
+  "COMPL_DOCNAME_pl_ip_assignment_v1": {
+    "status": "PENDING",
+    "notes": "Phase 73 D-16 — PL adviser sign-off."
+  },
+
+  "COMPL_DOCNAME_ksa_iqama_v1": {
+    "status": "PENDING",
+    "notes": "Phase 73 D-16 — KSA adviser sign-off."
+  },
+  "COMPL_DOCNAME_ksa_work_permit_qiwa_v1": {
+    "status": "PENDING",
+    "notes": "Phase 73 D-16 — KSA adviser sign-off."
+  },
+  "COMPL_DOCNAME_ksa_ip_assignment_v1": {
+    "status": "PENDING",
+    "notes": "Phase 73 D-16 — KSA adviser sign-off."
+  },
+
+  "COMPL_DOCNAME_uae_emirates_id_v1": {
+    "status": "PENDING",
+    "notes": "Phase 73 D-16 — UAE adviser sign-off."
+  },
+  "COMPL_DOCNAME_uae_free_zone_license_v1": {
+    "status": "PENDING",
+    "notes": "Phase 73 D-16 — UAE adviser sign-off."
+  },
+  "COMPL_DOCNAME_uae_ip_assignment_v1": {
+    "status": "PENDING",
+    "notes": "Phase 73 D-16 — UAE adviser sign-off."
+  },
+
+  "COMPL_DOCNAME_us_ip_assignment_v1": {
+    "status": "PENDING",
+    "notes": "Phase 73 D-16 — US adviser sign-off."
   }
 }
