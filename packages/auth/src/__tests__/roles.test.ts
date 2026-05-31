@@ -72,6 +72,19 @@ describe('roles', () => {
     }
   });
 
+  it('owner and admin both hold idp:override_step_failure (Phase 77 D-12)', () => {
+    expect(roles.owner.statements.idp).toEqual(['override_step_failure']);
+    expect(roles.admin.statements.idp).toEqual(['override_step_failure']);
+  });
+
+  it('no role other than owner/admin holds idp:override_step_failure', () => {
+    for (const [name, role] of Object.entries(roles)) {
+      if (name === 'owner' || name === 'admin') continue;
+      const statements = role.statements as Record<string, readonly string[] | undefined>;
+      expect(statements.idp, `${name} must not hold idp permissions`).toBeUndefined();
+    }
+  });
+
   it('finance_admin cannot create or bulk-update contractors', () => {
     expect(roles.finance_admin.statements.contractor).toEqual(['read']);
   });

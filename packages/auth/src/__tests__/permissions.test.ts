@@ -13,6 +13,7 @@ describe('accessControlStatement', () => {
       'document',
       'invoice',
       'workflow',
+      'idp',
       'payment',
       'report',
       'settings',
