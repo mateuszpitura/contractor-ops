@@ -1,5 +1,7 @@
 import { DashboardIllustration } from '@contractor-ops/ui';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
+import { lazy, Suspense } from 'react';
 
 import { usePermissions } from '../../hooks/use-permissions.js';
 import { Link } from '../../i18n/navigation.js';
@@ -20,8 +22,20 @@ import { HeroSpendMetric } from './hero-spend-metric.js';
 import { useDashboardHome } from './hooks/use-dashboard-home.js';
 import { KpiCards } from './kpi-cards.js';
 import { OverdueReceivablesTile } from './overdue-receivables-tile.js';
-import { SpendChart } from './spend-chart.js';
 import { TaxObligationsWidget } from './tax-obligations-widget.js';
+
+/**
+ * SpendChart pulls in recharts (+ d3) — the heaviest vendor group on the
+ * dashboard. Lazy-load it so the chunk downloads after first paint instead of
+ * blocking dashboard interactivity; a skeleton card holds the layout in place.
+ */
+const SpendChart = lazy(() =>
+  import('./spend-chart.js').then(module => ({ default: module.SpendChart })),
+);
+
+function SpendChartFallback() {
+  return <Skeleton className="h-[420px] w-full rounded-2xl" />;
+}
 
 /**
  * Empty state rendered when every KPI is zero — fresh org that hasn't
@@ -122,7 +136,9 @@ export function DashboardHomeContainer() {
         <div className="flex flex-col gap-6">
           {hasReportAccess && (
             <AnimateIn delay={3}>
-              <SpendChart />
+              <Suspense fallback={<SpendChartFallback />}>
+                <SpendChart />
+              </Suspense>
             </AnimateIn>
           )}
           <AnimateIn delay={4}>

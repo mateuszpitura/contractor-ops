@@ -9,12 +9,18 @@
  * banner's accept handler re-invokes this after writing the consent flag
  * (see `components/layout/cookie-consent-banner.tsx`). This prevents the
  * pre-consent cookie/event leak that the unconditional boot-time init had.
+ *
+ * posthog-js (~50-60KB gzip) is loaded via a dynamic import inside
+ * `initPostHog()` — only after consent — so the SDK stays out of the entry
+ * chunk and off the cold-boot critical path.
  */
 
-import posthog from 'posthog-js';
+import type Posthog from 'posthog-js';
 import { getClientEnv } from '../env.js';
+import { Sentry } from '../sentry.js';
 import { hasCookieConsent } from './consent.js';
 
+let ph: typeof Posthog | null = null;
 let initialized = false;
 let identifiedUserId: string | null = null;
 
@@ -24,14 +30,25 @@ export function initPostHog(): void {
   const env = getClientEnv();
   const key = env.VITE_POSTHOG_KEY;
   if (!key) return;
-  posthog.init(key, {
-    api_host: env.VITE_POSTHOG_HOST ?? 'https://eu.i.posthog.com',
-    autocapture: false,
-    capture_pageview: false,
-    persistence: 'localStorage+cookie',
-  });
-  posthog.capture('app_loaded');
+  // Flip the flag synchronously so a concurrent call cannot double-load, then
+  // lazy-import the SDK off the cold-boot critical path.
   initialized = true;
+  void import('posthog-js')
+    .then(({ default: posthog }) => {
+      ph = posthog;
+      posthog.init(key, {
+        api_host: env.VITE_POSTHOG_HOST ?? 'https://eu.i.posthog.com',
+        autocapture: false,
+        capture_pageview: false,
+        persistence: 'localStorage+cookie',
+      });
+      posthog.capture('app_loaded');
+    })
+    .catch((err: unknown) => {
+      // Analytics is non-critical; report the chunk-load failure to Sentry
+      // rather than dropping it silently.
+      Sentry.captureException(err);
+    });
 }
 
 /**
@@ -42,14 +59,15 @@ export function initPostHog(): void {
  * (anonymous landing visit → signup → first dashboard load) stays
  * stitched in one user timeline.
  *
- * Safe to call before `initPostHog()` ran (e.g. when consent has not
- * yet been granted) — the call short-circuits.
+ * Safe to call before the SDK has finished loading (e.g. before consent,
+ * or while the dynamic import is in flight) — it short-circuits until `ph`
+ * is set.
  */
 export function identifyPostHogUser(userId: string, properties?: Record<string, unknown>): void {
-  if (!initialized) return;
+  if (!ph) return;
   if (!userId) return;
   if (identifiedUserId === userId) return;
-  posthog.identify(userId, properties);
+  ph.identify(userId, properties);
   identifiedUserId = userId;
 }
 
@@ -58,9 +76,7 @@ export function identifyPostHogUser(userId: string, properties?: Record<string, 
  * anonymous events do not get attributed to the previous user.
  */
 export function resetPostHogIdentity(): void {
-  if (!initialized) return;
-  posthog.reset();
+  if (!ph) return;
+  ph.reset();
   identifiedUserId = null;
 }
-
-export { posthog };
