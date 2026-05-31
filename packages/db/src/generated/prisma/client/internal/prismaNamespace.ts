@@ -10336,6 +10336,8 @@ export const ContractorComplianceItemScalarFieldEnum = {
   policyRuleId: 'policyRuleId',
   expiryJurisdictionTz: 'expiryJurisdictionTz',
   waivedReason: 'waivedReason',
+  waivedReasonCategory: 'waivedReasonCategory',
+  waivedReasonNote: 'waivedReasonNote',
   dueDate: 'dueDate',
   satisfiedByDocumentId: 'satisfiedByDocumentId',
   expiresAt: 'expiresAt',
@@ -12560,6 +12562,20 @@ export type EnumWaivedReasonFieldRefInput<$PrismaModel> = FieldRefInputType<$Pri
  * Reference to a field of type 'WaivedReason[]'
  */
 export type ListEnumWaivedReasonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'WaivedReason[]'>
+    
+
+
+/**
+ * Reference to a field of type 'WaivedReasonCategory'
+ */
+export type EnumWaivedReasonCategoryFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'WaivedReasonCategory'>
+    
+
+
+/**
+ * Reference to a field of type 'WaivedReasonCategory[]'
+ */
+export type ListEnumWaivedReasonCategoryFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'WaivedReasonCategory[]'>
     
 
 

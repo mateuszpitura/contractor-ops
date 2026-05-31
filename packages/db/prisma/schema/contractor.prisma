@@ -235,24 +235,26 @@ model ComplianceRequirementTemplate {
 }
 
 model ContractorComplianceItem {
-  id                    String           @id @default(cuid())
+  id                    String                @id @default(cuid())
   organizationId        String
   contractorId          String
   contractId            String?
   requirementTemplateId String?
   name                  String
   documentType          DocumentType
-  status                ComplianceStatus @default(MISSING)
+  status                ComplianceStatus      @default(MISSING)
   severity              Severity? // Phase 71 D-05 — null pre-backfill
   policyRuleId          String? // Phase 71 D-06 — value-checked at write against compliance-policy registry
   expiryJurisdictionTz  String? // Phase 71 D-07 — IANA TZ; set at row-creation, never rewritten
   waivedReason          WaivedReason? // Phase 71 D-11 — populated only when status = WAIVED
-  dueDate               DateTime?        @db.Date
+  waivedReasonCategory  WaivedReasonCategory? // Phase 73 D-11 — admin-chosen closed-enum subcategory on override
+  waivedReasonNote      String? // Phase 73 D-11 — admin free-text rationale (≥20 chars when set; client + server validated)
+  dueDate               DateTime?             @db.Date
   satisfiedByDocumentId String?
-  expiresAt             DateTime?        @db.Date
+  expiresAt             DateTime?             @db.Date
   notes                 String?
-  createdAt             DateTime         @default(now())
-  updatedAt             DateTime         @updatedAt
+  createdAt             DateTime              @default(now())
+  updatedAt             DateTime              @updatedAt
 
   organization Organization @relation(fields: [organizationId], references: [id])
   contractor   Contractor   @relation(fields: [contractorId], references: [id])
@@ -265,6 +267,7 @@ model ContractorComplianceItem {
   @@index([organizationId, contractorId, status])
   @@index([organizationId, expiresAt])
   @@index([organizationId, policyRuleId]) // Phase 71 — supports drift queries by policyRuleId namespace
+  @@index([organizationId, severity, status, expiresAt]) // Phase 73 D-02 — admin dashboard "At risk" filter
 }
 
 // Phase 72 D-01 — 1:1 state machine for compliance reminder cascade.
@@ -340,6 +343,20 @@ enum WaivedReason {
   CLASSIFICATION_OUTCOME_CHANGE // Outcome differs from prior assessment (D-10)
   ADMIN_MANUAL_WAIVE // Admin clicked "Waive this requirement" (existing UX)
   CONTRACTOR_OFFBOARDED // Phase 74/75 fires this on offboarding completion
+}
+
+// Phase 73 D-11 — Closed enum for admin-chosen `waivedReasonCategory` on overrides.
+// Strong type at the DB level, greppable in audit queries; supplements the
+// system-generated `WaivedReason` enum (Phase 71 D-11) which is set automatically
+// to `admin_manual_waive` on override. The new column captures the admin's
+// closed-enum sub-category for richer audit queries.
+enum WaivedReasonCategory {
+  CONTRACTOR_OFFBOARDED
+  ENGAGEMENT_CHANGED
+  REGULATORY_EXEMPTION
+  TEMPORARY_GRACE_PERIOD
+  ADMIN_CORRECTION
+  OTHER
 }
 
 // Phase 72 D-02 — Reminder cascade band enum.

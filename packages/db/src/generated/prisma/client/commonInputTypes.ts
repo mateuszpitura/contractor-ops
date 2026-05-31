@@ -1099,6 +1099,13 @@ export type EnumWaivedReasonNullableFilter<$PrismaModel = never> = {
   not?: Prisma.NestedEnumWaivedReasonNullableFilter<$PrismaModel> | $Enums.WaivedReason | null
 }
 
+export type EnumWaivedReasonCategoryNullableFilter<$PrismaModel = never> = {
+  equals?: $Enums.WaivedReasonCategory | Prisma.EnumWaivedReasonCategoryFieldRefInput<$PrismaModel> | null
+  in?: $Enums.WaivedReasonCategory[] | Prisma.ListEnumWaivedReasonCategoryFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.WaivedReasonCategory[] | Prisma.ListEnumWaivedReasonCategoryFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumWaivedReasonCategoryNullableFilter<$PrismaModel> | $Enums.WaivedReasonCategory | null
+}
+
 export type EnumComplianceStatusWithAggregatesFilter<$PrismaModel = never> = {
   equals?: $Enums.ComplianceStatus | Prisma.EnumComplianceStatusFieldRefInput<$PrismaModel>
   in?: $Enums.ComplianceStatus[] | Prisma.ListEnumComplianceStatusFieldRefInput<$PrismaModel>
@@ -1127,6 +1134,16 @@ export type EnumWaivedReasonNullableWithAggregatesFilter<$PrismaModel = never> =
   _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
   _min?: Prisma.NestedEnumWaivedReasonNullableFilter<$PrismaModel>
   _max?: Prisma.NestedEnumWaivedReasonNullableFilter<$PrismaModel>
+}
+
+export type EnumWaivedReasonCategoryNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.WaivedReasonCategory | Prisma.EnumWaivedReasonCategoryFieldRefInput<$PrismaModel> | null
+  in?: $Enums.WaivedReasonCategory[] | Prisma.ListEnumWaivedReasonCategoryFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.WaivedReasonCategory[] | Prisma.ListEnumWaivedReasonCategoryFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumWaivedReasonCategoryNullableWithAggregatesFilter<$PrismaModel> | $Enums.WaivedReasonCategory | null
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumWaivedReasonCategoryNullableFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumWaivedReasonCategoryNullableFilter<$PrismaModel>
 }
 
 export type EnumReminderBandFilter<$PrismaModel = never> = {
@@ -3543,6 +3560,13 @@ export type NestedEnumWaivedReasonNullableFilter<$PrismaModel = never> = {
   not?: Prisma.NestedEnumWaivedReasonNullableFilter<$PrismaModel> | $Enums.WaivedReason | null
 }
 
+export type NestedEnumWaivedReasonCategoryNullableFilter<$PrismaModel = never> = {
+  equals?: $Enums.WaivedReasonCategory | Prisma.EnumWaivedReasonCategoryFieldRefInput<$PrismaModel> | null
+  in?: $Enums.WaivedReasonCategory[] | Prisma.ListEnumWaivedReasonCategoryFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.WaivedReasonCategory[] | Prisma.ListEnumWaivedReasonCategoryFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumWaivedReasonCategoryNullableFilter<$PrismaModel> | $Enums.WaivedReasonCategory | null
+}
+
 export type NestedEnumComplianceStatusWithAggregatesFilter<$PrismaModel = never> = {
   equals?: $Enums.ComplianceStatus | Prisma.EnumComplianceStatusFieldRefInput<$PrismaModel>
   in?: $Enums.ComplianceStatus[] | Prisma.ListEnumComplianceStatusFieldRefInput<$PrismaModel>
@@ -3571,6 +3595,16 @@ export type NestedEnumWaivedReasonNullableWithAggregatesFilter<$PrismaModel = ne
   _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
   _min?: Prisma.NestedEnumWaivedReasonNullableFilter<$PrismaModel>
   _max?: Prisma.NestedEnumWaivedReasonNullableFilter<$PrismaModel>
+}
+
+export type NestedEnumWaivedReasonCategoryNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.WaivedReasonCategory | Prisma.EnumWaivedReasonCategoryFieldRefInput<$PrismaModel> | null
+  in?: $Enums.WaivedReasonCategory[] | Prisma.ListEnumWaivedReasonCategoryFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.WaivedReasonCategory[] | Prisma.ListEnumWaivedReasonCategoryFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumWaivedReasonCategoryNullableWithAggregatesFilter<$PrismaModel> | $Enums.WaivedReasonCategory | null
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumWaivedReasonCategoryNullableFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumWaivedReasonCategoryNullableFilter<$PrismaModel>
 }
 
 export type NestedEnumReminderBandFilter<$PrismaModel = never> = {

@@ -37,6 +37,8 @@ export type ContractorComplianceItemMinAggregateOutputType = {
   policyRuleId: string | null
   expiryJurisdictionTz: string | null
   waivedReason: $Enums.WaivedReason | null
+  waivedReasonCategory: $Enums.WaivedReasonCategory | null
+  waivedReasonNote: string | null
   dueDate: Date | null
   satisfiedByDocumentId: string | null
   expiresAt: Date | null
@@ -58,6 +60,8 @@ export type ContractorComplianceItemMaxAggregateOutputType = {
   policyRuleId: string | null
   expiryJurisdictionTz: string | null
   waivedReason: $Enums.WaivedReason | null
+  waivedReasonCategory: $Enums.WaivedReasonCategory | null
+  waivedReasonNote: string | null
   dueDate: Date | null
   satisfiedByDocumentId: string | null
   expiresAt: Date | null
@@ -79,6 +83,8 @@ export type ContractorComplianceItemCountAggregateOutputType = {
   policyRuleId: number
   expiryJurisdictionTz: number
   waivedReason: number
+  waivedReasonCategory: number
+  waivedReasonNote: number
   dueDate: number
   satisfiedByDocumentId: number
   expiresAt: number
@@ -102,6 +108,8 @@ export type ContractorComplianceItemMinAggregateInputType = {
   policyRuleId?: true
   expiryJurisdictionTz?: true
   waivedReason?: true
+  waivedReasonCategory?: true
+  waivedReasonNote?: true
   dueDate?: true
   satisfiedByDocumentId?: true
   expiresAt?: true
@@ -123,6 +131,8 @@ export type ContractorComplianceItemMaxAggregateInputType = {
   policyRuleId?: true
   expiryJurisdictionTz?: true
   waivedReason?: true
+  waivedReasonCategory?: true
+  waivedReasonNote?: true
   dueDate?: true
   satisfiedByDocumentId?: true
   expiresAt?: true
@@ -144,6 +154,8 @@ export type ContractorComplianceItemCountAggregateInputType = {
   policyRuleId?: true
   expiryJurisdictionTz?: true
   waivedReason?: true
+  waivedReasonCategory?: true
+  waivedReasonNote?: true
   dueDate?: true
   satisfiedByDocumentId?: true
   expiresAt?: true
@@ -238,6 +250,8 @@ export type ContractorComplianceItemGroupByOutputType = {
   policyRuleId: string | null
   expiryJurisdictionTz: string | null
   waivedReason: $Enums.WaivedReason | null
+  waivedReasonCategory: $Enums.WaivedReasonCategory | null
+  waivedReasonNote: string | null
   dueDate: Date | null
   satisfiedByDocumentId: string | null
   expiresAt: Date | null
@@ -280,6 +294,8 @@ export type ContractorComplianceItemWhereInput = {
   policyRuleId?: Prisma.StringNullableFilter<"ContractorComplianceItem"> | string | null
   expiryJurisdictionTz?: Prisma.StringNullableFilter<"ContractorComplianceItem"> | string | null
   waivedReason?: Prisma.EnumWaivedReasonNullableFilter<"ContractorComplianceItem"> | $Enums.WaivedReason | null
+  waivedReasonCategory?: Prisma.EnumWaivedReasonCategoryNullableFilter<"ContractorComplianceItem"> | $Enums.WaivedReasonCategory | null
+  waivedReasonNote?: Prisma.StringNullableFilter<"ContractorComplianceItem"> | string | null
   dueDate?: Prisma.DateTimeNullableFilter<"ContractorComplianceItem"> | Date | string | null
   satisfiedByDocumentId?: Prisma.StringNullableFilter<"ContractorComplianceItem"> | string | null
   expiresAt?: Prisma.DateTimeNullableFilter<"ContractorComplianceItem"> | Date | string | null
@@ -305,6 +321,8 @@ export type ContractorComplianceItemOrderByWithRelationInput = {
   policyRuleId?: Prisma.SortOrderInput | Prisma.SortOrder
   expiryJurisdictionTz?: Prisma.SortOrderInput | Prisma.SortOrder
   waivedReason?: Prisma.SortOrderInput | Prisma.SortOrder
+  waivedReasonCategory?: Prisma.SortOrderInput | Prisma.SortOrder
+  waivedReasonNote?: Prisma.SortOrderInput | Prisma.SortOrder
   dueDate?: Prisma.SortOrderInput | Prisma.SortOrder
   satisfiedByDocumentId?: Prisma.SortOrderInput | Prisma.SortOrder
   expiresAt?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -333,6 +351,8 @@ export type ContractorComplianceItemWhereUniqueInput = Prisma.AtLeast<{
   policyRuleId?: Prisma.StringNullableFilter<"ContractorComplianceItem"> | string | null
   expiryJurisdictionTz?: Prisma.StringNullableFilter<"ContractorComplianceItem"> | string | null
   waivedReason?: Prisma.EnumWaivedReasonNullableFilter<"ContractorComplianceItem"> | $Enums.WaivedReason | null
+  waivedReasonCategory?: Prisma.EnumWaivedReasonCategoryNullableFilter<"ContractorComplianceItem"> | $Enums.WaivedReasonCategory | null
+  waivedReasonNote?: Prisma.StringNullableFilter<"ContractorComplianceItem"> | string | null
   dueDate?: Prisma.DateTimeNullableFilter<"ContractorComplianceItem"> | Date | string | null
   satisfiedByDocumentId?: Prisma.StringNullableFilter<"ContractorComplianceItem"> | string | null
   expiresAt?: Prisma.DateTimeNullableFilter<"ContractorComplianceItem"> | Date | string | null
@@ -358,6 +378,8 @@ export type ContractorComplianceItemOrderByWithAggregationInput = {
   policyRuleId?: Prisma.SortOrderInput | Prisma.SortOrder
   expiryJurisdictionTz?: Prisma.SortOrderInput | Prisma.SortOrder
   waivedReason?: Prisma.SortOrderInput | Prisma.SortOrder
+  waivedReasonCategory?: Prisma.SortOrderInput | Prisma.SortOrder
+  waivedReasonNote?: Prisma.SortOrderInput | Prisma.SortOrder
   dueDate?: Prisma.SortOrderInput | Prisma.SortOrder
   satisfiedByDocumentId?: Prisma.SortOrderInput | Prisma.SortOrder
   expiresAt?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -385,6 +407,8 @@ export type ContractorComplianceItemScalarWhereWithAggregatesInput = {
   policyRuleId?: Prisma.StringNullableWithAggregatesFilter<"ContractorComplianceItem"> | string | null
   expiryJurisdictionTz?: Prisma.StringNullableWithAggregatesFilter<"ContractorComplianceItem"> | string | null
   waivedReason?: Prisma.EnumWaivedReasonNullableWithAggregatesFilter<"ContractorComplianceItem"> | $Enums.WaivedReason | null
+  waivedReasonCategory?: Prisma.EnumWaivedReasonCategoryNullableWithAggregatesFilter<"ContractorComplianceItem"> | $Enums.WaivedReasonCategory | null
+  waivedReasonNote?: Prisma.StringNullableWithAggregatesFilter<"ContractorComplianceItem"> | string | null
   dueDate?: Prisma.DateTimeNullableWithAggregatesFilter<"ContractorComplianceItem"> | Date | string | null
   satisfiedByDocumentId?: Prisma.StringNullableWithAggregatesFilter<"ContractorComplianceItem"> | string | null
   expiresAt?: Prisma.DateTimeNullableWithAggregatesFilter<"ContractorComplianceItem"> | Date | string | null
@@ -403,6 +427,8 @@ export type ContractorComplianceItemCreateInput = {
   policyRuleId?: string | null
   expiryJurisdictionTz?: string | null
   waivedReason?: $Enums.WaivedReason | null
+  waivedReasonCategory?: $Enums.WaivedReasonCategory | null
+  waivedReasonNote?: string | null
   dueDate?: Date | string | null
   satisfiedByDocumentId?: string | null
   expiresAt?: Date | string | null
@@ -428,6 +454,8 @@ export type ContractorComplianceItemUncheckedCreateInput = {
   policyRuleId?: string | null
   expiryJurisdictionTz?: string | null
   waivedReason?: $Enums.WaivedReason | null
+  waivedReasonCategory?: $Enums.WaivedReasonCategory | null
+  waivedReasonNote?: string | null
   dueDate?: Date | string | null
   satisfiedByDocumentId?: string | null
   expiresAt?: Date | string | null
@@ -447,6 +475,8 @@ export type ContractorComplianceItemUpdateInput = {
   policyRuleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   expiryJurisdictionTz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   waivedReason?: Prisma.NullableEnumWaivedReasonFieldUpdateOperationsInput | $Enums.WaivedReason | null
+  waivedReasonCategory?: Prisma.NullableEnumWaivedReasonCategoryFieldUpdateOperationsInput | $Enums.WaivedReasonCategory | null
+  waivedReasonNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   satisfiedByDocumentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   expiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -472,6 +502,8 @@ export type ContractorComplianceItemUncheckedUpdateInput = {
   policyRuleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   expiryJurisdictionTz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   waivedReason?: Prisma.NullableEnumWaivedReasonFieldUpdateOperationsInput | $Enums.WaivedReason | null
+  waivedReasonCategory?: Prisma.NullableEnumWaivedReasonCategoryFieldUpdateOperationsInput | $Enums.WaivedReasonCategory | null
+  waivedReasonNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   satisfiedByDocumentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   expiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -494,6 +526,8 @@ export type ContractorComplianceItemCreateManyInput = {
   policyRuleId?: string | null
   expiryJurisdictionTz?: string | null
   waivedReason?: $Enums.WaivedReason | null
+  waivedReasonCategory?: $Enums.WaivedReasonCategory | null
+  waivedReasonNote?: string | null
   dueDate?: Date | string | null
   satisfiedByDocumentId?: string | null
   expiresAt?: Date | string | null
@@ -512,6 +546,8 @@ export type ContractorComplianceItemUpdateManyMutationInput = {
   policyRuleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   expiryJurisdictionTz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   waivedReason?: Prisma.NullableEnumWaivedReasonFieldUpdateOperationsInput | $Enums.WaivedReason | null
+  waivedReasonCategory?: Prisma.NullableEnumWaivedReasonCategoryFieldUpdateOperationsInput | $Enums.WaivedReasonCategory | null
+  waivedReasonNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   satisfiedByDocumentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   expiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -533,6 +569,8 @@ export type ContractorComplianceItemUncheckedUpdateManyInput = {
   policyRuleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   expiryJurisdictionTz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   waivedReason?: Prisma.NullableEnumWaivedReasonFieldUpdateOperationsInput | $Enums.WaivedReason | null
+  waivedReasonCategory?: Prisma.NullableEnumWaivedReasonCategoryFieldUpdateOperationsInput | $Enums.WaivedReasonCategory | null
+  waivedReasonNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   satisfiedByDocumentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   expiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -564,6 +602,8 @@ export type ContractorComplianceItemCountOrderByAggregateInput = {
   policyRuleId?: Prisma.SortOrder
   expiryJurisdictionTz?: Prisma.SortOrder
   waivedReason?: Prisma.SortOrder
+  waivedReasonCategory?: Prisma.SortOrder
+  waivedReasonNote?: Prisma.SortOrder
   dueDate?: Prisma.SortOrder
   satisfiedByDocumentId?: Prisma.SortOrder
   expiresAt?: Prisma.SortOrder
@@ -585,6 +625,8 @@ export type ContractorComplianceItemMaxOrderByAggregateInput = {
   policyRuleId?: Prisma.SortOrder
   expiryJurisdictionTz?: Prisma.SortOrder
   waivedReason?: Prisma.SortOrder
+  waivedReasonCategory?: Prisma.SortOrder
+  waivedReasonNote?: Prisma.SortOrder
   dueDate?: Prisma.SortOrder
   satisfiedByDocumentId?: Prisma.SortOrder
   expiresAt?: Prisma.SortOrder
@@ -606,6 +648,8 @@ export type ContractorComplianceItemMinOrderByAggregateInput = {
   policyRuleId?: Prisma.SortOrder
   expiryJurisdictionTz?: Prisma.SortOrder
   waivedReason?: Prisma.SortOrder
+  waivedReasonCategory?: Prisma.SortOrder
+  waivedReasonNote?: Prisma.SortOrder
   dueDate?: Prisma.SortOrder
   satisfiedByDocumentId?: Prisma.SortOrder
   expiresAt?: Prisma.SortOrder
@@ -715,6 +759,10 @@ export type NullableEnumWaivedReasonFieldUpdateOperationsInput = {
   set?: $Enums.WaivedReason | null
 }
 
+export type NullableEnumWaivedReasonCategoryFieldUpdateOperationsInput = {
+  set?: $Enums.WaivedReasonCategory | null
+}
+
 export type ContractorComplianceItemCreateNestedOneWithoutReminderStateInput = {
   create?: Prisma.XOR<Prisma.ContractorComplianceItemCreateWithoutReminderStateInput, Prisma.ContractorComplianceItemUncheckedCreateWithoutReminderStateInput>
   connectOrCreate?: Prisma.ContractorComplianceItemCreateOrConnectWithoutReminderStateInput
@@ -781,6 +829,8 @@ export type ContractorComplianceItemCreateWithoutContractInput = {
   policyRuleId?: string | null
   expiryJurisdictionTz?: string | null
   waivedReason?: $Enums.WaivedReason | null
+  waivedReasonCategory?: $Enums.WaivedReasonCategory | null
+  waivedReasonNote?: string | null
   dueDate?: Date | string | null
   satisfiedByDocumentId?: string | null
   expiresAt?: Date | string | null
@@ -804,6 +854,8 @@ export type ContractorComplianceItemUncheckedCreateWithoutContractInput = {
   policyRuleId?: string | null
   expiryJurisdictionTz?: string | null
   waivedReason?: $Enums.WaivedReason | null
+  waivedReasonCategory?: $Enums.WaivedReasonCategory | null
+  waivedReasonNote?: string | null
   dueDate?: Date | string | null
   satisfiedByDocumentId?: string | null
   expiresAt?: Date | string | null
@@ -855,6 +907,8 @@ export type ContractorComplianceItemScalarWhereInput = {
   policyRuleId?: Prisma.StringNullableFilter<"ContractorComplianceItem"> | string | null
   expiryJurisdictionTz?: Prisma.StringNullableFilter<"ContractorComplianceItem"> | string | null
   waivedReason?: Prisma.EnumWaivedReasonNullableFilter<"ContractorComplianceItem"> | $Enums.WaivedReason | null
+  waivedReasonCategory?: Prisma.EnumWaivedReasonCategoryNullableFilter<"ContractorComplianceItem"> | $Enums.WaivedReasonCategory | null
+  waivedReasonNote?: Prisma.StringNullableFilter<"ContractorComplianceItem"> | string | null
   dueDate?: Prisma.DateTimeNullableFilter<"ContractorComplianceItem"> | Date | string | null
   satisfiedByDocumentId?: Prisma.StringNullableFilter<"ContractorComplianceItem"> | string | null
   expiresAt?: Prisma.DateTimeNullableFilter<"ContractorComplianceItem"> | Date | string | null
@@ -873,6 +927,8 @@ export type ContractorComplianceItemCreateWithoutContractorInput = {
   policyRuleId?: string | null
   expiryJurisdictionTz?: string | null
   waivedReason?: $Enums.WaivedReason | null
+  waivedReasonCategory?: $Enums.WaivedReasonCategory | null
+  waivedReasonNote?: string | null
   dueDate?: Date | string | null
   satisfiedByDocumentId?: string | null
   expiresAt?: Date | string | null
@@ -896,6 +952,8 @@ export type ContractorComplianceItemUncheckedCreateWithoutContractorInput = {
   policyRuleId?: string | null
   expiryJurisdictionTz?: string | null
   waivedReason?: $Enums.WaivedReason | null
+  waivedReasonCategory?: $Enums.WaivedReasonCategory | null
+  waivedReasonNote?: string | null
   dueDate?: Date | string | null
   satisfiedByDocumentId?: string | null
   expiresAt?: Date | string | null
@@ -941,6 +999,8 @@ export type ContractorComplianceItemCreateWithoutReminderStateInput = {
   policyRuleId?: string | null
   expiryJurisdictionTz?: string | null
   waivedReason?: $Enums.WaivedReason | null
+  waivedReasonCategory?: $Enums.WaivedReasonCategory | null
+  waivedReasonNote?: string | null
   dueDate?: Date | string | null
   satisfiedByDocumentId?: string | null
   expiresAt?: Date | string | null
@@ -965,6 +1025,8 @@ export type ContractorComplianceItemUncheckedCreateWithoutReminderStateInput = {
   policyRuleId?: string | null
   expiryJurisdictionTz?: string | null
   waivedReason?: $Enums.WaivedReason | null
+  waivedReasonCategory?: $Enums.WaivedReasonCategory | null
+  waivedReasonNote?: string | null
   dueDate?: Date | string | null
   satisfiedByDocumentId?: string | null
   expiresAt?: Date | string | null
@@ -999,6 +1061,8 @@ export type ContractorComplianceItemUpdateWithoutReminderStateInput = {
   policyRuleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   expiryJurisdictionTz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   waivedReason?: Prisma.NullableEnumWaivedReasonFieldUpdateOperationsInput | $Enums.WaivedReason | null
+  waivedReasonCategory?: Prisma.NullableEnumWaivedReasonCategoryFieldUpdateOperationsInput | $Enums.WaivedReasonCategory | null
+  waivedReasonNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   satisfiedByDocumentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   expiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1023,6 +1087,8 @@ export type ContractorComplianceItemUncheckedUpdateWithoutReminderStateInput = {
   policyRuleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   expiryJurisdictionTz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   waivedReason?: Prisma.NullableEnumWaivedReasonFieldUpdateOperationsInput | $Enums.WaivedReason | null
+  waivedReasonCategory?: Prisma.NullableEnumWaivedReasonCategoryFieldUpdateOperationsInput | $Enums.WaivedReasonCategory | null
+  waivedReasonNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   satisfiedByDocumentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   expiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1041,6 +1107,8 @@ export type ContractorComplianceItemCreateWithoutOrganizationInput = {
   policyRuleId?: string | null
   expiryJurisdictionTz?: string | null
   waivedReason?: $Enums.WaivedReason | null
+  waivedReasonCategory?: $Enums.WaivedReasonCategory | null
+  waivedReasonNote?: string | null
   dueDate?: Date | string | null
   satisfiedByDocumentId?: string | null
   expiresAt?: Date | string | null
@@ -1064,6 +1132,8 @@ export type ContractorComplianceItemUncheckedCreateWithoutOrganizationInput = {
   policyRuleId?: string | null
   expiryJurisdictionTz?: string | null
   waivedReason?: $Enums.WaivedReason | null
+  waivedReasonCategory?: $Enums.WaivedReasonCategory | null
+  waivedReasonNote?: string | null
   dueDate?: Date | string | null
   satisfiedByDocumentId?: string | null
   expiresAt?: Date | string | null
@@ -1111,6 +1181,8 @@ export type ContractorComplianceItemCreateManyContractInput = {
   policyRuleId?: string | null
   expiryJurisdictionTz?: string | null
   waivedReason?: $Enums.WaivedReason | null
+  waivedReasonCategory?: $Enums.WaivedReasonCategory | null
+  waivedReasonNote?: string | null
   dueDate?: Date | string | null
   satisfiedByDocumentId?: string | null
   expiresAt?: Date | string | null
@@ -1129,6 +1201,8 @@ export type ContractorComplianceItemUpdateWithoutContractInput = {
   policyRuleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   expiryJurisdictionTz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   waivedReason?: Prisma.NullableEnumWaivedReasonFieldUpdateOperationsInput | $Enums.WaivedReason | null
+  waivedReasonCategory?: Prisma.NullableEnumWaivedReasonCategoryFieldUpdateOperationsInput | $Enums.WaivedReasonCategory | null
+  waivedReasonNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   satisfiedByDocumentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   expiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1152,6 +1226,8 @@ export type ContractorComplianceItemUncheckedUpdateWithoutContractInput = {
   policyRuleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   expiryJurisdictionTz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   waivedReason?: Prisma.NullableEnumWaivedReasonFieldUpdateOperationsInput | $Enums.WaivedReason | null
+  waivedReasonCategory?: Prisma.NullableEnumWaivedReasonCategoryFieldUpdateOperationsInput | $Enums.WaivedReasonCategory | null
+  waivedReasonNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   satisfiedByDocumentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   expiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1173,6 +1249,8 @@ export type ContractorComplianceItemUncheckedUpdateManyWithoutContractInput = {
   policyRuleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   expiryJurisdictionTz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   waivedReason?: Prisma.NullableEnumWaivedReasonFieldUpdateOperationsInput | $Enums.WaivedReason | null
+  waivedReasonCategory?: Prisma.NullableEnumWaivedReasonCategoryFieldUpdateOperationsInput | $Enums.WaivedReasonCategory | null
+  waivedReasonNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   satisfiedByDocumentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   expiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1193,6 +1271,8 @@ export type ContractorComplianceItemCreateManyContractorInput = {
   policyRuleId?: string | null
   expiryJurisdictionTz?: string | null
   waivedReason?: $Enums.WaivedReason | null
+  waivedReasonCategory?: $Enums.WaivedReasonCategory | null
+  waivedReasonNote?: string | null
   dueDate?: Date | string | null
   satisfiedByDocumentId?: string | null
   expiresAt?: Date | string | null
@@ -1211,6 +1291,8 @@ export type ContractorComplianceItemUpdateWithoutContractorInput = {
   policyRuleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   expiryJurisdictionTz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   waivedReason?: Prisma.NullableEnumWaivedReasonFieldUpdateOperationsInput | $Enums.WaivedReason | null
+  waivedReasonCategory?: Prisma.NullableEnumWaivedReasonCategoryFieldUpdateOperationsInput | $Enums.WaivedReasonCategory | null
+  waivedReasonNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   satisfiedByDocumentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   expiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1234,6 +1316,8 @@ export type ContractorComplianceItemUncheckedUpdateWithoutContractorInput = {
   policyRuleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   expiryJurisdictionTz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   waivedReason?: Prisma.NullableEnumWaivedReasonFieldUpdateOperationsInput | $Enums.WaivedReason | null
+  waivedReasonCategory?: Prisma.NullableEnumWaivedReasonCategoryFieldUpdateOperationsInput | $Enums.WaivedReasonCategory | null
+  waivedReasonNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   satisfiedByDocumentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   expiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1255,6 +1339,8 @@ export type ContractorComplianceItemUncheckedUpdateManyWithoutContractorInput = 
   policyRuleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   expiryJurisdictionTz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   waivedReason?: Prisma.NullableEnumWaivedReasonFieldUpdateOperationsInput | $Enums.WaivedReason | null
+  waivedReasonCategory?: Prisma.NullableEnumWaivedReasonCategoryFieldUpdateOperationsInput | $Enums.WaivedReasonCategory | null
+  waivedReasonNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   satisfiedByDocumentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   expiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1275,6 +1361,8 @@ export type ContractorComplianceItemCreateManyOrganizationInput = {
   policyRuleId?: string | null
   expiryJurisdictionTz?: string | null
   waivedReason?: $Enums.WaivedReason | null
+  waivedReasonCategory?: $Enums.WaivedReasonCategory | null
+  waivedReasonNote?: string | null
   dueDate?: Date | string | null
   satisfiedByDocumentId?: string | null
   expiresAt?: Date | string | null
@@ -1293,6 +1381,8 @@ export type ContractorComplianceItemUpdateWithoutOrganizationInput = {
   policyRuleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   expiryJurisdictionTz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   waivedReason?: Prisma.NullableEnumWaivedReasonFieldUpdateOperationsInput | $Enums.WaivedReason | null
+  waivedReasonCategory?: Prisma.NullableEnumWaivedReasonCategoryFieldUpdateOperationsInput | $Enums.WaivedReasonCategory | null
+  waivedReasonNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   satisfiedByDocumentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   expiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1316,6 +1406,8 @@ export type ContractorComplianceItemUncheckedUpdateWithoutOrganizationInput = {
   policyRuleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   expiryJurisdictionTz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   waivedReason?: Prisma.NullableEnumWaivedReasonFieldUpdateOperationsInput | $Enums.WaivedReason | null
+  waivedReasonCategory?: Prisma.NullableEnumWaivedReasonCategoryFieldUpdateOperationsInput | $Enums.WaivedReasonCategory | null
+  waivedReasonNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   satisfiedByDocumentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   expiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1337,6 +1429,8 @@ export type ContractorComplianceItemUncheckedUpdateManyWithoutOrganizationInput 
   policyRuleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   expiryJurisdictionTz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   waivedReason?: Prisma.NullableEnumWaivedReasonFieldUpdateOperationsInput | $Enums.WaivedReason | null
+  waivedReasonCategory?: Prisma.NullableEnumWaivedReasonCategoryFieldUpdateOperationsInput | $Enums.WaivedReasonCategory | null
+  waivedReasonNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   satisfiedByDocumentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   expiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1360,6 +1454,8 @@ export type ContractorComplianceItemSelect<ExtArgs extends runtime.Types.Extensi
   policyRuleId?: boolean
   expiryJurisdictionTz?: boolean
   waivedReason?: boolean
+  waivedReasonCategory?: boolean
+  waivedReasonNote?: boolean
   dueDate?: boolean
   satisfiedByDocumentId?: boolean
   expiresAt?: boolean
@@ -1385,6 +1481,8 @@ export type ContractorComplianceItemSelectCreateManyAndReturn<ExtArgs extends ru
   policyRuleId?: boolean
   expiryJurisdictionTz?: boolean
   waivedReason?: boolean
+  waivedReasonCategory?: boolean
+  waivedReasonNote?: boolean
   dueDate?: boolean
   satisfiedByDocumentId?: boolean
   expiresAt?: boolean
@@ -1409,6 +1507,8 @@ export type ContractorComplianceItemSelectUpdateManyAndReturn<ExtArgs extends ru
   policyRuleId?: boolean
   expiryJurisdictionTz?: boolean
   waivedReason?: boolean
+  waivedReasonCategory?: boolean
+  waivedReasonNote?: boolean
   dueDate?: boolean
   satisfiedByDocumentId?: boolean
   expiresAt?: boolean
@@ -1433,6 +1533,8 @@ export type ContractorComplianceItemSelectScalar = {
   policyRuleId?: boolean
   expiryJurisdictionTz?: boolean
   waivedReason?: boolean
+  waivedReasonCategory?: boolean
+  waivedReasonNote?: boolean
   dueDate?: boolean
   satisfiedByDocumentId?: boolean
   expiresAt?: boolean
@@ -1441,7 +1543,7 @@ export type ContractorComplianceItemSelectScalar = {
   updatedAt?: boolean
 }
 
-export type ContractorComplianceItemOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "organizationId" | "contractorId" | "contractId" | "requirementTemplateId" | "name" | "documentType" | "status" | "severity" | "policyRuleId" | "expiryJurisdictionTz" | "waivedReason" | "dueDate" | "satisfiedByDocumentId" | "expiresAt" | "notes" | "createdAt" | "updatedAt", ExtArgs["result"]["contractorComplianceItem"]>
+export type ContractorComplianceItemOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "organizationId" | "contractorId" | "contractId" | "requirementTemplateId" | "name" | "documentType" | "status" | "severity" | "policyRuleId" | "expiryJurisdictionTz" | "waivedReason" | "waivedReasonCategory" | "waivedReasonNote" | "dueDate" | "satisfiedByDocumentId" | "expiresAt" | "notes" | "createdAt" | "updatedAt", ExtArgs["result"]["contractorComplianceItem"]>
 export type ContractorComplianceItemInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
   contractor?: boolean | Prisma.ContractorDefaultArgs<ExtArgs>
@@ -1480,6 +1582,8 @@ export type $ContractorComplianceItemPayload<ExtArgs extends runtime.Types.Exten
     policyRuleId: string | null
     expiryJurisdictionTz: string | null
     waivedReason: $Enums.WaivedReason | null
+    waivedReasonCategory: $Enums.WaivedReasonCategory | null
+    waivedReasonNote: string | null
     dueDate: Date | null
     satisfiedByDocumentId: string | null
     expiresAt: Date | null
@@ -1925,6 +2029,8 @@ export interface ContractorComplianceItemFieldRefs {
   readonly policyRuleId: Prisma.FieldRef<"ContractorComplianceItem", 'String'>
   readonly expiryJurisdictionTz: Prisma.FieldRef<"ContractorComplianceItem", 'String'>
   readonly waivedReason: Prisma.FieldRef<"ContractorComplianceItem", 'WaivedReason'>
+  readonly waivedReasonCategory: Prisma.FieldRef<"ContractorComplianceItem", 'WaivedReasonCategory'>
+  readonly waivedReasonNote: Prisma.FieldRef<"ContractorComplianceItem", 'String'>
   readonly dueDate: Prisma.FieldRef<"ContractorComplianceItem", 'DateTime'>
   readonly satisfiedByDocumentId: Prisma.FieldRef<"ContractorComplianceItem", 'String'>
   readonly expiresAt: Prisma.FieldRef<"ContractorComplianceItem", 'DateTime'>

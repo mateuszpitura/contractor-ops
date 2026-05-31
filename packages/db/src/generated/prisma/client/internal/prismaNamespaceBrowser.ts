@@ -935,6 +935,8 @@ export const ContractorComplianceItemScalarFieldEnum = {
   policyRuleId: 'policyRuleId',
   expiryJurisdictionTz: 'expiryJurisdictionTz',
   waivedReason: 'waivedReason',
+  waivedReasonCategory: 'waivedReasonCategory',
+  waivedReasonNote: 'waivedReasonNote',
   dueDate: 'dueDate',
   satisfiedByDocumentId: 'satisfiedByDocumentId',
   expiresAt: 'expiresAt',

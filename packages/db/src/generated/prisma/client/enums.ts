@@ -263,6 +263,7 @@ export type DocumentType = (typeof DocumentType)[keyof typeof DocumentType]
 
 export const DocumentStatus = {
   ACTIVE: 'ACTIVE',
+  PENDING_REVIEW: 'PENDING_REVIEW',
   SUPERSEDED: 'SUPERSEDED',
   EXPIRED: 'EXPIRED',
   ARCHIVED: 'ARCHIVED'
@@ -428,6 +429,18 @@ export const WaivedReason = {
 } as const
 
 export type WaivedReason = (typeof WaivedReason)[keyof typeof WaivedReason]
+
+
+export const WaivedReasonCategory = {
+  CONTRACTOR_OFFBOARDED: 'CONTRACTOR_OFFBOARDED',
+  ENGAGEMENT_CHANGED: 'ENGAGEMENT_CHANGED',
+  REGULATORY_EXEMPTION: 'REGULATORY_EXEMPTION',
+  TEMPORARY_GRACE_PERIOD: 'TEMPORARY_GRACE_PERIOD',
+  ADMIN_CORRECTION: 'ADMIN_CORRECTION',
+  OTHER: 'OTHER'
+} as const
+
+export type WaivedReasonCategory = (typeof WaivedReasonCategory)[keyof typeof WaivedReasonCategory]
 
 
 export const ReminderBand = {

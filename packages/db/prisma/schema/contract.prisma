@@ -244,6 +244,7 @@ enum DocumentType {
 
 enum DocumentStatus {
   ACTIVE
+  PENDING_REVIEW // Phase 73 D-06 — portal upload awaiting admin approval; flips to ACTIVE on approve / ARCHIVED on reject
   SUPERSEDED
   EXPIRED
   ARCHIVED
