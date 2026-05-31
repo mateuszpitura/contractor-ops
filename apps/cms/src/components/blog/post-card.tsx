@@ -24,7 +24,7 @@ export function PostCard({ post, locale }: Props): ReactNode {
             : '—'}
         </p>
         <h2 className="post-card__title">{post.title}</h2>
-        {post.excerpt && <p className="post-card__excerpt">{post.excerpt}</p>}
+        {post.excerpt ? <p className="post-card__excerpt">{post.excerpt}</p> : null}
         <footer className="post-card__meta">
           <span className="post-card__byline">{post.author}</span>
           {post.tags.length > 0 && (

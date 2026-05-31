@@ -77,7 +77,7 @@ export default async function LocaleHome({ params }: Props): Promise<React.React
                         : '—'}
                     </p>
                     <h3 className="post-card__title">{post.title}</h3>
-                    {post.excerpt && <p className="post-card__excerpt">{post.excerpt}</p>}
+                    {post.excerpt ? <p className="post-card__excerpt">{post.excerpt}</p> : null}
                     <span className="post-card__byline">{post.author}</span>
                   </Link>
                 </article>

@@ -69,25 +69,25 @@ export default async function BlogIndexPage({
         </ul>
       )}
 
-      {(hasPrevPage || hasNextPage) && (
+      {hasPrevPage || hasNextPage ? (
         <nav className="pagination" aria-label="Pagination">
-          {hasPrevPage && (
+          {hasPrevPage ? (
             <Link
               href={page - 1 === 1 ? `/${typed}/blog` : `/${typed}/blog?page=${page - 1}`}
               rel="prev">
               ← Newer
             </Link>
-          )}
+          ) : null}
           <span className="pagination__current" aria-current="page">
             {page} / {Math.max(1, totalPages)}
           </span>
-          {hasNextPage && (
+          {hasNextPage ? (
             <Link href={`/${typed}/blog?page=${page + 1}`} rel="next">
               Older →
             </Link>
-          )}
+          ) : null}
         </nav>
-      )}
+      ) : null}
     </div>
   );
 }

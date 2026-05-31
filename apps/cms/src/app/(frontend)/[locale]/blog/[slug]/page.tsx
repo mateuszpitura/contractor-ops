@@ -83,7 +83,7 @@ export default async function BlogPostPage({ params }: Props): Promise<React.Rea
             : '—'}
         </p>
         <h1 className="post__title">{post.title}</h1>
-        {post.excerpt && <p className="post__lede">{post.excerpt}</p>}
+        {post.excerpt ? <p className="post__lede">{post.excerpt}</p> : null}
         <p className="post__byline">By {post.author}</p>
         {post.tags.length > 0 && (
           <ul className="post__tags">
