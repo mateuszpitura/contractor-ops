@@ -15,6 +15,7 @@ export const accessControlStatement = {
   invitation: ['create', 'cancel'],
   contractor: ['create', 'read', 'update', 'delete', 'bulk'],
   contract: ['create', 'read', 'update', 'delete'],
+  compliance: ['read', 'override'], // Phase 73 D-10 — admin override + per-role read
   document: ['create', 'read', 'update', 'delete'],
   invoice: ['create', 'read', 'update', 'delete', 'approve'],
   workflow: ['create', 'read', 'update', 'delete', 'execute', 'override_blocking_task'],

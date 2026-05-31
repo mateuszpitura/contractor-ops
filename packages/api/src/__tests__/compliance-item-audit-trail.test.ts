@@ -1,10 +1,6 @@
-// Phase 73 · Plan 03 — compliance.overrideItem mutation tests (D-10..D-12).
+// Phase 73 · Plan 03 — compliance.itemAuditTrail query test (D-13).
 //
-// Uses the canonical router-caller harness (mirrors routers/__tests__/classification.test.ts):
-// a hoisted mockPrisma with an observable $transaction, full @contractor-ops/db +
-// @contractor-ops/auth + logger + feature-flags mocks, and createCallerFactory(appRouter).
-// The classification router is flag-gated (module.classification-engine) so the
-// feature-flags mock force-enables it.
+// Same router-caller harness as compliance-override-mutation.test.ts.
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -13,24 +9,28 @@ const USER_ID = 'cluseraaaaaaaaaaaaaaaaaaaaa';
 const ITEM_ID = 'clitemaaaaaaaaaaaaaaaaaaaaa';
 const CONTRACTOR_ID = 'clcontractoraaaaaaaaaaaaaaa';
 
-const { mockPrisma, auditWriteSpy } = vi.hoisted(() => {
-  const item = {
-    id: 'clitemaaaaaaaaaaaaaaaaaaaaa',
-    contractorId: 'clcontractoraaaaaaaaaaaaaaa',
-    organizationId: 'clorgaaaaaaaaaaaaaaaaaaaaaa',
-    status: 'EXPIRED',
-    severity: 'BLOCKING',
-  };
+const { mockPrisma } = vi.hoisted(() => {
   const contractorComplianceItem = {
-    findFirst: vi.fn(async () => ({ ...item })),
-    update: vi.fn(async (args: { data: Record<string, unknown> }) => ({
-      ...item,
-      ...args.data,
+    findFirst: vi.fn(async () => ({
+      id: 'clitemaaaaaaaaaaaaaaaaaaaaa',
+      contractorId: 'clcontractoraaaaaaaaaaaaaaa',
     })),
   };
   const auditLog = {
-    create: vi.fn(async () => ({ id: 'audit_1' })),
-    findMany: vi.fn(async () => []),
+    findMany: vi.fn(async () => [
+      {
+        id: 'a2',
+        action: 'compliance.item.overridden',
+        createdAt: new Date('2026-04-15'),
+        metadataJson: { itemId: 'clitemaaaaaaaaaaaaaaaaaaaaa' },
+      },
+      {
+        id: 'a1',
+        action: 'compliance.item.created',
+        createdAt: new Date('2026-04-01'),
+        metadataJson: { itemId: 'clitemaaaaaaaaaaaaaaaaaaaaa' },
+      },
+    ]),
   };
   const organization = {
     findUnique: vi.fn(async () => ({ dataRegion: 'EU', status: 'ACTIVE' })),
@@ -41,7 +41,7 @@ const { mockPrisma, auditWriteSpy } = vi.hoisted(() => {
     ...base,
     $transaction: vi.fn(async (fn: (tx: typeof base) => unknown) => fn(base)),
   };
-  return { mockPrisma, auditWriteSpy: vi.fn(async () => undefined) };
+  return { mockPrisma };
 });
 
 vi.mock('@contractor-ops/db', () => ({
@@ -66,8 +66,6 @@ vi.mock('@contractor-ops/auth', () => ({
   },
   authApi: { hasPermission: vi.fn().mockResolvedValue({ success: true }) },
 }));
-
-vi.mock('../services/audit-writer', () => ({ writeAuditLog: auditWriteSpy }));
 
 vi.mock('@sentry/node', () => {
   const span = { setStatus: vi.fn(), setAttribute: vi.fn(), end: vi.fn() };
@@ -186,124 +184,39 @@ beforeEach(() => {
   mockPrisma.contractorComplianceItem.findFirst.mockResolvedValue({
     id: ITEM_ID,
     contractorId: CONTRACTOR_ID,
-    organizationId: ORG_ID,
-    status: 'EXPIRED',
-    severity: 'BLOCKING',
   } as never);
 });
 
-describe('compliance-override-mutation happy-path', () => {
-  it('flips ContractorComplianceItem.status to WAIVED and writes audit log', async () => {
+describe('compliance-item-audit-trail', () => {
+  it('returns audit-log entries ordered by createdAt DESC, org + contractor scoped', async () => {
     const caller = makeCaller();
-    const out = (await caller.classification.overrideItem({
-      itemId: ITEM_ID,
-      reasonCategory: 'TEMPORARY_GRACE_PERIOD',
-      reasonNote: 'Renewal pending — admin grace period for 30 days',
-    })) as { status: string };
-    expect(out.status).toBe('WAIVED');
-    expect(mockPrisma.contractorComplianceItem.update).toHaveBeenCalledWith(
+    const trail = (await caller.classification.itemAuditTrail({ itemId: ITEM_ID })) as unknown[];
+    expect(trail).toHaveLength(2);
+    expect(mockPrisma.auditLog.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
-        data: expect.objectContaining({
-          status: 'WAIVED',
-          waivedReason: 'ADMIN_MANUAL_WAIVE',
-          waivedReasonCategory: 'TEMPORARY_GRACE_PERIOD',
+        where: expect.objectContaining({
+          organizationId: ORG_ID,
+          resourceType: 'CONTRACTOR',
+          resourceId: CONTRACTOR_ID,
         }),
+        orderBy: { createdAt: 'desc' },
       }),
     );
   });
 
-  it('sets waivedReason=ADMIN_MANUAL_WAIVE AND waivedReasonCategory + waivedReasonNote per input', async () => {
-    const caller = makeCaller();
-    await caller.classification.overrideItem({
-      itemId: ITEM_ID,
-      reasonCategory: 'ADMIN_CORRECTION',
-      reasonNote: 'Misclassified as missing — doc was on file all along',
-    });
-    const lastCall = mockPrisma.contractorComplianceItem.update.mock.calls.at(-1) as
-      | [{ data: Record<string, unknown> }]
-      | undefined;
-    expect(lastCall?.[0].data.waivedReason).toBe('ADMIN_MANUAL_WAIVE');
-    expect(lastCall?.[0].data.waivedReasonCategory).toBe('ADMIN_CORRECTION');
-    expect(lastCall?.[0].data.waivedReasonNote).toContain('Misclassified');
-  });
-});
-
-describe('compliance-override-mutation permission', () => {
-  it('rejects callers without compliance:override permission with FORBIDDEN', async () => {
-    vi.mocked(authApi.hasPermission).mockResolvedValue({ success: false } as never);
-    const caller = makeCaller('readonly');
-    await expect(
-      caller.classification.overrideItem({
-        itemId: ITEM_ID,
-        reasonCategory: 'OTHER',
-        reasonNote: 'A sufficiently long override rationale here.',
-      }),
-    ).rejects.toThrow();
-  });
-});
-
-describe('compliance-override-mutation freetext-min', () => {
-  it('rejects reasonNote shorter than 20 chars with BAD_REQUEST', async () => {
+  it('rejects with NOT_FOUND when itemId does not belong to caller org', async () => {
+    mockPrisma.contractorComplianceItem.findFirst.mockResolvedValueOnce(null as never);
     const caller = makeCaller();
     await expect(
-      caller.classification.overrideItem({
-        itemId: ITEM_ID,
-        reasonCategory: 'OTHER',
-        reasonNote: 'too short',
-      }),
+      caller.classification.itemAuditTrail({ itemId: 'cross_org_item' }),
     ).rejects.toThrow();
   });
 
-  it('rejects reasonCategory not in closed enum with BAD_REQUEST', async () => {
+  it('respects limit parameter (default 50, max 200)', async () => {
     const caller = makeCaller();
-    await expect(
-      caller.classification.overrideItem({
-        itemId: ITEM_ID,
-        // @ts-expect-error — bad reason category should fail Zod
-        reasonCategory: 'this-is-not-in-the-enum',
-        reasonNote: 'a'.repeat(25),
-      }),
-    ).rejects.toThrow();
-  });
-});
-
-describe('compliance-override-mutation audit-emission', () => {
-  it('emits AuditLog action=compliance.item.overridden with metadata.itemId + previousStatus', async () => {
-    const caller = makeCaller();
-    await caller.classification.overrideItem({
-      itemId: ITEM_ID,
-      reasonCategory: 'ENGAGEMENT_CHANGED',
-      reasonNote: 'Engagement type changed from B2B to employment',
-    });
-    expect(auditWriteSpy).toHaveBeenCalledWith(
-      expect.objectContaining({
-        action: 'compliance.item.overridden',
-        resourceType: 'CONTRACTOR',
-        resourceId: CONTRACTOR_ID,
-        metadata: expect.objectContaining({
-          itemId: ITEM_ID,
-          reasonCategory: 'ENGAGEMENT_CHANGED',
-          previousStatus: 'EXPIRED',
-        }),
-      }),
+    await caller.classification.itemAuditTrail({ itemId: ITEM_ID, limit: 10 });
+    expect(mockPrisma.auditLog.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({ take: 10 }),
     );
-  });
-
-  it('already-WAIVED item is rejected with PRECONDITION_FAILED (no double-override)', async () => {
-    mockPrisma.contractorComplianceItem.findFirst.mockResolvedValueOnce({
-      id: ITEM_ID,
-      contractorId: CONTRACTOR_ID,
-      organizationId: ORG_ID,
-      status: 'WAIVED',
-      severity: 'BLOCKING',
-    } as never);
-    const caller = makeCaller();
-    await expect(
-      caller.classification.overrideItem({
-        itemId: ITEM_ID,
-        reasonCategory: 'OTHER',
-        reasonNote: 'Attempting to override an already-waived item here.',
-      }),
-    ).rejects.toThrow();
   });
 });

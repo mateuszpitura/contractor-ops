@@ -46,6 +46,8 @@ import {
   CLASSIFICATION_ONLY_DRAFT_CAN_RECREATE,
   CLASSIFICATION_SDS_APPROVAL_IR35_ONLY,
   CLASSIFICATION_STALE_ANSWER,
+  COMPLIANCE_ITEM_ALREADY_WAIVED,
+  COMPLIANCE_ITEM_NOT_FOUND,
   SDS_APPROVAL_ALREADY_EXISTS,
 } from '../../errors';
 import { router } from '../../init';
@@ -53,6 +55,7 @@ import { findOrThrow } from '../../lib/find-or-throw';
 import { classificationSaveAnswerRateLimit } from '../../middleware/classification-rate-limit';
 import { adminProcedure, requirePermission } from '../../middleware/rbac';
 import { classificationProcedure } from '../../middleware/require-classification-flag';
+import { tenantProcedure } from '../../middleware/tenant';
 import { writeAuditLog } from '../../services/audit-writer';
 import { onComplianceItemSatisfied } from '../../services/compliance-recovery';
 import {
@@ -121,6 +124,22 @@ const recreateDraftAfterDriftInput = z.object({
 const recreateComplianceAssessmentInput = z.object({
   contractorIds: z.array(cuid).min(1).max(500),
   reason: z.enum(['policy_version_bump', 'classification_outcome_change', 'admin_correction']),
+});
+
+// Phase 73 D-11..D-12 — admin manual override of a compliance item.
+// Closed enum mirrors the Prisma `WaivedReasonCategory` enum (UPPER_SNAKE_CASE);
+// the value is written straight into the column so the literals MUST match.
+const overrideItemInput = z.object({
+  itemId: z.string().min(1),
+  reasonCategory: z.enum([
+    'CONTRACTOR_OFFBOARDED',
+    'ENGAGEMENT_CHANGED',
+    'REGULATORY_EXEMPTION',
+    'TEMPORARY_GRACE_PERIOD',
+    'ADMIN_CORRECTION',
+    'OTHER',
+  ]),
+  reasonNote: z.string().min(20).max(1000),
 });
 
 type RecreateComplianceAssessmentResultEntry =
@@ -526,6 +545,95 @@ export const classificationRouter = router({
       });
 
       return { results };
+    }),
+
+  // -------------------------------------------------------------------------
+  // overrideItem — admin manual override of a single compliance item (D-12).
+  //
+  // Flips status → WAIVED, records the admin-chosen closed-enum subcategory +
+  // free-text note, and emits a forensic AuditLog row INSIDE the same
+  // transaction so the item update and the audit row commit atomically
+  // (T-73-03-02). `previousStatus` is read before the update (T-73-03-07).
+  // -------------------------------------------------------------------------
+  overrideItem: tenantProcedure
+    .use(requirePermission({ compliance: ['override'] }))
+    .input(overrideItemInput)
+    .mutation(async ({ ctx, input }) => {
+      return await ctx.db.$transaction(async tx => {
+        const before = await tx.contractorComplianceItem.findFirst({
+          where: { id: input.itemId, organizationId: ctx.organizationId },
+        });
+        if (!before) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: COMPLIANCE_ITEM_NOT_FOUND });
+        }
+        if (before.status === 'WAIVED') {
+          throw new TRPCError({
+            code: 'PRECONDITION_FAILED',
+            message: COMPLIANCE_ITEM_ALREADY_WAIVED,
+          });
+        }
+        const updated = await tx.contractorComplianceItem.update({
+          where: { id: input.itemId },
+          data: {
+            status: 'WAIVED',
+            waivedReason: 'ADMIN_MANUAL_WAIVE',
+            waivedReasonCategory: input.reasonCategory,
+            waivedReasonNote: input.reasonNote,
+          },
+        });
+        await writeAuditLog({
+          tx,
+          organizationId: ctx.organizationId,
+          actorType: 'USER',
+          actorId: ctx.user.id,
+          actorName: ctx.user.name ?? null,
+          action: 'compliance.item.overridden',
+          resourceType: 'CONTRACTOR',
+          resourceId: before.contractorId,
+          metadata: {
+            itemId: input.itemId,
+            reasonCategory: input.reasonCategory,
+            reasonNote: input.reasonNote,
+            previousStatus: before.status,
+            // Best-effort role snapshot for forensics — role only, never PII (T-73-03-03).
+            actorRoleSnapshot:
+              (ctx.session as unknown as { role?: string } | undefined)?.role ?? null,
+          },
+        });
+        return updated;
+      });
+    }),
+
+  // -------------------------------------------------------------------------
+  // itemAuditTrail — History timeline for a single compliance item (D-13).
+  //
+  // Org-scoped (tenantProcedure) + defence-in-depth item-org assertion before
+  // the audit lookup (T-73-03-05). The typed JSON filter `metadataJson.itemId`
+  // is backed by the Plan 73-02 partial GIN index on AuditLog.metadataJson.
+  // -------------------------------------------------------------------------
+  itemAuditTrail: tenantProcedure
+    .use(requirePermission({ compliance: ['read'] }))
+    .input(
+      z.object({ itemId: z.string().min(1), limit: z.number().int().min(1).max(200).default(50) }),
+    )
+    .query(async ({ ctx, input }) => {
+      const item = await ctx.db.contractorComplianceItem.findFirst({
+        where: { id: input.itemId, organizationId: ctx.organizationId },
+        select: { id: true, contractorId: true },
+      });
+      if (!item) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: COMPLIANCE_ITEM_NOT_FOUND });
+      }
+      return await ctx.db.auditLog.findMany({
+        where: {
+          organizationId: ctx.organizationId,
+          resourceType: 'CONTRACTOR',
+          resourceId: item.contractorId,
+          metadataJson: { path: ['itemId'], equals: input.itemId } as Prisma.JsonFilter,
+        },
+        orderBy: { createdAt: 'desc' },
+        take: input.limit,
+      });
     }),
 
   // -------------------------------------------------------------------------

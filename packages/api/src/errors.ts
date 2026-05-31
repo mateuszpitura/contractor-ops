@@ -410,3 +410,7 @@ export const APPROVAL_FLOW_NOT_FOUND = 'approvalFlowNotFound';
 export const APPROVAL_NOT_PENDING_COMPLIANCE = 'approvalNotPendingCompliance';
 export const APPROVAL_CANNOT_RESOLVE_CONTRACTOR = 'approvalCannotResolveContractor';
 export const APPROVAL_STILL_COMPLIANCE_BLOCKED = 'approvalStillComplianceBlocked';
+
+// ─── Phase 73 — F1 compliance admin override + audit trail (COMPL-01) ──────────
+export const COMPLIANCE_ITEM_NOT_FOUND = 'complianceItemNotFound';
+export const COMPLIANCE_ITEM_ALREADY_WAIVED = 'complianceItemAlreadyWaived';

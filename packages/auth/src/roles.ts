@@ -21,6 +21,7 @@ const allPermissions = {
   invitation: ['create', 'cancel'],
   contractor: ['create', 'read', 'update', 'delete', 'bulk'],
   contract: ['create', 'read', 'update', 'delete'],
+  compliance: ['read', 'override'], // Phase 73 D-10
   document: ['create', 'read', 'update', 'delete'],
   invoice: ['create', 'read', 'update', 'delete', 'approve'],
   workflow: ['create', 'read', 'update', 'delete', 'execute', 'override_blocking_task'],
@@ -50,6 +51,7 @@ export const roles = {
     invitation: ['create', 'cancel'],
     contractor: ['create', 'read', 'update', 'delete', 'bulk'],
     contract: ['create', 'read', 'update', 'delete'],
+    compliance: ['read', 'override'], // Phase 73 D-10
     document: ['create', 'read', 'update', 'delete'],
     invoice: ['create', 'read', 'update', 'delete', 'approve'],
     workflow: ['create', 'read', 'update', 'delete', 'execute'],
@@ -68,6 +70,7 @@ export const roles = {
   finance_admin: ac.newRole({
     contractor: ['read'],
     contract: ['read'],
+    compliance: ['read'], // Phase 73 D-10
     invoice: ['create', 'read', 'update', 'delete', 'approve'],
     payment: ['create', 'read', 'update', 'export'],
     report: ['read', 'export'],
@@ -81,6 +84,7 @@ export const roles = {
   ops_manager: ac.newRole({
     contractor: ['create', 'read', 'update', 'delete', 'bulk'],
     contract: ['create', 'read', 'update', 'delete'],
+    compliance: ['read'], // Phase 73 D-10
     invoice: ['create', 'read', 'update'],
     workflow: ['create', 'read', 'update', 'delete', 'execute'],
     report: ['read', 'export'],
@@ -95,6 +99,7 @@ export const roles = {
   team_manager: ac.newRole({
     contractor: ['read', 'update'],
     contract: ['read'],
+    compliance: ['read'], // Phase 73 D-10
     invoice: ['read', 'approve'],
     workflow: ['read', 'execute'],
     report: ['read'],
@@ -108,6 +113,7 @@ export const roles = {
   legal_compliance_viewer: ac.newRole({
     contractor: ['read'],
     contract: ['read'],
+    compliance: ['read'], // Phase 73 D-10
     invoice: ['read'],
     report: ['read'],
     team: ['read'],
@@ -129,6 +135,7 @@ export const roles = {
   external_accountant: ac.newRole({
     contractor: ['read'],
     contract: ['read'],
+    compliance: ['read'], // Phase 73 D-10
     invoice: ['read'],
     payment: ['read'],
     report: ['read', 'export'],
@@ -140,6 +147,7 @@ export const roles = {
   readonly: ac.newRole({
     contractor: ['read'],
     contract: ['read'],
+    compliance: ['read'], // Phase 73 D-10
     invoice: ['read'],
     workflow: ['read'],
     report: ['read'],
