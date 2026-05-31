@@ -89,7 +89,7 @@ Phase artifacts: `.planning/milestones/v5.0-phases/`
 - [ ] **Phase 75: F4 Offboarding — Contract Health Check + IP Verification + Credential Vault** — Claude Vision tool_use with regex-first phrase library, tristate verdict, e-sign-backed IP ratification, `CredentialReference` (no secrets) with content-validation regex — **PARTIAL (75-01..07 complete; 75-08 UI/templates/i18n done, e-sign signing mutation + webhook IP-ratification atomic flow DEFERRED — STATE.md blocker)** (2026-05-31)
 - [x] **Phase 76: F2 IdP — Capability Mixin + Saga Schema + Cooldown Gate + GWS Scope Migration** — `Deprovisionable` interface, `DeprovisioningRun/Step` saga, 14-day cooldown referencing F4 final-invoice-paid, scope-capabilities JSONB, webhook-loop guard (completed 2026-05-31)
 - [x] **Phase 77: F2 IdP — GWS + Slack Adapters (the wedge)** — Google Workspace suspend+OAuth-revoke+sign-out, Slack session-invalidate+SCIM-deactivate, per-IdP `describeImpact` preview, partial-failure reconcile queue (completed 2026-05-31)
-- [ ] **Phase 78: F2 IdP — Entra ID + Okta + GitHub Adapters (the differentiator)** — Entra disable+revokeSignInSessions with CA pre-flight, Okta deactivate+session-clear, GitHub member-remove+per-PAT-revoke+outside-collab manual flag
+- [x] **Phase 78: F2 IdP — Entra ID + Okta + GitHub Adapters (the differentiator)** — Entra disable+revokeSignInSessions with CA pre-flight, Okta deactivate+session-clear, GitHub member-remove+per-PAT-revoke+outside-collab manual flag (completed 2026-05-31)
 - [ ] **Phase 79: F3 Gulf — UAE Free-Zone Tracking + Saudization Dashboard + Arabic + RTL** — `packages/gulf-regulatory`, 10-zone seed enum, Saudization manual-band entry, pre-offboarding impact banner, Qiwa-auth, ms-/me-/ps-/pe- ESLint guard
 - [ ] **Phase 80: v6.0 Verification + Hardening + Manual UAT** — cross-feature integration tests (F1+F3+F4 composition), manual-UAT checkpoints document, consolidated post-deploy legal sign-off list, v6.0 retrospective
 
@@ -231,7 +231,7 @@ Phase artifacts: `.planning/milestones/v5.0-phases/`
   2. Admin executes deprovision on an Okta contractor; system deactivates the user (`@okta/okta-sdk-nodejs@8.0.0` namespaced `userApi.deactivateUser`) and clears active sessions (`revokeUserSessions`); audit row captures the request/response hashes
   3. Admin executes deprovision on a GitHub org member; system removes the org member (`octokit.rest.orgs.removeMember`), explicitly revokes per-PAT credentials, and flags any outside-collaborator repos as a manual-task with link (per Pitfall 7 + GitHub authorization model)
   4. Admin sees a hybrid-AD detection hard-warning when attempting to deprovision an Entra-only identity that's actually backed by on-prem AD; system refuses the action with "On-prem AD authoritative — revoke at source" and a link to the v3.0 GWS directory-import-style status panel
-**Plans:** 6/7 plans executed
+**Plans:** 7/7 plans complete
 **Research flag:** NEEDS RESEARCH — Entra `revokeSignInSessions` Conditional Access interaction, Okta 8.x namespaced API surface, GitHub SAML credential-authorization endpoint via Context7
 **Feature flags:** `idp-deprovisioning-entra` PENDING, `idp-deprovisioning-okta` PENDING, `idp-deprovisioning-github` PENDING
 **UI hint:** yes
@@ -388,6 +388,6 @@ Phase artifacts: `.planning/milestones/v5.0-phases/`
 | 75. F4 Offboarding — IP Verify + Credentials  | v6.0      | 7.x/8 | Partial (esign deferred) | 2026-05-31 |
 | 76. F2 IdP — Capability + Saga + Cooldown     | v6.0      | 10/10 | Complete    | 2026-05-31 |
 | 77. F2 IdP — GWS + Slack (the wedge)          | v6.0      | 5/5 | Complete    | 2026-05-31 |
-| 78. F2 IdP — Entra + Okta + GitHub            | v6.0      | 6/7 | In Progress|  |
+| 78. F2 IdP — Entra + Okta + GitHub            | v6.0      | 7/7 | Complete   | 2026-05-31 |
 | 79. F3 Gulf — UAE Free-Zone + Saudization     | v6.0      | 0/?            | Not started | -          |
 | 80. v6.0 Verification + Hardening + UAT       | v6.0      | 0/?            | Not started | -          |

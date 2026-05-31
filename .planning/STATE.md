@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v6.0
 milestone_name: Platform Maturity & Operational Hardening
-status: executing
+status: verifying
 stopped_at: context exhaustion at 75% (2026-05-31)
-last_updated: "2026-05-31T20:59:00.939Z"
+last_updated: "2026-05-31T21:14:32.442Z"
 last_activity: 2026-05-31
 progress:
   total_phases: 11
-  completed_phases: 7
+  completed_phases: 8
   total_plans: 71
-  completed_plans: 62
-  percent: 64
+  completed_plans: 63
+  percent: 73
 ---
 
 # Project State
@@ -24,6 +24,7 @@ progress:
 **Workflow:** `gsd:execute-phase 78` (background resume) — TWO executor sessions ran this phase at the same time.
 
 **What this resume verified + did (faithful, no redo):**
+
 - 78-01..78-05: already COMPLETE at resume (code + tests + SUMMARYs committed). Verified Wave-2 adapter tests GREEN (33/33: entra 11, okta 10, github 12) + `@contractor-ops/integrations` typecheck clean. Did NOT touch.
 - 78-06: a CONCURRENT executor session (separate live `claude` process) committed the full 78-06 wiring while this resume was mid-work — `4aa68ff4 feat`, `adfd4a9d test`, `a11bf9eb fix`, and `2c00e148 docs(78-06) SUMMARY`. Their work is correct: register-all registers Entra/Okta/GitHub in BOTH registries with keys `ENTRA`/`OKTA`/`GITHUB` (NOT `ENTRA_ID` — matches Prisma `DeprovisioningProvider` + `ImpactPreview` union), 3 PENDING flags `module.idp-deprovisioning-{entra,okta,github}`, 3 connection routers (`entra`/`okta`/`github` namespaces) + barrel + root mount, and the `deprovisioning` router extended to all 5 providers for the toggle table.
 - This resume layered ONE scoped quality fix on top (commit `06f0a3ee`): the three routers' `setEnabled` signoff gate threw a bare `Error` (→ INTERNAL_SERVER_ERROR); changed to `TRPCError FORBIDDEN` with `DEPROVISIONING_PROVIDER_SIGNOFF_PENDING`, and raised the connection-router test suite timeout to 20s (heavy appRouter import on cold fork worker). Verified: API typecheck clean, `idp-deprovision-connections.test.ts` 15/15 GREEN, `idp-provider-enable.test.ts` 5/5 GREEN (no regression).
@@ -38,7 +39,7 @@ progress:
 
 **Phase:** 73 (F1 Compliance — Admin Dashboard + Portal Self-Service + i18n)
 **Workflow:** `gsd:execute-phase 73` (autonomous background run)
-**Status:** Ready to execute
+**Status:** Phase complete — ready for verification
 
 **Why halted (per execute-phase rule "if drift is so deep a plan can't be faithfully executed, write specifics to STATE.md as a blocker and stop rather than guessing"):**
 
@@ -252,10 +253,10 @@ See: .planning/PROJECT.md (updated 2026-04-26 — v6.0 milestone started)
 
 Phase: 78 (f2-idp-entra-id-okta-github-adapters-the-differentiator) — EXECUTING
 Plan: 7 of 7
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-05-31
 
-Progress: [█████████░] 87%
+Progress: [█████████░] 89%
 
 **Active Phase:** none (Phase 70 closed)
 **Next Phase candidates (parallel-ready):**
