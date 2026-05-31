@@ -4,13 +4,13 @@ milestone: v6.0
 milestone_name: Platform Maturity & Operational Hardening
 status: executing
 stopped_at: context exhaustion at 75% (2026-05-31)
-last_updated: "2026-05-31T16:10:27.906Z"
+last_updated: "2026-05-31T16:18:20.508Z"
 last_activity: 2026-05-31
 progress:
   total_phases: 11
   completed_phases: 5
   total_plans: 71
-  completed_plans: 44
+  completed_plans: 45
   percent: 45
 ---
 
@@ -68,6 +68,7 @@ The entire plan-phase pipeline routes through `gsd-sdk query`: init context + mo
 
 ---
 - Phase 75-08 — e-sign IP-ratification signing + webhook atomic flow DEFERRED (not faithfully executable against current tree). DONE in 75-08: 6 IP-ratification templates; HealthCheckPanel (web-vite presentational + use-health-check-panel hook + container); CredentialsTab + CredentialAddDialog + container (use-credentials-tab hook); PendingCredentialsWarningDialog; IpVerificationEsignButton (presentational); i18n keys en/de/pl/ar; health-check-panel.test 7 GREEN; esign-webhook-ip-ratification.test 2 GREEN + 7 todo. DEFERRED (75-08-04 startIpRatificationSigning + 75-08-05 webhook atomic flow): (1) real e-sign entry is esign-orchestrator.sendForSignature requiring an existing Document(storageKey PDF in R2)+connectionId+signers, NOT a raw template string — no template->PDF->R2 render pipeline exists; (2) SigningEnvelope has NO documentType/metadata column (esign.prisma) — IP_RATIFICATION webhook detection needs a schema column+migration the plan only hand-waves; (3) the materialiseFromPolicy carry-forward to flip ContractorComplianceItem->SATISFIED is not the real helper signature. To unblock (follow-up slice): add SigningEnvelope.documentType+metadataJson + migration; build template->PDF->R2->Document step so startIpRatificationSigning can call sendForSignature; extend apps/api/src/routes/webhooks/process.ts e-sign branch (handleSigningCompletion already there) to detect IP_RATIFICATION and run the atomic 3-step tx + workflow.ip_verification.signed audit. IpVerificationEsignButton is presentational+wired-by-prop, ready for its container/hook once the mutation lands. NOT a tooling failure (gsd-sdk works) — plan-vs-reality drift requiring schema+render-pipeline work outside the plan's concrete spec; surfaced per policy.
+- [DEFERRED post-deploy] Phase 72 multi-region migration apply — run `pnpm --filter @contractor-ops/db db:migrate:all` (3 additive migrations: 20260531170000/170001/170002_phase72_*) per region after merge. LOCAL-ONLY constraint; not a phase blocker. Shared dev DB also needs phase75/phase76 applied first (concurrent session owns those).
 
 ### BLOCKER (2026-05-31): Phase 78 plan-phase aborted — same GSD tooling break (missing model-catalog.json)
 
@@ -193,11 +194,11 @@ See: .planning/PROJECT.md (updated 2026-04-26 — v6.0 milestone started)
 ## Current Position
 
 Phase: 72 (f1-compliance-reminder-cascade-payment-block) — EXECUTING
-Plan: 2 of 8
+Plan: 3 of 8
 Status: Ready to execute
 Last activity: 2026-05-31
 
-Progress: [██████░░░░] 62%
+Progress: [██████░░░░] 63%
 
 **Active Phase:** none (Phase 70 closed)
 **Next Phase candidates (parallel-ready):**
