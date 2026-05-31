@@ -4,14 +4,14 @@ milestone: v6.0
 milestone_name: Platform Maturity & Operational Hardening
 status: executing
 stopped_at: context exhaustion at 75% (2026-05-27)
-last_updated: "2026-05-31T13:59:56.482Z"
-last_activity: 2026-05-31
+last_updated: "2026-05-31T14:31:02.486Z"
+last_activity: 2026-05-31 -- Phase 76 execution started
 progress:
   total_phases: 11
-  completed_phases: 3
+  completed_phases: 4
   total_plans: 71
-  completed_plans: 32
-  percent: 27
+  completed_plans: 33
+  percent: 36
 ---
 
 # Project State
@@ -73,7 +73,7 @@ The entire plan-phase pipeline routes through `gsd-sdk query`: init context + mo
 
 **Phase:** 78 — F2 IdP — Entra ID + Okta + GitHub Adapters (the differentiator)
 **Workflow:** `gsd:plan-phase 78 --auto`
-**Status:** Ready to execute
+**Status:** Executing Phase 76
 
 **What happened:** Identical root cause to the Phase 75 blocker below. `gsd:plan-phase` step 1 (`gsd-sdk query init.plan-phase 78`) crashes at module load:
 
@@ -188,14 +188,14 @@ The execute-phase pipeline depends on `gsd-tools.cjs` for: init context + model/
 See: .planning/PROJECT.md (updated 2026-04-26 — v6.0 milestone started)
 
 **Core value:** The invoice-to-payment flow must work end-to-end: invoice arrives, gets matched to contract, routed through approval, and batched for payment — with full audit trail.
-**Current focus:** Phase 75 — f4-offboarding-contract-health-check-ip-verification-credent
+**Current focus:** Phase 76 — f2-idp-capability-mixin-saga-schema-cooldown-gate-gws-scope-
 
 ## Current Position
 
-Phase: 75 (f4-offboarding-contract-health-check-ip-verification-credent) — EXECUTING
-Plan: 8 of 8
-Status: Ready to execute
-Last activity: 2026-05-31
+Phase: 76 (f2-idp-capability-mixin-saga-schema-cooldown-gate-gws-scope-) — EXECUTING
+Plan: 1 of 10
+Status: Executing Phase 76
+Last activity: 2026-05-31 -- Phase 76 execution started
 
 Progress: [████░░░░░░] 44%
 

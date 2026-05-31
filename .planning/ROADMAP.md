@@ -201,7 +201,7 @@ Phase artifacts: `.planning/milestones/v5.0-phases/`
   6. System enforces minimum-privilege OAuth scopes per provider: GWS `admin.directory.user`, Entra `User.EnableDisableAccount.All` + `User.RevokeSessions.All`, GitHub `admin:org`, Slack `admin.users.session:write` + `scim:write` (org-token), Okta "User Admin" role; CI lint asserts no scope expansion beyond the registry without code-review approval
   7. UI exposes no "reactivate contractor" button anywhere; returning contractors flow through the new-engagement path with fresh provisioning by design (Pitfall 11)
   8. Each deprovisioning step runs as an independent QStash job (no `Promise.allSettled` aggregation per Pitfall 10); aggregate `DeprovisioningRun.status` is computed from per-step states
-**Plans:** TBD
+**Plans:** 1/10 plans executed
 **Research flag:** STANDARD (mirrors v2.0 Jira scope-expansion + v2.0 webhook pipeline + v5.0 saga model)
 **Feature flags:** `idp-deprovisioning` PENDING
 
@@ -386,7 +386,7 @@ Phase artifacts: `.planning/milestones/v5.0-phases/`
 | 73. F1 Compliance — Dashboard + Portal + i18n | v6.0      | 0/?            | Not started | -          |
 | 74. F4 Offboarding — Workflow + KT            | v6.0      | 8/8 | Complete    | 2026-04-27 |
 | 75. F4 Offboarding — IP Verify + Credentials  | v6.0      | 7.x/8 | Partial (esign deferred) | 2026-05-31 |
-| 76. F2 IdP — Capability + Saga + Cooldown     | v6.0      | 0/?            | Not started | -          |
+| 76. F2 IdP — Capability + Saga + Cooldown     | v6.0      | 1/10 | In Progress|  |
 | 77. F2 IdP — GWS + Slack (the wedge)          | v6.0      | 0/?            | Not started | -          |
 | 78. F2 IdP — Entra + Okta + GitHub            | v6.0      | 0/?            | Not started | -          |
 | 79. F3 Gulf — UAE Free-Zone + Saudization     | v6.0      | 0/?            | Not started | -          |

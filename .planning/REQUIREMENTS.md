@@ -49,20 +49,20 @@ Requirements for the v6.0 milestone. Each maps to exactly one phase (filled by r
 ### IdP Deprovisioning (F2)
 
 - [ ] **IDP-01**: Admin can trigger access revocation for a single contractor via the offboarding workflow's `ACCESS_REVOKE` task; system enumerates connected IdPs and presents a per-IdP impact preview (`describeImpact`) before executing
-- [ ] **IDP-02**: System enforces a 14-day cooldown gate after `ContractorAssignment.status = ENDED` before allowing IdP deprovisioning to start (final-invoice race protection)
+- [x] **IDP-02**: System enforces a 14-day cooldown gate after `ContractorAssignment.status = ENDED` before allowing IdP deprovisioning to start (final-invoice race protection)
 - [ ] **IDP-03**: Admin can deprovision a contractor's Google Workspace identity — system suspends user, revokes all OAuth grants, and signs the user out of all sessions
 - [ ] **IDP-04**: Admin can deprovision a contractor's Slack identity — system invalidates active sessions and SCIM-deactivates the user (`active=false`)
 - [ ] **IDP-05**: Admin can deprovision a contractor's Microsoft Entra ID identity — system disables the account and revokes all sign-in sessions, with pre-flight Conditional Access policy enumeration warning when org policies may override the revoke
 - [ ] **IDP-06**: Admin can deprovision a contractor's Okta identity — system deactivates the user and clears active sessions
 - [ ] **IDP-07**: Admin can deprovision a contractor's GitHub org membership — system removes the org member, explicitly revokes per-PAT credentials, and flags outside-collab repos as manual-task with link
-- [ ] **IDP-08**: Each IdP adapter implements both `suspendAccount()` and `revokeAllSessions()`; per-provider integration test asserts revocation is verifiable within 5 minutes
-- [ ] **IDP-09**: System runs each provider deprovisioning step as an independent QStash job (no `Promise.allSettled` aggregation); aggregate `DeprovisioningRun.status` resolves to `COMPLETED` / `PARTIAL_FAILURE` / `FAILED`
-- [ ] **IDP-10**: Admin can view a `DeprovisioningRun` audit trail showing per-step status, retry attempts, request/response hashes (SOC2 evidence-grade), and last-error message; `PARTIAL_FAILURE` runs surface in an admin reconcile queue
-- [ ] **IDP-11**: System detects a v3.0 Google Workspace connection lacking write scopes and presents a re-OAuth prompt with `prompt=consent` rather than silently failing or breaking existing read-only flows
+- [x] **IDP-08**: Each IdP adapter implements both `suspendAccount()` and `revokeAllSessions()`; per-provider integration test asserts revocation is verifiable within 5 minutes
+- [x] **IDP-09**: System runs each provider deprovisioning step as an independent QStash job (no `Promise.allSettled` aggregation); aggregate `DeprovisioningRun.status` resolves to `COMPLETED` / `PARTIAL_FAILURE` / `FAILED`
+- [x] **IDP-10**: Admin can view a `DeprovisioningRun` audit trail showing per-step status, retry attempts, request/response hashes (SOC2 evidence-grade), and last-error message; `PARTIAL_FAILURE` runs surface in an admin reconcile queue
+- [x] **IDP-11**: System detects a v3.0 Google Workspace connection lacking write scopes and presents a re-OAuth prompt with `prompt=consent` rather than silently failing or breaking existing read-only flows
 - [ ] **IDP-12**: Admin can manually mark a `MANUAL_ESCALATION` step as complete with a written reason (audit-logged), unblocking the offboarding workflow while preserving the failure record
-- [ ] **IDP-13**: Webhook events from IdPs that originate from our own deprovision call are filtered out via short-TTL `IdpChangeProvenance` table — no self-trigger loops with v3.0 GWS directory-import
-- [ ] **IDP-14**: System enforces minimum-privilege OAuth scopes per provider (GWS `admin.directory.user`, Entra `User.EnableDisableAccount.All` + `User.RevokeSessions.All`, GitHub `admin:org`, Slack `admin.users.session:write` + `scim:write` org-token, Okta "User Admin" role)
-- [ ] **IDP-15**: System has no "reactivate contractor" button — returning contractors create a new engagement with fresh provisioning, by design
+- [x] **IDP-13**: Webhook events from IdPs that originate from our own deprovision call are filtered out via short-TTL `IdpChangeProvenance` table — no self-trigger loops with v3.0 GWS directory-import
+- [x] **IDP-14**: System enforces minimum-privilege OAuth scopes per provider (GWS `admin.directory.user`, Entra `User.EnableDisableAccount.All` + `User.RevokeSessions.All`, GitHub `admin:org`, Slack `admin.users.session:write` + `scim:write` org-token, Okta "User Admin" role)
+- [x] **IDP-15**: System has no "reactivate contractor" button — returning contractors create a new engagement with fresh provisioning, by design
 
 ### Gulf Operational Polish (F3)
 
@@ -295,20 +295,20 @@ Which phases cover which requirements. Filled by roadmapper on 2026-04-26.
 | COMPL-10 | Phase 71 | Pending |
 | COMPL-11 | Phase 73 | Pending |
 | IDP-01 | Phase 77 | Pending |
-| IDP-02 | Phase 76 | Pending |
+| IDP-02 | Phase 76 | Complete |
 | IDP-03 | Phase 77 | Pending |
 | IDP-04 | Phase 77 | Pending |
 | IDP-05 | Phase 78 | Pending |
 | IDP-06 | Phase 78 | Pending |
 | IDP-07 | Phase 78 | Pending |
-| IDP-08 | Phase 76 | Pending |
-| IDP-09 | Phase 76 | Pending |
-| IDP-10 | Phase 76 | Pending |
-| IDP-11 | Phase 76 | Pending |
+| IDP-08 | Phase 76 | Complete |
+| IDP-09 | Phase 76 | Complete |
+| IDP-10 | Phase 76 | Complete |
+| IDP-11 | Phase 76 | Complete |
 | IDP-12 | Phase 77 | Pending |
-| IDP-13 | Phase 76 | Pending |
-| IDP-14 | Phase 76 | Pending |
-| IDP-15 | Phase 76 | Pending |
+| IDP-13 | Phase 76 | Complete |
+| IDP-14 | Phase 76 | Complete |
+| IDP-15 | Phase 76 | Complete |
 | GULF-01 | Phase 79 | Pending |
 | GULF-02 | Phase 79 | Pending |
 | GULF-03 | Phase 79 | Pending |
