@@ -18,6 +18,22 @@ progress:
 
 ## Blockers
 
+### BLOCKER (2026-05-31): Phase 78 — CONCURRENT EXECUTOR detected; this resume stopped before 78-07 to avoid duplicate/colliding work
+
+**Phase:** 78 (F2 IdP — Entra ID + Okta + GitHub adapters)
+**Workflow:** `gsd:execute-phase 78` (background resume) — TWO executor sessions ran this phase at the same time.
+
+**What this resume verified + did (faithful, no redo):**
+- 78-01..78-05: already COMPLETE at resume (code + tests + SUMMARYs committed). Verified Wave-2 adapter tests GREEN (33/33: entra 11, okta 10, github 12) + `@contractor-ops/integrations` typecheck clean. Did NOT touch.
+- 78-06: a CONCURRENT executor session (separate live `claude` process) committed the full 78-06 wiring while this resume was mid-work — `4aa68ff4 feat`, `adfd4a9d test`, `a11bf9eb fix`, and `2c00e148 docs(78-06) SUMMARY`. Their work is correct: register-all registers Entra/Okta/GitHub in BOTH registries with keys `ENTRA`/`OKTA`/`GITHUB` (NOT `ENTRA_ID` — matches Prisma `DeprovisioningProvider` + `ImpactPreview` union), 3 PENDING flags `module.idp-deprovisioning-{entra,okta,github}`, 3 connection routers (`entra`/`okta`/`github` namespaces) + barrel + root mount, and the `deprovisioning` router extended to all 5 providers for the toggle table.
+- This resume layered ONE scoped quality fix on top (commit `06f0a3ee`): the three routers' `setEnabled` signoff gate threw a bare `Error` (→ INTERNAL_SERVER_ERROR); changed to `TRPCError FORBIDDEN` with `DEPROVISIONING_PROVIDER_SIGNOFF_PENDING`, and raised the connection-router test suite timeout to 20s (heavy appRouter import on cold fork worker). Verified: API typecheck clean, `idp-deprovision-connections.test.ts` 15/15 GREEN, `idp-provider-enable.test.ts` 5/5 GREEN (no regression).
+
+**Schema constraint found (carried forward for any 78-06/78-07 follow-up):** the Prisma `IntegrationProvider` enum has `GITHUB` + `MICROSOFT_365` but NO `ENTRA` / `OKTA` values, so `IntegrationConnection` rows for Entra/Okta cannot be stored without a schema migration (out of 78-06 scope). The per-org enable toggle therefore lives in `Organization.settingsJson.idpDeprovisioningEnabled` (Phase 77 D-15 shape) keyed by the `DeprovisioningProvider` string — works for all 5 without schema change. `getProviderToggleState` derives ENTRA/OKTA `connected` from settings only (documented inline in `deprovisioning.ts`). Full per-provider credential storage + `idp-token-resolver`/`idp-impact-preview` extension for Entra/Okta is DEFERRED (needs the enum + connection-row migration).
+
+**Why stopped (per execute-phase blocker rule):** Only 78-07 (web-vite UI: 3 provider cards + per-provider compliance toggle table, 14 files) remains. The concurrent executor already began 78-07 web-vite work (`a11bf9eb` touched `apps/web-vite` ToggleProvider). Two executors writing the same 14 web-vite files would collide destructively. The other session owns the remaining plan and is the live driver. This resume hands off cleanly rather than racing.
+
+**Next-resume guidance:** Confirm only ONE executor is active before resuming 78-07. Check `git log --grep=78-07` + `ls .planning/phases/78-*/78-07-SUMMARY.md`; if the other session finished it, run phase verification only. 78-07 must follow `apps/web-vite/ARCHITECTURE.md` (Page→Container→Hook→Component), extend the existing `provider-connection-card` + `getProviderToggleState`/`enableProviderForOrg` (5 providers now), i18n en/de/pl/ar parity, loading/empty/error states, WCAG.
+
 ### BLOCKER (2026-05-31): Phase 73 execute-phase HALTED — UI plans (3 of 8) + UI test scaffolds target the deleted `apps/web` (Next.js); need re-plan against `apps/web-vite`
 
 **Phase:** 73 (F1 Compliance — Admin Dashboard + Portal Self-Service + i18n)
