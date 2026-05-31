@@ -86,7 +86,7 @@ Phase artifacts: `.planning/milestones/v5.0-phases/`
 - [ ] **Phase 72: F1 Compliance — Reminder Cascade + Payment Block** — band-state-machine cron, daily digest, paymentRouter hard-block, approval-engine condition operator, atomic audit row
 - [ ] **Phase 73: F1 Compliance — Admin Dashboard + Portal Self-Service + i18n** — at-risk dashboard, contractor portal compliance tab, one-click upload-replacement, en/pl/de parity
 - [x] **Phase 74: F4 Offboarding — Workflow Foundation + KT Templates + Override Permission** — IP_VERIFICATION + CONTRACT_HEALTH_CHECK enums, OWNER override with reason, 4 role-typed KT seed templates, OOO-aware routing (completed 2026-04-27)
-- [ ] **Phase 75: F4 Offboarding — Contract Health Check + IP Verification + Credential Vault** — Claude Vision tool_use with regex-first phrase library, tristate verdict, e-sign-backed IP ratification, `CredentialReference` (no secrets) with content-validation regex
+- [ ] **Phase 75: F4 Offboarding — Contract Health Check + IP Verification + Credential Vault** — Claude Vision tool_use with regex-first phrase library, tristate verdict, e-sign-backed IP ratification, `CredentialReference` (no secrets) with content-validation regex — **PARTIAL (75-01..07 complete; 75-08 UI/templates/i18n done, e-sign signing mutation + webhook IP-ratification atomic flow DEFERRED — STATE.md blocker)** (2026-05-31)
 - [ ] **Phase 76: F2 IdP — Capability Mixin + Saga Schema + Cooldown Gate + GWS Scope Migration** — `Deprovisionable` interface, `DeprovisioningRun/Step` saga, 14-day cooldown referencing F4 final-invoice-paid, scope-capabilities JSONB, webhook-loop guard
 - [ ] **Phase 77: F2 IdP — GWS + Slack Adapters (the wedge)** — Google Workspace suspend+OAuth-revoke+sign-out, Slack session-invalidate+SCIM-deactivate, per-IdP `describeImpact` preview, partial-failure reconcile queue
 - [ ] **Phase 78: F2 IdP — Entra ID + Okta + GitHub Adapters (the differentiator)** — Entra disable+revokeSignInSessions with CA pre-flight, Okta deactivate+session-clear, GitHub member-remove+per-PAT-revoke+outside-collab manual flag
@@ -182,7 +182,7 @@ Phase artifacts: `.planning/milestones/v5.0-phases/`
   3. Admin attempts to mark `WorkflowRun.completedAt` while `IP_VERIFICATION` task is open; system hard-blocks; admin signs the IP-assignment ratification document via existing v2.0 e-sign integration (DocuSign for UK/PL/US, Autenti for DE); on signing-completion webhook, task auto-completes and offboarding can finalise
   4. Admin records a credential-rotation task with `CredentialReference` row containing label, vault URL, successor user; content-validation regex rejects any string shaped like `AKIA*`, GitHub PAT, JWT structure, or hex≥32 (system stores POINTERS only, NEVER secrets) — paste of an actual AWS access key returns 400 with explanation
   5. After offboarding completes with no IP-block override, `Contract.complianceFlagsJson.ipAssignment` history shows the verdict that drove the gate; admin can drill into the cited clause text from the audit log
-**Plans:** 7/8 plans executed
+**Plans:** 8/8 plans complete
 **Research flag:** NEEDS RESEARCH — Werkvertrag wording lawyer-dependent; Anthropic SDK tool_use schema requires Context7 validation at implementation time
 **Feature flags:** `offboarding-ip-clause-scanner` PENDING (legal-sensitive — AI verdict on legal-adjacent surface)
 **UI hint:** yes
@@ -385,7 +385,7 @@ Phase artifacts: `.planning/milestones/v5.0-phases/`
 | 72. F1 Compliance — Reminder + Payment Block  | v6.0      | 0/?            | Not started | -          |
 | 73. F1 Compliance — Dashboard + Portal + i18n | v6.0      | 0/?            | Not started | -          |
 | 74. F4 Offboarding — Workflow + KT            | v6.0      | 8/8 | Complete    | 2026-04-27 |
-| 75. F4 Offboarding — IP Verify + Credentials  | v6.0      | 7/8 | In Progress|  |
+| 75. F4 Offboarding — IP Verify + Credentials  | v6.0      | 7.x/8 | Partial (esign deferred) | 2026-05-31 |
 | 76. F2 IdP — Capability + Saga + Cooldown     | v6.0      | 0/?            | Not started | -          |
 | 77. F2 IdP — GWS + Slack (the wedge)          | v6.0      | 0/?            | Not started | -          |
 | 78. F2 IdP — Entra + Okta + GitHub            | v6.0      | 0/?            | Not started | -          |

@@ -1,0 +1,39 @@
+Phase 75 final status (executed 2026-05-31, inline executor):
+
+Gates (whole workspace):
+- pnpm typecheck: PASS (42/42 turbo tasks)
+- pnpm lint:schema: 1 PRE-EXISTING offence only (UserPinnedView, auth.prisma, commit a1efc484 — unrelated to Phase 75; both new Phase 75 models pass)
+- pnpm lint:logs: 1 PRE-EXISTING offence only (csp-report.ts:86, commit e320911b — unrelated to Phase 75; no new offences from Phase 75)
+- pnpm i18n:parity: PASS
+- check:web-vite-{data-layer,presentational,dialog-pattern,table-pattern,page-shells}: PASS
+- lint:no-next: PASS
+- check:webhook-routes: PASS (27 routes; /contract-health/_run registered)
+
+Per-package Phase 75 test files (scoped runs — full unscoped web-vite suite NOT run per RAM constraint):
+- validators: 126 passed (secret-shape, ip-clauses-parity, ip-clauses-results-schema, locked-phrases-guard)
+- db: phase-75-schema 14 passed
+- compliance-policy: 26 passed (registry + resolve)
+- api: 43 passed + 18 todo (contract-health dedup/materialise/cross-jurisdiction, workflow-execution-ip-block, workflow-execution-credential-warning, credential-reference, bulk-rerun)
+- integrations: 9 passed + 7 todo (contract-health-tools, esign-webhook-ip-ratification)
+- web-vite: health-check-panel 7 passed + 1 todo
+
+RED -> GREEN transitions:
+- 75-01: RED scaffolds (intentional baseline)
+- 75-02: phase-75-schema -> GREEN
+- 75-03: registry/resolve (Phase 75 IP rules) -> GREEN
+- 75-04: ip-clauses-parity + ip-clauses-results-schema -> GREEN
+- 75-05: secret-shape-detector -> GREEN
+- 75-06: dedup/materialise/cross-jurisdiction/contract-health-tools/bulk-rerun -> GREEN
+- 75-07: workflow-execution-ip-block + credential-warning + credential-reference -> GREEN
+- 75-08: health-check-panel + esign-webhook-ip-ratification (constants) -> GREEN
+
+PHASE 75 STATUS: PARTIAL — 75-01..75-07 fully complete; 75-08 partial.
+
+Outstanding (deferred — see STATE.md blocker):
+- 75-08-04 startIpRatificationSigning tRPC mutation + 75-08-05 e-sign webhook IP_RATIFICATION atomic flow. Require: SigningEnvelope.documentType+metadata schema column + migration; a template->PDF->R2->Document render pipeline; the documentType carry-forward to flip ContractorComplianceItem->SATISFIED. The plan assumed adapter.createSigningEnvelope(documentText) which does not exist (real entry is esign-orchestrator.sendForSignature requiring an existing R2 Document). IpVerificationEsignButton is presentational + wired-by-prop, ready for its container/hook once the mutation lands.
+
+Standing-constraint deferrals (per project policy, not blockers):
+- Legal sign-off for 17 IP-clause phrases (PENDING in signoff-registry.json)
+- Multi-region migration apply (manual post-deploy: migrate-all-regions.ts; documented in packages/db/scripts/README.md)
+- Real Anthropic API integration smoke (manual per VALIDATION §6.2)
+- Real DocuSign + Autenti webhook smoke (manual per VALIDATION §6.2)

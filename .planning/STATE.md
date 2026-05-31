@@ -4,13 +4,13 @@ milestone: v6.0
 milestone_name: Platform Maturity & Operational Hardening
 status: executing
 stopped_at: context exhaustion at 75% (2026-05-27)
-last_updated: "2026-05-31T13:42:59.837Z"
+last_updated: "2026-05-31T13:59:56.482Z"
 last_activity: 2026-05-31
 progress:
   total_phases: 11
   completed_phases: 3
   total_plans: 71
-  completed_plans: 31
+  completed_plans: 32
   percent: 27
 ---
 
@@ -22,7 +22,7 @@ progress:
 
 **Phase:** 77 — F2 IdP — GWS + Slack Adapters (the wedge)
 **Workflow:** `gsd:plan-phase 77 --auto`
-**Resolution:** `gsd-sdk query init.plan-phase 77` and `roadmap.get-phase 77` now return valid JSON in this environment — the `model-catalog.json` crash no longer reproduces. plan-phase 77 ran end-to-end; RESEARCH.md, VALIDATION.md, PATTERNS.md and PLAN.md files were generated. NOTE: subagent (`gsd-phase-researcher` / `gsd-planner` / `gsd-plan-checker`) spawning was unavailable in the background-agent runtime, so the orchestrator performed those roles inline against the live tree (verified paths via semble + Read). Two upstream caveats recorded in 77-RESEARCH.md: (a) Phase 76 is PLANNED but NOT executed — none of its infra exists yet, so Phase 77 plans treat it as an upstream dependency; (b) Phase 76 plans + 77-CONTEXT.md reference the now-deleted `apps/web` (Next.js) — Phase 77 anchors all server routes to `apps/api` Fastify routes and all UI to `apps/web-vite` (Page→Container→Hook→Component).
+**Resolution:** `gsd-sdk query init.plan-phase 77` and `roadmap.get-phase 77` now return valid JSON in this environment — the `model-catalog.json` crash no longer reproduces. plan-phase 77 ran end-to-end; RESEARCH.md, VALIDATION.md, PATTERNS.md and PLAN.md files were generated. NOTE: subagent (`gsd-phase-researcher` / `gsd-planner` / `gsd-plan-checker`) spawning was unavailable in the background-agent runtime, so the orchestrator performed those roles inline against the live tree (verified paths via semble + Read). Two upstream caveats recorded in 77-RESEARCH.md: (a) Phase 76 is PLANNED but NOT executed — of its infra exists yet, so Phase 77 plans treat it as an upstream dependency; (b) Phase 76 plans + 77-CONTEXT.md reference the now-deleted `apps/web` (Next.js) — Phase 77 anchors all server routes to `apps/api` Fastify routes and all UI to `apps/web-vite` (Page→Container→Hook→Component).
 
 <details><summary>Original blocker note (stale — kept for history)</summary>
 
@@ -67,6 +67,7 @@ The entire plan-phase pipeline routes through `gsd-sdk query`: init context + mo
 </details>
 
 ---
+- Phase 75-08 — e-sign IP-ratification signing + webhook atomic flow DEFERRED (not faithfully executable against current tree). DONE in 75-08: 6 IP-ratification templates; HealthCheckPanel (web-vite presentational + use-health-check-panel hook + container); CredentialsTab + CredentialAddDialog + container (use-credentials-tab hook); PendingCredentialsWarningDialog; IpVerificationEsignButton (presentational); i18n keys en/de/pl/ar; health-check-panel.test 7 GREEN; esign-webhook-ip-ratification.test 2 GREEN + 7 todo. DEFERRED (75-08-04 startIpRatificationSigning + 75-08-05 webhook atomic flow): (1) real e-sign entry is esign-orchestrator.sendForSignature requiring an existing Document(storageKey PDF in R2)+connectionId+signers, NOT a raw template string — no template->PDF->R2 render pipeline exists; (2) SigningEnvelope has NO documentType/metadata column (esign.prisma) — IP_RATIFICATION webhook detection needs a schema column+migration the plan only hand-waves; (3) the materialiseFromPolicy carry-forward to flip ContractorComplianceItem->SATISFIED is not the real helper signature. To unblock (follow-up slice): add SigningEnvelope.documentType+metadataJson + migration; build template->PDF->R2->Document step so startIpRatificationSigning can call sendForSignature; extend apps/api/src/routes/webhooks/process.ts e-sign branch (handleSigningCompletion already there) to detect IP_RATIFICATION and run the atomic 3-step tx + workflow.ip_verification.signed audit. IpVerificationEsignButton is presentational+wired-by-prop, ready for its container/hook once the mutation lands. NOT a tooling failure (gsd-sdk works) — plan-vs-reality drift requiring schema+render-pipeline work outside the plan's concrete spec; surfaced per policy.
 
 ### BLOCKER (2026-05-31): Phase 78 plan-phase aborted — same GSD tooling break (missing model-catalog.json)
 
