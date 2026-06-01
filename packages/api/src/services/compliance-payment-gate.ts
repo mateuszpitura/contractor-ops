@@ -91,6 +91,10 @@ export async function assertContractorPaymentEligibility(
       contractorId: { in: contractorIds },
       severity: 'BLOCKING',
       status: 'EXPIRED',
+      // Defense-in-depth tenant guard: when organizationId is provided, scope
+      // the query so no items from other orgs can leak via a widened contractor
+      // id set at a future call site.
+      ...(organizationId ? { contractor: { is: { organizationId } } } : {}),
     },
     include: {
       contractor: { select: { id: true, displayName: true, organizationId: true } },

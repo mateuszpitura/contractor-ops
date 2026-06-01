@@ -117,6 +117,28 @@ describe('compliance-payment-gate assertion', () => {
     expect(where.status).toBe('EXPIRED');
   });
 
+  it('includes contractor.organizationId in WHERE when organizationId is provided (M-3 tenant guard)', async () => {
+    await assertContractorPaymentEligibility(['ctr-1'], { organizationId: ORG });
+    const where = mockPrisma.contractorComplianceItem.findMany.mock.calls[0]?.[0]?.where as Record<
+      string,
+      unknown
+    >;
+    // Defense-in-depth: the query must scope items to the calling org via the
+    // contractor relation so a widened contractorIds set cannot read other orgs.
+    expect(where.contractor).toEqual({ is: { organizationId: ORG } });
+  });
+
+  it('omits contractor org filter when no organizationId provided (tx path — caller-scoped)', async () => {
+    const txFindMany = vi.fn(async () => []);
+    const tx = {
+      contractorComplianceItem: { findMany: txFindMany },
+      auditLog: { create: vi.fn() },
+    } as never;
+    await assertContractorPaymentEligibility(['ctr-1'], { tx });
+    const where = txFindMany.mock.calls[0]?.[0]?.where as Record<string, unknown>;
+    expect(where.contractor).toBeUndefined();
+  });
+
   it('returns immediately for an empty contractorIds array (no DB query)', async () => {
     const result = await assertContractorPaymentEligibility([], { organizationId: ORG });
     expect(result).toEqual({ blocked: false, wouldBlock: false, contractorReasons: [] });
