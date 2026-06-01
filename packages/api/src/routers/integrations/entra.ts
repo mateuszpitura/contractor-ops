@@ -7,6 +7,7 @@ import { router } from '../../init';
 import { requirePermission } from '../../middleware/rbac';
 import { tenantProcedure } from '../../middleware/tenant';
 import { writeAuditLog } from '../../services/audit-writer';
+import { CacheKeys, invalidateByPrefix } from '../../services/cache';
 
 // Phase 78 IDP-05 — Microsoft Entra ID per-provider connection-lifecycle router.
 //
@@ -58,20 +59,23 @@ export const entraRouter = router({
           message: DEPROVISIONING_PROVIDER_SIGNOFF_PENDING,
         });
       }
-      const org = await ctx.db.organization.findUnique({
-        where: { id: ctx.organizationId },
-        select: { settingsJson: true },
+      await ctx.db.$transaction(async tx => {
+        const org = await tx.organization.findUnique({
+          where: { id: ctx.organizationId },
+          select: { settingsJson: true },
+        });
+        const settings = (org?.settingsJson as Record<string, unknown>) ?? {};
+        const current = (settings.idpDeprovisioningEnabled as Record<string, boolean>) ?? {};
+        const next = {
+          ...settings,
+          idpDeprovisioningEnabled: { ...current, [PROVIDER]: input.enabled },
+        };
+        await tx.organization.update({
+          where: { id: ctx.organizationId },
+          data: { settingsJson: next as Prisma.InputJsonValue },
+        });
       });
-      const settings = (org?.settingsJson as Record<string, unknown>) ?? {};
-      const current = (settings.idpDeprovisioningEnabled as Record<string, boolean>) ?? {};
-      const next = {
-        ...settings,
-        idpDeprovisioningEnabled: { ...current, [PROVIDER]: input.enabled },
-      };
-      await ctx.db.organization.update({
-        where: { id: ctx.organizationId },
-        data: { settingsJson: next as Prisma.InputJsonValue },
-      });
+      void invalidateByPrefix(CacheKeys.settingsPrefix(ctx.organizationId));
 
       await writeAuditLog({
         organizationId: ctx.organizationId,

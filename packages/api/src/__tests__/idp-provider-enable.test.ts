@@ -30,6 +30,8 @@ const { mockPrisma, orgUpdate, settingsState, signoffStatus } = vi.hoisted(() =>
       })),
       update: orgUpdate,
     },
+    // Executes the callback with the same mock so findUnique/update calls are captured.
+    $transaction: vi.fn(async (fn: (tx: typeof mockPrisma) => Promise<unknown>) => fn(mockPrisma)),
   };
   return { mockPrisma, orgUpdate, settingsState, signoffStatus };
 });
