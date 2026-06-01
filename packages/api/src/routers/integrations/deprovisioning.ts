@@ -300,6 +300,11 @@ export const deprovisioningRouter = router({
         return { noop: true, reason: 'step not in FAILED state' };
       }
 
+      // `nextAttempt` is used only for the QStash deduplicationId to ensure the
+      // re-enqueued job has a different id from the original enqueue (which used
+      // `:${originalAttempts}`). The row resets to attempts:0 deliberately — a
+      // manual retry grants a fresh MAX_ATTEMPTS budget; the dedup id only needs
+      // per-enqueue uniqueness, not a match to the actual attempt counter.
       const nextAttempt = step.attempts + 1;
 
       const updated = await ctx.db.deprovisioningStep.updateMany({

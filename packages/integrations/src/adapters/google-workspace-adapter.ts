@@ -523,7 +523,13 @@ export class GoogleWorkspaceAdapter extends BaseAdapter implements Deprovisionab
       { timeoutMs: DEPROVISION_TIMEOUT_MS, retries: 0 },
     );
     if (res.status === 404) return true; // user gone is also "deprovisioned"
-    const data = (await res.json().catch(() => ({}))) as { suspended?: boolean };
+    // Throw on non-ok so callers can distinguish "confirmed active" from
+    // "couldn't check" — coercing 5xx/429 to `false` masks transient errors
+    // as "user still active".
+    if (!res.ok) {
+      throw new Error(`verifyDeprovisioned: unexpected ${res.status} for ${externalUserId}`);
+    }
+    const data = (await res.json()) as { suspended?: boolean };
     return Boolean(data?.suspended);
   }
 
