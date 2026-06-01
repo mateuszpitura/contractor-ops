@@ -97,6 +97,38 @@ describe('canStartDeprovisioning (Phase 76 D-05/D-06)', () => {
     ).toBe(true);
   });
 
+  it('Asia/Riyadh: reason string shows the LOCAL date, not the previous UTC day', () => {
+    // endedAt = 2026-05-01T00:00:00Z. +14d raw = 2026-05-15T00:00:00Z.
+    // startOfDay in Asia/Riyadh (+03) = 2026-05-14T21:00:00Z (= 2026-05-15 00:00 Riyadh).
+    // UTC ISO of that instant .slice(0,10) = "2026-05-14" (WRONG — off-by-one bug).
+    // TZ-aware format(new TZDate(..., 'Asia/Riyadh'), 'yyyy-MM-dd') = "2026-05-15" (CORRECT).
+    const endedAt = new Date('2026-05-01T00:00:00Z');
+    const decision = canStartDeprovisioning({
+      endedAt,
+      jurisdictionTz: 'Asia/Riyadh',
+      status: 'ENDED',
+      now: new Date('2026-05-14T20:59:00Z'), // 1 min before Riyadh boundary (2026-05-14T21:00Z)
+    });
+    expect(decision.allowed).toBe(false);
+    expect(decision.reason).toContain('2026-05-15');
+    expect(decision.reason).not.toContain('2026-05-14');
+  });
+
+  it('Asia/Dubai: reason string shows the LOCAL date, not the previous UTC day', () => {
+    // Dubai is UTC+4. Boundary = 2026-05-14T20:00:00Z (= 2026-05-15 00:00 Dubai).
+    // UTC ISO slice = "2026-05-14" (WRONG); TZ-aware format = "2026-05-15" (CORRECT).
+    const endedAt = new Date('2026-05-01T00:00:00Z');
+    const decision = canStartDeprovisioning({
+      endedAt,
+      jurisdictionTz: 'Asia/Dubai',
+      status: 'ENDED',
+      now: new Date('2026-05-14T19:59:00Z'), // 1 min before Dubai boundary (2026-05-14T20:00Z)
+    });
+    expect(decision.allowed).toBe(false);
+    expect(decision.reason).toContain('2026-05-15');
+    expect(decision.reason).not.toContain('2026-05-14');
+  });
+
   it('earliestDate is computed even when allowed=true (UI can display the passed boundary)', () => {
     const endedAt = new Date('2026-04-01T10:00:00Z');
     const now = new Date('2026-04-16T10:00:00Z');

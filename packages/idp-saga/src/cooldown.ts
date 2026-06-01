@@ -1,5 +1,5 @@
 import { TZDate } from '@date-fns/tz';
-import { startOfDay } from 'date-fns';
+import { format, startOfDay } from 'date-fns';
 import type { CooldownDecision, CooldownInput } from './types.js';
 import { COOLDOWN_DAYS } from './types.js';
 
@@ -40,7 +40,11 @@ export function canStartDeprovisioning(input: CooldownInput): CooldownDecision {
   );
 
   if (now.getTime() < earliestDate.getTime()) {
-    const dateStr = earliestDate.toISOString().slice(0, 10);
+    // Format in the jurisdiction TZ so east-of-UTC locales (Asia/Riyadh +03,
+    // Asia/Dubai +04) get the correct calendar date — UTC ISO slice would
+    // render the previous day for those TZs. Mirrors jurisdictionDate() in
+    // compliance-policy/src/expiry.ts.
+    const dateStr = format(new TZDate(earliestDate, input.jurisdictionTz), 'yyyy-MM-dd');
     return {
       allowed: false,
       earliestDate,
