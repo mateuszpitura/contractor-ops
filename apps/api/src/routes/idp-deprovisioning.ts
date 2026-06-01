@@ -14,6 +14,7 @@
 
 import {
   runDeprovisioningStep,
+  StepOrgMismatchError,
   stepRunnerBodySchema,
 } from '@contractor-ops/api/services/idp-deprovisioning-step-runner';
 import { createTenantClientFrom, getRegionalClient, prisma } from '@contractor-ops/db';
@@ -52,6 +53,15 @@ async function handlerInner(
     const result = await runDeprovisioningStep(db, body);
     return reply.code(200).send({ processed: true, ...result });
   } catch (err) {
+    // StepOrgMismatchError is a non-retryable configuration error (77 WR-04):
+    // return 400 so QStash does NOT retry the job.
+    if (err instanceof StepOrgMismatchError) {
+      log.error(
+        { err: err.message, runId: body.runId, stepId: body.stepId },
+        'deprovisioning step org mismatch — non-retryable',
+      );
+      return reply.code(400).send({ error: err.message });
+    }
     log.error(
       {
         err: err instanceof Error ? err.message : String(err),

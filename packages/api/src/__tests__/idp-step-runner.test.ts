@@ -104,14 +104,23 @@ vi.mock('@contractor-ops/logger', () => ({
   hashExternalUserId: (id: string) => `sha256:${id}`,
 }));
 
-import { runDeprovisioningStep } from '../services/idp-deprovisioning-step-runner';
+import {
+  runDeprovisioningStep,
+  StepOrgMismatchError,
+} from '../services/idp-deprovisioning-step-runner';
 
-type StepRow = { id: string; runId: string; status: string; attempts: number };
+type StepRow = {
+  id: string;
+  runId: string;
+  status: string;
+  attempts: number;
+  organizationId: string;
+};
 
-function makeDb(step: StepRow) {
+function makeDb(step: StepRow | null) {
   const update = vi.fn(async () => ({}));
   const db = {
-    deprovisioningStep: { findUniqueOrThrow: vi.fn(async () => step), update },
+    deprovisioningStep: { findUnique: vi.fn(async () => step), update },
     deprovisioningRun: { update: vi.fn(async () => ({})) },
   };
   return { db, update };
@@ -138,6 +147,7 @@ describe('runDeprovisioningStep (Phase 77 D-04/D-05/D-06)', () => {
       runId: 'run-1',
       status: 'IN_PROGRESS',
       attempts: 3,
+      organizationId: 'org-1',
     });
     // biome-ignore lint/suspicious/noExplicitAny: mock db
     const result = await runDeprovisioningStep(db as any, body);
@@ -148,7 +158,13 @@ describe('runDeprovisioningStep (Phase 77 D-04/D-05/D-06)', () => {
   });
 
   it('inserts provenance BEFORE calling the adapter', async () => {
-    const { db } = makeDb({ id: 's-1', runId: 'run-1', status: 'PENDING', attempts: 0 });
+    const { db } = makeDb({
+      id: 's-1',
+      runId: 'run-1',
+      status: 'PENDING',
+      attempts: 0,
+      organizationId: 'org-1',
+    });
     // biome-ignore lint/suspicious/noExplicitAny: mock db
     await runDeprovisioningStep(db as any, body);
     expect(callOrder).toEqual(['provenance', 'adapter']);
@@ -161,7 +177,13 @@ describe('runDeprovisioningStep (Phase 77 D-04/D-05/D-06)', () => {
       requestSha256: 'a'.repeat(64),
       responseSha256: 'b'.repeat(64),
     });
-    const { db, update } = makeDb({ id: 's-1', runId: 'run-1', status: 'PENDING', attempts: 0 });
+    const { db, update } = makeDb({
+      id: 's-1',
+      runId: 'run-1',
+      status: 'PENDING',
+      attempts: 0,
+      organizationId: 'org-1',
+    });
     // biome-ignore lint/suspicious/noExplicitAny: mock db
     await runDeprovisioningStep(db as any, body);
     const resultUpdate = update.mock.calls.find(
@@ -180,7 +202,13 @@ describe('runDeprovisioningStep (Phase 77 D-04/D-05/D-06)', () => {
       requestSha256: 'c'.repeat(64),
       responseSha256: 'd'.repeat(64),
     });
-    const { db, update } = makeDb({ id: 's-1', runId: 'run-1', status: 'PENDING', attempts: 0 });
+    const { db, update } = makeDb({
+      id: 's-1',
+      runId: 'run-1',
+      status: 'PENDING',
+      attempts: 0,
+      organizationId: 'org-1',
+    });
     // biome-ignore lint/suspicious/noExplicitAny: mock db
     const result = await runDeprovisioningStep(db as any, body);
     expect(result.ok).toBe(true);
@@ -192,7 +220,13 @@ describe('runDeprovisioningStep (Phase 77 D-04/D-05/D-06)', () => {
   });
 
   it('emits 2 sub-action audit rows for a GWS revokeAllSessions (3-row mapping)', async () => {
-    const { db } = makeDb({ id: 's-1', runId: 'run-1', status: 'PENDING', attempts: 0 });
+    const { db } = makeDb({
+      id: 's-1',
+      runId: 'run-1',
+      status: 'PENDING',
+      attempts: 0,
+      organizationId: 'org-1',
+    });
     await runDeprovisioningStep(
       // biome-ignore lint/suspicious/noExplicitAny: mock db
       db as any,
@@ -207,7 +241,13 @@ describe('runDeprovisioningStep (Phase 77 D-04/D-05/D-06)', () => {
   });
 
   it('calls recomputeRunStatus after the step transition', async () => {
-    const { db } = makeDb({ id: 's-1', runId: 'run-1', status: 'PENDING', attempts: 0 });
+    const { db } = makeDb({
+      id: 's-1',
+      runId: 'run-1',
+      status: 'PENDING',
+      attempts: 0,
+      organizationId: 'org-1',
+    });
     // biome-ignore lint/suspicious/noExplicitAny: mock db
     await runDeprovisioningStep(db as any, body);
     expect(recomputeRunStatus).toHaveBeenCalledWith(db, 'run-1');
@@ -219,7 +259,13 @@ describe('runDeprovisioningStep (Phase 77 D-04/D-05/D-06)', () => {
       ok: false,
       reason: 'not_connected',
     });
-    const { db } = makeDb({ id: 's-1', runId: 'run-1', status: 'PENDING', attempts: 0 });
+    const { db } = makeDb({
+      id: 's-1',
+      runId: 'run-1',
+      status: 'PENDING',
+      attempts: 0,
+      organizationId: 'org-1',
+    });
     // biome-ignore lint/suspicious/noExplicitAny: mock db
     await expect(runDeprovisioningStep(db as any, body)).rejects.toThrow(
       /GOOGLE_WORKSPACE is not connected/,
@@ -228,11 +274,37 @@ describe('runDeprovisioningStep (Phase 77 D-04/D-05/D-06)', () => {
   });
 
   it('throws a clear error for a provider with no resolver wired (ENTRA/OKTA/GITHUB) — fail-fast (78-WR-3)', async () => {
-    const { db } = makeDb({ id: 's-1', runId: 'run-1', status: 'PENDING', attempts: 0 });
+    const { db } = makeDb({
+      id: 's-1',
+      runId: 'run-1',
+      status: 'PENDING',
+      attempts: 0,
+      organizationId: 'org-1',
+    });
     await expect(
       // biome-ignore lint/suspicious/noExplicitAny: mock db
       runDeprovisioningStep(db as any, { ...body, provider: 'ENTRA' as const }),
     ).rejects.toThrow(/no credential resolver registered for provider ENTRA/);
+    expect(suspendAccount).not.toHaveBeenCalled();
+  });
+
+  it('throws StepOrgMismatchError when step organizationId does not match payload — defense-in-depth (77 WR-04)', async () => {
+    const { db } = makeDb({
+      id: 's-1',
+      runId: 'run-1',
+      status: 'PENDING',
+      attempts: 0,
+      organizationId: 'org-OTHER',
+    });
+    // biome-ignore lint/suspicious/noExplicitAny: mock db
+    await expect(runDeprovisioningStep(db as any, body)).rejects.toThrow(StepOrgMismatchError);
+    expect(suspendAccount).not.toHaveBeenCalled();
+  });
+
+  it('throws StepOrgMismatchError when the step does not exist — defense-in-depth (77 WR-04)', async () => {
+    const { db } = makeDb(null);
+    // biome-ignore lint/suspicious/noExplicitAny: mock db
+    await expect(runDeprovisioningStep(db as any, body)).rejects.toThrow(StepOrgMismatchError);
     expect(suspendAccount).not.toHaveBeenCalled();
   });
 });

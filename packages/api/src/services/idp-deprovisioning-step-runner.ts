@@ -34,6 +34,20 @@ export interface StepRunnerResult {
 }
 
 /**
+ * Thrown when the step's own organizationId does not match the one in the
+ * QStash payload (77 WR-04 defense-in-depth). Non-retryable — the caller
+ * (QStash route) should return 400, not 500, so the job is not retried.
+ */
+export class StepOrgMismatchError extends Error {
+  constructor(stepId: string, organizationId: string) {
+    super(
+      `IdP step org-mismatch: step ${stepId} does not belong to organization ${organizationId}`,
+    );
+    this.name = 'StepOrgMismatchError';
+  }
+}
+
+/**
  * Phase 76 D-03 — execute a single deprovisioning saga step.
  *
  * One independent QStash job per (provider, stepKind). NO Promise.allSettled
@@ -57,10 +71,18 @@ export async function runDeprovisioningStep(
   // idp-saga helpers are typed against the base PrismaClient; the tenant client is a
   // structural superset of the model accessors they use.
   const sagaDb = db as unknown as PrismaClient;
-  const step = await db.deprovisioningStep.findUniqueOrThrow({
+  const step = await db.deprovisioningStep.findUnique({
     where: { id: body.stepId },
-    select: { id: true, runId: true, status: true, attempts: true },
+    select: { id: true, runId: true, status: true, attempts: true, organizationId: true },
   });
+
+  // Defense-in-depth org-match guard (77 WR-04): the QStash payload is HMAC-signed
+  // so this is trusted-internal input — but if organizationId ever mismatches the
+  // step's own tenant, the runner would operate under the wrong regional client.
+  // A mismatch is a non-retryable configuration error, not a transient failure.
+  if (!step || step.organizationId !== body.organizationId) {
+    throw new StepOrgMismatchError(body.stepId, body.organizationId);
+  }
 
   if (step.attempts >= MAX_ATTEMPTS) {
     await db.deprovisioningStep.update({
