@@ -43,11 +43,18 @@ export type ResourceMessage =
   | { key: TranslationKey; params?: TranslateValues }
   | string;
 
-export interface UseResourceMutationConfig {
+export interface UseResourceMutationConfig<TError = unknown> {
   invalidate?: QueryKey[];
   successMessage: ResourceMessage;
   errorMessage?: ResourceMessage;
   onClose?: () => void;
+  /**
+   * When provided and returns `true` for a given error, the hook's built-in
+   * `toast.error(...)` is suppressed. Use this when the caller handles the
+   * error via its own rich UI (e.g. a modal) and the generic toast would
+   * double-surface the same failure.
+   */
+  suppressErrorToast?: (error: TError) => boolean;
 }
 
 function isStructuredMessage(
@@ -78,12 +85,12 @@ export function useResourceMutation<
   TContext = unknown,
 >(
   mutationOptions: UseMutationOptions<TData, TError, TVariables, TContext>,
-  config: UseResourceMutationConfig,
+  config: UseResourceMutationConfig<TError>,
 ) {
   const queryClient = useQueryClient();
   const t = useTranslations();
   const translateError = useTranslatedError();
-  const { invalidate, successMessage, errorMessage, onClose } = config;
+  const { invalidate, successMessage, errorMessage, onClose, suppressErrorToast } = config;
 
   const invalidateAll = useCallback(async () => {
     if (!invalidate || invalidate.length === 0) return;
@@ -100,6 +107,7 @@ export function useResourceMutation<
     },
     onError: (error, variables, onMutateResult, context) => {
       mutationOptions.onError?.(error, variables, onMutateResult, context);
+      if (suppressErrorToast?.(error)) return;
       // Caller-supplied override wins; otherwise auto-translate the API key.
       const text =
         errorMessage === undefined ? translateError(error) : resolveMessage(errorMessage, t);

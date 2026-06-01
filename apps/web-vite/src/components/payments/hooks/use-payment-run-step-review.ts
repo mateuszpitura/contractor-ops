@@ -75,6 +75,13 @@ export function usePaymentRunStepReview(options: {
   const hasPLN = currencies.includes('PLN');
   const hasEUR = currencies.includes('EUR');
 
+  // Suppress the built-in useResourceMutation toast when the error is a compliance block —
+  // the modal opened in handleLockAndExport's catch is the single surface for that case (M-1).
+  const suppressPaymentBlockToast = useCallback(
+    (err: unknown) => isPaymentBlock(err as Parameters<typeof isPaymentBlock>[0]),
+    [],
+  );
+
   const createMutation = useResourceMutation(
     trpc.payment.create.mutationOptions({
       onSuccess: () => {
@@ -83,6 +90,7 @@ export function usePaymentRunStepReview(options: {
     }),
     {
       successMessage: toasts.done(),
+      suppressErrorToast: suppressPaymentBlockToast,
     },
   );
 
@@ -94,6 +102,7 @@ export function usePaymentRunStepReview(options: {
     }),
     {
       successMessage: toasts.done(),
+      suppressErrorToast: suppressPaymentBlockToast,
     },
   );
 
@@ -131,8 +140,10 @@ export function usePaymentRunStepReview(options: {
         exportFormat,
       });
     } catch (err) {
-      // Phase 72 D-10 — a PRECONDITION_FAILED compliance block from payment.create
-      // or payment.lockAndExport opens the block modal instead of a generic toast.
+      // Phase 72 D-10 — a PRECONDITION_FAILED compliance block opens the modal (sole surface).
+      // The useResourceMutation toast is suppressed for this error class via suppressPaymentBlockToast
+      // above, so exactly one surface fires. All other errors fall through to the generic toast
+      // path in useResourceMutation (M-2 fix — non-block failures are never silently swallowed).
       if (isPaymentBlock(err)) {
         setPaymentBlock({ open: true, reasons: err.cause?.contractorReasons ?? [] });
       }

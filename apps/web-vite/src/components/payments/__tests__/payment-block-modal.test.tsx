@@ -13,7 +13,7 @@ const oneContractor: ContractorReason[] = [
       {
         itemId: 'item-1',
         policyRuleId: 'compliance-policy-engine.de.a1',
-        documentTypeLabelKey: 'compliance.documentType.compliance-policy-engine.de.a1',
+        documentTypeLabelKey: 'Compliance.documentType.compliance-policy-engine.de.a1',
         expiredOnDate: '2026-04-01',
         jurisdictionTz: 'Europe/Berlin',
         deepLinkPath: '/contractors/ctr-1/compliance#item-item-1',
