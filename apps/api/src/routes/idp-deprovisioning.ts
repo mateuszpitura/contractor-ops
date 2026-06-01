@@ -12,15 +12,20 @@
  * Lives inside the webhook plugin scope (raw-body + QStash HMAC over exact bytes).
  */
 
+import { withQueueObservability } from '@contractor-ops/api/services/cron-monitor';
 import {
   runDeprovisioningStep,
   StepOrgMismatchError,
   stepRunnerBodySchema,
 } from '@contractor-ops/api/services/idp-deprovisioning-step-runner';
 import { createTenantClientFrom, getRegionalClient, prisma } from '@contractor-ops/db';
+import { registerAllAdapters } from '@contractor-ops/integrations/adapters/register-all';
 import { createCronLogger } from '@contractor-ops/logger';
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { guardQStashRequest } from '../lib/qstash-verify.js';
+
+// Adapter registry is process-singleton.
+registerAllAdapters();
 
 const log = createCronLogger('idp-deprovisioning-step-runner');
 
@@ -38,7 +43,10 @@ async function handlerInner(
 
   const parsed = stepRunnerBodySchema.safeParse(parsedJson);
   if (!parsed.success) {
-    return reply.code(400).send({ error: 'Invalid body' });
+    const missing = parsed.error.issues.map(i => i.path.join('.')).filter(Boolean);
+    const detail =
+      missing.length > 0 ? `Missing or invalid: ${missing.join(', ')}` : 'Invalid body';
+    return reply.code(400).send({ error: detail });
   }
   const body = parsed.data;
 
@@ -79,6 +87,10 @@ export function registerIdpDeprovisioningStepRunnerRoute(app: FastifyInstance): 
   app.post('/idp-deprovisioning/_step-runner', async (request, reply) => {
     const guard = await guardQStashRequest(request, reply);
     if (!guard) return reply;
-    return guard.run(() => handlerInner(request, reply, guard.rawBody));
+    return guard.run(() =>
+      withQueueObservability('idp-deprovisioning-step-runner', () =>
+        handlerInner(request, reply, guard.rawBody),
+      ),
+    );
   });
 }
