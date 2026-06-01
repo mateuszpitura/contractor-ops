@@ -1,3 +1,4 @@
+import { authApi } from '@contractor-ops/auth';
 import type { Prisma } from '@contractor-ops/db';
 import { getFlagSignoff } from '@contractor-ops/feature-flags';
 import { canStartDeprovisioning, MAX_ATTEMPTS, recomputeRunStatus } from '@contractor-ops/idp-saga';
@@ -15,6 +16,7 @@ import {
 } from '../../errors';
 import { router } from '../../init';
 import { findOrThrow } from '../../lib/find-or-throw';
+import { permissionToScopes } from '../../lib/scope-utils';
 import { requirePermission } from '../../middleware/rbac';
 import { tenantProcedure } from '../../middleware/tenant';
 import { writeAuditLog } from '../../services/audit-writer';
@@ -360,7 +362,24 @@ export const deprovisioningRouter = router({
     .use(requirePermission({ integration: ['read'] }))
     .input(z.object({ runId: z.string().min(1) }))
     .query(async ({ ctx, input }) => {
-      return findOrThrow(
+      // The free-text override note + actor may contain incident detail or names.
+      // Only expose them to callers that also hold the `idp:override_step_failure`
+      // write gate — the same audience that authored the note (WR-06).
+      // Analog: approval.ts secondary authApi.hasPermission check.
+      let canReadOverrideNote = false;
+      if (ctx.authMode === 'apiKey') {
+        const required = permissionToScopes({ idp: ['override_step_failure'] });
+        const granted = new Set(ctx.apiKeyScopes ?? []);
+        canReadOverrideNote = required.every(s => granted.has(s));
+      } else {
+        const perm = await authApi.hasPermission({
+          headers: ctx.headers,
+          body: { permissions: { idp: ['override_step_failure'] } },
+        });
+        canReadOverrideNote = perm?.success === true;
+      }
+
+      const run = await findOrThrow(
         () =>
           ctx.db.deprovisioningRun.findFirst({
             where: { id: input.runId, organizationId: ctx.organizationId },
@@ -390,6 +409,18 @@ export const deprovisioningRouter = router({
           }),
         DEPROVISIONING_STEP_NOT_FOUND,
       );
+
+      if (!canReadOverrideNote) {
+        return {
+          ...run,
+          steps: run.steps.map(step => ({
+            ...step,
+            manualOverrideNote: null,
+            manualOverriddenByUserId: null,
+          })),
+        };
+      }
+      return run;
     }),
 
   /**
