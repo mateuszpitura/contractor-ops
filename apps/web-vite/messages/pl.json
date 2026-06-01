@@ -3175,9 +3175,7 @@
       "itemCountSuffix": "[pl] {count, plural, one {# document} other {# documents}}",
       "expiredOn": "[pl] expired on {date} ({tz})",
       "deepLinkAriaLabel": "[pl] Open {label} compliance details",
-      "close": "[pl] Close",
-      "wouldBlockBannerTitle": "[pl] Compliance check would block this payment when the feature is enabled",
-      "wouldBlockBannerDescription": "[pl] Feature flag compliance-payment-block is OFF. Engineering may force-enable it with FLAG_SIGNOFF_BYPASS=local."
+      "close": "[pl] Close"
     },
     "documentType": {
       "compliance-policy-engine": {
