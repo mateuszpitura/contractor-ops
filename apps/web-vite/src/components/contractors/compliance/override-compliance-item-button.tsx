@@ -8,7 +8,6 @@ import { OverrideComplianceItemDialogContainer } from './override-compliance-ite
 
 export interface OverrideComplianceItemButtonProps {
   itemId: string;
-  contractorId: string;
   severity: string | null;
   status: string;
 }

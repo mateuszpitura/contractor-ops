@@ -46,7 +46,7 @@ export function PortalUploadReplacementForm({
       <h1 className="text-2xl font-semibold">{t('upload.heading', { document: documentLabel })}</h1>
 
       <div className="flex flex-col gap-2">
-        <Label htmlFor="upload-dropzone">{t('upload.fileLabel')}</Label>
+        <h2 className="text-sm font-medium leading-none">{t('upload.fileLabel')}</h2>
         <DropZone onFilesAccepted={files => setFile(files[0] ?? null)} />
         {file && <p className="text-sm text-muted-foreground">{file.name}</p>}
       </div>

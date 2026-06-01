@@ -163,7 +163,6 @@ export function TabCompliance({ contractor }: TabComplianceProps) {
                 ) : (
                   <OverrideComplianceItemButton
                     itemId={item.id}
-                    contractorId={contractor.id}
                     severity={item.severity}
                     status={item.status}
                   />

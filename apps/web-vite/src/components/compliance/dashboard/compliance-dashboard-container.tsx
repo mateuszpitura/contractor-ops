@@ -102,7 +102,6 @@ export function ComplianceDashboardContainer() {
               renderRowActions={row => (
                 <OverrideComplianceItemButton
                   itemId={row.id}
-                  contractorId={row.contractorId}
                   severity={row.severity}
                   status={row.status}
                 />
