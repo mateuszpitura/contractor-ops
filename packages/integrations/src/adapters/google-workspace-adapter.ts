@@ -467,6 +467,14 @@ export class GoogleWorkspaceAdapter extends BaseAdapter implements Deprovisionab
     const tokensResSha = sha256Hex(
       canonicalizeResponse({ deleted: deleteOutcomes.length, allOk: !failedDelete }),
     );
+    // The revoke_oauth_grants sub-action is built here so it's available in all
+    // return paths — including the FAILED early-return (IN-06: partial failure must
+    // appear in the persisted step's subActions regardless of which sub-action failed).
+    const revokeSubAction = {
+      kind: 'revoke_oauth_grants',
+      requestSha256: tokensReqSha,
+      responseSha256: tokensResSha,
+    };
     if (failedDelete) {
       const failed = this.#mapDeprovisionFailure(
         failedDelete.status,
@@ -477,8 +485,9 @@ export class GoogleWorkspaceAdapter extends BaseAdapter implements Deprovisionab
           notFoundReason: 'user_not_found',
         },
       );
-      // Already-gone on the token list is still a clean LIKELY_GONE outcome.
-      if (failed.status === 'FAILED') return failed;
+      // LIKELY_GONE token delete: proceed to sign-out (idempotent).
+      // FAILED token delete: surface immediately with the sub-action included.
+      if (failed.status === 'FAILED') return { ...failed, subActions: [revokeSubAction] };
     }
 
     // Sub-action (b) — sign out of all sessions.
@@ -494,7 +503,7 @@ export class GoogleWorkspaceAdapter extends BaseAdapter implements Deprovisionab
     );
 
     const subActions = [
-      { kind: 'revoke_oauth_grants', requestSha256: tokensReqSha, responseSha256: tokensResSha },
+      revokeSubAction,
       { kind: 'sign_out_sessions', requestSha256: signOutReqSha, responseSha256: signOutResSha },
     ];
 
