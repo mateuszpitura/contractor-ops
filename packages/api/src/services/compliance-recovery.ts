@@ -9,6 +9,8 @@
 import type { Prisma } from '@contractor-ops/db';
 import { Prisma as PrismaRuntime } from '@contractor-ops/db/generated/prisma/client';
 import { createLogger } from '@contractor-ops/logger';
+import type { AuditWriterClient } from './audit-writer';
+import { writeAuditLog } from './audit-writer';
 import type { PaymentGateClient } from './compliance-payment-gate';
 import { assertContractorPaymentEligibility } from './compliance-payment-gate';
 
@@ -24,7 +26,7 @@ const log = createLogger({ service: 'compliance-recovery' });
  * the deep-generic instantiation the concrete client union triggers. Extends
  * PaymentGateClient so the same tx can be forwarded to the eligibility re-assertion.
  */
-export interface RecoveryClient extends PaymentGateClient {
+export interface RecoveryClient extends PaymentGateClient, AuditWriterClient {
   // biome-ignore lint/suspicious/noExplicitAny: $queryRaw tagged-template signature is intentionally loose
   $queryRaw: <T = unknown>(query: TemplateStringsArray, ...values: any[]) => Promise<T>;
   approvalFlow: {
@@ -74,19 +76,18 @@ export async function onComplianceItemSatisfied(
       where: { id: flow.id },
       data: { status: 'PENDING', complianceHoldsJson: PrismaRuntime.DbNull },
     });
-    await tx.auditLog.create({
-      data: {
-        organizationId: args.organizationId,
-        actorType: 'SYSTEM',
-        action: 'approval.compliance_resolved',
-        resourceType: 'INVOICE',
-        resourceId: flow.id,
-        metadataJson: {
-          releasedItemIds: [args.itemId],
-          resolverEvent: 'item_satisfied',
-          timestamp: new Date().toISOString(),
-        },
+    await writeAuditLog({
+      organizationId: args.organizationId,
+      actorType: 'SYSTEM',
+      action: 'approval.compliance_resolved',
+      resourceType: 'INVOICE',
+      resourceId: flow.id,
+      metadata: {
+        releasedItemIds: [args.itemId],
+        resolverEvent: 'item_satisfied',
+        timestamp: new Date().toISOString(),
       },
+      tx,
     });
     resumedFlowIds.push(flow.id);
   }

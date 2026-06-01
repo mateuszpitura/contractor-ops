@@ -26,6 +26,7 @@ import { isPaymentBlockEnforced } from '@contractor-ops/feature-flags';
 import { createLogger } from '@contractor-ops/logger';
 import { TRPCError } from '@trpc/server';
 import * as E from '../errors';
+import { writeAuditLog } from './audit-writer';
 
 /**
  * Structural client interface — works with the full PrismaClient, a `tx` from
@@ -36,9 +37,6 @@ import * as E from '../errors';
 export interface PaymentGateClient {
   contractorComplianceItem: {
     findMany: (args: Prisma.ContractorComplianceItemFindManyArgs) => Promise<unknown>;
-  };
-  auditLog: {
-    create: (args: Prisma.AuditLogCreateArgs) => Promise<unknown>;
   };
 }
 
@@ -110,7 +108,6 @@ export async function assertContractorPaymentEligibility(
 
   if (wouldBlock) {
     await recordWouldBlock(
-      db,
       contractorIds,
       contractorReasons,
       organizationId ?? items[0]?.contractor.organizationId,
@@ -167,7 +164,6 @@ function groupReasons(items: ComplianceItemWithContractor[]): ContractorReason[]
  * best-effort AuditLog row (never aborts the caller). T-72-04-07.
  */
 async function recordWouldBlock(
-  db: PaymentGateClient,
   contractorIds: string[],
   contractorReasons: ContractorReason[],
   organizationId: string | undefined,
@@ -178,15 +174,13 @@ async function recordWouldBlock(
   );
   if (!organizationId) return;
   try {
-    await db.auditLog.create({
-      data: {
-        organizationId,
-        actorType: 'SYSTEM',
-        action: 'compliance.payment.would_block',
-        resourceType: 'PAYMENT_RUN',
-        resourceId: contractorIds.join(','),
-        metadataJson: { contractorReasons } as unknown as Prisma.InputJsonValue,
-      },
+    await writeAuditLog({
+      organizationId,
+      actorType: 'SYSTEM',
+      action: 'compliance.payment.would_block',
+      resourceType: 'PAYMENT_RUN',
+      resourceId: contractorIds.join(','),
+      metadata: { contractorReasons },
     });
   } catch (err) {
     log.error({ err }, 'compliance.payment.would_block audit-log write failed (non-blocking)');

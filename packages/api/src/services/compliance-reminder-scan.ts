@@ -26,6 +26,7 @@ import { createCronLogger } from '@contractor-ops/logger';
 import { metrics } from '@contractor-ops/logger/metrics';
 
 import { normalizeLocale, resolveMessage } from '../i18n/email-i18n';
+import { writeAuditLog } from './audit-writer';
 import { getDocumentTypeLabelKey } from './compliance-payment-gate';
 import { claimCronNotificationDedup } from './cron-dedup';
 import { dispatch } from './notification-service';
@@ -422,18 +423,17 @@ export async function onComplianceItemExpiresAtChanged(
       version: 0,
     },
   });
-  await tx.auditLog.create({
-    data: {
-      organizationId: args.organizationId,
-      actorType: 'SYSTEM',
-      action: 'compliance.reminder.reset',
-      resourceType: 'CONTRACTOR',
-      resourceId: args.itemId,
-      metadataJson: {
-        previousBand: existing?.lastBandFired ?? null,
-        triggerEvent: args.triggerEvent,
-      },
+  await writeAuditLog({
+    organizationId: args.organizationId,
+    actorType: 'SYSTEM',
+    action: 'compliance.reminder.reset',
+    resourceType: 'CONTRACTOR',
+    resourceId: args.itemId,
+    metadata: {
+      previousBand: existing?.lastBandFired ?? null,
+      triggerEvent: args.triggerEvent,
     },
+    tx,
   });
 }
 

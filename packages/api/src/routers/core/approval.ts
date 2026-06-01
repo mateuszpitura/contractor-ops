@@ -1499,20 +1499,19 @@ export const approvalRouter = router({
           where: { id: input.approvalFlowId },
           data: { status: 'PENDING', complianceHoldsJson: PrismaClient.DbNull },
         });
-        await tx.auditLog.create({
-          data: {
-            organizationId: ctx.organizationId,
-            actorType: 'USER',
-            actorId: ctx.user.id,
-            action: 'approval.compliance_resolved',
-            resourceType: flow.resourceType,
-            resourceId: flow.resourceId,
-            metadataJson: {
-              manualOverride: true,
-              reason: input.reason,
-              resolverEvent: 'admin_manual',
-            },
+        await writeAuditLog({
+          organizationId: ctx.organizationId,
+          actorType: 'USER',
+          actorId: ctx.user.id,
+          action: 'approval.compliance_resolved',
+          resourceType: flow.resourceType,
+          resourceId: flow.resourceId,
+          metadata: {
+            manualOverride: true,
+            reason: input.reason,
+            resolverEvent: 'admin_manual',
           },
+          tx,
         });
         return { resumed: true, approvalFlowId: input.approvalFlowId };
       });
