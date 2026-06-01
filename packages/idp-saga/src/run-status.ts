@@ -44,17 +44,27 @@ export function deriveRunStatus(steps: readonly StepRow[]): RunStatus {
  *
  * Returns the new status. Idempotent — safe to call concurrently (last write wins;
  * all writes converge because deriveRunStatus is pure-of-the-step-rows).
+ *
+ * `finishedAt` is set-once: if the run already has a finishedAt (a late concurrent
+ * re-derivation that still sees a terminal aggregate), the existing timestamp is
+ * preserved so it can serve as SLA evidence without jitter.
  */
 export async function recomputeRunStatus(db: PrismaClient, runId: string): Promise<RunStatus> {
-  const steps = await db.deprovisioningStep.findMany({
-    where: { runId },
-    select: { status: true, attempts: true },
-  });
+  const [steps, run] = await Promise.all([
+    db.deprovisioningStep.findMany({
+      where: { runId },
+      select: { status: true, attempts: true },
+    }),
+    db.deprovisioningRun.findUnique({
+      where: { id: runId },
+      select: { finishedAt: true },
+    }),
+  ]);
   const newStatus = deriveRunStatus(steps);
-  const finishedAt =
-    newStatus === 'COMPLETED' || newStatus === 'PARTIAL_FAILURE' || newStatus === 'FAILED'
-      ? new Date()
-      : null;
+  const isTerminal =
+    newStatus === 'COMPLETED' || newStatus === 'PARTIAL_FAILURE' || newStatus === 'FAILED';
+  // Preserve an already-set finishedAt — do not overwrite with a later timestamp.
+  const finishedAt = isTerminal ? (run?.finishedAt ?? new Date()) : null;
   await db.deprovisioningRun.update({
     where: { id: runId },
     data: { status: newStatus, finishedAt },

@@ -73,38 +73,53 @@ describe('deriveRunStatus (Phase 76 D-02)', () => {
 });
 
 describe('recomputeRunStatus (Phase 76 D-02 async wrapper)', () => {
+  const makeDb = (
+    steps: { status: string; attempts: number }[],
+    existingFinishedAt: Date | null = null,
+  ) =>
+    ({
+      deprovisioningStep: { findMany: vi.fn().mockResolvedValue(steps) },
+      deprovisioningRun: {
+        findUnique: vi.fn().mockResolvedValue({ finishedAt: existingFinishedAt }),
+        update: vi.fn().mockResolvedValue({}),
+      },
+    }) as unknown as Parameters<typeof recomputeRunStatus>[0];
+
   it('reads steps + UPDATEs run.status + sets finishedAt when terminal', async () => {
-    const findManyMock = vi.fn().mockResolvedValue([
+    const db = makeDb([
       { status: 'SUCCEEDED', attempts: 1 },
       { status: 'SUCCEEDED', attempts: 1 },
     ]);
-    const updateMock = vi.fn().mockResolvedValue({});
-    const db = {
-      deprovisioningStep: { findMany: findManyMock },
-      deprovisioningRun: { update: updateMock },
-    } as unknown as Parameters<typeof recomputeRunStatus>[0];
-
     const result = await recomputeRunStatus(db, 'run-1');
     expect(result).toBe('COMPLETED');
-    expect(updateMock).toHaveBeenCalledWith({
+    expect(
+      (db.deprovisioningRun as { update: ReturnType<typeof vi.fn> }).update,
+    ).toHaveBeenCalledWith({
       where: { id: 'run-1' },
       data: { status: 'COMPLETED', finishedAt: expect.any(Date) },
     });
   });
 
   it('does NOT set finishedAt when status is IN_PROGRESS', async () => {
-    const updateMock = vi.fn().mockResolvedValue({});
-    const db = {
-      deprovisioningStep: {
-        findMany: vi.fn().mockResolvedValue([{ status: 'IN_PROGRESS', attempts: 0 }]),
-      },
-      deprovisioningRun: { update: updateMock },
-    } as unknown as Parameters<typeof recomputeRunStatus>[0];
-
+    const db = makeDb([{ status: 'IN_PROGRESS', attempts: 0 }]);
     await recomputeRunStatus(db, 'run-2');
-    expect(updateMock).toHaveBeenCalledWith({
+    expect(
+      (db.deprovisioningRun as { update: ReturnType<typeof vi.fn> }).update,
+    ).toHaveBeenCalledWith({
       where: { id: 'run-2' },
       data: { status: 'IN_PROGRESS', finishedAt: null },
+    });
+  });
+
+  it('preserves existing finishedAt on concurrent re-derivation (set-once)', async () => {
+    const existingFinishedAt = new Date('2026-05-01T10:00:00Z');
+    const db = makeDb([{ status: 'SUCCEEDED', attempts: 1 }], existingFinishedAt);
+    await recomputeRunStatus(db, 'run-3');
+    expect(
+      (db.deprovisioningRun as { update: ReturnType<typeof vi.fn> }).update,
+    ).toHaveBeenCalledWith({
+      where: { id: 'run-3' },
+      data: { status: 'COMPLETED', finishedAt: existingFinishedAt },
     });
   });
 });
