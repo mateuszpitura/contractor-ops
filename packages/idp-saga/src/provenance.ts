@@ -19,8 +19,9 @@ const ONE_HOUR_MS = 60 * 60 * 1000;
 export async function provenanceLookup(
   db: PrismaClient,
   input: ProvenanceLookupInput,
+  now: Date = new Date(),
 ): Promise<ProvenanceMatchResult | null> {
-  const cutoff = new Date(Date.now() - ONE_HOUR_MS);
+  const cutoff = new Date(now.getTime() - ONE_HOUR_MS);
 
   const candidate = await db.idpChangeProvenance.findFirst({
     where: {

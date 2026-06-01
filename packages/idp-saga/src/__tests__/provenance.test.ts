@@ -49,12 +49,12 @@ describe('provenanceLookup (Phase 76 D-10)', () => {
   it('respects 1-hour window — query has initiatedAt: { gte: cutoff }', async () => {
     const findFirst = vi.fn().mockResolvedValue(null);
     const db = makeDb({ findFirst });
-    await provenanceLookup(db, baseInput);
+    const now = new Date('2026-06-01T12:00:00Z');
+    await provenanceLookup(db, baseInput, now);
     const call = findFirst.mock.calls[0][0];
     expect(call.where.initiatedAt).toEqual({ gte: expect.any(Date) });
     const cutoff = call.where.initiatedAt.gte as Date;
-    expect(Date.now() - cutoff.getTime()).toBeGreaterThan(60 * 60 * 1000 - 5000);
-    expect(Date.now() - cutoff.getTime()).toBeLessThan(60 * 60 * 1000 + 5000);
+    expect(cutoff.toISOString()).toBe('2026-06-01T11:00:00.000Z');
   });
 
   it('filters out already-matched rows (matchedAt: null)', async () => {
