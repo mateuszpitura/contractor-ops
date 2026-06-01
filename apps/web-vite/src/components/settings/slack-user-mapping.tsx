@@ -5,7 +5,7 @@ import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import type { ColumnDef } from '@tanstack/react-table';
 import { useCallback, useMemo, useState } from 'react';
-
+import { tDynLoose } from '../../i18n/typed-keys.js';
 import { getAvatarInitials } from '../../lib/avatar-initials';
 import type { UserMapping, useSlackUserMapping } from './hooks/use-slack-user-mapping.js';
 import { LinkUserPopoverContainer } from './link-user-popover-container.js';
@@ -136,7 +136,7 @@ export function SlackUserMapping({
           const cfg = STATUS_BADGE[status];
           return (
             <Badge variant="secondary" className={cfg.className}>
-              {t(`integrations.userMapping.${cfg.labelKey}` as Parameters<typeof t>[0])}
+              {tDynLoose(t, 'integrations.userMapping', cfg.labelKey)}
             </Badge>
           );
         },

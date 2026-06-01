@@ -13,6 +13,7 @@ import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { AlertCircle, Plus } from 'lucide-react';
 import { useCallback, useState } from 'react';
+import { tDynLoose } from '../../i18n/typed-keys.js';
 import { useTranslations } from '../../i18n/useTranslations.js';
 import type { CredentialRow } from './hooks/use-credentials-tab.js';
 
@@ -40,21 +41,21 @@ function useLabelFns() {
   return {
     labelVaultProvider: (raw: string) => {
       try {
-        return t(`providers.${raw}` as Parameters<typeof t>[0]);
+        return tDynLoose(t, 'providers', raw);
       } catch {
         return raw;
       }
     },
     labelAccessType: (raw: string) => {
       try {
-        return t(`accessTypes.${raw}` as Parameters<typeof t>[0]);
+        return tDynLoose(t, 'accessTypes', raw);
       } catch {
         return raw;
       }
     },
     labelStatus: (raw: string) => {
       try {
-        return t(`status.${raw}` as Parameters<typeof t>[0]);
+        return tDynLoose(t, 'status', raw);
       } catch {
         return raw;
       }
