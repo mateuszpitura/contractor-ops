@@ -3245,6 +3245,13 @@
         "blockedDocuments": "Blocked documents",
         "source": "Source"
       },
+      "status": {
+        "satisfied": "Uploaded",
+        "missing": "Missing",
+        "expired": "Expired",
+        "pending": "Pending",
+        "waived": "Waived"
+      },
       "empty": {
         "heading": "All clear",
         "body": "No contractors are at risk and no payments are blocked."
@@ -5722,6 +5729,13 @@
       "emptyHeading": "Nothing to renew",
       "emptyBody": "All your compliance documents are up to date.",
       "renewNow": "Renew now",
+      "status": {
+        "satisfied": "Uploaded",
+        "missing": "Missing",
+        "expired": "Expired",
+        "pending": "Pending",
+        "waived": "Waived"
+      },
       "upload": {
         "heading": "Renew {document}",
         "fileLabel": "Upload replacement document",

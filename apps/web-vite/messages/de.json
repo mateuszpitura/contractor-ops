@@ -3245,6 +3245,13 @@
         "blockedDocuments": "Blockierte Dokumente",
         "source": "Quelle"
       },
+      "status": {
+        "satisfied": "Hochgeladen",
+        "missing": "Fehlend",
+        "expired": "Abgelaufen",
+        "pending": "Ausstehend",
+        "waived": "Erlassen"
+      },
       "empty": {
         "heading": "Alles in Ordnung",
         "body": "Keine Auftragnehmer gefährdet und keine Zahlungen blockiert."
@@ -5722,6 +5729,13 @@
       "emptyHeading": "Nichts zu erneuern",
       "emptyBody": "Alle Ihre Compliance-Dokumente sind aktuell.",
       "renewNow": "Jetzt erneuern",
+      "status": {
+        "satisfied": "Hochgeladen",
+        "missing": "Fehlend",
+        "expired": "Abgelaufen",
+        "pending": "Ausstehend",
+        "waived": "Erlassen"
+      },
       "upload": {
         "heading": "{document} erneuern",
         "fileLabel": "Ersatzdokument hochladen",

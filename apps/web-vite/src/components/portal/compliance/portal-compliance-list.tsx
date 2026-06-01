@@ -2,7 +2,9 @@ import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
 import { buttonVariants } from '@contractor-ops/ui/components/shadcn/button';
 
 import { Link } from '../../../i18n/navigation.js';
+import { tDynLoose } from '../../../i18n/typed-keys.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
+import { enumKey } from '../../../lib/enum-key.js';
 import { useComplDocName } from '../../compliance/hooks/use-compl-doc-name.js';
 import type { PortalComplianceItem } from './hooks/use-portal-compliance.js';
 
@@ -24,7 +26,7 @@ function PortalComplianceCard({ item }: { item: PortalComplianceItem }) {
       <div className="flex items-start justify-between gap-3">
         <span className="text-sm font-medium">{label || item.name}</span>
         <Badge variant="secondary" className={STATUS_BADGE_STYLES[item.status] ?? ''}>
-          {item.status}
+          {tDynLoose(t, 'status', enumKey(item.status))}
         </Badge>
       </div>
       {needsAction && (

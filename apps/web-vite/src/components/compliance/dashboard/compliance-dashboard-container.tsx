@@ -67,7 +67,14 @@ export function ComplianceDashboardContainer() {
 
       <ComplianceKpiCards kpis={dash.kpis} activeTab={tab} onTabChange={setTab} />
 
-      <section aria-label={t(`${tab.replace('-', '')}.label`)}>
+      <section
+        aria-label={t(
+          {
+            'at-risk': 'atRisk.label',
+            'upcoming-renewals': 'upcomingRenewals.label',
+            'blocked-payments': 'blockedPayments.label',
+          }[tab] ?? 'atRisk.label',
+        )}>
         {tab === 'at-risk' && (
           <AtRiskTable
             rows={dash.atRiskProps.rows}

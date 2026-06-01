@@ -3,6 +3,8 @@ import type { ColumnDef } from '@tanstack/react-table';
 
 import { Link } from '../../../../i18n/navigation.js';
 import type { LooseTranslator } from '../../../../i18n/typed-keys.js';
+import { tDynLoose } from '../../../../i18n/typed-keys.js';
+import { enumKey } from '../../../../lib/enum-key.js';
 import { useDateFormatter } from '../../../../lib/format/use-date-formatter.js';
 import { useComplDocName } from '../../hooks/use-compl-doc-name.js';
 import type { AtRiskRow } from '../hooks/use-compliance-dashboard.js';
@@ -69,7 +71,7 @@ export function getAtRiskColumns(t: LooseTranslator): ColumnDef<AtRiskRow>[] {
       header: t('columns.status'),
       cell: ({ row }) => (
         <Badge variant="secondary" className={STATUS_BADGE_STYLES[row.original.status] ?? ''}>
-          {row.original.status}
+          {tDynLoose(t, 'status', enumKey(row.original.status))}
         </Badge>
       ),
     },

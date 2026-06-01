@@ -3245,6 +3245,13 @@
         "blockedDocuments": "Zablokowane dokumenty",
         "source": "Źródło"
       },
+      "status": {
+        "satisfied": "Przesłano",
+        "missing": "Brak",
+        "expired": "Wygasło",
+        "pending": "Oczekujące",
+        "waived": "Zwolnione"
+      },
       "empty": {
         "heading": "Wszystko w porządku",
         "body": "Żaden wykonawca nie jest zagrożony i żadne płatności nie są zablokowane."
@@ -5722,6 +5729,13 @@
       "emptyHeading": "Nic do odnowienia",
       "emptyBody": "Wszystkie Twoje dokumenty zgodności są aktualne.",
       "renewNow": "Odnów teraz",
+      "status": {
+        "satisfied": "Przesłano",
+        "missing": "Brak",
+        "expired": "Wygasło",
+        "pending": "Oczekujące",
+        "waived": "Zwolnione"
+      },
       "upload": {
         "heading": "Odnów {document}",
         "fileLabel": "Prześlij dokument zastępczy",

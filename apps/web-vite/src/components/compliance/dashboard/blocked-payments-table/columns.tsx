@@ -35,7 +35,7 @@ export function getBlockedPaymentsColumns(t: LooseTranslator): ColumnDef<Blocked
             {reasons.map(reason => (
               <li key={reason.itemId} className="text-sm">
                 <Link href={reason.deepLinkPath} className="text-primary hover:underline">
-                  {reason.documentTypeLabelKey}
+                  {t(reason.documentTypeLabelKey)}
                 </Link>
                 <span className="ml-2 text-xs text-muted-foreground tabular-nums">
                   {reason.expiredOnDate}
