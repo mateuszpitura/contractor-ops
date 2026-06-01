@@ -21,8 +21,8 @@ import {
 import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { CheckCircle2, Download, FileUp, Lightbulb, XCircle } from 'lucide-react';
 import { useCallback } from 'react';
-
 import type { TranslateFn } from '../../i18n/useTranslations.js';
+import { useTranslations } from '../../i18n/useTranslations.js';
 import { formatMinorUnits } from '../../lib/format-currency.js';
 import { formatRelativeDate } from '../../lib/format-relative-date.js';
 import { BacsPreviewCardContainer } from './bacs/bacs-preview-card-container.js';
@@ -40,13 +40,14 @@ export function PaymentRunSidePanelSkeleton({
   open,
   onOpenChange,
 }: PaymentRunSidePanelSkeletonProps) {
+  const t = useTranslations('Payments.sidePanel');
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent className="w-[400px] p-0">
         <ScrollArea className="h-full">
           <div className="p-6 space-y-6">
             <SheetHeader className="space-y-3">
-              <SheetTitle className="sr-only">Loading payment run</SheetTitle>
+              <SheetTitle className="sr-only">{t('loadingTitle')}</SheetTitle>
               <div className="flex items-center gap-3">
                 <Skeleton className="h-6 w-48" />
                 <Skeleton className="h-5 w-16 rounded-full" />

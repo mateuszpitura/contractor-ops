@@ -4883,6 +4883,7 @@
       "failedToRemove": "Aktion fehlgeschlagen: remove invoice from run. Versuchen Sie es erneut."
     },
     "sidePanel": {
+      "loadingTitle": "Zahlungslauf wird geladen",
       "created": "Erstellt",
       "exportFormat": "Exportformat",
       "invoices": "Rechnungen",

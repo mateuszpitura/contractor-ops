@@ -4883,6 +4883,7 @@
       "failedToRemove": "تعذر remove invoice from run. حاول مجددًا."
     },
     "sidePanel": {
+      "loadingTitle": "Loading payment run",
       "created": "تم الإنشاء",
       "exportFormat": "تصدير format",
       "invoices": "الفواتير",

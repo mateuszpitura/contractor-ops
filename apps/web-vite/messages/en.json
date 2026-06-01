@@ -4893,6 +4893,7 @@
       "failedToRemove": "Could not remove invoice from run. Try again."
     },
     "sidePanel": {
+      "loadingTitle": "Loading payment run",
       "created": "Created",
       "exportFormat": "Export format",
       "invoices": "Invoices",

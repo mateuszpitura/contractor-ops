@@ -4883,6 +4883,7 @@
       "failedToRemove": "Nie udało się usunąć faktury z przebiegu. Spróbuj ponownie."
     },
     "sidePanel": {
+      "loadingTitle": "Ładowanie przebiegu płatności",
       "created": "Utworzono",
       "exportFormat": "Format eksportu",
       "invoices": "Faktury",
