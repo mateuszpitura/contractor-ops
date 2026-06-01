@@ -23,16 +23,21 @@ import { getImpactPreview } from '../../services/idp-impact-preview';
 
 const auditLog = getIdpAuditLogger();
 
-// Phase 77 D-15 / Phase 78 D-12 — the five Deprovisionable providers + their
-// signoff flag keys. Each provider is independently enable/disable-able for
-// enterprise rollout; the key strings mirror the saga DeprovisioningProvider
-// enum (ENTRA — NOT ENTRA_ID).
-export type DeprovisioningToggleProvider =
-  | 'GOOGLE_WORKSPACE'
-  | 'SLACK'
-  | 'ENTRA'
-  | 'OKTA'
-  | 'GITHUB';
+// Phase 77 D-15 / Phase 78 D-12 — single source-of-truth for the five
+// Deprovisionable providers. Derive the TS type from the schema so the tuple,
+// the Zod enum, and the type alias can never drift apart. The key strings mirror
+// the saga DeprovisioningProvider enum (ENTRA — NOT ENTRA_ID).
+export const DEPROVISIONING_TOGGLE_PROVIDERS = [
+  'GOOGLE_WORKSPACE',
+  'SLACK',
+  'ENTRA',
+  'OKTA',
+  'GITHUB',
+] as const;
+
+const deprovisioningProviderSchema = z.enum(DEPROVISIONING_TOGGLE_PROVIDERS);
+
+export type DeprovisioningToggleProvider = z.infer<typeof deprovisioningProviderSchema>;
 
 const PROVIDER_FLAG_KEY: Record<DeprovisioningToggleProvider, string> = {
   GOOGLE_WORKSPACE: 'module.idp-deprovisioning-gws',
@@ -41,14 +46,6 @@ const PROVIDER_FLAG_KEY: Record<DeprovisioningToggleProvider, string> = {
   OKTA: 'module.idp-deprovisioning-okta',
   GITHUB: 'module.idp-deprovisioning-github',
 };
-
-const DEPROVISIONING_TOGGLE_PROVIDERS = [
-  'GOOGLE_WORKSPACE',
-  'SLACK',
-  'ENTRA',
-  'OKTA',
-  'GITHUB',
-] as const satisfies readonly DeprovisioningToggleProvider[];
 
 /** A provider may be enabled only when its signoff flag is APPROVED (or local bypass). */
 export function isProviderSignoffSatisfied(provider: DeprovisioningToggleProvider): boolean {
@@ -612,7 +609,7 @@ export const deprovisioningRouter = router({
     .use(requirePermission({ settings: ['update'] }))
     .input(
       z.object({
-        provider: z.enum(['GOOGLE_WORKSPACE', 'SLACK', 'ENTRA', 'OKTA', 'GITHUB']),
+        provider: deprovisioningProviderSchema,
         enabled: z.boolean(),
       }),
     )

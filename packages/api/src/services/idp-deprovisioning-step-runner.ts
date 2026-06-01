@@ -5,6 +5,7 @@ import { GoogleWorkspaceAdapter } from '@contractor-ops/integrations/adapters/go
 import { SlackAdapter } from '@contractor-ops/integrations/adapters/slack-adapter';
 import { getIdpAuditLogger, hashExternalUserId } from '@contractor-ops/logger';
 import { z } from 'zod';
+import { DEPROVISIONING_TOGGLE_PROVIDERS } from '../routers/integrations/deprovisioning.js';
 import { resolveDeprovisionToken } from './idp-token-resolver.js';
 
 /**
@@ -21,7 +22,7 @@ export const stepRunnerBodySchema = z.object({
   runId: z.string().min(1),
   stepId: z.string().min(1),
   organizationId: z.string().min(1),
-  provider: z.enum(['GOOGLE_WORKSPACE', 'SLACK', 'ENTRA', 'OKTA', 'GITHUB']),
+  provider: z.enum(DEPROVISIONING_TOGGLE_PROVIDERS),
   stepKind: z.enum(['SUSPEND_ACCOUNT', 'REVOKE_ALL_SESSIONS']),
   externalUserId: z.string().min(1),
 });
