@@ -20,6 +20,10 @@ import { UploadReviewDialogContainer } from '../compliance/upload-review-dialog-
 import { ContractorEInvoicingSectionContainer } from '../contractor-e-invoicing-section-container.js';
 import { CountryComplianceSectionContainer } from '../country-compliance-section-container.js';
 
+function toIsoDate(d: Date): string {
+  return d.toISOString().slice(0, 10);
+}
+
 type ComplianceItem = {
   id: string;
   name: string;
@@ -162,7 +166,7 @@ export function TabCompliance({ contractor }: TabComplianceProps) {
                   <ReviewUploadButton
                     itemId={item.id}
                     documentId={item.pendingReviewDocumentId as string}
-                    defaultExpiresAt={item.expiresAt ? formatDate(item.expiresAt) : ''}
+                    defaultExpiresAt={item.expiresAt ? toIsoDate(new Date(item.expiresAt)) : ''}
                   />
                 ) : (
                   <OverrideComplianceItemButton
