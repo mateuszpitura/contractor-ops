@@ -1,9 +1,12 @@
 import { createHash, randomUUID } from 'node:crypto';
+import { z } from 'zod';
 import { mapErrorClassToResult } from '../idp/deprovision-result.js';
 import { classifyError } from '../idp/error-classifier.js';
 import type { EntraImpactCustomMetrics, ImpactPreview } from '../idp/impact-preview.js';
 import { ENTRA_DEPROVISION_SCOPES } from '../scopes/entra-deprovision-scopes.js';
 import { fetchWithTimeout } from '../services/fetch-helpers.js';
+import { safeParseJsonResponse } from '../services/parse-json-response.js';
+import { withResilience } from '../services/resilience.js';
 import {
   canonicalizeRequest,
   canonicalizeResponse,
@@ -58,6 +61,83 @@ const ENTRA_OAUTH_CONFIG: OAuthConfig = {
   redirectPath: '/api/oauth/entra/callback',
 };
 
+// ---------------------------------------------------------------------------
+// Minimal Zod schemas for the Graph response bodies we read.
+// Partial objects (passthrough) so unrecognised fields are ignored; fields we
+// branch on are typed. A parse failure is a hard-fail — an unknown shape cannot
+// be silently coerced (the hybrid-AD gate in particular must NOT fail open).
+// ---------------------------------------------------------------------------
+
+/** GET /users/{id}?$select=accountEnabled,onPremisesSyncEnabled — hybrid-AD pre-flight. */
+const GraphUserPreflightSchema = z
+  .object({
+    accountEnabled: z.boolean().optional(),
+    onPremisesSyncEnabled: z.boolean().optional(),
+  })
+  .passthrough();
+
+/** GET /users/{id}?$select=accountEnabled — verify step. */
+const GraphUserAccountEnabledSchema = z
+  .object({
+    accountEnabled: z.boolean().optional(),
+  })
+  .passthrough();
+
+/** GET /users/{id}?$select=signInActivity — post-revoke forensic poll. */
+const GraphUserSignInActivitySchema = z
+  .object({
+    signInActivity: z
+      .object({
+        lastSignInDateTime: z.string().optional(),
+      })
+      .optional(),
+  })
+  .passthrough();
+
+/** GET /users/{id}?$select=accountEnabled,onPremisesSyncEnabled,assignedLicenses,displayName — describeImpact. */
+const GraphUserDescribeImpactSchema = z
+  .object({
+    accountEnabled: z.boolean().optional(),
+    onPremisesSyncEnabled: z.boolean().optional(),
+    displayName: z.string().optional(),
+    assignedLicenses: z.array(z.object({ skuId: z.string().optional() }).passthrough()).optional(),
+  })
+  .passthrough();
+
+/** GET /identity/conditionalAccess/policies — CA policy list. */
+const GraphConditionalAccessPoliciesSchema = z
+  .object({
+    value: z
+      .array(
+        z
+          .object({
+            displayName: z.string().optional(),
+            state: z.string().optional(),
+            conditions: z
+              .object({
+                users: z
+                  .object({
+                    includeUsers: z.array(z.string()).optional(),
+                    excludeUsers: z.array(z.string()).optional(),
+                  })
+                  .optional(),
+              })
+              .optional(),
+            sessionControls: z.unknown().optional(),
+          })
+          .passthrough(),
+      )
+      .optional(),
+  })
+  .passthrough();
+
+/** Non-2xx Graph error body — best-effort `error.code` extraction. */
+const GraphErrorBodySchema = z
+  .object({
+    error: z.object({ code: z.string().optional() }).optional(),
+  })
+  .passthrough();
+
 /**
  * Microsoft Entra ID `Deprovisionable` adapter (Phase 78 IDP-05) — the most
  * complex of the three, carrying TWO novel pre-flight gates.
@@ -106,9 +186,22 @@ export class EntraIdAdapter extends BaseAdapter implements Deprovisionable {
     };
   }
 
-  /** Best-effort Graph error code (`error.code`) from a non-2xx body. */
+  /**
+   * Graph fetch helper — mirrors Slack's `#scimFetch`/`#adminApi` pattern.
+   * Wraps `fetchWithTimeout` in `withResilience` (circuit-breaker + bulkhead)
+   * so every Graph call benefits from the package's resilience seam.
+   */
+  async #graphFetch(url: string, init: RequestInit): Promise<Response> {
+    return withResilience(
+      () => fetchWithTimeout(url, init, { timeoutMs: DEPROVISION_TIMEOUT_MS, retries: 0 }),
+      { provider: 'entra' },
+    );
+  }
+
+  /** Best-effort Graph error code (`error.code`) from a validated error body. */
   static #providerErrorCode(body: unknown): string | undefined {
-    const code = (body as { error?: { code?: string } })?.error?.code;
+    const parsed = GraphErrorBodySchema.safeParse(body);
+    const code = parsed.success ? parsed.data.error?.code : undefined;
     return typeof code === 'string' ? code : undefined;
   }
 
@@ -117,20 +210,13 @@ export class EntraIdAdapter extends BaseAdapter implements Deprovisionable {
     const preflightReqSha = sha256Hex(
       canonicalizeRequest({ method: 'GET', target: 'users.preflight', userId: externalUserId }),
     );
-    const preRes = await fetchWithTimeout(
+    const preRes = await this.#graphFetch(
       `${this.#userUrl(externalUserId)}?$select=accountEnabled,onPremisesSyncEnabled`,
       { headers: this.#authHeaders() },
-      { timeoutMs: DEPROVISION_TIMEOUT_MS, retries: 0 },
-    );
-    const preBody = (await preRes.json().catch(() => ({}))) as {
-      accountEnabled?: boolean;
-      onPremisesSyncEnabled?: boolean;
-    };
-    const preflightResSha = sha256Hex(
-      canonicalizeResponse({ status: preRes.status, onPrem: preBody.onPremisesSyncEnabled }),
     );
 
     if (preRes.status === 404) {
+      const preflightResSha = sha256Hex(canonicalizeResponse({ status: 404 }));
       // Already gone — idempotent LIKELY_GONE, no write.
       return {
         status: 'LIKELY_GONE',
@@ -142,11 +228,47 @@ export class EntraIdAdapter extends BaseAdapter implements Deprovisionable {
         responseSha256: preflightResSha,
       };
     }
+
     if (!preRes.ok) {
-      return this.#mapDeprovisionFailure(preRes.status, preBody, preflightReqSha, preflightResSha);
+      // Non-2xx non-404: parse error body best-effort for classifier.
+      const errParsed = await safeParseJsonResponse(
+        preRes,
+        GraphErrorBodySchema,
+        'entra:suspendAccount:preflight',
+      );
+      const errBody = errParsed.success ? errParsed.data : {};
+      const preflightResSha = sha256Hex(canonicalizeResponse({ status: preRes.status }));
+      return this.#mapDeprovisionFailure(preRes.status, errBody, preflightReqSha, preflightResSha);
     }
 
-    // Step 2 — HARD BLOCK on hybrid-AD authoritative accounts. Make NO PATCH call.
+    // Step 2 — parse and validate the pre-flight body.
+    // A drifted/malformed body MUST hard-fail here: the hybrid-AD gate cannot
+    // fail open (coercing `undefined` to `false` would silently skip the block).
+    const preParsed = await safeParseJsonResponse(
+      preRes,
+      GraphUserPreflightSchema,
+      'entra:suspendAccount:preflight',
+    );
+    if (!preParsed.success) {
+      const preflightResSha = sha256Hex(
+        canonicalizeResponse({ status: preRes.status, parseError: true }),
+      );
+      return {
+        status: 'FAILED',
+        failureKind: 'PROVIDER_ERROR',
+        errorClass: 'PERMANENT_OTHER',
+        errorMessage:
+          'entra hybrid-AD pre-flight body failed schema validation — cannot proceed safely',
+        requestSha256: preflightReqSha,
+        responseSha256: preflightResSha,
+      };
+    }
+    const preBody = preParsed.data;
+    const preflightResSha = sha256Hex(
+      canonicalizeResponse({ status: preRes.status, onPrem: preBody.onPremisesSyncEnabled }),
+    );
+
+    // Step 3 — HARD BLOCK on hybrid-AD authoritative accounts. Make NO PATCH call.
     if (preBody.onPremisesSyncEnabled === true) {
       return {
         status: 'FAILED',
@@ -159,42 +281,47 @@ export class EntraIdAdapter extends BaseAdapter implements Deprovisionable {
       };
     }
 
-    // Step 3 — disable the account. Idempotent PATCH; client-request-id correlates retries.
+    // Step 4 — disable the account. Idempotent PATCH; client-request-id correlates retries.
     const requestPayload = { accountEnabled: false };
     const requestSha256 = sha256Hex(canonicalizeRequest({ method: 'PATCH', body: requestPayload }));
-    const res = await fetchWithTimeout(
-      this.#userUrl(externalUserId),
-      {
-        method: 'PATCH',
-        headers: {
-          ...this.#authHeaders(`entra:suspend:${externalUserId}`),
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(requestPayload),
+    const res = await this.#graphFetch(this.#userUrl(externalUserId), {
+      method: 'PATCH',
+      headers: {
+        ...this.#authHeaders(`entra:suspend:${externalUserId}`),
+        'Content-Type': 'application/json',
       },
-      { timeoutMs: DEPROVISION_TIMEOUT_MS, retries: 0 },
-    );
-    const body = await res.json().catch(() => ({}));
-    const responseSha256 = sha256Hex(canonicalizeResponse({ status: res.status, body }));
+      body: JSON.stringify(requestPayload),
+    });
+    const responseSha256 = sha256Hex(canonicalizeResponse({ status: res.status }));
 
     if (res.ok) return { status: 'SUCCEEDED', requestSha256, responseSha256 };
-    return this.#mapDeprovisionFailure(res.status, body, requestSha256, responseSha256);
+    const patchErrParsed = await safeParseJsonResponse(
+      res,
+      GraphErrorBodySchema,
+      'entra:suspendAccount:patch',
+    );
+    const patchErrBody = patchErrParsed.success ? patchErrParsed.data : {};
+    return this.#mapDeprovisionFailure(res.status, patchErrBody, requestSha256, responseSha256);
   }
 
   async revokeAllSessions(externalUserId: string): Promise<DeprovisionResult> {
     const requestSha256 = sha256Hex(
       canonicalizeRequest({ method: 'POST', target: 'revokeSignInSessions' }),
     );
-    const res = await fetchWithTimeout(
-      `${this.#userUrl(externalUserId)}/revokeSignInSessions`,
-      { method: 'POST', headers: this.#authHeaders(`entra:revoke:${externalUserId}`) },
-      { timeoutMs: DEPROVISION_TIMEOUT_MS, retries: 0 },
-    );
-    const body = await res.json().catch(() => ({}));
-    const responseSha256 = sha256Hex(canonicalizeResponse({ status: res.status, body }));
+    const res = await this.#graphFetch(`${this.#userUrl(externalUserId)}/revokeSignInSessions`, {
+      method: 'POST',
+      headers: this.#authHeaders(`entra:revoke:${externalUserId}`),
+    });
+    const responseSha256 = sha256Hex(canonicalizeResponse({ status: res.status }));
 
     if (!res.ok) {
-      return this.#mapDeprovisionFailure(res.status, body, requestSha256, responseSha256);
+      const errParsed = await safeParseJsonResponse(
+        res,
+        GraphErrorBodySchema,
+        'entra:revokeAllSessions',
+      );
+      const errBody = errParsed.success ? errParsed.data : {};
+      return this.#mapDeprovisionFailure(res.status, errBody, requestSha256, responseSha256);
     }
 
     // Single delayed signInActivity poll (CONTEXT.md D-03) — supplementary
@@ -203,16 +330,19 @@ export class EntraIdAdapter extends BaseAdapter implements Deprovisionable {
     let lastSignInDateTime: string | null = null;
     try {
       await new Promise(resolve => setTimeout(resolve, REVOKE_VERIFY_POLL_DELAY_MS));
-      const pollRes = await fetchWithTimeout(
+      const pollRes = await this.#graphFetch(
         `${this.#userUrl(externalUserId)}?$select=signInActivity`,
         { headers: this.#authHeaders() },
-        { timeoutMs: DEPROVISION_TIMEOUT_MS, retries: 0 },
       );
       if (pollRes.ok) {
-        const poll = (await pollRes.json().catch(() => ({}))) as {
-          signInActivity?: { lastSignInDateTime?: string };
-        };
-        lastSignInDateTime = poll.signInActivity?.lastSignInDateTime ?? null;
+        const pollParsed = await safeParseJsonResponse(
+          pollRes,
+          GraphUserSignInActivitySchema,
+          'entra:revokeAllSessions:poll',
+        );
+        if (pollParsed.success) {
+          lastSignInDateTime = pollParsed.data.signInActivity?.lastSignInDateTime ?? null;
+        }
       }
     } catch {
       lastSignInDateTime = null;
@@ -230,15 +360,19 @@ export class EntraIdAdapter extends BaseAdapter implements Deprovisionable {
 
   async verifyDeprovisioned(externalUserId: string): Promise<boolean> {
     try {
-      const res = await fetchWithTimeout(
+      const res = await this.#graphFetch(
         `${this.#userUrl(externalUserId)}?$select=accountEnabled`,
         { headers: this.#authHeaders() },
-        { timeoutMs: DEPROVISION_TIMEOUT_MS, retries: 0 },
       );
       if (res.status === 404) return true; // gone is also deprovisioned
       if (!res.ok) return false;
-      const body = (await res.json().catch(() => ({}))) as { accountEnabled?: boolean };
-      return body.accountEnabled === false;
+      const parsed = await safeParseJsonResponse(
+        res,
+        GraphUserAccountEnabledSchema,
+        'entra:verifyDeprovisioned',
+      );
+      if (!parsed.success) return false;
+      return parsed.data.accountEnabled === false;
     } catch {
       return false;
     }
@@ -250,20 +384,19 @@ export class EntraIdAdapter extends BaseAdapter implements Deprovisionable {
 
     // User read — accountStatus + onPremisesSyncEnabled + license SKUs. A total
     // failure here throws for the Phase 77 D-03 proceed-without-preview flow.
-    const userRes = await fetchWithTimeout(
+    const userRes = await this.#graphFetch(
       `${this.#userUrl(externalUserId)}?$select=accountEnabled,onPremisesSyncEnabled,assignedLicenses,displayName`,
       { headers: this.#authHeaders() },
-      { timeoutMs: DEPROVISION_TIMEOUT_MS, retries: 0 },
     );
     if (!userRes.ok && userRes.status !== 404) {
       throw new Error('entra describeImpact failed: user read unavailable');
     }
-    const user = (await userRes.json().catch(() => ({}))) as {
-      accountEnabled?: boolean;
-      onPremisesSyncEnabled?: boolean;
-      displayName?: string;
-      assignedLicenses?: Array<{ skuId?: string }>;
-    };
+    const userParsed = await safeParseJsonResponse(
+      userRes,
+      GraphUserDescribeImpactSchema,
+      'entra:describeImpact:user',
+    );
+    const user = userParsed.success ? userParsed.data : {};
     const accountStatus: 'ACTIVE' | 'SUSPENDED' | 'NOT_FOUND' =
       userRes.status === 404 ? 'NOT_FOUND' : user.accountEnabled === false ? 'SUSPENDED' : 'ACTIVE';
     const assignedLicenseSkus = (user.assignedLicenses ?? [])
@@ -315,21 +448,17 @@ export class EntraIdAdapter extends BaseAdapter implements Deprovisionable {
     externalUserId: string,
   ): Promise<EntraImpactCustomMetrics['conditionalAccessPolicies']> {
     try {
-      const res = await fetchWithTimeout(
-        `${GRAPH_BASE}/identity/conditionalAccess/policies`,
-        { headers: this.#authHeaders() },
-        { timeoutMs: DEPROVISION_TIMEOUT_MS, retries: 0 },
-      );
+      const res = await this.#graphFetch(`${GRAPH_BASE}/identity/conditionalAccess/policies`, {
+        headers: this.#authHeaders(),
+      });
       if (!res.ok) return [];
-      const body = (await res.json().catch(() => ({}))) as {
-        value?: Array<{
-          displayName?: string;
-          state?: string;
-          conditions?: { users?: { includeUsers?: string[]; excludeUsers?: string[] } };
-          sessionControls?: unknown;
-        }>;
-      };
-      return (body.value ?? [])
+      const parsed = await safeParseJsonResponse(
+        res,
+        GraphConditionalAccessPoliciesSchema,
+        'entra:conditionalAccess',
+      );
+      if (!parsed.success) return [];
+      return (parsed.data.value ?? [])
         .filter(p => p.state === 'enabled')
         .map(p => {
           const include = p.conditions?.users?.includeUsers ?? [];
@@ -352,11 +481,9 @@ export class EntraIdAdapter extends BaseAdapter implements Deprovisionable {
   /** Best-effort Graph `$count` read (ConsistencyLevel: eventual) → number, 0 on failure. */
   async #count(url: string): Promise<number> {
     try {
-      const res = await fetchWithTimeout(
-        url,
-        { headers: { ...this.#authHeaders(), ConsistencyLevel: 'eventual' } },
-        { timeoutMs: DEPROVISION_TIMEOUT_MS, retries: 0 },
-      );
+      const res = await this.#graphFetch(url, {
+        headers: { ...this.#authHeaders(), ConsistencyLevel: 'eventual' },
+      });
       if (!res.ok) return 0;
       const text = await res.text().catch(() => '');
       const n = Number.parseInt(text.trim(), 10);

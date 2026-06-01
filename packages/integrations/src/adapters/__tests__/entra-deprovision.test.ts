@@ -74,6 +74,33 @@ describe('EntraIdAdapter — Deprovisionable contract (Phase 78 IDP-05)', () => 
     expect(result.reason).toBe('hybrid_ad_authoritative');
   });
 
+  it('hybrid-AD pre-flight drifted/garbage body → FAILED hard, NO PATCH fired (gate must NOT fail open)', async () => {
+    // A body that is not valid JSON — simulates a drifted Graph response where
+    // onPremisesSyncEnabled would silently coerce to undefined under a bare `as` cast.
+    server.use(
+      http.get(
+        ({ request }) => isUser(request.url),
+        () =>
+          new HttpResponse('not-json-at-all', {
+            status: 200,
+            headers: { 'content-type': 'text/plain' },
+          }),
+      ),
+      // PATCH must NOT fire — a parse failure is a hard-fail, not a bypass.
+      http.patch(
+        ({ request }) => isUser(request.url),
+        () => {
+          throw new Error('PATCH must NOT fire on a drifted pre-flight body');
+        },
+      ),
+    );
+
+    const result = await adapter().suspendAccount(USER);
+    expect(result.status).toBe('FAILED');
+    expect(result.errorClass).toBe('PERMANENT_OTHER');
+    expect(result.errorMessage).toMatch(/schema validation/i);
+  });
+
   it('suspendAccount 404 on pre-flight → LIKELY_GONE, no write', async () => {
     server.use(
       http.get(
