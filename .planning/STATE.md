@@ -35,6 +35,27 @@ progress:
 
 **Next-resume guidance:** Confirm only ONE executor is active before resuming 78-07. Check `git log --grep=78-07` + `ls .planning/phases/78-*/78-07-SUMMARY.md`; if the other session finished it, run phase verification only. 78-07 must follow `apps/web-vite/ARCHITECTURE.md` (Page→Container→Hook→Component), extend the existing `provider-connection-card` + `getProviderToggleState`/`enableProviderForOrg` (5 providers now), i18n en/de/pl/ar parity, loading/empty/error states, WCAG.
 
+### DEFERRED REFACTOR (2026-06-01): Consolidate per-provider connection routers (78 WR-1, FIX F)
+
+The three per-provider connection routers (`packages/api/src/routers/integrations/entra.ts`,
+`okta.ts`, `github.ts`) are near-verbatim copies of each other and duplicate the logic already
+in `deprovisioning.enableProviderForOrg` / `getProviderToggleState`. The Phase 76/77/78 review
+(78 WR-1) flagged this as the primary DRY debt in the phase.
+
+**Why deferred:** The web-vite UI (`apps/web-vite/src/components/integrations/hooks/`) calls
+`trpc.entra.getStatus`, `trpc.entra.setEnabled`, `trpc.okta.*`, and `trpc.github.*` in three
+separate hook files. Consolidating into a single parameterized procedure (e.g.
+`trpc.deprovisioning.getProviderConnectionStatus({ provider })` / `.enableProviderForOrg`) would
+require updating those 3 hook files, changing query-key invalidation, and a coordinated UI +
+API change — too wide a surface to do safely as an atomic post-review fix. The correctness fixes
+(transaction wrapping WR-5, cache invalidation WR-4) have already been applied to all 4 entry
+points in commit `170be7bc`.
+
+**Suggested follow-up:** In a dedicated refactor phase, delete the 3 per-provider routers, update
+the 3 web-vite hooks to call `trpc.deprovisioning.enableProviderForOrg({ provider, enabled })` /
+`getProviderToggleState` (already wired for all 5 providers), and consolidate `getStatus` into
+`getProviderToggleState`. The toggle-table and provider-card UI then share one cache entry per org.
+
 ### RESOLVED (2026-05-31): Phase 73 RE-PLANNED against `apps/web-vite` — the `apps/web` drift blocker below is cleared; 8 plans regenerated/corrected, all gates pass
 
 **Resolution (`gsd:plan-phase 73 --auto`, background re-plan):** All 8 PLAN.md regenerated/corrected for the current tree. Subagent spawning was unavailable in the background runtime (same as Phase 77 RESOLVED note), so the orchestrator performed researcher/planner/checker roles inline against the live tree (paths verified via semble + Read). Outcome:
