@@ -3184,154 +3184,154 @@
           "utr": "[ar] HMRC UTR",
           "business_registration": "[ar] Companies House registration",
           "sds": "[ar] Status Determination Statement",
-          "ip_assignment": "UK Intellectual Property Assignment"
+          "ip_assignment": "UK — تنازل عن الملكية الفكرية"
         },
         "de": {
           "a1": "[ar] A1-Bescheinigung",
           "aufenthaltstitel": "[ar] Aufenthaltstitel residence permit",
           "eight_b_estg": "[ar] §48b EStG Freistellungsbescheinigung",
-          "werkvertrag_ip": "DE Werkvertrag — grant of usage rights"
+          "werkvertrag_ip": "DE Werkvertrag — منح حقوق الاستخدام"
         },
         "pl": {
           "zus_a1": "[ar] ZUS A1",
           "udt": "[ar] UDT certification",
-          "ip_assignment": "PL — assignment of economic copyright"
+          "ip_assignment": "PL — التنازل عن حقوق النشر الاقتصادية"
         },
         "ksa": {
           "iqama": "[ar] Iqama residency permit",
           "work_permit_qiwa": "[ar] Work permit + Qiwa authorisation",
-          "ip_assignment": "KSA — transfer of economic rights"
+          "ip_assignment": "KSA — نقل الحقوق الاقتصادية"
         },
         "uae": {
           "emirates_id": "[ar] Emirates ID",
           "free_zone_license": "[ar] Free-zone trade license",
-          "ip_assignment": "UAE — disposition of economic rights"
+          "ip_assignment": "UAE — التصرف في الحقوق الاقتصادية"
         },
         "us": {
-          "ip_assignment": "US Intellectual Property Assignment"
+          "ip_assignment": "US — تنازل عن الملكية الفكرية"
         }
       }
     },
     "dashboard": {
-      "title": "Compliance",
-      "kpiGroupLabel": "Compliance summary",
-      "errorLoading": "Failed to load the compliance dashboard",
-      "daysValue": "{count, plural, one {# day} other {# days}}",
+      "title": "الامتثال",
+      "kpiGroupLabel": "ملخص الامتثال",
+      "errorLoading": "تعذّر تحميل لوحة الامتثال",
+      "daysValue": "{count, plural, zero {# يوم} one {يوم واحد} two {يومان} few {# أيام} many {# يومًا} other {# يوم}}",
       "atRisk": {
-        "label": "At risk",
-        "entityLabel": "{count, plural, one {# item} other {# items}}",
-        "empty": "No at-risk compliance items"
+        "label": "في خطر",
+        "entityLabel": "{count, plural, zero {# عنصر} one {عنصر واحد} two {عنصران} few {# عناصر} many {# عنصرًا} other {# عنصر}}",
+        "empty": "لا توجد عناصر امتثال في خطر"
       },
       "upcomingRenewals": {
-        "label": "Upcoming renewals",
-        "entityLabel": "{count, plural, one {# item} other {# items}}",
-        "empty": "No upcoming renewals"
+        "label": "التجديدات القادمة",
+        "entityLabel": "{count, plural, zero {# عنصر} one {عنصر واحد} two {عنصران} few {# عناصر} many {# عنصرًا} other {# عنصر}}",
+        "empty": "لا توجد تجديدات قادمة"
       },
       "blockedPayments": {
-        "label": "Blocked payments",
-        "entityLabel": "{count, plural, one {# contractor} other {# contractors}}",
-        "empty": "No blocked payments",
-        "sourceLive": "Live",
-        "sourceHistorical": "Recent"
+        "label": "المدفوعات المحظورة",
+        "entityLabel": "{count, plural, zero {# مقاول} one {مقاول واحد} two {مقاولان} few {# مقاولين} many {# مقاولًا} other {# مقاول}}",
+        "empty": "لا توجد مدفوعات محظورة",
+        "sourceLive": "مباشر",
+        "sourceHistorical": "حديث"
       },
       "columns": {
-        "contractor": "Contractor",
-        "document": "Document",
-        "status": "Status",
-        "expiresAt": "Expires",
-        "daysUntilExpiry": "Days left",
-        "blockedDocuments": "Blocked documents",
-        "source": "Source"
+        "contractor": "المقاول",
+        "document": "المستند",
+        "status": "الحالة",
+        "expiresAt": "تاريخ الانتهاء",
+        "daysUntilExpiry": "الأيام المتبقية",
+        "blockedDocuments": "المستندات المحظورة",
+        "source": "المصدر"
       },
       "status": {
-        "satisfied": "Uploaded",
-        "missing": "Missing",
-        "expired": "Expired",
-        "pending": "Pending",
-        "waived": "Waived"
+        "satisfied": "مرفوع",
+        "missing": "مفقود",
+        "expired": "منتهي الصلاحية",
+        "pending": "قيد الانتظار",
+        "waived": "متنازل عنه"
       },
       "empty": {
-        "heading": "All clear",
-        "body": "No contractors are at risk and no payments are blocked."
+        "heading": "كل شيء على ما يرام",
+        "body": "لا يوجد مقاولون في خطر ولا مدفوعات محظورة."
       }
     },
     "override": {
-      "title": "Override compliance item",
-      "description": "Mark this requirement as waived with a documented reason.",
-      "categoryLabel": "Reason category",
-      "categoryPlaceholder": "Select a reason",
-      "noteLabel": "Rationale",
-      "notePlaceholder": "Explain why this item is being waived…",
-      "noteMinHint": "Minimum {min} characters.",
-      "cancel": "Cancel",
-      "submit": "Waive item",
-      "buttonLabel": "Override",
-      "buttonAriaLabel": "Override this compliance item",
+      "title": "تجاوز عنصر الامتثال",
+      "description": "وضع علامة على هذا المتطلب بأنه متنازل عنه مع توثيق السبب.",
+      "categoryLabel": "فئة السبب",
+      "categoryPlaceholder": "اختر سببًا",
+      "noteLabel": "المبرر",
+      "notePlaceholder": "اشرح سبب التنازل عن هذا العنصر…",
+      "noteMinHint": "الحد الأدنى {min} حرفًا.",
+      "cancel": "إلغاء",
+      "submit": "تنازل عن العنصر",
+      "buttonLabel": "تجاوز",
+      "buttonAriaLabel": "تجاوز عنصر الامتثال هذا",
       "category": {
-        "CONTRACTOR_OFFBOARDED": "Contractor offboarded",
-        "ENGAGEMENT_CHANGED": "Engagement changed",
-        "REGULATORY_EXEMPTION": "Regulatory exemption",
-        "TEMPORARY_GRACE_PERIOD": "Temporary grace period",
-        "ADMIN_CORRECTION": "Admin correction",
-        "OTHER": "Other"
+        "CONTRACTOR_OFFBOARDED": "إنهاء تعاقد المقاول",
+        "ENGAGEMENT_CHANGED": "تغيّر التعاقد",
+        "REGULATORY_EXEMPTION": "إعفاء تنظيمي",
+        "TEMPORARY_GRACE_PERIOD": "فترة سماح مؤقتة",
+        "ADMIN_CORRECTION": "تصحيح إداري",
+        "OTHER": "أخرى"
       },
       "toast": {
-        "success": "Item waived",
-        "error": "Could not waive the item"
+        "success": "تم التنازل عن العنصر",
+        "error": "تعذّر التنازل عن العنصر"
       }
     },
     "uploadReview": {
-      "reviewButtonLabel": "Review upload",
-      "reviewButtonAriaLabel": "Review uploaded document",
-      "title": "Review uploaded document",
-      "description": "Approve to satisfy the requirement, or reject with a reason.",
-      "approveTab": "Approve",
-      "rejectTab": "Reject",
-      "expiresAtLabel": "Expiry date",
-      "reasonLabel": "Rejection reason",
-      "reasonPlaceholder": "Select a reason",
-      "freeTextLabel": "Notes (optional)",
-      "cancel": "Cancel",
-      "confirmApprove": "Approve",
-      "confirmReject": "Reject",
+      "reviewButtonLabel": "مراجعة الرفع",
+      "reviewButtonAriaLabel": "مراجعة المستند المرفوع",
+      "title": "مراجعة المستند المرفوع",
+      "description": "وافق لاستيفاء المتطلب، أو ارفض مع ذكر السبب.",
+      "approveTab": "موافقة",
+      "rejectTab": "رفض",
+      "expiresAtLabel": "تاريخ الانتهاء",
+      "reasonLabel": "سبب الرفض",
+      "reasonPlaceholder": "اختر سببًا",
+      "freeTextLabel": "ملاحظات (اختياري)",
+      "cancel": "إلغاء",
+      "confirmApprove": "موافقة",
+      "confirmReject": "رفض",
       "reason": {
-        "wrong_document_type": "Wrong document type",
-        "illegible": "Illegible",
-        "already_expired": "Already expired",
-        "forged_or_altered": "Forged or altered",
-        "other": "Other"
+        "wrong_document_type": "نوع مستند غير صحيح",
+        "illegible": "غير مقروء",
+        "already_expired": "منتهي الصلاحية مسبقًا",
+        "forged_or_altered": "مزوّر أو معدَّل",
+        "other": "أخرى"
       },
       "toast": {
-        "approved": "Upload approved",
-        "rejected": "Upload rejected",
-        "error": "Review failed"
+        "approved": "تمت الموافقة على الرفع",
+        "rejected": "تم رفض الرفع",
+        "error": "فشلت المراجعة"
       }
     },
     "history": {
-      "toggle": "History",
-      "empty": "No history yet",
-      "error": "Could not load history",
+      "toggle": "السجل",
+      "empty": "لا يوجد سجل بعد",
+      "error": "تعذّر تحميل السجل",
       "action": {
-        "compliance.item.overridden": "Overridden",
-        "compliance.upload.submitted": "Upload submitted",
-        "compliance.upload.approved": "Upload approved",
-        "compliance.upload.rejected": "Upload rejected",
-        "compliance.recompute": "Recomputed"
+        "compliance.item.overridden": "تم التجاوز",
+        "compliance.upload.submitted": "تم رفع المستند",
+        "compliance.upload.approved": "تمت الموافقة على الرفع",
+        "compliance.upload.rejected": "تم رفض الرفع",
+        "compliance.recompute": "تمت إعادة الحساب"
       }
     },
     "notifications": {
       "uploadApproved": {
-        "title": "Compliance document approved",
-        "body": "Your uploaded compliance document was approved."
+        "title": "تمت الموافقة على مستند الامتثال",
+        "body": "تمت الموافقة على مستند الامتثال الذي رفعته."
       },
       "uploadRejected": {
-        "title": "Compliance document needs attention",
-        "body": "Your uploaded compliance document was rejected — please re-upload."
+        "title": "مستند الامتثال يحتاج إلى مراجعة",
+        "body": "تم رفض مستند الامتثال الذي رفعته — يرجى إعادة الرفع."
       },
       "expiryDigest": {
-        "title": "{count} compliance document(s) expiring soon",
-        "body": "The following compliance documents need attention:\n\n{items}",
-        "item": "• {contractorName} — {documentLabel} ({band}, expires {expiresAt})"
+        "title": "{count, plural, zero {لا توجد مستندات امتثال} one {مستند امتثال واحد} two {مستندا امتثال} few {{count} مستندات امتثال} many {{count} مستند امتثال} other {{count} مستند امتثال}} تنتهي صلاحيتها قريبًا",
+        "body": "المستندات التالية تحتاج إلى اهتمام:\n\n{items}",
+        "item": "• {contractorName} — {documentLabel} ({band}، ينتهي {expiresAt})"
       }
     }
   },
@@ -4883,7 +4883,7 @@
       "failedToRemove": "تعذر remove invoice from run. حاول مجددًا."
     },
     "sidePanel": {
-      "loadingTitle": "Loading payment run",
+      "loadingTitle": "جارٍ تحميل تشغيل الدفع",
       "created": "تم الإنشاء",
       "exportFormat": "تصدير format",
       "invoices": "الفواتير",
@@ -5723,32 +5723,32 @@
       "invoiceSubmitted": "تم إرسال الفاتورة."
     },
     "compliance": {
-      "listHeading": "Compliance documents",
-      "listError": "Failed to load your compliance documents",
-      "emptyHeading": "Nothing to renew",
-      "emptyBody": "All your compliance documents are up to date.",
-      "renewNow": "Renew now",
+      "listHeading": "مستندات الامتثال",
+      "listError": "تعذّر تحميل مستندات الامتثال الخاصة بك",
+      "emptyHeading": "لا يوجد ما يحتاج إلى تجديد",
+      "emptyBody": "جميع مستندات الامتثال الخاصة بك محدَّثة.",
+      "renewNow": "تجديد الآن",
       "status": {
-        "satisfied": "Uploaded",
-        "missing": "Missing",
-        "expired": "Expired",
-        "pending": "Pending",
-        "waived": "Waived"
+        "satisfied": "مرفوع",
+        "missing": "مفقود",
+        "expired": "منتهي الصلاحية",
+        "pending": "قيد الانتظار",
+        "waived": "متنازل عنه"
       },
       "upload": {
-        "heading": "Renew {document}",
-        "fileLabel": "Upload replacement document",
-        "expiresAtLabel": "Expiry date",
-        "submit": "Submit for review",
-        "success": "Uploaded — pending admin review",
-        "error": "Upload failed",
-        "missingItem": "No compliance item selected",
-        "fallbackDocument": "document"
+        "heading": "تجديد {document}",
+        "fileLabel": "رفع مستند بديل",
+        "expiresAtLabel": "تاريخ الانتهاء",
+        "submit": "إرسال للمراجعة",
+        "success": "تم الرفع — في انتظار مراجعة المسؤول",
+        "error": "فشل الرفع",
+        "missingItem": "لم يتم تحديد عنصر امتثال",
+        "fallbackDocument": "مستند"
       },
       "banner": {
-        "title": "Compliance attention needed",
-        "body": "{count, plural, one {# document needs} other {# documents need}} your attention.",
-        "cta": "Review compliance documents"
+        "title": "يتطلب الامتثال اهتمامًا",
+        "body": "{count, plural, zero {لا توجد مستندات تحتاج} one {مستند واحد يحتاج} two {مستندان يحتاجان} few {{count} مستندات تحتاج} many {{count} مستندًا يحتاج} other {{count} مستند يحتاج}} إلى اهتمامك.",
+        "cta": "مراجعة مستندات الامتثال"
       }
     }
   },
