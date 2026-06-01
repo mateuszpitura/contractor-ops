@@ -70,4 +70,28 @@
 - `pnpm check:web-vite-data-layer` + `check:web-vite-dialog-pattern` — UI layering + Dialog body/footer.
 - `pnpm lint:schema`, `lint:logs`, `i18n:parity`, `pnpm typecheck` (tsc).
 
+## Adapter HTTP-discipline rule (post-conformance-audit, explicit convention)
+
+Established after the 77-CONFORMANCE.md audit identified an asymmetry between
+Slack (centralises HTTP through `#scimFetch`/`#adminApi` helpers that each wrap
+`withResilience`) and GWS + Entra (inline `fetchWithTimeout` per call site, no
+`withResilience` wrapper on deprovision mutations).
+
+**Chosen family rule (majority idiom — do NOT deviate in phase 78+):**
+
+| Adapter | HTTP discipline for deprovision/preview calls | Rationale |
+|---|---|---|
+| GWS (`google-workspace-adapter.ts`) | Inline `fetchWithTimeout(url, init, { timeoutMs, retries: 0 })` — no `withResilience` | 8 call sites; `fetchWithTimeout` provides the wall-clock bound that prevents QStash hangs; `withResilience` absent by design (deprovision mutations are NOT idempotent-retry-safe at the HTTP layer — QStash backoff owns retries) |
+| Entra (`entra-id-adapter.ts`) | `#graphFetch` helper (wraps `fetchWithTimeout`) — no `withResilience` | matches GWS; Graph SDK-level retries not appropriate for deprovision mutations |
+| Slack (`slack-adapter.ts`) | `#scimFetch`/`#adminApi` helpers — EACH wraps `withResilience(() => fetchWithTimeout(...))` | Slack is the outlier; it is the better pattern for session-safe SCIM PATCH + admin Web-API calls that are idempotent, but the wrapping predates the family norm |
+| Okta, GitHub | Vendor SDK — resilience owned by the SDK | N/A; no raw fetch |
+
+**Phase 78+ guidance:** new `Deprovisionable` adapters using raw `fetchWithTimeout`
+(no vendor SDK) SHOULD follow the GWS/Entra idiom (inline `fetchWithTimeout`,
+`retries: 0`, no `withResilience` on mutation sites). QStash backoff is the retry
+mechanism; `withResilience` is NOT a substitute and its use on non-idempotent
+mutations can cause double-execution. For read-only `describeImpact` calls the
+recommendation is the same — `fetchWithTimeout` with `retries: 0`; best-effort
+reads degrade to null rather than retry.
+
 ## PATTERN MAPPING COMPLETE
