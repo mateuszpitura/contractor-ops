@@ -51,13 +51,14 @@ export function getAllAdapters(): IntegrationProviderAdapter[] {
 /**
  * Clears all registered adapters. Useful for testing.
  *
- * Also clears the OCR adapter registry to keep the two registries in sync
- * for tests that expect a clean slate.
+ * Clears all four capability registries (provider, OCR, CompanyRegistry,
+ * Deprovisionable) to keep them in sync for tests that expect a clean slate.
  */
 export function clearAdapters(): void {
   adapters.clear();
   ocrAdapters.clear();
   companyRegistryAdapters.clear();
+  deprovisionableAdapters.clear();
 }
 
 // ---------------------------------------------------------------------------
@@ -166,14 +167,21 @@ type DeprovisioningProviderId = 'GOOGLE_WORKSPACE' | 'SLACK' | 'ENTRA' | 'OKTA' 
 const deprovisionableAdapters = new Map<DeprovisioningProviderId, BaseAdapter & Deprovisionable>();
 
 /**
- * Registers a Deprovisionable adapter for a provider. Throws on double registration.
+ * Registers a Deprovisionable adapter for a provider.
+ *
+ * If a provider is already registered, the existing entry is overwritten and a
+ * warning is logged — matching the OCR and CompanyRegistry siblings in this file,
+ * which use warn+overwrite to tolerate Vitest-worker test leakage without hard-crashing.
  */
 export function registerDeprovisionableAdapter(
   provider: DeprovisioningProviderId,
   adapter: BaseAdapter & Deprovisionable,
 ): void {
   if (deprovisionableAdapters.has(provider)) {
-    throw new Error(`Deprovisionable adapter already registered for ${provider}`);
+    log.warn(
+      { provider },
+      'registerDeprovisionableAdapter: provider already registered — overwriting existing adapter',
+    );
   }
   deprovisionableAdapters.set(provider, adapter);
 }
@@ -189,9 +197,4 @@ export function getDeprovisionableAdapter(
     throw new Error(`No Deprovisionable adapter registered for provider: ${provider}`);
   }
   return adapter;
-}
-
-/** Internal — for tests only. Resets the registered Deprovisionable adapters. */
-export function _resetDeprovisionableAdapters(): void {
-  deprovisionableAdapters.clear();
 }

@@ -1,8 +1,8 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { BaseAdapter } from '../adapters/base-adapter.js';
 import type { ImpactPreview } from '../idp/impact-preview.js';
 import {
-  _resetDeprovisionableAdapters,
+  clearAdapters,
   getDeprovisionableAdapter,
   registerDeprovisionableAdapter,
 } from '../registry.js';
@@ -47,7 +47,7 @@ class TestDeprovisionableAdapter extends BaseAdapter implements Deprovisionable 
 }
 
 describe('Deprovisionable interface (Phase 76 D-13)', () => {
-  beforeEach(() => _resetDeprovisionableAdapters());
+  beforeEach(() => clearAdapters());
 
   it('exports Deprovisionable with suspendAccount + revokeAllSessions + verifyDeprovisioned', () => {
     const a = new TestDeprovisionableAdapter();
@@ -56,12 +56,16 @@ describe('Deprovisionable interface (Phase 76 D-13)', () => {
     expect(typeof a.verifyDeprovisioned).toBe('function');
   });
 
-  it('registry rejects double registration of the same provider', () => {
+  it('registry warns and overwrites on double registration (tolerates Vitest-worker leakage)', () => {
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
     const a = new TestDeprovisionableAdapter();
+    const b = new TestDeprovisionableAdapter();
     registerDeprovisionableAdapter('GOOGLE_WORKSPACE', a);
-    expect(() => registerDeprovisionableAdapter('GOOGLE_WORKSPACE', a)).toThrow(
-      /already registered/,
-    );
+    // Second registration must NOT throw — it overwrites silently (logger.warn via Pino,
+    // not console.warn, so we just verify no throw and the new instance wins).
+    expect(() => registerDeprovisionableAdapter('GOOGLE_WORKSPACE', b)).not.toThrow();
+    expect(getDeprovisionableAdapter('GOOGLE_WORKSPACE')).toBe(b);
+    warnSpy.mockRestore();
   });
 
   it('registry getDeprovisionableAdapter throws for unregistered provider', () => {

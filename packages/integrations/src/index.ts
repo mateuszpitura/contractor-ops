@@ -30,7 +30,6 @@ export type {
 export { classifyError } from './idp/index.js';
 // Provider Registry
 export {
-  _resetDeprovisionableAdapters,
   clearAdapters,
   getAdapter,
   getAllAdapters,
