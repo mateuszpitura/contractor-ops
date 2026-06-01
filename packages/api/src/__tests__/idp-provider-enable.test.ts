@@ -101,6 +101,10 @@ vi.mock('@contractor-ops/logger/metrics', () => ({
   metrics: { increment: vi.fn(), gauge: vi.fn(), distribution: vi.fn() },
 }));
 
+vi.mock('../services/audit-writer', () => ({
+  writeAuditLog: vi.fn(async () => undefined),
+}));
+
 import { createCallerFactory } from '../init';
 import { appRouter } from '../root';
 

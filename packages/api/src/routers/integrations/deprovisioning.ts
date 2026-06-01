@@ -642,16 +642,17 @@ export const deprovisioningRouter = router({
       });
       void invalidateByPrefix(CacheKeys.settingsPrefix(ctx.organizationId));
 
-      auditLog.info(
-        {
-          auditEvent: 'idp.deprovisioning.provider_toggled',
-          organizationId: ctx.organizationId,
-          userId: ctx.user.id,
-          provider: input.provider,
-          actionResult: input.enabled ? 'ENABLED' : 'DISABLED',
-        },
-        'IdP deprovisioning provider toggled for org',
-      );
+      await writeAuditLog({
+        organizationId: ctx.organizationId,
+        actorType: 'USER',
+        actorId: ctx.user.id,
+        action: input.enabled
+          ? `idp.${input.provider.toLowerCase()}.deprovisioning_enabled`
+          : `idp.${input.provider.toLowerCase()}.deprovisioning_disabled`,
+        resourceType: 'ORGANIZATION',
+        resourceId: ctx.organizationId,
+        metadata: { provider: input.provider, enabled: input.enabled },
+      });
 
       return { ok: true, provider: input.provider, enabled: input.enabled };
     }),
