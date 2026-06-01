@@ -27,6 +27,7 @@ export default defineConfig({
       'packages/einvoice',
       'packages/feature-flags',
       'packages/gov-api',
+      'packages/idp-saga',
       /** Test-only harness (MSW, fixtures) — not in root coverage; run via `pnpm --filter @contractor-ops/test-utils test` */
     ],
     coverage: {
@@ -45,6 +46,7 @@ export default defineConfig({
         'packages/validators/src/**/*.ts',
         'packages/gov-api/src/**/*.ts',
         'packages/feature-flags/src/**/*.ts',
+        'packages/idp-saga/src/**/*.ts',
       ],
       exclude: [
         '**/node_modules/**',

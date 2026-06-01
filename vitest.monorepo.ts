@@ -22,4 +22,5 @@ export const vitestProject = {
   apiServer: { name: 'api-server', groupOrder: 14 },
   cronWorker: { name: 'cron-worker', groupOrder: 15 },
   webVite: { name: 'web-vite', groupOrder: 16 },
+  idpSaga: { name: 'idp-saga', groupOrder: 17 },
 } as const;

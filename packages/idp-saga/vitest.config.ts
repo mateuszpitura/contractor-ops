@@ -1,9 +1,11 @@
 import { defineConfig } from 'vitest/config';
 
+import { vitestProject } from '../../vitest.monorepo';
+
 export default defineConfig({
   test: {
-    name: 'idp-saga',
+    name: vitestProject.idpSaga.name,
     include: ['src/**/*.test.ts'],
-    sequence: { groupOrder: 14 },
+    sequence: { groupOrder: vitestProject.idpSaga.groupOrder },
   },
 });
