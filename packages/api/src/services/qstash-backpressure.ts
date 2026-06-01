@@ -107,6 +107,7 @@ export const BackpressureRoutes = {
   OCR_PROCESS: { key: 'ocr-process', max: 10 },
   PEPPOL_OUTBOUND: { key: 'peppol-outbound', max: 3 },
   LATE_INTEREST_RENDER: { key: 'late-interest-render-claim-pdf', max: 5 },
+  CONTRACT_HEALTH_RUN: { key: 'contract-health-run', max: 5 },
 } as const satisfies Record<string, { key: string; max: number }>;
 
 export type BackpressureRoute = (typeof BackpressureRoutes)[keyof typeof BackpressureRoutes];

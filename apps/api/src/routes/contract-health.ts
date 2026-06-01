@@ -2,8 +2,10 @@
  * Contract health-check QStash callback (`POST /contract-health/_run`).
  *
  *   1. QStash signature verification via `guardQStashRequest`.
- *   2. F-ASYNC-17 — `withQueueObservability` reports per-tick duration.
- *   3. Validate body shape (organizationId, contractId, triggeredBy, …).
+ *   2. F-SCALE-19 — `withBackpressure(CONTRACT_HEALTH_RUN)` caps fleet-wide
+ *      concurrency so an Anthropic spike doesn't sink other QStash consumers.
+ *   3. F-ASYNC-17 — `withQueueObservability` reports per-tick duration.
+ *   4. Validate body shape (organizationId, contractId, triggeredBy, …).
  *   4. Delegate to `runContractHealthCheck`; the service persists a FAILED
  *      ContractHealthCheckRun row on failure so operators can diagnose and
  *      re-run from the admin UI.
@@ -19,13 +21,18 @@
 
 import { runContractHealthCheck } from '@contractor-ops/api/services/contract-health';
 import { withQueueObservability } from '@contractor-ops/api/services/cron-monitor';
+import {
+  BackpressureRoutes,
+  isBackpressureRejected,
+  withBackpressure,
+} from '@contractor-ops/api/services/qstash-backpressure';
 import { prisma } from '@contractor-ops/db';
-import { createWebhookLogger } from '@contractor-ops/logger';
+import { createCronLogger } from '@contractor-ops/logger';
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { z } from 'zod';
 import { guardQStashRequest } from '../lib/qstash-verify.js';
 
-const log = createWebhookLogger('contract-health-check');
+const log = createCronLogger('contract-health-run');
 
 const bodySchema = z.object({
   organizationId: z.string().min(1),
@@ -49,7 +56,10 @@ async function handlerInner(
 
   const parsed = bodySchema.safeParse(parsedJson);
   if (!parsed.success) {
-    return reply.code(400).send({ error: 'Invalid body' });
+    const missing = parsed.error.issues.map(i => i.path.join('.')).filter(Boolean);
+    const detail =
+      missing.length > 0 ? `Missing or invalid: ${missing.join(', ')}` : 'Invalid body';
+    return reply.code(400).send({ error: detail });
   }
   const body = parsed.data;
 
@@ -88,10 +98,18 @@ export function registerContractHealthRoute(app: FastifyInstance): void {
     const guard = await guardQStashRequest(request, reply);
     if (!guard) return reply;
 
-    return guard.run(() =>
-      withQueueObservability('contract-health-run', () =>
-        handlerInner(request, reply, guard.rawBody),
-      ),
-    );
+    const { key, max } = BackpressureRoutes.CONTRACT_HEALTH_RUN;
+    return guard.run(async () => {
+      try {
+        return await withBackpressure(key, max, () =>
+          withQueueObservability(key, () => handlerInner(request, reply, guard.rawBody)),
+        );
+      } catch (err) {
+        if (isBackpressureRejected(err)) {
+          return reply.code(429).header('Retry-After', String(err.retryAfterSec)).send();
+        }
+        throw err;
+      }
+    });
   });
 }
