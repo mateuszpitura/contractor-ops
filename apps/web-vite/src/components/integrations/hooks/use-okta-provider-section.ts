@@ -8,12 +8,14 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback } from 'react';
 import { toast } from 'sonner';
+import { useTranslatedError } from '../../../i18n/use-translated-error.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { useTRPC } from '../../../providers/trpc-provider.js';
 
 export function useOktaProviderSection() {
   const trpc = useTRPC();
   const t = useTranslations('Settings.integrations.okta');
+  const translateError = useTranslatedError();
   const queryClient = useQueryClient();
 
   const statusQuery = useQuery(trpc.okta.getStatus.queryOptions());
@@ -25,7 +27,7 @@ export function useOktaProviderSection() {
         toast.success(t('toggleSuccess'));
         queryClient.invalidateQueries({ queryKey: trpc.okta.getStatus.queryKey() });
       },
-      onError: err => toast.error(err.message || t('toggleFailure')),
+      onError: err => toast.error(translateError(err)),
     }),
   );
 

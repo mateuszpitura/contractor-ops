@@ -3164,7 +3164,8 @@
     "approvalFlowNotFound": "Approval flow not found.",
     "approvalNotPendingCompliance": "This approval is not on a compliance hold.",
     "approvalCannotResolveContractor": "Cannot resolve the contractor for this approval.",
-    "approvalStillComplianceBlocked": "Contractor still has an expired blocking compliance document; cannot resume the approval."
+    "approvalStillComplianceBlocked": "Contractor still has an expired blocking compliance document; cannot resume the approval.",
+    "deprovisioningProviderSignoffPending": "This provider's deprovisioning feature requires sign-off approval before it can be enabled."
   },
   "Compliance": {
     "paymentBlockModal": {
