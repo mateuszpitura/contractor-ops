@@ -59,7 +59,7 @@ export function usePortalUploadReplacement() {
         toast.success(t('upload.success'));
         router.push('/portal/compliance');
       } catch (err) {
-        toast.error(err instanceof Error ? err.message : t('upload.error'));
+        toast.error(t('upload.error'));
         throw err;
       } finally {
         setIsSubmitting(false);
