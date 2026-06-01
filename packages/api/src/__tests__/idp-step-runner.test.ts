@@ -66,23 +66,35 @@ vi.mock('@contractor-ops/integrations', () => ({
   })),
 }));
 // Stub the concrete adapter modules (imported for token-configured construction).
+// withAccessToken/withOrgGridToken return an object with the same suspend/revoke
+// mocks so the happy-path tests exercise the token-configured adapter code path.
 vi.mock('@contractor-ops/integrations/adapters/google-workspace-adapter', () => ({
   GoogleWorkspaceAdapter: class {
     withAccessToken() {
-      return this;
+      return {
+        suspendAccount,
+        revokeAllSessions,
+        verifyDeprovisioned: vi.fn(),
+        describeImpact: vi.fn(),
+      };
     }
   },
 }));
 vi.mock('@contractor-ops/integrations/adapters/slack-adapter', () => ({
   SlackAdapter: class {
     withOrgGridToken() {
-      return this;
+      return {
+        suspendAccount,
+        revokeAllSessions,
+        verifyDeprovisioned: vi.fn(),
+        describeImpact: vi.fn(),
+      };
     }
   },
 }));
-// Force the registry-adapter fallback by failing token resolution.
+// Default: token resolver succeeds (GWS connected). Individual tests override this.
 vi.mock('../services/idp-token-resolver', () => ({
-  resolveDeprovisionToken: vi.fn(async () => ({ ok: false, reason: 'not_connected' })),
+  resolveDeprovisionToken: vi.fn(async () => ({ ok: true, accessToken: 'tok-test' })),
 }));
 
 vi.mock('@contractor-ops/logger', () => ({
@@ -199,5 +211,28 @@ describe('runDeprovisioningStep (Phase 77 D-04/D-05/D-06)', () => {
     // biome-ignore lint/suspicious/noExplicitAny: mock db
     await runDeprovisioningStep(db as any, body);
     expect(recomputeRunStatus).toHaveBeenCalledWith(db, 'run-1');
+  });
+
+  it('throws a clear error when the token resolver returns not-ok (not connected) — fail-fast (78-WR-3)', async () => {
+    const { resolveDeprovisionToken } = await import('../services/idp-token-resolver');
+    (resolveDeprovisionToken as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+      ok: false,
+      reason: 'not_connected',
+    });
+    const { db } = makeDb({ id: 's-1', runId: 'run-1', status: 'PENDING', attempts: 0 });
+    // biome-ignore lint/suspicious/noExplicitAny: mock db
+    await expect(runDeprovisioningStep(db as any, body)).rejects.toThrow(
+      /GOOGLE_WORKSPACE is not connected/,
+    );
+    expect(suspendAccount).not.toHaveBeenCalled();
+  });
+
+  it('throws a clear error for a provider with no resolver wired (ENTRA/OKTA/GITHUB) — fail-fast (78-WR-3)', async () => {
+    const { db } = makeDb({ id: 's-1', runId: 'run-1', status: 'PENDING', attempts: 0 });
+    await expect(
+      // biome-ignore lint/suspicious/noExplicitAny: mock db
+      runDeprovisioningStep(db as any, { ...body, provider: 'ENTRA' as const }),
+    ).rejects.toThrow(/no credential resolver registered for provider ENTRA/);
+    expect(suspendAccount).not.toHaveBeenCalled();
   });
 });

@@ -168,8 +168,14 @@ export async function runDeprovisioningStep(
 
 /**
  * Resolves the Deprovisionable adapter for a step, configured with the decrypted
- * connection token. Falls back to the bare registry adapter if no token resolver
- * applies (defensive — every supported provider has a resolver).
+ * connection token.
+ *
+ * Fail-fast: if the provider has no token resolver wired up yet (ENTRA / OKTA /
+ * GITHUB are deprovisioning-deferred), throw immediately rather than returning a
+ * bare registry instance with empty credentials. An uncredentialed adapter call
+ * would silently fire real provider mutations with an empty bearer token, 401 into
+ * PERMANENT_AUTH_EXPIRED, and look like a provider rejection rather than a
+ * configuration gap.
  */
 async function resolveAdapter(db: PrismaClient, body: StepRunnerBody) {
   if (body.provider === 'GOOGLE_WORKSPACE' || body.provider === 'SLACK') {
@@ -179,6 +185,16 @@ async function resolveAdapter(db: PrismaClient, body: StepRunnerBody) {
         ? new GoogleWorkspaceAdapter().withAccessToken(token.accessToken)
         : new SlackAdapter().withOrgGridToken(token.accessToken);
     }
+    // Token resolver returned not-ok (not connected / decrypt failure) for a
+    // known provider — throw so the step records a clear not-connected failure
+    // rather than falling through to the uncredentialed registry adapter.
+    throw new Error(
+      `IdP step resolver: provider ${body.provider} is not connected (reason: ${(token as { reason?: string }).reason ?? 'unknown'})`,
+    );
   }
-  return getDeprovisionableAdapter(body.provider);
+  // ENTRA / OKTA / GITHUB: no token resolver is wired — fail closed instead of
+  // returning a bare adapter with empty credentials on a security-critical path.
+  throw new Error(
+    `IdP step resolver: no credential resolver registered for provider ${body.provider}. Add a resolver before enabling this provider for deprovisioning runs.`,
+  );
 }
