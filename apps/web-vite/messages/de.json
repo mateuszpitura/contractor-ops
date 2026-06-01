@@ -2007,7 +2007,10 @@
         "description": "{found}-Formulierung in einem {expected}-Vertrag gefunden — manuelle Prüfung erforderlich."
       },
       "pendingPhraseFooter": "¹ Das Ergebnis stützt sich auf Formulierungen, die der rechtlichen Prüfung unterliegen.",
-      "schemaUnsupported": "Die Prüfdaten verwenden ein nicht unterstütztes Format. Führen Sie die Prüfung erneut aus."
+      "schemaUnsupported": "Die Prüfdaten verwenden ein nicht unterstütztes Format. Führen Sie die Prüfung erneut aus.",
+      "errors": {
+        "failedToRerun": "Prüfung konnte nicht eingereiht werden. Bitte erneut versuchen."
+      }
     }
   },
   "CookieConsent": {
@@ -7282,7 +7285,18 @@
         "submit": "Zugangsdaten hinzufügen",
         "cancel": "Abbrechen"
       },
-      "secretPasteHint": "Dies sieht wie ein Zugangsdaten-Wert aus ({hint}). Geben Sie nur eine Vault-URL oder eine Beschreibung an — fügen Sie niemals echte Geheimnisse ein."
+      "secretPasteHint": "Dies sieht wie ein Zugangsdaten-Wert aus ({hint}). Geben Sie nur eine Vault-URL oder eine Beschreibung an — fügen Sie niemals echte Geheimnisse ein.",
+      "errors": {
+        "failedToAdd": "Zugangsdaten konnten nicht hinzugefügt werden. Bitte erneut versuchen.",
+        "failedToMarkRotated": "Zugangsdaten konnten nicht als rotiert markiert werden. Bitte erneut versuchen.",
+        "failedToRemove": "Zugangsdaten konnten nicht entfernt werden. Bitte erneut versuchen."
+      },
+      "removeConfirm": {
+        "title": "Zugangsdaten-Referenz entfernen",
+        "description": "Dadurch wird die Zugangsdaten-Referenz dauerhaft aus dem Offboarding-Datensatz gelöscht. Diese Aktion kann nicht rückgängig gemacht werden.",
+        "confirm": "Entfernen",
+        "cancel": "Abbrechen"
+      }
     },
     "ipVerification": {
       "esignButton": "IP-Übertragungs-Ratifizierung unterschreiben",

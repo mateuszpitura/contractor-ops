@@ -1,12 +1,26 @@
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@contractor-ops/ui/components/shadcn/alert-dialog';
 import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
-import { Plus } from 'lucide-react';
+import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
+import { AlertCircle, Plus } from 'lucide-react';
+import { useCallback, useState } from 'react';
 import { useTranslations } from '../../i18n/useTranslations.js';
 import type { CredentialRow } from './hooks/use-credentials-tab.js';
 
 export interface CredentialsTabProps {
   rows: CredentialRow[];
   isLoading: boolean;
+  isError: boolean;
+  onRetry: () => void;
   onAdd: () => void;
   onMarkRotated: (id: string) => void;
   onRemove: (id: string) => void;
@@ -19,6 +33,70 @@ const STATUS_VARIANT = {
   NOT_APPLICABLE: 'outline',
 } as const;
 
+// ---------------------------------------------------------------------------
+// Enum → i18n label maps (INFO-1 fix)
+// ---------------------------------------------------------------------------
+
+const VAULT_PROVIDER_KEY: Record<string, string> = {
+  AWS_SECRETS_MANAGER: 'AWS Secrets Manager',
+  AZURE_KEY_VAULT: 'Azure Key Vault',
+  GCP_SECRET_MANAGER: 'GCP Secret Manager',
+  HASHICORP_VAULT: 'HashiCorp Vault',
+  BITWARDEN: 'Bitwarden',
+  OTHER: 'Other',
+};
+
+const ACCESS_TYPE_KEY: Record<string, string> = {
+  API_KEY: 'API Key',
+  OAUTH_TOKEN: 'OAuth Token',
+  SSH_KEY: 'SSH Key',
+  DATABASE_CREDENTIAL: 'Database credential',
+  SERVICE_ACCOUNT: 'Service account',
+  OTHER: 'Other',
+};
+
+function labelVaultProvider(raw: string): string {
+  return VAULT_PROVIDER_KEY[raw] ?? raw;
+}
+
+function labelAccessType(raw: string): string {
+  return ACCESS_TYPE_KEY[raw] ?? raw;
+}
+
+// ---------------------------------------------------------------------------
+// Remove confirm dialog (WR-5 fix)
+// ---------------------------------------------------------------------------
+
+interface RemoveConfirmDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onConfirm: () => void;
+}
+
+function RemoveConfirmDialog({ open, onOpenChange, onConfirm }: RemoveConfirmDialogProps) {
+  const t = useTranslations('Workflow.credentials.removeConfirm');
+  return (
+    <AlertDialog open={open} onOpenChange={onOpenChange}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>{t('title')}</AlertDialogTitle>
+          <AlertDialogDescription>{t('description')}</AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
+          <AlertDialogAction variant="destructive" onClick={onConfirm}>
+            {t('confirm')}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Main component
+// ---------------------------------------------------------------------------
+
 /**
  * Presentational — credential-rotation list for an offboarding workflow run.
  * WHO rotates WHAT WHERE; never the secret itself (vault URL is a pointer).
@@ -29,12 +107,25 @@ const STATUS_VARIANT = {
 export function CredentialsTab({
   rows,
   isLoading,
+  isError,
+  onRetry,
   onAdd,
   onMarkRotated,
   onRemove,
   isMutating,
 }: CredentialsTabProps) {
   const t = useTranslations('Workflow.credentials');
+  const tWorkflows = useTranslations('Workflows.errors');
+  const [removeTarget, setRemoveTarget] = useState<string | null>(null);
+
+  const handleRemoveRequest = useCallback((id: string) => setRemoveTarget(id), []);
+  const handleRemoveConfirm = useCallback(() => {
+    if (removeTarget) onRemove(removeTarget);
+    setRemoveTarget(null);
+  }, [removeTarget, onRemove]);
+  const handleRemoveCancel = useCallback((open: boolean) => {
+    if (!open) setRemoveTarget(null);
+  }, []);
 
   return (
     <section className="space-y-4" data-testid="credentials-tab">
@@ -46,7 +137,21 @@ export function CredentialsTab({
       </div>
 
       {isLoading ? (
-        <p className="text-sm text-muted-foreground">…</p>
+        <div className="space-y-2" data-testid="credentials-loading">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <Skeleton key={`skel-${i}`} className="h-14 w-full rounded-md" />
+          ))}
+        </div>
+      ) : isError ? (
+        <div
+          className="flex flex-col items-center gap-3 rounded-md border border-destructive/30 bg-destructive/5 px-4 py-6 text-center"
+          data-testid="credentials-error">
+          <AlertCircle className="size-5 text-destructive" aria-hidden="true" />
+          <p className="text-sm text-destructive">{tWorkflows('failedToLoadWorkflows')}</p>
+          <Button size="sm" variant="outline" onClick={onRetry}>
+            {tWorkflows('retry')}
+          </Button>
+        </div>
       ) : rows.length === 0 ? (
         <p className="text-sm text-muted-foreground" data-testid="credentials-empty">
           {t('empty')}
@@ -60,7 +165,7 @@ export function CredentialsTab({
               <div className="min-w-0 space-y-0.5">
                 <p className="truncate font-medium">{row.label}</p>
                 <p className="text-xs text-muted-foreground">
-                  {row.vaultProvider} · {row.accessType}
+                  {labelVaultProvider(row.vaultProvider)} · {labelAccessType(row.accessType)}
                 </p>
               </div>
               <div className="flex items-center gap-2">
@@ -82,7 +187,7 @@ export function CredentialsTab({
                 <Button
                   size="sm"
                   variant="ghost"
-                  onClick={() => onRemove(row.id)}
+                  onClick={() => handleRemoveRequest(row.id)}
                   disabled={isMutating}>
                   {t('actions.remove')}
                 </Button>
@@ -91,6 +196,12 @@ export function CredentialsTab({
           ))}
         </ul>
       )}
+
+      <RemoveConfirmDialog
+        open={removeTarget !== null}
+        onOpenChange={handleRemoveCancel}
+        onConfirm={handleRemoveConfirm}
+      />
     </section>
   );
 }

@@ -2007,7 +2007,10 @@
         "description": "Znaleziono sformułowanie {found} w umowie {expected} — wymagana weryfikacja ręczna."
       },
       "pendingPhraseFooter": "¹ Wynik opiera się na sformułowaniach oczekujących na weryfikację prawną.",
-      "schemaUnsupported": "Dane kontroli używają nieobsługiwanego formatu. Uruchom kontrolę ponownie, aby je odświeżyć."
+      "schemaUnsupported": "Dane kontroli używają nieobsługiwanego formatu. Uruchom kontrolę ponownie, aby je odświeżyć.",
+      "errors": {
+        "failedToRerun": "Nie udało się zakolejkować kontroli zdrowia. Spróbuj ponownie."
+      }
     }
   },
   "CookieConsent": {
@@ -7282,7 +7285,18 @@
         "submit": "Dodaj poświadczenie",
         "cancel": "Anuluj"
       },
-      "secretPasteHint": "To wygląda jak wartość poświadczenia ({hint}). Podaj tylko URL sejfu lub opis wskaźnika — nigdy nie wklejaj rzeczywistych sekretów."
+      "secretPasteHint": "To wygląda jak wartość poświadczenia ({hint}). Podaj tylko URL sejfu lub opis wskaźnika — nigdy nie wklejaj rzeczywistych sekretów.",
+      "errors": {
+        "failedToAdd": "Nie udało się dodać poświadczenia. Spróbuj ponownie.",
+        "failedToMarkRotated": "Nie udało się oznaczyć poświadczenia jako zrotowane. Spróbuj ponownie.",
+        "failedToRemove": "Nie udało się usunąć poświadczenia. Spróbuj ponownie."
+      },
+      "removeConfirm": {
+        "title": "Usuń odniesienie do poświadczenia",
+        "description": "Spowoduje to trwałe usunięcie odniesienia do poświadczenia z rekordu offboardingu. Tej operacji nie można cofnąć.",
+        "confirm": "Usuń",
+        "cancel": "Anuluj"
+      }
     },
     "ipVerification": {
       "esignButton": "Podpisz ratyfikację przeniesienia praw IP",

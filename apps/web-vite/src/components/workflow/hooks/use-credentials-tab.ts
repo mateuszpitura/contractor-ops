@@ -1,5 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useState } from 'react';
+import { toast } from 'sonner';
+import { useTranslations } from '../../../i18n/useTranslations.js';
 import { useTRPC } from '../../../providers/trpc-provider.js';
 
 export interface CredentialRow {
@@ -18,6 +20,7 @@ export interface CredentialRow {
 export function useCredentialsTab(workflowRunId: string) {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
+  const t = useTranslations('Workflow.credentials');
   const [addDialogOpen, setAddDialogOpen] = useState(false);
 
   const listQuery = useQuery(
@@ -36,15 +39,22 @@ export function useCredentialsTab(workflowRunId: string) {
         setAddDialogOpen(false);
         invalidate();
       },
+      onError: () => toast.error(t('errors.failedToAdd')),
     }),
   );
 
   const markRotatedMutation = useMutation(
-    trpc.workflow.credentialReference.markRotated.mutationOptions({ onSuccess: invalidate }),
+    trpc.workflow.credentialReference.markRotated.mutationOptions({
+      onSuccess: invalidate,
+      onError: () => toast.error(t('errors.failedToMarkRotated')),
+    }),
   );
 
   const removeMutation = useMutation(
-    trpc.workflow.credentialReference.remove.mutationOptions({ onSuccess: invalidate }),
+    trpc.workflow.credentialReference.remove.mutationOptions({
+      onSuccess: invalidate,
+      onError: () => toast.error(t('errors.failedToRemove')),
+    }),
   );
 
   const rows = (listQuery.data ?? []) as CredentialRow[];

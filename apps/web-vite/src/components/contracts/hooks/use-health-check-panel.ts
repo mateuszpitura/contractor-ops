@@ -1,5 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useCallback } from 'react';
+import { toast } from 'sonner';
+import { useTranslations } from '../../../i18n/useTranslations.js';
 import { useTRPC } from '../../../providers/trpc-provider.js';
 
 /**
@@ -10,6 +12,7 @@ import { useTRPC } from '../../../providers/trpc-provider.js';
 export function useHealthCheckPanel(contractId: string) {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
+  const t = useTranslations('ContractDetail.healthCheck');
 
   const rerun = useMutation(
     trpc.contract.rerunHealthCheck.mutationOptions({
@@ -18,6 +21,7 @@ export function useHealthCheckPanel(contractId: string) {
           queryKey: trpc.contract.getById.queryKey({ id: contractId }),
         });
       },
+      onError: () => toast.error(t('errors.failedToRerun')),
     }),
   );
 

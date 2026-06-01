@@ -14,6 +14,8 @@ export function CredentialsTabContainer({ workflowRunId }: CredentialsTabContain
   const {
     rows,
     isLoading,
+    isError,
+    refetch,
     addDialogOpen,
     setAddDialogOpen,
     createMutation,
@@ -27,6 +29,8 @@ export function CredentialsTabContainer({ workflowRunId }: CredentialsTabContain
       <CredentialsTab
         rows={rows}
         isLoading={isLoading}
+        isError={isError}
+        onRetry={refetch}
         onAdd={() => setAddDialogOpen(true)}
         onMarkRotated={onMarkRotated}
         onRemove={onRemove}

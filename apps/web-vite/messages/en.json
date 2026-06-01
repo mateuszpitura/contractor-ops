@@ -2007,7 +2007,10 @@
         "description": "Found {found} phrasing in a {expected} contract — manual review required."
       },
       "pendingPhraseFooter": "¹ Verdict relies on phrasing pending legal review.",
-      "schemaUnsupported": "Health-check data uses an unsupported format. Re-run the health check to refresh."
+      "schemaUnsupported": "Health-check data uses an unsupported format. Re-run the health check to refresh.",
+      "errors": {
+        "failedToRerun": "Could not enqueue health check. Try again."
+      }
     }
   },
   "CookieConsent": {
@@ -7282,7 +7285,18 @@
         "submit": "Add credential",
         "cancel": "Cancel"
       },
-      "secretPasteHint": "This looks like a credential value ({hint}). Provide a vault URL or pointer description only — never paste actual secrets."
+      "secretPasteHint": "This looks like a credential value ({hint}). Provide a vault URL or pointer description only — never paste actual secrets.",
+      "errors": {
+        "failedToAdd": "Could not add credential. Try again.",
+        "failedToMarkRotated": "Could not mark credential as rotated. Try again.",
+        "failedToRemove": "Could not remove credential. Try again."
+      },
+      "removeConfirm": {
+        "title": "Remove credential reference",
+        "description": "This will permanently delete the credential reference from the offboarding record. This action cannot be undone.",
+        "confirm": "Remove",
+        "cancel": "Cancel"
+      }
     },
     "ipVerification": {
       "esignButton": "Sign IP-assignment ratification",
