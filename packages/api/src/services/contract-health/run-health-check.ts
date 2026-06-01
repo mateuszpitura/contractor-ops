@@ -7,7 +7,7 @@
 import { createHash } from 'node:crypto';
 import type { PrismaClient } from '@contractor-ops/db';
 import type { ContractHealthToolInput } from '@contractor-ops/integrations';
-import { evaluateContractIpAssignment } from '@contractor-ops/integrations';
+import { evaluateContractIpAssignment, fetchWithTimeout } from '@contractor-ops/integrations';
 import { createLogger } from '@contractor-ops/logger';
 import type { IpAssignmentResults, IpClausePhraseId } from '@contractor-ops/validators';
 import {
@@ -268,7 +268,7 @@ async function fetchContractPdf(
     throw new Error(`No document linked to contract ${contractId} — cannot run health check`);
   }
   const downloadUrl = await createPresignedDownloadUrl(storageKey);
-  const res = await fetch(downloadUrl);
+  const res = await fetchWithTimeout(downloadUrl, undefined, { timeoutMs: 30_000, retries: 0 });
   if (!res.ok) {
     throw new Error(`Failed to download contract PDF from R2: ${res.status} ${res.statusText}`);
   }
