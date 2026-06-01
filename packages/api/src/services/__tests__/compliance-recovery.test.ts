@@ -27,6 +27,8 @@ import { onComplianceItemSatisfied } from '../compliance-recovery';
 
 interface FlowRow {
   id: string;
+  resourceType: string;
+  resourceId: string;
 }
 
 function makeTx(heldFlows: FlowRow[]) {
@@ -58,7 +60,9 @@ beforeEach(() => {
 describe('compliance-recovery resume', () => {
   it('resumes PENDING_COMPLIANCE flow when held item is satisfied (re-asserts eligibility passes)', async () => {
     mockAssert.mockResolvedValue({ blocked: false, wouldBlock: false, contractorReasons: [] });
-    const { tx, updates, audits } = makeTx([{ id: 'flow-1' }]);
+    const { tx, updates, audits } = makeTx([
+      { id: 'flow-1', resourceType: 'INVOICE', resourceId: 'inv-1' },
+    ]);
 
     const result = await onComplianceItemSatisfied(tx, {
       itemId: 'item-1',
@@ -79,7 +83,9 @@ describe('compliance-recovery resume', () => {
       wouldBlock: false,
       contractorReasons: [{ contractorId: 'ctr-1', contractorName: 'Acme', reasons: [] }],
     });
-    const { tx, updates, audits } = makeTx([{ id: 'flow-1' }]);
+    const { tx, updates, audits } = makeTx([
+      { id: 'flow-1', resourceType: 'INVOICE', resourceId: 'inv-1' },
+    ]);
 
     const result = await onComplianceItemSatisfied(tx, {
       itemId: 'item-1',
@@ -94,7 +100,11 @@ describe('compliance-recovery resume', () => {
 
   it('re-asserts eligibility independently for each held flow', async () => {
     mockAssert.mockResolvedValue({ blocked: false, wouldBlock: false, contractorReasons: [] });
-    const { tx } = makeTx([{ id: 'flow-1' }, { id: 'flow-2' }, { id: 'flow-3' }]);
+    const { tx } = makeTx([
+      { id: 'flow-1', resourceType: 'INVOICE', resourceId: 'inv-1' },
+      { id: 'flow-2', resourceType: 'INVOICE', resourceId: 'inv-2' },
+      { id: 'flow-3', resourceType: 'INVOICE', resourceId: 'inv-3' },
+    ]);
 
     const result = await onComplianceItemSatisfied(tx, {
       itemId: 'item-1',
@@ -108,7 +118,7 @@ describe('compliance-recovery resume', () => {
 
   it('queries via JSONB containment and writes audit-log on resume', async () => {
     mockAssert.mockResolvedValue({ blocked: false, wouldBlock: false, contractorReasons: [] });
-    const { tx, audits } = makeTx([{ id: 'flow-1' }]);
+    const { tx, audits } = makeTx([{ id: 'flow-1', resourceType: 'INVOICE', resourceId: 'inv-9' }]);
 
     await onComplianceItemSatisfied(tx, {
       itemId: 'item-9',
@@ -120,6 +130,24 @@ describe('compliance-recovery resume', () => {
     const meta = audits[0]?.metadataJson as { releasedItemIds: string[]; resolverEvent: string };
     expect(meta.releasedItemIds).toEqual(['item-9']);
     expect(meta.resolverEvent).toBe('item_satisfied');
+  });
+
+  it('uses the flow real resourceType/resourceId in the audit row (M-NEW-3 — not hardcoded INVOICE/flow.id)', async () => {
+    mockAssert.mockResolvedValue({ blocked: false, wouldBlock: false, contractorReasons: [] });
+    const { tx, audits } = makeTx([
+      { id: 'flow-99', resourceType: 'ENGAGEMENT', resourceId: 'eng-42' },
+    ]);
+
+    await onComplianceItemSatisfied(tx, {
+      itemId: 'item-x',
+      contractorId: 'ctr-1',
+      organizationId: 'org-1',
+    });
+
+    expect(audits[0]?.resourceType).toBe('ENGAGEMENT');
+    expect(audits[0]?.resourceId).toBe('eng-42');
+    // The flow id must NOT appear as resourceId.
+    expect(audits[0]?.resourceId).not.toBe('flow-99');
   });
 });
 

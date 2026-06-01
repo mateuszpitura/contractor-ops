@@ -47,8 +47,10 @@ export async function onComplianceItemSatisfied(
   // GIN-indexed JSONB containment (Phase 72 D-14). The itemIds payload is passed
   // as a bound text parameter and cast to jsonb in SQL — no string interpolation.
   const containment = JSON.stringify({ itemIds: [args.itemId] });
-  const heldFlows = await tx.$queryRaw<Array<{ id: string }>>`
-    SELECT id FROM "ApprovalFlow"
+  const heldFlows = await tx.$queryRaw<
+    Array<{ id: string; resourceType: string; resourceId: string }>
+  >`
+    SELECT id, "resourceType", "resourceId" FROM "ApprovalFlow"
     WHERE "status" = 'PENDING_COMPLIANCE'
       AND "organizationId" = ${args.organizationId}
       AND "complianceHoldsJson" @> ${containment}::jsonb
@@ -80,8 +82,12 @@ export async function onComplianceItemSatisfied(
       organizationId: args.organizationId,
       actorType: 'SYSTEM',
       action: 'approval.compliance_resolved',
-      resourceType: 'INVOICE',
-      resourceId: flow.id,
+      // Use the flow's actual resourceType/resourceId so both resolution paths
+      // (system recovery here and admin manual in approval.ts:1506) emit
+      // identically-shaped audit rows. Previously hardcoded 'INVOICE'/flow.id
+      // was semantically wrong — a flow id is not an invoice resource id.
+      resourceType: flow.resourceType,
+      resourceId: flow.resourceId,
       metadata: {
         releasedItemIds: [args.itemId],
         resolverEvent: 'item_satisfied',
