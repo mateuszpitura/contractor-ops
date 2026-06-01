@@ -256,8 +256,15 @@ export const deprovisioningRouter = router({
         return { runId: run.id, idempotent: false };
       } catch (err) {
         if (err && typeof err === 'object' && (err as { code?: string }).code === 'P2002') {
+          // Composite unique — must filter by organizationId to avoid returning a different
+          // tenant's run when the key collides across orgs (WR-1 fix).
           const existing = await ctx.db.deprovisioningRun.findUniqueOrThrow({
-            where: { idempotencyKey: input.idempotencyKey },
+            where: {
+              organizationId_idempotencyKey: {
+                organizationId: ctx.organizationId,
+                idempotencyKey: input.idempotencyKey,
+              },
+            },
             select: { id: true },
           });
           return { runId: existing.id, idempotent: true };

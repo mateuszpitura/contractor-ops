@@ -14,7 +14,7 @@ model DeprovisioningRun {
   startedAt         DateTime                @default(now())
   finishedAt        DateTime?
   triggeredByUserId String
-  idempotencyKey    String                  @unique // saga-start client-supplied dedup key
+  idempotencyKey    String // saga-start client-supplied dedup key; uniqueness is per-org (@@unique below)
 
   organization    Organization         @relation(fields: [organizationId], references: [id])
   contractor      Contractor           @relation(fields: [contractorId], references: [id])
@@ -22,6 +22,7 @@ model DeprovisioningRun {
   triggeredByUser User                 @relation("UserTriggeredDeprovisioningRuns", fields: [triggeredByUserId], references: [id])
   steps           DeprovisioningStep[]
 
+  @@unique([organizationId, idempotencyKey]) // per-org dedup: prevents cross-tenant key squatting (WR-1)
   @@index([organizationId, status]) // admin reconcile queue: WHERE status = PARTIAL_FAILURE
   @@index([organizationId, assignmentId]) // contractor-profile audit lookup
   @@index([startedAt]) // newest-first audit listing

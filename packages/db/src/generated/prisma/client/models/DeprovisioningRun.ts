@@ -240,7 +240,7 @@ export type DeprovisioningRunOrderByWithRelationInput = {
 
 export type DeprovisioningRunWhereUniqueInput = Prisma.AtLeast<{
   id?: string
-  idempotencyKey?: string
+  organizationId_idempotencyKey?: Prisma.DeprovisioningRunOrganizationIdIdempotencyKeyCompoundUniqueInput
   AND?: Prisma.DeprovisioningRunWhereInput | Prisma.DeprovisioningRunWhereInput[]
   OR?: Prisma.DeprovisioningRunWhereInput[]
   NOT?: Prisma.DeprovisioningRunWhereInput | Prisma.DeprovisioningRunWhereInput[]
@@ -251,12 +251,13 @@ export type DeprovisioningRunWhereUniqueInput = Prisma.AtLeast<{
   startedAt?: Prisma.DateTimeFilter<"DeprovisioningRun"> | Date | string
   finishedAt?: Prisma.DateTimeNullableFilter<"DeprovisioningRun"> | Date | string | null
   triggeredByUserId?: Prisma.StringFilter<"DeprovisioningRun"> | string
+  idempotencyKey?: Prisma.StringFilter<"DeprovisioningRun"> | string
   organization?: Prisma.XOR<Prisma.OrganizationScalarRelationFilter, Prisma.OrganizationWhereInput>
   contractor?: Prisma.XOR<Prisma.ContractorScalarRelationFilter, Prisma.ContractorWhereInput>
   assignment?: Prisma.XOR<Prisma.ContractorAssignmentScalarRelationFilter, Prisma.ContractorAssignmentWhereInput>
   triggeredByUser?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   steps?: Prisma.DeprovisioningStepListRelationFilter
-}, "id" | "idempotencyKey">
+}, "id" | "organizationId_idempotencyKey">
 
 export type DeprovisioningRunOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
@@ -380,6 +381,11 @@ export type DeprovisioningRunListRelationFilter = {
 
 export type DeprovisioningRunOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder
+}
+
+export type DeprovisioningRunOrganizationIdIdempotencyKeyCompoundUniqueInput = {
+  organizationId: string
+  idempotencyKey: string
 }
 
 export type DeprovisioningRunCountOrderByAggregateInput = {
