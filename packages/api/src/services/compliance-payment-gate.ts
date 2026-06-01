@@ -18,6 +18,8 @@
 // of the registry's PENDING status — the canonical dev-time hard-block path
 // until legal sign-off flips the flag.
 
+import type { PolicyRuleId } from '@contractor-ops/compliance-policy';
+import { parsePolicyRuleId } from '@contractor-ops/compliance-policy';
 import type { Prisma } from '@contractor-ops/db';
 import { prisma } from '@contractor-ops/db';
 import { isPaymentBlockEnforced } from '@contractor-ops/feature-flags';
@@ -193,9 +195,18 @@ async function recordWouldBlock(
 
 /**
  * Resolves the i18n label key for a (documentType, policyRuleId) pair.
- * Phase 71 locked-phrase registry. Plan 72-07 adds the en/de/pl translations.
+ *
+ * The message catalog lives under `Compliance.documentType.compliance-policy-engine.<jurisdiction>.<docNamespace>`.
+ * For known rules the stableNamespace from parsePolicyRuleId (`uk.utr`, `de.a1`, …) maps directly
+ * to that path: `compliance.documentType.compliance-policy-engine.uk.utr`.
+ * The fallback (null policyRuleId) produces a best-effort key; all real-world items carry a ruleId.
  */
 export function getDocumentTypeLabelKey(documentType: string, policyRuleId: string | null): string {
-  if (policyRuleId) return `compliance.documentType.${policyRuleId}`;
-  return `compliance.documentType.${documentType.toLowerCase()}`;
+  if (policyRuleId) {
+    // policyRuleId values are written by the compliance engine which enforces
+    // the PolicyRuleId format via POLICY_RULE_ID_RE on registration.
+    const { stableNamespace } = parsePolicyRuleId(policyRuleId as PolicyRuleId);
+    return `compliance.documentType.compliance-policy-engine.${stableNamespace}`;
+  }
+  return `compliance.documentType.compliance-policy-engine.${documentType.toLowerCase()}`;
 }

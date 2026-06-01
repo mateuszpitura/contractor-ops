@@ -54,7 +54,7 @@ function blockingExpiredItem(over: Partial<Record<string, unknown>> = {}): Recor
   return {
     id: `item-${itemsFixture.length + 1}`,
     contractorId: 'ctr-1',
-    policyRuleId: 'compliance-policy-engine.de.a1',
+    policyRuleId: 'de.a1@v1',
     documentType: 'A1_CERTIFICATE',
     severity: 'BLOCKING',
     status: 'EXPIRED',
@@ -198,12 +198,21 @@ describe('compliance-payment-gate tx interop', () => {
 });
 
 describe('getDocumentTypeLabelKey', () => {
-  it('uses policyRuleId when present, falls back to lowercased documentType', () => {
-    expect(getDocumentTypeLabelKey('A1_CERTIFICATE', 'compliance-policy-engine.de.a1')).toBe(
+  it('maps policyRuleId to compliance-policy-engine catalog path (strips @vN)', () => {
+    expect(getDocumentTypeLabelKey('A1_CERTIFICATE', 'de.a1@v1')).toBe(
       'compliance.documentType.compliance-policy-engine.de.a1',
     );
+    expect(getDocumentTypeLabelKey('UTR', 'uk.utr@v1')).toBe(
+      'compliance.documentType.compliance-policy-engine.uk.utr',
+    );
+    expect(getDocumentTypeLabelKey('RIGHT_TO_WORK', 'uk.right_to_work@v1')).toBe(
+      'compliance.documentType.compliance-policy-engine.uk.right_to_work',
+    );
+  });
+
+  it('falls back to compliance-policy-engine path with lowercased documentType when policyRuleId is null', () => {
     expect(getDocumentTypeLabelKey('A1_CERTIFICATE', null)).toBe(
-      'compliance.documentType.a1_certificate',
+      'compliance.documentType.compliance-policy-engine.a1_certificate',
     );
   });
 });
