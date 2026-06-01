@@ -414,3 +414,4 @@ export const APPROVAL_STILL_COMPLIANCE_BLOCKED = 'approvalStillComplianceBlocked
 // ─── Phase 73 — F1 compliance admin override + audit trail (COMPL-01) ──────────
 export const COMPLIANCE_ITEM_NOT_FOUND = 'complianceItemNotFound';
 export const COMPLIANCE_ITEM_ALREADY_WAIVED = 'complianceItemAlreadyWaived';
+export const COMPLIANCE_DOCUMENT_NOT_PENDING_REVIEW = 'complianceDocumentNotPendingReview';

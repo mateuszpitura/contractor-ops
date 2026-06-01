@@ -25,28 +25,35 @@ export function usePortalUploadReplacement() {
   const t = useTranslations('Portal.compliance');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const getUploadUrl = useMutation(trpc.portal.getUploadUrl.mutationOptions());
+  const getUploadUrl = useMutation(trpc.portal.getComplianceUploadUrl.mutationOptions());
   const submitReplacement = useMutation(trpc.portal.submitUploadReplacement.mutationOptions());
 
   const submit = useCallback(
     async ({ itemId, file, suggestedExpiresAt }: SubmitUploadReplacementArgs) => {
       setIsSubmitting(true);
       try {
+        const contentType = file.type || 'application/pdf';
         const { uploadUrl, documentId } = await getUploadUrl.mutateAsync({
           filename: file.name,
-          contentType: file.type || 'application/octet-stream',
+          contentType,
         });
 
         const putResponse = await fetch(uploadUrl, {
           method: 'PUT',
-          headers: { 'Content-Type': file.type || 'application/octet-stream' },
+          headers: { 'Content-Type': contentType },
           body: file,
         });
         if (!putResponse.ok) {
           throw new Error(`R2 PUT failed: ${putResponse.status}`);
         }
 
-        await submitReplacement.mutateAsync({ itemId, documentId, suggestedExpiresAt });
+        await submitReplacement.mutateAsync({
+          itemId,
+          documentId,
+          originalFileName: file.name,
+          fileSizeBytes: file.size,
+          suggestedExpiresAt,
+        });
 
         await queryClient.invalidateQueries(trpc.portal.complianceItems.pathFilter());
         toast.success(t('upload.success'));

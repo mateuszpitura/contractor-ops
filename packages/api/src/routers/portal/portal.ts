@@ -899,6 +899,40 @@ export const portalRouter = router({
     }),
 
   /**
+   * Get a presigned upload URL for compliance document replacement.
+   * Accepts PDF, PNG, and JPEG — compliance scans are commonly image files.
+   * Uses PORTAL_COMPLIANCE_UPLOAD purpose so submitUploadReplacement can
+   * reject a documentId minted for a different flow (F-SEC-01).
+   */
+  getComplianceUploadUrl: portalProcedure
+    .input(
+      z.object({
+        filename: z.string(),
+        contentType: z
+          .string()
+          .refine(
+            ct => ['application/pdf', 'image/png', 'image/jpeg'].includes(ct),
+            'Only PDF, PNG, or JPEG files are accepted for compliance documents',
+          ),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const pending = await createPendingUpload({
+        db: ctx.db,
+        organizationId: ctx.organizationId,
+        purpose: 'PORTAL_COMPLIANCE_UPLOAD',
+        filename: input.filename,
+        mimeType: input.contentType,
+      });
+
+      return {
+        uploadUrl: pending.presignedPutUrl,
+        documentId: pending.documentId,
+        expiresAt: pending.expiresAt,
+      };
+    }),
+
+  /**
    * Submit an invoice through the portal.
    * Creates invoice with source PORTAL and status RECEIVED.
    * Verifies contract belongs to this contractor and is ACTIVE.
@@ -1715,10 +1749,21 @@ export const portalRouter = router({
       z.object({
         itemId: z.string().min(1),
         documentId: z.string().min(1),
+        originalFileName: z.string().min(1),
+        fileSizeBytes: z.number().int().positive(),
         suggestedExpiresAt: z.string().date().optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
+      // F-SEC-01: atomically consume the PendingUpload row to recover the
+      // server-stored storageKey. Rejects foreign/expired/wrong-purpose rows.
+      const pending = await consumePendingUpload({
+        db: ctx.db,
+        organizationId: ctx.organizationId,
+        documentId: input.documentId,
+        expectedPurpose: 'PORTAL_COMPLIANCE_UPLOAD',
+      });
+
       return await ctx.db.$transaction(async tx => {
         const item = await tx.contractorComplianceItem.findFirst({
           where: {
@@ -1731,24 +1776,44 @@ export const portalRouter = router({
         if (!item) {
           throw new TRPCError({ code: 'NOT_FOUND', message: E.COMPLIANCE_ITEM_NOT_FOUND });
         }
-        // Document has no contractorId column — ownership is asserted via the
-        // DocumentLink join (entityType CONTRACTOR + entityId = portal contractor).
-        const ownLink = await tx.documentLink.findFirst({
-          where: {
-            documentId: input.documentId,
+
+        // Materialize the Document row using the server-trusted storage key.
+        // Status starts as PENDING_REVIEW — admin approve/reject flips it.
+        await tx.document.create({
+          data: {
+            id: input.documentId,
             organizationId: ctx.organizationId,
+            storageKey: pending.storageKey,
+            originalFileName: input.originalFileName,
+            mimeType: pending.mimeType,
+            fileSizeBytes: input.fileSizeBytes,
+            documentType: 'OTHER',
+            source: 'USER_UPLOAD',
+            status: 'PENDING_REVIEW',
+            checksumSha256: '',
+          },
+        });
+
+        // Link document to the contractor for ownership assertions (WR-1).
+        await tx.documentLink.create({
+          data: {
+            organizationId: ctx.organizationId,
+            documentId: input.documentId,
             entityType: 'CONTRACTOR',
             entityId: ctx.contractorId,
+            linkRole: 'PRIMARY',
           },
-          select: { id: true },
         });
-        if (!ownLink) {
-          throw new TRPCError({ code: 'NOT_FOUND', message: E.COMPLIANCE_ITEM_NOT_FOUND });
-        }
-        await tx.document.update({
-          where: { id: input.documentId },
-          data: { status: 'PENDING_REVIEW' },
+
+        // Record the candidate document on the item so the admin can surface
+        // the PENDING_REVIEW document in the compliance tab (CR-2 data layer).
+        // This is overwritten with the same value on approve, and cleared on
+        // reject, so it is safe to set optimistically here.
+        await tx.contractorComplianceItem.update({
+          where: { id: input.itemId },
+          data: { satisfiedByDocumentId: input.documentId },
         });
+
         await writeAuditLog({
           tx,
           organizationId: ctx.organizationId,

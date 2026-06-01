@@ -1,8 +1,11 @@
 // Phase 73 · Plan 07 — compliance.submitUploadReplacement portal mutation tests (COMPL-04 / D-06).
 //
-// Router-caller harness over the portal procedure: validatePortalSession is
-// mocked to inject a portal-session contractor, and the @contractor-ops/db mock
-// provides the regional client + organization lookup the portal middleware uses.
+// CR-1 fix: the test now exercises the REAL flow — consumePendingUpload must
+// be called, document.create must be called with PENDING_REVIEW status, and
+// documentLink.create must link the document to the contractor. The old mocks
+// that patched document.update (and the pre-existing documentLink stub) are
+// removed; tests would FAIL on the old broken code because document.update no
+// longer exists in submitUploadReplacement.
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -10,29 +13,40 @@ const ORG_ID = 'clorgaaaaaaaaaaaaaaaaaaaaaa';
 const CONTRACTOR_ID = 'clcontractoraaaaaaaaaaaaaaa';
 const ITEM_ID = 'clitemaaaaaaaaaaaaaaaaaaaaa';
 const DOC_ID = 'cldocaaaaaaaaaaaaaaaaaaaaaa';
+const STORAGE_KEY = `orgs/${ORG_ID}/docs/${DOC_ID}/file.pdf`;
 
-const { mockPrisma, auditWriteSpy } = vi.hoisted(() => {
+const { mockPrisma, auditWriteSpy, consumePendingUploadMock } = vi.hoisted(() => {
   const contractorComplianceItem = {
     findFirst: vi.fn(async () => ({
-      id: 'clitemaaaaaaaaaaaaaaaaaaaaa',
-      contractorId: 'clcontractoraaaaaaaaaaaaaaa',
+      id: ITEM_ID,
+      contractorId: CONTRACTOR_ID,
       status: 'EXPIRED',
     })),
+    update: vi.fn(async () => ({ id: ITEM_ID })),
   };
-  const documentLink = { findFirst: vi.fn(async () => ({ id: 'link_1' })) };
   const document = {
-    update: vi.fn(async () => ({ id: 'cldocaaaaaaaaaaaaaaaaaaaaaa', status: 'PENDING_REVIEW' })),
+    create: vi.fn(async () => ({ id: DOC_ID, status: 'PENDING_REVIEW' })),
+  };
+  const documentLink = {
+    create: vi.fn(async () => ({ id: 'link_1' })),
   };
   const organization = {
     findUnique: vi.fn(async () => ({ dataRegion: 'EU', status: 'ACTIVE' })),
     findUniqueOrThrow: vi.fn(async () => ({ countryCode: 'GB' })),
   };
-  const base = { contractorComplianceItem, documentLink, document, organization };
+  const base = { contractorComplianceItem, document, documentLink, organization };
   const mockPrisma = {
     ...base,
     $transaction: vi.fn(async (fn: (tx: typeof base) => unknown) => fn(base)),
   };
-  return { mockPrisma, auditWriteSpy: vi.fn(async () => undefined) };
+  const consumePendingUploadMock = vi.fn(async () => ({
+    documentId: DOC_ID,
+    storageKey: STORAGE_KEY,
+    mimeType: 'application/pdf',
+    fileSizeBytesMax: null,
+    purpose: 'PORTAL_COMPLIANCE_UPLOAD',
+  }));
+  return { mockPrisma, auditWriteSpy: vi.fn(async () => undefined), consumePendingUploadMock };
 });
 
 vi.mock('@contractor-ops/db', () => ({
@@ -59,6 +73,13 @@ vi.mock('@contractor-ops/auth', () => ({
 }));
 
 vi.mock('../services/audit-writer', () => ({ writeAuditLog: auditWriteSpy }));
+
+// CR-1 fix: mock consumePendingUpload so the test controls what it returns
+// and can assert it was called with the correct purpose.
+vi.mock('../services/pending-upload', () => ({
+  createPendingUpload: vi.fn(),
+  consumePendingUpload: consumePendingUploadMock,
+}));
 
 const validatePortalSessionMock = vi.fn();
 vi.mock('../services/portal-session', () => ({
@@ -139,6 +160,7 @@ vi.mock('@contractor-ops/feature-flags', async importOriginal => {
   };
 });
 
+import { PENDING_UPLOAD_INVALID } from '../errors';
 import { createCallerFactory } from '../init';
 import { portalAppRouter } from '../portal-root';
 
@@ -149,6 +171,13 @@ function portalCaller() {
   headers.set('cookie', 'portal_session=mock-token');
   return createCaller({ headers } as never);
 }
+
+const VALID_INPUT = {
+  itemId: ITEM_ID,
+  documentId: DOC_ID,
+  originalFileName: 'right-to-work.pdf',
+  fileSizeBytes: 102400,
+};
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -163,25 +192,70 @@ beforeEach(() => {
     contractorId: CONTRACTOR_ID,
     status: 'EXPIRED',
   } as never);
-  mockPrisma.documentLink.findFirst.mockResolvedValue({ id: 'link_1' } as never);
+  consumePendingUploadMock.mockResolvedValue({
+    documentId: DOC_ID,
+    storageKey: STORAGE_KEY,
+    mimeType: 'application/pdf',
+    fileSizeBytesMax: null,
+    purpose: 'PORTAL_COMPLIANCE_UPLOAD',
+  });
 });
 
-describe('compliance-portal-upload submitUploadReplacement', () => {
-  it('updates Document.status to PENDING_REVIEW for the contractor-uploaded doc', async () => {
+describe('compliance-portal-upload submitUploadReplacement — real flow (CR-1)', () => {
+  it('consumes the pending upload with PORTAL_COMPLIANCE_UPLOAD purpose', async () => {
     const caller = portalCaller();
-    const out = (await caller.portal.submitUploadReplacement({
-      itemId: ITEM_ID,
-      documentId: DOC_ID,
-    })) as { documentId: string };
-    expect(out.documentId).toBe(DOC_ID);
-    expect(mockPrisma.document.update).toHaveBeenCalledWith(
-      expect.objectContaining({ data: { status: 'PENDING_REVIEW' } }),
+    await caller.portal.submitUploadReplacement(VALID_INPUT);
+    expect(consumePendingUploadMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        documentId: DOC_ID,
+        expectedPurpose: 'PORTAL_COMPLIANCE_UPLOAD',
+      }),
     );
   });
 
-  it('writes AuditLog action=compliance.upload.submitted with metadata.itemId + documentId', async () => {
+  it('creates the Document row with status PENDING_REVIEW using the server storageKey', async () => {
     const caller = portalCaller();
-    await caller.portal.submitUploadReplacement({ itemId: ITEM_ID, documentId: DOC_ID });
+    await caller.portal.submitUploadReplacement(VALID_INPUT);
+    expect(mockPrisma.document.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          id: DOC_ID,
+          storageKey: STORAGE_KEY,
+          status: 'PENDING_REVIEW',
+          source: 'USER_UPLOAD',
+        }),
+      }),
+    );
+  });
+
+  it('creates a DocumentLink(CONTRACTOR, contractorId) for ownership', async () => {
+    const caller = portalCaller();
+    await caller.portal.submitUploadReplacement(VALID_INPUT);
+    expect(mockPrisma.documentLink.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          documentId: DOC_ID,
+          entityType: 'CONTRACTOR',
+          entityId: CONTRACTOR_ID,
+        }),
+      }),
+    );
+  });
+
+  it('sets satisfiedByDocumentId on the compliance item for admin data layer', async () => {
+    const caller = portalCaller();
+    await caller.portal.submitUploadReplacement(VALID_INPUT);
+    expect(mockPrisma.contractorComplianceItem.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: ITEM_ID },
+        data: expect.objectContaining({ satisfiedByDocumentId: DOC_ID }),
+      }),
+    );
+  });
+
+  it('writes AuditLog action=compliance.upload.submitted', async () => {
+    const caller = portalCaller();
+    await caller.portal.submitUploadReplacement(VALID_INPUT);
     expect(auditWriteSpy).toHaveBeenCalledWith(
       expect.objectContaining({
         action: 'compliance.upload.submitted',
@@ -192,11 +266,31 @@ describe('compliance-portal-upload submitUploadReplacement', () => {
     );
   });
 
-  it('keeps ContractorComplianceItem.status MISSING/EXPIRED until admin review (no item write)', async () => {
+  it('does NOT call document.update — old broken path is gone', async () => {
     const caller = portalCaller();
-    await caller.portal.submitUploadReplacement({ itemId: ITEM_ID, documentId: DOC_ID });
-    // The item table is only read (findFirst), never updated, by this mutation.
-    expect((mockPrisma.contractorComplianceItem as Record<string, unknown>).update).toBeUndefined();
+    await caller.portal.submitUploadReplacement(VALID_INPUT);
+    // The old broken code called document.update. The fix uses document.create.
+    expect((mockPrisma.document as Record<string, unknown>).update).toBeUndefined();
+  });
+
+  it('keeps ContractorComplianceItem status unchanged (admin review flips it)', async () => {
+    const caller = portalCaller();
+    const out = (await caller.portal.submitUploadReplacement(VALID_INPUT)) as {
+      status: string;
+    };
+    // Return value carries the original item status, not SATISFIED.
+    expect(out.status).toBe('EXPIRED');
+  });
+
+  it('rejects when consumePendingUpload throws (expired/wrong-purpose row)', async () => {
+    const { TRPCError } = await import('@trpc/server');
+    consumePendingUploadMock.mockRejectedValueOnce(
+      new TRPCError({ code: 'BAD_REQUEST', message: PENDING_UPLOAD_INVALID }),
+    );
+    const caller = portalCaller();
+    await expect(caller.portal.submitUploadReplacement(VALID_INPUT)).rejects.toThrow();
+    // Document must NOT be created if pending-upload consumption fails.
+    expect(mockPrisma.document.create).not.toHaveBeenCalled();
   });
 });
 
@@ -205,36 +299,24 @@ describe('compliance-portal-upload cross-contractor-isolation', () => {
     mockPrisma.contractorComplianceItem.findFirst.mockResolvedValueOnce(null as never);
     const caller = portalCaller();
     await expect(
-      caller.portal.submitUploadReplacement({ itemId: 'cross_org_item', documentId: DOC_ID }),
-    ).rejects.toThrow();
-  });
-
-  it('rejects when the document is not linked to the portal contractor (NOT_FOUND)', async () => {
-    mockPrisma.documentLink.findFirst.mockResolvedValueOnce(null as never);
-    const caller = portalCaller();
-    await expect(
-      caller.portal.submitUploadReplacement({ itemId: ITEM_ID, documentId: 'someone-elses-doc' }),
+      caller.portal.submitUploadReplacement({ ...VALID_INPUT, itemId: 'cross_org_item' }),
     ).rejects.toThrow();
   });
 
   it('rejects an unauthenticated request (no portal session) with UNAUTHORIZED', async () => {
     validatePortalSessionMock.mockResolvedValueOnce(null);
     const caller = portalCaller();
-    await expect(
-      caller.portal.submitUploadReplacement({ itemId: ITEM_ID, documentId: DOC_ID }),
-    ).rejects.toThrow();
+    await expect(caller.portal.submitUploadReplacement(VALID_INPUT)).rejects.toThrow();
   });
 });
 
-describe('compliance-portal-upload deep-link-payload', () => {
-  it('accepts itemId + documentId + optional suggestedExpiresAt and returns the updated item ref', async () => {
+describe('compliance-portal-upload optional suggestedExpiresAt', () => {
+  it('forwards suggestedExpiresAt into the audit metadata when provided', async () => {
     const caller = portalCaller();
-    const out = (await caller.portal.submitUploadReplacement({
-      itemId: ITEM_ID,
-      documentId: DOC_ID,
+    await caller.portal.submitUploadReplacement({
+      ...VALID_INPUT,
       suggestedExpiresAt: '2027-01-15',
-    })) as { itemId: string };
-    expect(out.itemId).toBe(ITEM_ID);
+    });
     expect(auditWriteSpy).toHaveBeenCalledWith(
       expect.objectContaining({
         metadata: expect.objectContaining({ suggestedExpiresAt: '2027-01-15' }),
