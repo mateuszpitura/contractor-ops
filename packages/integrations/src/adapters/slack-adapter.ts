@@ -451,6 +451,18 @@ export class SlackAdapter extends BaseAdapter implements Deprovisionable {
     ) {
       return classifyError({ httpStatus: 403, providerErrorCode: slackError });
     }
+    // Slack Web-API returns HTTP 200 with ok:false for logical failures; the
+    // fallthrough `classifyError({ httpStatus })` would see status 200 and classify
+    // every unlisted code as PERMANENT_OTHER (no retry). Map known Slack transient
+    // families explicitly so they trigger QStash retry instead of manual override.
+    if (
+      slackError === 'internal_error' ||
+      slackError === 'fatal_error' ||
+      slackError === 'service_unavailable' ||
+      slackError === 'request_timeout'
+    ) {
+      return 'TRANSIENT_NETWORK';
+    }
     return classifyError({ httpStatus, providerErrorCode: slackError });
   }
 
