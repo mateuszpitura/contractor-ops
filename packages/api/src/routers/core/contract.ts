@@ -791,9 +791,27 @@ export const contractRouter = router({
         import('@contractor-ops/integrations/services/qstash-client'),
         import('@contractor-ops/validators'),
       ]);
+
+      // Pre-filter to IDs that actually belong to this org — mirrors
+      // bulkTransition's found-ID discipline (contract.ts ~689). Prevents a
+      // caller from wasting up to 1000 Anthropic-bound QStash jobs on
+      // arbitrary/foreign contract IDs (cost-abuse, not a data-leak — the
+      // downstream run is already org-scoped).
+      const owned = await ctx.db.contract.findMany({
+        where: {
+          id: { in: input.contractIds },
+          organizationId: ctx.organizationId,
+          deletedAt: null,
+        },
+        select: { id: true },
+      });
+      const ownedIds = new Set(owned.map(c => c.id));
+      const skippedCount = input.contractIds.length - ownedIds.size;
+
       const url = `${getServerEnv().API_URL}/contract-health/_run`;
       const enqueued: string[] = [];
       for (const contractId of input.contractIds) {
+        if (!ownedIds.has(contractId)) continue;
         try {
           await publishJSONWithContext({
             url,
@@ -826,8 +844,13 @@ export const contractRouter = router({
           contractIds: input.contractIds,
           force: input.force,
           enqueuedCount: enqueued.length,
+          skippedCount,
         },
       });
-      return { enqueuedCount: enqueued.length, requestedCount: input.contractIds.length };
+      return {
+        enqueuedCount: enqueued.length,
+        requestedCount: input.contractIds.length,
+        skippedCount,
+      };
     }),
 });
