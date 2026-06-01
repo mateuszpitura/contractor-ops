@@ -158,6 +158,40 @@ describe('GitHubAdapter — Deprovisionable contract (Phase 78 IDP-07)', () => {
     }
   });
 
+  it('describeImpact: 403 on checkCollaborator aborts outside-collab scan → reports 0, not a silent under-count (78 WR-6)', async () => {
+    server.use(
+      http.get(`${GH}/orgs/${ORG}/memberships/${USER}`, () =>
+        HttpResponse.json({ state: 'active', role: 'member' }),
+      ),
+      http.get(`${GH}/orgs/${ORG}/repos`, () =>
+        HttpResponse.json([{ name: 'repo-a' }, { name: 'repo-b' }]),
+      ),
+      http.get(`${GH}/orgs/${ORG}/teams`, () => HttpResponse.json([])),
+      http.get(`${GH}/orgs/${ORG}/outside_collaborators`, () =>
+        HttpResponse.json([{ login: USER }]),
+      ),
+      // repo-a: 403 rate-limit — should abort the scan
+      http.get(`${GH}/repos/${ORG}/repo-a/collaborators/${USER}`, () =>
+        HttpResponse.json({ message: 'rate limited' }, { status: 403 }),
+      ),
+      // repo-b would return 204 but should NOT be reached after the 403 abort
+      http.get(
+        `${GH}/repos/${ORG}/repo-b/collaborators/${USER}`,
+        () => new HttpResponse(null, { status: 204 }),
+      ),
+      http.get(`${GH}/orgs/${ORG}/invitations`, () => HttpResponse.json([])),
+      http.get(`${GH}/orgs/${ORG}/credential-authorizations`, () => HttpResponse.json([])),
+    );
+    const preview = await adapter().describeImpact(USER);
+    expect(preview.provider).toBe('GITHUB');
+    if (preview.provider === 'GITHUB') {
+      // 403 aborted the scan → 0 (not the falsely-low count of 0 that also happens
+      // when no repos match — the important assertion is it doesn't report 1 from repo-b
+      // while silently skipping the rate-limit signal from repo-a).
+      expect(preview.customMetrics.outsideCollaboratorRepoCount).toBe(0);
+    }
+  });
+
   it('verifyDeprovisioned: checkMembershipForUser 404 → true (LIKELY_GONE)', async () => {
     server.use(
       http.get(`${GH}/orgs/${ORG}/members/${USER}`, () =>

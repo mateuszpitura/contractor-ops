@@ -1,3 +1,4 @@
+import { createIntegrationLogger } from '@contractor-ops/logger';
 import { Octokit } from '@octokit/rest';
 import { mapErrorClassToResult } from '../idp/deprovision-result.js';
 import type { ErrorClass } from '../idp/error-classifier.js';
@@ -11,6 +12,14 @@ import {
 } from '../services/saga-canonicalize.js';
 import type { Deprovisionable, DeprovisionResult } from '../types/deprovisionable.js';
 import { BaseAdapter } from './base-adapter.js';
+
+const log = createIntegrationLogger('github');
+
+// Cap for the per-repo outside-collaborator scan (78 WR-6). GitHub orgs can have
+// thousands of repos; an unbounded paginate + checkCollaborator fan-out exhausts
+// the rate budget and the preview's latency window. At 500 repos the scan covers
+// all but the very largest orgs while staying well inside a single rate-limit window.
+const OUTSIDE_COLLAB_REPO_SCAN_LIMIT = 500;
 
 /**
  * GitHub org `Deprovisionable` adapter (Phase 78 IDP-07) — the provider with a
@@ -313,34 +322,65 @@ export class GitHubAdapter extends BaseAdapter implements Deprovisionable {
     }
   }
 
-  /** Count org repos where `username` is a direct collaborator (best-effort, → 0). */
+  /**
+   * Count org repos where `username` is an outside collaborator (best-effort).
+   *
+   * Bounded at {@link OUTSIDE_COLLAB_REPO_SCAN_LIMIT} repos to avoid exhausting
+   * the GitHub rate budget on large orgs (78 WR-6). A 403 response on any
+   * per-repo check (rate-limit or forbidden) is distinguished from a 404
+   * (not-a-collaborator): a 403 aborts the scan and returns 0 with a logged
+   * warning so a throttled scan does not silently under-count the back-door
+   * security signal.
+   */
   static async #countOutsideCollabRepos(
     octokit: Octokit,
     org: string,
     username: string,
   ): Promise<number> {
     try {
-      const repos = (await octokit.paginate('GET /orgs/{org}/repos', { org })) as Array<{
+      const allRepos = (await octokit.paginate('GET /orgs/{org}/repos', { org })) as Array<{
         name?: string;
       }>;
+      const repoNames = allRepos.map(r => r.name).filter((n): n is string => typeof n === 'string');
+
+      const capped = repoNames.length > OUTSIDE_COLLAB_REPO_SCAN_LIMIT;
+      const scanRepos = capped ? repoNames.slice(0, OUTSIDE_COLLAB_REPO_SCAN_LIMIT) : repoNames;
+      if (capped) {
+        log.warn(
+          { org, total: repoNames.length, scanned: OUTSIDE_COLLAB_REPO_SCAN_LIMIT },
+          'github outside-collab scan capped — count may be partial',
+        );
+      }
+
       const limit = pLimit(5);
       const flags = await Promise.all(
-        repos
-          .map(r => r.name)
-          .filter((n): n is string => typeof n === 'string')
-          .map(repo =>
-            limit(async () => {
-              try {
-                await octokit.rest.repos.checkCollaborator({ owner: org, repo, username });
-                return 1; // 204 ⇒ is a collaborator
-              } catch {
-                return 0; // 404 ⇒ not a collaborator on this repo
+        scanRepos.map(repo =>
+          limit(async () => {
+            try {
+              await octokit.rest.repos.checkCollaborator({ owner: org, repo, username });
+              return 1 as const; // 204 ⇒ is a collaborator
+            } catch (err) {
+              const status = GitHubAdapter.#httpStatus(err);
+              if (status === 403) {
+                // Rate-limited or forbidden — abort the whole scan rather than
+                // silently under-counting. Re-throw so Promise.all rejects and
+                // the outer catch logs a warning and returns 0.
+                throw err;
               }
-            }),
-          ),
+              return 0 as const; // 404 ⇒ not a collaborator on this repo
+            }
+          }),
+        ),
       );
       return flags.reduce<number>((sum, f) => sum + f, 0);
-    } catch {
+    } catch (err) {
+      const status = GitHubAdapter.#httpStatus(err);
+      if (status === 403) {
+        log.warn(
+          { org, username },
+          'github outside-collab scan aborted by 403 (rate-limit/forbidden) — count reported as 0',
+        );
+      }
       return 0;
     }
   }
