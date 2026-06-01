@@ -1071,7 +1071,8 @@
       "overview": "Übersicht",
       "documents": "Dokumente",
       "amendments": "Nachträge",
-      "activity": "Aktivität"
+      "activity": "Aktivität",
+      "compliance": "Compliance"
     },
     "activity": {
       "contractCreated": "Vertrag erstellt",

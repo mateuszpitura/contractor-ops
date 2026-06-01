@@ -3,6 +3,7 @@ import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { useParams } from 'react-router-dom';
 import { Link } from '../../i18n/navigation.js';
 import { useTranslations } from '../../i18n/useTranslations.js';
+import { CredentialsTabContainer } from '../workflow/credentials-tab-container.js';
 import { useWorkflowRunDetail } from './hooks/use-workflow-run-detail.js';
 import { RunHeaderContainer } from './workflow-run/run-header-container.js';
 import { TaskChecklist } from './workflow-run/task-checklist.js';
@@ -72,6 +73,9 @@ export function WorkflowRunDetailContainer() {
         <>
           <RunHeaderContainer run={run} />
           <TaskChecklist tasks={run.tasks} runId={run.id} currentUserId={currentUserId} />
+          {run.workflowTemplate?.type === 'OFFBOARDING' && (
+            <CredentialsTabContainer workflowRunId={run.id} />
+          )}
         </>
       )}
     </div>

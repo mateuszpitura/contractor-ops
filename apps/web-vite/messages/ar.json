@@ -1071,7 +1071,8 @@
       "overview": "نظرة عامة",
       "documents": "المستندات",
       "amendments": "Amendments",
-      "activity": "النشاط"
+      "activity": "النشاط",
+      "compliance": "الامتثال"
     },
     "activity": {
       "contractCreated": "تم إنشاء Contract",

@@ -1071,7 +1071,8 @@
       "overview": "Overview",
       "documents": "Documents",
       "amendments": "Amendments",
-      "activity": "Activity"
+      "activity": "Activity",
+      "compliance": "Compliance"
     },
     "activity": {
       "contractCreated": "Contract created",

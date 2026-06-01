@@ -11,6 +11,7 @@ import { useCallback } from 'react';
 
 import { tDyn } from '../../../i18n/typed-keys.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
+import { HealthCheckPanelContainer } from '../health-check-panel-container.js';
 import { useContractDetailTabs } from '../hooks/use-contract-detail-tabs.js';
 import { ActivityTab } from './activity-tab.js';
 import { AmendmentsTabContainer } from './amendments-tab-container.js';
@@ -63,6 +64,13 @@ export function ContractDetailTabs({ contract, contractParties }: ContractDetail
       <TabsContent value="activity" className="mt-4 min-h-[400px] space-y-6">
         <ActivityTab contract={contract} />
         <LinearLinkedIssuesPanelContainer taskRunIds={taskRunIds} />
+      </TabsContent>
+
+      <TabsContent value="compliance" className="mt-4 min-h-[400px]">
+        <HealthCheckPanelContainer
+          contractId={contract.id}
+          resultsJson={contract.complianceFlagsJson}
+        />
       </TabsContent>
     </Tabs>
   );

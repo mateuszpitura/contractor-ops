@@ -1071,7 +1071,8 @@
       "overview": "Przegląd",
       "documents": "Dokumenty",
       "amendments": "Aneksy",
-      "activity": "Aktywność"
+      "activity": "Aktywność",
+      "compliance": "Zgodność"
     },
     "activity": {
       "contractCreated": "Umowa utwórzona",

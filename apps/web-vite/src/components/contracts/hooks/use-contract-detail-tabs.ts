@@ -3,7 +3,7 @@ import type { inferRouterOutputs } from '@trpc/server';
 import { parseAsString, useQueryState } from 'nuqs';
 import { useCallback, useMemo } from 'react';
 
-const TAB_KEYS = ['overview', 'documents', 'amendments', 'activity'] as const;
+const TAB_KEYS = ['overview', 'documents', 'amendments', 'activity', 'compliance'] as const;
 export type ContractDetailTabKey = (typeof TAB_KEYS)[number];
 
 type ContractDetail = NonNullable<inferRouterOutputs<AppRouter>['contract']['getById']>;
