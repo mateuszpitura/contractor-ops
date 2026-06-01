@@ -3,12 +3,9 @@
 // via relative paths (e.g. `./equipment-shared.js`), not through this barrel.
 
 export { deprovisioningRouter } from './deprovisioning';
-export { entraRouter } from './entra';
-export { githubRouter } from './github';
 export { googleWorkspaceRouter } from './google-workspace';
 export { jiraRouter } from './jira';
 export { ksefRouter } from './ksef';
 export { linearRouter } from './linear';
-export { oktaRouter } from './okta';
 export { peppolRouter } from './peppol';
 export { teamsRouter } from './teams';

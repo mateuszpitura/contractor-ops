@@ -3,6 +3,9 @@
  * section. Reads per-org GitHub deprovisioning status (signoff approval + enabled
  * flag) and drives the enable toggle. Only useTRPC/useQuery/useMutation boundary
  * for the section (Page→Container→Hook→Component).
+ *
+ * Routes through the unified `deprovisioning.getProviderToggleState` +
+ * `deprovisioning.enableProviderForOrg` procedures (MED-1 consolidation).
  */
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -12,20 +15,24 @@ import { useTranslatedError } from '../../../i18n/use-translated-error.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { useTRPC } from '../../../providers/trpc-provider.js';
 
+const PROVIDER = 'GITHUB' as const;
+
 export function useGitHubProviderSection() {
   const trpc = useTRPC();
   const t = useTranslations('Settings.integrations.github');
   const translateError = useTranslatedError();
   const queryClient = useQueryClient();
 
-  const statusQuery = useQuery(trpc.github.getStatus.queryOptions());
-  const status = statusQuery.data;
+  const stateQuery = useQuery(trpc.deprovisioning.getProviderToggleState.queryOptions());
+  const providerRow = stateQuery.data?.providers.find(p => p.provider === PROVIDER);
 
   const mutation = useMutation(
-    trpc.github.setEnabled.mutationOptions({
+    trpc.deprovisioning.enableProviderForOrg.mutationOptions({
       onSuccess: () => {
         toast.success(t('toggleSuccess'));
-        queryClient.invalidateQueries({ queryKey: trpc.github.getStatus.queryKey() });
+        queryClient.invalidateQueries({
+          queryKey: trpc.deprovisioning.getProviderToggleState.queryKey(),
+        });
       },
       onError: err => toast.error(translateError(err)),
     }),
@@ -33,17 +40,17 @@ export function useGitHubProviderSection() {
 
   const onToggle = useCallback(
     (enabled: boolean) => {
-      mutation.mutate({ enabled });
+      mutation.mutate({ provider: PROVIDER, enabled });
     },
     [mutation],
   );
 
   return {
-    isLoading: statusQuery.isLoading,
-    isError: statusQuery.isError,
-    onRetry: () => statusQuery.refetch(),
-    flagApproved: status?.flagApproved ?? false,
-    enabled: status?.enabled ?? false,
+    isLoading: stateQuery.isLoading,
+    isError: stateQuery.isError,
+    onRetry: () => stateQuery.refetch(),
+    flagApproved: providerRow?.flagApproved ?? false,
+    enabled: providerRow?.enabled ?? false,
     isToggling: mutation.isPending,
     onToggle,
     t,

@@ -147,53 +147,67 @@ beforeEach(() => {
   vi.clearAllMocks();
 });
 
+// The per-provider routers (entra/okta/github) were consolidated into
+// `deprovisioning.enableProviderForOrg` (MED-1). These tests verify that the
+// unified procedure correctly handles each provider.
 // The appRouter (full root namespace graph) is heavy to import per test; the
 // default 5s timeout is occasionally hit on a cold fork worker. 20s mirrors the
 // idp-provider-enable.test.ts precedent.
-describe('IdP deprovisioning per-provider connection routers (Phase 78 D-12)', {
+describe('IdP deprovisioning per-provider toggle via deprovisioning.enableProviderForOrg (Phase 78 D-12 / MED-1)', {
   timeout: 20000,
 }, () => {
-  for (const provider of ['entra', 'okta', 'github'] as const) {
-    describe(`${provider} router`, () => {
-      it('setEnabled REJECTS while the signoff flag is PENDING and no bypass', async () => {
+  for (const provider of ['ENTRA', 'OKTA', 'GITHUB'] as const) {
+    describe(`${provider} provider`, () => {
+      it('enableProviderForOrg REJECTS while the signoff flag is PENDING and no bypass', async () => {
         flagStatus.value = 'PENDING';
         const caller = makeCaller();
-        await expect(caller[provider].setEnabled({ enabled: true })).rejects.toThrow();
+        await expect(
+          caller.deprovisioning.enableProviderForOrg({ provider, enabled: true }),
+        ).rejects.toThrow();
       });
 
-      it('setEnabled SUCCEEDS under FLAG_SIGNOFF_BYPASS=local and persists the per-org toggle', async () => {
+      it('enableProviderForOrg SUCCEEDS under FLAG_SIGNOFF_BYPASS=local and persists the per-org toggle', async () => {
         process.env.FLAG_SIGNOFF_BYPASS = 'local';
         const caller = makeCaller();
-        const result = await caller[provider].setEnabled({ enabled: true });
+        const result = await caller.deprovisioning.enableProviderForOrg({
+          provider,
+          enabled: true,
+        });
         expect(result.ok).toBe(true);
         expect(result.enabled).toBe(true);
         const persisted = (orgSettings.value.idpDeprovisioningEnabled ?? {}) as Record<
           string,
           boolean
         >;
-        expect(Object.values(persisted)).toContain(true);
+        expect(persisted[provider]).toBe(true);
       });
 
-      it('setEnabled SUCCEEDS when the flag is APPROVED', async () => {
+      it('enableProviderForOrg SUCCEEDS when the flag is APPROVED', async () => {
         flagStatus.value = 'APPROVED';
         const caller = makeCaller();
-        const result = await caller[provider].setEnabled({ enabled: true });
+        const result = await caller.deprovisioning.enableProviderForOrg({
+          provider,
+          enabled: true,
+        });
         expect(result.ok).toBe(true);
       });
 
-      it('setEnabled writes an audit row scoped to the session organizationId', async () => {
+      it('enableProviderForOrg writes an audit row scoped to the session organizationId', async () => {
         flagStatus.value = 'APPROVED';
         const caller = makeCaller();
-        await caller[provider].setEnabled({ enabled: true });
+        await caller.deprovisioning.enableProviderForOrg({ provider, enabled: true });
         expect(auditWrites).toHaveLength(1);
         expect(auditWrites[0]?.organizationId).toBe(ORG_A);
         expect(auditWrites[0]?.actorId).toBe(USER_ID);
       });
 
-      it('setEnabled response contains NO credential/secret field', async () => {
+      it('enableProviderForOrg response contains NO credential/secret field', async () => {
         flagStatus.value = 'APPROVED';
         const caller = makeCaller();
-        const result = await caller[provider].setEnabled({ enabled: true });
+        const result = await caller.deprovisioning.enableProviderForOrg({
+          provider,
+          enabled: true,
+        });
         const json = JSON.stringify(result).toLowerCase();
         expect(json).not.toMatch(/secret|token|credential|apikey|api_key|client_secret/);
       });
