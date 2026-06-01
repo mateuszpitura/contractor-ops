@@ -51,43 +51,46 @@ export function DeprovisioningRunView({
   const t = useTranslations('Idp.runView');
 
   return (
-    <ul className="divide-y rounded-lg border">
-      {steps.map(step => (
-        <li key={step.id} className="flex items-center justify-between gap-3 p-3">
-          <div className="min-w-0 space-y-1">
-            <div className="flex items-center gap-2">
-              <span className="font-medium">{t(`provider.${step.provider}`)}</span>
-              <span className="text-sm text-muted-foreground">
-                {t(`stepKind.${step.stepKind}`)}
-              </span>
+    <>
+      <ul className="divide-y rounded-lg border">
+        {steps.map(step => (
+          <li key={step.id} className="flex items-center justify-between gap-3 p-3">
+            <div className="min-w-0 space-y-1">
+              <div className="flex items-center gap-2">
+                <span className="font-medium">{t(`provider.${step.provider}`)}</span>
+                <span className="text-sm text-muted-foreground">
+                  {t(`stepKind.${step.stepKind}`)}
+                </span>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge variant={statusBadgeVariant(step.status)}>
+                  {t(`status.${step.status}`)}
+                </Badge>
+                {step.status === 'MANUAL_COMPLETED' ? (
+                  <StepOverrideBadge
+                    category={step.manualOverrideCategory}
+                    note={step.manualOverrideNote}
+                    overriddenByUserId={step.manualOverriddenByUserId}
+                    overriddenAt={step.manualOverriddenAt}
+                  />
+                ) : null}
+                {step.status === 'FAILED' && step.lastErrorMessage ? (
+                  <span className="text-xs text-destructive">{step.lastErrorMessage}</span>
+                ) : null}
+              </div>
             </div>
-            <div className="flex flex-wrap items-center gap-2">
-              <Badge variant={statusBadgeVariant(step.status)}>{t(`status.${step.status}`)}</Badge>
-              {step.status === 'MANUAL_COMPLETED' ? (
-                <StepOverrideBadge
-                  category={step.manualOverrideCategory}
-                  note={step.manualOverrideNote}
-                  overriddenByUserId={step.manualOverriddenByUserId}
-                  overriddenAt={step.manualOverriddenAt}
-                />
-              ) : null}
-              {step.status === 'FAILED' && step.lastErrorMessage ? (
-                <span className="text-xs text-destructive">{step.lastErrorMessage}</span>
-              ) : null}
-            </div>
-          </div>
-          {step.canMarkComplete ? (
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => onOpenOverride(step.id)}>
-              {t('markComplete')}
-            </Button>
-          ) : null}
-        </li>
-      ))}
-
+            {step.canMarkComplete ? (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => onOpenOverride(step.id)}>
+                {t('markComplete')}
+              </Button>
+            ) : null}
+          </li>
+        ))}
+      </ul>
       {overrideStepId ? (
         <OverrideStepDialog
           stepId={overrideStepId}
@@ -98,6 +101,6 @@ export function DeprovisioningRunView({
           serverError={overrideServerError}
         />
       ) : null}
-    </ul>
+    </>
   );
 }
