@@ -2,6 +2,7 @@ import { AtelierEmptyState, ComplianceGapsIllustration } from '@contractor-ops/u
 import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
+import { AnimateIn } from '../../shared/animate-in.js';
 import { renderEmptyStateAction } from '../../shared/atelier-bridges.js';
 import { usePortalCompliance } from './hooks/use-portal-compliance.js';
 import { PortalComplianceList } from './portal-compliance-list.js';
@@ -13,11 +14,14 @@ export function PortalComplianceContainer() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-[28px] font-semibold leading-[1.2]">{t('listHeading')}</h1>
+      <AnimateIn delay={0}>
+        <h1 className="text-[28px] font-semibold leading-[1.2]">{t('listHeading')}</h1>
+      </AnimateIn>
 
       {isPending && (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2" aria-busy aria-live="polite">
           {[0, 1, 2, 3].map(i => (
+            // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
             <Skeleton key={i} className="h-28 w-full rounded-xl" />
           ))}
         </div>
@@ -39,7 +43,11 @@ export function PortalComplianceContainer() {
         />
       )}
 
-      {!(isPending || error || isEmpty) && <PortalComplianceList items={items} />}
+      {!(isPending || error || isEmpty) && (
+        <AnimateIn delay={1}>
+          <PortalComplianceList items={items} />
+        </AnimateIn>
+      )}
     </div>
   );
 }
