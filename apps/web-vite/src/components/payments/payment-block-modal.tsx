@@ -51,12 +51,12 @@ export interface PaymentBlockModalProps {
 }
 
 /**
- * The server emits documentTypeLabelKey as `compliance.documentType.<x>`. The
- * Compliance namespace is prepended by useTranslations('Compliance'), so we pass
- * the tail after the leading `compliance.` segment.
+ * The server emits documentTypeLabelKey as `Compliance.documentType.<x>` (canonical
+ * bundle root casing). useTranslations('Compliance') already scopes to the `Compliance`
+ * namespace, so we pass the tail after the leading `Compliance.` segment.
  */
 function labelKeyTail(documentTypeLabelKey: string): string {
-  return documentTypeLabelKey.replace(/^compliance\./, '');
+  return documentTypeLabelKey.replace(/^Compliance\./, '');
 }
 
 export function PaymentBlockModal({ open, onClose, contractorReasons }: PaymentBlockModalProps) {

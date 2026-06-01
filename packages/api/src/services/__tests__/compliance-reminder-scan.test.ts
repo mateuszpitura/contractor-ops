@@ -156,8 +156,8 @@ vi.mock('../cron-dedup', () => ({ claimCronNotificationDedup: mockClaimDedup }))
 vi.mock('../compliance-payment-gate', () => ({
   getDocumentTypeLabelKey: vi.fn((_documentType: string, policyRuleId: string | null) =>
     policyRuleId
-      ? `compliance.documentType.compliance-policy-engine.${policyRuleId.replace(/@v\d+$/, '')}`
-      : `compliance.documentType.compliance-policy-engine.unknown`,
+      ? `Compliance.documentType.compliance-policy-engine.${policyRuleId.replace(/@v\d+$/, '')}`
+      : `Compliance.documentType.compliance-policy-engine.unknown`,
   ),
 }));
 vi.mock('../../i18n/email-i18n', () => ({
@@ -444,5 +444,40 @@ describe('compliance-reminder-scan filtering + resilience', () => {
     mockPrismaRaw.contractorComplianceItem.findMany.mockRejectedValueOnce(new Error('db down'));
     const result = await runComplianceReminderScan(new Date('2026-05-03T09:00:00Z'));
     expect(result).toEqual({ scanned: 0, fires: 0, digests: 0 });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Bundle resolution — catches H-NEW-1 (casing miss causes raw key in digest)
+// ---------------------------------------------------------------------------
+// These tests call the REAL resolveMessage against the real en.json bundle so
+// any casing regression in getDocumentTypeLabelKey immediately produces a raw
+// key in these assertions instead of a human-readable label.
+// We use vi.importActual to bypass the module-level vi.mock on email-i18n.
+
+import { getDocumentTypeLabelKey } from '../compliance-payment-gate';
+
+type RealEmailI18n = typeof import('../../i18n/email-i18n');
+
+describe('compliance-reminder-scan digest label bundle resolution (real resolveMessage)', () => {
+  it('resolves one known rule per jurisdiction to a non-key human label (en)', async () => {
+    // Bypass the module-level mock to exercise the real bundle-walking code path.
+    const { resolveMessage } = await vi.importActual<RealEmailI18n>('../../i18n/email-i18n');
+
+    const cases: [string, string, string][] = [
+      ['UTR', 'uk.utr@v1', 'HMRC UTR'],
+      ['RIGHT_TO_WORK', 'uk.right_to_work@v1', 'UK Right-to-Work share code'],
+      ['A1_CERTIFICATE', 'de.a1@v1', 'A1-Bescheinigung'],
+      ['ZUS_A1', 'pl.zus_a1@v1', 'ZUS A1'],
+      ['IQAMA', 'ksa.iqama@v1', 'Iqama residency permit'],
+      ['EMIRATES_ID', 'uae.emirates_id@v1', 'Emirates ID'],
+    ];
+    for (const [documentType, policyRuleId, expected] of cases) {
+      const key = getDocumentTypeLabelKey(documentType, policyRuleId);
+      // The key must NOT be echoed back — that would mean the bundle lookup failed.
+      const resolved = resolveMessage(key, 'en');
+      expect(resolved).toBe(expected);
+      expect(resolved).not.toBe(key);
+    }
   });
 });

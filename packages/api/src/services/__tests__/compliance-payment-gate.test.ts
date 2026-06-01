@@ -99,7 +99,7 @@ describe('compliance-payment-gate assertion', () => {
       expect(cr.contractorId).toBe('ctr-1');
       expect(cr.contractorName).toBe('Acme GmbH');
       expect(cr.reasons[0]?.documentTypeLabelKey).toBe(
-        'compliance.documentType.compliance-policy-engine.de.a1',
+        'Compliance.documentType.compliance-policy-engine.de.a1',
       );
       expect(cr.reasons[0]?.deepLinkPath).toBe('/contractors/ctr-1/compliance#item-item-1');
     }
@@ -198,21 +198,21 @@ describe('compliance-payment-gate tx interop', () => {
 });
 
 describe('getDocumentTypeLabelKey', () => {
-  it('maps policyRuleId to compliance-policy-engine catalog path (strips @vN)', () => {
+  it('emits canonical Compliance.-prefixed key (capital C) so resolveMessage can walk the bundle root', () => {
     expect(getDocumentTypeLabelKey('A1_CERTIFICATE', 'de.a1@v1')).toBe(
-      'compliance.documentType.compliance-policy-engine.de.a1',
+      'Compliance.documentType.compliance-policy-engine.de.a1',
     );
     expect(getDocumentTypeLabelKey('UTR', 'uk.utr@v1')).toBe(
-      'compliance.documentType.compliance-policy-engine.uk.utr',
+      'Compliance.documentType.compliance-policy-engine.uk.utr',
     );
     expect(getDocumentTypeLabelKey('RIGHT_TO_WORK', 'uk.right_to_work@v1')).toBe(
-      'compliance.documentType.compliance-policy-engine.uk.right_to_work',
+      'Compliance.documentType.compliance-policy-engine.uk.right_to_work',
     );
   });
 
-  it('falls back to compliance-policy-engine path with lowercased documentType when policyRuleId is null', () => {
+  it('falls back to Compliance.-prefixed path with lowercased documentType when policyRuleId is null', () => {
     expect(getDocumentTypeLabelKey('A1_CERTIFICATE', null)).toBe(
-      'compliance.documentType.compliance-policy-engine.a1_certificate',
+      'Compliance.documentType.compliance-policy-engine.a1_certificate',
     );
   });
 });

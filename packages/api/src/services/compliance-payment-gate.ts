@@ -188,19 +188,24 @@ async function recordWouldBlock(
 }
 
 /**
- * Resolves the i18n label key for a (documentType, policyRuleId) pair.
+ * Resolves the canonical i18n label key for a (documentType, policyRuleId) pair.
  *
  * The message catalog lives under `Compliance.documentType.compliance-policy-engine.<jurisdiction>.<docNamespace>`.
+ * The leading `Compliance` segment matches the bundle root key exactly (case-sensitive).
  * For known rules the stableNamespace from parsePolicyRuleId (`uk.utr`, `de.a1`, …) maps directly
- * to that path: `compliance.documentType.compliance-policy-engine.uk.utr`.
+ * to that path: `Compliance.documentType.compliance-policy-engine.uk.utr`.
  * The fallback (null policyRuleId) produces a best-effort key; all real-world items carry a ruleId.
+ *
+ * Server-side callers pass this key verbatim to `resolveMessage` which walks the bundle from the
+ * root and requires the correct casing. The web-vite modal strips the leading `Compliance.` segment
+ * before calling `t(...)` under the `Compliance` namespace — see `labelKeyTail` in payment-block-modal.tsx.
  */
 export function getDocumentTypeLabelKey(documentType: string, policyRuleId: string | null): string {
   if (policyRuleId) {
     // policyRuleId values are written by the compliance engine which enforces
     // the PolicyRuleId format via POLICY_RULE_ID_RE on registration.
     const { stableNamespace } = parsePolicyRuleId(policyRuleId as PolicyRuleId);
-    return `compliance.documentType.compliance-policy-engine.${stableNamespace}`;
+    return `Compliance.documentType.compliance-policy-engine.${stableNamespace}`;
   }
-  return `compliance.documentType.compliance-policy-engine.${documentType.toLowerCase()}`;
+  return `Compliance.documentType.compliance-policy-engine.${documentType.toLowerCase()}`;
 }
