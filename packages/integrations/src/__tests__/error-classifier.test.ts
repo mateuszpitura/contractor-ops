@@ -73,7 +73,7 @@ describe('classifyError (Phase 77 D-07 closed-enum classifier)', () => {
 // classifier is signal-driven (status/headers/body/code), not provider-keyed,
 // so the `provider` hint is passed for documentation; behavior is asserted.
 describe.each([
-  { provider: 'ENTRA_ID' as const },
+  { provider: 'ENTRA' as const },
   { provider: 'OKTA' as const },
   { provider: 'GITHUB' as const },
 ])('classifyError per-provider HTTP-status mapping ($provider)', ({ provider }) => {
@@ -108,7 +108,7 @@ describe('classifyError provider-specific cases (Phase 78 D-13)', () => {
   it('Entra 403 Authorization_RequestDenied → PERMANENT_FORBIDDEN (no retry)', () => {
     expect(
       classifyError({
-        provider: 'ENTRA_ID',
+        provider: 'ENTRA',
         httpStatus: 403,
         providerErrorCode: 'Authorization_RequestDenied',
       }),

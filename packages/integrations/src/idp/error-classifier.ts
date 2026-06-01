@@ -32,16 +32,10 @@ export type ErrorClass =
  *
  * NOTE: the GoogleWorkspace/Slack/Okta/GitHub keys mirror the Prisma
  * `DeprovisioningProvider` enum; Entra is the saga key `ENTRA`. The plan's
- * Phase-78-D-13 spec names it `ENTRA_ID`, which is the same provider — both
- * labels accepted here so callers reading either spec compile.
+ * Phase-78-D-13 spec used `ENTRA_ID` but the whole tree standardised on `ENTRA`;
+ * the dual literal is dropped — call sites must pass `'ENTRA'`.
  */
-export type ClassifyErrorProvider =
-  | 'GOOGLE_WORKSPACE'
-  | 'SLACK'
-  | 'ENTRA'
-  | 'ENTRA_ID'
-  | 'OKTA'
-  | 'GITHUB';
+export type ClassifyErrorProvider = 'GOOGLE_WORKSPACE' | 'SLACK' | 'ENTRA' | 'OKTA' | 'GITHUB';
 
 /**
  * Input to {@link classifyError}. All fields optional so a bare `{}` (no
@@ -153,9 +147,9 @@ function isNetworkCause(cause: unknown): boolean {
  *  6. 403, or any status with a known forbidden provider code → `PERMANENT_FORBIDDEN`
  *  7. everything else → `PERMANENT_OTHER`
  *
- * Entra (`ENTRA`/`ENTRA_ID`), Okta, and GitHub all flow through this same
- * signal-driven logic (Phase 78 D-13): generic 401/403/404/429 mappings come
- * for free; the GitHub 403-vs-rate-limit overload is the one provider-specific
+ * Entra (`ENTRA`), Okta, and GitHub all flow through this same signal-driven
+ * logic (Phase 78 D-13): generic 401/403/404/429 mappings come for free; the
+ * GitHub 403-vs-rate-limit overload is the one provider-specific
  * disambiguation, handled by the rate-limit-signal check above the 403 branch.
  */
 export function classifyError(input: ClassifyErrorInput): ErrorClass {

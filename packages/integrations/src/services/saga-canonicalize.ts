@@ -36,6 +36,10 @@ const DENYLIST_KEYS = new Set(
     'givenname',
     'familyname',
     'phone',
+    // GitHub already-masked PAT identifier — defence-in-depth so the field is
+    // stripped if it ever appears under a differently-named wrapper elsewhere.
+    'token_last_eight',
+    'tokenlasteight',
   ].map(k => k.toLowerCase()),
 );
 
