@@ -16,11 +16,11 @@ export type ComplianceDashboardTab = 'at-risk' | 'upcoming-renewals' | 'blocked-
 export function useComplianceDashboard() {
   const trpc = useTRPC();
 
-  const kpisQuery = useQuery(trpc.classification.dashboardKpis.queryOptions());
-  const atRiskQuery = useQuery(trpc.classification.dashboardAtRisk.queryOptions());
-  const upcomingQuery = useQuery(trpc.classification.dashboardUpcomingRenewals.queryOptions());
+  const kpisQuery = useQuery(trpc.complianceAdmin.dashboardKpis.queryOptions());
+  const atRiskQuery = useQuery(trpc.complianceAdmin.dashboardAtRisk.queryOptions());
+  const upcomingQuery = useQuery(trpc.complianceAdmin.dashboardUpcomingRenewals.queryOptions());
   const blockedQuery = useQuery(
-    trpc.classification.dashboardBlockedPayments.queryOptions(undefined, {
+    trpc.complianceAdmin.dashboardBlockedPayments.queryOptions(undefined, {
       refetchInterval: BLOCKED_PAYMENTS_POLL_MS,
     }),
   );

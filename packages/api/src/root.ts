@@ -4,6 +4,7 @@ import {
   classificationDashboardRouter,
   classificationDocumentRouter,
   classificationRouter,
+  complianceAdminRouter,
   consentRouter,
   economicDependencyAlertRouter,
   gdprRouter,
@@ -203,6 +204,7 @@ export const appRouter = router({
   gdpr: gdprRouter, // GDPR: right to erasure (Art. 17), data portability/export (Art. 20)
   teams: teamsRouter, // Microsoft Teams integration -- channel discovery, channel mapping, connection status
   onboardingImport: onboardingImportRouter, // onboardingImport: Cross-tool import wizard -- source discovery, user merge, project import, async progress
+  complianceAdmin: complianceAdminRouter, // complianceAdmin: Admin compliance dashboard (KPIs, at-risk, renewals, blocked payments), manual override, upload approve/reject, item audit trail — always mounted (Phase 73)
   einvoice: einvoiceRouter, // einvoice: E-invoicing compliance statuses per country profile
   leitwegId: leitwegIdRouter, // leitwegId: German public-sector Leitweg-ID CRUD + contractor/contract default resolution (Phase 61 EINV-05)
   exchangeRate: exchangeRateRouter, // exchangeRate: Daily ECB exchange rates — query, convert, cron fetch

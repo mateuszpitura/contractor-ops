@@ -5,6 +5,7 @@
 export { classificationRouter } from './classification';
 export { classificationDashboardRouter } from './classification-dashboard';
 export { classificationDocumentRouter } from './classification-document';
+export { complianceAdminRouter } from './compliance-admin';
 export { consentRouter } from './consent';
 export { economicDependencyAlertRouter } from './economic-dependency-alert';
 export { gdprRouter } from './gdpr';

@@ -28,27 +28,27 @@ export function useUploadReview(onSettled?: () => void) {
   const queryClient = useQueryClient();
   const t = useTranslations('Compliance.uploadReview');
 
-  const invalidate = () => queryClient.invalidateQueries(trpc.classification.pathFilter());
+  const invalidate = () => queryClient.invalidateQueries(trpc.complianceAdmin.pathFilter());
 
   const approveMutation = useMutation(
-    trpc.classification.approveUploadReplacement.mutationOptions({
+    trpc.complianceAdmin.approveUploadReplacement.mutationOptions({
       onSuccess: () => {
         toast.success(t('toast.approved'));
         void invalidate();
         onSettled?.();
       },
-      onError: err => toast.error(err.message || t('toast.error')),
+      onError: () => toast.error(t('toast.error')),
     }),
   );
 
   const rejectMutation = useMutation(
-    trpc.classification.rejectUploadReplacement.mutationOptions({
+    trpc.complianceAdmin.rejectUploadReplacement.mutationOptions({
       onSuccess: () => {
         toast.success(t('toast.rejected'));
         void invalidate();
         onSettled?.();
       },
-      onError: err => toast.error(err.message || t('toast.error')),
+      onError: () => toast.error(t('toast.error')),
     }),
   );
 

@@ -17,7 +17,7 @@ export interface ComplianceAuditEntry {
 export function useComplianceItemHistory(itemId: string, enabled: boolean) {
   const trpc = useTRPC();
   const query = useQuery({
-    ...trpc.classification.itemAuditTrail.queryOptions({ itemId }),
+    ...trpc.complianceAdmin.itemAuditTrail.queryOptions({ itemId }),
     enabled,
   });
 

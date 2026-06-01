@@ -32,13 +32,13 @@ export function useOverrideComplianceItem(onSuccess?: () => void) {
   const t = useTranslations('Compliance.override');
 
   const mutation = useMutation(
-    trpc.classification.overrideItem.mutationOptions({
+    trpc.complianceAdmin.overrideItem.mutationOptions({
       onSuccess: () => {
         toast.success(t('toast.success'));
-        void queryClient.invalidateQueries(trpc.classification.pathFilter());
+        void queryClient.invalidateQueries(trpc.complianceAdmin.pathFilter());
         onSuccess?.();
       },
-      onError: err => toast.error(err.message || t('toast.error')),
+      onError: () => toast.error(t('toast.error')),
     }),
   );
 
