@@ -891,8 +891,12 @@ export const paymentRouter = router({
       const distinctContractorIds = Array.from(
         new Set(prepared.run.items.map(i => i.contractorId).filter((x): x is string => Boolean(x))),
       );
-      const jurisdictionDate = new Date().toISOString().slice(0, 10);
-      let toctouFailureContext: { contractorIds: string[]; jurisdictionDate: string } | null = null;
+      // UTC wall-clock date for the export timestamp. Named explicitly to avoid
+      // confusion with the TZ-aware jurisdictionDate(now, tz) helper from
+      // @contractor-ops/compliance-policy, which returns the calendar date in a
+      // contractor's jurisdiction timezone — a different (and per-contractor) value.
+      const exportDateUtc = new Date().toISOString().slice(0, 10);
+      let toctouFailureContext: { contractorIds: string[]; exportDateUtc: string } | null = null;
 
       // ── tx-2: TOCTOU re-assert + PaymentRunComplianceCheck PASS rows + transition ──
       let updatedRun: Awaited<ReturnType<typeof ctx.db.paymentRun.update>> | typeof prepared.run;
@@ -923,7 +927,7 @@ export const paymentRouter = router({
             });
           } catch (err) {
             if (err instanceof TRPCError && err.code === 'PRECONDITION_FAILED') {
-              toctouFailureContext = { contractorIds: distinctContractorIds, jurisdictionDate };
+              toctouFailureContext = { contractorIds: distinctContractorIds, exportDateUtc };
             }
             throw err;
           }
@@ -952,7 +956,7 @@ export const paymentRouter = router({
           // Phase 72 D-16 / D-18 — PASS-verdict compliance audit rows, atomic with
           // the PaymentExport row (one frozen snapshot per contractor on the run).
           for (const contractorId of distinctContractorIds) {
-            const snap = await buildSnapshotForContractor(tx, contractorId, jurisdictionDate);
+            const snap = await buildSnapshotForContractor(tx, contractorId, exportDateUtc);
             await tx.paymentRunComplianceCheck.create({
               data: {
                 organizationId: ctx.organizationId,
@@ -993,7 +997,7 @@ export const paymentRouter = router({
         if (toctouFailureContext) {
           const failCtx = toctouFailureContext as {
             contractorIds: string[];
-            jurisdictionDate: string;
+            exportDateUtc: string;
           };
           try {
             await ctx.db.$transaction(async tx2 => {
@@ -1001,7 +1005,7 @@ export const paymentRouter = router({
                 const snap = await buildSnapshotForContractor(
                   tx2,
                   contractorId,
-                  failCtx.jurisdictionDate,
+                  failCtx.exportDateUtc,
                 );
                 if (snap.eligibilityVerdict !== 'FAIL') continue;
                 await tx2.paymentRunComplianceCheck.create({
