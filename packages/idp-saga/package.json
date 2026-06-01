@@ -19,14 +19,11 @@
     "typecheck:fast": "tsgo --noEmit"
   },
   "dependencies": {
+    "@contractor-ops/db": "workspace:*",
     "@date-fns/tz": "^1.2.0",
     "date-fns": "^4.1.0"
   },
-  "peerDependencies": {
-    "@contractor-ops/db": "workspace:*"
-  },
   "devDependencies": {
-    "@contractor-ops/db": "workspace:*",
     "typescript": "^6.0.3",
     "vitest": "^4.1.5"
   }
