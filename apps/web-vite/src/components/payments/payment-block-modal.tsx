@@ -33,7 +33,7 @@ export interface ItemReason {
   itemId: string;
   policyRuleId: string | null;
   documentTypeLabelKey: string;
-  expiredOnDate: string;
+  expiredOnDate?: string; // absent when expiresAt is null on the compliance item
   jurisdictionTz: string;
   deepLinkPath: string;
 }

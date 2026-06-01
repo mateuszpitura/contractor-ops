@@ -48,7 +48,7 @@ export interface ItemReason {
   itemId: string;
   policyRuleId: string | null;
   documentTypeLabelKey: string;
-  expiredOnDate: string; // YYYY-MM-DD in jurisdiction TZ
+  expiredOnDate?: string; // YYYY-MM-DD in jurisdiction TZ; absent when expiresAt is null
   jurisdictionTz: string;
   deepLinkPath: string;
 }
@@ -72,19 +72,16 @@ export interface AssertOptions {
   organizationId?: string; // required when flag-OFF audit-log writes happen
 }
 
-const EMPTY_RESULT: EligibilityResult = {
-  blocked: false,
-  wouldBlock: false,
-  contractorReasons: [],
-};
-
 export async function assertContractorPaymentEligibility(
   contractorIds: string[],
   opts: AssertOptions = {},
 ): Promise<EligibilityResult> {
   const { tx, throwOnFail = true, flagEnabled, organizationId } = opts;
   const db: PaymentGateClient = tx ?? (prisma as unknown as PaymentGateClient);
-  if (contractorIds.length === 0) return EMPTY_RESULT;
+  // Return a fresh literal on the empty-input fast-path — no shared mutable singleton
+  // whose contractorReasons array could be corrupted by a mutating caller (L-2).
+  if (contractorIds.length === 0)
+    return { blocked: false, wouldBlock: false, contractorReasons: [] };
 
   const items = (await db.contractorComplianceItem.findMany({
     where: {
@@ -151,7 +148,9 @@ function groupReasons(items: ComplianceItemWithContractor[]): ContractorReason[]
       itemId: item.id,
       policyRuleId: item.policyRuleId,
       documentTypeLabelKey: getDocumentTypeLabelKey(item.documentType, item.policyRuleId),
-      expiredOnDate: item.expiresAt ? item.expiresAt.toISOString().slice(0, 10) : 'unknown',
+      // Omit expiredOnDate when expiresAt is null — mirrors payment-export-compliance-snapshot.ts
+      // which uses `undefined` for the same missing-date case rather than a magic string.
+      ...(item.expiresAt ? { expiredOnDate: item.expiresAt.toISOString().slice(0, 10) } : {}),
       jurisdictionTz: item.expiryJurisdictionTz ?? 'UTC',
       deepLinkPath: `/contractors/${item.contractorId}/compliance#item-${item.id}`,
     });

@@ -9,7 +9,7 @@
 import type { Prisma } from '@contractor-ops/db';
 import { Prisma as PrismaRuntime } from '@contractor-ops/db/generated/prisma/client';
 import { createLogger } from '@contractor-ops/logger';
-import type { AuditWriterClient } from './audit-writer';
+import type { AuditEntityType, AuditWriterClient } from './audit-writer';
 import { writeAuditLog } from './audit-writer';
 import type { PaymentGateClient } from './compliance-payment-gate';
 import { assertContractorPaymentEligibility } from './compliance-payment-gate';
@@ -86,7 +86,8 @@ export async function onComplianceItemSatisfied(
       // (system recovery here and admin manual in approval.ts:1506) emit
       // identically-shaped audit rows. Previously hardcoded 'INVOICE'/flow.id
       // was semantically wrong — a flow id is not an invoice resource id.
-      resourceType: flow.resourceType,
+      // Cast: $queryRaw returns plain string; DB enforces the EntityType enum.
+      resourceType: flow.resourceType as AuditEntityType,
       resourceId: flow.resourceId,
       metadata: {
         releasedItemIds: [args.itemId],
