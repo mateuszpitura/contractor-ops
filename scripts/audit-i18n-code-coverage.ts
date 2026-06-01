@@ -41,7 +41,7 @@ import { mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from 'n
 import { join, relative, resolve } from 'node:path';
 
 const ROOT = resolve(process.cwd());
-const APP = 'apps/web';
+const APP = 'apps/web-vite';
 const SRC_DIR = resolve(ROOT, APP, 'src');
 const MSG_DIR = resolve(ROOT, APP, 'messages');
 const LOCALES = ['en', 'pl', 'de', 'ar'] as const;
