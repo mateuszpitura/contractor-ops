@@ -7287,6 +7287,30 @@
         "cancel": "Cancel"
       },
       "secretPasteHint": "This looks like a credential value ({hint}). Provide a vault URL or pointer description only — never paste actual secrets.",
+      "providers": {
+        "ONE_PASSWORD": "1Password",
+        "BITWARDEN": "Bitwarden",
+        "HASHICORP_VAULT": "HashiCorp Vault",
+        "AWS_SECRETS_MANAGER": "AWS Secrets Manager",
+        "GCP_SECRET_MANAGER": "GCP Secret Manager",
+        "AZURE_KEY_VAULT": "Azure Key Vault",
+        "OTHER": "Other"
+      },
+      "accessTypes": {
+        "AWS": "AWS",
+        "GITHUB": "GitHub",
+        "GCP": "GCP",
+        "AZURE": "Azure",
+        "DATABASE": "Database",
+        "API_KEY": "API Key",
+        "SSH_KEY": "SSH Key",
+        "OTHER": "Other"
+      },
+      "status": {
+        "PENDING": "Pending",
+        "ROTATED": "Rotated",
+        "NOT_APPLICABLE": "N/A"
+      },
       "errors": {
         "failedToAdd": "Could not add credential. Try again.",
         "failedToMarkRotated": "Could not mark credential as rotated. Try again.",

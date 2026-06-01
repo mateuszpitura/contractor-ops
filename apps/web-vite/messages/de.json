@@ -7287,6 +7287,30 @@
         "cancel": "Abbrechen"
       },
       "secretPasteHint": "Dies sieht wie ein Zugangsdaten-Wert aus ({hint}). Geben Sie nur eine Vault-URL oder eine Beschreibung an — fügen Sie niemals echte Geheimnisse ein.",
+      "providers": {
+        "ONE_PASSWORD": "1Password",
+        "BITWARDEN": "Bitwarden",
+        "HASHICORP_VAULT": "HashiCorp Vault",
+        "AWS_SECRETS_MANAGER": "AWS Secrets Manager",
+        "GCP_SECRET_MANAGER": "GCP Secret Manager",
+        "AZURE_KEY_VAULT": "Azure Key Vault",
+        "OTHER": "Sonstiges"
+      },
+      "accessTypes": {
+        "AWS": "AWS",
+        "GITHUB": "GitHub",
+        "GCP": "GCP",
+        "AZURE": "Azure",
+        "DATABASE": "Datenbank",
+        "API_KEY": "API-Schlüssel",
+        "SSH_KEY": "SSH-Schlüssel",
+        "OTHER": "Sonstiges"
+      },
+      "status": {
+        "PENDING": "Ausstehend",
+        "ROTATED": "Rotiert",
+        "NOT_APPLICABLE": "N/A"
+      },
       "errors": {
         "failedToAdd": "Zugangsdaten konnten nicht hinzugefügt werden. Bitte erneut versuchen.",
         "failedToMarkRotated": "Zugangsdaten konnten nicht als rotiert markiert werden. Bitte erneut versuchen.",

@@ -7287,6 +7287,30 @@
         "cancel": "Anuluj"
       },
       "secretPasteHint": "To wygląda jak wartość poświadczenia ({hint}). Podaj tylko URL sejfu lub opis wskaźnika — nigdy nie wklejaj rzeczywistych sekretów.",
+      "providers": {
+        "ONE_PASSWORD": "1Password",
+        "BITWARDEN": "Bitwarden",
+        "HASHICORP_VAULT": "HashiCorp Vault",
+        "AWS_SECRETS_MANAGER": "AWS Secrets Manager",
+        "GCP_SECRET_MANAGER": "GCP Secret Manager",
+        "AZURE_KEY_VAULT": "Azure Key Vault",
+        "OTHER": "Inne"
+      },
+      "accessTypes": {
+        "AWS": "AWS",
+        "GITHUB": "GitHub",
+        "GCP": "GCP",
+        "AZURE": "Azure",
+        "DATABASE": "Baza danych",
+        "API_KEY": "Klucz API",
+        "SSH_KEY": "Klucz SSH",
+        "OTHER": "Inne"
+      },
+      "status": {
+        "PENDING": "Oczekujące",
+        "ROTATED": "Zrotowane",
+        "NOT_APPLICABLE": "N/D"
+      },
       "errors": {
         "failedToAdd": "Nie udało się dodać poświadczenia. Spróbuj ponownie.",
         "failedToMarkRotated": "Nie udało się oznaczyć poświadczenia jako zrotowane. Spróbuj ponownie.",

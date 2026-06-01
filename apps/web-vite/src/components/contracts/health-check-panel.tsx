@@ -106,7 +106,10 @@ export function HealthCheckPanel({
                       {t('confidence', { value: Math.round(clause.confidence * 100) })}
                     </span>
                     {isPending && (
-                      <sup data-testid="pending-phrase-marker" className="text-amber-600">
+                      <sup
+                        data-testid="pending-phrase-marker"
+                        className="text-amber-600"
+                        aria-label={t('pendingPhraseFooter')}>
                         ¹
                       </sup>
                     )}

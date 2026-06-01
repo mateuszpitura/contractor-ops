@@ -9,6 +9,13 @@ import {
 } from '@contractor-ops/ui/components/shadcn/dialog';
 import { Input } from '@contractor-ops/ui/components/shadcn/input';
 import { Label } from '@contractor-ops/ui/components/shadcn/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@contractor-ops/ui/components/shadcn/select';
 import { looksLikeSecret } from '@contractor-ops/validators';
 import { useState } from 'react';
 import { useTranslations } from '../../i18n/useTranslations.js';
@@ -24,7 +31,6 @@ export interface CredentialAddDialogProps {
     vaultProvider: VaultProvider;
     vaultUrl: string;
     accessType: AccessType;
-    notes?: string;
   }) => void;
 }
 
@@ -100,31 +106,33 @@ export function CredentialAddDialog({
           </div>
           <div className="space-y-1">
             <Label htmlFor="cred-provider">{t('dialog.fields.vaultProvider')}</Label>
-            <select
-              id="cred-provider"
-              className="w-full rounded border p-2 text-sm"
-              value={vaultProvider}
-              onChange={e => setVaultProvider(e.target.value as VaultProvider)}>
-              {VAULT_PROVIDERS.map(p => (
-                <option key={p} value={p}>
-                  {p}
-                </option>
-              ))}
-            </select>
+            <Select value={vaultProvider} onValueChange={v => setVaultProvider(v as VaultProvider)}>
+              <SelectTrigger id="cred-provider" className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {VAULT_PROVIDERS.map(p => (
+                  <SelectItem key={p} value={p}>
+                    {t(`providers.${p}`)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           <div className="space-y-1">
             <Label htmlFor="cred-access">{t('dialog.fields.accessType')}</Label>
-            <select
-              id="cred-access"
-              className="w-full rounded border p-2 text-sm"
-              value={accessType}
-              onChange={e => setAccessType(e.target.value as AccessType)}>
-              {ACCESS_TYPES.map(a => (
-                <option key={a} value={a}>
-                  {a}
-                </option>
-              ))}
-            </select>
+            <Select value={accessType} onValueChange={v => setAccessType(v as AccessType)}>
+              <SelectTrigger id="cred-access" className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {ACCESS_TYPES.map(a => (
+                  <SelectItem key={a} value={a}>
+                    {t(`accessTypes.${a}`)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </DialogBody>
         <DialogFooter>

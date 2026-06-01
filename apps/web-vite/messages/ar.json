@@ -7287,6 +7287,30 @@
         "cancel": "إلغاء"
       },
       "secretPasteHint": "يبدو هذا كقيمة بيانات اعتماد ({hint}). قدّم رابط خزنة أو وصف مؤشر فقط — لا تلصق الأسرار الفعلية أبدًا.",
+      "providers": {
+        "ONE_PASSWORD": "1Password",
+        "BITWARDEN": "Bitwarden",
+        "HASHICORP_VAULT": "HashiCorp Vault",
+        "AWS_SECRETS_MANAGER": "AWS Secrets Manager",
+        "GCP_SECRET_MANAGER": "GCP Secret Manager",
+        "AZURE_KEY_VAULT": "Azure Key Vault",
+        "OTHER": "أخرى"
+      },
+      "accessTypes": {
+        "AWS": "AWS",
+        "GITHUB": "GitHub",
+        "GCP": "GCP",
+        "AZURE": "Azure",
+        "DATABASE": "قاعدة البيانات",
+        "API_KEY": "مفتاح API",
+        "SSH_KEY": "مفتاح SSH",
+        "OTHER": "أخرى"
+      },
+      "status": {
+        "PENDING": "قيد الانتظار",
+        "ROTATED": "مُدوَّر",
+        "NOT_APPLICABLE": "غير قابل للتطبيق"
+      },
       "errors": {
         "failedToAdd": "تعذّر إضافة بيانات الاعتماد. حاول مرة أخرى.",
         "failedToMarkRotated": "تعذّر تحديد بيانات الاعتماد كمُدوَّرة. حاول مرة أخرى.",

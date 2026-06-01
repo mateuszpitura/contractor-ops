@@ -33,34 +33,33 @@ const STATUS_VARIANT = {
   NOT_APPLICABLE: 'outline',
 } as const;
 
-// ---------------------------------------------------------------------------
-// Enum → i18n label maps (INFO-1 fix)
-// ---------------------------------------------------------------------------
-
-const VAULT_PROVIDER_KEY: Record<string, string> = {
-  AWS_SECRETS_MANAGER: 'AWS Secrets Manager',
-  AZURE_KEY_VAULT: 'Azure Key Vault',
-  GCP_SECRET_MANAGER: 'GCP Secret Manager',
-  HASHICORP_VAULT: 'HashiCorp Vault',
-  BITWARDEN: 'Bitwarden',
-  OTHER: 'Other',
-};
-
-const ACCESS_TYPE_KEY: Record<string, string> = {
-  API_KEY: 'API Key',
-  OAUTH_TOKEN: 'OAuth Token',
-  SSH_KEY: 'SSH Key',
-  DATABASE_CREDENTIAL: 'Database credential',
-  SERVICE_ACCOUNT: 'Service account',
-  OTHER: 'Other',
-};
-
-function labelVaultProvider(raw: string): string {
-  return VAULT_PROVIDER_KEY[raw] ?? raw;
-}
-
-function labelAccessType(raw: string): string {
-  return ACCESS_TYPE_KEY[raw] ?? raw;
+// Enum label lookup via the i18n catalog — falls back to the raw value
+// for any unknown enum variant so rendering never silently breaks (INFO-1).
+function useLabelFns() {
+  const t = useTranslations('Workflow.credentials');
+  return {
+    labelVaultProvider: (raw: string) => {
+      try {
+        return t(`providers.${raw}` as Parameters<typeof t>[0]);
+      } catch {
+        return raw;
+      }
+    },
+    labelAccessType: (raw: string) => {
+      try {
+        return t(`accessTypes.${raw}` as Parameters<typeof t>[0]);
+      } catch {
+        return raw;
+      }
+    },
+    labelStatus: (raw: string) => {
+      try {
+        return t(`status.${raw}` as Parameters<typeof t>[0]);
+      } catch {
+        return raw;
+      }
+    },
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -116,6 +115,7 @@ export function CredentialsTab({
 }: CredentialsTabProps) {
   const t = useTranslations('Workflow.credentials');
   const tWorkflows = useTranslations('Workflows.errors');
+  const { labelVaultProvider, labelAccessType, labelStatus } = useLabelFns();
   const [removeTarget, setRemoveTarget] = useState<string | null>(null);
 
   const handleRemoveRequest = useCallback((id: string) => setRemoveTarget(id), []);
@@ -173,7 +173,7 @@ export function CredentialsTab({
                   variant={
                     STATUS_VARIANT[row.status as keyof typeof STATUS_VARIANT] ?? 'secondary'
                   }>
-                  {row.status}
+                  {labelStatus(row.status)}
                 </Badge>
                 {row.status === 'PENDING' && (
                   <Button
