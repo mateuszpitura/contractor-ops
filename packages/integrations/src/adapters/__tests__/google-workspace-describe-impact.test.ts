@@ -54,7 +54,6 @@ describe('GoogleWorkspaceAdapter.describeImpact (Phase 77 D-04)', () => {
         { appName: 'Some App', scopes: ['https://www.googleapis.com/auth/drive'] },
       ]);
     }
-    expect(preview.cacheKey).toBe(`co:idp:preview:GOOGLE_WORKSPACE:${USER}`);
     expect(preview.fetchedAt).toMatch(/^\d{4}-\d{2}-\d{2}T/);
   });
 

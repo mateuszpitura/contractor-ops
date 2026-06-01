@@ -215,7 +215,6 @@ export class GitHubAdapter extends BaseAdapter implements Deprovisionable {
   }
 
   async describeImpact(externalUserId: string): Promise<ImpactPreview> {
-    const cacheKey = `co:idp:preview:GITHUB:${externalUserId}`;
     const fetchedAt = new Date().toISOString();
     const octokit = this.#octokit();
 
@@ -303,7 +302,6 @@ export class GitHubAdapter extends BaseAdapter implements Deprovisionable {
       },
       customMetrics,
       fetchedAt,
-      cacheKey,
     };
   }
 

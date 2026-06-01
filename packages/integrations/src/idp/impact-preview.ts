@@ -113,36 +113,30 @@ export type ImpactPreview =
       customMetrics: GwsImpactCustomMetrics;
       /** ISO-8601 timestamp of when the underlying provider data was fetched. */
       fetchedAt: string;
-      /** `co:idp:preview:{provider}:{externalUserId}` Redis cache key (D-02). */
-      cacheKey: string;
     }
   | {
       provider: 'SLACK';
       commonMetrics: ImpactCommonMetrics;
       customMetrics: SlackImpactCustomMetrics;
       fetchedAt: string;
-      cacheKey: string;
     }
   | {
       provider: 'ENTRA';
       commonMetrics: ImpactCommonMetrics;
       customMetrics: EntraImpactCustomMetrics;
       fetchedAt: string;
-      cacheKey: string;
     }
   | {
       provider: 'OKTA';
       commonMetrics: ImpactCommonMetrics;
       customMetrics: OktaImpactCustomMetrics;
       fetchedAt: string;
-      cacheKey: string;
     }
   | {
       provider: 'GITHUB';
       commonMetrics: ImpactCommonMetrics;
       customMetrics: GitHubImpactCustomMetrics;
       fetchedAt: string;
-      cacheKey: string;
     };
 
 /** The `provider` discriminant literals carried by {@link ImpactPreview}. */

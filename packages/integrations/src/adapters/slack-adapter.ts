@@ -526,7 +526,6 @@ export class SlackAdapter extends BaseAdapter implements Deprovisionable {
   }
 
   async describeImpact(externalUserId: string): Promise<ImpactPreview> {
-    const cacheKey = `co:idp:preview:SLACK:${externalUserId}`;
     const fetchedAt = new Date().toISOString();
 
     const baseCommon = {
@@ -564,7 +563,6 @@ export class SlackAdapter extends BaseAdapter implements Deprovisionable {
           error: 'NOT_ON_ENTERPRISE_GRID',
         },
         fetchedAt,
-        cacheKey,
       };
     }
 
@@ -619,7 +617,6 @@ export class SlackAdapter extends BaseAdapter implements Deprovisionable {
         error: null,
       },
       fetchedAt,
-      cacheKey,
     };
   }
 

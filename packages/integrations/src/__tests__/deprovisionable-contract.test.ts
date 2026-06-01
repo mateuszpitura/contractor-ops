@@ -41,7 +41,6 @@ class TestDeprovisionableAdapter extends BaseAdapter implements Deprovisionable 
       },
       customMetrics: { oauthGrants: [], isSuperAdmin: false, drivesOwnedCount: null },
       fetchedAt: new Date().toISOString(),
-      cacheKey: `co:idp:preview:GOOGLE_WORKSPACE:${externalUserId}`,
     };
   }
 }

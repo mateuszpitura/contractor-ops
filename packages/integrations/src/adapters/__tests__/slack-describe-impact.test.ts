@@ -47,7 +47,6 @@ describe('SlackAdapter.describeImpact (Phase 77 D-04)', () => {
       expect(preview.customMetrics.installedAppCount).toBe(2);
       expect(preview.customMetrics.error).toBeNull();
     }
-    expect(preview.cacheKey).toBe(`co:idp:preview:SLACK:${USER_ID}`);
   });
 
   it('degrades installedAppCount to null when apps method unavailable', async () => {

@@ -126,7 +126,6 @@ describe('GitHubAdapter — Deprovisionable contract (Phase 78 IDP-07)', () => {
 
     const preview = await adapter().describeImpact(USER);
     expect(preview.provider).toBe('GITHUB');
-    expect(preview.cacheKey).toBe(`co:idp:preview:GITHUB:${USER}`);
     if (preview.provider === 'GITHUB') {
       expect(preview.commonMetrics.accountStatus).toBe('ACTIVE');
       expect(preview.customMetrics.repositoryCount).toBe(2);

@@ -187,7 +187,6 @@ describe('EntraIdAdapter — Deprovisionable contract (Phase 78 IDP-05)', () => 
 
     const preview = await adapter().describeImpact(USER);
     expect(preview.provider).toBe('ENTRA');
-    expect(preview.cacheKey).toBe(`co:idp:preview:ENTRA_ID:${USER}`);
     if (preview.provider === 'ENTRA') {
       expect(preview.commonMetrics.accountStatus).toBe('ACTIVE');
       expect(preview.commonMetrics.externalUserDisplayName).toBe('Entra Test User');

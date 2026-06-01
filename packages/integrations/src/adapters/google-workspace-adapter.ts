@@ -534,7 +534,6 @@ export class GoogleWorkspaceAdapter extends BaseAdapter implements Deprovisionab
   }
 
   async describeImpact(externalUserId: string): Promise<ImpactPreview> {
-    const cacheKey = `co:idp:preview:GOOGLE_WORKSPACE:${externalUserId}`;
     const fetchedAt = new Date().toISOString();
 
     // users.get — accountStatus + isSuperAdmin + displayName.
@@ -554,7 +553,6 @@ export class GoogleWorkspaceAdapter extends BaseAdapter implements Deprovisionab
         },
         customMetrics: { oauthGrants: [], isSuperAdmin: false, drivesOwnedCount: null },
         fetchedAt,
-        cacheKey,
       };
     }
     const user = (await userRes.json().catch(() => ({}))) as {
@@ -614,7 +612,6 @@ export class GoogleWorkspaceAdapter extends BaseAdapter implements Deprovisionab
         drivesOwnedCount,
       },
       fetchedAt,
-      cacheKey,
     };
   }
 

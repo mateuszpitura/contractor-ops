@@ -379,7 +379,6 @@ export class EntraIdAdapter extends BaseAdapter implements Deprovisionable {
   }
 
   async describeImpact(externalUserId: string): Promise<ImpactPreview> {
-    const cacheKey = `co:idp:preview:ENTRA_ID:${externalUserId}`;
     const fetchedAt = new Date().toISOString();
 
     // User read — accountStatus + onPremisesSyncEnabled + license SKUs. A total
@@ -435,7 +434,6 @@ export class EntraIdAdapter extends BaseAdapter implements Deprovisionable {
       },
       customMetrics,
       fetchedAt,
-      cacheKey,
     };
   }
 

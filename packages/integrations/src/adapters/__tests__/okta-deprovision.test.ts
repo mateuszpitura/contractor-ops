@@ -144,7 +144,6 @@ describe('OktaAdapter — Deprovisionable contract (Phase 78 IDP-06)', () => {
 
     const preview = await adapter().describeImpact(USER);
     expect(preview.provider).toBe('OKTA');
-    expect(preview.cacheKey).toBe(`co:idp:preview:OKTA:${USER}`);
     if (preview.provider === 'OKTA') {
       expect(preview.commonMetrics.accountStatus).toBe('ACTIVE');
       expect(preview.commonMetrics.externalUserDisplayName).toBe('Test User');

@@ -43,7 +43,6 @@ describe('ImpactPreview union ↔ DeprovisioningProvider enum (Phase 77 D-01)', 
       },
       customMetrics: { oauthGrants: [], isSuperAdmin: false, drivesOwnedCount: null },
       fetchedAt: new Date().toISOString(),
-      cacheKey: 'co:idp:preview:GOOGLE_WORKSPACE:u@example.com',
     };
     expect(preview.provider).toBe('GOOGLE_WORKSPACE');
     if (preview.provider === 'GOOGLE_WORKSPACE') {

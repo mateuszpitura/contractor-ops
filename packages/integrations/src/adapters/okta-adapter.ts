@@ -145,7 +145,6 @@ export class OktaAdapter extends BaseAdapter implements Deprovisionable {
   }
 
   async describeImpact(externalUserId: string): Promise<ImpactPreview> {
-    const cacheKey = `co:idp:preview:OKTA:${externalUserId}`;
     const fetchedAt = new Date().toISOString();
     const client = this.#client();
 
@@ -204,7 +203,6 @@ export class OktaAdapter extends BaseAdapter implements Deprovisionable {
         linkedIdpCount,
       },
       fetchedAt,
-      cacheKey,
     };
   }
 
