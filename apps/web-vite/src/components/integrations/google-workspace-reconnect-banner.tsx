@@ -1,12 +1,6 @@
 import type { ScopeCapabilities } from '@contractor-ops/db';
+import { Alert, AlertDescription, AlertTitle } from '@contractor-ops/ui/components/shadcn/alert';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
-import {
-  Card,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@contractor-ops/ui/components/shadcn/card';
 import { AlertCircle } from 'lucide-react';
 import { useTranslations } from '../../i18n/useTranslations.js';
 
@@ -101,23 +95,18 @@ export function GoogleWorkspaceReconnectBanner({
   const buttonKey = needsWriteAccess ? 'writeAccessButton' : 'reconnectButton';
 
   return (
-    <Card
+    <Alert
       role="region"
       aria-label={t(titleKey)}
       className="border-amber-500/50 bg-amber-50 dark:bg-amber-950/30">
-      <CardHeader className="flex flex-row items-start gap-3">
-        <AlertCircle
-          className="mt-0.5 h-5 w-5 shrink-0 text-amber-600 dark:text-amber-400"
-          aria-hidden="true"
-        />
-        <div className="flex-1">
-          <CardTitle className="text-base">{t(titleKey)}</CardTitle>
-          <CardDescription className="mt-1">{t(bodyKey)}</CardDescription>
-        </div>
-      </CardHeader>
-      <CardFooter>
-        <Button render={<a href={reconnectHref} />}>{t(buttonKey)}</Button>
-      </CardFooter>
-    </Card>
+      <AlertCircle className="text-amber-600 dark:text-amber-400" aria-hidden="true" />
+      <div className="flex flex-col gap-2">
+        <AlertTitle>{t(titleKey)}</AlertTitle>
+        <AlertDescription>{t(bodyKey)}</AlertDescription>
+        <Button render={<a href={reconnectHref} />} className="w-fit">
+          {t(buttonKey)}
+        </Button>
+      </div>
+    </Alert>
   );
 }
