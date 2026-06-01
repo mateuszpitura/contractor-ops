@@ -46,6 +46,7 @@ import {
   CLASSIFICATION_ONLY_DRAFT_CAN_RECREATE,
   CLASSIFICATION_SDS_APPROVAL_IR35_ONLY,
   CLASSIFICATION_STALE_ANSWER,
+  COMPLIANCE_DOCUMENT_NOT_PENDING_REVIEW,
   COMPLIANCE_ITEM_ALREADY_WAIVED,
   COMPLIANCE_ITEM_NOT_FOUND,
   SDS_APPROVAL_ALREADY_EXISTS,
@@ -751,6 +752,36 @@ export const classificationRouter = router({
         if (!before) {
           throw new TRPCError({ code: 'NOT_FOUND', message: COMPLIANCE_ITEM_NOT_FOUND });
         }
+
+        // WR-1: verify the document is PENDING_REVIEW, belongs to this org,
+        // and is linked to the item's contractor — prevents an admin from
+        // corrupting satisfiedByDocumentId with an arbitrary same-org document.
+        const doc = await tx.document.findFirst({
+          where: { id: input.documentId, organizationId: ctx.organizationId },
+          select: { id: true, status: true },
+        });
+        if (!doc || doc.status !== 'PENDING_REVIEW') {
+          throw new TRPCError({
+            code: 'PRECONDITION_FAILED',
+            message: COMPLIANCE_DOCUMENT_NOT_PENDING_REVIEW,
+          });
+        }
+        const ownerLink = await tx.documentLink.findFirst({
+          where: {
+            documentId: input.documentId,
+            organizationId: ctx.organizationId,
+            entityType: 'CONTRACTOR',
+            entityId: before.contractorId,
+          },
+          select: { id: true },
+        });
+        if (!ownerLink) {
+          throw new TRPCError({
+            code: 'PRECONDITION_FAILED',
+            message: COMPLIANCE_DOCUMENT_NOT_PENDING_REVIEW,
+          });
+        }
+
         const updated = await tx.contractorComplianceItem.update({
           where: { id: input.itemId },
           data: {
@@ -820,9 +851,43 @@ export const classificationRouter = router({
         if (!item) {
           throw new TRPCError({ code: 'NOT_FOUND', message: COMPLIANCE_ITEM_NOT_FOUND });
         }
+
+        // WR-1: same ownership + status guard as approveUploadReplacement.
+        const doc = await tx.document.findFirst({
+          where: { id: input.documentId, organizationId: ctx.organizationId },
+          select: { id: true, status: true },
+        });
+        if (!doc || doc.status !== 'PENDING_REVIEW') {
+          throw new TRPCError({
+            code: 'PRECONDITION_FAILED',
+            message: COMPLIANCE_DOCUMENT_NOT_PENDING_REVIEW,
+          });
+        }
+        const ownerLink = await tx.documentLink.findFirst({
+          where: {
+            documentId: input.documentId,
+            organizationId: ctx.organizationId,
+            entityType: 'CONTRACTOR',
+            entityId: item.contractorId,
+          },
+          select: { id: true },
+        });
+        if (!ownerLink) {
+          throw new TRPCError({
+            code: 'PRECONDITION_FAILED',
+            message: COMPLIANCE_DOCUMENT_NOT_PENDING_REVIEW,
+          });
+        }
+
         await tx.document.update({
           where: { id: input.documentId },
           data: { status: 'ARCHIVED' },
+        });
+        // Clear the candidate doc from the item so it no longer appears as
+        // awaiting review in the admin tab.
+        await tx.contractorComplianceItem.update({
+          where: { id: input.itemId },
+          data: { satisfiedByDocumentId: null },
         });
         await writeAuditLog({
           tx,

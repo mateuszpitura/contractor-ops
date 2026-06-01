@@ -627,8 +627,35 @@ export const contractorRouter = router({
         unpaidInvoiceCount: 0, // Invoices not yet in Phase 2
       });
 
+      // CR-2: surface which compliance items have a document awaiting admin
+      // review. satisfiedByDocumentId is set optimistically by
+      // submitUploadReplacement and cleared on reject / confirmed on approve.
+      // We batch-fetch statuses in one query rather than N+1 per item.
+      const candidateDocIds = contractor.complianceItems
+        .filter(i => i.satisfiedByDocumentId != null && i.status !== 'SATISFIED')
+        .map(i => i.satisfiedByDocumentId as string);
+
+      const pendingReviewDocIds =
+        candidateDocIds.length > 0
+          ? await ctx.db.document
+              .findMany({
+                where: { id: { in: candidateDocIds }, status: 'PENDING_REVIEW' },
+                select: { id: true },
+              })
+              .then(docs => new Set(docs.map(d => d.id)))
+          : new Set<string>();
+
+      const complianceItems = contractor.complianceItems.map(i => ({
+        ...i,
+        pendingReviewDocumentId:
+          i.satisfiedByDocumentId != null && pendingReviewDocIds.has(i.satisfiedByDocumentId)
+            ? i.satisfiedByDocumentId
+            : null,
+      }));
+
       return {
         ...contractor,
+        complianceItems,
         complianceHealth: health,
       };
     }),

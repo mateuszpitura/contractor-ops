@@ -1,5 +1,8 @@
 // Phase 73 · Plan 08 — compliance approve/reject upload-review admin mutations (COMPL-04 / D-08).
 // Router-caller harness over the staff appRouter (mirrors compliance-override-mutation.test.ts).
+//
+// WR-1 fix: tests now assert that approve/reject reject a documentId that is
+// not PENDING_REVIEW or is not linked to the item's contractor.
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -20,12 +23,20 @@ const { mockPrisma, auditWriteSpy, dispatchSpy, rbacSpy } = vi.hoisted(() => {
     findFirst: vi.fn(async () => ({ ...item })),
     update: vi.fn(async (args: { data: Record<string, unknown> }) => ({ ...item, ...args.data })),
   };
-  const document = { update: vi.fn(async () => ({ id: 'cldocaaaaaaaaaaaaaaaaaaaaaa' })) };
+  // WR-1: document.findFirst returns a PENDING_REVIEW doc by default.
+  const document = {
+    findFirst: vi.fn(async () => ({ id: DOC_ID, status: 'PENDING_REVIEW' })),
+    update: vi.fn(async () => ({ id: DOC_ID })),
+  };
+  // WR-1: documentLink.findFirst returns the owner link by default.
+  const documentLink = {
+    findFirst: vi.fn(async () => ({ id: 'link_1' })),
+  };
   const organization = {
     findUnique: vi.fn(async () => ({ dataRegion: 'EU', status: 'ACTIVE' })),
     findUniqueOrThrow: vi.fn(async () => ({ countryCode: 'GB' })),
   };
-  const base = { contractorComplianceItem, document, organization };
+  const base = { contractorComplianceItem, document, documentLink, organization };
   const mockPrisma = {
     ...base,
     $transaction: vi.fn(async (fn: (tx: typeof base) => unknown) => fn(base)),
@@ -185,10 +196,20 @@ beforeEach(() => {
     policyRuleId: 'uk.right_to_work@v1',
     status: 'EXPIRED',
   } as never);
+  // Default: doc is PENDING_REVIEW and owned by the contractor.
+  mockPrisma.document.findFirst.mockResolvedValue({
+    id: DOC_ID,
+    status: 'PENDING_REVIEW',
+  } as never);
+  mockPrisma.documentLink.findFirst.mockResolvedValue({ id: 'link_1' } as never);
 });
 
-describe('compliance-upload-review approve', () => {
-  it('flips ContractorComplianceItem to SATISFIED + sets satisfiedByDocumentId + sets expiresAt', async () => {
+// ---------------------------------------------------------------------------
+// approve happy path
+// ---------------------------------------------------------------------------
+
+describe('compliance-upload-review approve — happy path', () => {
+  it('flips ContractorComplianceItem to SATISFIED + sets satisfiedByDocumentId + expiresAt', async () => {
     const caller = makeCaller();
     const out = (await caller.classification.approveUploadReplacement({
       itemId: ITEM_ID,
@@ -215,7 +236,7 @@ describe('compliance-upload-review approve', () => {
     );
   });
 
-  it('writes AuditLog action=compliance.upload.approved with metadata.itemId, metadata.documentId', async () => {
+  it('writes AuditLog action=compliance.upload.approved', async () => {
     const caller = makeCaller();
     await caller.classification.approveUploadReplacement({
       itemId: ITEM_ID,
@@ -230,7 +251,7 @@ describe('compliance-upload-review approve', () => {
     );
   });
 
-  it('rejects callers without compliance:override permission with FORBIDDEN', async () => {
+  it('rejects callers without compliance:override permission', async () => {
     vi.mocked(authApi.hasPermission).mockResolvedValue({ success: false } as never);
     const caller = makeCaller('readonly');
     await expect(
@@ -243,7 +264,58 @@ describe('compliance-upload-review approve', () => {
   });
 });
 
-describe('compliance-upload-review reject', () => {
+// ---------------------------------------------------------------------------
+// WR-1: approve must reject a non-PENDING_REVIEW or unlinked documentId
+// ---------------------------------------------------------------------------
+
+describe('compliance-upload-review approve — WR-1 validation', () => {
+  it('throws PRECONDITION_FAILED when the document does not exist', async () => {
+    mockPrisma.document.findFirst.mockResolvedValueOnce(null as never);
+    const caller = makeCaller();
+    await expect(
+      caller.classification.approveUploadReplacement({
+        itemId: ITEM_ID,
+        documentId: 'nonexistent-doc',
+        expiresAt: '2027-01-15',
+      }),
+    ).rejects.toMatchObject({ code: 'PRECONDITION_FAILED' });
+    // Mutation must not have proceeded.
+    expect(mockPrisma.contractorComplianceItem.update).not.toHaveBeenCalled();
+  });
+
+  it('throws PRECONDITION_FAILED when document status is ACTIVE (not PENDING_REVIEW)', async () => {
+    mockPrisma.document.findFirst.mockResolvedValueOnce({ id: DOC_ID, status: 'ACTIVE' } as never);
+    const caller = makeCaller();
+    await expect(
+      caller.classification.approveUploadReplacement({
+        itemId: ITEM_ID,
+        documentId: DOC_ID,
+        expiresAt: '2027-01-15',
+      }),
+    ).rejects.toMatchObject({ code: 'PRECONDITION_FAILED' });
+    expect(mockPrisma.contractorComplianceItem.update).not.toHaveBeenCalled();
+  });
+
+  it('throws PRECONDITION_FAILED when document is not linked to the item contractor (IDOR guard)', async () => {
+    // Document is PENDING_REVIEW but not owned by this contractor.
+    mockPrisma.documentLink.findFirst.mockResolvedValueOnce(null as never);
+    const caller = makeCaller();
+    await expect(
+      caller.classification.approveUploadReplacement({
+        itemId: ITEM_ID,
+        documentId: DOC_ID,
+        expiresAt: '2027-01-15',
+      }),
+    ).rejects.toMatchObject({ code: 'PRECONDITION_FAILED' });
+    expect(mockPrisma.contractorComplianceItem.update).not.toHaveBeenCalled();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// reject happy path
+// ---------------------------------------------------------------------------
+
+describe('compliance-upload-review reject — happy path', () => {
   it('moves Document.status to ARCHIVED', async () => {
     const caller = makeCaller();
     await caller.classification.rejectUploadReplacement({
@@ -256,14 +328,19 @@ describe('compliance-upload-review reject', () => {
     );
   });
 
-  it('keeps ContractorComplianceItem.status MISSING/EXPIRED on reject (no item update)', async () => {
+  it('clears satisfiedByDocumentId on the compliance item after rejection', async () => {
     const caller = makeCaller();
     await caller.classification.rejectUploadReplacement({
       itemId: ITEM_ID,
       documentId: DOC_ID,
       reasonCategory: 'illegible',
     });
-    expect(mockPrisma.contractorComplianceItem.update).not.toHaveBeenCalled();
+    expect(mockPrisma.contractorComplianceItem.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: ITEM_ID },
+        data: expect.objectContaining({ satisfiedByDocumentId: null }),
+      }),
+    );
   });
 
   it('writes AuditLog action=compliance.upload.rejected with reasonCategory + freeText', async () => {
@@ -307,5 +384,53 @@ describe('compliance-upload-review reject', () => {
         reasonCategory: 'not-a-real-reason',
       }),
     ).rejects.toThrow();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// WR-1: reject must reject a non-PENDING_REVIEW or unlinked documentId
+// ---------------------------------------------------------------------------
+
+describe('compliance-upload-review reject — WR-1 validation', () => {
+  it('throws PRECONDITION_FAILED when the document does not exist', async () => {
+    mockPrisma.document.findFirst.mockResolvedValueOnce(null as never);
+    const caller = makeCaller();
+    await expect(
+      caller.classification.rejectUploadReplacement({
+        itemId: ITEM_ID,
+        documentId: 'nonexistent-doc',
+        reasonCategory: 'illegible',
+      }),
+    ).rejects.toMatchObject({ code: 'PRECONDITION_FAILED' });
+    expect(mockPrisma.document.update).not.toHaveBeenCalled();
+  });
+
+  it('throws PRECONDITION_FAILED when document is not PENDING_REVIEW', async () => {
+    mockPrisma.document.findFirst.mockResolvedValueOnce({
+      id: DOC_ID,
+      status: 'ARCHIVED',
+    } as never);
+    const caller = makeCaller();
+    await expect(
+      caller.classification.rejectUploadReplacement({
+        itemId: ITEM_ID,
+        documentId: DOC_ID,
+        reasonCategory: 'illegible',
+      }),
+    ).rejects.toMatchObject({ code: 'PRECONDITION_FAILED' });
+    expect(mockPrisma.document.update).not.toHaveBeenCalled();
+  });
+
+  it('throws PRECONDITION_FAILED when document is not linked to the item contractor', async () => {
+    mockPrisma.documentLink.findFirst.mockResolvedValueOnce(null as never);
+    const caller = makeCaller();
+    await expect(
+      caller.classification.rejectUploadReplacement({
+        itemId: ITEM_ID,
+        documentId: DOC_ID,
+        reasonCategory: 'illegible',
+      }),
+    ).rejects.toMatchObject({ code: 'PRECONDITION_FAILED' });
+    expect(mockPrisma.document.update).not.toHaveBeenCalled();
   });
 });

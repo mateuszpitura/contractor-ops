@@ -3276,6 +3276,8 @@
       }
     },
     "uploadReview": {
+      "reviewButtonLabel": "Review upload",
+      "reviewButtonAriaLabel": "Review uploaded document",
       "title": "Review uploaded document",
       "description": "Approve to satisfy the requirement, or reject with a reason.",
       "approveTab": "Approve",

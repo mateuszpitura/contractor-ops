@@ -3276,6 +3276,8 @@
       }
     },
     "uploadReview": {
+      "reviewButtonLabel": "Przejrzyj upload",
+      "reviewButtonAriaLabel": "Przejrzyj przesłany dokument",
       "title": "Przejrzyj przesłany dokument",
       "description": "Zatwierdź, aby spełnić wymaganie, lub odrzuć z podaniem powodu.",
       "approveTab": "Zatwierdź",

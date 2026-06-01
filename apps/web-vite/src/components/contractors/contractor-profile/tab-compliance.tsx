@@ -1,11 +1,14 @@
 import { AtelierEmptyState, ComplianceGapsIllustration } from '@contractor-ops/ui';
 import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from '@contractor-ops/ui/components/shadcn/tooltip';
-import { ShieldCheck } from 'lucide-react';
+import { FileSearch, ShieldCheck } from 'lucide-react';
+import { useState } from 'react';
+import { usePermissions } from '../../../hooks/use-permissions.js';
 import { tDynLoose } from '../../../i18n/typed-keys.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { enumKey } from '../../../lib/enum-key.js';
@@ -13,6 +16,7 @@ import { useDateFormatter } from '../../../lib/format/use-date-formatter.js';
 import { renderEmptyStateAction } from '../../shared/atelier-bridges.js';
 import { ComplianceItemHistory } from '../compliance/compliance-item-history.js';
 import { OverrideComplianceItemButton } from '../compliance/override-compliance-item-button.js';
+import { UploadReviewDialogContainer } from '../compliance/upload-review-dialog-container.js';
 import { ContractorEInvoicingSectionContainer } from '../contractor-e-invoicing-section-container.js';
 import { CountryComplianceSectionContainer } from '../country-compliance-section-container.js';
 
@@ -26,6 +30,8 @@ type ComplianceItem = {
   expiresAt: string | Date | null;
   requirementTemplateId: string | null;
   waivedReasonCategory: string | null;
+  /** Set by submitUploadReplacement when a PENDING_REVIEW document exists. */
+  pendingReviewDocumentId?: string | null;
   contract: { id: string; title: string | null } | null;
 };
 
@@ -49,6 +55,42 @@ function isExpiringSoon(expiresAt: string | Date | null): boolean {
   const d = typeof expiresAt === 'string' ? new Date(expiresAt) : expiresAt;
   const thirtyDaysFromNow = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
   return d <= thirtyDaysFromNow && d >= new Date();
+}
+
+function ReviewUploadButton({
+  itemId,
+  documentId,
+  defaultExpiresAt,
+}: {
+  itemId: string;
+  documentId: string;
+  defaultExpiresAt: string;
+}) {
+  const t = useTranslations('Compliance.uploadReview');
+  const { can } = usePermissions();
+  const [open, setOpen] = useState(false);
+
+  if (!can('compliance', ['override'])) return null;
+
+  return (
+    <>
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={() => setOpen(true)}
+        aria-label={t('reviewButtonAriaLabel')}>
+        <FileSearch className="size-4" aria-hidden />
+        {t('reviewButtonLabel')}
+      </Button>
+      <UploadReviewDialogContainer
+        itemId={itemId}
+        documentId={documentId}
+        defaultExpiresAt={defaultExpiresAt}
+        open={open}
+        onOpenChange={setOpen}
+      />
+    </>
+  );
 }
 
 export function TabCompliance({ contractor }: TabComplianceProps) {
@@ -83,6 +125,7 @@ export function TabCompliance({ contractor }: TabComplianceProps) {
           const isMissing = item.status === 'MISSING';
           const expiringSoon = isExpiringSoon(item.expiresAt);
           const statusKey = item.status as keyof typeof statusBadgeStyles;
+          const hasPendingReview = item.pendingReviewDocumentId != null;
 
           return (
             <div
@@ -115,12 +158,20 @@ export function TabCompliance({ contractor }: TabComplianceProps) {
               </div>
 
               <div className="flex shrink-0 items-center gap-2">
-                <OverrideComplianceItemButton
-                  itemId={item.id}
-                  contractorId={contractor.id}
-                  severity={item.severity}
-                  status={item.status}
-                />
+                {hasPendingReview ? (
+                  <ReviewUploadButton
+                    itemId={item.id}
+                    documentId={item.pendingReviewDocumentId as string}
+                    defaultExpiresAt={item.expiresAt ? formatDate(item.expiresAt) : ''}
+                  />
+                ) : (
+                  <OverrideComplianceItemButton
+                    itemId={item.id}
+                    contractorId={contractor.id}
+                    severity={item.severity}
+                    status={item.status}
+                  />
+                )}
                 {item.status === 'WAIVED' ? (
                   <Tooltip>
                     <TooltipTrigger

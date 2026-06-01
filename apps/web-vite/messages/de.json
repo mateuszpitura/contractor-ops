@@ -3276,6 +3276,8 @@
       }
     },
     "uploadReview": {
+      "reviewButtonLabel": "Upload prüfen",
+      "reviewButtonAriaLabel": "Hochgeladenes Dokument prüfen",
       "title": "Hochgeladenes Dokument prüfen",
       "description": "Genehmigen, um die Anforderung zu erfüllen, oder mit Begründung ablehnen.",
       "approveTab": "Genehmigen",
