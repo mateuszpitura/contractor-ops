@@ -87,6 +87,9 @@ vi.mock('../services/idp-token-resolver', () => ({
 
 vi.mock('@contractor-ops/logger', () => ({
   getIdpAuditLogger: vi.fn(() => ({ info: auditInfo, warn: vi.fn(), error: vi.fn() })),
+  // hashExternalUserId is a pure crypto helper; use the real implementation so
+  // audit assertions work without coupling tests to a specific hash value.
+  hashExternalUserId: (id: string) => `sha256:${id}`,
 }));
 
 import { runDeprovisioningStep } from '../services/idp-deprovisioning-step-runner';

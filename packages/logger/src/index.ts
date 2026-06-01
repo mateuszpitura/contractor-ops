@@ -73,7 +73,9 @@ export function getBaseLoggerOptions(): LoggerOptions {
 }
 
 export {
+  createIdpAuditChild,
   getIdpAuditLogger,
+  hashExternalUserId,
   IDP_AUDIT_ALLOWED_FIELDS,
   type IdpAuditAllowedField,
   type IdpAuditEvent,

@@ -3,7 +3,7 @@ import { insertProvenance, MAX_ATTEMPTS, recomputeRunStatus } from '@contractor-
 import { getDeprovisionableAdapter } from '@contractor-ops/integrations';
 import { GoogleWorkspaceAdapter } from '@contractor-ops/integrations/adapters/google-workspace-adapter';
 import { SlackAdapter } from '@contractor-ops/integrations/adapters/slack-adapter';
-import { getIdpAuditLogger } from '@contractor-ops/logger';
+import { getIdpAuditLogger, hashExternalUserId } from '@contractor-ops/logger';
 import { z } from 'zod';
 import { resolveDeprovisionToken } from './idp-token-resolver.js';
 
@@ -134,7 +134,7 @@ export async function runDeprovisioningStep(
         stepId: body.stepId,
         stepKind: body.stepKind,
         provider: body.provider,
-        externalUserId: body.externalUserId,
+        externalUserId: hashExternalUserId(body.externalUserId),
         actionResult: finalStatus,
         requestSha256: sub.requestSha256,
         responseSha256: sub.responseSha256,
@@ -151,7 +151,7 @@ export async function runDeprovisioningStep(
       stepId: body.stepId,
       stepKind: body.stepKind,
       provider: body.provider,
-      externalUserId: body.externalUserId,
+      externalUserId: hashExternalUserId(body.externalUserId),
       actionResult: finalStatus,
       attempts: step.attempts + 1,
       requestSha256: result.requestSha256,

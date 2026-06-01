@@ -6,12 +6,16 @@
 // production `getIdpAuditLogger()` delegates to that helper with the
 // global root, so the contract is identical.
 
+import { createHash } from 'node:crypto';
 import { Writable } from 'node:stream';
-
 import pino from 'pino';
 import { describe, expect, it } from 'vitest';
 import type { IdpAuditEvent } from '../idp-audit-logger.js';
-import { createIdpAuditChild, IDP_AUDIT_ALLOWED_FIELDS } from '../idp-audit-logger.js';
+import {
+  createIdpAuditChild,
+  hashExternalUserId,
+  IDP_AUDIT_ALLOWED_FIELDS,
+} from '../idp-audit-logger.js';
 import { PII_MASK_PATHS } from '../pii-mask.js';
 
 function setup() {
@@ -37,17 +41,32 @@ function setup() {
 }
 
 describe('getIdpAuditLogger (FOUND6-06 — D-15)', () => {
-  it('emits externalUserId in plaintext', () => {
+  it('emits externalUserId as a SHA-256 hash — raw email must not appear in logs', () => {
     const { chunks, audit } = setup();
+    const rawEmail = 'alice@example.com';
+    const hashed = hashExternalUserId(rawEmail);
     audit.info(
       {
         auditEvent: 'deprovision',
-        externalUserId: 'usr_abc123',
+        externalUserId: hashed,
       } satisfies IdpAuditEvent,
       'audit',
     );
     const joined = chunks.join('');
-    expect(joined).toContain('usr_abc123');
+    // The hash must appear (audit traceability)
+    expect(joined).toContain(hashed);
+    // The raw email must NOT appear (PII protection)
+    expect(joined).not.toContain(rawEmail);
+  });
+
+  it('hashExternalUserId produces a stable 64-char hex SHA-256', () => {
+    const h = hashExternalUserId('alice@example.com');
+    expect(h).toBe(createHash('sha256').update('alice@example.com').digest('hex'));
+    expect(h).toHaveLength(64);
+    // Same input → same output (stable for within-incident correlation)
+    expect(hashExternalUserId('alice@example.com')).toBe(h);
+    // Different input → different output
+    expect(hashExternalUserId('bob@example.com')).not.toBe(h);
   });
 
   it('emits scopeDelta in plaintext (audit field allow-list)', () => {

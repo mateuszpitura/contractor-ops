@@ -7,12 +7,17 @@
 //     the root — audit lines emit structured fields (scopeDelta, body),
 //     and these MUST survive in plaintext for compliance fidelity.
 //
+// PII note: `externalUserId` is the contractor's IdP email address. It MUST
+// NOT appear in plaintext audit log lines (GDPR / SOC2). Callers MUST pass
+// a SHA-256 hash via `hashExternalUserId(rawEmail)` rather than the raw value.
+// The `externalUserId` allow-list field carries the hash, not the email.
+//
 // Consumer: Phases 76–78 (IdP deprovisioning F2). Example call:
 //
 //   getIdpAuditLogger().info(
 //     {
 //       auditEvent: 'deprovision',
-//       externalUserId: 'usr_123',
+//       externalUserId: hashExternalUserId('alice@example.com'),
 //       actionResult: 'OK',
 //       provider: 'google',
 //       connectionId: 'c_x',
@@ -21,10 +26,21 @@
 //     'IdP deprovision applied',
 //   );
 
+import { createHash } from 'node:crypto';
 import type { Logger } from 'pino';
 
 import { logger as rootLogger } from './index.js';
 import { PII_MASK_PATHS } from './pii-mask.js';
+
+/**
+ * Hash a contractor's IdP identifier (email) for audit-log emission.
+ * Using SHA-256 keeps the value opaque while still allowing auditors to
+ * correlate entries for the same subject across a single incident review
+ * (consistent hash for the same input within a deployment).
+ */
+export function hashExternalUserId(rawId: string): string {
+  return createHash('sha256').update(rawId).digest('hex');
+}
 
 /**
  * Canonical schema of fields permitted on IdP audit log lines.
