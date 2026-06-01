@@ -20,10 +20,12 @@ vi.mock('../../../../hooks/use-permissions.js', () => ({
 }));
 vi.mock('../../../../i18n/navigation.js', () => ({
   useLocale: () => 'en',
+  usePathname: () => '/en/compliance',
   Link: ({ children }: { children?: unknown }) => children,
 }));
 vi.mock('react-router-dom', () => ({
   Navigate: ({ to }: { to: string }) => <div data-testid="navigate" data-to={to} />,
+  useSearchParams: () => [new URLSearchParams()],
 }));
 // Stub the tables so the container test does not need a router/DataTable chrome.
 vi.mock('../at-risk-table/data-table.js', () => ({

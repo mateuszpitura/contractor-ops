@@ -1,19 +1,10 @@
-import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
 import { buttonVariants } from '@contractor-ops/ui/components/shadcn/button';
 
 import { Link } from '../../../i18n/navigation.js';
-import { tDynLoose } from '../../../i18n/typed-keys.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
-import { enumKey } from '../../../lib/enum-key.js';
+import { ComplianceStatusBadge } from '../../compliance/compliance-status-badge.js';
 import { useComplDocName } from '../../compliance/hooks/use-compl-doc-name.js';
 import type { PortalComplianceItem } from './hooks/use-portal-compliance.js';
-
-const STATUS_BADGE_STYLES: Record<string, string> = {
-  SATISFIED: 'bg-green-600/10 text-green-800 dark:text-green-400',
-  MISSING: 'bg-red-500/10 text-red-500',
-  EXPIRED: 'bg-red-500/10 text-red-500',
-  WAIVED: 'bg-muted text-muted-foreground',
-};
 
 function PortalComplianceCard({ item }: { item: PortalComplianceItem }) {
   const t = useTranslations('Portal.compliance');
@@ -25,9 +16,7 @@ function PortalComplianceCard({ item }: { item: PortalComplianceItem }) {
     <li className="flex flex-col gap-3 rounded-xl border border-border bg-card p-5">
       <div className="flex items-start justify-between gap-3">
         <span className="text-sm font-medium">{label || item.name}</span>
-        <Badge variant="secondary" className={STATUS_BADGE_STYLES[item.status] ?? ''}>
-          {tDynLoose(t, 'status', enumKey(item.status))}
-        </Badge>
+        <ComplianceStatusBadge status={item.status} />
       </div>
       {needsAction && (
         <Link href={renewHref} className={buttonVariants({ size: 'sm', className: 'self-start' })}>

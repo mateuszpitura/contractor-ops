@@ -1,35 +1,12 @@
 import type { ColumnDef } from '@tanstack/react-table';
 
-import { Link } from '../../../../i18n/navigation.js';
 import type { LooseTranslator } from '../../../../i18n/typed-keys.js';
-import { useDateFormatter } from '../../../../lib/format/use-date-formatter.js';
-import { useComplDocName } from '../../hooks/use-compl-doc-name.js';
 import type { UpcomingRow } from '../hooks/use-compliance-dashboard.js';
+import { ContractorLinkCell, DocNameCell, ExpiresAtCell } from '../shared-columns.js';
 
-function complianceItemHref(contractorId: string, itemId: string): string {
-  return `/contractors/${contractorId}/compliance#item-${itemId}`;
-}
-
-function DocNameCell({ policyRuleId }: { policyRuleId: string | null }) {
-  const { label, isPending } = useComplDocName(policyRuleId);
-  return (
-    <span className="text-sm">
-      {label}
-      {isPending && (
-        <sup className="ml-0.5 text-muted-foreground" aria-hidden>
-          †
-        </sup>
-      )}
-    </span>
-  );
-}
-
-function ExpiresAtCell({ expiresAt }: { expiresAt: Date | string | null }) {
-  const { formatDate } = useDateFormatter();
-  if (!expiresAt) return <span className="text-muted-foreground">&mdash;</span>;
-  return <span className="text-sm tabular-nums">{formatDate(new Date(expiresAt))}</span>;
-}
-
+// daysUntil uses browser-local TZ — approximate display value, not authoritative
+// renewal boundary (CF-L3). The server-authoritative band is daysUntilExpiryInTz
+// in packages/compliance-policy/src/expiry.ts.
 function daysUntil(expiresAt: Date | string | null): number | null {
   if (!expiresAt) return null;
   const ms = new Date(expiresAt).getTime() - Date.now();
@@ -44,13 +21,13 @@ export function getUpcomingRenewalsColumns(t: LooseTranslator): ColumnDef<Upcomi
       header: t('columns.contractor'),
       cell: ({ row }) => {
         const r = row.original;
-        const name = r.contractor?.displayName ?? r.contractor?.legalName ?? r.contractorId;
         return (
-          <Link
-            href={complianceItemHref(r.contractorId, r.id)}
-            className="text-sm text-primary hover:underline">
-            {name}
-          </Link>
+          <ContractorLinkCell
+            contractorId={r.contractorId}
+            itemId={r.id}
+            displayName={r.contractor?.displayName}
+            legalName={r.contractor?.legalName}
+          />
         );
       },
     },

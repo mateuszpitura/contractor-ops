@@ -1,5 +1,4 @@
 import { AtelierEmptyState, ComplianceGapsIllustration } from '@contractor-ops/ui';
-import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import {
   Tooltip,
@@ -13,6 +12,7 @@ import { tDynLoose } from '../../../i18n/typed-keys.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { enumKey } from '../../../lib/enum-key.js';
 import { useDateFormatter } from '../../../lib/format/use-date-formatter.js';
+import { ComplianceStatusBadge } from '../../compliance/compliance-status-badge.js';
 import { renderEmptyStateAction } from '../../shared/atelier-bridges.js';
 import { ComplianceItemHistory } from '../compliance/compliance-item-history.js';
 import { OverrideComplianceItemButton } from '../compliance/override-compliance-item-button.js';
@@ -44,14 +44,6 @@ type TabComplianceProps = {
     id: string;
     complianceItems: ComplianceItem[];
   };
-};
-
-const statusBadgeStyles: Record<string, string> = {
-  SATISFIED: 'bg-green-600/10 text-green-800 dark:text-green-400',
-  MISSING: 'bg-red-500/10 text-red-500',
-  EXPIRED: 'bg-red-500/10 text-red-500',
-  PENDING: 'bg-amber-500/10 text-amber-800 dark:text-amber-400',
-  WAIVED: 'bg-muted text-muted-foreground',
 };
 
 function isExpiringSoon(expiresAt: string | Date | null): boolean {
@@ -128,7 +120,7 @@ export function TabCompliance({ contractor }: TabComplianceProps) {
         {contractor.complianceItems.map(item => {
           const isMissing = item.status === 'MISSING';
           const expiringSoon = isExpiringSoon(item.expiresAt);
-          const statusKey = item.status as keyof typeof statusBadgeStyles;
+          const statusKey = item.status;
           const hasPendingReview = item.pendingReviewDocumentId != null;
 
           return (
@@ -178,8 +170,7 @@ export function TabCompliance({ contractor }: TabComplianceProps) {
                 )}
                 {item.status === 'WAIVED' ? (
                   <Tooltip>
-                    <TooltipTrigger
-                      className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium ${statusBadgeStyles[statusKey] ?? ''}`}>
+                    <TooltipTrigger className="inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium bg-muted text-muted-foreground">
                       <ShieldCheck className="mr-1 size-3" aria-hidden />
                       {tDynLoose(t, 'status', enumKey(statusKey))}
                     </TooltipTrigger>
@@ -192,9 +183,7 @@ export function TabCompliance({ contractor }: TabComplianceProps) {
                     </TooltipContent>
                   </Tooltip>
                 ) : (
-                  <Badge variant="secondary" className={statusBadgeStyles[statusKey] ?? ''}>
-                    {tDynLoose(t, 'status', enumKey(statusKey))}
-                  </Badge>
+                  <ComplianceStatusBadge status={item.status} />
                 )}
               </div>
             </div>
