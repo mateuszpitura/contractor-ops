@@ -3322,6 +3322,11 @@
       "uploadRejected": {
         "title": "Compliance-Dokument erfordert Aufmerksamkeit",
         "body": "Ihr hochgeladenes Compliance-Dokument wurde abgelehnt — bitte erneut hochladen."
+      },
+      "expiryDigest": {
+        "title": "{count} Compliance-Dokument(e) läuft/laufen bald ab",
+        "body": "Die folgenden Compliance-Dokumente erfordern Aufmerksamkeit:\n\n{items}",
+        "item": "• {contractorName} — {documentLabel} ({band}, läuft ab am {expiresAt})"
       }
     }
   },

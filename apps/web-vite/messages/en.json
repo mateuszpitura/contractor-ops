@@ -3322,6 +3322,11 @@
       "uploadRejected": {
         "title": "Compliance document needs attention",
         "body": "Your uploaded compliance document was rejected — please re-upload."
+      },
+      "expiryDigest": {
+        "title": "{count} compliance document(s) expiring soon",
+        "body": "The following compliance documents need attention:\n\n{items}",
+        "item": "• {contractorName} — {documentLabel} ({band}, expires {expiresAt})"
       }
     }
   },

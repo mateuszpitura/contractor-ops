@@ -100,6 +100,9 @@ const {
         return c;
       }),
     },
+    organization: {
+      findUnique: vi.fn(async () => ({ language: 'en' })),
+    },
     auditLog: {
       create: vi.fn(async (args: { data: Record<string, unknown> }) => {
         auditLogCreates.push(args.data);
@@ -140,6 +143,7 @@ vi.mock('@contractor-ops/db', () => ({
 
 vi.mock('@contractor-ops/logger', () => ({
   createCronLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
+  createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
 }));
 
 vi.mock('@contractor-ops/logger/metrics', () => ({
@@ -149,6 +153,23 @@ vi.mock('@contractor-ops/logger/metrics', () => ({
 vi.mock('../notification-service', () => ({ dispatch: mockDispatch }));
 vi.mock('../rbac-recipients', () => ({ resolveRbacRecipients: mockResolveRecipients }));
 vi.mock('../cron-dedup', () => ({ claimCronNotificationDedup: mockClaimDedup }));
+vi.mock('../compliance-payment-gate', () => ({
+  getDocumentTypeLabelKey: vi.fn((_documentType: string, policyRuleId: string | null) =>
+    policyRuleId
+      ? `compliance.documentType.compliance-policy-engine.${policyRuleId.replace(/@v\d+$/, '')}`
+      : `compliance.documentType.compliance-policy-engine.unknown`,
+  ),
+}));
+vi.mock('../../i18n/email-i18n', () => ({
+  normalizeLocale: vi.fn(() => 'en'),
+  resolveMessage: vi.fn((key: string, _locale: string, params?: Record<string, unknown>) => {
+    // Return a simple interpolated string so digest tests can assert on structure.
+    if (!params) return key;
+    return key.replace(/\{(\w+)\}/g, (_m, k) => String(params[k] ?? ''));
+  }),
+}));
+
+import { normalizeLocale } from '../../i18n/email-i18n';
 
 import {
   bandFor,
@@ -166,7 +187,7 @@ function makeItem(over: Partial<Record<string, unknown>> = {}): Record<string, u
     organizationId: ORG,
     contractorId: 'ctr-1',
     documentType: 'A1_CERTIFICATE',
-    policyRuleId: 'compliance-policy-engine.de.a1',
+    policyRuleId: 'de.a1@v1',
     expiresAt: new Date('2026-08-01T00:00:00Z'),
     expiryJurisdictionTz: TZ_BERLIN,
     ...over,
@@ -284,6 +305,31 @@ describe('compliance-reminder-scan digest', () => {
     };
     expect(call.type).toBe('compliance.expiry_digest');
     expect(call.metadata.fires).toHaveLength(3);
+  });
+
+  it('passes i18n keys as title/body (not hardcoded English) and resolves locale from org', async () => {
+    // Change org language to German so we can verify normalizeLocale is called with it.
+    mockPrisma.organization.findUnique.mockResolvedValueOnce({ language: 'de' });
+
+    itemsFixture.push(makeItem({ id: 'de-item', expiresAt: new Date('2026-06-20T00:00:00Z') }));
+    const now = new Date('2026-05-03T09:00:00Z');
+
+    await runComplianceReminderScan(now);
+
+    expect(mockDispatch).toHaveBeenCalledTimes(1);
+    const call = mockDispatch.mock.calls[0]?.[0] as {
+      title: string;
+      body: string;
+      metadata: { count: number; items: string };
+    };
+    // title and body must be dotted i18n keys, not raw English sentences.
+    expect(call.title).toBe('Compliance.notifications.expiryDigest.title');
+    expect(call.body).toBe('Compliance.notifications.expiryDigest.body');
+    // metadata carries the interpolation params for resolveCopy.
+    expect(call.metadata.count).toBe(1);
+    expect(typeof call.metadata.items).toBe('string');
+    // normalizeLocale must be called with the org's language so non-en orgs localise.
+    expect(vi.mocked(normalizeLocale)).toHaveBeenCalledWith('de');
   });
 });
 

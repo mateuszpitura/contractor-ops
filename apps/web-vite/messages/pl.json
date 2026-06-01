@@ -3322,6 +3322,11 @@
       "uploadRejected": {
         "title": "Dokument zgodności wymaga uwagi",
         "body": "Twój przesłany dokument zgodności został odrzucony — prześlij ponownie."
+      },
+      "expiryDigest": {
+        "title": "{count} dokument(ów) zgodności wkrótce wygasa",
+        "body": "Następujące dokumenty zgodności wymagają uwagi:\n\n{items}",
+        "item": "• {contractorName} — {documentLabel} ({band}, wygasa {expiresAt})"
       }
     }
   },

@@ -25,6 +25,8 @@ import { prisma, prismaRaw } from '@contractor-ops/db';
 import { createCronLogger } from '@contractor-ops/logger';
 import { metrics } from '@contractor-ops/logger/metrics';
 
+import { normalizeLocale, resolveMessage } from '../i18n/email-i18n';
+import { getDocumentTypeLabelKey } from './compliance-payment-gate';
 import { claimCronNotificationDedup } from './cron-dedup';
 import { dispatch } from './notification-service';
 import { resolveRbacRecipients } from './rbac-recipients';
@@ -343,24 +345,42 @@ async function resolveRecipientsForItem(item: ItemForScan): Promise<string[]> {
 /**
  * Dispatch ONE digest notification listing all (doc, band, expiresAt) entries
  * for this recipient on this jurisdictionDate.
+ *
+ * Title and body are i18n-keyed so the notification-service resolveEventCopy
+ * step localises them against the org's configured locale. Per-item document
+ * labels are also resolved server-side (via resolveMessage) so the {items}
+ * param carries locale-aware text rather than raw DocumentType enum values.
  */
 async function dispatchDigest(group: DigestGroup): Promise<void> {
-  const title = `${group.fires.length} compliance document(s) expiring soon`;
-  const lines = group.fires.map(f => {
-    const dateStr = f.expiresAt.toISOString().slice(0, 10);
-    return `• ${f.contractorDisplayName} — ${f.documentType} (${f.band}, expires ${dateStr})`;
+  const org = await prisma.organization.findUnique({
+    where: { id: group.organizationId },
+    select: { language: true },
   });
-  const body = `The following compliance documents need attention:\n\n${lines.join('\n')}`;
+  const locale = normalizeLocale(org?.language ?? null);
+
+  const lines = group.fires.map(f => {
+    const labelKey = getDocumentTypeLabelKey(f.documentType, f.policyRuleId);
+    const documentLabel = resolveMessage(labelKey, locale);
+    const expiresAt = f.expiresAt.toISOString().slice(0, 10);
+    return resolveMessage('Compliance.notifications.expiryDigest.item', locale, {
+      contractorName: f.contractorDisplayName,
+      documentLabel,
+      band: f.band,
+      expiresAt,
+    });
+  });
 
   await dispatch({
     organizationId: group.organizationId,
     type: 'compliance.expiry_digest',
     recipientUserIds: [group.recipientUserId],
-    title,
-    body,
+    title: 'Compliance.notifications.expiryDigest.title',
+    body: 'Compliance.notifications.expiryDigest.body',
     entityType: 'CONTRACTOR',
     entityId: group.fires[0]?.contractorId ?? group.organizationId,
     metadata: {
+      count: group.fires.length,
+      items: lines.join('\n'),
       jurisdictionDate: group.jurisdictionDate,
       fires: group.fires.map(f => ({
         itemId: f.itemId,
