@@ -2,7 +2,10 @@
 // Every free-text field (vaultUrl, label, notes) is gated server-side by
 // looksLikeSecretRefinement (D-11). Stores POINTERS only — never secrets.
 
-import { looksLikeSecretRefinement } from '@contractor-ops/validators';
+import {
+  looksLikeSecretInFreeTextRefinement,
+  looksLikeSecretRefinement,
+} from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import * as E from '../../errors';
@@ -32,10 +35,13 @@ const ACCESS_TYPE = z.enum([
   'OTHER',
 ]);
 
-// Every free-text field passes through looksLikeSecretRefinement (D-11).
-const SAFE_TEXT = z.string().min(1).max(2000).superRefine(looksLikeSecretRefinement);
+// Every free-text field passes through secret-shape detection (D-11).
+// SAFE_VAULT_URL uses anchored (whole-value) matching — a URL should never BE a secret.
+// SAFE_TEXT (label) and SAFE_NOTES use substring matching so embedded secrets
+// like "Rotate the AKIAIOSFODNN7EXAMPLE key" are also rejected.
+const SAFE_TEXT = z.string().min(1).max(2000).superRefine(looksLikeSecretInFreeTextRefinement);
 const SAFE_VAULT_URL = z.string().min(1).max(2000).url().superRefine(looksLikeSecretRefinement);
-const SAFE_NOTES = z.string().max(10000).superRefine(looksLikeSecretRefinement);
+const SAFE_NOTES = z.string().max(10000).superRefine(looksLikeSecretInFreeTextRefinement);
 
 export const credentialReferenceRouter = router({
   create: tenantProcedure

@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import {
   looksLikeSecret,
+  looksLikeSecretInFreeText,
+  looksLikeSecretInFreeTextRefinement,
   looksLikeSecretRefinement,
   SECRET_PATTERNS,
 } from '../secret-shape-detector.js';
@@ -120,5 +122,63 @@ describe('looksLikeSecret (Phase 75 D-11)', () => {
   it('input with leading/trailing whitespace is trimmed before matching', () => {
     expect(looksLikeSecret('   AKIAIOSFODNN7EXAMPLE   ').matched).toBe(true);
     expect(looksLikeSecret('   AKIAIOSFODNN7EXAMPLE   ').patternId).toBe('aws-access-key');
+  });
+});
+
+describe('looksLikeSecretInFreeText — embedded-secret detection for notes/label fields', () => {
+  it('REJECTS an AWS access key embedded in notes prose', () => {
+    const result = looksLikeSecretInFreeText(
+      'Rotate the AKIAIOSFODNN7EXAMPLE key in the vault before Q3',
+    );
+    expect(result.matched).toBe(true);
+    expect(result.patternId).toBe('aws-access-key');
+  });
+
+  it('REJECTS a GitHub classic PAT embedded in a label', () => {
+    const result = looksLikeSecretInFreeText(
+      'old token was ghp_1234567890abcdefghijklmnopqrstuvwxyz please rotate',
+    );
+    expect(result.matched).toBe(true);
+    expect(result.patternId).toBe('github-pat-classic');
+  });
+
+  it('REJECTS a bare secret value (same as looksLikeSecret)', () => {
+    const result = looksLikeSecretInFreeText('AKIAIOSFODNN7EXAMPLE');
+    expect(result.matched).toBe(true);
+    expect(result.patternId).toBe('aws-access-key');
+  });
+
+  it('does NOT flag safe prose without any embedded token', () => {
+    expect(looksLikeSecretInFreeText('AWS root credentials stored in 1Password').matched).toBe(
+      false,
+    );
+    expect(looksLikeSecretInFreeText('Production AWS root').matched).toBe(false);
+  });
+
+  it('does NOT flag a 1Password URL (hex chars within a URL path)', () => {
+    expect(
+      looksLikeSecretInFreeText(
+        'See https://my.1password.com/vaults/d41d8cd98f00b204e9800998ecf8427e1234abcd for details',
+      ).matched,
+    ).toBe(false);
+  });
+
+  it('looksLikeSecretInFreeTextRefinement rejects embedded AKIA key via Zod', () => {
+    const schema = z.string().superRefine(looksLikeSecretInFreeTextRefinement);
+    const result = schema.safeParse('Rotate the AKIAIOSFODNN7EXAMPLE key in the vault');
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      const issue = result.error.issues[0];
+      const params = (issue as unknown as { params?: Record<string, unknown> }).params;
+      expect(params?.reason).toBe('looks_like_secret');
+      expect(params?.patternId).toBe('aws-access-key');
+    }
+  });
+
+  it('looksLikeSecretInFreeTextRefinement passes safe prose', () => {
+    const schema = z.string().superRefine(looksLikeSecretInFreeTextRefinement);
+    expect(
+      schema.safeParse('AWS credentials are stored in 1Password under the Vault ops team').success,
+    ).toBe(true);
   });
 });

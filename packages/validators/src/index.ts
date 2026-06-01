@@ -600,6 +600,8 @@ export {
 export type { LooksLikeSecretResult, SecretPattern } from './secret-shape-detector.js';
 export {
   looksLikeSecret,
+  looksLikeSecretInFreeText,
+  looksLikeSecretInFreeTextRefinement,
   looksLikeSecretRefinement,
   SECRET_PATTERNS,
 } from './secret-shape-detector.js';
