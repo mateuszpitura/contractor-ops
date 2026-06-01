@@ -1,7 +1,7 @@
 import { prisma } from '@contractor-ops/db';
 import { provenanceLookup } from '@contractor-ops/idp-saga';
 import { z } from 'zod';
-import type { ErrorClass } from '../idp/error-classifier.js';
+import { mapErrorClassToResult } from '../idp/deprovision-result.js';
 import { classifyError } from '../idp/error-classifier.js';
 import type { ImpactPreview } from '../idp/impact-preview.js';
 import { GOOGLE_WORKSPACE_DEPROVISION_SCOPES } from '../scopes/google-workspace-deprovision-scopes.js';
@@ -624,31 +624,14 @@ export class GoogleWorkspaceAdapter extends BaseAdapter implements Deprovisionab
     opts: { notFoundReason: string },
   ): DeprovisionResult {
     const providerErrorCode = GoogleWorkspaceAdapter.#providerErrorCode(body);
-    const errorClass: ErrorClass = classifyError({ httpStatus, providerErrorCode });
-
-    if (errorClass === 'TRANSIENT_RATE_LIMIT' || errorClass === 'TRANSIENT_NETWORK') {
-      // Re-throw so the QStash step-runner retries the whole step with backoff.
-      throw new Error(`google-workspace transient failure (${httpStatus}/${errorClass})`);
-    }
-    if (errorClass === 'PERMANENT_NOT_FOUND') {
-      return {
-        status: 'LIKELY_GONE',
-        skipped: false,
-        reason: opts.notFoundReason,
-        failureKind: 'USER_NOT_FOUND',
-        errorClass,
-        requestSha256,
-        responseSha256,
-      };
-    }
-    return {
-      status: 'FAILED',
-      failureKind: errorClass === 'PERMANENT_AUTH_EXPIRED' ? 'AUTH_REVOKED' : 'PROVIDER_ERROR',
-      errorClass,
-      errorMessage: `google-workspace deprovision failed (${httpStatus}/${errorClass})`,
+    const errorClass = classifyError({ httpStatus, providerErrorCode });
+    return mapErrorClassToResult(errorClass, {
       requestSha256,
       responseSha256,
-    };
+      notFoundReason: opts.notFoundReason,
+      transientDetail: `google-workspace transient failure (${httpStatus})`,
+      failedDetail: `google-workspace deprovision failed (${httpStatus}/${errorClass})`,
+    });
   }
 
   // -------------------------------------------------------------------------

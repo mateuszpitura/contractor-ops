@@ -1,5 +1,5 @@
 import { Client } from '@okta/okta-sdk-nodejs';
-import type { ErrorClass } from '../idp/error-classifier.js';
+import { mapErrorClassToResult } from '../idp/deprovision-result.js';
 import { classifyError } from '../idp/error-classifier.js';
 import type { ImpactPreview } from '../idp/impact-preview.js';
 import {
@@ -248,33 +248,17 @@ export class OktaAdapter extends BaseAdapter implements Deprovisionable {
     const httpStatus = OktaAdapter.#httpStatus(err);
     const errorCode = OktaAdapter.#errorCode(err);
     // No HTTP status → treat as a transport/network failure (retryable).
-    const errorClass: ErrorClass =
+    const errorClass =
       httpStatus === undefined
         ? classifyError({ provider: 'OKTA', cause: err })
         : classifyError({ provider: 'OKTA', httpStatus, providerErrorCode: errorCode });
     const responseSha256 = sha256Hex(canonicalizeResponse({ op, httpStatus: httpStatus ?? null }));
-
-    if (errorClass === 'TRANSIENT_RATE_LIMIT' || errorClass === 'TRANSIENT_NETWORK') {
-      throw new Error(`okta transient failure (${httpStatus ?? 'network'}/${errorClass})`);
-    }
-    if (errorClass === 'PERMANENT_NOT_FOUND') {
-      return {
-        status: 'LIKELY_GONE',
-        skipped: false,
-        reason: 'user_not_found',
-        failureKind: 'USER_NOT_FOUND',
-        errorClass,
-        requestSha256,
-        responseSha256,
-      };
-    }
-    return {
-      status: 'FAILED',
-      failureKind: errorClass === 'PERMANENT_AUTH_EXPIRED' ? 'AUTH_REVOKED' : 'PROVIDER_ERROR',
-      errorClass,
-      errorMessage: `okta deprovision failed (${httpStatus ?? 'unknown'}/${errorClass})`,
+    return mapErrorClassToResult(errorClass, {
       requestSha256,
       responseSha256,
-    };
+      notFoundReason: 'user_not_found',
+      transientDetail: `okta transient failure (${httpStatus ?? 'network'})`,
+      failedDetail: `okta deprovision failed (${httpStatus ?? 'unknown'}/${errorClass})`,
+    });
   }
 }

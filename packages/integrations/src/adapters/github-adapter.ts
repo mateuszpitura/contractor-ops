@@ -1,4 +1,5 @@
 import { Octokit } from '@octokit/rest';
+import { mapErrorClassToResult } from '../idp/deprovision-result.js';
 import type { ErrorClass } from '../idp/error-classifier.js';
 import { classifyError } from '../idp/error-classifier.js';
 import type { GitHubImpactCustomMetrics, ImpactPreview } from '../idp/impact-preview.js';
@@ -353,28 +354,12 @@ export class GitHubAdapter extends BaseAdapter implements Deprovisionable {
     const httpStatus = GitHubAdapter.#httpStatus(err);
     const errorClass = GitHubAdapter.#classify(err);
     const responseSha256 = sha256Hex(canonicalizeResponse({ op, httpStatus: httpStatus ?? null }));
-
-    if (errorClass === 'TRANSIENT_RATE_LIMIT' || errorClass === 'TRANSIENT_NETWORK') {
-      throw new Error(`github transient failure (${httpStatus ?? 'network'}/${errorClass})`);
-    }
-    if (errorClass === 'PERMANENT_NOT_FOUND') {
-      return {
-        status: 'LIKELY_GONE',
-        skipped: false,
-        reason: 'not_a_member',
-        failureKind: 'USER_NOT_FOUND',
-        errorClass,
-        requestSha256,
-        responseSha256,
-      };
-    }
-    return {
-      status: 'FAILED',
-      failureKind: errorClass === 'PERMANENT_AUTH_EXPIRED' ? 'AUTH_REVOKED' : 'PROVIDER_ERROR',
-      errorClass,
-      errorMessage: `github deprovision failed (${httpStatus ?? 'unknown'}/${errorClass})`,
+    return mapErrorClassToResult(errorClass, {
       requestSha256,
       responseSha256,
-    };
+      notFoundReason: 'not_a_member',
+      transientDetail: `github transient failure (${httpStatus ?? 'network'})`,
+      failedDetail: `github deprovision failed (${httpStatus ?? 'unknown'}/${errorClass})`,
+    });
   }
 }

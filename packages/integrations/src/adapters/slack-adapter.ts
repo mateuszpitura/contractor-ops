@@ -1,5 +1,6 @@
 import { createHmac, timingSafeEqual } from 'node:crypto';
 import { z } from 'zod';
+import { mapErrorClassToResult } from '../idp/deprovision-result.js';
 import type { ErrorClass } from '../idp/error-classifier.js';
 import { classifyError } from '../idp/error-classifier.js';
 import type { ImpactPreview } from '../idp/impact-preview.js';
@@ -630,28 +631,12 @@ export class SlackAdapter extends BaseAdapter implements Deprovisionable {
     responseSha256: string,
   ): DeprovisionResult {
     const errorClass = SlackAdapter.#classifySlackError(httpStatus, slackError);
-
-    if (errorClass === 'TRANSIENT_RATE_LIMIT' || errorClass === 'TRANSIENT_NETWORK') {
-      throw new Error(`slack transient failure (${httpStatus}/${slackError ?? errorClass})`);
-    }
-    if (errorClass === 'PERMANENT_NOT_FOUND') {
-      return {
-        status: 'LIKELY_GONE',
-        skipped: false,
-        reason: 'user_not_found',
-        failureKind: 'USER_NOT_FOUND',
-        errorClass,
-        requestSha256,
-        responseSha256,
-      };
-    }
-    return {
-      status: 'FAILED',
-      failureKind: errorClass === 'PERMANENT_AUTH_EXPIRED' ? 'AUTH_REVOKED' : 'PROVIDER_ERROR',
-      errorClass,
-      errorMessage: `slack deprovision failed (${httpStatus}/${slackError ?? errorClass})`,
+    return mapErrorClassToResult(errorClass, {
       requestSha256,
       responseSha256,
-    };
+      notFoundReason: 'user_not_found',
+      transientDetail: `slack transient failure (${httpStatus}/${slackError ?? errorClass})`,
+      failedDetail: `slack deprovision failed (${httpStatus}/${slackError ?? errorClass})`,
+    });
   }
 }

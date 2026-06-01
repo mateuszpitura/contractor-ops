@@ -1,5 +1,5 @@
 import { createHash, randomUUID } from 'node:crypto';
-import type { ErrorClass } from '../idp/error-classifier.js';
+import { mapErrorClassToResult } from '../idp/deprovision-result.js';
 import { classifyError } from '../idp/error-classifier.js';
 import type { EntraImpactCustomMetrics, ImpactPreview } from '../idp/impact-preview.js';
 import { ENTRA_DEPROVISION_SCOPES } from '../scopes/entra-deprovision-scopes.js';
@@ -378,36 +378,17 @@ export class EntraIdAdapter extends BaseAdapter implements Deprovisionable {
     responseSha256: string,
   ): DeprovisionResult {
     const providerErrorCode = EntraIdAdapter.#providerErrorCode(body);
-    const errorClass: ErrorClass = classifyError({
-      provider: 'ENTRA',
-      httpStatus,
-      providerErrorCode,
-    });
-
-    if (errorClass === 'TRANSIENT_RATE_LIMIT' || errorClass === 'TRANSIENT_NETWORK') {
-      throw new Error(`entra transient failure (${httpStatus}/${errorClass})`);
-    }
-    if (errorClass === 'PERMANENT_NOT_FOUND') {
-      return {
-        status: 'LIKELY_GONE',
-        skipped: false,
-        reason: 'user_not_found',
-        failureKind: 'USER_NOT_FOUND',
-        errorClass,
-        requestSha256,
-        responseSha256,
-      };
-    }
-    return {
-      status: 'FAILED',
-      failureKind: errorClass === 'PERMANENT_AUTH_EXPIRED' ? 'AUTH_REVOKED' : 'PROVIDER_ERROR',
-      errorClass,
-      errorMessage:
-        errorClass === 'PERMANENT_FORBIDDEN'
-          ? `entra deprovision forbidden (${httpStatus}/${providerErrorCode ?? errorClass}) — check Graph app permissions`
-          : `entra deprovision failed (${httpStatus}/${errorClass})`,
+    const errorClass = classifyError({ provider: 'ENTRA', httpStatus, providerErrorCode });
+    const failedDetail =
+      errorClass === 'PERMANENT_FORBIDDEN'
+        ? `entra deprovision forbidden (${httpStatus}/${providerErrorCode ?? errorClass}) — check Graph app permissions`
+        : `entra deprovision failed (${httpStatus}/${errorClass})`;
+    return mapErrorClassToResult(errorClass, {
       requestSha256,
       responseSha256,
-    };
+      notFoundReason: 'user_not_found',
+      transientDetail: `entra transient failure (${httpStatus})`,
+      failedDetail,
+    });
   }
 }
