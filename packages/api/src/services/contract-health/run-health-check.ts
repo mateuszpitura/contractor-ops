@@ -5,7 +5,7 @@
 // (LIKELY_MISSING only) → emit audit log.
 
 import { createHash } from 'node:crypto';
-import type { PrismaClient } from '@contractor-ops/db';
+import type { Prisma, PrismaClient } from '@contractor-ops/db';
 import type { ContractHealthToolInput } from '@contractor-ops/integrations';
 import { evaluateContractIpAssignment, fetchWithTimeout } from '@contractor-ops/integrations';
 import { createLogger } from '@contractor-ops/logger';
@@ -16,6 +16,7 @@ import {
   IP_CLAUSE_PHRASE_LIBRARY_VERSION,
   IP_CLAUSES_BY_JURISDICTION,
 } from '@contractor-ops/validators';
+import { ZodError } from 'zod';
 import { writeAuditLog } from '../audit-writer.js';
 import { createPresignedDownloadUrl } from '../r2.js';
 import { analyzeCrossJurisdiction, resolveContractJurisdiction } from './cross-jurisdiction.js';
@@ -45,7 +46,10 @@ export interface RunHealthCheckResult {
 type GroundedClause = ContractHealthToolInput['citedClauses'][number] & {
   regexMatched: boolean;
   regexMatchSpan: { startChar: number; endChar: number } | undefined;
-  phraseId: IpClausePhraseId | undefined;
+  // phraseId is either a real library key or a synthetic `<jur>.ungrounded@v0`
+  // string; the results schema stores it as a regex-validated string so the
+  // runtime type is string, not the narrower IpClausePhraseId union.
+  phraseId: IpClausePhraseId | string | undefined;
 };
 
 export async function runContractHealthCheck(
@@ -100,10 +104,8 @@ export async function runContractHealthCheck(
     }));
 
     for (const cited of groundedClauses) {
-      const jurisdictionPhrases = IP_CLAUSES_BY_JURISDICTION[cited.jurisdiction] as Record<
-        string,
-        { regex: RegExp }
-      >;
+      const jurisdictionPhrases = IP_CLAUSES_BY_JURISDICTION[cited.jurisdiction];
+      if (!jurisdictionPhrases) continue;
       for (const [phraseId, entry] of Object.entries(jurisdictionPhrases)) {
         const match = entry.regex.exec(cited.citedText);
         if (match) {
@@ -147,8 +149,7 @@ export async function runContractHealthCheck(
       ipAssignment: {
         verdict,
         citedClauses: groundedClauses.map(c => ({
-          phraseId:
-            c.phraseId ?? (`${c.jurisdiction.toLowerCase()}.ungrounded@v0` as IpClausePhraseId),
+          phraseId: c.phraseId ?? `${c.jurisdiction.toLowerCase()}.ungrounded@v0`,
           jurisdiction: c.jurisdiction,
           citedText: c.citedText,
           confidence: c.confidence,
@@ -184,7 +185,7 @@ export async function runContractHealthCheck(
         where: { id: pending.id },
         data: {
           verdict,
-          resultsJson: resultsJson as unknown as object,
+          resultsJson: resultsJson as Prisma.InputJsonValue,
           status: 'SUCCEEDED',
           completedAt,
         },
@@ -195,7 +196,7 @@ export async function runContractHealthCheck(
         where: { id: contractId },
         data: {
           latestHealthCheckRunId: pending.id,
-          complianceFlagsJson: resultsJson as unknown as object,
+          complianceFlagsJson: resultsJson as Prisma.InputJsonValue,
           complianceFlagsCheckedAt: completedAt,
           complianceFlagsModelVer: modelVer,
         },
@@ -233,7 +234,31 @@ export async function runContractHealthCheck(
 
     return { runId: pending.id, status: 'SUCCEEDED', verdict };
   } catch (error) {
-    // Mark FAILED so the partial unique index does not block re-runs.
+    // A ZodError here means the Anthropic tool_use body did not match the
+    // expected schema (drifted model response / partial output). This is not
+    // an infrastructure failure — the contract still exists and a human
+    // reviewer may be able to assess it. Persist MANUAL_REVIEW_REQUIRED so
+    // the run is visible and re-runnable, rather than silently FAILED.
+    if (error instanceof ZodError) {
+      const issuePaths = error.issues.map(i => i.path.join('.')).join(', ');
+      log.warn(
+        { contractId, runId: pending.id, issues: issuePaths },
+        'tool_use body failed schema validation — persisting MANUAL_REVIEW_REQUIRED',
+      );
+      await db.contractHealthCheckRun.update({
+        where: { id: pending.id },
+        data: {
+          verdict: 'MANUAL_REVIEW_REQUIRED',
+          status: 'SUCCEEDED',
+          errorMessage: `tool_use schema validation failed: ${issuePaths}`.slice(0, 500),
+          completedAt: new Date(),
+        },
+      });
+      return { runId: pending.id, status: 'SUCCEEDED', verdict: 'MANUAL_REVIEW_REQUIRED' };
+    }
+
+    // Infrastructure / unexpected error — mark FAILED so the partial unique
+    // index does not block re-runs.
     await db.contractHealthCheckRun.update({
       where: { id: pending.id },
       data: {

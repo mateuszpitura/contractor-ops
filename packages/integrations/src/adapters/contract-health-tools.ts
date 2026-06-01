@@ -4,6 +4,7 @@
 // composes them with the contract PDF to perform the IP-assignment check.
 
 import type Anthropic from '@anthropic-ai/sdk';
+import { z } from 'zod';
 
 export const CONTRACT_HEALTH_TOOL_NAME = 'evaluate_ip_assignment' as const;
 
@@ -66,6 +67,25 @@ export const CONTRACT_HEALTH_TOOL: Anthropic.Tool = {
     required: ['verdict', 'citedClauses'],
   },
 };
+
+/**
+ * Zod schema mirroring ContractHealthToolInput — validates the raw
+ * toolUseBlock.input from Anthropic before the caller trusts any field.
+ * Fails closed: a malformed/drifted model response throws ZodError so the
+ * run-health-check orchestrator can record MANUAL_REVIEW_REQUIRED instead
+ * of silently coercing garbage into the results store.
+ */
+export const contractHealthToolInputSchema = z.object({
+  verdict: z.enum(['LIKELY_PRESENT', 'LIKELY_MISSING', 'MANUAL_REVIEW_REQUIRED']),
+  citedClauses: z.array(
+    z.object({
+      citedText: z.string(),
+      jurisdiction: z.enum(['UK', 'DE', 'PL', 'US', 'KSA', 'UAE']),
+      confidence: z.number().min(0).max(1),
+    }),
+  ),
+  reasoning: z.string().optional(),
+});
 
 export interface ContractHealthToolInput {
   verdict: 'LIKELY_PRESENT' | 'LIKELY_MISSING' | 'MANUAL_REVIEW_REQUIRED';

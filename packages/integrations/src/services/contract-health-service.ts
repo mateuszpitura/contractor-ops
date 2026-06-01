@@ -11,6 +11,7 @@ import {
   CONTRACT_HEALTH_PROMPT,
   CONTRACT_HEALTH_TOOL,
   CONTRACT_HEALTH_TOOL_NAME,
+  contractHealthToolInputSchema,
 } from '../adapters/contract-health-tools.js';
 
 // Default to the same generally-available model the OCR adapter pins.
@@ -62,5 +63,5 @@ export async function evaluateContractIpAssignment(
   if (!toolUseBlock) {
     throw new Error('Claude returned no tool_use block for evaluate_ip_assignment');
   }
-  return toolUseBlock.input as ContractHealthToolInput;
+  return contractHealthToolInputSchema.parse(toolUseBlock.input) as ContractHealthToolInput;
 }
