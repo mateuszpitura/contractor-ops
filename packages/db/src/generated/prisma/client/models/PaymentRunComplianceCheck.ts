@@ -248,6 +248,7 @@ export type PaymentRunComplianceCheckOrderByWithRelationInput = {
 
 export type PaymentRunComplianceCheckWhereUniqueInput = Prisma.AtLeast<{
   id?: string
+  paymentExportId_contractorId?: Prisma.PaymentRunComplianceCheckPaymentExportIdContractorIdCompoundUniqueInput
   AND?: Prisma.PaymentRunComplianceCheckWhereInput | Prisma.PaymentRunComplianceCheckWhereInput[]
   OR?: Prisma.PaymentRunComplianceCheckWhereInput[]
   NOT?: Prisma.PaymentRunComplianceCheckWhereInput | Prisma.PaymentRunComplianceCheckWhereInput[]
@@ -265,7 +266,7 @@ export type PaymentRunComplianceCheckWhereUniqueInput = Prisma.AtLeast<{
   paymentRun?: Prisma.XOR<Prisma.PaymentRunScalarRelationFilter, Prisma.PaymentRunWhereInput>
   paymentExport?: Prisma.XOR<Prisma.PaymentExportNullableScalarRelationFilter, Prisma.PaymentExportWhereInput> | null
   contractor?: Prisma.XOR<Prisma.ContractorScalarRelationFilter, Prisma.ContractorWhereInput>
-}, "id">
+}, "id" | "paymentExportId_contractorId">
 
 export type PaymentRunComplianceCheckOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
@@ -403,6 +404,11 @@ export type PaymentRunComplianceCheckListRelationFilter = {
 
 export type PaymentRunComplianceCheckOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder
+}
+
+export type PaymentRunComplianceCheckPaymentExportIdContractorIdCompoundUniqueInput = {
+  paymentExportId: string
+  contractorId: string
 }
 
 export type PaymentRunComplianceCheckCountOrderByAggregateInput = {

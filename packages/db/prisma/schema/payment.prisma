@@ -115,6 +115,11 @@ model PaymentRunComplianceCheck {
   paymentExport PaymentExport? @relation(fields: [paymentExportId], references: [id], onDelete: SetNull)
   contractor    Contractor     @relation(fields: [contractorId], references: [id])
 
+  // PASS-row dedup guard: a given contractor can appear at most once per export.
+  // paymentExportId is null for FAIL rows (export aborted); Postgres treats NULL
+  // as non-equal in unique constraints so multiple FAIL rows are allowed —
+  // only PASS rows (non-null paymentExportId) are constrained to one per contractor.
+  @@unique([paymentExportId, contractorId])
   @@index([organizationId])
   @@index([paymentRunId])
   @@index([contractorId, snapshottedAt(sort: Desc)])
