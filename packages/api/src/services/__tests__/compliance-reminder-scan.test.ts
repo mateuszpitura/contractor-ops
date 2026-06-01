@@ -15,7 +15,6 @@ const {
   mockMetricsGauge,
   itemsFixture,
   reminderStateByItem,
-  contractorsById,
   claimedKeys,
   auditLogCreates,
 } = vi.hoisted(() => {
@@ -30,10 +29,10 @@ const {
 
   const itemsFixture: Array<Record<string, unknown>> = [];
   const reminderStateByItem = new Map<string, ReminderStateRow>();
-  const contractorsById = new Map<string, { displayName: string }>();
   const claimedKeys = new Set<string>();
   const auditLogCreates: Array<Record<string, unknown>> = [];
 
+  // All cron-context reads/writes go through prismaRaw (M-NEW-2).
   const reminderStateDelegate = {
     findUnique: vi.fn(async (args: { where: { itemId: string } }) => {
       return reminderStateByItem.get(args.where.itemId) ?? null;
@@ -91,29 +90,30 @@ const {
     ),
   };
 
-  const mockPrisma = {
-    contractorComplianceReminderState: reminderStateDelegate,
-    contractor: {
-      findUniqueOrThrow: vi.fn(async (args: { where: { id: string } }) => {
-        const c = contractorsById.get(args.where.id);
-        if (!c) throw new Error(`contractor ${args.where.id} not found`);
-        return c;
-      }),
+  // mockPrismaRaw covers all cron-context operations:
+  //   - contractorComplianceItem.findMany (top-level scan)
+  //   - contractorComplianceReminderState (per-item state reads/writes — M-NEW-2)
+  //   - organization.findUnique (org language for digest locale)
+  const mockPrismaRaw = {
+    contractorComplianceItem: {
+      findMany: vi.fn(async () => itemsFixture),
     },
+    contractorComplianceReminderState: reminderStateDelegate,
     organization: {
       findUnique: vi.fn(async () => ({ language: 'en' })),
     },
+  };
+
+  // mockPrisma is used only by the renewal-reset listener (onComplianceItemExpiresAtChanged),
+  // which runs inside a caller-supplied tx (not a cron singleton). The tx mock is cast as
+  // RecoveryClient in those tests; the audit log create is intercepted here.
+  const mockPrisma = {
+    contractorComplianceReminderState: reminderStateDelegate,
     auditLog: {
       create: vi.fn(async (args: { data: Record<string, unknown> }) => {
         auditLogCreates.push(args.data);
         return args.data;
       }),
-    },
-  };
-
-  const mockPrismaRaw = {
-    contractorComplianceItem: {
-      findMany: vi.fn(async () => itemsFixture),
     },
   };
 
@@ -130,7 +130,6 @@ const {
     mockMetricsGauge: vi.fn(),
     itemsFixture,
     reminderStateByItem,
-    contractorsById,
     claimedKeys,
     auditLogCreates,
   };
@@ -181,15 +180,24 @@ import {
 const ORG = 'clorgaaaaaaaaaaaaaaaaaaaaaa';
 const TZ_BERLIN = 'Europe/Berlin';
 
+// contractor.displayName is embedded in the top-level query result (N+1 eliminated — M-NEW-1).
+const CONTRACTOR_NAMES: Record<string, string> = {
+  'ctr-1': 'Acme GmbH',
+  'ctr-2': 'Beta Ltd',
+  'ctr-3': 'Gamma SARL',
+};
+
 function makeItem(over: Partial<Record<string, unknown>> = {}): Record<string, unknown> {
+  const contractorId = (over.contractorId as string | undefined) ?? 'ctr-1';
   return {
     id: `item-${itemsFixture.length + 1}`,
     organizationId: ORG,
-    contractorId: 'ctr-1',
+    contractorId,
     documentType: 'A1_CERTIFICATE',
     policyRuleId: 'de.a1@v1',
     expiresAt: new Date('2026-08-01T00:00:00Z'),
     expiryJurisdictionTz: TZ_BERLIN,
+    contractor: { displayName: CONTRACTOR_NAMES[contractorId] ?? 'Unknown Contractor' },
     ...over,
   };
 }
@@ -197,24 +205,20 @@ function makeItem(over: Partial<Record<string, unknown>> = {}): Record<string, u
 function resetFixtures() {
   itemsFixture.length = 0;
   reminderStateByItem.clear();
-  contractorsById.clear();
   claimedKeys.clear();
   auditLogCreates.length = 0;
   mockPrismaRaw.contractorComplianceItem.findMany.mockClear();
-  mockPrisma.contractorComplianceReminderState.findUnique.mockClear();
-  mockPrisma.contractorComplianceReminderState.updateMany.mockClear();
-  mockPrisma.contractorComplianceReminderState.create.mockClear();
-  mockPrisma.contractorComplianceReminderState.upsert.mockClear();
-  mockPrisma.contractor.findUniqueOrThrow.mockClear();
+  mockPrismaRaw.contractorComplianceReminderState.findUnique.mockClear();
+  mockPrismaRaw.contractorComplianceReminderState.updateMany.mockClear();
+  mockPrismaRaw.contractorComplianceReminderState.create.mockClear();
+  mockPrismaRaw.contractorComplianceReminderState.upsert.mockClear();
+  mockPrismaRaw.organization.findUnique.mockClear();
   mockPrisma.auditLog.create.mockClear();
   mockDispatch.mockClear();
   mockResolveRecipients.mockReset();
   mockResolveRecipients.mockResolvedValue(['user-admin-1']);
   mockClaimDedup.mockClear();
   mockMetricsGauge.mockClear();
-  contractorsById.set('ctr-1', { displayName: 'Acme GmbH' });
-  contractorsById.set('ctr-2', { displayName: 'Beta Ltd' });
-  contractorsById.set('ctr-3', { displayName: 'Gamma SARL' });
 }
 
 beforeEach(resetFixtures);
@@ -309,7 +313,7 @@ describe('compliance-reminder-scan digest', () => {
 
   it('passes i18n keys as title/body (not hardcoded English) and resolves locale from org', async () => {
     // Change org language to German so we can verify normalizeLocale is called with it.
-    mockPrisma.organization.findUnique.mockResolvedValueOnce({ language: 'de' });
+    mockPrismaRaw.organization.findUnique.mockResolvedValueOnce({ language: 'de' });
 
     itemsFixture.push(makeItem({ id: 'de-item', expiresAt: new Date('2026-06-20T00:00:00Z') }));
     const now = new Date('2026-05-03T09:00:00Z');
@@ -373,8 +377,8 @@ describe('compliance-reminder-scan renewal-reset', () => {
       lastBandFiredAt: null,
       version: 5,
     });
-    // findUnique returns the row at version 5; then a concurrent reset bumps it.
-    mockPrisma.contractorComplianceReminderState.findUnique.mockImplementationOnce(async () => {
+    // findUnique (on prismaRaw) returns the row at version 5; then a concurrent reset bumps it.
+    mockPrismaRaw.contractorComplianceReminderState.findUnique.mockImplementationOnce(async () => {
       const row = reminderStateByItem.get('item-c');
       // Concurrent renewal-reset increments version between read and write.
       reminderStateByItem.set('item-c', { ...row!, version: 6 });
@@ -420,13 +424,17 @@ describe('compliance-reminder-scan filtering + resilience', () => {
   });
 
   it('logs error and continues on per-item failure (does not abort whole scan)', async () => {
+    // Make the state read for 'bad' throw; 'good' still processes to completion.
+    mockPrismaRaw.contractorComplianceReminderState.findUnique.mockImplementationOnce(async () => {
+      throw new Error('db connection error');
+    });
     itemsFixture.push(
-      makeItem({ id: 'bad', contractorId: 'missing-ctr' }), // findUniqueOrThrow will throw
+      makeItem({ id: 'bad', contractorId: 'ctr-1' }),
       makeItem({ id: 'good', contractorId: 'ctr-1' }),
     );
     const now = new Date('2026-05-03T09:00:00Z');
     const result = await runComplianceReminderScan(now);
-    // 'bad' throws during contractor lookup; 'good' still fires.
+    // 'bad' throws during state read; 'good' still fires.
     expect(result.scanned).toBe(2);
     expect(result.fires).toBe(1);
   });

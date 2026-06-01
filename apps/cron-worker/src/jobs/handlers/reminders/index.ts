@@ -382,6 +382,10 @@ export const remindersHandler: JobHandler = async ctx => {
           gcIdpProvenance(ctx.log),
           // Phase 72 COMPL-03 — never rejects (top-level try/catch in the helper),
           // so it can't abort the shared reminders transaction.
+          // INTENTIONAL: runComplianceReminderScan uses its own prismaRaw connections,
+          // NOT the lock-holding tx above. Crash-isolation is the goal — the scan's
+          // dedup unique index (claimCronNotificationDedup) is the real idempotency
+          // guard; the advisory lock does not need to cover these connections.
           runComplianceReminderScan(),
         ]);
 

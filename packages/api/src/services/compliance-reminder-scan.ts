@@ -22,6 +22,7 @@
 import { daysUntilExpiryInTz, jurisdictionDate } from '@contractor-ops/compliance-policy';
 import type { Prisma } from '@contractor-ops/db';
 import { prisma, prismaRaw } from '@contractor-ops/db';
+import { pLimit } from '@contractor-ops/integrations/services/concurrency';
 import { createCronLogger } from '@contractor-ops/logger';
 import { metrics } from '@contractor-ops/logger/metrics';
 
@@ -33,6 +34,9 @@ import { dispatch } from './notification-service';
 import { resolveRbacRecipients } from './rbac-recipients';
 
 const log = createCronLogger('compliance-reminder-scan');
+
+// F-ASYNC-09 — bound the cross-org scan fan-out (mirror of economic-dependency-scan.ts).
+const SCAN_FANOUT_CONCURRENCY = 10;
 
 // ---------------------------------------------------------------------------
 // Pure helpers — band classification
@@ -88,6 +92,7 @@ interface ItemForScan {
   policyRuleId: string | null;
   expiresAt: Date | null;
   expiryJurisdictionTz: string | null;
+  contractor: { displayName: string };
 }
 
 interface PendingFire {
@@ -114,6 +119,9 @@ interface DigestGroup {
 
 export async function runComplianceReminderScan(now: Date = new Date()): Promise<ScanResult> {
   try {
+    // PHASE-72-CROSS-ORG-SCAN: prismaRaw used throughout (no tenant frame in cron context).
+    // contractor.displayName is selected here to avoid a per-item N+1 lookup — mirrors
+    // the economic-dependency-scan.ts twin (select contractor.displayName in the top query).
     const items: ItemForScan[] = await prismaRaw.contractorComplianceItem.findMany({
       where: {
         severity: 'BLOCKING',
@@ -129,6 +137,7 @@ export async function runComplianceReminderScan(now: Date = new Date()): Promise
         policyRuleId: true,
         expiresAt: true,
         expiryJurisdictionTz: true,
+        contractor: { select: { displayName: true } },
       },
     });
 
@@ -151,35 +160,46 @@ export async function runComplianceReminderScan(now: Date = new Date()): Promise
 
 /**
  * Pass 1 — per-item band processing + per-recipient grouping.
+ *
+ * F-ASYNC-09 / F-SCALE-05: fan-out is bounded by pLimit(SCAN_FANOUT_CONCURRENCY)
+ * to avoid head-of-line blocking on slow per-item DB writes at high BLOCKING-item
+ * volume — mirrors the economic-dependency-scan.ts twin.
+ *
  * Per-item failures are logged and skipped; they never abort the whole scan.
  */
 async function collectPendingFires(
   items: ItemForScan[],
   now: Date,
 ): Promise<{ scanned: number; fires: number; recipientGroups: Map<string, DigestGroup> }> {
-  let scanned = 0;
-  let fires = 0;
+  const limit = pLimit(SCAN_FANOUT_CONCURRENCY);
   const recipientGroups = new Map<string, DigestGroup>(); // key = `${userId}:${jurisdictionDate}`
 
-  for (const item of items) {
-    scanned++;
-    try {
-      const fire = await processItem(item, now);
-      if (!fire) continue;
-      fires++;
-      // Resolve recipients in Pass 1 so we can group correctly in Pass 2.
-      const recipients = await resolveRecipientsForItem(item);
-      // biome-ignore lint/style/noNonNullAssertion: query filters out null expiryJurisdictionTz
-      const date = jurisdictionDate(now, item.expiryJurisdictionTz!);
-      for (const recipientUserId of recipients) {
-        addFireToGroup(recipientGroups, recipientUserId, date, item.organizationId, fire);
-      }
-    } catch (err) {
-      log.error({ err, itemId: item.id }, 'compliance-reminder per-item processing failed');
-    }
-  }
+  // Shared mutable counters — safe because pLimit serialises access at SCAN_FANOUT_CONCURRENCY.
+  const counters = { scanned: 0, fires: 0 };
 
-  return { scanned, fires, recipientGroups };
+  await Promise.all(
+    items.map(item =>
+      limit(async () => {
+        counters.scanned++;
+        try {
+          const fire = await processItem(item, now);
+          if (!fire) return;
+          counters.fires++;
+          // Resolve recipients in Pass 1 so we can group correctly in Pass 2.
+          const recipients = await resolveRecipientsForItem(item);
+          // biome-ignore lint/style/noNonNullAssertion: query filters out null expiryJurisdictionTz
+          const date = jurisdictionDate(now, item.expiryJurisdictionTz!);
+          for (const recipientUserId of recipients) {
+            addFireToGroup(recipientGroups, recipientUserId, date, item.organizationId, fire);
+          }
+        } catch (err) {
+          log.error({ err, itemId: item.id }, 'compliance-reminder per-item processing failed');
+        }
+      }),
+    ),
+  );
+
+  return { scanned: counters.scanned, fires: counters.fires, recipientGroups };
 }
 
 function addFireToGroup(
@@ -221,6 +241,11 @@ async function dispatchDigests(recipientGroups: Map<string, DigestGroup>): Promi
 /**
  * Per-item processing: compute next band, claim per-band dedup, persist with
  * optimistic concurrency, return PendingFire if we should add to the digest.
+ *
+ * Uses prismaRaw throughout — the cron runs without a tenant frame and the
+ * tenant-scoped `prisma` client's withTenantScope extension can silently
+ * under-filter cross-org scans. Mirror of economic-dependency-scan.ts idiom
+ * (tagged PHASE-60-CROSS-ORG-AGGREGATE there; same principle applies here).
  */
 async function processItem(item: ItemForScan, now: Date): Promise<PendingFire | null> {
   if (!(item.expiresAt && item.expiryJurisdictionTz)) return null;
@@ -229,15 +254,15 @@ async function processItem(item: ItemForScan, now: Date): Promise<PendingFire | 
   const nextBand = bandFor(days);
   if (nextBand === 'NONE') return null;
 
-  // Read current state (or default to NONE).
-  const existing = await prisma.contractorComplianceReminderState.findUnique({
+  // Read current state (or default to NONE). prismaRaw: cron has no tenant frame.
+  const existing = await prismaRaw.contractorComplianceReminderState.findUnique({
     where: { itemId: item.id },
   });
   const knownVersion = existing?.version ?? 0;
   const lastFired = existing?.lastBandFired ?? null;
 
   // Only fire if the next band is forward of the last fired band.
-  if (lastFired && bandIndex(nextBand) <= bandIndex(lastFired)) return null;
+  if (lastFired && bandIndex(nextBand) <= bandIndex(lastFired as ReminderBand)) return null;
 
   // Per-band dedup claim (jurisdictionDate-scoped).
   const date = jurisdictionDate(now, item.expiryJurisdictionTz);
@@ -248,12 +273,6 @@ async function processItem(item: ItemForScan, now: Date): Promise<PendingFire | 
   const persisted = await persistBandFire(item, nextBand, knownVersion, existing !== null, now);
   if (!persisted) return null;
 
-  // Fetch contractor display name for the digest line.
-  const contractor = await prisma.contractor.findUniqueOrThrow({
-    where: { id: item.contractorId },
-    select: { displayName: true },
-  });
-
   return {
     itemId: item.id,
     organizationId: item.organizationId,
@@ -262,7 +281,8 @@ async function processItem(item: ItemForScan, now: Date): Promise<PendingFire | 
     documentType: item.documentType,
     policyRuleId: item.policyRuleId,
     contractorId: item.contractorId,
-    contractorDisplayName: contractor.displayName,
+    // displayName was selected in the top-level query — no per-item contractor N+1.
+    contractorDisplayName: item.contractor.displayName,
   };
 }
 
@@ -271,6 +291,8 @@ async function processItem(item: ItemForScan, now: Date): Promise<PendingFire | 
  * fire) when a renewal-reset raced with us — either updateMany matched zero rows
  * (version bumped between read and write) or the create lost to a P2002 from a
  * parallel listener. Both cases retry on the next cron tick.
+ *
+ * prismaRaw: cron context, no tenant frame — mirrors processItem above.
  */
 async function persistBandFire(
   item: ItemForScan,
@@ -280,7 +302,7 @@ async function persistBandFire(
   now: Date,
 ): Promise<boolean> {
   if (exists) {
-    const updated = await prisma.contractorComplianceReminderState.updateMany({
+    const updated = await prismaRaw.contractorComplianceReminderState.updateMany({
       where: { itemId: item.id, version: knownVersion },
       data: {
         currentBand: nextBand,
@@ -301,7 +323,7 @@ async function persistBandFire(
 
   // Race-tolerant create: if a parallel listener created the row, this throws P2002 — caught and skipped.
   try {
-    await prisma.contractorComplianceReminderState.create({
+    await prismaRaw.contractorComplianceReminderState.create({
       data: {
         itemId: item.id,
         organizationId: item.organizationId,
@@ -331,7 +353,8 @@ async function persistBandFire(
  *
  * NOTE: `resolveRbacRecipients` is typed to ContractorPermission and compliance
  * reads are gated behind contractor:read in this RBAC model, so we reuse that
- * gate (same one the economic-dependency twin uses).
+ * gate (same one the economic-dependency twin uses). It returns a distinct set
+ * already — no re-dedup needed here.
  *
  * The contractor themselves is NOT a platform `User` in this data model (they
  * authenticate via PortalSession, not a User row), so they cannot be a
@@ -339,8 +362,7 @@ async function persistBandFire(
  * Phase 73 portal scope; Phase 72 dispatches the admin digest only.
  */
 async function resolveRecipientsForItem(item: ItemForScan): Promise<string[]> {
-  const adminRecipients = await resolveRbacRecipients(item.organizationId, 'contractor:read');
-  return Array.from(new Set<string>(adminRecipients));
+  return resolveRbacRecipients(item.organizationId, 'contractor:read');
 }
 
 /**
@@ -351,9 +373,11 @@ async function resolveRecipientsForItem(item: ItemForScan): Promise<string[]> {
  * step localises them against the org's configured locale. Per-item document
  * labels are also resolved server-side (via resolveMessage) so the {items}
  * param carries locale-aware text rather than raw DocumentType enum values.
+ *
+ * prismaRaw: org language lookup is a cross-org read in the cron context.
  */
 async function dispatchDigest(group: DigestGroup): Promise<void> {
-  const org = await prisma.organization.findUnique({
+  const org = await prismaRaw.organization.findUnique({
     where: { id: group.organizationId },
     select: { language: true },
   });
