@@ -3,7 +3,7 @@ Verify threat mitigations for a completed phase. Confirm PLAN.md threat register
 </purpose>
 
 <required_reading>
-@/Users/mateusz.pitura/Repos/projects/contractor-ops/.claude/get-shit-done/references/ui-brand.md
+@$HOME/Repos/projects/contractor-ops/.claude/get-shit-done/references/ui-brand.md
 </required_reading>
 
 <available_agent_types>
@@ -94,7 +94,7 @@ Call AskUserQuestion with threat table and options:
 
 ```
 Agent(
-  prompt="Read /Users/mateusz.pitura/Repos/projects/contractor-ops/.claude/agents/gsd-security-auditor.md for instructions.\n\n" +
+  prompt="Read $HOME/Repos/projects/contractor-ops/.claude/agents/gsd-security-auditor.md for instructions.\n\n" +
     "<files_to_read>{PLAN, SUMMARY, impl files, SECURITY.md}</files_to_read>" +
     "<threat_register>{threat register}</threat_register>" +
     "<config>asvs_level: {SECURITY_ASVS}, block_on: {SECURITY_BLOCK_ON}</config>" +
@@ -116,7 +116,7 @@ Handle return:
 ## 6. Write/Update SECURITY.md
 
 **State B (create):**
-1. Read template from `/Users/mateusz.pitura/Repos/projects/contractor-ops/.claude/get-shit-done/templates/SECURITY.md`
+1. Read template from `$HOME/Repos/projects/contractor-ops/.claude/get-shit-done/templates/SECURITY.md`
 2. Fill: frontmatter, threat register, accepted risks, audit trail
 3. Write to `${PHASE_DIR}/${PADDED_PHASE}-SECURITY.md`
 

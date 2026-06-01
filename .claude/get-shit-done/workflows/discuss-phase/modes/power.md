@@ -8,7 +8,7 @@
 ## Dispatch
 
 ```
-Read @/Users/mateusz.pitura/Repos/projects/contractor-ops/.claude/get-shit-done/workflows/discuss-phase-power.md
+Read @$HOME/Repos/projects/contractor-ops/.claude/get-shit-done/workflows/discuss-phase-power.md
 ```
 
 Execute it end-to-end. Do not continue with the standard interactive steps.

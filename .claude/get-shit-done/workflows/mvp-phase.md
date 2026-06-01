@@ -3,9 +3,9 @@ Guide the user through MVP-mode planning for a phase. Prompts for an "As a / I w
 </purpose>
 
 <required_reading>
-@/Users/mateusz.pitura/Repos/projects/contractor-ops/.claude/get-shit-done/references/user-story-template.md
-@/Users/mateusz.pitura/Repos/projects/contractor-ops/.claude/get-shit-done/references/spidr-splitting.md
-@/Users/mateusz.pitura/Repos/projects/contractor-ops/.claude/get-shit-done/references/planner-mvp-mode.md
+@$HOME/Repos/projects/contractor-ops/.claude/get-shit-done/references/user-story-template.md
+@$HOME/Repos/projects/contractor-ops/.claude/get-shit-done/references/spidr-splitting.md
+@$HOME/Repos/projects/contractor-ops/.claude/get-shit-done/references/planner-mvp-mode.md
 </required_reading>
 
 <runtime_note>
@@ -29,7 +29,7 @@ Example: /gsd mvp-phase 2.1
 ```
 Exit.
 
-Normalize per `@/Users/mateusz.pitura/Repos/projects/contractor-ops/.claude/get-shit-done/references/phase-argument-parsing.md` (zero-pad integer phases to two digits).
+Normalize per `@$HOME/Repos/projects/contractor-ops/.claude/get-shit-done/references/phase-argument-parsing.md` (zero-pad integer phases to two digits).
 
 ## 2. Validate phase exists and check status
 
@@ -73,7 +73,7 @@ Use `AskUserQuestion` with options [Re-prompt / Abort]. On Abort, exit cleanly. 
 
 ## 3. User story prompts
 
-Run three sequential `AskUserQuestion` calls. Each is free-text. After all three, assemble into the canonical sentence per `@/Users/mateusz.pitura/Repos/projects/contractor-ops/.claude/get-shit-done/references/user-story-template.md`:
+Run three sequential `AskUserQuestion` calls. Each is free-text. After all three, assemble into the canonical sentence per `@$HOME/Repos/projects/contractor-ops/.claude/get-shit-done/references/user-story-template.md`:
 
 **Prompt 1 — As a:**
 > "As a [user role]?"
@@ -112,7 +112,7 @@ If `RE_PROMPT_USER_STORY=true`, re-run only the offending prompt field(s), rebui
 
 ## 4. SPIDR splitting check
 
-Run the SPIDR rules from `@/Users/mateusz.pitura/Repos/projects/contractor-ops/.claude/get-shit-done/references/spidr-splitting.md`. Briefly:
+Run the SPIDR rules from `@$HOME/Repos/projects/contractor-ops/.claude/get-shit-done/references/spidr-splitting.md`. Briefly:
 
 **Trigger evaluation.** Check the assembled `USER_STORY` against the four size signals from the reference (compound capabilities, multi-actor, length > 120 chars, vague capability). If none fire, **skip SPIDR** entirely — go to step 5.
 

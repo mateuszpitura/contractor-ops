@@ -14,6 +14,7 @@ Detect whether GSD is installed locally or globally by checking both locations a
 First, derive `PREFERRED_CONFIG_DIR` and `PREFERRED_RUNTIME` from the invoking prompt's `execution_context` path:
 - If the path contains `/get-shit-done/workflows/update.md`, strip that suffix and store the remainder as `PREFERRED_CONFIG_DIR`
 - Path contains `/.codex/` -> `codex`
+- Path contains `/.gemini/antigravity/` -> `antigravity`
 - Path contains `/.gemini/` -> `gemini`
 - Path contains `/.config/kilo/` or `/.kilo/`, or `PREFERRED_CONFIG_DIR` contains `kilo.json` / `kilo.jsonc` -> `kilo`
 - Path contains `/.config/opencode/` or `/.opencode/`, or `PREFERRED_CONFIG_DIR` contains `opencode.json` / `opencode.jsonc` -> `opencode`
@@ -36,7 +37,7 @@ expand_home() {
 # Using an array instead of a space-separated string ensures correct
 # iteration in both bash and zsh (zsh does not word-split unquoted
 # variables by default). Fixes #1173.
-RUNTIME_DIRS=( "claude:.claude" "opencode:.config/opencode" "opencode:.opencode" "gemini:.gemini" "kilo:.config/kilo" "kilo:.kilo" "codex:.codex" )
+RUNTIME_DIRS=( "claude:.claude" "opencode:.config/opencode" "opencode:.opencode" "antigravity:.gemini/antigravity" "gemini:.gemini" "kilo:.config/kilo" "kilo:.kilo" "codex:.codex" )
 ENV_RUNTIME_DIRS=()
 
 # PREFERRED_CONFIG_DIR / PREFERRED_RUNTIME should be set from execution_context
@@ -58,6 +59,8 @@ fi
 if [ -z "$PREFERRED_RUNTIME" ]; then
   if [ -n "$CODEX_HOME" ]; then
     PREFERRED_RUNTIME="codex"
+  elif [ -n "$ANTIGRAVITY_CONFIG_DIR" ]; then
+    PREFERRED_RUNTIME="antigravity"
   elif [ -n "$GEMINI_CONFIG_DIR" ]; then
     PREFERRED_RUNTIME="gemini"
   elif [ -n "$KILO_CONFIG_DIR" ]; then
@@ -95,7 +98,7 @@ if [ -n "$PREFERRED_CONFIG_DIR" ] && { [ -f "$PREFERRED_CONFIG_DIR/get-shit-done
     printf '%s' "$p"
   }
   normalized_preferred="$(normalize_path "$PREFERRED_CONFIG_DIR")"
-  for dir in .claude .config/opencode .opencode .gemini .config/kilo .kilo .codex; do
+  for dir in .claude .config/opencode .opencode .gemini/antigravity .gemini .config/kilo .kilo .codex; do
     resolved_local="$(cd "./$dir" 2>/dev/null && pwd)"
     normalized_local="$(normalize_path "$resolved_local")"
     if [ -n "$normalized_local" ] && [ "$normalized_local" = "$normalized_preferred" ]; then
@@ -125,6 +128,9 @@ fi
 # Absolute global candidates from env overrides (covers custom config dirs).
 if [ -n "$CLAUDE_CONFIG_DIR" ]; then
   ENV_RUNTIME_DIRS+=( "claude:$(expand_home "$CLAUDE_CONFIG_DIR")" )
+fi
+if [ -n "$ANTIGRAVITY_CONFIG_DIR" ]; then
+  ENV_RUNTIME_DIRS+=( "antigravity:$(expand_home "$ANTIGRAVITY_CONFIG_DIR")" )
 fi
 if [ -n "$GEMINI_CONFIG_DIR" ]; then
   ENV_RUNTIME_DIRS+=( "gemini:$(expand_home "$GEMINI_CONFIG_DIR")" )
@@ -284,7 +290,7 @@ Proceed to install step (treat as version 0.0.0 for comparison).
 <step name="check_latest_version">
 Check npm for latest version via the deterministic script. **Do NOT run `npm view` or `npm search` directly** — the package name must come from the script, not from a free choice at execution time. (#2992: LLM-driven prescriptions of npm package names produced wrong-package queries; moving the package name into a script constant closes that gap.)
 
-The `GSD_DIR` value emitted by `get_installed_version` (line 4) resolves to the runtime-specific config dir (`/Users/mateusz.pitura/Repos/projects/contractor-ops/.claude/`, `~/.gemini/`, `~/.codex/`, etc.), so the script invocation works for every runtime — not just Claude. If `GSD_DIR` is empty (scope `UNKNOWN`), skip this step and go directly to install.
+The `GSD_DIR` value emitted by `get_installed_version` (line 4) resolves to the runtime-specific config dir (`$HOME/Repos/projects/contractor-ops/.claude/`, `~/.gemini/`, `~/.codex/`, etc.), so the script invocation works for every runtime — not just Claude. If `GSD_DIR` is empty (scope `UNKNOWN`), skip this step and go directly to install.
 
 `LATEST_RESULT` is a JSON document with the documented shape `{ ok: bool, version: string, reason: string, detail?: string }`. Parse via `jq` ONLY when the script actually ran. When `GSD_DIR` is empty (scope `UNKNOWN`), skip the check entirely and seed the parsed fields with their no-op values so downstream logic does not mistake an unset `LATEST_RESULT` for a failed network check (#2993 CR feedback):
 
@@ -397,7 +403,7 @@ Exit.
 - `agents/gsd-*` files will be replaced
 
 (Paths are relative to detected runtime install location:
-global: `/Users/mateusz.pitura/Repos/projects/contractor-ops/.claude/`, `~/.config/opencode/`, `~/.opencode/`, `~/.gemini/`, `~/.config/kilo/`, or `~/.codex/`
+global: `$HOME/Repos/projects/contractor-ops/.claude/`, `~/.config/opencode/`, `~/.opencode/`, `~/.gemini/`, `~/.config/kilo/`, or `~/.codex/`
 local: `./.claude/`, `./.config/opencode/`, `./.opencode/`, `./.gemini/`, `./.kilo/`, or `./.codex/`)
 
 Your custom files in other locations are preserved:
@@ -581,7 +587,7 @@ for dir in "${CACHE_DIRS[@]}"; do
   fi
 done
 
-for dir in .claude .config/opencode .opencode .gemini .config/kilo .kilo .codex; do
+for dir in .claude .config/opencode .opencode .gemini/antigravity .gemini .config/kilo .kilo .codex; do
   rm -f "./$dir/cache/gsd-update-check.json"
   rm -f "$HOME/$dir/cache/gsd-update-check.json"
 done

@@ -11,10 +11,10 @@ Supports two modes:
 <required_reading>
 Read all files referenced by the invoking prompt's execution_context before starting.
 
-@/Users/mateusz.pitura/Repos/projects/contractor-ops/.claude/get-shit-done/references/sketch-theme-system.md
-@/Users/mateusz.pitura/Repos/projects/contractor-ops/.claude/get-shit-done/references/sketch-variant-patterns.md
-@/Users/mateusz.pitura/Repos/projects/contractor-ops/.claude/get-shit-done/references/sketch-interactivity.md
-@/Users/mateusz.pitura/Repos/projects/contractor-ops/.claude/get-shit-done/references/sketch-tooling.md
+@$HOME/Repos/projects/contractor-ops/.claude/get-shit-done/references/sketch-theme-system.md
+@$HOME/Repos/projects/contractor-ops/.claude/get-shit-done/references/sketch-variant-patterns.md
+@$HOME/Repos/projects/contractor-ops/.claude/get-shit-done/references/sketch-interactivity.md
+@$HOME/Repos/projects/contractor-ops/.claude/get-shit-done/references/sketch-tooling.md
 </required_reading>
 
 <process>

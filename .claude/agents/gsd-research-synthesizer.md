@@ -112,7 +112,7 @@ This is the most important section. Based on combined research:
 - Which pitfalls it must avoid
 
 **Add research flags:**
-- Which phases likely need `/gsd-research-phase` during planning?
+- Which phases likely need `/gsd:plan-phase --research-phase <N>` during planning?
 - Which phases have well-documented patterns (skip research)?
 
 ## Step 5: Assess Confidence
@@ -130,7 +130,7 @@ Identify gaps that couldn't be resolved and need attention during planning.
 
 **ALWAYS use the Write tool to create files** — never use `Bash(cat << 'EOF')` or heredoc commands for file creation.
 
-Use template: /Users/mateusz.pitura/Repos/projects/contractor-ops/.claude/get-shit-done/templates/research-project/SUMMARY.md
+Use template: $HOME/Repos/projects/contractor-ops/.claude/get-shit-done/templates/research-project/SUMMARY.md
 
 Write to `.planning/research/SUMMARY.md`
 
@@ -150,7 +150,7 @@ Return brief confirmation with key points for the orchestrator.
 
 <output_format>
 
-Use template: /Users/mateusz.pitura/Repos/projects/contractor-ops/.claude/get-shit-done/templates/research-project/SUMMARY.md
+Use template: $HOME/Repos/projects/contractor-ops/.claude/get-shit-done/templates/research-project/SUMMARY.md
 
 Key sections:
 - Executive Summary (2-3 paragraphs)

@@ -11,8 +11,8 @@ This prevents the two most common AI development failures: choosing the wrong fr
 </purpose>
 
 <required_reading>
-@/Users/mateusz.pitura/Repos/projects/contractor-ops/.claude/get-shit-done/references/ai-frameworks.md
-@/Users/mateusz.pitura/Repos/projects/contractor-ops/.claude/get-shit-done/references/ai-evals.md
+@$HOME/Repos/projects/contractor-ops/.claude/get-shit-done/references/ai-frameworks.md
+@$HOME/Repos/projects/contractor-ops/.claude/get-shit-done/references/ai-evals.md
 </required_reading>
 
 <process>
@@ -102,7 +102,7 @@ Display:
 
 Spawn `gsd-framework-selector` with:
 ```markdown
-Read /Users/mateusz.pitura/Repos/projects/contractor-ops/.claude/agents/gsd-framework-selector.md for instructions.
+Read $HOME/Repos/projects/contractor-ops/.claude/agents/gsd-framework-selector.md for instructions.
 
 <objective>
 Select the right AI framework for Phase {phase_number}: {phase_name}
@@ -128,7 +128,7 @@ Parse selector output for: `primary_framework`, `system_type`, `model_provider`,
 
 Copy template:
 ```bash
-cp "/Users/mateusz.pitura/Repos/projects/contractor-ops/.claude/get-shit-done/templates/AI-SPEC.md" "${PHASE_DIR}/${PADDED_PHASE}-AI-SPEC.md"
+cp "$HOME/Repos/projects/contractor-ops/.claude/get-shit-done/templates/AI-SPEC.md" "${PHASE_DIR}/${PADDED_PHASE}-AI-SPEC.md"
 ```
 
 Fill in header fields:
@@ -148,7 +148,7 @@ Display:
 
 Spawn `gsd-ai-researcher` with:
 ```markdown
-Read /Users/mateusz.pitura/Repos/projects/contractor-ops/.claude/agents/gsd-ai-researcher.md for instructions.
+Read $HOME/Repos/projects/contractor-ops/.claude/agents/gsd-ai-researcher.md for instructions.
 
 **Tool discipline (mandatory):**
 Use the Edit tool exclusively when modifying AI-SPEC.md — NEVER use Write on this file.
@@ -183,7 +183,7 @@ Display:
 
 Spawn `gsd-domain-researcher` with:
 ```markdown
-Read /Users/mateusz.pitura/Repos/projects/contractor-ops/.claude/agents/gsd-domain-researcher.md for instructions.
+Read $HOME/Repos/projects/contractor-ops/.claude/agents/gsd-domain-researcher.md for instructions.
 
 **Tool discipline (mandatory):**
 Use the Edit tool exclusively when modifying AI-SPEC.md — NEVER use Write on this file.
@@ -216,7 +216,7 @@ Display:
 
 Spawn `gsd-eval-planner` with:
 ```markdown
-Read /Users/mateusz.pitura/Repos/projects/contractor-ops/.claude/agents/gsd-eval-planner.md for instructions.
+Read $HOME/Repos/projects/contractor-ops/.claude/agents/gsd-eval-planner.md for instructions.
 
 <objective>
 Design evaluation strategy for Phase {phase_number}: {phase_name}

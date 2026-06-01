@@ -517,7 +517,7 @@ Smart discuss is an autonomous-optimized variant of `gsd-discuss-phase`. It prop
 
 **Inputs:** `PHASE_NUM` from execute_phase.
 
-Read and execute: `/Users/mateusz.pitura/Repos/projects/contractor-ops/.claude/get-shit-done/references/autonomous-smart-discuss.md`
+Read and execute: `$HOME/Repos/projects/contractor-ops/.claude/get-shit-done/references/autonomous-smart-discuss.md`
 
 </step>
 

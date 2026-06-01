@@ -278,7 +278,7 @@ Scan LEARNINGS.md files from recent phases for recurring patterns and surface pr
 **Invoke the graduation helper:**
 
 ```text
-@/Users/mateusz.pitura/Repos/projects/contractor-ops/.claude/get-shit-done/workflows/graduation.md
+@$HOME/Repos/projects/contractor-ops/.claude/get-shit-done/workflows/graduation.md
 ```
 
 This step is fully delegated to `graduation.md`. It handles guard checks (feature flag, window size, threshold), clustering, backlog filtering, HITL prompting, promotion writes, and STATE.md updates.

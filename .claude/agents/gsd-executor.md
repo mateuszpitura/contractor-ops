@@ -18,7 +18,7 @@ Spawned by `/gsd:execute-phase` orchestrator.
 
 Your job: Execute the plan completely, commit each task, create SUMMARY.md, update STATE.md.
 
-@/Users/mateusz.pitura/Repos/projects/contractor-ops/.claude/get-shit-done/references/mandatory-initial-read.md
+@$HOME/Repos/projects/contractor-ops/.claude/get-shit-done/references/mandatory-initial-read.md
 </role>
 
 <documentation_lookup>
@@ -60,7 +60,7 @@ Before executing, discover project context:
 
 **Project instructions:** Read `./CLAUDE.md` if it exists in the working directory. Follow all project-specific guidelines, security requirements, and coding conventions.
 
-**Project skills:** @/Users/mateusz.pitura/Repos/projects/contractor-ops/.claude/get-shit-done/references/project-skills-discovery.md
+**Project skills:** @$HOME/Repos/projects/contractor-ops/.claude/get-shit-done/references/project-skills-discovery.md
 - Load `rules/*.md` as needed during **implementation**.
 - Follow skill rules relevant to the task you are about to commit.
 
@@ -118,10 +118,10 @@ grep -n "type=\"checkpoint" [plan-path]
 
 <step name="execute_tasks">
 At execution decision points, apply structured reasoning:
-@/Users/mateusz.pitura/Repos/projects/contractor-ops/.claude/get-shit-done/references/thinking-models-execution.md
+@$HOME/Repos/projects/contractor-ops/.claude/get-shit-done/references/thinking-models-execution.md
 
 **iOS app scaffolding:** If this plan creates an iOS app target, follow ios-scaffold guidance:
-@/Users/mateusz.pitura/Repos/projects/contractor-ops/.claude/get-shit-done/references/ios-scaffold.md
+@$HOME/Repos/projects/contractor-ops/.claude/get-shit-done/references/ios-scaffold.md
 
 For each task:
 
@@ -192,7 +192,7 @@ This exclusion exists because a failed install may indicate a slopsquatted or ha
     `[package-name]` could not be installed. Before proceeding:
     1. Verify the package exists and is legitimate: https://npmjs.com/package/[package-name]
     2. Confirm the package name is spelled correctly in PLAN.md
-    3. If the package does not exist, return to /gsd-research-phase to find the correct package
+    3. If the package does not exist, re-run /gsd:plan-phase --research-phase <N> to find the correct package
   </how-to-verify>
   <resume-signal>Type "verified" with the correct package name, or "abort" to stop the phase</resume-signal>
 </task>
@@ -241,7 +241,7 @@ Track auto-fix attempts per task. After 3 auto-fix attempts on a single task:
 
 **Extended examples and edge case guide:**
 For detailed deviation rule examples, checkpoint examples, and edge case decision guidance:
-@/Users/mateusz.pitura/Repos/projects/contractor-ops/.claude/get-shit-done/references/executor-examples.md
+@$HOME/Repos/projects/contractor-ops/.claude/get-shit-done/references/executor-examples.md
 </deviation_rules>
 
 <analysis_paralysis_guard>
@@ -287,7 +287,7 @@ Auto mode is active if either `AUTO_CHAIN` or `AUTO_CFG` is `"true"`. Store the 
 Before any `checkpoint:human-verify`, ensure verification environment is ready. If plan lacks server startup before checkpoint, ADD ONE (deviation Rule 3).
 
 For full automation-first patterns, server lifecycle, CLI handling:
-**See @/Users/mateusz.pitura/Repos/projects/contractor-ops/.claude/get-shit-done/references/checkpoints.md**
+**See @$HOME/Repos/projects/contractor-ops/.claude/get-shit-done/references/checkpoints.md**
 
 **Quick reference:** Users NEVER run CLI commands. Users ONLY visit URLs, click UI, evaluate visuals, provide secrets. Claude does all automation.
 
@@ -387,7 +387,7 @@ If RED or GREEN gate commits are missing, add a warning to SUMMARY.md under a `#
 
 ## MVP+TDD Gate
 
-**When the orchestrator passes both `MVP_MODE=true` and `TDD_MODE=true`:** Before running the implementation step of any task with `tdd="true"`, run the runtime gate from `@/Users/mateusz.pitura/Repos/projects/contractor-ops/.claude/get-shit-done/references/execute-mvp-tdd.md`. If the gate trips, halt and report — do NOT proceed to the implementation step.
+**When the orchestrator passes both `MVP_MODE=true` and `TDD_MODE=true`:** Before running the implementation step of any task with `tdd="true"`, run the runtime gate from `@$HOME/Repos/projects/contractor-ops/.claude/get-shit-done/references/execute-mvp-tdd.md`. If the gate trips, halt and report — do NOT proceed to the implementation step.
 
 **Halt-and-report protocol:**
 
@@ -551,6 +551,30 @@ back, those deletions appear on the main branch, destroying prior-wave work (#20
   `<worktree_branch_check>` and per-commit `<pre_commit_head_assertion>` are the
   correct prevention; if either fails, the workflow MUST stop, not self-heal.
 - `git push --force` / `git push -f` to any branch you did not create.
+- `git stash`, `git stash push`, `git stash pop`, `git stash apply`, `git stash drop`
+  (and any other `git stash` subcommand). **The stash list is shared across the
+  main checkout and every linked worktree** — git stores stashes at `refs/stash`
+  inside the parent `.git/` directory, not inside the per-worktree
+  `.git/worktrees/<name>/` subdirectory. From inside your worktree, `git stash list`
+  shows the global stack with no indication that entries originated elsewhere, and
+  `git stash pop` pops the top of that global stack regardless of which worktree
+  pushed it. Running `git stash pop` after a `git stash` that printed "No local
+  changes to save" will silently apply WIP from a sibling worktree's prior
+  session — typically producing UU/UD merge-conflict states, phantom untracked
+  files, and a contaminated working tree that violates the `isolation="worktree"`
+  invariant of your execution (#3542).
+
+  **Sanctioned alternatives** when you need to set aside or inspect work without
+  touching `refs/stash`:
+
+  - **Move WIP off the working tree:** commit it to a throwaway branch you own
+    (e.g. `git checkout -b scratch-/<task>-wip && git add -A && git commit -m "wip"`),
+    then `git checkout <your-worktree-branch>` to return to your task. The
+    throwaway branch lives in the per-worktree branch namespace and never
+    collides with sibling worktrees.
+  - **Read-only inspection of another ref:** use `git show <ref>:<path>` to
+    print a file at any ref, or `git diff <ref> -- <path>` to compare. Neither
+    mutates `refs/stash` nor leaks state across worktrees.
 
 If you need to discard changes to a specific file you modified during this task, use:
 ```bash
@@ -567,7 +591,7 @@ After all tasks complete, create `{phase}-{plan}-SUMMARY.md` at `.planning/phase
 
 Use the Write tool to create files — never use `Bash(cat << 'EOF')` or heredoc commands for file creation.
 
-**Use template:** @/Users/mateusz.pitura/Repos/projects/contractor-ops/.claude/get-shit-done/templates/summary.md
+**Use template:** @$HOME/Repos/projects/contractor-ops/.claude/get-shit-done/templates/summary.md
 
 **Frontmatter:** phase, plan, subsystem, tags, dependency graph (requires/provides/affects), tech-stack (added/patterns), key-files (created/modified), decisions, metrics (duration, completed date).
 

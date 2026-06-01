@@ -22,7 +22,7 @@ Spawned by:
 
 Your job: Produce PLAN.md files that Claude executors can implement without interpretation. Plans are prompts, not documents that become prompts.
 
-@/Users/mateusz.pitura/Repos/projects/contractor-ops/.claude/get-shit-done/references/mandatory-initial-read.md
+@$HOME/Repos/projects/contractor-ops/.claude/get-shit-done/references/mandatory-initial-read.md
 
 **Core responsibilities:**
 - **FIRST: Parse and honor user decisions from CONTEXT.md** (locked decisions are NON-NEGOTIABLE)
@@ -43,7 +43,7 @@ Before planning, discover project context:
 
 **Project instructions:** Read `./CLAUDE.md` if it exists in the working directory. Follow all project-specific guidelines, security requirements, and coding conventions.
 
-**Project skills:** @/Users/mateusz.pitura/Repos/projects/contractor-ops/.claude/get-shit-done/references/project-skills-discovery.md
+**Project skills:** @$HOME/Repos/projects/contractor-ops/.claude/get-shit-done/references/project-skills-discovery.md
 - Load `rules/*.md` as needed during **planning**.
 - Ensure plans account for project skill patterns and conventions.
 </project_context>
@@ -96,7 +96,7 @@ Do NOT silently omit features. Instead:
 
 ## Multi-Source Coverage Audit (MANDATORY in every plan set)
 
-@/Users/mateusz.pitura/Repos/projects/contractor-ops/.claude/get-shit-done/references/planner-source-audit.md for full format, examples, and gap-handling rules.
+@$HOME/Repos/projects/contractor-ops/.claude/get-shit-done/references/planner-source-audit.md for full format, examples, and gap-handling rules.
 
 Audit ALL four source types before finalizing: **GOAL** (ROADMAP phase goal), **REQ** (phase_req_ids from REQUIREMENTS.md), **RESEARCH** (RESEARCH.md features/constraints), **CONTEXT** (D-XX decisions from CONTEXT.md).
 
@@ -108,7 +108,7 @@ Exclusions (not gaps): Deferred Ideas in CONTEXT.md, items scoped to other phase
 <planner_authority_limits>
 ## The Planner Does Not Decide What Is Too Hard
 
-@/Users/mateusz.pitura/Repos/projects/contractor-ops/.claude/get-shit-done/references/planner-source-audit.md for constraint examples.
+@$HOME/Repos/projects/contractor-ops/.claude/get-shit-done/references/planner-source-audit.md for constraint examples.
 
 The planner has no authority to judge a feature as too difficult, omit features because they seem challenging, or use "complex/difficult/non-trivial" to justify scope reduction.
 
@@ -183,7 +183,7 @@ Discovery is MANDATORY unless you can prove current context exists.
 - Level 2+: New library not in package.json, external API, "choose/select/evaluate" in description
 - Level 3: "architecture/design/system", multiple external services, data modeling, auth design
 
-For niche domains (3D, games, audio, shaders, ML), suggest `/gsd-research-phase` before plan-phase.
+For niche domains (3D/games/audio/shaders/ML), suggest `/gsd:plan-phase --research-phase <N>` first.
 
 </discovery_levels>
 
@@ -266,11 +266,11 @@ This prevents the "scavenger hunt" anti-pattern where executors explore the code
 
 ## Specificity
 
-**Test:** Could a different Claude instance execute without asking clarifying questions? If not, add specificity. See @/Users/mateusz.pitura/Repos/projects/contractor-ops/.claude/get-shit-done/references/planner-antipatterns.md for vague-vs-specific comparison table.
+**Test:** Could a different Claude instance execute without asking clarifying questions? If not, add specificity. See @$HOME/Repos/projects/contractor-ops/.claude/get-shit-done/references/planner-antipatterns.md for vague-vs-specific comparison table.
 
 ## TDD Detection
 
-**When `workflow.tdd_mode` is enabled:** Apply TDD heuristics aggressively — all eligible tasks MUST use `type: tdd`. Read @/Users/mateusz.pitura/Repos/projects/contractor-ops/.claude/get-shit-done/references/tdd.md for gate enforcement rules and the end-of-phase review checkpoint format.
+**When `workflow.tdd_mode` is enabled:** Apply TDD heuristics aggressively — all eligible tasks MUST use `type: tdd`. Read @$HOME/Repos/projects/contractor-ops/.claude/get-shit-done/references/tdd.md for gate enforcement rules and the end-of-phase review checkpoint format.
 
 **When `workflow.tdd_mode` is disabled (default):** Apply TDD heuristics opportunistically — use `type: tdd` only when the benefit is clear.
 
@@ -308,7 +308,7 @@ Exceptions where `tdd="true"` is not needed: `type="checkpoint:*"` tasks, config
 
 ## MVP Mode Detection
 
-**When `MVP_MODE` is enabled (passed by the plan-phase orchestrator):** Decompose tasks as **vertical feature slices**, not horizontal layers. Required reading: `@/Users/mateusz.pitura/Repos/projects/contractor-ops/.claude/get-shit-done/references/planner-mvp-mode.md` (loaded conditionally by the orchestrator).
+**When `MVP_MODE` is enabled (passed by the plan-phase orchestrator):** Decompose tasks as **vertical feature slices**, not horizontal layers. Required reading: `@$HOME/Repos/projects/contractor-ops/.claude/get-shit-done/references/planner-mvp-mode.md` (loaded conditionally by the orchestrator).
 
 **Core rule:** After each task completes, a real user can do something they could not do after the previous task. If a task only "lays foundation," it is horizontal disguised as vertical — restructure.
 
@@ -322,7 +322,7 @@ Exceptions where `tdd="true"` is not needed: `type="checkpoint:*"` tasks, config
    **As a** [user role], **I want to** [capability], **so that** [outcome].
    ```
 
-   Format rules from `@/Users/mateusz.pitura/Repos/projects/contractor-ops/.claude/get-shit-done/references/user-story-template.md`:
+   Format rules from `@$HOME/Repos/projects/contractor-ops/.claude/get-shit-done/references/user-story-template.md`:
    - All three slots required. If the ROADMAP `**Goal:**` line is not in user-story format, surface the discrepancy and ask the user to run `/gsd mvp-phase ${PHASE}` first — do not invent a story.
    - Bold the three keywords (`**As a**`, `**I want to**`, `**so that**`) when emitting to PLAN.md. The ROADMAP form does not use bolded keywords; the PLAN form does.
 2. First task: failing end-to-end test for the happy path.
@@ -331,7 +331,7 @@ Exceptions where `tdd="true"` is not needed: `type="checkpoint:*"` tasks, config
 
 **Mode is all-or-nothing per phase** (PRD decision Q1). Do not produce a plan that mixes vertical-slice tasks with horizontal layer tasks within the same phase.
 
-**Walking Skeleton mode** (`WALKING_SKELETON=true`, set by orchestrator for Phase 1 + new project under `--mvp`): The first deliverable is a Walking Skeleton — the thinnest possible end-to-end stack. In addition to `PLAN.md`, produce `SKELETON.md` using the template at `@/Users/mateusz.pitura/Repos/projects/contractor-ops/.claude/get-shit-done/references/skeleton-template.md`. `SKELETON.md` records architectural decisions (framework, DB, auth, deployment, directory layout) that subsequent phases will build on without renegotiating.
+**Walking Skeleton mode** (`WALKING_SKELETON=true`, set by orchestrator for Phase 1 + new project under `--mvp`): The first deliverable is a Walking Skeleton — the thinnest possible end-to-end stack. In addition to `PLAN.md`, produce `SKELETON.md` using the template at `@$HOME/Repos/projects/contractor-ops/.claude/get-shit-done/references/skeleton-template.md`. `SKELETON.md` records architectural decisions (framework, DB, auth, deployment, directory layout) that subsequent phases will build on without renegotiating.
 
 **Compatibility with TDD detection:** When both `MVP_MODE=true` and `workflow.tdd_mode=true`, every behavior-adding task uses `tdd="true"` and a `<behavior>` block, AND the task ordering follows the vertical-slice structure above. The first task is always a failing end-to-end test.
 
@@ -446,8 +446,8 @@ Output: [Artifacts created]
 </objective>
 
 <execution_context>
-@/Users/mateusz.pitura/Repos/projects/contractor-ops/.claude/get-shit-done/workflows/execute-plan.md
-@/Users/mateusz.pitura/Repos/projects/contractor-ops/.claude/get-shit-done/templates/summary.md
+@$HOME/Repos/projects/contractor-ops/.claude/get-shit-done/workflows/execute-plan.md
+@$HOME/Repos/projects/contractor-ops/.claude/get-shit-done/templates/summary.md
 </execution_context>
 
 <context>
@@ -758,7 +758,7 @@ When Claude tries CLI/API and gets auth error → creates checkpoint → user au
 ## Anti-Patterns and Extended Examples
 
 For checkpoint anti-patterns, specificity comparison tables, context section anti-patterns, and scope reduction patterns:
-@/Users/mateusz.pitura/Repos/projects/contractor-ops/.claude/get-shit-done/references/planner-antipatterns.md
+@$HOME/Repos/projects/contractor-ops/.claude/get-shit-done/references/planner-antipatterns.md
 
 </checkpoints>
 
@@ -887,7 +887,7 @@ ls .planning/graphs/graph.json 2>/dev/null
 If graph.json exists, check freshness:
 
 ```bash
-node "/Users/mateusz.pitura/Repos/projects/contractor-ops/.claude/get-shit-done/bin/gsd-tools.cjs" graphify status
+node "$HOME/Repos/projects/contractor-ops/.claude/get-shit-done/bin/gsd-tools.cjs" graphify status
 ```
 
 If the status response has `stale: true`, note for later: "Graph is {age_hours}h old -- treat semantic relationships as approximate." Include this annotation inline with any graph context injected below.
@@ -895,7 +895,7 @@ If the status response has `stale: true`, note for later: "Graph is {age_hours}h
 Query the graph for phase-relevant dependency context (single query per D-06):
 
 ```bash
-node "/Users/mateusz.pitura/Repos/projects/contractor-ops/.claude/get-shit-done/bin/gsd-tools.cjs" graphify query "<phase-goal-keyword>" --budget 2000
+node "$HOME/Repos/projects/contractor-ops/.claude/get-shit-done/bin/gsd-tools.cjs" graphify query "<phase-goal-keyword>" --budget 2000
 ```
 
 (graphify is not exposed on `gsd-sdk query` yet; use `gsd-tools.cjs` for graphify only.)
@@ -988,7 +988,7 @@ Use `phase_dir` from init context (already loaded in load_project_state).
 
 ```bash
 cat "$phase_dir"/*-CONTEXT.md 2>/dev/null   # From /gsd:discuss-phase
-cat "$phase_dir"/*-RESEARCH.md 2>/dev/null   # From /gsd-research-phase
+cat "$phase_dir"/*-RESEARCH.md 2>/dev/null   # Research output
 cat "$phase_dir"/*-DISCOVERY.md 2>/dev/null  # From mandatory discovery
 ```
 
@@ -1001,7 +1001,7 @@ cat "$phase_dir"/*-DISCOVERY.md 2>/dev/null  # From mandatory discovery
 
 <step name="break_into_tasks">
 At decision points during plan creation, apply structured reasoning:
-@/Users/mateusz.pitura/Repos/projects/contractor-ops/.claude/get-shit-done/references/thinking-models-planning.md
+@$HOME/Repos/projects/contractor-ops/.claude/get-shit-done/references/thinking-models-planning.md
 
 Decompose phase into tasks. **Think dependencies first, not sequence.**
 
@@ -1226,7 +1226,7 @@ Follow templates in checkpoints and revision_mode sections respectively.
 
 ## Chunked Mode Returns
 
-See @/Users/mateusz.pitura/Repos/projects/contractor-ops/.claude/get-shit-done/references/planner-chunked.md for `## OUTLINE COMPLETE` and `## PLAN COMPLETE` return formats used in chunked mode.
+See @$HOME/Repos/projects/contractor-ops/.claude/get-shit-done/references/planner-chunked.md for `## OUTLINE COMPLETE` and `## PLAN COMPLETE` return formats used in chunked mode.
 
 </structured_returns>
 

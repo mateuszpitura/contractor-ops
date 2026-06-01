@@ -236,7 +236,7 @@ keeps raw file contents out of the main context window, protecting token budget.
 **Resolve calibration tier (if USER-PROFILE.md exists):**
 
 ```bash
-PROFILE_PATH="/Users/mateusz.pitura/Repos/projects/contractor-ops/.claude/get-shit-done/USER-PROFILE.md"
+PROFILE_PATH="$HOME/Repos/projects/contractor-ops/.claude/get-shit-done/USER-PROFILE.md"
 ```
 
 If file exists at PROFILE_PATH:

@@ -33,7 +33,7 @@ Every planned eval dimension must resolve to COVERED, PARTIAL (WARNING), or MISS
 </adversarial_stance>
 
 <required_reading>
-Read `/Users/mateusz.pitura/Repos/projects/contractor-ops/.claude/get-shit-done/references/ai-evals.md` before auditing. This is your scoring framework.
+Read `$HOME/Repos/projects/contractor-ops/.claude/get-shit-done/references/ai-evals.md` before auditing. This is your scoring framework.
 </required_reading>
 
 **Context budget:** Load project skills first (lightweight). Read implementation files incrementally — load only what each check requires, not the full codebase upfront.
