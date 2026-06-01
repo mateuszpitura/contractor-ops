@@ -52,6 +52,10 @@ const OAUTH_TIMEOUT_MS = 30_000;
 // last successful response).
 const DIRECTORY_TIMEOUT_MS = 15_000;
 const DIRECTORY_RETRIES = 2;
+// Deprovision Admin SDK mutations (suspend, revoke-tokens, signOut, verify,
+// describeImpact). 15s wall-clock, no retries — QStash retries the whole
+// step on transient failure via #mapDeprovisionFailure throwing.
+const DEPROVISION_TIMEOUT_MS = 15_000;
 
 // ---------------------------------------------------------------------------
 // Google Workspace Admin SDK Types
@@ -403,11 +407,15 @@ export class GoogleWorkspaceAdapter extends BaseAdapter implements Deprovisionab
     const requestPayload = { suspended: true };
     const requestSha256 = sha256Hex(canonicalizeRequest({ method: 'PATCH', body: requestPayload }));
 
-    const res = await fetch(this.#usersUrl(externalUserId), {
-      method: 'PATCH',
-      headers: { ...this.#authHeaders(), 'Content-Type': 'application/json' },
-      body: JSON.stringify(requestPayload),
-    });
+    const res = await fetchWithTimeout(
+      this.#usersUrl(externalUserId),
+      {
+        method: 'PATCH',
+        headers: { ...this.#authHeaders(), 'Content-Type': 'application/json' },
+        body: JSON.stringify(requestPayload),
+      },
+      { timeoutMs: DEPROVISION_TIMEOUT_MS, retries: 0 },
+    );
 
     const body = await res.json().catch(() => ({}));
     const responseSha256 = sha256Hex(canonicalizeResponse({ status: res.status, body }));
@@ -423,9 +431,11 @@ export class GoogleWorkspaceAdapter extends BaseAdapter implements Deprovisionab
   async revokeAllSessions(externalUserId: string): Promise<DeprovisionResult> {
     // Sub-action (a) — revoke OAuth grants: list tokens, delete each (idempotent).
     const tokensReqSha = sha256Hex(canonicalizeRequest({ method: 'GET', target: 'tokens.list' }));
-    const listRes = await fetch(`${this.#usersUrl(externalUserId)}/tokens`, {
-      headers: this.#authHeaders(),
-    });
+    const listRes = await fetchWithTimeout(
+      `${this.#usersUrl(externalUserId)}/tokens`,
+      { headers: this.#authHeaders() },
+      { timeoutMs: DEPROVISION_TIMEOUT_MS, retries: 0 },
+    );
     const listBody = await listRes.json().catch(() => ({}));
 
     if (!listRes.ok && listRes.status !== 404) {
@@ -443,9 +453,10 @@ export class GoogleWorkspaceAdapter extends BaseAdapter implements Deprovisionab
         .filter((c): c is string => typeof c === 'string')
         .map(clientId =>
           limit(async () => {
-            const delRes = await fetch(
+            const delRes = await fetchWithTimeout(
               `${this.#usersUrl(externalUserId)}/tokens/${encodeURIComponent(clientId)}`,
               { method: 'DELETE', headers: this.#authHeaders() },
+              { timeoutMs: DEPROVISION_TIMEOUT_MS, retries: 0 },
             );
             // 404 ⇒ token already revoked (idempotent success).
             return { status: delRes.status, ok: delRes.ok || delRes.status === 404 };
@@ -472,10 +483,11 @@ export class GoogleWorkspaceAdapter extends BaseAdapter implements Deprovisionab
 
     // Sub-action (b) — sign out of all sessions.
     const signOutReqSha = sha256Hex(canonicalizeRequest({ method: 'POST', target: 'signOut' }));
-    const signOutRes = await fetch(`${this.#usersUrl(externalUserId)}/signOut`, {
-      method: 'POST',
-      headers: this.#authHeaders(),
-    });
+    const signOutRes = await fetchWithTimeout(
+      `${this.#usersUrl(externalUserId)}/signOut`,
+      { method: 'POST', headers: this.#authHeaders() },
+      { timeoutMs: DEPROVISION_TIMEOUT_MS, retries: 0 },
+    );
     const signOutText = await signOutRes.text().catch(() => '');
     const signOutResSha = sha256Hex(
       canonicalizeResponse({ status: signOutRes.status, bodyLength: signOutText.length }),
@@ -505,7 +517,11 @@ export class GoogleWorkspaceAdapter extends BaseAdapter implements Deprovisionab
   }
 
   async verifyDeprovisioned(externalUserId: string): Promise<boolean> {
-    const res = await fetch(this.#usersUrl(externalUserId), { headers: this.#authHeaders() });
+    const res = await fetchWithTimeout(
+      this.#usersUrl(externalUserId),
+      { headers: this.#authHeaders() },
+      { timeoutMs: DEPROVISION_TIMEOUT_MS, retries: 0 },
+    );
     if (res.status === 404) return true; // user gone is also "deprovisioned"
     const data = (await res.json().catch(() => ({}))) as { suspended?: boolean };
     return Boolean(data?.suspended);
@@ -516,7 +532,11 @@ export class GoogleWorkspaceAdapter extends BaseAdapter implements Deprovisionab
     const fetchedAt = new Date().toISOString();
 
     // users.get — accountStatus + isSuperAdmin + displayName.
-    const userRes = await fetch(this.#usersUrl(externalUserId), { headers: this.#authHeaders() });
+    const userRes = await fetchWithTimeout(
+      this.#usersUrl(externalUserId),
+      { headers: this.#authHeaders() },
+      { timeoutMs: DEPROVISION_TIMEOUT_MS, retries: 0 },
+    );
     if (userRes.status === 404) {
       return {
         provider: 'GOOGLE_WORKSPACE',
@@ -540,9 +560,11 @@ export class GoogleWorkspaceAdapter extends BaseAdapter implements Deprovisionab
     // tokens.list — oauthGrants (best-effort; degrade to [] on failure).
     let oauthGrants: Array<{ appName: string; scopes: string[] }> = [];
     try {
-      const tokRes = await fetch(`${this.#usersUrl(externalUserId)}/tokens`, {
-        headers: this.#authHeaders(),
-      });
+      const tokRes = await fetchWithTimeout(
+        `${this.#usersUrl(externalUserId)}/tokens`,
+        { headers: this.#authHeaders() },
+        { timeoutMs: DEPROVISION_TIMEOUT_MS, retries: 0 },
+      );
       if (tokRes.ok) {
         const tok = (await tokRes.json().catch(() => ({}))) as {
           items?: Array<{ displayText?: string; clientId?: string; scopes?: string[] }>;
@@ -559,9 +581,10 @@ export class GoogleWorkspaceAdapter extends BaseAdapter implements Deprovisionab
     // drives.list — drivesOwnedCount (best-effort; null when Drive API/scope absent).
     let drivesOwnedCount: number | null = null;
     try {
-      const driveRes = await fetch(
+      const driveRes = await fetchWithTimeout(
         'https://www.googleapis.com/drive/v3/drives?useDomainAdminAccess=false&pageSize=100',
         { headers: this.#authHeaders() },
+        { timeoutMs: DEPROVISION_TIMEOUT_MS, retries: 0 },
       );
       if (driveRes.ok) {
         const drives = (await driveRes.json().catch(() => ({}))) as { drives?: unknown[] };

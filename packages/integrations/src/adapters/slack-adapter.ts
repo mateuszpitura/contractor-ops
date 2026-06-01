@@ -390,7 +390,7 @@ export class SlackAdapter extends BaseAdapter implements Deprovisionable {
   // workspace bot token). Errors map through the closed-enum classifier.
   // -------------------------------------------------------------------------
 
-  /** Raw SCIM fetch (Enterprise Grid SCIM v2) with the org-grid bearer token. */
+  /** SCIM request helper (Enterprise Grid SCIM v2) with the org-grid bearer token. */
   async #scimFetch(path: string, init: RequestInit): Promise<Response> {
     return withResilience(
       () =>

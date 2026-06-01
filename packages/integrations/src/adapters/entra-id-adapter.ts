@@ -3,6 +3,7 @@ import type { ErrorClass } from '../idp/error-classifier.js';
 import { classifyError } from '../idp/error-classifier.js';
 import type { EntraImpactCustomMetrics, ImpactPreview } from '../idp/impact-preview.js';
 import { ENTRA_DEPROVISION_SCOPES } from '../scopes/entra-deprovision-scopes.js';
+import { fetchWithTimeout } from '../services/fetch-helpers.js';
 import {
   canonicalizeRequest,
   canonicalizeResponse,
@@ -13,6 +14,11 @@ import type { OAuthConfig } from '../types/provider.js';
 import { BaseAdapter } from './base-adapter.js';
 
 const GRAPH_BASE = 'https://graph.microsoft.com/v1.0';
+
+// Deprovision Graph mutations (suspend, revoke-sessions, verify, describeImpact,
+// conditionalAccess, $count). 15s wall-clock, no retries — QStash retries the
+// whole step on transient failure via #mapDeprovisionFailure throwing.
+const DEPROVISION_TIMEOUT_MS = 15_000;
 
 // Single post-revoke signInActivity poll delay (CONTEXT.md D-03). A single
 // delayed poll — never a tight loop. Tests fake the timer.
@@ -111,9 +117,10 @@ export class EntraIdAdapter extends BaseAdapter implements Deprovisionable {
     const preflightReqSha = sha256Hex(
       canonicalizeRequest({ method: 'GET', target: 'users.preflight', userId: externalUserId }),
     );
-    const preRes = await fetch(
+    const preRes = await fetchWithTimeout(
       `${this.#userUrl(externalUserId)}?$select=accountEnabled,onPremisesSyncEnabled`,
       { headers: this.#authHeaders() },
+      { timeoutMs: DEPROVISION_TIMEOUT_MS, retries: 0 },
     );
     const preBody = (await preRes.json().catch(() => ({}))) as {
       accountEnabled?: boolean;
@@ -155,14 +162,18 @@ export class EntraIdAdapter extends BaseAdapter implements Deprovisionable {
     // Step 3 — disable the account. Idempotent PATCH; client-request-id correlates retries.
     const requestPayload = { accountEnabled: false };
     const requestSha256 = sha256Hex(canonicalizeRequest({ method: 'PATCH', body: requestPayload }));
-    const res = await fetch(this.#userUrl(externalUserId), {
-      method: 'PATCH',
-      headers: {
-        ...this.#authHeaders(`entra:suspend:${externalUserId}`),
-        'Content-Type': 'application/json',
+    const res = await fetchWithTimeout(
+      this.#userUrl(externalUserId),
+      {
+        method: 'PATCH',
+        headers: {
+          ...this.#authHeaders(`entra:suspend:${externalUserId}`),
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestPayload),
       },
-      body: JSON.stringify(requestPayload),
-    });
+      { timeoutMs: DEPROVISION_TIMEOUT_MS, retries: 0 },
+    );
     const body = await res.json().catch(() => ({}));
     const responseSha256 = sha256Hex(canonicalizeResponse({ status: res.status, body }));
 
@@ -174,10 +185,11 @@ export class EntraIdAdapter extends BaseAdapter implements Deprovisionable {
     const requestSha256 = sha256Hex(
       canonicalizeRequest({ method: 'POST', target: 'revokeSignInSessions' }),
     );
-    const res = await fetch(`${this.#userUrl(externalUserId)}/revokeSignInSessions`, {
-      method: 'POST',
-      headers: this.#authHeaders(`entra:revoke:${externalUserId}`),
-    });
+    const res = await fetchWithTimeout(
+      `${this.#userUrl(externalUserId)}/revokeSignInSessions`,
+      { method: 'POST', headers: this.#authHeaders(`entra:revoke:${externalUserId}`) },
+      { timeoutMs: DEPROVISION_TIMEOUT_MS, retries: 0 },
+    );
     const body = await res.json().catch(() => ({}));
     const responseSha256 = sha256Hex(canonicalizeResponse({ status: res.status, body }));
 
@@ -191,9 +203,11 @@ export class EntraIdAdapter extends BaseAdapter implements Deprovisionable {
     let lastSignInDateTime: string | null = null;
     try {
       await new Promise(resolve => setTimeout(resolve, REVOKE_VERIFY_POLL_DELAY_MS));
-      const pollRes = await fetch(`${this.#userUrl(externalUserId)}?$select=signInActivity`, {
-        headers: this.#authHeaders(),
-      });
+      const pollRes = await fetchWithTimeout(
+        `${this.#userUrl(externalUserId)}?$select=signInActivity`,
+        { headers: this.#authHeaders() },
+        { timeoutMs: DEPROVISION_TIMEOUT_MS, retries: 0 },
+      );
       if (pollRes.ok) {
         const poll = (await pollRes.json().catch(() => ({}))) as {
           signInActivity?: { lastSignInDateTime?: string };
@@ -216,9 +230,11 @@ export class EntraIdAdapter extends BaseAdapter implements Deprovisionable {
 
   async verifyDeprovisioned(externalUserId: string): Promise<boolean> {
     try {
-      const res = await fetch(`${this.#userUrl(externalUserId)}?$select=accountEnabled`, {
-        headers: this.#authHeaders(),
-      });
+      const res = await fetchWithTimeout(
+        `${this.#userUrl(externalUserId)}?$select=accountEnabled`,
+        { headers: this.#authHeaders() },
+        { timeoutMs: DEPROVISION_TIMEOUT_MS, retries: 0 },
+      );
       if (res.status === 404) return true; // gone is also deprovisioned
       if (!res.ok) return false;
       const body = (await res.json().catch(() => ({}))) as { accountEnabled?: boolean };
@@ -234,9 +250,10 @@ export class EntraIdAdapter extends BaseAdapter implements Deprovisionable {
 
     // User read — accountStatus + onPremisesSyncEnabled + license SKUs. A total
     // failure here throws for the Phase 77 D-03 proceed-without-preview flow.
-    const userRes = await fetch(
+    const userRes = await fetchWithTimeout(
       `${this.#userUrl(externalUserId)}?$select=accountEnabled,onPremisesSyncEnabled,assignedLicenses,displayName`,
       { headers: this.#authHeaders() },
+      { timeoutMs: DEPROVISION_TIMEOUT_MS, retries: 0 },
     );
     if (!userRes.ok && userRes.status !== 404) {
       throw new Error('entra describeImpact failed: user read unavailable');
@@ -298,9 +315,11 @@ export class EntraIdAdapter extends BaseAdapter implements Deprovisionable {
     externalUserId: string,
   ): Promise<EntraImpactCustomMetrics['conditionalAccessPolicies']> {
     try {
-      const res = await fetch(`${GRAPH_BASE}/identity/conditionalAccess/policies`, {
-        headers: this.#authHeaders(),
-      });
+      const res = await fetchWithTimeout(
+        `${GRAPH_BASE}/identity/conditionalAccess/policies`,
+        { headers: this.#authHeaders() },
+        { timeoutMs: DEPROVISION_TIMEOUT_MS, retries: 0 },
+      );
       if (!res.ok) return [];
       const body = (await res.json().catch(() => ({}))) as {
         value?: Array<{
@@ -333,9 +352,11 @@ export class EntraIdAdapter extends BaseAdapter implements Deprovisionable {
   /** Best-effort Graph `$count` read (ConsistencyLevel: eventual) → number, 0 on failure. */
   async #count(url: string): Promise<number> {
     try {
-      const res = await fetch(url, {
-        headers: { ...this.#authHeaders(), ConsistencyLevel: 'eventual' },
-      });
+      const res = await fetchWithTimeout(
+        url,
+        { headers: { ...this.#authHeaders(), ConsistencyLevel: 'eventual' } },
+        { timeoutMs: DEPROVISION_TIMEOUT_MS, retries: 0 },
+      );
       if (!res.ok) return 0;
       const text = await res.text().catch(() => '');
       const n = Number.parseInt(text.trim(), 10);
