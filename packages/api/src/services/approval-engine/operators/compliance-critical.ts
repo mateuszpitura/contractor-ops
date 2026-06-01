@@ -16,6 +16,10 @@ registerOperator<ComplianceCriticalArgs>('complianceCritical', async (args, ctx)
       contractorId: ctx.contractorId,
       severity: 'BLOCKING',
       status: args.status,
+      // Defense-in-depth tenant guard — mirrors the M-3 fix in compliance-payment-gate.ts.
+      // OperatorContext.organizationId is populated by the engine (approval-engine.ts:347)
+      // precisely for this guard.
+      contractor: { is: { organizationId: ctx.organizationId } },
     },
     select: { id: true },
   });

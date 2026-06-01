@@ -349,7 +349,13 @@ async function checkComplianceHoldAtFinalStep(
   if (!blocked) return null;
 
   const items = await tx.contractorComplianceItem.findMany({
-    where: { contractorId: invoice.contractorId, severity: 'BLOCKING', status: 'EXPIRED' },
+    where: {
+      contractorId: invoice.contractorId,
+      severity: 'BLOCKING',
+      status: 'EXPIRED',
+      // Defense-in-depth tenant guard — mirrors the M-3 fix in compliance-payment-gate.ts.
+      contractor: { is: { organizationId: flow.organizationId } },
+    },
     select: { id: true },
   });
   return {
