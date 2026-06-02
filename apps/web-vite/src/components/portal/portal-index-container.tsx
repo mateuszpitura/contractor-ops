@@ -1,3 +1,4 @@
+import { minorToMajor, minorUnitDigits } from '@contractor-ops/shared';
 import { SectionLabel } from '@contractor-ops/ui';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
@@ -19,8 +20,8 @@ function formatAmount(minor: number, currency: string): string {
     style: 'currency',
     currency,
     minimumFractionDigits: 0,
-    maximumFractionDigits: 2,
-  }).format(minor / 100);
+    maximumFractionDigits: minorUnitDigits(currency),
+  }).format(minorToMajor(minor, currency));
 }
 
 export function PortalIndexContainer() {

@@ -1,3 +1,4 @@
+import { minorToMajor, minorUnitDigits } from '@contractor-ops/shared';
 import type { AtelierStatusVariant } from '@contractor-ops/ui';
 import {
   AtelierStatusPill,
@@ -27,8 +28,8 @@ function formatAmount(minor: number, currency: string): string {
     style: 'currency',
     currency,
     minimumFractionDigits: 0,
-    maximumFractionDigits: 2,
-  }).format(minor / 100);
+    maximumFractionDigits: minorUnitDigits(currency),
+  }).format(minorToMajor(minor, currency));
 }
 
 type InvoiceStatusDisplay = {
@@ -197,10 +198,7 @@ export function PortalInvoicesContainer() {
               {rows.map(invoice => {
                 const statusDisplay = getStatusDisplay(invoice, t);
                 return (
-                  <Link
-                    key={invoice.id}
-                    href={`/portal/invoices/${invoice.id}`}
-                    className="block">
+                  <Link key={invoice.id} href={`/portal/invoices/${invoice.id}`} className="block">
                     <Card className="transition-colors hover:bg-muted/50">
                       <CardContent className="space-y-2 pt-4">
                         <div className="flex items-center justify-between">

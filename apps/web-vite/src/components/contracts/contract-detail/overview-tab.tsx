@@ -1,3 +1,4 @@
+import { minorToMajor, minorUnitDigits } from '@contractor-ops/shared';
 import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import {
@@ -52,7 +53,7 @@ type OverviewTabProps = {
 };
 
 function formatCurrency(minor: number, currency: string): string {
-  return `${(minor / 100).toFixed(2)} ${currency}`;
+  return `${minorToMajor(minor, currency).toFixed(minorUnitDigits(currency))} ${currency}`;
 }
 
 function getDaysRemaining(endDate: string | Date): number {

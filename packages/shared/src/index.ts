@@ -10,6 +10,8 @@ export {
   formatMoney,
   fromMinor,
   minorToDecimalStr,
+  minorToMajor,
+  minorUnitDigits,
   multiplyMoney,
   subtractMoney,
   toDecimal,

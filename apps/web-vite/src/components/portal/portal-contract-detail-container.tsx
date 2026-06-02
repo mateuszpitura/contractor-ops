@@ -1,3 +1,4 @@
+import { minorToMajor, minorUnitDigits } from '@contractor-ops/shared';
 import { DataTable } from '@contractor-ops/ui';
 import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
@@ -18,8 +19,8 @@ function formatAmount(minor: number, currency: string): string {
     style: 'currency',
     currency,
     minimumFractionDigits: 0,
-    maximumFractionDigits: 2,
-  }).format(minor / 100);
+    maximumFractionDigits: minorUnitDigits(currency),
+  }).format(minorToMajor(minor, currency));
 }
 
 function formatContractType(type: string): string {

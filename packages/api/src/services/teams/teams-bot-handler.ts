@@ -12,6 +12,7 @@
 import type { Prisma } from '@contractor-ops/db';
 import { prisma } from '@contractor-ops/db';
 import { createLogger } from '@contractor-ops/logger';
+import { minorToMajor, minorUnitDigits } from '@contractor-ops/shared';
 import { getServerEnv } from '@contractor-ops/validators';
 import type { ConversationReference } from '@microsoft/agents-activity';
 import { Activity } from '@microsoft/agents-activity';
@@ -334,7 +335,9 @@ export class TeamsBotHandler extends TeamsActivityHandler {
         const resultCard = buildApprovalResultCard({
           result: 'rejected',
           invoiceNumber: invoice.invoiceNumber ?? 'N/A',
-          amount: (invoice.totalMinor / 100).toFixed(2),
+          amount: minorToMajor(invoice.totalMinor, invoice.currency).toFixed(
+            minorUnitDigits(invoice.currency),
+          ),
           currency: invoice.currency,
           approverName: user.userName,
           comment,
@@ -539,10 +542,13 @@ export class TeamsBotHandler extends TeamsActivityHandler {
         });
       }
 
+      const resultCurrency = invoice?.currency ?? 'PLN';
       return {
         invoiceNumber: invoice?.invoiceNumber ?? 'N/A',
-        amount: ((invoice?.totalMinor ?? 0) / 100).toFixed(2),
-        currency: invoice?.currency ?? 'PLN',
+        amount: minorToMajor(invoice?.totalMinor ?? 0, resultCurrency).toFixed(
+          minorUnitDigits(resultCurrency),
+        ),
+        currency: resultCurrency,
         viewUrl: `${getServerEnv().PUBLIC_APP_URL}/invoices/${flow.resourceId}`,
       };
     });

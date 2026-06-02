@@ -1,6 +1,7 @@
 import { authApi } from '@contractor-ops/auth';
 import type { Prisma } from '@contractor-ops/db';
 import { Prisma as PrismaClient } from '@contractor-ops/db/generated/prisma/client';
+import { minorToMajor, minorUnitDigits } from '@contractor-ops/shared';
 import {
   approvalAuditSystemLabel,
   approvalChainCreateSchema,
@@ -156,13 +157,15 @@ async function dispatchNextApproverNotification(
     type: 'APPROVAL_REQUEST',
     recipientUserIds: [nextStep.approverUserId],
     title: `Approval requested for ${invoice.invoiceNumber}`,
-    body: `${contractor?.legalName ?? 'Unknown'} - ${(invoice.totalMinor / 100).toFixed(2)} ${invoice.currency}`,
+    body: `${contractor?.legalName ?? 'Unknown'} - ${minorToMajor(invoice.totalMinor, invoice.currency).toFixed(minorUnitDigits(invoice.currency))} ${invoice.currency}`,
     entityType: 'INVOICE',
     entityId: invoice.id,
     metadata: {
       invoiceNumber: invoice.invoiceNumber,
       contractorName: contractor?.legalName ?? 'Unknown',
-      amount: (invoice.totalMinor / 100).toFixed(2),
+      amount: minorToMajor(invoice.totalMinor, invoice.currency).toFixed(
+        minorUnitDigits(invoice.currency),
+      ),
       currency: invoice.currency,
       slaDeadline,
       invoiceId: invoice.id,
@@ -1317,13 +1320,15 @@ export const approvalRouter = router({
           type: 'APPROVAL_REQUEST',
           recipientUserIds: [firstStep.approverUserId],
           title: `Approval requested for ${inv.invoiceNumber}`,
-          body: `${contractor?.legalName ?? 'Unknown'} - ${(inv.totalMinor / 100).toFixed(2)} ${inv.currency}. SLA: ${slaDeadline}`,
+          body: `${contractor?.legalName ?? 'Unknown'} - ${minorToMajor(inv.totalMinor, inv.currency).toFixed(minorUnitDigits(inv.currency))} ${inv.currency}. SLA: ${slaDeadline}`,
           entityType: 'INVOICE',
           entityId: inv.id,
           metadata: {
             invoiceNumber: inv.invoiceNumber,
             contractorName: contractor?.legalName ?? 'Unknown',
-            amount: (inv.totalMinor / 100).toFixed(2),
+            amount: minorToMajor(inv.totalMinor, inv.currency).toFixed(
+              minorUnitDigits(inv.currency),
+            ),
             currency: inv.currency,
             slaDeadline,
             invoiceId: inv.id,

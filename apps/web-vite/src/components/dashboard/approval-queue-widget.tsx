@@ -8,6 +8,7 @@
  *   - `@/i18n/navigation` → `../../i18n/navigation.js`
  */
 
+import { minorToMajor, minorUnitDigits } from '@contractor-ops/shared';
 import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
 import {
   Card,
@@ -36,10 +37,10 @@ function formatAmount(minor: number, currency: string): string {
       style: 'currency',
       currency,
       minimumFractionDigits: 0,
-      maximumFractionDigits: 2,
-    }).format(minor / 100);
+      maximumFractionDigits: minorUnitDigits(currency),
+    }).format(minorToMajor(minor, currency));
   }
-  return currencyFormatter.format(minor / 100);
+  return currencyFormatter.format(minorToMajor(minor, 'PLN'));
 }
 
 function getSlaVariant(status: string): 'success' | 'warning' | 'destructive' | 'secondary' {

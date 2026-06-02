@@ -1,3 +1,4 @@
+import { minorToMajor, minorUnitDigits } from '@contractor-ops/shared';
 import type { ContractStatusInput } from '@contractor-ops/ui';
 import { AtelierStatusPill, statusToVariant } from '@contractor-ops/ui';
 import { Card, CardContent } from '@contractor-ops/ui/components/shadcn/card';
@@ -30,8 +31,8 @@ function formatAmount(minor: number, currency: string): string {
     style: 'currency',
     currency,
     minimumFractionDigits: 0,
-    maximumFractionDigits: 2,
-  }).format(minor / 100);
+    maximumFractionDigits: minorUnitDigits(currency),
+  }).format(minorToMajor(minor, currency));
 }
 
 function ratePeriodLabel(rateType: string): string {

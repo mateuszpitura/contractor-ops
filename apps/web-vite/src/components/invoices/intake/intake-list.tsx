@@ -1,3 +1,4 @@
+import { minorToMajor, minorUnitDigits } from '@contractor-ops/shared';
 import { DataTable, WORKBENCH_DATA_TABLE_CLASS } from '@contractor-ops/ui';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import type { ColumnDef } from '@tanstack/react-table';
@@ -48,9 +49,9 @@ function formatTotalMinor(amountMinor: unknown, currency: string | null): string
     return new Intl.NumberFormat(undefined, {
       style: 'currency',
       currency: safeCurrency,
-    }).format(minor / 100);
+    }).format(minorToMajor(minor, safeCurrency));
   } catch {
-    return `${(minor / 100).toFixed(2)} ${safeCurrency}`;
+    return `${minorToMajor(minor, safeCurrency).toFixed(minorUnitDigits(safeCurrency))} ${safeCurrency}`;
   }
 }
 

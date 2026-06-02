@@ -1,3 +1,4 @@
+import { minorToMajor, minorUnitDigits } from '@contractor-ops/shared';
 import {
   Card,
   CardContent,
@@ -155,8 +156,8 @@ function formatTotal(
     return new Intl.NumberFormat(undefined, {
       style: 'currency',
       currency: safeCurrency,
-    }).format(minor / 100);
+    }).format(minorToMajor(minor, safeCurrency));
   } catch {
-    return `${(minor / 100).toFixed(2)} ${safeCurrency}`;
+    return `${minorToMajor(minor, safeCurrency).toFixed(minorUnitDigits(safeCurrency))} ${safeCurrency}`;
   }
 }

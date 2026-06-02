@@ -1,3 +1,4 @@
+import { minorToMajor } from '@contractor-ops/shared';
 import { DataTable, TeamsIllustration } from '@contractor-ops/ui';
 import type { ColumnDef } from '@tanstack/react-table';
 import { format } from 'date-fns';
@@ -28,7 +29,7 @@ interface ProjectTableProps {
 
 const formatBudget = (minor: number | null, currency: string | null): string => {
   if (minor == null || !currency) return '—';
-  return `${(minor / 100).toLocaleString(undefined, {
+  return `${minorToMajor(minor, currency).toLocaleString(undefined, {
     style: 'currency',
     currency,
     minimumFractionDigits: 0,

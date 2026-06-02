@@ -1,3 +1,4 @@
+import { minorToMajor, minorUnitDigits } from '@contractor-ops/shared';
 import {
   AtelierStatusPill,
   DataTable,
@@ -18,8 +19,8 @@ function formatAmount(minor: number, currency: string): string {
     style: 'currency',
     currency,
     minimumFractionDigits: 0,
-    maximumFractionDigits: 2,
-  }).format(minor / 100);
+    maximumFractionDigits: minorUnitDigits(currency),
+  }).format(minorToMajor(minor, currency));
 }
 
 interface PortalPaymentRow {

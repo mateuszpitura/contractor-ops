@@ -1,3 +1,4 @@
+import { minorToMajor, minorUnitDigits } from '@contractor-ops/shared';
 import {
   Card,
   CardAction,
@@ -151,7 +152,9 @@ export function TabOverviewView({ contractor, showPii, onSwitchTab }: TabOvervie
   const activeContract = contractor.contracts.find(c => c.status === 'ACTIVE');
 
   const formattedRate =
-    rateValueMinor == null ? null : `${(rateValueMinor / 100).toFixed(2)} ${contractor.currency}`;
+    rateValueMinor == null
+      ? null
+      : `${minorToMajor(rateValueMinor, contractor.currency).toFixed(minorUnitDigits(contractor.currency))} ${contractor.currency}`;
 
   const formattedAddress = [
     contractor.addressLine1,

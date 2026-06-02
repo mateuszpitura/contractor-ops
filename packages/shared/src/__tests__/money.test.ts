@@ -6,6 +6,8 @@ import {
   formatMoney,
   fromMinor,
   minorToDecimalStr,
+  minorToMajor,
+  minorUnitDigits,
   subtractMoney,
   toMinor,
   toSnapshot,
@@ -142,11 +144,50 @@ describe('formatMinorAsCurrency', () => {
     expect(formatMinorAsCurrency(123456, 'USD', 'en-US', 0)).toBe('$1,235');
   });
 
-  it('omits min/max fraction digit options when fractionDigits is undefined', () => {
-    // Passing `undefined` skips the default 2/2 override — the resulting
-    // Intl.NumberFormat call uses the currency's own defaults. We verify
-    // the helper does not throw and returns the standard 2-decimal USD form
-    // (USD's default is 2/2 — same as with the override).
+  it('defaults to the currency ISO 4217 exponent when fractionDigits is undefined', () => {
+    // Passing `undefined` defers to the currency's own exponent (USD = 2).
     expect(formatMinorAsCurrency(123456, 'USD', 'en-US', undefined)).toBe('$1,234.56');
+  });
+
+  it('formats JPY (zero-decimal) without a 100x error', () => {
+    // JPY has no minor units: 123456 minor === ¥123,456, not ¥1,234.56.
+    expect(formatMinorAsCurrency(123456, 'JPY', 'en-US')).toBe('¥123,456');
+  });
+});
+
+describe('minorUnitDigits', () => {
+  it('returns 2 for the common two-decimal currencies', () => {
+    for (const code of ['USD', 'EUR', 'GBP', 'PLN', 'AED', 'SAR']) {
+      expect(minorUnitDigits(code)).toBe(2);
+    }
+  });
+
+  it('returns 0 for zero-decimal currencies', () => {
+    expect(minorUnitDigits('JPY')).toBe(0);
+    expect(minorUnitDigits('KRW')).toBe(0);
+  });
+
+  it('returns 3 for three-decimal currencies', () => {
+    for (const code of ['BHD', 'KWD', 'OMR', 'TND']) {
+      expect(minorUnitDigits(code)).toBe(3);
+    }
+  });
+
+  it('falls back to 2 for an unknown code without throwing', () => {
+    expect(minorUnitDigits('ZZZ')).toBe(2);
+  });
+});
+
+describe('minorToMajor', () => {
+  it('divides by 100 for two-decimal currencies', () => {
+    expect(minorToMajor(123456, 'EUR')).toBe(1234.56);
+  });
+
+  it('does not divide for zero-decimal currencies', () => {
+    expect(minorToMajor(123456, 'JPY')).toBe(123456);
+  });
+
+  it('divides by 1000 for three-decimal currencies', () => {
+    expect(minorToMajor(123456, 'KWD')).toBe(123.456);
   });
 });

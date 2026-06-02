@@ -100,6 +100,62 @@ export function allocateMoney(d: Dinero<number>, ratios: number[]): Dinero<numbe
 }
 
 // ---------------------------------------------------------------------------
+// ISO 4217 minor-unit precision
+// ---------------------------------------------------------------------------
+
+/**
+ * Static fallback for ISO 4217 minor-unit digits, used only when the runtime
+ * `Intl` data does not recognise a currency code. Covers the zero- and
+ * three-decimal currencies that diverge from the default of 2.
+ */
+const MINOR_UNIT_DIGITS_FALLBACK: Record<string, number> = {
+  JPY: 0,
+  KRW: 0,
+  VND: 0,
+  CLP: 0,
+  ISK: 0,
+  HUF: 0,
+  BHD: 3,
+  KWD: 3,
+  OMR: 3,
+  TND: 3,
+};
+
+/**
+ * Number of minor-unit digits (the ISO 4217 exponent) for a currency.
+ * JPY/KRW = 0, BHD/KWD/OMR/TND = 3, most = 2.
+ *
+ * Resolved from `Intl.NumberFormat` (authoritative for every ISO code the
+ * runtime knows) and falls back to a small static table — then to 2 — for
+ * unrecognised codes. Never throws, so it is safe on free-form currency
+ * strings coming from the database.
+ */
+export function minorUnitDigits(currencyCode: string): number {
+  try {
+    const resolved = new Intl.NumberFormat(undefined, {
+      style: 'currency',
+      currency: currencyCode,
+    }).resolvedOptions();
+    if (typeof resolved.maximumFractionDigits === 'number') {
+      return resolved.maximumFractionDigits;
+    }
+  } catch {
+    // Unsupported code — fall through to the static table.
+  }
+  return MINOR_UNIT_DIGITS_FALLBACK[currencyCode] ?? 2;
+}
+
+/**
+ * Convert an integer minor-unit amount to its major-unit numeric value using
+ * the currency's ISO 4217 exponent. Replacement for the hardcoded
+ * `amount / 100`, which is wrong for zero- and three-decimal currencies
+ * (e.g. JPY would be displayed 100x too small).
+ */
+export function minorToMajor(amountMinor: number, currencyCode: string): number {
+  return amountMinor / 10 ** minorUnitDigits(currencyCode);
+}
+
+// ---------------------------------------------------------------------------
 // Formatting
 // ---------------------------------------------------------------------------
 
@@ -134,35 +190,35 @@ export function minorToDecimalStr(amount: number, currencyCode: string): string 
  * currency, minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(minor / 100)`
  * pattern duplicated across web-vite and landing components.
  *
- * Behaviour is preserved bit-for-bit at every call site that migrates:
- * `locale` is passed straight through (use `undefined` to defer to the
- * runtime default), `currency` is required, and the fraction digit
- * options default to 2/2 (the dominant existing choice). Pass
- * `fractionDigits: undefined` to use the ISO 4217 exponent default.
+ * The minor-unit divisor is derived from the currency's ISO 4217 exponent
+ * (via {@link minorToMajor}), so zero-decimal currencies such as JPY format
+ * correctly instead of 100x too small. `locale` is passed straight through
+ * (use `undefined` to defer to the runtime default) and `currency` is
+ * required. By default the displayed fraction digits also follow the
+ * currency's exponent; pass `fractionDigits` to force a specific min/max.
  *
- * For Dinero-aware formatting that respects each currency's exponent,
- * use `formatMoney(d, locale)` instead.
+ * For Dinero-aware formatting, use `formatMoney(d, locale)` instead.
  *
  * @param amount  Minor units (integer) — e.g. 12345 for 123.45.
- * @param currency  ISO 4217 code (e.g. `EUR`, `USD`).
+ * @param currency  ISO 4217 code (e.g. `EUR`, `USD`, `JPY`).
  * @param locale  BCP-47 locale tag or `undefined` to defer to the runtime.
- * @param fractionDigits  Override the min/max fraction digits. Default `2`.
+ * @param fractionDigits  Override the min/max fraction digits. Defaults to
+ *   the currency's ISO 4217 exponent.
  */
 export function formatMinorAsCurrency(
   amount: number,
   currency: string,
   locale?: string,
-  fractionDigits: number | undefined = 2,
+  fractionDigits?: number,
 ): string {
+  const digits = fractionDigits ?? minorUnitDigits(currency);
   const options: Intl.NumberFormatOptions = {
     style: 'currency',
     currency,
+    minimumFractionDigits: digits,
+    maximumFractionDigits: digits,
   };
-  if (fractionDigits !== undefined) {
-    options.minimumFractionDigits = fractionDigits;
-    options.maximumFractionDigits = fractionDigits;
-  }
-  return new Intl.NumberFormat(locale, options).format(amount / 100);
+  return new Intl.NumberFormat(locale, options).format(minorToMajor(amount, currency));
 }
 
 // ---------------------------------------------------------------------------
