@@ -23,7 +23,10 @@
 
 import type { GovApiEnvironment } from '@contractor-ops/gov-api';
 import { HmrcVatClient, ViesClient } from '@contractor-ops/gov-api';
-import { getSecretStore } from '@contractor-ops/secrets';
+import { InfisicalSecretStore } from '@contractor-ops/integrations';
+import type { SecretStore } from '@contractor-ops/secrets';
+import { CachedStore, getSecretStore } from '@contractor-ops/secrets';
+import { getServerEnv } from '@contractor-ops/validators';
 import { z } from 'zod';
 
 // ---------------------------------------------------------------------------
@@ -67,6 +70,35 @@ export function resetGovApiClientsForTest(): void {
 }
 
 // ---------------------------------------------------------------------------
+// Secret store resolution
+// ---------------------------------------------------------------------------
+
+/**
+ * Resolve the secret store backing HMRC OAuth-credential storage. When the
+ * Infisical machine-identity vars (client id + secret + project id) are all
+ * present, wire a CachedStore over a real InfisicalSecretStore; otherwise fall
+ * back to the process-default store (in-memory for dev/test).
+ *
+ * Reads via `getServerEnv()` rather than raw `process.env` so the
+ * `check:no-process-env` ratchet stays green.
+ */
+function resolveSecretStore(): SecretStore {
+  const env = getServerEnv();
+  if (env.INFISICAL_CLIENT_ID && env.INFISICAL_CLIENT_SECRET && env.INFISICAL_PROJECT_ID) {
+    return new CachedStore(
+      new InfisicalSecretStore({
+        clientId: env.INFISICAL_CLIENT_ID,
+        clientSecret: env.INFISICAL_CLIENT_SECRET,
+        projectId: env.INFISICAL_PROJECT_ID,
+        environment: env.INFISICAL_ENVIRONMENT ?? env.NODE_ENV,
+        siteUrl: env.INFISICAL_SITE_URL,
+      }),
+    );
+  }
+  return getSecretStore();
+}
+
+// ---------------------------------------------------------------------------
 // HMRC VAT client singleton
 // ---------------------------------------------------------------------------
 
@@ -100,7 +132,7 @@ export function getHmrcVatClient(): HmrcVatClient {
       },
     },
     environment: env.HMRC_ENV as GovApiEnvironment,
-    secretStore: getSecretStore(),
+    secretStore: resolveSecretStore(),
     // sandbox-only empty path — production path is guarded above.
     platformVrn: env.HMRC_PLATFORM_VRN ?? '',
     pkgVersion: process.env.npm_package_version ?? '0.0.0',

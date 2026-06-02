@@ -293,6 +293,20 @@ const oauthAliasSchema = z.object({
   OUTLOOK_CLIENT_SECRET: z.string().min(1).optional(),
 });
 
+// ── Infisical (external secret store) ───────────────────────────────────────
+// Optional everywhere: when client id / secret / project id are all present the
+// secret-store factory in consuming packages wires a real Infisical-backed
+// store; otherwise it falls back to the in-memory dev/test default. Leaving
+// these unset is the supported local-dev posture.
+
+const infisicalSchema = z.object({
+  INFISICAL_CLIENT_ID: z.string().min(1).optional(),
+  INFISICAL_CLIENT_SECRET: z.string().min(1).optional(),
+  INFISICAL_PROJECT_ID: z.string().min(1).optional(),
+  INFISICAL_SITE_URL: optionalUrl,
+  INFISICAL_ENVIRONMENT: z.string().min(1).optional(),
+});
+
 // ── PostHog (server-side product analytics) ─────────────────────────────────
 //
 // The `posthog-node` client fires identified events (signup_completed,
@@ -337,6 +351,7 @@ export const serverEnvSchema = coreSchema
   .merge(featureFlagsSchema)
   .merge(turnstileSchema)
   .merge(proxySchema)
+  .merge(infisicalSchema)
   .merge(posthogServerSchema);
 
 // ── Client env (NEXT_PUBLIC_ only) ──────────────────────────────────────────
