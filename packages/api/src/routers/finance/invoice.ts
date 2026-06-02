@@ -20,7 +20,11 @@ import { computeDuplicateCheckHash, runAutoMatch } from '../../services/invoice-
 import { applyKleinunternehmerOverride } from '../../services/kleinunternehmer.service';
 import { dispatch } from '../../services/notification-service';
 import type { DE13bServiceType } from '../../services/reverse-charge.service';
-import { applyReverseCharge, detectReverseCharge } from '../../services/reverse-charge.service';
+import {
+  applyReverseCharge,
+  detectReverseCharge,
+  resolveReverseChargeDecision,
+} from '../../services/reverse-charge.service';
 import { sanitizeStrings } from '../../services/sanitize';
 import { isValidationFresh, validateTaxId } from '../../services/tax-id-validation.service';
 import { getDefaultRateCode } from '../../services/tax-rate.service';
@@ -242,9 +246,7 @@ function resolveReverseCharge(
     });
     rcShouldApply = rc.shouldApply;
   }
-  if (userOverride === true) return true;
-  if (userOverride === false) return false;
-  return rcShouldApply;
+  return resolveReverseChargeDecision(rcShouldApply, userOverride).isReverseCharge;
 }
 
 /**

@@ -195,6 +195,23 @@ export function detectReverseCharge(params: {
 }
 
 /**
+ * Pure override-precedence decision shared by every reverse-charge call site.
+ *
+ * Given the auto-detected outcome and an explicit user override, returns the
+ * final flag plus the auto-detected value (the latter feeds the D-13
+ * override-with-reason audit). A set override (true/false) always wins; an
+ * unset override (null/undefined) defers to auto-detection. No DB, no I/O.
+ */
+export function resolveReverseChargeDecision(
+  autoDetected: boolean,
+  override: boolean | null | undefined,
+): { isReverseCharge: boolean; autoDetected: boolean } {
+  if (override === true) return { isReverseCharge: true, autoDetected };
+  if (override === false) return { isReverseCharge: false, autoDetected };
+  return { isReverseCharge: autoDetected, autoDetected };
+}
+
+/**
  * Apply reverse charge logic to an invoice, respecting manual override.
  * If reverseChargeOverride is set, use it. Otherwise, auto-detect.
  */
@@ -210,10 +227,11 @@ export async function applyReverseCharge(params: {
 }): Promise<{ isReverseCharge: boolean; reason: string }> {
   const { organizationId, contractorId, reverseChargeOverride, serviceType } = params;
 
-  // Manual override takes precedence
+  // Manual override takes precedence — short-circuit before any DB load.
   if (reverseChargeOverride !== undefined && reverseChargeOverride !== null) {
+    const { isReverseCharge } = resolveReverseChargeDecision(false, reverseChargeOverride);
     return {
-      isReverseCharge: reverseChargeOverride,
+      isReverseCharge,
       reason: reverseChargeOverride
         ? 'Manually set to reverse charge'
         : 'Manually removed reverse charge',
@@ -244,5 +262,9 @@ export async function applyReverseCharge(params: {
     serviceType,
   });
 
-  return { isReverseCharge: result.shouldApply, reason: result.reason };
+  const { isReverseCharge } = resolveReverseChargeDecision(
+    result.shouldApply,
+    reverseChargeOverride,
+  );
+  return { isReverseCharge, reason: result.reason };
 }
