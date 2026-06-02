@@ -31,6 +31,16 @@ function mockFetch(response: { ok: boolean; status?: number; body: unknown }) {
   });
 }
 
+/** Faithful OK response: text() and json() both reflect the same body. */
+function jsonOk(body: unknown) {
+  return {
+    ok: true,
+    status: 200,
+    text: () => Promise.resolve(JSON.stringify(body)),
+    json: () => Promise.resolve(body),
+  };
+}
+
 describe('GoogleWorkspaceAdapter', () => {
   let adapter: GoogleWorkspaceAdapter;
 
@@ -196,11 +206,8 @@ describe('GoogleWorkspaceAdapter', () => {
   it('lists directory users, skips suspended, and follows nextPageToken', async () => {
     const fetchMock = vi
       .fn()
-      .mockResolvedValueOnce({
-        ok: true,
-        status: 200,
-        text: async () => '',
-        json: async () => ({
+      .mockResolvedValueOnce(
+        jsonOk({
           users: [
             {
               id: '1',
@@ -217,12 +224,9 @@ describe('GoogleWorkspaceAdapter', () => {
           ],
           nextPageToken: 'tok2',
         }),
-      })
-      .mockResolvedValueOnce({
-        ok: true,
-        status: 200,
-        text: async () => '',
-        json: async () => ({
+      )
+      .mockResolvedValueOnce(
+        jsonOk({
           users: [
             {
               id: '3',
@@ -231,7 +235,7 @@ describe('GoogleWorkspaceAdapter', () => {
             },
           ],
         }),
-      });
+      );
     vi.stubGlobal('fetch', fetchMock);
 
     const users = await adapter.listAllDirectoryUsers('access');
@@ -278,23 +282,17 @@ describe('GoogleWorkspaceAdapter', () => {
   it('lists groups with pagination', async () => {
     const fetchMock = vi
       .fn()
-      .mockResolvedValueOnce({
-        ok: true,
-        status: 200,
-        text: async () => '',
-        json: async () => ({
+      .mockResolvedValueOnce(
+        jsonOk({
           groups: [{ id: 'g1', email: 'a@groups', name: 'A' }],
           nextPageToken: 'pg2',
         }),
-      })
-      .mockResolvedValueOnce({
-        ok: true,
-        status: 200,
-        text: async () => '',
-        json: async () => ({
+      )
+      .mockResolvedValueOnce(
+        jsonOk({
           groups: [{ id: 'g2', email: 'b@groups', name: 'B' }],
         }),
-      });
+      );
     vi.stubGlobal('fetch', fetchMock);
 
     const groups = await adapter.listUserGroups('tok', 'u@x.com');

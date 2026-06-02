@@ -7,7 +7,7 @@ import type { ImpactPreview } from '../idp/impact-preview.js';
 import { GOOGLE_WORKSPACE_DEPROVISION_SCOPES } from '../scopes/google-workspace-deprovision-scopes.js';
 import { pLimit } from '../services/concurrency.js';
 import { fetchWithTimeout } from '../services/fetch-helpers.js';
-import { parseJsonResponse } from '../services/parse-json-response.js';
+import { parseJsonResponse, safeParseJsonResponse } from '../services/parse-json-response.js';
 import { withResilience } from '../services/resilience.js';
 import {
   canonicalizeRequest,
@@ -36,6 +36,59 @@ const googleTokenRefreshSchema = z.object({
   expires_in: z.number().int().nonnegative(),
   token_type: z.string().min(1),
   scope: z.string(),
+});
+
+/**
+ * Admin SDK Directory `users.list` page — only the fields the consumers read.
+ * `thumbnailPhotoUrl` is `nullish` because the API returns `null` for users
+ * without a photo; it is mapped to `undefined` when building GoogleDirectoryUser
+ * so the consumed type stays `string | undefined`. Validated as a transient read
+ * (degrade to an empty page) rather than coercing a drifted body.
+ */
+const googleDirectoryUsersPageSchema = z.object({
+  users: z
+    .array(
+      z.object({
+        id: z.string(),
+        primaryEmail: z.string(),
+        name: z.object({
+          givenName: z.string(),
+          familyName: z.string(),
+          fullName: z.string(),
+        }),
+        thumbnailPhotoUrl: z.string().nullish(),
+        orgUnitPath: z.string().optional(),
+        organizations: z
+          .array(
+            z.object({
+              department: z.string().optional(),
+              title: z.string().optional(),
+              primary: z.boolean().optional(),
+            }),
+          )
+          .optional(),
+        suspended: z.boolean().optional(),
+        isAdmin: z.boolean().optional(),
+      }),
+    )
+    .optional(),
+  nextPageToken: z.string().optional(),
+});
+
+/** Admin SDK Directory `groups.list` page — only the fields the consumers read. */
+const googleGroupsPageSchema = z.object({
+  groups: z
+    .array(
+      z.object({
+        id: z.string(),
+        email: z.string(),
+        name: z.string(),
+        description: z.string().optional(),
+        directMembersCount: z.string().optional(),
+      }),
+    )
+    .optional(),
+  nextPageToken: z.string().optional(),
 });
 
 // ---------------------------------------------------------------------------
@@ -309,18 +362,25 @@ export class GoogleWorkspaceAdapter extends BaseAdapter implements Deprovisionab
         throw new Error(`Google Workspace Directory API failed (${response.status}): ${text}`);
       }
 
-      const data = (await response.json()) as {
-        users?: GoogleDirectoryUser[];
-        nextPageToken?: string;
-      };
+      const parsed = await safeParseJsonResponse(
+        response,
+        googleDirectoryUsersPageSchema,
+        'google-workspace:listAllDirectoryUsers',
+      );
+      // A drifted body degrades to "no more users" rather than coercing junk.
+      if (!parsed.success) break;
 
-      if (data.users) {
-        // Filter out suspended users
-        const activeUsers = data.users.filter(u => !u.suspended);
-        allUsers.push(...activeUsers);
+      for (const u of parsed.data.users ?? []) {
+        // Filter out suspended users.
+        if (u.suspended) continue;
+        allUsers.push({
+          ...u,
+          // API returns null for users without a photo; consumers expect string | undefined.
+          thumbnailPhotoUrl: u.thumbnailPhotoUrl ?? undefined,
+        });
       }
 
-      pageToken = data.nextPageToken;
+      pageToken = parsed.data.nextPageToken;
     } while (pageToken);
 
     return allUsers;
@@ -366,16 +426,19 @@ export class GoogleWorkspaceAdapter extends BaseAdapter implements Deprovisionab
         throw new Error(`Google Workspace Groups API failed (${response.status}): ${text}`);
       }
 
-      const data = (await response.json()) as {
-        groups?: GoogleGroup[];
-        nextPageToken?: string;
-      };
+      const parsed = await safeParseJsonResponse(
+        response,
+        googleGroupsPageSchema,
+        'google-workspace:listUserGroups',
+      );
+      // A drifted body degrades to "no more groups" rather than coercing junk.
+      if (!parsed.success) break;
 
-      if (data.groups) {
-        allGroups.push(...data.groups);
+      if (parsed.data.groups) {
+        allGroups.push(...parsed.data.groups);
       }
 
-      pageToken = data.nextPageToken;
+      pageToken = parsed.data.nextPageToken;
     } while (pageToken);
 
     return allGroups;

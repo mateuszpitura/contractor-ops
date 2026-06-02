@@ -1,6 +1,7 @@
 import { createHash, randomUUID } from 'node:crypto';
 import { z } from 'zod';
 import { fetchWithTimeout } from '../services/fetch-helpers.js';
+import type { SafeParseJsonResult } from '../services/parse-json-response.js';
 import { parseJsonResponse, safeParseJsonResponse } from '../services/parse-json-response.js';
 import { withResilience } from '../services/resilience.js';
 import type { CredentialBlob } from '../types/credentials.js';
@@ -17,6 +18,18 @@ const outlookTokenResponseSchema = z.object({
   expires_in: z.number().int().nonnegative(),
   token_type: z.string().min(1),
   scope: z.string(),
+});
+
+/**
+ * Microsoft Graph calendar-event response (create/update) — only `id` and
+ * `webLink`. Both are OPTIONAL so an empty success body (Graph occasionally
+ * returns `{}` on a 2xx) parses to `{ id: undefined, webLink: undefined }`
+ * rather than throwing, while a non-empty body with a wrong-typed `id`/`webLink`
+ * is still rejected. Validated as a transient read (degrade locally).
+ */
+const graphEventSchema = z.object({
+  id: z.string().optional(),
+  webLink: z.string().optional(),
 });
 
 /**
@@ -101,6 +114,28 @@ function encodeMicrosoftClientRequestId(idempotencyKey: string): string {
  * fallback id (used when no caller-supplied idempotency key is available).
  */
 const newRandomClientRequestId = (): string => randomUUID();
+
+/**
+ * Maps a validated Graph create/update event body to the adapter's public
+ * `{ eventId, webLink }` shape. A schema-validation failure (non-JSON or a
+ * wrong-typed field) throws so a drifted body never silently yields a junk
+ * event id; an empty `{}` success body parses to undefined fields, preserving
+ * the long-standing "empty success body ⇒ undefined ids" contract.
+ *
+ * The public type advertises non-optional strings (its consumers persist the
+ * id as an ExternalLink), so the validated optionals are surfaced as-is; the
+ * empty-body case is a documented exception the callers already tolerate.
+ */
+function mapGraphEventResponse(parsed: SafeParseJsonResult<z.infer<typeof graphEventSchema>>): {
+  eventId: string;
+  webLink: string;
+} {
+  if (!parsed.success) throw parsed.error;
+  return {
+    eventId: parsed.data.id as string,
+    webLink: parsed.data.webLink as string,
+  };
+}
 
 /**
  * Phase 74 D-05 / D-08 — busy range returned by Outlook's getFreeBusy.
@@ -365,15 +400,9 @@ export class OutlookCalendarAdapter extends BaseAdapter {
       throw new Error(`Outlook Calendar create event failed: ${text}`);
     }
 
-    const data = (await response.json()) as {
-      id: string;
-      webLink: string;
-    };
-
-    return {
-      eventId: data.id,
-      webLink: data.webLink,
-    };
+    return mapGraphEventResponse(
+      await safeParseJsonResponse(response, graphEventSchema, 'outlook-calendar:createEvent'),
+    );
   }
 
   /**
@@ -448,15 +477,9 @@ export class OutlookCalendarAdapter extends BaseAdapter {
       throw new Error(`Outlook Calendar update event failed: ${text}`);
     }
 
-    const data = (await response.json()) as {
-      id: string;
-      webLink: string;
-    };
-
-    return {
-      eventId: data.id,
-      webLink: data.webLink,
-    };
+    return mapGraphEventResponse(
+      await safeParseJsonResponse(response, graphEventSchema, 'outlook-calendar:updateEvent'),
+    );
   }
 
   /**
@@ -529,7 +552,11 @@ export class OutlookCalendarAdapter extends BaseAdapter {
       const body = await resp.text();
       throw new Error(`Outlook getSchedule failed (${resp.status}): ${body}`);
     }
-    const parsed = await safeParseJsonResponse(resp, graphScheduleSchema, 'outlook-calendar:getFreeBusy');
+    const parsed = await safeParseJsonResponse(
+      resp,
+      graphScheduleSchema,
+      'outlook-calendar:getFreeBusy',
+    );
     // A drifted body degrades to "no busy ranges" rather than surfacing junk.
     const items = parsed.success ? (parsed.data.value?.[0]?.scheduleItems ?? []) : [];
     return {
