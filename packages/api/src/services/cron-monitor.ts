@@ -75,7 +75,7 @@ async function ping(monitorKey: string, state: PingState, message?: string): Pro
       method: 'GET',
       signal: AbortSignal.timeout(5000),
     });
-    // safe-swallow: pre-existing — see goals/production-hardening/ phase B.7.b
+    // safe-swallow: Cronitor heartbeat is best-effort observability; a ping failure must never break the cron job it monitors
   } catch {
     // Monitoring failure should never break the cron job itself
   }

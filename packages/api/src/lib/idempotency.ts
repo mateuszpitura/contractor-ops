@@ -92,7 +92,7 @@ export async function reserve<T>(rawKey: string, ttlSeconds: number): Promise<Id
       }
       // Key vanished between set-NX and get (race on TTL boundary) — retry as MISS.
       return { kind: 'MISS' };
-      // safe-swallow: pre-existing — see goals/production-hardening/ phase B.7.b
+      // safe-swallow: Redis reserve failure degrades to the in-memory fallback below; no error is lost to the caller
     } catch {
       // Redis transient error → fall through to in-memory fallback.
     }
@@ -117,7 +117,7 @@ export async function complete<T>(rawKey: string, result: T, ttlSeconds: number)
     try {
       await redis.set(key, serialized, { ex: ttlSeconds });
       return;
-      // safe-swallow: pre-existing — see goals/production-hardening/ phase B.7.b
+      // safe-swallow: Redis complete-write failure degrades to the in-memory store below; the result is still cached locally
     } catch {
       // fall through
     }
@@ -132,7 +132,7 @@ export async function clear(rawKey: string): Promise<void> {
     try {
       await redis.del(key);
       return;
-      // safe-swallow: pre-existing — see goals/production-hardening/ phase B.7.b
+      // safe-swallow: Redis clear failure leaves the reservation to expire via TTL; the in-memory clear below still runs
     } catch {
       // fall through
     }

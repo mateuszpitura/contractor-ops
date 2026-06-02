@@ -469,7 +469,7 @@ export async function deregisterLinearWebhook(
       }`,
       { id: webhookId },
     );
-    // safe-swallow: pre-existing — see goals/production-hardening/ phase B.7.b
+    // safe-swallow: the Linear webhook may already be deleted upstream; we remove it from local config below regardless
   } catch {
     // best-effort cleanup
   }

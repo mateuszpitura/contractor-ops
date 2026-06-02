@@ -235,7 +235,7 @@ export const gdprRouter = router({
           try {
             await deleteRegionalObject(doc.storageKey);
             r2Cleaned++;
-            // safe-swallow: pre-existing — see goals/production-hardening/ phase B.7.b
+            // safe-swallow: R2 object already soft-deleted in DB; orphaned blob is reclaimed by the data-purge cron retry
           } catch {
             // Non-critical: data-purge cron will retry
           }

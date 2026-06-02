@@ -59,7 +59,7 @@ export function StepConfirmation({
         URL.revokeObjectURL(url);
         document.body.removeChild(a);
       }, 100);
-      // safe-swallow: pre-existing — see goals/production-hardening/ phase B.7.b
+      // safe-swallow: client-side blob download is best-effort; on failure the user can re-trigger the download button
     } catch {
       // Silent fail -- user can try again
     }

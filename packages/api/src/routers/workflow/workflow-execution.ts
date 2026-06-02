@@ -367,7 +367,7 @@ async function syncJiraTasksAfterStart(
         /* fire-and-forget */
       });
     }
-    // safe-swallow: pre-existing — see goals/production-hardening/ phase B.7.b
+    // safe-swallow: post-start Jira dispatch is fire-and-forget; a failed import/lookup must not abort the workflow start
   } catch (_err) {
     /* fire-and-forget */
   }
@@ -409,7 +409,7 @@ async function syncLinearTasksAfterStart(
         /* fire-and-forget */
       });
     }
-    // safe-swallow: pre-existing — see goals/production-hardening/ phase B.7.b
+    // safe-swallow: post-start Linear dispatch is fire-and-forget; a failed import/lookup must not abort the workflow start
   } catch (_err) {
     /* fire-and-forget */
   }
@@ -449,7 +449,7 @@ async function syncCalendarTasksAfterStart(
         /* fire-and-forget */
       });
     }
-    // safe-swallow: pre-existing — see goals/production-hardening/ phase B.7.b
+    // safe-swallow: post-start calendar dispatch is fire-and-forget; a failed import must not abort the workflow start
   } catch (_err) {
     /* fire-and-forget */
   }

@@ -28,7 +28,7 @@ process.on('uncaughtException', err => {
   log.fatal({ err }, 'uncaughtException');
   try {
     Sentry.captureException(err);
-    // safe-swallow: pre-existing — see goals/production-hardening/ phase B.7.b
+    // safe-swallow: already logged at fatal above; a failing Sentry capture must not throw from the exit path that follows
   } catch {
     // Sentry capture itself failed — don't loop, just exit.
   }
@@ -39,7 +39,7 @@ process.on('unhandledRejection', reason => {
   log.error({ err: reason }, 'unhandledRejection');
   try {
     Sentry.captureException(reason);
-    // safe-swallow: pre-existing — see goals/production-hardening/ phase B.7.b
+    // safe-swallow: already logged at error above; a failing Sentry capture must not itself raise inside the rejection handler
   } catch {
     // ignore secondary failures
   }

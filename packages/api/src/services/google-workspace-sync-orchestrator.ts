@@ -359,7 +359,7 @@ export async function processDirectorySync(params: {
     throw error;
   } finally {
     // Best-effort unlock; the lock is connection-scoped so it is safe to ignore unlock failures.
-    // safe-swallow: pre-existing — see goals/production-hardening/ phase B.7.b
+    // safe-swallow: advisory lock is connection-scoped and self-expires; an unlock failure in finally must not mask the sync result
     await releaseAdvisoryLock(prisma, 'sync', lockKey).catch(() => undefined);
   }
 }

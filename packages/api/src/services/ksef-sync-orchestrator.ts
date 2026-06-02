@@ -450,7 +450,7 @@ async function runKsefSyncForConnection(
     if (client) {
       try {
         await client.terminateSession();
-        // safe-swallow: pre-existing — see goals/production-hardening/ phase B.7.b
+        // safe-swallow: session teardown runs in finally; a termination error must not mask the original sync outcome already recorded above
       } catch {
         // Swallow session termination errors
       }

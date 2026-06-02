@@ -221,7 +221,7 @@ export async function cachedSingleflight<T>(
       if (isEnvelope<T>(hit)) {
         return unwrap(hit);
       }
-      // safe-swallow: pre-existing — see goals/production-hardening/ phase B.7.b
+      // safe-swallow: a transient Redis read during lock-contention polling is non-fatal; the loop retries and falls back to local compute on timeout
     } catch {
       // Ignore — keep polling.
     }

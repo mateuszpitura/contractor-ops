@@ -163,7 +163,7 @@ export async function createCalendarEvent(
     );
 
     logRejected(results, 'create');
-    // safe-swallow: pre-existing — see goals/production-hardening/ phase B.7.b
+    // safe-swallow: per-connection failures already logged by logRejected; calendar sync is fire-and-forget and must not block the business mutation (D-11)
   } catch (_error) {
     /* fire-and-forget */
   }
@@ -285,7 +285,7 @@ export async function updateCalendarEvent(
     );
 
     logRejected(results, 'update');
-    // safe-swallow: pre-existing — see goals/production-hardening/ phase B.7.b
+    // safe-swallow: per-link failures already logged by logRejected; calendar sync is fire-and-forget and must not block the business mutation (D-11)
   } catch (_error) {
     /* fire-and-forget */
   }
@@ -310,7 +310,7 @@ export async function deleteCalendarEvent(
     );
 
     logRejected(results, 'delete');
-    // safe-swallow: pre-existing — see goals/production-hardening/ phase B.7.b
+    // safe-swallow: per-link failures already logged by logRejected; calendar sync is fire-and-forget and must not block the business mutation (D-11)
   } catch (_error) {
     /* fire-and-forget */
   }
@@ -451,7 +451,7 @@ async function deleteEventForLink(
         await outlookAdapter.deleteEvent(credentials.accessToken, link.externalId);
       }
     }
-    // safe-swallow: pre-existing — see goals/production-hardening/ phase B.7.b
+    // safe-swallow: provider-side delete is best-effort (event may already be gone); the ExternalLink is removed below regardless
   } catch (_deleteError) {
     // fire-and-forget
   }

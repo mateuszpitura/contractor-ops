@@ -397,7 +397,7 @@ export const classificationDocumentRouter = router({
           select: { id: true },
         });
       } catch (err) {
-        // safe-swallow: pre-existing — see goals/production-hardening/ phase B.7.b
+        // safe-swallow: R2 cleanup is best-effort after a failed DB insert; the original error is rethrown below
         await deleteObject(r2Key).catch(() => undefined);
         throw err;
       }

@@ -56,7 +56,7 @@ function extractErrorDetails(err: TRPCError): { code: string; message: string } 
         message: `Subscription tier ${String(parsed.requiredTier)} is required.`,
       };
     }
-    // safe-swallow: pre-existing — see goals/production-hardening/ phase B.7.b
+    // safe-swallow: message is not structured JSON (the common case); fall through to the Zod/raw handling below
   } catch {
     // Not JSON — use as-is
   }

@@ -453,7 +453,7 @@ export async function deregisterJiraWebhooks(
         headers: authHeaders,
         body: JSON.stringify({ webhookIds: [webhookId] }),
       });
-      // safe-swallow: pre-existing — see goals/production-hardening/ phase B.7.b
+      // safe-swallow: a webhook may already be expired/deleted upstream; we continue deleting the rest and clear local config regardless
     } catch {
       // Best effort — continue with remaining webhooks
     }
