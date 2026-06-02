@@ -1,9 +1,10 @@
 # Production Readiness Checklist
 
 **Last reviewed:** 2026-05-17
+**Security-section refreshed:** 2026-06-03 (post-`apps/web` removal — security-header + CSP paths re-pointed to `apps/api`, `render.yaml`, `apps/web-vite`)
 **Reconciled-against:** `.audit-2026-05-03/AUDIT-CLOSURE-2026-05-11.md` (2026-05-11 closure)
 **Production-Hardening-completed:** 2026-05-16 (commits e0be0966..dc6776c3 on `feat/production-hardening`)
-**Stack:** pnpm + Turborepo · Next.js 15 (SSR) · tRPC v11 · Prisma 7 + Neon (EU + ME) · Better Auth · Render · Pino · Sentry · Upstash Redis · Unleash OSS
+**Stack:** pnpm + Turborepo · React + Vite SPA (`apps/web-vite`) · Fastify API (`apps/api`) · Next.js 16 landing (`apps/landing`) · tRPC v11 · Prisma 7 + Neon (EU + ME) · Better Auth · Render · Pino · Sentry · Upstash Redis · Unleash OSS
 
 > **Production-Hardening Goal status (2026-05-17):** Phases A, B, C, D shipped on
 > branch `feat/production-hardening`. B.5 (advisory-lock dual-hold shim cleanup)
@@ -11,10 +12,19 @@
 > set in any environment, and the shim was dead code from day one. C.1.c (CSP
 > enforce flip — drop `'unsafe-inline'` from script-src) also landed: the 48h
 > report-only observation window was a hedge against breaking real users, and
-> with no users to break the flip was risk-free. The enforce `Content-Security-
-> Policy` header is now emitted per-request from `apps/web/src/middleware.ts`
-> (`attachCsp`) with a fresh nonce; the static entry in `apps/web/next.config.ts`
-> was removed in the same commit.
+> with no users to break the flip was risk-free.
+>
+> **2026-06-03 migration note:** the `apps/web` Next.js app referenced throughout
+> the Security/Observability/Performance sections below was retired in the
+> web-vite cutover. The CSP/security-header surface it owned now lives in the
+> Fastify API (`apps/api/src/plugins/helmet.ts` + `apps/api/src/lib/csp.ts`), the
+> Render static-site `headers:` block for the SPA (`render.yaml`, `web-vite`),
+> and the local-preview `<meta>` fallback in `apps/web-vite/index.html`. The
+> Security section (§5) has been re-pointed; rows in other sections that still
+> cite `apps/web/...` paths are **historical evidence of the original Next.js
+> implementation** and are flagged inline where verified-moved — treat any
+> remaining `apps/web/...` path in §1/§4/§7/§8 as NEEDS VERIFICATION against the
+> live tree before relying on it.
 
 This checklist is the operational counterpart to [`/contractor-ops-launch-checklist.md`](../contractor-ops-launch-checklist.md). The launch checklist is authoritative on multi-tenancy, auth, GDPR, and payments. **This file** owns infrastructure, observability, security headers, CI/CD gates, DR, and documentation. Both must pass before paid launch.
 
@@ -123,19 +133,19 @@ For depth on specific areas, see [`.audit-2026-05-03/`](../.audit-2026-05-03/) �
 - [x] Account lockout (5 failed attempts → 15 min, atomic increment)
 - [x] Rate limiting via Upstash Redis (10/min auth, 60/min API)
 - [x] Better Auth `trustedOrigins` configured via `AUTH_TRUSTED_ORIGINS` + baseURL seed — `packages/auth/src/config.ts`
-- [x] CSRF posture: SameSite=Lax + Origin validation (Better Auth defaults)
-- [x] Content-Security-Policy header — `apps/web/next.config.ts:97-110`
-- [x] X-Frame-Options DENY — `apps/web/next.config.ts:111-114`
-- [x] X-Content-Type-Options nosniff — `apps/web/next.config.ts:115-118`
-- [x] Referrer-Policy strict-origin-when-cross-origin — `apps/web/next.config.ts:119-122`
-- [x] Permissions-Policy (camera/mic/geo denied + extended surface) — `apps/web/next.config.ts:123-126` and commit 52628844 (mirrored to `apps/landing/next.config.ts`)
-- [x] HSTS `max-age=63072000; includeSubDomains; preload` — `apps/web/next.config.ts:127-130`
+- [x] CSRF posture: SameSite cookies + Better Auth Origin validation, plus a defense-in-depth Origin guard on `/api/**` — `apps/api/src/plugins/csrf-origin.ts` (registered in `apps/api/src/server.ts`)
+- [x] Content-Security-Policy header — API: `apps/api/src/plugins/helmet.ts` + `apps/api/src/lib/csp.ts` (`script-src 'none'`); SPA wire header: `render.yaml` `web-vite` block; local-preview `<meta>` fallback: `apps/web-vite/index.html`. CSP-string equality between SPA wire + `<meta>` asserted in `apps/api/src/__tests__/utility-routes.test.ts`.
+- [x] X-Frame-Options DENY — API: `apps/api/src/plugins/helmet.ts` (`xFrameOptions: { action: 'deny' }`); SPA: `render.yaml` `web-vite` block (`X-Frame-Options: DENY`)
+- [x] X-Content-Type-Options nosniff — API: `@fastify/helmet` default in `apps/api/src/plugins/helmet.ts`; SPA: `render.yaml` `web-vite` block (`X-Content-Type-Options: nosniff`)
+- [x] Referrer-Policy strict-origin-when-cross-origin — API: `apps/api/src/plugins/helmet.ts`; SPA: `render.yaml` `web-vite` block
+- [x] Permissions-Policy (camera/mic on browser default for embedded signing; geo/payment/sensors denied) — API: `apps/api/src/plugins/helmet.ts` (`onSend` Permissions-Policy header); SPA: `render.yaml` `web-vite` block; landing mirrored in `render.yaml` landing block + `apps/landing/next.config.ts`
+- [x] HSTS `max-age=63072000; includeSubDomains; preload` — API: `apps/api/src/plugins/helmet.ts` (`strictTransportSecurity`); SPA: `render.yaml` `web-vite` block
 - [x] AES-256-GCM bank account encryption — `bank-account-crypto.ts`
 - [x] XSS sanitization on create/update mutations
-- [x] Report-only nonce-based CSP shipped alongside enforce header (Phase C.1.a/b complete; enforce flip deferred per goal callout) — 🟠 CRITICAL  → evidence: commit 11a56375 — `apps/web/next.config.ts` + `apps/landing/next.config.ts` emit `Content-Security-Policy-Report-Only` with per-request nonce; `apps/web/src/app/api/csp-report/route.ts` ingests reports
-- [x] Inline theme bootstrap replaced by Server Component cookie read (eliminates inline `<script>` blocker for CSP enforce) — 🟠 CRITICAL  → evidence: commit 62ca7261 — `apps/web/src/app/layout.tsx`, `apps/landing/src/app/layout.tsx`
-- [x] COOP / COEP / CORP headers + extended Permissions-Policy — 🟠 CRITICAL  → evidence: commit 52628844 — `apps/web/next.config.ts` + `apps/landing/next.config.ts`
-- [x] `/.well-known/security.txt` for vulnerability disclosure — 🟢 IMPORTANT  → evidence: commit eb854533 — `apps/web/src/app/.well-known/security.txt/route.ts`
+- [x] CSP report ingestion + report-only/enforce toggle — 🟠 CRITICAL  → evidence: API emits `Content-Security-Policy` or `-Report-Only` via `apps/api/src/plugins/helmet.ts` (toggled by the `CSP_MODE` env var, default enforce); violations POST to `apps/api/src/routes/csp-report.ts` (`/csp-report`, exempt from the CSRF-origin guard). The legacy Next.js per-request nonce flow was retired with `apps/web`; the SPA uses `script-src 'self'` (no inline scripts on the shell) instead of nonces.
+- [x] No inline `<script>` on the SPA shell (eliminates inline-script CSP blocker) — 🟠 CRITICAL  → evidence: `apps/web-vite/index.html` loads the theme bootstrap from `/public/theme-init.js` (satisfies `script-src 'self'`); no inline `<script>` requiring a nonce or `'unsafe-inline'`.
+- [x] COOP / COEP / CORP headers + extended Permissions-Policy — 🟠 CRITICAL  → evidence: API: `apps/api/src/plugins/helmet.ts` (COOP `same-origin`, CORP `same-site`, permitted-cross-domain-policies `none`); SPA: `render.yaml` `web-vite` block (COEP `credentialless` for embedded-signing iframes) + extended Permissions-Policy; landing mirrored in `apps/landing/next.config.ts`
+- [x] `/.well-known/security.txt` for vulnerability disclosure — 🟢 IMPORTANT  → evidence: `apps/landing/public/.well-known/security.txt` (served from the static landing site; the original `apps/web` route handler was retired in the migration)
 - [x] Dependabot weekly + daily security channel — 🟠 CRITICAL  → evidence: commit e11cac5f — `.github/dependabot.yml`
 - [x] Outbound HTTP wrapped in `withResilience` (timeout + retry + circuit-breaker) on 11 integration adapters — 🟠 CRITICAL  → evidence: commit 6928d109 — `packages/integrations/src/adapters/*` (Jira, Slack, Teams, Asana, ClickUp, Linear, Notion, Trello, Zendesk, Freshdesk, Intercom)
 - [x] Courier clients use `fetchWithTimeout` (InPost / DPD / UPS) — 🟠 CRITICAL  → evidence: commit ebb42b3a — `packages/api/src/services/courier/inpost-client.ts`, `dpd-client.ts`, `ups-client.ts`
@@ -143,7 +153,7 @@ For depth on specific areas, see [`.audit-2026-05-03/`](../.audit-2026-05-03/) �
 - [x] Lint guard: raw `fetch` forbidden in adapter/service paths without annotation — 🟢 IMPORTANT  → evidence: commit e8e05475 — `scripts/lint-raw-fetch.mjs`
 - [x] Idempotency keys unified through `deriveIdempotencyKey` (Stripe / InPost / Resend) — 🟠 CRITICAL  → evidence: commit 867c50c3 — `billing-service.ts`, `inpost-client.ts`, `app-email.ts` (+ slack/teams docs)
 - [x] Lint guard: hand-rolled idempotency keys forbidden outside `deriveIdempotencyKey` — 🟢 IMPORTANT  → evidence: commit d4dbaaa2 — `scripts/lint-idempotency.mjs`
-- [x] Flip CSP to enforce (drop `'unsafe-inline'` from script-src) — 🟠 CRITICAL  → evidence: apps/web/src/middleware.ts (attachCsp) — enforce nonce-based CSP, no unsafe-inline in script-src; static `Content-Security-Policy` entry removed from `apps/web/next.config.ts`; flip landed 2026-05-17, app not yet deployed so 48h report-only observation window not required
+- [x] CSP `script-src` carries no `'unsafe-inline'`/`'unsafe-eval'` — 🟠 CRITICAL  → evidence: API `script-src 'none'` (`apps/api/src/lib/csp.ts`); SPA `script-src 'self' 'wasm-unsafe-eval' https://*.sentry-cdn.com https://challenges.cloudflare.com` in `render.yaml` `web-vite` block + `apps/web-vite/index.html` `<meta>` (no `'unsafe-inline'`, no broad `'unsafe-eval'`). API enforce/report-only via `CSP_MODE` (`apps/api/src/plugins/helmet.ts`). Residual: SPA keeps `style-src 'unsafe-inline'` for Tailwind runtime style injection (documented in the `render.yaml` `web-vite` header comment)
 - [ ] Production `trustedOrigins` audit — confirm no `localhost` in deployed env — 🔴 BLOCKER (verify before launch; trivial)  → evidence: `packages/auth/src/config.ts:107` reads `AUTH_TRUSTED_ORIGINS` at boot but a production env attestation has not been captured in any doc; runtime verification only
 - [x] RLS audit on Neon (Prisma extension covers most paths; raw SQL paths in search router need explicit enumeration) — 🟠 CRITICAL  → evidence: `packages/api/src/middleware/tenant.ts` wires `withRlsSession` per closure §2.1; `scripts/check-raw-sql-tenant-scoped.ts` enumerates raw SQL exits via `pnpm run lint:raw-sql` (closure §4)
 - [ ] Public-API key revocation drill (HMAC keys via `API_KEY_HMAC_SECRET`) — 🟢 IMPORTANT  → evidence: revocation code paths exist in `packages/api/src/routers/` but no drill log captured in `docs/`
@@ -175,14 +185,14 @@ For depth on specific areas, see [`.audit-2026-05-03/`](../.audit-2026-05-03/) �
 - [x] Hot-path organization lookups routed through 5min cache — 🟠 CRITICAL  → evidence: commit c6b59148 — `apps/web/src/app/[locale]/(dashboard)/layout.tsx` and classification layouts route through the org cache helper
 - [x] Image `remotePatterns` narrowed to known external hosts only — 🟢 IMPORTANT  → evidence: commit afddd8c2 — `apps/web/next.config.ts` `images.remotePatterns` allowlist
 - [x] N+1 query review for hot paths (Prisma query logging + top-10 tRPC procedures) — 🟠 CRITICAL  → evidence: commit cbbe7ff1 — `docs/N+1-AUDIT.md`
-- [ ] `next/font` audit (no rogue `<link href="fonts.googleapis...">` outside CSP) — 🟢 IMPORTANT  → evidence: CSP `style-src` at `apps/web/next.config.ts:91` still includes `https://fonts.googleapis.com` — audit of `next/font` adoption not captured in any doc
+- [ ] Font-loading audit (no rogue `<link href="fonts.googleapis...">` outside CSP) — 🟢 IMPORTANT  → evidence: SPA CSP `style-src` (`render.yaml` `web-vite` block + `apps/web-vite/index.html`) still allows `https://fonts.googleapis.com` and `font-src https://fonts.gstatic.com` — `apps/web-vite` font-loading audit not captured in any doc
 
 ## 8. Accessibility & UX
 
 - [x] Playwright RTL config — `playwright.rtl.config.ts`, `e2e/rtl/`
 - [x] MDX `rehype-autolink-headings` with `behavior: 'wrap'` — `next.config.ts:14-19`
 - [x] `next-intl` for EN / PL / DE / AR — `apps/web/src/i18n/`
-- [x] CSP `frame-src` allows DocuSign embeds (signing flow accessibility)
+- [x] CSP `frame-src` allows DocuSign + Autenti embedded-signing iframes (signing flow accessibility) — `render.yaml` `web-vite` block (`frame-src 'self' https://*.docusign.net https://*.docusign.com https://*.autenti.com ...`) + `apps/web-vite/index.html`
 - [x] axe-core / `@axe-core/playwright` CI gate on top-10 dashboard routes — 🟢 IMPORTANT  → evidence: commit c3053fd4 — `apps/web/e2e/a11y/dashboard-routes.spec.ts` + `.axe-allowlist.json`; CI job in commit 1b8efef1
 - [x] WCAG 2.2 AA self-attestation — 🟢 IMPORTANT  → evidence: commit 1b8efef1 — `docs/ACCESSIBILITY.md`
 - [x] `loading.tsx` / `not-found.tsx` / `error.tsx` boundary coverage on top-10 dashboard routes — 🟠 CRITICAL  → evidence: commit 664d1dc7 — shared boundary primitives under `apps/web/src/components/boundaries/*` wired into the top-10 dashboard route files
