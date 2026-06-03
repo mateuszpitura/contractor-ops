@@ -1663,6 +1663,175 @@
     "eInvoicing": {
       "cardTitle": "E-Invoicing",
       "defaultLeitwegIdLabel": "Standard-Leitweg-ID"
+    },
+    "freeZone": {
+      "form": {
+        "title": "VAE-Freizonenzuordnung",
+        "description": "Erfassen Sie die Freizonen- oder Mainland-Lizenz dieses Auftragnehmers, damit die Ablaufüberwachung und Zahlungsprüfungen laufen können.",
+        "zoneLabel": "Freizone",
+        "zonePlaceholder": "Wählen Sie zunächst eine Zone aus",
+        "licenseNumberLabel": "Lizenznummer",
+        "licenseNumberPlaceholder": "Lizenznummer eingeben",
+        "licenseCategoryLabel": "Lizenzkategorie",
+        "licenseCategoryPlaceholder": "Lizenzkategorie eingeben",
+        "licenseExpiresAtLabel": "Ablaufdatum der Lizenz",
+        "licenseExpiresAtHelp": "Wird für Ablauferinnerungen und die Zahlungssperre bei abgelaufener Lizenz verwendet. Mainland-Lizenzen werden nicht zahlungsgesperrt.",
+        "permittedActivitiesLabel": "Zulässige Tätigkeiten",
+        "permittedActivitiesPlaceholder": "Beschreiben Sie die unter dieser Lizenz zulässigen Tätigkeiten",
+        "isicCodesLabel": "ISIC-Codes der zulässigen Tätigkeiten",
+        "isicCodesPlaceholder": "z. B. 6201",
+        "isicCodesHelp": "Fügen Sie die von der Lizenz abgedeckten ISIC-Codes hinzu. Diese steuern die Geltungsbereichsprüfung bei der Vertragserstellung.",
+        "isicAddButton": "Hinzufügen",
+        "isicRemoveLabel": "Code {code} entfernen",
+        "saveButton": "Freizonenzuordnung speichern"
+      },
+      "zones": {
+        "DIFC": "Dubai International Financial Centre (DIFC)",
+        "DMCC": "Dubai Multi Commodities Centre (DMCC)",
+        "IFZA": "International Free Zone Authority (IFZA)",
+        "DUBAI_INTERNET_CITY": "Dubai Internet City",
+        "DUBAI_MEDIA_CITY": "Dubai Media City",
+        "MEYDAN_FZ": "Meydan Free Zone",
+        "JAFZA": "Jebel Ali Free Zone (JAFZA)",
+        "SHAMS": "Sharjah Media City (Shams)",
+        "RAKEZ": "Ras Al Khaimah Economic Zone (RAKEZ)",
+        "ADGM": "Abu Dhabi Global Market (ADGM)",
+        "MAINLAND": "Mainland (keine Freizone)"
+      },
+      "empty": {
+        "heading": "Keine Freizonenzuordnung erfasst",
+        "body": "Erfassen Sie die VAE-Freizonen- oder Mainland-Lizenz dieses Auftragnehmers, damit die Ablaufüberwachung und Zahlungsprüfungen laufen können. Wählen Sie zunächst eine Zone aus."
+      },
+      "error": {
+        "loadHeading": "Freizonenzuordnung konnte nicht geladen werden",
+        "loadBody": "Diese Golf-Daten konnten nicht geladen werden. Prüfen Sie Ihre Verbindung und versuchen Sie es erneut.",
+        "retry": "Erneut versuchen"
+      },
+      "toast": {
+        "saved": "Freizonenzuordnung gespeichert",
+        "saveFailed": "Ihre Änderungen konnten nicht gespeichert werden. Ihre vorherigen Werte bleiben unverändert — bitte versuchen Sie es erneut."
+      },
+      "scopeMismatch": {
+        "heading": "Tätigkeit außerhalb des zulässigen Freizonenbereichs",
+        "body": "Die Tätigkeit dieses Vertrags liegt außerhalb der für den Auftragnehmer zulässigen Freizonentätigkeiten. Der Compliance-Liste dieses Engagements wurde ein NOC-Dokument hinzugefügt. Die Vertragserstellung kann dennoch fortgesetzt werden.",
+        "viewComplianceLink": "Engagement-Compliance anzeigen"
+      }
+    }
+  },
+  "Saudization": {
+    "title": "Saudisierung",
+    "subtitle": "Manuelles Nitaqat-Band, Nationalisierungsquote, Qiwa-Authentifizierungsabdeckung und Iqama-Ablaufübersicht für Ihre Organisation.",
+    "rate": {
+      "label": "Nationalisierungsquote",
+      "notAvailable": "Nicht verfügbar",
+      "noChart": "Noch keine Quote"
+    },
+    "band": {
+      "label": "Nitaqat-Band",
+      "notSet": "Nicht festgelegt",
+      "lastUpdated": "Band zuletzt aktualisiert am {date}"
+    },
+    "manualNature": {
+      "title": "Band manuell eingegeben",
+      "body": "Das System berechnet Ihr Nitaqat-Band niemals automatisch — bestätigen Sie es in Qiwa."
+    },
+    "quarterly": {
+      "title": "Bestätigen oder aktualisieren Sie Ihr Band",
+      "body": "Ihr Nitaqat-Band wurde zuletzt am {date} aktualisiert. Nitaqat wird vierteljährlich überprüft — bestätigen oder aktualisieren Sie Ihr Band.",
+      "bodyNoDate": "Nitaqat wird vierteljährlich überprüft — bestätigen oder aktualisieren Sie Ihr Band."
+    },
+    "headcount": {
+      "title": "Personalbestand-Abgleich",
+      "description": "Nitaqat zählt Ihre gesamte Belegschaft. Die manuellen Zahlen sind maßgeblich; die plattformbasierten Auftragnehmerzahlen dienen nur der Plausibilitätsprüfung.",
+      "totalLabel": "Gesamte Belegschaft",
+      "saudiLabel": "Saudische Staatsangehörige",
+      "platformContractors": "Plattform-Auftragnehmer",
+      "platformSaudiContractors": "Saudische Plattform-Auftragnehmer"
+    },
+    "qiwa": {
+      "title": "Qiwa-Authentifizierungsabdeckung",
+      "description": "Verträge, die noch nicht in Qiwa authentifiziert sind.",
+      "gapCount": "{count, plural, one {# Vertrag wartet auf Authentifizierung} other {# Verträge warten auf Authentifizierung}}",
+      "gapBody": "Authentifizieren Sie diese Verträge in Qiwa, um die Abdeckungslücke zu schließen.",
+      "empty": "Alle authentifiziert. Jeder Vertrag mit saudischen Staatsangehörigen ist Qiwa-authentifiziert."
+    },
+    "iqama": {
+      "title": "Iqama-Ablaufübersicht",
+      "description": "Iqama-Verlängerungen, die im überwachten Zeitfenster fällig sind.",
+      "tracked": "Überwacht",
+      "expired": "Abgelaufen",
+      "expiringSoon": "Läuft bald ab",
+      "empty": "Keine Iqama-Verlängerungen im überwachten Zeitfenster fällig."
+    },
+    "actions": {
+      "editConfig": "Konfiguration bearbeiten",
+      "manageOverrides": "Überschreibungen verwalten"
+    },
+    "bands": {
+      "PLATINUM": "PLATINUM",
+      "HIGH_GREEN": "HIGH_GREEN",
+      "MID_GREEN": "MID_GREEN",
+      "LOW_GREEN": "LOW_GREEN",
+      "YELLOW": "YELLOW",
+      "RED": "RED"
+    },
+    "config": {
+      "title": "Saudisierungs-Konfiguration",
+      "description": "Geben Sie Ihr Nitaqat-Band, Ihr Branchensegment und Ihren Personalbestand ein. Das Band wird immer manuell eingegeben.",
+      "bandSectionTitle": "Nitaqat-Band",
+      "bandLabel": "Band",
+      "bandPlaceholder": "Wählen Sie Ihr aktuelles Band",
+      "bandHelp": "Geben Sie das in Qiwa bestätigte Band ein. Das System berechnet es niemals für Sie.",
+      "segmentLabel": "Branchensegment",
+      "segmentPlaceholder": "z. B. Bauwesen",
+      "saveBandButton": "Nitaqat-Band aktualisieren",
+      "headcountSectionTitle": "Personalbestand",
+      "headcountHelp": "Geben Sie den Personalbestand Ihrer gesamten Organisation ein, einschließlich der Mitarbeiter, die die Plattform nicht erfasst.",
+      "totalLabel": "Gesamte Belegschaft",
+      "saudiLabel": "Saudische Staatsangehörige",
+      "saudiExceedsTotal": "Saudische Staatsangehörige dürfen die Gesamtbelegschaft nicht überschreiten.",
+      "saveHeadcountButton": "Personalbestand speichern",
+      "close": "Schließen"
+    },
+    "override": {
+      "title": "Katalog-Überschreibungen",
+      "description": "Überschreiben Sie die Standard-Nitaqat-Schwellenwerte oder den Katalog zulässiger Tätigkeiten für Ihre Organisation. Jede Überschreibung wird im Audit-Protokoll erfasst.",
+      "nitaqatHeading": "Nitaqat-Schwellenwerte",
+      "nitaqatBody": "Wenden Sie einen benutzerdefinierten Nitaqat-Schwellenwertkatalog für Ihre Organisation an.",
+      "activityHeading": "Katalog zulässiger Tätigkeiten",
+      "activityBody": "Wenden Sie einen benutzerdefinierten Katalog zulässiger Tätigkeiten für Ihre Organisation an.",
+      "applyNitaqat": "Nitaqat-Überschreibung anwenden",
+      "applyActivity": "Tätigkeitsüberschreibung anwenden",
+      "reset": "Auf Standard zurücksetzen",
+      "badge": "Benutzerdefiniert — mit Berater prüfen",
+      "resetConfirmTitle": "Überschreibung auf Standard zurücksetzen?",
+      "resetConfirmBody": "Dies stellt den Standard-Nitaqat-Schwellenwert / Katalog zulässiger Tätigkeiten wieder her und entfernt den benutzerdefinierten Wert. Diese Aktion wird im Audit-Protokoll erfasst.",
+      "resetConfirm": "Auf Standard zurücksetzen",
+      "cancel": "Abbrechen",
+      "close": "Schließen"
+    },
+    "empty": {
+      "heading": "Saudisierung nicht konfiguriert",
+      "body": "Geben Sie das Nitaqat-Band und den Personalbestand Ihrer Organisation ein, um Ihre Nationalisierungsquote, die Qiwa-Authentifizierungsabdeckung und die Iqama-Ablaufübersicht zu sehen. Das Band wird immer manuell eingegeben — das System berechnet es niemals für Sie.",
+      "cta": "Saudisierung konfigurieren"
+    },
+    "error": {
+      "loadHeading": "Saudisierungsdaten konnten nicht geladen werden",
+      "loadBody": "Diese Golf-Daten konnten nicht geladen werden. Prüfen Sie Ihre Verbindung und versuchen Sie es erneut.",
+      "retry": "Erneut versuchen"
+    },
+    "toast": {
+      "bandSaved": "Nitaqat-Band gespeichert",
+      "headcountSaved": "Personalbestand gespeichert",
+      "overrideApplied": "Überschreibung angewendet",
+      "saveFailed": "Ihre Änderungen konnten nicht gespeichert werden. Ihre vorherigen Werte bleiben unverändert — bitte versuchen Sie es erneut."
+    },
+    "offboardingTrajectory": {
+      "title": "Saudisierungsverlauf beim Offboarding",
+      "projection": "Das Offboarding dieses saudischen Staatsangehörigen kann Ihre voraussichtliche Saudisierung senken. Aktuell: {band} bei {rate} → voraussichtlich: {projectedRate}.",
+      "advisory": "Nur als Hinweis — prüfen Sie in Qiwa. Das System legt Ihr Band nicht fest.",
+      "bandUnknown": "Band nicht festgelegt",
+      "rateUnknown": "Nicht verfügbar"
     }
   },
   "Contracts": {
@@ -2899,6 +3068,7 @@
       "heading": "Zugriff verweigert"
     },
     "forbidden": "Zugriff verweigert.",
+    "demoReadOnly": "Demomodus – Speichern ist deaktiviert.",
     "accountBanned": "Ihr Konto wurde deaktiviert. Bitte wenden Sie sich an Ihren Organisations-Administrator.",
     "accountLocked": "Zu viele fehlgeschlagene Anmeldeversuche. Ihr Konto ist vorübergehend gesperrt. Bitte versuchen Sie es später erneut.",
     "lastAdminCannotDeactivate": "Der letzte Administrator kann nicht deaktiviert werden. Weisen Sie zunächst einen anderen Administrator zu.",
@@ -3926,6 +4096,12 @@
   },
   "Layout": {
     "skipToContent": "Zum Inhalt springen",
+    "demo": {
+      "bannerLabel": "Demomodus",
+      "bannerDescription": "Nur Lesezugriff – erkunden Sie frei; Änderungen werden nicht gespeichert.",
+      "toastTitle": "Demomodus",
+      "toastBody": "Dies ist eine schreibgeschützte Demo – Änderungen können nicht gespeichert werden."
+    },
     "footer": {
       "privacy": "Datenschutz",
       "terms": "Nutzungsbedingungen"

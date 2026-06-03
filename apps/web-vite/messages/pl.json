@@ -1663,6 +1663,175 @@
     "eInvoicing": {
       "cardTitle": "Fakturowanie elektroniczne",
       "defaultLeitwegIdLabel": "Domyślny Leitweg-ID"
+    },
+    "freeZone": {
+      "form": {
+        "title": "Przypisanie do strefy wolnocłowej ZEA",
+        "description": "Zarejestruj licencję strefy wolnocłowej lub Mainland tego wykonawcy, aby działało śledzenie wygaśnięcia i kontrole płatności.",
+        "zoneLabel": "Strefa wolnocłowa",
+        "zonePlaceholder": "Wybierz strefę, aby rozpocząć",
+        "licenseNumberLabel": "Numer licencji",
+        "licenseNumberPlaceholder": "Wprowadź numer licencji",
+        "licenseCategoryLabel": "Kategoria licencji",
+        "licenseCategoryPlaceholder": "Wprowadź kategorię licencji",
+        "licenseExpiresAtLabel": "Data wygaśnięcia licencji",
+        "licenseExpiresAtHelp": "Używana do przypomnień o wygaśnięciu i blokady płatności po wygaśnięciu licencji. Licencje Mainland nie są blokowane płatnościowo.",
+        "permittedActivitiesLabel": "Dozwolone działalności",
+        "permittedActivitiesPlaceholder": "Opisz działalności dozwolone w ramach tej licencji",
+        "isicCodesLabel": "Kody ISIC dozwolonych działalności",
+        "isicCodesPlaceholder": "np. 6201",
+        "isicCodesHelp": "Dodaj kody ISIC objęte licencją. Sterują one kontrolą zgodności zakresu przy tworzeniu umowy.",
+        "isicAddButton": "Dodaj",
+        "isicRemoveLabel": "Usuń kod {code}",
+        "saveButton": "Zapisz przypisanie do strefy wolnocłowej"
+      },
+      "zones": {
+        "DIFC": "Dubai International Financial Centre (DIFC)",
+        "DMCC": "Dubai Multi Commodities Centre (DMCC)",
+        "IFZA": "International Free Zone Authority (IFZA)",
+        "DUBAI_INTERNET_CITY": "Dubai Internet City",
+        "DUBAI_MEDIA_CITY": "Dubai Media City",
+        "MEYDAN_FZ": "Meydan Free Zone",
+        "JAFZA": "Jebel Ali Free Zone (JAFZA)",
+        "SHAMS": "Sharjah Media City (Shams)",
+        "RAKEZ": "Ras Al Khaimah Economic Zone (RAKEZ)",
+        "ADGM": "Abu Dhabi Global Market (ADGM)",
+        "MAINLAND": "Mainland (bez strefy wolnocłowej)"
+      },
+      "empty": {
+        "heading": "Brak zarejestrowanego przypisania do strefy wolnocłowej",
+        "body": "Zarejestruj licencję strefy wolnocłowej ZEA lub Mainland tego wykonawcy, aby działało śledzenie wygaśnięcia i kontrole płatności. Wybierz strefę, aby rozpocząć."
+      },
+      "error": {
+        "loadHeading": "Nie udało się wczytać przypisania do strefy wolnocłowej",
+        "loadBody": "Nie udało się wczytać tych danych Zatoki. Sprawdź połączenie i spróbuj ponownie.",
+        "retry": "Ponów"
+      },
+      "toast": {
+        "saved": "Zapisano przypisanie do strefy wolnocłowej",
+        "saveFailed": "Nie udało się zapisać zmian. Poprzednie wartości pozostają bez zmian — spróbuj ponownie."
+      },
+      "scopeMismatch": {
+        "heading": "Działalność poza dozwolonym zakresem strefy wolnocłowej",
+        "body": "Działalność tej umowy wykracza poza działalności dozwolone dla wykonawcy w strefie wolnocłowej. Do listy zgodności tego zaangażowania dodano dokument NOC. Tworzenie umowy może być kontynuowane.",
+        "viewComplianceLink": "Zobacz zgodność zaangażowania"
+      }
+    }
+  },
+  "Saudization": {
+    "title": "Saudyzacja",
+    "subtitle": "Ręczny pasmo Nitaqat, wskaźnik nacjonalizacji, pokrycie uwierzytelnieniem Qiwa oraz zestawienie wygaśnięć Iqama dla Twojej organizacji.",
+    "rate": {
+      "label": "Wskaźnik nacjonalizacji",
+      "notAvailable": "Niedostępne",
+      "noChart": "Brak wskaźnika"
+    },
+    "band": {
+      "label": "Pasmo Nitaqat",
+      "notSet": "Nie ustawiono",
+      "lastUpdated": "Pasmo ostatnio zaktualizowano {date}"
+    },
+    "manualNature": {
+      "title": "Pasmo wprowadzone ręcznie",
+      "body": "System nigdy nie oblicza Twojego pasma Nitaqat automatycznie — potwierdź je w Qiwa."
+    },
+    "quarterly": {
+      "title": "Potwierdź lub zaktualizuj swoje pasmo",
+      "body": "Twoje pasmo Nitaqat zaktualizowano ostatnio {date}. Nitaqat jest weryfikowany kwartalnie — potwierdź lub zaktualizuj swoje pasmo.",
+      "bodyNoDate": "Nitaqat jest weryfikowany kwartalnie — potwierdź lub zaktualizuj swoje pasmo."
+    },
+    "headcount": {
+      "title": "Weryfikacja liczby pracowników",
+      "description": "Nitaqat liczy całą Twoją kadrę. Liczby wprowadzone ręcznie są wiążące; liczby wykonawców pochodzące z platformy służą jedynie kontroli wiarygodności.",
+      "totalLabel": "Cała kadra",
+      "saudiLabel": "Obywatele Arabii Saudyjskiej",
+      "platformContractors": "Wykonawcy z platformy",
+      "platformSaudiContractors": "Saudyjscy wykonawcy z platformy"
+    },
+    "qiwa": {
+      "title": "Pokrycie uwierzytelnieniem Qiwa",
+      "description": "Umowy jeszcze nieuwierzytelnione w Qiwa.",
+      "gapCount": "{count, plural, one {# umowa oczekuje na uwierzytelnienie} few {# umowy oczekują na uwierzytelnienie} many {# umów oczekuje na uwierzytelnienie} other {# umowy oczekują na uwierzytelnienie}}",
+      "gapBody": "Uwierzytelnij te umowy w Qiwa, aby zamknąć lukę w pokryciu.",
+      "empty": "Wszystko uwierzytelnione. Każda umowa z obywatelem Arabii Saudyjskiej jest uwierzytelniona w Qiwa."
+    },
+    "iqama": {
+      "title": "Zestawienie wygaśnięć Iqama",
+      "description": "Odnowienia Iqama wymagane w śledzonym oknie czasowym.",
+      "tracked": "Śledzone",
+      "expired": "Wygasłe",
+      "expiringSoon": "Wkrótce wygasają",
+      "empty": "Brak odnowień Iqama wymaganych w śledzonym oknie czasowym."
+    },
+    "actions": {
+      "editConfig": "Edytuj konfigurację",
+      "manageOverrides": "Zarządzaj nadpisaniami"
+    },
+    "bands": {
+      "PLATINUM": "PLATINUM",
+      "HIGH_GREEN": "HIGH_GREEN",
+      "MID_GREEN": "MID_GREEN",
+      "LOW_GREEN": "LOW_GREEN",
+      "YELLOW": "YELLOW",
+      "RED": "RED"
+    },
+    "config": {
+      "title": "Konfiguracja saudyzacji",
+      "description": "Wprowadź swoje pasmo Nitaqat, segment branżowy oraz liczbę pracowników. Pasmo zawsze wprowadza się ręcznie.",
+      "bandSectionTitle": "Pasmo Nitaqat",
+      "bandLabel": "Pasmo",
+      "bandPlaceholder": "Wybierz swoje bieżące pasmo",
+      "bandHelp": "Wprowadź pasmo potwierdzone w Qiwa. System nigdy nie oblicza go za Ciebie.",
+      "segmentLabel": "Segment branżowy",
+      "segmentPlaceholder": "np. Budownictwo",
+      "saveBandButton": "Zaktualizuj pasmo Nitaqat",
+      "headcountSectionTitle": "Liczba pracowników",
+      "headcountHelp": "Wprowadź liczbę pracowników całej organizacji, w tym pracowników, których platforma nie śledzi.",
+      "totalLabel": "Cała kadra",
+      "saudiLabel": "Obywatele Arabii Saudyjskiej",
+      "saudiExceedsTotal": "Liczba obywateli Arabii Saudyjskiej nie może przekraczać całej kadry.",
+      "saveHeadcountButton": "Zapisz liczbę pracowników",
+      "close": "Zamknij"
+    },
+    "override": {
+      "title": "Nadpisania katalogu",
+      "description": "Nadpisz domyślne progi Nitaqat lub katalog dozwolonych działalności dla swojej organizacji. Każde nadpisanie jest rejestrowane w dzienniku audytu.",
+      "nitaqatHeading": "Progi Nitaqat",
+      "nitaqatBody": "Zastosuj niestandardowy katalog progów Nitaqat dla swojej organizacji.",
+      "activityHeading": "Katalog dozwolonych działalności",
+      "activityBody": "Zastosuj niestandardowy katalog dozwolonych działalności dla swojej organizacji.",
+      "applyNitaqat": "Zastosuj nadpisanie Nitaqat",
+      "applyActivity": "Zastosuj nadpisanie działalności",
+      "reset": "Przywróć domyślne",
+      "badge": "Niestandardowe — zweryfikuj z doradcą",
+      "resetConfirmTitle": "Przywrócić nadpisanie do domyślnego?",
+      "resetConfirmBody": "Przywróci to domyślny próg Nitaqat / katalog dozwolonych działalności i usunie wartość niestandardową. Ta akcja jest rejestrowana w dzienniku audytu.",
+      "resetConfirm": "Przywróć domyślne",
+      "cancel": "Anuluj",
+      "close": "Zamknij"
+    },
+    "empty": {
+      "heading": "Saudyzacja nieskonfigurowana",
+      "body": "Wprowadź pasmo Nitaqat i liczbę pracowników swojej organizacji, aby zobaczyć wskaźnik nacjonalizacji, pokrycie uwierzytelnieniem Qiwa oraz zestawienie wygaśnięć Iqama. Pasmo zawsze wprowadza się ręcznie — system nigdy nie oblicza go za Ciebie.",
+      "cta": "Skonfiguruj saudyzację"
+    },
+    "error": {
+      "loadHeading": "Nie udało się wczytać danych saudyzacji",
+      "loadBody": "Nie udało się wczytać tych danych Zatoki. Sprawdź połączenie i spróbuj ponownie.",
+      "retry": "Ponów"
+    },
+    "toast": {
+      "bandSaved": "Zapisano pasmo Nitaqat",
+      "headcountSaved": "Zapisano liczbę pracowników",
+      "overrideApplied": "Zastosowano nadpisanie",
+      "saveFailed": "Nie udało się zapisać zmian. Poprzednie wartości pozostają bez zmian — spróbuj ponownie."
+    },
+    "offboardingTrajectory": {
+      "title": "Trajektoria saudyzacji przy offboardingu",
+      "projection": "Offboarding tego obywatela Arabii Saudyjskiej może obniżyć prognozowaną saudyzację. Obecnie: {band} przy {rate} → prognoza: {projectedRate}.",
+      "advisory": "Tylko informacyjnie — zweryfikuj w Qiwa. System nie ustala Twojego pasma.",
+      "bandUnknown": "Pasmo nie ustawione",
+      "rateUnknown": "Niedostępne"
     }
   },
   "Contracts": {
@@ -2899,6 +3068,7 @@
       "heading": "Brak dostępu"
     },
     "forbidden": "Odmowa dostępu.",
+    "demoReadOnly": "Tryb demo — zapisywanie jest wyłączone.",
     "accountBanned": "Twoje konto zostało dezaktywowane. Skontaktuj się z administratorem organizacji.",
     "accountLocked": "Zbyt wiele nieudanych prób logowania. Twoje konto jest tymczasowo zablokowane. Spróbuj ponownie później.",
     "lastAdminCannotDeactivate": "Nie można dezaktywować ostatniego administratora. Najpierw wyznacz innego administratora.",
@@ -3926,6 +4096,12 @@
   },
   "Layout": {
     "skipToContent": "Przejdź do treści",
+    "demo": {
+      "bannerLabel": "Tryb demo",
+      "bannerDescription": "Tylko do odczytu — przeglądaj swobodnie; zmiany nie zostaną zapisane.",
+      "toastTitle": "Tryb demo",
+      "toastBody": "To wersja demonstracyjna tylko do odczytu — zmian nie można zapisać."
+    },
     "footer": {
       "privacy": "Prywatność",
       "terms": "Regulamin"

@@ -1663,6 +1663,175 @@
     "eInvoicing": {
       "cardTitle": "E-invoicing",
       "defaultLeitwegIdLabel": "Default Leitweg-ID"
+    },
+    "freeZone": {
+      "form": {
+        "title": "UAE free-zone assignment",
+        "description": "Record this contractor's free-zone or Mainland license so expiry tracking and payment checks can run.",
+        "zoneLabel": "Free zone",
+        "zonePlaceholder": "Select a zone to begin",
+        "licenseNumberLabel": "License number",
+        "licenseNumberPlaceholder": "Enter license number",
+        "licenseCategoryLabel": "License category",
+        "licenseCategoryPlaceholder": "Enter license category",
+        "licenseExpiresAtLabel": "License expiry date",
+        "licenseExpiresAtHelp": "Used for expiry reminders and the payment block when the license has lapsed. Mainland licenses are not payment-blocked.",
+        "permittedActivitiesLabel": "Permitted activities",
+        "permittedActivitiesPlaceholder": "Describe the activities permitted under this license",
+        "isicCodesLabel": "Permitted-activity ISIC codes",
+        "isicCodesPlaceholder": "e.g. 6201",
+        "isicCodesHelp": "Add the ISIC codes covered by the license. These drive the scope-mismatch check when a contract is created.",
+        "isicAddButton": "Add",
+        "isicRemoveLabel": "Remove code {code}",
+        "saveButton": "Save free-zone assignment"
+      },
+      "zones": {
+        "DIFC": "Dubai International Financial Centre (DIFC)",
+        "DMCC": "Dubai Multi Commodities Centre (DMCC)",
+        "IFZA": "International Free Zone Authority (IFZA)",
+        "DUBAI_INTERNET_CITY": "Dubai Internet City",
+        "DUBAI_MEDIA_CITY": "Dubai Media City",
+        "MEYDAN_FZ": "Meydan Free Zone",
+        "JAFZA": "Jebel Ali Free Zone (JAFZA)",
+        "SHAMS": "Sharjah Media City (Shams)",
+        "RAKEZ": "Ras Al Khaimah Economic Zone (RAKEZ)",
+        "ADGM": "Abu Dhabi Global Market (ADGM)",
+        "MAINLAND": "Mainland (no free zone)"
+      },
+      "empty": {
+        "heading": "No free-zone assignment recorded",
+        "body": "Record this contractor's UAE free-zone or Mainland license so expiry tracking and payment checks can run. Select a zone to begin."
+      },
+      "error": {
+        "loadHeading": "Couldn't load the free-zone assignment",
+        "loadBody": "We couldn't load this Gulf data. Check your connection and try again.",
+        "retry": "Retry"
+      },
+      "toast": {
+        "saved": "Free-zone assignment saved",
+        "saveFailed": "We couldn't save your changes. Your previous values are unchanged — please try again."
+      },
+      "scopeMismatch": {
+        "heading": "Activity outside permitted free-zone scope",
+        "body": "This contract's activity falls outside the contractor's permitted free-zone activities. An NOC document has been added to this engagement's compliance list. Contract creation can still proceed.",
+        "viewComplianceLink": "View engagement compliance"
+      }
+    }
+  },
+  "Saudization": {
+    "title": "Saudization",
+    "subtitle": "Manual Nitaqat band, nationalisation rate, Qiwa-auth coverage, and Iqama expiry roll-up for your organisation.",
+    "rate": {
+      "label": "Nationalisation rate",
+      "notAvailable": "Not available",
+      "noChart": "No rate yet"
+    },
+    "band": {
+      "label": "Nitaqat band",
+      "notSet": "Not set",
+      "lastUpdated": "Band last updated {date}"
+    },
+    "manualNature": {
+      "title": "Band entered manually",
+      "body": "The system never auto-computes your Nitaqat band — confirm against Qiwa."
+    },
+    "quarterly": {
+      "title": "Confirm or update your band",
+      "body": "Your Nitaqat band was last updated {date}. Nitaqat is reviewed quarterly — confirm or update your band.",
+      "bodyNoDate": "Nitaqat is reviewed quarterly — confirm or update your band."
+    },
+    "headcount": {
+      "title": "Headcount cross-check",
+      "description": "Nitaqat counts your whole workforce. The manual numbers are authoritative; the platform-derived contractor counts are shown for a sanity check.",
+      "totalLabel": "Total workforce",
+      "saudiLabel": "Saudi nationals",
+      "platformContractors": "Platform contractors",
+      "platformSaudiContractors": "Platform Saudi contractors"
+    },
+    "qiwa": {
+      "title": "Qiwa-auth coverage",
+      "description": "Contracts not yet authenticated in Qiwa.",
+      "gapCount": "{count, plural, one {# contract awaiting authentication} other {# contracts awaiting authentication}}",
+      "gapBody": "Authenticate these contracts in Qiwa to close the coverage gap.",
+      "empty": "All authenticated. Every Saudi-national contract is Qiwa-authenticated."
+    },
+    "iqama": {
+      "title": "Iqama expiry roll-up",
+      "description": "Iqama renewals due in the tracked window.",
+      "tracked": "Tracked",
+      "expired": "Expired",
+      "expiringSoon": "Expiring soon",
+      "empty": "No Iqama renewals due in the tracked window."
+    },
+    "actions": {
+      "editConfig": "Edit configuration",
+      "manageOverrides": "Manage overrides"
+    },
+    "bands": {
+      "PLATINUM": "PLATINUM",
+      "HIGH_GREEN": "HIGH_GREEN",
+      "MID_GREEN": "MID_GREEN",
+      "LOW_GREEN": "LOW_GREEN",
+      "YELLOW": "YELLOW",
+      "RED": "RED"
+    },
+    "config": {
+      "title": "Saudization configuration",
+      "description": "Enter your Nitaqat band, industry segment, and workforce headcount. The band is always entered manually.",
+      "bandSectionTitle": "Nitaqat band",
+      "bandLabel": "Band",
+      "bandPlaceholder": "Select your current band",
+      "bandHelp": "Enter the band confirmed in Qiwa. The system never computes it for you.",
+      "segmentLabel": "Industry segment",
+      "segmentPlaceholder": "e.g. Construction",
+      "saveBandButton": "Update Nitaqat band",
+      "headcountSectionTitle": "Workforce headcount",
+      "headcountHelp": "Enter your whole organisation's headcount, including employees the platform does not track.",
+      "totalLabel": "Total workforce",
+      "saudiLabel": "Saudi nationals",
+      "saudiExceedsTotal": "Saudi nationals cannot exceed the total workforce.",
+      "saveHeadcountButton": "Save headcount",
+      "close": "Close"
+    },
+    "override": {
+      "title": "Catalogue overrides",
+      "description": "Override the seed Nitaqat thresholds or permitted-activity catalogue for your organisation. Each override is audit-logged.",
+      "nitaqatHeading": "Nitaqat thresholds",
+      "nitaqatBody": "Apply a custom Nitaqat-threshold catalogue for your organisation.",
+      "activityHeading": "Permitted-activity catalogue",
+      "activityBody": "Apply a custom permitted-activity catalogue for your organisation.",
+      "applyNitaqat": "Apply Nitaqat override",
+      "applyActivity": "Apply activity override",
+      "reset": "Reset to default",
+      "badge": "Custom — verify with adviser",
+      "resetConfirmTitle": "Reset override to default?",
+      "resetConfirmBody": "This restores the seed Nitaqat threshold / permitted-activity catalogue and removes the custom value. This action is audit-logged.",
+      "resetConfirm": "Reset to default",
+      "cancel": "Cancel",
+      "close": "Close"
+    },
+    "empty": {
+      "heading": "Saudization not configured",
+      "body": "Enter your organisation's Nitaqat band and headcount to see your nationalisation rate, Qiwa-auth coverage, and Iqama expiry roll-up. The band is always entered manually — the system never computes it for you.",
+      "cta": "Configure Saudization"
+    },
+    "error": {
+      "loadHeading": "Couldn't load Saudization data",
+      "loadBody": "We couldn't load this Gulf data. Check your connection and try again.",
+      "retry": "Retry"
+    },
+    "toast": {
+      "bandSaved": "Nitaqat band saved",
+      "headcountSaved": "Headcount saved",
+      "overrideApplied": "Override applied",
+      "saveFailed": "We couldn't save your changes. Your previous values are unchanged — please try again."
+    },
+    "offboardingTrajectory": {
+      "title": "Offboarding Saudization trajectory",
+      "projection": "Offboarding this Saudi national may lower your projected Saudization. Current: {band} at {rate} → projected: {projectedRate}.",
+      "advisory": "Advisory only — verify in Qiwa. The system does not set your band.",
+      "bandUnknown": "Band not set",
+      "rateUnknown": "Not available"
     }
   },
   "Contracts": {
@@ -2899,6 +3068,7 @@
       "heading": "Access denied"
     },
     "forbidden": "Access denied.",
+    "demoReadOnly": "Demo mode — saving is disabled.",
     "accountBanned": "Your account has been deactivated. Please contact your organization administrator.",
     "accountLocked": "Too many failed login attempts. Your account is temporarily locked. Please try again later.",
     "lastAdminCannotDeactivate": "Cannot deactivate the last administrator. Assign another admin first.",
@@ -3926,6 +4096,12 @@
   },
   "Layout": {
     "skipToContent": "Skip to content",
+    "demo": {
+      "bannerLabel": "Demo mode",
+      "bannerDescription": "Read-only — explore freely; changes won't be saved.",
+      "toastTitle": "Demo mode",
+      "toastBody": "This is a read-only demo — changes can't be saved."
+    },
     "footer": {
       "privacy": "Privacy",
       "terms": "Terms"
