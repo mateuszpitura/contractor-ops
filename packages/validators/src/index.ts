@@ -299,6 +299,23 @@ export {
   saveJiraStatusMappingInputSchema,
   saveJiraTaskConfigInputSchema,
 } from './jira.js';
+// Phase 79 (F3 Gulf) — UAE/KSA locked statutory phrases (GULF-09, D-14/D-15)
+export type { LockedAePhraseKey } from './legal/ae.js';
+export {
+  ADGM_AUTHORITY_LEGAL_NAME,
+  DIFC_AUTHORITY_LEGAL_NAME,
+  DMCC_AUTHORITY_LEGAL_NAME,
+  DUBAI_INTERNET_CITY_AUTHORITY_LEGAL_NAME,
+  DUBAI_MEDIA_CITY_AUTHORITY_LEGAL_NAME,
+  IFZA_AUTHORITY_LEGAL_NAME,
+  JAFZA_AUTHORITY_LEGAL_NAME,
+  LOCKED_AE_PHRASES,
+  MAINLAND_AUTHORITY_LEGAL_NAME,
+  MEYDAN_FZ_AUTHORITY_LEGAL_NAME,
+  RAKEZ_AUTHORITY_LEGAL_NAME,
+  RESERVED_AE_LEGAL_KEYS,
+  SHAMS_AUTHORITY_LEGAL_NAME,
+} from './legal/ae.js';
 // Phase 73 D-14/D-16 — COMPL doc-name locked-phrase registry + signoff state
 export { complDocNameSignoffKey, isComplDocNamePending } from './legal/compl-doc-name-signoff.js';
 export type { LockedDePhraseKey } from './legal/de.js';
@@ -393,6 +410,19 @@ export {
   ipAssignmentResultsSchema,
   PHRASE_ID_REGEX,
 } from './legal/ip-clauses-results-schema.js';
+export type { LockedSaPhraseKey } from './legal/sa.js';
+export {
+  LOCKED_SA_PHRASES,
+  NITAQAT_BAND_HIGH_GREEN,
+  NITAQAT_BAND_LOW_GREEN,
+  NITAQAT_BAND_MID_GREEN,
+  NITAQAT_BAND_PLATINUM,
+  NITAQAT_BAND_RED,
+  NITAQAT_BAND_YELLOW,
+  QIWA_CONTRACT_AUTHENTICATED_LABEL,
+  QIWA_CONTRACT_NOT_AUTHENTICATED_LABEL,
+  RESERVED_SA_LEGAL_KEYS,
+} from './legal/sa.js';
 export {
   getAllPending,
   getDisclaimerStatus,

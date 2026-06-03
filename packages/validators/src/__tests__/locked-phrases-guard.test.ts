@@ -14,7 +14,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 import { describe, expect, it } from 'vitest';
-
+import { LOCKED_AE_PHRASES, RESERVED_AE_LEGAL_KEYS } from '../legal/ae.js';
 import {
   EINVOICE_INTAKE_EXTENDED_BEST_EFFORT_DE,
   EINVOICE_INTAKE_LEVEL_TOO_LOW_DE,
@@ -41,6 +41,7 @@ import {
   LPCDA_STATUTORY_RATE_LABEL,
   RESERVED_GB_LEGAL_KEYS,
 } from '../legal/gb.js';
+import { LOCKED_SA_PHRASES, RESERVED_SA_LEGAL_KEYS } from '../legal/sa.js';
 import { getAllPending, getRegistry, isAllApproved } from '../legal/signoff-registry.js';
 import rawRegistry from '../legal/signoff-registry.json' with { type: 'json' };
 import { SignoffRegistrySchema } from '../legal/signoff-registry-schema.js';
@@ -67,7 +68,13 @@ describe('Locked German legal phrases (D-05, D-06)', () => {
     if (messages === null) return; // locale file not yet created (Plan 05 adds de.json)
 
     const keys = flatKeys(messages);
-    const reserved = [...RESERVED_LEGAL_KEYS, ...RESERVED_EN_LEGAL_KEYS, ...RESERVED_GB_LEGAL_KEYS];
+    const reserved = [
+      ...RESERVED_LEGAL_KEYS,
+      ...RESERVED_EN_LEGAL_KEYS,
+      ...RESERVED_GB_LEGAL_KEYS,
+      ...RESERVED_AE_LEGAL_KEYS,
+      ...RESERVED_SA_LEGAL_KEYS,
+    ];
     const violations = keys.filter(k => reserved.some(r => k === r || k.endsWith(`.${r}`)));
     expect(
       violations,
@@ -594,5 +601,74 @@ describe('Phase 64 — Signoff registry CI guard (D-14 Layer 1)', () => {
   it('DRV_UNVERIFIED_ENTRY_DISCLAIMER_DE references DRV and Bescheid', () => {
     expect(DRV_UNVERIFIED_ENTRY_DISCLAIMER_DE).toContain('DRV');
     expect(DRV_UNVERIFIED_ENTRY_DISCLAIMER_DE).toContain('Bescheid');
+  });
+});
+
+// -----------------------------------------------------------------------------
+// Phase 79 (F3 Gulf) — AE/SA locked statutory phrases (GULF-09, D-14/D-15)
+// -----------------------------------------------------------------------------
+
+describe('Phase 79 — AE locked phrases (UAE free-zone authority legal names)', () => {
+  it('RESERVED_AE_LEGAL_KEYS mirrors LOCKED_AE_PHRASES keys', () => {
+    expect([...RESERVED_AE_LEGAL_KEYS].sort()).toEqual(Object.keys(LOCKED_AE_PHRASES).sort());
+  });
+
+  it('every LOCKED_AE_PHRASES value is a non-empty string', () => {
+    for (const [key, value] of Object.entries(LOCKED_AE_PHRASES)) {
+      expect(typeof value, `${key} is not a string`).toBe('string');
+      expect(value.length, `${key} is empty`).toBeGreaterThan(0);
+    }
+  });
+
+  it.each(
+    locales,
+  )('messages/%s.json does not define any RESERVED_AE_LEGAL_KEYS key as a (nested) property', locale => {
+    const messages = loadMessages(locale);
+    if (messages === null) return;
+    const keys = flatKeys(messages);
+    const violations = keys.filter(k =>
+      RESERVED_AE_LEGAL_KEYS.some(r => k === r || k.endsWith(`.${r}`)),
+    );
+    expect(
+      violations,
+      `AE locked keys leaked into ${locale}.json: ${violations.join(', ')}`,
+    ).toEqual([]);
+  });
+});
+
+describe('Phase 79 — SA locked phrases (Nitaqat band labels + Qiwa terms)', () => {
+  it('RESERVED_SA_LEGAL_KEYS mirrors LOCKED_SA_PHRASES keys', () => {
+    expect([...RESERVED_SA_LEGAL_KEYS].sort()).toEqual(Object.keys(LOCKED_SA_PHRASES).sort());
+  });
+
+  it('every LOCKED_SA_PHRASES value is a non-empty string', () => {
+    for (const [key, value] of Object.entries(LOCKED_SA_PHRASES)) {
+      expect(typeof value, `${key} is not a string`).toBe('string');
+      expect(value.length, `${key} is empty`).toBeGreaterThan(0);
+    }
+  });
+
+  it('Nitaqat band labels are the literal UPPER_SNAKE NitaqatBand enum strings', () => {
+    expect(LOCKED_SA_PHRASES.NITAQAT_BAND_PLATINUM).toBe('PLATINUM');
+    expect(LOCKED_SA_PHRASES.NITAQAT_BAND_HIGH_GREEN).toBe('HIGH_GREEN');
+    expect(LOCKED_SA_PHRASES.NITAQAT_BAND_MID_GREEN).toBe('MID_GREEN');
+    expect(LOCKED_SA_PHRASES.NITAQAT_BAND_LOW_GREEN).toBe('LOW_GREEN');
+    expect(LOCKED_SA_PHRASES.NITAQAT_BAND_YELLOW).toBe('YELLOW');
+    expect(LOCKED_SA_PHRASES.NITAQAT_BAND_RED).toBe('RED');
+  });
+
+  it.each(
+    locales,
+  )('messages/%s.json does not define any RESERVED_SA_LEGAL_KEYS key as a (nested) property', locale => {
+    const messages = loadMessages(locale);
+    if (messages === null) return;
+    const keys = flatKeys(messages);
+    const violations = keys.filter(k =>
+      RESERVED_SA_LEGAL_KEYS.some(r => k === r || k.endsWith(`.${r}`)),
+    );
+    expect(
+      violations,
+      `SA locked keys leaked into ${locale}.json: ${violations.join(', ')}`,
+    ).toEqual([]);
   });
 });
