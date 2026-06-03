@@ -21,6 +21,7 @@ export const GLOBAL_LOOKUP_MODELS_ALLOWLIST = [
   'BoEBaseRateHistory', // reason: Bank of England base-rate timeline — global reference
   'TaxRate', // reason: jurisdictional tax-rate lookup — global reference
   'WithholdingTaxRate', // reason: jurisdictional withholding-tax lookup — global reference
+  'UaeFreeZone', // reason: Phase 79 — global seed of UAE free zones (code + authority-name key); non-PII lookup, no tenant scope
 
   // ── Tenant root (cannot reference itself) ──────────────────────────────
   'Organization', // reason: the tenant itself; organizationId points back to id

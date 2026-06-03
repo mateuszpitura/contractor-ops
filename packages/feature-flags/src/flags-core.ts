@@ -178,6 +178,32 @@ export const FLAGS = deepFreeze({
     jurisdiction: 'ANY',
     owner: 'idp-platform',
   },
+  // Phase 79 (F3 Gulf) — UAE free-zone tracking + Saudization dashboard.
+  //
+  // Both ship dark (default false), jurisdiction ME (structurally invisible to
+  // EU orgs), and are legal-sensitive: the boot-time signoff gate requires a
+  // PENDING entry (gated namespace prefix 'gulf.') so neither can be flipped to
+  // APPROVED without a recorded legal-ticket sign-off. Keys use the dotted form
+  // because flagDefinitionSchema requires the first segment to be alphanumeric
+  // (a 'gulf-…' first segment would fail the regex).
+  'gulf.free-zone-tracking': {
+    key: 'gulf.free-zone-tracking',
+    description:
+      'UAE free-zone assignment tracking + license-expiry compliance + permitted-activity scope advisory. Ship dark — ME-only; requires signoff PENDING→APPROVED before enabling per-org.',
+    default: false,
+    category: 'module',
+    jurisdiction: 'ME',
+    owner: 'gulf-platform',
+  },
+  'gulf.saudization-dashboard': {
+    key: 'gulf.saudization-dashboard',
+    description:
+      'Saudization dashboard: manual Nitaqat band + headcount entry, nationalisation rate, Qiwa-auth gap, Iqama roll-up, offboarding trajectory banner. Ship dark — ME-only; requires signoff PENDING→APPROVED before enabling per-org.',
+    default: false,
+    category: 'module',
+    jurisdiction: 'ME',
+    owner: 'gulf-platform',
+  },
 } as const satisfies Record<string, FlagDefinition>);
 
 export type FlagKey = keyof typeof FLAGS;

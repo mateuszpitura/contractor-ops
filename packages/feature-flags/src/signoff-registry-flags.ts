@@ -34,7 +34,12 @@ try {
  *   - 'compliance-'             → F1 Compliance Document Lifecycle (Phases 71–73)
  *   - 'idp-deprovisioning'      → F2 IdP Deprovisioning saga signoff (Phase 76)
  *   - 'module.idp-deprovisioning' → F2 per-provider FLAGS gating (Phase 77)
- *   - 'gulf-'                   → F3 Gulf Operational Polish (Phase 79)
+ *   - 'gulf-'                   → F3 Gulf signoff-registry keys (Phase 79)
+ *   - 'gulf.'                   → F3 Gulf FLAGS-key gating (Phase 79). Distinct
+ *       from the 'gulf-' signoff key prefix because a FLAGS key's first
+ *       dot-segment must be alphanumeric (flagDefinitionSchema regex) — it
+ *       cannot start with 'gulf-'. The two FLAGS keys (gulf.free-zone-tracking,
+ *       gulf.saudization-dashboard) are legal-sensitive and MUST land PENDING.
  *   - 'offboarding-ip-'         → F4 Offboarding Hardening (Phases 74–75)
  */
 export const GATED_FLAG_NAMESPACE_PREFIXES = [
@@ -42,6 +47,7 @@ export const GATED_FLAG_NAMESPACE_PREFIXES = [
   'idp-deprovisioning',
   'module.idp-deprovisioning',
   'gulf-',
+  'gulf.',
   'offboarding-ip-',
 ] as const satisfies readonly string[];
 

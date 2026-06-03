@@ -86,5 +86,13 @@
   "compliance-portal-self-service": {
     "status": "PENDING",
     "notes": "F1 Compliance Phase 73 — contractor portal compliance self-service (upload-replacement + admin review). Ship dark; flip to APPROVED post-deploy after legal review of the self-service flow + notification copy. Engineers develop with FLAG_SIGNOFF_BYPASS=local."
+  },
+  "gulf.free-zone-tracking": {
+    "status": "PENDING",
+    "notes": "F3 Gulf Phase 79 — UAE free-zone assignment tracking + license-expiry payment-block + permitted-activity scope advisory (ME-only). Legal-sensitive: arms a payment hard-block on expired free-zone licenses + auto-NOC items. Ship dark; flip to APPROVED post-deploy after legal review of the free-zone authority legal names + payment-block lockout copy + NOC wording. Engineers develop with FLAG_SIGNOFF_BYPASS=local."
+  },
+  "gulf.saudization-dashboard": {
+    "status": "PENDING",
+    "notes": "F3 Gulf Phase 79 — Saudization dashboard (manual Nitaqat band + headcount, nationalisation rate, Qiwa-auth gap, Iqama roll-up, offboarding trajectory banner; ME-only). Legal-sensitive: surfaces Nitaqat band labels + Qiwa-auth status; system never auto-computes the band (locked anti-feature). Ship dark; flip to APPROVED post-deploy after legal review of the band/trajectory advisory copy. Engineers develop with FLAG_SIGNOFF_BYPASS=local."
   }
 }
