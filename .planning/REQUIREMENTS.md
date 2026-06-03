@@ -68,11 +68,11 @@ Requirements for the v6.0 milestone. Each maps to exactly one phase (filled by r
 
 - [x] **GULF-01**: Admin can record a contractor's UAE free-zone assignment — selecting from 10-zone seed enum (DIFC, DMCC, IFZA, Dubai Internet City, Dubai Media City, Meydan FZ, JAFZA, SHAMS, RAKEZ, ADGM) plus Mainland — with license number, license category, license expiry, and permitted-activities text
 - [x] **GULF-02**: System tracks UAE free-zone trade license expiry as a `ContractorComplianceItem` of severity CRITICAL participating in the F1 reminder cascade and payment-block gate
-- [ ] **GULF-03**: System surfaces a permitted-activity scope-mismatch advisory when a contract's activity descriptor falls outside the contractor's free-zone permitted-activities list, with auto-add of NOC required-document for the affected engagement
+- [x] **GULF-03**: System surfaces a permitted-activity scope-mismatch advisory when a contract's activity descriptor falls outside the contractor's free-zone permitted-activities list, with auto-add of NOC required-document for the affected engagement
 - [x] **GULF-04**: Admin can record per-engagement Saudi nationality + `isSaudi` boolean + `qiwaContractAuthenticated` boolean (2026-04-15 reg)
 - [x] **GULF-05**: Admin can manually enter and update the org's current Saudization Nitaqat band (PLATINUM / HIGH_GREEN / MID_GREEN / LOW_GREEN / YELLOW / RED) with industry-segment field; system records last-updated timestamp and prompts quarterly re-entry — system does NOT auto-compute the band
-- [ ] **GULF-06**: Admin can view a Saudization dashboard surfacing total headcount, Saudi-national count, nationalisation rate, current band, Qiwa-auth coverage gap, and Iqama expiry roll-up (reusing F1 expiry data)
-- [ ] **GULF-07**: Admin offboarding a Saudi-national contractor sees a pre-offboarding impact banner showing the projected Saudization-band trajectory after the offboarding completes
+- [x] **GULF-06**: Admin can view a Saudization dashboard surfacing total headcount, Saudi-national count, nationalisation rate, current band, Qiwa-auth coverage gap, and Iqama expiry roll-up (reusing F1 expiry data)
+- [x] **GULF-07**: Admin offboarding a Saudi-national contractor sees a pre-offboarding impact banner showing the projected Saudization-band trajectory after the offboarding completes
 - [ ] **GULF-08**: All GULF surfaces (compliance dashboard, free-zone forms, Saudization dashboard, NOC flow) ship full Arabic localization with RTL CSS logical properties (`ms-` / `me-` / `ps-` / `pe-` only); ESLint guard bans `ml-` / `mr-` in v6.0 surfaces
 - [x] **GULF-09**: Locked-phrase registry extends with UAE/KSA Arabic statutory terms (free-zone authority names, Saudization band labels, Qiwa-auth status)
 - [ ] **GULF-10**: Admin can override seed Saudization Nitaqat thresholds + UAE permitted-activity catalogues per-org with audit-logged write; system displays "Custom — verify with adviser" badge on overrides
@@ -311,11 +311,11 @@ Which phases cover which requirements. Filled by roadmapper on 2026-04-26.
 | IDP-15 | Phase 76 | Complete |
 | GULF-01 | Phase 79 | Complete |
 | GULF-02 | Phase 79 | Complete |
-| GULF-03 | Phase 79 | Pending |
+| GULF-03 | Phase 79 | Complete |
 | GULF-04 | Phase 79 | Complete |
 | GULF-05 | Phase 79 | Complete |
-| GULF-06 | Phase 79 | Pending |
-| GULF-07 | Phase 79 | Pending |
+| GULF-06 | Phase 79 | Complete |
+| GULF-07 | Phase 79 | Complete |
 | GULF-08 | Phase 79 | Pending |
 | GULF-09 | Phase 79 | Complete |
 | GULF-10 | Phase 79 | Pending |

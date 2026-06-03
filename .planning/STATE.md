@@ -4,13 +4,13 @@ milestone: v6.0
 milestone_name: Platform Maturity & Operational Hardening
 status: executing
 stopped_at: Completed 79-03-PLAN.md
-last_updated: "2026-06-03T09:06:15.174Z"
+last_updated: "2026-06-03T09:21:44.762Z"
 last_activity: 2026-06-03
 progress:
   total_phases: 11
   completed_phases: 9
   total_plans: 79
-  completed_plans: 74
+  completed_plans: 75
   percent: 82
 ---
 
@@ -290,11 +290,11 @@ See: .planning/PROJECT.md (updated 2026-04-26 — v6.0 milestone started)
 ## Current Position
 
 Phase: 79 (f3-gulf-uae-free-zone-tracking-saudization-dashboard-arabic-) — EXECUTING
-Plan: 4 of 8
+Plan: 5 of 8
 Status: Ready to execute
 Last activity: 2026-06-03
 
-Progress: [█████████░] 94%
+Progress: [██████████] 95%
 
 **Active Phase:** none (Phase 70 closed)
 **Next Phase candidates (parallel-ready):**
@@ -437,6 +437,7 @@ Code-level audit gaps (I-1 / EINV-01/02/04 / PAY-04 / FOUND-03) all closed this 
 | Phase 79 P01 | 25m | 3 tasks | 10 files |
 | Phase 79 P79-02 | 14min | 4 tasks | 13 files |
 | Phase 79 P79-03 | 35 | 3 tasks | 12 files |
+| Phase 79 P04 | 10min | 2 tasks | 5 files |
 
 ### Standing Project Constraints
 
@@ -498,6 +499,9 @@ Recent decisions affecting current work:
 - [Phase ?]: 79-02: GENERATE ONLY, DEFER APPLY — ran db:generate (no DB mutation) for downstream type resolution; single-region db:migrate:dev + multi-region db:migrate:all (EU+ME) both deferred post-deploy under LOCAL-ONLY (migration phase79_gulf_free_zone_saudization, additive-only)
 - [Phase ?]: 79-03: uae.free_zone_license bumped to BLOCKING @v2 (per-rule rotation); POLICY_RULE_SET_VERSION NOT bumped (locked to pkg version, not the rotation mechanism)
 - [Phase ?]: 79-03: free-zone compliance item written out-of-band from the service with zone!=='MAINLAND' gate (D-04); appliesIf:()=>false keeps the classification path out (Pitfall 2); reminder cron fans out over SUPPORTED_REGIONS (Pitfall 18); GULF-11 region-leakage lint in lint:ci (Pitfall 19)
+- [Phase ?]: 79-04: Saudization rate from manual SaudiHeadcount only; Nitaqat band read-through, never auto-computed (Pitfall 7/8)
+- [Phase ?]: 79-04: NOC scope-mismatch item uses documentType OTHER (no NOC enum value; identified by name + policyRuleId uae.permitted_activity_noc@v1) — avoids a migration in a pure-logic plan
+- [Phase ?]: 79-04: offboarding trajectory is ephemeral SaudiHeadcount-1, advisory + non-authoritative, asserts no band, persists nothing (D-12)
 
 ### Pending Todos
 
@@ -535,7 +539,7 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-06-03T09:06:15.168Z
+Last session: 2026-06-03T09:21:07.391Z
 Stopped at: Completed 79-03-PLAN.md
 Resume file: None
 Next command: `/gsd-plan-phase 74`  (Phase 74 context gathered, ready to plan; 71 + 76 plans already ready to execute)
