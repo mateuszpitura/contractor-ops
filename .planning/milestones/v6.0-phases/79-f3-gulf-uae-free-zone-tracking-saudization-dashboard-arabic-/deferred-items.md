@@ -60,17 +60,36 @@ directly caused by the current task's changes).
 - **Suggested fix (separate change):** rename to UPPER_SNAKE
   (`VERIFIED_VIA_VENDOR_CONSOLE`, …) with a migration mapping existing rows, owned by the F2 IdP track.
 
-## [BLOCKING] Multi-region migrate apply — DEFERRED post-deploy (LOCAL-ONLY)
+## Migrate apply — DEFERRED post-deploy (GENERATE-ONLY decision, LOCAL-ONLY)
+
+**Decision (Task 4, user-confirmed):** GENERATE ONLY, DEFER APPLY. Ran only
+`pnpm --filter @contractor-ops/db db:generate` (regenerates the Prisma client from the
+schema — NO database mutation) so downstream waves type-check against the new Gulf models.
+NO DB-mutating migrate/push command was run. Both the single-region and the multi-region
+apply are recorded below as deferred post-deploy items.
 
 - **Migration name (intended):** `phase79_gulf_free_zone_saudization`
-- **Additive-only:** CREATE TABLE x4 (FreeZoneAssignment, SaudizationConfig, SaudiHeadcount,
-  UaeFreeZone) + CREATE TYPE x2 (NitaqatBand, UaeFreeZoneCode) + ADD COLUMN x4
+- **Additive-only DDL summary:** CREATE TABLE x4 (FreeZoneAssignment, SaudizationConfig,
+  SaudiHeadcount, UaeFreeZone) + CREATE TYPE x2 (NitaqatBand, UaeFreeZoneCode) + ADD COLUMN x4
   (ContractorAssignment.isSaudi/nationality/qiwaContractAuthenticated, Contract.activityIsicCodes).
-  Zero DROP/RENAME.
-- **Status:** NOT applied. The DB-mutating `prisma migrate dev` + multi-region `db:migrate:all`
-  (against DATABASE_URL_EU then DATABASE_URL_ME) require human confirmation (autonomous:false).
-  Returned as a structured checkpoint to the orchestrator. Per LOCAL-ONLY Standing Constraint
-  (Phase 70/73/74/76 precedent), the multi-region apply is a deferred post-deploy item.
-- **Local note:** `prisma db push` is blocked by the pre-existing `Contractor.search_vector`
-  GENERATED column; if `db:migrate:dev` is likewise blocked, fall back to `db:generate` for type
-  resolution and keep the apply deferred (STATE.md Phase 73 precedent).
+  Zero DROP/RENAME — purely additive, safe to apply against existing rows.
+
+### Deferred item (a) — single-region migration generate + apply
+
+- **Command:** `pnpm --filter @contractor-ops/db db:migrate:dev` (name the migration
+  `phase79_gulf_free_zone_saudization`).
+- **Status:** NOT run. This DB-mutating command generates the migration SQL file AND applies it
+  to the local single-region dev DB. The migration SQL file was therefore NOT generated either —
+  only the Prisma client was regenerated via `db:generate` for type resolution.
+- **Local note:** `prisma db push`/`migrate dev` against the local dev DB is also blocked by the
+  pre-existing `Contractor.search_vector` GENERATED column (STATE.md Phase 73 precedent); the
+  generate-only fallback sidesteps that block.
+
+### Deferred item (b) — multi-region apply (EU + ME)
+
+- **Command:** `pnpm --filter @contractor-ops/db db:migrate:all` (applies against
+  `$DATABASE_URL_EU` then `$DATABASE_URL_ME` — NOT `push-all-regions.ts`).
+- **Status:** NOT run. Per LOCAL-ONLY Standing Constraint (Phase 70/73/74/76 precedent), the
+  multi-region apply is a deferred post-deploy item — not a phase blocker.
+- **Sequencing note:** the shared dev DB also needs the deferred Phase 72/75/76 migrations applied
+  first; coordinate the full additive-migration apply order at deploy time.
