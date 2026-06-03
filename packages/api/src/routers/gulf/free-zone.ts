@@ -16,12 +16,13 @@
 // atomically (D-17). Mainland assignments arm no payment-block gate (D-04 — the
 // zone narrowing lives in the service write).
 
+import type { Prisma } from '@contractor-ops/db';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import * as E from '../../errors';
 import { router } from '../../init';
+import { requireFeatureFlag, tenantFlaggedProcedure } from '../../middleware/feature-flag';
 import { requirePermission } from '../../middleware/rbac';
-import { tenantProcedure } from '../../middleware/tenant';
 import { writeAuditLog } from '../../services/audit-writer';
 import type { FreeZoneComplianceClient } from '../../services/free-zone-compliance';
 import { writeFreeZoneComplianceItem } from '../../services/free-zone-compliance';
@@ -68,7 +69,8 @@ export const freeZoneRouter = router({
    * Tenant-scoped: the org filter rides on the where clause so a spoofed
    * contractorId from another org resolves to null (T-79-05-02 IDOR mitigation).
    */
-  getAssignment: tenantProcedure
+  getAssignment: tenantFlaggedProcedure
+    .use(requireFeatureFlag('gulf.free-zone-tracking'))
     .use(requirePermission({ contractor: ['read'] }))
     .input(z.object({ contractorId: z.string().min(1) }))
     .query(async ({ ctx, input }) =>
@@ -86,7 +88,8 @@ export const freeZoneRouter = router({
    * expired license yields a BLOCKING + EXPIRED item that hard-blocks payment via
    * the existing gate; a Mainland assignment writes no item (D-04).
    */
-  upsertAssignment: tenantProcedure
+  upsertAssignment: tenantFlaggedProcedure
+    .use(requireFeatureFlag('gulf.free-zone-tracking'))
     .use(requirePermission({ contractor: ['update'] }))
     .input(upsertAssignmentSchema)
     .mutation(async ({ ctx, input }) => {
@@ -172,7 +175,8 @@ export const freeZoneRouter = router({
    * (GULF-04 / D-09). These feed the Saudization dashboard derivation. Tenant-scoped
    * update: the org filter on the where clause prevents cross-tenant writes.
    */
-  setSaudiAssignmentFields: tenantProcedure
+  setSaudiAssignmentFields: tenantFlaggedProcedure
+    .use(requireFeatureFlag('gulf.free-zone-tracking'))
     .use(requirePermission({ contractor: ['update'] }))
     .input(setSaudiAssignmentFieldsSchema)
     .mutation(async ({ ctx, input }) => {
@@ -184,13 +188,21 @@ export const freeZoneRouter = router({
         throw new TRPCError({ code: 'NOT_FOUND', message: E.GULF_ASSIGNMENT_NOT_FOUND });
       }
 
+      // Partial-update semantics: only write the columns actually provided in the
+      // input. `undefined` means "leave unchanged"; an explicit `null` clears the
+      // column. Writing all three unconditionally would null the untouched
+      // independent fields (isSaudi / nationality / qiwaContractAuthenticated) on
+      // any single-field update, silently corrupting the Saudization derivation.
+      const data: Prisma.ContractorAssignmentUpdateInput = {};
+      if (input.isSaudi !== undefined) data.isSaudi = input.isSaudi;
+      if (input.nationality !== undefined) data.nationality = input.nationality;
+      if (input.qiwaContractAuthenticated !== undefined) {
+        data.qiwaContractAuthenticated = input.qiwaContractAuthenticated;
+      }
+
       const updated = await ctx.db.contractorAssignment.update({
         where: { id: existing.id },
-        data: {
-          isSaudi: input.isSaudi ?? null,
-          nationality: input.nationality ?? null,
-          qiwaContractAuthenticated: input.qiwaContractAuthenticated ?? null,
-        },
+        data,
         select: {
           id: true,
           contractorId: true,

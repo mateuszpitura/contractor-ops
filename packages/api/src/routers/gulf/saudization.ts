@@ -18,8 +18,8 @@
 
 import { z } from 'zod';
 import { router } from '../../init';
+import { requireFeatureFlag, tenantFlaggedProcedure } from '../../middleware/feature-flag';
 import { requirePermission } from '../../middleware/rbac';
-import { tenantProcedure } from '../../middleware/tenant';
 import { writeAuditLog } from '../../services/audit-writer';
 import {
   computeSaudizationDashboard,
@@ -54,11 +54,14 @@ const offboardingTrajectorySchema = z.object({
 
 export const saudizationRouter = router({
   /** Read the org's manual Saudization config (band + segment + override flags). */
-  getConfig: tenantProcedure.use(requirePermission({ settings: ['read'] })).query(async ({ ctx }) =>
-    ctx.db.saudizationConfig.findFirst({
-      where: { organizationId: ctx.organizationId },
-    }),
-  ),
+  getConfig: tenantFlaggedProcedure
+    .use(requireFeatureFlag('gulf.saudization-dashboard'))
+    .use(requirePermission({ settings: ['read'] }))
+    .query(async ({ ctx }) =>
+      ctx.db.saudizationConfig.findFirst({
+        where: { organizationId: ctx.organizationId },
+      }),
+    ),
 
   /**
    * Record the manual Nitaqat band + industry segment (GULF-05 / D-05). The band
@@ -66,7 +69,8 @@ export const saudizationRouter = router({
    * stamped server-side whenever the band value changes, so the quarterly-reentry
    * window is computed from the real recording instant, never a client clock.
    */
-  upsertConfig: tenantProcedure
+  upsertConfig: tenantFlaggedProcedure
+    .use(requireFeatureFlag('gulf.saudization-dashboard'))
     .use(requirePermission({ settings: ['update'] }))
     .input(upsertConfigSchema)
     .mutation(async ({ ctx, input }) => {
@@ -115,7 +119,8 @@ export const saudizationRouter = router({
    * Record a manual org-wide headcount snapshot (D-10). The nationalisation rate
    * is derived from these numbers only — never from the platform contractor list.
    */
-  upsertHeadcount: tenantProcedure
+  upsertHeadcount: tenantFlaggedProcedure
+    .use(requireFeatureFlag('gulf.saudization-dashboard'))
     .use(requirePermission({ settings: ['update'] }))
     .input(upsertHeadcountSchema)
     .mutation(async ({ ctx, input }) => {
@@ -150,7 +155,8 @@ export const saudizationRouter = router({
    * expiry items via the region-aware ctx.db, then runs the pure Plan 04
    * derivation. Band is surfaced verbatim; rate comes only from manual numbers.
    */
-  dashboard: tenantProcedure
+  dashboard: tenantFlaggedProcedure
+    .use(requireFeatureFlag('gulf.saudization-dashboard'))
     .use(requirePermission({ settings: ['read'] }))
     .query(async ({ ctx }) => {
       const [headcount, config, assignments, iqamaItems] = await Promise.all([
@@ -196,7 +202,8 @@ export const saudizationRouter = router({
    * only — surfaces the recorded band verbatim, never asserts a projected band,
    * never persists, never gates. Reads the latest manual headcount + band.
    */
-  offboardingTrajectory: tenantProcedure
+  offboardingTrajectory: tenantFlaggedProcedure
+    .use(requireFeatureFlag('gulf.saudization-dashboard'))
     .use(requirePermission({ settings: ['read'] }))
     .input(offboardingTrajectorySchema)
     .query(async ({ ctx, input }) => {
@@ -225,7 +232,8 @@ export const saudizationRouter = router({
    * + before/after, recording the adviser-verification trail (C9). The flag flip
    * + audit write commit atomically in one transaction (D-17).
    */
-  applyNitaqatThresholdOverride: tenantProcedure
+  applyNitaqatThresholdOverride: tenantFlaggedProcedure
+    .use(requireFeatureFlag('gulf.saudization-dashboard'))
     .use(requirePermission({ settings: ['update'] }))
     .input(z.object({ custom: z.boolean() }))
     .mutation(async ({ ctx, input }) =>
@@ -269,7 +277,8 @@ export const saudizationRouter = router({
    * Flips `permittedActivityCatalogueCustom = true` and audit-logs with
    * `metadata.custom = true` + before/after (C9). Atomic with the flag flip.
    */
-  applyPermittedActivityOverride: tenantProcedure
+  applyPermittedActivityOverride: tenantFlaggedProcedure
+    .use(requireFeatureFlag('gulf.saudization-dashboard'))
     .use(requirePermission({ settings: ['update'] }))
     .input(z.object({ custom: z.boolean() }))
     .mutation(async ({ ctx, input }) =>

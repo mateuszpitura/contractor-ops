@@ -66,6 +66,22 @@ vi.mock('@contractor-ops/db', () => ({
   getRegionalClient: vi.fn(() => mockPrisma),
 }));
 
+// The Gulf saudization procedures are flag-gated behind 'gulf.saudization-dashboard'
+// (ship-dark, default false). Enable it in the test flag bag so the gated overrides
+// are reachable — mirrors the skonto router test's lazyFlagBag mock. Partial mock:
+// keep every real export (root.ts uses buildFlagBag, isPaymentBlockEnforced, …) and
+// only force the lazy bag's isEnabled to true.
+vi.mock('@contractor-ops/feature-flags', async importOriginal => {
+  const actual = await importOriginal<typeof import('@contractor-ops/feature-flags')>();
+  return {
+    ...actual,
+    lazyFlagBag: vi.fn(() => ({
+      values: { 'gulf.saudization-dashboard': true, 'gulf.free-zone-tracking': true },
+      isEnabled: (_key: string) => true,
+    })),
+  };
+});
+
 vi.mock('@contractor-ops/auth', () => ({
   auth: {
     api: { getSession: vi.fn(), hasPermission: vi.fn().mockResolvedValue({ success: true }) },
