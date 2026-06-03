@@ -249,13 +249,13 @@ Phase artifacts: `.planning/milestones/v5.0-phases/`
   5. Every Gulf surface (compliance dashboard, free-zone forms, Saudization dashboard, NOC flow) renders fully in Arabic with RTL layout via CSS logical properties (`ms-` / `me-` / `ps-` / `pe-` only); ESLint guard bans `ml-`/`mr-` in v6.0 surfaces — *Needs verification by legal entity before production deploy* on UAE/KSA Arabic statutory locked phrases per Standing Constraints
   6. Admin overrides a seed Saudization Nitaqat threshold or UAE permitted-activity entry per-org; system audit-logs the write and displays a "Custom — verify with adviser" badge on overrides (drift escape hatch pattern, mirrors v5.0 / F1 Phase 71)
   7. New gulf-domain Prisma models (`FreeZoneAssignment`, `SaudizationConfig`, `SaudiHeadcount`, `UaeFreeZone` global lookup) all carry explicit regional-routing annotations; ME-region data stays in ME database per v4.0 multi-region strategy; schema-lint test asserts no cross-region leakage (Pitfall 19)
-**Plans:** 5/8 plans executed
+**Plans:** 6/8 plans executed
 - [x] 79-01-PLAN.md — Wave 0: RED test scaffolds (C1-C10) + ME-region fixture factory + verify/build the `ml-`/`mr-` RTL guard (GULF-08)
 - [x] 79-02-PLAN.md — Wave 1: gulf.prisma (4 ME-region models + NitaqatBand/UaeFreeZoneCode enums) + ContractorAssignment/Contract columns + LOCKED_AE/SA_PHRASES + feature-flags PENDING + [BLOCKING] multi-region migrate/generate/enum-casing
 - [x] 79-03-PLAN.md — Wave 2: free-zone-compliance service + uae policy BLOCKING @v2 + reminder-cron region fan-out + region-leakage lint (GULF-02/11, landmines 1/2/4)
 - [x] 79-04-PLAN.md — Wave 2: permitted-activity ISIC check + auto-NOC + Saudization dashboard derivation + offboarding trajectory (GULF-03/05/06/07)
 - [x] 79-05-PLAN.md — Wave 3: gulf tRPC routers (free-zone/saudization/overrides) + root mount + contract-create wiring + D-02 backfill + AE-field hide (GULF-01/04/10)
-- [ ] 79-06-PLAN.md — Wave 4: web-vite free-zone form + scope-mismatch banner + D-02 hide of UAE freeform inputs (GULF-01/03)
+- [x] 79-06-PLAN.md — Wave 4: web-vite free-zone form + scope-mismatch banner + D-02 hide of UAE freeform inputs (GULF-01/03)
 - [ ] 79-07-PLAN.md — Wave 4: web-vite Saudization dashboard + manual band entry + drift-override dialog + offboarding trajectory banner (GULF-05/06/07/10)
 - [ ] 79-08-PLAN.md — Wave 5: 4-locale Gulf i18n (real de/pl/ar) + RTL/locked-phrase/parity sweep + Arabic-RTL human-verify (GULF-08/09)
 **Research flag:** NEEDS RESEARCH — Saudization Nitaqat 2026–2028 rates verified against Qiwa portal at seed time; UAE free-zone permitted-activity lists cross-referenced against each authority's portal; Dubai Law No. 7/2025 contracting framework; Qiwa-auth 2026-04-15 requirement
@@ -397,5 +397,5 @@ Phase artifacts: `.planning/milestones/v5.0-phases/`
 | 76. F2 IdP — Capability + Saga + Cooldown     | v6.0      | 10/10 | Complete    | 2026-05-31 |
 | 77. F2 IdP — GWS + Slack (the wedge)          | v6.0      | 5/5 | Complete    | 2026-05-31 |
 | 78. F2 IdP — Entra + Okta + GitHub            | v6.0      | 7/7 | Complete    | 2026-05-31 |
-| 79. F3 Gulf — UAE Free-Zone + Saudization     | v6.0      | 5/8 | In Progress|  |
+| 79. F3 Gulf — UAE Free-Zone + Saudization     | v6.0      | 6/8 | In Progress|  |
 | 80. v6.0 Verification + Hardening + UAT       | v6.0      | 0/?            | Not started | -          |

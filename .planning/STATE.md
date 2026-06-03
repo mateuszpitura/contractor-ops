@@ -4,13 +4,13 @@ milestone: v6.0
 milestone_name: Platform Maturity & Operational Hardening
 status: executing
 stopped_at: Completed 79-03-PLAN.md
-last_updated: "2026-06-03T09:49:19.367Z"
+last_updated: "2026-06-03T10:08:20.624Z"
 last_activity: 2026-06-03
 progress:
   total_phases: 11
   completed_phases: 9
   total_plans: 79
-  completed_plans: 76
+  completed_plans: 77
   percent: 82
 ---
 
@@ -290,11 +290,11 @@ See: .planning/PROJECT.md (updated 2026-04-26 — v6.0 milestone started)
 ## Current Position
 
 Phase: 79 (f3-gulf-uae-free-zone-tracking-saudization-dashboard-arabic-) — EXECUTING
-Plan: 6 of 8
+Plan: 7 of 8
 Status: Ready to execute
 Last activity: 2026-06-03
 
-Progress: [██████████] 96%
+Progress: [██████████] 97%
 
 **Active Phase:** none (Phase 70 closed)
 **Next Phase candidates (parallel-ready):**
@@ -439,6 +439,7 @@ Code-level audit gaps (I-1 / EINV-01/02/04 / PAY-04 / FOUND-03) all closed this 
 | Phase 79 P79-03 | 35 | 3 tasks | 12 files |
 | Phase 79 P04 | 10min | 2 tasks | 5 files |
 | Phase 79 P79-05 | 16 | 2 tasks | 15 files |
+| Phase 79 P06 | 8min | 2 tasks | 6 files |
 
 ### Standing Project Constraints
 
@@ -504,6 +505,8 @@ Recent decisions affecting current work:
 - [Phase ?]: 79-04: NOC scope-mismatch item uses documentType OTHER (no NOC enum value; identified by name + policyRuleId uae.permitted_activity_noc@v1) — avoids a migration in a pure-logic plan
 - [Phase ?]: 79-04: offboarding trajectory is ephemeral SaudiHeadcount-1, advisory + non-authoritative, asserts no band, persists nothing (D-12)
 - [Phase ?]: 79-05: gulf tRPC namespace mounted (free-zone + saudization CRUD + dashboard + GULF-10 audit-logged drift overrides), tenant-scoped/region-aware/audit-logged; contract-create runs the permitted-activity ISIC scope check in-tx (non-blocking, D-07); D-02 freeform-to-FreeZoneAssignment backfill + AE-field hide. C9 GREEN.
+- [Phase ?]: 79-06: UAE free-zone UI = Container/Hook/Form (hook = sole tRPC boundary); native date input over calendar (RTL-safe); form doubles as create surface
+- [Phase ?]: 79-06: D-02 removed freeform UAE tradeLicense*/freeZone inputs from country-compliance-section, mounted structured free-zone form; scope-mismatch banner non-blocking --warning (D-07)
 
 ### Pending Todos
 
@@ -541,7 +544,7 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-06-03T09:48:47.853Z
+Last session: 2026-06-03T10:08:11.275Z
 Stopped at: Completed 79-03-PLAN.md
 Resume file: None
 Next command: `/gsd-plan-phase 74`  (Phase 74 context gathered, ready to plan; 71 + 76 plans already ready to execute)

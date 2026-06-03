@@ -153,3 +153,13 @@ apply are recorded below as deferred post-deploy items.
   (79-02 GENERATE-ONLY decision — the live DB has no `FreeZoneAssignment` table yet).
 - **Post-deploy:** run `DATABASE_URL=$DATABASE_URL_ME tsx packages/db/scripts/backfill-free-zone-assignment.ts --dry-run`
   AFTER the deferred `phase79_gulf_free_zone_saudization` migration applies, then drop `--dry-run`.
+
+## Pre-existing web-vite tsc errors (not caused by 79-06)
+
+- **File:** `apps/web-vite/src/components/layout/hooks/use-dashboard-shell.ts:42`
+- **Errors:** 4 × `TS2339` — `Property 'id' / 'name' / 'slug' / 'logo' does not exist on type`
+  (the active-org member-list shape narrows to `{ isDemo: boolean }` on one branch).
+- **Cause:** pre-existing on the `audit/post-migration-parity` baseline; unrelated to the Gulf
+  free-zone surface. Confirmed: the free-zone files I added produce **zero** tsc errors; these 4
+  are the only errors in a full `pnpm --filter @contractor-ops/web-vite exec tsc --noEmit`.
+- **Scope boundary (D-17):** not touched by 79-06 — fixing means reshaping an unrelated layout hook.
