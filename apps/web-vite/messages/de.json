@@ -1782,6 +1782,7 @@
       "bandLabel": "Band",
       "bandPlaceholder": "Wählen Sie Ihr aktuelles Band",
       "bandHelp": "Geben Sie das in Qiwa bestätigte Band ein. Das System berechnet es niemals für Sie.",
+      "bandRequiredHint": "Wählen Sie ein Band, bevor Sie speichern – ein Speichern ohne Band würde das erfasste Band löschen.",
       "segmentLabel": "Branchensegment",
       "segmentPlaceholder": "z. B. Bauwesen",
       "saveBandButton": "Nitaqat-Band aktualisieren",

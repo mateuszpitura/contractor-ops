@@ -1782,6 +1782,7 @@
       "bandLabel": "Pasmo",
       "bandPlaceholder": "Wybierz swoje bieżące pasmo",
       "bandHelp": "Wprowadź pasmo potwierdzone w Qiwa. System nigdy nie oblicza go za Ciebie.",
+      "bandRequiredHint": "Wybierz pasmo przed zapisaniem — zapis bez pasma usunąłby zapisane pasmo.",
       "segmentLabel": "Segment branżowy",
       "segmentPlaceholder": "np. Budownictwo",
       "saveBandButton": "Zaktualizuj pasmo Nitaqat",

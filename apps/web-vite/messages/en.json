@@ -1782,6 +1782,7 @@
       "bandLabel": "Band",
       "bandPlaceholder": "Select your current band",
       "bandHelp": "Enter the band confirmed in Qiwa. The system never computes it for you.",
+      "bandRequiredHint": "Select a band before saving — saving without one would clear the recorded band.",
       "segmentLabel": "Industry segment",
       "segmentPlaceholder": "e.g. Construction",
       "saveBandButton": "Update Nitaqat band",

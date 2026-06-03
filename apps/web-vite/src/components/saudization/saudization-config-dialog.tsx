@@ -81,6 +81,10 @@ export function SaudizationConfigDialog({
   }, [open, initialBand, initialSegment, initialTotalHeadcount, initialSaudiHeadcount]);
 
   const handleSaveBand = useCallback(() => {
+    // Never clear a manually-recorded band by accident: a null band here would send
+    // band:null, which the server treats as an explicit clear (Pitfall 8). The Save
+    // button is disabled while band is null; this guards the programmatic path too.
+    if (band === null) return;
     onSaveBand({ band, industrySegment: segment.trim() || null });
   }, [band, segment, onSaveBand]);
 
@@ -148,7 +152,16 @@ export function SaudizationConfigDialog({
               />
             </div>
 
-            <Button onClick={handleSaveBand} disabled={isSavingBand}>
+            {band === null ? (
+              <p id={`${id}-band-hint`} className="text-xs text-muted-foreground">
+                {t('bandRequiredHint')}
+              </p>
+            ) : null}
+
+            <Button
+              onClick={handleSaveBand}
+              disabled={isSavingBand || band === null}
+              aria-describedby={band === null ? `${id}-band-hint` : undefined}>
               {isSavingBand ? (
                 <Loader2 aria-hidden="true" className="me-2 size-4 animate-spin" />
               ) : null}
