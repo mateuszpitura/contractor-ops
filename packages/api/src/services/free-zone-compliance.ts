@@ -197,7 +197,12 @@ export async function writeFreeZoneComplianceItem(
  * Returns the new status when it changed, or null when no transition was needed.
  */
 export async function reEvaluateFreeZoneStatus(
-  client: Pick<FreeZoneComplianceClient, 'contractorComplianceItem'>,
+  // Only `update` is used here — narrow the client so cron-context callers (the
+  // reminder scan's ReminderScanClient, which has no findFirst/create) qualify
+  // structurally without widening to the full FreeZoneComplianceClient.
+  client: {
+    contractorComplianceItem: Pick<FreeZoneComplianceClient['contractorComplianceItem'], 'update'>;
+  },
   item: {
     id: string;
     status: string;
