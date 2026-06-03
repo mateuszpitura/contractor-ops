@@ -138,6 +138,12 @@ const {
 vi.mock('@contractor-ops/db', () => ({
   prisma: mockPrisma,
   prismaRaw: mockPrismaRaw,
+  // Phase 79 region fan-out — the public scan loops SUPPORTED_REGIONS and resolves
+  // a regional client per region. These existing tests assert single-region behaviour,
+  // so we expose a one-region set whose client IS the cron-context mock (mockPrismaRaw),
+  // keeping every existing findMany/state/digest assertion intact.
+  SUPPORTED_REGIONS: ['EU'] as const,
+  getRegionalClient: vi.fn(() => mockPrismaRaw),
 }));
 
 vi.mock('@contractor-ops/logger', () => ({

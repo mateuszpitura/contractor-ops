@@ -21,7 +21,7 @@
 // TZ boundary math lives in the package that owns the date-fns deps (Phase 71 D-07).
 import { daysUntilExpiryInTz, jurisdictionDate } from '@contractor-ops/compliance-policy';
 import type { Prisma } from '@contractor-ops/db';
-import { prisma, prismaRaw } from '@contractor-ops/db';
+import { getRegionalClient, prisma, prismaRaw, SUPPORTED_REGIONS } from '@contractor-ops/db';
 import { pLimit } from '@contractor-ops/integrations/services/concurrency';
 import { createCronLogger } from '@contractor-ops/logger';
 import { metrics } from '@contractor-ops/logger/metrics';
@@ -84,6 +84,30 @@ export interface ScanResult {
   digests: number; // per-recipient digest dispatches
 }
 
+/**
+ * Phase 79 Pitfall 18 — the cron has no tenant frame and must run once per
+ * data region against that region's physical DB. `runComplianceReminderScan`
+ * fans out over SUPPORTED_REGIONS, so the per-region worker receives an explicit
+ * Prisma client (the regional writer) rather than closing over the EU-only
+ * `prismaRaw`. Structural shape — only the cron-context delegates are needed.
+ * Mirrors compliance-payment-gate.ts PaymentGateClient.
+ */
+export interface ReminderScanClient {
+  contractorComplianceItem: {
+    findMany: (args: Prisma.ContractorComplianceItemFindManyArgs) => Promise<unknown>;
+  };
+  contractorComplianceReminderState: {
+    findUnique: (args: Prisma.ContractorComplianceReminderStateFindUniqueArgs) => Promise<unknown>;
+    updateMany: (
+      args: Prisma.ContractorComplianceReminderStateUpdateManyArgs,
+    ) => Promise<{ count: number }>;
+    create: (args: Prisma.ContractorComplianceReminderStateCreateArgs) => Promise<unknown>;
+  };
+  organization: {
+    findUnique: (args: Prisma.OrganizationFindUniqueArgs) => Promise<unknown>;
+  };
+}
+
 interface ItemForScan {
   id: string;
   organizationId: string;
@@ -117,12 +141,63 @@ interface DigestGroup {
 // Orchestrator
 // ---------------------------------------------------------------------------
 
+/**
+ * Public cron entry — fans the scan out across SUPPORTED_REGIONS (Pitfall 18).
+ *
+ * UAE/KSA orgs live in the ME physical DB; the cron has no tenant frame, so each
+ * region is scanned with its OWN regional Prisma client (getRegionalClient). A
+ * region whose DATABASE_URL_* env is unset is skipped with a Pino warn (no silent
+ * catch, D-17) — the other regions still run. Per-region results are accumulated.
+ *
+ * Signature-compatible with the prior EU-only entry so the cron handler call site
+ * (reminders/index.ts) stays `runComplianceReminderScan()`.
+ */
 export async function runComplianceReminderScan(now: Date = new Date()): Promise<ScanResult> {
+  const total: ScanResult = { scanned: 0, fires: 0, digests: 0 };
+
+  for (const region of SUPPORTED_REGIONS) {
+    let client: ReminderScanClient;
+    try {
+      client = getRegionalClient(region) as unknown as ReminderScanClient;
+    } catch (err) {
+      // Unconfigured region (DATABASE_URL_<REGION> unset) — skip, do not abort the fan-out.
+      log.warn(
+        { err, region },
+        'compliance-reminder-scan: region client unavailable; skipping region',
+      );
+      continue;
+    }
+
+    const result = await runComplianceReminderScanForClient(client, region, now);
+    total.scanned += result.scanned;
+    total.fires += result.fires;
+    total.digests += result.digests;
+  }
+
+  metrics.gauge('cron.compliance_reminder.scanned', total.scanned);
+  metrics.gauge('cron.compliance_reminder.fires', total.fires);
+  metrics.gauge('cron.compliance_reminder.digests', total.digests);
+
+  log.info({ ...total }, 'compliance-reminder-scan complete (all regions)');
+  return total;
+}
+
+/**
+ * Per-region worker — runs the two-pass scan against ONE regional client.
+ * Every read/write goes through the supplied `client` (no module-level prismaRaw
+ * close-over) so ME-region BLOCKING free-zone items enter the cascade (Pitfall 18).
+ * The `region` label region-prefixes the dedup keys so a band/digest claim in one
+ * region cannot suppress the same key in another (Open Q3).
+ */
+export async function runComplianceReminderScanForClient(
+  client: ReminderScanClient,
+  region: string,
+  now: Date = new Date(),
+): Promise<ScanResult> {
   try {
-    // PHASE-72-CROSS-ORG-SCAN: prismaRaw used throughout (no tenant frame in cron context).
     // contractor.displayName is selected here to avoid a per-item N+1 lookup — mirrors
     // the economic-dependency-scan.ts twin (select contractor.displayName in the top query).
-    const items: ItemForScan[] = await prismaRaw.contractorComplianceItem.findMany({
+    const items = (await client.contractorComplianceItem.findMany({
       where: {
         severity: 'BLOCKING',
         status: { in: ['PENDING', 'EXPIRED'] }, // skip MISSING (no expiresAt yet), WAIVED, SATISFIED
@@ -139,21 +214,25 @@ export async function runComplianceReminderScan(now: Date = new Date()): Promise
         expiryJurisdictionTz: true,
         contractor: { select: { displayName: true } },
       },
-    });
+    })) as ItemForScan[];
 
     // Pass 1: collect band transitions per item, accumulate per-recipient groups.
-    const { scanned, fires, recipientGroups } = await collectPendingFires(items, now);
+    const { scanned, fires, recipientGroups } = await collectPendingFires(
+      client,
+      region,
+      items,
+      now,
+    );
     // Pass 2: dispatch ONE dedup-gated digest per recipient/day.
-    const digests = await dispatchDigests(recipientGroups);
+    const digests = await dispatchDigests(client, region, recipientGroups);
 
-    metrics.gauge('cron.compliance_reminder.scanned', scanned);
-    metrics.gauge('cron.compliance_reminder.fires', fires);
-    metrics.gauge('cron.compliance_reminder.digests', digests);
-
-    log.info({ scanned, fires, digests }, 'compliance-reminder-scan complete');
+    log.info({ region, scanned, fires, digests }, 'compliance-reminder-scan region complete');
     return { scanned, fires, digests };
   } catch (err) {
-    log.error({ err }, 'compliance-reminder-scan failed (top-level catch — returning zero counts)');
+    log.error(
+      { err, region },
+      'compliance-reminder-scan region failed (per-region catch — returning zero counts)',
+    );
     return { scanned: 0, fires: 0, digests: 0 };
   }
 }
@@ -168,6 +247,8 @@ export async function runComplianceReminderScan(now: Date = new Date()): Promise
  * Per-item failures are logged and skipped; they never abort the whole scan.
  */
 async function collectPendingFires(
+  client: ReminderScanClient,
+  region: string,
   items: ItemForScan[],
   now: Date,
 ): Promise<{ scanned: number; fires: number; recipientGroups: Map<string, DigestGroup> }> {
@@ -182,7 +263,7 @@ async function collectPendingFires(
       limit(async () => {
         counters.scanned++;
         try {
-          const fire = await processItem(item, now);
+          const fire = await processItem(client, region, item, now);
           if (!fire) return;
           counters.fires++;
           // Resolve recipients in Pass 1 so we can group correctly in Pass 2.
@@ -219,14 +300,20 @@ function addFireToGroup(
 }
 
 /** Pass 2 — one dedup-gated digest per recipient/day. Returns dispatched count. */
-async function dispatchDigests(recipientGroups: Map<string, DigestGroup>): Promise<number> {
+async function dispatchDigests(
+  client: ReminderScanClient,
+  region: string,
+  recipientGroups: Map<string, DigestGroup>,
+): Promise<number> {
   let digests = 0;
   for (const group of recipientGroups.values()) {
     try {
-      const digestKey = `compl:digest:${group.recipientUserId}:${group.jurisdictionDate}`;
+      // Region-prefixed so a digest claim in one region cannot suppress the same
+      // (recipient, date) digest in another region (Open Q3, Pitfall 18).
+      const digestKey = `compl:digest:${region}:${group.recipientUserId}:${group.jurisdictionDate}`;
       const claimed = await claimCronNotificationDedup(digestKey);
       if (!claimed) continue; // already sent today
-      await dispatchDigest(group);
+      await dispatchDigest(client, group);
       digests++;
     } catch (err) {
       log.error(
@@ -242,35 +329,49 @@ async function dispatchDigests(recipientGroups: Map<string, DigestGroup>): Promi
  * Per-item processing: compute next band, claim per-band dedup, persist with
  * optimistic concurrency, return PendingFire if we should add to the digest.
  *
- * Uses prismaRaw throughout — the cron runs without a tenant frame and the
- * tenant-scoped `prisma` client's withTenantScope extension can silently
- * under-filter cross-org scans. Mirror of economic-dependency-scan.ts idiom
- * (tagged PHASE-60-CROSS-ORG-AGGREGATE there; same principle applies here).
+ * Reads/writes go through the regional `client` threaded from the fan-out — the
+ * cron runs without a tenant frame, so a tenant-scoped client's withTenantScope
+ * extension would silently under-filter the cross-org scan. The client is the
+ * region's raw writer (getRegionalClient). Mirror of economic-dependency-scan.ts
+ * idiom (tagged PHASE-60-CROSS-ORG-AGGREGATE there; same principle applies here).
  */
-async function processItem(item: ItemForScan, now: Date): Promise<PendingFire | null> {
+async function processItem(
+  client: ReminderScanClient,
+  region: string,
+  item: ItemForScan,
+  now: Date,
+): Promise<PendingFire | null> {
   if (!(item.expiresAt && item.expiryJurisdictionTz)) return null;
 
   const days = daysUntilExpiryInTz(item.expiresAt, item.expiryJurisdictionTz, now);
   const nextBand = bandFor(days);
   if (nextBand === 'NONE') return null;
 
-  // Read current state (or default to NONE). prismaRaw: cron has no tenant frame.
-  const existing = await prismaRaw.contractorComplianceReminderState.findUnique({
+  // Read current state (or default to NONE) via the regional client (no tenant frame).
+  const existing = (await client.contractorComplianceReminderState.findUnique({
     where: { itemId: item.id },
-  });
+  })) as { version: number; lastBandFired: string | null } | null;
   const knownVersion = existing?.version ?? 0;
   const lastFired = existing?.lastBandFired ?? null;
 
   // Only fire if the next band is forward of the last fired band.
   if (lastFired && bandIndex(nextBand) <= bandIndex(lastFired as ReminderBand)) return null;
 
-  // Per-band dedup claim (jurisdictionDate-scoped).
+  // Per-band dedup claim (region- + jurisdictionDate-scoped). Region-prefixed so the
+  // same (item, band, date) claim does not collide across regions (Open Q3, Pitfall 18).
   const date = jurisdictionDate(now, item.expiryJurisdictionTz);
-  const dedupKey = `compl:band:${item.id}:${nextBand}:${date}`;
+  const dedupKey = `compl:band:${region}:${item.id}:${nextBand}:${date}`;
   const claimed = await claimCronNotificationDedup(dedupKey);
   if (!claimed) return null;
 
-  const persisted = await persistBandFire(item, nextBand, knownVersion, existing !== null, now);
+  const persisted = await persistBandFire(
+    client,
+    item,
+    nextBand,
+    knownVersion,
+    existing !== null,
+    now,
+  );
   if (!persisted) return null;
 
   return {
@@ -292,9 +393,10 @@ async function processItem(item: ItemForScan, now: Date): Promise<PendingFire | 
  * (version bumped between read and write) or the create lost to a P2002 from a
  * parallel listener. Both cases retry on the next cron tick.
  *
- * prismaRaw: cron context, no tenant frame — mirrors processItem above.
+ * Regional client: cron context, no tenant frame — mirrors processItem above.
  */
 async function persistBandFire(
+  client: ReminderScanClient,
   item: ItemForScan,
   nextBand: ReminderBand,
   knownVersion: number,
@@ -302,7 +404,7 @@ async function persistBandFire(
   now: Date,
 ): Promise<boolean> {
   if (exists) {
-    const updated = await prismaRaw.contractorComplianceReminderState.updateMany({
+    const updated = await client.contractorComplianceReminderState.updateMany({
       where: { itemId: item.id, version: knownVersion },
       data: {
         currentBand: nextBand,
@@ -323,7 +425,7 @@ async function persistBandFire(
 
   // Race-tolerant create: if a parallel listener created the row, this throws P2002 — caught and skipped.
   try {
-    await prismaRaw.contractorComplianceReminderState.create({
+    await client.contractorComplianceReminderState.create({
       data: {
         itemId: item.id,
         organizationId: item.organizationId,
@@ -374,13 +476,13 @@ async function resolveRecipientsForItem(item: ItemForScan): Promise<string[]> {
  * labels are also resolved server-side (via resolveMessage) so the {items}
  * param carries locale-aware text rather than raw DocumentType enum values.
  *
- * prismaRaw: org language lookup is a cross-org read in the cron context.
+ * Regional client: org language lookup is a cross-org read in the cron context.
  */
-async function dispatchDigest(group: DigestGroup): Promise<void> {
-  const org = await prismaRaw.organization.findUnique({
+async function dispatchDigest(client: ReminderScanClient, group: DigestGroup): Promise<void> {
+  const org = (await client.organization.findUnique({
     where: { id: group.organizationId },
     select: { language: true },
-  });
+  })) as { language: string | null } | null;
   const locale = normalizeLocale(org?.language ?? null);
 
   const lines = group.fires.map(f => {
