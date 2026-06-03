@@ -20,6 +20,14 @@ vi.mock('../revalidate-vat-button-container.js', () => ({
   RevalidateVatButtonContainer: () => <div data-testid="revalidate-vat" />,
 }));
 
+// The AE branch now mounts the tRPC-bound free-zone assignment surface (D-02);
+// stub it like the other child containers so the dispatch test stays unit-scoped.
+vi.mock('../free-zone/free-zone-assignment-container.js', () => ({
+  FreeZoneAssignmentContainer: ({ contractorId }: { contractorId: string }) => (
+    <div data-testid="free-zone-assignment" data-contractor={contractorId} />
+  ),
+}));
+
 import { render, screen } from '../../../test/test-utils.js';
 import { CountryComplianceSectionView } from '../country-compliance-section.js';
 import type {
@@ -132,6 +140,9 @@ describe('CountryComplianceSectionView — country dispatch', () => {
     );
     expect(screen.getByLabelText(/Freelance Permit Number/i)).toBeInTheDocument();
     expect(screen.getByText(/UAE/)).toBeInTheDocument();
+    // D-02: the structured free-zone surface replaces the old freeform UAE inputs.
+    expect(screen.getByTestId('free-zone-assignment')).toBeInTheDocument();
+    expect(screen.queryByLabelText(/Trade License Number/i)).toBeNull();
   });
 
   it('renders the SA field group when countryCode=SA', () => {

@@ -10,7 +10,6 @@ import {
 } from '@contractor-ops/ui/components/shadcn/card';
 import { Input } from '@contractor-ops/ui/components/shadcn/input';
 import { Label } from '@contractor-ops/ui/components/shadcn/label';
-import { Switch } from '@contractor-ops/ui/components/shadcn/switch';
 import type { DeCountryFields, UkCountryFields } from '@contractor-ops/validators';
 import { AlertCircle, Check, Loader2 } from 'lucide-react';
 import type { Dispatch, SetStateAction } from 'react';
@@ -20,6 +19,7 @@ import { useTranslations } from '../../i18n/useTranslations.js';
 import { ClassificationTileContainer } from './classification/classification-tile-container.js';
 import { DeComplianceFields } from './compliance/de-compliance-fields.js';
 import { UkComplianceFields } from './compliance/uk-compliance-fields.js';
+import { FreeZoneAssignmentContainer } from './free-zone/free-zone-assignment-container.js';
 import type {
   useContractorEngagements,
   useCountryCompliance,
@@ -125,6 +125,7 @@ export function CountryComplianceSectionView({
       <CardContent className="space-y-4">
         <CountryFieldsDispatch
           countryCode={countryCode}
+          contractorId={contractorId}
           values={merged}
           onChange={handleFieldChange}
         />
@@ -221,16 +222,18 @@ function ClassificationEngagementsBlock({
 
 function CountryFieldsDispatch({
   countryCode,
+  contractorId,
   values,
   onChange,
 }: {
   countryCode: string;
+  contractorId: string;
   values: Record<string, unknown>;
   onChange: (key: string, val: unknown) => void;
 }) {
   switch (countryCode) {
     case 'AE':
-      return <UaeFields values={values} onChange={onChange} />;
+      return <UaeFields contractorId={contractorId} values={values} onChange={onChange} />;
     case 'SA':
       return <SaudiFields values={values} onChange={onChange} />;
     case 'GB':
@@ -243,9 +246,11 @@ function CountryFieldsDispatch({
 }
 
 function UaeFields({
+  contractorId,
   values,
   onChange,
 }: {
+  contractorId: string;
   values: Record<string, unknown>;
   onChange: (key: string, val: unknown) => void;
 }) {
@@ -257,21 +262,12 @@ function UaeFields({
       onChange('freelancePermitNumber', e.target.value || undefined),
     [onChange],
   );
-  const handleTradeLicenseChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) =>
-      onChange('tradeLicenseNumber', e.target.value || undefined),
-    [onChange],
-  );
-  const handleFreeZoneChange = useCallback(
-    (checked: boolean) => onChange('freeZone', checked),
-    [onChange],
-  );
-  const handleExpiryChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) =>
-      onChange('tradeLicenseExpiry', e.target.value || undefined),
-    [onChange],
-  );
 
+  // D-02: the freeform trade-license number / free-zone switch / expiry inputs are
+  // superseded by the structured FreeZoneAssignment surface below. Only the
+  // freelance-permit field remains in country-fields (server trimmed the AE config
+  // to ['freelancePermitNumber'] in Plan 05). The free zone, license number/category,
+  // expiry tracking and permitted activities are now recorded in the dedicated form.
   return (
     <>
       <div className="space-y-2">
@@ -285,38 +281,7 @@ function UaeFields({
           placeholder={tUae('freelancePermitNumberPlaceholder')}
         />
       </div>
-      <div className="space-y-2">
-        <Label htmlFor={`${id}-tradeLicenseNumber`} className="text-sm font-medium">
-          {tUae('tradeLicenseNumberLabel')}
-        </Label>
-        <Input
-          id={`${id}-tradeLicenseNumber`}
-          value={(values.tradeLicenseNumber as string) ?? ''}
-          onChange={handleTradeLicenseChange}
-          placeholder={tUae('tradeLicenseNumberPlaceholder')}
-        />
-      </div>
-      <div className="flex items-center gap-2">
-        <Switch
-          id={`${id}-freeZone`}
-          checked={(values.freeZone as boolean) ?? false}
-          onCheckedChange={handleFreeZoneChange}
-        />
-        <Label htmlFor={`${id}-freeZone`} className="text-sm font-medium">
-          {tUae('freeZoneLabel')}
-        </Label>
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor={`${id}-tradeLicenseExpiry`} className="text-sm font-medium">
-          {tUae('tradeLicenseExpiryLabel')}
-        </Label>
-        <Input
-          id={`${id}-tradeLicenseExpiry`}
-          type="date"
-          value={(values.tradeLicenseExpiry as string) ?? ''}
-          onChange={handleExpiryChange}
-        />
-      </div>
+      <FreeZoneAssignmentContainer contractorId={contractorId} />
     </>
   );
 }
