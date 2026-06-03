@@ -77,6 +77,9 @@ export const contractCreateSchema = z
     projectId: optionalFk,
     costCenterId: optionalFk,
     notes: optionalString,
+    // Phase 79 GULF-03 (D-05/D-06) — engagement activity ISIC codes. Compared
+    // against the contractor's free-zone permitted set on create (scope check).
+    activityIsicCodes: z.array(z.string().trim().min(1).max(32)).max(200).optional(),
   })
   .refine(
     data => {

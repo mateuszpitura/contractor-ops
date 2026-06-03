@@ -1317,9 +1317,15 @@ export const contractorRouter = router({
     if (!(org.countryCode && countryFieldsSchemaMap[org.countryCode])) {
       return { hasCountryFields: false, countryCode: org.countryCode };
     }
+    // Phase 79 D-02 — the UAE free-zone freeform fields (tradeLicenseNumber,
+    // freeZone, tradeLicenseExpiry) are migrated to the structured
+    // FreeZoneAssignment model (gulf.freeZone router) and are no longer rendered
+    // here; the data is backfilled by backfill-free-zone-assignment.ts and
+    // retained in countryFields JSONB for audit/rollback. freelancePermitNumber
+    // is NOT a free-zone license field, so it stays. The Saudi list is untouched.
     const fields =
       org.countryCode === 'AE'
-        ? ['freelancePermitNumber', 'tradeLicenseNumber', 'freeZone', 'tradeLicenseExpiry']
+        ? ['freelancePermitNumber']
         : ['freelanceSaLicense', 'commercialRegistration', 'commercialRegistrationExpiry'];
     return { hasCountryFields: true, countryCode: org.countryCode, fields };
   }),

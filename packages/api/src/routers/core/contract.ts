@@ -19,6 +19,8 @@ import { tenantProcedure } from '../../middleware/tenant';
 import { writeAuditLog, writeAuditLogMany } from '../../services/audit-writer';
 import { syncContractExpiryDeadline } from '../../services/calendar-deadline-sync';
 import { deleteCalendarEvent } from '../../services/calendar-event-service';
+import type { PermittedActivityClient } from '../../services/permitted-activity-check';
+import { checkPermittedActivityScope } from '../../services/permitted-activity-check';
 
 const log = createLogger({ service: 'contract-router' });
 
@@ -212,6 +214,8 @@ function buildContractCreateData(
     projectId: input.projectId ?? null,
     costCenterId: input.costCenterId ?? null,
     notes: input.notes ?? null,
+    // Phase 79 GULF-03 (D-05/D-06) — engagement activity ISIC codes (scope check).
+    activityIsicCodes: input.activityIsicCodes ?? [],
     status: 'DRAFT' as const,
   };
 }
@@ -228,13 +232,44 @@ export const contractRouter = router({
     .use(requirePermission({ contract: ['create'] }))
     .input(contractCreateSchema)
     .mutation(async ({ ctx, input }) => {
-      const contract = await ctx.db.contract.create({
-        data: buildContractCreateData(ctx.organizationId, input),
-        include: {
-          contractor: {
-            select: { id: true, legalName: true, displayName: true, status: true },
+      // Phase 79 GULF-03 (D-05/D-06/D-07) — contract create + permitted-activity
+      // scope check compose in one transaction so an auto-NOC item + its audit
+      // row commit atomically with the contract. The check is NON-BLOCKING: it
+      // never throws on a mismatch, so contract creation always proceeds (D-07).
+      const { contract, scopeCheck } = await ctx.db.$transaction(async tx => {
+        const created = await tx.contract.create({
+          data: buildContractCreateData(ctx.organizationId, input),
+          include: {
+            contractor: {
+              select: {
+                id: true,
+                legalName: true,
+                displayName: true,
+                status: true,
+                freeZoneAssignment: { select: { permittedActivityIsicCodes: true } },
+              },
+            },
           },
-        },
+        });
+
+        // Only run the scope check for a free-zone contractor with a coded
+        // permitted set AND a coded contract; the service skips symmetrically on
+        // either side uncoded (D-08). Mismatch fires a non-blocking advisory NOC.
+        let scopeResult: Awaited<ReturnType<typeof checkPermittedActivityScope>> | null = null;
+        const permittedCodes = created.contractor?.freeZoneAssignment?.permittedActivityIsicCodes;
+        if (permittedCodes && created.activityIsicCodes.length > 0) {
+          scopeResult = await checkPermittedActivityScope(tx as PermittedActivityClient, {
+            organizationId: ctx.organizationId,
+            contractorId: created.contractorId,
+            contractId: created.id,
+            permittedActivityIsicCodes: permittedCodes,
+            contractActivityIsicCodes: created.activityIsicCodes,
+            actorType: 'USER',
+            actorId: ctx.user?.id ?? null,
+          });
+        }
+
+        return { contract: created, scopeCheck: scopeResult };
       });
 
       // Phase 75 D-01 — fire-and-forget contract health-check QStash job.
@@ -300,7 +335,10 @@ export const contractRouter = router({
         }).catch(err => log.error({ err }, 'calendar sync on create failed'));
       }
 
-      return contract;
+      // Surface the permitted-activity scope result so the UI can render the
+      // advisory banner (Plan 06). `null` when the check did not run (D-08 skip
+      // or non-free-zone contractor); `{ mismatch }` otherwise.
+      return { ...contract, permittedActivityScope: scopeCheck };
     }),
 
   /**
