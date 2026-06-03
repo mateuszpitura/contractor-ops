@@ -59,6 +59,7 @@ import {
   paymentRouter,
   skontoRouter,
 } from './routers/finance/index';
+import { gulfRouter } from './routers/gulf/index';
 import {
   deprovisioningRouter,
   googleWorkspaceRouter,
@@ -207,6 +208,7 @@ export const appRouter = router({
   peppol: peppolRouter, // peppol: Peppol network integration — participant registration, transmission tracking, ASP management
   tax: taxRouter, // tax: Tax rate lookup, VAT validation, WHT calculation, WHT certificates, tax summary dashboard
   zatca: zatcaRouter, // zatca: ZATCA device onboarding — tax details, CSR generation, compliance CSID, compliance checks, production cert
+  gulf: gulfRouter, // gulf: Phase 79 F3 — UAE free-zone assignment CRUD + Saudization config/headcount/dashboard + GULF-10 drift overrides (region-aware ME)
   ...conditionalClassificationRouters,
 });
 

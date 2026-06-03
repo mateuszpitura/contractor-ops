@@ -2906,6 +2906,7 @@
     "unknownError": "Wystąpił nieoczekiwany błąd. Spróbuj ponownie.",
     "generic": "Coś poszło nie tak. Spróbuj ponownie.",
     "contractorNotFound": "Nie znaleziono kontrahenta.",
+    "gulfAssignmentNotFound": "Nie znaleziono przypisania.",
     "contractorHasUnpaidInvoices": "Nie można zarchiwizować kontrahenta z nieopłaconymi fakturami. Najpierw rozlicz wszystkie zaległe płatności.",
     "contractorHasActiveWorkflows": "Nie można zarchiwizować kontrahenta z aktywnymi workflow. Najpierw dokończ lub anuluj workflow.",
     "contractorHasActiveContracts": "Nie można zarchiwizować kontrahenta z aktywnymi umowami. Najpierw zakończ lub przypisz umowy inaczej.",

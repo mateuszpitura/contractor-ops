@@ -415,3 +415,6 @@ export const APPROVAL_STILL_COMPLIANCE_BLOCKED = 'approvalStillComplianceBlocked
 export const COMPLIANCE_ITEM_NOT_FOUND = 'complianceItemNotFound';
 export const COMPLIANCE_ITEM_ALREADY_WAIVED = 'complianceItemAlreadyWaived';
 export const COMPLIANCE_DOCUMENT_NOT_PENDING_REVIEW = 'complianceDocumentNotPendingReview';
+
+// ─── Phase 79 — F3 Gulf (GULF-01/04) ──────────────────────────────────────────
+export const GULF_ASSIGNMENT_NOT_FOUND = 'gulfAssignmentNotFound';

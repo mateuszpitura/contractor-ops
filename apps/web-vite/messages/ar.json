@@ -2906,6 +2906,7 @@
     "unknownError": "حدث خطأ غير متوقّع. يرجى المحاولة مجددًا.",
     "generic": "حدث خطأ ما. يرجى المحاولة مجددًا.",
     "contractorNotFound": "Contractor غير موجود.",
+    "gulfAssignmentNotFound": "التعيين غير موجود.",
     "contractorHasUnpaidInvoices": "لا يمكن أرشفة مقاول لديه فواتير غير مدفوعة. سوِّ جميع المدفوعات المعلّقة أولًا.",
     "contractorHasActiveWorkflows": "لا يمكن أرشفة مقاول لديه Workflows نشطة. أكمل أو ألغِ Workflows أولًا.",
     "contractorInvalidTransition": "هذا الانتقال في الحالة غير مسموح به.",

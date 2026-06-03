@@ -2906,6 +2906,7 @@
     "unknownError": "An unexpected error occurred. Please try again.",
     "generic": "Something went wrong. Please try again.",
     "contractorNotFound": "Contractor not found.",
+    "gulfAssignmentNotFound": "Assignment not found.",
     "contractorHasUnpaidInvoices": "Cannot archive contractor with unpaid invoices. Resolve all pending payments first.",
     "contractorHasActiveWorkflows": "Cannot archive contractor with active workflows. Complete or cancel workflows first.",
     "contractorHasActiveContracts": "Cannot archive contractor with active contracts. End or reassign contracts first.",
