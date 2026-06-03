@@ -1,8 +1,8 @@
 ---
 phase: 79
 slug: f3-gulf-uae-free-zone-tracking-saudization-dashboard-arabic
-status: draft
-nyquist_compliant: false
+status: planned
+nyquist_compliant: true
 wave_0_complete: false
 created: 2026-06-03
 ---
@@ -59,10 +59,16 @@ These are the behaviors whose failure is high-recovery-cost. Each must map to an
 
 | Task ID | Plan | Wave | Requirement | Secure Behavior | Test Type | Automated Command | Status |
 |---------|------|------|-------------|-----------------|-----------|-------------------|--------|
-| 79-XX-XX | TBD | TBD | GULF-02 | C1 payment hard-block on expired FZ license | integration | `pnpm --filter @contractor-ops/api test -- <gate test>` | ⬜ pending |
-| 79-XX-XX | TBD | TBD | GULF-02 | C3 ME-region cascade fan-out | integration | `pnpm --filter @contractor-ops/api test -- <cron test>` | ⬜ pending |
-| 79-XX-XX | TBD | TBD | GULF-01 | C4 supersession does not orphan FZ row | integration | `pnpm --filter @contractor-ops/api test -- <supersession test>` | ⬜ pending |
-| 79-XX-XX | TBD | TBD | GULF-11 | C8 no cross-region leakage | schema-lint | `pnpm --filter @contractor-ops/db <leakage lint>` | ⬜ pending |
+| 79-03-01 | 79-03 | 2 | GULF-02 | C1 payment hard-block on expired FZ license | integration | `pnpm --filter @contractor-ops/api test -- free-zone-payment-block` | ⬜ pending |
+| 79-03-01 | 79-03 | 2 | GULF-02/D-04 | C2 Mainland gets no item / not blocked | integration | `pnpm --filter @contractor-ops/api test -- free-zone-mainland-exclusion` | ⬜ pending |
+| 79-03-02 | 79-03 | 2 | GULF-02 | C3 ME-region cascade fan-out | integration | `pnpm --filter @contractor-ops/api test -- reminder-region-fanout` | ⬜ pending |
+| 79-03-01 | 79-03 | 2 | GULF-01/02 | C4 supersession does not orphan FZ row | integration | `pnpm --filter @contractor-ops/api test -- free-zone-supersession-isolation` | ⬜ pending |
+| 79-04-01 | 79-04 | 2 | GULF-03/D-05..08 | C5 ISIC scope-mismatch + auto-NOC; uncoded skip | unit+integration | `pnpm --filter @contractor-ops/api test -- permitted-activity-noc` | ⬜ pending |
+| 79-04-02 | 79-04 | 2 | GULF-05/06 | C6 rate from manual headcount; band never auto-computed | unit | `pnpm --filter @contractor-ops/api test -- saudization-derivation` | ⬜ pending |
+| 79-04-02 | 79-04 | 2 | GULF-07/D-12 | C7 trajectory ephemeral, advisory, non-gating | unit | `pnpm --filter @contractor-ops/api test -- saudization-derivation` | ⬜ pending |
+| 79-03-03 | 79-03 | 2 | GULF-11 | C8 no cross-region leakage | schema-lint | `pnpm --filter @contractor-ops/db db:lint:region-leakage` | ⬜ pending |
+| 79-05-01 | 79-05 | 3 | GULF-10 | C9 drift override audit-logged + custom badge | integration | `pnpm --filter @contractor-ops/api test -- gulf-override-audit` | ⬜ pending |
+| 79-08-02 | 79-08 | 5 | GULF-08/09/D-13..16 | C10 RTL guard + locked-phrase + 4-locale parity | lint | `pnpm check:rtl-logical-props && pnpm i18n:parity && pnpm --filter @contractor-ops/validators test -- locked-phrases-guard` | ⬜ pending |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 

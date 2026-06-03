@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v6.0
 milestone_name: Platform Maturity & Operational Hardening
-status: planning
-stopped_at: Phase 80 context gathered
-last_updated: "2026-06-02T23:19:26.657Z"
-last_activity: 2026-05-31
+status: executing
+stopped_at: Phase 79 UI-SPEC approved
+last_updated: "2026-06-03T07:08:17.329Z"
+last_activity: 2026-06-03 -- Phase 79 planning complete
 progress:
   total_phases: 11
   completed_phases: 9
-  total_plans: 71
+  total_plans: 79
   completed_plans: 71
   percent: 82
 ---
@@ -75,7 +75,7 @@ the 3 web-vite hooks to call `trpc.deprovisioning.enableProviderForOrg({ provide
 
 **Phase:** 73 (F1 Compliance — Admin Dashboard + Portal Self-Service + i18n)
 **Workflow:** `gsd:execute-phase 73` (autonomous background run)
-**Status:** Ready to plan
+**Status:** Ready to execute
 
 **Why halted (per execute-phase rule "if drift is so deep a plan can't be faithfully executed, write specifics to STATE.md as a blocker and stop rather than guessing"):**
 
@@ -291,8 +291,8 @@ See: .planning/PROJECT.md (updated 2026-04-26 — v6.0 milestone started)
 
 Phase: 73 (f1-compliance-admin-dashboard-portal-self-service-i18n) — EXECUTING
 Plan: Not started
-Status: Executing Phase 73
-Last activity: 2026-05-31
+Status: Ready to execute
+Last activity: 2026-06-03 -- Phase 79 planning complete
 
 Progress: [█████████░] 89%
 
@@ -527,9 +527,9 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-06-02T23:19:26.646Z
-Stopped at: Phase 80 context gathered
-Resume file: .planning/phases/80-v6-0-verification-hardening-manual-uat/80-CONTEXT.md
+Last session: 2026-06-02T23:51:23.053Z
+Stopped at: Phase 79 UI-SPEC approved
+Resume file: .planning/milestones/v6.0-phases/79-f3-gulf-uae-free-zone-tracking-saudization-dashboard-arabic-/79-UI-SPEC.md
 Next command: `/gsd-plan-phase 74`  (Phase 74 context gathered, ready to plan; 71 + 76 plans already ready to execute)
 
 **Planned Phases (ready to execute):** 71 (F1 Compliance — 7 plans), 76 (F2 IdP — 10 plans, gated on 74 + 75)
