@@ -116,18 +116,27 @@ export async function supersedeAndMaterialise(
 ): Promise<{ waivedCount: number; insertedCount: number; carriedForwardCount: number }> {
   // 1. Fetch existing non-WAIVED rows.
   //
-  // Phase 79 Pitfall 2 (C4): EXCLUDE free-zone rows from the supersession scope.
-  // Free-zone items (uae.free_zone_license@v2) are written OUT-OF-BAND from the
-  // FreeZoneAssignment service (free-zone-compliance.ts), keyed off the license,
-  // NOT the classification outcome. They are absent from resolvePolicyRules, so
-  // an unrelated classification recompute would otherwise WAIVE them silently
-  // (orphaning the payment-block gate). The NOT-startsWith filter keeps them out
-  // of both the WAIVE set and the carry-forward map.
+  // Phase 79 Pitfall 2 (C4): EXCLUDE out-of-band advisory rows from the
+  // supersession scope. Two families are written OUTSIDE resolvePolicyRules and
+  // keyed off domain state, NOT the classification outcome, so an unrelated
+  // classification recompute would otherwise WAIVE them silently:
+  //   - free-zone license items (uae.free_zone_license@v2) — written by the
+  //     FreeZoneAssignment service; WAIVING them orphans the payment-block gate.
+  //   - permitted-activity NOC advisories (uae.permitted_activity_noc@v1) —
+  //     written by the contract-create scope check (permitted-activity-check.ts);
+  //     WAIVING them erases the scope-mismatch advisory the UI links to, even when
+  //     the recompute is for a different engagement (the findMany scopes on
+  //     contractorId only).
+  // The NOT-startsWith filters keep both out of the WAIVE set and the
+  // carry-forward map.
   const oldRows = (await client.contractorComplianceItem.findMany({
     where: {
       contractorId: ctx.contractorId,
       status: { not: 'WAIVED' },
-      policyRuleId: { not: { startsWith: 'uae.free_zone' } },
+      NOT: [
+        { policyRuleId: { startsWith: 'uae.free_zone' } },
+        { policyRuleId: { startsWith: 'uae.permitted_activity_noc' } },
+      ],
     },
     select: {
       id: true,

@@ -62,7 +62,7 @@ function startsWith(value: string | null, prefix: string): boolean {
   return typeof value === 'string' && value.startsWith(prefix);
 }
 
-/** Mock client honouring the contractorId + status.not + policyRuleId.not.startsWith filter. */
+/** Mock client honouring the contractorId + status.not + NOT[policyRuleId.startsWith] filter. */
 function makeClient(): SupersessionClient {
   return {
     contractorComplianceItem: {
@@ -72,10 +72,14 @@ function makeClient(): SupersessionClient {
           if (where.contractorId && r.contractorId !== where.contractorId) return false;
           const status = where.status as { not?: string } | undefined;
           if (status?.not && r.status === status.not) return false;
-          // Phase 79 — the free-zone NOT-startsWith exclusion the service adds.
-          const rule = where.policyRuleId as { not?: { startsWith?: string } } | undefined;
-          const prefix = rule?.not?.startsWith;
-          if (prefix && startsWith(r.policyRuleId, prefix)) return false;
+          // Phase 79 — the out-of-band advisory exclusions the service adds as a
+          // NOT array (free-zone licenses + permitted-activity NOC advisories).
+          const notClauses =
+            (where.NOT as Array<{ policyRuleId?: { startsWith?: string } }> | undefined) ?? [];
+          for (const clause of notClauses) {
+            const prefix = clause.policyRuleId?.startsWith;
+            if (prefix && startsWith(r.policyRuleId, prefix)) return false;
+          }
           return true;
         });
       }) as never,
@@ -171,6 +175,34 @@ describe('C4 (Pitfall 2) free-zone item survives supersession — not orphaned/W
     expect(result.waivedCount).toBe(0);
     const freeZoneRows = rows.filter(r => startsWith(r.policyRuleId, 'uae.free_zone'));
     expect(freeZoneRows.every(r => r.status !== 'WAIVED')).toBe(true);
+  });
+
+  it('excludes uae.permitted_activity_noc@v1 advisories from the supersession WAIVE scope (WR-03) [79-gap]', async () => {
+    // A permitted-activity NOC advisory is written out-of-band by the contract-create
+    // scope check, keyed off the engagement — NOT the classification outcome. An
+    // unrelated classification recompute on the same contractor (even a different
+    // engagement) must not silently WAIVE it.
+    const noc = seedRow({
+      documentType: 'NOC',
+      name: 'Permitted-activity scope mismatch',
+      severity: 'WARNING',
+      policyRuleId: 'uae.permitted_activity_noc@v1',
+      status: 'MISSING',
+    });
+
+    const result = await supersedeAndMaterialise(makeClient(), {
+      organizationId: 'org_me',
+      contractorId: 'c_me',
+      contractId: null,
+      engagement: UK_ENGAGEMENT,
+      reason: 'CLASSIFICATION_OUTCOME_CHANGE',
+    });
+
+    // The NOC advisory is invisible to the WAIVE scope, so waivedCount is 0.
+    expect(result.waivedCount).toBe(0);
+    const after = rows.find(r => r.id === noc.id);
+    expect(after?.status).toBe('MISSING'); // unchanged — NOT WAIVED
+    expect(after?.waivedReason).toBeNull();
   });
 
   it('still WAIVES genuinely superseded classification-outcome rows (no over-exclusion) [79-03]', async () => {
