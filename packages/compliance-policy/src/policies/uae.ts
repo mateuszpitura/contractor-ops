@@ -2,7 +2,14 @@
 //
 // Documents covered:
 //  1. uae.emirates_id@v1 — Emirates ID (BLOCKING)
-//  2. uae.free_zone_license@v1 — Free-zone trade license (WARNING; annually renewed)
+//  2. uae.free_zone_license@v2 — Free-zone trade license (BLOCKING; annually renewed)
+//
+// Phase 79 D-03/D-04 (Pitfall 2/3): the free-zone rule is BLOCKING and its row is
+// written OUT-OF-BAND from the FreeZoneAssignment service (free-zone-compliance.ts),
+// NOT via the classification → resolvePolicyRules path. `appliesIf` therefore returns
+// false so the classification engine never materialises a free-zone item (which would
+// lack the zone discriminator and wrongly block Mainland contractors). The Mainland
+// gate lives in the service write, not here.
 
 import { registerPolicyRule } from '../registry';
 
@@ -23,13 +30,17 @@ registerPolicyRule({
 });
 
 registerPolicyRule({
-  policyRuleId: 'uae.free_zone_license@v1',
+  policyRuleId: 'uae.free_zone_license@v2',
   jurisdiction: 'UAE',
   documentType: 'UAE_FREE_ZONE_LICENSE',
   displayName: 'UAE Free-Zone Trade License',
-  severity: 'WARNING',
+  severity: 'BLOCKING', // Phase 79 D-03 — expired free-zone license hard-blocks payment (GULF-02)
   expiryJurisdictionTz: 'Asia/Dubai',
-  appliesIf: () => true,
+  // Phase 79 D-04/Pitfall 2 — NEVER materialised by the classification path.
+  // EngagementContext carries no zone discriminator, so resolving this rule there
+  // would arm the BLOCKING gate for Mainland (DED-licensed) contractors too. The
+  // row is written from free-zone-compliance.ts which applies the zone gate.
+  appliesIf: () => false,
   draftLegalText:
     'Required for freelancers operating from UAE free zones (DMCC, ADGM, DIFC, etc.). License number is the canonical identifier; renewal cadence is yearly. (Free-zone authority; PENDING legal review)',
   expirySemantic: 'fixed_months', // Phase 73 D-07 — free-zone licence renews yearly

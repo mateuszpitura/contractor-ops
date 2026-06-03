@@ -114,9 +114,21 @@ export async function supersedeAndMaterialise(
   client: SupersessionClient,
   ctx: SupersedeContext,
 ): Promise<{ waivedCount: number; insertedCount: number; carriedForwardCount: number }> {
-  // 1. Fetch existing non-WAIVED rows
+  // 1. Fetch existing non-WAIVED rows.
+  //
+  // Phase 79 Pitfall 2 (C4): EXCLUDE free-zone rows from the supersession scope.
+  // Free-zone items (uae.free_zone_license@v2) are written OUT-OF-BAND from the
+  // FreeZoneAssignment service (free-zone-compliance.ts), keyed off the license,
+  // NOT the classification outcome. They are absent from resolvePolicyRules, so
+  // an unrelated classification recompute would otherwise WAIVE them silently
+  // (orphaning the payment-block gate). The NOT-startsWith filter keeps them out
+  // of both the WAIVE set and the carry-forward map.
   const oldRows = (await client.contractorComplianceItem.findMany({
-    where: { contractorId: ctx.contractorId, status: { not: 'WAIVED' } },
+    where: {
+      contractorId: ctx.contractorId,
+      status: { not: 'WAIVED' },
+      policyRuleId: { not: { startsWith: 'uae.free_zone' } },
+    },
     select: {
       id: true,
       documentType: true,
