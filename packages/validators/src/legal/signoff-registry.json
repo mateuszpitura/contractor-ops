@@ -154,9 +154,9 @@
     "status": "PENDING",
     "notes": "Phase 73 D-16 — UAE adviser sign-off."
   },
-  "COMPL_DOCNAME_uae_free_zone_license_v1": {
+  "COMPL_DOCNAME_uae_free_zone_license_v2": {
     "status": "PENDING",
-    "notes": "Phase 73 D-16 — UAE adviser sign-off."
+    "notes": "Phase 73 D-16 / Phase 79 D-03 — UAE adviser sign-off (rule bumped to BLOCKING @v2)."
   },
   "COMPL_DOCNAME_uae_ip_assignment_v1": {
     "status": "PENDING",

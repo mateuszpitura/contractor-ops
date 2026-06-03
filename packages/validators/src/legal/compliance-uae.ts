@@ -13,7 +13,7 @@ export const LOCKED_COMPL_NAMES_UAE = {
     de: 'Emirates-ID',
     ar: 'الهوية الإماراتية',
   },
-  'uae.free_zone_license@v1': {
+  'uae.free_zone_license@v2': {
     en: 'UAE free-zone trade licence',
     pl: 'Licencja handlowa strefy wolnocłowej (UAE)',
     de: 'UAE Freihandelszonen-Gewerbelizenz',
