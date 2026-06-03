@@ -115,3 +115,41 @@ apply are recorded below as deferred post-deploy items.
   multi-region apply is a deferred post-deploy item — not a phase blocker.
 - **Sequencing note:** the shared dev DB also needs the deferred Phase 72/75/76 migrations applied
   first; coordinate the full additive-migration apply order at deploy time.
+
+## Pre-existing router-test mock gap (not caused by 79-05)
+
+- **Files:** `packages/api/src/routers/__tests__/contract.test.ts`,
+  `packages/api/src/routers/__tests__/contractor.test.ts` (and any test that transitively
+  imports the contract/contractor router chain).
+- **Failure:** `Error: [vitest] No "prismaRaw" export is defined on the "@contractor-ops/db"
+  mock` at module load (`src/services/compliance-reminder-scan.ts:570` — `__deps = { prisma, prismaRaw, … }`).
+- **Cause:** commit `2295f3eb` (79-03 region fan-out) added `prismaRaw` to the
+  `compliance-reminder-scan.ts` `__deps` export, but the pre-existing `contract.test.ts` /
+  `contractor.test.ts` `vi.mock('@contractor-ops/db')` blocks do not return a `prismaRaw` export.
+  The router import chain pulls in `compliance-reminder-scan.ts` at module load, so the mock gap
+  fails the whole file before any test runs. **Pre-dates 79-05** — confirmed: `contractor.test.ts`
+  (which 79-05 does not touch) reproduces the identical failure, and the `prismaRaw` `__deps`
+  addition is in the 79-03 commit, not mine.
+- **Repro:** `pnpm --filter @contractor-ops/api exec vitest run src/routers/__tests__/contract.test.ts`
+  → `1 failed | no tests`.
+- **Scope:** out of 79-05 — fixing it means editing the `@contractor-ops/db` mock in multiple
+  unrelated pre-existing test files. My new gulf-override-audit + free-zone-backfill tests use
+  fresh, complete mocks and pass.
+- **Suggested fix (separate change, standards-audit track):** add `prismaRaw: mockPrisma` to the
+  `@contractor-ops/db` `vi.mock` in `contract.test.ts` / `contractor.test.ts` (mirrors the
+  complete mock already used by `compliance-override-mutation.test.ts`).
+
+## Backfill dry-run — network-gated in sandbox (D-02, not a script bug)
+
+- **Script:** `packages/db/scripts/backfill-free-zone-assignment.ts --dry-run`.
+- **Observed:** the script constructs the Prisma client correctly (via the canonical
+  `createPrismaClientForUrl`, modern prisma-client generator) and connects, then fails with
+  `Connection terminated due to connection timeout` reaching the remote EU Neon endpoint —
+  the execution sandbox has no network egress to Neon.
+- **Why this is not a blocker:** the load-bearing, network-free core (`planFreeZoneBackfill`
+  pure transform — idempotency guard, IFZA/MAINLAND zone mapping, no-trade-license skip,
+  Saudi-not-migrated) is fully verified by `packages/db/src/__tests__/free-zone-assignment-backfill.test.ts`
+  (5/5 GREEN). The live dry-run also cannot find Gulf tables until the deferred migration applies
+  (79-02 GENERATE-ONLY decision — the live DB has no `FreeZoneAssignment` table yet).
+- **Post-deploy:** run `DATABASE_URL=$DATABASE_URL_ME tsx packages/db/scripts/backfill-free-zone-assignment.ts --dry-run`
+  AFTER the deferred `phase79_gulf_free_zone_saudization` migration applies, then drop `--dry-run`.

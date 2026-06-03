@@ -75,7 +75,7 @@ Requirements for the v6.0 milestone. Each maps to exactly one phase (filled by r
 - [x] **GULF-07**: Admin offboarding a Saudi-national contractor sees a pre-offboarding impact banner showing the projected Saudization-band trajectory after the offboarding completes
 - [ ] **GULF-08**: All GULF surfaces (compliance dashboard, free-zone forms, Saudization dashboard, NOC flow) ship full Arabic localization with RTL CSS logical properties (`ms-` / `me-` / `ps-` / `pe-` only); ESLint guard bans `ml-` / `mr-` in v6.0 surfaces
 - [x] **GULF-09**: Locked-phrase registry extends with UAE/KSA Arabic statutory terms (free-zone authority names, Saudization band labels, Qiwa-auth status)
-- [ ] **GULF-10**: Admin can override seed Saudization Nitaqat thresholds + UAE permitted-activity catalogues per-org with audit-logged write; system displays "Custom — verify with adviser" badge on overrides
+- [x] **GULF-10**: Admin can override seed Saudization Nitaqat thresholds + UAE permitted-activity catalogues per-org with audit-logged write; system displays "Custom — verify with adviser" badge on overrides
 - [x] **GULF-11**: System routes ME-region (UAE/KSA) data to the ME database per the existing v4.0 multi-region strategy; new gulf models carry explicit regional-routing annotations and ship with a schema-lint test asserting no cross-region leakage
 
 ### Offboarding Hardening (F4)
@@ -318,7 +318,7 @@ Which phases cover which requirements. Filled by roadmapper on 2026-04-26.
 | GULF-07 | Phase 79 | Complete |
 | GULF-08 | Phase 79 | Pending |
 | GULF-09 | Phase 79 | Complete |
-| GULF-10 | Phase 79 | Pending |
+| GULF-10 | Phase 79 | Complete |
 | GULF-11 | Phase 79 | Complete |
 | OFFB-01 | Phase 74 | Complete |
 | OFFB-02 | Phase 74 | Complete |
