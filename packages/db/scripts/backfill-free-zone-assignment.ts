@@ -94,12 +94,30 @@ export function planFreeZoneBackfill(
     const licenseNumber = fields.tradeLicenseNumber?.trim();
     if (!licenseNumber) continue; // nothing structured to migrate.
 
+    // The source is freeform JSONB, so tradeLicenseExpiry may be unparseable
+    // (e.g. "2025-13-01", "soon", a localized date). An `Invalid Date` here would
+    // be rejected by Postgres and — because every insert runs in ONE $transaction —
+    // abort the entire batch. Normalize an invalid date to null + record the skip
+    // so one bad row can never take the whole backfill down.
+    let licenseExpiresAt: Date | null = null;
+    if (fields.tradeLicenseExpiry) {
+      const parsed = new Date(fields.tradeLicenseExpiry);
+      if (Number.isNaN(parsed.getTime())) {
+        log.warn(
+          { contractorId: c.id, tradeLicenseExpiry: fields.tradeLicenseExpiry },
+          'unparseable tradeLicenseExpiry — recording assignment with licenseExpiresAt=null',
+        );
+      } else {
+        licenseExpiresAt = parsed;
+      }
+    }
+
     inserts.push({
       organizationId: c.organizationId,
       contractorId: c.id,
       zone: fields.freeZone === true ? DEFAULT_FREE_ZONE_CODE : MAINLAND_ZONE_CODE,
       licenseNumber,
-      licenseExpiresAt: fields.tradeLicenseExpiry ? new Date(fields.tradeLicenseExpiry) : null,
+      licenseExpiresAt,
     });
   }
   return inserts;

@@ -42,6 +42,44 @@ describe('free-zone backfill transform (D-02)', () => {
     expect(rows[0]?.licenseExpiresAt).toEqual(new Date('2027-01-15'));
   });
 
+  it('normalizes an unparseable tradeLicenseExpiry to null instead of Invalid Date (WR-04)', () => {
+    const rows = planFreeZoneBackfill([
+      aeContractor({
+        countryFields: {
+          tradeLicenseNumber: 'TL-bad',
+          freeZone: true,
+          tradeLicenseExpiry: '2025-13-01', // month 13 — unparseable
+        },
+      }),
+    ]);
+    // The row is still planned (not dropped), but the bad date becomes null so the
+    // single-transaction batch is not aborted by an Invalid Date rejected by Postgres.
+    expect(rows).toHaveLength(1);
+    expect(rows[0]?.licenseExpiresAt).toBeNull();
+  });
+
+  it('keeps planning other rows when one contractor has an unparseable expiry (no batch abort) (WR-04)', () => {
+    const rows = planFreeZoneBackfill([
+      aeContractor({
+        id: 'ctr_bad',
+        countryFields: { tradeLicenseNumber: 'TL-bad', freeZone: true, tradeLicenseExpiry: 'soon' },
+      }),
+      aeContractor({
+        id: 'ctr_ok',
+        countryFields: {
+          tradeLicenseNumber: 'TL-ok',
+          freeZone: true,
+          tradeLicenseExpiry: '2027-03-10',
+        },
+      }),
+    ]);
+    expect(rows).toHaveLength(2);
+    expect(rows.find(r => r.contractorId === 'ctr_bad')?.licenseExpiresAt).toBeNull();
+    expect(rows.find(r => r.contractorId === 'ctr_ok')?.licenseExpiresAt).toEqual(
+      new Date('2027-03-10'),
+    );
+  });
+
   it('maps freeZone false/absent → MAINLAND (arms no payment-block gate)', () => {
     const rows = planFreeZoneBackfill([
       aeContractor({ countryFields: { tradeLicenseNumber: 'TL-9', freeZone: false } }),
