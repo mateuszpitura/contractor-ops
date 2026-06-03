@@ -19,6 +19,7 @@
 export { createPrismaClientForUrl, PrismaClient, prisma } from './client.js';
 export type {
   ContractType,
+  NitaqatBand,
   Prisma,
   TaxIdType,
   ValidationStatus,
