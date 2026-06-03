@@ -1,0 +1,141 @@
+// Phase 79 (F3 Gulf) — UAE free-zone tracking + Saudization dashboard data layer.
+//
+// FreeZoneAssignment, SaudizationConfig, SaudiHeadcount, UaeFreeZone + the
+// NitaqatBand / UaeFreeZoneCode enums. The same schema deploys to BOTH the EU
+// and ME physical databases (migrate-all-regions runs `migrate deploy` against
+// each DATABASE_URL_*). "Region" is a RUNTIME routing concern, not a Prisma
+// attribute — UAE/KSA orgs live in the ME database and these models are only
+// ever reached via a region-aware client. See the per-model REGION doc comments.
+
+// REGION: ME — accessed only via ctx.db / getRegionalClient(org.dataRegion); never default prisma/prismaRaw. Pitfall 19.
+// Per-contractor free-zone assignment (D-01): a single trade license belongs to
+// the contractor's legal entity, not one engagement. The permitted-activity
+// scope check (D-05/D-06) runs whenever any contract is created for the
+// contractor. License expiry feeds the F1 reminder cascade + payment-block
+// (GULF-02) — written as a ContractorComplianceItem from the service path,
+// gated on zone != MAINLAND (D-04, Pitfall 3).
+model FreeZoneAssignment {
+  id             String @id @default(cuid())
+  organizationId String
+  // @unique — one free-zone assignment per contractor (D-01); also satisfies the
+  // 1:1 back-relation on Contractor.freeZoneAssignment.
+  contractorId   String @unique
+
+  zone             UaeFreeZoneCode
+  licenseNumber    String?
+  licenseCategory  String?
+  // Calendar expiry date (Asia/Dubai); drives the F1 reminder-cascade band math.
+  licenseExpiresAt DateTime?       @db.Date
+
+  // D-05 — human-readable permitted-activities text (display/audit) + the
+  // admin-tagged ISIC-style code list that actually drives scope matching.
+  permittedActivitiesText    String?
+  permittedActivityIsicCodes String[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  contractor   Contractor   @relation(fields: [contractorId], references: [id])
+
+  @@unique([organizationId, contractorId])
+  @@index([organizationId])
+  @@index([organizationId, licenseExpiresAt])
+}
+
+// REGION: ME — accessed only via ctx.db / getRegionalClient(org.dataRegion); never default prisma/prismaRaw. Pitfall 19.
+// Per-org manual Saudization config (GULF-05). The Nitaqat band is entered by
+// hand and NEVER auto-computed (locked anti-feature). The custom-override flags
+// drive the GULF-10 "Custom — verify with adviser" drift badge.
+model SaudizationConfig {
+  id             String @id @default(cuid())
+  organizationId String
+
+  // Manual band entry — nullable until an admin records it. Never derived.
+  band              NitaqatBand?
+  industrySegment   String?
+  bandLastUpdatedAt DateTime?
+
+  // GULF-10 drift overrides of the seed Nitaqat thresholds / permitted-activity
+  // catalogue — true flips the "Custom — verify with adviser" badge.
+  thresholdsCustom                 Boolean @default(false)
+  permittedActivityCatalogueCustom Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+
+  @@unique([organizationId])
+  @@index([organizationId])
+}
+
+// REGION: ME — accessed only via ctx.db / getRegionalClient(org.dataRegion); never default prisma/prismaRaw. Pitfall 19.
+// Per-org manual headcount snapshot (D-10). Nitaqat counts the whole workforce
+// (including employees the platform does not track), so the org-wide total +
+// Saudi-national count are entered by hand; the nationalisation rate is computed
+// from these manual numbers, never from platform contractors alone (Pitfall 7).
+model SaudiHeadcount {
+  id             String @id @default(cuid())
+  organizationId String
+
+  totalHeadcount Int
+  saudiHeadcount Int
+  recordedAt     DateTime @default(now())
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+
+  @@index([organizationId])
+  @@index([organizationId, recordedAt])
+}
+
+// REGION: ME — accessed only via ctx.db / getRegionalClient(org.dataRegion); never default prisma/prismaRaw. Pitfall 19.
+// Global lookup seed of the 10 recordable UAE free zones + Mainland. This is a
+// non-PII reference table (zone code + authority-name KEY pointing at a
+// LOCKED_AE_PHRASES constant, never free text) — it carries no organizationId
+// and is allowlisted in the lint:schema global-lookup allowlist (FOUND6-01).
+model UaeFreeZone {
+  code UaeFreeZoneCode @id @unique
+
+  // Points at a LOCKED_AE_PHRASES key (statutory authority legal name) — NOT a
+  // translatable string, NOT free text. Resolved through validators/legal/ae.ts.
+  authorityLegalNameKey String
+
+  isMainland Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// --- Enums (UPPER_SNAKE per D-17 / db:audit-enum-casing) ---
+
+// Nitaqat bands. YELLOW retained as a recordable historical/manual value even
+// though the 2025 reform folded former Yellow into Red — the system never
+// auto-computes the band, so keeping the label is safe.
+enum NitaqatBand {
+  PLATINUM
+  HIGH_GREEN
+  MID_GREEN
+  LOW_GREEN
+  YELLOW
+  RED
+}
+
+// 10 recordable UAE free zones + MAINLAND. MAINLAND is recordable but arms no
+// payment-block gate (D-04, DED-licensed regime is different).
+enum UaeFreeZoneCode {
+  DIFC
+  DMCC
+  IFZA
+  DUBAI_INTERNET_CITY
+  DUBAI_MEDIA_CITY
+  MEYDAN_FZ
+  JAFZA
+  SHAMS
+  RAKEZ
+  ADGM
+  MAINLAND
+}

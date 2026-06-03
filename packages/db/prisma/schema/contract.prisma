@@ -46,6 +46,11 @@ model Contract {
   // Nullable for backfill — RESEARCH §3 fallback chain: contract.jurisdiction → contractor.countryCode → organization country.
   jurisdiction String? @db.Char(3) // 3-char ISO country code
 
+  // Phase 79 GULF-03 (D-05/D-08) — admin-tagged ISIC-style activity codes for the
+  // permitted-activity scope check. Empty array = uncoded contract → the scope
+  // check SKIPS (no code, no advisory).
+  activityIsicCodes String[]
+
   metadataJson Json?
   createdAt    DateTime                 @default(now())
   updatedAt    DateTime                 @updatedAt

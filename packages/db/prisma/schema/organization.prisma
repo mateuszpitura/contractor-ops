@@ -151,6 +151,10 @@ model Organization {
   deprovisioningRuns             DeprovisioningRun[]
   deprovisioningSteps            DeprovisioningStep[]
   idpChangeProvenances           IdpChangeProvenance[]
+  // Phase 79 (F3 Gulf) — ME-region free-zone + Saudization registries
+  freeZoneAssignments            FreeZoneAssignment[]
+  saudizationConfig              SaudizationConfig?
+  saudiHeadcounts                SaudiHeadcount[]
 }
 
 model Member {

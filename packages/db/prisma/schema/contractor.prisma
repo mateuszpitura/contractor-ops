@@ -80,6 +80,7 @@ model Contractor {
   intakes                   InvoiceIntakeRequest[]             @relation("InvoiceIntakeMatchedContractor")
   deprovisioningRuns        DeprovisioningRun[]
   paymentComplianceChecks   PaymentRunComplianceCheck[] // Phase 72 D-16
+  freeZoneAssignment        FreeZoneAssignment? // Phase 79 GULF-01 (D-01) — per-contractor UAE free-zone license
 
   // InPost preferred Paczkomat (D-03)
   preferredPaczkomatId      String?
@@ -158,23 +159,29 @@ model ContractorBillingProfile {
 }
 
 model ContractorAssignment {
-  id                String           @id @default(cuid())
-  organizationId    String
-  contractorId      String
-  teamId            String?
-  projectId         String?
-  costCenterId      String?
-  ownerUserId       String?
-  allocationPercent Decimal?         @db.Decimal(5, 2)
-  activeFrom        DateTime         @db.Date
-  activeTo          DateTime?        @db.Date
+  id                        String           @id @default(cuid())
+  organizationId            String
+  contractorId              String
+  teamId                    String?
+  projectId                 String?
+  costCenterId              String?
+  ownerUserId               String?
+  allocationPercent         Decimal?         @db.Decimal(5, 2)
+  activeFrom                DateTime         @db.Date
+  activeTo                  DateTime?        @db.Date
   // Phase 76 D-06 — administrative termination instant; drives the 14-day deprovisioning
   // cooldown. Distinct from `activeTo` (calendar end-of-engagement date); written by
   // Phase 74's workflow ACCESS_REVOKE task hook when transitioning to status = ENDED.
-  endedAt           DateTime?
-  status            AssignmentStatus @default(ACTIVE)
-  createdAt         DateTime         @default(now())
-  updatedAt         DateTime         @updatedAt
+  endedAt                   DateTime?
+  // Phase 79 GULF-04 (D-09) — per-engagement Saudi nationality + Qiwa fields.
+  // Nullable-additive (mirrors Phase 76 `endedAt`); ME-org rows route to the ME
+  // db via the existing region routing. Drive the Saudization dashboard derivation.
+  isSaudi                   Boolean?
+  nationality               String? // ISO 3166-1 alpha-2
+  qiwaContractAuthenticated Boolean?         @default(false) // 2026-04-15 Qiwa authorisation requirement
+  status                    AssignmentStatus @default(ACTIVE)
+  createdAt                 DateTime         @default(now())
+  updatedAt                 DateTime         @updatedAt
 
   organization Organization @relation(fields: [organizationId], references: [id])
   contractor   Contractor   @relation(fields: [contractorId], references: [id])
