@@ -46,6 +46,9 @@ export type ContractorAssignmentMinAggregateOutputType = {
   activeFrom: Date | null
   activeTo: Date | null
   endedAt: Date | null
+  isSaudi: boolean | null
+  nationality: string | null
+  qiwaContractAuthenticated: boolean | null
   status: $Enums.AssignmentStatus | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -63,6 +66,9 @@ export type ContractorAssignmentMaxAggregateOutputType = {
   activeFrom: Date | null
   activeTo: Date | null
   endedAt: Date | null
+  isSaudi: boolean | null
+  nationality: string | null
+  qiwaContractAuthenticated: boolean | null
   status: $Enums.AssignmentStatus | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -80,6 +86,9 @@ export type ContractorAssignmentCountAggregateOutputType = {
   activeFrom: number
   activeTo: number
   endedAt: number
+  isSaudi: number
+  nationality: number
+  qiwaContractAuthenticated: number
   status: number
   createdAt: number
   updatedAt: number
@@ -107,6 +116,9 @@ export type ContractorAssignmentMinAggregateInputType = {
   activeFrom?: true
   activeTo?: true
   endedAt?: true
+  isSaudi?: true
+  nationality?: true
+  qiwaContractAuthenticated?: true
   status?: true
   createdAt?: true
   updatedAt?: true
@@ -124,6 +136,9 @@ export type ContractorAssignmentMaxAggregateInputType = {
   activeFrom?: true
   activeTo?: true
   endedAt?: true
+  isSaudi?: true
+  nationality?: true
+  qiwaContractAuthenticated?: true
   status?: true
   createdAt?: true
   updatedAt?: true
@@ -141,6 +156,9 @@ export type ContractorAssignmentCountAggregateInputType = {
   activeFrom?: true
   activeTo?: true
   endedAt?: true
+  isSaudi?: true
+  nationality?: true
+  qiwaContractAuthenticated?: true
   status?: true
   createdAt?: true
   updatedAt?: true
@@ -245,6 +263,9 @@ export type ContractorAssignmentGroupByOutputType = {
   activeFrom: Date
   activeTo: Date | null
   endedAt: Date | null
+  isSaudi: boolean | null
+  nationality: string | null
+  qiwaContractAuthenticated: boolean | null
   status: $Enums.AssignmentStatus
   createdAt: Date
   updatedAt: Date
@@ -285,6 +306,9 @@ export type ContractorAssignmentWhereInput = {
   activeFrom?: Prisma.DateTimeFilter<"ContractorAssignment"> | Date | string
   activeTo?: Prisma.DateTimeNullableFilter<"ContractorAssignment"> | Date | string | null
   endedAt?: Prisma.DateTimeNullableFilter<"ContractorAssignment"> | Date | string | null
+  isSaudi?: Prisma.BoolNullableFilter<"ContractorAssignment"> | boolean | null
+  nationality?: Prisma.StringNullableFilter<"ContractorAssignment"> | string | null
+  qiwaContractAuthenticated?: Prisma.BoolNullableFilter<"ContractorAssignment"> | boolean | null
   status?: Prisma.EnumAssignmentStatusFilter<"ContractorAssignment"> | $Enums.AssignmentStatus
   createdAt?: Prisma.DateTimeFilter<"ContractorAssignment"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"ContractorAssignment"> | Date | string
@@ -314,6 +338,9 @@ export type ContractorAssignmentOrderByWithRelationInput = {
   activeFrom?: Prisma.SortOrder
   activeTo?: Prisma.SortOrderInput | Prisma.SortOrder
   endedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  isSaudi?: Prisma.SortOrderInput | Prisma.SortOrder
+  nationality?: Prisma.SortOrderInput | Prisma.SortOrder
+  qiwaContractAuthenticated?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -346,6 +373,9 @@ export type ContractorAssignmentWhereUniqueInput = Prisma.AtLeast<{
   activeFrom?: Prisma.DateTimeFilter<"ContractorAssignment"> | Date | string
   activeTo?: Prisma.DateTimeNullableFilter<"ContractorAssignment"> | Date | string | null
   endedAt?: Prisma.DateTimeNullableFilter<"ContractorAssignment"> | Date | string | null
+  isSaudi?: Prisma.BoolNullableFilter<"ContractorAssignment"> | boolean | null
+  nationality?: Prisma.StringNullableFilter<"ContractorAssignment"> | string | null
+  qiwaContractAuthenticated?: Prisma.BoolNullableFilter<"ContractorAssignment"> | boolean | null
   status?: Prisma.EnumAssignmentStatusFilter<"ContractorAssignment"> | $Enums.AssignmentStatus
   createdAt?: Prisma.DateTimeFilter<"ContractorAssignment"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"ContractorAssignment"> | Date | string
@@ -375,6 +405,9 @@ export type ContractorAssignmentOrderByWithAggregationInput = {
   activeFrom?: Prisma.SortOrder
   activeTo?: Prisma.SortOrderInput | Prisma.SortOrder
   endedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  isSaudi?: Prisma.SortOrderInput | Prisma.SortOrder
+  nationality?: Prisma.SortOrderInput | Prisma.SortOrder
+  qiwaContractAuthenticated?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -400,6 +433,9 @@ export type ContractorAssignmentScalarWhereWithAggregatesInput = {
   activeFrom?: Prisma.DateTimeWithAggregatesFilter<"ContractorAssignment"> | Date | string
   activeTo?: Prisma.DateTimeNullableWithAggregatesFilter<"ContractorAssignment"> | Date | string | null
   endedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"ContractorAssignment"> | Date | string | null
+  isSaudi?: Prisma.BoolNullableWithAggregatesFilter<"ContractorAssignment"> | boolean | null
+  nationality?: Prisma.StringNullableWithAggregatesFilter<"ContractorAssignment"> | string | null
+  qiwaContractAuthenticated?: Prisma.BoolNullableWithAggregatesFilter<"ContractorAssignment"> | boolean | null
   status?: Prisma.EnumAssignmentStatusWithAggregatesFilter<"ContractorAssignment"> | $Enums.AssignmentStatus
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"ContractorAssignment"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"ContractorAssignment"> | Date | string
@@ -412,6 +448,9 @@ export type ContractorAssignmentCreateInput = {
   activeFrom: Date | string
   activeTo?: Date | string | null
   endedAt?: Date | string | null
+  isSaudi?: boolean | null
+  nationality?: string | null
+  qiwaContractAuthenticated?: boolean | null
   status?: $Enums.AssignmentStatus
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -441,6 +480,9 @@ export type ContractorAssignmentUncheckedCreateInput = {
   activeFrom: Date | string
   activeTo?: Date | string | null
   endedAt?: Date | string | null
+  isSaudi?: boolean | null
+  nationality?: string | null
+  qiwaContractAuthenticated?: boolean | null
   status?: $Enums.AssignmentStatus
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -460,6 +502,9 @@ export type ContractorAssignmentUpdateInput = {
   activeFrom?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   activeTo?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   endedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  isSaudi?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  nationality?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  qiwaContractAuthenticated?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   status?: Prisma.EnumAssignmentStatusFieldUpdateOperationsInput | $Enums.AssignmentStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -489,6 +534,9 @@ export type ContractorAssignmentUncheckedUpdateInput = {
   activeFrom?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   activeTo?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   endedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  isSaudi?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  nationality?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  qiwaContractAuthenticated?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   status?: Prisma.EnumAssignmentStatusFieldUpdateOperationsInput | $Enums.AssignmentStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -513,6 +561,9 @@ export type ContractorAssignmentCreateManyInput = {
   activeFrom: Date | string
   activeTo?: Date | string | null
   endedAt?: Date | string | null
+  isSaudi?: boolean | null
+  nationality?: string | null
+  qiwaContractAuthenticated?: boolean | null
   status?: $Enums.AssignmentStatus
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -525,6 +576,9 @@ export type ContractorAssignmentUpdateManyMutationInput = {
   activeFrom?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   activeTo?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   endedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  isSaudi?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  nationality?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  qiwaContractAuthenticated?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   status?: Prisma.EnumAssignmentStatusFieldUpdateOperationsInput | $Enums.AssignmentStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -542,6 +596,9 @@ export type ContractorAssignmentUncheckedUpdateManyInput = {
   activeFrom?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   activeTo?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   endedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  isSaudi?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  nationality?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  qiwaContractAuthenticated?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   status?: Prisma.EnumAssignmentStatusFieldUpdateOperationsInput | $Enums.AssignmentStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -574,6 +631,9 @@ export type ContractorAssignmentCountOrderByAggregateInput = {
   activeFrom?: Prisma.SortOrder
   activeTo?: Prisma.SortOrder
   endedAt?: Prisma.SortOrder
+  isSaudi?: Prisma.SortOrder
+  nationality?: Prisma.SortOrder
+  qiwaContractAuthenticated?: Prisma.SortOrder
   status?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -595,6 +655,9 @@ export type ContractorAssignmentMaxOrderByAggregateInput = {
   activeFrom?: Prisma.SortOrder
   activeTo?: Prisma.SortOrder
   endedAt?: Prisma.SortOrder
+  isSaudi?: Prisma.SortOrder
+  nationality?: Prisma.SortOrder
+  qiwaContractAuthenticated?: Prisma.SortOrder
   status?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -612,6 +675,9 @@ export type ContractorAssignmentMinOrderByAggregateInput = {
   activeFrom?: Prisma.SortOrder
   activeTo?: Prisma.SortOrder
   endedAt?: Prisma.SortOrder
+  isSaudi?: Prisma.SortOrder
+  nationality?: Prisma.SortOrder
+  qiwaContractAuthenticated?: Prisma.SortOrder
   status?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -940,6 +1006,9 @@ export type ContractorAssignmentCreateWithoutClassificationAssessmentsInput = {
   activeFrom: Date | string
   activeTo?: Date | string | null
   endedAt?: Date | string | null
+  isSaudi?: boolean | null
+  nationality?: string | null
+  qiwaContractAuthenticated?: boolean | null
   status?: $Enums.AssignmentStatus
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -968,6 +1037,9 @@ export type ContractorAssignmentUncheckedCreateWithoutClassificationAssessmentsI
   activeFrom: Date | string
   activeTo?: Date | string | null
   endedAt?: Date | string | null
+  isSaudi?: boolean | null
+  nationality?: string | null
+  qiwaContractAuthenticated?: boolean | null
   status?: $Enums.AssignmentStatus
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1002,6 +1074,9 @@ export type ContractorAssignmentUpdateWithoutClassificationAssessmentsInput = {
   activeFrom?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   activeTo?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   endedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  isSaudi?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  nationality?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  qiwaContractAuthenticated?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   status?: Prisma.EnumAssignmentStatusFieldUpdateOperationsInput | $Enums.AssignmentStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1030,6 +1105,9 @@ export type ContractorAssignmentUncheckedUpdateWithoutClassificationAssessmentsI
   activeFrom?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   activeTo?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   endedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  isSaudi?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  nationality?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  qiwaContractAuthenticated?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   status?: Prisma.EnumAssignmentStatusFieldUpdateOperationsInput | $Enums.AssignmentStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1048,6 +1126,9 @@ export type ContractorAssignmentCreateWithoutIr35ChainParticipantsInput = {
   activeFrom: Date | string
   activeTo?: Date | string | null
   endedAt?: Date | string | null
+  isSaudi?: boolean | null
+  nationality?: string | null
+  qiwaContractAuthenticated?: boolean | null
   status?: $Enums.AssignmentStatus
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1076,6 +1157,9 @@ export type ContractorAssignmentUncheckedCreateWithoutIr35ChainParticipantsInput
   activeFrom: Date | string
   activeTo?: Date | string | null
   endedAt?: Date | string | null
+  isSaudi?: boolean | null
+  nationality?: string | null
+  qiwaContractAuthenticated?: boolean | null
   status?: $Enums.AssignmentStatus
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1110,6 +1194,9 @@ export type ContractorAssignmentUpdateWithoutIr35ChainParticipantsInput = {
   activeFrom?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   activeTo?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   endedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  isSaudi?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  nationality?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  qiwaContractAuthenticated?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   status?: Prisma.EnumAssignmentStatusFieldUpdateOperationsInput | $Enums.AssignmentStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1138,6 +1225,9 @@ export type ContractorAssignmentUncheckedUpdateWithoutIr35ChainParticipantsInput
   activeFrom?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   activeTo?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   endedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  isSaudi?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  nationality?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  qiwaContractAuthenticated?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   status?: Prisma.EnumAssignmentStatusFieldUpdateOperationsInput | $Enums.AssignmentStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1156,6 +1246,9 @@ export type ContractorAssignmentCreateWithoutIr35OtherClientAttestationInput = {
   activeFrom: Date | string
   activeTo?: Date | string | null
   endedAt?: Date | string | null
+  isSaudi?: boolean | null
+  nationality?: string | null
+  qiwaContractAuthenticated?: boolean | null
   status?: $Enums.AssignmentStatus
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1184,6 +1277,9 @@ export type ContractorAssignmentUncheckedCreateWithoutIr35OtherClientAttestation
   activeFrom: Date | string
   activeTo?: Date | string | null
   endedAt?: Date | string | null
+  isSaudi?: boolean | null
+  nationality?: string | null
+  qiwaContractAuthenticated?: boolean | null
   status?: $Enums.AssignmentStatus
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1218,6 +1314,9 @@ export type ContractorAssignmentUpdateWithoutIr35OtherClientAttestationInput = {
   activeFrom?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   activeTo?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   endedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  isSaudi?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  nationality?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  qiwaContractAuthenticated?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   status?: Prisma.EnumAssignmentStatusFieldUpdateOperationsInput | $Enums.AssignmentStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1246,6 +1345,9 @@ export type ContractorAssignmentUncheckedUpdateWithoutIr35OtherClientAttestation
   activeFrom?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   activeTo?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   endedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  isSaudi?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  nationality?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  qiwaContractAuthenticated?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   status?: Prisma.EnumAssignmentStatusFieldUpdateOperationsInput | $Enums.AssignmentStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1264,6 +1366,9 @@ export type ContractorAssignmentCreateWithoutEconomicDependencyAlertStateInput =
   activeFrom: Date | string
   activeTo?: Date | string | null
   endedAt?: Date | string | null
+  isSaudi?: boolean | null
+  nationality?: string | null
+  qiwaContractAuthenticated?: boolean | null
   status?: $Enums.AssignmentStatus
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1292,6 +1397,9 @@ export type ContractorAssignmentUncheckedCreateWithoutEconomicDependencyAlertSta
   activeFrom: Date | string
   activeTo?: Date | string | null
   endedAt?: Date | string | null
+  isSaudi?: boolean | null
+  nationality?: string | null
+  qiwaContractAuthenticated?: boolean | null
   status?: $Enums.AssignmentStatus
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1326,6 +1434,9 @@ export type ContractorAssignmentUpdateWithoutEconomicDependencyAlertStateInput =
   activeFrom?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   activeTo?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   endedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  isSaudi?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  nationality?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  qiwaContractAuthenticated?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   status?: Prisma.EnumAssignmentStatusFieldUpdateOperationsInput | $Enums.AssignmentStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1354,6 +1465,9 @@ export type ContractorAssignmentUncheckedUpdateWithoutEconomicDependencyAlertSta
   activeFrom?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   activeTo?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   endedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  isSaudi?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  nationality?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  qiwaContractAuthenticated?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   status?: Prisma.EnumAssignmentStatusFieldUpdateOperationsInput | $Enums.AssignmentStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1372,6 +1486,9 @@ export type ContractorAssignmentCreateWithoutReassessmentTriggersInput = {
   activeFrom: Date | string
   activeTo?: Date | string | null
   endedAt?: Date | string | null
+  isSaudi?: boolean | null
+  nationality?: string | null
+  qiwaContractAuthenticated?: boolean | null
   status?: $Enums.AssignmentStatus
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1400,6 +1517,9 @@ export type ContractorAssignmentUncheckedCreateWithoutReassessmentTriggersInput 
   activeFrom: Date | string
   activeTo?: Date | string | null
   endedAt?: Date | string | null
+  isSaudi?: boolean | null
+  nationality?: string | null
+  qiwaContractAuthenticated?: boolean | null
   status?: $Enums.AssignmentStatus
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1434,6 +1554,9 @@ export type ContractorAssignmentUpdateWithoutReassessmentTriggersInput = {
   activeFrom?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   activeTo?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   endedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  isSaudi?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  nationality?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  qiwaContractAuthenticated?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   status?: Prisma.EnumAssignmentStatusFieldUpdateOperationsInput | $Enums.AssignmentStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1462,6 +1585,9 @@ export type ContractorAssignmentUncheckedUpdateWithoutReassessmentTriggersInput 
   activeFrom?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   activeTo?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   endedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  isSaudi?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  nationality?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  qiwaContractAuthenticated?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   status?: Prisma.EnumAssignmentStatusFieldUpdateOperationsInput | $Enums.AssignmentStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1480,6 +1606,9 @@ export type ContractorAssignmentCreateWithoutStatusfeststellungsverfahrenInput =
   activeFrom: Date | string
   activeTo?: Date | string | null
   endedAt?: Date | string | null
+  isSaudi?: boolean | null
+  nationality?: string | null
+  qiwaContractAuthenticated?: boolean | null
   status?: $Enums.AssignmentStatus
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1508,6 +1637,9 @@ export type ContractorAssignmentUncheckedCreateWithoutStatusfeststellungsverfahr
   activeFrom: Date | string
   activeTo?: Date | string | null
   endedAt?: Date | string | null
+  isSaudi?: boolean | null
+  nationality?: string | null
+  qiwaContractAuthenticated?: boolean | null
   status?: $Enums.AssignmentStatus
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1542,6 +1674,9 @@ export type ContractorAssignmentUpdateWithoutStatusfeststellungsverfahrenInput =
   activeFrom?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   activeTo?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   endedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  isSaudi?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  nationality?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  qiwaContractAuthenticated?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   status?: Prisma.EnumAssignmentStatusFieldUpdateOperationsInput | $Enums.AssignmentStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1570,6 +1705,9 @@ export type ContractorAssignmentUncheckedUpdateWithoutStatusfeststellungsverfahr
   activeFrom?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   activeTo?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   endedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  isSaudi?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  nationality?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  qiwaContractAuthenticated?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   status?: Prisma.EnumAssignmentStatusFieldUpdateOperationsInput | $Enums.AssignmentStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1588,6 +1726,9 @@ export type ContractorAssignmentCreateWithoutContractorInput = {
   activeFrom: Date | string
   activeTo?: Date | string | null
   endedAt?: Date | string | null
+  isSaudi?: boolean | null
+  nationality?: string | null
+  qiwaContractAuthenticated?: boolean | null
   status?: $Enums.AssignmentStatus
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1615,6 +1756,9 @@ export type ContractorAssignmentUncheckedCreateWithoutContractorInput = {
   activeFrom: Date | string
   activeTo?: Date | string | null
   endedAt?: Date | string | null
+  isSaudi?: boolean | null
+  nationality?: string | null
+  qiwaContractAuthenticated?: boolean | null
   status?: $Enums.AssignmentStatus
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1668,6 +1812,9 @@ export type ContractorAssignmentScalarWhereInput = {
   activeFrom?: Prisma.DateTimeFilter<"ContractorAssignment"> | Date | string
   activeTo?: Prisma.DateTimeNullableFilter<"ContractorAssignment"> | Date | string | null
   endedAt?: Prisma.DateTimeNullableFilter<"ContractorAssignment"> | Date | string | null
+  isSaudi?: Prisma.BoolNullableFilter<"ContractorAssignment"> | boolean | null
+  nationality?: Prisma.StringNullableFilter<"ContractorAssignment"> | string | null
+  qiwaContractAuthenticated?: Prisma.BoolNullableFilter<"ContractorAssignment"> | boolean | null
   status?: Prisma.EnumAssignmentStatusFilter<"ContractorAssignment"> | $Enums.AssignmentStatus
   createdAt?: Prisma.DateTimeFilter<"ContractorAssignment"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"ContractorAssignment"> | Date | string
@@ -1680,6 +1827,9 @@ export type ContractorAssignmentCreateWithoutDeprovisioningRunsInput = {
   activeFrom: Date | string
   activeTo?: Date | string | null
   endedAt?: Date | string | null
+  isSaudi?: boolean | null
+  nationality?: string | null
+  qiwaContractAuthenticated?: boolean | null
   status?: $Enums.AssignmentStatus
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1708,6 +1858,9 @@ export type ContractorAssignmentUncheckedCreateWithoutDeprovisioningRunsInput = 
   activeFrom: Date | string
   activeTo?: Date | string | null
   endedAt?: Date | string | null
+  isSaudi?: boolean | null
+  nationality?: string | null
+  qiwaContractAuthenticated?: boolean | null
   status?: $Enums.AssignmentStatus
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1742,6 +1895,9 @@ export type ContractorAssignmentUpdateWithoutDeprovisioningRunsInput = {
   activeFrom?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   activeTo?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   endedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  isSaudi?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  nationality?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  qiwaContractAuthenticated?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   status?: Prisma.EnumAssignmentStatusFieldUpdateOperationsInput | $Enums.AssignmentStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1770,6 +1926,9 @@ export type ContractorAssignmentUncheckedUpdateWithoutDeprovisioningRunsInput = 
   activeFrom?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   activeTo?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   endedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  isSaudi?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  nationality?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  qiwaContractAuthenticated?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   status?: Prisma.EnumAssignmentStatusFieldUpdateOperationsInput | $Enums.AssignmentStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1788,6 +1947,9 @@ export type ContractorAssignmentCreateWithoutOrganizationInput = {
   activeFrom: Date | string
   activeTo?: Date | string | null
   endedAt?: Date | string | null
+  isSaudi?: boolean | null
+  nationality?: string | null
+  qiwaContractAuthenticated?: boolean | null
   status?: $Enums.AssignmentStatus
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1815,6 +1977,9 @@ export type ContractorAssignmentUncheckedCreateWithoutOrganizationInput = {
   activeFrom: Date | string
   activeTo?: Date | string | null
   endedAt?: Date | string | null
+  isSaudi?: boolean | null
+  nationality?: string | null
+  qiwaContractAuthenticated?: boolean | null
   status?: $Enums.AssignmentStatus
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1860,6 +2025,9 @@ export type ContractorAssignmentCreateWithoutTeamInput = {
   activeFrom: Date | string
   activeTo?: Date | string | null
   endedAt?: Date | string | null
+  isSaudi?: boolean | null
+  nationality?: string | null
+  qiwaContractAuthenticated?: boolean | null
   status?: $Enums.AssignmentStatus
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1887,6 +2055,9 @@ export type ContractorAssignmentUncheckedCreateWithoutTeamInput = {
   activeFrom: Date | string
   activeTo?: Date | string | null
   endedAt?: Date | string | null
+  isSaudi?: boolean | null
+  nationality?: string | null
+  qiwaContractAuthenticated?: boolean | null
   status?: $Enums.AssignmentStatus
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1932,6 +2103,9 @@ export type ContractorAssignmentCreateWithoutProjectInput = {
   activeFrom: Date | string
   activeTo?: Date | string | null
   endedAt?: Date | string | null
+  isSaudi?: boolean | null
+  nationality?: string | null
+  qiwaContractAuthenticated?: boolean | null
   status?: $Enums.AssignmentStatus
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1959,6 +2133,9 @@ export type ContractorAssignmentUncheckedCreateWithoutProjectInput = {
   activeFrom: Date | string
   activeTo?: Date | string | null
   endedAt?: Date | string | null
+  isSaudi?: boolean | null
+  nationality?: string | null
+  qiwaContractAuthenticated?: boolean | null
   status?: $Enums.AssignmentStatus
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -2004,6 +2181,9 @@ export type ContractorAssignmentCreateWithoutCostCenterInput = {
   activeFrom: Date | string
   activeTo?: Date | string | null
   endedAt?: Date | string | null
+  isSaudi?: boolean | null
+  nationality?: string | null
+  qiwaContractAuthenticated?: boolean | null
   status?: $Enums.AssignmentStatus
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -2031,6 +2211,9 @@ export type ContractorAssignmentUncheckedCreateWithoutCostCenterInput = {
   activeFrom: Date | string
   activeTo?: Date | string | null
   endedAt?: Date | string | null
+  isSaudi?: boolean | null
+  nationality?: string | null
+  qiwaContractAuthenticated?: boolean | null
   status?: $Enums.AssignmentStatus
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -2080,6 +2263,9 @@ export type ContractorAssignmentCreateManyContractorInput = {
   activeFrom: Date | string
   activeTo?: Date | string | null
   endedAt?: Date | string | null
+  isSaudi?: boolean | null
+  nationality?: string | null
+  qiwaContractAuthenticated?: boolean | null
   status?: $Enums.AssignmentStatus
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -2092,6 +2278,9 @@ export type ContractorAssignmentUpdateWithoutContractorInput = {
   activeFrom?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   activeTo?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   endedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  isSaudi?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  nationality?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  qiwaContractAuthenticated?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   status?: Prisma.EnumAssignmentStatusFieldUpdateOperationsInput | $Enums.AssignmentStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2119,6 +2308,9 @@ export type ContractorAssignmentUncheckedUpdateWithoutContractorInput = {
   activeFrom?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   activeTo?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   endedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  isSaudi?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  nationality?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  qiwaContractAuthenticated?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   status?: Prisma.EnumAssignmentStatusFieldUpdateOperationsInput | $Enums.AssignmentStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2142,6 +2334,9 @@ export type ContractorAssignmentUncheckedUpdateManyWithoutContractorInput = {
   activeFrom?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   activeTo?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   endedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  isSaudi?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  nationality?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  qiwaContractAuthenticated?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   status?: Prisma.EnumAssignmentStatusFieldUpdateOperationsInput | $Enums.AssignmentStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2158,6 +2353,9 @@ export type ContractorAssignmentCreateManyOrganizationInput = {
   activeFrom: Date | string
   activeTo?: Date | string | null
   endedAt?: Date | string | null
+  isSaudi?: boolean | null
+  nationality?: string | null
+  qiwaContractAuthenticated?: boolean | null
   status?: $Enums.AssignmentStatus
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -2170,6 +2368,9 @@ export type ContractorAssignmentUpdateWithoutOrganizationInput = {
   activeFrom?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   activeTo?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   endedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  isSaudi?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  nationality?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  qiwaContractAuthenticated?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   status?: Prisma.EnumAssignmentStatusFieldUpdateOperationsInput | $Enums.AssignmentStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2197,6 +2398,9 @@ export type ContractorAssignmentUncheckedUpdateWithoutOrganizationInput = {
   activeFrom?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   activeTo?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   endedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  isSaudi?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  nationality?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  qiwaContractAuthenticated?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   status?: Prisma.EnumAssignmentStatusFieldUpdateOperationsInput | $Enums.AssignmentStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2220,6 +2424,9 @@ export type ContractorAssignmentUncheckedUpdateManyWithoutOrganizationInput = {
   activeFrom?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   activeTo?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   endedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  isSaudi?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  nationality?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  qiwaContractAuthenticated?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   status?: Prisma.EnumAssignmentStatusFieldUpdateOperationsInput | $Enums.AssignmentStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2236,6 +2443,9 @@ export type ContractorAssignmentCreateManyTeamInput = {
   activeFrom: Date | string
   activeTo?: Date | string | null
   endedAt?: Date | string | null
+  isSaudi?: boolean | null
+  nationality?: string | null
+  qiwaContractAuthenticated?: boolean | null
   status?: $Enums.AssignmentStatus
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -2248,6 +2458,9 @@ export type ContractorAssignmentUpdateWithoutTeamInput = {
   activeFrom?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   activeTo?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   endedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  isSaudi?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  nationality?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  qiwaContractAuthenticated?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   status?: Prisma.EnumAssignmentStatusFieldUpdateOperationsInput | $Enums.AssignmentStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2275,6 +2488,9 @@ export type ContractorAssignmentUncheckedUpdateWithoutTeamInput = {
   activeFrom?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   activeTo?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   endedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  isSaudi?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  nationality?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  qiwaContractAuthenticated?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   status?: Prisma.EnumAssignmentStatusFieldUpdateOperationsInput | $Enums.AssignmentStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2298,6 +2514,9 @@ export type ContractorAssignmentUncheckedUpdateManyWithoutTeamInput = {
   activeFrom?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   activeTo?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   endedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  isSaudi?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  nationality?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  qiwaContractAuthenticated?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   status?: Prisma.EnumAssignmentStatusFieldUpdateOperationsInput | $Enums.AssignmentStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2314,6 +2533,9 @@ export type ContractorAssignmentCreateManyProjectInput = {
   activeFrom: Date | string
   activeTo?: Date | string | null
   endedAt?: Date | string | null
+  isSaudi?: boolean | null
+  nationality?: string | null
+  qiwaContractAuthenticated?: boolean | null
   status?: $Enums.AssignmentStatus
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -2326,6 +2548,9 @@ export type ContractorAssignmentUpdateWithoutProjectInput = {
   activeFrom?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   activeTo?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   endedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  isSaudi?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  nationality?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  qiwaContractAuthenticated?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   status?: Prisma.EnumAssignmentStatusFieldUpdateOperationsInput | $Enums.AssignmentStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2353,6 +2578,9 @@ export type ContractorAssignmentUncheckedUpdateWithoutProjectInput = {
   activeFrom?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   activeTo?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   endedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  isSaudi?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  nationality?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  qiwaContractAuthenticated?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   status?: Prisma.EnumAssignmentStatusFieldUpdateOperationsInput | $Enums.AssignmentStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2376,6 +2604,9 @@ export type ContractorAssignmentUncheckedUpdateManyWithoutProjectInput = {
   activeFrom?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   activeTo?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   endedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  isSaudi?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  nationality?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  qiwaContractAuthenticated?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   status?: Prisma.EnumAssignmentStatusFieldUpdateOperationsInput | $Enums.AssignmentStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2392,6 +2623,9 @@ export type ContractorAssignmentCreateManyCostCenterInput = {
   activeFrom: Date | string
   activeTo?: Date | string | null
   endedAt?: Date | string | null
+  isSaudi?: boolean | null
+  nationality?: string | null
+  qiwaContractAuthenticated?: boolean | null
   status?: $Enums.AssignmentStatus
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -2404,6 +2638,9 @@ export type ContractorAssignmentUpdateWithoutCostCenterInput = {
   activeFrom?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   activeTo?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   endedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  isSaudi?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  nationality?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  qiwaContractAuthenticated?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   status?: Prisma.EnumAssignmentStatusFieldUpdateOperationsInput | $Enums.AssignmentStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2431,6 +2668,9 @@ export type ContractorAssignmentUncheckedUpdateWithoutCostCenterInput = {
   activeFrom?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   activeTo?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   endedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  isSaudi?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  nationality?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  qiwaContractAuthenticated?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   status?: Prisma.EnumAssignmentStatusFieldUpdateOperationsInput | $Enums.AssignmentStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2454,6 +2694,9 @@ export type ContractorAssignmentUncheckedUpdateManyWithoutCostCenterInput = {
   activeFrom?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   activeTo?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   endedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  isSaudi?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  nationality?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  qiwaContractAuthenticated?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   status?: Prisma.EnumAssignmentStatusFieldUpdateOperationsInput | $Enums.AssignmentStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2538,6 +2781,9 @@ export type ContractorAssignmentSelect<ExtArgs extends runtime.Types.Extensions.
   activeFrom?: boolean
   activeTo?: boolean
   endedAt?: boolean
+  isSaudi?: boolean
+  nationality?: boolean
+  qiwaContractAuthenticated?: boolean
   status?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -2568,6 +2814,9 @@ export type ContractorAssignmentSelectCreateManyAndReturn<ExtArgs extends runtim
   activeFrom?: boolean
   activeTo?: boolean
   endedAt?: boolean
+  isSaudi?: boolean
+  nationality?: boolean
+  qiwaContractAuthenticated?: boolean
   status?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -2590,6 +2839,9 @@ export type ContractorAssignmentSelectUpdateManyAndReturn<ExtArgs extends runtim
   activeFrom?: boolean
   activeTo?: boolean
   endedAt?: boolean
+  isSaudi?: boolean
+  nationality?: boolean
+  qiwaContractAuthenticated?: boolean
   status?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -2612,12 +2864,15 @@ export type ContractorAssignmentSelectScalar = {
   activeFrom?: boolean
   activeTo?: boolean
   endedAt?: boolean
+  isSaudi?: boolean
+  nationality?: boolean
+  qiwaContractAuthenticated?: boolean
   status?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type ContractorAssignmentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "organizationId" | "contractorId" | "teamId" | "projectId" | "costCenterId" | "ownerUserId" | "allocationPercent" | "activeFrom" | "activeTo" | "endedAt" | "status" | "createdAt" | "updatedAt", ExtArgs["result"]["contractorAssignment"]>
+export type ContractorAssignmentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "organizationId" | "contractorId" | "teamId" | "projectId" | "costCenterId" | "ownerUserId" | "allocationPercent" | "activeFrom" | "activeTo" | "endedAt" | "isSaudi" | "nationality" | "qiwaContractAuthenticated" | "status" | "createdAt" | "updatedAt", ExtArgs["result"]["contractorAssignment"]>
 export type ContractorAssignmentInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
   contractor?: boolean | Prisma.ContractorDefaultArgs<ExtArgs>
@@ -2676,6 +2931,9 @@ export type $ContractorAssignmentPayload<ExtArgs extends runtime.Types.Extension
     activeFrom: Date
     activeTo: Date | null
     endedAt: Date | null
+    isSaudi: boolean | null
+    nationality: string | null
+    qiwaContractAuthenticated: boolean | null
     status: $Enums.AssignmentStatus
     createdAt: Date
     updatedAt: Date
@@ -3125,6 +3383,9 @@ export interface ContractorAssignmentFieldRefs {
   readonly activeFrom: Prisma.FieldRef<"ContractorAssignment", 'DateTime'>
   readonly activeTo: Prisma.FieldRef<"ContractorAssignment", 'DateTime'>
   readonly endedAt: Prisma.FieldRef<"ContractorAssignment", 'DateTime'>
+  readonly isSaudi: Prisma.FieldRef<"ContractorAssignment", 'Boolean'>
+  readonly nationality: Prisma.FieldRef<"ContractorAssignment", 'String'>
+  readonly qiwaContractAuthenticated: Prisma.FieldRef<"ContractorAssignment", 'Boolean'>
   readonly status: Prisma.FieldRef<"ContractorAssignment", 'AssignmentStatus'>
   readonly createdAt: Prisma.FieldRef<"ContractorAssignment", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"ContractorAssignment", 'DateTime'>

@@ -446,6 +446,10 @@ export const ModelName = {
   SkontoSnapshot: 'SkontoSnapshot',
   SkontoApplication: 'SkontoApplication',
   GovApiAuditLog: 'GovApiAuditLog',
+  FreeZoneAssignment: 'FreeZoneAssignment',
+  SaudizationConfig: 'SaudizationConfig',
+  SaudiHeadcount: 'SaudiHeadcount',
+  UaeFreeZone: 'UaeFreeZone',
   DeprovisioningRun: 'DeprovisioningRun',
   DeprovisioningStep: 'DeprovisioningStep',
   IdpChangeProvenance: 'IdpChangeProvenance',
@@ -521,7 +525,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "organizationApiKey" | "approvalChainConfig" | "approvalFlow" | "approvalStep" | "approvalDecision" | "auditLog" | "user" | "userPinnedView" | "session" | "account" | "verification" | "subscription" | "ocrCreditLedger" | "stripeEvent" | "classificationAssessment" | "classificationDocument" | "ir35ChainParticipant" | "ir35OtherClientAttestation" | "economicDependencyAlertState" | "reassessmentTrigger" | "cronScanState" | "statusfeststellungsverfahren" | "classificationEscalationEvent" | "sdsApproval" | "consentRecord" | "privacyNotice" | "consentEvent" | "contract" | "contractAmendment" | "contractRatePeriod" | "document" | "documentLink" | "contractHealthCheckRun" | "contractor" | "contractorContact" | "contractorBillingProfile" | "contractorAssignment" | "contractorTag" | "contractorTagLink" | "complianceRequirementTemplate" | "contractorComplianceItem" | "contractorComplianceReminderState" | "leitwegId" | "eInvoiceLifecycle" | "eInvoiceLifecycleEvent" | "peppolCapabilityCache" | "equipment" | "equipmentAssignment" | "shipment" | "shipmentEvent" | "returnRequest" | "courierConfig" | "signingEnvelope" | "signingRecipient" | "signingEvent" | "exchangeRate" | "export" | "boEBaseRateHistory" | "skontoTerm" | "skontoSnapshot" | "skontoApplication" | "govApiAuditLog" | "deprovisioningRun" | "deprovisioningStep" | "idpChangeProvenance" | "integrationConnection" | "externalLink" | "integrationSyncLog" | "webhookDelivery" | "invoice" | "invoiceFile" | "invoiceLine" | "invoiceMatchResult" | "invoiceIntakeRequest" | "invoicePayment" | "invoiceInterestCompensation" | "invoiceInterestWaiver" | "invoiceInterestClaim" | "notification" | "userNotificationPreference" | "comment" | "reminderRule" | "reminderInstance" | "notificationCronDedup" | "oAuthChallenge" | "ocrExtraction" | "organization" | "member" | "invitation" | "team" | "project" | "pendingProjectMerge" | "projectExternalLink" | "costCenter" | "outboxEvent" | "paymentRun" | "paymentRunItem" | "paymentExport" | "paymentRunComplianceCheck" | "peppolParticipant" | "peppolTransmission" | "portalSession" | "portalMagicToken" | "contractorChangeRequest" | "contractorNotificationPreference" | "pendingUpload" | "taxRate" | "withholdingTaxRate" | "whtCertificate" | "taxIdValidation" | "timesheet" | "timeEntry" | "workflowTemplate" | "workflowTaskTemplate" | "workflowRoleTemplate" | "workflowRoleTaskTemplate" | "workflowRun" | "workflowTaskRun" | "workflowComment" | "workflowAttachment" | "credentialReference" | "zatcaInvoiceChain"
+    modelProps: "organizationApiKey" | "approvalChainConfig" | "approvalFlow" | "approvalStep" | "approvalDecision" | "auditLog" | "user" | "userPinnedView" | "session" | "account" | "verification" | "subscription" | "ocrCreditLedger" | "stripeEvent" | "classificationAssessment" | "classificationDocument" | "ir35ChainParticipant" | "ir35OtherClientAttestation" | "economicDependencyAlertState" | "reassessmentTrigger" | "cronScanState" | "statusfeststellungsverfahren" | "classificationEscalationEvent" | "sdsApproval" | "consentRecord" | "privacyNotice" | "consentEvent" | "contract" | "contractAmendment" | "contractRatePeriod" | "document" | "documentLink" | "contractHealthCheckRun" | "contractor" | "contractorContact" | "contractorBillingProfile" | "contractorAssignment" | "contractorTag" | "contractorTagLink" | "complianceRequirementTemplate" | "contractorComplianceItem" | "contractorComplianceReminderState" | "leitwegId" | "eInvoiceLifecycle" | "eInvoiceLifecycleEvent" | "peppolCapabilityCache" | "equipment" | "equipmentAssignment" | "shipment" | "shipmentEvent" | "returnRequest" | "courierConfig" | "signingEnvelope" | "signingRecipient" | "signingEvent" | "exchangeRate" | "export" | "boEBaseRateHistory" | "skontoTerm" | "skontoSnapshot" | "skontoApplication" | "govApiAuditLog" | "freeZoneAssignment" | "saudizationConfig" | "saudiHeadcount" | "uaeFreeZone" | "deprovisioningRun" | "deprovisioningStep" | "idpChangeProvenance" | "integrationConnection" | "externalLink" | "integrationSyncLog" | "webhookDelivery" | "invoice" | "invoiceFile" | "invoiceLine" | "invoiceMatchResult" | "invoiceIntakeRequest" | "invoicePayment" | "invoiceInterestCompensation" | "invoiceInterestWaiver" | "invoiceInterestClaim" | "notification" | "userNotificationPreference" | "comment" | "reminderRule" | "reminderInstance" | "notificationCronDedup" | "oAuthChallenge" | "ocrExtraction" | "organization" | "member" | "invitation" | "team" | "project" | "pendingProjectMerge" | "projectExternalLink" | "costCenter" | "outboxEvent" | "paymentRun" | "paymentRunItem" | "paymentExport" | "paymentRunComplianceCheck" | "peppolParticipant" | "peppolTransmission" | "portalSession" | "portalMagicToken" | "contractorChangeRequest" | "contractorNotificationPreference" | "pendingUpload" | "taxRate" | "withholdingTaxRate" | "whtCertificate" | "taxIdValidation" | "timesheet" | "timeEntry" | "workflowTemplate" | "workflowTaskTemplate" | "workflowRoleTemplate" | "workflowRoleTaskTemplate" | "workflowRun" | "workflowTaskRun" | "workflowComment" | "workflowAttachment" | "credentialReference" | "zatcaInvoiceChain"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -5110,6 +5114,302 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.GovApiAuditLogCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.GovApiAuditLogCountAggregateOutputType> | number
+        }
+      }
+    }
+    FreeZoneAssignment: {
+      payload: Prisma.$FreeZoneAssignmentPayload<ExtArgs>
+      fields: Prisma.FreeZoneAssignmentFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.FreeZoneAssignmentFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FreeZoneAssignmentPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.FreeZoneAssignmentFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FreeZoneAssignmentPayload>
+        }
+        findFirst: {
+          args: Prisma.FreeZoneAssignmentFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FreeZoneAssignmentPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.FreeZoneAssignmentFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FreeZoneAssignmentPayload>
+        }
+        findMany: {
+          args: Prisma.FreeZoneAssignmentFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FreeZoneAssignmentPayload>[]
+        }
+        create: {
+          args: Prisma.FreeZoneAssignmentCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FreeZoneAssignmentPayload>
+        }
+        createMany: {
+          args: Prisma.FreeZoneAssignmentCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.FreeZoneAssignmentCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FreeZoneAssignmentPayload>[]
+        }
+        delete: {
+          args: Prisma.FreeZoneAssignmentDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FreeZoneAssignmentPayload>
+        }
+        update: {
+          args: Prisma.FreeZoneAssignmentUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FreeZoneAssignmentPayload>
+        }
+        deleteMany: {
+          args: Prisma.FreeZoneAssignmentDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.FreeZoneAssignmentUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.FreeZoneAssignmentUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FreeZoneAssignmentPayload>[]
+        }
+        upsert: {
+          args: Prisma.FreeZoneAssignmentUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FreeZoneAssignmentPayload>
+        }
+        aggregate: {
+          args: Prisma.FreeZoneAssignmentAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateFreeZoneAssignment>
+        }
+        groupBy: {
+          args: Prisma.FreeZoneAssignmentGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.FreeZoneAssignmentGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.FreeZoneAssignmentCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.FreeZoneAssignmentCountAggregateOutputType> | number
+        }
+      }
+    }
+    SaudizationConfig: {
+      payload: Prisma.$SaudizationConfigPayload<ExtArgs>
+      fields: Prisma.SaudizationConfigFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.SaudizationConfigFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SaudizationConfigPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.SaudizationConfigFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SaudizationConfigPayload>
+        }
+        findFirst: {
+          args: Prisma.SaudizationConfigFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SaudizationConfigPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.SaudizationConfigFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SaudizationConfigPayload>
+        }
+        findMany: {
+          args: Prisma.SaudizationConfigFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SaudizationConfigPayload>[]
+        }
+        create: {
+          args: Prisma.SaudizationConfigCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SaudizationConfigPayload>
+        }
+        createMany: {
+          args: Prisma.SaudizationConfigCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.SaudizationConfigCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SaudizationConfigPayload>[]
+        }
+        delete: {
+          args: Prisma.SaudizationConfigDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SaudizationConfigPayload>
+        }
+        update: {
+          args: Prisma.SaudizationConfigUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SaudizationConfigPayload>
+        }
+        deleteMany: {
+          args: Prisma.SaudizationConfigDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.SaudizationConfigUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.SaudizationConfigUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SaudizationConfigPayload>[]
+        }
+        upsert: {
+          args: Prisma.SaudizationConfigUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SaudizationConfigPayload>
+        }
+        aggregate: {
+          args: Prisma.SaudizationConfigAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateSaudizationConfig>
+        }
+        groupBy: {
+          args: Prisma.SaudizationConfigGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SaudizationConfigGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.SaudizationConfigCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SaudizationConfigCountAggregateOutputType> | number
+        }
+      }
+    }
+    SaudiHeadcount: {
+      payload: Prisma.$SaudiHeadcountPayload<ExtArgs>
+      fields: Prisma.SaudiHeadcountFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.SaudiHeadcountFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SaudiHeadcountPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.SaudiHeadcountFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SaudiHeadcountPayload>
+        }
+        findFirst: {
+          args: Prisma.SaudiHeadcountFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SaudiHeadcountPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.SaudiHeadcountFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SaudiHeadcountPayload>
+        }
+        findMany: {
+          args: Prisma.SaudiHeadcountFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SaudiHeadcountPayload>[]
+        }
+        create: {
+          args: Prisma.SaudiHeadcountCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SaudiHeadcountPayload>
+        }
+        createMany: {
+          args: Prisma.SaudiHeadcountCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.SaudiHeadcountCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SaudiHeadcountPayload>[]
+        }
+        delete: {
+          args: Prisma.SaudiHeadcountDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SaudiHeadcountPayload>
+        }
+        update: {
+          args: Prisma.SaudiHeadcountUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SaudiHeadcountPayload>
+        }
+        deleteMany: {
+          args: Prisma.SaudiHeadcountDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.SaudiHeadcountUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.SaudiHeadcountUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SaudiHeadcountPayload>[]
+        }
+        upsert: {
+          args: Prisma.SaudiHeadcountUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SaudiHeadcountPayload>
+        }
+        aggregate: {
+          args: Prisma.SaudiHeadcountAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateSaudiHeadcount>
+        }
+        groupBy: {
+          args: Prisma.SaudiHeadcountGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SaudiHeadcountGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.SaudiHeadcountCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SaudiHeadcountCountAggregateOutputType> | number
+        }
+      }
+    }
+    UaeFreeZone: {
+      payload: Prisma.$UaeFreeZonePayload<ExtArgs>
+      fields: Prisma.UaeFreeZoneFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.UaeFreeZoneFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UaeFreeZonePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.UaeFreeZoneFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UaeFreeZonePayload>
+        }
+        findFirst: {
+          args: Prisma.UaeFreeZoneFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UaeFreeZonePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.UaeFreeZoneFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UaeFreeZonePayload>
+        }
+        findMany: {
+          args: Prisma.UaeFreeZoneFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UaeFreeZonePayload>[]
+        }
+        create: {
+          args: Prisma.UaeFreeZoneCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UaeFreeZonePayload>
+        }
+        createMany: {
+          args: Prisma.UaeFreeZoneCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.UaeFreeZoneCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UaeFreeZonePayload>[]
+        }
+        delete: {
+          args: Prisma.UaeFreeZoneDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UaeFreeZonePayload>
+        }
+        update: {
+          args: Prisma.UaeFreeZoneUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UaeFreeZonePayload>
+        }
+        deleteMany: {
+          args: Prisma.UaeFreeZoneDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.UaeFreeZoneUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.UaeFreeZoneUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UaeFreeZonePayload>[]
+        }
+        upsert: {
+          args: Prisma.UaeFreeZoneUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UaeFreeZonePayload>
+        }
+        aggregate: {
+          args: Prisma.UaeFreeZoneAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateUaeFreeZone>
+        }
+        groupBy: {
+          args: Prisma.UaeFreeZoneGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.UaeFreeZoneGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.UaeFreeZoneCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.UaeFreeZoneCountAggregateOutputType> | number
         }
       }
     }
@@ -10078,6 +10378,7 @@ export const ContractScalarFieldEnum = {
   complianceFlagsModelVer: 'complianceFlagsModelVer',
   latestHealthCheckRunId: 'latestHealthCheckRunId',
   jurisdiction: 'jurisdiction',
+  activityIsicCodes: 'activityIsicCodes',
   metadataJson: 'metadataJson',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
@@ -10281,6 +10582,9 @@ export const ContractorAssignmentScalarFieldEnum = {
   activeFrom: 'activeFrom',
   activeTo: 'activeTo',
   endedAt: 'endedAt',
+  isSaudi: 'isSaudi',
+  nationality: 'nationality',
+  qiwaContractAuthenticated: 'qiwaContractAuthenticated',
   status: 'status',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
@@ -10702,6 +11006,62 @@ export const GovApiAuditLogScalarFieldEnum = {
 } as const
 
 export type GovApiAuditLogScalarFieldEnum = (typeof GovApiAuditLogScalarFieldEnum)[keyof typeof GovApiAuditLogScalarFieldEnum]
+
+
+export const FreeZoneAssignmentScalarFieldEnum = {
+  id: 'id',
+  organizationId: 'organizationId',
+  contractorId: 'contractorId',
+  zone: 'zone',
+  licenseNumber: 'licenseNumber',
+  licenseCategory: 'licenseCategory',
+  licenseExpiresAt: 'licenseExpiresAt',
+  permittedActivitiesText: 'permittedActivitiesText',
+  permittedActivityIsicCodes: 'permittedActivityIsicCodes',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type FreeZoneAssignmentScalarFieldEnum = (typeof FreeZoneAssignmentScalarFieldEnum)[keyof typeof FreeZoneAssignmentScalarFieldEnum]
+
+
+export const SaudizationConfigScalarFieldEnum = {
+  id: 'id',
+  organizationId: 'organizationId',
+  band: 'band',
+  industrySegment: 'industrySegment',
+  bandLastUpdatedAt: 'bandLastUpdatedAt',
+  thresholdsCustom: 'thresholdsCustom',
+  permittedActivityCatalogueCustom: 'permittedActivityCatalogueCustom',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type SaudizationConfigScalarFieldEnum = (typeof SaudizationConfigScalarFieldEnum)[keyof typeof SaudizationConfigScalarFieldEnum]
+
+
+export const SaudiHeadcountScalarFieldEnum = {
+  id: 'id',
+  organizationId: 'organizationId',
+  totalHeadcount: 'totalHeadcount',
+  saudiHeadcount: 'saudiHeadcount',
+  recordedAt: 'recordedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type SaudiHeadcountScalarFieldEnum = (typeof SaudiHeadcountScalarFieldEnum)[keyof typeof SaudiHeadcountScalarFieldEnum]
+
+
+export const UaeFreeZoneScalarFieldEnum = {
+  code: 'code',
+  authorityLegalNameKey: 'authorityLegalNameKey',
+  isMainland: 'isMainland',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type UaeFreeZoneScalarFieldEnum = (typeof UaeFreeZoneScalarFieldEnum)[keyof typeof UaeFreeZoneScalarFieldEnum]
 
 
 export const DeprovisioningRunScalarFieldEnum = {
@@ -12818,6 +13178,34 @@ export type ListEnumSkontoEligibilityFieldRefInput<$PrismaModel> = FieldRefInput
 
 
 /**
+ * Reference to a field of type 'UaeFreeZoneCode'
+ */
+export type EnumUaeFreeZoneCodeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'UaeFreeZoneCode'>
+    
+
+
+/**
+ * Reference to a field of type 'UaeFreeZoneCode[]'
+ */
+export type ListEnumUaeFreeZoneCodeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'UaeFreeZoneCode[]'>
+    
+
+
+/**
+ * Reference to a field of type 'NitaqatBand'
+ */
+export type EnumNitaqatBandFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'NitaqatBand'>
+    
+
+
+/**
+ * Reference to a field of type 'NitaqatBand[]'
+ */
+export type ListEnumNitaqatBandFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'NitaqatBand[]'>
+    
+
+
+/**
  * Reference to a field of type 'DeprovisioningRunStatus'
  */
 export type EnumDeprovisioningRunStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DeprovisioningRunStatus'>
@@ -13814,6 +14202,10 @@ export type GlobalOmitConfig = {
   skontoSnapshot?: Prisma.SkontoSnapshotOmit
   skontoApplication?: Prisma.SkontoApplicationOmit
   govApiAuditLog?: Prisma.GovApiAuditLogOmit
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentOmit
+  saudizationConfig?: Prisma.SaudizationConfigOmit
+  saudiHeadcount?: Prisma.SaudiHeadcountOmit
+  uaeFreeZone?: Prisma.UaeFreeZoneOmit
   deprovisioningRun?: Prisma.DeprovisioningRunOmit
   deprovisioningStep?: Prisma.DeprovisioningStepOmit
   idpChangeProvenance?: Prisma.IdpChangeProvenanceOmit

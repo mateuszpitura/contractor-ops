@@ -352,6 +352,26 @@ export type SkontoApplication = Prisma.SkontoApplicationModel
  */
 export type GovApiAuditLog = Prisma.GovApiAuditLogModel
 /**
+ * Model FreeZoneAssignment
+ * 
+ */
+export type FreeZoneAssignment = Prisma.FreeZoneAssignmentModel
+/**
+ * Model SaudizationConfig
+ * 
+ */
+export type SaudizationConfig = Prisma.SaudizationConfigModel
+/**
+ * Model SaudiHeadcount
+ * 
+ */
+export type SaudiHeadcount = Prisma.SaudiHeadcountModel
+/**
+ * Model UaeFreeZone
+ * 
+ */
+export type UaeFreeZone = Prisma.UaeFreeZoneModel
+/**
  * Model DeprovisioningRun
  * 
  */

@@ -625,6 +625,35 @@ export const SkontoEligibility = {
 export type SkontoEligibility = (typeof SkontoEligibility)[keyof typeof SkontoEligibility]
 
 
+export const NitaqatBand = {
+  PLATINUM: 'PLATINUM',
+  HIGH_GREEN: 'HIGH_GREEN',
+  MID_GREEN: 'MID_GREEN',
+  LOW_GREEN: 'LOW_GREEN',
+  YELLOW: 'YELLOW',
+  RED: 'RED'
+} as const
+
+export type NitaqatBand = (typeof NitaqatBand)[keyof typeof NitaqatBand]
+
+
+export const UaeFreeZoneCode = {
+  DIFC: 'DIFC',
+  DMCC: 'DMCC',
+  IFZA: 'IFZA',
+  DUBAI_INTERNET_CITY: 'DUBAI_INTERNET_CITY',
+  DUBAI_MEDIA_CITY: 'DUBAI_MEDIA_CITY',
+  MEYDAN_FZ: 'MEYDAN_FZ',
+  JAFZA: 'JAFZA',
+  SHAMS: 'SHAMS',
+  RAKEZ: 'RAKEZ',
+  ADGM: 'ADGM',
+  MAINLAND: 'MAINLAND'
+} as const
+
+export type UaeFreeZoneCode = (typeof UaeFreeZoneCode)[keyof typeof UaeFreeZoneCode]
+
+
 export const DeprovisioningRunStatus = {
   PENDING: 'PENDING',
   IN_PROGRESS: 'IN_PROGRESS',

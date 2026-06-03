@@ -164,6 +164,7 @@ export type ContractCountAggregateOutputType = {
   complianceFlagsModelVer: number
   latestHealthCheckRunId: number
   jurisdiction: number
+  activityIsicCodes: number
   metadataJson: number
   createdAt: number
   updatedAt: number
@@ -310,6 +311,7 @@ export type ContractCountAggregateInputType = {
   complianceFlagsModelVer?: true
   latestHealthCheckRunId?: true
   jurisdiction?: true
+  activityIsicCodes?: true
   metadataJson?: true
   createdAt?: true
   updatedAt?: true
@@ -441,6 +443,7 @@ export type ContractGroupByOutputType = {
   complianceFlagsModelVer: string | null
   latestHealthCheckRunId: string | null
   jurisdiction: string | null
+  activityIsicCodes: string[]
   metadataJson: runtime.JsonValue | null
   createdAt: Date
   updatedAt: Date
@@ -508,6 +511,7 @@ export type ContractWhereInput = {
   complianceFlagsModelVer?: Prisma.StringNullableFilter<"Contract"> | string | null
   latestHealthCheckRunId?: Prisma.StringNullableFilter<"Contract"> | string | null
   jurisdiction?: Prisma.StringNullableFilter<"Contract"> | string | null
+  activityIsicCodes?: Prisma.StringNullableListFilter<"Contract">
   metadataJson?: Prisma.JsonNullableFilter<"Contract">
   createdAt?: Prisma.DateTimeFilter<"Contract"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Contract"> | Date | string
@@ -568,6 +572,7 @@ export type ContractOrderByWithRelationInput = {
   complianceFlagsModelVer?: Prisma.SortOrderInput | Prisma.SortOrder
   latestHealthCheckRunId?: Prisma.SortOrderInput | Prisma.SortOrder
   jurisdiction?: Prisma.SortOrderInput | Prisma.SortOrder
+  activityIsicCodes?: Prisma.SortOrder
   metadataJson?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -631,6 +636,7 @@ export type ContractWhereUniqueInput = Prisma.AtLeast<{
   complianceFlagsModelVer?: Prisma.StringNullableFilter<"Contract"> | string | null
   latestHealthCheckRunId?: Prisma.StringNullableFilter<"Contract"> | string | null
   jurisdiction?: Prisma.StringNullableFilter<"Contract"> | string | null
+  activityIsicCodes?: Prisma.StringNullableListFilter<"Contract">
   metadataJson?: Prisma.JsonNullableFilter<"Contract">
   createdAt?: Prisma.DateTimeFilter<"Contract"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Contract"> | Date | string
@@ -691,6 +697,7 @@ export type ContractOrderByWithAggregationInput = {
   complianceFlagsModelVer?: Prisma.SortOrderInput | Prisma.SortOrder
   latestHealthCheckRunId?: Prisma.SortOrderInput | Prisma.SortOrder
   jurisdiction?: Prisma.SortOrderInput | Prisma.SortOrder
+  activityIsicCodes?: Prisma.SortOrder
   metadataJson?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -743,6 +750,7 @@ export type ContractScalarWhereWithAggregatesInput = {
   complianceFlagsModelVer?: Prisma.StringNullableWithAggregatesFilter<"Contract"> | string | null
   latestHealthCheckRunId?: Prisma.StringNullableWithAggregatesFilter<"Contract"> | string | null
   jurisdiction?: Prisma.StringNullableWithAggregatesFilter<"Contract"> | string | null
+  activityIsicCodes?: Prisma.StringNullableListFilter<"Contract">
   metadataJson?: Prisma.JsonNullableWithAggregatesFilter<"Contract">
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Contract"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Contract"> | Date | string
@@ -780,6 +788,7 @@ export type ContractCreateInput = {
   complianceFlagsCheckedAt?: Date | string | null
   complianceFlagsModelVer?: string | null
   jurisdiction?: string | null
+  activityIsicCodes?: Prisma.ContractCreateactivityIsicCodesInput | string[]
   metadataJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -840,6 +849,7 @@ export type ContractUncheckedCreateInput = {
   complianceFlagsModelVer?: string | null
   latestHealthCheckRunId?: string | null
   jurisdiction?: string | null
+  activityIsicCodes?: Prisma.ContractCreateactivityIsicCodesInput | string[]
   metadataJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -886,6 +896,7 @@ export type ContractUpdateInput = {
   complianceFlagsCheckedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   complianceFlagsModelVer?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   jurisdiction?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  activityIsicCodes?: Prisma.ContractUpdateactivityIsicCodesInput | string[]
   metadataJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -946,6 +957,7 @@ export type ContractUncheckedUpdateInput = {
   complianceFlagsModelVer?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latestHealthCheckRunId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   jurisdiction?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  activityIsicCodes?: Prisma.ContractUpdateactivityIsicCodesInput | string[]
   metadataJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -999,6 +1011,7 @@ export type ContractCreateManyInput = {
   complianceFlagsModelVer?: string | null
   latestHealthCheckRunId?: string | null
   jurisdiction?: string | null
+  activityIsicCodes?: Prisma.ContractCreateactivityIsicCodesInput | string[]
   metadataJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1036,6 +1049,7 @@ export type ContractUpdateManyMutationInput = {
   complianceFlagsCheckedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   complianceFlagsModelVer?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   jurisdiction?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  activityIsicCodes?: Prisma.ContractUpdateactivityIsicCodesInput | string[]
   metadataJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1080,6 +1094,7 @@ export type ContractUncheckedUpdateManyInput = {
   complianceFlagsModelVer?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latestHealthCheckRunId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   jurisdiction?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  activityIsicCodes?: Prisma.ContractUpdateactivityIsicCodesInput | string[]
   metadataJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1134,6 +1149,7 @@ export type ContractCountOrderByAggregateInput = {
   complianceFlagsModelVer?: Prisma.SortOrder
   latestHealthCheckRunId?: Prisma.SortOrder
   jurisdiction?: Prisma.SortOrder
+  activityIsicCodes?: Prisma.SortOrder
   metadataJson?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -1292,6 +1308,10 @@ export type ContractUncheckedUpdateManyWithoutInternalOwnerNestedInput = {
   deleteMany?: Prisma.ContractScalarWhereInput | Prisma.ContractScalarWhereInput[]
 }
 
+export type ContractCreateactivityIsicCodesInput = {
+  set: string[]
+}
+
 export type EnumContractTypeFieldUpdateOperationsInput = {
   set?: $Enums.ContractType
 }
@@ -1322,6 +1342,11 @@ export type NullableEnumInvoiceCycleFieldUpdateOperationsInput = {
 
 export type NullableEnumComplianceRiskLevelFieldUpdateOperationsInput = {
   set?: $Enums.ComplianceRiskLevel | null
+}
+
+export type ContractUpdateactivityIsicCodesInput = {
+  set?: string[]
+  push?: string | string[]
 }
 
 export type ContractCreateNestedOneWithoutAmendmentsInput = {
@@ -1743,6 +1768,7 @@ export type ContractCreateWithoutInternalOwnerInput = {
   complianceFlagsCheckedAt?: Date | string | null
   complianceFlagsModelVer?: string | null
   jurisdiction?: string | null
+  activityIsicCodes?: Prisma.ContractCreateactivityIsicCodesInput | string[]
   metadataJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1801,6 +1827,7 @@ export type ContractUncheckedCreateWithoutInternalOwnerInput = {
   complianceFlagsModelVer?: string | null
   latestHealthCheckRunId?: string | null
   jurisdiction?: string | null
+  activityIsicCodes?: Prisma.ContractCreateactivityIsicCodesInput | string[]
   metadataJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1883,6 +1910,7 @@ export type ContractScalarWhereInput = {
   complianceFlagsModelVer?: Prisma.StringNullableFilter<"Contract"> | string | null
   latestHealthCheckRunId?: Prisma.StringNullableFilter<"Contract"> | string | null
   jurisdiction?: Prisma.StringNullableFilter<"Contract"> | string | null
+  activityIsicCodes?: Prisma.StringNullableListFilter<"Contract">
   metadataJson?: Prisma.JsonNullableFilter<"Contract">
   createdAt?: Prisma.DateTimeFilter<"Contract"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Contract"> | Date | string
@@ -1920,6 +1948,7 @@ export type ContractCreateWithoutAmendmentsInput = {
   complianceFlagsCheckedAt?: Date | string | null
   complianceFlagsModelVer?: string | null
   jurisdiction?: string | null
+  activityIsicCodes?: Prisma.ContractCreateactivityIsicCodesInput | string[]
   metadataJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1979,6 +2008,7 @@ export type ContractUncheckedCreateWithoutAmendmentsInput = {
   complianceFlagsModelVer?: string | null
   latestHealthCheckRunId?: string | null
   jurisdiction?: string | null
+  activityIsicCodes?: Prisma.ContractCreateactivityIsicCodesInput | string[]
   metadataJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -2040,6 +2070,7 @@ export type ContractUpdateWithoutAmendmentsInput = {
   complianceFlagsCheckedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   complianceFlagsModelVer?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   jurisdiction?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  activityIsicCodes?: Prisma.ContractUpdateactivityIsicCodesInput | string[]
   metadataJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2099,6 +2130,7 @@ export type ContractUncheckedUpdateWithoutAmendmentsInput = {
   complianceFlagsModelVer?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latestHealthCheckRunId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   jurisdiction?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  activityIsicCodes?: Prisma.ContractUpdateactivityIsicCodesInput | string[]
   metadataJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2144,6 +2176,7 @@ export type ContractCreateWithoutRatePeriodsInput = {
   complianceFlagsCheckedAt?: Date | string | null
   complianceFlagsModelVer?: string | null
   jurisdiction?: string | null
+  activityIsicCodes?: Prisma.ContractCreateactivityIsicCodesInput | string[]
   metadataJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -2203,6 +2236,7 @@ export type ContractUncheckedCreateWithoutRatePeriodsInput = {
   complianceFlagsModelVer?: string | null
   latestHealthCheckRunId?: string | null
   jurisdiction?: string | null
+  activityIsicCodes?: Prisma.ContractCreateactivityIsicCodesInput | string[]
   metadataJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -2264,6 +2298,7 @@ export type ContractUpdateWithoutRatePeriodsInput = {
   complianceFlagsCheckedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   complianceFlagsModelVer?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   jurisdiction?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  activityIsicCodes?: Prisma.ContractUpdateactivityIsicCodesInput | string[]
   metadataJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2323,6 +2358,7 @@ export type ContractUncheckedUpdateWithoutRatePeriodsInput = {
   complianceFlagsModelVer?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latestHealthCheckRunId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   jurisdiction?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  activityIsicCodes?: Prisma.ContractUpdateactivityIsicCodesInput | string[]
   metadataJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2368,6 +2404,7 @@ export type ContractCreateWithoutHealthCheckRunsInput = {
   complianceFlagsCheckedAt?: Date | string | null
   complianceFlagsModelVer?: string | null
   jurisdiction?: string | null
+  activityIsicCodes?: Prisma.ContractCreateactivityIsicCodesInput | string[]
   metadataJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -2427,6 +2464,7 @@ export type ContractUncheckedCreateWithoutHealthCheckRunsInput = {
   complianceFlagsModelVer?: string | null
   latestHealthCheckRunId?: string | null
   jurisdiction?: string | null
+  activityIsicCodes?: Prisma.ContractCreateactivityIsicCodesInput | string[]
   metadataJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -2477,6 +2515,7 @@ export type ContractCreateWithoutLatestHealthCheckRunInput = {
   complianceFlagsCheckedAt?: Date | string | null
   complianceFlagsModelVer?: string | null
   jurisdiction?: string | null
+  activityIsicCodes?: Prisma.ContractCreateactivityIsicCodesInput | string[]
   metadataJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -2535,6 +2574,7 @@ export type ContractUncheckedCreateWithoutLatestHealthCheckRunInput = {
   complianceFlagsCheckedAt?: Date | string | null
   complianceFlagsModelVer?: string | null
   jurisdiction?: string | null
+  activityIsicCodes?: Prisma.ContractCreateactivityIsicCodesInput | string[]
   metadataJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -2602,6 +2642,7 @@ export type ContractUpdateWithoutHealthCheckRunsInput = {
   complianceFlagsCheckedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   complianceFlagsModelVer?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   jurisdiction?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  activityIsicCodes?: Prisma.ContractUpdateactivityIsicCodesInput | string[]
   metadataJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2661,6 +2702,7 @@ export type ContractUncheckedUpdateWithoutHealthCheckRunsInput = {
   complianceFlagsModelVer?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latestHealthCheckRunId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   jurisdiction?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  activityIsicCodes?: Prisma.ContractUpdateactivityIsicCodesInput | string[]
   metadataJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2722,6 +2764,7 @@ export type ContractCreateWithoutContractorInput = {
   complianceFlagsCheckedAt?: Date | string | null
   complianceFlagsModelVer?: string | null
   jurisdiction?: string | null
+  activityIsicCodes?: Prisma.ContractCreateactivityIsicCodesInput | string[]
   metadataJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -2780,6 +2823,7 @@ export type ContractUncheckedCreateWithoutContractorInput = {
   complianceFlagsModelVer?: string | null
   latestHealthCheckRunId?: string | null
   jurisdiction?: string | null
+  activityIsicCodes?: Prisma.ContractCreateactivityIsicCodesInput | string[]
   metadataJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -2852,6 +2896,7 @@ export type ContractCreateWithoutComplianceItemsInput = {
   complianceFlagsCheckedAt?: Date | string | null
   complianceFlagsModelVer?: string | null
   jurisdiction?: string | null
+  activityIsicCodes?: Prisma.ContractCreateactivityIsicCodesInput | string[]
   metadataJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -2911,6 +2956,7 @@ export type ContractUncheckedCreateWithoutComplianceItemsInput = {
   complianceFlagsModelVer?: string | null
   latestHealthCheckRunId?: string | null
   jurisdiction?: string | null
+  activityIsicCodes?: Prisma.ContractCreateactivityIsicCodesInput | string[]
   metadataJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -2972,6 +3018,7 @@ export type ContractUpdateWithoutComplianceItemsInput = {
   complianceFlagsCheckedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   complianceFlagsModelVer?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   jurisdiction?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  activityIsicCodes?: Prisma.ContractUpdateactivityIsicCodesInput | string[]
   metadataJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -3031,6 +3078,7 @@ export type ContractUncheckedUpdateWithoutComplianceItemsInput = {
   complianceFlagsModelVer?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latestHealthCheckRunId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   jurisdiction?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  activityIsicCodes?: Prisma.ContractUpdateactivityIsicCodesInput | string[]
   metadataJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -3076,6 +3124,7 @@ export type ContractCreateWithoutLeitwegIdsInput = {
   complianceFlagsCheckedAt?: Date | string | null
   complianceFlagsModelVer?: string | null
   jurisdiction?: string | null
+  activityIsicCodes?: Prisma.ContractCreateactivityIsicCodesInput | string[]
   metadataJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -3135,6 +3184,7 @@ export type ContractUncheckedCreateWithoutLeitwegIdsInput = {
   complianceFlagsModelVer?: string | null
   latestHealthCheckRunId?: string | null
   jurisdiction?: string | null
+  activityIsicCodes?: Prisma.ContractCreateactivityIsicCodesInput | string[]
   metadataJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -3196,6 +3246,7 @@ export type ContractUpdateWithoutLeitwegIdsInput = {
   complianceFlagsCheckedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   complianceFlagsModelVer?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   jurisdiction?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  activityIsicCodes?: Prisma.ContractUpdateactivityIsicCodesInput | string[]
   metadataJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -3255,6 +3306,7 @@ export type ContractUncheckedUpdateWithoutLeitwegIdsInput = {
   complianceFlagsModelVer?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latestHealthCheckRunId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   jurisdiction?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  activityIsicCodes?: Prisma.ContractUpdateactivityIsicCodesInput | string[]
   metadataJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -3300,6 +3352,7 @@ export type ContractCreateWithoutInvoicesInput = {
   complianceFlagsCheckedAt?: Date | string | null
   complianceFlagsModelVer?: string | null
   jurisdiction?: string | null
+  activityIsicCodes?: Prisma.ContractCreateactivityIsicCodesInput | string[]
   metadataJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -3359,6 +3412,7 @@ export type ContractUncheckedCreateWithoutInvoicesInput = {
   complianceFlagsModelVer?: string | null
   latestHealthCheckRunId?: string | null
   jurisdiction?: string | null
+  activityIsicCodes?: Prisma.ContractCreateactivityIsicCodesInput | string[]
   metadataJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -3420,6 +3474,7 @@ export type ContractUpdateWithoutInvoicesInput = {
   complianceFlagsCheckedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   complianceFlagsModelVer?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   jurisdiction?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  activityIsicCodes?: Prisma.ContractUpdateactivityIsicCodesInput | string[]
   metadataJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -3479,6 +3534,7 @@ export type ContractUncheckedUpdateWithoutInvoicesInput = {
   complianceFlagsModelVer?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latestHealthCheckRunId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   jurisdiction?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  activityIsicCodes?: Prisma.ContractUpdateactivityIsicCodesInput | string[]
   metadataJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -3524,6 +3580,7 @@ export type ContractCreateWithoutIntakesInput = {
   complianceFlagsCheckedAt?: Date | string | null
   complianceFlagsModelVer?: string | null
   jurisdiction?: string | null
+  activityIsicCodes?: Prisma.ContractCreateactivityIsicCodesInput | string[]
   metadataJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -3583,6 +3640,7 @@ export type ContractUncheckedCreateWithoutIntakesInput = {
   complianceFlagsModelVer?: string | null
   latestHealthCheckRunId?: string | null
   jurisdiction?: string | null
+  activityIsicCodes?: Prisma.ContractCreateactivityIsicCodesInput | string[]
   metadataJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -3644,6 +3702,7 @@ export type ContractUpdateWithoutIntakesInput = {
   complianceFlagsCheckedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   complianceFlagsModelVer?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   jurisdiction?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  activityIsicCodes?: Prisma.ContractUpdateactivityIsicCodesInput | string[]
   metadataJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -3703,6 +3762,7 @@ export type ContractUncheckedUpdateWithoutIntakesInput = {
   complianceFlagsModelVer?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latestHealthCheckRunId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   jurisdiction?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  activityIsicCodes?: Prisma.ContractUpdateactivityIsicCodesInput | string[]
   metadataJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -3748,6 +3808,7 @@ export type ContractCreateWithoutOrganizationInput = {
   complianceFlagsCheckedAt?: Date | string | null
   complianceFlagsModelVer?: string | null
   jurisdiction?: string | null
+  activityIsicCodes?: Prisma.ContractCreateactivityIsicCodesInput | string[]
   metadataJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -3806,6 +3867,7 @@ export type ContractUncheckedCreateWithoutOrganizationInput = {
   complianceFlagsModelVer?: string | null
   latestHealthCheckRunId?: string | null
   jurisdiction?: string | null
+  activityIsicCodes?: Prisma.ContractCreateactivityIsicCodesInput | string[]
   metadataJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -3878,6 +3940,7 @@ export type ContractCreateWithoutTeamInput = {
   complianceFlagsCheckedAt?: Date | string | null
   complianceFlagsModelVer?: string | null
   jurisdiction?: string | null
+  activityIsicCodes?: Prisma.ContractCreateactivityIsicCodesInput | string[]
   metadataJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -3936,6 +3999,7 @@ export type ContractUncheckedCreateWithoutTeamInput = {
   complianceFlagsModelVer?: string | null
   latestHealthCheckRunId?: string | null
   jurisdiction?: string | null
+  activityIsicCodes?: Prisma.ContractCreateactivityIsicCodesInput | string[]
   metadataJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -4008,6 +4072,7 @@ export type ContractCreateWithoutProjectInput = {
   complianceFlagsCheckedAt?: Date | string | null
   complianceFlagsModelVer?: string | null
   jurisdiction?: string | null
+  activityIsicCodes?: Prisma.ContractCreateactivityIsicCodesInput | string[]
   metadataJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -4066,6 +4131,7 @@ export type ContractUncheckedCreateWithoutProjectInput = {
   complianceFlagsModelVer?: string | null
   latestHealthCheckRunId?: string | null
   jurisdiction?: string | null
+  activityIsicCodes?: Prisma.ContractCreateactivityIsicCodesInput | string[]
   metadataJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -4138,6 +4204,7 @@ export type ContractCreateWithoutCostCenterInput = {
   complianceFlagsCheckedAt?: Date | string | null
   complianceFlagsModelVer?: string | null
   jurisdiction?: string | null
+  activityIsicCodes?: Prisma.ContractCreateactivityIsicCodesInput | string[]
   metadataJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -4196,6 +4263,7 @@ export type ContractUncheckedCreateWithoutCostCenterInput = {
   complianceFlagsModelVer?: string | null
   latestHealthCheckRunId?: string | null
   jurisdiction?: string | null
+  activityIsicCodes?: Prisma.ContractCreateactivityIsicCodesInput | string[]
   metadataJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -4268,6 +4336,7 @@ export type ContractCreateWithoutTimeEntriesInput = {
   complianceFlagsCheckedAt?: Date | string | null
   complianceFlagsModelVer?: string | null
   jurisdiction?: string | null
+  activityIsicCodes?: Prisma.ContractCreateactivityIsicCodesInput | string[]
   metadataJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -4327,6 +4396,7 @@ export type ContractUncheckedCreateWithoutTimeEntriesInput = {
   complianceFlagsModelVer?: string | null
   latestHealthCheckRunId?: string | null
   jurisdiction?: string | null
+  activityIsicCodes?: Prisma.ContractCreateactivityIsicCodesInput | string[]
   metadataJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -4388,6 +4458,7 @@ export type ContractUpdateWithoutTimeEntriesInput = {
   complianceFlagsCheckedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   complianceFlagsModelVer?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   jurisdiction?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  activityIsicCodes?: Prisma.ContractUpdateactivityIsicCodesInput | string[]
   metadataJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -4447,6 +4518,7 @@ export type ContractUncheckedUpdateWithoutTimeEntriesInput = {
   complianceFlagsModelVer?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latestHealthCheckRunId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   jurisdiction?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  activityIsicCodes?: Prisma.ContractUpdateactivityIsicCodesInput | string[]
   metadataJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -4492,6 +4564,7 @@ export type ContractCreateWithoutWorkflowRunsInput = {
   complianceFlagsCheckedAt?: Date | string | null
   complianceFlagsModelVer?: string | null
   jurisdiction?: string | null
+  activityIsicCodes?: Prisma.ContractCreateactivityIsicCodesInput | string[]
   metadataJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -4551,6 +4624,7 @@ export type ContractUncheckedCreateWithoutWorkflowRunsInput = {
   complianceFlagsModelVer?: string | null
   latestHealthCheckRunId?: string | null
   jurisdiction?: string | null
+  activityIsicCodes?: Prisma.ContractCreateactivityIsicCodesInput | string[]
   metadataJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -4612,6 +4686,7 @@ export type ContractUpdateWithoutWorkflowRunsInput = {
   complianceFlagsCheckedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   complianceFlagsModelVer?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   jurisdiction?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  activityIsicCodes?: Prisma.ContractUpdateactivityIsicCodesInput | string[]
   metadataJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -4671,6 +4746,7 @@ export type ContractUncheckedUpdateWithoutWorkflowRunsInput = {
   complianceFlagsModelVer?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latestHealthCheckRunId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   jurisdiction?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  activityIsicCodes?: Prisma.ContractUpdateactivityIsicCodesInput | string[]
   metadataJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -4722,6 +4798,7 @@ export type ContractCreateManyInternalOwnerInput = {
   complianceFlagsModelVer?: string | null
   latestHealthCheckRunId?: string | null
   jurisdiction?: string | null
+  activityIsicCodes?: Prisma.ContractCreateactivityIsicCodesInput | string[]
   metadataJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -4759,6 +4836,7 @@ export type ContractUpdateWithoutInternalOwnerInput = {
   complianceFlagsCheckedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   complianceFlagsModelVer?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   jurisdiction?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  activityIsicCodes?: Prisma.ContractUpdateactivityIsicCodesInput | string[]
   metadataJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -4817,6 +4895,7 @@ export type ContractUncheckedUpdateWithoutInternalOwnerInput = {
   complianceFlagsModelVer?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latestHealthCheckRunId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   jurisdiction?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  activityIsicCodes?: Prisma.ContractUpdateactivityIsicCodesInput | string[]
   metadataJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -4869,6 +4948,7 @@ export type ContractUncheckedUpdateManyWithoutInternalOwnerInput = {
   complianceFlagsModelVer?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latestHealthCheckRunId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   jurisdiction?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  activityIsicCodes?: Prisma.ContractUpdateactivityIsicCodesInput | string[]
   metadataJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -4912,6 +4992,7 @@ export type ContractCreateManyLatestHealthCheckRunInput = {
   complianceFlagsCheckedAt?: Date | string | null
   complianceFlagsModelVer?: string | null
   jurisdiction?: string | null
+  activityIsicCodes?: Prisma.ContractCreateactivityIsicCodesInput | string[]
   metadataJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -4949,6 +5030,7 @@ export type ContractUpdateWithoutLatestHealthCheckRunInput = {
   complianceFlagsCheckedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   complianceFlagsModelVer?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   jurisdiction?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  activityIsicCodes?: Prisma.ContractUpdateactivityIsicCodesInput | string[]
   metadataJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -5007,6 +5089,7 @@ export type ContractUncheckedUpdateWithoutLatestHealthCheckRunInput = {
   complianceFlagsCheckedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   complianceFlagsModelVer?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   jurisdiction?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  activityIsicCodes?: Prisma.ContractUpdateactivityIsicCodesInput | string[]
   metadataJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -5059,6 +5142,7 @@ export type ContractUncheckedUpdateManyWithoutLatestHealthCheckRunInput = {
   complianceFlagsCheckedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   complianceFlagsModelVer?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   jurisdiction?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  activityIsicCodes?: Prisma.ContractUpdateactivityIsicCodesInput | string[]
   metadataJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -5102,6 +5186,7 @@ export type ContractCreateManyContractorInput = {
   complianceFlagsModelVer?: string | null
   latestHealthCheckRunId?: string | null
   jurisdiction?: string | null
+  activityIsicCodes?: Prisma.ContractCreateactivityIsicCodesInput | string[]
   metadataJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -5139,6 +5224,7 @@ export type ContractUpdateWithoutContractorInput = {
   complianceFlagsCheckedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   complianceFlagsModelVer?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   jurisdiction?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  activityIsicCodes?: Prisma.ContractUpdateactivityIsicCodesInput | string[]
   metadataJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -5197,6 +5283,7 @@ export type ContractUncheckedUpdateWithoutContractorInput = {
   complianceFlagsModelVer?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latestHealthCheckRunId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   jurisdiction?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  activityIsicCodes?: Prisma.ContractUpdateactivityIsicCodesInput | string[]
   metadataJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -5249,6 +5336,7 @@ export type ContractUncheckedUpdateManyWithoutContractorInput = {
   complianceFlagsModelVer?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latestHealthCheckRunId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   jurisdiction?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  activityIsicCodes?: Prisma.ContractUpdateactivityIsicCodesInput | string[]
   metadataJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -5292,6 +5380,7 @@ export type ContractCreateManyOrganizationInput = {
   complianceFlagsModelVer?: string | null
   latestHealthCheckRunId?: string | null
   jurisdiction?: string | null
+  activityIsicCodes?: Prisma.ContractCreateactivityIsicCodesInput | string[]
   metadataJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -5329,6 +5418,7 @@ export type ContractUpdateWithoutOrganizationInput = {
   complianceFlagsCheckedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   complianceFlagsModelVer?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   jurisdiction?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  activityIsicCodes?: Prisma.ContractUpdateactivityIsicCodesInput | string[]
   metadataJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -5387,6 +5477,7 @@ export type ContractUncheckedUpdateWithoutOrganizationInput = {
   complianceFlagsModelVer?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latestHealthCheckRunId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   jurisdiction?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  activityIsicCodes?: Prisma.ContractUpdateactivityIsicCodesInput | string[]
   metadataJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -5439,6 +5530,7 @@ export type ContractUncheckedUpdateManyWithoutOrganizationInput = {
   complianceFlagsModelVer?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latestHealthCheckRunId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   jurisdiction?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  activityIsicCodes?: Prisma.ContractUpdateactivityIsicCodesInput | string[]
   metadataJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -5482,6 +5574,7 @@ export type ContractCreateManyTeamInput = {
   complianceFlagsModelVer?: string | null
   latestHealthCheckRunId?: string | null
   jurisdiction?: string | null
+  activityIsicCodes?: Prisma.ContractCreateactivityIsicCodesInput | string[]
   metadataJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -5519,6 +5612,7 @@ export type ContractUpdateWithoutTeamInput = {
   complianceFlagsCheckedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   complianceFlagsModelVer?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   jurisdiction?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  activityIsicCodes?: Prisma.ContractUpdateactivityIsicCodesInput | string[]
   metadataJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -5577,6 +5671,7 @@ export type ContractUncheckedUpdateWithoutTeamInput = {
   complianceFlagsModelVer?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latestHealthCheckRunId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   jurisdiction?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  activityIsicCodes?: Prisma.ContractUpdateactivityIsicCodesInput | string[]
   metadataJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -5629,6 +5724,7 @@ export type ContractUncheckedUpdateManyWithoutTeamInput = {
   complianceFlagsModelVer?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latestHealthCheckRunId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   jurisdiction?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  activityIsicCodes?: Prisma.ContractUpdateactivityIsicCodesInput | string[]
   metadataJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -5672,6 +5768,7 @@ export type ContractCreateManyProjectInput = {
   complianceFlagsModelVer?: string | null
   latestHealthCheckRunId?: string | null
   jurisdiction?: string | null
+  activityIsicCodes?: Prisma.ContractCreateactivityIsicCodesInput | string[]
   metadataJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -5709,6 +5806,7 @@ export type ContractUpdateWithoutProjectInput = {
   complianceFlagsCheckedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   complianceFlagsModelVer?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   jurisdiction?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  activityIsicCodes?: Prisma.ContractUpdateactivityIsicCodesInput | string[]
   metadataJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -5767,6 +5865,7 @@ export type ContractUncheckedUpdateWithoutProjectInput = {
   complianceFlagsModelVer?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latestHealthCheckRunId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   jurisdiction?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  activityIsicCodes?: Prisma.ContractUpdateactivityIsicCodesInput | string[]
   metadataJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -5819,6 +5918,7 @@ export type ContractUncheckedUpdateManyWithoutProjectInput = {
   complianceFlagsModelVer?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latestHealthCheckRunId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   jurisdiction?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  activityIsicCodes?: Prisma.ContractUpdateactivityIsicCodesInput | string[]
   metadataJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -5862,6 +5962,7 @@ export type ContractCreateManyCostCenterInput = {
   complianceFlagsModelVer?: string | null
   latestHealthCheckRunId?: string | null
   jurisdiction?: string | null
+  activityIsicCodes?: Prisma.ContractCreateactivityIsicCodesInput | string[]
   metadataJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -5899,6 +6000,7 @@ export type ContractUpdateWithoutCostCenterInput = {
   complianceFlagsCheckedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   complianceFlagsModelVer?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   jurisdiction?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  activityIsicCodes?: Prisma.ContractUpdateactivityIsicCodesInput | string[]
   metadataJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -5957,6 +6059,7 @@ export type ContractUncheckedUpdateWithoutCostCenterInput = {
   complianceFlagsModelVer?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latestHealthCheckRunId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   jurisdiction?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  activityIsicCodes?: Prisma.ContractUpdateactivityIsicCodesInput | string[]
   metadataJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -6009,6 +6112,7 @@ export type ContractUncheckedUpdateManyWithoutCostCenterInput = {
   complianceFlagsModelVer?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latestHealthCheckRunId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   jurisdiction?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  activityIsicCodes?: Prisma.ContractUpdateactivityIsicCodesInput | string[]
   metadataJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -6156,6 +6260,7 @@ export type ContractSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs
   complianceFlagsModelVer?: boolean
   latestHealthCheckRunId?: boolean
   jurisdiction?: boolean
+  activityIsicCodes?: boolean
   metadataJson?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -6217,6 +6322,7 @@ export type ContractSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exte
   complianceFlagsModelVer?: boolean
   latestHealthCheckRunId?: boolean
   jurisdiction?: boolean
+  activityIsicCodes?: boolean
   metadataJson?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -6268,6 +6374,7 @@ export type ContractSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exte
   complianceFlagsModelVer?: boolean
   latestHealthCheckRunId?: boolean
   jurisdiction?: boolean
+  activityIsicCodes?: boolean
   metadataJson?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -6319,13 +6426,14 @@ export type ContractSelectScalar = {
   complianceFlagsModelVer?: boolean
   latestHealthCheckRunId?: boolean
   jurisdiction?: boolean
+  activityIsicCodes?: boolean
   metadataJson?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   deletedAt?: boolean
 }
 
-export type ContractOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "organizationId" | "contractorId" | "contractNumber" | "title" | "type" | "status" | "startDate" | "endDate" | "noticePeriodDays" | "autoRenewal" | "renewalTerms" | "currency" | "billingModel" | "rateType" | "rateValueMinor" | "expectedHoursPerPeriod" | "retainerAmountMinor" | "paymentTermsDays" | "invoiceCycle" | "expenseReimbursementAllowed" | "requiresTimesheet" | "requiresDeliverableAcceptance" | "internalOwnerUserId" | "teamId" | "projectId" | "costCenterId" | "complianceRiskLevel" | "notes" | "signedAt" | "terminatedAt" | "terminationReason" | "complianceFlagsJson" | "complianceFlagsCheckedAt" | "complianceFlagsModelVer" | "latestHealthCheckRunId" | "jurisdiction" | "metadataJson" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["contract"]>
+export type ContractOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "organizationId" | "contractorId" | "contractNumber" | "title" | "type" | "status" | "startDate" | "endDate" | "noticePeriodDays" | "autoRenewal" | "renewalTerms" | "currency" | "billingModel" | "rateType" | "rateValueMinor" | "expectedHoursPerPeriod" | "retainerAmountMinor" | "paymentTermsDays" | "invoiceCycle" | "expenseReimbursementAllowed" | "requiresTimesheet" | "requiresDeliverableAcceptance" | "internalOwnerUserId" | "teamId" | "projectId" | "costCenterId" | "complianceRiskLevel" | "notes" | "signedAt" | "terminatedAt" | "terminationReason" | "complianceFlagsJson" | "complianceFlagsCheckedAt" | "complianceFlagsModelVer" | "latestHealthCheckRunId" | "jurisdiction" | "activityIsicCodes" | "metadataJson" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["contract"]>
 export type ContractInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
   contractor?: boolean | Prisma.ContractorDefaultArgs<ExtArgs>
@@ -6422,6 +6530,7 @@ export type $ContractPayload<ExtArgs extends runtime.Types.Extensions.InternalAr
     complianceFlagsModelVer: string | null
     latestHealthCheckRunId: string | null
     jurisdiction: string | null
+    activityIsicCodes: string[]
     metadataJson: runtime.JsonValue | null
     createdAt: Date
     updatedAt: Date
@@ -6902,6 +7011,7 @@ export interface ContractFieldRefs {
   readonly complianceFlagsModelVer: Prisma.FieldRef<"Contract", 'String'>
   readonly latestHealthCheckRunId: Prisma.FieldRef<"Contract", 'String'>
   readonly jurisdiction: Prisma.FieldRef<"Contract", 'String'>
+  readonly activityIsicCodes: Prisma.FieldRef<"Contract", 'String[]'>
   readonly metadataJson: Prisma.FieldRef<"Contract", 'Json'>
   readonly createdAt: Prisma.FieldRef<"Contract", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Contract", 'DateTime'>

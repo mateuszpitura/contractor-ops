@@ -113,6 +113,10 @@ export const ModelName = {
   SkontoSnapshot: 'SkontoSnapshot',
   SkontoApplication: 'SkontoApplication',
   GovApiAuditLog: 'GovApiAuditLog',
+  FreeZoneAssignment: 'FreeZoneAssignment',
+  SaudizationConfig: 'SaudizationConfig',
+  SaudiHeadcount: 'SaudiHeadcount',
+  UaeFreeZone: 'UaeFreeZone',
   DeprovisioningRun: 'DeprovisioningRun',
   DeprovisioningStep: 'DeprovisioningStep',
   IdpChangeProvenance: 'IdpChangeProvenance',
@@ -677,6 +681,7 @@ export const ContractScalarFieldEnum = {
   complianceFlagsModelVer: 'complianceFlagsModelVer',
   latestHealthCheckRunId: 'latestHealthCheckRunId',
   jurisdiction: 'jurisdiction',
+  activityIsicCodes: 'activityIsicCodes',
   metadataJson: 'metadataJson',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
@@ -880,6 +885,9 @@ export const ContractorAssignmentScalarFieldEnum = {
   activeFrom: 'activeFrom',
   activeTo: 'activeTo',
   endedAt: 'endedAt',
+  isSaudi: 'isSaudi',
+  nationality: 'nationality',
+  qiwaContractAuthenticated: 'qiwaContractAuthenticated',
   status: 'status',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
@@ -1301,6 +1309,62 @@ export const GovApiAuditLogScalarFieldEnum = {
 } as const
 
 export type GovApiAuditLogScalarFieldEnum = (typeof GovApiAuditLogScalarFieldEnum)[keyof typeof GovApiAuditLogScalarFieldEnum]
+
+
+export const FreeZoneAssignmentScalarFieldEnum = {
+  id: 'id',
+  organizationId: 'organizationId',
+  contractorId: 'contractorId',
+  zone: 'zone',
+  licenseNumber: 'licenseNumber',
+  licenseCategory: 'licenseCategory',
+  licenseExpiresAt: 'licenseExpiresAt',
+  permittedActivitiesText: 'permittedActivitiesText',
+  permittedActivityIsicCodes: 'permittedActivityIsicCodes',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type FreeZoneAssignmentScalarFieldEnum = (typeof FreeZoneAssignmentScalarFieldEnum)[keyof typeof FreeZoneAssignmentScalarFieldEnum]
+
+
+export const SaudizationConfigScalarFieldEnum = {
+  id: 'id',
+  organizationId: 'organizationId',
+  band: 'band',
+  industrySegment: 'industrySegment',
+  bandLastUpdatedAt: 'bandLastUpdatedAt',
+  thresholdsCustom: 'thresholdsCustom',
+  permittedActivityCatalogueCustom: 'permittedActivityCatalogueCustom',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type SaudizationConfigScalarFieldEnum = (typeof SaudizationConfigScalarFieldEnum)[keyof typeof SaudizationConfigScalarFieldEnum]
+
+
+export const SaudiHeadcountScalarFieldEnum = {
+  id: 'id',
+  organizationId: 'organizationId',
+  totalHeadcount: 'totalHeadcount',
+  saudiHeadcount: 'saudiHeadcount',
+  recordedAt: 'recordedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type SaudiHeadcountScalarFieldEnum = (typeof SaudiHeadcountScalarFieldEnum)[keyof typeof SaudiHeadcountScalarFieldEnum]
+
+
+export const UaeFreeZoneScalarFieldEnum = {
+  code: 'code',
+  authorityLegalNameKey: 'authorityLegalNameKey',
+  isMainland: 'isMainland',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type UaeFreeZoneScalarFieldEnum = (typeof UaeFreeZoneScalarFieldEnum)[keyof typeof UaeFreeZoneScalarFieldEnum]
 
 
 export const DeprovisioningRunScalarFieldEnum = {

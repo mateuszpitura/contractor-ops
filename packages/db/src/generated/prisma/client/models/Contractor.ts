@@ -490,6 +490,7 @@ export type ContractorWhereInput = {
   intakes?: Prisma.InvoiceIntakeRequestListRelationFilter
   deprovisioningRuns?: Prisma.DeprovisioningRunListRelationFilter
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckListRelationFilter
+  freeZoneAssignment?: Prisma.XOR<Prisma.FreeZoneAssignmentNullableScalarRelationFilter, Prisma.FreeZoneAssignmentWhereInput> | null
 }
 
 export type ContractorOrderByWithRelationInput = {
@@ -562,6 +563,7 @@ export type ContractorOrderByWithRelationInput = {
   intakes?: Prisma.InvoiceIntakeRequestOrderByRelationAggregateInput
   deprovisioningRuns?: Prisma.DeprovisioningRunOrderByRelationAggregateInput
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckOrderByRelationAggregateInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentOrderByWithRelationInput
 }
 
 export type ContractorWhereUniqueInput = Prisma.AtLeast<{
@@ -637,6 +639,7 @@ export type ContractorWhereUniqueInput = Prisma.AtLeast<{
   intakes?: Prisma.InvoiceIntakeRequestListRelationFilter
   deprovisioningRuns?: Prisma.DeprovisioningRunListRelationFilter
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckListRelationFilter
+  freeZoneAssignment?: Prisma.XOR<Prisma.FreeZoneAssignmentNullableScalarRelationFilter, Prisma.FreeZoneAssignmentWhereInput> | null
 }, "id">
 
 export type ContractorOrderByWithAggregationInput = {
@@ -797,6 +800,7 @@ export type ContractorCreateInput = {
   intakes?: Prisma.InvoiceIntakeRequestCreateNestedManyWithoutMatchedContractorInput
   deprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutContractorInput
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckCreateNestedManyWithoutContractorInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentCreateNestedOneWithoutContractorInput
 }
 
 export type ContractorUncheckedCreateInput = {
@@ -863,6 +867,7 @@ export type ContractorUncheckedCreateInput = {
   intakes?: Prisma.InvoiceIntakeRequestUncheckedCreateNestedManyWithoutMatchedContractorInput
   deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutContractorInput
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckUncheckedCreateNestedManyWithoutContractorInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentUncheckedCreateNestedOneWithoutContractorInput
 }
 
 export type ContractorUpdateInput = {
@@ -929,6 +934,7 @@ export type ContractorUpdateInput = {
   intakes?: Prisma.InvoiceIntakeRequestUpdateManyWithoutMatchedContractorNestedInput
   deprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutContractorNestedInput
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckUpdateManyWithoutContractorNestedInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentUpdateOneWithoutContractorNestedInput
 }
 
 export type ContractorUncheckedUpdateInput = {
@@ -995,6 +1001,7 @@ export type ContractorUncheckedUpdateInput = {
   intakes?: Prisma.InvoiceIntakeRequestUncheckedUpdateManyWithoutMatchedContractorNestedInput
   deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutContractorNestedInput
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckUncheckedUpdateManyWithoutContractorNestedInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentUncheckedUpdateOneWithoutContractorNestedInput
 }
 
 export type ContractorCreateManyInput = {
@@ -1473,6 +1480,20 @@ export type ContractorUpdateOneRequiredWithoutReturnRequestsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.ContractorUpdateToOneWithWhereWithoutReturnRequestsInput, Prisma.ContractorUpdateWithoutReturnRequestsInput>, Prisma.ContractorUncheckedUpdateWithoutReturnRequestsInput>
 }
 
+export type ContractorCreateNestedOneWithoutFreeZoneAssignmentInput = {
+  create?: Prisma.XOR<Prisma.ContractorCreateWithoutFreeZoneAssignmentInput, Prisma.ContractorUncheckedCreateWithoutFreeZoneAssignmentInput>
+  connectOrCreate?: Prisma.ContractorCreateOrConnectWithoutFreeZoneAssignmentInput
+  connect?: Prisma.ContractorWhereUniqueInput
+}
+
+export type ContractorUpdateOneRequiredWithoutFreeZoneAssignmentNestedInput = {
+  create?: Prisma.XOR<Prisma.ContractorCreateWithoutFreeZoneAssignmentInput, Prisma.ContractorUncheckedCreateWithoutFreeZoneAssignmentInput>
+  connectOrCreate?: Prisma.ContractorCreateOrConnectWithoutFreeZoneAssignmentInput
+  upsert?: Prisma.ContractorUpsertWithoutFreeZoneAssignmentInput
+  connect?: Prisma.ContractorWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.ContractorUpdateToOneWithWhereWithoutFreeZoneAssignmentInput, Prisma.ContractorUpdateWithoutFreeZoneAssignmentInput>, Prisma.ContractorUncheckedUpdateWithoutFreeZoneAssignmentInput>
+}
+
 export type ContractorCreateNestedOneWithoutDeprovisioningRunsInput = {
   create?: Prisma.XOR<Prisma.ContractorCreateWithoutDeprovisioningRunsInput, Prisma.ContractorUncheckedCreateWithoutDeprovisioningRunsInput>
   connectOrCreate?: Prisma.ContractorCreateOrConnectWithoutDeprovisioningRunsInput
@@ -1920,6 +1941,7 @@ export type ContractorCreateWithoutOwnerInput = {
   intakes?: Prisma.InvoiceIntakeRequestCreateNestedManyWithoutMatchedContractorInput
   deprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutContractorInput
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckCreateNestedManyWithoutContractorInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentCreateNestedOneWithoutContractorInput
 }
 
 export type ContractorUncheckedCreateWithoutOwnerInput = {
@@ -1985,6 +2007,7 @@ export type ContractorUncheckedCreateWithoutOwnerInput = {
   intakes?: Prisma.InvoiceIntakeRequestUncheckedCreateNestedManyWithoutMatchedContractorInput
   deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutContractorInput
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckUncheckedCreateNestedManyWithoutContractorInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentUncheckedCreateNestedOneWithoutContractorInput
 }
 
 export type ContractorCreateOrConnectWithoutOwnerInput = {
@@ -2123,6 +2146,7 @@ export type ContractorCreateWithoutIr35ChainParticipantLinksInput = {
   intakes?: Prisma.InvoiceIntakeRequestCreateNestedManyWithoutMatchedContractorInput
   deprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutContractorInput
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckCreateNestedManyWithoutContractorInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentCreateNestedOneWithoutContractorInput
 }
 
 export type ContractorUncheckedCreateWithoutIr35ChainParticipantLinksInput = {
@@ -2188,6 +2212,7 @@ export type ContractorUncheckedCreateWithoutIr35ChainParticipantLinksInput = {
   intakes?: Prisma.InvoiceIntakeRequestUncheckedCreateNestedManyWithoutMatchedContractorInput
   deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutContractorInput
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckUncheckedCreateNestedManyWithoutContractorInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentUncheckedCreateNestedOneWithoutContractorInput
 }
 
 export type ContractorCreateOrConnectWithoutIr35ChainParticipantLinksInput = {
@@ -2269,6 +2294,7 @@ export type ContractorUpdateWithoutIr35ChainParticipantLinksInput = {
   intakes?: Prisma.InvoiceIntakeRequestUpdateManyWithoutMatchedContractorNestedInput
   deprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutContractorNestedInput
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckUpdateManyWithoutContractorNestedInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentUpdateOneWithoutContractorNestedInput
 }
 
 export type ContractorUncheckedUpdateWithoutIr35ChainParticipantLinksInput = {
@@ -2334,6 +2360,7 @@ export type ContractorUncheckedUpdateWithoutIr35ChainParticipantLinksInput = {
   intakes?: Prisma.InvoiceIntakeRequestUncheckedUpdateManyWithoutMatchedContractorNestedInput
   deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutContractorNestedInput
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckUncheckedUpdateManyWithoutContractorNestedInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentUncheckedUpdateOneWithoutContractorNestedInput
 }
 
 export type ContractorCreateWithoutContractsInput = {
@@ -2399,6 +2426,7 @@ export type ContractorCreateWithoutContractsInput = {
   intakes?: Prisma.InvoiceIntakeRequestCreateNestedManyWithoutMatchedContractorInput
   deprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutContractorInput
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckCreateNestedManyWithoutContractorInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentCreateNestedOneWithoutContractorInput
 }
 
 export type ContractorUncheckedCreateWithoutContractsInput = {
@@ -2464,6 +2492,7 @@ export type ContractorUncheckedCreateWithoutContractsInput = {
   intakes?: Prisma.InvoiceIntakeRequestUncheckedCreateNestedManyWithoutMatchedContractorInput
   deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutContractorInput
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckUncheckedCreateNestedManyWithoutContractorInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentUncheckedCreateNestedOneWithoutContractorInput
 }
 
 export type ContractorCreateOrConnectWithoutContractsInput = {
@@ -2545,6 +2574,7 @@ export type ContractorUpdateWithoutContractsInput = {
   intakes?: Prisma.InvoiceIntakeRequestUpdateManyWithoutMatchedContractorNestedInput
   deprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutContractorNestedInput
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckUpdateManyWithoutContractorNestedInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentUpdateOneWithoutContractorNestedInput
 }
 
 export type ContractorUncheckedUpdateWithoutContractsInput = {
@@ -2610,6 +2640,7 @@ export type ContractorUncheckedUpdateWithoutContractsInput = {
   intakes?: Prisma.InvoiceIntakeRequestUncheckedUpdateManyWithoutMatchedContractorNestedInput
   deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutContractorNestedInput
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckUncheckedUpdateManyWithoutContractorNestedInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentUncheckedUpdateOneWithoutContractorNestedInput
 }
 
 export type ContractorCreateWithoutContactsInput = {
@@ -2675,6 +2706,7 @@ export type ContractorCreateWithoutContactsInput = {
   intakes?: Prisma.InvoiceIntakeRequestCreateNestedManyWithoutMatchedContractorInput
   deprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutContractorInput
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckCreateNestedManyWithoutContractorInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentCreateNestedOneWithoutContractorInput
 }
 
 export type ContractorUncheckedCreateWithoutContactsInput = {
@@ -2740,6 +2772,7 @@ export type ContractorUncheckedCreateWithoutContactsInput = {
   intakes?: Prisma.InvoiceIntakeRequestUncheckedCreateNestedManyWithoutMatchedContractorInput
   deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutContractorInput
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckUncheckedCreateNestedManyWithoutContractorInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentUncheckedCreateNestedOneWithoutContractorInput
 }
 
 export type ContractorCreateOrConnectWithoutContactsInput = {
@@ -2821,6 +2854,7 @@ export type ContractorUpdateWithoutContactsInput = {
   intakes?: Prisma.InvoiceIntakeRequestUpdateManyWithoutMatchedContractorNestedInput
   deprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutContractorNestedInput
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckUpdateManyWithoutContractorNestedInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentUpdateOneWithoutContractorNestedInput
 }
 
 export type ContractorUncheckedUpdateWithoutContactsInput = {
@@ -2886,6 +2920,7 @@ export type ContractorUncheckedUpdateWithoutContactsInput = {
   intakes?: Prisma.InvoiceIntakeRequestUncheckedUpdateManyWithoutMatchedContractorNestedInput
   deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutContractorNestedInput
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckUncheckedUpdateManyWithoutContractorNestedInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentUncheckedUpdateOneWithoutContractorNestedInput
 }
 
 export type ContractorCreateWithoutBillingProfilesInput = {
@@ -2951,6 +2986,7 @@ export type ContractorCreateWithoutBillingProfilesInput = {
   intakes?: Prisma.InvoiceIntakeRequestCreateNestedManyWithoutMatchedContractorInput
   deprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutContractorInput
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckCreateNestedManyWithoutContractorInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentCreateNestedOneWithoutContractorInput
 }
 
 export type ContractorUncheckedCreateWithoutBillingProfilesInput = {
@@ -3016,6 +3052,7 @@ export type ContractorUncheckedCreateWithoutBillingProfilesInput = {
   intakes?: Prisma.InvoiceIntakeRequestUncheckedCreateNestedManyWithoutMatchedContractorInput
   deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutContractorInput
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckUncheckedCreateNestedManyWithoutContractorInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentUncheckedCreateNestedOneWithoutContractorInput
 }
 
 export type ContractorCreateOrConnectWithoutBillingProfilesInput = {
@@ -3097,6 +3134,7 @@ export type ContractorUpdateWithoutBillingProfilesInput = {
   intakes?: Prisma.InvoiceIntakeRequestUpdateManyWithoutMatchedContractorNestedInput
   deprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutContractorNestedInput
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckUpdateManyWithoutContractorNestedInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentUpdateOneWithoutContractorNestedInput
 }
 
 export type ContractorUncheckedUpdateWithoutBillingProfilesInput = {
@@ -3162,6 +3200,7 @@ export type ContractorUncheckedUpdateWithoutBillingProfilesInput = {
   intakes?: Prisma.InvoiceIntakeRequestUncheckedUpdateManyWithoutMatchedContractorNestedInput
   deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutContractorNestedInput
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckUncheckedUpdateManyWithoutContractorNestedInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentUncheckedUpdateOneWithoutContractorNestedInput
 }
 
 export type ContractorCreateWithoutAssignmentsInput = {
@@ -3227,6 +3266,7 @@ export type ContractorCreateWithoutAssignmentsInput = {
   intakes?: Prisma.InvoiceIntakeRequestCreateNestedManyWithoutMatchedContractorInput
   deprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutContractorInput
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckCreateNestedManyWithoutContractorInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentCreateNestedOneWithoutContractorInput
 }
 
 export type ContractorUncheckedCreateWithoutAssignmentsInput = {
@@ -3292,6 +3332,7 @@ export type ContractorUncheckedCreateWithoutAssignmentsInput = {
   intakes?: Prisma.InvoiceIntakeRequestUncheckedCreateNestedManyWithoutMatchedContractorInput
   deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutContractorInput
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckUncheckedCreateNestedManyWithoutContractorInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentUncheckedCreateNestedOneWithoutContractorInput
 }
 
 export type ContractorCreateOrConnectWithoutAssignmentsInput = {
@@ -3373,6 +3414,7 @@ export type ContractorUpdateWithoutAssignmentsInput = {
   intakes?: Prisma.InvoiceIntakeRequestUpdateManyWithoutMatchedContractorNestedInput
   deprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutContractorNestedInput
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckUpdateManyWithoutContractorNestedInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentUpdateOneWithoutContractorNestedInput
 }
 
 export type ContractorUncheckedUpdateWithoutAssignmentsInput = {
@@ -3438,6 +3480,7 @@ export type ContractorUncheckedUpdateWithoutAssignmentsInput = {
   intakes?: Prisma.InvoiceIntakeRequestUncheckedUpdateManyWithoutMatchedContractorNestedInput
   deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutContractorNestedInput
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckUncheckedUpdateManyWithoutContractorNestedInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentUncheckedUpdateOneWithoutContractorNestedInput
 }
 
 export type ContractorCreateWithoutTagsInput = {
@@ -3503,6 +3546,7 @@ export type ContractorCreateWithoutTagsInput = {
   intakes?: Prisma.InvoiceIntakeRequestCreateNestedManyWithoutMatchedContractorInput
   deprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutContractorInput
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckCreateNestedManyWithoutContractorInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentCreateNestedOneWithoutContractorInput
 }
 
 export type ContractorUncheckedCreateWithoutTagsInput = {
@@ -3568,6 +3612,7 @@ export type ContractorUncheckedCreateWithoutTagsInput = {
   intakes?: Prisma.InvoiceIntakeRequestUncheckedCreateNestedManyWithoutMatchedContractorInput
   deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutContractorInput
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckUncheckedCreateNestedManyWithoutContractorInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentUncheckedCreateNestedOneWithoutContractorInput
 }
 
 export type ContractorCreateOrConnectWithoutTagsInput = {
@@ -3649,6 +3694,7 @@ export type ContractorUpdateWithoutTagsInput = {
   intakes?: Prisma.InvoiceIntakeRequestUpdateManyWithoutMatchedContractorNestedInput
   deprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutContractorNestedInput
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckUpdateManyWithoutContractorNestedInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentUpdateOneWithoutContractorNestedInput
 }
 
 export type ContractorUncheckedUpdateWithoutTagsInput = {
@@ -3714,6 +3760,7 @@ export type ContractorUncheckedUpdateWithoutTagsInput = {
   intakes?: Prisma.InvoiceIntakeRequestUncheckedUpdateManyWithoutMatchedContractorNestedInput
   deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutContractorNestedInput
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckUncheckedUpdateManyWithoutContractorNestedInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentUncheckedUpdateOneWithoutContractorNestedInput
 }
 
 export type ContractorCreateWithoutComplianceItemsInput = {
@@ -3779,6 +3826,7 @@ export type ContractorCreateWithoutComplianceItemsInput = {
   intakes?: Prisma.InvoiceIntakeRequestCreateNestedManyWithoutMatchedContractorInput
   deprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutContractorInput
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckCreateNestedManyWithoutContractorInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentCreateNestedOneWithoutContractorInput
 }
 
 export type ContractorUncheckedCreateWithoutComplianceItemsInput = {
@@ -3844,6 +3892,7 @@ export type ContractorUncheckedCreateWithoutComplianceItemsInput = {
   intakes?: Prisma.InvoiceIntakeRequestUncheckedCreateNestedManyWithoutMatchedContractorInput
   deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutContractorInput
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckUncheckedCreateNestedManyWithoutContractorInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentUncheckedCreateNestedOneWithoutContractorInput
 }
 
 export type ContractorCreateOrConnectWithoutComplianceItemsInput = {
@@ -3925,6 +3974,7 @@ export type ContractorUpdateWithoutComplianceItemsInput = {
   intakes?: Prisma.InvoiceIntakeRequestUpdateManyWithoutMatchedContractorNestedInput
   deprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutContractorNestedInput
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckUpdateManyWithoutContractorNestedInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentUpdateOneWithoutContractorNestedInput
 }
 
 export type ContractorUncheckedUpdateWithoutComplianceItemsInput = {
@@ -3990,6 +4040,7 @@ export type ContractorUncheckedUpdateWithoutComplianceItemsInput = {
   intakes?: Prisma.InvoiceIntakeRequestUncheckedUpdateManyWithoutMatchedContractorNestedInput
   deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutContractorNestedInput
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckUncheckedUpdateManyWithoutContractorNestedInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentUncheckedUpdateOneWithoutContractorNestedInput
 }
 
 export type ContractorCreateWithoutLeitwegIdsInput = {
@@ -4055,6 +4106,7 @@ export type ContractorCreateWithoutLeitwegIdsInput = {
   intakes?: Prisma.InvoiceIntakeRequestCreateNestedManyWithoutMatchedContractorInput
   deprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutContractorInput
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckCreateNestedManyWithoutContractorInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentCreateNestedOneWithoutContractorInput
 }
 
 export type ContractorUncheckedCreateWithoutLeitwegIdsInput = {
@@ -4120,6 +4172,7 @@ export type ContractorUncheckedCreateWithoutLeitwegIdsInput = {
   intakes?: Prisma.InvoiceIntakeRequestUncheckedCreateNestedManyWithoutMatchedContractorInput
   deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutContractorInput
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckUncheckedCreateNestedManyWithoutContractorInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentUncheckedCreateNestedOneWithoutContractorInput
 }
 
 export type ContractorCreateOrConnectWithoutLeitwegIdsInput = {
@@ -4201,6 +4254,7 @@ export type ContractorUpdateWithoutLeitwegIdsInput = {
   intakes?: Prisma.InvoiceIntakeRequestUpdateManyWithoutMatchedContractorNestedInput
   deprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutContractorNestedInput
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckUpdateManyWithoutContractorNestedInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentUpdateOneWithoutContractorNestedInput
 }
 
 export type ContractorUncheckedUpdateWithoutLeitwegIdsInput = {
@@ -4266,6 +4320,7 @@ export type ContractorUncheckedUpdateWithoutLeitwegIdsInput = {
   intakes?: Prisma.InvoiceIntakeRequestUncheckedUpdateManyWithoutMatchedContractorNestedInput
   deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutContractorNestedInput
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckUncheckedUpdateManyWithoutContractorNestedInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentUncheckedUpdateOneWithoutContractorNestedInput
 }
 
 export type ContractorCreateWithoutEquipmentAssignmentsInput = {
@@ -4331,6 +4386,7 @@ export type ContractorCreateWithoutEquipmentAssignmentsInput = {
   intakes?: Prisma.InvoiceIntakeRequestCreateNestedManyWithoutMatchedContractorInput
   deprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutContractorInput
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckCreateNestedManyWithoutContractorInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentCreateNestedOneWithoutContractorInput
 }
 
 export type ContractorUncheckedCreateWithoutEquipmentAssignmentsInput = {
@@ -4396,6 +4452,7 @@ export type ContractorUncheckedCreateWithoutEquipmentAssignmentsInput = {
   intakes?: Prisma.InvoiceIntakeRequestUncheckedCreateNestedManyWithoutMatchedContractorInput
   deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutContractorInput
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckUncheckedCreateNestedManyWithoutContractorInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentUncheckedCreateNestedOneWithoutContractorInput
 }
 
 export type ContractorCreateOrConnectWithoutEquipmentAssignmentsInput = {
@@ -4477,6 +4534,7 @@ export type ContractorUpdateWithoutEquipmentAssignmentsInput = {
   intakes?: Prisma.InvoiceIntakeRequestUpdateManyWithoutMatchedContractorNestedInput
   deprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutContractorNestedInput
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckUpdateManyWithoutContractorNestedInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentUpdateOneWithoutContractorNestedInput
 }
 
 export type ContractorUncheckedUpdateWithoutEquipmentAssignmentsInput = {
@@ -4542,6 +4600,7 @@ export type ContractorUncheckedUpdateWithoutEquipmentAssignmentsInput = {
   intakes?: Prisma.InvoiceIntakeRequestUncheckedUpdateManyWithoutMatchedContractorNestedInput
   deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutContractorNestedInput
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckUncheckedUpdateManyWithoutContractorNestedInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentUncheckedUpdateOneWithoutContractorNestedInput
 }
 
 export type ContractorCreateWithoutReturnRequestsInput = {
@@ -4607,6 +4666,7 @@ export type ContractorCreateWithoutReturnRequestsInput = {
   intakes?: Prisma.InvoiceIntakeRequestCreateNestedManyWithoutMatchedContractorInput
   deprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutContractorInput
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckCreateNestedManyWithoutContractorInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentCreateNestedOneWithoutContractorInput
 }
 
 export type ContractorUncheckedCreateWithoutReturnRequestsInput = {
@@ -4672,6 +4732,7 @@ export type ContractorUncheckedCreateWithoutReturnRequestsInput = {
   intakes?: Prisma.InvoiceIntakeRequestUncheckedCreateNestedManyWithoutMatchedContractorInput
   deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutContractorInput
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckUncheckedCreateNestedManyWithoutContractorInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentUncheckedCreateNestedOneWithoutContractorInput
 }
 
 export type ContractorCreateOrConnectWithoutReturnRequestsInput = {
@@ -4753,6 +4814,7 @@ export type ContractorUpdateWithoutReturnRequestsInput = {
   intakes?: Prisma.InvoiceIntakeRequestUpdateManyWithoutMatchedContractorNestedInput
   deprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutContractorNestedInput
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckUpdateManyWithoutContractorNestedInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentUpdateOneWithoutContractorNestedInput
 }
 
 export type ContractorUncheckedUpdateWithoutReturnRequestsInput = {
@@ -4812,6 +4874,287 @@ export type ContractorUncheckedUpdateWithoutReturnRequestsInput = {
   timesheets?: Prisma.TimesheetUncheckedUpdateManyWithoutContractorNestedInput
   timeEntries?: Prisma.TimeEntryUncheckedUpdateManyWithoutContractorNestedInput
   equipmentAssignments?: Prisma.EquipmentAssignmentUncheckedUpdateManyWithoutContractorNestedInput
+  taxIdValidations?: Prisma.TaxIdValidationUncheckedUpdateManyWithoutContractorNestedInput
+  ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantUncheckedUpdateManyWithoutLinkedContractorNestedInput
+  leitwegIds?: Prisma.LeitwegIdUncheckedUpdateManyWithoutContractorNestedInput
+  intakes?: Prisma.InvoiceIntakeRequestUncheckedUpdateManyWithoutMatchedContractorNestedInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutContractorNestedInput
+  paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckUncheckedUpdateManyWithoutContractorNestedInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentUncheckedUpdateOneWithoutContractorNestedInput
+}
+
+export type ContractorCreateWithoutFreeZoneAssignmentInput = {
+  id?: string
+  type: $Enums.ContractorType
+  legalName: string
+  displayName: string
+  taxId?: string | null
+  vatId?: string | null
+  registrationNumber?: string | null
+  countryCode: string
+  currency: string
+  email?: string | null
+  phone?: string | null
+  website?: string | null
+  addressLine1?: string | null
+  addressLine2?: string | null
+  city?: string | null
+  postalCode?: string | null
+  status?: $Enums.ContractorStatus
+  lifecycleStage?: $Enums.ContractorLifecycleStage
+  notes?: string | null
+  isSensitive?: boolean
+  customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  latestVatValidatedAt?: Date | string | null
+  latestVatValidationStatus?: $Enums.ValidationStatus | null
+  isPublicSectorBuyer?: boolean
+  peppolSchemeId?: string | null
+  peppolParticipantValue?: string | null
+  isBusinessCustomer?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  archivedAt?: Date | string | null
+  deletedAt?: Date | string | null
+  preferredPaczkomatId?: string | null
+  preferredPaczkomatName?: string | null
+  preferredPaczkomatAddress?: string | null
+  organization: Prisma.OrganizationCreateNestedOneWithoutContractorsInput
+  owner?: Prisma.UserCreateNestedOneWithoutOwnedContractorsInput
+  primaryTeam?: Prisma.TeamCreateNestedOneWithoutContractorsInput
+  primaryProject?: Prisma.ProjectCreateNestedOneWithoutContractorsInput
+  defaultCostCenter?: Prisma.CostCenterCreateNestedOneWithoutContractorsInput
+  workflowRole?: Prisma.WorkflowRoleTemplateCreateNestedOneWithoutContractorsInput
+  contacts?: Prisma.ContractorContactCreateNestedManyWithoutContractorInput
+  billingProfiles?: Prisma.ContractorBillingProfileCreateNestedManyWithoutContractorInput
+  assignments?: Prisma.ContractorAssignmentCreateNestedManyWithoutContractorInput
+  contracts?: Prisma.ContractCreateNestedManyWithoutContractorInput
+  complianceItems?: Prisma.ContractorComplianceItemCreateNestedManyWithoutContractorInput
+  workflowRuns?: Prisma.WorkflowRunCreateNestedManyWithoutContractorInput
+  invoices?: Prisma.InvoiceCreateNestedManyWithoutContractorInput
+  paymentRunItems?: Prisma.PaymentRunItemCreateNestedManyWithoutContractorInput
+  tags?: Prisma.ContractorTagLinkCreateNestedManyWithoutContractorInput
+  portalSessions?: Prisma.PortalSessionCreateNestedManyWithoutContractorInput
+  changeRequests?: Prisma.ContractorChangeRequestCreateNestedManyWithoutContractorInput
+  notificationPreferences?: Prisma.ContractorNotificationPreferenceCreateNestedManyWithoutContractorInput
+  timesheets?: Prisma.TimesheetCreateNestedManyWithoutContractorInput
+  timeEntries?: Prisma.TimeEntryCreateNestedManyWithoutContractorInput
+  equipmentAssignments?: Prisma.EquipmentAssignmentCreateNestedManyWithoutContractorInput
+  returnRequests?: Prisma.ReturnRequestCreateNestedManyWithoutContractorInput
+  taxIdValidations?: Prisma.TaxIdValidationCreateNestedManyWithoutContractorInput
+  ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantCreateNestedManyWithoutLinkedContractorInput
+  leitwegIds?: Prisma.LeitwegIdCreateNestedManyWithoutContractorInput
+  intakes?: Prisma.InvoiceIntakeRequestCreateNestedManyWithoutMatchedContractorInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutContractorInput
+  paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckCreateNestedManyWithoutContractorInput
+}
+
+export type ContractorUncheckedCreateWithoutFreeZoneAssignmentInput = {
+  id?: string
+  organizationId: string
+  type: $Enums.ContractorType
+  legalName: string
+  displayName: string
+  taxId?: string | null
+  vatId?: string | null
+  registrationNumber?: string | null
+  countryCode: string
+  currency: string
+  email?: string | null
+  phone?: string | null
+  website?: string | null
+  addressLine1?: string | null
+  addressLine2?: string | null
+  city?: string | null
+  postalCode?: string | null
+  status?: $Enums.ContractorStatus
+  lifecycleStage?: $Enums.ContractorLifecycleStage
+  ownerUserId?: string | null
+  primaryTeamId?: string | null
+  primaryProjectId?: string | null
+  defaultCostCenterId?: string | null
+  workflowRoleId?: string | null
+  notes?: string | null
+  isSensitive?: boolean
+  customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  latestVatValidatedAt?: Date | string | null
+  latestVatValidationStatus?: $Enums.ValidationStatus | null
+  isPublicSectorBuyer?: boolean
+  peppolSchemeId?: string | null
+  peppolParticipantValue?: string | null
+  isBusinessCustomer?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  archivedAt?: Date | string | null
+  deletedAt?: Date | string | null
+  preferredPaczkomatId?: string | null
+  preferredPaczkomatName?: string | null
+  preferredPaczkomatAddress?: string | null
+  contacts?: Prisma.ContractorContactUncheckedCreateNestedManyWithoutContractorInput
+  billingProfiles?: Prisma.ContractorBillingProfileUncheckedCreateNestedManyWithoutContractorInput
+  assignments?: Prisma.ContractorAssignmentUncheckedCreateNestedManyWithoutContractorInput
+  contracts?: Prisma.ContractUncheckedCreateNestedManyWithoutContractorInput
+  complianceItems?: Prisma.ContractorComplianceItemUncheckedCreateNestedManyWithoutContractorInput
+  workflowRuns?: Prisma.WorkflowRunUncheckedCreateNestedManyWithoutContractorInput
+  invoices?: Prisma.InvoiceUncheckedCreateNestedManyWithoutContractorInput
+  paymentRunItems?: Prisma.PaymentRunItemUncheckedCreateNestedManyWithoutContractorInput
+  tags?: Prisma.ContractorTagLinkUncheckedCreateNestedManyWithoutContractorInput
+  portalSessions?: Prisma.PortalSessionUncheckedCreateNestedManyWithoutContractorInput
+  changeRequests?: Prisma.ContractorChangeRequestUncheckedCreateNestedManyWithoutContractorInput
+  notificationPreferences?: Prisma.ContractorNotificationPreferenceUncheckedCreateNestedManyWithoutContractorInput
+  timesheets?: Prisma.TimesheetUncheckedCreateNestedManyWithoutContractorInput
+  timeEntries?: Prisma.TimeEntryUncheckedCreateNestedManyWithoutContractorInput
+  equipmentAssignments?: Prisma.EquipmentAssignmentUncheckedCreateNestedManyWithoutContractorInput
+  returnRequests?: Prisma.ReturnRequestUncheckedCreateNestedManyWithoutContractorInput
+  taxIdValidations?: Prisma.TaxIdValidationUncheckedCreateNestedManyWithoutContractorInput
+  ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantUncheckedCreateNestedManyWithoutLinkedContractorInput
+  leitwegIds?: Prisma.LeitwegIdUncheckedCreateNestedManyWithoutContractorInput
+  intakes?: Prisma.InvoiceIntakeRequestUncheckedCreateNestedManyWithoutMatchedContractorInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutContractorInput
+  paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckUncheckedCreateNestedManyWithoutContractorInput
+}
+
+export type ContractorCreateOrConnectWithoutFreeZoneAssignmentInput = {
+  where: Prisma.ContractorWhereUniqueInput
+  create: Prisma.XOR<Prisma.ContractorCreateWithoutFreeZoneAssignmentInput, Prisma.ContractorUncheckedCreateWithoutFreeZoneAssignmentInput>
+}
+
+export type ContractorUpsertWithoutFreeZoneAssignmentInput = {
+  update: Prisma.XOR<Prisma.ContractorUpdateWithoutFreeZoneAssignmentInput, Prisma.ContractorUncheckedUpdateWithoutFreeZoneAssignmentInput>
+  create: Prisma.XOR<Prisma.ContractorCreateWithoutFreeZoneAssignmentInput, Prisma.ContractorUncheckedCreateWithoutFreeZoneAssignmentInput>
+  where?: Prisma.ContractorWhereInput
+}
+
+export type ContractorUpdateToOneWithWhereWithoutFreeZoneAssignmentInput = {
+  where?: Prisma.ContractorWhereInput
+  data: Prisma.XOR<Prisma.ContractorUpdateWithoutFreeZoneAssignmentInput, Prisma.ContractorUncheckedUpdateWithoutFreeZoneAssignmentInput>
+}
+
+export type ContractorUpdateWithoutFreeZoneAssignmentInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumContractorTypeFieldUpdateOperationsInput | $Enums.ContractorType
+  legalName?: Prisma.StringFieldUpdateOperationsInput | string
+  displayName?: Prisma.StringFieldUpdateOperationsInput | string
+  taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  vatId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  registrationNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  countryCode?: Prisma.StringFieldUpdateOperationsInput | string
+  currency?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  addressLine1?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  addressLine2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  postalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumContractorStatusFieldUpdateOperationsInput | $Enums.ContractorStatus
+  lifecycleStage?: Prisma.EnumContractorLifecycleStageFieldUpdateOperationsInput | $Enums.ContractorLifecycleStage
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isSensitive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
+  isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  peppolSchemeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  peppolParticipantValue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isBusinessCustomer?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  preferredPaczkomatId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  preferredPaczkomatName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  preferredPaczkomatAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  organization?: Prisma.OrganizationUpdateOneRequiredWithoutContractorsNestedInput
+  owner?: Prisma.UserUpdateOneWithoutOwnedContractorsNestedInput
+  primaryTeam?: Prisma.TeamUpdateOneWithoutContractorsNestedInput
+  primaryProject?: Prisma.ProjectUpdateOneWithoutContractorsNestedInput
+  defaultCostCenter?: Prisma.CostCenterUpdateOneWithoutContractorsNestedInput
+  workflowRole?: Prisma.WorkflowRoleTemplateUpdateOneWithoutContractorsNestedInput
+  contacts?: Prisma.ContractorContactUpdateManyWithoutContractorNestedInput
+  billingProfiles?: Prisma.ContractorBillingProfileUpdateManyWithoutContractorNestedInput
+  assignments?: Prisma.ContractorAssignmentUpdateManyWithoutContractorNestedInput
+  contracts?: Prisma.ContractUpdateManyWithoutContractorNestedInput
+  complianceItems?: Prisma.ContractorComplianceItemUpdateManyWithoutContractorNestedInput
+  workflowRuns?: Prisma.WorkflowRunUpdateManyWithoutContractorNestedInput
+  invoices?: Prisma.InvoiceUpdateManyWithoutContractorNestedInput
+  paymentRunItems?: Prisma.PaymentRunItemUpdateManyWithoutContractorNestedInput
+  tags?: Prisma.ContractorTagLinkUpdateManyWithoutContractorNestedInput
+  portalSessions?: Prisma.PortalSessionUpdateManyWithoutContractorNestedInput
+  changeRequests?: Prisma.ContractorChangeRequestUpdateManyWithoutContractorNestedInput
+  notificationPreferences?: Prisma.ContractorNotificationPreferenceUpdateManyWithoutContractorNestedInput
+  timesheets?: Prisma.TimesheetUpdateManyWithoutContractorNestedInput
+  timeEntries?: Prisma.TimeEntryUpdateManyWithoutContractorNestedInput
+  equipmentAssignments?: Prisma.EquipmentAssignmentUpdateManyWithoutContractorNestedInput
+  returnRequests?: Prisma.ReturnRequestUpdateManyWithoutContractorNestedInput
+  taxIdValidations?: Prisma.TaxIdValidationUpdateManyWithoutContractorNestedInput
+  ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantUpdateManyWithoutLinkedContractorNestedInput
+  leitwegIds?: Prisma.LeitwegIdUpdateManyWithoutContractorNestedInput
+  intakes?: Prisma.InvoiceIntakeRequestUpdateManyWithoutMatchedContractorNestedInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutContractorNestedInput
+  paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckUpdateManyWithoutContractorNestedInput
+}
+
+export type ContractorUncheckedUpdateWithoutFreeZoneAssignmentInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  organizationId?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumContractorTypeFieldUpdateOperationsInput | $Enums.ContractorType
+  legalName?: Prisma.StringFieldUpdateOperationsInput | string
+  displayName?: Prisma.StringFieldUpdateOperationsInput | string
+  taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  vatId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  registrationNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  countryCode?: Prisma.StringFieldUpdateOperationsInput | string
+  currency?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  addressLine1?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  addressLine2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  postalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumContractorStatusFieldUpdateOperationsInput | $Enums.ContractorStatus
+  lifecycleStage?: Prisma.EnumContractorLifecycleStageFieldUpdateOperationsInput | $Enums.ContractorLifecycleStage
+  ownerUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  primaryTeamId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  primaryProjectId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  defaultCostCenterId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  workflowRoleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isSensitive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
+  isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  peppolSchemeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  peppolParticipantValue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isBusinessCustomer?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  preferredPaczkomatId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  preferredPaczkomatName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  preferredPaczkomatAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contacts?: Prisma.ContractorContactUncheckedUpdateManyWithoutContractorNestedInput
+  billingProfiles?: Prisma.ContractorBillingProfileUncheckedUpdateManyWithoutContractorNestedInput
+  assignments?: Prisma.ContractorAssignmentUncheckedUpdateManyWithoutContractorNestedInput
+  contracts?: Prisma.ContractUncheckedUpdateManyWithoutContractorNestedInput
+  complianceItems?: Prisma.ContractorComplianceItemUncheckedUpdateManyWithoutContractorNestedInput
+  workflowRuns?: Prisma.WorkflowRunUncheckedUpdateManyWithoutContractorNestedInput
+  invoices?: Prisma.InvoiceUncheckedUpdateManyWithoutContractorNestedInput
+  paymentRunItems?: Prisma.PaymentRunItemUncheckedUpdateManyWithoutContractorNestedInput
+  tags?: Prisma.ContractorTagLinkUncheckedUpdateManyWithoutContractorNestedInput
+  portalSessions?: Prisma.PortalSessionUncheckedUpdateManyWithoutContractorNestedInput
+  changeRequests?: Prisma.ContractorChangeRequestUncheckedUpdateManyWithoutContractorNestedInput
+  notificationPreferences?: Prisma.ContractorNotificationPreferenceUncheckedUpdateManyWithoutContractorNestedInput
+  timesheets?: Prisma.TimesheetUncheckedUpdateManyWithoutContractorNestedInput
+  timeEntries?: Prisma.TimeEntryUncheckedUpdateManyWithoutContractorNestedInput
+  equipmentAssignments?: Prisma.EquipmentAssignmentUncheckedUpdateManyWithoutContractorNestedInput
+  returnRequests?: Prisma.ReturnRequestUncheckedUpdateManyWithoutContractorNestedInput
   taxIdValidations?: Prisma.TaxIdValidationUncheckedUpdateManyWithoutContractorNestedInput
   ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantUncheckedUpdateManyWithoutLinkedContractorNestedInput
   leitwegIds?: Prisma.LeitwegIdUncheckedUpdateManyWithoutContractorNestedInput
@@ -4883,6 +5226,7 @@ export type ContractorCreateWithoutDeprovisioningRunsInput = {
   leitwegIds?: Prisma.LeitwegIdCreateNestedManyWithoutContractorInput
   intakes?: Prisma.InvoiceIntakeRequestCreateNestedManyWithoutMatchedContractorInput
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckCreateNestedManyWithoutContractorInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentCreateNestedOneWithoutContractorInput
 }
 
 export type ContractorUncheckedCreateWithoutDeprovisioningRunsInput = {
@@ -4948,6 +5292,7 @@ export type ContractorUncheckedCreateWithoutDeprovisioningRunsInput = {
   leitwegIds?: Prisma.LeitwegIdUncheckedCreateNestedManyWithoutContractorInput
   intakes?: Prisma.InvoiceIntakeRequestUncheckedCreateNestedManyWithoutMatchedContractorInput
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckUncheckedCreateNestedManyWithoutContractorInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentUncheckedCreateNestedOneWithoutContractorInput
 }
 
 export type ContractorCreateOrConnectWithoutDeprovisioningRunsInput = {
@@ -5029,6 +5374,7 @@ export type ContractorUpdateWithoutDeprovisioningRunsInput = {
   leitwegIds?: Prisma.LeitwegIdUpdateManyWithoutContractorNestedInput
   intakes?: Prisma.InvoiceIntakeRequestUpdateManyWithoutMatchedContractorNestedInput
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckUpdateManyWithoutContractorNestedInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentUpdateOneWithoutContractorNestedInput
 }
 
 export type ContractorUncheckedUpdateWithoutDeprovisioningRunsInput = {
@@ -5094,6 +5440,7 @@ export type ContractorUncheckedUpdateWithoutDeprovisioningRunsInput = {
   leitwegIds?: Prisma.LeitwegIdUncheckedUpdateManyWithoutContractorNestedInput
   intakes?: Prisma.InvoiceIntakeRequestUncheckedUpdateManyWithoutMatchedContractorNestedInput
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckUncheckedUpdateManyWithoutContractorNestedInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentUncheckedUpdateOneWithoutContractorNestedInput
 }
 
 export type ContractorCreateWithoutInvoicesInput = {
@@ -5159,6 +5506,7 @@ export type ContractorCreateWithoutInvoicesInput = {
   intakes?: Prisma.InvoiceIntakeRequestCreateNestedManyWithoutMatchedContractorInput
   deprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutContractorInput
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckCreateNestedManyWithoutContractorInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentCreateNestedOneWithoutContractorInput
 }
 
 export type ContractorUncheckedCreateWithoutInvoicesInput = {
@@ -5224,6 +5572,7 @@ export type ContractorUncheckedCreateWithoutInvoicesInput = {
   intakes?: Prisma.InvoiceIntakeRequestUncheckedCreateNestedManyWithoutMatchedContractorInput
   deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutContractorInput
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckUncheckedCreateNestedManyWithoutContractorInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentUncheckedCreateNestedOneWithoutContractorInput
 }
 
 export type ContractorCreateOrConnectWithoutInvoicesInput = {
@@ -5305,6 +5654,7 @@ export type ContractorUpdateWithoutInvoicesInput = {
   intakes?: Prisma.InvoiceIntakeRequestUpdateManyWithoutMatchedContractorNestedInput
   deprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutContractorNestedInput
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckUpdateManyWithoutContractorNestedInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentUpdateOneWithoutContractorNestedInput
 }
 
 export type ContractorUncheckedUpdateWithoutInvoicesInput = {
@@ -5370,6 +5720,7 @@ export type ContractorUncheckedUpdateWithoutInvoicesInput = {
   intakes?: Prisma.InvoiceIntakeRequestUncheckedUpdateManyWithoutMatchedContractorNestedInput
   deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutContractorNestedInput
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckUncheckedUpdateManyWithoutContractorNestedInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentUncheckedUpdateOneWithoutContractorNestedInput
 }
 
 export type ContractorCreateWithoutIntakesInput = {
@@ -5435,6 +5786,7 @@ export type ContractorCreateWithoutIntakesInput = {
   leitwegIds?: Prisma.LeitwegIdCreateNestedManyWithoutContractorInput
   deprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutContractorInput
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckCreateNestedManyWithoutContractorInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentCreateNestedOneWithoutContractorInput
 }
 
 export type ContractorUncheckedCreateWithoutIntakesInput = {
@@ -5500,6 +5852,7 @@ export type ContractorUncheckedCreateWithoutIntakesInput = {
   leitwegIds?: Prisma.LeitwegIdUncheckedCreateNestedManyWithoutContractorInput
   deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutContractorInput
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckUncheckedCreateNestedManyWithoutContractorInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentUncheckedCreateNestedOneWithoutContractorInput
 }
 
 export type ContractorCreateOrConnectWithoutIntakesInput = {
@@ -5581,6 +5934,7 @@ export type ContractorUpdateWithoutIntakesInput = {
   leitwegIds?: Prisma.LeitwegIdUpdateManyWithoutContractorNestedInput
   deprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutContractorNestedInput
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckUpdateManyWithoutContractorNestedInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentUpdateOneWithoutContractorNestedInput
 }
 
 export type ContractorUncheckedUpdateWithoutIntakesInput = {
@@ -5646,6 +6000,7 @@ export type ContractorUncheckedUpdateWithoutIntakesInput = {
   leitwegIds?: Prisma.LeitwegIdUncheckedUpdateManyWithoutContractorNestedInput
   deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutContractorNestedInput
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckUncheckedUpdateManyWithoutContractorNestedInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentUncheckedUpdateOneWithoutContractorNestedInput
 }
 
 export type ContractorCreateWithoutOrganizationInput = {
@@ -5711,6 +6066,7 @@ export type ContractorCreateWithoutOrganizationInput = {
   intakes?: Prisma.InvoiceIntakeRequestCreateNestedManyWithoutMatchedContractorInput
   deprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutContractorInput
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckCreateNestedManyWithoutContractorInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentCreateNestedOneWithoutContractorInput
 }
 
 export type ContractorUncheckedCreateWithoutOrganizationInput = {
@@ -5776,6 +6132,7 @@ export type ContractorUncheckedCreateWithoutOrganizationInput = {
   intakes?: Prisma.InvoiceIntakeRequestUncheckedCreateNestedManyWithoutMatchedContractorInput
   deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutContractorInput
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckUncheckedCreateNestedManyWithoutContractorInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentUncheckedCreateNestedOneWithoutContractorInput
 }
 
 export type ContractorCreateOrConnectWithoutOrganizationInput = {
@@ -5867,6 +6224,7 @@ export type ContractorCreateWithoutPrimaryTeamInput = {
   intakes?: Prisma.InvoiceIntakeRequestCreateNestedManyWithoutMatchedContractorInput
   deprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutContractorInput
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckCreateNestedManyWithoutContractorInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentCreateNestedOneWithoutContractorInput
 }
 
 export type ContractorUncheckedCreateWithoutPrimaryTeamInput = {
@@ -5932,6 +6290,7 @@ export type ContractorUncheckedCreateWithoutPrimaryTeamInput = {
   intakes?: Prisma.InvoiceIntakeRequestUncheckedCreateNestedManyWithoutMatchedContractorInput
   deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutContractorInput
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckUncheckedCreateNestedManyWithoutContractorInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentUncheckedCreateNestedOneWithoutContractorInput
 }
 
 export type ContractorCreateOrConnectWithoutPrimaryTeamInput = {
@@ -6023,6 +6382,7 @@ export type ContractorCreateWithoutPrimaryProjectInput = {
   intakes?: Prisma.InvoiceIntakeRequestCreateNestedManyWithoutMatchedContractorInput
   deprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutContractorInput
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckCreateNestedManyWithoutContractorInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentCreateNestedOneWithoutContractorInput
 }
 
 export type ContractorUncheckedCreateWithoutPrimaryProjectInput = {
@@ -6088,6 +6448,7 @@ export type ContractorUncheckedCreateWithoutPrimaryProjectInput = {
   intakes?: Prisma.InvoiceIntakeRequestUncheckedCreateNestedManyWithoutMatchedContractorInput
   deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutContractorInput
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckUncheckedCreateNestedManyWithoutContractorInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentUncheckedCreateNestedOneWithoutContractorInput
 }
 
 export type ContractorCreateOrConnectWithoutPrimaryProjectInput = {
@@ -6179,6 +6540,7 @@ export type ContractorCreateWithoutDefaultCostCenterInput = {
   intakes?: Prisma.InvoiceIntakeRequestCreateNestedManyWithoutMatchedContractorInput
   deprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutContractorInput
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckCreateNestedManyWithoutContractorInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentCreateNestedOneWithoutContractorInput
 }
 
 export type ContractorUncheckedCreateWithoutDefaultCostCenterInput = {
@@ -6244,6 +6606,7 @@ export type ContractorUncheckedCreateWithoutDefaultCostCenterInput = {
   intakes?: Prisma.InvoiceIntakeRequestUncheckedCreateNestedManyWithoutMatchedContractorInput
   deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutContractorInput
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckUncheckedCreateNestedManyWithoutContractorInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentUncheckedCreateNestedOneWithoutContractorInput
 }
 
 export type ContractorCreateOrConnectWithoutDefaultCostCenterInput = {
@@ -6335,6 +6698,7 @@ export type ContractorCreateWithoutPaymentRunItemsInput = {
   intakes?: Prisma.InvoiceIntakeRequestCreateNestedManyWithoutMatchedContractorInput
   deprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutContractorInput
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckCreateNestedManyWithoutContractorInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentCreateNestedOneWithoutContractorInput
 }
 
 export type ContractorUncheckedCreateWithoutPaymentRunItemsInput = {
@@ -6400,6 +6764,7 @@ export type ContractorUncheckedCreateWithoutPaymentRunItemsInput = {
   intakes?: Prisma.InvoiceIntakeRequestUncheckedCreateNestedManyWithoutMatchedContractorInput
   deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutContractorInput
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckUncheckedCreateNestedManyWithoutContractorInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentUncheckedCreateNestedOneWithoutContractorInput
 }
 
 export type ContractorCreateOrConnectWithoutPaymentRunItemsInput = {
@@ -6481,6 +6846,7 @@ export type ContractorUpdateWithoutPaymentRunItemsInput = {
   intakes?: Prisma.InvoiceIntakeRequestUpdateManyWithoutMatchedContractorNestedInput
   deprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutContractorNestedInput
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckUpdateManyWithoutContractorNestedInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentUpdateOneWithoutContractorNestedInput
 }
 
 export type ContractorUncheckedUpdateWithoutPaymentRunItemsInput = {
@@ -6546,6 +6912,7 @@ export type ContractorUncheckedUpdateWithoutPaymentRunItemsInput = {
   intakes?: Prisma.InvoiceIntakeRequestUncheckedUpdateManyWithoutMatchedContractorNestedInput
   deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutContractorNestedInput
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckUncheckedUpdateManyWithoutContractorNestedInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentUncheckedUpdateOneWithoutContractorNestedInput
 }
 
 export type ContractorCreateWithoutPaymentComplianceChecksInput = {
@@ -6611,6 +6978,7 @@ export type ContractorCreateWithoutPaymentComplianceChecksInput = {
   leitwegIds?: Prisma.LeitwegIdCreateNestedManyWithoutContractorInput
   intakes?: Prisma.InvoiceIntakeRequestCreateNestedManyWithoutMatchedContractorInput
   deprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutContractorInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentCreateNestedOneWithoutContractorInput
 }
 
 export type ContractorUncheckedCreateWithoutPaymentComplianceChecksInput = {
@@ -6676,6 +7044,7 @@ export type ContractorUncheckedCreateWithoutPaymentComplianceChecksInput = {
   leitwegIds?: Prisma.LeitwegIdUncheckedCreateNestedManyWithoutContractorInput
   intakes?: Prisma.InvoiceIntakeRequestUncheckedCreateNestedManyWithoutMatchedContractorInput
   deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutContractorInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentUncheckedCreateNestedOneWithoutContractorInput
 }
 
 export type ContractorCreateOrConnectWithoutPaymentComplianceChecksInput = {
@@ -6757,6 +7126,7 @@ export type ContractorUpdateWithoutPaymentComplianceChecksInput = {
   leitwegIds?: Prisma.LeitwegIdUpdateManyWithoutContractorNestedInput
   intakes?: Prisma.InvoiceIntakeRequestUpdateManyWithoutMatchedContractorNestedInput
   deprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutContractorNestedInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentUpdateOneWithoutContractorNestedInput
 }
 
 export type ContractorUncheckedUpdateWithoutPaymentComplianceChecksInput = {
@@ -6822,6 +7192,7 @@ export type ContractorUncheckedUpdateWithoutPaymentComplianceChecksInput = {
   leitwegIds?: Prisma.LeitwegIdUncheckedUpdateManyWithoutContractorNestedInput
   intakes?: Prisma.InvoiceIntakeRequestUncheckedUpdateManyWithoutMatchedContractorNestedInput
   deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutContractorNestedInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentUncheckedUpdateOneWithoutContractorNestedInput
 }
 
 export type ContractorCreateWithoutPortalSessionsInput = {
@@ -6887,6 +7258,7 @@ export type ContractorCreateWithoutPortalSessionsInput = {
   intakes?: Prisma.InvoiceIntakeRequestCreateNestedManyWithoutMatchedContractorInput
   deprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutContractorInput
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckCreateNestedManyWithoutContractorInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentCreateNestedOneWithoutContractorInput
 }
 
 export type ContractorUncheckedCreateWithoutPortalSessionsInput = {
@@ -6952,6 +7324,7 @@ export type ContractorUncheckedCreateWithoutPortalSessionsInput = {
   intakes?: Prisma.InvoiceIntakeRequestUncheckedCreateNestedManyWithoutMatchedContractorInput
   deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutContractorInput
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckUncheckedCreateNestedManyWithoutContractorInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentUncheckedCreateNestedOneWithoutContractorInput
 }
 
 export type ContractorCreateOrConnectWithoutPortalSessionsInput = {
@@ -7033,6 +7406,7 @@ export type ContractorUpdateWithoutPortalSessionsInput = {
   intakes?: Prisma.InvoiceIntakeRequestUpdateManyWithoutMatchedContractorNestedInput
   deprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutContractorNestedInput
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckUpdateManyWithoutContractorNestedInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentUpdateOneWithoutContractorNestedInput
 }
 
 export type ContractorUncheckedUpdateWithoutPortalSessionsInput = {
@@ -7098,6 +7472,7 @@ export type ContractorUncheckedUpdateWithoutPortalSessionsInput = {
   intakes?: Prisma.InvoiceIntakeRequestUncheckedUpdateManyWithoutMatchedContractorNestedInput
   deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutContractorNestedInput
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckUncheckedUpdateManyWithoutContractorNestedInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentUncheckedUpdateOneWithoutContractorNestedInput
 }
 
 export type ContractorCreateWithoutChangeRequestsInput = {
@@ -7163,6 +7538,7 @@ export type ContractorCreateWithoutChangeRequestsInput = {
   intakes?: Prisma.InvoiceIntakeRequestCreateNestedManyWithoutMatchedContractorInput
   deprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutContractorInput
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckCreateNestedManyWithoutContractorInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentCreateNestedOneWithoutContractorInput
 }
 
 export type ContractorUncheckedCreateWithoutChangeRequestsInput = {
@@ -7228,6 +7604,7 @@ export type ContractorUncheckedCreateWithoutChangeRequestsInput = {
   intakes?: Prisma.InvoiceIntakeRequestUncheckedCreateNestedManyWithoutMatchedContractorInput
   deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutContractorInput
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckUncheckedCreateNestedManyWithoutContractorInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentUncheckedCreateNestedOneWithoutContractorInput
 }
 
 export type ContractorCreateOrConnectWithoutChangeRequestsInput = {
@@ -7309,6 +7686,7 @@ export type ContractorUpdateWithoutChangeRequestsInput = {
   intakes?: Prisma.InvoiceIntakeRequestUpdateManyWithoutMatchedContractorNestedInput
   deprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutContractorNestedInput
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckUpdateManyWithoutContractorNestedInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentUpdateOneWithoutContractorNestedInput
 }
 
 export type ContractorUncheckedUpdateWithoutChangeRequestsInput = {
@@ -7374,6 +7752,7 @@ export type ContractorUncheckedUpdateWithoutChangeRequestsInput = {
   intakes?: Prisma.InvoiceIntakeRequestUncheckedUpdateManyWithoutMatchedContractorNestedInput
   deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutContractorNestedInput
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckUncheckedUpdateManyWithoutContractorNestedInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentUncheckedUpdateOneWithoutContractorNestedInput
 }
 
 export type ContractorCreateWithoutNotificationPreferencesInput = {
@@ -7439,6 +7818,7 @@ export type ContractorCreateWithoutNotificationPreferencesInput = {
   intakes?: Prisma.InvoiceIntakeRequestCreateNestedManyWithoutMatchedContractorInput
   deprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutContractorInput
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckCreateNestedManyWithoutContractorInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentCreateNestedOneWithoutContractorInput
 }
 
 export type ContractorUncheckedCreateWithoutNotificationPreferencesInput = {
@@ -7504,6 +7884,7 @@ export type ContractorUncheckedCreateWithoutNotificationPreferencesInput = {
   intakes?: Prisma.InvoiceIntakeRequestUncheckedCreateNestedManyWithoutMatchedContractorInput
   deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutContractorInput
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckUncheckedCreateNestedManyWithoutContractorInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentUncheckedCreateNestedOneWithoutContractorInput
 }
 
 export type ContractorCreateOrConnectWithoutNotificationPreferencesInput = {
@@ -7585,6 +7966,7 @@ export type ContractorUpdateWithoutNotificationPreferencesInput = {
   intakes?: Prisma.InvoiceIntakeRequestUpdateManyWithoutMatchedContractorNestedInput
   deprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutContractorNestedInput
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckUpdateManyWithoutContractorNestedInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentUpdateOneWithoutContractorNestedInput
 }
 
 export type ContractorUncheckedUpdateWithoutNotificationPreferencesInput = {
@@ -7650,6 +8032,7 @@ export type ContractorUncheckedUpdateWithoutNotificationPreferencesInput = {
   intakes?: Prisma.InvoiceIntakeRequestUncheckedUpdateManyWithoutMatchedContractorNestedInput
   deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutContractorNestedInput
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckUncheckedUpdateManyWithoutContractorNestedInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentUncheckedUpdateOneWithoutContractorNestedInput
 }
 
 export type ContractorCreateWithoutTaxIdValidationsInput = {
@@ -7715,6 +8098,7 @@ export type ContractorCreateWithoutTaxIdValidationsInput = {
   intakes?: Prisma.InvoiceIntakeRequestCreateNestedManyWithoutMatchedContractorInput
   deprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutContractorInput
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckCreateNestedManyWithoutContractorInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentCreateNestedOneWithoutContractorInput
 }
 
 export type ContractorUncheckedCreateWithoutTaxIdValidationsInput = {
@@ -7780,6 +8164,7 @@ export type ContractorUncheckedCreateWithoutTaxIdValidationsInput = {
   intakes?: Prisma.InvoiceIntakeRequestUncheckedCreateNestedManyWithoutMatchedContractorInput
   deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutContractorInput
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckUncheckedCreateNestedManyWithoutContractorInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentUncheckedCreateNestedOneWithoutContractorInput
 }
 
 export type ContractorCreateOrConnectWithoutTaxIdValidationsInput = {
@@ -7861,6 +8246,7 @@ export type ContractorUpdateWithoutTaxIdValidationsInput = {
   intakes?: Prisma.InvoiceIntakeRequestUpdateManyWithoutMatchedContractorNestedInput
   deprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutContractorNestedInput
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckUpdateManyWithoutContractorNestedInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentUpdateOneWithoutContractorNestedInput
 }
 
 export type ContractorUncheckedUpdateWithoutTaxIdValidationsInput = {
@@ -7926,6 +8312,7 @@ export type ContractorUncheckedUpdateWithoutTaxIdValidationsInput = {
   intakes?: Prisma.InvoiceIntakeRequestUncheckedUpdateManyWithoutMatchedContractorNestedInput
   deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutContractorNestedInput
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckUncheckedUpdateManyWithoutContractorNestedInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentUncheckedUpdateOneWithoutContractorNestedInput
 }
 
 export type ContractorCreateWithoutTimesheetsInput = {
@@ -7991,6 +8378,7 @@ export type ContractorCreateWithoutTimesheetsInput = {
   intakes?: Prisma.InvoiceIntakeRequestCreateNestedManyWithoutMatchedContractorInput
   deprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutContractorInput
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckCreateNestedManyWithoutContractorInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentCreateNestedOneWithoutContractorInput
 }
 
 export type ContractorUncheckedCreateWithoutTimesheetsInput = {
@@ -8056,6 +8444,7 @@ export type ContractorUncheckedCreateWithoutTimesheetsInput = {
   intakes?: Prisma.InvoiceIntakeRequestUncheckedCreateNestedManyWithoutMatchedContractorInput
   deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutContractorInput
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckUncheckedCreateNestedManyWithoutContractorInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentUncheckedCreateNestedOneWithoutContractorInput
 }
 
 export type ContractorCreateOrConnectWithoutTimesheetsInput = {
@@ -8137,6 +8526,7 @@ export type ContractorUpdateWithoutTimesheetsInput = {
   intakes?: Prisma.InvoiceIntakeRequestUpdateManyWithoutMatchedContractorNestedInput
   deprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutContractorNestedInput
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckUpdateManyWithoutContractorNestedInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentUpdateOneWithoutContractorNestedInput
 }
 
 export type ContractorUncheckedUpdateWithoutTimesheetsInput = {
@@ -8202,6 +8592,7 @@ export type ContractorUncheckedUpdateWithoutTimesheetsInput = {
   intakes?: Prisma.InvoiceIntakeRequestUncheckedUpdateManyWithoutMatchedContractorNestedInput
   deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutContractorNestedInput
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckUncheckedUpdateManyWithoutContractorNestedInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentUncheckedUpdateOneWithoutContractorNestedInput
 }
 
 export type ContractorCreateWithoutTimeEntriesInput = {
@@ -8267,6 +8658,7 @@ export type ContractorCreateWithoutTimeEntriesInput = {
   intakes?: Prisma.InvoiceIntakeRequestCreateNestedManyWithoutMatchedContractorInput
   deprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutContractorInput
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckCreateNestedManyWithoutContractorInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentCreateNestedOneWithoutContractorInput
 }
 
 export type ContractorUncheckedCreateWithoutTimeEntriesInput = {
@@ -8332,6 +8724,7 @@ export type ContractorUncheckedCreateWithoutTimeEntriesInput = {
   intakes?: Prisma.InvoiceIntakeRequestUncheckedCreateNestedManyWithoutMatchedContractorInput
   deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutContractorInput
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckUncheckedCreateNestedManyWithoutContractorInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentUncheckedCreateNestedOneWithoutContractorInput
 }
 
 export type ContractorCreateOrConnectWithoutTimeEntriesInput = {
@@ -8413,6 +8806,7 @@ export type ContractorUpdateWithoutTimeEntriesInput = {
   intakes?: Prisma.InvoiceIntakeRequestUpdateManyWithoutMatchedContractorNestedInput
   deprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutContractorNestedInput
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckUpdateManyWithoutContractorNestedInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentUpdateOneWithoutContractorNestedInput
 }
 
 export type ContractorUncheckedUpdateWithoutTimeEntriesInput = {
@@ -8478,6 +8872,7 @@ export type ContractorUncheckedUpdateWithoutTimeEntriesInput = {
   intakes?: Prisma.InvoiceIntakeRequestUncheckedUpdateManyWithoutMatchedContractorNestedInput
   deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutContractorNestedInput
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckUncheckedUpdateManyWithoutContractorNestedInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentUncheckedUpdateOneWithoutContractorNestedInput
 }
 
 export type ContractorCreateWithoutWorkflowRoleInput = {
@@ -8543,6 +8938,7 @@ export type ContractorCreateWithoutWorkflowRoleInput = {
   intakes?: Prisma.InvoiceIntakeRequestCreateNestedManyWithoutMatchedContractorInput
   deprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutContractorInput
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckCreateNestedManyWithoutContractorInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentCreateNestedOneWithoutContractorInput
 }
 
 export type ContractorUncheckedCreateWithoutWorkflowRoleInput = {
@@ -8608,6 +9004,7 @@ export type ContractorUncheckedCreateWithoutWorkflowRoleInput = {
   intakes?: Prisma.InvoiceIntakeRequestUncheckedCreateNestedManyWithoutMatchedContractorInput
   deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutContractorInput
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckUncheckedCreateNestedManyWithoutContractorInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentUncheckedCreateNestedOneWithoutContractorInput
 }
 
 export type ContractorCreateOrConnectWithoutWorkflowRoleInput = {
@@ -8699,6 +9096,7 @@ export type ContractorCreateWithoutWorkflowRunsInput = {
   intakes?: Prisma.InvoiceIntakeRequestCreateNestedManyWithoutMatchedContractorInput
   deprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutContractorInput
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckCreateNestedManyWithoutContractorInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentCreateNestedOneWithoutContractorInput
 }
 
 export type ContractorUncheckedCreateWithoutWorkflowRunsInput = {
@@ -8764,6 +9162,7 @@ export type ContractorUncheckedCreateWithoutWorkflowRunsInput = {
   intakes?: Prisma.InvoiceIntakeRequestUncheckedCreateNestedManyWithoutMatchedContractorInput
   deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutContractorInput
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckUncheckedCreateNestedManyWithoutContractorInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentUncheckedCreateNestedOneWithoutContractorInput
 }
 
 export type ContractorCreateOrConnectWithoutWorkflowRunsInput = {
@@ -8845,6 +9244,7 @@ export type ContractorUpdateWithoutWorkflowRunsInput = {
   intakes?: Prisma.InvoiceIntakeRequestUpdateManyWithoutMatchedContractorNestedInput
   deprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutContractorNestedInput
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckUpdateManyWithoutContractorNestedInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentUpdateOneWithoutContractorNestedInput
 }
 
 export type ContractorUncheckedUpdateWithoutWorkflowRunsInput = {
@@ -8910,6 +9310,7 @@ export type ContractorUncheckedUpdateWithoutWorkflowRunsInput = {
   intakes?: Prisma.InvoiceIntakeRequestUncheckedUpdateManyWithoutMatchedContractorNestedInput
   deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutContractorNestedInput
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckUncheckedUpdateManyWithoutContractorNestedInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentUncheckedUpdateOneWithoutContractorNestedInput
 }
 
 export type ContractorCreateManyOwnerInput = {
@@ -9018,6 +9419,7 @@ export type ContractorUpdateWithoutOwnerInput = {
   intakes?: Prisma.InvoiceIntakeRequestUpdateManyWithoutMatchedContractorNestedInput
   deprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutContractorNestedInput
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckUpdateManyWithoutContractorNestedInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentUpdateOneWithoutContractorNestedInput
 }
 
 export type ContractorUncheckedUpdateWithoutOwnerInput = {
@@ -9083,6 +9485,7 @@ export type ContractorUncheckedUpdateWithoutOwnerInput = {
   intakes?: Prisma.InvoiceIntakeRequestUncheckedUpdateManyWithoutMatchedContractorNestedInput
   deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutContractorNestedInput
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckUncheckedUpdateManyWithoutContractorNestedInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentUncheckedUpdateOneWithoutContractorNestedInput
 }
 
 export type ContractorUncheckedUpdateManyWithoutOwnerInput = {
@@ -9234,6 +9637,7 @@ export type ContractorUpdateWithoutOrganizationInput = {
   intakes?: Prisma.InvoiceIntakeRequestUpdateManyWithoutMatchedContractorNestedInput
   deprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutContractorNestedInput
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckUpdateManyWithoutContractorNestedInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentUpdateOneWithoutContractorNestedInput
 }
 
 export type ContractorUncheckedUpdateWithoutOrganizationInput = {
@@ -9299,6 +9703,7 @@ export type ContractorUncheckedUpdateWithoutOrganizationInput = {
   intakes?: Prisma.InvoiceIntakeRequestUncheckedUpdateManyWithoutMatchedContractorNestedInput
   deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutContractorNestedInput
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckUncheckedUpdateManyWithoutContractorNestedInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentUncheckedUpdateOneWithoutContractorNestedInput
 }
 
 export type ContractorUncheckedUpdateManyWithoutOrganizationInput = {
@@ -9450,6 +9855,7 @@ export type ContractorUpdateWithoutPrimaryTeamInput = {
   intakes?: Prisma.InvoiceIntakeRequestUpdateManyWithoutMatchedContractorNestedInput
   deprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutContractorNestedInput
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckUpdateManyWithoutContractorNestedInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentUpdateOneWithoutContractorNestedInput
 }
 
 export type ContractorUncheckedUpdateWithoutPrimaryTeamInput = {
@@ -9515,6 +9921,7 @@ export type ContractorUncheckedUpdateWithoutPrimaryTeamInput = {
   intakes?: Prisma.InvoiceIntakeRequestUncheckedUpdateManyWithoutMatchedContractorNestedInput
   deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutContractorNestedInput
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckUncheckedUpdateManyWithoutContractorNestedInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentUncheckedUpdateOneWithoutContractorNestedInput
 }
 
 export type ContractorUncheckedUpdateManyWithoutPrimaryTeamInput = {
@@ -9666,6 +10073,7 @@ export type ContractorUpdateWithoutPrimaryProjectInput = {
   intakes?: Prisma.InvoiceIntakeRequestUpdateManyWithoutMatchedContractorNestedInput
   deprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutContractorNestedInput
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckUpdateManyWithoutContractorNestedInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentUpdateOneWithoutContractorNestedInput
 }
 
 export type ContractorUncheckedUpdateWithoutPrimaryProjectInput = {
@@ -9731,6 +10139,7 @@ export type ContractorUncheckedUpdateWithoutPrimaryProjectInput = {
   intakes?: Prisma.InvoiceIntakeRequestUncheckedUpdateManyWithoutMatchedContractorNestedInput
   deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutContractorNestedInput
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckUncheckedUpdateManyWithoutContractorNestedInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentUncheckedUpdateOneWithoutContractorNestedInput
 }
 
 export type ContractorUncheckedUpdateManyWithoutPrimaryProjectInput = {
@@ -9882,6 +10291,7 @@ export type ContractorUpdateWithoutDefaultCostCenterInput = {
   intakes?: Prisma.InvoiceIntakeRequestUpdateManyWithoutMatchedContractorNestedInput
   deprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutContractorNestedInput
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckUpdateManyWithoutContractorNestedInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentUpdateOneWithoutContractorNestedInput
 }
 
 export type ContractorUncheckedUpdateWithoutDefaultCostCenterInput = {
@@ -9947,6 +10357,7 @@ export type ContractorUncheckedUpdateWithoutDefaultCostCenterInput = {
   intakes?: Prisma.InvoiceIntakeRequestUncheckedUpdateManyWithoutMatchedContractorNestedInput
   deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutContractorNestedInput
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckUncheckedUpdateManyWithoutContractorNestedInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentUncheckedUpdateOneWithoutContractorNestedInput
 }
 
 export type ContractorUncheckedUpdateManyWithoutDefaultCostCenterInput = {
@@ -10098,6 +10509,7 @@ export type ContractorUpdateWithoutWorkflowRoleInput = {
   intakes?: Prisma.InvoiceIntakeRequestUpdateManyWithoutMatchedContractorNestedInput
   deprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutContractorNestedInput
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckUpdateManyWithoutContractorNestedInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentUpdateOneWithoutContractorNestedInput
 }
 
 export type ContractorUncheckedUpdateWithoutWorkflowRoleInput = {
@@ -10163,6 +10575,7 @@ export type ContractorUncheckedUpdateWithoutWorkflowRoleInput = {
   intakes?: Prisma.InvoiceIntakeRequestUncheckedUpdateManyWithoutMatchedContractorNestedInput
   deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutContractorNestedInput
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckUncheckedUpdateManyWithoutContractorNestedInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentUncheckedUpdateOneWithoutContractorNestedInput
 }
 
 export type ContractorUncheckedUpdateManyWithoutWorkflowRoleInput = {
@@ -10498,6 +10911,7 @@ export type ContractorSelect<ExtArgs extends runtime.Types.Extensions.InternalAr
   intakes?: boolean | Prisma.Contractor$intakesArgs<ExtArgs>
   deprovisioningRuns?: boolean | Prisma.Contractor$deprovisioningRunsArgs<ExtArgs>
   paymentComplianceChecks?: boolean | Prisma.Contractor$paymentComplianceChecksArgs<ExtArgs>
+  freeZoneAssignment?: boolean | Prisma.Contractor$freeZoneAssignmentArgs<ExtArgs>
   _count?: boolean | Prisma.ContractorCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["contractor"]>
 
@@ -10675,6 +11089,7 @@ export type ContractorInclude<ExtArgs extends runtime.Types.Extensions.InternalA
   intakes?: boolean | Prisma.Contractor$intakesArgs<ExtArgs>
   deprovisioningRuns?: boolean | Prisma.Contractor$deprovisioningRunsArgs<ExtArgs>
   paymentComplianceChecks?: boolean | Prisma.Contractor$paymentComplianceChecksArgs<ExtArgs>
+  freeZoneAssignment?: boolean | Prisma.Contractor$freeZoneAssignmentArgs<ExtArgs>
   _count?: boolean | Prisma.ContractorCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type ContractorIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -10725,6 +11140,7 @@ export type $ContractorPayload<ExtArgs extends runtime.Types.Extensions.Internal
     intakes: Prisma.$InvoiceIntakeRequestPayload<ExtArgs>[]
     deprovisioningRuns: Prisma.$DeprovisioningRunPayload<ExtArgs>[]
     paymentComplianceChecks: Prisma.$PaymentRunComplianceCheckPayload<ExtArgs>[]
+    freeZoneAssignment: Prisma.$FreeZoneAssignmentPayload<ExtArgs> | null
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -11190,6 +11606,7 @@ export interface Prisma__ContractorClient<T, Null = never, ExtArgs extends runti
   intakes<T extends Prisma.Contractor$intakesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Contractor$intakesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InvoiceIntakeRequestPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   deprovisioningRuns<T extends Prisma.Contractor$deprovisioningRunsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Contractor$deprovisioningRunsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$DeprovisioningRunPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   paymentComplianceChecks<T extends Prisma.Contractor$paymentComplianceChecksArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Contractor$paymentComplianceChecksArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PaymentRunComplianceCheckPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  freeZoneAssignment<T extends Prisma.Contractor$freeZoneAssignmentArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Contractor$freeZoneAssignmentArgs<ExtArgs>>): Prisma.Prisma__FreeZoneAssignmentClient<runtime.Types.Result.GetResult<Prisma.$FreeZoneAssignmentPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -12281,6 +12698,25 @@ export type Contractor$paymentComplianceChecksArgs<ExtArgs extends runtime.Types
   take?: number
   skip?: number
   distinct?: Prisma.PaymentRunComplianceCheckScalarFieldEnum | Prisma.PaymentRunComplianceCheckScalarFieldEnum[]
+}
+
+/**
+ * Contractor.freeZoneAssignment
+ */
+export type Contractor$freeZoneAssignmentArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the FreeZoneAssignment
+   */
+  select?: Prisma.FreeZoneAssignmentSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the FreeZoneAssignment
+   */
+  omit?: Prisma.FreeZoneAssignmentOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.FreeZoneAssignmentInclude<ExtArgs> | null
+  where?: Prisma.FreeZoneAssignmentWhereInput
 }
 
 /**

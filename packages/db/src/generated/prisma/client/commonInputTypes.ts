@@ -1452,6 +1452,40 @@ export type EnumSkontoEligibilityWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedEnumSkontoEligibilityFilter<$PrismaModel>
 }
 
+export type EnumUaeFreeZoneCodeFilter<$PrismaModel = never> = {
+  equals?: $Enums.UaeFreeZoneCode | Prisma.EnumUaeFreeZoneCodeFieldRefInput<$PrismaModel>
+  in?: $Enums.UaeFreeZoneCode[] | Prisma.ListEnumUaeFreeZoneCodeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.UaeFreeZoneCode[] | Prisma.ListEnumUaeFreeZoneCodeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumUaeFreeZoneCodeFilter<$PrismaModel> | $Enums.UaeFreeZoneCode
+}
+
+export type EnumUaeFreeZoneCodeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.UaeFreeZoneCode | Prisma.EnumUaeFreeZoneCodeFieldRefInput<$PrismaModel>
+  in?: $Enums.UaeFreeZoneCode[] | Prisma.ListEnumUaeFreeZoneCodeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.UaeFreeZoneCode[] | Prisma.ListEnumUaeFreeZoneCodeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumUaeFreeZoneCodeWithAggregatesFilter<$PrismaModel> | $Enums.UaeFreeZoneCode
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumUaeFreeZoneCodeFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumUaeFreeZoneCodeFilter<$PrismaModel>
+}
+
+export type EnumNitaqatBandNullableFilter<$PrismaModel = never> = {
+  equals?: $Enums.NitaqatBand | Prisma.EnumNitaqatBandFieldRefInput<$PrismaModel> | null
+  in?: $Enums.NitaqatBand[] | Prisma.ListEnumNitaqatBandFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.NitaqatBand[] | Prisma.ListEnumNitaqatBandFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumNitaqatBandNullableFilter<$PrismaModel> | $Enums.NitaqatBand | null
+}
+
+export type EnumNitaqatBandNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.NitaqatBand | Prisma.EnumNitaqatBandFieldRefInput<$PrismaModel> | null
+  in?: $Enums.NitaqatBand[] | Prisma.ListEnumNitaqatBandFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.NitaqatBand[] | Prisma.ListEnumNitaqatBandFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumNitaqatBandNullableWithAggregatesFilter<$PrismaModel> | $Enums.NitaqatBand | null
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumNitaqatBandNullableFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumNitaqatBandNullableFilter<$PrismaModel>
+}
+
 export type EnumDeprovisioningRunStatusFilter<$PrismaModel = never> = {
   equals?: $Enums.DeprovisioningRunStatus | Prisma.EnumDeprovisioningRunStatusFieldRefInput<$PrismaModel>
   in?: $Enums.DeprovisioningRunStatus[] | Prisma.ListEnumDeprovisioningRunStatusFieldRefInput<$PrismaModel>
@@ -3911,6 +3945,40 @@ export type NestedEnumSkontoEligibilityWithAggregatesFilter<$PrismaModel = never
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumSkontoEligibilityFilter<$PrismaModel>
   _max?: Prisma.NestedEnumSkontoEligibilityFilter<$PrismaModel>
+}
+
+export type NestedEnumUaeFreeZoneCodeFilter<$PrismaModel = never> = {
+  equals?: $Enums.UaeFreeZoneCode | Prisma.EnumUaeFreeZoneCodeFieldRefInput<$PrismaModel>
+  in?: $Enums.UaeFreeZoneCode[] | Prisma.ListEnumUaeFreeZoneCodeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.UaeFreeZoneCode[] | Prisma.ListEnumUaeFreeZoneCodeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumUaeFreeZoneCodeFilter<$PrismaModel> | $Enums.UaeFreeZoneCode
+}
+
+export type NestedEnumUaeFreeZoneCodeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.UaeFreeZoneCode | Prisma.EnumUaeFreeZoneCodeFieldRefInput<$PrismaModel>
+  in?: $Enums.UaeFreeZoneCode[] | Prisma.ListEnumUaeFreeZoneCodeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.UaeFreeZoneCode[] | Prisma.ListEnumUaeFreeZoneCodeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumUaeFreeZoneCodeWithAggregatesFilter<$PrismaModel> | $Enums.UaeFreeZoneCode
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumUaeFreeZoneCodeFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumUaeFreeZoneCodeFilter<$PrismaModel>
+}
+
+export type NestedEnumNitaqatBandNullableFilter<$PrismaModel = never> = {
+  equals?: $Enums.NitaqatBand | Prisma.EnumNitaqatBandFieldRefInput<$PrismaModel> | null
+  in?: $Enums.NitaqatBand[] | Prisma.ListEnumNitaqatBandFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.NitaqatBand[] | Prisma.ListEnumNitaqatBandFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumNitaqatBandNullableFilter<$PrismaModel> | $Enums.NitaqatBand | null
+}
+
+export type NestedEnumNitaqatBandNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.NitaqatBand | Prisma.EnumNitaqatBandFieldRefInput<$PrismaModel> | null
+  in?: $Enums.NitaqatBand[] | Prisma.ListEnumNitaqatBandFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.NitaqatBand[] | Prisma.ListEnumNitaqatBandFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumNitaqatBandNullableWithAggregatesFilter<$PrismaModel> | $Enums.NitaqatBand | null
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumNitaqatBandNullableFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumNitaqatBandNullableFilter<$PrismaModel>
 }
 
 export type NestedEnumDeprovisioningRunStatusFilter<$PrismaModel = never> = {
