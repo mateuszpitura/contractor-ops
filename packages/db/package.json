@@ -30,6 +30,7 @@
     "db:migrate:all": "tsx scripts/migrate-all-regions.ts",
     "db:check-drift": "tsx scripts/check-generated-drift.ts",
     "db:audit-enum-casing": "tsx scripts/audit-enum-casing.ts",
+    "db:lint:region-leakage": "tsx scripts/lint-region-leakage.ts",
     "db:seed:dev": "PRISMA_SLOW_QUERY_THRESHOLD_MS=999999 tsx scripts/seed-dev.ts",
     "lint": "biome check .",
     "lint:fix": "biome check --write .",
