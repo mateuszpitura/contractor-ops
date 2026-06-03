@@ -60,6 +60,28 @@ directly caused by the current task's changes).
 - **Suggested fix (separate change):** rename to UPPER_SNAKE
   (`VERIFIED_VIA_VENDOR_CONSOLE`, …) with a migration mapping existing rows, owned by the F2 IdP track.
 
+## Pre-existing classification-supersession count drift (not caused by 79-03)
+
+- **File:** `packages/api/src/__tests__/classification-supersession.test.ts:176,241-243`
+- **Tests:** `first classification … (UK B2B IR35-INSIDE → 4 rows)` and
+  `outcome change UK B2B IR35-INSIDE → DE ABHANGIG … new rows inserted`.
+- **Assertions:** `result.inserted === 4` (UK) and `result.insertedCount === 1` (DE) —
+  actual is now **5** (UK) and **2** (DE).
+- **Cause:** `resolvePolicyRules(ctx)` filters the registry by `r.jurisdiction === ctx.jurisdiction`,
+  so these counts are a function ONLY of the UK/DE rule set. Phase 75 added `uk.ip_assignment@v1`
+  (`appliesIf: () => true`) → UK IR35-INSIDE now resolves 5 rules; a 4th DE rule
+  (`de.werkvertrag_ip@v1`) lifts the DE count to 2. The Phase-71 test hardcoded the older counts.
+  **My 79-03 edit is UAE-jurisdiction only** (`uae.free_zone_license@v2`, `appliesIf: () => false`)
+  and is structurally excluded from any UK/DE resolution — it cannot change these counts. This is
+  the documented "v6.0 standards audit pending" drift (phases 75/76/77/78 added rules without
+  updating Phase-71 count assertions).
+- **Repro:** `pnpm exec vitest run src/__tests__/classification-supersession.test.ts` (from
+  `packages/api`) → `2 failed | 21 passed`. The 3 new free-zone tests in the same run all pass,
+  and the free-zone supersession-exclusion filter does NOT alter the UK/DE WAIVE outcome (those
+  rows are not `uae.free_zone*`).
+- **Suggested fix (separate change, owned by the standards-audit track):** derive the expected
+  count from `resolvePolicyRules` instead of a magic number, or update `4→5` / `1→2`.
+
 ## Migrate apply — DEFERRED post-deploy (GENERATE-ONLY decision, LOCAL-ONLY)
 
 **Decision (Task 4, user-confirmed):** GENERATE ONLY, DEFER APPLY. Ran only

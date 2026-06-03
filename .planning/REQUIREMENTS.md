@@ -67,7 +67,7 @@ Requirements for the v6.0 milestone. Each maps to exactly one phase (filled by r
 ### Gulf Operational Polish (F3)
 
 - [x] **GULF-01**: Admin can record a contractor's UAE free-zone assignment — selecting from 10-zone seed enum (DIFC, DMCC, IFZA, Dubai Internet City, Dubai Media City, Meydan FZ, JAFZA, SHAMS, RAKEZ, ADGM) plus Mainland — with license number, license category, license expiry, and permitted-activities text
-- [ ] **GULF-02**: System tracks UAE free-zone trade license expiry as a `ContractorComplianceItem` of severity CRITICAL participating in the F1 reminder cascade and payment-block gate
+- [x] **GULF-02**: System tracks UAE free-zone trade license expiry as a `ContractorComplianceItem` of severity CRITICAL participating in the F1 reminder cascade and payment-block gate
 - [ ] **GULF-03**: System surfaces a permitted-activity scope-mismatch advisory when a contract's activity descriptor falls outside the contractor's free-zone permitted-activities list, with auto-add of NOC required-document for the affected engagement
 - [x] **GULF-04**: Admin can record per-engagement Saudi nationality + `isSaudi` boolean + `qiwaContractAuthenticated` boolean (2026-04-15 reg)
 - [x] **GULF-05**: Admin can manually enter and update the org's current Saudization Nitaqat band (PLATINUM / HIGH_GREEN / MID_GREEN / LOW_GREEN / YELLOW / RED) with industry-segment field; system records last-updated timestamp and prompts quarterly re-entry — system does NOT auto-compute the band
@@ -310,7 +310,7 @@ Which phases cover which requirements. Filled by roadmapper on 2026-04-26.
 | IDP-14 | Phase 76 | Complete |
 | IDP-15 | Phase 76 | Complete |
 | GULF-01 | Phase 79 | Complete |
-| GULF-02 | Phase 79 | Pending |
+| GULF-02 | Phase 79 | Complete |
 | GULF-03 | Phase 79 | Pending |
 | GULF-04 | Phase 79 | Complete |
 | GULF-05 | Phase 79 | Complete |
