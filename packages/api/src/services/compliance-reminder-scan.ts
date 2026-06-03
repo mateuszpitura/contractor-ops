@@ -30,6 +30,7 @@ import { normalizeLocale, resolveMessage } from '../i18n/email-i18n';
 import { writeAuditLog } from './audit-writer';
 import { getDocumentTypeLabelKey } from './compliance-payment-gate';
 import { claimCronNotificationDedup } from './cron-dedup';
+import { reEvaluateFreeZoneStatus } from './free-zone-compliance';
 import { dispatch } from './notification-service';
 import { resolveRbacRecipients } from './rbac-recipients';
 
@@ -95,6 +96,10 @@ export interface ScanResult {
 export interface ReminderScanClient {
   contractorComplianceItem: {
     findMany: (args: Prisma.ContractorComplianceItemFindManyArgs) => Promise<unknown>;
+    // Phase 79 CR-01 — the scan persists the free-zone PENDING→EXPIRED transition at
+    // the TZ boundary (reEvaluateFreeZoneStatus). The cron has no tenant frame, so
+    // this write goes through the regional client threaded from the fan-out.
+    update: (args: Prisma.ContractorComplianceItemUpdateArgs) => Promise<unknown>;
   };
   contractorComplianceReminderState: {
     findUnique: (args: Prisma.ContractorComplianceReminderStateFindUniqueArgs) => Promise<unknown>;
@@ -114,10 +119,17 @@ interface ItemForScan {
   contractorId: string;
   documentType: string; // DocumentType enum — there is no `name`-based reminder label on the item
   policyRuleId: string | null;
+  status: string; // needed for the free-zone PENDING→EXPIRED boundary flip (Phase 79 CR-01)
   expiresAt: Date | null;
   expiryJurisdictionTz: string | null;
   contractor: { displayName: string };
 }
+
+// Phase 79 CR-01 — free-zone license items are written out-of-band and key the
+// payment gate on status='EXPIRED'. The reminder scan is the cron-context pass that
+// flips them PENDING→EXPIRED at the Asia/Dubai boundary (reEvaluateFreeZoneStatus),
+// since there is no other tenant-frame-less sweep.
+const FREE_ZONE_POLICY_PREFIX = 'uae.free_zone' as const;
 
 interface PendingFire {
   itemId: string;
@@ -210,11 +222,19 @@ export async function runComplianceReminderScanForClient(
         contractorId: true,
         documentType: true,
         policyRuleId: true,
+        status: true,
         expiresAt: true,
         expiryJurisdictionTz: true,
         contractor: { select: { displayName: true } },
       },
     })) as ItemForScan[];
+
+    // Phase 79 CR-01 — flip free-zone PENDING items that have crossed their TZ
+    // boundary to EXPIRED BEFORE the band pass, so the BLOCKING payment gate (which
+    // keys on status='EXPIRED') arms for licenses that expire after they were
+    // recorded. Idempotent + region-correct: the write rides the regional client,
+    // and reEvaluateFreeZoneStatus no-ops for already-EXPIRED / non-PENDING rows.
+    await flipExpiredFreeZoneItems(client, items, now);
 
     // Pass 1: collect band transitions per item, accumulate per-recipient groups.
     const { scanned, fires, recipientGroups } = await collectPendingFires(
@@ -234,6 +254,48 @@ export async function runComplianceReminderScanForClient(
       'compliance-reminder-scan region failed (per-region catch — returning zero counts)',
     );
     return { scanned: 0, fires: 0, digests: 0 };
+  }
+}
+
+/**
+ * Phase 79 CR-01 — persist the free-zone PENDING→EXPIRED transition for items whose
+ * Asia/Dubai expiry boundary has crossed. This is the missing wiring that arms the
+ * GULF-02 payment hard-block for a license that expires AFTER it was recorded: the
+ * gate keys on status='EXPIRED', and no other cron-context (tenant-frame-less) pass
+ * flips the status. Delegates to the idempotent, region-safe reEvaluateFreeZoneStatus
+ * and mutates the in-memory `items` so the subsequent band pass sees the new status.
+ *
+ * Per-item failures are logged and skipped — one bad flip never aborts the scan.
+ */
+async function flipExpiredFreeZoneItems(
+  client: ReminderScanClient,
+  items: ItemForScan[],
+  now: Date,
+): Promise<void> {
+  for (const item of items) {
+    if (!item.policyRuleId?.startsWith(FREE_ZONE_POLICY_PREFIX)) continue;
+    if (item.status !== 'PENDING') continue;
+    try {
+      const flipped = await reEvaluateFreeZoneStatus(
+        client,
+        {
+          id: item.id,
+          status: item.status,
+          expiresAt: item.expiresAt,
+          expiryJurisdictionTz: item.expiryJurisdictionTz,
+        },
+        now,
+      );
+      if (flipped === 'EXPIRED') {
+        // Keep the in-memory row consistent for the band pass that follows.
+        item.status = 'EXPIRED';
+      }
+    } catch (err) {
+      log.error(
+        { err, itemId: item.id },
+        'compliance-reminder free-zone status re-evaluation failed; skipping item',
+      );
+    }
   }
 }
 

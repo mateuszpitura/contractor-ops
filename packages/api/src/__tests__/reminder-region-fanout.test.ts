@@ -34,6 +34,14 @@ const {
     return {
       contractorComplianceItem: {
         findMany: vi.fn(async () => itemsByRegion.get(region) ?? []),
+        // Phase 79 CR-01 — the scan flips free-zone PENDING items to EXPIRED at the
+        // TZ boundary via this update; these fixtures are not yet expired so it no-ops.
+        update: vi.fn(async (a: { where: { id: string }; data: Record<string, unknown> }) => {
+          const list = itemsByRegion.get(region) ?? [];
+          const row = list.find(r => r.id === a.where.id);
+          if (row) Object.assign(row, a.data);
+          return row;
+        }),
       },
       contractorComplianceReminderState: {
         findUnique: vi.fn(async () => null),
@@ -117,6 +125,7 @@ function meFreeZoneItem(now: Date) {
     contractorId: item.contractorId,
     documentType: item.documentType,
     policyRuleId: item.policyRuleId,
+    status: 'PENDING',
     expiresAt,
     expiryJurisdictionTz: item.expiryJurisdictionTz,
     contractor: { displayName: 'Gulf Free-Zone Contractor' },
