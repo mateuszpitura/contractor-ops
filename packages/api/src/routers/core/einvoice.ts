@@ -579,11 +579,7 @@ export const einvoiceRouter = router({
       // 3. Sender must be ACTIVE — throws PEPPOL_PARTICIPANT_NOT_ACTIVE
       //    (mapped to PRECONDITION_FAILED) BEFORE any HTTP call.
       try {
-        // ctx.db is Prisma's extended (TenantScoped) client; the service
-        // params declare narrow structural surfaces it is not assignable to
-        // (Prisma extension <-> structural-interface gap). Same bridge as
-        // routers/integrations/peppol.ts.
-        await assertSenderParticipantActive(ctx.db as never, ctx.organizationId);
+        await assertSenderParticipantActive(ctx.db, ctx.organizationId);
       } catch (err) {
         if (err instanceof Error && err.message === PEPPOL_PARTICIPANT_NOT_ACTIVE) {
           throw new TRPCError({
@@ -604,10 +600,8 @@ export const einvoiceRouter = router({
         });
       }
 
-      // 5. Adapter factory — tests mock this module. `ctx.db as never`
-      // bridges the Prisma extended-client / PrismaClient param gap (same as
-      // routers/integrations/peppol.ts).
-      const adapter = await buildStorecoveAdapterForOrg(ctx.db as never, ctx.organizationId);
+      // 5. Adapter factory — tests mock this module.
+      const adapter = await buildStorecoveAdapterForOrg(ctx.db, ctx.organizationId);
       if (!adapter) {
         throw new TRPCError({
           code: 'PRECONDITION_FAILED',
@@ -618,14 +612,7 @@ export const einvoiceRouter = router({
       // 6. Receiver capability check — throws PARTICIPANT_NOT_REACHABLE on
       //    missing doc-type. Uses the 6h cache (Plan 05).
       try {
-        await assertReceiverAcceptsXRechnung(
-          // Same Prisma extended-client / structural-param bridge as above.
-          ctx.db as never,
-          adapter,
-          ctx.organizationId,
-          schemeId,
-          value,
-        );
+        await assertReceiverAcceptsXRechnung(ctx.db, adapter, ctx.organizationId, schemeId, value);
       } catch (err) {
         if (err instanceof Error && err.message === PARTICIPANT_NOT_REACHABLE) {
           throw new TRPCError({

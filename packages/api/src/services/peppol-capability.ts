@@ -30,6 +30,8 @@
 import type { ASPAdapter, ParticipantCapabilityResult } from '@contractor-ops/einvoice';
 import { STORECOVE_CII_XRECHNUNG_DOC_TYPE_ID } from '@contractor-ops/einvoice';
 
+import type { DbClient } from './types';
+
 // ---------------------------------------------------------------------------
 // Public error codes (consumed verbatim by Plan 07 i18n)
 // ---------------------------------------------------------------------------
@@ -68,56 +70,6 @@ export interface GetCapabilitiesOptions {
   forceRefresh?: boolean;
 }
 
-// Minimal database surface the service uses — allows in-memory test doubles
-// to stand in for `PrismaClient` without requiring a live DB.
-interface PeppolCapabilityDb {
-  peppolCapabilityCache: {
-    findUnique: (args: {
-      where: {
-        organizationId_schemeId_value: {
-          organizationId: string;
-          schemeId: string;
-          value: string;
-        };
-      };
-    }) => Promise<{
-      id: string;
-      organizationId: string;
-      schemeId: string;
-      value: string;
-      documentTypes: unknown; // Prisma Json column
-      cachedAt: Date;
-      expiresAt: Date;
-    } | null>;
-    upsert: (args: {
-      where: {
-        organizationId_schemeId_value: {
-          organizationId: string;
-          schemeId: string;
-          value: string;
-        };
-      };
-      create: {
-        organizationId: string;
-        schemeId: string;
-        value: string;
-        documentTypes: unknown;
-        expiresAt: Date;
-      };
-      update: {
-        documentTypes: unknown;
-        cachedAt: Date;
-        expiresAt: Date;
-      };
-    }) => Promise<unknown>;
-  };
-  peppolParticipant: {
-    findFirst: (args: {
-      where: { organizationId: string; status?: string | { in: string[] } };
-    }) => Promise<{ id: string; status: string } | null>;
-  };
-}
-
 // ---------------------------------------------------------------------------
 // getCapabilitiesWithCache
 // ---------------------------------------------------------------------------
@@ -132,7 +84,7 @@ interface PeppolCapabilityDb {
  * `PARTICIPANT_NOT_REACHABLE` via `assertReceiverAcceptsXRechnung`.
  */
 export async function getCapabilitiesWithCache(
-  db: PeppolCapabilityDb,
+  db: DbClient,
   adapter: Pick<ASPAdapter, 'lookupParticipantCapabilities'>,
   organizationId: string,
   schemeId: string,
@@ -239,7 +191,7 @@ export function supportsXRechnungCii(documentTypes: string[]): boolean {
  * `SUSPENDED` / `DEREGISTERED` all fail the gate.
  */
 export async function assertSenderParticipantActive(
-  db: PeppolCapabilityDb,
+  db: DbClient,
   organizationId: string,
 ): Promise<void> {
   const participant = await db.peppolParticipant.findFirst({
@@ -265,7 +217,7 @@ export async function assertSenderParticipantActive(
  * the actual blocker is the sender's own participant state.
  */
 export async function assertReceiverAcceptsXRechnung(
-  db: PeppolCapabilityDb,
+  db: DbClient,
   adapter: Pick<ASPAdapter, 'lookupParticipantCapabilities'>,
   organizationId: string,
   schemeId: string,

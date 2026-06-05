@@ -16,9 +16,10 @@
 // Tests mock this module so the router can be exercised without running
 // real Storecove HTTP calls.
 
-import type { PrismaClient } from '@contractor-ops/db';
 import { StorecoveAdapter } from '@contractor-ops/einvoice';
 import { decryptCredentials } from '@contractor-ops/integrations/services/credential-service';
+
+import type { DbClient } from './types';
 
 const STORECOVE_SANDBOX_BASE_URL = 'https://api-sandbox.storecove.com/api/v2';
 const STORECOVE_PRODUCTION_BASE_URL = 'https://api.storecove.com/api/v2';
@@ -33,7 +34,7 @@ const STORECOVE_PRODUCTION_BASE_URL = 'https://api.storecove.com/api/v2';
  * in `connectPeppolSchema`). No user input can influence the URL path.
  */
 export async function buildStorecoveAdapterForOrg(
-  db: PrismaClient,
+  db: DbClient,
   organizationId: string,
 ): Promise<StorecoveAdapter | null> {
   const connection = await db.integrationConnection.findFirst({

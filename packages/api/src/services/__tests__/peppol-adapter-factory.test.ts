@@ -1,5 +1,6 @@
-import type { PrismaClient } from '@contractor-ops/db';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+import type { DbClient } from '../types';
 
 vi.mock('@contractor-ops/db', () => ({
   withRlsTransactions: <T>(c: T) => c,
@@ -26,7 +27,7 @@ import { buildStorecoveAdapterForOrg } from '../peppol-adapter-factory';
 function makeMockDb() {
   return {
     integrationConnection: { findFirst: vi.fn() },
-  } as unknown as PrismaClient;
+  } as unknown as DbClient;
 }
 
 const ORG_ID = 'org-test-123';
