@@ -27,6 +27,12 @@ import {
   DialogSection,
   DialogTitle,
 } from '@contractor-ops/ui/components/shadcn/dialog';
+import {
+  billingModelEnum,
+  contractTypeEnum,
+  invoiceCycleEnum,
+  rateTypeEnum,
+} from '@contractor-ops/validators';
 import { AlertTriangle, Loader2, Sparkles } from 'lucide-react';
 import { useCallback } from 'react';
 import { z } from 'zod';
@@ -39,24 +45,17 @@ import { StepFinancial } from './step-financial.js';
 const contractWizardSchema = z.object({
   contractorId: z.string().min(1, 'Contractor is required'),
   title: z.string().min(1, 'Contract title is required').max(255),
-  type: z.enum(['B2B_MASTER_SERVICE', 'STATEMENT_OF_WORK', 'NDA', 'IP_ASSIGNMENT', 'DPA', 'OTHER']),
+  type: contractTypeEnum,
   startDate: z.string().min(1, 'Start date is required'),
   endDate: z.string().optional(),
   noticePeriodDays: z.number().int().positive().optional(),
   autoRenewal: z.boolean().default(false),
   currency: z.string().length(3),
-  billingModel: z.enum([
-    'MONTHLY_RETAINER',
-    'HOURLY',
-    'DAILY',
-    'MILESTONE',
-    'DELIVERABLE_BASED',
-    'MIXED',
-  ]),
-  rateType: z.enum(['MONTHLY_FIXED', 'PER_HOUR', 'PER_DAY', 'PER_MILESTONE', 'PER_DELIVERABLE']),
+  billingModel: billingModelEnum,
+  rateType: rateTypeEnum,
   rateValueMinor: z.number().int().nonnegative().optional(),
   paymentTermsDays: z.number().int().positive().optional(),
-  invoiceCycle: z.enum(['WEEKLY', 'BIWEEKLY', 'MONTHLY', 'ON_DELIVERABLE', 'AD_HOC']).optional(),
+  invoiceCycle: invoiceCycleEnum.optional(),
 });
 
 export type ContractWizardFormValues = z.infer<typeof contractWizardSchema>;

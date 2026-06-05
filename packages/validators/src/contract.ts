@@ -5,7 +5,7 @@ import { optionalFk, optionalPositiveInt, optionalString } from './helpers.js';
 // Prisma enum mirrors (string unions — validators package has no Prisma dep)
 // ---------------------------------------------------------------------------
 
-const contractTypeEnum = z.enum([
+export const contractTypeEnum = z.enum([
   'B2B_MASTER_SERVICE',
   'STATEMENT_OF_WORK',
   'NDA',
@@ -13,8 +13,9 @@ const contractTypeEnum = z.enum([
   'DPA',
   'OTHER',
 ]);
+export type ContractType = z.infer<typeof contractTypeEnum>;
 
-const contractStatusEnum = z.enum([
+export const contractStatusEnum = z.enum([
   'DRAFT',
   'PENDING_SIGNATURE',
   'ACTIVE',
@@ -24,8 +25,9 @@ const contractStatusEnum = z.enum([
   'SUPERSEDED',
   'ARCHIVED',
 ]);
+export type ContractStatus = z.infer<typeof contractStatusEnum>;
 
-const billingModelEnum = z.enum([
+export const billingModelEnum = z.enum([
   'MONTHLY_RETAINER',
   'HOURLY',
   'DAILY',
@@ -33,18 +35,28 @@ const billingModelEnum = z.enum([
   'DELIVERABLE_BASED',
   'MIXED',
 ]);
+export type BillingModel = z.infer<typeof billingModelEnum>;
 
-const rateTypeEnum = z.enum([
+export const rateTypeEnum = z.enum([
   'MONTHLY_FIXED',
   'PER_HOUR',
   'PER_DAY',
   'PER_MILESTONE',
   'PER_DELIVERABLE',
 ]);
+export type RateType = z.infer<typeof rateTypeEnum>;
 
-const invoiceCycleEnum = z.enum(['WEEKLY', 'BIWEEKLY', 'MONTHLY', 'ON_DELIVERABLE', 'AD_HOC']);
+export const invoiceCycleEnum = z.enum([
+  'WEEKLY',
+  'BIWEEKLY',
+  'MONTHLY',
+  'ON_DELIVERABLE',
+  'AD_HOC',
+]);
+export type InvoiceCycle = z.infer<typeof invoiceCycleEnum>;
 
-const complianceRiskLevelEnum = z.enum(['LOW', 'MEDIUM', 'HIGH']);
+export const complianceRiskLevelEnum = z.enum(['LOW', 'MEDIUM', 'HIGH']);
+export type ComplianceRiskLevel = z.infer<typeof complianceRiskLevelEnum>;
 
 // ---------------------------------------------------------------------------
 // Contract CRUD schemas

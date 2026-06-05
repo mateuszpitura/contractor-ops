@@ -19,6 +19,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@contractor-ops/ui/components/shadcn/select';
+import {
+  complianceRiskLevelEnum,
+  contractorLifecycleStageEnum,
+  contractorTypeEnum,
+  contractStatusEnum,
+  contractTypeEnum,
+} from '@contractor-ops/validators';
 import { Plus, X } from 'lucide-react';
 import { memo, useCallback } from 'react';
 
@@ -56,27 +63,11 @@ const CONDITION_FIELDS = [
 const OPERATORS = ['equals', 'notEquals', 'contains', 'startsWith'] as const;
 
 const ENUM_VALUE_FIELDS: Record<string, string[]> = {
-  'contractor.type': ['SOLE_TRADER', 'COMPANY', 'INDIVIDUAL_FREELANCER', 'OTHER'],
-  'contractor.status': ['DRAFT', 'ONBOARDING', 'ACTIVE', 'OFFBOARDING', 'ENDED'],
-  'contractor.complianceRiskLevel': ['LOW', 'MEDIUM', 'HIGH'],
-  'contract.type': [
-    'B2B_MASTER_SERVICE',
-    'STATEMENT_OF_WORK',
-    'NDA',
-    'IP_ASSIGNMENT',
-    'DPA',
-    'OTHER',
-  ],
-  'contract.status': [
-    'DRAFT',
-    'PENDING_SIGNATURE',
-    'ACTIVE',
-    'EXPIRING',
-    'EXPIRED',
-    'TERMINATED',
-    'SUPERSEDED',
-    'ARCHIVED',
-  ],
+  'contractor.type': [...contractorTypeEnum.options],
+  'contractor.status': [...contractorLifecycleStageEnum.options],
+  'contractor.complianceRiskLevel': [...complianceRiskLevelEnum.options],
+  'contract.type': [...contractTypeEnum.options],
+  'contract.status': [...contractStatusEnum.options],
   'contract.currency': ['PLN', 'EUR', 'USD', 'GBP', 'CHF', 'CZK'],
 };
 

@@ -1,3 +1,8 @@
+import type {
+  ComplianceHealth,
+  ContractorLifecycleStage,
+  ContractorType,
+} from '@contractor-ops/validators';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { useCallback, useMemo } from 'react';
 
@@ -90,18 +95,14 @@ export function useContractorList(options: { onAddContractor: () => void; onImpo
       sortOrder: (filters.sortOrder as 'asc' | 'desc') || 'desc',
       filters: {
         lifecycleStage: filters.lifecycleStage.length
-          ? (filters.lifecycleStage as Array<
-              'DRAFT' | 'ONBOARDING' | 'ACTIVE' | 'OFFBOARDING' | 'ENDED'
-            >)
+          ? (filters.lifecycleStage as Array<ContractorLifecycleStage>)
           : undefined,
-        type: filters.type.length
-          ? (filters.type as Array<'SOLE_TRADER' | 'COMPANY' | 'INDIVIDUAL_FREELANCER' | 'OTHER'>)
-          : undefined,
+        type: filters.type.length ? (filters.type as Array<ContractorType>) : undefined,
         ownerUserId: filters.owner.length ? filters.owner : undefined,
         primaryTeamId: filters.team.length ? filters.team : undefined,
         billingModel: filters.billingModel.length ? filters.billingModel : undefined,
         complianceHealth: filters.health.length
-          ? (filters.health as Array<'green' | 'yellow' | 'red'>)
+          ? (filters.health as Array<ComplianceHealth>)
           : undefined,
       },
     }),

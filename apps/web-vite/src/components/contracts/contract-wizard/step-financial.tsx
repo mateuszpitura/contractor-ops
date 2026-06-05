@@ -7,6 +7,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@contractor-ops/ui/components/shadcn/select';
+import { billingModelEnum, invoiceCycleEnum, rateTypeEnum } from '@contractor-ops/validators';
 import React, { useCallback, useId } from 'react';
 import type { UseFormReturn } from 'react-hook-form';
 
@@ -16,25 +17,6 @@ import { enumKey } from '../../../lib/enum-key.js';
 import type { ContractWizardFormValues } from './wizard-dialog.js';
 
 const CURRENCIES = ['PLN', 'EUR', 'USD'] as const;
-
-const BILLING_MODELS = [
-  'MONTHLY_RETAINER',
-  'HOURLY',
-  'DAILY',
-  'MILESTONE',
-  'DELIVERABLE_BASED',
-  'MIXED',
-] as const;
-
-const RATE_TYPES = [
-  'MONTHLY_FIXED',
-  'PER_HOUR',
-  'PER_DAY',
-  'PER_MILESTONE',
-  'PER_DELIVERABLE',
-] as const;
-
-const INVOICE_CYCLES = ['WEEKLY', 'BIWEEKLY', 'MONTHLY', 'ON_DELIVERABLE', 'AD_HOC'] as const;
 
 interface StepFinancialProps {
   form: UseFormReturn<ContractWizardFormValues>;
@@ -48,17 +30,17 @@ export function StepFinancial({ form, preFilledFields }: StepFinancialProps) {
   const id = useId();
   const t = useTranslations('Contracts.wizard');
 
-  const billingModelItems = BILLING_MODELS.map(m => ({
+  const billingModelItems = billingModelEnum.options.map(m => ({
     value: m,
     label: tDynLoose(t, 'billingModelOptions', enumKey(m)),
   }));
 
-  const rateTypeItems = RATE_TYPES.map(rt => ({
+  const rateTypeItems = rateTypeEnum.options.map(rt => ({
     value: rt,
     label: tDynLoose(t, 'rateTypeOptions', enumKey(rt)),
   }));
 
-  const invoiceCycleItems = INVOICE_CYCLES.map(c => ({
+  const invoiceCycleItems = invoiceCycleEnum.options.map(c => ({
     value: c,
     label: tDynLoose(t, 'invoiceCycleOptions', enumKey(c)),
   }));

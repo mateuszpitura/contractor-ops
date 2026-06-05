@@ -1,3 +1,9 @@
+import type {
+  BillingModel,
+  ComplianceRiskLevel,
+  ContractStatus,
+  ContractType,
+} from '@contractor-ops/validators';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { useCallback, useMemo } from 'react';
 
@@ -99,28 +105,15 @@ export function useContractList(options: { onNewContract: () => void; onImport?:
         'endDate',
       sortOrder: (filters.sortOrder as 'asc' | 'desc') || 'asc',
       filters: {
-        status: asFilterArray<
-          | 'DRAFT'
-          | 'PENDING_SIGNATURE'
-          | 'ACTIVE'
-          | 'EXPIRING'
-          | 'EXPIRED'
-          | 'TERMINATED'
-          | 'SUPERSEDED'
-          | 'ARCHIVED'
-        >(filters.status),
-        type: asFilterArray<
-          'B2B_MASTER_SERVICE' | 'STATEMENT_OF_WORK' | 'NDA' | 'IP_ASSIGNMENT' | 'DPA' | 'OTHER'
-        >(filters.type),
-        billingModel: asFilterArray<
-          'MONTHLY_RETAINER' | 'HOURLY' | 'DAILY' | 'MILESTONE' | 'DELIVERABLE_BASED' | 'MIXED'
-        >(filters.billingModel),
+        status: asFilterArray<ContractStatus>(filters.status),
+        type: asFilterArray<ContractType>(filters.type),
+        billingModel: asFilterArray<BillingModel>(filters.billingModel),
         ownerUserId: asFilterArray(filters.ownerUserId),
         startDateFrom: asDateFilter(filters.startDateFrom),
         startDateTo: asDateFilter(filters.startDateTo),
         endDateFrom: asDateFilter(filters.endDateFrom),
         endDateTo: asDateFilter(filters.endDateTo),
-        complianceRiskLevel: asFilterArray<'LOW' | 'MEDIUM' | 'HIGH'>(filters.complianceRiskLevel),
+        complianceRiskLevel: asFilterArray<ComplianceRiskLevel>(filters.complianceRiskLevel),
       },
     }),
     [filters],

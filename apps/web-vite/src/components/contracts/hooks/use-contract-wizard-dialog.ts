@@ -1,3 +1,9 @@
+import {
+  billingModelEnum,
+  contractTypeEnum,
+  invoiceCycleEnum,
+  rateTypeEnum,
+} from '@contractor-ops/validators';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useCallback, useState } from 'react';
 import type { Resolver } from 'react-hook-form';
@@ -14,51 +20,30 @@ import { useContractWizardStepDocuments } from './use-contract-wizard-step-docum
 const contractWizardSchema = z.object({
   contractorId: z.string().min(1, 'Contractor is required'),
   title: z.string().min(1, 'Contract title is required').max(255),
-  type: z.enum(['B2B_MASTER_SERVICE', 'STATEMENT_OF_WORK', 'NDA', 'IP_ASSIGNMENT', 'DPA', 'OTHER']),
+  type: contractTypeEnum,
   startDate: z.string().min(1, 'Start date is required'),
   endDate: z.string().optional(),
   noticePeriodDays: z.number().int().positive().optional(),
   autoRenewal: z.boolean().default(false),
   currency: z.string().length(3),
-  billingModel: z.enum([
-    'MONTHLY_RETAINER',
-    'HOURLY',
-    'DAILY',
-    'MILESTONE',
-    'DELIVERABLE_BASED',
-    'MIXED',
-  ]),
-  rateType: z.enum(['MONTHLY_FIXED', 'PER_HOUR', 'PER_DAY', 'PER_MILESTONE', 'PER_DELIVERABLE']),
+  billingModel: billingModelEnum,
+  rateType: rateTypeEnum,
   rateValueMinor: z.number().int().nonnegative().optional(),
   paymentTermsDays: z.number().int().positive().optional(),
-  invoiceCycle: z.enum(['WEEKLY', 'BIWEEKLY', 'MONTHLY', 'ON_DELIVERABLE', 'AD_HOC']).optional(),
+  invoiceCycle: invoiceCycleEnum.optional(),
 });
 
 const stepSchemas = [
   z.object({
     contractorId: z.string().min(1),
     title: z.string().min(1),
-    type: z.enum([
-      'B2B_MASTER_SERVICE',
-      'STATEMENT_OF_WORK',
-      'NDA',
-      'IP_ASSIGNMENT',
-      'DPA',
-      'OTHER',
-    ]),
+    type: contractTypeEnum,
     startDate: z.string().min(1),
   }),
   z.object({
     currency: z.string().length(3),
-    billingModel: z.enum([
-      'MONTHLY_RETAINER',
-      'HOURLY',
-      'DAILY',
-      'MILESTONE',
-      'DELIVERABLE_BASED',
-      'MIXED',
-    ]),
-    rateType: z.enum(['MONTHLY_FIXED', 'PER_HOUR', 'PER_DAY', 'PER_MILESTONE', 'PER_DELIVERABLE']),
+    billingModel: billingModelEnum,
+    rateType: rateTypeEnum,
   }),
   z.object({}),
 ] as const;

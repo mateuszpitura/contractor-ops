@@ -2,6 +2,7 @@ import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { Input } from '@contractor-ops/ui/components/shadcn/input';
 import { Label } from '@contractor-ops/ui/components/shadcn/label';
 import { RadioGroup, RadioGroupItem } from '@contractor-ops/ui/components/shadcn/radio-group';
+import { contractorTypeEnum } from '@contractor-ops/validators';
 import { Loader2 } from 'lucide-react';
 import { useCallback, useId } from 'react';
 import type { UseFormReturn } from 'react-hook-form';
@@ -17,8 +18,6 @@ interface StepCompanyViewProps {
   lookup: ReturnType<typeof useContractorCompanyLookup>['lookup'];
   isLookupLoading: boolean;
 }
-
-const CONTRACTOR_TYPES = ['SOLE_TRADER', 'COMPANY', 'INDIVIDUAL_FREELANCER', 'OTHER'] as const;
 
 /**
  * Step 1: Company details with NIP autofill from the configured Polish
@@ -100,7 +99,7 @@ export function StepCompanyView({ form, lookup, isLookupLoading }: StepCompanyVi
       <div className="space-y-2">
         <Label className="text-[13px]">{t('type')}</Label>
         <RadioGroup value={watch('type') ?? ''} onValueChange={handleTypeChange}>
-          {CONTRACTOR_TYPES.map(type => (
+          {contractorTypeEnum.options.map(type => (
             <label
               key={type}
               htmlFor={`${id}-contractor-type-${type}`}

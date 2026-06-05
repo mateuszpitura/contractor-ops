@@ -1,3 +1,4 @@
+import { contractorTypeEnum } from '@contractor-ops/validators';
 import { Check, Loader2 } from 'lucide-react';
 import { useCallback } from 'react';
 import { z } from 'zod';
@@ -41,7 +42,7 @@ function preventEnterSubmit(e: React.KeyboardEvent<HTMLDivElement>) {
 const wizardSchema = z.object({
   legalName: z.string().min(1, 'Legal name is required').max(255),
   displayName: z.string().max(255),
-  type: z.enum(['SOLE_TRADER', 'COMPANY', 'INDIVIDUAL_FREELANCER', 'OTHER']),
+  type: contractorTypeEnum,
   taxId: z
     .string()
     .min(1, 'NIP is required')

@@ -7,6 +7,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@contractor-ops/ui/components/shadcn/popover';
+import { complianceHealthEnum, contractorTypeEnum } from '@contractor-ops/validators';
 import { Filter, Loader2, Plus, Search, Upload, X } from 'lucide-react';
 import type { HTMLAttributes } from 'react';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -45,11 +46,7 @@ const LIFECYCLE_STAGE_CHIPS = [
   { key: 'ENDED', labelKey: 'lifecycle.ended' },
 ] as const;
 
-const CONTRACTOR_TYPES = ['SOLE_TRADER', 'COMPANY', 'INDIVIDUAL_FREELANCER', 'OTHER'] as const;
-
 const BILLING_MODELS = ['FIXED', 'HOURLY', 'PROJECT', 'MILESTONE'] as const;
-
-const HEALTH_OPTIONS = ['green', 'yellow', 'red'] as const;
 
 // ---------------------------------------------------------------------------
 // Component
@@ -157,7 +154,7 @@ export function DataTableToolbar({
 
   const typeOptions = useMemo(
     () =>
-      CONTRACTOR_TYPES.map(ct => ({
+      contractorTypeEnum.options.map(ct => ({
         value: ct,
         label: tDynLoose(t, 'type', enumKey(ct)),
       })),
@@ -175,7 +172,7 @@ export function DataTableToolbar({
 
   const healthOptions = useMemo(
     () =>
-      HEALTH_OPTIONS.map(health => ({
+      complianceHealthEnum.options.map(health => ({
         value: health,
         label: tDynLoose(t, 'health', enumKey(health)),
       })),

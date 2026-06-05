@@ -1,3 +1,4 @@
+import { contractorTypeEnum } from '@contractor-ops/validators';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useCallback, useRef, useState } from 'react';
 import type { Resolver, UseFormReturn } from 'react-hook-form';
@@ -13,7 +14,7 @@ import { useContractorWizardCreate } from './use-contractor-wizard.js';
 const wizardSchema = z.object({
   legalName: z.string().min(1, 'Legal name is required').max(255),
   displayName: z.string().max(255),
-  type: z.enum(['SOLE_TRADER', 'COMPANY', 'INDIVIDUAL_FREELANCER', 'OTHER']),
+  type: contractorTypeEnum,
   taxId: z
     .string()
     .min(1, 'NIP is required')
@@ -79,7 +80,7 @@ const wizardSchema = z.object({
 const stepSchemas = [
   z.object({
     legalName: z.string().min(1),
-    type: z.enum(['SOLE_TRADER', 'COMPANY', 'INDIVIDUAL_FREELANCER', 'OTHER']),
+    type: contractorTypeEnum,
     taxId: z
       .string()
       .min(1)

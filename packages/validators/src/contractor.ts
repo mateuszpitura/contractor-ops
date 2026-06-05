@@ -6,19 +6,28 @@ import { optionalFk, optionalPositiveInt, optionalString } from './helpers.js';
 // Prisma enum mirrors (string unions — validators package has no Prisma dep)
 // ---------------------------------------------------------------------------
 
-const contractorTypeEnum = z.enum(['SOLE_TRADER', 'COMPANY', 'INDIVIDUAL_FREELANCER', 'OTHER']);
+export const contractorTypeEnum = z.enum([
+  'SOLE_TRADER',
+  'COMPANY',
+  'INDIVIDUAL_FREELANCER',
+  'OTHER',
+]);
+export type ContractorType = z.infer<typeof contractorTypeEnum>;
 
-const contractorStatusEnum = z.enum(['ACTIVE', 'INACTIVE', 'ARCHIVED']);
+export const contractorStatusEnum = z.enum(['ACTIVE', 'INACTIVE', 'ARCHIVED']);
+export type ContractorStatus = z.infer<typeof contractorStatusEnum>;
 
-const contractorLifecycleStageEnum = z.enum([
+export const contractorLifecycleStageEnum = z.enum([
   'DRAFT',
   'ONBOARDING',
   'ACTIVE',
   'OFFBOARDING',
   'ENDED',
 ]);
+export type ContractorLifecycleStage = z.infer<typeof contractorLifecycleStageEnum>;
 
-const complianceHealthEnum = z.enum(['green', 'yellow', 'red']);
+export const complianceHealthEnum = z.enum(['green', 'yellow', 'red']);
+export type ComplianceHealth = z.infer<typeof complianceHealthEnum>;
 
 // ---------------------------------------------------------------------------
 // NIP validation (Polish tax identification number — mod-11 checksum)

@@ -8,6 +8,12 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@contractor-ops/ui/components/shadcn/popover';
+import {
+  billingModelEnum,
+  complianceRiskLevelEnum,
+  contractStatusEnum,
+  contractTypeEnum,
+} from '@contractor-ops/validators';
 import { CalendarIcon, Filter, X } from 'lucide-react';
 import { memo, useCallback, useId, useMemo, useState } from 'react';
 import type { DateRange } from 'react-day-picker';
@@ -64,37 +70,6 @@ interface DataTableFiltersProps {
 // ---------------------------------------------------------------------------
 // Filter option sets
 // ---------------------------------------------------------------------------
-
-const CONTRACT_STATUSES = [
-  'DRAFT',
-  'PENDING_SIGNATURE',
-  'ACTIVE',
-  'EXPIRING',
-  'EXPIRED',
-  'TERMINATED',
-  'SUPERSEDED',
-  'ARCHIVED',
-] as const;
-
-const CONTRACT_TYPES = [
-  'B2B_MASTER_SERVICE',
-  'STATEMENT_OF_WORK',
-  'NDA',
-  'IP_ASSIGNMENT',
-  'DPA',
-  'OTHER',
-] as const;
-
-const BILLING_MODELS = [
-  'MONTHLY_RETAINER',
-  'HOURLY',
-  'DAILY',
-  'MILESTONE',
-  'DELIVERABLE_BASED',
-  'MIXED',
-] as const;
-
-const RISK_LEVELS = ['LOW', 'MEDIUM', 'HIGH'] as const;
 
 // ---------------------------------------------------------------------------
 // Component
@@ -171,7 +146,7 @@ export function DataTableFilters({
 
   const statusOptions = useMemo(
     () =>
-      CONTRACT_STATUSES.map(s => ({
+      contractStatusEnum.options.map(s => ({
         value: s as string,
         label: tDynLoose(t, 'status', enumKey(s)),
       })),
@@ -179,7 +154,7 @@ export function DataTableFilters({
   );
   const typeOptions = useMemo(
     () =>
-      CONTRACT_TYPES.map(ct => ({
+      contractTypeEnum.options.map(ct => ({
         value: ct as string,
         label: tDynLoose(t, 'type', enumKey(ct)),
       })),
@@ -187,7 +162,7 @@ export function DataTableFilters({
   );
   const billingOptions = useMemo(
     () =>
-      BILLING_MODELS.map(bm => ({
+      billingModelEnum.options.map(bm => ({
         value: bm as string,
         label: tDynLoose(t, 'billingModel', enumKey(bm)),
       })),
@@ -210,7 +185,7 @@ export function DataTableFilters({
   );
   const riskOptions = useMemo(
     () =>
-      RISK_LEVELS.map(rl => ({
+      complianceRiskLevelEnum.options.map(rl => ({
         value: rl as string,
         label: tDynLoose(t, 'risk', enumKey(rl)),
       })),
