@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v6.0
 milestone_name: Platform Maturity & Operational Hardening
 status: executing
-stopped_at: Completed 79-08-PLAN.md (Gulf 4-locale i18n; C10 GREEN at translation layer; Task 3 human-verify deferred to verifier)
-last_updated: "2026-06-03T21:48:24.130Z"
-last_activity: 2026-06-03 -- Phase 80 planning complete
+stopped_at: "Completed 80-01-PLAN.md (SC#1 cross-feature composition test — 11/11 green)"
+last_updated: "2026-06-05T15:43:36.940Z"
+last_activity: 2026-06-05
 progress:
   total_phases: 11
   completed_phases: 10
   total_plans: 83
-  completed_plans: 79
+  completed_plans: 80
   percent: 91
 ---
 
@@ -285,16 +285,16 @@ The execute-phase pipeline depends on `gsd-tools.cjs` for: init context + model/
 See: .planning/PROJECT.md (updated 2026-04-26 — v6.0 milestone started)
 
 **Core value:** The invoice-to-payment flow must work end-to-end: invoice arrives, gets matched to contract, routed through approval, and batched for payment — with full audit trail.
-**Current focus:** Phase 80 — v6 0 verification hardening manual uat
+**Current focus:** Phase 80 — v6-0-verification-hardening-manual-uat
 
 ## Current Position
 
-Phase: 79 (f3-gulf-uae-free-zone-tracking-saudization-dashboard-arabic-) — EXECUTING
-Plan: Not started
+Phase: 80 (v6-0-verification-hardening-manual-uat) — EXECUTING
+Plan: 2 of 4
 Status: Ready to execute
-Last activity: 2026-06-03 -- Phase 80 planning complete
+Last activity: 2026-06-05
 
-Progress: [██████████] 100%
+Progress: [██████████] 96%
 
 **Active Phase:** none (Phase 70 closed)
 **Next Phase candidates (parallel-ready):**
@@ -441,6 +441,7 @@ Code-level audit gaps (I-1 / EINV-01/02/04 / PAY-04 / FOUND-03) all closed this 
 | Phase 79 P79-05 | 16 | 2 tasks | 15 files |
 | Phase 79 P06 | 8min | 2 tasks | 6 files |
 | Phase 79 P08 | 10min | 2 tasks | 4 files |
+| Phase 80 P01 | 7min | 2 tasks | 1 files |
 
 ### Standing Project Constraints
 
@@ -510,6 +511,8 @@ Recent decisions affecting current work:
 - [Phase ?]: 79-06: D-02 removed freeform UAE tradeLicense*/freeZone inputs from country-compliance-section, mounted structured free-zone form; scope-mismatch banner non-blocking --warning (D-07)
 - [Phase ?]: 79-08: Saudization.bands.* sourced from LOCKED_SA_PHRASES literals (identical across en/de/pl/ar, D-14).
 - [Phase ?]: 79-08: free-zone zone proper nouns kept verbatim in de/pl, localized in ar; demo-readonly i18n keys bundled per user decision (only 4 JSONs staged).
+- [Phase 80]: SC#1 cross-feature test: F1/F3 audit row asserted via the deterministic compliance.payment.would_block (flag-OFF) branch — the enforced hard-block throws and writes no row; reEvaluateFreeZoneStatus flips PENDING->EXPIRED with no audit row
+- [Phase 80]: SC#1: F2 IdP deliberately NOT composed (D-01) — ACCESS_REVOKE saga runs post-offboarding-completion, off the blocked path; F2 verification lives only in 80-HUMAN-UAT.md
 
 ### Pending Todos
 
@@ -547,8 +550,8 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-06-03T10:49:06.893Z
-Stopped at: Completed 79-08-PLAN.md (Gulf 4-locale i18n; C10 GREEN at translation layer; Task 3 human-verify deferred to verifier)
+Last session: 2026-06-05T15:43:36.933Z
+Stopped at: Completed 80-01-PLAN.md (SC#1 cross-feature composition test — 11/11 green)
 Resume file: None
 Next command: `/gsd-plan-phase 74`  (Phase 74 context gathered, ready to plan; 71 + 76 plans already ready to execute)
 
