@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v6.0
 milestone_name: Platform Maturity & Operational Hardening
-status: verifying
-stopped_at: "Completed 80-04-PLAN.md (D-04 hardening gate re-run + 80-RETROSPECTIVE.md — v6.0 milestone-close: 4/4 plans, ready for verification)"
-last_updated: "2026-06-05T16:04:45.505Z"
+status: gaps_found
+stopped_at: "Phase 80 verification: gaps_found (3/4 SCs). SC#1 FAILED — v6-cross-feature-composition.test.ts exercises F1/F3/F4 gates in isolation (5 separate describe blocks, beforeEach resets store) but does NOT compose them on one seeded contractor as SC#1 requires. SC#2/3/4 verified. Gap closure pending: /gsd:plan-phase 80 --gaps"
+last_updated: "2026-06-05T18:35:00.000Z"
 last_activity: 2026-06-05
 progress:
   total_phases: 11
-  completed_phases: 11
+  completed_phases: 10
   total_plans: 83
   completed_plans: 83
-  percent: 100
+  percent: 91
 ---
 
 # Project State

@@ -91,7 +91,7 @@ Phase artifacts: `.planning/milestones/v5.0-phases/`
 - [x] **Phase 77: F2 IdP — GWS + Slack Adapters (the wedge)** — Google Workspace suspend+OAuth-revoke+sign-out, Slack session-invalidate+SCIM-deactivate, per-IdP `describeImpact` preview, partial-failure reconcile queue (completed 2026-05-31)
 - [x] **Phase 78: F2 IdP — Entra ID + Okta + GitHub Adapters (the differentiator)** — Entra disable+revokeSignInSessions with CA pre-flight, Okta deactivate+session-clear, GitHub member-remove+per-PAT-revoke+outside-collab manual flag (completed 2026-05-31)
 - [x] **Phase 79: F3 Gulf — UAE Free-Zone Tracking + Saudization Dashboard + Arabic + RTL** — `packages/gulf-regulatory`, 10-zone seed enum, Saudization manual-band entry, pre-offboarding impact banner, Qiwa-auth, ms-/me-/ps-/pe- ESLint guard (completed 2026-06-03)
-- [x] **Phase 80: v6.0 Verification + Hardening + Manual UAT** — cross-feature integration tests (F1+F3+F4 composition), manual-UAT checkpoints document, consolidated post-deploy legal sign-off list, v6.0 retrospective (completed 2026-06-05)
+- [ ] **Phase 80: v6.0 Verification + Hardening + Manual UAT** — cross-feature integration tests (F1+F3+F4 composition), manual-UAT checkpoints document, consolidated post-deploy legal sign-off list, v6.0 retrospective (plans 4/4 executed; verification 2026-06-05: gaps_found — SC#1 composition incomplete, gap closure pending)
 
 ## Phase Details
 
