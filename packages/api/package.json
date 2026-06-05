@@ -16,16 +16,6 @@
       "import": "./src/services/app-email.ts",
       "default": "./src/services/app-email.ts"
     },
-    "./services/slack-client": {
-      "types": "./src/services/slack-client.ts",
-      "import": "./src/services/slack-client.ts",
-      "default": "./src/services/slack-client.ts"
-    },
-    "./services/approval-engine": {
-      "types": "./src/services/approval-engine.ts",
-      "import": "./src/services/approval-engine.ts",
-      "default": "./src/services/approval-engine.ts"
-    },
     "./services/notification-service": {
       "types": "./src/services/notification-service.ts",
       "import": "./src/services/notification-service.ts",
@@ -86,11 +76,6 @@
       "import": "./src/services/stripe-client.ts",
       "default": "./src/services/stripe-client.ts"
     },
-    "./services/billing-constants": {
-      "types": "./src/services/billing-constants.ts",
-      "import": "./src/services/billing-constants.ts",
-      "default": "./src/services/billing-constants.ts"
-    },
     "./services/billing-webhook": {
       "types": "./src/services/billing-webhook.ts",
       "import": "./src/services/billing-webhook.ts",
@@ -146,11 +131,6 @@
       "import": "./src/services/org-definition-sync.ts",
       "default": "./src/services/org-definition-sync.ts"
     },
-    "./services/exchange-rate": {
-      "types": "./src/services/exchange-rate.ts",
-      "import": "./src/services/exchange-rate.ts",
-      "default": "./src/services/exchange-rate.ts"
-    },
     "./services/teams/teams-bot-handler": {
       "types": "./src/services/teams/teams-bot-handler.ts",
       "import": "./src/services/teams/teams-bot-handler.ts",
@@ -201,50 +181,20 @@
       "import": "./src/services/reassessment-trigger-scan.ts",
       "default": "./src/services/reassessment-trigger-scan.ts"
     },
-    "./schemas/reassessment-trigger-reason": {
-      "types": "./src/schemas/reassessment-trigger-reason.ts",
-      "import": "./src/schemas/reassessment-trigger-reason.ts",
-      "default": "./src/schemas/reassessment-trigger-reason.ts"
-    },
     "./services/outbox": {
       "types": "./src/services/outbox/index.ts",
       "import": "./src/services/outbox/index.ts",
       "default": "./src/services/outbox/index.ts"
-    },
-    "./services/queue": {
-      "types": "./src/services/queue.ts",
-      "import": "./src/services/queue.ts",
-      "default": "./src/services/queue.ts"
     },
     "./services/exports": {
       "types": "./src/services/exports/index.ts",
       "import": "./src/services/exports/index.ts",
       "default": "./src/services/exports/index.ts"
     },
-    "./services/exports/registry": {
-      "types": "./src/services/exports/registry.ts",
-      "import": "./src/services/exports/registry.ts",
-      "default": "./src/services/exports/registry.ts"
-    },
-    "./services/email/templates/export-ready": {
-      "types": "./src/services/email/templates/export-ready.tsx",
-      "import": "./src/services/email/templates/export-ready.tsx",
-      "default": "./src/services/email/templates/export-ready.tsx"
-    },
-    "./services/email": {
-      "types": "./src/services/email/index.ts",
-      "import": "./src/services/email/index.ts",
-      "default": "./src/services/email/index.ts"
-    },
     "./services/cache": {
       "types": "./src/services/cache.ts",
       "import": "./src/services/cache.ts",
       "default": "./src/services/cache.ts"
-    },
-    "./services/org-cache": {
-      "types": "./src/services/org-cache.ts",
-      "import": "./src/services/org-cache.ts",
-      "default": "./src/services/org-cache.ts"
     },
     "./services/qstash-backpressure": {
       "types": "./src/services/qstash-backpressure.ts",
