@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v6.0
 milestone_name: Platform Maturity & Operational Hardening
 status: executing
-stopped_at: "Completed 80-01-PLAN.md (SC#1 cross-feature composition test — 11/11 green)"
+stopped_at: "Completed 80-03-PLAN.md (SC#3 80-LEGAL-SIGNOFF.md — 4 adviser sections, all 24 PENDING flags catalogued)"
 last_updated: "2026-06-05T15:49:12.690Z"
 last_activity: 2026-06-05
 progress:
   total_phases: 11
   completed_phases: 10
   total_plans: 83
-  completed_plans: 81
-  percent: 91
+  completed_plans: 82
+  percent: 92
 ---
 
 # Project State
@@ -290,7 +290,7 @@ See: .planning/PROJECT.md (updated 2026-04-26 — v6.0 milestone started)
 ## Current Position
 
 Phase: 80 (v6-0-verification-hardening-manual-uat) — EXECUTING
-Plan: 3 of 4
+Plan: 4 of 4
 Status: Ready to execute
 Last activity: 2026-06-05
 
@@ -493,6 +493,7 @@ Recent decisions affecting current work:
 - [v6.0 requirements, 2026-04-26]: Drift escape hatch reused 3x (compliance requirement-set / Saudization Nitaqat thresholds / role taxonomy) — milestone-wide pattern mirrors v5.0 `recreateDraftAfterDrift`
 - [v6.0 requirements, 2026-04-26]: Saudization band entry is MANUAL — system never auto-computes (legal liability + quarterly matrix changes); GULF-FUTURE-02 likely never
 - [v6.0 requirements, 2026-04-26]: Contract clause scanner is REGEX-FIRST per-jurisdiction phrase library; Claude Vision tool_use only as MANUAL_REVIEW_REQUIRED tristate fallback (PITFALLS P22)
+- [Phase 80-03, 2026-06-05]: 80-LEGAL-SIGNOFF.md catalogues all 24 PENDING signoff-registry-flags namespaces under exactly four adviser sections (DE Steuerberater / UK / UAE / KSA MOL-HRSD+legal); PL+US rows and the 6 IdP cross-border data-handling flags live in trailing plain-text subsections (no fifth `## ` heading) — registry notes restated inline; all items post-deploy, never hard-blocking (D-05, Standing Constraint LOCAL-ONLY)
 - [v6.0 requirements, 2026-04-26]: Credentials are POINTERS only (`CredentialReference` schema) — content-validation regex rejects AKIA*/GitHub PATs/JWT/hex≥32; storing actual credentials explicitly out of scope (PITFALLS P21)
 - [v5.0 roadmap]: Classification engine as new `packages/classification` with pluggable country rule sets (mirrors einvoice pattern)
 - [v5.0 roadmap]: XRechnung uses CII XML syntax (not UBL) — different from existing Peppol-AE profile

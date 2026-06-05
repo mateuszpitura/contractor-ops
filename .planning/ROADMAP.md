@@ -272,10 +272,10 @@ Phase artifacts: `.planning/milestones/v5.0-phases/`
   2. `80-HUMAN-UAT.md` document lists every manual UI UAT scenario across F1/F2/F3/F4 with reproduction steps, expected behaviour, and "post-deploy" disposition (mirrors v5.0 `63-HUMAN-UAT.md` pattern)
   3. Consolidated post-deploy legal sign-off list catalogues every "Needs verification by legal entity" annotation across the milestone — Steuerberater for §48b EStG / A1 / Aufenthaltstitel / Werkvertrag IP wording; Saudi MOL/HRSD for Saudization rates; UAE legal for free-zone permitted-activity; UK legal for Border Security Act; KSA legal for Iqama+Qiwa-auth flow
   4. v6.0 retrospective documents (a) hard dependencies that played out as planned vs differed, (b) all PENDING Unleash flags by namespace with their post-deploy approval ticket pointers, (c) plan-completion velocity vs v5.0 baseline
-**Plans:** 2/4 plans executed
+**Plans:** 3/4 plans executed
   - [x] 80-01-PLAN.md — Wave 1: cross-feature F1+F3+F4 composition integration test (SC#1)
   - [x] 80-02-PLAN.md — Wave 1: 80-HUMAN-UAT.md manual UI UAT scenarios across F1/F2/F3/F4 (SC#2, F2 included)
-  - [ ] 80-03-PLAN.md — Wave 1: 80-LEGAL-SIGNOFF.md consolidated post-deploy legal sign-off list, one section per adviser (SC#3)
+  - [x] 80-03-PLAN.md — Wave 1: 80-LEGAL-SIGNOFF.md consolidated post-deploy legal sign-off list, one section per adviser (SC#3)
   - [ ] 80-04-PLAN.md — Wave 2: D-04 milestone-wide gate re-run + 80-RETROSPECTIVE.md dependency play-out / PENDING-flag inventory / velocity (SC#4)
 **Research flag:** STANDARD (mirrors v5.0 Phase 69 retrospective)
 **Feature flags:** none — verification phase
