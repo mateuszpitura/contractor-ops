@@ -91,7 +91,7 @@ Phase artifacts: `.planning/milestones/v5.0-phases/`
 - [x] **Phase 77: F2 IdP — GWS + Slack Adapters (the wedge)** — Google Workspace suspend+OAuth-revoke+sign-out, Slack session-invalidate+SCIM-deactivate, per-IdP `describeImpact` preview, partial-failure reconcile queue (completed 2026-05-31)
 - [x] **Phase 78: F2 IdP — Entra ID + Okta + GitHub Adapters (the differentiator)** — Entra disable+revokeSignInSessions with CA pre-flight, Okta deactivate+session-clear, GitHub member-remove+per-PAT-revoke+outside-collab manual flag (completed 2026-05-31)
 - [x] **Phase 79: F3 Gulf — UAE Free-Zone Tracking + Saudization Dashboard + Arabic + RTL** — `packages/gulf-regulatory`, 10-zone seed enum, Saudization manual-band entry, pre-offboarding impact banner, Qiwa-auth, ms-/me-/ps-/pe- ESLint guard (completed 2026-06-03)
-- [ ] **Phase 80: v6.0 Verification + Hardening + Manual UAT** — cross-feature integration tests (F1+F3+F4 composition), manual-UAT checkpoints document, consolidated post-deploy legal sign-off list, v6.0 retrospective (plans 4/4 executed; verification 2026-06-05: gaps_found — SC#1 composition incomplete, gap closure pending)
+- [x] **Phase 80: v6.0 Verification + Hardening + Manual UAT** — cross-feature integration tests (F1+F3+F4 composition), manual-UAT checkpoints document, consolidated post-deploy legal sign-off list, v6.0 retrospective (plans 4/4 executed; verification 2026-06-05: gaps_found — SC#1 composition incomplete, gap closure pending) (completed 2026-06-05)
 
 ## Phase Details
 
@@ -272,7 +272,7 @@ Phase artifacts: `.planning/milestones/v5.0-phases/`
   2. `80-HUMAN-UAT.md` document lists every manual UI UAT scenario across F1/F2/F3/F4 with reproduction steps, expected behaviour, and "post-deploy" disposition (mirrors v5.0 `63-HUMAN-UAT.md` pattern)
   3. Consolidated post-deploy legal sign-off list catalogues every "Needs verification by legal entity" annotation across the milestone — Steuerberater for §48b EStG / A1 / Aufenthaltstitel / Werkvertrag IP wording; Saudi MOL/HRSD for Saudization rates; UAE legal for free-zone permitted-activity; UK legal for Border Security Act; KSA legal for Iqama+Qiwa-auth flow
   4. v6.0 retrospective documents (a) hard dependencies that played out as planned vs differed, (b) all PENDING Unleash flags by namespace with their post-deploy approval ticket pointers, (c) plan-completion velocity vs v5.0 baseline
-**Plans:** 4/4 plans complete
+**Plans:** 5/5 plans complete
   - [x] 80-01-PLAN.md — Wave 1: cross-feature F1+F3+F4 composition integration test (SC#1)
   - [x] 80-02-PLAN.md — Wave 1: 80-HUMAN-UAT.md manual UI UAT scenarios across F1/F2/F3/F4 (SC#2, F2 included)
   - [x] 80-03-PLAN.md — Wave 1: 80-LEGAL-SIGNOFF.md consolidated post-deploy legal sign-off list, one section per adviser (SC#3)
@@ -402,4 +402,4 @@ Phase artifacts: `.planning/milestones/v5.0-phases/`
 | 77. F2 IdP — GWS + Slack (the wedge)          | v6.0      | 5/5 | Complete    | 2026-05-31 |
 | 78. F2 IdP — Entra + Okta + GitHub            | v6.0      | 7/7 | Complete    | 2026-05-31 |
 | 79. F3 Gulf — UAE Free-Zone + Saudization     | v6.0      | 8/8 | Complete    | 2026-06-03 |
-| 80. v6.0 Verification + Hardening + UAT       | v6.0      | 4/4 | Complete   | 2026-06-05 |
+| 80. v6.0 Verification + Hardening + UAT       | v6.0      | 5/5 | Complete   | 2026-06-05 |

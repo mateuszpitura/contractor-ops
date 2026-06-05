@@ -2,10 +2,10 @@
 gsd_state_version: 1.0
 milestone: v6.0
 milestone_name: Platform Maturity & Operational Hardening
-status: gaps_found
-stopped_at: "Phase 80 gap plan ready. SC#1 gap (composition test) planned as 80-05-PLAN.md (gap_closure: true) — plan-checker PASSED. SC#2/3/4 verified. Next: /gsd:execute-phase 80 --gaps-only → re-verify."
-last_updated: "2026-06-06T00:00:00.000Z"
-last_activity: 2026-06-06
+status: executing
+stopped_at: "Completed 80-04-PLAN.md (D-04 hardening gate re-run + 80-RETROSPECTIVE.md — v6.0 milestone-close: 4/4 plans, ready for verification)"
+last_updated: "2026-06-05T23:22:58.718Z"
+last_activity: 2026-06-05 -- Phase 80 execution started
 progress:
   total_phases: 11
   completed_phases: 10
@@ -75,7 +75,7 @@ the 3 web-vite hooks to call `trpc.deprovisioning.enableProviderForOrg({ provide
 
 **Phase:** 73 (F1 Compliance — Admin Dashboard + Portal Self-Service + i18n)
 **Workflow:** `gsd:execute-phase 73` (autonomous background run)
-**Status:** Phase complete — ready for verification
+**Status:** Executing Phase 80
 
 **Why halted (per execute-phase rule "if drift is so deep a plan can't be faithfully executed, write specifics to STATE.md as a blocker and stop rather than guessing"):**
 
@@ -290,9 +290,9 @@ See: .planning/PROJECT.md (updated 2026-04-26 — v6.0 milestone started)
 ## Current Position
 
 Phase: 80 (v6-0-verification-hardening-manual-uat) — EXECUTING
-Plan: 4 of 4
-Status: Phase complete — ready for verification
-Last activity: 2026-06-05
+Plan: 1 of 5
+Status: Executing Phase 80
+Last activity: 2026-06-05 -- Phase 80 execution started
 
 Progress: [██████████] 100%
 
