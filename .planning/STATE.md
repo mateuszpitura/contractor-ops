@@ -4,13 +4,13 @@ milestone: v6.0
 milestone_name: Platform Maturity & Operational Hardening
 status: executing
 stopped_at: "Completed 80-01-PLAN.md (SC#1 cross-feature composition test — 11/11 green)"
-last_updated: "2026-06-05T15:43:36.940Z"
+last_updated: "2026-06-05T15:49:12.690Z"
 last_activity: 2026-06-05
 progress:
   total_phases: 11
   completed_phases: 10
   total_plans: 83
-  completed_plans: 80
+  completed_plans: 81
   percent: 91
 ---
 
@@ -290,11 +290,11 @@ See: .planning/PROJECT.md (updated 2026-04-26 — v6.0 milestone started)
 ## Current Position
 
 Phase: 80 (v6-0-verification-hardening-manual-uat) — EXECUTING
-Plan: 2 of 4
+Plan: 3 of 4
 Status: Ready to execute
 Last activity: 2026-06-05
 
-Progress: [██████████] 96%
+Progress: [██████████] 98%
 
 **Active Phase:** none (Phase 70 closed)
 **Next Phase candidates (parallel-ready):**
@@ -442,6 +442,7 @@ Code-level audit gaps (I-1 / EINV-01/02/04 / PAY-04 / FOUND-03) all closed this 
 | Phase 79 P06 | 8min | 2 tasks | 6 files |
 | Phase 79 P08 | 10min | 2 tasks | 4 files |
 | Phase 80 P01 | 7min | 2 tasks | 1 files |
+| Phase 80 P02 | 18min | 1 tasks | 1 files |
 
 ### Standing Project Constraints
 
@@ -513,6 +514,8 @@ Recent decisions affecting current work:
 - [Phase ?]: 79-08: free-zone zone proper nouns kept verbatim in de/pl, localized in ar; demo-readonly i18n keys bundled per user decision (only 4 JSONs staged).
 - [Phase 80]: SC#1 cross-feature test: F1/F3 audit row asserted via the deterministic compliance.payment.would_block (flag-OFF) branch — the enforced hard-block throws and writes no row; reEvaluateFreeZoneStatus flips PENDING->EXPIRED with no audit row
 - [Phase 80]: SC#1: F2 IdP deliberately NOT composed (D-01) — ACCESS_REVOKE saga runs post-offboarding-completion, off the blocked path; F2 verification lives only in 80-HUMAN-UAT.md
+- [Phase ?]: 80-02: 80-HUMAN-UAT.md captures 21 manual UI UAT scenarios across F1(4)/F2-IdP(8)/F3(5)/F4(4); F2 weighted heavy because UAT is its only milestone-close coverage (D-01 excludes F2 from the SC#1 integration test)
+- [Phase ?]: 80-02: every UAT result is [pending] — LOCAL-ONLY post-deploy disposition, never a phase/milestone blocker; F3 RTL + de/pl scenarios cross-reference 79-HUMAN-UAT tests 1-2 at milestone scope (dedup)
 
 ### Pending Todos
 
@@ -550,7 +553,7 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-06-05T15:43:36.933Z
+Last session: 2026-06-05T15:48:48.004Z
 Stopped at: Completed 80-01-PLAN.md (SC#1 cross-feature composition test — 11/11 green)
 Resume file: None
 Next command: `/gsd-plan-phase 74`  (Phase 74 context gathered, ready to plan; 71 + 76 plans already ready to execute)
