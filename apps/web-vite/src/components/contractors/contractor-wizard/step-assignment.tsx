@@ -1,6 +1,5 @@
 /**
- * Wizard step 3 — assignment dropdowns. Step 11 codemod port from
- * apps/web with org inline-create sheets deferred (TemplatePicker batch).
+ * Wizard step 3 — assignment dropdowns.
  */
 
 import { Combobox } from '@contractor-ops/ui/components/reui/combobox';

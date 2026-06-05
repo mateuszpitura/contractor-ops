@@ -36,9 +36,8 @@ let cachedClient: AuthClient | undefined;
 
 /**
  * Lazily build the singleton on first access. Plugin set mirrors
- * `packages/auth/src/client.ts` so the legacy `authClient.signIn.magicLink`
- * + `authClient.organization.*` call sites work unchanged after the
- * Step 11 codemod swap.
+ * `packages/auth/src/client.ts` so the `authClient.signIn.magicLink`
+ * + `authClient.organization.*` call sites work unchanged.
  */
 export function getAuthClient(): AuthClient {
   if (cachedClient) return cachedClient;
