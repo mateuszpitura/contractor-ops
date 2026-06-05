@@ -252,7 +252,7 @@ describe('KSeF mapKsefToInvoiceFields', () => {
   it('maps all invoice fields correctly', async () => {
     const { mapKsefToInvoiceFields } = await import('../profiles/ksef/mapper.js');
     const parsed = createParsedInvoice();
-    const { invoice, lines } = mapKsefToInvoiceFields(parsed);
+    const { invoice } = mapKsefToInvoiceFields(parsed);
 
     expect(invoice.invoiceNumber).toBe('FV/2026/001');
     expect(invoice.externalInvoiceId).toBe('KSEF-REF-001');

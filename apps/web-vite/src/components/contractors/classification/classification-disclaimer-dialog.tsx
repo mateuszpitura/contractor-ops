@@ -63,8 +63,7 @@ export type ClassificationDisclaimerDialogViewProps = ClassificationDisclaimerDi
   Pick<ReturnType<typeof useClassificationDisclaimerAck>, 'acknowledge' | 'isPending'>;
 
 export function ClassificationDisclaimerDialogView(props: ClassificationDisclaimerDialogViewProps) {
-  const { assessmentId, countryCode, open, onAcknowledged, onDeferred, acknowledge, isPending } =
-    props;
+  const { countryCode, open, onDeferred, acknowledge, isPending } = props;
   const t = useTranslations('Classification');
   const copy = DISCLAIMER_COPY[countryCode];
   const titleId = useId();

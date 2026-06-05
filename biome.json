@@ -97,7 +97,8 @@
         "useImportExtensions": "off",
         "noUnresolvedImports": "off",
         "useUniqueElementIds": "warn",
-        "noUndeclaredDependencies": "off"
+        "noUndeclaredDependencies": "off",
+        "noUnusedVariables": "error"
       },
       "performance": {
         "noAccumulatingSpread": "error",
@@ -216,6 +217,16 @@
       }
     },
     {
+      "includes": ["packages/einvoice/src/profiles/*/validator-bundle/*.sef.{js,json}"],
+      "linter": {
+        "rules": {
+          "correctness": {
+            "noUnusedVariables": "off"
+          }
+        }
+      }
+    },
+    {
       "includes": ["apps/cms/migrations/**", "apps/cms/src/payload-types.ts"],
       "linter": {
         "rules": {
@@ -308,11 +319,12 @@
       "!**/.turbo",
       "!**/.claude",
       "!**/.planning",
+      "!**/.audit-scratch",
       "!**/out",
       "!**/coverage",
       "!**/playwright-report",
       "!**/next-env.d.ts",
-      "!apps/cms/migrations/**",
+      "!apps/cms/migrations",
       "!apps/cms/src/payload-types.ts"
     ]
   }

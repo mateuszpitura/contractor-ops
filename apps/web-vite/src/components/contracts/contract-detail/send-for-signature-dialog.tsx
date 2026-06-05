@@ -63,7 +63,7 @@ type SendForSignatureDialogProps = {
 function SortableSignerRow({ signer, index: _index }: { signer: Signer; index: number }) {
   const tAria = useTranslations('Common.aria');
   const t = useTranslations('ContractDetail.signing.sendDialog');
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+  const { attributes, listeners, setNodeRef } = useSortable({
     id: signer.id,
   });
 

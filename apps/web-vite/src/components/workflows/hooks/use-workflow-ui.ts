@@ -312,7 +312,6 @@ export function useWorkflowCompleteTask(runId: string, options?: { onSuccess?: (
 export function useWorkflowTaskComments(runId: string, taskRunId: string) {
   const t = useTranslations('Workflows');
   const trpc = useTRPC();
-  const queryClient = useQueryClient();
 
   const commentsQuery = useQuery(
     trpc.workflow.listComments.queryOptions({

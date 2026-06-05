@@ -59,7 +59,6 @@ export function StepReview({
     isLocking,
     groupedByCurrency,
     currencies,
-    grandTotal,
     hasPLN,
     hasEUR,
     handleLockAndExport,

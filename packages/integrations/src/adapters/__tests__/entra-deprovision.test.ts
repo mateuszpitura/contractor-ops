@@ -12,7 +12,6 @@ beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
 afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
 
-const GRAPH = 'https://graph.microsoft.com/v1.0';
 const USER = 'user-entra-001';
 const adapter = () => new EntraIdAdapter().withAccessToken('fake-graph-token');
 

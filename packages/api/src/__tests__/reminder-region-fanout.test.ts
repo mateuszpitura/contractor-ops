@@ -23,7 +23,6 @@ const {
   mockResolveRecipients,
   itemsByRegion,
   claimedKeys,
-  regionClientFactory,
 } = vi.hoisted(() => {
   const itemsByRegion = new Map<string, Array<Record<string, unknown>>>();
   const claimedKeys = new Set<string>();

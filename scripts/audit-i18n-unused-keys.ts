@@ -187,11 +187,6 @@ function listSourceFiles(dir: string, out: string[] = []): string[] {
 
 // ─── parsing primitives ──────────────────────────────────────────────────────
 
-function readFirstArg(text: string, start: number): string | null {
-  const args = readArgsList(text, start, 1);
-  return args.length > 0 ? args[0] : null;
-}
-
 /** Read up to `max` comma-separated args starting after the opening paren. */
 function readArgsList(text: string, start: number, max = 8): string[] {
   const out: string[] = [];
@@ -313,7 +308,7 @@ function extractHookNamespaces(text: string): Map<string, HookEntry> {
     /\b(?:export\s+(?:default\s+)?)?(?:function\s+(\w+)\s*[<(]|const\s+(\w+)\s*[:=][^=][^=]*(?:=>|function\b))/g;
   for (const m of text.matchAll(declRe)) {
     const name = m[1] ?? m[2];
-    if (!name || !name.startsWith('use')) continue;
+    if (!(name && name.startsWith('use'))) continue;
     // Find function body start (next `{` after the match).
     const fromIdx = (m.index ?? 0) + m[0].length;
     const braceIdx = text.indexOf('{', fromIdx);
@@ -331,7 +326,7 @@ function extractHookNamespaces(text: string): Map<string, HookEntry> {
     // Body exposes the translator if it (a) returns the bound var, OR
     // (b) returns an object that includes `t`. Heuristic: look for `return`
     // followed by either the bound identifier or a `{ t` token.
-    if (!/\breturn\b[^;]*\bt\b/.test(body) && !/\breturn\b[^;]*\{[^}]*\bt\b/.test(body)) continue;
+    if (!(/\breturn\b[^;]*\bt\b/.test(body) || /\breturn\b[^;]*\{[^}]*\bt\b/.test(body))) continue;
 
     // Wildcard if the hook itself dispatches `t(varExpr)`.
     const wildcard = /\bt\(\s*[A-Za-z_$][\w$]*\s*[,)]/.test(body);
@@ -407,7 +402,10 @@ function extractImportedNames(text: string): Set<string> {
   const importRe = /\bimport\s+(?:type\s+)?\{([^}]+)\}\s+from\s+['"][^'"]+['"]/g;
   for (const m of text.matchAll(importRe)) {
     for (const raw of m[1].split(',')) {
-      const cleaned = raw.trim().replace(/^type\s+/, '').replace(/\s+as\s+\w+$/i, '');
+      const cleaned = raw
+        .trim()
+        .replace(/^type\s+/, '')
+        .replace(/\s+as\s+\w+$/i, '');
       if (cleaned) out.add(cleaned);
     }
   }
@@ -800,13 +798,27 @@ if (JSON_OUT) {
   console.log(`━━━ ${APP} — i18n dead-key audit (v2) ━━━\n`);
   console.log(`Total leaves in ${BASE_LOCALE}.json: ${report.totalLeaves}`);
   console.log(`Hooks traced (use* fns exposing a bound translator): ${report.hookCount}`);
-  console.log(`  ✓ used via static t('leaf'):           ${report.usedStatic} (${pct(report.usedStatic)}%)`);
-  console.log(`  ✓ used via bare 'NS.leaf' literal:     ${report.usedBareLiteral} (${pct(report.usedBareLiteral)}%)`);
-  console.log(`  ⊕ covered by dynamic prefix t(\`p.\${x}\`): ${report.coveredDynamic} (${pct(report.coveredDynamic)}%)`);
-  console.log(`  ✷ covered by wildcard ns (unresolved t(x)): ${report.coveredWildcard} (${pct(report.coveredWildcard)}%)`);
-  console.log(`  ⊕ covered by floating literal (xfile binding): ${report.coveredFloating} (${pct(report.coveredFloating)}%)`);
-  console.log(`  ✗ unused (no code reference):          ${report.unused.length} (${pct(report.unused.length)}%)`);
-  console.log(`Wildcard namespaces (unresolved t(x) hit): ${report.wildcardNamespaces.join(', ') || '(none)'}`);
+  console.log(
+    `  ✓ used via static t('leaf'):           ${report.usedStatic} (${pct(report.usedStatic)}%)`,
+  );
+  console.log(
+    `  ✓ used via bare 'NS.leaf' literal:     ${report.usedBareLiteral} (${pct(report.usedBareLiteral)}%)`,
+  );
+  console.log(
+    `  ⊕ covered by dynamic prefix t(\`p.\${x}\`): ${report.coveredDynamic} (${pct(report.coveredDynamic)}%)`,
+  );
+  console.log(
+    `  ✷ covered by wildcard ns (unresolved t(x)): ${report.coveredWildcard} (${pct(report.coveredWildcard)}%)`,
+  );
+  console.log(
+    `  ⊕ covered by floating literal (xfile binding): ${report.coveredFloating} (${pct(report.coveredFloating)}%)`,
+  );
+  console.log(
+    `  ✗ unused (no code reference):          ${report.unused.length} (${pct(report.unused.length)}%)`,
+  );
+  console.log(
+    `Wildcard namespaces (unresolved t(x) hit): ${report.wildcardNamespaces.join(', ') || '(none)'}`,
+  );
   console.log(`Unresolved (fully dynamic) call sites scanned: ${report.unresolvedCallSites}`);
 
   console.log(`\n— Per-namespace dead keys (top by absolute count) —`);
@@ -814,7 +826,9 @@ if (JSON_OUT) {
   for (const ns of nsSlice) {
     if (ns.unused === 0) continue;
     const pctNs = ((ns.unused / ns.total) * 100).toFixed(0);
-    console.log(`  ${ns.ns.padEnd(36)} ${String(ns.unused).padStart(5)} / ${String(ns.total).padStart(5)}  (${pctNs}% dead)`);
+    console.log(
+      `  ${ns.ns.padEnd(36)} ${String(ns.unused).padStart(5)} / ${String(ns.total).padStart(5)}  (${pctNs}% dead)`,
+    );
   }
 
   console.log(`\n— Sample unused keys (alphabetical) —`);

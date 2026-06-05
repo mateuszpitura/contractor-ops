@@ -909,7 +909,7 @@ export const classificationRouter = router({
   logEscalation: classificationProcedure
     .input(logEscalationInput)
     .mutation(async ({ ctx, input }) => {
-      const assessment = await findOrThrow(
+      await findOrThrow(
         () =>
           ctx.db.classificationAssessment.findFirst({
             where: { id: input.assessmentId },
