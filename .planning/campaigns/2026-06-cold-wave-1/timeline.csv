@@ -1,0 +1,29 @@
+phase,milestone,target_date,owner,status,blockers_resolved,notes
+W0-day1,Approve campaign plan + domain names,2026-06-03,Mateusz,in_progress,,Today
+W0-day2,Buy 2 alt domains + configure DNS,2026-06-04,Mateusz,not_started,plan approved,~30 min on Cloudflare
+W0-day3,Set up 2 Google Workspace mailboxes,2026-06-05,Mateusz,not_started,DNS propagated,~15 min per mailbox after DNS
+W0-day3,Subscribe Apollo + MillionVerifier,2026-06-05,Mateusz,not_started,,~15 min
+W0-day4,Connect Instantly + start warmup,2026-06-06,Mateusz,not_started,mailboxes ready,3-wk warmup window begins
+W0-day4,Cal.com event type live,2026-06-06,Mateusz,not_started,,~10 min
+W0-day5,Subscribe Clay + connect Apollo source,2026-06-08,Mateusz,not_started,Apollo ready,Clay can wait until W1 if budget concern
+W0-day5,Brand domain DMARC=reject + SPF=-all,2026-06-08,Mateusz,not_started,,Defense - blocks brand impersonation
+W1-day8,Loom demo recorded EN + hosted,2026-06-10,Mateusz,not_started,,P0 - needed for first send
+W1-day8,One-pager PDF EN draft + design pass,2026-06-10,Mateusz + designer,not_started,,P0
+W1-day10,One-pager PDF DE + PL translation/proofread,2026-06-12,Mateusz + DE/PL proofreader,not_started,EN one-pager done,Hire native proofreader on Fiverr/Upwork for DE+PL
+W1-day10,Loom DE + PL recorded,2026-06-12,Mateusz,not_started,,P1 - can ship with EN demo if delayed
+W1-day12,List build: 30 leads x 5 hero cells (PL-SMB / PL-PAR / DE-SMB / SA-SMB / PL-SWH),2026-06-14,Mateusz,not_started,Apollo + Clay ready,150 leads for first sub-wave - test reply rate before scaling to 480
+W1-day10,Intent-trigger overlay: hiring-post scrape + new-exec + funding filters,2026-06-12,Mateusz,not_started,base lists started,LV-01/02/03 - re-order hero lists by hot/warm/cold. See sourcing-triggers.md (~7.5h parallel to warmup)
+W1-day12,Verify emails via MillionVerifier,2026-06-14,Mateusz,not_started,leads built,Drop catch-all + risky from active send
+W1-day12,Hero copy native QA (15 templates already drafted in copy_templates.csv),2026-06-14,Mateusz + proofreaders,not_started,copy drafted,5 hero cells x 3 steps DONE - only native DE/PL QA pass needed
+W1-day12,Lead magnets drafted: LM-01 KSeF / LM-02 E-Rechnung / LM-03 Saudization calc,2026-06-14,Mateusz + me,not_started,,LV-05/07 - liability-free CTA + list builder. See lead-magnets.md
+W2-day15,Copy review + DE/PL native QA,2026-06-17,Mateusz + proofreaders,not_started,copy drafted,DE+PL native eyes mandatory - cold copy reads broken if MT-only
+W2-day15,Unsubscribe page live,2026-06-17,Mateusz,not_started,,GDPR gate before send
+W3-day22,Warmup window complete (3 wk),2026-06-24,Instantly auto,not_started,,Daily ramp to 50/inbox achieved
+W3-day22,Launch sub-wave 1: 150 leads (5 hero cells),2026-06-24,Mateusz,not_started,everything above,Start Mon 10:00 local time per geo - hot triggers first
+W0-day5,NL wave-1.5: buy 3rd domain (contractorops.eu) + DNS + Workspace mailbox,2026-06-08,Mateusz,not_started,,Parallel track - 3-wk warmup starts now so NL can send ~mid-July without delaying 24 Jun
+W2-day15,NL wave-1.5: Wet DBA + Peppol compliance research + NL-SMB/NL-AGE list,2026-06-17,Mateusz,not_started,NL domain warming,LV-11 - DBA enforcement resumed Jan 2025; English copy ready in copy_templates.csv
+W5-day33,NL wave-1.5 launch: NL-SMB + NL-AGE (~60 leads),2026-07-15,Mateusz,not_started,NL warmup complete,~3 wks after main launch - separate signal read for NL market
+W3-day24,First metrics review: open / reply / bounce,2026-06-26,Mateusz,not_started,sends in flight,If bounce >2% or open <40% - pause + diagnose
+W4-day29,Iterate copy based on W3 data,2026-07-01,Mateusz,not_started,metrics in,A/B winner -> scale
+W4-day29,Build remaining 360 leads (12 cells),2026-07-01,Mateusz,not_started,W3 signal positive,Only if W3 hit baseline metrics
+W5-day36,Launch sub-wave 2: remaining 360 leads,2026-07-08,Mateusz,not_started,,Full wave live

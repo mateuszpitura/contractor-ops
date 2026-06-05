@@ -1,0 +1,23 @@
+lever_id,category,lever,market_fit,effort,impact,liability,fits_2wk_buffer,decision,notes
+LV-01,trigger,Active contractor/freelance hiring-post sourcing,all geos,medium,very_high,none,yes,ADD_NOW,"Companies posting 5+ contractor/freelance ads = pain NOW. 2-4x reply vs static lists. Re-orders existing hero cells by intent, no new copy needed. Highest ROI add. See sourcing-triggers.md"
+LV-02,trigger,New-in-role exec (<90 days) — People/Finance/Ops,all geos,low,high,none,yes,ADD_NOW,New exec = buying window for quick wins. Apollo/Clay detect job-change. Prepend 'congrats on the new role' angle.
+LV-03,trigger,Recent funding round,DE/PL/UK + Gulf (Magnitt),low,medium,none,yes,ADD_NOW,Just-raised = scaling headcount = contractor mix grows. Crunchbase/Dealroom/Magnitt. Lower urgency than hiring-post but easy.
+LV-04,trigger,Cross-border expansion announcement,all geos,medium,medium,none,partial,WAVE_2,New-country office = cross-border contractor compliance need. Harder to source at scale; defer.
+LV-05,offer,Lead magnet — KSeF/E-Rechnung/Saudization readiness checklist,PL/DE/Gulf,low,high,none,yes,ADD_NOW,"Deterministic + educational = liability-free. Triples as: content lead capture + low-friction cold CTA + LinkedIn lead gen. See lead-magnets.md"
+LV-06,offer,Free 1-page 'readiness map' teardown for first 20,all geos,low_setup_med_deliver,high,low,yes,ADD_NOW,"Founder-led manual teardown converts cold->meeting high. Framed as readiness/checklist NOT legal verdict. Added as step-2 CTA variant."
+LV-07,offer,Interactive Saudization band self-calculator,Gulf,low,medium,low,yes,ADD_NOW,Arithmetic vs public MHRSD bands = viral + liability-free in Gulf. Embeds in landing + shareable. Part of lead-magnets.md
+LV-08,segment,PL IT software houses vertical (PL-SWH),PL,low,high,none,yes,ADD_NOW,"B2B contractor model is THE default in PL software houses; KSeF hits them hardest. Native PL. New sharp sequence added."
+LV-09,segment,UK CIS construction subcontractor vertical,UK,medium,medium,low,partial,WAVE_2,CIS verification is specific + underserved; verticalizes UK-AGE. Defer to wave 2.
+LV-10,segment,DE healthcare Honorarärzte/Honorarpflege,DE,medium,high,HIGH,no,WAVE_2_AFTER_GUARDRAILS,BSG Scheinselbst. case law is literally about them = acute. BUT documentation-liability surface; needs OC+RDG sign-off first. Wave 2.
+LV-11,geo,Netherlands (Wet DBA + e-invoicing),NL,high,high,medium,no,WAVE_1.5_CONFIRMED,"CONFIRMED wave 1.5: 3rd domain contractorops.eu warms now, NL-SMB+NL-AGE send ~mid-July (15 Jul), separate signal read. Does NOT delay 24 Jun. DBA enforcement resumed Jan 2025; ops+Peppol lead, DBA as documentation."
+LV-12,geo,Ireland (IR35-adjacent + tech hub),IE,medium,medium,medium,no,WAVE_2,English market, contractor-heavy tech. New geo overhead. Defer.
+LV-13,geo,Wider Gulf — Qatar/Bahrain/Kuwait nationalization,Gulf,medium,medium,low,partial,WAVE_2,Qatarization/Bahrainization mirror Saudization. Ports SA playbook. Defer until SA proves.
+LV-14,channel,Webinar/roundtable — 'KSeF for B2B contractors' live Q&A,PL first,med_high,high,low,no,SKIP_Q3,"SKIPPED Q3 per user decision. Founder time goes to cold + content + partnerships. Revisit at W12 gate if a list exists to invite."
+LV-15,channel,Cold calling layer (Apollo dialer) for PL/DE SMB,PL/DE,high,medium,none,partial,OPTIONAL,PL/DE SMB answer phones. High founder time. Optional intensifier post-send if email signal weak.
+LV-16,channel,Warm intros / founder network activation,all,low,very_high,none,yes,ADD_NOW,Highest-converting channel period. Audit Mateusz's network for any DE/PL/UK/Gulf contractor-adjacent contacts -> direct intro, skip cold cadence.
+LV-17,channel,Referral loop from first customers,all,low,high,none,partial,M2,Can't run until first customers land. Build the ask into pilot onboarding.
+LV-18,channel,LinkedIn outreach (Heyreach),all,med,high,med_ban_risk,no,M3_ONLY,Deferred per GTM_PLAN. Ban risk before cold email proven. Hold.
+LV-19,proof,Founder thought-leadership on LinkedIn,all,low,medium,none,yes,ADD_NOW,Mateusz posts 2-3x/wk on jurisdictional pain. Free, compounds, warms cold list. Folds into content plan.
+LV-20,proof,Comparison/teardown content (vs Deel/Remote),all,low,medium,none,yes,IN_PLAN,Already in content-seo/calendar.csv ART-05/06.
+LV-21,offer,Money-back guarantee on e-invoicing deliverable,all,low,medium,none,yes,CONSIDER,Deterministic outcome = safe to guarantee. De-risks buyer. Only on e-invoicing (never classification).
+LV-22,trigger,Competitor-stack signal (uses Deel/Remote),all,medium,medium,none,partial,WAVE_2,Using an EOR = category-aware = warmer. BuiltWith/Clay tech detection. Defer sourcing complexity.

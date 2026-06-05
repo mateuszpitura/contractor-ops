@@ -1,0 +1,4 @@
+email,domain,reason,source_lead_id,suppressed_at,notes
+example-opt-out@hays.de,hays.de,explicit_unsubscribe,DE-AGE-001,2026-06-15,SAMPLE - shows shape; remove before production
+example-bounce@invalid.tld,invalid.tld,hard_bounce,DE-SMB-002,2026-06-15,SAMPLE
+example-competitor@deel.com,deel.com,do_not_contact,,2026-06-15,SAMPLE - blanket competitor domain block

@@ -1,0 +1,100 @@
+pitch_id,partner_type,deal_type,language,step,day_offset,subject_line,body_markdown,cta,notes
+PITCH-01,invoicing_pl,integration,pl,1,0,"Integracja z contractor-ops: KSeF + klasyfikacja B2B dla Waszych klientów","Cześć {{first_name}},
+
+prowadzę contractor-ops - SaaS do compliance kontraktorów B2B na rynkach EU + Gulf. Piszę bo widzimy stałe pytanie od użytkowników {{company_name}}: ""jak ogarnąć klasyfikację B2B vs etat plus KSeF w jednym przepływie"", a oba to obecnie oddzielne projekty.
+
+Mamy gotowe API + UI dla:
+- klasyfikacji statusu B2B/UoP z audytowalnym uzasadnieniem
+- generacji + wysyłki faktur w KSeF z poziomu kontraktora
+- pełnego cyklu kontrakt → faktura → akceptacja
+
+Pomysł: Wasi klienci klikają ""Zarządzaj kontraktorami"" w {{company_name}} i lądują w naszym module (whitelabel albo branded). My obsługujemy compliance, Wy zachowujecie relację + retencję.
+
+Czy ma sens 30 minut o tym pogadać? {{cal_link_long}}
+
+Pozdrawiam,
+Mateusz Pitura
+contractor-ops",book 30-min partnership intro,Cel = inFakt / Fakturownia / wfirma. Use Polish business style.
+PITCH-02,accounting_de,integration,de,1,0,"Integration mit contractor-ops: § 7a-Statusprüfung + GoBD-konforme Rechnungslegung für Ihre Kunden","Hallo {{first_name}},
+
+ich leite contractor-ops, eine SaaS für Contractor-Compliance auf EU- und Gulf-Märkten. Wir hören in jedem Discovery-Call mit {{company_name}}-Kunden dieselbe Frage: ""Wie automatisieren wir Scheinselbstständigkeits-Prüfung plus e-Rechnung 2025/2026 in einem Workflow?"" – aktuell sind das zwei getrennte Projekte.
+
+Wir bieten API + UI für:
+- § 7a SGB IV Statusprüfung als Entscheidungsbaum mit BSG-Rechtsprechungs-Referenzen
+- GoBD-konforme Rechnungs-Generation + Wachstumschancengesetz e-Invoice
+- Vollständiger Audit-Trail pro Vertragspartner
+
+Vorschlag: Ihre Kunden klicken auf ""Freie Mitarbeiter verwalten"" in {{company_name}} und landen in unserem Modul (whitelabel oder co-branded). Wir tragen die Compliance, Sie behalten Kunden + Retention.
+
+Macht es Sinn, 30 Minuten dazu zu sprechen? {{cal_link_long}}
+
+Beste Grüße,
+Mateusz Pitura
+contractor-ops",book 30-min partnership intro,Cel = DATEV / Lexware / sevDesk / Personio. Formal DE business register.
+PITCH-03,payment_processor,revshare,en,1,0,"Revshare partnership: Contractor compliance layer for {{company_name}} merchants","Hi {{first_name}},
+
+I'm the founder of contractor-ops - SaaS for contractor compliance across EU and Gulf markets. Writing because we keep meeting {{company_name}} merchants who solved payouts with you but still patch contractor classification, e-invoicing, and (in the Gulf) Saudization tracking with spreadsheets + Steuerberater retainers.
+
+We provide an API + embed for:
+- Classification (§7a SGB IV / IR35 SDS / Polish B2B-vs-UoP / Saudization Nitaqat)
+- Compliant invoicing (KSeF, Wachstumschancengesetz e-invoice, ZATCA)
+- Auditable contractor lifecycle
+
+Proposal: revenue-share co-sell. Your CSM / BD team flags merchants whose compliance pain you currently can't solve; we close them; you get 20-30% MRR per refer for the contract lifetime. No build cost on your side.
+
+Worth 30 minutes to sketch the mechanics? {{cal_link_long}}
+
+Best,
+Mateusz Pitura
+contractor-ops
+
+P.S. Quick context: {{relevant_partner_signal_or_recent_news}}",book 30-min revshare intro,"Cel = Stripe / Wise / Mollie / Revolut / Tipalti. Higher BD ROI than direct sale."
+PITCH-04,hrtech,integration,en,1,0,"contractor-ops × {{company_name}}: filling the contractor-compliance gap in your HR suite","Hi {{first_name}},
+
+I run contractor-ops - SaaS for contractor compliance on EU + Gulf markets. Reaching out because {{company_name}} sits at the exact spot where HR teams ask for contractor management - and the typical answer is ""we focus on employees; talk to Deel or your accountant for contractors.""
+
+We built the layer that fills that gap:
+- Classification engine (jurisdiction-specific: DE §7a / UK IR35 SDS / PL B2B / SA Nitaqat)
+- Compliant invoicing per jurisdiction (KSeF / Wachstumschancengesetz / ZATCA)
+- Embedded UI or API - your branding, our compliance
+
+Proposal: marketplace listing + warm-intro referrals from your Customer Success team. Mutual customers get a one-click connector; you keep the HR relationship; we own the compliance product.
+
+Worth 30 minutes? {{cal_link_long}}
+
+Best,
+Mateusz Pitura
+contractor-ops",book 30-min partnership intro,"Cel = Personio / HiBob / Bayzat. HR adjacency angle."
+PITCH-05,competitor_adjacent,marketplace_listing,en,1,0,"App marketplace listing — contractor-ops adds {{niche_capability}} to {{company_name}}","Hi {{first_name}},
+
+I'm the founder of contractor-ops. We focus on jurisdictional compliance edges that broader EOR platforms - {{company_name}} included - intentionally don't cover deeply: Polish B2B-vs-UoP classification, German Scheinselbstständigkeit § 7a verdicts, UK IR35 SDS automation, and Saudi Nitaqat real-time tracking.
+
+When your customers hit these edges, they currently either:
+- accept the limitation and use spreadsheets for that slice, or
+- churn to a specialist.
+
+A marketplace listing would let them stay on {{company_name}} as primary while we handle the niche - both of us win.
+
+Would your app partner program team be open to a 30-minute scoping call? {{cal_link_long}}
+
+Best,
+Mateusz Pitura
+contractor-ops",book 30-min marketplace intro,"Cel = Deel / Remote / Multiplier. Position as COMPLEMENT not COMPETE."
+PITCH-06,any,—,en,2,5,"Re: {{previous_subject}}","Hi {{first_name}},
+
+Following up on the partnership outreach below. Three things if useful:
+
+1. We've prepped a 5-page deck specifically for {{partner_type}} partnerships - I can share if it's faster than a call.
+
+2. If partnerships isn't your remit anymore, who would you point me at?
+
+3. Open to a written intro instead of meeting if scheduling is hard.
+
+Thanks,
+Mateusz",ask for referral or written intro,Universal follow-up step 2 - works across partner types.
+PITCH-07,any,—,en,3,12,"Last note — should I close the loop?","Hi {{first_name}},
+
+Closing the loop on the partnership note from {{day_X_ago}}. Assuming this isn't the right timing - want me to circle back in Q4 instead?
+
+Best,
+Mateusz",break-up close,Universal step 3 break-up - lower CTA than buyer break-up because partnership timing varies more.

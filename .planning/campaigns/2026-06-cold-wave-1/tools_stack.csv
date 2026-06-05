@@ -1,0 +1,26 @@
+tool_id,category,tool,plan,monthly_cost_usd,one_time_usd,when_to_add,replaces,why,alternative,notes
+T-01,data_enrichment,Apollo.io,Basic,59,0,day_1,—,2500 credits/mo + waterfall enrichment + filters + sequences,Lemlist+Hunter combo $89,Already in asset_specs ASSET-11
+T-02,sending,Instantly.ai,Growth,47,0,day_1,—,5k emails/mo + unlimited mailboxes + warmup + reply detection,Smartlead $39 (close substitute),Already in asset_specs ASSET-10
+T-03,enrichment_premium,Clay.com,Free first then Launch conditional,0,0,day_1 (free) / W3 gate (Launch +185),—,Personalization-hook generation via Claude + ICP scoring + waterfall,Apollo + manual,Already in asset_specs ASSET-12
+T-04,email_verify,MillionVerifier,10k credits one-time,0,39,day_1,—,Never-expire credits; batch verify pre-send drops bounce <2%,NeverBounce $40 / Hunter Verifier $49,Already in asset_specs ASSET-13
+T-05,mailbox,Google Workspace,Starter x2,9.50 promo / 19 normal,0,day_1,—,1 mailbox per sending domain + Gmail SMTP,Zoho Mail $1/mailbox (cheaper but worse delivery rep),Already in asset_specs ASSET-09
+T-06,domain,Cloudflare Registrar,—,4,0,day_1,—,getcontractorops.com + contractorops.io at-cost,Namecheap (similar),Already in asset_specs ASSET-08
+T-07,scheduling,Cal.com,Individuals Free,0,0,day_1,—,Unlimited event types + Stripe integration + browser ext + Calendly import,Calendly Free (15-min limit),Already in asset_specs ASSET-07
+T-08,crm,HubSpot,Free CRM,0,0,day_1,Sheets-only tracking after first 10 deals,1M contacts + deal pipeline + Gmail/Cal sync + email tracking + free meeting scheduler,Pipedrive $14 / Attio $30/seat / Salesflare $29,Bridges first 3 months before paid CRM needed
+T-09,meeting_record,Fathom,Free,0,0,before_first_meeting,manual note-taking,Auto-transcript + AI summary + HubSpot sync,Granola $19 / Read.ai Free / Otter Free,5 hr/mo cap on free tier - upgrade $19 if exceeded
+T-10,analytics_product,PostHog,Self-hosted (already in stack),0,0,day_1,—,Track landing_view + one_pager_download + cal_booking_completed + unsubscribe_submitted with UTM per cell,—,Per CLAUDE.md already used; reuse same instance
+T-11,analytics_seo,Google Search Console,Free,0,0,day_1,—,Impressions + clicks + queries per article; daily export to Sheet via API,—,Mandatory for content workstream
+T-12,analytics_keyword,Google Keyword Planner,Free (needs Ads account with $0 budget),0,0,day_1,—,Search volume + competition for keyword research,Ahrefs Lite $108 (better but $108),Free works for first 3 mo; upgrade only if traffic >1k/mo
+T-13,analytics_dashboard,Looker Studio,Free,0,0,after_first_send,Sheets pivot tables,Live dashboard from Sheets source + cross-channel widgets,Metabase self-hosted (overkill),5 tabs - wave overview / cells leaderboard / geo heat / copy AB / channel mix
+T-14,seo_research_paid_later,Ahrefs Webmaster Tools,Free for own sites,0,0,day_1,—,Limited backlink + tech-SEO audit for own domains,Ahrefs Lite $108 / Semrush Pro $140,Skip paid until M3 traffic justifies
+T-15,content_brief,Claude API / Cursor / Claude Code,already-have,0,0,day_1,manual writing,Article briefs + draft generation,GPT API,Already paying for Claude Max / API; reuse
+T-16,newsletter,Substack,Free,0,0,M1 (after first 2 articles published),—,Free + built-in network distribution + comments + paid-tier upgrade path,Buttondown $9 (better UX but no network),Skip Beehiiv $0 free until 2.5k subs
+T-17,comms,Slack,Free Workspace,0,0,day_1,Discord / Telegram,90-day history + webhook channels for #gtm-replies + #gtm-bookings + #gtm-content + #gtm-partnerships + #gtm-alerts,—,Free is enough for solo founder
+T-18,task_tracking,Linear,Free,0,0,day_1,GitHub Issues,250 issues + 2 teams; or just use GSD .planning/,GitHub Issues (in-repo),Either works; pick GitHub Issues if you want one-system flow
+T-19,esign,SignWell,Free or $8/mo,0 / 8,0,M2-M3 (first pilot),—,3 docs/mo free; $8 unlimited,PandaDoc Free (3 docs lifetime) / DocuSign Personal $10,Don't subscribe until first pilot
+T-20,billing,Stripe,Standard,0 (1.5% of revenue),0,M2-M3 (first pilot),—,Payment link → pilot fee + recurring billing,Mollie (EU only) / Adyen (enterprise),Don't subscribe until first pilot - use existing entity
+T-21,proposal,Tally,Free,0,0,M2 (first proposal),Google Doc,Form-style proposal builder + Stripe payment link,PandaDoc Free,Optional - Google Doc + Stripe link works too
+T-22,linkedin_outreach,Heyreach,Subscription,79,0,M3+ ONLY,—,LinkedIn DM automation + LinkedIn-Sales-Nav integration,Expandi $99 / La Growth Machine $80,DO NOT add before M3 - LI ban risk if cold mail not yet proven
+T-23,referral_tracking,Sheet only (manual) -> Rewardful $39 if scaling,—,0 / 39,0,M3+ partnerships,—,Track partner referrals + revenue share calculation,PartnerStack $500 (enterprise),Manual Sheet first; Rewardful only if 5+ active partners
+T-24,social_listening,Brand24 Free trial or manual Google Alerts,Free,0,0,day_1,—,Track 'contractor-ops' + competitor mentions + jurisdiction-pain searches,Mention $29,Free Alerts + LinkedIn search is enough for solo founder
+T-25,competitive_intel,Deel/Remote/Multiplier public pricing pages + manual,Free,0,0,monthly,—,Track competitor pricing/feature drift,Compass + Klue (enterprise),Save to .planning/intel/ monthly

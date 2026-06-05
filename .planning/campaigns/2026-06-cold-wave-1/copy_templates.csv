@@ -1,0 +1,226 @@
+cell_id,segment,geo,language,variant,step,day_offset,subject_line,body_markdown,cta,notes
+DE-AGE,agency,DE,de,A,1,0,"Scheinselbstständigkeit: audit-fest dokumentieren statt raten","Hallo {{first_name}},
+
+bei {{company_name}} platzieren Sie laut LinkedIn aktuell mehr als 500 Kontraktoren monatlich beim deutschen Mittelstand. In dieser Größenordnung wird nicht die Entscheidung selbst zum Problem, sondern die Dokumentation: Wenn die DRV-Clearingstelle oder ein Prüfer nachfragt, muss pro Engagement nachvollziehbar belegt sein, worauf die Einschätzung beruht.
+
+contractor-ops ist dafür die Software-Schicht – kein Rechts- oder Steuerberater-Ersatz: wir strukturieren die Kriterien (§ 7a SGB IV), markieren Risiko-Indikatoren pro Vertragspartner und bereiten das Unterlagenpaket für Ihre § 7a-Anfrage auf. Die Statusentscheidung trifft Ihr Steuerberater bzw. die Clearingstelle – wir machen sie schnell und auditierbar.
+
+Macht es Sinn, 15 Minuten dazu zu sprechen? {{cal_link}}
+
+Beste Grüße,
+Mateusz Pitura
+contractor-ops
+
+P.S.: 2-Minuten-Demo: {{demo_url}}",book 15-min call,"DE-RISKED per positioning-and-liability.md: documentation + risk-flag + §7a prep + adviser routing. NO verdict claim. Software not Rechtsberatung."
+DE-AGE,agency,DE,de,A,2,4,"Re: Scheinselbstständigkeit: audit-fest dokumentieren statt raten","Hallo {{first_name}},
+
+ich weiß, dass Sie viele solcher Anfragen bekommen. Daher kurz und konkret: drei Agenturen Ihrer Größenordnung haben uns gesagt, dass die manuelle Statusdokumentation 0,5 FTE bindet – und im Prüffall trotzdem lückenhaft ist.
+
+Falls das bei Ihnen ähnlich ist: hier eine Loom-Demo (3 Min): {{demo_url}}. Wir arbeiten dabei mit Steuerberatern zusammen, die die eigentliche Statusentscheidung tragen – unsere Software liefert nur die belastbare Dokumentation.
+
+Wenn das Thema bei jemand anderem in Ihrem Team besser aufgehoben ist – könnten Sie mich weiterleiten?
+
+Danke,
+Mateusz",demo click + referral ask,Follow-up with referral fork + adviser-carries-decision framing.
+DE-AGE,agency,DE,de,A,3,9,"Letzte Mail – darf ich Sie löschen?","Hallo {{first_name}},
+
+ich nehme an, dass Status-Dokumentation gerade keine Priorität hat. Soll ich Sie aus meiner Liste streichen?
+
+Beste Grüße,
+Mateusz",break-up close,"Break-up close - DSGVO-compliant exit. Sometimes triggers the highest reply rate."
+PL-SMB,smb,PL,pl,A,1,0,"KSeF od 02.2026 + kontraktorzy B2B w {{company_name}}","Cześć {{first_name}},
+
+zgodnie z planem Ministerstwa Finansów KSeF staje się obowiązkowy od lutego 2026. Dla firm w skali {{company_name}} (~{{company_size_employees}} osób + miks B2B kontraktorów) wąskie gardło to nie samo wystawianie faktur w KSeF – tylko sklejka: kontrakt → faktura → akceptacja → KSeF, w przepływie który dziś biegnie przez 3–4 narzędzia.
+
+W contractor-ops zbudowaliśmy ten pipeline natywnie pod KSeF plus operacyjne zarządzanie kontraktorami (umowy B2B, płatności, akceptacje). Jeden dashboard, jedna baza, audyt każdego dokumentu.
+
+Czy ma sens 15 minut o tym pogadać? Jeśli tak: {{cal_link}}
+
+Pozdrawiam,
+Mateusz Pitura
+contractor-ops
+
+P.S.: 2-minutowe demo: {{demo_url}}",book 15-min call,"Go-to lever — KSeF deadline, deterministic, lowest liability. Classification removed from promise; ops + e-invoicing only."
+PL-SMB,smb,PL,pl,A,2,4,"Re: KSeF od 02.2026 + kontraktorzy B2B w {{company_name}}","Cześć {{first_name}},
+
+domyślam się, że KSeF jest już na Waszej liście. Pytanie raczej brzmi: czy łączysz to z systemem zarządzania kontraktorami, czy traktujesz jako oddzielny projekt księgowy.
+
+Jeśli to drugie – warto się odezwać. U trzech klientów którzy próbowali rozdzielnie, integracja zjadła 2 razy więcej czasu niż samo wdrożenie KSeF.
+
+3-minutowe Loom: {{demo_url}}
+
+Mateusz",demo click,Reframes objection ('we already have KSeF plan').
+PL-SMB,smb,PL,pl,A,3,9,"Ostatnia wiadomość – czy mam Cię odznaczyć?","Cześć {{first_name}},
+
+zakładam że temat KSeF i kontraktorów nie jest teraz priorytetem. Czy mam Cię usunąć z listy?
+
+Pozdrawiam,
+Mateusz",break-up close,Break-up. RODO-compliant exit.
+UK-AGE,agency,UK,en,A,1,0,"IR35 SDS: prove reasonable care, without the FTE drain","Hi {{first_name}},
+
+{{company_name}} is one of the larger IR35 operators in the UK staffing market. Since the 2021 reform the status determination (SDS) sits with the client and the legal test is whether 'reasonable care' was taken — so the real exposure isn't the decision, it's being able to evidence it if HMRC asks.
+
+contractor-ops is the software layer for that — not a legal adviser: we structure the SDS criteria, capture the evidence per engagement, and produce an audit trail that demonstrates reasonable care. The determination stays with you (or your advising accountant); we make it fast and defensible.
+
+Worth a 15-min call? {{cal_link}}
+
+Best,
+Mateusz Pitura
+contractor-ops
+
+P.S.: 2-min demo: {{demo_url}}",book 15-min call,"DE-RISKED per positioning-and-liability.md: reasonable-care evidence + audit trail. Client issues SDS. NO vendor determination claim."
+UK-AGE,agency,UK,en,A,2,4,"Re: IR35 SDS: prove reasonable care, without the FTE drain","Hi {{first_name}},
+
+I know IR35 inboxes are a graveyard of SaaS pitches. So briefly: three agencies in your bracket told us that manual SDS evidence-gathering burns 0.5 FTE plus £40k/yr legal retainer — and still leaves gaps when HMRC asks for the working.
+
+If that's roughly your shape, here's a 3-min Loom: {{demo_url}}. We work alongside your accountant, who carries the determination — our software just makes the evidence defensible.
+
+If this should go to someone else on your team, who would you point me at?
+
+Thanks,
+Mateusz",demo click + referral ask,Self-aware acknowledgement + adviser-carries-decision framing.
+UK-AGE,agency,UK,en,A,3,9,"Last message – should I take you off my list?","Hi {{first_name}},
+
+Guessing IR35 evidence automation isn't a priority right now. Want me to drop you from my list?
+
+Best,
+Mateusz",break-up close,Break-up close.
+SA-SMB,smb,SA,en,A,1,0,"Nitaqat green band – without the spreadsheet juggling","Hi {{first_name}},
+
+{{company_name}} sits in the bracket where Saudization tracking has to balance Vision 2030 ambitions against actual hire-mix economics. Most teams we talk to run this in 3 spreadsheets and a monthly GOSI export – and the Nitaqat band only shows the truth at quarter-end.
+
+We built a Saudization dashboard that tracks ratio per cost center in real time, projects band-change risk 90 days out, and flags any contractor mix that would push you toward yellow. Local nationals counted per Ministry of Human Resources logic.
+
+Worth 15 minutes? {{cal_link}}
+
+Best,
+Mateusz Pitura
+contractor-ops
+
+P.S.: 2-min demo: {{demo_url}}",book 15-min call,"SA hook = Nitaqat band + Vision 2030. Dashboard mirrors govt data — low liability."
+SA-SMB,smb,SA,en,A,2,4,"Re: Nitaqat green band – without the spreadsheet juggling","Hi {{first_name}},
+
+If Nitaqat tracking sits with someone else now – HR Director, Saudization Officer – could you point me their way?
+
+3-min Loom in case useful: {{demo_url}}
+
+Thanks,
+Mateusz",referral ask,Forward-friendly.
+SA-SMB,smb,SA,en,A,3,9,"Last message – should I close the loop?","Hi {{first_name}},
+
+Assuming Saudization automation isn't a priority right now. Want me to drop you?
+
+Best,
+Mateusz",break-up close,Break-up close.
+DE-SMB,smb,DE,de,A,1,0,"E-Rechnung 2026/2027 + freie Mitarbeiter: ein Workflow statt drei Tools","Hallo {{first_name}},
+
+mit dem Wachstumschancengesetz wird die strukturierte E-Rechnung (XRechnung / ZUGFeRD) für B2B schrittweise Pflicht – Empfang bereits seit 2025, Ausstellungspflichten folgen. Bei {{company_name}} mit Mischung aus Festangestellten und freien Mitarbeitern ist der Engpass selten das Rechnungsformat selbst, sondern die Kette: Vertrag → Leistung → Rechnung → Freigabe → E-Rechnung, die heute über drei getrennte Tools läuft.
+
+contractor-ops bündelt das in einem Workflow: E-Rechnung nativ plus operative Verwaltung freier Mitarbeiter (Verträge, Zahlungen, Freigaben, Audit-Trail pro Beleg). Reines Software-/Workflow-Tool – kein Steuerberater-Ersatz.
+
+Macht es Sinn, 15 Minuten dazu zu sprechen? {{cal_link}}
+
+Beste Grüße,
+Mateusz Pitura
+contractor-ops
+
+P.S.: 2-Minuten-Demo: {{demo_url}}",book 15-min call,"DE-SMB hero - e-invoicing primary (deterministic, deadline, lowest liability). Ops platform secondary. No classification verdict."
+DE-SMB,smb,DE,de,A,2,4,"Re: E-Rechnung 2026/2027 + freie Mitarbeiter: ein Workflow statt drei Tools","Hallo {{first_name}},
+
+kurz nachgefasst: die meisten Teams Ihrer Größe behandeln E-Rechnung und Contractor-Verwaltung als zwei Projekte – und verlieren genau an der Schnittstelle Zeit (doppelte Stammdaten, manuelle Freigaben, kein durchgängiger Audit-Trail).
+
+Falls das bei Ihnen ähnlich ist, hier eine 3-Minuten-Demo: {{demo_url}}
+
+Wenn das Thema bei jemand anderem (Finance / People Ops) besser aufgehoben ist – könnten Sie mich weiterleiten?
+
+Danke,
+Mateusz",demo click + referral ask,Reframes 'we already have e-invoicing' objection toward the integration gap.
+DE-SMB,smb,DE,de,A,3,9,"Letzte Mail – darf ich Sie löschen?","Hallo {{first_name}},
+
+ich nehme an, dass E-Rechnung + Contractor-Workflow gerade keine Priorität hat. Soll ich Sie aus meiner Liste streichen?
+
+Beste Grüße,
+Mateusz",break-up close,Break-up close - DSGVO-compliant exit.
+PL-PAR,partner,PL,pl,A,1,0,"Partnerstwo: KSeF + zarządzanie kontraktorami dla klientów {{company_name}}","Cześć {{first_name}},
+
+prowadzę contractor-ops – SaaS do operacyjnej obsługi kontraktorów B2B (umowy, płatności, akceptacje) z natywnym KSeF. Piszę bo Wasi klienci w {{company_name}} od lutego 2026 muszą ogarnąć KSeF, a przy okazji pytają o kwestie statusu B2B vs etat – i to Wy, jako doradca, podejmujecie tę ocenę.
+
+Pomysł partnerstwa: my dostarczamy software (KSeF + pipeline kontraktorski + audytowalna dokumentacja), Wy zostajecie stroną która prowadzi klienta i podejmuje ocenę podatkową/statusową. Model: revenue-share za każdego klienta którego przyprowadzicie, albo whitelabel pod Waszą marką.
+
+To zdejmuje z nas ryzyko oceny (Wy macie licencję i OC), a Wam daje narzędzie zamiast Excela. Czy ma sens 30 minut o tym pogadać? {{cal_link_long}}
+
+Pozdrawiam,
+Mateusz Pitura
+contractor-ops",book 30-min partnership intro,"PL-PAR PROMOTED to determination-layer per positioning-and-liability.md - doradca carries the status/tax assessment (licensed+insured); we are infra. Revenue-share/whitelabel. 30-min CTA (partner not buyer)."
+PL-PAR,partner,PL,pl,A,2,5,"Re: Partnerstwo: KSeF + zarządzanie kontraktorami dla klientów {{company_name}}","Cześć {{first_name}},
+
+nawiązując do poprzedniej wiadomości – trzy rzeczy jeśli pomocne:
+
+1. Mamy gotowy 1-pager pod biura rachunkowe / doradców – mogę podesłać jeśli szybciej niż rozmowa.
+2. Jeśli partnerstwa nie są w Twojej gestii – kto byłby właściwą osobą?
+3. Otwarty na wstępną rozmowę pisemną zamiast spotkania, jeśli tak wygodniej.
+
+Pozdrawiam,
+Mateusz",send one-pager or referral,Partnership follow-up - lower friction options.
+PL-PAR,partner,PL,pl,A,3,12,"Ostatnia wiadomość – wrócić w Q4?","Cześć {{first_name}},
+
+domykam wątek partnerstwa z poprzedniej wiadomości. Zakładam że to nie jest dobry moment – mam wrócić do tematu w Q4?
+
+Pozdrawiam,
+Mateusz",break-up close,Partnership break-up - softer (timing varies for partners).
+PL-SWH,vertical-software-house,PL,pl,A,1,0,"{{trigger_detail}} + KSeF od 02.2026 – software house na modelu B2B","Cześć {{first_name}},
+
+{{trigger_hook}} – a w software housie gdzie większość zespołu siedzi na B2B, KSeF od lutego 2026 uderza mocniej niż gdziekolwiek: każdy kontraktor to faktura, każda faktura musi przejść przez KSeF, a do tego dochodzi cała operacja (umowy B2B, akceptacje, płatności, rozliczenie projektów).
+
+W contractor-ops spięliśmy to natywnie: KSeF + operacyjne zarządzanie kontraktorami w jednym workflow, z audytem każdego dokumentu. Czyste narzędzie software'owe – ocenę podatkową zostawiamy Waszej księgowości/doradcy.
+
+Czy ma sens 15 minut o tym pogadać? {{cal_link}}
+
+Pozdrawiam,
+Mateusz Pitura
+contractor-ops
+
+P.S.: 2-minutowe demo: {{demo_url}}",book 15-min call,"NEW PL-SWH hero (LV-08). {{trigger_hook}} = hiring-post personalization from sourcing-triggers.md (e.g. '6 ofert B2B na JustJoin w 2 tyg'). e-invoicing lever, zero classification liability."
+PL-SWH,vertical-software-house,PL,pl,A,2,4,"Re: KSeF + software house na B2B – gotowa checklista","Cześć {{first_name}},
+
+bez spotkania na razie – jeśli wygodniej, odeślę 1-stronicową checklistę gotowości KSeF dla firm z kontraktorami B2B (15 punktów, co musi być spięte przed lutym). Odpisz 'checklista' i wysyłam.
+
+A jeśli wolisz od razu zobaczyć jak to wygląda spięte: 3-minutowe Loom {{demo_url}}
+
+Pozdrawiam,
+Mateusz",reply 'checklista' OR demo,"LV-06 low-friction CTA: lead magnet LM-01 zamiast calla. Obniża próg odpowiedzi, checklista sprzedaje call."
+PL-SWH,vertical-software-house,PL,pl,A,3,9,"Ostatnia wiadomość – czy mam Cię odznaczyć?","Cześć {{first_name}},
+
+zakładam że KSeF + workflow kontraktorów nie jest teraz priorytetem. Czy mam Cię usunąć z listy?
+
+Pozdrawiam,
+Mateusz",break-up close,Break-up. RODO-compliant exit.
+NL-SMB,smb,NL,en,A,1,0,"ZZP'ers + Wet DBA: keeping the evidence trail clean since enforcement resumed","Hi {{first_name}},
+
+Since the Belastingdienst resumed active Wet DBA enforcement in January 2025, the exposure for teams like {{company_name}} that engage ZZP'ers isn't the engagement itself — it's being able to show, per engagement, that the working relationship was set up and documented properly if you're asked.
+
+contractor-ops is the software layer for that: it runs the contractor operations (contracts, Peppol e-invoicing, payments, approvals) and keeps an audit trail per ZZP engagement. It's a workflow tool, not a tax adviser — the determination stays with you or your belastingadviseur; we make it fast and defensible.
+
+Worth a 15-min call? {{cal_link}}
+
+Best,
+Mateusz Pitura
+contractor-ops
+
+P.S.: 2-min demo: {{demo_url}}",book 15-min call,"NL-SMB wave 1.5. Ops + Peppol e-invoicing lead, DBA as documentation (adviser/client decides) per positioning-and-liability.md. No verdict claim."
+NL-SMB,smb,NL,en,A,2,4,"Re: ZZP'ers + Wet DBA: keeping the evidence trail clean","Hi {{first_name}},
+
+Quick follow-up: most teams treat ZZP administration and e-invoicing as two separate things and lose time at the seam — duplicate master data, manual approvals, no continuous audit trail when the Belastingdienst asks for the working.
+
+3-min Loom if useful: {{demo_url}}. We work alongside your belastingadviseur, who carries the determination — our software just makes the evidence defensible.
+
+If this should go to someone else (Finance / Ops), who would you point me at?
+
+Thanks,
+Mateusz",demo click + referral ask,Integration-gap reframe + adviser-carries-decision framing.
+NL-SMB,smb,NL,en,A,3,9,"Last message – should I close the loop?","Hi {{first_name}},
+
+Guessing ZZP + e-invoicing workflow isn't a priority right now. Want me to drop you from my list?
+
+Best,
+Mateusz",break-up close,Break-up close. GDPR-compliant exit.
