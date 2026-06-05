@@ -23,7 +23,7 @@ export function UpgradeInlineBanner({ featureName, requiredTier }: UpgradeInline
     <div
       role="status"
       aria-live="polite"
-      className="flex h-full flex-col gap-3 border-l-4 border-primary bg-primary/5 py-3 px-6">
+      className="flex h-full flex-col gap-3 border-s-4 border-primary bg-primary/5 py-3 px-6">
       <div className="flex items-center gap-3">
         <Gem size={16} className="text-primary shrink-0" aria-hidden="true" />
         <p className="text-sm">{t('requiresTier', { feature: featureName, tier: requiredTier })}</p>

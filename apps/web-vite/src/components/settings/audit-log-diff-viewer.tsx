@@ -55,7 +55,7 @@ export function AuditLogDiffViewer({ oldValues, newValues }: AuditLogDiffViewerP
   }
 
   return (
-    <div className="grid grid-cols-2 gap-4 border-l border-primary/20 p-4">
+    <div className="grid grid-cols-2 gap-4 border-s border-primary/20 p-4">
       {/* Before column */}
       <div className="space-y-2">
         <h4 className="text-xs font-semibold text-muted-foreground">{t('before')}</h4>

@@ -96,7 +96,7 @@ export function HealthCheckPanel({
             {citedClauses.map((clause, idx) => {
               const isPending = pendingPhrasesCited?.includes(clause.phraseId) ?? false;
               return (
-                <li key={`${clause.phraseId}-${idx}`} className="border-l-2 border-l-blue-300 pl-3">
+                <li key={`${clause.phraseId}-${idx}`} className="border-s-2 border-s-blue-300 ps-3">
                   <div className="flex items-center gap-2 text-xs">
                     <Badge variant="outline">{clause.jurisdiction}</Badge>
                     <Badge variant={clause.regexMatched ? 'default' : 'secondary'}>

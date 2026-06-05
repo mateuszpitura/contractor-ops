@@ -19,7 +19,7 @@ export function DocNameCell({ policyRuleId }: { policyRuleId: string | null }) {
     <span className="text-sm">
       {label}
       {isPending && (
-        <sup className="ml-0.5 text-muted-foreground" aria-hidden>
+        <sup className="ms-0.5 text-muted-foreground" aria-hidden>
           †
         </sup>
       )}

@@ -49,7 +49,7 @@ export function KsefDuplicateBanner({
 
   return (
     <>
-      <div className="rounded-md border border-amber-500/30 border-l-4 border-l-amber-500 bg-amber-500/5 p-4">
+      <div className="rounded-md border border-amber-500/30 border-s-4 border-s-amber-500 bg-amber-500/5 p-4">
         <div className="flex items-start gap-3">
           <AlertTriangle className="mt-0.5 size-4 shrink-0 text-amber-500" aria-hidden="true" />
           <div className="space-y-2">

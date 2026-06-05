@@ -8,9 +8,9 @@ import { isListControlsDisabled } from '../shared/list-controls-disabled.js';
 import { useOrganizationProjects } from './hooks/use-organization-projects.js';
 import { isFeaturedEmptyList } from './is-featured-empty-list.js';
 import { OrganizationLayout } from './organization-layout.js';
+import { ProjectTable } from './projects/data-table.js';
 import { PendingMergesInboxContainer } from './projects/pending-merges-inbox-container.js';
 import { ProjectFormSheetContainer } from './projects/project-form-sheet-container.js';
-import { ProjectTable } from './projects/data-table.js';
 
 type SyncConnection = { id: string; provider: string };
 
@@ -31,7 +31,7 @@ function ConnectionSyncButton({
   );
   return (
     <Button variant="outline" disabled={disabled} onClick={handleClick}>
-      <RefreshCw className="mr-2 h-4 w-4" /> {label} ({conn.provider})
+      <RefreshCw className="me-2 h-4 w-4" /> {label} ({conn.provider})
     </Button>
   );
 }
@@ -108,7 +108,7 @@ export function OrganizationProjectsContainer() {
               ))}
               {canCreate ? (
                 <Button disabled={controlsDisabled} onClick={handleNewProject}>
-                  <Plus className="mr-2 h-4 w-4" /> {t('newProject')}
+                  <Plus className="me-2 h-4 w-4" /> {t('newProject')}
                 </Button>
               ) : null}
             </div>

@@ -240,7 +240,7 @@ export function CostCenterCsvImportDialog({
           <Button
             disabled={selectedValidRows.length === 0 || importMutation.isPending}
             onClick={handleImport}>
-            <FileUp className="mr-2 h-4 w-4" />
+            <FileUp className="me-2 h-4 w-4" />
             Import {selectedValidRows.length} {selectedValidRows.length === 1 ? 'row' : 'rows'}
           </Button>
         </DialogFooter>

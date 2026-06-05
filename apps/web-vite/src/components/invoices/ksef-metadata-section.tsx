@@ -73,7 +73,7 @@ export function KsefMetadataSection({
   const ksefUrl = `https://ksef.mf.gov.pl/web/${encodeURIComponent(ksefReference)}`;
 
   return (
-    <Card className="border-l-2 border-l-primary">
+    <Card className="border-s-2 border-s-primary">
       <CardHeader className="pb-3">
         <div className="flex items-center gap-2">
           <ShieldCheck className="size-4 text-primary" aria-hidden="true" />

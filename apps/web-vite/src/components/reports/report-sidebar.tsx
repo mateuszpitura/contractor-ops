@@ -70,7 +70,7 @@ export function ReportSidebar({ activeReport, onSelect }: ReportSidebarProps) {
                   className={cn(
                     'flex w-full items-center gap-2.5 rounded-md px-3 py-2 text-sm transition-colors',
                     isActive
-                      ? 'border-l-[3px] border-primary bg-primary/5 text-primary'
+                      ? 'border-s-[3px] border-primary bg-primary/5 text-primary'
                       : 'text-muted-foreground hover:bg-muted',
                   )}
                   iconClassName="h-4 w-4 shrink-0"

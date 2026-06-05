@@ -97,7 +97,7 @@ export const DrvClearanceRow = memo(function DrvClearanceRow({
           </div>
         ) : null}
       </TableCell>
-      <TableCell className="text-right">
+      <TableCell className="text-end">
         <Button
           type="button"
           variant="ghost"

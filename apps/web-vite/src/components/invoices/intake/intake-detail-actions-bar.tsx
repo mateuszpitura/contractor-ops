@@ -45,7 +45,7 @@ export function IntakeDetailActionsBar({ actions, className }: IntakeDetailActio
         role="toolbar"
         aria-label={t('pageTitle')}
         className={cn(
-          'sticky bottom-0 left-0 z-20 flex flex-wrap items-center justify-between gap-2 border-t bg-card/95 p-4 backdrop-blur supports-backdrop-filter:bg-card/75 md:static md:rounded-xl md:border md:bg-card md:p-4',
+          'sticky bottom-0 start-0 z-20 flex flex-wrap items-center justify-between gap-2 border-t bg-card/95 p-4 backdrop-blur supports-backdrop-filter:bg-card/75 md:static md:rounded-xl md:border md:bg-card md:p-4',
           className,
         )}
         data-slot="intake-detail-actions-bar">
@@ -58,9 +58,9 @@ export function IntakeDetailActionsBar({ actions, className }: IntakeDetailActio
             disabled={actions.isXmlPending}
             data-testid="intake-download-xml">
             {actions.isXmlPending ? (
-              <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+              <Loader2 className="me-1.5 h-3.5 w-3.5 animate-spin" />
             ) : (
-              <FileText className="mr-1.5 h-3.5 w-3.5" />
+              <FileText className="me-1.5 h-3.5 w-3.5" />
             )}
             {t('ctaDownloadXml')}
           </Button>
@@ -72,9 +72,9 @@ export function IntakeDetailActionsBar({ actions, className }: IntakeDetailActio
             disabled={actions.isReportPending}
             data-testid="intake-download-report">
             {actions.isReportPending ? (
-              <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+              <Loader2 className="me-1.5 h-3.5 w-3.5 animate-spin" />
             ) : (
-              <Download className="mr-1.5 h-3.5 w-3.5" />
+              <Download className="me-1.5 h-3.5 w-3.5" />
             )}
             {t('ctaDownloadValidationReport')}
           </Button>
@@ -110,7 +110,7 @@ export function IntakeDetailActionsBar({ actions, className }: IntakeDetailActio
               disabled={actions.isConfirmMatchPending}
               data-testid="intake-confirm-match">
               {actions.isConfirmMatchPending ? (
-                <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                <Loader2 className="me-1.5 h-3.5 w-3.5 animate-spin" />
               ) : null}
               {t('ctaConfirmMatch')}
             </Button>

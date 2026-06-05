@@ -170,7 +170,7 @@ export function TabCompliance({ contractor }: TabComplianceProps) {
                 {item.status === 'WAIVED' ? (
                   <Tooltip>
                     <TooltipTrigger className="inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium bg-muted text-muted-foreground">
-                      <ShieldCheck className="mr-1 size-3" aria-hidden />
+                      <ShieldCheck className="me-1 size-3" aria-hidden />
                       {tDynLoose(t, 'status', enumKey(statusKey))}
                     </TooltipTrigger>
                     <TooltipContent>

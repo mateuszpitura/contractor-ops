@@ -75,10 +75,10 @@ export function OrganizationCostCentersContainer() {
               {canCreate ? (
                 <>
                   <Button variant="outline" disabled={controlsDisabled} onClick={handleOpenCsv}>
-                    <FileUp className="mr-2 h-4 w-4" /> {t('importCsv')}
+                    <FileUp className="me-2 h-4 w-4" /> {t('importCsv')}
                   </Button>
                   <Button disabled={controlsDisabled} onClick={handleNewCostCenter}>
-                    <Plus className="mr-2 h-4 w-4" /> {t('newCostCenter')}
+                    <Plus className="me-2 h-4 w-4" /> {t('newCostCenter')}
                   </Button>
                 </>
               ) : null}

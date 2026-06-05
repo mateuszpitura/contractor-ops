@@ -120,7 +120,7 @@ export function ApprovalQueueWidget() {
                     href={invoiceId ? `/invoices/${invoiceId}` : '/approvals'}
                     className={`grid grid-cols-[minmax(0,1fr)_7rem_7rem] items-center gap-3 rounded-lg border-s-2 ${accent} ps-3 pe-2.5 py-2.5 transition-all duration-200 hover:bg-muted/40 hover:ps-3.5`}>
                     <span className="min-w-0 truncate text-sm font-medium">{contractorName}</span>
-                    <span className="text-right font-display text-sm font-semibold tabular-nums text-foreground">
+                    <span className="text-end font-display text-sm font-semibold tabular-nums text-foreground">
                       {formatAmount(amount, currency)}
                     </span>
                     <div className="flex justify-end">

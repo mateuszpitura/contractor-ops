@@ -66,7 +66,7 @@ export function TosReacceptanceModalView({
               rel="noopener noreferrer"
               className="underline">
               {t('termsLink')}
-              <ExternalLink className="ml-1 inline h-3 w-3" />
+              <ExternalLink className="ms-1 inline h-3 w-3" />
             </Link>
           </p>
         </DialogBody>

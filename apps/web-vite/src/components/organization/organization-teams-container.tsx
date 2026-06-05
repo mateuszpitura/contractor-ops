@@ -8,8 +8,8 @@ import { isListControlsDisabled } from '../shared/list-controls-disabled.js';
 import { useOrganizationTeams } from './hooks/use-organization-teams.js';
 import { isFeaturedEmptyList } from './is-featured-empty-list.js';
 import { OrganizationLayout } from './organization-layout.js';
-import { TeamFormSheetContainer } from './teams/team-form-sheet-container.js';
 import { TeamTable } from './teams/data-table.js';
+import { TeamFormSheetContainer } from './teams/team-form-sheet-container.js';
 
 export function OrganizationTeamsContainer() {
   const t = useTranslations('Organization');
@@ -73,7 +73,7 @@ export function OrganizationTeamsContainer() {
             />
             {canCreate ? (
               <Button disabled={controlsDisabled} onClick={handleNewTeam}>
-                <Plus className="mr-2 h-4 w-4" /> {t('newTeam')}
+                <Plus className="me-2 h-4 w-4" /> {t('newTeam')}
               </Button>
             ) : null}
           </div>

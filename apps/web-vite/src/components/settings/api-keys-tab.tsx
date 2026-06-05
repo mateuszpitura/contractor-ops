@@ -216,7 +216,7 @@ export function CreateKeyDialog({
           <Button
             onClick={handleCreate}
             disabled={!name.trim() || scopes.length === 0 || createMutation.isPending}>
-            {!!createMutation.isPending && <Loader2 className="mr-2 size-4 animate-spin" />}
+            {!!createMutation.isPending && <Loader2 className="me-2 size-4 animate-spin" />}
             {t('createDialog.submitButton')}
           </Button>
         </DialogFooter>
@@ -263,7 +263,7 @@ export function RevokeKeyDialog({
         <AlertDialogFooter>
           <AlertDialogCancel>{tCommon('cancel')}</AlertDialogCancel>
           <AlertDialogAction variant="destructive" onClick={handleRevoke} disabled={isPending}>
-            {!!isPending && <Loader2 className="mr-2 size-4 animate-spin" />}
+            {!!isPending && <Loader2 className="me-2 size-4 animate-spin" />}
             {t('revokeDialog.confirmButton')}
           </AlertDialogAction>
         </AlertDialogFooter>
@@ -348,7 +348,7 @@ export function EditKeyDialog({
         <DialogFooter>
           <DialogClose render={<Button variant="outline" />}>{tCommon('cancel')}</DialogClose>
           <Button onClick={handleSubmit} disabled={!canSubmit}>
-            {!!updateMutation.isPending && <Loader2 className="mr-2 size-4 animate-spin" />}
+            {!!updateMutation.isPending && <Loader2 className="me-2 size-4 animate-spin" />}
             {t('editDialog.submitButton')}
           </Button>
         </DialogFooter>
@@ -385,7 +385,7 @@ export function ApiKeysTab({ t, keys, isLoading }: ApiKeysTabProps) {
             <p className="text-xs text-muted-foreground">{t('description')}</p>
           </div>
           <Button size="sm" onClick={openCreate}>
-            <Plus className="mr-1.5 size-4" />
+            <Plus className="me-1.5 size-4" />
             {t('createKeyButton')}
           </Button>
         </div>

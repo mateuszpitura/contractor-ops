@@ -60,7 +60,7 @@ export function ImportSplitButtonView({
           type="button"
           disabled={disabled}
           onClick={onCreateNewClick}
-          className="rounded-r-none border-r border-primary-foreground/20">
+          className="rounded-e-none border-e border-primary-foreground/20">
           <Plus className="h-4 w-4" aria-hidden="true" />
           <span>{primaryLabel}</span>
         </Button>
@@ -70,7 +70,7 @@ export function ImportSplitButtonView({
               <Button
                 type="button"
                 disabled={disabled}
-                className="rounded-l-none px-2"
+                className="rounded-s-none px-2"
                 aria-label={t('splitButtonImport')}
               />
             }>

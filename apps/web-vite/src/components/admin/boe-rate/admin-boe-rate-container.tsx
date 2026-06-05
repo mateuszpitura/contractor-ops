@@ -33,7 +33,7 @@ export function AdminBoeRateContainer() {
 
       <div className="flex shrink-0 items-center justify-end">
         <Button onClick={openAddDialog}>
-          <PlusIcon className="mr-2 h-4 w-4" aria-hidden="true" />
+          <PlusIcon className="me-2 h-4 w-4" aria-hidden="true" />
           {t('addRate')}
         </Button>
       </div>

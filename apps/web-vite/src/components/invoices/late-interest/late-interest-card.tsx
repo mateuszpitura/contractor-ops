@@ -266,9 +266,9 @@ export function LateInterestCard({
                 onClick={handleDownloadClaim}
                 data-testid="late-interest-download-claim">
                 {isDownloadClaimPending ? (
-                  <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                  <Loader2 className="me-1.5 h-3.5 w-3.5 animate-spin" />
                 ) : (
-                  <Download className="mr-1.5 h-3.5 w-3.5" />
+                  <Download className="me-1.5 h-3.5 w-3.5" />
                 )}
                 {t('downloadClaimLetter')}
               </Button>

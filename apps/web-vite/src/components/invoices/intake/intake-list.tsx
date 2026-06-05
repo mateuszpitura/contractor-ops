@@ -92,9 +92,9 @@ export function IntakeList({ list }: IntakeListProps) {
       },
       {
         id: 'total',
-        header: () => <span className="block text-right">{tColumn('total')}</span>,
+        header: () => <span className="block text-end">{tColumn('total')}</span>,
         cell: ({ row }) => (
-          <span className="block text-right font-mono tabular-nums">
+          <span className="block text-end font-mono tabular-nums">
             {formatTotalMinor(row.original.extractedTotalMinor, row.original.extractedCurrency) ??
               '—'}
           </span>

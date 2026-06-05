@@ -95,11 +95,11 @@ function ActionsCell({ row, status, t, onEdit, onRevoke }: ActionsCellProps) {
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <DropdownMenuItem onClick={handleEdit}>
-          <Pencil className="mr-2 size-4" />
+          <Pencil className="me-2 size-4" />
           {t('editAction')}
         </DropdownMenuItem>
         <DropdownMenuItem className="text-destructive" onClick={handleRevoke}>
-          <Trash2 className="mr-2 size-4" />
+          <Trash2 className="me-2 size-4" />
           {t('revokeAction')}
         </DropdownMenuItem>
       </DropdownMenuContent>
@@ -164,7 +164,9 @@ export function ApiKeysDataTable({
         accessorKey: 'createdAt',
         header: t('tableHeaders.created'),
         cell: ({ row }) => (
-          <span className="text-muted-foreground text-xs">{formatDate(row.original.createdAt)}</span>
+          <span className="text-muted-foreground text-xs">
+            {formatDate(row.original.createdAt)}
+          </span>
         ),
       },
       {

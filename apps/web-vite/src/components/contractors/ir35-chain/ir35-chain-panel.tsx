@@ -1,4 +1,3 @@
-import { useCallback, useId, useState } from 'react';
 import {
   Table,
   TableBody,
@@ -6,6 +5,7 @@ import {
   TableHeader,
   TableRow,
 } from '@contractor-ops/ui/components/shadcn/table';
+import { useCallback, useId, useState } from 'react';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
 
@@ -94,7 +94,7 @@ export function Ir35ChainPanelView({
             <TableHead>{t('columnDisplayName')}</TableHead>
             <TableHead>{t('columnDelivered')}</TableHead>
             <TableHead>{t('columnAcknowledged')}</TableHead>
-            <TableHead className="text-right">{t('columnActions')}</TableHead>
+            <TableHead className="text-end">{t('columnActions')}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>

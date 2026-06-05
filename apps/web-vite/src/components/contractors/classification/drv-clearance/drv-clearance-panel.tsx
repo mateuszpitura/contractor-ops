@@ -155,7 +155,7 @@ export function StatusfeststellungsverfahrenPanelView({
                   size="sm"
                   onClick={handleUploadButtonClick}
                   disabled={uploadPending}>
-                  <Upload className="mr-2 h-4 w-4" aria-hidden />
+                  <Upload className="me-2 h-4 w-4" aria-hidden />
                   {uploadPending ? tDrv('uploading') : tDrv('uploadDecisionLetter')}
                 </Button>
               )}
@@ -185,7 +185,7 @@ export function StatusfeststellungsverfahrenPanelView({
                   <TableHead>{t('drvReferenceLabel')}</TableHead>
                   <TableHead>{t('outcomeLabel')}</TableHead>
                   <TableHead>{t('validToLabel')}</TableHead>
-                  <TableHead className="text-right">
+                  <TableHead className="text-end">
                     <span className="sr-only">{t('editAction')}</span>
                   </TableHead>
                 </TableRow>

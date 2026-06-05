@@ -47,11 +47,11 @@ export function ComplianceItemHistory({ itemId }: ComplianceItemHistoryProps) {
           <p className="text-sm text-muted-foreground">{t('empty')}</p>
         )}
         {!(isPending || error || isEmpty) && (
-          <ol className="flex flex-col gap-2 border-l border-border pl-4">
+          <ol className="flex flex-col gap-2 border-s border-border ps-4">
             {entries.map(entry => (
               <li key={entry.id} className="text-sm">
                 <span className="font-medium">{tDynLoose(t, 'action', entry.action)}</span>
-                <span className="ml-2 text-muted-foreground">
+                <span className="ms-2 text-muted-foreground">
                   {entry.actorName ? `${entry.actorName} · ` : ''}
                   {formatDateTime(new Date(entry.createdAt))}
                 </span>

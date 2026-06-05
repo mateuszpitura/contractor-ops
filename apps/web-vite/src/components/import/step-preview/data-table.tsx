@@ -60,7 +60,7 @@ export function ImportPreviewDataTable({
           <div
             className={
               hasError
-                ? 'flex items-center gap-1 border-l-2 border-destructive pl-2'
+                ? 'flex items-center gap-1 border-s-2 border-destructive ps-2'
                 : 'flex items-center gap-1'
             }>
             <span className="block max-w-[160px] truncate text-sm">

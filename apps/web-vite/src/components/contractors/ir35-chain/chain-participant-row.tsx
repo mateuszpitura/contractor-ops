@@ -1,5 +1,5 @@
-import { useCallback } from 'react';
 import { TableCell, TableRow } from '@contractor-ops/ui/components/shadcn/table';
+import { useCallback } from 'react';
 
 import { tDyn } from '../../../i18n/typed-keys.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
@@ -49,7 +49,7 @@ export function ChainParticipantRow({
       <TableCell>
         <span>{acknowledgedLabel}</span>
       </TableCell>
-      <TableCell className="text-right">
+      <TableCell className="text-end">
         <div className="inline-flex gap-2">
           <button
             type="button"

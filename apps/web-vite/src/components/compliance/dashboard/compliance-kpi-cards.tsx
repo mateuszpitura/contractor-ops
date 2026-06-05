@@ -59,7 +59,7 @@ export function ComplianceKpiCards({ kpis, activeTab, onTabChange }: ComplianceK
             type="button"
             aria-pressed={isActive}
             onClick={() => onTabChange(card.tab)}
-            className={`flex flex-col gap-3 rounded-xl border p-5 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+            className={`flex flex-col gap-3 rounded-xl border p-5 text-start transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
               isActive
                 ? 'border-primary bg-primary/5 shadow-sm'
                 : 'border-border bg-card hover:border-primary/40 hover:bg-accent/30'

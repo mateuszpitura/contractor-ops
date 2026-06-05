@@ -37,7 +37,7 @@ export function getBlockedPaymentsColumns(t: LooseTranslator): ColumnDef<Blocked
                 <Link href={reason.deepLinkPath} className="text-primary hover:underline">
                   {t(reason.documentTypeLabelKey)}
                 </Link>
-                <span className="ml-2 text-xs text-muted-foreground tabular-nums">
+                <span className="ms-2 text-xs text-muted-foreground tabular-nums">
                   {reason.expiredOnDate}
                 </span>
               </li>
