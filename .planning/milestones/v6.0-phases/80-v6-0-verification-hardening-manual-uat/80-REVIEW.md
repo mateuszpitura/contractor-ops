@@ -1,243 +1,255 @@
 ---
 phase: 80-v6-0-verification-hardening-manual-uat
-reviewed: 2026-06-05T16:08:45Z
+reviewed: 2026-06-06T00:00:00Z
 depth: standard
 files_reviewed: 1
 files_reviewed_list:
   - packages/api/src/__tests__/v6-cross-feature-composition.test.ts
 findings:
   critical: 0
-  warning: 6
+  warning: 5
   info: 3
-  total: 9
+  total: 8
 status: issues_found
 ---
 
 # Phase 80: Code Review Report
 
-**Reviewed:** 2026-06-05T16:08:45Z
+**Reviewed:** 2026-06-06
 **Depth:** standard
 **Files Reviewed:** 1
 **Status:** issues_found
 
 ## Summary
 
-Reviewed `v6-cross-feature-composition.test.ts` — phase 80's sole application-source
-change, billed as the milestone's proof that the four v6.0 gate primitives
-(F1 payment gate, F3 Gulf free-zone / Saudization, F4 offboarding hard-block)
-**compose** on the SC#1 mega-scenario against one shared mutable mock-Prisma store.
+Re-review of the sole phase-80 source change: the `v6-cross-feature-composition.test.ts`
+integration test, as rewritten by gap-closure 80-05 (diff base `55a97fe7`). The diff
+adds (a) a composed-scenario `it` threading F1 scan→EXPIRED → enforced payment
+hard-block → F3 advisory → F4 IP_VERIFICATION offboarding hard-block on one shared
+mutable store, (b) a second synthetic tenant so the payment-gate `where` filters are
+load-bearing, and (c) three predicate tests (WR-02/WR-03 from the prior review).
 
-No security defects and no leaked secrets/PII (the legal-phrase fixtures are
-public statutory authority names, not credentials). No crashes or data-loss
-paths — this is a test file with no production reach.
+The F1 leg is genuinely load-bearing: the real services (`runComplianceReminderScan`,
+`assertContractorPaymentEligibility`) run end-to-end against the shared store, the
+TZ-boundary flip (`2026-06-03` crossing the `2026-03-01` Asia/Dubai expiry) actually
+drives the EXPIRED transition (verified against `isExpired`/`startOfDay` in
+`expiry.ts`), and the prisma mock now mirrors the gate's `contractorId.in` +
+`contractor.is.organizationId` scope, so the second-tenant isolation assertion
+(`contractorReasons` pinned to length 1) is real.
 
-However, the central claim of the artifact — that the features *compose* — is
-not borne out by the code. The dominant defect class is **false-green / weak
-assertions**: the mock stores discard the exact `where` clauses (tenant scope,
-contractor id, task type, status) that the real services rely on for correctness,
-so several regressions in the services under test would still pass green. The
-file is also substantially a copy of two existing tests
-(`free-zone-record-then-expire.test.ts`, `workflow-execution-ip-block.test.ts`)
-plus a re-run of the validators `locked-phrases-guard.test.ts`, contributing little
-net coverage beyond what already exists. These are quality/robustness issues, not
-shipping blockers for a test artifact, so they are classified WARNING/INFO — but
-the headline "cross-feature composition proof" is not actually demonstrated.
+However the **F4 leg is materially weaker than the comments claim**: the
+`makeGateClient` mock honours only `taskType` and `workflowRunId`, while the real gate
+(`workflow-shared.ts:332-340`) additionally filters on `status: { in: [...] }` and
+`organizationId`. The composed test passes `organizationId` into `assertRunCompletable`
+but the mock ignores it entirely, so F4 tenant isolation and the open-task status
+predicate are **unproven** — the test can stay green while production filters
+differently. One advisory assertion (`not.toHaveProperty('projectedBand')`) is a
+type-level tautology that can never fail. Several comments embed source line-number
+breadcrumbs and review-finding IDs that violate the project's no-inline-breadcrumb
+convention and will silently rot.
+
+No security issues (test-only, all I/O mocked, no secrets, no dynamic eval). No
+`console.*`. No empty catches.
 
 ## Warnings
 
-### WR-01: The three features are never composed — each is tested in an isolated `describe` against fresh state
+### WR-01: F4 gate mock ignores `status` and `organizationId` — the load-bearing claim is false for two of four predicates
 
-**File:** `packages/api/src/__tests__/v6-cross-feature-composition.test.ts:187-387`
-**Issue:** The file header (lines 1-30) and the SC#1 framing assert that F1, F3,
-and F4 "actually COMPOSE … on ONE seeded ME-region contractor" with "a free-zone
-BLOCKING license, a Saudi-national assignment, and an open IP_VERIFICATION
-offboarding task." In practice:
-- The "F1+F3" describe (187-241) calls only `assertContractorPaymentEligibility`
-  and `runComplianceReminderScan`. `projectOffboardingTrajectory` (the F3 leg) is
-  **never invoked** in this block — F1 is composed with nothing.
-- The F3 describe (243-272) calls only `projectOffboardingTrajectory` with
-  hand-built literal headcount params — it never touches `store`, the seeded
-  contractor, or any F1/F4 state.
-- The F4 describe (296-325) builds a wholly separate `makeGateClient` and never
-  references the free-zone item, the scan, or the Saudization projection.
-- `beforeEach` (181-185) resets `store` between every `it`, so even within F1
-  no state survives across the "still valid" / "flip" / "arm block" cases — each
-  re-seeds from scratch.
+**File:** `packages/api/src/__tests__/v6-cross-feature-composition.test.ts:537-561` (mock), `401-443` + `303-318` (assertions)
 
-There is no single test in which the free-zone item, the Saudi assignment, and
-the IP task coexist and interact. The artifact proves three independent unit
-behaviours run in the same file, not that they compose. This is the primary
-reason the deliverable does not meet its stated purpose.
-
-**Fix:** Add at least one test that seeds the one contractor with all three
-states in `store`, then drives the real flow end-to-end on shared state: scan →
-flip free-zone PENDING→EXPIRED, assert payment gate blocks AND
-`projectOffboardingTrajectory` (fed the same seeded headcount) returns the
-advisory projection, AND `assertRunCompletable` hard-blocks on the open IP task —
-all observing the same mutable store. Otherwise rename the file/headers to drop
-the "compose" claim and present it as three co-located unit suites.
-
-### WR-02: Payment-gate mock discards the tenant/contractor scope, so the org-isolation assertion is false-green
-
-**File:** `packages/api/src/__tests__/v6-cross-feature-composition.test.ts:99-110, 207-236`
-**Issue:** The real gate query (`compliance-payment-gate.ts:86-99`) filters on
-`contractorId: { in: contractorIds }` AND `contractor: { is: { organizationId } }`
-(the defense-in-depth tenant guard). The `prisma` mock `findMany` (101-108) only
-inspects `where.severity` and `where.status` — it ignores `contractorId` and
-`organizationId` entirely. Consequently the test at 207-236, whose name promises
-"surfacing the free-zone doc in cause.contractorReasons" for a specific org +
-contractor, would pass identically if the gate dropped its tenant guard or its
-contractor filter. With a single seeded row the assertions on
-`cause.contractorReasons[0]` are trivially satisfied regardless of scoping. The
-tenant-isolation behaviour the test appears to exercise is not actually verified.
-
-**Fix:** Make the `prisma` mock honour the `where` it receives:
-```ts
-return store.items.filter(r => {
-  if (where.severity && r.severity !== where.severity) return false;
-  if (where.status && r.status !== where.status) return false;
-  const cid = (where.contractorId as { in?: string[] } | undefined)?.in;
-  if (cid && !cid.includes(r.contractorId as string)) return false;
-  const orgIs = (where.contractor as { is?: { organizationId?: string } } | undefined)?.is?.organizationId;
-  if (orgIs && r.organizationId !== orgIs) return false;
-  return true;
-});
+**Issue:** The real `assertRunCompletable` query filters on four fields
+(`workflow-shared.ts:332-340`):
 ```
-Then seed a second row under a different org/contractor and assert it is NOT in
-`contractorReasons` — that turns 207-236 into a real isolation test.
+where: { workflowRunId, organizationId, taskType: 'IP_VERIFICATION',
+         status: { in: ['TODO','IN_PROGRESS','BLOCKED'] } }
+```
+`makeGateClient.workflowTaskRun.findMany` (lines 548-552) only inspects
+`args.where?.taskType` and `args.where?.workflowRunId`; it returns the open task
+regardless of `status` or `organizationId`. Consequences:
+- The WR-03 predicate test (lines 401-443) titles itself "honour their where
+  predicates" but proves only 2 of the 4 real predicates. A `DONE`/`CANCELLED`
+  IP_VERIFICATION task, or a cross-org task, would be excluded by the real query but
+  returned by this mock — so a regression that loosened the real
+  `status`/`organizationId` filter would not be caught here.
+- In the composed `it` (line 310) `SEEDED.organizationId` is threaded into
+  `assertRunCompletable`, and the inline comment (lines 303-304) asserts "the
+  taskType/workflowRunId filter is load-bearing" — but the org argument is inert. F4
+  tenant isolation is implied by the scenario narrative yet not exercised, unlike the
+  genuinely load-bearing F1 org filter.
 
-### WR-03: `makeGateClient.workflowTaskRun.findMany` ignores its `where`, so the IP-block filter is not verified
+This is a false-confidence / mock-divergence defect: the test can pass while the F4
+production gate behaves differently on status and tenant scope.
 
-**File:** `packages/api/src/__tests__/v6-cross-feature-composition.test.ts:278-294, 297-316`
-**Issue:** `assertRunCompletable` (`workflow-shared.ts:332-340`) selects open IP
-tasks with `where: { workflowRunId, organizationId, taskType: 'IP_VERIFICATION',
-status: { in: ['TODO','IN_PROGRESS','BLOCKED'] } }`. The mock `findMany`
-(285) is `async () => (opts.openIpTaskIds ?? []).map(id => ({ id }))` — it returns
-the supplied ids unconditionally, never reading `where`. So the test asserts the
-block fires but does NOT verify that the gate filters by `taskType`, by
-`status`, by `workflowRunId`, or by `organizationId`. A regression that, e.g.,
-dropped the `taskType: 'IP_VERIFICATION'` predicate (and thus blocked on ANY open
-task) would still pass `cause.blockedTaskKind === 'IP_VERIFICATION'` here. The
-`ME_ORG.id` argument threaded into `assertRunCompletable` (300) is decorative —
-nothing in the mock consumes the org id.
+**Fix:** Make the mock honour all four real predicates and add controls that prove
+each is load-bearing:
+```ts
+findMany: async (args: {
+  where?: { taskType?: string; workflowRunId?: string;
+            organizationId?: string; status?: { in?: string[] } };
+}) => {
+  if (args.where?.taskType !== 'IP_VERIFICATION') return [];
+  if (opts.workflowRunId && args.where?.workflowRunId !== opts.workflowRunId) return [];
+  if (opts.organizationId && args.where?.organizationId !== opts.organizationId) return [];
+  const wantStatus = args.where?.status?.in;
+  // model the open tasks as carrying a concrete open status so the gate's
+  // status:{in:[TODO,IN_PROGRESS,BLOCKED]} predicate is actually filtering.
+  if (wantStatus && !wantStatus.includes(opts.openTaskStatus ?? 'TODO')) return [];
+  return (opts.openIpTaskIds ?? []).map(id => ({ id }));
+},
+```
+Then add WR-03 cases proving a wrong-org query and a closed-status task both return
+`[]`, and assert in the composed `it` that calling with `OTHER_ORG_ID` does NOT block.
 
-**Fix:** Have the mock apply the real predicate, e.g. return ids only when
-`where.taskType === 'IP_VERIFICATION'` and `where.workflowRunId`/
-`where.organizationId` match, and seed a non-IP open task that must be ignored.
-That makes the "blockedTaskKind" assertion load-bearing.
+### WR-02: `expect(traj).not.toHaveProperty('projectedBand')` is a type-level tautology that can never fail
 
-### WR-04: Reminder-scan mock approximates the real `where` loosely (DONE/SATISFIED rows leak; `expiresAt`/TZ predicates only null-checked)
+**File:** `packages/api/src/__tests__/v6-cross-feature-composition.test.ts:301`, `517`, `529`
 
-**File:** `packages/api/src/__tests__/v6-cross-feature-composition.test.ts:66-77`
-**Issue:** The real scan query (`compliance-reminder-scan.ts:212-230`) uses
-`status: { in: ['PENDING','EXPIRED'] }`, `expiresAt: { not: null }`,
-`expiryJurisdictionTz: { not: null }`. The regionClient mock handles `statusIn`
-correctly but reduces the `expiresAt`/`expiryJurisdictionTz` predicates to mere
-null-presence checks (73-74: `if (where.expiresAt && r.expiresAt == null) return false`).
-That is acceptable for the `{ not: null }` shape used today, but it silently
-diverges if the service query ever tightens (e.g., a date range). More importantly,
-because the scan only ever seeds one PENDING free-zone row here, the
-`status: { in: [...] }` exclusion of MISSING/WAIVED/SATISFIED rows — a real
-correctness property of the scan — is never exercised. The test cannot catch a
-regression where the scan starts sweeping non-PENDING rows.
+**Issue:** `projectOffboardingTrajectory` returns the fixed-shape
+`OffboardingTrajectoryResult` (`saudization-dashboard.ts:172-218`), which has no
+`projectedBand` key and no code path that ever attaches one — the function constructs a
+5-field object literal. The assertion is therefore guaranteed to pass regardless of any
+behaviour change short of someone widening the return type itself, so it provides no
+protection for the "locked anti-feature" (Pitfall 8 / D-12) it claims to guard. It
+reads as a regression guard but is an always-green check. (The companion
+`advisory:true` / `authoritative:false` / `projectedRate < currentRate` assertions ARE
+meaningful — only the `projectedBand` guard is hollow.)
 
-**Fix:** Seed at least one WAIVED/SATISFIED free-zone row alongside the PENDING
-one and assert it is left untouched (`reEvaluateFreeZoneStatus` no-ops, status
-unchanged). This pins the status-filter contract the comment on
-`compliance-reminder-scan.ts:215` documents.
+**Fix:** Either drop it (the type system already forbids the property) or, to keep a
+real runtime regression guard, assert the exhaustive key set so adding ANY new key
+(including an accidental `projectedBand`) trips the test:
+```ts
+expect(Object.keys(traj).sort()).toEqual(
+  ['advisory', 'authoritative', 'currentBand', 'currentRate', 'projectedRate'].sort(),
+);
+```
 
-### WR-05: The audit assertion does not pin org scope — `contractorReasons` match is satisfied by the fixture constant, not by correct querying
+### WR-03: Hardcoded source line-number breadcrumbs in comments will silently rot and already mis-cite
 
-**File:** `packages/api/src/__tests__/v6-cross-feature-composition.test.ts:328-357`
-**Issue:** The would-block audit row is asserted to carry
-`metadata.contractorReasons` containing `{ contractorId: CONTRACTOR_ID }`. Because
-`CONTRACTOR_ID` is the same constant the fixture is seeded with (37, 154-159),
-and the `prisma` mock ignores the contractor/org filter (see WR-02), this passes
-even if the gate selected the wrong rows. The assertion also uses
-`expect.objectContaining` / `arrayContaining` at every level, so it tolerates
-extra (e.g., leaked cross-org) reasons silently — it only checks that the
-expected one is *present*, not that it is the *only* one. For an audit-trail
-correctness test this is too permissive: an over-broad gate that audited
-additional orgs' contractors would still be green.
+**File:** `packages/api/src/__tests__/v6-cross-feature-composition.test.ts:110`, `288`, `338`, `545`
 
-**Fix:** After applying the WR-02 mock fix, seed a second org's EXPIRED BLOCKING
-row and assert `metadata.contractorReasons` has exactly length 1 and contains only
-`CONTRACTOR_ID`. Use `toHaveLength(1)` plus an exact-shape check rather than
-`arrayContaining` alone.
+**Issue:** Multiple comments pin behaviour to exact source line ranges:
+`compliance-payment-gate.ts:86-99` (line 110), `:114-120` (line 288),
+`:106-120` (line 338), `workflow-shared.ts:332-340` (line 545). These references decay
+the moment the referenced files change and become misleading. They are also already
+imprecise — the gate `where` clause begins at `compliance-payment-gate.ts:88` (not 86);
+the would-block path's actual `writeAuditLog` call is at `recordWouldBlock`
+(`compliance-payment-gate.ts:176-183`), reached via the call at lines 106-112, not
+"106-120". A reader trusting the comment is pointed at the wrong span.
 
-### WR-06: `flipExpiredFreeZoneItems` swallows per-item errors; the test never asserts the flip vs. a silent skip
+**Fix:** Reference the symbol, not the line number — e.g. "mirrors the
+`contractorId`/`contractor.is.organizationId` scope in
+`assertContractorPaymentEligibility`'s findMany `where`" and "the enforced branch
+throws without writing audit; only the flag-OFF `recordWouldBlock` path emits a row".
+Symbols survive refactors; line numbers do not.
 
-**File:** `packages/api/src/__tests__/v6-cross-feature-composition.test.ts:197-205, 328-333`
-**Issue:** `flipExpiredFreeZoneItems` (`compliance-reminder-scan.ts:270-300`) wraps
-each `reEvaluateFreeZoneStatus` call in a try/catch that logs and continues. The
-mock logger (123-126) discards `error`. The test asserts only the post-condition
-(`after?.status === 'EXPIRED'`). If the regional `update` mock threw (or
-`getRegionalClient` returned the wrong client and the ME branch returned `[]`),
-the item would silently stay PENDING and the test would fail with a confusing
-"expected EXPIRED, got PENDING" rather than surfacing the underlying error. More
-subtly, because `runComplianceReminderScanForClient` also catches at the region
-level (251-257) and returns zero counts, a thrown error inside the scan is fully
-absorbed — the test cannot distinguish "scan ran and flipped" from "scan errored
-and a prior state happened to match." There is no assertion on the
-`ScanResult`/`update`-spy to confirm the flip path actually executed.
+### WR-04: Review-finding IDs and decision breadcrumbs embedded in source comments violate the no-inline-breadcrumb convention
 
-**Fix:** Assert the flip happened *through the scan*, not just that the end state
-matches: e.g. capture the regionClient via `clientCache.get('ME')` and assert its
-`contractorComplianceItem.update` spy was called once with
-`{ where: { id: item.id }, data: { status: 'EXPIRED' } }`. That distinguishes a
-real flip from an absorbed error.
+**File:** `packages/api/src/__tests__/v6-cross-feature-composition.test.ts:39`, `111`, `196-197`, `283`, `304`, `339`, `547` (`WR-02`/`WR-03`); `30`, `242`, `533-536` (`D-01`, `Phase-74`)
+
+**Issue:** Project convention (CLAUDE.md / MEMORY: "No legacy / restoration / GAP-ID
+refs in source comments" — codebase should read self-contained; migration and review
+breadcrumbs belong in commit messages + `.planning/`, not inline). The test threads
+review-finding IDs `(WR-02)` / `(WR-03)` and decision IDs `(D-01)`, `Phase-74` directly
+into source comments. A future reader has no `WR-02` registry to resolve. The intent
+(explaining WHY the second tenant exists) is good; the encoding (an opaque finding ID)
+is the violation.
+
+**Fix:** Keep the rationale, drop the IDs:
+```ts
+// A second synthetic tenant so the payment-gate where filters
+// (contractorId.in + contractor.is.organizationId) are load-bearing, not decorative.
+```
+The `WR-02`/`WR-03`/`D-01` traceability already lives in the 80-05 commit body and
+SUMMARY, which is the correct home.
+
+### WR-05: Regional reminder mock diverges from the real `select`/tenant scope — the second-tenant EXPIRED row is silently re-scanned
+
+**File:** `packages/api/src/__tests__/v6-cross-feature-composition.test.ts:67-97` (mock), `253-265` (composed step 1)
+
+**Issue:** The real scan query (`compliance-reminder-scan.ts:212-230`) uses a `select`
+projection and `status: { in: ['PENDING','EXPIRED'] }`; `processItem` then reads
+`item.contractor.displayName` after a fire. The `regionClientFactory.findMany` mock
+returns the full row objects (not a projection) and honours `statusIn`, so the happy
+path works. But because the mock does NOT scope by `organizationId`, the composed
+step-1 scan also returns the OTHER-tenant EXPIRED row (seeded at lines 254-260) and
+runs the full band/fire/dispatch pipeline against it. That row's `contractor.displayName`
+is populated by `recordFreeZoneItemFor` (line 224), so it does not crash today — but
+the test is incidentally exercising a cross-tenant fan-out it never asserts on, and a
+future change to `recordFreeZoneItemFor` that omits `contractor` would make the SCAN
+(not the gate) throw, producing a confusing failure unrelated to the assertion under
+test. The mock's divergence from the real `select` also masks whether the scan would
+tolerate a projection-shaped row.
+
+**Fix:** Scope the regional mock by `organizationId`/region the way the gate mock now
+scopes (so the scan only sees the seeded tenant's rows), OR make the OTHER row
+PENDING-with-future-expiry so it is irrelevant to the scan; add a one-line comment that
+the regional mock intentionally returns full rows rather than the `select` projection.
 
 ## Info
 
-### IN-01: F1 describe block duplicates `free-zone-record-then-expire.test.ts` near-verbatim
+### IN-01: F4-no-audit assertion is triplicated across three describes
 
-**File:** `packages/api/src/__tests__/v6-cross-feature-composition.test.ts:39-241`
-**Issue:** The `ItemRow` interface, the `vi.hoisted` store, `regionClientFactory`,
-the `@contractor-ops/db` mock, the logger/metrics/notification/rbac/dedup/i18n
-mocks, `recordValidFreeZoneItem`, and the first three F1 `it`s are essentially
-identical to `packages/api/src/__tests__/free-zone-record-then-expire.test.ts:24-200`.
-The only material additions are the inline `cause` field assertions at 226-235.
-This is copy-paste duplication of an existing regression test rather than new
-composition coverage; it raises maintenance cost (two copies of the same mock
-harness drift independently).
+**File:** `packages/api/src/__tests__/v6-cross-feature-composition.test.ts:289`, `582`, `632`
 
-**Fix:** Extract the shared mock harness + `recordValidFreeZoneItem` into a small
-test helper under `__tests__/__fixtures__/` and import it in both files, or have
-the new file genuinely compose (WR-01) instead of restating the existing path.
+**Issue:** `expect(auditWriteSpy).not.toHaveBeenCalled()` after the F4 hard-block path
+appears three times (composed `it`, the F4 describe, the audit describe), and the
+would_block audit-row capture is asserted twice (lines 347-356 and 613-623). Not
+harmful, but the composed `it` was meant to subsume the per-feature checks; the
+duplication dilutes the "one composed proof" intent of 80-05.
 
-### IN-02: F4 describe block duplicates `workflow-execution-ip-block.test.ts`
+**Fix:** Optional — if the composed `it` is the canonical SC#1 proof, trim the
+standalone F4-no-audit and would_block audit `it`s to the unique edge each adds
+(override-clears, flag-OFF return shape) rather than re-asserting the same invariants.
 
-**File:** `packages/api/src/__tests__/v6-cross-feature-composition.test.ts:278-325`
-**Issue:** `makeGateClient` and the IP-block / override assertions reproduce
-`packages/api/src/routers/__tests__/workflow-execution-ip-block.test.ts:6-63`
-almost line-for-line. The added value over the existing test is the
-`auditWriteSpy` not-called assertion (315), which is itself weak (the spy can only
-be called by mocked modules, none of which `assertRunCompletable` touches — see
-IN-03).
+### IN-02: `reasons[0]?.itemId` hardcodes the fixture default id
 
-**Fix:** Reuse the existing test's helper or limit this block to the genuinely new
-assertion (audit-not-called) rather than restating the IP-block coverage.
+**File:** `packages/api/src/__tests__/v6-cross-feature-composition.test.ts:398`
 
-### IN-03: Locked-phrase describe re-runs the validators package's own guard; `auditWriteSpy.not.toHaveBeenCalled` is near-tautological
+**Issue:** The assertion pins `itemId` to the literal `'clmefzitemaaaaaaaaaaaaaaaaa'`,
+which is the default id baked into `makeFreeZoneComplianceItem` (`gulf-fixtures.ts:99`).
+If that fixture default ever changes the test breaks for an unrelated reason and the
+literal gives no hint of its origin.
 
-**File:** `packages/api/src/__tests__/v6-cross-feature-composition.test.ts:315, 365, 369-387`
-**Issue:** Two minor low-value assertions: (1) The locked-phrase describe
-(369-387) re-implements `packages/validators/src/__tests__/locked-phrases-guard.test.ts:612-657`
-(same `RESERVED_*` ↔ `LOCKED_*` key-mirror and NITAQAT literal checks), adding no
-coverage beyond the validators package's existing guard. (2) The
-`expect(auditWriteSpy).not.toHaveBeenCalled()` checks (315, 365) are close to
-tautological: `assertRunCompletable` does not import `audit-writer` at all, and
-the spy is only wired into `../services/audit-writer`; it can never be invoked on
-the F4 path by construction. The assertion documents intent but cannot fail for
-the reason stated unless an unrelated import changes.
+**Fix:** Capture the seeded row's id and assert against it (the test already does this
+elsewhere, e.g. line 494): `const item = recordValidFreeZoneItem(...); ...
+expect(...itemId).toBe(item.id);`
 
-**Fix:** Drop the duplicated locked-phrase block (or replace with a thin
-re-export/import-presence check), and treat the audit-not-called assertion as
-documentation only — or strengthen it by asserting the F1 path *does* call the spy
-and the F4 path does not within the same composed scenario (ties into WR-01).
+### IN-03: Synthetic item-id literals are hand-typed per call with copy-paste risk
+
+**File:** `packages/api/src/__tests__/v6-cross-feature-composition.test.ts:256`, `328`, `365`, `385`
+
+**Issue:** Each `recordFreeZoneItemFor` call invents a fresh CUID-shaped literal inline.
+They are distinct per test today, but a duplicated suffix across two seeds in the same
+`describe` would create two store rows with the same id, and the store's
+`find(r => r.id === ...)` update would mutate only the first — a silent foot-gun.
+
+**Fix:** Optional — add a `nextOtherItemId()` helper / counter so ids are generated,
+not hand-typed.
 
 ---
 
-_Reviewed: 2026-06-05T16:08:45Z_
+## Structural Findings (fallow)
+
+None provided for this review (no `<structural_findings>` block supplied).
+
+## Narrative Findings (AI reviewer)
+
+All findings above (WR-01..WR-05, IN-01..IN-03) are narrative findings from direct read
+of the test plus its real-service contracts — `compliance-payment-gate.ts`,
+`compliance-reminder-scan.ts`, `saudization-dashboard.ts`, `workflow-shared.ts` — and
+the `gulf-fixtures` / `legal/ae.ts` / `legal/sa.ts` / `expiry.ts` / `free-zone-compliance.ts`
+collaborators.
+
+The highest-value items are **WR-01** (F4 mock omits the real `status` +
+`organizationId` predicates, so the composed scenario's F4 tenant-isolation claim is
+unproven and could pass while production diverges) and **WR-02** (the `projectedBand`
+guard is a tautology that can never fail). The F1 leg holds up under scrutiny: real
+services, a real TZ-boundary flip, and a load-bearing gate `where` filter proven by the
+second-tenant isolation assertion. No tautologies or always-pass mocks were found on
+the F1 path.
+
+---
+
+_Reviewed: 2026-06-06_
 _Reviewer: Claude (gsd-code-reviewer)_
 _Depth: standard_
