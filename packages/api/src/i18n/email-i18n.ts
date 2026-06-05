@@ -59,7 +59,7 @@ export function normalizeLocale(value: string | null | undefined): EmailLocale {
 
 function readPath(root: Json, path: string): string | undefined {
   const parts = path.split('.');
-  let cur: Json = root;
+  let cur: Json | undefined = root;
   for (const p of parts) {
     if (cur === null || typeof cur !== 'object' || Array.isArray(cur)) return;
     cur = (cur as { [k: string]: Json })[p];
