@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v6.0
 milestone_name: Platform Maturity & Operational Hardening
-status: executing
-stopped_at: "Completed 80-04-PLAN.md (D-04 hardening gate re-run + 80-RETROSPECTIVE.md — v6.0 milestone-close: 4/4 plans, ready for verification)"
-last_updated: "2026-06-05T23:22:58.718Z"
+status: milestone_complete
+stopped_at: Milestone complete (Phase 80 was final phase)
+last_updated: 2026-06-05T23:46:24.198Z
 last_activity: 2026-06-05 -- Phase 80 execution started
 progress:
   total_phases: 11
   completed_phases: 10
   total_plans: 84
-  completed_plans: 83
+  completed_plans: 84
   percent: 91
 ---
 
@@ -75,7 +75,7 @@ the 3 web-vite hooks to call `trpc.deprovisioning.enableProviderForOrg({ provide
 
 **Phase:** 73 (F1 Compliance — Admin Dashboard + Portal Self-Service + i18n)
 **Workflow:** `gsd:execute-phase 73` (autonomous background run)
-**Status:** Executing Phase 80
+**Status:** Milestone complete
 
 **Why halted (per execute-phase rule "if drift is so deep a plan can't be faithfully executed, write specifics to STATE.md as a blocker and stop rather than guessing"):**
 
@@ -285,14 +285,14 @@ The execute-phase pipeline depends on `gsd-tools.cjs` for: init context + model/
 See: .planning/PROJECT.md (updated 2026-04-26 — v6.0 milestone started)
 
 **Core value:** The invoice-to-payment flow must work end-to-end: invoice arrives, gets matched to contract, routed through approval, and batched for payment — with full audit trail.
-**Current focus:** Phase 80 — v6-0-verification-hardening-manual-uat
+**Current focus:** Milestone complete
 
 ## Current Position
 
 Phase: 80 (v6-0-verification-hardening-manual-uat) — EXECUTING
-Plan: 1 of 5
+Plan: Not started
 Status: Executing Phase 80
-Last activity: 2026-06-05 -- Phase 80 execution started
+Last activity: 2026-06-05
 
 Progress: [██████████] 100%
 
@@ -394,7 +394,7 @@ DATABASE_URL=$DATABASE_URL_ME tsx packages/db/scripts/backfill-scope-capabilitie
 
 **Velocity:**
 
-- Total plans completed: 378 (51 v1.0 + 52 v2.0 + 47 v3.0 + 55 v4.0 + 70 v5.0 [Phases 56–69] + 10 v6.0 [Phase 70])
+- Total plans completed: 383 (51 v1.0 + 52 v2.0 + 47 v3.0 + 55 v4.0 + 70 v5.0 [Phases 56–69] + 10 v6.0 [Phase 70])
 - v6.0 plans completed: 10 (Phase 70: 70-01..70-10)
 - v6.0 phases completed: 1 / 11 (Phase 70)
 - v6.0 phases planned: 11 (70-80)
