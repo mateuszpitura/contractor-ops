@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v6.0
 milestone_name: Platform Maturity & Operational Hardening
-status: executing
-stopped_at: "Completed 80-03-PLAN.md (SC#3 80-LEGAL-SIGNOFF.md — 4 adviser sections, all 24 PENDING flags catalogued)"
-last_updated: "2026-06-05T15:49:12.690Z"
+status: verifying
+stopped_at: "Completed 80-04-PLAN.md (D-04 hardening gate re-run + 80-RETROSPECTIVE.md — v6.0 milestone-close: 4/4 plans, ready for verification)"
+last_updated: "2026-06-05T16:04:45.505Z"
 last_activity: 2026-06-05
 progress:
   total_phases: 11
-  completed_phases: 10
+  completed_phases: 11
   total_plans: 83
-  completed_plans: 82
-  percent: 92
+  completed_plans: 83
+  percent: 100
 ---
 
 # Project State
@@ -75,7 +75,7 @@ the 3 web-vite hooks to call `trpc.deprovisioning.enableProviderForOrg({ provide
 
 **Phase:** 73 (F1 Compliance — Admin Dashboard + Portal Self-Service + i18n)
 **Workflow:** `gsd:execute-phase 73` (autonomous background run)
-**Status:** Ready to execute
+**Status:** Phase complete — ready for verification
 
 **Why halted (per execute-phase rule "if drift is so deep a plan can't be faithfully executed, write specifics to STATE.md as a blocker and stop rather than guessing"):**
 
@@ -291,10 +291,10 @@ See: .planning/PROJECT.md (updated 2026-04-26 — v6.0 milestone started)
 
 Phase: 80 (v6-0-verification-hardening-manual-uat) — EXECUTING
 Plan: 4 of 4
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-06-05
 
-Progress: [██████████] 98%
+Progress: [██████████] 100%
 
 **Active Phase:** none (Phase 70 closed)
 **Next Phase candidates (parallel-ready):**
@@ -443,6 +443,7 @@ Code-level audit gaps (I-1 / EINV-01/02/04 / PAY-04 / FOUND-03) all closed this 
 | Phase 79 P08 | 10min | 2 tasks | 4 files |
 | Phase 80 P01 | 7min | 2 tasks | 1 files |
 | Phase 80 P02 | 18min | 1 tasks | 1 files |
+| Phase 80 P80-04 | 25min | 2 tasks | 1 files |
 
 ### Standing Project Constraints
 
@@ -517,6 +518,7 @@ Recent decisions affecting current work:
 - [Phase 80]: SC#1: F2 IdP deliberately NOT composed (D-01) — ACCESS_REVOKE saga runs post-offboarding-completion, off the blocked path; F2 verification lives only in 80-HUMAN-UAT.md
 - [Phase ?]: 80-02: 80-HUMAN-UAT.md captures 21 manual UI UAT scenarios across F1(4)/F2-IdP(8)/F3(5)/F4(4); F2 weighted heavy because UAT is its only milestone-close coverage (D-01 excludes F2 from the SC#1 integration test)
 - [Phase ?]: 80-02: every UAT result is [pending] — LOCAL-ONLY post-deploy disposition, never a phase/milestone blocker; F3 RTL + de/pl scenarios cross-reference 79-HUMAN-UAT tests 1-2 at milestone scope (dedup)
+- [Phase ?]: v6.0 milestone-close (80-04): D-04 gate re-run recorded — 9 PASS, 3 pre-existing committed offenders (Phase 76/apps-api, recorded not fixed), 2 recorded-only (pnpm audit 10 advisories; security:scan gitleaks env-unavailable). Velocity 7.5 plans/phase vs v5.0 5.0 (+50%). 24 PENDING flags inventoried by namespace. Verdict: milestone-complete pending post-deploy (LOCAL-ONLY).
 
 ### Pending Todos
 
@@ -554,8 +556,8 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-06-05T15:48:48.004Z
-Stopped at: Completed 80-01-PLAN.md (SC#1 cross-feature composition test — 11/11 green)
+Last session: 2026-06-05T16:04:45.498Z
+Stopped at: Completed 80-04-PLAN.md (D-04 hardening gate re-run + 80-RETROSPECTIVE.md — v6.0 milestone-close: 4/4 plans, ready for verification)
 Resume file: None
 Next command: `/gsd-plan-phase 74`  (Phase 74 context gathered, ready to plan; 71 + 76 plans already ready to execute)
 
