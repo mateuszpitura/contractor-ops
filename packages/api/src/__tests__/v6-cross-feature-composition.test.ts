@@ -236,6 +236,127 @@ beforeEach(() => {
   auditWriteSpy.mockClear();
 });
 
+describe('SC#1 — F1+F3+F4 compose on ONE seeded contractor (single shared store)', () => {
+  // One coherent seeded context: the free-zone item, the offboarding headcount,
+  // and the IP_VERIFICATION run all reference the SAME contractor/org so step 3's
+  // advisory is derived from the seeded state, not disconnected literals.
+  const SEEDED = {
+    organizationId: ME_ORG.id,
+    contractorId: CONTRACTOR_ID,
+    workflowRunId: 'run_seeded_1',
+    headcount: { totalHeadcount: 100, saudiHeadcount: 50 },
+  };
+
+  it('threads scan→EXPIRED → enforced payment hard-block → advisory from the same headcount → IP_VERIFICATION offboarding hard-block, with the OTHER-tenant row excluded', async () => {
+    // Seed the SAME contractor's PENDING free-zone item plus a SECOND-tenant
+    // EXPIRED BLOCKING row; the latter must be excluded by the gate where filters.
+    const item = recordValidFreeZoneItem(new Date('2026-03-01T00:00:00Z'));
+    recordFreeZoneItemFor({
+      id: 'clmefzitemddddddddddddddddd',
+      organizationId: OTHER_ORG_ID,
+      contractorId: OTHER_CONTRACTOR_ID,
+      expiresAt: new Date('2026-03-01T00:00:00Z'),
+      status: 'EXPIRED',
+    });
+
+    // Step 1 (F1): the regional reminder scan crosses the Asia/Dubai boundary and
+    // flips the seeded contractor's PENDING free-zone item to EXPIRED in place.
+    await runComplianceReminderScan(new Date('2026-06-03T09:00:00Z'));
+    expect(store.items.find(r => r.id === item.id)?.status).toBe('EXPIRED');
+
+    // Step 2 (F1+F3): the EXPIRED BLOCKING item now arms the enforced hard-block.
+    try {
+      await assertContractorPaymentEligibility([SEEDED.contractorId], {
+        organizationId: SEEDED.organizationId,
+      });
+      throw new Error('expected PRECONDITION_FAILED');
+    } catch (err) {
+      expect(err).toBeInstanceOf(TRPCError);
+      expect((err as TRPCError).code).toBe('PRECONDITION_FAILED');
+      const cause = (err as TRPCError).cause as {
+        contractorReasons: Array<{
+          contractorId: string;
+          reasons: Array<{ policyRuleId: string | null }>;
+        }>;
+      };
+      // Tenant isolation is load-bearing: only the seeded contractor's reason
+      // survives; the OTHER_ORG/OTHER_CONTRACTOR row is filtered out (WR-02).
+      expect(cause.contractorReasons).toHaveLength(1);
+      expect(cause.contractorReasons[0]?.contractorId).toBe(SEEDED.contractorId);
+      expect(cause.contractorReasons[0]?.reasons[0]?.policyRuleId).toBe('uae.free_zone_license@v2');
+    }
+    // The enforced branch throws and writes NO audit row (compliance-payment-gate.ts:114-120).
+    expect(auditWriteSpy).not.toHaveBeenCalled();
+
+    // Step 3 (F3): the Saudization advisory derives its headcount from the SAME
+    // seeded context — advisory-only, non-gating, never asserts a band.
+    const traj = projectOffboardingTrajectory({
+      headcount: SEEDED.headcount,
+      currentBand: 'MID_GREEN',
+      offboardingContractorIsSaudi: true,
+    });
+    expect(traj.advisory).toBe(true);
+    expect(traj.authoritative).toBe(false);
+    expect(traj.projectedRate ?? 1).toBeLessThan(traj.currentRate ?? 0);
+    expect(traj).not.toHaveProperty('projectedBand');
+
+    // Step 4 (F4): an open IP_VERIFICATION task on the SAME seeded run hard-blocks
+    // offboarding completion; the taskType/workflowRunId filter is load-bearing.
+    const gateClient = makeGateClient({
+      openIpTaskIds: ['task_ip_seeded'],
+      workflowRunId: SEEDED.workflowRunId,
+    });
+    try {
+      await assertRunCompletable(gateClient, SEEDED.workflowRunId, SEEDED.organizationId);
+      throw new Error('expected PRECONDITION_FAILED');
+    } catch (err) {
+      expect(err).toBeInstanceOf(TRPCError);
+      expect((err as TRPCError).code).toBe('PRECONDITION_FAILED');
+      const cause = (err as TRPCError).cause as { blockedTaskKind: string; openTaskIds: string[] };
+      expect(cause.blockedTaskKind).toBe('IP_VERIFICATION');
+      expect(cause.openTaskIds).toContain('task_ip_seeded');
+    }
+  });
+
+  it('captures the compliance.payment.would_block audit row via the honest flag-OFF would-block branch, pinned to exactly CONTRACTOR_ID', async () => {
+    // Reuse the SAME EXPIRED store state the composed flow produces, plus a
+    // SECOND-tenant EXPIRED row so the would-block contractorReasons pin is a real
+    // isolation control (the OTHER row must not leak into the audit metadata).
+    const item = recordValidFreeZoneItem(new Date('2026-03-01T00:00:00Z'));
+    recordFreeZoneItemFor({
+      id: 'clmefzitemeeeeeeeeeeeeeeeee',
+      organizationId: OTHER_ORG_ID,
+      contractorId: OTHER_CONTRACTOR_ID,
+      expiresAt: new Date('2026-03-01T00:00:00Z'),
+      status: 'EXPIRED',
+    });
+    await runComplianceReminderScan(new Date('2026-06-03T09:00:00Z'));
+    expect(store.items.find(r => r.id === item.id)?.status).toBe('EXPIRED');
+    auditWriteSpy.mockClear();
+
+    // The enforced path writes no row, so the documented audit-emitting path is the
+    // flag-OFF would-block branch (compliance-payment-gate.ts:106-120). This is the
+    // honest enforced-vs-audit split: never assert hard-block AND audit on one call.
+    const result = await assertContractorPaymentEligibility([SEEDED.contractorId], {
+      organizationId: SEEDED.organizationId,
+      flagEnabled: false,
+    });
+    expect(result.wouldBlock).toBe(true);
+    expect(result.blocked).toBe(false);
+
+    expect(auditWriteSpy).toHaveBeenCalledTimes(1);
+    const auditArg = auditWriteSpy.mock.calls[0]?.[0] as {
+      action: string;
+      organizationId: string;
+      metadata: { contractorReasons: Array<{ contractorId: string }> };
+    };
+    expect(auditArg.action).toBe('compliance.payment.would_block');
+    expect(auditArg.organizationId).toBe(SEEDED.organizationId);
+    expect(auditArg.metadata.contractorReasons).toHaveLength(1);
+    expect(auditArg.metadata.contractorReasons[0]?.contractorId).toBe(SEEDED.contractorId);
+  });
+});
+
 describe('SC#1 mocks — the gate mocks honour their where predicates (WR-02 + WR-03)', () => {
   it('excludes a second-contractor EXPIRED BLOCKING row when only CONTRACTOR_ID is queried (where.contractorId.in)', async () => {
     recordValidFreeZoneItem(new Date('2026-03-01T00:00:00Z'));
