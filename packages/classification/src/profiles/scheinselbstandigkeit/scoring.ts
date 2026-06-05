@@ -53,9 +53,12 @@ export function billingRatioToScore(ratio: number): 0 | 1 | 2 | 3 {
  * submit; Nicht anwendbar is a valid answered-zero.
  */
 export class MissingAnswerError extends Error {
-  constructor(public readonly questionId: string) {
+  readonly questionId: string;
+
+  constructor(questionId: string) {
     super(`scoreSchein: missing required answer for questionId=${questionId}`);
     this.name = 'MissingAnswerError';
+    this.questionId = questionId;
   }
 }
 
