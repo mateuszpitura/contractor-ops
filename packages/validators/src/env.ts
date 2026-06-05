@@ -234,6 +234,34 @@ const platformOperatorSchema = z.object({
   PLATFORM_OPERATOR_ORG_ID: z.string().min(1).optional(),
 });
 
+// ── Demo read-only mode ──────────────────────────────────────────────────────
+// Drives the demo read-only enforcement (tRPC mutation guard + service-layer
+// outbound skip). Env-controlled ONLY — never inferred from mutable
+// `metadata.profile`, which is not a trust boundary.
+//
+//   DEMO_MODE=true        → the entire deployment is read-only (every org).
+//   DEMO_ORG_IDS=a,b,c    → only those organization IDs are read-only.
+//
+// An org is "demo" iff DEMO_MODE is true OR its id is in DEMO_ORG_IDS. The
+// comma-separated list is trimmed and blank-filtered into a string[] (mirrors
+// `parseTrustedOrigins` in packages/auth/src/env.ts).
+
+const demoSchema = z.object({
+  DEMO_MODE: z
+    .string()
+    .optional()
+    .transform(v => v === 'true'),
+  DEMO_ORG_IDS: z
+    .string()
+    .optional()
+    .transform(raw =>
+      (raw ?? '')
+        .split(',')
+        .map(s => s.trim())
+        .filter(s => s.length > 0),
+    ),
+});
+
 // ── Observability ──────────────────────────────────────────────────────────
 
 const observabilitySchema = z.object({
@@ -352,7 +380,8 @@ export const serverEnvSchema = coreSchema
   .merge(turnstileSchema)
   .merge(proxySchema)
   .merge(infisicalSchema)
-  .merge(posthogServerSchema);
+  .merge(posthogServerSchema)
+  .merge(demoSchema);
 
 // ── Client env (NEXT_PUBLIC_ only) ──────────────────────────────────────────
 
