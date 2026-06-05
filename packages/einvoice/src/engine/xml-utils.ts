@@ -42,8 +42,10 @@ export function escapeXmlEntities(value: string): string {
  */
 export class InvalidMinorUnitsValueError extends Error {
   readonly code = 'INVALID_MINOR_UNITS_VALUE' as const;
-  constructor(public readonly raw: string) {
+  readonly raw: string;
+  constructor(raw: string) {
     super(`Invalid decimal value for minor-units conversion: "${raw}"`);
+    this.raw = raw;
     this.name = 'InvalidMinorUnitsValueError';
   }
 }

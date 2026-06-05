@@ -46,11 +46,10 @@ export type StructuralCheckSubcode =
  */
 export class ZugferdWrappingError extends Error {
   readonly code = 'ZUGFERD_WRAPPING_FAILED' as const;
-  constructor(
-    public readonly subcode: StructuralCheckSubcode,
-    message: string,
-  ) {
+  readonly subcode: StructuralCheckSubcode;
+  constructor(subcode: StructuralCheckSubcode, message: string) {
     super(`${message} [${subcode}]`);
+    this.subcode = subcode;
     this.name = 'ZugferdWrappingError';
   }
 }

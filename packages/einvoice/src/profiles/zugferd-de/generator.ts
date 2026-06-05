@@ -68,8 +68,10 @@ export interface GenerateZugferdInput {
  */
 export class ZugferdLevelUnsupportedForOutput extends Error {
   readonly code = 'ZUGFERD_LEVEL_UNSUPPORTED_FOR_OUTPUT' as const;
-  constructor(public readonly level: string) {
+  readonly level: string;
+  constructor(level: string) {
     super(`Outbound ZUGFeRD only supports COMFORT; got ${level}`);
+    this.level = level;
     this.name = 'ZugferdLevelUnsupportedForOutput';
   }
 }

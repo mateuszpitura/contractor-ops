@@ -73,11 +73,11 @@ export type ZugferdParserError =
  * `String(err)` — see bug-hunt 2026-04-27 [MEDIUM]).
  */
 export class ZugferdParserErrorClass extends Error {
-  constructor(
-    public readonly code: 'ZUGFERD_PDF_UNREADABLE' | 'ZUGFERD_NO_XML_ATTACHMENT',
-    message: string,
-  ) {
+  readonly code: 'ZUGFERD_PDF_UNREADABLE' | 'ZUGFERD_NO_XML_ATTACHMENT';
+
+  constructor(code: 'ZUGFERD_PDF_UNREADABLE' | 'ZUGFERD_NO_XML_ATTACHMENT', message: string) {
     super(message);
+    this.code = code;
     this.name = 'ZugferdParserError';
   }
 }

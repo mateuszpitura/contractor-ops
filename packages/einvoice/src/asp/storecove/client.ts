@@ -247,12 +247,13 @@ export class StorecoveClient {
  * Typed error for Storecove API failures.
  */
 export class StorecoveApiError extends Error {
-  constructor(
-    message: string,
-    public readonly statusCode: number,
-    public readonly responseBody: string,
-  ) {
+  readonly statusCode: number;
+  readonly responseBody: string;
+
+  constructor(message: string, statusCode: number, responseBody: string) {
     super(message);
+    this.statusCode = statusCode;
+    this.responseBody = responseBody;
     this.name = 'StorecoveApiError';
   }
 }

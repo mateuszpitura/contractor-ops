@@ -43,16 +43,17 @@ export interface ZatcaOnboardingState {
  * Tags 1-5 are required for Phase 1 (B2C simplified).
  * Tags 6-8 are required for Phase 2 (B2B standard).
  */
-export enum ZatcaTlvTag {
-  SELLER_NAME = 1,
-  VAT_NUMBER = 2,
-  TIMESTAMP = 3,
-  TOTAL_WITH_VAT = 4,
-  VAT_AMOUNT = 5,
-  INVOICE_HASH = 6,
-  ECDSA_SIGNATURE = 7,
-  PUBLIC_KEY = 8,
-}
+export const ZatcaTlvTag = {
+  SELLER_NAME: 1,
+  VAT_NUMBER: 2,
+  TIMESTAMP: 3,
+  TOTAL_WITH_VAT: 4,
+  VAT_AMOUNT: 5,
+  INVOICE_HASH: 6,
+  ECDSA_SIGNATURE: 7,
+  PUBLIC_KEY: 8,
+} as const;
+export type ZatcaTlvTag = (typeof ZatcaTlvTag)[keyof typeof ZatcaTlvTag];
 
 /** ZATCA-specific extension fields on an EInvoice */
 export interface ZatcaInvoiceExtensions {

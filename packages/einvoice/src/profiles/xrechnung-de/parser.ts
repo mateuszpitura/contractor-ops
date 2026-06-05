@@ -92,13 +92,18 @@ export type ParserError =
  * style narrow.
  */
 export class CIIParserError extends Error {
+  readonly code: 'CII_PARSE_FAILED' | 'ZUGFERD_LEVEL_UNSUPPORTED';
+  /** Present only when code === 'ZUGFERD_LEVEL_UNSUPPORTED'. */
+  readonly level?: string;
+
   constructor(
-    public readonly code: 'CII_PARSE_FAILED' | 'ZUGFERD_LEVEL_UNSUPPORTED',
+    code: 'CII_PARSE_FAILED' | 'ZUGFERD_LEVEL_UNSUPPORTED',
     message: string,
-    /** Present only when code === 'ZUGFERD_LEVEL_UNSUPPORTED'. */
-    public readonly level?: string,
+    level?: string,
   ) {
     super(message);
+    this.code = code;
+    this.level = level;
     this.name = 'CIIParserError';
   }
 }
