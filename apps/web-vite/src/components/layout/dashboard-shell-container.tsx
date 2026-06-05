@@ -9,7 +9,7 @@ import { useFlagBagValues } from './hooks/use-flag-bag.js';
 
 export function DashboardShellContainer() {
   const tLayout = useTranslations('Layout');
-  const { isLoading, activeOrg, memberRole, activeOrgId, session, needsTosAcceptance } =
+  const { isLoading, activeOrg, memberRole, activeOrgId, session, needsTosAcceptance, isDemo } =
     useDashboardShell();
   useAutoActiveOrg();
   const flagBag = useFlagBagValues(activeOrgId, session.isPending);
@@ -28,6 +28,7 @@ export function DashboardShellContainer() {
         activeOrg={activeOrg}
         memberRole={memberRole}
         flagBag={flagBag}
+        isDemo={isDemo}
       />
     </>
   );

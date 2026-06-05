@@ -21,13 +21,28 @@
  */
 
 import type { AppRouter, PortalAppRouter } from '@contractor-ops/api';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { MutationCache, QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { createTRPCClient, httpBatchLink } from '@trpc/client';
 import { createTRPCContext } from '@trpc/tanstack-react-query';
 import type { ReactNode } from 'react';
 import { useState } from 'react';
+import { toast } from 'sonner';
 import superjson from 'superjson';
 import { getClientEnv } from '../env.js';
+import { i18next } from '../i18n/index.js';
+
+/**
+ * Reads the machine-readable `errorKey` the server attaches to tRPC errors
+ * (see packages/api/src/init.ts `errorFormatter`). Structural — works for any
+ * router type.
+ */
+function errorKeyOf(error: unknown): string | undefined {
+  if (error === null || typeof error !== 'object') return;
+  const data = (error as { data?: unknown }).data;
+  if (data === null || typeof data !== 'object') return;
+  const key = (data as { errorKey?: unknown }).errorKey;
+  return typeof key === 'string' ? key : undefined;
+}
 
 const staff = createTRPCContext<AppRouter>();
 const portal = createTRPCContext<PortalAppRouter>();
@@ -47,6 +62,19 @@ export function TRPCProvider({ children }: TRPCProviderProps) {
   const [queryClient] = useState(
     () =>
       new QueryClient({
+        // Global demo-mode feedback: when ANY mutation is blocked by the
+        // server's demo read-only guard (errorKey `demoReadOnly`), surface one
+        // friendly i18n toast. A stable id collapses repeated blocks into a
+        // single toast. Other errors are left to per-mutation handlers.
+        mutationCache: new MutationCache({
+          onError(error) {
+            if (errorKeyOf(error) !== 'demoReadOnly') return;
+            toast.info(i18next.t('Layout.demo.toastTitle'), {
+              id: 'demo-read-only',
+              description: i18next.t('Layout.demo.toastBody'),
+            });
+          },
+        }),
         defaultOptions: {
           queries: {
             staleTime: 30_000,

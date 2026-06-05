@@ -9,6 +9,7 @@ import { AppFooter } from './app-footer.js';
 import { BreadcrumbProvider } from './breadcrumb-context.js';
 import { CookieConsentBannerContainer } from './cookie-consent-banner-container.js';
 import { DashboardProvider } from './dashboard-context.js';
+import { DemoBanner } from './demo-banner.js';
 import { FeatureFlagProvider } from './feature-flag-context.js';
 import { IntensityRouter } from './intensity-router.js';
 import { AppSidebar } from './sidebar.js';
@@ -19,6 +20,8 @@ interface DashboardShellProps {
   activeOrg: { id: string; name: string; slug: string; logo: string | null } | null;
   memberRole: string | null;
   flagBag: FlagValues;
+  /** Env-controlled demo flag — renders a persistent read-only banner when true. */
+  isDemo: boolean;
 }
 
 export function DashboardShell({
@@ -26,6 +29,7 @@ export function DashboardShell({
   activeOrg,
   memberRole,
   flagBag,
+  isDemo,
 }: DashboardShellProps) {
   return (
     <FeatureFlagProvider bag={flagBag}>
@@ -41,6 +45,7 @@ export function DashboardShell({
                 </a>
                 <AppSidebar />
                 <SidebarInset>
+                  {isDemo ? <DemoBanner /> : null}
                   <TopBarContainer />
                   <BillingOverlayContainer />
                   {/*

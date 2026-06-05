@@ -56,5 +56,8 @@ export function useDashboardShell() {
     activeOrg,
     memberRole,
     needsTosAcceptance,
+    // Env-controlled demo signal (server: organization.getCurrent) — drives the
+    // persistent DEMO banner. Defaults to false until the org query resolves.
+    isDemo: Boolean(org?.isDemo),
   } as const;
 }
