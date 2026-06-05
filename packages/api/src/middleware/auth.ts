@@ -1,6 +1,7 @@
 import { TRPCError } from '@trpc/server';
 import { ACCOUNT_BANNED } from '../errors';
 import { publicProcedure, t } from '../init';
+import { demoReadOnly } from './demo';
 
 /**
  * Auth middleware: requires an authenticated session.
@@ -29,6 +30,11 @@ export const authMiddleware = t.middleware(async ({ ctx, next }) => {
 
 /**
  * Procedure that requires an authenticated user.
- * Chain: auth -> handler
+ * Chain: auth -> demoReadOnly -> handler
+ *
+ * `demoReadOnly` is anchored here so the entire staff `appRouter` (everything
+ * built on `authedProcedure`/`tenantProcedure`, including `org.create`) inherits
+ * the demo mutation guard from one place. It runs after auth (so the session —
+ * and its `activeOrganizationId` — is available) and before any handler.
  */
-export const authedProcedure = publicProcedure.use(authMiddleware);
+export const authedProcedure = publicProcedure.use(authMiddleware).use(demoReadOnly);

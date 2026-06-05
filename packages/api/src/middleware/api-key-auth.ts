@@ -2,6 +2,7 @@ import { TRPCError } from '@trpc/server';
 import * as E from '../errors';
 import { publicProcedure, t } from '../init';
 import { resolveApiKey, touchLastUsed } from '../services/api-key-service';
+import { demoReadOnly } from './demo';
 import { runWithTenantContext } from './tenant';
 import { requireTier } from './tier';
 
@@ -91,4 +92,5 @@ const apiKeyAuthMiddleware = t.middleware(async ({ ctx, next }) => {
  */
 export const apiKeyTenantProcedure = publicProcedure
   .use(apiKeyAuthMiddleware)
-  .use(requireTier('ENTERPRISE'));
+  .use(requireTier('ENTERPRISE'))
+  .use(demoReadOnly);

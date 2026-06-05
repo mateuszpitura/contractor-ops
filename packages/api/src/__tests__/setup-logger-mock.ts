@@ -17,6 +17,7 @@ vi.mock('@contractor-ops/logger', () => ({
   createCronLogger: vi.fn(() => noopLogger),
   createWebhookLogger: vi.fn(() => noopLogger),
   createIntegrationLogger: vi.fn(() => noopLogger),
+  getIdpAuditLogger: vi.fn(() => noopLogger),
   withBodyLogging: vi.fn((_opts, fn) => fn),
   logIntegrationCall: vi.fn(),
   subscribeOpossumEvents: vi.fn(),

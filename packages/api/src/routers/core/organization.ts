@@ -3,6 +3,7 @@ import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import { KLEINUNTERNEHMER_DE_ONLY } from '../../errors';
 import { router } from '../../init';
+import { isDemoOrg } from '../../lib/demo';
 import { requirePermission } from '../../middleware/rbac';
 import { tenantProcedure } from '../../middleware/tenant';
 import { writeAuditLog } from '../../services/audit-writer';
@@ -24,7 +25,11 @@ export const organizationRouter = router({
       query: { organizationId: ctx.organizationId },
     });
 
-    return org;
+    // `isDemo` drives the web-vite DEMO banner. Env-controlled signal only
+    // (DEMO_MODE / DEMO_ORG_IDS) — never read from mutable metadata.profile.
+    // Returns full-org-or-null (unchanged contract) with `isDemo` attached when
+    // an active org is present; a null org has no banner to drive anyway.
+    return org ? { ...org, isDemo: isDemoOrg(ctx.organizationId) } : null;
   }),
 
   // ---------------------------------------------------------------------------

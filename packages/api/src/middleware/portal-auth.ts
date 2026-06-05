@@ -2,6 +2,7 @@ import { createTenantClientFrom, getRegionalClient, prisma, tenantStore } from '
 import { TRPCError } from '@trpc/server';
 import { publicProcedure, t } from '../init';
 import { validatePortalSession } from '../services/portal-session';
+import { demoReadOnly } from './demo';
 
 // ---------------------------------------------------------------------------
 // Cookie parsing
@@ -104,4 +105,4 @@ export const portalPublicProcedure = publicProcedure;
  * Provides ctx.portalSession, ctx.contractorId, ctx.organizationId,
  * ctx.region, ctx.db, and ctx.contractor to all downstream handlers.
  */
-export const portalProcedure = publicProcedure.use(portalAuthMiddleware);
+export const portalProcedure = publicProcedure.use(portalAuthMiddleware).use(demoReadOnly);

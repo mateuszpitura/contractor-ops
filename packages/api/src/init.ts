@@ -136,7 +136,16 @@ export function formatTrpcError({ shape, error, isProduction }: FormatTrpcErrorA
   };
 }
 
-const t = initTRPC.context<Context>().create({
+/**
+ * Per-procedure metadata. `allowInDemo` opts a single mutation out of the
+ * `demoReadOnly` guard (see `middleware/demo.ts`) so it keeps working in a
+ * demo context. Optional everywhere — untagged procedures inherit the guard.
+ */
+export interface Meta {
+  allowInDemo?: boolean;
+}
+
+const t = initTRPC.context<Context>().meta<Meta>().create({
   transformer: superjson,
   errorFormatter({ shape, error, path, type }) {
     const isProduction = process.env.NODE_ENV === 'production';

@@ -44,6 +44,10 @@ export const PERMISSION_DENIED = 'permissionDenied';
 export const UNKNOWN_ERROR = 'unknownError';
 export const PLATFORM_ADMIN_REQUIRED = 'platformAdminRequired';
 export const SERVER_MISCONFIGURED = 'serverMisconfigured';
+// Demo read-only mode — a mutation was blocked because the context is demo.
+// Generic + leak-free: carries no org/tenant detail. The client detects this
+// key (also mirrored in `cause.code`) to show the friendly demo toast.
+export const DEMO_READ_ONLY = 'demoReadOnly';
 
 // ─── Org definitions (projects / teams / cost centers) ───────────
 export const PROJECT_NOT_FOUND = 'projectNotFound';
