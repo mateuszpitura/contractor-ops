@@ -192,6 +192,7 @@ export const rateLimitMiddleware: MiddlewareHandler = async (c, next) => {
   }
 
   await next();
+  return;
 };
 
 // Periodic cleanup of expired windows (every 1 minute — matches window duration)

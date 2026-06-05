@@ -25,10 +25,12 @@ export function extractSlackTeamId(payload: unknown): string | undefined {
 function extractFromTeamObject(p: Record<string, unknown>): string | undefined {
   const team = p.team as Record<string, unknown> | undefined;
   if (team && typeof team.id === 'string') return team.id;
+  return;
 }
 
 function extractTopLevelTeamId(p: Record<string, unknown>): string | undefined {
   if (typeof p.team_id === 'string') return p.team_id;
+  return;
 }
 
 function extractFromAuthorizations(p: Record<string, unknown>): string | undefined {
@@ -40,6 +42,7 @@ function extractFromAuthorizations(p: Record<string, unknown>): string | undefin
       if (typeof tid === 'string') return tid;
     }
   }
+  return;
 }
 
 function extractFromEvent(p: Record<string, unknown>): string | undefined {
@@ -48,6 +51,7 @@ function extractFromEvent(p: Record<string, unknown>): string | undefined {
     const e = ev as Record<string, unknown>;
     if (typeof e.team_id === 'string') return e.team_id;
   }
+  return;
 }
 
 export async function resolveSlackConnectionByTeamId(teamId: string): Promise<{

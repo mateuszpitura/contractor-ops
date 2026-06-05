@@ -91,6 +91,7 @@ export function UserMenu({ user, displayName, initials, onSignOut, onSaveName }:
       const handle = window.setTimeout(() => nameInputRef.current?.select(), 50);
       return () => window.clearTimeout(handle);
     }
+    return;
   }, [nameDialogOpen, user?.name]);
 
   const submitName = useCallback(async () => {
