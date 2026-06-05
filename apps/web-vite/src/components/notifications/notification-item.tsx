@@ -1,8 +1,5 @@
 /**
  * NotificationItem — single row in the notification center / popover.
- *
- * Ported from apps/web/src/components/notifications/notification-item.tsx —
- * only swap is the relative @/lib/utils → ../../lib/utils import.
  */
 
 import { Bdi } from '@contractor-ops/ui/components/shadcn/bdi';

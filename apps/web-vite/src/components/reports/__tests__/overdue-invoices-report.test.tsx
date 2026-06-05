@@ -1,6 +1,4 @@
 /**
- * Step 10 port of apps/web/src/components/reports/__tests__/overdue-invoices-report.test.tsx.
- *
  * Component-prop pattern (post container/component split): the `report`
  * prop is stubbed with the shape `useOverdueInvoicesReport` returns. The
  * test does not exercise tRPC; it asserts presentational wiring and the

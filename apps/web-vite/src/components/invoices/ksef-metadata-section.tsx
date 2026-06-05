@@ -1,10 +1,8 @@
 /**
- * KSeF metadata section. Step 11 codemod port from
- * apps/web/src/components/invoices/ksef-metadata-section.tsx:
- *   - `next-intl`                        → `../../i18n/useTranslations.js`
- *   - `@/components/shared/copyable-field` → inline `CopyableField` helper
- *     below (the shared component is not yet ported into the vite tree and
- *     `components/shared/**` is out of scope for the invoices batch).
+ * KSeF metadata section.
+ *
+ * Uses the inline `CopyableField` helper below rather than a shared
+ * component: `components/shared/**` is out of scope for this surface.
  */
 
 import { Card, CardContent, CardHeader } from '@contractor-ops/ui/components/shadcn/card';

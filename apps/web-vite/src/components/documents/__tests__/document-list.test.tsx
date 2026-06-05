@@ -1,6 +1,4 @@
 /**
- * Step 10 port of apps/web/src/components/documents/__tests__/document-list.test.tsx.
- *
  * DocumentList is a presentational wrapper that switches between three
  * states (loading → empty → children). The data fetching belongs to the
  * container.

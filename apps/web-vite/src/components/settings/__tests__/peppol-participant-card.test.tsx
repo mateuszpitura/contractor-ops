@@ -1,8 +1,6 @@
 /**
  * Peppol participant card — render parity test.
  *
- * Ported from apps/web/src/components/settings/e-invoicing/__tests__/peppol-participant-card.test.tsx.
- *
  * The Peppol participant record is the EU e-invoicing identity for the
  * tenant; rendering an inactive participant as "ACTIVE" (or the reverse)
  * misleads the operator and would route real invoices into a network

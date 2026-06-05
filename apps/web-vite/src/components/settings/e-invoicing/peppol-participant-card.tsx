@@ -1,6 +1,4 @@
-// apps/web/src/components/settings/e-invoicing/peppol-participant-card.tsx
-//
-// Phase 61 · Plan 61-07 — Peppol participant card (Settings → E-invoicing).
+// Peppol participant card (Settings → E-invoicing).
 //
 // Two states:
 //   A) No active participant → empty state with "Register Peppol participant" CTA.

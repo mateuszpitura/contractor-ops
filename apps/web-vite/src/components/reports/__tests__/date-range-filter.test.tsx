@@ -1,7 +1,5 @@
 /**
- * Step 10 port of apps/web/src/components/reports/__tests__/date-range-filter.test.tsx.
- *
- * Web-vite DateRangeFilter pulls preset labels from i18next
+ * DateRangeFilter pulls preset labels from i18next
  * (`Reports.thisMonth` …) — `mount()` boots `applyLocale('en')` first.
  * The Custom-popover calendar-driven test is skipped: it depends on
  * base-ui Popover + react-day-picker pointer-event handling which is

@@ -1,5 +1,4 @@
-// Phase 58 Plan 05 Task 2 — Engagement-level CTA.
-// Step 11 codemod port from apps/web/src/components/contractors/classification/classification-engagement-cta.tsx.
+// Engagement-level CTA.
 
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 

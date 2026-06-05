@@ -1,7 +1,5 @@
 /**
- * Ported from apps/web/src/components/contracts/contract-detail/__tests__/amendments-tab.test.tsx.
- *
- * Web-vite split: AmendmentsTab is presentational; `tab` and `addDialog`
+ * AmendmentsTab is presentational; `tab` and `addDialog`
  * props are produced by `useContractAmendmentsTab` / `useAddAmendmentDialog`.
  * We supply shaped stubs so the test runs without a tRPC harness.
  */

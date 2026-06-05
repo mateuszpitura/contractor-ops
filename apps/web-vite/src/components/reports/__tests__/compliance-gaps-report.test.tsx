@@ -1,6 +1,4 @@
 /**
- * Step 10 port of apps/web/src/components/reports/__tests__/compliance-gaps-report.test.tsx.
- *
  * Component-prop pattern (post container/component split). `report` is a
  * shaped stub; the test asserts presentational wiring + the drill-down
  * callback chain.

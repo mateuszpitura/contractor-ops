@@ -1,6 +1,4 @@
 /**
- * Web-vite port of apps/web/src/components/settings/__tests__/admin-branding-section.test.tsx.
- *
  * Container/component split — the section receives `t`, `tSettings`,
  * `fileInputRef`, branding query state and save handlers from its hook.
  * Tests inject shaped stubs directly; tRPC/upload concerns belong to the

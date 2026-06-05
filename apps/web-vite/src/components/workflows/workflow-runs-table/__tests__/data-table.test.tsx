@@ -1,7 +1,6 @@
 /**
- * Ported from apps/web/.../data-table.test.tsx. View now delegates to the
- * canonical `DataTable` primitive; the hook bag no longer carries a
- * `useReactTable` instance, so we shape the props directly.
+ * View delegates to the canonical `DataTable` primitive; the hook bag no
+ * longer carries a `useReactTable` instance, so we shape the props directly.
  */
 
 import { afterEach, describe, expect, it, vi } from 'vitest';

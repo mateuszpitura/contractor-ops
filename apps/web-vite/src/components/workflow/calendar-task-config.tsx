@@ -1,8 +1,6 @@
 /**
  * Calendar task config — toggle + summary + "Configure" button for the
- * workflow-task → calendar sync settings. Ported from legacy
- * `apps/web/src/components/workflow/calendar-task-config.tsx`
- * (commit 62a97d73). Data layer split into
+ * workflow-task → calendar sync settings. Data layer split into
  * `./hooks/use-calendar-task-config.ts`.
  */
 

@@ -1,6 +1,5 @@
 /**
- * Carrier shipment form validators. Lifted from
- * apps/web/src/lib/carrier-validation.ts unchanged.
+ * Carrier shipment form validators.
  */
 
 export function isCarrierFormValid(carrier: string, formData: Record<string, unknown>): boolean {

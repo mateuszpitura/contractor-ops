@@ -1,7 +1,5 @@
 /**
- * Late-interest LPCDA rate tooltip. Step 11 codemod port from
- * apps/web/src/components/invoices/late-interest/rate-calculation-tooltip.tsx:
- *   - `next-intl` → `../../../i18n/useTranslations.js`
+ * Late-interest LPCDA rate tooltip.
  */
 
 import { Button } from '@contractor-ops/ui/components/shadcn/button';

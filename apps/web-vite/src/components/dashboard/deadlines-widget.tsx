@@ -1,8 +1,5 @@
 /**
  * Deadlines widget — contract expirations, overdue tasks, due invoices.
- * Ported from legacy `apps/web/src/components/dashboard/deadlines-widget.tsx`
- * (removed in commit 62a97d73) and rewired for the Vite SPA per
- * `apps/web-vite/ARCHITECTURE.md` (data layer in `./hooks/use-deadlines-widget.ts`).
  */
 
 import { Badge } from '@contractor-ops/ui/components/shadcn/badge';

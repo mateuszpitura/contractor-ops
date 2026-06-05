@@ -1,6 +1,4 @@
-// apps/web/src/components/settings/e-invoicing/peppol-participant-register-dialog.tsx
-//
-// Phase 61 · Plan 61-07 — Register Peppol participant dialog.
+// Register Peppol participant dialog.
 //
 // Form fields:
 //   - scheme  (Identifier scheme, 4-digit ICD literal — 0060 / 0088 / 0106 or "Other")

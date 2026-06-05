@@ -1,9 +1,5 @@
 /**
- * Delete BoE rate dialog. Step 10 batch port from
- * apps/web/src/components/admin/boe-rate/delete-boe-rate-dialog.tsx:
- *   - `'use client'` stripped
- *   - `next-intl#useTranslations` → `../../../i18n/useTranslations.js`
- *   - `@/trpc/init` → `useTRPC()` proxy
+ * Delete BoE rate dialog.
  */
 
 import {

@@ -1,8 +1,6 @@
 /**
  * Premium bento-grid KPI cards with trend arrows + TiltCard chrome.
  *
- * Ported from legacy `apps/web/src/components/dashboard/kpi-cards.tsx`
- * (commit 62a97d73). Data layer split into `./hooks/use-kpi-cards.ts`.
  * The slimmer 5-cell row that renders inside `dashboard-home-container`
  * keeps shipping for the basic dashboard skeleton; this richer
  * presentation can be wired in by replacing the inline UsageKpiCard

@@ -1,9 +1,7 @@
 /**
- * Ported from apps/web/src/components/payments/new-payment-run-dialog/__tests__/step-review.test.tsx.
- *
- * Web-vite split: StepReview accepts the `usePaymentRunStepReview` hook
- * return as a `review` prop; the test passes a shaped stub instead of
- * deep-mocking tRPC + react-query create/lock mutations.
+ * StepReview accepts the `usePaymentRunStepReview` hook return as a `review`
+ * prop; the test passes a shaped stub instead of deep-mocking tRPC +
+ * react-query create/lock mutations.
  */
 
 import { render, screen, setup } from '@/test/test-utils';

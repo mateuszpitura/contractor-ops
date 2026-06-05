@@ -1,6 +1,4 @@
 /**
- * Web-vite port of apps/web/src/components/equipment/__tests__/shipment-label-view.test.tsx.
- *
  * LabelDisplay reads only `Equipment.shipmentLabel` translations from the
  * live EN bundle (no tRPC). `@unpic/react` Image renders a native <img>
  * with the supplied alt/src attributes, so jsdom queries match without

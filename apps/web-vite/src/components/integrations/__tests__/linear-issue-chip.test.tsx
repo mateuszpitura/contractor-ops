@@ -1,10 +1,7 @@
 /**
- * Step 10 port of apps/web/src/components/integrations/__tests__/linear-issue-chip.test.tsx.
- *
- * Prior batches deferred this test because base-ui's tooltip uses the
- * `render` prop pattern (the trigger anchor is composed inside a Radix /
- * base-ui slot), making the rendered DOM brittle to walk. We mirror the
- * legacy approach: stub the shadcn tooltip module so `<TooltipTrigger
+ * base-ui's tooltip uses the `render` prop pattern (the trigger anchor is
+ * composed inside a Radix / base-ui slot), making the rendered DOM brittle
+ * to walk. We stub the shadcn tooltip module so `<TooltipTrigger
  * render={<a ... />}>` collapses to a plain `<a>` we can interrogate
  * directly, and `<TooltipContent>` renders its children inline so the
  * title is visible without simulating a hover.

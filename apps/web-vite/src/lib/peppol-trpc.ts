@@ -1,7 +1,6 @@
 /**
  * Peppol tRPC accessor — workaround for TypeScript type instantiation depth
- * limit with 40+ routers in AppRouter. Lifted from apps/web/src/lib/peppol-trpc.ts;
- * uses the SPA `useTRPC()` proxy instead of `@/trpc/init`.
+ * limit with 40+ routers in AppRouter. Uses the SPA `useTRPC()` proxy.
  */
 
 import type { useTRPC } from '../providers/trpc-provider.js';

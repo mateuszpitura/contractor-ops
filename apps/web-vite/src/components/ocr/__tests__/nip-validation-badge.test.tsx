@@ -1,9 +1,6 @@
 /**
- * Ported from apps/web/src/components/ocr/__tests__/nip-validation-badge.test.tsx.
- *
- * Web-vite NipValidationBadge swaps `next-intl` for the local i18n
- * compat layer, so we keep the original validateNip checksum coverage
- * and assert the badge labels via the live `OcrReview.nipBadge.*` keys.
+ * Covers validateNip checksum behavior and asserts the badge labels via
+ * the live `OcrReview.nipBadge.*` keys.
  */
 
 import { afterEach, describe, expect, it } from 'vitest';

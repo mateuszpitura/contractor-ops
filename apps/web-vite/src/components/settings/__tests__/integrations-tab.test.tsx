@@ -1,6 +1,4 @@
 /**
- * Web-vite port of apps/web/src/components/settings/__tests__/integrations-tab.test.tsx.
- *
  * The tab composes ~15 provider containers that each call tRPC at module
  * eval. We stub them all so the test verifies the layout-level wiring:
  * the standard provider grid renders, and the Slack-specific mapping

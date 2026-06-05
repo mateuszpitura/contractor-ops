@@ -1,6 +1,4 @@
 /**
- * web-vite port of apps/web/.../tab-contracts.test.tsx.
- *
  * Container/component split — `TabContractsView` takes the
  * `useContractorTabContracts` hook return as props. Tests inject a shaped
  * stub instead of mocking tRPC + react-query.

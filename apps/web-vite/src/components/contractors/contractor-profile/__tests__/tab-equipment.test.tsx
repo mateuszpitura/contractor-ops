@@ -1,6 +1,4 @@
 /**
- * web-vite port of apps/web/.../tab-equipment.test.tsx.
- *
  * Container/component split — `TabEquipmentView` takes the
  * `useContractorTabEquipment` hook return as props.
  */

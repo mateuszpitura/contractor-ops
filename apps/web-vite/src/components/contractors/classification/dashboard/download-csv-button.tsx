@@ -1,8 +1,5 @@
 /**
- * Classification dashboard CSV download. Step 11 codemod port from
- * apps/web/src/components/contractors/classification/dashboard/download-csv-button.tsx:
- *   - `next-intl`     → `../../../../i18n/useTranslations.js`
- *   - `@/trpc/init`   → `../../../../providers/trpc-provider.js#useTRPC`
+ * Classification dashboard CSV download.
  */
 
 import { Button } from '@contractor-ops/ui/components/shadcn/button';

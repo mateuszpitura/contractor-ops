@@ -1,12 +1,10 @@
 /**
- * Tests for the nuqs-backed `useInvoiceFilters` URL state hook — adapted
- * from apps/web/src/components/invoices/invoice-table/__tests__/use-invoice-filters.test.tsx.
+ * Tests for the nuqs-backed `useInvoiceFilters` URL state hook.
  *
- * The legacy test used @testing-library/react + user-event, neither of
- * which is a declared dependency of apps/web-vite. To stay within the
- * "no new deps" constraint we render with `react-dom/client` + React's
- * `act` directly and assert on the values pulled out of the hook through
- * a probe component.
+ * @testing-library/react + user-event are not declared dependencies of
+ * apps/web-vite. To stay within the "no new deps" constraint we render
+ * with `react-dom/client` + React's `act` directly and assert on the
+ * values pulled out of the hook through a probe component.
  */
 
 import { NuqsTestingAdapter } from 'nuqs/adapters/testing';

@@ -1,6 +1,4 @@
 /**
- * Web-vite port of apps/web/src/components/settings/__tests__/my-calendar-section.test.tsx.
- *
  * Component is wrapped in a `FeatureGateContainer` that consults tRPC for
  * billing tier — stubbed here to a pass-through so the test exercises the
  * loading / connected / disconnected branches of the calendar surface.

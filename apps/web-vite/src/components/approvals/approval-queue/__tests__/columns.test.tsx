@@ -1,11 +1,9 @@
 /**
- * Step 10 port of apps/web/src/components/approvals/approval-queue/__tests__/columns.test.tsx.
- *
- * The web-vite getColumns is the same pure factory — we render the columns through
- * a vanilla TanStack table wrapper to exercise cell/header logic. SlaBadge is
+ * getColumns is a pure factory — we render the columns through a vanilla
+ * TanStack table wrapper to exercise cell/header logic. SlaBadge is
  * stubbed to keep this focused on the column definitions; SLA logic has its own
- * test. i18n key assertions are rewritten to the live EN strings from the
- * Approvals namespace.
+ * test. i18n key assertions use the live EN strings from the Approvals
+ * namespace.
  */
 
 import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';

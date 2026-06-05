@@ -1,6 +1,4 @@
 /**
- * Ported from apps/web/src/components/billing/__tests__/credit-exhausted-inline.test.tsx.
- *
  * CreditExhaustedInline is presentational — an `role="alert"` panel with
  * two CTA buttons (Upgrade plan / Buy credits) wired via props.
  */

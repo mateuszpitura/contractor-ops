@@ -1,8 +1,6 @@
 /**
  * Settings → members table — render parity test.
  *
- * Ported from apps/web/src/components/settings/__tests__/users-table.test.tsx.
- *
  * The member-management table is the only RBAC-graded surface in
  * Settings; a regressed row (missing role badge, dropped status,
  * inverted "deactivate" rule for the current user) instantly produces

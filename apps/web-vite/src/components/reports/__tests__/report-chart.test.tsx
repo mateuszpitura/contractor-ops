@@ -1,11 +1,8 @@
 /**
- * Step 10 port of apps/web/src/components/reports/__tests__/report-chart.test.tsx.
- *
  * Recharts ResponsiveContainer requires real DOM measurement and doesn't
- * render Cells in jsdom — the legacy test stubs recharts at the module
- * level for the same reason. We mirror that stub set so we can assert on
- * data-driven behavior (cell counts after sort/slice, click payload)
- * without depending on SVG layout.
+ * render Cells in jsdom, so recharts is stubbed at the module level. This
+ * lets the test assert on data-driven behavior (cell counts after
+ * sort/slice, click payload) without depending on SVG layout.
  *
  * Notes:
  *   - `data-fill` cells let us check active/inactive dimming.

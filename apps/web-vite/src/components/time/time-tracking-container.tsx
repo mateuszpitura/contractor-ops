@@ -1,9 +1,5 @@
 /**
- * Admin time tracking page. Ported from
- * apps/web/src/app/[locale]/(dashboard)/time/page.tsx:
- *   - next-intl → ../../i18n/useTranslations.js
- *   - @/i18n/navigation → ../../i18n/navigation.js
- *   - @/trpc/init → ../../providers/trpc-provider.js#useTRPC
+ * Admin time tracking page.
  */
 
 import {
@@ -39,8 +35,8 @@ import { AnimateIn } from '../shared/animate-in.js';
 import { renderEmptyStateAction } from '../shared/atelier-bridges.js';
 import { isListControlsDisabled } from '../shared/list-controls-disabled.js';
 import { WorkbenchPageHeader } from '../shared/workbench-page-header.js';
-import { ApprovalQueueTable } from './approval-queue/data-table.js';
 import type { TimesheetRow } from './approval-queue/data-table.js';
+import { ApprovalQueueTable } from './approval-queue/data-table.js';
 import { TIME_STATUS_FILTER_ALL, useTimeTracking } from './hooks/use-time-tracking.js';
 import { ReconciliationSpotCheck } from './reconciliation-spot-check-container.js';
 import { ReconciliationTable } from './reconciliation-table-container.js';

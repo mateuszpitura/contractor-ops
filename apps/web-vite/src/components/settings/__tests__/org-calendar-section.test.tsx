@@ -1,6 +1,4 @@
 /**
- * Web-vite port of apps/web/src/components/settings/__tests__/org-calendar-section.test.tsx.
- *
  * Mirror of `my-calendar-section.test.tsx` — same FeatureGate stub,
  * different connection scope (org-level vs personal) and the
  * onGoogleConnect / onOutlookConnect handlers come in as props rather

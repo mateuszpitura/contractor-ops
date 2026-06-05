@@ -1,6 +1,5 @@
 /**
- * Generic wizard step navigation. Lifted from
- * apps/web/src/hooks/use-wizard-steps.ts unchanged.
+ * Generic wizard step navigation.
  */
 
 import { useCallback, useState } from 'react';

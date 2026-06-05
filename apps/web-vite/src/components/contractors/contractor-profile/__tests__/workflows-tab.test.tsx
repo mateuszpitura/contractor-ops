@@ -1,6 +1,4 @@
 /**
- * web-vite port of apps/web/.../workflows-tab.test.tsx.
- *
  * Container/component split — `WorkflowsTabView` takes the
  * `useContractorTabWorkflows` hook return as props. Tests mock the two
  * tRPC-bound child containers (jira summary + template picker) and inject

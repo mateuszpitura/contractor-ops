@@ -1,6 +1,4 @@
 /**
- * Ported from apps/web/src/components/billing/__tests__/seat-count-card.test.tsx.
- *
  * SeatCountCard renders the seat-usage tile in the billing dashboard:
  *   - "Active Seats" label + numeric value
  *   - overage warning when active > included

@@ -1,7 +1,5 @@
 /**
- * Step 10 port of apps/web/src/components/approvals/approval-queue/__tests__/side-panel.test.tsx.
- *
- * Web-vite split the panel into a container (`ApprovalSidePanelContainer`,
+ * The panel is split into a container (`ApprovalSidePanelContainer`,
  * which owns the useApprovalActions hook) and a pure view
  * (`ApprovalSidePanelView`, which receives `actions` + `resolvedChain` as
  * props). Tests target the view with a shaped `actions` stub so we never need

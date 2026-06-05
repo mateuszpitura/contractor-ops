@@ -1,8 +1,5 @@
 /**
- * StepConfirmation — ported from
- * apps/web/src/components/payments/new-payment-run-dialog/step-confirmation.tsx.
- * Swaps:
- *   - next-intl → ../../../i18n/useTranslations
+ * StepConfirmation.
  */
 
 import { Button } from '@contractor-ops/ui/components/shadcn/button';

@@ -1,6 +1,4 @@
 /**
- * Web-vite port of apps/web/src/components/zatca/__tests__/compliance-checks.test.tsx.
- *
  * Container splits the step into ComplianceChecksIdle (Run button) and
  * ComplianceChecksResults (per-row status + progress). Tests render
  * each sibling directly with live EN translations.

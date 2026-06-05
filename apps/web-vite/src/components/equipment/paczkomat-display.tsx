@@ -1,7 +1,5 @@
 /**
- * Paczkomat selected-locker display. Step 11 codemod port from
- * apps/web/src/components/equipment/paczkomat-display.tsx:
- *   - `next-intl` → `../../i18n/useTranslations.js`
+ * Paczkomat selected-locker display.
  */
 
 import { Button } from '@contractor-ops/ui/components/shadcn/button';

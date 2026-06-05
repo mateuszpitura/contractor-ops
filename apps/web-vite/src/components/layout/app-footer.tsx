@@ -1,8 +1,5 @@
 /**
- * Authenticated dashboard footer. Step 11 codemod port from
- * apps/web/src/components/layout/app-footer.tsx:
- *   - `next-intl`              → `../../i18n/useTranslations.js`
- *   - `@/i18n/navigation#Link` → `react-router-dom#Link`
+ * Authenticated dashboard footer.
  */
 
 import { Link } from 'react-router-dom';

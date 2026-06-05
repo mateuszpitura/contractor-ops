@@ -1,7 +1,5 @@
 /**
- * BACS modulus check warning list — ported from
- * apps/web/src/components/payments/bacs/modulus-check-warning-list.tsx.
- * next-intl → ../../../i18n/useTranslations.
+ * BACS modulus check warning list.
  */
 
 import { Badge } from '@contractor-ops/ui/components/shadcn/badge';

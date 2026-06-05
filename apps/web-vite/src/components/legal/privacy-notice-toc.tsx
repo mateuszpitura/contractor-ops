@@ -1,6 +1,5 @@
 /**
- * Client-side table of contents for privacy notices — ported from
- * apps/web/src/components/legal/privacy-notice-toc.tsx.
+ * Client-side table of contents for privacy notices.
  */
 
 import { cn } from '../../lib/utils.js';

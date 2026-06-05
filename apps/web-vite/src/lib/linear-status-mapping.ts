@@ -1,6 +1,5 @@
 /**
- * Linear status → workflow status smart-default mapping. Lifted from
- * apps/web/src/lib/linear-status-mapping.ts unchanged.
+ * Linear status → workflow status smart-default mapping.
  */
 
 interface LinearStateInput {

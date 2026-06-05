@@ -1,6 +1,4 @@
 /**
- * Step 10 port of apps/web/src/components/documents/__tests__/upload-progress.test.tsx.
- *
  * UploadProgress renders one in-flight or finished upload row. It is purely
  * presentational — covers a small status enum and the progress bar.
  */

@@ -1,7 +1,5 @@
 /**
- * BACS transliteration warning banner — ported from
- * apps/web/src/components/payments/bacs/transliteration-warning-banner.tsx.
- * next-intl → ../../../i18n/useTranslations.
+ * BACS transliteration warning banner.
  */
 
 import { Alert, AlertDescription, AlertTitle } from '@contractor-ops/ui/components/shadcn/alert';

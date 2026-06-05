@@ -1,5 +1,4 @@
 // Default Skonto section in DE billing-profile edit form.
-// Step 11 codemod port from apps/web/src/components/contractors/billing-profile/default-skonto-section.tsx.
 
 import {
   AlertDialog,

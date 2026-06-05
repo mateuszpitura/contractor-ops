@@ -1,6 +1,4 @@
 /**
- * Ported from apps/web/src/components/payments/payment-run-table/__tests__/data-table-toolbar.test.tsx.
- *
  * The toolbar reads translations + `useDateFormatter`; `useDateFormatter`
  * reaches into tRPC for org settings, so we stub it to a stable formatter
  * to keep the test focused on prop wiring.

@@ -1,6 +1,4 @@
 /**
- * Step 10 port of apps/web/src/components/reports/__tests__/expiring-contracts-report.test.tsx.
- *
  * Container/component split means the test no longer needs a tRPC harness:
  * the `report` prop is the hook's return value, so the test injects a
  * shaped stub. `useRouter()` is wired via a `MemoryRouter` with `:locale`

@@ -1,7 +1,5 @@
 /**
- * OCR processing overlay. Step 11 codemod port from
- * apps/web/src/components/ocr/ocr-processing-overlay.tsx:
- *   - `next-intl` → `../../i18n/useTranslations.js`
+ * OCR processing overlay.
  */
 
 import { Progress } from '@contractor-ops/ui/components/shadcn/progress';

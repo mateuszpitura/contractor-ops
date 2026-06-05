@@ -1,11 +1,8 @@
 /**
- * Step 10 port of apps/web/src/components/notifications/__tests__/notification-item.test.tsx.
- *
- * NotificationItem in web-vite is pure presentational — the
- * mark-read/mutation boundary lives in the container — so we exercise
- * visual + click logic directly with the local `_render.tsx` helpers and
- * drop the `@testing-library/*` boilerplate plus i18n mocks (none needed
- * — the component renders raw `notification.title`/`body` from props).
+ * NotificationItem is pure presentational — the mark-read/mutation
+ * boundary lives in the container — so we exercise visual + click logic
+ * directly with the local `_render.tsx` helpers and need no i18n mocks
+ * (the component renders raw `notification.title`/`body` from props).
  */
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';

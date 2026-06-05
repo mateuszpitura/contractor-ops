@@ -1,11 +1,6 @@
 /**
  * Kleinunternehmerregelung toggle (DE-only).
  *
- * Ported from apps/web/src/components/organization/kleinunternehmer-toggle.tsx
- * with the SPA codemod swaps:
- *   - next-intl `useTranslations` → ../../i18n/useTranslations.js
- *   - @/trpc/init `trpc` → useTRPC() proxy from providers/trpc-provider
- *
  * Flipping this flag rewrites VAT handling for every future DE invoice
  * (forces `KU` rate, suppresses VAT-breakdown row, emits § 19 UStG footer).
  * Non-DE orgs never render the toggle (router enforces too).

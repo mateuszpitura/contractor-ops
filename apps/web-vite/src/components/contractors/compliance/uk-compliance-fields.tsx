@@ -1,5 +1,3 @@
-// Step 11 codemod port from apps/web/src/components/contractors/compliance/uk-compliance-fields.tsx.
-
 import { Input } from '@contractor-ops/ui/components/shadcn/input';
 import { Label } from '@contractor-ops/ui/components/shadcn/label';
 import type { UkCountryFields } from '@contractor-ops/validators';

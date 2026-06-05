@@ -1,12 +1,5 @@
 /**
- * ConditionBuilder — task-card condition rules editor. Ported from
- * apps/web/src/components/workflows/template-builder/condition-builder.tsx.
- *
- * SPA swaps:
- *   - `'use client';` removed
- *   - `next-intl` `useTranslations` → ../../../i18n/useTranslations.js
- *   - `@/i18n/typed-keys` → ../../../i18n/typed-keys.js
- *   - `@/lib/enum-key` → ../../../lib/enum-key.js
+ * ConditionBuilder — task-card condition rules editor.
  */
 
 import { Badge } from '@contractor-ops/ui/components/shadcn/badge';

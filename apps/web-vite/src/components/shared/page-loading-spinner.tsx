@@ -1,7 +1,5 @@
 /**
- * Suspense fallback spinner. Step 11 codemod port from
- * apps/web/src/components/shared/page-loading-spinner.tsx:
- *   - `next-intl`  → `../../i18n/useTranslations.js`
+ * Suspense fallback spinner.
  */
 
 import { Loader2 } from 'lucide-react';

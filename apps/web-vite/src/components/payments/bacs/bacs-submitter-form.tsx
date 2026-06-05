@@ -1,9 +1,5 @@
 /**
- * BACS submitter form — ported from
- * apps/web/src/components/payments/bacs/bacs-submitter-form.tsx.
- * Swaps:
- *   - next-intl → ../../../i18n/useTranslations
- *   - @/trpc/init → useTRPC() from providers/trpc-provider
+ * BACS submitter form.
  */
 
 import { Button } from '@contractor-ops/ui/components/shadcn/button';

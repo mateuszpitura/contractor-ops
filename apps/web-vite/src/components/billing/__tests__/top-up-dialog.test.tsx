@@ -1,6 +1,4 @@
 /**
- * Web-vite port of apps/web/src/components/billing/__tests__/top-up-dialog.test.tsx.
- *
  * TopUpDialog is now a controlled presentational dialog — `selectedBundle`,
  * `isPending`, `onConfirm`, and the `t` translator are passed as props.
  */

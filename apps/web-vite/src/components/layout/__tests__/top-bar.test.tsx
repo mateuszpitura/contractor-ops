@@ -1,6 +1,4 @@
 /**
- * Step 10 port of apps/web/src/components/layout/__tests__/top-bar.test.tsx.
- *
  * The web-vite TopBar is purely presentational: it receives breadcrumb
  * segments, a `hasContractors` flag, and navigation callbacks. The dialogs
  * (contract wizard + command palette) and the notification popover are

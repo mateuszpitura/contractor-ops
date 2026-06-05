@@ -1,6 +1,4 @@
 /**
- * Web-vite port of apps/web/src/components/settings/__tests__/expiry-reminder-defaults.test.tsx.
- *
  * Container/component split — the component is pure presentational and
  * receives `t`, `inputValue`, `setInputValue`, `isDirty`, `isPending`,
  * `handleSave` from its hook. Tests inject a shaped stub directly so no

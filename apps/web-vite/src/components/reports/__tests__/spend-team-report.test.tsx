@@ -1,6 +1,4 @@
 /**
- * Step 10 port of apps/web/src/components/reports/__tests__/spend-team-report.test.tsx.
- *
  * Component-prop pattern (post container/component split). `report` is a
  * shaped stub; no tRPC mocking is needed because `SpendTeamReport` does
  * not import `useDateFormatter` or `useRouter` — it consumes `report`

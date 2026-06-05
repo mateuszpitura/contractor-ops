@@ -1,10 +1,7 @@
 /**
- * Dashboard layout context — active org + role. Lifted from
- * apps/web/src/components/layout/dashboard-context.tsx unchanged.
+ * Dashboard layout context — active org + role.
  *
- * In the SPA the provider is populated from a tRPC query at the
- * dashboard shell mount; the context shape stays identical so the legacy
- * `useDashboardContext()` call sites work after the import-path swap.
+ * The provider is populated from a tRPC query at the dashboard shell mount.
  */
 
 import type { ReactNode } from 'react';

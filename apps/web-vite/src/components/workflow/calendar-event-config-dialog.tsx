@@ -1,9 +1,7 @@
 /**
  * Calendar event config dialog — workflow task → calendar sync settings
- * (title template, duration, attendees). Ported from legacy
- * `apps/web/src/components/workflow/calendar-event-config-dialog.tsx`
- * (commit 62a97d73). Pure presentational; persistence happens in the
- * parent via `onSave`.
+ * (title template, duration, attendees). Pure presentational; persistence
+ * happens in the parent via `onSave`.
  */
 
 import { Button } from '@contractor-ops/ui/components/shadcn/button';

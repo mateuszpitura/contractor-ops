@@ -1,7 +1,5 @@
 /**
- * Ported from apps/web/src/components/portal/__tests__/portal-top-bar.test.tsx.
- *
- * Web-vite split: PortalTopBar accepts the `usePortalTopBar` return as a
+ * PortalTopBar accepts the `usePortalTopBar` return as a
  * `bar` prop. The nested mobile-menu container reaches into tRPC for org
  * lists, so we stub it to inert null. The OrgSwitcherList is only shown
  * via dropdown sub-menus the test does not exercise.

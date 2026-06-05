@@ -1,8 +1,5 @@
 /**
- * Intake validation status pill. Step 11 codemod port from
- * apps/web/src/components/invoices/intake/intake-validation-status-pill.tsx:
- *   - `next-intl`    → `../../../i18n/useTranslations.js`
- *   - `@/lib/utils`  → `../../../lib/utils.js`
+ * Intake validation status pill.
  */
 
 import { AlertTriangle, CheckCircle, ShieldX } from 'lucide-react';

@@ -1,9 +1,5 @@
 /**
- * Equipment status badge. Step 11 codemod port from
- * apps/web/src/components/equipment/equipment-status-badge.tsx:
- *   - `next-intl`         → `../../i18n/useTranslations.js`
- *   - `@/i18n/typed-keys` → `../../i18n/typed-keys.js`
- *   - `@/lib/enum-key`    → `../../lib/enum-key.js`
+ * Equipment status badge.
  */
 
 import { Badge } from '@contractor-ops/ui/components/shadcn/badge';

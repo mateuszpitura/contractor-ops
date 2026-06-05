@@ -1,7 +1,5 @@
 /**
- * Compliance health badge. Step 11 codemod port from
- * apps/web/src/components/contractors/compliance-health-badge.tsx:
- *   - `next-intl` → `../../i18n/useTranslations.js`
+ * Compliance health badge.
  */
 
 import { AlertTriangle, CheckCircle, XCircle } from 'lucide-react';

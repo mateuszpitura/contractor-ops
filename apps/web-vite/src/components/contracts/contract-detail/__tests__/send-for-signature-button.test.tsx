@@ -1,6 +1,4 @@
 /**
- * Ported from apps/web/src/components/contracts/contract-detail/__tests__/send-for-signature-button.test.tsx.
- *
  * SendForSignatureButton calls `useSendForSignatureButton` directly (pure
  * derivation hook — no tRPC) and renders SendForSignatureDialogContainer
  * (which IS a tRPC consumer). We mock the container to keep this test

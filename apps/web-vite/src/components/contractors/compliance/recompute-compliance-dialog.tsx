@@ -1,5 +1,4 @@
 // Phase 71 D-13..D-16 — Recompute compliance confirm dialog.
-// Step 11 codemod port from apps/web/src/components/contractors/compliance/recompute-compliance-dialog.tsx.
 
 import {
   AlertDialog,

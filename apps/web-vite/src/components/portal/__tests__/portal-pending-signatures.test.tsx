@@ -1,7 +1,5 @@
 /**
- * Ported from apps/web/src/components/portal/__tests__/portal-pending-signatures.test.tsx.
- *
- * Web-vite split: the presentational `PortalPendingSignatures` accepts
+ * The presentational `PortalPendingSignatures` accepts
  * the `usePortalPendingSignaturesView` return as a `view` prop. The
  * embedded signing modal container is stubbed because it hits tRPC for
  * envelope details.

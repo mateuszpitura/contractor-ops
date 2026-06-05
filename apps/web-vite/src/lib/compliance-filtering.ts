@@ -1,6 +1,5 @@
 /**
- * Client-side compliance health filtering. Lifted from
- * apps/web/src/lib/compliance-filtering.ts unchanged.
+ * Client-side compliance health filtering.
  */
 
 export interface ComplianceItem {

@@ -1,7 +1,5 @@
 /**
- * Transmission section. Step 11 codemod port from
- * apps/web/src/components/invoices/einvoice-tab/transmission-section.tsx:
- *   - `next-intl` → `../../../i18n/useTranslations.js`
+ * Transmission section.
  */
 
 import { DataTable } from '@contractor-ops/ui';

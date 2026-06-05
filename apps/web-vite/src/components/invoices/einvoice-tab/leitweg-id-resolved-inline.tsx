@@ -1,7 +1,5 @@
 /**
- * Resolved Leitweg-ID inline display. Step 11 codemod port from
- * apps/web/src/components/invoices/einvoice-tab/leitweg-id-resolved-inline.tsx:
- *   - `next-intl` → `../../../i18n/useTranslations.js`
+ * Resolved Leitweg-ID inline display.
  */
 
 import { Alert, AlertDescription, AlertTitle } from '@contractor-ops/ui/components/shadcn/alert';

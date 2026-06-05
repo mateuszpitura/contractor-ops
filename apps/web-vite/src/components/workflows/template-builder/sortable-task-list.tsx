@@ -1,10 +1,5 @@
 /**
- * SortableTaskList — @dnd-kit-powered task reorder list. Ported from
- * apps/web/src/components/workflows/template-builder/sortable-task-list.tsx.
- *
- * SPA swaps:
- *   - `'use client';` removed
- *   - `next-intl` → ../../../i18n/useTranslations.js
+ * SortableTaskList — @dnd-kit-powered task reorder list.
  */
 
 import { Button } from '@contractor-ops/ui/components/shadcn/button';

@@ -1,6 +1,4 @@
 /**
- * Ported from apps/web/src/components/payments/invoice-selection-table/__tests__/columns.test.tsx.
- *
  * `createMockTranslator` was not lifted into web-vite; a thin echo
  * translator (key-as-text) keeps the assertions stable across i18n
  * tweaks. Cell renderers receive a minimal fake row context shaped to

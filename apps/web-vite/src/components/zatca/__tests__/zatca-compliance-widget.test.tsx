@@ -1,6 +1,4 @@
 /**
- * Web-vite port of apps/web/src/components/zatca/__tests__/zatca-compliance-widget.test.tsx.
- *
  * ZatcaComplianceWidgetView is pure presentational; the stats query lives
  * in `useZatcaComplianceWidget`. The test passes shaped props directly.
  */

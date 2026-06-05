@@ -1,7 +1,5 @@
 /**
- * Permanent offboarding override badge. Step 11 codemod port from
- * apps/web/src/components/offboarding/override-badge.tsx:
- *   - `next-intl` → `../../i18n/useTranslations.js`
+ * Permanent offboarding override badge.
  */
 
 import { Badge } from '@contractor-ops/ui/components/shadcn/badge';

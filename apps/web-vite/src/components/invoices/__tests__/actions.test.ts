@@ -1,9 +1,5 @@
 /**
- * Pure-data tests for the invoice actions registry — ported from
- * apps/web/src/components/invoices/__tests__/actions.test.ts.
- *
- * The registry is shared verbatim with apps/web (no React imports), so
- * the only adaptation needed was the relative import path.
+ * Pure-data tests for the invoice actions registry.
  */
 
 import { describe, expect, it } from 'vitest';

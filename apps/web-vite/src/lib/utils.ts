@@ -1,6 +1,5 @@
 /**
- * Tailwind class merge — lifted from apps/web/src/lib/utils.ts unchanged
- * (no Next imports). Step 11 codemod: zero swaps needed.
+ * Tailwind class merge.
  */
 
 import type { ClassValue } from 'clsx';

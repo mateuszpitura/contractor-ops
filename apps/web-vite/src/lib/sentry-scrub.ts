@@ -1,11 +1,5 @@
 /**
- * Sentry `beforeSend` PII scrubber. Step 11 codemod port from
- * apps/web/src/lib/sentry-scrub.ts:
- *
- *   - `@sentry/nextjs`        → `@sentry/react` (ErrorEvent + EventHint
- *     types live in `@sentry/types`, which both SDKs re-export).
- *
- * Logic body unchanged.
+ * Sentry `beforeSend` PII scrubber.
  */
 
 import type { ErrorEvent, EventHint } from '@sentry/react';

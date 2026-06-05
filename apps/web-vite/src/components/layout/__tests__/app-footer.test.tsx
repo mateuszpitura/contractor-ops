@@ -1,6 +1,4 @@
 /**
- * Step 10 port of apps/web/src/components/layout/__tests__/app-footer.test.tsx.
- *
  * AppFooter is the authenticated shell footer — the only piece of layout
  * chrome that surfaces the policy links and the dynamic copyright year.
  * Wrapped in MemoryRouter because react-router-dom's `<Link>` needs a

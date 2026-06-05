@@ -1,7 +1,5 @@
 /**
- * Ported from apps/web/src/components/contracts/contract-table/__tests__/data-table-bulk-actions.test.tsx.
- *
- * Web-vite split: DataTableBulkActions takes `table`, `bulkActions` (handlers
+ * DataTableBulkActions takes `table`, `bulkActions` (handlers
  * bag from `useContractBulkActions`), and `onComplete`. Mutations are not
  * triggered here so we pass a no-op handlers bag.
  */

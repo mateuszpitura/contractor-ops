@@ -1,7 +1,5 @@
 /**
- * Ported from apps/web/src/components/workflows/template-builder/__tests__/template-form.test.tsx.
- *
- * Web-vite split: TemplateForm takes the full `useTemplateFormSection` bag
+ * TemplateForm takes the full `useTemplateFormSection` bag
  * as props. We mock SortableTaskList so the test focuses on the chrome
  * (name field, type select, save button) without dragging dnd-kit context.
  */

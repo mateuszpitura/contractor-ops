@@ -1,8 +1,6 @@
 /**
- * Ported from apps/web/src/components/contracts/contract-wizard/__tests__/step-documents.test.tsx.
- *
- * Web-vite split: StepDocuments is presentational (XHR upload + tRPC moved
- * into `useContractWizardStepDocuments`). Tests cover the prop-driven
+ * StepDocuments is presentational (XHR upload + tRPC live in
+ * `useContractWizardStepDocuments`). Tests cover the prop-driven
  * rendering branches.
  */
 

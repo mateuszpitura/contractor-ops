@@ -1,8 +1,5 @@
 /**
- * Time summary stats (3 cards). Step 11 codemod port from
- * apps/web/src/components/time/time-summary-stats.tsx:
- *   - `next-intl` → `../../i18n/useTranslations.js`
- *   - `@/components/portal/summary-card` → `../portal/summary-card.js`
+ * Time summary stats (3 cards).
  */
 
 import { CheckCircle2, Clock, Send } from 'lucide-react';

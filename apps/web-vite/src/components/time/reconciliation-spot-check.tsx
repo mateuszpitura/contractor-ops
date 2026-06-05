@@ -1,8 +1,5 @@
 /**
  * Reconciliation spot-check (single contract/period drill-down).
- * Ported from apps/web/src/components/time/reconciliation-spot-check.tsx:
- *   - next-intl → ../../i18n/useTranslations.js
- *   - @/trpc/init → ../../providers/trpc-provider.js#useTRPC
  */
 
 import { Badge } from '@contractor-ops/ui/components/shadcn/badge';

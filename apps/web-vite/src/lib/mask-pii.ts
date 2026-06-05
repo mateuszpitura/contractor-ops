@@ -1,8 +1,7 @@
 /**
- * PII masking helpers. Lifted from apps/web/src/lib/mask-pii.ts
- * unchanged — the role-normalization helper lives in
- * `@contractor-ops/auth/role-normalization` already exposed as a
- * workspace sub-path.
+ * PII masking helpers. The role-normalization helper lives in
+ * `@contractor-ops/auth/role-normalization`, exposed as a workspace
+ * sub-path.
  */
 
 import { parseMemberRole } from '@contractor-ops/auth/role-normalization';

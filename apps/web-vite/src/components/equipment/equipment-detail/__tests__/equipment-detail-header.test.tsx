@@ -1,6 +1,4 @@
 /**
- * Step 10 port of apps/web/src/components/equipment/equipment-detail/__tests__/equipment-detail-header.test.tsx.
- *
  * Web-vite renames the component to `EquipmentDetailHeaderView` and lifts retire/
  * unassign mutations to props (the container owns the hooks). Tests inject
  * shaped mutation stubs so we never call tRPC.

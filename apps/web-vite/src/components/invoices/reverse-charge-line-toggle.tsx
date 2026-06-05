@@ -1,7 +1,5 @@
 /**
- * Reverse-charge per-line toggle. Step 11 codemod port from
- * apps/web/src/components/invoices/reverse-charge-line-toggle.tsx:
- *   - `next-intl` → `../../i18n/useTranslations.js`
+ * Reverse-charge per-line toggle.
  */
 
 import {

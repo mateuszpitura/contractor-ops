@@ -1,6 +1,4 @@
 /**
- * Step 10 port of apps/web/src/components/layout/__tests__/user-menu.test.tsx.
- *
  * The web-vite UserMenu is the presentational counterpart of the container
  * — it accepts `user`, `displayName`, `initials`, `onSignOut` directly.
  * The session/sign-out side-effects live in `user-menu-container.tsx`.

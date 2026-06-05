@@ -1,6 +1,5 @@
 /**
- * Bank statement file validator. Lifted from
- * apps/web/src/lib/file-validation.ts unchanged.
+ * Bank statement file validator.
  */
 
 const VALID_EXTENSIONS = ['.mt940', '.csv'];

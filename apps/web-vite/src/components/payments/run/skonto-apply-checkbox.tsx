@@ -1,10 +1,5 @@
 /**
- * Skonto apply checkbox — ported from
- * apps/web/src/components/payments/run/skonto-apply-checkbox.tsx.
- * Swaps:
- *   - next-intl → ../../../i18n/useTranslations
- *   - @/trpc/init → useTRPC()
- *   - @/lib/utils → ../../../lib/utils
+ * Skonto apply checkbox.
  */
 
 import { formatMinorAsCurrency } from '@contractor-ops/shared';

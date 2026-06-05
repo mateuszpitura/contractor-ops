@@ -1,8 +1,5 @@
 /**
- * Privacy-notice PDF download CTA. Step 11 codemod port from
- * apps/web/src/components/legal/privacy-notice-pdf-download.tsx:
- *   - `next-intl`     → `../../i18n/useTranslations.js`
- *   - `@/trpc/init`   → `../../providers/trpc-provider.js#useTRPC`
+ * Privacy-notice PDF download CTA.
  */
 
 import { Button } from '@contractor-ops/ui/components/shadcn/button';

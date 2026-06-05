@@ -1,6 +1,4 @@
 /**
- * Web-vite port of apps/web/src/components/equipment/__tests__/shipment-form.test.tsx.
- *
  * ShipmentFormView owns react-hook-form internally; the test injects a
  * stub `createMutation` so the form renders without tRPC.
  */

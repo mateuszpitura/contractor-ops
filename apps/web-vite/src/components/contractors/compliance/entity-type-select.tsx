@@ -1,5 +1,3 @@
-// Step 11 codemod port from apps/web/src/components/contractors/compliance/entity-type-select.tsx.
-
 import { Label } from '@contractor-ops/ui/components/shadcn/label';
 import { useCallback, useId } from 'react';
 

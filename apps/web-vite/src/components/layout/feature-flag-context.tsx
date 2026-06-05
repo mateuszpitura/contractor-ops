@@ -1,11 +1,8 @@
 /**
- * Feature-flag React context. Lifted from
- * apps/web/src/components/layout/feature-flag-context.tsx unchanged.
+ * Feature-flag React context.
  *
- * The legacy layout populated `<FeatureFlagProvider bag={...}>` from a
- * server-resolved flag bag. In the SPA the bag arrives via a tRPC query
- * at the dashboard shell mount (`flag.list.queryOptions()`); the
- * provider stays identical.
+ * The bag arrives via a tRPC query at the dashboard shell mount
+ * (`flag.list.queryOptions()`).
  */
 
 import type { FlagKey, FlagValues } from '@contractor-ops/feature-flags/browser';

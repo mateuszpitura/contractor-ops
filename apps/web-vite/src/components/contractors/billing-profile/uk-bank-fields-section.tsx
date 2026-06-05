@@ -1,5 +1,4 @@
 // Phase 63 · Plan 04 · D-01 — Collapsible UK bank fields section.
-// Step 11 codemod port from apps/web/src/components/contractors/billing-profile/uk-bank-fields-section.tsx.
 
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import {

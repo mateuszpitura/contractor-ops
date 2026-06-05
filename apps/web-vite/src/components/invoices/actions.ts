@@ -1,9 +1,7 @@
 /**
  * Invoice actions registry — single source of truth.
  *
- * Mirror of apps/web/src/components/invoices/actions.ts. Pure data
- * structure; no React or next-intl imports, so the SPA port lifts it
- * unchanged.
+ * Pure data structure; no React or next-intl imports.
  */
 
 import {

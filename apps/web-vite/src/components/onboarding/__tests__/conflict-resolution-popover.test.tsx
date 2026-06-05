@@ -1,6 +1,4 @@
 /**
- * Ported from apps/web/src/components/onboarding/__tests__/conflict-resolution-popover.test.tsx.
- *
  * ConflictResolutionPopover renders a Popover whose trigger is a Badge
  * showing the unresolved count. We assert on the visible trigger text.
  */

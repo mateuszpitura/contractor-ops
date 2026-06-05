@@ -1,6 +1,4 @@
 /**
- * Step 10 port of apps/web/src/components/contracts/__tests__/actions.test.ts.
- *
  * The contract actions registry is the gate that decides when
  * "Send for Signature" (e-sign initiation), supersede, terminate, and
  * delete appear on each surface — the canonical source of truth for the

@@ -1,8 +1,7 @@
 /**
  * React Router loader helper — assert the caller is a platform operator.
  *
- * Step 11 codemod port of apps/web/src/lib/admin-auth.ts. Server-side
- * `requirePlatformOperator()` is replaced by a loader that:
+ * Server-side `requirePlatformOperator()` is replaced by a loader that:
  *
  *   1. Calls the Better Auth `getSession()` to confirm a session exists.
  *   2. Compares `session.session.activeOrganizationId` to the public

@@ -1,6 +1,4 @@
 /**
- * Web-vite port of apps/web/src/components/settings/__tests__/provider-connection-card.test.tsx.
- *
  * Container/component split. The detail sheet container is mocked to a
  * noop to keep the test scoped to the card surface.
  */

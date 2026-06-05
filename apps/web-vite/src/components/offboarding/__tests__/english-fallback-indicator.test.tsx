@@ -1,9 +1,7 @@
 /**
- * Ported from apps/web/src/components/offboarding/__tests__/english-fallback-indicator.test.tsx.
- *
- * Web-vite EnglishFallbackIndicator is presentational and reads strings via
- * `useTranslations` (i18next-backed compat hook). Legacy mocked next-intl;
- * here we render against the real bundle that `_render.tsx` boots in English.
+ * EnglishFallbackIndicator is presentational and reads strings via
+ * `useTranslations` (i18next-backed compat hook); here we render against the
+ * real bundle that `_render.tsx` boots in English.
  *
  * Note: ICU variable interpolation in jsdom-loaded bundles is partially
  * exercised elsewhere in the suite; here we assert on the literal portion

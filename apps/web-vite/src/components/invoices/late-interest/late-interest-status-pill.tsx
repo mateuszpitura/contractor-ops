@@ -1,9 +1,5 @@
 /**
- * Late-interest status pill. Step 11 codemod port from
- * apps/web/src/components/invoices/late-interest/late-interest-status-pill.tsx:
- *   - `next-intl`         → `../../../i18n/useTranslations.js`
- *   - `@/i18n/typed-keys` → `../../../i18n/typed-keys.js`
- *   - `@/lib/utils`       → `../../../lib/utils.js`
+ * Late-interest status pill.
  */
 
 import { Badge } from '@contractor-ops/ui/components/shadcn/badge';

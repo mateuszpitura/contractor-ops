@@ -1,12 +1,7 @@
 /**
- * Step 10 port of apps/web/src/components/reports/__tests__/report-table.test.tsx.
- *
- * Web-vite ReportTable is structurally identical to the legacy version
- * (same react-table props, same SortableTableHead). Differences:
- *   - i18n source is i18next via `useTranslations` (real bundle resolved
- *     by `mount()` → `applyLocale('en')`), not a vi.mock of next-intl.
- *   - The refetch-overlay class set comes from `AtelierTableShell`:
- *     `absolute inset-0` + `aria-busy="true"` (no `z-10`).
+ * i18n labels resolve from the real bundle via `mount()` → `applyLocale('en')`.
+ * The refetch-overlay class set comes from `AtelierTableShell`:
+ * `absolute inset-0` + `aria-busy="true"` (no `z-10`).
  *
  * Skeleton selector `[data-slot='skeleton']` matches shadcn's Skeleton
  * primitive used inside ReportTable's loading branch.

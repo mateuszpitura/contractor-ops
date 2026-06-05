@@ -1,7 +1,5 @@
 /**
- * Invoice detail 60/40 split layout. Step 11 codemod port from
- * apps/web/src/components/invoices/invoice-detail/invoice-detail-layout.tsx:
- *   - `next-intl` → `../../../i18n/useTranslations.js`
+ * Invoice detail 60/40 split layout.
  */
 
 import type { ReactNode } from 'react';

@@ -1,9 +1,6 @@
 /**
  * Monthly spend chart — Recharts area chart with 6m / 12m / YTD toggle
- * and multi-currency stacking (PLN + EUR). Ported from legacy
- * `apps/web/src/components/dashboard/spend-chart.tsx` (commit 62a97d73)
- * and rewired for the Vite SPA per `apps/web-vite/ARCHITECTURE.md`
- * (data layer in `./hooks/use-spend-chart.ts`).
+ * and multi-currency stacking (PLN + EUR).
  */
 
 import {

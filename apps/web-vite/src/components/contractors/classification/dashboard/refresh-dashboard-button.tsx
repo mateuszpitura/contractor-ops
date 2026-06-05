@@ -1,6 +1,5 @@
 /**
- * Refresh dashboard button. Port from
- * apps/web/src/components/contractors/classification/dashboard/refresh-dashboard-button.tsx
+ * Refresh dashboard button.
  */
 
 import { Button } from '@contractor-ops/ui/components/shadcn/button';

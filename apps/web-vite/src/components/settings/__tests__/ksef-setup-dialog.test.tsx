@@ -1,6 +1,4 @@
 /**
- * Web-vite port of apps/web/src/components/settings/__tests__/ksef-setup-dialog.test.tsx.
- *
  * Container/component split. The dialog receives all KSeF setup state +
  * handlers from `useKsefSetupDialog`. Tests inject shaped stubs and
  * assert on the open-state surface, tab switch, save-disable logic.

@@ -1,6 +1,4 @@
 /**
- * Ported from apps/web/src/components/portal/__tests__/notification-preferences-section.test.tsx.
- *
  * Container/component split: the section accepts the
  * `useNotificationPreferencesSection` hook return as a `prefs` prop, so
  * the test injects a shaped stub instead of mocking tRPC mutations.

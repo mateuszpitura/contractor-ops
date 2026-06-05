@@ -1,6 +1,4 @@
 /**
- * Ported from apps/web/src/components/portal/__tests__/org-picker.test.tsx.
- *
  * Pure presentational tests against shaped props.
  */
 

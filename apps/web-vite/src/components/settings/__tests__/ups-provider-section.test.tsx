@@ -1,6 +1,4 @@
 /**
- * Web-vite port of apps/web/src/components/settings/__tests__/ups-provider-section.test.tsx.
- *
  * Mirror of `dpd-provider-section.test.tsx` — same shape, UPS-specific keys.
  */
 

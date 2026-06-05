@@ -1,5 +1,4 @@
-// Phase 57 · Plan 04 · Task 2 — VAT validation status pill.
-// Step 11 codemod port from apps/web/src/components/contractors/vat-validation-status-pill.tsx.
+// VAT validation status pill.
 
 import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
 import {

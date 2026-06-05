@@ -1,6 +1,4 @@
 /**
- * Web-vite port of apps/web/src/components/billing/__tests__/plan-comparison-grid.test.tsx.
- *
  * In web-vite, Stripe price ids read from `import.meta.env.VITE_STRIPE_PRICE_*`.
  * vitest exposes `vi.stubEnv` for `import.meta.env`, but the PLANS array
  * is captured at module load — we stub via the top-level test setup using

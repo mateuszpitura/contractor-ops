@@ -1,6 +1,4 @@
 /**
- * web-vite port of apps/web/.../other-client-attestation-form.test.tsx.
- *
  * Container/component split — `OtherClientAttestationFormView` takes the
  * `useOtherClientAttestation` hook return as props. Tests inject a shaped
  * stub instead of mocking tRPC.

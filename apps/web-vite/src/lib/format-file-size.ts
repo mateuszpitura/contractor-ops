@@ -1,7 +1,5 @@
 /**
  * Byte → human-readable size + filename-extension-preserving truncate.
- *
- * Lifted from apps/web/src/lib/format-file-size.ts unchanged.
  */
 
 export function formatFileSize(bytes: number): string {

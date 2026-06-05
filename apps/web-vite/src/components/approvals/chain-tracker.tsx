@@ -1,13 +1,5 @@
 /**
  * ChainTracker — visual stepper for an invoice's approval chain.
- *
- * Ported from apps/web/src/components/approvals/chain-tracker.tsx with
- * the SPA codemod swaps:
- *   - next-intl `useTranslations` → ../../i18n/useTranslations.js
- *   - @/trpc/init `trpc` → useTRPC() proxy from providers/trpc-provider
- *   - @/components/approvals/sla-badge → ./sla-badge.js
- *   - @/lib/avatar-initials → ../../lib/avatar-initials.js
- *   - @/lib/utils `cn` → ../../lib/utils.js
  */
 
 import { Avatar, AvatarFallback, AvatarImage } from '@contractor-ops/ui/components/shadcn/avatar';

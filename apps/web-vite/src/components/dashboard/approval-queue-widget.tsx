@@ -1,11 +1,5 @@
 /**
  * Approval-queue widget — top 5 pending approvals with SLA colour-coding.
- *
- * Ported from `apps/web/src/components/dashboard/approval-queue-widget.tsx`
- * (removed in commit 62a97d73) and rewired for the Vite SPA:
- *   - `next-intl` → `../../i18n/useTranslations.js`
- *   - direct tRPC call → `./hooks/use-approval-queue-widget.ts`
- *   - `@/i18n/navigation` → `../../i18n/navigation.js`
  */
 
 import { minorToMajor, minorUnitDigits } from '@contractor-ops/shared';

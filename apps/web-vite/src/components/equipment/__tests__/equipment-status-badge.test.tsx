@@ -1,6 +1,4 @@
 /**
- * Step 10 port of apps/web/src/components/equipment/__tests__/equipment-status-badge.test.tsx.
- *
  * Equipment status spans the full assignment + return lifecycle
  * (AVAILABLE → ASSIGNED → IN_TRANSIT → DELIVERED → RETURN_REQUESTED →
  * RETURN_IN_TRANSIT → RETURNED → RETIRED). Verifies translated labels,

@@ -1,8 +1,5 @@
-// apps/web/src/components/settings/e-invoicing/peppol-participant-deregister-dialog.tsx
-//
-// Phase 61 · Plan 61-07 — Destructive deregister-Peppol-participant
-// confirmation dialog. Uses shadcn AlertDialog per UI-SPEC §Destructive
-// confirmations.
+// Destructive deregister-Peppol-participant confirmation dialog. Uses
+// shadcn AlertDialog per UI-SPEC §Destructive confirmations.
 
 import {
   AlertDialog,

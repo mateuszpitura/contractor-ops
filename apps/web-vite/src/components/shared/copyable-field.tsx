@@ -1,9 +1,6 @@
 /**
  * Copyable field — single-line value with a copy-to-clipboard button that
  * flips to a check icon for 2 seconds on success.
- *
- * Ported from legacy `apps/web/src/components/shared/copyable-field.tsx`
- * (commit 62a97d73). Mechanical port — no platform-specific imports.
  */
 
 import { Check, Copy } from 'lucide-react';

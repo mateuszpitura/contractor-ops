@@ -1,6 +1,4 @@
 /**
- * Step 10 port of apps/web/src/components/classification/__tests__/advisory-banner.test.tsx.
- *
  * Banner is pure presentational — no tRPC, no i18n hook (legal text comes
  * from `@contractor-ops/validators` constants), so the local `_render.tsx`
  * helpers are enough and we can drop `@testing-library/react`.

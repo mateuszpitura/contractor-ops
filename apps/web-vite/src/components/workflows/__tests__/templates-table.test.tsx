@@ -1,7 +1,5 @@
 /**
- * Ported from apps/web/src/components/workflows/__tests__/templates-table.test.tsx.
- *
- * Web-vite split: TemplatesTable takes the full `useTemplatesTable` return
+ * TemplatesTable takes the full `useTemplatesTable` return
  * value as props. We supply shaped stubs to cover loading, empty, and
  * populated render branches. Wrapped in MemoryRouter because the
  * empty-state CTA renders an internal `<Link>` from i18n/navigation.

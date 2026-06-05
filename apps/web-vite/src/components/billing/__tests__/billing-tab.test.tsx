@@ -1,6 +1,4 @@
 /**
- * Web-vite port of apps/web/src/components/billing/__tests__/billing-tab.test.tsx.
- *
  * BillingTabContainer is now decisive: it owns selectedPriceId state,
  * the useBillingTab hook, and composes UsageDashboardContainer +
  * ProrationPreviewContainer + Manage-billing button directly (the old

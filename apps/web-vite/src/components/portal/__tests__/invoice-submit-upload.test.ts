@@ -1,11 +1,8 @@
 /**
- * Plan 10 — port of the file-size pure-logic from
- * `apps/web/src/components/portal/__tests__/invoice-submit-form.test.tsx`.
- *
- * The legacy test asserted "shows uploaded file info when upload is
- * complete" — the human-readable size string came from `formatFileSize`.
- * That helper is the only piece of the upload flow that is testable
- * without React testing-library, which apps/web-vite does not yet wire.
+ * `formatFileSize` produces the human-readable size string for the
+ * uploaded-file info. That helper is the only piece of the upload flow
+ * that is testable without React testing-library, which apps/web-vite
+ * does not yet wire.
  * Locks the thresholds (1 KB = 1024 B, 1 MB = 1024 KB) the dropzone
  * banner depends on.
  */

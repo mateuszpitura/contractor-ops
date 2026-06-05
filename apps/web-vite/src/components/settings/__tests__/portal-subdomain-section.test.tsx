@@ -1,6 +1,4 @@
 /**
- * Web-vite port of apps/web/src/components/settings/__tests__/portal-subdomain-section.test.tsx.
- *
  * Container/component split — the section receives all derived state from
  * its hook (`portalSubdomain`, `subdomainError`, `handleSubdomainChange`,
  * `isDirty`, `handleSaveSubdomain`, `isPending`) plus three `t` namespaces.

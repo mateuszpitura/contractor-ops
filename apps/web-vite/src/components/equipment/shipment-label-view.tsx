@@ -1,10 +1,7 @@
 /**
- * Shipment label display. Step 11 codemod port from
- * apps/web/src/components/equipment/shipment-label-view.tsx:
- *   - `next/image` → `@unpic/react` <Image> (label.url is a signed R2 URL;
- *     R2 image transforms negotiate format/size in CSR — no server-side
- *     optimizer needed).
- *   - `next-intl`  → `../../i18n/useTranslations.js`
+ * Shipment label display. Uses `@unpic/react` <Image>: label.url is a
+ * signed R2 URL; R2 image transforms negotiate format/size in CSR — no
+ * server-side optimizer needed.
  */
 
 import { Image } from '@unpic/react';

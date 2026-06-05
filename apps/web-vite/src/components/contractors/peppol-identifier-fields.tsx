@@ -1,5 +1,4 @@
-// Phase 61 · Plan 61-07 — Reusable Contractor Peppol identifier field group.
-// Step 11 codemod port from apps/web/src/components/contractors/peppol-identifier-fields.tsx.
+// Reusable Contractor Peppol identifier field group.
 
 import { Input } from '@contractor-ops/ui/components/shadcn/input';
 import { Label } from '@contractor-ops/ui/components/shadcn/label';

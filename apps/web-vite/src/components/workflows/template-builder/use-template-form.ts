@@ -1,10 +1,5 @@
 /**
- * useTemplateForm — workflow template form hook ported from
- * apps/web/src/components/workflows/template-builder/use-template-form.ts.
- *
- * No SPA-specific swaps needed (no next-intl / next/navigation / @/...
- * imports); kept verbatim except the leading `'use client';` directive
- * which is meaningless under Vite.
+ * useTemplateForm — workflow template form hook.
  */
 
 import { workflowAssignableRoleValues } from '@contractor-ops/validators/roles';

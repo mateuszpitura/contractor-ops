@@ -1,6 +1,5 @@
 /**
- * Active alerts tile. Port from
- * apps/web/src/components/contractors/classification/dashboard/active-alerts-tile.tsx
+ * Active alerts tile.
  */
 
 import { useTranslations } from '../../../../i18n/useTranslations.js';

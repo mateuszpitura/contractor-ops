@@ -1,9 +1,7 @@
 /**
- * Step 10 port of apps/web/src/components/reports/__tests__/report-sidebar.test.tsx.
- *
  * `ReportSidebar` is fully presentational (props in, JSX out) — no tRPC,
- * no router. The legacy test mocked `next-intl`; the port resolves the
- * real ICU bundle via `setupTestI18n()` inside `mount()`.
+ * no router. The real ICU bundle is resolved via `setupTestI18n()` inside
+ * `mount()`.
  */
 
 import { afterEach, describe, expect, it, vi } from 'vitest';

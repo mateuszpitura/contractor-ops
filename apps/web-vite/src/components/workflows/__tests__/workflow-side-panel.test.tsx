@@ -1,7 +1,5 @@
 /**
- * Ported from apps/web/src/components/workflows/__tests__/workflow-side-panel.test.tsx.
- *
- * Web-vite split: WorkflowSidePanelView is presentational. We pass a shaped
+ * WorkflowSidePanelView is presentational. We pass a shaped
  * `run` object plus loading/error stubs. The Jira/Linear linked-issues
  * containers are mocked because they have their own tRPC dependencies.
  */

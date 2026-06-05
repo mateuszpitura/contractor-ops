@@ -1,7 +1,5 @@
 /**
- * Organization section chrome — Step 10 batch 6 port from
- * apps/web/src/app/[locale]/(dashboard)/organization/layout.tsx:
- *   - `next-intl` server `getTranslations` → client `useTranslations`
+ * Organization section chrome.
  *
  * Layout matches other workbench list pages (contractors, workflows, time):
  * full-width `WORKBENCH_TABLE_PAGE_CLASS`, `WorkbenchPageHeader`, route tabs.

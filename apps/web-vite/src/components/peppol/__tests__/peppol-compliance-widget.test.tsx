@@ -1,9 +1,7 @@
 /**
- * Ported from apps/web/src/components/peppol/__tests__/peppol-compliance-widget.test.tsx.
- *
- * Web-vite PeppolComplianceWidget is a fully presentational row used
+ * PeppolComplianceWidget is a fully presentational row used
  * inside `EInvoiceComplianceWidgetView`. It owns its own STATE_LABELS
- * map (no translations) so the test is a literal port — we still
+ * map (no translations) — we still
  * mount through the per-domain helper to keep the React 19 act() flag
  * + i18n bootstrap consistent with sibling tests.
  */

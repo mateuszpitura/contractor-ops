@@ -1,7 +1,5 @@
 /**
- * External sync button for Clockify/Jira. Ported from
- * apps/web/src/components/time/external-sync-button.tsx:
- *   - next-intl → ../../i18n/useTranslations.js
+ * External sync button for Clockify/Jira.
  */
 
 import { Button } from '@contractor-ops/ui/components/shadcn/button';

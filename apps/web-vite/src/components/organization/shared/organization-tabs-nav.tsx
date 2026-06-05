@@ -1,13 +1,5 @@
 /**
- * Organization tab bar. Step 11 codemod port from
- * apps/web/src/components/organization/shared/organization-tabs-nav.tsx:
- *   - `next/link`                  → the i18n `Link` wrapper which mounts
- *     react-router's Link and resolves `href` against the active locale.
- *   - `next/navigation#useSelectedLayoutSegment` →
- *     `react-router-dom#useLocation` (matches the leaf segment of the
- *     active route).
- *   - `next-intl`                  → `../../../i18n/useTranslations.js`
- *   - `@/lib/utils`                → `../../../lib/utils.js`
+ * Organization tab bar.
  *
  * Hrefs are absolute (not `relative="path"`) so navigating between tabs
  * never appends `/teams` onto a sibling tab URL: react-router v7's

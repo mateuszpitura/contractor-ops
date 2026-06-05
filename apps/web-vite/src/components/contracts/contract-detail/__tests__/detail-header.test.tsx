@@ -1,7 +1,5 @@
 /**
- * Ported from apps/web/src/components/contracts/contract-detail/__tests__/detail-header.test.tsx.
- *
- * Web-vite split: DetailHeader is presentational; `header` prop is produced by
+ * DetailHeader is presentational; `header` prop is produced by
  * `useContractDetailHeader`. We pass shaped stubs and derive `menuActions`
  * for the current status via the same `getDetailContractActions` registry.
  *

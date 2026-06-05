@@ -1,6 +1,4 @@
 /**
- * Web-vite port of apps/web/src/components/zatca/__tests__/csr-generation.test.tsx.
- *
  * Container splits the step into CsrGenerationIdle (no CSR yet) and
  * CsrGenerationGenerated (preview + Next). Tests render each sibling
  * directly with live EN translations.

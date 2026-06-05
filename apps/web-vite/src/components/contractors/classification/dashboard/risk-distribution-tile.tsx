@@ -1,6 +1,5 @@
 /**
- * Risk distribution tile. Port from
- * apps/web/src/components/contractors/classification/dashboard/risk-distribution-tile.tsx
+ * Risk distribution tile.
  */
 
 import {

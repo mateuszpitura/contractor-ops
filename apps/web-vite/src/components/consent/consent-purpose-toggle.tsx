@@ -1,8 +1,5 @@
 /**
- * Consent purpose toggle. Step 11 codemod port from
- * apps/web/src/components/consent/consent-purpose-toggle.tsx:
- *   - `next-intl`         → `../../i18n/useTranslations.js`
- *   - `@/i18n/typed-keys` → `../../i18n/typed-keys.js`
+ * Consent purpose toggle.
  */
 
 import { Badge } from '@contractor-ops/ui/components/shadcn/badge';

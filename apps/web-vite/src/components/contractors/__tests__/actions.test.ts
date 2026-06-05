@@ -1,10 +1,5 @@
 /**
- * Pure-data tests for the contractor actions registry — ported from
- * apps/web/src/components/contractors/__tests__/actions.test.ts.
- *
- * The registry has no React imports and is consumed identically in
- * apps/web-vite, so the test transfers verbatim once the import path is
- * updated.
+ * Pure-data tests for the contractor actions registry.
  */
 
 import { describe, expect, it } from 'vitest';

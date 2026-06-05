@@ -1,11 +1,8 @@
 /**
- * Step 10 port of apps/web/src/components/portal/__tests__/status-timeline.test.tsx.
- *
  * StatusTimeline is the five-step strip on the portal invoice detail
  * page (Submitted -> In Review -> Approved -> Payment Scheduled -> Paid).
- * Lock the activeStep / rejected branching that the legacy file covered,
- * including the rejected-from-review styling that swaps the second
- * circle to destructive.
+ * Lock the activeStep / rejected branching, including the
+ * rejected-from-review styling that swaps the second circle to destructive.
  *
  * Uses react-dom/client directly + i18n bootstrap to match the existing
  * web-vite render pattern (e.g. equipment-status-badge.test.tsx).

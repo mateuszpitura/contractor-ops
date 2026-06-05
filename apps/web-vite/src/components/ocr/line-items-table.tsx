@@ -1,10 +1,5 @@
 /**
- * Line items table. Step 10 batch port from
- * apps/web/src/components/ocr/line-items-table.tsx:
- *   - `'use client'` stripped (SPA default)
- *   - `next-intl#useTranslations` → `../../i18n/useTranslations.js`
- *   - `@/components/ocr/confidence-badge` → `./confidence-badge.js`
- *   - `@/lib/utils` → `../../lib/utils.js`
+ * Line items table.
  */
 
 import { Badge } from '@contractor-ops/ui/components/shadcn/badge';

@@ -1,5 +1,3 @@
-// Step 11 codemod port from apps/web/src/components/contractors/compliance/handelsregister-input.tsx.
-
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import {
   Command,

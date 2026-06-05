@@ -1,9 +1,5 @@
 /**
- * Skonto eligibility pill. Step 11 codemod port from
- * apps/web/src/components/invoices/skonto/skonto-eligibility-pill.tsx:
- *   - `next-intl`         → `../../../i18n/useTranslations.js`
- *   - `@/i18n/typed-keys` → `../../../i18n/typed-keys.js`
- *   - `@/lib/utils`       → `../../../lib/utils.js`
+ * Skonto eligibility pill.
  */
 
 import { Badge } from '@contractor-ops/ui/components/shadcn/badge';

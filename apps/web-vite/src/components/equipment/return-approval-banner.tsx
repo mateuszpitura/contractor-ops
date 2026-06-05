@@ -1,10 +1,7 @@
 /**
  * Equipment return-approval banner — admin-facing CTA shown on the
  * equipment detail page when a contractor has submitted a return
- * request awaiting approval. Ported from legacy
- * `apps/web/src/components/equipment/return-approval-banner.tsx`
- * (commit 62a97d73). Data layer split into
- * `./hooks/use-return-approval-banner.ts`.
+ * request awaiting approval.
  */
 
 import {

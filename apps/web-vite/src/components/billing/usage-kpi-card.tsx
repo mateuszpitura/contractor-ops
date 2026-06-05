@@ -1,7 +1,5 @@
 /**
- * Usage KPI card. Lifted from
- * apps/web/src/components/billing/usage-kpi-card.tsx unchanged (no Next
- * imports — pure shadcn presentational).
+ * Usage KPI card. Pure shadcn presentational.
  */
 
 import { Card, CardContent } from '@contractor-ops/ui/components/shadcn/card';

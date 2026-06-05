@@ -1,6 +1,4 @@
-// apps/web/src/components/settings/e-invoicing/leitweg-id-create-dialog.tsx
-//
-// Phase 61 · Plan 61-07 — Create / Edit Leitweg-ID dialog.
+// Create / Edit Leitweg-ID dialog.
 //
 // Form fields (UI-SPEC §Copywriting):
 //   - value (text, mono; real-time leitwegIdSchema validation)

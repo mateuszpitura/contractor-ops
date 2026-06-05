@@ -1,7 +1,5 @@
 /**
- * Ported from apps/web/src/components/portal/__tests__/portal-mobile-menu.test.tsx.
- *
- * Web-vite split: PortalMobileMenu accepts the `usePortalMobileMenu` hook
+ * PortalMobileMenu accepts the `usePortalMobileMenu` hook
  * return as a `menu` prop; nav clicks delegate to the hook's
  * `handleNavClick`.
  */

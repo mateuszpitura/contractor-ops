@@ -1,13 +1,5 @@
 /**
  * TaskChecklist — list of tasks inside a workflow run detail page.
- * Ported from
- * apps/web/src/components/workflows/workflow-run/task-checklist.tsx.
- *
- * SPA swaps:
- *   - `'use client';` removed
- *   - `next-intl` → ../../../i18n/useTranslations.js
- *   - `@/components/contracts/contract-detail/linear-linked-issues-panel`
- *     → ../../contracts/contract-detail/linear-linked-issues-panel.js
  */
 
 import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';

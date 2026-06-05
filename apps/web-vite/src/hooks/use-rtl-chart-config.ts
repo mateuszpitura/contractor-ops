@@ -1,10 +1,5 @@
 /**
- * RTL-aware Recharts config. Step 11 codemod port from
- * apps/web/src/hooks/use-rtl-chart-config.ts.
- *
- *   - `next-intl` (useLocale)     → `react-i18next` (useTranslation → i18n.language)
- *   - `@/i18n/config#isRtl`        → inlined locale check against the SUPPORTED_LOCALES list
- *   - `@/i18n/routing#Locale`      → `../i18n/messages.js#Locale`
+ * RTL-aware Recharts config.
  */
 
 import { useTranslation } from 'react-i18next';

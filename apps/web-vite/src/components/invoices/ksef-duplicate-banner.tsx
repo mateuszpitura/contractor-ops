@@ -1,8 +1,5 @@
 /**
- * KSeF duplicate banner. Step 11 codemod port from
- * apps/web/src/components/invoices/ksef-duplicate-banner.tsx:
- *   - `next-intl`         → `../../i18n/useTranslations.js`
- *   - `@/i18n/navigation` → `../../i18n/navigation.js`
+ * KSeF duplicate banner.
  */
 
 import {

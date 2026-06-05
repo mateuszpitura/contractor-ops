@@ -1,6 +1,4 @@
 /**
- * Web-vite port of apps/web/src/components/zatca/__tests__/zatca-status-card.test.tsx.
- *
  * Container now picks one of four sibling components (Skeleton, Disconnected,
  * Onboarding, Connected). Tests render each variant directly so the View
  * file stays pure props-in / JSX-out. The onboarding wizard container is

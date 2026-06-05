@@ -1,6 +1,4 @@
 /**
- * Web-vite port of apps/web/src/components/settings/__tests__/notification-preferences.test.tsx.
- *
  * Component is presentational and receives `t`, `form`, `isLoading`,
  * `isSlackConnected`, `isTeamsConnected`, `onSubmit`, `isSavePending`
  * from `useNotificationPreferences`. Tests build a real `useForm`

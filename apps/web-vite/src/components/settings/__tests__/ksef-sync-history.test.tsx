@@ -1,6 +1,4 @@
 /**
- * Web-vite port of apps/web/src/components/settings/__tests__/ksef-sync-history.test.tsx.
- *
  * The collapsible receives `t`, open state, logs and loading state from
  * `useKsefSyncHistory`. The trigger always renders; the body is only
  * forced into the DOM when `isOpen` is true.

@@ -1,7 +1,5 @@
 /**
- * Ported from apps/web/src/components/peppol/__tests__/peppol-qr-display.test.tsx.
- *
- * The legacy test mocked `next/image`; the web-vite version uses a
+ * The web-vite version uses a
  * plain `<img>` (no Next dependency). i18next-ICU placeholder
  * interpolation does not run under the jsdom env wiring used by the
  * existing per-domain `_render.tsx` helpers, so assertions limit

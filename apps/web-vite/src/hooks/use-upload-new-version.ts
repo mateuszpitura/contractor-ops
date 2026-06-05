@@ -1,11 +1,5 @@
 /**
- * Document new-version upload flow. Step 11 codemod port from
- * apps/web/src/hooks/use-upload-new-version.ts:
- *
- *   - `next-intl`         → `../i18n/useTranslations.js`
- *   - `@/trpc/init`        → `../providers/trpc-provider.js#useTRPC`
- *
- * Otherwise unchanged.
+ * Document new-version upload flow.
  */
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';

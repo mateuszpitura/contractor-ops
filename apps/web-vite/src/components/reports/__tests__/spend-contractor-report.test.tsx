@@ -1,6 +1,4 @@
 /**
- * Step 10 port of apps/web/src/components/reports/__tests__/spend-contractor-report.test.tsx.
- *
  * Component-prop pattern. `useDateFormatter` is stubbed because the
  * component calls it for the last-paid-at cell.
  */

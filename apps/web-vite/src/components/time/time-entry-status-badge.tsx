@@ -1,6 +1,5 @@
 /**
- * Timesheet status badge. Lifted from
- * apps/web/src/components/time/time-entry-status-badge.tsx unchanged.
+ * Timesheet status badge.
  */
 
 import { Badge } from '@contractor-ops/ui/components/shadcn/badge';

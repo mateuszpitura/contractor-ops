@@ -1,11 +1,8 @@
 /**
- * Step 10 port of apps/web/src/components/approvals/__tests__/chain-tracker.test.tsx.
- *
- * Adapted to the web-vite container/hook split: the new ChainTracker is
- * a pure presentational component that receives `flow` + `isLoading` as
- * props — the tRPC query lives in `chain-tracker-container.tsx`. So the
- * legacy `vi.mock('@tanstack/react-query', ...)` boilerplate goes away
- * and we exercise the visual logic directly.
+ * ChainTracker is a pure presentational component that receives `flow` +
+ * `isLoading` as props — the tRPC query lives in `chain-tracker-container.tsx`,
+ * so there is no react-query boilerplate here and we exercise the visual logic
+ * directly.
  *
  * The SlaBadge child is mocked to keep this test focused on chain layout;
  * SLA logic is covered by `sla-badge.test.tsx`.

@@ -1,9 +1,5 @@
 /**
- * Upgrade inline banner. Step 11 codemod port from
- * apps/web/src/components/billing/upgrade-inline-banner.tsx:
- *   - `next-intl`              → `../../i18n/useTranslations.js`
- *   - `@/i18n/navigation#Link` → `react-router-dom#Link`
- *   - shadcn `<Button render={<Link…/>}/>` slot pattern preserved.
+ * Upgrade inline banner.
  */
 
 import { Button } from '@contractor-ops/ui/components/shadcn/button';

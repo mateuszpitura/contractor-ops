@@ -1,7 +1,5 @@
 /**
- * Ported from apps/web/src/components/contracts/contract-detail/__tests__/void-envelope-dialog.test.tsx.
- *
- * Web-vite split: VoidEnvelopeDialog is presentational; `voidDialog` prop is
+ * VoidEnvelopeDialog is presentational; `voidDialog` prop is
  * produced by `useVoidEnvelopeDialog`. We supply a shaped stub.
  */
 

@@ -1,5 +1,3 @@
-// Step 11 codemod port from apps/web/src/components/contractors/country-compliance-section.tsx.
-
 import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import {

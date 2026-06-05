@@ -1,7 +1,5 @@
 /**
- * Ported from apps/web/src/components/contracts/contract-wizard/__tests__/wizard-dialog.test.tsx.
- *
- * Web-vite split: ContractWizardDialog takes a single `wizard` prop built
+ * ContractWizardDialog takes a single `wizard` prop built
  * by `useContractWizardDialog`. Step components are mocked out so we cover
  * only the dialog chrome, indicator, and navigation.
  */

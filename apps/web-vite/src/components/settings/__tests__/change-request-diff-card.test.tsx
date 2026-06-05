@@ -1,6 +1,4 @@
 /**
- * Web-vite port of apps/web/src/components/settings/__tests__/change-request-diff-card.test.tsx.
- *
  * Container/component split. The card receives the request payload as a
  * prop plus `t`, `rejectDialogOpen`, comment state, both mutations, and
  * approve/reject handlers from `useChangeRequestDiffCard`. Tests inject

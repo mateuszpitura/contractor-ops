@@ -1,6 +1,4 @@
 /**
- * Step 10 port of apps/web/src/components/dashboard/__tests__/dashboard-greeting.test.tsx.
- *
  * DashboardGreeting reads `session.data.user.name` and picks one of three
  * greeting buckets (morning / afternoon / evening) off the local wall
  * clock. The legacy test mocked `@/lib/auth-client`; here we mock the

@@ -1,6 +1,4 @@
 /**
- * Step 10 port of apps/web/src/components/onboarding/__tests__/import-progress-tracker.test.tsx.
- *
  * The web-vite ImportProgressTracker is presentational — it consumes flags
  * (`isError`, `hasData`, `isComplete`, `isFailed`, `isRunning`,
  * `percentDone`) plus a shaped `progress` object. The tRPC polling lives

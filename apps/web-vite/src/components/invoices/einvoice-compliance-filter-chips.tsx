@@ -1,9 +1,5 @@
 /**
- * E-invoice compliance filter chips. Step 11 codemod port from
- * apps/web/src/components/invoices/einvoice-compliance-filter-chips.tsx:
- *   - `next-intl`                     → `../../i18n/useTranslations.js`
- *   - `next/navigation#useSearchParams` → `react-router-dom#useSearchParams`
- *   - `@/i18n/navigation#useRouter`     → `../../i18n/navigation.js#useRouter`
+ * E-invoice compliance filter chips.
  *
  * URL binding stays on `?einvoiceStatus=<value>`. The canonical filter set
  * and parser live in `invoice-table/compliance-filter-param.ts` so the

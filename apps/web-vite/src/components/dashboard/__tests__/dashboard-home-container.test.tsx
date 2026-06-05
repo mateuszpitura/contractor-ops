@@ -1,6 +1,4 @@
 /**
- * Step 10 port of apps/web/src/components/dashboard/__tests__/kpi-cards.test.tsx.
- *
  * The web-vite container owns the KPI grid directly (no extracted
  * `<KpiCards>` component yet) and reads from a single dashboard hook
  * (`useDashboardHome`) instead of the legacy per-KPI tRPC queries. We

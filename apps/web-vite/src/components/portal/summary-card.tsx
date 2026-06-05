@@ -1,7 +1,5 @@
 /**
- * Portal summary card + skeleton. Step 11 codemod port from
- * apps/web/src/components/portal/summary-card.tsx:
- *   - `@/lib/utils` → `../../lib/utils.js`
+ * Portal summary card + skeleton.
  */
 
 import { Card, CardContent } from '@contractor-ops/ui/components/shadcn/card';

@@ -1,7 +1,5 @@
 /**
- * NIP validation badge. Step 11 codemod port from
- * apps/web/src/components/ocr/nip-validation-badge.tsx:
- *   - `next-intl` → `../../i18n/useTranslations.js`
+ * NIP validation badge.
  */
 
 import { Badge } from '@contractor-ops/ui/components/shadcn/badge';

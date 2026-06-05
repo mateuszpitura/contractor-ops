@@ -1,8 +1,5 @@
 /**
- * Invoice detail tab shell. Ported from
- * apps/web/src/app/[locale]/(dashboard)/invoices/[id]/_components/invoice-detail-tabs.tsx:
- *   - next/navigation → react-router-dom
- *   - EInvoiceTab → EInvoiceTabContainer (web-vite data layer)
+ * Invoice detail tab shell.
  */
 
 import { Separator } from '@contractor-ops/ui/components/shadcn/separator';

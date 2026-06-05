@@ -1,5 +1,3 @@
-// Step 11 codemod port from apps/web/src/components/contractors/compliance/bundesland-select.tsx.
-
 import { Label } from '@contractor-ops/ui/components/shadcn/label';
 import type { BundeslandCode } from '@contractor-ops/validators';
 import { STEUERNUMMER_FORMATS } from '@contractor-ops/validators';

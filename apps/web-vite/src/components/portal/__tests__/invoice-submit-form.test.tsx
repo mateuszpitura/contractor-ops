@@ -1,7 +1,5 @@
 /**
- * Ported from apps/web/src/components/portal/__tests__/invoice-submit-form.test.tsx.
- *
- * Web-vite split: the form accepts `uploadBundle`, `contractsQuery`, and
+ * The form accepts `uploadBundle`, `contractsQuery`, and
  * `submission` props (each one returned by a dedicated hook). The OCR
  * confidence/extraction primitives, the upload section, and the OCR
  * processing overlay are mocked to inert markers — we only assert the

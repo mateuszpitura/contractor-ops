@@ -1,6 +1,4 @@
 /**
- * Step 10 port of apps/web/src/components/layout/__tests__/org-switcher.test.tsx.
- *
  * The web-vite OrgSwitcher is the pure presentational counterpart of the
  * container — it receives `currentOrg`, `organizations`, `onOrgSwitch`,
  * `onCreateOrg`, `isCreating` and renders the dropdown header + item list

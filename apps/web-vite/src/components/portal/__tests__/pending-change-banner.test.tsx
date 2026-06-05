@@ -1,6 +1,4 @@
 /**
- * Ported from apps/web/src/components/portal/__tests__/pending-change-banner.test.tsx.
- *
  * Stubs the portal date formatter so the banner does not need real org
  * settings; assertions cover the title, submitted-on copy, and the
  * collapsed field list which expands on click.

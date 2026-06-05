@@ -1,6 +1,4 @@
 /**
- * Web-vite port of apps/web/src/components/billing/__tests__/usage-dashboard.test.tsx.
- *
  * UsageDashboard is now a pure presentational component. Container
  * (`usage-dashboard-container.tsx`) owns the tRPC query, parsing, and
  * tier derivation. Child cards / grid / dialog are mocked to keep

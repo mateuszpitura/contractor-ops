@@ -1,6 +1,4 @@
 /**
- * Web-vite port of apps/web/src/components/settings/__tests__/dpd-provider-section.test.tsx.
- *
  * Presentational card receives `t`, `tCarriers`, `configOpen`, `isLoading`,
  * `isConfigured` from `useDpdProviderSection`. The configure dialog
  * mounts `CarrierCredentialFormContainer`, which hits tRPC at runtime —

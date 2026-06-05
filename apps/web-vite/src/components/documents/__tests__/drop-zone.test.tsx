@@ -1,6 +1,4 @@
 /**
- * Step 10 port of apps/web/src/components/documents/__tests__/drop-zone.test.tsx.
- *
  * DropZoneView is the presentational counterpart of `useDocumentDropZone`.
  * It receives `{ files, onDrop, removeFile }` plus optional accept/reject
  * callbacks. We pin the drop-zone copy, the upload list, and the disabled

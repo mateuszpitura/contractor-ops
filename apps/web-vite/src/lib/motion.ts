@@ -1,6 +1,6 @@
 /**
  * Motion (Framer Motion → motion/react) spring + stagger + variant
- * presets. Lifted from apps/web/src/lib/motion.ts unchanged.
+ * presets.
  */
 
 import type { Transition, Variants } from 'motion/react';

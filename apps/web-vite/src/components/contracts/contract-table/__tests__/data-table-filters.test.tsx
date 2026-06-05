@@ -1,15 +1,14 @@
 /**
- * Ported from apps/web/src/components/contracts/contract-table/__tests__/data-table-filters.test.tsx.
- *
- * Web-vite split: DataTableFilters takes `users` as a prop (no tRPC inside).
- * The component was further split into `DataTableFilters` (popover trigger +
+ * DataTableFilters takes `users` as a prop (no tRPC inside).
+ * The component is split into `DataTableFilters` (popover trigger +
  * filter-count badge) and `ActiveFilterBadges` (active chip row), so badge
  * assertions render both via the `renderToolbar`/`setupToolbar` helpers.
  */
 
 import { vi } from 'vitest';
 import { render, screen, setup } from '@/test/test-utils';
-import { ActiveFilterBadges, DataTableFilters, type FilterState } from '../data-table-filters';
+import type { FilterState } from '../data-table-filters';
+import { ActiveFilterBadges, DataTableFilters } from '../data-table-filters';
 
 const users = [
   { id: 'u1', userId: 'u1', name: 'Alice', email: 'alice@test.com' },

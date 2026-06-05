@@ -1,6 +1,4 @@
 /**
- * web-vite port of apps/web/.../country-compliance-section.test.tsx.
- *
  * `CountryComplianceSectionView` takes the two hook returns
  * (`useCountryCompliance`, `useContractorEngagements`) as props. We mock
  * the two tRPC-bound child containers (classification tile, revalidate-vat)

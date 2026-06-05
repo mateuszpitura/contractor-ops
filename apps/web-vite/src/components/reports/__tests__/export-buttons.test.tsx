@@ -1,10 +1,6 @@
 /**
- * Step 10 port of apps/web/src/components/reports/__tests__/export-buttons.test.tsx.
- *
- * Web-vite ExportButtons is unchanged in shape — only the i18n source
- * differs (i18next vs next-intl). Tests stay click-driven; the
- * download-link branch is exercised against the still-exported
- * `downloadBase64File` helper.
+ * Tests stay click-driven; the download-link branch is exercised against
+ * the exported `downloadBase64File` helper.
  */
 
 import { afterEach, describe, expect, it, vi } from 'vitest';

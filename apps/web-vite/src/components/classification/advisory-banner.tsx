@@ -1,7 +1,5 @@
 /**
- * Classification advisory banner. Lifted from
- * apps/web/src/components/classification/advisory-banner.tsx unchanged.
- * Pure presentational; no Next imports.
+ * Classification advisory banner. Pure presentational.
  */
 
 import { BANNER_IR35_ADVISORY_EN, BANNER_SCHEIN_ADVISORY_DE } from '@contractor-ops/validators';

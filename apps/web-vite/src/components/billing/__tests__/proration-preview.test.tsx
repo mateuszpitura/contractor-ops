@@ -1,6 +1,4 @@
 /**
- * Web-vite port of apps/web/src/components/billing/__tests__/proration-preview.test.tsx.
- *
  * ProrationPreview is a pure presentational component — translations,
  * the tRPC query, and the loading/error variant pick are owned by the
  * container. The skeleton and error states are now sibling components

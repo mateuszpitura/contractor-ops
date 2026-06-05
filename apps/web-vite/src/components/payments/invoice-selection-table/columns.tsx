@@ -1,6 +1,5 @@
 /**
- * Invoice selection table columns — ported from
- * apps/web/src/components/payments/invoice-selection-table/columns.tsx.
+ * Invoice selection table columns.
  * Uses LooseTranslator (parity with payment-run-table/columns).
  */
 

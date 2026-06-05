@@ -1,7 +1,5 @@
 /**
- * Ported from apps/web/src/components/portal/__tests__/portal-settings-page.test.tsx.
- *
- * Web-vite split: PortalSettingsPage is the loaded-state-only view; the
+ * PortalSettingsPage is the loaded-state-only view; the
  * container (PortalSettingsContainer) owns the isPending branch and renders
  * PortalSettingsSkeleton vs PortalSettingsPage. ProfileSection + the
  * notification prefs container are mocked so the test stays focused on

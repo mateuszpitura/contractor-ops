@@ -1,7 +1,5 @@
 /**
- * Locale-fallback "(English)" indicator. Step 11 codemod port from
- * apps/web/src/components/offboarding/english-fallback-indicator.tsx:
- *   - `next-intl` → `../../i18n/useTranslations.js`
+ * Locale-fallback "(English)" indicator.
  */
 
 import {

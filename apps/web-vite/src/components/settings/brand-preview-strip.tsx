@@ -1,7 +1,5 @@
 /**
- * Brand color preview strip. Step 11 codemod port from
- * apps/web/src/components/settings/brand-preview-strip.tsx:
- *   - `next-intl` → `../../i18n/useTranslations.js`
+ * Brand color preview strip.
  */
 
 import type { CSSProperties } from 'react';

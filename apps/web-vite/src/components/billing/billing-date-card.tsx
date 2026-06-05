@@ -1,10 +1,5 @@
 /**
- * Billing date card. Step 11 codemod port from
- * apps/web/src/components/billing/billing-date-card.tsx:
- *   - `next-intl#useFormatter` → inline Intl.DateTimeFormat (next-intl's
- *     formatter is a thin wrapper over Intl with locale plumbing; in the
- *     SPA we read the active locale from react-i18next).
- *   - `next-intl#useTranslations` → `../../i18n/useTranslations.js`
+ * Billing date card.
  */
 
 import { Card, CardContent } from '@contractor-ops/ui/components/shadcn/card';

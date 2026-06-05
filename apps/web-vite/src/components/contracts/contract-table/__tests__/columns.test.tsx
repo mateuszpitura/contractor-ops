@@ -1,9 +1,7 @@
 /**
- * Ported from apps/web/src/components/contracts/contract-table/__tests__/columns.test.tsx.
- *
- * The column factory itself is unchanged (still takes a translator + optional
- * date formatter). web-vite has no `createMockTranslator` export, so we
- * supply an inline identity translator that echoes the key.
+ * The column factory takes a translator + optional date formatter. web-vite
+ * has no `createMockTranslator` export, so we supply an inline identity
+ * translator that echoes the key.
  */
 
 import { vi } from 'vitest';

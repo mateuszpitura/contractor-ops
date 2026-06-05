@@ -1,8 +1,5 @@
 /**
- * Manual VAT revalidation button. Step 11 codemod port from
- * apps/web/src/components/contractors/revalidate-vat-button.tsx:
- *   - `next-intl`     → `../../i18n/useTranslations.js`
- *   - `@/trpc/init`   → `../../providers/trpc-provider.js#useTRPC`
+ * Manual VAT revalidation button.
  */
 
 import { Button } from '@contractor-ops/ui/components/shadcn/button';

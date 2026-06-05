@@ -1,8 +1,5 @@
 /**
- * Time reconciliation card. Ported from
- * apps/web/src/components/time/reconciliation-card.tsx:
- *   - next-intl → ../../i18n/useTranslations.js
- *   - @/components/time/deviation-flag → ./deviation-flag
+ * Time reconciliation card.
  */
 
 import { formatMinorAsCurrency } from '@contractor-ops/shared';

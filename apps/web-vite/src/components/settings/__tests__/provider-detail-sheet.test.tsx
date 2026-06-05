@@ -1,6 +1,4 @@
 /**
- * Web-vite port of apps/web/src/components/settings/__tests__/provider-detail-sheet.test.tsx.
- *
  * The sheet renders inside a Portal. Tests inject shaped hook output and
  * assert on header, action buttons, and the sync/webhook empty + filled
  * branches.

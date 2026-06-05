@@ -1,5 +1,4 @@
-// Phase 61 · Plan 61-07 — Contractor-profile E-invoicing fields section.
-// Step 11 codemod port from apps/web/src/components/contractors/contractor-e-invoicing-section.tsx.
+// Contractor-profile E-invoicing fields section.
 
 import {
   Card,

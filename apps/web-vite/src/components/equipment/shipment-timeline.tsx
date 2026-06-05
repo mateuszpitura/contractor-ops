@@ -2,10 +2,6 @@
  * Shipment timeline — vertical chronological view of equipment shipment
  * status events with an inline "add status update" form when the
  * shipment is not yet in a terminal state.
- *
- * Ported from legacy `apps/web/src/components/equipment/shipment-timeline.tsx`
- * (commit 62a97d73). Data layer pulled into
- * `./hooks/use-shipment-timeline.ts` per `apps/web-vite/ARCHITECTURE.md`.
  */
 
 import { Button } from '@contractor-ops/ui/components/shadcn/button';

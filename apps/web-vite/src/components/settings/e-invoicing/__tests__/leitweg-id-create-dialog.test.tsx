@@ -1,6 +1,4 @@
 /**
- * Web-vite port of apps/web/src/components/settings/e-invoicing/__tests__/leitweg-id-create-dialog.test.tsx.
- *
  * The dialog renders inside a Dialog portal. Tests inject the hook
  * return + `tCommon` + form-error helpers directly and assert on the
  * create/edit titles, save-button disabled state, and cancel handler.

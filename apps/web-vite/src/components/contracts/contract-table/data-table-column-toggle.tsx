@@ -1,11 +1,5 @@
 /**
- * Contract table column visibility toggle. Step 11 codemod port from
- * apps/web/src/components/contracts/contract-table/data-table-column-toggle.tsx:
- *   - `next-intl`         → `../../../i18n/useTranslations.js`
- *   - `@/i18n/typed-keys` → `../../../i18n/typed-keys.js`
- *
- * (Structurally identical to the contractor table toggle — same shape,
- * different translation namespace.)
+ * Contract table column visibility toggle.
  */
 
 import { Button } from '@contractor-ops/ui/components/shadcn/button';

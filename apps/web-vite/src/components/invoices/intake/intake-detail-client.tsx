@@ -1,7 +1,5 @@
 /**
- * Intake detail client composition. Port from
- * apps/web/src/app/[locale]/(dashboard)/invoices/intake/[id]/intake-detail-client.tsx:
- *   - `next-intl` → `../../../i18n/useTranslations.js`
+ * Intake detail client composition.
  */
 
 import { Alert, AlertDescription } from '@contractor-ops/ui/components/shadcn/alert';

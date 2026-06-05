@@ -1,6 +1,5 @@
 /**
- * OCR confidence badge. Lifted from
- * apps/web/src/components/ocr/confidence-badge.tsx unchanged (no Next).
+ * OCR confidence badge.
  */
 
 import { Badge } from '@contractor-ops/ui/components/shadcn/badge';

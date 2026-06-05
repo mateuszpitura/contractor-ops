@@ -1,8 +1,5 @@
 /**
- * E-invoice compliance summary tile. Step 11 codemod port from
- * apps/web/src/components/invoices/einvoice-compliance-summary-tile.tsx:
- *   - `next-intl`     → `../../i18n/useTranslations.js`
- *   - `@/trpc/init`   → `../../providers/trpc-provider.js#useTRPC`
+ * E-invoice compliance summary tile.
  */
 
 import { Button } from '@contractor-ops/ui/components/shadcn/button';

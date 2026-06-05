@@ -1,10 +1,7 @@
 /**
- * Step 10 port of apps/web/src/components/equipment/equipment-table/__tests__/equipment-columns.test.tsx.
- *
- * getEquipmentColumns is the same pure factory in web-vite. We render individual
+ * getEquipmentColumns is a pure factory. We render individual
  * cells through a synthetic info object to keep coverage tight, and rely on the
- * live i18n bundle for translated text — legacy `createMockTranslator` keys are
- * rewritten to the EN copy from the Equipment namespace.
+ * live i18n bundle for translated text from the Equipment namespace.
  */
 
 import { describe, expect, it, vi } from 'vitest';

@@ -1,6 +1,4 @@
 /**
- * Step 10 port of apps/web/src/components/notifications/__tests__/notification-popover.test.tsx.
- *
  * `NotificationPopoverShell` is presentational — it renders the bell
  * trigger, badge, popover chrome, and slots a variant body via children.
  * Variant selection (skeletons / empty / list) lives in the container; the
@@ -8,8 +6,7 @@
  * aria) by mounting the shell with an arbitrary children placeholder.
  *
  * Wrapped in `<MemoryRouter>` because the `<Bell>` button is rendered
- * through `react-router-dom`-aware children deeper in the tree (and
- * keeps parity with the apps/web setup).
+ * through `react-router-dom`-aware children deeper in the tree.
  */
 
 import type { ReactElement } from 'react';

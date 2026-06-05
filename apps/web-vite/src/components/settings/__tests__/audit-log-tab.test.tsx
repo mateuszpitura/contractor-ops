@@ -1,6 +1,4 @@
 /**
- * Web-vite port of apps/web/src/components/settings/__tests__/audit-log-tab.test.tsx.
- *
  * Container/component split — the section receives ~40 props from
  * `useAuditLogTab`. Tests inject shaped stubs and assert on the empty,
  * loaded, and active-filter branches. The inner `AuditLogTable` reads
@@ -10,8 +8,8 @@
 import { describe, expect, it, vi } from 'vitest';
 
 import { render, screen, setup } from '@/test/test-utils';
-import { AuditLogTab } from '../audit-log-tab';
 import type { AuditLogEntry } from '../audit-log/data-table.js';
+import { AuditLogTab } from '../audit-log-tab';
 import type { useAuditLogTab } from '../hooks/use-audit-log-tab';
 
 type HookReturn = ReturnType<typeof useAuditLogTab>;

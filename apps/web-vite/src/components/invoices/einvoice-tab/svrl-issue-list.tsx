@@ -1,7 +1,5 @@
 /**
- * SVRL issue list. Step 11 codemod port from
- * apps/web/src/components/invoices/einvoice-tab/svrl-issue-list.tsx:
- *   - `next-intl` → `../../../i18n/useTranslations.js`
+ * SVRL issue list.
  */
 
 import { DataTable } from '@contractor-ops/ui';

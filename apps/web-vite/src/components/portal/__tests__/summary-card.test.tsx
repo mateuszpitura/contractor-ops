@@ -1,8 +1,6 @@
 /**
- * Step 10 port of apps/web/src/components/portal/__tests__/summary-card.test.tsx.
- *
  * SummaryCard is the dashboard stat tile (invoice count, paid amount, ...).
- * It carries no i18n and no tRPC, so the port is a direct render of
+ * It carries no i18n and no tRPC, so this is a direct render of
  * static + skeleton variants.
  *
  * Uses react-dom/client directly (same pattern as the other web-vite

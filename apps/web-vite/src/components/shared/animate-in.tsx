@@ -1,8 +1,5 @@
 /**
- * Spring-based fade-up wrapper. Step 11 codemod port from
- * apps/web/src/components/shared/animate-in.tsx:
- *   - `@/lib/motion` → `../../lib/motion.js`
- *   - `@/lib/utils`  → `../../lib/utils.js`
+ * Spring-based fade-up wrapper.
  */
 
 import { motion } from 'motion/react';

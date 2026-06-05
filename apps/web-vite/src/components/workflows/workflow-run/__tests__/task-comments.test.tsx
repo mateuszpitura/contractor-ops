@@ -1,7 +1,5 @@
 /**
- * Ported from apps/web/src/components/workflows/workflow-run/__tests__/task-comments.test.tsx.
- *
- * Web-vite TaskComments takes the `useTaskCommentsSection` bag as props.
+ * TaskComments takes the `useTaskCommentsSection` bag as props.
  */
 
 import type { ComponentProps } from 'react';

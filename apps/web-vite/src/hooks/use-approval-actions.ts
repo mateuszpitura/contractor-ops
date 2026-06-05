@@ -1,9 +1,5 @@
 /**
- * Approval queue actions hook. Step 11 codemod port from
- * apps/web/src/hooks/use-approval-actions.ts:
- *   - `@/trpc/init`  → `../providers/trpc-provider.js#useTRPC`
- *
- * Otherwise unchanged.
+ * Approval queue actions hook.
  */
 
 import { useCallback } from 'react';

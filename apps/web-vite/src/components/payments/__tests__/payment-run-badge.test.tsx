@@ -1,6 +1,4 @@
 /**
- * Step 10 port of apps/web/src/components/payments/__tests__/payment-run-badge.test.tsx.
- *
  * Covers the payment run lifecycle pills (DRAFT → LOCKED → EXPORTED → COMPLETED
  * → CANCELLED) and the per-item PENDING/PAID/FAILED states — the visual
  * spine of the payment run flow (CSV export, settle).

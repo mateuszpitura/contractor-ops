@@ -1,9 +1,9 @@
 /**
- * PORTED STUB — apps/web/src/components/shared/__tests__/copyable-field.test.tsx.
+ * Deferred skip-stub.
  *
- * Component `copyable-field.tsx` does NOT exist in apps/web-vite — never ported
- * from legacy. Stub permanently until either component is ported OR the legacy
- * use sites are confirmed dead and the test deleted.
+ * Component `copyable-field.tsx` does NOT exist in apps/web-vite. Stub
+ * permanently until either the component is ported OR the use sites are
+ * confirmed dead and the test deleted.
  */
 
 import { describe } from 'vitest';

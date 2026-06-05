@@ -1,6 +1,4 @@
 /**
- * Web-vite port of apps/web/src/components/settings/__tests__/api-keys-tab.test.tsx.
- *
  * The ApiKeysTab presentational component receives `t`, `keys`, `isLoading`
  * from its hook. It also wraps the table in `FeatureGateContainer` and
  * mounts dialog containers — both reach into tRPC at module-eval time.

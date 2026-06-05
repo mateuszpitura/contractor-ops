@@ -1,5 +1,4 @@
-// Phase 61 · Plan 61-07 — Leitweg-ID inline selector for contractor profile + contract pages.
-// Step 11 codemod port from apps/web/src/components/contractors/leitweg-id-inline-selector.tsx.
+// Leitweg-ID inline selector for contractor profile + contract pages.
 
 import { Alert, AlertDescription, AlertTitle } from '@contractor-ops/ui/components/shadcn/alert';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';

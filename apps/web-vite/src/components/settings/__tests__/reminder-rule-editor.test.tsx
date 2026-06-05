@@ -1,6 +1,4 @@
 /**
- * Web-vite port of apps/web/src/components/settings/__tests__/reminder-rule-editor.test.tsx.
- *
  * Container/component split. The editor is mounted inside a Dialog
  * portal. We mock the user-picker container (tRPC-backed) and build a
  * real `useForm` instance so Controller-bound selects are wired.

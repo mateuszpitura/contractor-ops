@@ -1,6 +1,4 @@
 /**
- * Step 10 port of apps/web/src/components/documents/__tests__/document-card.test.tsx.
- *
  * The web-vite DocumentCardView is presentational: it takes a `cardActions`
  * bag and an optional `versionNumber`. The `pdf-preview` and
  * `version-history-container` children are tRPC-bound, so we mock them

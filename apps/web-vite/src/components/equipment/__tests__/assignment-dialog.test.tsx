@@ -1,6 +1,4 @@
 /**
- * Web-vite port of apps/web/src/components/equipment/__tests__/assignment-dialog.test.tsx.
- *
  * AssignmentDialogView is presentational; the tRPC query/mutation live in
  * `useAssignmentDialog`. The test injects shaped hook state so it covers
  * the dialog branches (open, contractor list, empty, pending mutation).

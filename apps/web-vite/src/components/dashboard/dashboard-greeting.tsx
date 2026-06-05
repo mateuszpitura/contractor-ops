@@ -1,8 +1,5 @@
 /**
- * Personalized dashboard greeting with time-of-day awareness. Step 11
- * codemod port from apps/web/src/components/dashboard/dashboard-greeting.tsx:
- *   - `next-intl`              → `../../i18n/useTranslations.js`
- *   - `@/lib/auth-client`      → `../../providers/auth-provider.js#useAuth`
+ * Personalized dashboard greeting with time-of-day awareness.
  */
 
 import { useTranslations } from '../../i18n/useTranslations.js';

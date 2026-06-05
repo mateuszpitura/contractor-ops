@@ -1,8 +1,5 @@
 /**
- * Contractor table column visibility toggle. Step 11 codemod port from
- * apps/web/src/components/contractors/contractor-table/data-table-column-toggle.tsx:
- *   - `next-intl`         → `../../../i18n/useTranslations.js`
- *   - `@/i18n/typed-keys` → `../../../i18n/typed-keys.js`
+ * Contractor table column visibility toggle.
  */
 
 import { Button } from '@contractor-ops/ui/components/shadcn/button';

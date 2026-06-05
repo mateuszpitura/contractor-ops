@@ -3,10 +3,6 @@
  * Visibility gated by the `PAY_LATE_INTEREST_ENABLED` feature flag (the
  * tile self-renders nothing when disabled or when there are no
  * outstanding accruals).
- *
- * Ported from legacy `apps/web/src/components/dashboard/overdue-receivables-tile.tsx`
- * (commit 62a97d73). Data layer split into
- * `./hooks/use-overdue-receivables-tile.ts`.
  */
 
 import {

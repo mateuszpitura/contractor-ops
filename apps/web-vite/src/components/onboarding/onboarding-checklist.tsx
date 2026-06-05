@@ -2,10 +2,6 @@
  * Onboarding checklist — collapsible card guiding first-time admins
  * through org setup, privacy consent (PDPL only), team invite, first
  * contractor, plus optional approval / Slack steps.
- *
- * Ported from legacy `apps/web/src/components/onboarding/onboarding-checklist.tsx`
- * (commit 62a97d73) with the data layer split into
- * `./hooks/use-onboarding-checklist.ts` per `apps/web-vite/ARCHITECTURE.md`.
  */
 
 import { Button } from '@contractor-ops/ui/components/shadcn/button';

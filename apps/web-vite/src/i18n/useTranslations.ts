@@ -1,7 +1,7 @@
 /**
  * Compat hook mirroring `next-intl`'s `useTranslations(namespace)` shape.
  *
- * The ~545 next-intl consumers in apps/web/src/** call:
+ * Consumers call:
  *
  *     const t = useTranslations('contractors.detail');
  *     t('title');                 // → "Contractor detail"
@@ -9,11 +9,9 @@
  *
  * react-i18next's native `useTranslation(ns)` returns `{ t }` with the
  * same `(key, vars?) => string` signature but accepts ICU values under a
- * single positional argument. This wrapper hides the destructure so the
- * Step 11 codemod swap is a one-line import path change per file
- * (`from 'next-intl'` → `from '@/i18n/useTranslations'`).
+ * single positional argument. This wrapper hides the destructure.
  *
- * Dot-prefix matches the legacy "namespace" semantics: `useTranslations('a.b')`
+ * Dot-prefix matches the "namespace" semantics: `useTranslations('a.b')`
  * makes `t('c')` resolve to key `'a.b.c'` in the underlying flat bundle.
  */
 
@@ -35,9 +33,8 @@ export function useTranslations(namespace?: string): TranslateFn {
     return typeof result === 'string' ? result : String(result);
   };
   // `rich` parity stub — next-intl callers occasionally use it for
-  // React-element interpolation. Implementation lands in Step 11
-  // alongside the consumer codemod, once the call-sites that need it
-  // are catalogued.
+  // React-element interpolation. Full implementation is deferred until
+  // the call-sites that need it are catalogued.
   fn.rich = (key, values) => fn(key, values);
   return fn;
 }

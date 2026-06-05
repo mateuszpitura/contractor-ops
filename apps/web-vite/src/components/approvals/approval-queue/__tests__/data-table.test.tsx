@@ -1,9 +1,7 @@
 /**
- * Step 10 port of apps/web/src/components/approvals/approval-queue/__tests__/data-table.test.tsx.
- *
- * The web-vite ApprovalQueueTable is a pure presentational component — pagination,
+ * ApprovalQueueTable is a pure presentational component — pagination,
  * row selection, and skeleton logic live inside, but data/columns/page/onClick
- * arrive as props. Tests inject minimal column defs and the legacy ApprovalQueueRow
+ * arrive as props. Tests inject minimal column defs and the ApprovalQueueRow
  * shape so we exercise rendering + interaction without tRPC.
  */
 

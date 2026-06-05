@@ -1,6 +1,4 @@
 /**
- * Web-vite port of apps/web/src/components/settings/__tests__/brand-color-picker.test.tsx.
- *
  * Component is presentational (`value` + `onChange` props); no tRPC harness
  * needed. ICU interpolation is not patched in the default test-utils
  * harness, so we assert on stable surface details — trigger role,

@@ -1,7 +1,5 @@
 /**
- * Ported from apps/web/src/components/contracts/contract-detail/__tests__/send-for-signature-dialog.test.tsx.
- *
- * Web-vite split: SendForSignatureDialog is presentational; `dialog` prop is
+ * SendForSignatureDialog is presentational; `dialog` prop is
  * produced by `useSendForSignatureDialog`. We construct shaped stubs to
  * exercise each render branch without a tRPC harness.
  */

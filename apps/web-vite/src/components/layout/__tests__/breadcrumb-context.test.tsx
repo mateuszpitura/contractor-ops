@@ -1,8 +1,6 @@
 /**
- * Step 10 port of apps/web/src/components/layout/__tests__/breadcrumb-context.test.tsx.
- *
  * The web-vite BreadcrumbProvider exposes a positional setter shape:
- * `setOverride(segment, label)` (vs the legacy object form). Tests adapted.
+ * `setOverride(segment, label)`.
  *
  * `useBreadcrumbOverride` is exercised via a full `mount` instead of
  * `renderHook`: the provider's `value` is rebuilt when `overrides` change,

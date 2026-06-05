@@ -1,6 +1,4 @@
 /**
- * Step 10 port of apps/web/src/components/documents/__tests__/version-history.test.tsx.
- *
  * After the passthrough-container refactor the variant pick lives in the
  * container; the view now exports four single-path components
  * (`VersionHistoryCollapsedTrigger`, `VersionHistoryLoading`,

@@ -1,23 +1,11 @@
 /**
- * RBAC permission checks. Step 11 codemod port from
- * apps/web/src/hooks/use-permissions.ts:
+ * RBAC permission checks.
  *
- *   - `@/components/layout/dashboard-context#useDashboardContext`
- *       → consume the Better Auth org client directly. The legacy
- *         DashboardContext ferried a server-resolved member role to
- *         client components; in CSR we resolve it via the Better Auth
- *         organization plugin's `getActiveMember` endpoint, fetched
- *         once per active session+org and cached by React Query.
- *         The original CSR port assumed `session.data.member.role`
- *         was populated automatically — it is not. Better Auth's
- *         `/get-session` intentionally omits per-org membership; the
- *         active member lives behind `/organization/get-active-member`.
- *   - `@/lib/auth-client#authClient`
- *       → `../providers/auth-provider.js#useAuth`.
- *
- * Permission matrix copied verbatim — parity test in
- * apps/web/src/hooks/__tests__/use-permissions-parity.test.ts will lift
- * alongside it.
+ * We resolve the active member role via the Better Auth organization
+ * plugin's `getActiveMember` endpoint, fetched once per active session+org
+ * and cached by React Query. `session.data.member.role` is NOT populated
+ * automatically: Better Auth's `/get-session` intentionally omits per-org
+ * membership; the active member lives behind `/organization/get-active-member`.
  */
 
 import { useQuery } from '@tanstack/react-query';

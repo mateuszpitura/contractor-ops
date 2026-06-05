@@ -1,6 +1,5 @@
 /**
- * Auth layout — Step 10 batch 1 / P1 UI.
- * Lifted from apps/web/src/app/[locale]/(auth)/layout.tsx (no Next layout wrapper).
+ * Auth layout.
  */
 
 import type { ReactNode } from 'react';

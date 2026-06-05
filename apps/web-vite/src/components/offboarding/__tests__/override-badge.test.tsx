@@ -1,6 +1,4 @@
 /**
- * Ported from apps/web/src/components/offboarding/__tests__/override-badge.test.tsx.
- *
  * OverrideBadge is presentational — returns `null` when metadata absent,
  * otherwise renders a destructive Badge wrapped in a TooltipTrigger button.
  */

@@ -1,6 +1,4 @@
 /**
- * Web-vite port of apps/web/src/components/zatca/__tests__/compliance-csid.test.tsx.
- *
  * Container splits the step into ComplianceCsidIdle (action button) and
  * ComplianceCsidProgress (status list) so neither view branches on hook
  * state internally. Tests render each sibling directly through small

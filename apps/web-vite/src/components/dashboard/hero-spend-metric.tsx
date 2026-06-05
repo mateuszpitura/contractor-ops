@@ -3,9 +3,7 @@
  * total + sparkline + month-over-month trend chip. Sits above the KPI
  * row in the bento dashboard layout.
  *
- * Ported from legacy `apps/web/src/components/dashboard/hero-spend-metric.tsx`
- * (commit 62a97d73). Aggregates across currencies into a single
- * PLN-formatted total (same math as the legacy V1 SpendChart).
+ * Aggregates across currencies into a single PLN-formatted total.
  */
 
 import { AnimatedNumber, Sparkline, TiltCard } from '@contractor-ops/ui';

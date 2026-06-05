@@ -1,6 +1,5 @@
 /**
- * Double-confirmation pattern. Lifted from
- * apps/web/src/hooks/use-double-confirmation.ts unchanged.
+ * Double-confirmation pattern.
  */
 
 import { useCallback, useRef, useState } from 'react';

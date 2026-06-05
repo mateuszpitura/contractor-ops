@@ -1,6 +1,4 @@
 /**
- * Web-vite port of apps/web/src/components/zatca/__tests__/production-certificate.test.tsx.
- *
  * Container splits the step into ProductionCertificateIdle (warning +
  * complete-onboarding action) and ProductionCertificateCompleted (active
  * certificate panel + final Complete). Tests render each sibling

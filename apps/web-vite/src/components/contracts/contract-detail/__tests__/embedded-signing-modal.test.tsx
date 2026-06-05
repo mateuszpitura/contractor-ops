@@ -1,7 +1,5 @@
 /**
- * Ported from apps/web/src/components/contracts/contract-detail/__tests__/embedded-signing-modal.test.tsx.
- *
- * Web-vite split: EmbeddedSigningModal is presentational; `modal` prop holds
+ * EmbeddedSigningModal is presentational; `modal` prop holds
  * iframe ref, isPending, signingData. We supply shaped stubs.
  */
 

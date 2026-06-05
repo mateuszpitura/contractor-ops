@@ -1,6 +1,3 @@
-// Phase 60 · CLASS-08 — ReassessmentTriggerDismissDialog.
-// Step 11 codemod port from apps/web/src/components/contractors/classification/reassessment-trigger/dismiss-dialog.tsx.
-
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import {
   Dialog,

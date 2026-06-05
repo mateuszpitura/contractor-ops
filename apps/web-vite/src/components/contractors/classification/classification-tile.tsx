@@ -1,5 +1,4 @@
-// Phase 58 Plan 05 Task 2 — Per-engagement Classification tile.
-// Step 11 codemod port from apps/web/src/components/contractors/classification/classification-tile.tsx.
+// Per-engagement Classification tile.
 
 import type { Ir35Outcome, ScheinselbstandigkeitOutcome } from '@contractor-ops/classification';
 import { Badge } from '@contractor-ops/ui/components/shadcn/badge';

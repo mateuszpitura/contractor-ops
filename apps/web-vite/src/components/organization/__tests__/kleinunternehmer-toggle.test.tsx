@@ -1,8 +1,6 @@
 /**
  * Kleinunternehmer (§ 19 UStG) toggle — render parity test.
  *
- * Ported from apps/web/src/components/organization/__tests__/kleinunternehmer-toggle.test.tsx.
- *
  * Flipping this DE-only flag rewrites VAT handling for every future
  * invoice issued by the organisation. The legacy guard "non-DE orgs
  * never see the toggle" must hold in web-vite too. After the passthrough

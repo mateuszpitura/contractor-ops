@@ -1,8 +1,4 @@
 /**
- * Web-vite port of apps/web/src/components/billing/__tests__/upgrade-inline-banner.test.tsx.
- *
- * In web-vite, `Link` comes from `react-router-dom` (wired via the harness'
- * MemoryRouter); the legacy `@/i18n/navigation` mock is no longer needed.
  * `useTranslations` resolves against the real EN bundle so the assertions
  * pin the live `Billing.gate` copy.
  */

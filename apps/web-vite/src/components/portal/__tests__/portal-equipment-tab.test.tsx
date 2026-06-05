@@ -1,7 +1,5 @@
 /**
- * Ported from apps/web/src/components/portal/__tests__/portal-equipment-tab.test.tsx.
- *
- * Web-vite split: PortalEquipmentTab is fully presentational. Translators
+ * PortalEquipmentTab is fully presentational. Translators
  * + queries arrive as props; the test passes stub translators so the
  * key-as-text assertions stay stable across copy edits.
  */

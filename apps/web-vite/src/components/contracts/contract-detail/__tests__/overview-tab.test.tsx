@@ -1,7 +1,5 @@
 /**
- * Ported from apps/web/src/components/contracts/contract-detail/__tests__/overview-tab.test.tsx.
- *
- * Web-vite split: OverviewTab is presentational; `reminders` prop is produced
+ * OverviewTab is presentational; `reminders` prop is produced
  * by `useExpiryRemindersEditor`. We supply a shaped stub so the test renders
  * without a tRPC harness.
  */

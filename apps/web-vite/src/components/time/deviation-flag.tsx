@@ -1,8 +1,5 @@
 /**
  * DeviationFlag — invoice-vs-time reconciliation severity badge.
- *
- * Lifted from apps/web/src/components/time/deviation-flag.tsx — no i18n
- * imports so no codemod needed.
  */
 
 import { Badge } from '@contractor-ops/ui/components/shadcn/badge';

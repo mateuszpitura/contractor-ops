@@ -1,6 +1,5 @@
 /**
- * ZATCA integration settings — Step 10 batch 8 port from
- * apps/web/src/app/[locale]/(dashboard)/settings/integrations/zatca/page.tsx.
+ * ZATCA integration settings.
  */
 
 import { IntegrationsIllustration } from '@contractor-ops/ui';
@@ -11,10 +10,10 @@ import { AnimateIn } from '../shared/animate-in.js';
 import { WorkbenchPageHeader } from '../shared/workbench-page-header.js';
 import { EnvironmentToggle } from './environment-toggle.js';
 import { useZatcaIntegrationSettings } from './hooks/use-zatca-integration-settings.js';
+import { ZatcaInvoiceChainTable } from './invoice-chain/container.js';
 import { OnboardingWizard } from './onboarding-wizard-container.js';
 import { ZatcaComplianceWidget } from './zatca-compliance-widget-container.js';
 import { ZatcaConnectionPill } from './zatca-connection-pill-container.js';
-import { ZatcaInvoiceChainTable } from './invoice-chain/container.js';
 import { ZatcaStatsCards } from './zatca-stats-cards-container.js';
 
 export function ZatcaIntegrationContainer() {

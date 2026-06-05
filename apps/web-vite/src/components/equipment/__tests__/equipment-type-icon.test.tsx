@@ -1,6 +1,4 @@
 /**
- * Step 10 port of apps/web/src/components/equipment/__tests__/equipment-type-icon.test.tsx.
- *
  * EquipmentTypeIcon is the visual key on every assignment dialog + table
  * row identifying what is being assigned or returned. Verifies the SVG
  * mapping per known type, the `Box` fallback for unknown types, and that

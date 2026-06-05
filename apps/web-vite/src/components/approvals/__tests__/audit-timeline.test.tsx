@@ -1,6 +1,4 @@
 /**
- * Step 10 port of apps/web/src/components/approvals/__tests__/audit-timeline.test.tsx.
- *
  * AuditTimeline is presentational — `events` + `isLoading` come in via
  * props (the tRPC query lives in `audit-timeline-container.tsx`).
  * Translation keys resolve against the real English bundle, so assertions

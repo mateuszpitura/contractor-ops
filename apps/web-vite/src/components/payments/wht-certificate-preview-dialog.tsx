@@ -1,9 +1,5 @@
 /**
- * WHT certificate preview dialog — ported from
- * apps/web/src/components/payments/wht-certificate-preview-dialog.tsx.
- * Swaps:
- *   - next-intl → ../../i18n/useTranslations + ../../i18n/navigation (useLocale)
- *   - @/lib/format-currency → ../../lib/format-currency
+ * WHT certificate preview dialog.
  */
 
 import { Button } from '@contractor-ops/ui/components/shadcn/button';

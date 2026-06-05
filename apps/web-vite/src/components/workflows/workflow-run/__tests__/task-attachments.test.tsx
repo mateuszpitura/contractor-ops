@@ -1,8 +1,6 @@
 /**
- * Ported from apps/web/src/components/workflows/workflow-run/__tests__/task-attachments.test.tsx.
- *
- * Web-vite split: TaskAttachments is presentational — `useTaskAttachmentsSection`
- * bag drives it. DropZoneContainer hits tRPC so we mock it out.
+ * TaskAttachments is presentational — `useTaskAttachmentsSection` bag drives
+ * it. DropZoneContainer hits tRPC so we mock it out.
  */
 
 import type { ComponentProps } from 'react';

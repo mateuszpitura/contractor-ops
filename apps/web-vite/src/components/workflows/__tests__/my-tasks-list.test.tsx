@@ -1,8 +1,6 @@
 /**
- * Ported from apps/web/src/components/workflows/__tests__/my-tasks-list.test.tsx.
- *
  * Web-vite MyTasksList is presentational (props bag from useMyTasksList).
- * Legacy mocked tRPC + useQuery — here we feed the props directly.
+ * We feed the props directly rather than mocking the tRPC/useQuery boundary.
  */
 
 import { MemoryRouter } from 'react-router-dom';

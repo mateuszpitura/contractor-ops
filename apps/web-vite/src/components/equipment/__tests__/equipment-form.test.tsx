@@ -1,6 +1,4 @@
 /**
- * Web-vite port of apps/web/src/components/equipment/__tests__/equipment-form.test.tsx.
- *
  * EquipmentFormView owns react-hook-form internally. The container/hook
  * (useEquipmentForm) provides `submit` + `isPending`; the test stubs
  * those out so the form renders, react-hook-form binds defaults, and the

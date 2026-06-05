@@ -1,9 +1,7 @@
 /**
  * Pure URL-param parsing tests for the e-invoice compliance client-side
- * filter. The legacy test (apps/web/.../einvoice-compliance-filter-chips.test.tsx)
- * mixed parseFilterParam unit cases with chip-rendering integration cases;
- * here we keep only the pure parser cases — the chip component is covered
- * by Playwright in apps/web-vite.
+ * filter. Only the pure `parseFilterParam` cases live here — the chip
+ * component is covered by Playwright in apps/web-vite.
  */
 
 import { describe, expect, it } from 'vitest';

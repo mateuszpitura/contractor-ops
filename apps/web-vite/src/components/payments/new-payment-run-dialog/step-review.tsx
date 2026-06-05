@@ -1,9 +1,5 @@
 /**
- * StepReview — ported from
- * apps/web/src/components/payments/new-payment-run-dialog/step-review.tsx.
- * Swaps:
- *   - next-intl → ../../../i18n/useTranslations
- *   - @/trpc/init → useTRPC()
+ * StepReview.
  */
 
 import { Button } from '@contractor-ops/ui/components/shadcn/button';

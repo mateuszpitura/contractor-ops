@@ -1,9 +1,7 @@
 /**
- * Ported from apps/web/src/components/workflows/workflow-run/__tests__/task-checklist.test.tsx.
- *
- * Web-vite TaskChecklist still composes TaskCardRunContainer (which fetches
- * tRPC). We mock the row container so the test only verifies the list
- * scaffolding (heading + one row per task).
+ * TaskChecklist composes TaskCardRunContainer (which fetches tRPC). We mock
+ * the row container so the test only verifies the list scaffolding (heading +
+ * one row per task).
  */
 
 import type { ComponentProps } from 'react';

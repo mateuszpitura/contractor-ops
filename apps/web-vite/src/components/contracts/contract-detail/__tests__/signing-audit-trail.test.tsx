@@ -1,7 +1,5 @@
 /**
- * Ported from apps/web/src/components/contracts/contract-detail/__tests__/signing-audit-trail.test.tsx.
- *
- * Web-vite split: SigningAuditTrail is presentational; `audit` prop is
+ * SigningAuditTrail is presentational; `audit` prop is
  * produced by `useSigningAuditTrail`. We pass shaped stubs (no tRPC needed).
  */
 

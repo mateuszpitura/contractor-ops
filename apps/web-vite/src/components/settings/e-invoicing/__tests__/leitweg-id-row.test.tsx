@@ -1,11 +1,7 @@
 /**
- * Web-vite port of apps/web/src/components/settings/e-invoicing/__tests__/leitweg-id-row.test.tsx.
- *
  * NOTE: A canonical copy of this test also lives at
  * `apps/web-vite/src/components/settings/__tests__/leitweg-id-row.test.tsx`
- * (mirror of the same component). This file kept for parity with the
- * legacy `apps/web/src/components/settings/e-invoicing/__tests__/`
- * layout — assertions are identical.
+ * (mirror of the same component) — assertions are identical.
  *
  * The row is a `<tr>`, so it must be mounted inside a `<table><tbody>`
  * for a valid DOM. Edit and delete dialog containers pull tRPC at module

@@ -1,6 +1,4 @@
 /**
- * Ported from apps/web/src/components/payments/bacs/__tests__/bacs-submitter-form.test.tsx.
- *
  * Web-vite split: BacsSubmitterForm accepts `useBacsSubmitterForm`'s
  * return as a `submitter` prop, so the test injects a shaped stub
  * instead of mocking the BACS tRPC endpoints.

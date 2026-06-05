@@ -1,6 +1,4 @@
 /**
- * Step 10 port of apps/web/src/components/billing/__tests__/credit-progress-bar.test.tsx.
- *
  * CreditCard owns the OCR credit gauge in the billing tab and the invoice
  * submit upload flow (exhausted state -> CTA to buy credits). Tests cover:
  *   - remaining/exhausted label switch

@@ -1,6 +1,4 @@
 /**
- * Step 10 port of apps/web/src/components/approvals/__tests__/sla-badge.test.tsx.
- *
  * Covers the SLA countdown logic surfacing on every approval-chain step
  * (approve/reject with comment, delegation): label format, overdue
  * handling, % thresholds with and without an explicit `slaHours`.

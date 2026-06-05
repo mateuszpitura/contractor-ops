@@ -1,7 +1,5 @@
 /**
- * Equipment-type icon mapper. Step 11 codemod port from
- * apps/web/src/components/equipment/equipment-type-icon.tsx:
- *   - `@/lib/utils` → `../../lib/utils.js`
+ * Equipment-type icon mapper.
  */
 
 import type { LucideIcon } from 'lucide-react';

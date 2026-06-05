@@ -1,9 +1,3 @@
-/**
- * Org definition source badge. Step 11 codemod port from
- * apps/web/src/components/organization/shared/source-badge.tsx:
- *   - `next-intl` → `../../../i18n/useTranslations.js`
- */
-
 import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';

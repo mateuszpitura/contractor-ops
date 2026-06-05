@@ -1,9 +1,6 @@
 /**
- * Ported from apps/web/src/components/contracts/contract-wizard/__tests__/step-details.test.tsx.
- *
- * Web-vite split: StepDetails takes contractors data + handlers as props
- * (was a self-fetching component). Use a local harness that mounts a real
- * react-hook-form and supplies stub contractors.
+ * StepDetails takes contractors data + handlers as props. Use a local
+ * harness that mounts a real react-hook-form and supplies stub contractors.
  */
 
 import { useForm } from 'react-hook-form';

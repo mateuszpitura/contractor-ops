@@ -1,6 +1,4 @@
 /**
- * Step 10 port of apps/web/src/components/equipment/equipment-detail/__tests__/tab-shipments.test.tsx.
- *
  * Web-vite splits the tab into a container (owns the useEquipmentShipments hook
  * + selected shipment state) and `TabShipmentsView`. The view is single-path
  * (renders the populated table); loading/error/empty variants are exported as

@@ -1,8 +1,6 @@
 /**
- * Plan 10 — port of legacy `apps/web/src/components/billing/__tests__/plan-comparison-grid.test.tsx`.
- *
- * Web-vite has no React testing-library installed yet, so this port covers
- * the pure-logic contract that legacy renders implicitly:
+ * Web-vite has no React testing-library installed yet, so this covers
+ * the pure-logic contract that renders implicitly:
  *
  *   - `VITE_STRIPE_PRICE_*` env-source contract (audit-flagged migration:
  *     legacy used `process.env.NEXT_PUBLIC_STRIPE_PRICE_*`, web-vite uses

@@ -1,7 +1,5 @@
 /**
- * Org definition status badge. Step 11 codemod port from
- * apps/web/src/components/organization/shared/status-badge.tsx:
- *   - `next-intl` → `../../../i18n/useTranslations.js`
+ * Org definition status badge.
  */
 
 import { Badge } from '@contractor-ops/ui/components/shadcn/badge';

@@ -1,9 +1,5 @@
 /**
- * PDF viewer for OCR review. Step 10 batch port from
- * apps/web/src/components/ocr/pdf-viewer.tsx:
- *   - `'use client'` stripped (SPA default)
- *   - `next-intl#useTranslations` → `../../i18n/useTranslations.js`
- *   - `@/lib/utils` → `../../lib/utils.js`
+ * PDF viewer for OCR review.
  */
 
 import { Button } from '@contractor-ops/ui/components/shadcn/button';

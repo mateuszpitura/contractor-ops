@@ -1,7 +1,6 @@
 /**
- * Ported from apps/web/src/components/time/__tests__/rejection-reason-dialog.test.tsx
- * Web-vite RejectionReasonDialog is presentational (next-intl → useTranslations
- * compat hook). Focus: validation gate, character counter, bulk title.
+ * RejectionReasonDialog is presentational. Focus: validation gate, character
+ * counter, bulk title.
  */
 
 import { afterEach, describe, expect, it, vi } from 'vitest';

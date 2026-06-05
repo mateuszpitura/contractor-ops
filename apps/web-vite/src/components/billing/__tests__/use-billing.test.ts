@@ -1,14 +1,8 @@
 /**
- * Plan 10 — port of the pure-logic slice from
- * `apps/web/src/components/billing/__tests__/usage-dashboard.test.tsx` +
- * `top-up-dialog.test.tsx`.
- *
- * The render-based assertions in the legacy file depend on
- * `@testing-library/react`, which is not yet wired into apps/web-vite.
  * The pure parsers / derivations exported alongside the hooks
  * (`parseUsageDashboard`, `deriveUsageDashboardTier`) are exercised here
  * — they own the tier-fallback contract that the usage dashboard relies
- * on when the subscription row is missing (legacy bug class: rendering
+ * on when the subscription row is missing (bug class: rendering
  * "undefined" as the tier name).
  */
 

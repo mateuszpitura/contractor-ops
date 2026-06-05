@@ -1,7 +1,5 @@
 /**
- * Payment run/item status badges. Lifted from
- * apps/web/src/components/payments/payment-run-badge.tsx unchanged
- * (consumes only @contractor-ops/ui + lucide; no Next imports).
+ * Payment run/item status badges.
  */
 
 import type { PaymentRunItemStatusInput, PaymentRunStatusInput } from '@contractor-ops/ui';

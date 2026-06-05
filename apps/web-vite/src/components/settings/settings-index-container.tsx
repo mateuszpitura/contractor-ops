@@ -1,6 +1,5 @@
 /**
- * Organization settings — Step 10 batch 8 port from
- * apps/web/src/app/[locale]/(dashboard)/settings/page.tsx.
+ * Organization settings.
  */
 
 import { Button } from '@contractor-ops/ui/components/shadcn/button';

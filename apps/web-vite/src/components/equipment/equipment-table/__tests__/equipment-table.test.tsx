@@ -1,6 +1,4 @@
 /**
- * Step 10 port of apps/web/src/components/equipment/equipment-table/__tests__/equipment-table.test.tsx.
- *
  * Web-vite split the table into `EquipmentTableContainer` (owns the tRPC query
  * via useEquipmentTable) and `EquipmentTableView` (pure presentational, props
  * include the hook return). Tests target the view so no tRPC/react-query mocks
@@ -10,8 +8,8 @@
 import { describe, expect, it, vi } from 'vitest';
 
 import { render, screen, setup } from '../../../../test/test-utils.js';
-import type { EquipmentRow } from '../equipment-columns.js';
 import { EquipmentTableView } from '../data-table.js';
+import type { EquipmentRow } from '../equipment-columns.js';
 
 type ViewProps = React.ComponentProps<typeof EquipmentTableView>;
 
@@ -102,18 +100,14 @@ describe('EquipmentTableView (web-vite)', () => {
 
   it('renders the table element', () => {
     render(
-      <EquipmentTableView
-        {...makeViewProps({ data: [makeRow()], totalRows: 1, totalPages: 1 })}
-      />,
+      <EquipmentTableView {...makeViewProps({ data: [makeRow()], totalRows: 1, totalPages: 1 })} />,
     );
     expect(document.querySelector('table')).toBeInTheDocument();
   });
 
   it('renders toolbar with a search input', () => {
     render(
-      <EquipmentTableView
-        {...makeViewProps({ data: [makeRow()], totalRows: 1, totalPages: 1 })}
-      />,
+      <EquipmentTableView {...makeViewProps({ data: [makeRow()], totalRows: 1, totalPages: 1 })} />,
     );
     expect(document.querySelector('input')).toBeInTheDocument();
   });
@@ -231,9 +225,7 @@ describe('EquipmentTableView (web-vite)', () => {
 
   it('handles search input changes (controlled via local state)', async () => {
     const { user } = setup(
-      <EquipmentTableView
-        {...makeViewProps({ data: [makeRow()], totalRows: 1, totalPages: 1 })}
-      />,
+      <EquipmentTableView {...makeViewProps({ data: [makeRow()], totalRows: 1, totalPages: 1 })} />,
     );
     const searchInput = document.querySelector('input') as HTMLInputElement;
     await user.type(searchInput, 'laptop');

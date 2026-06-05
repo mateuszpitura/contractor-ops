@@ -1,8 +1,6 @@
 /**
- * Ported from apps/web/src/components/payments/invoice-selection-table/__tests__/data-table.test.tsx.
- *
- * Uses the local echo translator (web-vite has no `createMockTranslator`
- * lift). Asserts the loading/data/disabled-checkbox rendering paths.
+ * Uses the local echo translator (web-vite has no `createMockTranslator`).
+ * Asserts the loading/data/disabled-checkbox rendering paths.
  */
 
 import { render, screen } from '@/test/test-utils';

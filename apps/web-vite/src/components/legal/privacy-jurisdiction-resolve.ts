@@ -1,6 +1,5 @@
 /**
- * Privacy-notice jurisdiction routing helpers — ported from
- * apps/web/src/app/[locale]/(legal)/legal/privacy/_resolve.ts.
+ * Privacy-notice jurisdiction routing helpers.
  */
 
 /** Jurisdiction slugs the /legal/privacy pages are allowed to render. */

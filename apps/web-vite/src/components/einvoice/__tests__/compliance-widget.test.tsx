@@ -1,6 +1,4 @@
 /**
- * Step 10 port of apps/web/src/components/einvoice/__tests__/compliance-widget.test.tsx.
- *
  * Post-passthrough refactor: `EInvoiceComplianceWidget` (container) now
  * branches on `isLoading` and the empty case (no statuses + no peppol),
  * delegating render to `EInvoiceComplianceWidgetSkeleton`,

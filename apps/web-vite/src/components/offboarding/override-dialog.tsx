@@ -1,11 +1,9 @@
 /**
- * Phase 74 Plan 08 — Override IP_VERIFICATION dialog.
+ * Override IP_VERIFICATION dialog.
  *
- * Ported from legacy `apps/web/src/components/offboarding/override-dialog.tsx`
- * (commit 62a97d73). Pure presentational — caller injects the tRPC
- * mutation via `onSubmit`, so this file stays free of `useMutation`
- * (data-layer lint compliant) and the consuming container handles its
- * own tRPC plumbing.
+ * Pure presentational — caller injects the tRPC mutation via `onSubmit`, so
+ * this file stays free of `useMutation` (data-layer lint compliant) and the
+ * consuming container handles its own tRPC plumbing.
  *
  * Dual validation:
  *   - reason: client min 20 chars (live)

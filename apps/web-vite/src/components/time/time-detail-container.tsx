@@ -1,9 +1,5 @@
 /**
- * Per-contractor timesheet review — Step 10 batch 6 full port from
- * apps/web/src/app/[locale]/(dashboard)/time/[contractorId]/page.tsx:
- *   - next-intl / @/trpc/init → useTranslations + useTRPC()
- *   - @/i18n/navigation → ../../i18n/navigation.js
- *   - next/navigation searchParams → react-router useSearchParams
+ * Per-contractor timesheet review.
  */
 
 import { AtelierEmptyState, TimeTrackingIllustration } from '@contractor-ops/ui';

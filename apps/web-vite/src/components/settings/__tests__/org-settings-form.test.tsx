@@ -1,6 +1,4 @@
 /**
- * Web-vite port of apps/web/src/components/settings/__tests__/org-settings-form.test.tsx.
- *
  * Container/component split — the form takes register/handleSubmit/setValue
  * plus several option lists and t. We provide a real `useForm` instance
  * in a tiny harness so the controlled selects + inputs are exercised

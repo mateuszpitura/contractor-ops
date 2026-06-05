@@ -1,13 +1,5 @@
 /**
  * AuditTimeline — chronological audit trail for an invoice's approval flow.
- *
- * Ported from apps/web/src/components/approvals/audit-timeline.tsx with
- * the SPA codemod swaps:
- *   - next-intl `useTranslations` → ../../i18n/useTranslations.js
- *   - @/i18n/typed-keys `tKey` → ../../i18n/typed-keys.js
- *   - @/trpc/init `trpc` → useTRPC() proxy from providers/trpc-provider
- *   - @/lib/avatar-initials → ../../lib/avatar-initials.js
- *   - @/lib/utils `cn` → ../../lib/utils.js
  */
 
 import { Avatar, AvatarFallback, AvatarImage } from '@contractor-ops/ui/components/shadcn/avatar';

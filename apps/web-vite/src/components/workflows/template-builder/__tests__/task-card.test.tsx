@@ -1,7 +1,5 @@
 /**
- * Ported from apps/web/src/components/workflows/template-builder/__tests__/task-card.test.tsx.
- *
- * Web-vite split: TaskCard takes `users`/`usersQuery` directly (no longer
+ * TaskCard takes `users`/`usersQuery` directly (no longer
  * fetches them) plus integration containers are mocked here because they
  * depend on tRPC.
  */

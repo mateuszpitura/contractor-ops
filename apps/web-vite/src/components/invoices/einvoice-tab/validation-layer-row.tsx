@@ -1,7 +1,5 @@
 /**
- * Validation layer row. Step 11 codemod port from
- * apps/web/src/components/invoices/einvoice-tab/validation-layer-row.tsx:
- *   - `next-intl` → `../../../i18n/useTranslations.js`
+ * Validation layer row.
  */
 
 import { Badge } from '@contractor-ops/ui/components/shadcn/badge';

@@ -1,6 +1,4 @@
 /**
- * Web-vite port of apps/web/src/components/settings/__tests__/invoice-matching-settings.test.tsx.
- *
  * Container/component split. The presentational form receives all state +
  * handlers from `useInvoiceMatchingSettings`; tRPC settings/threshold
  * queries are the hook's concern.

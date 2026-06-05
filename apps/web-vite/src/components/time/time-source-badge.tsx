@@ -1,7 +1,5 @@
 /**
- * Compact inline badge showing time entry source. Lifted from
- * apps/web/src/components/time/time-source-badge.tsx unchanged
- * (no Next/next-intl imports, so no codemod needed).
+ * Compact inline badge showing time entry source.
  */
 
 import { Badge } from '@contractor-ops/ui/components/shadcn/badge';

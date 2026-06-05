@@ -1,6 +1,4 @@
 /**
- * Step 10 port of apps/web/src/components/layout/__tests__/sidebar.test.tsx.
- *
  * The web-vite AppSidebar composes three container components
  * (OrgSwitcherContainer, NavItemsContainer, UserMenuContainer) that each
  * pull tRPC + Better Auth + Sidebar context. We mock the containers to

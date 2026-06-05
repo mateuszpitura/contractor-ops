@@ -1,6 +1,5 @@
 /**
- * Per-market classification dashboard card. Port from
- * apps/web/src/components/contractors/classification/dashboard/market-card.tsx
+ * Per-market classification dashboard card.
  */
 
 import {

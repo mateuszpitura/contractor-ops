@@ -1,7 +1,5 @@
 /**
- * Ported from apps/web/src/components/contracts/contract-detail/__tests__/contract-detail-tabs.test.tsx.
- *
- * Web-vite split: ContractDetailTabs renders Container components for each
+ * ContractDetailTabs renders Container components for each
  * tab. We mock containers + the underlying `useContractDetailTabs` hook so
  * the test focuses on the tabs surface itself.
  */

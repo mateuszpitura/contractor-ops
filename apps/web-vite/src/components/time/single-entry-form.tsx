@@ -1,8 +1,5 @@
 /**
- * Single time entry form. Ported from
- * apps/web/src/components/time/single-entry-form.tsx:
- *   - next-intl → ../../i18n/useTranslations.js
- *   - @/lib/utils → ../../lib/utils.js
+ * Single time entry form.
  */
 
 import { Button } from '@contractor-ops/ui/components/shadcn/button';

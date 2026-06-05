@@ -1,6 +1,5 @@
 /**
- * Format a date as a human-readable relative string. Lifted from
- * apps/web/src/lib/format-relative-date.ts unchanged.
+ * Format a date as a human-readable relative string.
  */
 
 export function formatRelativeDate(dateStr: Date | string, locale: string = 'en'): string {

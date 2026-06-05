@@ -1,6 +1,4 @@
 /**
- * Ported from apps/web/src/components/onboarding/__tests__/source-card.test.tsx.
- *
  * SourceCard is presentational — checkbox-role container that toggles via
  * keyboard or onClick when connected, and exposes a Connect button when not.
  */

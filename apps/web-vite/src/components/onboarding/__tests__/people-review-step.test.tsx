@@ -1,6 +1,4 @@
 /**
- * Step 10 port of apps/web/src/components/onboarding/__tests__/people-review-step.test.tsx.
- *
  * The web-vite PeopleReviewStep is presentational — it consumes already-shaped
  * `filteredPeople`, `counts`, `personSelections`, etc. and exposes callbacks
  * for every interaction. We focus on the visible top-level UI (header,

@@ -1,6 +1,4 @@
 /**
- * Ported from apps/web/src/components/consent/__tests__/consent-purpose-toggle.test.tsx.
- *
  * Web-vite ConsentPurposeToggle is fully presentational — translations
  * come from the live i18n compat layer (no provider/mock dance). We
  * exercise the props the consent settings container hands the toggle

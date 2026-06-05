@@ -1,8 +1,5 @@
 /**
  * Tax-obligations widget — VAT + WHT summary for the current period.
- * Ported from legacy `apps/web/src/components/dashboard/tax-obligations-widget.tsx`
- * (commit 62a97d73) and rewired for the Vite SPA per
- * `apps/web-vite/ARCHITECTURE.md`.
  */
 
 import { Badge } from '@contractor-ops/ui/components/shadcn/badge';

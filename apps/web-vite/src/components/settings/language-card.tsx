@@ -1,6 +1,5 @@
 /**
- * Language / locale picker — Step 10 batch 8 port from
- * apps/web/src/components/settings/language-card.tsx.
+ * Language / locale picker.
  */
 
 import {

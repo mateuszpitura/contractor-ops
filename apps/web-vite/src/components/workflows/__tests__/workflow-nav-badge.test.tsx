@@ -1,7 +1,5 @@
 /**
- * Ported from apps/web/src/components/workflows/__tests__/workflow-nav-badge.test.tsx.
- *
- * Web-vite split: WorkflowNavBadge takes `{ count }` (produced by the
+ * WorkflowNavBadge takes `{ count }` (produced by the
  * `useWorkflowNavBadge` hook).
  */
 

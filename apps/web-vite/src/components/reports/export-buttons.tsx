@@ -1,7 +1,5 @@
 /**
- * Report export buttons + base64 download helper. Step 11 codemod port
- * from apps/web/src/components/reports/export-buttons.tsx:
- *   - `next-intl` → `../../i18n/useTranslations.js`
+ * Report export buttons + base64 download helper.
  */
 
 import { Button } from '@contractor-ops/ui/components/shadcn/button';

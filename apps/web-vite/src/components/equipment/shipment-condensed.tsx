@@ -1,6 +1,5 @@
 /**
- * Inline shipment status display. Lifted from
- * apps/web/src/components/equipment/shipment-condensed.tsx unchanged.
+ * Inline shipment status display.
  */
 
 import { ShipmentStatusBadge } from './shipment-status-badge.js';

@@ -1,11 +1,8 @@
 /**
- * Test-utils shim for ported `apps/web` tests.
+ * Test-utils shim.
  *
- * Mirrors the export surface of `apps/web/src/test/test-utils.tsx` so the
- * codemodded shadcn / component tests change ONLY their import path
- * (`@/test/test-utils` → `@/test/test-utils.js`) when moved here. Exposes
- * `render`, `setup`, `screen`, `act`, `waitFor`, `within` with the same
- * signatures the legacy harness used.
+ * Exposes `render`, `setup`, `screen`, `act`, `waitFor`, `within` with the
+ * same signatures the legacy harness used.
  *
  * Providers wrapped on every render:
  *

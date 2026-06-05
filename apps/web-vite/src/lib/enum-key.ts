@@ -1,7 +1,5 @@
 /**
  * Convert a DB enum / API value to a camelCase i18n key suffix.
- *
- * Lifted from apps/web/src/lib/enum-key.ts unchanged.
  */
 
 export function enumKey(value: string): string {

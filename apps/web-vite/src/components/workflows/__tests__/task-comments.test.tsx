@@ -1,10 +1,7 @@
 /**
- * Ported from apps/web/src/components/workflows/workflow-run/__tests__/task-comments.test.tsx.
- *
  * Web-vite TaskComments is fully presentational — the tRPC boundary lives
- * in `use-task-comments-section.ts`. The legacy test mocked
- * `@tanstack/react-query` + `@/trpc/init`; here we just feed the
- * presentational props the hook would have produced.
+ * in `use-task-comments-section.ts`. Here we feed the presentational props
+ * the hook would have produced rather than mocking react-query.
  */
 
 import type { ComponentProps } from 'react';

@@ -1,6 +1,4 @@
 /**
- * Web-vite port of apps/web/src/components/settings/__tests__/slack-user-mapping.test.tsx.
- *
  * Container/component split. The table receives mappings + stats +
  * handlers from `useSlackUserMapping`. We mock the link-user popover
  * container (tRPC-bound) so the test stays scoped to the table surface.

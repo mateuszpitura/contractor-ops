@@ -1,7 +1,5 @@
 /**
- * Ported from apps/web/src/components/contracts/contract-detail/__tests__/signing-progress-bar.test.tsx.
- *
- * Web-vite split: SigningProgressBar is presentational; `signing` prop is
+ * SigningProgressBar is presentational; `signing` prop is
  * produced by `useSigningProgressBar`, and audit/void dialogs are controlled
  * by parent state.
  */

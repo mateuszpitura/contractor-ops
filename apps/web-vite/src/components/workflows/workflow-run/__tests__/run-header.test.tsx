@@ -1,9 +1,7 @@
 /**
- * Ported from apps/web/src/components/workflows/workflow-run/__tests__/run-header.test.tsx.
- *
- * Web-vite split: RunHeader takes the `useRunHeader` bag merged with the
- * shaped `run` object. We mock `useDateFormatter` to avoid the tRPC org
- * settings call and wrap in MemoryRouter for the contractor/template Link.
+ * RunHeader takes the `useRunHeader` bag merged with the shaped `run` object.
+ * We mock `useDateFormatter` to avoid the tRPC org settings call and wrap in
+ * MemoryRouter for the contractor/template Link.
  */
 
 import type { ReactElement } from 'react';

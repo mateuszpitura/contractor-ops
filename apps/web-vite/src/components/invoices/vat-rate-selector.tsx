@@ -1,8 +1,5 @@
 /**
- * VAT rate selector. Step 11 codemod port from
- * apps/web/src/components/invoices/vat-rate-selector.tsx:
- *   - `next-intl`     → `../../i18n/useTranslations.js`
- *   - `@/trpc/init`   → `../../providers/trpc-provider.js#useTRPC`
+ * VAT rate selector.
  */
 
 import {

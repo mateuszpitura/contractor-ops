@@ -1,9 +1,3 @@
-/**
- * Pending project merge inbox — Step 10 batch 6 / Step 11 codemod port from
- * apps/web/src/components/organization/projects/pending-merges-inbox.tsx:
- *   - `@/trpc/init` → `../../../providers/trpc-provider.js#useTRPC`
- */
-
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import {
   Dialog,

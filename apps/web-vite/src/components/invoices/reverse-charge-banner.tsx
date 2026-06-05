@@ -1,8 +1,5 @@
 /**
- * Reverse-charge invoice banner. Step 11 codemod port from
- * apps/web/src/components/invoices/reverse-charge-banner.tsx:
- *   - `next-intl`     → `../../i18n/useTranslations.js`
- *   - `@/trpc/init`   → `../../providers/trpc-provider.js#useTRPC`
+ * Reverse-charge invoice banner.
  */
 
 import { Alert, AlertDescription, AlertTitle } from '@contractor-ops/ui/components/shadcn/alert';

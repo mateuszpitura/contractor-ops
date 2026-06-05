@@ -1,6 +1,4 @@
 /**
- * Ported from apps/web/src/components/payments/payment-run-table/__tests__/data-table.test.tsx.
- *
  * Uses an echo translator. Mocks PaymentRunBadge so the status cell stays
  * inert. The table reads `Payments` translations internally via
  * `useTranslations`, which the harness provides; we still need the

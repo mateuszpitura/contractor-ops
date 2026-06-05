@@ -1,6 +1,5 @@
 /**
- * E-invoice tab shared types. Lifted unchanged from
- * apps/web/src/components/invoices/einvoice-tab/types.ts.
+ * E-invoice tab shared types.
  */
 
 import type { SvrlIssue } from './svrl-issue-list.js';

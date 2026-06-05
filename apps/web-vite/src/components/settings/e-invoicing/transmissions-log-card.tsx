@@ -1,5 +1,3 @@
-// apps/web/src/components/settings/e-invoicing/transmissions-log-card.tsx
-//
 // Renders the org-wide e-invoice transmissions log card (Settings →
 // E-invoicing → Log). Consumes `einvoice.listByOrg` for filtered server-
 // side pagination via cursor + status enum.

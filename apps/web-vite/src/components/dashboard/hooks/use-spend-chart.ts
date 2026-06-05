@@ -1,9 +1,8 @@
 /**
  * Data hook for the dashboard spend chart — monthly spend totals per
- * currency, parameterised by a `?spend=6|12|ytd` URL state. Ported from
- * legacy `apps/web/src/components/dashboard/spend-chart.tsx` (commit
- * 62a97d73) and split out so the widget itself stays free of useQuery
- * (enforced by `scripts/check-web-vite-data-layer.mjs`).
+ * currency, parameterised by a `?spend=6|12|ytd` URL state. Split out so
+ * the widget itself stays free of useQuery (enforced by
+ * `scripts/check-web-vite-data-layer.mjs`).
  */
 
 import { useQuery } from '@tanstack/react-query';

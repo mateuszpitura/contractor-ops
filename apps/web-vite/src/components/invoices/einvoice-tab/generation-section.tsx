@@ -1,7 +1,5 @@
 /**
- * Generation section. Step 11 codemod port from
- * apps/web/src/components/invoices/einvoice-tab/generation-section.tsx:
- *   - `next-intl` → `../../../i18n/useTranslations.js`
+ * Generation section.
  */
 
 import { Button } from '@contractor-ops/ui/components/shadcn/button';

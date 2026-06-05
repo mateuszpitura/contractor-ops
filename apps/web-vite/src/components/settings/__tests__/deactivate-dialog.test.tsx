@@ -1,6 +1,4 @@
 /**
- * Web-vite port of apps/web/src/components/settings/__tests__/deactivate-dialog.test.tsx.
- *
  * Container/component split: the component receives the hook return value
  * (`t`, `isPending`, `handleConfirm`) as props, so the test passes a
  * shaped stub and exercises the presentational surface — no tRPC harness

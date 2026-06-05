@@ -1,8 +1,5 @@
 /**
- * ZUGFeRD / Factur-X profile-level badge. Step 11 codemod port from
- * apps/web/src/components/invoices/intake/intake-profile-level-badge.tsx:
- *   - `next-intl`    → `../../../i18n/useTranslations.js`
- *   - `@/lib/utils`  → `../../../lib/utils.js`
+ * ZUGFeRD / Factur-X profile-level badge.
  */
 
 import { useTranslations } from '../../../i18n/useTranslations.js';

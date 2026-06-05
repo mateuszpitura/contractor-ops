@@ -1,9 +1,5 @@
 /**
- * Status chip bar. Step 11 codemod port from
- * apps/web/src/components/invoices/status-chip-bar.tsx:
- *   - `next-intl`     → `../../i18n/useTranslations.js`
- *   - `@/lib/utils`   → `../../lib/utils.js`
- *   - `@/trpc/init`   → `../../providers/trpc-provider.js#useTRPC`
+ * Status chip bar.
  */
 
 import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';

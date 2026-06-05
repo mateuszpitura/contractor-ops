@@ -1,7 +1,5 @@
 /**
- * Overdue reassessments tile. Step 11 codemod port from
- * apps/web/src/components/contractors/classification/dashboard/overdue-reassessments-tile.tsx:
- *   - `next-intl` → `../../../../i18n/useTranslations.js`
+ * Overdue reassessments tile.
  */
 
 import { useTranslations } from '../../../../i18n/useTranslations.js';

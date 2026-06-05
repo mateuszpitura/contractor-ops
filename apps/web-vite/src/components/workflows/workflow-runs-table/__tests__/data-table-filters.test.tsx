@@ -1,8 +1,6 @@
 /**
- * Ported from apps/web/src/components/workflows/workflow-runs-table/__tests__/data-table-filters.test.tsx.
- *
- * Web-vite DataTableFilters takes `templates` as a prop instead of fetching
- * them. We exercise badge / clear-all / overdue toggle render branches.
+ * DataTableFilters takes `templates` as a prop instead of fetching them. We
+ * exercise badge / clear-all / overdue toggle render branches.
  */
 
 import { afterEach, describe, expect, it, vi } from 'vitest';

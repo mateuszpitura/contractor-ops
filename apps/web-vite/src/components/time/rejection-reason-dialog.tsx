@@ -1,7 +1,5 @@
 /**
- * Rejection reason dialog (single + bulk). Ported from
- * apps/web/src/components/time/rejection-reason-dialog.tsx:
- *   - next-intl → ../../i18n/useTranslations.js
+ * Rejection reason dialog (single + bulk).
  */
 
 import { Button } from '@contractor-ops/ui/components/shadcn/button';

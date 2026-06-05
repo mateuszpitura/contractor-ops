@@ -1,6 +1,4 @@
 /**
- * Ported from apps/web/src/components/payments/payment-run-table/__tests__/columns.test.tsx.
- *
  * Uses an echo translator (web-vite has no `createMockTranslator`).
  * Mocks the PaymentRunBadge so the status cell renders a known marker.
  */

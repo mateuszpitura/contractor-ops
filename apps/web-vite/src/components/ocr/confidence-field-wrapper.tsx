@@ -1,8 +1,5 @@
 /**
- * OCR confidence field wrapper. Step 11 codemod port from
- * apps/web/src/components/ocr/confidence-field-wrapper.tsx:
- *   - `@/components/ocr/confidence-badge` → `./confidence-badge.js`
- *   - `@/lib/utils`                        → `../../lib/utils.js`
+ * OCR confidence field wrapper.
  */
 
 import { Label } from '@contractor-ops/ui/components/shadcn/label';

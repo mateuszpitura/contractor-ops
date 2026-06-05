@@ -1,6 +1,4 @@
 /**
- * Ported from apps/web/src/components/billing/__tests__/trial-banner.test.tsx.
- *
  * TrialBanner is presentational — visibility window is computed from
  * `Date.now()` so we need a deterministic clock. We mock `Date.now` directly
  * (rather than vi.useFakeTimers) so async i18n bootstrap inside `mount()`

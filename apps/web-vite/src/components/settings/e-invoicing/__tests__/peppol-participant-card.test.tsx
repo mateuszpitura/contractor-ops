@@ -1,6 +1,4 @@
 /**
- * Web-vite port of apps/web/src/components/settings/e-invoicing/__tests__/peppol-participant-card.test.tsx.
- *
  * The card mounts two tRPC-bound dialog containers; we stub both to keep
  * the test scoped to the card surface. Stub `t` returns the i18n key so
  * assertions are independent of copy churn.

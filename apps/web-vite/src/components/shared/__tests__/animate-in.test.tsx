@@ -1,6 +1,4 @@
 /**
- * Step 10 port of apps/web/src/components/shared/__tests__/animate-in.test.tsx.
- *
  * AnimateIn is the spring-based fade-up wrapper used across every list and
  * dashboard surface — kept presentational on the web-vite side. Tests cover
  * child rendering, default `min-w-0` clamp, and custom className merging.

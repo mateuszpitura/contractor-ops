@@ -1,6 +1,4 @@
 /**
- * Web-vite port of apps/web/src/components/settings/__tests__/carrier-credential-form.test.tsx.
- *
  * Container/component split. The form receives `t`, both credential
  * state pairs (dpd + ups), and save/test handlers from
  * `useCarrierCredentialForm`. Tests inject shaped stubs.

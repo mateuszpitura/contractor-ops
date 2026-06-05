@@ -1,6 +1,4 @@
 /**
- * Web-vite port of apps/web/src/components/zatca/__tests__/onboarding-wizard.test.tsx.
- *
  * OnboardingWizardView is pure presentational; child step containers are
  * mocked so the test asserts the wizard orchestration (loading skeleton,
  * stepper title, which step is mounted for the active index).

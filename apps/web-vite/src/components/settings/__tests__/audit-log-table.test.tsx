@@ -1,6 +1,4 @@
 /**
- * Web-vite port of apps/web/src/components/settings/__tests__/audit-log-table.test.tsx.
- *
  * Unlike most settings components, AuditLogTable still calls
  * `useTranslations(...)` directly rather than receiving `t` as a prop, so
  * the test relies on the live i18next bundle wired by the harness.

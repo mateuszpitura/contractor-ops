@@ -1,5 +1,4 @@
 // Phase 63 · Plan 04 · D-01 — Inline VocaLink modulus check button.
-// Step 11 codemod port from apps/web/src/components/contractors/billing-profile/sort-code-validator.tsx.
 
 import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';

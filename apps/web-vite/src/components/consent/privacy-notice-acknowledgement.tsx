@@ -1,12 +1,11 @@
 /**
  * UK / DE / PDPL privacy-notice acknowledgement gate (Phase 56 · Plan 08, D-10).
  *
- * Ported from legacy `apps/web/src/components/consent/privacy-notice-acknowledgement.tsx`
- * (commit 62a97d73). The legacy `t.rich('label', { link })` next-intl
- * pattern is replaced by react-i18next's `<Trans>` component, which
- * resolves `<link>...</link>` markup in the translation against the
- * `components` map natively (the shared `useTranslations` wrapper's
- * `rich` is a flat-string stub — see `apps/web-vite/src/i18n/useTranslations.ts`).
+ * The `t.rich('label', { link })` pattern is replaced by react-i18next's
+ * `<Trans>` component, which resolves `<link>...</link>` markup in the
+ * translation against the `components` map natively (the shared
+ * `useTranslations` wrapper's `rich` is a flat-string stub — see
+ * `apps/web-vite/src/i18n/useTranslations.ts`).
  *
  * Accessibility:
  *   - `aria-required="true"` on the checkbox.

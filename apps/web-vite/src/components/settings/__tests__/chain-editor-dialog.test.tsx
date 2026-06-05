@@ -1,6 +1,4 @@
 /**
- * Web-vite port of apps/web/src/components/settings/__tests__/chain-editor-dialog.test.tsx.
- *
  * The dialog mounts inside a Portal and depends on a `useFieldArray` form
  * instance. We mock the user picker container (tRPC-bound) and build a
  * real form + fields array inside a harness so the rendered surface is

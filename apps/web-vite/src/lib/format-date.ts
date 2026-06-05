@@ -1,6 +1,5 @@
 /**
- * Centralized date & time formatting. Lifted from
- * apps/web/src/lib/format-date.ts unchanged.
+ * Centralized date & time formatting.
  */
 
 export const DATE_FORMATS = [

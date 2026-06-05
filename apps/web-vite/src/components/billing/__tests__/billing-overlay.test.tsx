@@ -1,6 +1,4 @@
 /**
- * Web-vite port of apps/web/src/components/billing/__tests__/billing-overlay.test.tsx.
- *
  * BillingOverlayContainer is decisive: it branches on overlay flags and
  * renders TrialBanner / BillingPastDueBanner / SoftBlockModal siblings.
  * Tests stub `useBillingOverlay` + `useTranslations` so assertions stay

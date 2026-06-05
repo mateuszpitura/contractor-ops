@@ -1,5 +1,3 @@
-// Step 11 codemod port from apps/web/src/components/contractors/compliance/de-compliance-fields.tsx.
-
 import { Input } from '@contractor-ops/ui/components/shadcn/input';
 import { Label } from '@contractor-ops/ui/components/shadcn/label';
 import type { BundeslandCode, DeCountryFields } from '@contractor-ops/validators';

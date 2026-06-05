@@ -1,8 +1,5 @@
 /**
  * Activity feed — last ~20 audit-log events grouped by today/yesterday/earlier.
- * Ported from legacy `apps/web/src/components/dashboard/activity-feed.tsx`
- * (removed in commit 62a97d73) and rewired for the Vite SPA per
- * `apps/web-vite/ARCHITECTURE.md`.
  */
 
 import { Badge } from '@contractor-ops/ui/components/shadcn/badge';

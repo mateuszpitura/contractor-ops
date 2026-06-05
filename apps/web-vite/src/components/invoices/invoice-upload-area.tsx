@@ -1,23 +1,11 @@
 /**
- * Invoice upload area. Step 11 codemod port from
- * apps/web/src/components/invoices/invoice-upload-area.tsx:
- *   - `next-intl`                          → `../../i18n/useTranslations.js`
- *   - `@/i18n/navigation`                   → `../../i18n/navigation.js`
- *   - Data layer → `hooks/use-invoice-upload.ts` + `invoice-upload-area-container.tsx`
+ * Invoice upload area.
  */
 
 import { DropZoneSurface } from '@contractor-ops/ui/components/origin/drop-zone-surface';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { Progress } from '@contractor-ops/ui/components/shadcn/progress';
-import {
-  CheckCircle2,
-  Eye,
-  EyeOff,
-  FileText,
-  Loader2,
-  RotateCcw,
-  XCircle,
-} from 'lucide-react';
+import { CheckCircle2, Eye, EyeOff, FileText, Loader2, RotateCcw, XCircle } from 'lucide-react';
 import type { ChangeEvent, DragEvent, ReactNode, RefObject } from 'react';
 import { memo, useCallback } from 'react';
 

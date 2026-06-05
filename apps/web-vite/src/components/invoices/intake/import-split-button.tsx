@@ -1,8 +1,5 @@
 /**
- * Invoice import split button. Step 11 codemod port from
- * apps/web/src/components/invoices/intake/import-split-button.tsx:
- *   - `next-intl`                              → `../../../i18n/useTranslations.js`
- *   - `@/lib/utils`                              → `../../../lib/utils.js`
+ * Invoice import split button.
  */
 
 import { Button } from '@contractor-ops/ui/components/shadcn/button';

@@ -1,5 +1,3 @@
-// Step 11 codemod port from apps/web/src/components/contractors/compliance/steuernummer-input.tsx.
-
 import { Input } from '@contractor-ops/ui/components/shadcn/input';
 import { Label } from '@contractor-ops/ui/components/shadcn/label';
 import type { BundeslandCode } from '@contractor-ops/validators';

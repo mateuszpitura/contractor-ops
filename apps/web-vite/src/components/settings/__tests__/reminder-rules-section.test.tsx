@@ -1,6 +1,4 @@
 /**
- * Web-vite port of apps/web/src/components/settings/__tests__/reminder-rules-section.test.tsx.
- *
  * Container/component split. The section receives rule data + handlers
  * from `useReminderRulesSection`. The editor container is mocked since
  * it pulls in tRPC at module-eval.

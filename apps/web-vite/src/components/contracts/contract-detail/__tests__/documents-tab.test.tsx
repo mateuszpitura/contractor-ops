@@ -1,7 +1,5 @@
 /**
- * Ported from apps/web/src/components/contracts/contract-detail/__tests__/documents-tab.test.tsx.
- *
- * Web-vite split: DocumentsTab is presentational over a `documents` prop
+ * DocumentsTab is presentational over a `documents` prop
  * produced by `useContractDocumentsTab`. DropZone/DocumentList are now
  * Container components so we mock them out to keep this test scoped.
  */

@@ -1,7 +1,3 @@
-// apps/web/src/components/settings/e-invoicing/peppol-participant-status-pill.tsx
-//
-// Phase 61 · Plan 61-07 — Peppol participant status pill.
-//
 // Pure stateless pill that renders the PeppolParticipant.status value with the
 // UI-SPEC locked semantic triad (colour + icon + text). Re-used on both the
 // Settings page's PeppolParticipantCard and (future) the invoices-list compliance

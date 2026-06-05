@@ -1,6 +1,4 @@
 /**
- * Step 10 port of apps/web/src/components/layout/__tests__/cookie-consent-banner.test.tsx.
- *
  * Container/component split: CookieConsentBanner is the pure presentational
  * shell — only takes `onAccept`. Visibility is decided by
  * `CookieConsentBannerContainer`, so this test exercises only the rendered

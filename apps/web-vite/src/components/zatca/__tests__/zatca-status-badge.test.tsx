@@ -1,6 +1,4 @@
 /**
- * Ported from apps/web/src/components/zatca/__tests__/zatca-status-badge.test.tsx.
- *
  * Web-vite ZatcaStatusBadge is a pure i18n-free badge — same status →
  * label map (UI-SPEC §2) and same aria-label contract. Audit #13
  * flagged the broader ZATCA cluster as untested; this badge is the

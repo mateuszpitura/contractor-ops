@@ -1,8 +1,5 @@
 /**
- * Workflow template CRUD mutations. Step 11 codemod port from
- * apps/web/src/hooks/use-template-mutations.ts:
- *   - `@/trpc/init`           → `../providers/trpc-provider.js#useTRPC`
- *   - `@/i18n/typed-keys`     → `../i18n/typed-keys.js`
+ * Workflow template CRUD mutations.
  */
 
 import { useQueryClient } from '@tanstack/react-query';

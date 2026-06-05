@@ -1,6 +1,5 @@
 /**
- * Expert help adviser directory. Port from
- * apps/web/src/app/[locale]/(dashboard)/classification/expert-help/page.tsx
+ * Expert help adviser directory.
  */
 
 import {

@@ -1,6 +1,4 @@
 /**
- * Ported from apps/web/src/components/time/__tests__/approval-queue-table.test.tsx.
- *
  * Covers the high-value behaviour: row callbacks, batch selection,
  * bulk-approve confirm, bulk-reject dialog opening. Mocks the heavy
  * child components (status badge, rejection dialog) to keep the test

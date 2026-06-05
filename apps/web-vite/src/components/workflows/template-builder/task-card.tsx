@@ -1,6 +1,5 @@
 /**
- * TaskCard — collapsible task editor inside the template builder. Ported
- * from apps/web/src/components/workflows/template-builder/task-card.tsx.
+ * TaskCard — collapsible task editor inside the template builder.
  */
 
 import { Badge } from '@contractor-ops/ui/components/shadcn/badge';

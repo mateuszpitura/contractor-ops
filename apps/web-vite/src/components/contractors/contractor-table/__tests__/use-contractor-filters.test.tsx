@@ -1,9 +1,6 @@
 /**
  * Tests for `useContractorFilters` — the nuqs URL-state hook driving the
- * contractor list filters. Adapted from the legacy
- * apps/web/src/components/invoices/invoice-table/__tests__/use-invoice-filters.test.tsx
- * pattern; the contractor side never had a legacy unit test, so this
- * fills a gap as part of the Step 10 port.
+ * contractor list filters.
  *
  * Renders with `react-dom/client` + React's `act` directly because
  * apps/web-vite does not depend on @testing-library/react.

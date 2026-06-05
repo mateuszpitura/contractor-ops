@@ -1,5 +1,3 @@
-// Step 11 codemod port from apps/web/src/components/contractors/compliance/vat-registered-toggle.tsx.
-
 import { Switch } from '@contractor-ops/ui/components/shadcn/switch';
 import { useId } from 'react';
 

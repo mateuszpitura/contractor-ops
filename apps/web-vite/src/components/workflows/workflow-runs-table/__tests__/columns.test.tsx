@@ -1,8 +1,6 @@
 /**
- * Ported from apps/web/src/components/workflows/workflow-runs-table/__tests__/columns.test.tsx.
- *
- * Web-vite getColumns is a pure factory — pass an identity translator and
- * exercise each cell.
+ * getColumns is a pure factory — pass an identity translator and exercise each
+ * cell.
  */
 
 import { afterEach, describe, expect, it, vi } from 'vitest';

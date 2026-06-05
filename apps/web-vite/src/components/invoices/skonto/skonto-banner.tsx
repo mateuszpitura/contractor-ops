@@ -1,7 +1,5 @@
 /**
- * Skonto banner. Step 11 codemod port from
- * apps/web/src/components/invoices/skonto/skonto-banner.tsx:
- *   - Data layer → `hooks/use-skonto-banner.ts` + `skonto-banner-container.tsx`
+ * Skonto banner.
  */
 
 import { formatMinorAsCurrency } from '@contractor-ops/shared';

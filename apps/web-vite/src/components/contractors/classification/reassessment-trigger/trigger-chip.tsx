@@ -1,8 +1,5 @@
 /**
- * Reassessment-trigger chip. Step 11 codemod port from
- * apps/web/src/components/contractors/classification/reassessment-trigger/trigger-chip.tsx:
- *   - `next-intl` → `../../../../i18n/useTranslations.js`
- *   - `@/lib/utils` → `../../../../lib/utils.js`
+ * Reassessment-trigger chip.
  */
 
 import { Badge } from '@contractor-ops/ui/components/shadcn/badge';

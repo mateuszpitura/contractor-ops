@@ -1,6 +1,4 @@
 /**
- * Step 10 port of apps/web/src/components/einvoice/__tests__/compliance-detail.test.tsx.
- *
  * Post-passthrough refactor: the container `EInvoiceComplianceDetail` now
  * branches on `isLoading` and empty `statuses`, rendering one of three
  * presentational siblings — `EInvoiceComplianceDetailSkeleton`,

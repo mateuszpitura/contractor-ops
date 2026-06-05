@@ -1,6 +1,4 @@
 /**
- * Web-vite port of apps/web/src/components/equipment/__tests__/carrier-shipment-form.test.tsx.
- *
  * CarrierShipmentFormView is presentational; tRPC mutations live in
  * `useCarrierShipmentForm`. The test injects a stub `submitShipment`
  * and mocks the heavyweight fieldset/picker children so assertions

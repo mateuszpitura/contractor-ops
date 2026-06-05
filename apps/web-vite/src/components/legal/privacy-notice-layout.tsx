@@ -1,6 +1,5 @@
 /**
- * Privacy-notice chrome shared by jurisdiction pages — ported from
- * apps/web/src/components/legal/privacy-notice-layout.tsx.
+ * Privacy-notice chrome shared by jurisdiction pages.
  */
 
 import type { ReactNode } from 'react';

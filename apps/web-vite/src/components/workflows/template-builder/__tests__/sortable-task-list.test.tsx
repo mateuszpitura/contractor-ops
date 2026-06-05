@@ -1,7 +1,5 @@
 /**
- * Ported from apps/web/src/components/workflows/template-builder/__tests__/sortable-task-list.test.tsx.
- *
- * Web-vite still renders the same SortableTaskList shape. We mock dnd-kit
+ * We mock dnd-kit
  * + TaskCardContainer so the test focuses on empty / populated rendering
  * and the onAdd CTA.
  */

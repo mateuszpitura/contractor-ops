@@ -1,6 +1,4 @@
 /**
- * web-vite port of apps/web/.../invoices-tab.test.tsx.
- *
  * Container/component split — `InvoicesTabView` takes the
  * `useContractorTabInvoices` hook return as props. The view embeds an
  * upload-area container (tRPC-bound) and the invoice column factory; both

@@ -1,10 +1,7 @@
 /**
- * Step 10 port of apps/web/src/components/reports/__tests__/drill-down-breadcrumb.test.tsx.
- *
- * Web-vite DrillDownBreadcrumb pulls its "All" + "Clear filter" labels
- * from i18next (`Reports.all`, `Reports.clearFilter`) instead of the
- * legacy `useTranslations` mock — `mount()` boots `applyLocale('en')`
- * before the first render so the real bundle resolves.
+ * DrillDownBreadcrumb pulls its "All" + "Clear filter" labels
+ * from i18next (`Reports.all`, `Reports.clearFilter`) — `mount()` boots
+ * `applyLocale('en')` before the first render so the real bundle resolves.
  */
 
 import { afterEach, describe, expect, it, vi } from 'vitest';

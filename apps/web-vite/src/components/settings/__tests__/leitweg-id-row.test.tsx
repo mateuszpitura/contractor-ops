@@ -1,8 +1,6 @@
 /**
  * Leitweg-ID row — render parity test.
  *
- * Ported from apps/web/src/components/settings/e-invoicing/__tests__/leitweg-id-row.test.tsx.
- *
  * The XRechnung Leitweg-ID identifies the German public-sector buyer on
  * the e-invoice envelope; a wrong default-flag silently misroutes
  * invoices, so the row's "default" badge, mono Leitweg value rendering,

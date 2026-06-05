@@ -1,9 +1,7 @@
 /**
- * Ported from apps/web/src/components/workflows/__tests__/template-picker-dialog.test.tsx.
- *
- * Web-vite split: TemplatePicker takes the full `useTemplatePicker` return
- * value spread as props. We pass shaped stubs to exercise the loading,
- * empty, and populated branches.
+ * TemplatePicker takes the full `useTemplatePicker` return value spread as
+ * props. We pass shaped stubs to exercise the loading, empty, and populated
+ * branches.
  */
 
 import type { ComponentProps } from 'react';

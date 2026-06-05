@@ -1,7 +1,5 @@
 /**
- * Polish classification coverage tile. Step 11 codemod port from
- * apps/web/src/components/contractors/classification/dashboard/coverage-tile.tsx:
- *   - `next-intl` → `../../../../i18n/useTranslations.js`
+ * Polish classification coverage tile.
  */
 
 import { useTranslations } from '../../../../i18n/useTranslations.js';

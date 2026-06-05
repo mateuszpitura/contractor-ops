@@ -1,6 +1,4 @@
 /**
- * Web-vite port of apps/web/src/components/settings/__tests__/transfer-title-settings.test.tsx.
- *
  * Container/component split. The presentational form receives a
  * pre-bound `register` and `handleSubmit` from react-hook-form via the
  * hook return. We build a real `useForm` instance inside a tiny harness

@@ -1,6 +1,4 @@
 /**
- * Web-vite port of apps/web/src/components/zatca/__tests__/stepper.test.tsx.
- *
  * Stepper is a self-contained presentational component that reads only
  * `Zatca.stepper` translations. Harness wires the EN bundle.
  */

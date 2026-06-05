@@ -1,6 +1,4 @@
 /**
- * Web-vite port of apps/web/src/components/settings/__tests__/invite-dialog.test.tsx.
- *
  * Container/component split — the presentational component receives `t`,
  * `form` (react-hook-form), `roleItems`, `onSubmit`, `isPending` from its
  * hook. Tests build a real react-hook-form instance via the standalone

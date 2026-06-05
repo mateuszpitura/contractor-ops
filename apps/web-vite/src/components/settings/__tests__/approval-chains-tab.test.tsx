@@ -1,6 +1,4 @@
 /**
- * Web-vite port of apps/web/src/components/settings/__tests__/approval-chains-tab.test.tsx.
- *
  * The presentational tab receives chain data + handlers from
  * `useApprovalChainsTab`. It also mounts `ChainEditorDialogContainer`,
  * which pulls in tRPC — mock that container to keep the test scoped to

@@ -1,7 +1,5 @@
 /**
- * Team create/edit sheet — Step 10 batch 6 / Step 11 codemod port from
- * apps/web/src/components/organization/teams/team-form-sheet.tsx:
- *   - `@/trpc/init` → `../../../providers/trpc-provider.js#useTRPC`
+ * Team create/edit sheet.
  *
  * Reused by contractor wizard "Add new team" (follow-up).
  */

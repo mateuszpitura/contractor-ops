@@ -1,9 +1,7 @@
 /**
- * Ported from apps/web/src/components/workflows/workflow-run/__tests__/task-card-run.test.tsx.
- *
- * Web-vite TaskCardRun is presentational with helper props from
- * `useTaskCardRun`. We mock `useDateFormatter` (tRPC), the inline
- * `DocLinksSection` container and the `LinearTaskIssueChip` container.
+ * TaskCardRun is presentational with helper props from `useTaskCardRun`. We
+ * mock `useDateFormatter` (tRPC), the inline `DocLinksSection` container and
+ * the `LinearTaskIssueChip` container.
  */
 
 import type { ComponentProps } from 'react';

@@ -1,7 +1,5 @@
 /**
- * Ported from apps/web/src/components/contracts/contract-table/__tests__/data-table-toolbar.test.tsx.
- *
- * Web-vite split: DataTableToolbar takes users + handlers as props; no tRPC.
+ * DataTableToolbar takes users + handlers as props; no tRPC.
  */
 
 import { vi } from 'vitest';

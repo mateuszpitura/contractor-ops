@@ -1,6 +1,4 @@
 /**
- * Web-vite port of apps/web/src/components/zatca/__tests__/zatca-submission-detail.test.tsx.
- *
  * ZatcaSubmissionDetailView is pure presentational; the resubmit mutation
  * lives in `useZatcaSubmissionDetail`. The test passes a shaped
  * `submission` literal and a stub `resubmit` callback.

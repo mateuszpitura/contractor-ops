@@ -1,7 +1,5 @@
 /**
- * Validation section. Step 11 codemod port from
- * apps/web/src/components/invoices/einvoice-tab/validation-section.tsx:
- *   - `next-intl` → `../../../i18n/useTranslations.js`
+ * Validation section.
  */
 
 import { Button } from '@contractor-ops/ui/components/shadcn/button';

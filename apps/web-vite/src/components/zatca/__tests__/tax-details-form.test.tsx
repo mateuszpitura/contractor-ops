@@ -1,6 +1,4 @@
 /**
- * Web-vite port of apps/web/src/components/zatca/__tests__/tax-details-form.test.tsx.
- *
  * TaxDetailsFormView still owns react-hook-form locally (zodResolver +
  * default field state). The split moved the tRPC `saveTaxDetails`
  * mutation into the hook (`useTaxDetailsForm`) — we inject a no-op

@@ -1,7 +1,5 @@
 /**
- * BACS Std 18 file preview. Step 11 codemod port from
- * apps/web/src/components/payments/bacs/bacs-preview-pre.tsx:
- *   - `next-intl` → `../../../i18n/useTranslations.js`
+ * BACS Std 18 file preview.
  */
 
 import { ScrollArea } from '@contractor-ops/ui/components/shadcn/scroll-area';

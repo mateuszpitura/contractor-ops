@@ -1,12 +1,6 @@
 /**
  * Onboarding consent step — Phase 51 / Phase 56 · Plan 08 D-10.
  *
- * Ported from legacy `apps/web/src/components/consent/onboarding-consent-step.tsx`
- * (commit 62a97d73). Rewired for the Vite SPA:
- *   - tRPC/React-Query data fetching moved into `./hooks/use-onboarding-consent-step.ts`
- *     to satisfy `scripts/check-web-vite-data-layer.mjs`.
- *   - `next-intl#useLocale` → `../../i18n/navigation#useLocale`.
- *
  * UK / DE / AE / SA orgs render this step before the rest of onboarding;
  * everyone else short-circuits to `null` (return value of the outer
  * jurisdiction guard) so the wizard simply skips the consent slot.

@@ -1,6 +1,4 @@
 /**
- * Ported from apps/web/src/components/portal/__tests__/contract-card.test.tsx.
- *
  * `ContractCard` reaches into `usePortalDateFormatter` for org-locale date
  * rendering — stub it for stable strings. The card uses the `Link`
  * navigation shim which the harness wraps via MemoryRouter, so no extra

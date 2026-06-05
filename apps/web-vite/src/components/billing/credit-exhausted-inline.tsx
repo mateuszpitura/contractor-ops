@@ -1,7 +1,5 @@
 /**
- * Credit-exhausted banner. Step 11 codemod port from
- * apps/web/src/components/billing/credit-exhausted-inline.tsx:
- *   - `next-intl` → `../../i18n/useTranslations.js`
+ * Credit-exhausted banner.
  */
 
 import { Button } from '@contractor-ops/ui/components/shadcn/button';

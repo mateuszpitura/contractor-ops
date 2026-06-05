@@ -1,6 +1,4 @@
 /**
- * Ported from apps/web/src/components/payments/__tests__/wht-certificate-preview-dialog.test.tsx.
- *
  * Web-vite uses the real EN bundle, so legacy key-as-text assertions are
  * swapped for translated copy. `usePermissions` reaches into the Better
  * Auth session — we stub it to `admin` so PII is shown for the tax-id

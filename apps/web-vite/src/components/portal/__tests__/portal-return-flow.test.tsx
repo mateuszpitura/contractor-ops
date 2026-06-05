@@ -1,6 +1,4 @@
 /**
- * Ported from apps/web/src/components/portal/__tests__/portal-return-flow.test.tsx.
- *
  * `PortalReturnFlow` calls `usePortalReturnFlow` internally (the
  * container/component split was not applied here). Mock the hook module
  * so the dialog renders with controllable state instead of hitting tRPC.

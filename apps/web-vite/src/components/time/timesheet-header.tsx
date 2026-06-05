@@ -1,7 +1,5 @@
 /**
- * Timesheet header bar (week selector + status + submit). Ported from
- * apps/web/src/components/time/timesheet-header.tsx:
- *   - next-intl → ../../i18n/useTranslations.js
+ * Timesheet header bar (week selector + status + submit).
  */
 
 import { Button } from '@contractor-ops/ui/components/shadcn/button';

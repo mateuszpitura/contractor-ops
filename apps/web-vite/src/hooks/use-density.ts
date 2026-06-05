@@ -1,11 +1,9 @@
 /**
- * Information-density preference store. Lifted from
- * apps/web/src/hooks/use-density.ts unchanged.
+ * Information-density preference store.
  *
  * Persisted to localStorage AND mirrored to a `density` cookie so the
- * SPA's index.html prelude script (lifts in a later batch alongside
- * the theme prelude) can apply the class before first paint and avoid
- * a layout-shift FOUC for returning users.
+ * SPA's index.html prelude script can apply the class before first paint
+ * and avoid a layout-shift FOUC for returning users.
  */
 
 import { create } from 'zustand';

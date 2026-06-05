@@ -1,9 +1,6 @@
 /**
- * Ported from apps/web/src/components/ocr/__tests__/confidence-badge.test.tsx.
- *
- * Web-vite `ConfidenceBadge` is a 1:1 lift of the legacy component (no
- * Next bindings, no i18n) — same `getConfidenceConfig` thresholds plus
- * the same percent / aria-label / variant rendering rules.
+ * Covers `getConfidenceConfig` thresholds plus the percent / aria-label /
+ * variant rendering rules of `ConfidenceBadge`.
  */
 
 import { afterEach, describe, expect, it } from 'vitest';

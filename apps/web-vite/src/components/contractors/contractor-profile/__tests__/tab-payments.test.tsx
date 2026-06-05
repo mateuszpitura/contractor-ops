@@ -1,6 +1,4 @@
 /**
- * web-vite port of apps/web/.../tab-payments.test.tsx.
- *
  * Container/component split — `TabPaymentsView` takes the
  * `useContractorTabPayments` hook return as props. Tests inject a shaped
  * stub instead of mocking tRPC + react-query.

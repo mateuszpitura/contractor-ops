@@ -1,7 +1,5 @@
 /**
- * Ported from apps/web/src/components/contracts/contract-table/__tests__/data-table.test.tsx.
- *
- * Web-vite split: ContractDataTable is presentational. All filter/data state
+ * ContractDataTable is presentational. All filter/data state
  * comes in via props (built by `useContractList` in the container). We
  * synthesize a minimal `ContractListTableProps` bag.
  */

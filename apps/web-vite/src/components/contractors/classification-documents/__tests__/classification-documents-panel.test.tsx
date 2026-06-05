@@ -1,6 +1,4 @@
 /**
- * web-vite port of apps/web/.../classification-documents-panel.test.tsx.
- *
  * The panel itself is purely view-driven (props in) but composes three tRPC
  * containers. We mock the containers so the panel resolves in isolation and
  * verify the GB/DE branching + a11y anchors.

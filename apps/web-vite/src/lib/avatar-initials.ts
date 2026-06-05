@@ -1,7 +1,5 @@
 /**
  * Two-character avatar initials used across the app.
- *
- * Lifted from apps/web/src/lib/avatar-initials.ts unchanged.
  */
 
 export function getAvatarInitials(name: string | null | undefined, email?: string | null): string {

@@ -1,6 +1,4 @@
 /**
- * Step 10 port of apps/web/src/components/layout/__tests__/nav-items.test.tsx.
- *
  * The web-vite NavItems is purely presentational — it consumes a shaped
  * `groups` prop (NavItemsGroupView[]) instead of pulling pins from tRPC.
  * The container owns query + permission gating; this test pins the
