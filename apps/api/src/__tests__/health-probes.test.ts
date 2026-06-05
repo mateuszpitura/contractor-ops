@@ -64,7 +64,10 @@ vi.mock('@aws-sdk/client-s3', () => ({
     }
   },
   HeadObjectCommand: class {
-    constructor(public input: unknown) {}
+    input: unknown;
+    constructor(input: unknown) {
+      this.input = input;
+    }
   },
 }));
 
