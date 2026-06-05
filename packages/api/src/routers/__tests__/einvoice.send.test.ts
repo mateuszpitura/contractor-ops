@@ -55,6 +55,10 @@ const { mockPrisma, mockBuildAdapter, mockAdapter, mockGetObjectAsString } = vi.
       findUnique: vi.fn(),
       upsert: vi.fn(),
     },
+    auditLog: {
+      create: vi.fn(async () => ({ id: 'audit_1' })),
+      createMany: vi.fn(async () => ({ count: 0 })),
+    },
     member: { findFirst: vi.fn(async () => ({ role: 'admin' })) },
     $transaction: vi.fn(async (fn: (tx: Rec) => Promise<unknown>) => fn(mockPrisma)),
   };

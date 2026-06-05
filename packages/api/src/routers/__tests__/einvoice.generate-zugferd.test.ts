@@ -64,6 +64,10 @@ const {
         return { id: `event_${lifecycleEvents.length}` };
       }),
     },
+    auditLog: {
+      create: vi.fn(async () => ({ id: 'audit_1' })),
+      createMany: vi.fn(async () => ({ count: 0 })),
+    },
     $transaction: vi.fn(async (fn: (tx: Rec) => Promise<unknown>) => fn(mockPrisma)),
   };
 

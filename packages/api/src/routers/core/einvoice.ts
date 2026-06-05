@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto';
 
+import { Prisma } from '@contractor-ops/db/generated/prisma/client';
 import type { ComplianceStatus } from '@contractor-ops/einvoice';
 import {
   computeKsefComplianceStatus,
@@ -19,6 +20,7 @@ import { router } from '../../init';
 import { cursorClause, paginateByExtraRowUndefined } from '../../lib/pagination';
 import { requirePermission } from '../../middleware/rbac';
 import { tenantProcedure } from '../../middleware/tenant';
+import { writeAuditLog } from '../../services/audit-writer';
 import type { FinalizeResult, R2Service } from '../../services/einvoice-finalize';
 import {
   EInvoiceAlreadyFinalizedError,
@@ -46,24 +48,6 @@ import {
 import type { SkontoTermData } from '../../services/skonto';
 import { resolveSkontoTerm } from '../../services/skonto';
 import type { DbClient } from '../../services/types';
-
-// ---------------------------------------------------------------------------
-// Types for the Prisma `$transaction` callback — we project onto the
-// minimal delegate surface this router touches so test doubles only need
-// to implement the delegates / methods actually called (vs mirroring the
-// entire Prisma extension overlay).
-// ---------------------------------------------------------------------------
-
-interface LifecycleTx {
-  eInvoiceLifecycle: {
-    update: (args: { where: { id: string }; data: Record<string, unknown> }) => Promise<unknown>;
-  };
-  eInvoiceLifecycleEvent: {
-    create: (args: { data: Record<string, unknown> }) => Promise<unknown>;
-  };
-}
-
-type TxRunner = (fn: (tx: LifecycleTx) => Promise<unknown>) => Promise<unknown>;
 
 const log = createLogger({ service: 'einvoice-router' });
 
@@ -212,7 +196,7 @@ export const einvoiceRouter = router({
     .input(z.object({ invoiceId: z.cuid() }))
     .mutation(async ({ ctx, input }) => {
       // 1. Load invoice (org-scoped) + its existing lifecycle row.
-      const invoice = (await (ctx.db.invoice.findFirst as (args: unknown) => Promise<unknown>)({
+      const invoice = await ctx.db.invoice.findFirst({
         where: {
           id: input.invoiceId,
           organizationId: ctx.organizationId,
@@ -237,38 +221,7 @@ export const einvoiceRouter = router({
           organization: true,
           eInvoiceLifecycle: true,
         },
-      })) as
-        | (Record<string, unknown> & {
-            id: string;
-            // Phase 68 D-06 — eager-fetched cascade inputs (mirrors Plan 03).
-            skontoTerms: Array<{
-              id: string;
-              discountPercent: unknown;
-              discountPeriodDays: number;
-              netPeriodDays: number;
-            }>;
-            contractor:
-              | ({
-                  id: string;
-                  billingProfiles: Array<{
-                    id: string;
-                    skontoTerms: Array<{
-                      id: string;
-                      discountPercent: unknown;
-                      discountPeriodDays: number;
-                      netPeriodDays: number;
-                    }>;
-                  }>;
-                } & Record<string, unknown>)
-              | null;
-            eInvoiceLifecycle: {
-              id: string;
-              zugferdPdfKey: string | null;
-              zugferdPdfSha256: string | null;
-              zugferdGeneratedAt: Date | null;
-            } | null;
-          })
-        | null;
+      });
 
       if (!invoice) {
         throw new TRPCError({
@@ -368,17 +321,8 @@ export const einvoiceRouter = router({
 
       // 6. Upsert lifecycle + append ZUGFERD_GENERATED event atomically.
       const now = new Date();
-      await (ctx.db as never as { $transaction: TxRunner }).$transaction(async tx => {
-        const txDb = tx as unknown as LifecycleTx & {
-          eInvoiceLifecycle: {
-            upsert: (args: {
-              where: Record<string, unknown>;
-              create: Record<string, unknown>;
-              update: Record<string, unknown>;
-            }) => Promise<{ id: string }>;
-          };
-        };
-        const upserted = await txDb.eInvoiceLifecycle.upsert({
+      await ctx.db.$transaction(async tx => {
+        const upserted = await tx.eInvoiceLifecycle.upsert({
           // F-DB-17 — compound (orgId, invoiceId) unique was redundant
           // (invoiceId is globally @unique). Use the field-level unique key.
           where: {
@@ -398,7 +342,7 @@ export const einvoiceRouter = router({
             zugferdGeneratedAt: now,
           },
         });
-        await txDb.eInvoiceLifecycleEvent.create({
+        await tx.eInvoiceLifecycleEvent.create({
           data: {
             organizationId: ctx.organizationId,
             lifecycleId: upserted.id,
@@ -407,6 +351,16 @@ export const einvoiceRouter = router({
             actorUserId: ctx.user?.id ?? null,
             detailsJson: { sha256: sha, pdfKey: key, byteLength: pdfBytes.length },
           },
+        });
+        await writeAuditLog({
+          tx,
+          organizationId: ctx.organizationId,
+          actorType: 'USER',
+          actorId: ctx.user?.id ?? null,
+          action: 'einvoice.generate_zugferd_pdf',
+          resourceType: 'INVOICE',
+          resourceId: input.invoiceId,
+          newValues: { profileId: 'zugferd-de', zugferdPdfKey: key, zugferdPdfSha256: sha },
         });
       });
 
@@ -447,7 +401,7 @@ export const einvoiceRouter = router({
       try {
         return await finalizeEInvoice(
           {
-            db: ctx.db as never,
+            db: ctx.db,
             r2: r2Service,
             profile: new XRechnungDEProfile(),
             logger: log,
@@ -480,11 +434,7 @@ export const einvoiceRouter = router({
     .use(requirePermission({ invoice: ['read'] }))
     .input(lifecycleIdInput)
     .mutation(async ({ ctx, input }) => {
-      const lifecycle = await loadLifecycleScoped(
-        ctx.db,
-        ctx.organizationId,
-        input.lifecycleId,
-      );
+      const lifecycle = await loadLifecycleScoped(ctx.db, ctx.organizationId, input.lifecycleId);
       if (!lifecycle?.xmlKey) {
         throw new TRPCError({
           code: 'NOT_FOUND',
@@ -497,7 +447,6 @@ export const einvoiceRouter = router({
       const profile = new XRechnungDEProfile();
       const report = await profile.validateRich(xml);
 
-      const { createHash } = await import('node:crypto');
       const currentHash = createHash('sha256').update(xml).digest('hex');
       const driftDetected = lifecycle.xmlSha256 !== currentHash;
 
@@ -505,9 +454,8 @@ export const einvoiceRouter = router({
       const nextStatus =
         report.status === 'VALID' ? 'VALID' : report.status === 'WARNINGS' ? 'WARNINGS' : 'INVALID';
 
-      await (ctx.db as never as { $transaction: TxRunner }).$transaction(async tx => {
-        const txDb = tx;
-        await txDb.eInvoiceLifecycle.update({
+      await ctx.db.$transaction(async tx => {
+        await tx.eInvoiceLifecycle.update({
           where: { id: lifecycle.id },
           data: {
             validationStatus: nextStatus,
@@ -525,7 +473,7 @@ export const einvoiceRouter = router({
             },
           },
         });
-        await txDb.eInvoiceLifecycleEvent.create({
+        await tx.eInvoiceLifecycleEvent.create({
           data: {
             organizationId: ctx.organizationId,
             lifecycleId: lifecycle.id,
@@ -557,11 +505,7 @@ export const einvoiceRouter = router({
     .use(requirePermission({ invoice: ['read'] }))
     .input(lifecycleIdInput)
     .query(async ({ ctx, input }) => {
-      const lifecycle = await loadLifecycleScoped(
-        ctx.db,
-        ctx.organizationId,
-        input.lifecycleId,
-      );
+      const lifecycle = await loadLifecycleScoped(ctx.db, ctx.organizationId, input.lifecycleId);
       if (!lifecycle?.xmlKey) {
         throw new TRPCError({
           code: 'NOT_FOUND',
@@ -581,11 +525,7 @@ export const einvoiceRouter = router({
     .use(requirePermission({ invoice: ['read'] }))
     .input(lifecycleIdInput)
     .query(async ({ ctx, input }) => {
-      const lifecycle = await loadLifecycleScoped(
-        ctx.db,
-        ctx.organizationId,
-        input.lifecycleId,
-      );
+      const lifecycle = await loadLifecycleScoped(ctx.db, ctx.organizationId, input.lifecycleId);
       if (!lifecycle?.validationReportFullKey) {
         throw new TRPCError({
           code: 'NOT_FOUND',
@@ -615,22 +555,10 @@ export const einvoiceRouter = router({
     .input(invoiceIdInput)
     .mutation(async ({ ctx, input }) => {
       // 1. Load lifecycle + contractor scoped by org.
-      const invoice = (await (ctx.db.invoice.findFirst as (args: unknown) => Promise<unknown>)({
+      const invoice = await ctx.db.invoice.findFirst({
         where: { id: input.invoiceId, organizationId: ctx.organizationId },
         include: { eInvoiceLifecycle: true, contractor: true },
-      })) as {
-        id: string;
-        contractor: {
-          peppolSchemeId: string | null;
-          peppolParticipantValue: string | null;
-        } | null;
-        eInvoiceLifecycle: {
-          id: string;
-          xmlKey: string | null;
-          validationStatus: 'NOT_VALIDATED' | 'VALID' | 'WARNINGS' | 'INVALID';
-          transmissionStatus: 'NOT_SENT' | 'QUEUED' | 'SENT' | 'DELIVERED' | 'FAILED';
-        } | null;
-      } | null;
+      });
 
       if (!invoice?.eInvoiceLifecycle?.xmlKey) {
         throw new TRPCError({
@@ -651,6 +579,10 @@ export const einvoiceRouter = router({
       // 3. Sender must be ACTIVE — throws PEPPOL_PARTICIPANT_NOT_ACTIVE
       //    (mapped to PRECONDITION_FAILED) BEFORE any HTTP call.
       try {
+        // ctx.db is Prisma's extended (TenantScoped) client; the service
+        // params declare narrow structural surfaces it is not assignable to
+        // (Prisma extension <-> structural-interface gap). Same bridge as
+        // routers/integrations/peppol.ts.
         await assertSenderParticipantActive(ctx.db as never, ctx.organizationId);
       } catch (err) {
         if (err instanceof Error && err.message === PEPPOL_PARTICIPANT_NOT_ACTIVE) {
@@ -672,7 +604,9 @@ export const einvoiceRouter = router({
         });
       }
 
-      // 5. Adapter factory — tests mock this module.
+      // 5. Adapter factory — tests mock this module. `ctx.db as never`
+      // bridges the Prisma extended-client / PrismaClient param gap (same as
+      // routers/integrations/peppol.ts).
       const adapter = await buildStorecoveAdapterForOrg(ctx.db as never, ctx.organizationId);
       if (!adapter) {
         throw new TRPCError({
@@ -685,6 +619,7 @@ export const einvoiceRouter = router({
       //    missing doc-type. Uses the 6h cache (Plan 05).
       try {
         await assertReceiverAcceptsXRechnung(
+          // Same Prisma extended-client / structural-param bridge as above.
           ctx.db as never,
           adapter,
           ctx.organizationId,
@@ -719,7 +654,7 @@ export const einvoiceRouter = router({
         throw err;
       }
 
-      await (ctx.db as never as { $transaction: TxRunner }).$transaction(async tx => {
+      await ctx.db.$transaction(async tx => {
         await tx.eInvoiceLifecycle.update({
           where: { id: lifecycle.id },
           data: { transmissionStatus: queuedStatus },
@@ -727,18 +662,24 @@ export const einvoiceRouter = router({
       });
 
       // 8. Rehydrate XML + call Storecove. `xmlKey` was null-checked on the
-      // NOT_FOUND branch above; assert non-null to satisfy the narrowing
-      // that TS cannot carry across the transaction callback.
-      const xml = await getObjectAsString(lifecycle.xmlKey as string);
+      // NOT_FOUND branch above, but TS cannot carry that narrowing across the
+      // QUEUED transaction callback — re-assert it here, throwing rather than
+      // coercing a null key into the R2 fetch.
+      const { xmlKey } = lifecycle;
+      if (!xmlKey) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: E.EINVOICE_XML_NOT_FOUND,
+        });
+      }
+      const xml = await getObjectAsString(xmlKey);
 
       // Load the org's active participant for the sender identifier that
       // Storecove echoes back with the transmission.
-      const senderParticipant = (await (
-        ctx.db.peppolParticipant.findFirst as (args: unknown) => Promise<unknown>
-      )({
+      const senderParticipant = await ctx.db.peppolParticipant.findFirst({
         where: { organizationId: ctx.organizationId, status: 'ACTIVE' },
         select: { participantId: true },
-      })) as { participantId: string } | null;
+      });
 
       let result: Awaited<ReturnType<typeof adapter.transmitInvoice>>;
       try {
@@ -755,7 +696,7 @@ export const einvoiceRouter = router({
           organizationId: ctx.organizationId,
         });
       } catch (err) {
-        await (ctx.db as never as { $transaction: TxRunner }).$transaction(async tx => {
+        await ctx.db.$transaction(async tx => {
           await tx.eInvoiceLifecycle.update({
             where: { id: lifecycle.id },
             data: {
@@ -785,7 +726,7 @@ export const einvoiceRouter = router({
       }
 
       if (result.status === 'rejected') {
-        await (ctx.db as never as { $transaction: TxRunner }).$transaction(async tx => {
+        await ctx.db.$transaction(async tx => {
           await tx.eInvoiceLifecycle.update({
             where: { id: lifecycle.id },
             data: {
@@ -811,14 +752,16 @@ export const einvoiceRouter = router({
 
       const now = new Date();
       const sentStatus = transitionTransmission(queuedStatus, 'transmit_success');
-      await (ctx.db as never as { $transaction: TxRunner }).$transaction(async tx => {
+      await ctx.db.$transaction(async tx => {
         await tx.eInvoiceLifecycle.update({
           where: { id: lifecycle.id },
           data: {
             transmissionStatus: sentStatus,
             transmissionId: result.transmissionId,
             transmittedAt: now,
-            lastErrorJson: null,
+            // Clear any prior failure payload — Prisma.DbNull writes SQL NULL
+            // (literal `null` is rejected for a JSON-nullable column).
+            lastErrorJson: Prisma.DbNull,
           },
         });
         await tx.eInvoiceLifecycleEvent.create({
@@ -833,6 +776,16 @@ export const einvoiceRouter = router({
               timestamp: result.timestamp,
             },
           },
+        });
+        await writeAuditLog({
+          tx,
+          organizationId: ctx.organizationId,
+          actorType: 'USER',
+          actorId: ctx.user?.id ?? null,
+          action: 'einvoice.transmit',
+          resourceType: 'INVOICE',
+          resourceId: input.invoiceId,
+          newValues: { transmissionStatus: sentStatus, transmissionId: result.transmissionId },
         });
       });
 
@@ -851,7 +804,7 @@ export const einvoiceRouter = router({
     .use(requirePermission({ invoice: ['read'] }))
     .input(listByOrgInput)
     .query(async ({ ctx, input }) => {
-      const where: Record<string, unknown> = { organizationId: ctx.organizationId };
+      const where: Prisma.InvoiceWhereInput = { organizationId: ctx.organizationId };
 
       switch (input.status) {
         case 'notGenerated':
@@ -879,12 +832,12 @@ export const einvoiceRouter = router({
           break;
       }
 
-      const rawRows = (await (ctx.db.invoice.findMany as (args: unknown) => Promise<unknown>)({
+      const rawRows = await ctx.db.invoice.findMany({
         where,
         include: { eInvoiceLifecycle: true },
         orderBy: { createdAt: 'desc' },
         ...cursorClause(input, 50),
-      })) as Array<{ id: string }>;
+      });
 
       const { items: rows, nextCursor } = paginateByExtraRowUndefined(rawRows, input, 50);
 
@@ -898,21 +851,15 @@ export const einvoiceRouter = router({
   summaryForOrg: tenantProcedure
     .use(requirePermission({ invoice: ['read'] }))
     .query(async ({ ctx }) => {
-      const total = await (ctx.db.invoice.count as (args: unknown) => Promise<number>)({
+      const total = await ctx.db.invoice.count({
         where: { organizationId: ctx.organizationId },
       });
 
-      const groups = (await (
-        ctx.db.eInvoiceLifecycle.groupBy as (args: unknown) => Promise<unknown>
-      )({
+      const groups = await ctx.db.eInvoiceLifecycle.groupBy({
         by: ['validationStatus', 'transmissionStatus'],
         where: { organizationId: ctx.organizationId },
         _count: { _all: true },
-      })) as Array<{
-        validationStatus: 'NOT_VALIDATED' | 'VALID' | 'WARNINGS' | 'INVALID';
-        transmissionStatus: 'NOT_SENT' | 'QUEUED' | 'SENT' | 'DELIVERED' | 'FAILED';
-        _count: { _all: number };
-      }>;
+      });
 
       const valid = sumBy(groups, g => g.validationStatus === 'VALID');
       const warnings = sumBy(groups, g => g.validationStatus === 'WARNINGS');

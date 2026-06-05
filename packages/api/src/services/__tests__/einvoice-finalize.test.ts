@@ -254,15 +254,28 @@ function makeDb(seed?: {
     ),
   };
 
+  const auditLogs: Array<Record<string, unknown>> = [];
+  const auditLog = {
+    create: vi.fn(async (args: { data: Record<string, unknown> }) => {
+      auditLogs.push(args.data);
+      return { id: `al-${auditLogs.length}` };
+    }),
+    createMany: vi.fn(async (args: { data: Array<Record<string, unknown>> }) => {
+      for (const row of args.data) auditLogs.push(row);
+      return { count: args.data.length };
+    }),
+  };
+
   async function $transaction<T>(
     fn: (tx: {
       invoice: typeof invoice;
       leitwegId: typeof leitwegId;
       eInvoiceLifecycle: typeof eInvoiceLifecycle;
       eInvoiceLifecycleEvent: typeof eInvoiceLifecycleEvent;
+      auditLog: typeof auditLog;
     }) => Promise<T>,
   ): Promise<T> {
-    return fn({ invoice, leitwegId, eInvoiceLifecycle, eInvoiceLifecycleEvent });
+    return fn({ invoice, leitwegId, eInvoiceLifecycle, eInvoiceLifecycleEvent, auditLog });
   }
 
   return {
@@ -270,9 +283,10 @@ function makeDb(seed?: {
     leitwegId,
     eInvoiceLifecycle,
     eInvoiceLifecycleEvent,
+    auditLog,
     $transaction,
     // Test-only introspection handles:
-    __rows: { invoices, lifecycles, events, leitwegIds },
+    __rows: { invoices, lifecycles, events, leitwegIds, auditLogs },
   };
 }
 

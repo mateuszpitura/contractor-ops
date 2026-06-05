@@ -43,7 +43,6 @@
 
 import { createHash } from 'node:crypto';
 
-import type { PrismaClient } from '@contractor-ops/db';
 import type {
   EInvoiceLifecycle,
   EInvoiceValidationStatus,
@@ -56,12 +55,14 @@ import type {
   XRechnungValidationReport,
 } from '@contractor-ops/einvoice';
 import { KOSIT_RULE_SET_VERSION, XRECHNUNG_DE_PROFILE_ID } from '@contractor-ops/einvoice';
+import { writeAuditLog } from './audit-writer';
 import type { ValidationEvent } from './einvoice-lifecycle-fsm';
 import { transitionValidation } from './einvoice-lifecycle-fsm';
 import type { ResolvedLeitwegId } from './leitweg-id-resolver';
 import { resolveLeitwegIdForInvoice } from './leitweg-id-resolver';
 import type { SkontoTermData } from './skonto';
 import { resolveSkontoTerm } from './skonto';
+import type { DbClient } from './types';
 
 // ---------------------------------------------------------------------------
 // Error codes / warning codes surfaced to Plan 07 UI (kept in lockstep with
@@ -144,7 +145,7 @@ export interface FinalizeLogger {
 }
 
 export interface FinalizeDeps {
-  db: PrismaClient;
+  db: DbClient;
   r2: R2Service;
   profile: FinalizeProfile;
   logger: FinalizeLogger;
@@ -371,6 +372,17 @@ export async function finalizeEInvoice(
       },
     });
 
+    await writeAuditLog({
+      tx,
+      organizationId: input.organizationId,
+      actorType: 'USER',
+      actorId: input.actorUserId,
+      action: isReFinalize ? 'einvoice.refinalize' : 'einvoice.finalize',
+      resourceType: 'INVOICE',
+      resourceId: input.invoiceId,
+      newValues: { validationStatus, xmlKey, xmlSha256, ruleSetVersion: KOSIT_RULE_SET_VERSION },
+    });
+
     return upserted;
   });
 
@@ -408,7 +420,7 @@ export async function finalizeEInvoice(
 
 type InvoiceWithRelations = Awaited<ReturnType<typeof loadInvoiceWithRelations>>;
 
-async function loadInvoiceWithRelations(db: PrismaClient, input: FinalizeInput) {
+async function loadInvoiceWithRelations(db: DbClient, input: FinalizeInput) {
   return db.invoice.findFirst({
     where: {
       id: input.invoiceId,
