@@ -35,6 +35,10 @@ import { makeFreeZoneComplianceItem, makeMeOrg } from './__fixtures__/gulf-fixtu
 
 const ME_ORG = makeMeOrg();
 const CONTRACTOR_ID = 'clmectraaaaaaaaaaaaaaaaaaaa';
+// A SECOND synthetic tenant + contractor so the payment-gate where filters
+// (contractorId.in + contractor.is.organizationId) are load-bearing, not decorative.
+const OTHER_ORG_ID = 'clmeorgbbbbbbbbbbbbbbbbbbbb';
+const OTHER_CONTRACTOR_ID = 'clmectrbbbbbbbbbbbbbbbbbbbb';
 
 interface ItemRow {
   id: string;
@@ -103,6 +107,13 @@ vi.mock('@contractor-ops/db', () => ({
         return store.items.filter(r => {
           if (where.severity && r.severity !== where.severity) return false;
           if (where.status && r.status !== where.status) return false;
+          // Mirror the real gate's contractorId/tenant scope (compliance-payment-gate.ts:86-99)
+          // so the tenant-isolation assertions are load-bearing, not false-green (WR-02).
+          const cid = (where.contractorId as { in?: string[] } | undefined)?.in;
+          if (cid && !cid.includes(r.contractorId as string)) return false;
+          const orgIs = (where.contractor as { is?: { organizationId?: string } } | undefined)?.is
+            ?.organizationId;
+          if (orgIs && r.organizationId !== orgIs) return false;
           return true;
         });
       }),
@@ -178,10 +189,137 @@ function recordValidFreeZoneItem(expiresAt: Date): ItemRow {
   return row;
 }
 
+/**
+ * A free-zone BLOCKING item for an arbitrary org/contractor — used to seed a
+ * SECOND tenant's EXPIRED row so the gate's contractorId/organizationId where
+ * filters are proven load-bearing (the second-tenant row must NOT leak into the
+ * first tenant's contractorReasons).
+ */
+function recordFreeZoneItemFor(params: {
+  id: string;
+  organizationId: string;
+  contractorId: string;
+  expiresAt: Date;
+  status: string;
+}): ItemRow {
+  const fixture = makeFreeZoneComplianceItem({
+    id: params.id,
+    organizationId: params.organizationId,
+    contractorId: params.contractorId,
+    expiresAt: params.expiresAt,
+    status: params.status,
+  });
+  const row: ItemRow = {
+    id: fixture.id,
+    organizationId: fixture.organizationId,
+    contractorId: fixture.contractorId,
+    documentType: fixture.documentType,
+    name: fixture.name,
+    severity: fixture.severity,
+    policyRuleId: fixture.policyRuleId,
+    status: fixture.status,
+    expiresAt: fixture.expiresAt,
+    expiryJurisdictionTz: fixture.expiryJurisdictionTz,
+    contractor: {
+      id: fixture.contractorId,
+      displayName: 'Other-Tenant Free-Zone Contractor',
+      organizationId: fixture.organizationId,
+    },
+  };
+  store.items.push(row as unknown as Record<string, unknown>);
+  return row;
+}
+
 beforeEach(() => {
   store.items.length = 0;
   clientCache.clear();
   auditWriteSpy.mockClear();
+});
+
+describe('SC#1 mocks — the gate mocks honour their where predicates (WR-02 + WR-03)', () => {
+  it('excludes a second-contractor EXPIRED BLOCKING row when only CONTRACTOR_ID is queried (where.contractorId.in)', async () => {
+    recordValidFreeZoneItem(new Date('2026-03-01T00:00:00Z'));
+    store.items[0].status = 'EXPIRED';
+    recordFreeZoneItemFor({
+      id: 'clmefzitembbbbbbbbbbbbbbbbb',
+      organizationId: ME_ORG.id,
+      contractorId: OTHER_CONTRACTOR_ID,
+      expiresAt: new Date('2026-03-01T00:00:00Z'),
+      status: 'EXPIRED',
+    });
+
+    const result = await assertContractorPaymentEligibility([CONTRACTOR_ID], {
+      organizationId: ME_ORG.id,
+      throwOnFail: false,
+    });
+    expect(result.contractorReasons).toHaveLength(1);
+    expect(result.contractorReasons[0]?.contractorId).toBe(CONTRACTOR_ID);
+  });
+
+  it('excludes a second-org EXPIRED BLOCKING row for the same contractor when ME_ORG is queried (where.contractor.is.organizationId)', async () => {
+    recordValidFreeZoneItem(new Date('2026-03-01T00:00:00Z'));
+    store.items[0].status = 'EXPIRED';
+    recordFreeZoneItemFor({
+      id: 'clmefzitemccccccccccccccccc',
+      organizationId: OTHER_ORG_ID,
+      contractorId: CONTRACTOR_ID,
+      expiresAt: new Date('2026-03-01T00:00:00Z'),
+      status: 'EXPIRED',
+    });
+
+    const result = await assertContractorPaymentEligibility([CONTRACTOR_ID, OTHER_CONTRACTOR_ID], {
+      organizationId: ME_ORG.id,
+      throwOnFail: false,
+    });
+    // Only the ME_ORG row survives the contractor.is.organizationId guard.
+    expect(result.contractorReasons).toHaveLength(1);
+    expect(result.contractorReasons[0]?.contractorId).toBe(CONTRACTOR_ID);
+    expect(result.contractorReasons[0]?.reasons[0]?.itemId).toBe('clmefzitemaaaaaaaaaaaaaaaaa');
+  });
+
+  it('returns the open IP task only for taskType=IP_VERIFICATION on the matching workflowRunId (makeGateClient.workflowTaskRun.findMany)', async () => {
+    const client = makeGateClient({ openIpTaskIds: ['task_ip'], workflowRunId: 'run_1' });
+
+    // taskType=IP_VERIFICATION on the matching run → the row is returned.
+    const matched = await (
+      client as unknown as {
+        workflowTaskRun: {
+          findMany: (a: {
+            where?: { taskType?: string; workflowRunId?: string };
+          }) => Promise<Array<{ id: string }>>;
+        };
+      }
+    ).workflowTaskRun.findMany({ where: { taskType: 'IP_VERIFICATION', workflowRunId: 'run_1' } });
+    expect(matched).toEqual([{ id: 'task_ip' }]);
+
+    // A non-IP task type is filtered out.
+    const nonIp = await (
+      client as unknown as {
+        workflowTaskRun: {
+          findMany: (a: {
+            where?: { taskType?: string; workflowRunId?: string };
+          }) => Promise<Array<{ id: string }>>;
+        };
+      }
+    ).workflowTaskRun.findMany({
+      where: { taskType: 'KNOWLEDGE_TRANSFER', workflowRunId: 'run_1' },
+    });
+    expect(nonIp).toEqual([]);
+
+    // A mismatched runId is filtered out.
+    const wrongRun = await (
+      client as unknown as {
+        workflowTaskRun: {
+          findMany: (a: {
+            where?: { taskType?: string; workflowRunId?: string };
+          }) => Promise<Array<{ id: string }>>;
+        };
+      }
+    ).workflowTaskRun.findMany({
+      where: { taskType: 'IP_VERIFICATION', workflowRunId: 'run_other' },
+    });
+    expect(wrongRun).toEqual([]);
+  });
 });
 
 describe('SC#1 F1+F3 — free-zone payment hard-block composes with the F3 advisory', () => {
@@ -278,11 +416,19 @@ describe('SC#1 F3 — Saudization offboarding band-trajectory is advisory-only a
 function makeGateClient(opts: {
   overrideMetadata?: unknown;
   openIpTaskIds?: string[];
+  workflowRunId?: string;
   pendingCreds?: Array<{ id: string; label: string; vaultProvider: string }>;
 }) {
   return {
     workflowTaskRun: {
-      findMany: async () => (opts.openIpTaskIds ?? []).map(id => ({ id })),
+      // Honour the real gate predicate (workflow-shared.ts:332-340): only return
+      // open tasks when the query is for IP_VERIFICATION on the matching run, so the
+      // taskType/workflowRunId filters are load-bearing, not unconditional (WR-03).
+      findMany: async (args: { where?: { taskType?: string; workflowRunId?: string } }) => {
+        if (args.where?.taskType !== 'IP_VERIFICATION') return [];
+        if (opts.workflowRunId && args.where?.workflowRunId !== opts.workflowRunId) return [];
+        return (opts.openIpTaskIds ?? []).map(id => ({ id }));
+      },
     },
     workflowRun: {
       findUniqueOrThrow: async () => ({ overrideMetadata: opts.overrideMetadata ?? null }),
