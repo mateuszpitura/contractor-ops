@@ -3,6 +3,7 @@ import { pLimit } from '@contractor-ops/integrations/services/concurrency';
 import { createLogger } from '@contractor-ops/logger';
 import type { NOTIFICATION_TYPES } from '@contractor-ops/validators';
 import { getServerEnv } from '@contractor-ops/validators';
+import { isDemoOrg } from '../lib/demo';
 import type { EmailLocale } from '../i18n/email-i18n';
 import { normalizeLocale, resolveMessage } from '../i18n/email-i18n';
 import { sendAppEmail } from './app-email';
@@ -270,6 +271,17 @@ export async function dispatch(
   event: NotificationEvent,
   options: NotificationDispatchOptions = {},
 ): Promise<void> {
+  // Demo read-only — a demo org triggers no real notifications (email / Slack /
+  // Teams) and no notification writes. Mutation handlers that call this are
+  // already blocked by the demo tRPC guard; this covers the outbox / cron paths.
+  if (isDemoOrg(event.organizationId)) {
+    log.info(
+      { organizationId: event.organizationId, type: event.type },
+      'demo org — skipping notification dispatch',
+    );
+    return;
+  }
+
   const now = new Date();
 
   // Resolve i18n-key-shaped title / body strings against the org's locale

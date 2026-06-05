@@ -8,6 +8,7 @@ import {
 import { decryptCredentials } from '@contractor-ops/integrations';
 import { createLogger } from '@contractor-ops/logger';
 import { releaseAdvisoryLock, tryAcquireAdvisoryLock } from '../lib/advisory-lock';
+import { isDemoOrg } from '../lib/demo';
 import { computeDuplicateCheckHashForInvoice, runAutoMatch } from './invoice-matching';
 import { checkCrossSourceDuplicate, linkDuplicateInvoices } from './ksef-duplicate-detection';
 import { dispatch } from './notification-service';
@@ -493,6 +494,13 @@ export async function processKsefSync(params: {
   duplicatesFound: number;
   errors: string[];
 }> {
+  // Demo read-only — never poll the real KSeF platform for a demo org. Reached
+  // via the QStash callback route (non-tRPC), so the skip lives here.
+  if (isDemoOrg(params.organizationId)) {
+    log.info({ organizationId: params.organizationId }, 'demo org — skipping KSeF sync');
+    return { invoicesCreated: 0, duplicatesFound: 0, errors: [] };
+  }
+
   const org = await prisma.organization.findUniqueOrThrow({
     where: { id: params.organizationId },
   });

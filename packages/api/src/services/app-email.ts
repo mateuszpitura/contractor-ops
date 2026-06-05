@@ -1,10 +1,14 @@
 import { createHash } from 'node:crypto';
 import { deriveIdempotencyKey, GLOBAL_ORG_SENTINEL } from '@contractor-ops/integrations';
+import { createLogger } from '@contractor-ops/logger';
 import { getServerEnv } from '@contractor-ops/validators';
 import nodemailer from 'nodemailer';
 import type { ReactElement } from 'react';
 import { render } from 'react-email';
+import { isGlobalDemo } from '../lib/demo';
 import { getResend } from './resend-client';
+
+const log = createLogger({ service: 'app-email' });
 
 export type SendAppEmailParams = {
   from: string;
@@ -90,6 +94,15 @@ async function buildHtmlForSmtp(params: SendAppEmailParams): Promise<string> {
  */
 export async function sendAppEmail(params: SendAppEmailParams): Promise<void> {
   const env = getServerEnv();
+
+  // Demo read-only — a dedicated demo deployment (DEMO_MODE=true) sends no real
+  // email at all. This helper has no org context (it also serves pre-tenancy
+  // auth flows), so it can only honor the global signal; org-scoped sends are
+  // already skipped one level up in `dispatch` (see lib/demo.ts isGlobalDemo).
+  if (isGlobalDemo()) {
+    log.info({ subject: params.subject }, 'demo mode — skipping outbound email');
+    return;
+  }
 
   if (isDevSmtpEnabled(env)) {
     const transporter = nodemailer.createTransport({

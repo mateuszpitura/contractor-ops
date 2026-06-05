@@ -64,6 +64,7 @@
 import { prismaRaw } from '@contractor-ops/db';
 import { createLogger } from '@contractor-ops/logger';
 import * as Sentry from '@sentry/node';
+import { isDemoOrg } from '../../lib/demo';
 import type { OutboxEventType } from './handlers';
 import { dispatchOutboxEvent } from './handlers';
 
@@ -372,6 +373,18 @@ type RowOutcome = 'dispatched' | 'retried' | 'exhausted';
  * Returns the outcome label so the caller can update its aggregate counts.
  */
 async function dispatchAndFinalize(row: ClaimedOutboxRow): Promise<RowOutcome> {
+  // Demo read-only — a demo org's outbox events fire no real side-effects
+  // (email / webhooks / notifications). Mark the event done without dispatching
+  // so it is not retried, and emit a skip log.
+  if (isDemoOrg(row.organizationId)) {
+    log.info(
+      { outboxEventId: row.id, organizationId: row.organizationId, eventType: row.eventType },
+      'demo org — skipping outbox dispatch',
+    );
+    await finalizeSuccess(row.id);
+    return 'dispatched';
+  }
+
   try {
     // Phase 2 — handler side-effects, NEVER inside a transaction.
     await dispatchOutboxEvent({

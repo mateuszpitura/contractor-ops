@@ -17,6 +17,7 @@ import {
   IP_CLAUSES_BY_JURISDICTION,
 } from '@contractor-ops/validators';
 import { ZodError } from 'zod';
+import { isDemoOrg } from '../../lib/demo.js';
 import { writeAuditLog } from '../audit-writer.js';
 import { createPresignedDownloadUrl } from '../r2.js';
 import { analyzeCrossJurisdiction, resolveContractJurisdiction } from './cross-jurisdiction.js';
@@ -56,6 +57,15 @@ export async function runContractHealthCheck(
   args: RunHealthCheckArgs,
 ): Promise<RunHealthCheckResult> {
   const { db, organizationId, contractId, triggeredBy, triggeredByUserId, force } = args;
+
+  // Demo read-only — never run the (Anthropic-backed, write-heavy) health check
+  // for a demo org. Reached via the QStash callback route (non-tRPC ingress).
+  // `DEDUPED` is the existing "no new run was created" outcome — exactly the
+  // semantics of a demo skip — so callers need no new status to handle.
+  if (isDemoOrg(organizationId)) {
+    log.info({ organizationId, contractId }, 'demo org — skipping contract health check');
+    return { runId: '', status: 'DEDUPED' };
+  }
 
   // 1. Fetch the contract PDF bytes from R2 (via the primary CONTRACT DocumentLink).
   const { pdfBase64, contentHash } = await fetchContractPdf(db, organizationId, contractId);

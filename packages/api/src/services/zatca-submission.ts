@@ -31,6 +31,7 @@ import { createZatcaSecretStore, ZATCA_SECRET_NAMES } from '@contractor-ops/inte
 import { getQStashClient } from '@contractor-ops/integrations/services/qstash-client';
 import { createLogger } from '@contractor-ops/logger';
 import { getServerEnv } from '@contractor-ops/validators';
+import { isDemoOrg } from '../lib/demo';
 import type { PrismaLike } from './zatca-hash-chain';
 import { acquireChainLock, getNextChainEntry, recordChainEntry } from './zatca-hash-chain';
 
@@ -87,6 +88,14 @@ export async function submitToZatca(
 ): Promise<void> {
   const prisma = db ?? defaultPrisma;
   const { invoiceId, organizationId } = options;
+
+  // Demo read-only — never submit a demo org's invoice to the real ZATCA
+  // platform. Reached only via the QStash callback route (a non-tRPC ingress
+  // the mutation guard does not cover), so the skip must live here.
+  if (isDemoOrg(organizationId)) {
+    log.info({ organizationId, invoiceId }, 'demo org — skipping ZATCA submission');
+    return;
+  }
 
   // Load invoice and org data
   const invoice = await prisma.invoice.findUniqueOrThrow({

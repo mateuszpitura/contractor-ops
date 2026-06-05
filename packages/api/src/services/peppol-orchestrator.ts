@@ -6,7 +6,11 @@ import {
   PeppolAEQRCode,
   PINT_AE_DOCUMENT_TYPE_ID,
 } from '@contractor-ops/einvoice';
+import { createLogger } from '@contractor-ops/logger';
+import { isDemoOrg } from '../lib/demo';
 import { computeDuplicateCheckHash } from './invoice-matching';
+
+const log = createLogger({ service: 'peppol-orchestrator' });
 
 // ---------------------------------------------------------------------------
 // Peppol Orchestrator
@@ -205,6 +209,13 @@ export class PeppolOrchestrator {
    * Idempotent: skips if aspTransmissionId already exists.
    */
   async processInboundInvoice(params: { payload: InboundInvoicePayload; organizationId: string }) {
+    // Demo read-only — never ingest a real inbound Peppol document for a demo
+    // org (reached from the webhook route + the poller below, both non-tRPC).
+    if (isDemoOrg(params.organizationId)) {
+      log.info({ organizationId: params.organizationId }, 'demo org — skipping inbound Peppol');
+      return null;
+    }
+
     // Idempotent — check for duplicate by ASP document ID
     const existing = await this.db.peppolTransmission.findFirst({
       where: { aspTransmissionId: params.payload.documentId },
@@ -314,6 +325,12 @@ export class PeppolOrchestrator {
    * Returns the count of newly processed invoices.
    */
   async pollAndProcessInbound(organizationId: string): Promise<number> {
+    // Demo read-only — never poll the real ASP for a demo org (cron path).
+    if (isDemoOrg(organizationId)) {
+      log.info({ organizationId }, 'demo org — skipping Peppol inbound poll');
+      return 0;
+    }
+
     // Find last inbound transmission timestamp
     const lastInbound = await this.db.peppolTransmission.findFirst({
       where: {

@@ -24,6 +24,7 @@ import {
   recordQueueDepth,
   withQueueObservability,
 } from '@contractor-ops/api/services/cron-monitor';
+import { isDemoOrg } from '@contractor-ops/api/lib/demo';
 import { PeppolOrchestrator } from '@contractor-ops/api/services/peppol-orchestrator';
 import {
   BackpressureRoutes,
@@ -367,6 +368,13 @@ async function outboundHandlerInner(
     return reply.code(400).send({ error: detail });
   }
   const { organizationId, invoiceId, receiverParticipantId } = parsed.data;
+
+  // Demo read-only — never transmit a demo org's invoice to the real Peppol
+  // network. This QStash route is a non-tRPC ingress, so the skip lives here.
+  if (isDemoOrg(organizationId)) {
+    outboundLog.info({ organizationId, invoiceId }, 'demo org — skipping Peppol outbound');
+    return reply.code(200).send({ processed: false, skipped: 'demo' });
+  }
 
   try {
     const connection = await prisma.integrationConnection.findFirst({
