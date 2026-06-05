@@ -138,6 +138,13 @@ vi.mock('../i18n/email-i18n', () => ({
   resolveMessage: vi.fn((key: string) => key),
 }));
 
+import {
+  LOCKED_AE_PHRASES,
+  LOCKED_SA_PHRASES,
+  RESERVED_AE_LEGAL_KEYS,
+  RESERVED_SA_LEGAL_KEYS,
+} from '@contractor-ops/validators';
+import { assertRunCompletable } from '../routers/workflow/workflow-shared';
 import { assertContractorPaymentEligibility } from '../services/compliance-payment-gate';
 import { runComplianceReminderScan } from '../services/compliance-reminder-scan';
 import { projectOffboardingTrajectory } from '../services/saudization-dashboard';
@@ -261,5 +268,120 @@ describe('SC#1 F3 — Saudization offboarding band-trajectory is advisory-only a
     expect(traj.advisory).toBe(true);
     expect(traj.authoritative).toBe(false);
     expect(traj).not.toHaveProperty('projectedBand');
+  });
+});
+
+// In-memory gate client mirroring the structural RunGateClient shape
+// (workflow-execution-ip-block.test.ts). assertRunCompletable reads only these
+// three relations and — crucially for the composed audit assertion below — never
+// calls writeAuditLog itself.
+function makeGateClient(opts: {
+  overrideMetadata?: unknown;
+  openIpTaskIds?: string[];
+  pendingCreds?: Array<{ id: string; label: string; vaultProvider: string }>;
+}) {
+  return {
+    workflowTaskRun: {
+      findMany: async () => (opts.openIpTaskIds ?? []).map(id => ({ id })),
+    },
+    workflowRun: {
+      findUniqueOrThrow: async () => ({ overrideMetadata: opts.overrideMetadata ?? null }),
+    },
+    credentialReference: {
+      findMany: async () => opts.pendingCreds ?? [],
+    },
+  } as never;
+}
+
+describe('SC#1 F4 — offboarding IP_VERIFICATION hard-block (writes no audit row of its own)', () => {
+  it('hard-blocks offboarding while an IP_VERIFICATION task is open, with cause.blockedTaskKind === IP_VERIFICATION', async () => {
+    const client = makeGateClient({ openIpTaskIds: ['task_ip'] });
+    try {
+      await assertRunCompletable(client, 'run_1', ME_ORG.id);
+      throw new Error('expected PRECONDITION_FAILED');
+    } catch (err) {
+      expect(err).toBeInstanceOf(TRPCError);
+      expect((err as TRPCError).code).toBe('PRECONDITION_FAILED');
+      const cause = (err as TRPCError).cause as {
+        blockedTaskKind: string;
+        openTaskIds: string[];
+      };
+      expect(cause.blockedTaskKind).toBe('IP_VERIFICATION');
+      expect(cause.openTaskIds).toEqual(['task_ip']);
+    }
+    // The F4 hard-block path emits NO audit row — it merely throws. The only
+    // audit rows in this composed SC#1 hard-block scenario are the F1/F3 rows
+    // asserted in the audit describe below.
+    expect(auditWriteSpy).not.toHaveBeenCalled();
+  });
+
+  it('a Phase-74 override (overrideMetadata.blockedTaskKind=IP_VERIFICATION) clears the block — the gate is overridable, not absent', async () => {
+    const client = makeGateClient({
+      openIpTaskIds: ['task_ip'],
+      overrideMetadata: { blockedTaskKind: 'IP_VERIFICATION' },
+    });
+    await expect(assertRunCompletable(client, 'run_1', ME_ORG.id)).resolves.toBeUndefined();
+  });
+});
+
+describe('SC#1 audit — the F1/F3 gate path emits an AuditLog row (the F4 hard-block emits none)', () => {
+  it('records the compliance.payment.would_block AuditLog row via the F1/F3 gate path (flag-OFF would-block branch) once the free-zone item is EXPIRED', async () => {
+    const item = recordValidFreeZoneItem(new Date('2026-03-01T00:00:00Z'));
+
+    // The cron scan crosses the Asia/Dubai boundary and persists PENDING → EXPIRED.
+    await runComplianceReminderScan(new Date('2026-06-03T09:00:00Z'));
+    expect(store.items.find(r => r.id === item.id)?.status).toBe('EXPIRED');
+    auditWriteSpy.mockClear();
+
+    // Drive the gate's would-block branch (flag OFF) — this is the F1/F3 gate path
+    // that writes an AuditLog row. With the flag ON the gate throws and writes
+    // nothing, so the would-block branch is the deterministic audit-emitting path.
+    const result = await assertContractorPaymentEligibility([CONTRACTOR_ID], {
+      organizationId: ME_ORG.id,
+      flagEnabled: false,
+    });
+    expect(result.wouldBlock).toBe(true);
+    expect(result.blocked).toBe(false);
+
+    expect(auditWriteSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        action: 'compliance.payment.would_block',
+        organizationId: ME_ORG.id,
+        metadata: expect.objectContaining({
+          contractorReasons: expect.arrayContaining([
+            expect.objectContaining({ contractorId: CONTRACTOR_ID }),
+          ]),
+        }),
+      }),
+    );
+  });
+
+  it('the composed F4 hard-block path adds no audit row — assertRunCompletable never calls the audit writer', async () => {
+    auditWriteSpy.mockClear();
+    const client = makeGateClient({ openIpTaskIds: ['task_ip'] });
+    await expect(assertRunCompletable(client, 'run_1', ME_ORG.id)).rejects.toMatchObject({
+      code: 'PRECONDITION_FAILED',
+    });
+    expect(auditWriteSpy).not.toHaveBeenCalled();
+  });
+});
+
+describe('SC#1 locked-phrase guard — Gulf AE/SA legal phrases are green (no drift)', () => {
+  it('RESERVED_AE_LEGAL_KEYS mirrors LOCKED_AE_PHRASES keys and every value is a non-empty string', () => {
+    expect([...RESERVED_AE_LEGAL_KEYS].sort()).toEqual(Object.keys(LOCKED_AE_PHRASES).sort());
+    for (const [key, value] of Object.entries(LOCKED_AE_PHRASES)) {
+      expect(typeof value, `${key} is not a string`).toBe('string');
+      expect((value as string).length, `${key} is empty`).toBeGreaterThan(0);
+    }
+  });
+
+  it('RESERVED_SA_LEGAL_KEYS mirrors LOCKED_SA_PHRASES keys and the NITAQAT_BAND_* literals equal their UPPER_SNAKE enum strings', () => {
+    expect([...RESERVED_SA_LEGAL_KEYS].sort()).toEqual(Object.keys(LOCKED_SA_PHRASES).sort());
+    expect(LOCKED_SA_PHRASES.NITAQAT_BAND_PLATINUM).toBe('PLATINUM');
+    expect(LOCKED_SA_PHRASES.NITAQAT_BAND_HIGH_GREEN).toBe('HIGH_GREEN');
+    expect(LOCKED_SA_PHRASES.NITAQAT_BAND_MID_GREEN).toBe('MID_GREEN');
+    expect(LOCKED_SA_PHRASES.NITAQAT_BAND_LOW_GREEN).toBe('LOW_GREEN');
+    expect(LOCKED_SA_PHRASES.NITAQAT_BAND_YELLOW).toBe('YELLOW');
+    expect(LOCKED_SA_PHRASES.NITAQAT_BAND_RED).toBe('RED');
   });
 });
