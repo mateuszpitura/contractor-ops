@@ -36,6 +36,7 @@ import {
   listBlockedPayments,
   listUpcomingRenewals,
 } from '../../services/compliance-dashboard';
+import { onComplianceItemSatisfied } from '../../services/compliance-recovery';
 import { dispatch } from '../../services/notification-service';
 import { resolveRbacRecipients } from '../../services/rbac-recipients';
 
@@ -308,6 +309,19 @@ export const complianceAdminRouter = router({
             expiresAt: input.expiresAt,
           },
         });
+
+        // Phase 81 D-12/D-14 — re-assert contractor eligibility for the approved
+        // item so any PENDING_COMPLIANCE ApprovalFlow holding it resumes to PENDING
+        // and the contractor's payment unblocks. Per-item (exactly one item flips
+        // per approval — not the all-BLOCKING supersession loop). In-tx so the
+        // resume is atomic with the SATISFIED flip; the post-tx contractor
+        // notification below stays best-effort (T-73-08-04).
+        await onComplianceItemSatisfied(tx as Parameters<typeof onComplianceItemSatisfied>[0], {
+          itemId: input.itemId,
+          contractorId: before.contractorId,
+          organizationId: ctx.organizationId,
+        });
+
         return { item: updated, contractorId: before.contractorId };
       });
 
