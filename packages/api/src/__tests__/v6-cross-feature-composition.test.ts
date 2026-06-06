@@ -118,8 +118,9 @@ vi.mock('@contractor-ops/db', () => ({
         return store.items.filter(r => {
           if (where.severity && r.severity !== where.severity) return false;
           if (where.status && r.status !== where.status) return false;
-          // Mirror the real gate's contractorId/tenant scope (compliance-payment-gate.ts:86-99)
-          // so the tenant-isolation assertions are load-bearing, not false-green (WR-02).
+          // Mirror the contractorId.in + contractor.is.organizationId scope in
+          // assertContractorPaymentEligibility's findMany where, so the tenant-isolation
+          // assertions are load-bearing, not false-green.
           const cid = (where.contractorId as { in?: string[] } | undefined)?.in;
           if (cid && !cid.includes(r.contractorId as string)) return false;
           const orgIs = (where.contractor as { is?: { organizationId?: string } } | undefined)?.is
@@ -296,7 +297,8 @@ describe('SC#1 — F1+F3+F4 compose on ONE seeded contractor (single shared stor
       expect(cause.contractorReasons[0]?.contractorId).toBe(SEEDED.contractorId);
       expect(cause.contractorReasons[0]?.reasons[0]?.policyRuleId).toBe('uae.free_zone_license@v2');
     }
-    // The enforced branch throws and writes NO audit row (compliance-payment-gate.ts:114-120).
+    // The enforced branch throws without writing audit; only the flag-OFF
+    // recordWouldBlock path emits a row.
     expect(auditWriteSpy).not.toHaveBeenCalled();
 
     // Step 3 (F3): the Saudization advisory derives its headcount from the SAME
@@ -359,8 +361,8 @@ describe('SC#1 — F1+F3+F4 compose on ONE seeded contractor (single shared stor
     auditWriteSpy.mockClear();
 
     // The enforced path writes no row, so the documented audit-emitting path is the
-    // flag-OFF would-block branch (compliance-payment-gate.ts:106-120). This is the
-    // honest enforced-vs-audit split: never assert hard-block AND audit on one call.
+    // flag-OFF would-block branch (recordWouldBlock). This is the honest
+    // enforced-vs-audit split: never assert hard-block AND audit on one call.
     const result = await assertContractorPaymentEligibility([SEEDED.contractorId], {
       organizationId: SEEDED.organizationId,
       flagEnabled: false,
