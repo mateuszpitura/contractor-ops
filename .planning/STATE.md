@@ -4,13 +4,13 @@ milestone: v6.0
 milestone_name: Platform Maturity & Operational Hardening
 status: executing
 stopped_at: Phase 81 context gathered
-last_updated: "2026-06-06T16:24:06.210Z"
+last_updated: "2026-06-06T16:29:58.681Z"
 last_activity: 2026-06-06
 progress:
   total_phases: 12
   completed_phases: 11
   total_plans: 90
-  completed_plans: 85
+  completed_plans: 86
   percent: 92
 ---
 
@@ -294,7 +294,7 @@ Plan: 2 of 6
 Status: Ready to execute
 Last activity: 2026-06-06
 
-Progress: [█████████░] 94%
+Progress: [██████████] 96%
 
 **Active Phase:** none (Phase 70 closed)
 **Next Phase candidates (parallel-ready):**
@@ -449,6 +449,7 @@ Code-level audit gaps (I-1 / EINV-01/02/04 / PAY-04 / FOUND-03) all closed this 
 | Phase 80 P02 | 18min | 1 tasks | 1 files |
 | Phase 80 P80-04 | 25min | 2 tasks | 1 files |
 | Phase 81 P01 | 40 | 3 tasks | 4 files |
+| Phase 81 P04 | 6 | 1 tasks | 1 files |
 
 ### Standing Project Constraints
 
@@ -527,6 +528,7 @@ Recent decisions affecting current work:
 - [Phase ?]: 81-01: RED gate authored assertion-level failing tests for both seams before any Wave 1 source (TDD-first)
 - [Phase ?]: 81-01: it_admin idp invariant pinned to EXACTLY ['start_run'] (research A1); override_step_failure stays owner/admin-only
 - [Phase ?]: 81-01: fixed pre-existing harness bug — approve/reject upload-review live on complianceAdmin namespace, not classification
+- [Phase ?]: 81-04: Slack deprovision execution path (D-08) already covered by 21 GREEN sibling tests; stale 'zero coverage' premise. Honored D-08 intent with a non-duplicative regression lock in slack-adapter.test.ts asserting org-grid bearer on suspend/revoke/impact; adapter source unchanged.
 
 ### Pending Todos
 
@@ -564,7 +566,7 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-06-06T16:23:41.512Z
+Last session: 2026-06-06T16:29:42.882Z
 Stopped at: Phase 81 context gathered
 Resume file: None
 Next command: `/gsd-plan-phase 74`  (Phase 74 context gathered, ready to plan; 71 + 76 plans already ready to execute)
