@@ -77,6 +77,10 @@ workflow tasks from the saga, and new notification types are explicitly OUT of s
   `getDeprovisioningEligibility` + the UI trigger with it. Both procedures are currently UNGATED
   (`tenantProcedure` only) — closing this gap is in scope because the trigger is the first real
   caller of a destructive, security-critical mutation. Register/seed the permission across roles.
+  **Resolved (research A1, 2026-06-06):** grant `idp:start_run` to **owner + admin + it_admin** —
+  it_admin is the seeded `ACCESS_REVOKE` assignee, so the D-01 inline-card path must be usable by
+  it_admin. This requires rewriting the `roles.test.ts:80` invariant ("only owner/admin hold idp")
+  to allow it_admin exactly this one `idp` action; `idp:override_step_failure` stays owner/admin-only.
 - **D-11: Cooldown pre-check + disabled button.** Call `getDeprovisioningEligibility` on render;
   disable the start button + show an earliest-date tooltip while inside the 14-day cooldown (the
   query was built for exactly this). The server re-runs the gate on submit regardless — the UI
