@@ -227,7 +227,6 @@ function TaskActionToolbar({
   completeMutation,
   skip,
   reassign,
-  triggerSlot,
   t,
 }: {
   canAct: boolean;
@@ -237,7 +236,6 @@ function TaskActionToolbar({
   completeMutation: TaskCardRunProps['completeMutation'];
   skip: ReturnType<typeof useSkipTaskPopover>;
   reassign: ReturnType<typeof useReassignTaskPopover>;
-  triggerSlot?: ReactNode;
   t: ReturnType<typeof useTranslations>;
 }) {
   const handleComplete = useCallback(() => {
@@ -265,7 +263,6 @@ function TaskActionToolbar({
         </>
       )}
       {!!canReassignOnly && <ReassignPopover taskRunId={task.id} reassign={reassign} />}
-      {task.taskType === 'ACCESS_REVOKE' && triggerSlot}
       {task.status === 'BLOCKED' && !!dependencyTitle && (
         <TooltipProvider>
           <Tooltip>
@@ -284,6 +281,7 @@ function TaskExpandedDetails({
   isConditionSkipped,
   attachmentsSection,
   commentsSection,
+  triggerSlot,
   t,
 }: {
   task: TaskCardRunTask;
@@ -291,6 +289,7 @@ function TaskExpandedDetails({
   isConditionSkipped: boolean;
   attachmentsSection?: ReactNode;
   commentsSection?: ReactNode;
+  triggerSlot?: ReactNode;
   t: ReturnType<typeof useTranslations>;
 }) {
   const { formatDateTime } = useDateFormatter();
@@ -324,6 +323,13 @@ function TaskExpandedDetails({
       <div className="empty:hidden">
         <LinearTaskIssueChip taskRunId={task.id} />
       </div>
+
+      {/* Phase 81 D-01 — the inline deprovisioning trigger / run-view panel
+          renders in the collapsible body (a block-level region), never in the
+          compact shrink-0 header toolbar that would break its row layout. */}
+      {task.taskType === 'ACCESS_REVOKE' && !!triggerSlot && (
+        <div className="empty:hidden">{triggerSlot}</div>
+      )}
 
       {attachmentsSection}
 
@@ -430,7 +436,6 @@ export function TaskCardRun({
               completeMutation={completeMutation}
               skip={skip}
               reassign={reassign}
-              triggerSlot={triggerSlot}
               t={t}
             />
           </div>
@@ -443,6 +448,7 @@ export function TaskCardRun({
             isConditionSkipped={isConditionSkipped}
             attachmentsSection={attachmentsSection}
             commentsSection={commentsSection}
+            triggerSlot={triggerSlot}
             t={t}
           />
         </CollapsibleContent>
