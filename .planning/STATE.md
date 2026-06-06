@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v6.0
 milestone_name: Platform Maturity & Operational Hardening
-status: completed
+status: executing
 stopped_at: Phase 81 context gathered
-last_updated: "2026-06-06T12:51:44.662Z"
-last_activity: 2026-06-05
+last_updated: "2026-06-06T14:45:34.740Z"
+last_activity: 2026-06-06 -- Phase 81 planning complete
 progress:
   total_phases: 12
   completed_phases: 11
-  total_plans: 84
+  total_plans: 90
   completed_plans: 84
   percent: 92
 ---
@@ -75,7 +75,7 @@ the 3 web-vite hooks to call `trpc.deprovisioning.enableProviderForOrg({ provide
 
 **Phase:** 73 (F1 Compliance — Admin Dashboard + Portal Self-Service + i18n)
 **Workflow:** `gsd:execute-phase 73` (autonomous background run)
-**Status:** Milestone complete
+**Status:** Ready to execute
 
 **Why halted (per execute-phase rule "if drift is so deep a plan can't be faithfully executed, write specifics to STATE.md as a blocker and stop rather than guessing"):**
 
@@ -291,8 +291,8 @@ See: .planning/PROJECT.md (updated 2026-04-26 — v6.0 milestone started)
 
 Phase: 80 (v6-0-verification-hardening-manual-uat) — EXECUTING
 Plan: Not started
-Status: Executing Phase 80
-Last activity: 2026-06-05
+Status: Ready to execute
+Last activity: 2026-06-06 -- Phase 81 planning complete
 
 Progress: [██████████] 100%
 
