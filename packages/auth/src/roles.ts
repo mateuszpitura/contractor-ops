@@ -25,7 +25,7 @@ const allPermissions = {
   document: ['create', 'read', 'update', 'delete'],
   invoice: ['create', 'read', 'update', 'delete', 'approve'],
   workflow: ['create', 'read', 'update', 'delete', 'execute', 'override_blocking_task'],
-  idp: ['override_step_failure'],
+  idp: ['override_step_failure', 'start_run'],
   payment: ['create', 'read', 'update', 'export'],
   report: ['read', 'export'],
   settings: ['read', 'update'],
@@ -55,7 +55,7 @@ export const roles = {
     document: ['create', 'read', 'update', 'delete'],
     invoice: ['create', 'read', 'update', 'delete', 'approve'],
     workflow: ['create', 'read', 'update', 'delete', 'execute'],
-    idp: ['override_step_failure'],
+    idp: ['override_step_failure', 'start_run'],
     payment: ['create', 'read', 'update', 'export'],
     report: ['read', 'export'],
     settings: ['read', 'update'],
@@ -126,6 +126,10 @@ export const roles = {
     invitation: ['create', 'cancel'],
     settings: ['read', 'update'],
     integration: ['read', 'update'],
+    // it_admin is the seeded ACCESS_REVOKE assignee, so the inline deprovisioning
+    // trigger must be reachable by it_admin. It holds start_run ONLY — the
+    // override_step_failure escalation stays owner/admin-only.
+    idp: ['start_run'],
     equipment: ['read'],
     team: ['read'],
     project: ['read'],

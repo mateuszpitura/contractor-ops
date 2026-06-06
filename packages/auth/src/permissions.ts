@@ -19,10 +19,13 @@ export const accessControlStatement = {
   document: ['create', 'read', 'update', 'delete'],
   invoice: ['create', 'read', 'update', 'delete', 'approve'],
   workflow: ['create', 'read', 'update', 'delete', 'execute', 'override_blocking_task'],
-  // Phase 77 D-12 — IdP deprovisioning: marking a terminally-failed step
-  // MANUAL_COMPLETED. Granted to owner + admin only (mirrors the workflow
-  // override_blocking_task pattern). See roles.ts.
-  idp: ['override_step_failure'],
+  // IdP deprovisioning actions:
+  //   override_step_failure — mark a terminally-failed step MANUAL_COMPLETED
+  //     (owner + admin only, mirrors workflow override_blocking_task).
+  //   start_run — start a deprovisioning run / read eligibility
+  //     (owner + admin + it_admin; it_admin is the seeded ACCESS_REVOKE assignee).
+  // See roles.ts for the per-role grants.
+  idp: ['override_step_failure', 'start_run'],
   payment: ['create', 'read', 'update', 'export'],
   report: ['read', 'export'],
   settings: ['read', 'update'],
