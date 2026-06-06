@@ -18,32 +18,50 @@ type AssignmentRow = {
 
 const publishJSON = vi.fn().mockResolvedValue({ messageId: 'm-1' });
 
-const { mockPrisma, assignments, runCreate, runUpdate, runFindUnique } = vi.hoisted(() => {
-  const assignments = new Map<string, AssignmentRow>();
-  const runCreate = vi.fn();
-  const runUpdate = vi.fn().mockResolvedValue({});
-  const runFindUnique = vi.fn();
-  const mockPrisma = {
-    contractorAssignment: {
-      findFirst: vi.fn(async (args: { where?: Record<string, unknown> }) => {
-        const where = args?.where ?? {};
-        return (
-          Array.from(assignments.values()).find(a => {
-            if ('id' in where && where.id !== a.id) return false;
-            if ('organizationId' in where && where.organizationId !== a.organizationId)
-              return false;
-            return true;
-          }) ?? null
-        );
-      }),
-    },
-    deprovisioningRun: { create: runCreate, update: runUpdate, findUniqueOrThrow: runFindUnique },
-    // $transaction runs the callback against the same mock client.
-    $transaction: vi.fn(async (fn: (tx: unknown) => unknown) => fn(mockPrisma)),
-    organization: { findUnique: vi.fn(async () => ({ dataRegion: 'EU', status: 'ACTIVE' })) },
-  };
-  return { mockPrisma, assignments, runCreate, runUpdate, runFindUnique };
-});
+const { mockPrisma, assignments, runCreate, runUpdate, runFindUnique, orgSettings } = vi.hoisted(
+  () => {
+    const assignments = new Map<string, AssignmentRow>();
+    // Per-org idpDeprovisioningEnabled toggle map (Phase 81 D-05). Mutated per-test;
+    // 81-02 will add an `organization.findUnique({ select: { settingsJson } })` read
+    // inside startDeprovisioningRun to derive the run's provider set from this.
+    const orgSettings: { idpDeprovisioningEnabled: Record<string, boolean> } = {
+      idpDeprovisioningEnabled: { GOOGLE_WORKSPACE: true },
+    };
+    const runCreate = vi.fn();
+    const runUpdate = vi.fn().mockResolvedValue({});
+    const runFindUnique = vi.fn();
+    const mockPrisma = {
+      contractorAssignment: {
+        findFirst: vi.fn(async (args: { where?: Record<string, unknown> }) => {
+          const where = args?.where ?? {};
+          return (
+            Array.from(assignments.values()).find(a => {
+              if ('id' in where && where.id !== a.id) return false;
+              if ('organizationId' in where && where.organizationId !== a.organizationId)
+                return false;
+              if ('status' in where && where.status !== a.status) return false;
+              return true;
+            }) ?? null
+          );
+        }),
+      },
+      deprovisioningRun: { create: runCreate, update: runUpdate, findUniqueOrThrow: runFindUnique },
+      // $transaction runs the callback against the same mock client.
+      $transaction: vi.fn(async (fn: (tx: unknown) => unknown) => fn(mockPrisma)),
+      organization: {
+        // 81-02: startDeprovisioningRun reads settingsJson to derive enabled providers.
+        // Returns BOTH the existing region/status shape AND the toggle map so the
+        // single mock satisfies the legacy reads and the new D-05 derivation.
+        findUnique: vi.fn(async () => ({
+          dataRegion: 'EU',
+          status: 'ACTIVE',
+          settingsJson: { ...orgSettings },
+        })),
+      },
+    };
+    return { mockPrisma, assignments, runCreate, runUpdate, runFindUnique, orgSettings };
+  },
+);
 
 vi.mock('@contractor-ops/auth', () => ({
   auth: {
@@ -101,6 +119,7 @@ vi.mock('@contractor-ops/integrations/services/qstash-client', () => ({
   getQStashClient: () => ({ publishJSON }),
 }));
 
+import { authApi } from '@contractor-ops/auth';
 import { createCallerFactory } from '../init';
 import { appRouter } from '../root';
 
@@ -152,23 +171,41 @@ function seedEnded() {
 beforeEach(() => {
   vi.clearAllMocks();
   runUpdate.mockResolvedValue({});
-  runCreate.mockResolvedValue({
-    id: 'run-1',
-    steps: [
-      {
-        id: 's-1',
-        provider: 'GOOGLE_WORKSPACE',
-        stepKind: 'SUSPEND_ACCOUNT',
-        externalUserId: 'u@example.com',
-      },
-      {
-        id: 's-2',
-        provider: 'GOOGLE_WORKSPACE',
-        stepKind: 'REVOKE_ALL_SESSIONS',
-        externalUserId: 'u@example.com',
-      },
-    ],
+  // Default org has only GWS enabled (matches the legacy single-provider behaviour).
+  orgSettings.idpDeprovisioningEnabled = { GOOGLE_WORKSPACE: true };
+  // Echo the steps the router asked us to create so multi-provider assertions can
+  // read the derived provider set off the returned run (mirrors a real insert).
+  runCreate.mockImplementation(async (args: { data?: { steps?: { create?: unknown[] } } }) => {
+    const created = (args?.data?.steps?.create ?? []) as Array<{
+      provider: string;
+      stepKind: string;
+      externalUserId: string;
+    }>;
+    const steps =
+      created.length > 0
+        ? created.map((s, i) => ({
+            id: `s-${i + 1}`,
+            provider: s.provider,
+            stepKind: s.stepKind,
+            externalUserId: s.externalUserId,
+          }))
+        : [
+            {
+              id: 's-1',
+              provider: 'GOOGLE_WORKSPACE',
+              stepKind: 'SUSPEND_ACCOUNT',
+              externalUserId: 'u@example.com',
+            },
+            {
+              id: 's-2',
+              provider: 'GOOGLE_WORKSPACE',
+              stepKind: 'REVOKE_ALL_SESSIONS',
+              externalUserId: 'u@example.com',
+            },
+          ];
+    return { id: 'run-1', steps };
   });
+  vi.mocked(authApi.hasPermission).mockResolvedValue({ success: true } as never);
 });
 
 describe('startDeprovisioningRun mutation (Phase 76 D-03)', () => {
@@ -253,5 +290,148 @@ describe('startDeprovisioningRun mutation (Phase 76 D-03)', () => {
         idempotencyKey: 'k-12345678',
       }),
     ).rejects.toMatchObject({ code: 'PRECONDITION_FAILED' });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Phase 81 INT-01 — RED scaffolds for the Wave 1 wiring (81-02).
+//
+// These assert the POST-WIRING contract: dynamic multi-provider derivation
+// (D-05), the empty-set precondition (D-06), the idp:start_run gate (D-10),
+// and the per-assignment idempotency key (D-09). They are EXPECTED to RED
+// until 81-02 lands the source — failures are assertion-level (the router
+// still hardcodes PROVIDERS_FOR_RUN = ['GOOGLE_WORKSPACE'] and both procedures
+// are still ungated), NOT compile/harness errors.
+// ---------------------------------------------------------------------------
+
+describe('startDeprovisioningRun — Phase 81 D-05 multi-provider derivation (RED)', () => {
+  it('creates steps for BOTH providers when GWS + Slack are enabled + signoff-satisfied', async () => {
+    process.env.FLAG_SIGNOFF_BYPASS = 'local';
+    seedEnded();
+    orgSettings.idpDeprovisioningEnabled = { GOOGLE_WORKSPACE: true, SLACK: true };
+    const caller = makeCaller();
+    await caller.deprovisioning.startDeprovisioningRun({
+      assignmentId: 'a-1',
+      idempotencyKey: 'k-12345678',
+    });
+    const createArg = runCreate.mock.calls[0]?.[0];
+    const created = (createArg?.data?.steps?.create ?? []) as Array<{ provider: string }>;
+    const providers = new Set(created.map(s => s.provider));
+    expect(providers).toEqual(new Set(['GOOGLE_WORKSPACE', 'SLACK']));
+    // suspend + revoke per provider
+    expect(created).toHaveLength(4);
+    process.env.FLAG_SIGNOFF_BYPASS = undefined;
+  });
+
+  it('creates GWS-only steps when only GOOGLE_WORKSPACE is enabled', async () => {
+    process.env.FLAG_SIGNOFF_BYPASS = 'local';
+    seedEnded();
+    orgSettings.idpDeprovisioningEnabled = { GOOGLE_WORKSPACE: true };
+    const caller = makeCaller();
+    await caller.deprovisioning.startDeprovisioningRun({
+      assignmentId: 'a-1',
+      idempotencyKey: 'k-12345678',
+    });
+    const createArg = runCreate.mock.calls[0]?.[0];
+    const created = (createArg?.data?.steps?.create ?? []) as Array<{ provider: string }>;
+    const providers = new Set(created.map(s => s.provider));
+    expect(providers).toEqual(new Set(['GOOGLE_WORKSPACE']));
+    expect(created).toHaveLength(2);
+    process.env.FLAG_SIGNOFF_BYPASS = undefined;
+  });
+});
+
+describe('startDeprovisioningRun — Phase 81 D-06 empty provider set (RED)', () => {
+  it('rejects PRECONDITION_FAILED with DEPROVISIONING_INTEGRATION_NOT_CONFIGURED and creates no run', async () => {
+    process.env.FLAG_SIGNOFF_BYPASS = 'local';
+    seedEnded();
+    // No enabled + signoff + resolver-backed provider → empty derived set.
+    orgSettings.idpDeprovisioningEnabled = {};
+    const caller = makeCaller();
+    await expect(
+      caller.deprovisioning.startDeprovisioningRun({
+        assignmentId: 'a-1',
+        idempotencyKey: 'k-12345678',
+      }),
+    ).rejects.toMatchObject({
+      code: 'PRECONDITION_FAILED',
+      message: 'DEPROVISIONING_INTEGRATION_NOT_CONFIGURED',
+    });
+    expect(runCreate).not.toHaveBeenCalled();
+    process.env.FLAG_SIGNOFF_BYPASS = undefined;
+  });
+
+  it('rejects when a provider is enabled but NOT resolver-backed (e.g. ENTRA)', async () => {
+    process.env.FLAG_SIGNOFF_BYPASS = 'local';
+    seedEnded();
+    // ENTRA is registered but has no token resolver — it must NOT contribute steps,
+    // leaving the derived set empty → precondition throw.
+    orgSettings.idpDeprovisioningEnabled = { ENTRA: true };
+    const caller = makeCaller();
+    await expect(
+      caller.deprovisioning.startDeprovisioningRun({
+        assignmentId: 'a-1',
+        idempotencyKey: 'k-12345678',
+      }),
+    ).rejects.toMatchObject({
+      code: 'PRECONDITION_FAILED',
+      message: 'DEPROVISIONING_INTEGRATION_NOT_CONFIGURED',
+    });
+    expect(runCreate).not.toHaveBeenCalled();
+    process.env.FLAG_SIGNOFF_BYPASS = undefined;
+  });
+});
+
+describe('startDeprovisioningRun — Phase 81 D-10 idp:start_run gate (RED)', () => {
+  it('rejects startDeprovisioningRun with FORBIDDEN when hasPermission denies idp:start_run', async () => {
+    seedEnded();
+    vi.mocked(authApi.hasPermission).mockResolvedValue({ success: false } as never);
+    const caller = makeCaller();
+    await expect(
+      caller.deprovisioning.startDeprovisioningRun({
+        assignmentId: 'a-1',
+        idempotencyKey: 'k-12345678',
+      }),
+    ).rejects.toMatchObject({ code: 'FORBIDDEN' });
+    expect(runCreate).not.toHaveBeenCalled();
+  });
+
+  it('rejects getDeprovisioningEligibility with FORBIDDEN when hasPermission denies idp:start_run', async () => {
+    seedEnded();
+    vi.mocked(authApi.hasPermission).mockResolvedValue({ success: false } as never);
+    const caller = makeCaller();
+    await expect(
+      caller.deprovisioning.getDeprovisioningEligibility({ assignmentId: 'a-1' }),
+    ).rejects.toMatchObject({ code: 'FORBIDDEN' });
+  });
+});
+
+describe('startDeprovisioningRun — Phase 81 D-09 per-assignment idempotency key (RED)', () => {
+  it('a re-trigger with the SAME assignment-derived key returns the existing run (P2002)', async () => {
+    seedEnded();
+    // The UI derives a stable key from assignmentId. A double-click re-runs with the
+    // same key; the unique index (76-WR1) raises P2002 and the mutation returns the
+    // EXISTING run rather than creating a second one or throwing.
+    const assignmentDerivedKey = 'assign-a-1-deprov';
+    runCreate.mockRejectedValueOnce(Object.assign(new Error('unique'), { code: 'P2002' }));
+    runFindUnique.mockResolvedValueOnce({ id: 'run-existing' });
+    const caller = makeCaller();
+    const result = await caller.deprovisioning.startDeprovisioningRun({
+      assignmentId: 'a-1',
+      idempotencyKey: assignmentDerivedKey,
+    });
+    expect(result).toEqual({ runId: 'run-existing', idempotent: true });
+    // The existing-run lookup MUST be scoped by the per-org composite unique on the
+    // assignment-derived key (no cross-tenant key squatting).
+    expect(runFindUnique).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: {
+          organizationId_idempotencyKey: {
+            organizationId: ORG_A,
+            idempotencyKey: assignmentDerivedKey,
+          },
+        },
+      }),
+    );
   });
 });
