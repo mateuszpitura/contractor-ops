@@ -26,8 +26,11 @@
 // workflow-execution-ip-block.test.ts. No feature source is modified.
 //
 // F2 (IdP deprovisioning) is deliberately NOT composed here: its ACCESS_REVOKE
-// saga runs POST-offboarding-completion, off the blocked path, so it belongs
-// only in the manual-UAT scenario, not this automated composition proof.
+// saga runs POST-offboarding-completion, off the blocked path, so it does not
+// belong in this F1/F3/F4 hard-block proof. The F2 end-to-end composition
+// (ACCESS_REVOKE → resolve → multi-provider run) — together with the INT-02
+// payment-block recovery flow — now lives in its own automated proof:
+// 81-int-closure.test.ts (Phase 81 INT-01 + INT-02 closure gate).
 
 import { TRPCError } from '@trpc/server';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
