@@ -41,7 +41,7 @@ Requirements for the v6.0 milestone. Each maps to exactly one phase (filled by r
 - [x] **COMPL-05**: Admin payment-run creation is hard-blocked when any selected contractor has an EXPIRED CRITICAL compliance item, with structured per-contractor reason and deep link to the affected document
 - [x] **COMPL-06**: Approval engine evaluates a `complianceCritical(EXPIRED)` condition operator and holds the approval in `PENDING_COMPLIANCE` state when triggered, preventing back-door auto-`READY` transitions
 - [x] **COMPL-07**: System writes an immutable `PaymentRunComplianceCheck` audit row in the same transaction as the bank-file export (mid-batch race protection)
-- [ ] **COMPL-08**: Document expiry dates are stored as `@db.Date` (not `DateTime`) with explicit `expiry_jurisdiction_tz` field — "expires today" resolves in contractor jurisdiction, not org HQ
+- [x] **COMPL-08**: Document expiry dates are stored as `@db.Date` (not `DateTime`) with explicit `expiry_jurisdiction_tz` field — "expires today" resolves in contractor jurisdiction, not org HQ
 - [ ] **COMPL-09**: Per-jurisdiction policy registry seeds (PL/UK/DE/UAE/SA) cover at minimum: UK Right-to-Work share code (90-day generation expiry), UK UTR, DE A1-Bescheinigung (24-month max), DE Aufenthaltstitel, DE §48b EStG (construction conditional), PL ZUS A1 (12-month max), PL UDT, KSA Iqama (1-year), KSA work permit + Qiwa-auth boolean, UAE Emirates ID, UAE free-zone trade license
 - [ ] **COMPL-10**: Admin can trigger `recreateComplianceAssessment(reason)` to regenerate requirements when the compliance-policy rule set version changes (mirrors v5.0 `recreateDraftAfterDrift`); operation is audit-logged and never auto-runs
 - [x] **COMPL-11**: All COMPL surfaces ship en/pl/de parity at message-key level; locked-phrase registry extended with jurisdiction-specific document type names
@@ -290,7 +290,7 @@ Which phases cover which requirements. Filled by roadmapper on 2026-04-26.
 | COMPL-05 | Phase 72 | Complete |
 | COMPL-06 | Phase 72 | Complete |
 | COMPL-07 | Phase 72 | Complete |
-| COMPL-08 | Phase 71 | Pending |
+| COMPL-08 | Phase 71 | Complete |
 | COMPL-09 | Phase 71 | Pending |
 | COMPL-10 | Phase 71 | Pending |
 | COMPL-11 | Phase 73 | Complete |

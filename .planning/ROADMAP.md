@@ -292,8 +292,8 @@ Phase artifacts: `.planning/milestones/v5.0-phases/`
   3. `startDeprovisioningRun` + `getDeprovisioningEligibility` + the new `contractorId→assignmentId` resolver are gated by `idp:start_run` (owner+admin+it_admin); `idp:override_step_failure` stays owner/admin-only; double-trigger returns the existing run via the per-assignment deterministic `idempotencyKey` (P2002), and the trigger shows "view run" once a run exists
   4. Approving a portal upload replacement fires `onComplianceItemSatisfied` inside the `approveUploadReplacement` transaction for the approved item, releasing any held `PENDING_COMPLIANCE` ApprovalFlow → PENDING so the payment gate no longer blocks; the post-tx contractor notification stays best-effort and never rolls back the approval
   5. Both source-confirmed E2E flows are exercised by an automated composition test: "offboarding ACCESS_REVOKE → IdP deprovisioning run" and "portal upload → admin approve → payment unblock"
-**Plans:** 6/6 plans (planned 2026-06-06)
-- [ ] 81-01-PLAN.md — Wave 0: RED test scaffolds (both seams) + roles.test idp invariant rewrite + 76-WR1 local index verify
+**Plans:** 1/6 plans executed
+- [x] 81-01-PLAN.md — Wave 0: RED test scaffolds (both seams) + roles.test idp invariant rewrite + 76-WR1 local index verify
 - [ ] 81-02-PLAN.md — Wave 1: INT-01 server — idp:start_run permission, dynamic PROVIDERS_FOR_RUN, org-settings read, gate 2 procs, contractorId→assignmentId resolver
 - [ ] 81-03-PLAN.md — Wave 1: INT-02 server — onComplianceItemSatisfied wired into approveUploadReplacement tx (payment-block recovery)
 - [ ] 81-04-PLAN.md — Wave 1: D-08 Slack deprovision regression tests (suspend/revoke/impact via org-grid token)
@@ -437,4 +437,4 @@ Phase artifacts: `.planning/milestones/v5.0-phases/`
 | 78. F2 IdP — Entra + Okta + GitHub            | v6.0      | 7/7 | Complete    | 2026-05-31 |
 | 79. F3 Gulf — UAE Free-Zone + Saudization     | v6.0      | 8/8 | Complete    | 2026-06-03 |
 | 80. v6.0 Verification + Hardening + UAT       | v6.0      | 5/5 | Complete    | 2026-06-05 |
-| 81. v6.0 Integration Closure — INT-01 + INT-02 | v6.0      | 0/6 | Planned     | -          |
+| 81. v6.0 Integration Closure — INT-01 + INT-02 | v6.0      | 1/6 | In Progress|  |

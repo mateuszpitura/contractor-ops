@@ -136,6 +136,10 @@ None - no external service configuration required.
 - 81-03 (INT-02 source): turn the compliance-upload-review RED cases GREEN — call `onComplianceItemSatisfied` inside the `approveUploadReplacement` transaction after the SATISFIED flip, keeping the post-tx notification best-effort.
 - 81-06 (E2E): confirm the 76-WR1 unique index is applied at the DB level before the P2002 idempotency E2E case relies on it (see "76-WR1 Idempotency Index" above).
 
+## Self-Check: PASSED
+
+All four test files and the SUMMARY exist on disk; all four commits (`9f4038bb`, `34217f5a`, `cc685051`, `b4544240`) are present in git history.
+
 ---
 *Phase: 81-v6-0-integration-closure-idp-deprovisioning-ui-trigger-acces*
 *Completed: 2026-06-06*
