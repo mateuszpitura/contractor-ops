@@ -13,7 +13,7 @@
 //     and non-gating — it recomputes a projected RATE and NEVER asserts a band.
 //   F4 (offboarding hard-block): an open IP_VERIFICATION task makes
 //     `assertRunCompletable` throw PRECONDITION_FAILED with
-//     cause.blockedTaskKind='IP_VERIFICATION'; a Phase-74 override clears it.
+//     cause.blockedTaskKind='IP_VERIFICATION'; an override clears it.
 //   Audit (F1/F3 path): the payment gate's would-block path writes a
 //     `compliance.payment.would_block` AuditLog row. The composed F4 hard-block
 //     path (`assertRunCompletable`) writes NO audit row of its own.
@@ -25,9 +25,9 @@
 // wiring REAL services end-to-end against one shared mutable store). F4 analog:
 // workflow-execution-ip-block.test.ts. No feature source is modified.
 //
-// F2 (IdP deprovisioning) is deliberately NOT composed here (D-01): its
-// ACCESS_REVOKE saga runs POST-offboarding-completion, off the blocked path, so
-// it belongs only in 80-HUMAN-UAT.md.
+// F2 (IdP deprovisioning) is deliberately NOT composed here: its ACCESS_REVOKE
+// saga runs POST-offboarding-completion, off the blocked path, so it belongs
+// only in the manual-UAT scenario, not this automated composition proof.
 
 import { TRPCError } from '@trpc/server';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -292,7 +292,7 @@ describe('SC#1 — F1+F3+F4 compose on ONE seeded contractor (single shared stor
         }>;
       };
       // Tenant isolation is load-bearing: only the seeded contractor's reason
-      // survives; the OTHER_ORG/OTHER_CONTRACTOR row is filtered out (WR-02).
+      // survives; the OTHER_ORG/OTHER_CONTRACTOR row is filtered out.
       expect(cause.contractorReasons).toHaveLength(1);
       expect(cause.contractorReasons[0]?.contractorId).toBe(SEEDED.contractorId);
       expect(cause.contractorReasons[0]?.reasons[0]?.policyRuleId).toBe('uae.free_zone_license@v2');
@@ -383,7 +383,7 @@ describe('SC#1 — F1+F3+F4 compose on ONE seeded contractor (single shared stor
   });
 });
 
-describe('SC#1 mocks — the gate mocks honour their where predicates (WR-02 + WR-03)', () => {
+describe('SC#1 mocks — the gate mocks honour their where predicates', () => {
   it('excludes a second-contractor EXPIRED BLOCKING row when only CONTRACTOR_ID is queried (where.contractorId.in)', async () => {
     recordValidFreeZoneItem(new Date('2026-03-01T00:00:00Z'));
     store.items[0].status = 'EXPIRED';
@@ -658,7 +658,7 @@ describe('SC#1 F4 — offboarding IP_VERIFICATION hard-block (writes no audit ro
     expect(auditWriteSpy).not.toHaveBeenCalled();
   });
 
-  it('a Phase-74 override (overrideMetadata.blockedTaskKind=IP_VERIFICATION) clears the block — the gate is overridable, not absent', async () => {
+  it('an override (overrideMetadata.blockedTaskKind=IP_VERIFICATION) clears the block — the gate is overridable, not absent', async () => {
     const client = makeGateClient({
       openIpTaskIds: ['task_ip'],
       overrideMetadata: { blockedTaskKind: 'IP_VERIFICATION' },
