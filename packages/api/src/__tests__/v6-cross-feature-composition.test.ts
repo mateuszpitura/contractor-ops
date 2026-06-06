@@ -40,6 +40,17 @@ const CONTRACTOR_ID = 'clmectraaaaaaaaaaaaaaaaaaaa';
 const OTHER_ORG_ID = 'clmeorgbbbbbbbbbbbbbbbbbbbb';
 const OTHER_CONTRACTOR_ID = 'clmectrbbbbbbbbbbbbbbbbbbbb';
 
+// The exhaustive key set of OffboardingTrajectoryResult. Asserting the trajectory
+// has EXACTLY these keys guards the locked anti-feature: an advisory render must
+// never grow a projected band (or any other) field.
+const TRAJECTORY_KEYS = [
+  'advisory',
+  'authoritative',
+  'currentBand',
+  'currentRate',
+  'projectedRate',
+].sort();
+
 interface ItemRow {
   id: string;
   organizationId: string;
@@ -297,8 +308,12 @@ describe('SC#1 — F1+F3+F4 compose on ONE seeded contractor (single shared stor
     });
     expect(traj.advisory).toBe(true);
     expect(traj.authoritative).toBe(false);
-    expect(traj.projectedRate ?? 1).toBeLessThan(traj.currentRate ?? 0);
-    expect(traj).not.toHaveProperty('projectedBand');
+    expect(traj.projectedRate).not.toBeNull();
+    expect(traj.currentRate).not.toBeNull();
+    expect(traj.projectedRate as number).toBeLessThan(traj.currentRate as number);
+    // The locked anti-feature: the advisory result is EXACTLY this key set — adding
+    // any new key (e.g. an accidental `projectedBand`) trips this assertion.
+    expect(Object.keys(traj).sort()).toEqual(TRAJECTORY_KEYS);
 
     // Step 4 (F4): an open IP_VERIFICATION task on the SAME seeded run hard-blocks
     // offboarding completion. The gate mock scopes the open task to the seeded
@@ -421,9 +436,8 @@ describe('SC#1 mocks — the gate mocks honour their where predicates (WR-02 + W
         status?: { in?: string[] };
       };
     }) => Promise<Array<{ id: string }>>;
-    const findMany = (
-      client as unknown as { workflowTaskRun: { findMany: TaskRunFindMany } }
-    ).workflowTaskRun.findMany;
+    const findMany = (client as unknown as { workflowTaskRun: { findMany: TaskRunFindMany } })
+      .workflowTaskRun.findMany;
     // The real gate's open-status set — closed statuses (DONE/CANCELLED) are excluded.
     const openStatus = { in: ['TODO', 'IN_PROGRESS', 'BLOCKED'] };
 
@@ -554,9 +568,12 @@ describe('SC#1 F3 — Saudization offboarding band-trajectory is advisory-only a
     expect(traj.currentBand).toBe('MID_GREEN');
     expect(traj.currentRate).toBeCloseTo(0.5, 5);
     expect(traj.projectedRate).toBeCloseTo(49 / 99, 5);
-    expect(traj.projectedRate ?? 1).toBeLessThan(traj.currentRate ?? 0);
-    // The locked anti-feature: an advisory render must never assert a band.
-    expect(traj).not.toHaveProperty('projectedBand');
+    expect(traj.projectedRate).not.toBeNull();
+    expect(traj.currentRate).not.toBeNull();
+    expect(traj.projectedRate as number).toBeLessThan(traj.currentRate as number);
+    // The locked anti-feature: the result is EXACTLY this key set, so an advisory
+    // render can never grow a projected band (or any other) field.
+    expect(Object.keys(traj).sort()).toEqual(TRAJECTORY_KEYS);
   });
 
   it('is a pure, non-gating function (single params arg, no DB client, never throws)', () => {
@@ -568,7 +585,8 @@ describe('SC#1 F3 — Saudization offboarding band-trajectory is advisory-only a
     });
     expect(traj.advisory).toBe(true);
     expect(traj.authoritative).toBe(false);
-    expect(traj).not.toHaveProperty('projectedBand');
+    // Even on the null-headcount path the shape is the locked key set — no band.
+    expect(Object.keys(traj).sort()).toEqual(TRAJECTORY_KEYS);
   });
 });
 
