@@ -8325,6 +8325,21 @@
       "error": "Could not load provider settings.",
       "retry": "Retry",
       "empty": "No deprovisioning providers available."
+    },
+    "trigger": {
+      "start": "Start deprovisioning",
+      "confirmTitle": "Deprovision access?",
+      "confirmBody": "This suspends accounts and revokes sessions across your connected providers. Review the impact below before continuing — this cannot be undone.",
+      "confirmCta": "Deprovision now",
+      "confirmLoading": "Starting…",
+      "cancel": "Cancel",
+      "cooldownTooltip": "Available from {date} (14-day cooldown active)",
+      "cooldownTooltipGeneric": "Deprovisioning is not available yet (cooldown active)",
+      "viewRun": "A deprovisioning run already exists for this assignment.",
+      "notConfigured": "No ended assignment to deprovision for this contractor.",
+      "error": "Could not load the deprovisioning trigger.",
+      "retry": "Retry",
+      "startFailure": "Could not start the deprovisioning run."
     }
   }
 }

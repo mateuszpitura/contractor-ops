@@ -72,7 +72,12 @@ export function WorkflowRunDetailContainer() {
       ) : (
         <>
           <RunHeaderContainer run={run} />
-          <TaskChecklist tasks={run.tasks} runId={run.id} currentUserId={currentUserId} />
+          <TaskChecklist
+            tasks={run.tasks}
+            runId={run.id}
+            currentUserId={currentUserId}
+            contractorId={run.contractorId}
+          />
           {run.workflowTemplate?.type === 'OFFBOARDING' && (
             <CredentialsTabContainer workflowRunId={run.id} />
           )}

@@ -111,6 +111,12 @@ interface TaskCardRunProps {
   reassign: ReturnType<typeof useReassignTaskPopover>;
   attachmentsSection?: ReactNode;
   commentsSection?: ReactNode;
+  /**
+   * Inline deprovisioning trigger for ACCESS_REVOKE tasks (Phase 81 D-01). The
+   * container injects a fully-wired DeprovisioningTriggerContainer element here;
+   * the card stays presentational and never calls tRPC (data-layer guard).
+   */
+  triggerSlot?: ReactNode;
 }
 
 function SkipPopover({
@@ -221,6 +227,7 @@ function TaskActionToolbar({
   completeMutation,
   skip,
   reassign,
+  triggerSlot,
   t,
 }: {
   canAct: boolean;
@@ -230,6 +237,7 @@ function TaskActionToolbar({
   completeMutation: TaskCardRunProps['completeMutation'];
   skip: ReturnType<typeof useSkipTaskPopover>;
   reassign: ReturnType<typeof useReassignTaskPopover>;
+  triggerSlot?: ReactNode;
   t: ReturnType<typeof useTranslations>;
 }) {
   const handleComplete = useCallback(() => {
@@ -257,6 +265,7 @@ function TaskActionToolbar({
         </>
       )}
       {!!canReassignOnly && <ReassignPopover taskRunId={task.id} reassign={reassign} />}
+      {task.taskType === 'ACCESS_REVOKE' && triggerSlot}
       {task.status === 'BLOCKED' && !!dependencyTitle && (
         <TooltipProvider>
           <Tooltip>
@@ -338,6 +347,7 @@ export function TaskCardRun({
   reassign,
   attachmentsSection,
   commentsSection,
+  triggerSlot,
 }: TaskCardRunProps) {
   const t = useTranslations('Workflows');
   const { formatDate } = useDateFormatter();
@@ -420,6 +430,7 @@ export function TaskCardRun({
               completeMutation={completeMutation}
               skip={skip}
               reassign={reassign}
+              triggerSlot={triggerSlot}
               t={t}
             />
           </div>

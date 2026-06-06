@@ -8325,6 +8325,21 @@
       "error": "Could not load provider settings.",
       "retry": "Retry",
       "empty": "No deprovisioning providers available."
+    },
+    "trigger": {
+      "start": "Rozpocznij deprowizjonowanie",
+      "confirmTitle": "Deprowizjonować dostęp?",
+      "confirmBody": "Spowoduje to zawieszenie kont i unieważnienie sesji u połączonych dostawców. Przejrzyj wpływ poniżej przed kontynuowaniem — tej operacji nie można cofnąć.",
+      "confirmCta": "Deprowizjonuj teraz",
+      "confirmLoading": "Uruchamianie…",
+      "cancel": "Anuluj",
+      "cooldownTooltip": "Dostępne od {date} (aktywny 14-dniowy okres karencji)",
+      "cooldownTooltipGeneric": "Deprowizjonowanie nie jest jeszcze dostępne (aktywna karencja)",
+      "viewRun": "Dla tego przydziału istnieje już proces deprowizjonowania.",
+      "notConfigured": "Brak zakończonego przydziału do deprowizjonowania dla tego wykonawcy.",
+      "error": "Nie można załadować wyzwalacza deprowizjonowania.",
+      "retry": "Ponów",
+      "startFailure": "Nie można rozpocząć procesu deprowizjonowania."
     }
   }
 }

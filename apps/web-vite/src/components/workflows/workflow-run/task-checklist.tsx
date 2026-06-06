@@ -34,6 +34,8 @@ interface TaskChecklistProps {
   currentUserId: string | null;
   isLoading?: boolean;
   taskTitleMap?: Map<string, string>;
+  /** Run's contractor (Phase 81 D-01) — forwarded to the ACCESS_REVOKE trigger. */
+  contractorId?: string | null;
 }
 
 function TaskChecklistSkeleton() {
@@ -60,6 +62,7 @@ export function TaskChecklist({
   currentUserId,
   isLoading,
   taskTitleMap,
+  contractorId,
 }: TaskChecklistProps) {
   const t = useTranslations('Workflows');
 
@@ -94,6 +97,7 @@ export function TaskChecklist({
                 task={task}
                 runId={runId}
                 currentUserId={currentUserId}
+                contractorId={contractorId}
                 dependencyTitle={
                   task.dependsOnTaskRunId
                     ? (titleMap.get(task.dependsOnTaskRunId) ?? undefined)

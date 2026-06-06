@@ -8325,6 +8325,21 @@
       "error": "Could not load provider settings.",
       "retry": "Retry",
       "empty": "No deprovisioning providers available."
+    },
+    "trigger": {
+      "start": "Deprovisionierung starten",
+      "confirmTitle": "Zugriff deprovisionieren?",
+      "confirmBody": "Dies sperrt Konten und widerruft Sitzungen bei allen verbundenen Anbietern. Prüfen Sie die Auswirkungen unten, bevor Sie fortfahren — dies kann nicht rückgängig gemacht werden.",
+      "confirmCta": "Jetzt deprovisionieren",
+      "confirmLoading": "Wird gestartet…",
+      "cancel": "Abbrechen",
+      "cooldownTooltip": "Verfügbar ab {date} (14-tägige Sperrfrist aktiv)",
+      "cooldownTooltipGeneric": "Deprovisionierung noch nicht verfügbar (Sperrfrist aktiv)",
+      "viewRun": "Für diese Zuordnung existiert bereits ein Deprovisionierungslauf.",
+      "notConfigured": "Keine beendete Zuordnung für diesen Auftragnehmer zur Deprovisionierung.",
+      "error": "Der Deprovisionierungs-Trigger konnte nicht geladen werden.",
+      "retry": "Erneut versuchen",
+      "startFailure": "Der Deprovisionierungslauf konnte nicht gestartet werden."
     }
   }
 }
