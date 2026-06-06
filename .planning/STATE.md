@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v6.0
 milestone_name: Platform Maturity & Operational Hardening
 status: executing
-stopped_at: Phase 81 context gathered
-last_updated: "2026-06-06T16:43:16.438Z"
+stopped_at: Completed 81-03-PLAN.md (INT-02 compliance recovery seam — GREEN)
+last_updated: "2026-06-06T18:54:00.000Z"
 last_activity: 2026-06-06
 progress:
   total_phases: 12
   completed_phases: 11
   total_plans: 90
-  completed_plans: 87
+  completed_plans: 88
   percent: 92
 ---
 
@@ -290,9 +290,11 @@ See: .planning/PROJECT.md (updated 2026-04-26 — v6.0 milestone started)
 ## Current Position
 
 Phase: 81 (v6-0-integration-closure-idp-deprovisioning-ui-trigger-acces) — EXECUTING
-Plan: 3 of 6
+Plan: 4 of 6
 Status: Ready to execute
 Last activity: 2026-06-06
+
+**Decision (81-03):** INT-02 server seam closed — `onComplianceItemSatisfied` now called in-tx in `approveUploadReplacement` (per-item, after the SATISFIED flip + audit, before return). An approved portal upload resumes held PENDING_COMPLIANCE ApprovalFlows to PENDING and unblocks contractor payment; the post-tx best-effort contractor notification is unchanged (T-73-08-04). 81-01 INT-02 RED cases (D-12/D-14) GREEN; `pnpm --filter @contractor-ops/api test compliance-upload-review` 18/18; api typecheck clean. Commit `fa148159`.
 
 Progress: [██████████] 97%
 
