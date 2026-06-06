@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v6.0
 milestone_name: Platform Maturity & Operational Hardening
 status: executing
-stopped_at: Completed 81-03-PLAN.md (INT-02 compliance recovery seam — GREEN)
-last_updated: "2026-06-06T18:54:00.000Z"
+stopped_at: Phase 81 context gathered
+last_updated: "2026-06-06T17:17:17.220Z"
 last_activity: 2026-06-06
 progress:
   total_phases: 12
-  completed_phases: 11
+  completed_phases: 12
   total_plans: 90
-  completed_plans: 88
-  percent: 92
+  completed_plans: 90
+  percent: 100
 ---
 
 # Project State
@@ -290,7 +290,7 @@ See: .planning/PROJECT.md (updated 2026-04-26 — v6.0 milestone started)
 ## Current Position
 
 Phase: 81 (v6-0-integration-closure-idp-deprovisioning-ui-trigger-acces) — EXECUTING
-Plan: 5 of 6
+Plan: 6 of 6
 Status: Ready to execute
 Last activity: 2026-06-06
 
@@ -298,7 +298,7 @@ Last activity: 2026-06-06
 
 **Decision (81-03):** INT-02 server seam closed — `onComplianceItemSatisfied` now called in-tx in `approveUploadReplacement` (per-item, after the SATISFIED flip + audit, before return). An approved portal upload resumes held PENDING_COMPLIANCE ApprovalFlows to PENDING and unblocks contractor payment; the post-tx best-effort contractor notification is unchanged (T-73-08-04). 81-01 INT-02 RED cases (D-12/D-14) GREEN; `pnpm --filter @contractor-ops/api test compliance-upload-review` 18/18; api typecheck clean. Commit `fa148159`.
 
-Progress: [██████████] 97%
+Progress: [██████████] 100%
 
 **Active Phase:** none (Phase 70 closed)
 **Next Phase candidates (parallel-ready):**
@@ -455,6 +455,7 @@ Code-level audit gaps (I-1 / EINV-01/02/04 / PAY-04 / FOUND-03) all closed this 
 | Phase 81 P01 | 40 | 3 tasks | 4 files |
 | Phase 81 P04 | 6 | 1 tasks | 1 files |
 | Phase 81 P02 | 25min | 2 tasks | 5 files |
+| Phase 81 P06 | ~20min | 1 tasks | 2 files |
 
 ### Standing Project Constraints
 
@@ -537,6 +538,7 @@ Recent decisions affecting current work:
 - [Phase 81]: 81-02: idp:start_run granted to owner+admin+it_admin (locked D-10/A1); override_step_failure stays owner/admin-only
 - [Phase 81]: 81-02: run provider set derived from RESOLVER_BACKED_PROVIDERS (single source) intersect enabled intersect signoff — no 4th-literal drift (D-05)
 - [Phase 81]: 81-02: resolveAssignmentForContractor returns most-recent ENDED assignment or assignmentId:null, org-scoped, idp:start_run-gated (D-01)
+- [Phase 81]: 81-06: Both v6.0 integration-closure E2E flows now proven by 81-int-closure.test.ts (6/6 GREEN) — INT-01 (ACCESS_REVOKE -> resolveAssignmentForContractor most-recent ENDED -> deterministic deprov:<assignmentId> key -> startDeprovisioningRun creates GWS+Slack steps, one independent QStash job per step) + INT-02 (approveUploadReplacement -> onComplianceItemSatisfied in-tx resumes held PENDING_COMPLIANCE flow to PENDING -> payment gate releases). Closes the F2 composition gap left in v6-cross-feature-composition.test.ts:28-30. — Idempotency asserted at the deterministic-key level (carried verbatim into the single run insert), NOT a live-DB P2002 — 76-WR1 unique index present in schema source but unconfirmed against live Neon EU; dedicated P2002 path already covered in deprovisioning-start.test.ts. Commit 51220fb6.
 
 ### Pending Todos
 
@@ -574,7 +576,7 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-06-06T16:42:19.774Z
+Last session: 2026-06-06T17:16:17.936Z
 Stopped at: Phase 81 context gathered
 Resume file: None
 Next command: `/gsd-plan-phase 74`  (Phase 74 context gathered, ready to plan; 71 + 76 plans already ready to execute)
