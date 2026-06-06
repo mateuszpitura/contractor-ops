@@ -87,11 +87,15 @@ export function DeprovisioningTriggerContainer(props: DeprovisioningTriggerConta
     <DeprovisioningTrigger
       disabled={disabled}
       disabledTooltip={
+        // WR-02: never surface the saga's raw English `state.reason` (e.g.
+        // "Assignment is not ENDED") — for the non-cooldown edge cases there is
+        // no earliestDate, so fall back to the localized generic message in all
+        // four locales rather than leaking an untranslated server string.
         state.allowed
           ? null
           : earliest
             ? t('cooldownTooltip', { date: earliest })
-            : (state.reason ?? t('cooldownTooltipGeneric'))
+            : t('cooldownTooltipGeneric')
       }
       confirmOpen={state.confirmOpen}
       onOpenConfirm={state.openConfirm}
