@@ -46,6 +46,20 @@ const { mockPrisma, assignments, runCreate, runUpdate, runFindUnique, orgSetting
         }),
       },
       deprovisioningRun: { create: runCreate, update: runUpdate, findUniqueOrThrow: runFindUnique },
+      // retryDeprovisioningStep fetches the step before any QStash enqueue; the
+      // gate (idp:start_run) runs BEFORE this, so the deny-case test never reaches it.
+      deprovisioningStep: {
+        findFirst: vi.fn(async () => ({
+          id: 's-1',
+          runId: 'run-1',
+          status: 'FAILED',
+          attempts: 1,
+          provider: 'GOOGLE_WORKSPACE',
+          stepKind: 'SUSPEND_ACCOUNT',
+          externalUserId: 'u@example.com',
+        })),
+        updateMany: vi.fn(async () => ({ count: 1 })),
+      },
       // $transaction runs the callback against the same mock client.
       $transaction: vi.fn(async (fn: (tx: unknown) => unknown) => fn(mockPrisma)),
       organization: {
@@ -415,6 +429,18 @@ describe('startDeprovisioningRun — Phase 81 D-10 idp:start_run gate (RED)', ()
     await expect(
       caller.deprovisioning.getDeprovisioningEligibility({ assignmentId: 'a-1' }),
     ).rejects.toMatchObject({ code: 'FORBIDDEN' });
+  });
+
+  it('rejects retryDeprovisioningStep with FORBIDDEN when hasPermission denies idp:start_run', async () => {
+    // CR-01: retry re-enqueues the same destructive SUSPEND/REVOKE job, so it
+    // carries the SAME idp:start_run gate as the start path. A denied caller
+    // must never reach the step lookup or the QStash enqueue.
+    vi.mocked(authApi.hasPermission).mockResolvedValue({ success: false } as never);
+    const caller = makeCaller();
+    await expect(
+      caller.deprovisioning.retryDeprovisioningStep({ stepId: 's-1' }),
+    ).rejects.toMatchObject({ code: 'FORBIDDEN' });
+    expect(publishJSON).not.toHaveBeenCalled();
   });
 });
 

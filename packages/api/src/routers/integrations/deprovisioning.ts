@@ -347,6 +347,7 @@ export const deprovisioningRouter = router({
    * deduplicationId so a duplicate delivery is dropped while a genuine retry runs.
    */
   retryDeprovisioningStep: tenantProcedure
+    .use(requirePermission({ idp: ['start_run'] }))
     .input(z.object({ stepId: z.string().min(1) }))
     .mutation(async ({ ctx, input }) => {
       const step = await findOrThrow(
