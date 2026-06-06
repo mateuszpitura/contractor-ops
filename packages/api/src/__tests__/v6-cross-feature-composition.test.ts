@@ -301,10 +301,13 @@ describe('SC#1 — F1+F3+F4 compose on ONE seeded contractor (single shared stor
     expect(traj).not.toHaveProperty('projectedBand');
 
     // Step 4 (F4): an open IP_VERIFICATION task on the SAME seeded run hard-blocks
-    // offboarding completion; the taskType/workflowRunId filter is load-bearing.
+    // offboarding completion. The gate mock scopes the open task to the seeded
+    // org, so the taskType / workflowRunId / organizationId filters are all
+    // load-bearing for this leg.
     const gateClient = makeGateClient({
       openIpTaskIds: ['task_ip_seeded'],
       workflowRunId: SEEDED.workflowRunId,
+      organizationId: SEEDED.organizationId,
     });
     try {
       await assertRunCompletable(gateClient, SEEDED.workflowRunId, SEEDED.organizationId);
@@ -316,6 +319,12 @@ describe('SC#1 — F1+F3+F4 compose on ONE seeded contractor (single shared stor
       expect(cause.blockedTaskKind).toBe('IP_VERIFICATION');
       expect(cause.openTaskIds).toContain('task_ip_seeded');
     }
+
+    // F4 tenant isolation: the SAME open task queried under a DIFFERENT org is
+    // out of scope, so a cross-org completion check does NOT block.
+    await expect(
+      assertRunCompletable(gateClient, SEEDED.workflowRunId, OTHER_ORG_ID),
+    ).resolves.toBeUndefined();
   });
 
   it('captures the compliance.payment.would_block audit row via the honest flag-OFF would-block branch, pinned to exactly CONTRACTOR_ID', async () => {
@@ -398,48 +407,81 @@ describe('SC#1 mocks — the gate mocks honour their where predicates (WR-02 + W
     expect(result.contractorReasons[0]?.reasons[0]?.itemId).toBe('clmefzitemaaaaaaaaaaaaaaaaa');
   });
 
-  it('returns the open IP task only for taskType=IP_VERIFICATION on the matching workflowRunId (makeGateClient.workflowTaskRun.findMany)', async () => {
-    const client = makeGateClient({ openIpTaskIds: ['task_ip'], workflowRunId: 'run_1' });
+  it('returns the open IP task only when ALL FOUR predicates match — taskType, workflowRunId, organizationId, and an open status (makeGateClient.workflowTaskRun.findMany)', async () => {
+    const client = makeGateClient({
+      openIpTaskIds: ['task_ip'],
+      workflowRunId: 'run_1',
+      organizationId: ME_ORG.id,
+    });
+    type TaskRunFindMany = (a: {
+      where?: {
+        taskType?: string;
+        workflowRunId?: string;
+        organizationId?: string;
+        status?: { in?: string[] };
+      };
+    }) => Promise<Array<{ id: string }>>;
+    const findMany = (
+      client as unknown as { workflowTaskRun: { findMany: TaskRunFindMany } }
+    ).workflowTaskRun.findMany;
+    // The real gate's open-status set — closed statuses (DONE/CANCELLED) are excluded.
+    const openStatus = { in: ['TODO', 'IN_PROGRESS', 'BLOCKED'] };
 
-    // taskType=IP_VERIFICATION on the matching run → the row is returned.
-    const matched = await (
-      client as unknown as {
-        workflowTaskRun: {
-          findMany: (a: {
-            where?: { taskType?: string; workflowRunId?: string };
-          }) => Promise<Array<{ id: string }>>;
-        };
-      }
-    ).workflowTaskRun.findMany({ where: { taskType: 'IP_VERIFICATION', workflowRunId: 'run_1' } });
+    // All four predicates match → the row is returned.
+    const matched = await findMany({
+      where: {
+        taskType: 'IP_VERIFICATION',
+        workflowRunId: 'run_1',
+        organizationId: ME_ORG.id,
+        status: openStatus,
+      },
+    });
     expect(matched).toEqual([{ id: 'task_ip' }]);
 
     // A non-IP task type is filtered out.
-    const nonIp = await (
-      client as unknown as {
-        workflowTaskRun: {
-          findMany: (a: {
-            where?: { taskType?: string; workflowRunId?: string };
-          }) => Promise<Array<{ id: string }>>;
-        };
-      }
-    ).workflowTaskRun.findMany({
-      where: { taskType: 'KNOWLEDGE_TRANSFER', workflowRunId: 'run_1' },
+    const nonIp = await findMany({
+      where: {
+        taskType: 'KNOWLEDGE_TRANSFER',
+        workflowRunId: 'run_1',
+        organizationId: ME_ORG.id,
+        status: openStatus,
+      },
     });
     expect(nonIp).toEqual([]);
 
     // A mismatched runId is filtered out.
-    const wrongRun = await (
-      client as unknown as {
-        workflowTaskRun: {
-          findMany: (a: {
-            where?: { taskType?: string; workflowRunId?: string };
-          }) => Promise<Array<{ id: string }>>;
-        };
-      }
-    ).workflowTaskRun.findMany({
-      where: { taskType: 'IP_VERIFICATION', workflowRunId: 'run_other' },
+    const wrongRun = await findMany({
+      where: {
+        taskType: 'IP_VERIFICATION',
+        workflowRunId: 'run_other',
+        organizationId: ME_ORG.id,
+        status: openStatus,
+      },
     });
     expect(wrongRun).toEqual([]);
+
+    // A cross-org query is filtered out (organizationId predicate is load-bearing).
+    const wrongOrg = await findMany({
+      where: {
+        taskType: 'IP_VERIFICATION',
+        workflowRunId: 'run_1',
+        organizationId: OTHER_ORG_ID,
+        status: openStatus,
+      },
+    });
+    expect(wrongOrg).toEqual([]);
+
+    // A closed-status query (the seeded task is TODO, which is NOT in this set) is
+    // filtered out (the open-status predicate is load-bearing).
+    const closedStatus = await findMany({
+      where: {
+        taskType: 'IP_VERIFICATION',
+        workflowRunId: 'run_1',
+        organizationId: ME_ORG.id,
+        status: { in: ['DONE', 'CANCELLED'] },
+      },
+    });
+    expect(closedStatus).toEqual([]);
   });
 });
 
@@ -538,16 +580,30 @@ function makeGateClient(opts: {
   overrideMetadata?: unknown;
   openIpTaskIds?: string[];
   workflowRunId?: string;
+  organizationId?: string;
+  /** Status the seeded open task carries; defaults to an OPEN status (TODO). */
+  taskStatus?: string;
   pendingCreds?: Array<{ id: string; label: string; vaultProvider: string }>;
 }) {
   return {
     workflowTaskRun: {
-      // Honour the real gate predicate (workflow-shared.ts:332-340): only return
-      // open tasks when the query is for IP_VERIFICATION on the matching run, so the
-      // taskType/workflowRunId filters are load-bearing, not unconditional (WR-03).
-      findMany: async (args: { where?: { taskType?: string; workflowRunId?: string } }) => {
+      // Honour ALL FOUR of assertRunCompletable's where predicates so each is
+      // load-bearing: taskType, workflowRunId, organizationId, and the open-status
+      // set. A wrong-org query, a mismatched run, a non-IP task, or a closed-status
+      // task must each return [] — exactly as the real query would scope them.
+      findMany: async (args: {
+        where?: {
+          taskType?: string;
+          workflowRunId?: string;
+          organizationId?: string;
+          status?: { in?: string[] };
+        };
+      }) => {
         if (args.where?.taskType !== 'IP_VERIFICATION') return [];
         if (opts.workflowRunId && args.where?.workflowRunId !== opts.workflowRunId) return [];
+        if (opts.organizationId && args.where?.organizationId !== opts.organizationId) return [];
+        const wantStatus = args.where?.status?.in;
+        if (wantStatus && !wantStatus.includes(opts.taskStatus ?? 'TODO')) return [];
         return (opts.openIpTaskIds ?? []).map(id => ({ id }));
       },
     },
