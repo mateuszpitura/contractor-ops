@@ -92,6 +92,7 @@ Phase artifacts: `.planning/milestones/v5.0-phases/`
 - [x] **Phase 78: F2 IdP — Entra ID + Okta + GitHub Adapters (the differentiator)** — Entra disable+revokeSignInSessions with CA pre-flight, Okta deactivate+session-clear, GitHub member-remove+per-PAT-revoke+outside-collab manual flag (completed 2026-05-31)
 - [x] **Phase 79: F3 Gulf — UAE Free-Zone Tracking + Saudization Dashboard + Arabic + RTL** — `packages/gulf-regulatory`, 10-zone seed enum, Saudization manual-band entry, pre-offboarding impact banner, Qiwa-auth, ms-/me-/ps-/pe- ESLint guard (completed 2026-06-03)
 - [x] **Phase 80: v6.0 Verification + Hardening + Manual UAT** — cross-feature integration tests (F1+F3+F4 composition), manual-UAT checkpoints document, consolidated post-deploy legal sign-off list, v6.0 retrospective (plans 4/4 executed; verification 2026-06-05: gaps_found — SC#1 composition incomplete, gap closure pending) (completed 2026-06-05)
+- [ ] **Phase 81: v6.0 Integration Closure — IdP deprovisioning UI trigger + multi-provider run steps + compliance payment-block recovery** — closes the two source-confirmed milestone-audit blockers (INT-01 + INT-02): wire the IdP-deprovisioning trigger into the UI, un-hardcode `PROVIDERS_FOR_RUN`, gate with `idp:start_run`, and fire `onComplianceItemSatisfied` on admin upload approval (6/6 plans planned 2026-06-06)
 
 ## Phase Details
 
@@ -280,6 +281,27 @@ Phase artifacts: `.planning/milestones/v5.0-phases/`
 **Research flag:** STANDARD (mirrors v5.0 Phase 69 retrospective)
 **Feature flags:** none — verification phase
 
+### Phase 81: v6.0 Integration Closure — IdP deprovisioning UI trigger (ACCESS_REVOKE to startDeprovisioningRun) + multi-provider run steps (un-hardcode PROVIDERS_FOR_RUN) + compliance payment-block recovery on admin upload approval
+
+**Goal:** Close the two source-confirmed v6.0 E2E integration blockers (`.planning/v6.0-MILESTONE-AUDIT.md` INT-01 + INT-02). Wire the IdP-deprovisioning trigger into the UI (ACCESS_REVOKE task card + assignment detail) through one shared web-vite hook, un-hardcode `PROVIDERS_FOR_RUN` into a per-org dynamic provider set (enabled ∩ signoff ∩ resolver-backed), gate the destructive mutation with a new `idp:start_run` permission, and fire `onComplianceItemSatisfied` inside `approveUploadReplacement` so an approved portal upload unblocks contractor payment. Wiring + light hardening of already-shipped, phase-verified deliverables — NOT new capability; both E2E flows must compose end-to-end.
+**Depends on:** Phase 80
+**Requirements:** IDP-01, IDP-02, IDP-03, IDP-04, IDP-05, IDP-06, IDP-07, IDP-08, IDP-09, IDP-10, IDP-12, IDP-13, IDP-15, COMPL-07, COMPL-08, COMPL-11 (reached/composed, not newly built)
+**Success Criteria** (what must be TRUE):
+  1. An owner/admin/it_admin sees a deprovisioning trigger on BOTH the offboarding `ACCESS_REVOKE` task card AND the contractor/assignment detail surface, routed through ONE shared web-vite hook (sole tRPC boundary, `check:web-vite-data-layer` green); pre-flight reuses the existing impact preview + confirm dialog, and post-start navigates to the existing run-view
+  2. A deprovisioning run spans the org's ENABLED ∩ signoff-APPROVED ∩ resolver-backed providers (`{GOOGLE_WORKSPACE, SLACK}` today), not the hardcoded GWS-only; an org with no eligible provider throws `DEPROVISIONING_INTEGRATION_NOT_CONFIGURED` (no zero-step run) and the UI disables the trigger with the reason
+  3. `startDeprovisioningRun` + `getDeprovisioningEligibility` + the new `contractorId→assignmentId` resolver are gated by `idp:start_run` (owner+admin+it_admin); `idp:override_step_failure` stays owner/admin-only; double-trigger returns the existing run via the per-assignment deterministic `idempotencyKey` (P2002), and the trigger shows "view run" once a run exists
+  4. Approving a portal upload replacement fires `onComplianceItemSatisfied` inside the `approveUploadReplacement` transaction for the approved item, releasing any held `PENDING_COMPLIANCE` ApprovalFlow → PENDING so the payment gate no longer blocks; the post-tx contractor notification stays best-effort and never rolls back the approval
+  5. Both source-confirmed E2E flows are exercised by an automated composition test: "offboarding ACCESS_REVOKE → IdP deprovisioning run" and "portal upload → admin approve → payment unblock"
+**Plans:** 6/6 plans (planned 2026-06-06)
+- [ ] 81-01-PLAN.md — Wave 0: RED test scaffolds (both seams) + roles.test idp invariant rewrite + 76-WR1 local index verify
+- [ ] 81-02-PLAN.md — Wave 1: INT-01 server — idp:start_run permission, dynamic PROVIDERS_FOR_RUN, org-settings read, gate 2 procs, contractorId→assignmentId resolver
+- [ ] 81-03-PLAN.md — Wave 1: INT-02 server — onComplianceItemSatisfied wired into approveUploadReplacement tx (payment-block recovery)
+- [ ] 81-04-PLAN.md — Wave 1: D-08 Slack deprovision regression tests (suspend/revoke/impact via org-grid token)
+- [ ] 81-05-PLAN.md — Wave 2: INT-01 web-vite trigger UI — shared hook + container + ACCESS_REVOKE card wiring + en/de/pl/ar i18n
+- [ ] 81-06-PLAN.md — Wave 3: E2E composition — both flows (ACCESS_REVOKE→deprovisioning run; portal upload→approve→payment unblock)
+**Research flag:** STANDARD (~95% reuse wiring + light hardening; all 14 decisions source-verified in 81-RESEARCH.md)
+**Feature flags:** none new — reuses existing `idp-deprovisioning-{provider}` signoff flags
+
 ## Dependency Graph (v6.0)
 
 ```
@@ -350,6 +372,15 @@ Phase artifacts: `.planning/milestones/v5.0-phases/`
         │ Verification + UAT  │
         │ + Legal Sign-off    │
         │ List + Retro        │
+        └──────────┬──────────┘
+                   │
+                   ▼
+        ┌─────────────────────┐
+        │ Phase 81            │
+        │ Integration Closure │
+        │ (INT-01 UI trigger +│
+        │  PROVIDERS_FOR_RUN, │
+        │  INT-02 recovery)   │
         └─────────────────────┘
 ```
 
@@ -360,10 +391,11 @@ Phase artifacts: `.planning/milestones/v5.0-phases/`
 - 74 → 75 (F4 IP_VERIFICATION block needs the override permission and workflow foundation)
 - 75 → 76 (F2 14-day cooldown gate references F4's final-invoice-paid state — Pitfall 7)
 - 76 → 77 → 78 (saga + cooldown infrastructure → wedge → differentiator)
+- 76/77/78 + 72/73 → 81 (integration closure wires the shipped F2 saga to the UI and the F1 recovery hook to admin-approve)
 
 **Research flags:**
 - NEEDS RESEARCH (5 phases): 71, 75, 77, 78, 79
-- STANDARD pattern (6 phases): 70, 72, 73, 74, 76, 80
+- STANDARD pattern (7 phases): 70, 72, 73, 74, 76, 80, 81
 
 ## Coverage Summary (v6.0)
 
@@ -373,6 +405,8 @@ Phase artifacts: `.planning/milestones/v5.0-phases/`
 - 8 + 4 + 3 = 15 IDP → Phases 76, 77, 78
 - 11 GULF → Phase 79
 - 6 + 5 = 11 OFFB → Phases 74, 75
+
+(Phase 81 does not own new requirements — it closes the INT-01/INT-02 integration seams that make the already-mapped IDP-01..10/12/13/15 + COMPL-07/08/11 requirements reachable/composing end-to-end.)
 
 ## Progress
 
@@ -403,3 +437,4 @@ Phase artifacts: `.planning/milestones/v5.0-phases/`
 | 78. F2 IdP — Entra + Okta + GitHub            | v6.0      | 7/7 | Complete    | 2026-05-31 |
 | 79. F3 Gulf — UAE Free-Zone + Saudization     | v6.0      | 8/8 | Complete    | 2026-06-03 |
 | 80. v6.0 Verification + Hardening + UAT       | v6.0      | 5/5 | Complete    | 2026-06-05 |
+| 81. v6.0 Integration Closure — INT-01 + INT-02 | v6.0      | 0/6 | Planned     | -          |
