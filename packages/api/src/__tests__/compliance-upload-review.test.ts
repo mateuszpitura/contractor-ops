@@ -12,42 +12,66 @@ const ITEM_ID = 'clitemaaaaaaaaaaaaaaaaaaaaa';
 const DOC_ID = 'cldocaaaaaaaaaaaaaaaaaaaaaa';
 const CONTRACTOR_ID = 'clcontractoraaaaaaaaaaaaaaa';
 
-const { mockPrisma, auditWriteSpy, dispatchSpy, rbacSpy } = vi.hoisted(() => {
-  const item = {
-    id: 'clitemaaaaaaaaaaaaaaaaaaaaa',
-    contractorId: 'clcontractoraaaaaaaaaaaaaaa',
-    policyRuleId: 'uk.right_to_work@v1',
-    status: 'EXPIRED',
-  };
-  const contractorComplianceItem = {
-    findFirst: vi.fn(async () => ({ ...item })),
-    update: vi.fn(async (args: { data: Record<string, unknown> }) => ({ ...item, ...args.data })),
-  };
-  // WR-1: document.findFirst returns a PENDING_REVIEW doc by default.
-  const document = {
-    findFirst: vi.fn(async () => ({ id: DOC_ID, status: 'PENDING_REVIEW' })),
-    update: vi.fn(async () => ({ id: DOC_ID })),
-  };
-  // WR-1: documentLink.findFirst returns the owner link by default.
-  const documentLink = {
-    findFirst: vi.fn(async () => ({ id: 'link_1' })),
-  };
-  const organization = {
-    findUnique: vi.fn(async () => ({ dataRegion: 'EU', status: 'ACTIVE' })),
-    findUniqueOrThrow: vi.fn(async () => ({ countryCode: 'GB' })),
-  };
-  const base = { contractorComplianceItem, document, documentLink, organization };
-  const mockPrisma = {
-    ...base,
-    $transaction: vi.fn(async (fn: (tx: typeof base) => unknown) => fn(base)),
-  };
-  return {
-    mockPrisma,
-    auditWriteSpy: vi.fn(async () => undefined),
-    dispatchSpy: vi.fn(async () => undefined),
-    rbacSpy: vi.fn(async () => ['admin_user_1']),
-  };
-});
+const { mockPrisma, auditWriteSpy, dispatchSpy, rbacSpy, approvalFlowUpdate, queryRaw } =
+  vi.hoisted(() => {
+    const item = {
+      id: 'clitemaaaaaaaaaaaaaaaaaaaaa',
+      contractorId: 'clcontractoraaaaaaaaaaaaaaa',
+      policyRuleId: 'uk.right_to_work@v1',
+      status: 'EXPIRED',
+    };
+    const contractorComplianceItem = {
+      findFirst: vi.fn(async () => ({ ...item })),
+      update: vi.fn(async (args: { data: Record<string, unknown> }) => ({ ...item, ...args.data })),
+      // Phase 81 D-12: onComplianceItemSatisfied re-asserts eligibility via the
+      // payment gate (compliance-payment-gate.assertContractorPaymentEligibility),
+      // which queries remaining EXPIRED+BLOCKING items. Empty ⇒ not blocked ⇒
+      // the held flow is eligible to resume.
+      findMany: vi.fn(async () => [] as unknown[]),
+    };
+    // WR-1: document.findFirst returns a PENDING_REVIEW doc by default.
+    const document = {
+      findFirst: vi.fn(async () => ({ id: DOC_ID, status: 'PENDING_REVIEW' })),
+      update: vi.fn(async () => ({ id: DOC_ID })),
+    };
+    // WR-1: documentLink.findFirst returns the owner link by default.
+    const documentLink = {
+      findFirst: vi.fn(async () => ({ id: 'link_1' })),
+    };
+    const organization = {
+      findUnique: vi.fn(async () => ({ dataRegion: 'EU', status: 'ACTIVE' })),
+      findUniqueOrThrow: vi.fn(async () => ({ countryCode: 'GB' })),
+    };
+    // Phase 81 D-12: held PENDING_COMPLIANCE flows the recovery hook's $queryRaw
+    // returns (JSONB-containment of the approved itemId). Default: one held flow.
+    const heldFlows: Array<{ id: string; resourceType: string; resourceId: string }> = [
+      { id: 'flow-held-1', resourceType: 'INVOICE', resourceId: 'inv-held-1' },
+    ];
+    const approvalFlowUpdate = vi.fn(async () => ({ id: 'flow-held-1', status: 'PENDING' }));
+    const approvalFlow = { update: approvalFlowUpdate };
+    // The recovery hook reads held flows via a raw tagged-template query.
+    const queryRaw = vi.fn(async () => heldFlows.slice());
+    const base = {
+      contractorComplianceItem,
+      document,
+      documentLink,
+      organization,
+      approvalFlow,
+      $queryRaw: queryRaw,
+    };
+    const mockPrisma = {
+      ...base,
+      $transaction: vi.fn(async (fn: (tx: typeof base) => unknown) => fn(base)),
+    };
+    return {
+      mockPrisma,
+      auditWriteSpy: vi.fn(async () => undefined),
+      dispatchSpy: vi.fn(async () => undefined),
+      rbacSpy: vi.fn(async () => ['admin_user_1']),
+      approvalFlowUpdate,
+      queryRaw,
+    };
+  });
 
 vi.mock('@contractor-ops/db', () => ({
   withRlsTransactions: <T>(c: T) => c,
@@ -202,6 +226,12 @@ beforeEach(() => {
     status: 'PENDING_REVIEW',
   } as never);
   mockPrisma.documentLink.findFirst.mockResolvedValue({ id: 'link_1' } as never);
+  // Phase 81 recovery defaults: one held flow, no remaining blocking items.
+  mockPrisma.contractorComplianceItem.findMany.mockResolvedValue([] as never);
+  queryRaw.mockResolvedValue([
+    { id: 'flow-held-1', resourceType: 'INVOICE', resourceId: 'inv-held-1' },
+  ] as never);
+  approvalFlowUpdate.mockResolvedValue({ id: 'flow-held-1', status: 'PENDING' } as never);
 });
 
 // ---------------------------------------------------------------------------
@@ -211,7 +241,7 @@ beforeEach(() => {
 describe('compliance-upload-review approve — happy path', () => {
   it('flips ContractorComplianceItem to SATISFIED + sets satisfiedByDocumentId + expiresAt', async () => {
     const caller = makeCaller();
-    const out = (await caller.classification.approveUploadReplacement({
+    const out = (await caller.complianceAdmin.approveUploadReplacement({
       itemId: ITEM_ID,
       documentId: DOC_ID,
       expiresAt: '2027-01-15',
@@ -226,7 +256,7 @@ describe('compliance-upload-review approve — happy path', () => {
 
   it('moves Document.status from PENDING_REVIEW to ACTIVE', async () => {
     const caller = makeCaller();
-    await caller.classification.approveUploadReplacement({
+    await caller.complianceAdmin.approveUploadReplacement({
       itemId: ITEM_ID,
       documentId: DOC_ID,
       expiresAt: '2027-01-15',
@@ -238,7 +268,7 @@ describe('compliance-upload-review approve — happy path', () => {
 
   it('writes AuditLog action=compliance.upload.approved', async () => {
     const caller = makeCaller();
-    await caller.classification.approveUploadReplacement({
+    await caller.complianceAdmin.approveUploadReplacement({
       itemId: ITEM_ID,
       documentId: DOC_ID,
       expiresAt: '2027-01-15',
@@ -255,7 +285,7 @@ describe('compliance-upload-review approve — happy path', () => {
     vi.mocked(authApi.hasPermission).mockResolvedValue({ success: false } as never);
     const caller = makeCaller('readonly');
     await expect(
-      caller.classification.approveUploadReplacement({
+      caller.complianceAdmin.approveUploadReplacement({
         itemId: ITEM_ID,
         documentId: DOC_ID,
         expiresAt: '2027-01-15',
@@ -273,7 +303,7 @@ describe('compliance-upload-review approve — WR-1 validation', () => {
     mockPrisma.document.findFirst.mockResolvedValueOnce(null as never);
     const caller = makeCaller();
     await expect(
-      caller.classification.approveUploadReplacement({
+      caller.complianceAdmin.approveUploadReplacement({
         itemId: ITEM_ID,
         documentId: 'nonexistent-doc',
         expiresAt: '2027-01-15',
@@ -287,7 +317,7 @@ describe('compliance-upload-review approve — WR-1 validation', () => {
     mockPrisma.document.findFirst.mockResolvedValueOnce({ id: DOC_ID, status: 'ACTIVE' } as never);
     const caller = makeCaller();
     await expect(
-      caller.classification.approveUploadReplacement({
+      caller.complianceAdmin.approveUploadReplacement({
         itemId: ITEM_ID,
         documentId: DOC_ID,
         expiresAt: '2027-01-15',
@@ -301,7 +331,7 @@ describe('compliance-upload-review approve — WR-1 validation', () => {
     mockPrisma.documentLink.findFirst.mockResolvedValueOnce(null as never);
     const caller = makeCaller();
     await expect(
-      caller.classification.approveUploadReplacement({
+      caller.complianceAdmin.approveUploadReplacement({
         itemId: ITEM_ID,
         documentId: DOC_ID,
         expiresAt: '2027-01-15',
@@ -318,7 +348,7 @@ describe('compliance-upload-review approve — WR-1 validation', () => {
 describe('compliance-upload-review reject — happy path', () => {
   it('moves Document.status to ARCHIVED', async () => {
     const caller = makeCaller();
-    await caller.classification.rejectUploadReplacement({
+    await caller.complianceAdmin.rejectUploadReplacement({
       itemId: ITEM_ID,
       documentId: DOC_ID,
       reasonCategory: 'illegible',
@@ -330,7 +360,7 @@ describe('compliance-upload-review reject — happy path', () => {
 
   it('clears satisfiedByDocumentId on the compliance item after rejection', async () => {
     const caller = makeCaller();
-    await caller.classification.rejectUploadReplacement({
+    await caller.complianceAdmin.rejectUploadReplacement({
       itemId: ITEM_ID,
       documentId: DOC_ID,
       reasonCategory: 'illegible',
@@ -345,7 +375,7 @@ describe('compliance-upload-review reject — happy path', () => {
 
   it('writes AuditLog action=compliance.upload.rejected with reasonCategory + freeText', async () => {
     const caller = makeCaller();
-    await caller.classification.rejectUploadReplacement({
+    await caller.complianceAdmin.rejectUploadReplacement({
       itemId: ITEM_ID,
       documentId: DOC_ID,
       reasonCategory: 'wrong_document_type',
@@ -364,7 +394,7 @@ describe('compliance-upload-review reject — happy path', () => {
 
   it('dispatches a notification after the reject transaction', async () => {
     const caller = makeCaller();
-    await caller.classification.rejectUploadReplacement({
+    await caller.complianceAdmin.rejectUploadReplacement({
       itemId: ITEM_ID,
       documentId: DOC_ID,
       reasonCategory: 'other',
@@ -377,7 +407,7 @@ describe('compliance-upload-review reject — happy path', () => {
   it('validates reasonCategory against the closed enum', async () => {
     const caller = makeCaller();
     await expect(
-      caller.classification.rejectUploadReplacement({
+      caller.complianceAdmin.rejectUploadReplacement({
         itemId: ITEM_ID,
         documentId: DOC_ID,
         // @ts-expect-error — invalid reason category must fail Zod
@@ -396,7 +426,7 @@ describe('compliance-upload-review reject — WR-1 validation', () => {
     mockPrisma.document.findFirst.mockResolvedValueOnce(null as never);
     const caller = makeCaller();
     await expect(
-      caller.classification.rejectUploadReplacement({
+      caller.complianceAdmin.rejectUploadReplacement({
         itemId: ITEM_ID,
         documentId: 'nonexistent-doc',
         reasonCategory: 'illegible',
@@ -412,7 +442,7 @@ describe('compliance-upload-review reject — WR-1 validation', () => {
     } as never);
     const caller = makeCaller();
     await expect(
-      caller.classification.rejectUploadReplacement({
+      caller.complianceAdmin.rejectUploadReplacement({
         itemId: ITEM_ID,
         documentId: DOC_ID,
         reasonCategory: 'illegible',
@@ -425,12 +455,77 @@ describe('compliance-upload-review reject — WR-1 validation', () => {
     mockPrisma.documentLink.findFirst.mockResolvedValueOnce(null as never);
     const caller = makeCaller();
     await expect(
-      caller.classification.rejectUploadReplacement({
+      caller.complianceAdmin.rejectUploadReplacement({
         itemId: ITEM_ID,
         documentId: DOC_ID,
         reasonCategory: 'illegible',
       }),
     ).rejects.toMatchObject({ code: 'PRECONDITION_FAILED' });
     expect(mockPrisma.document.update).not.toHaveBeenCalled();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Phase 81 INT-02 — compliance payment-block recovery (RED scaffolds for 81-03).
+//
+// approveUploadReplacement flips the item to SATISFIED but does NOT yet fire the
+// recovery hook (onComplianceItemSatisfied), so an approved upload leaves the
+// contractor's held ApprovalFlow stuck in PENDING_COMPLIANCE. 81-03 wires the
+// recovery call INSIDE the approve transaction, AFTER the SATISFIED flip.
+//
+// These cases assert the post-wiring contract and are EXPECTED to RED until 81-03
+// lands the wiring — failures are assertion-level (approvalFlow.update never fired
+// because the hook is not yet imported/called), NOT compile/harness errors.
+// ---------------------------------------------------------------------------
+
+describe('compliance-upload-review approve — Phase 81 D-12 recovery fires (RED)', () => {
+  it('flips a held PENDING_COMPLIANCE flow to PENDING + clears holds inside the approve tx', async () => {
+    const caller = makeCaller();
+    await caller.complianceAdmin.approveUploadReplacement({
+      itemId: ITEM_ID,
+      documentId: DOC_ID,
+      expiresAt: '2027-01-15',
+    });
+    // The recovery hook must update the held flow to PENDING and clear its holds.
+    expect(approvalFlowUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: 'flow-held-1' },
+        data: expect.objectContaining({ status: 'PENDING' }),
+      }),
+    );
+  });
+
+  it('queries held flows by JSONB containment of the approved itemId (recovery in-tx)', async () => {
+    const caller = makeCaller();
+    await caller.complianceAdmin.approveUploadReplacement({
+      itemId: ITEM_ID,
+      documentId: DOC_ID,
+      expiresAt: '2027-01-15',
+    });
+    // The recovery hook reads held flows via the raw containment query before
+    // re-asserting eligibility — proves onComplianceItemSatisfied ran in-tx.
+    expect(queryRaw).toHaveBeenCalled();
+  });
+});
+
+describe('compliance-upload-review approve — Phase 81 D-14 notification-failure isolation (RED)', () => {
+  it('a post-tx notification dispatch failure does NOT roll back the approval or the recovery flip', async () => {
+    // Make the best-effort post-tx contractor notification reject.
+    dispatchSpy.mockRejectedValueOnce(new Error('notification provider down'));
+    const caller = makeCaller();
+    const out = (await caller.complianceAdmin.approveUploadReplacement({
+      itemId: ITEM_ID,
+      documentId: DOC_ID,
+      expiresAt: '2027-01-15',
+    })) as { status: string };
+    // The approval still commits — item SATISFIED, mutation returns normally.
+    expect(out.status).toBe('SATISFIED');
+    // And the in-tx recovery flip is NOT undone by the post-tx notification failure.
+    expect(approvalFlowUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: 'flow-held-1' },
+        data: expect.objectContaining({ status: 'PENDING' }),
+      }),
+    );
   });
 });
