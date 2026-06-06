@@ -72,15 +72,37 @@ describe('roles', () => {
     }
   });
 
-  it('owner and admin both hold idp:override_step_failure (Phase 77 D-12)', () => {
-    expect(roles.owner.statements.idp).toEqual(['override_step_failure']);
-    expect(roles.admin.statements.idp).toEqual(['override_step_failure']);
+  it('owner and admin both hold idp:override_step_failure + idp:start_run (Phase 77 D-12 / Phase 81 D-10)', () => {
+    // Phase 81 D-10 adds the idp:start_run action alongside override_step_failure.
+    // Order-tolerant compare — the role array order is not a contract.
+    expect(roles.owner.statements.idp?.slice().sort()).toEqual(
+      ['override_step_failure', 'start_run'].sort(),
+    );
+    expect(roles.admin.statements.idp?.slice().sort()).toEqual(
+      ['override_step_failure', 'start_run'].sort(),
+    );
   });
 
-  it('no role other than owner/admin holds idp:override_step_failure', () => {
+  it('it_admin holds EXACTLY idp:start_run and NOT idp:override_step_failure (Phase 81 D-10)', () => {
+    // Phase 81 D-10 (research A1): it_admin is the seeded ACCESS_REVOKE assignee, so
+    // the inline task-card deprovisioning trigger must be usable by it_admin. It gains
+    // ONLY start_run; override_step_failure stays owner/admin-only.
+    expect(roles.it_admin.statements.idp).toEqual(['start_run']);
+    expect(roles.it_admin.statements.idp).not.toContain('override_step_failure');
+  });
+
+  it('no role other than owner/admin/it_admin holds any idp action; only owner/admin hold override_step_failure', () => {
     for (const [name, role] of Object.entries(roles)) {
-      if (name === 'owner' || name === 'admin') continue;
       const statements = role.statements as Record<string, readonly string[] | undefined>;
+      if (name === 'owner' || name === 'admin') {
+        expect(statements.idp).toContain('override_step_failure');
+        continue;
+      }
+      if (name === 'it_admin') {
+        // it_admin holds idp (start_run) but NEVER the override action.
+        expect(statements.idp).toEqual(['start_run']);
+        continue;
+      }
       expect(statements.idp, `${name} must not hold idp permissions`).toBeUndefined();
     }
   });
