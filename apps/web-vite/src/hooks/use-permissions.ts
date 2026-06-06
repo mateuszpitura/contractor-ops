@@ -21,7 +21,7 @@ const permissions: Record<string, Record<string, string[]>> = {
     document: ['create', 'read', 'update', 'delete'],
     invoice: ['create', 'read', 'update', 'delete', 'approve'],
     workflow: ['create', 'read', 'update', 'delete', 'execute', 'override_blocking_task'],
-    idp: ['override_step_failure'],
+    idp: ['override_step_failure', 'start_run'],
     payment: ['create', 'read', 'update', 'export'],
     report: ['read', 'export'],
     settings: ['read', 'update'],
@@ -41,7 +41,7 @@ const permissions: Record<string, Record<string, string[]>> = {
     document: ['create', 'read', 'update', 'delete'],
     invoice: ['create', 'read', 'update', 'delete', 'approve'],
     workflow: ['create', 'read', 'update', 'delete', 'execute'],
-    idp: ['override_step_failure'],
+    idp: ['override_step_failure', 'start_run'],
     payment: ['create', 'read', 'update', 'export'],
     report: ['read', 'export'],
     settings: ['read', 'update'],
@@ -51,6 +51,12 @@ const permissions: Record<string, Record<string, string[]>> = {
     team: ['read', 'create', 'update', 'archive'],
     project: ['read', 'create', 'update', 'archive'],
     costCenter: ['read', 'create', 'update', 'archive'],
+  },
+  it_admin: {
+    // it_admin is the seeded ACCESS_REVOKE assignee — it holds EXACTLY
+    // idp:start_run (mirrors packages/auth roles.ts; the server is authoritative),
+    // never idp:override_step_failure.
+    idp: ['start_run'],
   },
   finance_admin: {
     contractor: ['read'],
