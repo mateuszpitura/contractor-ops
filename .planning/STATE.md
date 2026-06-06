@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v6.0
 milestone_name: Platform Maturity & Operational Hardening
-status: milestone_complete
-stopped_at: Milestone complete (Phase 80 was final phase)
-last_updated: 2026-06-05T23:46:24.198Z
-last_activity: 2026-06-05 -- Phase 80 execution started
+status: completed
+stopped_at: Phase 81 context gathered
+last_updated: "2026-06-06T12:51:44.662Z"
+last_activity: 2026-06-05
 progress:
-  total_phases: 11
-  completed_phases: 10
+  total_phases: 12
+  completed_phases: 11
   total_plans: 84
   completed_plans: 84
-  percent: 91
+  percent: 92
 ---
 
 # Project State
@@ -408,6 +408,10 @@ DATABASE_URL=$DATABASE_URL_ME tsx packages/db/scripts/backfill-scope-capabilitie
 
 ## Accumulated Context
 
+### Roadmap Evolution
+
+- Phase 81 added (2026-06-06): v6.0 Integration Closure — INT-01 (wire offboarding ACCESS_REVOKE → `startDeprovisioningRun` UI trigger + un-hardcode `PROVIDERS_FOR_RUN` for all enabled adapters) + INT-02 (call `onComplianceItemSatisfied` in `approveUploadReplacement` to release payment-block on admin upload approval). Closes the 2 source-confirmed integration blockers from `v6.0-MILESTONE-AUDIT.md` before `/gsd:complete-milestone v6.0`.
+
 ## Deferred Items
 
 Items acknowledged and deferred at v5.0 milestone close on 2026-04-26:
@@ -556,9 +560,9 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-06-05T16:04:45.498Z
-Stopped at: Completed 80-04-PLAN.md (D-04 hardening gate re-run + 80-RETROSPECTIVE.md — v6.0 milestone-close: 4/4 plans, ready for verification)
-Resume file: None
+Last session: 2026-06-06T12:51:44.654Z
+Stopped at: Phase 81 context gathered
+Resume file: .planning/milestones/v6.0-phases/81-v6-0-integration-closure-idp-deprovisioning-ui-trigger-acces/81-CONTEXT.md
 Next command: `/gsd-plan-phase 74`  (Phase 74 context gathered, ready to plan; 71 + 76 plans already ready to execute)
 
 **Planned Phases (ready to execute):** 71 (F1 Compliance — 7 plans), 76 (F2 IdP — 10 plans, gated on 74 + 75)
