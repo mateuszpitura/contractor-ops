@@ -75,7 +75,12 @@ const { auditWriteSpy } = vi.hoisted(() => ({ auditWriteSpy: vi.fn(async () => u
 
 // Region client used by the reminder scan. Holds the shared mutable item store so
 // a status flip persisted by reEvaluateFreeZoneStatus is visible to the gate.
-function regionClientFactory(region: string) {
+// The mock intentionally returns FULL rows rather than the scan's `select`
+// projection — the shared store rows already carry exactly the fields the scan
+// reads, so a projection would add no coverage. `tenantOrgId` scopes the rows to a
+// single org (modelling the per-tenant isolation the regional client gets from RLS
+// in production), so the scan never incidentally fans out over an OTHER-tenant row.
+function regionClientFactory(region: string, tenantOrgId: string) {
   return {
     contractorComplianceItem: {
       findMany: vi.fn(async (args: { where?: Record<string, unknown> }) => {
@@ -83,6 +88,7 @@ function regionClientFactory(region: string) {
         const where = args?.where ?? {};
         const statusIn = (where.status as { in?: string[] } | undefined)?.in;
         return store.items.filter(r => {
+          if (r.organizationId !== tenantOrgId) return false;
           if (where.severity && r.severity !== where.severity) return false;
           if (statusIn && !statusIn.includes(r.status as string)) return false;
           if (where.expiresAt && r.expiresAt == null) return false;
@@ -136,7 +142,10 @@ vi.mock('@contractor-ops/db', () => ({
   getRegionalClient: vi.fn((region: string) => {
     let c = clientCache.get(region);
     if (!c) {
-      c = regionClientFactory(region);
+      // The ME regional client is scoped to the seeded tenant, so the scan only
+      // ever sees ME_ORG's rows (an OTHER-tenant row is out of scope, as RLS would
+      // enforce on the per-region client in production).
+      c = regionClientFactory(region, ME_ORG.id);
       clientCache.set(region, c);
     }
     return c;
