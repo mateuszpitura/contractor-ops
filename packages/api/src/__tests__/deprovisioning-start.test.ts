@@ -2,7 +2,7 @@
 // Phase 76 D-03 — startDeprovisioningRun mutation tests.
 // ---------------------------------------------------------------------------
 
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const ORG_A = 'clorgaaaaaaaaaaaaaaaaaaaaaa';
 const USER_ID = 'cluseraaaaaaaaaaaaaaaaaaaaa';
@@ -120,6 +120,7 @@ vi.mock('@contractor-ops/integrations/services/qstash-client', () => ({
 }));
 
 import { authApi } from '@contractor-ops/auth';
+import { DEPROVISIONING_INTEGRATION_NOT_CONFIGURED } from '../errors';
 import { createCallerFactory } from '../init';
 import { appRouter } from '../root';
 
@@ -171,6 +172,12 @@ function seedEnded() {
 beforeEach(() => {
   vi.clearAllMocks();
   runUpdate.mockResolvedValue({});
+  // The run provider-set derivation (Phase 81 D-05) gates each provider on its
+  // signoff flag. Bypass the flag service in unit tests so the default GWS-enabled
+  // org derives GWS (mirrors the legacy single-provider behaviour). Individual
+  // multi-provider cases re-assert this; the empty-set cases rely on the enabled
+  // map being empty / non-resolver-backed, not on signoff.
+  process.env.FLAG_SIGNOFF_BYPASS = 'local';
   // Default org has only GWS enabled (matches the legacy single-provider behaviour).
   orgSettings.idpDeprovisioningEnabled = { GOOGLE_WORKSPACE: true };
   // Echo the steps the router asked us to create so multi-provider assertions can
@@ -206,6 +213,11 @@ beforeEach(() => {
     return { id: 'run-1', steps };
   });
   vi.mocked(authApi.hasPermission).mockResolvedValue({ success: true } as never);
+});
+
+afterEach(() => {
+  // Don't leak the signoff bypass into other test files in the same worker.
+  process.env.FLAG_SIGNOFF_BYPASS = undefined;
 });
 
 describe('startDeprovisioningRun mutation (Phase 76 D-03)', () => {
@@ -355,7 +367,7 @@ describe('startDeprovisioningRun — Phase 81 D-06 empty provider set (RED)', ()
       }),
     ).rejects.toMatchObject({
       code: 'PRECONDITION_FAILED',
-      message: 'DEPROVISIONING_INTEGRATION_NOT_CONFIGURED',
+      message: DEPROVISIONING_INTEGRATION_NOT_CONFIGURED,
     });
     expect(runCreate).not.toHaveBeenCalled();
     process.env.FLAG_SIGNOFF_BYPASS = undefined;
@@ -375,7 +387,7 @@ describe('startDeprovisioningRun — Phase 81 D-06 empty provider set (RED)', ()
       }),
     ).rejects.toMatchObject({
       code: 'PRECONDITION_FAILED',
-      message: 'DEPROVISIONING_INTEGRATION_NOT_CONFIGURED',
+      message: DEPROVISIONING_INTEGRATION_NOT_CONFIGURED,
     });
     expect(runCreate).not.toHaveBeenCalled();
     process.env.FLAG_SIGNOFF_BYPASS = undefined;

@@ -22,6 +22,7 @@ import { tenantProcedure } from '../../middleware/tenant';
 import { writeAuditLog } from '../../services/audit-writer';
 import { CacheKeys, invalidateByPrefix } from '../../services/cache';
 import { getImpactPreview } from '../../services/idp-impact-preview';
+import { RESOLVER_BACKED_PROVIDERS } from '../../services/idp-token-resolver';
 
 const auditLog = getIdpAuditLogger();
 
@@ -63,10 +64,30 @@ const MANUAL_OVERRIDE_CATEGORIES = [
   'other',
 ] as const;
 
-// Phase 76 ships only Google Workspace as a real Deprovisionable adapter (Plan 76-09).
-// Phases 77-78 add Slack/Entra/Okta/GitHub — each gets two steps (suspend + revoke).
-const PROVIDERS_FOR_RUN = ['GOOGLE_WORKSPACE'] as const;
 const STEP_KINDS = ['SUSPEND_ACCOUNT', 'REVOKE_ALL_SESSIONS'] as const;
+
+const RESOLVER_BACKED_SET = new Set<string>(RESOLVER_BACKED_PROVIDERS);
+
+/**
+ * Per-org provider set for a run: org-ENABLED toggles
+ * (`Organization.settingsJson.idpDeprovisioningEnabled`, Phase 77 D-15) ∩
+ * signoff-APPROVED (`isProviderSignoffSatisfied`) ∩ resolver-backed
+ * (`RESOLVER_BACKED_PROVIDERS` — the single source of truth from the token
+ * resolver / step-runner capability). Replaces the old hardcoded GWS-only const
+ * so a run spans every executable provider the org has enabled (Phase 81 D-05).
+ * Providers without a token resolver (ENTRA/OKTA/GITHUB) are excluded here so a
+ * misconfigured org never gets a step that can only fail-closed at the runner.
+ */
+function deriveProvidersForRun(settingsJson: unknown): DeprovisioningToggleProvider[] {
+  const settings = (settingsJson as Record<string, unknown>) ?? {};
+  const enabledMap = (settings.idpDeprovisioningEnabled as Record<string, boolean>) ?? {};
+  return DEPROVISIONING_TOGGLE_PROVIDERS.filter(
+    provider =>
+      enabledMap[provider] === true &&
+      isProviderSignoffSatisfied(provider) &&
+      RESOLVER_BACKED_SET.has(provider),
+  );
+}
 
 /**
  * Resolve the contractor's jurisdiction TZ from its ISO-3166-1 alpha-2 country code.
@@ -97,6 +118,7 @@ export const deprovisioningRouter = router({
    * per call (SOC2 evidence: admin saw the cooldown state before/instead of deprovisioning).
    */
   getDeprovisioningEligibility: tenantProcedure
+    .use(requirePermission({ idp: ['start_run'] }))
     .input(z.object({ assignmentId: z.string().min(1) }))
     .query(async ({ ctx, input }) => {
       // ctx.db is tenant-scoped (RLS); findOrThrow narrows to NOT_FOUND on cross-tenant access.
@@ -137,6 +159,34 @@ export const deprovisioningRouter = router({
     }),
 
   /**
+   * Phase 81 D-01 — resolve a contractor to the assignment a deprovisioning run
+   * should target. The offboarding ACCESS_REVOKE task card only knows
+   * `WorkflowRun.contractorId` (there is no `assignmentId` FK on WorkflowRun), so
+   * the shared trigger hook calls this server-side resolver to obtain an
+   * unambiguous `assignmentId` in a single tRPC round-trip (keeping the web-vite
+   * data-layer guard green). Disambiguation: the MOST-RECENT ENDED assignment
+   * (status='ENDED', endedAt desc) — the offboarded engagement that armed the
+   * cooldown. A contractor with no ENDED assignment returns `{ assignmentId: null }`
+   * so the UI can disable the trigger with a reason rather than picking an ACTIVE row.
+   * Org-scoped via `ctx.organizationId` (a cross-tenant contractorId returns null).
+   */
+  resolveAssignmentForContractor: tenantProcedure
+    .use(requirePermission({ idp: ['start_run'] }))
+    .input(z.object({ contractorId: z.string().min(1) }))
+    .query(async ({ ctx, input }) => {
+      const assignment = await ctx.db.contractorAssignment.findFirst({
+        where: {
+          contractorId: input.contractorId,
+          organizationId: ctx.organizationId,
+          status: 'ENDED',
+        },
+        orderBy: { endedAt: 'desc' },
+        select: { id: true },
+      });
+      return { assignmentId: assignment?.id ?? null };
+    }),
+
+  /**
    * Phase 76 D-03 — start a deprovisioning run.
    *
    * Re-runs the cooldown gate server-side (UI cannot bypass), then in ONE transaction
@@ -145,6 +195,7 @@ export const deprovisioningRouter = router({
    * Idempotent via the unique idempotencyKey: a P2002 collision returns the existing run.
    */
   startDeprovisioningRun: tenantProcedure
+    .use(requirePermission({ idp: ['start_run'] }))
     .input(
       z.object({
         assignmentId: z.string().min(1),
@@ -186,6 +237,23 @@ export const deprovisioningRouter = router({
         });
       }
 
+      // Derive the per-org provider set (enabled ∩ signoff ∩ resolver-backed, D-05).
+      // The mutation previously fetched only the assignment — read settingsJson here
+      // so the derivation has the org toggle map (Phase 81 Pitfall 5).
+      const org = await ctx.db.organization.findUnique({
+        where: { id: ctx.organizationId },
+        select: { settingsJson: true },
+      });
+      const providersForRun = deriveProvidersForRun(org?.settingsJson);
+      if (providersForRun.length === 0) {
+        // No enabled + signoff + resolver-backed provider — do NOT create a
+        // zero-step run (D-06). The UI disables the trigger and explains why.
+        throw new TRPCError({
+          code: 'PRECONDITION_FAILED',
+          message: DEPROVISIONING_INTEGRATION_NOT_CONFIGURED,
+        });
+      }
+
       try {
         const run = await ctx.db.$transaction(async tx => {
           const created = await tx.deprovisioningRun.create({
@@ -197,7 +265,7 @@ export const deprovisioningRouter = router({
               idempotencyKey: input.idempotencyKey,
               status: 'PENDING',
               steps: {
-                create: PROVIDERS_FOR_RUN.flatMap(provider =>
+                create: providersForRun.flatMap(provider =>
                   STEP_KINDS.map(stepKind => ({
                     organizationId: ctx.organizationId,
                     provider,

@@ -7,7 +7,16 @@
 import type { PrismaClient } from '@contractor-ops/db';
 import { decryptCredentials } from '@contractor-ops/integrations';
 
-export type DeprovisionProvider = 'GOOGLE_WORKSPACE' | 'SLACK';
+/**
+ * The providers a deprovisioning run can actually execute — i.e. the ones with a
+ * token resolver below AND a configured adapter in the step-runner. This is the
+ * single source of truth: `DeprovisionProvider` derives from it, and the run
+ * provider-set derivation (deprovisioning.ts) intersects against it so a fourth
+ * literal cannot drift from the resolver capability.
+ */
+export const RESOLVER_BACKED_PROVIDERS = ['GOOGLE_WORKSPACE', 'SLACK'] as const;
+
+export type DeprovisionProvider = (typeof RESOLVER_BACKED_PROVIDERS)[number];
 
 export type ResolveTokenResult =
   | { ok: true; accessToken: string; connectionId: string }
