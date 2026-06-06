@@ -53,10 +53,18 @@ const permissions: Record<string, Record<string, string[]>> = {
     costCenter: ['read', 'create', 'update', 'archive'],
   },
   it_admin: {
-    // it_admin is the seeded ACCESS_REVOKE assignee — it holds EXACTLY
-    // idp:start_run (mirrors packages/auth roles.ts; the server is authoritative),
-    // never idp:override_step_failure.
+    // Mirrors the full server it_admin grant (packages/auth roles.ts; the
+    // server stays authoritative). it_admin is the seeded ACCESS_REVOKE
+    // assignee, so it holds idp:start_run ONLY — never idp:override_step_failure.
+    member: ['create', 'read', 'update'],
+    invitation: ['create', 'cancel'],
+    settings: ['read', 'update'],
+    integration: ['read', 'update'],
     idp: ['start_run'],
+    equipment: ['read'],
+    team: ['read'],
+    project: ['read'],
+    costCenter: ['read'],
   },
   finance_admin: {
     contractor: ['read'],
