@@ -297,7 +297,7 @@ Phase artifacts: `.planning/milestones/v5.0-phases/`
 - [x] 81-02-PLAN.md — Wave 1: INT-01 server — idp:start_run permission, dynamic PROVIDERS_FOR_RUN, org-settings read, gate 2 procs, contractorId→assignmentId resolver
 - [x] 81-03-PLAN.md — Wave 1: INT-02 server — onComplianceItemSatisfied wired into approveUploadReplacement tx (payment-block recovery)
 - [x] 81-04-PLAN.md — Wave 1: D-08 Slack deprovision regression tests (suspend/revoke/impact via org-grid token)
-- [ ] 81-05-PLAN.md — Wave 2: INT-01 web-vite trigger UI — shared hook + container + ACCESS_REVOKE card wiring + en/de/pl/ar i18n
+- [x] 81-05-PLAN.md — Wave 2: INT-01 web-vite trigger UI — shared hook + container + ACCESS_REVOKE card wiring + en/de/pl/ar i18n
 - [ ] 81-06-PLAN.md — Wave 3: E2E composition — both flows (ACCESS_REVOKE→deprovisioning run; portal upload→approve→payment unblock)
 **Research flag:** STANDARD (~95% reuse wiring + light hardening; all 14 decisions source-verified in 81-RESEARCH.md)
 **Feature flags:** none new — reuses existing `idp-deprovisioning-{provider}` signoff flags
@@ -437,4 +437,4 @@ Phase artifacts: `.planning/milestones/v5.0-phases/`
 | 78. F2 IdP — Entra + Okta + GitHub            | v6.0      | 7/7 | Complete    | 2026-05-31 |
 | 79. F3 Gulf — UAE Free-Zone + Saudization     | v6.0      | 8/8 | Complete    | 2026-06-03 |
 | 80. v6.0 Verification + Hardening + UAT       | v6.0      | 5/5 | Complete    | 2026-06-05 |
-| 81. v6.0 Integration Closure — INT-01 + INT-02 | v6.0      | 4/6 | In Progress|  |
+| 81. v6.0 Integration Closure — INT-01 + INT-02 | v6.0      | 5/6 | In Progress|  |

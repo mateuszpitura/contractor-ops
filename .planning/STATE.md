@@ -290,9 +290,11 @@ See: .planning/PROJECT.md (updated 2026-04-26 — v6.0 milestone started)
 ## Current Position
 
 Phase: 81 (v6-0-integration-closure-idp-deprovisioning-ui-trigger-acces) — EXECUTING
-Plan: 4 of 6
+Plan: 5 of 6
 Status: Ready to execute
 Last activity: 2026-06-06
+
+**Decision (81-05):** INT-01 trigger UI shipped in web-vite. One shared hook (`use-start-deprovisioning.ts`) is the sole tRPC boundary for BOTH entry points — assignment detail (direct `assignmentId`) and the offboarding ACCESS_REVOKE task card (server-side `resolveAssignmentForContractor` resolves `contractorId`→`assignmentId` in one round-trip, keeping `check:web-vite-data-layer` green). The container owns the permission/cooldown/existing-run state machine and reuses the existing `ImpactPreviewPanelContainer` (in a DialogBody confirm) + `DeprovisioningRunViewContainer` (rendered inline on success/existing-run — no standalone route, no rebuilt UI). Deterministic per-assignment idempotencyKey (`deprov:<id>`) means a double-click returns the existing run (D-09). Auto-fix (Rule 2): the client-side `use-permissions.ts` mirror lacked `idp:start_run` and the `it_admin` role entirely — added the mirror (owner/admin: override+start_run; it_admin: start_run only) matching `roles.ts`, else the advisory UI gate would hide the trigger from the seeded ACCESS_REVOKE assignee. `Idp.trigger.*` (13 keys) added to en/de/pl/ar (parity). Hook test 6/6; data-layer + dialog-pattern + i18n:parity guards + web-vite typecheck all green. Commits `1668dbd3`, `cb51ac7f`, `9d3d5ca7`.
 
 **Decision (81-03):** INT-02 server seam closed — `onComplianceItemSatisfied` now called in-tx in `approveUploadReplacement` (per-item, after the SATISFIED flip + audit, before return). An approved portal upload resumes held PENDING_COMPLIANCE ApprovalFlows to PENDING and unblocks contractor payment; the post-tx best-effort contractor notification is unchanged (T-73-08-04). 81-01 INT-02 RED cases (D-12/D-14) GREEN; `pnpm --filter @contractor-ops/api test compliance-upload-review` 18/18; api typecheck clean. Commit `fa148159`.
 
