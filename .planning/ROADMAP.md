@@ -110,7 +110,7 @@ Known gaps / deferred at close: see STATE.md `## Deferred Items` (3 unverified p
 - [ ] **Phase 98: Theme C — Public REST API Surface (foundation gate)** - read+write endpoints with `.strict()` DTOs, OpenAPI 3.1, versioning, cursor pagination, TS/Python SDKs
 - [ ] **Phase 99: Theme C — API Keys + Scopes + Rate Limiting** - HMAC-SHA256 keys, per-endpoint scope enforcement (BFLA fix), Developer page, per-tier rate limits, mutation audit
 - [ ] **Phase 100: Theme C — Outbound Webhooks + Integration Security** - WebhookSubscription on the outbox dispatcher, HMAC + DLQ + PII redaction, SSRF guard with DNS-rebind, OWASP review gate
-- [ ] **Phase 101: Theme C — Marketplace Listings + Developer Experience** - Zapier / n8n / Make listings + status dashboard, dev portal, Postman/Insomnia, public status page, sandbox tier
+- [ ] **Phase 101: Theme C — Marketplace Listings + Dev Experience** - Zapier / n8n / Make listings + status dashboard, dev portal, Postman/Insomnia, public status page, sandbox tier
 
 ## Phase Details
 
@@ -123,8 +123,12 @@ Known gaps / deferred at close: see STATE.md `## Deferred Items` (3 unverified p
   2. The app boots with all v7.0 Unleash flags registered PENDING in the signoff registry; the boot-time gate exits if any listed flag is missing from the registry.
   3. A request carrying `region=US` resolves through `SUPPORTED_REGIONS`, the `DataRegion` enum, `DATABASE_URL_US`, and `buildLazyBag` flag coercion without a runtime throw or silent EU-coercion (lockstep test asserts all four stay in sync).
   4. The IRIS TCC enrollment workflow document exists and records the ~45-day lead-time as a started calendar dependency.
-**Plans**: TBD
-**Research flag**: Standard — `requireAddOn` mirrors `requireTier`; flag registry + boot-gate are documented patterns. Decide `Subscription.addOns String[]` vs normalized `OrgAddOn` table here.
+**Plans**: 4 plans (3 waves)
+- [ ] 82-01-PLAN.md — Wave 0 test scaffolding (all VALIDATION.md test files) + IRIS TCC enrollment ops doc (SC#4) [wave 1]
+- [ ] 82-02-PLAN.md — FOUND7-03 US region 5-place lockstep + D-07 adjacents + 'payroll' flag category [wave 2]
+- [ ] 82-03-PLAN.md — FOUND7-02 19 v7.0 flags PENDING + V7_FLAG_KEYS cohort + gated prefixes + boot-gate wiring (apps/api, public-api, cron-worker) [wave 3]
+- [ ] 82-04-PLAN.md — FOUND7-01 Subscription.addOns + [BLOCKING] migration + requireAddOn + ADD_ON_REQUIRED REST branch + owner-gated grant + seed [wave 2]
+**Research flag**: Standard — `requireAddOn` mirrors `requireTier`; flag registry + boot-gate are documented patterns. Decided: `Subscription.addOns String[]` (additive array) over normalized `OrgAddOn` table (D-01).
 
 ### Phase 83: Theme A — US Region Infrastructure
 **Goal**: A new org with US billing is durably routed to `us-east-1` data + storage with IRS retention enforced, so US tax data can be created safely.
@@ -371,7 +375,7 @@ Phases execute in numeric order: 82 → 83 → … → 101. After Foundation (82
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 82. v7.0 Foundation — Add-On + Flags + US Region | v7.0 | 0/TBD | Not started | - |
+| 82. v7.0 Foundation — Add-On + Flags + US Region | v7.0 | 0/4 | Not started | - |
 | 83. Theme A — US Region Infrastructure | v7.0 | 0/TBD | Not started | - |
 | 84. Theme A — US Profile Fields + en-US Locale | v7.0 | 0/TBD | Not started | - |
 | 85. Theme A — W-Form Intake + Tax-Treaty Engine | v7.0 | 0/TBD | Not started | - |
