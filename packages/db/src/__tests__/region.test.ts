@@ -13,8 +13,8 @@ import { createPrismaClientForUrl } from '../client.js';
 import { getRegionalClient, preWarmRegionalClients, SUPPORTED_REGIONS } from '../region.js';
 
 describe('SUPPORTED_REGIONS', () => {
-  it('contains exactly EU and ME', () => {
-    expect(SUPPORTED_REGIONS).toEqual(['EU', 'ME']);
+  it('contains exactly EU, ME and US', () => {
+    expect(SUPPORTED_REGIONS).toEqual(['EU', 'ME', 'US']);
   });
 });
 
@@ -60,7 +60,7 @@ describe('getRegionalClient', () => {
 
   it('throws an error for an unsupported region', () => {
     expect(() => getRegionalClient('INVALID')).toThrow(
-      'Unsupported data region: INVALID. Supported: EU, ME',
+      'Unsupported data region: INVALID. Supported: EU, ME, US',
     );
   });
 

@@ -37,7 +37,10 @@ const SCHEMA_PATH = resolve(PACKAGE_DIR, 'prisma/schema');
 // resolve to a globally-cached newer version and produce drift).
 const PRISMA_BIN = resolve(PACKAGE_DIR, 'node_modules', '.bin', 'prisma');
 
-const REGION_ENV_VARS = ['DATABASE_URL_EU', 'DATABASE_URL_ME'] as const;
+// NOTE: this is a plain array (NOT Record<DataRegion>), so tsc does not force a
+// US entry — it is added manually for lockstep consistency (D-07). migrateRegion
+// skips-on-missing, so an unset DATABASE_URL_US locally is a no-op.
+const REGION_ENV_VARS = ['DATABASE_URL_EU', 'DATABASE_URL_ME', 'DATABASE_URL_US'] as const;
 
 interface RegionResult {
   region: string;
