@@ -84,9 +84,48 @@ the routing + bucket + retention primitive, not the tax records themselves.
   tax-form tables here; the retention guard/policy is verified against a
   representative model (or a test fixture model) until the real tables land.
 
+### Resolved from Research (2026-06-07)
+- **D-07 (retention primitive home):** the D-04 policy lives in a NEW
+  `packages/db/src/retention-policy.ts` (NOT in `packages/api` — keeps `data-purge.ts`
+  in cron-worker from needing a static api→cron edge). Exports `RETENTION_YEARS`
+  (`{ '1099-NEC': 4, 'backup-withholding': 7 }`), a `MODEL_RETENTION_TYPE` map that
+  ships **EMPTY** per D-06 (Phase 86 tax models register here), and a
+  `getRetentionCutoff(model, now)` resolver consumed by all three deletion chokepoints
+  (D-05). Verify against the existing `Invoice` soft-delete fixture in `soft-delete.test.ts`.
+- **D-08 (DATA_HOSTING_REGION env):** DEFERRED — widening the `DATA_HOSTING_REGION`
+  env enum to US is not required for request-time routing this phase (routing keys off
+  `organization.dataRegion`, not the deploy env). Revisit when US is actually deployed.
+
+### Research-surfaced anchor corrections (planner MUST honor — see 83-RESEARCH.md)
+- **`DataRegion` is a Prisma enum, not a TS union.** `organization.prisma` defines
+  `enum DataRegion { EU ME }` (Postgres `CREATE TYPE "DataRegion" AS ENUM ('EU','ME')`).
+  Phase 82 widened only the `SUPPORTED_REGIONS` TS tuple — it **never added `US` to the
+  Postgres enum**, and the 82 region-lockstep test skipped the Prisma enum. So
+  `dataRegion = 'US'` throws `invalid input value for enum` at the DB **today**. Phase 83
+  MUST add `US` via an **additive `ALTER TYPE "DataRegion" ADD VALUE 'US'`** migration
+  (use the db-push / direct-ALTER fallback — `prisma migrate dev` is blocked by the
+  pre-existing migration-history drift documented under Phase 82; record per-region
+  production apply as deferred) AND add a lockstep assertion that covers the Prisma enum
+  (the missing 6th place). This is the true origin point of US region routing.
+- **Org creation goes through Better Auth's `organization()` plugin** — the tRPC
+  org create/update mutations were removed; everything defaults `dataRegion='EU'` today.
+  D-01's creation-time US assignment plugs into a NEW `organizationCreation.beforeCreate`
+  hook + Better Auth `additionalFields` carrying the billing country/region selection →
+  mapped to `dataRegion`. Default stays EU.
+- **`data-purge.ts` uses the BASE `prisma` client (no soft-delete extension)** → its
+  `deleteMany` is a TRUE hard-delete with a flat `RETENTION_DAYS=90`. This is THE
+  load-bearing D-05 path. `gdpr.ts` `deleteByOrgAndCount` runs on `ctx.db` (extension
+  present → softDeleteModels auto-convert), but D-05 still wants an EXPLICIT retention
+  exemption + statutory citation there. Grep confirmed **no 4th hard-delete leak** on
+  soft-delete models — the three chokepoints are complete coverage.
+- **Cast sites to widen to the shared `DataRegion` type:** `tenant.ts`, `org-cache.ts`
+  (`OrgMeta.dataRegion: string`), `org-definition-sync.ts`, `oauth.ts`,
+  `regional-storage.ts`, `seed-dev.ts`, plus `?? 'EU'` sites in portal-shared /
+  portal-auth / ksef / idp-deprovisioning.
+
 ### Claude's Discretion
-- `dataRegion` representation (Prisma enum migration vs string) — planner's call
-  per the current schema definition.
+- `dataRegion` representation — RESOLVED: it is a Prisma enum; add `US` additively
+  (see anchor corrections). No longer open.
 - Retention-policy storage shape (typed const map vs DB table) — start as a typed
   const map; DB table only if a runtime-edit requirement appears.
 - Where the create-org region selection surfaces in the UI — minimal; en-US copy
