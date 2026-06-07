@@ -21,12 +21,28 @@
  * starves other tenants' cron mutations on the Neon HTTP driver.
  */
 
-import { prisma } from '@contractor-ops/db';
+import { getRetentionCutoff, prisma } from '@contractor-ops/db';
 import { metrics } from '@contractor-ops/logger/metrics';
 import { Sentry } from '../../lib/sentry.js';
 import type { JobHandler } from '../runner.js';
 
 const RETENTION_DAYS = 90;
+
+/**
+ * US-INFRA-03 — THE load-bearing hard-delete path. `data-purge` runs on the
+ * BASE prisma client (no soft-delete extension), so every `deleteMany` here is
+ * a TRUE Postgres DELETE. A model under an active statutory-retention rule must
+ * therefore use its policy window (4yr/7yr) instead of the flat 90-day sweep,
+ * or a retained record could be permanently destroyed.
+ *
+ * Returns the per-model cutoff: the retention window for a retained model, else
+ * the flat `RETENTION_DAYS` cutoff. The production retention map ships EMPTY
+ * (D-06), so all current models keep the 90-day behaviour; Phase 86 tax models
+ * inherit the guard automatically by registering their window.
+ */
+function cutoffFor(model: string, now: Date, flatCutoff: Date): Date {
+  return getRetentionCutoff(model, now) ?? flatCutoff;
+}
 
 async function purgeR2Files(
   docs: Array<{ id: string; storageKey: string | null }>,
@@ -64,15 +80,17 @@ export const dataPurgeHandler: JobHandler = async ctx => {
   const start = performance.now();
 
   try {
-    const cutoff = new Date();
+    const now = new Date();
+    const cutoff = new Date(now);
     cutoff.setDate(cutoff.getDate() - RETENTION_DAYS);
 
     const results: Record<string, number> = {};
 
     // 1. Snapshot the documents to purge so R2 cleanup + DB deletion
     //    operate on the exact same set (no race between query + delete).
+    const docCutoff = cutoffFor('Document', now, cutoff);
     const expiredDocs = await prisma.document.findMany({
-      where: { deletedAt: { not: null, lt: cutoff } },
+      where: { deletedAt: { not: null, lt: docCutoff } },
       select: { id: true, storageKey: true },
     });
     const docIds = expiredDocs.map(d => d.id);
@@ -117,17 +135,17 @@ export const dataPurgeHandler: JobHandler = async ctx => {
         }
 
         const invResult = await tx.invoice.deleteMany({
-          where: { deletedAt: { not: null, lt: cutoff } },
+          where: { deletedAt: { not: null, lt: cutoffFor('Invoice', now, cutoff) } },
         });
         txRes.invoices = invResult.count;
 
         const contractResult = await tx.contract.deleteMany({
-          where: { deletedAt: { not: null, lt: cutoff } },
+          where: { deletedAt: { not: null, lt: cutoffFor('Contract', now, cutoff) } },
         });
         txRes.contracts = contractResult.count;
 
         const contractorResult = await tx.contractor.deleteMany({
-          where: { deletedAt: { not: null, lt: cutoff } },
+          where: { deletedAt: { not: null, lt: cutoffFor('Contractor', now, cutoff) } },
         });
         txRes.contractors = contractorResult.count;
 

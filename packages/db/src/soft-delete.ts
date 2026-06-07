@@ -1,4 +1,6 @@
 import { Prisma } from './generated/prisma/client/client.js';
+import type { RetainedRecordType } from './retention-policy.js';
+import { getRetentionCutoff } from './retention-policy.js';
 
 type PrismaExtensible = {
   $extends: Prisma.DefaultPrismaClient['$extends'];
@@ -50,12 +52,26 @@ function injectDeletedAtNull(args: unknown): unknown {
  * - update/updateMany/upsert also filter where deletedAt is null so soft-deleted
  *   rows are immutable (F-DB-27)
  */
-export function withSoftDelete<T extends PrismaExtensible>(prisma: T) {
+export function withSoftDelete<T extends PrismaExtensible>(
+  prisma: T,
+  retentionOverride?: Partial<Record<string, RetainedRecordType>>,
+) {
+  // US-INFRA-03 — a model under an active statutory-retention rule must never be
+  // hard-deleted at this chokepoint. `getRetentionCutoff` returning a (non-null)
+  // cutoff means the model is retention-guarded, so the delete is forced through
+  // the soft-delete conversion below even if the model is absent from
+  // `softDeleteModels`. The production retention map ships EMPTY (D-06), so this
+  // is a no-op for all current models; tests inject a fixture override.
+  const isRetentionGuarded = (model: string): boolean =>
+    getRetentionCutoff(model, new Date(), retentionOverride) !== null;
+  const requiresSoftDelete = (model: string): boolean =>
+    softDeleteModels.has(model) || isRetentionGuarded(model);
+
   return prisma.$extends({
     query: {
       $allModels: {
         async delete(this: unknown, { model, args, query }: ModelQueryHookParams) {
-          if (!softDeleteModels.has(model)) {
+          if (!requiresSoftDelete(model)) {
             return await query(args);
           }
 
@@ -74,7 +90,7 @@ export function withSoftDelete<T extends PrismaExtensible>(prisma: T) {
         },
 
         async deleteMany(this: unknown, { model, args, query }: ModelQueryHookParams) {
-          if (!softDeleteModels.has(model)) {
+          if (!requiresSoftDelete(model)) {
             return await query(args);
           }
 

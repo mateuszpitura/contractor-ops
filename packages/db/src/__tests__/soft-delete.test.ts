@@ -1,8 +1,9 @@
 import { describe, expect, it, vi } from 'vitest';
+import type { RetainedRecordType } from '../retention-policy.js';
 import { withSoftDelete } from '../soft-delete.js';
 
 describe('withSoftDelete', () => {
-  function createMockClient() {
+  function createMockClient(retentionOverride?: Partial<Record<string, RetainedRecordType>>) {
     const innerQuery = vi.fn(async (args: unknown) => args);
     const invoiceUpdate = vi.fn(async (args: unknown) => args);
     const invoiceUpdateMany = vi.fn(async (args: unknown) => args);
@@ -126,7 +127,7 @@ describe('withSoftDelete', () => {
       },
     };
 
-    const client = withSoftDelete(base as Parameters<typeof withSoftDelete>[0]);
+    const client = withSoftDelete(base as Parameters<typeof withSoftDelete>[0], retentionOverride);
     return { client, innerQuery, invoiceUpdate, invoiceUpdateMany };
   }
 
@@ -269,5 +270,39 @@ describe('withSoftDelete', () => {
     const { client, innerQuery } = createMockClient();
     await client.verification.update({ where: { id: 'v1' }, data: { value: 'x' } });
     expect(innerQuery).toHaveBeenCalledWith({ where: { id: 'v1' }, data: { value: 'x' } });
+  });
+
+  // US-INFRA-03 — a model under an active statutory-retention rule can never be
+  // hard-deleted at this chokepoint: the explicit retained-window guard forces
+  // the delete→soft-delete conversion even for the never-reaches-query path.
+  // The fixture maps `Invoice` to a retention type (production map stays empty).
+  describe('retention guard (US-INFRA-03)', () => {
+    const fixtureMap = { Invoice: '1099-NEC' as const };
+
+    it('converts delete to soft-delete for a retained model (in-window) — never a raw hard-delete', async () => {
+      const { client, innerQuery } = createMockClient(fixtureMap);
+      await client.invoice.delete({ where: { id: 'i1' } });
+      // The final sink must be the soft-delete update (deletedAt set), never a
+      // raw delete passthrough.
+      expect(innerQuery).toHaveBeenCalledWith({
+        where: { id: 'i1', deletedAt: null },
+        data: { deletedAt: expect.any(Date) },
+      });
+    });
+
+    it('converts deleteMany to soft-delete for a retained model', async () => {
+      const { client, innerQuery } = createMockClient(fixtureMap);
+      await client.invoice.deleteMany({ where: { status: 'DRAFT' } });
+      expect(innerQuery).toHaveBeenCalledWith({
+        where: { status: 'DRAFT', deletedAt: null },
+        data: { deletedAt: expect.any(Date) },
+      });
+    });
+
+    it('passes through delete for a non-retained, non-soft-delete model even when a retention map is present', async () => {
+      const { client, innerQuery } = createMockClient(fixtureMap);
+      await client.verification.delete({ where: { id: 'v1' } });
+      expect(innerQuery).toHaveBeenCalledWith({ where: { id: 'v1' } });
+    });
   });
 });
