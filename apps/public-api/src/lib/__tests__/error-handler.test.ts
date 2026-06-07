@@ -151,6 +151,33 @@ describe('handleError', () => {
     });
   });
 
+  // Phase 82 · Plan 01 · FOUND7-01 (SC#1) — Wave 0 RED scaffold.
+  // The ADD_ON_REQUIRED branch in extractErrorDetails is added by Plan 82-04.
+  // Until then these assertions are RED (the parser falls through to the raw
+  // FORBIDDEN code/message). Encodes the REST mapping contract 82-04 must
+  // satisfy: ADD_ON_REQUIRED → code 'ADD_ON_REQUIRED', riding FORBIDDEN→403.
+  describe('ADD_ON_REQUIRED structured message (Wave 0 RED — 82-04 turns GREEN)', () => {
+    it('extracts code=ADD_ON_REQUIRED and message mentions the required add-on', () => {
+      const c = makeContext();
+      const message = JSON.stringify({ type: 'ADD_ON_REQUIRED', requiredAddOn: 'workforce' });
+      const err = new TRPCError({ code: 'FORBIDDEN', message });
+      handleError(err, c);
+      const [body] = (c.json as ReturnType<typeof vi.fn>).mock.calls[0] as [
+        { error: { code: string; message: string } },
+      ];
+      expect(body.error.code).toBe('ADD_ON_REQUIRED');
+      expect(body.error.message).toContain('workforce');
+    });
+
+    it('uses correct HTTP status (403 FORBIDDEN) for ADD_ON_REQUIRED', () => {
+      const c = makeContext();
+      const message = JSON.stringify({ type: 'ADD_ON_REQUIRED', requiredAddOn: 'us-cross-border' });
+      const err = new TRPCError({ code: 'FORBIDDEN', message });
+      handleError(err, c);
+      expect(c.json).toHaveBeenCalledWith(expect.any(Object), 403);
+    });
+  });
+
   describe('Zod validation error (BAD_REQUEST + "validation" message)', () => {
     it('returns code=VALIDATION_ERROR and canned message', () => {
       const c = makeContext();
