@@ -138,7 +138,11 @@ Known gaps / deferred at close: see STATE.md `## Deferred Items` (3 unverified p
   1. A US-billing org's requests resolve a `us-east-1` Prisma client; cross-region read replicas remain off by default.
   2. Tax-form archives for US orgs are stored in a US-specific R2 bucket (data residency for US tax records).
   3. IRS-mandated retention is enforced (4-year 1099-NEC, 7-year backup-withholding) via soft-delete + scheduled archive, with no early hard-delete of a retained record.
-**Plans**: TBD
+**Plans**: 4 plans
+- [ ] 83-01-PLAN.md — [BLOCKING] Add US to the DataRegion Postgres enum + Wave 0 RED test scaffolds (region-lockstep Prisma-enum assertion, retention resolver, org-creation hook)
+- [ ] 83-02-PLAN.md — US DB routing: organizationCreation.beforeCreate US assignment (D-01) + widen dataRegion cast sites to DataRegion + US tenant routing
+- [ ] 83-03-PLAN.md — US R2 tax-archive bucket: REGION_BUCKET_MAP Record<DataRegion> + optional R2_BUCKET_NAME_US (lazy-throw)
+- [ ] 83-04-PLAN.md — IRS retention: retention-policy resolver (4yr/7yr) wired into all 3 deletion chokepoints (soft-delete, data-purge cron, gdpr erasure)
 **Research flag**: Standard — the 4-place change is fully identified in-tree; the lockstep test landed in Phase 82 protects it.
 
 ### Phase 84: Theme A — US Contractor Profile Fields + en-US Locale
