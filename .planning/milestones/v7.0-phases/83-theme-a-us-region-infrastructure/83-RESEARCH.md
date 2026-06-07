@@ -424,18 +424,18 @@ R2_BUCKET_NAME_US=
 
 **If A1/A3 are confirmed by discuss-phase, they become locked decisions.**
 
-## Open Questions
+## Open Questions (RESOLVED)
+
+All three resolved at plan time (CONTEXT.md D-06/D-08 + plan 83-02); no open items remain.
 
 1. **How does the billing-country/region selection reach `organization.create`?** (A1)
-   - What we know: org-create runs through Better Auth (`organization.ts:16`); the plugin supports `organizationCreation.beforeCreate` and `additionalFields`; today NO code sets `dataRegion` (all orgs default EU).
-   - What's unclear: whether the SPA already passes a billing country into `authClient.organization.create`, or whether Phase 83 must add an `additionalFields` field + SPA wiring (the UI is "minimal, planner's call" per D Claude's Discretion).
-   - Recommendation: planner confirms the create payload shape; if absent, add a `billingCountry`/`region` `additionalFields` entry on the org plugin schema and map it in `beforeCreate`.
+   - **RESOLVED** (plan 83-02 Task 1): org-create runs through Better Auth (`organization.ts:16`); add a `billingCountry`/`region` `additionalFields` entry on the org plugin schema (Zod-validated) and map it → `dataRegion` in `organizationCreation.beforeCreate`. Today NO code sets `dataRegion` (all orgs default EU); default stays EU.
 
 2. **Does the empty `MODEL_RETENTION_TYPE` map (D-06) need a fixture entry shipped, or is a test-only fixture sufficient?**
-   - What we know: D-06 says verify against a representative/fixture model; no tax tables exist yet.
-   - Recommendation: ship the map EMPTY; verify the 3 chokepoints against a test-only fixture entry (e.g. map `'Invoice' → '1099-NEC'` inside a test) so production behavior is unchanged but the wiring is proven. Phase 86 adds the real entry.
+   - **RESOLVED** (D-06): ship the map EMPTY; verify the 3 chokepoints against a test-only fixture (e.g. map `'Invoice' → '1099-NEC'` inside a test) so production behavior is unchanged but the wiring is proven. Phase 86 adds the real entries.
 
-3. **Widen `DATA_HOSTING_REGION` to include US now, or defer?** (A3) — Recommendation: defer (not the per-org routing path); document the decision.
+3. **Widen `DATA_HOSTING_REGION` to include US now, or defer?** (A3)
+   - **RESOLVED** (D-08): defer — it is not the per-org request-time routing path (routing keys off `organization.dataRegion`). Revisit when US is actually deployed.
 
 ## Environment Availability
 
