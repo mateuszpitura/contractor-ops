@@ -127,7 +127,7 @@ Known gaps / deferred at close: see STATE.md `## Deferred Items` (3 unverified p
 - [x] 82-01-PLAN.md — Wave 0 test scaffolding (all VALIDATION.md test files) + IRIS TCC enrollment ops doc (SC#4) [wave 1]
 - [x] 82-02-PLAN.md — FOUND7-03 US region 5-place lockstep + D-07 adjacents + 'payroll' flag category [wave 2]
 - [ ] 82-03-PLAN.md — FOUND7-02 19 v7.0 flags PENDING + V7_FLAG_KEYS cohort + gated prefixes + boot-gate wiring (apps/api, public-api, cron-worker) [wave 3]
-- [ ] 82-04-PLAN.md — FOUND7-01 Subscription.addOns + [BLOCKING] migration + requireAddOn + ADD_ON_REQUIRED REST branch + owner-gated grant + seed [wave 2]
+- [x] 82-04-PLAN.md — FOUND7-01 Subscription.addOns + [BLOCKING] migration + requireAddOn + ADD_ON_REQUIRED REST branch + owner-gated grant + seed [wave 2]
 **Research flag**: Standard — `requireAddOn` mirrors `requireTier`; flag registry + boot-gate are documented patterns. Decided: `Subscription.addOns String[]` (additive array) over normalized `OrgAddOn` table (D-01).
 
 ### Phase 83: Theme A — US Region Infrastructure
@@ -375,7 +375,7 @@ Phases execute in numeric order: 82 → 83 → … → 101. After Foundation (82
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 82. v7.0 Foundation — Add-On + Flags + US Region | v7.0 | 2/4 | In Progress|  |
+| 82. v7.0 Foundation — Add-On + Flags + US Region | v7.0 | 3/4 | In Progress|  |
 | 83. Theme A — US Region Infrastructure | v7.0 | 0/TBD | Not started | - |
 | 84. Theme A — US Profile Fields + en-US Locale | v7.0 | 0/TBD | Not started | - |
 | 85. Theme A — W-Form Intake + Tax-Treaty Engine | v7.0 | 0/TBD | Not started | - |

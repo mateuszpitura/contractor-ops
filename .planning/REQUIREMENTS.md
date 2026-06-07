@@ -32,7 +32,7 @@ Requirements for the v7.0 milestone. Each maps to exactly one phase (filled by r
 
 ### Foundation (cross-cutting — gates revenue + US data work)
 
-- [ ] **FOUND7-01**: Engineer has a `requireAddOn(addOn)` tRPC middleware that composes after `requireTier`, returns a structured `ADD_ON_REQUIRED` error (mirroring the existing `TIER_REQUIRED` shape) when an org lacks the add-on, and reads add-on entitlement from a defined store (`Subscription.addOns` or normalized `OrgAddOn`); gates `Workforce` (Theme B) and `US Cross-Border` (Theme A) surfaces
+- [x] **FOUND7-01**: Engineer has a `requireAddOn(addOn)` tRPC middleware that composes after `requireTier`, returns a structured `ADD_ON_REQUIRED` error (mirroring the existing `TIER_REQUIRED` shape) when an org lacks the add-on, and reads add-on entitlement from a defined store (`Subscription.addOns` or normalized `OrgAddOn`); gates `Workforce` (Theme B) and `US Cross-Border` (Theme A) surfaces
 - [ ] **FOUND7-02**: All v7.0 Unleash flags are registered PENDING in the signoff registry with boot-time gate — `us-expansion`, `workforce-employees`, `personio-sync`, `bamboohr-sync`, `ach-payouts`, `iris-efile`, `public-api`, `outbound-webhooks`, `integration-marketplace-{zapier,n8n,make}`, and per-adapter `payroll-{symfonia,comarch,enova,datev,sage-uk,gusto,quickbooks,adp}`
 - [x] **FOUND7-03**: `us-east-1` is enabled as a third supported region across the stack — `SUPPORTED_REGIONS`, `DataRegion` enum, `DATABASE_URL_US` env (+ schema), and `feature-flag.ts` region coercion all accept `US` without runtime throw (the 4-place atomic change; precedes any US-data phase)
 
@@ -254,7 +254,7 @@ Which phases cover which requirements. Phase numbering continues from v6.0 (ende
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| FOUND7-01 | Phase 82 | Pending |
+| FOUND7-01 | Phase 82 | Complete |
 | FOUND7-02 | Phase 82 | Pending |
 | FOUND7-03 | Phase 82 | Complete |
 | US-INFRA-01 | Phase 83 | Pending |
