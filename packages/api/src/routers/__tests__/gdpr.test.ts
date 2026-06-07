@@ -4,9 +4,13 @@
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const { ORG_ID, USER_ID, mockPrisma } = vi.hoisted(() => {
+const { ORG_ID, USER_ID, mockPrisma, mockRetentionMap } = vi.hoisted(() => {
   const OrgId = 'org-gdpr-00000000-0000-0000-0000-000000000001';
   const UserId = 'user-gdpr-00000000-0000-0000-0000-000000000001';
+
+  // US-INFRA-03 fixture retention map — mutated per-test; EMPTY by default so
+  // the existing erasure tests keep their current behaviour.
+  const mockRetentionMap: Record<string, string> = {};
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   type Rec = Record<string, unknown>;
@@ -98,7 +102,7 @@ const { ORG_ID, USER_ID, mockPrisma } = vi.hoisted(() => {
     $transaction: vi.fn(async (fn: (tx: Rec) => Promise<unknown>) => fn(mockPrisma)),
   };
 
-  return { ORG_ID: OrgId, USER_ID: UserId, mockPrisma };
+  return { ORG_ID: OrgId, USER_ID: UserId, mockPrisma, mockRetentionMap };
 });
 
 vi.mock('@contractor-ops/auth', () => ({
@@ -126,6 +130,11 @@ vi.mock('@contractor-ops/db', () => ({
   createTenantClient: vi.fn(() => mockPrisma),
   createTenantClientFrom: vi.fn(() => mockPrisma),
   getRegionalClient: vi.fn(() => mockPrisma),
+  // US-INFRA-03 — fixture retention map. Production ships EMPTY (D-06); here we
+  // map the representative `Invoice` fixture to a retained record type so the
+  // statutory-exemption branch is exercised without a real tax table.
+  MODEL_RETENTION_TYPE: mockRetentionMap,
+  getRetentionCutoff: vi.fn(() => null),
 }));
 
 // F-DB-03 / F-SEC-12 — org-cache must report ACTIVE so tenant middleware
@@ -261,6 +270,8 @@ describe('gdprRouter', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    // Reset the fixture retention map to EMPTY (production default, D-06).
+    for (const k of Object.keys(mockRetentionMap)) delete mockRetentionMap[k];
     mockPrisma.organization.findUnique.mockResolvedValue({
       id: ORG_ID,
       name: 'Org',
@@ -425,6 +436,73 @@ describe('gdprRouter', () => {
     // Financial records must be preserved when retainFinancialRecords is true
     expect(mockPrisma.invoice.updateMany).not.toHaveBeenCalled();
     expect(mockPrisma.invoice.deleteMany).not.toHaveBeenCalled();
+  });
+
+  // US-INFRA-03 (D-05 #3) — a model under a statutory-retention rule is
+  // soft-deleted-with-exemption (never hard-deleted), surfaced with its citation
+  // in the summary, and the retention-blocked attempt is audit-logged.
+  describe('requestErasure statutory-retention exemption (US-INFRA-03)', () => {
+    it('retains a statutorily-held model even when retainFinancialRecords is false; surfaces citation + audits', async () => {
+      // Fixture: Invoice held under the 1099-NEC 4-year rule (production map empty).
+      mockRetentionMap.Invoice = '1099-NEC';
+      mockPrisma.invoice.count.mockResolvedValue(5);
+
+      const out = await caller.requestErasure({
+        confirmPhrase: 'DELETE ALL DATA',
+        retainFinancialRecords: false, // statutory hold must supersede this
+      });
+
+      expect(out.success).toBe(true);
+
+      // Invoice is retained (counted), NOT hard- or soft-deleted via the purge path.
+      expect(mockPrisma.invoice.count).toHaveBeenCalledWith({
+        where: { organizationId: ORG_ID, deletedAt: null },
+      });
+      expect(mockPrisma.invoice.deleteMany).not.toHaveBeenCalled();
+      expect(mockPrisma.invoice.updateMany).not.toHaveBeenCalled();
+
+      // Summary surfaces the statutory citation; never claims invoices erased.
+      const summary = out.summary as {
+        invoices: number;
+        invoicesRetained: number;
+        retainedUnderStatute: Record<string, string>;
+      };
+      expect(summary.invoices).toBe(0);
+      expect(summary.invoicesRetained).toBe(5);
+      expect(summary.retainedUnderStatute.Invoice).toContain('26 CFR 1.6001-1');
+      expect(out.message).toContain('Invoice');
+      expect(out.message).toContain('statutory-retention');
+
+      // Two audit writes: the erasure request + the retention-blocked attempt.
+      expect(mockPrisma.auditLog.create).toHaveBeenCalledTimes(2);
+      expect(mockPrisma.auditLog.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            organizationId: ORG_ID,
+            action: 'organization.erasure_retained_under_statute',
+          }),
+        }),
+      );
+    });
+
+    it('does not record any statutory hold when the retention map is empty (production default)', async () => {
+      const out = await caller.requestErasure({
+        confirmPhrase: 'DELETE ALL DATA',
+        retainFinancialRecords: true,
+      });
+
+      const summary = out.summary as { retainedUnderStatute: Record<string, string> };
+      expect(Object.keys(summary.retainedUnderStatute)).toHaveLength(0);
+      // Only the standard erasure-request audit write — no statutory-hold record.
+      expect(mockPrisma.auditLog.create).toHaveBeenCalledTimes(1);
+      expect(mockPrisma.auditLog.create).not.toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            action: 'organization.erasure_retained_under_statute',
+          }),
+        }),
+      );
+    });
   });
 
   describe('requestErasure R2 cleanup', () => {
