@@ -77,7 +77,7 @@ Requirements for the v7.0 milestone. Each maps to exactly one phase (filled by r
 ### Theme A — US Region Infrastructure (US-INFRA)
 
 - [x] **US-INFRA-01**: A new org with US billing is routed to the `us-east-1` database per the existing per-org region-routing pattern; cross-region read replicas remain off by default
-- [ ] **US-INFRA-02**: US-specific R2 storage bucket for tax-form archives (data-residency for US tax records)
+- [x] **US-INFRA-02**: US-specific R2 storage bucket for tax-form archives (data-residency for US tax records)
 - [x] **US-INFRA-03**: IRS-mandated retention enforced via soft-delete + scheduled archive (4-year 1099-NEC, 7-year backup-withholding records)
 
 ### Theme B — Worker Model Abstraction (WORKER) — foundation, ships first
@@ -258,7 +258,7 @@ Which phases cover which requirements. Phase numbering continues from v6.0 (ende
 | FOUND7-02 | Phase 82 | Complete |
 | FOUND7-03 | Phase 82 | Complete |
 | US-INFRA-01 | Phase 83 | Complete |
-| US-INFRA-02 | Phase 83 | Pending |
+| US-INFRA-02 | Phase 83 | Complete |
 | US-INFRA-03 | Phase 83 | Complete |
 | US-FIELD-01 | Phase 84 | Pending |
 | US-FIELD-02 | Phase 84 | Pending |

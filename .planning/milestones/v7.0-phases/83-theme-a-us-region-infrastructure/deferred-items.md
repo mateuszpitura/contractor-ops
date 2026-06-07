@@ -25,9 +25,23 @@ executor SCOPE BOUNDARY rule.
   allowlist entry in `GLOBAL_LOOKUP_MODELS_ALLOWLIST`).
 - **Origin:** pre-existing; unrelated to `organization.prisma`.
 
+### 3. `check:no-process-env` — ~170 raw `process.env` hits (Plan 83-03)
+
+- **Files:** `apps/landing/src/lib/posthog.tsx`, `apps/cron-worker/src/lib/sentry.ts`,
+  `apps/public-api/src/{app.ts,lib/sentry.ts}`, +others (~170 total).
+- **Discovered:** running the `check:no-process-env` env-edit gate for the Plan 83-03
+  `R2_BUCKET_NAME_US` addition. None of the four plan-owned files
+  (`regional-storage.ts`, `validators/src/env.ts`, `.env.example`, the regional-storage
+  test) are offenders — verified by grep.
+- **Origin:** pre-existing app-bootstrap/observability code; out of scope per SCOPE BOUNDARY.
+
 ## Deferred ops items (LOCAL-ONLY posture; recorded in 83-01-SUMMARY)
 
 - **Per-region PRODUCTION enum apply** of `ALTER TYPE "DataRegion" ADD VALUE 'US'`
   (EU then ME, then US once provisioned). `migrate dev` is blocked by pre-existing
   migration-history drift (Phase 82 precedent); the additive ALTER was applied to
   the local dev DB only. Apply per region post-merge at US go-live.
+- **Provision the US R2 bucket** and set `R2_BUCKET_NAME_US` (Plan 83-03 / US-INFRA-02).
+  Optional + lazy-throw by design — the app boots and tests clean without it; only
+  actual US-org file access fails until the operator provisions the bucket. Not
+  hard-blocking (LOCAL-ONLY).

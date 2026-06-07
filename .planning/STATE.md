@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v7.0
 milestone_name: GTM Expansion
 status: executing
-stopped_at: Phase 83 context gathered
-last_updated: "2026-06-07T21:37:40.662Z"
+stopped_at: Completed 83-03-PLAN.md (US-INFRA-02)
+last_updated: "2026-06-07T21:44:04.667Z"
 last_activity: 2026-06-07
 progress:
   total_phases: 20
   completed_phases: 1
   total_plans: 8
-  completed_plans: 6
+  completed_plans: 7
   percent: 5
 ---
 
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-06-07 — v7.0 GTM Expansion started; v6
 ## Current Position
 
 Phase: 83 (Theme A — US Region Infrastructure) — EXECUTING
-Plan: 3 of 4
+Plan: 4 of 4
 Status: Ready to execute
 Last activity: 2026-06-07
 
-Progress: [████████░░] 75%
+Progress: [█████████░] 88%
 
 ## v7.0 Roadmap Summary (created 2026-06-07)
 
@@ -95,6 +95,7 @@ Decisions are logged in PROJECT.md Key Decisions table. Recent decisions affecti
 - [Phase ?]: [82-03, 2026-06-07]: FOUND7-02 — 19 v7.0 flags registered PENDING (D-09 dot-namespaced) + V7_FLAG_KEYS cohort; 10 narrow gated prefixes (pre-v7.0 non-gated flags unaffected, D-10); assertFlagSignoffsOrExit() wired into all three app boots (api/public-api/cron-worker) — the load-bearing UNWIRED-gate fix; boot passes clean with 19 PENDING entries (no exit(1)); feature-flags added as direct dep to api+public-api (was phantom)
 - [Phase ?]: [83-01]: Postgres DataRegion enum widened to { EU ME US } via additive ALTER TYPE ADD VALUE IF NOT EXISTS (dev DB; migrate dev drift-blocked); per-region prod apply deferred. Lockstep test now asserts Prisma enum == SUPPORTED_REGIONS (closes Phase-82 Pitfall-1 drift). Wave 0 RED scaffolds laid for retention resolver (Plan 04) + resolveDataRegionFromBilling org-creation hook (Plan 02).
 - [Phase ?]: [83-02]: US-INFRA-01 routing complete — beforeCreateOrganization is the single immutable origin of dataRegion='US' (D-01); billingCountry input-only/Zod-validated/not-persisted (derive-and-strip); OrgMeta.dataRegion + all 'EU'|'ME' cast sites widened to shared DataRegion; tenant.ts widened structurally via OrgMeta; seed-dev types widened, runtime CLI EU/ME-only.
+- [Phase 83-03]: US-INFRA-02 — REGION_BUCKET_MAP widened to Record<DataRegion> (compile-time lockstep, missing US fails tsc); US branch lazy-throws when R2_BUCKET_NAME_US unset, resolves when set (ONE US bucket for all US-org files incl. tax archives, D-03); R2_BUCKET_NAME_US OPTIONAL no-default in env schema + .env.example (DATABASE_URL_US posture); DATA_HOSTING_REGION left EU/ME (deployment knob, not per-org routing, D-08).
 
 ### Pending Todos
 
@@ -127,6 +128,7 @@ Carried forward from v6.0 milestone close (2026-06-07). Full enumeration: `.plan
 | Phase 82 P82-03 | 18m | 3 tasks | 11 files |
 | Phase 83 P83-01 | 18m | 3 tasks | 6 files |
 | Phase 83 P83-02 | 9m | 2 tasks | 10 files |
+| Phase 83 P83-03 | 4m | 1 tasks | 4 files |
 
 ## Standing Project Constraints
 
@@ -136,7 +138,7 @@ Carried forward from v6.0 milestone close (2026-06-07). Full enumeration: `.plan
 
 ## Session Continuity
 
-Last session: 2026-06-07T21:37:17.633Z
-Stopped at: Phase 83 context gathered
+Last session: 2026-06-07T21:44:04.662Z
+Stopped at: Completed 83-03-PLAN.md (US-INFRA-02)
 Resume file: None
 Next command: `/gsd:plan-phase 82`
