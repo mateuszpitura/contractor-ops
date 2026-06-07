@@ -16,6 +16,7 @@ import {
   PutObjectCommand,
 } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+import type { DataRegion } from '@contractor-ops/db';
 import { tenantStore } from '@contractor-ops/db';
 import type { ServerEnv } from '@contractor-ops/validators';
 import { getServerEnv } from '@contractor-ops/validators';
@@ -25,9 +26,19 @@ import { createR2Client } from './r2';
 // Region → bucket (validated env)
 // ---------------------------------------------------------------------------
 
-const REGION_BUCKET_MAP: Record<'EU' | 'ME', (env: ServerEnv) => string> = {
+// `Record<DataRegion>` is a compile-time lockstep: adding a region to the
+// shared `DataRegion` union forces a matching bucket resolver here. EU/ME have
+// defaults in the env schema so they never throw; US is optional (no default)
+// and lazy-throws on access, mirroring the `DATABASE_URL_US` posture.
+const REGION_BUCKET_MAP: Record<DataRegion, (env: ServerEnv) => string> = {
   EU: env => env.R2_BUCKET_NAME_EU,
   ME: env => env.R2_BUCKET_NAME_ME,
+  US: env => {
+    if (!env.R2_BUCKET_NAME_US) {
+      throw new Error('R2_BUCKET_NAME_US is not configured for US-region storage');
+    }
+    return env.R2_BUCKET_NAME_US;
+  },
 };
 
 /**
@@ -36,7 +47,7 @@ const REGION_BUCKET_MAP: Record<'EU' | 'ME', (env: ServerEnv) => string> = {
  * @throws If region is not supported
  */
 export function getRegionalBucket(region: string): string {
-  const pick = REGION_BUCKET_MAP[region as 'EU' | 'ME'];
+  const pick = REGION_BUCKET_MAP[region as DataRegion];
   if (!pick) {
     throw new Error(
       `Unsupported storage region: ${region}. Supported: ${Object.keys(REGION_BUCKET_MAP).join(', ')}`,

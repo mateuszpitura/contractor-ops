@@ -86,6 +86,10 @@ const r2Schema = z.object({
   R2_BUCKET_NAME: z.string().optional(),
   R2_BUCKET_NAME_EU: z.string().default('contractor-ops-documents-eu'),
   R2_BUCKET_NAME_ME: z.string().default('contractor-ops-documents-me'),
+  // US-INFRA-02 — US region bucket. OPTIONAL (no default): the app boots clean
+  // locally with no US bucket; `getRegionalBucket('US')` lazy-throws only on
+  // actual US-org file access (mirrors DATABASE_URL_US, D-03).
+  R2_BUCKET_NAME_US: z.string().min(1).optional(),
   R2_PUBLIC_URL: optionalUrl,
   // Optional S3-compatible endpoint override. Unset → Cloudflare R2
   // (`https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com`). Set this to point
