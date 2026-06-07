@@ -29,6 +29,7 @@ export {
   type FlagKey,
   getFlagDefinition,
   isPaymentBlockEnforced,
+  V7_FLAG_KEYS,
 } from './registry';
 export {
   type EvalContext,

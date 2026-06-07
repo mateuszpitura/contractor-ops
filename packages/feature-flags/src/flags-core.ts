@@ -204,11 +204,219 @@ export const FLAGS = deepFreeze({
     jurisdiction: 'ME',
     owner: 'gulf-platform',
   },
+  // Phase 82 (v7.0 GTM Foundation, FOUND7-02 / D-09) — the 19 v7.0 flags. All
+  // ship dark (default false) and region-agnostic (jurisdiction 'ANY'; US flags
+  // do NOT use a US jurisdiction — jurisdiction partitions EU/ME/ANY only). Keys
+  // are dot-namespaced (flagDefinitionSchema regex) and gated via the v7.0
+  // namespace prefixes added to GATED_FLAG_NAMESPACE_PREFIXES, so each requires a
+  // PENDING signoff entry before boot. No v7.0 feature reads these yet; the
+  // backing Unleash toggles are created in the later theme phases.
+  'module.us-expansion': {
+    key: 'module.us-expansion',
+    description:
+      'US cross-border surface (Theme A): US region, profile fields, en-US locale, tax-form intake. Ship dark — requires signoff PENDING→APPROVED before enabling per-org.',
+    default: false,
+    category: 'module',
+    jurisdiction: 'ANY',
+    owner: 'us-platform',
+  },
+  'module.workforce-employees': {
+    key: 'module.workforce-employees',
+    description:
+      'Workforce / employee management (Theme B): employee registry, personnel files, leave + time tracking, on/offboarding. Ship dark — requires signoff PENDING→APPROVED before enabling per-org.',
+    default: false,
+    category: 'module',
+    jurisdiction: 'ANY',
+    owner: 'workforce-platform',
+  },
+  'module.public-api': {
+    key: 'module.public-api',
+    description:
+      'Public REST API surface (Theme C): external API-key consumers. Ship dark — requires signoff PENDING→APPROVED before enabling per-org.',
+    default: false,
+    category: 'module',
+    jurisdiction: 'ANY',
+    owner: 'platform-api',
+  },
+  'module.outbound-webhooks': {
+    key: 'module.outbound-webhooks',
+    description:
+      'Outbound webhooks (Theme C): event dispatch over the OutboxEvent outbox with SSRF guards. Ship dark — requires signoff PENDING→APPROVED before enabling per-org.',
+    default: false,
+    category: 'module',
+    jurisdiction: 'ANY',
+    owner: 'platform-api',
+  },
+  'module.iris-efile': {
+    key: 'module.iris-efile',
+    description:
+      'IRIS A2A e-file (Theme A): IRS IRIS XML transmission for 1099/1042-S (IRIS-primary; FIRE decommissions 2026-12-31). Ship dark — requires signoff PENDING→APPROVED before enabling per-org.',
+    default: false,
+    category: 'module',
+    jurisdiction: 'ANY',
+    owner: 'us-platform',
+  },
+  'integration.personio-sync': {
+    key: 'integration.personio-sync',
+    description:
+      'Personio HRIS two-way sync (Theme B). Ship dark — requires signoff PENDING→APPROVED before enabling per-org.',
+    default: false,
+    category: 'integration',
+    jurisdiction: 'ANY',
+    owner: 'integrations',
+  },
+  'integration.bamboohr-sync': {
+    key: 'integration.bamboohr-sync',
+    description:
+      'BambooHR HRIS two-way sync (Theme B). Ship dark — requires signoff PENDING→APPROVED before enabling per-org.',
+    default: false,
+    category: 'integration',
+    jurisdiction: 'ANY',
+    owner: 'integrations',
+  },
+  'integration.marketplace-zapier': {
+    key: 'integration.marketplace-zapier',
+    description:
+      'Zapier integration marketplace listing (Theme C). Ship dark — requires signoff PENDING→APPROVED before enabling per-org.',
+    default: false,
+    category: 'integration',
+    jurisdiction: 'ANY',
+    owner: 'integrations',
+  },
+  'integration.marketplace-n8n': {
+    key: 'integration.marketplace-n8n',
+    description:
+      'n8n integration marketplace listing (Theme C). Ship dark — requires signoff PENDING→APPROVED before enabling per-org.',
+    default: false,
+    category: 'integration',
+    jurisdiction: 'ANY',
+    owner: 'integrations',
+  },
+  'integration.marketplace-make': {
+    key: 'integration.marketplace-make',
+    description:
+      'Make (Integromat) integration marketplace listing (Theme C). Ship dark — requires signoff PENDING→APPROVED before enabling per-org.',
+    default: false,
+    category: 'integration',
+    jurisdiction: 'ANY',
+    owner: 'integrations',
+  },
+  'payments.ach-payouts': {
+    key: 'payments.ach-payouts',
+    description:
+      'US ACH payout rail via the NACHA payment-export factory (Theme A). Ship dark — requires signoff PENDING→APPROVED before enabling per-org.',
+    default: false,
+    category: 'payments',
+    jurisdiction: 'ANY',
+    owner: 'payments',
+  },
+  'payroll.symfonia': {
+    key: 'payroll.symfonia',
+    description:
+      'Symfonia (PL) payroll integration adapter (Theme B). Ship dark — requires signoff PENDING→APPROVED before enabling per-org.',
+    default: false,
+    category: 'payroll',
+    jurisdiction: 'ANY',
+    owner: 'payroll-platform',
+  },
+  'payroll.comarch': {
+    key: 'payroll.comarch',
+    description:
+      'Comarch (PL) payroll integration adapter (Theme B). Ship dark — requires signoff PENDING→APPROVED before enabling per-org.',
+    default: false,
+    category: 'payroll',
+    jurisdiction: 'ANY',
+    owner: 'payroll-platform',
+  },
+  'payroll.enova': {
+    key: 'payroll.enova',
+    description:
+      'enova365 (PL) payroll integration adapter (Theme B). Ship dark — requires signoff PENDING→APPROVED before enabling per-org.',
+    default: false,
+    category: 'payroll',
+    jurisdiction: 'ANY',
+    owner: 'payroll-platform',
+  },
+  'payroll.datev': {
+    key: 'payroll.datev',
+    description:
+      'DATEV (DE) payroll integration adapter (Theme B). Ship dark — requires signoff PENDING→APPROVED before enabling per-org.',
+    default: false,
+    category: 'payroll',
+    jurisdiction: 'ANY',
+    owner: 'payroll-platform',
+  },
+  'payroll.sage-uk': {
+    key: 'payroll.sage-uk',
+    description:
+      'Sage (UK) payroll integration adapter (Theme B). Ship dark — requires signoff PENDING→APPROVED before enabling per-org.',
+    default: false,
+    category: 'payroll',
+    jurisdiction: 'ANY',
+    owner: 'payroll-platform',
+  },
+  'payroll.gusto': {
+    key: 'payroll.gusto',
+    description:
+      'Gusto (US) payroll integration adapter (Theme B). Ship dark — requires signoff PENDING→APPROVED before enabling per-org.',
+    default: false,
+    category: 'payroll',
+    jurisdiction: 'ANY',
+    owner: 'payroll-platform',
+  },
+  'payroll.quickbooks': {
+    key: 'payroll.quickbooks',
+    description:
+      'QuickBooks (US) payroll integration adapter (Theme B). Ship dark — requires signoff PENDING→APPROVED before enabling per-org.',
+    default: false,
+    category: 'payroll',
+    jurisdiction: 'ANY',
+    owner: 'payroll-platform',
+  },
+  'payroll.adp': {
+    key: 'payroll.adp',
+    description:
+      'ADP (US) payroll integration adapter (Theme B). Ship dark — requires signoff PENDING→APPROVED before enabling per-org.',
+    default: false,
+    category: 'payroll',
+    jurisdiction: 'ANY',
+    owner: 'payroll-platform',
+  },
 } as const satisfies Record<string, FlagDefinition>);
 
 export type FlagKey = keyof typeof FLAGS;
 
 export const FLAG_KEYS = Object.keys(FLAGS) as FlagKey[];
+
+/**
+ * The v7.0 GTM-Expansion flag cohort (FOUND7-02 / D-09 / D-10). The explicit,
+ * order-stable list of the 19 v7.0 flags — backs the SC#2 "all keys present"
+ * test (`getFlagSignoff(key) !== undefined` for each) and the boot-gate
+ * assertion. `satisfies readonly FlagKey[]` is a compile-time guarantee that
+ * every cohort key actually exists in FLAGS (a typo or a missing FLAGS entry
+ * fails tsc here, not at runtime).
+ */
+export const V7_FLAG_KEYS = [
+  'module.us-expansion',
+  'module.workforce-employees',
+  'module.public-api',
+  'module.outbound-webhooks',
+  'module.iris-efile',
+  'integration.personio-sync',
+  'integration.bamboohr-sync',
+  'integration.marketplace-zapier',
+  'integration.marketplace-n8n',
+  'integration.marketplace-make',
+  'payments.ach-payouts',
+  'payroll.symfonia',
+  'payroll.comarch',
+  'payroll.enova',
+  'payroll.datev',
+  'payroll.sage-uk',
+  'payroll.gusto',
+  'payroll.quickbooks',
+  'payroll.adp',
+] as const satisfies readonly FlagKey[];
 
 /**
  * Ergonomic alias for the Phase 62 inbound e-invoice intake flag. Referenced

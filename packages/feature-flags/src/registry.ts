@@ -14,6 +14,7 @@ export {
   FLAGS,
   type FlagKey,
   getFlagDefinition,
+  V7_FLAG_KEYS,
 } from './flags-core';
 
 import { FLAG_KEYS } from './flags-core';
