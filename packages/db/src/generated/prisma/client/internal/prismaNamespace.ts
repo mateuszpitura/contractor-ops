@@ -10092,6 +10092,7 @@ export const SubscriptionScalarFieldEnum = {
   trialEnd: 'trialEnd',
   cancelAtPeriodEnd: 'cancelAtPeriodEnd',
   seatCount: 'seatCount',
+  addOns: 'addOns',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
