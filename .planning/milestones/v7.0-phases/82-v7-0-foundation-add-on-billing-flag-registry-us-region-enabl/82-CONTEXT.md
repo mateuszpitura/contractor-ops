@@ -82,6 +82,52 @@ Pure gating infrastructure — no user-facing feature ships in this phase.
   files until Phase 86. Honest artifact for LOCAL-ONLY; avoids product theater
   (rejected: seeding a fake in-app onboarding task that "starts the clock").
 
+### Resolved from Research (2026-06-07 — confirms researcher assumptions A1/A2/A4)
+- **D-09 (flag-key namespacing):** v7.0 flags use **domain namespaces** consistent
+  with the existing taxonomy — `module.us-expansion`, `module.workforce-employees`,
+  `module.public-api`, `module.outbound-webhooks`, `integration.personio-sync`,
+  `integration.bamboohr-sync`, `payments.ach-payouts`, `integration.marketplace-{zapier,n8n,make}`,
+  and the 8 payroll adapters under a **new `payroll.*` category** (`payroll.symfonia`,
+  `payroll.comarch`, `payroll.enova`, `payroll.datev`, `payroll.sage-uk`, `payroll.gusto`,
+  `payroll.quickbooks`, `payroll.adp`). Adding `'payroll'` to `flagCategorySchema`
+  (`packages/feature-flags/src/.../schemas.ts`) is a one-line additive enum change.
+  Bare FOUND7-02 wire names are invalid against `flagDefinitionSchema`
+  (`^[a-z0-9]+(\.[a-z0-9-]+)+$`) — every key MUST be dot-namespaced. Confirm final
+  count (research found **19** distinct keys from the FOUND7-02 enumeration; the
+  BACKLOG-mentioned `module.irs-fire-efile` legacy-fallback flag is optional → 20).
+- **D-10 (boot-gate enforcement):** Define an explicit **`V7_FLAG_KEYS`** cohort array;
+  **wire the currently-UNWIRED `assertFlagSignoffsOrExit()`** into app boot
+  (`apps/api`, `apps/public-api`, `apps/cron-worker`) and assert every cohort key has
+  a signoff entry — this is namespace-agnostic and changes behavior for NO existing
+  flag. Also add the v7.0 namespace prefixes to `GATED_FLAG_NAMESPACE_PREFIXES`
+  (belt-and-suspenders). Do **NOT** broaden the gate to all declared flags (would
+  break boot for existing non-gated flags like `payments.bacs-enabled`). This is the
+  load-bearing FOUND7-02 fix: the registry edit alone does NOT satisfy SC#2 because
+  the gate is defined+tested but never called at boot today (Phase 72 made it an
+  explicit-call gate; no app was updated to call it).
+- **D-11 (add-on base tier):** A/B add-ons are tier-independent. Convenience procedures
+  compose `tenantProcedure → requireTier('STARTER') → requireAddOn(addOn)` — the
+  `STARTER` floor only enforces "has an active subscription (any tier)", satisfying
+  SC#1's "composes after requireTier" while keeping add-on sales open to any paying
+  tier (BACKLOG: "add-on on top of base tier", no minimum stated). Only Theme C is
+  tier-gated within base; Themes A/B gate on the add-on, not the tier.
+
+### Research-surfaced anchor corrections (planner MUST honor — see 82-RESEARCH.md)
+- The "4-place" US region change is really **5**: `SUPPORTED_REGIONS` +
+  `DataRegion` (a TS union in `packages/db/src/region.ts`, **not** a Prisma enum) +
+  `DATABASE_URL_US` (optional env) + `buildLazyBag` coercion + the feature-flags
+  `regionSchema = z.enum(['EU','ME'])`. `REGION_ENV_MAP` and `REPLICA_ENV_MAP`
+  (`Record<DataRegion,string>`) force-fail `tsc` until US is added — that compile
+  error IS the lockstep (D-07 replica/migrate/seed adjacents confirmed needed).
+- `Subscription.addOns` does not exist yet (additive migration); `getSubscription`
+  uses bare `findUnique` (no `select`) so `addOns` rides along free — but the grant
+  mutation MUST invalidate the ~15-min Redis subscription cache.
+- `AuditEntityType` has no SUBSCRIPTION/BILLING value — audit the grant mutation with
+  `resourceType:'ORGANIZATION'` (resourceId = orgId), or add an additive enum value.
+- The relevant signoff registry is `packages/feature-flags/src/signoff-registry-flags.{ts,json}`
+  (boot-gate timing) — NOT `packages/validators/src/legal/signoff-registry.ts` (Phase 64
+  legal-disclaimer, production-deploy timing). Do not confuse them.
+
 ### Claude's Discretion
 - Exact add-on key type (string-literal union `const` vs Prisma enum) — planner's
   call, but it MUST be centralized in one place and shared by middleware + seed + admin mutation.
