@@ -18,6 +18,7 @@ import {
   StepOrgMismatchError,
   stepRunnerBodySchema,
 } from '@contractor-ops/api/services/idp-deprovisioning-step-runner';
+import type { DataRegion } from '@contractor-ops/db';
 import { createTenantClientFrom, getRegionalClient, prisma } from '@contractor-ops/db';
 import { registerAllAdapters } from '@contractor-ops/integrations/adapters/register-all';
 import { createCronLogger } from '@contractor-ops/logger';
@@ -55,7 +56,7 @@ async function handlerInner(
       where: { id: body.organizationId },
       select: { dataRegion: true },
     });
-    const region = org.dataRegion ?? 'EU';
+    const region: DataRegion = org.dataRegion ?? 'EU';
     const db = createTenantClientFrom(getRegionalClient(region));
 
     const result = await runDeprovisioningStep(db, body);

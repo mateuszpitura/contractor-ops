@@ -1,3 +1,4 @@
+import type { DataRegion } from '@contractor-ops/db';
 import { createTenantClientFrom, getRegionalClient, prisma, tenantStore } from '@contractor-ops/db';
 import {
   KsefApiClient,
@@ -504,7 +505,7 @@ export async function processKsefSync(params: {
   const org = await prisma.organization.findUniqueOrThrow({
     where: { id: params.organizationId },
   });
-  const region = org.dataRegion ?? 'EU';
+  const region: DataRegion = org.dataRegion ?? 'EU';
   const db = createTenantClientFrom(getRegionalClient(region));
   const settingsJson = (org.settingsJson as Record<string, unknown> | null) ?? {};
   const nip = settingsJson.taxId as string | undefined;

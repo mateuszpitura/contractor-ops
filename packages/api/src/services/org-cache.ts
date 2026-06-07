@@ -23,6 +23,7 @@
 //
 // Pino logger only — no console.* (CLAUDE.md).
 
+import type { DataRegion } from '@contractor-ops/db';
 import { prisma } from '@contractor-ops/db';
 import { createLogger } from '@contractor-ops/logger';
 import { cached, cacheKey, invalidate } from './cache';
@@ -35,7 +36,7 @@ const log = createLogger({ service: 'org-cache' });
 
 export interface OrgMeta {
   id: string;
-  dataRegion: string;
+  dataRegion: DataRegion;
   status: string;
   name: string;
   /**

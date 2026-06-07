@@ -1,3 +1,4 @@
+import type { DataRegion } from '@contractor-ops/db';
 import { createTenantClientFrom, getRegionalClient, prisma, tenantStore } from '@contractor-ops/db';
 import { TRPCError } from '@trpc/server';
 import { publicProcedure, t } from '../init';
@@ -66,7 +67,7 @@ const portalAuthMiddleware = t.middleware(async ({ ctx, next }) => {
     where: { id: session.organizationId },
     select: { dataRegion: true },
   });
-  const region = org?.dataRegion ?? 'EU';
+  const region: DataRegion = org?.dataRegion ?? 'EU';
 
   const regionalPrisma = getRegionalClient(region);
   const scopedClient = createTenantClientFrom(regionalPrisma);

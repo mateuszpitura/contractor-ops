@@ -155,6 +155,7 @@ import pinoPretty from 'pino-pretty';
 import { createPrismaClientForUrl } from '../src/client.js';
 import type { PrismaClient } from '../src/generated/prisma/client/client.js';
 import { Prisma } from '../src/generated/prisma/client/client.js';
+import type { DataRegion } from '../src/region.js';
 import { seedQaFixtureUsers } from './seed-qa-fixtures.js';
 
 // Load .env from the repo root so DATABASE_URL_* / SEED_PASSWORD work without
@@ -207,7 +208,7 @@ interface CliFlags {
   usersPerOrg?: number;
   contractorsPerOrg?: number;
   invoicesPerContractor?: number;
-  regions: readonly ('EU' | 'ME')[];
+  regions: readonly DataRegion[];
   seed: number;
   confirm: boolean;
   /**
@@ -807,7 +808,7 @@ interface OrgVolume {
   /** Distinct id used in slug + email prefixes. */
   key: string;
   /** Maps to OrgVolume.region. */
-  region: 'EU' | 'ME';
+  region: DataRegion;
   usersPerOrg: number;
   contractorsPerOrg: number;
   invoicesPerContractor: { min: number; max: number };
@@ -897,23 +898,23 @@ const VOLUME_TEMPLATES = {
   },
 } as const;
 
-function buildOrgs(profile: ProfileName, regions: readonly ('EU' | 'ME')[]): OrgVolume[] {
+function buildOrgs(profile: ProfileName, regions: readonly DataRegion[]): OrgVolume[] {
   const orgs: OrgVolume[] = [];
-  const pickRegion = (idx: number): 'EU' | 'ME' => {
+  const pickRegion = (idx: number): DataRegion => {
     // ~70% EU, 30% ME when both regions are configured
     if (regions.length === 1) {
       const only = regions[0];
       if (only === undefined) throw new Error('regions list is empty');
       return only;
     }
-    const r = idx % 10 < 7 ? 'EU' : 'ME';
-    return regions.includes(r) ? r : (regions[0] as 'EU' | 'ME');
+    const r: DataRegion = idx % 10 < 7 ? 'EU' : 'ME';
+    return regions.includes(r) ? r : (regions[0] as DataRegion);
   };
 
   const push = (
     key: string,
     template: keyof typeof VOLUME_TEMPLATES,
-    region: 'EU' | 'ME',
+    region: DataRegion,
     showcase = false,
   ): void => {
     orgs.push({ key, region, ...VOLUME_TEMPLATES[template], showcase });
@@ -1006,7 +1007,7 @@ interface OrgFakers {
   ascii: Faker;
 }
 
-function makeFakers(region: 'EU' | 'ME', countryCode: string, seed: number): OrgFakers {
+function makeFakers(region: DataRegion, countryCode: string, seed: number): OrgFakers {
   const locales = (() => {
     if (region === 'ME') return [ar, en];
     if (countryCode === 'DE') return [de, en];
@@ -1074,7 +1075,7 @@ const ME_PROFILES: readonly RegionProfile[] = [
   },
 ];
 
-function pickRegionProfile(region: 'EU' | 'ME', faker: Faker): RegionProfile {
+function pickRegionProfile(region: DataRegion, faker: Faker): RegionProfile {
   const list = region === 'EU' ? EU_PROFILES : ME_PROFILES;
   return faker.helpers.arrayElement(list);
 }
@@ -7479,7 +7480,7 @@ async function seedTimesheets(
 // ---------------------------------------------------------------------------
 
 interface SeedSummary {
-  region: 'EU' | 'ME';
+  region: DataRegion;
   orgKey: string;
   organizationId: string;
   organizationName: string;
@@ -7764,7 +7765,7 @@ const SECTION_COUNT_TABLES: ReadonlyArray<{ section: SectionKey; table: string }
  * as `0` rather than crashing the summary.
  */
 async function fetchSectionCounts(
-  clients: ReadonlyMap<'EU' | 'ME', PrismaClient>,
+  clients: ReadonlyMap<DataRegion, PrismaClient>,
 ): Promise<Map<SectionKey, number>> {
   const totals = new Map<SectionKey, number>();
   for (const { section, table } of SECTION_COUNT_TABLES) {
@@ -7875,7 +7876,7 @@ async function runSeed(flags: CliFlags): Promise<void> {
   const passwordHash = await hashPassword(password);
 
   // Build a region → URL → client map
-  const regionUrls = new Map<'EU' | 'ME', string>();
+  const regionUrls = new Map<DataRegion, string>();
   for (const r of flags.regions) {
     const explicit = process.env[`DATABASE_URL_${r}`];
     const fallback = r === 'EU' ? process.env.DATABASE_URL : undefined;
@@ -7891,7 +7892,7 @@ async function runSeed(flags: CliFlags): Promise<void> {
     throw new Error('no DB URLs configured for the requested regions');
   }
 
-  const clients = new Map<'EU' | 'ME', PrismaClient>();
+  const clients = new Map<DataRegion, PrismaClient>();
   for (const [region, url] of regionUrls) {
     clients.set(region, createPrismaClientForUrl(url));
   }

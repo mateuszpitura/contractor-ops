@@ -34,7 +34,7 @@
 //   4. Per write, the centralised audit-writer records an AuditLog row.
 //   5. A single Pino INFO line per run reports the resulting counts.
 
-import type { Prisma } from '@contractor-ops/db';
+import type { DataRegion, Prisma } from '@contractor-ops/db';
 import {
   decryptCredentials,
   fetchJiraProjects,
@@ -355,7 +355,7 @@ export interface ScheduledOrgDefinitionSyncResult {
  */
 export async function runScheduledOrgDefinitionSync(deps: {
   prisma: import('@contractor-ops/db').PrismaClient;
-  getRegionalClient: (region: 'EU' | 'ME') => unknown;
+  getRegionalClient: (region: DataRegion) => unknown;
   createTenantClientFrom: (p: unknown) => DbClient;
   tenantStore: {
     run<R>(ctx: { organizationId: string; region: string }, cb: () => R): R;
@@ -395,7 +395,7 @@ export async function runScheduledOrgDefinitionSync(deps: {
       continue;
     }
 
-    const region = (c.organization.dataRegion ?? 'EU') as 'EU' | 'ME';
+    const region: DataRegion = c.organization.dataRegion ?? 'EU';
     const regional = deps.getRegionalClient(region);
     const tenantDb = deps.createTenantClientFrom(regional);
     const provider = c.provider as 'JIRA' | 'LINEAR';

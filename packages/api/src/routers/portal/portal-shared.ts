@@ -1,4 +1,5 @@
 import { createHmac } from 'node:crypto';
+import type { DataRegion } from '@contractor-ops/db';
 import { createTenantClientFrom, getRegionalClient, prisma, tenantStore } from '@contractor-ops/db';
 import { getServerEnv } from '@contractor-ops/validators';
 import type { TenantScopedDb } from '../../lib/tenant-db';
@@ -20,7 +21,7 @@ export async function withOrgRegionalDb<T>(
     where: { id: organizationId },
     select: { dataRegion: true },
   });
-  const region = org?.dataRegion ?? 'EU';
+  const region: DataRegion = org?.dataRegion ?? 'EU';
   const db = createTenantClientFrom(getRegionalClient(region));
   return tenantStore.run({ organizationId, region }, () => fn(db));
 }

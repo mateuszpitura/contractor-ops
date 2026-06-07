@@ -42,7 +42,7 @@ import {
 } from '@contractor-ops/api/services/oauth-challenge';
 import { syncJiraProjectsToOrgDefinitions } from '@contractor-ops/api/services/org-definition-sync';
 import { auth } from '@contractor-ops/auth';
-import type { CapabilityEnum, Prisma, ScopeCapabilities } from '@contractor-ops/db';
+import type { CapabilityEnum, DataRegion, Prisma, ScopeCapabilities } from '@contractor-ops/db';
 import { createTenantClientFrom, getRegionalClient, prisma, tenantStore } from '@contractor-ops/db';
 import {
   encryptCredentials,
@@ -374,7 +374,7 @@ export function registerOAuthRoutes(app: FastifyInstance): void {
                 where: { id: targetOrgId },
                 select: { dataRegion: true },
               });
-              const region = (org.dataRegion ?? 'EU') as 'EU' | 'ME';
+              const region: DataRegion = org.dataRegion ?? 'EU';
               const tenantDb = createTenantClientFrom(getRegionalClient(region));
               await tenantStore.run({ organizationId: targetOrgId, region }, () =>
                 syncJiraProjectsToOrgDefinitions(

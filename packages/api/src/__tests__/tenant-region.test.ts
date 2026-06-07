@@ -115,6 +115,28 @@ describe('tenant middleware — region routing', () => {
     expect(result.ctx.db).toBe(mockScopedClient);
   });
 
+  it('resolves dataRegion=US and selects US regional client (US-INFRA-01 routing)', async () => {
+    // A US-billing org (dataRegion='US', assigned at creation via the Better
+    // Auth beforeCreateOrganization hook) must route to the us-east-1 client —
+    // never silently fall back to EU. This is US-INFRA-01 success criterion 1's
+    // resolution half: creation assigns US, the tenant boundary honours it.
+    mockFindUnique.mockResolvedValue({ id: 'org-mock', dataRegion: 'US', status: 'ACTIVE' });
+
+    const result = await runTenantMiddleware({
+      session: { session: { activeOrganizationId: 'org-us-001' } },
+      user: { id: 'user-1' },
+    });
+
+    expect(getRegionalClient).toHaveBeenCalledWith('US');
+    expect(getRegionalClient).not.toHaveBeenCalledWith('EU');
+    expect(mockTenantStoreRun).toHaveBeenCalledWith(
+      { organizationId: 'org-us-001', region: 'US' },
+      expect.any(Function),
+    );
+    expect(result.ctx.region).toBe('US');
+    expect(result.ctx.db).toBe(mockScopedClient);
+  });
+
   it('resolves dataRegion=EU and selects EU regional client', async () => {
     mockFindUnique.mockResolvedValue({ id: 'org-mock', dataRegion: 'EU', status: 'ACTIVE' });
 
