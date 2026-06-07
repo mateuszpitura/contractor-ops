@@ -23,6 +23,7 @@ vi.mock('../client.js', () => ({
   })),
 }));
 
+import { DataRegion as PrismaDataRegion } from '../generated/prisma/client/enums.js';
 import { getRegionalClient, SUPPORTED_REGIONS } from '../region.js';
 import { getReplicaClient, resetReplicaStateForTests } from '../replica.js';
 
@@ -36,6 +37,16 @@ describe('US region lockstep (SC#3)', () => {
 
   it("SUPPORTED_REGIONS includes 'US'", () => {
     expect(SUPPORTED_REGIONS).toContain('US' as (typeof SUPPORTED_REGIONS)[number]);
+  });
+
+  // Phase 83 (US-INFRA-01) — the 6th lockstep place the Phase-82 test skipped.
+  // `DataRegion` exists twice: the TS tuple here (`SUPPORTED_REGIONS`, US-aware
+  // since Phase 82) and the Postgres `enum DataRegion` (only widened to US in
+  // Phase 83, Task 1). They previously drifted silently (Pitfall 1). This
+  // assertion fails CI if the generated Prisma enum and the TS tuple ever
+  // diverge again — closing the gap permanently.
+  it('Prisma DataRegion enum matches SUPPORTED_REGIONS (no TS/DB drift — Pitfall 1)', () => {
+    expect(new Set(Object.values(PrismaDataRegion))).toEqual(new Set(SUPPORTED_REGIONS));
   });
 });
 
