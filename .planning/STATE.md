@@ -1,17 +1,16 @@
 ---
 gsd_state_version: 1.0
-milestone: v6.0
-milestone_name: Platform Maturity & Operational Hardening
-status: completed
-stopped_at: Phase 81 context gathered
-last_updated: "2026-06-07T13:26:35.869Z"
-last_activity: 2026-06-07 — Milestone v6.0 completed and archived
+milestone: v7.0
+milestone_name: GTM Expansion
+status: planning
+last_updated: "2026-06-07T13:58:43.495Z"
+last_activity: 2026-06-07
 progress:
-  total_phases: 12
-  completed_phases: 12
-  total_plans: 90
-  completed_plans: 90
-  percent: 100
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
@@ -289,10 +288,10 @@ See: .planning/PROJECT.md (updated 2026-06-07 — v6.0 milestone shipped)
 
 ## Current Position
 
-Phase: Milestone v6.0 complete
+Phase: Not started (defining requirements)
 Plan: —
-Status: Awaiting next milestone
-Last activity: 2026-06-07 — Milestone v6.0 completed and archived
+Status: Defining requirements
+Last activity: 2026-06-07 — Milestone v7.0 started
 
 ## Deferred Items
 

@@ -12,9 +12,16 @@ The invoice-to-payment flow must work end-to-end: a contractor's invoice arrives
 
 Delivered the four operational-hardening feature sets (see **Validated — v6.0**): F1 Compliance Document Lifecycle Engine, F2 Identity Provider Deprovisioning (5 providers, UI-triggered), F3 Gulf Operational Polish, F4 Offboarding Hardening. 12 phases (70–81), 90 plans, 392 tasks. Requirements 53/54 (OFFB-06 e-sign deferred). Integration 7/7, E2E flows 5/5. Full record: `.planning/milestones/v6.0-ROADMAP.md` + `.planning/MILESTONES.md`; close-time deferred items in `STATE.md`.
 
-## Next Milestone: v7.0 GTM Expansion (planned)
+## Current Milestone: v7.0 GTM Expansion
 
-US Cross-Border + Workforce Management + Integration Marketplace — Phases 82+ (pre-prod gate). Backlog: `.planning/milestones/v7.0-BACKLOG.md`. Concrete requirements defined via `/gsd:new-milestone`. LOCAL-ONLY deploy posture + DEFERRED legal sign-off carry forward.
+**Goal:** Ship the net-new product surface required for credible production GA — US cross-border billing/compliance, workforce (employee) management, and an open integration platform — atop the shipped v1–v6 contractor-ops core.
+
+**Target features (3 parallel themes, Phases 82+ — continues v6.0 numbering):**
+- **A. US Cross-Border** — 1099/W-form lifecycle (W-9, W-8BEN/E, 1099-NEC, 1042-S), IRS TIN-matching + FIRE/IRIS e-file, ACH NACHA + Fedwire + Modern Treasury/Plaid, US classification (federal common-law / CA AB5 / §530), US contractor fields + `en-US` locale + tax-treaty engine, `us-east-1` region routing.
+- **B. Workforce Management (employee-lite)** — `Worker` discriminated-union model, employee registry ×6 markets (PL/DE/UK/US/AE/SA), akta osobowe + per-jurisdiction retention, leave management, KP-grade time tracking, employee on/offboarding, payroll **integration adapters** (Gusto/QuickBooks/ADP + Symfonia/Comarch/Enova/DATEV/Sage — NOT own engine), Personio + BambooHR two-way sync, employee portal, HR dashboard.
+- **C. Integration Marketplace** — public REST API on `apps/public-api` (Hono), API keys + scopes + per-tier rate limits, outbound webhook subscriptions (HMAC-SHA256, QStash DLQ, SSRF guard, PII redaction), Zapier / n8n / Make.com listings, developer portal + TS/Python SDKs.
+
+**Locked decisions (2026-05-31):** themes run parallel (`WORKER-01` the only hard serialization point); `Workforce` + `US Cross-Border` add-on SKUs (`requireAddOn` middleware), Theme C tier-gated within base; 3 US payroll adapters; 10 US states + free-text fallback; e-ZLA / eAU / HMRC RTI deferred to v7.5; LOCAL-ONLY deploy posture + DEFERRED legal sign-off carry forward. Full backlog: `.planning/milestones/v7.0-BACKLOG.md`. Concrete requirements → `.planning/REQUIREMENTS.md` (this milestone).
 
 ## Current State
 
@@ -226,4 +233,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-06-07 — v6.0 Platform Maturity & Operational Hardening SHIPPED (Phases 70–81, 90 plans). Next: v7.0 GTM Expansion.*
+*Last updated: 2026-06-07 — v7.0 GTM Expansion STARTED (US Cross-Border + Workforce Management + Integration Marketplace; Phases 82+). v6.0 SHIPPED 2026-06-07 (Phases 70–81, 90 plans).*
