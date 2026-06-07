@@ -4,13 +4,13 @@ milestone: v7.0
 milestone_name: GTM Expansion
 status: executing
 stopped_at: Phase 82 context gathered
-last_updated: "2026-06-07T18:28:42.606Z"
-last_activity: 2026-06-07 -- Phase 82 planning complete
+last_updated: "2026-06-07T18:49:50.484Z"
+last_activity: 2026-06-07
 progress:
   total_phases: 20
   completed_phases: 0
   total_plans: 4
-  completed_plans: 0
+  completed_plans: 1
   percent: 0
 ---
 
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-07 — v7.0 GTM Expansion started; v6.0 shipped 2026-06-07)
 
 **Core value:** The invoice-to-payment flow must work end-to-end: invoice arrives, gets matched to contract, routed through approval, and batched for payment — with full audit trail and zero manual tracking in spreadsheets.
-**Current focus:** v7.0 GTM Expansion — roadmap created (Phases 82–101). Next: `/gsd:plan-phase 82`.
+**Current focus:** Phase 82 — v7.0 Foundation — Add-On Billing + Flag Registry + US Region Enablement
 
 ## Current Position
 
-Phase: 82 of 20 (v7.0 Foundation — Add-On Billing + Flag Registry + US Region Enablement)
-Plan: — (not yet planned)
+Phase: 82 (v7.0 Foundation — Add-On Billing + Flag Registry + US Region Enablement) — EXECUTING
+Plan: 2 of 4
 Status: Ready to execute
-Last activity: 2026-06-07 -- Phase 82 planning complete
+Last activity: 2026-06-07
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [███░░░░░░░] 25%
 
 ## v7.0 Roadmap Summary (created 2026-06-07)
 
@@ -89,6 +89,7 @@ Decisions are logged in PROJECT.md Key Decisions table. Recent decisions affecti
 - [v7.0 research, 2026-06-07]: Reuse-don't-rebuild — ACH NACHA = payment-export factory; outbound webhooks ride OutboxEvent outbox (NOT inbound webhook-dispatcher); Personio/BambooHR/payroll on v2.0 integration framework; US-CLASS extends v5.0 classification; public-api already has Hono + OpenAPI/Scalar + rate-limiter + apiKeyTenantProcedure
 - [v7.0 research, 2026-06-07]: `us-east-1` is a 4-place atomic change (SUPPORTED_REGIONS / DataRegion enum / DATABASE_URL_US / buildLazyBag coercion) with a lockstep test — Phase 82/83
 - [v7.0 research, 2026-06-07]: never add v7.0 tenant-owning models to `globalModels` (IDOR landmine); two-org cross-leak test per new model
+- [Phase ?]: [82-01, 2026-06-07]: Wave 0 RED scaffolds for FOUND7-01/02/03; error-handler.test.ts extended (pre-existing) not recreated; 5-way region lockstep split across packages/db + feature-flags (no new dep edge); IRIS TCC ~45-day clock started 2026-06-07, earliest-ready 2026-07-22 (Phase 86 / US-FORM-05)
 
 ### Pending Todos
 
@@ -115,6 +116,7 @@ Carried forward from v6.0 milestone close (2026-06-07). Full enumeration: `.plan
 | manual-uat | 28 open human-UAT scenarios across phases 72/79/80/81 | partial |
 | i18n_review | Phase-73 machine-translated ar.json strings — native review pre-prod | open |
 | legal_signoff | 24 PENDING signoff-registry namespaces (US tax-form copy, akta/Personalakte retention, per-market statutory paperwork) — per-adviser PRs post-deploy | open |
+| Phase 82 P82-01 | 10m | 3 tasks | 7 files |
 
 ## Standing Project Constraints
 
@@ -124,7 +126,7 @@ Carried forward from v6.0 milestone close (2026-06-07). Full enumeration: `.plan
 
 ## Session Continuity
 
-Last session: 2026-06-07T16:00:59.696Z
+Last session: 2026-06-07T18:49:43.105Z
 Stopped at: Phase 82 context gathered
-Resume file: .planning/milestones/v7.0-phases/82-v7-0-foundation-add-on-billing-flag-registry-us-region-enabl/82-CONTEXT.md
+Resume file: None
 Next command: `/gsd:plan-phase 82`
