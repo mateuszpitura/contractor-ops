@@ -12,12 +12,17 @@ vi.mock('@contractor-ops/db', () => ({
   },
 }));
 
+const bucketEnv: {
+  R2_BUCKET_NAME_EU: string;
+  R2_BUCKET_NAME_ME: string;
+  R2_BUCKET_NAME_US?: string;
+} = {
+  R2_BUCKET_NAME_EU: 'bucket-eu',
+  R2_BUCKET_NAME_ME: 'bucket-me',
+};
+
 vi.mock('@contractor-ops/validators', async importOriginal => {
   const actual = await importOriginal<typeof import('@contractor-ops/validators')>();
-  const bucketEnv = {
-    R2_BUCKET_NAME_EU: 'bucket-eu',
-    R2_BUCKET_NAME_ME: 'bucket-me',
-  };
   return {
     ...actual,
     getServerEnv: vi.fn(() => bucketEnv as import('@contractor-ops/validators').ServerEnv),
@@ -54,12 +59,25 @@ import {
 // ---------------------------------------------------------------------------
 
 describe('getRegionalBucket', () => {
+  beforeEach(() => {
+    delete bucketEnv.R2_BUCKET_NAME_US;
+  });
+
   it('returns EU bucket name for EU region', () => {
     expect(getRegionalBucket('EU')).toBe('bucket-eu');
   });
 
   it('returns ME bucket name for ME region', () => {
     expect(getRegionalBucket('ME')).toBe('bucket-me');
+  });
+
+  it('returns US bucket name when R2_BUCKET_NAME_US is set', () => {
+    bucketEnv.R2_BUCKET_NAME_US = 'bucket-us';
+    expect(getRegionalBucket('US')).toBe('bucket-us');
+  });
+
+  it('lazy-throws for US region when R2_BUCKET_NAME_US is unset', () => {
+    expect(() => getRegionalBucket('US')).toThrow('R2_BUCKET_NAME_US is not configured');
   });
 
   it('throws for unsupported region', () => {
