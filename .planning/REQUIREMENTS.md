@@ -250,20 +250,132 @@ Explicitly excluded for v7.0. Documented to prevent scope creep.
 
 ## Traceability
 
-Which phases cover which requirements. Empty — filled by the roadmapper.
+Which phases cover which requirements. Phase numbering continues from v6.0 (ended at Phase 81); v7.0 spans Phases 82–101.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| (filled by roadmapper) | — | Pending |
+| FOUND7-01 | Phase 82 | Pending |
+| FOUND7-02 | Phase 82 | Pending |
+| FOUND7-03 | Phase 82 | Pending |
+| US-INFRA-01 | Phase 83 | Pending |
+| US-INFRA-02 | Phase 83 | Pending |
+| US-INFRA-03 | Phase 83 | Pending |
+| US-FIELD-01 | Phase 84 | Pending |
+| US-FIELD-02 | Phase 84 | Pending |
+| US-FIELD-03 | Phase 84 | Pending |
+| US-FIELD-04 | Phase 84 | Pending |
+| US-LOC-01 | Phase 84 | Pending |
+| US-FORM-01 | Phase 85 | Pending |
+| US-FORM-02 | Phase 85 | Pending |
+| US-LOC-02 | Phase 85 | Pending |
+| US-LOC-03 | Phase 85 | Pending |
+| US-FORM-03 | Phase 86 | Pending |
+| US-FORM-04 | Phase 86 | Pending |
+| US-FORM-05 | Phase 86 | Pending |
+| US-FORM-07 | Phase 86 | Pending |
+| US-FORM-06 | Phase 87 | Pending |
+| US-CLASS-01 | Phase 87 | Pending |
+| US-CLASS-02 | Phase 87 | Pending |
+| US-CLASS-03 | Phase 87 | Pending |
+| US-CLASS-04 | Phase 87 | Pending |
+| US-PAY-01 | Phase 88 | Pending |
+| US-PAY-02 | Phase 88 | Pending |
+| US-PAY-03 | Phase 88 | Pending |
+| US-PAY-04 | Phase 88 | Pending |
+| US-PAY-05 | Phase 88 | Pending |
+| WORKER-01 | Phase 89 | Pending |
+| WORKER-02 | Phase 89 | Pending |
+| WORKER-03 | Phase 89 | Pending |
+| WORKER-04 | Phase 89 | Pending |
+| WORKER-05 | Phase 89 | Pending |
+| EMP-REG-PL-01 | Phase 90 | Pending |
+| EMP-REG-DE-01 | Phase 90 | Pending |
+| EMP-REG-UK-01 | Phase 90 | Pending |
+| EMP-REG-US-01 | Phase 90 | Pending |
+| EMP-REG-AE-01 | Phase 90 | Pending |
+| EMP-REG-SA-01 | Phase 90 | Pending |
+| AKTA-01 | Phase 91 | Pending |
+| AKTA-02 | Phase 91 | Pending |
+| AKTA-03 | Phase 91 | Pending |
+| AKTA-04 | Phase 91 | Pending |
+| LEAVE-01 | Phase 92 | Pending |
+| LEAVE-02 | Phase 92 | Pending |
+| LEAVE-03 | Phase 92 | Pending |
+| TIME-EMP-01 | Phase 92 | Pending |
+| TIME-EMP-02 | Phase 92 | Pending |
+| TIME-EMP-03 | Phase 92 | Pending |
+| EMP-ON-01 | Phase 93 | Pending |
+| EMP-OFF-01 | Phase 93 | Pending |
+| EMP-OFF-02 | Phase 93 | Pending |
+| PAYROLL-PL-01 | Phase 94 | Pending |
+| PAYROLL-PL-02 | Phase 94 | Pending |
+| PAYROLL-PL-03 | Phase 94 | Pending |
+| PAYROLL-DE-01 | Phase 94 | Pending |
+| PAYROLL-DE-02 | Phase 94 | Pending |
+| PAYROLL-UK-01 | Phase 94 | Pending |
+| PAYROLL-US-01 | Phase 94 | Pending |
+| HRIS-SYNC-01 | Phase 95 | Pending |
+| HRIS-SYNC-02 | Phase 95 | Pending |
+| HRIS-SYNC-03 | Phase 95 | Pending |
+| HRIS-SYNC-04 | Phase 95 | Pending |
+| HRIS-SYNC-05 | Phase 95 | Pending |
+| HRIS-SYNC-06 | Phase 95 | Pending |
+| EMP-PORTAL-01 | Phase 96 | Pending |
+| EMP-PORTAL-02 | Phase 96 | Pending |
+| EMP-PORTAL-03 | Phase 96 | Pending |
+| EMP-PORTAL-04 | Phase 96 | Pending |
+| HR-DASH-01 | Phase 97 | Pending |
+| HR-DASH-02 | Phase 97 | Pending |
+| HR-DASH-03 | Phase 97 | Pending |
+| HR-DASH-04 | Phase 97 | Pending |
+| HR-DASH-05 | Phase 97 | Pending |
+| INTEG-API-01 | Phase 98 | Pending |
+| INTEG-API-02 | Phase 98 | Pending |
+| INTEG-API-03 | Phase 98 | Pending |
+| INTEG-API-04 | Phase 98 | Pending |
+| INTEG-API-05 | Phase 98 | Pending |
+| INTEG-AUTH-01 | Phase 99 | Pending |
+| INTEG-AUTH-02 | Phase 99 | Pending |
+| INTEG-AUTH-03 | Phase 99 | Pending |
+| INTEG-AUTH-04 | Phase 99 | Pending |
+| INTEG-AUTH-05 | Phase 99 | Pending |
+| INTEG-WEBHOOK-01 | Phase 100 | Pending |
+| INTEG-WEBHOOK-02 | Phase 100 | Pending |
+| INTEG-WEBHOOK-03 | Phase 100 | Pending |
+| INTEG-WEBHOOK-04 | Phase 100 | Pending |
+| INTEG-WEBHOOK-05 | Phase 100 | Pending |
+| INTEG-WEBHOOK-06 | Phase 100 | Pending |
+| INTEG-WEBHOOK-07 | Phase 100 | Pending |
+| INTEG-SEC-01 | Phase 100 | Pending |
+| INTEG-SEC-02 | Phase 100 | Pending |
+| INTEG-SEC-03 | Phase 100 | Pending |
+| INTEG-SEC-04 | Phase 100 | Pending |
+| INTEG-SEC-05 | Phase 100 | Pending |
+| INTEG-ZAPIER-01 | Phase 101 | Pending |
+| INTEG-ZAPIER-02 | Phase 101 | Pending |
+| INTEG-N8N-01 | Phase 101 | Pending |
+| INTEG-N8N-02 | Phase 101 | Pending |
+| INTEG-MAKE-01 | Phase 101 | Pending |
+| INTEG-MARKETPLACE-01 | Phase 101 | Pending |
+| INTEG-DX-01 | Phase 101 | Pending |
+| INTEG-DX-02 | Phase 101 | Pending |
+| INTEG-DX-03 | Phase 101 | Pending |
+| INTEG-DX-04 | Phase 101 | Pending |
 
 **Coverage:**
 - v7.0 requirements: **107 total** (3 FOUND7 + Theme A 26 + Theme B 46 + Theme C 32)
   - Theme A: US-FORM 7 + US-PAY 5 + US-CLASS 4 + US-FIELD 4 + US-LOC 3 + US-INFRA 3 = 26
   - Theme B: WORKER 5 + EMP-REG 6 + AKTA 4 + LEAVE 3 + TIME-EMP 3 + EMP-ON/OFF 3 + PAYROLL 7 + HRIS-SYNC 6 + EMP-PORTAL 4 + HR-DASH 5 = 46
   - Theme C: INTEG-API 5 + INTEG-AUTH 5 + INTEG-WEBHOOK 7 + INTEG-SEC 5 + marketplace 6 + INTEG-DX 4 = 32
-- Mapped to phases: **0** (roadmapper pending)
-- Unmapped: **107** ⚠️ (resolved on roadmap creation)
+- Mapped to phases: **107** ✓ (all v7.0 requirements assigned to exactly one phase across Phases 82–101)
+- Unmapped: **0** ✓
+
+**Per-phase requirement counts (verification):**
+- Phase 82 (3) + 83 (3) + 84 (5) + 85 (4) + 86 (4) + 87 (5) + 88 (5) = 29 → FOUND7 (3) + Theme A (26) ✓
+- Phase 89 (5) + 90 (6) + 91 (4) + 92 (6) + 93 (3) + 94 (7) + 95 (6) + 96 (4) + 97 (5) = 46 → Theme B ✓
+- Phase 98 (5) + 99 (5) + 100 (12) + 101 (10) = 32 → Theme C ✓
+- Total: 29 + 46 + 32 = **107** ✓
 
 ---
 *Requirements defined: 2026-06-07*
-*Last updated: 2026-06-07 after initial definition (v7.0 milestone)*
+*Last updated: 2026-06-07 — roadmapper mapped all 107 requirements to Phases 82–101 (v7.0 roadmap created)*
