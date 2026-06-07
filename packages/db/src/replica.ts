@@ -72,6 +72,9 @@ import { getRegionalClient, SUPPORTED_REGIONS } from './region.js';
 const REPLICA_ENV_MAP: Record<DataRegion, string> = {
   EU: 'DATABASE_URL_EU_RO',
   ME: 'DATABASE_URL_ME_RO',
+  // US read-replica deferred (US-INFRA-01): DATABASE_URL_US_RO stays unset, so
+  // getReplicaClient('US') / readReplica transparently fall back to the writer.
+  US: 'DATABASE_URL_US_RO',
 };
 
 // ---------------------------------------------------------------------------

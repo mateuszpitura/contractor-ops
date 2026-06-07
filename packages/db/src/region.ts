@@ -5,7 +5,7 @@ import type { PrismaClient } from './generated/prisma/client/client.js';
 // Supported Regions
 // ---------------------------------------------------------------------------
 
-export const SUPPORTED_REGIONS = ['EU', 'ME'] as const;
+export const SUPPORTED_REGIONS = ['EU', 'ME', 'US'] as const;
 export type DataRegion = (typeof SUPPORTED_REGIONS)[number];
 
 // ---------------------------------------------------------------------------
@@ -15,6 +15,9 @@ export type DataRegion = (typeof SUPPORTED_REGIONS)[number];
 const REGION_ENV_MAP: Record<DataRegion, string> = {
   EU: 'DATABASE_URL_EU',
   ME: 'DATABASE_URL_ME',
+  // US is OPTIONAL (DATABASE_URL_US unset locally): getRegionalClient stays
+  // recognized for 'US' but lazy-throws the missing-env error on actual access.
+  US: 'DATABASE_URL_US',
 };
 
 // ---------------------------------------------------------------------------
