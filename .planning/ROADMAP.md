@@ -92,7 +92,7 @@ Known gaps / deferred at close: see STATE.md `## Deferred Items` (3 unverified p
 **Theme parallelism (locked 2026-05-31):** After the shared Foundation (Phase 82), Themes A / B / C run **concurrently** (concurrency capped by solo-dev-with-AI throughput, not by the dependency graph). The only hard serialization points are `WORKER-01` (Phase 89 — no Theme B work starts before it) and `INTEG-API-01` (Phase 98 — Theme C foundation). Reuse posture is mandatory: extend existing factories/frameworks (payment-export, integration adapters, OutboxEvent outbox, public-api Hono host, v5 classification, v2 portal) — do NOT rebuild. See `.planning/milestones/v7.0-BACKLOG.md` + `.planning/research/SUMMARY.md` + `.planning/research/ARCHITECTURE.md`.
 
 - [x] **Phase 82: v7.0 Foundation — Add-On Billing + Flag Registry + US Region Enablement** - `requireAddOn` middleware, all v7.0 flags PENDING with boot-gate, `us-east-1` 4-place region enablement; starts IRIS TCC ~45-day enrollment clock (completed 2026-06-07)
-- [ ] **Phase 83: Theme A — US Region Infrastructure** - `us-east-1` per-org DB routing + US R2 tax-archive bucket + IRS 4yr/7yr retention; precedes any US-data creation
+- [x] **Phase 83: Theme A — US Region Infrastructure** - `us-east-1` per-org DB routing + US R2 tax-archive bucket + IRS 4yr/7yr retention; precedes any US-data creation (completed 2026-06-07)
 - [ ] **Phase 84: Theme A — US Contractor Profile Fields + en-US Locale** - EIN/SSN/USPS-address validators, US profile component, `en-US` full key parity
 - [ ] **Phase 85: Theme A — W-Form Intake + Tax-Treaty Engine** - W-9 + W-8BEN/E wizards, US tax-treaty rate table, W-8BEN treaty-article auto-populate
 - [ ] **Phase 86: Theme A — TIN-Match → 1099-NEC → IRIS E-File → State Filing** - IRS TIN-matching, tax-year-keyed 1099-NEC ($2,000 TY2026), IRIS XML A2A transmit + ack, per-state CFSF
@@ -142,7 +142,7 @@ Known gaps / deferred at close: see STATE.md `## Deferred Items` (3 unverified p
 - [x] 83-01-PLAN.md — [BLOCKING] Add US to the DataRegion Postgres enum + Wave 0 RED test scaffolds (region-lockstep Prisma-enum assertion, retention resolver, org-creation hook)
 - [x] 83-02-PLAN.md — US DB routing: organizationCreation.beforeCreate US assignment (D-01) + widen dataRegion cast sites to DataRegion + US tenant routing
 - [x] 83-03-PLAN.md — US R2 tax-archive bucket: REGION_BUCKET_MAP Record<DataRegion> + optional R2_BUCKET_NAME_US (lazy-throw)
-- [ ] 83-04-PLAN.md — IRS retention: retention-policy resolver (4yr/7yr) wired into all 3 deletion chokepoints (soft-delete, data-purge cron, gdpr erasure)
+- [x] 83-04-PLAN.md — IRS retention: retention-policy resolver (4yr/7yr) wired into all 3 deletion chokepoints (soft-delete, data-purge cron, gdpr erasure)
 **Research flag**: Standard — the 4-place change is fully identified in-tree; the lockstep test landed in Phase 82 protects it.
 
 ### Phase 84: Theme A — US Contractor Profile Fields + en-US Locale
@@ -380,7 +380,7 @@ Phases execute in numeric order: 82 → 83 → … → 101. After Foundation (82
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
 | 82. v7.0 Foundation — Add-On + Flags + US Region | v7.0 | 4/4 | Complete    | 2026-06-07 |
-| 83. Theme A — US Region Infrastructure | v7.0 | 3/4 | In Progress|  |
+| 83. Theme A — US Region Infrastructure | v7.0 | 4/4 | Complete   | 2026-06-07 |
 | 84. Theme A — US Profile Fields + en-US Locale | v7.0 | 0/TBD | Not started | - |
 | 85. Theme A — W-Form Intake + Tax-Treaty Engine | v7.0 | 0/TBD | Not started | - |
 | 86. Theme A — TIN-Match → 1099-NEC → IRIS → State | v7.0 | 0/TBD | Not started | - |

@@ -35,6 +35,30 @@ executor SCOPE BOUNDARY rule.
   test) are offenders — verified by grep.
 - **Origin:** pre-existing app-bootstrap/observability code; out of scope per SCOPE BOUNDARY.
 
+### 4. `lint:logs` — unredacted `body` log in `csp-report.ts` (Plan 83-04)
+
+- **File:** `apps/api/src/routes/csp-report.ts:86` —
+  `log.warn({ body }, 'csp-report: unrecognised payload shape')`.
+- **Discovered:** running the `lint:logs` gate for the Plan 83-04 retention work.
+- **Origin:** last touched in `e320911b` (apps/api scaffold), long before Phase 83.
+  None of the four plan-owned files (`retention-policy.ts`, `soft-delete.ts`,
+  `data-purge.ts`, `gdpr.ts`) are offenders — `data-purge` keeps `ctx.log` (no
+  console.*), `gdpr` uses `writeAuditLog`. Out of scope per SCOPE BOUNDARY.
+
+## Phase 83-04 known limitations (recorded per plan success criterion)
+
+- **EU-pinned `data-purge` cross-region gap (Pitfall 6).** `data-purge.ts` sweeps via
+  the base (EU-pinned) `prisma`, so US/ME soft-deleted rows are not reached by the
+  EU purge. This is a PRE-EXISTING cross-region correctness gap (already true for ME),
+  NOT introduced by Plan 83-04, and D-05 (no in-window hard-delete) is satisfied
+  trivially for US rows the EU purge cannot see. A true region-aware purge would fan
+  out over `SUPPORTED_REGIONS` × `getRegionalClient(region)`. Deferred ops/correctness
+  item; out of Phase 83 scope (threat T-83-04-05 = accept).
+- **Statutory-citation copy needs legal/tax-adviser verification.** `RETENTION_YEARS`
+  (4yr 1099-NEC / 7yr backup-withholding) and the `RETENTION_CITATIONS` 26 CFR refs in
+  `gdpr.ts` are IRS values annotated LOCAL-ONLY; verify with a jurisdiction-specific
+  adviser before production deploy (Standing Project Constraint; not hard-blocking).
+
 ## Deferred ops items (LOCAL-ONLY posture; recorded in 83-01-SUMMARY)
 
 - **Per-region PRODUCTION enum apply** of `ALTER TYPE "DataRegion" ADD VALUE 'US'`
