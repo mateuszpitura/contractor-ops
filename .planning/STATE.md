@@ -4,13 +4,13 @@ milestone: v7.0
 milestone_name: GTM Expansion
 status: executing
 stopped_at: Phase 83 context gathered
-last_updated: "2026-06-07T21:03:20.542Z"
-last_activity: 2026-06-07 -- Phase 83 planning complete
+last_updated: "2026-06-07T21:25:44.318Z"
+last_activity: 2026-06-07
 progress:
   total_phases: 20
   completed_phases: 1
   total_plans: 8
-  completed_plans: 4
+  completed_plans: 5
   percent: 5
 ---
 
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-07 — v7.0 GTM Expansion started; v6.0 shipped 2026-06-07)
 
 **Core value:** The invoice-to-payment flow must work end-to-end: invoice arrives, gets matched to contract, routed through approval, and batched for payment — with full audit trail and zero manual tracking in spreadsheets.
-**Current focus:** Phase 83 — theme a — us region infrastructure
+**Current focus:** Phase 83 — Theme A — US Region Infrastructure
 
 ## Current Position
 
-Phase: 83
-Plan: Not started
+Phase: 83 (Theme A — US Region Infrastructure) — EXECUTING
+Plan: 2 of 4
 Status: Ready to execute
-Last activity: 2026-06-07 -- Phase 83 planning complete
+Last activity: 2026-06-07
 
-Progress: [██████████] 100%
+Progress: [██████░░░░] 63%
 
 ## v7.0 Roadmap Summary (created 2026-06-07)
 
@@ -93,6 +93,7 @@ Decisions are logged in PROJECT.md Key Decisions table. Recent decisions affecti
 - [Phase ?]: [82-02, 2026-06-07]: us-east-1 enabled across the five-way lockstep (SUPPORTED_REGIONS/DataRegion/regionSchema/REGION_ENV_MAP/REPLICA_ENV_MAP); DATABASE_URL_US OPTIONAL (D-06, lazy-throw on access); buildLazyBag explicit US branch (no silent EU coercion, T-82-02-01); 'payroll' flag category added in schemas.ts for 82-03; seed-dev US seed-org deferred to Phase 83
 - [Phase ?]: [82-04, 2026-06-07]: FOUND7-01 add-on primitive — Subscription.addOns String[] (additive); requireAddOn clones tier.ts (ADD_ON_REQUIRED FORBIDDEN JSON); workforceProcedure/usCrossBorderProcedure = tenant -> requireTier(STARTER) -> requireAddOn (D-11); owner-gated audit-logged cache-invalidating grantAddOn (D-03, Stripe SKU deferred); schema via scoped ALTER (db push fallback, migrate dev blocked by pre-existing migration-history drift); per-region prod apply deferred
 - [Phase ?]: [82-03, 2026-06-07]: FOUND7-02 — 19 v7.0 flags registered PENDING (D-09 dot-namespaced) + V7_FLAG_KEYS cohort; 10 narrow gated prefixes (pre-v7.0 non-gated flags unaffected, D-10); assertFlagSignoffsOrExit() wired into all three app boots (api/public-api/cron-worker) — the load-bearing UNWIRED-gate fix; boot passes clean with 19 PENDING entries (no exit(1)); feature-flags added as direct dep to api+public-api (was phantom)
+- [Phase ?]: [83-01]: Postgres DataRegion enum widened to { EU ME US } via additive ALTER TYPE ADD VALUE IF NOT EXISTS (dev DB; migrate dev drift-blocked); per-region prod apply deferred. Lockstep test now asserts Prisma enum == SUPPORTED_REGIONS (closes Phase-82 Pitfall-1 drift). Wave 0 RED scaffolds laid for retention resolver (Plan 04) + resolveDataRegionFromBilling org-creation hook (Plan 02).
 
 ### Pending Todos
 
@@ -123,6 +124,7 @@ Carried forward from v6.0 milestone close (2026-06-07). Full enumeration: `.plan
 | Phase 82 P02 | 9m | 3 tasks | 9 files |
 | Phase 82 P82-04 | ~14m | 3 tasks | 8 files |
 | Phase 82 P82-03 | 18m | 3 tasks | 11 files |
+| Phase 83 P83-01 | 18m | 3 tasks | 6 files |
 
 ## Standing Project Constraints
 
@@ -132,7 +134,7 @@ Carried forward from v6.0 milestone close (2026-06-07). Full enumeration: `.plan
 
 ## Session Continuity
 
-Last session: 2026-06-07T19:57:47.641Z
+Last session: 2026-06-07T21:25:23.115Z
 Stopped at: Phase 83 context gathered
-Resume file: .planning/milestones/v7.0-phases/83-theme-a-us-region-infrastructure/83-CONTEXT.md
+Resume file: None
 Next command: `/gsd:plan-phase 82`

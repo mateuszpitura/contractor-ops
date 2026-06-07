@@ -139,7 +139,7 @@ Known gaps / deferred at close: see STATE.md `## Deferred Items` (3 unverified p
   2. Tax-form archives for US orgs are stored in a US-specific R2 bucket (data residency for US tax records).
   3. IRS-mandated retention is enforced (4-year 1099-NEC, 7-year backup-withholding) via soft-delete + scheduled archive, with no early hard-delete of a retained record.
 **Plans**: 4 plans
-- [ ] 83-01-PLAN.md — [BLOCKING] Add US to the DataRegion Postgres enum + Wave 0 RED test scaffolds (region-lockstep Prisma-enum assertion, retention resolver, org-creation hook)
+- [x] 83-01-PLAN.md — [BLOCKING] Add US to the DataRegion Postgres enum + Wave 0 RED test scaffolds (region-lockstep Prisma-enum assertion, retention resolver, org-creation hook)
 - [ ] 83-02-PLAN.md — US DB routing: organizationCreation.beforeCreate US assignment (D-01) + widen dataRegion cast sites to DataRegion + US tenant routing
 - [ ] 83-03-PLAN.md — US R2 tax-archive bucket: REGION_BUCKET_MAP Record<DataRegion> + optional R2_BUCKET_NAME_US (lazy-throw)
 - [ ] 83-04-PLAN.md — IRS retention: retention-policy resolver (4yr/7yr) wired into all 3 deletion chokepoints (soft-delete, data-purge cron, gdpr erasure)
@@ -380,7 +380,7 @@ Phases execute in numeric order: 82 → 83 → … → 101. After Foundation (82
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
 | 82. v7.0 Foundation — Add-On + Flags + US Region | v7.0 | 4/4 | Complete    | 2026-06-07 |
-| 83. Theme A — US Region Infrastructure | v7.0 | 0/TBD | Not started | - |
+| 83. Theme A — US Region Infrastructure | v7.0 | 1/4 | In Progress|  |
 | 84. Theme A — US Profile Fields + en-US Locale | v7.0 | 0/TBD | Not started | - |
 | 85. Theme A — W-Form Intake + Tax-Treaty Engine | v7.0 | 0/TBD | Not started | - |
 | 86. Theme A — TIN-Match → 1099-NEC → IRIS → State | v7.0 | 0/TBD | Not started | - |
