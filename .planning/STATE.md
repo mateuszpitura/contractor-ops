@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v7.0
 milestone_name: GTM Expansion
-status: executing
+status: verifying
 stopped_at: Completed 82-04-PLAN.md
-last_updated: "2026-06-07T19:17:22.596Z"
+last_updated: "2026-06-07T19:28:18.517Z"
 last_activity: 2026-06-07
 progress:
   total_phases: 20
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 4
-  completed_plans: 3
-  percent: 0
+  completed_plans: 4
+  percent: 5
 ---
 
 # Project State
@@ -27,10 +27,10 @@ See: .planning/PROJECT.md (updated 2026-06-07 — v7.0 GTM Expansion started; v6
 
 Phase: 82 (v7.0 Foundation — Add-On Billing + Flag Registry + US Region Enablement) — EXECUTING
 Plan: 4 of 4
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-06-07
 
-Progress: [████████░░] 75%
+Progress: [██████████] 100%
 
 ## v7.0 Roadmap Summary (created 2026-06-07)
 
@@ -92,6 +92,7 @@ Decisions are logged in PROJECT.md Key Decisions table. Recent decisions affecti
 - [Phase ?]: [82-01, 2026-06-07]: Wave 0 RED scaffolds for FOUND7-01/02/03; error-handler.test.ts extended (pre-existing) not recreated; 5-way region lockstep split across packages/db + feature-flags (no new dep edge); IRIS TCC ~45-day clock started 2026-06-07, earliest-ready 2026-07-22 (Phase 86 / US-FORM-05)
 - [Phase ?]: [82-02, 2026-06-07]: us-east-1 enabled across the five-way lockstep (SUPPORTED_REGIONS/DataRegion/regionSchema/REGION_ENV_MAP/REPLICA_ENV_MAP); DATABASE_URL_US OPTIONAL (D-06, lazy-throw on access); buildLazyBag explicit US branch (no silent EU coercion, T-82-02-01); 'payroll' flag category added in schemas.ts for 82-03; seed-dev US seed-org deferred to Phase 83
 - [Phase ?]: [82-04, 2026-06-07]: FOUND7-01 add-on primitive — Subscription.addOns String[] (additive); requireAddOn clones tier.ts (ADD_ON_REQUIRED FORBIDDEN JSON); workforceProcedure/usCrossBorderProcedure = tenant -> requireTier(STARTER) -> requireAddOn (D-11); owner-gated audit-logged cache-invalidating grantAddOn (D-03, Stripe SKU deferred); schema via scoped ALTER (db push fallback, migrate dev blocked by pre-existing migration-history drift); per-region prod apply deferred
+- [Phase ?]: [82-03, 2026-06-07]: FOUND7-02 — 19 v7.0 flags registered PENDING (D-09 dot-namespaced) + V7_FLAG_KEYS cohort; 10 narrow gated prefixes (pre-v7.0 non-gated flags unaffected, D-10); assertFlagSignoffsOrExit() wired into all three app boots (api/public-api/cron-worker) — the load-bearing UNWIRED-gate fix; boot passes clean with 19 PENDING entries (no exit(1)); feature-flags added as direct dep to api+public-api (was phantom)
 
 ### Pending Todos
 
@@ -121,6 +122,7 @@ Carried forward from v6.0 milestone close (2026-06-07). Full enumeration: `.plan
 | Phase 82 P82-01 | 10m | 3 tasks | 7 files |
 | Phase 82 P02 | 9m | 3 tasks | 9 files |
 | Phase 82 P82-04 | ~14m | 3 tasks | 8 files |
+| Phase 82 P82-03 | 18m | 3 tasks | 11 files |
 
 ## Standing Project Constraints
 
@@ -130,7 +132,7 @@ Carried forward from v6.0 milestone close (2026-06-07). Full enumeration: `.plan
 
 ## Session Continuity
 
-Last session: 2026-06-07T19:17:22.591Z
+Last session: 2026-06-07T19:28:11.502Z
 Stopped at: Completed 82-04-PLAN.md
 Resume file: None
 Next command: `/gsd:plan-phase 82`

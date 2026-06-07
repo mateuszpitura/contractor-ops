@@ -62,3 +62,21 @@ These are pre-existing issues discovered during plan execution that are OUT OF S
   isolating billing from the unrelated chain so all 24 billing tests (18 pre-existing + 6 new
   grantAddOn) now run GREEN. The broader `appRouter`-import test-harness coupling (other router test
   files that import `root.ts`, e.g. `feature-flags.test.ts`) remains pre-existing test debt.
+
+## 82-03 (flag registry + boot gate wiring)
+
+- **Pre-existing failing test: boot-gate `synthetic gated key` case.**
+  `packages/feature-flags/src/__tests__/boot-gate.test.ts:73-83` (`synthetic gated key without
+  registry entry is identifiably ungated by helpers`) asserts
+  `getFlagSignoff('compliance-portal-self-service') === undefined`, but that key has a PENDING entry
+  in `signoff-registry-flags.json`. The test's `SYNTHETIC` key was chosen in Phase 70 (`99a6c74f`,
+  feat 70-07) when it was genuinely unregistered; Phase 73 (`6fc2b8f3`, feat 73-08) later added the
+  `compliance-portal-self-service` PENDING entry, invalidating the assumption. Test has been red
+  since Phase 73 — confirmed via `git log -S` history. 82-03 only APPENDED the 19 v7.0 entries (106
+  insertions, 0 deletions); the compliance key was untouched. Out of scope (scope-boundary rule).
+  Fix = repoint the test's `SYNTHETIC` to a gated-prefix key with no registry entry. NOTE: the 3
+  Phase-82 v7.0-cohort boot-gate cases all pass GREEN.
+
+- **`pnpm lint:logs` fails on `apps/api/src/routes/csp-report.ts:86`** (same pre-existing offense
+  already logged under 82-04). 82-03 touched only `apps/{api,public-api,cron-worker}/src/index.ts`
+  (wired `assertFlagSignoffsOrExit()`; no `console.*` / no log-body sites added). Out of scope.
