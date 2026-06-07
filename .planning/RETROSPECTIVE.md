@@ -157,6 +157,40 @@
 
 ---
 
+## Milestone: v6.0 — Platform Maturity & Operational Hardening
+
+**Shipped:** 2026-06-07
+**Phases:** 12 (70–81) | **Plans:** 90 | **Tasks:** 392
+
+### What Was Built
+F1 Compliance Document Lifecycle Engine (per-jurisdiction policy package, 90/60/30/15/7-day reminder cascade, hard payment-block + auto-recovery, admin dashboard, portal self-service). F2 Identity Provider Deprovisioning saga across 5 providers (GWS/Slack/Entra/Okta/GitHub) with 14-day cooldown, suspend+revoke contract, and a UI trigger on the offboarding ACCESS_REVOKE task. F3 Gulf polish (UAE free-zone tracking, Saudization dashboard, Arabic RTL). F4 Offboarding hardening (KT templates, IP-assignment verification, credential vault, contract-clause health check). Cross-cutting `@contractor-ops/lint-guards` CI package + default-redact logger + feature-flag signoff registry.
+
+### What Worked
+- **Audit → closure-phase loop.** The milestone audit caught two integration blockers (INT-01/INT-02) where server logic shipped + was per-phase-verified, but the cross-phase seam was never wired (feature UI-unreachable). A dedicated closure phase (81) wired both, and the re-audit flipped 16 partial requirements to satisfied. Goal-backward integration checking catches what per-phase verification structurally cannot.
+- **Sequential-on-symlink execution.** `.planning/phases` is a symlink; worktree executors would lose SUMMARY.md on `git add` ("beyond a symbolic link"). Running Phase 81 sequentially on the main tree with real-milestone-path commits avoided the loss entirely.
+- **Code-review-as-gate found a real auth bug.** Phase 81's review caught `retryDeprovisioningStep` ungated (any org member could re-fire destructive SUSPEND/REVOKE) — exactly the subsystem the phase was hardening.
+
+### What Was Inefficient
+- **GSD tooling instability** (missing `model-catalog.json`) repeatedly blocked plan/execute mid-milestone (Phases 75/77/78), forcing inline orchestration and leaving stale blocker notes in STATE.md.
+- **`apps/web` → `apps/web-vite` drift** stranded Phase 73's UI plans (authored against the deleted Next.js app), forcing a full re-plan.
+- **Verification debt accrued silently.** 3 phases (70/71/75) shipped with no VERIFICATION.md and 28 human-UAT scenarios stayed open — surfaced only at milestone-close audit, not during execution.
+
+### Patterns Established
+- Per-phase `<threat_model>` STRIDE registers feeding a retroactive `secure-phase` audit (Phase 81: 24/24 threats verified in code).
+- `@contractor-ops/lint-guards` ts-morph/AST CI guards (schema tenant-scope, body-redaction, i18n parity, OAuth scopes) — mechanical drift prevention with zero-friction baselines.
+- Single canonical guard for cross-cutting business rules (`assertContractorPaymentEligibility`, `idp:start_run`) instead of scattered checks.
+
+### Key Lessons
+- Per-phase verification ≠ integration verification. A milestone needs a goal-backward cross-phase audit before close — server-complete + UI-unwired reads as "done" in SUMMARY frontmatter.
+- A symlinked planning tree silently breaks worktree-isolated executors; detect it up front and drop to sequential + real-path commits.
+- "Claimed complete, unverified" (Slack D-08) and "stale audit blocker" classes both resolve by re-checking source, not trusting prior artifacts.
+
+### Cost Observations
+- Phase 81 (closure) executed sequentially: 6 plans on opus, code-review + 4 fixes, verification (sonnet), secure-phase (opus), all scoped-test only (web-vite full suite avoided per RAM constraint).
+- Milestone-close: re-audit (integration-checker on sonnet) flipped gaps_found's functional blockers to closed; remaining gate is verification/UAT process debt.
+
+---
+
 ## Cross-Milestone Trends
 
 | Milestone | Phases | Plans | Days | LOC | Key Pattern |
@@ -164,3 +198,4 @@
 | v1.0 MVP | 11 | 51 | 6 | 214K | Wave-based parallel execution |
 | v2.0 Platform Expansion | 16 | 52 | 14 | +44K | Provider adapter pattern, gap closure phases |
 | v5.0 UK & Germany Expansion | 14 | 70 | 14 | +142K TS | Audit-driven gap-closure phases (65-69), locked compile-time legal phrases (78/78), single-source-of-truth cross-phase business rules |
+| v6.0 Platform Maturity & Operational Hardening | 12 | 90 | ~41 | n/a | Audit-driven integration-closure phase (81 closed INT-01/INT-02), lint-guards CI package, secure-phase STRIDE verification, sequential-on-symlink execution |

@@ -8,24 +8,17 @@ A B2B contractor operations platform for EU, UK, and Gulf companies with 5-50 co
 
 The invoice-to-payment flow must work end-to-end: a contractor's invoice arrives, gets matched to their contract, routed through approval, and batched for payment — with full audit trail and zero manual tracking in spreadsheets.
 
-## Current Milestone: v6.0 Platform Maturity & Operational Hardening
+## Shipped Milestone: v6.0 Platform Maturity & Operational Hardening (2026-06-07)
 
-**Goal:** Make the platform production-grade across all supported markets (PL, UK, DE, UAE, SA) by closing critical operational gaps. No new market entry; focus on reliability and security for real users.
+Delivered the four operational-hardening feature sets (see **Validated — v6.0**): F1 Compliance Document Lifecycle Engine, F2 Identity Provider Deprovisioning (5 providers, UI-triggered), F3 Gulf Operational Polish, F4 Offboarding Hardening. 12 phases (70–81), 90 plans, 392 tasks. Requirements 53/54 (OFFB-06 e-sign deferred). Integration 7/7, E2E flows 5/5. Full record: `.planning/milestones/v6.0-ROADMAP.md` + `.planning/MILESTONES.md`; close-time deferred items in `STATE.md`.
 
-**Target features:**
-- **Compliance Document Lifecycle Engine** — per-country required document definitions, automated expiry tracking with 90/60/30/15/7-day alerts, hard payment blocking on expired critical documents, automated contractor reminders, compliance dashboard with at-risk contractor count
-- **Identity Provider Deprovisioning** — Google Workspace auto-suspend, Azure AD/Entra ID auto-disable, Okta SSO revocation, GitHub org member removal, Slack workspace deactivation on offboarding, full audit trail of access revocation
-- **Gulf Operational Polish** — UAE free zone entity tracking with permitted activity scope per zone and license expiry monitoring; Saudization workforce composition dashboard with nationality tracking
-- **Offboarding Hardening** — knowledge transfer checklist templates per role type, IP assignment verification workflow blocking offboarding completion, documentation handover task with credential links, contract clause health check flagging missing IP-assignment language
+## Next Milestone: v7.0 GTM Expansion (planned)
 
-**Key context:**
-- Phase numbering continues from v5.0 (next phase = 70)
-- LOCAL-ONLY deploy posture preserved; legal sign-off remains DEFERRED for any feature touching jurisdiction-specific compliance text
-- Feature gating uses self-hosted Unleash OSS + thin code wrapper per existing strategy
+US Cross-Border + Workforce Management + Integration Marketplace — Phases 82+ (pre-prod gate). Backlog: `.planning/milestones/v7.0-BACKLOG.md`. Concrete requirements defined via `/gsd:new-milestone`. LOCAL-ONLY deploy posture + DEFERRED legal sign-off carry forward.
 
 ## Current State
 
-**v6.0 Platform Maturity & Operational Hardening — all phases executed (Phase 70–80); milestone-close pending, 2026-06-06.** Phase 80 (Verification + Hardening + Manual UAT) closed the final SC#1 gap via plan 80-05: a single composed integration test (`packages/api/src/__tests__/v6-cross-feature-composition.test.ts`) now threads F1 compliance-scan (PENDING→EXPIRED) → F3 Gulf payment hard-block → F4 offboarding advisory + IP_VERIFICATION run-block on ONE seeded contractor's shared mock-Prisma store, proving the features COMPOSE rather than pass in isolation (verified 4/4 must-haves, 16 tests green). Milestone delivers the Compliance Document Lifecycle Engine (per-country required docs, 90/60/30/15/7-day expiry alerts, hard payment blocking on expired critical docs), Identity Provider Deprovisioning (F2 — manual-UAT-only coverage, off the blocked path per D-01), Gulf Operational Polish (UAE free-zone tracking + Saudization composition dashboard), and Offboarding Hardening (IP-assignment verification blocking completion). Manual UI UAT scenarios catalogued in `80-HUMAN-UAT.md` (post-deploy disposition); consolidated per-adviser sign-off list in `80-LEGAL-SIGNOFF.md`; v6.0 retrospective in `80-RETROSPECTIVE.md`. Code-review residual WR-01 (F4 gate-client mock omits the real `status` + `organizationId` predicates that `assertRunCompletable` enforces) carried as a non-blocking test-hardening follow-up. LOCAL-ONLY deploy posture + DEFERRED legal sign-off preserved per Standing Project Constraints.
+**v6.0 Platform Maturity & Operational Hardening SHIPPED 2026-06-07** — 12 phases (70–81), 90 plans, 392 tasks; re-audited 2026-06-07 (integration 7/7, flows 5/5, requirements 53/54, OFFB-06 deferred). Phase 81 (Integration Closure) closed the two milestone-audit blockers INT-01 (IdP deprovisioning UI trigger wired: offboarding ACCESS_REVOKE → `startDeprovisioningRun`, gated `idp:start_run`) and INT-02 (compliance payment-block recovery via `onComplianceItemSatisfied` on admin upload approval), security-verified 24/24 threats. Earlier, Phase 80 (Verification + Hardening + Manual UAT) closed the final SC#1 gap via plan 80-05: a single composed integration test (`packages/api/src/__tests__/v6-cross-feature-composition.test.ts`) now threads F1 compliance-scan (PENDING→EXPIRED) → F3 Gulf payment hard-block → F4 offboarding advisory + IP_VERIFICATION run-block on ONE seeded contractor's shared mock-Prisma store, proving the features COMPOSE rather than pass in isolation (verified 4/4 must-haves, 16 tests green). Milestone delivers the Compliance Document Lifecycle Engine (per-country required docs, 90/60/30/15/7-day expiry alerts, hard payment blocking on expired critical docs), Identity Provider Deprovisioning (F2 — manual-UAT-only coverage, off the blocked path per D-01), Gulf Operational Polish (UAE free-zone tracking + Saudization composition dashboard), and Offboarding Hardening (IP-assignment verification blocking completion). Manual UI UAT scenarios catalogued in `80-HUMAN-UAT.md` (post-deploy disposition); consolidated per-adviser sign-off list in `80-LEGAL-SIGNOFF.md`; v6.0 retrospective in `80-RETROSPECTIVE.md`. Code-review residual WR-01 (F4 gate-client mock omits the real `status` + `organizationId` predicates that `assertRunCompletable` enforces) carried as a non-blocking test-hardening follow-up. LOCAL-ONLY deploy posture + DEFERRED legal sign-off preserved per Standing Project Constraints.
 
 **v5.0 UK & Germany Expansion COMPLETE 2026-04-26** — all 14 phases shipped (Phase 56–69). Final phase 69 (DE Message-Key Parity Fix) closed GAP-67-01-01 with 32 missing German translations across LPCDA late-interest dialog (Phase 63), Skonto preview-line, and Admin Classification Engine flag panel (Phase 64); FOUND-03 flipped Pending → Complete. Milestone delivers UK invoicing foundation (BACS Standard 18, LPCDA late-payment interest, Bank of England rate poller, IR35/SDS classification), German invoicing foundation (XRechnung CIUS-XR + ZUGFeRD, Skonto early-payment discounts, Scheinselbständigkeit risk classification with DRV criteria), full DE locale (formal-Sie register, 78 locked legal phrases, full message-key parity vs en.json), and v5.0 verification + hardening passes. 6 manual UI checkpoints tracked in `63-HUMAN-UAT.md`; LPCDA copy + Steuerberater + Plain operations sign-off recorded as post-deploy items per Standing Project Constraints (LOCAL-ONLY deploy posture, legal review DEFERRED).
 
@@ -124,14 +117,21 @@ v3.0 Enterprise & Monetization (shipped 2026-04-11): Stripe subscription billing
 - ✓ UK contractor fields (UTR mod-11, GB VAT mod-97, Companies House) + German contractor fields (Steuernummer 16-Bundesland, USt-IdNr ISO 7064, SV-Nummer DRV-spec, Handelsregister ~120-court list) — v5.0
 - ✓ Legal compliance hardening: Unleash feature-flag with PENDING → APPROVED CI gate, advisory banners, ToS reacceptance, classification flag-OFF render-tree removal + tRPC FORBIDDEN — v5.0
 
+### Validated — v6.0
+
+- ✓ Compliance Document Lifecycle Engine — per-jurisdiction required-document policy package, 90/60/30/15/7-day expiry reminder cascade, hard payment-block on BLOCKING+EXPIRED items, admin at-risk dashboard, contractor portal self-service upload + admin approve→payment-recovery — v6.0
+- ✓ Identity Provider Deprovisioning — `Deprovisionable` saga across 5 providers (Google Workspace, Slack, Entra ID, Okta, GitHub), 14-day cooldown gate, suspend+revoke contract, per-org provider toggles, UI trigger on offboarding ACCESS_REVOKE task gated `idp:start_run`, full audit trail — v6.0
+- ✓ Gulf Operational Polish — UAE free-zone tracking (10-zone enum, permitted-activity scope, license expiry), Saudization composition dashboard, Arabic RTL parity, Qiwa-auth — v6.0
+- ✓ Offboarding Hardening — KT templates per role, IP-assignment verification (Claude tool_use + regex grounding) blocking completion, `CredentialReference` vault (no secrets, content-validation), contract-clause health check — v6.0 *(OFFB-06 e-sign IP-ratification signing + webhook atomic flow DEFERRED)*
+- ✓ Cross-cutting foundation — `@contractor-ops/lint-guards` (schema/logger/i18n-parity/scopes CI guards), default-redact logger, feature-flag signoff registry with boot-time gate, idp-audit logger — v6.0
+
 ### Active
 
-<!-- v6.0 target features. Concrete REQ-IDs live in .planning/REQUIREMENTS.md. -->
+<!-- v7.0 target features defined via /gsd:new-milestone. See .planning/milestones/v7.0-BACKLOG.md. -->
 
-- [ ] Compliance Document Lifecycle Engine
-- [ ] Identity Provider Deprovisioning
-- [ ] Gulf Operational Polish (UAE free zone + Saudization tracking)
-- [ ] Offboarding Hardening (knowledge transfer + IP verification)
+- [ ] v7.0 GTM Expansion — US Cross-Border (workforce classification + cross-border payments)
+- [ ] v7.0 Workforce Management
+- [ ] v7.0 Integration Marketplace
 
 ### Out of Scope
 
@@ -204,6 +204,9 @@ v3.0 Enterprise & Monetization (shipped 2026-04-11): Stripe subscription billing
 | Claude Vision for OCR | Native PDF support, tool_use for structured extraction | ✓ Good — high accuracy, grosze handling, confidence scores |
 | KSeF token auth (cert deferred) | XAdES certificate auth requires .p12 + XML signing complexity | ✓ Good — token covers 90%+ of use cases |
 | Fire-and-forget for integrations | Calendar push, Jira sync, OCR — never block user mutations | ✓ Good — void + .catch() pattern consistent across all hooks |
+| `idp:start_run` single RBAC gate (v6.0) | One action gates all destructive IdP run-trigger procedures (start/eligibility/resolver/retry); owner+admin+it_admin | ✓ Good — Phase 81 code review caught + closed an ungated-retry gap (CR-01) |
+| Compliance payment-block canonical guard (v6.0) | One `assertContractorPaymentEligibility` at every payment-write + approval-final-step; recovery hook releases on item-satisfied | ✓ Good — F1 hard-block + auto-recovery composed E2E (Phase 81 INT-02) |
+| `@contractor-ops/lint-guards` CI package (v6.0) | ts-morph/AST guards (schema tenant-scope, body-redaction, i18n parity, OAuth scopes) enforced pre-push + CI | ✓ Good — mechanical drift prevention, zero-friction baseline |
 
 ## Evolution
 
@@ -223,4 +226,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-06-06 — milestone v6.0 Platform Maturity & Operational Hardening: all phases (70–80) executed and verified; milestone-close pending*
+*Last updated: 2026-06-07 — v6.0 Platform Maturity & Operational Hardening SHIPPED (Phases 70–81, 90 plans). Next: v7.0 GTM Expansion.*

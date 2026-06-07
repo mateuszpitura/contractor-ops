@@ -2,10 +2,10 @@
 gsd_state_version: 1.0
 milestone: v6.0
 milestone_name: Platform Maturity & Operational Hardening
-status: executing
+status: completed
 stopped_at: Phase 81 context gathered
-last_updated: "2026-06-06T17:17:17.220Z"
-last_activity: 2026-06-06
+last_updated: "2026-06-07T13:26:35.869Z"
+last_activity: 2026-06-07 — Milestone v6.0 completed and archived
 progress:
   total_phases: 12
   completed_phases: 12
@@ -75,7 +75,7 @@ the 3 web-vite hooks to call `trpc.deprovisioning.enableProviderForOrg({ provide
 
 **Phase:** 73 (F1 Compliance — Admin Dashboard + Portal Self-Service + i18n)
 **Workflow:** `gsd:execute-phase 73` (autonomous background run)
-**Status:** Ready to execute
+**Status:** v6.0 milestone complete
 
 **Why halted (per execute-phase rule "if drift is so deep a plan can't be faithfully executed, write specifics to STATE.md as a blocker and stop rather than guessing"):**
 
@@ -282,30 +282,37 @@ The execute-phase pipeline depends on `gsd-tools.cjs` for: init context + model/
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-04-26 — v6.0 milestone started)
+See: .planning/PROJECT.md (updated 2026-06-07 — v6.0 milestone shipped)
 
 **Core value:** The invoice-to-payment flow must work end-to-end: invoice arrives, gets matched to contract, routed through approval, and batched for payment — with full audit trail.
-**Current focus:** Phase 81 — v6-0-integration-closure-idp-deprovisioning-ui-trigger-acces
+**Current focus:** Planning next milestone (v6.0 shipped 2026-06-07; run /gsd:new-milestone)
 
 ## Current Position
 
-Phase: 81 (v6-0-integration-closure-idp-deprovisioning-ui-trigger-acces) — EXECUTING
-Plan: 6 of 6
-Status: Ready to execute
-Last activity: 2026-06-06
+Phase: Milestone v6.0 complete
+Plan: —
+Status: Awaiting next milestone
+Last activity: 2026-06-07 — Milestone v6.0 completed and archived
 
-**Decision (81-05):** INT-01 trigger UI shipped in web-vite. One shared hook (`use-start-deprovisioning.ts`) is the sole tRPC boundary for BOTH entry points — assignment detail (direct `assignmentId`) and the offboarding ACCESS_REVOKE task card (server-side `resolveAssignmentForContractor` resolves `contractorId`→`assignmentId` in one round-trip, keeping `check:web-vite-data-layer` green). The container owns the permission/cooldown/existing-run state machine and reuses the existing `ImpactPreviewPanelContainer` (in a DialogBody confirm) + `DeprovisioningRunViewContainer` (rendered inline on success/existing-run — no standalone route, no rebuilt UI). Deterministic per-assignment idempotencyKey (`deprov:<id>`) means a double-click returns the existing run (D-09). Auto-fix (Rule 2): the client-side `use-permissions.ts` mirror lacked `idp:start_run` and the `it_admin` role entirely — added the mirror (owner/admin: override+start_run; it_admin: start_run only) matching `roles.ts`, else the advisory UI gate would hide the trigger from the seeded ACCESS_REVOKE assignee. `Idp.trigger.*` (13 keys) added to en/de/pl/ar (parity). Hook test 6/6; data-layer + dialog-pattern + i18n:parity guards + web-vite typecheck all green. Commits `1668dbd3`, `cb51ac7f`, `9d3d5ca7`.
+## Deferred Items
 
-**Decision (81-03):** INT-02 server seam closed — `onComplianceItemSatisfied` now called in-tx in `approveUploadReplacement` (per-item, after the SATISFIED flip + audit, before return). An approved portal upload resumes held PENDING_COMPLIANCE ApprovalFlows to PENDING and unblocks contractor payment; the post-tx best-effort contractor notification is unchanged (T-73-08-04). 81-01 INT-02 RED cases (D-12/D-14) GREEN; `pnpm --filter @contractor-ops/api test compliance-upload-review` 18/18; api typecheck clean. Commit `fa148159`.
+Items acknowledged and deferred at v6.0 milestone close on 2026-06-07 (audit `gaps_found` = verification/UAT process debt only; no functional/integration blockers — INT-01/INT-02 closed by Phase 81, integration 7/7, flows 5/5, requirements 53/54). Full enumeration in `.planning/milestones/v6.0-MILESTONE-AUDIT.md`.
 
-Progress: [██████████] 100%
-
-**Active Phase:** none (Phase 70 closed)
-**Next Phase candidates (parallel-ready):**
-
-- Phase 71 (F1 Compliance — Policy Package + Schema + Classification Reconcile) — 7 plans, depends on 70 ✓
-- Phase 76 (F2 IdP — Capability Mixin + Saga + Cooldown + GWS Scope) — 10 plans, depends on 70 ✓ + 74 + 75 (still gated on F4)
-- Phase 74 (F4 Offboarding — Workflow Foundation + KT Templates + Override Permission) — discussed, ready for `/gsd-plan-phase 74`
+| Category | Item | Status |
+|----------|------|--------|
+| verification-coverage | Phase 70 — no VERIFICATION.md (never goal-verified; predates convention) | deferred |
+| verification-coverage | Phase 71 — no VERIFICATION.md (never goal-verified; predates convention) | deferred |
+| verification-coverage | Phase 75 — no VERIFICATION.md (partial; e-sign deferred) | deferred |
+| manual-uat | Phase 80 HUMAN-UAT — 21 open scenarios | partial |
+| manual-uat | Phase 79 HUMAN-UAT — 3 open scenarios | partial |
+| manual-uat | Phase 81 HUMAN-UAT — 3 open scenarios | partial |
+| manual-uat | Phase 72 HUMAN-UAT — 1 open scenario | partial |
+| verification | Phases 72/74/79/81 VERIFICATION — human_needed | pending |
+| requirement | OFFB-06 — e-sign IP-ratification signing + webhook deferred (OWNER-override unblocks) | deferred-by-design |
+| tech-debt | R-01 — confirm 76-WR1 @@unique([organizationId, idempotencyKey]) applied on live Neon before relying on runtime P2002 | open |
+| tech-debt | Per-phase code-review never run for phases 72/73/75/76/77/78 (pre-standards plans) | open |
+| deferred-refactor | Consolidate 3 per-provider connection routers (entra/okta/github) into deprovisioning.enableProviderForOrg (78 WR-1) | open |
+| deferred-deploy | Multi-region migration apply (phase 72/75/76 additive migrations) per region post-merge | open |
 
 ## Phase 76 Planned (2026-04-27)
 
@@ -585,3 +592,7 @@ Next command: `/gsd-plan-phase 74`  (Phase 74 context gathered, ready to plan; 7
 **Recorded:** 2026-04-27
 
 **Planned Phase:** 74 (F4 Offboarding — Workflow Foundation + KT Templates + Override Permission) — 8 plans — 2026-04-27T09:58:11.669Z
+
+## Operator Next Steps
+
+- Start the next milestone with /gsd-new-milestone
