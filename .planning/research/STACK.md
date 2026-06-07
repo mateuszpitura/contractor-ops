@@ -1,358 +1,171 @@
-# Stack Research — v6.0 Platform Maturity & Operational Hardening
+# Stack Research — v7.0 GTM Expansion
 
-**Domain:** B2B contractor-ops platform — incremental additions for IdP deprovisioning, compliance document expiry, Gulf operational data, IP-clause detection on contract intake
-**Researched:** 2026-04-26
-**Confidence:** HIGH for IdP SDK choices and date-fns; MEDIUM for Saudization / UAE free-zone reference data (no maintained libraries — must build static + admin-editable tables); HIGH for "do NOT add new infra" decisions (QStash, Pino, Unleash, Claude Vision OCR all reused)
+**Domain:** B2B contractor-ops platform; net-new surface = US cross-border tax/payments (Theme A), workforce/HRIS-sync (Theme B), public API + webhook marketplace (Theme C)
+**Researched:** 2026-06-07
+**Confidence:** HIGH on payment/HRIS/OpenAPI SDKs (Context7 + official docs + verified npm versions); MEDIUM on IRS IRIS/TIN-Matching build-vs-buy (gov't specs, no Node lib exists); HIGH on the "what NOT to add" calls.
 
----
+> Scope discipline: this file covers ONLY what v7.0 adds. Existing infra (pluggable payment-export factory, integration framework with AES-256-GCM credential store + OAuth callback + webhook ingestion + health monitor, multi-region Neon routing, Unleash flags, QStash, `@contractor-ops/logger`, Hono `apps/public-api`, Better Auth `requireTier`, integer-grosze money, Prisma 7) is REUSED, not re-chosen. Each recommendation below states where it plugs in.
 
-## Executive Decision Summary
-
-| v6.0 Capability | Existing infra reused | Genuinely new dependency |
-|-----------------|------------------------|--------------------------|
-| IdP deprovisioning — Google Workspace | `googleapis` (already in repo for v3.0 GWS directory import); existing `IntegrationProviderAdapter` + AES-256-GCM credential store | None — extend existing GWS adapter with `users.update({ suspended: true })` |
-| IdP deprovisioning — Azure AD/Entra ID | `@microsoft/microsoft-graph-client` (already in repo for v3.0 Teams + Outlook Calendar); `@azure/identity` already installed | None — extend Teams/Calendar provider's credential store; add a new `EntraDeprovisionProvider` adapter sharing the same `MSALConfidentialClient` instance |
-| IdP deprovisioning — Okta | — | **NEW** `@okta/okta-sdk-nodejs@8.0.0` |
-| IdP deprovisioning — GitHub | `@octokit/rest` may already be present from prior work — verify; if not, add | **MAYBE NEW** `octokit@5.0.5` (or keep `@octokit/rest@22.0.1` — both fine; pick one) |
-| IdP deprovisioning — Slack | `@slack/web-api@7.15.1` already in repo for v1.0 Slack messaging | None — add SCIM token credential type to existing Slack adapter; SCIM is raw REST (no SDK methods on `@slack/web-api`) |
-| Document expiry engine | QStash (cron + async retries), Prisma 7, Pino logger, Unleash flags, existing `Notification` model + dispatch service | **NEW** `date-fns@4.1.0` for cascade-window arithmetic (lightweight, tree-shakeable, ~13KB) |
-| Hard payment block on expired CRITICAL doc | Existing payment-run guard pattern from v1.0 + v3.0 `requireTier` middleware | None — new `requireValidCompliance` tRPC middleware composable with existing chain |
-| UAE free-zone registry | Prisma 7, Unleash flag for SA/UAE jurisdiction short-circuit | None — **build static seed table** (~25 zones) committed to repo; Bayanat / official zone portals scraped manually at seed time. No maintained npm package exists. |
-| Saudization Nitaqat dashboard | Prisma 7, existing classification engine pattern from v5.0 | None — **build static rule table per Nitaqat 2026–2028 phase** + admin-editable override; logarithmic-formula evaluator in TS. No maintained npm package exists. |
-| IP-clause detection on contract upload | Existing Claude Vision OCR adapter (v2.0) + Anthropic SDK already wired; QStash for async classification job; document storage in R2 | None — **reuse `ClaudeOcrAdapter` with a second tool-use schema** (extract clauses + classify presence of IP assignment language). Do NOT add `pdfjs-dist`/`unpdf`/`pdf-parse` for this — Claude Vision handles native PDFs and scanned PDFs uniformly. |
-| Knowledge transfer / credential vault | Existing R2 presigned-URL store + portalSession magic-link auth (v2.0) + Better Auth org RBAC + Pino audit log | None — build domain UI on existing primitives. Do NOT introduce a third-party secret-share library. |
-
-**Bottom line:** v6.0 adds **at most three new top-level dependencies** to the monorepo: `@okta/okta-sdk-nodejs`, `date-fns`, and (conditionally, only if `@octokit/rest` is not already present) `octokit`. Everything else is wiring on existing v1.0–v5.0 infrastructure.
+> 7-day-release-age policy (`minimumReleaseAge: 10080`): today = 2026-06-07. Any package published after 2026-05-31 is BLOCKED until it ages. Flagged inline as TOO FRESH with the safe-pin to use instead. Versions verified via `npm view <pkg> version time.modified`.
 
 ---
 
-## Recommended Stack — Identity Provider Deprovisioning
+## Recommended Stack
 
-### Core SDKs / API access pattern
+### Core Technologies (new external surfaces)
 
-| Provider | Library / version | SDK vs raw REST | Why |
-|----------|-------------------|------------------|-----|
-| Google Workspace | `googleapis@171.4.0` (already installed v3.0) — service `admin('directory_v1').users.update` | **SDK** | Already used by `GoogleWorkspaceAdapter` for directory import; auth helpers (`google.auth.OAuth2`, `GoogleAuth` for service-account domain-wide delegation) are reused; `users.update({ userKey, requestBody: { suspended: true } })` is one method call. Raw REST would duplicate OAuth2 token-refresh logic that `googleapis` already handles. |
-| Azure AD / Entra ID | `@microsoft/microsoft-graph-client@3.0.7` + `@azure/identity@4.13.1` (already installed v3.0 Teams + Outlook) | **SDK** for the disable-account `PATCH /users/{id}` and **raw REST POST** for `/users/{id}/revokeSignInSessions` (no fluent method on the v3 client) | The 3.x JS client is the stable production SDK as of 2026-04. The Kiota-generated `@microsoft/msgraph-sdk` (`1.0.0-preview.80`) is **still in preview** — not production-grade. Use `client.api('/users/{id}').update({ accountEnabled: false })` for the disable, and `client.api('/users/{id}/revokeSignInSessions').post({})` for session revocation. |
-| Okta | `@okta/okta-sdk-nodejs@8.0.0` (NEW) | **SDK** | The 7.x → 8.x line moved every operation to namespaced `client.userApi.*` (`userApi.deactivateUser({ userId })`, `userApi.revokeUserSessions({ userId })`, `userApi.clearUserSessions({ userId })`). Direct REST would mean reimplementing Okta's API token + DPoP request signing, plus rate-limit headers. SDK is small, well-maintained, and matches our existing adapter pattern. |
-| GitHub | `octokit@5.0.5` (recommended) **OR** `@octokit/rest@22.0.1` if already in tree | **SDK** | `octokit.rest.orgs.removeMember({ org, username })` is a one-liner. Both packages are first-party and current; `octokit` is the umbrella SDK and is the one Octokit's docs now lead with — pick `octokit` for new code, keep `@octokit/rest` if it's already wired. |
-| Slack | `@slack/web-api@7.15.1` (already installed v1.0) for `admin.users.session.reset` + `admin.users.session.invalidate`; **raw REST + `fetch`** for SCIM `PATCH /scim/v1/Users/{id}` with `active=false` | **Hybrid** | The Web API client covers `admin.*` Enterprise Grid methods. SCIM is **not** modelled on `@slack/web-api` — it's a separate `https://api.slack.com/scim/v1/Users/{id}` endpoint that takes a SCIM-shaped JSON Patch body and uses a different OAuth scope (`scim:write`). Implement as a thin `fetch` wrapper inside the existing Slack adapter — no new dependency. |
+| Technology | Version (verified) | Purpose | Why Recommended |
+|------------|--------------------|---------|-----------------|
+| `stripe` (Treasury) | 22.2.0 (TOO FRESH — pub 2026-06-03; pin **22.1.x** until 22.2.0 ages) | Theme A US-PAY-03: programmatic ACH/wire outbound payouts via `stripe.treasury.outboundPayments.create()` | Already a dependency (v3.0 billing). Treasury is the SAME SDK — no new vendor onboarding. Native `purpose:'payroll'` flag satisfies the NACHA originator-identification rule. Same-day ACH is gated (email approval). |
+| `modern-treasury` | 4.15.0 (pub 2026-04-22 OK) | Theme A US-PAY-03 alt: bank-agnostic ACH/Fedwire orchestration for orgs that bring their own bank | Official Node SDK (Context7 `/websites/moderntreasury_platform_reference`, HIGH rep). Use when an org wants its own bank rather than Stripe holding funds. Wire BOTH behind one `UsPayoutProvider` adapter in the integration framework; org picks at connect time. |
+| `plaid` | 42.2.0 (pub 2026-04-27 OK) | Theme A US-PAY-05: US bank-account link + Identity/Auth verification at onboarding (anti-fraud) | Official Node SDK (`/plaid/plaid-node`, HIGH rep). Plaid Auth returns routing+account for the NACHA file; Identity Match for fraud. Token store reuses existing AES-256-GCM credential pattern. |
+| `@midlandsbank/node-nacha` | 2.1.1 (pub 2025-10-15 OK) | Theme A US-PAY-01: generate NACHA ACH files (PPD/CCD/CTX) | Most-maintained Node NACHA lib (others: `@ach/ach` ~10y stale; `nACH2`/`NACHAjs` low activity). Treat as a formatter helper INSIDE the existing payment-export factory, not a black box — NACHA is a documented fixed-width format, fully hand-buildable; validate output against your ODFI's spec. |
+| `@hono/zod-openapi` | 1.4.0 (pub 2026-05-09 OK) | Theme C INTEG-API-02: OpenAPI 3.1 spec auto-gen from Zod on `apps/public-api` | Native Hono middleware. `app.getOpenAPI31Document()` / `app.doc31()` emits 3.1 directly. Zero new framework — `apps/public-api` is already Hono. Single source of truth: Zod schema → runtime validation + spec + (downstream) SDK. |
+| `jose` | 6.2.3 (pub 2026-04-27 OK) | Theme A US-FORM-03: sign IRS e-Services TIN-Matching API JWT (JWKS/RS256); plus any RS256 need | IRS e-Services API auth = client publishes a JWKS (RS256 public key) and signs request assertions. `jose` is the standard, audited Node JWT/JWK lib. |
 
-### Required OAuth scopes / API permissions (minimum-privilege)
+### Supporting Libraries
 
-| Provider | Scope / permission | Justification |
-|----------|--------------------|---------------|
-| Google Workspace | `https://www.googleapis.com/auth/admin.directory.user` (read+write); domain-wide-delegation service account or OAuth admin token | Required to call `users.update` with `suspended: true`. The narrower read-only scope `admin.directory.user.readonly` (used in v3.0 directory import) is **insufficient** — must request the read-write scope at v6.0 connect time and trigger re-consent for existing tenants. |
-| Azure AD / Entra ID | `User.EnableDisableAccount.All` (least-privileged for `accountEnabled: false`) **+** `User.RevokeSessions.All` (for `revokeSignInSessions`) | Microsoft published these reduced-privilege scopes specifically for this scenario. Do NOT request `User.ReadWrite.All` — it's broader than needed. Both are **application** permissions (admin-consent required) to allow non-interactive deprovisioning from a cron context. |
-| Okta | API token with admin role (or OAuth `okta.users.manage`) — call `userApi.deactivateUser` | The deactivate operation requires user-management privilege. Token must have at minimum the "User Admin" role — not "Group Admin" or read-only. |
-| GitHub | OAuth `admin:org` scope — required by `DELETE /orgs/{org}/members/{username}` | `admin:org` is the documented minimum. `repo` scope is insufficient. If using a GitHub App instead of OAuth, request the org `Members: write` permission. |
-| Slack | `admin.users.session:write` (Enterprise Grid) for session reset/invalidate **+** `scim:write` (SCIM token from app installation on org, not workspace) for SCIM deactivate | SCIM deactivation requires the org-level OAuth token, not a workspace token. Note: SCIM users cannot be permanently deleted — only deactivated. |
+| Library | Version (verified) | Purpose | When to Use |
+|---------|--------------------|---------|-------------|
+| `request-filtering-agent` | 3.2.0 (pub 2025-12-15 OK) | Theme C INTEG-SEC-01: SSRF guard on outbound webhook dispatch | Blocks RFC-1918/loopback/link-local/`169.254.169.254` AND re-checks the **DNS-resolved IP at connect time** (defeats DNS-rebind — the requirement's hard part). Wrap the QStash-bound dispatch agent. Backstop with own CIDR denylist for cloud-metadata variants (GCP `metadata.google.internal`, Azure). Prefer over `ssrf-req-filter@1.1.1` (older, weaker rebind handling). |
+| `@scalar/hono-api-reference` | 0.10.20 (TOO FRESH — pub 2026-06-02; pin prior aged **0.9.x** until it ages) | Theme C INTEG-DX-01: render the OpenAPI ref UI from `apps/public-api` | If self-hosting docs on the Hono app. MIT, code-first, mounts the 3.1 doc. Alternative = host on Mintlify (below). |
+| `openapi-typescript` | 7.13.0 (pub 2026-02-11 OK) | Theme C: type-only TS surface from the spec (internal consumers / tests) | Lightweight types when a full client isn't needed. Complements (not replaces) the published SDK. |
+| `@apidevtools/swagger-parser` | 12.1.0 (pub 2026-01-24 OK) | Theme C: validate/bundle the generated OpenAPI doc in CI before publishing SDK + portal | CI gate so a malformed spec never ships to npm/PyPI/Mintlify. |
 
-### Auth-layer integration points (existing infra — do NOT duplicate)
+### Build-vs-Buy / External services (no npm install — gated partner programs or spec-driven hand-build)
 
-- **Credential storage:** add a new `IntegrationProvider` slug per IdP (`okta`, `azure_ad_deprovision`, `github_deprovision`) into the existing AES-256-GCM per-provider credential store. Microsoft Graph and Google credentials are **shared with v3.0** entries — extend the existing `googleAdminDirectory` and `microsoftGraph` provider records with additional scope grants rather than creating duplicates.
-- **OAuth callback:** reuse v2.0's generic OAuth callback with HMAC-signed cross-provider CSRF state.
-- **Token refresh:** reuse v2.0's proactive token-refresh cron with distributed lock.
-- **Audit log:** every revocation step (per-provider success/failure, scopes, timestamp, user-agent of admin who triggered it) flows through existing `AuditLog` Prisma model + Pino logger — no new table.
-- **Webhook pipeline:** **not used** for deprovisioning (operations are admin-initiated, fire-and-forget through QStash, then poll for completion if SDK call is asynchronous — Okta has eventual consistency on session revocation).
-
----
-
-## Recommended Stack — Compliance Document Expiry Engine
-
-### Core libraries
-
-| Library | Version | Purpose | Why |
-|---------|---------|---------|-----|
-| `date-fns` | `4.1.0` | Reminder-cascade arithmetic (90/60/30/15/7-day windows), `differenceInDays`, `addDays`, `isBefore` for "is in cascade window" checks | Modular tree-shakeable functions; ~13KB after tree-shaking; pure functions are easy to unit-test (no Date mocking needed); the v4 line is current and stable. The maintenance-status warning in some 2026 articles is misleading — v4.1.0 was published recently and the API surface used here (`addDays`, `differenceInDays`, `isAfter`, `isBefore`) is rock-solid. **Tree-shake aggressively** — `import { addDays, differenceInDays } from 'date-fns'` only. |
-| Prisma 7 (existing) | — | `ComplianceDocument`, `ComplianceDocumentDefinition` (per-country + per-role required-doc registry), `ComplianceReminderEvent` models | Reuse v1.0 multi-tenant + soft-delete client extensions. |
-| QStash (existing) | — | Daily cron at 06:00 org-local that scans `ComplianceDocument WHERE expiresAt - now() ∈ {90d, 60d, 30d, 15d, 7d, 0d, overdue}` and dispatches reminders idempotently (use `(documentId, milestone)` as dedup key into existing `Notification.dedupKey` field) | **Do NOT add BullMQ, Agenda, node-cron, or temporal.io** — QStash already handles cron + retry + signature verification + at-least-once with our `WebhookDelivery` audit trail. |
-| Pino logger (existing `@contractor-ops/logger`) | — | Structured event emission per cascade tick | per memory `feedback_logging.md` — never `console.*`. |
-| Unleash OSS (existing) | — | Per-jurisdiction feature gate (`compliance-doc-engine-pl`, `…-uk`, `…-de`, `…-uae`, `…-sa`) so a country's required-doc set can be turned off without code changes | per memory `project_feature_flags_strategy.md` — already-decided strategy. |
-| `requireTier` middleware (existing v3.0) | — | Gate compliance dashboard behind PRO; gate auto-enforcement (hard payment block) behind ENTERPRISE | Reuse the existing pattern. |
-
-### What we explicitly DO NOT add
-
-| Rejected option | Reason |
-|------------------|--------|
-| BullMQ | Would duplicate QStash's queue + retry + scheduling. v2.0 / v3.0 already standardised on QStash for `_process` async pipelines. |
-| Agenda / node-cron / Bree | Same reason — QStash schedules handle this natively. |
-| `cron-parser` standalone | Not needed — QStash schedules accept cron strings directly. |
-| temporal.io workflows | Massive over-engineering for a 5-step linear cascade. We have no other Temporal workflows. |
-| Specialised "compliance document" SaaS (Drata, Vanta) | Out of scope — those are SOC 2 / ISO 27001 attestation tools, not contractor-document expiry. |
-| `js-joda` / `Temporal` polyfill | Premature. Native `Date` + `date-fns` is sufficient — none of the cascade math touches sub-day precision or DST-sensitive operations. |
-| Standalone "document expiry tracker" npm packages (e.g. `expiry-tracker`, `date-expiry`) | None are maintained / production-grade. The logic is ~150 lines; building it on Prisma + QStash is faster than vetting a half-maintained dependency. |
-
-### Hard-block payment guard — composition with existing middleware
-
-```ts
-// Sketch — compose on top of existing tRPC middleware chain
-const requireValidCompliance = createMiddleware(async ({ ctx, next, input }) => {
-  const blockers = await ctx.prisma.complianceDocument.findMany({
-    where: {
-      contractorId: input.contractorId,
-      definition: { criticalityForPayment: 'HARD_BLOCK' },
-      OR: [{ expiresAt: { lt: new Date() } }, { status: 'MISSING' }],
-      orgId: getTenantOrgId(),  // existing AsyncLocalStorage tenant scope
-    },
-    select: { id: true, definitionCode: true, expiresAt: true },
-  });
-  if (blockers.length) {
-    throw new TRPCError({
-      code: 'FORBIDDEN',
-      message: 'PAYMENT_BLOCKED_EXPIRED_COMPLIANCE_DOC',
-      cause: { blockers },  // surfaced in admin UI, never in portal
-    });
-  }
-  return next();
-});
-
-// Wired into existing payment.markRunReady + payment.executeRun procedures
-```
-
----
-
-## Recommended Stack — Gulf Operational Polish
-
-### UAE free-zone registry
-
-**Verdict:** No maintained npm package exists. The UAE Bayanat open data portal has *individual* free-zone datasets (Dubai Customs free-zone companies CSV, RAK Maritime city port operating-license charges) but **no consolidated machine-readable list of free-zone authority codes + permitted-activity scope per zone**. Each authority publishes its activity list in a different format (DIFC: rulebooks PDF, ADGM: PDF + dynamic web pages, DMCC: searchable web app, IFZA: PDF, RAKEZ: PDF, JAFZA: PDF, SAIF/DAFZA: PDF). UAE business activities are **broadly** ISIC-aligned but each zone publishes its own permitted-activity subset — no canonical mapping.
-
-**Recommended approach:**
-
-| Step | What to do | Why |
-|------|-----------|-----|
-| 1. Static seed table in repo | New `packages/db/prisma/seeds/uae-free-zones.ts` with ~25 zones (DIFC, ADGM, JAFZA, DMCC, IFZA, RAKEZ, DAFZA, SAIF, SHAMS, DWTC, DSO, DAFZ, KIZAD, twofour54, DHCC, DIC, DMC, DEZ, FFZ, HFZA, etc.) — code, official Arabic + English name, regulatory body, license-renewal cadence, ISIC top-level categories permitted | One-time research effort; the list is stable on the year-scale. Source from the Federal Tax Authority "Designated Zones" list + each zone's official portal as of seed date. |
-| 2. Admin-editable override table | `UaeFreeZoneOverride` Prisma model with org-scoped customisation (per-tenant adjustments + custom zones for clients in zones we haven't seeded) | Avoids needing a code release to add a new zone; supports tenants that operate in non-listed zones. |
-| 3. License-expiry scan | Hook into the v6.0 Compliance Document Expiry Engine — the free-zone trade license is just a `ComplianceDocument` with `definitionCode: 'UAE_FREE_ZONE_TRADE_LICENSE'` and `criticalityForPayment: 'SOFT_WARN'` (or HARD_BLOCK depending on tenant policy) | Reuse, don't duplicate. |
-| 4. Permitted-activity validator | Free-form text per contractor engagement + admin-editable conflict-warning rules; **do NOT** try to build an exhaustive ISIC-code matcher in v6.0 | The admin-validation pattern matches how v4.0 + v5.0 country-specific validators work (UTR mod-11, Steuernummer regex map). |
-
-**Sources:** [Bayanat UAE Open Data Portal](https://bayanat.ae/), [List of Free Zones in UAE 2026 - Vertix](https://www.vertixauditing.ae/free-zones-in-uae/), [Free Zones in the UAE comparison - RSBM](https://rsbm.ae/tpost/mnn3dx3j11-free-zones-in-the-uae-a-comparative-guid). All MEDIUM confidence — verify each zone's permitted-activity list directly with the authority's portal at seed time. Mark "Needs verification by UAE legal counsel before production deploy" per Standing Project Constraints.
-
-### Saudi Saudization (Nitaqat) tracking
-
-**Verdict:** No maintained npm package exists. The official **Qiwa** platform calculator is the source of truth — it requires a Saudi MOL credential that we don't ship with. The Nitaqat formula transitioned away from fixed company-size bands to a **logarithmic localization-rate formula** with three-year rolling phases; the 2026–2028 phase is published by the Ministry of Human Resources & Social Development (MHRSD).
-
-**Recommended approach:**
-
-| Step | What to do | Why |
-|------|-----------|-----|
-| 1. Static rule table in repo | `packages/db/prisma/seeds/saudization-rules-2026-2028.ts` keyed by `(sector, companySize, calendarYear)` → required Saudization rate; sector list from the official Nitaqat 2026–2028 announcement | The table is small (~50 sectors × 3 years × 5 size bands) and changes annually — fits in a code-managed seed file with one PR per phase update. |
-| 2. Logarithmic-formula evaluator | Pure TS function `computeNitaqatBand({ sector, totalHeadcount, saudiHeadcount, year }) → { band: 'PLATINUM' \| 'GREEN_HIGH' \| ... ; targetRate; gapToNext }` | Mirrors v5.0 IR35 / DRV scoring engines. |
-| 3. Workforce composition dashboard | Reuse v5.0 compliance-health-dashboard component pattern (7-component native-flex visualisation, no chart library) — add a "Saudi vs non-Saudi" stacked bar by sector | Reuse, don't duplicate. |
-| 4. Nationality field on contractor | Reuse v4.0 country-specific contractor fields infrastructure — add `nationalityIso3` to contractor profile with admin-only edit | One Prisma column. |
-| 5. Annual rule-table refresh | Phase-update PR in Q4 of each year — admin gets a banner if the table is older than the current year |  |
-| 6. Mark "Needs verification by Saudi legal/HR counsel" | Per Standing Project Constraints — DO NOT hard-block | LOCAL-ONLY posture preserved. |
-
-**Sources:** [Nitaqat Mutawar Program - MHRSD](https://www.hrsd.gov.sa/en/knowledge-centre/decisions-and-regulations/regulation-and-procedures/832742), [New Phase of the Nitaqat Saudization Program (2026–2028)](https://ahysp.com/new-phase-of-the-nitaqat-saudization-program-2026-2028-what-businesses-in-saudi-arabia-need-to-know/), [Jisr HRMS Nitaqat calculator (reference UI)](https://www.jisr.net/en/hr-tools/nitaqat-calculator). MEDIUM confidence on rate values — must be verified against Qiwa portal at seed time and re-verified annually.
-
----
-
-## Recommended Stack — Offboarding Hardening (IP-clause Detection + Knowledge Transfer)
-
-### IP-assignment clause detection on contract intake
-
-**Verdict:** Reuse the existing v2.0 `ClaudeOcrAdapter` (Claude Vision via Anthropic SDK with native PDF support and `tool_use` for structured extraction). Do **not** add `pdf-parse`, `pdfjs-dist`, `unpdf`, Spark NLP for Legal, or any specialised contract-analysis SaaS.
-
-**Why Claude Vision wins for this:**
-
-1. Already wired — credential store, AI-credit metering (v3.0), confidence scoring, async QStash processing, retry, audit log all exist.
-2. Handles native PDFs and scanned PDFs uniformly. `pdf-parse`/`pdfjs-dist` only extract text from native PDFs — they fail on scanned/image-based contracts (which are common, especially in DE/PL where contracts are often scan-imaged after wet-signing). Adding one of those libraries would require a second pipeline branch for OCR fallback that we already have.
-3. Tool-use schema gives us structured JSON output (`{ has_ip_assignment_clause: bool, clause_text: string|null, confidence: 0-1, suggested_remediation: string|null }`) — directly maps to a Prisma field on `Contract`.
-4. Public benchmark data (ContractEval, Aug 2025) shows Claude Sonnet 4 has Jaccard ≥ 0.45 and a low 0.025 false-no-clause rate on commercial contract clause-level legal-risk identification — best-in-class among the LLMs evaluated for this exact task.
-5. Costs are predictable — each contract upload is one ClaudeVision call (we already have credit metering with hard-block).
-
-**Implementation pattern (extend existing adapter):**
-
-```ts
-// In ClaudeOcrAdapter — add a second tool definition alongside invoice extraction
-const ipClauseTool = {
-  name: 'extract_ip_assignment_clause',
-  description: 'Identify IP-assignment language in a contractor agreement.',
-  input_schema: {
-    type: 'object',
-    properties: {
-      has_ip_assignment_clause: { type: 'boolean' },
-      clause_excerpt: { type: 'string', description: 'Verbatim excerpt of the IP clause, or null if absent.' },
-      jurisdiction_specific_concerns: {
-        type: 'array',
-        items: { type: 'string', enum: ['DE_URHEBERRECHT_INALIENABLE', 'UK_PRE_EXISTING_IP', 'PL_AUTHOR_PROPERTY_RIGHTS', 'UAE_MOH_REGISTRATION', 'SA_NEED_NOTARIZATION'] },
-      },
-      confidence: { type: 'number', minimum: 0, maximum: 1 },
-      suggested_remediation: { type: 'string' },
-    },
-    required: ['has_ip_assignment_clause', 'confidence'],
-  },
-};
-
-// Triggered by contract.uploadDocument fire-and-forget; result lands on Contract.ipClauseHealth field
-// Offboarding workflow checks Contract.ipClauseHealth.status before allowing completion
-```
-
-**What NOT to use:**
-
-| Rejected | Reason |
-|----------|--------|
-| `pdf-parse@1.1.1` | Only handles native PDFs; output is unstructured raw text that we'd then have to send to an LLM anyway. Skip the middle step. |
-| `pdfjs-dist@5.6.205` | Same. Excellent library for in-browser preview rendering — irrelevant for server-side clause classification. |
-| `unpdf@1.6.0` | Better at edge runtime than `pdf-parse` but same fundamental limitation. |
-| Spark NLP for Legal | JVM-only. Heavy. Doesn't fit our Node monorepo. |
-| LawGeex / Spellbook / Kira-Systems APIs | Closed-source, expensive, English-only, separate vendor relationship for one feature |
-| Custom regex on extracted text | Brittle — IP-assignment language varies enormously across PL/UK/DE/UAE/SA legal traditions and Polish + German + Arabic translations. Regex will produce false negatives at unacceptable rates. |
-
-### Knowledge-transfer checklist + credential vault UX
-
-**Verdict:** Build domain UI on existing primitives. Do **not** introduce a third-party "secret-share" library (e.g. `onetimesecret`, `privatebin`, `react-share-secret`). The risk profile of those libraries — many are unmaintained one-person hobby projects — is unacceptable for credential handling.
-
-**Building blocks (all already in repo):**
-
-| Existing primitive | v6.0 use |
-|---------------------|-----------|
-| R2 presigned URLs (v1.0) | Knowledge-transfer doc handover (architecture diagrams, runbooks) — exactly the same as contract-document storage |
-| Document virus scan (ClamAV magic-byte, v1.0) | Same — applied transparently |
-| Workflow engine + template builder (v1.0) | Per-role offboarding-checklist templates (engineer / designer / PM / ops) — pure data, no new code |
-| `requireTier` middleware (v3.0) | Gate offboarding hardening behind PRO |
-| `portalSession` magic-link (v2.0) | Outgoing contractor reads handover materials via portal — already secure |
-| Better Auth org RBAC (v1.0) | Receiving teammate reads via internal app with role-scoped access |
-| Pino structured logging | Audit trail of every credential-vault read |
-| AES-256-GCM credential encryption (v2.0 integration framework) | Reuse the per-resource encryption pattern for "credentials-to-hand-over" rows: encrypt at rest, decrypt at read with audit-log row, expire after 30 days |
-
-**What "credential vault" means here (scoped narrowly):**
-
-1. Outgoing contractor uploads a free-form Markdown handover note + optional file attachments to R2 (existing flow).
-2. Outgoing contractor lists "credentials to hand over" — name (e.g. "AWS staging IAM role"), pointer (e.g. "rotated 2026-04-26, request from CTO"), expiry. **No actual secret values ever stored** — we are a coordination layer, not a password manager. If the customer needs a real password manager they should use 1Password / Bitwarden.
-3. Receiving teammate ticks off each row when handover is confirmed; structured `AuditLog` row per tick.
-
-**Mark "Needs verification by IT-security contact before production deploy"** per Standing Project Constraints — this section touches sensitive data flows.
+| Surface | Decision | Why |
+|---------|----------|-----|
+| **IRS IRIS A2A e-file** (US-FORM-05) | **HAND-BUILD XML against IRS XSDs (Pub 5717/5718/5719), OR BUY a transmitter** (1099Pro / Sovos / BoomTax). No Node lib exists. | IRIS A2A = SOAP-over-HTTPS, XML per IRS-published XSD, new IRIS-specific TCC (45-day application), strict pre-submission validation. **FIRE decommissions 2026-12-31** — TY2025 is the LAST FIRE year; TY2026 returns (filed early 2027) are IRIS-only. v7.0 must ship IRIS-primary. Recommend: model 1099-NEC/1042-S in Prisma, emit IRIS XML against the XSD (`xmlbuilder2`-style), validate in CI (`libxmljs2`/`xsd-schema-validator`). Keep a thin transmitter-adapter seam so a BUY (Sovos/1099Pro) can drop in for orgs that prefer it. |
+| **IRS TIN-Matching API** (US-FORM-03) | **DIRECT API** (e-Services); auth via `jose` JWT (JWKS/RS256) | Interactive ≤25 TIN/Name per call (immediate); Bulk ≤100k via .txt (hours). Requires PAF enrollment + IRS API Client ID. 24h cache + admin-escalation-on-mismatch per requirement. |
+| **USPS Addresses 3.0** (US-FIELD-03) | **DIRECT REST**, OAuth 2.0 client-credentials | v1/v2 retired 2026-01-25. v3 = OAuth (8h token), **60 req/hr, no batch** — design throttling + cache HARD (real constraint for bulk imports). CASS data ≤105 days. No SDK needed; thin Hono-side client + token cache. |
+| **DATEV Lohn/Gehalt** (PAYROLL-DE-01) | **HAND-BUILD ASCII import file**; DATEVconnect REST only where org subscribes | DATEV "Lohnimportdatenservice" REST exists for *Lohn und Gehalt* (gated, per-org DATEVconnect). **LODAS has NO REST — ASCII import only.** Ship the ASCII Lohn-import generator as default; REST adapter behind `payroll-datev` flag for subscribed orgs. |
+| **Symfonia / Comarch (XL/Optima) / Enova365** (PAYROLL-PL-01..03) | **HAND-BUILD CSV + their XML** | No official public Node SDKs — these are file-import integrations. Each = a `PayrollExportProfile` in the existing payment-export factory pattern (new format, same factory). |
+| **Sage UK / BrightPay / Moneysoft** (PAYROLL-UK-01) | **HAND-BUILD RTI-compatible FPS/EPS XML** (export only; direct HMRC RTI submission DEFERRED to v7.5) | v7.0 produces the FPS/EPS XML the org imports into their payroll tool; it does NOT submit to HMRC (PAYROLL-UK-02 = v7.5). |
+| **Gusto** (PAYROLL-US-01) | **DIRECT REST** (Gusto Embedded); official client libraries exist | Modern REST + OAuth; Gusto Embedded ships official SDKs/React components. For our push-data adapter, REST + OAuth via the integration framework is enough. We push pay-data; Gusto files taxes. |
+| **QuickBooks Payroll** (PAYROLL-US-01) | **DIRECT REST** (Intuit OAuth 2.0) | Adapter in integration framework. |
+| **ADP** (PAYROLL-US-01) | **DIRECT REST** — gated marketplace partner + OAuth 2.0 **+ client cert (mTLS)** | NO public Node SDK. Must apply as ADP Marketplace partner; OAuth uses client certificates in addition to client_id/secret. Workers v2 (read) + Pay Data Input v1 (write). Treat partner-onboarding lead-time as a phase risk. |
+| **Personio** (HRIS-SYNC-01..03) | **DIRECT REST** (API v2); no official Node SDK | **Research-gate RESOLVED:** API v2 = **200 req/min per credential** (429 + `X-RateLimit-*` headers; Auth endpoint separately 150/min then 1/s). **Custom attributes: keys must be known in advance, company-specific; every field value wrapped `{value, type}` — must unwrap.** Client-ID/secret auth. Hourly-cron pull (HRIS-SYNC-02) MUST respect 200/min → batch + backoff. Adapter reuses integration-framework credential store + health monitor. |
+| **BambooHR** (HRIS-SYNC-04) | **DIRECT REST**, **OAuth 2.0 (required for B2B SaaS)**; no official Node SDK | **Research-gate RESOLVED:** Official SDKs are PHP + Python only — **none for Node**. For multi-tenant SaaS connecting to customers' accounts, OAuth 2.0 is mandatory (Basic-auth API-key path is single-tenant/legacy and being deprecated). Employee list is UN-paginated (whole list in one response); time-off endpoints DO paginate (`page`/`per_page`). Same adapter shape as Personio. |
+| **Zapier app** (INTEG-ZAPIER-01..02) | **Zapier Platform CLI** (Node/TS app) | Triggers map to the webhook event catalog; actions hit the public REST API with the user's API key. 2–4 wk review cycle. Code-first CLI (not the visual builder) for in-repo versioning. |
+| **n8n community node** (INTEG-N8N-01) | **`n8n-nodes-*` package published to npm** (TypeScript) | Publish `@contractor-ops/n8n-nodes`; n8n's declarative/programmatic node TS interface. Mirrors Zapier trigger/action surface against the public API. |
+| **Make.com app** (INTEG-MAKE-01) | **Make custom app** (Make app SDK / JSON-config blueprint) | Same trigger/action surface; ~1–2 wk review. No npm artifact. |
+| **TS + Python SDK auto-gen** (INTEG-API-05) | **Speakeasy** (primary) — generate from the OpenAPI 3.1 doc | Best 2026 generator: Zod-backed runtime type safety, single TS runtime dep, OpenAPI as single source of truth (no proprietary DSL drift, unlike Stainless/Fern), ships as a standalone binary → fits CI + air-gapped + 7-day-age posture (no day-zero npm dep). Publishes `@contractor-ops/sdk` (npm) + `contractor-ops-sdk` (PyPI). Fallback: `openapi-generator` (free, but high maintenance — 4,500+ open issues). |
+| **Developer portal** (INTEG-DX-01) | **Scalar self-host** (recommended) OR **Mintlify** (hosted) | Scalar = MIT, code-first, very accurate OpenAPI parsing, self-host beside `apps/public-api` → fits local-only/data-residency posture + zero vendor lock. Mintlify = best AI/LLM discoverability (llms.txt + MCP), MDX, custom subdomain, but weaker raw OpenAPI parsing + is a SaaS dependency. Choose Mintlify only if marketing wants the hosted polish + AI search. |
 
 ---
 
 ## Installation
 
 ```bash
-# IdP deprovisioning — only Okta is genuinely new
-pnpm --filter @contractor-ops/integrations add @okta/okta-sdk-nodejs@^8.0.0
+# Theme A — US payments + IRS
+pnpm add modern-treasury@4.15.0 plaid@42.2.0 @midlandsbank/node-nacha@2.1.1 jose@6.2.3
+# stripe already present — bump to Treasury-capable line, pin BELOW 22.2.0 until it ages:
+#   pnpm add stripe@22.1   (22.2.0 pub 2026-06-03 — violates 7-day age on 2026-06-07)
 
-# Document expiry engine — only date-fns is genuinely new
-pnpm --filter @contractor-ops/api add date-fns@^4.1.0
+# Theme C — public API spec + SSRF guard (apps/public-api)
+pnpm add @hono/zod-openapi@1.4.0 request-filtering-agent@3.2.0
 
-# (Conditional) GitHub deprovisioning — only if @octokit/rest not already present
-pnpm --filter @contractor-ops/integrations add octokit@^5.0.5
-# OR keep using existing @octokit/rest@^22 if already installed
+# Theme C — docs UI (self-host). Pin previous Scalar line; 0.10.20 pub 2026-06-02 too fresh:
+#   pnpm add @scalar/hono-api-reference@0.9   (confirm exact aged version at install time)
 
-# Already in repo — no install needed:
-# googleapis@^171.4.0   (v3.0 GWS directory import)
-# @microsoft/microsoft-graph-client@^3.0.7  (v3.0 Teams + v2.0 Outlook Calendar)
-# @azure/identity@^4.13.1                   (v3.0 Teams)
-# @slack/web-api@^7.15.1                    (v1.0 Slack)
-# QStash, Pino, Unleash, Anthropic SDK, Prisma 7, pdf-lib, react-pdf — all v1.0–v5.0
+# Theme C — dev tooling (devDependencies)
+pnpm add -D openapi-typescript@7.13.0 @apidevtools/swagger-parser@12.1.0
+# Speakeasy SDK gen: standalone CLI (brew/curl in CI), NOT an npm dep — keeps supply-chain surface small
+
+# IRIS XML build/validate (Theme A US-FORM-05) — confirm aged versions at install:
+#   pnpm add xmlbuilder2 libxmljs2   (or xsd-schema-validator) — IRS XSD-validated 1099/1042-S XML
+
+# After ANY add/upgrade (mandatory):
+pnpm audit && pnpm security:scan
 ```
+
+> No `apps/*` framework changes. Theme C lives in existing Hono `apps/public-api`; webhook dispatch reuses `apps/cron-worker` + QStash; payment formats slot into the existing payment-export factory; HRIS/payroll/Plaid/Stripe/MT adapters slot into the existing integration framework (credential store + OAuth callback + health monitor).
 
 ---
 
 ## Alternatives Considered
 
-| Recommended | Alternative | When to use alternative |
+| Recommended | Alternative | When to Use Alternative |
 |-------------|-------------|-------------------------|
-| `@microsoft/microsoft-graph-client@3.0.7` (3 years stale but stable) | `@microsoft/msgraph-sdk@1.0.0-preview.80` (Kiota-generated) | Only when the Kiota line GAs (currently preview). Migration is breaking; defer until v7.x or later. |
-| `octokit@5.0.5` umbrella SDK | `@octokit/rest@22.0.1` standalone | Either works. Pick `octokit` for new greenfield code, `@octokit/rest` if it's already in the dependency tree to avoid version skew. |
-| Reuse `googleapis@171.4.0` for GWS suspend | Direct Admin SDK REST via `fetch` | Only if we wanted to drop the entire `googleapis` dependency to shave bundle — not relevant for a server-side monorepo. |
-| Claude Vision OCR for IP-clause detection | `pdfjs-dist` + custom regex/LLM pipeline | If we wanted on-device extraction with no LLM call (e.g. for self-hosted-by-customer EU deployments where Anthropic API access is restricted). Defer until that customer request lands. |
-| Build static UAE free-zone seed table | Scrape Bayanat datasets nightly | Only if/when Bayanat publishes a consolidated zone-list dataset. As of 2026-04 only fragmentary per-zone CSVs exist. |
-| Build static Saudization rule table | Pull live from Qiwa portal | Qiwa requires Saudi MOL employer credentials we cannot obtain as a SaaS vendor; static + admin-editable is the only viable path. |
-| `date-fns@4.1.0` | `dayjs@1.11.x` / native `Temporal` | `date-fns` is what v1.0 already uses for invoice / contract / deadline date math. Switching would cause a tree-wide refactor. Native `Temporal` is still Stage-3 not yet shipped in Node LTS as of 2026-04. |
+| `@midlandsbank/node-nacha` (helper) | Hand-roll NACHA fixed-width in the factory | If ODFI spec deviates from lib defaults (addenda/batch-balancing) — likely; keep the option open. NACHA is a documented fixed-width format; the lib is convenience, not a moat. |
+| Stripe Treasury | Modern Treasury | MT when org brings its own bank / wants Fedwire orchestration without Stripe holding funds. Ship both behind one provider seam. |
+| Speakeasy (SDK gen) | Stainless / Fern / openapi-generator | Stainless casts without runtime validation + proprietary DSL + cloud-only (and self-serve reportedly winding down — verify). Fern (Postman-acquired) uses a proprietary DSL. openapi-generator is free but a maintenance sink. Pick Speakeasy unless cost forbids, then openapi-generator. |
+| Scalar (self-host docs) | Mintlify (hosted) | Mintlify when you want hosted AI-search/MCP + marketing polish and accept a SaaS dependency outside local-only posture. |
+| `request-filtering-agent` | `ssrf-req-filter` / custom | Custom CIDR denylist still required as defense-in-depth for cloud-metadata hostnames; the agent handles the connect-time-resolved-IP rebind check that naive URL parsing misses. |
+| Direct Personio/BambooHR REST | Unified HRIS aggregator (Merge/Finch/Kombo) | An aggregator collapses Personio+BambooHR to one API but adds a paid middleman, a third party touching PII (RODO), and breaks the own-credential-store reuse. Two direct adapters fits v7.0's locked 2-provider scope. Revisit only if v8.0 adds many HRIS. |
 
 ---
 
-## What NOT to Use
+## What NOT to Use / NOT to Build
 
-| Avoid | Why | Use instead |
+| Avoid | Why | Use Instead |
 |-------|-----|-------------|
-| BullMQ / Agenda / node-cron / Bree for the expiry engine | We already have QStash for cron + retry + idempotency + audit; second queue layer would create state-of-truth ambiguity | Existing QStash schedules |
-| `pdfjs-dist` / `pdf-parse` / `unpdf` for IP-clause detection | Only extracts text; we'd still need an LLM for classification; fails on scanned PDFs | Existing `ClaudeOcrAdapter` with new tool-use schema |
-| `@microsoft/msgraph-sdk` (Kiota preview) | Still in preview as of 2026-04; breaking changes between preview releases | `@microsoft/microsoft-graph-client@3.0.7` (already installed) |
-| Generic "secret share" npm packages (`onetimesecret`, `privatebin`, etc.) | Most are unmaintained or single-maintainer; unacceptable risk profile for credential UX | Build narrow domain UI on existing R2 + AES-256-GCM + AuditLog primitives |
-| LawGeex / Spellbook / Kira-Systems for clause detection | Closed-source SaaS; vendor-lock for one feature; English-only or limited multilingual support | Claude Vision (Anthropic SDK already integrated) |
-| Spark NLP for Legal | JVM-only; doesn't fit Node monorepo | Claude Vision |
-| Standalone "Saudization" or "UAE free-zone" npm packages | None exist that are maintained / production-grade | Static seed tables + admin-editable overrides in Prisma |
-| Adding a second feature-flag system | Existing self-hosted Unleash OSS + thin code wrapper covers per-jurisdiction gating | Existing wrapper (per memory `project_feature_flags_strategy.md`) |
-| `console.*` anywhere in v6.0 code | Per memory `feedback_logging.md` and Standing Project Constraints | `@contractor-ops/logger` factories or raw `pino` in standalone scripts |
+| **Own payroll calc engine** (PL/DE/UK/US) | Explicit OUT-OF-SCOPE (backlog). Symfonia/DATEV/Sage/Gusto have 10–25yr leads; solo-dev can't compete. | Export/push adapters only — we hand data off, they calculate + file taxes. |
+| **`@ach/ach` npm** | ~10 years stale. | `@midlandsbank/node-nacha` or hand-roll. |
+| **`ssrf-req-filter@1.1.1` as sole guard** | Older, weaker DNS-rebind handling; webhook SSRF is a named verification gate (hostile `169.254.169.254` must be rejected pre-dispatch). | `request-filtering-agent` + own CIDR denylist + connect-time IP recheck. |
+| **IRS FIRE as the PRIMARY e-file path** | Decommissions **2026-12-31**, no grace period; FIRE TCC does NOT carry to IRIS. | IRIS A2A primary; FIRE only as a documented TY2025-and-earlier fallback. Apply for IRIS TCC early (45-day lead). |
+| **USPS v1/v2 Web Tools XML API** | Retired 2026-01-25. | USPS Addresses 3.0 (OAuth 2.0) — design around 60 req/hr + no-batch. |
+| **BambooHR Basic-auth API key for the SaaS connector** | Single-tenant/legacy; deprecating for B2B; won't scale to per-customer accounts. | OAuth 2.0 from day one. |
+| **Stainless/Fern proprietary-DSL SDK gen** | DSL drifts from the OpenAPI source of truth; some are cloud-only / winding down. | Speakeasy (OpenAPI = source of truth) or openapi-generator. |
+| **New app for Theme C** | Backlog says reuse `apps/public-api` (Hono). | Extend existing Hono app + cron-worker dispatcher. |
+| **OAuth-provider mode / inbound user webhooks** | Explicit v8.0+ out-of-scope. | API-key auth + OUTBOUND-only dispatch in v7.0. |
+| **Unified HRIS/payroll aggregator (Merge/Finch) as the default** | Adds a paid third party touching PII; breaks own-credential-store reuse; over-scoped for 2 locked providers. | Direct Personio + BambooHR adapters via existing integration framework. |
+| **Day-zero npm pins** (`stripe@22.2.0`, `@scalar/*@0.10.20`, `orval@8.15.0` — all pub after 2026-05-31) | Violates `minimumReleaseAge: 10080`; supply-chain risk. | Pin the prior aged minor; let the fresh release age 7d, then bump. |
 
 ---
 
 ## Stack Patterns by Variant
 
-**If a customer's IdP is not in our supported list (e.g. JumpCloud, OneLogin):**
-- Defer. v6.0 covers Google Workspace + Azure AD/Entra + Okta + GitHub + Slack — those cover ~95% of the SMB tech-company target market.
-- Document the gap; suggest manual deprovisioning checklist as fallback workflow item.
+**If org wants fully-automated US payouts:**
+- Stripe Treasury (`outboundPayments`, `purpose:'payroll'`) OR Modern Treasury, behind one `UsPayoutProvider` adapter
+- Because both ride the existing integration-framework credential store + health monitor; org picks at connect time.
 
-**If the customer is on Slack Free / Pro (not Enterprise Grid):**
-- `admin.users.*` methods all return `not_allowed` on non-Grid plans.
-- Detect plan tier on Slack adapter connect; surface a banner: "Slack deprovisioning available on Enterprise Grid only — falls back to manual removal task in offboarding workflow."
+**If org only wants a bank file (no programmatic payout):**
+- `@midlandsbank/node-nacha` (or hand-roll) NACHA PPD/CCD/CTX + Fedwire export via the payment-export factory
+- Because it mirrors the shipped BACS Standard 18 / SWIFT pain.001 / Elixir / SEPA pluggable-format pattern — new format, same factory.
 
-**If the customer wants us to integrate with their password manager (1Password / Bitwarden) for actual secret handover:**
-- Out of scope for v6.0. Plumbing into vendor-specific password-manager APIs is a v7+ capability.
-- v6.0 credential vault is a "pointer + audit trail" only — actual secrets stay in the customer's password manager.
+**If org is on DATEV with a DATEVconnect subscription:**
+- DATEVconnect REST (Lohnimportdatenservice) behind `payroll-datev` flag
+- Else: ASCII Lohn-import file (default; LODAS is ASCII-only regardless).
 
-**If the customer requires Steuerberater / Saudi legal / UAE legal sign-off on the rule tables before deploy:**
-- Per Standing Project Constraints — code ships, sign-off is recorded as a post-deploy item in the relevant phase SUMMARY's "Manual-Only Verifications" section. LOCAL-ONLY posture preserved.
+**If marketing wants hosted AI-searchable docs:**
+- Mintlify; else Scalar self-hosted on `apps/public-api` (default for local-only posture).
 
 ---
 
 ## Version Compatibility
 
-| Package | Compatible with | Notes |
-|---------|------------------|-------|
-| `@okta/okta-sdk-nodejs@8.0.0` | Node 18+ | 7.x → 8.x is breaking — operations moved to namespaced `client.userApi.*`, `groupApi.*` etc. We are on a clean install so no migration cost. |
-| `@microsoft/microsoft-graph-client@3.0.7` | `@azure/identity@4.x`, Node 18+ | If running Node 18, pass `--no-experimental-fetch` per Microsoft's recommendation, or pin to `node@20`+ which is our Render baseline. |
-| `googleapis@171.4.0` | `google-auth-library@9.x` (transitive) | We're already on 171.x for v3.0 — no change. Major version bumps are frequent (typically every 1-2 weeks) but binary-compatible within a major; keep in caret range `^171`. |
-| `octokit@5.0.5` | Node 20+ (ESM-only) | If we still have CommonJS builds in any package, we must use the ESM-preserving import pattern (`await import('octokit')`) or migrate the consuming package to ESM. |
-| `@slack/web-api@7.15.1` | Node 18+ | SCIM endpoints are NOT exposed by the SDK — implement via `fetch` in the existing Slack adapter. |
-| `date-fns@4.1.0` | TypeScript 5.x, ESM + CJS | The v3 → v4 jump dropped IE11 + CommonJS-only patterns, but our tooling is fine. |
-| Prisma 7 (existing) | `@prisma/adapter-neon` (existing) | New v6.0 models add only forward migrations — no schema breakage. |
+| Package | Compatible With | Notes |
+|---------|-----------------|-------|
+| `@hono/zod-openapi@1.4.0` | `hono@4.12.x`, `zod@3` or `zod@4` | Repo Hono is 4.12.23 OK. CONFIRM zod major: align with whatever `packages/api`/`public-api` already pin to avoid two zod copies (`@hono/zod-openapi` v1 supports zod v4). |
+| `stripe@22.x` Treasury | existing Stripe billing (v3.0) | Same SDK already in tree — single Stripe dep covers billing + Treasury. Bump major carefully against v3.0 billing code. |
+| `request-filtering-agent@3.2.0` | native `fetch`/`http(s)` agent, `node-fetch`, axios | Must override BOTH http+https agents or rebind bypass via cross-protocol redirect. |
+| Speakeasy CLI | OpenAPI 3.1 doc from `@hono/zod-openapi` | 3.1 fully supported; CI: validate spec (`swagger-parser`) → Speakeasy gen → publish npm + PyPI. |
+| `plaid@42.2.0` / `modern-treasury@4.15.0` | Node 18+ | Both official, OpenAPI-generated SDKs; stable. |
 
 ---
 
 ## Sources
 
-### Context7 / official docs (HIGH confidence)
-
-- `/websites/googleapis_dev_nodejs_googleapis` — `directory_v1` users.update, OAuth2 scopes, GoogleAuth keyFile patterns
-- `/microsoftgraph/microsoft-graph-docs-contrib` — `POST /users/{id}/revokeSignInSessions` (204 No Content), `PATCH /users/{id}` with `accountEnabled: false`, `User.EnableDisableAccount.All` reduced-privilege scope
-- `/okta/okta-sdk-nodejs` — `client.userApi.deactivateUser({ userId })`, `client.userApi.revokeUserSessions({ userId })`, 7.x → 8.x breaking-change diff
-- `/octokit/octokit.js` — `octokit.rest.*` namespaced endpoint methods, `DELETE /orgs/{org}/members/{username}`, OAuth `admin:org` scope
-- `/websites/slack_dev_reference_methods` — `admin.users.session.invalidate`, `admin.users.session.reset`, SCIM `/scim/v1/Users/{id}` PATCH active=false
-- `/date-fns/date-fns@v3.5.0` — `differenceInDays`, `addDays`, `isBefore`, `compareAsc` reference (4.x is API-compatible for the functions used)
-
-### Official documentation (HIGH confidence)
-
-- [Microsoft Graph: revokeSignInSessions API reference](https://learn.microsoft.com/en-us/graph/api/user-revokesigninsessions) — minimum-privilege permissions
-- [Microsoft Graph: SDK overview (3.x stable vs Kiota preview)](https://learn.microsoft.com/en-us/graph/sdks/sdks-overview)
-- [Slack: Using the SCIM API](https://docs.slack.dev/admins/scim-api/) — `scim:write` scope, org-token requirement, deactivate-only (no permanent delete)
-- [Slack: Manage members with SCIM provisioning](https://slack.com/help/articles/212572638-Manage-members-with-SCIM-provisioning)
-- [GitHub REST: Remove an organization member](https://docs.github.com/en/rest/orgs/members#remove-an-organization-member) — `admin:org` scope
-- [Okta: Lifecycle Management](https://developer.okta.com/docs/reference/api/users/#lifecycle-operations) — deactivate, clear sessions, revoke sessions
-- [date-fns documentation](https://date-fns.org/) — current API + v4 release notes
-
-### Web research (MEDIUM confidence — verified against multiple sources)
-
-- [Bayanat UAE Open Data Portal](https://bayanat.ae/) — confirms no consolidated free-zone activity dataset
-- [List of Free Zones in UAE 2026 - Vertix](https://www.vertixauditing.ae/free-zones-in-uae/) — secondary cross-reference for zone list
-- [Free Zones in the UAE: comparative guide DMCC, RAKEZ, IFZA, DAFZA, ADGM - RSBM](https://rsbm.ae/tpost/mnn3dx3j11-free-zones-in-the-uae-a-comparative-guid)
-- [MHRSD Nitaqat Mutawar Program](https://www.hrsd.gov.sa/en/knowledge-centre/decisions-and-regulations/regulation-and-procedures/832742) — official Saudi MOL source
-- [New Phase of the Nitaqat Saudization Program (2026–2028) - AHYSP](https://ahysp.com/new-phase-of-the-nitaqat-saudization-program-2026-2028-what-businesses-in-saudi-arabia-need-to-know/) — 2026–2028 phase changes
-- [Mondaq: New Phase Of The Nitaqat Saudization Program (2026-2028)](https://www.mondaq.com/saudiarabia/contracts-and-commercial-law/1754286/new-phase-of-the-nitaqat-saudization-program-20262028-what-businesses-in-saudi-arabia-need-to-know)
-- [Jisr HRMS Nitaqat calculator](https://www.jisr.net/en/hr-tools/nitaqat-calculator) — reference UI / formula behaviour
-- [ContractEval: LLMs for Clause-Level Legal Risk Identification (Aug 2025)](https://arxiv.org/pdf/2508.03080) — Claude Sonnet 4 Jaccard ≥ 0.45, false-no-clause rate 0.025
-- [Anthropic: Legal summarization use-case guide](https://platform.claude.com/docs/en/about-claude/use-case-guides/legal-summarization) — confirms Claude's clause-extraction capability
-- [PkgPulse: unpdf vs pdf-parse vs pdfjs-dist (2026)](https://www.pkgpulse.com/blog/unpdf-vs-pdf-parse-vs-pdfjs-dist-pdf-parsing-extraction-nodejs-2026) — confirms structural-extraction tradeoffs we explicitly avoid
-
-### npm registry version verification (HIGH confidence — fetched 2026-04-26)
-
-- `googleapis@171.4.0`, `@microsoft/microsoft-graph-client@3.0.7`, `@azure/identity@4.13.1`, `@okta/okta-sdk-nodejs@8.0.0`, `octokit@5.0.5`, `@octokit/rest@22.0.1`, `@slack/web-api@7.15.1`, `date-fns@4.1.0`, `unpdf@1.6.0`, `pdfjs-dist@5.6.205`, `@microsoft/msgraph-sdk@1.0.0-preview.80` — all checked via `npm view <pkg> version` directly.
+- Context7 `/websites/moderntreasury_platform_reference` (156 snippets, HIGH) — Modern Treasury Node SDK
+- Context7 `/plaid/plaid-node` (HIGH) + `/websites/plaid_api` — Plaid Node client, Identity/Auth
+- npm registry (`npm view … version time.modified`, 2026-06-07) — all version + publish-date pins; HIGH
+- IRS — FIRE→IRIS transition (sunset 2026-12-31; TY2026 IRIS-only; new TCC; 45-day app): irs.gov + Sovos / Ice Miller / 1099Pro corroboration — MEDIUM-HIGH
+- IRS Pub 5717/5718/5719 (IRIS A2A SOAP/XML/XSD) + irs.gov "IRIS schemas and business rules" — HIGH (gov't primary)
+- IRS TIN-Matching (e-Services; JWKS/RS256 JWT; PAF enrollment; 25 interactive / 100k bulk): irs.gov + IRM 3.42.8 — MEDIUM-HIGH
+- USPS Addresses 3.0 (OAuth 2.0, 60 req/hr, no batch, v1/v2 retired 2026-01-25): developers.usps.com — HIGH
+- Personio developer.personio.de — API v2 200 req/min/credential, custom-attr known-in-advance + `{value,type}` wrappers — HIGH (research-gate RESOLVED)
+- BambooHR documentation.bamboohr.com/docs/sdks — official SDKs PHP+Python only, OAuth 2.0 for B2B, employee list unpaginated — HIGH (research-gate RESOLVED)
+- Gusto dev.gusto.com / docs.gusto.com; Intuit QuickBooks; ADP developers.adp.com (gated partner + OAuth+client-cert, Workers v2 / Pay Data Input v1) — MEDIUM-HIGH
+- DATEV developer.datev.de + DATEV-Community — LODAS ASCII-only, L&G has Lohnimportdatenservice REST — MEDIUM
+- `@hono/zod-openapi` npm + hono.dev — `getOpenAPI31Document()`/`doc31()` for 3.1 — HIGH
+- Speakeasy/Stainless/Fern comparison (speakeasy.com, stainless.com, buildwithfern.com, Feb 2026) — MEDIUM (vendor-authored, cross-checked)
+- Mintlify vs Scalar (speakeasy.com docs-vendor, openalternative.co) — MEDIUM
+- SSRF: OWASP Node SSRF Prevention + `request-filtering-agent` (azu) GitHub/npm 3.2.0 — HIGH
+- Stripe Treasury OutboundPayment docs (docs.stripe.com, dated 2026-04-22) — HIGH
+- Zapier CLI / n8n community node / Make app toolchains (n8n.io, platform docs) — MEDIUM
 
 ---
-
-*Stack research for: v6.0 Platform Maturity & Operational Hardening*
-*Researched: 2026-04-26*
-*Confidence: HIGH on SDK choices and "do not add" decisions; MEDIUM on Saudization + UAE free-zone reference data (no maintained libraries — static seed tables + admin overrides + post-deploy legal sign-off).*
+*Stack research for: v7.0 GTM Expansion (US cross-border + workforce + integration marketplace)*
+*Researched: 2026-06-07*

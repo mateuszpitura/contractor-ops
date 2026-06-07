@@ -1,571 +1,371 @@
-# Architecture Research — v6.0 Platform Maturity & Operational Hardening
+# Architecture Research
 
-**Domain:** B2B contractor ops SaaS — adding 4 feature areas to an existing production-grade Turborepo monorepo (Next.js 15, tRPC v11, Prisma 7, Better Auth, Neon multi-region, R2, QStash, Unleash).
-**Researched:** 2026-04-26
-**Confidence:** HIGH — direct file-level verification against existing schema, routers, services, and adapter contracts.
+**Domain:** v7.0 GTM Expansion — integration into the existing contractor-ops platform (US Cross-Border + Workforce Management + Integration Marketplace)
+**Researched:** 2026-06-07
+**Confidence:** HIGH (all seams verified against the live tree; file paths and signatures read directly, not inferred)
 
----
-
-## 0. Existing Architecture Reference (verified by file inspection)
-
-These existing surfaces are the load-bearing extension points for v6.0. Names verified:
-
-| Surface | Location | Relevance to v6.0 |
-|---|---|---|
-| `WorkflowTaskType` enum (10 values incl. `ACCESS_REVOKE`, `KNOWLEDGE_TRANSFER`) | `packages/db/prisma/schema/workflow.prisma:173` | F2 trigger, F4 task types — already present |
-| `ComplianceRequirementTemplate` + `ContractorComplianceItem` + `ComplianceStatus` | `packages/db/prisma/schema/contractor.prisma:209-285` | F1 — extend, do NOT build parallel models |
-| `IntegrationProviderAdapter` interface | `packages/integrations/src/types/provider.ts` | F2 — extend with capability mixin |
-| `IntegrationProvider` enum (already includes `GOOGLE_WORKSPACE`, `MICROSOFT_365`, `MICROSOFT_TEAMS`, `GITHUB`, `SLACK`) | `packages/db/prisma/schema/integration.prisma:101` | F2 — re-use, add `OKTA`, `ENTRA_ID` (treat distinct from `MICROSOFT_365`) |
-| `EInvoiceProfile` country-profile interface | `packages/einvoice/src/types/profile.ts` | F1, F3 — copy-by-pattern for `CompliancePolicyProfile` and `GulfRegulatoryProfile` |
-| `ClassificationAssessment` + `outcome Json` per-engagement | `packages/db/prisma/schema/classification.prisma:15` | F1 — input to required-doc rule resolver |
-| `paymentRouter.create` mutation | `packages/api/src/routers/payment.ts:352` | F1 — payment-block hook site |
-| `notification-service.ts` dispatch with provider iteration | `packages/api/src/services/notification-service.ts` | F1, F4 — reuse for reminder fan-out (no new infra) |
-| Feature-flag wrapper with `PENDING → APPROVED` CI gate | `packages/feature-flags/` | All 4 features — gate every legal-sensitive surface |
-| `WorkflowRun.status BLOCKED` + `WorkflowTaskStatus.BLOCKED` | `workflow.prisma:205-220` | F4 — IP verification block already representable, no schema change needed |
-| `equipment-workflow.ts` auto-completion (shipment status → task DONE) | `packages/api/src/services/equipment-workflow.ts` | F2, F4 — proven pattern for "external event → close task" |
-| `Document` + `DocumentLink` (R2 + ClamAV + EntityType-based linking) | `packages/db/prisma/schema/contract.prisma:105` | F1 — uploaded compliance docs already have a home |
-| QStash cron + distributed-lock pattern (e.g. `boe-base-rate-poller.ts`, `economic-dependency-scan.ts`) | `packages/integrations/src/services/`, `packages/api/src/services/` | F1, F2, F3 — reuse for expiry sweeps + Saudization recompute + IdP retry |
-| `IR35Chain`, `EconomicDependencyAlertState`, `ReassessmentTrigger` band-state-machine cron | `packages/api/src/services/economic-dependency-scan.ts` | F1 — exact analog for 90/60/30/15/7-day reminder state machine |
+> Scope note: this is a **subsequent-milestone integration** study, not greenfield. Every recommendation extends a shipped v1–v6 component. Where a v7.0 feature names an existing factory/framework, the rule is **reuse, do not reinvent**. New code is flagged NEW; touched code is flagged MODIFIED.
 
 ---
 
-## 1. Feature 1 — Compliance Document Lifecycle Engine
+## Standard Architecture
 
-### 1.1 Package boundary decision
+### System Overview — where v7.0 lands
 
-**Decision: Extend `packages/db` + `packages/api` + new thin `packages/compliance-policy`. Do NOT duplicate `ComplianceRequirementTemplate`.**
+```
+┌───────────────────────────────────────────────────────────────────────────┐
+│ CLIENTS                                                                     │
+│  apps/web-vite (staff SPA, Page→Container→Hook→Component)                   │
+│  apps/web-vite portal routes (/portal/* magic-link)  ← EMP-PORTAL extends   │
+│  External API-key consumers (Zapier/n8n/Make)        ← Theme C consumes     │
+└───────┬───────────────────────────┬───────────────────────┬────────────────┘
+        │ /api/trpc/*                │ /api/trpc/portal       │ /api/v1/* (REST)
+┌───────▼────────────┐   ┌───────────▼─────────┐   ┌──────────▼──────────────┐
+│ apps/api (Fastify) │   │ portalAppRouter     │   │ apps/public-api (Hono)  │
+│ tRPC appRouter     │   │ (portal-root.ts)    │   │ Hono routes → tRPC      │
+│ ~50 namespaces     │   │ portal + portalTime │   │ caller (publicApiRouter)│
+│  + classification  │   │  ← +employee router │   │  ← Theme C extends      │
+└───────┬────────────┘   └─────────┬───────────┘   └──────────┬──────────────┘
+        │                          │                          │
+┌───────▼──────────────────────────▼──────────────────────────▼──────────────┐
+│ packages/api  (tRPC v11, routers/{core,finance,compliance,integrations,…})  │
+│   middleware: tenant · tier(requireTier) · feature-flag · rbac · api-key     │
+│   services:   payment-export factory · regional-storage · audit-writer       │
+│   ┌──────────── NEW v7.0 middleware: requireAddOn (composes w/ requireTier) ─┐│
+│   └──────────── NEW routers: worker / employee / usForm / usPay / payroll …──┘│
+└───────┬──────────────────────────────────────────────────────────────────┬─┘
+        │                                                                    │
+┌───────▼─────────────────────────┐   ┌──────────────────────────────────▼──┐
+│ packages/integrations           │   │ packages/db (Prisma 7)               │
+│  registry.ts (adapter registry) │   │  tenant.ts (AsyncLocalStorage + ext) │
+│  credential-service (AES-GCM)   │   │  region.ts (EU/ME → +US)             │
+│  webhook-dispatcher (inbound)   │   │  schema/*.prisma                     │
+│  qstash-client · health-service │   │   ← Worker(=Contractor) · ApiKey ·   │
+│   ← +Personio/BambooHR/payroll  │   │     WebhookSubscription · OutboxEvent│
+└───────┬─────────────────────────┘   └──────────────────────────────────────┘
+        │ QStash (fire-and-forget; OutboxEvent transactional outbox)
+┌───────▼───────────────────────────────────────────────────────────────────────┐
+│ apps/cron-worker (Fastify) — outbox drain, webhook _process, syncs, archives    │
+│  ← NEW: outbound webhook dispatcher (Theme C), HRIS hourly sync, IRS retention   │
+└───────────────────────────────────────────────────────────────────────────────┘
+```
 
-| Concern | Where it lives | Rationale |
-|---|---|---|
-| Per-country/engagement-type/classification-outcome **rule definitions** (data) | New `packages/compliance-policy/src/profiles/{pl,uk,de,uae,sa}/` | Mirrors proven `packages/einvoice/profiles/*` and `packages/classification/profiles/*` country-profile pattern. Pure functions + static rule sets. Zero DB. |
-| **Rule evaluation** (engagement → required-doc list) | `packages/compliance-policy/src/engine/resolve-requirements.ts` | Stateless, testable in isolation; consumes classification outcome JSON + contractor country + engagement type → returns `RequiredDocSpec[]`. |
-| **Persisted instances** (uploaded doc → requirement match, expiry, status) | Existing `ContractorComplianceItem` (extended with `severity`, `policyRuleId`, `lastReminderBand`) | The model already exists — reusing eliminates a parallel system. |
-| **Templates seeded per-org** | Existing `ComplianceRequirementTemplate` | Same — already has `appliesToContractorType`, `documentType`, `expires`, `defaultValidityDays`. Add `severity ComplianceSeverity` and `appliesToCountry String? @db.Char(2)`. |
-| **API surface (CRUD + dashboard + payment-block check)** | New `packages/api/src/routers/compliance.ts` + new `packages/api/src/services/compliance-policy-evaluator.ts` (thin wrapper over `compliance-policy` package) | Routers belong with routers; service layer adapts pure engine to Prisma. |
-| **Reminder cron (90/60/30/15/7/expired bands)** | New `packages/api/src/services/compliance-expiry-scan.ts` invoked by new QStash cron `/api/cron/compliance-expiry-scan` | Direct copy of `economic-dependency-scan.ts` band-state-machine pattern with `ReminderInstance` outbox. |
+### Component Responsibilities (verified locations)
 
-### 1.2 Schema delta (additive, no destructive migration)
+| Component | Responsibility | Verified location |
+|-----------|----------------|-------------------|
+| Tenant context | `organizationId` + `region` via AsyncLocalStorage; Prisma `$extends` auto-injects `organizationId` on every op | `packages/db/src/tenant.ts` |
+| Region routing | `SUPPORTED_REGIONS` → per-region `PrismaClient` pool keyed by `DATABASE_URL_*` | `packages/db/src/region.ts` |
+| Regional storage | Region → R2 bucket map for presigned URLs / object ops | `packages/api/src/services/regional-storage.ts` |
+| Payment-export factory | Pure generators (CSV/Elixir/SEPA/SWIFT/BACS) + format dispatcher | `packages/api/src/services/payment-export.ts`; dispatcher `_generateExportFileForFormat` in `routers/finance/payment.ts` |
+| Tier gating | `requireTier(minTier)` middleware → `proProcedure`/`enterpriseProcedure` | `packages/api/src/middleware/tier.ts` |
+| Flag gating | `requireFeatureFlag(key)` + `tenantFlaggedProcedure`; NOT_FOUND on flag-off | `packages/api/src/middleware/feature-flag.ts` |
+| RBAC + scope bridge | `requirePermission(perm)` — session→Better Auth, apiKey→`apiKeyScopes` via `permissionToScopes` | `packages/api/src/middleware/rbac.ts` |
+| Adapter registry | `registerAdapter`/`getAdapter` + capability sub-registries (OCR, CompanyRegistry, Deprovisionable) | `packages/integrations/src/registry.ts` |
+| Transactional outbox | `OutboxEvent` + `SELECT … FOR UPDATE SKIP LOCKED` drain via QStash schedule `/api/outbox/_drain` | `packages/db/prisma/schema/outbox.prisma`; handlers `packages/api/src/services/outbox/handlers.ts` |
+| Public REST surface | Hono `/api/v1/*`, per-route tRPC caller, CORS allowlist, rate limiter, OpenAPI/Scalar | `apps/public-api/src/{app.ts,routes/*,openapi.ts,lib/*}` |
+| API-key auth | Bearer `co_live_*` → `apiKeyTenantProcedure` (apiKeyAuth → `requireTier(ENTERPRISE)` → demoReadOnly) | `packages/api/src/middleware/api-key-auth.ts` |
+
+---
+
+## Recommended Project Structure (additions only)
+
+```
+packages/db/prisma/schema/
+├── contractor.prisma            # MODIFIED: add workerType enum + employment fields (additive)
+├── worker.prisma                # NEW (optional): Employee-only tables (akta, leave, time-emp)
+├── api-key.prisma               # exists (OrganizationApiKey) — reuse for Theme C; rotation modelled
+├── webhook-subscription.prisma  # NEW: WebhookSubscription + WebhookDeliveryAttempt (DLQ)
+├── billing.prisma               # MODIFIED: add-on entitlement (OrgAddOn table or Subscription.addOns)
+├── us-tax.prisma                # NEW: W9/W8/1099/1042-S form records + retention metadata
+
+packages/api/src/middleware/
+├── tier.ts                  # exists — requireTier (UNCHANGED)
+├── add-on.ts                # NEW: requireAddOn(addOnKey) — composes AFTER requireTier
+└── feature-flag.ts          # exists — requireFeatureFlag (UNCHANGED; flag-off = NOT_FOUND)
+
+packages/api/src/routers/
+├── core/                    # contractorRouter stays here, route shapes PRESERVED
+├── workforce/               # NEW domain folder
+│   ├── worker.ts            # workerRouter (shared cross-type ops)
+│   ├── employee.ts          # employeeRouter (HR-gated)
+│   └── leave.ts time-emp.ts akta.ts hr-dashboard.ts
+├── finance/                 # ACH NACHA generator joins payment-export here (MODIFIED)
+├── us/                      # NEW: usFormRouter, usPayRouter, usClassRouter, usFieldRouter
+└── public-api/              # exists — extend with write endpoints + webhook subscription mgmt
+
+packages/integrations/src/adapters/
+├── personio-adapter.ts      # NEW: BaseAdapter (OAuth credential store + webhook + health)
+├── bamboohr-adapter.ts      # NEW: BaseAdapter (REST)
+├── gusto-adapter.ts quickbooks-payroll-adapter.ts adp-adapter.ts  # NEW payroll
+├── modern-treasury-adapter.ts plaid-adapter.ts                    # NEW US-PAY
+└── register-all.ts          # MODIFIED: register the new adapters
+
+packages/integrations/src/services/
+├── webhook-dispatcher.ts    # exists (INBOUND verification). NEW sibling:
+└── outbound-webhook-dispatcher.ts  # NEW: HMAC sign + SSRF guard + enqueue via QStash/outbox
+
+apps/public-api/src/routes/
+├── contractors.ts invoices.ts …  # MODIFIED: add POST/PUT (write); add payments/payment-runs/workflows
+└── webhooks.ts                    # NEW: subscription CRUD + test-fire
+
+apps/web-vite/messages/
+└── en-US.json               # NEW: full key parity vs en.json (US-LOC-01)
+
+apps/web-vite/src/pages/portal/
+└── employee/                # NEW: /employee/* shell pages (EMP-PORTAL); same magic-link auth
+```
+
+### Structure Rationale
+
+- **`contractor.prisma` MODIFIED, not replaced.** WORKER-01 is a non-breaking additive migration: add `workerType WorkerType @default(CONTRACTOR)` plus nullable employment columns to the existing `Contractor` model. Zero data migration for v1–v6 orgs (default backfills). The "discriminated union" is logical (`workerType` discriminator on one physical table), keeping every shipped FK relation (`invoices`, `contracts`, `paymentRunItems`, `complianceItems`, `deprovisioningRuns`, `assignments`) intact. Employee-only satellite tables (akta sections, leave balances, employee time) go in a new `worker.prisma` to avoid bloating the hot Contractor row.
+- **`workforce/` and `us/` as new router domain folders** mirror the existing `routers/{core,finance,compliance,integrations,gulf,equipment,workflow}` convention. They register in `root.ts` the same way classification routers do, and gate behind flag + add-on (see Patterns).
+- **`add-on.ts` beside `tier.ts`** — the add-on check is a peer concern to tier, not a replacement. Compose `tenantFlaggedProcedure → requireTier(base) → requireAddOn('workforce') → requireFeatureFlag('workforce-employees')`.
+- **`public-api/routes/` MODIFIED for writes** — the read surface (GET contractors/invoices/contracts/documents/feature-flags) already exists; Theme C adds POST/PUT plus new resources. The webhook subscription API is a new Hono route group.
+
+---
+
+## Architectural Patterns
+
+### Pattern 1: Logical discriminated union over the existing physical Contractor (WORKER-01)
+
+**What:** Add `workerType WorkerType @default(CONTRACTOR)` to `model Contractor`. `workerRouter` exposes type-agnostic ops (list, search, owner assignment), `contractorRouter` keeps its existing route shapes for B2B, `employeeRouter` adds employment ops gated to HR roles.
+**When to use:** When the new entity shares ~80% of an existing entity's relations and you need zero-downtime for existing tenants. The milestone explicitly locks this.
+**Trade-offs:** One table stays wide; mitigated by satellite tables for employee-only data. Win: every shipped relation, the tenant `$extends` scope, soft-delete, and `writeAuditLog` path apply to employees for free.
 
 ```prisma
-// contractor.prisma — extend existing models
-model ComplianceRequirementTemplate {
-  // ... existing fields ...
-  severity            ComplianceSeverity @default(STANDARD)   // NEW
-  appliesToCountry    String?            @db.Char(2)           // NEW
-  appliesToEngagementType ContractType?                        // NEW
-  policyRuleId        String?                                  // NEW — references compliance-policy package rule ID
-  blocksPayment       Boolean            @default(false)       // NEW (only honoured when severity=CRITICAL)
+// contractor.prisma (MODIFIED — additive)
+enum WorkerType { CONTRACTOR EMPLOYEE }
+
+model Contractor {
+  // … all existing fields unchanged …
+  workerType   WorkerType @default(CONTRACTOR)   // discriminator; backfills CONTRACTOR
+  employment   EmployeeProfile?                  // 1:1, NULL for contractors
+  @@index([organizationId, workerType])          // new index for B-side list filters
 }
+```
 
-model ContractorComplianceItem {
-  // ... existing fields ...
-  severity            ComplianceSeverity @default(STANDARD)   // NEW (denormalised from template at create time so policy rotations don't retroactively change history)
-  policyRuleId        String?                                  // NEW
-  lastReminderBand    ReminderBand?                            // NEW — null|D90|D60|D30|D15|D7|EXPIRED
-  lastReminderAt      DateTime?                                // NEW
-  blocksPaymentAt     DateTime?                                // NEW — set when status=EXPIRED && severity=CRITICAL
+```ts
+// root.ts (MODIFIED) — register exactly like classification, gated by flag at the procedure
+export const appRouter = router({
+  // … existing 50 namespaces, contractor PRESERVED …
+  worker: workerRouter,       // shared; visible when workforce add-on present
+  employee: employeeRouter,   // HR-gated; flag-off ⇒ NOT_FOUND per requireFeatureFlag
+});
+```
+
+### Pattern 2: `requireAddOn` middleware composing AFTER `requireTier` (billing)
+
+**What:** A new middleware factory in `packages/api/src/middleware/add-on.ts` modelled on `tier.ts`. It reads a per-org add-on entitlement (new `OrgAddOn` table, or `Subscription.addOns String[]`) and throws a structured `FORBIDDEN` (`type: ADD_ON_REQUIRED`) mirroring the existing `TIER_REQUIRED` JSON shape so the SPA reuses the upgrade-prompt path.
+**When to use:** Theme A (`us-cross-border` SKU) and Theme B (`workforce` SKU). Theme C is **tier-gated, not add-on** (Starter read / Pro read+write / Enterprise unlimited) — it keeps `requireTier`.
+**Trade-offs:** Two billing axes (tier × add-on). Keep them orthogonal: tier = depth of base product; add-on = surface unlock. Compose in this order so a non-subscriber gets the tier error first.
+
+```ts
+// add-on.ts (NEW) — peer to requireTier; cache like getSubscription (Redis)
+export function requireAddOn(addOn: AddOnKey) {
+  return t.middleware(async ({ ctx, next }) => {
+    const has = await orgHasAddOn(ctx.organizationId, addOn);
+    if (!has) throw new TRPCError({ code: 'FORBIDDEN',
+      message: JSON.stringify({ type: 'ADD_ON_REQUIRED', requiredAddOn: addOn }) });
+    return next({ ctx });
+  });
 }
-
-enum ComplianceSeverity { CRITICAL STANDARD ADVISORY }
-enum ReminderBand      { D90 D60 D30 D15 D7 EXPIRED }
+export const workforceProcedure = tenantFlaggedProcedure
+  .use(requireTier('STARTER'))
+  .use(requireAddOn('workforce'))
+  .use(requireFeatureFlag('workforce-employees'));
 ```
 
-**Justification for extension over new models:** The existing `ComplianceRequirementTemplate.expires` + `defaultValidityDays` + `ContractorComplianceItem.expiresAt` already encodes 90% of the policy primitive. Adding parallel `ComplianceDocumentRequirement` would split a single concept across two tables and force every existing query in `contractorRouter` (compliance-health scoring) to be rewritten. Severity + policyRuleId are the only missing primitives.
+### Pattern 3: Flag-off = render-tree removal + tRPC NOT_FOUND (B-route gating)
 
-### 1.3 Payment-block enforcement — TWO hooks (defence in depth)
+**What:** Reuse the v5 classification flag-off pattern exactly. Server: `requireFeatureFlag('workforce-employees')` returns `NOT_FOUND` (does not leak existence) — the EXISTING behaviour in `feature-flag.ts`. Client: web-vite container reads `useFlag` and removes the route subtree (`<Navigate />` / null) per the Container decision rule.
+**When to use:** Every B2 route (WORKER-05). Also the staff-facing US and Theme-C settings surfaces.
+**Trade-offs:** None new — shipped, lint-guarded pattern. The flag must be declared in `flags-core.ts` FLAGS and carry a signoff-registry entry (boot-time gate `assertFlagSignoffsOrExit` in `feature-flags/src/registry.ts`).
 
-The existing `paymentRouter.create` mutation at `packages/api/src/routers/payment.ts:352` is the **primary** gate. Approval-engine condition is the **secondary** gate so a stale READY queue can't be force-pushed by an admin who bypasses the run wizard.
+### Pattern 4: New payment format = new pure generator + one dispatcher branch (ACH NACHA)
 
-**Primary hook (hard gate at run creation):**
+**What:** Add `generateNachaFile(items, originatorAch, runRef)` to `payment-export.ts` (pure, like `generateBacsStandard18`). Add `ACH_NACHA` to the `PaymentExportFormat` enum (`payment.prisma`). Add one branch to `_generateExportFileForFormat` in `routers/finance/payment.ts`. The generator takes decrypted routing/account numbers from the caller — never touches encrypted blobs (same contract as BACS).
+**When to use:** US-PAY-01. Modern Treasury/Plaid (US-PAY-03/05) ride the integrations adapter registry + credential store instead (programmatic ACH initiation), not the file factory.
+**Trade-offs:** None — this is the v4/v5 proven extension shape. Do NOT create a parallel export module.
 
-```
-paymentRouter.create({ invoiceIds }) →
-  // existing: idempotency cache + tx
-  → preCheck: complianceGate.assertPayable({ contractorIds })
-      → query ContractorComplianceItem
-        WHERE contractorId IN (…)
-          AND status = 'EXPIRED'
-          AND severity = 'CRITICAL'
-          AND blocksPaymentAt <= now()
-      → if any: throw TRPCError({ code: 'PRECONDITION_FAILED',
-                                   data: { code: 'COMPLIANCE_EXPIRED',
-                                           items: [{contractorId, name, expiredAt}] } })
-  → existing logic continues (PaymentRun + PaymentRunItem inserts)
+```ts
+// payment.ts (MODIFIED) — dispatcher gains one branch
+if (format === 'ACH_NACHA') {
+  return { fileBuffer: generateNachaFile(achItems, originatorAch, runRef), ext: 'txt' };
+}
 ```
 
-**Secondary hook (approval engine condition):**
-The existing `ApprovalChainConfig` already supports condition-based routing (per v1.0 ship-list). Add a new condition operator `complianceCritical(EXPIRED) === true` evaluated in `approval-engine.ts`. When approval submits a payment-eligible decision, evaluator queries the same compliance gate; if expired-critical present, decision is held in `PENDING_COMPLIANCE` state with surface notification and inline "view at-risk docs" deep link.
+### Pattern 5: HRIS / payroll as BaseAdapter on the existing integrations framework
 
-**Rationale for two hooks:** Single hook at `paymentRouter.create` catches the wizard flow but not the auto-`READY` transition that occurs when an approval flow completes. Adding the approval-engine condition closes the loop without requiring callers to remember the gate.
+**What:** Personio, BambooHR, Gusto, QuickBooks-Payroll, ADP are each a `BaseAdapter` registered via `registerAdapter` in `register-all.ts`. They reuse: AES-256-GCM `credential-service`, OAuth `oauth-arctic`/`oauth-state`, inbound `webhook-dispatcher`, `health-service`, and `IntegrationConnection`/`IntegrationSyncLog`/`ExternalLink` rows. Add the provider literals to the `IntegrationProvider` enum (`integration.prisma` MODIFIED).
+**When to use:** All of B7 (PAYROLL-*) and B8 (HRIS-SYNC-*).
+**Trade-offs:** Source-of-truth split (HRIS-SYNC-05) is a domain rule, not infra: implement a field-ownership map in the sync handler — registry fields write from HRIS; financial/compliance fields are locked against HRIS overwrite. Per-org single Personio OR BambooHR is enforceable by the existing `@@unique([organizationId, provider, userId])` plus an app-level "one HRIS connection" guard.
 
-### 1.4 Classification-engine interaction (IR35 / Scheinselbständigkeit)
+### Pattern 6: Outbound webhooks via the transactional outbox + QStash (Theme C)
 
-**Decision: Classification outcome is INPUT to the policy resolver, never the policy itself.**
+**What:** Producers `INSERT INTO OutboxEvent` inside the same `$transaction` as the domain mutation (e.g. `invoice.paid`). The cron-worker drain (`/api/outbox/_drain`, `FOR UPDATE SKIP LOCKED`) fans out to a NEW `outbound-webhook-dispatcher` that: looks up active `WebhookSubscription` rows for the org+event, SSRF-guards the target URL (resolve-then-verify against private ranges at dispatch), signs HMAC-SHA256 (`X-CO-Signature: t=…,v1=…`), POSTs, and on failure re-enqueues with the outbox's existing exponential-backoff/attempts bookkeeping; after max attempts → DLQ row + admin alert at 5 failures/1h.
+**When to use:** INTEG-WEBHOOK-01..07. Reuses the at-least-once guarantee already shipped for notifications/integration webhooks.
+**Trade-offs:** The inbound `webhook-dispatcher.ts` verifies provider→us webhooks; the outbound dispatcher is a NEW sibling — do not overload the inbound one. PII redaction (INTEG-WEBHOOK-07) is applied in the dispatcher before signing, keyed off `WebhookSubscription.includePii`.
 
-```
-ContractorAssignment created/updated
-  → classification submit (existing — packages/api/src/routers/classification.ts)
-    → ClassificationAssessment.outcome populated (Json: { verdict: 'OUTSIDE_IR35'|'INSIDE_IR35'|'SELBSTANDIG'|'ABHANGIG'|… })
-    → fire-and-forget: complianceGate.reconcileRequirements(assignmentId)
-      → load classification outcome + contractor.countryCode + contract.contractType
-      → call compliance-policy.resolveRequirements({ country, engagementType, classificationOutcome })
-        → returns RequiredDocSpec[] (e.g. for OUTSIDE_IR35: SDS + business-registration; for INSIDE_IR35: PAYE-engagement-letter + employment-rights-acknowledgement; for ABHANGIG: full Statusfeststellungsverfahren bundle)
-      → DIFF against existing ContractorComplianceItem rows for that assignment
-        → INSERT new requirements with status=MISSING
-        → mark superseded ones status=WAIVED with reason='classification_outcome_change'
-        → never DELETE (audit trail preserved)
+```ts
+// inside the domain mutation transaction (e.g. invoice paid)
+await tx.outboxEvent.create({ data: {
+  organizationId, eventType: 'invoice.paid',
+  aggregateType: 'Invoice', aggregateId: invoice.id,
+  payloadJson: redactablePayload, dedupKey: `webhook:invoice.paid:${invoice.id}`,
+}}); // drain → outbound-webhook-dispatcher → fan out to subscriptions
 ```
 
-The `compliance-policy` package owns the rules (e.g. "UK + B2B_MASTER_SERVICE + OUTSIDE_IR35 → these 4 docs"). Classification owns the verdict. Compliance-engine owns the persisted instances. Each package has one job.
+### Pattern 7: API-key scopes already bridge to RBAC (Theme C auth)
 
-### 1.5 Reminder cron state machine
-
-Direct port of `economic-dependency-scan.ts` band-state-machine:
-
-```
-Daily 02:00 UTC → /api/cron/compliance-expiry-scan
-  for each ContractorComplianceItem WHERE expiresAt IS NOT NULL AND status IN (SATISFIED, EXPIRED):
-    band = computeBand(expiresAt - now)   // D90|D60|D30|D15|D7|EXPIRED|null
-    if band !== lastReminderBand:
-      dispatchNotification(type=COMPLIANCE_DOC_EXPIRING, band, recipients=[admin, contractor-portal])
-      update lastReminderBand=band, lastReminderAt=now
-      if band === EXPIRED && severity === CRITICAL:
-        update status=EXPIRED, blocksPaymentAt=now
-        dispatchNotification(type=COMPLIANCE_PAYMENT_BLOCK, severity=CRITICAL)
-```
-
-Idempotency via `NotificationCronDedup` (already exists in `notification.prisma:104`).
-
-### 1.6 Files touched (concrete)
-
-**New:**
-- `packages/compliance-policy/` (new package) — `src/profiles/{pl,uk,de,uae,sa}/index.ts`, `src/engine/resolve-requirements.ts`, `src/types/{policy-rule,required-doc}.ts`
-- `packages/api/src/routers/compliance.ts`
-- `packages/api/src/services/compliance-policy-evaluator.ts`
-- `packages/api/src/services/compliance-expiry-scan.ts`
-- `apps/web/src/app/api/cron/compliance-expiry-scan/route.ts`
-- `apps/web/src/app/[locale]/(app)/compliance/dashboard/page.tsx` (At-Risk Contractors view + drill-down)
-- `packages/db/prisma/schema/contractor.prisma` migration (severity / policyRuleId / lastReminderBand / blocksPaymentAt)
-
-**Modified:**
-- `packages/api/src/routers/payment.ts:352` — inject `complianceGate.assertPayable` preCheck
-- `packages/api/src/services/approval-engine.ts` — register `complianceCritical` condition operator
-- `packages/api/src/routers/classification.ts` — fire-and-forget reconcile on submit/reassess
-- `packages/api/src/routers/document.ts` (existing — for DocumentLink) — when `DocumentType` matches a missing requirement and document is uploaded, auto-mark `ContractorComplianceItem.status=SATISFIED`, set `expiresAt` from template
-- `packages/api/src/routers/contractor.ts` — extend compliance-health scoring with `severity` weighting
-- `packages/validators/src/notifications.ts` — register `COMPLIANCE_DOC_EXPIRING_*`, `COMPLIANCE_PAYMENT_BLOCK`
-- `packages/feature-flags/src/registry.ts` — add `compliance-policy-engine` flag (legal-sensitive → PENDING)
+**What:** `OrganizationApiKey.scopes String[]` already exists; `requirePermission` already maps `apiKeyScopes` → required scopes via `permissionToScopes` (`rbac.ts`). The Theme C scope picker UI (INTEG-AUTH-02) writes into this same array; write endpoints add `requirePermission({ x: ['write'] })`. **No new auth primitive needed.**
+**When to use:** All Theme C write endpoints in `routers/public-api/*`.
+**Trade-offs:** Per-tier rate limiting (INTEG-AUTH-04) is the genuinely-new piece — extend the existing `apps/public-api/src/lib/rate-limiter.ts` (Redis) with per-tier buckets.
 
 ---
 
-## 2. Feature 2 — Identity Provider Deprovisioning
+## Data Flow
 
-### 2.1 Adapter pattern decision
-
-**Decision: Extend the existing `IntegrationProviderAdapter` interface with an optional `Deprovisionable` capability mixin. Do NOT create a parallel `packages/deprovisioning` package.**
-
-Rationale:
-- `IntegrationProvider` enum already lists `GOOGLE_WORKSPACE`, `MICROSOFT_365`, `MICROSOFT_TEAMS`, `GITHUB`, `SLACK`. Most credentials, OAuth flows, webhook pipelines, and health monitoring are already in place. A new package would force re-implementation of credential resolution, token refresh, and audit logging — exactly the duplication v2.0 fought to eliminate (Key Decision: "Provider adapter pattern — every integration shares credential store, webhook pipeline, health monitoring").
-- The country-profile pattern from `einvoice` and `classification` is the **wrong analog** here. Country profiles are pure-data + pure-function (rule sets, validators). IdP deprovisioning is **stateful imperative remote calls** with auth tokens and rate limits — exactly what `IntegrationProviderAdapter` is built for.
-
-```typescript
-// packages/integrations/src/types/provider.ts (NEW capability mixin)
-export interface DeprovisionResult {
-  status: 'SUSPENDED' | 'REMOVED' | 'NOT_FOUND' | 'PARTIAL' | 'FAILED';
-  externalUserId?: string;
-  durationMs: number;
-  rawResponseHash: string;  // SHA-256 of raw API response for audit (no PII in hash)
-  errorCode?: string;
-}
-
-export interface Deprovisionable {
-  /** Idempotent — calling twice MUST return SUSPENDED|NOT_FOUND on second call. */
-  deprovision(args: {
-    connectionId: string;
-    externalIdentifier: { email: string; externalId?: string };
-    actorUserId: string;
-    reason: 'OFFBOARDING' | 'MANUAL_REVOKE' | 'COMPLIANCE_BREACH';
-  }): Promise<DeprovisionResult>;
-
-  /** For dry-run UI preview — what would deprovision do? */
-  describeImpact?(args: { externalIdentifier: { email: string } }): Promise<{
-    actions: Array<{ kind: string; target: string }>;
-  }>;
-}
-
-// IntegrationProviderAdapter extended:
-export interface IntegrationProviderAdapter {
-  // ... existing fields ...
-  readonly deprovision?: Deprovisionable;
-}
-```
-
-### 2.2 New IntegrationProvider enum members
-
-```prisma
-enum IntegrationProvider {
-  // ... existing ...
-  ENTRA_ID    // separate from MICROSOFT_365 — different OAuth scope set, different Graph endpoints for user.disable
-  OKTA        // System for Cross-domain Identity Management (SCIM) v2
-}
-```
-
-Note: **Reuse existing `MICROSOFT_TEAMS`/`MICROSOFT_365`** as the same Azure AD principal — Teams adapter has Graph access; an adapter consolidation pass during v6.0 may DRY this, but is **not** a hard prerequisite for deprovisioning.
-
-### 2.3 Trigger orchestration — workflow-task driven, not bespoke orchestrator
-
-**Decision: Re-use `WorkflowTaskType.ACCESS_REVOKE` (already exists in `workflow.prisma:173`). Build a service `deprovisioning-orchestrator.ts` that listens for ACCESS_REVOKE task starts in the existing offboarding workflow.**
-
-This mirrors exactly how `equipment-workflow.ts` wires `WorkflowTaskType.EQUIPMENT` into the workflow engine. A bespoke orchestrator would split offboarding logic across two places.
+### Cross-border invoice → ACH payout (Theme A)
 
 ```
-ContractorAssignment.status = 'ENDED' (via offboarding)
-  → existing workflow engine starts run with template `OFFBOARDING`
-  → ACCESS_REVOKE task created (TODO)
-  → fire-and-forget: deprovisioning-orchestrator.handleAccessRevokeTaskStart(taskRunId)
-    → look up contractor.email
-    → for each connected IntegrationConnection where adapter.deprovision != null:
-        enqueue QStash job /api/queue/deprovision { connectionId, taskRunId, email }
-    → store DeprovisioningRun(taskRunId, totalProviders=N, completedProviders=0, status=IN_PROGRESS)
+US payer org (region=us-east-1) → invoice (USD, integer cents)
+   ↓ approval chain (existing)            ↓ payment run (existing)
+   ↓ format = ACH_NACHA  →  generateNachaFile() [NEW pure generator]
+   ↓ OR US-PAY-03: Modern Treasury adapter → programmatic ACH initiate
+   ↓ 1099-NEC year-end batch → US R2 bucket (us-east-1) → soft-delete + scheduled archive (4/7yr)
 ```
 
-### 2.4 Saga / partial-failure pattern
+### Employee onboarding → payroll push / HRIS sync (Theme B)
 
-**Decision: Saga with provider-level idempotency, NOT global compensation. Use a new `DeprovisioningRun` + `DeprovisioningStep` audit model. Partial failure = blocking task, never silent.**
-
-Rationale: A "compensating action" for IdP deprovisioning would be **re-provisioning** access — which is operationally unsafe and legally murky (re-granting access to an offboarded contractor). The right model is **idempotent retry with manual escalation** for unrecoverable failures.
-
-```prisma
-// New schema file: deprovisioning.prisma
-model DeprovisioningRun {
-  id                  String   @id @default(cuid())
-  organizationId      String
-  workflowTaskRunId   String   @unique
-  contractorId        String
-  contractorEmail     String
-  totalProviders      Int
-  completedProviders  Int      @default(0)
-  failedProviders     Int      @default(0)
-  status              DeprovisioningRunStatus @default(IN_PROGRESS)
-  startedAt           DateTime @default(now())
-  completedAt         DateTime?
-  // ... org rel, indexes
-}
-
-model DeprovisioningStep {
-  id                       String   @id @default(cuid())
-  organizationId           String
-  deprovisioningRunId      String
-  integrationConnectionId  String
-  provider                 IntegrationProvider
-  status                   DeprovisioningStepStatus @default(PENDING)
-  attempts                 Int      @default(0)
-  maxAttempts              Int      @default(3)
-  lastError                String?
-  externalActionResult     Json?
-  startedAt                DateTime?
-  completedAt              DateTime?
-  // ... rels
-}
-
-enum DeprovisioningRunStatus  { IN_PROGRESS COMPLETED PARTIAL_FAILURE FAILED }
-enum DeprovisioningStepStatus { PENDING IN_PROGRESS SUCCEEDED FAILED SKIPPED MANUAL_ESCALATION }
+```
+HR_ADMIN creates Worker(workerType=EMPLOYEE)  → flag+add-on gated route
+   ↓ EmployeeProfile + per-market fields (PESEL/Steuer-IdNr/NI/SSN, Zod-validated)
+   ↓ akta sections (RBAC per section) · leave balance engine · employee time
+   ↓ OutboxEvent OR adapter sync → Gusto/QuickBooks/ADP (export adapter)
+HRIS pull (hourly cron) Personio/BambooHR → registry fields update Worker
+   conflict: registry←HRIS ; financial/compliance fields LOCKED (HRIS-SYNC-05)
 ```
 
-**Failure handling:**
-- Provider call fails → step status=FAILED, attempts++. If attempts < maxAttempts, requeue with QStash exponential backoff (existing `qstash-client.ts` pattern).
-- Final attempt fails → step status=MANUAL_ESCALATION → `WorkflowTaskRun.status=BLOCKED` → notification dispatched to admin with deep link to manual-revoke page.
-- Run status computed: `IN_PROGRESS` while any PENDING/IN_PROGRESS, `COMPLETED` if all SUCCEEDED, `PARTIAL_FAILURE` if some MANUAL_ESCALATION, `FAILED` only if every provider failed (very rare).
+### Public API write → outbound webhook (Theme C)
 
-The workflow task is **only** marked DONE when run.status=COMPLETED. PARTIAL_FAILURE keeps the offboarding workflow blocked at ACCESS_REVOKE, which is the correct semantic — you cannot complete offboarding while contractor still has GitHub org access.
-
-### 2.5 Audit trail
-
-Every step writes to existing `AuditLog` (`audit.prisma:3`) with action='IDP_DEPROVISION', plus a redacted hash of the provider response. The existing `IntegrationSyncLog` is also written (direction=OUTBOUND, syncType='deprovision'). Re-use, don't duplicate.
-
-### 2.6 Files touched
-
-**New:**
-- `packages/integrations/src/types/deprovision.ts` (Deprovisionable interface)
-- `packages/integrations/src/adapters/{google-workspace,entra-id,okta,github,slack,teams}-adapter.ts` — extend each with `deprovision: Deprovisionable` (Microsoft Teams already covered if Entra ID adapter consolidates)
-- `packages/db/prisma/schema/deprovisioning.prisma`
-- `packages/api/src/services/deprovisioning-orchestrator.ts`
-- `packages/api/src/routers/deprovisioning.ts` (status query, manual retry, manual mark-complete with admin permission)
-- `apps/web/src/app/api/queue/deprovision/route.ts` (QStash worker)
-
-**Modified:**
-- `packages/integrations/src/types/provider.ts` — add optional `deprovision` field
-- `packages/db/prisma/schema/integration.prisma` — add `ENTRA_ID`, `OKTA` to `IntegrationProvider` enum
-- `packages/api/src/services/index.ts` — wire orchestrator into workflow start hook (mirror equipment-workflow.ts)
-- `packages/validators/src/permissions.ts` — register `idp_deprovision:execute`, `idp_deprovision:manual_complete` (latter scoped to admin only)
-- `packages/feature-flags/src/registry.ts` — `idp-deprovisioning` flag (operational risk → PENDING)
+```
+External client (Bearer co_live_…) → Hono /api/v1/invoices [POST, NEW]
+   ↓ createPublicCaller → apiKeyTenantProcedure → requireTier → requirePermission({invoice:['write']})
+   ↓ tRPC mutation (tenant-scoped, writeAuditLog with apiKeyId+sourceIp)
+   ↓ same $transaction: OutboxEvent('invoice.created')
+   ↓ cron drain → outbound-webhook-dispatcher → SSRF guard → HMAC sign → POST subscriber
+   ↓ fail → backoff (outbox attempts) → DLQ row + admin alert at 5/1h
+```
 
 ---
 
-## 3. Feature 3 — Gulf Operational Polish
+## Scaling Considerations
 
-### 3.1 UAE free-zone + Saudization — package boundary
+| Scale | Architecture Adjustments |
+|-------|--------------------------|
+| 0–1k orgs | Current shape holds. US region adds one Prisma client to the existing pool; no topology change. |
+| 1k–10k orgs | Outbound webhook fan-out is the first pressure point — the outbox `FOR UPDATE SKIP LOCKED` drain already supports concurrent workers; scale cron-worker replicas. Per-tier API rate limits cap noisy tenants. |
+| 10k+ orgs | Dedicate a webhook-dispatch worker separate from the outbox notification drain; partition `OutboxEvent`/`WebhookDeliveryAttempt` by org-hash. US read replicas stay off by default (US-INFRA-01). |
 
-**Decision: Extend `packages/db` + `packages/api` with a small per-jurisdiction profile package `packages/gulf-regulatory`. Country-data (zone codes, Nitaqat thresholds) belongs in code, persisted entities belong in Prisma.**
-
-The country-profile pattern fits here perfectly because zone codes and Saudization band thresholds are **data, not workflow** — same shape as `packages/einvoice/profiles/zatca` exposing static rule data. Putting these inside `packages/api/src/services/saudization.ts` would couple the API server to data that should be unit-testable in isolation and reviewable by Steuerberater-equivalent (Gulf compliance adviser) outside the application code.
-
-### 3.2 UAE Free Zone schema
-
-```prisma
-// New schema file: gulf.prisma
-model UaeFreeZone {
-  // STATIC reference data — seeded at migration time, rarely mutated.
-  // Synced from packages/gulf-regulatory/profiles/uae/free-zones.ts catalogue.
-  id                  String   @id     // e.g. 'DMCC', 'JAFZA', 'DIFC', 'ADGM'
-  displayName         String
-  emirate             String   // 'DUBAI' | 'ABU_DHABI' | 'SHARJAH' | …
-  permittedActivityCodes Json  // string[] from gulf-regulatory profile
-  licenseRenewalIntervalMonths Int @default(12)
-  // No organizationId — global reference table
-}
-
-model FreeZoneAssignment {
-  id                  String   @id @default(cuid())
-  organizationId      String
-  contractorId        String
-  contractorAssignmentId String?     // link to specific engagement, optional
-  uaeFreeZoneId       String
-  licenseNumber       String
-  licenseIssuedAt     DateTime @db.Date
-  licenseExpiresAt    DateTime @db.Date
-  permittedActivityCodes Json   // subset of UaeFreeZone.permittedActivityCodes — what THIS license covers
-  status              FreeZoneAssignmentStatus @default(ACTIVE)
-  // ... org/contractor rels, indexes on expiresAt for sweep
-}
-
-enum FreeZoneAssignmentStatus { ACTIVE EXPIRING EXPIRED REVOKED }
-```
-
-`UaeFreeZone` is global static reference data. `FreeZoneAssignment` is per-org, per-contractor. **Activity-scope validation** runs in the `compliance-policy-evaluator` (Feature 1's engine) — when a contractor with a free-zone assignment is matched against an engagement type, validate that the contract's activity descriptor falls inside `permittedActivityCodes`. This composes Feature 1 + Feature 3 cleanly.
-
-### 3.3 Saudization (Nitaqat) schema
-
-**Decision: Two new models. Do NOT extend `Organization` with a JSON blob — the Nitaqat band is queried frequently for the dashboard and needs to be indexable.**
-
-```prisma
-model SaudizationConfig {
-  id                  String   @id @default(cuid())
-  organizationId      String   @unique
-  totalEmployees      Int      @default(0)         // current snapshot — denormalised from headcount table
-  saudiEmployees      Int      @default(0)
-  nationalisationRate Decimal  @db.Decimal(5,4)    // 0.0000-1.0000
-  currentBand         NitaqatBand                  // PLATINUM | HIGH_GREEN | MID_GREEN | LOW_GREEN | YELLOW | RED
-  industrySegment     String                       // e.g. 'INFORMATION_TECHNOLOGY' — band thresholds vary per segment
-  lastRecomputedAt    DateTime
-  // org rel
-}
-
-model SaudiHeadcount {
-  // Per-engagement nationality + Saudi-status entry.
-  id                  String   @id @default(cuid())
-  organizationId      String
-  contractorAssignmentId String  @unique           // 1:1 with engagement
-  nationality         String   @db.Char(2)        // ISO-3166-1 alpha-2
-  isSaudi             Boolean
-  effectiveFrom       DateTime
-  effectiveTo         DateTime?
-  // ... rels, index on (organizationId, isSaudi, effectiveTo IS NULL)
-}
-
-enum NitaqatBand { PLATINUM HIGH_GREEN MID_GREEN LOW_GREEN YELLOW RED }
-```
-
-`SaudizationConfig.currentBand` and `nationalisationRate` are **denormalised** for dashboard read-perf. Recomputed by a daily cron `/api/cron/saudization-recompute` plus event-triggered on `SaudiHeadcount` insert/update (fire-and-forget). The recompute logic lives in `packages/gulf-regulatory/profiles/sa/nitaqat.ts` (pure function: headcount[] + segment → band).
-
-### 3.4 Dashboard composition
-
-**Decision: Reuse the existing `reportRouter` for Gulf reports, NOT a new top-level router. Add a `gulfDashboard` sub-router only if Saudization-specific charts diverge from the standard report shape.**
-
-Inspecting v5.0: per-market compliance dashboard uses 8 tRPC procedures across `classification-dashboard.ts`. v6.0 should add `report.gulf.{nitaqatStatus, freeZoneExpiry, freeZoneActivityViolations}` procedures. Gulf views that need richer chart composition can live in a thin `report.gulf.*` namespace; pure-data queries belong in the existing `report.ts` to keep the report-export pipeline (CSV with formula-injection neutralisation — already proven) consistent.
-
-### 3.5 Free-zone license expiry — re-uses Feature 1's reminder cron
-
-`FreeZoneAssignment.licenseExpiresAt` participates in the Feature 1 expiry-scan by mapping it as a `ContractorComplianceItem` row whose `requirementTemplateId` points at a synthetic "FREE_ZONE_LICENSE" template (severity=CRITICAL, blocksPayment=true). This composition is the entire reason Feature 1 must land first.
-
-### 3.6 Files touched
-
-**New:**
-- `packages/gulf-regulatory/src/profiles/uae/free-zones.ts` (static catalogue), `src/profiles/sa/nitaqat.ts` (band thresholds + computeBand fn)
-- `packages/db/prisma/schema/gulf.prisma`
-- `packages/api/src/routers/gulf.ts`
-- `packages/api/src/services/saudization-recompute.ts`
-- `apps/web/src/app/api/cron/saudization-recompute/route.ts`
-- `apps/web/src/app/[locale]/(app)/dashboard/gulf/page.tsx`
-- `packages/db/prisma/seed/uae-free-zones.ts` (seeds `UaeFreeZone` reference data from gulf-regulatory profile)
-
-**Modified:**
-- `packages/api/src/routers/report.ts` — add `gulf.*` namespace
-- `packages/api/src/routers/contractor.ts` — surface `freeZoneAssignment` and `saudiHeadcount` on contractor profile country-fields tab when `countryCode IN ('AE','SA')`
-- `packages/i18n/src/messages/{en,pl,de,ar}/gulf.json` — Nitaqat band names + zone names (Arabic critical)
-- `packages/feature-flags/src/registry.ts` — `gulf-operational-polish` flag
+### Scaling Priorities
+1. **First bottleneck:** outbound webhook dispatch volume (fan-out × retries). Mitigation: already on the durable outbox + QStash; isolate its drain schedule from the notification drain.
+2. **Second bottleneck:** the wide Contractor row once employees + per-market fields land. Mitigation: keep employee-only data in satellite tables (`worker.prisma`), index `(organizationId, workerType)`.
 
 ---
 
-## 4. Feature 4 — Offboarding Hardening
+## Anti-Patterns
 
-### 4.1 IP-assignment verification gate
+### Anti-Pattern 1: Separate `Worker`/`Employee` physical table
+**What people do:** Create a brand-new `Worker` table and migrate/duplicate Contractor relations.
+**Why it's wrong:** Breaks every shipped FK (invoices, payments, compliance, deprovisioning), forces data migration for v1–v6 orgs, and violates the locked "non-breaking additive, zero data migration" decision.
+**Do this instead:** Discriminator column on the existing `Contractor` model + satellite tables for employee-only data (Pattern 1).
 
-**Decision: New `WorkflowTaskType.IP_VERIFICATION` enum value, NOT a new top-level "blocking task" abstraction. The existing `WorkflowTaskRun.status=BLOCKED` + `WorkflowTaskTemplate.required=true` already provides the gate semantics.**
+### Anti-Pattern 2: A second webhook dispatcher / second integration framework
+**What people do:** Build a fresh outbound webhook stack and a parallel adapter loader for HRIS/payroll.
+**Why it's wrong:** Duplicates AES-GCM credential store, health monitoring, OAuth, dedup, and backoff that are shipped and lint-guarded.
+**Do this instead:** New adapters via `registerAdapter` (Pattern 5); outbound webhooks as a NEW dispatcher service that consumes the EXISTING `OutboxEvent` outbox (Pattern 6).
 
-Adding a `BlockingTaskType` parallel to `WorkflowTaskType` would split the workflow engine. The existing model already supports the gate: `required=true` task in BLOCKED state prevents `WorkflowRun.completedAt` from being set (verified in workflow router logic).
+### Anti-Pattern 3: New money/export module for ACH
+**What people do:** Write a standalone NACHA module outside the payment-export factory.
+**Why it's wrong:** Diverges from the format-dispatcher contract, loses integer-cents/grosze discipline and the decrypt-at-caller invariant.
+**Do this instead:** One pure `generateNachaFile` + one `PaymentExportFormat` enum value + one dispatcher branch (Pattern 4).
 
-```prisma
-enum WorkflowTaskType {
-  // ... existing ...
-  IP_VERIFICATION    // NEW
-  CONTRACT_HEALTH_CHECK  // NEW (drives F4.3)
-}
-```
-
-**Override RBAC:** Add a new permission `workflow:override_blocking_task` (admin + legal_compliance_viewer). The existing `requirePermission` middleware enforces it. UI surfaces the override only when permission present + user provides a written reason that lands in `WorkflowTaskRun.resultJson` (which already exists, line 106).
-
-### 4.2 Contract clause health check — Claude Vision tool_use
-
-**Decision: Trigger at contract upload AND on demand. Store result on `Contract.complianceFlagsJson` (new field) — NOT on `Document` (because health is per-contract relationship, not per-file).**
-
-```prisma
-// contract.prisma
-model Contract {
-  // ... existing ...
-  complianceFlagsJson      Json?       // NEW { ipAssignment: { present: bool, confidence: 0-1, citation?: string }, ... }
-  complianceFlagsCheckedAt DateTime?   // NEW
-  complianceFlagsModelVer  String?     // NEW — e.g. 'claude-3-5-sonnet-20241022' for replay
-}
-```
-
-```
-contractRouter.uploadDocument(contractId, file) →
-  // existing: R2 upload, ClamAV, DocumentLink
-  → fire-and-forget: enqueueContractHealthCheck(contractId)
-    → QStash /api/queue/contract-health-check { contractId }
-      → fetch document from R2 (presigned)
-      → call existing OCR adapter (claude-ocr-adapter.ts) but with NEW tool definition
-        — input: PDF bytes + system prompt: "Identify whether this contract contains IP assignment language transferring all work-product IP to the engaging party. Cite the clause."
-        — output via tool_use: { ipAssignment: { present: bool, confidence: number, citation: string|null } }
-      → write Contract.complianceFlagsJson, complianceFlagsCheckedAt, complianceFlagsModelVer
-      → if ipAssignment.present === false || confidence < 0.7:
-          create open ReassessmentTrigger-like flag → notify legal_compliance_viewer
-```
-
-**Reuse `claude-ocr-adapter.ts`** (already in `packages/integrations/src/adapters/`). The adapter contract supports tool_use; only the tool schema changes per use case. New tool registrations live in `packages/api/src/services/contract-health-tools.ts` keeping the OCR adapter pure.
-
-**OCR credits:** Each health check decrements OCR credits via existing `credit-service.ts` (atomic Serializable isolation already proven in v3.0). Fail-open (no block) on credit exhaustion — health check is advisory infrastructure.
-
-### 4.3 Knowledge transfer template — seeded `WorkflowTemplate`, NOT new RoleType taxonomy
-
-**Decision: Seed a small set of role-based `WorkflowTemplate` rows (e.g. `KT_DEVELOPER`, `KT_DESIGNER`, `KT_PROJECT_MANAGER`, `KT_OTHER`) with type=OFFBOARDING and tasks of taskType=KNOWLEDGE_TRANSFER. Pick template at offboarding start based on contractor's primary role tag.**
-
-A new `RoleType` taxonomy table + dynamic template generation would be **overengineering** for v6.0:
-- The existing `ContractorTag` system already supports role tagging (verified in `contractor.prisma:185`).
-- v1.0 already proved templates are sufficient for COMPLIANCE_REVIEW, ONBOARDING, OFFBOARDING workflows; adding 4 KT seeds reuses that proven mechanism.
-- Dynamic generation requires a new template-render engine; templates as data are reviewable by ops without engineering involvement.
-
-Future-proofing: when 4 templates becomes 40, the user can use the existing template builder UI (v1.0) to clone and customise. No engineering required.
-
-### 4.4 Documentation handover
-
-Add `WorkflowTaskTemplate.configJson.credentialLinks` (already JSON, no schema change) — array of `{ label, vaultUrl }`. Display in task UI as click-through links. Org-level setting: `Organization.settingsJson.passwordVaultProvider` (no schema change — settingsJson exists). This is purely a UI feature on top of existing infrastructure.
-
-### 4.5 Files touched
-
-**New:**
-- `packages/api/src/services/contract-health-checker.ts`
-- `packages/api/src/services/contract-health-tools.ts` (Claude tool_use definitions)
-- `apps/web/src/app/api/queue/contract-health-check/route.ts`
-- `packages/db/prisma/seed/offboarding-templates.ts` (seeds 4 KT templates per org on creation)
-
-**Modified:**
-- `packages/db/prisma/schema/workflow.prisma` — add `IP_VERIFICATION`, `CONTRACT_HEALTH_CHECK` to `WorkflowTaskType`
-- `packages/db/prisma/schema/contract.prisma` — add `complianceFlagsJson`, `complianceFlagsCheckedAt`, `complianceFlagsModelVer` to `Contract`
-- `packages/api/src/routers/contract.ts` — fire-and-forget health check on upload + new `Contract.runHealthCheck` mutation (manual re-run)
-- `packages/api/src/routers/workflow-execution.ts` — add `overrideBlockingTask` mutation gated on `workflow:override_blocking_task`
-- `packages/validators/src/permissions.ts` — register the override permission
-- `packages/feature-flags/src/registry.ts` — `offboarding-hardening` flag (legal-sensitive — IP-clause AI inference flagged for adviser review → PENDING)
+### Anti-Pattern 4: Bypassing tenant `$extends` for cross-region/US queries
+**What people do:** Reach for `prismaRaw` or hand-built clients when adding the US region.
+**Why it's wrong:** `prismaRaw` is for cron cross-org aggregation only; request handlers must keep the AsyncLocalStorage scope.
+**Do this instead:** Add `'US'` to `SUPPORTED_REGIONS` + `DATABASE_URL_US` mapping in `region.ts`, add `R2_BUCKET_NAME_US` to `regional-storage.ts`, route per-org via the existing `Organization.dataRegion` default, and add `US` to the Prisma `DataRegion` enum.
 
 ---
 
-## 5. Build Order — Dependency-Honouring
+## Integration Points
 
-```
-                ┌──────────────────────────────────┐
-                │ F1: Compliance Document Engine   │  ← FOUNDATION
-                │  (extends ComplianceRequirement, │
-                │   policy package, payment hook,  │
-                │   expiry cron)                   │
-                └────────────┬─────────────────────┘
-                             │
-         ┌───────────────────┼─────────────────────┐
-         │                   │                     │
-         ▼                   ▼                     ▼
-  ┌────────────┐    ┌────────────────┐   ┌────────────────┐
-  │ F3: Gulf   │    │ F4: Offboarding│   │ F2: IdP        │
-  │ (free-zone │    │ Hardening      │   │ Deprovisioning │
-  │  uses F1   │    │ (IP check uses │   │ (independent   │
-  │  expiry +  │    │  Doc store +   │   │  of F1; runs   │
-  │  block hook│    │  workflow      │   │  in offboarding│
-  │  for       │    │  engine; KT    │   │  workflow)     │
-  │  licenses) │    │  reuses        │   │                │
-  │            │    │  templates)    │   │                │
-  └────────────┘    └────────────────┘   └────────────────┘
-```
+### External Services
 
-**Hard dependencies:**
-1. **F1 must land before F3** — UAE free-zone license expiry composes through F1's `ContractorComplianceItem` + reminder cron. Building F3 first means duplicating the band-state-machine reminder logic.
-2. **F1 must land before F4's IP-clause health check** — the failure mode (missing IP assignment language) creates a `ContractorComplianceItem` of severity=STANDARD. Without F1's instance/expiry model, the health check has nowhere to write its findings.
-3. **F2 is independent of F1/F3/F4 schema-wise** but shares the offboarding workflow with F4. Build F4's `WorkflowTaskType.IP_VERIFICATION` enum addition before F2 wires `ACCESS_REVOKE` orchestration so a single migration covers both.
+| Service | Integration Pattern | Notes |
+|---------|---------------------|-------|
+| Modern Treasury / Plaid (US-PAY) | BaseAdapter + credential store + OAuth | Reuse `oauth-arctic`; programmatic ACH initiation, not the file factory |
+| Personio / BambooHR (HRIS) | BaseAdapter; hourly pull cron + event push | Source-of-truth split in sync handler; one HRIS per org (app guard + unique index) |
+| Gusto / QuickBooks / ADP (payroll) | BaseAdapter export; CSV/native API | Each behind `payroll-{provider}` flag; export only, NOT a payroll engine |
+| IRS TIN-match / FIRE-IRIS (US-FORM) | gov-api framework (cert auth, retry, audit) | Model on `packages/gov-api`; IRIS primary, FIRE fallback (research-gated cutover) |
+| Zapier / n8n / Make (Theme C) | Consume `/api/v1/*` + outbound webhooks | One backend, three listings; n8n node is an npm package `@contractor-ops/n8n-nodes` |
 
-**Suggested phase grouping (continuing from v5.0 phase 69):**
+### Internal Boundaries
 
-| Phase | Feature(s) | Scope |
-|---|---|---|
-| 70 | F1 Foundation | `packages/compliance-policy` package + schema delta + policy resolver + reconcile-on-classification hook + dashboard skeleton |
-| 71 | F1 Reminder + Payment Block | expiry-scan cron + paymentRouter preCheck + approval-engine condition + notification fan-out |
-| 72 | F1 UI + i18n | dashboard at-risk view + per-contractor compliance tab refresh + en/pl/de/ar parity |
-| 73 | F4 Workflow Foundation | `WorkflowTaskType` additions + `IP_VERIFICATION` blocking semantics + override permission + KT template seeds |
-| 74 | F4 Contract Health Check | Claude tool_use service + queue worker + Contract.complianceFlagsJson + advisory UI |
-| 75 | F3 UAE Free Zones | gulf-regulatory profiles + UaeFreeZone seed + FreeZoneAssignment + activity-scope validator (composes F1) |
-| 76 | F3 Saudization | SaudizationConfig + SaudiHeadcount + recompute cron + Nitaqat band dashboard + Arabic copy review |
-| 77 | F2 Adapter Capability + Schema | Deprovisionable mixin + DeprovisioningRun/Step models + ENTRA_ID/OKTA enum + base orchestrator |
-| 78 | F2 Provider Implementations | extend GWS + Entra + Okta + GitHub + Slack + Teams adapters with `deprovision` |
-| 79 | F2 Workflow Wiring + UI | ACCESS_REVOKE task hook + manual retry + audit + admin manual-complete flow |
-| 80 | v6.0 Verification + Hardening | cross-feature integration tests, manual UAT, post-deploy legal sign-off list |
+| Boundary | Communication | Notes |
+|----------|---------------|-------|
+| web-vite ↔ employee routes | Page→Container→Hook→Component; `useFlag` gate in container | New `components/workforce/` + `hooks/use-*`; obey `check:data-layer`/`page-shells` |
+| portal ↔ employee portal | `portalAppRouter` (separate endpoint) + new `/employee/*` shells | Same magic-link/subdomain; do NOT merge into staff `appRouter` (keeps inference cost down) |
+| apps/public-api (Hono) ↔ packages/api | `createPublicCaller` → tRPC `publicApiRouter` caller | Add write procedures to `routers/public-api/*`; Hono routes stay thin |
+| domain mutation ↔ outbound webhook | `OutboxEvent` insert in same `$transaction` | Decouples dispatch from the request; at-least-once + DLQ already modelled |
+| billing ↔ feature gates | `requireTier` (tier) + NEW `requireAddOn` (surface) + `requireFeatureFlag` (rollout) | Three orthogonal axes; compose tier→add-on→flag |
 
 ---
 
-## 6. Where Existing Patterns Are LIMITING (justified divergence)
+## Suggested Build Order (honours the locked dependency graph)
 
-| Pattern | Limit | v6.0 Divergence |
-|---|---|---|
-| Country-profile (einvoice/classification) | Pure-data + pure-function. Cannot drive remote API calls with auth. | F2 IdP deprovisioning uses `IntegrationProviderAdapter` (stateful) instead. Country profiles are kept for F1 (rules) and F3 (zone catalogue + Nitaqat thresholds). |
-| `IntegrationProviderAdapter` | Currently optional methods are OAuth/webhook focused. No retry semantics built-in. | Add `Deprovisionable` capability mixin AND new `DeprovisioningRun/Step` saga state model — adapter contract stays thin, retry orchestration lives in service layer. |
-| `WorkflowTaskRun.status=BLOCKED` | Workflow engine treats BLOCKED as informational; nothing prevents `WorkflowRun.completedAt` programmatically except the `required=true` flag check. | F4's IP_VERIFICATION needs an explicit override flow with audit trail, not a status flip. New `overrideBlockingTask` mutation with override permission + reason capture. |
-| `ComplianceRequirementTemplate` | Existing model has no `severity` or `appliesToCountry` — was scoped narrowly for v1.0 doc collection. | Extend additively. Do not fork into a new model — that splits the source of truth and breaks compliance-health scoring continuity. |
-| `Organization.settingsJson` (Json blob) | Fine for low-frequency config. Bad for indexed queries (Saudization band, query-by-band). | F3 Saudization promotes band + rate to first-class columns on new `SaudizationConfig` model. settingsJson is preserved for vault-provider URL (F4) which is read-once-on-render. |
-| `claude-ocr-adapter.ts` tool schema | Adapter is invoice-extraction-shaped today. | Extract tool definition to caller (`contract-health-tools.ts`). Adapter takes a `tool` parameter. Backwards compatible — invoice OCR keeps its tool. This DRYs the Claude Vision integration without forking the adapter. |
+> Locked: themes A/B/C run **parallel**; `WORKER-01` is the **only** strict serialization point inside B; `INTEG-API-01` is the Theme C foundation. Order below is dependency-correct; concurrency is capped by solo-dev throughput, not the graph.
+
+**Foundation (shared, do first — unblocks billing for A and B):**
+0. `requireAddOn` middleware + add-on entitlement (`OrgAddOn`/`Subscription.addOns`) + Stripe add-on SKUs (`add-on.ts`, `billing.prisma`). Designed once; consumed by A and B. Declare all v7.0 flags in `flags-core.ts` + signoff registry; teach the `buildLazyBag` region coercion about `US`.
+
+**Theme B (serial head, then fan-out):**
+1. **WORKER-01** (gate): additive `workerType` migration on `Contractor` + `WorkerType` enum + index. Verify zero-downtime on a staging snapshot of the largest org.
+2. WORKER-02..05 in parallel after 1: `workerRouter`/`employeeRouter` split (preserve `contractorRouter` shapes); new RBAC roles (`HR_ADMIN/HR_MANAGER/PAYROLL_OFFICER/LEAVE_APPROVER`) in `roles.ts`; `workforce-employees` flag gate.
+3. Fan-out (parallel): EMP-REG per market → AKTA → LEAVE / TIME-EMP / EMP-ON/OFF → PAYROLL adapters + HRIS-SYNC + EMP-PORTAL + HR-DASH.
+
+**Theme A (parallel to B; independent of Worker — uses existing Contractor):**
+1. US-INFRA-01..03 (region + US R2 + retention) — unblocks data residency for forms.
+2. US-FIELD + US-LOC (`en-US.json`) — profile + locale, parallel.
+3. US-FORM (W-9/W-8 intake → TIN-match → 1099/1042-S → FIRE/IRIS) — gov-api framework.
+4. US-PAY-01 (ACH NACHA generator) parallel with US-FORM; US-PAY-03/05 (Modern Treasury/Plaid) via adapter registry.
+5. US-CLASS extends the v5 classification engine.
+
+**Theme C (parallel to A and B; INTEG-API-01 is its own gate):**
+1. **INTEG-API-01** (gate): extend `apps/public-api` with write endpoints + new resources; per-tier rate limits.
+2. INTEG-AUTH (scope picker UI on existing `OrganizationApiKey.scopes`).
+3. INTEG-WEBHOOK (NEW `WebhookSubscription` + outbound dispatcher on the EXISTING outbox) + INTEG-SEC (SSRF guard, OWASP review).
+4. INTEG-ZAPIER / N8N / MAKE listings + INTEG-DX (OpenAPI-from-Zod, SDKs, dev portal) — after the API + webhook surface is stable.
 
 ---
 
-## 7. Risks & Mitigations
+## Open Gaps to flag for plan-phase
 
-| Risk | Mitigation |
-|---|---|
-| F1 payment-block rolled out to existing customers locks them out of payments | Feature flag `compliance-policy-engine` + per-org `complianceBlockEnabled` setting; default OFF for existing orgs, ON for new orgs. Migration path: 30-day advisory-only mode before block activates per-org. |
-| F2 deprovisioning irreversible — accidentally deprovisions wrong user | Required `describeImpact` dry-run UI before execute. Two-person rule for `idp_deprovision:execute` enforceable via `requireSensitive` middleware (already exists from v1.0). Audit log + slack notification. |
-| F3 Saudization recompute cross-org cost | `SaudiHeadcount` is per-org (no cross-org aggregation needed unlike economic-dependency); recompute is O(headcount) per org per day — trivial. |
-| F4 Claude Vision false-negative on IP clause → contractor offboarded with unsigned IP | Health check is advisory only — it FLAGS, does not BLOCK. Block lives in `IP_VERIFICATION` task which requires human sign-off. Two-layer defence. |
-| Cross-feature legal review burden (PENDING flags) | Stage flags PENDING on first ship; group adviser review in milestone hardening phase 80; do not block per-phase delivery. Aligned with project-local-only deferred legal sign-off memory. |
+- **Per-key scope coverage is partial.** Today only the read endpoints in `routers/public-api/*` carry `requirePermission`. Theme C write endpoints must each declare scopes; confirm `permissionToScopes` covers the new `payments`/`workflows`/`webhooks:manage` scopes (extend the map in `packages/api/src/lib/scope-utils.ts`).
+- **`DataRegion` Prisma enum is currently `{ EU, ME }`.** Adding `US` touches the enum, `region.ts`, `regional-storage.ts`, AND the flag evaluator's region coercion in `feature-flag.ts` (`buildLazyBag` only handles EU/ME — it warn-coerces unknown to EU). That coercion must learn `US` or US-jurisdiction flags silently degrade.
+- **Add-on entitlement source.** Decide `Subscription.addOns String[]` vs a normalized `OrgAddOn` table before the billing phase; the latter is cleaner for audit + per-add-on period tracking.
+- **IRIS vs FIRE cutover** and **Personio custom-attribute / rate-limit** remain research-gated per the backlog checklist — resolve before US-FORM-05 / HRIS-SYNC-01 plan-phase.
+
+## Sources
+
+- `.planning/PROJECT.md`, `.planning/milestones/v7.0-BACKLOG.md` (locked decisions + dependency graph) — HIGH
+- `packages/db/src/{tenant.ts,region.ts}`, `packages/api/src/services/{payment-export.ts,regional-storage.ts}` — HIGH (read directly)
+- `packages/api/src/middleware/{tier.ts,feature-flag.ts,rbac.ts,api-key-auth.ts}`, `root.ts`, `portal-root.ts` — HIGH
+- `packages/integrations/src/{registry.ts,services/webhook-dispatcher.ts,services/qstash-client.ts}` — HIGH
+- `packages/db/prisma/schema/{contractor.prisma,api-key.prisma,integration.prisma,billing.prisma,payment.prisma,outbox.prisma}` — HIGH
+- `apps/public-api/src/{app.ts,routes/contractors.ts,lib/create-caller.ts}`, `packages/api/src/routers/public-api/*` — HIGH
+- `apps/web-vite/ARCHITECTURE.md` (Page→Container→Hook→Component contract) — HIGH
 
 ---
-
-## 8. Confidence Notes
-
-- **F1, F4 — HIGH confidence:** All extension points verified at file-level. `ComplianceRequirementTemplate` schema reviewed in detail; payment router mutation site read at line 352; workflow `BLOCKED` semantics + `resultJson` confirmed.
-- **F2 — HIGH confidence on architecture, MEDIUM on per-IdP implementation:** Each provider's deprovisioning API (Google Admin SDK `users.update suspended=true`, Entra Graph `User.AccountEnabled=false`, Okta SCIM DELETE/deactivate, GitHub `orgs/{org}/memberships/{username}` DELETE, Slack SCIM `Users` PATCH `active=false`) needs per-provider Context7 verification before building each adapter. Flagged for phase-77/78 deeper research.
-- **F3 — HIGH confidence on schema, MEDIUM on Nitaqat band thresholds:** Saudization band thresholds vary by industry segment and are revised periodically by Saudi MHRSD. The `gulf-regulatory` profile must be reviewed against current MHRSD bulletin before each phase ship; same Steuerberater-equivalent legal-review-deferred posture applies.
-- **All features — HIGH confidence on monorepo conventions:** Direct file inspection of routers, services, schema, types, adapters confirms patterns are stable and v6.0 extensions slot in cleanly.
+*Architecture research for: v7.0 GTM Expansion integration into contractor-ops*
+*Researched: 2026-06-07*

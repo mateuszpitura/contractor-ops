@@ -1,220 +1,240 @@
-# Project Research Summary — v6.0 Platform Maturity & Operational Hardening
+# Project Research Summary
 
-**Project:** Contractor Ops — v6.0 Platform Maturity & Operational Hardening
-**Domain:** B2B contractor operations SaaS (multi-tenant, multi-jurisdiction PL/UK/DE/UAE/SA), maturity milestone — no new market entry, four cross-cutting capability additions on a production-grade Turborepo monorepo
-**Researched:** 2026-04-26
-**Confidence:** HIGH — every recommendation verified against existing v1.0–v5.0 precedents (file-level extension points), official SDK / regulator documentation, or both. MEDIUM only on (a) Saudization Nitaqat threshold values, (b) UAE permitted-activity catalogues, (c) exact Werkvertrag IP-clause wording. All MEDIUM areas have a documented "Needs verification by legal entity before production deploy" post-deploy checkpoint per LOCAL-ONLY / legal-sign-off-DEFERRED constraint.
+**Project:** contractor-ops v7.0 GTM Expansion
+**Domain:** B2B contractor/workforce ops — US cross-border tax+payments (Theme A), workforce management/HRIS sync (Theme B), public REST API + webhook marketplace (Theme C)
+**Researched:** 2026-06-07
+**Confidence:** HIGH (architecture seams verified in-tree; IRS regulatory findings corroborated by multiple independent sources; HRIS API facts verified against official developer docs)
 
 ## Executive Summary
 
-v6.0 is a **maturity milestone**, not a market-entry milestone. It closes four operational gaps that v1.0–v5.0 surfaced but deliberately deferred: (1) per-jurisdiction compliance-document lifecycle with hard payment-block on critical expiry, (2) IdP deprovisioning across Google Workspace / Entra ID / Okta / GitHub / Slack, (3) Gulf operational polish (UAE free-zone tracking + Saudization with the new 2026-04-15 Qiwa-auth requirement), and (4) offboarding hardening (KT templates, IP-assignment verification, contract clause health check, structured credential-rotation tracking). Across all four areas, research converges on a single architectural posture: **extend existing primitives, do not duplicate them**. Of ~15 dependencies a naive plan would add, research keeps **at most three** (`@okta/okta-sdk-nodejs`, `date-fns`, conditionally `octokit`); every other capability composes on existing infrastructure (QStash crons, AES-256-GCM per-provider credential store, `IntegrationProviderAdapter`, Claude Vision OCR with tool_use, R2 + ClamAV + DocumentLink, Unleash flags with PENDING→APPROVED CI gate, Better Auth org RBAC, AsyncLocalStorage tenant scoping, locked-phrases guard).
+v7.0 is a net-new surface expansion on a mature, GA-quality platform. The strategic bet is three simultaneous wedges: owning the cross-border corridor that Deel prices out of reach and Bill.com ignores (EU/Gulf compliance); becoming "one tool for your whole workforce" by landing an employee-management layer that keeps Contractor Ops from being sidelined as "the invoice tool next to Personio"; and flipping the integration-reach narrative by reaching ~9,000 apps via three marketplace listings on one backend. All three gaps block credible GA positioning.
 
-The recommended approach is **foundation-first**: a new Phase 70 closes cross-cutting CI guards (multi-tenant schema-lint, Pino redaction enumeration, message-key parity per-PR, Unleash signoff CI gate, OAuth scope-capability framework) BEFORE any feature work. This reconciles a real conflict between ARCHITECTURE (F1 first) and PITFALLS (foundation guards first) — see Roadmap Decision Points. F1 (Compliance Document Lifecycle Engine) lands second because two later features compose on it: F3 UAE free-zone license expiry reuses F1's `ContractorComplianceItem` + reminder cron, and F4 IP-clause health check writes findings as `ContractorComplianceItem` rows of severity STANDARD. F4 (Offboarding Hardening) ships before F2 (IdP Deprovisioning) so the 14-day cooldown gate has the final-invoice state machine to reference. F2 ships in two sub-phases: GWS+Slack first (~95% SMB target market, narrowest scope expansion), then Entra+Okta+GitHub (the wedge vs Deel/Rippling). F3 ships last (depends on F1 expiry engine).
+The recommended approach exploits the platform's existing abstractions instead of reinventing them. Theme A ACH NACHA is a new format in the payment-export factory (not a new module). Personio/BambooHR/Gusto/ADP are new BaseAdapters in the integration framework's existing credential store + OAuth + health-monitor stack. Outbound webhooks are a new dispatcher consuming the existing transactional OutboxEvent outbox. The Worker/Employee discriminated union is an additive `workerType` column on the existing Contractor table. The public REST API write surface extends the existing Hono `apps/public-api`. This reuse posture keeps the implementation surface small enough for solo-dev-with-AI throughput.
 
-The dominant risks are well-understood with v1.0–v5.0 precedents for mitigation. Three milestone-wide patterns warrant promotion: (a) the **drift escape hatch** pattern (mirrors v5.0 `recreateDraftAfterDrift`) reused 3x — for compliance requirement-set drift, Saudization Nitaqat threshold drift, and offboarding role-taxonomy drift; (b) the **locked-phrases guard** (78 phrases in v5.0 → 78+N) extended for every legally-defined document name, jurisdiction-specific clause, and Saudi/UAE Arabic statutory term; (c) the **detect-and-prompt re-OAuth** pattern from v2.0 Jira reused for every IdP whose existing OAuth scope set is read-only and needs write. The single highest-blast-radius pitfall is "deprovisioning runs before final invoice paid" (Pitfall 7) — the cooldown gate is mandatory, not a polish item, and foundation-first ordering is what makes it possible.
+Three research findings overturn backlog assumptions and are load-bearing for correctness. First, IRS FIRE decommissions 2026-12-31 with no grace period — the backlog's "FIRE primary, IRIS fallback" framing in US-FORM-05 is inverted; IRIS XML must be primary for TY2026 and the IRIS-specific TCC application (45-day lead) must begin in the foundation phase. Second, the 1099-NEC/MISC threshold is $2,000 for payments after 2025-12-31 per OBBBA — the backlog's "$600" constant in US-FORM-04 is stale and must become a config table (not a hardcoded constant) carrying the $2,000 TY2026 amount, legacy $600 for pre-2026 corrections, and the indexed update mechanism. Third, the 1099-K threshold reverted to $20,000 + 200 transactions — the backlog's "$5K for 2026, then $600" tracker in US-CLASS-03 is stale. These three corrections must flow into requirements and every affected phase plan before work begins.
 
 ## Key Findings
 
-### Recommended Stack (HIGH confidence)
+### Recommended Stack
 
-Stack research converges on a "do NOT add new infra" stance. Every capability has an existing primitive in v1.0–v5.0; the work is composition, not import.
+v7.0 adds no new framework or app. Every new surface slots into an existing host. The public API lives in `apps/public-api` (Hono); webhook dispatch in `apps/cron-worker` via QStash + OutboxEvent; adapters in `packages/integrations`; IRS gov-api in a `packages/gov-api`-style framework; UI in `apps/web-vite` under the Page→Container→Hook→Component contract.
 
-**New dependencies (at most three):**
-- `@okta/okta-sdk-nodejs@8.0.0` — namespaced `client.userApi.deactivateUser` / `revokeUserSessions`
-- `date-fns@4.1.0` — cascade-window arithmetic, tree-shake aggressively
-- `octokit@5.0.5` (conditional — only if `@octokit/rest` is not already in tree)
+**Core new libraries (all passing 7-day release-age as of 2026-06-07):**
+- `modern-treasury@4.15.0` — programmatic ACH/wire orchestration for orgs with own bank (alt to Stripe Treasury behind a shared `UsPayoutProvider` adapter)
+- `plaid@42.2.0` — US bank-account link + Identity verification at contractor onboarding (anti-fraud; AES-256-GCM token store reuses existing pattern)
+- `@midlandsbank/node-nacha@2.1.1` — NACHA ACH file formatter inside payment-export factory; treat as helper, not a black box (ODFI spec may require hand-rolling specific fields)
+- `jose@6.2.3` — RS256 JWT signing for IRS e-Services TIN-Matching API (JWKS client-credentials)
+- `@hono/zod-openapi@1.4.0` — OpenAPI 3.1 spec auto-generation from Zod on existing `apps/public-api`; `app.doc31()` emits 3.1 directly; zero new framework
+- `request-filtering-agent@3.2.0` — SSRF guard: blocks RFC-1918 + loopback + link-local + cloud-metadata AND re-validates the DNS-resolved IP at connect time (DNS-rebind defense — the part naive URL checking misses)
+- `stripe` already present — pin below `22.2.0` (published 2026-06-03, violates 7-day rule on 2026-06-07); use `22.1.x` until 22.2.0 ages
 
-**Existing infra reused (NOT new):**
-- `googleapis@171.4.0` — GWS Admin SDK (v3.0)
-- `@microsoft/microsoft-graph-client@3.0.7` + `@azure/identity@4.13.1` — Entra ID (v3.0 Teams + Outlook)
-- `@slack/web-api@7.15.1` + raw `fetch` for SCIM (`scim:write` org-token)
-- QStash, Pino via `@contractor-ops/logger`, Unleash OSS, Anthropic SDK with `ClaudeOcrAdapter`, Prisma 7, R2 + ClamAV, Better Auth org RBAC, `requireTier` Stripe middleware
+**Critical build-not-buy decisions:**
+- **IRS IRIS A2A**: no Node lib exists; hand-build XML against IRS XSDs (Pub 5717/5718/5719) with `xmlbuilder2` + XSD-validate in CI; keep a transmitter-adapter seam so Sovos/1099Pro can slot in; FIRE is dead for TY2026
+- **Personio adapter**: REST v2 directly; no Node SDK; proprietary client-credentials bearer (NOT RFC-6749 — do not use a generic OAuth2 client); 200 req/min per credential; attribute-scoped credentials (unpermitted fields silently omitted, not errors); offset/limit pagination max 200
+- **BambooHR adapter**: REST + OAuth 2.0 mandatory for B2B multi-tenant; no Node SDK (PHP/Python only); employee list un-paginated; time-off endpoints paginate (`page`/`per_page`)
+- **DATEV**: ASCII Lohn-import file default (LODAS has NO REST); DATEVconnect REST only behind `payroll-datev` flag for orgs with DATEVconnect subscriptions
+- **SDK generation**: Speakeasy from OpenAPI 3.1 spec; standalone binary (no day-zero npm dep); publishes `@contractor-ops/sdk` (npm) + `contractor-ops-sdk` (PyPI)
+- **Developer portal**: Scalar self-hosted on `apps/public-api` (fits local-only posture, MIT); Mintlify only if marketing chooses hosted AI-search; pin `@scalar/hono-api-reference` to `0.9.x` (0.10.20 published 2026-06-02, too fresh)
 
-**Explicitly NOT added:** BullMQ / Agenda / node-cron, `pdf-parse` / `pdfjs-dist` / `unpdf`, `@microsoft/msgraph-sdk` Kiota preview, generic secret-share packages, specialised compliance/Saudization npm packages.
+**What NOT to add:** `@ach/ach` (10yr stale), USPS v1/v2 XML API (retired 2026-01-25), BambooHR Basic-auth API key for SaaS connector (deprecated for B2B), any HRIS aggregator (Merge/Finch/Kombo — paid third party + PII egress + breaks own-credential-store reuse), Stainless/Fern DSL SDK gen, any npm pin published after 2026-05-31, new app for Theme C, OAuth-provider mode, inbound user-defined webhooks.
 
-**Static seed tables (no library exists):** UAE free-zone catalogue (~25 zones); Saudization Nitaqat 2026–2028 phase rules (~50 sectors × 3 years × 5 size bands). Both with admin-editable override tables and post-deploy legal sign-off checkpoints.
+### Expected Features
 
-**Minimum-privilege OAuth scopes:** GWS `admin.directory.user` (write), Entra `User.EnableDisableAccount.All` + `User.RevokeSessions.All`, GitHub `admin:org`, Slack `admin.users.session:write` + `scim:write` (org-token), Okta "User Admin" role.
+**Must have — table stakes (v7.0 audit gate floor):**
+- W-9 and W-8BEN/W-8BEN-E collection wizards (US-FORM-01/02)
+- IRS TIN-matching interactive/bulk (US-FORM-03); B-notice + backup-withholding workflow on mismatch, not a hard block; PAF enrollment per org is a prerequisite
+- 1099-NEC year-end generation + corrections (US-FORM-04); threshold $2,000 TY2026 as config table (backlog "$600" stale); legacy $600 for pre-2026 corrections
+- IRIS e-file transmit + ack loop (US-FORM-05); IRIS-primary; FIRE legacy-only for TY2025-and-earlier corrections; new IRIS TCC required (45-day lead)
+- 1042-S for foreign contractors of US payers (US-FORM-06); 30% statutory withholding default without a complete W-8 chain; treaty rate requires valid W-8 + article + FTIN
+- ACH NACHA file generator PPD/CCD/CTX (US-PAY-01); new format in existing factory; balanced file + valid effective-entry-date + return-code handling required
+- USD first-class currency (US-PAY-02); multi-currency engine already ships, this is config + UX
+- Fedwire wire export (US-PAY-04); genuinely in scope: Same-Day ACH cap $1M until 2027-09-17
+- US contractor profile fields with USPS Addresses 3.0 (OAuth 2.0; 60 req/hr no-batch — design throttling + cache) (US-FIELD-01..04)
+- WORKER-01..05: additive `workerType` discriminator on existing Contractor; zero data migration for v1–v6; sole hard serialization point in Theme B
+- Per-market employee registry ×6 (PL/DE/UK/US/AE/SA) with all statutory identifiers (EMP-REG-*)
+- Akta osobowe / personnel file structure (AKTA-01..04); per-jurisdiction retention; RODO erasure honoring statutory holds with statutory citation on blocked sections
+- Leave-balance engine + request workflow + team calendar (LEAVE-01..03); manual sick entry only; e-ZLA/eAU deferred v7.5
+- KP-grade employee time tracking + PL ewidencja report (TIME-EMP-01..03)
+- Per-market on/offboarding workflows (EMP-ON-01, EMP-OFF-01 composing v6.0 F4 — extend, do not duplicate)
+- Payroll export adapters ≥1 per market (PL: Symfonia/Comarch/Enova; DE: DATEV+Sage; UK: Sage+BrightPay+Moneysoft; US: Gusto+QuickBooks+ADP)
+- Personio + BambooHR two-way HRIS sync with source-of-truth split; both adapters pass conflict tests; one HRIS per org enforced via DB unique constraint
+- Employee + manager self-service portal (EMP-PORTAL-01..04)
+- HR dashboard widgets (HR-DASH-01..05)
+- Public REST API with write endpoints + cursor pagination + OpenAPI 3.1 (INTEG-API-01..04)
+- API key management + per-scope enforcement + per-tier rate limits (INTEG-AUTH-01..05); note: backlog INTEG-AUTH-01 says "bcrypt" but repo uses HMAC-SHA256 — reconcile the spec to match implementation, not the reverse
+- Outbound webhooks: event catalog + HMAC-SHA256 signing + QStash backoff + DLQ + replay protection + PII-redaction-default-on (INTEG-WEBHOOK-01..07)
+- SSRF guard with DNS-rebind protection (INTEG-SEC-01..03); must gate all outbound webhook dispatch; existing `webhook-dispatcher.ts` is inbound-only — outbound is greenfield
+- All three marketplace listings (Zapier + n8n npm + Make.com) reachable E2E
+- Developer portal + TS/Python SDKs + status page (INTEG-DX-01..04)
 
-### Expected Features (HIGH confidence)
+**Should have — differentiators:**
+- US tax-treaty engine (US-LOC-02/03): auto rate + W-8BEN treaty-article populate from contractor home jurisdiction — the cross-border wedge no competitor combines with multi-market e-invoice compliance
+- US classification extension — federal common-law + CA AB5 (stricter default for CA workers with logged admin override) + §530 safe harbor + Determination Letter PDF (US-CLASS-01..04)
+- 1099-K threshold tracker at $20,000 + 200 transactions (US-CLASS-03 corrected; backlog "$5K/$600" stale)
+- Modern Treasury / Stripe Treasury programmatic ACH opt-in (US-PAY-03) — premium tier, moves from file-export to press-pay
+- Plaid identity verification at contractor onboarding (US-PAY-05) — anti-fraud trust signal
+- Per-subscription PII redaction default-on (INTEG-WEBHOOK-07) — RODO-defensible, rare in SMB API space
+- API-key leak alarm (INTEG-SEC-05) — alert on >3 distinct source IPs / 24h
 
-**Must have (table stakes):**
-- F1: per-jurisdiction policy registry (UTR, A1-Bescheinigung 24mo, Aufenthaltstitel, §48b EStG, Iqama 1yr, Emirates ID, free-zone trade license, RTW share code 90d); 90/60/30/15/7-day reminder cascade; hard-block on payment-run for EXPIRED CRITICAL with structured per-contractor reason; contractor self-service upload from existing v2.0 portal; admin compliance dashboard
-- F2: manual approval gate with per-IdP preview; GWS suspend + OAuth grant revoke + sign-out (the Nudge/Torii finding); Slack `admin.users.session.invalidate` + SCIM `active=false`; per-step audit trail with request/response hashes (SOC2); pre-flight scope check; partial-failure manual reconcile queue
-- F3: UAE free-zone enum (10-zone seed: DIFC, DMCC, IFZA, Dubai Internet City, Dubai Media City, Meydan FZ, JAFZA, SHAMS, RAKEZ, ADGM + Mainland) with `licenseCategory` + `permittedActivitiesText` + `licenseExpiresAt`; Saudization dashboard (manual band entry — we don't compute); `qiwaContractAuthenticated` boolean (2026-04-15 reg); pre-offboarding impact banner; Iqama/work permit expiry roll-up reused from F1; Arabic + RTL via CSS logical properties
-- F4: 4 role-typed KT seed templates (Software Engineer / Designer / PM / Generic Consultant); IP-assignment verification with e-sign-backed ratification (existing v2.0 DocuSign + Autenti); hard-block on offboarding-complete for unverified IP; contract clause regex scanner (UK + DE + PL + KSA + UAE + US); structured credential-rotation tasks — **`CredentialReference` only, never actual credentials**; OWNER-role override path for unresponsive contractors
+**Defer (locked decisions):**
+- HMRC RTI direct submission → v7.5
+- PL e-ZLA auto-pull, DE eAU auto-pull → v7.5
+- Full 50-state US withholding matrix (10 states + free-text ships v7.0) → v7.5/v8.0
+- Workday/Paychex/Rippling-payroll adapters → v8.0+ on customer pull
+- Own payroll engine → v8.0+ only if adapter friction proves dispositive
+- OAuth provider mode, inbound user-defined webhooks → v8.0+
+- EOR/AOR, ATS, performance reviews → out of charter
 
-**Should have (differentiators vs Deel / Rippling / Worksuite):**
-- Payment hard-block per-invoice with specific document reason (vs Deel "no notify on expiry", Rippling holistic block)
-- Conditional documents (§48b EStG construction-only, A1 cross-border-only) — reduces false-positive reminders
-- Pre-flight Conditional Access conflict detection for Entra (silent-failure mode in MS shops)
-- OAuth grant enumeration UI before deprovision (shadow-IT discovery side-effect)
-- Werkvertrag-specific Schöpferprinzip + Nutzungsrechte distinction (DE wedge — UK boilerplate "hereby assigns" is INSUFFICIENT under §7 UrhG)
-- Saudization-band trajectory chart with offboarding-impact preview
-- Qiwa-auth coverage gap surfacing (2026-04-15 reg first-mover advantage)
+### Architecture Approach
 
-**Defer to v6.x or v7+:** time-delayed/immediate IdP deprovisioning modes, vacation-responder configuration, Drive ownership transfer, Slack DM export, 1Password/Bitwarden actual-rotation integration, additional IdP adapters (1Password SaaS Manager, Jamf, JumpCloud), free-zone NOC drafting, Saudization band auto-compute (likely never), embedding-similarity contract-clause matching, department-based per-doc-policy overrides.
+v7.0 extends the existing five-layer architecture (clients / apps / packages/api / packages/integrations / packages/db) without adding new apps or frameworks. Seven reusable patterns govern all net-new code verified in the live tree. The key structural principle: every component a v7.0 feature needs already exists and is confirmed at specific file paths.
 
-**Anti-features (explicit NO):** OCR auto-extraction of expiry dates, auto-generate documents (EOR territory), compliance score gamification, block invoice intake on expired docs, AI-suggested document policies, full SCIM provisioning, auto-detect orphaned accounts, delete-by-default (vs suspend), mailbox auto-forward, full free-zone activity catalog, auto-compute Saudization band, store actual credentials, auto-rotate API keys, auto-generate IP language, block offboarding on KT incompleteness, AI-generated KT documentation, "reactivate contractor" button.
+**Major components (new or modified):**
+1. `packages/api/src/middleware/add-on.ts` (NEW) — `requireAddOn(addOnKey)` middleware; composes `tier → add-on → flag`; designed once in foundation phase, consumed by both Theme A and B; Theme C stays tier-gated only
+2. `packages/db/prisma/schema/contractor.prisma` (MODIFIED additive) — `workerType WorkerType @default(CONTRACTOR)` + `@@index([organizationId, workerType])`; zero data migration for v1–v6
+3. `packages/integrations/src/services/outbound-webhook-dispatcher.ts` (NEW) — HMAC sign + SSRF guard (`request-filtering-agent`) + QStash enqueue; sibling to existing inbound `webhook-dispatcher.ts`; consumes existing `OutboxEvent` outbox drain
+4. `packages/api/src/routers/us/` (NEW domain folder) — `usFormRouter`, `usPayRouter`, `usClassRouter`, `usFieldRouter`; registers in `root.ts` like classification routers; gated by `us-expansion` flag + `US Cross-Border` add-on
+5. `packages/api/src/routers/workforce/` (NEW domain folder) — `workerRouter`, `employeeRouter`, `leaveRouter`, `timeEmpRouter`, `aktaRouter`, `hrDashboardRouter`; gated by `workforce-employees` flag + `Workforce` add-on
+6. `packages/integrations/src/adapters/` (NEW adapters) — Personio (API v2, proprietary bearer), BambooHR (OAuth 2.0), Gusto, QuickBooks Payroll, ADP (partner + mTLS), Modern Treasury, Plaid; all via `registerAdapter` in the existing framework
+7. `apps/public-api` (MODIFIED) — write endpoints; `@hono/zod-openapi` for OpenAPI 3.1; per-tier rate-limit buckets in existing `rate-limiter.ts`; `WebhookSubscription` CRUD routes
+8. `packages/db/src/region.ts` (MODIFIED — 4-place atomic change) — `SUPPORTED_REGIONS` + `REGION_ENV_MAP` + `DataRegion` Prisma enum + R2 bucket map + `buildLazyBag` region coercion all gain `US`/`us-east-1` atomically with a lockstep test
 
-### Architecture Approach (HIGH confidence — extension points file-verified)
+**Key invariants verified in-tree:**
+- `OrganizationApiKey.scopes String[]` already exists; `permissionToScopes` in `rbac.ts` already bridges keys to RBAC — no new auth primitive needed for Theme C, only per-endpoint scope declarations and the `payments`/`workflows`/`webhooks:manage` scope additions
+- `OutboxEvent` transactional outbox already exists (`schema/outbox.prisma`); outbound webhook dispatch consumes it — the inbound `webhook-dispatcher.ts` is a separate concern and must not be overloaded
+- `apiKeyTenantProcedure` today only enforces `requireTier('ENTERPRISE')` + `demoReadOnly`; per-scope enforcement on write endpoints is the genuinely new piece
 
-**Major components:**
-1. **`packages/compliance-policy` (NEW thin package)** — per-country profile modules, pure-function `resolveRequirements`; mirrors einvoice + classification country-profile pattern; classification outcome is INPUT, never policy itself
-2. **F1 Compliance Document Engine** — extends `ContractorComplianceItem` (NOT a parallel model); reminder cron at `compliance-expiry-scan.ts` (port of `economic-dependency-scan.ts`); two payment-block hooks (paymentRouter primary at `payment.ts:352` + approval-engine condition operator secondary defence-in-depth); reuses existing `Notification` + `NotificationCronDedup` for idempotency
-3. **F2 IdP Deprovisioning** — `Deprovisionable` capability mixin on existing `IntegrationProviderAdapter`; `DeprovisioningRun` + `DeprovisioningStep` saga state models with idempotent retry (NOT global compensation — re-provisioning offboarded contractor is unsafe); workflow-task driven via `WorkflowTaskType.ACCESS_REVOKE` (already exists in `workflow.prisma:173`); per-provider QStash jobs (NOT `Promise.allSettled`); `PARTIAL_COMPLETE` aggregate state surfaces in admin reconcile UI
-4. **F3 Gulf Polish** — `packages/gulf-regulatory` package with `src/profiles/uae/free-zones.ts` + `src/profiles/sa/nitaqat.ts`; `UaeFreeZone` global ref table + `FreeZoneAssignment` per-org; `SaudizationConfig` (denormalised band+rate, indexable — NOT JSON blob); daily `saudization-recompute.ts` cron + event-triggered fire-and-forget
-5. **F4 Offboarding Hardening** — new `WorkflowTaskType.IP_VERIFICATION` + `CONTRACT_HEALTH_CHECK` enum values (NOT a parallel BlockingTaskType); `Contract.complianceFlagsJson` + `complianceFlagsCheckedAt` + `complianceFlagsModelVer`; reused `ClaudeOcrAdapter` with new `contract-health-tools.ts` tool_use schema (model-version stored for replay); 4 role-typed KT seed templates via existing v1.0 template builder; new `workflow:override_blocking_task` permission with required reason text + RBAC OWNER role
-6. **Cross-cutting CI guards (FOUNDATION)** — schema-lint enforcing `organizationId` OR explicit global-lookup-list registration; `LOG_BODY_EXCLUDE_PREFIXES` opt-in body logging (stricter default); message-key parity per-PR; Unleash legal-sensitive flag PENDING→APPROVED gate; `IntegrationConnection.scopeCapabilities` JSONB with detect-and-prompt re-auth
+### Critical Pitfalls
 
-**Where existing patterns are limiting:** country-profile pattern is pure-data — F2 needs `IntegrationProviderAdapter` (stateful); `WorkflowTaskRun.status=BLOCKED` is informational — F4 IP_VERIFICATION needs `overrideBlockingTask` mutation; `ComplianceRequirementTemplate` lacks severity/country — extend additively (do NOT fork); `Organization.settingsJson` JSON blob fine for low-frequency — F3 Saudization promotes band+rate to first-class indexable columns.
+1. **US region is a 4-place atomic change** — `SUPPORTED_REGIONS=['EU','ME']` throws `Unsupported data region` for any US-org request before the handler runs; `preWarmRegionalClients()` silently skips missing clients; `buildLazyBag` in the feature-flag evaluator warn-coerces unknown regions to EU, silently degrading US-jurisdiction flags. All four locations must change atomically in US-INFRA-01 with a test asserting `SUPPORTED_REGIONS` and `DataRegion` enum stay in lockstep. Must land before any US data creation.
 
-### Critical Pitfalls (HIGH confidence — 31 pitfalls catalogued)
+2. **`globalModels` allow-list is the IDOR landmine** — `withTenantScope` in `packages/db/src/tenant.ts` auto-injects `organizationId` on every model not in `globalModels`. Adding any v7.0 model to `globalModels` to silence an org-id throw produces silent cross-org data leakage. Rule: never add to `globalModels` for tenant-owning data; child tables only with parent-relation enforcement + a two-org cross-leak test per new model. Schema-guard CI must fail on missing `organizationId`. Theme B introduces more new Prisma models than any prior milestone.
 
-Top 5 critical:
-1. **Mid-payment-batch document expiry race (P1)** — two-phase expiry gate (selection + export atomic, same Postgres `current_timestamp`); immutable `PaymentRunComplianceCheck` audit row in same transaction as bank-file export
-2. **IdP deprovisioning vs final-invoice race (P7)** — 14-day cooldown gate before deprovisioning; portal magic-link enforced as non-IdP-dependent email
-3. **Refresh-token semantic drift across IdPs (P8)** — `IdpDeprovisioningAdapter` interface MUST require BOTH `suspendAccount()` AND `revokeAllSessions()`; per-provider integration test asserts revocation within 5 minutes
-4. **Re-OAuth breaks v3.0 GWS read-only (P9)** — detect-and-prompt pattern (mirrors v2.0 Jira); per-org `scopeCapabilities` JSONB; NEVER force global re-OAuth
-5. **Rule-set drift mass-flagging contractors (P5/P17/P24)** — milestone-wide drift escape hatch pattern: `RULE_SET_VERSION` constant + `complianceRequirementSetVersionSnapshot` field + `recreateComplianceAssessment(reason)` admin mutation mirrors v5.0 `recreateDraftAfterDrift`
+3. **Outbound webhook SSRF is greenfield — existing dispatcher is inbound-only** — `webhook-dispatcher.ts` verifies incoming provider signatures; there is no outbound egress control in the repo. A naive URL-time check is bypassed by DNS rebinding. Fix: reject at subscribe time AND re-resolve + verify resolved IP immediately before connect (pin the resolved IP; disable redirects on the dispatcher HTTP client). Use `request-filtering-agent@3.2.0`. Gate all INTEG-WEBHOOK dispatch on INTEG-SEC-01 landing first.
 
-Other notable: reminder fatigue cascade (P2 — daily digest before per-doc cron); TZ drift (P3 — `@db.Date` not `DateTime`, store `expiry_jurisdiction_tz`); document-type conflation (P4 — country-profile pattern); i18n locked-phrase leakage (P6); partial-failure saga (P10 — per-provider QStash jobs, NEVER `Promise.allSettled`); reactivation resurrects access (P11 — no "reactivate" button, only "new engagement"); Pino over-redacting audit fields (P12 — separate child logger with allow-list); webhook self-trigger loop (P13 — `IdpChangeProvenance` filters own writes); Azure CA override (P14 — verify post-revoke via `signInActivity`); UAE permitted-activity scope (P15 — ISIC code field, not free text); three-clock conflation (P16); GCC partial-credit (P18); regional-routing default drift (P19); RTL drift (P20 — ESLint banning `ml-`/`mr-`); credential vault stores secrets (P21 — `CredentialReference` schema, content-validation regex rejecting AKIA*/PATs/JWT-shape/hex≥32); IP-clause false-negative (P22 — tristate verdict + operator-confirmation gate); IP-clause false-positive at upload (P23 — heuristic only at offboarding); hard-block on unresponsive contractor (P25 — OWNER override with required reason); PTO manager spam (P26 — OOO-aware routing). Cross-cutting: missing tenantId (P27), PII in Pino (P28), message-key parity drift (P29), feature flag without signoff (P30), OAuth scope cohabitation (P31).
+4. **`apiKeyTenantProcedure` does not enforce per-scope — BFLA/OWASP-API5** — chains `apiKeyAuth → requireTier('ENTERPRISE') → demoReadOnly`. Adding write endpoints without per-endpoint scope enforcement means a `contractors:read` key can call write procedures. Every write endpoint must explicitly declare its required scope. Write DTOs must be `.strict()` Zod schemas rejecting `organizationId`, `workerType`, `status`, and money fields from the body (mass-assignment/OWASP-API3). INTEG-AUTH-02 scopes must precede any write endpoint shipping.
+
+5. **WORKER-01 breaks all existing contractor read paths unless pre-filtered** — after employees exist, every `contractor.findMany` without `workerType:'CONTRACTOR'` returns employees in contractor lists, dashboards, payment runs, and classification scans. Must audit all ~50-namespace `findMany`/`findFirst` call sites. Lock existing contractor tRPC output shapes with snapshot tests. Run migration on staging snapshot of largest org and diff outputs before/after.
+
+6. **IRS FIRE decommissions 2026-12-31 with no grace period; FIRE TCC does not carry to IRIS** — the backlog's "FIRE primary / IRIS fallback" framing is inverted. TY2026 returns (filed early 2027) are IRIS-only. New IRIS-specific TCC requires ~45-day application. Begin TCC enrollment document in Phase 0. Ship IRIS as the primary transmit path; FIRE only for TY2025-and-earlier legacy corrections.
+
+7. **HRIS two-way sync without a hard field-owner partition silently corrupts financial data** — a Personio pull that overwrites a Contractor-Ops-owned field or a push that triggers an echo pull creates silent data corruption and sync loops. Encode the field partition as a per-field `owner: HRIS | CONTRACTOR_OPS` map in the pull mapper; the pull mapper must be physically incapable of writing CO-owned fields. Enforce one HRIS per org via DB unique constraint on `(organizationId, integration-category)`. Dedup inbound HRIS webhooks via the QStash `deduplicationId` pattern.
 
 ## Implications for Roadmap
 
-### Roadmap Decision Points (cross-source conflicts requiring synthesis)
+### Phase 0: Foundation — shared billing infrastructure + IRIS enrollment
+**Rationale:** `requireAddOn` middleware must exist before any Theme A or B revenue-gated procedure is written; building it per-theme produces inconsistent gating. Declare all v7.0 flags in the signoff registry (boot gate exits if missing). Teach `buildLazyBag` about `US`. Begin IRIS TCC enrollment document immediately.
+**Delivers:** `add-on.ts` + `OrgAddOn` entitlement decision; all v7.0 flag registry entries with signoff; `buildLazyBag` US region coercion; IRIS TCC application started.
+**Addresses:** requireAddOn (Pitfall 6); flag-signoff boot gate (Pitfall 5); IRIS enrollment lead-time.
+**Avoids:** Ad-hoc per-theme add-on checks; US flag silent degradation (Pitfall 1).
+**Research flag:** Standard — mirrors existing `requireTier` + flag-registry patterns; no /gsd:plan-phase research needed.
 
-**Decision 1 — Foundation phase before F1, or F1 first?**
-- ARCHITECTURE proposes Phase 70 = F1 Foundation
-- PITFALLS argues for separate v6.0 Foundation phase BEFORE F1 (P27, P28, P29, P30, P31)
-- **Synthesis: PITFALLS wins. Foundation first.** Each cross-cutting CI guard prevents a class of bug whose recovery cost is CRITICAL (cross-tenant leak, regulator-grade PII exposure, unsigned legal copy ships, breaking v3.0 customers). Pattern mirrors v5.0 Phase 56 establishing locked-phrases guard before any locked phrases were added.
+### Phase 1 (Theme A): US region infrastructure
+**Rationale:** US-INFRA-01/02/03 must precede any US data creation. The 4-place atomic change in `region.ts` + Prisma enum + R2 bucket map + `buildLazyBag` must land with a lockstep test.
+**Delivers:** US-org requests resolve a US Prisma client + US R2 bucket; IRS 4-yr/7-yr retention enforcement scaffolded; cross-region replicas remain off; `DATABASE_URL_US` in `.env.example` + package env schema.
+**Avoids:** Silent DB throw for US orgs (Pitfall 1); wrong-region tax-PDF storage (Pitfall 9).
+**Research flag:** Standard — architecture verified in-tree; change surface is fully identified.
 
-**Decision 2 — F2 phase ordering: GWS+Slack first or last?**
-- FEATURES recommends GWS+Slack first (P1 in v6.0 MVP) — narrowest scope, highest customer overlap
-- ARCHITECTURE puts F2 last (phases 77-79)
-- **Synthesis: ARCHITECTURE wins on overall position (F2 ships after F4 — Pitfall 7 cooldown gate dependency), BUT split F2 into two sub-phases per FEATURES — GWS+Slack as the wedge, Entra+Okta+GitHub as the differentiator (same milestone).**
+### Phase 2 (Theme B serial gate): WORKER-01 — discriminated union migration
+**Rationale:** Sole hard serialization point in Theme B. Nothing employee-side starts before it. Staging-snapshot migration diff is a v7.0 gate criterion.
+**Delivers:** Additive `workerType` migration; `@@index([organizationId, workerType])`; all existing contractor `findMany`/`findFirst` call sites audited and filtered; contractor output shapes snapshot-locked; zero v1–v6 data migration.
+**Avoids:** Contractor list corruption + classification scan misfires (Pitfall 3); IDOR via missing tenant scope (Pitfall 2).
+**Research flag:** Standard — locked pattern verified in-tree.
 
-### Standing Constraints (apply to every v6.0 phase)
+### Phases 3–5 (Theme C): INTEG-API-01 → INTEG-AUTH (scopes) → INTEG-SEC (SSRF) → INTEG-WEBHOOK
+**Rationale:** Internal gate chain: API foundation → scope enforcement → SSRF guard → webhooks → marketplace listings. INTEG-AUTH-02 must precede write endpoints; INTEG-SEC-01 must gate INTEG-WEBHOOK dispatch; marketplace listings need stable API + webhooks.
+**Delivers:** Public REST API read+write; OpenAPI 3.1 via `@hono/zod-openapi`; per-scope enforcement on every write endpoint with `.strict()` Zod DTOs; SSRF guard with DNS-rebind protection via `request-filtering-agent`; `WebhookSubscription` model + outbound dispatcher on existing outbox; HMAC signatures; DLQ; PII redaction default-on; Zapier + n8n + Make listings; OpenAPI-generated SDKs; Scalar dev portal; status page.
+**Avoids:** BFLA/mass-assignment (Pitfall 8); SSRF cloud-metadata pivot (Pitfall 7); cross-org leak (Pitfall 2).
+**Research flag:** INTEG-SEC-04 OWASP checklist must be real automated tests at the audit gate, not prose — flag for plan-phase rigor. Marketplace review timelines (Zapier 2–4wk, Make 1–2wk) are external; submit early, do not block GA announcement on them.
 
-- App is **LOCAL-ONLY**; legal sign-off **DEFERRED**. Every locked legal phrase needs the v5.0 `locked-phrases-guard` pattern + post-deploy "Needs verification by legal entity" note.
-- No `console.*` in source — `@contractor-ops/logger` factories or raw `pino` only.
-- Feature flags = self-hosted Unleash OSS + thin code wrapper. Every legal-sensitive v6.0 capability gets a flag in `compliance-*` / `idp-deprovisioning` / `gulf-*` / `offboarding-ip-*` namespace, registered PENDING in code-side signoff registry, gated by CI.
-- **Stripe tier gating recommendation (lock at requirements):** GWS+Slack deprovisioning at Starter (the wedge); Entra+Okta+GitHub at Pro (the differentiator); auto-enforcement / hard-payment-block at Enterprise (cost-of-fines tier — UAE permitted-activity hard-block in particular). F1 advisory dashboard at Starter; F1 hard-block at Pro+. F4 KT templates all tiers; F4 IP-clause scanner + hard-block at Pro+.
+### Phases 3–5 (Theme A, parallel): US forms → US payments → US classification
+**Rationale:** Within Theme A: US-INFRA first, then profile fields + en-US locale (parallel, low-risk), then W-9/W-8 intake → TIN-match → 1099-NEC build → IRIS transmit (serial sub-chain), then ACH NACHA parallel to forms, then treaty table → 1042-S (treaty table must precede 1042-S), then classification extension.
+**Delivers:** Full US tax-form intake-to-IRIS loop; 1099 threshold at $2,000 as config table; NACHA ACH file via payment-export factory (balanced + return-code handling); treaty-aware 1042-S; CA AB5 watchlist + Determination Letter.
+**Key correctness requirements:** backup-withholding W-9 flag actually reduces payout by 24% (not just stored); IRIS primary (not FIRE); 1099-K tracker at $20,000 + 200 transactions; treaty rate gated on complete W-8 chain; ACH files balanced with valid effective-entry-date.
+**Research flag:** IRS TIN-Matching PAF enrollment is a per-org operational prerequisite — flag as a prerequisite checklist item in the plan. US-CLASS-04 Determination Letter generation likely needs `/gsd:ai-integration-phase`. USPS Addresses 3.0 60 req/hr no-batch constraint requires throttling + caching design.
 
-### Milestone-Wide Patterns (promote in roadmap)
-
-- **Drift escape hatch (3x reuse)** — mirrors v5.0 `recreateDraftAfterDrift`. Required for: (a) F1 compliance requirement-set drift, (b) F3 Saudization Nitaqat threshold drift, (c) F4 offboarding role-taxonomy drift. Every drift handler emits an opt-in admin mutation + audit log + PDF watermark.
-- **Locked-phrases guard extension** (78 → 78+N) — F1 jurisdiction-specific document type names; F3 UAE free-zone authority + Arabic Saudization band labels; F4 Werkvertrag IP-clause canonical wordings. CI count grows monotonically.
-- **Detect-and-prompt re-OAuth** — F2 GWS scope upgrade, F2 Slack SCIM scope, F2 Entra session-revoke; future-proofs Jira/Teams/Calendar v7+.
-- **Two-step suspend + revoke contract** — F2 adapter interface MUST require both methods; per-provider integration test asserts token-revoked-within-5-min.
-
-### Phase Structure (suggested — phases continue from v5.0 Phase 69)
-
-**Phase 70: v6.0 Foundation — Cross-Cutting CI Guards & Observability Baseline**
-- Schema-lint CI script (model has `organizationId` OR global-lookup-list); `LOG_BODY_EXCLUDE_PREFIXES` opt-in body logging; message-key parity per-PR; Unleash legal-sensitive flag PENDING→APPROVED CI gate; per-org `IntegrationConnection.scopeCapabilities` JSONB with backfill migration; child-logger pattern documented
-- Addresses: P27, P28, P29, P30, P31
-- Research flag: STANDARD pattern (mirrors v5.0 locked-phrases-guard)
-
-**Phase 71: F1 Compliance Document Engine — Foundation**
-- `packages/compliance-policy` package with per-jurisdiction profile modules; pure-function `resolveRequirements`; schema delta (`severity`, `appliesToCountry`, `policyRuleId`, `lastReminderBand`, `blocksPaymentAt`, `expiry_jurisdiction_tz`); `@db.Date` not `DateTime` for expiry; fire-and-forget reconcile-on-classification hook
-- Addresses: P3, P4, P5
-- **Research flag: NEEDS RESEARCH** — per-jurisdiction document seed data dense (Border Security Act 2025, A1 24mo, §48b EStG, Iqama+Qiwa-auth)
-
-**Phase 72: F1 Compliance Document Engine — Reminder Cascade + Payment Block**
-- `compliance-expiry-scan.ts` band-state-machine cron (port of `economic-dependency-scan.ts`); `complianceReminderDigest` cron BEFORE per-doc cron; `requireValidCompliance` tRPC middleware at `paymentRouter.create`; `complianceCritical(EXPIRED)` condition operator in approval engine; immutable `PaymentRunComplianceCheck` audit row in same transaction as bank-file export; per-recipient throttle Redis SETNX max 1/24h
-- Addresses: P1, P2, P6
-- Research flag: STANDARD (port of v5.0 `economic-dependency-scan.ts`)
-
-**Phase 73: F1 Compliance Document Engine — UI + i18n + Self-Service Portal**
-- Admin compliance dashboard (at-risk count + renewals + blocked-payments queue + coverage matrix); contractor portal compliance tab; per-doc upload-replacement flow; manual override (audited); en/pl/de/ar parity
-- Addresses: P16, P20, P29
-- Research flag: STANDARD
-
-**Phase 74: F4 Offboarding Hardening — Workflow Foundation + KT Templates**
-- `WorkflowTaskType.IP_VERIFICATION` + `CONTRACT_HEALTH_CHECK` enum additions; `workflow:override_blocking_task` permission OWNER-only; required reason text + acknowledgement on override; 4 role-typed KT seed templates (Software Engineer / Designer / PM / Generic Consultant); per-org `WorkflowRole` model with editable templates; OOO-aware task routing + delegate fallback
-- Addresses: P24, P25, P26
-- Research flag: STANDARD (extends v1.0 template builder)
-
-**Phase 75: F4 Offboarding Hardening — Contract Health Check + IP Verification + Credential Vault**
-- `Contract.complianceFlagsJson` + `complianceFlagsCheckedAt` + `complianceFlagsModelVer`; reused `ClaudeOcrAdapter` with `contract-health-tools.ts` tool_use schema; tristate verdict `LIKELY_PRESENT` / `LIKELY_MISSING` / `MANUAL_REVIEW_REQUIRED`; per-jurisdiction phrase library (UK + DE + PL + KSA + UAE + US; Werkvertrag Schöpferprinzip + Nutzungsrechte detection); IP-assignment ratification via existing v2.0 e-sign; hard-block on offboarding-complete for unverified IP; `CredentialReference` schema (NEVER `Credential`); content-validation regex rejecting AKIA*/PATs/JWT-shape/hex≥32; structured credential-rotation tasks with successor-user-id required
-- Addresses: P21, P22, P23
-- **Research flag: NEEDS RESEARCH** — Werkvertrag wording lawyer-dependent; Claude Vision tool_use schema needs Context7 validation
-
-**Phase 76: F2 IdP Deprovisioning — Schema + Capability Mixin + GWS Scope Migration**
-- `Deprovisionable` capability mixin on `IntegrationProviderAdapter`; `DeprovisioningRun` + `DeprovisioningStep` saga models; new `IntegrationProvider` enum members `ENTRA_ID` + `OKTA`; detect-and-prompt re-OAuth UI flow with `prompt=consent`; backfill migration `['directory.read']`; `IdpChangeProvenance` short-TTL table for webhook-loop guard; separate Pino child logger with allow-list; 14-day cooldown gate referencing F4 final-invoice-paid event
-- Addresses: P7, P9, P11, P12, P13
-- Research flag: STANDARD (mirrors v2.0 Jira scope-expansion + v2.0 webhook pipeline + v5.0 saga model)
-
-**Phase 77: F2 IdP Deprovisioning — GWS + Slack Adapter Implementations (the wedge)**
-- `GoogleWorkspaceDeprovisionAdapter` extending v3.0 GWS with `users.update({ suspended: true })` + `directory.tokens.list` → `tokens.delete` + `users.signOut`; `SlackDeprovisionAdapter` extending v1.0 Slack with `admin.users.session.invalidate` + SCIM `PATCH active=false` (raw `fetch`); per-IdP preview UI; manual approval gate; per-step audit trail with request/response hashes; per-provider QStash jobs (NEVER `Promise.allSettled`); `PARTIAL_COMPLETE` aggregate state with admin reconcile UI; `LIKELY_GONE` idempotent semantic
-- Addresses: P8, P10
-- **Research flag: NEEDS RESEARCH** — GWS `tokens.delete` behaviour, Slack SCIM `scim:write` org-token requirement, current rate-limits via Context7
-
-**Phase 78: F2 IdP Deprovisioning — Entra ID + Okta + GitHub Adapter Implementations (the differentiator)**
-- `EntraIdDeprovisionAdapter` extending v3.0 Teams Graph adapter with `accountEnabled: false` + `revokeSignInSessions`; pre-flight Conditional Access enumeration with admin-action banner; hybrid-AD detection with hard warning; post-revoke verification via `signInActivity`; `OktaDeprovisionAdapter` (NEW `@okta/okta-sdk-nodejs@8.0.0`); `GitHubDeprovisionAdapter` with `octokit.rest.orgs.removeMember` + per-PAT explicit revoke + SAML credential-authorization revocation; outside-collab repos as manual-task with link
-- Addresses: P14
-- **Research flag: NEEDS RESEARCH** — Entra `revokeSignInSessions` CA interaction, Okta 8.x namespaced API, GitHub SAML credential-authorization endpoint via Context7
-
-**Phase 79: F3 Gulf Polish — UAE Free-Zone Tracking + Saudization Dashboard**
-- `packages/gulf-regulatory` package with UAE free-zones static catalogue + Saudization band thresholds + GCC sector-specific multiplier matrix; `UaeFreeZone` global + `FreeZoneAssignment` per-org + `UaeFreeZoneOverride` admin-editable; `SaudizationConfig` (denormalised, indexable) + `SaudiHeadcount` per-engagement nationality; `qiwaContractAuthenticated` boolean; schema-lint annotation classifying every new model tenant-scoped or global-lookup; manual self-reported band entry with quarterly cadence reminder; trajectory chart; pre-offboarding impact banner; free-zone trade license participates in F1 reminder cascade; permitted-activity scope-mismatch advisory + NOC required-doc auto-add; en/pl/de/ar parity with `ms-`/`me-`/`ps-`/`pe-` only; locked-phrase registry extension for UAE/KSA Arabic terms
-- Addresses: P15, P16, P17, P18, P19, P20
-- **Research flag: NEEDS RESEARCH** — Saudization Nitaqat 2026–2028 rates verified against Qiwa portal at seed time; UAE free-zone permitted-activity lists cross-referenced against each authority's portal; Dubai Law No. 7/2025 contracting framework; Qiwa-auth 2026-04-15 requirement
-
-**Phase 80: v6.0 Verification + Hardening + Manual UAT**
-- Cross-feature integration tests (F1 + F3 + F4 composition); manual-UAT checkpoints document (mirrors v5.0 `63-HUMAN-UAT.md`); post-deploy legal sign-off list (Steuerberater for §48b EStG/A1/Aufenthaltstitel/Werkvertrag IP wording; Saudi MOL/HRSD for Saudization rates; UAE legal for free-zone permitted-activity; UK legal for Border Security Act; KSA legal for Iqama+Qiwa-auth flow); v6.0 retrospective
-- Research flag: STANDARD (mirrors v5.0 phase 69)
+### Phases 3–N (Theme B fan-out, parallel after WORKER-01): EMP-REG → AKTA → LEAVE/TIME → on/offboarding → payroll adapters → HRIS sync → employee portal → HR dash
+**Rationale:** All fan-out work is unblocked after WORKER-01 and can largely run in parallel subject to solo-dev throughput. Key ordering within the fan-out: EMP-REG before AKTA (need registry fields to classify docs); LEAVE after EMP-REG (balance rules are market-specific); payroll adapters after on/offboarding context exists; HRIS sync after EMP-REG (Personio pull maps to registry fields).
+**Delivers:** Full per-market workforce management; ≥1 payroll export adapter per market (ADP lead-time risk — see gaps); Personio + BambooHR two-way sync with field-owner partition hard-coded in the pull mapper; single-HRIS-per-org DB unique constraint; employee self-service portal; HR dashboard.
+**Key correctness requirements:** ADP requires ADP Marketplace partner program approval + mTLS client cert (treat as potentially v7.1 if approval delays); AKTA erasure honors statutory holds with citation, never claims full erasure; legal annotations required on all statutory form copies (Standing Constraint); BambooHR custom-attribute contract must be verified before HRIS-SYNC-04 plan-phase (explicit gate).
+**Research flag:** BambooHR custom attributes (HRIS-SYNC-04 gate — use `/gsd:plan-phase --research-phase`). Personio rate limits: verify exact endpoint-level limits against current contract before HRIS-SYNC-01 plan-phase (community data is MEDIUM confidence). ADP partner program: determine timeline early; if blocked, QuickBooks + Gusto are the must-have US adapters for v7.0 audit gate.
 
 ### Phase Ordering Rationale
 
-1. **Foundation before features (70 → 71+)** — reconciles ARCHITECTURE-vs-PITFALLS in favour of PITFALLS; CI guards prevent CRITICAL-recovery-cost bugs
-2. **F1 before F3 + F4** — hard schema dependency; both compose on `ContractorComplianceItem` + reminder cron
-3. **F4 before F2** — hard workflow dependency; Pitfall 7 cooldown gate evaluates F4's final-invoice-paid state
-4. **F2 GWS+Slack before F2 Entra+Okta+GitHub** — maximises wedge speed; ~95% SMB market with narrowest scope expansion
+- Foundation (Phase 0) before any revenue-gated work — prevents duplicate `requireAddOn` helpers and undefined flag entries.
+- US-INFRA (Phase 1 Theme A) before US data creation — prevents the silent `Unsupported data region` throw and wrong-region storage.
+- WORKER-01 (Phase 2 Theme B) before any employee rows — the only strict serialization point in Theme B.
+- INTEG-AUTH scopes before INTEG-API writes — prevents BFLA from landing in production.
+- INTEG-SEC SSRF before INTEG-WEBHOOK dispatch — prevents cloud-metadata pivot.
+- Themes A (post-INFRA), B (post-WORKER-01), and C (post-INTEG-API-01) otherwise concurrent.
+- Marketplace submissions early — review timelines are external and non-deterministic.
 
 ### Research Flags
 
-- **NEEDS RESEARCH (5 phases):** 71, 75, 77, 78, 79
-- **STANDARD pattern (6 phases):** 70, 72, 73, 74, 76, 80
+Phases needing deeper research during planning:
+- **HRIS-SYNC-04 (BambooHR custom attributes):** Explicit research gate in backlog — custom-attribute contract not verified. Use `/gsd:plan-phase --research-phase` before planning this phase.
+- **HRIS-SYNC-01/02 (Personio rate limits):** Community changelog data only (MEDIUM confidence). Verify endpoint-level limits against current Personio contract before plan-phase.
+- **US-CLASS-04 (Determination Letter):** AI-generation component likely needs `/gsd:ai-integration-phase` per backlog checklist.
+- **US-FORM-03 (TIN Matching PAF enrollment):** Per-org operational prerequisite; confirm enrollment process and lead-time; flag as plan-phase prerequisite checklist item.
+- **PAYROLL-US ADP:** ADP Marketplace partner program + mTLS cert are external dependencies with unknown lead times. Assess early; have contingency (QuickBooks + Gusto as v7.0 floor, ADP as v7.1).
+- **INTEG-SEC-04 (OWASP review):** Must be automated tests at the audit gate — flag explicitly in the Theme C plan-phase.
+
+Phases with standard patterns (skip research-phase):
+- **Phase 0 Foundation:** `requireAddOn` mirrors `requireTier`; flag registry is a documented boot-gate procedure; both verified in-tree.
+- **US-INFRA-01:** 4-place change is fully identified in-tree; a lockstep test is the key deliverable.
+- **WORKER-01:** Additive discriminated union is a locked, verified pattern; contractor `findMany` audit + snapshot test checklist is known.
+- **INTEG-API-01 / INTEG-AUTH-01..05:** Public-API Hono host, `OrganizationApiKey.scopes`, per-tier rate-limiter all already exist in the tree.
+- **US-PAY-01 (NACHA):** Payment-export factory extension shape verified; balanced-file + return-code handling checklist is known; `@midlandsbank/node-nacha` is a formatter helper.
+- **Payroll export adapters (PL/DE/UK):** Each is a new `PayrollExportProfile` in the existing factory; adapter pattern is standard.
+- **EMP-PORTAL:** Extends existing v2.0 portal magic-link + subdomain; new `/employee/*` shell pages under the same auth model.
 
 ## Confidence Assessment
 
 | Area | Confidence | Notes |
 |------|------------|-------|
-| Stack | HIGH | SDK choices verified via Context7 + npm registry (2026-04-26). MEDIUM only on Saudization + UAE free-zone reference data — no maintained npm packages exist; static seed tables + admin overrides + post-deploy legal sign-off is the only viable path. |
-| Features | HIGH | IdP, compliance lifecycle, Saudization Qiwa-auth, IP-assignment patterns verified across ~50 sources. MEDIUM only on UAE NOC under Dubai Law 7/2025 (mid-2026 regulator clarifications expected) and Werkvertrag wording (lawyer-dependent). |
-| Architecture | HIGH | All extension points verified at file-level (`contractor.prisma:209-285`, `payment.ts:352`, `workflow.prisma:173-220`, `IntegrationProviderAdapter` interface, `economic-dependency-scan.ts`, `equipment-workflow.ts`). MEDIUM on per-IdP implementation details (Context7 verification needed before each adapter build). |
-| Pitfalls | HIGH | All 31 pitfalls grounded in concrete v1.0–v5.0 precedents. Where docs need verification (Google `tokens.delete`, Okta session semantics, Azure CA interaction), recommendation is Context7 at implementation time, not training data. |
+| Stack | HIGH | All npm versions verified against registry on 2026-06-07; 7-day-age violations identified; IRS IRIS/FIRE transition corroborated by Sovos, Ice Miller, TaxBandits, IRS.gov; Personio/BambooHR SDK absence confirmed from official developer docs |
+| Features | HIGH | IRS regulatory facts (OBBBA 1099 thresholds, FIRE decommission, 1099-K revert, Same-Day ACH cap) verified against IRS.gov + multiple independent secondary sources; three backlog corrections are load-bearing |
+| Architecture | HIGH | All seams verified in-tree against actual file paths and code signatures; read directly from `tenant.ts`, `region.ts`, `webhook-dispatcher.ts`, `api-key-auth.ts`, `root.ts`, `portal-root.ts`, `payment-export.ts`, `registry.ts`, `outbox.prisma`, `public-api/app.ts`, `rate-limiter.ts`, `api-key-service.ts` |
+| Pitfalls | HIGH (architecture-grounded) / MEDIUM (Personio rate-limit specifics) | SSRF, IDOR, discriminated-union, BFLA pitfalls verified against live code; Personio exact endpoint-level rate limits from community changelog only — flagged as MEDIUM and gated |
 
-**Overall confidence: HIGH**
+**Overall confidence:** HIGH on all load-bearing decisions; MEDIUM on two named research gates (BambooHR custom attributes; Personio exact rate-limit contract) which are explicitly gated in the backlog and flagged above.
 
-### Gaps to Address (Open Questions for Requirements Definer)
+### Gaps to Address
 
-- **Per-org policy customization scope (F1)** — admin override of severity per-jurisdiction? Lock during requirements definition.
-- **Regex-vs-ML for clause scanner (F4)** — recommendation: regex first, Claude Vision tool_use as MANUAL_REVIEW_REQUIRED escape only. Confirm during requirements.
-- **Arabic localization scope** — recommendation: F3 surfaces ship FULL AR + RTL (KSA/UAE customer-facing); other v6.0 surfaces en/pl/de only with AR added in v6.x. Lock during requirements.
-- **GCC counting weighting matrix (F3)** — per-sector multiplier matrix in `gulf-regulatory/profiles/sa/nitaqat.ts`; values are seed data with annual review per Standing Constraints. Lock during requirements + Phase 79 manual UAT checkpoint.
-- **Stripe tier gating exact mapping** — recommendation locked above; requirements definer to confirm with billing/product strategy.
-- **Anthropic SDK tool_use schema for Phase 75** — Phase 75 plan-phase research-needs flag set.
-- **Per-IdP deprovisioning APIs for Phase 77 + 78** — Context7 lookup mandatory before each adapter implementation.
-- **Manual UAT checkpoint capture for legal sign-off** — Phase 80 generates consolidated post-deploy legal sign-off list.
+- **Personio custom-attribute field contract:** Community docs confirm attributes must be known in advance and are company-specific, but the exact contract for a new SaaS tenant's attribute mapping is unverified. Gate HRIS-SYNC-04 plan on direct verification. If custom attributes cannot be reliably mapped, HRIS-SYNC-02/03 scope narrows to standard fields only.
+- **BambooHR custom-attribute support:** Explicitly unverified (backlog research gate). Block HRIS-SYNC-04 plan-phase.
+- **IRS IRIS TCC enrollment:** 45-day lead; begin application in Phase 0. If TCC not approved before US-FORM-05 plan-phase, fall back to commercial transmitter (Sovos/1099Pro) behind the transmitter-adapter seam.
+- **ADP Marketplace partner program:** External gating; no published timeline. Treat ADP as potentially v7.1; QuickBooks + Gusto as v7.0 must-have US payroll adapters.
+- **`requireAddOn` entitlement source:** Decide `Subscription.addOns String[]` vs normalized `OrgAddOn` table in Phase 0. `OrgAddOn` table is cleaner for audit + per-add-on period tracking.
+- **INTEG-AUTH-01 "bcrypt" vs repo HMAC-SHA256:** Backlog spec says "bcrypt + per-key salt"; `api-key-service.ts` uses HMAC-SHA256. HMAC is correct for high-entropy random keys. Reconcile the requirements doc to match the implementation — do not change the implementation.
+- **Zapier/Make marketplace review timelines:** 2–4 weeks and 1–2 weeks are estimates; reviews can run longer. Submit both in parallel as early as the public API + webhooks are stable. Do not gate the GA announcement on approvals — `n8n` (self-serve npm publish) is the launch-day integration story if reviews pend.
 
 ## Sources
 
 ### Primary (HIGH confidence)
-**Context7 / official SDK docs:** `googleapis_dev_nodejs_googleapis`, `microsoftgraph/microsoft-graph-docs-contrib`, `okta/okta-sdk-nodejs`, `octokit/octokit.js`, `slack_dev_reference_methods`, `date-fns/date-fns@v3.5.0`
 
-**Official documentation:** Microsoft Graph `revokeSignInSessions` API, Microsoft Graph SDK overview, Slack SCIM API, GitHub REST `Remove an organization member`, Okta Lifecycle Management, GOV.UK Right to Work Share Code, Bundesportal A1 certificate, ZUS A1 confirmation, MHRSD Nitaqat Mutawar Program, Saudi Gazette Qiwa Saudization update, Cooley GO contractor agreements, comp-lex IP-Übertragungsvertrag, Kraus-Ghendler Freier Mitarbeiter Vertrag, it-recht-kanzlei Nutzungsrechte, Google OAuth 2.0 token revocation, Microsoft Learn Entra ID emergency revoke, Slack Deactivate member, u.ae verify business licences
-
-**Internal precedents:** `.planning/PROJECT.md`, `.planning/MILESTONES.md`, `contractor.prisma:209-285`, `workflow.prisma:173-220`, `payment.ts:352`, `packages/integrations/src/types/provider.ts`, `economic-dependency-scan.ts`, `equipment-workflow.ts`
+- IRS.gov — FIRE decommission 2026-12-31, IRIS A2A Pub 5717/5718/5719, TIN-Matching e-Services, 1099-K threshold FAQ (IRS newsroom)
+- Sovos, Ice Miller, TaxBandits — FIRE→IRIS transition corroboration (multiple independent sources)
+- Calibre CPA, OnPay, Littler, IRS Pub 1099 (2026) — OBBBA 1099-NEC $2,000 threshold confirmation
+- Nacha.org — Same-Day ACH cap $1M now, $10M from 2027-09-17
+- developer.personio.de — API v2, 200 req/min/credential, attribute-scoped, proprietary bearer, v1 deprecation 2026-07-31
+- documentation.bamboohr.com/docs/sdks — official SDKs PHP+Python only; OAuth 2.0 required for B2B
+- npm registry (2026-06-07) — all package versions + publish dates; 7-day-age violations identified
+- In-tree source reads: `packages/db/src/{tenant.ts,region.ts}`, `packages/api/src/services/{payment-export.ts,regional-storage.ts,api-key-service.ts}`, `packages/api/src/middleware/{tier.ts,feature-flag.ts,rbac.ts,api-key-auth.ts}`, `packages/integrations/src/services/webhook-dispatcher.ts`, `apps/public-api/src/{app.ts,lib/rate-limiter.ts}`, `packages/db/prisma/schema/{contractor.prisma,api-key.prisma,integration.prisma,outbox.prisma,billing.prisma,payment.prisma}`
+- OWASP API Security Top 10 2023 — BOLA (API1), BFLA (API5), BOPLA (API3)
 
 ### Secondary (MEDIUM confidence)
-Nudge Security OAuth-Risks, Torii GWS Deactivation, Stitchflow Okta SSO-vs-Provisioning, Topedia Entra Revoke Sessions, Worksuite Compliance, VettingHub Right-to-Work 2026 (Border Security Act 2025), premote A1 24-month, Henry Club / SetupUAE / RIZ MONA UAE free zones, HCM Global / Qureos / SCPL Nitaqat, Sprintlaw UK Consultant Contracts, Enboarder + FutureCode Knowledge Transfer, ContractEval LLMs Clause-Level (Aug 2025), Anthropic Legal summarization guide, Bayanat UAE Open Data Portal
 
-### Tertiary (LOW confidence — needs validation)
-Vertix UAE free zones list, RSBM zone comparison, Jisr HRMS Nitaqat calculator (reference UI only), Thrivea Deel-vs-Rippling competitive comparison
+- Personio developer changelog — IP rate limiting + GET employees endpoint rate limits (community changelog, not contract SLA)
+- Speakeasy vs Stainless vs Fern comparison — vendor-authored, cross-checked
+- Mintlify vs Scalar — developer tooling community comparisons
+- DATEV developer.datev.de + DATEV-Community — LODAS ASCII-only; L&G Lohnimportdatenservice REST
+- dev.gusto.com, Intuit QuickBooks docs, ADP developers.adp.com — REST + OAuth + mTLS (partner-gated)
 
-### Internal references
-- `.planning/research/STACK.md`
-- `.planning/research/FEATURES.md`
-- `.planning/research/ARCHITECTURE.md`
-- `.planning/research/PITFALLS.md`
+### Tertiary (LOW confidence)
+
+- Zapier / n8n / Make review timelines (2–4wk / self-serve / 1–2wk) — platform community, non-contractual
+
+---
+*Research completed: 2026-06-07*
+*Ready for roadmap: yes*
