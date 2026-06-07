@@ -41,6 +41,26 @@ try {
  *       cannot start with 'gulf-'. The two FLAGS keys (gulf.free-zone-tracking,
  *       gulf.saudization-dashboard) are legal-sensitive and MUST land PENDING.
  *   - 'offboarding-ip-'         → F4 Offboarding Hardening (Phases 74–75)
+ *
+ * Phase 82 (v7.0 GTM Foundation, FOUND7-02 / D-10) — the 19 v7.0 flags are
+ * gated by these narrow prefixes so the existing prefix gate enforces a PENDING
+ * registry entry for each (a missing entry exits boot). The prefixes are scoped
+ * NOT to capture pre-v7.0 non-gated flags: 'payments.ach-' excludes
+ * payments.bacs-enabled/skonto-enabled; 'module.us-'/'module.workforce-'/
+ * 'module.iris-'/'module.public-api'/'module.outbound-' exclude
+ * module.classification-engine + module.legal-approval. The gate is NOT
+ * broadened to ALL declared flags (that would break boot for pre-v7.0 flags
+ * with no registry entry).
+ *   - 'module.us-'              → v7.0 Theme A US surface (module.us-expansion)
+ *   - 'module.workforce-'       → v7.0 Theme B (module.workforce-employees)
+ *   - 'module.iris-'            → v7.0 Theme A (module.iris-efile)
+ *   - 'module.public-api'       → v7.0 Theme C (module.public-api)
+ *   - 'module.outbound-'        → v7.0 Theme C (module.outbound-webhooks)
+ *   - 'integration.personio-'   → v7.0 Theme B (integration.personio-sync)
+ *   - 'integration.bamboohr-'   → v7.0 Theme B (integration.bamboohr-sync)
+ *   - 'integration.marketplace-'→ v7.0 Theme C (Zapier/n8n/Make listings)
+ *   - 'payments.ach-'           → v7.0 Theme A (payments.ach-payouts)
+ *   - 'payroll.'                → v7.0 Theme B (8 payroll.* adapters)
  */
 export const GATED_FLAG_NAMESPACE_PREFIXES = [
   'compliance-',
@@ -49,6 +69,16 @@ export const GATED_FLAG_NAMESPACE_PREFIXES = [
   'gulf-',
   'gulf.',
   'offboarding-ip-',
+  'module.us-',
+  'module.workforce-',
+  'module.iris-',
+  'module.public-api',
+  'module.outbound-',
+  'integration.personio-',
+  'integration.bamboohr-',
+  'integration.marketplace-',
+  'payments.ach-',
+  'payroll.',
 ] as const satisfies readonly string[];
 
 export function isGatedFlag(key: string): boolean {

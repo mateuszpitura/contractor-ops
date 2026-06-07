@@ -94,5 +94,81 @@
   "gulf.saudization-dashboard": {
     "status": "PENDING",
     "notes": "F3 Gulf Phase 79 — Saudization dashboard (manual Nitaqat band + headcount, nationalisation rate, Qiwa-auth gap, Iqama roll-up, offboarding trajectory banner; ME-only). Legal-sensitive: surfaces Nitaqat band labels + Qiwa-auth status; system never auto-computes the band (locked anti-feature). Ship dark; flip to APPROVED post-deploy after legal review of the band/trajectory advisory copy. Engineers develop with FLAG_SIGNOFF_BYPASS=local."
+  },
+  "module.us-expansion": {
+    "status": "PENDING",
+    "notes": "v7.0 Theme A — US cross-border surface gate. Ship dark; flip APPROVED post-deploy. Engineers dev with FLAG_SIGNOFF_BYPASS=local."
+  },
+  "module.workforce-employees": {
+    "status": "PENDING",
+    "notes": "v7.0 Theme B — workforce/employee management gate. Ship dark; flip APPROVED post-deploy. Engineers dev with FLAG_SIGNOFF_BYPASS=local."
+  },
+  "module.public-api": {
+    "status": "PENDING",
+    "notes": "v7.0 Theme C — public REST API surface gate. Ship dark; flip APPROVED post-deploy. Engineers dev with FLAG_SIGNOFF_BYPASS=local."
+  },
+  "module.outbound-webhooks": {
+    "status": "PENDING",
+    "notes": "v7.0 Theme C — outbound webhooks gate. Ship dark; flip APPROVED post-deploy. Engineers dev with FLAG_SIGNOFF_BYPASS=local."
+  },
+  "module.iris-efile": {
+    "status": "PENDING",
+    "notes": "v7.0 Theme A — IRIS A2A e-file gate (IRIS-primary; FIRE decommissions 2026-12-31). Ship dark; flip APPROVED post-deploy. Engineers dev with FLAG_SIGNOFF_BYPASS=local."
+  },
+  "integration.personio-sync": {
+    "status": "PENDING",
+    "notes": "v7.0 Theme B — Personio HRIS two-way sync gate. Ship dark; flip APPROVED post-deploy. Engineers dev with FLAG_SIGNOFF_BYPASS=local."
+  },
+  "integration.bamboohr-sync": {
+    "status": "PENDING",
+    "notes": "v7.0 Theme B — BambooHR HRIS two-way sync gate. Ship dark; flip APPROVED post-deploy. Engineers dev with FLAG_SIGNOFF_BYPASS=local."
+  },
+  "integration.marketplace-zapier": {
+    "status": "PENDING",
+    "notes": "v7.0 Theme C — Zapier marketplace listing gate. Ship dark; flip APPROVED post-deploy. Engineers dev with FLAG_SIGNOFF_BYPASS=local."
+  },
+  "integration.marketplace-n8n": {
+    "status": "PENDING",
+    "notes": "v7.0 Theme C — n8n marketplace listing gate. Ship dark; flip APPROVED post-deploy. Engineers dev with FLAG_SIGNOFF_BYPASS=local."
+  },
+  "integration.marketplace-make": {
+    "status": "PENDING",
+    "notes": "v7.0 Theme C — Make (Integromat) marketplace listing gate. Ship dark; flip APPROVED post-deploy. Engineers dev with FLAG_SIGNOFF_BYPASS=local."
+  },
+  "payments.ach-payouts": {
+    "status": "PENDING",
+    "notes": "v7.0 Theme A — US ACH payout rail (NACHA) gate. Ship dark; flip APPROVED post-deploy. Engineers dev with FLAG_SIGNOFF_BYPASS=local."
+  },
+  "payroll.symfonia": {
+    "status": "PENDING",
+    "notes": "v7.0 Theme B — Symfonia (PL) payroll adapter gate. Ship dark; flip APPROVED post-deploy. Engineers dev with FLAG_SIGNOFF_BYPASS=local."
+  },
+  "payroll.comarch": {
+    "status": "PENDING",
+    "notes": "v7.0 Theme B — Comarch (PL) payroll adapter gate. Ship dark; flip APPROVED post-deploy. Engineers dev with FLAG_SIGNOFF_BYPASS=local."
+  },
+  "payroll.enova": {
+    "status": "PENDING",
+    "notes": "v7.0 Theme B — enova365 (PL) payroll adapter gate. Ship dark; flip APPROVED post-deploy. Engineers dev with FLAG_SIGNOFF_BYPASS=local."
+  },
+  "payroll.datev": {
+    "status": "PENDING",
+    "notes": "v7.0 Theme B — DATEV (DE) payroll adapter gate. Ship dark; flip APPROVED post-deploy. Engineers dev with FLAG_SIGNOFF_BYPASS=local."
+  },
+  "payroll.sage-uk": {
+    "status": "PENDING",
+    "notes": "v7.0 Theme B — Sage (UK) payroll adapter gate. Ship dark; flip APPROVED post-deploy. Engineers dev with FLAG_SIGNOFF_BYPASS=local."
+  },
+  "payroll.gusto": {
+    "status": "PENDING",
+    "notes": "v7.0 Theme B — Gusto (US) payroll adapter gate. Ship dark; flip APPROVED post-deploy. Engineers dev with FLAG_SIGNOFF_BYPASS=local."
+  },
+  "payroll.quickbooks": {
+    "status": "PENDING",
+    "notes": "v7.0 Theme B — QuickBooks (US) payroll adapter gate. Ship dark; flip APPROVED post-deploy. Engineers dev with FLAG_SIGNOFF_BYPASS=local."
+  },
+  "payroll.adp": {
+    "status": "PENDING",
+    "notes": "v7.0 Theme B — ADP (US) payroll adapter gate. Ship dark; flip APPROVED post-deploy. Engineers dev with FLAG_SIGNOFF_BYPASS=local."
   }
 }
