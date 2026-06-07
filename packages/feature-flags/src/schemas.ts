@@ -12,6 +12,7 @@ export const flagCategorySchema = z.enum([
   'ui',
   'billing',
   'payments',
+  'payroll',
 ]);
 export type FlagCategory = z.infer<typeof flagCategorySchema>;
 
@@ -20,7 +21,7 @@ export type FlagCategory = z.infer<typeof flagCategorySchema>;
  * `client.ts` so the hand-typed `Region` literal cannot drift from the
  * runtime-validated `evalContextSchema.region` enum.
  */
-export const regionSchema = z.enum(['EU', 'ME']);
+export const regionSchema = z.enum(['EU', 'ME', 'US']);
 export type Region = z.infer<typeof regionSchema>;
 
 export const flagDefinitionSchema = z.object({

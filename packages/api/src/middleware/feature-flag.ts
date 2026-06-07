@@ -25,16 +25,21 @@ function buildLazyBag(ctx: {
   region: string;
   authMode?: 'session' | 'apiKey' | 'cron' | 'portal';
 }): LazyFlagBag {
-  let region: 'EU' | 'ME';
+  let region: 'EU' | 'ME' | 'US';
   if (ctx.region === 'ME') {
     region = 'ME';
+  } else if (ctx.region === 'US') {
+    // US is a supported region (FOUND7-03) — it must NOT fall into the
+    // unknown→EU branch. Silently coercing US data context to EU would be a
+    // data-residency leak (T-82-02-01), so US gets an explicit branch.
+    region = 'US';
   } else if (ctx.region === 'EU') {
     region = 'EU';
   } else {
-    // Unknown region — should never happen (tenant middleware guarantees
-    // EU/ME), but if it does we fail closed by picking the safer default. The
-    // log gives ops visibility; without it, a future region addition would
-    // silently degrade to EU.
+    // Genuinely-unknown region — should never happen (tenant middleware
+    // guarantees a supported region), but if it does we fail closed by picking
+    // the safer default. The log gives ops visibility; without it, a future
+    // region addition would silently degrade to EU.
     log.warn(
       { region: ctx.region, organizationId: ctx.organizationId },
       'unexpected ctx.region; coercing to EU and using jurisdiction short-circuit',

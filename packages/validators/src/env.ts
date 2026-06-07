@@ -31,6 +31,12 @@ const databaseSchema = z.object({
   // them once per region's Neon read-replica is provisioned.
   DATABASE_URL_EU_RO: z.string().min(1).optional(),
   DATABASE_URL_ME_RO: z.string().min(1).optional(),
+  // FOUND7-03 — US region (us-east-1). OPTIONAL by design (D-06): the app boots
+  // clean locally with no US DB. `getRegionalClient('US')` lazy-throws only on
+  // actual access. The US read-replica is deferred (US-INFRA-01), so its `_RO`
+  // var is optional too.
+  DATABASE_URL_US: z.string().min(1).optional(),
+  DATABASE_URL_US_RO: z.string().min(1).optional(),
 });
 
 // ── Auth ────────────────────────────────────────────────────────────────────

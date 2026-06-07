@@ -225,6 +225,27 @@ describe('tenantFlaggedProcedure', () => {
 
     expect(mockLazyFlagBag).toHaveBeenCalledWith(expect.objectContaining({ region: 'ME' }));
   });
+
+  it('passes US region through when org has US (no EU coercion — SC#3 / T-82-02-01)', async () => {
+    const mockBag = { isEnabled: vi.fn().mockReturnValue(true) };
+    mockLazyFlagBag.mockReturnValue(mockBag);
+
+    mockPrisma.organization.findUnique.mockResolvedValue({
+      id: 'org-mock',
+      dataRegion: 'US',
+      status: 'ACTIVE',
+    });
+
+    const router = t.router({
+      ping: tenantFlaggedProcedure.query(() => 'ok'),
+    });
+
+    const caller = t.createCallerFactory(router)(authedCtx());
+    await caller.ping();
+
+    // US must NOT silently coerce to EU — that would be a data-residency leak.
+    expect(mockLazyFlagBag).toHaveBeenCalledWith(expect.objectContaining({ region: 'US' }));
+  });
 });
 
 describe('requireFeatureFlag', () => {
