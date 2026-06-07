@@ -375,7 +375,7 @@ Phases execute in numeric order: 82 → 83 → … → 101. After Foundation (82
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 82. v7.0 Foundation — Add-On + Flags + US Region | v7.0 | 4/4 | Complete   | 2026-06-07 |
+| 82. v7.0 Foundation — Add-On + Flags + US Region | v7.0 | 4/4 | Complete    | 2026-06-07 |
 | 83. Theme A — US Region Infrastructure | v7.0 | 0/TBD | Not started | - |
 | 84. Theme A — US Profile Fields + en-US Locale | v7.0 | 0/TBD | Not started | - |
 | 85. Theme A — W-Form Intake + Tax-Treaty Engine | v7.0 | 0/TBD | Not started | - |
