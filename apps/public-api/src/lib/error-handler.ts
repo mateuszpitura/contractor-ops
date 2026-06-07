@@ -56,6 +56,12 @@ function extractErrorDetails(err: TRPCError): { code: string; message: string } 
         message: `Subscription tier ${String(parsed.requiredTier)} is required.`,
       };
     }
+    if (parsed.type === 'ADD_ON_REQUIRED') {
+      return {
+        code: 'ADD_ON_REQUIRED',
+        message: `Add-on '${String(parsed.requiredAddOn)}' is required for this resource.`,
+      };
+    }
     // safe-swallow: message is not structured JSON (the common case); fall through to the Zod/raw handling below
   } catch {
     // Not JSON — use as-is
