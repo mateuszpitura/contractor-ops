@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v7.0
 milestone_name: GTM Expansion
 status: executing
-stopped_at: Phase 82 context gathered
-last_updated: "2026-06-07T18:49:50.484Z"
+stopped_at: Completed 82-02-PLAN.md
+last_updated: "2026-06-07T18:59:27.351Z"
 last_activity: 2026-06-07
 progress:
   total_phases: 20
   completed_phases: 0
   total_plans: 4
-  completed_plans: 1
+  completed_plans: 2
   percent: 0
 ---
 
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-06-07 — v7.0 GTM Expansion started; v6
 ## Current Position
 
 Phase: 82 (v7.0 Foundation — Add-On Billing + Flag Registry + US Region Enablement) — EXECUTING
-Plan: 2 of 4
+Plan: 3 of 4
 Status: Ready to execute
 Last activity: 2026-06-07
 
-Progress: [███░░░░░░░] 25%
+Progress: [█████░░░░░] 50%
 
 ## v7.0 Roadmap Summary (created 2026-06-07)
 
@@ -90,6 +90,7 @@ Decisions are logged in PROJECT.md Key Decisions table. Recent decisions affecti
 - [v7.0 research, 2026-06-07]: `us-east-1` is a 4-place atomic change (SUPPORTED_REGIONS / DataRegion enum / DATABASE_URL_US / buildLazyBag coercion) with a lockstep test — Phase 82/83
 - [v7.0 research, 2026-06-07]: never add v7.0 tenant-owning models to `globalModels` (IDOR landmine); two-org cross-leak test per new model
 - [Phase ?]: [82-01, 2026-06-07]: Wave 0 RED scaffolds for FOUND7-01/02/03; error-handler.test.ts extended (pre-existing) not recreated; 5-way region lockstep split across packages/db + feature-flags (no new dep edge); IRIS TCC ~45-day clock started 2026-06-07, earliest-ready 2026-07-22 (Phase 86 / US-FORM-05)
+- [Phase ?]: [82-02, 2026-06-07]: us-east-1 enabled across the five-way lockstep (SUPPORTED_REGIONS/DataRegion/regionSchema/REGION_ENV_MAP/REPLICA_ENV_MAP); DATABASE_URL_US OPTIONAL (D-06, lazy-throw on access); buildLazyBag explicit US branch (no silent EU coercion, T-82-02-01); 'payroll' flag category added in schemas.ts for 82-03; seed-dev US seed-org deferred to Phase 83
 
 ### Pending Todos
 
@@ -117,6 +118,7 @@ Carried forward from v6.0 milestone close (2026-06-07). Full enumeration: `.plan
 | i18n_review | Phase-73 machine-translated ar.json strings — native review pre-prod | open |
 | legal_signoff | 24 PENDING signoff-registry namespaces (US tax-form copy, akta/Personalakte retention, per-market statutory paperwork) — per-adviser PRs post-deploy | open |
 | Phase 82 P82-01 | 10m | 3 tasks | 7 files |
+| Phase 82 P02 | 9m | 3 tasks | 9 files |
 
 ## Standing Project Constraints
 
@@ -126,7 +128,7 @@ Carried forward from v6.0 milestone close (2026-06-07). Full enumeration: `.plan
 
 ## Session Continuity
 
-Last session: 2026-06-07T18:49:43.105Z
-Stopped at: Phase 82 context gathered
+Last session: 2026-06-07T18:59:27.346Z
+Stopped at: Completed 82-02-PLAN.md
 Resume file: None
 Next command: `/gsd:plan-phase 82`
