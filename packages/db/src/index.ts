@@ -30,6 +30,15 @@ export type { DataRegion } from './region.js';
 export { getRegionalClient, preWarmRegionalClients, SUPPORTED_REGIONS } from './region.js';
 // F-SCALE-06 — opt-in read-replica routing with circuit-breaker fallback.
 export { getReplicaClient, readReplica, resetReplicaStateForTests } from './replica.js';
+// US-INFRA-03 — statutory retention resolver shared by the three deletion
+// chokepoints (soft-delete extension, data-purge cron, gdpr erasure).
+export type { RetainedRecordType } from './retention-policy.js';
+export {
+  getRetentionCutoff,
+  MODEL_RETENTION_TYPE,
+  RETENTION_YEARS,
+  resolveRetentionYears,
+} from './retention-policy.js';
 export type { PrismaWithTransaction, RlsContext, RlsReadScopedModel } from './rls.js';
 export {
   RLS_READ_SCOPED_MODELS,
