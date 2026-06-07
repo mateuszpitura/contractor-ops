@@ -350,6 +350,7 @@ enum SimpleStatus {
 enum DataRegion {
   EU
   ME
+  US
 }
 
 // Provenance of a Team / Project row: manual entry or pulled from an integration provider.

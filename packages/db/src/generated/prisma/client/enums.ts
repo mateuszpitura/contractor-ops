@@ -1009,7 +1009,8 @@ export type SimpleStatus = (typeof SimpleStatus)[keyof typeof SimpleStatus]
 
 export const DataRegion = {
   EU: 'EU',
-  ME: 'ME'
+  ME: 'ME',
+  US: 'US'
 } as const
 
 export type DataRegion = (typeof DataRegion)[keyof typeof DataRegion]
