@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import type { DataRegion } from '@contractor-ops/db';
 import { prisma } from '@contractor-ops/db';
 import { createLogger } from '@contractor-ops/logger';
 import { betterAuth } from 'better-auth';
@@ -8,6 +9,7 @@ import { nextCookies } from 'better-auth/next-js';
 import { admin } from 'better-auth/plugins/admin';
 import { magicLink } from 'better-auth/plugins/magic-link';
 import { organization } from 'better-auth/plugins/organization';
+import { z } from 'zod';
 import {
   sendMagicLinkEmail,
   sendInvitationEmail as sendOrgInvitationEmail,
@@ -35,6 +37,46 @@ const log = createLogger({ service: 'auth' });
  */
 function hashEmail(email: string): string {
   return createHash('sha256').update(email.toLowerCase().trim()).digest('hex').slice(0, 16);
+}
+
+// ---------------------------------------------------------------------------
+// US-INFRA-01 — creation-time data-region assignment (D-01).
+// ---------------------------------------------------------------------------
+//
+// `organization.dataRegion` is set ONCE, at creation, from the billing-country
+// selection the SPA passes into `authClient.organization.create`, and is
+// IMMUTABLE afterward (D-01) — there is NO update/afterCreate path that mutates
+// it (see `organizationHooks.beforeCreateOrganization` below; no
+// `beforeUpdateOrganization` sets it). US data residency is opt-in: only a US
+// billing country routes to the `us-east-1` region; everything else (incl. an
+// absent billing country) defaults to EU, preserving the schema `@default(EU)`
+// intent. The orthogonal `us-cross-border` add-on (Phase 82) unlocks US tax
+// features WITHOUT moving residency — it never touches `dataRegion`.
+
+/** Zod schema validating the optional billing-country create input at the
+ * Better Auth boundary (CLAUDE.md: schema-validate untrusted client input).
+ * ISO 3166-1 alpha-2; case-insensitive, normalised to upper-case. */
+const billingCountrySchema = z
+  .string()
+  .trim()
+  .length(2)
+  .transform(c => c.toUpperCase())
+  .optional();
+
+/**
+ * Maps a billing-country selection (untrusted client input) to the org's
+ * persistent data region. Pure + exported so the assignment logic is
+ * unit-testable without booting the full Better Auth server; the
+ * `beforeCreateOrganization` hook delegates to it.
+ *
+ * US residency is opt-in and explicit — only `billingCountry: 'US'` resolves
+ * to `'US'`. Any other country, an unparseable value, or an absent billing
+ * country falls back to `'EU'` (never silently routes to US).
+ */
+export function resolveDataRegionFromBilling(input: { billingCountry?: string }): DataRegion {
+  const parsed = billingCountrySchema.safeParse(input.billingCountry);
+  if (parsed.success && parsed.data === 'US') return 'US';
+  return 'EU';
 }
 
 /**
@@ -457,6 +499,36 @@ export const auth = betterAuth({
     organization({
       ac,
       allowCreatorAllPermissions: true,
+      // US-INFRA-01 (D-01) — accept an optional `billingCountry` on the create
+      // payload so the SPA can declare data residency at org creation. It is
+      // input-only: validated by Zod at the boundary, consumed by
+      // `beforeCreateOrganization` to derive `dataRegion`, and NEVER persisted
+      // (no `billingCountry` column exists on Organization) nor returned. The
+      // derived `dataRegion` enum column is the single source of truth.
+      schema: {
+        organization: {
+          additionalFields: {
+            billingCountry: {
+              type: 'string',
+              required: false,
+              input: true,
+              returned: false,
+              validator: { input: billingCountrySchema },
+            },
+          },
+        },
+      },
+      // US-INFRA-01 (D-01) — the SINGLE origin of `dataRegion`. Maps the
+      // billing-country selection to a region and strips the transient
+      // `billingCountry` input so only real columns are written. `dataRegion`
+      // is immutable after creation: no update hook sets it.
+      organizationHooks: {
+        beforeCreateOrganization: async ({ organization: org }) => {
+          const { billingCountry, ...rest } = org as typeof org & { billingCountry?: string };
+          const dataRegion = resolveDataRegionFromBilling({ billingCountry });
+          return { data: { ...rest, dataRegion } };
+        },
+      },
       roles: {
         owner: roles.owner,
         admin: roles.admin,
