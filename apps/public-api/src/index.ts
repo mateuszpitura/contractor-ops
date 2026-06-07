@@ -6,6 +6,7 @@ import { initSentry, Sentry } from './lib/sentry.js';
 initSentry();
 
 import { preWarmRegionalClients } from '@contractor-ops/db';
+import { assertFlagSignoffsOrExit } from '@contractor-ops/feature-flags';
 import { createLogger } from '@contractor-ops/logger';
 import { serve } from '@hono/node-server';
 import app from './app.js';
@@ -70,6 +71,11 @@ if (process.env.NODE_ENV === 'production') {
     process.exit(1);
   }
 }
+
+// FOUND7-02: fail-closed flag-signoff gate. Exits(1) if any gated flag is
+// missing its signoff-registry entry (FLAG_SIGNOFF_BYPASS=local downgrades to a
+// warn for local dev). Run after required-env validation, before serving.
+assertFlagSignoffsOrExit();
 
 const PORT = Number(process.env.PUBLIC_API_PORT ?? 4100);
 

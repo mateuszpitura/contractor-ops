@@ -5,6 +5,7 @@ import { initSentry, Sentry } from './lib/sentry.js';
 
 initSentry();
 
+import { assertFlagSignoffsOrExit } from '@contractor-ops/feature-flags';
 import {
   loadHeavyAdapters,
   registerAllAdapters,
@@ -39,6 +40,11 @@ process.on('unhandledRejection', reason => {
 
 async function main(): Promise<void> {
   const env = loadEnv();
+
+  // FOUND7-02: fail-closed flag-signoff gate. Exits(1) if any gated flag is
+  // missing its signoff-registry entry (FLAG_SIGNOFF_BYPASS=local downgrades to
+  // a warn for local dev). Run after env load, before serving.
+  assertFlagSignoffsOrExit();
 
   // Warm the integration adapter registry at the top of boot. ESSENTIAL
   // adapters register synchronously; the HEAVY (lazy, dynamic-import) OAuth

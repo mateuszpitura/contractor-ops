@@ -3,6 +3,7 @@ import { initSentry, Sentry } from './lib/sentry.js';
 
 initSentry();
 
+import { assertFlagSignoffsOrExit } from '@contractor-ops/feature-flags';
 import { createLogger } from '@contractor-ops/logger';
 import cron from 'node-cron';
 import { loadEnv } from './env.js';
@@ -35,6 +36,12 @@ process.on('unhandledRejection', reason => {
 
 async function main(): Promise<void> {
   const env = loadEnv();
+
+  // FOUND7-02: fail-closed flag-signoff gate. Exits(1) if any gated flag is
+  // missing its signoff-registry entry (FLAG_SIGNOFF_BYPASS=local downgrades to
+  // a warn for local dev). Run after env load, before scheduling jobs.
+  assertFlagSignoffsOrExit();
+
   const jobs = getJobDefinitions(env);
 
   for (const { meta, handler } of jobs) {
