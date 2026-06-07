@@ -5188,6 +5188,11 @@ async function seedSubscription(prisma: PrismaClient, ctx: OrgSeed): Promise<voi
       // Drifting them apart (independent rolls) reads weird in the billing UI.
       trialEnd: status === 'TRIALING' ? periodEnd : null,
       seatCount: Math.max(1, ctx.users.length),
+      // FOUND7-01 (D-03) — grant the QA-default org both add-on entitlements so a
+      // dev org can exercise requireAddOn-gated Workforce + US Cross-Border
+      // surfaces without an admin grant. Wire keys mirror ADD_ON_KEYS in
+      // packages/api (kept as literals here to avoid a db -> api dependency edge).
+      addOns: isQaDefault ? ['workforce', 'us-cross-border'] : [],
       // Stripe semantics: `cancelAtPeriodEnd=true` means "scheduled to
       // cancel at the end of the current period". Only ACTIVE rows can
       // have it true (~10% — typical churn signal). Already-CANCELED has

@@ -3,6 +3,7 @@ import { fetchPricingPlans, MARKETS } from '@contractor-ops/billing';
 import { getServerEnv } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
+import { ADD_ON_KEYS } from '../../constants/add-ons';
 import * as E from '../../errors';
 import { router } from '../../init';
 import { adminProcedure } from '../../middleware/rbac';
@@ -22,6 +23,7 @@ import {
   getProrationPreview,
   getSubscription,
 } from '../../services/billing-service';
+import { CacheKeys, invalidate } from '../../services/cache';
 import { getCreditBalance } from '../../services/credit-service';
 import { stripe } from '../../services/stripe-client';
 
@@ -352,6 +354,67 @@ export const billingRouter = router({
       planConfig: PLAN_CONFIG,
     };
   }),
+
+  /**
+   * Grant an add-on entitlement to the organization (FOUND7-01, D-03).
+   *
+   * Owner-gated via `adminProcedure` (= organization:update RBAC) — the same
+   * gate the four sibling billing mutations use; a member without that
+   * permission cannot self-grant. The grant is admin/seed only — real Stripe
+   * add-on SKU / checkout / webhook-entitlement-sync is DEFERRED.
+   *
+   * Writes the deduped `Subscription.addOns` array, audit-logs the change, then
+   * invalidates the Redis-cached subscription so `requireAddOn` (which reads the
+   * 15-min-cached getSubscription) sees the grant immediately rather than
+   * denying for up to the cache TTL.
+   */
+  grantAddOn: adminProcedure
+    .input(z.object({ addOn: z.enum(ADD_ON_KEYS) }))
+    .mutation(async ({ ctx, input }) => {
+      const sub = await ctx.db.subscription.findUnique({
+        where: { organizationId: ctx.organizationId },
+      });
+
+      if (!sub) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: E.BILLING_NO_ACTIVE_SUBSCRIPTION,
+        });
+      }
+
+      const currentAddOns = sub.addOns ?? [];
+      const nextAddOns = currentAddOns.includes(input.addOn)
+        ? currentAddOns
+        : [...currentAddOns, input.addOn];
+
+      await ctx.db.$transaction(async tx => {
+        await tx.subscription.update({
+          where: { organizationId: ctx.organizationId },
+          data: { addOns: nextAddOns },
+        });
+
+        // AuditEntityType has no SUBSCRIPTION value → resourceType ORGANIZATION,
+        // resourceId = orgId. Pass tx so the audit row commits atomically.
+        await writeAuditLog({
+          organizationId: ctx.organizationId,
+          actorType: 'USER',
+          actorId: ctx.user?.id ?? null,
+          action: 'subscription.addon.granted',
+          resourceType: 'ORGANIZATION',
+          resourceId: ctx.organizationId,
+          oldValues: { addOns: currentAddOns },
+          newValues: { addOns: nextAddOns },
+          tx,
+        });
+      });
+
+      // Load-bearing (Pitfall 3): the grant is a non-Stripe write path. Without
+      // this, requireAddOn reads the stale 15-min-cached subscription and denies
+      // the just-granted add-on for up to the cache TTL.
+      await invalidate(CacheKeys.subscription(ctx.organizationId));
+
+      return { addOns: nextAddOns };
+    }),
 });
 
 export { PLAN_CONFIG };

@@ -48,6 +48,16 @@ const { mockPrisma } = vi.hoisted(() => {
     member: {
       findFirst: vi.fn(async () => ({ role: 'admin' })),
     },
+    subscription: {
+      findUnique: vi.fn(async () => ({
+        id: 'sub-1',
+        organizationId: 'clxxxxxxxxxxxxxxxxxxxxxxxxx',
+        tier: 'STARTER',
+        status: 'ACTIVE',
+        addOns: [],
+      })),
+      update: vi.fn(async () => ({ id: 'sub-1' })),
+    },
     $transaction: vi.fn(async (fn: (tx: Rec) => Promise<unknown>) => fn(mockPrisma)),
   };
 
@@ -66,6 +76,7 @@ const {
   mockEnsureStripeCustomer,
   mockCreateTopUpCheckoutSession,
   mockUpdateSubscriptionSeatCount,
+  mockInvalidate,
 } = vi.hoisted(() => ({
   mockGetSubscription: vi.fn(async () => null),
   mockCreateCheckoutSession: vi.fn(async () => ({ url: 'https://checkout.stripe.com/session' })),
@@ -78,6 +89,7 @@ const {
   mockEnsureStripeCustomer: vi.fn(async () => STRIPE_CUSTOMER_ID),
   mockCreateTopUpCheckoutSession: vi.fn(async () => ({ url: 'https://checkout.stripe.com/topup' })),
   mockUpdateSubscriptionSeatCount: vi.fn(async () => undefined),
+  mockInvalidate: vi.fn(async () => undefined),
 }));
 
 // ---------------------------------------------------------------------------
@@ -100,6 +112,11 @@ vi.mock('@contractor-ops/db', () => ({
   withRlsTransactions: <T>(c: T) => c,
   withRlsReads: <T>(c: T) => c,
   prisma: mockPrisma,
+  // compliance-reminder-scan.ts captures `prismaRaw` into a module-level
+  // __deps const at import time (reached transitively via appRouter), so the
+  // mock must export it or collection fails before any test runs.
+  prismaRaw: mockPrisma,
+  SUPPORTED_REGIONS: ['EU', 'ME', 'US'],
   tenantStore: {
     run: (_ctx: unknown, fn: () => unknown) => fn(),
     getStore: vi.fn(() => ({ region: 'EU' })),
@@ -153,7 +170,7 @@ vi.mock('../../services/cache', () => ({
   cacheKey: vi.fn((...s: string[]) => s.join(':')),
   cachedSingleflight: vi.fn(async (_k: string, _t: number, fn: () => Promise<unknown>) => fn()),
   cached: vi.fn(async (_k: string, _t: number, fn: () => Promise<unknown>) => fn()),
-  invalidate: vi.fn(async () => undefined),
+  invalidate: mockInvalidate,
   invalidateByPrefix: vi.fn(async () => undefined),
   CacheKeys: {
     orgSettings: (orgId: string) => `org-settings:${orgId}`,
@@ -161,6 +178,7 @@ vi.mock('../../services/cache', () => ({
     orgBranding: (orgId: string) => `org-branding:${orgId}`,
     settingsPrefix: (orgId: string) => `org-settings:${orgId}`,
     approvalChains: (orgId: string) => `approval-chains:${orgId}`,
+    subscription: (orgId: string) => `${orgId}:billing:sub`,
   },
   CacheTTL: { ORG_SETTINGS: 300, ORG_SETTINGS_JSON: 300, ORG_BRANDING: 300, APPROVAL_CHAINS: 300 },
 }));
@@ -302,15 +320,22 @@ vi.mock('@contractor-ops/logger/metrics', () => ({
 // Imports (after mocks)
 // ---------------------------------------------------------------------------
 
-import { auth } from '@contractor-ops/auth';
-import { createCallerFactory } from '../../init';
-import { appRouter } from '../../root';
+import { auth, authApi } from '@contractor-ops/auth';
+import { createCallerFactory, router } from '../../init';
+import { billingRouter } from '../finance/billing';
 
 // ---------------------------------------------------------------------------
 // Caller helper
 // ---------------------------------------------------------------------------
 
-const createCaller = createCallerFactory(appRouter);
+// Mount billingRouter on a minimal standalone router instead of importing the
+// full appRouter. The appRouter import chain pulls unrelated routers
+// (integrations/deprovisioning → getIdpAuditLogger at module load) whose
+// module-level side-effects this test's mocks do not satisfy, causing a
+// collection failure that has nothing to do with billing. Isolating to
+// billingRouter keeps these tests focused and runnable.
+const testRouter = router({ billing: billingRouter });
+const createCaller = createCallerFactory(testRouter);
 
 function makeCaller(userId: string, orgId: string) {
   const session = {
@@ -355,6 +380,9 @@ const caller = makeCaller(USER_ID, ORG_ID);
 beforeEach(() => {
   vi.clearAllMocks();
   vi.mocked(auth.api.hasPermission).mockResolvedValue({ success: true } as never);
+  // adminProcedure resolves via authApi.hasPermission; clearAllMocks wiped the
+  // definition-time default, so restore "permitted" before each test.
+  vi.mocked(authApi.hasPermission).mockResolvedValue({ success: true } as never);
 });
 
 // ===========================================================================
@@ -609,5 +637,97 @@ describe('billing.createCheckoutSession — org not found', () => {
     await expect(caller.billing.createCheckoutSession({ priceId: PRICE_ID })).rejects.toThrow(
       'billingOrganizationNotFound',
     );
+  });
+});
+
+// ===========================================================================
+// billing.grantAddOn — FOUND7-01 (SC#1) owner-gated audit-logged cache-invalidating grant
+// ===========================================================================
+
+describe('billing.grantAddOn', () => {
+  it('is owner-gated: rejects when the actor lacks organization:update', async () => {
+    // adminProcedure delegates to authApi.hasPermission (Better Auth session path).
+    vi.mocked(authApi.hasPermission).mockResolvedValueOnce({ success: false } as never);
+
+    await expect(caller.billing.grantAddOn({ addOn: 'workforce' })).rejects.toThrow();
+
+    expect(mockPrisma.subscription.update).not.toHaveBeenCalled();
+  });
+
+  it('validates addOn against ADD_ON_KEYS (rejects unknown add-on)', async () => {
+    await expect(
+      // @ts-expect-error — exercising the z.enum boundary with an invalid value
+      caller.billing.grantAddOn({ addOn: 'not-a-real-add-on' }),
+    ).rejects.toThrow();
+
+    expect(mockPrisma.subscription.update).not.toHaveBeenCalled();
+  });
+
+  it('writes the deduped addOns array to the Subscription', async () => {
+    mockPrisma.subscription.findUnique.mockResolvedValueOnce({
+      id: 'sub-1',
+      organizationId: ORG_ID,
+      tier: 'STARTER',
+      status: 'ACTIVE',
+      addOns: ['workforce'],
+    } as unknown);
+
+    const result = await caller.billing.grantAddOn({ addOn: 'us-cross-border' });
+
+    expect(mockPrisma.subscription.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { organizationId: ORG_ID },
+        data: { addOns: ['workforce', 'us-cross-border'] },
+      }),
+    );
+    expect(result).toEqual({ addOns: ['workforce', 'us-cross-border'] });
+  });
+
+  it('does not duplicate an already-granted add-on', async () => {
+    mockPrisma.subscription.findUnique.mockResolvedValueOnce({
+      id: 'sub-1',
+      organizationId: ORG_ID,
+      tier: 'STARTER',
+      status: 'ACTIVE',
+      addOns: ['workforce'],
+    } as unknown);
+
+    const result = await caller.billing.grantAddOn({ addOn: 'workforce' });
+
+    expect(result).toEqual({ addOns: ['workforce'] });
+  });
+
+  it('audit-logs the grant with resourceType ORGANIZATION and action subscription.addon.granted', async () => {
+    await caller.billing.grantAddOn({ addOn: 'workforce' });
+
+    expect(mockPrisma.auditLog.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          action: 'subscription.addon.granted',
+          resourceType: 'ORGANIZATION',
+          resourceId: ORG_ID,
+          organizationId: ORG_ID,
+        }),
+      }),
+    );
+  });
+
+  it('invalidates the subscription cache after the write so requireAddOn sees the grant immediately (no stale deny)', async () => {
+    await caller.billing.grantAddOn({ addOn: 'workforce' });
+
+    // requireAddOn reads the 15-min-cached getSubscription; the grant MUST
+    // invalidate CacheKeys.subscription(orgId) or the just-granted add-on is
+    // denied for up to the cache TTL (Pitfall 3).
+    expect(mockInvalidate).toHaveBeenCalledWith(`${ORG_ID}:billing:sub`);
+  });
+
+  it('throws NOT_FOUND when the org has no subscription', async () => {
+    mockPrisma.subscription.findUnique.mockResolvedValueOnce(null);
+
+    await expect(caller.billing.grantAddOn({ addOn: 'workforce' })).rejects.toThrow(
+      'billingNoActiveSubscription',
+    );
+
+    expect(mockPrisma.subscription.update).not.toHaveBeenCalled();
   });
 });
