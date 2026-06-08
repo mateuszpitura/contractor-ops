@@ -4,13 +4,13 @@ milestone: v7.0
 milestone_name: GTM Expansion
 status: executing
 stopped_at: Phase 84 UI-SPEC approved
-last_updated: "2026-06-08T13:26:46.022Z"
-last_activity: 2026-06-08 -- Phase 84 planning complete
+last_updated: "2026-06-08T13:40:13.431Z"
+last_activity: 2026-06-08
 progress:
   total_phases: 20
   completed_phases: 2
   total_plans: 15
-  completed_plans: 8
+  completed_plans: 9
   percent: 10
 ---
 
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-07 — v7.0 GTM Expansion started; v6.0 shipped 2026-06-07)
 
 **Core value:** The invoice-to-payment flow must work end-to-end: invoice arrives, gets matched to contract, routed through approval, and batched for payment — with full audit trail and zero manual tracking in spreadsheets.
-**Current focus:** Phase 84 — theme a — us contractor profile fields + en us locale
+**Current focus:** Phase 84 — Theme A — US Contractor Profile Fields + en-US Locale
 
 ## Current Position
 
-Phase: 84
-Plan: Not started
+Phase: 84 (Theme A — US Contractor Profile Fields + en-US Locale) — EXECUTING
+Plan: 2 of 7
 Status: Ready to execute
-Last activity: 2026-06-08 -- Phase 84 planning complete
+Last activity: 2026-06-08
 
-Progress: [██████████] 100%
+Progress: [██████░░░░] 60%
 
 ## v7.0 Roadmap Summary (created 2026-06-07)
 
@@ -97,6 +97,7 @@ Decisions are logged in PROJECT.md Key Decisions table. Recent decisions affecti
 - [Phase ?]: [83-02]: US-INFRA-01 routing complete — beforeCreateOrganization is the single immutable origin of dataRegion='US' (D-01); billingCountry input-only/Zod-validated/not-persisted (derive-and-strip); OrgMeta.dataRegion + all 'EU'|'ME' cast sites widened to shared DataRegion; tenant.ts widened structurally via OrgMeta; seed-dev types widened, runtime CLI EU/ME-only.
 - [Phase 83-03]: US-INFRA-02 — REGION_BUCKET_MAP widened to Record<DataRegion> (compile-time lockstep, missing US fails tsc); US branch lazy-throws when R2_BUCKET_NAME_US unset, resolves when set (ONE US bucket for all US-org files incl. tax archives, D-03); R2_BUCKET_NAME_US OPTIONAL no-default in env schema + .env.example (DATABASE_URL_US posture); DATA_HOSTING_REGION left EU/ME (deployment knob, not per-org routing, D-08).
 - [Phase 83]: [83-04, 2026-06-07]: US-INFRA-03 — ONE statutory-retention resolver in packages/db (RETENTION_YEARS 4y 1099-NEC / 7y backup-withholding; MODEL_RETENTION_TYPE ships EMPTY per D-06) consumed by all three deletion chokepoints — soft-delete extension, the load-bearing base-prisma data-purge cron (per-model cutoffFor), and gdpr RODO erasure (softDeleteByOrgAndCount + retainedUnderStatute citation + writeAuditLog); statutory hold supersedes retainFinancialRecords=false; verified against the Invoice fixture; citations annotated LOCAL-ONLY. Theme B AKTA-02/03 extend the same resolver.
+- [Phase ?]: Phase 84 Wave-0: six RED scaffolds lock EIN/SSN/crypto/revealSsn-RBAC/USPS/web-vite contracts; RED accepted as terminal (Waves 1-4 turn GREEN)
 
 ### Pending Todos
 
@@ -131,6 +132,7 @@ Carried forward from v6.0 milestone close (2026-06-07). Full enumeration: `.plan
 | Phase 83 P83-02 | 9m | 2 tasks | 10 files |
 | Phase 83 P83-03 | 4m | 1 tasks | 4 files |
 | Phase 83 P83-04 | 9m | 3 tasks | 7 files |
+| Phase 84 P00 | 25min | 3 tasks | 6 files |
 
 ## Standing Project Constraints
 
@@ -140,7 +142,7 @@ Carried forward from v6.0 milestone close (2026-06-07). Full enumeration: `.plan
 
 ## Session Continuity
 
-Last session: 2026-06-08T11:35:55.840Z
+Last session: 2026-06-08T13:40:02.425Z
 Stopped at: Phase 84 UI-SPEC approved
-Resume file: .planning/milestones/v7.0-phases/84-theme-a-us-contractor-profile-fields-en-us-locale/84-UI-SPEC.md
+Resume file: None
 Next command: `/gsd:plan-phase 82`

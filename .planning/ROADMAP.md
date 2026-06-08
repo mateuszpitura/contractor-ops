@@ -155,7 +155,7 @@ Known gaps / deferred at close: see STATE.md `## Deferred Items` (3 unverified p
   3. The US contractor profile section dispatches from the existing `CountryComplianceSection` pattern with US fields.
   4. The app renders `en-US` at full key parity vs `en`, with American-English copy and US date/currency/measure formatting.
 **Plans**: 7 plans (4 waves)
-- [ ] 84-00-PLAN.md — Wave 0 RED test scaffolds (us-validators, ssn-crypto, contractor-reveal-ssn, usps-client, the two web-vite component tests) [wave 1]
+- [x] 84-00-PLAN.md — Wave 0 RED test scaffolds (us-validators, ssn-crypto, contractor-reveal-ssn, usps-client, the two web-vite component tests) [wave 1]
 - [ ] 84-01-PLAN.md — US-FIELD-01/02 validators: isValidEin (IRS prefix) + isValidSsn (range) + usCountryFieldsSchema (US, SSN excluded) + SSN_ENCRYPTION_KEY/USPS env (D-05) [wave 1]
 - [ ] 84-02-PLAN.md — US-LOC-01 en-US: register locale + fallbackLng en-US→en→pl + fallback-aware i18n:parity (NOT a strict peer) + thin en-US.json (D-04) [wave 1]
 - [ ] 84-03-PLAN.md — US-FIELD-02 security core: [BLOCKING] ssnEncrypted/ssnLast4/usps* columns (db push) + ssn-crypto (dedicated key) + contractorPii:read (owner/admin/finance_admin, owner-dup) + ssn/ein pii-mask (D-01/D-02/D-08/D-09) [wave 2]
@@ -388,7 +388,7 @@ Phases execute in numeric order: 82 → 83 → … → 101. After Foundation (82
 |-------|-----------|----------------|--------|-----------|
 | 82. v7.0 Foundation — Add-On + Flags + US Region | v7.0 | 4/4 | Complete    | 2026-06-07 |
 | 83. Theme A — US Region Infrastructure | v7.0 | 4/4 | Complete    | 2026-06-07 |
-| 84. Theme A — US Profile Fields + en-US Locale | v7.0 | 0/7 | Not started | - |
+| 84. Theme A — US Profile Fields + en-US Locale | v7.0 | 1/7 | In Progress|  |
 | 85. Theme A — W-Form Intake + Tax-Treaty Engine | v7.0 | 0/TBD | Not started | - |
 | 86. Theme A — TIN-Match → 1099-NEC → IRIS → State | v7.0 | 0/TBD | Not started | - |
 | 87. Theme A — 1042-S + US Classification + Letter | v7.0 | 0/TBD | Not started | - |
