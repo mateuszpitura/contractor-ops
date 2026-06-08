@@ -17,6 +17,10 @@ const permissions: Record<string, Record<string, string[]>> = {
     member: ['create', 'read', 'update', 'delete'],
     invitation: ['create', 'cancel'],
     contractor: ['create', 'read', 'update', 'delete', 'bulk'],
+    // Phase 84 US-FIELD-02 (D-02/D-09): SSN reveal gate. Mirrors the server
+    // roles.ts grant (owner/admin/finance_admin only); the server stays the
+    // authoritative boundary — this only governs reveal-control visibility.
+    contractorPii: ['read'],
     contract: ['create', 'read', 'update', 'delete'],
     document: ['create', 'read', 'update', 'delete'],
     invoice: ['create', 'read', 'update', 'delete', 'approve'],
@@ -37,6 +41,7 @@ const permissions: Record<string, Record<string, string[]>> = {
     member: ['create', 'read', 'update', 'delete'],
     invitation: ['create', 'cancel'],
     contractor: ['create', 'read', 'update', 'delete', 'bulk'],
+    contractorPii: ['read'], // Phase 84 US-FIELD-02 (D-02) — SSN reveal gate
     contract: ['create', 'read', 'update', 'delete'],
     document: ['create', 'read', 'update', 'delete'],
     invoice: ['create', 'read', 'update', 'delete', 'approve'],
@@ -68,6 +73,7 @@ const permissions: Record<string, Record<string, string[]>> = {
   },
   finance_admin: {
     contractor: ['read'],
+    contractorPii: ['read'], // Phase 84 US-FIELD-02 (D-02) — SSN reveal gate
     contract: ['read'],
     invoice: ['create', 'read', 'update', 'delete', 'approve'],
     payment: ['create', 'read', 'update', 'export'],

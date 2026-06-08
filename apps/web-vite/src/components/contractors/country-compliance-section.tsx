@@ -8,15 +8,17 @@ import {
 } from '@contractor-ops/ui/components/shadcn/card';
 import { Input } from '@contractor-ops/ui/components/shadcn/input';
 import { Label } from '@contractor-ops/ui/components/shadcn/label';
-import type { DeCountryFields, UkCountryFields } from '@contractor-ops/validators';
+import type { DeCountryFields, UkCountryFields, UsCountryFields } from '@contractor-ops/validators';
 import { AlertCircle, Check, Loader2 } from 'lucide-react';
 import type { Dispatch, SetStateAction } from 'react';
 import { useCallback, useId, useMemo } from 'react';
 
+import { usePermissions } from '../../hooks/use-permissions.js';
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { ClassificationTileContainer } from './classification/classification-tile-container.js';
 import { DeComplianceFields } from './compliance/de-compliance-fields.js';
 import { UkComplianceFields } from './compliance/uk-compliance-fields.js';
+import { UsComplianceFields } from './compliance/us-compliance-fields.js';
 import { FreeZoneAssignmentContainer } from './free-zone/free-zone-assignment-container.js';
 import type {
   useContractorEngagements,
@@ -62,6 +64,7 @@ export function CountryComplianceSectionView({
   onFormDataChange,
 }: CountryComplianceSectionViewProps) {
   const t = useTranslations('Contractors.countryCompliance');
+  const { can } = usePermissions();
   const { configQuery, fieldsQuery, contractorQuery, updateMutation, saveFields, isLoading } =
     compliance;
 
@@ -100,6 +103,7 @@ export function CountryComplianceSectionView({
     SA: t('countries.SA'),
     GB: t('countries.GB'),
     DE: t('countries.DE'),
+    US: t('countries.US'),
   };
   const countryLabel = COUNTRY_LABELS[countryCode] ?? countryCode;
 
@@ -126,6 +130,11 @@ export function CountryComplianceSectionView({
           contractorId={contractorId}
           values={merged}
           onChange={handleFieldChange}
+          ssnLast4={(contractorQuery.data as { ssnLast4?: string | null } | undefined)?.ssnLast4}
+          canRevealSsn={can('contractorPii', ['read'])}
+          uspsVerified={
+            (contractorQuery.data as { uspsVerified?: boolean | null } | undefined)?.uspsVerified
+          }
         />
         {(countryCode === 'GB' || countryCode === 'DE') && (
           <div
@@ -223,11 +232,17 @@ function CountryFieldsDispatch({
   contractorId,
   values,
   onChange,
+  ssnLast4,
+  canRevealSsn,
+  uspsVerified,
 }: {
   countryCode: string;
   contractorId: string;
   values: Record<string, unknown>;
   onChange: (key: string, val: unknown) => void;
+  ssnLast4?: string | null;
+  canRevealSsn?: boolean;
+  uspsVerified?: boolean | null;
 }) {
   switch (countryCode) {
     case 'AE':
@@ -238,6 +253,19 @@ function CountryFieldsDispatch({
       return <UkComplianceFields values={values as Partial<UkCountryFields>} onChange={onChange} />;
     case 'DE':
       return <DeComplianceFields values={values as Partial<DeCountryFields>} onChange={onChange} />;
+    case 'US':
+      return (
+        <UsComplianceFields
+          contractorId={contractorId}
+          values={values as Partial<UsCountryFields>}
+          onChange={onChange}
+          ssnLast4={ssnLast4 ?? undefined}
+          canRevealSsn={canRevealSsn ?? false}
+          uspsStatus={
+            uspsVerified == null ? 'not-validated' : uspsVerified ? 'verified' : 'unverified'
+          }
+        />
+      );
     default:
       return null;
   }
