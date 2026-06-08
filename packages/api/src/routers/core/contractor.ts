@@ -1,4 +1,6 @@
 import type { Prisma, TaxIdType } from '@contractor-ops/db';
+import type { UspsAddressCache } from '@contractor-ops/gov-api';
+import { GovApiRateLimiter, USPS_RATE_LIMIT, UspsAddressClient } from '@contractor-ops/gov-api';
 import { lookupCompanyByNip } from '@contractor-ops/integrations/services/company-registry-service';
 import {
   companyLookupSchema,
@@ -7,6 +9,9 @@ import {
   contractorListSchema,
   contractorUpdateSchema,
   countryFieldsSchemaMap,
+  getServerEnv,
+  isValidEin,
+  isValidSsn,
 } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
@@ -22,8 +27,111 @@ import { syncSeatCountForOrg } from '../../services/billing-service';
 import { CacheKeys, invalidateByPrefix } from '../../services/cache';
 import { captureEvent } from '../../services/posthog';
 import { sanitizeStrings } from '../../services/sanitize';
+import { decryptSsn, encryptSsn } from '../../services/ssn-crypto';
 import { validateTaxId } from '../../services/tax-id-validation.service';
 import type { DbClient } from '../../services/types';
+
+// ---------------------------------------------------------------------------
+// Phase 84 · Plan 05 (US-FIELD-03 / D-03) — USPS advisory address validation
+// ---------------------------------------------------------------------------
+//
+// A process-lifetime UspsAddressClient for the on-save CASS normalize. USPS is
+// advisory and NON-BLOCKING (D-03): `validateAddress` never throws — missing
+// creds (LOCAL-ONLY), self-throttle, USPS/Redis outage all resolve to an
+// `unavailable` result so a contractor save can never be blocked by USPS.
+//
+// The client keys its limiter on a fixed GLOBAL identifier (the 60/hr cap is
+// per-credential, not per-org — Pitfall 4); the cache is a no-op here (the
+// limiter + USPS's own fail-open path are the safety net), so every save
+// consults USPS directly when creds are present and within budget.
+// ---------------------------------------------------------------------------
+
+/** No-op address cache — the limiter + USPS fail-open path are the safety net. */
+const uspsNoopCache: UspsAddressCache = {
+  get: async () => null,
+  set: async () => {
+    // Intentional no-op: this surface does not cache USPS results (the 60/hr
+    // limiter + USPS's own fail-open path are the budget/safety controls).
+  },
+};
+
+let uspsClientInstance: UspsAddressClient | null = null;
+
+/** Process-lifetime USPS client (creds from optional env; absent → unavailable). */
+function getUspsAddressClient(): UspsAddressClient {
+  if (uspsClientInstance) return uspsClientInstance;
+  const env = getServerEnv();
+  uspsClientInstance = new UspsAddressClient({
+    clientId: env.USPS_CLIENT_ID,
+    clientSecret: env.USPS_CLIENT_SECRET,
+    rateLimiter: new GovApiRateLimiter('usps-address', USPS_RATE_LIMIT),
+    cache: uspsNoopCache,
+  });
+  return uspsClientInstance;
+}
+
+/** The flat US-profile fields the JSONB blob carries (SSN is excluded by design). */
+interface UsProfileFieldsInput {
+  entityType?: string;
+  ein?: string;
+  addressLine1?: string;
+  city?: string;
+  state?: string;
+  zipCode?: string;
+}
+
+/**
+ * Merge the provided US profile fields onto the prior `countryFields` blob.
+ * EIN + address only — SSN is NEVER written here (it has dedicated encrypted
+ * columns; mixing it into the JSONB would leak via the wide read path).
+ */
+function buildUsCountryFields(
+  prev: Record<string, unknown>,
+  input: UsProfileFieldsInput,
+): Record<string, unknown> {
+  const next: Record<string, unknown> = { ...prev };
+  if (input.entityType !== undefined) next.entityType = input.entityType;
+  if (input.ein !== undefined) next.ein = input.ein;
+  if (input.addressLine1 !== undefined) next.addressLine1 = input.addressLine1;
+  if (input.city !== undefined) next.city = input.city;
+  if (input.state !== undefined) next.state = input.state;
+  if (input.zipCode !== undefined) next.zipCode = input.zipCode;
+  return next;
+}
+
+/**
+ * Run USPS CASS validation advisory + non-blocking (D-03). Mutates `data` (USPS
+ * verified flag + timestamp) and, on a normalized match, the `countryFields`
+ * blob in place. NEVER throws to the save path — a USPS / limiter / cache
+ * failure leaves the save successful with `uspsVerified = false`.
+ */
+async function applyUspsAdvisory(
+  data: Prisma.ContractorUpdateInput,
+  countryFields: Record<string, unknown>,
+  address: { addressLine1: string; city: string; state: string; zipCode: string },
+): Promise<void> {
+  data.uspsValidatedAt = new Date();
+  try {
+    const usps = await getUspsAddressClient().validateAddress({
+      streetAddress: address.addressLine1,
+      city: address.city,
+      state: address.state,
+      ZIPCode: address.zipCode,
+    });
+    data.uspsVerified = usps.verified;
+    if (usps.normalized) {
+      countryFields.addressLine1 = usps.normalized.streetAddress;
+      countryFields.city = usps.normalized.city;
+      countryFields.state = usps.normalized.state;
+      countryFields.zipCode = usps.normalized.ZIPCode;
+      data.countryFields = countryFields as Prisma.InputJsonValue;
+    }
+  } catch {
+    // Defensive: validateAddress is already fail-open, but a save must never
+    // fail because USPS (or an injected limiter/cache) threw.
+    data.uspsVerified = false;
+  }
+}
 
 // ---------------------------------------------------------------------------
 // Lifecycle transition map
@@ -1323,10 +1431,19 @@ export const contractorRouter = router({
     // here; the data is backfilled by backfill-free-zone-assignment.ts and
     // retained in countryFields JSONB for audit/rollback. freelancePermitNumber
     // is NOT a free-zone license field, so it stays. The Saudi list is untouched.
-    const fields =
-      org.countryCode === 'AE'
-        ? ['freelancePermitNumber']
-        : ['freelanceSaLicense', 'commercialRegistration', 'commercialRegistrationExpiry'];
+    // Phase 84 (US-FIELD-04 / D-06) — place 1 of the 3-place US registration
+    // (place 2 = countryFieldsSchemaMap.US in @contractor-ops/validators; place 3
+    // = the CountryFieldsDispatch switch in web-vite). SSN is intentionally NOT
+    // in this list: it is rendered by the dedicated masked-reveal control and
+    // persisted to encrypted columns, never the generic JSONB field renderer.
+    let fields: string[];
+    if (org.countryCode === 'US') {
+      fields = ['entityType', 'ein', 'addressLine1', 'city', 'state', 'zipCode'];
+    } else if (org.countryCode === 'AE') {
+      fields = ['freelancePermitNumber'];
+    } else {
+      fields = ['freelanceSaLicense', 'commercialRegistration', 'commercialRegistrationExpiry'];
+    }
     return { hasCountryFields: true, countryCode: org.countryCode, fields };
   }),
 
@@ -1400,4 +1517,121 @@ export const contractorRouter = router({
     .use(requirePermission({ contractor: ['update'] }))
     .input(z.object({ contractorId: z.string().min(1) }))
     .mutation(({ ctx, input }) => validateContractorVatId(ctx, input.contractorId)),
+
+  // ---------------------------------------------------------------------------
+  // Phase 84 · Plan 05 — US contractor profile (US-FIELD-01/02/03)
+  // ---------------------------------------------------------------------------
+  //
+  // Storage contract (D-01 / Pitfall 3):
+  //   - EIN + address → plain `countryFields` JSONB (low-sensitivity business IDs)
+  //   - SSN          → encryptSsn() into the DEDICATED `ssnEncrypted`/`ssnLast4`
+  //                    columns, NEVER the JSONB blob (it would leak via the wide
+  //                    getCountryFields read path that returns the whole blob).
+  //   - USPS         → advisory, non-blocking (D-03): a USPS/Redis/cred failure
+  //                    leaves the save successful with `uspsVerified` false.
+  // Tenant isolation: every read/update is scoped by `ctx.organizationId`.
+  // ---------------------------------------------------------------------------
+
+  /** Update a US contractor's profile: EIN/address (JSONB) + SSN (encrypted) + USPS advisory. */
+  updateUsProfile: tenantProcedure
+    .use(requirePermission({ contractor: ['update'] }))
+    .input(
+      z.object({
+        contractorId: z.string().min(1),
+        entityType: z.string().optional(),
+        ein: z.string().optional(),
+        ssn: z.string().optional(),
+        addressLine1: z.string().optional(),
+        city: z.string().optional(),
+        state: z.string().optional(),
+        zipCode: z.string().optional(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      // EIN — reject an invalid identifier before any write (US-FIELD-01).
+      if (input.ein && !isValidEin(input.ein)) {
+        throw new TRPCError({ code: 'BAD_REQUEST', message: E.CONTRACTOR_INVALID_EIN });
+      }
+      // SSN — reject an invalid value before encrypting (US-FIELD-02).
+      if (input.ssn && !isValidSsn(input.ssn)) {
+        throw new TRPCError({ code: 'BAD_REQUEST', message: E.CONTRACTOR_INVALID_SSN });
+      }
+
+      // Confirm the contractor belongs to the caller's org (IDOR → NOT_FOUND).
+      const existing = await ctx.db.contractor.findUnique({
+        where: { id: input.contractorId, organizationId: ctx.organizationId },
+        select: { id: true, countryFields: true },
+      });
+      if (!existing) throw new TRPCError({ code: 'NOT_FOUND' });
+
+      // The JSONB blob carries EIN + address only — SSN is excluded by
+      // construction (it lives in the dedicated encrypted columns).
+      const prevFields = (existing.countryFields ?? {}) as Record<string, unknown>;
+      const countryFields = buildUsCountryFields(prevFields, input);
+
+      const data: Prisma.ContractorUpdateInput = {
+        countryFields: countryFields as Prisma.InputJsonValue,
+      };
+
+      // SSN → dedicated encrypted columns (mirrors the bankAccount precedent).
+      if (input.ssn) {
+        const cleaned = input.ssn.replace(/[\s-]/g, '');
+        data.ssnEncrypted = encryptSsn(cleaned);
+        data.ssnLast4 = cleaned.slice(-4);
+      }
+
+      // USPS advisory normalize (D-03) — only when a full address is present;
+      // never throws to the save path.
+      if (input.addressLine1 && input.city && input.state && input.zipCode) {
+        await applyUspsAdvisory(data, countryFields, {
+          addressLine1: input.addressLine1,
+          city: input.city,
+          state: input.state,
+          zipCode: input.zipCode,
+        });
+      }
+
+      return ctx.db.contractor.update({
+        where: { id: input.contractorId, organizationId: ctx.organizationId },
+        data,
+      });
+    }),
+
+  // ---------------------------------------------------------------------------
+  // Phase 84 · Plan 05 — SSN reveal (US-FIELD-02 / D-02 / D-09)
+  // ---------------------------------------------------------------------------
+  //
+  // STAFF-router-ONLY (Pitfall 6 — never portalAppRouter). Gated by the
+  // `contractorPii:['read']` permission (deny-by-default; only owner/admin/
+  // finance_admin grant it — external_accountant is DENIED per D-09). Every
+  // reveal writes an append-only audit row carrying `field:'ssn'` metadata but
+  // NEVER the SSN value itself. Tenant-scoped: a cross-org id surfaces NOT_FOUND.
+  // ---------------------------------------------------------------------------
+
+  /** Reveal a contractor's full SSN (audit-logged, RBAC-gated, staff-only). */
+  revealSsn: tenantProcedure
+    .use(requirePermission({ contractorPii: ['read'] }))
+    .input(z.object({ contractorId: z.string().min(1) }))
+    .mutation(async ({ ctx, input }) => {
+      // Select ONLY the encrypted column — never widen this read (Pitfall 3).
+      const contractor = await ctx.db.contractor.findUnique({
+        where: { id: input.contractorId, organizationId: ctx.organizationId },
+        select: { id: true, ssnEncrypted: true },
+      });
+      if (!contractor?.ssnEncrypted) throw new TRPCError({ code: 'NOT_FOUND' });
+
+      const ssn = decryptSsn(contractor.ssnEncrypted);
+
+      await writeAuditLog({
+        organizationId: ctx.organizationId,
+        actorType: 'USER',
+        actorId: ctx.user?.id,
+        action: 'contractor.ssn.revealed',
+        resourceType: 'CONTRACTOR',
+        resourceId: contractor.id,
+        metadata: { field: 'ssn' },
+      });
+
+      return { ssn };
+    }),
 });

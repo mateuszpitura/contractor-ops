@@ -26,3 +26,18 @@ Out-of-scope discoveries logged during execution. NOT fixed in their discovering
     suppression in the Phase 57 VIES schema. Not touched by 84-04.
   Both belong to the gov-api base/VIES owners (Phase 57 surface), not this USPS-adapter plan.
   84-04's own new files are lint-clean (export ordering auto-fixed on the two index barrels).
+
+## 84-05
+
+- **`pnpm lint:logs` failure in `apps/api/src/routes/csp-report.ts:86`** — same pre-existing
+  unredacted-body log site already logged under 84-03 above (commit `e320911b`, 2026-05-26).
+  Re-surfaced while running the 84-05 verification gate. Plan 84-05 touches only
+  `packages/api/src/routers/core/contractor.ts`; the contractor router is lint:logs-clean.
+  Remediation/ownership unchanged (apps/api CSP owner).
+
+- **Pre-existing `noExcessiveCognitiveComplexity` warning (complexity 17 > 15)** at
+  `packages/api/src/routers/core/contractor.ts:500` — the `contractor.list` query. Surfaced
+  by the biome pre-commit check while committing 84-05. NOT introduced by this plan; 84-05's
+  new `updateUsProfile`/`revealSsn` procedures are biome-clean (the USPS/JSONB assembly was
+  extracted into `buildUsCountryFields` + `applyUspsAdvisory` helpers to stay under the limit).
+  It is a warning (non-blocking) and belongs to the contractor-list maintainer, not this plan.
