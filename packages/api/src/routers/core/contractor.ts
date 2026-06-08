@@ -647,6 +647,10 @@ export const contractorRouter = router({
           organizationId: ctx.organizationId,
           deletedAt: null,
         },
+        // Pitfall 3 / T-84-05-01: the encrypted SSN must never leave the server
+        // outside revealSsn. This read spreads all scalars to the client, so
+        // exclude ssnEncrypted at the query level (ssnLast4 stays — masked display).
+        omit: { ssnEncrypted: true },
         include: {
           owner: { select: { id: true, name: true, image: true } },
           primaryTeam: { select: { id: true, name: true } },
@@ -951,6 +955,7 @@ export const contractorRouter = router({
       const updated = await ctx.db.contractor.update({
         where: { id },
         data: updateData,
+        omit: { ssnEncrypted: true },
       });
 
       // Phase 60 CLASS-08 — audit row for reassessment-trigger scan.
@@ -1041,6 +1046,7 @@ export const contractorRouter = router({
       const updated = await ctx.db.contractor.update({
         where: { id: input.id },
         data: updateData,
+        omit: { ssnEncrypted: true },
       });
 
       // Sync seat count if status changed (ENDED→INACTIVE or restored→ACTIVE)
@@ -1139,6 +1145,7 @@ export const contractorRouter = router({
           lifecycleStage: 'ENDED',
           archivedAt: new Date(),
         },
+        omit: { ssnEncrypted: true },
       });
 
       // Phase 60 CLASS-08 — audit archive as a DELETE-equivalent transition.
@@ -1494,6 +1501,7 @@ export const contractorRouter = router({
       return ctx.db.contractor.update({
         where: { id: input.contractorId, organizationId: ctx.organizationId },
         data: { countryFields: parsed.data as object },
+        omit: { ssnEncrypted: true },
       });
     }),
 
@@ -1594,6 +1602,7 @@ export const contractorRouter = router({
       return ctx.db.contractor.update({
         where: { id: input.contractorId, organizationId: ctx.organizationId },
         data,
+        omit: { ssnEncrypted: true },
       });
     }),
 
