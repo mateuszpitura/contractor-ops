@@ -1,0 +1,7 @@
+{
+  "Greeting": {
+    "hello": "Cześć",
+    "world": "Świat",
+    "color": "kolor"
+  }
+}
