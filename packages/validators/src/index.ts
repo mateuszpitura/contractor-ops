@@ -708,6 +708,10 @@ export {
   isValidGbVat,
   isValidUtr,
 } from './uk-validators.js';
+export {
+  isValidEin,
+  isValidSsn,
+} from './us-validators.js';
 export type {
   InviteUserInput,
   UpdateUserRoleInput,
