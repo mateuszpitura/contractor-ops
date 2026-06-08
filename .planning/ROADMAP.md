@@ -93,7 +93,7 @@ Known gaps / deferred at close: see STATE.md `## Deferred Items` (3 unverified p
 
 - [x] **Phase 82: v7.0 Foundation — Add-On Billing + Flag Registry + US Region Enablement** - `requireAddOn` middleware, all v7.0 flags PENDING with boot-gate, `us-east-1` 4-place region enablement; starts IRIS TCC ~45-day enrollment clock (completed 2026-06-07)
 - [x] **Phase 83: Theme A — US Region Infrastructure** - `us-east-1` per-org DB routing + US R2 tax-archive bucket + IRS 4yr/7yr retention; precedes any US-data creation (completed 2026-06-07)
-- [ ] **Phase 84: Theme A — US Contractor Profile Fields + en-US Locale** - EIN/SSN/USPS-address validators, US profile component, `en-US` full key parity
+- [x] **Phase 84: Theme A — US Contractor Profile Fields + en-US Locale** - EIN/SSN/USPS-address validators, US profile component, `en-US` full key parity (completed 2026-06-08)
 - [ ] **Phase 85: Theme A — W-Form Intake + Tax-Treaty Engine** - W-9 + W-8BEN/E wizards, US tax-treaty rate table, W-8BEN treaty-article auto-populate
 - [ ] **Phase 86: Theme A — TIN-Match → 1099-NEC → IRIS E-File → State Filing** - IRS TIN-matching, tax-year-keyed 1099-NEC ($2,000 TY2026), IRIS XML A2A transmit + ack, per-state CFSF
 - [ ] **Phase 87: Theme A — 1042-S + US Classification + Determination Letter** - treaty-rate 1042-S, US rule set (federal/AB5/§530), 1099-K tracker ($20k+200), Determination Letter PDF
@@ -161,7 +161,7 @@ Known gaps / deferred at close: see STATE.md `## Deferred Items` (3 unverified p
 - [x] 84-03-PLAN.md — US-FIELD-02 security core: [BLOCKING] ssnEncrypted/ssnLast4/usps* columns (db push) + ssn-crypto (dedicated key) + contractorPii:read (owner/admin/finance_admin, owner-dup) + ssn/ein pii-mask (D-01/D-02/D-08/D-09) [wave 2]
 - [x] 84-04-PLAN.md — US-FIELD-03 USPS adapter: UspsAddressClient (mirror HMRC) + GLOBAL 60/hr limiter + fail-open advisory + safeParse (D-03) [wave 2]
 - [x] 84-05-PLAN.md — US-FIELD-01/02/03/04 server: getCountryFieldsConfig US + updateUsProfile (SSN→encrypted columns, USPS advisory) + revealSsn (staff-only, RBAC, audit) (D-01/D-02/D-03/D-06/D-09) [wave 3]
-- [ ] 84-06-PLAN.md — US-FIELD-04 + US-LOC-01 UI: UsComplianceFields + SsnMaskedReveal (gated, absent-without-perm) + UspsAddressStatusPill (advisory) + case 'US' dispatch + en/en-US copy (D-04/D-06, 84-UI-SPEC) [wave 4]
+- [x] 84-06-PLAN.md — US-FIELD-04 + US-LOC-01 UI: UsComplianceFields + SsnMaskedReveal (gated, absent-without-perm) + UspsAddressStatusPill (advisory) + case 'US' dispatch + en/en-US copy (D-04/D-06, 84-UI-SPEC) [wave 4]
 **Research flag**: Standard — consistency phase; every hard part has an in-tree mirror (bank-account-crypto, hmrc-vat-client, uk-validators, uk-compliance-fields, Better Auth roles). USPS throttle/cache designed (GLOBAL 60/hr, fail-open). No new deps.
 **UI hint**: yes
 
@@ -388,7 +388,7 @@ Phases execute in numeric order: 82 → 83 → … → 101. After Foundation (82
 |-------|-----------|----------------|--------|-----------|
 | 82. v7.0 Foundation — Add-On + Flags + US Region | v7.0 | 4/4 | Complete    | 2026-06-07 |
 | 83. Theme A — US Region Infrastructure | v7.0 | 4/4 | Complete    | 2026-06-07 |
-| 84. Theme A — US Profile Fields + en-US Locale | v7.0 | 6/7 | In Progress|  |
+| 84. Theme A — US Profile Fields + en-US Locale | v7.0 | 7/7 | Complete   | 2026-06-08 |
 | 85. Theme A — W-Form Intake + Tax-Treaty Engine | v7.0 | 0/TBD | Not started | - |
 | 86. Theme A — TIN-Match → 1099-NEC → IRIS → State | v7.0 | 0/TBD | Not started | - |
 | 87. Theme A — 1042-S + US Classification + Letter | v7.0 | 0/TBD | Not started | - |
