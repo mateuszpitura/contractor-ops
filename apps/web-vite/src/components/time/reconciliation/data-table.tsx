@@ -85,10 +85,7 @@ export function ReconciliationDataTable({
   const t = useTranslations('Time');
   const tInvoices = useTranslations('Invoices');
 
-  const handlePageChange = useCallback(
-    (next: number) => onPageChange(next + 1),
-    [onPageChange],
-  );
+  const handlePageChange = useCallback((next: number) => onPageChange(next + 1), [onPageChange]);
 
   const columns = useMemo<ColumnDef<ReconciliationItem, unknown>[]>(
     () => [

@@ -72,7 +72,9 @@ vi.mock('@contractor-ops/db', () => ({
   withRlsReads: <T>(c: T) => c,
   prisma: {
     organization: {
-      findUnique: vi.fn().mockResolvedValue({ id: 'org_portal', dataRegion: 'EU', status: 'ACTIVE' }),
+      findUnique: vi
+        .fn()
+        .mockResolvedValue({ id: 'org_portal', dataRegion: 'EU', status: 'ACTIVE' }),
     },
   },
   getRegionalClient: vi.fn(() => ({})),

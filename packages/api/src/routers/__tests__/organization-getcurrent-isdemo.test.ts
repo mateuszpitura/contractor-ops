@@ -28,7 +28,10 @@ vi.mock('@contractor-ops/db', () => ({
   withRlsReads: <T>(c: T) => c,
   prisma: mockPrisma,
   prismaRaw: mockPrisma,
-  tenantStore: { run: (_c: unknown, fn: () => unknown) => fn(), getStore: vi.fn(() => ({ region: 'EU' })) },
+  tenantStore: {
+    run: (_c: unknown, fn: () => unknown) => fn(),
+    getStore: vi.fn(() => ({ region: 'EU' })),
+  },
   createTenantClientFrom: vi.fn(() => mockPrisma),
   getRegionalClient: vi.fn(() => mockPrisma),
 }));

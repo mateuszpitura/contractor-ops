@@ -20,11 +20,11 @@
  * Exempt from CSRF origin guard — QStash signature is the authn.
  */
 
+import { isDemoOrg } from '@contractor-ops/api/lib/demo';
 import {
   recordQueueDepth,
   withQueueObservability,
 } from '@contractor-ops/api/services/cron-monitor';
-import { isDemoOrg } from '@contractor-ops/api/lib/demo';
 import { PeppolOrchestrator } from '@contractor-ops/api/services/peppol-orchestrator';
 import {
   BackpressureRoutes,

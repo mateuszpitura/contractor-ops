@@ -1,8 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useTRPC } from '../../../providers/trpc-provider.js';
-import type { TeamRow } from '../teams/team-form-sheet.js';
 import type { TeamTableRow } from '../teams/data-table.js';
+import type { TeamRow } from '../teams/team-form-sheet.js';
 
 export function useOrganizationTeams() {
   const trpc = useTRPC();

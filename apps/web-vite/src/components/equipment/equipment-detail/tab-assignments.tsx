@@ -62,7 +62,9 @@ export function TabAssignments({ assignments, currentAssignmentId }: TabAssignme
         accessorFn: row => new Date(row.assignedAt).getTime(),
         header: t('detail.colAssigned'),
         cell: ({ row }) => (
-          <span className="text-sm">{format(new Date(row.original.assignedAt), 'MMM d, yyyy')}</span>
+          <span className="text-sm">
+            {format(new Date(row.original.assignedAt), 'MMM d, yyyy')}
+          </span>
         ),
       },
       {

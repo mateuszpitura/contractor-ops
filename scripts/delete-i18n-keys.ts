@@ -108,7 +108,9 @@ function loadKeys(): string[] {
 }
 
 const keys = loadKeys();
-console.log(`Pruning ${keys.length} key(s) from ${LOCALES.length} locale file(s)${DRY_RUN ? ' (dry-run)' : ''}.`);
+console.log(
+  `Pruning ${keys.length} key(s) from ${LOCALES.length} locale file(s)${DRY_RUN ? ' (dry-run)' : ''}.`,
+);
 
 let grandTotal = 0;
 for (const locale of LOCALES) {
@@ -136,4 +138,6 @@ for (const locale of LOCALES) {
   );
 }
 
-console.log(`\nTotal deletions across locales: ${grandTotal}${DRY_RUN ? ' (dry-run; no files written)' : ''}.`);
+console.log(
+  `\nTotal deletions across locales: ${grandTotal}${DRY_RUN ? ' (dry-run; no files written)' : ''}.`,
+);

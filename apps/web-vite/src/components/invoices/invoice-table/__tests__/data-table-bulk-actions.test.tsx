@@ -12,10 +12,7 @@ import type { InvoiceRow } from '../columns.js';
 import { DataTableBulkActions } from '../data-table-bulk-actions.js';
 
 function makeSelectedRows(selectedCount: number): InvoiceRow[] {
-  return Array.from(
-    { length: selectedCount },
-    (_, i) => ({ id: `inv-${i}` }) as InvoiceRow,
-  );
+  return Array.from({ length: selectedCount }, (_, i) => ({ id: `inv-${i}` }) as InvoiceRow);
 }
 
 function makeBulkActions(

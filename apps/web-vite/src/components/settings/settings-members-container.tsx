@@ -11,8 +11,8 @@ import { AnimateIn } from '../shared/animate-in.js';
 import { WorkbenchPageHeader } from '../shared/workbench-page-header.js';
 import { useSettingsMembers } from './hooks/use-settings-members.js';
 import { InviteDialogContainer } from './invite-dialog-container.js';
-import { PinActionButton } from './pin-action-button.js';
 import { UsersTableContainer } from './members/container.js';
+import { PinActionButton } from './pin-action-button.js';
 
 export function SettingsMembersContainer() {
   const t = useTranslations('Users');

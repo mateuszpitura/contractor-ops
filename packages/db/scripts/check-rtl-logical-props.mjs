@@ -17,7 +17,7 @@
  * `lint:ci` chain. Mirrors the structure of packages/db/scripts/audit-enum-casing.ts.
  */
 
-import { existsSync, readFileSync, readdirSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
 const REPO_ROOT = join(import.meta.dirname, '..', '..', '..');
@@ -46,7 +46,7 @@ function listFilesRecursive(dir) {
     const full = join(dir, entry.name);
     if (entry.isDirectory()) {
       out.push(...listFilesRecursive(full));
-    } else if (SCAN_EXTENSIONS.some((ext) => entry.name.endsWith(ext))) {
+    } else if (SCAN_EXTENSIONS.some(ext => entry.name.endsWith(ext))) {
       out.push(full);
     }
   }
@@ -83,7 +83,9 @@ function main() {
     const rel = relative(REPO_ROOT, o.file);
     process.stderr.write(`  ${rel}:${o.line}  ${o.text}\n`);
   }
-  process.stderr.write('  Use logical-property utilities instead (ms / me / ps / pe / start / end).\n');
+  process.stderr.write(
+    '  Use logical-property utilities instead (ms / me / ps / pe / start / end).\n',
+  );
   process.exit(1);
 }
 

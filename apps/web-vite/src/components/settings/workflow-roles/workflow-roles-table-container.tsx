@@ -7,8 +7,8 @@ import {
 import { Plus, Users2 } from 'lucide-react';
 
 import { renderEmptyStateAction } from '../../shared/atelier-bridges.js';
-import { useWorkflowRolesTable } from './hooks/use-workflow-roles-table.js';
 import { WorkflowRolesTable } from './data-table.js';
+import { useWorkflowRolesTable } from './hooks/use-workflow-roles-table.js';
 
 interface WorkflowRolesTableContainerProps {
   canCreate?: boolean;

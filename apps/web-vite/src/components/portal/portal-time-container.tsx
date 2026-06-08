@@ -180,9 +180,7 @@ export function PortalTimeContainer() {
           tCommon={tCommon}
           isPending={historyQuery.isPending}
           isError={historyQuery.isError}
-          items={
-            (historyQuery.data?.items ?? []) as TimesheetHistoryRow[]
-          }
+          items={(historyQuery.data?.items ?? []) as TimesheetHistoryRow[]}
           onSelectWeek={handleSelectWeek}
         />
       </AnimateIn>

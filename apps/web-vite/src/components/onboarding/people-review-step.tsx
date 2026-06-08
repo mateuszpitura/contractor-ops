@@ -94,12 +94,7 @@ interface PersonStatusCellProps {
   onResolveConflict: (email: string, field: string, value: string) => void;
 }
 
-function PersonStatusCell({
-  person,
-  selection,
-  labels,
-  onResolveConflict,
-}: PersonStatusCellProps) {
+function PersonStatusCell({ person, selection, labels, onResolveConflict }: PersonStatusCellProps) {
   const handleResolve = useCallback(
     (field: string, value: string) => onResolveConflict(person.email, field, value),
     [person.email, onResolveConflict],

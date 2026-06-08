@@ -58,10 +58,7 @@ export function ApprovalQueueTable({
     [onSelectionChange],
   );
 
-  const handlePageChange = useCallback(
-    (next: number) => onPageChange(next + 1),
-    [onPageChange],
-  );
+  const handlePageChange = useCallback((next: number) => onPageChange(next + 1), [onPageChange]);
 
   return (
     <DataTable

@@ -145,29 +145,32 @@ export interface Meta {
   allowInDemo?: boolean;
 }
 
-const t = initTRPC.context<Context>().meta<Meta>().create({
-  transformer: superjson,
-  errorFormatter({ shape, error, path, type }) {
-    const isProduction = process.env.NODE_ENV === 'production';
+const t = initTRPC
+  .context<Context>()
+  .meta<Meta>()
+  .create({
+    transformer: superjson,
+    errorFormatter({ shape, error, path, type }) {
+      const isProduction = process.env.NODE_ENV === 'production';
 
-    // Always log the underlying error so production failures stay debuggable.
-    errorLog.error(
-      {
-        path,
-        type,
-        code: shape.code,
-        cause:
-          error.cause instanceof Error
-            ? { name: error.cause.name, message: error.cause.message }
-            : undefined,
-        zodIssues: error.cause instanceof ZodError ? error.cause.issues : undefined,
-      },
-      error.message,
-    );
+      // Always log the underlying error so production failures stay debuggable.
+      errorLog.error(
+        {
+          path,
+          type,
+          code: shape.code,
+          cause:
+            error.cause instanceof Error
+              ? { name: error.cause.name, message: error.cause.message }
+              : undefined,
+          zodIssues: error.cause instanceof ZodError ? error.cause.issues : undefined,
+        },
+        error.message,
+      );
 
-    return formatTrpcError({ shape, error, path, type, isProduction });
-  },
-});
+      return formatTrpcError({ shape, error, path, type, isProduction });
+    },
+  });
 
 export const router = t.router;
 export const mergeRouters = t.mergeRouters;

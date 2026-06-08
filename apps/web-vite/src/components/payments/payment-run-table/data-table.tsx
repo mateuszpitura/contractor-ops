@@ -69,11 +69,7 @@ export function PaymentRunDataTable({
 
       {!isLoading && (hasPreviousPage || hasNextPage) ? (
         <div className="flex items-center justify-end gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={onPreviousPage}
-            disabled={!hasPreviousPage}>
+          <Button variant="outline" size="sm" onClick={onPreviousPage} disabled={!hasPreviousPage}>
             <ChevronLeft className="h-4 w-4" />
             {t('table.previous')}
           </Button>

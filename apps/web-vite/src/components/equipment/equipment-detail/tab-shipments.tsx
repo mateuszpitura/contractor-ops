@@ -268,9 +268,7 @@ export function TabShipmentsView({
         header: t('shipmentsTable.col.trackingNumber'),
         cell: ({ row }) => (
           <span className="font-mono text-xs">
-            {row.original.trackingNumber ?? (
-              <span className="text-muted-foreground">&mdash;</span>
-            )}
+            {row.original.trackingNumber ?? <span className="text-muted-foreground">&mdash;</span>}
           </span>
         ),
       },

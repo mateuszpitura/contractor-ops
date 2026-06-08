@@ -72,11 +72,7 @@ const ALLOWLIST = [
   },
 ];
 
-const R2_HOST_PATTERNS = [
-  /r2\.cloudflarestorage\.com/i,
-  /\.amazonaws\.com/i,
-  /minio\b/i,
-];
+const R2_HOST_PATTERNS = [/r2\.cloudflarestorage\.com/i, /\.amazonaws\.com/i, /minio\b/i];
 
 /** @param {string} dir */
 function walk(dir) {
@@ -96,31 +92,29 @@ function walk(dir) {
     const text = readFileSync(path, 'utf8');
     // Find each `<iframe` opening tag and capture up to the first `/>`.
     const re = /<iframe\b([\s\S]*?)\/>/g;
-    let m;
-    while ((m = re.exec(text)) !== null) {
+    let m = re.exec(text);
+    while (m !== null) {
       const block = m[0];
       // Line number = number of newlines before match start + 1.
       const line = text.slice(0, m.index).split('\n').length;
       found.push({ rel, line, block });
+      m = re.exec(text);
     }
     // Also detect non-self-closing iframes (rare, but possible).
     const reOpen = /<iframe\b([\s\S]*?)>(?!\s*<\/iframe>\s*$)/g;
-    let m2;
-    while ((m2 = reOpen.exec(text)) !== null) {
+    let m2 = reOpen.exec(text);
+    while (m2 !== null) {
       // Only flag if this didn't already match the self-closing regex.
       const blockStart = m2.index;
+      const matchEnd = m2.index + m2[0].length;
+      m2 = reOpen.exec(text);
       const already = found.some(
-        (f) =>
-          f.rel === rel &&
-          text.slice(0, blockStart).split('\n').length === f.line,
+        f => f.rel === rel && text.slice(0, blockStart).split('\n').length === f.line,
       );
       if (already) continue;
       // Take up to the closing `</iframe>` for the block snapshot.
       const closeIdx = text.indexOf('</iframe>', blockStart);
-      const block = text.slice(
-        blockStart,
-        closeIdx > 0 ? closeIdx + '</iframe>'.length : m2.index + m2[0].length,
-      );
+      const block = text.slice(blockStart, closeIdx > 0 ? closeIdx + '</iframe>'.length : matchEnd);
       const line = text.slice(0, blockStart).split('\n').length;
       found.push({ rel, line, block });
     }
@@ -141,7 +135,7 @@ function extractAttr(block, name) {
 
 /** @param {string|null} a @param {string|null} b */
 function sameTokens(a, b) {
-  if (!a || !b) return false;
+  if (!(a && b)) return false;
   const ta = a.split(/\s+/).filter(Boolean).sort();
   const tb = b.split(/\s+/).filter(Boolean).sort();
   return ta.length === tb.length && ta.every((t, i) => t === tb[i]);
@@ -152,7 +146,7 @@ const found = walk(ROOT);
 const errors = [];
 
 for (const entry of found) {
-  const expected = ALLOWLIST.find((a) => a.file === entry.rel);
+  const expected = ALLOWLIST.find(a => a.file === entry.rel);
   const sandbox = extractAttr(entry.block, 'sandbox');
   const src = extractAttr(entry.block, 'src');
 
@@ -190,7 +184,7 @@ for (const entry of found) {
   // Defence-in-depth: if the `src` is a string literal pointing at an R2/S3/
   // MinIO host, force `allow-downloads` regardless of allowlist category.
   if (src) {
-    const looksLikeR2 = R2_HOST_PATTERNS.some((p) => p.test(src));
+    const looksLikeR2 = R2_HOST_PATTERNS.some(p => p.test(src));
     if (looksLikeR2 && expected.category !== 'R2_FILE_PREVIEW') {
       errors.push({
         rel: entry.rel,
@@ -204,7 +198,7 @@ for (const entry of found) {
 }
 
 // Check that every allowlist entry was matched (catches deletions or renames).
-const seen = new Set(found.map((f) => f.rel));
+const seen = new Set(found.map(f => f.rel));
 for (const entry of ALLOWLIST) {
   if (!seen.has(entry.file)) {
     errors.push({

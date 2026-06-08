@@ -76,8 +76,8 @@ vi.mock('@contractor-ops/feature-flags', async importOriginal => {
 });
 
 import { createCallerFactory } from '../../init';
-import { appRouter } from '../../root';
 import { portalAppRouter } from '../../portal-root';
+import { appRouter } from '../../root';
 
 // Intentionally-public portal mutations (pre-auth, on `portalPublicProcedure`).
 // These are NOT demo-guarded by design — magic-link login must work in a demo.
@@ -95,7 +95,10 @@ function mutationPaths(router: { _def: { procedures: Record<string, AnyProc> } }
     .map(([path]) => path);
 }
 
-function resolve(caller: Record<string, unknown>, path: string): (input?: unknown) => Promise<unknown> {
+function resolve(
+  caller: Record<string, unknown>,
+  path: string,
+): (input?: unknown) => Promise<unknown> {
   const fn = path.split('.').reduce<unknown>((acc, key) => {
     return (acc as Record<string, unknown>)?.[key];
   }, caller);

@@ -241,14 +241,8 @@ export function AuditLogTable({
     [t, expandedRows, onToggleRow, sortOrder, toggleSortOrder],
   );
 
-  const handlePageChange = useCallback(
-    (next: number) => onPageChange(next + 1),
-    [onPageChange],
-  );
-  const handleRowClick = useCallback(
-    (row: AuditLogEntry) => onToggleRow(row.id),
-    [onToggleRow],
-  );
+  const handlePageChange = useCallback((next: number) => onPageChange(next + 1), [onPageChange]);
+  const handleRowClick = useCallback((row: AuditLogEntry) => onToggleRow(row.id), [onToggleRow]);
   const renderSubRow = useCallback(
     (row: AuditLogEntry) => (
       <AuditLogDiffViewer
@@ -267,7 +261,12 @@ export function AuditLogTable({
       pageIndex={Math.max(0, page - 1)}
       pageSize={pageSize}
       onPageChange={handlePageChange}
-      onPageSizeChange={onPageSizeChange ?? (() => {})}
+      onPageSizeChange={
+        onPageSizeChange ??
+        (() => {
+          /* intentionally empty: page size is fixed when no handler is provided */
+        })
+      }
       isLoading={isLoading}
       isRefetching={isFetching && !isLoading}
       fill

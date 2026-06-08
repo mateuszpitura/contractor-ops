@@ -1,14 +1,7 @@
 import { DropZoneSurface } from '@contractor-ops/ui/components/origin/drop-zone-surface';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { Progress } from '@contractor-ops/ui/components/shadcn/progress';
-import {
-  FileText,
-  Loader2,
-  ShieldAlert,
-  ShieldCheck,
-  ShieldQuestion,
-  X,
-} from 'lucide-react';
+import { FileText, Loader2, ShieldAlert, ShieldCheck, ShieldQuestion, X } from 'lucide-react';
 import { memo, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 

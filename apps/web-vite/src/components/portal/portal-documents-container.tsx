@@ -79,9 +79,7 @@ export function PortalDocumentsContainer() {
       {
         id: 'dateAdded',
         header: () => t('documents.columns.dateAdded'),
-        cell: ({ row }) => (
-          <span className="text-sm">{formatDate(row.original.addedAt)}</span>
-        ),
+        cell: ({ row }) => <span className="text-sm">{formatDate(row.original.addedAt)}</span>,
       },
       {
         id: 'actions',

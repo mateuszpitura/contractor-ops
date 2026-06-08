@@ -2,8 +2,8 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { useTRPC } from '../../../providers/trpc-provider.js';
-import type { ProjectRow } from '../projects/project-form-sheet.js';
 import type { ProjectTableRow } from '../projects/data-table.js';
+import type { ProjectRow } from '../projects/project-form-sheet.js';
 
 export function useOrganizationProjects() {
   const trpc = useTRPC();

@@ -18,7 +18,15 @@ const REPO = new URL('..', import.meta.url).pathname;
 // Scope mirrors the breadcrumb strip: the `src` tree of every app and package
 // (not e2e/, scripts/, fixtures/ — those are out of the cleaned surface).
 const WORKSPACE_ROOTS = ['apps', 'packages'];
-const SKIP_DIRS = new Set(['node_modules', 'dist', 'generated', '__generated__', '.turbo', '.next', 'coverage']);
+const SKIP_DIRS = new Set([
+  'node_modules',
+  'dist',
+  'generated',
+  '__generated__',
+  '.turbo',
+  '.next',
+  'coverage',
+]);
 
 function srcDirs() {
   const dirs = [];
@@ -79,9 +87,15 @@ for (const top of srcDirs()) {
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
       if (!isCommentLine(line)) continue;
-      if (ALLOW.some((re) => re.test(line))) continue;
-      const match = PROVENANCE.find((p) => p.re.test(line));
-      if (match) hits.push({ file: file.replace(REPO, ''), line: i + 1, label: match.label, text: line.trim() });
+      if (ALLOW.some(re => re.test(line))) continue;
+      const match = PROVENANCE.find(p => p.re.test(line));
+      if (match)
+        hits.push({
+          file: file.replace(REPO, ''),
+          line: i + 1,
+          label: match.label,
+          text: line.trim(),
+        });
     }
   }
 }
@@ -89,8 +103,12 @@ for (const top of srcDirs()) {
 if (hits.length > 0) {
   console.error('lint:no-breadcrumbs — migration-provenance comments found:');
   for (const h of hits) console.error(`  ${h.file}:${h.line} [${h.label}] ${h.text}`);
-  console.error(`\n${hits.length} breadcrumb comment(s). Remove provenance; keep behavioral/(D-NN)/security notes.`);
+  console.error(
+    `\n${hits.length} breadcrumb comment(s). Remove provenance; keep behavioral/(D-NN)/security notes.`,
+  );
   process.exit(1);
 }
 
-console.log('lint:no-breadcrumbs — OK (no migration-provenance comments in apps/*/src or packages/*/src)');
+console.log(
+  'lint:no-breadcrumbs — OK (no migration-provenance comments in apps/*/src or packages/*/src)',
+);

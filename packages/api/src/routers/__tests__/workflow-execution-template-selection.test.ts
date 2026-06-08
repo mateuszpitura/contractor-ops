@@ -225,9 +225,9 @@ describe('workflowRoles.selectForContractor — D-02 + D-03 template auto-select
   });
 
   it('rejects empty contractorId at the Zod boundary', async () => {
-    await expect(
-      caller.selectForContractor({ contractorId: '' }),
-    ).rejects.toBeInstanceOf(TRPCError);
+    await expect(caller.selectForContractor({ contractorId: '' })).rejects.toBeInstanceOf(
+      TRPCError,
+    );
 
     expect(mockPrisma.contractor.findFirstOrThrow).not.toHaveBeenCalled();
   });

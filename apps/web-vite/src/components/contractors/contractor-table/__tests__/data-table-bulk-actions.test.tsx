@@ -19,10 +19,7 @@ import type { ContractorRow } from '../columns.js';
 import { DataTableBulkActions } from '../data-table-bulk-actions.js';
 
 function makeSelectedRows(selectedCount: number): ContractorRow[] {
-  return Array.from(
-    { length: selectedCount },
-    (_, i) => ({ id: `c${i}` }) as ContractorRow,
-  );
+  return Array.from({ length: selectedCount }, (_, i) => ({ id: `c${i}` }) as ContractorRow);
 }
 
 function makeBulkActions(

@@ -30,11 +30,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
 const REPO_ROOT = new URL('..', import.meta.url).pathname;
-const SCAN_ROOTS = [
-  'apps/api/src/routes',
-  'apps/api/src/server.ts',
-  'apps/public-api/src/routes',
-];
+const SCAN_ROOTS = ['apps/api/src/routes', 'apps/api/src/server.ts', 'apps/public-api/src/routes'];
 
 // ---------------------------------------------------------------------------
 // publisher = who calls this URL:
@@ -58,7 +54,11 @@ const EXPECTED_ROUTES = {
   // --- External publishers (third parties we do NOT control) -------------
   // URL drift here breaks live delivery → cutover-blocking. Re-register the
   // new URL with the provider before changing any of these paths.
-  'POST /webhooks/stripe': { provider: 'stripe', publisher: 'external', signature: 'constructEvent' },
+  'POST /webhooks/stripe': {
+    provider: 'stripe',
+    publisher: 'external',
+    signature: 'constructEvent',
+  },
   'POST /webhooks/storecove': {
     provider: 'storecove',
     publisher: 'external',
@@ -79,7 +79,11 @@ const EXPECTED_ROUTES = {
     publisher: 'external',
     signature: 'CMS_WEBHOOK_SECRET',
   },
-  'POST /teams/messages': { provider: 'teams', publisher: 'external', signature: 'bot-framework-jwt' },
+  'POST /teams/messages': {
+    provider: 'teams',
+    publisher: 'external',
+    signature: 'bot-framework-jwt',
+  },
   'GET /api/oauth/:provider/start': {
     provider: 'idp-oauth',
     publisher: 'external',
@@ -94,15 +98,43 @@ const EXPECTED_ROUTES = {
   // --- QStash callbacks (we control the publisher) -----------------------
   // Drift is self-correcting on redeploy, but snapshotted so an accidental
   // rename is still surfaced.
-  'POST /webhooks/_process': { provider: 'qstash', publisher: 'qstash', signature: 'guardQStashRequest' },
-  'POST /zatca/_submit': { provider: 'qstash', publisher: 'qstash', signature: 'guardQStashRequest' },
+  'POST /webhooks/_process': {
+    provider: 'qstash',
+    publisher: 'qstash',
+    signature: 'guardQStashRequest',
+  },
+  'POST /zatca/_submit': {
+    provider: 'qstash',
+    publisher: 'qstash',
+    signature: 'guardQStashRequest',
+  },
   'POST /peppol/poll': { provider: 'qstash', publisher: 'qstash', signature: 'guardQStashRequest' },
-  'POST /peppol/inbound': { provider: 'qstash', publisher: 'qstash', signature: 'guardQStashRequest' },
-  'POST /peppol/outbound': { provider: 'qstash', publisher: 'qstash', signature: 'guardQStashRequest' },
+  'POST /peppol/inbound': {
+    provider: 'qstash',
+    publisher: 'qstash',
+    signature: 'guardQStashRequest',
+  },
+  'POST /peppol/outbound': {
+    provider: 'qstash',
+    publisher: 'qstash',
+    signature: 'guardQStashRequest',
+  },
   'POST /ksef/_sync': { provider: 'qstash', publisher: 'qstash', signature: 'guardQStashRequest' },
-  'POST /outbox/_drain': { provider: 'qstash', publisher: 'qstash', signature: 'guardQStashRequest' },
-  'POST /ocr/_process': { provider: 'qstash', publisher: 'qstash', signature: 'guardQStashRequest' },
-  'POST /exports/_process': { provider: 'qstash', publisher: 'qstash', signature: 'guardQStashRequest' },
+  'POST /outbox/_drain': {
+    provider: 'qstash',
+    publisher: 'qstash',
+    signature: 'guardQStashRequest',
+  },
+  'POST /ocr/_process': {
+    provider: 'qstash',
+    publisher: 'qstash',
+    signature: 'guardQStashRequest',
+  },
+  'POST /exports/_process': {
+    provider: 'qstash',
+    publisher: 'qstash',
+    signature: 'guardQStashRequest',
+  },
   'POST /google-workspace/_sync': {
     provider: 'qstash',
     publisher: 'qstash',
@@ -129,8 +161,18 @@ const EXPECTED_ROUTES = {
   // --- Internal (same-origin SPA / browser beacons) ----------------------
   // Authn is session/CSRF or none-by-design (public report sinks). No
   // upstream signature requirement.
-  'GET /health': { provider: 'self', publisher: 'internal', signature: 'none', note: 'liveness probe' },
-  'GET /ready': { provider: 'self', publisher: 'internal', signature: 'none', note: 'readiness probe' },
+  'GET /health': {
+    provider: 'self',
+    publisher: 'internal',
+    signature: 'none',
+    note: 'liveness probe',
+  },
+  'GET /ready': {
+    provider: 'self',
+    publisher: 'internal',
+    signature: 'none',
+    note: 'readiness probe',
+  },
   'POST /csp-report': {
     provider: 'browser',
     publisher: 'internal',
@@ -185,8 +227,7 @@ const SIGNATURE_TOKENS = [
   'x-hub-signature',
 ];
 
-const METHOD_PATH_RE =
-  /\bapp\.(get|post|put|patch|delete)\b[\s\S]{0,800}?(['"`])(\/[^'"`]*)\2/g;
+const METHOD_PATH_RE = /\bapp\.(get|post|put|patch|delete)\b[\s\S]{0,800}?(['"`])(\/[^'"`]*)\2/g;
 
 /** @returns {string[]} list of .ts files under a root (file or dir) */
 function collectFiles(rootRel) {

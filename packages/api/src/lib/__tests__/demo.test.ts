@@ -57,9 +57,9 @@ describe('resolveDemoOrgId', () => {
   });
 
   it('falls back to the session active org', () => {
-    expect(resolveDemoOrgId({ session: { session: { activeOrganizationId: 'org_session' } } })).toBe(
-      'org_session',
-    );
+    expect(
+      resolveDemoOrgId({ session: { session: { activeOrganizationId: 'org_session' } } }),
+    ).toBe('org_session');
   });
 
   it('returns null when neither is present', () => {
