@@ -1,10 +1,11 @@
 ---
 phase: 84
 slug: theme-a-us-contractor-profile-fields-en-us-locale
-status: draft
+status: approved
 shadcn_initialized: true
 preset: base-nova
 created: 2026-06-08
+reviewed_at: 2026-06-08
 ---
 
 # Phase 84 — UI Design Contract
