@@ -2,9 +2,9 @@
 gsd_state_version: 1.0
 milestone: v7.0
 milestone_name: GTM Expansion
-status: verifying
-stopped_at: Completed 84-04-PLAN.md
-last_updated: "2026-06-08T15:01:16.149Z"
+status: ready_to_plan
+stopped_at: Phase 84 complete (7/7) — ready to discuss Phase 85
+last_updated: 2026-06-08T15:33:55.330Z
 last_activity: 2026-06-08
 progress:
   total_phases: 20
@@ -21,13 +21,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-07 — v7.0 GTM Expansion started; v6.0 shipped 2026-06-07)
 
 **Core value:** The invoice-to-payment flow must work end-to-end: invoice arrives, gets matched to contract, routed through approval, and batched for payment — with full audit trail and zero manual tracking in spreadsheets.
-**Current focus:** Phase 84 — Theme A — US Contractor Profile Fields + en-US Locale
+**Current focus:** Phase 85 — theme a — w form intake + tax treaty engine
 
 ## Current Position
 
-Phase: 84 (Theme A — US Contractor Profile Fields + en-US Locale) — EXECUTING
-Plan: 7 of 7
-Status: Phase complete — ready for verification
+Phase: 85
+Plan: Not started
+Status: Ready to plan
 Last activity: 2026-06-08
 
 Progress: [██████████] 100%

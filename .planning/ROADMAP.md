@@ -388,7 +388,7 @@ Phases execute in numeric order: 82 → 83 → … → 101. After Foundation (82
 |-------|-----------|----------------|--------|-----------|
 | 82. v7.0 Foundation — Add-On + Flags + US Region | v7.0 | 4/4 | Complete    | 2026-06-07 |
 | 83. Theme A — US Region Infrastructure | v7.0 | 4/4 | Complete    | 2026-06-07 |
-| 84. Theme A — US Profile Fields + en-US Locale | v7.0 | 7/7 | Complete   | 2026-06-08 |
+| 84. Theme A — US Profile Fields + en-US Locale | v7.0 | 7/7 | Complete    | 2026-06-08 |
 | 85. Theme A — W-Form Intake + Tax-Treaty Engine | v7.0 | 0/TBD | Not started | - |
 | 86. Theme A — TIN-Match → 1099-NEC → IRIS → State | v7.0 | 0/TBD | Not started | - |
 | 87. Theme A — 1042-S + US Classification + Letter | v7.0 | 0/TBD | Not started | - |
