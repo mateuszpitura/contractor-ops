@@ -16,10 +16,21 @@ const ROOT = resolve(Dirname, '..');
 const MESSAGES_DIR = resolve(ROOT, 'apps/web-vite/messages');
 const BASELINE_PATH = resolve(ROOT, '.i18n-parity-baseline.json');
 
-const { runI18nParity } = await import('../packages/lint-guards/src/i18n-parity/run-guard.ts');
+const { runI18nParity, flattenLocaleKeys } = await import(
+  '../packages/lint-guards/src/i18n-parity/run-guard.ts'
+);
 const { formatI18nParityOffences } = await import(
   '../packages/lint-guards/src/i18n-parity/format-offence.ts'
 );
+
+// Phase 84-02 (US-LOC-01): en-US is a thin-override locale that inherits every
+// unchanged key from en at runtime (fallbackLng en-US → en → pl). It runs as a
+// fallback-aware peer — a base key counts as covered for en-US if present in
+// en-US.json OR in en.json — so the deliberately-thin override passes parity
+// without joining the strict peers array. en's flattened keys are the fallback
+// set. Run en-US in BOTH branches so it never seeds spurious baseline offences.
+const EN_FALLBACK_KEYS = await flattenLocaleKeys(resolve(MESSAGES_DIR, 'en.json'));
+const FALLBACK_PEERS = { 'en-US': EN_FALLBACK_KEYS };
 
 const args = new Set(process.argv.slice(2));
 const updateBaseline = args.has('--update-baseline');
@@ -38,6 +49,7 @@ if (updateBaseline) {
     messagesDir: MESSAGES_DIR,
     base: 'en',
     peers: ['de', 'pl', 'ar'],
+    fallbackPeers: FALLBACK_PEERS,
   });
   await writeFile(
     BASELINE_PATH,
@@ -60,6 +72,7 @@ const offences = await runI18nParity({
   messagesDir: MESSAGES_DIR,
   base: 'en',
   peers: ['de', 'pl', 'ar'],
+  fallbackPeers: FALLBACK_PEERS,
   baseline: baselineKeyed,
 });
 

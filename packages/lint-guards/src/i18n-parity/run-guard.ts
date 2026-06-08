@@ -17,6 +17,18 @@ export interface I18nParityOptions {
    * (baseline diff mode). Same shape as the lint:logs baseline (Plan 70-03).
    */
   baseline?: readonly { locale: string; missingKey: string }[];
+  /**
+   * Fallback-aware peers (Phase 84-02, US-LOC-01). A thin-override locale such
+   * as `en-US` only carries divergent keys; the rest are inherited at runtime
+   * via i18next's `fallbackLng` chain (en-US → en → pl). For each entry, a base
+   * key counts as covered if it is present in the peer's own JSON OR in the
+   * supplied fallback key set — so a deliberately-thin override passes parity
+   * without adding the locale to the strict `peers` array (which would demand
+   * literal full key parity and red-CI every not-yet-overridden key). Strict
+   * peers keep exact `peerKeys` semantics; this relaxation applies ONLY to the
+   * fallback-aware locales listed here.
+   */
+  fallbackPeers?: Record<string, ReadonlySet<string>>;
 }
 
 export interface I18nParityOffence {
@@ -44,6 +56,16 @@ function flattenKeys(obj: unknown, prefix = ''): string[] {
   return result;
 }
 
+/**
+ * Read a locale JSON file and return its flattened dotted key paths as a Set.
+ * Exposed so callers (e.g. `scripts/i18n-parity.mjs`) can build the fallback
+ * key set for a fallback-aware peer without re-implementing the flatten logic.
+ */
+export async function flattenLocaleKeys(filePath: string): Promise<Set<string>> {
+  const raw = await readFile(filePath, 'utf-8');
+  return new Set(flattenKeys(JSON.parse(raw)));
+}
+
 export async function runI18nParity(opts: I18nParityOptions): Promise<I18nParityOffence[]> {
   const baseRaw = await readFile(join(opts.messagesDir, `${opts.base}.json`), 'utf-8');
   const baseJson = JSON.parse(baseRaw);
@@ -54,14 +76,24 @@ export async function runI18nParity(opts: I18nParityOptions): Promise<I18nParity
 
   const offences: I18nParityOffence[] = [];
 
-  for (const peer of opts.peers) {
+  const fallbackPeers = opts.fallbackPeers ?? {};
+  // Strict peers + fallback-aware peers share the same base-key coverage check;
+  // only the "covered" set differs (fallback peers add their inherited keys).
+  const allPeers = [...opts.peers, ...Object.keys(fallbackPeers)];
+
+  for (const peer of allPeers) {
     const peerRaw = await readFile(join(opts.messagesDir, `${peer}.json`), 'utf-8');
     const peerJson = JSON.parse(peerRaw);
     const peerKeys = new Set(flattenKeys(peerJson));
+    const fallbackKeys = fallbackPeers[peer];
 
     const missing: string[] = [];
     for (const key of baseKeys) {
-      if (!(peerKeys.has(key) || baseline.has(baselineKey(peer, key)))) {
+      const covered =
+        peerKeys.has(key) ||
+        (fallbackKeys?.has(key) ?? false) ||
+        baseline.has(baselineKey(peer, key));
+      if (!covered) {
         missing.push(key);
       }
     }
