@@ -51,6 +51,10 @@ export type ContractorMinAggregateOutputType = {
   workflowRoleId: string | null
   notes: string | null
   isSensitive: boolean | null
+  ssnEncrypted: string | null
+  ssnLast4: string | null
+  uspsVerified: boolean | null
+  uspsValidatedAt: Date | null
   latestVatValidatedAt: Date | null
   latestVatValidationStatus: $Enums.ValidationStatus | null
   isPublicSectorBuyer: boolean | null
@@ -93,6 +97,10 @@ export type ContractorMaxAggregateOutputType = {
   workflowRoleId: string | null
   notes: string | null
   isSensitive: boolean | null
+  ssnEncrypted: string | null
+  ssnLast4: string | null
+  uspsVerified: boolean | null
+  uspsValidatedAt: Date | null
   latestVatValidatedAt: Date | null
   latestVatValidationStatus: $Enums.ValidationStatus | null
   isPublicSectorBuyer: boolean | null
@@ -137,6 +145,10 @@ export type ContractorCountAggregateOutputType = {
   isSensitive: number
   customFieldsJson: number
   countryFields: number
+  ssnEncrypted: number
+  ssnLast4: number
+  uspsVerified: number
+  uspsValidatedAt: number
   latestVatValidatedAt: number
   latestVatValidationStatus: number
   isPublicSectorBuyer: number
@@ -181,6 +193,10 @@ export type ContractorMinAggregateInputType = {
   workflowRoleId?: true
   notes?: true
   isSensitive?: true
+  ssnEncrypted?: true
+  ssnLast4?: true
+  uspsVerified?: true
+  uspsValidatedAt?: true
   latestVatValidatedAt?: true
   latestVatValidationStatus?: true
   isPublicSectorBuyer?: true
@@ -223,6 +239,10 @@ export type ContractorMaxAggregateInputType = {
   workflowRoleId?: true
   notes?: true
   isSensitive?: true
+  ssnEncrypted?: true
+  ssnLast4?: true
+  uspsVerified?: true
+  uspsValidatedAt?: true
   latestVatValidatedAt?: true
   latestVatValidationStatus?: true
   isPublicSectorBuyer?: true
@@ -267,6 +287,10 @@ export type ContractorCountAggregateInputType = {
   isSensitive?: true
   customFieldsJson?: true
   countryFields?: true
+  ssnEncrypted?: true
+  ssnLast4?: true
+  uspsVerified?: true
+  uspsValidatedAt?: true
   latestVatValidatedAt?: true
   latestVatValidationStatus?: true
   isPublicSectorBuyer?: true
@@ -384,6 +408,10 @@ export type ContractorGroupByOutputType = {
   isSensitive: boolean
   customFieldsJson: runtime.JsonValue | null
   countryFields: runtime.JsonValue | null
+  ssnEncrypted: string | null
+  ssnLast4: string | null
+  uspsVerified: boolean | null
+  uspsValidatedAt: Date | null
   latestVatValidatedAt: Date | null
   latestVatValidationStatus: $Enums.ValidationStatus | null
   isPublicSectorBuyer: boolean
@@ -449,6 +477,10 @@ export type ContractorWhereInput = {
   isSensitive?: Prisma.BoolFilter<"Contractor"> | boolean
   customFieldsJson?: Prisma.JsonNullableFilter<"Contractor">
   countryFields?: Prisma.JsonNullableFilter<"Contractor">
+  ssnEncrypted?: Prisma.StringNullableFilter<"Contractor"> | string | null
+  ssnLast4?: Prisma.StringNullableFilter<"Contractor"> | string | null
+  uspsVerified?: Prisma.BoolNullableFilter<"Contractor"> | boolean | null
+  uspsValidatedAt?: Prisma.DateTimeNullableFilter<"Contractor"> | Date | string | null
   latestVatValidatedAt?: Prisma.DateTimeNullableFilter<"Contractor"> | Date | string | null
   latestVatValidationStatus?: Prisma.EnumValidationStatusNullableFilter<"Contractor"> | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFilter<"Contractor"> | boolean
@@ -522,6 +554,10 @@ export type ContractorOrderByWithRelationInput = {
   isSensitive?: Prisma.SortOrder
   customFieldsJson?: Prisma.SortOrderInput | Prisma.SortOrder
   countryFields?: Prisma.SortOrderInput | Prisma.SortOrder
+  ssnEncrypted?: Prisma.SortOrderInput | Prisma.SortOrder
+  ssnLast4?: Prisma.SortOrderInput | Prisma.SortOrder
+  uspsVerified?: Prisma.SortOrderInput | Prisma.SortOrder
+  uspsValidatedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   latestVatValidatedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   latestVatValidationStatus?: Prisma.SortOrderInput | Prisma.SortOrder
   isPublicSectorBuyer?: Prisma.SortOrder
@@ -598,6 +634,10 @@ export type ContractorWhereUniqueInput = Prisma.AtLeast<{
   isSensitive?: Prisma.BoolFilter<"Contractor"> | boolean
   customFieldsJson?: Prisma.JsonNullableFilter<"Contractor">
   countryFields?: Prisma.JsonNullableFilter<"Contractor">
+  ssnEncrypted?: Prisma.StringNullableFilter<"Contractor"> | string | null
+  ssnLast4?: Prisma.StringNullableFilter<"Contractor"> | string | null
+  uspsVerified?: Prisma.BoolNullableFilter<"Contractor"> | boolean | null
+  uspsValidatedAt?: Prisma.DateTimeNullableFilter<"Contractor"> | Date | string | null
   latestVatValidatedAt?: Prisma.DateTimeNullableFilter<"Contractor"> | Date | string | null
   latestVatValidationStatus?: Prisma.EnumValidationStatusNullableFilter<"Contractor"> | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFilter<"Contractor"> | boolean
@@ -671,6 +711,10 @@ export type ContractorOrderByWithAggregationInput = {
   isSensitive?: Prisma.SortOrder
   customFieldsJson?: Prisma.SortOrderInput | Prisma.SortOrder
   countryFields?: Prisma.SortOrderInput | Prisma.SortOrder
+  ssnEncrypted?: Prisma.SortOrderInput | Prisma.SortOrder
+  ssnLast4?: Prisma.SortOrderInput | Prisma.SortOrder
+  uspsVerified?: Prisma.SortOrderInput | Prisma.SortOrder
+  uspsValidatedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   latestVatValidatedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   latestVatValidationStatus?: Prisma.SortOrderInput | Prisma.SortOrder
   isPublicSectorBuyer?: Prisma.SortOrder
@@ -721,6 +765,10 @@ export type ContractorScalarWhereWithAggregatesInput = {
   isSensitive?: Prisma.BoolWithAggregatesFilter<"Contractor"> | boolean
   customFieldsJson?: Prisma.JsonNullableWithAggregatesFilter<"Contractor">
   countryFields?: Prisma.JsonNullableWithAggregatesFilter<"Contractor">
+  ssnEncrypted?: Prisma.StringNullableWithAggregatesFilter<"Contractor"> | string | null
+  ssnLast4?: Prisma.StringNullableWithAggregatesFilter<"Contractor"> | string | null
+  uspsVerified?: Prisma.BoolNullableWithAggregatesFilter<"Contractor"> | boolean | null
+  uspsValidatedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Contractor"> | Date | string | null
   latestVatValidatedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Contractor"> | Date | string | null
   latestVatValidationStatus?: Prisma.EnumValidationStatusNullableWithAggregatesFilter<"Contractor"> | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolWithAggregatesFilter<"Contractor"> | boolean
@@ -759,6 +807,10 @@ export type ContractorCreateInput = {
   isSensitive?: boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: string | null
+  ssnLast4?: string | null
+  uspsVerified?: boolean | null
+  uspsValidatedAt?: Date | string | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -832,6 +884,10 @@ export type ContractorUncheckedCreateInput = {
   isSensitive?: boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: string | null
+  ssnLast4?: string | null
+  uspsVerified?: boolean | null
+  uspsValidatedAt?: Date | string | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -893,6 +949,10 @@ export type ContractorUpdateInput = {
   isSensitive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -966,6 +1026,10 @@ export type ContractorUncheckedUpdateInput = {
   isSensitive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1033,6 +1097,10 @@ export type ContractorCreateManyInput = {
   isSensitive?: boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: string | null
+  ssnLast4?: string | null
+  uspsVerified?: boolean | null
+  uspsValidatedAt?: Date | string | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -1071,6 +1139,10 @@ export type ContractorUpdateManyMutationInput = {
   isSensitive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1115,6 +1187,10 @@ export type ContractorUncheckedUpdateManyInput = {
   isSensitive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1179,6 +1255,10 @@ export type ContractorCountOrderByAggregateInput = {
   isSensitive?: Prisma.SortOrder
   customFieldsJson?: Prisma.SortOrder
   countryFields?: Prisma.SortOrder
+  ssnEncrypted?: Prisma.SortOrder
+  ssnLast4?: Prisma.SortOrder
+  uspsVerified?: Prisma.SortOrder
+  uspsValidatedAt?: Prisma.SortOrder
   latestVatValidatedAt?: Prisma.SortOrder
   latestVatValidationStatus?: Prisma.SortOrder
   isPublicSectorBuyer?: Prisma.SortOrder
@@ -1221,6 +1301,10 @@ export type ContractorMaxOrderByAggregateInput = {
   workflowRoleId?: Prisma.SortOrder
   notes?: Prisma.SortOrder
   isSensitive?: Prisma.SortOrder
+  ssnEncrypted?: Prisma.SortOrder
+  ssnLast4?: Prisma.SortOrder
+  uspsVerified?: Prisma.SortOrder
+  uspsValidatedAt?: Prisma.SortOrder
   latestVatValidatedAt?: Prisma.SortOrder
   latestVatValidationStatus?: Prisma.SortOrder
   isPublicSectorBuyer?: Prisma.SortOrder
@@ -1263,6 +1347,10 @@ export type ContractorMinOrderByAggregateInput = {
   workflowRoleId?: Prisma.SortOrder
   notes?: Prisma.SortOrder
   isSensitive?: Prisma.SortOrder
+  ssnEncrypted?: Prisma.SortOrder
+  ssnLast4?: Prisma.SortOrder
+  uspsVerified?: Prisma.SortOrder
+  uspsValidatedAt?: Prisma.SortOrder
   latestVatValidatedAt?: Prisma.SortOrder
   latestVatValidationStatus?: Prisma.SortOrder
   isPublicSectorBuyer?: Prisma.SortOrder
@@ -1901,6 +1989,10 @@ export type ContractorCreateWithoutOwnerInput = {
   isSensitive?: boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: string | null
+  ssnLast4?: string | null
+  uspsVerified?: boolean | null
+  uspsValidatedAt?: Date | string | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -1972,6 +2064,10 @@ export type ContractorUncheckedCreateWithoutOwnerInput = {
   isSensitive?: boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: string | null
+  ssnLast4?: string | null
+  uspsVerified?: boolean | null
+  uspsValidatedAt?: Date | string | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -2068,6 +2164,10 @@ export type ContractorScalarWhereInput = {
   isSensitive?: Prisma.BoolFilter<"Contractor"> | boolean
   customFieldsJson?: Prisma.JsonNullableFilter<"Contractor">
   countryFields?: Prisma.JsonNullableFilter<"Contractor">
+  ssnEncrypted?: Prisma.StringNullableFilter<"Contractor"> | string | null
+  ssnLast4?: Prisma.StringNullableFilter<"Contractor"> | string | null
+  uspsVerified?: Prisma.BoolNullableFilter<"Contractor"> | boolean | null
+  uspsValidatedAt?: Prisma.DateTimeNullableFilter<"Contractor"> | Date | string | null
   latestVatValidatedAt?: Prisma.DateTimeNullableFilter<"Contractor"> | Date | string | null
   latestVatValidationStatus?: Prisma.EnumValidationStatusNullableFilter<"Contractor"> | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFilter<"Contractor"> | boolean
@@ -2106,6 +2206,10 @@ export type ContractorCreateWithoutIr35ChainParticipantLinksInput = {
   isSensitive?: boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: string | null
+  ssnLast4?: string | null
+  uspsVerified?: boolean | null
+  uspsValidatedAt?: Date | string | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -2178,6 +2282,10 @@ export type ContractorUncheckedCreateWithoutIr35ChainParticipantLinksInput = {
   isSensitive?: boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: string | null
+  ssnLast4?: string | null
+  uspsVerified?: boolean | null
+  uspsValidatedAt?: Date | string | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -2254,6 +2362,10 @@ export type ContractorUpdateWithoutIr35ChainParticipantLinksInput = {
   isSensitive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -2326,6 +2438,10 @@ export type ContractorUncheckedUpdateWithoutIr35ChainParticipantLinksInput = {
   isSensitive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -2386,6 +2502,10 @@ export type ContractorCreateWithoutContractsInput = {
   isSensitive?: boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: string | null
+  ssnLast4?: string | null
+  uspsVerified?: boolean | null
+  uspsValidatedAt?: Date | string | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -2458,6 +2578,10 @@ export type ContractorUncheckedCreateWithoutContractsInput = {
   isSensitive?: boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: string | null
+  ssnLast4?: string | null
+  uspsVerified?: boolean | null
+  uspsValidatedAt?: Date | string | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -2534,6 +2658,10 @@ export type ContractorUpdateWithoutContractsInput = {
   isSensitive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -2606,6 +2734,10 @@ export type ContractorUncheckedUpdateWithoutContractsInput = {
   isSensitive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -2666,6 +2798,10 @@ export type ContractorCreateWithoutContactsInput = {
   isSensitive?: boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: string | null
+  ssnLast4?: string | null
+  uspsVerified?: boolean | null
+  uspsValidatedAt?: Date | string | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -2738,6 +2874,10 @@ export type ContractorUncheckedCreateWithoutContactsInput = {
   isSensitive?: boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: string | null
+  ssnLast4?: string | null
+  uspsVerified?: boolean | null
+  uspsValidatedAt?: Date | string | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -2814,6 +2954,10 @@ export type ContractorUpdateWithoutContactsInput = {
   isSensitive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -2886,6 +3030,10 @@ export type ContractorUncheckedUpdateWithoutContactsInput = {
   isSensitive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -2946,6 +3094,10 @@ export type ContractorCreateWithoutBillingProfilesInput = {
   isSensitive?: boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: string | null
+  ssnLast4?: string | null
+  uspsVerified?: boolean | null
+  uspsValidatedAt?: Date | string | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -3018,6 +3170,10 @@ export type ContractorUncheckedCreateWithoutBillingProfilesInput = {
   isSensitive?: boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: string | null
+  ssnLast4?: string | null
+  uspsVerified?: boolean | null
+  uspsValidatedAt?: Date | string | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -3094,6 +3250,10 @@ export type ContractorUpdateWithoutBillingProfilesInput = {
   isSensitive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -3166,6 +3326,10 @@ export type ContractorUncheckedUpdateWithoutBillingProfilesInput = {
   isSensitive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -3226,6 +3390,10 @@ export type ContractorCreateWithoutAssignmentsInput = {
   isSensitive?: boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: string | null
+  ssnLast4?: string | null
+  uspsVerified?: boolean | null
+  uspsValidatedAt?: Date | string | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -3298,6 +3466,10 @@ export type ContractorUncheckedCreateWithoutAssignmentsInput = {
   isSensitive?: boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: string | null
+  ssnLast4?: string | null
+  uspsVerified?: boolean | null
+  uspsValidatedAt?: Date | string | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -3374,6 +3546,10 @@ export type ContractorUpdateWithoutAssignmentsInput = {
   isSensitive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -3446,6 +3622,10 @@ export type ContractorUncheckedUpdateWithoutAssignmentsInput = {
   isSensitive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -3506,6 +3686,10 @@ export type ContractorCreateWithoutTagsInput = {
   isSensitive?: boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: string | null
+  ssnLast4?: string | null
+  uspsVerified?: boolean | null
+  uspsValidatedAt?: Date | string | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -3578,6 +3762,10 @@ export type ContractorUncheckedCreateWithoutTagsInput = {
   isSensitive?: boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: string | null
+  ssnLast4?: string | null
+  uspsVerified?: boolean | null
+  uspsValidatedAt?: Date | string | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -3654,6 +3842,10 @@ export type ContractorUpdateWithoutTagsInput = {
   isSensitive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -3726,6 +3918,10 @@ export type ContractorUncheckedUpdateWithoutTagsInput = {
   isSensitive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -3786,6 +3982,10 @@ export type ContractorCreateWithoutComplianceItemsInput = {
   isSensitive?: boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: string | null
+  ssnLast4?: string | null
+  uspsVerified?: boolean | null
+  uspsValidatedAt?: Date | string | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -3858,6 +4058,10 @@ export type ContractorUncheckedCreateWithoutComplianceItemsInput = {
   isSensitive?: boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: string | null
+  ssnLast4?: string | null
+  uspsVerified?: boolean | null
+  uspsValidatedAt?: Date | string | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -3934,6 +4138,10 @@ export type ContractorUpdateWithoutComplianceItemsInput = {
   isSensitive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -4006,6 +4214,10 @@ export type ContractorUncheckedUpdateWithoutComplianceItemsInput = {
   isSensitive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -4066,6 +4278,10 @@ export type ContractorCreateWithoutLeitwegIdsInput = {
   isSensitive?: boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: string | null
+  ssnLast4?: string | null
+  uspsVerified?: boolean | null
+  uspsValidatedAt?: Date | string | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -4138,6 +4354,10 @@ export type ContractorUncheckedCreateWithoutLeitwegIdsInput = {
   isSensitive?: boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: string | null
+  ssnLast4?: string | null
+  uspsVerified?: boolean | null
+  uspsValidatedAt?: Date | string | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -4214,6 +4434,10 @@ export type ContractorUpdateWithoutLeitwegIdsInput = {
   isSensitive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -4286,6 +4510,10 @@ export type ContractorUncheckedUpdateWithoutLeitwegIdsInput = {
   isSensitive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -4346,6 +4574,10 @@ export type ContractorCreateWithoutEquipmentAssignmentsInput = {
   isSensitive?: boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: string | null
+  ssnLast4?: string | null
+  uspsVerified?: boolean | null
+  uspsValidatedAt?: Date | string | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -4418,6 +4650,10 @@ export type ContractorUncheckedCreateWithoutEquipmentAssignmentsInput = {
   isSensitive?: boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: string | null
+  ssnLast4?: string | null
+  uspsVerified?: boolean | null
+  uspsValidatedAt?: Date | string | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -4494,6 +4730,10 @@ export type ContractorUpdateWithoutEquipmentAssignmentsInput = {
   isSensitive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -4566,6 +4806,10 @@ export type ContractorUncheckedUpdateWithoutEquipmentAssignmentsInput = {
   isSensitive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -4626,6 +4870,10 @@ export type ContractorCreateWithoutReturnRequestsInput = {
   isSensitive?: boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: string | null
+  ssnLast4?: string | null
+  uspsVerified?: boolean | null
+  uspsValidatedAt?: Date | string | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -4698,6 +4946,10 @@ export type ContractorUncheckedCreateWithoutReturnRequestsInput = {
   isSensitive?: boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: string | null
+  ssnLast4?: string | null
+  uspsVerified?: boolean | null
+  uspsValidatedAt?: Date | string | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -4774,6 +5026,10 @@ export type ContractorUpdateWithoutReturnRequestsInput = {
   isSensitive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -4846,6 +5102,10 @@ export type ContractorUncheckedUpdateWithoutReturnRequestsInput = {
   isSensitive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -4906,6 +5166,10 @@ export type ContractorCreateWithoutFreeZoneAssignmentInput = {
   isSensitive?: boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: string | null
+  ssnLast4?: string | null
+  uspsVerified?: boolean | null
+  uspsValidatedAt?: Date | string | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -4978,6 +5242,10 @@ export type ContractorUncheckedCreateWithoutFreeZoneAssignmentInput = {
   isSensitive?: boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: string | null
+  ssnLast4?: string | null
+  uspsVerified?: boolean | null
+  uspsValidatedAt?: Date | string | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -5054,6 +5322,10 @@ export type ContractorUpdateWithoutFreeZoneAssignmentInput = {
   isSensitive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -5126,6 +5398,10 @@ export type ContractorUncheckedUpdateWithoutFreeZoneAssignmentInput = {
   isSensitive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -5186,6 +5462,10 @@ export type ContractorCreateWithoutDeprovisioningRunsInput = {
   isSensitive?: boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: string | null
+  ssnLast4?: string | null
+  uspsVerified?: boolean | null
+  uspsValidatedAt?: Date | string | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -5258,6 +5538,10 @@ export type ContractorUncheckedCreateWithoutDeprovisioningRunsInput = {
   isSensitive?: boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: string | null
+  ssnLast4?: string | null
+  uspsVerified?: boolean | null
+  uspsValidatedAt?: Date | string | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -5334,6 +5618,10 @@ export type ContractorUpdateWithoutDeprovisioningRunsInput = {
   isSensitive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -5406,6 +5694,10 @@ export type ContractorUncheckedUpdateWithoutDeprovisioningRunsInput = {
   isSensitive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -5466,6 +5758,10 @@ export type ContractorCreateWithoutInvoicesInput = {
   isSensitive?: boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: string | null
+  ssnLast4?: string | null
+  uspsVerified?: boolean | null
+  uspsValidatedAt?: Date | string | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -5538,6 +5834,10 @@ export type ContractorUncheckedCreateWithoutInvoicesInput = {
   isSensitive?: boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: string | null
+  ssnLast4?: string | null
+  uspsVerified?: boolean | null
+  uspsValidatedAt?: Date | string | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -5614,6 +5914,10 @@ export type ContractorUpdateWithoutInvoicesInput = {
   isSensitive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -5686,6 +5990,10 @@ export type ContractorUncheckedUpdateWithoutInvoicesInput = {
   isSensitive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -5746,6 +6054,10 @@ export type ContractorCreateWithoutIntakesInput = {
   isSensitive?: boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: string | null
+  ssnLast4?: string | null
+  uspsVerified?: boolean | null
+  uspsValidatedAt?: Date | string | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -5818,6 +6130,10 @@ export type ContractorUncheckedCreateWithoutIntakesInput = {
   isSensitive?: boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: string | null
+  ssnLast4?: string | null
+  uspsVerified?: boolean | null
+  uspsValidatedAt?: Date | string | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -5894,6 +6210,10 @@ export type ContractorUpdateWithoutIntakesInput = {
   isSensitive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -5966,6 +6286,10 @@ export type ContractorUncheckedUpdateWithoutIntakesInput = {
   isSensitive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -6026,6 +6350,10 @@ export type ContractorCreateWithoutOrganizationInput = {
   isSensitive?: boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: string | null
+  ssnLast4?: string | null
+  uspsVerified?: boolean | null
+  uspsValidatedAt?: Date | string | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -6097,6 +6425,10 @@ export type ContractorUncheckedCreateWithoutOrganizationInput = {
   isSensitive?: boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: string | null
+  ssnLast4?: string | null
+  uspsVerified?: boolean | null
+  uspsValidatedAt?: Date | string | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -6184,6 +6516,10 @@ export type ContractorCreateWithoutPrimaryTeamInput = {
   isSensitive?: boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: string | null
+  ssnLast4?: string | null
+  uspsVerified?: boolean | null
+  uspsValidatedAt?: Date | string | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -6255,6 +6591,10 @@ export type ContractorUncheckedCreateWithoutPrimaryTeamInput = {
   isSensitive?: boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: string | null
+  ssnLast4?: string | null
+  uspsVerified?: boolean | null
+  uspsValidatedAt?: Date | string | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -6342,6 +6682,10 @@ export type ContractorCreateWithoutPrimaryProjectInput = {
   isSensitive?: boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: string | null
+  ssnLast4?: string | null
+  uspsVerified?: boolean | null
+  uspsValidatedAt?: Date | string | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -6413,6 +6757,10 @@ export type ContractorUncheckedCreateWithoutPrimaryProjectInput = {
   isSensitive?: boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: string | null
+  ssnLast4?: string | null
+  uspsVerified?: boolean | null
+  uspsValidatedAt?: Date | string | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -6500,6 +6848,10 @@ export type ContractorCreateWithoutDefaultCostCenterInput = {
   isSensitive?: boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: string | null
+  ssnLast4?: string | null
+  uspsVerified?: boolean | null
+  uspsValidatedAt?: Date | string | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -6571,6 +6923,10 @@ export type ContractorUncheckedCreateWithoutDefaultCostCenterInput = {
   isSensitive?: boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: string | null
+  ssnLast4?: string | null
+  uspsVerified?: boolean | null
+  uspsValidatedAt?: Date | string | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -6658,6 +7014,10 @@ export type ContractorCreateWithoutPaymentRunItemsInput = {
   isSensitive?: boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: string | null
+  ssnLast4?: string | null
+  uspsVerified?: boolean | null
+  uspsValidatedAt?: Date | string | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -6730,6 +7090,10 @@ export type ContractorUncheckedCreateWithoutPaymentRunItemsInput = {
   isSensitive?: boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: string | null
+  ssnLast4?: string | null
+  uspsVerified?: boolean | null
+  uspsValidatedAt?: Date | string | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -6806,6 +7170,10 @@ export type ContractorUpdateWithoutPaymentRunItemsInput = {
   isSensitive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -6878,6 +7246,10 @@ export type ContractorUncheckedUpdateWithoutPaymentRunItemsInput = {
   isSensitive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -6938,6 +7310,10 @@ export type ContractorCreateWithoutPaymentComplianceChecksInput = {
   isSensitive?: boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: string | null
+  ssnLast4?: string | null
+  uspsVerified?: boolean | null
+  uspsValidatedAt?: Date | string | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -7010,6 +7386,10 @@ export type ContractorUncheckedCreateWithoutPaymentComplianceChecksInput = {
   isSensitive?: boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: string | null
+  ssnLast4?: string | null
+  uspsVerified?: boolean | null
+  uspsValidatedAt?: Date | string | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -7086,6 +7466,10 @@ export type ContractorUpdateWithoutPaymentComplianceChecksInput = {
   isSensitive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -7158,6 +7542,10 @@ export type ContractorUncheckedUpdateWithoutPaymentComplianceChecksInput = {
   isSensitive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -7218,6 +7606,10 @@ export type ContractorCreateWithoutPortalSessionsInput = {
   isSensitive?: boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: string | null
+  ssnLast4?: string | null
+  uspsVerified?: boolean | null
+  uspsValidatedAt?: Date | string | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -7290,6 +7682,10 @@ export type ContractorUncheckedCreateWithoutPortalSessionsInput = {
   isSensitive?: boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: string | null
+  ssnLast4?: string | null
+  uspsVerified?: boolean | null
+  uspsValidatedAt?: Date | string | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -7366,6 +7762,10 @@ export type ContractorUpdateWithoutPortalSessionsInput = {
   isSensitive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -7438,6 +7838,10 @@ export type ContractorUncheckedUpdateWithoutPortalSessionsInput = {
   isSensitive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -7498,6 +7902,10 @@ export type ContractorCreateWithoutChangeRequestsInput = {
   isSensitive?: boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: string | null
+  ssnLast4?: string | null
+  uspsVerified?: boolean | null
+  uspsValidatedAt?: Date | string | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -7570,6 +7978,10 @@ export type ContractorUncheckedCreateWithoutChangeRequestsInput = {
   isSensitive?: boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: string | null
+  ssnLast4?: string | null
+  uspsVerified?: boolean | null
+  uspsValidatedAt?: Date | string | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -7646,6 +8058,10 @@ export type ContractorUpdateWithoutChangeRequestsInput = {
   isSensitive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -7718,6 +8134,10 @@ export type ContractorUncheckedUpdateWithoutChangeRequestsInput = {
   isSensitive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -7778,6 +8198,10 @@ export type ContractorCreateWithoutNotificationPreferencesInput = {
   isSensitive?: boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: string | null
+  ssnLast4?: string | null
+  uspsVerified?: boolean | null
+  uspsValidatedAt?: Date | string | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -7850,6 +8274,10 @@ export type ContractorUncheckedCreateWithoutNotificationPreferencesInput = {
   isSensitive?: boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: string | null
+  ssnLast4?: string | null
+  uspsVerified?: boolean | null
+  uspsValidatedAt?: Date | string | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -7926,6 +8354,10 @@ export type ContractorUpdateWithoutNotificationPreferencesInput = {
   isSensitive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -7998,6 +8430,10 @@ export type ContractorUncheckedUpdateWithoutNotificationPreferencesInput = {
   isSensitive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -8058,6 +8494,10 @@ export type ContractorCreateWithoutTaxIdValidationsInput = {
   isSensitive?: boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: string | null
+  ssnLast4?: string | null
+  uspsVerified?: boolean | null
+  uspsValidatedAt?: Date | string | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -8130,6 +8570,10 @@ export type ContractorUncheckedCreateWithoutTaxIdValidationsInput = {
   isSensitive?: boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: string | null
+  ssnLast4?: string | null
+  uspsVerified?: boolean | null
+  uspsValidatedAt?: Date | string | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -8206,6 +8650,10 @@ export type ContractorUpdateWithoutTaxIdValidationsInput = {
   isSensitive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -8278,6 +8726,10 @@ export type ContractorUncheckedUpdateWithoutTaxIdValidationsInput = {
   isSensitive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -8338,6 +8790,10 @@ export type ContractorCreateWithoutTimesheetsInput = {
   isSensitive?: boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: string | null
+  ssnLast4?: string | null
+  uspsVerified?: boolean | null
+  uspsValidatedAt?: Date | string | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -8410,6 +8866,10 @@ export type ContractorUncheckedCreateWithoutTimesheetsInput = {
   isSensitive?: boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: string | null
+  ssnLast4?: string | null
+  uspsVerified?: boolean | null
+  uspsValidatedAt?: Date | string | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -8486,6 +8946,10 @@ export type ContractorUpdateWithoutTimesheetsInput = {
   isSensitive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -8558,6 +9022,10 @@ export type ContractorUncheckedUpdateWithoutTimesheetsInput = {
   isSensitive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -8618,6 +9086,10 @@ export type ContractorCreateWithoutTimeEntriesInput = {
   isSensitive?: boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: string | null
+  ssnLast4?: string | null
+  uspsVerified?: boolean | null
+  uspsValidatedAt?: Date | string | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -8690,6 +9162,10 @@ export type ContractorUncheckedCreateWithoutTimeEntriesInput = {
   isSensitive?: boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: string | null
+  ssnLast4?: string | null
+  uspsVerified?: boolean | null
+  uspsValidatedAt?: Date | string | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -8766,6 +9242,10 @@ export type ContractorUpdateWithoutTimeEntriesInput = {
   isSensitive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -8838,6 +9318,10 @@ export type ContractorUncheckedUpdateWithoutTimeEntriesInput = {
   isSensitive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -8898,6 +9382,10 @@ export type ContractorCreateWithoutWorkflowRoleInput = {
   isSensitive?: boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: string | null
+  ssnLast4?: string | null
+  uspsVerified?: boolean | null
+  uspsValidatedAt?: Date | string | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -8969,6 +9457,10 @@ export type ContractorUncheckedCreateWithoutWorkflowRoleInput = {
   isSensitive?: boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: string | null
+  ssnLast4?: string | null
+  uspsVerified?: boolean | null
+  uspsValidatedAt?: Date | string | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -9056,6 +9548,10 @@ export type ContractorCreateWithoutWorkflowRunsInput = {
   isSensitive?: boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: string | null
+  ssnLast4?: string | null
+  uspsVerified?: boolean | null
+  uspsValidatedAt?: Date | string | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -9128,6 +9624,10 @@ export type ContractorUncheckedCreateWithoutWorkflowRunsInput = {
   isSensitive?: boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: string | null
+  ssnLast4?: string | null
+  uspsVerified?: boolean | null
+  uspsValidatedAt?: Date | string | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -9204,6 +9704,10 @@ export type ContractorUpdateWithoutWorkflowRunsInput = {
   isSensitive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -9276,6 +9780,10 @@ export type ContractorUncheckedUpdateWithoutWorkflowRunsInput = {
   isSensitive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -9341,6 +9849,10 @@ export type ContractorCreateManyOwnerInput = {
   isSensitive?: boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: string | null
+  ssnLast4?: string | null
+  uspsVerified?: boolean | null
+  uspsValidatedAt?: Date | string | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -9379,6 +9891,10 @@ export type ContractorUpdateWithoutOwnerInput = {
   isSensitive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -9450,6 +9966,10 @@ export type ContractorUncheckedUpdateWithoutOwnerInput = {
   isSensitive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -9516,6 +10036,10 @@ export type ContractorUncheckedUpdateManyWithoutOwnerInput = {
   isSensitive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -9559,6 +10083,10 @@ export type ContractorCreateManyOrganizationInput = {
   isSensitive?: boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: string | null
+  ssnLast4?: string | null
+  uspsVerified?: boolean | null
+  uspsValidatedAt?: Date | string | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -9597,6 +10125,10 @@ export type ContractorUpdateWithoutOrganizationInput = {
   isSensitive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -9668,6 +10200,10 @@ export type ContractorUncheckedUpdateWithoutOrganizationInput = {
   isSensitive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -9734,6 +10270,10 @@ export type ContractorUncheckedUpdateManyWithoutOrganizationInput = {
   isSensitive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -9777,6 +10317,10 @@ export type ContractorCreateManyPrimaryTeamInput = {
   isSensitive?: boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: string | null
+  ssnLast4?: string | null
+  uspsVerified?: boolean | null
+  uspsValidatedAt?: Date | string | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -9815,6 +10359,10 @@ export type ContractorUpdateWithoutPrimaryTeamInput = {
   isSensitive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -9886,6 +10434,10 @@ export type ContractorUncheckedUpdateWithoutPrimaryTeamInput = {
   isSensitive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -9952,6 +10504,10 @@ export type ContractorUncheckedUpdateManyWithoutPrimaryTeamInput = {
   isSensitive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -9995,6 +10551,10 @@ export type ContractorCreateManyPrimaryProjectInput = {
   isSensitive?: boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: string | null
+  ssnLast4?: string | null
+  uspsVerified?: boolean | null
+  uspsValidatedAt?: Date | string | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -10033,6 +10593,10 @@ export type ContractorUpdateWithoutPrimaryProjectInput = {
   isSensitive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -10104,6 +10668,10 @@ export type ContractorUncheckedUpdateWithoutPrimaryProjectInput = {
   isSensitive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -10170,6 +10738,10 @@ export type ContractorUncheckedUpdateManyWithoutPrimaryProjectInput = {
   isSensitive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -10213,6 +10785,10 @@ export type ContractorCreateManyDefaultCostCenterInput = {
   isSensitive?: boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: string | null
+  ssnLast4?: string | null
+  uspsVerified?: boolean | null
+  uspsValidatedAt?: Date | string | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -10251,6 +10827,10 @@ export type ContractorUpdateWithoutDefaultCostCenterInput = {
   isSensitive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -10322,6 +10902,10 @@ export type ContractorUncheckedUpdateWithoutDefaultCostCenterInput = {
   isSensitive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -10388,6 +10972,10 @@ export type ContractorUncheckedUpdateManyWithoutDefaultCostCenterInput = {
   isSensitive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -10431,6 +11019,10 @@ export type ContractorCreateManyWorkflowRoleInput = {
   isSensitive?: boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: string | null
+  ssnLast4?: string | null
+  uspsVerified?: boolean | null
+  uspsValidatedAt?: Date | string | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -10469,6 +11061,10 @@ export type ContractorUpdateWithoutWorkflowRoleInput = {
   isSensitive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -10540,6 +11136,10 @@ export type ContractorUncheckedUpdateWithoutWorkflowRoleInput = {
   isSensitive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -10606,6 +11206,10 @@ export type ContractorUncheckedUpdateManyWithoutWorkflowRoleInput = {
   isSensitive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -10870,6 +11474,10 @@ export type ContractorSelect<ExtArgs extends runtime.Types.Extensions.InternalAr
   isSensitive?: boolean
   customFieldsJson?: boolean
   countryFields?: boolean
+  ssnEncrypted?: boolean
+  ssnLast4?: boolean
+  uspsVerified?: boolean
+  uspsValidatedAt?: boolean
   latestVatValidatedAt?: boolean
   latestVatValidationStatus?: boolean
   isPublicSectorBuyer?: boolean
@@ -10944,6 +11552,10 @@ export type ContractorSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ex
   isSensitive?: boolean
   customFieldsJson?: boolean
   countryFields?: boolean
+  ssnEncrypted?: boolean
+  ssnLast4?: boolean
+  uspsVerified?: boolean
+  uspsValidatedAt?: boolean
   latestVatValidatedAt?: boolean
   latestVatValidationStatus?: boolean
   isPublicSectorBuyer?: boolean
@@ -10994,6 +11606,10 @@ export type ContractorSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Ex
   isSensitive?: boolean
   customFieldsJson?: boolean
   countryFields?: boolean
+  ssnEncrypted?: boolean
+  ssnLast4?: boolean
+  uspsVerified?: boolean
+  uspsValidatedAt?: boolean
   latestVatValidatedAt?: boolean
   latestVatValidationStatus?: boolean
   isPublicSectorBuyer?: boolean
@@ -11044,6 +11660,10 @@ export type ContractorSelectScalar = {
   isSensitive?: boolean
   customFieldsJson?: boolean
   countryFields?: boolean
+  ssnEncrypted?: boolean
+  ssnLast4?: boolean
+  uspsVerified?: boolean
+  uspsValidatedAt?: boolean
   latestVatValidatedAt?: boolean
   latestVatValidationStatus?: boolean
   isPublicSectorBuyer?: boolean
@@ -11059,7 +11679,7 @@ export type ContractorSelectScalar = {
   preferredPaczkomatAddress?: boolean
 }
 
-export type ContractorOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "organizationId" | "type" | "legalName" | "displayName" | "taxId" | "vatId" | "registrationNumber" | "countryCode" | "currency" | "email" | "phone" | "website" | "addressLine1" | "addressLine2" | "city" | "postalCode" | "status" | "lifecycleStage" | "ownerUserId" | "primaryTeamId" | "primaryProjectId" | "defaultCostCenterId" | "workflowRoleId" | "notes" | "isSensitive" | "customFieldsJson" | "countryFields" | "latestVatValidatedAt" | "latestVatValidationStatus" | "isPublicSectorBuyer" | "peppolSchemeId" | "peppolParticipantValue" | "isBusinessCustomer" | "createdAt" | "updatedAt" | "archivedAt" | "deletedAt" | "preferredPaczkomatId" | "preferredPaczkomatName" | "preferredPaczkomatAddress", ExtArgs["result"]["contractor"]>
+export type ContractorOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "organizationId" | "type" | "legalName" | "displayName" | "taxId" | "vatId" | "registrationNumber" | "countryCode" | "currency" | "email" | "phone" | "website" | "addressLine1" | "addressLine2" | "city" | "postalCode" | "status" | "lifecycleStage" | "ownerUserId" | "primaryTeamId" | "primaryProjectId" | "defaultCostCenterId" | "workflowRoleId" | "notes" | "isSensitive" | "customFieldsJson" | "countryFields" | "ssnEncrypted" | "ssnLast4" | "uspsVerified" | "uspsValidatedAt" | "latestVatValidatedAt" | "latestVatValidationStatus" | "isPublicSectorBuyer" | "peppolSchemeId" | "peppolParticipantValue" | "isBusinessCustomer" | "createdAt" | "updatedAt" | "archivedAt" | "deletedAt" | "preferredPaczkomatId" | "preferredPaczkomatName" | "preferredPaczkomatAddress", ExtArgs["result"]["contractor"]>
 export type ContractorInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
   owner?: boolean | Prisma.Contractor$ownerArgs<ExtArgs>
@@ -11171,6 +11791,10 @@ export type $ContractorPayload<ExtArgs extends runtime.Types.Extensions.Internal
     isSensitive: boolean
     customFieldsJson: runtime.JsonValue | null
     countryFields: runtime.JsonValue | null
+    ssnEncrypted: string | null
+    ssnLast4: string | null
+    uspsVerified: boolean | null
+    uspsValidatedAt: Date | null
     latestVatValidatedAt: Date | null
     latestVatValidationStatus: $Enums.ValidationStatus | null
     isPublicSectorBuyer: boolean
@@ -11664,6 +12288,10 @@ export interface ContractorFieldRefs {
   readonly isSensitive: Prisma.FieldRef<"Contractor", 'Boolean'>
   readonly customFieldsJson: Prisma.FieldRef<"Contractor", 'Json'>
   readonly countryFields: Prisma.FieldRef<"Contractor", 'Json'>
+  readonly ssnEncrypted: Prisma.FieldRef<"Contractor", 'String'>
+  readonly ssnLast4: Prisma.FieldRef<"Contractor", 'String'>
+  readonly uspsVerified: Prisma.FieldRef<"Contractor", 'Boolean'>
+  readonly uspsValidatedAt: Prisma.FieldRef<"Contractor", 'DateTime'>
   readonly latestVatValidatedAt: Prisma.FieldRef<"Contractor", 'DateTime'>
   readonly latestVatValidationStatus: Prisma.FieldRef<"Contractor", 'ValidationStatus'>
   readonly isPublicSectorBuyer: Prisma.FieldRef<"Contractor", 'Boolean'>

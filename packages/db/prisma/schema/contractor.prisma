@@ -36,6 +36,15 @@ model Contractor {
   isSensitive               Boolean                  @default(false)
   customFieldsJson          Json?
   countryFields             Json? // Country-specific compliance fields (validated by Zod per country)
+  // Phase 84 (US-FIELD-02 / D-01) — SSN encrypt-at-rest in dedicated columns (NEVER countryFields JSONB).
+  // ssnEncrypted holds `iv:authTag:ciphertext` (AES-256-GCM, dedicated SSN_ENCRYPTION_KEY); ssnLast4 is
+  // the plain trailing-4 for default display. Full value only via the audit-logged reveal procedure
+  // gated by contractorPii:read. Additive-nullable (existing rows default NULL — zero data migration).
+  ssnEncrypted              String?
+  ssnLast4                  String?
+  // Phase 84 (US-FIELD-03 / D-03) — USPS CASS advisory verification flag + last-validated instant.
+  uspsVerified              Boolean?
+  uspsValidatedAt           DateTime?
   // Phase 57 (D-05) — denormalized VAT validation summary (source of truth = TaxIdValidation)
   latestVatValidatedAt      DateTime?
   latestVatValidationStatus ValidationStatus?
