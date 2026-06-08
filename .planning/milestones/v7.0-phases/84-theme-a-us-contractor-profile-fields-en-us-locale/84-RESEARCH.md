@@ -12,7 +12,7 @@ The two genuinely new things are: (1) **encrypt-at-rest SSN** — but even this 
 
 **CRITICAL CORRECTION to CONTEXT hints:** The platform has **10 roles, not 8**, and the role names in CONTEXT (`owner/admin/manager/member/viewer/it_admin`) are WRONG. Actual roles: `owner, admin, finance_admin, ops_manager, team_manager, legal_compliance_viewer, it_admin, external_accountant, readonly, platform_operator`. D-02's "finance/accountant" maps to **`finance_admin` + `external_accountant`**; there is no `manager`/`member`/`viewer` role. The planner MUST use these exact names.
 
-**Primary recommendation:** Mirror `bank-account-crypto.ts` (not the credential-store) for SSN; add `contractorPii:['read']` to the access-control statement and grant it to `owner/admin/finance_admin/external_accountant`; build the USPS client as a new `packages/gov-api/src/clients/usps-client.ts` subclass of `GovApiClient`; persist SSN as dedicated `Contractor.ssnEncrypted`/`ssnLast4` columns (NOT inside `countryFields` JSONB); ship en-US as a thin-override `en-US.json` and extend the parity guard with a fallback-aware peer mode.
+**Primary recommendation:** Mirror `bank-account-crypto.ts` (not the credential-store) for SSN; add `contractorPii:['read']` to the access-control statement and grant it to `owner/admin/finance_admin (D-09: external_accountant DENIED)`; build the USPS client as a new `packages/gov-api/src/clients/usps-client.ts` subclass of `GovApiClient`; persist SSN as dedicated `Contractor.ssnEncrypted`/`ssnLast4` columns (NOT inside `countryFields` JSONB); ship en-US as a thin-override `en-US.json` and extend the parity guard with a fallback-aware peer mode.
 
 ## User Constraints (from CONTEXT.md)
 
@@ -143,7 +143,7 @@ The two genuinely new things are: (1) **encrypt-at-rest SSN** — but even this 
 
    packages/logger/pii-mask.ts  ── PII_MASK_PATHS += ssn/ein (log redaction, orthogonal to display+RBAC)
    packages/auth/permissions.ts ── accessControlStatement += contractorPii:['read']
-   packages/auth/roles.ts       ── grant contractorPii:['read'] to owner/admin/finance_admin/external_accountant
+   packages/auth/roles.ts       ── grant contractorPii:['read'] to owner/admin/finance_admin (D-09: external_accountant DENIED)
 ```
 
 ### Recommended File-Placement Map (verified anchors)
@@ -162,7 +162,7 @@ packages/api/src/
 
 packages/auth/src/
 ├── permissions.ts                      # EDIT — accessControlStatement: contractorPii:['read']
-└── roles.ts                            # EDIT — add to allPermissions + owner/admin/finance_admin/external_accountant
+└── roles.ts                            # EDIT — add to allPermissions + owner/admin/finance_admin (D-09: external_accountant DENIED)
 
 packages/logger/src/pii-mask.ts         # EDIT — PII_MASK_PATHS += ssn/ein variants
 
@@ -217,8 +217,8 @@ export function encryptSsn(ssn: string): string {
 // Source: packages/auth/src/permissions.ts — add to accessControlStatement:
 contractorPii: ['read'],
 // Source: packages/auth/src/roles.ts — add to allPermissions (for owner) AND to:
-//   admin, finance_admin, external_accountant  → contractorPii: ['read']
-//   (NOT ops_manager/team_manager/legal_compliance_viewer/it_admin/readonly/platform_operator)
+//   admin, finance_admin  → contractorPii: ['read']   (D-09: external_accountant EXCLUDED — DENIED)
+//   (NOT external_accountant/ops_manager/team_manager/legal_compliance_viewer/it_admin/readonly/platform_operator)
 // Middleware (packages/api/src/middleware/rbac.ts, already exists):
 revealSsn: tenantProcedure.use(requirePermission({ contractorPii: ['read'] }))…
 ```
@@ -288,7 +288,7 @@ Note `requirePermission` re-reads `member.role` live every call (config.ts:278 c
 ### Pitfall 1: Wrong role names (CONTEXT hint is stale)
 **What goes wrong:** CONTEXT says "owner + admin + finance/accountant; NOT manager/member/viewer/it_admin" and "8 roles". The codebase has **10 roles** and no `manager`/`member`/`viewer`.
 **Why it happens:** CONTEXT used generic role names, not the in-tree set.
-**How to avoid:** Grant `contractorPii:['read']` to exactly `owner, admin, finance_admin, external_accountant`. Deny is implicit for `ops_manager, team_manager, legal_compliance_viewer, it_admin, readonly, platform_operator`. Add a permission-matrix test asserting all 10.
+**How to avoid:** Grant `contractorPii:['read']` to exactly `owner, admin, finance_admin` (**D-09 — `external_accountant` is EXCLUDED**, a deliberate liability/data-minimization call). Deny is implicit for `external_accountant, ops_manager, team_manager, legal_compliance_viewer, it_admin, readonly, platform_operator`. Add a permission-matrix test asserting all 10.
 **Warning signs:** A plan referencing a `manager` or `viewer` role — those don't exist.
 
 ### Pitfall 2: `allPermissions` duplication in roles.ts (owner drift)
@@ -415,17 +415,13 @@ revealSsn: tenantProcedure
 
 **If this table looks long:** A1/A2 are the load-bearing ones and both are explicitly legal/spec-deferred by the phase posture — they do NOT block planning, only require a plan-time confirmation step + legal annotation.
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Exact USPS response field names + the normalized-address mapping back to our columns.**
-   - What we know: endpoint `GET apis.usps.com/addresses/v3/address`, OAuth `POST apis.usps.com/oauth2/v3/token`, 60/hr, no-batch, DPV included.
-   - What's unclear: the precise JSON key casing for `additionalInfo` sub-fields.
-   - Recommendation: planner fetches the official OpenAPI at `developers.usps.com/api/81` (JS-rendered; use the JSON spec link, not the HTML) and pins the Zod schema. The adapter's `safeParse` makes drift fail-loud, so a wrong guess is caught in the adapter test, not in production.
+   - **RESOLVED:** planner fetches the official OpenAPI at `developers.usps.com/api/81` (use the JSON spec link) and pins the Zod schema at implementation time; the adapter's `safeParse` makes any drift fail-loud in the adapter test, not production.
 
 2. **Is `external_accountant` in-scope for `contractorPii:read`?**
-   - What we know: D-02 says "finance/accountant". The repo has both `finance_admin` (internal) and `external_accountant`.
-   - What's unclear: whether an EXTERNAL accountant should see full SSN (they need it for 1099 in Phase 86, but external-party SSN access is a higher bar).
-   - Recommendation: grant to `finance_admin` definitely; flag `external_accountant` as a **discuss-phase confirmation** — it's a real liability call. Default-deny external if unsure (narrower is safer; can widen in Phase 86).
+   - **RESOLVED (D-09):** NO. Grant `contractorPii:read` to `owner + admin + finance_admin` only; `external_accountant` is DENIED (external-party full-SSN access is a liability + data-minimization concern; external accountants work from last-4 + the generated 1099). Can be revisited if Phase 86 surfaces a hard need.
 
 3. **EIN entity-type conditional requirements.**
    - What we know: UK/DE schemas make IDs conditionally required by entity type via `superRefine`.
@@ -464,7 +460,7 @@ revealSsn: tenantProcedure
 | US-FIELD-02 | SSN format + invalid-range (000/666/900-999/group00/serial0000) | unit | `pnpm --filter @contractor-ops/validators test src/__tests__/us-validators.test.ts` | ❌ Wave 0 |
 | US-FIELD-02 | `encryptSsn`/`decryptSsn` round-trip + `ssnLast4` derivation | unit | `pnpm --filter @contractor-ops/api test src/services/__tests__/ssn-crypto.test.ts` | ❌ Wave 0 |
 | US-FIELD-02 | `revealSsn` requires `contractorPii:read` → FORBIDDEN otherwise; writes audit row | unit (mocked ctx) | `pnpm --filter @contractor-ops/api test src/routers/core/__tests__/contractor-reveal-ssn.test.ts` | ❌ Wave 0 |
-| US-FIELD-02 | role→`contractorPii:read` matrix (10 roles; only owner/admin/finance_admin/external_accountant grant) | unit | `pnpm --filter @contractor-ops/auth test` (mirror existing access-control test) | ⚠️ extend existing access-control test |
+| US-FIELD-02 | role→`contractorPii:read` matrix (10 roles; only owner/admin/finance_admin (D-09: external_accountant DENIED) grant) | unit | `pnpm --filter @contractor-ops/auth test` (mirror existing access-control test) | ⚠️ extend existing access-control test |
 | US-FIELD-02 | `*.ssn`/`*.ein` redacted by pino | unit | `pnpm --filter @contractor-ops/logger test` | ⚠️ extend pii-mask test |
 | US-FIELD-03 | USPS adapter: token cache, 60/hr self-throttle → unverified, Redis-down → fail-open, address-cache hit, schema `safeParse` | unit (mocked fetch + Redis) | `pnpm --filter @contractor-ops/gov-api test src/clients/__tests__/usps-client.test.ts` | ❌ Wave 0 |
 | US-FIELD-04 | `CountryFieldsDispatch` renders `UsComplianceFields` for `countryCode==='US'` | component (jsdom) | `pnpm --filter @contractor-ops/web-vite test src/components/contractors/__tests__/country-compliance-us.test.tsx` | ❌ Wave 0 — **scoped path only** |
@@ -574,7 +570,7 @@ revealSsn: tenantProcedure
 - External facts (IRS/SSN/USPS): MEDIUM — CITED to authoritative sources but legal/tax-adviser-deferred by phase posture; USPS exact field names flagged for plan-time OpenAPI fetch
 
 **Anchor corrections flagged:**
-- CONTEXT "8 roles" + names `manager/member/viewer` → **WRONG**: 10 roles; correct names listed above. D-02 grant = `owner/admin/finance_admin/external_accountant`.
+- CONTEXT "8 roles" + names `manager/member/viewer` → **WRONG**: 10 roles; correct names listed above. D-02 grant = `owner/admin/finance_admin (D-09: external_accountant DENIED)`.
 - D-01 hint "credential-store pattern" → **better mirror is `bank-account-crypto.ts`** (single string + single key + masked-column precedent), not `credential-service.ts` (JSON blob).
 - "country-compliance config gating `hasCountryFields`/`countryCode`" → it is **server-side** (`contractor.getCountryFieldsConfig`, org-country gated via `countryFieldsSchemaMap`), not a client config. Registering `'US'` = adding `US` to `countryFieldsSchemaMap` (validators) AND the `fields` list in the server procedure AND the client `CountryFieldsDispatch` switch + `COUNTRY_LABELS`.
 - The `i18n:parity` gate (`scripts/i18n-parity.mjs` → `run-guard.ts`) uses `base:'en', peers:['de','pl','ar']`; en-US fallback-parity = a new fallback-aware peer mode, NOT adding en-US to the strict peers array.
