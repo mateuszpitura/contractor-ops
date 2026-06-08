@@ -63,8 +63,8 @@ Requirements for the v7.0 milestone. Each maps to exactly one phase (filled by r
 
 ### Theme A — US Contractor Profile Fields (US-FIELD)
 
-- [ ] **US-FIELD-01**: EIN validator (XX-XXXXXXX format + IRS-published prefix table)
-- [ ] **US-FIELD-02**: SSN intake with PII-grade masking (last-4 default; full display behind RBAC `CONTRACTOR_PII:READ`)
+- [x] **US-FIELD-01**: EIN validator (XX-XXXXXXX format + IRS-published prefix table)
+- [x] **US-FIELD-02**: SSN intake with PII-grade masking (last-4 default; full display behind RBAC `CONTRACTOR_PII:READ`)
 - [ ] **US-FIELD-03**: US address validation via USPS Addresses API (CASS-certified format)
 - [ ] **US-FIELD-04**: US contractor profile component dispatched from the existing `CountryComplianceSection` pattern
 
@@ -260,8 +260,8 @@ Which phases cover which requirements. Phase numbering continues from v6.0 (ende
 | US-INFRA-01 | Phase 83 | Complete |
 | US-INFRA-02 | Phase 83 | Complete |
 | US-INFRA-03 | Phase 83 | Complete |
-| US-FIELD-01 | Phase 84 | Pending |
-| US-FIELD-02 | Phase 84 | Pending |
+| US-FIELD-01 | Phase 84 | Complete |
+| US-FIELD-02 | Phase 84 | Complete |
 | US-FIELD-03 | Phase 84 | Pending |
 | US-FIELD-04 | Phase 84 | Pending |
 | US-LOC-01 | Phase 84 | Pending |
