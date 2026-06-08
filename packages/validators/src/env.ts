@@ -184,6 +184,19 @@ const bankEncryptionSchema = z.object({
   BANK_ACCOUNT_ENCRYPTION_KEY: hex32,
 });
 
+// ── SSN Encryption + USPS (Phase 84 — US-FIELD-02 / US-FIELD-03) ───────────
+// SSN_ENCRYPTION_KEY is a dedicated hex-32 key, separate from the bank key, so
+// the two secrets have independent blast radius (D-01). Required-in-schema so an
+// unset key fails loud at boot — the SSN write path never silently stores
+// plaintext (T-84-01-02). USPS credentials are optional: LOCAL-ONLY has no live
+// creds and the USPS address client fails-open (unverified flag) when absent.
+
+const usFieldsSchema = z.object({
+  SSN_ENCRYPTION_KEY: hex32,
+  USPS_CLIENT_ID: z.string().optional(),
+  USPS_CLIENT_SECRET: z.string().optional(),
+});
+
 // ── Cloudflare Turnstile (signup bot protection — F-SEC-22) ────────────────
 // Optional in development so contributors don't need a Cloudflare app to run
 // the app locally; the signup `before` hook short-circuits the verification
@@ -378,6 +391,7 @@ export const serverEnvSchema = coreSchema
   .merge(outlookCalendarSchema)
   .merge(linearSchema)
   .merge(bankEncryptionSchema)
+  .merge(usFieldsSchema)
   .merge(ocrSchema)
   .merge(qstashSchema)
   .merge(cronSchema)

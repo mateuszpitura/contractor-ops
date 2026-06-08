@@ -7,6 +7,8 @@ import {
   uaeCountryFieldsSchema,
   ukCountryFieldsSchema,
   ukEntityTypeEnum,
+  usCountryFieldsSchema,
+  usEntityTypeEnum,
 } from '../country-fields.js';
 
 // ---------------------------------------------------------------------------
@@ -40,6 +42,10 @@ describe('countryFieldsSchemaMap — preserves existing AE / SA entries', () => 
   it('DE maps to deCountryFieldsSchema', () => {
     expect(countryFieldsSchemaMap.DE).toBe(deCountryFieldsSchema);
   });
+
+  it('US maps to usCountryFieldsSchema', () => {
+    expect(countryFieldsSchemaMap.US).toBe(usCountryFieldsSchema);
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -67,6 +73,18 @@ describe('deEntityTypeEnum', () => {
 
   it('rejects unknown values', () => {
     expect(deEntityTypeEnum.safeParse('KGaA').success).toBe(false);
+  });
+});
+
+describe('usEntityTypeEnum', () => {
+  it('accepts all 6 US entity types', () => {
+    for (const t of ['SOLE_PROPRIETOR', 'LLC', 'C_CORP', 'S_CORP', 'PARTNERSHIP', 'INDIVIDUAL']) {
+      expect(usEntityTypeEnum.safeParse(t).success).toBe(true);
+    }
+  });
+
+  it('rejects unknown values', () => {
+    expect(usEntityTypeEnum.safeParse('B_CORP').success).toBe(false);
   });
 });
 
@@ -403,6 +421,93 @@ describe('deCountryFieldsSchema — D-04 required-field rules', () => {
 });
 
 // ---------------------------------------------------------------------------
+// US schema — D-05 rules (84-RESEARCH Open Question 3 + UI-SPEC §A)
+// ---------------------------------------------------------------------------
+
+const VALID_EIN = '12-3456789'; // valid IRS prefix 12 (84-RESEARCH)
+
+describe('usCountryFieldsSchema — D-05 rules', () => {
+  it('LLC with valid EIN + full US address → success', () => {
+    const result = usCountryFieldsSchema.safeParse({
+      entityType: 'LLC',
+      ein: VALID_EIN,
+      addressLine1: '1600 Pennsylvania Ave NW',
+      city: 'Washington',
+      state: 'DC',
+      zipCode: '20500',
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it('LLC without EIN → fails on [ein] with required message', () => {
+    const result = usCountryFieldsSchema.safeParse({ entityType: 'LLC' });
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      const issue = result.error.issues.find(i => i.path[0] === 'ein');
+      expect(issue).toBeDefined();
+      expect(issue?.message).toBe('EIN is required for LLCs, corporations, and partnerships');
+    }
+  });
+
+  it.each(['C_CORP', 'S_CORP', 'PARTNERSHIP'])('%s without EIN → fails on [ein]', entityType => {
+    const result = usCountryFieldsSchema.safeParse({ entityType });
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error.issues.some(i => i.path[0] === 'ein')).toBe(true);
+    }
+  });
+
+  it('SOLE_PROPRIETOR without EIN → success (EIN optional — may file on SSN)', () => {
+    const result = usCountryFieldsSchema.safeParse({ entityType: 'SOLE_PROPRIETOR' });
+    expect(result.success).toBe(true);
+  });
+
+  it('INDIVIDUAL without EIN → success (EIN optional)', () => {
+    const result = usCountryFieldsSchema.safeParse({ entityType: 'INDIVIDUAL' });
+    expect(result.success).toBe(true);
+  });
+
+  it('invalid EIN format → fails on [ein]', () => {
+    const result = usCountryFieldsSchema.safeParse({
+      entityType: 'LLC',
+      ein: '07-1234567', // 07 is not in VALID_EIN_PREFIXES
+    });
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error.issues.some(i => i.path[0] === 'ein')).toBe(true);
+    }
+  });
+
+  it('state longer than 2 chars → fails on [state]', () => {
+    const result = usCountryFieldsSchema.safeParse({
+      entityType: 'LLC',
+      ein: VALID_EIN,
+      state: 'California',
+    });
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error.issues.some(i => i.path[0] === 'state')).toBe(true);
+    }
+  });
+
+  it('SSN is excluded from the schema entirely (stripped, never parsed)', () => {
+    const result = usCountryFieldsSchema.safeParse({
+      entityType: 'INDIVIDUAL',
+      ssn: '078-05-1120',
+    });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect('ssn' in result.data).toBe(false);
+    }
+  });
+
+  it('rejects unknown entityType value', () => {
+    const result = usCountryFieldsSchema.safeParse({ entityType: 'B_CORP' });
+    expect(result.success).toBe(false);
+  });
+});
+
+// ---------------------------------------------------------------------------
 // Schema-level integration through countryFieldsSchemaMap
 // ---------------------------------------------------------------------------
 
@@ -422,6 +527,11 @@ describe('countryFieldsSchemaMap dispatch', () => {
       isVatRegistered: false,
       isKleinunternehmer: false,
     });
+    expect(result.success).toBe(false);
+  });
+
+  it('US dispatch uses usCountryFieldsSchema rules', () => {
+    const result = countryFieldsSchemaMap.US?.safeParse({ entityType: 'LLC' });
     expect(result.success).toBe(false);
   });
 });

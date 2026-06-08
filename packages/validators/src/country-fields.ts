@@ -3,6 +3,7 @@ import { isValidHandelsregister, isValidSvNummer, isValidUstIdNr } from './de-va
 import { HANDELSREGISTER_COURTS } from './handelsregister-courts.js';
 import { getSteuernummerFormat, getSteuernummerRegex } from './steuernummer-formats.js';
 import { isValidCompaniesHouseNumber, isValidGbVat, isValidUtr } from './uk-validators.js';
+import { isValidEin } from './us-validators.js';
 
 // ---------------------------------------------------------------------------
 // UAE Country Fields
@@ -218,6 +219,63 @@ export const deCountryFieldsSchema = z
 export type DeCountryFields = z.infer<typeof deCountryFieldsSchema>;
 
 // ---------------------------------------------------------------------------
+// US Country Fields (Phase 84 — US-FIELD-01)
+// ---------------------------------------------------------------------------
+//
+// D-05 conditional required-field rules (84-RESEARCH Open Question 3; mirrors
+// the uk SOLE_TRADER→UTR conditional):
+//   - LLC / C_CORP / S_CORP / PARTNERSHIP → EIN required
+//   - INDIVIDUAL / SOLE_PROPRIETOR        → EIN optional (may file on the SSN)
+//
+// SSN is DELIBERATELY EXCLUDED from this JSONB schema (T-84-01-01). It lives in
+// dedicated encrypted columns (Plan 03) with its own input validator + reveal
+// gate; putting it here would leak it unmasked through getCountryFields. The
+// `state` field is constrained to a 2-letter code; EIN format is checked field-
+// level via isValidEin before the conditional superRefine runs.
+//
+// LOCAL-ONLY: the IRS/SSA rules behind isValidEin need legal/tax-adviser
+// verification before production deploy (annotated in us-validators.ts).
+
+export const usEntityTypeEnum = z.enum([
+  'SOLE_PROPRIETOR',
+  'LLC',
+  'C_CORP',
+  'S_CORP',
+  'PARTNERSHIP',
+  'INDIVIDUAL',
+]);
+
+const US_ENTITY_TYPES_REQUIRING_EIN = ['LLC', 'C_CORP', 'S_CORP', 'PARTNERSHIP'] as const;
+
+export const usCountryFieldsSchema = z
+  .object({
+    entityType: usEntityTypeEnum,
+    ein: z
+      .string()
+      .refine(v => !v || isValidEin(v), 'Invalid EIN')
+      .optional(),
+    addressLine1: z.string().optional(),
+    city: z.string().optional(),
+    state: z.string().length(2).optional(),
+    zipCode: z.string().optional(),
+    uspsVerified: z.boolean().optional(),
+  })
+  .superRefine((data, ctx) => {
+    if (
+      (US_ENTITY_TYPES_REQUIRING_EIN as readonly string[]).includes(data.entityType) &&
+      !data.ein
+    ) {
+      ctx.addIssue({
+        code: 'custom',
+        message: 'EIN is required for LLCs, corporations, and partnerships',
+        path: ['ein'],
+      });
+    }
+  });
+
+export type UsCountryFields = z.infer<typeof usCountryFieldsSchema>;
+
+// ---------------------------------------------------------------------------
 // Country Fields Union
 // ---------------------------------------------------------------------------
 
@@ -226,6 +284,7 @@ export const countryFieldsSchemaMap: Record<string, z.ZodTypeAny> = {
   SA: saudiCountryFieldsSchema,
   GB: ukCountryFieldsSchema,
   DE: deCountryFieldsSchema,
+  US: usCountryFieldsSchema,
 };
 
 /**

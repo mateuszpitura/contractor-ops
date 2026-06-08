@@ -53,6 +53,7 @@ export function minimalServerEnv(): Record<string, string> {
     LINEAR_CLIENT_ID: 'l',
     LINEAR_CLIENT_SECRET: 'l',
     BANK_ACCOUNT_ENCRYPTION_KEY: HEX32,
+    SSN_ENCRYPTION_KEY: HEX32,
     ANTHROPIC_API_KEY: 'sk-ant-xxx',
     QSTASH_TOKEN: 'q',
     QSTASH_CURRENT_SIGNING_KEY: 'sig1',

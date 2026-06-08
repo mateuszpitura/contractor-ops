@@ -126,6 +126,7 @@ export type {
   SaudiCountryFields,
   UaeCountryFields,
   UkCountryFields,
+  UsCountryFields,
 } from './country-fields.js';
 export {
   countryFieldsSchemaMap,
@@ -136,6 +137,8 @@ export {
   uaeCountryFieldsSchema,
   ukCountryFieldsSchema,
   ukEntityTypeEnum,
+  usCountryFieldsSchema,
+  usEntityTypeEnum,
   validateCountryFields,
   validatePolishNip,
   validateSaudiTin,
