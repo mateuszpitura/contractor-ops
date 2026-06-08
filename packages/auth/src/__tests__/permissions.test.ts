@@ -10,6 +10,7 @@ describe('accessControlStatement', () => {
       'invitation',
       'contractor',
       'contract',
+      'compliance',
       'document',
       'invoice',
       'workflow',
@@ -23,6 +24,7 @@ describe('accessControlStatement', () => {
       'team',
       'project',
       'costCenter',
+      'contractorPii',
       'admin:boe-rate',
     ];
     const keys = Object.keys(accessControlStatement);

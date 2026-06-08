@@ -38,6 +38,10 @@ export const accessControlStatement = {
   team: ['read', 'create', 'update', 'archive'],
   project: ['read', 'create', 'update', 'archive'],
   costCenter: ['read', 'create', 'update', 'archive'],
+  // Phase 84 US-FIELD-02 (D-02 / D-09) — gate for revealing full SSN PII.
+  // Granted ONLY to owner/admin/finance_admin; deny-by-default for the other 7
+  // roles (external_accountant explicitly DENIED per D-09). See roles.ts.
+  contractorPii: ['read'],
   'admin:boe-rate': ['read', 'write'],
 } as const;
 

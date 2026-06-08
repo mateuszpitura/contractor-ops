@@ -43,6 +43,13 @@ export const PII_MASK_PATHS = [
   '*.svNr',
   '*.socialInsuranceNumber',
 
+  // US contractor fields — Phase 84 (D-08). SSN is the Art. 9-grade identifier;
+  // EIN is a business ID but still log-masked per D-01/D-08.
+  '*.ssn',
+  '*.SSN',
+  '*.ein',
+  '*.EIN',
+
   // Country-scoped bundles
   '*.countryFields.utr',
   '*.countryFields.UTR',
@@ -57,6 +64,10 @@ export const PII_MASK_PATHS = [
   '*.countryFields.svNumber',
   '*.countryFields.socialInsuranceNumber',
   '*.countryFields.handelsregister.*',
+  '*.countryFields.ssn',
+  '*.countryFields.SSN',
+  '*.countryFields.ein',
+  '*.countryFields.EIN',
 
   // Phase 70 D-05 — default-redact request/response bodies. Top-level `body`
   // and any `*.body` (one level of wrapping) emit `[REDACTED]` by default.
@@ -92,6 +103,8 @@ export const PII_MASK_KEYWORDS = [
   'svNumber',
   'svNr',
   'socialInsuranceNumber',
+  'ssn',
+  'ein',
 ] as const;
 
 export type PiiMaskKeyword = (typeof PII_MASK_KEYWORDS)[number];

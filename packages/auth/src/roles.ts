@@ -35,6 +35,10 @@ const allPermissions = {
   team: ['read', 'create', 'update', 'archive'],
   project: ['read', 'create', 'update', 'archive'],
   costCenter: ['read', 'create', 'update', 'archive'],
+  // Phase 84 US-FIELD-02 (Pitfall 2) — this `allPermissions` const is a DUPLICATE of
+  // accessControlStatement and is the sole source for the owner role. It MUST stay in
+  // sync with permissions.ts or owner silently loses the new permission.
+  contractorPii: ['read'],
 } as const;
 
 export const roles = {
@@ -65,6 +69,7 @@ export const roles = {
     team: ['read', 'create', 'update', 'archive'],
     project: ['read', 'create', 'update', 'archive'],
     costCenter: ['read', 'create', 'update', 'archive'],
+    contractorPii: ['read'], // Phase 84 US-FIELD-02 (D-02)
   }),
 
   finance_admin: ac.newRole({
@@ -79,6 +84,7 @@ export const roles = {
     team: ['read'],
     project: ['read'],
     costCenter: ['read'],
+    contractorPii: ['read'], // Phase 84 US-FIELD-02 (D-02)
   }),
 
   ops_manager: ac.newRole({

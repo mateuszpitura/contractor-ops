@@ -1,4 +1,8 @@
+import { Writable } from 'node:stream';
+
+import pino from 'pino';
 import { describe, expect, it } from 'vitest';
+
 import {
   createCronLogger,
   createIntegrationLogger,
@@ -6,6 +10,24 @@ import {
   createTrpcLogger,
   createWebhookLogger,
 } from '../index.js';
+import { PII_MASK_PATHS } from '../pii-mask.js';
+
+/** Mount a fresh pino over an in-memory sink with the package's redact paths. */
+function captureRedacted(record: Record<string, unknown>): string {
+  const chunks: string[] = [];
+  const sink = new Writable({
+    write(chunk, _encoding, cb) {
+      chunks.push(chunk.toString());
+      cb();
+    },
+  });
+  const log = pino(
+    { level: 'debug', redact: { paths: [...PII_MASK_PATHS], censor: '[REDACTED]' } },
+    sink,
+  );
+  log.info(record, 'msg');
+  return chunks.join('');
+}
 
 describe('@contractor-ops/logger factories', () => {
   it('createLogger merges context into bindings', () => {
@@ -52,5 +74,22 @@ describe('@contractor-ops/logger factories', () => {
       service: 'integration',
       provider: 'jira',
     });
+  });
+});
+
+// Phase 84 US-FIELD-02 (D-08) — SSN/EIN must never reach the log sink in cleartext.
+describe('PII redaction for US contractor fields (D-08)', () => {
+  it('redacts ssn + ein nested under a wrapper key', () => {
+    const out = captureRedacted({ contractor: { ssn: '123-45-6789', ein: '12-3456789' } });
+    expect(out).not.toContain('123-45-6789');
+    expect(out).not.toContain('12-3456789');
+    expect(out).toContain('[REDACTED]');
+  });
+
+  it('redacts ssn + ein inside the countryFields bundle', () => {
+    const out = captureRedacted({ countryFields: { ssn: '987-65-4321', ein: '98-7654321' } });
+    expect(out).not.toContain('987-65-4321');
+    expect(out).not.toContain('98-7654321');
+    expect(out).toContain('[REDACTED]');
   });
 });
