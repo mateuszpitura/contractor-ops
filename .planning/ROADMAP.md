@@ -159,7 +159,7 @@ Known gaps / deferred at close: see STATE.md `## Deferred Items` (3 unverified p
 - [x] 84-01-PLAN.md — US-FIELD-01/02 validators: isValidEin (IRS prefix) + isValidSsn (range) + usCountryFieldsSchema (US, SSN excluded) + SSN_ENCRYPTION_KEY/USPS env (D-05) [wave 1]
 - [x] 84-02-PLAN.md — US-LOC-01 en-US: register locale + fallbackLng en-US→en→pl + fallback-aware i18n:parity (NOT a strict peer) + thin en-US.json (D-04) [wave 1]
 - [x] 84-03-PLAN.md — US-FIELD-02 security core: [BLOCKING] ssnEncrypted/ssnLast4/usps* columns (db push) + ssn-crypto (dedicated key) + contractorPii:read (owner/admin/finance_admin, owner-dup) + ssn/ein pii-mask (D-01/D-02/D-08/D-09) [wave 2]
-- [ ] 84-04-PLAN.md — US-FIELD-03 USPS adapter: UspsAddressClient (mirror HMRC) + GLOBAL 60/hr limiter + fail-open advisory + safeParse (D-03) [wave 2]
+- [x] 84-04-PLAN.md — US-FIELD-03 USPS adapter: UspsAddressClient (mirror HMRC) + GLOBAL 60/hr limiter + fail-open advisory + safeParse (D-03) [wave 2]
 - [ ] 84-05-PLAN.md — US-FIELD-01/02/03/04 server: getCountryFieldsConfig US + updateUsProfile (SSN→encrypted columns, USPS advisory) + revealSsn (staff-only, RBAC, audit) (D-01/D-02/D-03/D-06/D-09) [wave 3]
 - [ ] 84-06-PLAN.md — US-FIELD-04 + US-LOC-01 UI: UsComplianceFields + SsnMaskedReveal (gated, absent-without-perm) + UspsAddressStatusPill (advisory) + case 'US' dispatch + en/en-US copy (D-04/D-06, 84-UI-SPEC) [wave 4]
 **Research flag**: Standard — consistency phase; every hard part has an in-tree mirror (bank-account-crypto, hmrc-vat-client, uk-validators, uk-compliance-fields, Better Auth roles). USPS throttle/cache designed (GLOBAL 60/hr, fail-open). No new deps.
@@ -388,7 +388,7 @@ Phases execute in numeric order: 82 → 83 → … → 101. After Foundation (82
 |-------|-----------|----------------|--------|-----------|
 | 82. v7.0 Foundation — Add-On + Flags + US Region | v7.0 | 4/4 | Complete    | 2026-06-07 |
 | 83. Theme A — US Region Infrastructure | v7.0 | 4/4 | Complete    | 2026-06-07 |
-| 84. Theme A — US Profile Fields + en-US Locale | v7.0 | 4/7 | In Progress|  |
+| 84. Theme A — US Profile Fields + en-US Locale | v7.0 | 5/7 | In Progress|  |
 | 85. Theme A — W-Form Intake + Tax-Treaty Engine | v7.0 | 0/TBD | Not started | - |
 | 86. Theme A — TIN-Match → 1099-NEC → IRIS → State | v7.0 | 0/TBD | Not started | - |
 | 87. Theme A — 1042-S + US Classification + Letter | v7.0 | 0/TBD | Not started | - |

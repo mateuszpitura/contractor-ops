@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v7.0
 milestone_name: GTM Expansion
 status: executing
-stopped_at: Phase 84 UI-SPEC approved
-last_updated: "2026-06-08T14:14:13.792Z"
+stopped_at: Completed 84-04-PLAN.md
+last_updated: "2026-06-08T14:23:08.378Z"
 last_activity: 2026-06-08
 progress:
   total_phases: 20
   completed_phases: 2
   total_plans: 15
-  completed_plans: 12
+  completed_plans: 13
   percent: 10
 ---
 
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-06-07 — v7.0 GTM Expansion started; v6
 ## Current Position
 
 Phase: 84 (Theme A — US Contractor Profile Fields + en-US Locale) — EXECUTING
-Plan: 5 of 7
+Plan: 6 of 7
 Status: Ready to execute
 Last activity: 2026-06-08
 
-Progress: [████████░░] 80%
+Progress: [█████████░] 87%
 
 ## v7.0 Roadmap Summary (created 2026-06-07)
 
@@ -103,6 +103,8 @@ Decisions are logged in PROJECT.md Key Decisions table. Recent decisions affecti
 - [Phase ?]: [84-03] SSN encrypt-at-rest in dedicated Contractor columns (ssnEncrypted/ssnLast4), never countryFields JSONB (D-01); keyed by a separate SSN_ENCRYPTION_KEY (blast-radius isolation)
 - [Phase ?]: [84-03] contractorPii:read granted to owner/admin/finance_admin ONLY; external_accountant + 6 others DENIED (D-09); a new Better Auth permission requires editing BOTH accessControlStatement and the roles.ts allPermissions owner-duplicate (Pitfall 2)
 - [Phase ?]: [84-03] columns applied via direct additive ALTER (db push fallback; migrate dev drift-blocked); per-region production apply deferred (Phase 82/83 posture)
+- [Phase ?]: 84-04: USPS rate limiter keyed on FIXED GLOBAL 'usps-global' (60/hr per-credential), NOT organizationId (Pitfall 4, D-03)
+- [Phase ?]: 84-04: USPS adapter fail-open advisory — throttle/5xx/network/Redis-down/malformed/missing-creds → unverified, never throws to save (D-03)
 
 ### Pending Todos
 
@@ -141,6 +143,7 @@ Carried forward from v6.0 milestone close (2026-06-07). Full enumeration: `.plan
 | Phase 84 P84-01 | 5min | 2 tasks | 7 files |
 | Phase 84 P84-02 | 25min | 2 tasks | 14 files |
 | Phase 84 P84-03 | 7m | 3 tasks | 8 files |
+| Phase 84 P84-04 | 9min | 1 tasks | 5 files |
 
 ## Standing Project Constraints
 
@@ -150,7 +153,7 @@ Carried forward from v6.0 milestone close (2026-06-07). Full enumeration: `.plan
 
 ## Session Continuity
 
-Last session: 2026-06-08T14:14:01.944Z
-Stopped at: Phase 84 UI-SPEC approved
+Last session: 2026-06-08T14:23:08.372Z
+Stopped at: Completed 84-04-PLAN.md
 Resume file: None
 Next command: `/gsd:plan-phase 82`
