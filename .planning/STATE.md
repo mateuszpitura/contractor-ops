@@ -4,13 +4,13 @@ milestone: v7.0
 milestone_name: GTM Expansion
 status: executing
 stopped_at: Phase 84 UI-SPEC approved
-last_updated: "2026-06-08T14:01:21.312Z"
+last_updated: "2026-06-08T14:14:13.792Z"
 last_activity: 2026-06-08
 progress:
   total_phases: 20
   completed_phases: 2
   total_plans: 15
-  completed_plans: 11
+  completed_plans: 12
   percent: 10
 ---
 
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-06-07 — v7.0 GTM Expansion started; v6
 ## Current Position
 
 Phase: 84 (Theme A — US Contractor Profile Fields + en-US Locale) — EXECUTING
-Plan: 4 of 7
+Plan: 5 of 7
 Status: Ready to execute
 Last activity: 2026-06-08
 
-Progress: [███████░░░] 73%
+Progress: [████████░░] 80%
 
 ## v7.0 Roadmap Summary (created 2026-06-07)
 
@@ -100,6 +100,9 @@ Decisions are logged in PROJECT.md Key Decisions table. Recent decisions affecti
 - [Phase ?]: Phase 84 Wave-0: six RED scaffolds lock EIN/SSN/crypto/revealSsn-RBAC/USPS/web-vite contracts; RED accepted as terminal (Waves 1-4 turn GREEN)
 - [Phase ?]: Phase 84-01: SSN_ENCRYPTION_KEY is a NEW separate hex-32 key (blast-radius separation, D-01); SSN excluded from countryFields JSONB — dedicated encrypted columns land in Plan 03
 - [Phase ?]: [84-02]: en-US registered as fallback-aware (NOT strict) i18n:parity peer — thin en-US.json passes via fallbackPeers (peerKeys union en keys); de/pl/ar keep exact-parity (T-84-02-01 preserved); fallbackLng map en-US to en to pl; pickBestLocale exact region-tag match wins (en-US sticks, en-GB to en); US copy keys deferred to Plan 05
+- [Phase ?]: [84-03] SSN encrypt-at-rest in dedicated Contractor columns (ssnEncrypted/ssnLast4), never countryFields JSONB (D-01); keyed by a separate SSN_ENCRYPTION_KEY (blast-radius isolation)
+- [Phase ?]: [84-03] contractorPii:read granted to owner/admin/finance_admin ONLY; external_accountant + 6 others DENIED (D-09); a new Better Auth permission requires editing BOTH accessControlStatement and the roles.ts allPermissions owner-duplicate (Pitfall 2)
+- [Phase ?]: [84-03] columns applied via direct additive ALTER (db push fallback; migrate dev drift-blocked); per-region production apply deferred (Phase 82/83 posture)
 
 ### Pending Todos
 
@@ -137,6 +140,7 @@ Carried forward from v6.0 milestone close (2026-06-07). Full enumeration: `.plan
 | Phase 84 P00 | 25min | 3 tasks | 6 files |
 | Phase 84 P84-01 | 5min | 2 tasks | 7 files |
 | Phase 84 P84-02 | 25min | 2 tasks | 14 files |
+| Phase 84 P84-03 | 7m | 3 tasks | 8 files |
 
 ## Standing Project Constraints
 
@@ -146,7 +150,7 @@ Carried forward from v6.0 milestone close (2026-06-07). Full enumeration: `.plan
 
 ## Session Continuity
 
-Last session: 2026-06-08T14:00:49.866Z
+Last session: 2026-06-08T14:14:01.944Z
 Stopped at: Phase 84 UI-SPEC approved
 Resume file: None
 Next command: `/gsd:plan-phase 82`
