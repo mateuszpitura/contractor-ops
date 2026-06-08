@@ -79,9 +79,39 @@ tax-treaty table + W-8BEN auto-populate (US-LOC-02/03) are **Phase 85**, NOT her
 - **D-07:** US-LOC-02 (tax-treaty rate table) and US-LOC-03 (W-8BEN treaty-article
   auto-populate) are **Phase 85** — do NOT build treaty logic here.
 
+### Resolved from Research (2026-06-08) — corrects D-01/D-02 anchors
+- **D-09 (SSN-reveal roles, LOCKED):** `CONTRACTOR_PII:READ` granted to **owner + admin +
+  finance_admin ONLY**. `external_accountant` is EXCLUDED — full SSN to an external party is
+  a liability + data-minimization (least-privilege) concern; external accountants work from
+  last-4 + the generated 1099 forms. Supersedes D-02's "finance/accountant" wording.
+- **Role-model correction:** there are **10 roles, not 8**; `manager` / `member` / `viewer`
+  do NOT exist. RBAC is **Better Auth `createAccessControl` statements**, not a custom map —
+  add `contractorPii: ['read']` to `packages/auth/src/permissions.ts` and grant it in
+  `packages/auth/src/roles.ts`. **`owner` has a DUPLICATED `allPermissions` const in
+  roles.ts — edit BOTH or owner silently lacks the new permission.**
+- **D-01 crypto correction:** mirror `packages/api/src/services/bank-account-crypto.ts`
+  (`encryptBankAccount`/`decryptBankAccount`, single hex-32 env key) — NOT the credential
+  store. Create a parallel `ssn-crypto.ts` + a SEPARATE `SSN_ENCRYPTION_KEY` env
+  (blast-radius separation). Precedent: `ContractorBillingProfile.bankAccountEncrypted` /
+  `bankAccountMasked` / `…last4` (`contractor.ts:270-271`). **SSN MUST live in DEDICATED
+  columns, NOT the `countryFields` JSONB** — `getCountryFields` returns the JSONB wholesale
+  and would leak the SSN. The SSN reveal procedure is **staff-router ONLY, never
+  `portalAppRouter`**.
+- **US-FIELD-04 correction:** registering `'US'` is a **3-place** edit — the SERVER-side
+  `getCountryFieldsConfig` + `countryFieldsSchemaMap`, plus the React `CountryComplianceSection`
+  switch (not just the React component).
+- **USPS correction (D-03):** mirror `packages/gov-api/src/clients/hmrc-vat-client.ts`
+  (OAuth2 client-credentials + token cache + single-flight refresh + Upstash sliding-window
+  + Zod boundary + fail-open). USPS is **60 req/hr GLOBAL per-credential** → key the
+  rate-limiter on a FIXED GLOBAL id, **NOT** `organizationId` (load-bearing pitfall).
+- **US-LOC-01 correction:** the `i18n:parity` gate (`scripts/i18n-parity.mjs` →
+  `run-guard.ts`, `base:'en' peers:['de','pl','ar']`) needs a **fallback-aware peer mode**
+  for en-US — do NOT add `en-US` to the strict `peers` array (that red-CIs on every
+  not-yet-overridden key).
+
 ### Claude's Discretion
-- The exact field-encryption util + key management for the SSN column (reuse the
-  existing per-field/credential AES-256-GCM helper) — planner.
+- Key management specifics for `SSN_ENCRYPTION_KEY` (env, rotation) — planner, mirroring
+  the bank-account-crypto key handling.
 - The initial divergent-key set in `en-US.json` (planner derives from `en`: spelling +
   date/currency/measure format keys + any US-specific labels added this phase).
 - USPS throttle/cache implementation (token bucket / Redis) — plan-phase per research flag.
