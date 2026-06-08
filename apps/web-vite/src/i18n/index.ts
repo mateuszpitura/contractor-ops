@@ -90,7 +90,10 @@ export function initI18n(): typeof i18next {
     .use(detector)
     .use(initReactI18next)
     .init({
-      fallbackLng: DEFAULT_LOCALE,
+      // en-US is a thin override: missing keys resolve through en, then the
+      // default locale (en-US → en → pl). All other locales fall straight back
+      // to the default. i18next reads the map by the active language tag.
+      fallbackLng: { 'en-US': ['en', DEFAULT_LOCALE], default: [DEFAULT_LOCALE] },
       supportedLngs: SUPPORTED_LOCALES as readonly string[],
       // Bundles are added on demand — not all locales ship in the initial JS.
       partialBundledLanguages: true,
@@ -127,6 +130,11 @@ export async function applyLocale(locale: Locale): Promise<void> {
   if (!bootstrapped) initI18n();
 
   await registerLocaleBundle(locale);
+  // en-US is a thin override; register its intermediate `en` fallback bundle so
+  // every key it does not override resolves (en-US → en → default).
+  if (locale === 'en-US') {
+    await registerLocaleBundle('en');
+  }
   if (locale !== DEFAULT_LOCALE) {
     await registerLocaleBundle(DEFAULT_LOCALE);
   }

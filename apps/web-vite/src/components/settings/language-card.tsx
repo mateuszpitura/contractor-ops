@@ -25,6 +25,7 @@ const localeFlagSrc: Record<Locale, string> = {
   en: '/flags/gb.svg',
   ar: '/flags/sa.svg',
   de: '/flags/de.svg',
+  'en-US': '/flags/us.svg',
 };
 
 const localeToKey: Record<Locale, string> = {
@@ -32,6 +33,7 @@ const localeToKey: Record<Locale, string> = {
   en: 'languageEnglish',
   ar: 'languageArabic',
   de: 'languageGerman',
+  'en-US': 'languageEnglishUs',
 };
 
 function LocaleButton({
