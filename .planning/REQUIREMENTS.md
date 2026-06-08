@@ -70,7 +70,7 @@ Requirements for the v7.0 milestone. Each maps to exactly one phase (filled by r
 
 ### Theme A — US Locale + Tax-Treaty Engine (US-LOC)
 
-- [ ] **US-LOC-01**: `en-US` locale at full key parity vs `en` (date/currency/measure formatting; American-English copy where it diverges from en-GB)
+- [x] **US-LOC-01**: `en-US` locale at full key parity vs `en` (date/currency/measure formatting; American-English copy where it diverges from en-GB)
 - [ ] **US-LOC-02**: US tax-treaty rate table (PL/DE/UK/UAE/KSA/IE/NL) auto-applied when contractor + payer jurisdictions trigger a treaty (extends the v5.0 reverse-charge engine pattern)
 - [ ] **US-LOC-03**: W-8BEN treaty-article auto-populate based on contractor home jurisdiction + treaty table
 
@@ -264,7 +264,7 @@ Which phases cover which requirements. Phase numbering continues from v6.0 (ende
 | US-FIELD-02 | Phase 84 | Complete |
 | US-FIELD-03 | Phase 84 | Pending |
 | US-FIELD-04 | Phase 84 | Pending |
-| US-LOC-01 | Phase 84 | Pending |
+| US-LOC-01 | Phase 84 | Complete |
 | US-FORM-01 | Phase 85 | Pending |
 | US-FORM-02 | Phase 85 | Pending |
 | US-LOC-02 | Phase 85 | Pending |

@@ -4,13 +4,13 @@ milestone: v7.0
 milestone_name: GTM Expansion
 status: executing
 stopped_at: Phase 84 UI-SPEC approved
-last_updated: "2026-06-08T13:48:58.821Z"
+last_updated: "2026-06-08T14:01:21.312Z"
 last_activity: 2026-06-08
 progress:
   total_phases: 20
   completed_phases: 2
   total_plans: 15
-  completed_plans: 10
+  completed_plans: 11
   percent: 10
 ---
 
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-06-07 — v7.0 GTM Expansion started; v6
 ## Current Position
 
 Phase: 84 (Theme A — US Contractor Profile Fields + en-US Locale) — EXECUTING
-Plan: 3 of 7
+Plan: 4 of 7
 Status: Ready to execute
 Last activity: 2026-06-08
 
-Progress: [███████░░░] 67%
+Progress: [███████░░░] 73%
 
 ## v7.0 Roadmap Summary (created 2026-06-07)
 
@@ -99,6 +99,7 @@ Decisions are logged in PROJECT.md Key Decisions table. Recent decisions affecti
 - [Phase 83]: [83-04, 2026-06-07]: US-INFRA-03 — ONE statutory-retention resolver in packages/db (RETENTION_YEARS 4y 1099-NEC / 7y backup-withholding; MODEL_RETENTION_TYPE ships EMPTY per D-06) consumed by all three deletion chokepoints — soft-delete extension, the load-bearing base-prisma data-purge cron (per-model cutoffFor), and gdpr RODO erasure (softDeleteByOrgAndCount + retainedUnderStatute citation + writeAuditLog); statutory hold supersedes retainFinancialRecords=false; verified against the Invoice fixture; citations annotated LOCAL-ONLY. Theme B AKTA-02/03 extend the same resolver.
 - [Phase ?]: Phase 84 Wave-0: six RED scaffolds lock EIN/SSN/crypto/revealSsn-RBAC/USPS/web-vite contracts; RED accepted as terminal (Waves 1-4 turn GREEN)
 - [Phase ?]: Phase 84-01: SSN_ENCRYPTION_KEY is a NEW separate hex-32 key (blast-radius separation, D-01); SSN excluded from countryFields JSONB — dedicated encrypted columns land in Plan 03
+- [Phase ?]: [84-02]: en-US registered as fallback-aware (NOT strict) i18n:parity peer — thin en-US.json passes via fallbackPeers (peerKeys union en keys); de/pl/ar keep exact-parity (T-84-02-01 preserved); fallbackLng map en-US to en to pl; pickBestLocale exact region-tag match wins (en-US sticks, en-GB to en); US copy keys deferred to Plan 05
 
 ### Pending Todos
 
@@ -135,6 +136,7 @@ Carried forward from v6.0 milestone close (2026-06-07). Full enumeration: `.plan
 | Phase 83 P83-04 | 9m | 3 tasks | 7 files |
 | Phase 84 P00 | 25min | 3 tasks | 6 files |
 | Phase 84 P84-01 | 5min | 2 tasks | 7 files |
+| Phase 84 P84-02 | 25min | 2 tasks | 14 files |
 
 ## Standing Project Constraints
 
@@ -144,7 +146,7 @@ Carried forward from v6.0 milestone close (2026-06-07). Full enumeration: `.plan
 
 ## Session Continuity
 
-Last session: 2026-06-08T13:48:52.128Z
+Last session: 2026-06-08T14:00:49.866Z
 Stopped at: Phase 84 UI-SPEC approved
 Resume file: None
 Next command: `/gsd:plan-phase 82`
