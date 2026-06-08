@@ -47,7 +47,7 @@ const VALID_ADDRESS_BODY = {
 
 /** A fetch mock that serves the OAuth token then the address response. */
 function makeFetchMock(addressBody: unknown = VALID_ADDRESS_BODY, addressStatus = 200) {
-  return vi.fn(async (input: RequestInfo | URL) => {
+  return vi.fn(async (input: Request | string | URL) => {
     const url = String(input);
     if (url.includes('/oauth2/v3/token')) {
       return new Response(JSON.stringify(TOKEN_BODY), {
