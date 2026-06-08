@@ -4,13 +4,13 @@ milestone: v7.0
 milestone_name: GTM Expansion
 status: executing
 stopped_at: Completed 84-04-PLAN.md
-last_updated: "2026-06-08T14:23:08.378Z"
+last_updated: "2026-06-08T14:39:39.728Z"
 last_activity: 2026-06-08
 progress:
   total_phases: 20
   completed_phases: 2
   total_plans: 15
-  completed_plans: 13
+  completed_plans: 14
   percent: 10
 ---
 
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-06-07 — v7.0 GTM Expansion started; v6
 ## Current Position
 
 Phase: 84 (Theme A — US Contractor Profile Fields + en-US Locale) — EXECUTING
-Plan: 6 of 7
+Plan: 7 of 7
 Status: Ready to execute
 Last activity: 2026-06-08
 
-Progress: [█████████░] 87%
+Progress: [█████████░] 93%
 
 ## v7.0 Roadmap Summary (created 2026-06-07)
 
@@ -105,6 +105,7 @@ Decisions are logged in PROJECT.md Key Decisions table. Recent decisions affecti
 - [Phase ?]: [84-03] columns applied via direct additive ALTER (db push fallback; migrate dev drift-blocked); per-region production apply deferred (Phase 82/83 posture)
 - [Phase ?]: 84-04: USPS rate limiter keyed on FIXED GLOBAL 'usps-global' (60/hr per-credential), NOT organizationId (Pitfall 4, D-03)
 - [Phase ?]: 84-04: USPS adapter fail-open advisory — throttle/5xx/network/Redis-down/malformed/missing-creds → unverified, never throws to save (D-03)
+- [Phase ?]: 84-05: SSN encrypted into dedicated ssnEncrypted/ssnLast4 columns (never countryFields JSONB); revealSsn staff-router-only + contractorPii:[read] + audit-logged (no SSN in row); USPS validation advisory/non-blocking on save (D-01/D-02/D-03)
 
 ### Pending Todos
 
@@ -144,6 +145,7 @@ Carried forward from v6.0 milestone close (2026-06-07). Full enumeration: `.plan
 | Phase 84 P84-02 | 25min | 2 tasks | 14 files |
 | Phase 84 P84-03 | 7m | 3 tasks | 8 files |
 | Phase 84 P84-04 | 9min | 1 tasks | 5 files |
+| Phase 84 P84-05 | 13min | 2 tasks | 2 files |
 
 ## Standing Project Constraints
 
@@ -153,7 +155,7 @@ Carried forward from v6.0 milestone close (2026-06-07). Full enumeration: `.plan
 
 ## Session Continuity
 
-Last session: 2026-06-08T14:23:08.372Z
+Last session: 2026-06-08T14:39:30.529Z
 Stopped at: Completed 84-04-PLAN.md
 Resume file: None
 Next command: `/gsd:plan-phase 82`

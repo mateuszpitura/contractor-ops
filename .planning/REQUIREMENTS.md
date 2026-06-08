@@ -66,7 +66,7 @@ Requirements for the v7.0 milestone. Each maps to exactly one phase (filled by r
 - [x] **US-FIELD-01**: EIN validator (XX-XXXXXXX format + IRS-published prefix table)
 - [x] **US-FIELD-02**: SSN intake with PII-grade masking (last-4 default; full display behind RBAC `CONTRACTOR_PII:READ`)
 - [x] **US-FIELD-03**: US address validation via USPS Addresses API (CASS-certified format)
-- [ ] **US-FIELD-04**: US contractor profile component dispatched from the existing `CountryComplianceSection` pattern
+- [x] **US-FIELD-04**: US contractor profile component dispatched from the existing `CountryComplianceSection` pattern
 
 ### Theme A — US Locale + Tax-Treaty Engine (US-LOC)
 
@@ -263,7 +263,7 @@ Which phases cover which requirements. Phase numbering continues from v6.0 (ende
 | US-FIELD-01 | Phase 84 | Complete |
 | US-FIELD-02 | Phase 84 | Complete |
 | US-FIELD-03 | Phase 84 | Complete |
-| US-FIELD-04 | Phase 84 | Pending |
+| US-FIELD-04 | Phase 84 | Complete |
 | US-LOC-01 | Phase 84 | Complete |
 | US-FORM-01 | Phase 85 | Pending |
 | US-FORM-02 | Phase 85 | Pending |
