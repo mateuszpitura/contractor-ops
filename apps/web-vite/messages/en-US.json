@@ -1,1 +1,16 @@
-{}
+{
+  "Contractors": {
+    "compliance": {
+      "us": {
+        "ssnLabel": "Social Security Number (SSN)",
+        "zipLabel": "ZIP code",
+        "zipPlaceholder": "94105"
+      }
+    },
+    "countryCompliance": {
+      "countries": {
+        "US": "United States"
+      }
+    }
+  }
+}
