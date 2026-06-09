@@ -9,10 +9,12 @@ import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import * as E from '../../errors';
 import { router } from '../../init';
+import {
+  loadIntegrationConnection,
+  loadOrgIntegrationConnection,
+} from '../../lib/integration-connection.js';
+import { integrationProcedure } from '../../lib/integration-procedure';
 import type { TenantScopedDb } from '../../lib/tenant-db';
-import { requirePermission } from '../../middleware/rbac';
-import { tenantProcedure } from '../../middleware/tenant';
-import { requireTier } from '../../middleware/tier';
 import { writeAuditLog } from '../../services/audit-writer';
 import { detectScopeExpansionNeeded } from '../../services/jira-issue-sync';
 import { getStatusMapping, saveStatusMapping } from '../../services/jira-status-mapping';
@@ -59,22 +61,8 @@ function buildJiraApiContext(
   };
 }
 
-/**
- * Loads and validates a Jira connection, throwing if not found or disconnected.
- */
 async function loadConnection(db: TenantScopedDb, connectionId: string, organizationId: string) {
-  const connection = await db.integrationConnection.findFirst({
-    where: { id: connectionId, organizationId },
-  });
-
-  if (!connection || connection.status !== 'CONNECTED') {
-    throw new TRPCError({
-      code: 'PRECONDITION_FAILED',
-      message: E.INTEGRATION_NOT_CONNECTED,
-    });
-  }
-
-  return connection;
+  return loadIntegrationConnection(db, connectionId, organizationId, { provider: 'JIRA' });
 }
 
 /**
@@ -132,23 +120,11 @@ export const jiraRouter = router({
    * Get the current Jira connection status for this organization.
    * Returns connection details including scope expansion detection.
    */
-  connectionStatus: tenantProcedure
-    .use(requirePermission({ settings: ['read'] }))
-    .query(async ({ ctx }) => {
-      const connection = await ctx.db.integrationConnection.findFirst({
-        where: {
-          organizationId: ctx.organizationId,
-          provider: 'JIRA',
-        },
-        select: {
-          id: true,
-          status: true,
-          displayName: true,
-          configJson: true,
-          lastSyncAt: true,
-          tokenExpiresAt: true,
-          credentialsRef: true,
-        },
+  connectionStatus: integrationProcedure({ permission: { settings: ['read'] } }).query(
+    async ({ ctx }) => {
+      const connection = await loadOrgIntegrationConnection(ctx.db, ctx.organizationId, 'JIRA', {
+        status: 'any',
+        optional: true,
       });
 
       if (!connection) return null;
@@ -176,13 +152,13 @@ export const jiraRouter = router({
         tokenExpiresAt: connection.tokenExpiresAt,
         scopeExpansionNeeded,
       };
-    }),
+    },
+  ),
 
   /**
    * List all Jira projects accessible via the connected account.
    */
-  listProjects: tenantProcedure
-    .use(requirePermission({ settings: ['read'] }))
+  listProjects: integrationProcedure({ permission: { settings: ['read'] } })
     .input(z.object({ connectionId: z.string() }))
     .query(async ({ ctx, input }) => {
       const connection = await loadConnection(ctx.db, input.connectionId, ctx.organizationId);
@@ -198,8 +174,7 @@ export const jiraRouter = router({
   /**
    * List issue types for a specific Jira project.
    */
-  listIssueTypes: tenantProcedure
-    .use(requirePermission({ settings: ['read'] }))
+  listIssueTypes: integrationProcedure({ permission: { settings: ['read'] } })
     .input(
       z.object({
         connectionId: z.string(),
@@ -222,8 +197,7 @@ export const jiraRouter = router({
   /**
    * List project-level statuses with transition info.
    */
-  listProjectStatuses: tenantProcedure
-    .use(requirePermission({ settings: ['read'] }))
+  listProjectStatuses: integrationProcedure({ permission: { settings: ['read'] } })
     .input(
       z.object({
         connectionId: z.string(),
@@ -249,8 +223,7 @@ export const jiraRouter = router({
   /**
    * Get saved status mapping for a Jira project.
    */
-  getStatusMapping: tenantProcedure
-    .use(requirePermission({ settings: ['read'] }))
+  getStatusMapping: integrationProcedure({ permission: { settings: ['read'] } })
     .input(
       z.object({
         connectionId: z.string(),
@@ -266,8 +239,7 @@ export const jiraRouter = router({
   /**
    * Get Jira configuration for a workflow task template.
    */
-  getTaskConfig: tenantProcedure
-    .use(requirePermission({ workflow: ['read'] }))
+  getTaskConfig: integrationProcedure({ permission: { workflow: ['read'] } })
     .input(z.object({ taskTemplateId: z.string() }))
     .query(async ({ ctx, input }) => {
       const template = await ctx.db.workflowTaskTemplate.findUnique({
@@ -286,7 +258,7 @@ export const jiraRouter = router({
   /**
    * Get linked Jira issues for a workflow entity.
    */
-  linkedIssues: tenantProcedure
+  linkedIssues: integrationProcedure({ permission: { workflow: ['read'] } })
     .input(
       z.object({
         entityType: z.enum(['WORKFLOW_TASK_RUN', 'WORKFLOW_RUN']),
@@ -366,7 +338,7 @@ export const jiraRouter = router({
   /**
    * Get recent Jira activity for a contractor.
    */
-  recentActivity: tenantProcedure
+  recentActivity: integrationProcedure({ permission: { workflow: ['read'] } })
     .input(
       z.object({
         contractorId: z.string(),
@@ -425,9 +397,10 @@ export const jiraRouter = router({
    * Save a status mapping for a Jira project.
    * After saving, registers/updates webhooks for all projects with mappings.
    */
-  saveStatusMapping: tenantProcedure
-    .use(requirePermission({ settings: ['update'] }))
-    .use(requireTier('PRO'))
+  saveStatusMapping: integrationProcedure({
+    permission: { settings: ['update'] },
+    tier: 'PRO',
+  })
     .input(saveJiraStatusMappingInputSchema)
     .mutation(async ({ ctx, input }) => {
       const connection = await loadConnection(ctx.db, input.connectionId, ctx.organizationId);
@@ -462,9 +435,10 @@ export const jiraRouter = router({
   /**
    * Save Jira configuration for a workflow task template.
    */
-  saveTaskConfig: tenantProcedure
-    .use(requirePermission({ workflow: ['update'] }))
-    .use(requireTier('PRO'))
+  saveTaskConfig: integrationProcedure({
+    permission: { workflow: ['update'] },
+    tier: 'PRO',
+  })
     .input(saveJiraTaskConfigInputSchema)
     .mutation(async ({ ctx, input }) => {
       const template = await ctx.db.workflowTaskTemplate.findFirst({
@@ -501,25 +475,22 @@ export const jiraRouter = router({
    * Disconnect Jira integration.
    * Deregisters webhooks and sets connection status to DISCONNECTED.
    */
-  disconnect: tenantProcedure
-    .use(requirePermission({ settings: ['update'] }))
-    .use(requireTier('PRO'))
+  disconnect: integrationProcedure({
+    permission: { settings: ['update'] },
+    tier: 'PRO',
+  })
     .input(z.object({ connectionId: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      const connection = await ctx.db.integrationConnection.findFirst({
-        where: {
-          id: input.connectionId,
-          organizationId: ctx.organizationId,
+      const connection = await loadIntegrationConnection(
+        ctx.db,
+        input.connectionId,
+        ctx.organizationId,
+        {
           provider: 'JIRA',
+          requireConnected: false,
+          notFoundMessage: E.INTEGRATION_NOT_FOUND,
         },
-      });
-
-      if (!connection) {
-        throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: E.INTEGRATION_NOT_FOUND,
-        });
-      }
+      );
 
       // Deregister webhooks first (best effort)
       try {

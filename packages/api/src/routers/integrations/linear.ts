@@ -11,10 +11,8 @@ import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import * as E from '../../errors';
 import { router } from '../../init';
-import type { TenantScopedDb } from '../../lib/tenant-db';
-import { requirePermission } from '../../middleware/rbac';
-import { tenantProcedure } from '../../middleware/tenant';
-import { requireTier } from '../../middleware/tier';
+import { loadOrgIntegrationConnection } from '../../lib/integration-connection.js';
+import { integrationProcedure } from '../../lib/integration-procedure';
 import { linearGraphQL } from '../../services/linear-issue-sync';
 import { registerLinearWebhook } from '../../services/linear-webhook-handler';
 
@@ -49,29 +47,6 @@ function buildLinearApiContext(credentialsRef: string): {
   };
 }
 
-/**
- * Loads a Linear connection for the org, accepting both PENDING_MAPPING
- * and CONNECTED statuses (per D-03: mapping dialog needs access post-OAuth).
- */
-async function loadLinearConnection(db: TenantScopedDb, organizationId: string) {
-  const connection = await db.integrationConnection.findFirst({
-    where: {
-      organizationId,
-      provider: 'LINEAR',
-      status: { in: ['PENDING_MAPPING', 'CONNECTED'] },
-    },
-  });
-
-  if (!connection) {
-    throw new TRPCError({
-      code: 'NOT_FOUND',
-      message: E.INTEGRATION_NOT_FOUND,
-    });
-  }
-
-  return connection;
-}
-
 // ---------------------------------------------------------------------------
 // Linear Router
 // ---------------------------------------------------------------------------
@@ -86,35 +61,32 @@ export const linearRouter = router({
    * Get Linear connection status (id, status, config) for the current org.
    * Returns null when no connection exists.
    */
-  connectionStatus: tenantProcedure.query(async ({ ctx }) => {
-    const connection = await ctx.db.integrationConnection.findFirst({
-      where: {
-        organizationId: ctx.organizationId,
-        provider: 'LINEAR',
-      },
-      select: {
-        id: true,
-        status: true,
-        configJson: true,
-      },
-    });
+  connectionStatus: integrationProcedure({ permission: { settings: ['read'] } }).query(
+    async ({ ctx }) => {
+      const connection = await loadOrgIntegrationConnection(ctx.db, ctx.organizationId, 'LINEAR', {
+        status: 'any',
+        optional: true,
+      });
 
-    if (!connection) return null;
+      if (!connection) return null;
 
-    return {
-      id: connection.id,
-      status: connection.status,
-      configJson: connection.configJson as Record<string, unknown> | null,
-    };
-  }),
+      return {
+        id: connection.id,
+        status: connection.status,
+        configJson: connection.configJson as Record<string, unknown> | null,
+      };
+    },
+  ),
 
   /**
    * Fetch Linear teams for the connected workspace.
    * Queries Linear GraphQL API for teams with their workflow states.
    * Accepts both PENDING_MAPPING and CONNECTED connections (D-03).
    */
-  teams: tenantProcedure.query(async ({ ctx }) => {
-    const connection = await loadLinearConnection(ctx.db, ctx.organizationId);
+  teams: integrationProcedure({ permission: { settings: ['read'] } }).query(async ({ ctx }) => {
+    const connection = await loadOrgIntegrationConnection(ctx.db, ctx.organizationId, 'LINEAR', {
+      status: ['PENDING_MAPPING', 'CONNECTED'],
+    });
     const { accessToken } = buildLinearApiContext(connection.credentialsRef);
 
     const result = await linearGraphQL<{
@@ -174,10 +146,12 @@ export const linearRouter = router({
    * Get saved status mapping for a Linear team.
    * Returns the mapping entries from configJson.statusMappings[teamId].
    */
-  getStatusMapping: tenantProcedure
+  getStatusMapping: integrationProcedure({ permission: { settings: ['read'] } })
     .input(z.object({ teamId: z.string() }))
     .query(async ({ ctx, input }) => {
-      const connection = await loadLinearConnection(ctx.db, ctx.organizationId);
+      const connection = await loadOrgIntegrationConnection(ctx.db, ctx.organizationId, 'LINEAR', {
+        status: ['PENDING_MAPPING', 'CONNECTED'],
+      });
       const config = (connection.configJson as LinearConnectionConfig) ?? {};
       const mappings = config.statusMappings ?? {};
       const teamMappings = mappings[input.teamId];
@@ -190,12 +164,15 @@ export const linearRouter = router({
    * Updates configJson.statusMappings[teamId] and configJson.stateCache[teamId].
    * Transitions connection from PENDING_MAPPING to CONNECTED on first save (D-03).
    */
-  saveStatusMapping: tenantProcedure
-    .use(requirePermission({ settings: ['update'] }))
-    .use(requireTier('PRO'))
+  saveStatusMapping: integrationProcedure({
+    permission: { settings: ['update'] },
+    tier: 'PRO',
+  })
     .input(saveLinearStatusMappingInputSchema)
     .mutation(async ({ ctx, input }) => {
-      const connection = await loadLinearConnection(ctx.db, ctx.organizationId);
+      const connection = await loadOrgIntegrationConnection(ctx.db, ctx.organizationId, 'LINEAR', {
+        status: ['PENDING_MAPPING', 'CONNECTED'],
+      });
 
       if (connection.id !== input.connectionId) {
         throw new TRPCError({
@@ -280,9 +257,10 @@ export const linearRouter = router({
    * Save Linear configuration for a workflow task template.
    * Merges Linear config into existing configJson.
    */
-  saveTaskConfig: tenantProcedure
-    .use(requirePermission({ workflow: ['update'] }))
-    .use(requireTier('PRO'))
+  saveTaskConfig: integrationProcedure({
+    permission: { workflow: ['update'] },
+    tier: 'PRO',
+  })
     .input(saveLinearTaskConfigInputSchema)
     .mutation(async ({ ctx, input }) => {
       const template = await ctx.db.workflowTaskTemplate.findFirst({
@@ -319,7 +297,7 @@ export const linearRouter = router({
    * Get linked Linear issue for a single task run.
    * Returns the ExternalLink with parsed metadata or null.
    */
-  getLinkedIssue: tenantProcedure
+  getLinkedIssue: integrationProcedure({ permission: { workflow: ['read'] } })
     .input(z.object({ taskRunId: z.string() }))
     .query(async ({ ctx, input }) => {
       const link = await ctx.db.externalLink.findFirst({
@@ -349,7 +327,7 @@ export const linearRouter = router({
    * Get linked Linear issues for multiple task runs (batch).
    * Returns a map of taskRunId to linked issue data or null.
    */
-  getLinkedIssues: tenantProcedure
+  getLinkedIssues: integrationProcedure({ permission: { workflow: ['read'] } })
     .input(z.object({ taskRunIds: z.array(z.string()) }))
     .query(async ({ ctx, input }) => {
       if (input.taskRunIds.length === 0) return {};
@@ -402,7 +380,7 @@ export const linearRouter = router({
    * Get linked Linear issues for a workflow entity (run or task run).
    * Mirrors jira.linkedIssues for UI consistency.
    */
-  linkedIssues: tenantProcedure
+  linkedIssues: integrationProcedure({ permission: { workflow: ['read'] } })
     .input(
       z.object({
         entityType: z.enum(['WORKFLOW_TASK_RUN', 'WORKFLOW_RUN']),
