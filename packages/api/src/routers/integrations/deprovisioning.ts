@@ -16,9 +16,11 @@ import {
 } from '../../errors';
 import { router } from '../../init';
 import { findOrThrow } from '../../lib/find-or-throw';
+import {
+  integrationProcedure,
+  integrationSettingsProcedure,
+} from '../../lib/integration-procedure';
 import { permissionToScopes } from '../../lib/scope-utils';
-import { requirePermission } from '../../middleware/rbac';
-import { tenantProcedure } from '../../middleware/tenant';
 import { writeAuditLog } from '../../services/audit-writer';
 import { CacheKeys, invalidateByPrefix } from '../../services/cache';
 import { getImpactPreview } from '../../services/idp-impact-preview';
@@ -117,8 +119,7 @@ export const deprovisioningRouter = router({
    * Returns `{ allowed, earliestDate?, reason? }`. Emits a single audit-grade log entry
    * per call (SOC2 evidence: admin saw the cooldown state before/instead of deprovisioning).
    */
-  getDeprovisioningEligibility: tenantProcedure
-    .use(requirePermission({ idp: ['start_run'] }))
+  getDeprovisioningEligibility: integrationProcedure({ permission: { idp: ['start_run'] } })
     .input(z.object({ assignmentId: z.string().min(1) }))
     .query(async ({ ctx, input }) => {
       // ctx.db is tenant-scoped (RLS); findOrThrow narrows to NOT_FOUND on cross-tenant access.
@@ -170,8 +171,7 @@ export const deprovisioningRouter = router({
    * so the UI can disable the trigger with a reason rather than picking an ACTIVE row.
    * Org-scoped via `ctx.organizationId` (a cross-tenant contractorId returns null).
    */
-  resolveAssignmentForContractor: tenantProcedure
-    .use(requirePermission({ idp: ['start_run'] }))
+  resolveAssignmentForContractor: integrationProcedure({ permission: { idp: ['start_run'] } })
     .input(z.object({ contractorId: z.string().min(1) }))
     .query(async ({ ctx, input }) => {
       const assignment = await ctx.db.contractorAssignment.findFirst({
@@ -194,8 +194,7 @@ export const deprovisioningRouter = router({
    * After commit, fans out N INDEPENDENT QStash jobs (no Promise.allSettled — Pitfall 10).
    * Idempotent via the unique idempotencyKey: a P2002 collision returns the existing run.
    */
-  startDeprovisioningRun: tenantProcedure
-    .use(requirePermission({ idp: ['start_run'] }))
+  startDeprovisioningRun: integrationProcedure({ permission: { idp: ['start_run'] } })
     .input(
       z.object({
         assignmentId: z.string().min(1),
@@ -346,8 +345,7 @@ export const deprovisioningRouter = router({
    * updateMany guards against double-clicks. Enqueues a fresh QStash job with a NEW
    * deduplicationId so a duplicate delivery is dropped while a genuine retry runs.
    */
-  retryDeprovisioningStep: tenantProcedure
-    .use(requirePermission({ idp: ['start_run'] }))
+  retryDeprovisioningStep: integrationProcedure({ permission: { idp: ['start_run'] } })
     .input(z.object({ stepId: z.string().min(1) }))
     .mutation(async ({ ctx, input }) => {
       const step = await findOrThrow(
@@ -427,8 +425,7 @@ export const deprovisioningRouter = router({
    * SUCCEEDED + MANUAL_COMPLETED), errorClass, attempts, and manual-override
    * metadata so the UI can render the override badge + the per-failed-step button.
    */
-  getDeprovisioningRun: tenantProcedure
-    .use(requirePermission({ integration: ['read'] }))
+  getDeprovisioningRun: integrationProcedure({ permission: { integration: ['read'] } })
     .input(z.object({ runId: z.string().min(1) }))
     .query(async ({ ctx, input }) => {
       // The free-text override note + actor may contain incident detail or names.
@@ -498,8 +495,7 @@ export const deprovisioningRouter = router({
    * failure returns a structured outcome the admin-choice flow renders. When the admin
    * proceeds without a preview, an `idp.preview.failed_proceed` audit line is emitted.
    */
-  describeImpact: tenantProcedure
-    .use(requirePermission({ integration: ['read'] }))
+  describeImpact: integrationProcedure({ permission: { integration: ['read'] } })
     .input(
       z.object({
         assignmentId: z.string().min(1),
@@ -556,8 +552,7 @@ export const deprovisioningRouter = router({
    * single $transaction (columns + status + AuditLog + recomputeRunStatus). The free-text
    * note is stored in the column only — never logged raw.
    */
-  overrideStepFailure: tenantProcedure
-    .use(requirePermission({ idp: ['override_step_failure'] }))
+  overrideStepFailure: integrationProcedure({ permission: { idp: ['override_step_failure'] } })
     .input(
       z.object({
         stepId: z.string().min(1),
@@ -641,9 +636,8 @@ export const deprovisioningRouter = router({
    * SLACK_ORG_GRID connection (marked via configJson.connectionSubKind) and probes
    * Enterprise-Grid availability into scopeCapabilities.unavailableReason.
    */
-  connectSlackOrgGrid: tenantProcedure
-    .use(requirePermission({ integration: ['update'] }))
-    .query(async () => {
+  connectSlackOrgGrid: integrationProcedure({ permission: { integration: ['update'] } }).query(
+    async () => {
       const [{ getServerEnv }] = await Promise.all([import('@contractor-ops/validators')]);
       const apiUrl = getServerEnv().API_URL;
       if (!apiUrl) {
@@ -653,65 +647,63 @@ export const deprovisioningRouter = router({
         });
       }
       return { url: `${apiUrl}/api/oauth/slack-org-grid/start` };
-    }),
+    },
+  ),
 
   /**
    * Phase 77 D-15 — per-provider toggle-table state for the settings UI: each
    * supported provider's connection status, signoff-flag approval, and current
    * per-org enabled flag. Drives the enable table (disabled when flag != APPROVED).
    */
-  getProviderToggleState: tenantProcedure
-    .use(requirePermission({ settings: ['read'] }))
-    .query(async ({ ctx }) => {
-      const [org, connections] = await Promise.all([
-        ctx.db.organization.findUnique({
-          where: { id: ctx.organizationId },
-          select: { settingsJson: true },
-        }),
-        ctx.db.integrationConnection.findMany({
-          where: {
-            organizationId: ctx.organizationId,
-            // Only GWS/SLACK/GITHUB exist in the IntegrationProvider enum; ENTRA
-            // and OKTA have no IntegrationConnection row yet (no enum value), so
-            // their `connected` state is derived from the per-org settings only.
-            provider: { in: ['GOOGLE_WORKSPACE', 'SLACK', 'GITHUB'] },
-            status: 'CONNECTED',
-          },
-          select: { provider: true, configJson: true },
-        }),
-      ]);
-      const settings = (org?.settingsJson as Record<string, unknown>) ?? {};
-      const enabledMap = (settings.idpDeprovisioningEnabled as Record<string, boolean>) ?? {};
+  getProviderToggleState: integrationSettingsProcedure('read').query(async ({ ctx }) => {
+    const [org, connections] = await Promise.all([
+      ctx.db.organization.findUnique({
+        where: { id: ctx.organizationId },
+        select: { settingsJson: true },
+      }),
+      ctx.db.integrationConnection.findMany({
+        where: {
+          organizationId: ctx.organizationId,
+          // Only GWS/SLACK/GITHUB exist in the IntegrationProvider enum; ENTRA
+          // and OKTA have no IntegrationConnection row yet (no enum value), so
+          // their `connected` state is derived from the per-org settings only.
+          provider: { in: ['GOOGLE_WORKSPACE', 'SLACK', 'GITHUB'] },
+          status: 'CONNECTED',
+        },
+        select: { provider: true, configJson: true },
+      }),
+    ]);
+    const settings = (org?.settingsJson as Record<string, unknown>) ?? {};
+    const enabledMap = (settings.idpDeprovisioningEnabled as Record<string, boolean>) ?? {};
 
-      const providers = DEPROVISIONING_TOGGLE_PROVIDERS.map(provider => ({
-        provider,
-        connected:
-          provider === 'SLACK'
-            ? connections.some(
-                c =>
-                  c.provider === 'SLACK' &&
-                  !!c.configJson &&
-                  typeof c.configJson === 'object' &&
-                  (c.configJson as { connectionSubKind?: unknown }).connectionSubKind ===
-                    'SLACK_ORG_GRID',
-              )
-            : provider === 'GOOGLE_WORKSPACE' || provider === 'GITHUB'
-              ? connections.some(c => c.provider === provider)
-              : false,
-        flagApproved: isProviderSignoffSatisfied(provider),
-        enabled: enabledMap[provider] === true,
-      }));
+    const providers = DEPROVISIONING_TOGGLE_PROVIDERS.map(provider => ({
+      provider,
+      connected:
+        provider === 'SLACK'
+          ? connections.some(
+              c =>
+                c.provider === 'SLACK' &&
+                !!c.configJson &&
+                typeof c.configJson === 'object' &&
+                (c.configJson as { connectionSubKind?: unknown }).connectionSubKind ===
+                  'SLACK_ORG_GRID',
+            )
+          : provider === 'GOOGLE_WORKSPACE' || provider === 'GITHUB'
+            ? connections.some(c => c.provider === provider)
+            : false,
+      flagApproved: isProviderSignoffSatisfied(provider),
+      enabled: enabledMap[provider] === true,
+    }));
 
-      return { providers };
-    }),
+    return { providers };
+  }),
 
   /**
    * Phase 77 D-15 — per-provider per-org enable toggle. Refuses to enable a provider
    * whose signoff flag is still PENDING (unless FLAG_SIGNOFF_BYPASS=local). GWS and
    * Slack are independent. Persisted in Organization.settingsJson.idpDeprovisioningEnabled.
    */
-  enableProviderForOrg: tenantProcedure
-    .use(requirePermission({ settings: ['update'] }))
+  enableProviderForOrg: integrationSettingsProcedure('update')
     .input(
       z.object({
         provider: deprovisioningProviderSchema,
