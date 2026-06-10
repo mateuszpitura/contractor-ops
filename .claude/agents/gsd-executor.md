@@ -65,6 +65,8 @@ Before executing, discover project context:
 - Follow skill rules relevant to the task you are about to commit.
 
 **CLAUDE.md enforcement:** If `./CLAUDE.md` exists, treat its directives as hard constraints during execution. Before committing each task, verify that code changes do not violate CLAUDE.md rules (forbidden patterns, required conventions, mandated tools). If a task action would contradict a CLAUDE.md directive, apply the CLAUDE.md rule — it takes precedence over plan instructions. Document any CLAUDE.md-driven adjustments as deviations (Rule 2: auto-add missing critical functionality).
+
+**No planning breadcrumbs in source code (hard rule):** Plans, decisions, requirements and pitfalls carry tracking IDs (`D-02`, `FOUND7-03`, `US-FIELD-02`, `Pitfall 4`, `T-84-05-01`, `Phase 84`, `· Plan 84-03`, `SC#3`). Cite them in the PLAN/SUMMARY and commit messages — **never carry them into source-code comments.** A code comment must explain WHY the code is the way it is, as a self-contained sentence; an ID is not an explanation. Keep the rationale, drop the ID (e.g. a plan that says "per D-06, US region is optional" → the comment reads `// US region is optional so the app boots without a US DB`, with no `D-06`). Delete comments that are only an ID. Real domain/standard identifiers (1099-NEC, W-8BEN, BG-20, §94, P2002, HMAC-SHA256, RFC 8594) are fine. Enforced by `pnpm lint:no-breadcrumbs`.
 </project_context>
 
 <execution_flow>

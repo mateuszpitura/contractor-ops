@@ -69,6 +69,7 @@ sections:
       - "Production-grade, not demo-grade — no placeholders, TODOs, or incomplete implementations left behind."
       - "Comments: self-explanatory code needs none. Comment only non-obvious intent, invariants, or unusual tricks — never narrate what the code already says."
       - "No comment spam — do not add dozens of line-by-line comments on short functions; prefer clearer names and structure."
+      - "Comments must be MEANINGFUL explanations, never planning/process breadcrumbs. NEVER put phase numbers, requirement/feature IDs, decision/pitfall/threat IDs, plan/wave tags, or audit refs in source comments (e.g. 'Phase 84', 'FOUND7-03', 'F-SCALE-06', '(D-02)', 'Pitfall 4', 'T-84-05-01', 'US-FIELD-02', 'NEW-ARCH-01', '· Plan 73-08', 'SC#3'). Keep the WHY, drop the ID; a comment that is only an ID gets deleted. Traceability lives in commit messages + .planning/, not in code. Enforced by `pnpm lint:no-breadcrumbs`. Real domain/standard identifiers (1099-NEC, W-8BEN, BG-20, §94 KP, pain.001, P2002, HMAC-SHA256, RFC 8594) stay — they document behavior, not planning."
       - "Strong typing, no unsafe shortcuts; match existing patterns before inventing new ones."
       - "No console.* in application source — use structured logging (@contractor-ops/logger)."
       - "No silent failures — make errors debuggable with proper logging and handling."

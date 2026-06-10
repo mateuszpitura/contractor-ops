@@ -164,7 +164,7 @@ pnpm test                                      # vitest via turbo
 
 - **Quality > time:** no skipping tests, types, Zod, tenant checks, audit, UI states, or typecheck/lint to finish faster. Fix root cause; verify touched packages before done.
 - Production-grade, not demo — no placeholders/TODOs left behind. Strong typing; match existing patterns; justified abstractions only.
-- **Comments:** self-explanatory → none. Only non-obvious rules, invariants, tricks. No `// increment i`, headers, “removed X”, or comment-dense 10-line functions. Match file’s comment density.
+- **Comments:** self-explanatory → none. Only non-obvious rules, invariants, tricks. No `// increment i`, headers, “removed X”, or comment-dense 10-line functions. Match file’s comment density. Comments must be **meaningful explanations, never planning/process breadcrumbs**: NEVER put phase numbers, requirement/feature IDs, decision/pitfall/threat IDs, plan/wave tags or audit refs in source comments (`Phase 84`, `FOUND7-03`, `F-SCALE-06`, `(D-02)`, `Pitfall 4`, `T-84-05-01`, `US-FIELD-02`, `NEW-ARCH-01`, `· Plan 73-08`, `SC#3`). Keep the WHY, drop the ID; delete ID-only comments. Traceability → commit messages + `.planning/`, not code. Enforced by `pnpm lint:no-breadcrumbs`. Real domain/standard IDs (1099-NEC, W-8BEN, BG-20, §94 KP, P2002, HMAC-SHA256, RFC 8594) stay — they document behavior.
 - **Logging:** structured (`@contractor-ops/logger`); no silent failures; debuggable errors.
 
 ## Validation & security
