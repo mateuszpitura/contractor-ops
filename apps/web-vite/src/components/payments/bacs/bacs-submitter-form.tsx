@@ -25,10 +25,10 @@ import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
+import type { useBacsSubmitterForm as UseBacsSubmitterForm } from '../hooks/use-bacs-submitter-form.js';
 import {
   useBacsSubmitterForm,
   useBacsSubmitterNameSync,
-  type useBacsSubmitterForm as UseBacsSubmitterForm,
 } from '../hooks/use-bacs-submitter-form.js';
 
 const bacsSubmitterFormSchema = z.object({

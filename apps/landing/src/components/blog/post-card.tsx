@@ -1,8 +1,8 @@
 'use client';
 
-import { PostCard as SharedPostCard } from '@contractor-ops/ui/marketing';
-import type { MarketingPostSummary } from '@contractor-ops/ui/marketing';
 import { GlowingEffect } from '@contractor-ops/ui/components/ace/glowing-effect';
+import type { MarketingPostSummary } from '@contractor-ops/ui/marketing';
+import { PostCard as SharedPostCard } from '@contractor-ops/ui/marketing';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 

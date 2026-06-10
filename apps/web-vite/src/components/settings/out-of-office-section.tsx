@@ -13,8 +13,8 @@ import { Textarea } from '@contractor-ops/ui/components/shadcn/textarea';
 import { Loader2, Save } from 'lucide-react';
 import type { ChangeEvent } from 'react';
 import { useCallback } from 'react';
-import { useOutOfOfficeSection } from './hooks/use-out-of-office-section.js';
 import type { useOutOfOfficeSection as UseOutOfOfficeSection } from './hooks/use-out-of-office-section.js';
+import { useOutOfOfficeSection } from './hooks/use-out-of-office-section.js';
 
 export type OutOfOfficeSectionProps = ReturnType<typeof UseOutOfOfficeSection>;
 

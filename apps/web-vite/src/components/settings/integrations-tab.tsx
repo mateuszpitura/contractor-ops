@@ -11,8 +11,8 @@ import { TeamsProviderSection } from '../integrations/teams-provider-section.js'
 import { PeppolStatusCard } from '../peppol/peppol-status-card.js';
 import { ZatcaStatusCard } from '../zatca/zatca-status-card.js';
 import { DpdProviderSection } from './dpd-provider-section.js';
-import { useIntegrationsTab } from './hooks/use-integrations-tab.js';
 import type { IntegrationsTabProps } from './hooks/use-integrations-tab.js';
+import { useIntegrationsTab } from './hooks/use-integrations-tab.js';
 import { IdpDeprovisioningToggleTable } from './idp-deprovisioning-toggle-table.js';
 import { KsefProviderSection } from './ksef-provider-section.js';
 import { OrgCalendarSection } from './org-calendar-section.js';

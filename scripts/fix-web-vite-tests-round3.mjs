@@ -38,16 +38,30 @@ for (const f of [
   'components/documents/hooks/__tests__/use-document-card.test.tsx',
   'components/documents/hooks/__tests__/use-document-drop-zone.test.tsx',
 ]) {
-  patch(f, [[`expect(toastErrorMock).toHaveBeenCalledWith('forbidden')`, `expect(toastErrorMock).toHaveBeenCalledWith('${genericError}')`]]);
+  patch(f, [
+    [
+      `expect(toastErrorMock).toHaveBeenCalledWith('forbidden')`,
+      `expect(toastErrorMock).toHaveBeenCalledWith('${genericError}')`,
+    ],
+  ]);
 }
 
 patch('components/organization/hooks/__tests__/use-organization-projects.test.tsx', [
-  [`expect(toastSuccess.mock.calls[0]?.[0]).toContain('Sync complete')`, `expect(toastSuccess.mock.calls[0]?.[0]).toBe('Done.')`],
-  [`expect(toastError.mock.calls[0]?.[0]).toContain('rate limit')`, `expect(toastError.mock.calls[0]?.[0]).toBe('${genericError}')`],
+  [
+    `expect(toastSuccess.mock.calls[0]?.[0]).toContain('Sync complete')`,
+    `expect(toastSuccess.mock.calls[0]?.[0]).toBe('Done.')`,
+  ],
+  [
+    `expect(toastError.mock.calls[0]?.[0]).toContain('rate limit')`,
+    `expect(toastError.mock.calls[0]?.[0]).toBe('${genericError}')`,
+  ],
 ]);
 
 patch('components/onboarding/hooks/__tests__/use-onboarding-confirm.test.tsx', [
-  [`expect(toastError.mock.calls[0]?.[0]).toContain('quota exceeded')`, `expect(toastError.mock.calls[0]?.[0]).toBe('${genericError}')`],
+  [
+    `expect(toastError.mock.calls[0]?.[0]).toContain('quota exceeded')`,
+    `expect(toastError.mock.calls[0]?.[0]).toBe('${genericError}')`,
+  ],
 ]);
 
 patch('components/organization/hooks/__tests__/use-cost-center-csv-import.test.tsx', [
@@ -57,7 +71,10 @@ patch('components/organization/hooks/__tests__/use-cost-center-csv-import.test.t
 
 // --- deriveIsNotFound moved to lib ---
 patch('components/invoices/hooks/__tests__/use-invoice-intake-detail.test.ts', [
-  [`import { deriveIsNotFound } from '../use-invoice-intake-detail.js';`, `import { deriveIsNotFound } from '../../../lib/derive-is-not-found.js';`],
+  [
+    `import { deriveIsNotFound } from '../use-invoice-intake-detail.js';`,
+    `import { deriveIsNotFound } from '../../../lib/derive-is-not-found.js';`,
+  ],
 ]);
 
 // --- intensity default is workbench ---
@@ -96,9 +113,18 @@ vi.mock('../../layout/feature-flag-context.js', () => ({
 
 // --- kleinunternehmer view harness ---
 patch('components/organization/__tests__/kleinunternehmer-toggle.test.tsx', [
-  [`import { KleinunternehmerToggle } from '../kleinunternehmer-toggle.js';`, `import { KleinunternehmerToggle, KleinunternehmerToggleView } from '../kleinunternehmer-toggle.js';`],
-  [`  return <KleinunternehmerToggle isKleinunternehmer={isKlein} toggle={toggle} />;`, `  return <KleinunternehmerToggleView isKleinunternehmer={isKlein} toggle={toggle} />;`],
-  [`type ToggleHookReturn = React.ComponentProps<typeof KleinunternehmerToggle>['toggle'];`, `type ToggleHookReturn = React.ComponentProps<typeof KleinunternehmerToggleView>['toggle'];`],
+  [
+    `import { KleinunternehmerToggle } from '../kleinunternehmer-toggle.js';`,
+    `import { KleinunternehmerToggle, KleinunternehmerToggleView } from '../kleinunternehmer-toggle.js';`,
+  ],
+  [
+    `  return <KleinunternehmerToggle isKleinunternehmer={isKlein} toggle={toggle} />;`,
+    `  return <KleinunternehmerToggleView isKleinunternehmer={isKlein} toggle={toggle} />;`,
+  ],
+  [
+    `type ToggleHookReturn = React.ComponentProps<typeof KleinunternehmerToggle>['toggle'];`,
+    `type ToggleHookReturn = React.ComponentProps<typeof KleinunternehmerToggleView>['toggle'];`,
+  ],
 ]);
 
 // --- match-card stale MatchCard symbol ---
@@ -113,13 +139,22 @@ patch('components/organization/__tests__/kleinunternehmer-toggle.test.tsx', [
 
 // --- import progress aria-valuemax is percent (100) ---
 patch('components/onboarding/__tests__/import-progress-tracker.test.tsx', [
-  [`expect(bar?.getAttribute('aria-valuemax')).toBe('5');`, `expect(bar?.getAttribute('aria-valuemax')).toBe('100');`],
-  [`expect(bar?.getAttribute('aria-valuenow')).toBe('2');`, `expect(bar?.getAttribute('aria-valuenow')).toBe('40');`],
+  [
+    `expect(bar?.getAttribute('aria-valuemax')).toBe('5');`,
+    `expect(bar?.getAttribute('aria-valuemax')).toBe('100');`,
+  ],
+  [
+    `expect(bar?.getAttribute('aria-valuenow')).toBe('2');`,
+    `expect(bar?.getAttribute('aria-valuenow')).toBe('40');`,
+  ],
 ]);
 
 // --- portal drop zone export name ---
 patch('components/portal/compliance/__tests__/portal-upload-replacement-form.test.tsx', [
-  [`  DropZoneContainer: ({ onFilesAccepted }: { onFilesAccepted?: (f: File[]) => void }) => (`, `  DropZone: ({ onFilesAccepted }: { onFilesAccepted?: (f: File[]) => void }) => (`],
+  [
+    `  DropZoneContainer: ({ onFilesAccepted }: { onFilesAccepted?: (f: File[]) => void }) => (`,
+    `  DropZone: ({ onFilesAccepted }: { onFilesAccepted?: (f: File[]) => void }) => (`,
+  ],
 ]);
 
 // --- portal top bar env ---
@@ -238,7 +273,8 @@ patch('components/workflows/hooks/__tests__/use-workflow-template-detail.test.ts
 
 // --- directory preview: skip checkbox tests that depend on DataTable selection chrome ---
 {
-  const f = 'components/integrations/google-workspace/directory-preview/__tests__/data-table.test.tsx';
+  const f =
+    'components/integrations/google-workspace/directory-preview/__tests__/data-table.test.tsx';
   let s = fs.readFileSync(path.join(root, f), 'utf8');
   s = s.replace(
     `    const checkboxes = screen.getAllByRole('checkbox');`,

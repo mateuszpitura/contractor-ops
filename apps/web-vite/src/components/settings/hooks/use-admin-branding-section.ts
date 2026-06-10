@@ -44,14 +44,11 @@ export function useAdminBrandingSection() {
     },
   });
 
-  const uploadUrlMutation = useResourceMutation(
-    trpc.settings.getLogoUploadUrl.mutationOptions(),
-    {
-      successMessage: toasts.done(),
-      invalidate: [trpc.settings.pathFilter()],
-      suppressErrorToast: () => true,
-    },
-  );
+  const uploadUrlMutation = useResourceMutation(trpc.settings.getLogoUploadUrl.mutationOptions(), {
+    successMessage: toasts.done(),
+    invalidate: [trpc.settings.pathFilter()],
+    suppressErrorToast: () => true,
+  });
 
   const updateBrandingMutation = useResourceMutation(
     trpc.settings.updateBranding.mutationOptions(),

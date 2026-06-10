@@ -33,8 +33,8 @@ import { Loader2 } from 'lucide-react';
 import { useCallback, useEffect, useId, useMemo, useState } from 'react';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { cn } from '../../../lib/utils.js';
-import { usePeppolParticipantRegisterDialog } from './hooks/use-peppol-participant-register-dialog.js';
 import type { usePeppolParticipantRegisterDialog as UsePeppolParticipantRegisterDialog } from './hooks/use-peppol-participant-register-dialog.js';
+import { usePeppolParticipantRegisterDialog } from './hooks/use-peppol-participant-register-dialog.js';
 
 // ---------------------------------------------------------------------------
 // Props

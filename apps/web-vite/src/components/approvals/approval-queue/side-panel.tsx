@@ -30,18 +30,15 @@ import {
 } from '@contractor-ops/ui/components/shadcn/tooltip';
 import { CheckCircle2, HelpCircle, MoreHorizontal, UserPlus, XCircle } from 'lucide-react';
 import { useCallback, useEffect, useId, useState } from 'react';
-
-import {
-  EntityDetailItem,
-  EntitySummarySheet,
-} from '../../table-kit/entity-summary-sheet.js';
-import { useApprovalActions, type useApprovalActions as UseApprovalActions } from '../../../hooks/use-approval-actions.js';
+import type { useApprovalActions as UseApprovalActions } from '../../../hooks/use-approval-actions.js';
+import { useApprovalActions } from '../../../hooks/use-approval-actions.js';
 import { Link, useLocale } from '../../../i18n/navigation.js';
 import type { LooseTranslator } from '../../../i18n/typed-keys.js';
 import { tKey } from '../../../i18n/typed-keys.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { enumKey } from '../../../lib/enum-key.js';
 import { formatAmount } from '../../../lib/money.js';
+import { EntityDetailItem, EntitySummarySheet } from '../../table-kit/entity-summary-sheet.js';
 import type { ApprovalChainStep, ResolvedApprovalChain } from '../hooks/use-approval-chain.js';
 import { SlaBadge } from '../sla-badge.js';
 import type { ApprovalQueueRow } from './columns.js';
@@ -603,9 +600,7 @@ export function ApprovalSidePanelView({
             />
           )}
 
-          {!!invoice && (
-            <EntityDetailItem label={t('sidePanel.submitted')} value={submittedDate} />
-          )}
+          {!!invoice && <EntityDetailItem label={t('sidePanel.submitted')} value={submittedDate} />}
 
           {!!step.approver && (
             <EntityDetailItem

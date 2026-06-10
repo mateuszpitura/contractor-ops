@@ -16,11 +16,8 @@ import type * as React from 'react';
 import { useCallback } from 'react';
 
 import { ScopeCheckboxRow } from './create-api-key-dialog.js';
-import {
-  AVAILABLE_SCOPES,
-  useEditKeyDialog,
-  type useEditKeyDialog as UseEditKeyDialog,
-} from './hooks/use-api-keys-tab.js';
+import type { useEditKeyDialog as UseEditKeyDialog } from './hooks/use-api-keys-tab.js';
+import { AVAILABLE_SCOPES, useEditKeyDialog } from './hooks/use-api-keys-tab.js';
 
 interface EditKeyDialogShellProps {
   keyId: string;

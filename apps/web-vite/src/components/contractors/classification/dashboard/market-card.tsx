@@ -12,10 +12,8 @@ import {
 import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 
 import { useTranslations } from '../../../../i18n/useTranslations.js';
-import {
-  useClassificationMarketCard,
-  type useClassificationMarketCard as UseClassificationMarketCard,
-} from '../hooks/use-classification-dashboard.js';
+import type { useClassificationMarketCard as UseClassificationMarketCard } from '../hooks/use-classification-dashboard.js';
+import { useClassificationMarketCard } from '../hooks/use-classification-dashboard.js';
 import { ActiveAlertsTile } from './active-alerts-tile.js';
 import { CoverageTile } from './coverage-tile.js';
 import { DownloadCsvButton } from './download-csv-button.js';

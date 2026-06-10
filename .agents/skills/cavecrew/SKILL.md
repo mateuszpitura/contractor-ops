@@ -8,7 +8,9 @@ description: >
   so the tool-result injected back into main context is ~60% smaller — main
   context lasts longer across long sessions.
   Trigger: "delegate to subagent", "use cavecrew", "spawn investigator/builder/reviewer",
-  "save context", "compressed agent output".
+  "save context", "compressed agent output", "bulk rename", "find all usages",
+  "refactor across files", "fix all tests", "mass replace", "grep entire repo",
+  "sed", "awk replace", before any wide grep or cross-file edit.
 ---
 
 Cavecrew = three subagent presets that emit caveman output. Same job as Anthropic defaults (`Explore`, edit-style agents, reviewer); difference is the tool-result they return is compressed, so main context shrinks per delegation.
@@ -69,6 +71,25 @@ Spawn 2-3 `cavecrew-investigator` calls in one message (different angles: defs v
 
 **Single-shot edit** (when site is already known):
 Skip investigator. Hand exact path:line to `cavecrew-builder` directly.
+
+## Scripts are not a substitute
+
+Ad-hoc `sed -i`, `awk`, `perl -pi`, `python -c/-e`, or `node -e` bulk replace on source files corrupt imports and formatting. Use this chain instead:
+
+1. **`cavecrew-investigator`** — site list (`path:line`)
+2. **`cavecrew-builder`** — ≤2 files per spawn; `too-big.` forces narrower scope
+3. **`cavecrew-reviewer`** — audit the diff
+
+For 3+ files: parallel investigator/builder per file or wave — never one shell script loop.
+
+**Allowed shell:** `pnpm`/`npm run`/`turbo` project scripts, read-only `git`, test/typecheck, existing repo codemods (jscodeshift) with user approval.
+
+## When NOT to delegate
+
+- Trivial one-liner you already know (typo, single import)
+- User explicitly says do inline
+- `/gsd:fast` or equivalent trivial inline workflow
+- You already have exact `path:line` and ≤2 files — skip investigator, go to builder or main `Edit`
 
 ## What NOT to do
 

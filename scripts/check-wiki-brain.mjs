@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { execSync } from 'node:child_process';
 /**
  * Wiki brain health check — CI-canonical guard for agent reliability.
  * - graph.json present
@@ -8,10 +9,9 @@
  * - api-routers-catalog not older than root.ts
  * - wiki source_commit matches HEAD (warn only if drift)
  */
-import { readFileSync, statSync, existsSync, readdirSync } from 'node:fs';
-import { join, relative, resolve, dirname } from 'node:path';
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
+import { dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { execSync } from 'node:child_process';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const VAULT = join(ROOT, '.planning/brain');
@@ -21,12 +21,7 @@ const BM25 = join(VAULT, '.vault-meta/bm25/index.json');
 const ROOT_TS = join(ROOT, 'packages/api/src/root.ts');
 const ROUTER_CATALOG = join(WIKI, 'structure/api-routers-catalog.md');
 
-const SKIP_VERIFY = new Set([
-  'index.md',
-  'hot.md',
-  'overview.md',
-  'log.md',
-]);
+const SKIP_VERIFY = new Set(['index.md', 'hot.md', 'overview.md', 'log.md']);
 
 const SKIP_VERIFY_DIRS = new Set(['sources']);
 
@@ -58,13 +53,17 @@ function parseFrontmatter(text) {
   const fm = {};
   for (const line of m[1].split('\n')) {
     if (line.startsWith('verify_with:')) fm.hasVerify = true;
-    if (line.startsWith('source_commit:')) fm.sourceCommit = line.split(':').slice(1).join(':').trim();
+    if (line.startsWith('source_commit:'))
+      fm.sourceCommit = line.split(':').slice(1).join(':').trim();
   }
   return fm;
 }
 
 function resolveWikilink(target, fromFile) {
-  const clean = target.replace(/^\.\.\//, '').split('/').filter(Boolean);
+  const clean = target
+    .replace(/^\.\.\//, '')
+    .split('/')
+    .filter(Boolean);
   const fromDir = dirname(fromFile);
   let base = fromDir;
   for (const part of clean) {
@@ -91,11 +90,11 @@ function resolveWikilink(target, fromFile) {
 }
 
 // 1. graph.json
-if (!existsSync(GRAPH)) {
-  err(`missing ${relative(ROOT, GRAPH)} — run graphify extract (see brain/README.md)`);
-} else {
+if (existsSync(GRAPH)) {
   const size = statSync(GRAPH).size;
   if (size < 1000) err(`graph.json too small (${size} bytes) — likely corrupt`);
+} else {
+  err(`missing ${relative(ROOT, GRAPH)} — run graphify extract (see brain/README.md)`);
 }
 
 // 2. BM25 index
@@ -114,13 +113,15 @@ if (head) {
   const pages = walkMd(WIKI);
   const commits = new Set(
     pages
-      .map((p) => parseFrontmatter(readFileSync(p, 'utf8')).sourceCommit)
+      .map(p => parseFrontmatter(readFileSync(p, 'utf8')).sourceCommit)
       .filter(Boolean)
-      .map((c) => c.slice(0, 8)),
+      .map(c => c.slice(0, 8)),
   );
   if (commits.size > 1) warn(`multiple source_commit prefixes in wiki: ${[...commits].join(', ')}`);
   if (commits.size === 1 && ![...commits][0].startsWith(head)) {
-    warn(`wiki source_commit ${[...commits][0]} differs from HEAD ${head} — run map-codebase + refresh`);
+    warn(
+      `wiki source_commit ${[...commits][0]} differs from HEAD ${head} — run map-codebase + refresh`,
+    );
   }
 }
 
@@ -129,13 +130,14 @@ if (existsSync(ROOT_TS) && existsSync(ROUTER_CATALOG)) {
   const rootMtime = statSync(ROOT_TS).mtimeMs;
   const catMtime = statSync(ROUTER_CATALOG).mtimeMs;
   if (rootMtime > catMtime + 1000) {
-    err('packages/api/src/root.ts newer than wiki/structure/api-routers-catalog.md — refresh catalog');
+    err(
+      'packages/api/src/root.ts newer than wiki/structure/api-routers-catalog.md — refresh catalog',
+    );
   }
 }
 
 // 5. per-page checks
 const pages = walkMd(WIKI);
-const allPaths = new Set(pages.map((p) => relative(WIKI, p)));
 
 for (const file of pages) {
   const rel = relative(WIKI, file);
@@ -143,9 +145,9 @@ for (const file of pages) {
   const fm = parseFrontmatter(text);
   const parts = rel.split('/');
   const isIndex = rel.endsWith('_index.md') || SKIP_VERIFY.has(parts[parts.length - 1]);
-  const isSource = parts[0] === 'sources';
+  const isSource = SKIP_VERIFY_DIRS.has(parts[0]);
 
-  if (!isIndex && !isSource && !fm.hasVerify) {
+  if (!(isIndex || isSource || fm.hasVerify)) {
     err(`${rel}: missing verify_with in frontmatter`);
   }
 

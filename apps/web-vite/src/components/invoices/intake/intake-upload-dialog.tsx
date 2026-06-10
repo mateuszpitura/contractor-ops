@@ -13,11 +13,11 @@ import type { ChangeEvent, DragEvent, KeyboardEvent, ReactNode } from 'react';
 import { useCallback } from 'react';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
-import {
-  useIntakeUpload,
-  type IntakeUploadLocalErrorKind,
-  type useIntakeUpload as UseIntakeUpload,
+import type {
+  IntakeUploadLocalErrorKind,
+  useIntakeUpload as UseIntakeUpload,
 } from '../hooks/use-intake-upload.js';
+import { useIntakeUpload } from '../hooks/use-intake-upload.js';
 
 const ACCEPT_ATTR = '.xml,.pdf,application/xml,text/xml,application/pdf';
 

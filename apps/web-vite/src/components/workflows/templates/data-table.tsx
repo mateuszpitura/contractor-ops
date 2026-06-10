@@ -1,5 +1,9 @@
-import { AtelierEmptyState, SectionLabel, TemplatesIllustration, WORKBENCH_TABLE_SECTION_CLASS } from '@contractor-ops/ui';
-import { WorkbenchDataTable } from '../../table-kit/workbench-data-table.js';
+import {
+  AtelierEmptyState,
+  SectionLabel,
+  TemplatesIllustration,
+  WORKBENCH_TABLE_SECTION_CLASS,
+} from '@contractor-ops/ui';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -20,18 +24,28 @@ import {
   DropdownMenuTrigger,
 } from '@contractor-ops/ui/components/shadcn/dropdown-menu';
 import type { ColumnDef } from '@tanstack/react-table';
-import { Archive, Copy, GitBranch, MoreHorizontal, Pencil, Plus, Power, Trash2 } from 'lucide-react';
+import {
+  Archive,
+  Copy,
+  GitBranch,
+  MoreHorizontal,
+  Pencil,
+  Plus,
+  Power,
+  Trash2,
+} from 'lucide-react';
 import { memo, useCallback, useMemo, useState } from 'react';
+import { Link } from '../../../i18n/navigation.js';
 
 import { tDynLoose } from '../../../i18n/typed-keys.js';
-import { Link } from '../../../i18n/navigation.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { enumKey } from '../../../lib/enum-key.js';
 import { formatDate } from '../../../lib/format-date.js';
-import { isListControlsDisabled } from '../../shared/list-controls-disabled.js';
 import { renderEmptyStateAction } from '../../shared/atelier-bridges.js';
-import { useTemplatesTable } from '../hooks/use-templates-table.js';
+import { isListControlsDisabled } from '../../shared/list-controls-disabled.js';
+import { WorkbenchDataTable } from '../../table-kit/workbench-data-table.js';
 import type { TemplateRow } from '../hooks/use-templates-table.js';
+import { useTemplatesTable } from '../hooks/use-templates-table.js';
 
 const stopMouseEventPropagation = (e: React.MouseEvent) => e.stopPropagation();
 

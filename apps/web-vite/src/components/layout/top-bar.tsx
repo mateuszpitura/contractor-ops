@@ -181,18 +181,12 @@ export function TopBar({
         </div>
       </header>
       <div className="accent-line sticky top-14 z-30 w-full" />
-      <ContractWizardDialog
-        open={contractWizardOpen}
-        onOpenChange={onContractWizardOpenChange}
-      />
+      <ContractWizardDialog open={contractWizardOpen} onOpenChange={onContractWizardOpenChange} />
       <ContractorWizardDialog
         open={contractorWizardOpen}
         onOpenChange={onContractorWizardOpenChange}
       />
-      <IntakeUploadDialog
-        open={invoiceUploadOpen}
-        onOpenChange={onInvoiceUploadOpenChange}
-      />
+      <IntakeUploadDialog open={invoiceUploadOpen} onOpenChange={onInvoiceUploadOpenChange} />
       <CommandPalette />
     </>
   );

@@ -162,7 +162,9 @@ describe('usePendingMergesInbox', () => {
     await waitFor(() => expect(result.current.items).toHaveLength(1));
     act(() => result.current.openMerge(sampleRow));
     act(() => result.current.keepSeparate());
-    await waitFor(() => expect(toastError).toHaveBeenCalledWith('Something went wrong. Please try again.'));
+    await waitFor(() =>
+      expect(toastError).toHaveBeenCalledWith('Something went wrong. Please try again.'),
+    );
   });
 
   it('closeMerge clears activeMerge but preserves chosenTarget snapshot', async () => {

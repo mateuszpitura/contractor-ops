@@ -1,10 +1,10 @@
+import type { InvoiceIntakeValidationStatus } from '@contractor-ops/db/generated/prisma/client';
 import type {
   ParsedXrechnung,
   ParsedZugferd,
   XRechnungValidationReport,
   ZugferdConformanceLevel,
 } from '@contractor-ops/einvoice';
-import type { InvoiceIntakeValidationStatus } from '@contractor-ops/db/generated/prisma/client';
 
 export type UploadFileKind = 'xml' | 'pdf';
 

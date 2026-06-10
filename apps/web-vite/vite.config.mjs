@@ -254,6 +254,17 @@ export default defineConfig(async ({ mode }) => {
     server: {
       port: 3000,
       strictPort: true,
+      // The SPA serves on :3000, but the Fastify API (:4000) hosts every server
+      // route the browser reaches same-origin: Better Auth (`/api/auth/**`,
+      // incl. the Google OAuth `callback/google` whose redirect_uri is derived
+      // from BETTER_AUTH_URL=:3000), integration OAuth (`/api/oauth/**`), and
+      // relative `/api/trpc/...` download links. The old Next.js app colocated
+      // these on :3000 — proxy `/api` to the API in dev so that single-origin
+      // contract still holds. The tRPC React client uses the absolute
+      // VITE_API_URL and never hits this proxy.
+      proxy: {
+        '/api': { target: apiUrl },
+      },
     },
     preview: {
       port: 4173,

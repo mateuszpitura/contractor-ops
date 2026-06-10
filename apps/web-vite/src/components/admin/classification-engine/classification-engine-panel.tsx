@@ -1,10 +1,9 @@
-import { WorkbenchDataTable } from '../../table-kit/workbench-data-table.js';
 import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
 import type { ColumnDef } from '@tanstack/react-table';
 import { AlertCircle, CheckCircle, XCircle } from 'lucide-react';
 import { useMemo, useState } from 'react';
-
 import { useTranslations } from '../../../i18n/useTranslations.js';
+import { WorkbenchDataTable } from '../../table-kit/workbench-data-table.js';
 import type { ClassificationEngineRow } from '../hooks/use-admin-classification-engine.js';
 
 export function ClassificationEnginePanelHeader() {

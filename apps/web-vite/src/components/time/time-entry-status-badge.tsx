@@ -1,4 +1,5 @@
-import { AtelierStatusPill, statusToVariant, type TimesheetStatusInput } from '@contractor-ops/ui';
+import type { TimesheetStatusInput } from '@contractor-ops/ui';
+import { AtelierStatusPill, statusToVariant } from '@contractor-ops/ui';
 import { tKey } from '../../i18n/typed-keys.js';
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { enumKey } from '../../lib/enum-key.js';

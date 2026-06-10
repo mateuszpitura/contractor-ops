@@ -1,4 +1,4 @@
-import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative, resolve } from 'node:path';
 
 export interface ArchitectureGuardOffence {
@@ -26,7 +26,9 @@ function walk(dir: string, acc: string[] = []): string[] {
   return acc;
 }
 
-export function runArchitectureGuard(opts: ArchitectureGuardOptions = {}): ArchitectureGuardOffence[] {
+export function runArchitectureGuard(
+  opts: ArchitectureGuardOptions = {},
+): ArchitectureGuardOffence[] {
   const root = opts.rootDir ?? process.cwd();
   const offences: ArchitectureGuardOffence[] = [];
 

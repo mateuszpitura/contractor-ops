@@ -14,17 +14,16 @@ const { mockContractorFindMany } = vi.hoisted(() => ({
 }));
 
 vi.mock('@contractor-ops/db', () => {
-  const __mockDbPrisma = {
+  const MockDbPrisma = {
     contractor: {
       findMany: mockContractorFindMany,
     },
   };
   return {
-  withRlsTransactions: <T>(c: T) => c,
-  withRlsReads: <T>(c: T) => c,
-  prisma: __mockDbPrisma,
-  prismaRaw: __mockDbPrisma,
-
+    withRlsTransactions: <T>(c: T) => c,
+    withRlsReads: <T>(c: T) => c,
+    prisma: MockDbPrisma,
+    prismaRaw: MockDbPrisma,
   };
 });
 

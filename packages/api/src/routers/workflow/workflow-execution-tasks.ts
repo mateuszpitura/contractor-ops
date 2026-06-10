@@ -18,11 +18,8 @@ import { tenantProcedure } from '../../middleware/tenant';
 import { writeAuditLog } from '../../services/audit-writer';
 import { CacheKeys, invalidateByPrefix } from '../../services/cache';
 import { dispatch } from '../../services/notification-service';
-import {
-  unblockDependentsAndRecomputeRun,
-  validateTransition,
-} from './workflow-shared';
 import { syncTaskToExternalSystems } from './workflow-execution-shared';
+import { unblockDependentsAndRecomputeRun, validateTransition } from './workflow-shared';
 
 function assertWorkflowRunInProgress(runStatus: string): void {
   if (runStatus !== 'IN_PROGRESS') {
@@ -43,8 +40,6 @@ function assertTaskAssignee(task: { assigneeUserId: string | null }, userId: str
 }
 
 export const workflowExecutionTasksRouter = router({
-
-
   /**
    * List tasks assigned to the current user.
    */
@@ -101,7 +96,6 @@ export const workflowExecutionTasksRouter = router({
   // =========================================================================
   // Task actions
   // =========================================================================
-
 
   /**
    * Complete a task. Unblocks dependent tasks and recomputes progress.
@@ -178,7 +172,6 @@ export const workflowExecutionTasksRouter = router({
       return result;
     }),
 
-
   /**
    * Skip a task with a reason. Unblocks dependents and recomputes progress.
    */
@@ -249,7 +242,6 @@ export const workflowExecutionTasksRouter = router({
 
       return result;
     }),
-
 
   /**
    * Reassign a task to a different user.
@@ -325,7 +317,6 @@ export const workflowExecutionTasksRouter = router({
   // Comments
   // =========================================================================
 
-
   /**
    * Count overdue tasks assigned to the current user.
    * Used for the sidebar navigation badge.
@@ -345,20 +336,19 @@ export const workflowExecutionTasksRouter = router({
       return { count };
     }),
 
-
   /**
-   * Phase 74 D-09 / D-10 / D-11 — OWNER-only override for the IP_VERIFICATION
-   * blocking task. Atomically writes:
+   * OWNER-only override for the IP_VERIFICATION blocking task. Atomically
+   * writes:
    *   1. WorkflowRun.overrideMetadata JSONB
    *   2. AuditLog row (action='workflow.offboarding.override_blocking_task')
    *   3. WorkflowTaskRun status SKIPPED for all open IP_VERIFICATION tasks
    * All in a single $transaction so a failure in any step rolls back the
-   * others (T-74-08-partial-write mitigation).
+   * others.
    *
    * Server-side Zod re-validates reason length + acknowledged literal — the
-   * client-side dialog is convenience UX only; this is the gate (Pitfall 5).
-   * Permission gate is enforced via requirePermission middleware so 9
-   * non-owner roles return FORBIDDEN before any DB work.
+   * client-side dialog is convenience UX only; this is the authoritative gate.
+   * Permission gate is enforced via requirePermission middleware so non-owner
+   * roles return FORBIDDEN before any DB work.
    */
   overrideBlockingTask: tenantProcedure
     .use(requirePermission({ workflow: ['override_blocking_task'] }))

@@ -5,11 +5,10 @@ import {
   CardHeader,
   CardTitle,
 } from '@contractor-ops/ui/components/shadcn/card';
-import { FolderKanban, RefreshCw, Users } from 'lucide-react';
-
 import type { ImportedProject, MergedPerson } from '@contractor-ops/validators';
 import type { InvitableMemberRole } from '@contractor-ops/validators/roles';
 import { invitableMemberRoleValues } from '@contractor-ops/validators/roles';
+import { FolderKanban, RefreshCw, Users } from 'lucide-react';
 
 import { useTranslations } from '../../i18n/useTranslations.js';
 
@@ -207,8 +206,7 @@ export function ConfirmImportStep(props: ConfirmImportStepWiredProps) {
   );
 }
 
-/** @deprecated Use ConfirmImportStep */
-export { ConfirmImportStep as ConfirmImportStepContainer };
-
 /** @deprecated Use ConfirmImportStepViewProps */
 export type { ConfirmImportStepViewProps as ConfirmImportStepProps };
+/** @deprecated Use ConfirmImportStep */
+export { ConfirmImportStep as ConfirmImportStepContainer };

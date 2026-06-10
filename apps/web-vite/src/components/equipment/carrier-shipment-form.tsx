@@ -207,22 +207,24 @@ export function CarrierShipmentFormView({
 
                 <div className="space-y-2">
                   <Label>{tInpost('destinationPaczkomat')}</Label>
-                  {!geowidgetConfigured ? (
+                  {geowidgetConfigured ? (
+                    selectedPoint ? (
+                      <PaczkomatDisplay
+                        pointId={selectedPoint.id}
+                        pointName={selectedPoint.name}
+                        pointAddress={selectedPoint.address}
+                        onChangeClick={handleOpenPicker}
+                      />
+                    ) : (
+                      <Button variant="outline" className="w-full" onClick={handleOpenPicker}>
+                        <Package className="me-2 h-4 w-4" />
+                        {tInpost('selectPaczkomat')}
+                      </Button>
+                    )
+                  ) : (
                     <p className="rounded-md border border-dashed px-3 py-2 text-sm text-muted-foreground">
                       {tPaczkomat('loadError')}
                     </p>
-                  ) : selectedPoint ? (
-                    <PaczkomatDisplay
-                      pointId={selectedPoint.id}
-                      pointName={selectedPoint.name}
-                      pointAddress={selectedPoint.address}
-                      onChangeClick={handleOpenPicker}
-                    />
-                  ) : (
-                    <Button variant="outline" className="w-full" onClick={handleOpenPicker}>
-                      <Package className="me-2 h-4 w-4" />
-                      {tInpost('selectPaczkomat')}
-                    </Button>
                   )}
                 </div>
 

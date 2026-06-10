@@ -11,23 +11,20 @@ import {
 } from '@contractor-ops/ui/components/shadcn/alert-dialog';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { Separator } from '@contractor-ops/ui/components/shadcn/separator';
-
-import {
-  EntityDetailItem,
-  EntitySummarySheet,
-} from '../table-kit/entity-summary-sheet.js';
 import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { CheckCircle2, Download, FileUp, Lightbulb, XCircle } from 'lucide-react';
 import { useCallback } from 'react';
 import { useLocale } from '../../i18n/navigation.js';
-import { useTranslations, type TranslateFn } from '../../i18n/useTranslations.js';
+import type { TranslateFn } from '../../i18n/useTranslations.js';
+import { useTranslations } from '../../i18n/useTranslations.js';
 import { useDateFormatter } from '../../lib/format/use-date-formatter.js';
-import { formatMinorUnits } from '../../lib/money.js';
 import { formatRelativeDate } from '../../lib/format-relative-date.js';
+import { formatMinorUnits } from '../../lib/money.js';
 import { useFlag } from '../layout/feature-flag-context.js';
+import { EntityDetailItem, EntitySummarySheet } from '../table-kit/entity-summary-sheet.js';
 import { BacsPreviewCard } from './bacs/bacs-preview-card.js';
-import { usePaymentRunSidePanel } from './hooks/use-payment-run-side-panel.js';
 import type { usePaymentRunSidePanel as UsePaymentRunSidePanel } from './hooks/use-payment-run-side-panel.js';
+import { usePaymentRunSidePanel } from './hooks/use-payment-run-side-panel.js';
 import { PaymentRunBadge } from './payment-run-badge.js';
 import { PaymentRunItemRow } from './payment-run-item-row.js';
 import { WhtSummaryCard } from './wht-summary-card.js';
@@ -175,53 +172,53 @@ export function PaymentRunSidePanelView({
       <WhtSummaryCard paymentRunId={safeRunId} items={items} />
 
       <div className="flex flex-wrap gap-2 mt-4">
-              {status === 'DRAFT' && (
-                <CancelRunButton
-                  status={status}
-                  onConfirm={panel.onCancelRun}
-                  isLoading={panel.isCancelPending}
-                  t={t}
-                />
-              )}
+        {status === 'DRAFT' && (
+          <CancelRunButton
+            status={status}
+            onConfirm={panel.onCancelRun}
+            isLoading={panel.isCancelPending}
+            t={t}
+          />
+        )}
 
-              {(status === 'EXPORTED' || status === 'LOCKED') && (
-                <>
-                  <Button variant="outline" size="sm" onClick={panel.handleDownloadExport}>
-                    <Download className="me-1.5 h-3.5 w-3.5" />
-                    {t('sidePanel.downloadExport')}
-                  </Button>
-                  {status === 'EXPORTED' && (
-                    <>
-                      <Button
-                        size="sm"
-                        onClick={panel.handleMarkAllPaid}
-                        disabled={panel.isMarkAllPaidPending}>
-                        <CheckCircle2 className="me-1.5 h-3.5 w-3.5" />
-                        {panel.confirmMarkAll
-                          ? t('sidePanel.confirmMarkAllPaid')
-                          : t('sidePanel.markAllPaid')}
-                      </Button>
-                      <Button variant="outline" size="sm" onClick={handleImportStatementClick}>
-                        <FileUp className="me-1.5 h-3.5 w-3.5" />
-                        {t('sidePanel.importStatement')}
-                      </Button>
-                    </>
-                  )}
-                  <CancelRunButton
-                    status={status}
-                    onConfirm={panel.onCancelRun}
-                    isLoading={panel.isCancelPending}
-                    t={t}
-                  />
-                </>
-              )}
-
-              {status === 'COMPLETED' && (
-                <Button variant="outline" size="sm" onClick={panel.handleDownloadExport}>
-                  <Download className="me-1.5 h-3.5 w-3.5" />
-                  {t('sidePanel.downloadExport')}
+        {(status === 'EXPORTED' || status === 'LOCKED') && (
+          <>
+            <Button variant="outline" size="sm" onClick={panel.handleDownloadExport}>
+              <Download className="me-1.5 h-3.5 w-3.5" />
+              {t('sidePanel.downloadExport')}
+            </Button>
+            {status === 'EXPORTED' && (
+              <>
+                <Button
+                  size="sm"
+                  onClick={panel.handleMarkAllPaid}
+                  disabled={panel.isMarkAllPaidPending}>
+                  <CheckCircle2 className="me-1.5 h-3.5 w-3.5" />
+                  {panel.confirmMarkAll
+                    ? t('sidePanel.confirmMarkAllPaid')
+                    : t('sidePanel.markAllPaid')}
                 </Button>
-              )}
+                <Button variant="outline" size="sm" onClick={handleImportStatementClick}>
+                  <FileUp className="me-1.5 h-3.5 w-3.5" />
+                  {t('sidePanel.importStatement')}
+                </Button>
+              </>
+            )}
+            <CancelRunButton
+              status={status}
+              onConfirm={panel.onCancelRun}
+              isLoading={panel.isCancelPending}
+              t={t}
+            />
+          </>
+        )}
+
+        {status === 'COMPLETED' && (
+          <Button variant="outline" size="sm" onClick={panel.handleDownloadExport}>
+            <Download className="me-1.5 h-3.5 w-3.5" />
+            {t('sidePanel.downloadExport')}
+          </Button>
+        )}
       </div>
 
       <Separator className="my-4" />
@@ -340,4 +337,3 @@ export function PaymentRunSidePanel({
     />
   );
 }
-

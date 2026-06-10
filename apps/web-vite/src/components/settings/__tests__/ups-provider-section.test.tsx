@@ -10,7 +10,7 @@ vi.mock('../carrier-credential-form', () => ({
 
 import { render, screen, setup } from '@/test/test-utils';
 import type { useUpsProviderSection } from '../hooks/use-ups-provider-section';
-import { UpsProviderSectionView, UpsProviderSectionSkeleton } from '../ups-provider-section';
+import { UpsProviderSectionSkeleton, UpsProviderSectionView } from '../ups-provider-section';
 
 type HookReturn = ReturnType<typeof useUpsProviderSection>;
 

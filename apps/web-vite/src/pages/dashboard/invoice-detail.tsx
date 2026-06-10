@@ -17,9 +17,9 @@ import { InvoiceDetailLayout } from '../../components/invoices/invoice-detail/in
 import { InvoiceDetailSkeleton } from '../../components/invoices/invoice-detail/invoice-detail-skeleton.js';
 import { InvoiceDetailTabs } from '../../components/invoices/invoice-detail/invoice-detail-tabs.js';
 import { InvoiceMetadataForm } from '../../components/invoices/invoice-detail/invoice-metadata-form.js';
+import { InvoiceOcrSection } from '../../components/invoices/invoice-detail/invoice-ocr-section.js';
 import { MatchCard } from '../../components/invoices/invoice-detail/match-card.js';
 import { PeppolStatusBadge } from '../../components/invoices/invoice-detail/peppol-status-badge.js';
-import { InvoiceOcrSection } from '../../components/invoices/invoice-detail/invoice-ocr-section.js';
 import { KsefSourceBadge } from '../../components/invoices/ksef-badge.js';
 import { ReverseChargeBanner } from '../../components/invoices/reverse-charge-banner.js';
 import { useFlag } from '../../components/layout/feature-flag-context.js';

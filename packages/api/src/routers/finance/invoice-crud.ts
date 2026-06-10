@@ -21,6 +21,7 @@ import { CacheKeys, invalidateByPrefix } from '../../services/cache';
 import { computeDuplicateCheckHash } from '../../services/invoice-matching';
 import { dispatch } from '../../services/notification-service';
 import { sanitizeStrings } from '../../services/sanitize';
+import type { ContractorTaxSnapshot } from './invoice-shared';
 import {
   coerceInvoiceDateFields,
   getFinanceTeamUserIds,
@@ -30,12 +31,9 @@ import {
   revalidateStaleVatIfNeeded,
   validateInvoiceAmounts,
   validateServicePeriod,
-  type ContractorTaxSnapshot,
 } from './invoice-shared';
 
 export const invoiceCrudRouter = router({
-
-
   /**
    * Create a new invoice with linked documents.
    * Sets status to RECEIVED, source to MANUAL_UPLOAD.
@@ -74,9 +72,9 @@ export const invoiceCrudRouter = router({
       }
 
       // ---------------------------------------------------------------------
-      // Phase 57 · Plan 04 — invoice-line tax pipeline
-      // Steps: load org/contractor, staleness revalidation, reverse-charge
-      // detection, default-rate preselect, Kleinunternehmer override.
+      // Invoice-line tax pipeline: load org/contractor, staleness
+      // revalidation, reverse-charge detection, default-rate preselect,
+      // Kleinunternehmer override.
       // ---------------------------------------------------------------------
       const org = await ctx.db.organization.findUniqueOrThrow({
         where: { id: ctx.organizationId },
@@ -165,7 +163,7 @@ export const invoiceCrudRouter = router({
           },
         });
 
-        // --- Step 6: Override-with-reason audit (D-13) -----------------------
+        // --- Step 6: Override-with-reason audit ------------------------------
         if (
           invoiceData.reverseChargeOverride === false &&
           rcShouldApply &&
@@ -243,7 +241,6 @@ export const invoiceCrudRouter = router({
       return invoice;
     }),
 
-
   /**
    * Get an invoice by ID with full relations (contractor, contract, files, match results).
    */
@@ -309,7 +306,6 @@ export const invoiceCrudRouter = router({
         E.INVOICE_NOT_FOUND,
       );
     }),
-
 
   /**
    * Update an invoice (PATCH semantics).
@@ -383,7 +379,6 @@ export const invoiceCrudRouter = router({
       return updated;
     }),
 
-
   /**
    * List invoices with pagination, sorting, filtering, and search.
    * Search covers invoiceNumber and contractor legalName (case-insensitive).
@@ -443,9 +438,9 @@ export const invoiceCrudRouter = router({
             contractor: {
               select: { id: true, legalName: true },
             },
-            // Plan 61-08 — compliance column on invoices-list needs per-row
-            // lifecycle status. `null` when no XRechnung XML has been
-            // generated (maps to the `notGenerated` compliance bucket).
+            // Compliance column on invoices-list needs per-row lifecycle
+            // status. `null` when no XRechnung XML has been generated
+            // (maps to the `notGenerated` compliance bucket).
             eInvoiceLifecycle: {
               select: { validationStatus: true, transmissionStatus: true },
             },
@@ -456,7 +451,6 @@ export const invoiceCrudRouter = router({
 
       return { items: invoices, total, page, pageSize };
     }),
-
 
   /**
    * Get invoice status and match status counts for the organization.

@@ -15,7 +15,9 @@ export function makeError(
   return details === undefined ? { code, message } : { code, message, details };
 }
 
-export function mapConformanceToProfileLevel(level: ZugferdConformanceLevel): InvoiceIntakeProfileLevel {
+export function mapConformanceToProfileLevel(
+  level: ZugferdConformanceLevel,
+): InvoiceIntakeProfileLevel {
   switch (level) {
     case 'COMFORT':
       return 'COMFORT';
@@ -62,7 +64,9 @@ export function flattenWarnings(report: XRechnungValidationReport): string[] {
   return out;
 }
 
-export function deriveValidationStatus(report: XRechnungValidationReport): InvoiceIntakeValidationStatus {
+export function deriveValidationStatus(
+  report: XRechnungValidationReport,
+): InvoiceIntakeValidationStatus {
   switch (report.status) {
     case 'VALID':
       return 'VALID';

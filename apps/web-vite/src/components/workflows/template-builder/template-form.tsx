@@ -30,7 +30,8 @@ import { useCallback, useId } from 'react';
 import { tDynLoose } from '../../../i18n/typed-keys.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { enumKey } from '../../../lib/enum-key.js';
-import { useTemplateFormSection, type useTemplateFormSection as UseTemplateFormSection } from '../hooks/use-template-form-section.js';
+import type { useTemplateFormSection as UseTemplateFormSection } from '../hooks/use-template-form-section.js';
+import { useTemplateFormSection } from '../hooks/use-template-form-section.js';
 import { SortableTaskList } from './sortable-task-list.js';
 import type { TemplateFormValues } from './use-template-form.js';
 

@@ -1,6 +1,4 @@
-
 import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
-import { WorkbenchDataTable } from '../../table-kit/workbench-data-table.js';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import {
   DropdownMenu,
@@ -11,6 +9,7 @@ import {
 import type { ColumnDef } from '@tanstack/react-table';
 import { Key, MoreHorizontal, Pencil, Plus, Trash2 } from 'lucide-react';
 import { useCallback, useMemo, useState } from 'react';
+import { WorkbenchDataTable } from '../../table-kit/workbench-data-table.js';
 
 import type { useApiKeysTab } from '../hooks/use-api-keys-tab.js';
 

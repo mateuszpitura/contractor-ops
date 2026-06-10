@@ -10,10 +10,8 @@ import { AlertCircle } from 'lucide-react';
 import { useCallback } from 'react';
 
 import { useTranslations } from '../../i18n/useTranslations.js';
-import {
-  useEinvoiceComplianceSummary,
-  type EInvoiceComplianceSummaryData,
-} from './hooks/use-einvoice-compliance-summary.js';
+import type { EInvoiceComplianceSummaryData } from './hooks/use-einvoice-compliance-summary.js';
+import { useEinvoiceComplianceSummary } from './hooks/use-einvoice-compliance-summary.js';
 
 export interface EInvoiceComplianceSummaryTileViewProps {
   onReviewFilterRequested?: () => void;

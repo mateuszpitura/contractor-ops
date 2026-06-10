@@ -20,9 +20,11 @@ import { Input } from '@contractor-ops/ui/components/shadcn/input';
 import { Label } from '@contractor-ops/ui/components/shadcn/label';
 import { Download, Loader2, Trash2 } from 'lucide-react';
 import { useCallback } from 'react';
-import { useGdprDataRightsSection } from './hooks/use-gdpr-data-rights-section.js';
 import type { useGdprDataRightsSection as UseGdprDataRightsSection } from './hooks/use-gdpr-data-rights-section.js';
-import { GDPR_CONFIRM_PHRASE } from './hooks/use-gdpr-data-rights-section.js';
+import {
+  GDPR_CONFIRM_PHRASE,
+  useGdprDataRightsSection,
+} from './hooks/use-gdpr-data-rights-section.js';
 
 export type GdprDataRightsSectionProps = ReturnType<typeof UseGdprDataRightsSection>;
 

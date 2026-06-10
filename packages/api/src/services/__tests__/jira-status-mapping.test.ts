@@ -125,7 +125,12 @@ describe('jira-status-mapping', () => {
         configJson: { statusMappings: {} },
       });
 
-      const result = await getStatusMapping(mockPrisma, ORG_ID, CONNECTION_ID, 'nonexistent-project');
+      const result = await getStatusMapping(
+        mockPrisma,
+        ORG_ID,
+        CONNECTION_ID,
+        'nonexistent-project',
+      );
 
       expect(result).toBeNull();
     });

@@ -12,7 +12,7 @@ vi.mock('../link-user-popover.js', () => ({
 
 import { render, screen, setup } from '@/test/test-utils';
 import type { UserMapping, useSlackUserMapping } from '../hooks/use-slack-user-mapping';
-import { SlackUserMappingView, SlackUserMappingSkeleton } from '../slack-user-mapping';
+import { SlackUserMappingSkeleton, SlackUserMappingView } from '../slack-user-mapping';
 
 type HookReturn = ReturnType<typeof useSlackUserMapping>;
 

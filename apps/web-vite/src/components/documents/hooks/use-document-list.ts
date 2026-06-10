@@ -1,6 +1,6 @@
 import type { AppRouter } from '@contractor-ops/api';
-import type { inferRouterOutputs } from '@trpc/server';
 import { useQuery } from '@tanstack/react-query';
+import type { inferRouterOutputs } from '@trpc/server';
 
 import { useUploadNewVersion } from '../../../hooks/use-upload-new-version.js';
 import { useTRPC } from '../../../providers/trpc-provider.js';

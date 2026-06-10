@@ -80,11 +80,7 @@ interface NewPaymentRunDialogProps {
   onViewRun?: (runId: string) => void;
 }
 
-export function NewPaymentRunDialog({
-  open,
-  onOpenChange,
-  onViewRun,
-}: NewPaymentRunDialogProps) {
+export function NewPaymentRunDialog({ open, onOpenChange, onViewRun }: NewPaymentRunDialogProps) {
   const dialog = useNewPaymentRunDialog({ open, onOpenChange, onViewRun });
 
   const handleCancelFromSelect = useCallback(() => dialog.handleOpenChange(false), [dialog]);

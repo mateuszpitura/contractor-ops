@@ -98,12 +98,24 @@ Full trigger matrix: [`.planning/brain/wiki/meta/refresh-triggers.md`](.planning
 | Deploy | Render (+ `render.yaml` in repo); infra recommendations in planning docs — no ad-hoc service changes without user ask |
 | Domains | Contractors, engagements, classification, invoices, payments, contracts, equipment, timesheets, approvals, workflows, portal (external) |
 
-## UI plugin (`frontend-design`)
+## UI skills (`frontend-design` + impeccable + marketing stack)
 
-- **Rule:** all UI work → read and follow the **`frontend-design`** skill before implementing in `apps/web-vite`, `apps/landing`, `packages/ui`.
-- **Claude Code UI hooks (opt-in):** **`[ui]`** / **`[ui-strict]`** — (1) `Skill` tool `frontend-design` *lub* `Read` na `SKILL.md`, (2) `semble search`, (3) analiza i edycje. Tracker liczy Skill + Semble native tools, nie tylko Bash/Read. Wyłącz: prompt bez prefiksu lub `/ui-workflow-off`.
-- **Cursor:** same workflow in [`.cursor/rules/30-ui-a11y.mdc`](.cursor/rules/30-ui-a11y.mdc) (no runtime block — verify tool log).
-- **Verify:** turn must show `Read` on `frontend-design/.../SKILL.md` + `semble search` before UI file edits.
+**Binding (every UI touch):** read and follow **`frontend-design`** plugin, then **`semble search`**, then edits in `apps/web-vite`, `apps/landing`, `packages/ui`.
+
+**Depth by surface (stack — not mutex):**
+
+| Surface | After frontend-design + semble |
+|---------|--------------------------------|
+| `apps/web-vite`, portal, `packages/ui` | **impeccable** + [`PRODUCT.md`](PRODUCT.md) product register (`reference/product.md`) — `shape`, `craft`, `harden`, `audit`, `live` |
+| `apps/landing`, explicit marketing | **design-taste-frontend** — Design Read, dials, pre-flight; optional **image-to-code**, **redesign-existing-projects** (existing pages), **full-output-enforcement** (full page / many files) |
+
+**Never** `design-taste-frontend` on product dashboards, data tables, or multi-step wizards. **Never** skip `frontend-design` on landing — binding requires both.
+
+Skill paths: `.claude/skills/impeccable/`; marketing skills symlinked under `.claude/skills/` from `.agents/skills/`. Full routing: [`.planning/brain/wiki/patterns/ui-skills-routing.md`](.planning/brain/wiki/patterns/ui-skills-routing.md).
+
+**Claude Code UI hooks (opt-in):** **`[ui]`** / **`[ui-strict]`** — (1) `Skill` tool `frontend-design` *lub* `Read` na `SKILL.md`, (2) `semble search`, (3) analiza i edycje. `[ui-strict]` blokuje edycje plików UI bez 1–2. Wyłącz: prompt bez prefiksu lub `/ui-workflow-off`. Hook paths: `apps/web-vite/`, `apps/landing/`, `packages/ui/` ([`ui-workflow-lib.js`](.claude/hooks/ui-workflow-lib.js)).
+
+**Cursor:** [`.cursor/rules/30-ui-a11y.mdc`](.cursor/rules/30-ui-a11y.mdc) — verify tool log shows frontend-design + semble before UI edits when `[ui]` prefixed.
 
 ## Verify (don’t trust session memory)
 
@@ -145,6 +157,19 @@ pnpm test                                      # vitest via turbo
 **Read before Edit (required):** MUST `Read` before first `Edit`/`Write` to an **existing** path — runtime rejects unread files (*"You must read file before overwriting it"*). Do **not** retry `Edit` without `Read`. New paths: `Write` OK without prior `Read`.
 
 **Editing:** Edit > Write on existing files. No `sed`/`awk`/ad-hoc Python/TS replace scripts (breaks imports/formatting) — Edit per file; codemods only when appropriate. Scripted replace = last resort + user OK + typecheck/lint after. Minimal diff; no new files/docs unless asked. Parallelize independent reads/edits. Verify paths via Read/Glob/semble — never guess.
+
+**Delegation (subagent-first):** Prefer Task subagents over ad-hoc bulk shell scripts. Full routing: [`.claude/skills/cavecrew/SKILL.md`](.claude/skills/cavecrew/SKILL.md).
+
+| Task | Subagent |
+|------|----------|
+| Locate symbol / callers | `cavecrew-investigator` (default); `explore` for prose |
+| Fix ≤2 files | `cavecrew-builder` or main `Edit` after `Read` |
+| Review diff/PR | `cavecrew-reviewer`; `bugbot` / `security-review` on request |
+| Fix 3+ files | Main plan → parallel investigator/builder per file — not one script |
+| `/gsd:*` phase work | `gsd-*` per workflow; trivial → inline (`/gsd:fast`) |
+
+- **Agent helper scripts ≠ project scripts** — do not create `fix-*.ts` / `bulk-rename.sh` unless the user asks.
+- **Orchestrator rule:** after spawning a subagent on a scope, do not read/edit that scope in parallel — wait for the result.
 
 **Search order:** [`.planning/INDEX.md`](.planning/INDEX.md) → semble → intel/graphify query → [`.planning/brain/wiki/hot.md`](.planning/brain/wiki/hot.md) (domain only) → Read file → grep only for exhaustive literals.
 

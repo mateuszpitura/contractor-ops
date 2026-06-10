@@ -1,13 +1,12 @@
-
 import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
-import { WorkbenchDataTable } from '../../table-kit/workbench-data-table.js';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import type { ColumnDef } from '@tanstack/react-table';
 import { PencilIcon, TrashIcon } from 'lucide-react';
 import { useCallback, useMemo, useState } from 'react';
-
 import { useTranslations } from '../../../i18n/useTranslations.js';
-import { useBoeRateList, type BoeRateEntry } from '../hooks/use-admin-boe-rate.js';
+import { WorkbenchDataTable } from '../../table-kit/workbench-data-table.js';
+import type { BoeRateEntry } from '../hooks/use-admin-boe-rate.js';
+import { useBoeRateList } from '../hooks/use-admin-boe-rate.js';
 import { DeleteBoeRateDialogWired } from './delete-boe-rate-dialog.js';
 import { EditBoeRateDialogWired } from './edit-boe-rate-dialog.js';
 

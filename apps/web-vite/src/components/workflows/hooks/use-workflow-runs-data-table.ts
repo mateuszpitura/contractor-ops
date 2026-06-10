@@ -53,21 +53,17 @@ export function useWorkflowRunsDataTable() {
     [setFilters],
   );
 
-  const {
-    columnVisibility,
-    setColumnVisibility,
-    sorting,
-    handleSortingChange,
-  } = useListDataTable<WorkflowRunRow>({
-    storageKey: STORAGE_KEY,
-    filters: {
-      sortBy: filters.sortBy,
-      sortOrder: (filters.sortOrder as 'asc' | 'desc') || 'asc',
-    },
-    onSortChange: handleSortChange,
-    defaultSortBy: 'dueAt',
-    defaultSortOrder: 'asc',
-  });
+  const { columnVisibility, setColumnVisibility, sorting, handleSortingChange } =
+    useListDataTable<WorkflowRunRow>({
+      storageKey: STORAGE_KEY,
+      filters: {
+        sortBy: filters.sortBy,
+        sortOrder: (filters.sortOrder as 'asc' | 'desc') || 'asc',
+      },
+      onSortChange: handleSortChange,
+      defaultSortBy: 'dueAt',
+      defaultSortOrder: 'asc',
+    });
 
   const handleFiltersChange = useCallback(
     (

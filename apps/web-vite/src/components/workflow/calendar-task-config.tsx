@@ -10,9 +10,9 @@ import { Switch } from '@contractor-ops/ui/components/shadcn/switch';
 import { useCallback, useState } from 'react';
 
 import { useTranslations } from '../../i18n/useTranslations.js';
-import { CalendarEventConfigDialog } from './calendar-event-config-dialog.js';
 import type { CalendarTaskConfigType } from '../workflows/hooks/use-calendar-task-config.js';
 import { useCalendarTaskConfig } from '../workflows/hooks/use-calendar-task-config.js';
+import { CalendarEventConfigDialog } from './calendar-event-config-dialog.js';
 
 const DURATION_LABELS: Record<string, string> = {
   '30m': '30 min',

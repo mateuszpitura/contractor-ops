@@ -10,13 +10,10 @@ export function usePortalLogin() {
   const [sent, setSent] = useState(false);
   const [sentEmail, setSentEmail] = useState<string>('');
 
-  const requestMagicLink = useResourceMutation(
-    trpc.portal.requestMagicLink.mutationOptions(),
-    {
-      successMessage: t('toast.magicLinkSent'),
-      invalidate: [trpc.portal.pathFilter()],
-    },
-  );
+  const requestMagicLink = useResourceMutation(trpc.portal.requestMagicLink.mutationOptions(), {
+    successMessage: t('toast.magicLinkSent'),
+    invalidate: [trpc.portal.pathFilter()],
+  });
 
   const submitEmail = useCallback(
     async (email: string) => {

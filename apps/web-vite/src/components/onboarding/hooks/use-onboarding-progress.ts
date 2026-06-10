@@ -89,8 +89,6 @@ export function useOnboardingProgress(
     percentDone,
     handleRefetch,
     handleRetry,
-    retryingItemKey: retryMutation.isPending
-      ? (retryMutation.variables?.itemKey ?? null)
-      : null,
+    retryingItemKey: retryMutation.isPending ? (retryMutation.variables?.itemKey ?? null) : null,
   };
 }

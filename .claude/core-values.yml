@@ -44,6 +44,20 @@ sections:
       - "Domain/decision context: Read .planning/brain/wiki/hot.md after INDEX for non-trivial domain work."
       - "Never use wiki for code symbol lookup — semble search first."
 
+  - name: Delegation & surgical edits
+    values:
+      - "Default: before bulk edits, wide grep sweeps, or cross-file refactors — delegate via Task subagent; parallel spawn for independent angles (see .claude/skills/cavecrew/SKILL.md)."
+      - "Locate (where is X / who calls Y): cavecrew-investigator (default); explore when narrative or architecture commentary is needed."
+      - "Fix ≤2 files with clear scope: cavecrew-builder or main-thread Edit after Read."
+      - "Review diff/PR: cavecrew-reviewer; bugbot or security-review when user asks."
+      - "Fix 3+ files: main thread plans, then parallel investigator/builder per file or wave — never one ad-hoc bulk script."
+      - "/gsd:* workflows: use gsd-* subagents per workflow; trivial inline work uses /gsd:fast with zero Task spawn."
+      - "NEVER ad-hoc sed -i, awk, perl -pi, python -c/-e, or node -e with replace/write on source files — corrupts imports and formatting."
+      - "Agent helper scripts (fix-*.ts, bulk-rename.sh) forbidden unless user explicitly requests."
+      - "Allowed shell: pnpm/npm run/turbo project scripts, read-only git, test/typecheck, existing repo codemods (jscodeshift) with user approval."
+      - "Inline exception: trivial one-liner, user says do inline, or /gsd:fast."
+      - "After spawning a subagent on a scope: do not read/edit that scope in parallel — wait for the result (GSD orchestrator rule)."
+
   - name: Documentation follows code
     values:
       - "Wiki is a living compass — documentation must track code, not lag behind. Product changes in apps/ or packages/ are incomplete until matching wiki is updated in the same change set."
@@ -76,7 +90,10 @@ sections:
 
   - name: UI & Accessibility
     values:
-      - "All UI work: use the frontend-design skill/plugin."
+      - "All UI work: frontend-design plugin (binding) + semble search before edits — then surface-specific depth."
+      - "web-vite, portal, packages/ui: impeccable + PRODUCT.md product register — not design-taste-frontend."
+      - "apps/landing / marketing: frontend-design + design-taste-frontend; optional image-to-code, redesign-existing-projects, full-output-enforcement."
+      - "UI skill stack is layered, not mutex — do not load every SKILL.md each turn; see wiki/patterns/ui-skills-routing.md."
       - "WCAG and a11y are core requirements: keyboard nav, focus states, semantic HTML, contrast."
       - "Ship loading, empty, and error states for every user-facing flow — not happy-path only."
 

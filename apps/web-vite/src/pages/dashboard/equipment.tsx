@@ -24,8 +24,8 @@ import { Suspense, useCallback, useState } from 'react';
 
 import { AssignmentDialog } from '../../components/equipment/assignment-dialog.js';
 import { EquipmentForm } from '../../components/equipment/equipment-form.js';
-import type { EquipmentRow } from '../../components/equipment/equipment-table/equipment-columns.js';
 import { EquipmentDataTable } from '../../components/equipment/equipment-table/data-table.js';
+import type { EquipmentRow } from '../../components/equipment/equipment-table/equipment-columns.js';
 import { useEquipmentList } from '../../components/equipment/hooks/use-equipment-list.js';
 import { ShipmentForm } from '../../components/equipment/shipment-form.js';
 import { AnimateIn } from '../../components/shared/animate-in.js';

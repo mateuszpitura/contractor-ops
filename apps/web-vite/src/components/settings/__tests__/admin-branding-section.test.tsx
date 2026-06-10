@@ -61,7 +61,9 @@ describe('AdminBrandingSectionView', () => {
 
   it('renders the logo preview and remove control when a logo is set', () => {
     render(
-      <AdminBrandingSectionView {...buildHook({ logoPreview: 'https://cdn.example.com/logo.png' })} />,
+      <AdminBrandingSectionView
+        {...buildHook({ logoPreview: 'https://cdn.example.com/logo.png' })}
+      />,
     );
 
     expect(screen.getByRole('img', { name: 'logoAlt' })).toHaveAttribute(
@@ -90,7 +92,9 @@ describe('AdminBrandingSectionView', () => {
 
   it('fires handleSave when the save button is clicked', async () => {
     const handleSave = vi.fn();
-    const { user } = setup(<AdminBrandingSectionView {...buildHook({ isDirty: true, handleSave })} />);
+    const { user } = setup(
+      <AdminBrandingSectionView {...buildHook({ isDirty: true, handleSave })} />,
+    );
 
     await user.click(screen.getByRole('button', { name: /saveCta/i }));
     expect(handleSave).toHaveBeenCalledTimes(1);

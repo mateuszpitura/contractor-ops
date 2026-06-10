@@ -4,7 +4,6 @@ import {
   TemplatesIllustration,
   WORKBENCH_TABLE_SECTION_CLASS,
 } from '@contractor-ops/ui';
-import { WorkbenchDataTable } from '../../table-kit/workbench-data-table.js';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -20,12 +19,10 @@ import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import type { ColumnDef } from '@tanstack/react-table';
 import { Pencil, Plus, Trash2, Users2 } from 'lucide-react';
 import { useCallback, useMemo, useState } from 'react';
-
 import { renderEmptyStateAction } from '../../shared/atelier-bridges.js';
-import {
-  useWorkflowRolesTable,
-  type useWorkflowRolesTable as UseWorkflowRolesTable,
-} from './hooks/use-workflow-roles-table.js';
+import { WorkbenchDataTable } from '../../table-kit/workbench-data-table.js';
+import type { useWorkflowRolesTable as UseWorkflowRolesTable } from './hooks/use-workflow-roles-table.js';
+import { useWorkflowRolesTable } from './hooks/use-workflow-roles-table.js';
 import { WorkflowRoleFormDialog } from './workflow-role-form-dialog.js';
 
 interface WorkflowRolesTableProps {

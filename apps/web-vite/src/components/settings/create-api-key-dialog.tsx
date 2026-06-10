@@ -15,12 +15,8 @@ import { Label } from '@contractor-ops/ui/components/shadcn/label';
 import { Check, ClipboardCopy, Key, Loader2, Plus, ShieldAlert } from 'lucide-react';
 import type * as React from 'react';
 import { useCallback } from 'react';
-
-import {
-  AVAILABLE_SCOPES,
-  useCreateKeyDialog,
-  type useCreateKeyDialog as UseCreateKeyDialog,
-} from './hooks/use-api-keys-tab.js';
+import type { useCreateKeyDialog as UseCreateKeyDialog } from './hooks/use-api-keys-tab.js';
+import { AVAILABLE_SCOPES, useCreateKeyDialog } from './hooks/use-api-keys-tab.js';
 
 interface ScopeCheckboxRowProps<T extends string> {
   id: string;

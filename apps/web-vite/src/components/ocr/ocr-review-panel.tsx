@@ -29,6 +29,7 @@ import { lazy, Suspense, useCallback } from 'react';
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { ConfidenceFieldWrapper } from './confidence-field-wrapper.js';
 import { ExtractionStatusBar } from './extraction-status-bar.js';
+import { useOcrExtractionResult } from './hooks/use-ocr-review.js';
 import type {
   ExtractedInvoiceData,
   LineItemFormData,
@@ -37,7 +38,6 @@ import type {
   OcrReviewFormState,
 } from './hooks/use-ocr-review-form.js';
 import { OCR_CURRENCIES, useOcrReviewForm } from './hooks/use-ocr-review-form.js';
-import { useOcrExtractionResult } from './hooks/use-ocr-review.js';
 import { LineItemsTable } from './line-items-table.js';
 import { NipValidationBadge } from './nip-validation-badge.js';
 import { OcrProcessingOverlay } from './ocr-processing-overlay.js';

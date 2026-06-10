@@ -19,10 +19,8 @@ import { tKey } from '../../i18n/typed-keys.js';
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { getAvatarInitials } from '../../lib/avatar-initials.js';
 import { cn } from '../../lib/utils.js';
-import {
-  type ApprovalAuditEvent,
-  useApprovalAuditTrail,
-} from './hooks/use-approval-audit-trail.js';
+import type { ApprovalAuditEvent } from './hooks/use-approval-audit-trail.js';
+import { useApprovalAuditTrail } from './hooks/use-approval-audit-trail.js';
 
 type AuditEvent = ApprovalAuditEvent;
 

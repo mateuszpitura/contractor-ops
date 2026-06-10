@@ -14,7 +14,8 @@ import type { LooseTranslator } from '../../../i18n/typed-keys.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { canViewSensitivePii, maskTaxId } from '../../../lib/mask-pii.js';
 import { cn } from '../../../lib/utils.js';
-import { useIntakeDetailMatch, type useIntakeDetailMatch as UseIntakeDetailMatch } from '../hooks/use-intake-detail-match.js';
+import type { useIntakeDetailMatch as UseIntakeDetailMatch } from '../hooks/use-intake-detail-match.js';
+import { useIntakeDetailMatch } from '../hooks/use-intake-detail-match.js';
 
 export interface IntakeDetailMatchPaneViewProps {
   match: ReturnType<typeof UseIntakeDetailMatch>;

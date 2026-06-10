@@ -25,26 +25,23 @@ import {
 } from '@contractor-ops/ui/components/shadcn/tabs';
 import { Textarea } from '@contractor-ops/ui/components/shadcn/textarea';
 import { useState } from 'react';
-
-import { useUploadReview } from './hooks/use-upload-review.js';
-
 import { tDynLoose } from '../../../i18n/typed-keys.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import type { RejectReasonCategory } from './hooks/use-upload-review.js';
-import { REJECT_REASON_CATEGORIES } from './hooks/use-upload-review.js';
+import { REJECT_REASON_CATEGORIES, useUploadReview } from './hooks/use-upload-review.js';
 
 export interface UploadReviewDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   isPending: boolean;
-  /** Pre-filled expiry (contractor-suggested + policy default), editable on approve (D-07). */
+  /** Pre-filled expiry (contractor-suggested + policy default), editable on approve. */
   defaultExpiresAt: string;
   onApprove: (input: { expiresAt: string }) => void;
   onReject: (input: { reasonCategory: RejectReasonCategory; freeText?: string }) => void;
 }
 
 /**
- * Phase 73 D-08 — admin approve/reject UI for a PENDING_REVIEW upload. Two tabs
+ * Admin approve/reject UI for a PENDING_REVIEW upload. Two tabs
  * (Approve = editable expiresAt; Reject = closed-enum reason + free text).
  * Content in DialogBody, actions in DialogFooter (web-vite dialog convention).
  */

@@ -29,7 +29,11 @@ describe('IntakeUploadDialog', () => {
   it('renders the drop-zone with a file input wired to id=intake-upload-input', () => {
     const upload = makeUpload();
     render(
-      <IntakeUploadDialogFrame open upload={upload} body={<IntakeUploadDropzone upload={upload} />} />,
+      <IntakeUploadDialogFrame
+        open
+        upload={upload}
+        body={<IntakeUploadDropzone upload={upload} />}
+      />,
     );
     const input = document.getElementById('intake-upload-input') as HTMLInputElement | null;
     expect(input).not.toBeNull();
@@ -41,7 +45,11 @@ describe('IntakeUploadDialog', () => {
   it('shows the validating label while isPending is true', () => {
     const upload = makeUpload({ isPending: true });
     render(
-      <IntakeUploadDialogFrame open upload={upload} body={<IntakeUploadDropzone upload={upload} />} />,
+      <IntakeUploadDialogFrame
+        open
+        upload={upload}
+        body={<IntakeUploadDropzone upload={upload} />}
+      />,
     );
     expect(screen.getByText(/Validating/i)).toBeInTheDocument();
   });

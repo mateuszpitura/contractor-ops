@@ -7,8 +7,8 @@ import {
 import { Progress } from '@contractor-ops/ui/components/shadcn/progress';
 import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { ShieldCheck } from 'lucide-react';
-import { useZatcaComplianceWidget } from './hooks/use-zatca-compliance-widget.js';
 import type { useZatcaComplianceWidget as UseZatcaComplianceWidget } from './hooks/use-zatca-compliance-widget.js';
+import { useZatcaComplianceWidget } from './hooks/use-zatca-compliance-widget.js';
 
 export type ZatcaComplianceWidgetProps = {
   connectionStatus?: string;

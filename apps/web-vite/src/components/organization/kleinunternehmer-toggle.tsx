@@ -22,8 +22,8 @@ import { AlertTriangle } from 'lucide-react';
 import { useId } from 'react';
 
 import { useTranslations } from '../../i18n/useTranslations.js';
-import { useKleinunternehmerToggle } from './hooks/use-kleinunternehmer-toggle.js';
 import type { useKleinunternehmerToggle as UseKleinunternehmerToggle } from './hooks/use-kleinunternehmer-toggle.js';
+import { useKleinunternehmerToggle } from './hooks/use-kleinunternehmer-toggle.js';
 
 interface KleinunternehmerToggleViewProps {
   isKleinunternehmer: boolean;

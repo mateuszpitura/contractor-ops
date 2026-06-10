@@ -1,12 +1,11 @@
 import { TeamsIllustration } from '@contractor-ops/ui';
-import { WorkbenchDataTable } from '../../table-kit/workbench-data-table.js';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import type { ColumnDef } from '@tanstack/react-table';
 import { format } from 'date-fns';
 import { Plus, RefreshCw } from 'lucide-react';
 import { useMemo, useState } from 'react';
-
 import { useTranslations } from '../../../i18n/useTranslations.js';
+import { WorkbenchDataTable } from '../../table-kit/workbench-data-table.js';
 import { SourceBadge } from '../shared/source-badge.js';
 import { StatusBadge } from '../shared/status-badge.js';
 import type { TeamRow } from './team-form-sheet.js';

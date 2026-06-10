@@ -3408,7 +3408,8 @@
     "approvalStillComplianceBlocked": "Contractor still has an expired blocking compliance document; cannot resume the approval.",
     "deprovisioningProviderSignoffPending": "This provider's deprovisioning feature requires sign-off approval before it can be enabled.",
     "workflowAssigneeNotMember": "Selected assignee is not a member of this organization.",
-    "importJobStateConflict": "Import job state changed; refresh and try again."
+    "importJobStateConflict": "Import job state changed; refresh and try again.",
+    "importProjectFailureRetryViaWizard": "Project import failures must be retried from the import wizard."
   },
   "Compliance": {
     "paymentBlockModal": {
@@ -7381,6 +7382,43 @@
       "itAdmin": "Manage members, integrations and system settings",
       "externalAccountant": "Read-only access to financial data and reports",
       "readonly": "View contractors, contracts, invoices and reports"
+    }
+  },
+  "OrganizationOnboarding": {
+    "eyebrow": "Welcome to Contractor Ops",
+    "title": "Create your organization",
+    "subtitle": "Set up your workspace to start managing contractors, contracts, and invoices.",
+    "nav": {
+      "step1Label": "Organization",
+      "step2Label": "Finish"
+    },
+    "step1": {
+      "heading": "Organization details",
+      "subtitle": "You can change these later in settings.",
+      "nameLabel": "Organization name",
+      "namePlaceholder": "Acme Studio",
+      "countryLabel": "Billing country",
+      "countryHelp": "Sets your data residency region. This can't be changed later.",
+      "countryPlaceholder": "Select a country",
+      "submit": "Create organization",
+      "submitting": "Creating…"
+    },
+    "step2": {
+      "heading": "You're all set, {orgName}",
+      "subtitle": "Your workspace is ready. Here's what you can set up next.",
+      "comingSoon": "Coming soon",
+      "next": {
+        "inviteTitle": "Invite your team",
+        "inviteDesc": "Add teammates and assign roles.",
+        "importTitle": "Import your data",
+        "importDesc": "Bring in contractors and projects from your tools.",
+        "billingTitle": "Set up billing",
+        "billingDesc": "Choose a plan and add a payment method."
+      },
+      "finish": "Go to dashboard"
+    },
+    "errors": {
+      "createFailed": "Couldn't create your organization. Please try again."
     }
   },
   "Validation": {

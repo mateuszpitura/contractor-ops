@@ -2,17 +2,13 @@ import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { Separator } from '@contractor-ops/ui/components/shadcn/separator';
 import { Mail, Upload } from 'lucide-react';
-
-import {
-  EntityDetailItem,
-  EntitySummarySheet,
-} from '../table-kit/entity-summary-sheet.js';
 import { Link } from '../../i18n/navigation.js';
 import { tDynLoose } from '../../i18n/typed-keys.js';
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { enumKey } from '../../lib/enum-key.js';
-import { formatMinorUnits } from '../../lib/money.js';
 import { formatDate } from '../../lib/format-date.js';
+import { formatMinorUnits } from '../../lib/money.js';
+import { EntityDetailItem, EntitySummarySheet } from '../table-kit/entity-summary-sheet.js';
 import type { InvoiceRow } from './invoice-table/columns.js';
 
 const statusBadgeColors: Record<string, string> = {

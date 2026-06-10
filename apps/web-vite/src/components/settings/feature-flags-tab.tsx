@@ -9,9 +9,8 @@ import {
   TableRow,
 } from '@contractor-ops/ui/components/shadcn/table';
 import { Flag } from 'lucide-react';
-
-import { useFeatureFlagsTab } from './hooks/use-feature-flags-tab.js';
 import type { useFeatureFlagsTab as UseFeatureFlagsTab } from './hooks/use-feature-flags-tab.js';
+import { useFeatureFlagsTab } from './hooks/use-feature-flags-tab.js';
 
 // ---------------------------------------------------------------------------
 // Feature Flags admin tab

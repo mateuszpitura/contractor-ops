@@ -44,10 +44,10 @@ import { usePermissions } from '../../../hooks/use-permissions.js';
 import type { LooseTranslator } from '../../../i18n/typed-keys.js';
 import { tKey } from '../../../i18n/typed-keys.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
+import { useFlag } from '../../layout/feature-flag-context.js';
 import type { InvoiceAction } from '../actions.js';
 import { getDetailInvoiceActions } from '../actions.js';
 import { useInvoiceMetadataForm } from '../hooks/use-invoice-metadata-form.js';
-import { useFlag } from '../../layout/feature-flag-context.js';
 import { LateInterestCard } from '../late-interest/late-interest-card.js';
 import { SkontoFormSection } from '../skonto/skonto-form-section.js';
 import { VatRateSelector } from '../vat-rate-selector.js';
@@ -157,7 +157,9 @@ function dateFieldToOptionalString(value: string | Date | null | undefined): str
  * payload. Centralises the null/undefined coalescing for every optional
  * field so the component body stays simple.
  */
-function getDefaultFormValues(invoice: InvoiceMetadataFormViewProps['invoice']): InvoiceMetadataValues {
+function getDefaultFormValues(
+  invoice: InvoiceMetadataFormViewProps['invoice'],
+): InvoiceMetadataValues {
   return {
     invoiceNumber: invoice.invoiceNumber,
     issueDate: dateFieldToString(invoice.issueDate),
@@ -802,10 +804,7 @@ type InvoiceMetadataFormProps = {
   onSubmittedForMatching?: () => void;
 };
 
-export function InvoiceMetadataForm({
-  invoice,
-  onSubmittedForMatching,
-}: InvoiceMetadataFormProps) {
+export function InvoiceMetadataForm({ invoice, onSubmittedForMatching }: InvoiceMetadataFormProps) {
   const mutations = useInvoiceMetadataForm(invoice.id, onSubmittedForMatching);
   const skontoEnabled = useFlag('payments.skonto-enabled');
   const lateInterestEnabled = useFlag('payments.late-interest-enabled');

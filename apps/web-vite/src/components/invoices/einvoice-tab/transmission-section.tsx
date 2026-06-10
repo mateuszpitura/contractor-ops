@@ -2,7 +2,6 @@
  * Transmission section.
  */
 
-import { WorkbenchDataTable } from '../../table-kit/workbench-data-table.js';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -26,8 +25,8 @@ import type { ColumnDef } from '@tanstack/react-table';
 import { Loader2, Send, SendHorizontal } from 'lucide-react';
 import { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-
 import { useTranslations } from '../../../i18n/useTranslations.js';
+import { WorkbenchDataTable } from '../../table-kit/workbench-data-table.js';
 import type { EInvoiceLifecycleShape, PeppolParticipantLike } from './types.js';
 
 export interface LifecycleEvent {
@@ -167,7 +166,7 @@ export function TransmissionSection({
         },
       },
     ],
-    [i18n.language],
+    [i18n.language, t],
   );
 
   const getRowId = useCallback((row: LifecycleEvent) => row.id, []);

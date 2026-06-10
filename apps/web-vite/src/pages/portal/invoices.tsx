@@ -18,10 +18,10 @@ import type { MouseEvent } from 'react';
 import { Suspense, useCallback, useMemo } from 'react';
 
 import { usePortalInvoicesList } from '../../components/portal/hooks/use-portal-invoices-list.js';
-import { WorkbenchDataTable } from '../../components/table-kit/workbench-data-table.js';
 import { AnimateIn } from '../../components/shared/animate-in.js';
 import { PageLoadingSpinner } from '../../components/shared/page-loading-spinner.js';
 import { WorkbenchPageHeader } from '../../components/shared/workbench-page-header.js';
+import { WorkbenchDataTable } from '../../components/table-kit/workbench-data-table.js';
 import { Link, useRouter } from '../../i18n/navigation.js';
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { usePortalDateFormatter } from '../../lib/format/use-portal-date-formatter.js';

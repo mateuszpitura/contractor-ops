@@ -27,8 +27,7 @@ const files = [
   'packages/api/src/routers/workflow/workflow-templates.ts',
 ];
 
-const pattern =
-  /\.input\(z\.object\(\{\s*id:\s*z\.string\(\)(?:\.min\(1\))?\s*\}\)\)/g;
+const pattern = /\.input\(z\.object\(\{\s*id:\s*z\.string\(\)(?:\.min\(1\))?\s*\}\)\)/g;
 
 for (const file of files) {
   let content = readFileSync(file, 'utf8');

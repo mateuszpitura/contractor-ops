@@ -3408,7 +3408,8 @@
     "approvalStillComplianceBlocked": "Der Auftragnehmer hat weiterhin ein abgelaufenes, blockierendes Compliance-Dokument; die Genehmigung kann nicht fortgesetzt werden.",
     "deprovisioningProviderSignoffPending": "Für diese Anbieter-Deprovisionierungsfunktion ist eine Genehmigung erforderlich, bevor sie aktiviert werden kann.",
     "workflowAssigneeNotMember": "Der ausgewählte Bearbeiter ist kein Mitglied dieser Organisation.",
-    "importJobStateConflict": "Der Importauftrag hat sich geändert; bitte aktualisieren und erneut versuchen."
+    "importJobStateConflict": "Der Importauftrag hat sich geändert; bitte aktualisieren und erneut versuchen.",
+    "importProjectFailureRetryViaWizard": "Fehlgeschlagene Projektimporte müssen über den Importassistenten wiederholt werden."
   },
   "Compliance": {
     "paymentBlockModal": {
@@ -7382,6 +7383,43 @@
       "itAdmin": "Mitglieder, Integrationen und Systemeinstellungen verwalten",
       "externalAccountant": "Lesezugriff auf Finanzdaten und Berichte",
       "readonly": "Auftragnehmer, Verträge, Rechnungen und Berichte einsehen"
+    }
+  },
+  "OrganizationOnboarding": {
+    "eyebrow": "Willkommen bei Contractor Ops",
+    "title": "Organisation erstellen",
+    "subtitle": "Richte deinen Arbeitsbereich ein, um Auftragnehmer, Verträge und Rechnungen zu verwalten.",
+    "nav": {
+      "step1Label": "Organisation",
+      "step2Label": "Fertig"
+    },
+    "step1": {
+      "heading": "Organisationsdetails",
+      "subtitle": "Du kannst diese später in den Einstellungen ändern.",
+      "nameLabel": "Name der Organisation",
+      "namePlaceholder": "Acme Studio",
+      "countryLabel": "Rechnungsland",
+      "countryHelp": "Legt deine Datenregion fest. Dies kann später nicht geändert werden.",
+      "countryPlaceholder": "Land auswählen",
+      "submit": "Organisation erstellen",
+      "submitting": "Wird erstellt…"
+    },
+    "step2": {
+      "heading": "Alles bereit, {orgName}",
+      "subtitle": "Dein Arbeitsbereich ist bereit. Das kannst du als Nächstes einrichten.",
+      "comingSoon": "Demnächst",
+      "next": {
+        "inviteTitle": "Team einladen",
+        "inviteDesc": "Teammitglieder hinzufügen und Rollen zuweisen.",
+        "importTitle": "Daten importieren",
+        "importDesc": "Auftragnehmer und Projekte aus deinen Tools übernehmen.",
+        "billingTitle": "Abrechnung einrichten",
+        "billingDesc": "Tarif wählen und Zahlungsmethode hinzufügen."
+      },
+      "finish": "Zum Dashboard"
+    },
+    "errors": {
+      "createFailed": "Organisation konnte nicht erstellt werden. Bitte versuche es erneut."
     }
   },
   "Validation": {

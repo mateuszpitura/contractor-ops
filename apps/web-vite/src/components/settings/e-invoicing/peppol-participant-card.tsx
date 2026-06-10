@@ -23,10 +23,8 @@ import { CheckCircle2, RefreshCw, XCircle } from 'lucide-react';
 import { useCallback } from 'react';
 import type { LooseTranslator } from '../../../i18n/typed-keys.js';
 import { useFormatter } from '../../../i18n/useFormatter.js';
-import {
-  usePeppolParticipantCard,
-  type usePeppolParticipantCard as UsePeppolParticipantCard,
-} from './hooks/use-peppol-participant-card.js';
+import type { usePeppolParticipantCard as UsePeppolParticipantCard } from './hooks/use-peppol-participant-card.js';
+import { usePeppolParticipantCard } from './hooks/use-peppol-participant-card.js';
 import { PeppolParticipantDeregisterDialog } from './peppol-participant-deregister-dialog.js';
 import { PeppolParticipantRegisterDialog } from './peppol-participant-register-dialog.js';
 import type { PeppolParticipantStatus } from './peppol-participant-status-pill.js';
@@ -139,15 +137,9 @@ export function PeppolParticipantCardView({
         )}
       </CardContent>
 
-      <PeppolParticipantRegisterDialog
-        open={registerOpen}
-        onOpenChange={setRegisterOpen}
-      />
+      <PeppolParticipantRegisterDialog open={registerOpen} onOpenChange={setRegisterOpen} />
       {active ? (
-        <PeppolParticipantDeregisterDialog
-          open={deregisterOpen}
-          onOpenChange={setDeregisterOpen}
-        />
+        <PeppolParticipantDeregisterDialog open={deregisterOpen} onOpenChange={setDeregisterOpen} />
       ) : null}
     </Card>
   );

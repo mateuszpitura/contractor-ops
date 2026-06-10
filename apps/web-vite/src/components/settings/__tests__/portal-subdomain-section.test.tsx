@@ -58,7 +58,9 @@ describe('PortalSubdomainSectionView', () => {
   });
 
   it('renders an inline error message when subdomainError is provided', () => {
-    render(<PortalSubdomainSectionView {...buildHook({ subdomainError: 'Subdomain too short' })} />);
+    render(
+      <PortalSubdomainSectionView {...buildHook({ subdomainError: 'Subdomain too short' })} />,
+    );
 
     expect(screen.getByRole('alert')).toHaveTextContent('Subdomain too short');
   });
@@ -74,7 +76,9 @@ describe('PortalSubdomainSectionView', () => {
 
   it('calls handleSubdomainChange as the user types', async () => {
     const handleSubdomainChange = vi.fn();
-    const { user } = setup(<PortalSubdomainSectionView {...buildHook({ handleSubdomainChange })} />);
+    const { user } = setup(
+      <PortalSubdomainSectionView {...buildHook({ handleSubdomainChange })} />,
+    );
 
     await user.type(screen.getByRole('textbox'), 'a');
     expect(handleSubdomainChange).toHaveBeenCalledWith('a');

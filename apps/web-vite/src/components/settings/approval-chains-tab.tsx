@@ -24,8 +24,8 @@ import { useCallback } from 'react';
 import { tKey } from '../../i18n/typed-keys';
 import { renderEmptyStateAction } from '../shared/atelier-bridges.js';
 import { ChainEditorDialog } from './chain-editor-dialog.js';
-import { useApprovalChainsTab } from './hooks/use-approval-chains-tab.js';
 import type { useApprovalChainsTab as UseApprovalChainsTab } from './hooks/use-approval-chains-tab.js';
+import { useApprovalChainsTab } from './hooks/use-approval-chains-tab.js';
 
 type SettingsTranslateFn = (key: string, params?: Record<string, string | number>) => string;
 
@@ -227,11 +227,7 @@ export function ApprovalChainsTabView({
         ))}
       </div>
 
-      <ChainEditorDialog
-        open={editorOpen}
-        onOpenChange={setEditorOpen}
-        chainData={editingChain}
-      />
+      <ChainEditorDialog open={editorOpen} onOpenChange={setEditorOpen} chainData={editingChain} />
 
       <AlertDialog open={deletingChainId !== null} onOpenChange={handleAlertOpenChange}>
         <AlertDialogContent>

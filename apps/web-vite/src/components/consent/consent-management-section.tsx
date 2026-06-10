@@ -19,7 +19,8 @@ import {
 import { Download, FileText, Globe, History, Loader2 } from 'lucide-react';
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { ConsentPurposeToggle } from './consent-purpose-toggle';
-import { useConsentManagement, type UseConsentManagementResult } from './hooks/use-consent-management.js';
+import type { UseConsentManagementResult } from './hooks/use-consent-management.js';
+import { useConsentManagement } from './hooks/use-consent-management.js';
 import { PrivacyNoticeDisplay } from './privacy-notice-display';
 
 export type ConsentManagementSectionViewProps = Omit<

@@ -29,11 +29,7 @@ export function KsefProviderSectionView({
 
       {isConnected && <KsefControls />}
 
-      <KsefSetupDialog
-        open={setupDialogOpen}
-        onOpenChange={setSetupDialogOpen}
-        orgNip={orgNip}
-      />
+      <KsefSetupDialog open={setupDialogOpen} onOpenChange={setSetupDialogOpen} orgNip={orgNip} />
     </div>
   );
 }

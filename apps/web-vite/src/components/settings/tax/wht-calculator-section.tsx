@@ -21,12 +21,14 @@ import { Calculator, Loader2 } from 'lucide-react';
 import { useCallback } from 'react';
 import { tDyn } from '../../../i18n/typed-keys';
 import { formatMinorUnits } from '../../../lib/money.js';
+import type {
+  ContractorCountry,
+  useWhtCalculatorSection as UseWhtCalculatorSection,
+} from './hooks/use-wht-calculator-section.js';
 import {
-  useWhtCalculatorSection,
   CONTRACTOR_COUNTRIES,
   SERVICE_TYPES,
-  type ContractorCountry,
-  type useWhtCalculatorSection as UseWhtCalculatorSection,
+  useWhtCalculatorSection,
 } from './hooks/use-wht-calculator-section.js';
 
 export type WhtCalculatorSectionProps = ReturnType<typeof UseWhtCalculatorSection>;

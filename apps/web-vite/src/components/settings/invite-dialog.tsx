@@ -20,9 +20,11 @@ import {
 } from '@contractor-ops/ui/components/shadcn/select';
 import { Loader2, UserPlus } from 'lucide-react';
 import { useCallback, useId } from 'react';
-
-import { useInviteDialog, type InviteValues } from './hooks/use-invite-dialog.js';
-import type { useInviteDialog as UseInviteDialog } from './hooks/use-invite-dialog.js';
+import type {
+  InviteValues,
+  useInviteDialog as UseInviteDialog,
+} from './hooks/use-invite-dialog.js';
+import { useInviteDialog } from './hooks/use-invite-dialog.js';
 
 interface InviteDialogShellProps {
   open: boolean;

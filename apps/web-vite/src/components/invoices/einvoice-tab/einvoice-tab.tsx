@@ -7,7 +7,8 @@ import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { useRef } from 'react';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
-import { useEinvoiceTab, type useEinvoiceTab as UseEinvoiceTab } from '../hooks/use-einvoice-tab.js';
+import type { useEinvoiceTab as UseEinvoiceTab } from '../hooks/use-einvoice-tab.js';
+import { useEinvoiceTab } from '../hooks/use-einvoice-tab.js';
 import { DownloadZugferdPdfButton } from './download-zugferd-pdf-button.js';
 import { GenerationSection } from './generation-section.js';
 import { LeitwegIdResolvedInline } from './leitweg-id-resolved-inline.js';

@@ -8,10 +8,8 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { render, screen, setup } from '@/test/test-utils';
 import type { useLeitwegIdCreateDialog } from '../hooks/use-leitweg-id-create-dialog';
-import {
-  LeitwegIdCreateDialogView,
-  type LeitwegIdCreateDialogViewProps,
-} from '../leitweg-id-create-dialog';
+import type { LeitwegIdCreateDialogViewProps } from '../leitweg-id-create-dialog';
+import { LeitwegIdCreateDialogView } from '../leitweg-id-create-dialog';
 
 type HookReturn = ReturnType<typeof useLeitwegIdCreateDialog>;
 
@@ -70,7 +68,9 @@ describe('LeitwegIdCreateDialogView', () => {
   });
 
   it('shows the formError alert when supplied', () => {
-    render(<LeitwegIdCreateDialogView {...baseProps({ formError: 'Generic error — please retry' })} />);
+    render(
+      <LeitwegIdCreateDialogView {...baseProps({ formError: 'Generic error — please retry' })} />,
+    );
     expect(screen.getByRole('alert')).toHaveTextContent('Generic error — please retry');
   });
 

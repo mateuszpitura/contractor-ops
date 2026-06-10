@@ -5,6 +5,7 @@ import {
   SectionLabel,
 } from '@contractor-ops/ui';
 import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
+import { Card, CardContent } from '@contractor-ops/ui/components/shadcn/card';
 import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import type { ColumnDef } from '@tanstack/react-table';
 import { CreditCard } from 'lucide-react';
@@ -13,14 +14,11 @@ import { Link } from '../../../i18n/navigation.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { useDateFormatter } from '../../../lib/format/use-date-formatter.js';
 import { renderEmptyStateAction } from '../../shared/atelier-bridges.js';
-import { Card, CardContent } from '@contractor-ops/ui/components/shadcn/card';
 
 import { DefaultSkontoSection } from '../billing-profile/default-skonto-section.js';
 import { useContractorBillingSkontoSection } from '../hooks/use-contractor-billing-skonto-section.js';
-import {
-  useContractorTabPayments,
-  type ContractorTabPaymentRow,
-} from '../hooks/use-contractor-tab-payments.js';
+import type { ContractorTabPaymentRow } from '../hooks/use-contractor-tab-payments.js';
+import { useContractorTabPayments } from '../hooks/use-contractor-tab-payments.js';
 
 const itemStatusBadgeColors: Record<string, string> = {
   PENDING: 'bg-muted text-muted-foreground border border-border',

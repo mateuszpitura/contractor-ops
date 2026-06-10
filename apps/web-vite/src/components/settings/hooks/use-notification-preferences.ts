@@ -73,11 +73,14 @@ export function useNotificationPreferences() {
     }
   }, [preferencesQuery.data, form]);
 
-  const updateMutation = useResourceMutation(trpc.notification.updatePreferences.mutationOptions(), {
-    invalidate: [trpc.notification.getPreferences.queryKey()],
-    successMessage: t('notifications.preferencesSaved'),
-    errorMessage: t('notifications.preferencesSaveFailed'),
-  });
+  const updateMutation = useResourceMutation(
+    trpc.notification.updatePreferences.mutationOptions(),
+    {
+      invalidate: [trpc.notification.getPreferences.queryKey()],
+      successMessage: t('notifications.preferencesSaved'),
+      errorMessage: t('notifications.preferencesSaveFailed'),
+    },
+  );
 
   const onSubmit = (data: PreferenceFormValues) => {
     updateMutation.mutate({ preferences: data.preferences });

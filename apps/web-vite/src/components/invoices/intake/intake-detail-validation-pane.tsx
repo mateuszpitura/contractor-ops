@@ -7,9 +7,9 @@ import {
 } from '@contractor-ops/ui/components/shadcn/card';
 import { ExternalLink } from 'lucide-react';
 import { useCallback } from 'react';
-import { useIntakeDetailValidation } from '../hooks/use-intake-detail-validation.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { useDateFormatter } from '../../../lib/format/use-date-formatter.js';
+import { useIntakeDetailValidation } from '../hooks/use-intake-detail-validation.js';
 import type { ValidationStatus } from './intake-validation-status-pill.js';
 import { IntakeValidationStatusPill } from './intake-validation-status-pill.js';
 

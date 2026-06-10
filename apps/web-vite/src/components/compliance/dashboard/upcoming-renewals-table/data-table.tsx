@@ -1,8 +1,6 @@
-
 import { useMemo, useState } from 'react';
-import { WorkbenchDataTable } from '../../../table-kit/workbench-data-table.js';
-
 import { useTranslations } from '../../../../i18n/useTranslations.js';
+import { WorkbenchDataTable } from '../../../table-kit/workbench-data-table.js';
 import type { UpcomingRow } from '../hooks/use-compliance-dashboard.js';
 import { getUpcomingRenewalsColumns } from './columns.js';
 

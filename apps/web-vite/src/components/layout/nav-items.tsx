@@ -7,9 +7,7 @@ import {
 } from '@contractor-ops/ui/components/shadcn/sidebar';
 import { Pin } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
-
-import { Link } from '../../i18n/navigation.js';
-import { usePathname } from '../../i18n/navigation.js';
+import { Link, usePathname } from '../../i18n/navigation.js';
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { prefetchRoute } from '../../lib/route-prefetch.js';
 import type { NavBadgeCounts } from './hooks/use-nav-badges.js';

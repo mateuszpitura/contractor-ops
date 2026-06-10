@@ -10,8 +10,8 @@ import { useParams } from 'react-router-dom';
 
 import { AssignmentDialog } from '../../components/equipment/assignment-dialog.js';
 import { CarrierShipmentForm } from '../../components/equipment/carrier-shipment-form.js';
-import { EquipmentDetailTabs } from '../../components/equipment/equipment-detail/equipment-detail-tabs.js';
 import { EquipmentDetailHeader } from '../../components/equipment/equipment-detail/equipment-detail-header.js';
+import { EquipmentDetailTabs } from '../../components/equipment/equipment-detail/equipment-detail-tabs.js';
 import { TabAssignments } from '../../components/equipment/equipment-detail/tab-assignments.js';
 import { TabInfo } from '../../components/equipment/equipment-detail/tab-info.js';
 import { TabShipments } from '../../components/equipment/equipment-detail/tab-shipments.js';

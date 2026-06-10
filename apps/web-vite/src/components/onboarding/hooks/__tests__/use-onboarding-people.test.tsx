@@ -118,14 +118,11 @@ describe('useOnboardingPeople', () => {
     expect(result.current.isEmpty).toBe(true);
   });
 
-
   it('exposes allSourcesFailed when every source errors and no people merge', async () => {
     setTRPCMock({
       'onboardingImport.fetchPeople': () => ({
         people: [],
-        sourceErrors: [
-          { source: 'JIRA', code: 'fetch_failed', error: 'token expired' },
-        ],
+        sourceErrors: [{ source: 'JIRA', code: 'fetch_failed', error: 'token expired' }],
       }),
     });
     const { useHook } = makeHarness();
@@ -147,7 +144,9 @@ describe('useOnboardingPeople', () => {
   });
 
   it('seeds merged people + default selections on first resolve', async () => {
-    setTRPCMock({ 'onboardingImport.fetchPeople': () => ({ people: samplePeople, sourceErrors: [] }) });
+    setTRPCMock({
+      'onboardingImport.fetchPeople': () => ({ people: samplePeople, sourceErrors: [] }),
+    });
     const { useHook, onMergedPeopleChange, onPersonSelectionsChange } = makeHarness();
     renderHookWithProviders(useHook);
     await waitFor(() => expect(onMergedPeopleChange).toHaveBeenCalled());
@@ -161,7 +160,9 @@ describe('useOnboardingPeople', () => {
   });
 
   it('filters people by activeFilter and produces stable counts', async () => {
-    setTRPCMock({ 'onboardingImport.fetchPeople': () => ({ people: samplePeople, sourceErrors: [] }) });
+    setTRPCMock({
+      'onboardingImport.fetchPeople': () => ({ people: samplePeople, sourceErrors: [] }),
+    });
     const selections = new Map<string, PersonSelection>([
       ['alice@example.com', { role: 'readonly', skip: false, resolvedConflicts: {} }],
     ]);
@@ -176,7 +177,9 @@ describe('useOnboardingPeople', () => {
   });
 
   it('row + select-all check tracks checked emails (existing rows excluded)', async () => {
-    setTRPCMock({ 'onboardingImport.fetchPeople': () => ({ people: samplePeople, sourceErrors: [] }) });
+    setTRPCMock({
+      'onboardingImport.fetchPeople': () => ({ people: samplePeople, sourceErrors: [] }),
+    });
     const { useHook } = makeHarness({
       mergedPeople: samplePeople,
       personSelections: new Map([
@@ -193,7 +196,9 @@ describe('useOnboardingPeople', () => {
   });
 
   it('handleSkipRow / handleRoleChange / handleResolveConflict update selections', async () => {
-    setTRPCMock({ 'onboardingImport.fetchPeople': () => ({ people: samplePeople, sourceErrors: [] }) });
+    setTRPCMock({
+      'onboardingImport.fetchPeople': () => ({ people: samplePeople, sourceErrors: [] }),
+    });
     const selections = new Map<string, PersonSelection>([
       ['alice@example.com', { role: 'readonly', skip: false, resolvedConflicts: {} }],
       ['bob@example.com', { role: 'readonly', skip: false, resolvedConflicts: {} }],
@@ -227,7 +232,9 @@ describe('useOnboardingPeople', () => {
   });
 
   it('batch ops apply to all checked emails and clear the selection for import + skip', async () => {
-    setTRPCMock({ 'onboardingImport.fetchPeople': () => ({ people: samplePeople, sourceErrors: [] }) });
+    setTRPCMock({
+      'onboardingImport.fetchPeople': () => ({ people: samplePeople, sourceErrors: [] }),
+    });
     const selections = new Map<string, PersonSelection>([
       ['alice@example.com', { role: 'readonly', skip: true, resolvedConflicts: {} }],
       ['bob@example.com', { role: 'readonly', skip: false, resolvedConflicts: {} }],

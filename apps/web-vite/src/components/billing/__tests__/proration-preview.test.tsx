@@ -10,9 +10,9 @@ import { render, screen, setup } from '@/test/test-utils';
 import type { TranslateFn } from '../../../i18n/useTranslations';
 
 import {
-  ProrationPreviewView,
   ProrationPreviewError,
   ProrationPreviewSkeleton,
+  ProrationPreviewView,
 } from '../proration-preview.js';
 
 const labels: Record<string, string> = {

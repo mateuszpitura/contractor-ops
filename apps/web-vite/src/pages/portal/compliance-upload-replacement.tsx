@@ -6,10 +6,9 @@ import type { PolicyRule } from '@contractor-ops/compliance-policy';
 import { defaultExpiryFromUploadDate, listPolicyRules } from '@contractor-ops/compliance-policy';
 import { Suspense, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
-
+import { useComplDocName } from '../../components/compliance/hooks/use-compl-doc-name.js';
 import { usePortalUploadReplacement } from '../../components/portal/compliance/hooks/use-portal-upload-replacement.js';
 import { PortalUploadReplacementForm } from '../../components/portal/compliance/portal-upload-replacement-form.js';
-import { useComplDocName } from '../../components/compliance/hooks/use-compl-doc-name.js';
 import { PageLoadingSpinner } from '../../components/shared/page-loading-spinner.js';
 import { useTranslations } from '../../i18n/useTranslations.js';
 

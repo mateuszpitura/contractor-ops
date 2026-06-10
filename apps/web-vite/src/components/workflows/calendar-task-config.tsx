@@ -3,7 +3,8 @@ import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { Switch } from '@contractor-ops/ui/components/shadcn/switch';
 import { useCallback, useState } from 'react';
 import { CalendarEventConfigDialog } from './calendar-event-config-dialog.js';
-import { useCalendarTaskConfig, type useCalendarTaskConfig as UseCalendarTaskConfig } from './hooks/use-calendar-task-config.js';
+import type { useCalendarTaskConfig as UseCalendarTaskConfig } from './hooks/use-calendar-task-config.js';
+import { useCalendarTaskConfig } from './hooks/use-calendar-task-config.js';
 
 export function CalendarTaskConfigSkeleton() {
   return (

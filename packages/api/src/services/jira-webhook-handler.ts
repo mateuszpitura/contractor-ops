@@ -1,12 +1,15 @@
-import type { Prisma } from '@contractor-ops/db';
 import { randomBytes } from 'node:crypto';
+import type { Prisma } from '@contractor-ops/db';
 import { fetchWithTimeout } from '@contractor-ops/integrations';
 import { decryptCredentials } from '@contractor-ops/integrations/services/credential-service';
 import type { JiraIssueMetadata } from '@contractor-ops/validators';
 import { getServerEnv, jiraWebhookPayloadSchema } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import * as E from '../errors';
-import { unblockDependentsAndRecomputeRun, validateTransition } from '../routers/workflow/workflow-shared';
+import {
+  unblockDependentsAndRecomputeRun,
+  validateTransition,
+} from '../routers/workflow/workflow-shared';
 import { lookupWorkflowStatus } from './jira-status-mapping';
 import type { DbClient } from './types';
 
@@ -153,7 +156,7 @@ export async function processJiraWebhook(
     return;
   }
 
-  // 4. Loop prevention (D-08): Check if this is a bounce-back from our own outbound sync
+  // 4. Loop prevention: Check if this is a bounce-back from our own outbound sync
   const metadata = (externalLink.metadataJson as Record<string, unknown>) ?? {};
   const lastSyncOrigin = metadata.lastSyncOrigin as string | undefined;
   const lastSyncAt = metadata.lastSyncAt as string | undefined;
@@ -181,7 +184,7 @@ export async function processJiraWebhook(
     }
   }
 
-  // 5. Deduplication: Check for duplicate webhook within 5s window (Pitfall 4)
+  // 5. Deduplication: Check for duplicate webhook within 5s window
   const deduplicationCutoff = new Date(Date.now() - DEDUP_WINDOW_MS);
   const recentDuplicate = await prisma.integrationSyncLog.findFirst({
     where: {
@@ -361,8 +364,8 @@ export async function processJiraWebhook(
 /**
  * Registers Jira webhooks for the specified project keys.
  *
- * Uses a single webhook registration with combined JQL filter (Pitfall 5:
- * 5-per-app limit). Stores webhook IDs in connection configJson for
+ * Uses a single webhook registration with combined JQL filter (Jira enforces
+ * a 5-per-app limit). Stores webhook IDs in connection configJson for
  * later refresh/deregistration.
  *
  * @param prisma - Prisma client instance
@@ -514,7 +517,7 @@ export async function deregisterJiraWebhooks(
 /**
  * Refreshes Jira webhook registrations to extend their 30-day expiry.
  *
- * Should be called via cron every ~25 days per Pitfall 2.
+ * Should be called via cron every ~25 days (Jira webhooks expire after 30 days).
  *
  * @param prisma - Prisma client instance
  * @param connectionId - The IntegrationConnection ID

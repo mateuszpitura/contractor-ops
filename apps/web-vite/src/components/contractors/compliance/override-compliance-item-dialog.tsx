@@ -21,10 +21,10 @@ import { useState } from 'react';
 
 import { tDynLoose } from '../../../i18n/typed-keys.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
+import type { OverrideReasonCategory } from './hooks/use-override-compliance-item.js';
 import {
   OVERRIDE_REASON_CATEGORIES,
   useOverrideComplianceItem,
-  type OverrideReasonCategory,
 } from './hooks/use-override-compliance-item.js';
 
 const MIN_NOTE_LENGTH = 20;
@@ -37,10 +37,10 @@ export interface OverrideComplianceItemDialogViewProps {
 }
 
 /**
- * Phase 73 D-12 — the manual-override modal view (one shared component, mounted
- * on the Compliance tab + the dashboard rows). Content lives in DialogBody,
- * actions in DialogFooter (web-vite dialog convention). Submit is disabled until
- * a reason category is chosen AND the note is at least 20 chars.
+ * Manual-override modal view (one shared component, mounted on the Compliance
+ * tab and the dashboard rows). Content lives in DialogBody, actions in
+ * DialogFooter (web-vite dialog convention). Submit is disabled until a reason
+ * category is chosen AND the note is at least 20 chars.
  */
 export function OverrideComplianceItemDialogView({
   open,

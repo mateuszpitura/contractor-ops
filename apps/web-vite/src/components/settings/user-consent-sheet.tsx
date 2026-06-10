@@ -17,12 +17,12 @@ import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { CheckCircle2, History, XCircle } from 'lucide-react';
 
 import type { LooseTranslator } from '../../i18n/typed-keys.js';
-import {
-  useUserConsentSheet,
-  type ConsentHistoryRow,
-  type ConsentMapEntry,
-  type useUserConsentSheet as UseUserConsentSheet,
+import type {
+  ConsentHistoryRow,
+  ConsentMapEntry,
+  useUserConsentSheet as UseUserConsentSheet,
 } from './hooks/use-user-consent-sheet.js';
+import { useUserConsentSheet } from './hooks/use-user-consent-sheet.js';
 
 interface UserConsentSheetBaseProps {
   userId: string | null;
@@ -181,7 +181,12 @@ export function UserConsentSheetView({
   );
 }
 
-export function UserConsentSheet({ userId, userName, open, onOpenChange }: UserConsentSheetBaseProps) {
+export function UserConsentSheet({
+  userId,
+  userName,
+  open,
+  onOpenChange,
+}: UserConsentSheetBaseProps) {
   const sheet = useUserConsentSheet(userId, open);
   return (
     <UserConsentSheetView

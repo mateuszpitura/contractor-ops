@@ -67,10 +67,7 @@ export function ImportProgressTrackerView({
   retryingItemKey,
 }: ImportProgressTrackerViewProps) {
   const t = useTranslations('OnboardingImport.step4');
-  const projectLabel = useCallback(
-    (name: string) => t('failedItemProject', { name }),
-    [t],
-  );
+  const projectLabel = useCallback((name: string) => t('failedItemProject', { name }), [t]);
 
   return (
     <div className="space-y-6">
@@ -84,7 +81,12 @@ export function ImportProgressTrackerView({
           </span>
           <span className="font-medium">{percentDone}%</span>
         </div>
-        <Progress value={percentDone} aria-valuenow={percentDone} aria-valuemin={0} aria-valuemax={100} />
+        <Progress
+          value={percentDone}
+          aria-valuenow={percentDone}
+          aria-valuemin={0}
+          aria-valuemax={100}
+        />
       </div>
 
       {(isFailed || progress.failedItems.length > 0) && (
@@ -185,8 +187,12 @@ function deriveCompletedImportCounts(
   expectedPeopleCount: number,
   expectedProjectsCount: number,
 ) {
-  const failedPeople = progress.failedItems.filter(item => !item.email.startsWith('project:')).length;
-  const failedProjects = progress.failedItems.filter(item => item.email.startsWith('project:')).length;
+  const failedPeople = progress.failedItems.filter(
+    item => !item.email.startsWith('project:'),
+  ).length;
+  const failedProjects = progress.failedItems.filter(item =>
+    item.email.startsWith('project:'),
+  ).length;
   return {
     peopleCount: Math.max(0, expectedPeopleCount - failedPeople),
     projectsCount: Math.max(0, expectedProjectsCount - failedProjects),
@@ -265,8 +271,7 @@ export function ImportProgressTracker({
   );
 }
 
-/** @deprecated Use ImportProgressTracker */
-export { ImportProgressTracker as ImportProgressTrackerContainer };
-
 /** @deprecated Use ImportProgressTrackerViewProps */
 export type { ImportProgressTrackerViewProps as ImportProgressTrackerProps };
+/** @deprecated Use ImportProgressTracker */
+export { ImportProgressTracker as ImportProgressTrackerContainer };

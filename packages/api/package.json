@@ -121,11 +121,6 @@
       "import": "./src/services/peppol-orchestrator.ts",
       "default": "./src/services/peppol-orchestrator.ts"
     },
-    "./services/cron-jobs": {
-      "types": "./src/services/cron-jobs/index.ts",
-      "import": "./src/services/cron-jobs/index.ts",
-      "default": "./src/services/cron-jobs/index.ts"
-    },
     "./services/einvoice-orchestration": {
       "types": "./src/services/einvoice-orchestration/index.ts",
       "import": "./src/services/einvoice-orchestration/index.ts",

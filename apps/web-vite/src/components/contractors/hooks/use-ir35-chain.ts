@@ -23,10 +23,13 @@ export function useIr35ChainPanel(engagementId: string) {
     successMessage: toasts.done(),
   });
 
-  const removeParticipant = useResourceMutation(trpc.ir35Chain.removeParticipant.mutationOptions(), {
-    invalidate: [trpc.ir35Chain.pathFilter()],
-    successMessage: toasts.done(),
-  });
+  const removeParticipant = useResourceMutation(
+    trpc.ir35Chain.removeParticipant.mutationOptions(),
+    {
+      invalidate: [trpc.ir35Chain.pathFilter()],
+      successMessage: toasts.done(),
+    },
+  );
 
   return {
     listQuery,

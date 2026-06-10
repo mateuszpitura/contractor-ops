@@ -10,8 +10,8 @@ import {
 } from '@contractor-ops/ui/components/shadcn/alert-dialog';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { RefreshCw } from 'lucide-react';
-import { useSlackSyncButton } from './hooks/use-slack-sync-button.js';
 import type { useSlackSyncButton as UseSlackSyncButton } from './hooks/use-slack-sync-button.js';
+import { useSlackSyncButton } from './hooks/use-slack-sync-button.js';
 
 export type SlackSyncButtonProps = ReturnType<typeof UseSlackSyncButton>;
 

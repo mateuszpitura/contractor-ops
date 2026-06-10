@@ -1,6 +1,6 @@
-import { useTranslations } from '../../i18n/useTranslations.js';
 import { LegalDocumentLayout } from '../../components/legal/legal-document-layout.js';
 import { H1, H2, P } from '../../components/legal/privacy-prose.js';
+import { useTranslations } from '../../i18n/useTranslations.js';
 
 const SECTIONS = [
   'introduction',

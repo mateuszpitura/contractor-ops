@@ -11,9 +11,8 @@ import { Input } from '@contractor-ops/ui/components/shadcn/input';
 import { Loader2, Save } from 'lucide-react';
 import type * as React from 'react';
 import { useCallback } from 'react';
-
-import { useExpiryReminderDefaults } from './hooks/use-expiry-reminder-defaults.js';
 import type { useExpiryReminderDefaults as UseExpiryReminderDefaults } from './hooks/use-expiry-reminder-defaults.js';
+import { useExpiryReminderDefaults } from './hooks/use-expiry-reminder-defaults.js';
 
 export type ExpiryReminderDefaultsProps = ReturnType<typeof UseExpiryReminderDefaults>;
 

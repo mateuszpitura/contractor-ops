@@ -15,9 +15,12 @@ export function usePortalTime() {
   const openSingleEntry = useCallback(() => setSingleEntryOpen(true), []);
 
   const weekStartStr = format(currentWeekStart, 'yyyy-MM-dd');
-  const timesheetQueryKey = trpc.portalTime.getTimesheet.queryOptions({ weekStartDate: weekStartStr })
-    .queryKey;
-  const listTimesheetsQueryKey = trpc.portalTime.listTimesheets.queryOptions({ limit: 10 }).queryKey;
+  const timesheetQueryKey = trpc.portalTime.getTimesheet.queryOptions({
+    weekStartDate: weekStartStr,
+  }).queryKey;
+  const listTimesheetsQueryKey = trpc.portalTime.listTimesheets.queryOptions({
+    limit: 10,
+  }).queryKey;
 
   const timesheetQuery = useQuery(
     trpc.portalTime.getTimesheet.queryOptions({ weekStartDate: weekStartStr }),
@@ -74,22 +77,16 @@ export function usePortalTime() {
     },
   );
 
-  const submitMutation = useResourceMutation(
-    trpc.portalTime.submitTimesheet.mutationOptions(),
-    {
-      successMessage: t('toast.timesheetSubmitted'),
-      errorMessage: t('toast.timesheetSubmitFailed'),
-      invalidate: [{ queryKey: timesheetQueryKey }, { queryKey: listTimesheetsQueryKey }],
-    },
-  );
+  const submitMutation = useResourceMutation(trpc.portalTime.submitTimesheet.mutationOptions(), {
+    successMessage: t('toast.timesheetSubmitted'),
+    errorMessage: t('toast.timesheetSubmitFailed'),
+    invalidate: [{ queryKey: timesheetQueryKey }, { queryKey: listTimesheetsQueryKey }],
+  });
 
-  const syncMutation = useResourceMutation(
-    trpc.portalTime.syncExternal.mutationOptions(),
-    {
-      successMessage: t('toast.synced'),
-      invalidate: [{ queryKey: timesheetQueryKey }, { queryKey: listTimesheetsQueryKey }],
-    },
-  );
+  const syncMutation = useResourceMutation(trpc.portalTime.syncExternal.mutationOptions(), {
+    successMessage: t('toast.synced'),
+    invalidate: [{ queryKey: timesheetQueryKey }, { queryKey: listTimesheetsQueryKey }],
+  });
 
   const handleWeekChange = useCallback((date: Date) => {
     setCurrentWeekStart(startOfISOWeek(date));

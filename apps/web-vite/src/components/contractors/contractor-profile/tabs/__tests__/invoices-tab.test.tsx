@@ -162,9 +162,7 @@ describe('InvoicesTabView', () => {
       sampleInvoice({ id: `inv-${i}`, invoiceNumber: `FV/${i}` }),
     );
     const { container } = render(
-      <InvoicesTabView
-        {...buildProps({ data: rows, totalRows: 60, totalPages: 3, page: 1 })}
-      />,
+      <InvoicesTabView {...buildProps({ data: rows, totalRows: 60, totalPages: 3, page: 1 })} />,
     );
     expect(
       container.querySelector('[data-slot="pagination"]') ??

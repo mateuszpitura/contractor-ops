@@ -1,12 +1,12 @@
 import { Building2, Layers, Wallet } from 'lucide-react';
 
 import { useOrganizationIndex } from '../../../components/organization/hooks/use-organization-index.js';
-import { OrganizationLayout } from '../../../components/organization/organization-layout.js';
 import type { SummaryCardItem } from '../../../components/organization/organization-index-view.js';
 import {
   OrganizationIndexSkeleton,
   OrganizationIndexView,
 } from '../../../components/organization/organization-index-view.js';
+import { OrganizationLayout } from '../../../components/organization/organization-layout.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 
 function OrganizationIndexPageContent() {

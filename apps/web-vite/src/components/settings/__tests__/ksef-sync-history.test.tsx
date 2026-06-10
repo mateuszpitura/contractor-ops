@@ -66,11 +66,7 @@ describe('KsefSyncHistoryView', () => {
   });
 
   it('renders supplied logs with status and invoice-count badges', () => {
-    render(
-      <KsefSyncHistoryView
-        {...buildHook({ isOpen: true, logs: [successLog] })}
-      />,
-    );
+    render(<KsefSyncHistoryView {...buildHook({ isOpen: true, logs: [successLog] })} />);
 
     expect(screen.getByText('syncStatusSuccess')).toBeInTheDocument();
     expect(screen.getByText('syncInvoiceCount')).toBeInTheDocument();

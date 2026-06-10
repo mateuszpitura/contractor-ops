@@ -20,13 +20,7 @@ export async function saveStatusMapping(
   projectId: string,
   mappings: JiraStatusMappingEntry[],
 ): Promise<void> {
-  return saveIntegrationStatusMapping(
-    prisma,
-    organizationId,
-    connectionId,
-    projectId,
-    mappings,
-  );
+  return saveIntegrationStatusMapping(prisma, organizationId, connectionId, projectId, mappings);
 }
 
 export async function getStatusMapping(

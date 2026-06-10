@@ -13,10 +13,8 @@ import { Label } from '@contractor-ops/ui/components/shadcn/label';
 import { Textarea } from '@contractor-ops/ui/components/shadcn/textarea';
 import { ArrowDown, ArrowUp, Plus, Trash2 } from 'lucide-react';
 import { useCallback } from 'react';
-import {
-  useWorkflowRoleFormDialog,
-  type useWorkflowRoleFormDialog as UseWorkflowRoleFormDialog,
-} from './hooks/use-workflow-role-form-dialog.js';
+import type { useWorkflowRoleFormDialog as UseWorkflowRoleFormDialog } from './hooks/use-workflow-role-form-dialog.js';
+import { useWorkflowRoleFormDialog } from './hooks/use-workflow-role-form-dialog.js';
 
 type SetTaskField = ReturnType<typeof useWorkflowRoleFormDialog>['setTaskField'];
 type MoveTask = ReturnType<typeof useWorkflowRoleFormDialog>['moveTask'];

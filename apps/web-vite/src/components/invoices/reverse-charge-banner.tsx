@@ -20,7 +20,10 @@ interface ReverseChargeBannerViewProps {
   onRemove: () => void;
 }
 
-export function ReverseChargeBannerView({ isPending = false, onRemove }: ReverseChargeBannerViewProps) {
+export function ReverseChargeBannerView({
+  isPending = false,
+  onRemove,
+}: ReverseChargeBannerViewProps) {
   const t = useTranslations('Invoices.reverseCharge');
 
   return (

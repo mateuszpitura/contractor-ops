@@ -194,10 +194,9 @@ export type ImportProgressOutput = z.infer<typeof importProgressOutputSchema>;
 const retryItemKeySchema = z
   .string()
   .min(1)
-  .refine(
-    value => z.email().safeParse(value).success || value.startsWith('project:'),
-    { message: 'itemKey must be an email or project:externalId' },
-  );
+  .refine(value => z.email().safeParse(value).success || value.startsWith('project:'), {
+    message: 'itemKey must be an email or project:externalId',
+  });
 
 export const retryItemInputSchema = z.object({
   jobId: z.string(),

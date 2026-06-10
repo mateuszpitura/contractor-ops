@@ -15,8 +15,8 @@ import { useCallback } from 'react';
 import type { UseFormReturn } from 'react-hook-form';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
-import { useContractorWizardAssignmentOptions } from '../hooks/use-contractor-wizard.js';
 import type { useContractorWizardAssignmentOptions as UseContractorWizardAssignmentOptions } from '../hooks/use-contractor-wizard.js';
+import { useContractorWizardAssignmentOptions } from '../hooks/use-contractor-wizard.js';
 import type { WizardFormValues } from './wizard-dialog.js';
 
 type StepAssignmentViewProps = {

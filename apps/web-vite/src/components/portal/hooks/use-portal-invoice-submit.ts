@@ -28,21 +28,17 @@ export function usePortalInvoiceFileUploadWithOcr(t: LooseTranslator) {
   const portalTrpc = usePortalTRPC();
   const trpc = useTRPC();
 
-  const getUploadUrl = useResourceMutation(
-    portalTrpc.portal.getUploadUrl.mutationOptions(),
-    { successMessage: t('toast.uploadReady') },
-  );
+  const getUploadUrl = useResourceMutation(portalTrpc.portal.getUploadUrl.mutationOptions(), {
+    successMessage: t('toast.uploadReady'),
+  });
 
-  const ocrTriggerMutation = useResourceMutation(
-    trpc.ocr.portalTrigger.mutationOptions(),
-    {
-      successMessage: t('toast.scanComplete'),
-      suppressErrorToast: error =>
-        error instanceof TRPCClientError &&
-        error.data?.code === 'PRECONDITION_FAILED' &&
-        error.message === 'OCR credits exhausted',
-    },
-  );
+  const ocrTriggerMutation = useResourceMutation(trpc.ocr.portalTrigger.mutationOptions(), {
+    successMessage: t('toast.scanComplete'),
+    suppressErrorToast: error =>
+      error instanceof TRPCClientError &&
+      error.data?.code === 'PRECONDITION_FAILED' &&
+      error.message === 'OCR credits exhausted',
+  });
 
   const ocrQuery = useQuery({
     ...trpc.ocr.portalGetResult.queryOptions({ extractionId: extractionId ?? '' }),
@@ -191,10 +187,9 @@ export function usePortalInvoiceSubmission(
   const router = useRouter();
   const portalTrpc = usePortalTRPC();
 
-  const submitInvoice = useResourceMutation(
-    portalTrpc.portal.submitInvoice.mutationOptions(),
-    { successMessage: t('toast.invoiceSubmitted') },
-  );
+  const submitInvoice = useResourceMutation(portalTrpc.portal.submitInvoice.mutationOptions(), {
+    successMessage: t('toast.invoiceSubmitted'),
+  });
 
   const onSubmit = useCallback(
     async (values: typeof valuesType) => {
@@ -219,6 +214,7 @@ export function usePortalInvoiceSubmission(
         router.push(
           `/portal/invoices/submit/success?invoiceId=${result.invoiceId}&invoiceNumber=${encodeURIComponent(result.invoiceNumber)}`,
         );
+        // safe-swallow: the error is surfaced to the user via useResourceMutation's toast.
       } catch {
         // toast emitted by useResourceMutation
       }

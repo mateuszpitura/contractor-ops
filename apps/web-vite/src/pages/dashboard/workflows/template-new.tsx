@@ -1,9 +1,8 @@
 import { Suspense } from 'react';
-
-import { TemplateFormSection } from '../../../components/workflows/template-builder/template-form.js';
-import { PageLoadingSpinner } from '../../../components/shared/page-loading-spinner.js';
-import { useTranslations } from '../../../i18n/useTranslations.js';
 import { useBreadcrumbOverride } from '../../../components/layout/breadcrumb-context.js';
+import { PageLoadingSpinner } from '../../../components/shared/page-loading-spinner.js';
+import { TemplateFormSection } from '../../../components/workflows/template-builder/template-form.js';
+import { useTranslations } from '../../../i18n/useTranslations.js';
 
 function WorkflowTemplateNewPageContent() {
   const t = useTranslations('Workflows');

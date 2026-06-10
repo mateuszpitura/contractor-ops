@@ -1,5 +1,4 @@
 import type { Ir35Outcome, ScheinselbstandigkeitOutcome } from '@contractor-ops/classification';
-import { WorkbenchDataTable } from '../../table-kit/workbench-data-table.js';
 import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import {
@@ -11,12 +10,12 @@ import {
 import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import type { ColumnDef } from '@tanstack/react-table';
 import { useCallback, useMemo, useState } from 'react';
-
 import { Link } from '../../../i18n/navigation.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { useDateFormatter } from '../../../lib/format/use-date-formatter.js';
-import { useClassificationAssessmentList } from './hooks/use-classification-assessment-list.js';
+import { WorkbenchDataTable } from '../../table-kit/workbench-data-table.js';
 import type { AssessmentRow } from './hooks/use-classification-assessment-list.js';
+import { useClassificationAssessmentList } from './hooks/use-classification-assessment-list.js';
 
 export interface ClassificationAssessmentListViewProps {
   readonly contractorId: string;

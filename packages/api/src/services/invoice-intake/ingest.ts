@@ -20,14 +20,12 @@ import {
   makeError,
   mapConformanceToProfileLevel,
 } from './shared.js';
+import type { IntakeServiceDeps, UploadInput, UploadResult } from './types.js';
 import {
   ALLOWED_PDF_MIMES,
   ALLOWED_XML_MIMES,
   INTAKE_MAX_FILE_BYTES,
   R2_CONTENT_TYPES,
-  type IntakeServiceDeps,
-  type UploadInput,
-  type UploadResult,
 } from './types.js';
 
 const log = createLogger({ module: 'invoice-intake-service' });

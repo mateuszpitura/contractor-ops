@@ -14,11 +14,11 @@ import { EquipmentStatusBadge } from '../../equipment/equipment-status-badge.js'
 import { EquipmentTypeIcon } from '../../equipment/equipment-type-icon.js';
 import { ShipmentCondensed } from '../../equipment/shipment-condensed.js';
 import { renderEmptyStateAction } from '../../shared/atelier-bridges.js';
-import {
-  useContractorTabEquipment,
-  type ContractorTabEquipmentItem,
-  type useContractorTabEquipment as UseContractorTabEquipment,
+import type {
+  ContractorTabEquipmentItem,
+  useContractorTabEquipment as UseContractorTabEquipment,
 } from '../hooks/use-contractor-tab-equipment.js';
+import { useContractorTabEquipment } from '../hooks/use-contractor-tab-equipment.js';
 
 type TabEquipmentViewProps = {
   contractorId: string;

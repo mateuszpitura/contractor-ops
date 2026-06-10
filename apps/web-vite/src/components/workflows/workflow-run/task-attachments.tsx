@@ -10,8 +10,8 @@ import { useCallback, useState } from 'react';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { DropZoneContainer } from '../../documents/drop-zone.js';
-import { useTaskAttachmentsSection } from '../hooks/use-task-attachments-section.js';
 import type { AttachmentRow } from '../hooks/use-task-attachments-section.js';
+import { useTaskAttachmentsSection } from '../hooks/use-task-attachments-section.js';
 
 interface TaskAttachmentsShellProps {
   onAddClick: () => void;

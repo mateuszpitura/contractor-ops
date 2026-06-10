@@ -18,13 +18,10 @@ export function useEquipmentShipments(equipmentId: string, selectedShipmentId: s
     enabled: !!selectedShipmentId,
   });
 
-  const deleteMutation = useResourceMutation(
-    trpc.equipment.deleteShipment.mutationOptions(),
-    {
-      successMessage: t('toast.shipmentDeleted'),
-      invalidate: [trpc.equipment.pathFilter()],
-    },
-  );
+  const deleteMutation = useResourceMutation(trpc.equipment.deleteShipment.mutationOptions(), {
+    successMessage: t('toast.shipmentDeleted'),
+    invalidate: [trpc.equipment.pathFilter()],
+  });
 
   const fetchLabel = useCallback(
     async (shipmentId: string) => {

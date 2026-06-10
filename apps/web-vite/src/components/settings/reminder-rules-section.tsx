@@ -22,12 +22,14 @@ import { Switch } from '@contractor-ops/ui/components/shadcn/switch';
 import { Pencil, Plus, Trash2 } from 'lucide-react';
 import { useCallback } from 'react';
 import { renderEmptyStateAction } from '../shared/atelier-bridges';
-import {
-  useReminderRulesSection,
-  type ReminderRule,
-  type useReminderRulesSection as UseReminderRulesSection,
+import type {
+  ReminderRule,
+  useReminderRulesSection as UseReminderRulesSection,
 } from './hooks/use-reminder-rules-section.js';
-import { CHANNEL_BADGE_VARIANT } from './hooks/use-reminder-rules-section.js';
+import {
+  CHANNEL_BADGE_VARIANT,
+  useReminderRulesSection,
+} from './hooks/use-reminder-rules-section.js';
 import { ReminderRuleEditor } from './reminder-rule-editor.js';
 
 export type { ReminderRule };

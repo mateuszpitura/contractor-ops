@@ -62,7 +62,9 @@ vi.mock('@contractor-ops/ui/components/shadcn/dropdown-menu', () => ({
   DropdownMenuLabel: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   DropdownMenuSeparator: () => <hr />,
   DropdownMenuSub: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-  DropdownMenuSubTrigger: ({ children }: { children: React.ReactNode }) => <button type="button">{children}</button>,
+  DropdownMenuSubTrigger: ({ children }: { children: React.ReactNode }) => (
+    <button type="button">{children}</button>
+  ),
   DropdownMenuSubContent: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   DropdownMenuRadioGroup: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   DropdownMenuRadioItem: ({
@@ -98,8 +100,19 @@ vi.mock('@contractor-ops/ui/components/shadcn/label', () => ({
 }));
 
 vi.mock('@contractor-ops/ui/components/shadcn/switch', () => ({
-  Switch: ({ checked, onCheckedChange }: { checked?: boolean; onCheckedChange?: (v: boolean) => void }) => (
-    <button type="button" role="switch" aria-checked={checked} onClick={() => onCheckedChange?.(!checked)} />
+  Switch: ({
+    checked,
+    onCheckedChange,
+  }: {
+    checked?: boolean;
+    onCheckedChange?: (v: boolean) => void;
+  }) => (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      onClick={() => onCheckedChange?.(!checked)}
+    />
   ),
 }));
 

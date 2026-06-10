@@ -14,13 +14,16 @@ import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { Progress } from '@contractor-ops/ui/components/shadcn/progress';
 import type { ImportedProject, MergedPerson } from '@contractor-ops/validators';
 import { useCallback, useMemo, useState } from 'react';
-
+import { FeatureGate } from '../../components/layout/feature-gate.js';
 import { ConfirmImportStep } from '../../components/onboarding/confirm-import-step.js';
-import type { PersonSelection, ProjectSelection, WizardStep } from '../../components/onboarding/import-wizard.js';
+import type {
+  PersonSelection,
+  ProjectSelection,
+  WizardStep,
+} from '../../components/onboarding/import-wizard.js';
 import { PeopleReviewStepContainer } from '../../components/onboarding/people-review-step.js';
 import { ProjectImportStepContainer } from '../../components/onboarding/project-import-step.js';
 import { SourceSelectionStepContainer } from '../../components/onboarding/source-selection-step.js';
-import { FeatureGate } from '../../components/layout/feature-gate.js';
 import { useTranslations } from '../../i18n/useTranslations.js';
 
 function WizardStepIndicator({
@@ -37,7 +40,9 @@ function WizardStepIndicator({
       <StepperNav className="gap-6">
         {steps.map(({ step, label }, index) => (
           <StepperItem key={step} step={step} className="items-center">
-            <div className="flex items-center gap-1.5" aria-current={step === currentStep ? 'step' : undefined}>
+            <div
+              className="flex items-center gap-1.5"
+              aria-current={step === currentStep ? 'step' : undefined}>
               <StepperIndicator className="size-6 text-xs">{step}</StepperIndicator>
               <StepperTitle className="hidden text-sm sm:inline">{label}</StepperTitle>
             </div>

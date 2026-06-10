@@ -67,7 +67,9 @@ if (hits.length > 0) {
   for (const hit of hits) {
     console.error(`  ${hit.rel}:${hit.line}  ${hit.match}`);
   }
-  console.error('\nMove data fetching to components/{domain}/hooks/ (wired sections call hooks only).');
+  console.error(
+    '\nMove data fetching to components/{domain}/hooks/ (wired sections call hooks only).',
+  );
   console.error('See apps/web-vite/ARCHITECTURE.md');
   process.exit(1);
 }

@@ -74,7 +74,10 @@ describe('InvoiceMetadataForm', () => {
   it('shows a validation error when invoice number is cleared before save', async () => {
     const onSaveDraft = vi.fn();
     const { user } = setup(
-      <InvoiceMetadataFormView invoice={baseInvoice()} mutations={makeMutations({ onSaveDraft })} />,
+      <InvoiceMetadataFormView
+        invoice={baseInvoice()}
+        mutations={makeMutations({ onSaveDraft })}
+      />,
     );
     const numberInput = screen.getByLabelText(/invoice number/i);
     await user.clear(numberInput);
@@ -88,7 +91,10 @@ describe('InvoiceMetadataForm', () => {
   it('calls onSaveDraft with the form values when save draft passes validation', async () => {
     const onSaveDraft = vi.fn();
     const { user } = setup(
-      <InvoiceMetadataFormView invoice={baseInvoice()} mutations={makeMutations({ onSaveDraft })} />,
+      <InvoiceMetadataFormView
+        invoice={baseInvoice()}
+        mutations={makeMutations({ onSaveDraft })}
+      />,
     );
     await user.click(screen.getByRole('button', { name: /save draft/i }));
     await waitFor(() => {

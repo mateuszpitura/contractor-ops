@@ -3,7 +3,8 @@ import { useCallback, useState } from 'react';
 
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { ACCEPTED_TYPES, MAX_FILE_SIZE } from './drop-zone-constants.js';
-import { useDocumentDropZone, type useDocumentDropZone as UseDocumentDropZone } from './hooks/use-document-drop-zone.js';
+import type { useDocumentDropZone as UseDocumentDropZone } from './hooks/use-document-drop-zone.js';
+import { useDocumentDropZone } from './hooks/use-document-drop-zone.js';
 import { UploadProgress } from './upload-progress.js';
 
 type UploadFileItem = ReturnType<typeof useDocumentDropZone>['files'][number];

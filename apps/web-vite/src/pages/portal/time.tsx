@@ -11,10 +11,10 @@ import { AlertCircle, Plus } from 'lucide-react';
 import { Suspense, useCallback, useMemo } from 'react';
 
 import { usePortalTime } from '../../components/portal/hooks/use-portal-time.js';
-import { WorkbenchDataTable } from '../../components/table-kit/workbench-data-table.js';
 import { AnimateIn } from '../../components/shared/animate-in.js';
 import { PageLoadingSpinner } from '../../components/shared/page-loading-spinner.js';
 import { WorkbenchPageHeader } from '../../components/shared/workbench-page-header.js';
+import { WorkbenchDataTable } from '../../components/table-kit/workbench-data-table.js';
 import { ExternalSyncButton } from '../../components/time/external-sync-button.js';
 import { SingleEntryForm } from '../../components/time/single-entry-form.js';
 import { TimeEntryStatusBadge } from '../../components/time/time-entry-status-badge.js';
@@ -92,7 +92,9 @@ function TimesheetHistorySection({
         id: 'submitted',
         header: () => t('columns.submitted'),
         cell: ({ row }) => (
-          <span className="text-muted-foreground">{formatSubmittedAt(row.original.submittedAt)}</span>
+          <span className="text-muted-foreground">
+            {formatSubmittedAt(row.original.submittedAt)}
+          </span>
         ),
       },
     ],

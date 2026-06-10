@@ -39,7 +39,8 @@ vi.mock('../e-invoicing/leitweg-id-row.js', () => ({
   ),
 }));
 
-import { LeitwegIdListCardView, type LeitwegIdListCardProps } from '../e-invoicing/leitweg-id-list-card.js';
+import type { LeitwegIdListCardProps } from '../e-invoicing/leitweg-id-list-card.js';
+import { LeitwegIdListCardView } from '../e-invoicing/leitweg-id-list-card.js';
 import type { LeitwegIdRowData } from '../e-invoicing/leitweg-id-row.js';
 
 type CardProps = LeitwegIdListCardProps;

@@ -5,7 +5,8 @@ import { Link } from '../../../i18n/navigation.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { useEinvoiceImportEnabled } from '../hooks/use-einvoice-import-enabled.js';
 import { useInvoiceIntakeDetail } from '../hooks/use-invoice-intake-detail.js';
-import { IntakeDetailClient, type IntakeDetailData } from './intake-detail-client.js';
+import type { IntakeDetailData } from './intake-detail-client.js';
+import { IntakeDetailClient } from './intake-detail-client.js';
 import { IntakeDetailSkeleton } from './intake-detail-skeleton.js';
 
 export function IntakeDetail() {

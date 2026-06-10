@@ -22,21 +22,15 @@ export function useCalendarTaskConfig(taskTemplateId: string) {
 
   const invalidateConfig = [trpc.calendar.getTaskConfig.queryKey({ taskTemplateId })];
 
-  const saveToggleMutation = useResourceMutation(
-    trpc.calendar.saveTaskConfig.mutationOptions(),
-    {
-      successMessage: toasts.done(),
-      invalidate: invalidateConfig,
-    },
-  );
+  const saveToggleMutation = useResourceMutation(trpc.calendar.saveTaskConfig.mutationOptions(), {
+    successMessage: toasts.done(),
+    invalidate: invalidateConfig,
+  });
 
-  const saveConfigMutation = useResourceMutation(
-    trpc.calendar.saveTaskConfig.mutationOptions(),
-    {
-      successMessage: t('eventConfigSaved'),
-      invalidate: invalidateConfig,
-    },
-  );
+  const saveConfigMutation = useResourceMutation(trpc.calendar.saveTaskConfig.mutationOptions(), {
+    successMessage: t('eventConfigSaved'),
+    invalidate: invalidateConfig,
+  });
 
   const handleToggle = (checked: boolean) => {
     if (!config) return;

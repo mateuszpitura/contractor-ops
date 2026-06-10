@@ -30,8 +30,8 @@ import { useCallback } from 'react';
 import { z } from 'zod';
 
 import { WizardDialogShell } from '../../wizard/wizard-dialog-shell.js';
-import { useContractWizardDialog } from '../hooks/use-contract-wizard-dialog.js';
 import type { useContractWizardDialog as UseContractWizardDialog } from '../hooks/use-contract-wizard-dialog.js';
+import { useContractWizardDialog } from '../hooks/use-contract-wizard-dialog.js';
 import { StepDetails } from './step-details.js';
 import { StepDocuments } from './step-documents.js';
 import { StepFinancial } from './step-financial.js';

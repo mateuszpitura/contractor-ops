@@ -37,26 +37,20 @@ export function usePortalUpdateContactInfo() {
   const t = useTranslations('Portal');
   const trpc = usePortalTRPC();
 
-  return useResourceMutation(
-    trpc.portal.updateContactInfo.mutationOptions(),
-    {
-      successMessage: t('toast.saved'),
-      invalidate: [{ queryKey: trpc.portal.getProfile.queryOptions().queryKey }],
-    },
-  );
+  return useResourceMutation(trpc.portal.updateContactInfo.mutationOptions(), {
+    successMessage: t('toast.saved'),
+    invalidate: [{ queryKey: trpc.portal.getProfile.queryOptions().queryKey }],
+  });
 }
 
 export function usePortalSubmitFinancialChange() {
   const t = useTranslations('Portal');
   const trpc = usePortalTRPC();
 
-  return useResourceMutation(
-    trpc.portal.submitFinancialChangeRequest.mutationOptions(),
-    {
-      successMessage: t('toast.saved'),
-      invalidate: [{ queryKey: trpc.portal.getProfile.queryOptions().queryKey }],
-    },
-  );
+  return useResourceMutation(trpc.portal.submitFinancialChangeRequest.mutationOptions(), {
+    successMessage: t('toast.saved'),
+    invalidate: [{ queryKey: trpc.portal.getProfile.queryOptions().queryKey }],
+  });
 }
 
 export function usePortalNotificationPreferences() {

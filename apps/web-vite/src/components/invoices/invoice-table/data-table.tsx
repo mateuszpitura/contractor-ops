@@ -1,11 +1,11 @@
 import { InvoicesIllustration } from '@contractor-ops/ui';
-import { WorkbenchDataTable } from '../../table-kit/workbench-data-table.js';
 import type { ColumnDef } from '@tanstack/react-table';
 import { Upload } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { useCallback, useMemo } from 'react';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { formatDate } from '../../../lib/format-date.js';
+import { WorkbenchDataTable } from '../../table-kit/workbench-data-table.js';
 import type { InvoiceListTableProps } from '../hooks/use-invoice-list.js';
 import type { InvoiceRow } from './columns.js';
 import { getColumns } from './columns.js';

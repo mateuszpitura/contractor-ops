@@ -31,7 +31,10 @@ export interface IntakeDetailActionsBarViewProps {
   className?: string;
 }
 
-export function IntakeDetailActionsBarView({ actions, className }: IntakeDetailActionsBarViewProps) {
+export function IntakeDetailActionsBarView({
+  actions,
+  className,
+}: IntakeDetailActionsBarViewProps) {
   const t = useTranslations('EInvoice.intake');
   const setRejectReason = actions.setRejectReason;
   const handleRejectReasonChange = useCallback(

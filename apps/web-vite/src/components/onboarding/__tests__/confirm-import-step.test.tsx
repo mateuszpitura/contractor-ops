@@ -4,13 +4,12 @@
  */
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
-
-import type { RoleBreakdownEntry } from '../hooks/use-onboarding-confirm.js';
 import {
   ConfirmImportEmpty,
   ConfirmImportError,
   ConfirmImportStepView,
 } from '../confirm-import-step.js';
+import type { RoleBreakdownEntry } from '../hooks/use-onboarding-confirm.js';
 import { click, findButton, mount } from './_render.js';
 
 afterEach(() => {

@@ -30,10 +30,7 @@ export function integrationProcedure(options: IntegrationProcedureOptions = {}) 
 /**
  * Convenience factory for integration procedures gated on `settings` permissions.
  */
-export function integrationSettingsProcedure(
-  action: 'read' | 'update',
-  tier?: SubscriptionTier,
-) {
+export function integrationSettingsProcedure(action: 'read' | 'update', tier?: SubscriptionTier) {
   return integrationProcedure({
     permission: { settings: [action] },
     ...(tier ? { tier } : {}),

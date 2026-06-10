@@ -26,10 +26,8 @@ import { tDynLoose } from '../../../i18n/typed-keys.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { enumKey } from '../../../lib/enum-key.js';
 import type { ContractAction } from '../actions.js';
-import {
-  useContractDetailHeader,
-  type useContractDetailHeader as UseContractDetailHeader,
-} from '../hooks/use-contract-detail-header.js';
+import type { useContractDetailHeader as UseContractDetailHeader } from '../hooks/use-contract-detail-header.js';
+import { useContractDetailHeader } from '../hooks/use-contract-detail-header.js';
 import { useEditContractDialog } from '../hooks/use-edit-contract-dialog.js';
 import { EditContractDialog } from './edit-contract-dialog.js';
 import { SendForSignatureButton } from './send-for-signature-button.js';

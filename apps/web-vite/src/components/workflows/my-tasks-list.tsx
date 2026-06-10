@@ -19,7 +19,8 @@ import { Link } from '../../i18n/navigation.js';
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { formatDate } from '../../lib/format-date.js';
 import { renderEmptyStateAction } from '../shared/atelier-bridges.js';
-import { useMyTasksList, type MyTaskRow } from './hooks/use-my-tasks-list.js';
+import type { MyTaskRow } from './hooks/use-my-tasks-list.js';
+import { useMyTasksList } from './hooks/use-my-tasks-list.js';
 
 const TASK_STATUS_ICON: Record<string, { icon: React.ElementType; className: string }> = {
   TODO: { icon: Circle, className: 'text-muted-foreground' },

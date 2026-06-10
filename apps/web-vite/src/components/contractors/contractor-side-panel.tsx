@@ -1,17 +1,13 @@
 import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
-import {
-  EntityDetailItem,
-  EntitySummarySheet,
-} from '../table-kit/entity-summary-sheet.js';
-
 import { usePermissions } from '../../hooks/use-permissions.js';
 import { Link } from '../../i18n/navigation.js';
 import { tDynLoose } from '../../i18n/typed-keys.js';
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { enumKey } from '../../lib/enum-key.js';
-import { formatAmount } from '../../lib/money.js';
 import { canViewSensitivePii, maskTaxId } from '../../lib/mask-pii.js';
+import { formatAmount } from '../../lib/money.js';
+import { EntityDetailItem, EntitySummarySheet } from '../table-kit/entity-summary-sheet.js';
 import { ComplianceHealthBadge } from './compliance-health-badge.js';
 import type { ContractorRow } from './contractor-table/columns.js';
 
@@ -55,7 +51,7 @@ export function ContractorSidePanel({ contractor, open, onOpenChange }: Contract
     typeof customRaw === 'object' && customRaw !== null && !Array.isArray(customRaw)
       ? customRaw
       : {};
-  const billingModel = custom.billingModel != null ? String(custom.billingModel) : null;
+  const billingModel = custom.billingModel == null ? null : String(custom.billingModel);
   const rateMinor = typeof custom.rateValueMinor === 'number' ? custom.rateValueMinor : null;
 
   const rateDisplay =

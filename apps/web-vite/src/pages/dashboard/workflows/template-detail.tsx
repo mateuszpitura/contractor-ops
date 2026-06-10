@@ -2,12 +2,11 @@ import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { Suspense } from 'react';
 import { useParams } from 'react-router-dom';
-
-import { TemplateFormSection } from '../../../components/workflows/template-builder/template-form.js';
 import { PageLoadingSpinner } from '../../../components/shared/page-loading-spinner.js';
+import { useWorkflowTemplateDetail } from '../../../components/workflows/hooks/use-workflow-template-detail.js';
+import { TemplateFormSection } from '../../../components/workflows/template-builder/template-form.js';
 import { Link } from '../../../i18n/navigation.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
-import { useWorkflowTemplateDetail } from '../../../components/workflows/hooks/use-workflow-template-detail.js';
 
 function TemplateDetailSkeleton() {
   return (
@@ -66,9 +65,7 @@ function WorkflowTemplateDetailPageContent() {
   }
 
   return (
-    <div className="space-y-6">
-      {!!template && <TemplateFormSection templateId={templateId} />}
-    </div>
+    <div className="space-y-6">{!!template && <TemplateFormSection templateId={templateId} />}</div>
   );
 }
 

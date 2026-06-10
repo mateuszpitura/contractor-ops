@@ -103,7 +103,11 @@ export function SourceCard({
             />
           </div>
         ) : (
-          <Button variant="outline" size="sm" onClick={handleConnectClick} disabled={connectDisabled}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleConnectClick}
+            disabled={connectDisabled}>
             {t('connect')}
           </Button>
         )}

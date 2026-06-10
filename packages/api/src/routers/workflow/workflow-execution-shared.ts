@@ -14,12 +14,7 @@ import {
 } from '@contractor-ops/validators';
 import type { DbClient } from '../../services/types';
 import type { ConditionGroup } from './workflow-shared';
-import {
-  addDays,
-  addHours,
-  evaluateCondition,
-  resolveAssignee,
-} from './workflow-shared';
+import { addDays, addHours, evaluateCondition, resolveAssignee } from './workflow-shared';
 
 /** Transaction client derived from the tenant-scoped DbClient. */
 export type TxClient = Parameters<Parameters<DbClient['$transaction']>[0]>[0];
@@ -299,6 +294,8 @@ export async function syncJiraTasksAfterStart(
         /* fire-and-forget */
       });
     }
+    // safe-swallow: best-effort external issue sync; a setup failure must not
+    // block workflow execution (the fire-and-forget calls own their errors).
   } catch (_err) {
     /* fire-and-forget */
   }
@@ -337,6 +334,8 @@ export async function syncLinearTasksAfterStart(
         /* fire-and-forget */
       });
     }
+    // safe-swallow: best-effort external issue sync; a setup failure must not
+    // block workflow execution (the fire-and-forget calls own their errors).
   } catch (_err) {
     /* fire-and-forget */
   }
@@ -373,6 +372,8 @@ export async function syncCalendarTasksAfterStart(
         /* fire-and-forget */
       });
     }
+    // safe-swallow: best-effort external issue sync; a setup failure must not
+    // block workflow execution (the fire-and-forget calls own their errors).
   } catch (_err) {
     /* fire-and-forget */
   }

@@ -8,9 +8,8 @@ import { Progress } from '@contractor-ops/ui/components/shadcn/progress';
 import { CheckCircle2, Eye, EyeOff, FileText, Loader2, RotateCcw, XCircle } from 'lucide-react';
 import type { ChangeEvent, DragEvent, ReactNode, RefObject } from 'react';
 import { memo, useCallback } from 'react';
-
-import { useTranslations } from '../../i18n/useTranslations.js';
 import { useRouter } from '../../i18n/navigation.js';
+import { useTranslations } from '../../i18n/useTranslations.js';
 import { formatFileSize, truncateFilename as truncateName } from '../../lib/format-file-size.js';
 import { CreditExhaustedInline } from '../billing/credit-exhausted-inline.js';
 import type { ExtractedInvoiceData } from '../ocr/ocr-review-panel.js';
@@ -238,10 +237,7 @@ export function InvoiceUploadArea({
     setShowPdfReview(prev => !prev);
   }, [setShowPdfReview]);
 
-  const handleIngestFiles = useCallback(
-    (files: File[]) => ingestFiles(files, t),
-    [ingestFiles, t],
-  );
+  const handleIngestFiles = useCallback((files: File[]) => ingestFiles(files, t), [ingestFiles, t]);
 
   const ocrReviewPanel =
     upload.showPdfReview && upload.extractionId && upload.pdfUrl ? (

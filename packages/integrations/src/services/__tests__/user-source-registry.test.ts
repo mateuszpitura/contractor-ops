@@ -140,9 +140,11 @@ describe('user-source-registry', () => {
   it('throws when Slack users.list returns ok=false', async () => {
     vi.stubGlobal(
       'fetch',
-      vi.fn().mockResolvedValue(
-        new Response(JSON.stringify({ ok: false, members: [] }), { status: 200 }),
-      ),
+      vi
+        .fn()
+        .mockResolvedValue(
+          new Response(JSON.stringify({ ok: false, members: [] }), { status: 200 }),
+        ),
     );
 
     await expect(fetchUsersFromIntegrationSource('SLACK', 'token', null)).rejects.toThrow(
@@ -177,7 +179,6 @@ describe('user-source-registry', () => {
       },
     ]);
   });
-
 
   it('skips suspended and archived Google Workspace users', async () => {
     vi.stubGlobal(
@@ -258,9 +259,9 @@ describe('user-source-registry', () => {
 
     vi.stubGlobal('fetch', fetchMock);
 
-    await expect(fetchUsersFromIntegrationSource('GOOGLE_WORKSPACE', 'token', null)).rejects.toThrow(
-      'Exceeded maximum pagination limit (100 pages)',
-    );
+    await expect(
+      fetchUsersFromIntegrationSource('GOOGLE_WORKSPACE', 'token', null),
+    ).rejects.toThrow('Exceeded maximum pagination limit (100 pages)');
     expect(fetchMock).toHaveBeenCalledTimes(100);
   });
 });

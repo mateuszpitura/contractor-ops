@@ -10,9 +10,9 @@ import {
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import { router } from '../../init';
+import { auditedMutation, auditMutationCtx } from '../../lib/audited-mutation';
 import { requirePermission } from '../../middleware/rbac';
 import { tenantProcedure } from '../../middleware/tenant';
-import { auditMutationCtx, auditedMutation } from '../../lib/audited-mutation';
 import { checkShipmentTaskCompletion } from '../../services/equipment-workflow';
 import {
   EQUIPMENT_NOT_FOUND,
@@ -29,7 +29,7 @@ import {
 export const equipmentShipmentsRouter = router({
   /**
    * Create a shipment for equipment with an initial CREATED event.
-   * Auto-advances equipment status based on direction (D-06).
+   * Auto-advances equipment status based on direction.
    */
   createShipment: tenantProcedure
     .use(requirePermission({ equipment: ['create'] }))
@@ -119,7 +119,7 @@ export const equipmentShipmentsRouter = router({
 
   /**
    * Add a shipment event (status update).
-   * Auto-advances equipment status per D-06 mapping when applicable.
+   * Auto-advances equipment status per the direction mapping when applicable.
    */
   addShipmentEvent: tenantProcedure
     .use(requirePermission({ equipment: ['update'] }))
@@ -194,7 +194,7 @@ export const equipmentShipmentsRouter = router({
         },
       });
 
-      // Fire-and-forget: auto-complete linked workflow task if shipment reached target status (Phase 30)
+      // Fire-and-forget: auto-complete linked workflow task if shipment reached target status
       void (async () => {
         await checkShipmentTaskCompletion(ctx.db, ctx.organizationId, {
           id: shipment.id,

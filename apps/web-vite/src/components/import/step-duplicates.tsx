@@ -1,4 +1,3 @@
-import { WorkbenchDataTable } from '../table-kit/workbench-data-table.js';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { RadioGroup, RadioGroupItem } from '@contractor-ops/ui/components/shadcn/radio-group';
 import type { ColumnDef } from '@tanstack/react-table';
@@ -7,6 +6,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { usePermissions } from '../../hooks/use-permissions.js';
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { canViewSensitivePii, maskTaxId } from '../../lib/mask-pii.js';
+import { WorkbenchDataTable } from '../table-kit/workbench-data-table.js';
 
 import type { ImportRow } from './import-wizard-dialog.js';
 

@@ -69,6 +69,8 @@ describe('useLegalPrivacyPdfDownload', () => {
       result.current.mutation.mutate(undefined);
     });
 
-    await waitFor(() => expect(toastError).toHaveBeenCalledWith('Something went wrong. Please try again.'));
+    await waitFor(() =>
+      expect(toastError).toHaveBeenCalledWith('Something went wrong. Please try again.'),
+    );
   });
 });

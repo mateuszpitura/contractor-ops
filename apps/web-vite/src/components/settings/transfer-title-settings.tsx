@@ -9,8 +9,8 @@ import {
 } from '@contractor-ops/ui/components/shadcn/card';
 import { Input } from '@contractor-ops/ui/components/shadcn/input';
 import { Loader2, Save } from 'lucide-react';
-import { useTransferTitleSettings } from './hooks/use-transfer-title-settings.js';
 import type { useTransferTitleSettings as UseTransferTitleSettings } from './hooks/use-transfer-title-settings.js';
+import { useTransferTitleSettings } from './hooks/use-transfer-title-settings.js';
 
 export type TransferTitleSettingsProps = ReturnType<typeof UseTransferTitleSettings>;
 

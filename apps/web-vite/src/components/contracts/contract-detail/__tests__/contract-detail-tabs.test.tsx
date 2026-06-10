@@ -10,8 +10,7 @@ import { render, screen } from '@/test/test-utils';
 vi.mock('../overview-tab.js', () => {
   const React = require('react');
   return {
-    OverviewTabWired: () =>
-      React.createElement('div', { 'data-testid': 'overview' }, 'Overview'),
+    OverviewTabWired: () => React.createElement('div', { 'data-testid': 'overview' }, 'Overview'),
   };
 });
 vi.mock('../documents-tab.js', () => {

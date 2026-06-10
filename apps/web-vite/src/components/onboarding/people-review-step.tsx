@@ -1,4 +1,3 @@
-import { WorkbenchDataTable } from '../table-kit/workbench-data-table.js';
 import { Alert, AlertDescription, AlertTitle } from '@contractor-ops/ui/components/shadcn/alert';
 import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
@@ -23,13 +22,13 @@ import { invitableMemberRoleValues } from '@contractor-ops/validators/roles';
 import type { ColumnDef } from '@tanstack/react-table';
 import { AlertTriangle, RefreshCw, Users } from 'lucide-react';
 import { useCallback, useMemo, useState } from 'react';
-
 import { useTranslations } from '../../i18n/useTranslations.js';
+import { WorkbenchDataTable } from '../table-kit/workbench-data-table.js';
 import { ConflictResolutionPopover } from './conflict-resolution-popover.js';
-import { PeopleReviewSkeleton } from './onboarding-skeletons.js';
 import type { PeopleCounts, PeopleStepReadiness } from './hooks/use-onboarding-people.js';
 import { useOnboardingPeople } from './hooks/use-onboarding-people.js';
 import type { PersonSelection } from './import-wizard.js';
+import { PeopleReviewSkeleton } from './onboarding-skeletons.js';
 
 const SOURCE_COLORS: Record<string, string> = {
   JIRA: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
@@ -563,7 +562,10 @@ export interface PeopleReviewSourceErrorsProps {
   onRefetch: () => void;
 }
 
-export function PeopleReviewSourceErrors({ sourceErrors, onRefetch }: PeopleReviewSourceErrorsProps) {
+export function PeopleReviewSourceErrors({
+  sourceErrors,
+  onRefetch,
+}: PeopleReviewSourceErrorsProps) {
   const tCommon = useTranslations('Common');
   const tErr = useTranslations('Contractors.error');
 

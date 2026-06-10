@@ -44,7 +44,12 @@ export function VatRateSelectorEmpty() {
   );
 }
 
-export function VatRateSelectorView({ value, onChange, disabled, rates }: VatRateSelectorViewProps) {
+export function VatRateSelectorView({
+  value,
+  onChange,
+  disabled,
+  rates,
+}: VatRateSelectorViewProps) {
   const t = useTranslations('Invoices.vatRate');
 
   const defaultRates = rates.filter(

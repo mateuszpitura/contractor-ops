@@ -8,7 +8,7 @@ const { mockCreate, mockFindUniqueOrThrow, mockUpdate, mockSyncLogUpdate } = vi.
 }));
 
 vi.mock('@contractor-ops/db', () => {
-  const __mockDbPrisma = {
+  const MockDbPrisma = {
     integrationSyncLog: {
       create: mockCreate,
       update: mockSyncLogUpdate,
@@ -22,11 +22,10 @@ vi.mock('@contractor-ops/db', () => {
     $executeRawUnsafe: vi.fn(async () => 0),
   };
   return {
-  withRlsTransactions: <T>(c: T) => c,
-  withRlsReads: <T>(c: T) => c,
-  prisma: __mockDbPrisma,
-  prismaRaw: __mockDbPrisma,
-
+    withRlsTransactions: <T>(c: T) => c,
+    withRlsReads: <T>(c: T) => c,
+    prisma: MockDbPrisma,
+    prismaRaw: MockDbPrisma,
   };
 });
 

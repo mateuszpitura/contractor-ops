@@ -1,6 +1,4 @@
-
 import { Avatar, AvatarFallback, AvatarImage } from '@contractor-ops/ui/components/shadcn/avatar';
-import { WorkbenchDataTable } from '../../../table-kit/workbench-data-table.js';
 import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
 import { Input } from '@contractor-ops/ui/components/shadcn/input';
 import {
@@ -19,8 +17,8 @@ import {
 import type { ColumnDef, RowSelectionState } from '@tanstack/react-table';
 import type * as React from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-
 import { useTranslations } from '../../../../i18n/useTranslations.js';
+import { WorkbenchDataTable } from '../../../table-kit/workbench-data-table.js';
 
 export interface DirectoryUser {
   id: string;

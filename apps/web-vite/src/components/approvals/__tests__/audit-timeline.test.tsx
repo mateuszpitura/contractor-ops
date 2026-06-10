@@ -11,7 +11,7 @@ import { createRoot } from 'react-dom/client';
 import { afterEach, beforeAll, describe, expect, it } from 'vitest';
 
 import { applyLocale, initI18n } from '../../../i18n/index.js';
-import { AuditTimelineView, AuditTimelineSkeleton } from '../audit-timeline.js';
+import { AuditTimelineSkeleton, AuditTimelineView } from '../audit-timeline.js';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 

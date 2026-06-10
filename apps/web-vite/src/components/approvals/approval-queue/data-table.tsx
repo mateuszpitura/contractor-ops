@@ -1,9 +1,7 @@
-
 import type { ColumnDef } from '@tanstack/react-table';
-import { WorkbenchDataTable } from '../../table-kit/workbench-data-table.js';
 import { useCallback } from 'react';
-
 import { useTranslations } from '../../../i18n/useTranslations.js';
+import { WorkbenchDataTable } from '../../table-kit/workbench-data-table.js';
 import type { ApprovalQueueRow } from './columns.js';
 
 interface ApprovalQueueTableProps {

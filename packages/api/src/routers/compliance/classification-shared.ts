@@ -13,6 +13,7 @@ import type { EngagementContext, Jurisdiction } from '@contractor-ops/compliance
 import { POLICY_RULE_SET_VERSION } from '@contractor-ops/compliance-policy';
 
 export { mapCountryCodeToJurisdiction } from '@contractor-ops/compliance-policy';
+
 import type { Prisma } from '@contractor-ops/db';
 import { createLogger } from '@contractor-ops/logger';
 import { SDS_APPROVAL_STATEMENT_EN } from '@contractor-ops/validators';
@@ -191,22 +192,10 @@ export async function resolveAssignmentAndProfile(
   }
 }
 
+export type { Outcome, Prisma };
 export {
-  buildQuestionsSnapshot,
-  getAnswerSchemaForType,
-  getProfileForCountry,
-  outcomeSchema,
-  POLICY_RULE_SET_VERSION,
-  SDS_APPROVAL_STATEMENT_EN,
   adminProcedure,
-  classificationProcedure,
-  classificationSaveAnswerRateLimit,
-  findOrThrow,
-  requirePermission,
-  writeAuditLog,
-  extractOutcomeKind,
-  materialiseFromPolicy,
-  supersedeAndMaterialise,
+  buildQuestionsSnapshot,
   CLASSIFICATION_ALREADY_SUBMITTED,
   CLASSIFICATION_ASSESSMENT_NOT_DRAFT,
   CLASSIFICATION_NO_DRIFT_TO_RECOVER,
@@ -214,7 +203,18 @@ export {
   CLASSIFICATION_ONLY_DRAFT_CAN_RECREATE,
   CLASSIFICATION_SDS_APPROVAL_IR35_ONLY,
   CLASSIFICATION_STALE_ANSWER,
+  classificationProcedure,
+  classificationSaveAnswerRateLimit,
+  extractOutcomeKind,
+  findOrThrow,
+  getAnswerSchemaForType,
+  getProfileForCountry,
+  materialiseFromPolicy,
+  outcomeSchema,
+  POLICY_RULE_SET_VERSION,
+  requirePermission,
   SDS_APPROVAL_ALREADY_EXISTS,
+  SDS_APPROVAL_STATEMENT_EN,
+  supersedeAndMaterialise,
+  writeAuditLog,
 };
-
-export type { Outcome, Prisma };

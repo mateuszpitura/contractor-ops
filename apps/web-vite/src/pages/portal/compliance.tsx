@@ -5,9 +5,8 @@
 import { AtelierEmptyState, ComplianceGapsIllustration } from '@contractor-ops/ui';
 import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { Suspense } from 'react';
-
-import { PortalComplianceList } from '../../components/portal/compliance/portal-compliance-list.js';
 import { usePortalCompliance } from '../../components/portal/compliance/hooks/use-portal-compliance.js';
+import { PortalComplianceList } from '../../components/portal/compliance/portal-compliance-list.js';
 import { AnimateIn } from '../../components/shared/animate-in.js';
 import { renderEmptyStateAction } from '../../components/shared/atelier-bridges.js';
 import { PageLoadingSpinner } from '../../components/shared/page-loading-spinner.js';

@@ -30,18 +30,20 @@ import type { ColumnDef } from '@tanstack/react-table';
 import { addDays, format, startOfISOWeek } from 'date-fns';
 import { Clock } from 'lucide-react';
 import { Suspense, useCallback, useMemo } from 'react';
-
-import { ApprovalQueueTable } from '../../components/time/approval-queue/data-table.js';
-import type { TimesheetRow } from '../../components/time/approval-queue/data-table.js';
-import { TIME_STATUS_FILTER_ALL, useTimeTracking } from '../../components/time/hooks/use-time-tracking.js';
-import { ReconciliationSpotCheck } from '../../components/time/reconciliation-spot-check.js';
-import { ReconciliationTable } from '../../components/time/reconciliation-table.js';
-import { TimeEntryStatusBadge } from '../../components/time/time-entry-status-badge.js';
 import { AnimateIn } from '../../components/shared/animate-in.js';
 import { renderEmptyStateAction } from '../../components/shared/atelier-bridges.js';
 import { isListControlsDisabled } from '../../components/shared/list-controls-disabled.js';
 import { PageLoadingSpinner } from '../../components/shared/page-loading-spinner.js';
 import { WorkbenchPageHeader } from '../../components/shared/workbench-page-header.js';
+import type { TimesheetRow } from '../../components/time/approval-queue/data-table.js';
+import { ApprovalQueueTable } from '../../components/time/approval-queue/data-table.js';
+import {
+  TIME_STATUS_FILTER_ALL,
+  useTimeTracking,
+} from '../../components/time/hooks/use-time-tracking.js';
+import { ReconciliationTable } from '../../components/time/reconciliation-section.js';
+import { ReconciliationSpotCheck } from '../../components/time/reconciliation-spot-check.js';
+import { TimeEntryStatusBadge } from '../../components/time/time-entry-status-badge.js';
 import { useTranslations } from '../../i18n/useTranslations.js';
 
 function formatPeriod(weekStart: string | Date): string {

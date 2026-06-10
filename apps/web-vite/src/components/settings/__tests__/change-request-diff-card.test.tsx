@@ -62,7 +62,10 @@ describe('ChangeRequestDiffCardView', () => {
 
   it('hides approve/reject actions when status is APPROVED', () => {
     render(
-      <ChangeRequestDiffCardView request={{ ...baseRequest, status: 'APPROVED' }} {...buildHook()} />,
+      <ChangeRequestDiffCardView
+        request={{ ...baseRequest, status: 'APPROVED' }}
+        {...buildHook()}
+      />,
     );
 
     expect(screen.queryByRole('button', { name: 'approveChanges' })).not.toBeInTheDocument();

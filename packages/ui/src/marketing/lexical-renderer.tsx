@@ -75,7 +75,9 @@ function renderBlock(
     }
     case 'quote':
       return (
-        <blockquote key={index} className="border-s-4 border-border ps-4 italic text-muted-foreground">
+        <blockquote
+          key={index}
+          className="border-s-4 border-border ps-4 italic text-muted-foreground">
           {renderInline(node.children)}
         </blockquote>
       );

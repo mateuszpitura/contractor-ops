@@ -18,7 +18,7 @@ vi.mock('../sla-badge.js', () => ({
 }));
 
 import { applyLocale, initI18n } from '../../../i18n/index.js';
-import { ChainTrackerView, ChainTrackerSkeleton } from '../chain-tracker.js';
+import { ChainTrackerSkeleton, ChainTrackerView } from '../chain-tracker.js';
 
 // Opt jsdom into React 19's act-aware environment so the renderer stops
 // logging "current testing environment is not configured to support

@@ -11,11 +11,7 @@ export { minorToMajor, minorUnitDigits };
  * Format minor units as a locale-aware currency string (Intl style: symbol + amount).
  * Prefer this over local `formatAmount` helpers in components.
  */
-export function formatMoneyAmount(
-  minor: number,
-  currency: string,
-  locale: string = 'en',
-): string {
+export function formatMoneyAmount(minor: number, currency: string, locale: string = 'en'): string {
   return formatMinorAsCurrency(minor, currency, locale);
 }
 

@@ -13,8 +13,8 @@ import {
 } from '@contractor-ops/ui/components/shadcn/alert-dialog';
 import { Loader2, Unlink } from 'lucide-react';
 import { useTranslations } from '../../../i18n/useTranslations.js';
-import { usePeppolParticipantDeregisterDialog } from './hooks/use-peppol-participant-deregister-dialog.js';
 import type { usePeppolParticipantDeregisterDialog as UsePeppolParticipantDeregisterDialog } from './hooks/use-peppol-participant-deregister-dialog.js';
+import { usePeppolParticipantDeregisterDialog } from './hooks/use-peppol-participant-deregister-dialog.js';
 
 const DEREGISTER_HEADING = 'Deregister from Peppol?';
 const DEREGISTER_BODY =
@@ -25,10 +25,11 @@ interface PeppolParticipantDeregisterDialogShellProps {
   onOpenChange: (open: boolean) => void;
 }
 
-export type PeppolParticipantDeregisterDialogViewProps = PeppolParticipantDeregisterDialogShellProps &
-  ReturnType<typeof UsePeppolParticipantDeregisterDialog> & {
-    tCommon: (key: string) => string;
-  };
+export type PeppolParticipantDeregisterDialogViewProps =
+  PeppolParticipantDeregisterDialogShellProps &
+    ReturnType<typeof UsePeppolParticipantDeregisterDialog> & {
+      tCommon: (key: string) => string;
+    };
 
 export function PeppolParticipantDeregisterDialogView({
   open,

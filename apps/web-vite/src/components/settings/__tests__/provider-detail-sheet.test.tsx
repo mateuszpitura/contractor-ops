@@ -56,7 +56,9 @@ describe('ProviderDetailSheetView', () => {
 
   it('shows the reauth and disconnect buttons when status is REAUTH_REQUIRED', () => {
     render(
-      <ProviderDetailSheetView {...baseProps(buildHook({ connectionStatus: 'REAUTH_REQUIRED' }))} />,
+      <ProviderDetailSheetView
+        {...baseProps(buildHook({ connectionStatus: 'REAUTH_REQUIRED' }))}
+      />,
     );
     expect(screen.getByRole('button', { name: 'provider.reconnectCta' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'provider.disconnectCta' })).toBeInTheDocument();

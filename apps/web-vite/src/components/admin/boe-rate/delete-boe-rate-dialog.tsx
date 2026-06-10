@@ -14,8 +14,11 @@ import {
 } from '@contractor-ops/ui/components/shadcn/alert-dialog';
 import { useCallback } from 'react';
 import { useTranslations } from '../../../i18n/useTranslations.js';
-import { useBoeRateDelete, type BoeRateEntry } from '../hooks/use-admin-boe-rate.js';
-import type { useBoeRateDelete as UseBoeRateDelete } from '../hooks/use-admin-boe-rate.js';
+import type {
+  BoeRateEntry,
+  useBoeRateDelete as UseBoeRateDelete,
+} from '../hooks/use-admin-boe-rate.js';
+import { useBoeRateDelete } from '../hooks/use-admin-boe-rate.js';
 
 interface DeleteBoeRateDialogProps {
   entry: BoeRateEntry;

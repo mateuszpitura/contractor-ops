@@ -12,8 +12,8 @@ import { Suspense } from 'react';
 
 import { LeitwegIdListCard } from '../../../components/settings/e-invoicing/leitweg-id-list-card.js';
 import { PeppolParticipantCard } from '../../../components/settings/e-invoicing/peppol-participant-card.js';
-import { WorkbenchPageHeader } from '../../../components/shared/workbench-page-header.js';
 import { PageLoadingSpinner } from '../../../components/shared/page-loading-spinner.js';
+import { WorkbenchPageHeader } from '../../../components/shared/workbench-page-header.js';
 import { Link } from '../../../i18n/navigation.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 

@@ -1,4 +1,3 @@
-import { contractorTypeEnum } from '@contractor-ops/validators';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -11,14 +10,14 @@ import {
 } from '@contractor-ops/ui/components/shadcn/alert-dialog';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { DialogFooter } from '@contractor-ops/ui/components/shadcn/dialog';
+import { contractorTypeEnum } from '@contractor-ops/validators';
 import { Check, Loader2 } from 'lucide-react';
 import { useCallback } from 'react';
 import { z } from 'zod';
-
-import { WizardDialogShell } from '../../wizard/wizard-dialog-shell.js';
 import { isValidNip } from '../../../lib/nip-validator.js';
-import { useContractorWizardDialog } from '../hooks/use-contractor-wizard-dialog.js';
+import { WizardDialogShell } from '../../wizard/wizard-dialog-shell.js';
 import type { useContractorWizardDialog as UseContractorWizardDialog } from '../hooks/use-contractor-wizard-dialog.js';
+import { useContractorWizardDialog } from '../hooks/use-contractor-wizard-dialog.js';
 import { StepAssignment } from './step-assignment.js';
 import { StepBilling } from './step-billing.js';
 import { StepCompany } from './step-company.js';
@@ -265,10 +264,7 @@ export function WizardDialogView({
         showDirtyClose={false}
         onConfirmDirtyClose={handleDiscard}
         onCancelDirtyClose={handleCancelDirtyClose}>
-        <div
-          className="min-h-[320px] px-1"
-          role="presentation"
-          onKeyDown={preventEnterSubmit}>
+        <div className="min-h-[320px] px-1" role="presentation" onKeyDown={preventEnterSubmit}>
           {currentStep === 0 && <StepCompany form={form} />}
           {currentStep === 1 && <StepBilling form={form} />}
           {currentStep === 2 && <StepAssignment form={form} />}

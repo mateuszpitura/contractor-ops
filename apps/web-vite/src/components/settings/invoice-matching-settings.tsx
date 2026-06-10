@@ -11,8 +11,8 @@ import { Input } from '@contractor-ops/ui/components/shadcn/input';
 import { ClipboardCopy, Loader2, Save } from 'lucide-react';
 import type { ChangeEvent } from 'react';
 import { useCallback } from 'react';
-import { useInvoiceMatchingSettings } from './hooks/use-invoice-matching-settings.js';
 import type { useInvoiceMatchingSettings as UseInvoiceMatchingSettings } from './hooks/use-invoice-matching-settings.js';
+import { useInvoiceMatchingSettings } from './hooks/use-invoice-matching-settings.js';
 
 export type InvoiceMatchingSettingsProps = ReturnType<typeof UseInvoiceMatchingSettings>;
 

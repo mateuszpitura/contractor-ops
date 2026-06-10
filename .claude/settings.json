@@ -191,6 +191,16 @@
             "timeout": 5
           }
         ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"/Users/mateusz.pitura/.nvm/versions/node/v24.14.1/bin/node\" \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/no-bulk-script-guard.js",
+            "timeout": 5
+          }
+        ]
       }
     ]
   },

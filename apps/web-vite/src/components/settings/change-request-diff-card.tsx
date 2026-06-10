@@ -27,10 +27,8 @@ import { useCallback } from 'react';
 
 import { tDynLoose } from '../../i18n/typed-keys.js';
 import { enumKey } from '../../lib/enum-key.js';
-import {
-  useChangeRequestDiffCard,
-  type useChangeRequestDiffCard as UseChangeRequestDiffCard,
-} from './hooks/use-change-request-diff-card.js';
+import type { useChangeRequestDiffCard as UseChangeRequestDiffCard } from './hooks/use-change-request-diff-card.js';
+import { useChangeRequestDiffCard } from './hooks/use-change-request-diff-card.js';
 
 const FIELD_LABEL_KEYS: Record<string, string> = {
   bankAccountNumber: 'bankAccount',

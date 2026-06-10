@@ -1,10 +1,12 @@
 import { useParams } from 'react-router-dom';
-
-import { Link } from '../../i18n/navigation.js';
-import { useTranslations } from '../../i18n/useTranslations.js';
-import { isPrivacyJurisdictionSlug, JURISDICTION_LABEL } from '../../components/legal/privacy-jurisdiction-resolve.js';
+import {
+  isPrivacyJurisdictionSlug,
+  JURISDICTION_LABEL,
+} from '../../components/legal/privacy-jurisdiction-resolve.js';
 import { PrivacyNoticeLayout } from '../../components/legal/privacy-notice-layout.js';
 import { PrivacyNoticeStructuredContent } from '../../components/legal/privacy-notice-structured-content.js';
+import { Link } from '../../i18n/navigation.js';
+import { useTranslations } from '../../i18n/useTranslations.js';
 
 export default function LegalPrivacyJurisdictionPage() {
   const tLegal = useTranslations('Legal');

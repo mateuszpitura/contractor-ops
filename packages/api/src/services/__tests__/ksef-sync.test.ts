@@ -158,7 +158,9 @@ function makeOrg(overrides: Record<string, unknown> = {}) {
 
 function invoiceMetadata(ref: string) {
   return {
-    prismaRaw: prisma, ksefReferenceNumber: ref };
+    prismaRaw: prisma,
+    ksefReferenceNumber: ref,
+  };
 }
 
 function setupSuccessfulSync(

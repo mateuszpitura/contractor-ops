@@ -1,4 +1,3 @@
-import { WorkbenchDataTable } from '../table-kit/workbench-data-table.js';
 import { Avatar, AvatarFallback, AvatarImage } from '@contractor-ops/ui/components/shadcn/avatar';
 import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
@@ -7,11 +6,12 @@ import type { ColumnDef } from '@tanstack/react-table';
 import { useCallback, useMemo, useState } from 'react';
 import { tDynLoose } from '../../i18n/typed-keys.js';
 import { getAvatarInitials } from '../../lib/avatar-initials';
-import {
-  useSlackUserMapping,
-  type UserMapping,
-  type useSlackUserMapping as UseSlackUserMapping,
+import { WorkbenchDataTable } from '../table-kit/workbench-data-table.js';
+import type {
+  UserMapping,
+  useSlackUserMapping as UseSlackUserMapping,
 } from './hooks/use-slack-user-mapping.js';
+import { useSlackUserMapping } from './hooks/use-slack-user-mapping.js';
 import { LinkUserPopover } from './link-user-popover.js';
 
 const STATUS_BADGE: Record<string, { labelKey: string; className: string }> = {

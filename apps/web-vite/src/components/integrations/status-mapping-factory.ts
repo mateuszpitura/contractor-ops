@@ -23,7 +23,9 @@ export type StatusMappingProject = {
   name: string;
 };
 
-export function createEmptyMappings(workflowStatuses: readonly string[]): WorkflowStatusMappingEntry[] {
+export function createEmptyMappings(
+  workflowStatuses: readonly string[],
+): WorkflowStatusMappingEntry[] {
   return workflowStatuses.map(workflowStatus => ({
     workflowStatus,
     externalTransitionId: '',

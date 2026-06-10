@@ -4,7 +4,9 @@ import { Outlet } from 'react-router-dom';
 
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { TOS_CURRENT_VERSION } from '../../lib/tos.js';
+import { useAuth } from '../../providers/auth-provider.js';
 import { BillingOverlay } from '../billing/billing-overlay.js';
+import { OrganizationOnboardingContainer } from '../onboarding/organization-onboarding.js';
 import { SearchProvider } from '../search/search-provider.js';
 import { JumpCommandPalette } from '../shared/command-palette.js';
 import { TosReacceptanceModal } from '../tos-reacceptance-modal.js';
@@ -97,10 +99,29 @@ export function DashboardShell({
 
 export function DashboardShellContainer() {
   const tLayout = useTranslations('Layout');
+  const auth = useAuth();
   const { isLoading, activeOrg, memberRole, activeOrgId, session, needsTosAcceptance, isDemo } =
     useDashboardShell();
   useAutoActiveOrg();
+  const { data: orgs, isPending: orgsPending } = auth.useListOrganizations();
   const flagBag = useFlagBagValues(activeOrgId, session.isPending);
+
+  // Signed-in user with no active org. `useAutoActiveOrg` recovers the case
+  // where memberships exist (it activates the first + reloads); we only reach
+  // the onboarding branch when there are genuinely none — a brand-new account.
+  // Gating here means the org-dependent shell + dashboard queries never mount,
+  // so `tenantNoActiveOrganization` is never thrown.
+  const noActiveOrg = !session.isPending && Boolean(session.data?.user) && !activeOrgId;
+  if (noActiveOrg) {
+    if (orgsPending) {
+      return <DashboardShellSkeleton />;
+    }
+    if (!orgs || orgs.length === 0) {
+      return <OrganizationOnboardingContainer />;
+    }
+    // Memberships exist — `useAutoActiveOrg` is activating one and will reload.
+    return <DashboardShellSkeleton />;
+  }
 
   if (isLoading) {
     return <DashboardShellSkeleton />;
@@ -108,9 +129,7 @@ export function DashboardShellContainer() {
 
   return (
     <>
-      {needsTosAcceptance ? (
-        <TosReacceptanceModal currentVersion={TOS_CURRENT_VERSION} />
-      ) : null}
+      {needsTosAcceptance ? <TosReacceptanceModal currentVersion={TOS_CURRENT_VERSION} /> : null}
       <DashboardShell
         skipToContentLabel={tLayout('skipToContent')}
         activeOrg={activeOrg}

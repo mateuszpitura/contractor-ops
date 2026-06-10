@@ -16,10 +16,8 @@ import { FeatureGate } from '../../layout/feature-gate.js';
 import { DirectoryPreviewTable } from './directory-preview/data-table.js';
 import { DirectorySummaryBar } from './directory-summary-bar.js';
 import { GroupRoleMappingStep } from './group-role-mapping-step.js';
-import {
-  useDirectoryImportWizard,
-  type WizardStep,
-} from './hooks/use-directory-import-wizard.js';
+import type { WizardStep } from './hooks/use-directory-import-wizard.js';
+import { useDirectoryImportWizard } from './hooks/use-directory-import-wizard.js';
 import { ImportConfirmStep } from './import-confirm-step.js';
 import { RoleAssignmentControls } from './role-assignment-controls.js';
 
@@ -181,10 +179,7 @@ export function DirectoryImportWizardView({
             )}
 
             {step === 3 && (
-              <ImportConfirmStep
-                userCount={selectedUsers.length}
-                roleBreakdown={roleBreakdown}
-              />
+              <ImportConfirmStep userCount={selectedUsers.length} roleBreakdown={roleBreakdown} />
             )}
           </DialogBody>
 

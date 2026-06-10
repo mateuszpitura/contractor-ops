@@ -14,7 +14,7 @@ vi.mock('../../layout/feature-gate', () => ({
 import { render, screen, setup } from '@/test/test-utils';
 import type { CalendarConnection, useMyCalendarSection } from '../hooks/use-my-calendar-section';
 import type { useOrgCalendarSection } from '../hooks/use-org-calendar-section';
-import { OrgCalendarSectionView, OrgCalendarSectionSkeleton } from '../org-calendar-section';
+import { OrgCalendarSectionSkeleton, OrgCalendarSectionView } from '../org-calendar-section';
 
 type HookReturn = ReturnType<typeof useOrgCalendarSection>;
 

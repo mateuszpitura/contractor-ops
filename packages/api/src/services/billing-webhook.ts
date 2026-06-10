@@ -1,8 +1,8 @@
+import type { SubscriptionWithPeriod } from '@contractor-ops/billing/webhook';
 import {
   buildSubscriptionData,
   getSubscriptionIdFromInvoice,
   handleSubscriptionDeleted as markSubscriptionDeleted,
-  type SubscriptionWithPeriod,
 } from '@contractor-ops/billing/webhook';
 import type { SubscriptionTier } from '@contractor-ops/db/generated/prisma/client';
 import { createLogger } from '@contractor-ops/logger';
@@ -192,7 +192,7 @@ export async function dispatchStripeWebhookNotifications(
  * Handles checkout.session.completed:
  * 1. Retrieves the full subscription from Stripe
  * 2. Upserts subscription state
- * 3. If trialing, creates initial trial credit ledger entry (D-08)
+ * 3. If trialing, creates initial trial credit ledger entry
  */
 async function handleCheckoutCompleted(
   session: Stripe.Checkout.Session,
@@ -212,7 +212,7 @@ async function handleCheckoutCompleted(
   const subscription = subscriptionResponse as unknown as SubscriptionWithPeriod;
   await handleSubscriptionUpdated(subscription, tx, pendingNotifications);
 
-  // Per D-08: Create initial trial credit ledger for trialing subscriptions
+  // Create initial trial credit ledger for trialing subscriptions
   if (subscription.status === 'trialing') {
     const organizationId = subscription.metadata?.organizationId;
     if (!organizationId) {
@@ -427,7 +427,7 @@ async function handleSubscriptionDeleted(
 
 /**
  * Stripe sends trial_will_end 3 days before trial expires.
- * Per D-10: Send both in-app notification AND email to billingEmail.
+ * Sends both in-app notification AND email to billingEmail.
  *
  * The in-app dispatch is queued (not awaited inside the tx) so that the
  * caller can fire it after the Stripe Serializable tx commits.
@@ -470,7 +470,7 @@ async function handleTrialWillEnd(
     });
   }
 
-  // Per D-10: Also send email to billingEmail
+  // Also send email to billingEmail
   if (sub.organization.billingEmail) {
     await sendBillingEmail({
       to: sub.organization.billingEmail,
@@ -482,7 +482,7 @@ async function handleTrialWillEnd(
 
 /**
  * Allocates monthly OCR credits when a subscription invoice is paid.
- * Uses TIER_CREDIT_ALLOWANCE from billing-constants (D-06).
+ * Uses TIER_CREDIT_ALLOWANCE from billing-constants.
  * Skips the first invoice (credits are allocated via checkout.session.completed).
  */
 async function handleInvoicePaid(invoice: Stripe.Invoice, tx: TxClient): Promise<void> {

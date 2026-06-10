@@ -12,8 +12,6 @@ import {
 import { ShieldAlert } from 'lucide-react';
 import { Suspense, useState } from 'react';
 import { Navigate } from 'react-router-dom';
-
-import { OverrideComplianceItemButton } from '../../components/contractors/compliance/override-compliance-item-button.js';
 import { AtRiskTable } from '../../components/compliance/dashboard/at-risk-table/data-table.js';
 import { BlockedPaymentsTable } from '../../components/compliance/dashboard/blocked-payments-table/data-table.js';
 import { ComplianceDashboardSkeleton } from '../../components/compliance/dashboard/compliance-dashboard-skeleton.js';
@@ -21,13 +19,14 @@ import { ComplianceKpiCards } from '../../components/compliance/dashboard/compli
 import type { ComplianceDashboardTab } from '../../components/compliance/dashboard/hooks/use-compliance-dashboard.js';
 import { useComplianceDashboard } from '../../components/compliance/dashboard/hooks/use-compliance-dashboard.js';
 import { UpcomingRenewalsTable } from '../../components/compliance/dashboard/upcoming-renewals-table/data-table.js';
-import { usePermissions } from '../../hooks/use-permissions.js';
-import { useLocale } from '../../i18n/navigation.js';
-import { useTranslations } from '../../i18n/useTranslations.js';
+import { OverrideComplianceItemButton } from '../../components/contractors/compliance/override-compliance-item-button.js';
 import { AnimateIn } from '../../components/shared/animate-in.js';
 import { renderEmptyStateAction } from '../../components/shared/atelier-bridges.js';
 import { PageLoadingSpinner } from '../../components/shared/page-loading-spinner.js';
 import { WorkbenchPageHeader } from '../../components/shared/workbench-page-header.js';
+import { usePermissions } from '../../hooks/use-permissions.js';
+import { useLocale } from '../../i18n/navigation.js';
+import { useTranslations } from '../../i18n/useTranslations.js';
 
 export function ComplianceDashboardPageContent() {
   const t = useTranslations('Compliance.dashboard');

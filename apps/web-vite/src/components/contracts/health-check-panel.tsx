@@ -139,7 +139,5 @@ export interface HealthCheckPanelWiredProps {
 
 export function HealthCheckPanelWired({ contractId, resultsJson }: HealthCheckPanelWiredProps) {
   const { onRerun, isRerunning } = useHealthCheckPanel(contractId);
-  return (
-    <HealthCheckPanel resultsJson={resultsJson} onRerun={onRerun} isRerunning={isRerunning} />
-  );
+  return <HealthCheckPanel resultsJson={resultsJson} onRerun={onRerun} isRerunning={isRerunning} />;
 }

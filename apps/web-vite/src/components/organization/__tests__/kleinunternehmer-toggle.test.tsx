@@ -100,16 +100,12 @@ afterEach(() => {
 
 describe('KleinunternehmerToggle (web-vite)', () => {
   it('renders nothing for non-DE organizations', () => {
-    harness = mount(
-      <KleinunternehmerToggle orgCountryCode="GB" isKleinunternehmer={false} />,
-    );
+    harness = mount(<KleinunternehmerToggle orgCountryCode="GB" isKleinunternehmer={false} />);
     expect(harness.container.innerHTML).toBe('');
   });
 
   it('renders nothing when orgCountryCode is null', () => {
-    harness = mount(
-      <KleinunternehmerToggle orgCountryCode={null} isKleinunternehmer={false} />,
-    );
+    harness = mount(<KleinunternehmerToggle orgCountryCode={null} isKleinunternehmer={false} />);
     expect(harness.container.innerHTML).toBe('');
   });
 
@@ -121,9 +117,7 @@ describe('KleinunternehmerToggle (web-vite)', () => {
   });
 
   it('renders the toggle view for DE organizations', () => {
-    harness = mount(
-      <KleinunternehmerToggle orgCountryCode="DE" isKleinunternehmer={false} />,
-    );
+    harness = mount(<KleinunternehmerToggle orgCountryCode="DE" isKleinunternehmer={false} />);
     expect(
       harness.container.querySelector('[data-testid="kleinunternehmer-toggle"]'),
     ).not.toBeNull();

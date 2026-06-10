@@ -10,7 +10,7 @@ vi.mock('../download-zugferd-pdf-button', () => ({
   ),
 }));
 
-import { EInvoiceTabView, EInvoiceTabSkeleton } from '../einvoice-tab';
+import { EInvoiceTabSkeleton, EInvoiceTabView } from '../einvoice-tab';
 import type { InvoiceTabData } from '../types';
 
 type TabExtras = {

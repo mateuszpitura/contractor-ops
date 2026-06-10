@@ -45,11 +45,9 @@ export function deriveProjectImportQueryState(input: {
   sourceErrorsCount: number;
   pmSourcesCount: number;
 }): Pick<UseOnboardingProjectsResult, 'isEmpty' | 'allSourcesFailed' | 'canContinueStep'> {
-  const ready = !input.isLoading && !input.isError;
+  const ready = !(input.isLoading || input.isError);
   const allSourcesFailed =
-    ready &&
-    input.pmSourcesCount > 0 &&
-    input.sourceErrorsCount === input.pmSourcesCount;
+    ready && input.pmSourcesCount > 0 && input.sourceErrorsCount === input.pmSourcesCount;
   const isEmpty = ready && input.projectsCount === 0 && input.sourceErrorsCount === 0;
   const canContinueStep = ready && (input.pmSourcesCount === 0 || !allSourcesFailed);
   return {
@@ -87,7 +85,10 @@ function mergeProjectSelections(
 ): Map<string, ProjectSelection> {
   const next = new Map<string, ProjectSelection>();
   for (const project of nextProjects) {
-    next.set(getProjectKey(project), previous.get(getProjectKey(project)) ?? makeDefaultSelection(project));
+    next.set(
+      getProjectKey(project),
+      previous.get(getProjectKey(project)) ?? makeDefaultSelection(project),
+    );
   }
   return next;
 }
@@ -189,13 +190,7 @@ export function useOnboardingProjects(
       allSourcesFailed,
       canContinue: canContinueStep,
     });
-  }, [
-    onStepReadinessChange,
-    isLoading,
-    projectsQuery.isError,
-    allSourcesFailed,
-    canContinueStep,
-  ]);
+  }, [onStepReadinessChange, isLoading, projectsQuery.isError, allSourcesFailed, canContinueStep]);
 
   return {
     isLoading,

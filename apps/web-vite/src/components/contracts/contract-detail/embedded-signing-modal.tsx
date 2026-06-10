@@ -4,8 +4,8 @@ import { ExternalLink, Loader2, X } from 'lucide-react';
 import { useCallback } from 'react';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
-import { useEmbeddedSigningModal } from '../hooks/use-embedded-signing-modal.js';
 import type { useEmbeddedSigningModal as UseEmbeddedSigningModal } from '../hooks/use-embedded-signing-modal.js';
+import { useEmbeddedSigningModal } from '../hooks/use-embedded-signing-modal.js';
 
 type EmbeddedSigningModalProps = {
   envelopeId: string;

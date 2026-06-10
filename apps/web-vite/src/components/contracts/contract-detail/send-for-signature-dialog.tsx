@@ -38,8 +38,8 @@ import { useCallback } from 'react';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { getAvatarInitials } from '../../../lib/avatar-initials.js';
-import { useSendForSignatureDialog } from '../hooks/use-send-for-signature-dialog.js';
 import type { useSendForSignatureDialog as UseSendForSignatureDialog } from '../hooks/use-send-for-signature-dialog.js';
+import { useSendForSignatureDialog } from '../hooks/use-send-for-signature-dialog.js';
 
 type Signer = {
   id: string;

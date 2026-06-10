@@ -3,10 +3,8 @@ import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { AlertCircle, CheckCircle2, Loader2, Unplug } from 'lucide-react';
 
 import { tDyn } from '../../i18n/typed-keys';
-import {
-  useZatcaConnectionPill,
-  type ZatcaDerivedStatus,
-} from './hooks/use-zatca-connection-pill.js';
+import type { ZatcaDerivedStatus } from './hooks/use-zatca-connection-pill.js';
+import { useZatcaConnectionPill } from './hooks/use-zatca-connection-pill.js';
 
 // ---------------------------------------------------------------------------
 // ZATCA Connection Status Pill

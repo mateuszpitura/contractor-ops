@@ -9,8 +9,8 @@ import { Loader2 } from 'lucide-react';
 import { useCallback, useId } from 'react';
 import type { ControllerRenderProps } from 'react-hook-form';
 import { Controller, useForm } from 'react-hook-form';
-import { useTaxDetailsForm } from './hooks/use-tax-details-form.js';
 import type { useTaxDetailsForm as UseTaxDetailsForm } from './hooks/use-tax-details-form.js';
+import { useTaxDetailsForm } from './hooks/use-tax-details-form.js';
 
 // ---------------------------------------------------------------------------
 // Invoice types field renderer

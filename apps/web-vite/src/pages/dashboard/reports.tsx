@@ -1,5 +1,5 @@
-import { Navigate } from 'react-router-dom';
 import { Suspense } from 'react';
+import { Navigate } from 'react-router-dom';
 
 import { ComplianceGapsReport } from '../../components/reports/compliance-gaps-report.js';
 import { DateRangeFilter } from '../../components/reports/date-range-filter.js';

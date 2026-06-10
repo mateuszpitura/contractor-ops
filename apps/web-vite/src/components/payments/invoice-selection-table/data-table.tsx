@@ -7,12 +7,10 @@
  * canonical primitive's `isRowSelectable` predicate.
  */
 
-
 import type { ColumnDef, RowSelectionState } from '@tanstack/react-table';
-import { WorkbenchDataTable } from '../../table-kit/workbench-data-table.js';
 import { useCallback, useState } from 'react';
-
 import { useTranslations } from '../../../i18n/useTranslations.js';
+import { WorkbenchDataTable } from '../../table-kit/workbench-data-table.js';
 import type { ReadyInvoiceRow } from './columns.js';
 
 interface InvoiceSelectionDataTableProps {

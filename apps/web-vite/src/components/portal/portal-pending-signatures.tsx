@@ -9,9 +9,9 @@ import { useTranslations } from '../../i18n/useTranslations.js';
 import { usePortalDateFormatter } from '../../lib/format/use-portal-date-formatter.js';
 import { WorkbenchPageHeader } from '../shared/workbench-page-header.js';
 import { EmbeddedSigningModalWired } from './embedded-signing-modal.js';
-import {
+import type {
+  PendingSignatureItem,
   usePortalPendingSignaturesView,
-  type PendingSignatureItem,
 } from './hooks/use-portal-pending-signatures-view.js';
 
 function formatRelativeTime(
@@ -207,4 +207,3 @@ export function PortalSignaturesPage({ view }: PortalPendingSignaturesViewProps)
     </>
   );
 }
-

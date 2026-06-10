@@ -12,7 +12,7 @@ vi.mock('../carrier-credential-form', () => ({
 }));
 
 import { render, screen, setup } from '@/test/test-utils';
-import { DpdProviderSectionView, DpdProviderSectionSkeleton } from '../dpd-provider-section';
+import { DpdProviderSectionSkeleton, DpdProviderSectionView } from '../dpd-provider-section';
 import type { useDpdProviderSection } from '../hooks/use-dpd-provider-section';
 
 type HookReturn = ReturnType<typeof useDpdProviderSection>;

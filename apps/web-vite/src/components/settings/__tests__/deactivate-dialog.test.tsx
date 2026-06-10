@@ -30,7 +30,13 @@ function buildHook(overrides: Partial<HookReturn> = {}): HookReturn {
 describe('DeactivateDialogView', () => {
   it('renders title, body and CTAs when open', () => {
     render(
-      <DeactivateDialogView open onOpenChange={vi.fn()} userId="u1" userName="John" {...buildHook()} />,
+      <DeactivateDialogView
+        open
+        onOpenChange={vi.fn()}
+        userId="u1"
+        userName="John"
+        {...buildHook()}
+      />,
     );
 
     expect(screen.getByText('title')).toBeInTheDocument();

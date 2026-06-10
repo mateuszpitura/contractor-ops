@@ -15,11 +15,8 @@ import {
   TableRow,
 } from '@contractor-ops/ui/components/shadcn/table';
 import { useCallback } from 'react';
-
-import {
-  useLeitwegIdListCard,
-  type useLeitwegIdListCard as UseLeitwegIdListCard,
-} from './hooks/use-leitweg-id-list-card.js';
+import type { useLeitwegIdListCard as UseLeitwegIdListCard } from './hooks/use-leitweg-id-list-card.js';
+import { useLeitwegIdListCard } from './hooks/use-leitweg-id-list-card.js';
 import { LeitwegIdCreateDialog } from './leitweg-id-create-dialog.js';
 import { LeitwegIdRow } from './leitweg-id-row.js';
 

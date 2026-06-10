@@ -62,7 +62,7 @@ export function derivePeopleReviewQueryState(input: {
   sourceErrorsCount: number;
   selectedSourcesCount: number;
 }): Pick<UseOnboardingPeopleResult, 'isEmpty' | 'allSourcesFailed' | 'canContinueStep'> {
-  const ready = !input.isLoading && !input.isError;
+  const ready = !(input.isLoading || input.isError);
   const allSourcesFailed =
     ready &&
     input.selectedSourcesCount > 0 &&
@@ -123,10 +123,7 @@ export function useOnboardingPeople(params: UseOnboardingPeopleParams): UseOnboa
   } = params;
 
   const trpc = useTRPC();
-  const sourcesKey = useMemo(
-    () => [...selectedSources].sort().join(','),
-    [selectedSources],
-  );
+  const sourcesKey = useMemo(() => [...selectedSources].sort().join(','), [selectedSources]);
 
   const peopleQuery = useQuery({
     ...trpc.onboardingImport.fetchPeople.queryOptions({
@@ -278,8 +275,7 @@ export function useOnboardingPeople(params: UseOnboardingPeopleParams): UseOnboa
     void peopleQuery.refetch();
   }, [peopleQuery]);
 
-  const isLoading =
-    (peopleQuery.isLoading || peopleQuery.isFetching) && selectedSources.length > 0;
+  const isLoading = (peopleQuery.isLoading || peopleQuery.isFetching) && selectedSources.length > 0;
   const { isEmpty, allSourcesFailed, canContinueStep } = derivePeopleReviewQueryState({
     isLoading,
     isError: peopleQuery.isError,
@@ -295,13 +291,7 @@ export function useOnboardingPeople(params: UseOnboardingPeopleParams): UseOnboa
       allSourcesFailed,
       canContinue: canContinueStep,
     });
-  }, [
-    onStepReadinessChange,
-    isLoading,
-    peopleQuery.isError,
-    allSourcesFailed,
-    canContinueStep,
-  ]);
+  }, [onStepReadinessChange, isLoading, peopleQuery.isError, allSourcesFailed, canContinueStep]);
 
   return {
     isLoading,

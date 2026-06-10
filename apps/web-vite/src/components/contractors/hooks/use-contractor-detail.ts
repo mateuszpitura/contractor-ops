@@ -1,5 +1,5 @@
-import { useTranslations } from '../../../i18n/useTranslations.js';
 import { useEntityDetailQuery } from '../../../hooks/use-entity-detail-query.js';
+import { useTranslations } from '../../../i18n/useTranslations.js';
 import { useTRPC } from '../../../providers/trpc-provider.js';
 import { useBreadcrumbOverride } from '../../layout/breadcrumb-context.js';
 

@@ -3,14 +3,13 @@
  */
 
 import { Suspense, useCallback } from 'react';
-
+import { usePortalPendingSignaturesView } from '../../components/portal/hooks/use-portal-pending-signatures-view.js';
 import {
   PendingSignaturesError,
   PendingSignaturesSkeleton,
   PortalSignaturesPage,
   PortalSignaturesPageHeader,
 } from '../../components/portal/portal-pending-signatures.js';
-import { usePortalPendingSignaturesView } from '../../components/portal/hooks/use-portal-pending-signatures-view.js';
 import { PageLoadingSpinner } from '../../components/shared/page-loading-spinner.js';
 
 function PortalSignaturesPageContent() {

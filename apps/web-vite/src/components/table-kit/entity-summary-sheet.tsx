@@ -44,9 +44,7 @@ export function EntitySummarySheet({
             <SheetHeader className="space-y-3">
               <SheetTitle
                 className={
-                  titleVisuallyHidden
-                    ? 'sr-only'
-                    : 'text-[20px] font-semibold leading-[1.2]'
+                  titleVisuallyHidden ? 'sr-only' : 'text-[20px] font-semibold leading-[1.2]'
                 }>
                 {title}
               </SheetTitle>

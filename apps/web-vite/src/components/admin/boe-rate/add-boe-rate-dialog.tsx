@@ -19,8 +19,11 @@ import { Textarea } from '@contractor-ops/ui/components/shadcn/textarea';
 import { useCallback, useEffect, useState } from 'react';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
+import type {
+  useBoeRateInsert as UseBoeRateInsert,
+  useBoeRateValidation as UseBoeRateValidation,
+} from '../hooks/use-admin-boe-rate.js';
 import { useBoeRateInsert, useBoeRateValidation } from '../hooks/use-admin-boe-rate.js';
-import type { useBoeRateInsert as UseBoeRateInsert, useBoeRateValidation as UseBoeRateValidation } from '../hooks/use-admin-boe-rate.js';
 
 interface AddBoeRateDialogProps {
   open: boolean;

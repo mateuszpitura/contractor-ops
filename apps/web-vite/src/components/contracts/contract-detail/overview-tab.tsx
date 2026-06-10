@@ -17,8 +17,8 @@ import type { LooseTranslator } from '../../../i18n/typed-keys.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { enumKey } from '../../../lib/enum-key.js';
 import { formatDate } from '../../../lib/format-date.js';
-import { useExpiryRemindersEditor } from '../hooks/use-expiry-reminders-editor.js';
 import type { useExpiryRemindersEditor as UseExpiryRemindersEditor } from '../hooks/use-expiry-reminders-editor.js';
+import { useExpiryRemindersEditor } from '../hooks/use-expiry-reminders-editor.js';
 
 type OverviewContract = {
   id: string;

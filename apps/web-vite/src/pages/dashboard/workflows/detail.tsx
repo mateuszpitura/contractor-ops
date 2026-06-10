@@ -2,14 +2,13 @@ import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { Suspense } from 'react';
 import { useParams } from 'react-router-dom';
-
-import { CredentialsTabSection } from '../../../components/workflow/credentials-tab.js';
 import { PageLoadingSpinner } from '../../../components/shared/page-loading-spinner.js';
-import { Link } from '../../../i18n/navigation.js';
-import { useTranslations } from '../../../i18n/useTranslations.js';
+import { CredentialsTabSection } from '../../../components/workflow/credentials-tab.js';
 import { useWorkflowRunDetail } from '../../../components/workflows/hooks/use-workflow-run-detail.js';
 import { RunHeaderSection } from '../../../components/workflows/workflow-run/run-header.js';
 import { TaskChecklist } from '../../../components/workflows/workflow-run/task-checklist.js';
+import { Link } from '../../../i18n/navigation.js';
+import { useTranslations } from '../../../i18n/useTranslations.js';
 
 function RunDetailSkeleton() {
   return (

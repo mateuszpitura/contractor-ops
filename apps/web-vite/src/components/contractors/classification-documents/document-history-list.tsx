@@ -1,4 +1,4 @@
-// Phase 59 · Plan 02 Task 3 — Document history list.
+// Document history list.
 // Renders classificationDocument.listByEngagement results as a semantic <ul>
 // and fetches getDownloadUrl on click to re-sign the persisted R2 object.
 
@@ -6,10 +6,8 @@ import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { useCallback, useId, useState } from 'react';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { useDateFormatter } from '../../../lib/format/use-date-formatter.js';
-import {
-  useDocumentHistoryList,
-  type useDocumentHistoryList as UseDocumentHistoryList,
-} from '../hooks/use-classification-documents.js';
+import type { useDocumentHistoryList as UseDocumentHistoryList } from '../hooks/use-classification-documents.js';
+import { useDocumentHistoryList } from '../hooks/use-classification-documents.js';
 
 interface DocumentHistoryListViewProps {
   engagementId: string;

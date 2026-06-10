@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
-
-import { getPeppolTrpc, type PeppolTransmissionResult } from '../../../lib/peppol-trpc.js';
+import type { PeppolTransmissionResult } from '../../../lib/peppol-trpc.js';
+import { getPeppolTrpc } from '../../../lib/peppol-trpc.js';
 import { useTRPC } from '../../../providers/trpc-provider.js';
 
 const REFETCH_MS = 30_000;

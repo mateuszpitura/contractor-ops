@@ -19,8 +19,8 @@ import { useCallback, useState } from 'react';
 
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { JiraBrandIcon, LinearBrandIcon } from '../integrations/brand-icons.js';
-import { useOnboardingProjects } from './hooks/use-onboarding-projects.js';
 import type { ProjectsStepReadiness } from './hooks/use-onboarding-projects.js';
+import { useOnboardingProjects } from './hooks/use-onboarding-projects.js';
 import type { ProjectSelection } from './import-wizard.js';
 import { ProjectImportSkeleton } from './onboarding-skeletons.js';
 import { PeopleReviewPartialSourceErrors, PeopleReviewSourceErrors } from './people-review-step.js';

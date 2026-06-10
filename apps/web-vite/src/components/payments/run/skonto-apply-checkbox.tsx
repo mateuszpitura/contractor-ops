@@ -8,7 +8,8 @@ import { Label } from '@contractor-ops/ui/components/shadcn/label';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { cn } from '../../../lib/utils.js';
-import { useSkontoApply, type useSkontoApply as UseSkontoApply } from '../hooks/use-skonto-apply.js';
+import type { useSkontoApply as UseSkontoApply } from '../hooks/use-skonto-apply.js';
+import { useSkontoApply } from '../hooks/use-skonto-apply.js';
 import { useSkontoApplyEligibility } from '../hooks/use-skonto-apply-eligibility.js';
 
 function formatEUR(minorAmount: number): string {

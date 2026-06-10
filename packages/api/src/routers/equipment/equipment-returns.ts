@@ -12,10 +12,10 @@ import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import { RETURN_REQUEST_NOT_FOUND, RETURN_REQUEST_NOT_PENDING } from '../../errors';
 import { router } from '../../init';
+import { auditedMutation, auditMutationCtx } from '../../lib/audited-mutation';
 import { findOrThrow } from '../../lib/find-or-throw';
 import { requirePermission } from '../../middleware/rbac';
 import { tenantProcedure } from '../../middleware/tenant';
-import { auditMutationCtx, auditedMutation } from '../../lib/audited-mutation';
 import { loadCourierClient } from '../../services/courier/carrier-factory';
 import { dispatch } from '../../services/notification-service';
 import { NOTIFICATION_KEYS } from './equipment-shared';
@@ -27,7 +27,7 @@ import { NOTIFICATION_KEYS } from './equipment-shared';
 export const equipmentReturnsRouter = router({
   /**
    * Approve a return request and create an InPost shipment.
-   * All equipment assigned to the contractor is included (D-11 all-or-nothing).
+   * All equipment assigned to the contractor is included (all-or-nothing).
    */
   approveReturnRequest: tenantProcedure
     .use(requirePermission({ equipment: ['update'] }))
@@ -61,7 +61,7 @@ export const equipmentReturnsRouter = router({
         });
       }
 
-      // Load all equipment assigned to the contractor (D-11 all-or-nothing)
+      // Load all equipment assigned to the contractor (all-or-nothing)
       const assignments = await ctx.db.equipmentAssignment.findMany({
         where: {
           organizationId: ctx.organizationId,
@@ -100,8 +100,8 @@ export const equipmentReturnsRouter = router({
         reference: `return-${returnRequest.id}`,
       });
 
-      // F-DB-08 — pre-generate shipment IDs so the per-equipment 4-write
-      // sequence collapses into createMany x2 + updateMany x1 + a single
+      // Pre-generate shipment IDs so the per-equipment write sequence
+      // collapses into createMany x2 + updateMany x1 + a single
       // returnRequest.update — total 4 round-trips regardless of N.
       const shipmentRows = assignments.map(a => ({
         id: randomUUID(),
@@ -183,7 +183,7 @@ export const equipmentReturnsRouter = router({
         },
       );
 
-      // Fire-and-forget: notify contractor about approved return with label info (D-13)
+      // Fire-and-forget: notify contractor about approved return with label info
       void dispatch({
         organizationId: ctx.organizationId,
         type: 'EQUIPMENT_RETURN_APPROVED',

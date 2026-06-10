@@ -70,7 +70,9 @@ describe('useTosReacceptance', () => {
 
     act(() => result.current.onAccept());
 
-    await waitFor(() => expect(toastError).toHaveBeenCalledWith('Something went wrong. Please try again.'));
+    await waitFor(() =>
+      expect(toastError).toHaveBeenCalledWith('Something went wrong. Please try again.'),
+    );
     expect(result.current.open).toBe(true);
   });
 });

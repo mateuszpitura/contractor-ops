@@ -1,10 +1,10 @@
 #!/usr/bin/env node
+import { execSync } from 'node:child_process';
 /**
  * Batch-fix API vitest mocks: prismaRaw on @contractor-ops/db,
  * getIdpAuditLogger on @contractor-ops/logger, getServerEnv on @contractor-ops/validators.
  */
 import fs from 'node:fs';
-import { execSync } from 'node:child_process';
 import path from 'node:path';
 
 const apiSrc = 'packages/api/src';
@@ -44,10 +44,7 @@ for (const file of testFiles) {
       const named = text.match(/vi\.mock\('@contractor-ops\/db'[\s\S]*?prisma:\s*(\w+),/);
       if (named) {
         const varName = named[1];
-        text = text.replace(
-          new RegExp(`(prisma:\\s*${varName},)`),
-          `$1\n  prismaRaw: ${varName},`,
-        );
+        text = text.replace(new RegExp(`(prisma:\\s*${varName},)`), `$1\n  prismaRaw: ${varName},`);
         changed = true;
       } else if (text.includes("vi.mock('@contractor-ops/db', () => ({")) {
         // inline prisma object — convert to IIFE with shared reference
@@ -71,7 +68,10 @@ for (const file of testFiles) {
           if (prismaMatch) {
             const indent = prismaMatch[1];
             const prismaBody = prismaMatch[2];
-            const rest = inner.replace(prismaMatch[0], `\n${indent}prisma: __mockDbPrisma,\n${indent}prismaRaw: __mockDbPrisma,`);
+            const rest = inner.replace(
+              prismaMatch[0],
+              `\n${indent}prisma: __mockDbPrisma,\n${indent}prismaRaw: __mockDbPrisma,`,
+            );
             const newBlock = `vi.mock('@contractor-ops/db', () => {
   const __mockDbPrisma = ${prismaBody};
   return {${rest}
@@ -87,10 +87,7 @@ for (const file of testFiles) {
   }
 
   // --- @contractor-ops/logger: getIdpAuditLogger ---
-  if (
-    text.includes("vi.mock('@contractor-ops/logger'") &&
-    !text.includes('getIdpAuditLogger')
-  ) {
+  if (text.includes("vi.mock('@contractor-ops/logger'") && !text.includes('getIdpAuditLogger')) {
     const insertAfter = [
       /(createLogger:\s*vi\.fn\([^)]*\)[^,]*,)/,
       /(createTrpcLogger:\s*vi\.fn\([^)]*\)[^,]*,)/,
@@ -107,10 +104,7 @@ for (const file of testFiles) {
   }
 
   // --- @contractor-ops/validators: getServerEnv ---
-  if (
-    text.includes("vi.mock('@contractor-ops/validators'") &&
-    !text.includes('getServerEnv')
-  ) {
+  if (text.includes("vi.mock('@contractor-ops/validators'") && !text.includes('getServerEnv')) {
     text = text.replace(
       /vi\.mock\('@contractor-ops\/validators',\s*\(\)\s*=>\s*\(\{/,
       `vi.mock('@contractor-ops/validators', () => ({

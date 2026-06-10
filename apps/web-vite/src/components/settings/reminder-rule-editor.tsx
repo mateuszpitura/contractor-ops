@@ -23,11 +23,12 @@ import { Bell, Loader2, Save } from 'lucide-react';
 import { useCallback, useId, useMemo } from 'react';
 import type { ControllerRenderProps } from 'react-hook-form';
 import { Controller } from 'react-hook-form';
+import type { useReminderRuleEditor as UseReminderRuleEditor } from './hooks/use-reminder-rule-editor.js';
 import {
+  REMINDER_ROLE_LABELS,
+  REMINDER_ROLE_OPTIONS,
   useReminderRuleEditor,
-  type useReminderRuleEditor as UseReminderRuleEditor,
 } from './hooks/use-reminder-rule-editor.js';
-import { REMINDER_ROLE_LABELS, REMINDER_ROLE_OPTIONS } from './hooks/use-reminder-rule-editor.js';
 import { ReminderRuleUserPicker } from './reminder-rule-user-picker.js';
 import type { ReminderRule } from './reminder-rules-section';
 

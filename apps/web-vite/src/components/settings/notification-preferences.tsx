@@ -37,11 +37,13 @@ import type { ControllerRenderProps } from 'react-hook-form';
 import { Controller } from 'react-hook-form';
 import { tDynLoose } from '../../i18n/typed-keys';
 import { useTranslations } from '../../i18n/useTranslations.js';
+import type {
+  PreferenceFormValues,
+  useNotificationPreferences as UseNotificationPreferences,
+} from './hooks/use-notification-preferences.js';
 import {
-  useNotificationPreferences,
   NOTIFICATION_TYPES,
-  type PreferenceFormValues,
-  type useNotificationPreferences as UseNotificationPreferences,
+  useNotificationPreferences,
 } from './hooks/use-notification-preferences.js';
 
 export type NotificationPreferencesProps = ReturnType<typeof UseNotificationPreferences>;

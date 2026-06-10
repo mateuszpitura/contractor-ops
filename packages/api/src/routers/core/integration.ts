@@ -18,10 +18,8 @@ import {
 import { TRPCError } from '@trpc/server';
 import * as E from '../../errors';
 import { router } from '../../init';
-import {
-  loadOrgIntegrationConnection,
-  type IntegrationProviderSlug,
-} from '../../lib/integration-connection.js';
+import type { IntegrationProviderSlug } from '../../lib/integration-connection.js';
+import { loadOrgIntegrationConnection } from '../../lib/integration-connection.js';
 import { cursorClause, paginateByLastKept } from '../../lib/pagination';
 import { requirePermission } from '../../middleware/rbac';
 import { tenantProcedure } from '../../middleware/tenant';
@@ -79,12 +77,10 @@ export const integrationRouter = router({
    * Shows matched and unmatched users with their Slack info.
    */
   listUserMappings: tenantProcedure.query(async ({ ctx }) => {
-    const connection = await loadOrgIntegrationConnection(
-      ctx.db,
-      ctx.organizationId,
-      'SLACK',
-      { status: 'any', optional: true },
-    );
+    const connection = await loadOrgIntegrationConnection(ctx.db, ctx.organizationId, 'SLACK', {
+      status: 'any',
+      optional: true,
+    });
 
     if (!connection) {
       return { mappings: [], connectionId: null };
@@ -141,12 +137,9 @@ export const integrationRouter = router({
     .use(requirePermission({ organization: ['update'] }))
     .input(slackUserLinkSchema)
     .mutation(async ({ ctx, input }) => {
-      const connection = await loadOrgIntegrationConnection(
-        ctx.db,
-        ctx.organizationId,
-        'SLACK',
-        { notFoundMessage: E.INTEGRATION_NOT_CONNECTED },
-      );
+      const connection = await loadOrgIntegrationConnection(ctx.db, ctx.organizationId, 'SLACK', {
+        notFoundMessage: E.INTEGRATION_NOT_CONNECTED,
+      });
 
       const link = await ctx.db.externalLink.create({
         data: {
@@ -159,8 +152,8 @@ export const integrationRouter = router({
         },
       });
 
-      // F-OBS-05 — linking external identities expands the surface for
-      // outbound notifications and DM-based actions.
+      // Linking external identities expands the surface for outbound
+      // notifications and DM-based actions.
       await writeAuditLog({
         organizationId: ctx.organizationId,
         actorType: 'USER',
@@ -205,7 +198,7 @@ export const integrationRouter = router({
         where: { id: input.externalLinkId },
       });
 
-      // F-OBS-05 — symmetric with INTEGRATION_USER_LINK.
+      // Symmetric audit entry with INTEGRATION_USER_LINK.
       await writeAuditLog({
         organizationId: ctx.organizationId,
         actorType: 'USER',
@@ -227,12 +220,9 @@ export const integrationRouter = router({
   syncUsers: tenantProcedure
     .use(requirePermission({ organization: ['update'] }))
     .mutation(async ({ ctx }) => {
-      const connection = await loadOrgIntegrationConnection(
-        ctx.db,
-        ctx.organizationId,
-        'SLACK',
-        { notFoundMessage: E.INTEGRATION_NOT_CONNECTED },
-      );
+      const connection = await loadOrgIntegrationConnection(ctx.db, ctx.organizationId, 'SLACK', {
+        notFoundMessage: E.INTEGRATION_NOT_CONNECTED,
+      });
 
       return syncWorkspaceUsers(ctx.organizationId, connection.id);
     }),
@@ -265,7 +255,7 @@ export const integrationRouter = router({
    * Returns the local `/api/oauth/[provider]/start` URL — NOT the IdP
    * authorization URL directly. The local start route mints a single-use
    * `OAuthChallenge` row, sets the `__Host-oauth_state` cookie, and
-   * 302-redirects to the IdP (F-SEC-05 + F-SEC-21).
+   * 302-redirects to the IdP.
    *
    * We still validate that the adapter is registered + the credentials are
    * configured here so the UI can short-circuit with a clear error before
@@ -332,7 +322,7 @@ export const integrationRouter = router({
         },
       });
 
-      // F-OBS-05 — disconnect tears down the OAuth grant and stops syncing;
+      // Disconnect tears down the OAuth grant and stops syncing;
       // forensics needs to see who pulled the plug + when.
       await writeAuditLog({
         organizationId: ctx.organizationId,

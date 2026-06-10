@@ -26,7 +26,13 @@ vi.mock('@contractor-ops/db', () => ({
 }));
 
 vi.mock('@contractor-ops/logger', () => ({
-  getIdpAuditLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn(), child: vi.fn() })),
+  getIdpAuditLogger: vi.fn(() => ({
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
+    child: vi.fn(),
+  })),
   createTrpcLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
   createWebhookLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
   createCronLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
@@ -43,8 +49,7 @@ vi.mock('@contractor-ops/logger', () => ({
   LOG_BODY_INCLUDE_PREFIXES: [],
   PII_MASK_KEYWORDS: [],
   PII_MASK_PATHS: [],
-  createLogger: vi.fn(() => ({ info: vi.fn(),
- warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
+  createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
   createIntegrationLogger: vi.fn(() => ({
     info: vi.fn(),
     warn: vi.fn(),

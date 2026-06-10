@@ -1,5 +1,4 @@
 import type { MemberStatusInput } from '@contractor-ops/ui';
-import { WorkbenchDataTable } from '../../table-kit/workbench-data-table.js';
 import { AtelierStatusPill, statusToVariant } from '@contractor-ops/ui';
 import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
@@ -12,10 +11,10 @@ import {
 import type { ColumnDef } from '@tanstack/react-table';
 import { ShieldCheck, UserX } from 'lucide-react';
 import { useCallback, useMemo, useState } from 'react';
-
 import type { LooseTranslator } from '../../../i18n/typed-keys.js';
 import { tDynLoose } from '../../../i18n/typed-keys.js';
 import { enumKey } from '../../../lib/enum-key.js';
+import { WorkbenchDataTable } from '../../table-kit/workbench-data-table.js';
 import { DeactivateDialog } from '../deactivate-dialog.js';
 import {
   assignableRoles,

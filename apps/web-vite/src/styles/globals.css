@@ -782,8 +782,9 @@ body[data-intensity="workbench"]
  * FILL pages keep the locked wrapper so the table fills the viewport instead.
  * (`> div` targets only the Outlet wrapper; AppFooter is a <footer>.)
  */
-body[data-intensity="workbench"]
-  [data-slot="sidebar-inset"]:has(.workbench-list-page):not(:has(.workbench-list-fill))
+body[data-intensity="workbench"] [data-slot="sidebar-inset"]:has(.workbench-list-page):not(
+    :has(.workbench-list-fill)
+  )
   > main#main-content
   > div {
   flex: 1 0 auto;

@@ -3,8 +3,8 @@
  * Normalize wiki wikilinks for Obsidian graph view.
  * Converts [[../domains/foo]] → [[domains/foo]] (vault-root paths from wiki/).
  */
-import { readFileSync, writeFileSync, readdirSync } from 'node:fs';
-import { join, dirname } from 'node:path';
+import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');

@@ -101,7 +101,9 @@ describe('useTeamFormSheet', () => {
     act(() => {
       result.current.createMutation.mutate({ name: 'X' });
     });
-    await waitFor(() => expect(toastError).toHaveBeenCalledWith('Something went wrong. Please try again.'));
+    await waitFor(() =>
+      expect(toastError).toHaveBeenCalledWith('Something went wrong. Please try again.'),
+    );
     expect(onOpenChange).not.toHaveBeenCalledWith(false);
   });
 });

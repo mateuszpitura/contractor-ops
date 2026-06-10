@@ -12,8 +12,8 @@ import { Suspense, useCallback, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 
 import { usePortalContractDetail } from '../../components/portal/hooks/use-portal-contract-detail.js';
-import { WorkbenchDataTable } from '../../components/table-kit/workbench-data-table.js';
 import { PageLoadingSpinner } from '../../components/shared/page-loading-spinner.js';
+import { WorkbenchDataTable } from '../../components/table-kit/workbench-data-table.js';
 import { Link } from '../../i18n/navigation.js';
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { usePortalDateFormatter } from '../../lib/format/use-portal-date-formatter.js';

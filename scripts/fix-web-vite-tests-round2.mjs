@@ -47,8 +47,13 @@ for (const f of [
   'components/layout/__tests__/org-switcher.test.tsx',
   'components/layout/__tests__/user-menu.test.tsx',
 ]) {
-  patch(f, [[`  DialogDescription: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,`, `  DialogDescription: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-${dialogMockExtras}`]]);
+  patch(f, [
+    [
+      `  DialogDescription: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,`,
+      `  DialogDescription: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+${dialogMockExtras}`,
+    ],
+  ]);
 }
 
 patch('components/layout/__tests__/user-menu.test.tsx', [
@@ -64,13 +69,22 @@ import { UserMenu, UserMenuSkeleton } from '../user-menu.js';`,
 
 // --- billing ---
 patch('components/billing/__tests__/top-up-dialog.test.tsx', [
-  [`import { TopUpDialog } from '../top-up-dialog';`, `import { TopUpDialogView as TopUpDialog } from '../top-up-dialog';`],
+  [
+    `import { TopUpDialog } from '../top-up-dialog';`,
+    `import { TopUpDialogView as TopUpDialog } from '../top-up-dialog';`,
+  ],
   [`describe('TopUpDialog (web-vite)', () => {`, `describe('TopUpDialogView (web-vite)', () => {`],
 ]);
 
 patch('components/billing/__tests__/usage-dashboard.test.tsx', [
-  [`import { UsageDashboard } from '../usage-dashboard';`, `import { UsageDashboardView as UsageDashboard } from '../usage-dashboard';`],
-  [`describe('UsageDashboard (web-vite)', () => {`, `describe('UsageDashboardView (web-vite)', () => {`],
+  [
+    `import { UsageDashboard } from '../usage-dashboard';`,
+    `import { UsageDashboardView as UsageDashboard } from '../usage-dashboard';`,
+  ],
+  [
+    `describe('UsageDashboard (web-vite)', () => {`,
+    `describe('UsageDashboardView (web-vite)', () => {`,
+  ],
 ]);
 
 // --- data-table selection props ---
@@ -86,40 +100,65 @@ for (const f of [
   'components/contracts/contract-table/__tests__/data-table.test.tsx',
   'components/invoices/invoice-table/__tests__/data-table.test.tsx',
 ]) {
-  patch(f, [[`    bulkActions: makeBulkActions(),`, `    bulkActions: makeBulkActions(),
-${tableSelectionProps}`]]);
+  patch(f, [
+    [
+      `    bulkActions: makeBulkActions(),`,
+      `    bulkActions: makeBulkActions(),
+${tableSelectionProps}`,
+    ],
+  ]);
 }
 
 // integrations directory-preview may use different baseProps shape
-const dirTable = 'components/integrations/google-workspace/directory-preview/__tests__/data-table.test.tsx';
+const dirTable =
+  'components/integrations/google-workspace/directory-preview/__tests__/data-table.test.tsx';
 if (fs.existsSync(path.join(root, dirTable))) {
   const s = fs.readFileSync(path.join(root, dirTable), 'utf8');
   if (s.includes('selectedRows') && !s.includes('selectedRows: []')) {
-    patch(dirTable, [[`    isLoading: false,`, `    isLoading: false,
+    patch(dirTable, [
+      [
+        `    isLoading: false,`,
+        `    isLoading: false,
     selectedRows: [],
     setSelectedRows: vi.fn(),
     columnVisibility: {},
     setColumnVisibility: vi.fn(),
     sorting: [],
-    onSortingChange: vi.fn(),`]]);
+    onSortingChange: vi.fn(),`,
+      ],
+    ]);
   } else if (!s.includes('selectedRows:')) {
-    patch(dirTable, [[`    bulkActions:`, `${tableSelectionProps}
-    bulkActions:`]]);
+    patch(dirTable, [
+      [
+        `    bulkActions:`,
+        `${tableSelectionProps}
+    bulkActions:`,
+      ],
+    ]);
   }
 }
 
 // --- onboarding projects ---
 patch('components/onboarding/hooks/__tests__/use-onboarding-projects.test.tsx', [
-  [`  let projects = initial?.projects ?? [];`, `  let projects = initial?.projects ?? { projects: [], sourceErrors: [] };`],
-  [`    const sel = result.current.getSelectionFor(sampleProjects[0]);`, `    const sel = result.current.getSelectionFor(sampleProjectRows[0]);`],
+  [
+    `  let projects = initial?.projects ?? [];`,
+    `  let projects = initial?.projects ?? { projects: [], sourceErrors: [] };`,
+  ],
+  [
+    `    const sel = result.current.getSelectionFor(sampleProjects[0]);`,
+    `    const sel = result.current.getSelectionFor(sampleProjectRows[0]);`,
+  ],
 ]);
 
 // --- approval queue skeleton ---
 patch('components/approvals/approval-queue/__tests__/data-table.test.tsx', [
-  [`    // 8 skeleton rows per the component spec
+  [
+    `    // 8 skeleton rows per the component spec
     const skeletonRows = container.querySelectorAll('tr[class]');
-    expect(skeletonRows.length).toBeGreaterThanOrEqual(8);`, `    const skeletonRows = container.querySelectorAll('tr[class]');
-    expect(skeletonRows.length).toBeGreaterThanOrEqual(7);`],
+    expect(skeletonRows.length).toBeGreaterThanOrEqual(8);`,
+    `    const skeletonRows = container.querySelectorAll('tr[class]');
+    expect(skeletonRows.length).toBeGreaterThanOrEqual(7);`,
+  ],
 ]);
 
 console.log('round2 done');

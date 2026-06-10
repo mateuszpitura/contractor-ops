@@ -6,13 +6,13 @@ export {
 export { uploadAndPersist } from './ingest.js';
 export { confirmMatch } from './match.js';
 export {
+  type AcknowledgeValidationInput,
   ALLOWED_PDF_MIMES,
   ALLOWED_XML_MIMES,
-  INTAKE_MAX_FILE_BYTES,
-  type AcknowledgeValidationInput,
   type ConfirmMatchInput,
   type ConvertToInvoiceInput,
   type ConvertToInvoiceResult,
+  INTAKE_MAX_FILE_BYTES,
   type IntakeServiceDeps,
   type IntakeServiceError,
   type IntakeServiceErrorCode,

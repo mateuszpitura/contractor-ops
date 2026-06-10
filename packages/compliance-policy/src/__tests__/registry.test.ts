@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { listPolicyRules, resolvePolicyRules } from '../registry';
 import type { EngagementContext, Jurisdiction } from '../types';
-import '../index'; // triggers module-import side effects (Plan 71-02 registers rules on import)
+import '../index'; // triggers module-import side effects (registers all jurisdiction rules)
 
-// Phase 75 adds 6 IP-assignment rules (1 per jurisdiction, incl. new US module)
-// on top of the 13 Phase-71 baseline rules.
+// 6 IP-assignment rules (1 per jurisdiction, incl. US module) on top of the
+// 13 baseline rules.
 const PHASE_71_BASELINE_RULE_COUNT = 13;
 const PHASE_75_IP_RULE_COUNT = 6;
 
@@ -19,14 +19,14 @@ function ctx(jurisdiction: Jurisdiction): EngagementContext {
 }
 
 describe('compliance-policy registry', () => {
-  it('registers all baseline + Phase 75 IP-assignment rules across 6 jurisdictions', () => {
+  it('registers all baseline + IP-assignment rules across 6 jurisdictions', () => {
     const rules = listPolicyRules();
     expect(rules.length).toBe(PHASE_71_BASELINE_RULE_COUNT + PHASE_75_IP_RULE_COUNT);
   });
 
   it('every policyRuleId matches the stable-namespace@vN regex', () => {
     const rules = listPolicyRules();
-    // Matches Plan 71-02 POLICY_RULE_ID_RE (permits digits in doc namespace, e.g. `de.a1`).
+    // Matches POLICY_RULE_ID_RE (permits digits in doc namespace, e.g. `de.a1`).
     const re = /^[a-z]+\.[a-z][a-z_0-9]*@v\d+$/;
     for (const r of rules) {
       expect(re.test(r.policyRuleId), `bad id: ${r.policyRuleId}`).toBe(true);
@@ -54,7 +54,7 @@ describe('compliance-policy registry', () => {
   });
 });
 
-describe('Phase 75 — IP-assignment policy rules (D-07)', () => {
+describe('IP-assignment policy rules', () => {
   const phase75Rules = [
     { id: 'uk.ip_assignment@v1', jurisdiction: 'UK' as const, tz: 'Europe/London' },
     { id: 'de.werkvertrag_ip@v1', jurisdiction: 'DE' as const, tz: 'Europe/Berlin' },

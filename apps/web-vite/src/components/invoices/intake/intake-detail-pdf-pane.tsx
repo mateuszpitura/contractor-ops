@@ -8,11 +8,8 @@ import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { FileText } from 'lucide-react';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { cn } from '../../../lib/utils.js';
-import {
-  useIntakeDetailPdf,
-  useIntakeXmlPreview,
-  type useIntakeXmlPreview as UseIntakeXmlPreview,
-} from '../hooks/use-intake-detail-pdf.js';
+import type { useIntakeXmlPreview as UseIntakeXmlPreview } from '../hooks/use-intake-detail-pdf.js';
+import { useIntakeDetailPdf, useIntakeXmlPreview } from '../hooks/use-intake-detail-pdf.js';
 
 export interface IntakeDetailPdfPaneViewProps {
   url: string;
@@ -138,11 +135,7 @@ export interface IntakeDetailPdfPaneProps {
   className?: string;
 }
 
-export function IntakeDetailPdfPane({
-  intakeId,
-  sourceKind,
-  className,
-}: IntakeDetailPdfPaneProps) {
+export function IntakeDetailPdfPane({ intakeId, sourceKind, className }: IntakeDetailPdfPaneProps) {
   const pdf = useIntakeDetailPdf(intakeId, sourceKind);
   const xmlPreview = useIntakeXmlPreview(pdf.isXml ? pdf.url : undefined);
 

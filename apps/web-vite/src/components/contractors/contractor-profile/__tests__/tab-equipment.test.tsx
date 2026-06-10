@@ -40,9 +40,7 @@ function buildProps(override: Overrides = {}): ViewProps {
   };
 }
 
-const sampleItem = (
-  over: Partial<ContractorTabEquipmentItem> = {},
-): ContractorTabEquipmentItem =>
+const sampleItem = (over: Partial<ContractorTabEquipmentItem> = {}): ContractorTabEquipmentItem =>
   ({
     assignmentId: 'a1',
     assignedAt: new Date('2025-01-15T10:00:00Z'),

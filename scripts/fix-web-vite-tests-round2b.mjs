@@ -31,23 +31,29 @@ const tableSelectionProps = `    selectedRows: [],
     onSortingChange: vi.fn(),`;
 
 patch('components/contracts/contract-table/__tests__/data-table.test.tsx', [
-  [`    bulkActions: { onBulkTerminate: vi.fn(), isTerminating: false },`, `    bulkActions: { onBulkTerminate: vi.fn(), isTerminating: false },
-${tableSelectionProps}`],
+  [
+    `    bulkActions: { onBulkTerminate: vi.fn(), isTerminating: false },`,
+    `    bulkActions: { onBulkTerminate: vi.fn(), isTerminating: false },
+${tableSelectionProps}`,
+  ],
 ]);
 
 patch('components/invoices/invoice-table/__tests__/data-table.test.tsx', [
-  [`    bulkActions: {
+  [
+    `    bulkActions: {
       onBulkSubmitForMatching: vi.fn(),
       onBulkVoid: vi.fn(),
       isSubmittingForMatching: false,
       isVoiding: false,
-    },`, `    bulkActions: {
+    },`,
+    `    bulkActions: {
       onBulkSubmitForMatching: vi.fn(),
       onBulkVoid: vi.fn(),
       isSubmittingForMatching: false,
       isVoiding: false,
     },
-${tableSelectionProps}`],
+${tableSelectionProps}`,
+  ],
 ]);
 
 // user-menu dropdown sub + dialog mocks

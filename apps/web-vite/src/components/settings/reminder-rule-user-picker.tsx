@@ -13,11 +13,8 @@ import {
   PopoverTrigger,
 } from '@contractor-ops/ui/components/shadcn/popover';
 import { useCallback } from 'react';
-
-import {
-  useReminderRuleUserPicker,
-  type useReminderRuleUserPicker as UseReminderRuleUserPicker,
-} from './hooks/use-reminder-rule-editor.js';
+import type { useReminderRuleUserPicker as UseReminderRuleUserPicker } from './hooks/use-reminder-rule-editor.js';
+import { useReminderRuleUserPicker } from './hooks/use-reminder-rule-editor.js';
 
 interface ReminderRuleUserPickerShellProps {
   value: string | undefined;

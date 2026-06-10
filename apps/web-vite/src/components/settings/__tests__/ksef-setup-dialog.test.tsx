@@ -37,7 +37,9 @@ function buildHook(overrides: Partial<HookReturn> = {}): HookReturn {
 
 describe('KsefSetupDialogView', () => {
   it('renders title, description and NIP helper when open with an orgNip', () => {
-    render(<KsefSetupDialogView open onOpenChange={vi.fn()} orgNip="1234567890" {...buildHook()} />);
+    render(
+      <KsefSetupDialogView open onOpenChange={vi.fn()} orgNip="1234567890" {...buildHook()} />,
+    );
 
     expect(screen.getByText('connectTitle')).toBeInTheDocument();
     expect(screen.getByText('connectDescription')).toBeInTheDocument();
@@ -109,7 +111,9 @@ describe('KsefSetupDialogView', () => {
   });
 
   it('does not render dialog body when closed', () => {
-    render(<KsefSetupDialogView open={false} onOpenChange={vi.fn()} orgNip="123" {...buildHook()} />);
+    render(
+      <KsefSetupDialogView open={false} onOpenChange={vi.fn()} orgNip="123" {...buildHook()} />,
+    );
 
     expect(screen.queryByText('connectTitle')).not.toBeInTheDocument();
   });

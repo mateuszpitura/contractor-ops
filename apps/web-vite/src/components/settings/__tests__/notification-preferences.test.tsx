@@ -12,8 +12,8 @@ import { render, screen, setup } from '@/test/test-utils';
 import type { PreferenceFormValues } from '../hooks/use-notification-preferences';
 import { NOTIFICATION_TYPES } from '../hooks/use-notification-preferences';
 import {
-  NotificationPreferencesView,
   NotificationPreferencesSkeleton,
+  NotificationPreferencesView,
 } from '../notification-preferences';
 
 const tStub = ((key: string) => key) as never;

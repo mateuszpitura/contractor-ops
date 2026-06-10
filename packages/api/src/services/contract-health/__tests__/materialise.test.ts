@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import '@contractor-ops/compliance-policy'; // register all policy rules (incl. Phase 75 IP rules)
+import '@contractor-ops/compliance-policy'; // register all policy rules (incl. IP rules)
 import type { Jurisdiction } from '@contractor-ops/validators';
 import type { MaterialiseClient } from '../materialise.js';
 import { JURISDICTION_TO_POLICY_RULE_ID, materialiseLikelyMissing } from '../materialise.js';

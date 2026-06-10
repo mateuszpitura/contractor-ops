@@ -2,9 +2,8 @@ import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { Card, CardContent } from '@contractor-ops/ui/components/shadcn/card';
 import { Separator } from '@contractor-ops/ui/components/shadcn/separator';
 import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
-
-import { useTranslations } from '../../i18n/useTranslations.js';
 import type { TranslateFn } from '../../i18n/useTranslations.js';
+import { useTranslations } from '../../i18n/useTranslations.js';
 import { useProrationPreview } from './hooks/use-billing.js';
 
 export interface ProrationLine {

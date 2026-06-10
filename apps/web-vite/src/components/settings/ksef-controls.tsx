@@ -1,10 +1,7 @@
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { Loader2 } from 'lucide-react';
-
-import {
-  useKsefControls,
-  type useKsefControls as UseKsefControls,
-} from './hooks/use-integrations-tab.js';
+import type { useKsefControls as UseKsefControls } from './hooks/use-integrations-tab.js';
+import { useKsefControls } from './hooks/use-integrations-tab.js';
 import { KsefSyncHistory } from './ksef-sync-history.js';
 
 export type KsefControlsProps = ReturnType<typeof UseKsefControls>;

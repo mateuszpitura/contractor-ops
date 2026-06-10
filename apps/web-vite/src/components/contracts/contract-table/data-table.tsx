@@ -1,12 +1,11 @@
 import { ContractsIllustration } from '@contractor-ops/ui';
-import { WorkbenchDataTable } from '../../table-kit/workbench-data-table.js';
 import type { ColumnDef, Table } from '@tanstack/react-table';
 import { Plus } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { useCallback, useMemo } from 'react';
-
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { formatDate } from '../../../lib/format-date.js';
+import { WorkbenchDataTable } from '../../table-kit/workbench-data-table.js';
 import type { ContractListTableProps } from '../hooks/use-contract-list.js';
 import type { ContractRow } from './columns.js';
 import { getColumns } from './columns.js';

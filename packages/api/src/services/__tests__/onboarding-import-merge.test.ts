@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-
-import { mergeByEmail, type SourcePerson } from '../onboarding-import-service.js';
+import type { SourcePerson } from '../onboarding-import-service.js';
+import { mergeByEmail } from '../onboarding-import-service.js';
 
 describe('mergeByEmail', () => {
   it('sorts conflict before new before exists', () => {

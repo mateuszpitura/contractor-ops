@@ -1,5 +1,5 @@
-import { Navigate, useSearchParams } from 'react-router-dom';
 import { Suspense } from 'react';
+import { Navigate, useSearchParams } from 'react-router-dom';
 
 import { ClassificationAdvisoryBanner } from '../../components/classification/advisory-banner.js';
 import { ClassificationGuard } from '../../components/classification/classification-guard.js';

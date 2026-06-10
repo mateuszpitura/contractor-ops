@@ -2,7 +2,6 @@
  * SVRL issue list.
  */
 
-import { WorkbenchDataTable } from '../../table-kit/workbench-data-table.js';
 import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
 import {
   Collapsible,
@@ -11,8 +10,8 @@ import {
 } from '@contractor-ops/ui/components/shadcn/collapsible';
 import type { ColumnDef } from '@tanstack/react-table';
 import { useMemo } from 'react';
-
 import { useTranslations } from '../../../i18n/useTranslations.js';
+import { WorkbenchDataTable } from '../../table-kit/workbench-data-table.js';
 
 export type SvrlSeverity = 'fatal' | 'error' | 'warning' | 'info';
 

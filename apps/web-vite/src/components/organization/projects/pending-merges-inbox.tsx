@@ -10,8 +10,8 @@ import {
 } from '@contractor-ops/ui/components/shadcn/dialog';
 import { AlertTriangle } from 'lucide-react';
 import { useCallback } from 'react';
-import { usePendingMergesInbox } from '../hooks/use-pending-merges-inbox.js';
 import type { usePendingMergesInbox as UsePendingMergesInbox } from '../hooks/use-pending-merges-inbox.js';
+import { usePendingMergesInbox } from '../hooks/use-pending-merges-inbox.js';
 import { SourceBadge } from '../shared/source-badge.js';
 
 type InboxHandle = ReturnType<typeof UsePendingMergesInbox>;

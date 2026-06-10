@@ -21,9 +21,7 @@ export function useEntityDetailQuery<
   TData,
   TError = unknown,
   TQueryKey extends QueryKey = QueryKey,
->(
-  queryOptions: UseQueryOptions<TData, TError, TData, TQueryKey>,
-): EntityDetailQueryResult<TData> {
+>(queryOptions: UseQueryOptions<TData, TError, TData, TQueryKey>): EntityDetailQueryResult<TData> {
   const query = useQuery(queryOptions);
 
   const handleRetry = useCallback(() => {

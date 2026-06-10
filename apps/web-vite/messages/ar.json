@@ -3408,7 +3408,8 @@
     "approvalStillComplianceBlocked": "لا يزال لدى المقاول مستند امتثال منتهٍ يمنع الدفع؛ لا يمكن استئناف الموافقة.",
     "deprovisioningProviderSignoffPending": "تتطلب ميزة إلغاء توفير هذا الموفّر الحصول على موافقة قبل تفعيلها.",
     "workflowAssigneeNotMember": "المُعيَّن المحدد ليس عضوًا في هذه المنظمة.",
-    "importJobStateConflict": "تغيّرت حالة مهمة الاستيراد؛ حدّث الصفحة وحاول مرة أخرى."
+    "importJobStateConflict": "تغيّرت حالة مهمة الاستيراد؛ حدّث الصفحة وحاول مرة أخرى.",
+    "importProjectFailureRetryViaWizard": "يجب إعادة محاولة عمليات استيراد المشاريع الفاشلة من معالج الاستيراد."
   },
   "Compliance": {
     "paymentBlockModal": {
@@ -7382,6 +7383,43 @@
       "itAdmin": "إدارة الأعضاء والتكاملات وإعدادات النظام",
       "externalAccountant": "وصول للقراءة فقط للبيانات المالية والتقارير",
       "readonly": "عرض المقاولين والعقود والفواتير والتقارير"
+    }
+  },
+  "OrganizationOnboarding": {
+    "eyebrow": "مرحبًا بك في Contractor Ops",
+    "title": "أنشئ مؤسستك",
+    "subtitle": "قم بإعداد مساحة العمل لبدء إدارة المتعاقدين والعقود والفواتير.",
+    "nav": {
+      "step1Label": "المؤسسة",
+      "step2Label": "إنهاء"
+    },
+    "step1": {
+      "heading": "تفاصيل المؤسسة",
+      "subtitle": "يمكنك تغيير هذه التفاصيل لاحقًا في الإعدادات.",
+      "nameLabel": "اسم المؤسسة",
+      "namePlaceholder": "Acme Studio",
+      "countryLabel": "بلد الفوترة",
+      "countryHelp": "يحدد منطقة إقامة بياناتك. لا يمكن تغيير ذلك لاحقًا.",
+      "countryPlaceholder": "اختر بلدًا",
+      "submit": "إنشاء المؤسسة",
+      "submitting": "جارٍ الإنشاء…"
+    },
+    "step2": {
+      "heading": "كل شيء جاهز، {orgName}",
+      "subtitle": "مساحة عملك جاهزة. إليك ما يمكنك إعداده بعد ذلك.",
+      "comingSoon": "قريبًا",
+      "next": {
+        "inviteTitle": "ادعُ فريقك",
+        "inviteDesc": "أضف أعضاء الفريق وعيّن الأدوار.",
+        "importTitle": "استورد بياناتك",
+        "importDesc": "أحضر المتعاقدين والمشاريع من أدواتك.",
+        "billingTitle": "إعداد الفوترة",
+        "billingDesc": "اختر خطة وأضف طريقة دفع."
+      },
+      "finish": "اذهب إلى لوحة التحكم"
+    },
+    "errors": {
+      "createFailed": "تعذّر إنشاء مؤسستك. يُرجى المحاولة مرة أخرى."
     }
   },
   "Validation": {

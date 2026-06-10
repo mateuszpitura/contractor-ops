@@ -6,9 +6,35 @@ alwaysApply: false
 
 # UI & Accessibility
 
-**Claude Code `[ui]` / `[ui-strict]`:** Read frontend-design skill → semble search → then Grep/analysis → then edits. Hooks enforce steps 1–2 before discovery tools. No prefix = unrestricted debug.
+## Skill hierarchy (stack — not mutex)
 
-- Use the `frontend-design` skill/plugin for all UI work.
+Every UI touch in `apps/web-vite`, `apps/landing`, `packages/ui`, or portal surfaces:
+
+```
+1. frontend-design (plugin) — binding; distinctive UI, anti-generic patterns
+2. semble search — before discovery grep and before edits
+3. Surface-specific depth:
+   - web-vite / portal / packages/ui → impeccable (product register + PRODUCT.md)
+   - apps/landing / explicit marketing → design-taste-frontend (+ optional stack below)
+4. full-output-enforcement — when deliverable = full page or many complete files
+```
+
+**Marketing stack (landing):** `frontend-design` + `design-taste-frontend` → optional `image-to-code` → `full-output-enforcement`. Existing landing redesign: add `redesign-existing-projects` diagnose first.
+
+**Product stack (web-vite):** `frontend-design` + `impeccable` (`reference/product.md`). Never `design-taste-frontend` on dashboards, data tables, or multi-step wizards.
+
+**Do not load all SKILL.md files every turn** — add missing layers per slice; skills already read stay in session context.
+
+Skill paths: plugin `frontend-design`; `.claude/skills/impeccable/`; `.claude/skills/design-taste-frontend` (symlink to `.agents/skills/`); same for `image-to-code`, `redesign-existing-projects`, `full-output-enforcement`. Wiki: [[patterns/ui-skills-routing]].
+
+## Hooks (Claude Code opt-in)
+
+**`[ui]` / `[ui-strict]`:** (1) Load `frontend-design` (Skill tool or Read SKILL.md), (2) `semble search`, (3) analysis and edits. `[ui-strict]` blocks UI file edits until steps 1–2 complete. Disable: no prefix or `/ui-workflow-off`.
+
+**Cursor:** verify tool log shows frontend-design + semble before UI edits when user prefixes `[ui]`.
+
+## Quality bar
+
 - Ship production-grade interfaces: clear hierarchy, responsive layout, consistent with the design system.
-- WCAG is mandatory: keyboard navigation, visible focus, semantic HTML, screen-reader-friendly labels, sufficient contrast.
-- Avoid generic or low-effort UI patterns.
+- WCAG mandatory: keyboard navigation, visible focus, semantic HTML, screen-reader-friendly labels, sufficient contrast.
+- Loading, empty, and error states on every user-facing flow — not happy-path only.

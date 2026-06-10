@@ -6,15 +6,13 @@ export function usePortalLoginVerify() {
   const t = useTranslations('Portal');
   const trpc = usePortalTRPC();
 
-  const verifyMagicLink = useResourceMutation(
-    trpc.portal.verifyMagicLink.mutationOptions(),
-    { successMessage: t('toast.verified') },
-  );
+  const verifyMagicLink = useResourceMutation(trpc.portal.verifyMagicLink.mutationOptions(), {
+    successMessage: t('toast.verified'),
+  });
 
-  const selectOrg = useResourceMutation(
-    trpc.portal.selectOrg.mutationOptions(),
-    { successMessage: t('toast.verified') },
-  );
+  const selectOrg = useResourceMutation(trpc.portal.selectOrg.mutationOptions(), {
+    successMessage: t('toast.verified'),
+  });
 
   return { verifyMagicLink, selectOrg, t } as const;
 }

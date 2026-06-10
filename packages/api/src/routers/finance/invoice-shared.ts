@@ -4,6 +4,7 @@
 
 import type { TaxIdType, ValidationStatus } from '@contractor-ops/db';
 import { TRPCError } from '@trpc/server';
+import * as E from '../../errors';
 import { getHmrcVatClient, getViesClient } from '../../gov-api-clients';
 import type { TenantScopedDb } from '../../lib/tenant-db';
 import { computeDuplicateCheckHash } from '../../services/invoice-matching';
@@ -15,7 +16,6 @@ import {
 } from '../../services/reverse-charge.service';
 import { isValidationFresh, validateTaxId } from '../../services/tax-id-validation.service';
 import { getDefaultRateCode } from '../../services/tax-rate.service';
-import * as E from '../../errors';
 
 export async function getFinanceTeamUserIds(db: TenantScopedDb, orgId: string): Promise<string[]> {
   const members = await db.member.findMany({

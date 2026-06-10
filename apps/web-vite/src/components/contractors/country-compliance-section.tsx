@@ -20,12 +20,14 @@ import { DeComplianceFields } from './compliance/de-compliance-fields.js';
 import { UkComplianceFields } from './compliance/uk-compliance-fields.js';
 import { UsComplianceFields } from './compliance/us-compliance-fields.js';
 import { FreeZoneAssignmentContainer } from './free-zone/free-zone-assignment.js';
+import type {
+  useContractorEngagements as UseContractorEngagements,
+  useCountryCompliance as UseCountryCompliance,
+} from './hooks/use-country-compliance.js';
 import {
   useContractorEngagements,
   useCountryCompliance,
   useCountryComplianceForm,
-  type useContractorEngagements as UseContractorEngagements,
-  type useCountryCompliance as UseCountryCompliance,
 } from './hooks/use-country-compliance.js';
 import { RevalidateVatButton } from './revalidate-vat-button.js';
 import { VatValidationStatusPill } from './vat-validation-status-pill.js';
@@ -303,10 +305,10 @@ function UaeFields({
     [onChange],
   );
 
-  // D-02: the freeform trade-license number / free-zone switch / expiry inputs are
+  // The freeform trade-license number / free-zone switch / expiry inputs are
   // superseded by the structured FreeZoneAssignment surface below. Only the
   // freelance-permit field remains in country-fields (server trimmed the AE config
-  // to ['freelancePermitNumber'] in Plan 05). The free zone, license number/category,
+  // to ['freelancePermitNumber']). The free zone, license number/category,
   // expiry tracking and permitted activities are now recorded in the dedicated form.
   return (
     <>

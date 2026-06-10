@@ -1,6 +1,6 @@
 import { render, screen, setup } from '@/test/test-utils';
 
-import { StatusChipBarView, StatusChipBarSkeleton } from '../status-chip-bar';
+import { StatusChipBarSkeleton, StatusChipBarView } from '../status-chip-bar';
 
 describe('StatusChipBar', () => {
   it('skeleton renders without toggle buttons', () => {
@@ -57,7 +57,10 @@ describe('StatusChipBar', () => {
   it('deselects an active chip when clicked again', async () => {
     const onStatusChange = vi.fn();
     const { user } = setup(
-      <StatusChipBarView activeStatuses={['RECEIVED', 'MATCHED']} onStatusChange={onStatusChange} />,
+      <StatusChipBarView
+        activeStatuses={['RECEIVED', 'MATCHED']}
+        onStatusChange={onStatusChange}
+      />,
     );
 
     await user.click(screen.getByRole('switch', { name: /Received/i }));

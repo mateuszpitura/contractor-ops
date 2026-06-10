@@ -1,18 +1,4 @@
 export type {
-  DateRangeInput,
-  EntityIdInput,
-  EntityIdsInput,
-  PaginationInput,
-} from './common-inputs.js';
-export {
-  dateRangeInputSchema,
-  entityIdSchema,
-  entityIdsSchema,
-  entityWithDataSchema,
-  paginationSchema,
-  reportPaginationSchema,
-} from './common-inputs.js';
-export type {
   ApprovalChainCreate,
   ApprovalChainUpdate,
   ApprovalQueue,
@@ -61,6 +47,20 @@ export {
   createCalendarEventInputSchema,
   deadlineTypeSchema,
 } from './calendar.js';
+export type {
+  DateRangeInput,
+  EntityIdInput,
+  EntityIdsInput,
+  PaginationInput,
+} from './common-inputs.js';
+export {
+  dateRangeInputSchema,
+  entityIdSchema,
+  entityIdsSchema,
+  entityWithDataSchema,
+  paginationSchema,
+  reportPaginationSchema,
+} from './common-inputs.js';
 export type {
   BulkGrantConsentInput,
   ConsentAdminQueryInput,
@@ -122,18 +122,23 @@ export type {
   ContractorType,
   ContractorUpdateInput,
 } from './contractor.js';
+// Web form enum aliases (prefer in web-vite selects / filter chips)
 export {
   companyLookupSchema,
   complianceHealthEnum,
   contractorCreateSchema,
   contractorLifecycleStageEnum,
+  contractorLifecycleStageEnum as contractorLifecycleStage,
   contractorLifecycleTransitionSchema,
   contractorListSchema,
   contractorStatusEnum,
+  contractorStatusEnum as contractorStatus,
   contractorTypeEnum,
+  contractorTypeEnum as contractorType,
   contractorUpdateSchema,
   isValidNip,
   nipSchema,
+  workerTypeEnum as workerType,
 } from './contractor.js';
 export type {
   DeCountryFields,
@@ -233,8 +238,10 @@ export {
   equipmentCreateSchema,
   equipmentListSchema,
   equipmentStatusEnum,
+  equipmentStatusEnum as equipmentStatus,
   equipmentTaskConfigSchema,
   equipmentTypeEnum,
+  equipmentTypeEnum as equipmentType,
   equipmentUnassignSchema,
   equipmentUpdateSchema,
   inpostShipmentCreateSchema,
@@ -336,7 +343,7 @@ export {
   saveJiraStatusMappingInputSchema,
   saveJiraTaskConfigInputSchema,
 } from './jira.js';
-// Phase 79 (F3 Gulf) — UAE/KSA locked statutory phrases (GULF-09, D-14/D-15)
+// UAE/KSA locked statutory phrases
 export type { LockedAePhraseKey } from './legal/ae.js';
 export {
   ADGM_AUTHORITY_LEGAL_NAME,
@@ -353,7 +360,7 @@ export {
   RESERVED_AE_LEGAL_KEYS,
   SHAMS_AUTHORITY_LEGAL_NAME,
 } from './legal/ae.js';
-// Phase 73 D-14/D-16 — COMPL doc-name locked-phrase registry + signoff state
+// COMPL doc-name locked-phrase registry + signoff state
 export { complDocNameSignoffKey, isComplDocNamePending } from './legal/compl-doc-name-signoff.js';
 export type { LockedDePhraseKey } from './legal/de.js';
 export {
@@ -429,7 +436,7 @@ export {
   LOCKED_COMPL_NAMES_UK,
   LOCKED_COMPL_NAMES_US,
 } from './legal/index.js';
-// Phase 75 D-13/D-14 — IP-clause phrase libraries + aggregate registry
+// IP-clause phrase libraries + aggregate registry
 export type { IpClausePhraseId, Jurisdiction } from './legal/ip-clauses-index.js';
 export {
   ALL_IP_CLAUSES,
@@ -437,7 +444,7 @@ export {
   IP_CLAUSE_PHRASE_LIBRARY_VERSION,
   IP_CLAUSES_BY_JURISDICTION,
 } from './legal/ip-clauses-index.js';
-// Phase 75 D-06 — verdict results Zod schema
+// IP assignment verdict results Zod schema
 export type { IpAssignmentResults } from './legal/ip-clauses-results-schema.js';
 export {
   citedClauseSchema,
@@ -671,7 +678,7 @@ export {
   workflowAssignableRoleEnum,
   workflowAssignableRoleValues,
 } from './roles.js';
-// Phase 75 D-11 — secret-shape detector (credential-vault structural defence)
+// Secret-shape detector (credential-vault structural defence)
 export type { LooksLikeSecretResult, SecretPattern } from './secret-shape-detector.js';
 export {
   looksLikeSecret,
@@ -798,15 +805,3 @@ export {
   zatcaOnboardingStepSchema,
   zatcaTaxDetailsSchema,
 } from './zatca.js';
-
-// Web form enum aliases (Wave G — prefer in web-vite selects / filter chips)
-export {
-  contractorLifecycleStageEnum as contractorLifecycleStage,
-  contractorStatusEnum as contractorStatus,
-  contractorTypeEnum as contractorType,
-  workerTypeEnum as workerType,
-} from './contractor.js';
-export {
-  equipmentStatusEnum as equipmentStatus,
-  equipmentTypeEnum as equipmentType,
-} from './equipment.js';

@@ -30,8 +30,13 @@ export type IntegrationProviderSectionState = {
 export function useIntegrationProviderSection<TConnection extends { status?: string }>(
   config: IntegrationProviderSectionConfig<TConnection>,
 ) {
-  const { connection, isLoading, t, connectedStatuses = ['CONNECTED'], autoOpenMappingOnStatus } =
-    config;
+  const {
+    connection,
+    isLoading,
+    t,
+    connectedStatuses = ['CONNECTED'],
+    autoOpenMappingOnStatus,
+  } = config;
   const [mappingDialogOpen, setMappingDialogOpen] = useState(false);
 
   const openMappingDialog = useCallback(() => {
@@ -55,11 +60,7 @@ export function useIntegrationProviderSection<TConnection extends { status?: str
   } as const;
 }
 
-export type IntegrationHealthProvider =
-  | 'google_workspace'
-  | 'microsoft_teams'
-  | 'linear'
-  | 'jira';
+export type IntegrationHealthProvider = 'google_workspace' | 'microsoft_teams' | 'linear' | 'jira';
 
 export type DeprovisioningProvider = 'OKTA' | 'ENTRA' | 'GITHUB';
 
@@ -97,10 +98,7 @@ export function useIntegrationHealthProviderSection(
 /**
  * Shared deprovisioning toggle section for Okta / Entra / GitHub IDP providers.
  */
-export function useDeprovisioningProviderSection(
-  provider: DeprovisioningProvider,
-  t: TranslateFn,
-) {
+export function useDeprovisioningProviderSection(provider: DeprovisioningProvider, t: TranslateFn) {
   const trpc = useTRPC();
   const translateError = useTranslatedError();
   const queryClient = useQueryClient();

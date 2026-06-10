@@ -19,7 +19,9 @@ describe('DownloadZugferdPdfButton', () => {
 
   it('invokes onDownload when clicked', async () => {
     const onDownload = vi.fn();
-    const { user } = setup(<DownloadZugferdPdfButtonView onDownload={onDownload} isPending={false} />);
+    const { user } = setup(
+      <DownloadZugferdPdfButtonView onDownload={onDownload} isPending={false} />,
+    );
     await user.click(screen.getByTestId('download-zugferd-pdf-button'));
     expect(onDownload).toHaveBeenCalledTimes(1);
   });

@@ -13,10 +13,8 @@ import {
   PopoverTrigger,
 } from '@contractor-ops/ui/components/shadcn/popover';
 import { useCallback } from 'react';
-import {
-  useRuleUserPicker,
-  type RuleUserPickerProps as RuleUserPickerInputProps,
-} from './hooks/use-rule-user-picker.js';
+import type { RuleUserPickerProps as RuleUserPickerInputProps } from './hooks/use-rule-user-picker.js';
+import { useRuleUserPicker } from './hooks/use-rule-user-picker.js';
 
 export type { RuleUserPickerInputProps as RuleUserPickerProps };
 

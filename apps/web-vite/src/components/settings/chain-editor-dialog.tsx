@@ -33,14 +33,12 @@ import { Controller } from 'react-hook-form';
 import { ChainEditorUserPicker } from './chain-editor-user-picker.js';
 import type { Condition } from './condition-builder';
 import { ConditionBuilder } from './condition-builder';
-import {
-  useChainEditorDialog,
-  type useChainEditorDialog as UseChainEditorDialog,
-} from './hooks/use-chain-editor-dialog.js';
+import type { useChainEditorDialog as UseChainEditorDialog } from './hooks/use-chain-editor-dialog.js';
 import {
   CHAIN_APPROVER_ROLES,
   CHAIN_ROLE_LABELS,
   DEFAULT_CHAIN_STEP,
+  useChainEditorDialog,
 } from './hooks/use-chain-editor-dialog.js';
 
 export type ChainData = {

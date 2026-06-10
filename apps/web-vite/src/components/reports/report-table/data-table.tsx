@@ -1,11 +1,9 @@
-
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
-import { WorkbenchDataTable } from '../../table-kit/workbench-data-table.js';
 import type { ColumnDef, Table } from '@tanstack/react-table';
 import { RefreshCw } from 'lucide-react';
 import { useCallback } from 'react';
-
 import { useTranslations } from '../../../i18n/useTranslations.js';
+import { WorkbenchDataTable } from '../../table-kit/workbench-data-table.js';
 import { useReportTableState } from '../hooks/use-report-table-state.js';
 import { DataTableColumnToggle } from './data-table-column-toggle.js';
 
@@ -87,7 +85,7 @@ export function ReportTable<TData>({
 
   const resolvedEmptyTitle = emptyTitle ?? tCommon('noData');
   const showGrandTotal =
-    !isLoading && !isError && data.length > 0 && grandTotalLabel && grandTotalValue;
+    !(isLoading || isError) && data.length > 0 && grandTotalLabel && grandTotalValue;
 
   if (isError) {
     return (

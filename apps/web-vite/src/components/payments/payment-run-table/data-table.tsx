@@ -1,11 +1,9 @@
-
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
-import { WorkbenchDataTable } from '../../table-kit/workbench-data-table.js';
 import type { ColumnDef } from '@tanstack/react-table';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useCallback } from 'react';
-
 import { useTranslations } from '../../../i18n/useTranslations.js';
+import { WorkbenchDataTable } from '../../table-kit/workbench-data-table.js';
 import type { PaymentRunRow } from './columns.js';
 
 interface PaymentRunDataTableProps {

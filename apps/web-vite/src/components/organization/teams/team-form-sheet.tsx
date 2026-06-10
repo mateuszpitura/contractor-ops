@@ -17,9 +17,8 @@ import {
   SheetTitle,
 } from '@contractor-ops/ui/components/shadcn/sheet';
 import { useCallback, useEffect, useState } from 'react';
-
-import { useTeamFormSheet } from '../hooks/use-team-form-sheet.js';
 import type { useTeamFormSheet as UseTeamFormSheet } from '../hooks/use-team-form-sheet.js';
+import { useTeamFormSheet } from '../hooks/use-team-form-sheet.js';
 
 export interface TeamRow {
   id: string;

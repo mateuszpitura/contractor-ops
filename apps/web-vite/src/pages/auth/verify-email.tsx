@@ -1,6 +1,6 @@
+import { AuthLayout } from '../../components/layout/auth-layout.js';
 import { Link } from '../../i18n/navigation.js';
 import { useTranslations } from '../../i18n/useTranslations.js';
-import { AuthLayout } from '../../components/layout/auth-layout.js';
 
 export default function VerifyEmailPage() {
   const t = useTranslations('Auth.verifyEmail');

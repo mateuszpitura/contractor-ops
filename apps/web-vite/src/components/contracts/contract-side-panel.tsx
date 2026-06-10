@@ -1,20 +1,15 @@
 import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { Separator } from '@contractor-ops/ui/components/shadcn/separator';
-
-import {
-  EntityDetailItem,
-  EntitySummarySheet,
-} from '../table-kit/entity-summary-sheet.js';
 import { differenceInDays, isPast } from 'date-fns';
 import type { MouseEvent } from 'react';
-
 import { Link } from '../../i18n/navigation.js';
 import { tDynLoose } from '../../i18n/typed-keys.js';
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { enumKey } from '../../lib/enum-key.js';
-import { formatAmount } from '../../lib/money.js';
 import { formatDate } from '../../lib/format-date.js';
+import { formatAmount } from '../../lib/money.js';
+import { EntityDetailItem, EntitySummarySheet } from '../table-kit/entity-summary-sheet.js';
 import type { ContractRow } from './contract-table/columns.js';
 
 function stopPropagation(e: MouseEvent) {

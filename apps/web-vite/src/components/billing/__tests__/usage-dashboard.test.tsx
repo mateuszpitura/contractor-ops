@@ -45,8 +45,7 @@ vi.mock('../plan-comparison-grid', () => ({
 }));
 
 vi.mock('../top-up-dialog', () => ({
-  TopUpDialog: ({ open }: { open: boolean }) =>
-    open ? <div data-testid="top-up-dialog" /> : null,
+  TopUpDialog: ({ open }: { open: boolean }) => (open ? <div data-testid="top-up-dialog" /> : null),
 }));
 
 import { useUsageDashboard } from '../hooks/use-billing.js';

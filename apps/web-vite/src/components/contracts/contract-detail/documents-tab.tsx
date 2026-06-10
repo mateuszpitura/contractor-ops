@@ -5,8 +5,8 @@ import { memo, useCallback } from 'react';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { DocumentListContainer } from '../../documents/document-list.js';
 import { DropZoneContainer } from '../../documents/drop-zone.js';
-import { useContractDocumentsTab } from '../hooks/use-contract-documents-tab.js';
 import type { useContractDocumentsTab as UseContractDocumentsTab } from '../hooks/use-contract-documents-tab.js';
+import { useContractDocumentsTab } from '../hooks/use-contract-documents-tab.js';
 import { SendForSignatureDialog } from './send-for-signature-dialog.js';
 
 type DocumentsTabProps = {
@@ -87,10 +87,7 @@ type DocumentsTabWiredProps = {
   }>;
 };
 
-export function DocumentsTabWired({
-  contractId,
-  contractParties = [],
-}: DocumentsTabWiredProps) {
+export function DocumentsTabWired({ contractId, contractParties = [] }: DocumentsTabWiredProps) {
   const documents = useContractDocumentsTab(contractId);
 
   return (

@@ -1,13 +1,16 @@
-// Phase 77 D-02/D-03/D-04 — cached describeImpact orchestration + failure classifier.
+// Cached describeImpact orchestration + failure classifier.
 //
-// The tRPC procedure runs `requirePermission` BEFORE calling getImpactPreview (the
-// F-SCALE-09 invariant). Preview data is org-scoped (cache key includes orgId), never
-// user-scoped. On adapter failure the result is a structured discriminated outcome the
+// The tRPC procedure runs `requirePermission` BEFORE calling getImpactPreview.
+// Preview data is org-scoped (cache key includes orgId), never user-scoped.
+// On adapter failure the result is a structured discriminated outcome the
 // admin-choice flow renders (reconnect banner / proceed-without-preview).
 
 import type { PrismaClient } from '@contractor-ops/db';
 import type { ImpactPreview } from '@contractor-ops/integrations';
-import { classifyError, createConfiguredDeprovisionableAdapter } from '@contractor-ops/integrations';
+import {
+  classifyError,
+  createConfiguredDeprovisionableAdapter,
+} from '@contractor-ops/integrations';
 import { createLogger } from '@contractor-ops/logger';
 import { CacheKeys, CacheTTL, cached, invalidate } from './cache.js';
 import type { DeprovisionProvider } from './idp-token-resolver.js';
@@ -15,7 +18,7 @@ import { resolveDeprovisionToken } from './idp-token-resolver.js';
 
 const log = createLogger({ service: 'idp-impact-preview' });
 
-/** Structured preview outcome consumed by the admin-choice flow (D-03). */
+/** Structured preview outcome consumed by the admin-choice flow. */
 export type ImpactPreviewResult =
   | { ok: true; preview: ImpactPreview }
   | { ok: false; kind: 'reconnect_required'; reason: string }
@@ -31,9 +34,9 @@ export interface GetImpactPreviewArgs {
 
 /**
  * Builds the provider adapter configured with the resolved org connection token,
- * then runs describeImpact through the 5-minute Upstash cache (D-02). On adapter
- * error the failure is classified (D-03): 401 → reconnect-required; 429/503 →
- * admin-choice after one retry; transient network → retry once then admin-choice.
+ * then runs describeImpact through the 5-minute Upstash cache. On adapter error
+ * the failure is classified: 401 → reconnect-required; 429/503 → admin-choice
+ * after one retry; transient network → retry once then admin-choice.
  */
 export async function getImpactPreview(args: GetImpactPreviewArgs): Promise<ImpactPreviewResult> {
   const { db, organizationId, provider, externalUserId, forceRefresh } = args;

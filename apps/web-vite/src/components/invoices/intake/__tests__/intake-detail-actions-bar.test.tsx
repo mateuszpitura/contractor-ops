@@ -67,7 +67,9 @@ describe('IntakeDetailActionsBar', () => {
 
   it('invokes openRejectDialog when the reject trigger is clicked', async () => {
     const openRejectDialog = vi.fn();
-    const { user } = setup(<IntakeDetailActionsBarView actions={makeActions({ openRejectDialog })} />);
+    const { user } = setup(
+      <IntakeDetailActionsBarView actions={makeActions({ openRejectDialog })} />,
+    );
     await user.click(screen.getByTestId('intake-reject-trigger'));
     expect(openRejectDialog).toHaveBeenCalledTimes(1);
   });

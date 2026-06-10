@@ -27,9 +27,8 @@ import { useDropzone } from 'react-dropzone';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
-
-import type { LooseTranslator } from '../../i18n/typed-keys.js';
 import { useRouter } from '../../i18n/navigation.js';
+import type { LooseTranslator } from '../../i18n/typed-keys.js';
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { formatMoneyAmount } from '../../lib/money.js';
 import { ConfidenceBadge } from '../ocr/confidence-badge.js';

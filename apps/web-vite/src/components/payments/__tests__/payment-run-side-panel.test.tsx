@@ -18,7 +18,7 @@ vi.mock('../run/skonto-apply-checkbox', () => ({
 
 import { render, screen, setup } from '@/test/test-utils';
 import type { usePaymentRunSidePanel } from '../hooks/use-payment-run-side-panel.js';
-import { PaymentRunSidePanelView, PaymentRunSidePanelSkeleton } from '../payment-run-side-panel';
+import { PaymentRunSidePanelSkeleton, PaymentRunSidePanelView } from '../payment-run-side-panel';
 
 type Panel = ReturnType<typeof usePaymentRunSidePanel>;
 type LoadedRun = NonNullable<Panel['run']>;

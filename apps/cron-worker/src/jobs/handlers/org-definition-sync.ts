@@ -9,13 +9,8 @@
  */
 
 import { runScheduledOrgDefinitionSync } from '@contractor-ops/api/services/org-definition-sync';
-import {
-  createTenantClientFrom,
-  getRegionalClient,
-  prisma,
-  type PrismaClient,
-  tenantStore,
-} from '@contractor-ops/db';
+import type { PrismaClient } from '@contractor-ops/db';
+import { createTenantClientFrom, getRegionalClient, prisma, tenantStore } from '@contractor-ops/db';
 import { Sentry } from '../../lib/sentry.js';
 import type { JobHandler } from '../runner.js';
 

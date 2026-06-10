@@ -1,4 +1,4 @@
-import { Client } from '@okta/okta-sdk-nodejs';
+import OktaSdk, { type Client } from '@okta/okta-sdk-nodejs';
 import { mapErrorClassToResult } from '../idp/deprovision-result.js';
 import { classifyError } from '../idp/error-classifier.js';
 import type { ImpactPreview } from '../idp/impact-preview.js';
@@ -11,11 +11,16 @@ import type { Deprovisionable, DeprovisionResult } from '../types/deprovisionabl
 import type { GetHealthStatusOptions } from './base-adapter.js';
 import { BaseAdapter } from './base-adapter.js';
 
+// `@okta/okta-sdk-nodejs` v8 is CommonJS: the `.d.ts` presents named exports,
+// but `Client` is attached to `module.exports` at runtime — a named ESM import
+// resolves to undefined. Default-import the namespace and destructure the value.
+const { Client: OktaClient } = OktaSdk;
+
 /**
- * Okta `Deprovisionable` adapter (Phase 78 IDP-06).
+ * Okta `Deprovisionable` adapter.
  *
- * Uses the official `@okta/okta-sdk-nodejs` v8 namespaced client (CONTEXT.md
- * D-08 — API-token auth model, mirroring the KSeF/Clockify API-key adapters).
+ * Uses the official `@okta/okta-sdk-nodejs` v8 namespaced client with an
+ * API-token auth model, mirroring the KSeF/Clockify API-key adapters.
  * The saga step-runner resolves the org URL + API token from the decrypted
  * `IntegrationConnection.credentials` and configures the instance via
  * {@link withCredentials} before invoking suspend/revoke.
@@ -47,7 +52,7 @@ export class OktaAdapter extends BaseAdapter implements Deprovisionable {
 
   /** Fresh SDK client bound to the configured org URL + token. */
   #client(): Client {
-    return new Client({ orgUrl: this.#orgUrl, token: this.#token });
+    return new OktaClient({ orgUrl: this.#orgUrl, token: this.#token });
   }
 
   /**
@@ -149,7 +154,7 @@ export class OktaAdapter extends BaseAdapter implements Deprovisionable {
     const client = this.#client();
 
     // getUser — accountStatus + displayName. A total failure here (the user
-    // read) throws for the Phase 77 D-03 proceed-without-preview flow.
+    // read) throws so callers can choose to proceed without a preview.
     let accountStatus: 'ACTIVE' | 'SUSPENDED' | 'NOT_FOUND' = 'ACTIVE';
     let displayName = externalUserId;
     try {

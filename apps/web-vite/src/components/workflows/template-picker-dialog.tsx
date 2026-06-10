@@ -19,7 +19,11 @@ import { memo, useCallback } from 'react';
 import { tDynLoose } from '../../i18n/typed-keys.js';
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { enumKey } from '../../lib/enum-key.js';
-import type { TemplateOption, TemplatePickerParams, useTemplatePicker } from './hooks/use-template-picker.js';
+import type {
+  TemplateOption,
+  TemplatePickerParams,
+  useTemplatePicker,
+} from './hooks/use-template-picker.js';
 import { useTemplatePicker as useTemplatePickerHook } from './hooks/use-template-picker.js';
 
 const templateTypeBadgeColors: Record<string, string> = {

@@ -1,8 +1,8 @@
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { ArrowLeft, ArrowRight, Loader2 } from 'lucide-react';
 import type { ReactNode } from 'react';
-import { useCsrGeneration } from './hooks/use-csr-generation.js';
 import type { useCsrGeneration as UseCsrGeneration } from './hooks/use-csr-generation.js';
+import { useCsrGeneration } from './hooks/use-csr-generation.js';
 
 type HookResult = ReturnType<typeof UseCsrGeneration>;
 type T = HookResult['t'];

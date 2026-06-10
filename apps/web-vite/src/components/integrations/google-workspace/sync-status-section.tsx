@@ -74,8 +74,15 @@ interface SyncStatusSectionProps {
 }
 
 export function SyncStatusSection({ onImportClick }: SyncStatusSectionProps) {
-  const { syncStatusQuery, syncStatus, isError, onRetry, triggerSyncMutation, handleTriggerSync, t } =
-    useSyncStatusSection();
+  const {
+    syncStatusQuery,
+    syncStatus,
+    isError,
+    onRetry,
+    triggerSyncMutation,
+    handleTriggerSync,
+    t,
+  } = useSyncStatusSection();
   if (syncStatusQuery.isLoading) return <SyncStatusSectionSkeleton />;
   if (isError) {
     return (

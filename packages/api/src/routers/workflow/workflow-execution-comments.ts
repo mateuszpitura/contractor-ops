@@ -11,8 +11,6 @@ import { requirePermission } from '../../middleware/rbac';
 import { tenantProcedure } from '../../middleware/tenant';
 
 export const workflowExecutionCommentsRouter = router({
-
-
   /**
    * Add a comment to a workflow run or task.
    */
@@ -61,7 +59,6 @@ export const workflowExecutionCommentsRouter = router({
 
       return comment;
     }),
-
 
   /**
    * List comments for a workflow run, optionally filtered by task.

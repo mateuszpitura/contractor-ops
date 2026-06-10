@@ -51,7 +51,7 @@ const FILE_PATCHES = [
   {
     path: 'components/billing/__tests__/proration-preview.test.tsx',
     replacements: [
-      ['from \'../proration-preview\';', "from '../proration-preview.js';"],
+      ["from '../proration-preview';", "from '../proration-preview.js';"],
       [
         `import {
   ProrationPreview,
@@ -65,7 +65,7 @@ const FILE_PATCHES = [
 } from '../proration-preview.js';`,
       ],
       ['<ProrationPreview\n', '<ProrationPreviewView\n'],
-      ['describe(\'ProrationPreview (web-vite)\'', "describe('ProrationPreviewView (web-vite)'"],
+      ["describe('ProrationPreview (web-vite)'", "describe('ProrationPreviewView (web-vite)'"],
     ],
   },
 ];

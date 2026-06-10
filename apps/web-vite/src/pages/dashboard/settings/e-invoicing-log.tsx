@@ -9,8 +9,8 @@ import {
 import { Suspense } from 'react';
 
 import { TransmissionsLogCard } from '../../../components/settings/e-invoicing/transmissions-log-card.js';
-import { WorkbenchPageHeader } from '../../../components/shared/workbench-page-header.js';
 import { PageLoadingSpinner } from '../../../components/shared/page-loading-spinner.js';
+import { WorkbenchPageHeader } from '../../../components/shared/workbench-page-header.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 
 function EInvoicingLogContent() {

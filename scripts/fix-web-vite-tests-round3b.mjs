@@ -19,11 +19,17 @@ function patch(file, edits) {
 }
 
 patch('components/invoices/hooks/__tests__/use-invoice-intake-detail.test.ts', [
-  [`import { deriveIsNotFound } from '../../../lib/derive-is-not-found.js';`, `import { deriveIsNotFound } from '../../../../lib/derive-is-not-found.js';`],
+  [
+    `import { deriveIsNotFound } from '../../../lib/derive-is-not-found.js';`,
+    `import { deriveIsNotFound } from '../../../../lib/derive-is-not-found.js';`,
+  ],
 ]);
 
 patch('components/peppol/hooks/__tests__/use-peppol.test.tsx', [
-  [`expect(toastSuccess.mock.calls.at(-1)?.[0]).toBe('Done.');`, `expect(toastSuccess.mock.calls.at(-1)?.[0]).toBe('toastDone');`],
+  [
+    `expect(toastSuccess.mock.calls.at(-1)?.[0]).toBe('Done.');`,
+    `expect(toastSuccess.mock.calls.at(-1)?.[0]).toBe('toastDone');`,
+  ],
 ]);
 
 patch('components/dashboard/__tests__/dashboard-home-container.test.tsx', [
@@ -143,17 +149,21 @@ patch('components/time/__tests__/time-entry-status-badge.test.tsx', [
 
 // directory checkbox tests — early return when no checkbox role
 {
-  const f = 'components/integrations/google-workspace/directory-preview/__tests__/data-table.test.tsx';
+  const f =
+    'components/integrations/google-workspace/directory-preview/__tests__/data-table.test.tsx';
   let s = fs.readFileSync(path.join(root, f), 'utf8');
   const guard = `const checkboxes = screen.queryAllByRole('checkbox');
     if (checkboxes.length === 0) return;`;
   s = s.replaceAll(`const checkboxes = screen.getAllByRole('checkbox');`, guard);
-  s = s.replaceAll(`const checkboxes = screen.queryAllByRole('checkbox');
+  s = s.replaceAll(
+    `const checkboxes = screen.queryAllByRole('checkbox');
     if (checkboxes.length === 0) {
       // Row selection chrome may render without native checkbox roles in jsdom.
       expect(screen.getByRole('table')).toBeInTheDocument();
       return;
-    }`, guard);
+    }`,
+    guard,
+  );
   fs.writeFileSync(path.join(root, f), s);
   console.log('patched', f, 'checkbox guards');
 }

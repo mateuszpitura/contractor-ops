@@ -1,6 +1,5 @@
-import { AlertTriangle } from 'lucide-react';
-
 import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
+import { AlertTriangle } from 'lucide-react';
 import { FeatureGate } from '../layout/feature-gate.js';
 import { ProviderConnectionCard } from '../settings/provider-connection-card.js';
 import { GoogleWorkspaceBrandIcon } from './brand-icons.js';

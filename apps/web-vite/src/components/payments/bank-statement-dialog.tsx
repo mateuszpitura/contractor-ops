@@ -11,8 +11,8 @@ import { AlertCircle, Loader2, Upload } from 'lucide-react';
 import type * as React from 'react';
 import type { ReactNode, RefObject } from 'react';
 import { useCallback, useState } from 'react';
-
-import { useTranslations, type TranslateFn } from '../../i18n/useTranslations.js';
+import type { TranslateFn } from '../../i18n/useTranslations.js';
+import { useTranslations } from '../../i18n/useTranslations.js';
 import { BankStatementMatchesDataTable } from './bank-statement/data-table.js';
 import type { BankStatementMatchResult } from './hooks/use-bank-statement-import.js';
 import { useBankStatementImport } from './hooks/use-bank-statement-import.js';

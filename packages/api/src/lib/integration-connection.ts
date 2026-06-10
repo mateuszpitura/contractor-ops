@@ -27,7 +27,7 @@ export async function loadIntegrationConnection(
     where: {
       id: connectionId,
       organizationId,
-      ...(options?.provider !== undefined ? { provider: options.provider } : {}),
+      ...(options?.provider === undefined ? {} : { provider: options.provider }),
     },
   });
 
@@ -63,7 +63,7 @@ function orgIntegrationStatusWhere(
   statusFilter: OrgIntegrationConnectionStatusFilter,
 ): { status: IntegrationConnectionStatus | { in: IntegrationConnectionStatus[] } } | undefined {
   if (statusFilter === 'any') {
-    return undefined;
+    return;
   }
 
   return {

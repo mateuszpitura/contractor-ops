@@ -12,9 +12,8 @@ import {
   PopoverTrigger,
 } from '@contractor-ops/ui/components/shadcn/popover';
 import { useCallback } from 'react';
-
-import { useLinkUserPopover } from './hooks/use-slack-user-mapping.js';
 import type { useLinkUserPopover as UseLinkUserPopover } from './hooks/use-slack-user-mapping.js';
+import { useLinkUserPopover } from './hooks/use-slack-user-mapping.js';
 
 interface LinkUserPopoverShellProps {
   userId: string;

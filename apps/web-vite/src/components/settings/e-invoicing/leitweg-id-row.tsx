@@ -11,8 +11,8 @@ import { TableCell, TableRow } from '@contractor-ops/ui/components/shadcn/table'
 import { Check, MoreHorizontal } from 'lucide-react';
 import { useCallback } from 'react';
 import { useTranslations } from '../../../i18n/useTranslations.js';
-import { useLeitwegIdRow } from './hooks/use-leitweg-id-row.js';
 import type { useLeitwegIdRow as UseLeitwegIdRow } from './hooks/use-leitweg-id-row.js';
+import { useLeitwegIdRow } from './hooks/use-leitweg-id-row.js';
 import type { LeitwegIdEditInitial } from './leitweg-id-create-dialog.js';
 import { LeitwegIdCreateDialog } from './leitweg-id-create-dialog.js';
 import { LeitwegIdDeleteDialog } from './leitweg-id-delete-dialog.js';

@@ -3,10 +3,10 @@ import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import { KLEINUNTERNEHMER_DE_ONLY } from '../../errors';
 import { router } from '../../init';
+import { auditedMutation, auditMutationCtx } from '../../lib/audited-mutation';
 import { isDemoOrg } from '../../lib/demo';
 import { requirePermission } from '../../middleware/rbac';
 import { tenantProcedure } from '../../middleware/tenant';
-import { auditMutationCtx, auditedMutation } from '../../lib/audited-mutation';
 
 export const organizationRouter = router({
   /**
@@ -33,7 +33,7 @@ export const organizationRouter = router({
   }),
 
   // ---------------------------------------------------------------------------
-  // Phase 57 · Plan 04 — Kleinunternehmerregelung toggle (DE-only; D-11)
+  // Kleinunternehmerregelung toggle (DE-only)
   // ---------------------------------------------------------------------------
   //
   // Flipping this flag has material invoice-generation consequences

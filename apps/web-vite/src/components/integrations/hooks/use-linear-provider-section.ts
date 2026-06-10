@@ -10,7 +10,10 @@ export function useLinearProviderSection() {
   const t = useTranslations('Settings.integrations.linear');
 
   const healthQuery = useQuery(trpc.integration.getHealth.queryOptions({ provider: 'linear' }));
-  const connection = healthQuery.data as { status: string; connectionId?: string } | null | undefined;
+  const connection = healthQuery.data as
+    | { status: string; connectionId?: string }
+    | null
+    | undefined;
 
   const section = useIntegrationProviderSection({
     t,

@@ -43,7 +43,12 @@ export function complianceDocsForJurisdiction(
 
 const BASELINE_DOCS: ComplianceDocRegistryEntry[] = [
   { id: 'de.a1@v1', jurisdiction: 'DE', severity: 'BLOCKING', i18nKey: 'a1' },
-  { id: 'de.aufenthaltstitel@v1', jurisdiction: 'DE', severity: 'BLOCKING', i18nKey: 'aufenthaltstitel' },
+  {
+    id: 'de.aufenthaltstitel@v1',
+    jurisdiction: 'DE',
+    severity: 'BLOCKING',
+    i18nKey: 'aufenthaltstitel',
+  },
   { id: 'de.eight_b_estg@v1', jurisdiction: 'DE', severity: 'BLOCKING', i18nKey: 'eightBEstg' },
   { id: 'uk.ir35@v1', jurisdiction: 'UK', severity: 'BLOCKING', i18nKey: 'ir35' },
   { id: 'pl.zus@v1', jurisdiction: 'PL', severity: 'BLOCKING', i18nKey: 'zus' },

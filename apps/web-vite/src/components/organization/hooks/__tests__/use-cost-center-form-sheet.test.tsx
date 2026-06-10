@@ -103,7 +103,9 @@ describe('useCostCenterFormSheet', () => {
     act(() => {
       result.current.updateMutation.mutate({ id: 'cc1', name: 'X', code: 'X' });
     });
-    await waitFor(() => expect(toastError).toHaveBeenCalledWith('Something went wrong. Please try again.'));
+    await waitFor(() =>
+      expect(toastError).toHaveBeenCalledWith('Something went wrong. Please try again.'),
+    );
     expect(onOpenChange).not.toHaveBeenCalledWith(false);
   });
 });

@@ -1,14 +1,13 @@
-// Phase 71 D-09 / D-10 / D-11 / D-12 — supersession service unit tests.
+// Supersession service unit tests.
 //
 // Test scope: the pure service helpers in `packages/api/src/services/compliance-supersession.ts`.
 // We test against an in-memory mock client (not real Prisma) — the same approach
 // classification.test.ts uses with vi.hoisted mockPrisma. Direct integration
 // tests against the trpc router are gated by a pre-existing test-infra issue
-// (`contractorUpdateSchema.extend is not a function` in contractor.ts) that
-// surfaced before Plan 71 began; documented in 71-04-SUMMARY.md.
+// (`contractorUpdateSchema.extend is not a function` in contractor.ts).
 
 import { beforeEach, describe, expect, it } from 'vitest';
-import '@contractor-ops/compliance-policy'; // register all 13 policy rules
+import '@contractor-ops/compliance-policy'; // registers all policy rules
 import type { SupersessionClient } from '../services/compliance-supersession';
 import {
   extractOutcomeKind,

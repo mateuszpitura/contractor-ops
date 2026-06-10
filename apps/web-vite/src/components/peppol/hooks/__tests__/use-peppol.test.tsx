@@ -177,7 +177,9 @@ describe('usePeppolDisconnect', () => {
     });
     const { result } = renderHookWithProviders(() => usePeppolDisconnect());
     act(() => result.current.mutate(undefined as never));
-    await waitFor(() => expect(toastError).toHaveBeenCalledWith('Something went wrong. Please try again.'));
+    await waitFor(() =>
+      expect(toastError).toHaveBeenCalledWith('Something went wrong. Please try again.'),
+    );
   });
 });
 

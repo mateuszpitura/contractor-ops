@@ -36,8 +36,8 @@ vi.mock('../e-invoicing/leitweg-id-delete-dialog.js', () => ({
   LeitwegIdDeleteDialog: () => null,
 }));
 
-import type { LeitwegIdRowData } from '../e-invoicing/leitweg-id-row.js';
-import { LeitwegIdRowView, type LeitwegIdRowViewProps } from '../e-invoicing/leitweg-id-row.js';
+import type { LeitwegIdRowData, LeitwegIdRowViewProps } from '../e-invoicing/leitweg-id-row.js';
+import { LeitwegIdRowView } from '../e-invoicing/leitweg-id-row.js';
 
 type RowProps = LeitwegIdRowViewProps;
 
@@ -125,7 +125,9 @@ afterEach(() => {
 
 describe('LeitwegIdRowView (web-vite)', () => {
   it('renders the Leitweg value inside an LTR <bdi> for RTL safety', () => {
-    harness = mount(<LeitwegIdRowView row={baseRow} t={tFn as RowProps['t']} {...buildHookReturn()} />);
+    harness = mount(
+      <LeitwegIdRowView row={baseRow} t={tFn as RowProps['t']} {...buildHookReturn()} />,
+    );
     const valueEl = harness.container.querySelector('[data-testid="leitweg-value-leitweg-1"]');
     expect(valueEl).not.toBeNull();
     expect(valueEl?.textContent).toBe('991-33333TEST-33');
@@ -133,7 +135,9 @@ describe('LeitwegIdRowView (web-vite)', () => {
   });
 
   it('renders the default badge when isDefaultForContractor is true', () => {
-    harness = mount(<LeitwegIdRowView row={baseRow} t={tFn as RowProps['t']} {...buildHookReturn()} />);
+    harness = mount(
+      <LeitwegIdRowView row={baseRow} t={tFn as RowProps['t']} {...buildHookReturn()} />,
+    );
     expect(harness.container.textContent).toContain('defaultBadge');
   });
 
@@ -149,14 +153,18 @@ describe('LeitwegIdRowView (web-vite)', () => {
   });
 
   it('renders the actions dropdown trigger with an accessible label', () => {
-    harness = mount(<LeitwegIdRowView row={baseRow} t={tFn as RowProps['t']} {...buildHookReturn()} />);
+    harness = mount(
+      <LeitwegIdRowView row={baseRow} t={tFn as RowProps['t']} {...buildHookReturn()} />,
+    );
     const trigger = harness.container.querySelector('[data-testid="leitweg-actions-leitweg-1"]');
     expect(trigger).not.toBeNull();
     expect(trigger?.getAttribute('aria-label')).toBe('actionsAriaLabel');
   });
 
   it('renders contractor badge when contractor is attached', () => {
-    harness = mount(<LeitwegIdRowView row={baseRow} t={tFn as RowProps['t']} {...buildHookReturn()} />);
+    harness = mount(
+      <LeitwegIdRowView row={baseRow} t={tFn as RowProps['t']} {...buildHookReturn()} />,
+    );
     expect(harness.container.textContent).toContain('Bundeswehr GmbH');
   });
 });

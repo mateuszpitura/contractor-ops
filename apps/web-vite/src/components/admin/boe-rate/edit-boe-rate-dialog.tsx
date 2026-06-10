@@ -20,12 +20,12 @@ import { AlertTriangleIcon } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
-import {
-  useBoeRateUpdate,
-  useBoeRateValidation,
-  type BoeRateEntry,
+import type {
+  BoeRateEntry,
+  useBoeRateUpdate as UseBoeRateUpdate,
+  useBoeRateValidation as UseBoeRateValidation,
 } from '../hooks/use-admin-boe-rate.js';
-import type { useBoeRateUpdate as UseBoeRateUpdate, useBoeRateValidation as UseBoeRateValidation } from '../hooks/use-admin-boe-rate.js';
+import { useBoeRateUpdate, useBoeRateValidation } from '../hooks/use-admin-boe-rate.js';
 
 export type { BoeRateEntry };
 

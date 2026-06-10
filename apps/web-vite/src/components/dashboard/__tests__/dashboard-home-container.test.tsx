@@ -44,16 +44,30 @@ vi.mock('../kpi-cards.js', () => ({
       new Intl.NumberFormat('en', { style: 'currency', currency: 'PLN' }).format(minor / 100);
     return (
       <div className="grid">
-        <div data-slot="card"><span>Active contractors</span><span>{kpis.activeContractors.value}</span></div>
-        <div data-slot="card"><span>Pending approvals</span><span>{kpis.pendingApprovals.value}</span></div>
-        <div data-slot="card"><span>Ready to pay</span><span>{fmt(kpis.readyToPayTotal.valueMinor)}</span></div>
-        <div data-slot="card"><span>Expiring contracts</span><span>{kpis.expiringContracts.value}</span></div>
-        <div data-slot="card"><span>Open tasks</span><span>{kpis.openTasks.value}</span></div>
+        <div data-slot="card">
+          <span>Active contractors</span>
+          <span>{kpis.activeContractors.value}</span>
+        </div>
+        <div data-slot="card">
+          <span>Pending approvals</span>
+          <span>{kpis.pendingApprovals.value}</span>
+        </div>
+        <div data-slot="card">
+          <span>Ready to pay</span>
+          <span>{fmt(kpis.readyToPayTotal.valueMinor)}</span>
+        </div>
+        <div data-slot="card">
+          <span>Expiring contracts</span>
+          <span>{kpis.expiringContracts.value}</span>
+        </div>
+        <div data-slot="card">
+          <span>Open tasks</span>
+          <span>{kpis.openTasks.value}</span>
+        </div>
       </div>
     );
   },
 }));
-
 
 vi.mock('../dashboard-greeting.js', () => ({
   DashboardGreeting: () => <h1 id="dashboard-heading">Dashboard</h1>,

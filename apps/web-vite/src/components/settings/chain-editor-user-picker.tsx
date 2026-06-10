@@ -14,11 +14,8 @@ import {
   PopoverTrigger,
 } from '@contractor-ops/ui/components/shadcn/popover';
 import { useCallback } from 'react';
-
-import {
-  useChainEditorUserPicker,
-  type useChainEditorUserPicker as UseChainEditorUserPicker,
-} from './hooks/use-chain-editor-dialog.js';
+import type { useChainEditorUserPicker as UseChainEditorUserPicker } from './hooks/use-chain-editor-dialog.js';
+import { useChainEditorUserPicker } from './hooks/use-chain-editor-dialog.js';
 
 interface ChainEditorUserPickerShellProps {
   value: string | null | undefined;

@@ -258,5 +258,4 @@ describe('useOnboardingConfirm', () => {
     await waitFor(() => expect(onJobIdChange).toHaveBeenCalledWith('job-retry'));
     expect(result.current.isError).toBe(false);
   });
-
 });

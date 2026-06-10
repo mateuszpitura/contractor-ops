@@ -1,8 +1,8 @@
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { ArrowLeft, ArrowRight, Check, Loader2 } from 'lucide-react';
 import type { ReactNode } from 'react';
-import { useComplianceCsid } from './hooks/use-compliance-csid.js';
 import type { useComplianceCsid as UseComplianceCsid } from './hooks/use-compliance-csid.js';
+import { useComplianceCsid } from './hooks/use-compliance-csid.js';
 
 type HookResult = ReturnType<typeof UseComplianceCsid>;
 type T = HookResult['t'];

@@ -17,12 +17,12 @@ import { CheckCircle2, Globe, Loader2 } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { useCallback, useId } from 'react';
 import { useTranslations } from '../../i18n/useTranslations.js';
-import {
-  usePeppolWizard,
-  type PeppolWizardEnvironment,
-  type PeppolWizardStep,
-  type PeppolWizardProps as WizardHookProps,
+import type {
+  PeppolWizardEnvironment,
+  PeppolWizardStep,
+  PeppolWizardProps as WizardHookProps,
 } from './hooks/use-peppol.js';
+import { usePeppolWizard } from './hooks/use-peppol.js';
 
 export interface PeppolWizardProps {
   open: boolean;

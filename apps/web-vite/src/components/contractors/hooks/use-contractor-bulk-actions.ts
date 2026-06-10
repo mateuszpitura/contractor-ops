@@ -19,14 +19,11 @@ export function useContractorBulkActions(count: number): ContractorBulkActionsHa
   const trpc = useTRPC();
   const tc = useTranslations('Contractors');
 
-  const bulkArchiveMutation = useResourceMutation(
-    trpc.contractor.bulkArchive.mutationOptions(),
-    {
-      invalidate: [contractorPrefixKey],
-      successMessage: tc('archived', { count }),
-      errorMessage: tc('error.loadFailed'),
-    },
-  );
+  const bulkArchiveMutation = useResourceMutation(trpc.contractor.bulkArchive.mutationOptions(), {
+    invalidate: [contractorPrefixKey],
+    successMessage: tc('archived', { count }),
+    errorMessage: tc('error.loadFailed'),
+  });
 
   const bulkAssignOwnerMutation = useResourceMutation(
     trpc.contractor.bulkAssignOwner.mutationOptions(),

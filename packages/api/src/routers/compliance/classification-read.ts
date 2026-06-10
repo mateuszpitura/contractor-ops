@@ -6,13 +6,13 @@ import type { EngagementContext } from '@contractor-ops/compliance-policy';
 import { POLICY_RULE_SET_VERSION } from '@contractor-ops/compliance-policy';
 import { TRPCError } from '@trpc/server';
 import { router } from '../../init';
+import type { RecreateComplianceAssessmentResultEntry } from './classification-shared';
 import {
-  CLASSIFICATION_SDS_APPROVAL_IR35_ONLY,
-  SDS_APPROVAL_ALREADY_EXISTS,
-  SDS_APPROVAL_STATEMENT_EN,
   adminProcedure,
   approveSdsInput,
+  CLASSIFICATION_SDS_APPROVAL_IR35_ONLY,
   classificationProcedure,
+  extractOutcomeKind,
   findOrThrow,
   getByIdInput,
   getLatestInput,
@@ -24,15 +24,13 @@ import {
   recreateComplianceAssessmentInput,
   releaseHeldApprovalsForContractor,
   requirePermission,
-  writeAuditLog,
-  extractOutcomeKind,
+  SDS_APPROVAL_ALREADY_EXISTS,
+  SDS_APPROVAL_STATEMENT_EN,
   supersedeAndMaterialise,
-  type RecreateComplianceAssessmentResultEntry,
+  writeAuditLog,
 } from './classification-shared';
 
 export const classificationReadRouter = router({
-
-
   recreateComplianceAssessment: adminProcedure
     .input(recreateComplianceAssessmentInput)
     .mutation(async ({ ctx, input }) => {
@@ -46,7 +44,7 @@ export const classificationReadRouter = router({
               where: {
                 contractorAssignment: {
                   contractorId,
-                  organizationId: ctx.organizationId, // tenant guard (T-71-05-06)
+                  organizationId: ctx.organizationId, // tenant guard
                 },
                 status: 'COMPLETED',
               },
@@ -70,7 +68,7 @@ export const classificationReadRouter = router({
               };
             }
 
-            // 2. Idempotency precondition (D-16). Only applies for policy_version_bump.
+            // 2. Idempotency precondition. Only applies for policy_version_bump.
             //    For classification_outcome_change and admin_correction, always recompute.
             if (
               input.reason === 'policy_version_bump' &&
@@ -99,7 +97,7 @@ export const classificationReadRouter = router({
             const engagement: EngagementContext = {
               jurisdiction,
               outcome: extractOutcomeKind(latest.outcome),
-              sector: null, // see Plan 71-04 discovery — sector column absent today
+              sector: null, // sector column absent from ContractorAssignment today
               contractorNationality: latest.contractorAssignment.contractor?.countryCode ?? null,
               requiresRegulatedEquipment: false,
             };
@@ -115,7 +113,7 @@ export const classificationReadRouter = router({
                   ? 'CLASSIFICATION_OUTCOME_CHANGE'
                   : 'admin_correction';
 
-            // 5. Run the supersession (reuses Plan 71-04's helper).
+            // 5. Run the supersession.
             const supersedeResult = await supersedeAndMaterialise(tx, {
               organizationId: ctx.organizationId,
               contractorId,
@@ -130,8 +128,8 @@ export const classificationReadRouter = router({
               data: { policyRuleSetVersion: POLICY_RULE_SET_VERSION },
             });
 
-            // Phase 72 D-15 — recompute can carry items forward to SATISFIED;
-            // release any approval flow held by a now-satisfied BLOCKING item.
+            // Recompute can carry items forward to SATISFIED; release any
+            // approval flow held by a now-satisfied BLOCKING item.
             await releaseHeldApprovalsForContractor(tx, ctx.organizationId, contractorId);
 
             return {
@@ -145,7 +143,7 @@ export const classificationReadRouter = router({
           });
           results.push(result);
         } catch (err) {
-          // Per-contractor failure does NOT abort the bulk — record + continue (T-71-05-04).
+          // Per-contractor failure does NOT abort the bulk — record + continue.
           results.push({
             contractorId,
             noop: false,
@@ -154,7 +152,7 @@ export const classificationReadRouter = router({
         }
       }
 
-      // 7. Single AuditLog row per invocation (D-15).
+      // 7. Single AuditLog row per invocation.
       await writeAuditLog({
         tx: ctx.db,
         organizationId: ctx.organizationId,
@@ -178,10 +176,9 @@ export const classificationReadRouter = router({
   // getDraft — fetch the current draft for an engagement.
   //
   // Throws PRECONDITION_FAILED if the persisted ruleSetVersion no longer
-  // matches the currently-registered profile (T-58-16 / Pitfall 7). The UI
-  // surfaces this as "start a new assessment".
+  // matches the currently-registered profile. The UI surfaces this as
+  // "start a new assessment".
   // -------------------------------------------------------------------------
-
 
   getLatest: classificationProcedure.input(getLatestInput).query(async ({ ctx, input }) => {
     const row = await ctx.db.classificationAssessment.findFirst({
@@ -195,7 +192,7 @@ export const classificationReadRouter = router({
     if (!row) return null;
 
     // Defence-in-depth: re-parse outcome on read so a malformed/forged JSON
-    // never reaches the client (Pitfall 12).
+    // never reaches the client.
     if (row.outcome !== null && row.outcome !== undefined) {
       outcomeSchema.parse(row.outcome);
     }
@@ -212,7 +209,6 @@ export const classificationReadRouter = router({
   // cross-tenant existence (V7).
   // -------------------------------------------------------------------------
 
-
   getById: classificationProcedure.input(getByIdInput).query(async ({ ctx, input }) => {
     const row = await ctx.db.classificationAssessment.findFirst({
       where: { id: input.assessmentId },
@@ -221,7 +217,7 @@ export const classificationReadRouter = router({
     if (!row) return null;
 
     // Defence-in-depth: re-parse outcome on read so a malformed/forged JSON
-    // never reaches the client (Pitfall 12). Drafts have null outcome — skip.
+    // never reaches the client. Drafts have null outcome — skip.
     //
     // safeParse, not parse: legacy / dev-seeded rows can carry an older
     // outcome shape (pre-discriminated-union schema). Throwing 500 on a
@@ -252,7 +248,6 @@ export const classificationReadRouter = router({
   // before `draft`), which is the opposite of what the wizard wants.
   // -------------------------------------------------------------------------
 
-
   listByContractor: classificationProcedure
     .input(listByContractorInput)
     .query(async ({ ctx, input }) => {
@@ -269,9 +264,8 @@ export const classificationReadRouter = router({
     }),
 
   // ---------------------------------------------------------------------------
-  // Phase 64 · LEGAL-03/04 — logEscalation (D-19)
+  // logEscalation
   // ---------------------------------------------------------------------------
-
 
   /**
    * Log a classification advisory escalation event.
@@ -318,9 +312,8 @@ export const classificationReadRouter = router({
     }),
 
   // ---------------------------------------------------------------------------
-  // Phase 64 · LEGAL-05 — approveSds (D-22)
+  // approveSds
   // ---------------------------------------------------------------------------
-
 
   /**
    * Record in-app SDS approval gate.
@@ -355,7 +348,7 @@ export const classificationReadRouter = router({
             approvedByUserId: ctx.user?.id ?? '',
             approvedAt: new Date(),
             clientName: input.clientName,
-            approvalStatementSnapshot: SDS_APPROVAL_STATEMENT_EN, // Snapshot at approval time (D-21)
+            approvalStatementSnapshot: SDS_APPROVAL_STATEMENT_EN, // snapshot at approval time
           },
           select: { id: true },
         });

@@ -2,7 +2,7 @@ import { resetServerEnvCacheForTesting } from '@contractor-ops/validators';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('@contractor-ops/db', () => {
-  const __mockDbPrisma = {
+  const MockDbPrisma = {
     organization: {
       findUniqueOrThrow: vi.fn(),
     },
@@ -15,11 +15,10 @@ vi.mock('@contractor-ops/db', () => {
     },
   };
   return {
-  withRlsTransactions: <T>(c: T) => c,
-  withRlsReads: <T>(c: T) => c,
-  prisma: __mockDbPrisma,
-  prismaRaw: __mockDbPrisma,
-
+    withRlsTransactions: <T>(c: T) => c,
+    withRlsReads: <T>(c: T) => c,
+    prisma: MockDbPrisma,
+    prismaRaw: MockDbPrisma,
   };
 });
 

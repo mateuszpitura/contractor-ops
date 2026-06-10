@@ -1,12 +1,10 @@
-
 import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
-import { WorkbenchDataTable } from '../../table-kit/workbench-data-table.js';
 import { Checkbox } from '@contractor-ops/ui/components/shadcn/checkbox';
 import type { ColumnDef } from '@tanstack/react-table';
 import { memo, useCallback, useMemo, useState } from 'react';
-
 import type { TranslateFn } from '../../../i18n/useTranslations.js';
 import { formatMinorUnits } from '../../../lib/money.js';
+import { WorkbenchDataTable } from '../../table-kit/workbench-data-table.js';
 import type { BankStatementMatchResult } from '../hooks/use-bank-statement-import.js';
 
 interface MatchCheckboxProps {

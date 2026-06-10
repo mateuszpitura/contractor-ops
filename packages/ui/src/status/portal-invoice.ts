@@ -9,13 +9,7 @@ export type PortalInvoiceStatusInput = {
 export type PortalInvoiceStatusDisplay = {
   variant: AtelierStatusVariant;
   /** i18n key under Portal.invoices.status.* */
-  labelKey:
-    | 'paid'
-    | 'paymentScheduled'
-    | 'approved'
-    | 'rejected'
-    | 'inReview'
-    | 'submitted';
+  labelKey: 'paid' | 'paymentScheduled' | 'approved' | 'rejected' | 'inReview' | 'submitted';
 };
 
 /**

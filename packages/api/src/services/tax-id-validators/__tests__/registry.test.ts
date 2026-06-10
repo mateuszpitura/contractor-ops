@@ -1,10 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import {
-  clearTaxIdValidators,
-  getTaxIdValidator,
-  registerTaxIdValidator,
-} from '../registry.js';
+import { clearTaxIdValidators, getTaxIdValidator, registerTaxIdValidator } from '../registry.js';
 
 describe('tax-id-validator registry', () => {
   it('registers built-in GB_VAT and DE_USTIDNR validators', () => {

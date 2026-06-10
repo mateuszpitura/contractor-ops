@@ -1,10 +1,9 @@
 import { EquipmentIllustration } from '@contractor-ops/ui';
-import { WorkbenchDataTable } from '../../table-kit/workbench-data-table.js';
 import type { ColumnDef } from '@tanstack/react-table';
 import { Plus } from 'lucide-react';
 import { useCallback, useMemo } from 'react';
-
 import { useTranslations } from '../../../i18n/useTranslations.js';
+import { WorkbenchDataTable } from '../../table-kit/workbench-data-table.js';
 import { useEquipmentBulkActions } from '../hooks/use-equipment-bulk-actions.js';
 import { useEquipmentTable } from '../hooks/use-equipment-table.js';
 import { DataTableBulkActions } from './data-table-bulk-actions.js';

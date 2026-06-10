@@ -1,5 +1,4 @@
 import { iconSize } from '@contractor-ops/ui';
-import { WorkbenchDataTable } from '../../table-kit/workbench-data-table.js';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -16,8 +15,8 @@ import type { ColumnDef } from '@tanstack/react-table';
 import { addDays, format, startOfISOWeek } from 'date-fns';
 import { CheckCircle, XCircle } from 'lucide-react';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-
 import { useTranslations } from '../../../i18n/useTranslations.js';
+import { WorkbenchDataTable } from '../../table-kit/workbench-data-table.js';
 import { RejectionReasonDialog } from '../rejection-reason-dialog.js';
 import { TimeEntryStatusBadge } from '../time-entry-status-badge.js';
 

@@ -11,11 +11,8 @@ import { Input } from '@contractor-ops/ui/components/shadcn/input';
 import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { Search } from 'lucide-react';
 import { memo, useCallback } from 'react';
-
-import {
-  type DocSearchResult,
-  useAttachDocDialog,
-} from './hooks/use-attach-doc-dialog.js';
+import type { DocSearchResult } from './hooks/use-attach-doc-dialog.js';
+import { useAttachDocDialog } from './hooks/use-attach-doc-dialog.js';
 import { ConfluenceIcon, NotionIcon } from './provider-icons.js';
 
 export type AttachDocDialogViewProps = ReturnType<typeof useAttachDocDialog> & {

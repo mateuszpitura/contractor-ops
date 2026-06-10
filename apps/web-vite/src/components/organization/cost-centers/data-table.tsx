@@ -1,11 +1,10 @@
 import { TeamsIllustration } from '@contractor-ops/ui';
-import { WorkbenchDataTable } from '../../table-kit/workbench-data-table.js';
 import type { ColumnDef } from '@tanstack/react-table';
 import { format } from 'date-fns';
 import { Plus } from 'lucide-react';
 import { useMemo, useState } from 'react';
-
 import { useTranslations } from '../../../i18n/useTranslations.js';
+import { WorkbenchDataTable } from '../../table-kit/workbench-data-table.js';
 import { StatusBadge } from '../shared/status-badge.js';
 import type { CostCenterRow } from './cost-center-form-sheet.js';
 

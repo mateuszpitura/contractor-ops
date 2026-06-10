@@ -9,8 +9,8 @@ import {
 } from '@contractor-ops/ui/components/shadcn/alert-dialog';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { Loader2, UserMinus, UserX } from 'lucide-react';
-import { useDeactivateDialog } from './hooks/use-deactivate-dialog.js';
 import type { useDeactivateDialog as UseDeactivateDialog } from './hooks/use-deactivate-dialog.js';
+import { useDeactivateDialog } from './hooks/use-deactivate-dialog.js';
 
 interface DeactivateDialogShellProps {
   open: boolean;

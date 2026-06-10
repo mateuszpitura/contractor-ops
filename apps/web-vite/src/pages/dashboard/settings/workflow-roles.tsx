@@ -47,11 +47,7 @@ function WorkflowRolesSettingsContent() {
         <WorkflowRolesTable canCreate={canCreate} onCreate={openCreate} />
       </AnimateIn>
 
-      <WorkflowRoleFormDialog
-        mode="create"
-        open={createOpen}
-        onOpenChange={setCreateOpen}
-      />
+      <WorkflowRoleFormDialog mode="create" open={createOpen} onOpenChange={setCreateOpen} />
     </div>
   );
 }

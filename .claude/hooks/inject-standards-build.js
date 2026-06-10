@@ -38,7 +38,27 @@ const loadNotesFull = {
 };
 
 const subagentNote =
-  "Subagent floor standards injected. For full rules use Read on ./CLAUDE.md before multi-file implementation. Caveman full mode applies to parent session — stay terse unless code/commit/PR text.";
+  "Subagent floor standards injected. For full rules use Read on ./CLAUDE.md before multi-file implementation. Caveman full mode applies to parent session — stay terse unless code/commit/PR text. No ad-hoc bulk shell scripts on source files — surgical Edit or return too-big to parent.";
+
+const DELEGATION_DEFAULT = `## DELEGATION DEFAULT (mandatory)
+
+Prefer Task subagents over ad-hoc bulk shell scripts (sed/awk/python -e replace). Surgical precision beats automation that corrupts imports/format.
+
+| Task | Subagent |
+|------|----------|
+| Locate symbol / callers | cavecrew-investigator (default); explore for prose |
+| Fix ≤2 files | cavecrew-builder or main Edit after Read |
+| Review diff/PR | cavecrew-reviewer; bugbot/security-review on request |
+| Fix 3+ files | Main plan → parallel investigator/builder per file |
+| /gsd:* phase work | gsd-* per workflow; trivial → inline (/gsd:fast) |
+
+- Do not create agent helper scripts (fix-*.ts, bulk-rename.sh) unless user asks.
+- After spawning on a scope: do not read/edit that scope in parallel — wait for result.
+- Uncertain routing: Read .claude/skills/cavecrew/SKILL.md
+
+---
+
+`;
 
 const preamble = isSubagent
   ? `## BINDING PROJECT STANDARDS (subagent — mandatory)
@@ -84,7 +104,10 @@ if (!isSubagent && claudePath && fs.existsSync(claudePath)) {
     claudeContent;
 }
 
-const additionalContext = cavemanSection + preamble + body + claudeSection;
+const delegationSection = isSubagent ? "" : DELEGATION_DEFAULT;
+
+const additionalContext =
+  cavemanSection + delegationSection + preamble + body + claudeSection;
 
 process.stdout.write(
   JSON.stringify({

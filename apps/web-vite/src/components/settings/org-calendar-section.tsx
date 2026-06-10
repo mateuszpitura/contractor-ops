@@ -15,8 +15,8 @@ import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { Loader2, Unlink } from 'lucide-react';
 import { useCallback, useState } from 'react';
 import { useTranslations } from '../../i18n/useTranslations.js';
-import { FeatureGate } from '../layout/feature-gate';
 import { GoogleCalendarIcon, OutlookCalendarIcon } from '../integrations/provider-icons';
+import { FeatureGate } from '../layout/feature-gate';
 import type { CalendarConnection } from './hooks/use-my-calendar-section.js';
 import {
   useOrgCalendarProviderCard,

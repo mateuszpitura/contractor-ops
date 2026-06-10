@@ -6,19 +6,15 @@ import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { workflowTaskSkipReason } from '@contractor-ops/validators';
 import type { ReactNode } from 'react';
 import { useCallback, useMemo } from 'react';
-
-import {
-  EntityDetailItem,
-  EntitySummarySheet,
-} from '../table-kit/entity-summary-sheet.js';
 import { Link } from '../../i18n/navigation.js';
 import { tDynLoose } from '../../i18n/typed-keys.js';
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { enumKey } from '../../lib/enum-key.js';
 import { formatDate } from '../../lib/format-date.js';
+import { EntityDetailItem, EntitySummarySheet } from '../table-kit/entity-summary-sheet.js';
+import { useWorkflowSidePanelRun } from './hooks/use-workflow-ui.js';
 import { LinkedJiraIssuesSection } from './workflow-side-panel-linked-jira.js';
 import { LinkedLinearIssuesSection } from './workflow-side-panel-linked-linear.js';
-import { useWorkflowSidePanelRun } from './hooks/use-workflow-ui.js';
 
 const statusBadgeColors: Record<string, string> = {
   NOT_STARTED: 'bg-muted text-muted-foreground border border-border',
@@ -227,10 +223,7 @@ export function WorkflowSidePanelContent({ run }: WorkflowSidePanelContentProps)
 
       <div className="grid grid-cols-2 gap-3 text-sm">
         {!!run.startedAt && (
-          <EntityDetailItem
-            label={ts('startedOn')}
-            value={formatDate(run.startedAt)}
-          />
+          <EntityDetailItem label={ts('startedOn')} value={formatDate(run.startedAt)} />
         )}
       </div>
     </>

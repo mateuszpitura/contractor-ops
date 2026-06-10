@@ -156,7 +156,13 @@ vi.mock('@sentry/node', () => {
 });
 
 vi.mock('@contractor-ops/logger', () => ({
-  getIdpAuditLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn(), child: vi.fn() })),
+  getIdpAuditLogger: vi.fn(() => ({
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
+    child: vi.fn(),
+  })),
   createWebhookLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
   createCronLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
   withBodyLogging: vi.fn((_o, fn) => fn),
@@ -178,8 +184,7 @@ vi.mock('@contractor-ops/logger', () => ({
     error: vi.fn(),
     debug: vi.fn(),
   })),
-  createLogger: vi.fn(() => ({ info: vi.fn(),
- warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
+  createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
   createTrpcLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
 }));
 

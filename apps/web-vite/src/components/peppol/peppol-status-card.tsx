@@ -14,12 +14,11 @@ import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { Card, CardContent, CardHeader } from '@contractor-ops/ui/components/shadcn/card';
 import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { Settings, Unlink, Unplug } from 'lucide-react';
+import { useCallback, useState } from 'react';
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { PeppolBrandIcon } from '../integrations/brand-icons';
-import { useCallback, useState } from 'react';
-
-import { usePeppolStatusCard } from './hooks/use-peppol.js';
 import type { PeppolStatusCardProps as StatusCardHookProps } from './hooks/use-peppol.js';
+import { usePeppolStatusCard } from './hooks/use-peppol.js';
 import { PeppolWizard } from './peppol-wizard.js';
 
 // ---------------------------------------------------------------------------

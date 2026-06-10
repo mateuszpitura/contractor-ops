@@ -4,8 +4,8 @@ import { Clock, RefreshCw, UserPlus } from 'lucide-react';
 import { useCallback } from 'react';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
-import { useContractorNotes } from '../hooks/use-contractor-profile.js';
 import type { useContractorNotes as UseContractorNotes } from '../hooks/use-contractor-profile.js';
+import { useContractorNotes } from '../hooks/use-contractor-profile.js';
 
 export type RightRailContractor = {
   id: string;

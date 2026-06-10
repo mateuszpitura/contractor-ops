@@ -1,8 +1,8 @@
 import { Alert, AlertDescription, AlertTitle } from '@contractor-ops/ui/components/shadcn/alert';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { AlertTriangle, ArrowLeft, Check, Loader2, ShieldCheck } from 'lucide-react';
-import { useProductionCertificate } from './hooks/use-production-certificate.js';
 import type { useProductionCertificate as UseProductionCertificate } from './hooks/use-production-certificate.js';
+import { useProductionCertificate } from './hooks/use-production-certificate.js';
 
 type HookResult = ReturnType<typeof UseProductionCertificate>;
 type T = HookResult['t'];

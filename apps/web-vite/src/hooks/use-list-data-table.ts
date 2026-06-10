@@ -27,6 +27,8 @@ export function useListDataTable<T>(options: UseListDataTableOptions) {
     try {
       const stored = localStorage.getItem(storageKey);
       if (stored) setColumnVisibility(JSON.parse(stored) as VisibilityState);
+      // safe-swallow: localStorage may be unavailable (private mode) or hold
+      // corrupt JSON; column-visibility hydration is non-critical.
     } catch {
       // best-effort hydration
     }
@@ -40,6 +42,8 @@ export function useListDataTable<T>(options: UseListDataTableOptions) {
     }
     try {
       localStorage.setItem(storageKey, JSON.stringify(columnVisibility));
+      // safe-swallow: localStorage may be unavailable or over quota; persisting
+      // column-visibility prefs is non-critical.
     } catch {
       // best-effort persistence
     }

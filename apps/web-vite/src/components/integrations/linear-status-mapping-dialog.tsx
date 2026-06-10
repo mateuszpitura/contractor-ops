@@ -1,4 +1,3 @@
-import { WorkbenchDataTable } from '../table-kit/workbench-data-table.js';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import {
   Dialog,
@@ -26,8 +25,8 @@ import {
 import type { ColumnDef } from '@tanstack/react-table';
 import { AlertTriangle, Loader2 } from 'lucide-react';
 import { memo, useCallback, useMemo, useState } from 'react';
-
 import { tKey } from '../../i18n/typed-keys.js';
+import { WorkbenchDataTable } from '../table-kit/workbench-data-table.js';
 import { useLinearStatusMappingDialog } from './hooks/use-linear-status-mapping-dialog.js';
 import { WORKFLOW_STATUS_VALUES } from './status-mapping.constants.js';
 

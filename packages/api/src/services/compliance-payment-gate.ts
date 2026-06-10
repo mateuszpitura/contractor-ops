@@ -1,14 +1,16 @@
 // ---------------------------------------------------------------------------
-// Phase 72 · COMPL-05 — Single payment-block guard.
+// Single payment-block guard.
 // ---------------------------------------------------------------------------
 
+import type {
+  PaymentEligibilityBlockedItem,
+  PaymentEligibilityContractorReason,
+  PaymentEligibilityItemReason,
+  PaymentEligibilityResult,
+} from '@contractor-ops/compliance-policy';
 import {
   evaluatePaymentEligibility,
   getDocumentTypeLabelKey,
-  type PaymentEligibilityBlockedItem,
-  type PaymentEligibilityContractorReason,
-  type PaymentEligibilityItemReason,
-  type PaymentEligibilityResult,
 } from '@contractor-ops/compliance-policy';
 import type { Prisma } from '@contractor-ops/db';
 import { prisma } from '@contractor-ops/db';

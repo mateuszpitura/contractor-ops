@@ -17,8 +17,8 @@ import { ArrowRight, Settings, Unlink, Unplug } from 'lucide-react';
 import { Link } from '../../i18n/navigation.js';
 import { tKey } from '../../i18n/typed-keys.js';
 import { ZatcaBrandIcon } from '../integrations/brand-icons.js';
-import { useZatcaStatusCard } from './hooks/use-zatca-status-card.js';
 import type { useZatcaStatusCard as UseZatcaStatusCard } from './hooks/use-zatca-status-card.js';
+import { useZatcaStatusCard } from './hooks/use-zatca-status-card.js';
 import { OnboardingWizard } from './onboarding-wizard.js';
 
 type HookResult = ReturnType<typeof UseZatcaStatusCard>;

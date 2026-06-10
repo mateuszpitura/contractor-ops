@@ -1,8 +1,8 @@
 import { render, screen, setup } from '@/test/test-utils';
 
 import {
-  EInvoiceComplianceSummaryTileView,
   EInvoiceComplianceSummaryTileSkeleton,
+  EInvoiceComplianceSummaryTileView,
 } from '../einvoice-compliance-summary-tile';
 
 describe('EInvoiceComplianceSummaryTile', () => {

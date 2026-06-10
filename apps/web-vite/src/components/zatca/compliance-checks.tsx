@@ -3,8 +3,8 @@ import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { Progress } from '@contractor-ops/ui/components/shadcn/progress';
 import { ArrowLeft, ArrowRight, Check, Loader2, X } from 'lucide-react';
 import type { ReactNode } from 'react';
-import { useComplianceChecks } from './hooks/use-compliance-checks.js';
 import type { useComplianceChecks as UseComplianceChecks } from './hooks/use-compliance-checks.js';
+import { useComplianceChecks } from './hooks/use-compliance-checks.js';
 
 type HookResult = ReturnType<typeof UseComplianceChecks>;
 type T = HookResult['t'];

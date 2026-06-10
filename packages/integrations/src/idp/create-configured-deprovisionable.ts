@@ -6,9 +6,9 @@
 // `withOrgGridToken` mutate the instance). Concurrent saga steps must NOT
 // share a registry instance — this factory creates a new adapter per call.
 
+import type { BaseAdapter } from '../adapters/base-adapter.js';
 import { GoogleWorkspaceAdapter } from '../adapters/google-workspace-adapter.js';
 import { SlackAdapter } from '../adapters/slack-adapter.js';
-import type { BaseAdapter } from '../adapters/base-adapter.js';
 import type { Deprovisionable } from '../types/deprovisionable.js';
 
 export type TokenConfiguredDeprovisionProvider = 'GOOGLE_WORKSPACE' | 'SLACK';
@@ -27,8 +27,8 @@ export function createConfiguredDeprovisionableAdapter(
     case 'SLACK':
       return new SlackAdapter().withOrgGridToken(accessToken);
     default: {
-      const _exhaustive: never = provider;
-      throw new Error(`Unknown deprovisioning provider: ${String(_exhaustive)}`);
+      const Exhaustive: never = provider;
+      throw new Error(`Unknown deprovisioning provider: ${String(Exhaustive)}`);
     }
   }
 }

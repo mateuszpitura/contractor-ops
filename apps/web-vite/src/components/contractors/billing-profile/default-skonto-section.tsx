@@ -22,8 +22,8 @@ import { Loader2, Trash2 } from 'lucide-react';
 import { useCallback, useState } from 'react';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
-import { useDefaultSkonto } from '../hooks/use-default-skonto.js';
 import type { useDefaultSkonto as UseDefaultSkonto } from '../hooks/use-default-skonto.js';
+import { useDefaultSkonto } from '../hooks/use-default-skonto.js';
 
 export interface DefaultSkontoSectionProps {
   billingProfileId: string;

@@ -1,6 +1,4 @@
-import { formatExtractedTotalMinor } from '../../../lib/money.js';
 import { WORKBENCH_DATA_TABLE_CLASS } from '@contractor-ops/ui';
-import { WorkbenchDataTable } from '../../table-kit/workbench-data-table.js';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import type { ColumnDef } from '@tanstack/react-table';
 import { Inbox, RefreshCw, Upload } from 'lucide-react';
@@ -8,11 +6,14 @@ import { useCallback, useMemo, useState } from 'react';
 import { Link } from '../../../i18n/navigation.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { useDateFormatter } from '../../../lib/format/use-date-formatter.js';
-import { useIntakeList, type IntakeRow } from '../hooks/use-intake-list.js';
-import { IntakeUploadDialog } from './intake-upload-dialog.js';
+import { formatExtractedTotalMinor } from '../../../lib/money.js';
+import { WorkbenchDataTable } from '../../table-kit/workbench-data-table.js';
+import type { IntakeRow } from '../hooks/use-intake-list.js';
+import { useIntakeList } from '../hooks/use-intake-list.js';
 import { IntakeFilterChips } from './intake-filter-chips.js';
 import { IntakeProfileLevelBadge } from './intake-profile-level-badge.js';
 import { IntakeStatusPill } from './intake-status-pill.js';
+import { IntakeUploadDialog } from './intake-upload-dialog.js';
 import { IntakeValidationStatusPill } from './intake-validation-status-pill.js';
 
 export interface IntakeListViewProps {
@@ -82,8 +83,10 @@ export function IntakeListView({ list }: IntakeListViewProps) {
         header: () => <span className="block text-end">{tColumn('total')}</span>,
         cell: ({ row }) => (
           <span className="block text-end font-mono tabular-nums">
-            {formatExtractedTotalMinor(row.original.extractedTotalMinor, row.original.extractedCurrency) ??
-              '—'}
+            {formatExtractedTotalMinor(
+              row.original.extractedTotalMinor,
+              row.original.extractedCurrency,
+            ) ?? '—'}
           </span>
         ),
       },

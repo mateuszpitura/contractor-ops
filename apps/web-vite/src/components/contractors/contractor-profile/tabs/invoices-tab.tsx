@@ -21,10 +21,8 @@ import type { InvoiceRow } from '../../../invoices/invoice-table/columns.js';
 import { getColumns } from '../../../invoices/invoice-table/columns.js';
 import { InvoiceUploadArea } from '../../../invoices/invoice-upload-area.js';
 import { renderEmptyStateAction } from '../../../shared/atelier-bridges.js';
-import {
-  useContractorTabInvoices,
-  type useContractorTabInvoices as UseContractorTabInvoices,
-} from '../../hooks/use-contractor-tab-invoices.js';
+import type { useContractorTabInvoices as UseContractorTabInvoices } from '../../hooks/use-contractor-tab-invoices.js';
+import { useContractorTabInvoices } from '../../hooks/use-contractor-tab-invoices.js';
 
 const PAGE_SIZE = 25;
 

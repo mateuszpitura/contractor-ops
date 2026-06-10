@@ -34,8 +34,8 @@ import { Link } from '../../../i18n/navigation.js';
 import { tDynLoose } from '../../../i18n/typed-keys.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { enumKey } from '../../../lib/enum-key.js';
-import { formatAmount } from '../../../lib/money.js';
 import { canViewSensitivePii, maskTaxId } from '../../../lib/mask-pii.js';
+import { formatAmount } from '../../../lib/money.js';
 import { useInvoiceManualMatch } from '../hooks/use-invoice-manual-match.js';
 
 // ---------------------------------------------------------------------------

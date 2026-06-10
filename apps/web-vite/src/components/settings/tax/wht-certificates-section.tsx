@@ -28,10 +28,8 @@ import {
 import { Download, Eye, Loader2 } from 'lucide-react';
 import { useCallback } from 'react';
 import { formatMinorUnits } from '../../../lib/money.js';
-import {
-  useWhtCertificatesSection,
-  type useWhtCertificatesSection as UseWhtCertificatesSection,
-} from './hooks/use-wht-certificates-section.js';
+import type { useWhtCertificatesSection as UseWhtCertificatesSection } from './hooks/use-wht-certificates-section.js';
+import { useWhtCertificatesSection } from './hooks/use-wht-certificates-section.js';
 
 export type WhtCertificatesSectionProps = ReturnType<typeof UseWhtCertificatesSection>;
 

@@ -2,9 +2,9 @@ import { render, screen } from '@/test/test-utils';
 
 import type { TaxRateOption } from '../hooks/use-vat-rates';
 import {
-  VatRateSelectorView,
   VatRateSelectorEmpty,
   VatRateSelectorSkeleton,
+  VatRateSelectorView,
 } from '../vat-rate-selector';
 
 const sampleRates: TaxRateOption[] = [

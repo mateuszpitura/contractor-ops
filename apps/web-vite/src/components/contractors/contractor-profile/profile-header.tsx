@@ -27,14 +27,12 @@ import { useTranslations } from '../../../i18n/useTranslations.js';
 import { getAvatarInitials } from '../../../lib/avatar-initials.js';
 import { enumKey } from '../../../lib/enum-key.js';
 import { ContractWizardDialog } from '../../contracts/contract-wizard/wizard-dialog.js';
+import { OffboardingTrajectoryBannerWired } from '../../saudization/offboarding-trajectory-banner.js';
 import { TemplatePickerDialog } from '../../workflows/template-picker-dialog.js';
 import type { ContractorAction } from '../actions.js';
 import { getProfileContractorActions } from '../actions.js';
-import {
-  useContractorProfileActions,
-  type useContractorProfileActions as UseContractorProfileActions,
-} from '../hooks/use-contractor-profile.js';
-import { OffboardingTrajectoryBannerWired } from '../../saudization/offboarding-trajectory-banner.js';
+import type { useContractorProfileActions as UseContractorProfileActions } from '../hooks/use-contractor-profile.js';
+import { useContractorProfileActions } from '../hooks/use-contractor-profile.js';
 
 type LifecycleStage = 'DRAFT' | 'ONBOARDING' | 'ACTIVE' | 'OFFBOARDING' | 'ENDED';
 

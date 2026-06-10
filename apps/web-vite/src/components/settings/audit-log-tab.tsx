@@ -16,9 +16,8 @@ import { tDynLoose } from '../../i18n/typed-keys';
 import { enumKey } from '../../lib/enum-key';
 import { renderEmptyStateAction } from '../shared/atelier-bridges';
 import { AuditLogTable } from './audit-log/data-table.js';
-import { useAuditLogTab } from './hooks/use-audit-log-tab.js';
 import type { useAuditLogTab as UseAuditLogTab } from './hooks/use-audit-log-tab.js';
-import { AUDIT_LOG_PAGE_SIZE } from './hooks/use-audit-log-tab.js';
+import { AUDIT_LOG_PAGE_SIZE, useAuditLogTab } from './hooks/use-audit-log-tab.js';
 
 function ActorOptionButton({
   id,

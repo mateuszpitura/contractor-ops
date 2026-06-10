@@ -62,10 +62,11 @@ function uiWorkflowMode(text) {
 
 function isUiTargetPath(filePath) {
   const p = filePath.replace(/\\/g, '/');
-  return (
-    (p.includes('apps/web/') || p.includes('packages/ui/')) &&
-    /\.(tsx|css)$/.test(p)
-  );
+  const inUiApp =
+    p.includes('apps/web-vite/') ||
+    p.includes('apps/landing/') ||
+    p.includes('packages/ui/');
+  return inUiApp && /\.(tsx|css)$/.test(p);
 }
 
 function fileExists(filePath) {

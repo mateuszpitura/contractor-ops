@@ -1,9 +1,6 @@
-import { z } from 'zod';
 import { describe, expect, it } from 'vitest';
-import {
-  integrationProcedure,
-  integrationSettingsProcedure,
-} from '../integration-procedure';
+import { z } from 'zod';
+import { integrationProcedure, integrationSettingsProcedure } from '../integration-procedure';
 
 describe('integrationProcedure', () => {
   it('returns a chainable procedure with query and mutation builders', () => {

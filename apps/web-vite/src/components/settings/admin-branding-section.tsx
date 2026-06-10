@@ -14,8 +14,8 @@ import { Loader2, Save, Upload } from 'lucide-react';
 import { useCallback } from 'react';
 import { BrandColorPicker } from './brand-color-picker';
 import { BrandPreviewStrip } from './brand-preview-strip';
-import { useAdminBrandingSection } from './hooks/use-admin-branding-section.js';
 import type { useAdminBrandingSection as UseAdminBrandingSection } from './hooks/use-admin-branding-section.js';
+import { useAdminBrandingSection } from './hooks/use-admin-branding-section.js';
 
 export type AdminBrandingSectionProps = ReturnType<typeof UseAdminBrandingSection>;
 

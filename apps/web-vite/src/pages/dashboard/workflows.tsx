@@ -19,18 +19,17 @@ import {
 import { Play, Plus } from 'lucide-react';
 import { parseAsString, useQueryState } from 'nuqs';
 import { Suspense, useCallback, useEffect, useState } from 'react';
-
-import { MyTasksList } from '../../components/workflows/my-tasks-list.js';
-import { TemplatePickerDialog } from '../../components/workflows/template-picker-dialog.js';
-import { TemplatesTableSection } from '../../components/workflows/templates/data-table.js';
-import { useWorkflowsList } from '../../components/workflows/hooks/use-workflows-list.js';
-import type { WorkflowRunRow } from '../../components/workflows/workflow-runs-table/columns.js';
-import { WorkflowRunsDataTableSection } from '../../components/workflows/workflow-runs-table/data-table.js';
-import { WorkflowSidePanel } from '../../components/workflows/workflow-side-panel.js';
 import { AnimateIn } from '../../components/shared/animate-in.js';
 import { renderEmptyStateAction } from '../../components/shared/atelier-bridges.js';
 import { PageLoadingSpinner } from '../../components/shared/page-loading-spinner.js';
 import { WorkbenchPageHeader } from '../../components/shared/workbench-page-header.js';
+import { useWorkflowsList } from '../../components/workflows/hooks/use-workflows-list.js';
+import { MyTasksList } from '../../components/workflows/my-tasks-list.js';
+import { TemplatePickerDialog } from '../../components/workflows/template-picker-dialog.js';
+import { TemplatesTableSection } from '../../components/workflows/templates/data-table.js';
+import type { WorkflowRunRow } from '../../components/workflows/workflow-runs-table/columns.js';
+import { WorkflowRunsDataTableSection } from '../../components/workflows/workflow-runs-table/data-table.js';
+import { WorkflowSidePanel } from '../../components/workflows/workflow-side-panel.js';
 import { useTranslations } from '../../i18n/useTranslations.js';
 
 function WorkflowsListPageContent() {

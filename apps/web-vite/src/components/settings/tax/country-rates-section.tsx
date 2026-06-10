@@ -28,12 +28,11 @@ import {
 import { AlertCircle, CheckCircle2, Loader2 } from 'lucide-react';
 import { useCallback } from 'react';
 import { tDyn } from '../../../i18n/typed-keys';
-import {
-  useCountryRatesSection,
-  SUPPORTED_COUNTRIES,
-  type SupportedCountry,
-  type useCountryRatesSection as UseCountryRatesSection,
+import type {
+  SupportedCountry,
+  useCountryRatesSection as UseCountryRatesSection,
 } from './hooks/use-country-rates-section.js';
+import { SUPPORTED_COUNTRIES, useCountryRatesSection } from './hooks/use-country-rates-section.js';
 
 export type CountryRatesSectionProps = ReturnType<typeof UseCountryRatesSection>;
 

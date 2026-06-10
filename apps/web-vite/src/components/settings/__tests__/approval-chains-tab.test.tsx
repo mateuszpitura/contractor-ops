@@ -108,7 +108,9 @@ describe('ApprovalChainsTabView', () => {
 
   it('renders the delete confirm body when deletingChainId is set', () => {
     render(
-      <ApprovalChainsTabView {...buildHook({ chains: [sampleChain], deletingChainId: 'chain-1' })} />,
+      <ApprovalChainsTabView
+        {...buildHook({ chains: [sampleChain], deletingChainId: 'chain-1' })}
+      />,
     );
 
     expect(screen.getByText('approvals.deleteConfirm.title')).toBeInTheDocument();

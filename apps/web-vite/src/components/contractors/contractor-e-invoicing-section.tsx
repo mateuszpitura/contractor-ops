@@ -9,8 +9,8 @@ import {
 import { useState } from 'react';
 
 import { useTranslations } from '../../i18n/useTranslations.js';
-import { LeitwegIdInlineSelector } from './leitweg-id-inline-selector.js';
 import { useContractorEInvoicing } from './hooks/use-contractor-e-invoicing.js';
+import { LeitwegIdInlineSelector } from './leitweg-id-inline-selector.js';
 import { PeppolIdentifierFields } from './peppol-identifier-fields.js';
 
 export interface ContractorEInvoicingSectionProps {

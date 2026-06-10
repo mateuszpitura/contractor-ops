@@ -20,10 +20,8 @@ import {
 import { Loader2, ShieldCheck } from 'lucide-react';
 import type { ChangeEvent, KeyboardEvent } from 'react';
 import { useCallback, useRef } from 'react';
-import {
-  useKsefSetupDialog,
-  type useKsefSetupDialog as UseKsefSetupDialog,
-} from './hooks/use-ksef-setup-dialog.js';
+import type { useKsefSetupDialog as UseKsefSetupDialog } from './hooks/use-ksef-setup-dialog.js';
+import { useKsefSetupDialog } from './hooks/use-ksef-setup-dialog.js';
 
 interface KsefSetupDialogBaseProps {
   open: boolean;
@@ -168,7 +166,9 @@ export function KsefSetupDialogView({
 
 export function KsefSetupDialog({ open, onOpenChange, orgNip }: KsefSetupDialogBaseProps) {
   const dialog = useKsefSetupDialog({ onOpenChange, orgNip });
-  return <KsefSetupDialogView open={open} onOpenChange={onOpenChange} orgNip={orgNip} {...dialog} />;
+  return (
+    <KsefSetupDialogView open={open} onOpenChange={onOpenChange} orgNip={orgNip} {...dialog} />
+  );
 }
 
 interface KsefCertificateFieldProps {

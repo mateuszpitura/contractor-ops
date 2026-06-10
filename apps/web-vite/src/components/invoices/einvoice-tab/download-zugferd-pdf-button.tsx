@@ -51,6 +51,10 @@ interface DownloadZugferdPdfButtonProps {
 export function DownloadZugferdPdfButton({ invoiceId, className }: DownloadZugferdPdfButtonProps) {
   const { onDownload, isPending } = useDownloadZugferdPdf(invoiceId);
   return (
-    <DownloadZugferdPdfButtonView className={className} onDownload={onDownload} isPending={isPending} />
+    <DownloadZugferdPdfButtonView
+      className={className}
+      onDownload={onDownload}
+      isPending={isPending}
+    />
   );
 }

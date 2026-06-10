@@ -1,9 +1,9 @@
 import type { Prisma, PrismaClient } from '@contractor-ops/db';
+import type { CalendarProviderId } from '@contractor-ops/integrations';
 import {
   getCalendarEventAdapter,
   getCalendarProviderMeta,
   isCalendarProviderId,
-  type CalendarProviderId,
 } from '@contractor-ops/integrations';
 import { pLimit } from '@contractor-ops/integrations/services/concurrency';
 import { decryptCredentials } from '@contractor-ops/integrations/services/credential-service';
@@ -15,11 +15,11 @@ import type { CalendarPrismaClient } from './types';
 const log = createLogger({ service: 'calendar-event-service' });
 
 // ---------------------------------------------------------------------------
-// F-INT-09 — bound calendar provider fan-out
+// Bound calendar provider fan-out
 // ---------------------------------------------------------------------------
 //
 // `createCalendarEvent` / `updateCalendarEvent` / `deleteCalendarEvent` fan
-// out across every connected calendar (dual-push per D-12). For an org with
+// out across every connected calendar (dual-push across all connections). For an org with
 // many contractors and several calendar connections per user, an unbounded
 // `Promise.all` can saturate Google/Microsoft's per-process socket pool and
 // the Prisma pool simultaneously (the per-provider resilience layer already
@@ -94,7 +94,7 @@ interface DeleteCalendarEventInput {
 /**
  * Finds all CONNECTED calendar connections for the given organization.
  * Returns both personal connections (userId = given userId) and
- * org-level connections (userId = null) per D-12 dual-push requirement.
+ * org-level connections (userId = null) for dual-push coverage.
  */
 async function findCalendarConnections(
   prisma: CalendarPrismaClient,
@@ -144,13 +144,13 @@ async function findCalendarConnections(
 // ---------------------------------------------------------------------------
 
 /**
- * Creates a calendar event on all connected calendars (dual-push per D-12).
+ * Creates a calendar event on all connected calendars (dual-push across all connections).
  *
  * For each calendar connection, creates the event via the provider API
  * and stores an ExternalLink with cached metadata.
  *
  * Uses fire-and-forget pattern: logs errors but does not throw,
- * so calendar failures never block business mutations (D-11).
+ * so calendar failures never block business mutations.
  */
 export async function createCalendarEvent(
   prisma: CalendarPrismaClient,
@@ -166,7 +166,7 @@ export async function createCalendarEvent(
     );
 
     logRejected(results, 'create');
-    // safe-swallow: per-connection failures already logged by logRejected; calendar sync is fire-and-forget and must not block the business mutation (D-11)
+    // safe-swallow: per-connection failures already logged by logRejected; calendar sync is fire-and-forget and must not block the business mutation
   } catch (_error) {
     /* fire-and-forget */
   }
@@ -288,7 +288,7 @@ export async function updateCalendarEvent(
     );
 
     logRejected(results, 'update');
-    // safe-swallow: per-link failures already logged by logRejected; calendar sync is fire-and-forget and must not block the business mutation (D-11)
+    // safe-swallow: per-link failures already logged by logRejected; calendar sync is fire-and-forget and must not block the business mutation
   } catch (_error) {
     /* fire-and-forget */
   }
@@ -313,7 +313,7 @@ export async function deleteCalendarEvent(
     );
 
     logRejected(results, 'delete');
-    // safe-swallow: per-link failures already logged by logRejected; calendar sync is fire-and-forget and must not block the business mutation (D-11)
+    // safe-swallow: per-link failures already logged by logRejected; calendar sync is fire-and-forget and must not block the business mutation
   } catch (_error) {
     /* fire-and-forget */
   }

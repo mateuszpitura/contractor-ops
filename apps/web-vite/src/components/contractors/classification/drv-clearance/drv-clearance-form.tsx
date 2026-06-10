@@ -1,5 +1,4 @@
-// Phase 60 · CLASS-09 — DRV clearance create/edit form (shadcn Dialog + form).
-// See .planning/phases/60-classification-polish/60-UI-SPEC.md §CLASS-09.
+// DRV clearance create/edit form (shadcn Dialog + form).
 //
 // Zod validation mirrors the server schema in
 // packages/api/src/routers/statusfeststellungsverfahren.ts. Server-side
@@ -27,8 +26,11 @@ import {
 import { Textarea } from '@contractor-ops/ui/components/shadcn/textarea';
 import { useCallback, useId, useState } from 'react';
 import { useTranslations } from '../../../../i18n/useTranslations.js';
+import type {
+  Outcome,
+  useDrvClearanceFormMutations as UseDrvClearanceFormMutations,
+} from '../hooks/use-drv-clearance.js';
 import { useDrvClearanceFormMutations } from '../hooks/use-drv-clearance.js';
-import type { Outcome, useDrvClearanceFormMutations as UseDrvClearanceFormMutations } from '../hooks/use-drv-clearance.js';
 
 export interface DrvClearanceFormInitial {
   id: string;

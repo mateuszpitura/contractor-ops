@@ -17,9 +17,8 @@ import {
 } from '@contractor-ops/ui/components/shadcn/select';
 import { Loader2 } from 'lucide-react';
 import { useCallback, useState } from 'react';
-
-import { useTranslations } from '../../i18n/useTranslations.js';
 import type { TranslateFn } from '../../i18n/useTranslations.js';
+import { useTranslations } from '../../i18n/useTranslations.js';
 import { useTopUpCheckout } from './hooks/use-billing.js';
 
 const CREDIT_BUNDLES = [

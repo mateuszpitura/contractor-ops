@@ -1,5 +1,5 @@
-import type { SortingState } from '@tanstack/react-table';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
+import type { SortingState } from '@tanstack/react-table';
 import { useCallback, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
@@ -191,20 +191,16 @@ export function useInvoiceList(options: { onUpload: () => void }) {
     [setFilters],
   );
 
-  const {
-    selectedRows,
-    setSelectedRows,
-    sorting,
-    handleSortingChange,
-  } = useListDataTable<InvoiceRow>({
-    storageKey: STORAGE_KEY,
-    filters: {
-      sortBy: filters.sortBy,
-      sortOrder: (filters.sortOrder as 'asc' | 'desc') || 'desc',
-    },
-    onSortChange: handleSortChange,
-    defaultSortBy: 'receivedAt',
-  });
+  const { selectedRows, setSelectedRows, sorting, handleSortingChange } =
+    useListDataTable<InvoiceRow>({
+      storageKey: STORAGE_KEY,
+      filters: {
+        sortBy: filters.sortBy,
+        sortOrder: (filters.sortOrder as 'asc' | 'desc') || 'desc',
+      },
+      onSortChange: handleSortChange,
+      defaultSortBy: 'receivedAt',
+    });
 
   const clearFilters = useCallback(() => {
     void setFilters({

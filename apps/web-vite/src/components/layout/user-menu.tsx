@@ -46,9 +46,9 @@ import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { useDensity } from '../../hooks/use-density.js';
 import { Link } from '../../i18n/navigation.js';
 import { useTranslations } from '../../i18n/useTranslations.js';
-import { useUserMenu } from './hooks/use-user-menu.js';
 import type { Theme } from '../../providers/theme-provider.js';
 import { useTheme } from '../../providers/theme-provider.js';
+import { useUserMenu } from './hooks/use-user-menu.js';
 
 interface UserMenuProps {
   user: {

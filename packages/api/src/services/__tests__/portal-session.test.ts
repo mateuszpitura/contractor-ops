@@ -11,7 +11,7 @@ const { mockSessionCreate, mockSessionFindUnique, mockSessionDeleteMany } = vi.h
 }));
 
 vi.mock('@contractor-ops/db', () => {
-  const __mockDbPrisma = {
+  const MockDbPrisma = {
     portalSession: {
       create: mockSessionCreate,
       findUnique: mockSessionFindUnique,
@@ -19,11 +19,10 @@ vi.mock('@contractor-ops/db', () => {
     },
   };
   return {
-  withRlsTransactions: <T>(c: T) => c,
-  withRlsReads: <T>(c: T) => c,
-  prisma: __mockDbPrisma,
-  prismaRaw: __mockDbPrisma,
-
+    withRlsTransactions: <T>(c: T) => c,
+    withRlsReads: <T>(c: T) => c,
+    prisma: MockDbPrisma,
+    prismaRaw: MockDbPrisma,
   };
 });
 

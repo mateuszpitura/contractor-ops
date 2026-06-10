@@ -76,7 +76,9 @@ describe('ReminderRulesSection', () => {
 
   it('renders the empty state when there are no rules', async () => {
     const handleCreate = vi.fn();
-    const { user } = setup(<ReminderRulesSectionView {...buildHook({ rules: [], handleCreate })} />);
+    const { user } = setup(
+      <ReminderRulesSectionView {...buildHook({ rules: [], handleCreate })} />,
+    );
 
     expect(screen.getByText('reminderRules.emptyHeading')).toBeInTheDocument();
     expect(screen.getByText('reminderRules.emptyBody')).toBeInTheDocument();
@@ -107,7 +109,9 @@ describe('ReminderRulesSection', () => {
 
   it('opens the delete confirm dialog with rule body when deletingRuleId is set', () => {
     render(
-      <ReminderRulesSectionView {...buildHook({ rules: [sampleRule], deletingRuleId: 'rule-1' })} />,
+      <ReminderRulesSectionView
+        {...buildHook({ rules: [sampleRule], deletingRuleId: 'rule-1' })}
+      />,
     );
 
     expect(screen.getByText('reminderRules.deleteConfirm.title')).toBeInTheDocument();

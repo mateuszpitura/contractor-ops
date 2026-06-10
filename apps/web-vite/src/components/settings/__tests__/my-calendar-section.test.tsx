@@ -15,7 +15,7 @@ vi.mock('../../layout/feature-gate', () => ({
 
 import { render, screen } from '@/test/test-utils';
 import type { CalendarConnection, useMyCalendarSection } from '../hooks/use-my-calendar-section';
-import { MyCalendarSectionView, MyCalendarSectionSkeleton } from '../my-calendar-section';
+import { MyCalendarSectionSkeleton, MyCalendarSectionView } from '../my-calendar-section';
 
 type HookReturn = ReturnType<typeof useMyCalendarSection>;
 
@@ -64,7 +64,9 @@ describe('MyCalendarSectionView', () => {
 
   it('shows the connected badge and account when Google is connected', () => {
     render(
-      <MyCalendarSectionView {...buildHook({ googleConnection: connectedGoogle, eventCount: 4 })} />,
+      <MyCalendarSectionView
+        {...buildHook({ googleConnection: connectedGoogle, eventCount: 4 })}
+      />,
     );
 
     expect(screen.getByText('Connected')).toBeInTheDocument();

@@ -1,14 +1,14 @@
 // ---------------------------------------------------------------------------
-// Classification disclaimer dialog — Phase 58 Plan 05 Task 1 (D-12).
+// Classification disclaimer dialog
 // ---------------------------------------------------------------------------
 // Blocking AlertDialog that pre-empts the outcome page until the user ticks
 // the acknowledgement checkbox and confirms. Escape + overlay click are
-// disabled (Pitfall 6 — the disclaimer must not be bypassable by keyboard or
-// pointer). Initial focus lands on the checkbox so keyboard users never tab
-// through the confirm button first.
+// disabled — the disclaimer must not be bypassable by keyboard or pointer.
+// Initial focus lands on the checkbox so keyboard users never tab through
+// the confirm button first.
 //
 // Copy is rendered verbatim from packages/validators/src/legal/disclaimers.ts
-// (D-12 locked constants). Never duplicate these strings into messages/*.json —
+// (locked constants). Never duplicate these strings into messages/*.json —
 // the locked-phrases-guard test enforces absence.
 
 import {
@@ -33,10 +33,8 @@ import {
 import { AlertTriangle } from 'lucide-react';
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { useTranslations } from '../../../i18n/useTranslations.js';
-import {
-  useClassificationDisclaimerAck,
-  type useClassificationDisclaimerAck as UseClassificationDisclaimerAck,
-} from './hooks/use-classification-disclaimer.js';
+import type { useClassificationDisclaimerAck as UseClassificationDisclaimerAck } from './hooks/use-classification-disclaimer.js';
+import { useClassificationDisclaimerAck } from './hooks/use-classification-disclaimer.js';
 
 export type ClassificationCountryCode = 'GB' | 'DE';
 
@@ -94,7 +92,7 @@ export function ClassificationDisclaimerDialogView(props: ClassificationDisclaim
     setAcknowledged(checked === true);
   }, []);
 
-  // Escape-key bypass hardening (Pitfall 6 / D-12).
+  // Escape-key bypass hardening.
   // Base-UI AlertDialog is modal by default and does NOT dismiss on overlay
   // click. To also disable escape-key dismissal we intercept `onOpenChange`
   // (the base-ui equivalent of onEscapeKeyDown + onInteractOutside): every

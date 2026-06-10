@@ -1,6 +1,9 @@
-import type { CapabilityEnum, ScopeCapabilities } from '@contractor-ops/validators/scope-capabilities';
 import { Alert, AlertDescription, AlertTitle } from '@contractor-ops/ui/components/shadcn/alert';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import type {
+  CapabilityEnum,
+  ScopeCapabilities,
+} from '@contractor-ops/validators/scope-capabilities';
 import { AlertCircle } from 'lucide-react';
 import { useId } from 'react';
 import { useTranslations } from '../../i18n/useTranslations.js';

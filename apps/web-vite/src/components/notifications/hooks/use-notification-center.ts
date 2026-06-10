@@ -74,22 +74,16 @@ export function useNotificationCenter() {
   });
   const unreadCount = (unreadQuery.data as { count: number } | undefined)?.count ?? 0;
 
-  const markReadMutation = useResourceMutation(
-    trpc.notification.markRead.mutationOptions(),
-    {
-      successMessage: toasts.done(),
-      invalidate: [{ queryKey: [['notification']] }],
-    },
-  );
+  const markReadMutation = useResourceMutation(trpc.notification.markRead.mutationOptions(), {
+    successMessage: toasts.done(),
+    invalidate: [{ queryKey: [['notification']] }],
+  });
 
-  const markAllReadMutation = useResourceMutation(
-    trpc.notification.markAllRead.mutationOptions(),
-    {
-      successMessage: t('markedAllRead'),
-      errorMessage: t('errors.failedToMarkRead'),
-      invalidate: [{ queryKey: [['notification']] }],
-    },
-  );
+  const markAllReadMutation = useResourceMutation(trpc.notification.markAllRead.mutationOptions(), {
+    successMessage: t('markedAllRead'),
+    errorMessage: t('errors.failedToMarkRead'),
+    invalidate: [{ queryKey: [['notification']] }],
+  });
 
   const handleItemClick = useCallback(
     (notification: NotificationData) => {

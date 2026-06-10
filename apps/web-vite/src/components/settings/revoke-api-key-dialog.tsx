@@ -10,11 +10,8 @@ import {
   AlertDialogTitle,
 } from '@contractor-ops/ui/components/shadcn/alert-dialog';
 import { Loader2, Trash2 } from 'lucide-react';
-
-import {
-  useRevokeKeyDialog,
-  type useRevokeKeyDialog as UseRevokeKeyDialog,
-} from './hooks/use-api-keys-tab.js';
+import type { useRevokeKeyDialog as UseRevokeKeyDialog } from './hooks/use-api-keys-tab.js';
+import { useRevokeKeyDialog } from './hooks/use-api-keys-tab.js';
 
 interface RevokeKeyDialogShellProps {
   keyId: string;
@@ -59,12 +56,7 @@ export function RevokeKeyDialogView({
   );
 }
 
-export function RevokeKeyDialog({
-  keyId,
-  keyName,
-  open,
-  onOpenChange,
-}: RevokeKeyDialogShellProps) {
+export function RevokeKeyDialog({ keyId, keyName, open, onOpenChange }: RevokeKeyDialogShellProps) {
   const dialog = useRevokeKeyDialog({ keyId, keyName, onOpenChange });
   return (
     <RevokeKeyDialogView

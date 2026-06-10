@@ -7,11 +7,7 @@
 import { describe, expect, it, vi } from 'vitest';
 
 vi.mock('../generate-sds-button.js', () => ({
-  GenerateSdsButton: ({
-    classificationAssessmentId,
-  }: {
-    classificationAssessmentId: string;
-  }) => (
+  GenerateSdsButton: ({ classificationAssessmentId }: { classificationAssessmentId: string }) => (
     <button
       type="button"
       data-testid="generate-sds-btn"

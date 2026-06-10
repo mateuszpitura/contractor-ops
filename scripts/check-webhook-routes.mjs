@@ -212,6 +212,7 @@ const SIGNATURE_TOKENS = [
   'verifyOAuthState',
   'consumeOAuthChallenge',
   'guardQStashRequest', // QStash Receiver HMAC
+  'defineQStashRoute', // QStash route helper — applies guardQStashRequest internally (lib/qstash-route.ts)
   'verifyWebhookSignature',
   'parseWebhookPayload', // adapter-level signature parse (storecove/multi-provider)
   'verifySignature',
@@ -228,6 +229,11 @@ const SIGNATURE_TOKENS = [
 ];
 
 const METHOD_PATH_RE = /\bapp\.(get|post|put|patch|delete)\b[\s\S]{0,800}?(['"`])(\/[^'"`]*)\2/g;
+
+// QStash callback routes registered via the `defineQStashRoute(app, { path })`
+// helper are always POST. The generic `app.<method>(...)` regex above can't see
+// them because the verb is encapsulated inside the helper.
+const QSTASH_ROUTE_RE = /\bdefineQStashRoute\b[\s\S]{0,400}?\bpath:\s*(['"`])(\/[^'"`]*)\1/g;
 
 /** @returns {string[]} list of .ts files under a root (file or dir) */
 function collectFiles(rootRel) {
@@ -271,6 +277,14 @@ function discoverRoutes() {
       for (const m of text.matchAll(METHOD_PATH_RE)) {
         const method = m[1].toUpperCase();
         const path = m[3];
+        const key = `${method} ${path}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        routes.push({ key, method, path, file: rel });
+      }
+      for (const m of text.matchAll(QSTASH_ROUTE_RE)) {
+        const method = 'POST';
+        const path = m[2];
         const key = `${method} ${path}`;
         if (seen.has(key)) continue;
         seen.add(key);

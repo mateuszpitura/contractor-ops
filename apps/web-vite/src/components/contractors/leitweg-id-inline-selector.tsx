@@ -9,8 +9,8 @@ import { useCallback, useState } from 'react';
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { cn } from '../../lib/utils.js';
 import { LeitwegIdCreateDialog } from '../settings/e-invoicing/leitweg-id-create-dialog.js';
-import { useLeitwegIdInlineSelector } from './hooks/use-leitweg-id-inline-selector.js';
 import type { useLeitwegIdInlineSelector as UseLeitwegIdInlineSelector } from './hooks/use-leitweg-id-inline-selector.js';
+import { useLeitwegIdInlineSelector } from './hooks/use-leitweg-id-inline-selector.js';
 
 export interface LeitwegIdInlineSelectorProps {
   mode: 'contractor' | 'contract';

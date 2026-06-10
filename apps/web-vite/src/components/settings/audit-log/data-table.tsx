@@ -1,5 +1,4 @@
 import { AuditLogIllustration } from '@contractor-ops/ui';
-import { WorkbenchDataTable } from '../../table-kit/workbench-data-table.js';
 import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
 import {
   Tooltip,
@@ -11,11 +10,11 @@ import { format, formatDistanceToNow } from 'date-fns';
 import { ArrowDown, ArrowUp, ArrowUpDown, ChevronRight } from 'lucide-react';
 import type * as React from 'react';
 import { useCallback, useMemo } from 'react';
-
 import { Link } from '../../../i18n/navigation';
 import { tDynLoose } from '../../../i18n/typed-keys';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { enumKey } from '../../../lib/enum-key';
+import { WorkbenchDataTable } from '../../table-kit/workbench-data-table.js';
 import { AuditLogDiffViewer } from '../audit-log-diff-viewer';
 
 const stopPropagation = (e: React.SyntheticEvent) => e.stopPropagation();

@@ -1,8 +1,9 @@
 /**
  * Factory for integration MSW handler registration — reduces per-provider boilerplate.
  */
-import { selectHandlers } from './msw/handlers/index.js';
+
 import type { ProviderName } from './msw/handlers/index.js';
+import { selectHandlers } from './msw/handlers/index.js';
 import type { HandlerOptions } from './msw/types.js';
 
 export type IntegrationMswProviderConfig = {

@@ -3408,7 +3408,8 @@
     "approvalStillComplianceBlocked": "Wykonawca nadal ma wygasły, blokujący dokument zgodności; nie można wznowić zatwierdzenia.",
     "deprovisioningProviderSignoffPending": "Ta funkcja deprowizji dostawcy wymaga zatwierdzenia przed aktywacją.",
     "workflowAssigneeNotMember": "Wybrany przypisany użytkownik nie jest członkiem tej organizacji.",
-    "importJobStateConflict": "Stan zadania importu uległ zmianie; odśwież i spróbuj ponownie."
+    "importJobStateConflict": "Stan zadania importu uległ zmianie; odśwież i spróbuj ponownie.",
+    "importProjectFailureRetryViaWizard": "Nieudane importy projektów należy ponowić z kreatora importu."
   },
   "Compliance": {
     "paymentBlockModal": {
@@ -7382,6 +7383,43 @@
       "itAdmin": "Zarządzanie członkami, integracjami i ustawieniami systemu",
       "externalAccountant": "Dostęp tylko do odczytu danych finansowych i raportów",
       "readonly": "Podgląd wykonawców, umów, faktur i raportów"
+    }
+  },
+  "OrganizationOnboarding": {
+    "eyebrow": "Witamy w Contractor Ops",
+    "title": "Utwórz organizację",
+    "subtitle": "Skonfiguruj przestrzeń roboczą, aby zarządzać wykonawcami, umowami i fakturami.",
+    "nav": {
+      "step1Label": "Organizacja",
+      "step2Label": "Gotowe"
+    },
+    "step1": {
+      "heading": "Dane organizacji",
+      "subtitle": "Możesz je później zmienić w ustawieniach.",
+      "nameLabel": "Nazwa organizacji",
+      "namePlaceholder": "Acme Studio",
+      "countryLabel": "Kraj rozliczeniowy",
+      "countryHelp": "Określa region przechowywania danych. Nie można tego później zmienić.",
+      "countryPlaceholder": "Wybierz kraj",
+      "submit": "Utwórz organizację",
+      "submitting": "Tworzenie…"
+    },
+    "step2": {
+      "heading": "Wszystko gotowe, {orgName}",
+      "subtitle": "Twoja przestrzeń robocza jest gotowa. Oto, co możesz skonfigurować dalej.",
+      "comingSoon": "Wkrótce",
+      "next": {
+        "inviteTitle": "Zaproś zespół",
+        "inviteDesc": "Dodaj członków zespołu i przypisz role.",
+        "importTitle": "Zaimportuj dane",
+        "importDesc": "Przenieś wykonawców i projekty ze swoich narzędzi.",
+        "billingTitle": "Skonfiguruj płatności",
+        "billingDesc": "Wybierz plan i dodaj metodę płatności."
+      },
+      "finish": "Przejdź do panelu"
+    },
+    "errors": {
+      "createFailed": "Nie udało się utworzyć organizacji. Spróbuj ponownie."
     }
   },
   "Validation": {

@@ -49,17 +49,17 @@ import { tDynLoose } from '../../../i18n/typed-keys.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { enumKey } from '../../../lib/enum-key.js';
 import { useDateFormatter } from '../../../lib/format/use-date-formatter.js';
-import { DocLinksSection } from '../../integrations/doc-links-section.js';
 import { DeprovisioningTriggerWired } from '../../idp/deprovisioning-trigger.js';
-import {
-  useTaskCardRun,
-  type useReassignTaskPopover,
-  type useSkipTaskPopover,
-  type useTaskCardRun as UseTaskCardRun,
+import { DocLinksSection } from '../../integrations/doc-links-section.js';
+import type {
+  useTaskCardRun as UseTaskCardRun,
+  useReassignTaskPopover,
+  useSkipTaskPopover,
 } from '../hooks/use-task-card-run.js';
+import { useTaskCardRun } from '../hooks/use-task-card-run.js';
+import { LinearTaskIssueChip } from './linear-task-issue-chip.js';
 import { TaskAttachments } from './task-attachments.js';
 import { TaskComments } from './task-comments.js';
-import { LinearTaskIssueChip } from './linear-task-issue-chip.js';
 
 const statusIconMap: Record<
   string,
@@ -116,9 +116,9 @@ interface TaskCardRunProps {
   attachmentsSection?: ReactNode;
   commentsSection?: ReactNode;
   /**
-   * Inline deprovisioning trigger for ACCESS_REVOKE tasks (Phase 81 D-01). The
-   * container injects a fully-wired DeprovisioningTriggerContainer element here;
-   * the card stays presentational and never calls tRPC (data-layer guard).
+   * Inline deprovisioning trigger for ACCESS_REVOKE tasks. The container injects
+   * a fully-wired DeprovisioningTriggerContainer element here; the card stays
+   * presentational and never calls tRPC (data-layer guard).
    */
   triggerSlot?: ReactNode;
 }

@@ -3,10 +3,7 @@
  */
 
 import type { Prisma } from '@contractor-ops/db';
-import {
-  entityIdSchema,
-  invoiceManualMatchSchema,
-} from '@contractor-ops/validators';
+import { entityIdSchema, invoiceManualMatchSchema } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import * as E from '../../errors';
@@ -18,8 +15,6 @@ import { runAutoMatch } from '../../services/invoice-matching';
 import { applyReverseCharge } from '../../services/reverse-charge.service';
 
 export const invoiceMatchingRouter = router({
-
-
   /**
    * Submit an invoice for automatic matching.
    * Validates RECEIVED status, runs auto-match pipeline, creates match result,
@@ -131,7 +126,6 @@ export const invoiceMatchingRouter = router({
       return updated;
     }),
 
-
   /**
    * Manually match an invoice to a contractor and optionally a contract.
    * Creates a MANUALLY_CONFIRMED match result.
@@ -226,7 +220,6 @@ export const invoiceMatchingRouter = router({
       return updated;
     }),
 
-
   /**
    * Dismiss a duplicate flag from an invoice's flagsJson.
    * Removes DUPLICATE_SUSPECTED from the flags array.
@@ -263,7 +256,6 @@ export const invoiceMatchingRouter = router({
       return updated;
     }),
 
-
   /**
    * Search contractors by legalName or taxId (for manual matching UI).
    * Empty query returns the first `take` contractors (browse list); non-empty
@@ -274,8 +266,8 @@ export const invoiceMatchingRouter = router({
     .input(
       z.object({
         query: z.string().max(100).default(''),
-        // F-DB-09: bound autocomplete to a documented cap. Default 10 keeps
-        // dropdown UX snappy; max 200 leaves headroom for rare bulk uses.
+        // Bound autocomplete to a documented cap. Default 10 keeps dropdown
+        // UX snappy; max 200 leaves headroom for rare bulk uses.
         take: z.number().int().min(1).max(200).default(10),
       }),
     )
@@ -307,7 +299,6 @@ export const invoiceMatchingRouter = router({
 
       return contractors;
     }),
-
 
   /**
    * Get active/expiring contracts for a given contractor (for manual matching UI).

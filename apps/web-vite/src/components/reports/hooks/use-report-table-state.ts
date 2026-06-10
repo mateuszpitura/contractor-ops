@@ -18,18 +18,14 @@ export function useReportTableState<T>({
 }: UseReportTableStateOptions) {
   const resolvedSortOrder = sortOrder === 'asc' ? 'asc' : 'desc';
 
-  const {
-    columnVisibility,
-    setColumnVisibility,
-    sorting,
-    handleSortingChange,
-  } = useListDataTable<T>({
-    storageKey: STORAGE_KEY,
-    filters: { sortBy, sortOrder: resolvedSortOrder },
-    onSortChange: (nextSortBy, nextSortOrder) => onSortChange(nextSortBy, nextSortOrder),
-    defaultSortBy: sortBy,
-    defaultSortOrder: resolvedSortOrder,
-  });
+  const { columnVisibility, setColumnVisibility, sorting, handleSortingChange } =
+    useListDataTable<T>({
+      storageKey: STORAGE_KEY,
+      filters: { sortBy, sortOrder: resolvedSortOrder },
+      onSortChange: (nextSortBy, nextSortOrder) => onSortChange(nextSortBy, nextSortOrder),
+      defaultSortBy: sortBy,
+      defaultSortOrder: resolvedSortOrder,
+    });
 
   return {
     sorting,

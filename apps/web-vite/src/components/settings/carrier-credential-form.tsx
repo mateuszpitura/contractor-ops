@@ -12,10 +12,8 @@ import { Label } from '@contractor-ops/ui/components/shadcn/label';
 import { Eye, EyeOff, Loader2, Save, Truck, Wifi } from 'lucide-react';
 import type * as React from 'react';
 import { useCallback, useState } from 'react';
-import {
-  useCarrierCredentialForm,
-  type useCarrierCredentialForm as UseCarrierCredentialForm,
-} from './hooks/use-carrier-credential-form.js';
+import type { useCarrierCredentialForm as UseCarrierCredentialForm } from './hooks/use-carrier-credential-form.js';
+import { useCarrierCredentialForm } from './hooks/use-carrier-credential-form.js';
 
 interface CarrierCredentialFormBaseProps {
   carrier: 'dpd' | 'ups';

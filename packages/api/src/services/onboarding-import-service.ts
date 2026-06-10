@@ -1,8 +1,8 @@
-import { fetchUsersFromIntegrationSource } from '@contractor-ops/integrations';
-import type { TenantScopedDb } from '../lib/tenant-db';
 import type { UserSourceProviderId } from '@contractor-ops/integrations';
+import { fetchUsersFromIntegrationSource } from '@contractor-ops/integrations';
 import type { MergedPerson } from '@contractor-ops/validators';
 import { z } from 'zod';
+import type { TenantScopedDb } from '../lib/tenant-db';
 
 // ---------------------------------------------------------------------------
 // Types

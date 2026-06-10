@@ -7,31 +7,28 @@ import { TRPCError } from '@trpc/server';
 import { CLASSIFICATION_ASSESSMENT_NOT_FOUND } from '../../errors';
 import { router } from '../../init';
 import { findOrThrow } from '../../lib/find-or-throw';
+import type { Outcome, Prisma } from './classification-shared';
 import {
-  CLASSIFICATION_ALREADY_SUBMITTED,
-  CLASSIFICATION_ONLY_COMPLETED_CAN_ACKNOWLEDGE,
-  POLICY_RULE_SET_VERSION,
   acknowledgeDisclaimerInput,
   buildQuestionsSnapshot,
+  CLASSIFICATION_ALREADY_SUBMITTED,
+  CLASSIFICATION_ONLY_COMPLETED_CAN_ACKNOWLEDGE,
   contractorUpdateProcedure,
   extractOutcomeKind,
   getProfileForCountry,
   mapCountryCodeToJurisdiction,
   materialiseFromPolicy,
   outcomeSchema,
+  POLICY_RULE_SET_VERSION,
   releaseHeldApprovalsForContractor,
   submitInput,
   supersedeAndMaterialise,
-  type Outcome,
-  type Prisma,
 } from './classification-shared';
 
 export const classificationSubmitRouter = router({
-
-
   submit: contractorUpdateProcedure.input(submitInput).mutation(async ({ ctx, input }) => {
-    // Phase 71 D-10 — entire body wrapped in $transaction. Atomicity guarantees
-    // the assessment update + the row materialisation/supersession are all-or-nothing.
+    // Entire body wrapped in $transaction. Atomicity guarantees the assessment
+    // update + the row materialisation/supersession are all-or-nothing.
     // DO NOT extract any logic out of this transaction without re-evaluating
     // supersession atomicity.
     return ctx.db.$transaction(async tx => {
@@ -59,7 +56,7 @@ export const classificationSubmitRouter = router({
       } catch (err) {
         // Engine errors (MissingAnswerError, malformed answers, etc.) surface
         // as a typed BAD_REQUEST so the wizard can highlight the offending
-        // questions instead of leaking a stack trace (Pitfall 5).
+        // questions instead of leaking a stack trace.
         throw new TRPCError({
           code: 'BAD_REQUEST',
           message:
@@ -82,7 +79,7 @@ export const classificationSubmitRouter = router({
 
       const now = new Date();
 
-      // Phase 71 D-10 — find prior completed assessment for outcome-change detection.
+      // Find prior completed assessment for outcome-change detection.
       const prior = await tx.classificationAssessment.findFirst({
         where: {
           contractorAssignmentId: row.contractorAssignmentId,
@@ -98,14 +95,14 @@ export const classificationSubmitRouter = router({
           outcome: validatedOutcome,
           questionsSnapshot: snapshot as unknown as Prisma.InputJsonValue,
           completedAt: now,
-          // Literal `immutableAfter: new Date` — D-04 append-only marker.
+          // Literal `immutableAfter: new Date` — append-only marker.
           immutableAfter: new Date(now),
-          // Phase 71 D-03 — snapshot policy rule set version onto every completed assessment.
+          // Snapshot policy rule set version onto every completed assessment.
           policyRuleSetVersion: POLICY_RULE_SET_VERSION,
         },
       });
 
-      // Phase 71 D-10 — supersession-on-outcome-change OR first-classification materialisation.
+      // Supersession-on-outcome-change OR first-classification materialisation.
       // EngagementContext.sector is null today (ContractorAssignment has no sector column);
       // de.eight_b_estg@v1 predicate returns false for null sector → conservative.
       const jurisdiction = mapCountryCodeToJurisdiction(row.countryCode);
@@ -146,8 +143,8 @@ export const classificationSubmitRouter = router({
               engagement,
               reason: 'CLASSIFICATION_OUTCOME_CHANGE',
             });
-            // Phase 72 D-15 — supersession can carry items forward to SATISFIED.
-            // Fire the recovery hook for each now-satisfied BLOCKING item so any
+            // Supersession can carry items forward to SATISFIED. Fire the
+            // recovery hook for each now-satisfied BLOCKING item so any
             // PENDING_COMPLIANCE approval flow held by it can re-assert + resume.
             await releaseHeldApprovalsForContractor(
               tx,
@@ -155,13 +152,13 @@ export const classificationSubmitRouter = router({
               assignment.contractorId,
             );
           }
-          // else: same outcome kind — no row churn (D-10 atomicity preserved by skipping).
+          // else: same outcome kind — no row churn (atomicity preserved by skipping).
         }
       }
 
-      // Phase 60 · CLASS-08 — auto-resolve any OPEN/ACKNOWLEDGED reassessment
-      // triggers on this engagement once a fresh GB IR35 assessment has been
-      // submitted. Tenant-scoped client keeps cross-org rows untouched.
+      // Auto-resolve any OPEN/ACKNOWLEDGED reassessment triggers on this
+      // engagement once a fresh GB IR35 assessment has been submitted.
+      // Tenant-scoped client keeps cross-org rows untouched.
       if (row.countryCode === 'GB') {
         await tx.reassessmentTrigger.updateMany({
           where: {
@@ -182,7 +179,6 @@ export const classificationSubmitRouter = router({
   // Only operates on completed rows; draft rows throw CONFLICT so the UI
   // cannot short-circuit the wizard.
   // -------------------------------------------------------------------------
-
 
   acknowledgeDisclaimer: contractorUpdateProcedure
     .input(acknowledgeDisclaimerInput)

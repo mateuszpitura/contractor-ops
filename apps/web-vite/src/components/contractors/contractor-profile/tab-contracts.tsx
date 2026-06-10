@@ -17,10 +17,8 @@ import { enumKey } from '../../../lib/enum-key.js';
 import { useDateFormatter } from '../../../lib/format/use-date-formatter.js';
 import { formatAmount } from '../../../lib/money.js';
 import { ContractWizardDialog } from '../../contracts/contract-wizard/wizard-dialog.js';
-import {
-  useContractorTabContracts,
-  type ContractorTabContractRow,
-} from '../hooks/use-contractor-tab-contracts.js';
+import type { ContractorTabContractRow } from '../hooks/use-contractor-tab-contracts.js';
+import { useContractorTabContracts } from '../hooks/use-contractor-tab-contracts.js';
 
 const statusBadgeColors: Record<string, string> = {
   DRAFT: 'bg-muted text-muted-foreground border border-border',

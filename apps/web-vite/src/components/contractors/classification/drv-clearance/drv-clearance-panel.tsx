@@ -19,12 +19,8 @@ import { DRV_UNVERIFIED_ENTRY_DISCLAIMER_DE } from '@contractor-ops/validators';
 import { FileText, Upload } from 'lucide-react';
 import { useCallback, useId, useRef, useState } from 'react';
 import { useTranslations } from '../../../../i18n/useTranslations.js';
-
-import {
-  useDrvClearanceList,
-  useDrvDecisionLetterUpload,
-  type useDrvDecisionLetterUpload as UseDrvDecisionLetterUpload,
-} from '../hooks/use-drv-clearance.js';
+import type { useDrvDecisionLetterUpload as UseDrvDecisionLetterUpload } from '../hooks/use-drv-clearance.js';
+import { useDrvClearanceList, useDrvDecisionLetterUpload } from '../hooks/use-drv-clearance.js';
 import type { DrvClearanceFormInitial } from './drv-clearance-form.js';
 import { DrvClearanceForm } from './drv-clearance-form.js';
 import type { DrvClearanceRowData } from './drv-clearance-row';
@@ -34,7 +30,7 @@ const MAX_DRV_FILE_BYTES = 10 * 1024 * 1024; // 10 MB
 
 export interface StatusfeststellungsverfahrenPanelProps {
   engagementId: string;
-  /** Phase 64 D-27 — assessment ID for DRV decision letter upload. Optional — upload section hidden when absent. */
+  /** Assessment ID for DRV decision letter upload. Optional — upload section hidden when absent. */
   classificationAssessmentId?: string;
 }
 

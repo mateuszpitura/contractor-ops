@@ -214,7 +214,9 @@ function PortalInvoiceDetailPageContent() {
             <span className="text-[13px] text-muted-foreground">
               {t('invoiceDetail.netAmount')}
             </span>
-            <span className="text-sm">{formatMoneyAmount(invoice.subtotalMinor, invoice.currency, 'en-US')}</span>
+            <span className="text-sm">
+              {formatMoneyAmount(invoice.subtotalMinor, invoice.currency, 'en-US')}
+            </span>
           </div>
           <div className="flex items-center justify-between">
             <span className="text-[13px] text-muted-foreground">

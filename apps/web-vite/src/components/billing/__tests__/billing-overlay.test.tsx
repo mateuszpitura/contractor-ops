@@ -39,8 +39,7 @@ vi.mock('../soft-block-modal', () => ({
     isOpen ? <div data-testid="soft-block-modal">Blocked</div> : null,
 }));
 
-import { BillingPastDueBanner } from '../billing-overlay';
-import { BillingOverlay } from '../billing-overlay';
+import { BillingOverlay, BillingPastDueBanner } from '../billing-overlay';
 
 type Overlay = ReturnType<typeof useBillingOverlay>;
 

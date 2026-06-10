@@ -87,7 +87,10 @@ describe('RunHeader (web-vite)', () => {
   it('hides the actions trigger when neither canCancel nor showOverride', async () => {
     await mount(
       withRouter(
-        <RunHeaderView run={sampleRun} {...makeHeader({ canCancel: false, showOverride: false })} />,
+        <RunHeaderView
+          run={sampleRun}
+          {...makeHeader({ canCancel: false, showOverride: false })}
+        />,
       ),
     );
     // Only the progress + template chrome render — no overflow dropdown.
@@ -98,7 +101,9 @@ describe('RunHeader (web-vite)', () => {
   });
 
   it('renders the cancel confirmation when cancelOpen is true', async () => {
-    await mount(withRouter(<RunHeaderView run={sampleRun} {...makeHeader({ cancelOpen: true })} />));
+    await mount(
+      withRouter(<RunHeaderView run={sampleRun} {...makeHeader({ cancelOpen: true })} />),
+    );
     // Workflows.cancelWorkflowTitle copy
     expect(document.body.textContent).toMatch(/cancel/i);
   });
