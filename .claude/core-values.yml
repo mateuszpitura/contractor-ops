@@ -41,6 +41,16 @@ sections:
       - "Scripted replace only as last resort: trivial change, user-approved, and you verify with typecheck/lint after — never default choice."
       - "Minimal diff only — no new files or docs unless the user asked; parallelize independent tool calls."
       - "Do not guess paths or URLs — use Read, Glob, or semble search to verify."
+      - "Domain/decision context: Read .planning/brain/wiki/hot.md after INDEX for non-trivial domain work."
+      - "Never use wiki for code symbol lookup — semble search first."
+
+  - name: Documentation follows code
+    values:
+      - "Wiki is a living compass — documentation must track code, not lag behind. Product changes in apps/ or packages/ are incomplete until matching wiki is updated in the same change set."
+      - "Applies to every new or changed feature, hook, container, component, package, router, service, integration, cron job, Prisma model, env var, and flag — not only large refactors."
+      - "Update relevant wiki/domains, patterns, structure, or integrations pages; append log.md; overwrite hot.md; run pnpm check:wiki-brain; rebuild BM25 (see .planning/brain/wiki/meta/refresh-triggers.md)."
+      - "Graph: graphify update when call paths change; intel/map-codebase when large refactors drift maps; MEMORY.md for new invariants; bump source_commit when HEAD advances."
+      - "Exempt: test-only, generated, lockfiles, zero-behavior formatting — when unsure, update wiki. Never ship product code without synced wiki."
 
   - name: Validation & Security
     values:
