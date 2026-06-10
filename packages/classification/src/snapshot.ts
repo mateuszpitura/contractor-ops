@@ -1,10 +1,10 @@
 // ---------------------------------------------------------------------------
-// Questions Snapshot Helper — D-08
+// Questions Snapshot Helper
 // ---------------------------------------------------------------------------
 //
 // On submit, we persist a deep-frozen copy of the rule-set questions so that
 // historical assessments always re-render with the exact wording shown to the
-// user. Uses structuredClone + Object.freeze (RESEARCH §Pattern 4).
+// user. Uses structuredClone + Object.freeze.
 
 import type { QuestionsSnapshot } from './types/assessment.js';
 import type { ClassificationProfile } from './types/profile.js';

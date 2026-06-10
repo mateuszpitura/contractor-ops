@@ -3,7 +3,7 @@
  *
  * Sources for the path list:
  * - UK: UTR, National Insurance number, Companies House reg, VAT number
- * - Germany (Phase 56): USt-IdNr, Steuernummer, Handelsregister number,
+ * - Germany: USt-IdNr, Steuernummer, Handelsregister number,
  *   Sozialversicherungsnummer (Art. 9 DSGVO sensitive data — ASVS V8)
  * - Generic: passwords, tokens, auth headers, API keys
  *
@@ -32,7 +32,7 @@ export const PII_MASK_PATHS = [
   '*.vatNumber',
   '*.vatRegistrationNumber',
 
-  // German contractor fields — Phase 56
+  // German contractor fields
   '*.steuernummer',
   '*.ustIdNr',
   '*.ustIdnr',
@@ -43,8 +43,8 @@ export const PII_MASK_PATHS = [
   '*.svNr',
   '*.socialInsuranceNumber',
 
-  // US contractor fields — Phase 84 (D-08). SSN is the Art. 9-grade identifier;
-  // EIN is a business ID but still log-masked per D-01/D-08.
+  // US contractor fields. SSN is the Art. 9-grade identifier;
+  // EIN is a business ID but still log-masked to prevent accidental exposure.
   '*.ssn',
   '*.SSN',
   '*.ein',
@@ -69,10 +69,10 @@ export const PII_MASK_PATHS = [
   '*.countryFields.ein',
   '*.countryFields.EIN',
 
-  // Phase 70 D-05 — default-redact request/response bodies. Top-level `body`
-  // and any `*.body` (one level of wrapping) emit `[REDACTED]` by default.
-  // Routers wanting plaintext bodies use `withBodyLogging` from this package;
-  // every approved opt-in lives in `LOG_BODY_INCLUDE_PREFIXES`.
+  // Default-redact request/response bodies. Top-level `body` and any `*.body`
+  // (one level of wrapping) emit `[REDACTED]` by default. Routers wanting
+  // plaintext bodies use `withBodyLogging` from this package; every approved
+  // opt-in lives in `LOG_BODY_INCLUDE_PREFIXES`.
   'body',
   '*.body',
 ] as const;

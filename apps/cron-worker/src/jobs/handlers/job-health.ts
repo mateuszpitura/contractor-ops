@@ -3,9 +3,9 @@
  *
  * Runs every 5 minutes:
  *   1. Detects stale webhook deliveries (RECEIVED/PROCESSING > 15 min).
- *   2. F-INT-13 / P2-B reaper: bumps `attempts`, re-enqueues to QStash
- *      with exponential backoff capped at 1h; rows whose attempts
- *      exceed `MAX_REAPER_ATTEMPTS` flip to FAILED + Sentry capture.
+ *   2. Reaper: bumps `attempts`, re-enqueues to QStash with exponential
+ *      backoff capped at 1h; rows whose attempts exceed
+ *      `MAX_REAPER_ATTEMPTS` flip to FAILED + Sentry capture.
  *   3. Counts recent failures (last hour) + queue depth.
  *   4. Fires Sentry alerts when failure-rate or queue-depth thresholds
  *      breach.

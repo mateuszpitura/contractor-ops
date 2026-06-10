@@ -8,10 +8,10 @@
 // 4. runComplianceChecks — submit 6 test invoices against compliance endpoint
 // 5. exchangeProductionCertificate — swap compliance for production credentials
 //
-// Per D-02: All certificates/keys stored in Infisical, never in DB.
-// Per T-48-15: Private key never returned to client.
-// Per T-48-16: All mutations require authenticated org admin.
-// Per T-48-18: Compliance credentials only in Infisical, never in configJson.
+// All certificates/keys stored in Infisical, never in DB.
+// Private key never returned to client.
+// All mutations require authenticated org admin.
+// Compliance credentials only in Infisical, never in configJson.
 // ---------------------------------------------------------------------------
 
 import nodeCrypto from 'node:crypto';
@@ -52,7 +52,7 @@ export interface ComplianceCheckResult {
   message?: string;
 }
 
-/** Minimal shape of the ZatcaApiClient we expect from Plan 04 */
+/** Minimal shape of the ZatcaApiClient we expect */
 interface ZatcaApiClientLike {
   requestComplianceCsid(csrBase64: string): Promise<{
     binarySecurityToken: string;
@@ -81,12 +81,9 @@ interface ZatcaApiClientLike {
 
 /**
  * Dynamically load the ZatcaApiClient from the einvoice package.
- * Uses dynamic import because the api-client module is created by Plan 04
- * (running in parallel). At merge time, this resolves correctly.
  */
 async function loadZatcaApiClient(options: Record<string, unknown>): Promise<ZatcaApiClientLike> {
   try {
-    // The api-client.ts is created by Plan 04 and exports ZatcaApiClient
     const mod = await import('@contractor-ops/einvoice');
     const ClientClass = (mod as Record<string, unknown>).ZatcaApiClient as
       | (new (
@@ -182,7 +179,7 @@ export async function saveTaxDetails(
   taxDetails: ZatcaTaxDetails,
   userId?: string,
 ): Promise<void> {
-  // Validate input (T-48-17: Zod schema enforces VAT format)
+  // Validate input — Zod schema enforces VAT format
   const validated = zatcaTaxDetailsSchema.parse(taxDetails);
 
   const connection = await getOrCreateConnection(organizationId, userId);
@@ -243,7 +240,7 @@ export async function generateAndStoreCsr(organizationId: string): Promise<{ csr
   // Generate CSR and key pair
   const { csr, privateKey } = generateZatcaCsr(csrAttributes);
 
-  // Store private key in Infisical immediately (T-48-15: never return to client)
+  // Store private key in Infisical immediately — never return to client
   const secretStore = createZatcaSecretStore(organizationId);
   await secretStore.set(ZATCA_SECRET_NAMES.PRIVATE_KEY, privateKey);
 
@@ -291,7 +288,7 @@ export async function requestComplianceCsid(
   // Submit CSR to ZATCA
   const response = await apiClient.requestComplianceCsid(csrBase64);
 
-  // Store compliance credentials in Infisical (T-48-18: never in DB)
+  // Store compliance credentials in Infisical — never persist in DB
   const secretStore = createZatcaSecretStore(organizationId);
   await secretStore.set(ZATCA_SECRET_NAMES.X509_CERTIFICATE, response.binarySecurityToken);
   await secretStore.set(ZATCA_SECRET_NAMES.API_SECRET, response.secret);

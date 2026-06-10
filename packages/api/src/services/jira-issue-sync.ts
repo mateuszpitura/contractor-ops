@@ -145,7 +145,7 @@ export async function createJiraIssue(
   );
 
   // siteUrl is set during OAuth discovery (discoverCloudId returns { cloudId, siteName, siteUrl }).
-  // Fall back to cloudId-based browsable URL if siteUrl/siteName missing (e.g., Phase 18 connections).
+  // Fall back to cloudId-based browsable URL if siteUrl/siteName missing.
   const config = connection.configJson as JiraConnectionConfig;
   const siteUrl =
     config.siteUrl ?? (config.siteName ? `https://${config.siteName}.atlassian.net` : null);
@@ -404,7 +404,7 @@ export async function transitionJiraIssue(
     connection.credentialsRef,
   );
 
-  // 5. Set lastSyncOrigin="APP" BEFORE transition (loop prevention per D-08)
+  // 5. Set lastSyncOrigin="APP" BEFORE transition (loop prevention)
   const existingMetadata = (externalLink.metadataJson as Record<string, unknown>) ?? {};
   await prisma.externalLink.update({
     where: { id: externalLink.id },
@@ -518,10 +518,10 @@ export async function transitionJiraIssue(
 
 /**
  * Detects whether a stored OAuth scope string is missing required scopes
- * for Phase 19 Jira integration (issue creation + webhook management).
+ * for full Jira integration (issue creation + webhook management).
  *
- * Used to prompt admins to reconnect when upgrading from Phase 18
- * (read-only worklog import) to Phase 19 (full issue lifecycle).
+ * Used to prompt admins to reconnect when upgrading from read-only worklog
+ * import to full issue lifecycle sync.
  *
  * @param storedScope - The scope string stored in credentials
  * @returns true if the stored scope needs expansion

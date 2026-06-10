@@ -1,6 +1,4 @@
-// packages/api/src/routers/late-payment-interest.ts
-//
-// Phase 63 · Plan 05 · D-27 — Late payment interest tRPC router.
+// Late payment interest tRPC router.
 // Provides: getForInvoice, getForOrg, waive, revokeWaiver, claim, downloadClaim.
 //
 // All procedures are tenant-scoped. Feature-flagged via the canonical
@@ -523,9 +521,9 @@ export const latePaymentInterestRouter = router({
           body: { claimId: claim.id, organizationId: ctx.organizationId },
           retries: 3,
           timeout: '60s',
-          // F-ASYNC-15 idempotency: stable per-claim QStash dedup id so the
-          // tRPC retry, the reaper re-enqueue, and the original delivery
-          // can't all produce separate QStash messages.
+          // Stable per-claim QStash dedup id so the tRPC retry, the reaper
+          // re-enqueue, and the original delivery can't all produce separate
+          // QStash messages.
           deduplicationId: `late-interest-pdf-${claim.id}`,
         });
       } catch (err) {

@@ -6,7 +6,7 @@ import {
 import { cn } from '../../lib/utils';
 
 // ---------------------------------------------------------------------------
-// Status category color mapping (per UI-SPEC D-09)
+// Status category color mapping
 // ---------------------------------------------------------------------------
 
 const dotColorMap: Record<string, string> = {

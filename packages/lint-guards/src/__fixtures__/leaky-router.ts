@@ -1,8 +1,7 @@
 // Fixture for logs-guard — router that logs a `body` field.
-// Plan 70-03 implementation should flag this with kind: 'unredacted-body-log'.
+// The guard should flag this with kind: 'unredacted-body-log'.
 //
-// The fixture uses placeholder shapes (no real-format identifiers) per
-// T-70-01-02 mitigation.
+// The fixture uses placeholder shapes (no real-format identifiers).
 type Bindings = { procedure: string; type: string };
 type StubLogger = {
   info(obj: Record<string, unknown>, msg: string): void;

@@ -1,16 +1,14 @@
-// Phase 71 D-13..D-16 — recreateComplianceAssessment admin mutation tests.
+// recreateComplianceAssessment admin mutation tests.
 //
 // Test scope: the per-contractor transaction logic, idempotency precondition,
 // audit-log emission, bulk-cap enforcement, and tenant guard.
 //
 // Note: The classification trpc router cannot be loaded as a caller in this
 // suite because of a pre-existing test-infra issue
-// (`contractorUpdateSchema.extend is not a function` in contractor.ts) that
-// surfaced before Plan 71 began. Instead, this suite verifies the same
-// behaviours by calling the underlying helper (supersedeAndMaterialise from
-// Plan 71-04) and the input schema directly. Phase 71-05 SUMMARY.md tracks
-// the trpc-router-level coverage gap as a known limitation; full integration
-// tests can land once the upstream test infra is repaired.
+// (`contractorUpdateSchema.extend is not a function` in contractor.ts). Instead,
+// this suite verifies the same behaviours by calling the underlying helper
+// (supersedeAndMaterialise) and the input schema directly. Full integration tests
+// can land once the upstream test infra is repaired.
 
 import { beforeEach, describe, expect, it } from 'vitest';
 import '@contractor-ops/compliance-policy';
@@ -194,7 +192,7 @@ describe('classification.recreateComplianceAssessment — per-contractor superse
     });
     expect(result.waivedCount).toBe(1);
     // For outcome.kind === 'IR35' (not 'IR35-INSIDE'), uk.sds@v1 doesn't fire;
-    // with the UK IP-assignment rule (Phase 75) now in the set, 4 rules apply.
+    // with the UK IP-assignment rule now in the set, 4 rules apply.
     expect(result.insertedCount).toBe(4);
     expect(result.carriedForwardCount).toBe(1); // RTW had a doc
   });

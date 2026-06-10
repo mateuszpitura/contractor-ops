@@ -1,5 +1,5 @@
 /**
- * Async export download endpoint (P2-F · F-SCALE-01).
+ * Async export download endpoint.
  *
  *   1. Better Auth session must resolve.
  *   2. Session's `activeOrganizationId` must match `Export.organizationId`
@@ -94,8 +94,7 @@ export function registerExportsRoute(app: FastifyInstance): void {
 }
 
 // ---------------------------------------------------------------------------
-// /exports/_process — QStash callback for the async export framework
-// (P2-F · F-SCALE-01/02/08).
+// /exports/_process — QStash callback for the async export framework.
 // ---------------------------------------------------------------------------
 
 const processLog = createCronLogger('exports-process');

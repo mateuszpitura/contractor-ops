@@ -119,7 +119,7 @@ export function generateStorageKey(orgId: string, docId: string, filename: strin
 }
 
 // ---------------------------------------------------------------------------
-// Per-content-type size caps (F-SEC-19)
+// Per-content-type size caps
 // ---------------------------------------------------------------------------
 
 /**
@@ -165,9 +165,9 @@ export function maxBytesForMime(mimeType: string): number {
  * Creates a presigned PUT URL for uploading a file to R2.
  * Default expiry: 5 minutes.
  *
- * F-SEC-19: passes `ContentLength` to the signed PUT so R2 rejects PUTs
- * whose body length doesn't match the signed value at the edge. Callers
- * MUST supply the maximum bytes the upload should allow; R2 will return
+ * Passes `ContentLength` to the signed PUT so R2 rejects PUTs whose body
+ * length doesn't match the signed value at the edge. Callers MUST supply
+ * the maximum bytes the upload should allow; R2 will return
  * `XAmzContentLengthTooLong` (or similar) if the client tries to upload
  * more.
  */
@@ -212,7 +212,7 @@ export async function createPresignedDownloadUrl(key: string, expiresIn = 900): 
  * time-limited download link instead of streaming the bytes back.
  *
  * `key` is trusted — callers must scope keys by organizationId to prevent
- * cross-tenant access (Phase 56 · D-09 + ASVS V4).
+ * cross-tenant access (ASVS V4).
  */
 export async function putObjectAndSignDownload(params: {
   key: string;
@@ -248,11 +248,11 @@ export async function putObjectAndSignDownload(params: {
 /**
  * Stream-upload an object to R2 using the AWS SDK lib-storage `Upload`
  * helper which auto-chunks the input into multipart parts. Used by the
- * async export framework (P2-F · F-SCALE-08) to pipe a CSV stream from a
- * Prisma cursor straight into R2 without buffering the entire result.
+ * async export framework to pipe a CSV stream from a Prisma cursor
+ * straight into R2 without buffering the entire result.
  *
  * `key` is trusted — callers must scope keys by `organizationId` to
- * prevent cross-tenant access (Phase 56 · D-09 + ASVS V4).
+ * prevent cross-tenant access (ASVS V4).
  *
  * Returns the `key` and `byteLength` of the uploaded object — caller is
  * responsible for persisting the key into the owning row (e.g.
@@ -329,9 +329,9 @@ export async function deleteObject(key: string) {
 
 /**
  * Upload a string body (e.g. serialized XML) to R2 at a caller-owned key.
- * Used by Phase 61's `finalizeEInvoice` to persist the canonical XRechnung
- * CII XML at a content-addressed key.  Caller MUST scope keys by
- * organizationId to prevent cross-tenant access (Phase 56 · D-09 + ASVS V4).
+ * Used by `finalizeEInvoice` to persist the canonical XRechnung CII XML at
+ * a content-addressed key. Caller MUST scope keys by organizationId to
+ * prevent cross-tenant access (ASVS V4).
  */
 export async function putObjectString(params: {
   key: string;
@@ -350,7 +350,7 @@ export async function putObjectString(params: {
 }
 
 /**
- * Read an R2 object into a UTF-8 string.  Consumed by Phase 61 `einvoice.send`
+ * Read an R2 object into a UTF-8 string. Consumed by `einvoice.send`
  * when it rehydrates the canonical XRechnung XML for transmission.
  *
  * `key` is trusted — callers MUST have verified the caller owns the
@@ -376,13 +376,14 @@ export async function getObjectAsString(key: string): Promise<string> {
 
 /**
  * Sign a GET URL for an existing R2 object WITHOUT uploading anything.
- * Used by Phase 59 `classificationDocument.getDownloadUrl` query — the PDF bytes
- * were persisted by an earlier `generateSds` / `generateDrvDefenseBundle` mutation,
- * and subsequent downloads re-sign the same object so bytes never change (D-05).
+ * Used by `classificationDocument.getDownloadUrl` — the PDF bytes were
+ * persisted by an earlier `generateSds` / `generateDrvDefenseBundle`
+ * mutation, and subsequent downloads re-sign the same object so bytes
+ * never change.
  *
- * `key` is trusted — callers MUST scope by organizationId + verify the caller
- * owns the ClassificationDocument row before invoking this helper
- * (Phase 59 D-06 + ASVS V4).
+ * `key` is trusted — callers MUST scope by organizationId + verify the
+ * caller owns the ClassificationDocument row before invoking this helper
+ * (ASVS V4).
  */
 export async function signExistingDownload(
   key: string,

@@ -7,7 +7,7 @@
  * mapped to a BACS-safe equivalent or replaced with `?` (and surfaced as a
  * warning in the UI before the file is downloaded).
  *
- * Coverage (per Phase 63 D-05):
+ * Coverage:
  * - German:        ä/Ä, ö/Ö, ü/Ü, ß
  * - Polish:        ą/Ą, ć/Ć, ę/Ę, ł/Ł, ń/Ń, ó/Ó, ś/Ś, ź/Ź, ż/Ż
  * - French:        é/É, è/È, ê/Ê, ë/Ë, á/Á, à/À, â/Â, ç/Ç

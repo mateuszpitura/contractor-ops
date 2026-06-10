@@ -1,4 +1,4 @@
-// Phase 73 · Plan 02 — Schema test for D-11 override columns.
+// Schema test for compliance override columns.
 
 import fs from 'node:fs';
 import path from 'node:path';

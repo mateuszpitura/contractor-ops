@@ -1,4 +1,4 @@
-// Phase 75 D-14 — UAE IP-clause phrase library. Legal sign-off PENDING.
+// UAE IP-clause phrase library. Legal sign-off PENDING.
 
 export const IP_CLAUSES_UAE = {
   'uae.disposition_of_economic_rights@v1': {

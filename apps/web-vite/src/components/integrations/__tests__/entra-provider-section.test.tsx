@@ -1,6 +1,6 @@
 /**
- * Phase 78 IDP-05 — EntraProviderSectionView render + toggle-gate tests. Props
- * are shaped directly; the hook (tRPC boundary) is not exercised here.
+ * EntraProviderSectionView render + toggle-gate tests. Props are shaped
+ * directly; the hook (tRPC boundary) is not exercised here.
  */
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';

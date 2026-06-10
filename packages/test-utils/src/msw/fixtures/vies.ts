@@ -1,4 +1,4 @@
-// Phase 57 · Plan 01 — VIES USt-IdNr fixtures (PAY-05).
+// VIES USt-IdNr fixtures.
 
 export const VIES_SIMPLE_VALID_200 = (countryCode: string, vatNumber: string) => ({
   countryCode,

@@ -1,5 +1,5 @@
-// Phase 70 D-03 structured-diff formatter for schema-guard offences.
-// Same shape as `lint:logs` and `i18n:parity` outputs (Plans 70-03, 70-04).
+// Structured-diff formatter for schema-guard offences.
+// Same shape as `lint:logs` and `i18n:parity` outputs.
 
 import type { SchemaGuardOffence } from './run-guard';
 

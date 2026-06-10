@@ -1,8 +1,8 @@
 // ---------------------------------------------------------------------------
-// Phase 2 P2-C — F-DB-03 — Cross-region tenant cache for Organization meta.
+// Cross-region tenant cache for Organization meta.
 // ---------------------------------------------------------------------------
 //
-// Problem (audit F-DB-03): every authenticated tRPC request issues
+// Problem: every authenticated tRPC request issues
 // `prisma.organization.findUnique({ where: { id: orgId }, select: { ... } })`
 // against the EU primary to discover the tenant's data region. For ME-region
 // tenants this is a cross-region RTT (80–200ms) on the hot path. At 50 RPS per
@@ -124,7 +124,7 @@ export async function invalidateOrgMeta(orgId: string): Promise<void> {
 }
 
 // ---------------------------------------------------------------------------
-// Branding — Phase D-12 — separate cache row for portal-shell branding so the
+// Branding — separate cache row for portal-shell branding so the
 // hot getOrgMeta envelope stays small and free of settingsJson leakage. Read
 // on every portal navigation; invalidated by the same Prisma extension that
 // drops getOrgMeta and by the updateBranding mutation handler.

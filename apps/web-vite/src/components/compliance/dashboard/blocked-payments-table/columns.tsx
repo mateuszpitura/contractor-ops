@@ -5,9 +5,9 @@ import type { LooseTranslator } from '../../../../i18n/typed-keys.js';
 import type { BlockedRow } from '../hooks/use-compliance-dashboard.js';
 
 /**
- * Renders the D-10 contractorReasons[] grouping — one row per contractor, with
+ * Renders the contractorReasons[] grouping — one row per contractor, with
  * the blocked documents listed and each linking to the per-contractor Compliance
- * tab (reuses the `deepLinkPath` issued by the Phase 72 payment gate).
+ * tab via the `deepLinkPath` issued by the payment gate.
  */
 export function getBlockedPaymentsColumns(t: LooseTranslator): ColumnDef<BlockedRow>[] {
   return [

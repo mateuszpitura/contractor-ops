@@ -52,7 +52,7 @@ export function mapInPostStatus(rawStatus: string): ShipmentStatus | null {
 }
 
 /**
- * Statuses that should trigger user notifications (per D-06).
+ * Statuses that should trigger user notifications.
  * Intermediate statuses update silently; only terminal/critical events notify.
  */
 export const NOTIFICATION_STATUSES = ['DELIVERED', 'FAILED', 'RETURNED'] as const;

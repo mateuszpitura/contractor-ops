@@ -10,7 +10,7 @@ import {
 // ---------------------------------------------------------------------------
 // InPost Polling Service
 //
-// QStash-triggered fallback for catching missed webhook events (D-05).
+// QStash-triggered fallback for catching missed webhook events.
 // Fetches all active InPost shipments and creates missing ShipmentEvents.
 // ---------------------------------------------------------------------------
 

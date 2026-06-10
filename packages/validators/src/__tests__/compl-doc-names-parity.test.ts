@@ -1,4 +1,4 @@
-// Phase 73 · Plan 04 — COMPL doc-name parity guard (D-17).
+// COMPL doc-name parity guard.
 //
 // Asserts:
 //   1. Every policyRuleId in @contractor-ops/compliance-policy registry has a

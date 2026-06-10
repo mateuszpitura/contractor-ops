@@ -1,8 +1,8 @@
 // packages/api/src/routers/__tests__/einvoice.generate-zugferd.test.ts
 //
-// Phase 62 · Plan 62-05 Task 2 — unit tests for the outbound
-// `einvoice.generateZugferdPdf` mutation. The einvoice package's own test
-// suite covers the generator pipeline; here we verify:
+// Unit tests for the outbound `einvoice.generateZugferdPdf` mutation.
+// The einvoice package's own test suite covers the generator pipeline;
+// here we verify:
 //   - auth + org-scope enforcement,
 //   - idempotency (same sha → reuse existing key, no second event),
 //   - typed error translation (level-unsupported, internal),
@@ -326,7 +326,7 @@ function invoiceRow(overrides: Record<string, unknown> = {}) {
     id: INVOICE_ID,
     organizationId: ORG_A,
     eInvoiceLifecycle: null,
-    // Phase 68 D-06 cascade defaults — empty arrays mean no Skonto.
+    // Cascade defaults — empty arrays mean no Skonto.
     skontoTerms: [] as unknown[],
     contractor: { id: 'ctr_default', billingProfiles: [] as unknown[] },
     ...overrides,
@@ -485,10 +485,10 @@ describe('einvoice.generateZugferdPdf', () => {
 });
 
 // ===========================================================================
-// Phase 68 · Plan 05 — Skonto cascade plumbing (Layer C router boundary)
+// Skonto cascade plumbing (Layer C router boundary)
 //
-// Closes the audit I-1 router half for the ZUGFeRD path. The embedded
-// factur-x.xml end-to-end emission is locked by Plan 04
+// The embedded factur-x.xml end-to-end emission is locked by the ZUGFeRD
+// generator test suite
 // (packages/einvoice/src/profiles/zugferd-de/__tests__/generator.test.ts);
 // here we verify the api router resolves the cascade and forwards the
 // resolved term to the einvoice-package generator.

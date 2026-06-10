@@ -1,4 +1,4 @@
-// Phase 73 · Plan 02 — Schema test for D-02 dashboard "At risk" composite index.
+// Schema test for the dashboard "At risk" composite index.
 
 import fs from 'node:fs';
 import path from 'node:path';

@@ -1,4 +1,4 @@
-// Phase 64 · D-12 — Zod schema for the disclaimer signoff registry.
+// Zod schema for the disclaimer signoff registry.
 //
 // The registry records the legal review status of every locked disclaimer
 // constant. Production deployments are blocked by ci-legal-gate-production

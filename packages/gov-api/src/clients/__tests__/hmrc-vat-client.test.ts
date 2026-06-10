@@ -1,5 +1,4 @@
-// Phase 57 · Plan 02 — PAY-03 GREEN tests for HmrcVatClient.
-// See .planning/phases/57-government-api-clients/57-VALIDATION.md.
+// HmrcVatClient unit tests.
 //
 // Covers:
 //   - OAuth 2.0 client-credentials flow (POST /oauth/token)
@@ -11,7 +10,7 @@
 //   - Pre-flight isValidGbVat short-circuit (no network call)
 //   - Rate-limit exhaustion → HmrcApiError(429)
 //   - Fraud-prevention headers on lookup
-//   - checkVatNumber signature EXCLUDES requesterVrn (threat T-57-02-04)
+//   - checkVatNumber signature EXCLUDES requesterVrn (tenant enumeration prevention)
 
 import { MemoryStore } from '@contractor-ops/secrets';
 import { createMockServer, HttpResponse, http } from '@contractor-ops/test-utils';

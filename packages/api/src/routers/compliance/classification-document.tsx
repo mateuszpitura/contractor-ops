@@ -1,16 +1,14 @@
-// Phase 59 · Plan 02 Task 2 — classificationDocument tRPC router (CLASS-03).
+// classificationDocument tRPC router.
 //
 // Exposes three procedures:
 //   - generateSds: renders an IR35 Status Determination Statement PDF, uploads
-//     bytes to R2, persists a ClassificationDocument row (append-only, D-06),
+//     bytes to R2, persists a ClassificationDocument row (append-only),
 //     returns a 300s signed URL. Rolls back R2 object on row-insert failure.
 //   - getDownloadUrl: re-signs an existing document's pdfKey without re-upload
-//     (D-05 byte stability).
+//     (bytes remain byte-exact).
 //   - listByEngagement: lists documents for a ContractorAssignment via the
 //     assessment join (ClassificationDocument.classificationAssessmentId ->
 //     ClassificationAssessment.contractorAssignmentId).
-//
-// Plan 59-04 extends this router with `generateDrvDefenseBundle`.
 
 import { createHash } from 'node:crypto';
 
@@ -53,7 +51,7 @@ const getDownloadUrlInputSchema = z.object({
   classificationDocumentId: z.string().min(1),
 });
 
-// Phase 64 D-26 — DRV decision letter upload schema
+// DRV decision letter upload schema
 const uploadDrvDecisionLetterInputSchema = z.object({
   classificationAssessmentId: z.string().min(1),
   fileBase64: z.string().min(1),
@@ -88,7 +86,7 @@ function sanitizeFilename(s: string): string {
 
 export const classificationDocumentRouter = router({
   /**
-   * Enqueue an SDS PDF generation job (P2-F · F-SCALE-02).
+   * Enqueue an SDS PDF generation job.
    *
    * The mutation only enforces the legal preconditions (assessment
    * completed + outcome.kind === 'IR35' + SdsApproval present) and
@@ -142,7 +140,7 @@ export const classificationDocumentRouter = router({
         });
       }
 
-      // Phase 64 D-22 — Require SdsApproval before generating SDS (LEGAL-05)
+      // Require SdsApproval before generating SDS.
       const sdsApproval = await ctx.db.sdsApproval.findUnique({
         where: { assessmentId: input.classificationAssessmentId },
         select: { id: true },
@@ -165,7 +163,7 @@ export const classificationDocumentRouter = router({
     }),
 
   /**
-   * Enqueue a DRV defense bundle PDF generation job (P2-F · F-SCALE-02).
+   * Enqueue a DRV defense bundle PDF generation job.
    *
    * Same async contract as `generateSds` — the mutation only validates
    * the legal preconditions (completed Schein assessment + signed
@@ -234,7 +232,7 @@ export const classificationDocumentRouter = router({
 
   /**
    * Re-sign an existing ClassificationDocument for download. Does NOT
-   * re-upload — bytes remain byte-exact (D-05).
+   * re-upload — bytes remain byte-exact.
    */
   getDownloadUrl: classificationProcedure
     .input(getDownloadUrlInputSchema)
@@ -307,7 +305,7 @@ export const classificationDocumentRouter = router({
     }),
 
   // ---------------------------------------------------------------------------
-  // Phase 64 · LEGAL-06 — uploadDrvDecisionLetter (D-26)
+  // uploadDrvDecisionLetter
   // ---------------------------------------------------------------------------
 
   /**

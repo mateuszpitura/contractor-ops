@@ -1,7 +1,7 @@
-// Phase 72 D-08 — CI lint guard: every payment-write tRPC procedure must
-// import and call assertContractorPaymentEligibility. Twin-write enforced —
-// adding a new payment-write entry point requires updating BOTH the procedure
-// AND PAYMENT_WRITE_PROCEDURES below.
+// CI lint guard: every payment-write tRPC procedure must import and call
+// assertContractorPaymentEligibility. Twin-write enforced — adding a new
+// payment-write entry point requires updating BOTH the procedure AND
+// PAYMENT_WRITE_PROCEDURES below.
 
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';

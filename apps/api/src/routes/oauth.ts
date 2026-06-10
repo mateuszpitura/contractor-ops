@@ -1,7 +1,7 @@
 /**
  * OAuth start + callback handlers.
  *
- * F-SEC-05 + F-SEC-21 — browser-bound, single-use OAuth state.
+ * Browser-bound, single-use OAuth state.
  *
  *   /api/oauth/:provider/start  (GET)
  *     1. Better Auth session must resolve; user must have an active org.
@@ -70,11 +70,11 @@ function noStore(reply: FastifyReply): FastifyReply {
 }
 
 /**
- * Phase 76 SC#3 — derive the Google Workspace scopeCapabilities JSONB from the
- * space-separated scope string Google returns on token exchange. Read capabilities
- * are the baseline; write capabilities (user.deprovision + directory.write) are
- * appended only when the additive admin.directory.user (non-readonly) scope was
- * granted. Existing read-only directory-import is preserved either way.
+ * Derive the Google Workspace scopeCapabilities JSONB from the space-separated
+ * scope string Google returns on token exchange. Read capabilities are the
+ * baseline; write capabilities (user.deprovision + directory.write) are appended
+ * only when the additive admin.directory.user (non-readonly) scope was granted.
+ * Existing read-only directory-import is preserved either way.
  */
 export function buildGoogleWorkspaceScopeCapabilities(
   scope: string | undefined,
@@ -291,10 +291,10 @@ export function registerOAuthRoutes(app: FastifyInstance): void {
           (credentials.extra?.displayName as string) ??
           adapter.displayName;
 
-        // Phase 76 SC#3 — for Google Workspace, derive the scopeCapabilities JSONB from
-        // the granted OAuth scopes. The write capabilities (user.deprovision + directory.write)
-        // are appended ONLY when the additive admin.directory.user scope was granted, so an
-        // existing read-only v3.0 connection that re-OAuths gains write access additively.
+        // For Google Workspace, derive the scopeCapabilities JSONB from the granted OAuth
+        // scopes. The write capabilities (user.deprovision + directory.write) are appended
+        // ONLY when the additive admin.directory.user scope was granted, so an existing
+        // read-only connection that re-OAuths gains write access additively.
         const gwsScopeCapabilities =
           provider === 'google_workspace'
             ? buildGoogleWorkspaceScopeCapabilities(credentials.scope)

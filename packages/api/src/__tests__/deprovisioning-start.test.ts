@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------
-// Phase 76 D-03 — startDeprovisioningRun mutation tests.
+// startDeprovisioningRun mutation tests.
 // ---------------------------------------------------------------------------
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -21,9 +21,9 @@ const publishJSON = vi.fn().mockResolvedValue({ messageId: 'm-1' });
 const { mockPrisma, assignments, runCreate, runUpdate, runFindUnique, orgSettings } = vi.hoisted(
   () => {
     const assignments = new Map<string, AssignmentRow>();
-    // Per-org idpDeprovisioningEnabled toggle map (Phase 81 D-05). Mutated per-test;
-    // 81-02 will add an `organization.findUnique({ select: { settingsJson } })` read
-    // inside startDeprovisioningRun to derive the run's provider set from this.
+    // Per-org idpDeprovisioningEnabled toggle map. Mutated per-test;
+    // startDeprovisioningRun reads `organization.findUnique({ select: { settingsJson } })`
+    // to derive the run's provider set from this.
     const orgSettings: { idpDeprovisioningEnabled: Record<string, boolean> } = {
       idpDeprovisioningEnabled: { GOOGLE_WORKSPACE: true },
     };
@@ -63,9 +63,9 @@ const { mockPrisma, assignments, runCreate, runUpdate, runFindUnique, orgSetting
       // $transaction runs the callback against the same mock client.
       $transaction: vi.fn(async (fn: (tx: unknown) => unknown) => fn(mockPrisma)),
       organization: {
-        // 81-02: startDeprovisioningRun reads settingsJson to derive enabled providers.
+        // startDeprovisioningRun reads settingsJson to derive enabled providers.
         // Returns BOTH the existing region/status shape AND the toggle map so the
-        // single mock satisfies the legacy reads and the new D-05 derivation.
+        // single mock satisfies the legacy reads and the provider derivation.
         findUnique: vi.fn(async () => ({
           dataRegion: 'EU',
           status: 'ACTIVE',
@@ -186,11 +186,11 @@ function seedEnded() {
 beforeEach(() => {
   vi.clearAllMocks();
   runUpdate.mockResolvedValue({});
-  // The run provider-set derivation (Phase 81 D-05) gates each provider on its
-  // signoff flag. Bypass the flag service in unit tests so the default GWS-enabled
-  // org derives GWS (mirrors the legacy single-provider behaviour). Individual
-  // multi-provider cases re-assert this; the empty-set cases rely on the enabled
-  // map being empty / non-resolver-backed, not on signoff.
+  // The run provider-set derivation gates each provider on its signoff flag.
+  // Bypass the flag service in unit tests so the default GWS-enabled org derives
+  // GWS (mirrors the legacy single-provider behaviour). Individual multi-provider
+  // cases re-assert this; the empty-set cases rely on the enabled map being empty
+  // or non-resolver-backed, not on signoff.
   process.env.FLAG_SIGNOFF_BYPASS = 'local';
   // Default org has only GWS enabled (matches the legacy single-provider behaviour).
   orgSettings.idpDeprovisioningEnabled = { GOOGLE_WORKSPACE: true };
@@ -320,14 +320,11 @@ describe('startDeprovisioningRun mutation (Phase 76 D-03)', () => {
 });
 
 // ---------------------------------------------------------------------------
-// Phase 81 INT-01 — RED scaffolds for the Wave 1 wiring (81-02).
+// Extended startDeprovisioningRun contract assertions.
 //
-// These assert the POST-WIRING contract: dynamic multi-provider derivation
-// (D-05), the empty-set precondition (D-06), the idp:start_run gate (D-10),
-// and the per-assignment idempotency key (D-09). They are EXPECTED to RED
-// until 81-02 lands the source — failures are assertion-level (the router
-// still hardcodes PROVIDERS_FOR_RUN = ['GOOGLE_WORKSPACE'] and both procedures
-// are still ungated), NOT compile/harness errors.
+// These assert the wired contract: dynamic multi-provider derivation, the
+// empty-set precondition, the idp:start_run gate, and the per-assignment
+// idempotency key.
 // ---------------------------------------------------------------------------
 
 describe('startDeprovisioningRun — Phase 81 D-05 multi-provider derivation (RED)', () => {
@@ -432,7 +429,7 @@ describe('startDeprovisioningRun — Phase 81 D-10 idp:start_run gate (RED)', ()
   });
 
   it('rejects retryDeprovisioningStep with FORBIDDEN when hasPermission denies idp:start_run', async () => {
-    // CR-01: retry re-enqueues the same destructive SUSPEND/REVOKE job, so it
+    // Retry re-enqueues the same destructive SUSPEND/REVOKE job, so it
     // carries the SAME idp:start_run gate as the start path. A denied caller
     // must never reach the step lookup or the QStash enqueue.
     vi.mocked(authApi.hasPermission).mockResolvedValue({ success: false } as never);
@@ -448,7 +445,7 @@ describe('startDeprovisioningRun — Phase 81 D-09 per-assignment idempotency ke
   it('a re-trigger with the SAME assignment-derived key returns the existing run (P2002)', async () => {
     seedEnded();
     // The UI derives a stable key from assignmentId. A double-click re-runs with the
-    // same key; the unique index (76-WR1) raises P2002 and the mutation returns the
+    // same key; the unique index raises P2002 and the mutation returns the
     // EXISTING run rather than creating a second one or throwing.
     const assignmentDerivedKey = 'assign-a-1-deprov';
     runCreate.mockRejectedValueOnce(Object.assign(new Error('unique'), { code: 'P2002' }));

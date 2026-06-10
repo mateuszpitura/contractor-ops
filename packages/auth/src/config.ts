@@ -40,22 +40,22 @@ function hashEmail(email: string): string {
 }
 
 // ---------------------------------------------------------------------------
-// US-INFRA-01 — creation-time data-region assignment (D-01).
+// Creation-time data-region assignment
 // ---------------------------------------------------------------------------
 //
 // `organization.dataRegion` is set ONCE, at creation, from the billing-country
 // selection the SPA passes into `authClient.organization.create`, and is
-// IMMUTABLE afterward (D-01) — there is NO update/afterCreate path that mutates
-// it (see `organizationHooks.beforeCreateOrganization` below; no
+// IMMUTABLE afterward — there is NO update/afterCreate path that mutates it
+// (see `organizationHooks.beforeCreateOrganization` below; no
 // `beforeUpdateOrganization` sets it). US data residency is opt-in: only a US
 // billing country routes to the `us-east-1` region; everything else (incl. an
 // absent billing country) defaults to EU, preserving the schema `@default(EU)`
-// intent. The orthogonal `us-cross-border` add-on (Phase 82) unlocks US tax
-// features WITHOUT moving residency — it never touches `dataRegion`.
+// intent. The `us-cross-border` add-on unlocks US tax features WITHOUT moving
+// residency — it never touches `dataRegion`.
 
 /** Zod schema validating the optional billing-country create input at the
- * Better Auth boundary (CLAUDE.md: schema-validate untrusted client input).
- * ISO 3166-1 alpha-2; case-insensitive, normalised to upper-case. */
+ * Better Auth boundary. ISO 3166-1 alpha-2; case-insensitive, normalised to
+ * upper-case. */
 const billingCountrySchema = z
   .string()
   .trim()
@@ -80,9 +80,8 @@ export function resolveDataRegionFromBilling(input: { billingCountry?: string })
 }
 
 /**
- * F-SEC-07 — reject sessions whose active organization membership is
- * soft-disabled. Used by the `databaseHooks.session.{create,update}.before`
- * hooks below.
+ * Reject sessions whose active organization membership is soft-disabled.
+ * Used by the `databaseHooks.session.{create,update}.before` hooks below.
  *
  * No-ops when the session has no `activeOrganizationId` (Better Auth allows
  * sessions without an active org — the user can pick one later via
@@ -149,7 +148,7 @@ export const auth = betterAuth({
   ...(authEnv.trustedOrigins.length > 0 ? { trustedOrigins: authEnv.trustedOrigins } : {}),
 
   // ---------------------------------------------------------------------
-  // F-SCALE-20 — Better Auth built-in per-IP rate limiter
+  // Better Auth built-in per-IP rate limiter
   // ---------------------------------------------------------------------
   //
   // This is the PRIMARY rate-limiting layer for auth endpoints. The
@@ -202,7 +201,7 @@ export const auth = betterAuth({
     /**
      * Better Auth invokes this when a user requests a password reset
      * (`/forget-password`). The handler is mandatory in production — without
-     * it the entire reset flow silently no-ops (F-SEC-13). We throw on send
+     * it the entire reset flow silently no-ops . We throw on send
      * failure so Better Auth surfaces the error to the caller.
      */
     sendResetPassword: async ({ user, url }) => {
@@ -222,7 +221,7 @@ export const auth = betterAuth({
     /**
      * Sent on sign-up and on every sign-in attempt for unverified accounts
      * (because `requireEmailVerification: true`). Without this handler newly
-     * registered users cannot verify and are locked out forever (F-SEC-13).
+     * registered users cannot verify and are locked out forever .
      */
     sendVerificationEmail: async ({ user, url }) => {
       log.info(
@@ -285,11 +284,11 @@ export const auth = betterAuth({
   },
 
   /**
-   * F-SEC-07 — block sessions whose `activeOrganizationId` resolves to a
-   * soft-disabled `Member` row. The deactivate mutation flips
-   * `Member.disabledAt`; this hook ensures sessions cannot be created (or
-   * refreshed) into a disabled membership. The check runs on both create and
-   * update so a session refresh re-evaluates the membership state.
+   * Block sessions whose `activeOrganizationId` resolves to a soft-disabled
+   * `Member` row. The deactivate mutation flips `Member.disabledAt`; this hook
+   * ensures sessions cannot be created (or refreshed) into a disabled
+   * membership. The check runs on both create and update so a session refresh
+   * re-evaluates the membership state.
    */
   databaseHooks: {
     session: {
@@ -366,13 +365,13 @@ export const auth = betterAuth({
 
   hooks: {
     before: createAuthMiddleware(async ctx => {
-      // F-SEC-22 — Cloudflare Turnstile bot protection on signup. The
-      // client widget produces a token in `cf-turnstile-response` (custom
-      // body field) which we forward to Cloudflare's siteverify endpoint
-      // BEFORE Better Auth processes the signup body. On failure we throw
-      // a generic FORBIDDEN so the response shape doesn't reveal whether
-      // the email was valid (defence in depth alongside the existing
-      // sign-in account-lockout PII protection).
+      // Cloudflare Turnstile bot protection on signup. The client widget
+      // produces a token in `cf-turnstile-response` (custom body field)
+      // which we forward to Cloudflare's siteverify endpoint BEFORE Better
+      // Auth processes the signup body. On failure we throw a generic
+      // FORBIDDEN so the response shape doesn't reveal whether the email was
+      // valid (defence in depth alongside the existing sign-in account-lockout
+      // PII protection).
       if (ctx.path === '/sign-up/email' && ctx.body) {
         const body = ctx.body as Record<string, unknown>;
         const token =
@@ -499,12 +498,12 @@ export const auth = betterAuth({
     organization({
       ac,
       allowCreatorAllPermissions: true,
-      // US-INFRA-01 (D-01) — accept an optional `billingCountry` on the create
-      // payload so the SPA can declare data residency at org creation. It is
-      // input-only: validated by Zod at the boundary, consumed by
-      // `beforeCreateOrganization` to derive `dataRegion`, and NEVER persisted
-      // (no `billingCountry` column exists on Organization) nor returned. The
-      // derived `dataRegion` enum column is the single source of truth.
+      // Accept an optional `billingCountry` on the create payload so the SPA
+      // can declare data residency at org creation. It is input-only: validated
+      // by Zod at the boundary, consumed by `beforeCreateOrganization` to derive
+      // `dataRegion`, and NEVER persisted (no `billingCountry` column exists on
+      // Organization) nor returned. The derived `dataRegion` enum column is the
+      // single source of truth.
       schema: {
         organization: {
           additionalFields: {
@@ -518,10 +517,10 @@ export const auth = betterAuth({
           },
         },
       },
-      // US-INFRA-01 (D-01) — the SINGLE origin of `dataRegion`. Maps the
-      // billing-country selection to a region and strips the transient
-      // `billingCountry` input so only real columns are written. `dataRegion`
-      // is immutable after creation: no update hook sets it.
+      // The SINGLE origin of `dataRegion`. Maps the billing-country selection
+      // to a region and strips the transient `billingCountry` input so only
+      // real columns are written. `dataRegion` is immutable after creation:
+      // no update hook sets it.
       organizationHooks: {
         beforeCreateOrganization: async ({ organization: org }) => {
           const { billingCountry, ...rest } = org as typeof org & { billingCountry?: string };
@@ -545,8 +544,7 @@ export const auth = betterAuth({
         // Better Auth's organization plugin does not synthesise an acceptance
         // URL — it provides the invitation id and expects the host application
         // to construct the link. We use the canonical app base URL (never a
-        // request-supplied origin) to prevent host-header injection (cf.
-        // F-SEC-08).
+        // request-supplied origin) to prevent host-header injection.
         const base = (authEnv.baseURL ?? 'http://localhost:3000').replace(/\/$/, '');
         const acceptUrl = `${base}/accept-invitation/${data.id}`;
 

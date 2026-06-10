@@ -26,7 +26,7 @@ export const portalAuthRouter = router({
   /**
    * Request a magic link email for portal login.
    * ALWAYS returns { success: true } regardless of whether the email
-   * matches a contractor -- prevents email enumeration (D-16 / Pitfall 2).
+   * matches a contractor -- prevents email enumeration.
    */
   requestMagicLink: portalPublicProcedure
     .input(z.object({ email: z.email() }))
@@ -36,7 +36,7 @@ export const portalAuthRouter = router({
 
       if (contractors.length > 0) {
         const { token } = await createMagicLinkToken(email);
-        // F-SEC-08: trusted env URL only — never from `ctx.headers`.
+        // Use trusted env URL only — never from `ctx.headers`.
         const baseUrl = deriveBaseUrl();
         await sendPortalMagicLink({ email, token, baseUrl });
       }
@@ -81,7 +81,7 @@ export const portalAuthRouter = router({
           userAgent,
         });
 
-        // F-SEC-09: bind a server-issued HMAC to the (token, expiresAt) pair
+        // Bind a server-issued HMAC to the (token, expiresAt) pair
         // so `/portal/set-session` can verify the cookie value really came
         // from this mutation (CSRF / session-fixation defence).
         const signature = signPortalSessionToken(session.rawToken, session.expiresAt);
@@ -171,7 +171,7 @@ export const portalAuthRouter = router({
         userAgent,
       });
 
-      // F-SEC-09: see verifyMagicLink — same defence applies to selectOrg.
+      // Same HMAC-session defence as verifyMagicLink applies to selectOrg.
       const signature = signPortalSessionToken(session.rawToken, session.expiresAt);
 
       return { rawToken: session.rawToken, expiresAt: session.expiresAt, signature };

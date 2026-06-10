@@ -1,10 +1,10 @@
 // ---------------------------------------------------------------------------
-// Phase 57 · Plan 03 · Task 1 — tax-id-validation.service (orchestrator)
+// tax-id-validation.service (orchestrator)
 // ---------------------------------------------------------------------------
 //
 // Single entry point for HMRC VAT + VIES USt-IdNr validation:
 //
-//   1. Pre-flight format check (Phase 56 `isValidGbVat` / `isValidUstIdNr`)
+//   1. Pre-flight format check (`isValidGbVat` / `isValidUstIdNr`)
 //      — shortcircuits malformed input BEFORE any network call. Writes an
 //      `invalid` TaxIdValidation row with `apiProvider='local-checksum'` so
 //      the audit trail captures the rejected attempt.
@@ -13,22 +13,22 @@
 //        - GB_VAT      → HmrcVatClient.checkVatNumber(vrn, { useVerifiedLookup: true })
 //        - DE_USTIDNR  → ViesClient.checkVatNumber('DE', vat, { qualified: true })
 //
-//   3. Atomic dual-write (D-04, D-05, Pitfall 9): `db.$transaction([
+//   3. Atomic dual-write: `db.$transaction([
 //        taxIdValidation.create({...}),
 //        contractor.update({ latestVatValidatedAt, latestVatValidationStatus }),
 //      ])` guarantees the summary columns on `Contractor` never drift from
 //      the append-only audit row.
 //
-//   4. Soft-fail (D-08): on HmrcApiError / ViesApiError / schema violation,
+//   4. Soft-fail: on HmrcApiError / ViesApiError / schema violation,
 //      look up the latest valid row. If one exists within the 90-day
 //      freshness window, persist a new `stale` row (preserving the prior
 //      `confirmationRef` + recording the upstream error message); otherwise
 //      persist `unavailable`. The caller always sees a deterministic
 //      `ValidationStatus` — the orchestrator never surfaces upstream errors
 //      as exceptions to tRPC (that would surface raw HMRC/VIES text to users
-//      and violate T-57-03-06).
+//      and expose raw HMRC/VIES error text to users).
 //
-//   5. PII safety (T-57-03-02): `maskTaxId()` is applied to every log line
+//   5. PII safety: `maskTaxId()` is applied to every log line
 //      containing the raw VAT value. Pino redact paths (packages/logger)
 //      cover structured log bodies; the orchestrator never writes the raw
 //      `taxIdValue` to console directly.
@@ -37,7 +37,7 @@
 //   - `taxIdValidation.create` writes `organizationId` from `input`
 //   - `getLatestValidation` filters by `contractorId` (tRPC caller has
 //     already enforced tenant scope on the contractor lookup). This
-//     matches T-57-03-05 — no cross-tenant read path exists.
+//     no cross-tenant read path exists.
 // ---------------------------------------------------------------------------
 
 import type { Prisma, PrismaClient, TaxIdType, ValidationStatus } from '@contractor-ops/db';
@@ -58,7 +58,7 @@ function taxValidationDelegates(db: TaxValidationDb): PrismaClient {
 // Constants
 // ---------------------------------------------------------------------------
 
-/** 90-day freshness window (D-06). */
+/** 90-day freshness window. */
 export const NINETY_DAYS_MS = 90 * 24 * 60 * 60 * 1000;
 
 // Supported tax-id types — explicit whitelist (dispatch guard).
@@ -103,7 +103,7 @@ export interface LatestValidationRow {
 // ---------------------------------------------------------------------------
 
 /**
- * Computes the 90-day freshness predicate (D-06).
+ * Computes the 90-day freshness predicate.
  *
  * @param validation - most-recent TaxIdValidation row (nullable)
  * @param now        - injected clock; defaults to `new Date()`
@@ -128,7 +128,7 @@ export function isValidationFresh(
  * Contractor scoping is handled by the tRPC caller — this function is
  * intentionally not aware of `organizationId` because the contractor row
  * itself carries the FK and the tRPC tenant middleware guarantees the
- * caller only ever sees contractors inside their own org (T-57-03-05).
+ * caller only ever sees contractors inside their own org.
  */
 export async function getLatestValidation(
   params: { contractorId: string; taxIdType: TaxIdType },
@@ -224,7 +224,7 @@ export async function validateTaxId(
     );
   } catch (err) {
     // Any thrown error — HmrcApiError, ViesApiError, schema violation, TCP
-    // reset — maps to the D-08 soft-fail branch. Logs are PII-masked.
+    // reset — maps to the soft-fail branch. Logs are PII-masked.
     const message = err instanceof Error ? err.message : 'Unknown upstream error';
     return softFail({
       input,
@@ -302,7 +302,7 @@ async function persistAndUpdate(
 }
 
 // ---------------------------------------------------------------------------
-// Internal: soft-fail handler (D-08)
+// Internal: soft-fail handler
 // ---------------------------------------------------------------------------
 
 interface SoftFailArgs {

@@ -34,8 +34,8 @@ export interface StepRunnerResult {
 
 /**
  * Thrown when the step's own organizationId does not match the one in the
- * QStash payload (77 WR-04 defense-in-depth). Non-retryable — the caller
- * (QStash route) should return 400, not 500, so the job is not retried.
+ * QStash payload (defense-in-depth org-match guard). Non-retryable — the
+ * caller (QStash route) should return 400, not 500, so the job is not retried.
  */
 export class StepOrgMismatchError extends Error {
   constructor(stepId: string, organizationId: string) {
@@ -47,16 +47,16 @@ export class StepOrgMismatchError extends Error {
 }
 
 /**
- * Phase 76 D-03 — execute a single deprovisioning saga step.
+ * Execute a single deprovisioning saga step.
  *
  * One independent QStash job per (provider, stepKind). NO Promise.allSettled
- * aggregation (Pitfall 10) — the aggregate run status is derived by
- * recomputeRunStatus after every transition (D-02).
+ * aggregation — the aggregate run status is derived by recomputeRunStatus
+ * after every transition.
  *
  * Order of operations (the audit + idempotency contract):
  *   1. Read step; short-circuit to FAILED if attempts >= MAX_ATTEMPTS.
  *   2. Mark IN_PROGRESS + increment attempts.
- *   3. INSERT IdpChangeProvenance BEFORE the adapter call (D-09 self-trigger filter).
+ *   3. INSERT IdpChangeProvenance BEFORE the adapter call (self-trigger filter).
  *   4. Resolve the Deprovisionable adapter + invoke suspend/revoke.
  *   5. Map USER_NOT_FOUND → SUCCEEDED (idempotent provider semantics).
  *   6. Persist result (status, SHA-256 hashes, sanitised error, finishedAt).
@@ -75,9 +75,9 @@ export async function runDeprovisioningStep(
     select: { id: true, runId: true, status: true, attempts: true, organizationId: true },
   });
 
-  // Defense-in-depth org-match guard (77 WR-04): the QStash payload is HMAC-signed
-  // so this is trusted-internal input — but if organizationId ever mismatches the
-  // step's own tenant, the runner would operate under the wrong regional client.
+  // Defense-in-depth org-match guard: the QStash payload is HMAC-signed so this
+  // is trusted-internal input — but if organizationId ever mismatches the step's
+  // own tenant, the runner would operate under the wrong regional client.
   // A mismatch is a non-retryable configuration error, not a transient failure.
   if (!step || step.organizationId !== body.organizationId) {
     throw new StepOrgMismatchError(body.stepId, body.organizationId);
@@ -101,7 +101,7 @@ export async function runDeprovisioningStep(
     },
   });
 
-  // D-09 — provenance row inserted BEFORE the adapter call so the webhook
+  // Provenance row inserted BEFORE the adapter call so the webhook
   // self-trigger filter can match our own change.
   await insertProvenance(sagaDb, {
     organizationId: body.organizationId,
@@ -122,8 +122,8 @@ export async function runDeprovisioningStep(
       ? await adapter.suspendAccount(body.externalUserId)
       : await adapter.revokeAllSessions(body.externalUserId);
 
-  // Phase 77 D-06/D-11 — LIKELY_GONE (user already absent) + SUCCEEDED are
-  // success-equivalent; USER_NOT_FOUND failureKind kept for back-compat.
+  // LIKELY_GONE (user already absent) + SUCCEEDED are success-equivalent;
+  // USER_NOT_FOUND failureKind kept for back-compat.
   const finalStatus =
     result.status === 'SUCCEEDED' ||
     result.status === 'LIKELY_GONE' ||
@@ -143,9 +143,9 @@ export async function runDeprovisioningStep(
     },
   });
 
-  // D-05 three-audit-row mapping: a GWS revokeAllSessions returns two sub-action
-  // hash pairs (OAuth-grant revoke + sign-out). Emit each as its own audit row so a
-  // full GWS run produces three rows (suspend + 2 revoke sub-actions).
+  // GWS revokeAllSessions returns two sub-action hash pairs (OAuth-grant revoke
+  // + sign-out). Emit each as its own audit row so a full GWS run produces
+  // three rows (suspend + 2 revoke sub-actions).
   for (const sub of result.subActions ?? []) {
     auditLog.info(
       {

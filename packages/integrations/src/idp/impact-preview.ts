@@ -1,11 +1,9 @@
-// Phase 77 D-01 — `describeImpact` return type.
+// `describeImpact` return type.
 //
 // `ImpactPreview` is a discriminated union keyed on `provider`. The saga UI
-// (77-05) narrows on `provider` with an exhaustive `switch` to render the
-// per-provider impact panel. Phase 78 adds new members (Entra, Okta, …)
-// WITHOUT modifying the existing ones. A CI lint
-// (`impact-preview-union.test.ts`, 77-01-10) asserts the union's `provider`
-// literals are a subset of the Prisma `DeprovisioningProvider` enum.
+// narrows on `provider` with an exhaustive `switch` to render the per-provider
+// impact panel. A CI lint asserts the union's `provider` literals are a subset
+// of the Prisma `DeprovisioningProvider` enum.
 
 /**
  * Provider-agnostic metrics rendered for every IdP in the impact panel.
@@ -20,7 +18,7 @@ export interface ImpactCommonMetrics {
 }
 
 /**
- * Google Workspace-specific impact metrics (CONTEXT.md D-01 / D-04).
+ * Google Workspace-specific impact metrics.
  */
 export interface GwsImpactCustomMetrics {
   /** Third-party OAuth grants that will be revoked. */
@@ -31,7 +29,7 @@ export interface GwsImpactCustomMetrics {
 }
 
 /**
- * Slack-specific impact metrics (CONTEXT.md D-01 / D-04).
+ * Slack-specific impact metrics.
  */
 export interface SlackImpactCustomMetrics {
   channelsMemberCount: number | null;
@@ -41,13 +39,13 @@ export interface SlackImpactCustomMetrics {
   isOrgOwner: boolean;
   /**
    * Set to `NOT_ON_ENTERPRISE_GRID` when `users.lookupByEmail` returns
-   * `cannot_perform_operation` (the canonical workspace-only signal, D-14).
+   * `cannot_perform_operation` (the canonical workspace-only signal).
    */
   error?: 'NOT_ON_ENTERPRISE_GRID' | null;
 }
 
 /**
- * Microsoft Entra ID-specific impact metrics (Phase 78 CONTEXT.md D-10).
+ * Microsoft Entra ID-specific impact metrics.
  *
  * `conditionalAccessPolicies` is the headline gate: a policy with session
  * controls that applies to the user can override a sign-out, so the impact
@@ -69,7 +67,7 @@ export interface EntraImpactCustomMetrics {
 }
 
 /**
- * Okta-specific impact metrics (Phase 78 CONTEXT.md D-10).
+ * Okta-specific impact metrics.
  */
 export interface OktaImpactCustomMetrics {
   assignedAppCount: number;
@@ -80,7 +78,7 @@ export interface OktaImpactCustomMetrics {
 }
 
 /**
- * GitHub org-specific impact metrics (Phase 78 CONTEXT.md D-10).
+ * GitHub org-specific impact metrics.
  *
  * `outsideCollaboratorRepoCount` is the "back-door" signal: repos the user
  * keeps access to even after org-member removal. `authorizedPatCount` is `null`
@@ -101,10 +99,9 @@ export interface GitHubImpactCustomMetrics {
  * Discriminated union returned by `Deprovisionable.describeImpact`. Narrow on
  * `provider` to access the provider-specific `customMetrics`.
  *
- * Phase 78 adds the `ENTRA`, `OKTA`, and `GITHUB` members WITHOUT modifying the
- * existing `GOOGLE_WORKSPACE` / `SLACK` ones. The `provider` discriminants are a
- * subset of the Prisma `DeprovisioningProvider` enum (`ENTRA`, NOT `ENTRA_ID`)
- * so the saga resolves adapters and the D-01 CI subset assertion stays green.
+ * The `provider` discriminants are a subset of the Prisma
+ * `DeprovisioningProvider` enum (`ENTRA`, NOT `ENTRA_ID`) so the saga resolves
+ * adapters and the CI subset assertion stays green.
  */
 export type ImpactPreview =
   | {

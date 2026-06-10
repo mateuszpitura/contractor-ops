@@ -11,7 +11,7 @@ import type {
 //
 // Wraps the `bir1` npm package, which speaks SOAP to the Polish GUS BIR1
 // service (https://api.stat.gov.pl/Home/RegonApi). Loaded via dynamic import
-// so the SOAP client stays out of cold-start (F-SCALE-14 convention).
+// so the SOAP client stays out of cold-start.
 
 const log = createIntegrationLogger('bir1');
 

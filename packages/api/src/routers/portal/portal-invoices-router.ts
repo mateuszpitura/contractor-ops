@@ -38,7 +38,7 @@ export const portalInvoicesRouter = router({
 
   /**
    * Get invoice detail with timeline, attached files, and payment info.
-   * Excludes internal data (batch IDs, reviewer names, cost centers) per D-11/D-12.
+   * Excludes internal data (batch IDs, reviewer names, cost centers) not intended for contractors.
    */
   getInvoice: portalProcedure.input(entityIdSchema).query(async ({ ctx, input }) => {
     const invoice = await ctx.db.invoice.findFirst({
@@ -87,7 +87,7 @@ export const portalInvoicesRouter = router({
       }),
     );
 
-    // Payment info (date + amount only, no batch IDs per D-12)
+    // Payment info (date + amount only, no batch IDs exposed to contractors)
     const paymentItem = await ctx.db.paymentRunItem.findFirst({
       where: {
         invoiceId: input.id,
@@ -169,7 +169,7 @@ export const portalInvoicesRouter = router({
 
   /**
    * List completed payments for this contractor.
-   * Returns only paidAt + amount + currency + invoiceNumber (no batch IDs per D-12).
+   * Returns only paidAt + amount + currency + invoiceNumber (no batch IDs exposed to contractors).
    */
   listPayments: portalProcedure.query(async ({ ctx }) => {
     const items = await ctx.db.paymentRunItem.findMany({
@@ -210,7 +210,7 @@ export const portalInvoicesRouter = router({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      // F-SEC-01: never accept (or return) a client-supplied storage key.
+      // Never accept (or return) a client-supplied storage key.
       // The server derives the key from `(organizationId, documentId)` and
       // persists it in `PendingUpload` for retrieval by `submitInvoice`.
       // The client only ever sees `documentId` + the presigned PUT URL —
@@ -227,7 +227,7 @@ export const portalInvoicesRouter = router({
         uploadUrl: pending.presignedPutUrl,
         documentId: pending.documentId,
         expiresAt: pending.expiresAt,
-        // F-SEC-01: kept as deprecated empty string for back-compat with
+        // Kept as deprecated empty string for back-compat with
         // older portal clients that still destructure `storageKey`. New
         // clients should ignore this field — the server no longer trusts it.
         storageKey: '',
@@ -249,13 +249,13 @@ export const portalInvoicesRouter = router({
         netAmountMinor: z.number().int().positive(),
         grossAmountMinor: z.number().int().positive(),
         documentId: z.string(),
-        // F-SEC-01: `storageKey` is intentionally NOT part of the input
-        // contract — the server recovers the trusted key from `PendingUpload`
+        // `storageKey` is intentionally NOT part of the input contract —
+        // the server recovers the trusted key from `PendingUpload`
         // (consumed atomically below). Older portal clients that still send
         // `storageKey` are non-breaking: Zod's default object behaviour
         // strips unknown keys, so the field is silently dropped at the edge.
-        // Re-introducing it here would re-open F-SEC-01 (cross-tenant IDOR
-        // via attacker-supplied storage path).
+        // Re-introducing it here would re-open a cross-tenant IDOR via
+        // attacker-supplied storage path.
         originalFileName: z.string(),
         fileSizeBytes: z.number().int().positive(),
         checksumSha256: z.string().optional(),
@@ -278,10 +278,10 @@ export const portalInvoicesRouter = router({
         });
       }
 
-      // F-SEC-01: atomically consume the PendingUpload row to recover the
+      // Atomically consume the PendingUpload row to recover the
       // server-stored `storageKey` for this `documentId`. Throws if the row
       // is missing, expired, already consumed, belongs to another tenant,
-      // or was minted for a different purpose. THIS IS THE PRIMARY DEFENCE
+      // or was minted for a different purpose. This is the primary defence
       // against cross-tenant document exfiltration via portal.submitInvoice.
       const pending = await consumePendingUpload({
         db: ctx.db,

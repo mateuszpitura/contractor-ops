@@ -641,7 +641,7 @@ export const reportRouter = router({
   }),
 
   // =========================================================================
-  // Export mutations — all 5 enqueue async jobs (P2-F · F-SCALE-01).
+  // Export mutations — all 5 enqueue async jobs.
   //
   // Each mutation:
   //   - validates input via Zod (per-export schema lives in the

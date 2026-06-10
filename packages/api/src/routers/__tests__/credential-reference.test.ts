@@ -3,9 +3,9 @@ import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 
 // The credentialReference router gates vaultUrl/label/notes server-side with
-// looksLikeSecretRefinement (D-11). These tests exercise the exact Zod schema
-// shape the router applies; full tRPC-harness integration (permission gates,
-// audit emission, tenant scoping) is covered by the it.todo forward-references.
+// looksLikeSecretRefinement. These tests exercise the exact Zod schema shape
+// the router applies; full tRPC-harness integration (permission gates, audit
+// emission, tenant scoping) is covered by the it.todo forward-references.
 const SAFE_TEXT = z.string().min(1).max(2000).superRefine(looksLikeSecretRefinement);
 const SAFE_VAULT_URL = z.string().url().superRefine(looksLikeSecretRefinement);
 

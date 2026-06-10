@@ -1,6 +1,6 @@
 export { GovApiAuditLogger } from './audit-logger.js';
 export { GovApiClient } from './client.js';
-// Phase 57 · Plan 02 — government VAT client implementations.
+// Government API client implementations.
 export {
   HmrcApiError,
   HmrcVatClient,

@@ -6,9 +6,9 @@ import { useTranslations } from '../../../i18n/useTranslations.js';
 
 export interface ScopeMismatchBannerProps {
   /**
-   * Set by the contract-create result (`contract.permittedActivityScope.mismatch`,
-   * Plan 05): the contract's ISIC activity falls outside the contractor's permitted
-   * free-zone set. The banner is advisory only — it never gates creation (D-07).
+   * Set by the contract-create result (`contract.permittedActivityScope.mismatch`):
+   * the contract's ISIC activity falls outside the contractor's permitted
+   * free-zone set. The banner is advisory only — it never gates creation.
    */
   mismatch: boolean;
   /**
@@ -19,10 +19,10 @@ export interface ScopeMismatchBannerProps {
 }
 
 /**
- * GULF-03 — non-blocking scope-mismatch advisory (D-07). Rendered with the `--warning`
- * (amber) treatment, NOT `--destructive`: the mismatch is surfaced, the auto-NOC item is
- * recorded server-side, and contract creation still proceeds. Copy is advisory in tone
- * and never asserts a determination (T-79-06-03). Logical properties only (D-13).
+ * Non-blocking scope-mismatch advisory. Rendered with the `--warning` (amber)
+ * treatment, NOT `--destructive`: the mismatch is surfaced, the auto-NOC item is
+ * recorded server-side, and contract creation still proceeds. Copy is advisory in
+ * tone and never asserts a determination. Uses logical properties throughout.
  */
 export function ScopeMismatchBanner({ mismatch, complianceHref }: ScopeMismatchBannerProps) {
   const t = useTranslations('Contractors.freeZone.scopeMismatch');

@@ -1,6 +1,6 @@
 // packages/api/src/pdf-templates/late-payment-claim.tsx
 //
-// Phase 63 · Plan 05 · D-17 — React-PDF template for LPCDA claim letter.
+// React-PDF template for LPCDA claim letter.
 // Follows the same pattern as ir35-sds.tsx — same design tokens, same structure.
 //
 // Contract:

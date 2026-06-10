@@ -1,5 +1,5 @@
 /**
- * Phase 78 IDP-07 — GitHubProviderSectionView render + toggle-gate tests.
+ * GitHubProviderSectionView render + toggle-gate tests.
  */
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';

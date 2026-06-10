@@ -56,7 +56,7 @@ const confluenceSearchResponseSchema = z.object({
 });
 
 // ---------------------------------------------------------------------------
-// Timeout budgets (F-INT-01 / F-INT-02)
+// Timeout budgets
 // ---------------------------------------------------------------------------
 //
 // OAuth token redemption + refresh — non-idempotent POSTs. 30s wall-clock,
@@ -76,8 +76,8 @@ const REST_RETRIES = 2;
 /**
  * Confluence Cloud uses OAuth 2.0 Authorization Code Grant (3LO).
  *
- * IMPORTANT: Use a separate OAuth app from Jira (Pitfall 3) to avoid
- * scope conflicts and allow independent lifecycle management.
+ * IMPORTANT: Use a separate OAuth app from Jira to avoid scope conflicts
+ * and allow independent lifecycle management.
  *
  * Env vars required:
  * - CONFLUENCE_CLIENT_ID, CONFLUENCE_CLIENT_SECRET — for OAuth

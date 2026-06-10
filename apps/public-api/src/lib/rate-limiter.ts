@@ -40,11 +40,11 @@ const upstashLimiter: Ratelimit | null = hasRedis
 
 // --- In-memory fallback ---
 //
-// F-SCALE-15 — entries track `lastSeenMs`; eviction at `MAX_WINDOWS` is LRU
-// (oldest `lastSeenMs` first). Previously the eviction batch was insertion-
-// order FIFO, which during a sustained Redis outage evicted legitimate
-// long-running clients before lower-rate attackers, the wrong incentive
-// direction. LRU keeps the active workload in the map.
+// Entries track `lastSeenMs`; eviction at `MAX_WINDOWS` is LRU (oldest
+// `lastSeenMs` first). Previously the eviction batch was insertion-order
+// FIFO, which during a sustained Redis outage evicted legitimate long-running
+// clients before lower-rate attackers — the wrong incentive direction. LRU
+// keeps the active workload in the map.
 type RlWindow = { count: number; resetAt: number; lastSeenMs: number };
 const windows = new Map<string, RlWindow>();
 
@@ -79,7 +79,7 @@ function fallbackLimit(key: string): { allowed: boolean; remaining: number; rese
 
   if (!window || now >= window.resetAt) {
     // Safety cap: prune expired windows first; then LRU-evict if still
-    // over the cap (F-SCALE-15).
+    // over the cap.
     if (windows.size >= MAX_WINDOWS) {
       for (const [k, w] of windows) {
         if (now >= w.resetAt) windows.delete(k);
@@ -132,11 +132,11 @@ export const rateLimitMiddleware: MiddlewareHandler = async (c, next) => {
       remaining = result.remaining;
       resetAtMs = result.reset;
     } catch (err) {
-      // F-SCALE-03: fail-CLOSED in production. The in-memory fallback is
-      // per-instance and ineffective on a 6-pod deploy, so allowing requests
-      // through during a Redis outage gives an attacker a free DoS window
-      // against authenticated API keys. Surface a 503 + Retry-After so
-      // clients back off and on-call sees the spike.
+      // Fail-CLOSED in production. The in-memory fallback is per-instance and
+      // ineffective on a multi-pod deploy, so allowing requests through during
+      // a Redis outage gives an attacker a free DoS window against authenticated
+      // API keys. Surface a 503 + Retry-After so clients back off and on-call
+      // sees the spike.
       const env = process.env.NODE_ENV ?? 'development';
       if (env === 'production') {
         log.error({ err }, 'upstash rate limiter unavailable — failing closed (503)');

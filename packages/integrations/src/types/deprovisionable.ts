@@ -1,4 +1,4 @@
-// Phase 76 D-13 — Deprovisionable contract.
+// Deprovisionable contract.
 //
 // Every IdP-capable adapter MUST implement this interface. Compile-time enforcement
 // happens at the registry boundary: `registerDeprovisionableAdapter(provider, adapter)`
@@ -11,10 +11,10 @@ import type { ImpactPreview } from '../idp/impact-preview.js';
 /**
  * Status of an individual deprovisioning method call.
  *
- * Phase 77 D-06 — additively extended with `LIKELY_GONE`: the provider returned
- * a not-found signal (PERMANENT_NOT_FOUND), so the user is treated as already
+ * Additively extended with `LIKELY_GONE`: the provider returned a not-found
+ * signal (PERMANENT_NOT_FOUND), so the user is treated as already
  * deprovisioned. The saga's run-status derivation treats LIKELY_GONE as a
- * terminal-success equivalent (D-11).
+ * terminal-success equivalent.
  */
 export type DeprovisionResultStatus = 'SUCCEEDED' | 'FAILED' | 'LIKELY_GONE';
 
@@ -50,18 +50,17 @@ export interface DeprovisionResult {
   requestSha256: string;
   /** SHA-256 hex of the canonicalised response payload (PII removed first). */
   responseSha256: string;
-  // Phase 77 D-06 — additive optional fields.
   /** Set when the operation was a no-op because the user was already gone. */
   skipped?: boolean;
   /** Sanitised, non-PII reason for a skip / LIKELY_GONE outcome. */
   reason?: string;
-  /** Closed-enum failure classification (D-07) used by the reconcile queue. */
+  /** Closed-enum failure classification used by the reconcile queue. */
   errorClass?: ErrorClass;
   /**
-   * Phase 77 D-05 — extra per-sub-action audit rows (e.g. GWS `revokeAllSessions`
-   * does an OAuth-grant revoke + a sign-out; each gets its own SHA-256 pair). The
-   * step-runner (77-04) persists these as additional audit rows beyond the step's
-   * own request/response hashes. Each entry's hashes are PII-free.
+   * Extra per-sub-action audit rows (e.g. GWS `revokeAllSessions` does an
+   * OAuth-grant revoke + a sign-out; each gets its own SHA-256 pair). The
+   * step-runner persists these as additional audit rows beyond the step's own
+   * request/response hashes. Each entry's hashes are PII-free.
    */
   subActions?: Array<{
     /** Stable label, e.g. `'revoke_oauth_grants'` / `'sign_out_sessions'`. */
@@ -77,13 +76,13 @@ export interface DeprovisionResult {
  * Adapters that implement this interface MUST be registered via
  * `registerDeprovisionableAdapter(provider, adapter)` for the saga to discover them.
  *
- * Compile-time enforcement guarantee (D-13 / SC#5):
+ * Compile-time enforcement guarantee:
  * - `class GoogleWorkspaceAdapter extends BaseAdapter implements Deprovisionable { ... }` ←
  *   if any of the three methods is missing, TypeScript rejects the class declaration.
  * - `registerDeprovisionableAdapter(provider, new GoogleWorkspaceAdapter())` ←
  *   the signature requires `BaseAdapter & Deprovisionable`. A class missing methods
  *   fails the second check too.
- * - Phase 78's Entra adapter that forgets `revokeAllSessions()` will not compile.
+ * - Any Entra adapter that forgets `revokeAllSessions()` will not compile.
  */
 export interface Deprovisionable {
   /**
@@ -101,7 +100,7 @@ export interface Deprovisionable {
 
   /**
    * Verifies the user is in a fully-deprovisioned state at the provider.
-   * Used by D-16 integration test stub: after suspendAccount + 5 minutes
+   * Used by the integration test stub: after suspendAccount + 5 minutes
    * of mocked-clock time, `verifyDeprovisioned` returns true.
    *
    * Returning `false` does NOT itself fail the saga; it's a TEST-TIME assertion.
@@ -110,11 +109,11 @@ export interface Deprovisionable {
   verifyDeprovisioned(externalUserId: string): Promise<boolean>;
 
   /**
-   * Phase 77 D-01 — pre-flight impact preview. Makes live (cached) provider
-   * read calls to describe what deprovisioning the user will affect (account
-   * status, session count, OAuth grants, channel/drive ownership, …). Returns
-   * a discriminated {@link ImpactPreview} narrowed on `provider`. Never mutates
-   * provider state; safe to call before the admin confirms the run.
+   * Pre-flight impact preview. Makes live (cached) provider read calls to
+   * describe what deprovisioning the user will affect (account status, session
+   * count, OAuth grants, channel/drive ownership, …). Returns a discriminated
+   * {@link ImpactPreview} narrowed on `provider`. Never mutates provider state;
+   * safe to call before the admin confirms the run.
    */
   describeImpact(externalUserId: string): Promise<ImpactPreview>;
 }

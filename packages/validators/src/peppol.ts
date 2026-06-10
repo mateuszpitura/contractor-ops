@@ -15,7 +15,7 @@ export const peppolParticipantIdSchema = z
 export type PeppolParticipantId = z.infer<typeof peppolParticipantIdSchema>;
 
 // ---------------------------------------------------------------------------
-// Peppol scheme-id + value primitives (Phase 61 Plan 05)
+// Peppol scheme-id + value primitives
 // ---------------------------------------------------------------------------
 //
 // The Peppol ICD (Issuing Code List) registers every jurisdiction's
@@ -23,7 +23,7 @@ export type PeppolParticipantId = z.infer<typeof peppolParticipantIdSchema>;
 // 0192 Norway orgnr, 9930 DE Leitweg, 9957 DE Steuernummer, …).
 // Participant values are capped at 64 chars per Storecove's documented limit.
 //
-// Consumed by Plan 05 UI forms (Settings → E-invoicing) and by the
+// Consumed by the Settings → E-invoicing UI forms and by the
 // capability-lookup tRPC procedure. The paired refinement
 // (`peppolParticipantPairSchema`) lives in `./leitweg-id.ts` to colocate
 // with Contractor boundary validation; re-exported from the package root.
@@ -36,7 +36,7 @@ export const peppolParticipantValueSchema = z
   .max(64, 'Peppol participant value too long');
 
 // ---------------------------------------------------------------------------
-// Capability lookup (Phase 61 Plan 05 — D-11)
+// Capability lookup
 // ---------------------------------------------------------------------------
 
 /**

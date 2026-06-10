@@ -1,12 +1,9 @@
-// Phase 57 · Plan 04 Task 4 — tax-rate.service unit test (PAY-02; PAY-04).
+// tax-rate.service unit test.
 // Owns: pnpm --filter @contractor-ops/api test --run tax-rate.service
 //
-// The original Wave-0 RED scaffold (Plan 57-01 Task 1 Step 7, fallback clause)
-// depended on a real Prisma test DB + seed helpers from
-// @contractor-ops/test-utils/prisma. Those helpers still do not exist in the
-// workspace, so Plan 57-04 Task 4 turns this scaffold GREEN by mocking the
-// Prisma client at the call boundary instead. The underlying seed is already
-// unit-tested in `packages/db/__tests__/tax-rates.seed.test.ts` (Plan 57-01).
+// Mocks the Prisma client at the call boundary rather than requiring a real
+// Prisma test DB + seed helpers. The underlying seed is already unit-tested
+// in `packages/db/__tests__/tax-rates.seed.test.ts`.
 //
 // What we assert here is the SERVICE behaviour, not the DB seed:
 //   - `getTaxRatesForCountry('GB')` issues a single `taxRate.findMany` with

@@ -13,8 +13,6 @@ import { CacheKeys, invalidateByPrefix } from '../../services/cache';
 import { deleteCalendarEvent } from '../../services/calendar-event-service';
 
 export const invoiceActionsRouter = router({
-
-
   /**
    * Void an invoice (soft status transition to VOID).
    */
@@ -108,7 +106,7 @@ export const invoiceActionsRouter = router({
         });
       });
 
-      // Calendar cleanup: remove payment deadline event (D-08)
+      // Calendar cleanup: remove payment deadline event
       void deleteCalendarEvent(ctx.db, {
         organizationId: ctx.organizationId,
         entityType: 'INVOICE',
@@ -121,7 +119,6 @@ export const invoiceActionsRouter = router({
 
       return updated;
     }),
-
 
   /**
    * Toggle reverse charge status on an invoice.

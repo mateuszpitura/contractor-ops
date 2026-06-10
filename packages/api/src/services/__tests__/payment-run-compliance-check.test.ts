@@ -1,10 +1,10 @@
-// Phase 72 Wave 3 — GREEN tests for payment-run-compliance-check
+// GREEN tests for payment-run-compliance-check.
 //
-// Covers the snapshot builder (D-17) and the PASS/FAIL verdict + atomicity
-// contract (D-16/D-18/D-19) at the service boundary that payment.lockAndExport
-// composes. The full mutation is exercised via the snapshot builder + a faithful
-// re-implementation of the tx orchestration (the real router transaction shape),
-// avoiding the appRouter import (which has unrelated Phase 76 mock requirements).
+// Covers the snapshot builder and the PASS/FAIL verdict + atomicity contract
+// at the service boundary that payment.lockAndExport composes. The full
+// mutation is exercised via the snapshot builder + a faithful re-implementation
+// of the tx orchestration (the real router transaction shape), avoiding the
+// appRouter import (which has unrelated mock requirements).
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 

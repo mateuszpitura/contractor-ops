@@ -1,41 +1,40 @@
 // ---------------------------------------------------------------------------
-// Phase 79 · GULF-05/06/07 (D-10/D-11/D-12) — Saudization dashboard derivation
-// + offboarding band-trajectory.
+// Saudization dashboard derivation + offboarding band-trajectory.
 // ---------------------------------------------------------------------------
 //
 // Pure derivation functions mirroring computeComplianceHealth
 // (packages/api/src/routers/core/contractor.ts) — params in, structured result
-// out, NO DB client, NO writes, NO throws. The router (Plan 06) reads the
+// out, NO DB client, NO writes, NO throws. The router reads the
 // SaudiHeadcount / SaudizationConfig rows + the ksa.iqama compliance items via
 // the region-aware ctx.db and passes them here.
 //
 // Two locked anti-features enforced by structure, not discipline:
-//   - Pitfall 7 (D-10): the nationalisation rate is computed ONLY from the manual
-//     SaudiHeadcount numbers (Nitaqat counts the whole workforce; the platform
-//     sees contractors only). The platform-derived contractor breakdown is
-//     returned side-by-side, clearly subordinate, and NEVER drives the rate.
-//   - Pitfall 8 (D-12): the band is read-through from the manual SaudizationConfig
-//     entry — it is NEVER recomputed or inferred from the rate. No band-derivation
-//     code path exists here by design. The offboarding trajectory is ephemeral,
+//   - The nationalisation rate is computed ONLY from the manual SaudiHeadcount
+//     numbers (Nitaqat counts the whole workforce; the platform sees contractors
+//     only). The platform-derived contractor breakdown is returned side-by-side,
+//     clearly subordinate, and NEVER drives the rate.
+//   - The band is read-through from the manual SaudizationConfig entry — it is
+//     NEVER recomputed or inferred from the rate. No band-derivation code path
+//     exists here by design. The offboarding trajectory is ephemeral,
 //     advisory-only, non-authoritative, and asserts no band.
 
 import type { NitaqatBand } from '@contractor-ops/db';
 
-/** Manual org-wide headcount (D-10) — the ONLY source of the nationalisation rate. */
+/** Manual org-wide headcount — the ONLY source of the nationalisation rate. */
 export interface SaudiHeadcountInput {
   totalHeadcount: number;
   saudiHeadcount: number;
 }
 
-/** Manual Saudization config (D-05/GULF-05) — band is recorded by an admin, never computed. */
+/** Manual Saudization config — band is recorded by an admin, never computed. */
 export interface SaudizationConfigInput {
-  /** Read-through manual band; null until an admin records it. NEVER auto-computed (Pitfall 8). */
+  /** Read-through manual band; null until an admin records it. NEVER auto-computed. */
   band: NitaqatBand | null;
   industrySegment: string | null;
   bandLastUpdatedAt: Date | null;
 }
 
-/** Per-engagement platform-derived flags (GULF-04) — side-by-side sanity-check only. */
+/** Per-engagement platform-derived flags — side-by-side sanity-check only. */
 export interface PlatformContractorInput {
   isSaudi: boolean | null;
   qiwaContractAuthenticated: boolean | null;
@@ -68,17 +67,17 @@ export interface IqamaRollup {
 }
 
 export interface SaudizationDashboardResult {
-  /** From manual numbers ONLY (D-10); null when no headcount recorded. */
+  /** From manual numbers ONLY; null when no headcount recorded. */
   nationalisationRate: number | null;
   totalHeadcount: number | null;
   saudiHeadcount: number | null;
-  /** Read-through manual band — never computed (Pitfall 8). */
+  /** Read-through manual band — never computed. */
   band: NitaqatBand | null;
   industrySegment: string | null;
   bandLastUpdatedAt: Date | null;
   /** True when the recorded band is older than the quarterly (~90 day) re-entry window. */
   quarterlyReentryDue: boolean;
-  /** D-11 visibility-only: contracts WHERE qiwaContractAuthenticated=false. */
+  /** Visibility-only: contracts WHERE qiwaContractAuthenticated=false. */
   qiwaGapCount: number;
   iqamaRollup: IqamaRollup;
   /** Subordinate platform-derived breakdown shown beside the manual numbers. */
@@ -103,7 +102,7 @@ export function computeSaudizationDashboard(
   const now = params.now ?? new Date();
   const { headcount, config } = params;
 
-  // D-10 / Pitfall 7 — rate from MANUAL numbers only. No platform fallback.
+  // Rate from MANUAL numbers only. No platform fallback.
   const totalHeadcount = headcount?.totalHeadcount ?? null;
   const saudiHeadcount = headcount?.saudiHeadcount ?? null;
   const nationalisationRate =
@@ -111,7 +110,7 @@ export function computeSaudizationDashboard(
       ? headcount.saudiHeadcount / headcount.totalHeadcount
       : null;
 
-  // Pitfall 8 — band is read-through; we NEVER compute it from the rate.
+  // Band is read-through; we NEVER compute it from the rate.
   const band = config.band;
 
   const quarterlyReentryDue =
@@ -119,7 +118,7 @@ export function computeSaudizationDashboard(
       ? false
       : (now.getTime() - config.bandLastUpdatedAt.getTime()) / MS_PER_DAY > QUARTERLY_REENTRY_DAYS;
 
-  // D-11 — Qiwa-auth coverage gap = count of contracts not authenticated.
+  // Qiwa-auth coverage gap = count of contracts not authenticated.
   const qiwaGapCount = params.platformContractors.filter(
     c => c.qiwaContractAuthenticated === false,
   ).length;
@@ -173,16 +172,16 @@ export interface OffboardingTrajectoryResult {
   currentRate: number | null;
   /** Projected rate from SaudiHeadcount minus one (Saudi count drops only if the leaver is Saudi). */
   projectedRate: number | null;
-  /** The recorded band, surfaced verbatim. NO projected band is asserted (Pitfall 8 / D-12). */
+  /** The recorded band, surfaced verbatim. NO projected band is asserted. */
   currentBand: NitaqatBand | null;
   /** Always true — this is a non-gating advisory banner. */
   advisory: true;
-  /** Always false — the projection never authoritatively sets a band (D-12). */
+  /** Always false — the projection never authoritatively sets a band. */
   authoritative: false;
 }
 
 /**
- * Live, ephemeral offboarding band-trajectory recompute (D-12). Projects the
+ * Live, ephemeral offboarding band-trajectory recompute. Projects the
  * nationalisation rate from SaudiHeadcount minus one (the Saudi count drops only
  * when the leaver is Saudi). Returns advisory flags only — it never sets a band,
  * never persists, never gates, and never throws. Pure single-arg function so it

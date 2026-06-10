@@ -1,14 +1,14 @@
-// Phase 70 D-09 D-12 — Zod schema for the flag-namespace signoff registry.
+// Zod schema for the flag-namespace signoff registry.
 //
-// Independent of Phase 64's disclaimer signoff registry
+// Independent of the disclaimer signoff registry
 // (`packages/validators/src/legal/signoff-registry-schema.ts`):
 //   - Different approver-role enum (legal/compliance/privacy/external)
 //   - Different gate timing (boot vs production-deploy)
 //   - Different consumer (feature-flags registry-load vs ci-legal-gate-production)
 //
-// Boot-time consumed by `packages/feature-flags/src/registry.ts` (Plan 70-07)
-// to refuse to start the app when a gated-namespace flag is APPROVED but
-// missing a registry entry, OR APPROVED without a legalTicketRef.
+// Consumed at boot by `packages/feature-flags/src/registry.ts` to refuse to
+// start the app when a gated-namespace flag is missing a registry entry, or
+// is APPROVED without a legalTicketRef.
 
 import { z } from 'zod';
 

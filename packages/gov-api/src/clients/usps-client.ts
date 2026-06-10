@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------
-// Phase 84 · Plan 04 — UspsAddressClient (US-FIELD-03, D-03)
+// UspsAddressClient
 // ---------------------------------------------------------------------------
 //
 // USPS Addresses 3.0 adapter. Mirrors the hmrc-vat-client.ts template:
@@ -10,15 +10,15 @@
 //   - Sliding-window rate limiter keyed on a FIXED GLOBAL id ('usps-global'),
 //     config { maxRequests: 60, windowMs: 3_600_000 }. The 60/hr cap is
 //     per-credential GLOBAL — keying on organizationId would let N orgs each
-//     claim 60/hr and blow the real cap (Pitfall 4, D-03 correction).
+//     claim 60/hr and blow the real cap.
 //   - Address-result cache keyed by sha256(canonical input) to amortize the
 //     60/hr budget across repeat saves of the same address.
 //   - Zod safeParse boundary — schema drift / malformed bodies become
 //     `unverified`, never an unsafe cast or a thrown SyntaxError.
 //
-// Advisory / fail-open (D-03): USPS NEVER blocks the save path. On self-throttle
+// Advisory / fail-open: USPS NEVER blocks the save path. On self-throttle
 // (60/hr hit) OR 5xx OR network error OR Redis/limiter failure OR a malformed /
-// safeParse-failed response OR missing credentials (LOCAL-ONLY), `validateAddress`
+// safeParse-failed response OR missing credentials, `validateAddress`
 // returns `{ verified: false, status }` WITHOUT throwing to the caller.
 //
 // Dependency injection: the limiter, address cache, and `fetch` are injected so
@@ -46,7 +46,8 @@ const TOKEN_REFRESH_BUFFER_MS = 300_000;
 
 /**
  * Fixed GLOBAL rate-limit identifier. The USPS 60/hr cap is per-credential and
- * shared across the whole platform — this MUST NOT be organizationId (Pitfall 4).
+ * shared across the whole platform — this MUST NOT be organizationId (per-org
+ * keying would let N orgs each claim 60/hr and blow the real per-credential cap).
  */
 const USPS_GLOBAL_LIMITER_ID = 'usps-global';
 
@@ -181,9 +182,9 @@ export class UspsAddressClient {
   /**
    * Validate/normalize a US address against USPS Addresses 3.0.
    *
-   * NEVER throws to the caller (D-03 advisory): every failure path resolves to
-   * `{ verified: false, status }` so a USPS / Redis / credential outage can
-   * never block a contractor save.
+   * NEVER throws to the caller (advisory / fail-open): every failure path
+   * resolves to `{ verified: false, status }` so a USPS / Redis / credential
+   * outage can never block a contractor save.
    */
   async validateAddress(input: UspsAddressInput): Promise<UspsValidationResult> {
     const cacheKey = this.cacheKey(input);

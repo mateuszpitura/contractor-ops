@@ -1,8 +1,8 @@
-// Phase 57 · Plan 01 — HMRC VAT Registration API Zod schemas (PAY-03, D-04).
+// HMRC VAT Registration API Zod schemas.
 //
 // Source: https://developer.service.hmrc.gov.uk/api-documentation/docs/api/service/vat-registered-companies-api
 //
-// Consumed by HmrcVatClient (Wave 1) to parse:
+// Consumed by HmrcVatClient to parse:
 //   - OAuth 2.0 client-credentials token response
 //   - /organisations/vat/check-vat-number/lookup/:targetVrn/:requesterVrn? success body
 //   - HMRC error envelope

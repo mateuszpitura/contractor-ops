@@ -1,13 +1,12 @@
 // packages/api/src/services/__tests__/leitweg-id-resolver.test.ts
 //
-// Phase 61 · Plan 61-04 Task 1 — resolver unit tests replacing Plan 01 RED
-// scaffolds. Covers the D-06 resolution order exactly plus cross-tenant
+// Resolver unit tests. Covers the resolution order plus cross-tenant
 // isolation and non-default contractor rows never being returned.
 //
 // Strategy: pure unit test with an in-memory Map modelling the `LeitwegId`
 // table; we implement only the `findFirst` behaviour the resolver consumes.
 // No real Prisma client — avoids flaky DB state and keeps the test focused on
-// the resolver's branching logic (which is where D-06 can silently regress).
+// the resolver's branching logic.
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 

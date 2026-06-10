@@ -1,18 +1,18 @@
-// Phase 70 D-15 — IdP deprovisioning audit logger.
+// IdP deprovisioning audit logger.
 //
 // Returns a Pino child logger that:
 //   - Inherits auth/secret redaction from PII_MASK_PATHS (passwords, tokens,
 //     apiKeys, contractor PII)
-//   - EXPLICITLY omits the body and `*.body` paths that Plan 70-03 added at
-//     the root — audit lines emit structured fields (scopeDelta, body),
-//     and these MUST survive in plaintext for compliance fidelity.
+//   - EXPLICITLY omits the body and `*.body` paths from the default redact
+//     config — audit lines emit structured fields (scopeDelta, body), and
+//     these MUST survive in plaintext for compliance fidelity.
 //
 // PII note: `externalUserId` is the contractor's IdP email address. It MUST
 // NOT appear in plaintext audit log lines (GDPR / SOC2). Callers MUST pass
 // a SHA-256 hash via `hashExternalUserId(rawEmail)` rather than the raw value.
 // The `externalUserId` allow-list field carries the hash, not the email.
 //
-// Consumer: Phases 76–78 (IdP deprovisioning F2). Example call:
+// Example call:
 //
 //   getIdpAuditLogger().info(
 //     {
@@ -50,16 +50,16 @@ export function hashExternalUserId(rawId: string): string {
  * (the IdpAuditEvent type below is a partial map) but the documented
  * contract is "extras-discouraged".
  *
- * Phase 70 D-15 — initial 9 fields (per-action audit).
- * Phase 76 D-15 — saga + provenance fields (runId, stepId, hashes, attempts, etc.).
- * All Phase 76 fields are SHA-256 hashes, enum discriminators, or opaque IDs — no PII.
- * Phase 77 D-07/D-10 — error-class + manual-override discriminators. `errorClass`
- * and `manualOverrideCategory` are closed enums; `manualOverriddenByUserId` is an
+ * Initial 9 fields cover per-action audit (auditEvent, externalUserId, etc.).
+ * Saga + provenance fields (runId, stepId, hashes, attempts, etc.) are all
+ * SHA-256 hashes, enum discriminators, or opaque IDs — no PII.
+ * Error-class + manual-override discriminators: `errorClass` and
+ * `manualOverrideCategory` are closed enums; `manualOverriddenByUserId` is an
  * opaque id — no PII. The free-text override-rationale column is DELIBERATELY
  * excluded from this allow-list — it lives only in the DB and is never logged raw.
  */
 export const IDP_AUDIT_ALLOWED_FIELDS = [
-  // Phase 70 D-15 (existing) — DO NOT REMOVE
+  // Per-action audit fields — DO NOT REMOVE
   'auditEvent',
   'externalUserId',
   'actionResult',
@@ -69,7 +69,7 @@ export const IDP_AUDIT_ALLOWED_FIELDS = [
   'organizationId',
   'userId',
   'timestamp',
-  // Phase 76 D-15 / SC#2 — saga audit grade
+  // Saga + provenance audit fields
   'runId',
   'stepId',
   'stepKind',
@@ -78,7 +78,7 @@ export const IDP_AUDIT_ALLOWED_FIELDS = [
   'attempts',
   'failureKind',
   'matchedProvenanceId',
-  // Phase 77 D-07 / D-10 — error-class + manual-override (non-PII discriminators/ids)
+  // Error-class + manual-override discriminators (non-PII)
   'errorClass',
   'manualOverrideCategory',
   'manualOverriddenByUserId',

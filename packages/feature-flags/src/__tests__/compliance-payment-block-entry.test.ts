@@ -1,6 +1,4 @@
-// Phase 72 Wave 0 — Nyquist failing scaffold
-// Maps to COMPL-05 feature-flag gating; entry lives in
-// packages/feature-flags/src/signoff-registry-flags.json (Plan 72-08).
+// Verifies the compliance-payment-block signoff-registry entry.
 
 import { describe, expect, it } from 'vitest';
 import rawRegistry from '../signoff-registry-flags.json' with { type: 'json' };

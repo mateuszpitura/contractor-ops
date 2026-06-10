@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------
-// Phase 60 · CLASS-07 — RBAC recipient lookup for notification dispatch.
+// RBAC recipient lookup for notification dispatch.
 // ---------------------------------------------------------------------------
 //
 // Bulk variant of `requirePermission` used when a cron job needs to dispatch
@@ -62,7 +62,7 @@ export type ContractorPermission = 'contractor:read' | 'contractor:update';
  * Returns the deduped list of user ids in `organizationId` whose active
  * Member role grants the requested contractor permission.
  *
- * Used by cron jobs (Phase 60 CLASS-07 economic-dependency scan) to resolve
+ * Used by cron jobs (economic-dependency scan) to resolve
  * "everyone in org X who can see this contractor" for notification fan-out.
  *
  * - Never returns members from other organisations (explicit where-scope).

@@ -2,8 +2,8 @@
  * Peppol poll worker (`POST /peppol/poll`).
  *
  *   1. QStash signature verification via `guardQStashRequest`.
- *   2. Reseed ALS frame from upstream QStash headers (F-OBS-03).
- *   3. Wrap with `withQueueObservability('peppol-poll', …)` (F-ASYNC-17).
+ *   2. Reseed ALS frame from upstream QStash headers.
+ *   3. Wrap with `withQueueObservability('peppol-poll', …)`.
  *   4. Body validation (`organizationId` optional — single-org poll vs
  *      sweep-all-active-participants).
  *   5. For each ACTIVE `PeppolParticipant`: locate its
@@ -146,8 +146,8 @@ async function handlePeppolPoll(
       );
     }
 
-    // F-ASYNC-17 — gauge tagged `queue:peppol-poll-participants` so it's
-    // distinct from outbox / webhook depths on the dashboard.
+    // Gauge tagged `queue:peppol-poll-participants` so it's distinct from
+    // outbox / webhook depths on the dashboard.
     recordQueueDepth('peppol-poll-participants', orgIds.size);
 
     const results: Array<{ organizationId: string; processed: number }> = [];
@@ -276,7 +276,7 @@ export function registerPeppolInboundRoute(app: FastifyInstance): void {
 
 // ---------------------------------------------------------------------------
 // /peppol/outbound — QStash callback for outbound invoice transmission.
-// Includes F-ASYNC-08 retry classification + F-SCALE-19 backpressure.
+// Includes retry classification + backpressure.
 // ---------------------------------------------------------------------------
 
 interface ClassifiedError {

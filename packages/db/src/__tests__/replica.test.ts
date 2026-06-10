@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------
-// F-SCALE-06 — read-replica routing tests
+// Read-replica routing tests
 // ---------------------------------------------------------------------------
 //
 // Covers the four guarantees of `replica.ts`:
@@ -207,7 +207,7 @@ describe('readReplica circuit breaker', () => {
 });
 
 // ---------------------------------------------------------------------------
-// 4. NEW-ARCH-01 — RLS-enforcement tripwire
+// 4. RLS-enforcement tripwire
 // ---------------------------------------------------------------------------
 //
 // `readReplica` (and its writer-fallback paths) hand a raw `PrismaClient` to
@@ -215,7 +215,6 @@ describe('readReplica circuit breaker', () => {
 // Until `CREATE POLICY` migrations land this is masked by callers writing
 // explicit `WHERE organization_id = …` predicates. The tripwire flips the
 // latent failure into a deterministic boot-time error once policies activate.
-// See `.audit-2026-05-03/REVIEW-R3-ARCHITECTURE.md` (NEW-ARCH-01).
 
 describe('readReplica RLS tripwire (NEW-ARCH-01)', () => {
   it('runs as before when RLS_POLICIES_ENFORCED is unset', async () => {

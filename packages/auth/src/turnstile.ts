@@ -1,5 +1,5 @@
 /**
- * F-SEC-22 — Cloudflare Turnstile server-side verification.
+ * Cloudflare Turnstile server-side verification.
  *
  * Closes the email-enumeration gap on the signup endpoint. The legacy
  * /sign-up/email route returns distinct messages for "email exists" vs.

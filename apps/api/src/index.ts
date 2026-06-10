@@ -1,4 +1,4 @@
-// F-OBS-01: initSentry MUST run before any module that might throw, so the
+// initSentry MUST run before any module that might throw, so the
 // SDK can wire its OpenTelemetry instrumentation hooks. Keep it as the first
 // executable statement of the entrypoint.
 import { initSentry, Sentry } from './lib/sentry.js';
@@ -16,9 +16,9 @@ import { buildServer } from './server.js';
 
 const log = createLogger({ service: 'api-server' });
 
-// F-OBS-04: process-level error handlers — without these an unhandled
-// rejection inside an async hook kills the Fastify server silently and
-// Render restarts the pod with no debuggable stack trace anywhere.
+// Process-level error handlers — without these an unhandled rejection inside
+// an async hook kills the Fastify server silently and Render restarts the
+// pod with no debuggable stack trace anywhere.
 process.on('uncaughtException', err => {
   log.fatal({ err }, 'uncaughtException');
   try {
@@ -41,9 +41,9 @@ process.on('unhandledRejection', reason => {
 async function main(): Promise<void> {
   const env = loadEnv();
 
-  // FOUND7-02: fail-closed flag-signoff gate. Exits(1) if any gated flag is
-  // missing its signoff-registry entry (FLAG_SIGNOFF_BYPASS=local downgrades to
-  // a warn for local dev). Run after env load, before serving.
+  // Fail-closed flag-signoff gate. Exits(1) if any gated flag is missing its
+  // signoff-registry entry (FLAG_SIGNOFF_BYPASS=local downgrades to a warn
+  // for local dev). Run after env load, before serving.
   assertFlagSignoffsOrExit();
 
   // Warm the integration adapter registry at the top of boot. ESSENTIAL

@@ -2,7 +2,7 @@ import { HttpResponse, http } from 'msw';
 import type { HandlerOptions } from '../types.js';
 import { applyNetworkConditions } from '../utils.js';
 
-// Phase 78 IDP-07 — GitHub org deprovision handlers (api.github.com).
+// GitHub org deprovision handlers (api.github.com).
 //
 // `@octokit/rest` targets `api.github.com`. URL predicates are used instead of
 // `:org`/`:username` path literals (MSW v2 + path-to-regexp v8 limitation). The

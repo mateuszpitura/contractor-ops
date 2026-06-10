@@ -1,6 +1,6 @@
 // packages/integrations/src/services/boe-base-rate-poller.ts
 //
-// Phase 63 · Plan 03 · D-09 — Bank of England base rate polling service.
+// Bank of England base rate polling service.
 //
 // Fetches the IUDBEDR series (Official Bank Rate) from the public BoE
 // Interactive Database CSV endpoint and upserts a new BoEBaseRateHistory row
@@ -13,8 +13,8 @@
 //
 // Failure mode: any fetch / parse / DB error returns
 // `{ updated: false, currentRate: null, error }` and logs a warning.
-// We never throw — manual entry via the admin BoE rate router (Plan 63-05)
-// remains available, and a single missed poll has no statutory impact
+// We never throw — manual entry via the admin BoE rate router remains
+// available, and a single missed poll has no statutory impact
 // because the rate snapshot used for late-payment-interest (LPCDA §4(1))
 // is the BoE rate on the LAST DAY of the preceding 6-month period.
 
@@ -371,9 +371,9 @@ export async function pollBoeBaseRate(deps: PollDeps = {}): Promise<PollBoeBaseR
 
   // Insert-only: if a row already exists for this `effectiveFrom` (cron ran
   // twice on the same UTC day, OR an admin manually entered the rate via the
-  // override path per D-10), preserve it and skip. The manual-edit endpoint
-  // is the documented override path; a scheduled cron must NOT stomp on a
-  // human correction the next time it runs.
+  // override path), preserve it and skip. The manual-edit endpoint is the
+  // documented override path; a scheduled cron must NOT stomp on a human
+  // correction the next time it runs.
   let existing: { source: string } | null;
   try {
     existing = (await db.boEBaseRateHistory.findUnique({

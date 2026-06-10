@@ -1,8 +1,7 @@
 /**
  * Slack + Resend webhook context helpers.
  *
- * Cached lookups stay TTL 60 s (F-SCALE-10) keyed via the existing Upstash
- * cache namespace.
+ * Cached lookups stay TTL 60 s, keyed via the existing Upstash cache namespace.
  */
 
 import { cached, cacheKey } from '@contractor-ops/api/services/cache';

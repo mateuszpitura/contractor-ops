@@ -1,10 +1,9 @@
 // Fixture for logs-guard — router that does NOT log a `body` field.
-// Plan 70-03 implementation should treat this as zero offences.
+// The guard should treat this as zero offences.
 //
 // We declare a stand-in `createTrpcLogger` shape rather than importing
 // `@contractor-ops/logger` so the fixture stays self-contained and the
-// `lint-guards` package retains its single-direct-dependency promise
-// (T-70-01-03 mitigation).
+// `lint-guards` package retains its single-direct-dependency promise.
 type Bindings = { procedure: string; type: string };
 type StubLogger = {
   info(obj: Record<string, unknown>, msg: string): void;

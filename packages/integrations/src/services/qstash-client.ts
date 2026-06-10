@@ -11,11 +11,11 @@ let client: Client | null = null;
  * Returns a singleton QStash client instance.
  * Requires QSTASH_TOKEN environment variable.
  *
- * NOTE — Phase 2 / P2-E (F-OBS-03): callers that want producer→consumer trace
- * correlation should publish via `publishJSONWithContext` (below) instead of
- * calling `client.publishJSON(...)` directly. The wrapper auto-injects the
- * current ALS frame's `x-request-id` and W3C `traceparent` as QStash forward
- * headers so the consumer route can reseed its own ALS frame.
+ * NOTE: callers that want producer→consumer trace correlation should publish
+ * via `publishJSONWithContext` (below) instead of calling
+ * `client.publishJSON(...)` directly. The wrapper auto-injects the current
+ * ALS frame's `x-request-id` and W3C `traceparent` as QStash forward headers
+ * so the consumer route can reseed its own ALS frame.
  *
  * Existing direct callers continue to work — only correlation IDs are missing.
  */
@@ -42,7 +42,7 @@ export function resetQStashClient(): void {
 }
 
 // ---------------------------------------------------------------------------
-// publishJSON wrapper with trace propagation (F-OBS-03)
+// publishJSON wrapper with trace propagation
 // ---------------------------------------------------------------------------
 
 type PublishJSONArgs = Parameters<Client['publishJSON']>[0];

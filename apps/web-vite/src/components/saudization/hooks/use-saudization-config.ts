@@ -16,12 +16,11 @@ export type UpsertHeadcountInput = RouterInputs['gulf']['saudization']['upsertHe
 export type NitaqatBand = NonNullable<UpsertConfigInput['band']>;
 
 /**
- * The mutation boundary for the manual Saudization config (GULF-05/06) and the
- * GULF-10 drift overrides (GULF-10). The band is recorded by hand and sent verbatim —
- * there is NO derivation path (Pitfall 8). Every mutation invalidates the dashboard
- * query so the hero rate / neutral band / override badge re-render from server truth,
- * and toasts success/failure. tRPC stays inside this hook; the dialog + view are
- * presentational.
+ * The mutation boundary for the manual Saudization config and drift overrides.
+ * The band is recorded by hand and sent verbatim — there is NO derivation path.
+ * Every mutation invalidates the dashboard query so the hero rate / neutral band
+ * / override badge re-render from server truth, and toasts success/failure. tRPC
+ * stays inside this hook; the dialog + view are presentational.
  */
 export function useSaudizationConfig() {
   const trpc = useTRPC();

@@ -79,7 +79,7 @@ export async function createSigningEnvelope(params: {
 /**
  * Gets an embedded signing URL for the specified provider.
  * Returns null if the provider does not support embedded signing
- * (caller should fall back to redirect flow per D-03).
+ * (caller should fall back to redirect flow).
  */
 export async function getEmbeddedSigningUrl(params: {
   provider: ESignProvider;

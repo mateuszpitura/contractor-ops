@@ -28,7 +28,7 @@ const MARKET_HERO_KEY: Record<Market, ExperimentKey> = {
 };
 
 /**
- * Per-market hero variant key + active variants. Wave 1 ships variants
+ * Per-market hero variant key + active variants. Ships variants
  * A (pain-first) and C (compliance-first) for PL; B (outcome-first) and
  * C for DE; A and B for INTL; B and C for UK; C and D (ICP-narrow) for
  * UAE; C and D for SA. The matrix mirrors

@@ -31,10 +31,10 @@ export const saudiCountryFieldsSchema = z.object({
 export type SaudiCountryFields = z.infer<typeof saudiCountryFieldsSchema>;
 
 // ---------------------------------------------------------------------------
-// UK Country Fields (Phase 56 — FOUND-01)
+// UK Country Fields
 // ---------------------------------------------------------------------------
 //
-// D-04 conditional required-field rules (UI-SPEC §Interaction 1 matrix):
+// Conditional required-field rules:
 //   - SOLE_TRADER → UTR required
 //   - LTD         → Companies House number required
 //   - LLP         → Companies House number required
@@ -95,18 +95,16 @@ export const ukCountryFieldsSchema = z
 export type UkCountryFields = z.infer<typeof ukCountryFieldsSchema>;
 
 // ---------------------------------------------------------------------------
-// DE Country Fields (Phase 56 — FOUND-02)
+// DE Country Fields
 // ---------------------------------------------------------------------------
 //
-// D-04 conditional required-field rules (UI-SPEC §Interaction 1 matrix):
+// Conditional required-field rules:
 //   - Steuernummer always required; dispatched per Bundesland regex
 //   - Handelsregister required for UG / GMBH only (OHG/KG optional — do NOT require)
 //   - USt-IdNr required when isVatRegistered=true AND not Kleinunternehmer
 //
-// Error messages follow UI-SPEC §Copywriting Error states. Translations live in
-// messages/de.json under ContractorProfile.CountryCompliance.DE (Plan 05).
-// Mandatory legal phrases (Steuernummer label etc.) resolve from legal/de.ts via
-// Plan 05 — schema-level messages are user-friendly English strings only.
+// Schema-level messages are user-friendly English strings only; translations live
+// in messages/de.json and mandatory legal phrases resolve from legal/de.ts.
 
 export const deEntityTypeEnum = z.enum([
   'EINZELUNTERNEHMEN',
@@ -195,8 +193,8 @@ export const deCountryFieldsSchema = z
     }
 
     // Handelsregister composite — structural validity check (composite-level).
-    // Delegates to Plan 03's isValidHandelsregister for cross-field structural
-    // consistency. Per-field format + court-whitelist are handled by the inner
+    // Delegates to isValidHandelsregister for cross-field structural consistency.
+    // Per-field format + court-whitelist are handled by the inner
     // `handelsregisterSchema` .refine, so this catches any residual mismatch.
     if (data.handelsregister && !isValidHandelsregister(data.handelsregister)) {
       ctx.addIssue({
@@ -219,19 +217,18 @@ export const deCountryFieldsSchema = z
 export type DeCountryFields = z.infer<typeof deCountryFieldsSchema>;
 
 // ---------------------------------------------------------------------------
-// US Country Fields (Phase 84 — US-FIELD-01)
+// US Country Fields
 // ---------------------------------------------------------------------------
 //
-// D-05 conditional required-field rules (84-RESEARCH Open Question 3; mirrors
-// the uk SOLE_TRADER→UTR conditional):
+// Conditional required-field rules (mirrors the UK SOLE_TRADER→UTR pattern):
 //   - LLC / C_CORP / S_CORP / PARTNERSHIP → EIN required
 //   - INDIVIDUAL / SOLE_PROPRIETOR        → EIN optional (may file on the SSN)
 //
-// SSN is DELIBERATELY EXCLUDED from this JSONB schema (T-84-01-01). It lives in
-// dedicated encrypted columns (Plan 03) with its own input validator + reveal
-// gate; putting it here would leak it unmasked through getCountryFields. The
-// `state` field is constrained to a 2-letter code; EIN format is checked field-
-// level via isValidEin before the conditional superRefine runs.
+// SSN is DELIBERATELY EXCLUDED from this JSONB schema. It lives in dedicated
+// encrypted columns with its own input validator + reveal gate; putting it here
+// would leak it unmasked through getCountryFields. The `state` field is
+// constrained to a 2-letter code; EIN format is checked field-level via
+// isValidEin before the conditional superRefine runs.
 //
 // LOCAL-ONLY: the IRS/SSA rules behind isValidEin need legal/tax-adviser
 // verification before production deploy (annotated in us-validators.ts).

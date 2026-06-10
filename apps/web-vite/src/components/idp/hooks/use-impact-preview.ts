@@ -1,5 +1,5 @@
 /**
- * Phase 77 D-01/D-02/D-03 — sole tRPC boundary for the impact-preview panel.
+ * Sole tRPC boundary for the impact-preview panel.
  * Queries describeImpact for a (provider, assignment); refresh() re-queries with
  * forceRefresh; exposes the structured failure for the admin-choice flow.
  */

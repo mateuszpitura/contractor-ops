@@ -19,7 +19,7 @@ export type InviteUserInput = z.infer<typeof inviteUserSchema>;
  * NOTE: `userId` is the API surface (semantic for callers); the server
  * resolves it to the corresponding `Member.id` for the active organization
  * before calling Better Auth's `updateMemberRole` (which keys by Member.id,
- * not user id). See F-SEC-14 in .audit-2026-05-03/02-security.md.
+ * not user id).
  */
 export const updateUserRoleSchema = z.object({
   userId: z.string().min(1, 'User ID is required'),

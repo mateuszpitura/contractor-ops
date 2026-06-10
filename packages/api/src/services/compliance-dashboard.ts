@@ -1,15 +1,15 @@
 // ---------------------------------------------------------------------------
-// Phase 73 · COMPL-01 — Admin dashboard query helpers (D-01..D-05).
+// Admin dashboard query helpers.
 // ---------------------------------------------------------------------------
 //
 // All item helpers use the composite index `@@index([organizationId, severity,
-// status, expiresAt])` introduced by Plan 73-02. No N+1: each helper issues
-// exactly ONE compliance-item query (the blocked-payments helper additionally
-// reads the live payment-gate source + the 7-day historical check table).
+// status, expiresAt])`. No N+1: each helper issues exactly ONE compliance-item
+// query (the blocked-payments helper additionally reads the live payment-gate
+// source + the 7-day historical check table).
 //
 // Signature pattern: `(db, organizationId, ...)` — accepts a tenant-scoped
-// Prisma client OR a transaction client. Mirrors the Phase 71/72 service-module
-// shape (compliance-supersession.ts / compliance-payment-gate.ts).
+// Prisma client OR a transaction client. Mirrors the service-module shape of
+// compliance-supersession.ts / compliance-payment-gate.ts.
 
 import type { Prisma } from '@contractor-ops/db';
 import { createLogger } from '@contractor-ops/logger';
@@ -85,7 +85,7 @@ export interface BlockedPaymentItem {
 }
 
 // ---------------------------------------------------------------------------
-// At risk (D-02)
+// At risk
 // ---------------------------------------------------------------------------
 
 /**
@@ -127,7 +127,7 @@ export async function listAtRiskItems(db: Db, organizationId: string): Promise<A
 }
 
 // ---------------------------------------------------------------------------
-// Upcoming renewals (D-03)
+// Upcoming renewals
 // ---------------------------------------------------------------------------
 
 function upcomingRenewalsWhere(organizationId: string): Prisma.ContractorComplianceItemWhereInput {
@@ -157,7 +157,7 @@ export async function listUpcomingRenewals(
 }
 
 // ---------------------------------------------------------------------------
-// Blocked payments (D-04, D-05)
+// Blocked payments
 // ---------------------------------------------------------------------------
 
 /**

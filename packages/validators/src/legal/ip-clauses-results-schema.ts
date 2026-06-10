@@ -1,4 +1,4 @@
-// Phase 75 D-06 — Zod schema for ContractHealthCheckRun.resultsJson and the
+// Zod schema for ContractHealthCheckRun.resultsJson and the
 // denormalised Contract.complianceFlagsJson mirror. Versioned at top level
 // (`version: 1`) for forward migrations.
 
@@ -39,7 +39,7 @@ export const ipAssignmentInnerSchema = z.object({
   evaluatedAgainst: z.array(evaluatedAgainstSchema),
   crossJurisdictionMismatch: crossJurisdictionMismatchSchema.optional(),
   pendingPhrasesCited: z.array(z.string().regex(PHRASE_ID_REGEX)).optional(),
-  // Verbatim model output — preserved as-is (D-06). z.record keeps every key.
+  // Verbatim model output — preserved as-is so no fields are silently dropped. z.record keeps every key.
   rawModelToolUseInput: z.record(z.string(), z.unknown()),
   runId: z.string().min(1),
   runStartedAt: z.iso.datetime(),

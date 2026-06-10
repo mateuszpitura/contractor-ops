@@ -15,7 +15,7 @@ import type { DbClient } from './types';
 type TxClient = Parameters<Parameters<DbClient['$transaction']>[0]>[0];
 
 // ---------------------------------------------------------------------------
-// Status transition rules (D-03):
+// Status transition rules:
 // DRAFT -> SUBMITTED (contractor submits)
 // SUBMITTED -> APPROVED (manager approves)
 // SUBMITTED -> REJECTED (manager rejects with reason)
@@ -24,7 +24,7 @@ type TxClient = Parameters<Parameters<DbClient['$transaction']>[0]>[0];
 
 /**
  * Returns the ISO Monday for a given date (sets to start of ISO week).
- * Avoids external date-fns dependency — inline per Phase 4 convention.
+ * Avoids external date-fns dependency — inlined for zero overhead.
  */
 function getISOMonday(date: Date): Date {
   const d = new Date(date);
@@ -229,7 +229,7 @@ export async function approveTimesheet(
   timesheetId: string,
   reviewerUserId: string,
 ) {
-  // D-08: Standalone approval (one person)
+  // Standalone approval (one person)
   const updated = await db.timesheet.updateMany({
     where: {
       id: timesheetId,
@@ -267,7 +267,7 @@ export async function rejectTimesheet(
   reviewerUserId: string,
   reason: string,
 ) {
-  // D-07: Rejection includes reason
+  // Rejection includes reason
   const updated = await db.timesheet.updateMany({
     where: {
       id: timesheetId,

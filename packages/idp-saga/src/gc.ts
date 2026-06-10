@@ -4,12 +4,12 @@ import type { GcResult } from './types.js';
 const NINETY_DAYS_MS = 90 * 24 * 60 * 60 * 1000;
 
 /**
- * Phase 76 D-12 — 90-day retention GC.
+ * 90-day retention GC.
  *
  * Deletes IdpChangeProvenance rows where initiatedAt < (now - 90 days).
  * Idempotent: a second call within an hour returns deleted: 0.
  *
- * Wired into the reminders cron handler (apps/cron-worker, Plan 76-10) — daily.
+ * Wired into the reminders cron handler (apps/cron-worker) — daily.
  */
 export async function gcExpiredProvenance(
   db: PrismaClient,

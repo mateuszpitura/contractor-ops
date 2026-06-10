@@ -55,10 +55,10 @@ export class StorecoveClient {
   /**
    * Submit a UBL document for transmission via the Peppol network.
    *
-   * F-INT-04 / DRIFT-01: passes an `Idempotency-Key` header derived from
-   * the canonical `(orgId, operation, businessKey)` composition shared
-   * across every external-provider integration in this monorepo. Storecove
-   * dedupes against the header on `/document_submissions` for at least 24h.
+   * Passes an `Idempotency-Key` header derived from the canonical
+   * `(orgId, operation, businessKey)` composition shared across every
+   * external-provider integration in this monorepo. Storecove dedupes against
+   * the header on `/document_submissions` for at least 24h.
    * Critical for Peppol compliance — a duplicate transmission means the
    * receiver gets two copies and our local lifecycle row diverges from the
    * receiver's e-archive.
@@ -176,11 +176,11 @@ export class StorecoveClient {
   }
 
   /**
-   * Phase 61 Plan 05 (D-11) — probe a Peppol participant's SMP capabilities.
+   * Probe a Peppol participant's SMP capabilities.
    *
    * Returns the raw JSON body (unparsed) so the adapter layer can own the
-   * Zod normalisation step — keeps the discovery-shape uncertainty (per
-   * 61-RESEARCH.md §Open Questions #5) out of the HTTP client.
+   * Zod normalisation step — keeps the discovery-shape uncertainty out of
+   * the HTTP client.
    *
    * Throws `StorecoveApiError` on non-2xx; adapter-level caller handles 404
    * (participant not registered → empty capabilities).

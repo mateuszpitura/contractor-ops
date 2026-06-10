@@ -3,8 +3,8 @@
 // ---------------------------------------------------------------------------
 // Implements SecretStore interface from @contractor-ops/secrets for storing
 // ZATCA certificates and private keys in Infisical.
-// Per D-02: Certificates stored in external SaaS secret manager (Infisical).
-// Per T-48-14: Never log secret values. Path /zatca/{orgId} isolates orgs.
+// Certificates stored in external SaaS secret manager (Infisical).
+// Never log secret values. Path /zatca/{orgId} isolates orgs.
 // ---------------------------------------------------------------------------
 
 import { createIntegrationLogger } from '@contractor-ops/logger';

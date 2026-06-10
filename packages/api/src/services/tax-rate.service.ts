@@ -37,14 +37,14 @@ export async function getTaxRatesForCountry(
 }
 
 /**
- * Phase 57 · Plan 04 — returns the `isDefault: true` VAT rate code for a
- * country (e.g. GB → '20', DE → '19'). Used by invoice-line creation to
- * pre-select the standard rate when the client omits `vatRate` (D-10).
+ * Returns the `isDefault: true` VAT rate code for a country (e.g. GB → '20',
+ * DE → '19'). Used by invoice-line creation to pre-select the standard rate
+ * when the client omits `vatRate`.
  *
- * Falls back to any active zero rate if the seed lacks a default row (defensive
- * — should never happen with the Plan 57-01 seed but keeps the pipeline from
- * crashing on misconfiguration). Returns null only when no active rate exists
- * at all for the country.
+ * Falls back to any active zero rate if the seed lacks a default row
+ * (defensive — should never happen with the seed data but keeps the pipeline
+ * from crashing on misconfiguration). Returns null only when no active rate
+ * exists at all for the country.
  */
 export async function getDefaultRateCode(
   countryCode: string,

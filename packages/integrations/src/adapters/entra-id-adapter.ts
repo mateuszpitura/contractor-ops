@@ -23,8 +23,8 @@ const GRAPH_BASE = 'https://graph.microsoft.com/v1.0';
 // whole step on transient failure via #mapDeprovisionFailure throwing.
 const DEPROVISION_TIMEOUT_MS = 15_000;
 
-// Single post-revoke signInActivity poll delay (CONTEXT.md D-03). A single
-// delayed poll — never a tight loop. Tests fake the timer.
+// Single post-revoke signInActivity poll delay. Never a tight loop — tests
+// fake the timer.
 const REVOKE_VERIFY_POLL_DELAY_MS = 2_000;
 
 /**
@@ -47,9 +47,9 @@ function encodeMicrosoftClientRequestId(idempotencyKey: string): string {
 }
 
 /**
- * Microsoft Entra ID OAuth 2.0 app-only (client-credentials) config (CONTEXT.md
- * D-07). A SEPARATE Azure AD app from Outlook Calendar — Graph deprovision
- * scopes come from the typed-const ({@link ENTRA_DEPROVISION_SCOPES}); the
+ * Microsoft Entra ID OAuth 2.0 app-only (client-credentials) config.
+ * A SEPARATE Azure AD app from Outlook Calendar — Graph deprovision scopes
+ * come from the typed-const ({@link ENTRA_DEPROVISION_SCOPES}); the
  * lint:scopes guard traces the adapter's scopes back to that const.
  */
 const ENTRA_OAUTH_CONFIG: OAuthConfig = {
@@ -139,8 +139,7 @@ const GraphErrorBodySchema = z
   .passthrough();
 
 /**
- * Microsoft Entra ID `Deprovisionable` adapter (Phase 78 IDP-05) — the most
- * complex of the three, carrying TWO novel pre-flight gates.
+ * Microsoft Entra ID `Deprovisionable` adapter — carries two pre-flight gates.
  *
  * Follows the OutlookCalendarAdapter raw-Graph pattern (same IdP host, no new
  * SDK — `@microsoft/microsoft-graph-client` is NOT a dependency). The app-only
@@ -206,7 +205,7 @@ export class EntraIdAdapter extends BaseAdapter implements Deprovisionable {
   }
 
   async suspendAccount(externalUserId: string): Promise<DeprovisionResult> {
-    // Step 1 — hybrid-AD pre-flight read (CONTEXT.md D-02, SC#4). NO mutation yet.
+    // Step 1 — hybrid-AD pre-flight read. NO mutation yet.
     const preflightReqSha = sha256Hex(
       canonicalizeRequest({ method: 'GET', target: 'users.preflight', userId: externalUserId }),
     );
@@ -324,9 +323,9 @@ export class EntraIdAdapter extends BaseAdapter implements Deprovisionable {
       return this.#mapDeprovisionFailure(res.status, errBody, requestSha256, responseSha256);
     }
 
-    // Single delayed signInActivity poll (CONTEXT.md D-03) — supplementary
-    // forensic data; never flips the step to FAILED. accountEnabled is the
-    // authoritative verify (verifyDeprovisioned).
+    // Single delayed signInActivity poll — supplementary forensic data; never
+    // flips the step to FAILED. accountEnabled is the authoritative verify
+    // (verifyDeprovisioned).
     let lastSignInDateTime: string | null = null;
     try {
       await new Promise(resolve => setTimeout(resolve, REVOKE_VERIFY_POLL_DELAY_MS));
@@ -382,7 +381,7 @@ export class EntraIdAdapter extends BaseAdapter implements Deprovisionable {
     const fetchedAt = new Date().toISOString();
 
     // User read — accountStatus + onPremisesSyncEnabled + license SKUs. A total
-    // failure here throws for the Phase 77 D-03 proceed-without-preview flow.
+    // failure here throws for the proceed-without-preview flow.
     const userRes = await this.#graphFetch(
       `${this.#userUrl(externalUserId)}?$select=accountEnabled,onPremisesSyncEnabled,assignedLicenses,displayName`,
       { headers: this.#authHeaders() },
@@ -402,7 +401,7 @@ export class EntraIdAdapter extends BaseAdapter implements Deprovisionable {
       .map(l => l.skuId)
       .filter((s): s is string => typeof s === 'string');
 
-    // Conditional Access policies — NON-BLOCKING warning (CONTEXT.md D-01).
+    // Conditional Access policies — NON-BLOCKING warning.
     const conditionalAccessPolicies = await this.#conditionalAccessForUser(externalUserId);
 
     const groupMembershipCount = await this.#count(
@@ -439,8 +438,8 @@ export class EntraIdAdapter extends BaseAdapter implements Deprovisionable {
 
   /**
    * Enumerate enabled Conditional Access policies that apply to the user — a
-   * NON-BLOCKING warning surfaced in the impact panel (a CA policy with session
-   * controls can override revokeSignInSessions, Pitfall 14).
+   * NON-BLOCKING warning surfaced in the impact panel. A CA policy with session
+   * controls can override revokeSignInSessions.
    */
   async #conditionalAccessForUser(
     externalUserId: string,

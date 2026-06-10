@@ -1,11 +1,11 @@
 // ---------------------------------------------------------------------------
-// Phase 57 · Plan 02 — HmrcVatClient
+// HmrcVatClient
 // ---------------------------------------------------------------------------
 //
 // GovApiClient subclass encapsulating the HMRC VAT Registration API:
 //   - OAuth 2.0 client-credentials flow (/oauth/token)
 //   - GET /organisations/vat/check-vat-number/lookup/{targetVrn}[/{requesterVrn}]
-//   - Accept: application/vnd.hmrc.2.0+json (HMRC API v2 — Pitfall 1)
+//   - Accept: application/vnd.hmrc.2.0+json (HMRC API v2)
 //   - Fraud-prevention headers (Gov-Client-*, Gov-Vendor-*)
 //   - Token cache (4h TTL, 5min buffer) + refresh-once-on-401-then-retry
 //   - Single-flight token refresh: concurrent expiries share one in-flight
@@ -18,7 +18,7 @@
 //     `INTERNAL_RATE_LIMIT_EXCEEDED` so observability can distinguish
 //     "we self-throttled" from "HMRC throttled us (429)".
 //
-// Security invariants (threat model T-57-02-04):
+// Security invariants:
 //   - `requesterVrn` in the HMRC path is ALWAYS sourced from `deps.platformVrn`.
 //     The public `checkVatNumber` signature has NO `requesterVrn` parameter —
 //     tenant enumeration via caller-supplied VRNs is impossible.
@@ -63,11 +63,11 @@ const ERROR_BODY_SAMPLE_LEN = 200;
 /** Internal-rate-limit error code so callers can distinguish self-throttle. */
 export const INTERNAL_RATE_LIMIT_CODE = 'INTERNAL_RATE_LIMIT_EXCEEDED';
 
-// Minimal GB VAT format check — mirrors Phase 56 `isValidGbVat` public contract
-// (see packages/validators/src/uk-validators.ts). Duplicated inline to avoid a
-// workspace dependency cycle (gov-api ← einvoice ← validators ← einvoice).
-// The orchestrator (Plan 57-03) invokes the full `isValidGbVat` validator
-// before calling into this client; this inline check is defense-in-depth.
+// Minimal GB VAT format check — mirrors `isValidGbVat` in packages/validators
+// (see uk-validators.ts). Duplicated inline to avoid a workspace dependency
+// cycle (gov-api ← einvoice ← validators ← einvoice). The orchestrator invokes
+// the full `isValidGbVat` validator before calling into this client; this
+// inline check is defense-in-depth.
 //
 // A regression test in `__tests__/format-parity.test.ts` re-runs the canonical
 // validator's table-driven vectors against this inline copy to catch drift.
@@ -135,7 +135,7 @@ export interface HmrcVatClientDeps {
    *
    * SECURITY: MUST come from the `HMRC_PLATFORM_VRN` env var at construction.
    * Never accept this from caller input — doing so would allow tenant
-   * enumeration via crafted `requesterVrn` values (threat T-57-02-04).
+   * enumeration via crafted `requesterVrn` values.
    */
   platformVrn: string;
   /** Platform version string for the `Gov-Vendor-Version` fraud-prevention header. */
@@ -321,8 +321,8 @@ export class HmrcVatClient extends GovApiClient {
    *   Defaults to `false` (unverified, `confirmationRef` = null).
    *
    * SECURITY: this signature intentionally has NO `requesterVrn` parameter —
-   * the platform VRN is always sourced from `deps.platformVrn` (threat
-   * T-57-02-04).
+   * the platform VRN is always sourced from `deps.platformVrn` to prevent
+   * tenant enumeration via caller-supplied values.
    */
   async checkVatNumber(
     targetVrn: string,

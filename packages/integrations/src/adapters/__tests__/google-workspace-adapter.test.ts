@@ -65,9 +65,9 @@ describe('GoogleWorkspaceAdapter', () => {
     expect(c.scopes).toEqual([
       'https://www.googleapis.com/auth/admin.directory.user.readonly',
       'https://www.googleapis.com/auth/admin.directory.group.readonly',
-      // Phase 76 SC#3 — additive write scope for contractor deprovisioning.
+      // Additive write scope for contractor deprovisioning.
       'https://www.googleapis.com/auth/admin.directory.user',
-      // Phase 77 D-07 — token revoke + sign-out sub-actions of revokeAllSessions.
+      // Token revoke + sign-out sub-actions of revokeAllSessions.
       'https://www.googleapis.com/auth/admin.directory.user.security',
     ]);
     expect(c.redirectPath).toBe('/api/oauth/google_workspace/callback');

@@ -11,18 +11,18 @@ export interface PortalUploadReplacementFormProps {
   itemId: string;
   /** Resolved per-locale document name for the heading. */
   documentLabel: string;
-  /** Auto-filled default expiry (ISO yyyy-MM-dd) derived from the policy rule (D-07). */
+  /** Auto-filled default expiry (ISO yyyy-MM-dd) derived from the policy rule. */
   defaultExpiresAt: string;
   isSubmitting: boolean;
   onSubmit: (args: { itemId: string; file: File; suggestedExpiresAt?: string }) => void;
 }
 
 /**
- * Phase 73 COMPL-04 / D-06 — one-click upload-replacement form. DropZone picks a
- * file (pdf/png/jpeg, size capped by drop-zone-constants), the expiresAt is
- * auto-filled from the policy rule and editable by the contractor (D-07), and
- * submit is disabled until a file is chosen. Presentational — the R2 + submit
- * chain lives in use-portal-upload-replacement.
+ * One-click upload-replacement form. DropZone picks a file (pdf/png/jpeg, size
+ * capped by drop-zone-constants), the expiresAt is auto-filled from the policy
+ * rule and editable by the contractor, and submit is disabled until a file is
+ * chosen. Presentational — the R2 + submit chain lives in
+ * use-portal-upload-replacement.
  */
 export function PortalUploadReplacementForm({
   itemId,

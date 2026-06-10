@@ -1,4 +1,4 @@
-// Phase 73 · Plan 02 — Schema test for D-13 partial GIN index on AuditLog.metadataJson.
+// Schema test for the partial GIN index on AuditLog.metadataJson.
 
 import fs from 'node:fs';
 import path from 'node:path';

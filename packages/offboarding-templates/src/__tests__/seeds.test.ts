@@ -1,4 +1,4 @@
-// Phase 74 Plan 02 — GREEN tests for OFFBOARDING_TEMPLATE_SEEDS shape contract.
+// GREEN tests for OFFBOARDING_TEMPLATE_SEEDS shape contract.
 
 import { describe, expect, it } from 'vitest';
 import { OFFBOARDING_TEMPLATE_SEEDS } from '../seeds';

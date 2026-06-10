@@ -1,7 +1,7 @@
 /**
  * Unit coverage for the pure `formatTrpcError` exported from init.ts.
  *
- * Scope: shape contract — errorKey / errorParams surfacing, F-SEC-20
+ * Scope: shape contract — errorKey / errorParams surfacing,
  * INTERNAL_SERVER_ERROR stripping, and the dev-mode pass-through that
  * still attaches the new fields.
  *
@@ -103,7 +103,7 @@ describe('formatTrpcError — F-SEC-20 production hardening', () => {
   it('strips INTERNAL_SERVER_ERROR message and forces errorKey unknownError', () => {
     const error = new TRPCError({
       code: 'INTERNAL_SERVER_ERROR',
-      // biome-ignore lint/plugin/no-untranslated-trpc-error: deliberate raw message for F-SEC-20 stripping assertion
+      // biome-ignore lint/plugin/no-untranslated-trpc-error: deliberate raw message for INTERNAL_SERVER_ERROR stripping assertion
       message: 'Prisma constraint violation foo_bar_idx',
     });
     const result = formatTrpcError({
@@ -123,8 +123,8 @@ describe('formatTrpcError — F-SEC-20 production hardening', () => {
     // Note: zod v4 ZodError does NOT extend Error, so tRPC v11 wraps it via
     // getCauseFromUnknown into an UnknownCauseError. The legacy
     // `error.cause instanceof ZodError` branch in init.ts is therefore
-    // unreachable for v4 schemas — pre-existing F-SEC-20 hole, out of scope
-    // for the i18n contract. The relevant guarantee here is that errorKey +
+    // unreachable for v4 schemas — pre-existing production-hardening hole, out of
+    // scope for the i18n contract. The relevant guarantee here is that errorKey +
     // errorParams reach `shape.data` regardless of which branch handles the
     // BAD_REQUEST.
     const error = new TRPCError({

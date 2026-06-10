@@ -2,7 +2,7 @@ import { HttpResponse, http } from 'msw';
 import type { HandlerOptions } from '../types.js';
 import { applyNetworkConditions } from '../utils.js';
 
-// Phase 78 IDP-05 — Microsoft Entra ID (Graph API) deprovision handlers.
+// Microsoft Entra ID (Graph API) deprovision handlers.
 //
 // Mirrors the google-workspace.ts deprovision shape: URL predicates instead of
 // `:id` path literals (MSW v2 + path-to-regexp v8 rejects glob/regex path

@@ -1,5 +1,5 @@
 /**
- * Phase 77 D-06/D-12 — DeprovisioningRunView presentational tests.
+ * DeprovisioningRunView presentational tests.
  * Asserts LIKELY_GONE/MANUAL_COMPLETED rendering and that the per-failed-step
  * "Mark complete" button appears only for overridable steps.
  */

@@ -5,10 +5,10 @@
  * prefix exemption — portal session establishment runs from the magic
  * link verification page which posts here cross-tab on cold load.
  *
- * F-SEC-09: set-session requires an HMAC signature minted by the
- * originating tRPC mutation (`portal.verifyMagicLink` /
- * `portal.selectOrg`). Without it, an attacker could plant any
- * body-supplied token as a cookie — a CSRF / session-fixation primitive.
+ * set-session requires an HMAC signature minted by the originating tRPC
+ * mutation (`portal.verifyMagicLink` / `portal.selectOrg`). Without it,
+ * an attacker could plant any body-supplied token as a cookie — a CSRF /
+ * session-fixation primitive.
  * The signature is byte-identical to the helper in
  * `packages/api/src/routers/portal/portal.ts#signPortalSessionToken`;
  * any rotation requires bumping the domain-separator label there too.

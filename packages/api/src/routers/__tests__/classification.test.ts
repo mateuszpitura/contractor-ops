@@ -1,5 +1,5 @@
 /**
- * Classification router tests — Phase 58, Plan 03.
+ * Classification router tests.
  *
  * Strategy:
  *  - Mock @contractor-ops/db with a vi.hoisted mockPrisma that models the
@@ -287,10 +287,9 @@ vi.mock('@contractor-ops/logger/metrics', () => ({
 }));
 
 vi.mock('@contractor-ops/feature-flags', async importOriginal => {
-  // Multi-layer enforcement (D-05/D-06):
-  //  1. root.ts evaluates `buildFlagBag` at module load to gate classification routers.
-  //  2. classificationProcedure middleware calls `evaluate(...)` per-request.
-  // Tests that exercise classification need both layers to return enabled=true.
+  // Classification is gated at two layers: root.ts evaluates `buildFlagBag` at
+  // module load, and classificationProcedure middleware calls `evaluate(...)`
+  // per-request. Tests that exercise classification need both to return enabled=true.
   const actual = (await importOriginal()) as Record<string, unknown>;
   const enabledBag = {
     values: { 'module.classification-engine': true },
@@ -837,8 +836,8 @@ describe('classification.submit', () => {
     expect(result.outcome).toMatchObject({ kind: 'IR35', verdict: 'inside' });
   });
 
-  // Phase 60 CLASS-08 (60-02-05) — auto-resolve OPEN/ACKNOWLEDGED triggers on
-  // the same engagement after a fresh IR35 assessment is submitted.
+  // Auto-resolve OPEN/ACKNOWLEDGED triggers on the same engagement after a
+  // fresh IR35 assessment is submitted.
   it('SB-6 (60-02-05): auto-RESOLVES matching reassessment triggers on GB submit', async () => {
     seedOrgAAssignmentGB();
     seedDraft(DRAFT_ID_A);
@@ -992,7 +991,7 @@ describe('classification.getDraft', () => {
       code: 'PRECONDITION_FAILED',
     });
 
-    // Message mentions both versions — sanity check for Pitfall 7 surfacing.
+    // Message mentions both versions — sanity check that drift is surfaced correctly.
     try {
       await caller.classification.getDraft({ contractorAssignmentId: ASSIGNMENT_GB });
     } catch (err) {

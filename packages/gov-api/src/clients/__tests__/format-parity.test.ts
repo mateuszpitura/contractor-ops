@@ -1,4 +1,4 @@
-// Phase 57 · Plan 02 — Bug-hunt LOW: format-validator drift regression test.
+// Format-validator drift regression test.
 //
 // gov-api inlines minimal DE / GB VAT format checks to avoid a workspace
 // dependency cycle (gov-api ← einvoice ← validators ← einvoice). The same

@@ -1,4 +1,4 @@
-// Phase 77 D-02/D-03 — getImpactPreview cache + failure-classifier tests.
+// getImpactPreview cache + failure-classifier tests.
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 

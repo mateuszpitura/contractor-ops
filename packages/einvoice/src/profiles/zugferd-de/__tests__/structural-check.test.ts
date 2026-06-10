@@ -1,4 +1,4 @@
-// Phase 62 · Plan 62-03 Task 3 — Structural check tests.
+// ZUGFeRD structural check tests.
 //
 // Covers the 5 acceptance-criteria scenarios:
 //   1. Fully-wrapped PDF resolves without throw.

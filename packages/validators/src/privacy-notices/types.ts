@@ -1,4 +1,4 @@
-// Phase 56 · Plan 07 — Shared privacy-notice content shape.
+// Shared privacy-notice content shape.
 //
 // Mirrors (but does not collide with) `PrivacyNoticeContent` in
 // `packages/api/src/services/privacy-notice.ts` — the `controller` field is

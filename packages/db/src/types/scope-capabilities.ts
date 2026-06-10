@@ -1,7 +1,7 @@
-// Phase 70 D-13 — TypeScript shape of IntegrationConnection.scopeCapabilities (JSONB).
+// TypeScript shape of IntegrationConnection.scopeCapabilities (JSONB).
 //
 // Code branches on the typed `capabilities` enum, NEVER on raw scope strings.
-// Raw scopes are preserved for audit fidelity + Phase 76 drift detection.
+// Raw scopes are preserved for audit fidelity and drift detection.
 
 export type ProviderId = 'google' | 'slack' | 'entra' | 'okta' | 'github';
 

@@ -1,4 +1,4 @@
-// Phase 62 · Plan 62-03 Task 4 — React-PDF visual invoice template.
+// React-PDF visual invoice template.
 //
 // Renders the human-readable portion of a ZUGFeRD hybrid PDF. The machine-
 // readable CII XML is attached separately by `pdf-wrapper.ts`. This
@@ -7,14 +7,14 @@
 // without relying on @react-pdf/renderer's default Helvetica-std, which
 // is Type1 and not embedded.
 //
-// Typography pinned to 62-UI-SPEC.md:
+// Typography:
 //   * Body: 13–14pt Noto Sans Regular
 //   * Heading: 18pt Noto Sans Bold
 //   * Meta / totals: tabular-nums via explicit monospace-align table layout
 //
 // Statutory copy (Kleinunternehmer §19 UStG, reverse charge §13b UStG)
 // comes from `@contractor-ops/validators` locked-phrase constants — any
-// drift there is a locked-phrases guard violation + Phase-56 break.
+// drift there is caught by the locked-phrases guard test.
 
 import path from 'node:path';
 

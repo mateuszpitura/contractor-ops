@@ -1,5 +1,5 @@
 /**
- * Phase 78 IDP-06 — OktaProviderSectionView render + toggle-gate tests.
+ * OktaProviderSectionView render + toggle-gate tests.
  */
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';

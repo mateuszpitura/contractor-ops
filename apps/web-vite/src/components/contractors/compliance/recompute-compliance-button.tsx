@@ -1,4 +1,4 @@
-// Phase 71 D-13 — Per-contractor "Recompute compliance" button + dialog launcher.
+// Per-contractor "Recompute compliance" button + dialog launcher.
 
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { RefreshCw } from 'lucide-react';

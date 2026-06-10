@@ -1,11 +1,10 @@
 /**
- * Phase 81 D-01/D-09/D-11 — sole-boundary hook spec for the deprovisioning
- * start path. Asserts:
- *   - contractorId-only path calls resolveAssignmentForContractor (D-01);
- *   - a stable, assignment-derived idempotencyKey (D-09);
- *   - allowed===false flows through from the cooldown gate (D-11);
+ * Sole-boundary hook spec for the deprovisioning start path. Asserts:
+ *   - contractorId-only path calls resolveAssignmentForContractor;
+ *   - a stable, assignment-derived idempotencyKey;
+ *   - allowed===false flows through from the cooldown gate;
  *   - startDeprovisioningRun fires with { assignmentId, idempotencyKey } and the
- *     returned runId surfaces (D-03/D-09).
+ *     returned runId surfaces.
  */
 
 import { afterEach, describe, expect, it, vi } from 'vitest';

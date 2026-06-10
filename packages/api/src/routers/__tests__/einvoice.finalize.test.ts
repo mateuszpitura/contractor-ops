@@ -1,5 +1,5 @@
 /**
- * Phase 61 · Plan 61-06 Task 2 — einvoice.finalize router-level tests.
+ * einvoice.finalize router-level tests.
  *
  * Strategy:
  *   - Mock `@contractor-ops/db`, `@contractor-ops/auth`, `@contractor-ops/einvoice`,

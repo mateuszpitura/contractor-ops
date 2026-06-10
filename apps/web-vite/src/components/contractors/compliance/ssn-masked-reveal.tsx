@@ -13,17 +13,17 @@ export interface SsnMaskedRevealProps {
   /**
    * Whether the active role holds `contractorPii:read`. When false the reveal
    * control is ABSENT (not disabled) — the server gate is the real boundary;
-   * this is purely UX (UI-SPEC §B state 2, T-84-06-02).
+   * this is purely UX.
    */
   canReveal: boolean;
 }
 
 /**
- * SSN masked display with a gated, audit-logged reveal (UI-SPEC §B, US-FIELD-02).
+ * SSN masked display with a gated, audit-logged reveal.
  *
  * Default render shows only `•••-••-{last4}`; the full value enters the DOM only
- * after an explicit reveal click resolves the server `contractor.revealSsn` call
- * (T-84-06-01). Reveal is never triggered on hover, focus, or mount.
+ * after an explicit reveal click resolves the server `contractor.revealSsn` call.
+ * Reveal is never triggered on hover, focus, or mount.
  */
 export function SsnMaskedReveal({ contractorId, last4, canReveal }: SsnMaskedRevealProps) {
   const t = useTranslations('Contractors.compliance.us');

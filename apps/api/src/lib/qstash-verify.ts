@@ -11,7 +11,7 @@
  *   - Refuse to boot the receiver if signing keys are missing (500 — the
  *     deployment is misconfigured; never silently accept the request).
  *   - Reseed the ALS frame from upstream headers BEFORE the inner
- *     handler runs (F-OBS-03) so logger correlation IDs follow the job.
+ *     handler runs so logger correlation IDs follow the job.
  *
  * Returns `{ verified: true, run }` on success — caller invokes `run(fn)`
  * to execute its handler under the rebuilt request context. Returns

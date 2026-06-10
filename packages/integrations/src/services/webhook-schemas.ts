@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------
-// Per-provider webhook payload schemas (F-INT-07)
+// Per-provider webhook payload schemas
 // ---------------------------------------------------------------------------
 //
 // The generic webhook ingress route (`/webhooks/:provider`) used to

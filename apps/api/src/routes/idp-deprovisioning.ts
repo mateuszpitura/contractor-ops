@@ -5,7 +5,7 @@
  *   2. Validate body shape (runId, stepId, organizationId, provider, stepKind, externalUserId).
  *   3. Resolve the org's regional tenant-scoped Prisma client.
  *   4. Delegate to `runDeprovisioningStep` — one independent step per QStash job
- *      (no Promise.allSettled; recomputeRunStatus derives the aggregate, D-02/Pitfall 10).
+ *      (no Promise.allSettled; recomputeRunStatus derives the aggregate).
  *   5. 200 on success; 500 on error → QStash retries per the configured policy.
  *
  * Enqueued by `deprovisioning.startDeprovisioningRun` / `retryDeprovisioningStep`.
@@ -62,7 +62,7 @@ async function handlerInner(
     const result = await runDeprovisioningStep(db, body);
     return reply.code(200).send({ processed: true, ...result });
   } catch (err) {
-    // StepOrgMismatchError is a non-retryable configuration error (77 WR-04):
+    // StepOrgMismatchError is a non-retryable configuration error:
     // return 400 so QStash does NOT retry the job.
     if (err instanceof StepOrgMismatchError) {
       log.error(

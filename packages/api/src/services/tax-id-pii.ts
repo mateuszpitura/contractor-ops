@@ -1,6 +1,6 @@
-// Phase 57 · Plan 03 · Task 1 — PII mask utility for tax IDs.
+// PII mask utility for tax IDs.
 //
-// Mirrors the Phase 56 pii-mask precedent (packages/logger/src/pii-mask.ts).
+// Mirrors the pii-mask precedent (packages/logger/src/pii-mask.ts).
 // The orchestrator in `tax-id-validation.service.ts` calls `maskTaxId()` on
 // every log statement that would otherwise touch a raw VAT number.
 //
@@ -14,8 +14,8 @@
 // log lines without enabling identification. Middle masking enforces a
 // minimum of one star so values of length 5–6 still redact.
 //
-// ASVS V7 / V8 (T-57-03-02): the tax-id-validation.service.ts orchestrator
-// MUST wrap every logger call that references the VAT value with this helper.
+// The tax-id-validation.service.ts orchestrator MUST wrap every logger call
+// that references the VAT value with this helper (ASVS V7 / V8).
 // Pino's object-level redact (packages/logger/src/pii-mask.ts) complements
 // this for structured-body paths; this helper covers freeform string fields.
 

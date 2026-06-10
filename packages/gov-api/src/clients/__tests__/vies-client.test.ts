@@ -1,5 +1,4 @@
-// Phase 57 · Plan 02 — PAY-05 GREEN tests for ViesClient.
-// See .planning/phases/57-government-api-clients/57-VALIDATION.md.
+// ViesClient unit tests.
 //
 // Covers:
 //   - Simple confirmation (unauthenticated GET, no requester params)
@@ -8,7 +7,7 @@
 //   - isValid=false → invalid
 //   - userError=MS_UNAVAILABLE → unavailable + userError surfaced
 //   - Zod schema violation → ViesApiError(500)
-//   - HTTP 500 → unavailable (D-08 soft-fail)
+//   - HTTP 500 → unavailable (soft-fail)
 //   - Pre-flight isValidUstIdNr short-circuit for DE VAT
 //   - Qualified request carries query params
 

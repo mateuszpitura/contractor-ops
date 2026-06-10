@@ -86,11 +86,10 @@ export async function getStatusMapping(
  * Mappings are stored in IntegrationConnection.configJson.statusMappings[teamId].
  * Also builds a stateCache for fast webhook reverse-lookup.
  *
- * **CRITICAL (D-03 PENDING_MAPPING transition):** After saving the mappings,
- * if the connection's current status is PENDING_MAPPING, it transitions to
- * CONNECTED. This completes the D-03 flow:
- * OAuth sets PENDING_MAPPING -> admin saves status mapping -> connection
- * becomes CONNECTED and bidirectional sync activates.
+ * **CRITICAL (PENDING_MAPPING transition):** After saving the mappings, if the
+ * connection's current status is PENDING_MAPPING, it transitions to CONNECTED.
+ * OAuth sets PENDING_MAPPING → admin saves status mapping → connection becomes
+ * CONNECTED and bidirectional sync activates.
  *
  * @param prisma - Prisma client instance
  * @param connectionId - The IntegrationConnection ID
@@ -142,7 +141,7 @@ export async function resolveLinearStateId(
  * Used during inbound sync (Linear -> app) to find which WorkflowTaskStatus
  * to set when a Linear issue state changes via webhook.
  *
- * If the stateId is not mapped, logs the unmapped state per D-04.
+ * If the stateId is not mapped, logs the unmapped state for observability.
  *
  * @param prisma - Prisma client instance
  * @param connectionId - The IntegrationConnection ID
@@ -164,7 +163,7 @@ export async function resolveInternalStatus(
     return entry.workflowStatus;
   }
 
-  // Check stateCache for the state name and log as unmapped (D-04)
+  // Check stateCache for the state name and log as unmapped
   const connection = await prisma.integrationConnection.findFirst({
     where: { id: connectionId, organizationId },
     select: { configJson: true },

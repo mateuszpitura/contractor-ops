@@ -1,4 +1,4 @@
-// Phase 74 Plan 05 — GREEN tests for upsertSeedTemplates idempotency.
+// GREEN tests for upsertSeedTemplates idempotency.
 // Uses vitest mocks (no live DB) to track call counts and shape.
 
 import { describe, expect, it, vi } from 'vitest';

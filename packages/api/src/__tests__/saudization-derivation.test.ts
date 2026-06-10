@@ -1,15 +1,14 @@
-// Phase 79 Wave 2 — GREEN (was Wave 0 RED scaffold).
+// Saudization dashboard derivation tests.
 //
-// Critical behaviors C6 + C7 (GULF-05/06/07, D-10/D-12):
-//   C6 — the nationalisation rate is computed from the MANUAL SaudiHeadcount
-//        numbers (org-wide total + Saudi count), NOT from platform contractors
-//        (Pitfall 7). The platform-derived contractor breakdown is shown
-//        side-by-side for sanity-check only. The Nitaqat band is NEVER
-//        auto-computed — manual entry only (locked legal-liability anti-feature).
-//   C7 — the offboarding band-trajectory is a live, ephemeral recompute
-//        (SaudiHeadcount minus one Saudi national), advisory-only, non-gating,
-//        non-authoritative ("may drop to LOW_GREEN — verify in Qiwa"). It must
-//        never assert/set a band, and nothing is persisted.
+// C6 — the nationalisation rate is computed from the MANUAL SaudiHeadcount
+//      numbers (org-wide total + Saudi count), NOT from platform contractors.
+//      The platform-derived contractor breakdown is shown side-by-side for
+//      sanity-check only. The Nitaqat band is NEVER auto-computed — manual
+//      entry only (locked legal-liability anti-feature).
+// C7 — the offboarding band-trajectory is a live, ephemeral recompute
+//      (SaudiHeadcount minus one Saudi national), advisory-only, non-gating,
+//      non-authoritative ("may drop to LOW_GREEN — verify in Qiwa"). It must
+//      never assert/set a band, and nothing is persisted.
 //
 // Mirror: computeComplianceHealth (packages/api/src/routers/core/contractor.ts).
 
@@ -72,7 +71,7 @@ describe('C6 (GULF-05/06, D-10) saudization rate from manual headcount; band nev
       saudiContractorCount: 1,
     });
     expect(result.nationalisationRate).toBeCloseTo(0.3, 5);
-    // Qiwa-auth gap = contractors WHERE qiwaContractAuthenticated=false (D-11, visibility-only).
+    // Qiwa-auth gap = contractors WHERE qiwaContractAuthenticated=false (visibility-only).
     expect(result.qiwaGapCount).toBe(2);
   });
 

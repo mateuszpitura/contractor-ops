@@ -40,8 +40,8 @@ export interface TopUpResult {
  * Returns the current OCR credit balance for an organization.
  *
  * - Fetches the active/trialing subscription
- * - Per D-08: uses TRIAL_CREDIT_ALLOWANCE (5) for trialing subscriptions
- * - Per D-06: uses TIER_CREDIT_ALLOWANCE for active subscriptions
+ * - Uses TRIAL_CREDIT_ALLOWANCE (5) for trialing subscriptions
+ * - Uses TIER_CREDIT_ALLOWANCE for active subscriptions
  * - Aggregates OcrCreditLedger entries within the current billing period
  */
 export async function getCreditBalance(organizationId: string): Promise<CreditBalance> {
@@ -59,7 +59,7 @@ async function fetchCreditBalance(organizationId: string): Promise<CreditBalance
     return { balance: 0, allowance: 0, used: 0, tier: null };
   }
 
-  // Per D-08: Trial subscriptions get reduced allowance
+  // Trial subscriptions get reduced allowance
   const allowance =
     subscription.status === 'TRIALING'
       ? TRIAL_CREDIT_ALLOWANCE
@@ -104,10 +104,11 @@ async function fetchCreditBalance(organizationId: string): Promise<CreditBalance
  * Atomically checks and deducts one OCR credit for an organization.
  *
  * Uses Prisma's interactive transaction with Serializable isolation
- * to prevent race conditions (Pitfall 3 from RESEARCH.md).
+ * to prevent race conditions (concurrent deductions without serialization
+ * can double-count credits).
  *
  * After successful deduction, fires a Stripe Meter event (fire-and-forget)
- * for invoice-level usage tracking per D-12.
+ * for invoice-level usage tracking.
  *
  * @returns Whether the deduction was allowed, remaining credits, and reason if denied
  */
@@ -130,7 +131,7 @@ export async function checkAndDeductCredit(organizationId: string): Promise<Cred
         };
       }
 
-      // Per D-08: Trial subscriptions get reduced allowance
+      // Trial subscriptions get reduced allowance
       const allowance =
         subscription.status === 'TRIALING'
           ? TRIAL_CREDIT_ALLOWANCE
@@ -160,7 +161,7 @@ export async function checkAndDeductCredit(organizationId: string): Promise<Cred
       }
 
       // Deduct one credit. Capture the ledger ID so the meter event can use
-      // it as the Stripe `identifier` for native dedup (F-INT-04).
+      // it as the Stripe `identifier` for native dedup.
       const ledgerEntry = await tx.ocrCreditLedger.create({
         data: {
           organizationId,
@@ -202,11 +203,10 @@ export async function checkAndDeductCredit(organizationId: string): Promise<Cred
 
   // Fire-and-forget Stripe Meter event after successful deduction (outside transaction)
   if (result.allowed && result.stripeCustomerId) {
-    // F-INT-04: Stripe meter events have native dedup via `identifier`
-    // (Stripe enforces uniqueness within a rolling 24h period). Without it,
-    // a retried OCR job (QStash, fixer cron) double-bills the customer.
-    // Derive from the ledger entry ID when available so the natural row-key
-    // doubles as the dedup key.
+    // Stripe meter events have native dedup via `identifier` (Stripe enforces
+    // uniqueness within a rolling 24h period). Without it, a retried OCR job
+    // (QStash, fixer cron) double-bills the customer. Derive from the ledger
+    // entry ID when available so the natural row-key doubles as the dedup key.
     const meterIdentifier = `ocr-${organizationId}-${result.ledgerEntryId ?? Date.now().toString()}`;
     stripe.billing.meterEvents
       .create({
@@ -236,7 +236,7 @@ export async function checkAndDeductCredit(organizationId: string): Promise<Cred
  * Allocates top-up OCR credits for an organization.
  *
  * Creates a positive ledger entry with reason "TOP_UP" in the
- * current billing period. Per D-13.
+ * current billing period.
  *
  * @returns The new credit balance after allocation
  */

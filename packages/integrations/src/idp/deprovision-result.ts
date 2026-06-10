@@ -1,4 +1,4 @@
-// Phase 76-78 — shared DeprovisionResult builder for the IdP deprovision adapters.
+// Shared DeprovisionResult builder for the IdP deprovision adapters.
 //
 // ALL five Deprovisionable adapters (GWS, Slack, Entra, Okta, GitHub) share an
 // identical classify-then-branch pattern:

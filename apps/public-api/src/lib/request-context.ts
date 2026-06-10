@@ -1,11 +1,11 @@
 /**
  * Per-request context for the public REST API.
  *
- * F-OBS-01: a `requestId` minted at middleware entry is stored both on
- * the Hono context (via the built-in `requestId()` middleware) AND in
- * Node `AsyncLocalStorage`, so any downstream code path — tRPC caller,
- * service helpers, even errors caught in `app.onError` — can pull the
- * same id without threading it through every function signature.
+ * A `requestId` minted at middleware entry is stored both on the Hono
+ * context (via the built-in `requestId()` middleware) AND in Node
+ * `AsyncLocalStorage`, so any downstream code path — tRPC caller, service
+ * helpers, even errors caught in `app.onError` — can pull the same id
+ * without threading it through every function signature.
  *
  * Use `getRequestId()` from anywhere inside the request lifecycle to
  * tag a log line or error. Returns `undefined` outside a request frame

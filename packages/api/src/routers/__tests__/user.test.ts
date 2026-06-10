@@ -67,8 +67,8 @@ const { mockPrisma } = vi.hoisted(() => {
       findFirst: vi.fn(async () => ({ role: 'admin' })),
       findFirstOrThrow: vi.fn(async () => ({ id: 'member-mock' })),
       count: vi.fn(async () => 2),
-      // F-SEC-07 — deactivate / reactivate now flip Member.disabledAt
-      // instead of routing through Better Auth's banUser/unbanUser.
+      // deactivate / reactivate flip Member.disabledAt instead of routing
+      // through Better Auth's banUser/unbanUser.
       update: vi.fn(async () => ({ id: 'member-mock', disabledAt: new Date() })),
     },
     approvalStep: {
@@ -110,8 +110,7 @@ vi.mock('@contractor-ops/db', () => ({
   getRegionalClient: vi.fn(() => mockPrisma),
 }));
 
-// F-DB-03 / F-SEC-12 — org-cache must report ACTIVE so tenant middleware
-// does not throw orgSuspended.
+// org-cache must report ACTIVE so tenant middleware does not throw orgSuspended.
 vi.mock('../../services/org-cache', () => ({
   getOrgMeta: vi.fn(async (orgId: string) => ({
     id: orgId,
@@ -452,8 +451,8 @@ describe('user.invite', () => {
 
 describe('user.updateRole', () => {
   it('calls auth updateMemberRole with memberId and new role', async () => {
-    // F-SEC-14 — router now resolves Member.id from the supplied userId
-    // via `member.findFirstOrThrow` before calling Better Auth.
+    // router resolves Member.id from the supplied userId via
+    // `member.findFirstOrThrow` before calling Better Auth.
     mockPrisma.member.findFirstOrThrow.mockResolvedValueOnce({ id: MEMBER_ID });
 
     await caller.user.updateRole({ userId: TARGET_USER_ID, role: 'admin' });
@@ -479,9 +478,8 @@ describe('user.deactivate', () => {
       'lastAdminCannotDeactivate',
     );
 
-    // F-SEC-07 — deactivate now flips Member.disabledAt instead of
-    // calling Better Auth's banUser. The guard must short-circuit before
-    // any membership update happens.
+    // deactivate flips Member.disabledAt instead of calling Better Auth's
+    // banUser. The guard must short-circuit before any membership update happens.
     expect(mockPrisma.member.update).not.toHaveBeenCalled();
   });
 
@@ -537,10 +535,9 @@ describe('user.deactivate', () => {
 
 describe('user.reactivate', () => {
   it('clears Member.disabledAt for the target membership', async () => {
-    // F-SEC-07 — reactivation is now per-membership (clears disabledAt /
-    // disabledByUserId / disabledReason). It no longer routes through
-    // Better Auth's unbanUser, which would have global side-effects
-    // across every org the user belonged to.
+    // reactivation is per-membership (clears disabledAt / disabledByUserId /
+    // disabledReason). It no longer routes through Better Auth's unbanUser,
+    // which would have global side-effects across every org the user belonged to.
     mockPrisma.member.findFirst.mockResolvedValueOnce({ id: MEMBER_ID });
 
     await caller.user.reactivate({ userId: TARGET_USER_ID });

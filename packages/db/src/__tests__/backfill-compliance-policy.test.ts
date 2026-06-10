@@ -1,4 +1,4 @@
-// Phase 71 D-08 step 2 — backfillComplianceItems pure-function tests.
+// backfillComplianceItems pure-function tests.
 //
 // Tests the in-memory backfill computation without touching a real DB. The CLI
 // entry (main()) wraps prisma operations around this same pure function.

@@ -21,7 +21,7 @@ import type {
 // ---------------------------------------------------------------------------
 
 /**
- * Idempotency note (F-INT-04 / DRIFT-01).
+ * Idempotency note.
  *
  * Slack's Web API (chat.postMessage and related) does NOT expose a per-call
  * idempotency interface — there is no `Idempotency-Key` header and no
@@ -30,11 +30,6 @@ import type {
  * enforced one layer up via `Notification.dedupKey` (Prisma): the outbox
  * dispatcher composes a stable `${outboxEventId}:${userId}` key on the
  * `Notification` row and skips the send when that row already exists.
- *
- * Rationale and audit trail: see
- * `.audit-2026-05-03/AUDIT-CLOSURE-2026-05-11.md` §6 ("What was NOT changed
- * (and why)") and the outbox handler comments in
- * `packages/api/src/services/outbox/handlers.ts`.
  */
 export class SlackMessagingProvider implements MessagingProvider {
   readonly platform = 'slack' as const;

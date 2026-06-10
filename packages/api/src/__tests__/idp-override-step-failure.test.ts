@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------
-// Phase 77 D-12/D-13 — overrideStepFailure mutation tests.
+// overrideStepFailure mutation tests.
 // ---------------------------------------------------------------------------
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';

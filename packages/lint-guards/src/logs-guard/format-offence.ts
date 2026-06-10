@@ -1,4 +1,4 @@
-// Phase 70 D-03 structured-diff formatter for logs-guard offences.
+// Structured-diff formatter for logs-guard offences.
 
 import type { LogsGuardOffence } from './run-guard';
 

@@ -1,6 +1,6 @@
-// Phase 76 D-01..D-12 types for IdP deprovisioning saga.
-// Types only. Runtime implementations live in sibling files (cooldown.ts, run-status.ts,
-// provenance.ts, gc.ts) and ship across Plans 76-04, 76-06, 76-10.
+// Types for the IdP deprovisioning saga.
+// Runtime implementations live in sibling files (cooldown.ts, run-status.ts,
+// provenance.ts, gc.ts).
 
 export const COOLDOWN_DAYS = 14 as const;
 export const MAX_ATTEMPTS = 3 as const;
@@ -21,9 +21,9 @@ export interface CooldownInput {
 }
 
 export type RunStatus = 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'PARTIAL_FAILURE' | 'FAILED';
-// Phase 77 D-10 — MANUAL_COMPLETED added to mirror the Prisma DeprovisioningStepStatus
-// enum (recomputeRunStatus selects `status` straight off the regenerated client).
-// deriveRunStatus treats it as SUCCEEDED-equivalent for COMPLETED/PARTIAL_FAILURE (D-11).
+// MANUAL_COMPLETED mirrors the Prisma DeprovisioningStepStatus enum
+// (recomputeRunStatus selects `status` straight off the regenerated client).
+// deriveRunStatus treats it as SUCCEEDED-equivalent for COMPLETED/PARTIAL_FAILURE.
 export type StepStatus = 'PENDING' | 'IN_PROGRESS' | 'SUCCEEDED' | 'FAILED' | 'MANUAL_COMPLETED';
 
 export interface StepRow {

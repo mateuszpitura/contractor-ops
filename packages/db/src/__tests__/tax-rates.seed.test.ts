@@ -1,5 +1,4 @@
-// Phase 57 · Plan 01 — GB + DE TaxRate seed assertions (PAY-02, PAY-04; D-09).
-// See .planning/phases/57-government-api-clients/57-01-PLAN.md Task 1.
+// GB + DE TaxRate seed assertions.
 
 import { describe, expect, it } from 'vitest';
 

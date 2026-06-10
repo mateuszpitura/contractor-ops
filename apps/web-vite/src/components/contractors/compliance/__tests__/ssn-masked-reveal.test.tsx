@@ -1,13 +1,5 @@
 /**
- * Phase 84 · Plan 00 (Wave 0 RED) — US-FIELD-02 / US-FIELD-04, UI-SPEC §B.
- * See .planning/milestones/v7.0-phases/84-.../84-UI-SPEC.md §B.
- *
- * RED until Plan 05 creates
- *   apps/web-vite/src/components/contractors/compliance/ssn-masked-reveal.tsx
- * exporting `SsnMaskedReveal`. The import below resolves to a not-yet-existing
- * module so the suite fails (Cannot find module).
- *
- * Locks the five UI-SPEC §B states:
+ * SsnMaskedReveal — locks the five masked-reveal states:
  *   1. Masked (default) — `•••-••-1234`, last-4 aria-label, NO full value in DOM
  *   2. Reveal absent    — canReveal=false → reveal control NOT rendered (not disabled)
  *   3. Reveal available — canReveal=true → "Reveal SSN" button present

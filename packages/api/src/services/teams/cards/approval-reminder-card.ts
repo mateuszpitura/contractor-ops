@@ -1,6 +1,6 @@
 // ---------------------------------------------------------------------------
 // Adaptive Card: Approval Reminder (Overdue)
-// Per D-08: Reminder card for overdue approval requests
+// Reminder card for overdue approval requests
 // ---------------------------------------------------------------------------
 
 export interface ApprovalReminderCardParams {

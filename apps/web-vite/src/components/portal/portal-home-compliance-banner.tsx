@@ -6,9 +6,9 @@ import { useTranslations } from '../../i18n/useTranslations.js';
 import { usePortalCompliance } from './compliance/hooks/use-portal-compliance.js';
 
 /**
- * Phase 73 COMPL-04 / D-09 — portal-home attention banner. Surfaces when the
- * contractor has any MISSING/EXPIRED item or any item expiring within 30 days,
- * linking to the self-service list. Surface only — no cron (Phase 72 owns that).
+ * Portal-home attention banner. Surfaces when the contractor has any
+ * MISSING/EXPIRED item or any item expiring within 30 days, linking to the
+ * self-service list. Surface only — cron-driven expiry runs server-side.
  */
 export function PortalHomeComplianceBanner() {
   const t = useTranslations('Portal.compliance');

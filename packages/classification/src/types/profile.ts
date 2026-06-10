@@ -1,11 +1,10 @@
 // ---------------------------------------------------------------------------
-// ClassificationProfile Interface — D-02
+// ClassificationProfile Interface
 // ---------------------------------------------------------------------------
 //
 // Each country profile (IR35 / Scheinselbständigkeit) implements this
 // interface and registers itself via `registerProfile` on import. Scoring
-// MUST stay server-side (per Pitfall 2) — never import this module in a
-// client bundle.
+// must stay server-side — never import this module in a client bundle.
 
 import type { AnswerMap, Assessment, AssessmentShell } from './assessment.js';
 import type { Outcome, OutcomeView } from './outcome.js';
@@ -17,7 +16,7 @@ export interface ClassificationProfile {
   readonly country: string;
   /** Human-readable name (e.g., "IR35 (United Kingdom)"). */
   readonly displayName: string;
-  /** Semver of the rule set — snapshotted on submit per D-08. */
+  /** Semver of the rule set — snapshotted on submit. */
   readonly ruleSetVersion: string;
 
   /** Produce a fresh (empty) assessment shell scoped to a single engagement. */

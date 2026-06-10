@@ -1,4 +1,4 @@
-// Phase 62 · Plan 62-03 Task 1 — XMP packet builder for ZUGFeRD + PDF/A-3.
+// XMP packet builder for ZUGFeRD + PDF/A-3.
 //
 // Emits the XMP metadata packet that ZUGFeRD readers + veraPDF use to
 // identify the PDF as a Factur-X / ZUGFeRD COMFORT (EN 16931) hybrid wrapped
@@ -6,7 +6,7 @@
 // §5.1 + PDF/A-3 / ISO 19005-3) — only `conformanceLevel`, `documentTitle`,
 // `creatorTool`, and `producedAt` are caller-parameterised. The remaining
 // namespaces / constants come from ./constants.ts where they are single-source
-// for both parser (Plan 02) and generator (this plan).
+// for both parser and generator.
 //
 // The packet is a pure template (no XMP library); a template literal keeps
 // the dependency surface minimal — pdf-lib does not ship an XMP writer and
@@ -35,7 +35,7 @@ import {
 // ---------------------------------------------------------------------------
 
 export interface BuildXmpInput {
-  /** ZUGFeRD conformance level (we only ship COMFORT outbound for Phase 62). */
+  /** ZUGFeRD conformance level (outbound generation uses COMFORT). */
   conformanceLevel: ZugferdConformanceLevel;
   /** Document title — surfaces in readers as dc:title / pdf:Title. */
   documentTitle: string;
@@ -59,7 +59,7 @@ export function buildZugferdXmpPacket(input: BuildXmpInput): Uint8Array {
   const conformanceLabel = `EN 16931`; // Outbound COMFORT → EN 16931 label.
   // Factur-X / ZUGFeRD XMP schema uses distinct conformance-level strings per
   // variant. "EN 16931" is COMFORT; XRECHNUNG / EXTENDED would emit different
-  // strings but Phase 62 D-03 only ships COMFORT outbound.
+  // strings — only COMFORT is shipped outbound today.
   void input.conformanceLevel;
 
   // Factur-X 1.0.07 §5 mandates the `pdfaExtension` declaration describing

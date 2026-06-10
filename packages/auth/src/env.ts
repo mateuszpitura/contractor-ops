@@ -155,7 +155,7 @@ export function loadAuthEnv(env: NodeJS.ProcessEnv = process.env): ResolvedAuthE
 
   // Resend API key is mandatory in production so Better Auth's email handlers
   // (verification, reset, magic-link, invitation) can deliver transactional
-  // mail. Without it the auth surface is silently broken (F-SEC-13).
+  // mail. Without it the auth surface is silently broken.
   // Development falls back to logging the URL.
   if (!data.RESEND_API_KEY && isProduction) {
     throw new Error(

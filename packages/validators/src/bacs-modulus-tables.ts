@@ -1,7 +1,6 @@
 // packages/validators/src/bacs-modulus-tables.ts
 //
 // VocaLink modulus weights table v8.40 (May 2025).
-// Phase 63 — PAY-01.
 //
 // Source: https://www.vocalink.com/customer-support/modulus-checking/
 //

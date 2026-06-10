@@ -1,4 +1,4 @@
-// Phase 59 · Plans 02 + 04 — Classification documents UI panel barrel.
+// Classification documents UI panel barrel.
 
 export { ClassificationDocumentsPanel } from './classification-documents-panel';
 export { DocumentHistoryListContainer } from './document-history-list.js';

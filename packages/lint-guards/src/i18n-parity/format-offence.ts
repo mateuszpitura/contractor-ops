@@ -1,4 +1,4 @@
-// Phase 70 D-03 structured-diff formatter for i18n-parity offences.
+// Structured-diff formatter for i18n-parity offences.
 
 import type { I18nParityOffence } from './run-guard';
 

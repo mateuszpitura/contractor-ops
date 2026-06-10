@@ -65,7 +65,7 @@ function endOfDay(dateStr: string): string {
 /**
  * Syncs a contract expiry date to the calendar.
  *
- * Creates or updates a calendar event with the [Contractor Ops] prefix (D-15).
+ * Creates or updates a calendar event with the [Contractor Ops] prefix.
  * Event is a 30-minute block at 09:00 UTC on the expiry date.
  */
 export async function syncContractExpiryDeadline(
@@ -129,7 +129,7 @@ export async function syncContractExpiryDeadline(
  * Syncs an approval SLA deadline to the calendar.
  *
  * Creates or updates a calendar event for the approval deadline
- * with the [Contractor Ops] prefix (D-15).
+ * with the [Contractor Ops] prefix.
  */
 export async function syncApprovalSlaDeadline(
   prisma: CalendarPrismaClient,
@@ -192,7 +192,7 @@ export async function syncApprovalSlaDeadline(
  * Syncs a payment due date to the calendar.
  *
  * Creates or updates a calendar event for the payment deadline
- * with the [Contractor Ops] prefix (D-15).
+ * with the [Contractor Ops] prefix.
  */
 export async function syncPaymentDueDeadline(
   prisma: CalendarPrismaClient,
@@ -255,7 +255,7 @@ export async function syncPaymentDueDeadline(
  * Creates a calendar event when a workflow task is activated with calendar config.
  *
  * Substitutes template variables in the title ({contractor}, {contract}, {task})
- * and calculates event duration from the config. Prepends [Contractor Ops] prefix (D-15).
+ * and calculates event duration from the config. Prepends [Contractor Ops] prefix.
  */
 export async function createTaskCalendarEvent(
   prisma: CalendarPrismaClient,

@@ -1,9 +1,9 @@
 // packages/api/src/services/einvoice-lifecycle-fsm.ts
 //
-// Phase 61 · Plan 61-06 Task 1 — Lifecycle finite-state machine for
-// EInvoiceLifecycle.validationStatus + EInvoiceLifecycle.transmissionStatus.
+// Lifecycle finite-state machine for EInvoiceLifecycle.validationStatus
+// + EInvoiceLifecycle.transmissionStatus.
 //
-// Design rationale (CONTEXT D-12 + RESEARCH Pattern 4 / Pitfall 7):
+// Design rationale:
 //   * The FSM is a pure, data-driven lookup. Tables live at module scope,
 //     readonly + frozen, so every (state × event) cell is either explicitly
 //     mapped or explicitly absent — there is no silent fall-through.
@@ -12,8 +12,8 @@
 //     `BAD_REQUEST` at the tRPC boundary (the webhook handler returns 4xx).
 //   * The machine is stateless (no lock, no cache). Callers wrap each
 //     transition in a Prisma `$transaction` so concurrent mutations + webhook
-//     re-deliveries can't race (Pitfall 7). Tests assert completeness of the
-//     table for every state × event combination.
+//     re-deliveries can't race. Tests assert completeness of the table for
+//     every state × event combination.
 //
 // Validation FSM (re-runnable — no terminal state; any layer re-validation
 // may transition laterally):

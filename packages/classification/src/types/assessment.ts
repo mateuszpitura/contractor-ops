@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------
-// Classification Assessment Types — D-03, D-04, D-08
+// Classification Assessment Types
 // ---------------------------------------------------------------------------
 
 import type { Outcome } from './outcome.js';
@@ -19,7 +19,7 @@ export interface AnswerValue {
 export type AnswerMap = Record<string, AnswerValue>;
 
 /**
- * Frozen snapshot of the rule-set questions as captured on submit (D-08).
+ * Frozen snapshot of the rule-set questions as captured on submit.
  * Immutability guarantees the past assessment always re-renders with the exact
  * wording the user saw, even after the rule set is upgraded.
  */
@@ -37,7 +37,7 @@ export interface AssessmentShell {
 }
 
 /**
- * Full assessment record (matches ClassificationAssessment Prisma model, D-04).
+ * Full assessment record (matches ClassificationAssessment Prisma model).
  * `questionsSnapshot`/`outcome`/`completedAt`/`immutableAfter`/`disclaimerAcknowledgedAt`
  * are populated on `submit`.
  */

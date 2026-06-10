@@ -25,9 +25,9 @@ describe('r2 generateStorageKey', () => {
 });
 
 // -----------------------------------------------------------------------------
-// Phase 59 · D-05 — signExistingDownload signs a GET URL for an existing R2
-// object without re-uploading. Used by classificationDocument.getDownloadUrl
-// so the bytes of a persisted SDS / DRV bundle never change between downloads.
+// signExistingDownload signs a GET URL for an existing R2 object without
+// re-uploading. Used by classificationDocument.getDownloadUrl so the bytes
+// of a persisted SDS / DRV bundle never change between downloads.
 // -----------------------------------------------------------------------------
 
 interface MockCommand {

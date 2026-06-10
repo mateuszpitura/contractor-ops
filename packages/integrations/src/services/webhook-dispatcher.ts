@@ -68,15 +68,14 @@ export async function logWebhookDelivery(params: {
 /**
  * Queues a webhook delivery for async processing via QStash.
  *
- * F-INT-11: passes `deliveryId` as the QStash deduplication id so a
- * re-publish of the same `WebhookDelivery` row (e.g. ingress route retries
- * the queue step after a transient failure) collapses to a single delivery
- * within Upstash's 24h dedup window. `deliveryId` is a cuid generated inside
- * the ingress route's transaction and is naturally unique per logical
- * webhook event.
+ * Passes `deliveryId` as the QStash deduplication id so a re-publish of the
+ * same `WebhookDelivery` row (e.g. ingress route retries the queue step after
+ * a transient failure) collapses to a single delivery within Upstash's 24h
+ * dedup window. `deliveryId` is a cuid generated inside the ingress route's
+ * transaction and is naturally unique per logical webhook event.
  *
- * F-OBS-03: forward x-request-id + traceparent so the consumer route can
- * correlate inbound-webhook → processing logs end-to-end.
+ * Forwards x-request-id + traceparent so the consumer route can correlate
+ * inbound-webhook → processing logs end-to-end.
  *
  * @param deliveryId - The WebhookDelivery record ID (used as the dedup key)
  * @param provider - The provider slug

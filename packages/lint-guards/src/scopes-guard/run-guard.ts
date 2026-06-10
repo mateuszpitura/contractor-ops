@@ -1,4 +1,4 @@
-// Phase 76 D-15 — lint:scopes guard.
+// lint:scopes guard.
 //
 // Asserts that every write-capable scope string in an IdP adapter's
 // getOAuthConfig().scopes array is traceable to a typed-const declared in

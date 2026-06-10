@@ -1,10 +1,10 @@
 // ---------------------------------------------------------------------------
-// Classification autosave rate-limit middleware (Phase 58, Plan 03)
+// Classification autosave rate-limit middleware
 // ---------------------------------------------------------------------------
 //
 // Caps `classification.saveAnswer` at 120 calls per minute per assessmentId
-// per organization — mitigates the autosave DoS loop documented in
-// RESEARCH.md §Pitfall 10 and threat T-58-13 in the Plan 03 STRIDE register.
+// per organization — mitigates the autosave DoS loop where a misbehaving
+// client hammers saveAnswer at high frequency.
 //
 // Uses Upstash Redis (sliding window) when UPSTASH_REDIS_REST_URL +
 // UPSTASH_REDIS_REST_TOKEN are set; otherwise falls back to an in-memory
@@ -36,7 +36,7 @@ const log = createLogger({ service: 'api', component: 'classification-rate-limit
 
 /**
  * Max saveAnswer calls per minute per assessment. The production default is
- * 120 (Pitfall 10). Tests can override via the __setClassificationRateLimitForTests
+ * 120. Tests can override via the __setClassificationRateLimitForTests
  * helper below to avoid long-running runtimes without weakening the
  * production guarantee.
  */
@@ -66,12 +66,11 @@ const upstashLimiter: Ratelimit | null = hasRedis
 // In-memory fallback (dev / single-instance)
 // ---------------------------------------------------------------------------
 //
-// F-SCALE-15 — entries track `lastSeenMs`; eviction at the size cap is LRU
-// (oldest `lastSeenMs` first), not insertion-order FIFO. During a sustained
-// Redis outage on a 5 000-contractor org with 100 active users, the FIFO
-// approach evicted the first-arriving legitimate users while preserving
-// later-arriving low-rate attackers — exactly the wrong incentive. LRU
-// keeps the active workload in the map and pushes truly-stale keys out.
+// Entries track `lastSeenMs`; eviction at the size cap is LRU (oldest
+// `lastSeenMs` first), not insertion-order FIFO. During a sustained Redis
+// outage the FIFO approach evicted the first-arriving legitimate users while
+// preserving later-arriving low-rate attackers — exactly the wrong incentive.
+// LRU keeps the active workload in the map and pushes truly-stale keys out.
 
 type FallbackEntry = { timestamps: number[]; lastSeenMs: number };
 const fallbackMap = new Map<string, FallbackEntry>();
@@ -155,7 +154,7 @@ export const classificationSaveAnswerRateLimit = t.middleware(async ({ ctx, inpu
       const result = await upstashLimiter.limit(key);
       allowed = result.success;
     } catch (err) {
-      // F-SCALE-03: in production, fail-CLOSED if Upstash is unreachable.
+      // In production, fail-CLOSED if Upstash is unreachable.
       // The autosave loop is the cheapest possible DoS — a misbehaving
       // client can hammer saveAnswer at hundreds of req/s. The in-memory
       // fallback is per-pod and cannot detect the same assessment hitting
@@ -206,7 +205,7 @@ export function __resetClassificationRateLimitForTests(max?: number): void {
 
 /**
  * Exposed for test assertions so a fixture can verify the production default
- * has not drifted from the 120/min documented in Pitfall 10.
+ * has not drifted from the 120/min limit.
  */
 export function __getClassificationRateLimitMaxForTests(): number {
   return MaxCallsPerMinute;

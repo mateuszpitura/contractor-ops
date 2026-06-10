@@ -1,4 +1,4 @@
-// Phase 70 · Plan 08 · FOUND6-06 (D-15) — IdP audit logger contract.
+// IdP audit logger contract tests.
 //
 // We mount a fresh pino into an in-memory Writable sink (same approach as
 // default-body-redact.test.ts and with-body-logging.test.ts) and exercise
@@ -129,7 +129,7 @@ describe('getIdpAuditLogger (FOUND6-06 — D-15)', () => {
 
   it('IDP_AUDIT_ALLOWED_FIELDS contains the canonical fields (Phase 70 + 76 + 77)', () => {
     expect([...IDP_AUDIT_ALLOWED_FIELDS]).toEqual([
-      // Phase 70 D-15
+      // Per-action audit fields
       'auditEvent',
       'externalUserId',
       'actionResult',
@@ -139,7 +139,7 @@ describe('getIdpAuditLogger (FOUND6-06 — D-15)', () => {
       'organizationId',
       'userId',
       'timestamp',
-      // Phase 76 D-15 / SC#2
+      // Saga + provenance audit fields
       'runId',
       'stepId',
       'stepKind',
@@ -148,7 +148,7 @@ describe('getIdpAuditLogger (FOUND6-06 — D-15)', () => {
       'attempts',
       'failureKind',
       'matchedProvenanceId',
-      // Phase 77 D-07 / D-10
+      // Error-class + manual-override discriminators (non-PII)
       'errorClass',
       'manualOverrideCategory',
       'manualOverriddenByUserId',

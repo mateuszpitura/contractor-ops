@@ -1,5 +1,5 @@
 /**
- * Onboarding consent step — Phase 51 / Phase 56 · Plan 08 D-10.
+ * Onboarding consent step.
  *
  * UK / DE / AE / SA orgs render this step before the rest of onboarding;
  * everyone else short-circuits to `null` (return value of the outer

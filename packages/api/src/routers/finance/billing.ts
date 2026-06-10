@@ -28,7 +28,7 @@ import { getCreditBalance } from '../../services/credit-service';
 import { stripe } from '../../services/stripe-client';
 
 // ---------------------------------------------------------------------------
-// Static plan configuration (D-01 through D-06)
+// Static plan configuration
 // ---------------------------------------------------------------------------
 
 const PLAN_CONFIG = {
@@ -181,8 +181,8 @@ export const billingRouter = router({
         cancelUrl: `${baseUrl}/settings?tab=billing`,
       });
 
-      // F-OBS-05 — subscription checkout starts the billing relationship and
-      // can change plan tier; admins must be retraceable.
+      // Subscription checkout starts the billing relationship and can change
+      // plan tier; admins must be retraceable.
       await writeAuditLog({
         organizationId: ctx.organizationId,
         actorType: 'USER',
@@ -260,7 +260,7 @@ export const billingRouter = router({
       returnUrl: `${baseUrl}/settings?tab=billing`,
     });
 
-    // F-OBS-05 — billing portal session opens the door to plan changes,
+    // Billing portal session opens the door to plan changes,
     // payment-method updates, and cancellation. Audit the entry point.
     await writeAuditLog({
       organizationId: ctx.organizationId,
@@ -312,7 +312,7 @@ export const billingRouter = router({
         cancelUrl: `${baseUrl}/settings?tab=billing`,
       });
 
-      // F-OBS-05 — credit top-up is a billed event; audit who initiated.
+      // Credit top-up is a billed event; audit who initiated.
       await writeAuditLog({
         organizationId: ctx.organizationId,
         actorType: 'USER',
@@ -356,12 +356,12 @@ export const billingRouter = router({
   }),
 
   /**
-   * Grant an add-on entitlement to the organization (FOUND7-01, D-03).
+   * Grant an add-on entitlement to the organization.
    *
    * Owner-gated via `adminProcedure` (= organization:update RBAC) — the same
    * gate the four sibling billing mutations use; a member without that
    * permission cannot self-grant. The grant is admin/seed only — real Stripe
-   * add-on SKU / checkout / webhook-entitlement-sync is DEFERRED.
+   * add-on SKU / checkout / webhook-entitlement-sync is deferred.
    *
    * Writes the deduped `Subscription.addOns` array, audit-logs the change, then
    * invalidates the Redis-cached subscription so `requireAddOn` (which reads the
@@ -408,8 +408,8 @@ export const billingRouter = router({
         });
       });
 
-      // Load-bearing (Pitfall 3): the grant is a non-Stripe write path. Without
-      // this, requireAddOn reads the stale 15-min-cached subscription and denies
+      // The grant is a non-Stripe write path. Without this cache invalidation,
+      // requireAddOn reads the stale 15-min-cached subscription and denies
       // the just-granted add-on for up to the cache TTL.
       await invalidate(CacheKeys.subscription(ctx.organizationId));
 

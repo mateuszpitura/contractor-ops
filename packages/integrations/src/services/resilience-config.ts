@@ -16,11 +16,10 @@
 //     1 (per-channel limit elsewhere wraps this).
 //  4. `timeoutMs` is the wall-clock per attempt. Match to the upstream's
 //     documented p99, not p50. KSeF documents 60s for some endpoints.
-//  5. F-INT-22: we deliberately rely on Node's native `fetch` undici keep-alive
-//     defaults — no per-call `Agent` is configured. The shared host pool is
-//     already keep-alive'd, and per-provider Agents with custom keepAlive
-//     timing should only be added if profiling shows TLS handshake on the hot
-//     path. Document the future hook here when we add it.
+//  5. We deliberately rely on Node's native `fetch` undici keep-alive defaults —
+//     no per-call `Agent` is configured. The shared host pool is already
+//     keep-alive'd, and per-provider Agents with custom keepAlive timing should
+//     only be added if profiling shows TLS handshake on the hot path.
 
 export interface ProviderResilienceConfig {
   /** Consecutive failures before opening the breaker. */
@@ -130,8 +129,8 @@ export const PROVIDER_RESILIENCE_CONFIG: Readonly<
 
   // ---- collaboration / project mgmt -----------------------------------
   // Slack outbound is rate-limited per channel (1 req/sec). The 1-per-channel
-  // limit is enforced by callers (sweep S3-2 / F-INT-12); this cap protects
-  // shared workspace endpoints (auth.test, conversations.list).
+  // limit is enforced by callers; this cap protects shared workspace endpoints
+  // (auth.test, conversations.list).
   slack: {
     timeoutMs: 15_000,
     retryAttempts: 2,
@@ -162,8 +161,8 @@ export const PROVIDER_RESILIENCE_CONFIG: Readonly<
   'google-calendar': {
     timeoutMs: 15_000,
     retryAttempts: 2,
-    // Calendar fan-out: F-INT-09 wraps callers in p-limit(5) on top of this
-    // — the breaker should still allow burst writes from a single tRPC call.
+    // Calendar fan-out: callers use p-limit(5) on top of this — the breaker
+    // should still allow burst writes from a single tRPC call.
     concurrencyLimit: 10,
   },
   'google-workspace': {

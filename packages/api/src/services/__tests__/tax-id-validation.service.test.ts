@@ -1,12 +1,12 @@
-// Phase 57 · Plan 03 · Task 1 — tax-id-validation.service orchestrator.
+// tax-id-validation.service orchestrator.
 //
 // Dispatches between HmrcVatClient (GB_VAT) and ViesClient (DE_USTIDNR).
 // Enforces:
 //   - Pre-flight checksum short-circuit (no network on malformed input).
 //   - Atomic $transaction dual-write (TaxIdValidation + Contractor summary).
-//   - Soft-fail → `stale` within 90d window, else `unavailable` (D-08).
-//   - PII mask on every log statement (T-57-03-02).
-//   - Zod schema rejection → `unavailable` (D-08 outage from user POV).
+//   - Soft-fail → `stale` within 90d window, else `unavailable`.
+//   - PII mask on every log statement.
+//   - Zod schema rejection → `unavailable` (outage from user POV).
 
 import type { HmrcVatClient, ViesClient } from '@contractor-ops/gov-api';
 import { HmrcApiError, ViesApiError } from '@contractor-ops/gov-api';
@@ -75,7 +75,7 @@ const baseInputDE: TaxIdValidationInput = {
 
 const NOW = new Date('2026-04-13T10:00:00Z');
 
-// PII safety guard (T-57-03-02): the orchestrator must never write the raw
+// PII safety guard: the orchestrator must never write the raw
 // `taxIdValue` to console — it relies on Pino redact paths in
 // @contractor-ops/logger for structured bodies and never calls console.*
 // directly. We spy on console regardless so the regression test below can

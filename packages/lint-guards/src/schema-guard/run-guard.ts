@@ -1,4 +1,4 @@
-// Phase 70 · Plan 02 · FOUND6-01 — multi-tenant Prisma schema guard.
+// Multi-tenant Prisma schema guard.
 //
 // Walks the provided list of `*.prisma` files, parses each `model X { ... }`
 // block, and returns one offence for every model that:
@@ -7,8 +7,8 @@
 //   - is not present in the allowlist.
 //
 // The parser is line-based and strips `//` line comments + `/* */` block
-// comments before scanning so commented-out fields (T-70-02-02) cannot
-// accidentally satisfy the gate.
+// comments before scanning so commented-out fields cannot accidentally
+// satisfy the gate.
 
 import { readFile } from 'node:fs/promises';
 

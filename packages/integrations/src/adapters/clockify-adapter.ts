@@ -3,7 +3,7 @@ import type { GetHealthStatusOptions } from './base-adapter.js';
 import { BaseAdapter } from './base-adapter.js';
 
 // ---------------------------------------------------------------------------
-// Clockify Regional Base URLs (Pitfall 3 from RESEARCH.md)
+// Clockify Regional Base URLs
 // ---------------------------------------------------------------------------
 
 /**

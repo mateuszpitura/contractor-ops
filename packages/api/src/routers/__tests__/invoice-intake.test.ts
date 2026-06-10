@@ -1,7 +1,7 @@
 // packages/api/src/routers/__tests__/invoice-intake.test.ts
 //
-// Phase 62 · Plan 62-05 Task 1 — tRPC router tests for the invoice intake
-// surface. Mocks the service layer via `vi.mock` so we test the router's
+// tRPC router tests for the invoice intake surface. Mocks the service layer
+// via `vi.mock` so we test the router's
 // auth/Zod/error-mapping responsibilities in isolation. The service itself
 // is covered by `services/__tests__/invoice-intake-service.test.ts`.
 //
@@ -95,8 +95,7 @@ vi.mock('@contractor-ops/db', () => ({
   getRegionalClient: vi.fn(() => mockPrisma),
 }));
 
-// F-DB-03 / F-SEC-12 — org-cache must report ACTIVE so tenant middleware
-// does not throw orgSuspended.
+// org-cache must report ACTIVE so tenant middleware does not throw orgSuspended.
 vi.mock('../../services/org-cache', () => ({
   getOrgMeta: vi.fn(async (orgId: string) => ({
     id: orgId,
@@ -444,7 +443,7 @@ describe('invoiceIntake.getById', () => {
   });
 
   it('6b. cross-org access returns NOT_FOUND (not FORBIDDEN)', async () => {
-    // F-DB-22: prod code pre-filters by organizationId in the where clause.
+    // Prod code pre-filters by organizationId in the where clause.
     // Cross-org row is invisible to the caller — mock returns null.
     mockPrisma.invoiceIntakeRequest.findFirst = vi.fn(async () => null);
 
@@ -608,7 +607,7 @@ describe('invoiceIntake.downloadValidationReport', () => {
   });
 
   it('14. cross-org download returns NOT_FOUND', async () => {
-    // F-DB-22: org-prefiltered findFirst returns null for cross-org row
+    // org-prefiltered findFirst returns null for cross-org row
     mockPrisma.invoiceIntakeRequest.findFirst = vi.fn(async () => null);
     const caller = makeCaller(USER_A, ORG_A);
     try {

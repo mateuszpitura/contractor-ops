@@ -1,6 +1,6 @@
-// Phase 75 D-10..D-12 — CredentialReference tRPC router.
+// CredentialReference tRPC router.
 // Every free-text field (vaultUrl, label, notes) is gated server-side by
-// looksLikeSecretRefinement (D-11). Stores POINTERS only — never secrets.
+// looksLikeSecretRefinement. Stores POINTERS only — never secrets.
 
 import {
   entityIdSchema,
@@ -37,7 +37,7 @@ const ACCESS_TYPE = z.enum([
   'OTHER',
 ]);
 
-// Every free-text field passes through secret-shape detection (D-11).
+// Every free-text field passes through secret-shape detection.
 // SAFE_VAULT_URL uses anchored (whole-value) matching — a URL should never BE a secret.
 // SAFE_TEXT (label) and SAFE_NOTES use substring matching so embedded secrets
 // like "Rotate the AKIAIOSFODNN7EXAMPLE key" are also rejected.
@@ -67,7 +67,7 @@ export const credentialReferenceRouter = router({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      // Defend the D-12 UI gate at the server: credentials only on OFFBOARDING runs.
+      // Defend the server-side gate: credentials only on OFFBOARDING runs.
       const run = await findOrThrow(
         () =>
           ctx.db.workflowRun.findFirst({

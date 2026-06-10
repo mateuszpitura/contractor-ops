@@ -1,7 +1,6 @@
 // packages/einvoice/src/profiles/xrechnung-de/__tests__/leitweg-id-embed.test.ts
 //
-// Phase 61 · Plan 61-02 Task 1 — TDD tests for the BT-10 embed helper.
-// Replaces the Plan-01 RED scaffold (describe.todo).
+// TDD tests for the BT-10 (Leitweg-ID) embed helper.
 //
 // The helper is the single place that writes a Leitweg-ID into a CII
 // document tree at path

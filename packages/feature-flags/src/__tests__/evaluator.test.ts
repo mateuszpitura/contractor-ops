@@ -173,7 +173,7 @@ describe('buildFlagBag', () => {
 });
 
 // ---------------------------------------------------------------------------
-// Phase 72 hardening — disclaimer-gate override surfaces a distinct reason
+// Disclaimer-gate override surfaces a distinct reason
 // ---------------------------------------------------------------------------
 
 describe('evaluate — classification disclaimer gate override', () => {
@@ -210,7 +210,7 @@ describe('evaluate — classification disclaimer gate override', () => {
 });
 
 // ---------------------------------------------------------------------------
-// Phase 72 hardening — killWhenUnknown short-circuits during Unleash outage
+// killWhenUnknown short-circuits during Unleash outage
 // ---------------------------------------------------------------------------
 
 describe('evaluateAgainst — killWhenUnknown', () => {
@@ -294,7 +294,7 @@ describe('evaluateAgainst — killWhenUnknown', () => {
 });
 
 // ---------------------------------------------------------------------------
-// Phase 72 hardening — defensive boolean coercion of SDK return value
+// Defensive boolean coercion of SDK return value
 // ---------------------------------------------------------------------------
 
 describe('evaluateAgainst — boolean coercion', () => {

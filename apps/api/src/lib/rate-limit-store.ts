@@ -8,8 +8,8 @@
  *     the in-memory LRU fallback.
  *   - In-memory LRU fallback (Map of `{count, resetAt, lastSeenMs}`) keyed
  *     by `prefix:identifier`. Map is bounded at FALLBACK_MAX_ENTRIES; LRU
- *     evicts the 10 % oldest entries by `lastSeenMs` on overflow (F-SCALE-15
- *     — FIFO ejected legitimate users while preserving slow attackers).
+ *     evicts the 10 % oldest entries by `lastSeenMs` on overflow — FIFO
+ *     would eject legitimate users while preserving slow attackers.
  *
  * Production policy is **fail-closed** — a `RateLimiterUnavailableError`
  * propagates to the plugin which translates it to `503 Retry-After: 5`.

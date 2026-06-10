@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------
-// Scheinselbständigkeit (DRV) Rule Set — D-06 / D-08
+// Scheinselbständigkeit (DRV) Rule Set
 // ---------------------------------------------------------------------------
 //
 // 20-criterion DRV inventory across the 4 Scheinselbständigkeit categories:
@@ -7,9 +7,6 @@
 // Every criterion carries a `drvReference` (DRV Rundschreiben, §-citation, or
 // leading BSG case). Category titles are imported VERBATIM from
 // `@contractor-ops/validators` so the locked-phrase CI guard catches any drift.
-//
-// RESEARCH refs: §Regulatory Domain → Scheinselbständigkeit + scoring test
-// coverage; D-14 (weights / thresholds); D-15 (DRV-ECO-01 billing-ratio band).
 
 import {
   CLASSIFICATION_SCHEIN_ECONOMIC_DEP,
@@ -22,11 +19,11 @@ import {
 import type { ScheinCategory } from '../../types/outcome.js';
 import type { RuleSet, RuleSetQuestion } from '../../types/rule-set.js';
 
-/** Rule-set version persisted in the questions snapshot on submit (D-08). */
+/** Rule-set version persisted in the questions snapshot on submit. */
 export const RULE_SET_VERSION = 'SCHEINSELBSTANDIGKEIT-DRV-2024' as const;
 
 /**
- * Category weights per D-14 / DRV Rundschreiben RS 2022/1 guidance.
+ * Category weights per DRV Rundschreiben RS 2022/1 guidance.
  * The sum MUST equal exactly 100 — enforced by a unit test.
  */
 export const CATEGORY_WEIGHTS = {
@@ -37,7 +34,7 @@ export const CATEGORY_WEIGHTS = {
 } as const satisfies Record<ScheinCategory, number>;
 
 /**
- * Traffic-light thresholds per D-14:
+ * Traffic-light thresholds:
  *   totalScore < green  → green
  *   totalScore ≤ amber  → amber
  *   totalScore > amber  → red
@@ -60,7 +57,7 @@ export const CATEGORY_TITLES = {
   'economic-dep': CLASSIFICATION_SCHEIN_ECONOMIC_DEP,
 } as const satisfies Record<ScheinCategory, string>;
 
-/** Re-export for Plan 04 / Plan 05 UI — single source of truth. */
+/** Re-export for wizard and outcome UI — single source of truth. */
 export const NOT_APPLICABLE_LABEL = CLASSIFICATION_SCHEIN_NOT_APPLICABLE;
 
 // ---------------------------------------------------------------------------

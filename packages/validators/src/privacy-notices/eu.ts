@@ -1,4 +1,4 @@
-// Phase 56 · Plan 07 — EU GDPR privacy notice fallback (FOUND-05/06).
+// EU GDPR privacy notice fallback.
 //
 // Rendered for authenticated users whose organization countryCode is not
 // GB/DE/AE/SA (resolved via `resolveJurisdiction` in the privacy-notice

@@ -1,20 +1,19 @@
-// Phase 62 · Plan 62-03 Task 5 — ZUGFeRD generator orchestrator.
+// ZUGFeRD generator orchestrator.
 //
 // End-to-end outbound pipeline:
-//   1. Build the CII XML via Phase-61 `generateXRechnungCii` — no fork.
-//      The CII syntax that XRechnung produces IS already EN-16931 compliant,
-//      which is what ZUGFeRD COMFORT requires. One CII XML, two wrappers.
+//   1. Build the CII XML via `generateXRechnungCii` — no fork. The CII syntax
+//      that XRechnung produces IS already EN-16931 compliant, which is what
+//      ZUGFeRD COMFORT requires. One CII XML, two wrappers.
 //   2. Render the visual invoice via @react-pdf/renderer.
 //   3. Wrap the visual + CII into PDF/A-3 B (`wrapToPdfA3`).
 //   4. Assert structural invariants (`assertZugferdStructure`) before
 //      returning bytes — fail fast so callers never ship a broken PDF.
 //
-// Level gate (D-03): we only emit COMFORT outbound. MINIMUM / BASIC /
-// BASIC-WL drop line-item or tax detail from the EN 16931 model, so
-// emitting them would silently strip invoice fields. Anything other
-// than 'COMFORT' throws `ZugferdLevelUnsupportedForOutput`. XRECHNUNG
-// / EXTENDED are accepted at the type-level for future use but currently
-// rejected as well (belt-and-braces).
+// Level gate: we only emit COMFORT outbound. MINIMUM / BASIC / BASIC-WL drop
+// line-item or tax detail from the EN 16931 model, so emitting them would
+// silently strip invoice fields. Anything other than 'COMFORT' throws
+// `ZugferdLevelUnsupportedForOutput`. XRECHNUNG / EXTENDED are accepted at
+// the type-level for future use but currently rejected as well (belt-and-braces).
 
 import { createLogger } from '@contractor-ops/logger';
 import type { EInvoice } from '../../types/invoice.js';
@@ -53,10 +52,8 @@ export interface GenerateZugferdInput {
    * #SKONTO#TAGE=…#PROZENT=…#BASISBETRAG=…# extension per XRechnung
    * 3.0.2 Anhang E.
    *
-   * Per Phase 68 D-05 — symmetric with XRechnungGenerateOptions.skontoTerm
-   * from xrechnung-de/index.ts. Resolution policy lives at the caller
-   * (api-side: routers/einvoice.ts:generateZugferdPdf after Plan 05),
-   * not here.
+   * Symmetric with `XRechnungGenerateOptions.skontoTerm` from
+   * xrechnung-de/index.ts. Resolution policy lives at the caller, not here.
    */
   skontoTerm?: SkontoTermInput | null;
 }
@@ -95,9 +92,8 @@ export async function generateZugferdPdf(input: GenerateZugferdInput): Promise<U
   const leitwegId = input.leitwegId ?? null;
 
   log.debug('building CII XML');
-  // Phase 68 D-05 — thread input.skontoTerm into the CII helper so the
-  // embedded factur-x.xml carries the BG-20 Payment Terms block. Defaults
-  // to null when omitted (no-Skonto path matches Phase 62 behaviour).
+  // Thread input.skontoTerm into the CII helper so the embedded factur-x.xml
+  // carries the BG-20 Payment Terms block. Defaults to null when omitted.
   const xml = generateXRechnungCii(input.invoice, leitwegId, input.skontoTerm ?? null);
 
   log.debug('rendering visual PDF');

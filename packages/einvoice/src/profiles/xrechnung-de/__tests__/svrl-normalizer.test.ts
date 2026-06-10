@@ -1,11 +1,11 @@
 // packages/einvoice/src/profiles/xrechnung-de/__tests__/svrl-normalizer.test.ts
 //
-// Phase 61 · Plan 61-03 Task 2 — SVRL normaliser unit tests.
+// SVRL normaliser unit tests.
 //
 // The normaliser flattens raw SVRL (Schematron Validation Report Language)
 // output emitted by saxon-js's `SaxonJS.transform` into the typed
 // `ValidationIssue` shape consumed by `validator.ts` (per-layer aggregation)
-// and downstream by the EInvoice tab UI (Plan 61-08 / 61-07 display layer).
+// and the EInvoice tab UI.
 
 import { describe, expect, it } from 'vitest';
 import { normaliseSvrl } from '../svrl-normalizer.js';
@@ -95,7 +95,7 @@ describe('normaliseSvrl', () => {
     // declares an ENTITY (resolution would require entity expansion). The
     // normaliser swallows the parse failure and returns empty buckets — no
     // attacker-controlled XXE payload can surface in the typed report.
-    // Mitigates T-61-03-01 (XXE) and T-61-03-05 (billion-laughs).
+    // Mitigates XXE and billion-laughs entity expansion attacks.
     const svrl = `<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE svrl [<!ENTITY xxe SYSTEM "file:///etc/passwd">]>
 <svrl:schematron-output xmlns:svrl="http://purl.oclc.org/dsdl/svrl">

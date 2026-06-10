@@ -1,5 +1,5 @@
-// Phase 71 D-01 D-02 — Type surface for the compliance policy registry.
-// Runtime registry implementation lives in src/registry.ts (Plan 71-02).
+// Type surface for the compliance policy registry.
+// Runtime registry implementation lives in src/registry.ts.
 
 export type Severity = 'BLOCKING' | 'WARNING' | 'INFO';
 
@@ -9,8 +9,8 @@ export type Jurisdiction = 'UK' | 'DE' | 'PL' | 'US' | 'KSA' | 'UAE';
  * Stable semantic ID + monotonic version. Format: `<jurisdiction>.<doc_namespace>@v<N>`
  * Example: 'uk.right_to_work@v1', 'de.a1@v1', 'ksa.iqama@v1'
  *
- * Stable namespace = everything before `@v`. Drift detection (D-09) compares
- * stored namespace against registry's current version per stable namespace.
+ * Stable namespace = everything before `@v`. Drift detection compares stored
+ * namespace against the registry's current version per stable namespace.
  */
 export type PolicyRuleId = `${Lowercase<string>}.${string}@v${number}`;
 
@@ -35,8 +35,8 @@ export interface EngagementContext {
  * a single ContractorComplianceItem requirement.
  */
 /**
- * Phase 73 D-07 — how a contractor-uploaded document's default `expiresAt` is
- * derived from its upload date:
+ * How a contractor-uploaded document's default `expiresAt` is derived from its
+ * upload date:
  *   - `fixed_days`   + `expiryDays`   → uploadDate + N days
  *   - `fixed_months` + `expiryMonths` → uploadDate + N months
  *   - `no_expiry`                     → sentinel far-future date
@@ -48,7 +48,7 @@ export interface PolicyRule {
   jurisdiction: Jurisdiction;
   /** Matches the Prisma DocumentType enum literal value. */
   documentType: string;
-  /** English display name; Phase 73 i18n covers locales. */
+  /** English display name; i18n covers locales. */
   displayName: string;
   severity: Severity;
   /** IANA TZ string (e.g., 'Europe/London', 'Asia/Riyadh'). */
@@ -62,9 +62,9 @@ export interface PolicyRule {
    */
   draftLegalText: string;
   /**
-   * Phase 73 D-07 — auto-fill expiry on portal upload-replacement. Optional so
-   * existing call sites that do not read it stay unaffected; the registry
-   * populates it for every rule (asserted by the expiry-semantic-coverage test).
+   * Auto-fill expiry on portal upload-replacement. Optional so existing call
+   * sites that do not read it stay unaffected; the registry populates it for
+   * every rule (asserted by the expiry-semantic-coverage test).
    */
   expirySemantic?: ExpirySemantic;
   expiryDays?: number;

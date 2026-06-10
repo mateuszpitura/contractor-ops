@@ -141,13 +141,13 @@ export const teamsRouter = router({
     }),
 
   /**
-   * Phase 74 D-06 — Set Team.fallbackApproverId for the offboarding workflow's
-   * PTO-aware fallback chain. Called from the per-team Settings page.
+   * Set Team.fallbackApproverId for the offboarding workflow's PTO-aware
+   * fallback chain. Called from the per-team Settings page.
    *
    * Although this router is named after Microsoft Teams integration (the
-   * collaboration product), it co-locates here per Plan 74-07's prescribed
-   * file layout. The mutation acts on the per-org `Team` model (organizational
-   * structure unit), NOT the Microsoft Teams workspace.
+   * collaboration product), it co-locates here because the mutation acts on
+   * the per-org `Team` model (organizational structure unit), NOT the
+   * Microsoft Teams workspace.
    */
   setFallbackApprover: integrationSettingsProcedure('update')
     .input(

@@ -491,7 +491,7 @@ describe('runAutoMatch', () => {
     const result = await runAutoMatch(mockPrisma as never, ORG_ID, makeInvoice());
 
     expect(result.flags).toContain('TIME_DEVIATION');
-    // Warning only: invoice amount still matches contract rate → MATCHED (D-15)
+    // Warning only: invoice amount still matches contract rate → MATCHED
     expect(result.matchStatus).toBe('MATCHED');
     expect(result.score).toBe(100);
   });

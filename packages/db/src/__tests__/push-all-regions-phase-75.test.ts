@@ -1,12 +1,11 @@
 import { describe, it } from 'vitest';
 
-// Region migration fan-out is driven by packages/db/scripts/migrate-all-regions.ts
-// in the current tree (RESEARCH §4 / DRIFT-MAP). Plan 75-02 wires the Phase 75
-// migration into that script; these scaffolds flip GREEN there.
+// Region migration fan-out is driven by packages/db/scripts/migrate-all-regions.ts.
+// These scaffolds verify the migration is wired into that script.
 //
 // Lives under src/__tests__/ (not scripts/__tests__/) because the db package
 // vitest include glob is `src/**/__tests__/**/*.test.ts` — a scripts/ sibling
-// would be silently skipped (threat T-75-01-01).
+// would be silently skipped.
 describe('migrate-all-regions for Phase 75 migration', () => {
   it.todo('migration applies to every region listed in DATABASE_URL_REGIONS env');
   it.todo('each region records the phase-75 migration in _prisma_migrations');

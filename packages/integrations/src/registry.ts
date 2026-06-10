@@ -155,13 +155,13 @@ export function getAllCompanyRegistryAdapters(): CompanyRegistryAdapter[] {
 }
 
 // ---------------------------------------------------------------------------
-// Deprovisionable Adapter Registry (Phase 76 D-13)
+// Deprovisionable Adapter Registry
 // ---------------------------------------------------------------------------
 //
 // Compile-time enforcement: only `BaseAdapter & Deprovisionable` instances pass
 // the registration signature. A class that implements BaseAdapter but forgets
 // any of the three Deprovisionable methods will not compile at the
-// `registerDeprovisionableAdapter` call site (SC#5).
+// `registerDeprovisionableAdapter` call site.
 //
 // DeprovisioningProviderId is a type-level union duplicated here (it mirrors the
 // Prisma `DeprovisioningProvider` enum + the @contractor-ops/idp-saga union).

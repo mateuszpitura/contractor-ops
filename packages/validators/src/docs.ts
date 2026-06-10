@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-// Doc link metadata cached in ExternalLink.metadataJson (D-04)
+// Doc link metadata cached in ExternalLink.metadataJson
 export const notionPageMetadataSchema = z.object({
   title: z.string(),
   icon: z.string().nullable(),

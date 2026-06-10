@@ -1,6 +1,5 @@
-// Phase 75 — aggregate IP-clause registry. The verdict engine (Plan 75-06)
-// imports ALL_IP_CLAUSES to run regex grounding across all jurisdictions on
-// a single contract.
+// Aggregate IP-clause registry. The verdict engine imports ALL_IP_CLAUSES
+// to run regex grounding across all jurisdictions on a single contract.
 
 import { IP_CLAUSES_DE } from './ip-clauses-de.js';
 import { IP_CLAUSES_KSA } from './ip-clauses-ksa.js';
@@ -33,7 +32,7 @@ export type IpClausePhraseId = keyof typeof ALL_IP_CLAUSES;
 
 /**
  * Returns the jurisdiction prefix of a phraseId — used by the
- * cross-jurisdiction-mismatch check (D-15).
+ * cross-jurisdiction-mismatch check.
  */
 export function getPhraseJurisdiction(phraseId: IpClausePhraseId): Jurisdiction {
   const prefix = phraseId.split('.')[0]?.toUpperCase();

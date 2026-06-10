@@ -1,6 +1,6 @@
 // ---------------------------------------------------------------------------
 // Adaptive Card: Activity Alert
-// Per D-07: Compact notification card for channel alerts
+// Compact notification card for channel alerts
 // ---------------------------------------------------------------------------
 
 export interface ActivityAlertCardParams {

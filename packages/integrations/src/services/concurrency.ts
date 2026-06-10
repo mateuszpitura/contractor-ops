@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------
-// Concurrency helpers (F-INT-09)
+// Concurrency helpers
 // ---------------------------------------------------------------------------
 //
 // Thin re-export of `p-limit` so consumers in sibling workspace packages can

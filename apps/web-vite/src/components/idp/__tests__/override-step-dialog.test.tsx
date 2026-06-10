@@ -1,6 +1,6 @@
 /**
- * Phase 77 D-12 — OverrideStepDialog presentational tests. Submit is disabled
- * until a category is chosen AND the rationale reaches 20 chars.
+ * OverrideStepDialog presentational tests. Submit is disabled until a category
+ * is chosen AND the rationale reaches 20 chars.
  */
 
 import { act } from 'react';

@@ -48,7 +48,7 @@ export interface FetchWithTimeoutOptions {
 const DEFAULT_RETRY_STATUSES = [429, 502, 503, 504] as const;
 
 /**
- * AWS-style "full jitter" exponential backoff (F-INT-18).
+ * AWS-style "full jitter" exponential backoff.
  *
  * `random(0, min(base * 2^attempt, cap))` — the random multiplier prevents
  * the thundering-herd recovery storm that `min(base * 2^attempt, cap)`
@@ -63,7 +63,7 @@ function exponentialBackoffMs(attempt: number): number {
 }
 
 // ---------------------------------------------------------------------------
-// Error classification (F-INT-14)
+// Error classification
 // ---------------------------------------------------------------------------
 
 /**
@@ -106,7 +106,7 @@ interface MaybeStatusBearing {
 }
 
 /**
- * Best-effort retryable-error classifier (F-INT-14).
+ * Best-effort retryable-error classifier.
  *
  * Returns `true` when the error indicates a transient upstream condition —
  * network blip, 5xx, 408, 429, AbortError on timeout. Returns `false` for
@@ -237,15 +237,15 @@ export async function fetchWithTimeout(
 }
 
 // ---------------------------------------------------------------------------
-// Body-bound JSON fetcher (F-INT-17)
+// Body-bound JSON fetcher
 // ---------------------------------------------------------------------------
 
 /**
  * Fetch + parse JSON with the body read bounded by the SAME timeout as the
  * fetch itself. The vanilla pattern `const r = await fetchWithTimeout(...);
  * const j = await r.json();` lets the body read run unbounded after the
- * abort timer has fired, which is the exact failure mode F-INT-17 calls out
- * (slow PDF body reads from DocuSign / Autenti hanging callbacks).
+ * abort timer has fired (slow PDF body reads from DocuSign / Autenti can hang
+ * callbacks this way).
  *
  * Implementation: thread the same caller AbortSignal — or create a fresh one
  * scoped to the full operation — through both the fetch and the JSON parse.

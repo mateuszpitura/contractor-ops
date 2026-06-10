@@ -5,14 +5,14 @@
  *   2. Verify `stripe-signature` via Stripe SDK.
  *   3. Reject deliveries > 24 h old unless they are "settlement" event
  *      types — Stripe's 3-day redelivery window can otherwise re-fire
- *      stale events after our handler graph has moved on (F-INT-21).
+ *      stale events after our handler graph has moved on.
  *   4. Inside a single Serializable transaction:
  *        - Upsert `StripeEvent { stripeEventId, eventType, payloadJson }`.
  *        - Skip processing if `processedAt` is already set (idempotency).
  *        - `routeStripeEvent` returns a queue of NotificationEvents.
  *        - Mark processed before commit.
- *      F-ASYNC-13: notifications dispatch AFTER commit so a tx rollback
- *      cannot send a phantom user-facing message.
+ *      Notifications dispatch AFTER commit so a tx rollback cannot send
+ *      a phantom user-facing message.
  *   5. 500 on processing error so Stripe retries; 200 on success.
  *
  * Exempt from the CSRF origin guard (handled by HMAC signature verify

@@ -1,4 +1,4 @@
-// Phase 73 · Plan 03 — compliance.itemAuditTrail query test (D-13).
+// compliance.itemAuditTrail query test.
 //
 // Same router-caller harness as compliance-override-mutation.test.ts.
 

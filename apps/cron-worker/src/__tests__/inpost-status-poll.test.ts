@@ -3,7 +3,7 @@
  *
  * Coverage:
  *   1. Happy path → ok=true + checked/updated aggregated across carriers + orgs.
- *   2. One carrier rejects → swallowed per-carrier; handler still ok=true (D-07).
+ *   2. One carrier rejects → swallowed per-carrier; handler still ok=true.
  *   3. courierConfig query throws → ok=false + Sentry capture.
  */
 

@@ -1,8 +1,8 @@
 // packages/api/src/services/__tests__/invoice-intake-service.test.ts
 //
-// Phase 62 · Plan 62-04 Task 2 — orchestration tests for the invoice intake
-// service. The real parser + KoSIT validator are exercised in the einvoice
-// package's own test suite; here we inject lightweight mocks via the
+// Orchestration tests for the invoice intake service. The real parser +
+// KoSIT validator are exercised in the einvoice package's own test suite;
+// here we inject lightweight mocks via the
 // service's `IntakeServiceDeps` surface so we test the orchestration logic
 // (gates, dedup, state machine, idempotency) in isolation.
 

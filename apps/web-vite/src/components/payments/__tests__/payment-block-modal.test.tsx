@@ -1,4 +1,4 @@
-// Phase 72 Wave 3 — GREEN tests for payment-block-modal
+// GREEN tests for payment-block-modal
 
 import { describe, expect, it, vi } from 'vitest';
 import { render, screen, setup } from '@/test/test-utils';

@@ -56,7 +56,7 @@ export const reminderRouter = router({
         },
       });
 
-      // F-OBS-05 — reminder rules drive automated outbound notifications;
+      // Reminder rules drive automated outbound notifications;
       // changes affect customer-facing communications.
       await writeAuditLog({
         organizationId: ctx.organizationId,
@@ -107,7 +107,7 @@ export const reminderRouter = router({
         },
       });
 
-      // F-OBS-05 — rule edits change which contractors get notified + when.
+      // Rule edits change which contractors get notified + when.
       await writeAuditLog({
         organizationId: ctx.organizationId,
         actorType: 'USER',
@@ -162,7 +162,7 @@ export const reminderRouter = router({
         await tx.reminderRule.delete({ where: { id: input.id } });
       });
 
-      // F-OBS-05 — rule deletion silences future notifications; auditable.
+      // Rule deletion silences future notifications; auditable.
       await writeAuditLog({
         organizationId: ctx.organizationId,
         actorType: 'USER',

@@ -51,9 +51,9 @@ export const notificationRouter = router({
       where.status = { in: ['PENDING', 'SENT'] };
     }
 
-    // F-DB-11 — bound the count() to a sane upper limit so deep-page
-    // requests do not trigger a full table scan on tenants with tens of
-    // thousands of notifications. The UI shows "10000+" when capped.
+    // Bound the count() to a sane upper limit so deep-page requests do not
+    // trigger a full table scan on tenants with tens of thousands of
+    // notifications. The UI shows "10000+" when capped.
     const COUNT_CAP = 10_000;
     const [items, total] = await Promise.all([
       ctx.db.notification.findMany({

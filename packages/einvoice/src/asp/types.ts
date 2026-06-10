@@ -33,10 +33,10 @@ export interface ParticipantStatus {
 }
 
 /**
- * Phase 61 Plan 05 (D-09) — e-invoice format discriminator carried on
- * `TransmitInvoiceParams`. Mirrors the Zod discriminated union in
- * `profiles/xrechnung-de/schemas.ts` (`eInvoiceFormatSchema`) so the type
- * system and the runtime contract stay in sync.
+ * E-invoice format discriminator carried on `TransmitInvoiceParams`. Mirrors
+ * the Zod discriminated union in `profiles/xrechnung-de/schemas.ts`
+ * (`eInvoiceFormatSchema`) so the type system and the runtime contract stay
+ * in sync.
  *
  * - `ubl-pint-ae` — existing UAE PINT payload route (peppol-ae profile).
  * - `cii-xrechnung` — XRechnung CII payload route; carries the XRechnung
@@ -54,26 +54,26 @@ export type EInvoiceFormat =
  * Parameters for transmitting an invoice via the ASP.
  *
  * Backwards-compatible: legacy callers that still pass `documentTypeId`
- * without a `format` continue to work unchanged (Plan 61-05 zero-regression
- * requirement). When both are provided, `format` wins — the adapter maps
- * the format to the provider-specific document_type_id string.
+ * without a `format` continue to work unchanged. When both are provided,
+ * `format` wins — the adapter maps the format to the provider-specific
+ * document_type_id string.
  */
 export interface TransmitInvoiceParams {
   xml: string;
   senderParticipantId: string;
   receiverParticipantId: string;
   documentTypeId: string;
-  /** Optional format discriminator (Plan 61-05 / D-09). */
+  /** Optional format discriminator; when provided overrides `documentTypeId` routing. */
   format?: EInvoiceFormat;
   /** Organization ID for rate limiting and audit logging (optional). */
   organizationId?: string;
 }
 
 /**
- * Phase 61 Plan 05 (D-11) — input for a per-recipient Peppol SML capability
- * probe. The caller supplies the receiver's Peppol scheme + participant
- * value; the adapter returns the list of document-type IDs that participant
- * has registered on the Peppol network (SMP).
+ * Input for a per-recipient Peppol SML capability probe. The caller supplies
+ * the receiver's Peppol scheme + participant value; the adapter returns the
+ * list of document-type IDs that participant has registered on the Peppol
+ * network (SMP).
  */
 export interface LookupParticipantCapabilitiesParams {
   schemeId: string;
@@ -83,11 +83,10 @@ export interface LookupParticipantCapabilitiesParams {
 }
 
 /**
- * Phase 61 Plan 05 (D-11) — normalized capability lookup result. Regardless
- * of whether Storecove returns a flat `documentTypes` array or a nested
- * `processes[].documentTypes` shape, the adapter flattens to this contract
- * so downstream consumers (PeppolCapabilityCache + pre-flight helpers) stay
- * provider-agnostic.
+ * Normalized capability lookup result. Regardless of whether Storecove
+ * returns a flat `documentTypes` array or a nested `processes[].documentTypes`
+ * shape, the adapter flattens to this contract so downstream consumers
+ * (PeppolCapabilityCache + pre-flight helpers) stay provider-agnostic.
  */
 export interface ParticipantCapabilityResult {
   schemeId: string;
@@ -150,7 +149,7 @@ export interface ASPHealthStatus {
 
 /**
  * Abstract ASP adapter interface.
- * Per D-01: vendor-agnostic so the specific provider can be swapped.
+ * Vendor-agnostic so the specific provider can be swapped without changing callers.
  */
 export interface ASPAdapter {
   readonly providerId: string;
@@ -166,10 +165,10 @@ export interface ASPAdapter {
   transmitInvoice(params: TransmitInvoiceParams): Promise<TransmissionResult>;
 
   /**
-   * Phase 61 Plan 05 (D-11) — probe the Peppol SML / SMP for a given
-   * participant's registered document-type capabilities. Used by the
-   * capability cache + pre-flight send gate to avoid hitting /invoices/submit
-   * against a participant that won't accept the XRechnung-CII doc type.
+   * Probe the Peppol SML / SMP for a given participant's registered
+   * document-type capabilities. Used by the capability cache + pre-flight
+   * send gate to avoid hitting /invoices/submit against a participant that
+   * won't accept the XRechnung-CII doc type.
    */
   lookupParticipantCapabilities(
     params: LookupParticipantCapabilitiesParams,

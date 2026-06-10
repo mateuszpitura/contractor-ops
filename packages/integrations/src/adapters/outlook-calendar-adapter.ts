@@ -58,19 +58,19 @@ const graphScheduleSchema = z.object({
 });
 
 // ---------------------------------------------------------------------------
-// Timeout budgets (F-INT-01 / F-INT-02)
+// Timeout budgets
 // ---------------------------------------------------------------------------
 //
 // OAuth token redemption + refresh — non-idempotent POST against Microsoft
 // Identity Platform. 30s wall-clock, no retries (replaying can claim
 // multiple sessions or invalidate the refresh token).
 const OAUTH_TIMEOUT_MS = 30_000;
-// Calendar event mutations — POST/PATCH/DELETE against Graph. With F-INT-04
-// the caller now passes a deterministic idempotency key on createEvent,
-// surfaced via the `client-request-id` Graph header so duplicate inserts
-// can be reconciled / observed in Microsoft's telemetry. `updateEvent` and
-// `deleteEvent` operate on a stable eventId so transport retries are
-// naturally safe. 15s wall-clock; helper aborts on transport hangs.
+// Calendar event mutations — POST/PATCH/DELETE against Graph. The caller
+// passes a deterministic idempotency key on createEvent, surfaced via the
+// `client-request-id` Graph header so duplicate inserts can be reconciled /
+// observed in Microsoft's telemetry. `updateEvent` and `deleteEvent` operate
+// on a stable eventId so transport retries are naturally safe. 15s
+// wall-clock; helper aborts on transport hangs.
 const MUTATION_TIMEOUT_MS = 15_000;
 const MUTATION_RETRIES = 2;
 // getSchedule POST is read-only — opt in to retry on 429/5xx.
@@ -78,7 +78,7 @@ const READ_TIMEOUT_MS = 15_000;
 const READ_RETRIES = 2;
 
 // ---------------------------------------------------------------------------
-// Idempotency key encoding (F-INT-04)
+// Idempotency key encoding
 // ---------------------------------------------------------------------------
 //
 // Microsoft Graph documents the `client-request-id` header as the standard
@@ -138,7 +138,7 @@ function mapGraphEventResponse(parsed: SafeParseJsonResult<z.infer<typeof graphE
 }
 
 /**
- * Phase 74 D-05 / D-08 — busy range returned by Outlook's getFreeBusy.
+ * Busy range returned by Outlook's getFreeBusy.
  * Mirrors the GoogleBusyRange shape so pto-detector can be calendar-agnostic.
  */
 export interface OutlookBusyRange {
@@ -162,7 +162,7 @@ export interface OutlookBusyRange {
  * - offline_access — receive a refresh token
  *
  * IMPORTANT: Microsoft Graph date format must use { dateTime, timeZone }
- * object shape, not ISO 8601 strings directly (Pitfall 5).
+ * object shape, not ISO 8601 strings directly.
  *
  * Env vars required:
  * - OUTLOOK_CLIENT_ID, OUTLOOK_CLIENT_SECRET — for OAuth
@@ -314,9 +314,9 @@ export class OutlookCalendarAdapter extends BaseAdapter {
    * Creates a calendar event using Microsoft Graph API.
    *
    * IMPORTANT: Dates must use the { dateTime, timeZone } object format,
-   * not raw ISO strings (Pitfall 5).
+   * not raw ISO strings.
    *
-   * F-INT-04 idempotency: when the caller supplies `idempotencyKey`, it is
+   * Idempotency: when the caller supplies `idempotencyKey`, it is
    * derived into a deterministic UUID and sent on the `client-request-id`
    * Graph header. Same input key → same id, so duplicate inserts are
    * reconcilable in Graph telemetry and the transport layer can safely
@@ -485,9 +485,9 @@ export class OutlookCalendarAdapter extends BaseAdapter {
   /**
    * Deletes a calendar event using Microsoft Graph API.
    *
-   * F-INT-04: DELETE on a stable eventId is naturally idempotent — Graph
-   * returns 404 on the second call and the caller already treats both 2xx
-   * and 404 as success. Safe to retry on transport errors.
+   * DELETE on a stable eventId is naturally idempotent — Graph returns 404
+   * on the second call and the caller already treats both 2xx and 404 as
+   * success. Safe to retry on transport errors.
    *
    * @param accessToken - The OAuth access token
    * @param eventId - The event ID to delete
@@ -516,9 +516,9 @@ export class OutlookCalendarAdapter extends BaseAdapter {
   }
 
   /**
-   * Phase 74 D-05 / D-08 — fetch free-busy ranges via Microsoft Graph
-   * `/me/calendar/getSchedule`. Filters status to busy/oof so free /
-   * tentative entries don't trigger PTO false-positives.
+   * Fetch free-busy ranges via Microsoft Graph `/me/calendar/getSchedule`.
+   * Filters status to busy/oof so free/tentative entries don't trigger PTO
+   * false-positives.
    *
    * Access token is never included in error messages.
    */

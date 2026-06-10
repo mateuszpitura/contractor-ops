@@ -113,7 +113,7 @@ export const portalContractsRouter = router({
 
   /**
    * List contractor's contracts (ACTIVE, EXPIRING, EXPIRED only).
-   * Excludes internal fields per D-11 / Pitfall 3.
+   * Excludes internal fields not intended for contractor visibility.
    */
   listContracts: portalProcedure.query(async ({ ctx }) => {
     const contracts = await ctx.db.contract.findMany({
@@ -194,7 +194,7 @@ export const portalContractsRouter = router({
    * Generates presigned download URLs. Excludes storageKey.
    */
   listDocuments: portalProcedure.query(async ({ ctx }) => {
-    // F-DB-24/25 — bound the contract scan. A contractor with 50k contracts
+    // Bound the contract scan. A contractor with 50k contracts
     // would otherwise pull every id into the next round-trip.
     const contractIds = await ctx.db.contract.findMany({
       where: { contractorId: ctx.contractorId },
@@ -203,7 +203,7 @@ export const portalContractsRouter = router({
     });
     const contractIdList = contractIds.map(c => c.id);
 
-    // F-DB-25 — collapse the two separate documentLink.findMany calls into
+    // Collapse the two separate documentLink.findMany calls into
     // a single OR query. Was 2-3 round-trips (contractor links + contract
     // ids + contract links); now 2 round-trips total.
     const docLinks = await ctx.db.documentLink.findMany({

@@ -7,7 +7,7 @@
  */
 export interface SigningEnvelopeRequest {
   /**
-   * Tenant scope used for idempotency-key derivation (DRIFT-01).
+   * Tenant scope used for idempotency-key derivation.
    *
    * The orchestrator (`packages/api/src/services/esign-orchestrator.ts`)
    * always plumbs the caller's organization id; only legacy / test paths
@@ -48,12 +48,12 @@ export interface SigningEnvelopeResult {
 /**
  * Result containing an embedded signing URL (e.g., DocuSign recipient view).
  *
- * F-INT-16: DocuSign recipient-view URLs are short-lived — the URL is
- * single-use and account policies cap validity to ~5 minutes by default.
- * Callers MUST treat `expiresAt` as authoritative and re-issue via
- * `getEmbeddedSigningUrl` (or the provider-specific re-issue method) when
- * within the safety margin. `ttlSeconds` is surfaced for clients that
- * want to schedule a refresh before the absolute expiry tips over.
+ * DocuSign recipient-view URLs are short-lived — the URL is single-use and
+ * account policies cap validity to ~5 minutes by default. Callers MUST treat
+ * `expiresAt` as authoritative and re-issue via `getEmbeddedSigningUrl` (or
+ * the provider-specific re-issue method) when within the safety margin.
+ * `ttlSeconds` is surfaced for clients that want to schedule a refresh before
+ * the absolute expiry tips over.
  */
 export interface EmbeddedSigningUrlResult {
   url: string;

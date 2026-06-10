@@ -1,19 +1,19 @@
 // ---------------------------------------------------------------------------
-// Phase 57 · Plan 04 · Task 1 — gov-api client factory (env-driven singletons)
+// gov-api client factory (env-driven singletons)
 // ---------------------------------------------------------------------------
 //
 // Reads HMRC/VIES environment configuration once at first call and caches the
 // `HmrcVatClient` + `ViesClient` instances for the process lifetime. The
-// orchestrator (Plan 57-03 `validateTaxId`) and the `contractor.revalidateVat`
-// tRPC mutation consume these through the exported `getHmrcVatClient()` /
-// `getViesClient()` getters.
+// `validateTaxId` orchestrator and the `contractor.revalidateVat` tRPC mutation
+// consume these through the exported `getHmrcVatClient()` / `getViesClient()`
+// getters.
 //
 // Security / correctness invariants:
 //   - `HMRC_PLATFORM_VRN` MUST be non-empty when `HMRC_ENV === 'production'`.
 //     Without it, HMRC verified-lookup URLs are malformed (path misses the
 //     second `/{requesterVrn}` segment) and degrade silently to unverified
 //     responses — polluting the audit trail and breaking the
-//     "platform-identified-requester" guarantee in T-57-02-04. The schema
+//     "platform-identified-requester" guarantee. The schema
 //     `superRefine` AND a runtime `throw` (defense in depth) enforce this.
 //   - Sandbox tolerates an empty `HMRC_PLATFORM_VRN`: the `verified-lookup`
 //     path falls back to the unverified single-arg form.

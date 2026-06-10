@@ -1,6 +1,6 @@
-// Phase 78 D-14 — GitHub org minimum-privilege deprovision scopes.
+// GitHub org minimum-privilege deprovision scopes.
 //
-// Mirrors the Phase 76 D-14 typed-const scope-registry pattern. The two classic
+// Mirrors the typed-const scope-registry pattern. The two classic
 // OAuth scopes cover the GitHubAdapter's org-membership operations:
 //   - `admin:org` → remove org member (`orgs.removeMember`) + revoke per-PAT
 //                   credential-authorizations on a SAML SSO org

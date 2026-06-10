@@ -8,7 +8,7 @@ import { writeAuditLog } from '../../services/audit-writer';
 import { deleteRegionalObject } from '../../services/regional-storage';
 
 // ---------------------------------------------------------------------------
-// Statutory-retention exemption (US-INFRA-03, D-05 #3)
+// Statutory-retention exemption
 // ---------------------------------------------------------------------------
 
 /**
@@ -18,7 +18,7 @@ import { deleteRegionalObject } from '../../services/regional-storage';
  *
  * Legal note: these citations need jurisdiction-specific legal/tax-adviser
  * verification before production deploy (Standing Project Constraint;
- * LOCAL-ONLY). Theme B AKTA-03 extends this map for personnel-file holds.
+ * LOCAL-ONLY).
  */
 const RETENTION_CITATIONS: Record<RetainedRecordType, string> = {
   '1099-NEC': 'IRS 1099-NEC: 4-year retention (26 CFR 1.6001-1)',
@@ -104,10 +104,10 @@ export const gdprRouter = router({
 
       const results: Record<string, number> = {};
 
-      // US-INFRA-03 (D-05 #3) — models under an active statutory-retention rule
-      // are soft-deleted-with-exemption (NEVER hard-deleted), and surfaced with
+      // Models under an active statutory-retention rule are
+      // soft-deleted-with-exemption (NEVER hard-deleted), and surfaced with
       // their citation so the erasure summary cannot over-claim full deletion.
-      // Ships EMPTY in production (D-06); Phase 86 tax models register here.
+      // Ships EMPTY in production; tax models register here when ready.
       const retainedModels = MODEL_RETENTION_TYPE;
       const isRetained = (model: string): boolean => retainedModels[model] != null;
       const retainedUnderStatute: Record<string, string> = {};
@@ -119,8 +119,8 @@ export const gdprRouter = router({
       await ctx.db.$transaction(async tx => {
         // 1-3. Soft-delete top-level entities (preserved through the retention
         //      window so the data-purge cron can finalise + R2 cleanup). A model
-        //      under a statutory-retention hold (US-INFRA-03) is recorded with
-        //      its citation so the summary surfaces the exemption.
+        //      under a statutory-retention hold is recorded with its citation so
+        //      the summary surfaces the exemption.
         results.contractors = await softDeleteByOrgAndCount(tx.contractor, orgId, now);
         recordRetention('Contractor');
         results.contracts = await softDeleteByOrgAndCount(tx.contract, orgId, now);
@@ -134,8 +134,8 @@ export const gdprRouter = router({
         results.invoiceFiles = await deleteByOrgAndCount(tx.invoiceFile, orgId);
         results.documentLinks = await deleteByOrgAndCount(tx.documentLink, orgId);
 
-        // 4b. Soft-delete invoices. A statutory-retention hold (US-INFRA-03)
-        //     supersedes the user's purge choice: a retained model is always
+        // 4b. Soft-delete invoices. A statutory-retention hold supersedes the
+        //     user's purge choice: a retained model is always
         //     soft-deleted-with-exemption, never hard-deleted, and its citation
         //     is surfaced. Otherwise the existing retainFinancialRecords flag
         //     governs (count-only when retaining, soft-delete when purging).
@@ -310,10 +310,9 @@ export const gdprRouter = router({
         userAgent,
       });
 
-      // 7b. US-INFRA-03 (D-05 #3) — when records are held under an active
-      //     statutory-retention rule, audit the retention-blocked erasure
-      //     attempt with the citations (sensitive mutation; RODO repudiation
-      //     mitigation T-83-04-03).
+      // 7b. When records are held under an active statutory-retention rule,
+      //     audit the retention-blocked erasure attempt with the citations
+      //     (sensitive mutation; RODO repudiation mitigation).
       if (hasStatutoryHold) {
         await writeAuditLog({
           organizationId: orgId,

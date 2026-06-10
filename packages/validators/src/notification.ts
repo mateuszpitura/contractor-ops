@@ -23,18 +23,18 @@ export const NOTIFICATION_TYPES = [
   'EQUIPMENT_RETURN_REJECTED',
   'EQUIPMENT_RETURN_REQUESTED',
   'SHIPMENT_STATUS_CHANGE',
-  // Phase 60 uses dot-notation per CONTEXT.md D-05; existing SCREAMING_SNAKE_CASE types remain unchanged.
+  // Dot-notation types; existing SCREAMING_SNAKE_CASE types remain unchanged.
   'classification.economic_dependency_warning',
   'classification.economic_dependency_critical',
-  // Phase 60 CLASS-08 — reassessment trigger (material change detected on GB engagement with prior IR35 SDS)
+  // Reassessment trigger (material change detected on GB engagement with prior IR35 SDS)
   'classification.reassessment_trigger',
-  // Phase 60 CLASS-09 — DRV § 7a SGB IV clearance expiry reminders (90/30/7 days before validTo)
+  // DRV § 7a SGB IV clearance expiry reminders (90/30/7 days before validTo)
   'classification.drv_expiry_90d',
   'classification.drv_expiry_30d',
   'classification.drv_expiry_7d',
-  // Phase 72 COMPL-03 — per-recipient daily compliance-expiry digest (band cascade 90/60/30/15/7)
+  // Per-recipient daily compliance-expiry digest (band cascade 90/60/30/15/7)
   'compliance.expiry_digest',
-  // Phase 73 COMPL-04 D-08 — admin review of a contractor portal upload-replacement
+  // Admin review of a contractor portal upload-replacement
   'compliance.upload.approved',
   'compliance.upload.rejected',
 ] as const;

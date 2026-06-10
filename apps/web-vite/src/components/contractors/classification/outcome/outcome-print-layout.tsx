@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------
-// Outcome print layout wrapper — Phase 58 Plan 05 Task 1.
+// Outcome print layout wrapper
 // ---------------------------------------------------------------------------
 // Applies @media print styles that force-expand all Collapsibles, hide
 // interactive chrome, and preserve semantic-triad colours. Ships as a single

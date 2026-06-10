@@ -1,12 +1,9 @@
-// Phase 79 Wave 2 — GREEN (was Wave 0 RED scaffold).
+// A free-zone `ContractorComplianceItem` written out-of-band from the
+// FreeZoneAssignment service path SURVIVES `supersedeAndMaterialise` (it is NOT
+// WAIVED) after an unrelated classification recompute for the same contractor.
 //
-// Critical behavior C4 (GULF-01/02, Pitfall 2): a free-zone
-// `ContractorComplianceItem` written out-of-band from the FreeZoneAssignment
-// service path SURVIVES `supersedeAndMaterialise` (it is NOT WAIVED) after an
-// unrelated classification recompute for the same contractor.
-//
-// LANDMINE: supersedeAndMaterialise WAIVES every non-WAIVED row not re-emitted
-// by resolvePolicyRules(engagement). Free-zone rows are keyed off
+// Key invariant: supersedeAndMaterialise WAIVEs every non-WAIVED row not
+// re-emitted by resolvePolicyRules(engagement). Free-zone rows are keyed off
 // FreeZoneAssignment, not the classification outcome, so the supersession scope
 // EXCLUDES them via `policyRuleId NOT startsWith 'uae.free_zone'` — otherwise the
 // free-zone item silently flips to WAIVED.
@@ -72,7 +69,7 @@ function makeClient(): SupersessionClient {
           if (where.contractorId && r.contractorId !== where.contractorId) return false;
           const status = where.status as { not?: string } | undefined;
           if (status?.not && r.status === status.not) return false;
-          // Phase 79 — the out-of-band advisory exclusions the service adds as a
+          // The out-of-band advisory exclusions the service adds as a
           // NOT array (free-zone licenses + permitted-activity NOC advisories).
           const notClauses =
             (where.NOT as Array<{ policyRuleId?: { startsWith?: string } }> | undefined) ?? [];

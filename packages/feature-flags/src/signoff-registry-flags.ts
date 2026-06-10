@@ -1,8 +1,8 @@
-// Phase 70 D-09 D-10 D-11 D-12 — Runtime flag-namespace signoff registry.
+// Runtime flag-namespace signoff registry.
 //
 // Validates the JSON at module load (fail-fast on malformed data, structural
-// sibling of `packages/validators/src/legal/signoff-registry.ts`). Plan 70-07
-// wires the boot-time gate that consumes the helpers here.
+// sibling of `packages/validators/src/legal/signoff-registry.ts`). The
+// boot-time gate in registry.ts consumes the helpers here.
 
 import rawRegistry from './signoff-registry-flags.json' with { type: 'json' };
 import type { FlagSignoffEntry, FlagSignoffRegistry } from './signoff-registry-flags-schema';
@@ -23,44 +23,42 @@ try {
 }
 
 // ---------------------------------------------------------------------------
-// Gated namespace prefix list (D-11)
+// Gated namespace prefix list
 // ---------------------------------------------------------------------------
 
 /**
  * Flags whose key matches any of these prefixes require a registry entry
- * before the app boots. Phase 70 D-11.
+ * before the app boots.
  *
- * Mapping to v6.0 features:
- *   - 'compliance-'             → F1 Compliance Document Lifecycle (Phases 71–73)
- *   - 'idp-deprovisioning'      → F2 IdP Deprovisioning saga signoff (Phase 76)
- *   - 'module.idp-deprovisioning' → F2 per-provider FLAGS gating (Phase 77)
- *   - 'gulf-'                   → F3 Gulf signoff-registry keys (Phase 79)
- *   - 'gulf.'                   → F3 Gulf FLAGS-key gating (Phase 79). Distinct
- *       from the 'gulf-' signoff key prefix because a FLAGS key's first
- *       dot-segment must be alphanumeric (flagDefinitionSchema regex) — it
- *       cannot start with 'gulf-'. The two FLAGS keys (gulf.free-zone-tracking,
+ * Prefixes and the feature areas they cover:
+ *   - 'compliance-'               → Compliance Document Lifecycle flags
+ *   - 'idp-deprovisioning'        → IdP Deprovisioning saga signoff entry
+ *   - 'module.idp-deprovisioning' → IdP Deprovisioning per-provider FLAGS keys
+ *   - 'gulf-'                     → Gulf signoff-registry keys
+ *   - 'gulf.'                     → Gulf FLAGS keys (dot form required because
+ *       flagDefinitionSchema's first segment must be alphanumeric — cannot
+ *       start with 'gulf-'). The two FLAGS keys (gulf.free-zone-tracking,
  *       gulf.saudization-dashboard) are legal-sensitive and MUST land PENDING.
- *   - 'offboarding-ip-'         → F4 Offboarding Hardening (Phases 74–75)
+ *   - 'offboarding-ip-'           → Offboarding Hardening flags
  *
- * Phase 82 (v7.0 GTM Foundation, FOUND7-02 / D-10) — the 19 v7.0 flags are
- * gated by these narrow prefixes so the existing prefix gate enforces a PENDING
- * registry entry for each (a missing entry exits boot). The prefixes are scoped
- * NOT to capture pre-v7.0 non-gated flags: 'payments.ach-' excludes
- * payments.bacs-enabled/skonto-enabled; 'module.us-'/'module.workforce-'/
- * 'module.iris-'/'module.public-api'/'module.outbound-' exclude
- * module.classification-engine + module.legal-approval. The gate is NOT
- * broadened to ALL declared flags (that would break boot for pre-v7.0 flags
+ * v7.0 GTM Foundation — the 19 v7.0 flags are gated by these narrow prefixes
+ * so the existing prefix gate enforces a PENDING registry entry for each. The
+ * prefixes are scoped NOT to capture pre-v7.0 non-gated flags: 'payments.ach-'
+ * excludes payments.bacs-enabled/skonto-enabled; 'module.us-'/
+ * 'module.workforce-'/'module.iris-'/'module.public-api'/'module.outbound-'
+ * exclude module.classification-engine + module.legal-approval. The gate is
+ * NOT broadened to ALL declared flags (that would break boot for older flags
  * with no registry entry).
- *   - 'module.us-'              → v7.0 Theme A US surface (module.us-expansion)
- *   - 'module.workforce-'       → v7.0 Theme B (module.workforce-employees)
- *   - 'module.iris-'            → v7.0 Theme A (module.iris-efile)
- *   - 'module.public-api'       → v7.0 Theme C (module.public-api)
- *   - 'module.outbound-'        → v7.0 Theme C (module.outbound-webhooks)
- *   - 'integration.personio-'   → v7.0 Theme B (integration.personio-sync)
- *   - 'integration.bamboohr-'   → v7.0 Theme B (integration.bamboohr-sync)
- *   - 'integration.marketplace-'→ v7.0 Theme C (Zapier/n8n/Make listings)
- *   - 'payments.ach-'           → v7.0 Theme A (payments.ach-payouts)
- *   - 'payroll.'                → v7.0 Theme B (8 payroll.* adapters)
+ *   - 'module.us-'              → US surface (module.us-expansion)
+ *   - 'module.workforce-'       → Workforce module (module.workforce-employees)
+ *   - 'module.iris-'            → IRIS A2A e-file (module.iris-efile)
+ *   - 'module.public-api'       → Public API (module.public-api)
+ *   - 'module.outbound-'        → Outbound webhooks (module.outbound-webhooks)
+ *   - 'integration.personio-'   → Personio sync
+ *   - 'integration.bamboohr-'   → BambooHR sync
+ *   - 'integration.marketplace-'→ Zapier/n8n/Make listings
+ *   - 'payments.ach-'           → ACH payouts
+ *   - 'payroll.'                → Payroll adapters (8 keys)
  */
 export const GATED_FLAG_NAMESPACE_PREFIXES = [
   'compliance-',
@@ -86,21 +84,21 @@ export function isGatedFlag(key: string): boolean {
 }
 
 // ---------------------------------------------------------------------------
-// Helpers (consumed by Plan 70-07 boot gate)
+// Helpers (consumed by the boot gate in registry.ts)
 // ---------------------------------------------------------------------------
 
 /**
  * Returns the signoff entry for a flag key, or undefined if the key has
- * no registry entry. Plan 70-07 treats missing-entry as a boot failure
- * (when the key is also gated by namespace prefix).
+ * no registry entry. A missing entry for a gated key is treated as a boot
+ * failure by the gate in registry.ts.
  */
 export function getFlagSignoff(key: string): FlagSignoffEntry | undefined {
   return Registry[key];
 }
 
 /**
- * Returns all flag keys whose status is 'PENDING'. Used by future audit
- * dashboards (deferred — out of Phase 70 scope; helper exposed for tooling).
+ * Returns all flag keys whose status is 'PENDING'. Exposed for tooling and
+ * future audit dashboards.
  */
 export function getAllPendingFlags(): string[] {
   return Object.entries(Registry)

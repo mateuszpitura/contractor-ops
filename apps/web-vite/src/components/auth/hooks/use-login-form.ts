@@ -92,7 +92,7 @@ export function useLoginForm(): LoginFormProps {
         }
         navigate(redirectTo, { replace: true });
       } catch (err) {
-        // F-OBS-13 — surface flow failures even when navigate succeeds.
+        // Surface flow failures even when navigate succeeds.
         Sentry.captureException(err, { tags: { 'auth.flow': 'login.password' } });
         toast.error(tc('networkError'));
         setIsLoading(false);

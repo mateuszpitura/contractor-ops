@@ -1,19 +1,18 @@
-// Phase 79 — shared ME-region Gulf test fixtures.
+// Shared ME-region Gulf test fixtures.
 //
 // Plain-object factories (NO DB writes) for the C1-C10 Gulf test suite and the
-// downstream service tests in plans 79-03/79-04/79-05. Unit tests pass these to
-// a mocked Prisma client; integration tests can seed them directly. Keeping them
-// DB-free keeps the suite fast (analog: the inline fixture builders in
+// downstream service tests. Unit tests pass these to a mocked Prisma client;
+// integration tests can seed them directly. Keeping them DB-free keeps the suite
+// fast (analog: the inline fixture builders in
 // packages/api/src/services/__tests__/compliance-payment-gate.test.ts).
 //
-// All enum-shaped string values are UPPER_SNAKE_CASE per D-17 (db:audit-enum-casing):
+// All enum-shaped string values are UPPER_SNAKE_CASE per the db:audit-enum-casing rule:
 //   dataRegion 'ME', zone 'DMCC'/'MAINLAND', severity 'BLOCKING', status 'EXPIRED',
 //   documentType 'UAE_FREE_ZONE_LICENSE'.
 //
-// The concrete FreeZoneAssignment / SaudizationConfig Prisma models land in plan
-// 79-02; these factories are typed structurally (not against the generated client)
-// so Wave 0 tests can import them before the schema exists. Downstream plans may
-// tighten the return types to the generated Prisma row types once available.
+// These factories are typed structurally (not against the generated client) so tests
+// can import them before a schema migration is applied. Downstream tests may tighten
+// the return types to the generated Prisma row types once available.
 
 /** A minimal ME-region organization row (UAE/KSA orgs route to the ME DB). */
 export interface MeOrgFixture {
@@ -24,18 +23,18 @@ export interface MeOrgFixture {
   countryCode: 'AE' | 'SA';
 }
 
-/** A free-zone assignment row (per-contractor; D-01). */
+/** A free-zone assignment row (per-contractor). */
 export interface FreeZoneAssignmentFixture {
   id: string;
   organizationId: string;
   contractorId: string;
-  /** UaeFreeZoneCode enum value; 'MAINLAND' arms no payment-block gate (D-04). */
+  /** UaeFreeZoneCode enum value; 'MAINLAND' arms no payment-block gate. */
   zone: string;
   licenseNumber: string;
   licenseExpiresAt: Date;
-  /** ISIC-style codes that drive the permitted-activity overlap check (D-06). */
+  /** ISIC-style codes that drive the permitted-activity overlap check. */
   permittedActivityIsicCodes: string[];
-  /** Human-readable permitted-activities text (display/audit; D-05). */
+  /** Human-readable permitted-activities text (display/audit). */
   permittedActivitiesText: string;
 }
 
@@ -51,14 +50,14 @@ export interface FreeZoneComplianceItemFixture {
   policyRuleId: 'uae.free_zone_license@v2';
   expiryJurisdictionTz: 'Asia/Dubai';
   expiresAt: Date;
-  /** ComplianceStatus; the EXPIRED payment gate selects status='EXPIRED'. */
+  /** ComplianceStatus; the payment gate selects status='EXPIRED'. */
   status: string;
 }
 
 const DEFAULT_ORG_ID = 'clmeorgaaaaaaaaaaaaaaaaaaaa';
 const DEFAULT_CONTRACTOR_ID = 'clmectraaaaaaaaaaaaaaaaaaaa';
 
-/** ME-region org (UAE by default). UAE/KSA orgs live in the ME DB (GULF-11). */
+/** ME-region org (UAE by default). UAE/KSA orgs live in the ME DB. */
 export function makeMeOrg(overrides: Partial<MeOrgFixture> = {}): MeOrgFixture {
   return {
     id: DEFAULT_ORG_ID,

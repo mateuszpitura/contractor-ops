@@ -1,4 +1,4 @@
-// Phase 75 D-14 — US IP-clause phrase library. Legal sign-off PENDING; production
+// US IP-clause phrase library. Legal sign-off PENDING; production
 // wording via post-deploy PR by US tax/IP adviser.
 
 export const IP_CLAUSES_US = {

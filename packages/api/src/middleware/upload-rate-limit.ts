@@ -53,11 +53,11 @@ const upstashLimiter: Ratelimit | null = hasRedis
 // decorative in serverless/edge runtimes where the module is recycled
 // frequently.
 //
-// F-SCALE-15 — entries track `lastSeenMs` and eviction is LRU (oldest
-// `lastSeenMs` first), not insertion-order FIFO. The previous FIFO
-// behaviour evicted legitimate users who happened to hit the system
-// first while preserving low-rate attackers who arrived later, which is
-// the wrong incentive direction during a Redis outage.
+// Entries track `lastSeenMs` and eviction is LRU (oldest `lastSeenMs`
+// first), not insertion-order FIFO. The previous FIFO behaviour evicted
+// legitimate users who happened to hit the system first while preserving
+// low-rate attackers who arrived later, which is the wrong incentive
+// direction during a Redis outage.
 type FallbackEntry = { timestamps: number[]; lastSeenMs: number };
 const fallbackMap = new Map<string, FallbackEntry>();
 
@@ -117,11 +117,11 @@ export const uploadRateLimitMiddleware = t.middleware(async ({ ctx, next }) => {
       allowed = result.success;
       remaining = result.remaining;
     } catch (err) {
-      // F-SCALE-03: in production, fail-CLOSED if Upstash is unreachable.
-      // The in-memory fallback only counts uploads on a single web pod;
-      // with the fleet at 2-8 instances this is effectively no rate limit
-      // and lets a single user OOM the upload pipeline during a Redis
-      // outage. dev/test still falls back so local runs aren't blocked.
+      // In production, fail-CLOSED if Upstash is unreachable. The in-memory
+      // fallback only counts uploads on a single web pod; with the fleet at
+      // 2-8 instances this is effectively no rate limit and lets a single
+      // user OOM the upload pipeline during a Redis outage. dev/test still
+      // falls back so local runs aren't blocked.
       const env = process.env.NODE_ENV ?? 'development';
       if (env === 'production') {
         log.error({ err, userId }, 'upstash rate limiter unavailable — failing closed for upload');

@@ -1,12 +1,12 @@
 // ---------------------------------------------------------------------------
-// Shared verdict banner — Phase 58 Plan 05 Task 1.
+// Shared verdict banner.
 // ---------------------------------------------------------------------------
 // Renders the colour + icon + text "semantic triad" (WCAG 1.4.1 — never
 // communicate by colour alone). Used by both IR35 and DRV outcome variants.
 //
-// Phase 64 · D-19 — When `onAmberVerdictMounted` is provided, the banner fires
-// the callback (exactly once, via ref guard) when the tone is 'warning'. The
-// outcome page uses this to trigger logEscalation for amber/indeterminate verdicts.
+// When `onAmberVerdictMounted` is provided, the banner fires the callback
+// (exactly once, via ref guard) when the tone is 'warning'. The outcome page
+// uses this to trigger logEscalation for amber/indeterminate verdicts.
 
 import type { Ir35Outcome, ScheinselbstandigkeitOutcome } from '@contractor-ops/classification';
 import type { LucideIcon } from 'lucide-react';
@@ -22,7 +22,7 @@ export type VerdictBannerProps =
       label: string;
       /** Optional subline e.g. rule-set version + completion date. */
       subline?: string;
-      /** Phase 64 D-19 — fired once on mount when verdict is amber/indeterminate */
+      /** Fired once on mount when verdict is amber/indeterminate. */
       onAmberVerdictMounted?: () => void;
     }
   | {
@@ -112,7 +112,7 @@ export function VerdictBanner(props: VerdictBannerProps) {
   const Icon = kind === 'ir35' ? iconForIr35(props.outcome) : iconForDrv(props.outcome);
   const styles = TONE_STYLES[tone];
 
-  // Phase 64 D-19 — fire logEscalation once on mount when verdict is amber/indeterminate.
+  // Fire logEscalation once on mount when verdict is amber/indeterminate.
   // Ref guard prevents double-fire on StrictMode double-mount in development.
   const escalationFiredRef = useRef(false);
   const onAmberVerdictMounted = props.onAmberVerdictMounted;

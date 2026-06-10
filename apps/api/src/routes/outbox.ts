@@ -1,5 +1,5 @@
 /**
- * Outbox drain (`POST /outbox/_drain`) — P2-A · F-ASYNC-03.
+ * Outbox drain (`POST /outbox/_drain`).
  *
  *   1. QStash signature verification via `guardQStashRequest`.
  *   2. Wrap the whole tick with `withQueueObservability('outbox-drain', …)`

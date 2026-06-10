@@ -2,9 +2,9 @@
  * Trusted-proxy client-IP extraction for @contractor-ops/api-server.
  *
  * The Fastify rate-limiter must see the originating client IP, not the
- * proxy hop's address (F-SEC-17). When the trust list is too permissive a
- * remote attacker can supply their own X-Forwarded-For entry and the
- * rate-limiter sees a fresh IP per request → trivial bypass.
+ * proxy hop's address. When the trust list is too permissive a remote
+ * attacker can supply their own X-Forwarded-For entry and the rate-limiter
+ * sees a fresh IP per request → trivial bypass.
  *
  * Default trust list (`loopback,linklocal,uniquelocal`) is the conservative
  * pre-Render default. Production .env sets `TRUSTED_PROXIES` to Render's

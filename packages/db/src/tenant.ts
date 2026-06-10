@@ -1,10 +1,10 @@
 import { AsyncLocalStorage } from 'node:async_hooks';
 import type { Prisma } from './generated/prisma/client/client.js';
 
-// PHASE-60-CROSS-ORG-AGGREGATE: raw (non-tenant-scoped) client re-exported
-// from tenant.ts so consumers can import the "tenant context family" from a
-// single module. Use ONLY in cron cross-org aggregations — never in request
-// handlers (see raw.ts for full rationale).
+// Raw (non-tenant-scoped) client re-exported from tenant.ts so consumers can
+// import the "tenant context family" from a single module. Use ONLY in cron
+// cross-org aggregations — never in request handlers (see raw.ts for full
+// rationale).
 export { prismaRaw } from './raw.js';
 
 interface TenantContext {
@@ -27,7 +27,7 @@ type QueryHookParams = {
 
 /**
  * Models where insert is allowed but subsequent mutation is forbidden.
- * Enforces append-only audit trail (Phase 59 D-06 — ClassificationDocument).
+ * Enforces an append-only audit trail (ClassificationDocument).
  * Delete is allowed (not a content mutation); update / updateMany / upsert are blocked.
  */
 const APPEND_ONLY_MODELS = new Set(['ClassificationDocument']);
@@ -50,11 +50,11 @@ const globalModels = new Set([
   'Organization',
   'Member',
   'Invitation',
-  // Phase 63 — Global reference data (no organizationId)
+  // Global reference data (no organizationId)
   'BoEBaseRateHistory',
-  // Phase 60 CLASS-09 — cron-state singleton keyed by `name` only.
-  // Auto-injecting organizationId here throws PrismaClientValidationError
-  // because the model has no organizationId column.
+  // Cron-state singleton keyed by `name` only. Auto-injecting organizationId
+  // here throws PrismaClientValidationError because the model has no
+  // organizationId column.
   'CronScanState',
   // Global reference / per-user models with no organizationId column.
   'ExchangeRate',

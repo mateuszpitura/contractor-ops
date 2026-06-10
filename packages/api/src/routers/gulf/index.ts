@@ -1,8 +1,8 @@
-// Barrel for routers/gulf/ — Phase 79 F3 Gulf namespace.
+// Barrel for routers/gulf/.
 //
 // Exposes a single `gulfRouter` mounted at `gulf:` in root.ts appRouter, grouping
 // the free-zone assignment CRUD + per-engagement Saudi fields (free-zone.ts) and
-// the Saudization config/headcount CRUD + dashboard + GULF-10 drift overrides
+// the Saudization config/headcount CRUD + dashboard + drift overrides
 // (saudization.ts). Mirrors the finance/index.ts barrel shape.
 
 import { router } from '../../init';

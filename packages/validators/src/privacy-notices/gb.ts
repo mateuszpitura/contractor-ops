@@ -1,4 +1,4 @@
-// Phase 56 · Plan 07 — UK GDPR privacy notice content (FOUND-05).
+// UK GDPR privacy notice content.
 //
 // Structured per ICO guidance on Article 13 required information. Content is
 // the single source of truth consumed by:

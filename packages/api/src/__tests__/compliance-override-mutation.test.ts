@@ -1,4 +1,4 @@
-// Phase 73 · Plan 03 — compliance.overrideItem mutation tests (D-10..D-12).
+// compliance.overrideItem mutation tests.
 //
 // Uses the canonical router-caller harness (mirrors routers/__tests__/classification.test.ts):
 // a hoisted mockPrisma with an observable $transaction, full @contractor-ops/db +

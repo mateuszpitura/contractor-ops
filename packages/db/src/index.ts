@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------
-// F-SCALE-06 — read-replica routing (Phase 3 Tier-2)
+// Read-replica routing
 // ---------------------------------------------------------------------------
 //
 // Per-region read replicas are wired in `replica.ts`. They are **opt-in**:
@@ -24,14 +24,14 @@ export type {
   TaxIdType,
   ValidationStatus,
 } from './generated/prisma/client/client.js';
-// PHASE-60-CROSS-ORG-AGGREGATE: raw (non-tenant-scoped) client for cron-only cross-org aggregates.
+// Raw (non-tenant-scoped) client for cron-only cross-org aggregates.
 export { prismaRaw } from './raw.js';
 export type { DataRegion } from './region.js';
 export { getRegionalClient, preWarmRegionalClients, SUPPORTED_REGIONS } from './region.js';
-// F-SCALE-06 — opt-in read-replica routing with circuit-breaker fallback.
+// Opt-in read-replica routing with circuit-breaker fallback.
 export { getReplicaClient, readReplica, resetReplicaStateForTests } from './replica.js';
-// US-INFRA-03 — statutory retention resolver shared by the three deletion
-// chokepoints (soft-delete extension, data-purge cron, gdpr erasure).
+// Statutory retention resolver shared by the three deletion chokepoints
+// (soft-delete extension, data-purge cron, gdpr erasure).
 export type { RetainedRecordType } from './retention-policy.js';
 export {
   getRetentionCutoff,

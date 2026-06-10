@@ -35,7 +35,7 @@ const isPageLayoutEntry = (value: unknown): boolean =>
  * means either a stale locale entry or a forgotten errors.ts constant.
  *
  * The `validation*` entries here are client-side Zod schema messages used
- * directly by the frontend; they are not raised as API errors. Phase 2
+ * directly by the frontend; they are not raised as API errors. A future
  * Zod sweep may move them under a separate `Validation` namespace.
  */
 const ALLOWED_NON_CODE_KEYS = new Set([

@@ -11,7 +11,7 @@ import { validateTaxId } from '../../services/tax-id-validation.service';
 import type { DbClient } from '../../services/types';
 
 // ---------------------------------------------------------------------------
-// Phase 84 · Plan 05 (US-FIELD-03 / D-03) — USPS advisory address validation
+// USPS advisory address validation
 // ---------------------------------------------------------------------------
 
 /** No-op address cache — the limiter + USPS fail-open path are the safety net. */
@@ -68,7 +68,7 @@ export function buildUsCountryFields(
 }
 
 /**
- * Run USPS CASS validation advisory + non-blocking (D-03). Mutates `data` (USPS
+ * Run USPS CASS validation advisory + non-blocking. Mutates `data` (USPS
  * verified flag + timestamp) and, on a normalized match, the `countryFields`
  * blob in place. NEVER throws to the save path — a USPS / limiter / cache
  * failure leaves the save successful with `uspsVerified = false`.

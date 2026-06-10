@@ -1,11 +1,11 @@
-// Phase 62 · Plan 62-02 Task 5 — ZUGFeRD PDF parser unit tests.
+// ZUGFeRD PDF parser unit tests.
 //
 // Fixtures are generated deterministically at test-time via pdf-lib + the
 // existing XRechnung CII generator — this keeps fixture bytes out of version
 // control (no binary churn) while still exercising the full PDF → CII
 // pipeline end-to-end.
 //
-// Five branches (matching plan):
+// Five branches:
 //   1. Happy path: factur-x.xml attachment → COMFORT level + correct invoice.
 //   2. No attachment: plain PDF → ZUGFERD_NO_XML_ATTACHMENT.
 //   3. Unsupported level propagation: MINIMUM URN inside PDF → ZUGFERD_LEVEL_UNSUPPORTED.

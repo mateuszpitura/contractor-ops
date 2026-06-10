@@ -2,17 +2,17 @@
  * OCR processor (`POST /ocr/_process`).
  *
  *   1. QStash signature verification via `defineQStashRoute`.
- *   2. Reseed ALS frame from upstream QStash headers (F-OBS-03).
- *   3. F-SCALE-19 — wrap with `withBackpressure(OCR_PROCESS)` so an
- *      Anthropic spike doesn't sink other QStash consumers.
- *   4. F-ASYNC-17 — `withQueueObservability` reports per-tick duration.
+ *   2. Reseed ALS frame from upstream QStash headers.
+ *   3. Wrap with `withBackpressure(OCR_PROCESS)` so an Anthropic spike
+ *      doesn't sink other QStash consumers.
+ *   4. `withQueueObservability` reports per-tick duration.
  *   5. Validate body shape (`extractionId`, `organizationId`, `storageKey`).
  *   6. Delegate to `processOcrExtraction` from the service. The service
  *      catches + marks rows FAILED on permanent OCR errors itself, so
  *      reaching this route's catch is rare (R2 outage, OOM).
- *   7. F-ASYNC-16 — classify infrastructure errors as permanent (200,
- *      QStash drops) vs transient (500, QStash retries). Permanent
- *      failures get a Sentry capture for ops visibility.
+ *   7. Classify infrastructure errors as permanent (200, QStash drops) vs
+ *      transient (500, QStash retries). Permanent failures get a Sentry
+ *      capture for ops visibility.
  *
  * Exempt from CSRF origin guard — `/ocr/` prefix added to
  * EXEMPT_PREFIXES; QStash signature owns authn.

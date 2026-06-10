@@ -99,9 +99,9 @@ describe('getFlagClient with missing env', () => {
   });
 
   it('evaluate() forces killWhenUnknown flags to false when Unleash is unreachable', () => {
-    // Phase 72 fix — kill-switches with killWhenUnknown:true MUST resolve to
-    // false during an Unleash outage, otherwise their `default: true` keeps
-    // the gated feature live exactly when ops needs to kill it.
+    // Kill-switches with killWhenUnknown:true MUST resolve to false during an
+    // Unleash outage, otherwise their `default: true` keeps the gated feature
+    // live exactly when ops needs to kill it.
     process.env.UNLEASH_URL_EU = '';
     process.env.UNLEASH_API_TOKEN_EU = '';
     const result = evaluate('killswitch.ai-invoice-parser', euCtx);
@@ -183,9 +183,8 @@ describe('buildFlagBag total', () => {
 describe('flag bag prototype safety', () => {
   // bag.values intentionally uses a plain-object prototype (not Object.create(null))
   // so the bag survives RSC serialization across the Server → Client boundary —
-  // RSC rejects null-prototype objects with "Classes or null prototypes are not
-  // supported". Prototype-pollution defense lives in the isEnabled strict
-  // `=== true` check below, not in the prototype shape.
+  // RSC rejects null-prototype objects. Prototype-pollution defense lives in the
+  // isEnabled strict `=== true` check below, not in the prototype shape.
   it('bag.values is a plain object that round-trips through structuredClone', () => {
     setFlagClientForTesting('EU', { isEnabled: (_n, _c, fb) => fb });
     const bag = buildFlagBag(euCtx);

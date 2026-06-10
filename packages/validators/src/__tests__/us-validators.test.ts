@@ -1,19 +1,13 @@
-// Phase 84 · Plan 00 (Wave 0 RED) — US-FIELD-01 / US-FIELD-02 validator vectors.
-// See .planning/milestones/v7.0-phases/84-.../84-VALIDATION.md.
+// EIN and SSN validator vectors.
 //
-// These vectors are RED until Plan 01 creates `packages/validators/src/us-validators.ts`
-// exporting `isValidEin` / `isValidSsn`. The import below intentionally resolves
-// to a not-yet-existing module so the suite fails (Cannot find module) — the
-// behavioural contract is locked here before implementation.
-//
-// EIN reference (US-FIELD-01) [CITED: irs.gov/.../valid-ein-prefixes — legal/tax-adviser
+// EIN reference [CITED: irs.gov/.../valid-ein-prefixes — legal/tax-adviser
 // verification deferred, LOCAL-ONLY]:
 //   - format XX-XXXXXXX (2-digit campus prefix + 7-digit serial)
 //   - the 2-digit prefix must be in the IRS-published valid set
 //   - `12` IS a valid prefix; `07` is NOT in the VALID_EIN_PREFIXES set
 //   - whitespace stripped before validation
 //
-// SSN reference (US-FIELD-02) [CITED: ssa.gov randomization FAQ — same deferral]:
+// SSN reference [CITED: ssa.gov randomization FAQ — same deferral]:
 //   - format XXX-XX-XXXX (area-group-serial)
 //   - invalid area: 000, 666, 900-999
 //   - invalid group: 00
@@ -25,7 +19,7 @@ import { describe, expect, it } from 'vitest';
 import { isValidEin, isValidSsn } from '../us-validators.js';
 
 // ---------------------------------------------------------------------------
-// isValidEin (US-FIELD-01)
+// isValidEin
 // ---------------------------------------------------------------------------
 
 describe('isValidEin', () => {
@@ -78,7 +72,7 @@ describe('isValidEin', () => {
 });
 
 // ---------------------------------------------------------------------------
-// isValidSsn (US-FIELD-02)
+// isValidSsn
 // ---------------------------------------------------------------------------
 
 describe('isValidSsn', () => {

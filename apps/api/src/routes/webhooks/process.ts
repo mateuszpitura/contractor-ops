@@ -4,10 +4,9 @@
  *   1. Verify QStash signature via the framework-agnostic `Receiver` from
  *      `@upstash/qstash`.
  *   2. Reseed the ALS request-context frame from upstream QStash headers
- *      (F-OBS-03) so logger correlation IDs follow the job through every
- *      side-effect.
+ *      so logger correlation IDs follow the job through every side-effect.
  *   3. Wrap with `withQueueObservability('webhooks-process', …)` for the
- *      per-tick duration histogram (F-ASYNC-17).
+ *      per-tick duration histogram.
  *   4. Validate body shape (`deliveryId`, `provider`).
  *   5. Look up `WebhookDelivery` row, dedup PROCESSED, atomic claim
  *      RECEIVED|FAILED → PROCESSING (compare-and-swap).
@@ -258,7 +257,7 @@ export function registerProcessWebhookRoute(app: FastifyInstance): void {
     if (!guard) return reply;
 
     return guard.run(() =>
-      // F-ASYNC-17 — emit per-tick duration histogram via cron-monitor.
+      // Emit per-tick duration histogram via cron-monitor.
       withQueueObservability('webhooks-process', () => handlerInner(request, reply, guard.rawBody)),
     );
   });

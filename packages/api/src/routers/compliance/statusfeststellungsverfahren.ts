@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------
-// Phase 60 · CLASS-09 — statusfeststellungsverfahren tRPC router.
+// statusfeststellungsverfahren tRPC router.
 // ---------------------------------------------------------------------------
 //
 // CRUD surface for the DRV § 7a SGB IV Statusfeststellungsverfahren clearance
@@ -8,8 +8,8 @@
 // organizationId.
 //
 // Audit trail: every mutation writes an AuditLog row via the shared
-// writeAuditLog helper (Plan 60-02) with resourceType='CONTRACTOR' and
-// resourceId=contractorAssignmentId — covers T-60-14 repudiation threat.
+// writeAuditLog helper with resourceType='CONTRACTOR' and
+// resourceId=contractorAssignmentId.
 //
 // Zod refine: validFrom + validTo are required when outcome is SELBSTANDIG or
 // ABHANGIG; PENDING and WITHDRAWN rows may omit them.
@@ -36,9 +36,9 @@ const contractorUpdateProcedure = classificationProcedure.use(
 const outcomeEnum = z.enum(['PENDING', 'SELBSTANDIG', 'ABHANGIG', 'WITHDRAWN']);
 
 /**
- * Input shape for create — enforces the plan's D-10 invariant that validFrom
- * and validTo must be supplied together once an outcome other than
- * PENDING/WITHDRAWN is recorded.
+ * Input shape for create — enforces the invariant that validFrom and validTo
+ * must be supplied together once an outcome other than PENDING/WITHDRAWN is
+ * recorded.
  */
 const createInput = z
   .object({
@@ -112,7 +112,7 @@ export const statusfeststellungsverfahrenRouter = router({
       },
     });
 
-    // T-60-14 — audit every mutation; resourceType reuses CONTRACTOR per Pitfall 4.
+    // Audit every mutation; resourceType=CONTRACTOR for consistent audit-log queries.
     await writeAuditLog({
       organizationId: ctx.organizationId,
       actorType: 'USER',

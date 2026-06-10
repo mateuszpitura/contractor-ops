@@ -107,12 +107,12 @@ const { mockPrisma } = vi.hoisted(() => {
     member: {
       findFirst: vi.fn(async () => ({ role: 'admin' })),
     },
-    // Phase 72 payment-block gate queries this; default to no BLOCKING/EXPIRED
+    // payment-block gate queries this; default to no BLOCKING/EXPIRED
     // items so contractors are eligible and payment flows proceed.
     contractorComplianceItem: {
       findMany: vi.fn(async () => []),
     },
-    // Phase 72 COMPL-07 — atomic compliance snapshot rows on lockAndExport.
+    // Atomic compliance snapshot rows on lockAndExport.
     paymentRunComplianceCheck: {
       create: vi.fn(async (opts: { data: Rec }) => ({ id: 'compliance-check-1', ...opts.data })),
     },
@@ -161,10 +161,9 @@ vi.mock('@contractor-ops/db', () => ({
   getRegionalClient: vi.fn(() => mockPrisma),
 }));
 
-// F-DB-03 — tenantMiddleware reads status/region via getOrgMeta. Stub it so
+// tenantMiddleware reads status/region via getOrgMeta. Stub it so
 // individual tests can override `prisma.organization.findUnique` for the
-// HANDLER's own DB lookup without inadvertently failing the F-SEC-12
-// suspended-org gate.
+// handler's own DB lookup without inadvertently failing the suspended-org gate.
 vi.mock('../../services/org-cache', () => ({
   getOrgMeta: vi.fn(async () => ({
     id: 'clxxxxxxxxxxxxxxxxxxxxxxxxx',
@@ -483,8 +482,8 @@ beforeEach(() => {
   // its procedure never consumes (e.g. a `create` that throws before allocating a
   // run number) would leak that value into the next test's `findFirst`/`findMany`.
   // Reset the per-test-configured mocks and re-seed their defaults so each test
-  // starts from a clean queue. (Phase 72 added a second `invoice.findMany` call in
-  // `create` for the payment-block eligibility gate, which made these leaks bite.)
+  // starts from a clean queue. A second `invoice.findMany` call in `create` for
+  // the payment-block eligibility gate made mock-value leaks between tests bite.
   mockPrisma.invoice.findMany.mockReset().mockResolvedValue([]);
   mockPrisma.invoice.findFirst.mockReset().mockResolvedValue(null);
   mockPrisma.paymentRun.findFirst.mockReset().mockResolvedValue(null);
@@ -556,7 +555,7 @@ describe('payment router', () => {
         amountToPayMinor: 200000,
       });
 
-      // Phase 72 payment-block gate adds a FIRST invoice.findMany (eligibility
+      // payment-block gate adds a FIRST invoice.findMany (eligibility
       // fetch) before the main loadEligibleInvoices fetch — persistent mock
       // serves both calls.
       mockPrisma.invoice.findMany.mockResolvedValue([invoice1, invoice2]);
@@ -783,8 +782,8 @@ describe('payment router', () => {
         ],
       });
 
-      // F-DB-22: lockAndExport now does two findFirst calls (prepare + re-fetch
-      // under tx-2 lock). Mock both with the same row.
+      // lockAndExport does two findFirst calls (prepare + re-fetch under tx-2 lock).
+      // Mock both with the same row.
       mockPrisma.paymentRun.findFirst
         .mockResolvedValueOnce(run)
         .mockResolvedValueOnce({ status: run.status });

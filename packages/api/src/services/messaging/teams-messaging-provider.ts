@@ -78,7 +78,7 @@ async function resolveAadObjectId(organizationId: string, userId: string): Promi
 // ---------------------------------------------------------------------------
 
 /**
- * Idempotency note (F-INT-04 / DRIFT-01).
+ * Idempotency note.
  *
  * Microsoft Teams' Bot Framework `CloudAdapter.continueConversationAsync`
  * pathway does NOT expose a per-call idempotency interface — proactive

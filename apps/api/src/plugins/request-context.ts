@@ -3,7 +3,7 @@
  *
  * Wraps the entire request lifecycle in `runWithRequestContext` so any
  * Pino logger created downstream — including module-scoped loggers in
- * `packages/api` routers — emits `{ requestId }` automatically (F-OBS-02).
+ * `packages/api` routers — emits `{ requestId }` automatically.
  *
  * Honors an inbound `x-request-id` header (operator probes, upstream
  * tracers) and mints a fresh UUID otherwise. Echoes the id back on every

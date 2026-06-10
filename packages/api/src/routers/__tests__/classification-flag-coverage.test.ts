@@ -1,7 +1,7 @@
-// Phase 64 · D-07 — assert every classification procedure uses classificationProcedure.
+// Assert every classification procedure uses classificationProcedure.
 //
 // Catches any future contributor adding a procedure with raw tenantProcedure,
-// which would bypass the flag gate (Pitfall 1 from RESEARCH.md).
+// which would bypass the flag gate.
 //
 // Strategy: read each classification router module source and verify the
 // classificationProcedure import exists and tenantProcedure direct procedure

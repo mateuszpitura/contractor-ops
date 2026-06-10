@@ -2,7 +2,7 @@
  * Unit tests for the `classification-economic-dependency` cron handler.
  *
  * Coverage:
- *   1. `module.classification-engine` off → ok=true + skipped (D-08).
+ *   1. `module.classification-engine` off → ok=true + skipped.
  *   2. Flag on, scan succeeds → ok=true + scan result relayed.
  *   3. Scan throws → ok=false + Sentry capture.
  */

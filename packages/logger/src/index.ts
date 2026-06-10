@@ -19,12 +19,12 @@ const isDev = process.env.NODE_ENV !== 'production';
 // Pino mixin — injects per-request correlation ids on every log line
 // ---------------------------------------------------------------------------
 //
-// Phase 2 / Unit P2-E (F-OBS-02). When an ALS frame is active (seeded by the
-// tRPC observability middleware, the QStash consumer routes, or the auth
-// route wrapper) every log line — including those emitted by module-scoped
-// loggers in routers / services that hold no per-request bindings — gets
-// `{ requestId, traceparent }`. Mixin must be cheap and never throw; the ALS
-// helpers swallow internal errors for that reason.
+// When an ALS frame is active (seeded by the tRPC observability middleware,
+// the QStash consumer routes, or the auth route wrapper) every log line —
+// including those emitted by module-scoped loggers in routers / services that
+// hold no per-request bindings — gets `{ requestId, traceparent }`. Mixin
+// must be cheap and never throw; the ALS helpers swallow internal errors for
+// that reason.
 function requestContextMixin(): Record<string, string> {
   const ctx = getRequestContext();
   if (!ctx) return {};
@@ -56,11 +56,11 @@ const baseOptions: LoggerOptions = {
 /**
  * Returns a *copy* of the shared Pino base options used by the root logger.
  *
- * F-OBS-12 — standalone scripts (`packages/db/scripts/*`, prisma seed) and
- * the worker-cron `.mjs` previously called `pino({ level })` with no PII
- * redact, no ISO timestamp, and no shared mixin, which let scripts drift
- * away from the rest of the app's log shape. They should use this factory
- * so PII redact + level config + mixins stay in lockstep.
+ * Standalone scripts (`packages/db/scripts/*`, prisma seed) and the
+ * worker-cron `.mjs` previously called `pino({ level })` with no PII redact,
+ * no ISO timestamp, and no shared mixin, which let scripts drift away from
+ * the rest of the app's log shape. They should use this factory so PII
+ * redact + level config + mixins stay in lockstep.
  *
  * Returned object is a shallow clone — callers may extend `redact.paths`
  * without mutating the shared list.

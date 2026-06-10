@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------
-// Phase 60 · CLASS-07 — economic-dependency daily scan orchestrator.
+// Economic-dependency daily scan orchestrator.
 // ---------------------------------------------------------------------------
 //
 // Fires early-warning notifications when a German contractor's platform
@@ -8,7 +8,7 @@
 // apps/cron-worker/src/jobs/handlers/classification-economic-dependency.ts
 // once per day (0 2 * * * UTC).
 //
-// Legal thresholds (locked — see 60-RESEARCH.md §DRV thresholds):
+// Legal thresholds (§2 SGB VI DRV):
 //   - 70.00% → warning band (early indicator of arbeitnehmerähnliche
 //              Selbständige risk; Steuerberater should review).
 //   - 83.33% (5/6) → critical band (DRV §2 Nr. 9 SGB VI — mandatory social
@@ -24,7 +24,7 @@
 //     contractor bills from, not just the current one. Every cross-org call
 //     is tagged `// PHASE-60-CROSS-ORG-AGGREGATE` for audit grep.
 //   - Aggregate returns scalars (BigInt/number), never per-row cross-org
-//     data — Information Disclosure (T-60-03) mitigated.
+//     data — mitigates information disclosure across org boundaries.
 //   - Recipient fan-out uses `resolveRbacRecipients` (contractor:read gate).
 //
 // State machine (research Pattern 3):
@@ -50,7 +50,7 @@ import { resolveRbacRecipients } from './rbac-recipients';
 const log = createCronLogger('classification-economic-dependency');
 
 // ---------------------------------------------------------------------------
-// Thresholds — §2 SGB VI (LOCKED — see 60-RESEARCH.md)
+// Thresholds — §2 SGB VI
 // ---------------------------------------------------------------------------
 
 export const WARNING_THRESHOLD = 0.7; // 70.00 %
@@ -283,16 +283,14 @@ export async function runEconomicDependencyScan(now: Date = new Date()): Promise
     },
   });
 
-  // F-ASYNC-09 / F-SCALE-05 / P2-B: bound the cross-tenant scan fan-out at
-  // SCAN_FANOUT_CONCURRENCY (10) so a 1000-assignment scan completes in
-  // ~100 RTTs instead of 1000 while not saturating Prisma / Resend / Slack.
+  // Bound the cross-tenant scan fan-out at SCAN_FANOUT_CONCURRENCY (10) so a
+  // 1000-assignment scan completes in ~100 RTTs instead of 1000 while not
+  // saturating Prisma / Resend / Slack.
   //
-  // Replaces a previous `chunked + sequential await` shape with `p-limit`,
-  // which lets every assignment slot start as soon as a previous one
-  // finishes (the chunked version waited for the slowest call in each
-  // batch before starting the next). When a single assignment's
-  // computeBillingShare is slow, throughput improves by avoiding head-of-
-  // line blocking on each chunk boundary.
+  // Uses `p-limit` so every assignment slot starts as soon as a previous one
+  // finishes (vs chunked sequential await, which waits for the slowest call
+  // in each batch). Avoids head-of-line blocking on each chunk boundary when
+  // a single computeBillingShare is slow.
   const SCAN_FANOUT_CONCURRENCY = 10;
   const limit = pLimit(SCAN_FANOUT_CONCURRENCY);
   const dispatchedCounter = { value: 0, crossings: 0, scanned: 0 };

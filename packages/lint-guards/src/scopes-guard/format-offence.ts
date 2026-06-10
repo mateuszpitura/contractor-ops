@@ -1,5 +1,5 @@
-// Phase 76 D-15 — structured-diff formatter for scopes-guard offences.
-// Same shape as schema-guard / logs-guard / i18n-parity outputs (Phase 70 D-03).
+// Structured-diff formatter for scopes-guard offences.
+// Same shape as schema-guard / logs-guard / i18n-parity outputs.
 
 import type { ScopesGuardOffence } from './run-guard';
 

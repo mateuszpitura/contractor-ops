@@ -7,9 +7,9 @@
  *      `verifyInPostSignature` from
  *      `@contractor-ops/api/services/courier/inpost-webhook-handler`.
  *   4. Non-prod fallback: match by `shipment_id` / `tracking_number` in
- *      the payload (F-SEC-06 — production rejects unsigned webhooks
- *      outright; this fallback exists only for dev/staging where
- *      Storecove sandbox webhooks lack signature material).
+ *      the payload (production rejects unsigned webhooks outright; this
+ *      fallback exists only for dev/staging where Storecove sandbox
+ *      webhooks lack signature material).
  *   5. Fire-and-forget `handleInPostWebhook`; respond 200 immediately so
  *      InPost's retry quota isn't burned on slow downstream calls.
  *
@@ -105,8 +105,8 @@ export function registerInPostWebhookRoute(app: FastifyInstance): void {
 
     const signatureOrgId = matchOrgBySignature(configs, rawBody, headers);
 
-    // F-SEC-06: production rejects unsigned webhooks outright. Non-prod can
-    // fall back to a tracking-id payload match for sandbox testing — unless
+    // Production rejects unsigned webhooks outright. Non-prod can fall back
+    // to a tracking-id payload match for sandbox testing — unless
     // STRICT_INPOST_SIGNATURE is set, which enforces signature-only in every
     // environment (lets staging mirror the production posture).
     const { NODE_ENV, STRICT_INPOST_SIGNATURE } = loadEnv();

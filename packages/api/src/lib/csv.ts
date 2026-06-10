@@ -1,6 +1,6 @@
 /**
  * CSV generation helpers — both an eager (legacy) buffer builder and a
- * streaming variant for the async export framework (P2-F · F-SCALE-08).
+ * streaming variant for the async export framework.
  *
  * Why streaming matters
  * ---------------------
@@ -8,7 +8,7 @@
  * concatenates them — for a 100k-row export that is ~25 MB heap allocated
  * on the request path, which compounds with the 1.3× base64 amplification
  * if the response is shipped over JSON. Combined with the async export
- * framework (F-SCALE-01) we now stream rows from a Prisma cursor through
+ * async export framework we now stream rows from a Prisma cursor through
  * `csv-stringify` and pipe directly into an R2 multipart upload — peak
  * heap usage is bounded by the stream's high-water mark (~64 KB) regardless
  * of result size.
@@ -29,7 +29,7 @@ export const UTF8_BOM = Buffer.from([0xef, 0xbb, 0xbf]);
  * of a cell. Cells starting with any of these are neutralised by prefixing a
  * single quote so the spreadsheet treats the value as literal text.
  *
- * Closes research gap A11 (CSV formula injection — OWASP guidance).
+ * Closes CSV formula injection risk (OWASP guidance).
  */
 const FORMULA_PREFIXES = new Set(['=', '+', '-', '@']);
 
@@ -39,7 +39,7 @@ const FORMULA_PREFIXES = new Set(['=', '+', '-', '@']);
  * Two-step process:
  *   1. Formula-injection neutralisation — if the stringified value starts
  *      with `=`, `+`, `-`, or `@`, prefix with `'` so Excel/Numbers/LibreOffice
- *      treat the cell as text (OWASP; research gap A11).
+ *      treat the cell as text (OWASP CSV injection guidance).
  *   2. RFC 4180 quoting — if the (post-neutralisation) value contains a
  *      comma, double quote, CR, or LF, wrap in double quotes and double-up
  *      any internal quotes.
@@ -95,7 +95,7 @@ export function encodeCsvUtf8Bom(columns: CsvColumnKey[], rows: Record<string, u
 }
 
 // ---------------------------------------------------------------------------
-// Streaming (P2-F · F-SCALE-08)
+// Streaming
 // ---------------------------------------------------------------------------
 
 export interface StreamCsvOptions {

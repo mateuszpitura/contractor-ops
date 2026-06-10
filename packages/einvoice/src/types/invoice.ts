@@ -60,7 +60,7 @@ export interface EInvoicePaymentMeans {
 /**
  * Canonical e-invoice type. Country profiles map to/from this model.
  *
- * Covers ~15-20 common fields across all profiles per D-06.
+ * Covers the common fields shared across all profiles.
  * Profile-specific extensions go in the `extensions` field.
  * All monetary amounts are in minor units (integer).
  */

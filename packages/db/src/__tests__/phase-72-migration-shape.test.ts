@@ -1,7 +1,7 @@
-// Phase 72 — migration shape regression test.
-// Reads each Phase 72 migration.sql and asserts the required SQL constructs
-// are present. Locks the contract so a future schema-pull or merge cannot
-// silently drop the GIN index, an enum value, or a foreign-key cascade.
+// Migration shape regression test.
+// Reads each compliance-reminder migration.sql and asserts the required SQL
+// constructs are present. Locks the contract so a future schema-pull or merge
+// cannot silently drop the GIN index, an enum value, or a foreign-key cascade.
 
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';

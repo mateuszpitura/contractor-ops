@@ -1,10 +1,8 @@
 // packages/einvoice/src/profiles/xrechnung-de/__tests__/generator.test.ts
 //
-// Phase 61 · Plan 61-02 Task 1 — TDD tests for the XRechnung 3.0.2 CII
-// generator. Replaces the Plan-01 RED scaffold (describe.todo).
+// TDD tests for the XRechnung 3.0.2 CII generator.
 //
-// Each block maps 1:1 to a row in the 61-VALIDATION.md Per-Task Verification
-// Map. The generator is intentionally deterministic: given the same EInvoice
+// The generator is intentionally deterministic: given the same EInvoice
 // and the same leitwegId, byte-for-byte identical XML is produced. This is
 // what makes content-addressed R2 storage + validation-report dedup work.
 
@@ -335,7 +333,7 @@ describe('generateXRechnungCii — monetary summation', () => {
 });
 
 // ---------------------------------------------------------------------------
-// BG-20 Skonto Payment Terms (Phase 63 · Plan 06)
+// BG-20 Skonto Payment Terms
 // ---------------------------------------------------------------------------
 
 describe('XRechnung CII generator — Skonto BG-20 Payment Terms', () => {

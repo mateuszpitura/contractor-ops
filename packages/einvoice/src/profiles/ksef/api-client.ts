@@ -310,7 +310,6 @@ export class KsefApiClient {
   /**
    * Verifies KSeF credentials by attempting authentication.
    * Returns true if credentials are valid, false otherwise.
-   * Used for D-04 credential verification in connection setup.
    */
   async verifyCredentials(token: string, nip: string): Promise<boolean> {
     try {

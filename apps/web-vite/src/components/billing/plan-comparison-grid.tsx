@@ -36,7 +36,7 @@ function PlanCardItem({
 }
 
 // ---------------------------------------------------------------------------
-// Static plan data (D-01 through D-06)
+// Static plan data
 // ---------------------------------------------------------------------------
 
 const TIER_ORDER = ['STARTER', 'PRO', 'ENTERPRISE'] as const;

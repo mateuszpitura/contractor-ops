@@ -1,4 +1,4 @@
-// Phase 71 D-01 — Registry of compliance policy rules.
+// Registry of compliance policy rules.
 
 import { deepFreeze } from './freeze';
 import type { EngagementContext, ParsedPolicyRuleId, PolicyRule, PolicyRuleId } from './types';

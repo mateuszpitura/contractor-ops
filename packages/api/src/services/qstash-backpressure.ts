@@ -1,5 +1,5 @@
 /**
- * Per-route backpressure semaphore for QStash consumers (S3-4 · F-SCALE-19).
+ * Per-route backpressure semaphore for QStash consumers.
  *
  * Pre-fix: every QStash consumer route accepts unbounded concurrent
  * callbacks. After a transient outage QStash will replay hundreds of

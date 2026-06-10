@@ -1,6 +1,6 @@
-// Phase 74 Plan 06 — PTO-aware manager fallback routing.
+// PTO-aware manager fallback routing.
 //
-// Implements the layered detection rule per CONTEXT.md D-05 / D-06 / D-07 / D-08:
+// Implements the layered detection rule:
 //
 //   1. Manual override (highest priority): User.outOfOffice has a date range
 //      covering "today in contractor jurisdiction TZ" → PTO active.
@@ -15,8 +15,7 @@
 //   B. Team.fallbackApproverId (from contractor's team)
 //   C. Owner-role users (returns first owner; admin-attention badge in UI)
 //
-// Resolution runs ONCE at task creation time (Pitfall 26 — no per-render
-// re-resolution).
+// Resolution runs ONCE at task creation time (not per-render).
 
 import type { PrismaClient } from '@contractor-ops/db';
 import { createLogger } from '@contractor-ops/logger';
@@ -67,7 +66,6 @@ export interface ResolveAssigneeWithPtoArgs {
   teamId?: string | null;
   /**
    * Locale used to look up `PTO_KEYWORDS` (defaults to 'en' when unknown).
-   * Phase 79 will extend with 'ar' once Gulf locale ships.
    */
   managerLocale?: SupportedLocale;
   /**
@@ -81,8 +79,8 @@ export interface ResolveAssigneeWithPtoArgs {
   managerCalendarId?: string;
   /**
    * Optional list of admin-extended PTO keywords merged with PTO_KEYWORDS
-   * for the manager's locale (per D-08). Plan 74-07 Settings UI populates
-   * this from the per-org admin extension.
+   * for the manager's locale. The Settings UI populates this from the
+   * per-org admin extension.
    */
   extraKeywords?: readonly string[];
 }
@@ -92,7 +90,7 @@ export interface ResolveAssigneeResult {
   fallbackReason?: PtoFallbackReason;
   /**
    * True when the result comes from "owner-role broadcast" leg of the
-   * fallback chain — UI surfaces an amber admin-attention badge (D-06).
+   * fallback chain — UI surfaces an amber admin-attention badge.
    */
   needsAdminAttention?: boolean;
 }
@@ -131,7 +129,7 @@ export async function isManagerOnPto(
 
   // Layer 2 + 3 — calendar
   if (!(args.calendarAdapter && args.managerCalendarAccessToken)) {
-    // D-07 — no calendar integration → skip calendar lookup; only manual OOO applies
+    // No calendar integration → skip calendar lookup; only manual OOO applies
     return { pto: false };
   }
   const todayStart = new Date(

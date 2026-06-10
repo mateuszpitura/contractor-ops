@@ -1,9 +1,9 @@
 /**
- * Phase 77 D-12 — "Mark complete" override dialog for a terminally-failed
- * deprovisioning step. Pure presentational — the consuming container injects the
- * tRPC mutation via `onSubmit`, so this file stays free of useMutation
- * (check:web-vite-data-layer compliant). Category dropdown (closed enum) + a
- * free-text rationale with client min-20 validation (server is authoritative).
+ * "Mark complete" override dialog for a terminally-failed deprovisioning step.
+ * Pure presentational — the consuming container injects the tRPC mutation via
+ * `onSubmit`, so this file stays free of useMutation (check:web-vite-data-layer
+ * compliant). Category dropdown (closed enum) + a free-text rationale with
+ * client min-20 validation (server is authoritative).
  */
 
 import { Button } from '@contractor-ops/ui/components/shadcn/button';

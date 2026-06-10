@@ -83,7 +83,7 @@ export const FLAGS = deepFreeze({
     owner: 'ops',
     killWhenUnknown: true,
   },
-  // Phase 63 — UK Payments & Financial Features
+  // UK Payments & Financial Features
   'payments.bacs-enabled': {
     key: 'payments.bacs-enabled',
     description: 'BACS Standard 18 Direct Credit export for UK GBP payments',
@@ -108,7 +108,7 @@ export const FLAGS = deepFreeze({
     jurisdiction: 'EU',
     owner: 'payments',
   },
-  // Phase 62 — ZUGFeRD / XRechnung inbound e-invoice intake (EINV-02, EINV-03).
+  // ZUGFeRD / XRechnung inbound e-invoice intake.
   //
   // When enabled:
   //   - "Imports" sidebar entry is visible.
@@ -131,8 +131,6 @@ export const FLAGS = deepFreeze({
     jurisdiction: 'EU',
     owner: 'einvoice',
   },
-  // Phase 64 — Legal Compliance Hardening (LEGAL-08, LEGAL-09, LEGAL-10).
-  //
   // Kill-switch for all classification features (IR35 + Scheinselbständigkeit).
   // Default: false (ship dark — classification invisible until every disclaimer
   // in packages/validators/src/legal/signoff-registry.json is APPROVED and the
@@ -140,7 +138,7 @@ export const FLAGS = deepFreeze({
   //
   // The app-side evaluator (evaluator.ts) overrides even a true Unleash result
   // to false while any disclaimer has status 'PENDING' — preventing accidental
-  // exposure before legal sign-off (D-10).
+  // exposure before legal sign-off.
   'module.classification-engine': {
     key: 'module.classification-engine',
     description:
@@ -150,16 +148,15 @@ export const FLAGS = deepFreeze({
     jurisdiction: 'ANY',
     owner: 'legal-platform',
   },
-  // Phase 77 D-15 — F2 IdP deprovisioning, gated per provider so GWS can enable
-  // independently of Slack. Both ship dark (default false); both require their
-  // signoff-registry entry to flip PENDING→APPROVED before enabling per-org.
+  // IdP deprovisioning flags, gated per provider so GWS can enable independently
+  // of Slack. Both ship dark (default false); both require their signoff-registry
+  // entry to flip PENDING→APPROVED before enabling per-org.
   //
   // Keys are dot-namespaced under `module.idp-deprovisioning-*` to satisfy the
   // `flagDefinitionSchema` key regex (first segment must be alphanumeric, no
   // hyphen). The signoff boot-gate prefix `module.idp-deprovisioning` (added to
-  // GATED_FLAG_NAMESPACE_PREFIXES) keeps them gated; the unrelated Phase 76
-  // `idp-deprovisioning` signoff-registry key (a saga-level entry, not a FLAGS
-  // key) is untouched.
+  // GATED_FLAG_NAMESPACE_PREFIXES) keeps them gated; the unrelated saga-level
+  // `idp-deprovisioning` signoff-registry key is untouched.
   'module.idp-deprovisioning-gws': {
     key: 'module.idp-deprovisioning-gws',
     description:
@@ -178,7 +175,7 @@ export const FLAGS = deepFreeze({
     jurisdiction: 'ANY',
     owner: 'idp-platform',
   },
-  // Phase 79 (F3 Gulf) — UAE free-zone tracking + Saudization dashboard.
+  // Gulf (ME) — UAE free-zone tracking + Saudization dashboard.
   //
   // Both ship dark (default false), jurisdiction ME (structurally invisible to
   // EU orgs), and are legal-sensitive: the boot-time signoff gate requires a
@@ -204,13 +201,13 @@ export const FLAGS = deepFreeze({
     jurisdiction: 'ME',
     owner: 'gulf-platform',
   },
-  // Phase 82 (v7.0 GTM Foundation, FOUND7-02 / D-09) — the 19 v7.0 flags. All
-  // ship dark (default false) and region-agnostic (jurisdiction 'ANY'; US flags
-  // do NOT use a US jurisdiction — jurisdiction partitions EU/ME/ANY only). Keys
-  // are dot-namespaced (flagDefinitionSchema regex) and gated via the v7.0
-  // namespace prefixes added to GATED_FLAG_NAMESPACE_PREFIXES, so each requires a
-  // PENDING signoff entry before boot. No v7.0 feature reads these yet; the
-  // backing Unleash toggles are created in the later theme phases.
+  // v7.0 GTM Foundation flags — all 19 keys. All ship dark (default false) and
+  // region-agnostic (jurisdiction 'ANY'; US flags do NOT use a US jurisdiction —
+  // jurisdiction partitions EU/ME/ANY only). Keys are dot-namespaced
+  // (flagDefinitionSchema regex) and gated via the v7.0 namespace prefixes added
+  // to GATED_FLAG_NAMESPACE_PREFIXES, so each requires a PENDING signoff entry
+  // before boot. No v7.0 feature reads these yet; the backing Unleash toggles
+  // are created in the later theme phases.
   'module.us-expansion': {
     key: 'module.us-expansion',
     description:
@@ -389,12 +386,12 @@ export type FlagKey = keyof typeof FLAGS;
 export const FLAG_KEYS = Object.keys(FLAGS) as FlagKey[];
 
 /**
- * The v7.0 GTM-Expansion flag cohort (FOUND7-02 / D-09 / D-10). The explicit,
- * order-stable list of the 19 v7.0 flags — backs the SC#2 "all keys present"
- * test (`getFlagSignoff(key) !== undefined` for each) and the boot-gate
- * assertion. `satisfies readonly FlagKey[]` is a compile-time guarantee that
- * every cohort key actually exists in FLAGS (a typo or a missing FLAGS entry
- * fails tsc here, not at runtime).
+ * The v7.0 GTM-Expansion flag cohort. The explicit, order-stable list of the
+ * 19 v7.0 flags — backs the "all keys present" test
+ * (`getFlagSignoff(key) !== undefined` for each) and the boot-gate assertion.
+ * `satisfies readonly FlagKey[]` is a compile-time guarantee that every cohort
+ * key actually exists in FLAGS (a typo or a missing FLAGS entry fails tsc here,
+ * not at runtime).
  */
 export const V7_FLAG_KEYS = [
   'module.us-expansion',
@@ -419,7 +416,7 @@ export const V7_FLAG_KEYS = [
 ] as const satisfies readonly FlagKey[];
 
 /**
- * Ergonomic alias for the Phase 62 inbound e-invoice intake flag. Referenced
+ * Ergonomic alias for the inbound e-invoice intake flag. Referenced
  * throughout the web app (sidebar, split-button, intake routes). Kept as a
  * typed constant — not a string literal — so renames propagate via tsc.
  *

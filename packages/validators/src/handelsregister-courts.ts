@@ -3,7 +3,7 @@
 // German Registergerichte (Amtsgerichte with Handelsregister competence).
 // Source: https://de.wikipedia.org/wiki/Liste_deutscher_Registergerichte
 // Cross-reference: https://www.handelsregister.de (Gemeinsames Registerportal der Länder)
-// Last verified: 2026-04-12 (during Phase 56 research).
+// Last verified: 2026-04-12.
 // Review cadence: annual (or on Steuerberater flag); Registergericht consolidations
 // do happen — e.g. Baden-Württemberg centralised to Freiburg/Mannheim/Stuttgart/Ulm in
 // 2009, and further mergers are possible.

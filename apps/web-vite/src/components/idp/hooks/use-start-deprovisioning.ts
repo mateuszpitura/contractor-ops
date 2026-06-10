@@ -1,15 +1,14 @@
 /**
- * Phase 81 D-01/D-03/D-09/D-11 — sole tRPC boundary for the deprovisioning
- * start path. Serves BOTH entry points (assignment detail + ACCESS_REVOKE task
- * card) through one hook:
+ * Sole tRPC boundary for the deprovisioning start path. Serves both entry
+ * points (assignment detail + ACCESS_REVOKE task card) through one hook:
  *
  *   - assignmentId given directly (detail surface), OR
  *   - contractorId given (task card) → one server resolver call
- *     (resolveAssignmentForContractor, 81-02) yields the assignmentId, so the
- *     web-vite data-layer guard stays green (no client-side resolution).
+ *     (resolveAssignmentForContractor) yields the assignmentId, keeping the
+ *     web-vite data-layer guard green (no client-side resolution).
  *
- * Exposes the cooldown eligibility gate (D-11), a deterministic per-assignment
- * idempotencyKey (D-09), the start mutation, and the resulting run id so the
+ * Exposes the cooldown eligibility gate, a deterministic per-assignment
+ * idempotencyKey, the start mutation, and the resulting run id so the
  * container can swap "start" → "view run" once a run exists for the assignment.
  */
 
@@ -32,7 +31,7 @@ const IDEMPOTENCY_PREFIX = 'deprov:';
 const IDEMPOTENCY_MAX = 128;
 
 /**
- * Deterministic, per-assignment key (D-09). A re-trigger for the same
+ * Deterministic, per-assignment key. A re-trigger for the same
  * assignment collides on the server unique index (P2002) and returns the
  * existing run rather than starting a second one. Clamped to the server bound
  * (min 8 / max 128) — assignment ids are cuids well within range, but the

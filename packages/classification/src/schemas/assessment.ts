@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------
-// Assessment / Outcome Zod Schemas — D-03
+// Assessment / Outcome Zod Schemas
 // ---------------------------------------------------------------------------
 //
 // The `outcomeSchema` is a discriminated union on `kind` — adding a new

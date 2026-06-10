@@ -43,7 +43,7 @@ export function extractPortalToken(headers: Headers): string | null {
 }
 
 /**
- * F-SEC-08: Derive the base URL used to build outbound magic-link emails.
+ * Derive the base URL used to build outbound magic-link emails.
  *
  * SECURITY: This function INTENTIONALLY ignores the inbound request headers
  * (`Origin`, `X-Forwarded-Host`, `X-Forwarded-Proto`, `Host`) — every one of
@@ -65,7 +65,7 @@ export function deriveBaseUrl(): string {
 }
 
 /**
- * F-SEC-09: Sign a freshly-issued portal session token so the
+ * Sign a freshly-issued portal session token so the
  * `/portal/set-session` route handler can prove the value originated from
  * `verifyMagicLink` / `selectOrg` rather than a CSRF / session-fixation attempt.
  *
@@ -87,7 +87,7 @@ export function signPortalSessionToken(rawToken: string, expiresAt: Date): strin
 }
 
 /**
- * F-SEC-10: Strip the `bankAccountEncrypted` field from a `requestedChanges`
+ * Strip the `bankAccountEncrypted` field from a `requestedChanges`
  * JSON blob before sending it to a portal client. The encrypted bank account
  * ciphertext (IV + auth tag + payload) must never leave the server — only the
  * server-derived `bankAccountMasked` is safe to expose. Same JSON is used by

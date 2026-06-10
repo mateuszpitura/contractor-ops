@@ -1,4 +1,4 @@
-// Phase 75 D-14 — PL IP-clause phrase library. Legal sign-off PENDING; production
+// PL IP-clause phrase library. Legal sign-off PENDING; production
 // wording via post-deploy PR by doradca podatkowy.
 
 export const IP_CLAUSES_PL = {

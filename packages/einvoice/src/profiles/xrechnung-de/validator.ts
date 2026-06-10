@@ -1,4 +1,4 @@
-// Phase 61 · Plan 61-03 Task 2 — KoSIT three-layer XRechnung CII validator.
+// KoSIT three-layer XRechnung CII validator.
 //
 // Pipeline:
 //   Layer 1 — XSD schema validation       (libxmljs2 ↔ CII D16B XSDs)
@@ -16,11 +16,11 @@
 // SECURITY:
 //   * libxmljs2.parseXml uses { nonet: true, baseUrl: <bundle dir> } so
 //     external `<xs:import schemaLocation="http://...">` is impossible
-//     (T-61-03-02 SSRF mitigation). The default `noent: false` means entities
-//     are NOT expanded (T-61-03-01 XXE mitigation).
+//     (SSRF mitigation). The default `noent: false` means entities are NOT
+//     expanded (XXE mitigation).
 //   * SaxonJS.transform consumes only the two SEFs under validator-bundle/;
-//     no user-supplied stylesheet is ever loaded (T-61-03-06 RCE mitigation).
-//   * SVRL is parsed via the XXE-safe normaliser (T-61-03-01 second line).
+//     no user-supplied stylesheet is ever loaded (RCE mitigation).
+//   * SVRL is parsed via the XXE-safe normaliser (second-line XXE defence).
 
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
@@ -111,7 +111,7 @@ interface XsdRun {
 
 function runXsd(xml: string, ciiXsd: string): XsdRun {
   // Pin baseUrl + disable network so attacker-controlled `<xs:import
-  // schemaLocation="http://…">` cannot trigger an outbound request (T-61-03-02).
+  // schemaLocation="http://…">` cannot trigger an outbound SSRF request.
   let xsdDoc: libxmljs.Document;
   let instanceDoc: libxmljs.Document;
   try {

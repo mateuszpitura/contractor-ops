@@ -83,8 +83,8 @@ describe('JiraAdapter', () => {
   });
 
   it('verifyWebhookSignature rejects when no configuredSecret is supplied (F-SEC-02)', () => {
-    // F-SEC-02: previously the adapter returned valid:true when the secret was
-    // missing, allowing unauthenticated payloads through. New behaviour fails closed.
+    // Previously the adapter returned valid:true when the secret was missing,
+    // allowing unauthenticated payloads through. New behaviour fails closed.
     const body = JSON.stringify({ webhookEvent: 'jira:issue_updated' });
     const r = adapter.verifyWebhookSignature(body, {});
     expect(r.valid).toBe(false);
@@ -92,8 +92,8 @@ describe('JiraAdapter', () => {
   });
 
   it('verifyWebhookSignature NEVER trusts inbound x-webhook-secret header (F-SEC-02)', () => {
-    // F-SEC-02: An attacker must not be able to supply their own secret via
-    // the request header and a matching HMAC.
+    // An attacker must not be able to supply their own secret via the request
+    // header and a matching HMAC.
     const attackerSecret = 'attacker-supplied';
     const body = JSON.stringify({ webhookEvent: 'issue_created' });
     const sig = createHmac('sha256', attackerSecret).update(body).digest('hex');

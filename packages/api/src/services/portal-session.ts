@@ -5,7 +5,7 @@ import { prisma } from '@contractor-ops/db';
 // Constants
 // ---------------------------------------------------------------------------
 
-/** Portal sessions expire after 7 days (Decision D-14). */
+/** Portal sessions expire after 7 days. */
 const SESSION_DURATION_MS = 7 * 24 * 60 * 60 * 1000;
 
 // ---------------------------------------------------------------------------

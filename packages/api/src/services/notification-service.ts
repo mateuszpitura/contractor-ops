@@ -74,7 +74,7 @@ function buildPreferencesUrl(): string {
 // Deduplication
 // ---------------------------------------------------------------------------
 //
-// P2-A · F-ASYNC-04 — dedup is now enforced at the DB layer via the
+// Dedup is now enforced at the DB layer via the
 // (organizationId, dedupKey) unique on Notification. The legacy
 // `findFirst within 60s` lookup was racy under at-least-once delivery (two
 // concurrent QStash retries both observed null and both inserted).
@@ -152,7 +152,7 @@ export async function getOrCreatePreferences(
  * Looks up user email, renders the template, and sends via Resend.
  *
  * When `idempotencyKey` is supplied (typically the OutboxEvent.id for
- * outbox-originated dispatches per NEW-ARCH-04), it is forwarded to
+ * outbox-originated dispatches), it is forwarded to
  * `sendAppEmail` which threads it as Resend's `Idempotency-Key` so a
  * cross-bucket re-fire of the same outbox row will not double-send.
  */
@@ -203,7 +203,7 @@ async function sendNotificationEmail(
     // Per-recipient idempotency: append the userId so a multi-recipient
     // outbox event still produces distinct keys for Resend (one Resend send
     // per recipient). When undefined, sendAppEmail falls back to its own
-    // payload-digest scheme (F-INT-04).
+    // payload-digest scheme.
     idempotencyKey: idempotencyKey ? `${idempotencyKey}:${userId}` : undefined,
   });
 }
@@ -230,7 +230,7 @@ const NOTIFICATION_TYPE_TO_CHANNEL_CATEGORY: Partial<Record<NotificationType, st
 
 /**
  * Optional dispatch overrides — used by outbox-originated calls to thread
- * the OutboxEvent.id as the canonical idempotency key (NEW-ARCH-04).
+ * the OutboxEvent.id as the canonical idempotency key.
  *
  * When `outboxEventId` is set:
  *   - `Notification.dedupKey` = `<outboxEventId>:<userId>` so the unique
@@ -291,7 +291,7 @@ export async function dispatch(
   // uses, with `event.metadata` supplying interpolation params).
   const resolvedEvent = await resolveEventCopy(event);
 
-  // F-ASYNC-09 / F-SCALE-05 / P2-B: bound the per-user fan-out at
+  // Bound the per-user fan-out at
   // FANOUT_CONCURRENCY (10) so a 100-recipient broadcast completes in ~10
   // RTTs instead of 100 while still protecting downstream providers
   // (Resend, Slack, Teams) from being saturated by a single dispatch.
@@ -367,7 +367,7 @@ async function dispatchToUser(
 ): Promise<void> {
   const prefs = await getOrCreatePreferences(userId, event.organizationId, event.type);
 
-  // F-ASYNC-04 / NEW-ARCH-04: dedup is enforced by the DB. We attempt the
+  // Dedup is enforced by the DB. We attempt the
   // insert; on unique-violation (P2002 on organizationId + dedupKey) we
   // treat the notification as already-delivered and skip the side channels
   // too — that's the correct semantic for retry: "another worker already
@@ -509,7 +509,7 @@ async function dispatchChannelAlerts(event: NotificationEvent): Promise<void> {
   const category = NOTIFICATION_TYPE_TO_CHANNEL_CATEGORY[event.type];
   if (!category) return;
 
-  // S3-5 · F-ASYNC-14 — channel routing is org-derived: providers are
+  // Channel routing is org-derived: providers are
   // resolved from the event's organizationId and the channel mapping comes
   // from that org's IntegrationConnection.configJson. There is NO
   // user-default channel; a user's prefs in Org A can never resolve a
@@ -520,7 +520,7 @@ async function dispatchChannelAlerts(event: NotificationEvent): Promise<void> {
     try {
       const channelId = await resolveChannelId(event.organizationId, provider.platform, category);
       if (!channelId) {
-        // F-ASYNC-14: previously this was a silent `continue` — operators
+        // Previously this was a silent `continue` — operators
         // had no signal that "approval went out as in-app + email but not
         // Slack" because the channel mapping for `approvals` was missing.
         // Log at debug so high-volume orgs without Slack mapping don't
@@ -561,7 +561,7 @@ async function dispatchChannelAlerts(event: NotificationEvent): Promise<void> {
  * org's connected messaging integration. Returns `null` if the org has not
  * mapped the category to a channel — caller logs and skips.
  *
- * S3-5 · F-ASYNC-14: every input is org-scoped:
+ * Every input is org-scoped:
  *   - `organizationId` is taken from the NotificationEvent (never from a
  *     user-default), so multi-org users cannot leak channel routing
  *     between tenants.

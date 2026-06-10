@@ -1,4 +1,4 @@
-// Phase 62 · Plan 62-03 Task 3 — Structural sanity check.
+// Structural sanity check for ZUGFeRD / Factur-X PDF/A-3 documents.
 //
 // Fails fast BEFORE a caller ships a PDF that veraPDF will reject. The
 // checks below are a narrow, deterministic, O(1)-ish subset of PDF/A-3 B

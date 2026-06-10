@@ -1,6 +1,6 @@
 /** @vitest-environment node */
 
-// Phase 76 SC#3 — Google Workspace OAuth callback scopeCapabilities derivation.
+// Google Workspace OAuth callback scopeCapabilities derivation.
 // Verifies the buildGoogleWorkspaceScopeCapabilities helper (apps/api/src/routes/oauth.ts)
 // and that the GWS adapter's getOAuthConfig forces prompt=consent + carries the additive
 // write scope traced to the typed-const.

@@ -1,8 +1,8 @@
 /**
- * Phase 57 · Plan 04 · Task 1 — gov-api-clients factory tests.
+ * gov-api-clients factory tests.
  *
  * Asserts the env-driven production-VRN guard fires at bootstrap time
- * (INFO #4 defense-in-depth):
+ * (defense-in-depth):
  *
  *   - HMRC_ENV='production' + empty HMRC_PLATFORM_VRN → throws
  *   - HMRC_ENV='sandbox'    + empty HMRC_PLATFORM_VRN → does not throw

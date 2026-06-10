@@ -10,7 +10,7 @@ import { useTRPC } from '../../../../providers/trpc-provider.js';
 type RouterInputs = inferRouterInputs<AppRouter>;
 type RouterOutputs = inferRouterOutputs<AppRouter>;
 
-/** The Plan 05 upsert input, minus the contractorId the hook injects. */
+/** The upsert input, minus the contractorId the hook injects. */
 export type FreeZoneAssignmentInput = Omit<
   RouterInputs['gulf']['freeZone']['upsertAssignment'],
   'contractorId'
@@ -18,11 +18,10 @@ export type FreeZoneAssignmentInput = Omit<
 export type FreeZoneAssignment = RouterOutputs['gulf']['freeZone']['getAssignment'];
 
 /**
- * The single tRPC boundary for the free-zone assignment surface (GULF-01).
- * Reads the contractor's one FreeZoneAssignment (D-01) and exposes a save handler
- * that upserts it through the tenant-scoped, Zod-validated `gulf.freeZone` router
- * (Plan 05). Server-side validation is authoritative — the form is presentational
- * (T-79-06-01: client validation is UX only).
+ * The single tRPC boundary for the free-zone assignment surface.
+ * Reads the contractor's one FreeZoneAssignment and exposes a save handler
+ * that upserts it through the tenant-scoped, Zod-validated `gulf.freeZone` router.
+ * Server-side validation is authoritative — client validation is UX only.
  */
 export function useFreeZoneAssignment(contractorId: string) {
   const trpc = useTRPC();

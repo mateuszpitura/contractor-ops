@@ -1,11 +1,7 @@
-// Phase 82 · Plan 01 · FOUND7-03 (SC#3) — Wave 0 RED scaffold.
-//
-// Asserts the US-region "lockstep": every region-set source must hold an
-// identical set that includes 'US'. RED is the expected Wave 0 state —
-// `SUPPORTED_REGIONS` is still `['EU','ME']`; Plan 82-02 adds 'US' (the
-// 4-place atomic change), which also force-fails tsc at `REGION_ENV_MAP` and
-// `REPLICA_ENV_MAP` (`Record<DataRegion,string>`) until each gains a US entry.
-// Do NOT add US to regions here.
+// US-region lockstep assertions: every region-set source must hold an identical
+// set that includes 'US'. Adding 'US' to SUPPORTED_REGIONS also force-fails tsc
+// at `REGION_ENV_MAP` and `REPLICA_ENV_MAP` (`Record<DataRegion,string>`) until
+// each gains a US entry.
 //
 // Scope note: the canonical 5th source `regionSchema.options` lives in
 // `@contractor-ops/feature-flags` (no dependency edge to `@contractor-ops/db`),
@@ -39,12 +35,10 @@ describe('US region lockstep (SC#3)', () => {
     expect(SUPPORTED_REGIONS).toContain('US' as (typeof SUPPORTED_REGIONS)[number]);
   });
 
-  // Phase 83 (US-INFRA-01) — the 6th lockstep place the Phase-82 test skipped.
-  // `DataRegion` exists twice: the TS tuple here (`SUPPORTED_REGIONS`, US-aware
-  // since Phase 82) and the Postgres `enum DataRegion` (only widened to US in
-  // Phase 83, Task 1). They previously drifted silently (Pitfall 1). This
-  // assertion fails CI if the generated Prisma enum and the TS tuple ever
-  // diverge again — closing the gap permanently.
+  // `DataRegion` exists in two places: the TS tuple (`SUPPORTED_REGIONS`) and
+  // the Postgres `enum DataRegion`. They can drift silently. This assertion
+  // fails CI if the generated Prisma enum and the TS tuple ever diverge —
+  // closing the gap permanently.
   it('Prisma DataRegion enum matches SUPPORTED_REGIONS (no TS/DB drift — Pitfall 1)', () => {
     expect(new Set(Object.values(PrismaDataRegion))).toEqual(new Set(SUPPORTED_REGIONS));
   });
@@ -59,7 +53,7 @@ describe('getRegionalClient / getReplicaClient accept US (SC#3)', () => {
     resetReplicaStateForTests();
     // US writer/replica env intentionally UNSET — US must be a *recognized*
     // region (no "Unsupported data region" throw); the only permissible throw
-    // is the lazy missing-env one (D-06).
+    // is the lazy missing-env one.
     process.env = {
       ...originalEnv,
       DATABASE_URL_EU: 'postgresql://eu-host/neondb',

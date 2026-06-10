@@ -1,6 +1,4 @@
-// Phase 70-01 · FOUND6-01 — failing test scaffold for the multi-tenant schema guard.
-// Plan 70-02 implements `runSchemaGuard`. Until then this suite fails with a
-// resolve error, proving Wave 1 has implementation work to do.
+// Test scaffold for the multi-tenant schema guard (`runSchemaGuard`).
 
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';

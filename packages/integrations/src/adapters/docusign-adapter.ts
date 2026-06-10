@@ -41,10 +41,10 @@ interface DocuSignApiClient {
   setBasePath(basePath: string): void;
   addDefaultHeader(name: string, value: string): void;
   /**
-   * F-INT-06: SDK exposes a `timeout` field used by its internal HTTP layer.
-   * Without setting this, every envelope/recipient/document call uses an
-   * unbounded vendor timeout — `getSignedDocument` can stream a large PDF
-   * for >10min and outlive a QStash callback.
+   * SDK exposes a `timeout` field used by its internal HTTP layer. Without
+   * setting this, every envelope/recipient/document call uses an unbounded
+   * vendor timeout — `getSignedDocument` can stream a large PDF for >10min
+   * and outlive a QStash callback.
    */
   timeout?: number;
 }
@@ -371,11 +371,11 @@ export class DocuSignAdapter extends BaseAdapter implements ESignAdapter {
 
     const envelope = docusign.EnvelopeDefinition.constructFromObject(envelopeDefinition);
 
-    // F-INT-04 / DRIFT-01: server-derived X-DocuSign-Idempotency-Key —
-    // DocuSign documents a 24h dedup window. The key composition goes
-    // through the canonical `deriveIdempotencyKey` helper so the same
-    // logical envelope creation, retried via any code path (direct API
-    // call, QStash callback, outbox replay), collapses to the same hash.
+    // Server-derived X-DocuSign-Idempotency-Key — DocuSign documents a 24h
+    // dedup window. The key composition goes through the canonical
+    // `deriveIdempotencyKey` helper so the same logical envelope creation,
+    // retried via any code path (direct API call, QStash callback, outbox
+    // replay), collapses to the same hash.
     //
     // `request.organizationId` is the tenant scope; when callers haven't
     // plumbed it (legacy / test callers) we fall back to the connectionId
@@ -414,12 +414,12 @@ export class DocuSignAdapter extends BaseAdapter implements ESignAdapter {
   }
 
   /**
-   * F-INT-16 — Default TTL for DocuSign recipient-view URLs. DocuSign's
-   * account-default is 5 minutes (300s) for the embedded recipient view,
-   * with the URL becoming invalid after first redirect or after the TTL
-   * elapses (whichever is first). Account admins can shorten this via the
-   * "Recipient URL TTL" account setting; we surface a conservative default
-   * so the UI can schedule a refresh before expiry.
+   * Default TTL for DocuSign recipient-view URLs. DocuSign's account-default
+   * is 5 minutes (300s) for the embedded recipient view, with the URL becoming
+   * invalid after first redirect or after the TTL elapses (whichever is first).
+   * Account admins can shorten this via the "Recipient URL TTL" account setting;
+   * we surface a conservative default so the UI can schedule a refresh before
+   * expiry.
    *
    * Operators with non-default account TTL configuration may override via
    * the `DOCUSIGN_EMBEDDED_URL_TTL_SECONDS` env var.
@@ -464,11 +464,11 @@ export class DocuSignAdapter extends BaseAdapter implements ESignAdapter {
       },
     );
 
-    // F-INT-16 — Surface a conservative TTL so callers can schedule a
-    // re-issue before the URL goes stale (DocuSign's account default is
-    // 5 minutes; the URL is single-use either way). Callers should treat
-    // the returned URL as click-time-only and call `reissueEmbeddedSigningUrl`
-    // when re-rendering signing pages after a navigation.
+    // Surface a conservative TTL so callers can schedule a re-issue before
+    // the URL goes stale (DocuSign's account default is 5 minutes; the URL
+    // is single-use either way). Callers should treat the returned URL as
+    // click-time-only and call `reissueEmbeddedSigningUrl` when re-rendering
+    // signing pages after a navigation.
     const ttlSeconds = this.getEmbeddedUrlTtlSeconds();
     return {
       url: result.url,
@@ -478,7 +478,7 @@ export class DocuSignAdapter extends BaseAdapter implements ESignAdapter {
   }
 
   /**
-   * F-INT-16 — Re-issue an embedded signing URL for an envelope's recipient.
+   * Re-issue an embedded signing URL for an envelope's recipient.
    * Convenience wrapper around `getEmbeddedSigningUrl` that callers should
    * invoke whenever they need a fresh URL (e.g. user re-opens a signing
    * page, the previous URL is near expiry, or DocuSign returned 410 on a
@@ -733,9 +733,9 @@ export class DocuSignAdapter extends BaseAdapter implements ESignAdapter {
     const apiClient: DocuSignApiClient = new docusign.ApiClient();
     apiClient.setBasePath(configJson.basePath);
     apiClient.addDefaultHeader('Authorization', `Bearer ${credentials.accessToken}`);
-    // F-INT-06: bound the DocuSign SDK's internal HTTP timeout. 60s is
-    // tuned for `getSignedDocument` (large PDF streaming); other ops are
-    // far below this so the bound is safe.
+    // Bound the DocuSign SDK's internal HTTP timeout. 60s is tuned for
+    // `getSignedDocument` (large PDF streaming); other ops are far below
+    // this so the bound is safe.
     apiClient.timeout = 60_000;
 
     return { apiClient, accountId: configJson.accountId };

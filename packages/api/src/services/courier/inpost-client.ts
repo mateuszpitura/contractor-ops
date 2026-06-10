@@ -93,12 +93,11 @@ export class InPostClient implements CourierClient {
       external_customer_id: inpostParams.organizationId,
     };
 
-    // F-INT-04 / DRIFT-01: server-derived Idempotency-Key prevents duplicate
-    // physical labels when QStash or our own retry logic re-fires after a 5xx
-    // that actually succeeded upstream. Composed via the canonical
-    // `deriveIdempotencyKey` helper from `@contractor-ops/integrations` so the
-    // wire format matches every other adapter. ShipX accepts any string
-    // ≤255 chars; the helper returns a 64-char lowercase hex digest.
+    // Server-derived Idempotency-Key prevents duplicate physical labels when
+    // QStash or our own retry logic re-fires after a 5xx that actually succeeded
+    // upstream. Composed via the canonical `deriveIdempotencyKey` helper so the
+    // wire format matches every other adapter. ShipX accepts any string ≤255
+    // chars; the helper returns a 64-char lowercase hex digest.
     const idempotencyKey = deriveIdempotencyKey({
       orgId: inpostParams.organizationId,
       operation: 'inpost.shipment.create',

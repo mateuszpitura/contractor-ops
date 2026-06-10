@@ -1,11 +1,11 @@
-// Phase 61 · Plan 61-02 Task 1 — XRechnung 3.0.2 CII generator.
+// XRechnung 3.0.2 CII generator.
 //
 // Produces an EN-16931-shaped Cross Industry Invoice (UN/CEFACT D16B) from the
 // canonical `EInvoice` envelope. Uses `fast-xml-parser` XMLBuilder (never
-// string templates — RESEARCH anti-pattern Pitfall explicitly forbids concat
-// XML because entity-escape bugs surface as unhelpful layer-1 XSD failures).
+// string templates — concat XML produces entity-escape bugs that surface as
+// unhelpful layer-1 XSD failures).
 //
-// Dual-profile customization pair (D-02):
+// Dual-profile customization pair:
 //   * CustomizationID = XRechnung CIUS 3.0 urn
 //   * ProfileID       = Peppol BIS 3.0 billing urn
 // The same XML validates against KoSIT + routes through Peppol to UK B2G.
@@ -14,7 +14,7 @@
 // relative source-path import. The validators package depends on einvoice
 // (zatca re-exports), so a reverse `@contractor-ops/validators` dep would
 // create a cycle; importing the leaf `legal/de.ts` file directly keeps the
-// constant-by-name invariant (threat T-61-02-02) without the cycle.
+// constant-by-name invariant without the cycle.
 //
 // BigInt safety: amounts travel as `number` minor units on the `EInvoice`
 // envelope (types/invoice.ts). For the values we persist in CII (2-decimal
@@ -294,7 +294,7 @@ function buildCiiParty(party: EInvoice['supplier']): Record<string, unknown> {
  * The structured string goes in the TEXT content of `ram:Description` via
  * fast-xml-parser's `#text` property — NOT in an XML attribute. This ensures
  * `#` and decimal numbers appear literally without XML escaping issues
- * (per Pitfall 6 from RESEARCH).
+ * Using `#text` avoids XML attribute escaping issues with `#` and decimal numbers.
  *
  * Due date is set to `issueDate + netPeriodDays` when Skonto is present.
  */

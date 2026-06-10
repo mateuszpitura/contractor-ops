@@ -1,4 +1,4 @@
-// Phase 62 · Plan 62-02 Task 5 — ZUGFeRD PDF inbound parser.
+// ZUGFeRD PDF inbound parser.
 //
 // Reads a ZUGFeRD / Factur-X PDF, finds the embedded `factur-x.xml`
 // attachment in the catalog `/Names /EmbeddedFiles` tree (or, as a fallback,
@@ -8,7 +8,7 @@
 //
 // The parser DOES NOT validate the XML against Schematron — that is the
 // validator's responsibility (via `validator.ts` which re-exports the
-// Phase-61 KoSIT three-layer pipeline). We only do:
+// KoSIT three-layer pipeline). We only do:
 //   1. PDF load with safe options (ignoreEncryption, throwOnInvalidObject=false).
 //   2. EmbeddedFiles tree traversal.
 //   3. UF-stream byte extraction + UTF-8 decode.

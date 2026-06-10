@@ -1,5 +1,5 @@
-// Phase 75 D-11 — Structural defence preventing actual secret values from
-// being pasted into CredentialReference rows. Used by:
+// Structural defence preventing actual secret values from being pasted into
+// CredentialReference rows. Used by:
 //   - Client-side instant feedback (looksLikeSecret called on input change)
 //   - Server-side Zod refinement (looksLikeSecretRefinement on vaultUrl/label/notes)
 //
@@ -40,7 +40,7 @@ function pair(body: string, flags = ''): { anchoredRegex: RegExp; substringRegex
 }
 
 /**
- * D-11 patterns — order matters. Most-specific first.
+ * Patterns — order matters. Most-specific first.
  */
 export const SECRET_PATTERNS: readonly SecretPattern[] = [
   // AWS access key — 20 chars, AKIA prefix
@@ -180,7 +180,7 @@ export function looksLikeSecretInFreeText(input: string): LooksLikeSecretResult 
 
 /**
  * Zod refinement for SHORT fields (vaultUrl) that should never BE a raw
- * secret value — whole-value match. Used by Plan 75-07's tRPC schemas.
+ * secret value — whole-value match. Used by the credential-reference tRPC schemas.
  *
  * Usage:
  *   z.string().superRefine(looksLikeSecretRefinement)

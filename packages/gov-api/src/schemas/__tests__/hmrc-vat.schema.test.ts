@@ -1,4 +1,4 @@
-// Phase 57 · Plan 01 — HMRC VAT Zod schema tests (PAY-03 VALIDATION row 15).
+// HMRC VAT Zod schema tests.
 
 import { describe, expect, it } from 'vitest';
 

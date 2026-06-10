@@ -230,7 +230,7 @@ describe('withSoftDelete', () => {
     expect(innerQuery).toHaveBeenCalledWith({ where: { id: 'v1' } });
   });
 
-  // F-DB-27: writes against soft-deleted rows must be no-ops.
+  // Writes against soft-deleted rows must be no-ops.
   it('adds deletedAt: null to update for soft-delete models', async () => {
     const { client, innerQuery } = createMockClient();
     await client.invoice.update({ where: { id: 'i1' }, data: { status: 'PAID' } });
@@ -272,9 +272,9 @@ describe('withSoftDelete', () => {
     expect(innerQuery).toHaveBeenCalledWith({ where: { id: 'v1' }, data: { value: 'x' } });
   });
 
-  // US-INFRA-03 — a model under an active statutory-retention rule can never be
-  // hard-deleted at this chokepoint: the explicit retained-window guard forces
-  // the delete→soft-delete conversion even for the never-reaches-query path.
+  // A model under an active statutory-retention rule can never be hard-deleted
+  // at this chokepoint: the explicit retained-window guard forces the
+  // delete→soft-delete conversion even for the never-reaches-query path.
   // The fixture maps `Invoice` to a retention type (production map stays empty).
   describe('retention guard (US-INFRA-03)', () => {
     const fixtureMap = { Invoice: '1099-NEC' as const };

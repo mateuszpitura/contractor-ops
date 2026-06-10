@@ -1,11 +1,11 @@
 // ---------------------------------------------------------------------------
-// Phase 60 · CLASS-08 — ReassessmentTrigger.triggerReasons JSONB schema.
+// ReassessmentTrigger.triggerReasons JSONB schema.
 // ---------------------------------------------------------------------------
 //
 // Zod contract for the triggerReasons JSONB column on ReassessmentTrigger.
-// MUST be used on both read and write paths (Pitfall 12 — JSONB is
-// untrusted input). Scan service reads existing reasons, appends a new
-// entry, and re-parses before persisting.
+// MUST be used on both read and write paths — JSONB is untrusted input.
+// Scan service reads existing reasons, appends a new entry, and re-parses
+// before persisting.
 
 import { z } from 'zod';
 

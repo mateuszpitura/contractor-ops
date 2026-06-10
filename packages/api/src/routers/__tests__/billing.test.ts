@@ -641,7 +641,7 @@ describe('billing.createCheckoutSession — org not found', () => {
 });
 
 // ===========================================================================
-// billing.grantAddOn — FOUND7-01 (SC#1) owner-gated audit-logged cache-invalidating grant
+// billing.grantAddOn — owner-gated, audit-logged, cache-invalidating grant
 // ===========================================================================
 
 describe('billing.grantAddOn', () => {
@@ -717,7 +717,7 @@ describe('billing.grantAddOn', () => {
 
     // requireAddOn reads the 15-min-cached getSubscription; the grant MUST
     // invalidate CacheKeys.subscription(orgId) or the just-granted add-on is
-    // denied for up to the cache TTL (Pitfall 3).
+    // denied for up to the cache TTL.
     expect(mockInvalidate).toHaveBeenCalledWith(`${ORG_ID}:billing:sub`);
   });
 

@@ -75,13 +75,13 @@ export async function verifyMagicLinkToken(rawToken: string): Promise<{ email: s
 
 /**
  * Find all active contractor records matching an email across ALL organizations.
- * Used to determine which orgs the contractor has access to (D-15).
+ * Used to determine which orgs the contractor has access to.
  *
  * The `prisma` import from @contractor-ops/db is the raw (unscoped) client,
  * so this query correctly bypasses tenant scoping for cross-org lookups.
  *
  * Returns empty array if no match — callers should always show the same
- * "check your email" response to prevent email enumeration (D-16).
+ * "check your email" response to prevent email enumeration.
  */
 export async function findContractorsByEmail(email: string) {
   return prisma.contractor.findMany({
@@ -108,7 +108,7 @@ export async function findContractorsByEmail(email: string) {
  * `RESEND_API_KEY` and `EMAIL_FROM` are required by the app server env schema — this runs only in a validated process.
  *
  * The caller should check if contractors exist for the email but ALWAYS show
- * the same "check your email" response to prevent enumeration (Pitfall 2 / D-16).
+ * the same "check your email" response to prevent enumeration.
  */
 export async function sendPortalMagicLink(opts: {
   email: string;

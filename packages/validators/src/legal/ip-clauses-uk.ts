@@ -1,7 +1,7 @@
-// Phase 75 D-14 — UK IP-clause phrase library.
+// UK IP-clause phrase library.
 //
-// Per-jurisdiction phrase library used by the Phase 75 contract health check
-// (run-health-check.ts) for regex grounding (D-13 — LLM-first verdict + regex
+// Per-jurisdiction phrase library used by the contract health check
+// (run-health-check.ts) for regex grounding (LLM-first verdict + regex
 // sanity check). Each phrase entry's legal sign-off status is tracked separately
 // in `signoff-registry.json` under `legal-signoff.ip_clauses.<phraseId>`.
 //

@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------
-// Scheinselbständigkeit (DRV) Scoring — D-14 / D-15
+// Scheinselbständigkeit (DRV) Scoring
 // ---------------------------------------------------------------------------
 //
 // Pure function. For each category:
@@ -15,10 +15,9 @@
 //
 // Boundary tests (scoring.test.ts): 29.9→green, 30→amber, 60→amber, 60.1→red.
 //
-// DRV-ECO-01 billing-ratio is a 0..100 integer percentage. D-15 bands:
-// (§ 2 Nr 9 SGB VI): Zod enforces integer input (z.number().int()), so
-// '< 84' ≡ '<= 83' and matches D-15 wording "> 83% → 3".
-// Boundary tests: 50 → 1, 70 → 2, 83 → 2, 84 → 3.
+// DRV-ECO-01 billing-ratio is a 0..100 integer percentage (§ 2 Nr 9 SGB VI).
+// Zod enforces integer input (z.number().int()), so '< 84' ≡ '<= 83' and
+// matches the wording "> 83% → 3". Boundary tests: 50→1, 70→2, 83→2, 84→3.
 
 import type { AnswerMap } from '../../types/assessment.js';
 import type {
@@ -37,8 +36,8 @@ const CATEGORIES_ORDERED: readonly ScheinCategory[] = [
 ];
 
 /**
- * D-15 bands (§2 Nr 9 SGB VI): Zod enforces integer input (z.number().int()), so
- * '< 84' ≡ '<= 83' and matches D-15 wording "> 83% → 3". Boundary tests: 50→1, 70→2, 83→2, 84→3.
+ * Billing-ratio bands per §2 Nr 9 SGB VI: Zod enforces integer input
+ * (z.number().int()), so '< 84' ≡ '<= 83'. Boundary tests: 50→1, 70→2, 83→2, 84→3.
  */
 export function billingRatioToScore(ratio: number): 0 | 1 | 2 | 3 {
   if (ratio < 50) return 0;
@@ -49,8 +48,8 @@ export function billingRatioToScore(ratio: number): 0 | 1 | 2 | 3 {
 
 /**
  * Error thrown when a required DRV criterion is absent from the answer map.
- * A missing answer is distinct from "Nicht anwendbar" (Pitfall 5): missing blocks
- * submit; Nicht anwendbar is a valid answered-zero.
+ * A missing answer is distinct from "Nicht anwendbar": missing blocks submit;
+ * Nicht anwendbar is a valid answered-zero.
  */
 export class MissingAnswerError extends Error {
   readonly questionId: string;

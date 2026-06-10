@@ -6,15 +6,14 @@ import { PII_MASK_PATHS } from './pii-mask.js';
  * Returns a child logger whose redact configuration excludes `*.body` (and
  * top-level `body`) for the given procedure prefixes.
  *
- * Phase 70 D-05 D-08 — opt-in body logging.
+ * Opt-in body logging.
  *
  * Entries support two shapes:
  *   - 'router.procedure'              — full body emitted in plaintext
  *   - 'router.procedure:fieldA,fieldB' — only body.fieldA / body.fieldB exempt
  *                                        (not yet implemented at the redact
- *                                        layer; treated as full opt-in for
- *                                        Phase 70 — per-field serializers are
- *                                        deferred to a future phase)
+ *                                        layer; treated as full opt-in for now
+ *                                        — per-field serializers are deferred)
  *
  * The parent logger is expected to have `procedure` in its bindings (see
  * `createTrpcLogger`). When the parent's procedure binding matches a prefix,

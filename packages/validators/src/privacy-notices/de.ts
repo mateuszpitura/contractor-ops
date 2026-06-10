@@ -1,4 +1,4 @@
-// Phase 56 · Plan 07 — German Datenschutzerklärung content (FOUND-06).
+// German Datenschutzerklärung content.
 //
 // Legally vetted (BfDI-aligned) German-language privacy notice. MUST import
 // from `../legal/de.js` so every value of `LOCKED_DE_PHRASES` appears
@@ -6,8 +6,8 @@
 // (`src/__tests__/locked-phrases-guard.test.ts`) stringifies the export and
 // asserts every locked phrase is present.
 //
-// Invariants (enforced by tests + `/gsd:verify`):
-//   1. All 9 LOCKED_DE_PHRASES values appear verbatim (output-level D-06).
+// Invariants (enforced by tests):
+//   1. All LOCKED_DE_PHRASES values appear verbatim.
 //   2. Register stays formal ("Sie") — no Du / Dir / Dein…
 //   3. Citations preserve Unicode: §, ä, ß, DSGVO round-trip without mojibake.
 

@@ -216,7 +216,7 @@ export function OnboardingChecklist() {
   const completeStep = useCallback(
     (stepId: string, skipValidation = false) => {
       if (completedSteps.includes(stepId)) return;
-      // Server-side consent validation for privacy-consent step (D-03 belt-and-suspenders)
+      // Server-side consent validation for privacy-consent step (belt-and-suspenders)
       if (stepId === 'privacy-consent' && !skipValidation && !hasConsents) {
         return;
       }

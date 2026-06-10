@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------
-// Phase 57 · Plan 02 — ViesClient
+// ViesClient
 // ---------------------------------------------------------------------------
 //
 // GovApiClient subclass for the EU VIES REST API (unauthenticated, TLS-only):
@@ -9,14 +9,13 @@
 //   - Qualified (with requester params) → returns requestIdentifier
 //     (surfaced as `confirmationRef`)
 //   - userError enum (MS_UNAVAILABLE, SERVICE_UNAVAILABLE, TIMEOUT, …) →
-//     `status: 'unavailable'` + `userError` for the orchestrator's D-08
+//     `status: 'unavailable'` + `userError` for the orchestrator's
 //     stale-fallback branch
-//   - Zod `.safeParse()` at response boundary (VIES response drift mitigation,
-//     threat T-57-02-02). `.refine()` on the schema guarantees either
-//     `isValid` or `userError` is set.
+//   - Zod `.safeParse()` at response boundary (VIES response drift mitigation).
+//     `.refine()` on the schema guarantees either `isValid` or `userError` is set.
 //   - JSON parse is guarded — non-JSON CDN error pages convert to a typed
 //     `ViesApiError` instead of leaking a `SyntaxError`.
-//   - HTTP 500 → soft-fail as `unavailable` (D-08)
+//   - HTTP 500 → soft-fail as `unavailable`
 //   - Local DE format short-circuit via inlined `isValidUstIdNr`
 //   - Per-org rate limiter (10 req/s) — internal denials surface as
 //     `ViesApiError(503)` with code `INTERNAL_RATE_LIMIT_EXCEEDED` so we
@@ -40,10 +39,10 @@ const ERROR_BODY_SAMPLE_LEN = 200;
 /** Internal-rate-limit error code so callers can distinguish self-throttle. */
 export const INTERNAL_RATE_LIMIT_CODE = 'INTERNAL_RATE_LIMIT_EXCEEDED';
 
-// Minimal DE USt-IdNr check — mirrors Phase 56 `isValidUstIdNr` (ISO 7064
-// MOD 11,10 Pure System). Duplicated inline to avoid a workspace dependency
-// cycle (gov-api ← einvoice ← validators ← einvoice). The orchestrator
-// (Plan 57-03) invokes the full validator first; this is defense-in-depth.
+// Minimal DE USt-IdNr check — mirrors `isValidUstIdNr` (ISO 7064 MOD 11,10
+// Pure System) in packages/validators. Duplicated inline to avoid a workspace
+// dependency cycle (gov-api ← einvoice ← validators ← einvoice). The
+// orchestrator invokes the full validator first; this is defense-in-depth.
 //
 // A regression test in `__tests__/format-parity.test.ts` re-runs the canonical
 // validator's table-driven vectors against this inline copy to catch drift.
@@ -221,7 +220,7 @@ export class ViesClient extends GovApiClient {
       { organizationId: opts.organizationId },
     );
 
-    // HTTP 5xx → soft-fail to 'unavailable' for the orchestrator's stale-fallback (D-08).
+    // HTTP 5xx → soft-fail to 'unavailable' for the orchestrator's stale-fallback.
     if (response.status >= 500) {
       return {
         status: 'unavailable',

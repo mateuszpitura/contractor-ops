@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------
-// Phase 76 D-04 — retryDeprovisioningStep mutation tests.
+// retryDeprovisioningStep mutation tests.
 // ---------------------------------------------------------------------------
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';

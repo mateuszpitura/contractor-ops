@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------
-// IR35 Rule Set (UK Off-Payroll Working) — D-06 / D-08
+// IR35 Rule Set (UK Off-Payroll Working)
 // ---------------------------------------------------------------------------
 //
 // 25 questions across the 5 HMRC CEST areas, each carrying its `caseLawCitation`.
@@ -8,13 +8,12 @@
 // UK tax adviser / Steuerberater review can flag them before go-live.
 // All question IDs are stable — never renumber; append-only.
 //
-// RESEARCH references: §Regulatory Domain → IR35 five areas + case law table
-// (Ready Mixed Concrete, Hall v Lorimer, Atholl House, PGMOL).
+// Key case law: Ready Mixed Concrete, Hall v Lorimer, Atholl House, PGMOL.
 
 import type { Ir35Area } from '../../types/outcome.js';
 import type { RuleSet, RuleSetQuestion } from '../../types/rule-set.js';
 
-/** Rule-set version persisted in the questions snapshot on submit (D-08). */
+/** Rule-set version persisted in the questions snapshot on submit. */
 export const RULE_SET_VERSION = 'IR35-2024-CEST' as const;
 
 /** Case-law citations reused across area question blocks. */

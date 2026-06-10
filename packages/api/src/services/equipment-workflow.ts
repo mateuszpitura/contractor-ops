@@ -142,7 +142,7 @@ export async function handleEquipmentTaskStart(
           'set equipment items to RETURN_REQUESTED for offboarding task',
         );
 
-        // D-10: Auto-create InPost return shipment if org has courier config
+        // Auto-create InPost return shipment if org has courier config
         await autoCreateInPostReturnShipment(tx as unknown as PrismaClient, {
           organizationId,
           contractorId,
@@ -173,7 +173,7 @@ export async function handleEquipmentTaskStart(
  * - OUTBOUND shipments must reach DELIVERED status
  * - RETURN shipments must reach RETURNED status
  * - ALL shipments linked to the same workflow task must reach their respective
- *   target status before the task auto-completes (per D-16)
+ *   target status before the task auto-completes
  * - Auto-completion is idempotent: already-completed tasks are skipped silently
  * - After task completion, workflow run progress is recomputed
  *
@@ -272,7 +272,7 @@ export async function checkShipmentTaskCompletion(
 }
 
 // ---------------------------------------------------------------------------
-// InPost auto-shipment for offboarding (D-10)
+// InPost auto-shipment for offboarding
 // ---------------------------------------------------------------------------
 
 /**
@@ -414,7 +414,7 @@ async function autoCreateInPostReturnShipment(
       });
     }
 
-    // Create ReturnRequest with SHIPMENT_CREATED status (skipping PENDING_APPROVAL per D-10)
+    // Create ReturnRequest with SHIPMENT_CREATED status (skipping PENDING_APPROVAL for auto-shipments)
     await tx.returnRequest.create({
       data: {
         organizationId,
@@ -433,9 +433,9 @@ async function autoCreateInPostReturnShipment(
       'auto-created InPost return shipment for offboarding task',
     );
 
-    // Fire-and-forget: notify contractor with return label info (D-13)
-    // Note: dispatch is not available in this service context, so we log it
-    // The notification will be sent via the webhook handler when status updates arrive
+    // Fire-and-forget: notify contractor with return label info.
+    // dispatch is not available in this service context — the notification
+    // will be sent via the webhook handler when status updates arrive.
   } catch (error) {
     // Do NOT fail the task start — equipment stays in RETURN_REQUESTED
     log.error(

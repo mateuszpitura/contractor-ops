@@ -57,12 +57,12 @@ export async function renderClaimPdf(claimId: string): Promise<RenderClaimPdfRes
     return { claimId, pdfKey: claim.pdfKey, skipped: true };
   }
 
-  // F-ASYNC-15: atomic compare-and-swap on the row state. The reaper
-  // re-enqueues stuck PENDING_RENDER rows after 10min; if the original
-  // QStash delivery worker is still running, two deliveries can race and
-  // both upload to R2 (orphan object best case, wrong-pdf-served worst
-  // case). Flip PENDING_RENDER → RENDERING before doing any I/O; whoever
-  // wins the CAS owns the render. The other delivery short-circuits.
+  // Atomic compare-and-swap on the row state. The reaper re-enqueues stuck
+  // PENDING_RENDER rows after 10min; if the original QStash delivery worker
+  // is still running, two deliveries can race and both upload to R2 (orphan
+  // object best case, wrong-pdf-served worst case). Flip PENDING_RENDER →
+  // RENDERING before doing any I/O; whoever wins the CAS owns the render.
+  // The other delivery short-circuits.
   //
   // The RENDERING enum literal is added to InvoiceInterestClaimPdfStatus
   // in the same migration as this code (see invoice.prisma); the generated

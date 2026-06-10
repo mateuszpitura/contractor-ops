@@ -58,7 +58,7 @@ type AccessType = (typeof ACCESS_TYPES)[number];
 
 /**
  * Add-credential modal. Client-side instant feedback via `looksLikeSecret`
- * mirrors the server-side `looksLikeSecretRefinement` rejection (Plan 75-07) —
+ * mirrors the server-side `looksLikeSecretRefinement` rejection —
  * defence-in-depth; the server is the truth.
  */
 export function CredentialAddDialog({

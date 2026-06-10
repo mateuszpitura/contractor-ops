@@ -31,7 +31,7 @@ export interface SignatureVerificationResult {
 /**
  * Capability hook for XML digital signing (XML DSig / XAdES).
  * Profiles implement this if their country requires signed invoices.
- * Per D-07: abstracted as profile-level capability, not hardcoded to any country.
+ * Abstracted as a profile-level capability, not hardcoded to any country.
  */
 export interface Signable {
   sign(xml: string, certificate: CertificateInfo): Promise<string>;
@@ -41,7 +41,7 @@ export interface Signable {
 /**
  * Capability hook for QR code generation on invoices.
  * Profiles implement this if their country requires QR codes.
- * Per D-07: abstracted as profile-level capability, not hardcoded to any country.
+ * Abstracted as a profile-level capability, not hardcoded to any country.
  */
 export interface QRCodeable {
   generateQR(invoice: EInvoice): Promise<Buffer>;
@@ -53,9 +53,8 @@ export interface QRCodeable {
  *
  * Each country (KSeF, ZATCA, Peppol, etc.) implements this interface.
  * The engine orchestrates profiles; profiles provide country-specific logic.
- *
- * Per D-01: new profiles can be added by implementing this interface
- * without modifying the engine core.
+ * New profiles can be added by implementing this interface without modifying
+ * the engine core.
  */
 export interface EInvoiceProfile {
   /** Unique profile identifier (e.g., "ksef", "zatca", "peppol-ae") */
@@ -76,10 +75,10 @@ export interface EInvoiceProfile {
    * direct callers (`new XRechnungDEProfile().generate(invoice, { ... })`)
    * get full type-safety from the narrowed signature.
    *
-   * Per Phase 68 D-07 — widened from `(invoice) => Promise<string>` so
-   * Plan 02 (XRechnung Skonto opts) and Plan 04 (ZUGFeRD Skonto opts) can
-   * extend their own opts types without forcing every other profile
-   * (KSeF / ZATCA / Peppol-AE) to acknowledge a Skonto-shaped param.
+   * Widened from `(invoice) => Promise<string>` so each profile can extend
+   * its own opts type (e.g. Skonto terms for XRechnung / ZUGFeRD) without
+   * forcing every other profile (KSeF / ZATCA / Peppol-AE) to acknowledge
+   * a profile-specific param.
    */
   generate(invoice: EInvoice, opts?: unknown): Promise<string>;
   /** Parse country-specific XML into canonical EInvoice */

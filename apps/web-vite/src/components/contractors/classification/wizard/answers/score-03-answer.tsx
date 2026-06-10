@@ -1,12 +1,12 @@
 // ---------------------------------------------------------------------------
 // Score03Answer — DRV 0/1/2/3 scoring scale with explicit Nicht-anwendbar.
 // ---------------------------------------------------------------------------
-// See UI-SPEC §Interaction 3 + §Copywriting Contract. The rawScore === 0
-// option renders the LOCKED DE label `CLASSIFICATION_SCHEIN_NOT_APPLICABLE`
-// verbatim (imported from @contractor-ops/validators); non-DE locales use
-// `Classification.stepNotApplicable`. Pitfall 5 — emits the discriminated
-// payload { rawScore: 0, isNotApplicable: true } for N/A so the scoring
-// engine can distinguish "not applicable" from "missing".
+// The rawScore === 0 option renders the LOCKED DE label
+// `CLASSIFICATION_SCHEIN_NOT_APPLICABLE` verbatim (imported from
+// @contractor-ops/validators); non-DE locales use
+// `Classification.stepNotApplicable`. Emits the discriminated payload
+// { rawScore: 0, isNotApplicable: true } for N/A so the scoring engine can
+// distinguish "not applicable" from "missing".
 
 import { Label } from '@contractor-ops/ui/components/shadcn/label';
 import { RadioGroup, RadioGroupItem } from '@contractor-ops/ui/components/shadcn/radio-group';

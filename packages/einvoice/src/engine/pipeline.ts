@@ -47,8 +47,8 @@ export interface PipelineOptions {
  * - If profile.qrCode is undefined, QR generation is skipped
  * - If validation fails, signing and QR are NOT attempted
  *
- * Per D-07: the engine orchestrates the pipeline; profiles provide
- * country-specific implementations.
+ * The engine orchestrates the pipeline; profiles provide country-specific
+ * implementations.
  */
 export async function runPipeline(
   profile: EInvoiceProfile,

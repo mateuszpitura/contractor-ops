@@ -1,8 +1,6 @@
-// Phase 56 · Plan 03 — German tax-ID validators (FOUND-02, D-03).
-// See .planning/phases/56-country-foundations-german-i18n/56-03-PLAN.md.
-//
+// German tax-ID validators.
 // Implementation in packages/validators/src/de-validators.ts.
-// Steuernummer/Handelsregister data (Plan 04) imported through that module.
+// Steuernummer/Handelsregister data imported through that module.
 
 import { describe, expect, it } from 'vitest';
 

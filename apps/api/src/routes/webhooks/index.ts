@@ -14,7 +14,7 @@
  *   2. Idempotency check against the provider-specific event table.
  *   3. Process the event inside the same Serializable tx that wrote
  *      the idempotency row.
- *   4. Dispatch notifications AFTER tx commit (F-ASYNC-13).
+ *   4. Dispatch notifications AFTER tx commit.
  *   5. Forward 5xx errors to Sentry; metrics.increment for processed /
  *      failed / late_delivery counters.
  *
@@ -84,9 +84,9 @@ const webhookPluginImpl: FastifyPluginAsync = async (app: FastifyInstance) => {
   registerExportsProcessRoute(app);
   registerGoogleWorkspaceSyncRoute(app);
   registerLateInterestRenderRoute(app);
-  // Phase 75 D-01 — contract health-check QStash callback.
+  // Contract health-check QStash callback.
   registerContractHealthRoute(app);
-  // Phase 76 D-03 — IdP deprovisioning saga step runner.
+  // IdP deprovisioning saga step runner.
   registerIdpDeprovisioningStepRunnerRoute(app);
 };
 

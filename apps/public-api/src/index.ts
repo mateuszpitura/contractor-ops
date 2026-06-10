@@ -1,6 +1,6 @@
-// F-OBS-01: Sentry MUST be initialized before any other module so the
-// SDK can wire its OpenTelemetry instrumentation hooks. Keep this as the
-// first executable statement of the entrypoint.
+// Sentry MUST be initialized before any other module so the SDK can wire
+// its OpenTelemetry instrumentation hooks. Keep this as the first
+// executable statement of the entrypoint.
 import { initSentry, Sentry } from './lib/sentry.js';
 
 initSentry();
@@ -14,7 +14,7 @@ import app from './app.js';
 const log = createLogger({ service: 'public-api' });
 
 // ---------------------------------------------------------------------------
-// F-OBS-04: process-level error handlers
+// Process-level error handlers
 // ---------------------------------------------------------------------------
 //
 // Without these, an unhandled rejection inside an async handler kills the
@@ -72,9 +72,9 @@ if (process.env.NODE_ENV === 'production') {
   }
 }
 
-// FOUND7-02: fail-closed flag-signoff gate. Exits(1) if any gated flag is
-// missing its signoff-registry entry (FLAG_SIGNOFF_BYPASS=local downgrades to a
-// warn for local dev). Run after required-env validation, before serving.
+// Fail-closed flag-signoff gate. Exits(1) if any gated flag is missing its
+// signoff-registry entry (FLAG_SIGNOFF_BYPASS=local downgrades to a warn for
+// local dev). Run after required-env validation, before serving.
 assertFlagSignoffsOrExit();
 
 const PORT = Number(process.env.PUBLIC_API_PORT ?? 4100);

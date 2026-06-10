@@ -1,12 +1,10 @@
 /**
  * Privacy notice service — jurisdiction-specific privacy notices.
  *
- * Per D-01: Privacy notices are jurisdiction-specific (UAE Federal Decree-Law
- * No. 45/2021, Saudi Royal Decree M/19 PDPL).
- *
- * Phase 56 Plan 07 extends the service with UK GDPR (GB), German GDPR/BDSG (DE)
- * and a generic EU GDPR fallback. Each org gets a versioned notice per
- * jurisdiction. GB/DE/EU static content is imported from
+ * Privacy notices are jurisdiction-specific (UAE Federal Decree-Law
+ * No. 45/2021, Saudi Royal Decree M/19 PDPL). The service also covers UK GDPR
+ * (GB), German GDPR/BDSG (DE) and a generic EU GDPR fallback. Each org gets a
+ * versioned notice per jurisdiction. GB/DE/EU static content is imported from
  * `@contractor-ops/validators` so MDX pages, React-PDF templates and the
  * service share a single source of truth (prevents content drift).
  */
@@ -25,7 +23,7 @@ import { CacheTTL, cached, cacheKey } from './cache';
 // Re-export the pure jurisdiction resolver from validators so existing callers
 // that import from this service continue to work. Client components should
 // import directly from `@contractor-ops/validators` to avoid the Prisma side
-// effect of this module (D-09 fallback rule).
+// effect of this module (avoids the Prisma side effect for client-only callers).
 export const resolveJurisdiction = resolveJurisdictionImpl;
 export type SupportedJurisdiction = SupportedJurisdictionImpl;
 
@@ -256,7 +254,7 @@ export async function getPrivacyNotice(
 }
 
 /**
- * Render the GDPR privacy notice PDF to a Buffer (P2-F · F-SCALE-02).
+ * Render the GDPR privacy notice PDF to a Buffer.
  *
  * Used by the async export consumer instead of inlining the React-PDF
  * render in the tRPC mutation. Mirrors the original `legalRouter.

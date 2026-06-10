@@ -1,11 +1,11 @@
-// Phase 57 · Plan 01 — VIES REST API Zod schema (PAY-05, D-06).
+// VIES REST API Zod schema.
 //
 // Source: https://ec.europa.eu/taxation_customs/vies/rest-api/
 // Endpoint: GET /rest-api/ms/:ms/vat/:vrn?requesterMemberStateCode=&requesterNumber=
 //
 // Notes:
 //   - Either `isValid` OR `userError` MUST be present — .refine() enforces
-//     this so the D-08 soft-fail path can reliably branch.
+//     this so the soft-fail path can reliably branch.
 //   - Qualified responses include `requestIdentifier` (consultationNumber);
 //     simple responses omit it.
 

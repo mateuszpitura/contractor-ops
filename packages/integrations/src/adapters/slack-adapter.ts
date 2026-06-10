@@ -46,7 +46,7 @@ const SlackPostMessageResponse = z.object({
 });
 
 // ---------------------------------------------------------------------------
-// F-INT-12 — per-channel self-throttle for chat.postMessage
+// Per-channel self-throttle for chat.postMessage
 // ---------------------------------------------------------------------------
 //
 // Slack documents a 1 req/sec limit per channel for `chat.postMessage`
@@ -124,11 +124,11 @@ export class SlackAdapter extends BaseAdapter implements Deprovisionable {
   readonly supportsWebhooks = true;
 
   /**
-   * Phase 77 D-14 — the org-grid (org-level) token used EXCLUSIVELY by the
-   * Deprovisionable methods (SCIM deactivate + admin.users.session.invalidate).
-   * The saga step-runner (77-04) resolves it from the SLACK_ORG_GRID connection
-   * and configures it via {@link withOrgGridToken}. The deprovision methods NEVER
-   * fall back to the workspace bot token (D-14 / T-77-03-01).
+   * The org-grid (org-level) token used EXCLUSIVELY by the Deprovisionable
+   * methods (SCIM deactivate + admin.users.session.invalidate). The saga
+   * step-runner resolves it from the SLACK_ORG_GRID connection and configures
+   * it via {@link withOrgGridToken}. The deprovision methods NEVER fall back
+   * to the workspace bot token.
    */
   #orgGridToken = '';
 
@@ -154,8 +154,8 @@ export class SlackAdapter extends BaseAdapter implements Deprovisionable {
   }
 
   /**
-   * Phase 77 D-14 — org-grid OAuth config for the deprovisioning connection.
-   * Distinct from the workspace {@link getOAuthConfig}: org-level scopes from the
+   * Org-grid OAuth config for the deprovisioning connection. Distinct from
+   * the workspace {@link getOAuthConfig}: uses org-level scopes from the
    * typed-const ({@link SLACK_DEPROVISION_SCOPES}) and a separate redirect path.
    */
   getOrgGridOAuthConfig(): OAuthConfig {
@@ -299,8 +299,8 @@ export class SlackAdapter extends BaseAdapter implements Deprovisionable {
   // -------------------------------------------------------------------------
 
   /**
-   * F-INT-12 — Send a message to a Slack channel, respecting the documented
-   * 1 req/sec per-channel rate limit on `chat.postMessage`.
+   * Send a message to a Slack channel, respecting the documented 1 req/sec
+   * per-channel rate limit on `chat.postMessage`.
    *
    * Outer composition:
    *   per-channel p-limit(1)         -> serialize calls to the same channel
@@ -386,7 +386,7 @@ export class SlackAdapter extends BaseAdapter implements Deprovisionable {
   }
 
   // -------------------------------------------------------------------------
-  // Deprovisionable (Phase 77 D-05/D-08/D-14) — SCIM deactivate + session invalidate.
+  // Deprovisionable — SCIM deactivate + session invalidate.
   // SCIM + admin.session calls use the ORG-GRID token exclusively (never the
   // workspace bot token). Errors map through the closed-enum classifier.
   // -------------------------------------------------------------------------
@@ -561,7 +561,7 @@ export class SlackAdapter extends BaseAdapter implements Deprovisionable {
       };
     };
 
-    // Enterprise-Grid pre-flight: cannot_perform_operation ⇒ not on Grid (non-fatal, D-08/D-16).
+    // Enterprise-Grid pre-flight: cannot_perform_operation ⇒ not on Grid (non-fatal).
     if (info.error === 'cannot_perform_operation') {
       return {
         provider: 'SLACK',

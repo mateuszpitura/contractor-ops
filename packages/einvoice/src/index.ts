@@ -62,7 +62,7 @@ import { KsefProfile as _KsefProfile } from './profiles/ksef/index.js';
 export { StorecoveAdapter } from './asp/storecove/adapter.js';
 export { StorecoveApiError, StorecoveClient } from './asp/storecove/client.js';
 export type { StorecoveDiscoveryResponse } from './asp/storecove/schemas.js';
-// ASP storecove schemas (Plan 61-05)
+// ASP storecove schemas
 export {
   extractDocumentTypes,
   storecoveDiscoveryResponseSchema,
@@ -218,8 +218,7 @@ export {
 } from './profiles/xrechnung-de/constants.js';
 export type { CiiDocShape } from './profiles/xrechnung-de/generator.js';
 export { generateXRechnungCii } from './profiles/xrechnung-de/generator.js';
-// Phase 68 D-01 — re-export SkontoTermInput at the package root so api-side
-// callers (einvoice-finalize.ts, routers/einvoice.ts:generateZugferdPdf) can
+// Re-export SkontoTermInput at the package root so api-side callers can
 // import the type without reaching into the xrechnung-de subpath.
 export type { SkontoTermInput, XRechnungGenerateOptions } from './profiles/xrechnung-de/index.js';
 export { XRechnungDEProfile } from './profiles/xrechnung-de/index.js';
@@ -238,7 +237,7 @@ export type {
   NormalisedSvrl,
   ValidationIssue as XRechnungValidationIssue,
 } from './profiles/xrechnung-de/svrl-normalizer.js';
-// XRechnung-DE three-layer KoSIT validator (Plan 61-03)
+// XRechnung-DE three-layer KoSIT validator
 export { normaliseSvrl } from './profiles/xrechnung-de/svrl-normalizer.js';
 export type {
   ValidationLayerName,
@@ -277,7 +276,7 @@ export function registerXRechnungDEProfile(): void {
 }
 
 // ---------------------------------------------------------------------------
-// ZUGFeRD-DE profile (Phase 62 — hybrid PDF/A-3 + embedded CII)
+// ZUGFeRD-DE profile (hybrid PDF/A-3 + embedded CII)
 // ---------------------------------------------------------------------------
 
 import { ZugferdDEProfile as _ZugferdDEProfile } from './profiles/zugferd-de/index.js';
@@ -310,7 +309,7 @@ export {
   ZUGFERD_XMP_VERSION,
 } from './profiles/zugferd-de/constants.js';
 export type { GenerateZugferdInput } from './profiles/zugferd-de/generator.js';
-// ZUGFeRD-DE outbound pipeline (Plan 62-03)
+// ZUGFeRD-DE outbound pipeline
 export {
   generateZugferdPdf,
   ZugferdLevelUnsupportedForOutput,

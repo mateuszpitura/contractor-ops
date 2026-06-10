@@ -1,7 +1,6 @@
 // packages/api/src/services/__tests__/late-payment-interest.test.ts
 //
-// Phase 63 · Plan 03 — TDD coverage for the LPCDA-compliant late payment
-// interest calculator.
+// TDD coverage for the LPCDA-compliant late payment interest calculator.
 //
 // References:
 //   - Late Payment of Commercial Debts (Interest) Act 1998 §3, §4(1), §5A
@@ -253,8 +252,8 @@ describe('calculateLateInterest — simple interest formula', () => {
   it('29 days overdue (Feb-13-due → Mar-15-asOf), £5,000 principal, BoE 3.75% → 11.75% statutory rate', () => {
     // LPCDA-correct (B-05): days overdue counted from overdueStartMs
     // (Feb 14) through endDateMs (Mar 15) → 29 days, NOT 30.
-    // Pre-fix this asserted 30; that was the off-by-one bug from CR-05 in
-    // 63-VERIFICATION.md (counting the dueDate itself as overdue).
+    // Pre-fix this asserted 30; that was an off-by-one bug
+    // (counting the dueDate itself as overdue).
     //
     // Debt overdue 2026-02-13 → reference 2025-12-31 → 3.75%
     // statutoryRate = 3.75 + 8 = 11.75%
@@ -333,7 +332,7 @@ describe('calculateLateInterest — partial payments', () => {
 });
 
 // ===========================================================================
-// calculateLateInterest — waivers (D-15)
+// calculateLateInterest — waivers
 // ===========================================================================
 
 describe('calculateLateInterest — waivers', () => {

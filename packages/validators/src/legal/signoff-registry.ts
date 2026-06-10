@@ -1,10 +1,10 @@
-// Phase 64 · D-12 — Runtime signoff registry module.
+// Runtime signoff registry module.
 //
 // Validates the registry JSON at module load time (fail-fast on malformed data).
 // Exports helper functions used by:
-//   - packages/feature-flags/src/evaluator.ts (isAllApproved → disclaimer gate D-10)
-//   - apps/web-vite admin feature-flags status page (D-11)
-//   - .github/workflows/ci.yml legal-gate-production job (getAllPending D-14)
+//   - packages/feature-flags/src/evaluator.ts (isAllApproved → disclaimer gate)
+//   - apps/web-vite admin feature-flags status page
+//   - .github/workflows/ci.yml legal-gate-production job (getAllPending)
 
 import type { LockedDisclaimerKey } from './disclaimers.js';
 import rawRegistry from './signoff-registry.json' with { type: 'json' };
@@ -45,7 +45,7 @@ export function getAllPending(): string[] {
 
 /**
  * Returns true when every entry in the registry has status 'APPROVED'.
- * Used by the evaluator's classificationEngineDisclaimerGate (D-10) —
+ * Used by the evaluator's classificationEngineDisclaimerGate —
  * if false, the flag is forcibly disabled even when Unleash says ON.
  */
 export function isAllApproved(): boolean {

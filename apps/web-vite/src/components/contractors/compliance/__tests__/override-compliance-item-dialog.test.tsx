@@ -1,5 +1,5 @@
-// Phase 73 · Plan 08 — override compliance item dialog tests (COMPL-01 / D-12).
-// Evolved from the Wave 0 scaffold: mounts the real View with a mocked onSubmit.
+// Override compliance item dialog tests.
+// Mounts the real View with a mocked onSubmit.
 
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 

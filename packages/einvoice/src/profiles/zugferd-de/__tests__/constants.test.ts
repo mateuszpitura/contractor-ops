@@ -1,4 +1,4 @@
-// Phase 62 · Plan 62-02 Task 3 — ZUGFeRD profile constants unit tests.
+// ZUGFeRD profile constants unit tests.
 //
 // These assertions are intentionally strict: the XMP namespace URI +
 // attachment filename are load-bearing for inbound readers (they index PDFs

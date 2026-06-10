@@ -11,7 +11,7 @@ type PrismaClient = DbClient;
  *
  * Encapsulates: admin member query, title/body formatting, dispatch() call.
  * Terminal status check (DELIVERED/FAILED/RETURNED) stays at the call site
- * since each service has its own flow control (per D-03).
+ * since each service has its own flow control.
  *
  * Fire-and-forget with try/catch — errors are logged, never thrown.
  */

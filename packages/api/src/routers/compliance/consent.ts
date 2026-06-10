@@ -1,9 +1,9 @@
 /**
  * Consent router — PDPL consent management and privacy notice APIs.
  *
- * Per D-01/D-02: Exposes per-purpose consent grant/revoke, privacy notice
- * retrieval, and admin consent audit endpoints. User-facing endpoints scope
- * to authenticated user. Admin endpoints require settings:read permission.
+ * Exposes per-purpose consent grant/revoke, privacy notice retrieval, and
+ * admin consent audit endpoints. User-facing endpoints scope to authenticated
+ * user. Admin endpoints require settings:read permission.
  */
 
 import {
@@ -205,7 +205,7 @@ export const consentRouter = router({
   }),
 
   // ---------------------------------------------------------------------------
-  // Phase 64 · LEGAL-07 — ToS acceptance (D-30)
+  // ToS acceptance
   // ---------------------------------------------------------------------------
 
   /**

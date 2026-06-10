@@ -77,7 +77,7 @@ describe('@contractor-ops/logger factories', () => {
   });
 });
 
-// Phase 84 US-FIELD-02 (D-08) — SSN/EIN must never reach the log sink in cleartext.
+// SSN/EIN must never reach the log sink in cleartext.
 describe('PII redaction for US contractor fields (D-08)', () => {
   it('redacts ssn + ein nested under a wrapper key', () => {
     const out = captureRedacted({ contractor: { ssn: '123-45-6789', ein: '12-3456789' } });

@@ -17,7 +17,7 @@ export interface ComplianceItemHistoryProps {
 }
 
 /**
- * Phase 73 D-13 — read-only audit-log timeline disclosure for a compliance item.
+ * Read-only audit-log timeline disclosure for a compliance item.
  * The audit trail is fetched lazily (only when expanded). Loading/empty/error
  * states render inside the disclosure.
  */

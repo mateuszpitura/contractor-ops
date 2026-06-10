@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------
-// Classification Rule-Set Types — D-06
+// Classification Rule-Set Types
 // ---------------------------------------------------------------------------
 
 import type { Ir35Area, ScheinCategory } from './outcome.js';
@@ -14,7 +14,7 @@ export interface LocalisedText {
   readonly de: string;
 }
 
-/** Single question in a rule set (D-06). */
+/** Single question in a rule set. */
 export interface RuleSetQuestion {
   readonly id: string;
   /** IR35 only — one of the 5 HMRC areas. */

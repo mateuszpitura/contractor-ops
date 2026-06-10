@@ -16,9 +16,9 @@ import { PrismaClient } from './generated/prisma/client/client.js';
 const PG_POOL_MAX = Number.parseInt(process.env.PG_POOL_MAX ?? '10', 10);
 
 /**
- * Slow-query threshold in ms. Phase 2 P2-E F-OBS-10. Queries that take longer
- * than this emit a Pino `warn` log line so we can spot regressions / N+1 in
- * production. 200ms is the audit-locked default per NEXT-PHASE-PLAN.md.
+ * Slow-query threshold in ms. Queries that take longer than this emit a Pino
+ * `warn` log line so we can spot regressions / N+1 in production. 200ms is
+ * the default.
  */
 const SLOW_QUERY_THRESHOLD_MS = Number.parseInt(
   process.env.PRISMA_SLOW_QUERY_THRESHOLD_MS ?? '200',
@@ -147,8 +147,8 @@ export function createPrismaClientForUrl(connectionString: string): PrismaClient
   });
   const client = new PrismaClient({
     adapter,
-    // F-OBS-10: opt into event-driven logs so we can pipe slow queries into
-    // Pino at a single, configurable threshold (200ms by default).
+    // Opt into event-driven logs so we can pipe slow queries into Pino at a
+    // single, configurable threshold (200ms by default).
     log: [
       { emit: 'event', level: 'query' },
       { emit: 'event', level: 'warn' },

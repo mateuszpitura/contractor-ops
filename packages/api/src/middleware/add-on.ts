@@ -18,8 +18,8 @@ export { ADD_ON_KEYS };
  *
  * Clones the requireTier pattern: a lazy per-request check via the same
  * Redis-cached `getSubscription`, so `addOns` rides along on the cached
- * Subscription with no extra query (D-01). Composes AFTER `requireTier` in the
- * chain (D-02). Rejects with a structured ADD_ON_REQUIRED error carrying the
+ * Subscription with no extra query. Composes AFTER `requireTier` in the
+ * chain. Rejects with a structured ADD_ON_REQUIRED error carrying the
  * required add-on and the org's current add-ons for client-side upgrade prompts.
  *
  * @param addOn - The add-on key required to access the procedure
@@ -55,7 +55,7 @@ export function requireAddOn(addOn: AddOnKey) {
 
 /**
  * Procedure gating the Workforce add-on (Theme B surfaces).
- * Chain (D-11): auth -> tenant -> requireTier(STARTER) -> requireAddOn(workforce) -> handler.
+ * Chain: auth -> tenant -> requireTier(STARTER) -> requireAddOn(workforce) -> handler.
  * STARTER floor = "any active subscription"; the add-on is tier-independent.
  */
 export const workforceProcedure = tenantProcedure
@@ -64,7 +64,7 @@ export const workforceProcedure = tenantProcedure
 
 /**
  * Procedure gating the US Cross-Border add-on (Theme A surfaces).
- * Chain (D-11): auth -> tenant -> requireTier(STARTER) -> requireAddOn(us-cross-border) -> handler.
+ * Chain: auth -> tenant -> requireTier(STARTER) -> requireAddOn(us-cross-border) -> handler.
  */
 export const usCrossBorderProcedure = tenantProcedure
   .use(requireTier('STARTER'))

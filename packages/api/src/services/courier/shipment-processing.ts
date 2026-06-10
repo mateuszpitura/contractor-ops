@@ -113,7 +113,7 @@ export async function processShipmentStatusChange(
     );
   }
 
-  // 4. Fire-and-forget: check workflow task auto-completion (per D-01/D-02)
+  // 4. Fire-and-forget: check workflow task auto-completion
   void checkShipmentTaskCompletion(db, organizationId, {
     id: shipment.id,
     workflowTaskRunId: shipment.workflowTaskRunId,

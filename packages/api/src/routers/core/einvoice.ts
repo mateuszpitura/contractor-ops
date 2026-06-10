@@ -176,7 +176,7 @@ export const einvoiceRouter = router({
     }),
 
   // -------------------------------------------------------------------------
-  // Phase 62 · Plan 62-05 Task 2 — outbound ZUGFeRD PDF/A-3 generation
+  // Outbound ZUGFeRD PDF/A-3 generation
   // -------------------------------------------------------------------------
 
   /**
@@ -203,11 +203,11 @@ export const einvoiceRouter = router({
         },
         include: {
           lines: { orderBy: { lineNumber: 'asc' } },
-          // Phase 68 D-06 — eager-fetch SkontoTerm so the cascade resolver
-          // can compute the effective term BEFORE calling generateZugferdPdf.
-          // Include shape mirrors payment.ts:1213-1222 + einvoice-finalize.ts
-          // loadInvoiceWithRelations (single source-of-truth pattern; do NOT
-          // extract a shared helper for two callers).
+          // Eager-fetch SkontoTerm so the cascade resolver can compute the
+          // effective term BEFORE calling generateZugferdPdf. Include shape
+          // mirrors payment.ts and einvoice-finalize.ts loadInvoiceWithRelations
+          // (single source-of-truth pattern; do NOT extract a shared helper
+          // for two callers).
           skontoTerms: { take: 1 },
           contractor: {
             include: {
@@ -236,10 +236,9 @@ export const einvoiceRouter = router({
         invoice as unknown as Parameters<typeof mapPrismaInvoiceToEInvoice>[0],
       );
 
-      // 2b. Resolve the Skonto cascade (Phase 68 D-06): invoice-level term
-      //     wins over billing-profile default. Mirrors einvoice-finalize.ts
-      //     and payment.ts:1239-1253. The inline mapping coerces Prisma
-      //     Decimal -> number per RESEARCH Pitfall 3.
+      // 2b. Resolve the Skonto cascade: invoice-level term wins over
+      //     billing-profile default. Mirrors einvoice-finalize.ts and
+      //     payment.ts. The inline mapping coerces Prisma Decimal -> number.
       const invoiceSkontoRow = invoice.skontoTerms[0];
       const profileSkontoRow = invoice.contractor?.billingProfiles?.[0]?.skontoTerms?.[0];
       const invoiceSkonto: SkontoTermData | null = invoiceSkontoRow
@@ -286,9 +285,8 @@ export const einvoiceRouter = router({
       // 4. Content-addressed idempotency — if the lifecycle already has a
       //    matching sha, re-sign the existing object and return. Append no
       //    second event.
-      // lint-idempotency-OK reason=content-fingerprint not provider key — this
-      // sha identifies the PDF bytes for storage dedup; it is NEVER sent to a
-      // provider as an Idempotency-Key header.
+      // This sha identifies the PDF bytes for storage dedup; it is NEVER
+      // sent to a provider as an Idempotency-Key header.
       const sha = createHash('sha256').update(Buffer.from(pdfBytes)).digest('hex');
       const key = `einvoice-pdf/${ctx.organizationId}/${input.invoiceId}/${sha.slice(0, 16)}.pdf`;
 
@@ -323,7 +321,7 @@ export const einvoiceRouter = router({
       const now = new Date();
       await ctx.db.$transaction(async tx => {
         const upserted = await tx.eInvoiceLifecycle.upsert({
-          // F-DB-17 — compound (orgId, invoiceId) unique was redundant
+          // The compound (orgId, invoiceId) unique was redundant
           // (invoiceId is globally @unique). Use the field-level unique key.
           where: {
             invoiceId: input.invoiceId,
@@ -384,7 +382,7 @@ export const einvoiceRouter = router({
     }),
 
   // -------------------------------------------------------------------------
-  // Phase 61 · Plan 61-06 — lifecycle + transmission procedures
+  // Lifecycle + transmission procedures
   // -------------------------------------------------------------------------
 
   /**
@@ -517,8 +515,8 @@ export const einvoiceRouter = router({
     }),
 
   /**
-   * Signed 300s R2 URL for the full KoSIT HTML validation report (D-14).
-   * NOT_FOUND when `validationReportFullKey` is null — Plan 07 UI surfaces
+   * Signed 300s R2 URL for the full KoSIT HTML validation report.
+   * NOT_FOUND when `validationReportFullKey` is null — the UI surfaces
    * "Report not available. Finalize the invoice to generate one.".
    */
   downloadReport: tenantProcedure
@@ -610,7 +608,7 @@ export const einvoiceRouter = router({
       }
 
       // 6. Receiver capability check — throws PARTICIPANT_NOT_REACHABLE on
-      //    missing doc-type. Uses the 6h cache (Plan 05).
+      //    missing doc-type. Uses the 6h cache.
       try {
         await assertReceiverAcceptsXRechnung(ctx.db, adapter, ctx.organizationId, schemeId, value);
       } catch (err) {
@@ -649,9 +647,9 @@ export const einvoiceRouter = router({
       });
 
       // 8. Rehydrate XML + call Storecove. `xmlKey` was null-checked on the
-      // NOT_FOUND branch above, but TS cannot carry that narrowing across the
-      // QUEUED transaction callback — re-assert it here, throwing rather than
-      // coercing a null key into the R2 fetch.
+      // NOT_FOUND branch above, but TypeScript cannot carry that narrowing
+      // across the QUEUED transaction callback — re-assert it here, throwing
+      // rather than coercing a null key into the R2 fetch.
       const { xmlKey } = lifecycle;
       if (!xmlKey) {
         throw new TRPCError({
@@ -785,7 +783,7 @@ export const einvoiceRouter = router({
 
   /**
    * Filtered + cursor-paginated join of Invoice × EInvoiceLifecycle for
-   * the compliance invoice list (UI-SPEC chips).
+   * the compliance invoice list.
    */
   listByOrg: tenantProcedure
     .use(requirePermission({ invoice: ['read'] }))
@@ -833,7 +831,7 @@ export const einvoiceRouter = router({
 
   /**
    * Org-wide compliance counts for the summary tile at the top of the
-   * invoices list (UI-SPEC tile).
+   * invoices list.
    */
   summaryForOrg: tenantProcedure
     .use(requirePermission({ invoice: ['read'] }))

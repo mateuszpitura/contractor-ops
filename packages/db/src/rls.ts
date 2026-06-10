@@ -30,7 +30,7 @@ export async function withRlsSession(
 }
 
 // ---------------------------------------------------------------------------
-// F-DB-04 — RLS defense-in-depth via $transaction wrapping
+// RLS defense-in-depth via $transaction wrapping
 // ---------------------------------------------------------------------------
 
 /**
@@ -63,11 +63,11 @@ export interface PrismaWithTransaction {
  *     wrapped. The array overload (`prisma.$transaction([q1, q2])`) is left
  *     alone because Prisma does not let us inject a SET LOCAL into the
  *     middle of a sequenced batch — and array transactions are rare in this
- *     codebase (auditor F-DB-04).
+ *     codebase.
  *   - Pass-through transactions (no callback) are not affected.
  *   - Defense-in-depth ONLY — RLS policies are not yet defined in the
- *     schema (deferred to a separate Phase 2 migration). The SET LOCAL is a
- *     no-op until policies exist; no behaviour change today.
+ *     schema. The SET LOCAL is a no-op until policies exist; no behaviour
+ *     change today.
  */
 export function withRlsTransactions<T extends PrismaWithTransaction>(
   client: T,
@@ -102,7 +102,7 @@ export function withRlsTransactions<T extends PrismaWithTransaction>(
 }
 
 // ---------------------------------------------------------------------------
-// F-DB-04 — scoped RLS read-path extension
+// Scoped RLS read-path extension
 // ---------------------------------------------------------------------------
 
 /**
@@ -110,19 +110,18 @@ export function withRlsTransactions<T extends PrismaWithTransaction>(
  * one-shot `$transaction` with `SET LOCAL app.org_id = ...` so that any future
  * Postgres RLS policy gets the org id even on plain reads.
  *
- * Selection rationale (locked decision — see audit `.audit-2026-05-03/01-db-performance.md`
- * F-DB-04): these are the models where a missed `where: { organizationId }` is
- * the highest-impact data exposure (file downloads → IDOR → cross-tenant
- * documents; financial records; identity rows; approval state; user-targeted
- * notifications). Other tenant-scoped models keep the pure-read fast path
- * (still scoped via the Prisma tenant extension; just no DB-level second
- * guard).
+ * Selection rationale (locked decision): these are the models where a missed
+ * `where: { organizationId }` is the highest-impact data exposure (file
+ * downloads → IDOR → cross-tenant documents; financial records; identity rows;
+ * approval state; user-targeted notifications). Other tenant-scoped models keep
+ * the pure-read fast path (still scoped via the Prisma tenant extension; just
+ * no DB-level second guard).
  *
  * Trade-off: each wrapped read costs +1 RTT to open a tx and +2 statements
  * for `set_config(...)`. We accept this on these tables because the alternative
  * — wrapping every model — adds the same cost to dashboards/lists that already
- * dominate p50 latency, and the F-DB-03 cache work doesn't help reads that are
- * not on the org-meta hot path.
+ * dominate p50 latency, and the org-meta cache work doesn't help reads that are
+ * not on the hot path.
  *
  * `Member` is intentionally EXCLUDED even though the audit listed it: Member
  * is in `globalModels` (cross-org auth flows like the org-switcher list-by-user
@@ -162,7 +161,7 @@ interface ReadHookParams {
  * Wraps READ operations on {@link RLS_READ_SCOPED_MODELS} so they execute
  * inside a `$transaction` with `SET LOCAL app.org_id` (+ `app.user_id`) issued
  * as the first statement. Defense-in-depth for the eventual Postgres RLS
- * policies tracked by F-DB-04.
+ * policies tracked in the audit log.
  *
  * Re-entrancy: when a hook fires while {@link rlsReadActive} is already set
  * (i.e. we're already inside a wrapped tx), we short-circuit to `query(args)`

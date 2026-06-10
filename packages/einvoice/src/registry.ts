@@ -10,8 +10,7 @@
 //
 // Keeping the ID symbols visible in this file makes the static surface of
 // the registry self-documenting — a grep for `ZUGFERD_DE_PROFILE_ID` in
-// `registry.ts` returns this file, which is the invariant Plan 62-02 Task 5
-// pins in its acceptance criteria.
+// `registry.ts` returns this file.
 
 import { XRECHNUNG_DE_PROFILE_ID } from './profiles/xrechnung-de/constants.js';
 import { ZUGFERD_DE_PROFILE_ID } from './profiles/zugferd-de/constants.js';
@@ -21,7 +20,7 @@ export { XRECHNUNG_DE_PROFILE_ID, ZUGFERD_DE_PROFILE_ID };
 
 /**
  * Static registry map for e-invoicing country profiles.
- * Per D-02: type-safe, tree-shakeable, finite number of country profiles.
+ * Type-safe, tree-shakeable, finite number of country profiles.
  */
 const profiles = new Map<string, EInvoiceProfile>();
 

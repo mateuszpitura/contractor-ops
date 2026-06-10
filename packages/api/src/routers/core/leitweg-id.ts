@@ -1,8 +1,6 @@
-// packages/api/src/routers/leitweg-id.ts
+// Leitweg-ID CRUD + default-flip router.
 //
-// Phase 61 · Plan 61-04 · EINV-05 — Leitweg-ID CRUD + default-flip router.
-//
-// Seven procedures (CONTEXT D-16):
+// Seven procedures:
 // - list                  — query, all rows for the org
 // - listByContractor      — query, rows scoped to a contractor
 // - listByContract        — query, rows scoped to a contract
@@ -14,12 +12,12 @@
 // Invariants:
 // - Every procedure runs through `tenantProcedure`; every `where` clause
 //   carries `organizationId: ctx.organizationId`. Cross-tenant ids resolve to
-//   NOT_FOUND (never FORBIDDEN) to avoid a response-code oracle (T-61-04-06).
+//   NOT_FOUND (never FORBIDDEN) to avoid a response-code oracle.
 // - Input validation uses `leitwegIdSchema` (structure + MOD-11-10 check
 //   digit) at the tRPC boundary so malformed IDs never hit the DB.
 // - `setDefault` and default-flipping writes live inside `$transaction` so
 //   two concurrent callers cannot produce two "isDefaultForContractor=true"
-//   rows for the same contractor (T-61-04-05).
+//   rows for the same contractor.
 // - The (organizationId, value) unique constraint surfaces as a clean
 //   CONFLICT; all other unknown errors rethrow unchanged.
 
@@ -232,7 +230,7 @@ export const leitwegIdRouter = router({
   /**
    * Atomically promote a Leitweg-ID row to the contractor's default. All
    * other `isDefaultForContractor=true` rows for the same contractor are
-   * cleared inside the same transaction (T-61-04-05 race guard).
+   * cleared inside the same transaction (race guard).
    */
   setDefault: leitwegIdWriteProcedure.input(setDefaultInput).mutation(async ({ ctx, input }) => {
     return ctx.db.$transaction(async tx => {

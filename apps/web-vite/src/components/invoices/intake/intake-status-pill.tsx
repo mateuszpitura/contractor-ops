@@ -21,20 +21,18 @@ export type IntakeStatus = (typeof INTAKE_STATUSES)[number];
 interface StatusVisual {
   icon: ComponentType<{ className?: string; 'aria-hidden'?: boolean | 'true' | 'false' }>;
   /**
-   * Token-aligned Tailwind classes matching Phase 62 UI-SPEC § Color.
-   * Uses existing `--muted`, `--warning`, `--info`, `--success`,
-   * `--destructive` CSS variables bridged by `globals.css`.
+   * Token-aligned Tailwind classes using `--muted`, `--warning`, `--info`,
+   * `--success`, `--destructive` CSS variables bridged by `globals.css`.
    */
   className: string;
 }
 
-// UI-SPEC § Color — status pill tokens.
-// Phase 61's einvoice-status-cell uses concrete tailwind color escape
-// (amber/green/blue) because the project's `--warning` / `--info` /
-// `--success` palette lives behind color-utility variables that need
-// tailwind 4's @theme inline bridge (already in place in globals.css).
-// We mirror the same concrete-color strategy here for visual parity with
-// the outbound e-invoice pills.
+// Status pill tokens. The einvoice-status-cell uses concrete tailwind color
+// escapes (amber/green/blue) because the project's `--warning` / `--info` /
+// `--success` palette lives behind color-utility variables that need tailwind
+// 4's @theme inline bridge (already in place in globals.css). We mirror the
+// same concrete-color strategy here for visual parity with the outbound
+// e-invoice pills.
 const STATUS_VISUALS: Record<IntakeStatus, StatusVisual> = {
   PARSED: {
     icon: Clock,
@@ -65,10 +63,10 @@ interface IntakeStatusPillProps {
 }
 
 /**
- * Intake-lifecycle status pill. Color + icon + text triad (never color
- * alone) per Phase 62 UI-SPEC § Accessibility. Receives its translated
- * label via `EInvoice.intake.status.{STATUS}` and surfaces it as
- * `aria-label` for screen-reader users who see only the colour.
+ * Intake-lifecycle status pill. Color + icon + text triad (never color alone
+ * for accessibility). Receives its translated label via
+ * `EInvoice.intake.status.{STATUS}` and surfaces it as `aria-label` for
+ * screen-reader users who see only the colour.
  */
 export function IntakeStatusPill({ status, className }: IntakeStatusPillProps) {
   const t = useTranslations('EInvoice.intake.status');

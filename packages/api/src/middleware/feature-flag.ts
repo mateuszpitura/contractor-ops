@@ -29,9 +29,9 @@ function buildLazyBag(ctx: {
   if (ctx.region === 'ME') {
     region = 'ME';
   } else if (ctx.region === 'US') {
-    // US is a supported region (FOUND7-03) — it must NOT fall into the
-    // unknown→EU branch. Silently coercing US data context to EU would be a
-    // data-residency leak (T-82-02-01), so US gets an explicit branch.
+    // US is a supported region — it must NOT fall into the unknown→EU branch.
+    // Silently coercing US data context to EU would be a data-residency leak,
+    // so US gets an explicit branch.
     region = 'US';
   } else if (ctx.region === 'EU') {
     region = 'EU';

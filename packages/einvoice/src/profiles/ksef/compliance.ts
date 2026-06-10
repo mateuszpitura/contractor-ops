@@ -36,7 +36,7 @@ function deriveComplianceState(
  * Compute compliance status for a KSeF connection.
  * Pure function — no database access. Data is provided by the caller.
  *
- * Per D-09: compliance states based on actual KSeF lifecycle needs.
+ * Compliance states are based on actual KSeF connection lifecycle.
  */
 export function computeKsefComplianceStatus(
   connection: KsefConnectionData | null,

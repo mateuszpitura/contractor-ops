@@ -1,7 +1,7 @@
-// Phase 59 · Plan 03 Task 3 — Mark delivered/acknowledged dialog.
+// Mark delivered/acknowledged dialog.
 // Optional dialog to capture a delivery/acknowledgement note. The inline row
 // buttons also call markDelivered/markAcknowledged without a note — this
-// component is exported for richer workflows (future UX polish).
+// component is exported for richer workflows.
 
 import type { ChangeEvent } from 'react';
 import { useCallback, useEffect, useId, useRef, useState } from 'react';

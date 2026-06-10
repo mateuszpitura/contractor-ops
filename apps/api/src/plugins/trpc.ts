@@ -13,11 +13,11 @@
  *
  * Behaviour:
  *
- *   - F-SCALE-17 body cap: short-circuit 413 when Content-Length exceeds
+ *   - Body cap: short-circuit 413 when Content-Length exceeds
  *     `TRPC_MAX_BODY_MB` (default 1 MB). Avoids materializing 10-20 MB
  *     base64 payloads on the V8 heap during DoS / accidental floods.
- *   - F-OBS-15 RED metrics: per-route request count, error count, and
- *     latency distribution tagged with route, method, status class.
+ *   - RED metrics: per-route request count, error count, and latency
+ *     distribution tagged with route, method, status class.
  *   - Sentry per-procedure capture via the `onError` hook on the handler;
  *     wrapped in `Sentry.withIsolationScope` so concurrent batched
  *     requests don't smear tags across each other.
@@ -95,7 +95,7 @@ async function handleTrpcRequest(
   const pathname = decodeURIComponent(new URL(absoluteUrl(request)).pathname);
   const procedure = pathname.replace(`${endpoint}/`, '');
 
-  // F-SCALE-17 — reject oversize bodies before fetchRequestHandler reads them.
+  // Reject oversize bodies before fetchRequestHandler reads them.
   if (method === 'POST' || method === 'PUT' || method === 'PATCH') {
     const cl = request.headers['content-length'];
     if (typeof cl === 'string') {

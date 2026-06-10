@@ -1,7 +1,7 @@
 /**
  * CSV generation functions for reports and audit log export.
  * Uses exceljs for proper escaping. Adds UTF-8 BOM for Polish character support.
- * Phase 46: Added home-currency conversion for multi-currency reports.
+ * Supports home-currency conversion for multi-currency reports.
  */
 
 import { minorToDecimalStr } from '@contractor-ops/shared';
@@ -78,7 +78,7 @@ export async function generateReportCsv(
 // ---------------------------------------------------------------------------
 
 /**
- * Generate audit log CSV with columns per D-16 spec.
+ * Generate audit log CSV.
  */
 export async function generateAuditCsv(
   items: AuditLogItem[],
@@ -246,7 +246,7 @@ export async function generateComplianceCsv(
 }
 
 // ---------------------------------------------------------------------------
-// Home Currency Conversion (Phase 46)
+// Home Currency Conversion
 // ---------------------------------------------------------------------------
 
 /**

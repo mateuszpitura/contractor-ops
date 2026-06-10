@@ -1,6 +1,6 @@
-// Phase 72 · COMPL-05 — Payment-block modal (presentational; props in / JSX out).
+// Payment-block modal (presentational; props in / JSX out).
 //
-// Surfaces the structured PRECONDITION_FAILED.cause.contractorReasons payload (D-10)
+// Surfaces the structured PRECONDITION_FAILED.cause.contractorReasons payload
 // at the payment-write entry points. One collapsible section per contractor, each
 // listing the expired BLOCKING documents with a deep link into the compliance item.
 //

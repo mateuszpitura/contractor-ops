@@ -29,11 +29,11 @@ const softDeleteModels = new Set(['Organization', 'Contractor', 'Contract', 'Inv
  * Inject `deletedAt: null` into the args.where for read & write operations
  * so soft-deleted rows are excluded. No-op when args is missing/non-object.
  *
- * F-DB-27: previously only applied to read operations (findMany, findFirst,
- * etc.) which meant `update`/`updateMany`/`upsert` could mutate soft-deleted
- * rows. We now also filter writes — any `update` against a soft-deleted row
- * becomes a no-op (P2025 / count: 0), preserving the audit invariant that
- * a "deleted" entity does not change state after deletion.
+ * Previously only applied to read operations (findMany, findFirst, etc.) which
+ * meant `update`/`updateMany`/`upsert` could mutate soft-deleted rows. We now
+ * also filter writes — any `update` against a soft-deleted row becomes a no-op
+ * (P2025 / count: 0), preserving the audit invariant that a "deleted" entity
+ * does not change state after deletion.
  */
 function injectDeletedAtNull(args: unknown): unknown {
   if (args == null || typeof args !== 'object') {
@@ -50,18 +50,18 @@ function injectDeletedAtNull(args: unknown): unknown {
  * - delete/deleteMany are converted to update deletedAt
  * - findMany/findFirst/findFirstOrThrow/count automatically filter where deletedAt is null
  * - update/updateMany/upsert also filter where deletedAt is null so soft-deleted
- *   rows are immutable (F-DB-27)
+ *   rows are immutable
  */
 export function withSoftDelete<T extends PrismaExtensible>(
   prisma: T,
   retentionOverride?: Partial<Record<string, RetainedRecordType>>,
 ) {
-  // US-INFRA-03 — a model under an active statutory-retention rule must never be
-  // hard-deleted at this chokepoint. `getRetentionCutoff` returning a (non-null)
-  // cutoff means the model is retention-guarded, so the delete is forced through
-  // the soft-delete conversion below even if the model is absent from
-  // `softDeleteModels`. The production retention map ships EMPTY (D-06), so this
-  // is a no-op for all current models; tests inject a fixture override.
+  // A model under an active statutory-retention rule must never be hard-deleted
+  // at this chokepoint. `getRetentionCutoff` returning a non-null cutoff means
+  // the model is retention-guarded, so the delete is forced through the
+  // soft-delete conversion below even if the model is absent from
+  // `softDeleteModels`. The production retention map ships empty, so this is a
+  // no-op for all current models; tests inject a fixture override.
   const isRetentionGuarded = (model: string): boolean =>
     getRetentionCutoff(model, new Date(), retentionOverride) !== null;
   const requiresSoftDelete = (model: string): boolean =>
@@ -149,8 +149,8 @@ export function withSoftDelete<T extends PrismaExtensible>(
           return await query(injectDeletedAtNull(args));
         },
 
-        // F-DB-27: writes against soft-deleted rows must be no-ops
-        // (otherwise audit trail can show a "deleted" entity changing state).
+        // Writes against soft-deleted rows must be no-ops (otherwise the audit
+        // trail can show a "deleted" entity changing state).
         async update({ model, args, query }: ModelQueryHookParams) {
           if (!softDeleteModels.has(model)) {
             return await query(args);

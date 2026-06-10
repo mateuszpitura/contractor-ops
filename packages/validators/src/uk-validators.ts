@@ -1,10 +1,10 @@
 // packages/validators/src/uk-validators.ts
 //
-// UK tax identifier validators (Phase 56, Decision D-02).
+// UK tax identifier validators.
 //
 // These validators are pure functions with no I/O. They run on both client
 // (React Hook Form resolvers) and server (tRPC input validation) to catch
-// typos at save time. No HMRC live lookup — Phase 57 adds that layer.
+// typos at save time. No HMRC live lookup.
 //
 // References:
 //   - UTR:  https://design.tax.service.gov.uk/hmrc-design-patterns/unique-taxpayer-reference/
@@ -14,7 +14,7 @@
 //
 // Input normalization: all functions strip whitespace and hyphens before
 // validating, and match regex anchors (^...$) to avoid ReDoS on adversarial
-// input (T-56-03).
+// input.
 
 // ---------------------------------------------------------------------------
 // UTR (Unique Taxpayer Reference)
@@ -67,8 +67,7 @@ const VAT_WEIGHTS = [8, 7, 6, 5, 4, 3, 2] as const;
  *
  * Both mod-97 (pre-2010) and mod-9755 (post-2010) variants are in active
  * circulation. HMRC did not reissue numbers — any given 9-digit body may
- * validate against either scheme, so both MUST be accepted (see
- * 56-RESEARCH §Pitfall 2, threat T-56-05).
+ * validate against either scheme, so both MUST be accepted.
  *
  * Algorithm (per 9-digit body):
  *   weighted = Σ VAT_WEIGHTS[i] * digit[i]  for i in 0..6
@@ -112,7 +111,7 @@ export function isValidGbVat(raw: string): boolean {
  *   - `R0` + 6 digits       — Historic pre-2009 registrations
  *
  * This is a structural check only — CH does not publish a checksum
- * algorithm. Phase 57 adds live CH API lookup for existence verification.
+ * algorithm. Live CH API lookup for existence verification is handled in the API layer.
  *
  * @param raw - raw user input
  * @returns true iff the input matches one of the accepted forms

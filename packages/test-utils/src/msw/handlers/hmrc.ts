@@ -1,4 +1,4 @@
-// Phase 57 · Plan 01 — MSW handlers for HMRC VAT API (PAY-03, D-01/D-03).
+// MSW handlers for HMRC VAT API.
 //
 // Covers:
 //   - OAuth 2.0 client-credentials token (POST /oauth/token)

@@ -1,9 +1,8 @@
-// Phase 70 · Plan 04 · FOUND6-03 — message-key parity guard.
+// Message-key parity guard.
 //
 // Loads `<base>.json` and each peer locale, flattens nested keys to dotted
 // paths, and reports an offence for every base-key missing from any peer.
-// Direction is one-way (base ⊂ peers) — peer-only keys are not flagged
-// (T-70-04-02).
+// Direction is one-way (base ⊂ peers) — peer-only keys are not flagged.
 
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
@@ -14,18 +13,18 @@ export interface I18nParityOptions {
   peers: readonly string[]; // e.g. ['de', 'pl', 'ar']
   /**
    * Sites whose `(locale, missingKey)` are present here are tolerated
-   * (baseline diff mode). Same shape as the lint:logs baseline (Plan 70-03).
+   * (baseline diff mode). Same shape as the lint:logs baseline.
    */
   baseline?: readonly { locale: string; missingKey: string }[];
   /**
-   * Fallback-aware peers (Phase 84-02, US-LOC-01). A thin-override locale such
-   * as `en-US` only carries divergent keys; the rest are inherited at runtime
-   * via i18next's `fallbackLng` chain (en-US → en → pl). For each entry, a base
-   * key counts as covered if it is present in the peer's own JSON OR in the
-   * supplied fallback key set — so a deliberately-thin override passes parity
-   * without adding the locale to the strict `peers` array (which would demand
-   * literal full key parity and red-CI every not-yet-overridden key). Strict
-   * peers keep exact `peerKeys` semantics; this relaxation applies ONLY to the
+   * Fallback-aware peers. A thin-override locale such as `en-US` only carries
+   * divergent keys; the rest are inherited at runtime via i18next's
+   * `fallbackLng` chain (en-US → en → pl). For each entry, a base key counts
+   * as covered if it is present in the peer's own JSON OR in the supplied
+   * fallback key set — so a deliberately-thin override passes parity without
+   * adding the locale to the strict `peers` array (which would demand literal
+   * full key parity and red-CI every not-yet-overridden key). Strict peers keep
+   * exact `peerKeys` semantics; this relaxation applies ONLY to the
    * fallback-aware locales listed here.
    */
   fallbackPeers?: Record<string, ReadonlySet<string>>;

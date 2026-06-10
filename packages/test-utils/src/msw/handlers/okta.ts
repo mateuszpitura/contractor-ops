@@ -2,7 +2,7 @@ import { HttpResponse, http } from 'msw';
 import type { HandlerOptions } from '../types.js';
 import { applyNetworkConditions } from '../utils.js';
 
-// Phase 78 IDP-06 — Okta lifecycle deprovision handlers.
+// Okta lifecycle deprovision handlers.
 //
 // The `@okta/okta-sdk-nodejs` client targets a tenant-specific host
 // (`https://{org}.okta.com`), so handlers match by pathname predicate across

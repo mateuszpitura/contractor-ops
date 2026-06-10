@@ -1,11 +1,11 @@
 // ---------------------------------------------------------------------------
-// Phase 60 · CLASS-08 — shared AuditLog writer.
+// Shared AuditLog writer.
 // ---------------------------------------------------------------------------
 //
-// Before this plan, ContractorAssignment + Contract mutations did NOT emit
-// AuditLog rows (Open Question #1, resolved here). This helper is the single
-// write path used by contractor/contract/reassessment routers so the daily
-// reassessment scan has an auditable event stream to walk.
+// ContractorAssignment + Contract mutations previously did NOT emit AuditLog
+// rows. This helper is the single write path used by contractor/contract/
+// reassessment routers so the daily reassessment scan has an auditable event
+// stream to walk.
 //
 // Security contract:
 //   - The caller MUST supply organizationId (no implicit tenant lookup).

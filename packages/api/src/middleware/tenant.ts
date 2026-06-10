@@ -12,9 +12,9 @@ import { getOrgMeta, invalidateOrgBranding, invalidateOrgMeta } from '../service
 import { authedProcedure } from './auth';
 
 // ---------------------------------------------------------------------------
-// Org-meta cache invalidation — F-DB-03 — wraps the tenant-scoped client with
-// a Prisma extension that drops the cached `org:${id}:meta` envelope whenever
-// any caller updates or deletes the Organization row.
+// Org-meta cache invalidation — wraps the tenant-scoped client with a Prisma
+// extension that drops the cached `org:${id}:meta` envelope whenever any
+// caller updates or deletes the Organization row.
 // ---------------------------------------------------------------------------
 
 type OrgMutationArgs = {
@@ -89,7 +89,7 @@ export async function runWithTenantContext<T>(
   /** Pre-resolved data region — skips the DB lookup when available. */
   knownRegion?: string,
   /**
-   * Optional acting user id used by F-DB-04 RLS `SET LOCAL app.user_id`.
+   * Optional acting user id used by RLS `SET LOCAL app.user_id`.
    * Falls back to `''` when caller cannot supply (e.g. system contexts);
    * `set_config` accepts the empty string and the future RLS policies treat
    * it as "no user" (org-scope only).
@@ -99,7 +99,7 @@ export async function runWithTenantContext<T>(
   let region = knownRegion;
 
   if (!region) {
-    // F-DB-03 — read-through Upstash Redis cache (5min TTL, key `org:${id}:meta`).
+    // Read-through Upstash Redis cache (5min TTL, key `org:${id}:meta`).
     // Falls back to a single Prisma findUnique on miss; degrades to direct DB
     // when Redis is unavailable.
     const meta = await getOrgMeta(orgId);
@@ -107,7 +107,7 @@ export async function runWithTenantContext<T>(
   }
 
   const regionalPrisma = getRegionalClient(region);
-  // F-DB-04 — RLS defense-in-depth, two layers:
+  // RLS defense-in-depth, two layers:
   //
   //   1. `withRlsTransactions` wraps the callback overload of `$transaction`
   //      so every interactive transaction issues `SET LOCAL app.org_id = ...`
@@ -117,7 +117,7 @@ export async function runWithTenantContext<T>(
   //      radius models (Document, Invoice, Contractor, ApprovalStep,
   //      Notification — see `RLS_READ_SCOPED_MODELS`). Each wrapped read
   //      opens a one-shot tx so SET LOCAL is in scope on the read path too,
-  //      where the F-SEC-01 file-download IDOR risk surface lives.
+  //      where the file-download IDOR risk surface lives.
   //
   // Trade-off (see `withRlsReads` jsdoc): wrapped reads pay +1 RTT to open a
   // tx and +2 statements for `set_config`. We accept that cost on the chosen
@@ -126,8 +126,8 @@ export async function runWithTenantContext<T>(
   // models retain the pure-read fast path (still org-scoped via the tenant
   // Prisma extension; just no DB-level second guard until policies exist).
   //
-  // The audit notes there are no DB-level RLS policies yet (deferred to a
-  // separate migration); this is defense-in-depth scaffolding so a future
+  // There are no DB-level RLS policies yet (deferred to a separate migration);
+  // this is defense-in-depth scaffolding so a future
   // `CREATE POLICY ... USING (organization_id = current_setting('app.org_id'))`
   // migration is a no-code-change rollout.
   //
@@ -144,11 +144,10 @@ export async function runWithTenantContext<T>(
 }
 
 /**
- * F-SEC-12 — Reject suspended/archived organizations from the tenant flow.
+ * Reject suspended/archived organizations from the tenant flow.
  * Returns the cached meta envelope so the caller can reuse the resolved
  * dataRegion and skip the second cache hit inside `runWithTenantContext`.
- *
- * F-DB-03 — single read-through cache hit covers both status and region.
+ * Single read-through cache hit covers both status and region.
  */
 async function loadAndAssertActive(orgId: string): Promise<{ region: string }> {
   const meta = await getOrgMeta(orgId);
@@ -188,8 +187,8 @@ const tenantMiddleware = t.middleware(async ({ ctx, next }) => {
     });
   }
 
-  // F-SEC-12 + F-DB-03 — Single cache hit returns dataRegion *and* asserts
-  // ACTIVE status so we don't pay two Redis round-trips per request.
+  // Single cache hit returns dataRegion *and* asserts ACTIVE status so we
+  // don't pay two Redis round-trips per request.
   const { region } = await loadAndAssertActive(orgId);
 
   // Preserve narrowed session/user types from the auth middleware through the spread.

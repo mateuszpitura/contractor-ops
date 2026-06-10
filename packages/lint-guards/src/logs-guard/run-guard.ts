@@ -1,4 +1,4 @@
-// Phase 70 · Plan 03 · FOUND6-02 — body-redaction logger guard.
+// Body-redaction logger guard.
 //
 // AST scan via ts-morph: walks every CallExpression of shape
 // `<expr>.<level>({ body: ... }, ...)` and reports an offence unless the

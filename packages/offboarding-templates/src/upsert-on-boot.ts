@@ -1,7 +1,7 @@
-// Phase 74 Plan 05 — Idempotent first-boot upsert that materialises the 4
-// typed-const seeds (from Plan 74-02) into per-organization
-// `WorkflowRoleTemplate` rows along with their `WorkflowRoleTaskTemplate`
-// children. Called by `runPostOrganizationCreateHooks` (api/src/services).
+// Idempotent first-boot upsert that materialises the 4 typed-const seeds into
+// per-organization `WorkflowRoleTemplate` rows along with their
+// `WorkflowRoleTaskTemplate` children. Called by
+// `runPostOrganizationCreateHooks` (api/src/services).
 
 import type { PrismaClient } from '@contractor-ops/db';
 import { Prisma } from '@contractor-ops/db/generated/prisma/client';
@@ -11,7 +11,7 @@ import { OFFBOARDING_TEMPLATE_SEEDS } from './seeds';
  * Upserts the 4 KT seed templates for an organization. Idempotent — re-running
  * is safe because both upserts key on the canonical compound-unique constraints
  * (`@@unique([organizationId, role])` for parent rows, `@@unique([workflowRoleTemplateId, sortOrder])`
- * for child task rows, both established by Plan 74-04's migration).
+ * for child task rows).
  */
 export async function upsertSeedTemplates(
   prisma: PrismaClient,

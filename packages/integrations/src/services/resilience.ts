@@ -10,7 +10,7 @@
 // helper applies the per-provider config from `resilience-config.ts`.
 //
 // =============================================================================
-// READ THIS BEFORE TUNING `retryAttempts` (NEW-ARCH-06)
+// READ THIS BEFORE TUNING `retryAttempts`
 // =============================================================================
 //
 // `withResilience` is one of THREE retry layers in the system. Every call you
@@ -86,10 +86,10 @@
 //     exhausted.
 //   - State is per-process. Cold starts pay a few extra retries while the
 //     breaker rebuilds its picture; that's cheaper than a Redis round-trip on
-//     every outbound call (per F-INT-05 settled decision). If we ever need
+//     every outbound call. If we ever need
 //     cross-instance coordination, the breaker exposes events that can be
 //     piped to Redis.
-//   - Connection reuse (F-INT-22): we deliberately do NOT configure a custom
+//   - Connection reuse: we deliberately do NOT configure a custom
 //     undici `Agent` here. Node 20+ native `fetch` keep-alives by default at
 //     the global pool level, which is sufficient until profiling shows TLS
 //     handshakes on the critical path. Adapters that previously instantiated
@@ -135,7 +135,7 @@ export function resetResilienceForTests(): void {
 }
 
 // ---------------------------------------------------------------------------
-// Observability surface (F-INT-23)
+// Observability surface
 // ---------------------------------------------------------------------------
 
 /**

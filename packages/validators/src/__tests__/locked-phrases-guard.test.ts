@@ -1,14 +1,13 @@
-// Phase 56 · Plan 03 — CI guard for locked German legal phrases (FOUND-04, D-05/D-06).
-// See .planning/phases/56-country-foundations-german-i18n/56-03-PLAN.md.
+// CI guard for locked German legal phrases.
 //
-// Enforces (per phase CONTEXT D-05, D-06, D-07):
+// Enforces:
 //   1. No reserved legal key appears in any locale messages/*.json file.
 //   2. Every value in LOCKED_DE_PHRASES appears verbatim in
-//      packages/validators/src/privacy-notices/de.ts once Plan 07 lands.
+//      packages/validators/src/privacy-notices/de.ts once that file lands.
 //   3. messages/de.json uses the formal "Sie" register (no Du/Dir/Dein…).
 //
 // Gating: the reserved-key iteration always runs for en/pl/ar/de (missing
-// files are skipped to keep the guard idempotent pre- vs post-Plan 05/07).
+// files are skipped to keep the guard idempotent).
 
 import fs from 'node:fs';
 import path from 'node:path';
@@ -83,17 +82,17 @@ describe('Locked German legal phrases (D-05, D-06)', () => {
   });
 
   it('privacy-notices/de.ts content contains every locked phrase (output-level D-06)', async () => {
-    // TODO Plan 07 — privacy-notices/de.ts is created there. Skip until it exists.
+    // Skip until privacy-notices/de.ts exists.
     const privacyDePath = path.resolve(__dirname, '../privacy-notices/de.ts');
     if (!fs.existsSync(privacyDePath)) return;
 
     const dePrivacy = await import('../privacy-notices/de.js');
     const serialized = JSON.stringify(dePrivacy);
-    // Phase 57 (D-11, D-14) — invoice-footer phrases are rendered on invoices,
-    // NOT in privacy notices; exempt them from the privacy-notice content check.
-    // Phase 58 (D-07) — classification criteria titles live in classification
-    // rule sets (packages/classification), not in privacy notices.
-    // Phase 59 (D-18) — DRV defense bundle strings live in the DRV PDF template
+    // Invoice-footer phrases are rendered on invoices, NOT in privacy notices;
+    // exempt them from the privacy-notice content check.
+    // Classification criteria titles live in classification rule sets
+    // (packages/classification), not in privacy notices.
+    // DRV defense bundle strings live in the DRV PDF template
     // (packages/api/src/pdf-templates/drv-defense-bundle.tsx), not in privacy notices.
     const privacyScopedKeys = new Set([
       'TAX_KLEINUNTERNEHMER_NOTICE',
@@ -112,15 +111,13 @@ describe('Locked German legal phrases (D-05, D-06)', () => {
       'DRV_DEFENSE_TABLE_HEADERS_DE',
       'DRV_DEFENSE_ATTESTATION_FOOTER_DE',
       'DRV_DEFENSE_CROSS_REFERENCE_FOOTER_DE',
-      // Phase 60 (CLASS-09) — DRV clearance panel phrases live on the engagement page,
-      // not in privacy notices.
+      // DRV clearance panel phrases live on the engagement page, not in privacy notices.
       'DRV_CLEARANCE_PANEL_HEADER_DE',
       'DRV_CLEARANCE_SECTION_REFERENCE_DE',
-      // Phase 63 (D-22) — Skonto description template lives on invoice detail,
-      // not in privacy notices.
+      // Skonto description template lives on invoice detail, not in privacy notices.
       'SKONTO_DESCRIPTION_TEMPLATE_DE',
-      // Phase 62 (EINV-02, EINV-03) — intake error phrases render in the
-      // upload dialog + detail action bar, not in privacy notices.
+      // E-invoice intake error phrases render in the upload dialog + detail action bar,
+      // not in privacy notices.
       'EINVOICE_INTAKE_XSD_REJECT_DE',
       'EINVOICE_INTAKE_LEVEL_TOO_LOW_DE',
       'EINVOICE_INTAKE_EXTENDED_BEST_EFFORT_DE',
@@ -156,7 +153,7 @@ describe('Locked German legal phrases (D-05, D-06)', () => {
         expect(v.length, `${key} is empty`).toBeGreaterThan(0);
         return;
       }
-      // Phase 59 — DRV_DEFENSE_SECTION_TITLES_DE / DRV_DEFENSE_TABLE_HEADERS_DE
+      // DRV_DEFENSE_SECTION_TITLES_DE / DRV_DEFENSE_TABLE_HEADERS_DE
       // are nested objects of locked strings.
       expect(v, `${key} is neither string nor object`).toBeTypeOf('object');
       for (const [childKey, childValue] of Object.entries(v as Record<string, unknown>)) {
@@ -299,8 +296,7 @@ describe('UK locked phrases (Phase 57 — D-14)', () => {
 });
 
 // -----------------------------------------------------------------------------
-// Phase 59 · D-18 — prefix-based CI guard for IR35 SDS + DRV defense strings.
-// See .planning/phases/59-classification-documents-chain-tracking/59-RESEARCH.md §Pattern 5.
+// Prefix-based CI guard for IR35 SDS + DRV defense strings.
 // -----------------------------------------------------------------------------
 
 const RESERVED_PHASE_59_PREFIXES = ['IR35_DISPUTE_', 'SDS_', 'DRV_DEFENSE_'] as const;
@@ -325,8 +321,7 @@ describe('Locked phrase prefixes (Phase 59 · D-18)', () => {
 });
 
 // -----------------------------------------------------------------------------
-// Phase 60 · CLASS-09 — prefix-based CI guard for DRV clearance panel strings.
-// See .planning/phases/60-classification-polish/60-03-PLAN.md.
+// Prefix-based CI guard for DRV clearance panel strings.
 // -----------------------------------------------------------------------------
 
 const RESERVED_PHASE_60_PREFIXES = ['DRV_CLEARANCE_'] as const;
@@ -361,7 +356,7 @@ describe('Locked phrase prefixes (Phase 60 · CLASS-09)', () => {
 });
 
 // -----------------------------------------------------------------------------
-// Phase 63 — GB locked phrases (LPCDA claim letter, D-17)
+// GB locked phrases (LPCDA claim letter)
 // -----------------------------------------------------------------------------
 
 describe('Phase 63 — GB locked phrases', () => {
@@ -412,7 +407,7 @@ describe('Phase 63 — GB locked phrases', () => {
 });
 
 // -----------------------------------------------------------------------------
-// Phase 63 — DE Skonto locked phrase (D-22)
+// DE Skonto locked phrase
 // -----------------------------------------------------------------------------
 
 describe('Phase 63 — DE Skonto locked phrase', () => {
@@ -432,7 +427,7 @@ describe('Phase 63 — DE Skonto locked phrase', () => {
 });
 
 // -----------------------------------------------------------------------------
-// Phase 62 — DE intake locked phrases (EINV-02, EINV-03)
+// DE e-invoice intake locked phrases
 // -----------------------------------------------------------------------------
 
 describe('Phase 62 — DE intake locked phrases', () => {
@@ -494,7 +489,7 @@ describe('Phase 62 — DE intake locked phrases', () => {
 });
 
 // -----------------------------------------------------------------------------
-// Phase 64 · D-14 (Layer 1) — signoff registry CI guard.
+// Signoff registry CI guard.
 // Asserts structural invariants on every PR (always-run).
 // Layer 2 (production PENDING block) is in .github/workflows/ci.yml.
 // -----------------------------------------------------------------------------
@@ -582,14 +577,13 @@ describe('Phase 64 — Signoff registry CI guard (D-14 Layer 1)', () => {
 
   it('getAllPending() returns all registry keys while every entry is PENDING (12 Phase 64 disclaimers + 17 Phase 75 IP clauses)', () => {
     const pending = getAllPending();
-    // All registry keys remain PENDING until legal sign-off
-    // (legal-signoff.ip_clauses.*, all PENDING pending adviser sign-off).
+    // All registry keys remain PENDING until legal sign-off.
     expect(pending.length).toBeGreaterThan(0);
     // The 12 base disclaimer keys must still be PENDING.
     for (const key of Object.keys(LOCKED_DISCLAIMERS)) {
       expect(pending, `disclaimer key "${key}" no longer PENDING`).toContain(key);
     }
-    // All 17 Phase 75 IP-clause sign-offs must be PENDING (legal review outstanding).
+    // All 17 IP-clause sign-offs must be PENDING (legal review outstanding).
     const ipClausePending = pending.filter(k => k.startsWith('legal-signoff.ip_clauses.'));
     expect(ipClausePending).toHaveLength(17);
   });
@@ -605,7 +599,7 @@ describe('Phase 64 — Signoff registry CI guard (D-14 Layer 1)', () => {
 });
 
 // -----------------------------------------------------------------------------
-// Phase 79 (F3 Gulf) — AE/SA locked statutory phrases (GULF-09, D-14/D-15)
+// AE/SA locked statutory phrases (UAE free-zone authority legal names + KSA)
 // -----------------------------------------------------------------------------
 
 describe('Phase 79 — AE locked phrases (UAE free-zone authority legal names)', () => {

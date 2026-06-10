@@ -49,16 +49,16 @@ export interface SaudizationDashboardProps {
 }
 
 /**
- * Presentational Saudization dashboard (GULF-05/06). Focal point: the manual
- * nationalisation rate (hero stat, Display role, `tabular-nums`, `text-primary`).
+ * Presentational Saudization dashboard. Focal point: the manual nationalisation
+ * rate (hero stat, Display role, `tabular-nums`, `text-primary`).
  *
- * Hard constraints from the UI-SPEC / CONTEXT:
- *   - The Nitaqat band is a NEUTRAL `outline` badge with the locked statutory label —
- *     it is NEVER colorized to assert a band judgement (D-12 / Pitfall 8). The system
- *     never auto-computes the band; it is admin-entered only.
- *   - The manual headcount is authoritative; the platform-derived contractor counts
- *     render side-by-side and visually subordinate (`text-muted-foreground`, D-10).
- *   - Charts wrap `useRtlChartConfig` for RTL (D-13). Logical properties only.
+ * Hard constraints:
+ *   - The Nitaqat band is a NEUTRAL `outline` badge with the locked statutory
+ *     label — it is NEVER colorized to assert a band judgement. The system never
+ *     auto-computes the band; it is admin-entered only.
+ *   - The manual headcount is authoritative; the platform-derived contractor
+ *     counts render side-by-side and visually subordinate (`text-muted-foreground`).
+ *   - Charts wrap `useRtlChartConfig` for RTL. Logical properties only.
  */
 export function SaudizationDashboard({
   dashboard,
@@ -143,7 +143,7 @@ export function SaudizationDashboard({
             <div className="flex flex-wrap items-center gap-2 pt-1">
               <span className="text-sm text-muted-foreground">{t('band.label')}</span>
               {bandLabel ? (
-                // Neutral badge ONLY — never colorized to assert a band judgement (D-12).
+                // Neutral badge ONLY — never colorized to assert a band judgement.
                 <Badge variant="outline" className="font-medium">
                   {bandLabel}
                 </Badge>

@@ -1,6 +1,6 @@
 // packages/validators/src/legal/index.ts
 //
-// Phase 73 — COMPL doc-name locked-phrase registry aggregator (D-14, D-15).
+// COMPL doc-name locked-phrase registry aggregator.
 // Re-exports the per-jurisdiction locked-name modules so consumers can import a
 // single surface. Per-jurisdiction legal review still lands per-file (UK adviser
 // reviews compliance-uk.ts, Steuerberater reviews compliance-de.ts, etc.).

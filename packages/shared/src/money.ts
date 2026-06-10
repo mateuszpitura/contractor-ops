@@ -2,8 +2,8 @@
  * Shared Money utility wrapping Dinero.js v2.
  * Single source of truth for all monetary operations across the platform.
  *
- * Per D-01: Dinero.js v2 (2.0.2) is the Money utility.
- * Per D-02: All monetary operations pass through this module.
+ * Dinero.js v2 (2.0.2) is the Money utility.
+ * All monetary operations pass through this module.
  *
  * @module money
  */

@@ -1,5 +1,5 @@
 export type { ClassifyErrorInput, ErrorClass } from '../idp/error-classifier.js';
-// Phase 77 — IdP impact-preview + error-classifier public types.
+// IdP impact-preview + error-classifier public types.
 export { classifyError } from '../idp/error-classifier.js';
 export type {
   EntraImpactCustomMetrics,

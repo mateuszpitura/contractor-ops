@@ -5,9 +5,9 @@ import { getServerEnv } from '@contractor-ops/validators';
 // AES-256-GCM Social Security Number Encryption
 // Mirrors bank-account-crypto.ts, but keyed by a DEDICATED SSN_ENCRYPTION_KEY
 // (separate from BANK_ACCOUNT_ENCRYPTION_KEY) so the two secrets have distinct
-// blast radii — a compromise of one key never exposes the other data class
-// (Phase 84 D-01). Never hand-roll; the IV/authTag/format here matches the
-// audited bank-account precedent.
+// blast radii — a compromise of one key never exposes the other data class.
+// Never hand-roll; the IV/authTag/format here matches the audited
+// bank-account precedent.
 // ---------------------------------------------------------------------------
 
 const ALGORITHM = 'aes-256-gcm';

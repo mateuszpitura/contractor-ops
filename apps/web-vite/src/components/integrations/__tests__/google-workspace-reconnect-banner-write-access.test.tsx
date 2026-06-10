@@ -1,4 +1,4 @@
-// Phase 76 SC#3 — GoogleWorkspaceReconnectBanner write-access variant (3rd state).
+// GoogleWorkspaceReconnectBanner write-access variant (3rd state).
 // The shared harness wires the real en.json bundle, so visible strings match.
 
 import type { ScopeCapabilities } from '@contractor-ops/db';

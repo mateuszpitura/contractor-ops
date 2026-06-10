@@ -1,11 +1,11 @@
 /**
- * Pino sinks for outbound HTTP integration events. Phase 2 P2-E F-OBS-06.
+ * Pino sinks for outbound HTTP integration events.
  *
- * The resilience layer (P2-B's `packages/integrations/src/services/resilience.ts`)
+ * The resilience layer (`packages/integrations/src/services/resilience.ts`)
  * already emits opossum's breaker state-transition events directly to Pino
  * (`open` / `halfOpen` / `close` / `reject`). What's missing — and what this
- * module supplies — are the per-call duration / status / retries lines that
- * the audit asks for in F-OBS-06: "outbound HTTP duration/status logging".
+ * module supplies — are the per-call duration / status / retries lines for
+ * outbound HTTP duration/status logging.
  *
  * Two sinks are exported:
  *

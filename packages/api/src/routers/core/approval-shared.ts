@@ -250,7 +250,7 @@ export function approvalQueueSqlConditions(
 
 /**
  * After an approval flow completes, mark the invoice as approved and sync the
- * payment-due calendar deadline (D-07).
+ * payment-due calendar deadline.
  */
 export async function finalizeApprovedInvoice(
   tx: TxClient,

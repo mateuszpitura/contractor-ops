@@ -1,6 +1,6 @@
-// Phase 70-01 · FOUND6-02 (D-05) — default body redaction on the root logger.
-// Plan 70-03 added `body` and `*.body` to the default redact.paths so any
-// log.info({ body: ... }) call site emits `[REDACTED]` for the body field.
+// Default body redaction on the root logger. `body` and `*.body` are in the
+// default redact.paths so any log.info({ body: ... }) call site emits
+// `[REDACTED]` for the body field.
 //
 // Implementation note: the global root logger is created with multistream
 // (pino-pretty + axiom) which buffers writes. To assert redact behaviour

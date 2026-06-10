@@ -1,12 +1,12 @@
-// Phase 70-01 · FOUND6-03 — failing test scaffold for the message-key parity
-// guard. Plan 70-04 implements `runI18nParity` (loads en/de/pl/ar JSON,
-// flattens key paths, asserts EN keys are a subset of every peer locale).
+// Test scaffold for the message-key parity guard. `runI18nParity` loads
+// en/de/pl/ar JSON, flattens key paths, and asserts EN keys are a subset of
+// every peer locale.
 //
-// Phase 84-02 · US-LOC-01 — fallback-aware peer mode. en-US is a thin-override
-// locale that inherits every unchanged key from en via the i18next fallbackLng
-// chain (en-US → en → pl). The parity gate must treat a key present in en as
-// covered for en-US, so a deliberately-thin en-US.json passes — without relaxing
-// the exact-parity semantics of the strict peers (de/pl/ar).
+// Fallback-aware peer mode: en-US is a thin-override locale that inherits
+// every unchanged key from en via the i18next fallbackLng chain
+// (en-US → en → pl). The parity gate must treat a key present in en as
+// covered for en-US, so a deliberately-thin en-US.json passes — without
+// relaxing the exact-parity semantics of the strict peers (de/pl/ar).
 
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';

@@ -3,7 +3,7 @@ import type { CredentialBlob } from '../types/credentials.js';
 
 // ---------------------------------------------------------------------------
 // AES-256-GCM Credential Encryption
-// Per D-01/D-02: Per-provider encryption keys for credential blobs
+// Per-provider encryption keys for credential blobs
 // ---------------------------------------------------------------------------
 
 const ALGORITHM = 'aes-256-gcm';

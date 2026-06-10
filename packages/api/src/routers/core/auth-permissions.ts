@@ -1,11 +1,11 @@
-// Phase 74 Plan 05 — Permission introspection query.
+// Permission introspection query.
 //
 // Returns the resource-action map for the current session's role, enabling
-// belt-and-suspenders UI gating in Plan 74-08 (the override dialog only
-// renders when `workflow` includes `override_blocking_task`).
+// belt-and-suspenders UI gating (the override dialog only renders when
+// `workflow` includes `override_blocking_task`).
 //
 // Server-side derivation only — client cannot override the role used for the
-// lookup (T-74-05-permission-introspection-bypass mitigation).
+// lookup.
 
 import { roles } from '@contractor-ops/auth';
 import { createLogger } from '@contractor-ops/logger';
@@ -42,7 +42,7 @@ export const authPermissionsRouter = router({
       logger.warn({ roleName, userId: session?.user?.id }, 'unknown role on session');
       return {} as Record<string, readonly string[]>;
     }
-    // Better Auth role.statements is the source-of-truth shape; mirror Plan 74-03.
+    // Better Auth role.statements is the source-of-truth shape.
     return (role.statements ?? {}) as Record<string, readonly string[]>;
   }),
 });

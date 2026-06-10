@@ -1,14 +1,14 @@
 import type { SubscriptionTier } from '@contractor-ops/db/generated/prisma/client';
 import { getServerEnv } from '@contractor-ops/validators';
 
-/** Monthly OCR credit allowance per tier for active subscriptions (D-06) */
+/** Monthly OCR credit allowance per tier for active subscriptions */
 export const TIER_CREDIT_ALLOWANCE: Record<SubscriptionTier, number> = {
   STARTER: 20,
   PRO: 100,
   ENTERPRISE: 500,
 } as const;
 
-/** OCR credit allowance for trial subscriptions per D-08 */
+/** OCR credit allowance for trial subscriptions */
 export const TRIAL_CREDIT_ALLOWANCE = 5;
 
 const stripeEnv = getServerEnv();

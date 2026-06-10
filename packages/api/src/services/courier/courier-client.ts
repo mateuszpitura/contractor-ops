@@ -1,7 +1,7 @@
 // ---------------------------------------------------------------------------
 // CourierClient Interface
 //
-// Abstract interface for courier integrations (InPost now, DPD/UPS in Phase 35).
+// Abstract interface for courier integrations (InPost, DPD, UPS).
 // Separate bounded context from BaseAdapter (per STATE.md decision).
 // ---------------------------------------------------------------------------
 

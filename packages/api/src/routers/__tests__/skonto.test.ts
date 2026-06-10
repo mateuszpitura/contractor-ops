@@ -633,9 +633,7 @@ describe('skontoRouter', () => {
       // diverge (e.g. supplier-side withholding tax deducted at source, or
       // reverse-charge VAT). The Skonto basis MUST track amountToPayMinor so
       // that skonto.evaluateForInvoice and payment.applySkontoToItem agree on
-      // the basis for the same invoice. This test would have caught CR-02 in
-      // the v5.0 audit (see .planning/phases/63-uk-payments-financial-features/
-      // 63-VERIFICATION.md and Phase 65 CONTEXT.md decision D-03 / B-01).
+      // the basis for the same invoice.
       const totalMinor = 120_000; // gross invoice
       const amountToPayMinor = 100_000; // after €20 supplier withholding
       expect(totalMinor).not.toBe(amountToPayMinor); // sanity: fixture exposes the bug surface

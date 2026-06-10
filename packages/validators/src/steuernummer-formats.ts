@@ -2,7 +2,7 @@
 //
 // Per-Bundesland Steuernummer format lookup.
 // Source: https://de.wikipedia.org/wiki/Steuernummer
-// Last verified: 2026-04-12 (during Phase 56 research).
+// Last verified: 2026-04-12.
 // Review cadence: annual Steuerberater re-verification (Finanzamt reorganisations are
 // rare but do happen; a Bundesland-level format change would silently invalidate
 // legitimate inputs until this table is refreshed).

@@ -12,8 +12,8 @@ interface PaymentBlockState {
 }
 
 /**
- * Phase 72 D-10 — detects the structured PRECONDITION_FAILED compliance block.
- * tRPC v11 surfaces the procedure error code at `error.data.code`; the
+ * Detects the structured PRECONDITION_FAILED compliance block. tRPC v11
+ * surfaces the procedure error code at `error.data.code`; the
  * `contractorReasons` payload rides on the serialised `cause`.
  */
 function isPaymentBlock(
@@ -140,10 +140,10 @@ export function usePaymentRunStepReview(options: {
         exportFormat,
       });
     } catch (err) {
-      // Phase 72 D-10 — a PRECONDITION_FAILED compliance block opens the modal (sole surface).
+      // A PRECONDITION_FAILED compliance block opens the modal (sole surface).
       // The useResourceMutation toast is suppressed for this error class via suppressPaymentBlockToast
       // above, so exactly one surface fires. All other errors fall through to the generic toast
-      // path in useResourceMutation (M-2 fix — non-block failures are never silently swallowed).
+      // path in useResourceMutation — non-block failures are never silently swallowed.
       if (isPaymentBlock(err)) {
         setPaymentBlock({ open: true, reasons: err.cause?.contractorReasons ?? [] });
       }

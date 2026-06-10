@@ -1,7 +1,7 @@
 // packages/validators/src/__tests__/leitweg-id.test.ts
 //
-// Phase 61 · Plan 61-01 Task 2 — Leitweg-ID Zod schema + MOD-11-10 check-digit
-// round-trip test against the ground-truth fixture corpus.
+// Leitweg-ID Zod schema + MOD-11-10 check-digit round-trip test against the
+// ground-truth fixture corpus.
 
 import { describe, expect, it } from 'vitest';
 
@@ -77,7 +77,7 @@ describe('validateLeitwegCheckDigit', () => {
 });
 
 // ---------------------------------------------------------------------------
-// peppolParticipantPairSchema — Phase 61 Plan 04 (D-11)
+// peppolParticipantPairSchema
 // ---------------------------------------------------------------------------
 
 describe('peppolParticipantPairSchema', () => {

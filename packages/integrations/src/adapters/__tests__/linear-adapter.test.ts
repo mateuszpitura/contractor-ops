@@ -324,8 +324,8 @@ describe('LinearAdapter', () => {
     });
 
     it('NEVER accepts a webhook secret supplied via inbound x-webhook-secret header (F-SEC-03)', () => {
-      // F-SEC-03: An attacker who can reach the webhook endpoint must not be
-      // able to supply their own secret + matching HMAC and pass verification.
+      // An attacker who can reach the webhook endpoint must not be able to
+      // supply their own secret + matching HMAC and pass verification.
       delete process.env.LINEAR_WEBHOOK_SECRET;
       const attackerSecret = 'attacker-supplied';
       const body = JSON.stringify({ type: 'Issue', action: 'create' });

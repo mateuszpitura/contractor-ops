@@ -1,4 +1,4 @@
-// Phase 59 · Plan 02 Task 1 — SDS template fixtures.
+// SDS template fixtures.
 // Each fixture is a completed IR35 ClassificationAssessment with a fully populated
 // outcome + questionsSnapshot, sufficient to exercise every branch of IR35SDSDocument.
 
@@ -174,7 +174,7 @@ export const fixtureIr35Indeterminate: Assessment = {
   },
 };
 
-/** Back-compat alias — plan referred to 'undetermined' but the real Ir35Verdict is 'indeterminate'. */
+/** Back-compat alias — the real Ir35Verdict is 'indeterminate', not 'undetermined'. */
 export const fixtureIr35Undetermined = fixtureIr35Indeterminate;
 
 export const SDS_FIXTURE_ENGAGEMENT = {

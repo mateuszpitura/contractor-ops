@@ -84,7 +84,7 @@ export const publicDocumentRouter = router({
         });
       }
 
-      // F-SEC-15: block downloads for any non-CLEAN scan status.
+      // Block downloads for any non-CLEAN scan status.
       // PENDING and FAILED files must never be served to API consumers — only
       // CLEAN files are safe. INFECTED is reported separately for clarity.
       if (doc.virusScanStatus !== 'CLEAN') {

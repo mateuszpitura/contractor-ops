@@ -3,7 +3,7 @@ import type { RunStatus, StepRow } from './types.js';
 import { MAX_ATTEMPTS } from './types.js';
 
 /**
- * Phase 76 D-02 / Phase 77 D-11 — Aggregate run-status derivation rule.
+ * Aggregate run-status derivation rule.
  *
  * PURE function. Rule:
  *   - all steps terminal-success → COMPLETED
@@ -12,9 +12,9 @@ import { MAX_ATTEMPTS } from './types.js';
  *   - empty step list → PENDING (transient — pre-fan-out)
  *   - otherwise → IN_PROGRESS
  *
- * "Terminal-success" = `SUCCEEDED` OR `MANUAL_COMPLETED` (Phase 77 D-11 — an
- * admin manually-completed step is done by out-of-band verification, so it
- * counts toward COMPLETED/PARTIAL_FAILURE exactly like SUCCEEDED).
+ * "Terminal-success" = `SUCCEEDED` OR `MANUAL_COMPLETED` — an admin manually-completed
+ * step is done by out-of-band verification, so it counts toward COMPLETED/PARTIAL_FAILURE
+ * exactly like SUCCEEDED.
  * "Terminally failed" = status === 'FAILED' AND attempts >= MAX_ATTEMPTS.
  * A FAILED step with attempts < MAX is still retryable; the run stays IN_PROGRESS.
  */
@@ -40,7 +40,7 @@ export function deriveRunStatus(steps: readonly StepRow[]): RunStatus {
 
 /**
  * Async wrapper: reads the run's steps, derives the new status, UPDATEs the run row.
- * Called by the QStash step-runner job AFTER every step transition (Plan 76-06).
+ * Called by the QStash step-runner job AFTER every step transition.
  *
  * Returns the new status. Idempotent — safe to call concurrently (last write wins;
  * all writes converge because deriveRunStatus is pure-of-the-step-rows).

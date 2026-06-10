@@ -1,4 +1,4 @@
-// Phase 60 · CLASS-09 — DRV clearance UI barrel.
+// DRV clearance UI barrel.
 
 export type { DrvClearanceFormInitial, DrvClearanceFormProps } from './drv-clearance-form';
 export { DrvClearanceForm } from './drv-clearance-form.js';

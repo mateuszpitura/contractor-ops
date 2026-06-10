@@ -109,7 +109,7 @@ describe('TabCompliance', () => {
     expect(screen.getByText('Expiring Doc')).toBeInTheDocument();
   });
 
-  // CR-2: items with pendingReviewDocumentId show the review affordance.
+  // Items with pendingReviewDocumentId show the review affordance.
   it('shows UploadReviewDialogContainer for items with a pendingReviewDocumentId', () => {
     canReturn = true;
     render(

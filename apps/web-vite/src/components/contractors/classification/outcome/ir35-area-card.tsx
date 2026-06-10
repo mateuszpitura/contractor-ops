@@ -1,10 +1,11 @@
 // ---------------------------------------------------------------------------
-// IR35 per-area card — Phase 58 Plan 05 Task 1.
+// IR35 per-area card
 // ---------------------------------------------------------------------------
 // Renders one card per Ir35AreaResult. Exposes top-3 driving questions + an
 // expandable Collapsible containing the full question inventory for this area.
 // All question prompts are read from the frozen questionsSnapshot passed
-// through props — never from the live rule-set constant (Pitfall 1).
+// through props — never from the live rule-set constant (answers must reflect
+// what was asked at assessment time).
 
 import type {
   Ir35Area,

@@ -1,8 +1,7 @@
-// Phase 57 · Plan 03 · Task 1 — PII mask for tax IDs (log-safe output).
+// PII mask for tax IDs (log-safe output).
 //
-// Mirrors the Phase 56 PII-mask precedent (packages/logger/src/pii-mask.ts).
 // Used by tax-id-validation.service to guarantee raw VAT numbers never reach
-// log sinks (ASVS V7, V8; T-57-03-02 mitigation).
+// log sinks (ASVS V7, V8 mitigation).
 
 import { describe, expect, it } from 'vitest';
 

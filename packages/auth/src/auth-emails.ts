@@ -3,7 +3,7 @@
  *
  * Wires the four mandatory Better Auth flows — email verification, password
  * reset, magic-link sign-in, and organization invitation — to Resend so the
- * auth surface is functional in non-development environments (F-SEC-13).
+ * auth surface is functional in non-development environments.
  *
  * Design notes:
  * - This module lives in `@contractor-ops/auth` (rather than reusing
@@ -27,7 +27,7 @@ import { Resend } from 'resend';
 import { authEnv } from './env.js';
 
 // ---------------------------------------------------------------------------
-// Idempotency-key derivation (DRIFT-01)
+// Idempotency-key derivation
 // ---------------------------------------------------------------------------
 //
 // `@contractor-ops/integrations/services/idempotency` is the canonical
@@ -64,7 +64,7 @@ interface SendEmailParams {
   /** Stable identifier for log correlation (e.g. 'verify-email', 'reset-password'). */
   template: string;
   /**
-   * Tenant scope used for idempotency-key derivation (DRIFT-01).
+   * Tenant scope used for idempotency-key derivation.
    *
    * Most Better Auth flows (verify-email, reset-password, magic-link) fire
    * BEFORE a user has selected an organization, so there is no real org
@@ -100,12 +100,12 @@ async function sendAuthEmail(params: SendEmailParams): Promise<void> {
 
   const resend = getResend();
   try {
-    // F-INT-04 / DRIFT-01: server-derived Idempotency-Key. The `businessKey`
-    // hashes (template, recipient, subject, body) so a retry of the same
-    // logical send collapses to one Resend message. Resend retains the key
-    // for 24h, which is wider than any retry window we operate under. The
-    // `auth.email.<template>` operation discriminator partitions verify /
-    // reset / magic-link / invitation flows from each other.
+    // Server-derived Idempotency-Key: the `businessKey` hashes (template,
+    // recipient, subject, body) so a retry of the same logical send collapses
+    // to one Resend message. Resend retains the key for 24h, which is wider
+    // than any retry window we operate under. The `auth.email.<template>`
+    // operation discriminator partitions verify / reset / magic-link /
+    // invitation flows from each other.
     const businessKey = createHash('sha256')
       .update(`${params.to}|${params.subject}|${params.html}`)
       .digest('hex');
@@ -291,9 +291,9 @@ export async function sendMagicLinkEmail(params: MagicLinkEmailParams): Promise<
 interface InvitationEmailParams {
   to: string;
   /**
-   * Tenant scope (DRIFT-01) — the inviting organization's id. Better Auth's
-   * organization plugin always supplies this in `data.organization.id` so
-   * the field is required at this entry point.
+   * Tenant scope — the inviting organization's id. Better Auth's organization
+   * plugin always supplies this in `data.organization.id` so the field is
+   * required at this entry point.
    */
   organizationId: string;
   organizationName: string;

@@ -3,7 +3,7 @@ import type { Prisma } from '../generated/prisma/client/client.js';
 
 // These assertions are compile-time AND runtime: each `Prisma.*UncheckedCreateInput`
 // reference would fail typecheck if the column/model/enum did not exist on the
-// regenerated client (Plan 75-02 schema additions).
+// regenerated client.
 
 const baseContract = {
   organizationId: 'org_1',

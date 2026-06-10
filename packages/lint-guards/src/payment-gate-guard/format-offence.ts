@@ -1,4 +1,4 @@
-// Phase 72 D-08 — formatter for payment-gate-guard offences.
+// Formatter for payment-gate-guard offences.
 
 import type { PaymentGateOffence } from './run-guard';
 

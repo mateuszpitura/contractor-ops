@@ -1,4 +1,4 @@
-// Phase 72 D-17 — Snapshot builder for PaymentRunComplianceCheck.
+// Snapshot builder for PaymentRunComplianceCheck.
 //
 // Captures the FULL set of BLOCKING-severity ContractorComplianceItem rows
 // (frozen copy) regardless of status — a PASS verdict still snapshots the full
@@ -65,8 +65,8 @@ export async function buildSnapshotForContractor(
   jurisdictionDate: string,
 ): Promise<SnapshotResult> {
   // Pull ALL BLOCKING-severity items regardless of status (full checked set).
-  // NOTE: ContractorComplianceItem has no waivedAt/satisfiedAt columns (Phase 71
-  // schema) — they are intentionally omitted from the select + snapshot.
+  // NOTE: ContractorComplianceItem has no waivedAt/satisfiedAt columns —
+  // they are intentionally omitted from the select + snapshot.
   const items = (await tx.contractorComplianceItem.findMany({
     where: { contractorId, severity: 'BLOCKING' },
     select: {

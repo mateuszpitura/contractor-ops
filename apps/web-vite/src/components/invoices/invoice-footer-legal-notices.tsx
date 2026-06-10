@@ -1,6 +1,6 @@
 /**
  * Invoice footer legal notices — composes the three locked phrases from
- * `@contractor-ops/validators` per D-11 / D-14 precedence rules. No
+ * `@contractor-ops/validators` following country-code precedence rules. No
  * codemod swaps needed (no next-intl / next imports).
  */
 

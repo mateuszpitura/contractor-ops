@@ -1,7 +1,6 @@
-// Phase 70-10 · FOUND6-05 (D-16) — GoogleWorkspaceReconnectBanner unit tests
-// ported from apps/web. Web-vite uses `useTranslations` from `@/i18n` instead
-// of `NextIntlClientProvider`, but the shared harness wires the same en.json
-// bundle so the visible strings match.
+// GoogleWorkspaceReconnectBanner unit tests ported from apps/web. Web-vite uses
+// `useTranslations` from `@/i18n` instead of `NextIntlClientProvider`, but the
+// shared harness wires the same en.json bundle so the visible strings match.
 
 import type { ScopeCapabilities } from '@contractor-ops/db';
 import { describe, expect, it } from 'vitest';

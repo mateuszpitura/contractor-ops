@@ -309,7 +309,7 @@ const equipmentCoreRouter = router({
 
   /**
    * Assign equipment to a contractor.
-   * Equipment must be in AVAILABLE status (per D-07).
+   * Equipment must be in AVAILABLE status.
    */
   assign: tenantProcedure
     .use(requirePermission({ equipment: ['update'] }))

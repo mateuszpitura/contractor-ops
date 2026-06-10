@@ -1,14 +1,14 @@
-// Phase 77 D-07 / D-08 — closed-enum IdP error classifier.
+// Closed-enum IdP error classifier.
 //
-// PURE function consumed by the GWS + Slack deprovision adapters (77-02/03) and
-// the QStash step-runner (77-04) to set `DeprovisioningStep.errorClass`. It
-// coexists with Phase 76's `DeprovisionFailureKind` (retry-policy hints): this
-// classifier is the closed-enum taxonomy that drives the admin reconcile-queue
-// UX + the LIKELY_GONE/manual-override flow, derived purely from HTTP status +
-// provider error code. No side effects, no logging, no network/db imports.
+// PURE function consumed by the GWS + Slack deprovision adapters and the
+// QStash step-runner to set `DeprovisioningStep.errorClass`. It coexists with
+// `DeprovisionFailureKind` (retry-policy hints): this classifier is the
+// closed-enum taxonomy that drives the admin reconcile-queue UX and the
+// LIKELY_GONE/manual-override flow, derived purely from HTTP status + provider
+// error code. No side effects, no logging, no network/db imports.
 
 /**
- * Closed taxonomy of deprovision call-failure modes (CONTEXT.md D-07).
+ * Closed taxonomy of deprovision call-failure modes.
  *
  * - `TRANSIENT_*` — retryable; the step runner re-enqueues with backoff.
  * - `PERMANENT_NOT_FOUND` — the user is already gone provider-side → the saga
@@ -31,9 +31,9 @@ export type ErrorClass =
  * not provider-driven — the hint only documents the caller's source.
  *
  * NOTE: the GoogleWorkspace/Slack/Okta/GitHub keys mirror the Prisma
- * `DeprovisioningProvider` enum; Entra is the saga key `ENTRA`. The plan's
- * Phase-78-D-13 spec used `ENTRA_ID` but the whole tree standardised on `ENTRA`;
- * the dual literal is dropped — call sites must pass `'ENTRA'`.
+ * `DeprovisioningProvider` enum; Entra is the saga key `ENTRA`. The whole
+ * tree standardised on `ENTRA` (not `ENTRA_ID`); call sites must pass
+ * `'ENTRA'`.
  */
 export type ClassifyErrorProvider = 'GOOGLE_WORKSPACE' | 'SLACK' | 'ENTRA' | 'OKTA' | 'GITHUB';
 
@@ -55,22 +55,22 @@ export interface ClassifyErrorInput {
    * network-level signals (ECONNRESET, ETIMEDOUT, "fetch failed").
    */
   cause?: unknown;
-  /** Optional provider source hint (Phase 78 D-13). Behavior stays signal-driven. */
+  /** Optional provider source hint. Behavior stays signal-driven. */
   provider?: ClassifyErrorProvider;
   /**
-   * Response headers, lower-cased keys. Phase 78 D-13: GitHub overloads 403 for
-   * BOTH true auth-forbidden AND secondary rate limits, so the headers
-   * disambiguate — `x-ratelimit-remaining: 0` or a `retry-after` header on a 403
-   * marks a rate limit (TRANSIENT), not a forbidden (PERMANENT).
+   * Response headers, lower-cased keys. GitHub overloads 403 for BOTH true
+   * auth-forbidden AND secondary rate limits, so the headers disambiguate —
+   * `x-ratelimit-remaining: 0` or a `retry-after` header on a 403 marks a
+   * rate limit (TRANSIENT), not a forbidden (PERMANENT).
    */
   responseHeaders?: Record<string, string | undefined>;
   /** Raw response body text, scanned for the `secondary rate limit` marker (GitHub). */
   responseBody?: string;
 }
 
-// Phase 78 D-13: Entra `Authorization_RequestDenied` (missing app permission)
-// and GitHub `require_two_factor_authentication` are non-retryable forbidden
-// outcomes — mapped to PERMANENT_FORBIDDEN, never retried.
+// Entra `Authorization_RequestDenied` (missing app permission) and GitHub
+// `require_two_factor_authentication` are non-retryable forbidden outcomes —
+// mapped to PERMANENT_FORBIDDEN, never retried.
 const FORBIDDEN_PROVIDER_CODES = new Set([
   'forbidden',
   'insufficientpermissions',
@@ -81,7 +81,7 @@ const FORBIDDEN_PROVIDER_CODES = new Set([
 ]);
 
 /**
- * Phase 78 D-13 — GitHub secondary-rate-limit detection on a 403.
+ * GitHub secondary-rate-limit detection on a 403.
  *
  * GitHub returns HTTP 403 for BOTH true auth-forbidden AND rate limits. A 403
  * with `x-ratelimit-remaining: 0`, a `retry-after` header, or a `secondary rate
@@ -136,21 +136,21 @@ function isNetworkCause(cause: unknown): boolean {
 
 /**
  * Maps an HTTP status + optional provider error code into the closed
- * {@link ErrorClass} taxonomy (CONTEXT.md D-07 / D-08).
+ * {@link ErrorClass} taxonomy.
  *
  * Precedence:
  *  1. 429 / 503 → `TRANSIENT_RATE_LIMIT`
  *  2. Network-level cause (ECONNRESET / ETIMEDOUT / fetch failure) → `TRANSIENT_NETWORK`
- *  3. 403 + rate-limit signal (GitHub secondary limit, D-13) → `TRANSIENT_RATE_LIMIT`
+ *  3. 403 + rate-limit signal (GitHub secondary limit) → `TRANSIENT_RATE_LIMIT`
  *  4. 404 → `PERMANENT_NOT_FOUND`
  *  5. 401 → `PERMANENT_AUTH_EXPIRED`
  *  6. 403, or any status with a known forbidden provider code → `PERMANENT_FORBIDDEN`
  *  7. everything else → `PERMANENT_OTHER`
  *
- * Entra (`ENTRA`), Okta, and GitHub all flow through this same signal-driven
- * logic (Phase 78 D-13): generic 401/403/404/429 mappings come for free; the
- * GitHub 403-vs-rate-limit overload is the one provider-specific
- * disambiguation, handled by the rate-limit-signal check above the 403 branch.
+ * Entra, Okta, and GitHub all flow through this same signal-driven logic:
+ * generic 401/403/404/429 mappings come for free; the GitHub
+ * 403-vs-rate-limit overload is the one provider-specific disambiguation,
+ * handled by the rate-limit-signal check above the 403 branch.
  */
 export function classifyError(input: ClassifyErrorInput): ErrorClass {
   const { httpStatus, providerErrorCode, cause } = input;

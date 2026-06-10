@@ -1,9 +1,9 @@
 // ---------------------------------------------------------------------------
-// Scheinselbständigkeit Profile — DE country implementation (D-02)
+// Scheinselbständigkeit Profile — DE country implementation
 // ---------------------------------------------------------------------------
 //
-// Registers itself on import (CLASS-01). Scoring is server-only per Pitfall 2 —
-// never import this module in a client bundle.
+// Registers itself on import. Scoring is server-only — never import this
+// module in a client bundle.
 
 import { registerProfile } from '../../registry.js';
 import type { AnswerMap, Assessment, AssessmentShell } from '../../types/assessment.js';
@@ -56,7 +56,7 @@ function summariseOutcome(outcome: Extract<Outcome, { kind: 'SCHEINSELBSTANDIGKE
   }
 }
 
-// Re-export for Plan 04 wizard / Plan 05 outcome page (single source of truth).
+// Re-export for wizard UI and outcome page (single source of truth).
 export {
   CATEGORY_TITLES,
   CATEGORY_WEIGHTS,

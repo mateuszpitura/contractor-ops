@@ -1,21 +1,21 @@
 // ---------------------------------------------------------------------------
-// Phase 79 · GULF-02 (D-03/D-04) — Free-zone license → ContractorComplianceItem.
+// Free-zone license → ContractorComplianceItem
 // ---------------------------------------------------------------------------
 //
 // Writes the free-zone trade-license compliance row OUT-OF-BAND from the
-// FreeZoneAssignment service (NOT the classification → resolvePolicyRules path —
-// Pitfall 2). The existing F1 reminder cascade + payment-block gate key off
-// `severity='BLOCKING' AND status='EXPIRED'` (compliance-payment-gate.ts:86-100),
+// FreeZoneAssignment service (NOT the classification → resolvePolicyRules path).
+// The existing reminder cascade + payment-block gate key off
+// `severity='BLOCKING' AND status='EXPIRED'` (compliance-payment-gate.ts),
 // so the only new backend work is materialising this row correctly and letting
-// the cron flip PENDING→EXPIRED at the TZ boundary.
+// the status flip at the TZ boundary.
 //
-// Two landmines handled here:
-//   - D-04 (Pitfall 3): the zone !== 'MAINLAND' gate lives in THIS service write,
-//     not in the policy `appliesIf` (EngagementContext has no zone field). A
-//     Mainland (DED-licensed) assignment writes NO item and arms no gate.
-//   - Status: there is no codebase sweep that flips PENDING→EXPIRED. The status
-//     is derived at write/re-evaluate time via the TZ-aware isExpired boundary
-//     (Phase 71 D-07), mirroring how the reminder cascade derives its bands.
+// Two invariants handled here:
+//   - The zone !== 'MAINLAND' gate lives in THIS service write, not in the
+//     policy `appliesIf` (EngagementContext has no zone field). A Mainland
+//     (DED-licensed) assignment writes NO item and arms no gate.
+//   - There is no background sweep that flips PENDING→EXPIRED. Status is
+//     derived at write/re-evaluate time via the TZ-aware isExpired boundary,
+//     mirroring how the reminder cascade derives its bands.
 //
 // Architectural twin: compliance-supersession.ts — same structural-client pattern
 // so the item write + audit log compose inside or outside a $transaction.
@@ -28,7 +28,7 @@ import { writeAuditLog } from './audit-writer';
 
 const log = createLogger({ service: 'free-zone-compliance' });
 
-/** The policy rule id the gate + cascade select on (D-03 — BLOCKING @v2). */
+/** The policy rule id the gate + cascade select on (BLOCKING severity, @v2). */
 export const FREE_ZONE_POLICY_RULE_ID = 'uae.free_zone_license@v2' as const;
 const FREE_ZONE_DOCUMENT_TYPE = 'UAE_FREE_ZONE_LICENSE' as const;
 const FREE_ZONE_TZ = 'Asia/Dubai' as const;
@@ -52,7 +52,7 @@ export interface FreeZoneComplianceClient extends AuditWriterClient {
 export interface FreeZoneAssignmentInput {
   organizationId: string;
   contractorId: string;
-  /** UaeFreeZoneCode value; 'MAINLAND' arms no gate (D-04). */
+  /** UaeFreeZoneCode value; 'MAINLAND' assignments write no compliance item. */
   zone: string;
   licenseNumber: string;
   licenseExpiresAt: Date;
@@ -60,7 +60,7 @@ export interface FreeZoneAssignmentInput {
 
 export interface WriteFreeZoneComplianceContext {
   assignment: FreeZoneAssignmentInput;
-  /** Actor for the audit trail (D-17). */
+  /** Actor for the audit trail. */
   actorType?: 'USER' | 'SYSTEM';
   actorId?: string | null;
   /** Override for deterministic tests; defaults to new Date(). */
@@ -83,7 +83,7 @@ type ComplianceItemRow = {
 /**
  * Derive the compliance status from the license expiry. There is NO background
  * sweep flipping PENDING→EXPIRED (Open Q2 resolution) — status is computed here
- * at write time via the same TZ-aware boundary the cascade uses (Phase 71 D-07).
+ * at write time via the same TZ-aware boundary the cascade uses.
  */
 function deriveStatus(licenseExpiresAt: Date, now: Date): 'PENDING' | 'EXPIRED' {
   return isExpired(licenseExpiresAt, FREE_ZONE_TZ, now) ? 'EXPIRED' : 'PENDING';
@@ -93,13 +93,13 @@ function deriveStatus(licenseExpiresAt: Date, now: Date): 'PENDING' | 'EXPIRED' 
  * Write (or update) the free-zone trade-license `ContractorComplianceItem` for a
  * FreeZoneAssignment.
  *
- * - Mainland zone → returns `{ written: false, reason: 'MAINLAND' }` (D-04). No
- *   item, no gate. Mainland is recordable but a different licensing regime.
+ * - Mainland zone → returns `{ written: false, reason: 'MAINLAND' }`. No item,
+ *   no gate. Mainland is recordable but a different licensing regime.
  * - Otherwise → upserts a BLOCKING item keyed on the @v2 policy rule, with
  *   `expiresAt = licenseExpiresAt` (drives the cascade band math) and
  *   `status` derived from `isExpired` (EXPIRED hard-blocks payment via the gate).
  *
- * Sensitive mutation (D-17): writes an AuditLog row via the same client so the
+ * Sensitive mutation: writes an AuditLog row via the same client so the
  * item + audit commit atomically inside the caller's transaction.
  */
 export async function writeFreeZoneComplianceItem(
@@ -109,7 +109,7 @@ export async function writeFreeZoneComplianceItem(
   const { assignment } = ctx;
   const now = ctx.now ?? new Date();
 
-  // D-04 / Pitfall 3 — the zone narrowing lives HERE, not in appliesIf.
+  // The zone narrowing lives HERE, not in appliesIf (EngagementContext has no zone field).
   if (assignment.zone === MAINLAND_ZONE) {
     return { written: false, itemId: null, status: null, reason: 'MAINLAND' };
   }
@@ -161,7 +161,7 @@ export async function writeFreeZoneComplianceItem(
     action = 'gulf.free_zone.compliance_item.create';
   }
 
-  // D-17 — free-zone item write is a sensitive mutation; audit it on the same client.
+  // Free-zone item write is a sensitive mutation; audit it on the same client.
   await writeAuditLog({
     organizationId: assignment.organizationId,
     actorType: ctx.actorType ?? 'SYSTEM',
@@ -191,15 +191,15 @@ export async function writeFreeZoneComplianceItem(
 /**
  * Re-evaluate an existing free-zone item's status, flipping PENDING→EXPIRED when
  * the TZ-aware boundary has crossed. Consumed by the region-aware reminder fan-out
- * so Gulf items transition without inventing a new sweep (Open Q2 resolution —
- * reuse isExpired, mirror how the cascade derives its bands at scan time).
+ * so Gulf items transition by reusing isExpired, mirroring how the cascade derives
+ * its bands at scan time.
  *
  * Returns the new status when it changed, or null when no transition was needed.
  */
 export async function reEvaluateFreeZoneStatus(
-  // Only `update` is used here — narrow the client so cron-context callers (the
-  // reminder scan's ReminderScanClient, which has no findFirst/create) qualify
-  // structurally without widening to the full FreeZoneComplianceClient.
+  // Only `update` is used here — narrow the client so cron-context callers
+  // (the reminder scan's ReminderScanClient, which has no findFirst/create)
+  // qualify structurally without widening to the full FreeZoneComplianceClient.
   client: {
     contractorComplianceItem: Pick<FreeZoneComplianceClient['contractorComplianceItem'], 'update'>;
   },

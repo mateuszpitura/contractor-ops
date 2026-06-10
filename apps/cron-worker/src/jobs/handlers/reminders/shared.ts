@@ -1,7 +1,7 @@
 /**
  * Date + dedup helpers shared across the reminders handler and its sub-jobs.
  *
- * Phase 72 — the canonical implementation moved into the API package
+ * The canonical implementation moved into the API package
  * (@contractor-ops/api/services/cron-dedup) so the compliance-reminder-scan
  * service can share it without the API package depending on apps/cron-worker.
  * This file remains a re-export so the reminders handler + sub-jobs are unchanged.

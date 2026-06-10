@@ -1,4 +1,4 @@
-// Phase 72 D-15 — Recovery hooks for PENDING_COMPLIANCE approval flows.
+// Recovery hooks for PENDING_COMPLIANCE approval flows.
 //
 // When a held ContractorComplianceItem flips to SATISFIED, onComplianceItemSatisfied
 // finds every PENDING_COMPLIANCE flow whose complianceHoldsJson @> { itemIds: [<id>] }
@@ -44,7 +44,7 @@ export async function onComplianceItemSatisfied(
   tx: RecoveryClient,
   args: SatisfiedArgs,
 ): Promise<{ resumedFlowIds: string[] }> {
-  // GIN-indexed JSONB containment (Phase 72 D-14). The itemIds payload is passed
+  // GIN-indexed JSONB containment query. The itemIds payload is passed
   // as a bound text parameter and cast to jsonb in SQL — no string interpolation.
   const containment = JSON.stringify({ itemIds: [args.itemId] });
   const heldFlows = await tx.$queryRaw<

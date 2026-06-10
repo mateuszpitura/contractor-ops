@@ -2,9 +2,9 @@
  * Contract health-check QStash callback (`POST /contract-health/_run`).
  *
  *   1. QStash signature verification via `guardQStashRequest`.
- *   2. F-SCALE-19 — `withBackpressure(CONTRACT_HEALTH_RUN)` caps fleet-wide
- *      concurrency so an Anthropic spike doesn't sink other QStash consumers.
- *   3. F-ASYNC-17 — `withQueueObservability` reports per-tick duration.
+ *   2. `withBackpressure(CONTRACT_HEALTH_RUN)` caps fleet-wide concurrency
+ *      so an Anthropic spike doesn't sink other QStash consumers.
+ *   3. `withQueueObservability` reports per-tick duration.
  *   4. Validate body shape (organizationId, contractId, triggeredBy, …).
  *   4. Delegate to `runContractHealthCheck`; the service persists a FAILED
  *      ContractHealthCheckRun row on failure so operators can diagnose and
@@ -13,10 +13,9 @@
  *      source of truth; returning non-2xx would trigger QStash retry storms
  *      that create duplicate runs.
  *
- * Phase 75 D-01. Enqueued from `contract.create` (UPLOAD) and
- * `contract.rerunHealthCheck` (MANUAL/MODEL_BUMP_BULK). Lives inside the
- * webhook plugin scope so the raw-body parser delivers the bytes QStash's
- * HMAC was computed over.
+ * Enqueued from `contract.create` (UPLOAD) and `contract.rerunHealthCheck`
+ * (MANUAL/MODEL_BUMP_BULK). Lives inside the webhook plugin scope so the
+ * raw-body parser delivers the bytes QStash's HMAC was computed over.
  */
 
 import { runContractHealthCheck } from '@contractor-ops/api/services/contract-health';

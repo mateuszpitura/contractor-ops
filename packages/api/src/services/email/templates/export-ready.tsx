@@ -1,5 +1,5 @@
 /**
- * "Your export is ready" transactional email (P2-F · F-SCALE-01).
+ * "Your export is ready" transactional email.
  *
  * Sent by the QStash export consumer once an `Export` row transitions to
  * `READY`. The email links to a download route that signs a fresh R2 URL

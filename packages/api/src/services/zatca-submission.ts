@@ -4,9 +4,9 @@
 // Orchestrates the full ZATCA invoice submission pipeline:
 // lock -> chain -> generate -> sign -> hash -> QR -> record -> submit
 //
-// Per D-05: Async submission via QStash queue.
-// Per D-03: Sequential queue per org using advisory lock.
-// Per T-48-13: QStash: 3 retries, exponential backoff, dead letter queue.
+// Async submission via QStash queue.
+// Sequential queue per org using advisory lock.
+// QStash: 3 retries, exponential backoff, dead letter queue.
 // ---------------------------------------------------------------------------
 
 import { createHash, randomUUID } from 'node:crypto';
@@ -60,7 +60,7 @@ interface ZatcaConnectionConfig {
 // QStash Configuration
 // ---------------------------------------------------------------------------
 
-/** QStash retry config per T-48-13: 3 retries, exponential backoff */
+/** QStash retry config: 3 retries, exponential backoff */
 const QSTASH_CONFIG = {
   retries: 3,
   /** Backoff intervals: 1s, 4s, 16s (exponential base 4) */
@@ -310,9 +310,7 @@ export async function handleZatcaSubmissionJob(payload: ZatcaSubmissionJobPayloa
 }
 
 /**
- * Queue a ZATCA submission job via QStash.
- *
- * Per D-05: Async submission via QStash with retry config.
+ * Queue a ZATCA submission job via QStash with retry config.
  */
 export async function queueZatcaSubmission(
   invoiceId: string,

@@ -31,10 +31,10 @@ export const searchRouter = router({
    * Uses tsvector prefix matching with 'simple' text search config.
    * Returns up to 5 results per entity type (15 max total).
    *
-   * F-SEC-16 — Requires `contractor:read` because the result set merges
-   * contractor identity rows. Roles without contractor read access (e.g.
-   * standalone integration roles) cannot use the command palette to
-   * enumerate contractor names.
+   * Requires `contractor:read` because the result set merges contractor
+   * identity rows. Roles without contractor read access (e.g. standalone
+   * integration roles) cannot use the command palette to enumerate
+   * contractor names.
    */
   global: tenantProcedure
     .use(requirePermission({ contractor: ['read'] }))
@@ -64,11 +64,11 @@ export const searchRouter = router({
       // as a parameter to to_tsquery() — never interpolated into SQL.
       const tsquery = Prisma.sql`to_tsquery('simple', ${sanitizedTerms})`;
 
-      // F-SEC-16 — Surface `displayName` (non-PII) instead of `taxId`.
-      // Tax identifiers (NIP, REGON, USt-IdNr, NINO, NIE, etc.) are sensitive
-      // financial PII and have no place in a global command-palette result.
-      // The dedicated contractor-detail page renders taxId for roles that
-      // need it (gated separately).
+      // Surface `displayName` (non-PII) instead of `taxId`. Tax identifiers
+      // (NIP, REGON, USt-IdNr, NINO, NIE, etc.) are sensitive financial PII
+      // and have no place in a global command-palette result. The dedicated
+      // contractor-detail page renders taxId for roles that need it (gated
+      // separately).
       const [contractors, contracts, invoices] = await Promise.all([
         ctx.db.$queryRaw<SearchResult[]>`
           SELECT id, "legalName" as name, COALESCE("displayName", '') as subtitle, 'contractor' as type
@@ -96,11 +96,11 @@ export const searchRouter = router({
         `,
       ]);
 
-      // F-DB-20 — defensive dedupe by (type, id). The three queries are
-      // org-scoped over disjoint tables, so collisions are unlikely (cuids
-      // are globally unique), but a Set guard prevents the UI from rendering
-      // duplicates if a future refactor folds the entity types together
-      // (e.g. via a materialised search-index view).
+      // Defensive dedupe by (type, id). The three queries are org-scoped
+      // over disjoint tables, so collisions are unlikely (cuids are globally
+      // unique), but a Set guard prevents the UI from rendering duplicates
+      // if a future refactor folds the entity types together (e.g. via a
+      // materialised search-index view).
       const seen = new Set<string>();
       const merged: SearchResult[] = [];
       for (const row of [...contractors, ...contracts, ...invoices]) {

@@ -1,4 +1,4 @@
-// Phase 63 · Plan 04 · D-01 — Inline VocaLink modulus check button.
+// Inline VocaLink modulus check button.
 
 import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';

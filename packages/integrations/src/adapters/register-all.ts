@@ -11,7 +11,7 @@ import { ResendAdapter } from './resend-adapter.js';
 import { SlackAdapter } from './slack-adapter.js';
 
 // ---------------------------------------------------------------------------
-// Adapter Registration — F-SCALE-14
+// Adapter Registration
 // ---------------------------------------------------------------------------
 //
 // Cold-start cost split into two tiers:
@@ -34,8 +34,7 @@ import { SlackAdapter } from './slack-adapter.js';
 //      These were previously imported eagerly at the top of this file,
 //      so every cold start of every route that called
 //      `registerAllAdapters()` paid the full ~100-500 ms parse + module-
-//      eval cost (audit measurement; see .audit-2026-05-03/06-scalability
-//      F-SCALE-14).
+//      eval cost (measured during scalability audit).
 //
 // Public API:
 //   - `registerAllAdapters()` — backwards-compatible sync entry point.
@@ -52,7 +51,7 @@ import { SlackAdapter } from './slack-adapter.js';
 // The dynamic `import()` boundary lets Next.js / Webpack split each heavy
 // adapter into its own chunk, so routes that don't reach the lazy code
 // path never bundle the heavy SDKs into their server-side output. This is
-// the key cold-start win for the F-SCALE-14 fix.
+// the key cold-start win for the lazy-load split.
 
 let registered = false;
 let heavyLoadPromise: Promise<void> | null = null;
@@ -110,7 +109,7 @@ function startHeavyLoad(): Promise<void> {
     registerAdapter(new NotionAdapter());
     registerAdapter(new ConfluenceAdapter());
     registerAdapter(new GoogleCalendarAdapter());
-    // Phase 76 D-13 — register the SAME GWS instance with both registries:
+    // Register the SAME GWS instance with both registries:
     // the provider registry (connection lifecycle) and the Deprovisionable
     // registry (saga step execution). They are separate Maps.
     const gwsAdapter = new GoogleWorkspaceAdapter();
@@ -119,9 +118,9 @@ function startHeavyLoad(): Promise<void> {
     registerAdapter(new OutlookCalendarAdapter());
     registerAdapter(new LinearAdapter());
     registerAdapter(new TeamsAdapter());
-    // Phase 78 IDP-05/06/07 — register the SAME adapter instance with both the
-    // provider registry and the Deprovisionable registry (separate Maps). Keys
-    // match the saga DeprovisioningProviderId union + ImpactPreview literals
+    // Register the SAME adapter instance with both the provider registry and
+    // the Deprovisionable registry (separate Maps). Keys match the saga
+    // DeprovisioningProviderId union + ImpactPreview literals
     // (ENTRA — NOT ENTRA_ID — per the Prisma DeprovisioningProvider enum).
     const entraAdapter = new EntraIdAdapter();
     registerAdapter(entraAdapter);
@@ -153,12 +152,12 @@ function startHeavyLoad(): Promise<void> {
  *
  * Safe to call multiple times — only registers on the first call.
  *
- * F-SCALE-14: ESSENTIAL adapters (Slack, Resend, KSeF, OCR) register
- * synchronously. HEAVY adapters (DocuSign, Notion, Confluence, Jira,
- * Linear, Google Workspace, Google/Outlook Calendar, Autenti, Clockify,
- * Teams) are loaded via dynamic `import()` triggered eagerly at module
- * load. Routes that need a heavy adapter on the first request can `await
- * loadHeavyAdapters()` to be deterministic about availability.
+ * ESSENTIAL adapters (Slack, Resend, KSeF, OCR) register synchronously.
+ * HEAVY adapters (DocuSign, Notion, Confluence, Jira, Linear, Google
+ * Workspace, Google/Outlook Calendar, Autenti, Clockify, Teams) are loaded
+ * via dynamic `import()` triggered eagerly at module load. Routes that need
+ * a heavy adapter on the first request can `await loadHeavyAdapters()` to
+ * be deterministic about availability.
  */
 export function registerAllAdapters(): void {
   // Hot path — bail out before any constructor / import lookup runs.
@@ -169,8 +168,8 @@ export function registerAllAdapters(): void {
   registered = true;
 
   // ESSENTIAL tier — eagerly registered synchronously.
-  // Phase 77 D-14 — the SAME Slack instance is registered with both the provider
-  // registry (workspace connection lifecycle + webhooks) and the Deprovisionable
+  // The SAME Slack instance is registered with both the provider registry
+  // (workspace connection lifecycle + webhooks) and the Deprovisionable
   // registry (org-grid SCIM deactivate + session invalidate). Separate Maps.
   const slackAdapter = new SlackAdapter();
   registerAdapter(slackAdapter);

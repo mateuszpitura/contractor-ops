@@ -1,16 +1,12 @@
 // ---------------------------------------------------------------------------
-// Phase 81 INT-01 D-01 — contractorId → assignmentId resolver (RED scaffold).
+// contractorId → assignmentId resolver tests.
 //
 // The offboarding ACCESS_REVOKE task card only knows WorkflowRun.contractorId
 // (there is no assignmentId FK on WorkflowRun). The deprovisioning trigger needs
-// an unambiguous assignmentId, so 81-02 adds a server-side resolver procedure
-// (`deprovisioning.resolveAssignmentForContractor`) that returns the MOST-RECENT
+// an unambiguous assignmentId, so the server-side resolver procedure
+// (`deprovisioning.resolveAssignmentForContractor`) returns the MOST-RECENT
 // ENDED assignment for the contractor (orderBy endedAt desc), or NOT_FOUND when
 // the contractor has no ENDED assignment.
-//
-// These cases assert the post-wiring contract and are EXPECTED to RED until 81-02
-// lands the procedure — failures are assertion-level (procedure resolves the wrong
-// row / does not exist), NOT compile/harness errors.
 // ---------------------------------------------------------------------------
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -30,7 +26,7 @@ type AssignmentRow = {
 const { mockPrisma, assignments, assignmentFindFirst } = vi.hoisted(() => {
   const assignments: AssignmentRow[] = [];
   // Mirrors a Prisma findFirst with where { contractorId, organizationId, status }
-  // and orderBy { endedAt: 'desc' } — the resolver's expected query shape.
+  // and orderBy { endedAt: 'desc' } — the expected resolver query shape.
   const assignmentFindFirst = vi.fn(
     async (args: { where?: Record<string, unknown>; orderBy?: { endedAt?: 'asc' | 'desc' } }) => {
       const where = args?.where ?? {};

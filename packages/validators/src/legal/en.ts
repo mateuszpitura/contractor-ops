@@ -1,6 +1,6 @@
 // packages/validators/src/legal/en.ts
 //
-// LOCKED UK LEGAL PHRASES — Phase 57 (PAY-04, D-14).
+// LOCKED UK LEGAL PHRASES.
 //
 // Mirror of legal/de.ts for UK-side locked invoice footer phrasing.
 // Do NOT add these identifiers as keys in messages/*.json — CI guard
@@ -9,10 +9,10 @@
 export const TAX_UK_REVERSE_CHARGE_NOTICE =
   'Reverse charge: Customer to pay the VAT to HMRC' as const;
 
-// Phase 59 · D-03 — locked IR35 dispute-process text for SDS final page.
+// Locked IR35 dispute-process text for the SDS final page.
 // Universal per HMRC off-payroll rules (ITEPA 2003 Chapter 10). 45-day challenge window,
 // client review obligation, client response timeframe.
-// PENDING UK tax-adviser sign-off (see Phase 59 Plan 59-01 Task 3 MANUAL-REVIEW checkpoint).
+// PENDING UK tax-adviser sign-off.
 export const IR35_DISPUTE_PROCESS_EN =
   'Dispute process: If you disagree with this Status Determination Statement, you may ' +
   'challenge it in writing within 45 days of receiving it (per ITEPA 2003 Chapter 10). ' +

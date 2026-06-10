@@ -1,8 +1,7 @@
-// Phase 59 · Plan 03 Task 2 — ir35Attestation tRPC router (CLASS-06 support).
+// ir35Attestation tRPC router.
 //
 // Captures the contractor's free-text "other clients" statement + typed
-// signature and provides a same-tenant cross-reference table for DRV Section 4
-// (the actual DRV PDF template lands in Plan 59-04).
+// signature and provides a same-tenant cross-reference table for DRV Section 4.
 //
 // Security: getPlatformCrossReference is strictly same-tenant — no cross-tenant
 // contractor data surfaces under any circumstance. PDF footer is required to

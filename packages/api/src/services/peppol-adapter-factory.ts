@@ -1,12 +1,11 @@
 // packages/api/src/services/peppol-adapter-factory.ts
 //
-// Phase 61 · Plan 61-05 — thin factory for the Storecove adapter instance
-// consumed by the `peppol.lookupCapabilities` / `einvoice.send` paths.
+// Thin factory for the Storecove adapter instance consumed by the
+// `peppol.lookupCapabilities` / `einvoice.send` paths.
 //
 // Scope:
 // - Pulls the Storecove base URL from a fixed, pinned literal per
-//   `environment` (SSRF-safety per threat T-61-05-07 — URL never derives
-//   from user input).
+//   `environment` (SSRF-safety — URL never derives from user input).
 // - API key is resolved via the existing per-org encrypted credential blob
 //   that the `peppol.connect` mutation stored through
 //   `IntegrationConnection.credentialsRef`.

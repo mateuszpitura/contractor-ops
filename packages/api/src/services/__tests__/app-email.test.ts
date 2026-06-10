@@ -78,8 +78,8 @@ describe('sendAppEmail', () => {
         subject: 'Subject',
         html: '<p>hello</p>',
       }),
-      // F-INT-04 / DRIFT-01: fallback idempotency key now derived via the
-      // canonical `deriveIdempotencyKey` helper — 64-char lowercase hex digest.
+      // Fallback idempotency key derived via the canonical
+      // `deriveIdempotencyKey` helper — 64-char lowercase hex digest.
       expect.objectContaining({
         idempotencyKey: expect.stringMatching(/^[0-9a-f]{64}$/),
       }),

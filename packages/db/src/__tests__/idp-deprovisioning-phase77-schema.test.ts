@@ -1,11 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import type { Prisma } from '../generated/prisma/client/client.js';
 
-// Phase 77 — compile-time AND runtime assertions for the additive schema
-// extensions (Plan 77-01-05): the MANUAL_COMPLETED step status, the ErrorClass
-// + ManualOverrideCategory enums, and the five new DeprovisioningStep columns.
-// Each `Prisma.*` reference fails typecheck if the column/enum is absent on the
-// regenerated client.
+// Compile-time AND runtime assertions for the additive schema extensions:
+// the MANUAL_COMPLETED step status, the ErrorClass + ManualOverrideCategory
+// enums, and the five new DeprovisioningStep columns. Each `Prisma.*` reference
+// fails typecheck if the column/enum is absent on the regenerated client.
 
 describe('Phase 77 schema additions (Plan 77-01-05)', () => {
   it('DeprovisioningStepStatus enum includes MANUAL_COMPLETED (5 values)', () => {

@@ -1,11 +1,10 @@
-// Phase 73 · Plan 07 — compliance.submitUploadReplacement portal mutation tests (COMPL-04 / D-06).
+// compliance.submitUploadReplacement portal mutation tests.
 //
-// CR-1 fix: the test now exercises the REAL flow — consumePendingUpload must
-// be called, document.create must be called with PENDING_REVIEW status, and
+// The test exercises the REAL flow — consumePendingUpload must be called,
+// document.create must be called with PENDING_REVIEW status, and
 // documentLink.create must link the document to the contractor. The old mocks
-// that patched document.update (and the pre-existing documentLink stub) are
-// removed; tests would FAIL on the old broken code because document.update no
-// longer exists in submitUploadReplacement.
+// that patched document.update are removed; tests would FAIL on the old broken
+// code because document.update no longer exists in submitUploadReplacement.
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -74,7 +73,7 @@ vi.mock('@contractor-ops/auth', () => ({
 
 vi.mock('../services/audit-writer', () => ({ writeAuditLog: auditWriteSpy }));
 
-// CR-1 fix: mock consumePendingUpload so the test controls what it returns
+// Mock consumePendingUpload so the test controls what it returns
 // and can assert it was called with the correct purpose.
 vi.mock('../services/pending-upload', () => ({
   createPendingUpload: vi.fn(),

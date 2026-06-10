@@ -2,7 +2,7 @@
 // WizardQuestion — generic question card + answer-input dispatcher.
 // ---------------------------------------------------------------------------
 // IMPORTANT: Do NOT import from @contractor-ops/classification/profiles/*/scoring.*
-// Scoring is server-only (Pitfall 2). Enforced by Plan 05 grep check.
+// Scoring is server-only.
 //
 // Reads a RuleSetQuestion + locale, renders the localised prompt, an optional
 // help-text Collapsible, a legal-reference Collapsible (case-law for IR35 or
@@ -30,14 +30,13 @@ import { EconomicDependencyInput } from './schein/economic-dependency-input';
 
 /**
  * Narrowed locale — only the 3 authored rule-set translations.
- * `ar` is not in scope for Phase 58 rule-set prompts; it falls back to `en`
- * so the wizard still functions for Arabic-locale users.
+ * `ar` falls back to `en` so the wizard still functions for Arabic-locale users.
  */
 export type RuleSetLocale = 'en' | 'pl' | 'de';
 
 /**
  * Discriminated answer payload wired through the wizard form state.
- * Plan 05 re-uses this union when rendering outcome breakdowns.
+ * Also re-used when rendering outcome breakdowns.
  */
 export type WizardAnswerValue =
   | { type: 'yes-no'; value: YesNoValue }

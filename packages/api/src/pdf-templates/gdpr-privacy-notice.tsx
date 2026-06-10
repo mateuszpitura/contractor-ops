@@ -12,12 +12,11 @@ export interface GdprPrivacyNoticeTemplateProps {
   locale?: string;
 }
 
-// Phase 56 · Plan 07 — React-PDF template rendered by
-// `legal.generatePrivacyNoticePdf`. Sources the SAME {gb,de,eu}PrivacyNotice
-// data objects from `@contractor-ops/validators` that the CMS legal
-// collection seeds from, so MDX / PDF / DB default content can never
-// diverge. UI-SPEC §Interaction 10 — A4, 20mm margins, Helvetica, grayscale
-// with a single teal accent on the title.
+// React-PDF template rendered by `legal.generatePrivacyNoticePdf`. Sources
+// the SAME {gb,de,eu}PrivacyNotice data objects from `@contractor-ops/validators`
+// that the CMS legal collection seeds from, so MDX / PDF / DB default content
+// can never diverge. A4, 20mm margins, Helvetica, grayscale with a single
+// teal accent on the title.
 
 const TEAL_ACCENT = '#0d7f72';
 const GREY_BODY = '#1f2937';

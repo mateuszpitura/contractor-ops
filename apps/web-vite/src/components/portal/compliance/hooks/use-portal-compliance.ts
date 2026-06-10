@@ -15,10 +15,10 @@ export interface PortalComplianceItem {
 }
 
 /**
- * Phase 73 COMPL-04 — the only tRPC boundary for the portal compliance surface.
- * Reads the logged-in contractor's own items (server-scoped to the portal
- * session). Also derives `attentionItems` (MISSING/EXPIRED or expiring within
- * 30d) for the home banner.
+ * The only tRPC boundary for the portal compliance surface. Reads the
+ * logged-in contractor's own items (server-scoped to the portal session).
+ * Also derives `attentionItems` (MISSING/EXPIRED or expiring within 30d)
+ * for the home banner.
  */
 export function usePortalCompliance() {
   const trpc = usePortalTRPC();

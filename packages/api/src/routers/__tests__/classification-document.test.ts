@@ -1,8 +1,7 @@
 vi.mock('@contractor-ops/feature-flags', async importOriginal => {
-  // Multi-layer enforcement (D-05/D-06):
-  //  1. root.ts evaluates `buildFlagBag` at module load to gate classification routers.
-  //  2. classificationProcedure middleware calls `evaluate(...)` per-request.
-  // Tests that exercise classification need both layers to return enabled=true.
+  // Classification is gated at two layers: root.ts evaluates `buildFlagBag` at
+  // module load, and classificationProcedure middleware calls `evaluate(...)`
+  // per-request. Tests that exercise classification need both to return enabled=true.
   const actual = (await importOriginal()) as Record<string, unknown>;
   const enabledBag = {
     values: { 'module.classification-engine': true },
@@ -20,13 +19,13 @@ vi.mock('@contractor-ops/feature-flags', async importOriginal => {
   };
 });
 
-// Phase 59 Plan 59-02 Task 2 — classificationDocument router contract tests.
+// classificationDocument router contract tests.
 //
 // Strategy: shape-level assertions via structural inspection of the router
 // export. Full integration tests require the shared test harness from
 // classification.test.ts (mockPrisma + auth + rate-limit scaffolding); that
-// harness is heavyweight and is reserved for Plan 59-03's chain router where
-// the integration surface is larger. Here we verify the procedure surface and
+// harness is heavyweight and is reserved for the chain router where the
+// integration surface is larger. Here we verify the procedure surface and
 // input schemas, plus the router is wired into the app router.
 
 import { describe, expect, it } from 'vitest';

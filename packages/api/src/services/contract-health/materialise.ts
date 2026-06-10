@@ -1,12 +1,11 @@
-// Phase 75 D-07 — LIKELY_MISSING verdict materialises a single open
-// ContractorComplianceItem of severity WARNING for the contract's IP-assignment
-// policy rule.
+// LIKELY_MISSING verdict materialises a single open ContractorComplianceItem
+// of severity WARNING for the contract's IP-assignment policy rule.
 //
-// NOTE: this does NOT reuse Phase 71's `materialiseFromPolicy`, which resolves
-// and materialises the ENTIRE jurisdiction rule set (RTW, UTR, …). A health
-// check that found a missing IP clause must create exactly ONE item — the IP
-// rule — so we look up that single rule from the registry and create it
-// directly, idempotently on (contractor, policyRuleId).
+// NOTE: this does NOT reuse `materialiseFromPolicy`, which resolves and
+// materialises the ENTIRE jurisdiction rule set (RTW, UTR, …). A health check
+// that found a missing IP clause must create exactly ONE item — the IP rule —
+// so we look up that single rule from the registry and create it directly,
+// idempotently on (contractor, policyRuleId).
 
 import { listPolicyRules } from '@contractor-ops/compliance-policy';
 import type { Prisma } from '@contractor-ops/db';
@@ -44,7 +43,7 @@ export interface MaterialiseLikelyMissingArgs {
  * Creates (or returns the existing) open ContractorComplianceItem for the
  * jurisdiction's IP-assignment policy rule. Idempotent on
  * (contractorId, policyRuleId) — a re-run with the same LIKELY_MISSING verdict
- * does not create a duplicate (mirrors Phase 71 D-12 idempotency).
+ * does not create a duplicate (idempotent on (contractorId, policyRuleId)).
  */
 export async function materialiseLikelyMissing(
   client: MaterialiseClient,
@@ -80,7 +79,7 @@ export async function materialiseLikelyMissing(
       severity: rule.severity,
       policyRuleId,
       expiryJurisdictionTz: rule.expiryJurisdictionTz,
-      // IP-assignment presence does not expire — present-or-not (D-07).
+      // IP-assignment presence does not expire — present-or-not.
       expiresAt: null,
       status: 'MISSING',
     },

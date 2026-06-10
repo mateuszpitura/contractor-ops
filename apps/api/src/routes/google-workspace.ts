@@ -2,16 +2,16 @@
  * Google Workspace directory sync (`POST /google-workspace/_sync`).
  *
  *   1. QStash signature verification via `guardQStashRequest`.
- *   2. Reseed ALS frame (F-OBS-03).
- *   3. `withQueueObservability('google-workspace-sync', …)` (F-ASYNC-17).
+ *   2. Reseed ALS frame.
+ *   3. `withQueueObservability('google-workspace-sync', …)`.
  *   4. Validate body shape (`organizationId`, `connectionId`).
  *   5. Delegate to `processDirectorySync` — compares the directory,
  *      detects changes, notifies admins.
  *   6. 200 on success; 500 on error → QStash retries.
  *
- * Called by daily cron schedule (created on Google Workspace connect,
- * D-12: 02:00 org timezone) and manual `googleWorkspace.triggerSync` tRPC.
- * Exempt from CSRF origin guard via `/google-workspace/` prefix.
+ * Called by daily cron schedule (02:00 org timezone) and manual
+ * `googleWorkspace.triggerSync` tRPC. Exempt from CSRF origin guard via
+ * `/google-workspace/` prefix.
  */
 
 import { withQueueObservability } from '@contractor-ops/api/services/cron-monitor';

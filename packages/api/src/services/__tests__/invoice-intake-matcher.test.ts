@@ -1,6 +1,6 @@
 // packages/api/src/services/__tests__/invoice-intake-matcher.test.ts
 //
-// Phase 62 · Plan 62-04 Task 1 — unit tests for `rankIntakeCandidates`.
+// Unit tests for `rankIntakeCandidates`.
 //
 // Uses a lightweight in-memory Prisma surface (bare `vi.fn()` stubs)
 // conforming to the minimal reader shape the matcher requires. The real

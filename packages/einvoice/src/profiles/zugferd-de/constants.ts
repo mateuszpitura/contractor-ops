@@ -1,4 +1,4 @@
-// Phase 62 · Plan 62-02 Task 3 — ZUGFeRD profile constants.
+// ZUGFeRD profile constants.
 //
 // ZUGFeRD (also known as Factur-X on the French side of the spec since 1.0)
 // is a hybrid PDF/A-3 + CII XML invoice format. Five conformance levels exist
@@ -137,8 +137,8 @@ export const UNSUPPORTED_GUIDELINE_URNS: ReadonlySet<string> = Object.freeze(
 );
 
 // ---------------------------------------------------------------------------
-// Re-exports from Phase 61 XRechnung profile
+// Re-exports from XRechnung profile
 // ---------------------------------------------------------------------------
 
-// Re-export Phase 61 constants the generator will reuse (Plan 03).
+// Re-export XRechnung version constant used by the generator.
 export { XRECHNUNG_VERSION };

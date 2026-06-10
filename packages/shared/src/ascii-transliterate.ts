@@ -8,7 +8,6 @@
  * mapping table are replaced with `?` and reported in the `replaced` array so
  * the UI can warn the user before the file is downloaded.
  *
- * Per Phase 63 D-05.
  */
 
 import { TRANSLITERATION_TABLE } from './ascii-transliterate-table.js';

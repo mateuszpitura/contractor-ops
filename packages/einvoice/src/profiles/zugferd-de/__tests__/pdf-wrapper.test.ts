@@ -1,4 +1,4 @@
-// Phase 62 · Plan 62-03 Task 2 — PDF/A-3 wrapper tests.
+// PDF/A-3 wrapper tests.
 //
 // Covers the 6 acceptance-criteria assertions:
 //   1. Wrapped PDF reloads cleanly via PDFDocument.load.

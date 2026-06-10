@@ -1,4 +1,4 @@
-// Phase 75 D-14 — KSA IP-clause phrase library. Legal sign-off PENDING.
+// KSA IP-clause phrase library. Legal sign-off PENDING.
 
 export const IP_CLAUSES_KSA = {
   'ksa.transfer_of_economic_rights@v1': {

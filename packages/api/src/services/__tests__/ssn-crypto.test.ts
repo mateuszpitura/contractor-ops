@@ -1,7 +1,6 @@
-// Phase 84 · Plan 00 (Wave 0 RED) — US-FIELD-02 SSN field-encryption contract.
-// See .planning/milestones/v7.0-phases/84-.../84-VALIDATION.md.
+// SSN field-encryption contract.
 //
-// RED until Plan 02 creates `packages/api/src/services/ssn-crypto.ts` exporting
+// RED until `packages/api/src/services/ssn-crypto.ts` is created exporting
 // `encryptSsn` / `decryptSsn` (AES-256-GCM, `iv:authTag:ciphertext`, keyed by the
 // dedicated `SSN_ENCRYPTION_KEY` — a SEPARATE key from BANK_ACCOUNT_ENCRYPTION_KEY,
 // per blast-radius isolation). Mirrors bank-account-crypto.test.ts. The import

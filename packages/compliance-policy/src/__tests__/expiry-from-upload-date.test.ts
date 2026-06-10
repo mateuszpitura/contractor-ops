@@ -1,5 +1,3 @@
-// Phase 73 · Plan 05 — defaultExpiryFromUploadDate tests (D-07).
-
 import { addDays, addMonths, addYears } from 'date-fns';
 import { describe, expect, it } from 'vitest';
 import { defaultExpiryFromUploadDate } from '../expiry.js';

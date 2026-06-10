@@ -1,6 +1,6 @@
-// Phase 62 · Plan 62-03 Task 1 — XMP packet builder tests.
+// XMP packet builder tests.
 //
-// Covers the eight acceptance-criteria assertions in PLAN.md:
+// Covers eight assertions:
 //   1. pdfaid:part exactly 3
 //   2. pdfaid:conformance exactly B
 //   3. fx:DocumentFileName exactly factur-x.xml

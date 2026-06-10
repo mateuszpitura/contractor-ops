@@ -1,10 +1,10 @@
 // packages/validators/src/legal/compl-doc-name-signoff.ts
 //
-// Phase 73 D-16 — derives the signoff status of a COMPL doc-name from the static
+// Derives the signoff status of a COMPL doc-name from the static
 // signoff-registry.json so UI surfaces (web-vite useComplDocName) can append a
 // PENDING-subscript footnote without coupling to the registry file layout.
 //
-// Flat-key form mirrors the D-17 parity guard:
+// Flat-key form mirrors the parity guard:
 //   policyRuleId `uk.right_to_work@v1` -> `COMPL_DOCNAME_uk_right_to_work_v1`
 
 import rawRegistry from './signoff-registry.json' with { type: 'json' };

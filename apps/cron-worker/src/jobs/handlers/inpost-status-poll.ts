@@ -2,10 +2,9 @@
  * Courier shipment status poll handler (InPost + DPD + UPS).
  *
  * Hourly fallback poll for missed carrier webhooks. Each carrier polls
- * independently — one carrier failure does not block the others
- * (D-07 fire-and-forget resilience). The job name `inpost-status-poll` is
- * kept for Render dashboard continuity even though it now covers all 3
- * carriers.
+ * independently — one carrier failure does not block the others. The job
+ * name `inpost-status-poll` is kept for Render dashboard continuity even
+ * though it now covers all 3 carriers.
  */
 
 import { pollDpdShipmentStatuses } from '@contractor-ops/api/services/courier/dpd-polling-service';

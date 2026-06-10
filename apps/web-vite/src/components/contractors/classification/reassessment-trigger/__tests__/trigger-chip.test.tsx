@@ -1,4 +1,4 @@
-// Phase 60 · CLASS-08 — ReassessmentTriggerChip behaviour contract.
+// ReassessmentTriggerChip behaviour contract.
 // Verifies the semantic triad (icon + text + accessible label).
 
 import { describe, expect, it } from 'vitest';

@@ -5,7 +5,7 @@ import { CacheKeys, CacheTTL, cached } from './cache';
 import { stripe } from './stripe-client';
 
 // ---------------------------------------------------------------------------
-// Idempotency-Key derivation (F-INT-04 / DRIFT-01)
+// Idempotency-Key derivation
 // ---------------------------------------------------------------------------
 //
 // Every state-changing Stripe call derives its Idempotency-Key through the
@@ -87,7 +87,7 @@ export async function getSubscription(organizationId: string) {
 
 /**
  * Create a Stripe Checkout session for a new subscription.
- * Includes a 14-day trial for new organizations per D-07.
+ * Includes a 14-day trial for new organizations.
  * Currency is PLN (minor units) per project convention.
  */
 export async function createCheckoutSession(
@@ -104,8 +104,8 @@ export async function createCheckoutSession(
   }
 
   try {
-    // F-INT-04: idempotency key dedupes a double-click or QStash retry that
-    // would otherwise create two checkout sessions (and two PaymentIntents)
+    // Idempotency key dedupes a double-click or QStash retry that would
+    // otherwise create two checkout sessions (and two PaymentIntents)
     // for the same intended subscription.
     const session = await stripe.checkout.sessions.create(
       {
@@ -227,9 +227,9 @@ export async function createTopUpCheckoutSession(
   assertNonEmpty(params.cancelUrl, 'cancelUrl');
 
   try {
-    // F-INT-04: stable idempotency key. Note we INCLUDE successUrl in the
-    // business key so distinct in-app flows don't share keys (and so that a
-    // post-cancel retry from a different page lands cleanly).
+    // Stable idempotency key. Note we INCLUDE successUrl in the business key
+    // so distinct in-app flows don't share keys (and so that a post-cancel
+    // retry from a different page lands cleanly).
     const session = await stripe.checkout.sessions.create(
       {
         mode: 'payment',
@@ -287,8 +287,8 @@ export async function updateSubscriptionSeatCount(params: {
   }
 
   try {
-    // F-INT-04: dedupe rapid-fire seat updates from concurrent contractor
-    // mutations. Stripe accepts the same key across `update` calls for 24h.
+    // Dedupe rapid-fire seat updates from concurrent contractor mutations.
+    // Stripe accepts the same key across `update` calls for 24h.
     // Including newQuantity in the business key means two distinct seat
     // changes still both go through.
     await stripe.subscriptions.update(
@@ -354,7 +354,7 @@ export async function syncSeatCountForOrg(organizationId: string): Promise<void>
 
     if (newQuantity === sub.seatCount) return;
 
-    // F-INT-04: same idempotency strategy as updateSubscriptionSeatCount.
+    // Same idempotency strategy as updateSubscriptionSeatCount.
     await stripe.subscriptions.update(
       sub.stripeSubscriptionId,
       {

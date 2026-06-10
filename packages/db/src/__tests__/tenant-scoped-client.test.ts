@@ -1,8 +1,8 @@
-// Phase 59 · Plan 59-01 Task 2 — APPEND_ONLY_MODELS guard for ClassificationDocument (D-06).
+// APPEND_ONLY_MODELS guard for ClassificationDocument.
 //
 // The tenant-scoped Prisma client extension blocks update / updateMany / upsert
 // on ClassificationDocument at runtime. This preserves byte-exact audit trails
-// required for IR35 SDS (CLASS-03) and DRV defense bundles (CLASS-06).
+// required for IR35 SDS and DRV defense bundles.
 //
 // The test suite uses the same lightweight $extends mock shape as tenant.test.ts
 // (no real database connection required).

@@ -1,5 +1,5 @@
-// Phase 71 — deep-freeze runtime complement to `as const`. Lifted verbatim from
-// packages/feature-flags/src/registry.ts (Phase 64/70 pattern).
+// Deep-freeze runtime complement to `as const`. Lifted verbatim from
+// packages/feature-flags/src/registry.ts.
 
 export function deepFreeze<T>(value: T): T {
   if (value === null || typeof value !== 'object' || Object.isFrozen(value)) {

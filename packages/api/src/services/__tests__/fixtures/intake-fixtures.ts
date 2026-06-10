@@ -1,8 +1,8 @@
 // packages/api/src/services/__tests__/fixtures/intake-fixtures.ts
 //
-// Phase 62 · Plan 62-04 Task 2 — deterministic fixtures for the invoice
-// intake service unit tests. Every fixture is built from constants with
-// pinned dates so the byte stream is reproducible across runs (no
+// Deterministic fixtures for the invoice intake service unit tests.
+// Every fixture is built from constants with pinned dates so the byte
+// stream is reproducible across runs (no
 // `Date.now()`, no `Math.random()`).
 //
 // The orchestration tests inject a mock `parseZugferdPdf` via

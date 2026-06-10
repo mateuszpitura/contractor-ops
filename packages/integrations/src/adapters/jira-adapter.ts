@@ -213,8 +213,8 @@ export class JiraAdapter extends BaseAdapter {
    * Jira sends an `X-Hub-Signature` header with format `sha256=<hex>`.
    * The secret MUST be resolved server-side from
    * `IntegrationConnection.configJson.webhookSecret` and passed in via
-   * `configuredSecret`. The adapter no longer reads any secret from inbound
-   * request headers — see F-SEC-02 / F-INT-08.
+   * `configuredSecret`. The adapter never reads any secret from inbound
+   * request headers.
    *
    * Behaviour:
    * - `configuredSecret` is null / empty → reject (`reason: 'config'`).
@@ -236,9 +236,8 @@ export class JiraAdapter extends BaseAdapter {
   ): WebhookVerificationResult {
     const signatureHeader = headers['x-hub-signature'] ?? headers['X-Hub-Signature'];
 
-    // F-SEC-02: never accept a missing-secret short-circuit. If the
-    // organization has not configured a webhook secret we cannot verify
-    // authenticity — fail closed.
+    // Never accept a missing-secret short-circuit. If the organization has
+    // not configured a webhook secret we cannot verify authenticity — fail closed.
     if (!configuredSecret) {
       return { valid: false, reason: 'config' };
     }
@@ -281,7 +280,7 @@ export class JiraAdapter extends BaseAdapter {
   /**
    * Handles an inbound Jira webhook payload.
    *
-   * This is a thin entry point called by the Phase 12 webhook pipeline.
+   * This is a thin entry point called by the webhook pipeline.
    * The actual processing is delegated to the jira-webhook-handler service
    * which is invoked by the _process route after this method returns.
    */
@@ -302,7 +301,7 @@ export class JiraAdapter extends BaseAdapter {
   /**
    * Returns the full set of OAuth scopes required by the Jira adapter.
    * Used to detect whether an existing connection needs scope expansion
-   * (e.g., Phase 18 read-only connections upgraded to Phase 19 write access).
+   * (e.g., read-only connections upgraded to write access).
    */
   getRequiredScopes(): string[] {
     return ['read:jira-work', 'write:jira-work', 'manage:jira-webhook', 'offline_access'];

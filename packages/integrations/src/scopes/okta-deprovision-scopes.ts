@@ -1,6 +1,6 @@
-// Phase 78 D-14 — Okta minimum-privilege deprovision scopes.
+// Okta minimum-privilege deprovision scopes.
 //
-// Mirrors the Phase 76 D-14 typed-const scope-registry pattern. A single OAuth2
+// Mirrors the typed-const scope-registry pattern. A single OAuth2
 // scope (`okta.users.manage`) grants the lifecycle operations the OktaAdapter
 // needs: `userApi.deactivateUser` (→ DEPROVISIONED), `userApi.revokeUserSessions`,
 // and `userApi.getUser` for the verify/describe-impact reads.

@@ -1,6 +1,4 @@
-// Phase 60 · CLASS-08 — ReassessmentTriggerDismissDialog.
-//
-// Contract:
+// ReassessmentTriggerDismissDialog contract:
 //   - Textarea < 10 chars → destructive button disabled.
 //   - ≥ 10 chars → button enabled; onConfirm fires with the reason.
 //   - Failed submit renders the validation message with role="alert".

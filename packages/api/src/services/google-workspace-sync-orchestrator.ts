@@ -132,7 +132,7 @@ async function buildDirectorySnapshot(
 }
 
 /**
- * D-13: emits new-hire notifications for Google users not in the org and not
+ * Emits new-hire notifications for Google users not in the org and not
  * previously synced. Returns the count of detected new hires.
  */
 async function detectAndNotifyNewHires(
@@ -169,8 +169,8 @@ async function detectAndNotifyNewHires(
 }
 
 /**
- * D-14: emits departure notifications for previously-synced emails no longer
- * in Google but still org members. Returns the count of detected departures.
+ * Emits departure notifications for previously-synced emails no longer in
+ * Google but still org members. Returns the count of detected departures.
  */
 async function detectAndNotifyDepartures(
   snapshot: DirectorySnapshot,
@@ -264,11 +264,10 @@ async function recordSyncFailure(
  *
  * Compares the current Google Workspace directory against org members and
  * a previously synced email snapshot to detect:
- * - **New hires** (D-13): users in Google directory but not in org members
- *   and not previously synced -- dispatches DIRECTORY_NEW_HIRE notifications
- * - **Departures** (D-14): previously synced users no longer in Google
- *   directory but still in org members -- dispatches DIRECTORY_DEPARTURE
- *   notifications
+ * - **New hires**: users in Google directory but not in org members and not
+ *   previously synced -- dispatches DIRECTORY_NEW_HIRE notifications
+ * - **Departures**: previously synced users no longer in Google directory but
+ *   still in org members -- dispatches DIRECTORY_DEPARTURE notifications
  *
  * IMPORTANT: This service does NOT auto-create or auto-delete users.
  * All changes are surfaced as admin notifications for manual review.

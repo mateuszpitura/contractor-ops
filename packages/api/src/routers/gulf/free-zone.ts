@@ -1,20 +1,18 @@
 // ---------------------------------------------------------------------------
-// Phase 79 · GULF-01/04 (D-01/D-04/D-09) — Free-zone assignment CRUD + per-
-// engagement Saudi fields tRPC router.
+// Free-zone assignment CRUD + per-engagement Saudi fields tRPC router.
 // ---------------------------------------------------------------------------
 //
-// Exposes the FreeZoneAssignment data layer (Plan 02 models, Plan 03 service)
-// through tenant-scoped, Zod-validated, region-aware procedures. All reads/writes
-// go through `ctx.db` — the tenant middleware resolves org.dataRegion →
-// getRegionalClient, so ME orgs transparently hit the ME database. The 4 Gulf
-// models are NEVER touched via the default `prisma`/`prismaRaw` client (Pitfall 19 /
-// lint-region-leakage).
+// Exposes the FreeZoneAssignment data layer through tenant-scoped,
+// Zod-validated, region-aware procedures. All reads/writes go through `ctx.db`
+// — the tenant middleware resolves org.dataRegion → getRegionalClient, so ME
+// orgs transparently hit the ME database. The Gulf models are NEVER touched
+// via the default `prisma`/`prismaRaw` client (lint-region-leakage guard).
 //
-// Writes compose the FreeZoneAssignment upsert + the out-of-band compliance-item
-// write (writeFreeZoneComplianceItem, Plan 03) inside a single ctx.db.$transaction
-// so the assignment, its BLOCKING/EXPIRED compliance row, and the audit log commit
-// atomically (D-17). Mainland assignments arm no payment-block gate (D-04 — the
-// zone narrowing lives in the service write).
+// Writes compose the FreeZoneAssignment upsert + the out-of-band
+// compliance-item write (writeFreeZoneComplianceItem) inside a single
+// ctx.db.$transaction so the assignment, its BLOCKING/EXPIRED compliance row,
+// and the audit log commit atomically. Mainland assignments arm no
+// payment-block gate (the zone narrowing lives in the service write).
 
 import type { Prisma } from '@contractor-ops/db';
 import { TRPCError } from '@trpc/server';
@@ -27,8 +25,8 @@ import { writeAuditLog } from '../../services/audit-writer';
 import type { FreeZoneComplianceClient } from '../../services/free-zone-compliance';
 import { writeFreeZoneComplianceItem } from '../../services/free-zone-compliance';
 
-// The 11 recordable UaeFreeZoneCode enum values (Plan 02 gulf.prisma). Kept as a
-// Zod enum so an invalid zone is rejected at the trust boundary (T-79-05-05).
+// The 11 recordable UaeFreeZoneCode enum values. Kept as a Zod enum so an
+// invalid zone is rejected at the trust boundary.
 const uaeFreeZoneCodeEnum = z.enum([
   'DIFC',
   'DMCC',
@@ -48,10 +46,10 @@ const upsertAssignmentSchema = z.object({
   zone: uaeFreeZoneCodeEnum,
   licenseNumber: z.string().trim().max(120).nullish(),
   licenseCategory: z.string().trim().max(120).nullish(),
-  /** Calendar expiry date (Asia/Dubai); drives the F1 reminder cascade band math. */
+  /** Calendar expiry date (Asia/Dubai); drives the reminder cascade band math. */
   licenseExpiresAt: z.iso.date().nullish(),
   permittedActivitiesText: z.string().trim().max(4000).nullish(),
-  /** Admin-tagged ISIC-style codes that drive the permitted-activity scope check (D-05/D-06). */
+  /** Admin-tagged ISIC-style codes that drive the permitted-activity scope check. */
   permittedActivityIsicCodes: z.array(z.string().trim().min(1).max(32)).max(200).default([]),
 });
 
@@ -65,9 +63,9 @@ const setSaudiAssignmentFieldsSchema = z.object({
 
 export const freeZoneRouter = router({
   /**
-   * Read a contractor's free-zone assignment (D-01 — one license per contractor).
+   * Read a contractor's free-zone assignment (one license per contractor).
    * Tenant-scoped: the org filter rides on the where clause so a spoofed
-   * contractorId from another org resolves to null (T-79-05-02 IDOR mitigation).
+   * contractorId from another org resolves to null (IDOR mitigation).
    */
   getAssignment: tenantFlaggedProcedure
     .use(requireFeatureFlag('gulf.free-zone-tracking'))
@@ -84,9 +82,9 @@ export const freeZoneRouter = router({
 
   /**
    * Create or update a contractor's free-zone assignment, then write/supersede
-   * its compliance item in the same transaction (D-01/D-02/D-03). A non-Mainland
-   * expired license yields a BLOCKING + EXPIRED item that hard-blocks payment via
-   * the existing gate; a Mainland assignment writes no item (D-04).
+   * its compliance item in the same transaction. A non-Mainland expired license
+   * yields a BLOCKING + EXPIRED item that hard-blocks payment via the existing
+   * gate; a Mainland assignment writes no item.
    */
   upsertAssignment: tenantFlaggedProcedure
     .use(requireFeatureFlag('gulf.free-zone-tracking'))
@@ -94,8 +92,7 @@ export const freeZoneRouter = router({
     .input(upsertAssignmentSchema)
     .mutation(async ({ ctx, input }) => {
       // Verify the contractor belongs to the caller's org before writing the
-      // 1:1 assignment — never trust the client-supplied contractorId alone
-      // (T-79-05-01 tampering mitigation).
+      // 1:1 assignment — never trust the client-supplied contractorId alone.
       const contractor = await ctx.db.contractor.findFirst({
         where: { id: input.contractorId, organizationId: ctx.organizationId },
         select: { id: true },
@@ -129,10 +126,10 @@ export const freeZoneRouter = router({
           },
         });
 
-        // D-03 — materialise the BLOCKING free-zone compliance item out-of-band
-        // (Plan 03 service). Only fires for non-Mainland licenses with an expiry
-        // date; the service gates Mainland (D-04). Composes inside this tx so the
-        // assignment + item + audit commit atomically.
+        // Materialise the BLOCKING free-zone compliance item out-of-band via
+        // the compliance service. Only fires for non-Mainland licenses with an
+        // expiry date; the service gates Mainland assignments. Composes inside
+        // this tx so the assignment + item + audit commit atomically.
         let compliance: Awaited<ReturnType<typeof writeFreeZoneComplianceItem>> | null = null;
         if (assignment.zone !== 'MAINLAND' && assignment.licenseExpiresAt) {
           compliance = await writeFreeZoneComplianceItem(tx as FreeZoneComplianceClient, {
@@ -148,8 +145,8 @@ export const freeZoneRouter = router({
           });
         }
 
-        // D-17 — the assignment write itself is a sensitive mutation; audit it on
-        // the same tx so it rolls back with the assignment on failure.
+        // The assignment write is a sensitive mutation; audit it on the same
+        // tx so the audit row rolls back with the assignment on failure.
         await writeAuditLog({
           organizationId: ctx.organizationId,
           actorType: 'USER',
@@ -171,9 +168,10 @@ export const freeZoneRouter = router({
     }),
 
   /**
-   * Persist per-engagement Saudi nationality + Qiwa fields on a ContractorAssignment
-   * (GULF-04 / D-09). These feed the Saudization dashboard derivation. Tenant-scoped
-   * update: the org filter on the where clause prevents cross-tenant writes.
+   * Persist per-engagement Saudi nationality + Qiwa fields on a
+   * ContractorAssignment. These feed the Saudization dashboard derivation.
+   * Tenant-scoped update: the org filter on the where clause prevents
+   * cross-tenant writes.
    */
   setSaudiAssignmentFields: tenantFlaggedProcedure
     .use(requireFeatureFlag('gulf.free-zone-tracking'))

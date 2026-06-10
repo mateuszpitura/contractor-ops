@@ -1,6 +1,6 @@
 /**
  * ISO 20022 ExternalPurpose1Code mapping for SWIFT payment purpose codes.
- * Per D-04: auto-assigned from contract service category, manually overridable.
+ * Auto-assigned from contract service category, manually overridable.
  */
 
 // ---------------------------------------------------------------------------

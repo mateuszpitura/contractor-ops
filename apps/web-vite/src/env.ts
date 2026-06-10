@@ -25,7 +25,7 @@ const envSchema = z.object({
   VITE_POSTHOG_KEY: z.string().min(1).optional(),
   VITE_POSTHOG_HOST: z.string().url().optional(),
 
-  /** Cloudflare Turnstile site key for signup bot protection (F-SEC-22). */
+  /** Cloudflare Turnstile site key for signup bot protection. */
   VITE_TURNSTILE_SITE_KEY: z.string().min(1).optional(),
 
   /** Platform operator org id — client-side admin route gate (see require-platform-operator.ts). */

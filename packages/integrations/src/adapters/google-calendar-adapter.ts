@@ -6,15 +6,15 @@ import type { OAuthConfig } from '../types/provider.js';
 import { BaseAdapter } from './base-adapter.js';
 
 // ---------------------------------------------------------------------------
-// Timeout budgets (F-INT-01 / F-INT-02)
+// Timeout budgets
 // ---------------------------------------------------------------------------
 //
 // OAuth token redemption + refresh — non-idempotent POST. 30s wall-clock,
 // no retries (replaying can claim multiple sessions or invalidate refresh
 // tokens). Matches Slack/DocuSign precedent.
 const OAUTH_TIMEOUT_MS = 30_000;
-// Calendar event mutations — POST/PATCH/DELETE. With F-INT-04 the caller
-// now passes a deterministic idempotency key on createEvent (used as the
+// Calendar event mutations — POST/PATCH/DELETE. The caller now passes a
+// deterministic idempotency key on createEvent (used as the
 // event `id` so a duplicate insert returns 409 instead of inserting twice).
 // `updateEvent` and `deleteEvent` operate on a stable eventId so a retry
 // of the same call is naturally idempotent. Both are safe to retry.
@@ -26,7 +26,7 @@ const READ_TIMEOUT_MS = 15_000;
 const READ_RETRIES = 2;
 
 // ---------------------------------------------------------------------------
-// Idempotency key encoding (F-INT-04)
+// Idempotency key encoding
 // ---------------------------------------------------------------------------
 //
 // Google Calendar's `events.insert` accepts an optional `id` field on the
@@ -68,7 +68,7 @@ function encodeGoogleEventId(idempotencyKey: string): string {
 }
 
 /**
- * Phase 74 D-05 / D-08 — busy range returned by getFreeBusy.
+ * Busy range returned by getFreeBusy.
  * Used by the pto-detector service to apply the layered detection rule
  * (manual outOfOffice → calendar all-day busy → PTO_KEYWORDS title match).
  */
@@ -243,12 +243,11 @@ export class GoogleCalendarAdapter extends BaseAdapter {
   /**
    * Creates a calendar event on the user's primary calendar.
    *
-   * F-INT-04 idempotency: when the caller supplies `idempotencyKey`, it is
-   * encoded as the event `id` (RFC 2938 base32hex sha-256 digest). A retry
-   * of the same logical create then returns 409 Conflict from Google
-   * instead of inserting a duplicate — which is what makes
-   * `retryNonIdempotent: true` safe at the transport layer below. Callers
-   * derive the key as e.g.
+   * Idempotency: when the caller supplies `idempotencyKey`, it is encoded as
+   * the event `id` (RFC 2938 base32hex sha-256 digest). A retry of the same
+   * logical create then returns 409 Conflict from Google instead of inserting
+   * a duplicate — which is what makes `retryNonIdempotent: true` safe at the
+   * transport layer below. Callers derive the key as e.g.
    * `sha256(`${orgId}:${calendarId}:${entityId}:create`)`.
    *
    * @param accessToken - The OAuth access token
@@ -328,7 +327,7 @@ export class GoogleCalendarAdapter extends BaseAdapter {
   /**
    * Updates an existing calendar event.
    *
-   * Uses `If-Match` header with etag for optimistic concurrency control (Pitfall 4).
+   * Uses `If-Match` header with etag for optimistic concurrency control.
    *
    * @param accessToken - The OAuth access token
    * @param eventId - The event ID to update
@@ -404,9 +403,9 @@ export class GoogleCalendarAdapter extends BaseAdapter {
   /**
    * Deletes a calendar event.
    *
-   * F-INT-04: DELETE on a stable eventId is naturally idempotent — Google
-   * returns 404/410 on the second call and the caller treats both 2xx and
-   * 410 as success. Safe to retry on transport errors.
+   * DELETE on a stable eventId is naturally idempotent — Google returns
+   * 404/410 on the second call and the caller treats both 2xx and 410 as
+   * success. Safe to retry on transport errors.
    *
    * @param accessToken - The OAuth access token
    * @param eventId - The event ID to delete
@@ -434,16 +433,16 @@ export class GoogleCalendarAdapter extends BaseAdapter {
   }
 
   /**
-   * Phase 74 D-05 / D-08 — fetch free-busy ranges enriched with event titles
-   * and all-day flags so the PTO detector can match against PTO_KEYWORDS.
+   * Fetch free-busy ranges enriched with event titles and all-day flags so
+   * the PTO detector can match against PTO_KEYWORDS.
    *
    * Performs two API calls and merges the results:
    *   1. POST /calendar/v3/freeBusy — authoritative busy ranges
    *   2. GET /calendar/v3/calendars/{id}/events — titles + isAllDay flags +
-   *      attendee counts for the same window (R1 refinement support).
+   *      attendee counts for the same window.
    *
    * Access token is never included in error messages — only the response
-   * body is surfaced so token leakage is prevented (T-74-06-token-leak).
+   * body is surfaced so token leakage is prevented.
    */
   async getFreeBusy(
     accessToken: string,

@@ -1,5 +1,4 @@
-// Phase 57 · Plan 01 — HMRC VAT fixtures (PAY-03).
-// Canonical sandbox VRNs + response bodies for MSW handlers + client tests.
+// HMRC VAT fixtures — canonical sandbox VRNs + response bodies for MSW handlers + client tests.
 
 export const HMRC_OAUTH_TOKEN_200 = {
   access_token: 'test-access-token-abc123',

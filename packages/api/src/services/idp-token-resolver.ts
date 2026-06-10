@@ -1,8 +1,8 @@
-// Phase 77 D-14 — resolve the decrypted token a Deprovisionable adapter needs.
+// Resolve the decrypted token a Deprovisionable adapter needs.
 //
 // GWS  → the org's CONNECTED GOOGLE_WORKSPACE IntegrationConnection token.
 // Slack→ the org's SLACK_ORG_GRID connection (marked via configJson.connectionSubKind),
-//        NOT the workspace Slack bot token (D-14 / T-77-03-01).
+//        NOT the workspace Slack bot token.
 
 import type { PrismaClient } from '@contractor-ops/db';
 import { decryptCredentials } from '@contractor-ops/integrations';

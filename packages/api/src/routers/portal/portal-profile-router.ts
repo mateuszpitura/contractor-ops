@@ -18,7 +18,7 @@ export const portalProfileRouter = router({
    * Get a presigned upload URL for compliance document replacement.
    * Accepts PDF, PNG, and JPEG — compliance scans are commonly image files.
    * Uses PORTAL_COMPLIANCE_UPLOAD purpose so submitUploadReplacement can
-   * reject a documentId minted for a different flow (F-SEC-01).
+   * reject a documentId minted for a different flow.
    */
   getComplianceUploadUrl: portalProcedure
     .input(
@@ -104,7 +104,7 @@ export const portalProfileRouter = router({
       },
     });
 
-    // F-SEC-10: never surface `bankAccountEncrypted` ciphertext to the portal
+    // Never surface `bankAccountEncrypted` ciphertext to the portal
     // client. Strip it from `requestedChanges` JSON before returning. The
     // `bankAccountMasked` field is server-derived and safe to expose.
     const pendingChangeRequest = pendingChangeRequestRaw
@@ -122,7 +122,7 @@ export const portalProfileRouter = router({
   }),
 
   /**
-   * Update contractor contact info (takes effect immediately per D-01).
+   * Update contractor contact info (takes effect immediately).
    * Contact fields only — financial fields require approval workflow.
    */
   updateContactInfo: portalProcedure
@@ -166,7 +166,7 @@ export const portalProfileRouter = router({
 
   /**
    * Submit a financial change request (bank account, SWIFT, tax ID).
-   * Creates a pending ContractorChangeRequest — requires admin approval per D-01.
+   * Creates a pending ContractorChangeRequest — requires admin approval.
    */
   submitFinancialChangeRequest: portalProcedure
     .input(
@@ -263,7 +263,7 @@ export const portalProfileRouter = router({
 
   /**
    * Get notification preferences for all 5 categories.
-   * Returns defaults (emailEnabled: true) for any missing categories per D-06.
+   * Returns defaults (emailEnabled: true) for any missing categories.
    */
   getNotificationPreferences: portalProcedure.query(async ({ ctx }) => {
     const CATEGORIES = [
@@ -298,7 +298,7 @@ export const portalProfileRouter = router({
 
   /**
    * Update a single notification preference category.
-   * SECURITY_ALERTS cannot be disabled per D-07.
+   * SECURITY_ALERTS cannot be disabled.
    */
   updateNotificationPreference: portalProcedure
     .input(
@@ -348,9 +348,9 @@ export const portalProfileRouter = router({
     }),
 
   /**
-   * Phase 73 COMPL-04 / D-06 — the logged-in contractor's own compliance items,
-   * driving the portal self-service list + the home attention banner. Strictly
-   * scoped to the portal-session contractor; no client-supplied id is trusted.
+   * The logged-in contractor's own compliance items, driving the portal
+   * self-service list + the home attention banner. Strictly scoped to the
+   * portal-session contractor; no client-supplied id is trusted.
    */
   complianceItems: portalProcedure.query(async ({ ctx }) => {
     return ctx.db.contractorComplianceItem.findMany({
@@ -369,17 +369,16 @@ export const portalProfileRouter = router({
   }),
 
   /**
-   * Phase 73 COMPL-04 / D-06 — contractor self-service upload-replacement.
+   * Contractor self-service upload-replacement.
    *
    * The contractor uploads a replacement document; we flip the Document to
    * PENDING_REVIEW and emit a forensic audit row, but DO NOT touch the
-   * ContractorComplianceItem status — the SATISFIED flip is admin-only
-   * (Plan 73-08, compliance:override). Strictly scoped to the portal-session
-   * contractor: a cross-contractor itemId/documentId is rejected NOT_FOUND
-   * (T-73-07-01). `suggestedExpiresAt` is the contractor's hint for the admin
-   * reviewer only; the authoritative expiresAt is written on approve
-   * (T-73-07-04). Lives on the portalRouter (not classification) because the
-   * portal client only reaches portalAppRouter.
+   * ContractorComplianceItem status — the SATISFIED flip is admin-only.
+   * Strictly scoped to the portal-session contractor: a cross-contractor
+   * itemId/documentId is rejected NOT_FOUND. `suggestedExpiresAt` is the
+   * contractor's hint for the admin reviewer only; the authoritative
+   * expiresAt is written on approve. Lives on the portalRouter (not
+   * classification) because the portal client only reaches portalAppRouter.
    */
   submitUploadReplacement: portalProcedure
     .input(
@@ -392,7 +391,7 @@ export const portalProfileRouter = router({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      // F-SEC-01: atomically consume the PendingUpload row to recover the
+      // Atomically consume the PendingUpload row to recover the
       // server-stored storageKey. Rejects foreign/expired/wrong-purpose rows.
       const pending = await consumePendingUpload({
         db: ctx.db,
@@ -431,7 +430,7 @@ export const portalProfileRouter = router({
           },
         });
 
-        // Link document to the contractor for ownership assertions (WR-1).
+        // Link document to the contractor for ownership assertions.
         await tx.documentLink.create({
           data: {
             organizationId: ctx.organizationId,
@@ -443,7 +442,7 @@ export const portalProfileRouter = router({
         });
 
         // Record the candidate document on the item so the admin can surface
-        // the PENDING_REVIEW document in the compliance tab (CR-2 data layer).
+        // the PENDING_REVIEW document in the compliance tab.
         // This is overwritten with the same value on approve, and cleared on
         // reject, so it is safe to set optimistically here.
         await tx.contractorComplianceItem.update({
@@ -465,7 +464,7 @@ export const portalProfileRouter = router({
             suggestedExpiresAt: input.suggestedExpiresAt ?? null,
           },
         });
-        // Item status intentionally unchanged (D-06) — admin review flips it.
+        // Item status intentionally unchanged — admin review flips it.
         return { itemId: item.id, documentId: input.documentId, status: item.status };
       });
     }),

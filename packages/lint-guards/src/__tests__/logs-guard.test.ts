@@ -1,5 +1,5 @@
-// Phase 70-01 · FOUND6-02 — failing test scaffold for the body-redaction
-// logger guard. Plan 70-03 implements `runLogsGuard` (ts-morph AST scan).
+// Test scaffold for the body-redaction logger guard.
+// `runLogsGuard` performs a ts-morph AST scan.
 
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';

@@ -48,7 +48,7 @@ vi.mock('@contractor-ops/db', () => ({
   withRlsTransactions: <T>(c: T) => c,
   withRlsReads: <T>(c: T) => c,
   prismaRaw: {
-    // The drain refactor (NEW-ARCH-02 / NEW-ARCH-03) splits work across
+    // The drain splits work across
     // a claim transaction (uses $transaction) plus per-row finalize
     // updates (direct $executeRawUnsafe on the raw client, NO outer tx).
     $transaction: (fn: (tx: unknown) => Promise<unknown>) => mockTransaction(fn),
@@ -247,7 +247,7 @@ describe('drainOutboxBatch', () => {
     expect(result.dispatched).toBe(0);
     expect(result.failed).toBe(0);
 
-    // NEW-ARCH-02 / NEW-ARCH-03: attempts is bumped during the CLAIM
+    // Attempts is bumped during the CLAIM
     // phase (a bulk UPDATE … SET "attempts" = "attempts" + 1, …) — the
     // failure-path UPDATE only writes lastError + nextAttemptAt.
     const claimUpdate = mockExecuteRawUnsafe.mock.calls.find(call =>
@@ -318,7 +318,7 @@ describe('drainOutboxBatch', () => {
 
 describe('computeBackoffMs', () => {
   it('produces ~4m base delay for the first retry', () => {
-    // BACKOFF_BASE_MS=4m + jitter(0..30s) — see NEW-ARCH-06 retune.
+    // BACKOFF_BASE_MS=4m + jitter(0..30s).
     const delay = computeBackoffMs(1);
     expect(delay).toBeGreaterThanOrEqual(4 * 60_000);
     expect(delay).toBeLessThanOrEqual(4 * 60_000 + 30_000);

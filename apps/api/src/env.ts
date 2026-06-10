@@ -39,7 +39,7 @@ const envSchema = z.object({
   // Comma-separated CIDR list (or proxy-addr keywords: loopback, linklocal,
   // uniquelocal) trusted for the X-Forwarded-For walk. Read by
   // `apps/api/src/plugins/rate-limit.ts`. Misconfiguring this allows XFF
-  // spoofing → rate-limit bypass (F-SEC-17).
+  // spoofing → rate-limit bypass.
   TRUSTED_PROXIES: z.string().default('loopback,linklocal,uniquelocal'),
 
   // Upstash Redis — required in production for rate-limit (fail-closed).
@@ -109,7 +109,7 @@ const envSchema = z.object({
 
   // tRPC body cap (MB). Empty / malformed / non-positive falls back to 1 MB
   // in the plugin. Coerced number lets the schema reject obvious garbage at
-  // boot rather than silently disabling the cap (F-SCALE-17).
+  // boot rather than silently disabling the cap.
   TRPC_MAX_BODY_MB: z.preprocess(emptyToUndefined, z.coerce.number().positive().optional()),
 });
 

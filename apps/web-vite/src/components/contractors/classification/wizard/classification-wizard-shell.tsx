@@ -1,8 +1,8 @@
 // ---------------------------------------------------------------------------
-// ClassificationWizardShell — multi-step assessment wizard (Plan 04, UI-SPEC §Interaction 1-4)
+// ClassificationWizardShell — multi-step assessment wizard.
 // ---------------------------------------------------------------------------
 // IMPORTANT: Do NOT import from @contractor-ops/classification/profiles/*/scoring.*
-// Scoring is server-only (Pitfall 2). All outcome computation happens inside
+// Scoring is server-only. All outcome computation happens inside
 // `trpc.classification.submit` on the server.
 
 import { Button } from '@contractor-ops/ui/components/shadcn/button';

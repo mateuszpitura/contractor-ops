@@ -2,7 +2,7 @@
  * Unit tests for the `trial-notifications` cron handler.
  *
  * Coverage:
- *   1. Advisory lock not acquired → ok=true + skippedLocked (F-ASYNC-07).
+ *   1. Advisory lock not acquired → ok=true + skippedLocked.
  *   2. Lock acquired, no trialing subscriptions → ok=true + processed 0.
  *   3. Subscription 7 days from trial end → notification dispatched.
  *   4. NotificationCronDedup P2002 → counted as skippedDedup, not sent.

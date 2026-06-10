@@ -1,4 +1,4 @@
-// Phase 75 D-14 + D-15 — DE Werkvertrag IP-clause phrase library.
+// DE Werkvertrag IP-clause phrase library.
 //
 // =============================================================================
 // CRITICAL — Werkvertrag legal context (engineering summary; NOT legal advice):
@@ -18,9 +18,9 @@
 // §31a UrhG: rights for unknown future uses require explicit form requirements.
 //
 // IMPLICATION: UK-style "hereby assigns" boilerplate is INSUFFICIENT under DE
-// law because it attempts what §7 UrhG forbids. The Phase 75 verdict engine
-// (Plan 75-06) triggers MANUAL_REVIEW_REQUIRED with crossJurisdictionMismatch
-// flag (D-15) when only UK-namespace phrases match a DE-jurisdiction contract.
+// law because it attempts what §7 UrhG forbids. The verdict engine triggers
+// MANUAL_REVIEW_REQUIRED with crossJurisdictionMismatch when only UK-namespace
+// phrases match a DE-jurisdiction contract.
 // =============================================================================
 //
 // Legal sign-off: PENDING per Standing Constraint. Production wording flips

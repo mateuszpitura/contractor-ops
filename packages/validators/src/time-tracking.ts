@@ -46,7 +46,7 @@ export const approveTimesheetSchema = z.object({
   timesheetId: z.string().min(1),
 });
 
-/** Reject timesheet (manager, D-07 requires reason) */
+/** Reject timesheet (manager) — reason is required */
 export const rejectTimesheetSchema = z.object({
   timesheetId: z.string().min(1),
   reason: z.string().min(10).max(500),
@@ -85,7 +85,7 @@ export const listTimesheetsSchema = z.object({
 });
 
 // ---------------------------------------------------------------------------
-// External sync (D-09, D-10)
+// External sync
 // ---------------------------------------------------------------------------
 
 export const syncExternalEntriesSchema = z.object({

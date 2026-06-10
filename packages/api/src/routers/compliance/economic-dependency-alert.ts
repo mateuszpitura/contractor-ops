@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------
-// Phase 60 · CLASS-07 — economicDependencyAlert tRPC router.
+// economicDependencyAlert tRPC router.
 // ---------------------------------------------------------------------------
 //
 // Read-only surface over EconomicDependencyAlertState (the state row is

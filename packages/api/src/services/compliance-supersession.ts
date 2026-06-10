@@ -1,8 +1,8 @@
-// Phase 71 D-09 D-10 D-11 D-12 — Compliance row supersession + materialisation.
+// Compliance row supersession + materialisation.
 //
 // Two pure-ish helpers (DB-accepting via structural client) used by:
-//   1. classification.submit's outcome-change branch (Plan 71-04)
-//   2. classification.recreateComplianceAssessment admin mutation (Plan 71-05)
+//   1. classification.submit's outcome-change branch
+//   2. classification.recreateComplianceAssessment admin mutation
 //
 // Architectural twin: packages/api/src/services/audit-writer.ts — same
 // structural-client pattern lets the helpers run inside or outside a $transaction.
@@ -18,7 +18,7 @@ import type { Prisma } from '@contractor-ops/db';
 /**
  * Inline shape for the Outcome union — avoids a tight import on
  * `@contractor-ops/classification`'s `Outcome` type at build time. The
- * discriminator is `kind` (D-10 contract); other fields are not needed here.
+ * discriminator is `kind`; other fields are not needed here.
  */
 export type OutcomeShape = { kind: string } & Record<string, unknown>;
 
@@ -72,7 +72,7 @@ export interface SupersedeContext extends MaterialiseContext {
  * classification when no prior rows exist for the contractor.
  *
  * Caller MUST verify "no prior rows" before calling — this function does NOT
- * check (Plan 71-04 keeps the check in submit's branch).
+ * check (caller is responsible for verifying "no prior rows" in its branch).
  */
 export async function materialiseFromPolicy(
   client: SupersessionClient,
@@ -103,9 +103,9 @@ export async function materialiseFromPolicy(
 /**
  * Supersede existing non-WAIVED rows for a contractor and materialise the new
  * outcome's rule set. Carry forward `satisfiedByDocumentId` + `expiresAt` when
- * `documentType` matches between an old row and a new rule (D-12).
+ * `documentType` matches between an old row and a new rule.
  *
- * Reason values (D-09/D-10):
+ * Reason values:
  *   - 'classification_outcome_change' — submit detected a different outcome.kind
  *   - 'superseded_by_policy_version'  — policy rule set version bumped
  *   - 'admin_correction'              — admin invoked recompute mutation
@@ -116,7 +116,7 @@ export async function supersedeAndMaterialise(
 ): Promise<{ waivedCount: number; insertedCount: number; carriedForwardCount: number }> {
   // 1. Fetch existing non-WAIVED rows.
   //
-  // Phase 79 Pitfall 2 (C4): EXCLUDE out-of-band advisory rows from the
+  // EXCLUDE out-of-band advisory rows from the
   // supersession scope. Two families are written OUTSIDE resolvePolicyRules and
   // keyed off domain state, NOT the classification outcome, so an unrelated
   // classification recompute would otherwise WAIVE them silently:

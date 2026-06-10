@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------
-// Phase 77 D-15 — enableProviderForOrg mutation tests.
+// enableProviderForOrg mutation tests.
 // ---------------------------------------------------------------------------
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';

@@ -9,10 +9,9 @@ import * as E from '../../errors';
 import type { ResolveAssigneeWithPtoArgs } from '../../services/pto-detector';
 import { resolveAssigneeWithPto } from '../../services/pto-detector';
 
-// Re-export for Plan 74-08 (overrideBlockingTask + startOffboardingRun) and
-// any other workflow-execution code that needs PTO-aware assignee resolution.
-// Resolution runs ONCE at task creation time — no per-render re-resolution
-// (Phase 74 Pitfall 26).
+// Re-export for overrideBlockingTask, startOffboardingRun, and any other
+// workflow-execution code that needs PTO-aware assignee resolution.
+// Resolution runs ONCE at task creation time — no per-render re-resolution.
 export { type ResolveAssigneeWithPtoArgs, resolveAssigneeWithPto };
 
 // ---------------------------------------------------------------------------
@@ -253,8 +252,8 @@ export async function unblockDependentsAndRecomputeRun(
   },
   closedTask: { id: string; workflowRun: { id: string } },
   completedAt: Date,
-  // Phase 75 D-08/D-12 — when supplied, run-completion is gated on open
-  // IP_VERIFICATION tasks (hard-block) + PENDING credentials (soft-warning).
+  // When supplied, run-completion is gated on open IP_VERIFICATION tasks
+  // (hard-block) + PENDING credentials (soft-warning).
   // Omitted by callers that do not need the gate (preserves existing behaviour).
   gate?: { organizationId: string },
 ): Promise<void> {
@@ -306,9 +305,9 @@ interface RunGateClient {
 }
 
 /**
- * Phase 75 D-08 + D-12 — gate offboarding-run completion.
+ * Gate offboarding-run completion.
  * Throws PRECONDITION_FAILED with a structured `cause` when an IP_VERIFICATION
- * task is still open (unless the Phase 74 override is applied) or when PENDING
+ * task is still open (unless the owner override is applied) or when PENDING
  * credentials remain. The UI inspects `cause.blockedTaskKind` to route the
  * admin to the e-sign / override / force-complete flow.
  */

@@ -1,8 +1,8 @@
 // ---------------------------------------------------------------------------
 // ZATCA TLV-Encoded QR Code Generator
 // ---------------------------------------------------------------------------
-// Per D-04: TLV QR code encoding built directly (no ZATCA JS libraries).
-// Implements QRCodeable capability hook from Phase 45's engine architecture.
+// TLV QR code encoding built directly (no ZATCA JS libraries).
+// Implements the QRCodeable capability hook from the engine architecture.
 // ---------------------------------------------------------------------------
 
 import QRCode from 'qrcode';

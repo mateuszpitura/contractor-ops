@@ -1,6 +1,6 @@
 // packages/validators/src/legal/disclaimers.ts
 //
-// LOCKED BILINGUAL CLASSIFICATION DISCLAIMERS — Phase 58 (D-12).
+// LOCKED BILINGUAL CLASSIFICATION DISCLAIMERS.
 //
 // These canonical disclaimer strings are legally vetted and MUST NOT be
 // translated, reflowed, or moved into messages/*.json. The CI guard in
@@ -24,8 +24,7 @@ export const DISCLAIMER_SCHEIN_BODY =
 export const DISCLAIMER_SCHEIN_ACKNOWLEDGEMENT =
   'Ich verstehe, dass diese Bewertung keine rechtsverbindliche Statusfeststellung ersetzt.';
 
-// Phase 59 · D-03 — SDS disclaimer on final page.
-// PENDING UK tax-adviser sign-off (see Phase 59 Plan 59-01 Task 3 MANUAL-REVIEW checkpoint).
+// SDS disclaimer on final page. PENDING UK tax-adviser sign-off.
 export const SDS_DISCLAIMER_EN =
   'This Status Determination Statement is issued by the client named above under ' +
   'Chapter 10 ITEPA 2003 for the purposes of off-payroll working (IR35). The tooling ' +
@@ -33,8 +32,7 @@ export const SDS_DISCLAIMER_EN =
   'retains responsibility for the determination and for taking reasonable care. ' +
   'Consult a qualified UK tax adviser before acting on this result.';
 
-// Phase 59 · D-18 — DRV defense bundle disclaimer (German).
-// PENDING Steuerberater sign-off (see Phase 59 Plan 59-01 Task 3 MANUAL-REVIEW checkpoint).
+// DRV defense bundle disclaimer (German). PENDING Steuerberater sign-off.
 export const DRV_DEFENSE_DISCLAIMER_DE =
   'Dieses Dokument ersetzt keine rechtsverbindliche Statusfeststellung nach § 7a SGB IV. ' +
   'Es dient ausschließlich der Beweissicherung und Dokumentation gegenüber der Deutschen ' +
@@ -42,7 +40,7 @@ export const DRV_DEFENSE_DISCLAIMER_DE =
   'obliegt der zuständigen Prüfstelle. Konsultieren Sie eine qualifizierte ' +
   'Steuerberatung oder Fachanwältin/Fachanwalt für Sozialrecht.';
 
-// Phase 64 · D-16 — Classification advisory banner phrases (LEGAL-03).
+// Classification advisory banner phrases.
 // PENDING legal sign-off — see signoff-registry.json.
 // Jurisdiction-aware: UK users see the IR35 version, DE users see the Schein version.
 export const BANNER_IR35_ADVISORY_EN =
@@ -59,7 +57,7 @@ export const BANNER_SCHEIN_ADVISORY_DE =
   'Entscheidung eine qualifizierte Steuerberatung oder ' +
   'Fachanwältin/Fachanwalt für Sozialrecht.';
 
-// Phase 64 · D-23 — SDS approval statement (LEGAL-05).
+// SDS approval statement.
 // PENDING UK tax-adviser sign-off — see signoff-registry.json.
 // Displayed in the in-app approval checkbox before SDS generation.
 // Snapshot stored in SdsApproval.approvalStatementSnapshot at approval time.
@@ -69,7 +67,7 @@ export const SDS_APPROVAL_STATEMENT_EN =
   'responsibility for its issuance under Chapter 10 ITEPA 2003. I understand this ' +
   'tool does not constitute legal advice.';
 
-// Phase 64 · D-27 — DRV unverified-entry disclaimer (LEGAL-06).
+// DRV unverified-entry disclaimer.
 // PENDING Steuerberater sign-off — see signoff-registry.json.
 // Displayed in the DRV Statusfeststellungsverfahren tracking panel when no
 // decision letter has been uploaded.
@@ -78,7 +76,7 @@ export const DRV_UNVERIFIED_ENTRY_DISCLAIMER_DE =
   'DRV-Bescheid verifiziert. Laden Sie den Bescheid der Deutschen Rentenversicherung ' +
   'hoch, um den Eintrag zu verifizieren.';
 
-// Phase 64 · D-29 — Platform "software not legal advice" ToS disclaimers (LEGAL-07).
+// Platform "software not legal advice" ToS disclaimers.
 // PENDING legal sign-off — see signoff-registry.json.
 // Embedded in the Terms of Service page for both EN and DE jurisdictions.
 export const SOFTWARE_NOT_LEGAL_ADVICE_EN =

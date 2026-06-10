@@ -1,12 +1,12 @@
 // packages/api/src/services/einvoice-finalize.ts
 //
-// Phase 61 · Plan 61-06 Task 1 — orchestration spine for EINV-01 + EINV-04 +
-// EINV-07. Consumes Plan 02's generator + Plan 03's KoSIT three-layer
-// validator + Plan 04's Leitweg-ID resolver; persists the canonical XML to
-// R2, the redacted summary to `EInvoiceLifecycle`, and writes the GENERATED
-// + VALIDATED audit rows atomically.
+// Orchestration spine for XRechnung e-invoice finalization. Consumes the
+// generator, the KoSIT three-layer validator, and the Leitweg-ID resolver;
+// persists the canonical XML to R2, the redacted summary to
+// `EInvoiceLifecycle`, and writes the GENERATED + VALIDATED audit rows
+// atomically.
 //
-// Flow (per PLAN.md §Task 1 behaviour):
+// Flow:
 //   1. Load Invoice (+ lines, contractor, contract, organization) scoped by
 //      orgId → NOT_FOUND on cross-tenant mismatch.
 //   2. Short-circuit: if a lifecycle already exists and `force === false`
@@ -15,12 +15,11 @@
 //      peppol-orchestrator has a jurisdiction-specific one but the shape is
 //      the same canonical EInvoice type).
 //   4. Resolve Leitweg-ID via `resolveLeitwegIdForInvoice`. Tag warnings:
-//      - `LEITWEG_ID_MISSING` when DE public-sector buyer has no resolver
-//        hit (D-08 soft-gate).
+//      - `LEITWEG_ID_MISSING` when DE public-sector buyer has no resolver hit.
 //      - `BR_DE_17_NON_EUR_CURRENCY` when DE public-sector buyer + invoice
-//        currency ≠ EUR (RESEARCH Pitfall 6). KoSIT layer-3 echoes this in
-//        the actual validation report; we surface it earlier so Plan 07's
-//        UI can render an inline hint before the user clicks Finalize.
+//        currency ≠ EUR (EN 16931 BR-DE-17). KoSIT layer-3 echoes this in
+//        the actual validation report; we surface it earlier so the UI can
+//        render an inline hint before the user clicks Finalize.
 //   5. Call `profile.generateAndValidate` (produces XML + typed report).
 //   6. Compute SHA-256 over the XML, build content-addressed R2 key, put
 //      the object.
@@ -36,8 +35,8 @@
 // a lifecycle row pointing at a non-existent key).
 //
 // Multi-tenant: every query filters by `organizationId`. Cross-tenant
-// invoice access resolves to NOT_FOUND, never FORBIDDEN (avoids the
-// response-code oracle documented in Plan 61-04 T-61-04-06).
+// invoice access resolves to NOT_FOUND, never FORBIDDEN (avoids leaking
+// resource existence via HTTP status codes).
 //
 // No `console.*` — `@contractor-ops/logger` only.
 
@@ -65,9 +64,9 @@ import { resolveSkontoTerm } from './skonto';
 import type { DbClient } from './types';
 
 // ---------------------------------------------------------------------------
-// Error codes / warning codes surfaced to Plan 07 UI (kept in lockstep with
-// the `EInvoice.Errors` i18n namespace). `NOT_FOUND` / `CONFLICT` use the
-// standard tRPC codes at the router boundary.
+// Error codes / warning codes surfaced to the finalize UI (kept in lockstep
+// with the `EInvoice.Errors` i18n namespace). `NOT_FOUND` / `CONFLICT` use
+// the standard tRPC codes at the router boundary.
 // ---------------------------------------------------------------------------
 
 export const EINVOICE_INVOICE_NOT_FOUND = 'EINVOICE_INVOICE_NOT_FOUND' as const;
@@ -107,7 +106,7 @@ export class EInvoiceAlreadyFinalizedError extends Error {
 /**
  * Minimal R2 surface the finalize service needs. `putObject` writes the
  * canonical XML at a content-addressed key; `signDownloadUrl` returns a
- * 300-second signed GET URL (Phase 56/59 convention).
+ * 300-second signed GET URL.
  */
 export interface R2Service {
   putObject(params: {
@@ -163,7 +162,7 @@ export interface FinalizeInput {
 
 /**
  * Redacted per-layer summary persisted to
- * `EInvoiceLifecycle.validationReportSummary` (D-14). Keeps the row small:
+ * `EInvoiceLifecycle.validationReportSummary`. Keeps the row small:
  * the full report is stored separately in R2 when present.
  */
 export interface FinalizeValidationReportSummary {
@@ -201,8 +200,8 @@ export interface FinalizeResult {
 // ---------------------------------------------------------------------------
 
 /**
- * Per T-61-06-06 — cap the XML we will persist. 5 MiB matches the validator
- * layer-1 guard (see `packages/einvoice/src/profiles/xrechnung-de/validator.ts`).
+ * Cap the XML we will persist. 5 MiB matches the validator layer-1 guard
+ * (see `packages/einvoice/src/profiles/xrechnung-de/validator.ts`).
  * A legitimate XRechnung invoice with a few hundred lines is typically well
  * under 200 KiB; 5 MiB is a generous but bounded ceiling.
  */
@@ -226,8 +225,8 @@ export async function finalizeEInvoice(
   // ── Short-circuit on existing lifecycle when force=false ─────────────────
   if (!input.force) {
     const existing = await db.eInvoiceLifecycle.findUnique({
-      // F-DB-17 — compound (orgId, invoiceId) unique was redundant
-      // (invoiceId is globally @unique). Use the field-level unique key.
+      // invoiceId is globally @unique; the compound (orgId, invoiceId) unique
+      // was redundant. Use the field-level unique key.
       where: {
         invoiceId: input.invoiceId,
       },
@@ -245,9 +244,8 @@ export async function finalizeEInvoice(
   const warnings = resolvePreflightWarnings(invoice, resolvedLeitwegId);
 
   // ── Resolve Skonto cascade (invoice → billing profile → null) ───────────
-  // Phase 68 D-03/D-04 — the BG-20 Payment Terms block in the emitted CII
-  // XML requires the resolved term as opts.skontoTerm. Cascade rule lives
-  // in services/skonto.ts:resolveSkontoTerm (Phase 63 D-21 source-of-truth).
+  // The BG-20 Payment Terms block in the emitted CII XML requires the resolved
+  // term as opts.skontoTerm. Cascade rule lives in services/skonto.ts:resolveSkontoTerm.
   const invoiceSkonto = toSkontoTermData(invoice.skontoTerms[0] ?? null);
   const profileSkonto = toSkontoTermData(
     invoice.contractor?.billingProfiles?.[0]?.skontoTerms?.[0] ?? null,
@@ -261,7 +259,7 @@ export async function finalizeEInvoice(
     skontoTerm: effectiveSkonto,
   });
 
-  // T-61-06-06 — bound the bytes we will persist.
+  // Bound the bytes we will persist.
   const xmlBytes = Buffer.byteLength(xml, 'utf8');
   if (xmlBytes > FINALIZE_MAX_XML_BYTES) {
     logger.error(
@@ -277,7 +275,7 @@ export async function finalizeEInvoice(
     );
   }
 
-  // ── Compute SHA-256 and content-addressed R2 key (D-14) ─────────────────
+  // ── Compute SHA-256 and content-addressed R2 key ────────────────────────
   const xmlSha256 = createHash('sha256').update(xml).digest('hex');
   const xmlKey = buildXmlKey(input.organizationId, input.invoiceId, xmlSha256);
 
@@ -293,8 +291,7 @@ export async function finalizeEInvoice(
     // Upsert on (organizationId, invoiceId) so force=true replaces the row
     // in place (unique index) and force=false has already been rejected.
     const current = await tx.eInvoiceLifecycle.findUnique({
-      // F-DB-17 — compound (orgId, invoiceId) unique was redundant
-      // (invoiceId is globally @unique). Use the field-level unique key.
+      // invoiceId is globally @unique; use the field-level unique key.
       where: {
         invoiceId: input.invoiceId,
       },
@@ -306,8 +303,7 @@ export async function finalizeEInvoice(
     transitionValidation(priorStatus, validationEvent);
 
     const upserted = await tx.eInvoiceLifecycle.upsert({
-      // F-DB-17 — compound (orgId, invoiceId) unique was redundant
-      // (invoiceId is globally @unique). Use the field-level unique key.
+      // invoiceId is globally @unique; use the field-level unique key.
       where: {
         invoiceId: input.invoiceId,
       },
@@ -358,7 +354,7 @@ export async function finalizeEInvoice(
         lifecycleId: upserted.id,
         // On a force=true re-finalize we want the audit trail to show
         // RE_VALIDATED (not VALIDATED) so dashboards can count
-        // finalizations vs re-validations accurately. The D-13
+        // finalizations vs re-validations accurately. The
         // EInvoiceLifecycleEventType enum has RE_VALIDATED for exactly
         // this case.
         eventType: isReFinalize ? 'RE_VALIDATED' : 'VALIDATED',
@@ -428,11 +424,11 @@ async function loadInvoiceWithRelations(db: DbClient, input: FinalizeInput) {
     },
     include: {
       lines: { orderBy: { lineNumber: 'asc' } },
-      // Phase 68 D-03 — eager-fetch SkontoTerm so finalizeEInvoice can
-      // resolve the effective term (invoice-level → billing-profile default
-      // → null) BEFORE calling profile.generateAndValidate. Include shape
-      // copied verbatim from packages/api/src/routers/payment.ts:1213-1222
-      // (single source-of-truth pattern; do NOT import from there).
+      // Eager-fetch SkontoTerm so finalizeEInvoice can resolve the effective
+      // term (invoice-level → billing-profile default → null) BEFORE calling
+      // profile.generateAndValidate. Include shape copied verbatim from
+      // packages/api/src/routers/payment.ts (single source-of-truth pattern;
+      // do NOT import from there).
       skontoTerms: { take: 1 },
       contractor: {
         include: {
@@ -452,16 +448,14 @@ async function loadInvoiceWithRelations(db: DbClient, input: FinalizeInput) {
  * Map a Prisma `SkontoTerm` row (or null) into the structural shape consumed
  * by `services/skonto.ts:resolveSkontoTerm`.
  *
- * Per Phase 68 D-04 + RESEARCH.md Pitfall 2 — kept inline (NOT extracted to
- * services/skonto.ts) because there are exactly three call sites today
- * (this file, `routers/payment.ts:1239-1253`, and `routers/einvoice.ts`
- * `generateZugferdPdf` after Plan 05). Extracting a helper for two new
- * callers is premature DRY.
+ * Kept inline (NOT extracted to services/skonto.ts) because there are exactly
+ * three call sites (this file, `routers/payment.ts`, and
+ * `routers/einvoice.ts`). Extracting a helper for two new callers is premature
+ * DRY.
  *
- * Per RESEARCH.md Pitfall 3 — `Number(row.discountPercent)` is REQUIRED:
- * the Prisma column is Decimal; the cascade resolver expects a number.
- * Failing to coerce produces `#PROZENT=Decimal(3.00)#` instead of
- * `#PROZENT=3.00#` in the emitted CII XML.
+ * `Number(row.discountPercent)` is REQUIRED: the Prisma column is Decimal; the
+ * cascade resolver expects a number. Failing to coerce produces
+ * `#PROZENT=Decimal(3.00)#` instead of `#PROZENT=3.00#` in the emitted CII XML.
  */
 function toSkontoTermData(
   row:
@@ -491,7 +485,7 @@ function resolvePreflightWarnings(
     warnings.push('LEITWEG_ID_MISSING');
   }
 
-  // RESEARCH Pitfall 6 — BR-DE-17 requires BT-5 = EUR for DE B2G.
+  // EN 16931 BR-DE-17 requires BT-5 = EUR for DE B2G invoices.
   if (isDePublicSector && invoice.currency !== 'EUR') {
     warnings.push('BR_DE_17_NON_EUR_CURRENCY');
   }
@@ -512,9 +506,9 @@ export function mapPrismaInvoiceToEInvoice(invoice: NonNullable<InvoiceWithRelat
   const contractor = invoice.contractor;
   const vatAmountMinor = invoice.vatAmountMinor ?? 0;
 
-  // Tax category default per Phase 57 semantics: reverse-charge 'AE' when
-  // the invoice is tagged reverse-charge; 'S' otherwise. Kleinunternehmer
-  // edge (category 'E') is gated upstream by the invoice flags.
+  // Tax category: reverse-charge 'AE' when the invoice is tagged
+  // reverse-charge; 'S' otherwise. Kleinunternehmer edge (category 'E') is
+  // gated upstream by the invoice flags.
   const taxCategory = invoice.isReverseCharge ? 'AE' : 'S';
 
   return {
@@ -524,10 +518,9 @@ export function mapPrismaInvoiceToEInvoice(invoice: NonNullable<InvoiceWithRelat
     invoiceTypeCode: '380',
     currencyCode: invoice.currency,
     supplier: {
-      // Organization does not carry a dedicated taxId column in the v4
-      // schema — the authoritative supplier tax identifier lives on the
-      // invoice row (`sellerTaxId`). Falling back to empty string when
-      // absent — the XRechnung generator surfaces its own KoSIT-compatible
+      // The authoritative supplier tax identifier lives on the invoice row
+      // (`sellerTaxId`), not on the Organization. Falling back to empty string
+      // when absent — the XRechnung generator surfaces its own KoSIT-compatible
       // error (BR-CO-26 seller VAT identifier) via layer-2 validation.
       id: invoice.sellerTaxId ?? '',
       name: invoice.sellerName ?? supplierOrg.name,
@@ -594,7 +587,7 @@ function validationEventFromStatus(status: EInvoiceValidationStatus): Validation
 
 /**
  * Produce the redacted per-layer summary persisted on the lifecycle row.
- * Keeps the first 20 issues total, oldest-first — sufficient for Plan 07 UI
+ * Keeps the first 20 issues total, oldest-first — sufficient for the UI
  * to render an inline hint without blowing up the Prisma JSON payload.
  */
 function buildSummary(report: XRechnungValidationReport): FinalizeValidationReportSummary {

@@ -1,7 +1,6 @@
-// Phase 70 D-13 — Zod schema for IntegrationConnection.scopeCapabilities JSONB.
+// Zod schema for IntegrationConnection.scopeCapabilities JSONB.
 // Used at every READ boundary that consumes the column to validate the shape
-// before branching on capabilities. Plan 70-09 ships this schema; Phase 76
-// imports it in the OAuth callback handler.
+// before branching on capabilities.
 
 import { z } from 'zod';
 

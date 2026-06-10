@@ -1,9 +1,9 @@
 // ---------------------------------------------------------------------------
-// IR35 Profile — UK country implementation (D-02)
+// IR35 Profile — UK country implementation
 // ---------------------------------------------------------------------------
 //
-// Registers itself into the registry on import (CLASS-01). Do NOT import this
-// module in a client bundle — scoring MUST stay server-side per Pitfall 2.
+// Registers itself into the registry on import. Do NOT import this module in
+// a client bundle — scoring must stay server-side.
 
 import { registerProfile } from '../../registry.js';
 import type { AnswerMap, Assessment, AssessmentShell } from '../../types/assessment.js';
@@ -55,9 +55,9 @@ function summariseOutcome(outcome: Extract<Outcome, { kind: 'IR35' }>): string {
   }
 }
 
-// Re-export rule-set constants for downstream plans (Plan 04 wizard).
+// Re-export rule-set constants for the wizard UI.
 export { IR35_QUESTIONS, RULE_SET_VERSION } from './rule-set.js';
 export { scoreIr35 } from './scoring.js';
 
-// Side-effect registration (CLASS-01): first import registers the profile.
+// Side-effect registration: first import registers the profile.
 registerProfile(new IR35Profile());

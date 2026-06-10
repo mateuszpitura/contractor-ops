@@ -6,7 +6,7 @@ import {
 import { cn } from '../../lib/utils';
 
 // ---------------------------------------------------------------------------
-// Status dot color mapping (per UI-SPEC D-09, Linear state types)
+// Status dot color mapping (Linear state types)
 // ---------------------------------------------------------------------------
 
 const dotColorMap: Record<string, string> = {

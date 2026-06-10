@@ -1,4 +1,4 @@
-// WR-6 regression — a ZodError from the Anthropic tool_use boundary must
+// Regression: a ZodError from the Anthropic tool_use boundary must
 // produce MANUAL_REVIEW_REQUIRED (not FAILED) from runContractHealthCheck.
 //
 // Uses an in-memory Prisma double + module mocks so no real Anthropic / R2

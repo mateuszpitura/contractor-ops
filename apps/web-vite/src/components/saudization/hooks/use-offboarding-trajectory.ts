@@ -9,10 +9,10 @@ type RouterOutputs = inferRouterOutputs<AppRouter>;
 export type OffboardingTrajectory = RouterOutputs['gulf']['saudization']['offboardingTrajectory'];
 
 /**
- * Read-only tRPC boundary for the GULF-07 offboarding band-trajectory (D-12). The
- * projection is ephemeral, advisory, non-authoritative, and never gates — this hook
- * only reads it. The Saudi-national flag sharpens the projected rate; the server never
- * asserts a projected band.
+ * Read-only tRPC boundary for the offboarding band-trajectory. The projection
+ * is ephemeral, advisory, non-authoritative, and never gates — this hook only
+ * reads it. The Saudi-national flag sharpens the projected rate; the server
+ * never asserts a projected band.
  */
 export function useOffboardingTrajectory(offboardingContractorIsSaudi: boolean | null) {
   const trpc = useTRPC();

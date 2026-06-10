@@ -1,6 +1,6 @@
 // packages/api/src/routers/admin-boe-rate.ts
 //
-// Phase 63 · Plan 05 · D-10 — Admin BoE base rate CRUD router.
+// Admin BoE base rate CRUD router.
 // All procedures gated on `admin:boe-rate:write` (super-admin only).
 
 import { createLogger } from '@contractor-ops/logger';

@@ -13,10 +13,10 @@ export interface OverrideComplianceItemButtonProps {
 }
 
 /**
- * Phase 73 D-12 — the SINGLE override-launcher button, mounted on the Compliance
- * tab (inline per row) AND the dashboard tables (via renderRowActions). Renders
- * only when the caller has compliance:override AND the item is a BLOCKING
- * MISSING/EXPIRED item; otherwise null. The server is the source of truth.
+ * The single override-launcher button, mounted on the Compliance tab (inline
+ * per row) and the dashboard tables (via renderRowActions). Renders only when
+ * the caller has compliance:override AND the item is a BLOCKING MISSING/EXPIRED
+ * item; otherwise null. The server is the source of truth.
  */
 export function OverrideComplianceItemButton({
   itemId,

@@ -1,11 +1,11 @@
-// Phase 71 D-07 — TZ-aware expiry boundary helper.
+// TZ-aware expiry boundary helper.
 //
 // "Expires today" boundary resolves at 00:00 in `expiryJurisdictionTz`, NOT in
 // the org HQ TZ. Set at row-creation from the engagement's jurisdiction; never
 // retroactively rewritten.
 //
-// ROADMAP success criterion #2: a Riyadh contractor's "expires today" must
-// resolve at 00:00 Asia/Riyadh, regardless of where the org's HQ is.
+// A Riyadh contractor's "expires today" must resolve at 00:00 Asia/Riyadh,
+// regardless of where the org's HQ is.
 
 import { TZDate } from '@date-fns/tz';
 import { addDays, addMonths, addYears, differenceInDays, isAfter, startOfDay } from 'date-fns';
@@ -35,9 +35,9 @@ export function isExpired(
 }
 
 /**
- * Phase 72 D-07 — integer days from `now` (in TZ) to `expiresAt` (in TZ),
- * comparing start-of-day boundaries in `expiryJurisdictionTz`. Negative when
- * already expired. Used by the COMPL-03 reminder-band classifier.
+ * Integer days from `now` (in TZ) to `expiresAt` (in TZ), comparing
+ * start-of-day boundaries in `expiryJurisdictionTz`. Negative when already
+ * expired. Used by the reminder-band classifier.
  */
 export function daysUntilExpiryInTz(
   expiresAt: Date,
@@ -50,17 +50,17 @@ export function daysUntilExpiryInTz(
 }
 
 /**
- * Phase 72 — YYYY-MM-DD in `tz` for `now`. Used as the per-band fire dedup-key
- * date component and the per-recipient digest dedup-key date component.
+ * YYYY-MM-DD in `tz` for `now`. Used as the per-band fire dedup-key date
+ * component and the per-recipient digest dedup-key date component.
  */
 export function jurisdictionDate(now: Date, tz: string): string {
   return startOfDay(new TZDate(now, tz)).toISOString().slice(0, 10);
 }
 
 /**
- * Phase 73 D-07 — auto-derive the default `expiresAt` for a contractor-uploaded
- * document from the rule's expiry semantic. Used by the portal upload form
- * (auto-fill the expiresAt input) and the admin review modal (default on approve).
+ * Auto-derive the default `expiresAt` for a contractor-uploaded document from
+ * the rule's expiry semantic. Used by the portal upload form (auto-fill the
+ * expiresAt input) and the admin review modal (default on approve).
  *
  * Examples:
  *   uk.right_to_work@v1 → expirySemantic='fixed_days', expiryDays=90 → +90d

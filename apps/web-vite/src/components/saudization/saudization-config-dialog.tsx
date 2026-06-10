@@ -27,7 +27,7 @@ import type {
   UpsertHeadcountInput,
 } from './hooks/use-saudization-config.js';
 
-/** The 6 locked Nitaqat band labels (Plan 02 enum / Plan 05 Zod). Admin entry only — never computed. */
+/** The 6 locked Nitaqat band labels. Admin entry only — never computed. */
 const BANDS: NitaqatBand[] = ['PLATINUM', 'HIGH_GREEN', 'MID_GREEN', 'LOW_GREEN', 'YELLOW', 'RED'];
 
 export interface SaudizationConfigDialogProps {
@@ -44,10 +44,10 @@ export interface SaudizationConfigDialogProps {
 }
 
 /**
- * Manual band + industry-segment + headcount entry (GULF-05/06). The band is the
- * 6-value enum entered by hand — the system NEVER auto-computes it (Pitfall 8). Uses
- * the canonical DialogBody (scroll) + DialogFooter (sticky single-CTA) convention.
- * Logical properties only; WCAG-labelled controls.
+ * Manual band + industry-segment + headcount entry. The band is the 6-value
+ * enum entered by hand — the system NEVER auto-computes it. Uses the canonical
+ * DialogBody (scroll) + DialogFooter (sticky single-CTA) convention. Logical
+ * properties only; WCAG-labelled controls.
  */
 export function SaudizationConfigDialog({
   open,
@@ -82,8 +82,8 @@ export function SaudizationConfigDialog({
 
   const handleSaveBand = useCallback(() => {
     // Never clear a manually-recorded band by accident: a null band here would send
-    // band:null, which the server treats as an explicit clear (Pitfall 8). The Save
-    // button is disabled while band is null; this guards the programmatic path too.
+    // band:null, which the server treats as an explicit clear. The Save button is
+    // disabled while band is null; this guards the programmatic path too.
     if (band === null) return;
     onSaveBand({ band, industrySegment: segment.trim() || null });
   }, [band, segment, onSaveBand]);

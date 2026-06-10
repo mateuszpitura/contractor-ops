@@ -1,8 +1,7 @@
-// Phase 57 · Plan 03 · Task 2 — reverse-charge.service extensions.
+// reverse-charge.service extensions.
 //
-// Covers two new D-12 rule paths (gb_eu_post_brexit_b2b, de_domestic_13b_ustg)
-// plus a regression block that re-runs core Phase 54 scenarios to guard
-// against drift.
+// Covers two new rule paths (gb_eu_post_brexit_b2b, de_domestic_13b_ustg)
+// plus a regression block that re-runs core scenarios to guard against drift.
 
 import { describe, expect, it } from 'vitest';
 import type { DE13bServiceType } from '../reverse-charge.service';

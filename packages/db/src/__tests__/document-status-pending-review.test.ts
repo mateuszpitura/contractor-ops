@@ -1,4 +1,4 @@
-// Phase 73 · Plan 02 — Schema test for D-06 PENDING_REVIEW status.
+// Schema test for the PENDING_REVIEW document status.
 
 import fs from 'node:fs';
 import path from 'node:path';

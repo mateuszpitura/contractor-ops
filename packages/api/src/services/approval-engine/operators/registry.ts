@@ -1,8 +1,8 @@
-// Phase 72 D-13 — Plug-in operator registry for approval-engine conditions.
+// Plug-in operator registry for approval-engine conditions.
 //
 // A Map-backed registry that lets approval-engine condition operators
 // self-register at module-load via barrel-import side effects in
-// operators/index.ts. Phase 72 ships ONE operator (complianceCritical);
+// operators/index.ts. Currently ships ONE operator (complianceCritical);
 // future operators (budget-cap, fraud-score) plug in without core-engine edits.
 
 import type { PrismaClient } from '@contractor-ops/db';

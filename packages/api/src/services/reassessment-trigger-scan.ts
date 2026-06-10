@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------
-// Phase 60 · CLASS-08 — reassessment trigger daily scan.
+// Reassessment trigger daily scan.
 // ---------------------------------------------------------------------------
 //
 // Walks the AuditLog since the last scan for ContractorAssignment + Contract
@@ -10,7 +10,7 @@
 //
 // Security contract:
 //   - prismaRaw for cross-org AuditLog reads (tagged PHASE-60-CROSS-ORG-AGGREGATE).
-//   - Material-field allowlist enforced at the scan layer (D-07).
+//   - Material-field allowlist enforced at the scan layer.
 //   - Assessment lookup filtered to countryCode='GB' + status='completed'.
 //   - triggerReasonsSchema parses JSONB on both read AND write paths.
 //   - No console.* — createCronLogger(...) per CLAUDE.md.
@@ -30,7 +30,7 @@ const SCAN_NAME = 'classification-reassessment-triggers';
 const AUDIT_TAKE_LIMIT = 10000;
 
 /**
- * D-07 material-field allowlists. A change to any listed field produces a
+ * Material-field allowlists. A change to any listed field produces a
  * trigger reason; anything else (allocationPercent, notes, tag links, cost
  * centre, owner) is explicitly ignored to avoid noise.
  */

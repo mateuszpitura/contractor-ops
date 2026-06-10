@@ -1,8 +1,8 @@
 // packages/validators/src/legal/sa.ts
 //
-// LOCKED SA (Saudi Arabia) LEGAL PHRASES — Phase 79 (GULF-09, D-14/D-15).
+// LOCKED SA (Saudi Arabia) LEGAL PHRASES.
 //
-// Statutory identifiers ONLY (D-14): Nitaqat band labels + Qiwa-authentication
+// Statutory identifiers ONLY: Nitaqat band labels + Qiwa-authentication
 // status terms. The band labels are the literal UPPER_SNAKE strings matching the
 // `NitaqatBand` Prisma enum — they are the official Nitaqat tier identifiers and
 // must never drift via translation. The system NEVER auto-computes the band

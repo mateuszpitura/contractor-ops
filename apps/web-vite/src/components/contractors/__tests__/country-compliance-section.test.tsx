@@ -8,7 +8,6 @@
 
 import { describe, expect, it, vi } from 'vitest';
 
-
 vi.mock('../../../hooks/use-permissions.js', () => ({
   usePermissions: () => ({ can: () => true, canManageSettings: true }),
 }));
@@ -23,7 +22,7 @@ vi.mock('../revalidate-vat-button.js', () => ({
   RevalidateVatButton: () => <div data-testid="revalidate-vat" />,
 }));
 
-// The AE branch now mounts the tRPC-bound free-zone assignment surface (D-02);
+// The AE branch now mounts the tRPC-bound free-zone assignment surface;
 // stub it like the other child containers so the dispatch test stays unit-scoped.
 vi.mock('../free-zone/free-zone-assignment.js', () => ({
   FreeZoneAssignmentContainer: ({ contractorId }: { contractorId: string }) => (
@@ -146,7 +145,7 @@ describe('CountryComplianceSectionView — country dispatch', () => {
     );
     expect(screen.getByLabelText(/Freelance Permit Number/i)).toBeInTheDocument();
     expect(screen.getByText(/UAE/)).toBeInTheDocument();
-    // D-02: the structured free-zone surface replaces the old freeform UAE inputs.
+    // The structured free-zone surface replaces the old freeform UAE inputs.
     expect(screen.getByTestId('free-zone-assignment')).toBeInTheDocument();
     expect(screen.queryByLabelText(/Trade License Number/i)).toBeNull();
   });

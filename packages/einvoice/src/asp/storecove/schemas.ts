@@ -63,11 +63,10 @@ export const storecoveWebhookPayloadSchema = z
   .passthrough();
 
 /**
- * Phase 61 Plan 05 (D-11) — Storecove /discovery/receives response envelope.
+ * Storecove /discovery/receives response envelope.
  *
- * The exact shape of the Storecove discovery response is MEDIUM-confidence
- * (see 61-RESEARCH.md §Open Questions #5). Two variants have been observed
- * across the Storecove documentation + community posts:
+ * The exact shape of the Storecove discovery response has two observed
+ * variants across the Storecove documentation + community posts:
  *
  *   (a) `{ documentTypes: string[] }` — flat array.
  *   (b) `{ processes: [{ documentTypes: string[] }, ...] }` — nested per

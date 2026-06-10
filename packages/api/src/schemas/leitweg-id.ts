@@ -1,6 +1,4 @@
-// packages/api/src/schemas/leitweg-id.ts
-//
-// Phase 61 · Plan 61-04 — tRPC input schemas for the `leitwegId` router.
+// tRPC input schemas for the `leitwegId` router.
 //
 // Structure + Modulo-11-10 check-digit validation happens inside
 // `leitwegIdSchema` (from @contractor-ops/validators); these schemas layer

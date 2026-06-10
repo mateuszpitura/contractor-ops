@@ -243,8 +243,8 @@ export class LinearAdapter extends BaseAdapter {
    * The secret MUST be resolved server-side from
    * `IntegrationConnection.configJson.webhookSecret` and passed in via
    * `configuredSecret`. The adapter no longer reads the secret from inbound
-   * request headers (`x-webhook-secret`) or environment fallbacks — see
-   * F-SEC-03. As a controlled escape hatch, a process-wide
+   * request headers (`x-webhook-secret`) or environment fallbacks. As a
+   * controlled escape hatch, a process-wide
    * `LINEAR_WEBHOOK_SECRET` env var is consulted if (and only if) no
    * per-connection secret was supplied; this is intended for development
    * setups where a single shared secret is convenient.
@@ -265,7 +265,7 @@ export class LinearAdapter extends BaseAdapter {
     // dev convenience and is never overridden by an inbound request header.
     const secret = configuredSecret ?? process.env.LINEAR_WEBHOOK_SECRET;
 
-    // F-SEC-03: fail closed when no secret is configured.
+    // Fail closed when no secret is configured.
     if (!secret) {
       return { valid: false, reason: 'config' };
     }

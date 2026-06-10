@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------
-// Phase 76 D-05/D-07 — getDeprovisioningEligibility router tests.
+// getDeprovisioningEligibility router tests.
 // ---------------------------------------------------------------------------
 //
 // Verifies the cooldown-gate eligibility query: it reads the assignment +

@@ -77,10 +77,10 @@ describe('TeamsAdapter', () => {
     });
     vi.stubGlobal('fetch', fetchMock);
 
-    // F-INT-19 regression: token-refresh.ts decrypts the credential blob
-    // BEFORE invoking adapter.refreshToken, so the adapter receives a
-    // CredentialBlob with plaintext tokens. The previous implementation
-    // re-decrypted credentials.accessToken which always threw
+    // Regression: token-refresh.ts decrypts the credential blob BEFORE invoking
+    // adapter.refreshToken, so the adapter receives a CredentialBlob with
+    // plaintext tokens. The previous implementation re-decrypted
+    // credentials.accessToken which always threw
     // "Invalid encrypted credentials format".
     const out = await adapter.refreshToken({
       accessToken: 'plaintext-access-token',

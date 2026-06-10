@@ -1,4 +1,4 @@
-// Phase 75 — Contract health-check orchestrator.
+// Contract health-check orchestrator.
 // Composes: dedup → ClaudeOcrAdapter-style Anthropic call → regex grounding →
 // cross-jurisdiction → persist ContractHealthCheckRun → denormalise to
 // Contract.complianceFlags* → materialise ContractorComplianceItem
@@ -70,7 +70,7 @@ export async function runContractHealthCheck(
   // 1. Fetch the contract PDF bytes from R2 (via the primary CONTRACT DocumentLink).
   const { pdfBase64, contentHash } = await fetchContractPdf(db, organizationId, contractId);
 
-  // 2. Idempotency check (D-03).
+  // 2. Idempotency check.
   const modelVer = CONTRACT_HEALTH_MODEL_VER;
   if (!force) {
     const existing = await findExistingSucceededRun(db, { contractId, contentHash, modelVer });
@@ -98,14 +98,14 @@ export async function runContractHealthCheck(
   });
 
   try {
-    // 4. Resolve jurisdiction (D-15 fallback chain).
+    // 4. Resolve jurisdiction (fallback chain).
     const expectedJurisdiction = await resolveContractJurisdiction(db, contractId);
 
     // 5. Call Claude via the integrations service (keeps @anthropic-ai/sdk out
     //    of the api package; mirrors ocr-service.extractInvoice).
     const toolInput = await evaluateContractIpAssignment({ pdfBase64, modelId: modelVer });
 
-    // 6. Regex grounding (D-13).
+    // 6. Regex grounding.
     const groundedClauses: GroundedClause[] = toolInput.citedClauses.map(c => ({
       ...c,
       regexMatched: false,
@@ -127,7 +127,7 @@ export async function runContractHealthCheck(
       }
     }
 
-    // 7. Apply D-13 divergence rules.
+    // 7. Apply divergence rules.
     let verdict = toolInput.verdict;
     const anyMatch = groundedClauses.some(c => c.regexMatched);
     if (verdict === 'LIKELY_PRESENT' && !anyMatch) {
@@ -137,7 +137,7 @@ export async function runContractHealthCheck(
       verdict = 'MANUAL_REVIEW_REQUIRED'; // divergence rule 2
     }
 
-    // 8. Cross-jurisdiction mismatch (D-15).
+    // 8. Cross-jurisdiction mismatch.
     const cjm = analyzeCrossJurisdiction(
       expectedJurisdiction,
       groundedClauses.map(c => c.jurisdiction),
@@ -146,13 +146,13 @@ export async function runContractHealthCheck(
       verdict = 'MANUAL_REVIEW_REQUIRED';
     }
 
-    // 9. PENDING-phrase detection (D-16).
+    // 9. PENDING-phrase detection.
     const pendingPhrasesCited = groundedClauses
       .filter((c): c is typeof c & { phraseId: IpClausePhraseId } => Boolean(c.phraseId))
       .filter(c => isPhrasePending(c.phraseId))
       .map(c => c.phraseId);
 
-    // 10. Compose resultsJson per D-06.
+    // 10. Compose resultsJson.
     const completedAt = new Date();
     const resultsJson: IpAssignmentResults = {
       version: 1,
@@ -201,7 +201,7 @@ export async function runContractHealthCheck(
         },
       });
 
-      // Denormalise to Contract columns (D-01).
+      // Denormalise to Contract columns.
       await tx.contract.update({
         where: { id: contractId },
         data: {
@@ -212,7 +212,7 @@ export async function runContractHealthCheck(
         },
       });
 
-      // Materialise ContractorComplianceItem on LIKELY_MISSING (D-07).
+      // Materialise ContractorComplianceItem on LIKELY_MISSING.
       if (verdict === 'LIKELY_MISSING' && expectedJurisdiction) {
         const contract = await tx.contract.findUniqueOrThrow({
           where: { id: contractId },
@@ -226,7 +226,7 @@ export async function runContractHealthCheck(
         });
       }
 
-      // Audit log (Phase 71 D-15 single-write).
+      // Audit log (single-write inside the transaction).
       await writeAuditLog({
         organizationId,
         actorType: triggeredByUserId ? 'USER' : 'SYSTEM',
@@ -315,7 +315,7 @@ async function fetchContractPdf(
 }
 
 /**
- * D-13 divergence rule 2 — does the LLM's own cited text contain a strong IP
+ * Divergence rule 2 — does the LLM's own cited text contain a strong IP
  * phrase the model overlooked when returning LIKELY_MISSING? Tests the cited
  * text against the full phrase library (any jurisdiction).
  */

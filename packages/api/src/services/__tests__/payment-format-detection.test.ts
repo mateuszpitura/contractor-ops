@@ -107,7 +107,7 @@ describe('groupItemsByFormat', () => {
 });
 
 // ---------------------------------------------------------------------------
-// detectFormatForDestination — BACS_STD18 routing for GBP+UK accounts (D-04)
+// detectFormatForDestination — BACS_STD18 routing for GBP+UK accounts
 // ---------------------------------------------------------------------------
 
 describe('detectFormatForDestination', () => {

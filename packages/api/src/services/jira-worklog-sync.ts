@@ -212,12 +212,12 @@ async function upsertWorklogEntry(
  * Fetches worklogs from Jira Cloud for a given connection and date range,
  * then upserts them as TimeEntry records with source=JIRA.
  *
- * Two-step fetch per D-10 and Pitfall 4:
+ * Two-step fetch:
  * 1. JQL search for issues with user's worklogs in the date range
  * 2. Per-issue worklog fetch, filtered by author accountId
  *
  * Deduplication: Uses @@unique(organizationId, contractorId, source, externalId)
- * with externalId = worklog.id to prevent duplicate imports (Pitfall 5).
+ * with externalId = worklog.id to prevent duplicate imports.
  *
  * @param prisma - Prisma client instance
  * @param organizationId - The organization ID

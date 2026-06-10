@@ -34,7 +34,7 @@ describe('withRlsSession', () => {
 });
 
 // ---------------------------------------------------------------------------
-// F-DB-04 — withRlsTransactions wraps the callback overload of $transaction.
+// withRlsTransactions wraps the callback overload of $transaction.
 // ---------------------------------------------------------------------------
 
 describe('withRlsTransactions', () => {
@@ -115,7 +115,7 @@ describe('withRlsTransactions', () => {
 });
 
 // ---------------------------------------------------------------------------
-// F-DB-04 — withRlsReads scoped read-path RLS
+// withRlsReads scoped read-path RLS
 // ---------------------------------------------------------------------------
 
 describe('withRlsReads', () => {

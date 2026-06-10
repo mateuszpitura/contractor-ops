@@ -1,6 +1,6 @@
 // packages/api/src/services/__tests__/einvoice-lifecycle-fsm.test.ts
 //
-// Phase 61 · Plan 61-06 Task 1 — Lifecycle FSM tests (replaces Plan 01 todos).
+// Lifecycle FSM tests.
 //
 // Coverage (per plan §Task 1 behavior):
 //   1. Every legal validation edge returns the expected next state.

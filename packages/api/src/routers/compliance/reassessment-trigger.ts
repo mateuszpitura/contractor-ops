@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------
-// Phase 60 · CLASS-08 — reassessmentTrigger tRPC router.
+// reassessmentTrigger tRPC router.
 // ---------------------------------------------------------------------------
 //
 // Surface over ReassessmentTrigger rows (written by the daily cron). Reads

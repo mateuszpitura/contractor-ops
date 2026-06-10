@@ -1,8 +1,8 @@
-// Phase 73 · Plan 08 — compliance approve/reject upload-review admin mutations (COMPL-04 / D-08).
+// Compliance approve/reject upload-review admin mutations.
 // Router-caller harness over the staff appRouter (mirrors compliance-override-mutation.test.ts).
 //
-// WR-1 fix: tests now assert that approve/reject reject a documentId that is
-// not PENDING_REVIEW or is not linked to the item's contractor.
+// Tests assert that approve/reject reject a documentId that is not PENDING_REVIEW
+// or is not linked to the item's contractor.
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -23,18 +23,18 @@ const { mockPrisma, auditWriteSpy, dispatchSpy, rbacSpy, approvalFlowUpdate, que
     const contractorComplianceItem = {
       findFirst: vi.fn(async () => ({ ...item })),
       update: vi.fn(async (args: { data: Record<string, unknown> }) => ({ ...item, ...args.data })),
-      // Phase 81 D-12: onComplianceItemSatisfied re-asserts eligibility via the
-      // payment gate (compliance-payment-gate.assertContractorPaymentEligibility),
-      // which queries remaining EXPIRED+BLOCKING items. Empty ⇒ not blocked ⇒
-      // the held flow is eligible to resume.
+      // onComplianceItemSatisfied re-asserts eligibility via the payment gate
+      // (compliance-payment-gate.assertContractorPaymentEligibility), which queries
+      // remaining EXPIRED+BLOCKING items. Empty ⇒ not blocked ⇒ the held flow is
+      // eligible to resume.
       findMany: vi.fn(async () => [] as unknown[]),
     };
-    // WR-1: document.findFirst returns a PENDING_REVIEW doc by default.
+    // document.findFirst returns a PENDING_REVIEW doc by default.
     const document = {
       findFirst: vi.fn(async () => ({ id: DOC_ID, status: 'PENDING_REVIEW' })),
       update: vi.fn(async () => ({ id: DOC_ID })),
     };
-    // WR-1: documentLink.findFirst returns the owner link by default.
+    // documentLink.findFirst returns the owner link by default.
     const documentLink = {
       findFirst: vi.fn(async () => ({ id: 'link_1' })),
     };
@@ -42,8 +42,8 @@ const { mockPrisma, auditWriteSpy, dispatchSpy, rbacSpy, approvalFlowUpdate, que
       findUnique: vi.fn(async () => ({ dataRegion: 'EU', status: 'ACTIVE' })),
       findUniqueOrThrow: vi.fn(async () => ({ countryCode: 'GB' })),
     };
-    // Phase 81 D-12: held PENDING_COMPLIANCE flows the recovery hook's $queryRaw
-    // returns (JSONB-containment of the approved itemId). Default: one held flow.
+    // Held PENDING_COMPLIANCE flows the recovery hook's $queryRaw returns
+    // (JSONB-containment of the approved itemId). Default: one held flow.
     const heldFlows: Array<{ id: string; resourceType: string; resourceId: string }> = [
       { id: 'flow-held-1', resourceType: 'INVOICE', resourceId: 'inv-held-1' },
     ];
@@ -226,7 +226,7 @@ beforeEach(() => {
     status: 'PENDING_REVIEW',
   } as never);
   mockPrisma.documentLink.findFirst.mockResolvedValue({ id: 'link_1' } as never);
-  // Phase 81 recovery defaults: one held flow, no remaining blocking items.
+  // Recovery defaults: one held flow, no remaining blocking items.
   mockPrisma.contractorComplianceItem.findMany.mockResolvedValue([] as never);
   queryRaw.mockResolvedValue([
     { id: 'flow-held-1', resourceType: 'INVOICE', resourceId: 'inv-held-1' },
@@ -295,7 +295,7 @@ describe('compliance-upload-review approve — happy path', () => {
 });
 
 // ---------------------------------------------------------------------------
-// WR-1: approve must reject a non-PENDING_REVIEW or unlinked documentId
+// approve must reject a non-PENDING_REVIEW or unlinked documentId
 // ---------------------------------------------------------------------------
 
 describe('compliance-upload-review approve — WR-1 validation', () => {
@@ -418,7 +418,7 @@ describe('compliance-upload-review reject — happy path', () => {
 });
 
 // ---------------------------------------------------------------------------
-// WR-1: reject must reject a non-PENDING_REVIEW or unlinked documentId
+// reject must reject a non-PENDING_REVIEW or unlinked documentId
 // ---------------------------------------------------------------------------
 
 describe('compliance-upload-review reject — WR-1 validation', () => {
@@ -466,16 +466,11 @@ describe('compliance-upload-review reject — WR-1 validation', () => {
 });
 
 // ---------------------------------------------------------------------------
-// Phase 81 INT-02 — compliance payment-block recovery (RED scaffolds for 81-03).
+// Compliance payment-block recovery — post-wiring contract assertions.
 //
-// approveUploadReplacement flips the item to SATISFIED but does NOT yet fire the
-// recovery hook (onComplianceItemSatisfied), so an approved upload leaves the
-// contractor's held ApprovalFlow stuck in PENDING_COMPLIANCE. 81-03 wires the
-// recovery call INSIDE the approve transaction, AFTER the SATISFIED flip.
-//
-// These cases assert the post-wiring contract and are EXPECTED to RED until 81-03
-// lands the wiring — failures are assertion-level (approvalFlow.update never fired
-// because the hook is not yet imported/called), NOT compile/harness errors.
+// approveUploadReplacement flips the item to SATISFIED and fires the recovery
+// hook (onComplianceItemSatisfied) INSIDE the approve transaction, AFTER the
+// SATISFIED flip. These cases assert that contract.
 // ---------------------------------------------------------------------------
 
 describe('compliance-upload-review approve — Phase 81 D-12 recovery fires (RED)', () => {

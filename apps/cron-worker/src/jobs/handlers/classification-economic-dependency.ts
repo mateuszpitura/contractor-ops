@@ -1,9 +1,8 @@
 /**
  * Classification economic-dependency scan handler.
  *
- * Daily §2 SGB VI early-warning scan run by
- * `runEconomicDependencyScan`. Short-circuits when
- * `module.classification-engine` is off (D-08).
+ * Daily §2 SGB VI early-warning scan run by `runEconomicDependencyScan`.
+ * Short-circuits when `module.classification-engine` is off.
  */
 
 import { runEconomicDependencyScan } from '@contractor-ops/api/services/economic-dependency-scan';

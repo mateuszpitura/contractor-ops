@@ -5,7 +5,6 @@ export { replayWebhook, webhookPayloads } from '../scenarios/webhook-replay.js';
 // API response parsing, and data transformation.
 
 export { dataportFixtures } from './dataport.js';
-// Phase 57 — HMRC + VIES fixtures
 export {
   HMRC_OAUTH_TOKEN_200,
   HMRC_SANDBOX_INVALID_VRN,

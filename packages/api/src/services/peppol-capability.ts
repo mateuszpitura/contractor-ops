@@ -1,14 +1,14 @@
 // packages/api/src/services/peppol-capability.ts
 //
-// Phase 61 · Plan 61-05 · EINV-06 — Peppol SMP capability lookup service +
-// 6h TTL cache + send-gate / pre-flight helpers consumed by Plan 06's
-// `einvoice.send` mutation and the `peppol.lookupCapabilities` tRPC query.
+// Peppol SMP capability lookup service — 6h TTL cache + send-gate /
+// pre-flight helpers consumed by the `einvoice.send` mutation and the
+// `peppol.lookupCapabilities` tRPC query.
 //
-// Architecture (per CONTEXT D-11 + RESEARCH §Collision Option A):
+// Architecture:
 //
 //   ┌──────────────────────┐      ┌────────────────────────────┐
 //   │ tRPC router / send   │─────▶│ getCapabilitiesWithCache() │
-//   │ mutation / Plan 06   │      └─────────────┬──────────────┘
+//   │ mutation             │      └─────────────┬──────────────┘
 //   └──────────────────────┘                    │
 //                                     cache hit?│
 //                                    ┌──────────┴──────────┐
@@ -23,9 +23,9 @@
 //   mirror the same key).
 // - Pure helpers — callers supply the tenant-scoped Prisma client and an
 //   ASPAdapter instance.  No module-level state.
-// - All errors that must reach Plan 07's UI carry the literal error codes
+// - All errors that must reach the UI carry the literal error codes
 //   `PEPPOL_PARTICIPANT_NOT_ACTIVE` and `PARTICIPANT_NOT_REACHABLE` so the
-//   i18n surface Plan 07 owns maps 1:1 without parsing message text.
+//   i18n surface maps 1:1 without parsing message text.
 
 import type { ASPAdapter, ParticipantCapabilityResult } from '@contractor-ops/einvoice';
 import { STORECOVE_CII_XRECHNUNG_DOC_TYPE_ID } from '@contractor-ops/einvoice';
@@ -33,22 +33,22 @@ import { STORECOVE_CII_XRECHNUNG_DOC_TYPE_ID } from '@contractor-ops/einvoice';
 import type { DbClient } from './types';
 
 // ---------------------------------------------------------------------------
-// Public error codes (consumed verbatim by Plan 07 i18n)
+// Public error codes (consumed verbatim by the UI i18n layer)
 // ---------------------------------------------------------------------------
 
 export const PEPPOL_PARTICIPANT_NOT_ACTIVE = 'PEPPOL_PARTICIPANT_NOT_ACTIVE' as const;
 export const PARTICIPANT_NOT_REACHABLE = 'PARTICIPANT_NOT_REACHABLE' as const;
 
 // ---------------------------------------------------------------------------
-// TTL — 6h per CONTEXT D-11
+// TTL — 6h
 // ---------------------------------------------------------------------------
 
 /**
- * Default lifetime for a cached capability lookup. CONTEXT D-11 pinned 6h
- * as a safe default weighing freshness (Storecove SMP participants very
- * rarely change doc-type registrations) against Storecove's per-org rate
- * budget. Callers can override via `opts.ttlMs` for tests or a force-soon
- * refresh path — production code paths always use the default.
+ * Default lifetime for a cached capability lookup. 6h is a safe default
+ * weighing freshness (Storecove SMP participants very rarely change
+ * doc-type registrations) against Storecove's per-org rate budget. Callers
+ * can override via `opts.ttlMs` for tests or a force-soon refresh path —
+ * production code paths always use the default.
  */
 export const CAPABILITY_CACHE_TTL_MS = 6 * 60 * 60 * 1000; // 21_600_000
 
@@ -167,8 +167,7 @@ function normaliseDocumentTypes(raw: unknown): string[] {
 
 /**
  * True iff the participant advertises the XRechnung-CII doc-type ID
- * (pending Plan 05 sandbox-confirmation of the literal; see
- * `STORECOVE_CII_XRECHNUNG_DOC_TYPE_ID` in `@contractor-ops/einvoice`).
+ * (see `STORECOVE_CII_XRECHNUNG_DOC_TYPE_ID` in `@contractor-ops/einvoice`).
  *
  * Intentionally synchronous — the heavy lifting (cache + adapter) happens
  * upstream in `getCapabilitiesWithCache`.
@@ -183,8 +182,8 @@ export function supportsXRechnungCii(documentTypes: string[]): boolean {
 
 /**
  * Throws `PEPPOL_PARTICIPANT_NOT_ACTIVE` when the org has no `ACTIVE`
- * PeppolParticipant. Plan 06 `einvoice.send` invokes this BEFORE any
- * HTTP request so non-active orgs never hit Storecove's billing meter.
+ * PeppolParticipant. `einvoice.send` invokes this BEFORE any HTTP request
+ * so non-active orgs never hit Storecove's billing meter.
  *
  * "ACTIVE" is defined by `PeppolParticipantStatus.ACTIVE` (see
  * `packages/db/prisma/schema/peppol.prisma`). `PENDING` / `REGISTERED` /
@@ -212,7 +211,7 @@ export async function assertSenderParticipantActive(
  * (`getCapabilitiesWithCache`) so repeat sends to the same buyer stay under
  * Storecove's per-org rate budget.
  *
- * Plan 06 `einvoice.send` invokes this AFTER `assertSenderParticipantActive`
+ * `einvoice.send` invokes this AFTER `assertSenderParticipantActive`
  * to avoid misleading the user with a "receiver not reachable" toast when
  * the actual blocker is the sender's own participant state.
  */

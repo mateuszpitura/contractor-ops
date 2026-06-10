@@ -1,12 +1,10 @@
 /**
  * Legal document generation service — DPA and SCC PDF generation.
  *
- * Per D-03: Template-based PDF generation with org-specific data merged in.
+ * Template-based PDF generation with org-specific data merged in.
  * DPA templates are jurisdiction-specific (UAE vs Saudi). SCC is generated
- * when cross-border transfer is detected.
- *
- * Per PDPL-04: Cross-border data transfer documentation generated when
- * org jurisdiction differs from data hosting region.
+ * when cross-border transfer is detected (org jurisdiction differs from data
+ * hosting region).
  */
 
 import { prisma } from '@contractor-ops/db';

@@ -1,11 +1,10 @@
-// Phase 61 — XRechnung profile Zod schemas.
+// XRechnung profile Zod schemas.
 //
 // These are the boundary contracts consumed by:
-//   - `packages/api/src/routers/einvoice.ts` (Plan 02 / 04): `finalizeEInvoice`
-//     mutation input.
-//   - `packages/einvoice/src/asp/storecove/adapter.ts` (Plan 05): `format`
-//     discriminator on TransmitInvoiceParams, routing XRechnung-CII vs
-//     UBL-PINT-AE vs UBL Peppol BIS 3 payloads.
+//   - `packages/api/src/routers/einvoice.ts`: `finalizeEInvoice` mutation input.
+//   - `packages/einvoice/src/asp/storecove/adapter.ts`: `format` discriminator
+//     on TransmitInvoiceParams, routing XRechnung-CII vs UBL-PINT-AE vs UBL
+//     Peppol BIS 3 payloads.
 //
 // Keep this file thin — production logic lives in `generator.ts`, `validator.ts`,
 // and the router layer. Only shape validation here.
@@ -21,7 +20,7 @@ export const finalizeEInvoiceInputSchema = z.object({
 export type FinalizeEInvoiceInput = z.infer<typeof finalizeEInvoiceInputSchema>;
 
 /**
- * Format discriminator consumed by the Storecove adapter (D-09 / Plan 05).
+ * Format discriminator consumed by the Storecove adapter.
  *
  * - `ubl-pint-ae` — existing UAE PINT payload route (peppol-ae profile).
  * - `cii-xrechnung` — XRechnung CII payload route, carrying the XRechnung

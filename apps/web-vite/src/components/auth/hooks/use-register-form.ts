@@ -1,6 +1,6 @@
 /**
  * Registration-form domain hook — drives the sign-up + org-create flow
- * with Turnstile gating (F-SEC-22 token forward).
+ * with Turnstile gating (token forwarded to Better Auth).
  */
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -85,7 +85,7 @@ export function useRegisterForm(): RegisterFormProps {
           email: values.email,
           password: values.password,
           name: values.email.split('@')[0] ?? values.email,
-          // @ts-expect-error — Better Auth types don't model the F-SEC-22 field
+          // @ts-expect-error — Better Auth types don't model the cf-turnstile-response field
           'cf-turnstile-response': turnstileToken,
         });
         if (signUpError) {

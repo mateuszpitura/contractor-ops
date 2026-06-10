@@ -1,7 +1,6 @@
 // packages/validators/src/leitweg-id.ts
 //
-// Leitweg-ID format + ISO/IEC 7064 MOD 11,10 check-digit validator — Phase 61
-// (D-07, EINV-05).
+// Leitweg-ID format + ISO/IEC 7064 MOD 11,10 check-digit validator.
 //
 // References:
 //   KoSIT "Format specification Leitweg-ID" v2.0.2
@@ -112,15 +111,15 @@ export const leitwegIdSchema = z
 export type LeitwegId = z.infer<typeof leitwegIdSchema>;
 
 // ---------------------------------------------------------------------------
-// Peppol participant pair constraint — Phase 61 Plan 04 (D-11).
+// Peppol participant pair constraint.
 // ---------------------------------------------------------------------------
 //
 // `Contractor.peppolSchemeId` and `Contractor.peppolParticipantValue` are
 // strictly paired: either BOTH are set (the contractor is registered on the
 // Peppol SML) or BOTH are null (no Peppol routing known yet). Persisting a
-// half-set pair would break the capability lookup (Plan 05) and the pre-send
-// SML call (Plan 06) with opaque errors; the Zod refine catches it at the
-// tRPC boundary so the DB never sees an inconsistent state.
+// half-set pair would break the capability lookup and the pre-send SML call
+// with opaque errors; the Zod refine catches it at the tRPC boundary so the
+// DB never sees an inconsistent state.
 //
 // The scheme-id regex mirrors Peppol's ICD list (0060 Companies House, 0088
 // GLN, 0106 DUNS, 0192 OrgNr, 0208 BE, 9957 DE, …) — always exactly 4 digits.

@@ -1,4 +1,4 @@
-// Phase 62 · Plan 62-03 Task 2 — PDF/A-3 wrapper.
+// PDF/A-3 wrapper.
 //
 // Takes a visual-only PDF (produced by `invoice-template.tsx` via
 // @react-pdf/renderer) plus the CII XML string (produced by
@@ -23,7 +23,7 @@
 //      safest default.
 //
 // The wrapper does NOT:
-//   * Run veraPDF conformance (that is Plan 03 Task 6 CI).
+//   * Run veraPDF conformance (CI responsibility).
 //   * Assert structural invariants (that is zugferd-structural-check.ts).
 //   * Register fonts (the base PDF from React-PDF already has Noto Sans
 //     embedded by `invoice-template.tsx`).

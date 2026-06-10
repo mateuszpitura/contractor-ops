@@ -28,10 +28,10 @@ import { RESOLVER_BACKED_PROVIDERS } from '../../services/idp-token-resolver';
 
 const auditLog = getIdpAuditLogger();
 
-// Phase 77 D-15 / Phase 78 D-12 — single source-of-truth for the five
-// Deprovisionable providers. Derive the TS type from the schema so the tuple,
-// the Zod enum, and the type alias can never drift apart. The key strings mirror
-// the saga DeprovisioningProvider enum (ENTRA — NOT ENTRA_ID).
+// Single source-of-truth for the five deprovisionable providers. Derive the
+// TS type from the schema so the tuple, the Zod enum, and the type alias can
+// never drift apart. The key strings mirror the saga DeprovisioningProvider
+// enum (ENTRA — NOT ENTRA_ID).
 export const DEPROVISIONING_TOGGLE_PROVIDERS = [
   'GOOGLE_WORKSPACE',
   'SLACK',
@@ -72,13 +72,14 @@ const RESOLVER_BACKED_SET = new Set<string>(RESOLVER_BACKED_PROVIDERS);
 
 /**
  * Per-org provider set for a run: org-ENABLED toggles
- * (`Organization.settingsJson.idpDeprovisioningEnabled`, Phase 77 D-15) ∩
+ * (`Organization.settingsJson.idpDeprovisioningEnabled`) ∩
  * signoff-APPROVED (`isProviderSignoffSatisfied`) ∩ resolver-backed
  * (`RESOLVER_BACKED_PROVIDERS` — the single source of truth from the token
- * resolver / step-runner capability). Replaces the old hardcoded GWS-only const
- * so a run spans every executable provider the org has enabled (Phase 81 D-05).
- * Providers without a token resolver (ENTRA/OKTA/GITHUB) are excluded here so a
- * misconfigured org never gets a step that can only fail-closed at the runner.
+ * resolver / step-runner capability). Replaces the old hardcoded GWS-only
+ * const so a run spans every executable provider the org has enabled.
+ * Providers without a token resolver (ENTRA/OKTA/GITHUB) are excluded here
+ * so a misconfigured org never gets a step that can only fail-closed at the
+ * runner.
  */
 function deriveProvidersForRun(settingsJson: unknown): DeprovisioningToggleProvider[] {
   const settings = (settingsJson as Record<string, unknown>) ?? {};
@@ -93,10 +94,11 @@ function deriveProvidersForRun(settingsJson: unknown): DeprovisioningToggleProvi
 
 /**
  * Resolve the contractor's jurisdiction TZ from its ISO-3166-1 alpha-2 country code.
- * The schema has no per-contractor jurisdictionTz column (the Phase 71 `expiryJurisdictionTz`
- * lives on ContractorComplianceItem), so the cooldown gate derives the boundary TZ from the
- * engagement country. Unknown countries fall back to the org-HQ default (Europe/Berlin),
- * which is conservative — the cooldown is computed for ALL valid IANA TZs identically.
+ * The schema has no per-contractor jurisdictionTz column (`expiryJurisdictionTz`
+ * lives on ContractorComplianceItem), so the cooldown gate derives the boundary
+ * TZ from the engagement country. Unknown countries fall back to the org-HQ
+ * default (Europe/Berlin), which is conservative — the cooldown is computed for
+ * ALL valid IANA TZs identically.
  */
 const COUNTRY_TZ: Record<string, string> = {
   DE: 'Europe/Berlin',
@@ -109,15 +111,16 @@ const DEFAULT_JURISDICTION_TZ = 'Europe/Berlin';
 
 export const deprovisioningRouter = router({
   /**
-   * Phase 76 D-05/D-07 — Eligibility query.
+   * Eligibility query.
    *
    * Single source of truth for the 14-day cooldown gate. Consumed by:
    *   - UI: deprovisioning-button disabled state + earliest-date tooltip
    *   - Server: the SAME `canStartDeprovisioning` helper from the
-   *     `startDeprovisioningRun` mutation (Plan 76-06) — the UI cannot lie about gate state.
+   *     `startDeprovisioningRun` mutation — the UI cannot lie about gate state.
    *
-   * Returns `{ allowed, earliestDate?, reason? }`. Emits a single audit-grade log entry
-   * per call (SOC2 evidence: admin saw the cooldown state before/instead of deprovisioning).
+   * Returns `{ allowed, earliestDate?, reason? }`. Emits a single audit-grade
+   * log entry per call (SOC2 evidence: admin saw the cooldown state
+   * before/instead of deprovisioning).
    */
   getDeprovisioningEligibility: integrationProcedure({ permission: { idp: ['start_run'] } })
     .input(z.object({ assignmentId: z.string().min(1) }))
@@ -160,16 +163,16 @@ export const deprovisioningRouter = router({
     }),
 
   /**
-   * Phase 81 D-01 — resolve a contractor to the assignment a deprovisioning run
-   * should target. The offboarding ACCESS_REVOKE task card only knows
-   * `WorkflowRun.contractorId` (there is no `assignmentId` FK on WorkflowRun), so
-   * the shared trigger hook calls this server-side resolver to obtain an
-   * unambiguous `assignmentId` in a single tRPC round-trip (keeping the web-vite
-   * data-layer guard green). Disambiguation: the MOST-RECENT ENDED assignment
-   * (status='ENDED', endedAt desc) — the offboarded engagement that armed the
-   * cooldown. A contractor with no ENDED assignment returns `{ assignmentId: null }`
-   * so the UI can disable the trigger with a reason rather than picking an ACTIVE row.
-   * Org-scoped via `ctx.organizationId` (a cross-tenant contractorId returns null).
+   * Resolve a contractor to the assignment a deprovisioning run should target.
+   * The offboarding ACCESS_REVOKE task card only knows `WorkflowRun.contractorId`
+   * (there is no `assignmentId` FK on WorkflowRun), so the shared trigger hook
+   * calls this server-side resolver to obtain an unambiguous `assignmentId` in a
+   * single tRPC round-trip (keeping the web-vite data-layer guard green).
+   * Disambiguation: the MOST-RECENT ENDED assignment (status='ENDED', endedAt
+   * desc) — the offboarded engagement that armed the cooldown. A contractor with
+   * no ENDED assignment returns `{ assignmentId: null }` so the UI can disable
+   * the trigger with a reason rather than picking an ACTIVE row. Org-scoped via
+   * `ctx.organizationId` (a cross-tenant contractorId returns null).
    */
   resolveAssignmentForContractor: integrationProcedure({ permission: { idp: ['start_run'] } })
     .input(z.object({ contractorId: z.string().min(1) }))
@@ -187,12 +190,14 @@ export const deprovisioningRouter = router({
     }),
 
   /**
-   * Phase 76 D-03 — start a deprovisioning run.
+   * Start a deprovisioning run.
    *
-   * Re-runs the cooldown gate server-side (UI cannot bypass), then in ONE transaction
-   * inserts the run + N steps (provider × stepKind) and flips status to IN_PROGRESS.
-   * After commit, fans out N INDEPENDENT QStash jobs (no Promise.allSettled — Pitfall 10).
-   * Idempotent via the unique idempotencyKey: a P2002 collision returns the existing run.
+   * Re-runs the cooldown gate server-side (UI cannot bypass), then in ONE
+   * transaction inserts the run + N steps (provider × stepKind) and flips
+   * status to IN_PROGRESS. After commit, fans out N INDEPENDENT QStash jobs
+   * (no Promise.allSettled — a single rejected job must not silence others).
+   * Idempotent via the unique idempotencyKey: a P2002 collision returns the
+   * existing run.
    */
   startDeprovisioningRun: integrationProcedure({ permission: { idp: ['start_run'] } })
     .input(
@@ -236,9 +241,9 @@ export const deprovisioningRouter = router({
         });
       }
 
-      // Derive the per-org provider set (enabled ∩ signoff ∩ resolver-backed, D-05).
-      // The mutation previously fetched only the assignment — read settingsJson here
-      // so the derivation has the org toggle map (Phase 81 Pitfall 5).
+      // Derive the per-org provider set (enabled ∩ signoff ∩ resolver-backed).
+      // The mutation previously fetched only the assignment — read settingsJson
+      // here so the derivation has the org toggle map.
       const org = await ctx.db.organization.findUnique({
         where: { id: ctx.organizationId },
         select: { settingsJson: true },
@@ -246,7 +251,7 @@ export const deprovisioningRouter = router({
       const providersForRun = deriveProvidersForRun(org?.settingsJson);
       if (providersForRun.length === 0) {
         // No enabled + signoff + resolver-backed provider — do NOT create a
-        // zero-step run (D-06). The UI disables the trigger and explains why.
+        // zero-step run. The UI disables the trigger and explains why.
         throw new TRPCError({
           code: 'PRECONDITION_FAILED',
           message: DEPROVISIONING_INTEGRATION_NOT_CONFIGURED,
@@ -286,8 +291,8 @@ export const deprovisioningRouter = router({
           return created;
         });
 
-        // Fan-out AFTER commit — independent QStash jobs (no aggregation). Dynamic
-        // import keeps Upstash env out of module-load for tooling/tests.
+        // Fan-out AFTER commit — independent QStash jobs. Dynamic import
+        // keeps Upstash env out of module-load for tooling/tests.
         const [{ getQStashClient }, { getServerEnv }] = await Promise.all([
           import('@contractor-ops/integrations/services/qstash-client'),
           import('@contractor-ops/validators'),
@@ -322,8 +327,8 @@ export const deprovisioningRouter = router({
         return { runId: run.id, idempotent: false };
       } catch (err) {
         if (err && typeof err === 'object' && (err as { code?: string }).code === 'P2002') {
-          // Composite unique — must filter by organizationId to avoid returning a different
-          // tenant's run when the key collides across orgs (WR-1 fix).
+          // Composite unique — must filter by organizationId to avoid returning
+          // a different tenant's run when the key collides across orgs.
           const existing = await ctx.db.deprovisioningRun.findUniqueOrThrow({
             where: {
               organizationId_idempotencyKey: {
@@ -340,8 +345,7 @@ export const deprovisioningRouter = router({
     }),
 
   /**
-   * Phase 76 D-04 — manual per-step retry. Idempotent precondition (mirrors v5
-   * recreateDraftAfterDrift): only a FAILED step can be retried. Optimistic-concurrency
+   * Manual per-step retry. Only a FAILED step can be retried. Optimistic-concurrency
    * updateMany guards against double-clicks. Enqueues a fresh QStash job with a NEW
    * deduplicationId so a duplicate delivery is dropped while a genuine retry runs.
    */
@@ -369,11 +373,11 @@ export const deprovisioningRouter = router({
         return { noop: true, reason: 'step not in FAILED state' };
       }
 
-      // `nextAttempt` is used only for the QStash deduplicationId to ensure the
-      // re-enqueued job has a different id from the original enqueue (which used
-      // `:${originalAttempts}`). The row resets to attempts:0 deliberately — a
-      // manual retry grants a fresh MAX_ATTEMPTS budget; the dedup id only needs
-      // per-enqueue uniqueness, not a match to the actual attempt counter.
+      // `nextAttempt` is used only for the QStash deduplicationId to ensure
+      // the re-enqueued job has a different id from the original enqueue.
+      // The row resets to attempts:0 deliberately — a manual retry grants a
+      // fresh MAX_ATTEMPTS budget; the dedup id only needs per-enqueue
+      // uniqueness, not a match to the actual attempt counter.
       const nextAttempt = step.attempts + 1;
 
       const updated = await ctx.db.deprovisioningStep.updateMany({
@@ -420,18 +424,18 @@ export const deprovisioningRouter = router({
     }),
 
   /**
-   * Phase 77 — read a deprovisioning run with its steps (saga run view, 77-05).
-   * Org-scoped; surfaces the per-step status (incl. LIKELY_GONE-equivalent
-   * SUCCEEDED + MANUAL_COMPLETED), errorClass, attempts, and manual-override
-   * metadata so the UI can render the override badge + the per-failed-step button.
+   * Read a deprovisioning run with its steps.
+   * Org-scoped; surfaces the per-step status (incl. SUCCEEDED +
+   * MANUAL_COMPLETED), errorClass, attempts, and manual-override metadata so
+   * the UI can render the override badge + the per-failed-step button.
    */
   getDeprovisioningRun: integrationProcedure({ permission: { integration: ['read'] } })
     .input(z.object({ runId: z.string().min(1) }))
     .query(async ({ ctx, input }) => {
       // The free-text override note + actor may contain incident detail or names.
       // Only expose them to callers that also hold the `idp:override_step_failure`
-      // write gate — the same audience that authored the note (WR-06).
-      // Analog: approval.ts secondary authApi.hasPermission check.
+      // write gate — the same audience that authored the note. Mirrors the
+      // secondary authApi.hasPermission check used in approval.ts.
       let canReadOverrideNote = false;
       if (ctx.authMode === 'apiKey') {
         const required = permissionToScopes({ idp: ['override_step_failure'] });
@@ -490,10 +494,11 @@ export const deprovisioningRouter = router({
     }),
 
   /**
-   * Phase 77 D-01/D-02/D-03 — pre-flight impact preview for an assignment + provider.
-   * Cache-fronted (5 min) in getImpactPreview; forceRefresh bypasses. On adapter
-   * failure returns a structured outcome the admin-choice flow renders. When the admin
-   * proceeds without a preview, an `idp.preview.failed_proceed` audit line is emitted.
+   * Pre-flight impact preview for an assignment + provider. Cache-fronted
+   * (5 min) in getImpactPreview; forceRefresh bypasses. On adapter failure
+   * returns a structured outcome the admin-choice flow renders. When the admin
+   * proceeds without a preview, an `idp.preview.failed_proceed` audit line is
+   * emitted.
    */
   describeImpact: integrationProcedure({ permission: { integration: ['read'] } })
     .input(
@@ -547,10 +552,10 @@ export const deprovisioningRouter = router({
     }),
 
   /**
-   * Phase 77 D-12/D-13 — mark a terminally-failed step MANUAL_COMPLETED with an
-   * audited written reason. Mirrors Phase 74 overrideBlockingTask: owner/admin only,
-   * single $transaction (columns + status + AuditLog + recomputeRunStatus). The free-text
-   * note is stored in the column only — never logged raw.
+   * Mark a terminally-failed step MANUAL_COMPLETED with an audited written
+   * reason. Owner/admin only; single $transaction (columns + status + AuditLog
+   * + recomputeRunStatus). The free-text note is stored in the column only —
+   * never logged raw.
    */
   overrideStepFailure: integrationProcedure({ permission: { idp: ['override_step_failure'] } })
     .input(
@@ -595,7 +600,7 @@ export const deprovisioningRouter = router({
           action: 'idp.deprovisioning.step.manual_completed',
           resourceType: 'WORKFLOW_TASK_RUN',
           resourceId: step.id,
-          // manualOverrideNote is DELIBERATELY excluded — it lives only in the column.
+          // manualOverrideNote deliberately excluded — it lives only in the column.
           newValues: {
             runId: step.runId,
             provider: step.provider,
@@ -610,7 +615,7 @@ export const deprovisioningRouter = router({
         );
       });
 
-      // D-12 — when the run reaches terminal status the parent offboarding
+      // When the run reaches terminal status the parent offboarding
       // ACCESS_REVOKE task auto-completes; capture it as a separate audit entry.
       if (runStatus === 'COMPLETED' || runStatus === 'PARTIAL_FAILURE') {
         await writeAuditLog({
@@ -628,12 +633,12 @@ export const deprovisioningRouter = router({
     }),
 
   /**
-   * Phase 77 D-14 — Slack org-grid OAuth connect entry point. Returns the local
-   * API-host OAuth start URL for the org-grid flow (mirrors getOAuthUrlGeneric's
-   * indirect F-SEC-05 pattern: the /api/oauth/slack-org-grid/start route mints the
-   * single-use OAuthChallenge + cookie, then 302s to Slack with the org-level
-   * scopes from getOrgGridOAuthConfig). The callback creates a distinct
-   * SLACK_ORG_GRID connection (marked via configJson.connectionSubKind) and probes
+   * Slack org-grid OAuth connect entry point. Returns the local API-host OAuth
+   * start URL for the org-grid flow (mirrors getOAuthUrlGeneric's indirect
+   * pattern: the /api/oauth/slack-org-grid/start route mints the single-use
+   * OAuthChallenge + cookie, then 302s to Slack with the org-level scopes from
+   * getOrgGridOAuthConfig). The callback creates a distinct SLACK_ORG_GRID
+   * connection (marked via configJson.connectionSubKind) and probes
    * Enterprise-Grid availability into scopeCapabilities.unavailableReason.
    */
   connectSlackOrgGrid: integrationProcedure({ permission: { integration: ['update'] } }).query(
@@ -651,9 +656,9 @@ export const deprovisioningRouter = router({
   ),
 
   /**
-   * Phase 77 D-15 — per-provider toggle-table state for the settings UI: each
-   * supported provider's connection status, signoff-flag approval, and current
-   * per-org enabled flag. Drives the enable table (disabled when flag != APPROVED).
+   * Per-provider toggle-table state for the settings UI: each supported
+   * provider's connection status, signoff-flag approval, and current per-org
+   * enabled flag. Drives the enable table (disabled when flag != APPROVED).
    */
   getProviderToggleState: integrationSettingsProcedure('read').query(async ({ ctx }) => {
     const [org, connections] = await Promise.all([
@@ -699,9 +704,10 @@ export const deprovisioningRouter = router({
   }),
 
   /**
-   * Phase 77 D-15 — per-provider per-org enable toggle. Refuses to enable a provider
-   * whose signoff flag is still PENDING (unless FLAG_SIGNOFF_BYPASS=local). GWS and
-   * Slack are independent. Persisted in Organization.settingsJson.idpDeprovisioningEnabled.
+   * Per-provider per-org enable toggle. Refuses to enable a provider whose
+   * signoff flag is still PENDING (unless FLAG_SIGNOFF_BYPASS=local). GWS and
+   * Slack are independent. Persisted in
+   * Organization.settingsJson.idpDeprovisioningEnabled.
    */
   enableProviderForOrg: integrationSettingsProcedure('update')
     .input(

@@ -8,7 +8,7 @@
  * Per-connection-secret providers (jira/linear): each tenant stores its own
  * signing secret in `IntegrationConnection.configJson.webhookSecret`. The
  * route iterates connected integrations and tries each secret until one
- * verifies (F-SEC-02 / F-SEC-03 / F-INT-08). It NEVER trusts an inbound
+ * verifies. It NEVER trusts an inbound
  * `x-webhook-secret` header.
  *
  * Slack / Resend: org resolution falls back to a workspace/teamId lookup

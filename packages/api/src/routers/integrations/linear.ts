@@ -82,7 +82,7 @@ export const linearRouter = router({
   /**
    * Fetch Linear teams for the connected workspace.
    * Queries Linear GraphQL API for teams with their workflow states.
-   * Accepts both PENDING_MAPPING and CONNECTED connections (D-03).
+   * Accepts both PENDING_MAPPING and CONNECTED connections.
    */
   teams: integrationProcedure({ permission: { settings: ['read'] } }).query(async ({ ctx }) => {
     const connection = await loadOrgIntegrationConnection(ctx.db, ctx.organizationId, 'LINEAR', {
@@ -163,7 +163,7 @@ export const linearRouter = router({
   /**
    * Save status mapping for a Linear team.
    * Updates configJson.statusMappings[teamId] and configJson.stateCache[teamId].
-   * Transitions connection from PENDING_MAPPING to CONNECTED on first save (D-03).
+   * Transitions connection from PENDING_MAPPING to CONNECTED on first save.
    */
   saveStatusMapping: integrationProcedure({
     permission: { settings: ['update'] },
@@ -409,7 +409,7 @@ export const linearRouter = router({
       z.object({
         entityType: z.enum(['WORKFLOW_TASK_RUN', 'WORKFLOW_RUN']),
         entityId: z.string(),
-        // F-DB-09: bound the result set. Mirrors jira.linkedIssues.
+        // Bound the result set. Mirrors jira.linkedIssues.
         take: z.number().int().min(1).max(200).default(50),
         cursor: z.string().optional(),
       }),

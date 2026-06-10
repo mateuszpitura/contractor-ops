@@ -1,6 +1,6 @@
-// Phase 78 D-14 — Microsoft Entra ID minimum-privilege deprovision scopes.
+// Microsoft Entra ID minimum-privilege deprovision scopes.
 //
-// Mirrors the Phase 76 D-14 typed-const scope-registry pattern
+// Mirrors the typed-const scope-registry pattern
 // (`google-workspace-deprovision-scopes.ts`): the `lint:scopes` CI guard treats
 // this constant as the single source of truth for the EntraIdAdapter's
 // `getOAuthConfig().scopes`, rejecting any scope literal added directly to the

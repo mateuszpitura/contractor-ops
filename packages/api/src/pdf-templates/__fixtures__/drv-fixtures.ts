@@ -1,4 +1,4 @@
-// Phase 59 · Plan 04 Task 1 — DRV defense bundle fixtures.
+// DRV defense bundle fixtures.
 
 import type {
   Assessment,

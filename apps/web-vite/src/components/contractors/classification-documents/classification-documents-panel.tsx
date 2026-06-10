@@ -1,6 +1,5 @@
-// Phase 59 · Plan 02 Task 3 — Classification documents panel for the engagement detail page.
-// Gates the generate CTA on assessment completion + engagement country (GB for SDS).
-// Plan 59-04 extends this panel with a GenerateDrvBundleButton for DE engagements.
+// Classification documents panel for the engagement detail page.
+// Gates the generate CTA on assessment completion + engagement country (GB for SDS, DE for DRV bundle).
 
 import { useId } from 'react';
 import { useTranslations } from '../../../i18n/useTranslations.js';

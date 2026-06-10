@@ -1,6 +1,5 @@
 /**
- * Buffer-only renderers for the classification SDS / DRV defense bundle
- * PDFs (P2-F · F-SCALE-02).
+ * Buffer-only renderers for the classification SDS / DRV defense bundle PDFs.
  *
  * Why a separate module
  * ---------------------
@@ -99,9 +98,9 @@ export async function renderSdsPdfBuffer(params: RenderSdsParams): Promise<Rende
     throw new Error('generateSds only applies to IR35 (GB) classification assessments.');
   }
 
-  // Phase 64 D-22 — SdsApproval gate (LEGAL-05). Maintained for consistency
-  // with the original synchronous mutation; if approval is missing we surface
-  // a structured error so the export row records SDS_NOT_APPROVED.
+  // SdsApproval gate. Maintained for consistency with the original synchronous
+  // mutation; if approval is missing we surface a structured error so the
+  // export row records SDS_NOT_APPROVED.
   const sdsApproval = await prisma.sdsApproval.findUnique({
     where: { assessmentId: params.classificationAssessmentId },
     select: { id: true },

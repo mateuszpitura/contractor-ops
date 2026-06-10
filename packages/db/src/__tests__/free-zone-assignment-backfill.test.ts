@@ -1,10 +1,10 @@
-// Phase 79 · D-02 — pure-transform tests for the free-zone backfill.
+// Pure-transform tests for the free-zone backfill.
 //
 // `planFreeZoneBackfill` maps AE contractors' freeform `countryFields` UAE license
 // values into the structured FreeZoneAssignment rows to insert. The transform is
 // the load-bearing, idempotent, network-free core of
 // backfill-free-zone-assignment.ts (the script's $transaction write is a thin
-// wrapper). These tests assert the documented mapping + the D-02 guards.
+// wrapper).
 
 import { describe, expect, it } from 'vitest';
 import type { ContractorRow } from '../../scripts/backfill-free-zone-assignment.js';

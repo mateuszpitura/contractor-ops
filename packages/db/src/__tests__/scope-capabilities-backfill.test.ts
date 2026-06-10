@@ -1,6 +1,5 @@
-// Phase 70-01 · FOUND6-05 (D-14) — failing test scaffold for the
-// scopeCapabilities backfill script. Plan 70-09 implements
-// `backfill-scope-capabilities.ts` + the `ScopeCapabilities` type.
+// Tests for the scopeCapabilities backfill script
+// (`backfill-scope-capabilities.ts` + the `ScopeCapabilities` type).
 
 import { describe, expect, it } from 'vitest';
 import { backfillScopeCapabilities } from '../../scripts/backfill-scope-capabilities.js';

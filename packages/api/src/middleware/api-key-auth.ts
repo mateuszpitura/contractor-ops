@@ -44,11 +44,11 @@ const apiKeyAuthMiddleware = t.middleware(async ({ ctx, next }) => {
     });
   }
 
-  // F-SEC-12 — Reject suspended/archived orgs even if their API key is still
-  // present in the DB. resolveApiKey already eagerly loads `organization.status`
-  // for exactly this reason; without this gate, a non-paying or fraud-flagged
-  // tenant could continue exfiltrating data via the public API as long as their
-  // key was not individually revoked.
+  // Reject suspended/archived orgs even if their API key is still present in
+  // the DB. resolveApiKey already eagerly loads `organization.status` for
+  // exactly this reason; without this gate, a non-paying or fraud-flagged
+  // tenant could continue exfiltrating data via the public API as long as
+  // their key was not individually revoked.
   if (keyRecord.organization.status !== 'ACTIVE') {
     throw new TRPCError({
       code: 'FORBIDDEN',

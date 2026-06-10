@@ -22,9 +22,9 @@ export const OVERRIDE_REASON_CATEGORIES: readonly OverrideReasonCategory[] = [
 ];
 
 /**
- * Phase 73 D-12 — the only tRPC boundary for the manual override modal. Calls
- * the Plan 73-03 overrideItem mutation, toasts, and invalidates the compliance
- * query so the row reflects the new WAIVED state.
+ * The only tRPC boundary for the manual override modal. Calls the overrideItem
+ * mutation, toasts, and invalidates the compliance query so the row reflects
+ * the new WAIVED state.
  */
 export function useOverrideComplianceItem(onSuccess?: () => void) {
   const trpc = useTRPC();

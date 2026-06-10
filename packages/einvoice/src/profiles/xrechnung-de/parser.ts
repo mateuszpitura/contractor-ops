@@ -1,4 +1,4 @@
-// Phase 62 · Plan 62-02 Task 4 — XRechnung CII inbound parser.
+// XRechnung CII inbound parser.
 //
 // Inverse of generator.ts: walks a CII Cross-Industry-Invoice document and
 // maps it back into the canonical `EInvoice` envelope plus a typed
@@ -22,18 +22,16 @@
 //     (`ZUGFERD_LEVEL_UNSUPPORTED`). This prevents silently round-tripping a
 //     MINIMUM or BASIC-WL ZUGFeRD invoice through our COMFORT-shaped envelope
 //     and writing lossy data into the intake staging table.
-//   - XSD shape violations are *not* this parser's job — Phase 61's
-//     KoSIT validator owns layer-1 XSD. We do, however, emit
-//     `CII_PARSE_FAILED` when the XML itself is malformed (fast-xml-parser
-//     throws during tree construction).
+//   - XSD shape violations are not this parser's job — the KoSIT validator
+//     owns layer-1 XSD. We do, however, emit `CII_PARSE_FAILED` when the XML
+//     itself is malformed (fast-xml-parser throws during tree construction).
 //   - Logging uses the shared Pino root logger via `.child({ module: ... })`.
 //     Never `console.*` — enforced by repo-wide guard.
 //
-// Threats mitigated:
-//   * T-62-02-01 (semantic drift on round-trip): round-trip test asserts
-//     `parse(generate(invoice))` returns a JSON-equal envelope.
-//   * T-62-02-02 (unsupported-level passthrough): hard throw + typed error.
-//   * T-62-02-03 (BOM parse failure): UTF-8 BOM is stripped before parsing.
+// Security:
+//   - Round-trip parity: `parse(generate(invoice))` returns a JSON-equal envelope.
+//   - Unsupported-level passthrough prevented by hard throw + typed error.
+//   - UTF-8 BOM is stripped before parsing to prevent parse failures.
 
 import { createLogger } from '@contractor-ops/logger';
 import { XMLParser } from 'fast-xml-parser';

@@ -1,6 +1,6 @@
 // packages/validators/src/us-validators.ts
 //
-// US tax identifier validators (Phase 84, Decision D-05).
+// US tax identifier validators.
 //
 // These validators are pure functions with no I/O. They run on both client
 // (React Hook Form resolvers) and server (tRPC input validation) to catch
@@ -8,7 +8,7 @@
 //
 // Input normalization: all functions strip whitespace and hyphens before
 // validating, and match anchored regex (^...$) to avoid ReDoS on adversarial
-// input (T-84-01-03, mirror uk-validators T-56-03).
+// input.
 //
 // References:
 //   - EIN: https://www.irs.gov/businesses/small-businesses-self-employed/how-eins-are-assigned-and-valid-ein-prefixes
@@ -23,8 +23,8 @@
 // LOCAL-ONLY: Table accuracy needs verification by a jurisdiction-specific
 // legal/tax adviser before production deploy. Cross-source lists vary on a few
 // prefixes (e.g. 07/08/09/17-19/28/29/49/69/70/78/79/89/96/97 reported invalid
-// by a secondary source); the set below follows the IRS campus list (84-RESEARCH
-// Assumption A1) and is intentionally annotated as adviser-deferred.
+// by a secondary source); the set below follows the IRS campus list and is
+// intentionally annotated as adviser-deferred.
 const VALID_EIN_PREFIXES = new Set([
   '01',
   '02',

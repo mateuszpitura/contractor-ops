@@ -131,7 +131,7 @@ async function processSingleKsefInvoice(
       totalMinor: fields.totalMinor,
     }) ?? null;
 
-  // Check cross-source duplicate (per D-11)
+  // Check cross-source duplicate
   const dup = fields.sellerTaxId
     ? await checkCrossSourceDuplicate(db, organizationId, fields.invoiceNumber, fields.sellerTaxId)
     : { isDuplicate: false, existingInvoiceId: null, existingSource: null };
@@ -153,14 +153,14 @@ async function processSingleKsefInvoice(
     },
   });
 
-  // Link duplicates bidirectionally (per D-12)
+  // Link duplicates bidirectionally
   let isDuplicate = false;
   if (dup.isDuplicate && dup.existingInvoiceId) {
     await linkDuplicateInvoices(db, invoice.id, dup.existingInvoiceId);
     isDuplicate = true;
   }
 
-  // Run auto-match (per D-08)
+  // Run auto-match
   await runAutoMatch(db, organizationId, {
     id: invoice.id,
     sellerTaxId: fields.sellerTaxId,
@@ -430,7 +430,7 @@ async function runKsefSyncForConnection(
   try {
     const connection = await loadKsefConnection(db, organizationId, connectionId);
 
-    // D-03: org NIP must be set before any KSeF call. Validated inside the
+    // Org NIP must be set before any KSeF call. Validated inside the
     // sync-log + lock boundary so failures route through `recordKsefSyncFailure`.
     assertNip(nip);
 

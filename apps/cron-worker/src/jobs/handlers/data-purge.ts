@@ -17,8 +17,8 @@
  * self-expire via `expiresAt`. Each ephemeral sweep is independent — one
  * failing does not abort the other.
  *
- * F-SCALE-07 — explicit tx timeout/maxWait so a wedged purge never
- * starves other tenants' cron mutations on the Neon HTTP driver.
+ * Explicit tx timeout/maxWait so a wedged purge never starves other
+ * tenants' cron mutations on the Neon HTTP driver.
  */
 
 import { getRetentionCutoff, prisma } from '@contractor-ops/db';
@@ -29,16 +29,16 @@ import type { JobHandler } from '../runner.js';
 const RETENTION_DAYS = 90;
 
 /**
- * US-INFRA-03 — THE load-bearing hard-delete path. `data-purge` runs on the
- * BASE prisma client (no soft-delete extension), so every `deleteMany` here is
- * a TRUE Postgres DELETE. A model under an active statutory-retention rule must
+ * THE load-bearing hard-delete path. `data-purge` runs on the BASE prisma
+ * client (no soft-delete extension), so every `deleteMany` here is a TRUE
+ * Postgres DELETE. A model under an active statutory-retention rule must
  * therefore use its policy window (4yr/7yr) instead of the flat 90-day sweep,
  * or a retained record could be permanently destroyed.
  *
  * Returns the per-model cutoff: the retention window for a retained model, else
- * the flat `RETENTION_DAYS` cutoff. The production retention map ships EMPTY
- * (D-06), so all current models keep the 90-day behaviour; Phase 86 tax models
- * inherit the guard automatically by registering their window.
+ * the flat `RETENTION_DAYS` cutoff. The production retention map ships EMPTY,
+ * so all current models keep the 90-day behaviour; new tax models inherit the
+ * guard automatically by registering their window.
  */
 function cutoffFor(model: string, now: Date, flatCutoff: Date): Date {
   return getRetentionCutoff(model, now) ?? flatCutoff;

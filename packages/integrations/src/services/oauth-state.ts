@@ -2,8 +2,7 @@ import { createHmac, timingSafeEqual } from 'node:crypto';
 
 // ---------------------------------------------------------------------------
 // OAuth State — HMAC-signed CSRF protection with cross-provider validation
-// Per Research Pitfall 1: include provider slug in state to prevent
-// cross-provider CSRF attacks.
+// Include provider slug in state to prevent cross-provider CSRF attacks.
 // ---------------------------------------------------------------------------
 
 export interface OAuthStatePayload {

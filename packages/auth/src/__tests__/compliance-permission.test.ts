@@ -1,5 +1,3 @@
-// Phase 73 · Plan 03 — Permission registration test (D-10).
-
 import { describe, expect, it } from 'vitest';
 import { accessControlStatement } from '../permissions.js';
 import { roles } from '../roles.js';

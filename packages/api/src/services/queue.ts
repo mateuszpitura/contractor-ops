@@ -1,4 +1,4 @@
-// Canonical typed enqueue helper for QStash jobs (P2-A, F-ASYNC-02).
+// Canonical typed enqueue helper for QStash jobs.
 //
 // Before this module: every producer hand-rolled
 // `getQStashClient().publishJSON({...})` with mismatched retries (2 vs 3),

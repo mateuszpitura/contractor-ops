@@ -12,7 +12,7 @@ const log = createLogger({ service: 'inpost-webhook-handler' });
 // Processes incoming ShipX webhook events:
 // - Validates payload with Zod
 // - Finds shipment by externalId (fallback: trackingNumber)
-// - Deduplicates events (pitfall 3)
+// - Deduplicates events
 // - Creates ShipmentEvent and updates Shipment.currentStatus
 // - Auto-advances equipment status
 // - Fires workflow task completion check
@@ -30,7 +30,7 @@ type PrismaClient = DbClient;
  * request — otherwise any caller could inject events against a misconfigured
  * org. Non-production environments can still match an org via the shipment-id
  * payload fallback in the webhook route; production rejects unsigned /
- * empty-secret webhooks outright (F-SEC-06).
+ * empty-secret webhooks outright.
  */
 export function verifyInPostSignature(
   rawBody: string,

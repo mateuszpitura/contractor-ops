@@ -1,4 +1,4 @@
-// Phase 62 · Plan 62-02 Task 4 — XRechnung CII inbound parser unit tests.
+// XRechnung CII inbound parser unit tests.
 //
 // Six branches:
 //   1. Round-trip: parse(generate(invoice)).invoice preserves key fields.

@@ -1,5 +1,5 @@
 /**
- * F-SEC-01: Server-derived pending-upload table.
+ * Server-derived pending-upload table.
  *
  * Replaces the previously-vulnerable pattern where the client sent
  * `storageKey` as part of `submitInvoice` / `confirmUpload` — letting an

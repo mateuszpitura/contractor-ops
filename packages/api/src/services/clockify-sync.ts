@@ -68,11 +68,11 @@ export function parseDurationToMinutes(duration: string): number {
  * Fetches time entries from Clockify for a given connection and date range,
  * then upserts them as TimeEntry records with source=CLOCKIFY.
  *
- * On-demand sync per D-09 — called when contractor or manager clicks
+ * On-demand sync — called when contractor or manager clicks
  * "Sync from Clockify" in the portal/admin UI.
  *
  * Deduplication: Uses @@unique(organizationId, contractorId, source, externalId)
- * to prevent duplicate imports on repeated syncs (Pitfall 5).
+ * to prevent duplicate imports on repeated syncs.
  *
  * @param prisma - Prisma client instance
  * @param organizationId - The organization ID

@@ -2,9 +2,9 @@
  * ZATCA submission worker (`POST /zatca/_submit`).
  *
  *   1. QStash signature verification via `defineQStashRoute`.
- *   2. Reseed ALS frame from upstream QStash headers (F-OBS-03).
+ *   2. Reseed ALS frame from upstream QStash headers.
  *   3. Wrap with `withQueueObservability('zatca-submit', …)` for the
- *      per-tick duration histogram (F-ASYNC-17).
+ *      per-tick duration histogram.
  *   4. Validate body shape (`invoiceId`, `organizationId`, optional `attempt`).
  *   5. Idempotency short-circuit if a chain entry already records a
  *      submission (`zatcaInvoiceChain.submittedAt` is set).

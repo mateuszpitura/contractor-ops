@@ -1,6 +1,6 @@
 // ---------------------------------------------------------------------------
 // Adaptive Card: Invoice Approval Request
-// Per D-05, D-06: Approval card with approve/reject buttons
+// Approval card with approve/reject buttons
 // Reject button uses msteams task/fetch for modal dialog
 // ---------------------------------------------------------------------------
 

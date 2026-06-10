@@ -1,4 +1,4 @@
-// Phase 79 · C9 (GULF-10) — drift override audit-logged + custom badge.
+// Drift override audit-logged + custom badge.
 //
 // A per-org drift override of a Nitaqat threshold catalogue or a UAE
 // permitted-activity catalogue MUST call `writeAuditLog` with
@@ -9,8 +9,8 @@
 // Harness mirrors compliance-override-mutation.test.ts: a hoisted mockPrisma with
 // an observable $transaction, full @contractor-ops/db + @contractor-ops/auth +
 // logger + feature-flags mocks, createCallerFactory(appRouter), and a spied
-// writeAuditLog. The Gulf models are mocked (Plan 02 landed generate-only — the
-// live DB has no Gulf tables; router tests mock the db, never a real table).
+// writeAuditLog. The Gulf models are mocked (the live DB has no Gulf tables;
+// router tests mock the db, never a real table).
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -69,8 +69,8 @@ vi.mock('@contractor-ops/db', () => ({
 // The Gulf saudization procedures are flag-gated behind 'gulf.saudization-dashboard'
 // (ship-dark, default false). Enable it in the test flag bag so the gated overrides
 // are reachable — mirrors the skonto router test's lazyFlagBag mock. Partial mock:
-// keep every real export (root.ts uses buildFlagBag, isPaymentBlockEnforced, …) and
-// only force the lazy bag's isEnabled to true.
+// keep every real export (root.ts uses buildFlagBag, isPaymentBlockEnforced, etc.)
+// and only force the lazy bag's isEnabled to true.
 vi.mock('@contractor-ops/feature-flags', async importOriginal => {
   const actual = await importOriginal<typeof import('@contractor-ops/feature-flags')>();
   return {
@@ -256,7 +256,7 @@ describe('C9 (GULF-10) drift override audit-logged + custom badge', () => {
       after: { thresholdsCustom: true },
       custom: true,
     });
-    // tx is threaded so the audit row commits atomically with the flag flip (D-17).
+    // tx is threaded so the audit row commits atomically with the flag flip.
     expect(auditCall?.tx).toBeDefined();
   });
 

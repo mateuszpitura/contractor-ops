@@ -1,17 +1,17 @@
 import { createHash } from 'node:crypto';
 
-// Phase 76 D-01/SC#2 — canonicalisation + SHA-256 hashing for SOC2 evidence-grade
-// audit on DeprovisioningStep.requestSha256 / .responseSha256.
+// Canonicalisation + SHA-256 hashing for SOC2 evidence-grade audit on
+// DeprovisioningStep.requestSha256 / .responseSha256.
 //
 // The hashes are stored on every deprovisioning step so an auditor can prove WHAT
 // payload was sent/received without retaining PII or secrets. Canonicalisation:
 //   1. Recursively drop denylisted keys (auth headers, tokens, secrets, raw PII).
 //   2. Sort object keys so logically-equal payloads hash identically regardless of
 //      property order.
-// Consumed by GoogleWorkspaceAdapter (Plan 76-09) and the QStash step-runner (Plan 76-06).
+// Consumed by GoogleWorkspaceAdapter and the QStash step-runner.
 
-// Keys removed before hashing — case-insensitive match. Covers auth headers
-// (T-76-09-03), bearer tokens, and obvious PII fields. The values never enter the digest.
+// Keys removed before hashing — case-insensitive match. Covers auth headers,
+// bearer tokens, and obvious PII fields. The values never enter the digest.
 const DENYLIST_KEYS = new Set(
   [
     'authorization',

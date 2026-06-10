@@ -1,8 +1,8 @@
 // ---------------------------------------------------------------------------
-// Phase 77 D-04/D-05/D-06 — deprovisioning step-runner service tests.
+// Deprovisioning step-runner service tests.
 // ---------------------------------------------------------------------------
 //
-// Verifies the upgraded saga step contract: MAX_ATTEMPTS short-circuit,
+// Verifies the saga step contract: MAX_ATTEMPTS short-circuit,
 // provenance-before-adapter ordering, errorClass + SHA-256 persistence,
 // LIKELY_GONE → SUCCEEDED-equivalent, the GWS three-audit-row sub-action mapping,
 // and recomputeRunStatus after every transition. The token resolver is stubbed to

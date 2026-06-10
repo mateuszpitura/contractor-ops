@@ -4,7 +4,7 @@
 
 /**
  * Canonical compliance state tokens (camelCase).
- * Per D-09: states based on actual provider lifecycle needs.
+ * States reflect actual provider lifecycle needs.
  */
 export const complianceState = {
   /** No profile configured for this org */

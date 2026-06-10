@@ -34,7 +34,7 @@ interface TaskChecklistProps {
   currentUserId: string | null;
   isLoading?: boolean;
   taskTitleMap?: Map<string, string>;
-  /** Run's contractor (Phase 81 D-01) — forwarded to the ACCESS_REVOKE trigger. */
+  /** Run's contractor — forwarded to the ACCESS_REVOKE trigger. */
   contractorId?: string | null;
 }
 

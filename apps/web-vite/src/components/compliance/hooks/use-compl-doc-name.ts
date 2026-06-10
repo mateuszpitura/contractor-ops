@@ -6,24 +6,24 @@ import { useTranslations } from '../../../i18n/useTranslations.js';
 export interface ComplDocName {
   /** Per-locale display name resolved from `compliance.docName.<jx>.<ns>`. */
   label: string;
-  /** True while the locked phrase still awaits legal sign-off (D-16). */
+  /** True while the locked phrase still awaits legal sign-off. */
   isPending: boolean;
 }
 
 /**
- * Phase 73 COMPL-11 / D-16 — resolve a contractor compliance document's
- * per-locale display name from a `policyRuleId`.
+ * Resolves a contractor compliance document's per-locale display name from a
+ * `policyRuleId`.
  *
  * `policyRuleId` form: `<jurisdiction>.<stable-namespace>@v<N>` (e.g.
  * `uk.right_to_work@v1`). The message key drops the `@vN` suffix:
  * `compliance.docName.uk.right_to_work`. Falls back to the stable namespace
  * itself if the key is missing (never throws — i18next returns the key).
  *
- * `isPending` mirrors the Plan 73-04 signoff registry so callers can append a
+ * `isPending` mirrors the signoff registry so callers can append a
  * PENDING-subscript footnote until per-jurisdiction legal review lands.
  */
 export function useComplDocName(policyRuleId: string | null | undefined): ComplDocName {
-  // Reuses the existing per-locale doc-name catalog established in Phase 71/72:
+  // Reuses the per-locale doc-name catalog:
   // `Compliance.documentType.compliance-policy-engine.<jx>.<stable-namespace>`.
   const t = useTranslations('Compliance.documentType.compliance-policy-engine');
   if (!policyRuleId) {

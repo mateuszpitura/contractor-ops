@@ -32,8 +32,8 @@ const UBL_PEPPOL_BIS_3_DOC_TYPE_ID =
   'urn:oasis:names:specification:ubl:schema:xsd:Invoice-2::Invoice##urn:cen.eu:en16931:2017#compliant#urn:fdc:peppol.eu:2017:poacc:billing:3.0::2.1' as const;
 
 /**
- * Phase 61 Plan 05 (D-09) — map the EInvoiceFormat discriminator to the
- * Storecove `document_type_id` that drives routing on the Peppol network.
+ * Map the EInvoiceFormat discriminator to the Storecove `document_type_id`
+ * that drives routing on the Peppol network.
  *
  * When `format` is undefined (legacy caller), the caller-supplied
  * `documentTypeId` is used as-is to preserve peppol-ae zero-regression.
@@ -254,10 +254,9 @@ export class StorecoveAdapter implements ASPAdapter {
   }
 
   /**
-   * Phase 61 Plan 05 (D-11) — probe a Peppol participant's SMP-registered
-   * document types. Results are cached by the API-layer service
-   * (`packages/api/src/services/peppol-capability.ts`) with a 6h TTL to
-   * stay under the Storecove rate budget.
+   * Probe a Peppol participant's SMP-registered document types. Results are
+   * cached by the API-layer service with a 6h TTL to stay under the Storecove
+   * rate budget.
    *
    * - Happy path: normalises the response to a flat `documentTypes: string[]`.
    * - 404: participant is not registered on the Peppol SML → returns an

@@ -131,7 +131,7 @@ async function singleflight<T>(key: string, fn: () => Promise<T>): Promise<T> {
 }
 
 // ---------------------------------------------------------------------------
-// Cross-instance singleflight via Redis SETNX (P2-F · F-SCALE-11)
+// Cross-instance singleflight via Redis SETNX
 // ---------------------------------------------------------------------------
 
 /**
@@ -281,7 +281,7 @@ export async function invalidateByPrefix(prefix: string): Promise<void> {
 // Convenience: org-scoped keys
 // ---------------------------------------------------------------------------
 //
-// F-SCALE-09 — INVARIANT: cache values stored under the keys below must NOT
+// INVARIANT: cache values stored under the keys below must NOT
 // contain role-gated subsets. Every entry below holds the *full* org-scoped
 // payload; the per-user authorisation check (`requirePermission`) MUST run
 // BEFORE `cached()` is invoked, never after, so a low-privilege user can
@@ -306,7 +306,7 @@ export const CacheKeys = {
   orgSettingsJson: (orgId: string, sub: string) => cacheKey(orgId, 'settings', 'json', sub),
   orgBranding: (orgId: string) => cacheKey(orgId, 'settings', 'branding'),
   approvalChains: (orgId: string) => cacheKey(orgId, 'approval', 'chains'),
-  // Phase 77 D-02 — IdP impact preview (org-scoped; provider + external user id).
+  // IdP impact preview (org-scoped; keyed by provider + external user id).
   idpPreview: (orgId: string, provider: string, externalUserId: string) =>
     cacheKey(orgId, 'idp', 'preview', provider, externalUserId),
 
@@ -329,9 +329,9 @@ export const CacheTTL = {
   DASHBOARD_KPIS: 5 * 60,
   /**
    * Short response cache used with `cachedSingleflight` for the
-   * dashboard KPIs hot path (P2-F · F-SCALE-11). 5 seconds is long
-   * enough to absorb burst traffic across the fleet but short enough
-   * that the user perceives the dashboard as live.
+   * dashboard KPIs hot path. 5 seconds is long enough to absorb burst
+   * traffic across the fleet but short enough that the user perceives
+   * the dashboard as live.
    */
   DASHBOARD_KPIS_BURST: 5,
   /** Spend trend — historical data, higher staleness OK */
@@ -348,6 +348,6 @@ export const CacheTTL = {
   ORG_BRANDING: 30 * 60,
   /** Approval chain configs — stable, invalidated on CRUD */
   APPROVAL_CHAINS: 10 * 60,
-  /** IdP impact preview — 5 min staleness; "Refresh" button force-invalidates (D-02). */
+  /** IdP impact preview — 5 min staleness; "Refresh" button force-invalidates. */
   IDP_PREVIEW: 5 * 60,
 } as const;

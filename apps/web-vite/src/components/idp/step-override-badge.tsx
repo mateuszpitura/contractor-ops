@@ -1,7 +1,7 @@
 /**
- * Phase 77 D-13 — permanent badge on a MANUAL_COMPLETED deprovisioning step.
- * Mirrors offboarding/override-badge.tsx: category icon + Tooltip showing the
- * rationale + actor + date. Presentational; the rationale comes from the step's
+ * Permanent badge on a MANUAL_COMPLETED deprovisioning step. Mirrors
+ * offboarding/override-badge.tsx: category icon + Tooltip showing the rationale
+ * + actor + date. Presentational; the rationale comes from the step's
  * manualOverride* columns (read by the run-view hook).
  */
 

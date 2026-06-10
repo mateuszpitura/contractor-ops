@@ -1,6 +1,4 @@
-// Plan 06 — FOUND-01 (UK contractor profile field UI).
-//
-// Rendering rules verified:
+// UK contractor profile field UI — rendering rules verified:
 //   * Entity-type-driven required markers (UTR vs Companies House)
 //   * VAT-registered toggle gating the VAT registration number input
 

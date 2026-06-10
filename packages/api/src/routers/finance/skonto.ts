@@ -1,6 +1,4 @@
-// packages/api/src/routers/skonto.ts
-//
-// Phase 63 · Plan 06 · D-27 — Skonto (early payment discount) tRPC router.
+// Skonto (early payment discount) tRPC router.
 // Provides: upsertForInvoice, deleteForInvoice, upsertForBillingProfile,
 //           deleteForBillingProfile, evaluateForInvoice.
 //
@@ -289,8 +287,7 @@ export const skontoRouter = router({
       // Skonto basis = invoice.amountToPayMinor (NOT totalMinor). For invoices
       // with reverse-charge VAT or supplier withholding the two fields differ;
       // the discount must apply against the amount the buyer is actually paying
-      // (matches packages/api/src/routers/payment.ts:applySkontoToItem).
-      // Fixes B-01 (CR-02 in 63-VERIFICATION.md) — Phase 65 CONTEXT.md D-03.
+      // (matches payment.ts:applySkontoToItem).
       const result = evaluateSkontoEligibility({
         invoiceTotalMinor: invoice.amountToPayMinor,
         invoiceIssueDate: invoice.issueDate,

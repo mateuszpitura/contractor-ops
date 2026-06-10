@@ -7,10 +7,10 @@
 import './profiles/ir35/index.js';
 import './profiles/scheinselbstandigkeit/index.js';
 
-// Client-safe rule-set re-exports (Plan 04 wizard UI consumes these).
+// Client-safe rule-set re-exports (wizard UI consumes these).
 // NOTE: Scoring functions from profiles/*/scoring are NEVER re-exported
-// here — they are server-only (Pitfall 2 / T-58-11). Client code that
-// needs scoring calls `trpc.classification.submit` instead.
+// here — they are server-only. Client code that needs scoring calls
+// `trpc.classification.submit` instead.
 export {
   IR35_QUESTIONS,
   IR35_RULE_SET,

@@ -1,8 +1,8 @@
 /**
- * Phase 76 D-12 — IdpChangeProvenance GC sub-task in the reminders cron handler.
+ * IdpChangeProvenance GC sub-task in the reminders cron handler.
  *
  * Verifies the GC runs once per tick, logs a structured entry, and is isolated:
- * a GC failure must NOT abort the handler or the other sub-tasks (T-76-10-02).
+ * a GC failure must NOT abort the handler or the other sub-tasks.
  */
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';

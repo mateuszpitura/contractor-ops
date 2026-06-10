@@ -37,12 +37,12 @@ const reportRead = requirePermission({ report: ['read'] });
 // ---------------------------------------------------------------------------
 
 async function fetchKpis(organizationId: string, db: RawQueryClient) {
-  // F-SCALE-11 — collapse the previous 8 separate count/aggregate queries
-  // into 3 single-scan queries using `FILTER (WHERE …)` aggregates. Each
-  // query now scans the underlying table once and computes both the
-  // current and previous-month values; on a 50k-invoice org this drops
-  // dashboardKpis cold-cache latency from ~800-3000 ms to ~150-500 ms
-  // and roughly halves writer CPU per request.
+  // Collapses the previous 8 separate count/aggregate queries into 3
+  // single-scan queries using `FILTER (WHERE …)` aggregates. Each query
+  // now scans the underlying table once and computes both the current and
+  // previous-month values; on a 50k-invoice org this drops dashboardKpis
+  // cold-cache latency from ~800-3000 ms to ~150-500 ms and roughly halves
+  // writer CPU per request.
   //
   // The `db.$queryRaw` calls bypass the soft-delete + tenant scope
   // extensions, so all predicates are spelled out explicitly.
@@ -296,19 +296,19 @@ export const dashboardRouter = router({
   /**
    * Returns 5 KPI values with trend data (current vs previous month).
    *
-   * Uses a Redis-backed cross-instance singleflight (P2-F · F-SCALE-11):
-   * the response cache TTL is intentionally short (5 s) so dashboard
-   * navigations feel live, but burst traffic (10+ pods hitting an
-   * expired cache) collapses to a single Postgres run via the SETNX
-   * lock. Combined with the FILTER-aggregate consolidation in
-   * `fetchKpis`, this keeps writer CPU bounded under realistic load.
+   * Uses a Redis-backed cross-instance singleflight: the response cache TTL
+   * is intentionally short (5 s) so dashboard navigations feel live, but
+   * burst traffic (10+ pods hitting an expired cache) collapses to a single
+   * Postgres run via the SETNX lock. Combined with the FILTER-aggregate
+   * consolidation in `fetchKpis`, this keeps writer CPU bounded under
+   * realistic load.
    *
-   * F-SCALE-06 — first proof-of-concept consumer of `readReplica`. KPIs are
-   * aggregates over historical rows; ~50-200ms of replica lag is well
-   * within the UX tolerance (the response cache TTL is already 5s and the
-   * trend math compares "current month" to "previous month" so a single
-   * stale write is invisible). When `DATABASE_URL_<region>_RO` is unset
-   * the helper transparently routes to the writer.
+   * KPIs go through the read replica when configured. Aggregates are over
+   * historical rows; ~50-200ms of replica lag is well within UX tolerance
+   * (the cache TTL is already 5s and the trend math compares current month
+   * to previous month so a single stale write is invisible). When
+   * `DATABASE_URL_<region>_RO` is unset the helper transparently routes to
+   * the writer.
    */
   kpis: tenantProcedure.use(reportRead).query(async ({ ctx }) => {
     const region = toDataRegion(ctx.region);
@@ -366,15 +366,15 @@ export const dashboardRouter = router({
    * Bundled dashboard payload — KPIs + spend trend + deadlines + activity
    * fetched server-side in parallel and returned in a single round-trip.
    *
-   * Wired in P2-F · F-SCALE-12 to absorb the existing 7-8 client widget
-   * fan-out into one server call. Each sub-fetch shares the same Redis
-   * cache entries used by the individual procedures, so calling
-   * `bootstrap` does not double-spend cache slots — and existing clients
-   * that still call individual procedures continue to work.
+   * Absorbs the existing 7-8 client widget fan-out into one server call.
+   * Each sub-fetch shares the same Redis cache entries used by the
+   * individual procedures, so calling `bootstrap` does not double-spend
+   * cache slots — and existing clients that still call individual
+   * procedures continue to work.
    *
    * TODO: migrate the 7-8 dashboard widgets to consume this payload from
-   * a single `useSuspenseQuery(trpc.dashboard.bootstrap)` call (see
-   * F-SCALE-12). Doing so requires updating the SPA dashboard container in
+   * a single `useSuspenseQuery(trpc.dashboard.bootstrap)` call. Doing so
+   * requires updating the SPA dashboard container in
    * `apps/web-vite/src/components/dashboard/dashboard-container.tsx`.
    */
   bootstrap: tenantProcedure
@@ -385,8 +385,8 @@ export const dashboardRouter = router({
       }),
     )
     .query(async ({ ctx, input }) => {
-      // F-SCALE-06 — kpis go through the read replica when configured (see
-      // `kpis` procedure JSDoc for lag-tolerance reasoning); the rest of the
+      // KPIs go through the read replica when configured (see `kpis`
+      // procedure JSDoc for lag-tolerance reasoning); the rest of the
       // bundle still hits the writer pending per-call-site lag review.
       const region = toDataRegion(ctx.region);
       const [kpis, spendTrend, deadlines, activity] = await Promise.all([

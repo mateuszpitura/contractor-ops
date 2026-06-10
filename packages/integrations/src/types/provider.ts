@@ -3,11 +3,11 @@ import type { ProviderHealthStatus } from './health.js';
 import type { WebhookVerificationResult } from './webhook.js';
 
 /**
- * Connection sub-kind discriminator (Phase 77 D-14). A provider may have more
- * than one logical connection per org — e.g. Slack has the existing
- * workspace-level connection AND a separate org-grid connection (org-level
- * OAuth grant) used exclusively for deprovisioning. Connections without a
- * sub-kind are the provider's default/workspace connection.
+ * Connection sub-kind discriminator. A provider may have more than one logical
+ * connection per org — e.g. Slack has the existing workspace-level connection
+ * AND a separate org-grid connection (org-level OAuth grant) used exclusively
+ * for deprovisioning. Connections without a sub-kind are the provider's
+ * default/workspace connection.
  */
 export type ConnectionSubKind = 'SLACK_ORG_GRID';
 
@@ -25,8 +25,8 @@ export interface OAuthConfig {
   /** Extra query parameters appended to the authorization URL (e.g., access_type, prompt). */
   extraAuthParams?: Record<string, string>;
   /**
-   * Phase 77 D-14 — marks a non-default connection sub-kind (e.g. the Slack
-   * org-grid deprovisioning connection). Absent on the default/workspace OAuth.
+   * Marks a non-default connection sub-kind (e.g. the Slack org-grid
+   * deprovisioning connection). Absent on the default/workspace OAuth.
    */
   connectionSubKind?: ConnectionSubKind;
 }

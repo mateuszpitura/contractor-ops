@@ -1,4 +1,4 @@
-// Phase 64 · D-19 — VerdictBanner escalation event firing (LEGAL-04).
+// VerdictBanner escalation event firing.
 //
 // Asserts that onAmberVerdictMounted is called exactly once on mount
 // when the verdict tone is warning (amber/indeterminate), and is NOT

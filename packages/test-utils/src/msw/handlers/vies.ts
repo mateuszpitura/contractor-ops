@@ -1,4 +1,4 @@
-// Phase 57 · Plan 01 — MSW handlers for VIES REST API (PAY-05, D-02).
+// MSW handlers for VIES REST API.
 //
 // Covers:
 //   - Simple confirmation (no requesterMemberStateCode) → VIES_SIMPLE_VALID_200

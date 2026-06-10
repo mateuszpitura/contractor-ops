@@ -33,7 +33,7 @@ const MIN_REASON = 20;
 /**
  * Opened when completeTask raises PRECONDITION_FAILED with
  * cause.blockedTaskKind=PENDING_CREDENTIALS. Captures a >=20-char reason +
- * acknowledgement, then calls forceCompleteRunWithPendingCredentials (Plan 75-07).
+ * acknowledgement, then calls forceCompleteRunWithPendingCredentials.
  */
 export function PendingCredentialsWarningDialog({
   open,

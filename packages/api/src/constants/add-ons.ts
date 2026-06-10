@@ -1,4 +1,4 @@
-// Add-on entitlement keys — single source of truth (FOUND7-01, D-01).
+// Add-on entitlement keys — single source of truth.
 //
 // Shared by the requireAddOn middleware, the grantAddOn mutation input
 // (z.enum(ADD_ON_KEYS)), and the dev seed. Lowercase wire keys (no Prisma enum):

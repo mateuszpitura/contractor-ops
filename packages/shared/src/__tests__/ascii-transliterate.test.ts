@@ -76,7 +76,7 @@ describe('transliterateToBacs', () => {
     });
 
     it('preserves all 14 BACS-allowed punctuation characters unchanged', () => {
-      // BACS allowed punctuation per D-05: - . ' / & ( ) + , : ; ? = " @
+      // BACS Standard 18 allowed punctuation: - . ' / & ( ) + , : ; ? = " @
       expect(transliterateToBacs('-.\'/+&():;?="@,')).toEqual({
         output: '-.\'/+&():;?="@,',
         replaced: [],

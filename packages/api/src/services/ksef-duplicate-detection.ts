@@ -2,7 +2,7 @@ import type { DbClient } from './types';
 
 // ---------------------------------------------------------------------------
 // Cross-Source Duplicate Detection
-// Per D-11: Uses invoiceNumber + sellerTaxId as the cross-source business key
+// Uses invoiceNumber + sellerTaxId as the cross-source business key
 // ---------------------------------------------------------------------------
 
 /**
@@ -50,7 +50,7 @@ export async function checkCrossSourceDuplicate(
 
 // ---------------------------------------------------------------------------
 // Duplicate Linking
-// Per D-12: Flag both invoices bidirectionally in flagsJson
+// Flags both invoices bidirectionally in flagsJson
 // ---------------------------------------------------------------------------
 
 /**

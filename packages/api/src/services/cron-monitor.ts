@@ -13,8 +13,7 @@ import { getServerEnv } from '@contractor-ops/validators';
  *
  * If CRONITOR_API_KEY is not set, all pings are silently skipped (dev-friendly).
  *
- * Beyond Cronitor heartbeats this module exposes two metric-emit primitives
- * (S3-5 · F-ASYNC-17):
+ * Beyond Cronitor heartbeats this module exposes two metric-emit primitives:
  *   - `recordJobDuration(jobName, durationMs, opts)` — distribution metric
  *     for histogram-style "how long is each tick taking" charts.
  *   - `recordQueueDepth(queue, depth, opts)` — gauge for "how many items
@@ -37,11 +36,11 @@ export const CronMonitors = {
   TOKEN_REFRESH: 'token-refresh',
   TRIAL_NOTIFICATIONS: 'trial-notifications',
   JOB_HEALTH: 'job-health',
-  // Phase 60 · CLASS-07 — daily economic-dependency scan (§2 SGB VI early warning).
+  // Daily economic-dependency scan (§2 SGB VI early warning).
   CLASSIFICATION_ECONOMIC_DEPENDENCY: 'classification-economic-dependency',
-  // Phase 60 · CLASS-08 — daily IR35 reassessment trigger scan (audit-log driven).
+  // Daily IR35 reassessment trigger scan (audit-log driven).
   CLASSIFICATION_REASSESSMENT_TRIGGERS: 'classification-reassessment-triggers',
-  // Phase 63 · Plan 03 — daily Bank of England base rate polling (LPCDA §4(1)).
+  // Daily Bank of England base rate polling (LPCDA §4(1)).
   BOE_RATE_POLL: 'boe-rate-poll',
   LATE_INTEREST_PDF_REAPER: 'late-interest-pdf-reaper',
   // GDPR-driven nightly purge of OAuth challenge records and expired pending uploads.
@@ -102,9 +101,8 @@ export async function withCronMonitor<T>(
   try {
     const result = await fn();
     const durationMs = Math.round(performance.now() - start);
-    // S3-5 · F-ASYNC-17: emit a duration metric next to the heartbeat so
-    // ops dashboards can chart per-job histogram without depending on
-    // Cronitor's external UI.
+    // Emit a duration metric next to the heartbeat so ops dashboards can
+    // chart per-job histogram without depending on Cronitor's external UI.
     recordJobDuration(monitorKey, durationMs, { outcome: 'ok' });
     const message =
       typeof result === 'object' && result !== null ? JSON.stringify(result) : String(result);
@@ -120,23 +118,20 @@ export async function withCronMonitor<T>(
 }
 
 // ---------------------------------------------------------------------------
-// Job duration / queue-depth metrics — S3-5 · F-ASYNC-17
+// Job duration / queue-depth metrics
 // ---------------------------------------------------------------------------
 //
-// Pre-fix (audit findings 04-async.md F-ASYNC-17):
-//   - Cron jobs only fired Cronitor heartbeats — no per-job duration
-//     histogram visible in Sentry/Axiom.
-//   - QStash consumer routes (_process / _sync / inbound / outbound /
-//     poll / _drain / _render-claim-pdf) emitted no timing metric at all.
-//   - Job-health route counted webhook PENDING but no other queues
-//     (outbox, peppol participants, ksef sync, ocr backlog).
+// Two metric primitives that any consumer can call:
+//   - `recordJobDuration(jobName, durationMs, opts)` — distribution metric
+//     for histogram-style "how long is each tick taking" charts.
+//   - `recordQueueDepth(queue, depth, opts)` — gauge for "how many items
+//     are waiting" (outbox pending, webhook RECEIVED, peppol participants
+//     to scan, etc.).
 //
-// Post-fix:
-//   - Two metric primitives that any consumer can call.
-//   - One `withQueueObservability(jobName, fn)` wrapper for QStash
-//     consumer routes that auto-emits duration + outcome counter.
-//   - Producers (e.g. outbox drain) emit `recordQueueDepth` against the
-//     pending count BEFORE dispatch so dashboards see queue lag.
+// Plus `withQueueObservability(jobName, fn)` for QStash consumer routes
+// that auto-emits duration + outcome counter. Producers (e.g. outbox drain)
+// emit `recordQueueDepth` against the pending count BEFORE dispatch so
+// dashboards see queue lag.
 //
 // These all funnel through `@contractor-ops/logger/metrics`, which
 // publishes both Sentry span attributes and structured Pino log lines so
@@ -234,7 +229,7 @@ export async function withQueueObservability<T>(jobName: string, fn: () => Promi
 }
 
 // ---------------------------------------------------------------------------
-// Backpressure queue-depth reader — S3-4 · F-SCALE-19
+// Backpressure queue-depth reader
 // ---------------------------------------------------------------------------
 //
 // `qstash-backpressure.ts` owns the per-route Redis semaphore counters.

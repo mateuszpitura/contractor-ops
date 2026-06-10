@@ -161,7 +161,7 @@ export const readyForPaymentListSchema = z.object({
 export type ReadyForPaymentList = z.infer<typeof readyForPaymentListSchema>;
 
 /**
- * Remove an invoice from a DRAFT payment run (per D-04).
+ * Remove an invoice from a DRAFT payment run.
  */
 export const removeFromRunSchema = z.object({
   runId: z.cuid(),

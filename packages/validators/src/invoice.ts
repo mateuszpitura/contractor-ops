@@ -42,7 +42,7 @@ export const invoiceFileRoleEnum = z.enum([
  * Schema for creating a new invoice.
  * Covers invoice metadata, financial fields, seller info, and linked documents.
  */
-// Phase 57 · Plan 04 — §13b UStG service-type enum exported for schema reuse.
+// §13b UStG service-type enum exported for schema reuse.
 // Values mirror `DE13bServiceType` in packages/api/src/services/reverse-charge.service.ts
 // (cannot import from @contractor-ops/api: API depends on validators, not vice versa).
 export const de13bServiceTypeEnum = z.enum([
@@ -70,18 +70,18 @@ const invoiceCreateBaseSchema = z.object({
   withholdingMinor: z.number().int().min(0).optional(),
   isReverseCharge: z.boolean().optional().default(false),
   reverseChargeOverride: z.boolean().optional(),
-  // Phase 57 · Plan 04 — required free-text justification when the user
-  // disables an auto-detected reverse-charge flag (D-13).
+  // Required free-text justification when the user disables an auto-detected
+  // reverse-charge flag.
   reverseChargeOverrideReason: z.string().min(5).max(500).optional(),
-  // Phase 57 · Plan 04 — §13b UStG service classification used by the
-  // reverse-charge auto-detector for DE→DE domestic rule (D-12.3).
+  // §13b UStG service classification used by the reverse-charge auto-detector
+  // for DE→DE domestic rule.
   serviceType: de13bServiceTypeEnum.optional(),
   amountToPayMinor: z.number().int().min(0),
   sellerTaxId: z.string().max(50).optional(),
   sellerName: z.string().max(500).optional(),
   sellerBankAccount: z.string().max(34).optional(),
-  // Phase 57 · Plan 04 — contractorId used to resolve the seller jurisdiction
-  // + VAT ID for reverse-charge auto-detection and staleness revalidation.
+  // contractorId used to resolve the seller jurisdiction + VAT ID for
+  // reverse-charge auto-detection and staleness revalidation.
   // Optional: manual-upload flows without a contractor match still succeed.
   contractorId: z.string().optional(),
   documentIds: z.array(z.string()).min(1, 'At least one document is required'),
@@ -122,7 +122,7 @@ export const invoiceCreateSchema = invoiceCreateBaseSchema
     message: 'INVOICE_AMOUNT_MISMATCH',
     path: ['amountToPayMinor'],
   })
-  // Phase 57 · Plan 04 — D-13: disabling auto-detected RC requires a reason.
+  // Disabling auto-detected reverse charge requires a reason.
   // Only enforced when `reverseChargeOverride === false` (i.e. user explicitly
   // turned RC off). `undefined` means no override at all — pipeline auto-detects.
   .refine(

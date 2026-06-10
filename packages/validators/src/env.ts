@@ -24,17 +24,16 @@ const databaseSchema = z.object({
   DATABASE_URL: z.string().min(1, 'DATABASE_URL is required'),
   DATABASE_URL_EU: z.string().min(1, 'DATABASE_URL_EU is required'),
   DATABASE_URL_ME: z.string().min(1, 'DATABASE_URL_ME is required'),
-  // F-SCALE-06 — optional per-region read-replica URLs. When set, the read
-  // replica is used by call sites that opt into `readReplica(region, fn)`
-  // (e.g. `dashboard.kpis`); otherwise reads go to the writer transparently.
-  // Leaving these unset is the default for local dev — production should set
-  // them once per region's Neon read-replica is provisioned.
+  // Optional per-region read-replica URLs. When set, the read replica is used
+  // by call sites that opt into `readReplica(region, fn)` (e.g. `dashboard.kpis`);
+  // otherwise reads go to the writer transparently. Leaving these unset is the
+  // default for local dev — production should set them once per region's
+  // Neon read-replica is provisioned.
   DATABASE_URL_EU_RO: z.string().min(1).optional(),
   DATABASE_URL_ME_RO: z.string().min(1).optional(),
-  // FOUND7-03 — US region (us-east-1). OPTIONAL by design (D-06): the app boots
-  // clean locally with no US DB. `getRegionalClient('US')` lazy-throws only on
-  // actual access. The US read-replica is deferred (US-INFRA-01), so its `_RO`
-  // var is optional too.
+  // US region (us-east-1). OPTIONAL by design: the app boots clean locally with
+  // no US DB. `getRegionalClient('US')` lazy-throws only on actual access. The
+  // US read-replica is deferred, so its `_RO` var is optional too.
   DATABASE_URL_US: z.string().min(1).optional(),
   DATABASE_URL_US_RO: z.string().min(1).optional(),
 });
@@ -86,9 +85,9 @@ const r2Schema = z.object({
   R2_BUCKET_NAME: z.string().optional(),
   R2_BUCKET_NAME_EU: z.string().default('contractor-ops-documents-eu'),
   R2_BUCKET_NAME_ME: z.string().default('contractor-ops-documents-me'),
-  // US-INFRA-02 — US region bucket. OPTIONAL (no default): the app boots clean
-  // locally with no US bucket; `getRegionalBucket('US')` lazy-throws only on
-  // actual US-org file access (mirrors DATABASE_URL_US, D-03).
+  // US region bucket. OPTIONAL (no default): the app boots clean locally with
+  // no US bucket; `getRegionalBucket('US')` lazy-throws only on actual US-org
+  // file access (mirrors DATABASE_URL_US behaviour).
   R2_BUCKET_NAME_US: z.string().min(1).optional(),
   R2_PUBLIC_URL: optionalUrl,
   // Optional S3-compatible endpoint override. Unset → Cloudflare R2
@@ -184,12 +183,12 @@ const bankEncryptionSchema = z.object({
   BANK_ACCOUNT_ENCRYPTION_KEY: hex32,
 });
 
-// ── SSN Encryption + USPS (Phase 84 — US-FIELD-02 / US-FIELD-03) ───────────
+// ── SSN Encryption + USPS ───────────────────────────────────────────────────
 // SSN_ENCRYPTION_KEY is a dedicated hex-32 key, separate from the bank key, so
-// the two secrets have independent blast radius (D-01). Required-in-schema so an
-// unset key fails loud at boot — the SSN write path never silently stores
-// plaintext (T-84-01-02). USPS credentials are optional: LOCAL-ONLY has no live
-// creds and the USPS address client fails-open (unverified flag) when absent.
+// the two secrets have independent blast radius. Required-in-schema so an unset
+// key fails loud at boot — the SSN write path never silently stores plaintext.
+// USPS credentials are optional: LOCAL-ONLY has no live creds and the USPS
+// address client fails-open (unverified flag) when absent.
 
 const usFieldsSchema = z.object({
   SSN_ENCRYPTION_KEY: hex32,
@@ -197,7 +196,7 @@ const usFieldsSchema = z.object({
   USPS_CLIENT_SECRET: z.string().optional(),
 });
 
-// ── Cloudflare Turnstile (signup bot protection — F-SEC-22) ────────────────
+// ── Cloudflare Turnstile (signup bot protection) ───────────────────────────
 // Optional in development so contributors don't need a Cloudflare app to run
 // the app locally; the signup `before` hook short-circuits the verification
 // when both vars are unset (and logs a Sentry warning if NODE_ENV=production).
@@ -207,7 +206,7 @@ const turnstileSchema = z.object({
   TURNSTILE_SECRET_KEY: z.string().min(1).optional(),
 });
 
-// ── Trusted reverse proxy CIDRs (F-SEC-17) ─────────────────────────────────
+// ── Trusted reverse proxy CIDRs ─────────────────────────────────────────────
 // Comma-separated list of CIDR ranges or proxy-addr keywords (loopback,
 // linklocal, uniquelocal). Used by `proxy-addr` to walk the X-Forwarded-For
 // chain right-to-left, terminating at the first untrusted hop. Document the
@@ -248,7 +247,7 @@ const portalSchema = z.object({
 // Used to gate access to `/admin/*` cross-tenant operator surfaces (e.g. BoE
 // base-rate management, classification-engine flag overview). Optional in
 // development; production deployments MUST set this so the admin shell rejects
-// arbitrary org owners (F-SEC-04).
+// arbitrary org owners.
 const platformOperatorSchema = z.object({
   // Org IDs in this schema are generated with Prisma `@default(cuid())`, not
   // UUID. Accept any non-empty string (CUID, UUID, or other) so the gate works

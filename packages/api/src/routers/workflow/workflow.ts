@@ -28,9 +28,9 @@ export {
 // Merged workflow router
 // ---------------------------------------------------------------------------
 
-// Phase 75 D-10 — `workflow.credentialReference.*` namespace (NOT flattened into
-// the merged procedure map). mergeRouters flattens; wrapping the credential
-// router in `router({ credentialReference })` keeps it a nested namespace.
+// `workflow.credentialReference.*` namespace (NOT flattened into the merged
+// procedure map). mergeRouters flattens; wrapping the credential router in
+// `router({ credentialReference })` keeps it a nested namespace.
 export const workflowRouter = mergeRouters(
   workflowTemplatesRouter,
   workflowExecutionRouter,

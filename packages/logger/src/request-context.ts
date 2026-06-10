@@ -1,12 +1,11 @@
 /**
  * Per-request context stored in Node's native AsyncLocalStorage.
  *
- * Phase 2 / Unit P2-E (F-OBS-02). Seeds a context frame at procedure / route
- * entry and exposes `requestId` + W3C `traceparent` to every nested call —
- * including module-scoped Pino loggers that previously had no per-request
- * binding (audit ref `05-observability.md` §F-OBS-02).
+ * Seeds a context frame at procedure / route entry and exposes `requestId` +
+ * W3C `traceparent` to every nested call — including module-scoped Pino
+ * loggers that previously had no per-request binding.
  *
- * Decisions (locked in NEXT-PHASE-PLAN.md / MARKET-SCAN.md §P2-E):
+ * Decisions:
  *
  * - Native `node:async_hooks` (no `cls-hooked`). Works in Next.js / Node 20+ /
  *   the QStash consumer routes; well-trodden production pattern.

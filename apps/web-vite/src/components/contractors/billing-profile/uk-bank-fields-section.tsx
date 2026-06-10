@@ -1,4 +1,4 @@
-// Phase 63 · Plan 04 · D-01 — Collapsible UK bank fields section.
+// Collapsible UK bank fields section.
 
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import {

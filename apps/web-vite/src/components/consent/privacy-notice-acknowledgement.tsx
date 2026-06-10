@@ -1,5 +1,5 @@
 /**
- * UK / DE / PDPL privacy-notice acknowledgement gate (Phase 56 · Plan 08, D-10).
+ * UK / DE / PDPL privacy-notice acknowledgement gate.
  *
  * The `t.rich('label', { link })` pattern is replaced by react-i18next's
  * `<Trans>` component, which resolves `<link>...</link>` markup in the

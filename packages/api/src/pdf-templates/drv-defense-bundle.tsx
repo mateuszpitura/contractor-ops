@@ -1,4 +1,4 @@
-// Phase 59 · Plan 04 Task 1 — DRV Defensivdokumentation React-PDF template (CLASS-06).
+// DRV Defensivdokumentation React-PDF template.
 //
 // 4-section consolidated audit defense bundle for the Deutsche Rentenversicherung:
 //   1. Engagement structure (two-column key/value block)

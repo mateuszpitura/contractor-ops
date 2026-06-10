@@ -1,8 +1,8 @@
 /**
- * Phase 77 D-15 — sole tRPC boundary for the per-provider IdP-deprovisioning
- * enable table. Reads org settings + per-provider signoff/connection state and
- * drives the enableProviderForOrg mutation. A provider row is only enableable
- * when its signoff flag is APPROVED; GWS and Slack toggle independently.
+ * Sole tRPC boundary for the per-provider IdP-deprovisioning enable table.
+ * Reads org settings + per-provider signoff/connection state and drives the
+ * enableProviderForOrg mutation. A provider row is only enableable when its
+ * signoff flag is APPROVED; GWS and Slack toggle independently.
  */
 
 import { useQuery } from '@tanstack/react-query';
@@ -11,9 +11,8 @@ import { useResourceMutation } from '../../../hooks/use-resource-mutation.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { useTRPC } from '../../../providers/trpc-provider.js';
 
-// Phase 78 D-12 — widened to the five Deprovisionable providers. The server's
-// getProviderToggleState now returns ENTRA/OKTA/GITHUB alongside GWS/Slack; the
-// full per-provider UI (labels, cards) is built in 78-07.
+// Widened to the five Deprovisionable providers. The server's
+// getProviderToggleState now returns ENTRA/OKTA/GITHUB alongside GWS/Slack.
 export type ToggleProvider = 'GOOGLE_WORKSPACE' | 'SLACK' | 'ENTRA' | 'OKTA' | 'GITHUB';
 
 export interface ProviderToggleRow {

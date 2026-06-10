@@ -1,6 +1,6 @@
 // ---------------------------------------------------------------------------
 // Adaptive Card: Approval Result
-// Per D-05, D-06: Shows the outcome of an approval decision
+// Shows the outcome of an approval decision
 // ---------------------------------------------------------------------------
 
 export interface ApprovalResultCardParams {

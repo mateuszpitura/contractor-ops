@@ -1,8 +1,8 @@
 /**
  * Pure-function export generators for payment run files.
  * Supports CSV (via xlsx), Polish Elixir flat file, SEPA XML pain.001.001.03,
- * SWIFT XML pain.001.001.09 (Phase 46), and BACS Standard 18 Direct Credit
- * (Phase 63 — UK GBP transfers).
+ * SWIFT XML pain.001.001.09, and BACS Standard 18 Direct Credit
+ * (UK GBP transfers).
  */
 
 import { createLogger } from '@contractor-ops/logger';
@@ -27,7 +27,7 @@ export type ExportItem = {
   swiftBic: string | null;
   dueDate: Date;
   transferTitle: string;
-  // SWIFT-specific (added in Phase 46)
+  // SWIFT-specific fields (used for international transfers)
   serviceCategory?: string;
   purposeCodeOverride?: string;
   creditorCountry?: string;
@@ -93,7 +93,7 @@ export function formatMultiline(s: string, maxLines: number, lineWidth: number):
 
 /**
  * Convert a minor-unit integer to a decimal string using ISO 4217 exponent.
- * Delegates to Dinero.js for currency-aware precision (per D-02).
+ * Delegates to Dinero.js for currency-aware precision.
  */
 function minorToDecimal(minor: number, currency: string = 'PLN'): string {
   return minorToDecimalStr(minor, currency);
@@ -294,13 +294,13 @@ ${transactions}
 }
 
 // ---------------------------------------------------------------------------
-// SWIFT XML pain.001.001.09 Export (Phase 46)
+// SWIFT XML pain.001.001.09 Export
 // ---------------------------------------------------------------------------
 
 /**
  * Generate a SWIFT XML pain.001.001.09 credit transfer initiation document.
  * Used for international (non-SEPA) transfers — AED, SAR, GBP, and other non-EUR currencies.
- * Per D-03: sits alongside generateSepaXml, format chosen by payment run.
+ * Sits alongside generateSepaXml; format is chosen by the payment run.
  */
 export function generateSwiftXml(items: ExportItem[], org: OrgBankInfo, runNumber: string): Buffer {
   const msgId = runNumber.replace(/[^a-zA-Z0-9-]/g, '').substring(0, 35);
@@ -386,7 +386,7 @@ function stripCountryPrefix(iban: string): string {
 }
 
 // ---------------------------------------------------------------------------
-// BACS Standard 18 Direct Credit (Phase 63 — PAY-01)
+// BACS Standard 18 Direct Credit
 // ---------------------------------------------------------------------------
 
 /**
@@ -409,7 +409,7 @@ export interface BacsExportItem {
 
 /**
  * Submitter (originator) bank details for the BACS file. Configured per
- * organization on the `Settings -> Payments` admin page (D-02).
+ * organization on the `Settings -> Payments` admin page.
  */
 export interface BacsOrgBankInfo {
   /** Service User Number — 6-digit identifier issued by Bacs to the submitting org. */
@@ -426,7 +426,7 @@ export interface BacsOrgBankInfo {
  * Result of {@link generateBacsStandard18}.
  *
  * `transliterationWarnings` and `modulusWarnings` are aggregated for UI
- * display BEFORE the file is downloaded. Per D-01, modulus-invalid entries
+ * display BEFORE the file is downloaded. Modulus-invalid entries
  * warn but do not block (some exception-category sort codes are known-invalid
  * per the VocaLink spec). Per the threat model, the UI MUST block download
  * when any `replaced` entries are present.
@@ -490,7 +490,7 @@ function bacsField(raw: string, len: number): { field: string; replaced: string[
 /**
  * Generate a BACS Standard 18 Direct Credit fixed-width file.
  *
- * File layout (per D-03 + Pay.UK Standard 18 spec):
+ * File layout (per Pay.UK Standard 18 spec):
  *
  *   VOL1<76 spaces>                      80
  *   HDR1A<SUN><...>                      80

@@ -1,7 +1,7 @@
 /**
- * Phase 77 D-15 — IdpDeprovisioningToggleTableView presentational tests. The per-row
- * switch is disabled when the provider flag is not APPROVED; GWS and Slack rows
- * are independent.
+ * IdpDeprovisioningToggleTableView presentational tests. The per-row switch is
+ * disabled when the provider flag is not APPROVED; GWS and Slack rows are
+ * independent.
  */
 
 import { describe, expect, it, vi } from 'vitest';

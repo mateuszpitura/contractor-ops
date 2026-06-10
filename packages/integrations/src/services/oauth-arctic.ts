@@ -3,8 +3,7 @@
  * for NEW OAuth providers; do NOT migrate the existing 7+ flows
  * (Slack/Jira/Linear/Notion/Google/Outlook/Confluence/Clockify) — they
  * already work and the layered HMAC + DB-challenge defense from oauth-state.ts
- * + services/oauth-challenge.ts in @contractor-ops/api is sufficient
- * (F-SEC-05 + F-SEC-21).
+ * + services/oauth-challenge.ts in @contractor-ops/api is sufficient.
  *
  * Why arctic at all?
  *   - Pre-typed provider configs save real time when adding e.g. HubSpot,
@@ -20,7 +19,7 @@
  *   const slack = new Slack(env.SLACK_CLIENT_ID, env.SLACK_CLIENT_SECRET, redirectUri);
  *   const state = generateState();
  *   // Layer the OAuthChallenge insert + __Host-oauth_state cookie ON TOP of
- *   // arctic's `state` (closes F-SEC-05 + F-SEC-21).
+ *   // arctic's `state` for CSRF protection.
  *   const url = slack.createAuthorizationURL(state, ['users:read']);
  *
  *   // On callback:

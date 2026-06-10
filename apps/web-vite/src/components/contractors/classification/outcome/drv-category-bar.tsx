@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------
-// DRV per-category horizontal bar — Phase 58 Plan 05 Task 1.
+// DRV per-category horizontal bar
 // ---------------------------------------------------------------------------
 // Horizontal bar with weighted-score fill, threshold markers at 30% and 60%
 // of the max weighted score, and an expandable criterion breakdown.

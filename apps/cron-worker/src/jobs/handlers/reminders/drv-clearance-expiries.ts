@@ -1,12 +1,11 @@
 /**
- * DRV § 7a SGB IV clearance expiry detector — Phase 60 · CLASS-09.
+ * DRV § 7a SGB IV clearance expiry detector.
  *
  * Piggybacks on the reminders cron (NOT a separate cron). Fires
  * notifications 90 / 30 / 7 days before `validTo` on Statusfeststellungs-
  * verfahren rows with `outcome ∈ {SELBSTANDIG, ABHANGIG}`. Day-exact
  * match on `(gte target, lt target+1)` avoids timezone drift. One-shot
- * dedup keyed on `(type, entityType=CONTRACTOR, entityId=clearance.id)`
- * per T-60-12.
+ * dedup keyed on `(type, entityType=CONTRACTOR, entityId=clearance.id)`.
  */
 
 import { dispatch } from '@contractor-ops/api/services/notification-service';

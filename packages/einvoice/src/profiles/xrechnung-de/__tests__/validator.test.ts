@@ -1,7 +1,6 @@
 // packages/einvoice/src/profiles/xrechnung-de/__tests__/validator.test.ts
 //
-// Phase 61 · Plan 61-03 Task 2 — KoSIT three-layer validator integration
-// tests. Replaces the Plan-01 RED scaffold (describe.todo).
+// KoSIT three-layer validator integration tests.
 //
 // Each fixture round-trips through libxmljs2 (XSD) + saxon-js EN16931 SEF +
 // saxon-js XRechnung CIUS SEF. Per-layer outcomes are documented in

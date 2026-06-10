@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------
-// Phase 60 · CLASS-07 — resolveRbacRecipients tests.
+// resolveRbacRecipients tests.
 // ---------------------------------------------------------------------------
 //
 // Verifies that the rbac-recipients helper:

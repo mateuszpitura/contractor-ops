@@ -1,4 +1,4 @@
-// Phase 72 Wave 2 — GREEN tests for payment-gate-guard.
+// GREEN tests for payment-gate-guard.
 
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
@@ -27,7 +27,6 @@ describe('payment-gate-guard', () => {
 
   it('passes (zero offences for create) once payment.create wires the helper in the real router', () => {
     const offences = runPaymentGateGuard({ paymentRouterPath: REAL_PAYMENT_ROUTER });
-    // Plan 72-04 wires payment.create; payment.lockAndExport is wired in Plan 72-06.
     expect(offences.map(o => o.procedure)).not.toContain('payment.create');
   });
 });

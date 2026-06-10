@@ -1,7 +1,6 @@
-// Phase 73 · Plan 07 — portal upload-replacement form + home banner tests (COMPL-04).
-// Evolved from the Wave 0 scaffold. The DropZone is stubbed to a file input so
-// the form test focuses on auto-fill + submit; the banner test mocks the portal
-// compliance hook to drive the attention-items branch.
+// Portal upload-replacement form + home banner tests. The DropZone is stubbed
+// to a file input so the form test focuses on auto-fill + submit; the banner
+// test mocks the portal compliance hook to drive the attention-items branch.
 
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 

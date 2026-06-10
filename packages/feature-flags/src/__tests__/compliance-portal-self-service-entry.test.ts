@@ -1,4 +1,4 @@
-// Phase 73 · Plan 08 — F1 portal self-service feature-flag signoff entry (COMPL-04).
+// Verifies the compliance-portal-self-service signoff-registry entry.
 
 import { describe, expect, it } from 'vitest';
 import rawRegistry from '../signoff-registry-flags.json' with { type: 'json' };

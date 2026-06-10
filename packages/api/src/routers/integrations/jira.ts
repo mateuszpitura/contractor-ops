@@ -129,7 +129,7 @@ export const jiraRouter = router({
 
       if (!connection) return null;
 
-      // Detect whether stored scopes need expansion (Phase 18 -> 19 upgrade)
+      // Detect whether stored scopes need expansion (scope upgrade)
       let scopeExpansionNeeded = false;
       if (connection.credentialsRef) {
         try {
@@ -269,9 +269,9 @@ export const jiraRouter = router({
       z.object({
         entityType: z.enum(['WORKFLOW_TASK_RUN', 'WORKFLOW_RUN']),
         entityId: z.string(),
-        // F-DB-09: bound the result set. WORKFLOW_RUN aggregates over all task
-        // runs; without a cap, a long-running workflow with many tasks loads
-        // every external link in one request.
+        // Bound the result set. WORKFLOW_RUN aggregates over all task runs;
+        // without a cap, a long-running workflow with many tasks loads every
+        // external link in one request.
         take: z.number().int().min(1).max(200).default(50),
         cursor: z.string().optional(),
       }),
@@ -514,8 +514,8 @@ export const jiraRouter = router({
         data: { status: 'DISCONNECTED' },
       });
 
-      // F-OBS-05 — disconnecting Jira tears down OAuth grant and webhook
-      // sync; admins must be able to retrace.
+      // Disconnecting Jira tears down the OAuth grant and webhook sync;
+      // admins must be able to retrace.
       await writeAuditLog({
         organizationId: ctx.organizationId,
         actorType: 'USER',

@@ -8,26 +8,25 @@ import type { Context } from '../context';
 // PII-sensitive procedure prefixes — never log input/output bodies for these
 // ---------------------------------------------------------------------------
 //
-// Phase 58 (Plan 03) / T-58-PII / ASVS V8: classification answers are PII
-// (hours worked, billing ratio, free-text rationales describing the working
-// relationship). Audit / metric entries still record procedure path, userId,
-// organizationId, duration and outcome code, but the `input` and `result`
-// bodies MUST NOT be logged. This constant is grep-asserted by the plan's
-// acceptance criteria — do not rename without updating CLASS-11 tests.
+// Classification answers are PII (hours worked, billing ratio, free-text
+// rationales describing the working relationship). Audit / metric entries
+// still record procedure path, userId, organizationId, duration and outcome
+// code, but the `input` and `result` bodies MUST NOT be logged. Do not rename
+// this constant without updating the corresponding coverage tests.
 export const LOG_BODY_EXCLUDE_PREFIXES: readonly string[] = ['classification.'];
 
 /**
  * Returns true when the given tRPC procedure path should NEVER have its
  * input/output body captured by the logger / metrics layer. Prefix match
  * keeps us forward-compatible with new `classification.*` procedures added
- * by downstream phases (e.g. Phase 59 document chain-tracking).
+ * in the future.
  */
 export function isBodyLoggingExcluded(procedurePath: string): boolean {
   return LOG_BODY_EXCLUDE_PREFIXES.some(prefix => procedurePath.startsWith(prefix));
 }
 
 // ---------------------------------------------------------------------------
-// F-SCALE-16 — bounded `procedure` label cardinality on metrics
+// Bounded `procedure` label cardinality on metrics
 // ---------------------------------------------------------------------------
 //
 // `metrics.distribution('trpc.duration', …, { tags: { procedure: path } })`
@@ -90,10 +89,10 @@ export function __resetProcedureLabelsForTests(): void {
 export const observabilityMiddleware: AnyMiddlewareFunction = async opts => {
   const { path, type, ctx, next } = opts;
   const start = performance.now();
-  // P2-E F-OBS-02: requestId is now seeded into AsyncLocalStorage so that
-  // module-scoped child loggers in routers / services automatically carry it
-  // on every log line via the Pino mixin in @contractor-ops/logger. Use the
-  // shared generator (UUID v7 when supported) instead of a raw v4.
+  // requestId is seeded into AsyncLocalStorage so that module-scoped child
+  // loggers in routers / services automatically carry it on every log line
+  // via the Pino mixin in @contractor-ops/logger. Use the shared generator
+  // (UUID v7 when supported) instead of a raw v4.
   const requestId = generateRequestId();
 
   const context = ctx as Context;
@@ -122,12 +121,12 @@ export const observabilityMiddleware: AnyMiddlewareFunction = async opts => {
         },
       },
       async span => {
-        // F-OBS-14: attach user + org to the current Sentry isolation scope
-        // so the dashboard's "users affected" and per-org filter both work.
-        // Span attributes alone do not power those Sentry features. The
-        // tRPC plugin (apps/api/src/plugins/trpc.ts) wraps each request
-        // with `withIsolationScope`, so these scope mutations do not leak
-        // into other concurrent requests.
+        // Attach user + org to the current Sentry isolation scope so the
+        // dashboard's "users affected" and per-org filter both work. Span
+        // attributes alone do not power those Sentry features. The tRPC
+        // plugin (apps/api/src/plugins/trpc.ts) wraps each request with
+        // `withIsolationScope`, so these scope mutations do not leak into
+        // other concurrent requests.
         const scope = Sentry.getCurrentScope();
         if (userId) {
           scope.setUser({ id: userId });
@@ -147,9 +146,9 @@ export const observabilityMiddleware: AnyMiddlewareFunction = async opts => {
 
           log.info({ durationMs }, 'procedure completed');
 
-          // Custom metrics — `procedure` tag goes through the F-SCALE-16
-          // bucket so cardinality stays bounded even if a future router
-          // accidentally embeds a per-request id in the path.
+          // Custom metrics — `procedure` tag goes through the cardinality
+          // bucket so it stays bounded even if a future router accidentally
+          // embeds a per-request id in the path.
           const procedureLabel = bucketedProcedureLabel(path);
           metrics.distribution('trpc.duration', durationMs, {
             unit: 'millisecond',
@@ -177,9 +176,9 @@ export const observabilityMiddleware: AnyMiddlewareFunction = async opts => {
             extra: { requestId, userId, organizationId },
           });
 
-          // F-SCALE-16: same bucketing on the error path so the
-          // `_other` bucket aggregates both ok and error counts when the
-          // cap is hit, rather than silently dropping the procedure tag.
+          // Same bucketing on the error path so the `_other` bucket
+          // aggregates both ok and error counts when the cap is hit,
+          // rather than silently dropping the procedure tag.
           const errorProcedureLabel = bucketedProcedureLabel(path);
           metrics.increment('trpc.calls', 1, {
             procedure: errorProcedureLabel,

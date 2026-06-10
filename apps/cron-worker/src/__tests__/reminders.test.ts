@@ -5,7 +5,7 @@
  * `evaluateReminderRules`, `detectOverdueTasks`, `detectDrvClearanceExpiries`.
  *
  * Coverage:
- *   1. Advisory lock not acquired → ok=true + skipped (F-ASYNC-06).
+ *   1. Advisory lock not acquired → ok=true + skipped.
  *   2. Lock acquired, nothing pending → ok=true + all counters 0.
  *   3. Transaction throws → ok=false + Sentry capture.
  */

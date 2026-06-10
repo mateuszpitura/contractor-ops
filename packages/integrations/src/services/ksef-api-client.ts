@@ -21,18 +21,17 @@ export interface KsefSession {
 const KSEF_PER_REQUEST_TIMEOUT_MS = 30_000;
 
 /**
- * Total wall-clock budget for `authenticate()` polling — F-INT-03 / F-INT-20.
- * Old code: 30 attempts × (network timeout + 1s) — could exceed an hour with
- * Node default 75s connect timeout. New: 90 seconds total, after which we
- * surface the error instead of stacking inside an outer cron handler that
- * has already returned to its scheduler.
+ * Total wall-clock budget for `authenticate()` polling. Old code: 30 attempts
+ * × (network timeout + 1s) — could exceed an hour with Node default 75s
+ * connect timeout. New: 90 seconds total, after which we surface the error
+ * instead of stacking inside an outer cron handler that has already returned
+ * to its scheduler.
  */
 const AUTH_POLL_WALL_CLOCK_MS = 90_000;
 
 /**
- * Total wall-clock budget for `queryInvoices()` polling — F-INT-03 / F-INT-20.
- * KSeF invoice queries can legitimately take 1–2 minutes for large date
- * ranges; cap at 180s.
+ * Total wall-clock budget for `queryInvoices()` polling. KSeF invoice queries
+ * can legitimately take 1–2 minutes for large date ranges; cap at 180s.
  */
 const QUERY_POLL_WALL_CLOCK_MS = 180_000;
 
@@ -92,9 +91,9 @@ export class KsefApiClient {
   /**
    * Authenticate with KSeF.
    *
-   * F-INT-20: accepts an optional `signal` so callers (typically a tRPC
-   * mutation or QStash consumer) can propagate request-scoped cancellation.
-   * If no signal is provided we still bound the full wall-clock with
+   * Accepts an optional `signal` so callers (typically a tRPC mutation or
+   * QStash consumer) can propagate request-scoped cancellation. If no signal
+   * is provided we still bound the full wall-clock with
    * `AUTH_POLL_WALL_CLOCK_MS` to prevent the polling loop from outliving
    * the caller's deadline.
    */
@@ -275,9 +274,9 @@ export class KsefApiClient {
   ): Promise<KsefQueryResult> {
     this.requireSession();
 
-    // F-INT-20: bound the polling wall-clock — without it, the loop can
-    // legitimately run for >2min on a hung KSeF endpoint and pin a Render
-    // request handler past the platform timeout.
+    // Bound the polling wall-clock — without it, the loop can legitimately
+    // run for >2min on a hung KSeF endpoint and pin a Render request handler
+    // past the platform timeout.
     const wallClockController = new AbortController();
     const wallClockTimer = setTimeout(
       () => wallClockController.abort(new Error('KSeF queryInvoices: wall-clock exceeded')),
@@ -440,7 +439,7 @@ export class KsefApiClient {
   /**
    * Verifies KSeF credentials by attempting authentication.
    * Returns true if credentials are valid, false otherwise.
-   * Used for D-04 credential verification in connection setup.
+   * Used for credential verification in connection setup.
    */
   async verifyCredentials(token: string, nip: string): Promise<boolean> {
     try {
@@ -533,10 +532,10 @@ export class KsefApiClient {
    * Execute a single fetch attempt: returns the response or decides to retry/throw.
    * Returns `null` when the caller should continue to the next attempt.
    *
-   * F-INT-03: per-attempt wall-clock bound via `fetchWithTimeout`. Combined
-   * with the polling loop's outer signal, a single hung KSeF call cannot
-   * outlast `KSEF_PER_REQUEST_TIMEOUT_MS`, and the polling loop itself
-   * cannot outlast its `*_POLL_WALL_CLOCK_MS` budget.
+   * Per-attempt wall-clock bound via `fetchWithTimeout`. Combined with the
+   * polling loop's outer signal, a single hung KSeF call cannot outlast
+   * `KSEF_PER_REQUEST_TIMEOUT_MS`, and the polling loop itself cannot
+   * outlast its `*_POLL_WALL_CLOCK_MS` budget.
    */
   private async attemptFetch(
     url: string,

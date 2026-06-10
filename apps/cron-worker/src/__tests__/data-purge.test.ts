@@ -27,7 +27,7 @@ const {
   mockGauge: vi.fn(),
   mockCaptureException: vi.fn(),
   // Defaults to "no retention rule" → every model keeps the flat 90-day sweep
-  // (matches the EMPTY production map, D-06). Overridden per-test to inject a
+  // (matches the EMPTY production map). Overridden per-test to inject a
   // fixture window and prove the wiring.
   mockGetRetentionCutoff: vi.fn<(model: string, now: Date) => Date | null>(() => null),
 }));
@@ -141,10 +141,10 @@ describe('dataPurgeHandler', () => {
     expect(mockCaptureException).toHaveBeenCalledTimes(1);
   });
 
-  // US-INFRA-03 — THE load-bearing hard-delete path. The cron runs on the base
-  // prisma (no soft-delete extension), so a retained model must use its policy
-  // window (4yr/7yr) instead of the flat 90-day cutoff. The fixture maps
-  // `Invoice` to a 4-year window (production map stays EMPTY, D-06).
+  // THE load-bearing hard-delete path. The cron runs on the base prisma (no
+  // soft-delete extension), so a retained model must use its policy window
+  // (4yr/7yr) instead of the flat 90-day cutoff. The fixture maps `Invoice`
+  // to a 4-year window (production map stays EMPTY).
   describe('retention-aware purge (US-INFRA-03)', () => {
     const FOUR_YEARS_MS = 4 * 365 * 24 * 60 * 60 * 1000;
     const NINETY_DAYS_MS = 90 * 24 * 60 * 60 * 1000;

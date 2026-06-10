@@ -1,13 +1,11 @@
-// packages/api/src/routers/bacs.ts
-//
-// Phase 63 · Plan 04 · D-27 — BACS Standard 18 Direct Credit tRPC router.
+// BACS Standard 18 Direct Credit tRPC router.
 // Provides: previewExport, generateExport, validateSortCode, saveSubmitterConfig.
 //
 // All procedures are tenant-scoped. Preview + generate are gated by the
-// `payments.bacs-enabled` feature flag (D-07). saveSubmitterConfig requires
-// `settings:update` permission (admin-only per D-02).
+// `payments.bacs-enabled` feature flag. saveSubmitterConfig requires
+// `settings:update` permission (admin-only).
 //
-// Threat model (per 63-04 plan):
+// Threat model:
 //   - Non-admin access to submitter config -> requirePermission gate.
 //   - Encrypted bank fields exposed in API response -> router NEVER returns
 //     `*Encrypted` columns; only `*Masked` is sent to the client.
@@ -265,10 +263,10 @@ export const bacsRouter = router({
    * Returns the rendered fixed-width text (ASCII), aggregated transliteration
    * warnings, and modulus-check warnings. The UI must:
    *  - block download when ANY transliteration `?` replacements exist;
-   *  - surface modulus-check warnings (non-blocking per D-01).
+   *  - surface modulus-check warnings (non-blocking).
    *
    * Throws FAILED_PRECONDITION when the org has not configured BACS submitter
-   * details yet (D-02). The frontend deep-links the user to /settings/payments.
+   * details yet. The frontend deep-links the user to /settings/payments.
    */
   previewExport: tenantFlaggedProcedure
     .use(requireFeatureFlag('payments.bacs-enabled'))
@@ -455,9 +453,9 @@ export const bacsRouter = router({
 
   /**
    * Validate a UK sort code + account number combination against the VocaLink
-   * modulus-check table v8.40 (D-01). Advisory only — exception ranges produce
-   * a `WARN` status, not a hard block. Format-level failures (regex) are
-   * already filtered by the Zod schemas before this handler runs.
+   * modulus-check table v8.40. Advisory only — exception ranges produce a
+   * `WARN` status, not a hard block. Format-level failures (regex) are already
+   * filtered by the Zod schemas before this handler runs.
    */
   validateSortCode: tenantProcedure
     .use(requirePermission({ contractor: ['read'] }))
@@ -484,7 +482,7 @@ export const bacsRouter = router({
     }),
 
   /**
-   * Save the org's BACS submitter configuration (admin-only per D-02).
+   * Save the org's BACS submitter configuration (admin-only).
    *
    * Encrypts each sensitive field via `encryptBankAccount` (AES-256-GCM) and
    * stores a non-reversible mask alongside for safe display in the settings

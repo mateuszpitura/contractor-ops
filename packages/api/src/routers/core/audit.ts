@@ -93,9 +93,9 @@ const auditFilterSchema = z.object({
 export const auditRouter = router({
   /**
    * List audit log entries with search, structured filters, and pagination.
-   * Admin-only (settings:read permission per D-13).
+   * Admin-only (settings:read permission).
    *
-   * F-DB-11 — supports two modes:
+   * Supports two modes:
    *   - cursor pagination (preferred for deep navigation; no total)
    *   - legacy offset pagination via {page, pageSize} kept for back-compat;
    *     total is bounded to avoid the full-scan-on-deep-page anti-pattern.
@@ -108,8 +108,8 @@ export const auditRouter = router({
           // Legacy offset pagination (deprecated, kept for back-compat)
           page: z.number().min(1).default(1),
           pageSize: z.number().min(1).max(100).default(25),
-          // F-DB-11 cursor pagination — preferred for write-heavy unbounded
-          // tables. When `cursor` is supplied we ignore `page` and stream.
+          // Cursor pagination — preferred for write-heavy unbounded tables.
+          // When `cursor` is supplied we ignore `page` and stream.
           cursor: z.string().optional(),
           sortOrder: z.enum(['asc', 'desc']).default('desc'),
         })
@@ -145,7 +145,7 @@ export const auditRouter = router({
         };
       }
 
-      // F-DB-11: cursor mode — keyset on (id) ordered by createdAt.
+      // cursor mode — keyset on (id) ordered by createdAt.
       if (input.cursor) {
         const helperInput = { cursor: input.cursor, limit: input.pageSize };
         const rows = await ctx.db.auditLog.findMany({
@@ -193,10 +193,10 @@ export const auditRouter = router({
   /**
    * Returns distinct actors for filter dropdown.
    *
-   * F-DB-10 — without `take`, this `DISTINCT ON (actorId)` walks the full
-   * audit log for the org (millions of rows in mature tenants). Cap the
-   * result set at 100 actors which is well above any realistic dropdown
-   * cardinality. Long-term fix is a denormalised `AuditActor` table.
+   * Without `take`, this `DISTINCT ON (actorId)` walks the full audit log
+   * for the org (millions of rows in mature tenants). Cap the result set at
+   * 100 actors which is well above any realistic dropdown cardinality.
+   * Long-term fix is a denormalised `AuditActor` table.
    */
   actors: tenantProcedure.use(settingsRead).query(async ({ ctx }) => {
     const actors = await ctx.db.auditLog.findMany({

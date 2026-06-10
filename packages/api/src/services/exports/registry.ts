@@ -1,5 +1,5 @@
 /**
- * Async export registry (P2-F · F-SCALE-01 / F-SCALE-02 / F-SCALE-08).
+ * Async export registry.
  *
  * Single typed source of truth for every long-running export the app can
  * produce. Each entry declares:

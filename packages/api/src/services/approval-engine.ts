@@ -43,7 +43,7 @@ export interface AdvanceFlowResult {
 
 /**
  * Add hours to a date, returning a new Date instance.
- * Inline helper — no date-fns dependency (per Phase 4 decision [04-01]).
+ * Inline helper — no date-fns dependency.
  */
 function addHours(date: Date, hours: number): Date {
   const result = new Date(date);
@@ -265,11 +265,11 @@ export async function advanceFlow(tx: TxClient, flowId: string): Promise<Advance
   const nextStep = flow.steps.find(s => s.status === 'NOT_STARTED' && s.stepOrder > currentOrder);
 
   if (!nextStep) {
-    // Phase 72 D-13 — Final-step compliance gate. This runs AFTER all approver
-    // steps complete and is orthogonal to the chain-config conditions evaluated
-    // at routing time (evaluateConditions). complianceCritical is the canonical
-    // pre-APPROVE check: if the resource's contractor has a BLOCKING+EXPIRED
-    // compliance item, hold the flow in PENDING_COMPLIANCE instead of approving.
+    // Final-step compliance gate. This runs AFTER all approver steps complete
+    // and is orthogonal to the chain-config conditions evaluated at routing time
+    // (evaluateConditions). complianceCritical is the canonical pre-APPROVE
+    // check: if the resource's contractor has a BLOCKING+EXPIRED compliance
+    // item, hold the flow in PENDING_COMPLIANCE instead of approving.
     // An approver must still act once the hold is released (never auto-APPROVE).
     const complianceHold = await checkComplianceHoldAtFinalStep(tx, flow);
     if (complianceHold) {
@@ -316,7 +316,7 @@ export async function advanceFlow(tx: TxClient, flowId: string): Promise<Advance
   return { completed: false, nextStepOrder: nextStep.stepOrder };
 }
 
-/** Phase 72 D-14 — linkage stored on a held flow's complianceHoldsJson. */
+/** Linkage stored on a held flow's complianceHoldsJson. */
 export interface ComplianceHold {
   itemIds: string[];
   heldAt: string;
@@ -324,10 +324,10 @@ export interface ComplianceHold {
 }
 
 /**
- * Phase 72 D-13 — evaluates complianceCritical(EXPIRED) at an invoice approval's
- * final step. Returns the hold linkage when the resource's contractor has at
- * least one BLOCKING+EXPIRED compliance item, or null when the flow may proceed
- * to APPROVED. Only invoice approvals are gated in Phase 72.
+ * Evaluates complianceCritical(EXPIRED) at an invoice approval's final step.
+ * Returns the hold linkage when the resource's contractor has at least one
+ * BLOCKING+EXPIRED compliance item, or null when the flow may proceed to
+ * APPROVED. Only invoice approvals are gated.
  */
 async function checkComplianceHoldAtFinalStep(
   tx: TxClient,

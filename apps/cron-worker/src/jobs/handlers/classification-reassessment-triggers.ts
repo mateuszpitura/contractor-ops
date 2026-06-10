@@ -3,7 +3,7 @@
  *
  * Daily AuditLog-driven scan that detects material-change events on
  * contractors / engagements and emits ReassessmentTrigger rows.
- * Short-circuits when `module.classification-engine` is off (D-08).
+ * Short-circuits when `module.classification-engine` is off.
  */
 
 import { runReassessmentTriggerScan } from '@contractor-ops/api/services/reassessment-trigger-scan';

@@ -4,17 +4,17 @@ import type { ProvenanceLookupInput, ProvenanceMatchResult } from './types.js';
 const ONE_HOUR_MS = 60 * 60 * 1000;
 
 /**
- * Phase 76 D-09/D-10 — Look up a provenance row matching (provider, externalUserId,
- * actionKind) within the last 1 hour. On hit, atomically claim it (set matchedAt = now).
+ * Look up a provenance row matching (provider, externalUserId, actionKind) within
+ * the last 1 hour. On hit, atomically claim it (set matchedAt = now).
  *
  * Returns:
  *   - { id } when a row matched and we won the atomic claim
  *   - null when no row matched, OR we lost the claim race (concurrent webhook claimed first)
  *
- * Concurrent-call safety (T-76-04-03): of N concurrent calls for the same row, only one
- * wins the `updateMany({ where: { id, matchedAt: null } })`. The loser gets count === 0 and
- * returns null → falls through to the default v3.0 user-departed path (D-11). Mirrors the
- * v5 claimDraft atomic-update pattern.
+ * Concurrent-call safety: of N concurrent calls for the same row, only one wins the
+ * `updateMany({ where: { id, matchedAt: null } })`. The loser gets count === 0 and
+ * returns null → falls through to the default user-departed path. Mirrors the
+ * claimDraft atomic-update pattern.
  */
 export async function provenanceLookup(
   db: PrismaClient,
@@ -47,9 +47,9 @@ export async function provenanceLookup(
 }
 
 /**
- * Phase 76 D-09 — Insert a provenance row BEFORE the QStash deprovision job calls the
- * adapter method. Called from the step-runner (Plan 76-06). initiatedAt defaults to now()
- * and matchedAt is null (set later by the webhook handler on a match).
+ * Insert a provenance row BEFORE the QStash deprovision job calls the adapter method.
+ * Called from the step-runner. initiatedAt defaults to now() and matchedAt is null
+ * (set later by the webhook handler on a match).
  */
 export async function insertProvenance(
   db: PrismaClient,

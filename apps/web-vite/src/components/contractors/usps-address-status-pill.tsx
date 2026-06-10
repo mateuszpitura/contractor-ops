@@ -1,8 +1,8 @@
-// USPS address validation status pill (UI-SPEC §C). Mirrors VatValidationStatusPill.
+// USPS address validation status pill. Mirrors VatValidationStatusPill.
 //
-// Advisory only (US-FIELD-03, D-03, T-84-06-03): the pill communicates whether
-// the address was CASS-verified against USPS, but never blocks save — an
-// unverified or unavailable result is a fully saveable state.
+// Advisory only: the pill communicates whether the address was CASS-verified
+// against USPS, but never blocks save — an unverified or unavailable result
+// is a fully saveable state.
 
 import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
 import {

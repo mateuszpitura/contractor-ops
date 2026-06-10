@@ -20,7 +20,7 @@ function resolveErrorKey(message: unknown): string {
 }
 
 // ---------------------------------------------------------------------------
-// F-SEC-20 — Global tRPC error formatter
+// Global tRPC error formatter
 // ---------------------------------------------------------------------------
 //
 // The default formatter forwards the raw `Error.message`, stack, and Zod

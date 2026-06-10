@@ -91,7 +91,7 @@ export function slackHandlers(options?: HandlerOptions) {
     // in production code. Add handlers here only when production starts
     // calling these Slack API methods.
 
-    // --- Phase 77 D-05/D-08/D-14 deprovisioning (SCIM + admin.session + users.*) ---
+    // --- Deprovisioning via SCIM + admin.session + users.* ---
     // SCIM lookup by filter.
     http.get('https://api.slack.com/scim/v2/Users', async () => {
       const err = await applyNetworkConditions(net);

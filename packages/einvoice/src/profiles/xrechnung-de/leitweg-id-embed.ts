@@ -1,7 +1,7 @@
-// Phase 61 · Plan 61-02 Task 1 — BT-10 (Leitweg-ID) embed helper.
+// BT-10 (Leitweg-ID) embed helper.
 //
 // Isolated so the generator's tree building stays pure and so that higher
-// layers (Plan 04 resolver) can short-circuit when no Leitweg-ID resolves.
+// layers can short-circuit when no Leitweg-ID resolves.
 //
 // Path written: /rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/
 //               ram:ApplicableHeaderTradeAgreement/ram:BuyerReference

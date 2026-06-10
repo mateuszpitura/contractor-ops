@@ -1,13 +1,13 @@
 // packages/api/src/middleware/require-classification-flag.ts
 //
-// Phase 64 · D-06 — defense-in-depth middleware for all classification tRPC procedures.
+// Defense-in-depth middleware for all classification tRPC procedures.
 //
 // Every classification procedure must use `classificationProcedure` (= tenantProcedure
 // + this middleware) instead of raw `tenantProcedure`. Two enforcement layers:
-//   1. Conditional root.ts registration (D-05, Plan 64-04) — procedures absent from
-//      appRouter when the global flag is OFF.
+//   1. Conditional root.ts registration — procedures absent from appRouter when the
+//      global flag is OFF.
 //   2. This middleware — per-org / per-jurisdiction evaluation at request time.
-//      If Unleash has the flag ON globally but the evaluator's disclaimer gate (D-10)
+//      If Unleash has the flag ON globally but the evaluator's disclaimer gate
 //      or per-org evaluation returns false, this middleware throws FORBIDDEN before
 //      any business logic executes.
 //

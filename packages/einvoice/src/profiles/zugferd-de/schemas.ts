@@ -1,8 +1,8 @@
-// Phase 62 · Plan 62-02 Task 5 — ZUGFeRD profile Zod schemas.
+// ZUGFeRD profile Zod schemas.
 //
-// Thin re-export of the Phase-61 XRechnung envelope schemas (ZUGFeRD carries
-// the same canonical EInvoice contract inside factur-x.xml) plus a ZUGFeRD-
-// specific upload-intake schema for the inbound PDF route.
+// Thin re-export of the XRechnung envelope schemas (ZUGFeRD carries the same
+// canonical EInvoice contract inside factur-x.xml) plus a ZUGFeRD-specific
+// upload-intake schema for the inbound PDF route.
 //
 // Keep this file small — semantic validation lives in the parser + validator
 // delegate. Schemas here guard only shape + transport invariants.
@@ -18,7 +18,7 @@ export {
 } from '../../schemas/invoice.js';
 
 /**
- * tRPC input schema for the ZUGFeRD PDF intake upload mutation (Plan 05).
+ * tRPC input schema for the ZUGFeRD PDF intake upload mutation.
  *
  * Constraints:
  *   - `base64` is a non-empty string (the router decodes before calling the

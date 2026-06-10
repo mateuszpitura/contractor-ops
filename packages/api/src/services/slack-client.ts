@@ -6,7 +6,7 @@ import { WebClient } from '@slack/web-api';
 
 // ---------------------------------------------------------------------------
 // Token Encryption / Decryption (AES-256-GCM)
-// Per D-09: NEVER store raw xoxb- tokens
+// NEVER store raw xoxb- tokens
 // ---------------------------------------------------------------------------
 
 const ALGORITHM = 'aes-256-gcm';
@@ -296,7 +296,7 @@ export async function sendReminderDM(params: ReminderDMParams) {
 }
 
 // ---------------------------------------------------------------------------
-// Workspace User Sync (D-10)
+// Workspace User Sync
 // ---------------------------------------------------------------------------
 
 /**

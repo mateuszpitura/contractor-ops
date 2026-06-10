@@ -1,20 +1,19 @@
 // ---------------------------------------------------------------------------
-// Phase 79 · GULF-05/06/07/10 (D-10/D-11/D-12) — Saudization config/headcount
-// CRUD + dashboard read-model + GULF-10 drift overrides tRPC router.
+// Saudization config/headcount CRUD + dashboard read-model + drift overrides
+// tRPC router.
 // ---------------------------------------------------------------------------
 //
-// Exposes the manual SaudizationConfig + SaudiHeadcount data layer (Plan 02
-// models) and the pure dashboard derivation (Plan 04 service) through tenant-
-// scoped, Zod-validated, region-aware procedures. The Nitaqat band is recorded
-// by hand and is NEVER auto-computed (Pitfall 8) — `upsertConfig` takes the band
-// verbatim from input. The nationalisation rate is derived only from the manual
-// SaudiHeadcount numbers (Pitfall 7 / D-10).
+// Exposes the manual SaudizationConfig + SaudiHeadcount data layer and the
+// pure dashboard derivation through tenant-scoped, Zod-validated,
+// region-aware procedures. The Nitaqat band is recorded by hand and is NEVER
+// auto-computed — `upsertConfig` takes the band verbatim from input. The
+// nationalisation rate is derived only from the manual SaudiHeadcount numbers.
 //
-// GULF-10 drift overrides (Nitaqat threshold catalogue / permitted-activity
-// catalogue) set the `*Custom` flag on SaudizationConfig and writeAuditLog with
+// Drift overrides (Nitaqat threshold catalogue / permitted-activity catalogue)
+// set the `*Custom` flag on SaudizationConfig and writeAuditLog with
 // `metadata.custom = true`, recording before/after — this drives the
-// "Custom — verify with adviser" badge and gives an adviser-verification trail
-// (C9). The audit write joins the same transaction as the flag flip (D-17).
+// "Custom — verify with adviser" badge and gives an adviser-verification trail.
+// The audit write joins the same transaction as the flag flip.
 
 import { z } from 'zod';
 import { router } from '../../init';
@@ -38,7 +37,7 @@ const nitaqatBandEnum = z.enum([
 ]);
 
 const upsertConfigSchema = z.object({
-  /** Manual band entry — verbatim, never derived (Pitfall 8). Null clears it. */
+  /** Manual band entry — verbatim, never auto-derived. Null clears it. */
   band: nitaqatBandEnum.nullish(),
   industrySegment: z.string().trim().max(120).nullish(),
 });
@@ -64,10 +63,10 @@ export const saudizationRouter = router({
     ),
 
   /**
-   * Record the manual Nitaqat band + industry segment (GULF-05 / D-05). The band
-   * is taken from input — there is NO derivation path. `bandLastUpdatedAt` is
-   * stamped server-side whenever the band value changes, so the quarterly-reentry
-   * window is computed from the real recording instant, never a client clock.
+   * Record the manual Nitaqat band + industry segment. The band is taken from
+   * input — there is NO derivation path. `bandLastUpdatedAt` is stamped
+   * server-side whenever the band value changes, so the quarterly-reentry window
+   * is computed from the real recording instant, never a client clock.
    */
   upsertConfig: tenantFlaggedProcedure
     .use(requireFeatureFlag('gulf.saudization-dashboard'))
@@ -116,8 +115,8 @@ export const saudizationRouter = router({
     }),
 
   /**
-   * Record a manual org-wide headcount snapshot (D-10). The nationalisation rate
-   * is derived from these numbers only — never from the platform contractor list.
+   * Record a manual org-wide headcount snapshot. The nationalisation rate is
+   * derived from these numbers only — never from the platform contractor list.
    */
   upsertHeadcount: tenantFlaggedProcedure
     .use(requireFeatureFlag('gulf.saudization-dashboard'))
@@ -198,9 +197,9 @@ export const saudizationRouter = router({
     }),
 
   /**
-   * Ephemeral offboarding band-trajectory projection (GULF-07 / D-12). Advisory
-   * only — surfaces the recorded band verbatim, never asserts a projected band,
-   * never persists, never gates. Reads the latest manual headcount + band.
+   * Ephemeral offboarding band-trajectory projection. Advisory only — surfaces
+   * the recorded band verbatim, never asserts a projected band, never persists,
+   * never gates. Reads the latest manual headcount + band.
    */
   offboardingTrajectory: tenantFlaggedProcedure
     .use(requireFeatureFlag('gulf.saudization-dashboard'))
@@ -230,7 +229,7 @@ export const saudizationRouter = router({
    * GULF-10 — override the seed Nitaqat band thresholds for this org. Flips
    * `thresholdsCustom = true` and writes an audit log with `metadata.custom = true`
    * + before/after, recording the adviser-verification trail (C9). The flag flip
-   * + audit write commit atomically in one transaction (D-17).
+   * + audit write commit atomically in one transaction.
    */
   applyNitaqatThresholdOverride: tenantFlaggedProcedure
     .use(requireFeatureFlag('gulf.saudization-dashboard'))

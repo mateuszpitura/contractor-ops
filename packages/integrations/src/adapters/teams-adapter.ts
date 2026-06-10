@@ -7,7 +7,7 @@ import type { OAuthConfig } from '../types/provider.js';
 import { BaseAdapter } from './base-adapter.js';
 
 // ---------------------------------------------------------------------------
-// F-INT-12 — per-conversation self-throttle for outbound Bot Framework calls
+// Per-conversation self-throttle for outbound Bot Framework calls
 // ---------------------------------------------------------------------------
 //
 // Microsoft Bot Framework's per-bot rate limit is generous (~1800 RPS across
@@ -53,9 +53,9 @@ async function awaitTeamsConversationSlot(conversationId: string): Promise<void>
 }
 
 /**
- * F-INT-12 — Wrap an outbound Bot Framework call with the per-conversation
- * throttle. Bot Framework callers (Plan 03) should funnel through this so
- * bulk reminder fan-outs don't burst-throttle a single conversation.
+ * Wrap an outbound Bot Framework call with the per-conversation throttle.
+ * Bot Framework callers should funnel through this so bulk reminder fan-outs
+ * don't burst-throttle a single conversation.
  *
  * @example
  *   await withTeamsConversationThrottle(activity.conversation.id, async () => {

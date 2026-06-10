@@ -1,4 +1,4 @@
-// Phase 84 · Plan 04 — USPS Addresses 3.0 API Zod schemas (US-FIELD-03, D-03).
+// USPS Addresses 3.0 API Zod schemas.
 //
 // Source: https://developer.usps.com/addressesv3 (OAuth2 + Addresses 3.0).
 // Field-name casing pinned from the official OpenAPI (developers.usps.com/api/81);

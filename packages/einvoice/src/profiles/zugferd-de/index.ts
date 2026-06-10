@@ -1,4 +1,4 @@
-// Phase 62 · Plan 62-02 Task 5 — ZUGFeRD profile barrel.
+// ZUGFeRD profile barrel.
 //
 // Public surface consumed by:
 //   * `packages/einvoice/src/registry.ts` — profile registration
@@ -10,7 +10,7 @@ export * from './constants.js';
 // listed directly in the barrel — also documents the public surface.
 export { ZUGFERD_DE_PROFILE_ID } from './constants.js';
 export type { GenerateZugferdInput } from './generator.js';
-// Plan 62-03: outbound pipeline.
+// Outbound pipeline.
 export {
   generateZugferdPdf,
   ZugferdLevelUnsupportedForOutput,

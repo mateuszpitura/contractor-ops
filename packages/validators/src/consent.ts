@@ -49,17 +49,17 @@ export function isPdplJurisdiction(
 }
 
 // ---------------------------------------------------------------------------
-// Phase 56 · Plan 08 — UK/DE privacy acknowledgement gate (D-10)
+// UK/DE privacy acknowledgement gate
 // ---------------------------------------------------------------------------
 
 /**
  * Jurisdiction codes that must surface the onboarding privacy-notice
  * acknowledgement gate. Extends the PDPL (AE/SA) jurisdictions with the
- * UK and German GDPR jurisdictions introduced in Phase 56.
+ * UK and German GDPR jurisdictions.
  *
  * Kept deliberately additive — `isPdplJurisdiction` is unchanged so the
- * existing Phase 51 PDPL-specific code paths (legal references, notice
- * content) continue to narrow exclusively to AE/SA.
+ * existing PDPL-specific code paths (legal references, notice content)
+ * continue to narrow exclusively to AE/SA.
  */
 export function requiresPrivacyAcknowledgement(countryCode: string | null | undefined): boolean {
   if (isPdplJurisdiction(countryCode)) return true;
@@ -80,10 +80,10 @@ export type GrantConsentInput = z.infer<typeof grantConsentSchema>;
 export const bulkGrantConsentSchema = z.object({
   consents: z.array(grantConsentSchema).min(1),
   /**
-   * Phase 56 · Plan 08 — privacy notice acknowledgement (D-10).
+   * Privacy notice acknowledgement flag.
    * Optional for existing PDPL flows (AE/SA); onboarding UI enforces `true`
    * for UK/DE via `requiresPrivacyAcknowledgement`. Server-side enforcement
-   * for UK/DE is tracked in the threat register (T-56-30).
+   * for UK/DE is a security invariant.
    */
   privacyNoticeAcknowledged: z.boolean().optional(),
   /** ISO-3166 alpha-2 jurisdiction of the notice the user acknowledged. */

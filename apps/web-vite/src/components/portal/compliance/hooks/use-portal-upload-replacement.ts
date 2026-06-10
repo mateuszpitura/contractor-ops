@@ -13,7 +13,7 @@ export interface SubmitUploadReplacementArgs {
 }
 
 /**
- * Phase 73 COMPL-04 / D-06 — orchestrates the portal upload-replacement flow:
+ * Orchestrates the portal upload-replacement flow:
  *   portal.getUploadUrl -> R2 PUT -> portal.submitUploadReplacement.
  * On success, toasts and navigates back to /portal/compliance. The only tRPC
  * boundary for the upload-replacement form.

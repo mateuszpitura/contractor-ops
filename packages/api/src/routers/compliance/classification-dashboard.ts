@@ -1,10 +1,10 @@
 // ---------------------------------------------------------------------------
-// Classification compliance dashboard tRPC router — Phase 60, Plan 04.
+// Classification compliance dashboard tRPC router.
 // ---------------------------------------------------------------------------
 //
-// Aggregates Phase-58 ClassificationAssessment + Phase-60 Economic-Dependency
-// + Reassessment-Trigger + Statusfeststellungsverfahren into a single
-// per-market compliance view (CLASS-10).
+// Aggregates ClassificationAssessment + Economic-Dependency +
+// Reassessment-Trigger + Statusfeststellungsverfahren into a single
+// per-market compliance view.
 //
 // Security contract:
 //   - Every procedure chains through `tenantProcedure` — the Prisma tenant
@@ -15,7 +15,7 @@
 //     through `escapeCsvField` which also neutralises formula-injection
 //     prefixes (=/+/-/@) per research gap A11 (OWASP).
 //   - Every ClassificationAssessment query filters `status: 'completed'` so
-//     drafts never leak into compliance aggregates (Pitfall 8).
+//     drafts never leak into compliance aggregates.
 //   - No cross-org read needed — dashboard runs in request context, so
 //     `ctx.db` (tenant extension) suffices. prismaRaw is NOT imported here.
 
@@ -47,7 +47,7 @@ const contractorReadProcedure = classificationProcedure.use(
 // Constants
 // ---------------------------------------------------------------------------
 
-/** CSV download signed-URL TTL (UI-SPEC D-16). */
+/** CSV download signed-URL TTL (300 s). */
 const CSV_TTL_SECONDS = 300;
 
 /** Defensive cap on detail-row queries (T-60-18). */
@@ -60,7 +60,7 @@ const DRV_EXPIRY_WINDOW_DAYS = 90;
 const OVERDUE_DE_MONTHS = 12;
 
 // ---------------------------------------------------------------------------
-// CSV column contract (UI-SPEC D-16)
+// CSV column contract
 // ---------------------------------------------------------------------------
 
 const CSV_COLUMNS = [
@@ -163,11 +163,11 @@ type DashboardRow = {
 // buildDashboardRows — shared data join for CSV export + (future) UI reuse
 // ---------------------------------------------------------------------------
 
-// F-DB-21 — add explicit organizationId to every where clause as
-// defense-in-depth. The withTenantScope extension would inject it anyway,
-// but a future refactor that swaps in `prismaRaw` (or any unscoped client)
-// would silently leak data on this sensitive compliance view (IR35
-// verdicts, DRV statuses). Belt-and-braces.
+// Explicit organizationId on every where clause as defense-in-depth.
+// The withTenantScope extension would inject it anyway, but a future
+// refactor that swaps in `prismaRaw` (or any unscoped client) would
+// silently leak data on this sensitive compliance view (IR35 verdicts,
+// DRV statuses). Belt-and-braces.
 type DbCtx = { db: Record<string, unknown>; organizationId: string };
 
 /**
@@ -176,7 +176,7 @@ type DbCtx = { db: Record<string, unknown>; organizationId: string };
  * for all ACTIVE assignments of the given market, producing one row per engagement.
  *
  * DE-only columns (score/band/share/drv*) are `null` for GB rows so the CSV
- * column set is stable across markets (UI-SPEC D-16 column contract).
+ * column set is stable across markets.
  */
 async function buildDashboardRows(ctx: DbCtx, market: 'GB' | 'DE'): Promise<DashboardRow[]> {
   const orgId = ctx.organizationId;
@@ -349,7 +349,7 @@ export const classificationDashboardRouter = router({
   /**
    * Assessment-coverage tile — `completed / total` for ACTIVE engagements of
    * this market. Completed = engagements with ≥1 classification assessment
-   * of `status='completed'` (Pitfall 8 — drafts excluded).
+   * of `status='completed'` (drafts excluded).
    */
   coverageByMarket: contractorReadProcedure.input(marketInput).query(async ({ ctx, input }) => {
     const db = ctx.db as {
@@ -359,7 +359,7 @@ export const classificationDashboardRouter = router({
       };
     };
 
-    // F-DB-21 — explicit org-scoping (defense-in-depth).
+    // Explicit org-scoping (defense-in-depth).
     const orgId = ctx.organizationId;
     const [total, completedAssessments] = await Promise.all([
       db.contractorAssignment.count({
@@ -382,7 +382,7 @@ export const classificationDashboardRouter = router({
 
   /**
    * Risk-distribution tile — counts of completed assessments per bucket
-   * (safe / warning / critical) for this market. Drafts excluded (Pitfall 8).
+   * (safe / warning / critical) for this market. Drafts excluded.
    *
    * GB mapping: outside → safe, indeterminate → warning, inside → critical.
    * DE mapping: green   → safe, amber         → warning, red    → critical.
@@ -405,7 +405,7 @@ export const classificationDashboardRouter = router({
         };
       };
 
-      // F-DB-21 — explicit org-scoping (defense-in-depth).
+      // Explicit org-scoping (defense-in-depth).
       const rows = await db.classificationAssessment.findMany({
         where: {
           organizationId: ctx.organizationId,
@@ -467,7 +467,7 @@ export const classificationDashboardRouter = router({
       };
     };
 
-    // F-DB-21 — explicit org-scoping (defense-in-depth).
+    // Explicit org-scoping (defense-in-depth).
     const orgId = ctx.organizationId;
     if (input.market === 'GB') {
       const triggers = await db.reassessmentTrigger.findMany({
@@ -542,7 +542,7 @@ export const classificationDashboardRouter = router({
       statusfeststellungsverfahren: { count: (args: unknown) => Promise<number> };
     };
 
-    // F-DB-21 — explicit org-scoping (defense-in-depth).
+    // Explicit org-scoping (defense-in-depth).
     const orgId = ctx.organizationId;
     if (input.market === 'GB') {
       const openReassessmentTriggers = await db.reassessmentTrigger.count({
@@ -596,7 +596,7 @@ export const classificationDashboardRouter = router({
    * prefixes (=/+/-/@) — closes research gap A11 (T-60-15).
    */
   exportMarketCsv: contractorReadProcedure.input(marketInput).mutation(async ({ ctx, input }) => {
-    // F-DB-21 — pass organizationId so buildDashboardRows can scope explicitly.
+    // Pass organizationId so buildDashboardRows can scope explicitly.
     const rows = await buildDashboardRows(
       { db: ctx.db, organizationId: ctx.organizationId },
       input.market,

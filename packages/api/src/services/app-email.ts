@@ -20,9 +20,9 @@ export type SendAppEmailParams = {
   html?: string;
   headers?: Record<string, string>;
   /**
-   * Server-derived idempotency key (F-INT-04). When set, Resend will dedupe
-   * retried sends within 24h. Callers should derive this from a stable
-   * business identifier — e.g. `notification:${notificationId}` —
+   * Server-derived idempotency key. When set, Resend will dedupe retried
+   * sends within 24h. Callers should derive this from a stable business
+   * identifier — e.g. `notification:${notificationId}` —
    * NEVER from client-supplied input.
    *
    * If omitted, a deterministic key is computed from from+to+subject+body
@@ -32,7 +32,7 @@ export type SendAppEmailParams = {
 };
 
 // ---------------------------------------------------------------------------
-// Idempotency-Key derivation (F-INT-04 / DRIFT-01)
+// Idempotency-Key derivation
 // ---------------------------------------------------------------------------
 
 /**
@@ -123,7 +123,7 @@ export async function sendAppEmail(params: SendAppEmailParams): Promise<void> {
 
   const resend = getResend();
 
-  // F-INT-04: thread Idempotency-Key on every Resend send so QStash retries
+  // Thread Idempotency-Key on every Resend send so QStash retries
   // (or fixer cron retries) cannot deliver the same email twice. Resend
   // dedupes against this header for 24h.
   if (params.react && typeof params.react !== 'string') {

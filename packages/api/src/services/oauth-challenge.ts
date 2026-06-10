@@ -1,5 +1,5 @@
 /**
- * F-SEC-05 + F-SEC-21 — OAuth challenge: single-use, browser-bound CSRF guard.
+ * OAuth challenge: single-use, browser-bound CSRF guard.
  *
  * Layered ON TOP of the existing HMAC-signed `state` from
  * `packages/integrations/src/services/oauth-state.ts`. The HMAC continues to
@@ -15,11 +15,11 @@
  *      replayed, or attacker-supplied state.
  *
  * Closes:
- *   - F-SEC-05 (OAuth callback CSRF — state binds to attacker, victim's code
- *     gets associated with attacker's org). The cookie binding ensures the
+ *   - OAuth callback CSRF (state binds to attacker, victim's code gets
+ *     associated with attacker's org). The cookie binding ensures the
  *     callback can only land in the browser that initiated the flow.
- *   - F-SEC-21 (state replay within 10-min window). Atomic `updateMany`
- *     guarantees single-use semantics even under concurrent callback delivery.
+ *   - State replay within 10-min window. Atomic `updateMany` guarantees
+ *     single-use semantics even under concurrent callback delivery.
  */
 
 import { createHmac, randomUUID } from 'node:crypto';

@@ -40,8 +40,8 @@ export interface ZatcaOnboardingState {
 
 /**
  * TLV (Tag-Length-Value) tags for ZATCA QR code encoding.
- * Tags 1-5 are required for Phase 1 (B2C simplified).
- * Tags 6-8 are required for Phase 2 (B2B standard).
+ * Tags 1-5 are required for B2C simplified invoices.
+ * Tags 6-8 are required for B2B standard invoices.
  */
 export const ZatcaTlvTag = {
   SELLER_NAME: 1,

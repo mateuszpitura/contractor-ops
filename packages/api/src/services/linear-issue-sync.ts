@@ -12,11 +12,10 @@ import type { DbClient } from './types';
 const log = createLogger({ service: 'linear-issue-sync' });
 
 /**
- * F-OBS-17 — turn an email address into a non-PII identifier suitable for
- * structured logs. We keep the domain (operationally useful — "is the
- * problem isolated to one company?") and a short stable SHA-256 of the
- * local-part so the same address renders the same hash across log lines
- * without exposing the raw PII to Axiom retention.
+ * Turn an email address into a non-PII identifier suitable for structured logs.
+ * Keeps the domain (operationally useful — "is the problem isolated to one
+ * company?") and a short stable SHA-256 of the local-part so the same address
+ * renders the same hash across log lines without exposing raw PII to Axiom.
  */
 function maskEmail(email: string): string {
   const trimmed = email.trim().toLowerCase();
@@ -134,7 +133,7 @@ export async function linearGraphQL<T>(
  *
  * Flow:
  * 1. Load connection and decrypt credentials
- * 2. Look up assignee by email (D-07: fall back to unassigned if no match)
+ * 2. Look up assignee by email (fall back to unassigned if no match)
  * 3. Run issueCreate mutation with title, description, assigneeId
  * 4. Create ExternalLink with LINEAR_ISSUE type and cached metadata
  * 5. Log to IntegrationSyncLog
@@ -179,7 +178,7 @@ export async function createLinearIssue(
   });
 
   try {
-    // 3. Look up assignee by email (D-07: fall back to unassigned)
+    // 3. Look up assignee by email (fall back to unassigned if no match)
     let assigneeId: string | undefined;
 
     if (assigneeEmail) {
@@ -200,7 +199,7 @@ export async function createLinearIssue(
         if (matchedUser) {
           assigneeId = matchedUser.id;
         } else {
-          // F-OBS-17 — log only a masked email so PII does not land in Axiom.
+          // Log only a masked email so PII does not land in Axiom.
           log.warn(
             { assigneeEmailMasked: maskEmail(assigneeEmail) },
             'no user found for email, creating issue unassigned (D-07)',
@@ -211,7 +210,7 @@ export async function createLinearIssue(
       }
     }
 
-    // 4. Create issue via issueCreate mutation (D-06: title + description only)
+    // 4. Create issue via issueCreate mutation (title + description only)
     const createResult = await linearGraphQL<{
       issueCreate: {
         success: boolean;

@@ -29,8 +29,8 @@ export function useSocialButtons(): SocialButtonsProps {
       try {
         await auth.signIn.social({ provider, callbackURL: '/' });
       } catch (err) {
-        // F-OBS-13 — capture so OAuth-redirect failures surface in Sentry
-        // instead of leaving the user with a frozen button.
+        // Capture so OAuth-redirect failures surface in Sentry instead of
+        // leaving the user with a frozen button.
         Sentry.captureException(err, {
           tags: { 'auth.flow': 'social', 'auth.provider': provider },
         });

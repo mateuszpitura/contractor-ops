@@ -1,6 +1,6 @@
 // packages/validators/src/__tests__/leitweg-id.fixtures.ts
 //
-// Leitweg-ID test vectors — Phase 61 · Plan 61-01 Task 2.
+// Leitweg-ID test vectors.
 //
 // Source strategy:
 //   - The canonical fixture corpus for Leitweg-IDs is KoSIT's

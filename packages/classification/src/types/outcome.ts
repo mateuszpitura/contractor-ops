@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------
-// Classification Outcome Types — D-03
+// Classification Outcome Types
 // ---------------------------------------------------------------------------
 //
 // Two country profiles produce two outcome shapes:
@@ -30,11 +30,11 @@ export interface Ir35AreaResult {
   readonly verdict: Ir35AreaVerdict;
   readonly rationaleKey?: string;
   readonly caseLawCitations: readonly string[];
-  /** Up to 3 question IDs that most drove this area's verdict (D-13). */
+  /** Up to 3 question IDs that most drove this area's verdict. */
   readonly drivingQuestionIds?: readonly string[];
 }
 
-/** IR35 outcome — 5-area composite per D-13. */
+/** IR35 outcome — 5-area composite. */
 export interface Ir35Outcome {
   readonly kind: 'IR35';
   readonly ruleSetVersion: string;
@@ -46,7 +46,7 @@ export interface Ir35Outcome {
 /** DRV 4 categories for Scheinselbständigkeit. */
 export type ScheinCategory = 'integration' | 'entrepreneurial' | 'personal-dep' | 'economic-dep';
 
-/** Traffic-light verdicts per DRV thresholds (D-14). */
+/** Traffic-light verdicts per DRV thresholds. */
 export type ScheinVerdict = 'green' | 'amber' | 'red';
 
 /** Per-category result for DRV. */
@@ -59,7 +59,7 @@ export interface ScheinCategoryResult {
   readonly drvReferences: readonly string[];
 }
 
-/** Scheinselbständigkeit outcome — weighted sum per D-14. */
+/** Scheinselbständigkeit outcome — weighted sum. */
 export interface ScheinselbstandigkeitOutcome {
   readonly kind: 'SCHEINSELBSTANDIGKEIT';
   readonly ruleSetVersion: string;

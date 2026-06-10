@@ -79,11 +79,11 @@ function extractErrorDetails(err: TRPCError): { code: string; message: string } 
  * Hono error handler that catches TRPCError instances and maps them
  * to structured JSON HTTP responses. Uses instanceof for reliable detection.
  *
- * F-OBS-01: every unhandled (non-tRPC) error is captured to Sentry with
- * the current `requestId` tag so on-call can correlate the JSON 500
- * shipped to the client with the stack trace in Sentry. tRPC errors
- * with status >= 500 are also reported (genuine server-side bugs);
- * 4xx tRPC errors are user errors and only logged.
+ * Every unhandled (non-tRPC) error is captured to Sentry with the current
+ * `requestId` tag so on-call can correlate the JSON 500 shipped to the
+ * client with the stack trace in Sentry. tRPC errors with status >= 500
+ * are also reported (genuine server-side bugs); 4xx tRPC errors are user
+ * errors and only logged.
  */
 export function handleError(err: Error, c: Context) {
   const requestId = getRequestId() ?? (c.get('requestId') as string | undefined);

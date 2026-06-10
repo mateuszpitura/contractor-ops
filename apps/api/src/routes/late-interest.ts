@@ -2,10 +2,10 @@
  * Late-payment claim PDF renderer (`POST /late-interest/_render-claim-pdf`).
  *
  *   1. QStash signature verification via `guardQStashRequest`.
- *   2. Reseed ALS frame (F-OBS-03).
- *   3. F-SCALE-19 — `withBackpressure(LATE_INTEREST_RENDER)` caps the
- *      concurrent @react-pdf renders so a retry burst can't OOM the pod.
- *   4. F-ASYNC-17 — `withQueueObservability` reports per-tick duration.
+ *   2. Reseed ALS frame.
+ *   3. `withBackpressure(LATE_INTEREST_RENDER)` caps the concurrent
+ *      @react-pdf renders so a retry burst can't OOM the pod.
+ *   4. `withQueueObservability` reports per-tick duration.
  *   5. Validate body shape (`claimId`, `organizationId`).
  *   6. Delegate to `renderClaimPdf(claimId)`; the service marks the row
  *      FAILED with a truncated error message on failure so operators can

@@ -1,4 +1,4 @@
-// Phase 72 Wave 2 — GREEN tests for the approval-engine operator registry.
+// GREEN tests for the approval-engine operator registry.
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 

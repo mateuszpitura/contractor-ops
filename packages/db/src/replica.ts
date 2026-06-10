@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------
-// F-SCALE-06 — read-replica routing (Phase 3 Tier-2)
+// Read-replica routing
 // ---------------------------------------------------------------------------
 //
 // Optional per-region read replica. When `DATABASE_URL_<REGION>_RO` is set,
@@ -50,7 +50,7 @@
 // same fallback decision:
 //
 // ```ts
-// // F-SCALE-06: kpis tolerate ~1s of replica lag.
+// // kpis tolerate ~1s of replica lag.
 // const kpis = await readReplica(ctx.region, async db => {
 //   const [a, b] = await Promise.all([db.contract.count(...), db.invoice.count(...)]);
 //   return { a, b };
@@ -72,13 +72,13 @@ import { getRegionalClient, SUPPORTED_REGIONS } from './region.js';
 const REPLICA_ENV_MAP: Record<DataRegion, string> = {
   EU: 'DATABASE_URL_EU_RO',
   ME: 'DATABASE_URL_ME_RO',
-  // US read-replica deferred (US-INFRA-01): DATABASE_URL_US_RO stays unset, so
+  // US read-replica deferred: DATABASE_URL_US_RO stays unset, so
   // getReplicaClient('US') / readReplica transparently fall back to the writer.
   US: 'DATABASE_URL_US_RO',
 };
 
 // ---------------------------------------------------------------------------
-// NEW-ARCH-01 — RLS bypass tripwire
+// RLS bypass tripwire
 // ---------------------------------------------------------------------------
 //
 // `readReplica` (and its writer-fallback paths) hand a raw `PrismaClient` to
@@ -92,9 +92,7 @@ const REPLICA_ENV_MAP: Record<DataRegion, string> = {
 // and policies either deny all reads or read with NULL. This tripwire flips
 // that latent failure into a loud, deterministic error at boot/test time —
 // surfaced via `RLS_POLICIES_ENFORCED=true` once the migration deploys.
-//
-// See `.audit-2026-05-03/REVIEW-R3-ARCHITECTURE.md` (NEW-ARCH-01) for the
-// rationale and the durable fix (a `withReplicaRlsReads` wrapper).
+// The durable fix is a `withReplicaRlsReads` wrapper.
 const RLS_ENFORCEMENT_FLAG = 'RLS_POLICIES_ENFORCED';
 
 function assertRlsCompatibleOrThrow(): void {
@@ -270,7 +268,7 @@ export function getReplicaClient(region: DataRegion): PrismaClient {
  * `$queryRaw` aggregates that already spell out predicates explicitly.
  *
  * @example
- *   // F-SCALE-06: kpis tolerate ~1s lag.
+ *   // kpis tolerate ~1s lag.
  *   const counts = await readReplica('EU', async db =>
  *     db.$queryRaw`SELECT COUNT(*) FROM "Contract" WHERE …`,
  *   );
@@ -279,7 +277,7 @@ export async function readReplica<T>(
   region: DataRegion,
   fn: (db: PrismaClient) => Promise<T>,
 ): Promise<T> {
-  // NEW-ARCH-01: tripwire — refuse to run when RLS policies are enforced.
+  // Tripwire — refuse to run when RLS policies are enforced.
   // Both replica and writer-fallback paths return raw clients with no
   // `SET LOCAL app.org_id`, so policy-protected reads would silently fail.
   assertRlsCompatibleOrThrow();

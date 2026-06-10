@@ -1,4 +1,4 @@
-// Phase 72 D-13 — complianceCritical operator.
+// complianceCritical operator.
 // Returns TRUE iff the contractor has at least one ContractorComplianceItem with
 // severity = 'BLOCKING' AND status = args.status (typically 'EXPIRED'). When TRUE
 // at an invoice approval's final step, the engine holds the flow in

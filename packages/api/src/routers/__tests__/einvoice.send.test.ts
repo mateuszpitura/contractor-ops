@@ -1,5 +1,5 @@
 /**
- * Phase 61 · Plan 61-06 Task 2 — einvoice.send router-level tests.
+ * einvoice.send router-level tests.
  *
  * Coverage (per plan §Task 2 behavior):
  *   1. Happy path — VALID lifecycle + sender ACTIVE + receiver CII → transmit
@@ -108,8 +108,7 @@ vi.mock('@contractor-ops/db', () => ({
   getRegionalClient: vi.fn(() => mockPrisma),
 }));
 
-// F-DB-03 / F-SEC-12 — org-cache must report ACTIVE so tenant middleware
-// does not throw orgSuspended.
+// org-cache must report ACTIVE so tenant middleware does not throw orgSuspended.
 vi.mock('../../services/org-cache', () => ({
   getOrgMeta: vi.fn(async (orgId: string) => ({
     id: orgId,

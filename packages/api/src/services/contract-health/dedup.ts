@@ -1,6 +1,6 @@
-// Phase 75 D-03 — Idempotency dedup. The partial unique index
-// (Plan 75-02) enforces (contractId, contentHash, modelVer) uniqueness ONLY
-// when status = 'SUCCEEDED'. This module exposes a typed wrapper.
+// Idempotency dedup. The partial unique index enforces
+// (contractId, contentHash, modelVer) uniqueness ONLY when
+// status = 'SUCCEEDED'. This module exposes a typed wrapper.
 
 import type { PrismaClient } from '@contractor-ops/db';
 

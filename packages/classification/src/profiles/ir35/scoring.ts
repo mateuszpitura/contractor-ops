@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------
-// IR35 Composite-Rule Scoring — D-13
+// IR35 Composite-Rule Scoring
 // ---------------------------------------------------------------------------
 //
 // ORDER IS LOAD-BEARING. Dispositive rules FIRST (the 2024 Supreme Court PGMOL
@@ -86,7 +86,7 @@ export function scoreIr35(answers: AnswerMap): ScoreIr35Result {
   let reasoning: string;
   let triggerKey: string;
 
-  // Step 2: DISPOSITIVE rules, ORDER LOAD-BEARING (D-13).
+  // Step 2: DISPOSITIVE rules, ORDER LOAD-BEARING.
   if (subVerdict === 'strong-inside' || mooVerdict === 'strong-inside') {
     overall = 'inside';
     triggerKey = 'dispositive-inside';

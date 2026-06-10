@@ -1,4 +1,4 @@
-// Phase 75 D-13 — Anthropic IP-assignment evaluation service.
+// Anthropic IP-assignment evaluation service.
 //
 // Owns the Anthropic SDK call for the contract health check, mirroring
 // ocr-service.extractInvoice. The api-package orchestrator

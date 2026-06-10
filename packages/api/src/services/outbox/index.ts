@@ -1,4 +1,4 @@
-// Transactional outbox service (P2-A, F-ASYNC-03 / F-ASYNC-04 / F-DB-23).
+// Transactional outbox service.
 //
 // Producers call `enqueueOutboxEvent({ tx, ... })` *inside* their existing
 // `prisma.$transaction(...)` so the side effect is durably scheduled iff the
@@ -17,7 +17,7 @@
 //     same event in the same tick — but a worker that crashes mid-dispatch
 //     leaves the row PENDING and the next tick will re-dispatch.
 //
-// Drain composition (NEW-ARCH-02 / NEW-ARCH-03 fix, 2026-05-06):
+// Drain composition (2026-05-06 fix):
 // The drain runs in three distinct phases, each with its own transactional
 // scope, so that handler side-effects (Stripe, Resend, Slack) NEVER share a
 // transaction with the row-status update:
@@ -41,7 +41,7 @@
 // capped at 1 hour, max 5 attempts. After the final attempt the row is
 // marked FAILED and a Sentry capture fires.
 //
-// Why 5 attempts (NEW-ARCH-06 fix, 2026-05-06)
+// Why 5 attempts (2026-05-06 fix)
 // ============================================
 // Each handler call goes through `withResilience` (packages/integrations),
 // which already applies its own p-retry budget (typically 2-3 attempts +
@@ -102,7 +102,7 @@ export interface EnqueueOutboxEventInput<TPayload = Record<string, unknown>> {
    * Optional natural-key dedup. When set, the row insert is `INSERT ... ON
    * CONFLICT (organizationId, dedupKey) DO NOTHING`, so a producer that
    * fires the same logical event twice is a no-op at the DB level. Use for
-   * notification dedup (F-ASYNC-04): set to e.g.
+   * notification dedup: set to e.g.
    * `${recipientId}:${notificationType}:${entityId}:${dateBucket}`.
    */
   dedupKey?: string;
@@ -147,7 +147,7 @@ interface ClaimedOutboxRow {
 /**
  * After this many attempts, mark FAILED and Sentry-capture.
  *
- * Lowered from 10 → 5 (NEW-ARCH-06, 2026-05-06): `withResilience` already
+ * Lowered from 10 → 5 (2026-05-06): `withResilience` already
  * absorbs transient errors with its own p-retry budget, so the outbox
  * compounds with already-retried calls. See the docstring at the top of
  * this file and `packages/integrations/src/services/resilience.ts`.
@@ -193,7 +193,7 @@ export const CLAIM_WINDOW_MS = 5 * 60 * 1000;
  * Returns the inserted row's id, or `null` if the insert was deduped
  * (dedupKey conflict). Callers may use the returned id for trace correlation.
  *
- * F-ASYNC-04: when `dedupKey` is set, the unique `(organizationId, dedupKey)`
+ * When `dedupKey` is set, the unique `(organizationId, dedupKey)`
  * constraint short-circuits double-enqueues at the DB layer instead of via a
  * racy `findFirst` lookup.
  */
@@ -257,7 +257,7 @@ export async function enqueueOutboxEvent<TPayload extends Record<string, unknown
  * locks them with `FOR UPDATE SKIP LOCKED` so concurrent drain workers fan
  * out without colliding, then dispatches each through the handler registry.
  *
- * Composition (NEW-ARCH-02 / NEW-ARCH-03 fix):
+ * Composition:
  *   1. Claim batch in a short tx — bump attempts, push nextAttemptAt out by
  *      CLAIM_WINDOW_MS so a parallel drainer skips the row.
  *   2. Dispatch each claimed row OUTSIDE any tx — handler side-effects
@@ -278,7 +278,7 @@ export async function drainOutboxBatch(): Promise<DrainBatchResult> {
     exhausted: 0,
   };
 
-  // Phase 1 — claim.
+  // Step 1 — claim.
   const claimed = await claimOutboxBatch();
   result.scanned = claimed.length;
   if (claimed.length === 0) return result;
@@ -301,7 +301,7 @@ export async function drainOutboxBatch(): Promise<DrainBatchResult> {
 }
 
 /**
- * Phase 1 — claim up to DRAIN_BATCH_LIMIT rows under a short transaction.
+ * Step 1 — claim up to DRAIN_BATCH_LIMIT rows under a short transaction.
  *
  * Increments `attempts` and pushes `nextAttemptAt` out by CLAIM_WINDOW_MS
  * so a concurrent drainer's `WHERE nextAttemptAt <= NOW()` predicate won't
@@ -386,7 +386,7 @@ async function dispatchAndFinalize(row: ClaimedOutboxRow): Promise<RowOutcome> {
   }
 
   try {
-    // Phase 2 — handler side-effects, NEVER inside a transaction.
+    // Step 2 — handler side-effects, NEVER inside a transaction.
     await dispatchOutboxEvent({
       id: row.id,
       organizationId: row.organizationId,
@@ -397,7 +397,7 @@ async function dispatchAndFinalize(row: ClaimedOutboxRow): Promise<RowOutcome> {
     return finalizeFailure(row, err);
   }
 
-  // Phase 3a — success.
+  // Step 3a — success.
   await finalizeSuccess(row.id);
   return 'dispatched';
 }

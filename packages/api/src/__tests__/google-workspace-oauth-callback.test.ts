@@ -4,8 +4,8 @@ import {
 } from '@contractor-ops/integrations';
 import { describe, expect, it } from 'vitest';
 
-// Phase 76 SC#3 — the OAuth callback's scopeCapabilities derivation + prompt=consent flow
-// is a Fastify route (apps/api/src/routes/oauth.ts); the full behavioural test lives at
+// The OAuth callback's scopeCapabilities derivation + prompt=consent flow is a
+// Fastify route (apps/api/src/routes/oauth.ts); the full behavioural test lives at
 // apps/api/src/__tests__/google-workspace-oauth-callback.test.ts. Here we lock the
 // integrations-level contract those callbacks depend on (the typed-const scope + capabilities).
 

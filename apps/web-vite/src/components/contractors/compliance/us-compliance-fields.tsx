@@ -38,7 +38,7 @@ export interface UsComplianceFieldsProps {
   ssnLast4?: string;
   /** Whether the active role holds `contractorPii:read` (controls reveal availability). */
   canRevealSsn?: boolean;
-  /** Advisory USPS status for the saved address (US-FIELD-03). */
+  /** Advisory USPS status for the saved address. */
   uspsStatus?: UspsAddressStatus;
   uspsValidatedAt?: Date | string | null;
   /** USPS-normalized address (CASS) when it differs from the entered one — advisory only. */
@@ -78,10 +78,10 @@ function FieldError({ id, message }: { id: string; message: string | undefined }
 }
 
 /**
- * US contractor compliance fields (US-FIELD-01/02/03/04, UI-SPEC §A).
+ * US contractor compliance fields.
  *
- * Mirrors UkComplianceFields: a dashed info box, then a `space-y-4` stack in the
- * §A order — entity type → EIN → SSN → US address (with the advisory USPS pill +
+ * Mirrors UkComplianceFields: a dashed info box, then a `space-y-4` stack in
+ * order — entity type → EIN → SSN → US address (with the advisory USPS pill +
  * normalized-suggestion box). The SSN surface is `SsnMaskedReveal` once a value
  * is stored, and a plain entry input otherwise. EIN/SSN format errors surface
  * inline via FieldError and never block typing.
@@ -135,7 +135,7 @@ export function UsComplianceFields(props: UsComplianceFieldsProps) {
   const einRequired = entityType ? ENTITIES_REQUIRING_EIN.includes(entityType) : false;
 
   // Inline, non-blocking validation — surfaced only once the user has typed a
-  // complete-looking value, so it never fires mid-keystroke (UI-SPEC §D).
+  // complete-looking value, so it never fires mid-keystroke.
   const einError =
     errors.ein ?? (einValue && !isValidEin(einValue) ? t('einFormatError') : undefined);
   const ssnError =

@@ -1,7 +1,6 @@
 // packages/validators/src/bacs.ts
 //
 // BACS Standard 18 Zod validators and VocaLink modulus check function.
-// Phase 63 — PAY-01.
 //
 // References:
 // - VocaLink Modulus Checking specification v8.40 (May 2025)

@@ -1,5 +1,5 @@
 /**
- * Unit tests for the compliance-gaps streaming source (P2-C / F-DB-05).
+ * Unit tests for the compliance-gaps streaming source.
  *
  * The iterator is a small piece of business logic but the cursor pagination
  * is easy to break (off-by-one when re-using the cursor from `take` size,

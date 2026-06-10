@@ -1,8 +1,6 @@
 /**
  * Skonto (early payment discount) eligibility service.
  *
- * Phase 63 · Plan 06 · D-21, D-24
- *
  * Pure functions for:
  * - Resolving which SkontoTerm applies (invoice-level > billing-profile default)
  * - Evaluating eligibility based on payment date vs discount window
@@ -46,7 +44,7 @@ export type SkontoEligibilityResult = {
  * Cascade resolution: invoice-level term takes priority over billing-profile
  * default. Returns null if neither is configured.
  *
- * Per D-21: invoice -> billing profile -> null.
+ * Cascade: invoice -> billing profile -> null.
  */
 export function resolveSkontoTerm(
   invoiceTerm: SkontoTermData | null,

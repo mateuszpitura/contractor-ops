@@ -2,7 +2,7 @@
 // ZATCA Invoice Hash Chain Service
 // ---------------------------------------------------------------------------
 // Manages the sequential invoice hash chain per organization.
-// Per D-03: Advisory lock ensures sequential processing per org.
+// Advisory lock ensures sequential processing per org.
 // Per ZATCA spec: Each invoice references the hash of the previous invoice.
 // First invoice PIH = SHA-256 of literal string "0".
 // ---------------------------------------------------------------------------
@@ -68,7 +68,7 @@ const GENESIS_PIH = crypto.createHash('sha256').update('0').digest('hex');
  * automatically released on commit or rollback.
  *
  * Must be called within a Prisma interactive transaction (`$transaction`).
- * T-48-10: Combined with @@unique([orgId, icv]) prevents concurrent/duplicate entries.
+ * Combined with @@unique([orgId, icv]) prevents concurrent/duplicate entries.
  */
 export async function acquireChainLock(prisma: PrismaLike, organizationId: string): Promise<void> {
   await acquireXactLock(

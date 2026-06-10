@@ -1,17 +1,11 @@
 // packages/validators/src/de-validators.ts
 //
-// German tax-ID validators — Phase 56 · Plan 03 (FOUND-02, D-03).
+// German tax-ID validators.
 //
 // References:
 //   ISO/IEC 7064:2003 Pure System MOD 11,10
 //   https://arthurdejong.org/python-stdnum/doc/1.17/stdnum.iso7064
 //   Deutsche Rentenversicherung — Sozialversicherungsnummer structure
-//
-// WAVE 1 CONTRACT: imports from './steuernummer-formats.js' and
-// './handelsregister-courts.js' are provided by Plan 04 (same wave).
-// Wave 1 must close with both Plan 03 AND Plan 04 landed — the package
-// will fail to build until Plan 04's data modules are present, which is
-// the designed cross-plan integration signal.
 
 import { HANDELSREGISTER_COURTS } from './handelsregister-courts.js';
 import type { BundeslandCode } from './steuernummer-formats.js';
@@ -27,9 +21,9 @@ import { getSteuernummerRegex, STEUERNUMMER_FORMATS } from './steuernummer-forma
  * Iterative algorithm (NOT a naive single-pass mod-11 sum).
  * Returns an integer 0-9.
  *
- * Pitfall 1 (RESEARCH §Pitfall 1): naive `Σ(w_i · d_i) mod 11` is a different
- * algorithm used by Polish NIP and Luhn-family IDs — it yields wrong results
- * for German USt-IdNr and must not be used here.
+ * Caution: naive `Σ(w_i · d_i) mod 11` is a different algorithm used by
+ * Polish NIP and Luhn-family IDs — it yields wrong results for German
+ * USt-IdNr and must not be used here.
  */
 // biome-ignore lint/style/useNamingConvention: name mirrors ISO 7064 MOD-11-10 algorithm identifier
 export function mod11_10CheckDigit(digits: readonly number[]): number {
@@ -69,10 +63,9 @@ export function isValidUstIdNr(raw: string): boolean {
 // Sozialversicherungsnummer — 12-char structural + weighted mod-10 checksum
 // ---------------------------------------------------------------------------
 
-// ASSUMPTION A3 (MEDIUM): SV-Nummer weight array [2,1,2,5,7,1,2,1,2,1,2,1]
-// per community DRV sources (https://www.deutsche-rentenversicherung.de).
-// Steuerberater review required to confirm against ≥5 real vectors before
-// production use. STATE.md Blockers tracks the review commissioning task.
+// SV-Nummer weight array [2,1,2,5,7,1,2,1,2,1,2,1] per community DRV sources
+// (https://www.deutsche-rentenversicherung.de). Steuerberater review required
+// to confirm against ≥5 real vectors before production use.
 const SV_WEIGHTS = [2, 1, 2, 5, 7, 1, 2, 1, 2, 1, 2, 1] as const;
 
 function digitSum(n: number): number {
@@ -94,7 +87,7 @@ function digitSum(n: number): number {
  * first 12 positions (area+DOB + letter(2 digits) + serial), each product
  * reduced via digit-sum, summed mod 10.
  *
- * Pitfall 4 (RESEARCH §Pitfall 4): accepts lowercase + strip whitespace/hyphens.
+ * Accepts lowercase input; strips whitespace and hyphens before validation.
  */
 export function isValidSvNummer(raw: string): boolean {
   const sv = raw.replace(/[\s-]/g, '').toUpperCase();
@@ -143,7 +136,7 @@ const COURT_CODE_SET: ReadonlySet<string> = new Set(HANDELSREGISTER_COURTS.map(c
  *
  * - `court`: must be a known Registergericht code from Plan 04's list.
  * - `type`: either `HRB` (Kapitalgesellschaften) or `HRA` (Personengesellschaften).
- * - `number`: 1-7 digits (D-03 cap).
+ * - `number`: 1-7 digits (maximum per spec).
  *
  * Any missing or malformed part yields `false`. Intended to back a composite
  * Zod schema in Plan 04 that attaches structured error paths.

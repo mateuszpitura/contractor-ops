@@ -1,6 +1,5 @@
 /**
- * Async export framework — orchestration helpers (P2-F · F-SCALE-01,
- * F-SCALE-02, F-SCALE-08).
+ * Async export framework — orchestration helpers.
  *
  * Public surface:
  *   - {@link requestExport} — called inside a tRPC mutation; persists a
@@ -626,11 +625,10 @@ async function handleOverdueInvoices(input: DispatchInput): Promise<DispatchResu
 }
 
 async function handleComplianceGaps(input: DispatchInput): Promise<DispatchResult> {
-  // P2-C — async-generator streaming source. Memory is O(CSV_PAGE_SIZE)
-  // regardless of org size; csv-stringify pulls one row at a time and pipes
-  // straight into the R2 multipart upload via `uploadCsvStream`.
-  // See `iterateComplianceGaps` jsdoc for the memory profile and the
-  // pending F-DB-05 SQL-side health-predicate follow-up.
+  // Async-generator streaming source. Memory is O(CSV_PAGE_SIZE) regardless
+  // of org size; csv-stringify pulls one row at a time and pipes straight into
+  // the R2 multipart upload via `uploadCsvStream`. See `iterateComplianceGaps`
+  // jsdoc for the memory profile.
   let rowCount = 0;
   const source = iterateComplianceGaps(prisma, {
     organizationId: input.claim.organizationId,

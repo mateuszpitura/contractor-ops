@@ -2,12 +2,10 @@
 // Classification Profile Registry
 // ---------------------------------------------------------------------------
 //
-// Per D-02: registry-based pluggable profile architecture mirroring
-// packages/einvoice. Each country rule set (IR35, Scheinselbständigkeit)
-// registers a ClassificationProfile via `registerProfile` on import.
-//
-// Per CLASS-01: adding a profile via `registerProfile` does NOT require
-// modifying this file — tree-shakeable, finite set of country profiles.
+// Registry-based pluggable profile architecture. Each country rule set
+// (IR35, Scheinselbständigkeit) registers a ClassificationProfile via
+// `registerProfile` on import. Adding a profile does NOT require modifying
+// this file — tree-shakeable, finite set of country profiles.
 
 import type { ClassificationProfile } from './types/profile.js';
 

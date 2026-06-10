@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------
-// Compliance admin tRPC router — Phase 73, Plan 73-03 / 73-05 / 73-08
+// Compliance admin tRPC router
 // ---------------------------------------------------------------------------
 //
 // Always-mounted router (no classification-engine flag required). Admin
@@ -14,7 +14,7 @@
 // - Mutation procedures require `compliance:override` RBAC.
 // - approveUploadReplacement + rejectUploadReplacement assert document org-scope,
 //   PENDING_REVIEW status, and DocumentLink contractor ownership before mutating
-//   (defence-in-depth, T-73-08-02 / WR-1 pattern).
+//   (defence-in-depth).
 
 import type { Prisma } from '@contractor-ops/db';
 import { createLogger } from '@contractor-ops/logger';
@@ -46,7 +46,7 @@ const logger = createLogger({ service: 'compliance-admin-router' });
 // Shared cuid validator — mirrors the idiom in sibling compliance routers.
 const cuid = z.string().min(1);
 
-// Phase 73 D-11..D-12 — closed enum mirrors Prisma `WaivedReasonCategory`.
+// Closed enum mirrors Prisma `WaivedReasonCategory`.
 const overrideItemInput = z.object({
   itemId: cuid,
   reasonCategory: z.enum([
@@ -61,12 +61,12 @@ const overrideItemInput = z.object({
 });
 
 /**
- * Phase 73 D-08 — best-effort contractor-upload-outcome notification. Contractors
- * authenticate via portal sessions (email-based), not the platform `User` table,
- * so there is no direct contractor `recipientUserId`; we notify the org's
- * compliance admins (the actors who review uploads) and the contractor sees the
- * outcome in their portal list. Wrapped so a dispatch failure never rolls back
- * (or surfaces from) the approve/reject mutation (T-73-08-04).
+ * Best-effort contractor-upload-outcome notification. Contractors authenticate
+ * via portal sessions (email-based), not the platform `User` table, so there
+ * is no direct contractor `recipientUserId`; we notify the org's compliance
+ * admins (the actors who review uploads) and the contractor sees the outcome
+ * in their portal list. Wrapped so a dispatch failure never rolls back or
+ * surfaces from the approve/reject mutation.
  */
 async function dispatchComplianceUploadOutcome(
   organizationId: string,
@@ -109,12 +109,12 @@ async function dispatchComplianceUploadOutcome(
 
 export const complianceAdminRouter = router({
   // -------------------------------------------------------------------------
-  // overrideItem — admin manual override of a single compliance item (D-12).
+  // overrideItem — admin manual override of a single compliance item.
   //
   // Flips status → WAIVED, records the admin-chosen closed-enum subcategory +
   // free-text note, and emits a forensic AuditLog row INSIDE the same
-  // transaction so the item update and the audit row commit atomically
-  // (T-73-03-02). `previousStatus` is read before the update (T-73-03-07).
+  // transaction so the item update and the audit row commit atomically.
+  // `previousStatus` is read before the update.
   // -------------------------------------------------------------------------
   overrideItem: tenantProcedure
     .use(requirePermission({ compliance: ['override'] }))
@@ -166,12 +166,12 @@ export const complianceAdminRouter = router({
     }),
 
   // -------------------------------------------------------------------------
-  // itemAuditTrail — History timeline for a single compliance item (D-13).
+  // itemAuditTrail — History timeline for a single compliance item.
   //
   // Org-scoped (tenantProcedure) + defence-in-depth item-org assertion before
-  // the audit lookup (T-73-03-05). The typed JSON filter `metadataJson.itemId`
-  // uses a path-equality predicate; note: the Plan 73-02 GIN index accelerates
-  // containment (`@>`) queries, not path-equality — the btree index on
+  // the audit lookup. The typed JSON filter `metadataJson.itemId` uses a
+  // path-equality predicate; the GIN index accelerates containment (`@>`)
+  // queries, not path-equality — the btree index on
   // (organizationId, resourceType, resourceId) covers this query in practice.
   // -------------------------------------------------------------------------
   itemAuditTrail: tenantProcedure
@@ -199,8 +199,8 @@ export const complianceAdminRouter = router({
     }),
 
   // -------------------------------------------------------------------------
-  // Admin compliance dashboard (D-01..D-05). All read-gated. KPI counts run in
-  // a single Promise.all; the three list endpoints back the dashboard tables.
+  // Admin compliance dashboard. All read-gated. KPI counts run in a single
+  // Promise.all; the three list endpoints back the dashboard tables.
   // -------------------------------------------------------------------------
   dashboardKpis: tenantProcedure
     .use(requirePermission({ compliance: ['read'] }))
@@ -231,10 +231,10 @@ export const complianceAdminRouter = router({
 
   // -------------------------------------------------------------------------
   // approveUploadReplacement — admin approve of a contractor PENDING_REVIEW
-  // upload (D-08). One $transaction: item -> SATISFIED + satisfiedByDocumentId
+  // upload. One $transaction: item -> SATISFIED + satisfiedByDocumentId
   // + admin-confirmed expiresAt; Document -> ACTIVE; forensic audit row. The
   // contractor notification is best-effort (post-tx) so a dispatch failure
-  // never rolls back the approval (T-73-08-04).
+  // never rolls back the approval.
   // -------------------------------------------------------------------------
   approveUploadReplacement: tenantProcedure
     .use(requirePermission({ compliance: ['override'] }))
@@ -313,12 +313,12 @@ export const complianceAdminRouter = router({
           tx,
         );
 
-        // Phase 81 D-12/D-14 — re-assert contractor eligibility for the approved
-        // item so any PENDING_COMPLIANCE ApprovalFlow holding it resumes to PENDING
-        // and the contractor's payment unblocks. Per-item (exactly one item flips
-        // per approval — not the all-BLOCKING supersession loop). In-tx so the
+        // Re-assert contractor eligibility for the approved item so any
+        // PENDING_COMPLIANCE ApprovalFlow holding it resumes to PENDING and the
+        // contractor's payment unblocks. Per-item (exactly one item flips per
+        // approval — not the all-BLOCKING supersession loop). In-tx so the
         // resume is atomic with the SATISFIED flip; the post-tx contractor
-        // notification below stays best-effort (T-73-08-04).
+        // notification below stays best-effort.
         await onComplianceItemSatisfied(tx as Parameters<typeof onComplianceItemSatisfied>[0], {
           itemId: input.itemId,
           contractorId: before.contractorId,
@@ -336,7 +336,7 @@ export const complianceAdminRouter = router({
     }),
 
   // -------------------------------------------------------------------------
-  // rejectUploadReplacement — admin reject of a PENDING_REVIEW upload (D-08).
+  // rejectUploadReplacement — admin reject of a PENDING_REVIEW upload.
   // One $transaction: Document -> ARCHIVED; item status UNCHANGED; forensic
   // audit row with closed-enum reason + free text. Best-effort contractor
   // notification carries a re-upload deep link. `Document.rejectionReason`
@@ -422,7 +422,7 @@ export const complianceAdminRouter = router({
           async () => item,
           tx,
         );
-        // Item status intentionally unchanged (D-08) — stays MISSING/EXPIRED.
+        // Item status intentionally unchanged — stays MISSING/EXPIRED.
         return { item, contractorId: item.contractorId, policyRuleId: item.policyRuleId };
       });
 

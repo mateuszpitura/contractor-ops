@@ -3,7 +3,7 @@ import type { Prisma } from '../generated/prisma/client/client.js';
 
 // Compile-time AND runtime assertions: each `Prisma.*UncheckedCreateInput`
 // reference fails typecheck if the model/column/enum does not exist on the
-// regenerated client (Plan 76-02 schema additions).
+// regenerated client.
 
 describe('Phase 76 schema additions (Plan 76-02)', () => {
   it('DeprovisioningRun model exists with all D-01 columns', () => {

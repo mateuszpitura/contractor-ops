@@ -24,8 +24,6 @@ import {
 } from './classification-shared';
 
 export const classificationDraftRouter = router({
-
-
   createDraft: classificationProcedure.input(createDraftInput).mutation(async ({ ctx, input }) => {
     const { assignment, profile } = await resolveAssignmentAndProfile(
       ctx.db,
@@ -70,7 +68,6 @@ export const classificationDraftRouter = router({
   //    already seen a drift error.
   // -------------------------------------------------------------------------
 
-
   recreateDraftAfterDrift: classificationProcedure
     .input(recreateDraftAfterDriftInput)
     .mutation(async ({ ctx, input }) => {
@@ -100,7 +97,7 @@ export const classificationDraftRouter = router({
       }
 
       // Create a new draft against the current rule-set version. The stale
-      // draft is NOT mutated (D-04 append-only); `getDraft` orders by
+      // draft is NOT mutated (append-only); `getDraft` orders by
       // createdAt DESC so the fresh draft naturally wins on next resume.
       // Historical drift drafts remain queryable via listByContractor for
       // audit purposes.
@@ -117,27 +114,26 @@ export const classificationDraftRouter = router({
     }),
 
   // -------------------------------------------------------------------------
-  // recreateComplianceAssessment — admin-triggered drift recompute (D-13..D-16).
+  // recreateComplianceAssessment — admin-triggered drift recompute.
   //
   // Architectural twin: recreateDraftAfterDrift (above). Same transactional
   // shape, same idempotency guard, same audit-log pattern. Differs in scope:
   // operates on ContractorComplianceItem rows (not the assessment itself).
   //
-  // Trigger points (D-13):
+  // Trigger points:
   //   - Per-contractor "Recompute compliance" button on profile (single ID)
   //   - Bulk action on contractors-list selection (N IDs)
   // Both call this same mutation. NO org-wide "everyone" button (blast radius).
   //
-  // Idempotency (D-16): when reason='policy_version_bump' AND the contractor's
-  // latest assessment already references the current registry version, returns
-  // noop:true. Mirrors recreateDraftAfterDrift's PRECONDITION_FAILED check, but
-  // returns gracefully instead of throwing — bulk runs need to skip already-
-  // current contractors without aborting.
+  // Idempotency: when reason='policy_version_bump' AND the contractor's latest
+  // assessment already references the current registry version, returns noop:true.
+  // Mirrors recreateDraftAfterDrift's PRECONDITION_FAILED check, but returns
+  // gracefully instead of throwing — bulk runs need to skip already-current
+  // contractors without aborting.
   //
-  // Audit (D-15): exactly ONE AuditLog row per invocation (NOT per affected
-  // row). metadataJson carries the per-contractor delta list.
+  // Audit: exactly ONE AuditLog row per invocation (NOT per affected row).
+  // metadataJson carries the per-contractor delta list.
   // -------------------------------------------------------------------------
-
 
   getDraft: classificationProcedure.input(getDraftInput).query(async ({ ctx, input }) => {
     const { assignment, profile } = await resolveAssignmentAndProfile(
@@ -171,11 +167,10 @@ export const classificationDraftRouter = router({
   // Security:
   //  - Rate-limited 120/min per assessmentId (T-58-13).
   //  - Only writeable while status='draft' (T-58-10).
-  //  - Optimistic concurrency via expectedUpdatedAt (T-58-17 / Pitfall 10).
+  //  - Optimistic concurrency via expectedUpdatedAt.
   //  - Answer payload is Zod-validated against the question's answerType
   //    before any write (T-58-10 / ASVS V5).
   // -------------------------------------------------------------------------
-
 
   saveAnswer: classificationProcedure
     .input(saveAnswerInput)
@@ -240,8 +235,8 @@ export const classificationDraftRouter = router({
   // -------------------------------------------------------------------------
   // submit — close the draft, compute the outcome, freeze the snapshot.
   //
-  // All scoring is server-side (T-58-11 / Pitfall 2). The computed outcome
-  // is parsed through `outcomeSchema` before persistence — defence in depth
-  // for Pitfall 12 (discriminated-union validation).
+  // All scoring is server-side. The computed outcome is parsed through
+  // `outcomeSchema` before persistence — defence in depth via
+  // discriminated-union validation.
   // -------------------------------------------------------------------------
 });

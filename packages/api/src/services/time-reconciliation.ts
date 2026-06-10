@@ -131,7 +131,7 @@ export async function computeTimeReconciliation(
   const approvedMinutes = approvedEntries._sum.minutes ?? 0;
   if (approvedMinutes === 0) return null;
 
-  // 3. Get org threshold setting (default 10% per D-14)
+  // 3. Get org threshold setting (default 10%)
   const org = await db.organization.findUniqueOrThrow({
     where: { id: organizationId },
     select: { settingsJson: true },

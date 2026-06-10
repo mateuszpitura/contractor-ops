@@ -1,11 +1,11 @@
 // packages/einvoice/src/profiles/xrechnung-de/__tests__/locked-phrase-parity.test.ts
 //
-// Phase 61 · Plan 61-02 Task 1 — Drift guard for threat T-61-02-02.
+// Drift guard for locked legal phrases.
 //
 // The XRechnung generator emits ExemptionReason strings that MUST byte-match
-// the Phase-56 locked legal phrases (Steuerschuldnerschaft des Leistungs-
-// empfängers / §19 UStG Kleinunternehmer-Hinweis). KoSIT Business Rules
-// BR-DE-10 / BR-DE-14 require the exact canonical wording.
+// the locked legal phrases (Steuerschuldnerschaft des Leistungsempfängers /
+// §19 UStG Kleinunternehmer-Hinweis). KoSIT Business Rules BR-DE-10 /
+// BR-DE-14 require the exact canonical wording.
 //
 // The einvoice package cannot relative-import from `packages/validators/src`
 // without violating its own `rootDir` TS boundary, and cannot depend on
@@ -15,7 +15,7 @@
 // test — run under vitest's unrestricted import semantics — to assert that
 // the mirror never drifts from the canonical source.
 //
-// If Phase 56 ever changes the canonical phrase, this test fails and the
+// If the canonical phrase ever changes, this test fails and the
 // xrechnung-de mirror must be updated in lockstep.
 
 import { describe, expect, it } from 'vitest';

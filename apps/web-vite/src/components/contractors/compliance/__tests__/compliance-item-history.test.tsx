@@ -1,4 +1,4 @@
-// Phase 73 · Plan 08 — compliance item history disclosure tests (D-13).
+// Compliance item history disclosure tests.
 
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 

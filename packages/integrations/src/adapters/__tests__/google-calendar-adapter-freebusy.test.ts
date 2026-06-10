@@ -1,4 +1,4 @@
-// Phase 74 Plan 06 — GoogleCalendarAdapter.getFreeBusy GREEN tests.
+// GoogleCalendarAdapter.getFreeBusy tests.
 //
 // Uses fetch-mock pattern via vi.spyOn(global, 'fetch') — no msw needed for
 // this small surface. Verifies merge of /freeBusy + events.list responses

@@ -1,6 +1,6 @@
 // packages/api/src/services/__tests__/peppol-capability.test.ts
 //
-// Phase 61 · Plan 61-05 Task 2 — capability cache + pre-flight helper tests.
+// Capability cache + pre-flight helper tests.
 //
 // Coverage:
 //   1. Cache miss → Storecove adapter called once → cache row upserted.

@@ -1,10 +1,9 @@
-// Phase 57 · Plan 03 · Task 3 — kleinunternehmer.service.
+// kleinunternehmer.service — § 19 UStG small-business VAT exemption.
 //
-// § 19 UStG small-business VAT exemption:
 //   - When org.countryCode='DE' AND org.isKleinunternehmer=true:
 //       • every non-RC invoice line forced to vatRate='KU' (0% exempt)
-//       • invoice footer renders TAX_KLEINUNTERNEHMER_NOTICE (Plan 57-04)
-//       • VAT totals breakdown suppressed (RESEARCH Pitfall 7)
+//       • invoice footer renders TAX_KLEINUNTERNEHMER_NOTICE
+//       • VAT totals breakdown suppressed
 //   - RC (reverse charge) takes PRECEDENCE over KU — legal attribution
 //     beats small-business exemption.
 

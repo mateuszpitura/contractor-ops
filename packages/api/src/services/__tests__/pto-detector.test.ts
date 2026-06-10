@@ -1,4 +1,4 @@
-// Phase 74 Plan 06 — GREEN tests for resolveAssigneeWithPto.
+// GREEN tests for resolveAssigneeWithPto.
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { CalendarAdapter } from '../pto-detector';
@@ -185,7 +185,7 @@ describe('resolveAssigneeWithPto — D-05/D-06/D-07/D-08', () => {
   it('no PTO-spam — single resolution at task creation time', async () => {
     // The detector exposes one entry point (resolveAssigneeWithPto). Calling
     // it once and asserting that the calendar adapter's getFreeBusy was hit
-    // exactly once is sufficient — Plan 74-08's startOffboardingRun calls it
+    // exactly once is sufficient — startOffboardingRun calls it
     // per-task at creation time (no per-render re-resolution).
     const prisma = makePrisma({ user: { outOfOffice: null } });
     const adapter = makeAdapter([]);

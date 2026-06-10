@@ -1,4 +1,4 @@
-// Phase 62 · Plan 62-03 Task 4 — React-PDF invoice template tests.
+// React-PDF invoice template tests.
 //
 // Covers:
 //   1. Rendered buffer > 1000 bytes.

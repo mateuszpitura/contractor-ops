@@ -1,9 +1,9 @@
 // packages/validators/src/legal/ae.ts
 //
-// LOCKED AE (UAE) LEGAL PHRASES — Phase 79 (GULF-09, D-14/D-15).
+// LOCKED AE (UAE) LEGAL PHRASES.
 //
-// Statutory identifiers ONLY (D-14): UAE free-zone authority legal names. These
-// are the canonical legal-entity names of the licensing authorities behind each
+// Statutory identifiers ONLY: UAE free-zone authority legal names. These are
+// the canonical legal-entity names of the licensing authorities behind each
 // recordable free zone (UaeFreeZoneCode). They are referenced by KEY from the
 // UaeFreeZone lookup (authorityLegalNameKey) — never stored as free text, never
 // translated, never placed in messages/*.json.

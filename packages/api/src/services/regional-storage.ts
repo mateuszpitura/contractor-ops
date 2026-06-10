@@ -77,7 +77,7 @@ function resolveRegion(explicitRegion?: string): string {
  * Creates a presigned PUT URL for uploading a file to the regional R2 bucket.
  * Default expiry: 5 minutes.
  *
- * F-SEC-19: when `maxBytes` is supplied, the URL is signed with
+ * When `maxBytes` is supplied, the URL is signed with
  * `ContentLength` so R2 rejects oversize PUTs at the edge before any bytes
  * land in our bucket.
  *

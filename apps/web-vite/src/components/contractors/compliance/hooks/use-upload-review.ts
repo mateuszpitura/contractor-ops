@@ -20,7 +20,7 @@ export const REJECT_REASON_CATEGORIES: readonly RejectReasonCategory[] = [
 ];
 
 /**
- * Phase 73 D-08 — the only tRPC boundary for the admin upload-review dialog.
+ * The only tRPC boundary for the admin upload-review dialog.
  * Wraps approve + reject mutations with toasts + compliance-query invalidation.
  */
 export function useUploadReview(onSettled?: () => void) {

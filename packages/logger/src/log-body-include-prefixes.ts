@@ -7,9 +7,8 @@
  *   - 'router.procedure'                 — full procedure body in plaintext
  *   - 'router.procedure:fieldA,fieldB'   — only the listed body fields exempt
  *
- * Phase 70 D-06 D-08. Empty initial state — every entry requires manual review.
- * The pnpm lint:logs guard reads this constant directly to decide whether a
- * body-log site is allowed.
+ * Empty initial state — every entry requires manual review. The pnpm lint:logs
+ * guard reads this constant directly to decide whether a body-log site is allowed.
  */
 export const LOG_BODY_INCLUDE_PREFIXES: readonly string[] = [
   // (intentionally empty — adding an entry requires a `// reason: ...` comment

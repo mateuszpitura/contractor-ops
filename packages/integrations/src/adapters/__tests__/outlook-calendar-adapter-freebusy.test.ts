@@ -1,4 +1,4 @@
-// Phase 74 Plan 06 — OutlookCalendarAdapter.getFreeBusy GREEN tests.
+// OutlookCalendarAdapter.getFreeBusy tests.
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { OutlookCalendarAdapter } from '../outlook-calendar-adapter.js';

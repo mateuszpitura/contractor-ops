@@ -1,4 +1,4 @@
-// F-OBS-01: initSentry first — same posture as apps/api/src/index.ts.
+// initSentry first — same posture as apps/api/src/index.ts.
 import { initSentry, Sentry } from './lib/sentry.js';
 
 initSentry();
@@ -37,9 +37,9 @@ process.on('unhandledRejection', reason => {
 async function main(): Promise<void> {
   const env = loadEnv();
 
-  // FOUND7-02: fail-closed flag-signoff gate. Exits(1) if any gated flag is
-  // missing its signoff-registry entry (FLAG_SIGNOFF_BYPASS=local downgrades to
-  // a warn for local dev). Run after env load, before scheduling jobs.
+  // Fail-closed flag-signoff gate. Exits(1) if any gated flag is missing its
+  // signoff-registry entry (FLAG_SIGNOFF_BYPASS=local downgrades to a warn
+  // for local dev). Run after env load, before scheduling jobs.
   assertFlagSignoffsOrExit();
 
   const jobs = getJobDefinitions(env);

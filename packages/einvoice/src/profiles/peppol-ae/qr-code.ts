@@ -8,7 +8,7 @@ import type { QRCodeable } from '../../types/profile.js';
 
 /**
  * UAE FTA QR code implementation for Peppol PINT-AE invoices.
- * Per D-05: shared QRCodeable interface from Phase 45.
+ * Implements the shared QRCodeable interface.
  *
  * QR data contains: seller name, TRN, invoice date, total, VAT amount.
  * Encoded as pipe-delimited string rendered to PNG.

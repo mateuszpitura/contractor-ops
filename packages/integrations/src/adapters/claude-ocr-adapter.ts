@@ -244,11 +244,11 @@ export class ClaudeOcrAdapter implements OcrAdapter {
   private readonly modelId: string;
 
   constructor(params?: { apiKey?: string; modelId?: string }) {
-    // F-INT-06: bound the Anthropic SDK's wall-clock + cap auto-retries.
-    // The SDK default is 600s timeout + 2 internal retries which compounds
-    // badly inside our outer withResilience retry loop and can hold a
-    // QStash worker far past the platform deadline. 90s p99 is documented
-    // for Sonnet on a 30MB PDF.
+    // Bound the Anthropic SDK's wall-clock + cap auto-retries. The SDK
+    // default is 600s timeout + 2 internal retries which compounds badly
+    // inside our outer withResilience retry loop and can hold a QStash worker
+    // far past the platform deadline. 90s p99 is documented for Sonnet on a
+    // 30MB PDF.
     this.client = new Anthropic({
       apiKey: params?.apiKey ?? process.env.ANTHROPIC_API_KEY,
       timeout: 90_000,

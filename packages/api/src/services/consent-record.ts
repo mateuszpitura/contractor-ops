@@ -1,8 +1,8 @@
 /**
  * Consent record service — append-only consent tracking per PDPL requirements.
  *
- * Per D-02: ConsentRecord is immutable and append-only. Revocations create new
- * records with granted=false, never update existing ones. This provides a complete
+ * ConsentRecord is immutable and append-only. Revocations create new records
+ * with granted=false, never update existing ones. This provides a complete
  * audit trail of all consent changes.
  */
 
@@ -56,7 +56,7 @@ export async function grantConsent(
 
 /**
  * Revoke consent for a specific purpose. Creates a NEW ConsentRecord
- * with granted=false. Does NOT modify existing records (append-only per D-02).
+ * with granted=false. Does NOT modify existing records (append-only).
  */
 export async function revokeConsent(
   organizationId: string,

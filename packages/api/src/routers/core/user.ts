@@ -23,9 +23,9 @@ import { userPinsRouter } from './user-pins';
  * Returns the resolved Member row (id + role) so callers can perform the
  * follow-up update in a single round-trip.
  *
- * F-SEC-07 — the prior implementation returned silently when the target was
- * not a member of the caller's org, allowing a downstream global `banUser`
- * call to lock any enumerated user out platform-wide. We now throw NOT_FOUND.
+ * The prior implementation returned silently when the target was not a member
+ * of the caller's org, allowing a downstream global `banUser` call to lock
+ * any enumerated user out platform-wide. We now throw NOT_FOUND.
  */
 async function guardLastAdmin(
   db: DbClient,
@@ -47,8 +47,8 @@ async function guardLastAdmin(
   }
 
   // Count active (non-disabled) admins/owners in this org. Per-membership
-  // soft-disable via `disabledAt` is the new mechanism (F-SEC-07); the old
-  // `User.banned` global ban no longer drives this query.
+  // soft-disable via `disabledAt` is the mechanism; the old `User.banned`
+  // global ban no longer drives this query.
   const adminCount = await db.member.count({
     where: {
       organizationId,
@@ -94,8 +94,8 @@ async function reassignPendingApprovalSteps(
           organizationId,
           role: step.approverRole,
           userId: { not: deactivatedUserId },
-          // F-SEC-07 — replacement must be an active (non-disabled) member of
-          // the same org. Replaces the prior `user.banned` global filter.
+          // Replacement must be an active (non-disabled) member of the same
+          // org; the prior `user.banned` global filter is no longer used.
           disabledAt: null,
         },
         select: { userId: true },
@@ -135,8 +135,8 @@ async function transferContractorOwnership(
       organizationId,
       role: { in: ['owner', 'admin'] },
       userId: { not: deactivatedUserId },
-      // F-SEC-07 — replacement must be an active (non-disabled) admin/owner
-      // of this org. Replaces the prior `user.banned` global filter.
+      // Replacement must be an active (non-disabled) admin/owner of this
+      // org; the prior `user.banned` global filter is no longer used.
       disabledAt: null,
     },
     select: { userId: true },
@@ -196,8 +196,8 @@ export const userRouter = router({
         },
       });
 
-      // F-OBS-05 — invitations are sensitive (grant org access). Audit so admins
-      // can trace who invited whom.
+      // Invitations grant org access and are audited so admins can trace
+      // who invited whom.
       await writeAuditLog({
         organizationId: ctx.organizationId,
         actorType: 'USER',
@@ -207,7 +207,7 @@ export const userRouter = router({
         resourceId: ctx.organizationId,
         newValues: {
           invitedRole: input.role,
-          // Email logged in audit-only context; not in app log streams (F-OBS-17).
+          // Email logged in audit-only context; not in app log streams.
           invitedEmail: input.email,
         },
       });
@@ -219,12 +219,12 @@ export const userRouter = router({
    * Update a member's role in the organization.
    * Sensitive action: requires re-authentication if session > 5 minutes old.
    *
-   * F-SEC-14 — Better Auth's `updateMemberRole` resolves by `memberId`
-   * (Member primary key), NOT user id. The validator surface keeps
-   * `userId` for caller ergonomics; we translate to `Member.id` here
-   * scoped to the active org. `findFirstOrThrow` raises NOT_FOUND when
-   * the supplied user is not a member of the caller's org, blocking
-   * silent no-ops or accidental cross-org role changes.
+   * Better Auth's `updateMemberRole` resolves by `memberId` (Member primary
+   * key), NOT user id. The validator surface keeps `userId` for caller
+   * ergonomics; we translate to `Member.id` here scoped to the active org.
+   * `findFirstOrThrow` raises NOT_FOUND when the supplied user is not a
+   * member of the caller's org, blocking silent no-ops or accidental
+   * cross-org role changes.
    */
   updateRole: sensitiveActionProcedure
     .use(requirePermission({ member: ['update'] }))
@@ -244,7 +244,7 @@ export const userRouter = router({
         },
       });
 
-      // F-OBS-05 — RBAC changes are SOC 2 / ISO 27001 evidence. Audit before/after.
+      // RBAC changes are SOC 2 / ISO 27001 evidence. Audit before/after.
       await writeAuditLog({
         organizationId: ctx.organizationId,
         actorType: 'USER',
@@ -264,11 +264,11 @@ export const userRouter = router({
    * Deactivate a member of the current organization (per-membership soft
    * disable). Sensitive action: requires re-authentication.
    *
-   * F-SEC-07 — the prior implementation called Better Auth's `banUser`, which
-   * locked the target out of every org they belonged to. We now flip
-   * `Member.disabledAt` for the membership in the caller's org only; sessions
-   * whose `activeOrganizationId` resolves to that membership are rejected by
-   * the Better Auth `databaseHooks.session.create.before` hook (see
+   * The prior implementation called Better Auth's `banUser`, which locked the
+   * target out of every org they belonged to. We now flip `Member.disabledAt`
+   * for the membership in the caller's org only; sessions whose
+   * `activeOrganizationId` resolves to that membership are rejected by the
+   * Better Auth `databaseHooks.session.create.before` hook (see
    * `packages/auth/src/config.ts`). Other org memberships keep working.
    */
   deactivate: sensitiveActionProcedure
@@ -310,7 +310,7 @@ export const userRouter = router({
       await reassignPendingApprovalSteps(ctx.db, ctx.organizationId, input.userId);
       await transferContractorOwnership(ctx.db, ctx.organizationId, input.userId);
 
-      // F-OBS-05 — deactivation transfers approvals + contractor ownership;
+      // Deactivation transfers approvals + contractor ownership;
       // forensics needs an immutable trail.
       await writeAuditLog({
         organizationId: ctx.organizationId,
@@ -334,8 +334,8 @@ export const userRouter = router({
    * Reactivate a previously soft-disabled membership (per-org).
    * Sensitive action: requires re-authentication.
    *
-   * F-SEC-07 — clears the per-membership `disabledAt` flag. Throws NOT_FOUND
-   * if the supplied user is not a member of the caller's org.
+   * Clears the per-membership `disabledAt` flag. Throws NOT_FOUND if the
+   * supplied user is not a member of the caller's org.
    */
   reactivate: sensitiveActionProcedure
     .use(requirePermission({ member: ['update'] }))
@@ -365,7 +365,7 @@ export const userRouter = router({
         },
       });
 
-      // F-OBS-05 — reactivation restores org access; pair with deactivate audit.
+      // Reactivation restores org access; pair with deactivate audit.
       await writeAuditLog({
         organizationId: ctx.organizationId,
         actorType: 'USER',
@@ -380,13 +380,13 @@ export const userRouter = router({
     }),
 
   /**
-   * Phase 74 D-08 — Set User.outOfOffice JSONB.
+   * Set User.outOfOffice JSONB.
    *
    * Actor identity (the `userId` whose OOO is being modified) MUST equal
    * the session user — users cannot set OOO for other users from this
-   * mutation. Cross-tenant updates are blocked because Member is
-   * scoped to ctx.organizationId. Admins can set other users' OOO via
-   * the admin override flow (out of scope for Phase 74).
+   * mutation. Cross-tenant updates are blocked because Member is scoped to
+   * ctx.organizationId. Admins can set other users' OOO via the admin
+   * override flow.
    */
   setOutOfOffice: tenantProcedure
     .input(
@@ -398,7 +398,7 @@ export const userRouter = router({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      // T-74-05 — server derives userId from session, never from input
+      // Server derives userId from session, never from input
       const userId = ctx.user.id;
       await ctx.db.user.update({
         where: { id: userId },

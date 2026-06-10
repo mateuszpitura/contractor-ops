@@ -1,17 +1,18 @@
 /**
- * Phase 77 D-14/D-16 — sole tRPC boundary for the Slack Org-Grid connection card.
- * Resolves the org-grid OAuth-start URL (connectSlackOrgGrid), the connection state
- * from getProviderToggleState (which checks connectionSubKind === 'SLACK_ORG_GRID' —
- * mirrors deprovisioning.ts:590-596), and the Enterprise-Grid availability signal from
- * integration.getHealth (scopeCapabilities.unavailableReason).
+ * Sole tRPC boundary for the Slack Org-Grid connection card. Resolves the
+ * org-grid OAuth-start URL (connectSlackOrgGrid), the connection state from
+ * getProviderToggleState (which checks connectionSubKind === 'SLACK_ORG_GRID' —
+ * mirrors deprovisioning.ts:590-596), and the Enterprise-Grid availability
+ * signal from integration.getHealth (scopeCapabilities.unavailableReason).
  *
  * Two separate probes are intentional:
- *   - `isConnected` ← getProviderToggleState SLACK row `.connected` (org-grid sub-kind,
- *     the deprovision token). This is the correct gate; `integration.getHealth` reports
- *     the WORKSPACE bot token and must NOT be used for connected-state here.
- *   - `notOnEnterpriseGrid` ← integration.getHealth scopeCapabilities (the only endpoint
- *     that probes Grid availability; unavailableReason is set by the workspace-level
- *     detection in D-16 and does not require an org-grid connection to be present).
+ *   - `isConnected` ← getProviderToggleState SLACK row `.connected` (org-grid
+ *     sub-kind, the deprovision token). This is the correct gate;
+ *     `integration.getHealth` reports the WORKSPACE bot token and must NOT be
+ *     used for connected-state here.
+ *   - `notOnEnterpriseGrid` ← integration.getHealth scopeCapabilities (the only
+ *     endpoint that probes Grid availability; unavailableReason is set by the
+ *     workspace-level health probe and does not require an org-grid connection).
  */
 
 import { useQuery } from '@tanstack/react-query';
@@ -29,7 +30,7 @@ export function useSlackOrgGridCard() {
   const slackRow = toggleStateQuery.data?.providers.find(p => p.provider === 'SLACK');
   const isConnected = slackRow?.connected === true;
 
-  // Enterprise Grid detection comes from the workspace health probe (D-16 signal).
+  // Enterprise Grid detection comes from the workspace health probe.
   const health = healthQuery.data as
     | { scopeCapabilities?: { unavailableReason?: string } | null }
     | null

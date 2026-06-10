@@ -1,6 +1,6 @@
 // packages/validators/src/legal/gb.ts
 //
-// LOCKED GB LEGAL PHRASES — Phase 63 (D-17).
+// LOCKED GB LEGAL PHRASES.
 //
 // Late Payment of Commercial Debts (Interest) Act 1998 as amended by the
 // Late Payment of Commercial Debts Regulations 2013.

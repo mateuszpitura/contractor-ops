@@ -1,5 +1,5 @@
 /**
- * Compliance gaps streaming source — P2-C / F-DB-05.
+ * Compliance gaps streaming source.
  *
  * Yields gap rows one contractor at a time using cursor pagination so the
  * caller's memory footprint stays O(CSV_PAGE_SIZE) regardless of org size.
@@ -11,8 +11,8 @@
  *   - The tRPC paginated procedure (`packages/api/src/routers/core/report.ts`)
  *     is bounded to a single page of UI results — it loads everyone, sorts
  *     in JS, and returns one slice. That code path is acceptable as a
- *     dashboard query (audit F-DB-05 marks it for replacement with a
- *     SQL-side health predicate; tracked separately).
+ *     dashboard query (a SQL-side health predicate on `Contractor` is tracked
+ *     as a follow-up).
  *   - This iterator is the EXPORT path. CSV exports cannot afford to load
  *     all contractors into memory, so the iterator yields rows lazily.
  *
@@ -55,8 +55,8 @@ export interface IterateComplianceGapsOptions {
  *
  * Yields ONLY non-green contractors (red/yellow). Green contractors are
  * filtered in-process after the fetch — pushing this predicate into SQL
- * is the F-DB-05 follow-up (denormalised `complianceHealth` column on
- * `Contractor`); tracked, out of P2-C scope.
+ * via a denormalised `complianceHealth` column on `Contractor` is tracked
+ * as a follow-up.
  *
  * Errors propagate to the caller; the iterator stops at the first failed
  * page.

@@ -95,7 +95,7 @@ export function googleWorkspaceHandlers(options?: HandlerOptions) {
       });
     }),
 
-    // --- Phase 77 D-04/D-05 deprovisioning endpoints ---
+    // --- Deprovisioning endpoints ---
     // Path predicates (MSW v2 + path-to-regexp v8 rejects glob/regex path literals).
     // Suspend (PATCH user).
     http.patch(

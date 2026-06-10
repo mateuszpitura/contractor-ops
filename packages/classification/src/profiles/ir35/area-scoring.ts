@@ -4,7 +4,7 @@
 //
 // Each of the 5 HMRC areas returns one of the 5 Ir35AreaVerdict values plus up
 // to 3 driving question IDs. The composite-rule module (`scoring.ts`) then
-// combines the 5 area verdicts into the overall Ir35Outcome per D-13.
+// combines the 5 area verdicts into the overall Ir35Outcome.
 //
 // Algorithm:
 //  1. Walk every question in the area.

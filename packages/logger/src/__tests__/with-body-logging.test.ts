@@ -1,5 +1,4 @@
-// Phase 70-01 · FOUND6-02 (D-05/D-06) — opt-in `withBodyLogging` factory.
-// Plan 70-03 implements + exports it.
+// Tests for the opt-in `withBodyLogging` factory.
 //
 // As with default-body-redact.test.ts, we mount a fresh pino instance into
 // an in-memory Writable to assert redact behaviour without depending on the

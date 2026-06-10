@@ -1,4 +1,4 @@
-// Outbox event-type → handler registry (P2-A, F-ASYNC-03).
+// Outbox event-type → handler registry.
 //
 // Handlers receive the OutboxEvent.id (for downstream idempotency) plus the
 // typed payload. Throwing means "transient failure, retry"; returning
@@ -56,12 +56,12 @@ type OutboxHandlerRegistry = {
 // ---------------------------------------------------------------------------
 
 const handleNotificationDispatch: OutboxHandler<'notification.dispatch'> = async (payload, ctx) => {
-  // NEW-ARCH-04: thread the OutboxEvent.id through the notification
-  // service so it becomes the canonical idempotency key. The notification
-  // service uses it as the (organizationId, dedupKey) value AND threads it
-  // into Resend's `Idempotency-Key` header. This closes the cross-bucket
-  // double-send window when the outbox redrives an event whose original
-  // attempt already issued the side effect.
+  // Thread the OutboxEvent.id through the notification service so it
+  // becomes the canonical idempotency key. The notification service uses it
+  // as the (organizationId, dedupKey) value AND threads it into Resend's
+  // `Idempotency-Key` header. This closes the cross-bucket double-send
+  // window when the outbox redrives an event whose original attempt already
+  // issued the side effect.
   log.debug(
     {
       outboxEventId: ctx.outboxEventId,

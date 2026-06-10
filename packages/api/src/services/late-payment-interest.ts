@@ -1,11 +1,7 @@
 // packages/api/src/services/late-payment-interest.ts
 //
-// Phase 63 · Plan 03/05 — LPCDA-compliant late payment interest calculation.
+// LPCDA-compliant late payment interest calculation.
 // Pure functions — no DB access; callers provide all data.
-//
-// Created as a dependency for Plan 63-05 (router). Full TDD coverage
-// belongs to Plan 63-03; this is the minimal production implementation
-// required by the router.
 
 // ---------------------------------------------------------------------------
 // Types
@@ -220,10 +216,8 @@ export function calculateLateInterest(input: LateInterestInput): LateInterestRes
   // LPCDA Section 4(1): interest accrues from the day AFTER due date
   // (overdueStartMs). daysOverdue counts the number of full days that have
   // ELAPSED since overdueStartMs — partial days don't accrue a full day's
-  // interest. Fixes B-05 (Phase 65 CONTEXT.md decision D-03 /
-  // .planning/phases/63-uk-payments-financial-features/63-VERIFICATION.md).
-  // DO NOT revert to (endDateMs - dueDateMs) — that overstates by one day
-  // because it counts the grace-period day (= dueDate itself) as overdue.
+  // interest. DO NOT revert to (endDateMs - dueDateMs) — that overstates by
+  // one day because it counts the grace-period day (= dueDate itself) as overdue.
   const daysOverdue = Math.floor((endDateMs - overdueStartMs) / (24 * 60 * 60 * 1000));
 
   // Calculate principal outstanding (invoice total - sum of payments)

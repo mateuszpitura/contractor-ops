@@ -2,7 +2,7 @@
  * Payment format auto-detection — routes payments to SEPA, SWIFT, or domestic format
  * based on currency and IBAN country code.
  *
- * Per D-03: payment run picks format based on currency/destination.
+ * Payment run picks format based on currency/destination.
  */
 
 import type { ExportItem } from './payment-export';
@@ -61,14 +61,14 @@ export const EU_IBAN_COUNTRIES = new Set([
  * - `SWIFT_XML`: pain.001.001.09 SWIFT international credit transfer
  * - `BANK_FILE`: Polish Elixir type 110 flat file (PLN + PL IBAN)
  * - `CSV`: Generic CSV with org-defined column mapping
- * - `BACS_STD18`: UK BACS Standard 18 Direct Credit fixed-width file (D-04)
+ * - `BACS_STD18`: UK BACS Standard 18 Direct Credit fixed-width file
  */
 export type ExportFormat = 'SEPA_XML' | 'SWIFT_XML' | 'BANK_FILE' | 'CSV' | 'BACS_STD18';
 
 /**
  * Destination identity for routing decisions. UK accounts use sort code +
  * account number (no IBAN); EU accounts use IBAN. Both may be present for a
- * UK account that also has a GB IBAN — in that case BACS_STD18 wins per D-04.
+ * UK account that also has a GB IBAN — in that case BACS_STD18 wins.
  */
 export interface Destination {
   iban: string | null;
@@ -83,7 +83,7 @@ export interface Destination {
 /**
  * Detect the appropriate payment export format for a single item.
  *
- * Rules (per D-03):
+ * Rules:
  * 1. PLN + Polish IBAN -> BANK_FILE (Elixir domestic)
  * 2. EUR + EU/EEA IBAN -> SEPA_XML
  * 3. Everything else -> SWIFT_XML (international)
@@ -113,7 +113,7 @@ export function detectFormat(currency: string, iban: string): ExportFormat {
  * Detect the appropriate payment export format for a destination that may
  * carry either UK sort code + account number OR a SEPA/IBAN identifier.
  *
- * Rules (per D-04):
+ * Rules:
  * 1. **GBP + UK sort code + UK account number -> BACS_STD18** (checked BEFORE IBAN)
  * 2. PLN + Polish IBAN -> BANK_FILE
  * 3. EUR + EU/EEA IBAN -> SEPA_XML
@@ -126,7 +126,7 @@ export function detectFormatForDestination(
   currency: string,
   destination: Destination,
 ): ExportFormat {
-  // 1. GBP + UK sort code + account -> BACS Standard 18 (per D-04)
+  // 1. GBP + UK sort code + account -> BACS Standard 18
   if (
     currency === 'GBP' &&
     destination.ukSortCodeEncrypted &&

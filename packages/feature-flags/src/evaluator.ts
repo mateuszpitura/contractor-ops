@@ -8,7 +8,7 @@ import type { EvalContext, FlagDefinition } from './schemas';
 const log = createLogger({ service: 'feature-flags' });
 
 // ---------------------------------------------------------------------------
-// Phase 64 D-10 — app-side override: even when Unleash returns true for
+// App-side override: even when Unleash returns true for
 // 'module.classification-engine', the app refuses to enable classification
 // if any disclaimer is still PENDING in the signoff registry.
 //
@@ -169,7 +169,8 @@ export function evaluate(key: FlagKey, ctx: EvalContext): EvalResult {
     }
   }
 
-  // Phase 64 D-10 — classification disclaimer gate override
+  // Classification disclaimer gate override: refuse to enable classification
+  // while any disclaimer is still PENDING in the signoff registry.
   const gate = gateRegistry.__contractorOpsClassificationGate;
   if (key === CLASSIFICATION_ENGINE_FLAG && base.enabled && gate) {
     const allApproved = gate();

@@ -10,8 +10,8 @@ export interface ComplianceAuditEntry {
 }
 
 /**
- * Phase 73 D-13 — the only tRPC boundary for the compliance item History
- * timeline. Lazy: pass `enabled` so the audit trail is fetched only when the
+ * The only tRPC boundary for the compliance item history timeline.
+ * Lazy: pass `enabled` so the audit trail is fetched only when the
  * disclosure is expanded.
  */
 export function useComplianceItemHistory(itemId: string, enabled: boolean) {

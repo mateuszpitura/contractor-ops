@@ -1,7 +1,6 @@
 // packages/api/src/services/invoice-intake-matcher.ts
 //
-// Phase 62 · Plan 62-04 Task 1 — Contractor matcher for inbound e-invoice
-// intake requests.
+// Contractor matcher for inbound e-invoice intake requests.
 //
 // Given the supplier signals extracted from a parsed XRechnung / ZUGFeRD
 // document (VAT-ID, Leitweg-ID, normalised name), deterministically ranks the
@@ -29,13 +28,12 @@
 // row whose normalised name does not share the first three characters of the
 // extracted name is skipped outright.
 //
-// Threats mitigated:
-//   - T-62-04-M1 (cross-tenant candidate leak): every query filters by
-//     organizationId, and the caller's PrismaClient is assumed to be tenant-
-//     scoped via the existing extension. No OR condition widens scope.
-//   - T-62-04-M2 (PII leakage via logs): we log `orgId` and (optionally) the
-//     supplier VAT-ID because it is a business identifier, not personal
-//     data. We NEVER log the supplier name or extracted normalised name.
+// Security invariants:
+//   - Every query filters by organizationId; no OR condition widens scope
+//     across tenants.
+//   - We log `orgId` and (optionally) the supplier VAT-ID (a business
+//     identifier, not personal data). We NEVER log the supplier name or
+//     extracted normalised name.
 
 import type { PrismaClient } from '@contractor-ops/db';
 import { createLogger } from '@contractor-ops/logger';

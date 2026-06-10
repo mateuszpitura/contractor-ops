@@ -4,8 +4,7 @@ import { createHash } from 'node:crypto';
  * Inputs for {@link deriveIdempotencyKey}.
  *
  * The trio (orgId, operation, businessKey) is the canonical
- * idempotency-key composition agreed in P2-B (audit reference: F-INT-04
- * follow-up — DRIFT-01). All upstream provider calls that need a
+ * idempotency-key composition. All upstream provider calls that need a
  * deterministic dedup key MUST derive it through this helper so that the
  * same logical business operation, retried via any code path, collapses
  * to the same hash.

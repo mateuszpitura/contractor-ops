@@ -4,8 +4,8 @@ import { decryptCredentials, encryptCredentials } from './credential-service.js'
 
 // ---------------------------------------------------------------------------
 // Token Refresh — proactive cron + lazy fallback
-// Per D-03: proactive refresh before expiry.
-// Per Research Pitfall 3: distributed lock using refreshLockedAt field.
+// Proactive refresh before expiry.
+// Distributed lock using refreshLockedAt field to prevent race conditions.
 // ---------------------------------------------------------------------------
 
 /** Lock TTL: if a lock is older than this, it's considered stale and can be acquired. */
