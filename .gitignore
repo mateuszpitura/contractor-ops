@@ -29,6 +29,15 @@ apps/*/out
 # Test coverage
 coverage
 
+# Brain vault (commit wiki; ignore hook noise + generated indexes)
+.planning/brain/.vault-meta/
+.planning/brain/graphify-out/
+
+# Graphify AST graph (~20MB) — regenerate after code refactors:
+#   graphify update . --no-cluster --force && cp graphify-out/graph.json .planning/graphs/graph.json
+.planning/graphs/graph.json
+graphify-out/
+
 # Playwright (auth state, reports, test results)
 apps/web/e2e/perf/.auth/
 apps/web/e2e/perf/results/
@@ -48,6 +57,9 @@ test-results
 # OS
 .DS_Store
 Thumbs.db
+
+# GSD graphify local venv (bootstrap tooling)
+.planning/.venv-graphify/
 
 # Claude Code agent scratch worktrees — never commit
 .claude/worktrees/

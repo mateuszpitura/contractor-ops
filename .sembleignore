@@ -16,7 +16,17 @@ packages/db/src/generated
 .claude/worktrees
 
 # Planning / docs / fixtures (not source)
+# Exclude bulk phase history; allow agent bootstrap docs (negation)
 .planning
+!.planning/INDEX.md
+!.planning/MEMORY.md
+!.planning/STATE.md
+!.planning/PROJECT.md
+!.planning/codebase/
+!.planning/intel/
+!.planning/graphs/
+!.planning/brain/wiki/
+!.planning/brain/WIKI.md
 .cursor
 docs
 

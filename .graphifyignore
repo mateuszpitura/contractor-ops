@@ -1,0 +1,94 @@
+# Graphify-only exclusions (syntax = .gitignore).
+# When this file exists, graphify uses it instead of .gitignore at repo root.
+# Intended for: graphify extract . --no-cluster --out .planning/graphs (AST-only).
+# Prisma client stays committed for CI drift + prod builds — excluded here only.
+
+# ── Committed generated (graph noise; git policy unchanged) ──
+packages/db/src/generated/
+
+# ── Dependencies & caches (mirror .gitignore) ──
+node_modules/
+.turbo/
+.next/
+.nuxt/
+
+# ── Build output ──
+dist/
+out/
+apps/*/out/
+*.tsbuildinfo
+
+# ── Env & secrets ──
+.env
+.env.*
+!.env.example
+
+# ── Tests & QA artifacts (architecture graph = prod code paths) ──
+# Vitest HTML: root ./coverage/ (pnpm test:coverage) + stale per-package dirs e.g. packages/api/coverage/
+coverage/
+test-results/
+playwright-report/
+**/e2e/
+load-tests/
+**/__tests__/
+**/__mocks__/
+**/*.test.ts
+**/*.test.tsx
+**/*.spec.ts
+apps/web/e2e/
+
+# ── i18n locale JSON (not TS architecture) ──
+apps/web-vite/messages/
+
+# ── Markdown & static docs (AST = code only; skip stale .md semantic edges) ──
+*.md
+*.mdx
+**/*.md
+**/*.mdx
+contractor-ops-launch-checklist.md
+
+# ── HTML, images, PDF (build artifacts + assets — no code graph value) ──
+**/*.html
+**/*.htm
+**/*.png
+**/*.jpg
+**/*.jpeg
+**/*.svg
+**/*.webp
+**/*.gif
+**/*.pdf
+
+# ── Planning / docs / agent scratch (use INDEX, intel, brain — not graphify) ──
+.planning/
+docs/
+goals/
+.audit-scratch/
+.restoration-scratch/
+.claude/worktrees/
+.claude/hooks/.state/
+.dev-logs/
+.cursor/plans/
+
+# ── Graphify local tooling & output ──
+.graphify-out/
+**/graphify-out/
+.planning/.venv-graphify/
+
+# ── IDE / OS ──
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# ── Lockfiles & install metadata (no code semantics) ──
+pnpm-lock.yaml
+package-lock.json
+yarn.lock
+
+# ── Agent instruction files (graphify skill recommends excluding) ──
+AGENTS.md
+CLAUDE.md
+GEMINI.md
+CODEBUDDY.md

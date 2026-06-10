@@ -16,6 +16,66 @@
 - Before stating project-specific facts (router count, test status, LOC, milestone phase, who works here): **verify in this tree** — do not trust session memory alone.
 - Examples to **discard unless re-verified here:** `matt@reachlatent.com`, “55 routers”, “phase 70 test debt”, handoff notes from other codebases.
 
+## Wiki Knowledge Base (claude-obsidian)
+
+**VAULT_PATH:** `.planning/brain`
+
+Discovery order for **domain / decisions / why** (not code locations):
+
+1. [`.planning/INDEX.md`](.planning/INDEX.md)
+2. [`.planning/brain/wiki/hot.md`](.planning/brain/wiki/hot.md)
+3. [`.planning/brain/wiki/index.md`](.planning/brain/wiki/index.md) → specific page
+
+For **code locations**: `semble search` first — **never wiki alone**.
+
+After a GSD phase with a new invariant: append to [`.planning/MEMORY.md`](.planning/MEMORY.md) + optional wiki synthesis page (`/wiki`, `ingest`, `lint the wiki` via claude-obsidian plugin).
+
+## Documentation follows code (mandatory — never skip)
+
+**Principle:** the codebase wiki is a **living compass** — it must **track the code**, not lag behind it. Any product change in `apps/` or `packages/` that adds, removes, or alters behavior is **incomplete** until the matching wiki (and indexes/graph when applicable) is updated **in the same change set**. Stale docs → next agent hallucinates.
+
+**Default rule:** if you changed product code → update wiki before done. Not only routers — **every** new feature, hook, container, component, package, cron job, Prisma model, env var, flag, integration, or flow change.
+
+| Trigger | Required wiki / index updates |
+|---------|-------------------------------|
+| New or changed **feature** (end-to-end flow) | Relevant `wiki/domains/*` — Purpose, Flow, Entry points, UI surface, Agent mistakes |
+| New **UI** hook / container / component / route | Domain page + `wiki/structure/web-vite-domains.md`; pattern page if new convention |
+| New/changed **tRPC** procedure or namespace | `wiki/structure/api-routers-catalog.md` + domain page; verify `root.ts` |
+| New/moved **`services/`** logic | `wiki/structure/key-services.md` + domain wiki; fix `verify_with` paths |
+| New **`packages/*`** module or public export | `wiki/structure/packages.md` + consumer domain/pattern pages |
+| New **integration** / webhook / OAuth | `wiki/integrations/<provider>.md` + `integrations/_index` |
+| New **cron** / QStash job | `wiki/structure/cron-jobs.md` + domain if business-facing |
+| New **Prisma** model / migration with product impact | `wiki/structure/prisma-schema-areas.md` + domain |
+| New **feature flag** key | `wiki/patterns/feature-flags.md` + registry comment; Unleash UI separate |
+| New **env** var (product-facing) | `.env.example` + pattern/domain note if agents need it |
+| **Refactor** / discovery / moved files | Same pages as above for affected surfaces; do not leave old paths in wiki |
+| Call-graph / import wiring change | `graphify update . --no-cluster --force` → `.planning/graphs/graph.json` |
+| Large multi-package refactor | `map-codebase` + `.planning/intel/` + `.planning/codebase/*` when maps drift |
+| New **invariant** (GSD, audit, bug root cause) | `.planning/MEMORY.md` + pattern/domain bullet |
+| Any **wiki** page edit | `wiki/log.md`, overwrite `wiki/hot.md`, rebuild BM25, `pnpm check:wiki-brain` |
+| **`HEAD` advanced** | bump `source_commit` on touched wiki frontmatter |
+
+**Exempt (wiki not required):** test-only files (`__tests__`, `*.test.ts`), generated code, lockfiles, pure formatting with zero behavior change — when unsure, update wiki.
+
+**Doc drift:** hook emits `DOC_DRIFT_WARN` on Stop if product code changed but no `wiki/` page was updated in the same session.
+
+Hook: SessionStart injects rule; Stop → `KNOWLEDGE_REFRESH_REQUIRED` / `DOC_DRIFT_WARN`. See [`.planning/brain/wiki/meta/refresh-triggers.md`](.planning/brain/wiki/meta/refresh-triggers.md).
+
+```bash
+pnpm check:wiki-brain
+graphify update . --no-cluster --force && cp graphify-out/graph.json .planning/graphs/graph.json
+cd .planning/brain && find wiki -name '*.md' -exec python3 scripts/contextual-prefix.py {} --no-llm \; && python3 scripts/bm25-index.py build
+```
+
+Full trigger matrix: [`.planning/brain/wiki/meta/refresh-triggers.md`](.planning/brain/wiki/meta/refresh-triggers.md). Cursor: [`.cursor/rules/25-wiki-brain.mdc`](.cursor/rules/25-wiki-brain.mdc).
+
+| Question | Source | Never |
+|----------|--------|-------|
+| Symbol / procedure location | semble → Read | wiki alone |
+| Where to put new files | `codebase/STRUCTURE` + `CONVENTIONS` | guessing |
+| Domain / business flow | `brain/wiki/hot.md` → `index.md` | mass-read milestones |
+| Router counts, test status | `root.ts`, `pnpm test` | session memory |
+
 ## Stack (canonical)
 
 | Area | In this repo |
@@ -62,6 +122,7 @@ pnpm test                                      # vitest via turbo
 - Comments only when non-obvious; no narration or spam on short code.
 - Tenant from session; `writeAuditLog` on sensitive mutations; tRPC Zod inputs; no unsafe `as` on external payloads.
 - `semble search` before grep; **MUST Read before Edit/Write** on existing files; Edit > Write; no sed/script bulk replace; minimal diff; parallel independent tools; no guessed paths/URLs.
+- **Documentation follows code:** any product change in apps/packages → matching wiki + indexes/graph in same change set; `pnpm check:wiki-brain` before done (§ Documentation follows code).
 - Schema-validate boundaries; no `console.*` in app source (`@contractor-ops/logger`); flags via `@contractor-ops/feature-flags` only.
 - UI: `frontend-design`; WCAG + loading/empty/error states mandatory.
 - Caveman **full** at session start until `stop caveman` / `normal mode`; code/commits/PRs stay normal.
@@ -85,7 +146,7 @@ pnpm test                                      # vitest via turbo
 
 **Editing:** Edit > Write on existing files. No `sed`/`awk`/ad-hoc Python/TS replace scripts (breaks imports/formatting) — Edit per file; codemods only when appropriate. Scripted replace = last resort + user OK + typecheck/lint after. Minimal diff; no new files/docs unless asked. Parallelize independent reads/edits. Verify paths via Read/Glob/semble — never guess.
 
-**Search order:** semble → read full file if needed → find-related → grep only for exhaustive literals.
+**Search order:** [`.planning/INDEX.md`](.planning/INDEX.md) → semble → intel/graphify query → [`.planning/brain/wiki/hot.md`](.planning/brain/wiki/hot.md) (domain only) → Read file → grep only for exhaustive literals.
 
 ## Monorepo & dependencies
 
