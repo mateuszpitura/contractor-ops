@@ -1,0 +1,14 @@
+{
+  "userIgnoreFilters": [
+    "agents/",
+    "commands/",
+    "hooks/",
+    "skills/",
+    "_templates/",
+    "README.md",
+    "CLAUDE.md",
+    "WIKI.md",
+    "Welcome.md"
+  ],
+  "promptDelete": false
+}

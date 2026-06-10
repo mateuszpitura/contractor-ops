@@ -4,11 +4,18 @@
   "parallelization": true,
   "commit_docs": true,
   "model_profile": "quality",
+  "intel": {
+    "enabled": true
+  },
+  "graphify": {
+    "enabled": true
+  },
   "workflow": {
     "research": true,
     "plan_check": true,
     "verifier": true,
     "nyquist_validation": true,
+    "subagent_timeout": 900000,
     "_auto_chain_active": false
   }
 }

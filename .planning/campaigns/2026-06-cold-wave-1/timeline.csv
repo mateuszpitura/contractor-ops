@@ -27,3 +27,9 @@ W3-day24,First metrics review: open / reply / bounce,2026-06-26,Mateusz,not_star
 W4-day29,Iterate copy based on W3 data,2026-07-01,Mateusz,not_started,metrics in,A/B winner -> scale
 W4-day29,Build remaining 360 leads (12 cells),2026-07-01,Mateusz,not_started,W3 signal positive,Only if W3 hit baseline metrics
 W5-day36,Launch sub-wave 2: remaining 360 leads,2026-07-08,Mateusz,not_started,,Full wave live
+US-W2,US Wave 2 relationship/outbound: US-OUT + US-PAR + US-ADJ (~90 leads),2026-07-20,Mateusz,not_started,contractorops.io warm + CAN-SPAM footer + US address,No product gate. US-OUT sells EU/Gulf depth; US-PAR/CPA starts the determination-shield channel. See us-gtm-plan.md
+US-GATE,IRIS TCC application filed (~45-day IRS lead),2026-09-15,Mateusz,not_started,,OPERATIONAL GATE (LV-26): blocks US 1099 e-file. Must file ~Sep to be ready Jan 31 2027. ⚖️
+US-GATE,US legal review: CAN-SPAM ok + classification-doc framing + US ToS/DPA + E&O extension,2026-09-30,Mateusz + lawyer,not_started,,⚖️ Gate before US-domestic sells. See us-gtm-plan.md hard gates
+US-GATE,Phases 85+86 shipped + tested in IRIS sandbox,2026-11-01,Mateusz/eng,not_started,product build,Product gate for US-domestic demo + 1099 lever
+US-W3,US Wave 3 domestic 1099 ramp: US-SMB + US-AGE + US-SWH (~90 leads),2026-11-15,Mateusz,not_started,Phase 85+86 shipped + IRIS TCC + legal,Lead with TY2026 1099 deadline (Jan 31 2027). Q4 timing = deadline freshest. CPA partners carry determination
+US-W3.5,US Wave 3.5 payments+classification upsell to installed base,2027-01-15,Mateusz,not_started,Phase 87+88 shipped,ACH payouts + classification documentation. Upsell existing US customers; US-AGE deep

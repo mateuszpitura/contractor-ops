@@ -1,0 +1,203 @@
+{
+  "_meta": {
+    "updated_at": "2026-06-08T16:03:52Z",
+    "version": 1,
+    "source_commit": "70f5782d78e33ba98c82e4ccda2cd4b0b4aff216"
+  },
+  "apps": {
+    "api-server": {
+      "path": "apps/api",
+      "package": "@contractor-ops/api-server",
+      "entrypoints": {
+        "listen": "apps/api/src/index.ts",
+        "factory": "apps/api/src/server.ts"
+      },
+      "role": "Fastify HTTP host: staff tRPC (/api/trpc/*), portal tRPC (/api/trpc/portal/*), Better Auth, webhooks, QStash routes",
+      "key_plugins": [
+        "apps/api/src/plugins/trpc.ts",
+        "apps/api/src/plugins/auth.ts",
+        "apps/api/src/plugins/webhooks.ts"
+      ]
+    },
+    "web-vite": {
+      "path": "apps/web-vite",
+      "package": "@contractor-ops/web-vite",
+      "entrypoints": {
+        "bootstrap": "apps/web-vite/src/main.tsx",
+        "router": "apps/web-vite/src/router.tsx"
+      },
+      "role": "Vite SPA for staff dashboard and contractor portal; TanStack Query + tRPC client",
+      "ui_layers": {
+        "page": "apps/web-vite/src/pages/**",
+        "container": "apps/web-vite/src/components/{domain}/*-container.tsx",
+        "hook": "apps/web-vite/src/components/{domain}/hooks/use-*.ts",
+        "component": "presentational *.tsx"
+      }
+    },
+    "cron-worker": {
+      "path": "apps/cron-worker",
+      "package": "@contractor-ops/cron-worker",
+      "entrypoints": {
+        "listen": "apps/cron-worker/src/index.ts"
+      },
+      "role": "Background jobs: QStash callbacks, scheduled handlers, integration webhooks",
+      "job_handlers": "apps/cron-worker/src/jobs/handlers/"
+    },
+    "public-api": {
+      "path": "apps/public-api",
+      "package": "@contractor-ops/public-api",
+      "entrypoints": {
+        "listen": "apps/public-api/src/index.ts"
+      },
+      "role": "Hono REST surface for API-key consumers; reuses @contractor-ops/api callers"
+    },
+    "cms": {
+      "path": "apps/cms",
+      "package": "@contractor-ops/cms",
+      "role": "Payload CMS (port 3002): Authors, Categories, Posts"
+    },
+    "landing": {
+      "path": "apps/landing",
+      "package": "@contractor-ops/landing",
+      "role": "Next.js 16 marketing site and blog consumption"
+    }
+  },
+  "api_core": {
+    "staff_router": {
+      "path": "packages/api/src/root.ts",
+      "export": "appRouter",
+      "mount": "/api/trpc/*",
+      "namespace_count": {
+        "always_mounted": 53,
+        "conditional_classification": 8
+      }
+    },
+    "portal_router": {
+      "path": "packages/api/src/portal-root.ts",
+      "export": "portalAppRouter",
+      "mount": "/api/trpc/portal/*",
+      "namespaces": ["portal", "portalTime"]
+    },
+    "context": "packages/api/src/context.ts",
+    "init": "packages/api/src/init.ts"
+  },
+  "middleware": {
+    "tenant": {
+      "path": "packages/api/src/middleware/tenant.ts",
+      "procedure": "tenantProcedure",
+      "role": "Derives organizationId and regional Prisma client from Better Auth session"
+    },
+    "portal_auth": {
+      "path": "packages/api/src/middleware/portal-auth.ts",
+      "procedure": "portalProcedure",
+      "role": "Validates portal_session cookie; exposes ctx.contractorId and ctx.organizationId"
+    },
+    "rbac": {
+      "path": "packages/api/src/middleware/rbac.ts",
+      "role": "requirePermission for staff procedures"
+    }
+  },
+  "router_domains": {
+    "finance": {
+      "path": "packages/api/src/routers/finance/",
+      "namespaces": ["invoice", "invoiceIntake", "payment", "billing", "skonto", "latePaymentInterest", "exchangeRate", "bacs"],
+      "notes": "invoice and payment use mergeRouters from split sub-modules"
+    },
+    "core": {
+      "path": "packages/api/src/routers/core/",
+      "namespaces": ["contractor", "contract", "approval", "audit", "organization", "user", "settings", "time", "document", "dashboard", "report"]
+    },
+    "compliance": {
+      "path": "packages/api/src/routers/compliance/",
+      "namespaces": ["complianceAdmin", "gdpr", "consent", "zatca", "gulf"],
+      "conditional": ["classification", "classificationDashboard", "classificationDocument", "ir35Chain", "ir35Attestation", "economicDependencyAlert", "reassessmentTrigger", "statusfeststellungsverfahren"]
+    },
+    "portal": {
+      "path": "packages/api/src/routers/portal/",
+      "namespaces": ["portal", "portalTime"],
+      "notes": "portal namespace merged from auth, invoices, contracts, profile, equipment sub-routers"
+    },
+    "workflow": {
+      "path": "packages/api/src/routers/workflow/",
+      "namespaces": ["workflow", "workflowRoles"]
+    },
+    "integrations": {
+      "path": "packages/api/src/routers/integrations/",
+      "namespaces": ["integration", "jira", "linear", "ksef", "peppol", "googleWorkspace", "teams"]
+    }
+  },
+  "services_high_signal": {
+    "invoice_intake": {
+      "path": "packages/api/src/services/invoice-intake/",
+      "files": ["ingest.ts", "match.ts", "finalize-stage.ts"],
+      "role": "Inbound XRechnung/ZUGFeRD intake pipeline"
+    },
+    "invoice_matching": {
+      "path": "packages/api/src/services/invoice-matching.ts",
+      "role": "Auto/manual contractor and contract matching"
+    },
+    "approval_engine": {
+      "path": "packages/api/src/services/approval-engine.ts",
+      "role": "Multi-step approval chain execution"
+    },
+    "compliance_payment_gate": {
+      "path": "packages/api/src/services/compliance-payment-gate.ts",
+      "role": "Blocks payment run creation when compliance items fail; uses @contractor-ops/compliance-policy"
+    },
+    "audit_writer": {
+      "path": "packages/api/src/services/audit-writer.ts",
+      "role": "Append-only AuditLog writes for sensitive mutations"
+    },
+    "portal_session": {
+      "path": "packages/api/src/services/portal-session.ts",
+      "role": "Contractor portal cookie session lifecycle"
+    },
+    "tenant_find": {
+      "path": "packages/api/src/lib/tenant-find.ts",
+      "role": "Tenant-scoped entity lookup helpers"
+    },
+    "audited_mutation": {
+      "path": "packages/api/src/lib/audited-mutation.ts",
+      "role": "Wrapper combining mutation + writeAuditLog in one transaction"
+    }
+  },
+  "packages_core": {
+    "db": {
+      "path": "packages/db",
+      "role": "Prisma 7, multi-region clients (EU/ME), tenant extension, migrations"
+    },
+    "auth": {
+      "path": "packages/auth",
+      "role": "Better Auth config; session types for createContext"
+    },
+    "validators": {
+      "path": "packages/validators",
+      "role": "Shared Zod schemas (entityIdSchema, domain inputs, public-api/)"
+    },
+    "feature_flags": {
+      "path": "packages/feature-flags",
+      "role": "Unleash wrapper; registry.ts is sole key declaration surface"
+    },
+    "compliance_policy": {
+      "path": "packages/compliance-policy",
+      "role": "Payment-gate rules and doc registry"
+    },
+    "classification_engine": {
+      "path": "packages/classification",
+      "role": "IR35 / Scheinselbständigkeit scoring (flag-gated at router level)"
+    },
+    "einvoice": {
+      "path": "packages/einvoice",
+      "role": "Country e-invoice profiles (KSeF, ZATCA, Peppol, XRechnung)"
+    }
+  },
+  "web_vite_domains": {
+    "invoices": "apps/web-vite/src/components/invoices/",
+    "payments": "apps/web-vite/src/components/payments/",
+    "approvals": "apps/web-vite/src/components/approvals/",
+    "portal": "apps/web-vite/src/components/portal/",
+    "contractors": "apps/web-vite/src/components/contractors/",
+    "compliance": "apps/web-vite/src/components/compliance/",
+    "classification": "apps/web-vite/src/components/classification/"
+  }
+}

@@ -1,0 +1,138 @@
+{
+  "_meta": {
+    "updated_at": "2026-06-08T16:03:52Z",
+    "version": 1,
+    "source_commit": "70f5782d78e33ba98c82e4ccda2cd4b0b4aff216"
+  },
+  "apps_to_packages": {
+    "@contractor-ops/api-server": {
+      "path": "apps/api",
+      "depends_on": [
+        "@contractor-ops/api",
+        "@contractor-ops/auth",
+        "@contractor-ops/db",
+        "@contractor-ops/einvoice",
+        "@contractor-ops/feature-flags",
+        "@contractor-ops/integrations",
+        "@contractor-ops/logger",
+        "@contractor-ops/validators"
+      ]
+    },
+    "@contractor-ops/web-vite": {
+      "path": "apps/web-vite",
+      "depends_on": [
+        "@contractor-ops/api",
+        "@contractor-ops/auth",
+        "@contractor-ops/classification",
+        "@contractor-ops/compliance-policy",
+        "@contractor-ops/db",
+        "@contractor-ops/einvoice",
+        "@contractor-ops/feature-flags",
+        "@contractor-ops/integrations",
+        "@contractor-ops/shared",
+        "@contractor-ops/ui",
+        "@contractor-ops/validators"
+      ],
+      "notes": "Types from @contractor-ops/api (AppRouter, PortalAppRouter); no direct Prisma in app code (lint guard)"
+    },
+    "@contractor-ops/cron-worker": {
+      "path": "apps/cron-worker",
+      "depends_on": [
+        "@contractor-ops/api",
+        "@contractor-ops/db",
+        "@contractor-ops/feature-flags",
+        "@contractor-ops/idp-saga",
+        "@contractor-ops/integrations",
+        "@contractor-ops/logger",
+        "@contractor-ops/validators"
+      ],
+      "notes": "Imports @contractor-ops/api/services/* subpaths for job handlers"
+    },
+    "@contractor-ops/public-api": {
+      "path": "apps/public-api",
+      "depends_on": [
+        "@contractor-ops/api",
+        "@contractor-ops/db",
+        "@contractor-ops/feature-flags",
+        "@contractor-ops/logger"
+      ],
+      "notes": "REST routes call createPublicCaller; logic lives in packages/api/src/routers/public-api/"
+    },
+    "@contractor-ops/cms": {
+      "path": "apps/cms",
+      "depends_on": [
+        "@contractor-ops/logger",
+        "@contractor-ops/ui"
+      ]
+    },
+    "@contractor-ops/landing": {
+      "path": "apps/landing",
+      "depends_on": [
+        "@contractor-ops/billing",
+        "@contractor-ops/logger",
+        "@contractor-ops/ui"
+      ]
+    }
+  },
+  "packages_hub": {
+    "@contractor-ops/api": {
+      "path": "packages/api",
+      "depends_on": [
+        "@contractor-ops/auth",
+        "@contractor-ops/billing",
+        "@contractor-ops/classification",
+        "@contractor-ops/compliance-policy",
+        "@contractor-ops/db",
+        "@contractor-ops/einvoice",
+        "@contractor-ops/feature-flags",
+        "@contractor-ops/gov-api",
+        "@contractor-ops/idp-saga",
+        "@contractor-ops/integrations",
+        "@contractor-ops/logger",
+        "@contractor-ops/offboarding-templates",
+        "@contractor-ops/secrets",
+        "@contractor-ops/shared",
+        "@contractor-ops/validators"
+      ],
+      "consumed_by": ["apps/api", "apps/cron-worker", "apps/public-api", "apps/web-vite"]
+    },
+    "@contractor-ops/db": {
+      "path": "packages/db",
+      "depends_on": [],
+      "consumed_by": ["packages/api", "apps/api", "apps/cron-worker", "apps/public-api", "apps/web-vite"]
+    },
+    "@contractor-ops/validators": {
+      "path": "packages/validators",
+      "consumed_by": ["packages/api", "apps/api", "apps/cron-worker", "apps/web-vite"]
+    }
+  },
+  "domain_chains": {
+    "invoice_payment": [
+      "apps/web-vite → @contractor-ops/api (invoice, payment, approval tRPC)",
+      "packages/api → @contractor-ops/db",
+      "packages/api → @contractor-ops/compliance-policy (payment gate)",
+      "packages/api → @contractor-ops/einvoice (intake profiles)"
+    ],
+    "classification": [
+      "apps/web-vite → @contractor-ops/api (classification*) + @contractor-ops/classification",
+      "packages/api → @contractor-ops/classification (scoring engine)",
+      "packages/api → @contractor-ops/feature-flags (module.classification-engine gate)"
+    ],
+    "portal": [
+      "apps/web-vite → @contractor-ops/api (portalAppRouter types + portal/portalTime)",
+      "packages/api → @contractor-ops/db (tenantStore, portal session)"
+    ],
+    "billing": [
+      "apps/landing → @contractor-ops/billing",
+      "packages/api → @contractor-ops/billing (Stripe webhooks via billing-webhook service)"
+    ]
+  },
+  "external_infra": {
+    "postgresql": "Neon multi-region (DATABASE_URL_EU, DATABASE_URL_ME)",
+    "object_storage": "Cloudflare R2 via @aws-sdk/client-s3",
+    "queues": "Upstash QStash + Redis",
+    "feature_flags": "Self-hosted Unleash OSS (EU + ME)",
+    "auth": "Better Auth (@contractor-ops/auth)",
+    "observability": "Sentry, Pino (@contractor-ops/logger), PostHog"
+  }
+}

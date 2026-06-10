@@ -1,0 +1,21 @@
+{
+	"nodes":[
+		{"id":"hub-index","type":"file","file":"wiki/index.md","x":0,"y":0,"width":420,"height":520,"color":"4"},
+		{"id":"hub-dashboard","type":"file","file":"wiki/meta/dashboard.md","x":-480,"y":-200,"width":380,"height":400,"color":"5"},
+		{"id":"hub-domains","type":"file","file":"wiki/domains/_index.md","x":520,"y":-240,"width":400,"height":480,"color":"3"},
+		{"id":"hub-patterns","type":"file","file":"wiki/patterns/_index.md","x":-520,"y":380,"width":400,"height":420,"color":"2"},
+		{"id":"hub-integrations","type":"file","file":"wiki/integrations/_index.md","x":520,"y":320,"width":400,"height":420,"color":"1"},
+		{"id":"hub-structure","type":"file","file":"wiki/structure/_index.md","x":0,"y":600,"width":400,"height":400,"color":"6"},
+		{"id":"flow-invoice","type":"file","file":"wiki/domains/invoice-to-payment.md","x":980,"y":-80,"width":360,"height":360,"color":"3"},
+		{"id":"flow-contractors","type":"file","file":"wiki/domains/contractors-engagements.md","x":980,"y":320,"width":360,"height":320,"color":"3"}
+	],
+	"edges":[
+		{"id":"e1","fromNode":"hub-index","fromSide":"left","toNode":"hub-dashboard","toSide":"right"},
+		{"id":"e2","fromNode":"hub-index","fromSide":"right","toNode":"hub-domains","toSide":"left"},
+		{"id":"e3","fromNode":"hub-index","fromSide":"bottom","toNode":"hub-structure","toSide":"top"},
+		{"id":"e4","fromNode":"hub-index","fromSide":"left","toNode":"hub-patterns","toSide":"right"},
+		{"id":"e5","fromNode":"hub-index","fromSide":"right","toNode":"hub-integrations","toSide":"left"},
+		{"id":"e6","fromNode":"hub-domains","fromSide":"right","toNode":"flow-invoice","toSide":"left"},
+		{"id":"e7","fromNode":"hub-domains","fromSide":"right","toNode":"flow-contractors","toSide":"left"}
+	]
+}

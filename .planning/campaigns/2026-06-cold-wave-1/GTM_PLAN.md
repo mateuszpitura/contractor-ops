@@ -43,6 +43,18 @@ Full inventory: `levers.csv` (22 levers scored by effort/impact/liability/buffer
 
 Deferred to wave 2 / M3 (in `levers.csv`): UK CIS vertical, DE healthcare Honorar (needs OC+RDG first), wider Gulf, Ireland, competitor-stack triggers, LinkedIn outreach, cold calling.
 
+### US — full market plan (phase-aligned)
+
+Complete US GTM is its own plan: **`us-gtm-plan.md`** (6 cells, phase-tied waves, CPA determination-shield, IRIS deadline lever). Summary:
+
+| US wave | Cells | When | Gate |
+|---------|-------|------|------|
+| **US Wave 2** (relationship/outbound) | US-OUT, US-PAR (CPA/EA), US-ADJ | ~20 Jul → | none — sells existing EU/Gulf depth + starts CPA channel |
+| **US Wave 3** (domestic 1099 ramp) | US-SMB, US-AGE, US-SWH | Nov–Dec 2026 | Phases 85+86 shipped + IRIS TCC filed (~Sep) + US legal review |
+| **US Wave 3.5** (payments + classification) | upsell installed base | Q1 2027 | Phases 87+88 |
+
+US go-to lever = **1099-NEC e-file deadline + IRIS transition** (FIRE sunset 2026-12-31; e-file threshold 10+) — the deterministic US analog of the EU e-invoicing mandate. Classification stays documentation-only, routed to the client's CPA/EA (licensed determination-bearer). Hard ⚖️ gates before US-domestic sells: IRIS TCC (~45-day lead), US legal review, E&O extension, signed CPA partner, US address for CAN-SPAM. US cold email = CAN-SPAM (opt-out, lighter than GDPR).
+
 ## Why three channels in parallel
 
 | Channel | Time to first signal | Time to revenue | Compounding | Marginal cost at scale |

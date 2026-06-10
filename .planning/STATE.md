@@ -16,6 +16,10 @@ progress:
 
 # Project State
 
+## Agent bootstrap
+
+**Start here:** [.planning/INDEX.md](./INDEX.md) — codebase maps, intel queries, brain wiki [`.planning/brain/`](./brain/), invariants in [MEMORY.md](./MEMORY.md).
+
 ## Project Reference
 
 See: .planning/PROJECT.md (updated 2026-06-07 — v7.0 GTM Expansion started; v6.0 shipped 2026-06-07)

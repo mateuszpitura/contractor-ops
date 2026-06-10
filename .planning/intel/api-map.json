@@ -1,0 +1,203 @@
+{
+  "_meta": {
+    "updated_at": "2026-06-08T16:03:52Z",
+    "version": 1,
+    "source_commit": "70f5782d78e33ba98c82e4ccda2cd4b0b4aff216"
+  },
+  "endpoints": {
+    "staff": {
+      "path": "/api/trpc/*",
+      "router_file": "packages/api/src/root.ts",
+      "router_export": "appRouter",
+      "auth": "tenantProcedure (Better Auth session → activeOrganizationId)"
+    },
+    "portal": {
+      "path": "/api/trpc/portal/*",
+      "router_file": "packages/api/src/portal-root.ts",
+      "router_export": "portalAppRouter",
+      "auth": "portalProcedure (portal_session cookie)"
+    }
+  },
+  "namespaces": {
+    "invoice": {
+      "router_file": "packages/api/src/routers/finance/invoice.ts",
+      "composed_from": [
+        "packages/api/src/routers/finance/invoice-crud.ts",
+        "packages/api/src/routers/finance/invoice-matching.ts",
+        "packages/api/src/routers/finance/invoice-actions.ts"
+      ],
+      "key_procedures": {
+        "create": "invoice-crud.ts",
+        "getById": "invoice-crud.ts",
+        "update": "invoice-crud.ts",
+        "list": "invoice-crud.ts",
+        "statusCounts": "invoice-crud.ts",
+        "submitForMatching": "invoice-matching.ts",
+        "manualMatch": "invoice-matching.ts",
+        "dismissDuplicate": "invoice-matching.ts",
+        "voidInvoice": "invoice-actions.ts",
+        "toggleReverseCharge": "invoice-actions.ts"
+      },
+      "services": ["packages/api/src/services/invoice-matching.ts", "packages/api/src/services/reverse-charge.service.ts"]
+    },
+    "invoiceIntake": {
+      "router_file": "packages/api/src/routers/finance/invoice-intake.ts",
+      "key_procedures": {
+        "upload": "invoice-intake.ts",
+        "listByOrg": "invoice-intake.ts",
+        "getById": "invoice-intake.ts",
+        "getMatchCandidates": "invoice-intake.ts",
+        "confirmMatch": "invoice-intake.ts",
+        "convertToInvoice": "invoice-intake.ts",
+        "reject": "invoice-intake.ts"
+      },
+      "services": ["packages/api/src/services/invoice-intake/ingest.ts", "packages/api/src/services/invoice-intake/match.ts", "packages/api/src/services/invoice-intake/finalize-stage.ts"]
+    },
+    "payment": {
+      "router_file": "packages/api/src/routers/finance/payment.ts",
+      "composed_from": [
+        "packages/api/src/routers/finance/payment-core.ts",
+        "packages/api/src/routers/finance/payment-export-router.ts",
+        "packages/api/src/routers/finance/payment-run-ops.ts",
+        "packages/api/src/routers/finance/payment-import.ts",
+        "packages/api/src/routers/finance/payment-skonto.ts"
+      ],
+      "key_procedures": {
+        "readyForPayment": "payment-core.ts",
+        "create": "payment-core.ts",
+        "get": "payment-core.ts",
+        "list": "payment-core.ts",
+        "lockAndExport": "payment-export-router.ts",
+        "importStatement": "payment-import.ts",
+        "confirmStatementMatches": "payment-import.ts",
+        "cancel": "payment-run-ops.ts",
+        "markAllPaid": "payment-run-ops.ts",
+        "applySkontoToItem": "payment-skonto.ts"
+      },
+      "services": ["packages/api/src/services/compliance-payment-gate.ts"]
+    },
+    "approval": {
+      "router_file": "packages/api/src/routers/core/approval.ts",
+      "composed_from": [
+        "packages/api/src/routers/core/approval-chain.ts",
+        "packages/api/src/routers/core/approval-queue.ts",
+        "packages/api/src/routers/core/approval-submit.ts"
+      ],
+      "key_procedures": {
+        "submitForApproval": "approval-submit.ts",
+        "getAuditTrail": "approval-submit.ts",
+        "resumeFromCompliance": "approval-submit.ts",
+        "listPending": "approval-queue.ts",
+        "actionableCount": "approval-queue.ts",
+        "approve": "approval-queue.ts",
+        "reject": "approval-queue.ts",
+        "delegate": "approval-queue.ts",
+        "bulkApprove": "approval-queue.ts",
+        "listChains": "approval-chain.ts",
+        "createChain": "approval-chain.ts"
+      },
+      "services": ["packages/api/src/services/approval-engine.ts", "packages/api/src/services/approval-filters.ts"]
+    },
+    "portal": {
+      "router_file": "packages/api/src/routers/portal/portal.ts",
+      "composed_from": [
+        "packages/api/src/routers/portal/portal-auth-router.ts",
+        "packages/api/src/routers/portal/portal-invoices-router.ts",
+        "packages/api/src/routers/portal/portal-contracts-router.ts",
+        "packages/api/src/routers/portal/portal-profile-router.ts",
+        "packages/api/src/routers/portal/portal-equipment-router.ts"
+      ],
+      "key_procedures": {
+        "getSession": "portal-auth-router.ts",
+        "listInvoices": "portal-invoices-router.ts",
+        "getInvoice": "portal-invoices-router.ts",
+        "submitInvoice": "portal-invoices-router.ts",
+        "listPayments": "portal-invoices-router.ts",
+        "getUploadUrl": "portal-invoices-router.ts",
+        "listContracts": "portal-contracts-router.ts",
+        "getContract": "portal-contracts-router.ts",
+        "getProfile": "portal-profile-router.ts",
+        "complianceItems": "portal-profile-router.ts",
+        "listEquipment": "portal-equipment-router.ts"
+      }
+    },
+    "portalTime": {
+      "router_file": "packages/api/src/routers/portal/portal-time.ts",
+      "key_procedures": {
+        "getTimesheet": "portal-time.ts",
+        "saveDraftEntries": "portal-time.ts",
+        "submitTimesheet": "portal-time.ts",
+        "listTimesheets": "portal-time.ts",
+        "syncExternal": "portal-time.ts"
+      }
+    },
+    "classification": {
+      "flag": "module.classification-engine",
+      "router_file": "packages/api/src/routers/compliance/classification.ts",
+      "composed_from": [
+        "packages/api/src/routers/compliance/classification-draft.ts",
+        "packages/api/src/routers/compliance/classification-submit.ts",
+        "packages/api/src/routers/compliance/classification-read.ts"
+      ],
+      "key_procedures": {
+        "createDraft": "classification-draft.ts",
+        "saveAnswer": "classification-draft.ts",
+        "getDraft": "classification-draft.ts",
+        "submit": "classification-submit.ts",
+        "getLatest": "classification-read.ts",
+        "getById": "classification-read.ts",
+        "listByContractor": "classification-read.ts"
+      },
+      "middleware": "classificationProcedure (packages/api/src/middleware/classification.ts)",
+      "package": "packages/classification"
+    },
+    "ir35Attestation": {
+      "flag": "module.classification-engine",
+      "router_file": "packages/api/src/routers/compliance/ir35-attestation.ts",
+      "role": "Contractor other-client attestation for DRV defense bundle",
+      "web_hook": "apps/web-vite/src/components/contractors/hooks/use-other-client-attestation.ts"
+    },
+    "complianceAdmin": {
+      "router_file": "packages/api/src/routers/compliance/compliance-admin.ts",
+      "role": "Compliance dashboard KPIs, at-risk, renewals, blocked payments; always mounted"
+    },
+    "audit": {
+      "router_file": "packages/api/src/routers/core/audit.ts",
+      "role": "Audit log list, search, filter, CSV export"
+    },
+    "contractor": {
+      "router_file": "packages/api/src/routers/core/contractor.ts",
+      "composed_from": [
+        "packages/api/src/routers/core/contractor-core.ts",
+        "packages/api/src/routers/core/contractor-bulk.ts",
+        "packages/api/src/routers/core/contractor-country.ts",
+        "packages/api/src/routers/core/contractor-engagements.ts",
+        "packages/api/src/routers/core/contractor-tax.ts"
+      ]
+    }
+  },
+  "invoice_to_payment_flow": [
+    {"step": "intake", "namespace": "invoiceIntake", "procedure": "upload → confirmMatch → convertToInvoice"},
+    {"step": "match", "namespace": "invoice", "procedure": "submitForMatching / manualMatch"},
+    {"step": "submit_approval", "namespace": "approval", "procedure": "submitForApproval"},
+    {"step": "approve", "namespace": "approval", "procedure": "approve (queue)"},
+    {"step": "ready", "namespace": "payment", "procedure": "readyForPayment"},
+    {"step": "run", "namespace": "payment", "procedure": "create (compliance gate)"},
+    {"step": "export", "namespace": "payment", "procedure": "lockAndExport"},
+    {"step": "reconcile", "namespace": "payment", "procedure": "importStatement → confirmStatementMatches"}
+  ],
+  "conditional_namespaces": {
+    "flag": "module.classification-engine",
+    "qa_bypass_env": "QA_DEFAULT_ORG_ID",
+    "list": [
+      "classification",
+      "classificationDashboard",
+      "classificationDocument",
+      "ir35Chain",
+      "ir35Attestation",
+      "economicDependencyAlert",
+      "reassessmentTrigger",
+      "statusfeststellungsverfahren"
+    ]
+  }
+}

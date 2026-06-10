@@ -28,9 +28,9 @@ ich nehme an, dass Status-Dokumentation gerade keine Priorität hat. Soll ich Si
 
 Beste Grüße,
 Mateusz",break-up close,"Break-up close - DSGVO-compliant exit. Sometimes triggers the highest reply rate."
-PL-SMB,smb,PL,pl,A,1,0,"KSeF od 02.2026 + kontraktorzy B2B w {{company_name}}","Cześć {{first_name}},
+PL-SMB,smb,PL,pl,A,1,0,"KSeF 2026 + kontraktorzy B2B w {{company_name}}","Cześć {{first_name}},
 
-zgodnie z planem Ministerstwa Finansów KSeF staje się obowiązkowy od lutego 2026. Dla firm w skali {{company_name}} (~{{company_size_employees}} osób + miks B2B kontraktorów) wąskie gardło to nie samo wystawianie faktur w KSeF – tylko sklejka: kontrakt → faktura → akceptacja → KSeF, w przepływie który dziś biegnie przez 3–4 narzędzia.
+zgodnie z harmonogramem Ministerstwa Finansów KSeF jest obowiązkowy w 2026 (duzi podatnicy >200 mln zł od 1 lutego, pozostali od 1 kwietnia; kary do 100% VAT od stycznia 2027). Dla firm w skali {{company_name}} (~{{company_size_employees}} osób + miks B2B kontraktorów) wąskie gardło to nie samo wystawianie faktur w KSeF – tylko sklejka: kontrakt → faktura → akceptacja → KSeF, w przepływie który dziś biegnie przez 3–4 narzędzia.
 
 W contractor-ops zbudowaliśmy ten pipeline natywnie pod KSeF plus operacyjne zarządzanie kontraktorami (umowy B2B, płatności, akceptacje). Jeden dashboard, jedna baza, audyt każdego dokumentu.
 
@@ -41,7 +41,7 @@ Mateusz Pitura
 contractor-ops
 
 P.S.: 2-minutowe demo: {{demo_url}}",book 15-min call,"Go-to lever — KSeF deadline, deterministic, lowest liability. Classification removed from promise; ops + e-invoicing only."
-PL-SMB,smb,PL,pl,A,2,4,"Re: KSeF od 02.2026 + kontraktorzy B2B w {{company_name}}","Cześć {{first_name}},
+PL-SMB,smb,PL,pl,A,2,4,"Re: KSeF 2026 + kontraktorzy B2B w {{company_name}}","Cześć {{first_name}},
 
 domyślam się, że KSeF jest już na Waszej liście. Pytanie raczej brzmi: czy łączysz to z systemem zarządzania kontraktorami, czy traktujesz jako oddzielny projekt księgowy.
 
@@ -112,7 +112,7 @@ Assuming Saudization automation isn't a priority right now. Want me to drop you?
 
 Best,
 Mateusz",break-up close,Break-up close.
-DE-SMB,smb,DE,de,A,1,0,"E-Rechnung 2026/2027 + freie Mitarbeiter: ein Workflow statt drei Tools","Hallo {{first_name}},
+DE-SMB,smb,DE,de,A,1,0,"E-Rechnung 2027/2028 + freie Mitarbeiter: ein Workflow statt drei Tools","Hallo {{first_name}},
 
 mit dem Wachstumschancengesetz wird die strukturierte E-Rechnung (XRechnung / ZUGFeRD) für B2B schrittweise Pflicht – Empfang bereits seit 2025, Ausstellungspflichten folgen. Bei {{company_name}} mit Mischung aus Festangestellten und freien Mitarbeitern ist der Engpass selten das Rechnungsformat selbst, sondern die Kette: Vertrag → Leistung → Rechnung → Freigabe → E-Rechnung, die heute über drei getrennte Tools läuft.
 
@@ -125,7 +125,7 @@ Mateusz Pitura
 contractor-ops
 
 P.S.: 2-Minuten-Demo: {{demo_url}}",book 15-min call,"DE-SMB hero - e-invoicing primary (deterministic, deadline, lowest liability). Ops platform secondary. No classification verdict."
-DE-SMB,smb,DE,de,A,2,4,"Re: E-Rechnung 2026/2027 + freie Mitarbeiter: ein Workflow statt drei Tools","Hallo {{first_name}},
+DE-SMB,smb,DE,de,A,2,4,"Re: E-Rechnung 2027/2028 + freie Mitarbeiter: ein Workflow statt drei Tools","Hallo {{first_name}},
 
 kurz nachgefasst: die meisten Teams Ihrer Größe behandeln E-Rechnung und Contractor-Verwaltung als zwei Projekte – und verlieren genau an der Schnittstelle Zeit (doppelte Stammdaten, manuelle Freigaben, kein durchgängiger Audit-Trail).
 
@@ -143,7 +143,7 @@ Beste Grüße,
 Mateusz",break-up close,Break-up close - DSGVO-compliant exit.
 PL-PAR,partner,PL,pl,A,1,0,"Partnerstwo: KSeF + zarządzanie kontraktorami dla klientów {{company_name}}","Cześć {{first_name}},
 
-prowadzę contractor-ops – SaaS do operacyjnej obsługi kontraktorów B2B (umowy, płatności, akceptacje) z natywnym KSeF. Piszę bo Wasi klienci w {{company_name}} od lutego 2026 muszą ogarnąć KSeF, a przy okazji pytają o kwestie statusu B2B vs etat – i to Wy, jako doradca, podejmujecie tę ocenę.
+prowadzę contractor-ops – SaaS do operacyjnej obsługi kontraktorów B2B (umowy, płatności, akceptacje) z natywnym KSeF. Piszę bo Wasi klienci w {{company_name}} w 2026 muszą ogarnąć KSeF (duzi od 1 lutego, pozostali od 1 kwietnia), a przy okazji pytają o kwestie statusu B2B vs etat – i to Wy, jako doradca, podejmujecie tę ocenę.
 
 Pomysł partnerstwa: my dostarczamy software (KSeF + pipeline kontraktorski + audytowalna dokumentacja), Wy zostajecie stroną która prowadzi klienta i podejmuje ocenę podatkową/statusową. Model: revenue-share za każdego klienta którego przyprowadzicie, albo whitelabel pod Waszą marką.
 
@@ -168,9 +168,9 @@ domykam wątek partnerstwa z poprzedniej wiadomości. Zakładam że to nie jest 
 
 Pozdrawiam,
 Mateusz",break-up close,Partnership break-up - softer (timing varies for partners).
-PL-SWH,vertical-software-house,PL,pl,A,1,0,"{{trigger_detail}} + KSeF od 02.2026 – software house na modelu B2B","Cześć {{first_name}},
+PL-SWH,vertical-software-house,PL,pl,A,1,0,"{{trigger_detail}} + KSeF od 04.2026 – software house na modelu B2B","Cześć {{first_name}},
 
-{{trigger_hook}} – a w software housie gdzie większość zespołu siedzi na B2B, KSeF od lutego 2026 uderza mocniej niż gdziekolwiek: każdy kontraktor to faktura, każda faktura musi przejść przez KSeF, a do tego dochodzi cała operacja (umowy B2B, akceptacje, płatności, rozliczenie projektów).
+{{trigger_hook}} – a w software housie gdzie większość zespołu siedzi na B2B, KSeF od 1 kwietnia 2026 uderza mocniej niż gdziekolwiek: każdy kontraktor to faktura, każda faktura musi przejść przez KSeF, a do tego dochodzi cała operacja (umowy B2B, akceptacje, płatności, rozliczenie projektów).
 
 W contractor-ops spięliśmy to natywnie: KSeF + operacyjne zarządzanie kontraktorami w jednym workflow, z audytem każdego dokumentu. Czyste narzędzie software'owe – ocenę podatkową zostawiamy Waszej księgowości/doradcy.
 
@@ -224,3 +224,183 @@ Guessing ZZP + e-invoicing workflow isn't a priority right now. Want me to drop 
 
 Best,
 Mateusz",break-up close,Break-up close. GDPR-compliant exit.
+US-OUT,outbound-intl,US,en,A,1,0,"Your contractors in {{contractor_geos}} — the compliance your US stack skips","Hi {{first_name}},
+
+{{company_name}} pays contractors across {{contractor_geos}} — and most US-side tools (even Deel) treat that as a flat ""global payout"" while the actual compliance lives in the local detail: Poland's KSeF e-invoicing mandate, Germany's Scheinselbständigkeit documentation, Gulf Saudization rules. That's where the audit risk and the surprise costs hide.
+
+contractor-ops is built for exactly that edge: one dashboard on top of your US entity that runs the local invoicing + ops + audit trail per jurisdiction, instead of a generic wrapper that ignores it. Software/workflow layer — local determinations stay with your advisers.
+
+Worth 15 minutes? {{cal_link}}
+
+Best,
+Mateusz Pitura
+contractor-ops
+
+P.S.: 2-min demo: {{demo_url}}",book 15-min call,"US-OUT wave 2 (LV-23). Sells EXISTING EU/Gulf depth to US buyer. {{contractor_geos}} personalized (e.g. 'Poland + Germany'). e-invoicing/ops lever, low liability. CAN-SPAM: footer must carry physical address."
+US-OUT,outbound-intl,US,en,A,2,4,"Re: Your contractors in {{contractor_geos}} — the compliance your US stack skips","Hi {{first_name}},
+
+Quick follow-up: the teams we help usually discover the gap at audit or invoice time — a Polish contractor's invoice bounces KSeF validation, or there's no Scheinselbst evidence trail when it's asked for. By then it's cleanup, not prevention.
+
+3-min Loom showing the per-jurisdiction view: {{demo_url}}
+
+If international contractor ops sits with someone else (Finance / People), who should I talk to?
+
+Thanks,
+Mateusz",demo click + referral ask,Audit-time-pain reframe + referral fork.
+US-OUT,outbound-intl,US,en,A,3,9,"Last message – should I close the loop?","Hi {{first_name}},
+
+Guessing international contractor compliance isn't top of the list right now. Want me to drop you?
+
+Best,
+Mateusz
+
+contractor-ops · [physical address for CAN-SPAM] · unsubscribe: {{unsubscribe_url}}",break-up close,Break-up close. CAN-SPAM: sender ID + physical address + working opt-out in footer.
+US-SMB,smb,US,en,A,1,0,"1099-NEC e-file is mandatory at 10+ forms now — and FIRE shuts down","Hi {{first_name}},
+
+If {{company_name}} pays 10 or more contractors, 1099-NEC e-filing is no longer optional — the IRS dropped the e-file threshold to 10 forms, and the old FIRE system is decommissioned at the end of 2026, so TY2026 filings have to go through IRIS (which needs a separate TCC that takes ~45 days to get).
+
+Most finance teams discover this in January when it's a fire drill: chasing W-9s, fixing TINs, and figuring out IRIS at the deadline.
+
+contractor-ops handles the whole chain — W-9 collection, TIN matching, 1099-NEC generation, IRIS e-file — in one workflow, so January is a click, not a scramble. Software/workflow tool; your CPA stays in the loop on any judgment calls.
+
+Worth 15 minutes before year-end planning? {{cal_link}}
+
+Best,
+Mateusz Pitura
+contractor-ops
+
+P.S.: 2-min demo: {{demo_url}}",book 15-min call,"US-SMB hero (LV-24, Q4 2026, gated Phase 85+86). Go-to lever = 1099 deadline (deterministic). CAN-SPAM footer required. Send Nov-Dec toward Jan 31."
+US-SMB,smb,US,en,A,2,4,"Re: 1099-NEC e-file is mandatory at 10+ forms now","Hi {{first_name}},
+
+Quick follow-up — the part that bites isn't the filing itself, it's the upstream mess: missing W-9s, mismatched TINs (which trigger IRS B-notices + backup withholding), and contractors you forgot were 1099 until December.
+
+3-min Loom showing the W-9 → TIN-match → 1099 → IRIS flow: {{demo_url}}
+
+If 1099s sit with someone else (Controller / your CPA), who should I talk to?
+
+Thanks,
+Mateusz",demo click + referral ask,Upstream-pain reframe (W-9/TIN) + referral fork to Controller/CPA.
+US-SMB,smb,US,en,A,3,9,"Last note — should I close the loop?","Hi {{first_name}},
+
+Guessing 1099 automation isn't on the radar yet — happy to circle back closer to year-end if that's better. Want me to drop you for now?
+
+Best,
+Mateusz
+
+contractor-ops · [physical address — CAN-SPAM] · unsubscribe: {{unsubscribe_url}}",break-up close,"Break-up close. CAN-SPAM footer. Soft 'circle back at year-end' fits the deadline cycle."
+US-AGE,agency,US,en,A,1,0,"1099s across {{contractor_count}}+ contractors + the classification audit trail","Hi {{first_name}},
+
+Running a staffing book at {{company_name}}'s scale means two compounding year-end problems: 1099-NEC e-filing across hundreds of contractors (now mandatory at 10+ forms, and FIRE→IRIS for TY2026), and a defensible worker-classification trail if a state or the IRS asks why someone's a 1099 and not a W-2.
+
+contractor-ops runs both: bulk W-9 → TIN-match → 1099 → IRIS e-file, plus a per-engagement evidence pack your CPA/EA can stand behind. We're the software + documentation layer — the classification determination stays with your CPA/EA, who's licensed and insured for it.
+
+Worth 15 minutes? {{cal_link}}
+
+Best,
+Mateusz Pitura
+contractor-ops
+
+P.S.: 2-min demo: {{demo_url}}",book 15-min call,"US-AGE hero (Q4 2026, gated Phase 86 +87). 1099-at-scale lead; classification = documentation, CPA carries determination. {{contractor_count}} personalized. CAN-SPAM footer."
+US-AGE,agency,US,en,A,2,4,"Re: 1099s + the classification audit trail","Hi {{first_name}},
+
+Briefly: the agencies we help were each burning ~0.5 FTE on 1099 season plus a legal retainer for classification questions — and still had gaps when audited.
+
+3-min Loom: {{demo_url}}. The classification piece is evidence + audit trail for your CPA/EA to sign off, not a black-box verdict.
+
+If this should go to your Finance or Compliance lead, who would you point me at?
+
+Thanks,
+Mateusz",demo click + referral ask,FTE+retainer cost frame + adviser-carries-decision + referral.
+US-AGE,agency,US,en,A,3,9,"Last message — should I take you off the list?","Hi {{first_name}},
+
+Guessing 1099 + classification tooling isn't a priority right now. Want me to drop you?
+
+Best,
+Mateusz
+
+contractor-ops · [physical address — CAN-SPAM] · unsubscribe: {{unsubscribe_url}}",break-up close,Break-up close. CAN-SPAM footer.
+US-SWH,vertical-tech-startup,US,en,A,1,0,"{{company_name}}'s contractors — 1099s, payouts, and the ones abroad","Hi {{first_name}},
+
+Most {{company_name}}-stage startups run on contractors — some US 1099, often some abroad (EU/LatAm/Gulf) — and the admin is scattered across your bank, a spreadsheet, and whoever does the books. Two things land hard: 1099-NEC e-file at year-end (mandatory at 10+, FIRE→IRIS for TY2026) and clean payouts.
+
+contractor-ops puts it in one place: W-9/onboarding, ACH payouts, 1099 + IRIS e-file for the US folks, and local invoicing/compliance for the contractors abroad — one dashboard on your US entity. Workflow tool; judgment calls stay with your CPA.
+
+Worth 15 minutes? {{cal_link}}
+
+Best,
+Mateusz Pitura
+contractor-ops
+
+P.S.: 2-min demo: {{demo_url}}",book 15-min call,"US-SWH hero (LV-28, gated Phase 85+86+88). Bridges US-domestic + US-OUT (startups have both). Ramp/Brex/Mercury co-marketing fit. CAN-SPAM footer."
+US-SWH,vertical-tech-startup,US,en,A,2,4,"Re: {{company_name}}'s contractors — one place instead of five","Hi {{first_name}},
+
+Follow-up: the startups we help usually stitch this from Mercury/Brex + a spreadsheet + Deel for the international ones, and the seams leak at year-end. One contractor record → onboarding, payout, 1099, and local compliance all hang off it.
+
+3-min Loom: {{demo_url}}
+
+If ops/finance sits with a cofounder, feel free to forward.
+
+Thanks,
+Mateusz",demo click + referral ask,Tool-sprawl reframe + cofounder forward.
+US-SWH,vertical-tech-startup,US,en,A,3,9,"Last note — should I close the loop?","Hi {{first_name}},
+
+Guessing contractor admin isn't the fire right now. Want me to drop you?
+
+Best,
+Mateusz
+
+contractor-ops · [physical address — CAN-SPAM] · unsubscribe: {{unsubscribe_url}}",break-up close,Break-up close. CAN-SPAM footer.
+US-PAR,partner,US,en,A,1,0,"Partnership: 1099 e-file + W-9 + intl compliance for your clients","Hi {{first_name}},
+
+I run contractor-ops — software for contractor compliance. Reaching out to {{company_name}} because your SMB clients are about to hit a rough 1099 season: e-file mandatory at 10+ forms, FIRE decommissioned, IRIS requiring a new TCC — and the upstream W-9/TIN mess that lands on your desk.
+
+Partnership idea: we provide the software (W-9 intake, TIN-match, 1099-NEC, IRIS e-file, plus international invoicing for clients with contractors abroad); you stay the trusted adviser who carries the determinations. Model: revenue-share per client you bring, or white-label under your firm.
+
+It takes the busywork off your team and keeps the judgment — and the liability — where it belongs, with you (licensed + insured). Worth 30 minutes? {{cal_link_long}}
+
+Best,
+Mateusz Pitura
+contractor-ops",book 30-min partnership intro,"US-PAR (LV-27). CPA/EA = US determination-bearer + liability shield + fast channel. Start NOW (no product gate for relationship). 30-min CTA. CAN-SPAM footer on later steps."
+US-PAR,partner,US,en,A,2,5,"Re: Partnership: 1099 e-file + W-9 for your clients","Hi {{first_name}},
+
+Three quick options if a call's hard to schedule:
+
+1. I can send a 1-pager built for accounting firms — IRIS transition + how the white-label works.
+2. If partnerships aren't your area, who's the right person?
+3. Happy to start with a written intro instead of a meeting.
+
+Best,
+Mateusz",send one-pager or referral,Partnership follow-up — low-friction options.
+US-PAR,partner,US,en,A,3,12,"Last note — revisit before 1099 season?","Hi {{first_name}},
+
+Closing the loop on the partnership note. Given the timing, want me to circle back in Q4 before 1099 season ramps?
+
+Best,
+Mateusz
+
+contractor-ops · [physical address — CAN-SPAM] · unsubscribe: {{unsubscribe_url}}",break-up close,Partnership break-up — Q4 timing hook. CAN-SPAM footer.
+US-ADJ,adjacent,US,en,A,1,0,"contractor-ops × {{company_name}}: the contractor-compliance layer you don't build","Hi {{first_name}},
+
+I run contractor-ops — software for contractor compliance (1099/IRIS e-file, W-9, plus EU/Gulf invoicing for international contractors). Reaching out because {{company_name}}'s customers keep bumping into contractor-compliance edges that aren't your core — 1099 season, W-9/TIN, or a customer with contractors abroad.
+
+We built exactly that layer. Proposal: a marketplace listing + integration so your customers get a one-click connector; you keep the relationship, we own the compliance product. Complement, not compete.
+
+Open to a 30-minute scoping call? {{cal_link_long}}
+
+Best,
+Mateusz Pitura
+contractor-ops",book 30-min partnership intro,"US-ADJ. Gusto/Bill/Ramp/QuickBooks adjacency. Marketplace + integration, complement-not-compete. CAN-SPAM footer on later steps."
+US-ADJ,adjacent,US,en,A,2,5,"Re: contractor-ops × {{company_name}} integration","Hi {{first_name}},
+
+Quick follow-up — happy to share a short integration brief if that's faster than a call, or point me to whoever owns your app/partner ecosystem.
+
+Best,
+Mateusz",send brief or referral,Integration follow-up.
+US-ADJ,adjacent,US,en,A,3,12,"Last note — should I close the loop?","Hi {{first_name}},
+
+Guessing now's not the moment for a new integration. Want me to circle back in Q4?
+
+Best,
+Mateusz
+
+contractor-ops · [physical address — CAN-SPAM] · unsubscribe: {{unsubscribe_url}}",break-up close,Break-up close. CAN-SPAM footer.

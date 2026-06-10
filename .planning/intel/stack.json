@@ -1,0 +1,127 @@
+{
+  "_meta": {
+    "updated_at": "2026-06-08T16:03:52Z",
+    "version": 1,
+    "source_commit": "70f5782d78e33ba98c82e4ccda2cd4b0b4aff216",
+    "source_doc": ".planning/codebase/STACK.md"
+  },
+  "workspace": {
+    "package_manager": "pnpm@10.33.2",
+    "monorepo": "Turborepo ^2.9.9",
+    "workspaces": ["apps/*", "packages/*", "goals/qa-walk-and-fix"],
+    "supply_chain_gate": "minimumReleaseAge 10080 (7 days)"
+  },
+  "languages": {
+    "primary": "TypeScript ^6.0.3",
+    "config": "tsconfig.base.json — strict: true, erasableSyntaxOnly: true",
+    "fast_typecheck": "@typescript/native-preview (tsgo) via pnpm typecheck:fast"
+  },
+  "lint_format": {
+    "linter": "Biome ^2.4.14",
+    "hooks": "Husky + lint-staged",
+    "ci": "pnpm lint:ci (~15 custom guards in scripts/)"
+  },
+  "testing": {
+    "runner": "Vitest ^4.1.5",
+    "coverage": "@vitest/coverage-v8",
+    "load": "k6 (load-tests/)",
+    "e2e": "Playwright (apps/web-vite functional config)"
+  },
+  "apps": {
+    "api-server": {
+      "path": "apps/api",
+      "runtime": "Fastify ^5.6.1 + tsx",
+      "api": "tRPC v11 (@trpc/server ^11.17.0)",
+      "auth": "Better Auth via @contractor-ops/auth"
+    },
+    "web-vite": {
+      "path": "apps/web-vite",
+      "runtime": "Vite 8.0.10 + React ^19.2.6",
+      "state": "TanStack Query 5 + tRPC client",
+      "routing": "React Router 7",
+      "styling": "Tailwind CSS 4",
+      "i18n": "i18next + ICU (en, de, pl, ar RTL)"
+    },
+    "cron-worker": {
+      "path": "apps/cron-worker",
+      "runtime": "Fastify + node-cron",
+      "queues": "QStash callbacks"
+    },
+    "public-api": {
+      "path": "apps/public-api",
+      "runtime": "Hono ^4.12.18",
+      "auth": "HMAC API keys"
+    },
+    "landing": {
+      "path": "apps/landing",
+      "runtime": "Next.js ^16.2.5",
+      "analytics": "PostHog"
+    },
+    "cms": {
+      "path": "apps/cms",
+      "runtime": "Payload ^3.84.1 on Next 16",
+      "port": 3002
+    }
+  },
+  "data": {
+    "database": "PostgreSQL 17 via Neon",
+    "orm": "Prisma 7 (@prisma/client ^7.8.0)",
+    "regions": ["DATABASE_URL_EU", "DATABASE_URL_ME"],
+    "object_storage": "Cloudflare R2 (S3-compatible @aws-sdk/client-s3)",
+    "cache_queues": ["Upstash Redis", "Upstash QStash"]
+  },
+  "api_layer": {
+    "trpc_version": 11,
+    "staff_namespaces": 53,
+    "conditional_namespaces": 8,
+    "portal_namespaces": 2,
+    "router_assembly": "packages/api/src/root.ts + portal-root.ts"
+  },
+  "auth": {
+    "staff": "Better Auth — packages/auth/src/config.ts",
+    "portal": "Cookie portal_session — packages/api/src/services/portal-session.ts",
+    "rbac": "8 roles + workflow roles — packages/api/src/middleware/rbac.ts",
+    "public_api": "HMAC API keys — packages/api/src/routers/core/api-key.ts"
+  },
+  "frontend_libraries": {
+    "forms": "react-hook-form + Zod resolvers",
+    "tables": "TanStack Table + WorkbenchDataTable",
+    "url_state": "nuqs",
+    "charts": "recharts",
+    "analytics": "PostHog (consent-gated)",
+    "errors": "Sentry React"
+  },
+  "observability": {
+    "errors": "Sentry (@sentry/node, @sentry/react)",
+    "logging": "Pino via @contractor-ops/logger",
+    "product_analytics": "PostHog",
+    "local_dev": "GlitchTip + Grafana + Loki (pnpm dev:observability)"
+  },
+  "deploy": {
+    "platform": "Render (render.yaml)",
+    "flags": "Unleash OSS private services (unleash-eu, unleash-me)"
+  },
+  "key_packages": [
+    "@contractor-ops/api",
+    "@contractor-ops/db",
+    "@contractor-ops/auth",
+    "@contractor-ops/validators",
+    "@contractor-ops/ui",
+    "@contractor-ops/feature-flags",
+    "@contractor-ops/integrations",
+    "@contractor-ops/einvoice",
+    "@contractor-ops/billing",
+    "@contractor-ops/compliance-policy",
+    "@contractor-ops/classification",
+    "@contractor-ops/logger",
+    "@contractor-ops/test-utils",
+    "@contractor-ops/lint-guards"
+  ],
+  "verification_commands": {
+    "typecheck": "pnpm typecheck",
+    "typecheck_api": "pnpm typecheck --filter=@contractor-ops/api",
+    "test": "pnpm test",
+    "lint_ci": "pnpm lint:ci",
+    "data_layer": "pnpm check:web-vite-data-layer"
+  }
+}

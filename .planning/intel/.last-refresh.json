@@ -1,0 +1,20 @@
+{
+  "commit": "70f5782d78e33ba98c82e4ccda2cd4b0b4aff216",
+  "refreshed_at": "2026-06-08T16:03:52Z",
+  "intel_files": [
+    "file-roles.json",
+    "api-map.json",
+    "dependency-graph.json",
+    "arch-decisions.json",
+    "stack.json"
+  ],
+  "source_docs": [
+    ".planning/codebase/ARCHITECTURE.md",
+    ".planning/codebase/CONCERNS.md",
+    ".planning/codebase/CONVENTIONS.md",
+    ".planning/codebase/INTEGRATIONS.md",
+    ".planning/codebase/STACK.md",
+    ".planning/codebase/STRUCTURE.md",
+    ".planning/codebase/TESTING.md"
+  ]
+}

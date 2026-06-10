@@ -1,0 +1,33 @@
+views:
+  - type: table
+    name: Domain pages
+    filters:
+      and:
+        - file.folder.startsWith("wiki/domains")
+        - file.ext == "md"
+    order:
+      - file.name
+  - type: table
+    name: Patterns
+    filters:
+      and:
+        - file.folder.startsWith("wiki/patterns")
+        - file.ext == "md"
+    order:
+      - file.name
+  - type: table
+    name: Integrations
+    filters:
+      and:
+        - file.folder.startsWith("wiki/integrations")
+        - file.ext == "md"
+    order:
+      - file.name
+  - type: table
+    name: Structure
+    filters:
+      and:
+        - file.folder.startsWith("wiki/structure")
+        - file.ext == "md"
+    order:
+      - file.name

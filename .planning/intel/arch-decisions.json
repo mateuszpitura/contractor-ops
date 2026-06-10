@@ -1,0 +1,138 @@
+{
+  "_meta": {
+    "updated_at": "2026-06-08T16:03:52Z",
+    "version": 1,
+    "source_commit": "70f5782d78e33ba98c82e4ccda2cd4b0b4aff216"
+  },
+  "invariants": [
+    {
+      "id": "tenant-from-session",
+      "rule": "Never trust organizationId or tenant ids from client input alone",
+      "staff": {
+        "source": "ctx.session.session.activeOrganizationId",
+        "middleware": "packages/api/src/middleware/tenant.ts",
+        "procedure": "tenantProcedure"
+      },
+      "portal": {
+        "source": "Validated portal_session cookie",
+        "middleware": "packages/api/src/middleware/portal-auth.ts",
+        "procedure": "portalProcedure"
+      },
+      "api_key": "packages/api/src/middleware/api-key-auth.ts",
+      "cron": "cronProcedure with Authorization: Bearer CRON_SECRET",
+      "regional_db": "DATABASE_URL_EU / DATABASE_URL_ME via packages/db/src/region.ts"
+    },
+    {
+      "id": "audit-on-sensitive-mutations",
+      "rule": "Sensitive mutations must call writeAuditLog or writeAuditLogMany",
+      "writer": "packages/api/src/services/audit-writer.ts",
+      "wrapper": "packages/api/src/lib/audited-mutation.ts",
+      "requirements": [
+        "Caller supplies organizationId explicitly",
+        "Pass tx inside $transaction so audit rolls back with business data",
+        "Append-only AuditLog — no updates or deletes"
+      ],
+      "read_router": "packages/api/src/routers/core/audit.ts",
+      "ci_guard": "pnpm lint:audit-log"
+    },
+    {
+      "id": "container-hook-data-layer",
+      "rule": "web-vite tRPC/React Query only in domain hooks, never pages or containers",
+      "spec": "apps/web-vite/ARCHITECTURE.md",
+      "layers": {
+        "page": "compose *Container only; no useTRPC/useQuery/useMutation",
+        "container": "call hooks; own loading/empty/error",
+        "hook": "sole tRPC boundary per section",
+        "component": "presentational props only"
+      },
+      "ci_guards": [
+        "pnpm check:web-vite-data-layer",
+        "pnpm check:web-vite-page-shells",
+        "pnpm check:web-vite-presentational"
+      ]
+    },
+    {
+      "id": "merge-routers",
+      "rule": "Large domains split into sub-routers composed with mergeRouters",
+      "helper": "packages/api/src/init.ts → mergeRouters",
+      "examples": {
+        "invoice": "invoice-crud + invoice-matching + invoice-actions → invoice.ts",
+        "payment": "payment-core + payment-export + payment-run-ops + payment-import + payment-skonto → payment.ts",
+        "approval": "approval-chain + approval-queue + approval-submit → approval.ts",
+        "portal": "portal-auth + portal-invoices + portal-contracts + portal-profile + portal-equipment → portal.ts",
+        "classification": "classification-draft + classification-submit + classification-read → classification.ts"
+      },
+      "rationale": "Flat namespace for clients; smaller files; shared helpers in *-shared.ts"
+    },
+    {
+      "id": "portal-router-split",
+      "rule": "Portal procedures live in portalAppRouter, not appRouter",
+      "files": {
+        "staff": "packages/api/src/root.ts",
+        "portal": "packages/api/src/portal-root.ts"
+      },
+      "mount": {
+        "staff": "/api/trpc/*",
+        "portal": "/api/trpc/portal/* (registered first in trpc plugin)"
+      },
+      "rationale": "Smaller AppRouter type for dashboard client TS inference"
+    },
+    {
+      "id": "zod-at-boundaries",
+      "rule": "Every tRPC procedure has Zod input; external payloads use safeParse not bare as",
+      "shared_inputs": "packages/validators/src/common-inputs.ts (entityIdSchema, paginationSchema)",
+      "ci_guard": "pnpm lint:architecture (inline-entity-id rule)"
+    },
+    {
+      "id": "feature-flags-wrapper",
+      "rule": "Apps use @contractor-ops/feature-flags only; never Unleash SDK directly",
+      "registry": "packages/feature-flags/src/registry.ts",
+      "classification_gate": {
+        "flag": "module.classification-engine",
+        "registration": "packages/api/src/root.ts conditional spread",
+        "middleware": "classificationProcedure defense-in-depth"
+      }
+    },
+    {
+      "id": "payment-compliance-gate",
+      "rule": "Payment run creation blocked when compliance items fail eligibility",
+      "service": "packages/api/src/services/compliance-payment-gate.ts",
+      "policy": "packages/compliance-policy",
+      "procedure": "payment.create in payment-core.ts"
+    },
+    {
+      "id": "invoice-approval-prerequisite",
+      "rule": "Invoice must be MATCHED or MANUALLY_CONFIRMED before submitForApproval",
+      "flow": "invoiceIntake/matching → approval.submitForApproval → payment.readyForPayment",
+      "services": [
+        "packages/api/src/services/invoice-matching.ts",
+        "packages/api/src/services/approval-engine.ts"
+      ]
+    },
+    {
+      "id": "no-console-in-apps",
+      "rule": "Structured logging via @contractor-ops/logger (Pino); no console.* in app source",
+      "ci_guard": "pnpm lint:logs"
+    },
+    {
+      "id": "env-schema",
+      "rule": "New env vars require .env.example + package env.ts schema",
+      "ci_guard": "pnpm check:no-process-env"
+    },
+    {
+      "id": "supply-chain-age",
+      "rule": "minimumReleaseAge 7 days on pnpm; no @latest bypass without approval",
+      "files": ["pnpm-workspace.yaml", ".npmrc"]
+    }
+  ],
+  "procedure_stacks": {
+    "staff_mutation": "publicProcedure → authedProcedure → tenantProcedure → requirePermission → handler",
+    "portal": "portalProcedure → handler",
+    "classification": "tenantProcedure → classificationProcedure → handler (when flag enabled)"
+  },
+  "rls": {
+    "reads": "withRlsReads — SET LOCAL app.org_id",
+    "transactions": "withRlsTransactions",
+    "client": "createTenantClientFrom via packages/db tenant extension"
+  }
+}

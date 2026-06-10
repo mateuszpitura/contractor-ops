@@ -47,11 +47,31 @@
 | `dashboard_spec.md` | Looker Studio 5-tab spec + PostHog event taxonomy + Slack channel routing + decision-gate rules. | — |
 | `sheets-spec.md` | Dropdowns, formulas, conditional formatting to apply after Sheets import. | — |
 
+### Strategy, validation & growth (added through session)
+| File | Purpose |
+|------|---------|
+| `positioning-and-liability.md` | Classification de-risked: verdict removed; "shows, doesn't classify" v1 tier; partner = liability shield; E&O/RDG gates. |
+| `legal-stack.md` | ToS/Privacy/Cookies/DPA/Impressum map — what blocks the send vs first customer; cookieless analytics. |
+| `legal-cost-by-region.md` | Classification legal cost per region (estimates); non-classifier launch = ~€0; staged spend. |
+| `competitive-cutthrough.md` | Whitespace vs Deel/Remote/inFakt/DATEV without classification; lead with e-invoicing depth. |
+| `conversion-model.md` | Honest funnel math — first-wave cold vs 12-month full-funnel; 2% is the destination not the blast. |
+| `scale-model.md` | 6-month scale constraints; founder follow-up is the binding ceiling; channel-mix shift. |
+| `growth-ceiling.md` | Max-throttle tiers (solo / lean-funded / VC); bootstrapper steady-state; PLG/VC-max glossary. |
+| `validation-plan.md` | De-risking the thesis: discovery calls + partner chats + landing signal BEFORE betting on cold. |
+| `confidence-scores.md` | **Research-backed per-branch confidence (0–100)** + the "compliance=hook, combine=moat, basic compliance commoditizing" finding + verified date corrections. |
+| `us-market.md` / `us-gtm-plan.md` | US two-wedge rationale + full phase-aligned US GTM (cells, waves, CPA shield, 1099 deadline). |
+| `sourcing-triggers.md` / `lead-magnets.md` | Intent-trigger sourcing (the multiplier) + liability-free lead magnets. |
+| `demo-strategy.md` | Golden-tenant demo, 5 tiers, pre-demo gates (classification UI, sandbox, watermark). |
+| `automation-capability.md` | What Claude can operate (API/MCP) vs what stays human (send/pay/legal/demos). |
+| `levers.csv` | 28 scored growth levers (NL wave 1.5, US-OUT, triggers, magnets, partner channel…). |
+
 ### Master + supporting
 | File | Purpose |
 |------|---------|
 | `GTM_PLAN.md` | Master plan tying all 3 channels. Resource allocation, milestones, decision gates W3/W6/W9/W12, cross-channel mechanics, risks. **Read first.** |
 | `README.md` | This file. |
+
+> **Verified facts (2026-06-08 research, run wf_8ac2430c-146 + searches) — keep copy aligned:** KSeF live 1 Feb 2026 (large >PLN 200m) / 1 Apr 2026 (SME+sole-prop), penalties to 100% VAT from Jan 2027. DE e-invoice: receive live since Jan 2025, ISSUING 2027 (>€800k) / 2028 (all) — no 2026 issuing mandate. US FIRE→IRIS: IRIS sole channel PY2027 (TY2026), 10+ form threshold binds now. NL Wet DBA enforced since Jan 2025, fines soft-landed to Jan 2027. ZATCA wave-23 (31 Mar 2026) PASSED; waves continue. Saudization Qiwa contract-doc from 15 Apr 2026. DE KIRA (DRV AI misclassification detection) full rollout 2026. **Do NOT claim:** "DE has no live mandate" / "Scheinselbst is a defined status not a judgment" (both refuted).
 
 ## How to use
 

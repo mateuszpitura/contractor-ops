@@ -8,6 +8,44 @@
 
 Classification survives only as **decision-support + documentation + advisor-routing** — never a determination we own.
 
+## Cost-cutting option: launch as "shows, doesn't classify" (RECOMMENDED for v1)
+
+There is a tier below "decision-support" that slashes startup legal to almost nothing: **ship with the classification engine OFF entirely.** The tool *shows + organizes + generates documents* and makes **no inference at all** — not even a risk flag. Pure software, outside the regulated-practice grey zone.
+
+**This is already the default production state.** Recon: `module.classification-engine` is an Unleash flag that only force-enables for `QA_DEFAULT_ORG_ID` in dev. In production it is OFF for normal customers. So "non-classifier launch" is **zero new work** — you just don't turn the flag on.
+
+### The judgment spectrum (pick where you sit at launch)
+
+| Level | What the tool does | Regulated-practice risk | Legal need |
+|-------|--------------------|--------------------------|------------|
+| **0 — Ledger/display** | Shows what the customer/adviser entered (contractors, contracts, invoices, payments) | none | base SaaS only |
+| **1 — Organize + generate** | Structures the data into an audit-ready view + generates the §7a / SDS / 1099 document pack from inputs | none–minimal | base SaaS only |
+| **2 — Risk indicators** | Flags "4 of 7 indicators present" with citations (current de-risked design) | grey zone — needs positioning opinion | per-region opinion (€3.5–10k) |
+| **3 — Verdict/score** | inside/outside, red/green, 0–100 (the raw code today) | highest | full + E&O loading |
+
+**v1 launch sits at Level 0–1.** Your go-to levers are ALL already Level 0–1 and need no classification legal:
+- **E-invoicing** (KSeF / ZATCA / Peppol / 1099-IRIS) = deterministic schema conformance, not classification.
+- **Saudization tracking** = arithmetic vs public bands.
+- **Ops platform** (onboarding, contracts, payments, timesheets, approvals) = pure software.
+- **Document generation** (W-9 collection → 1099 pack; §7a evidence bundle) = a smart filing cabinet, not a verdict.
+
+### Cost delta
+
+| Posture | One-time legal | Annual |
+|---------|----------------|--------|
+| Level 2–3 (classification live, 1 region) | ~€5–13k (positioning opinion + ToS increment + E&O) | ~€1–2.5k |
+| **Level 0–1 (shows, doesn't classify)** | **~€1–3k** (base ToS/DPA glance; or ~€100/yr fully self-serve via iubenda) | **~€0.8–2k** (base tech E&O only) |
+
+Dropping classification from v1 removes the **per-region €3.5–10k positioning opinions entirely** until much later, and de-loads the E&O. The whole "first classification region" budget evaporates from the launch path.
+
+### Trade-off (small, because our edge isn't the verdict)
+
+You lose the "tell me if this person is misclassified" headline. But our differentiation was never the verdict — it's the **jurisdictional e-invoicing depth + multi-geo ops** that generic tools lack. When a prospect asks "does it tell me if someone's misclassified?", the answer is the same de-risked line either way: *"it organizes the evidence and generates the pack so you + your adviser decide."* You give up nothing you were going to promise.
+
+### Upgrade path
+
+Turn `module.classification-engine` on later — **one region at a time, only when** (a) revenue justifies the legal spend, (b) the determination-bearing partner is signed, (c) that region's positioning opinion + E&O are in place. Until then the engine stays dark and the campaign leads with e-invoicing / ops / documentation. See `legal-cost-by-region.md` for the staged spend.
+
 ## Why the risk is real (three independent exposures)
 
 1. **Civil recourse.** Customer relies on a verdict → authority/court rules the opposite → customer pays back social-security + tax + penalties → seeks recovery from the vendor who said "OK". A "not advice" disclaimer does not fully shield against negligent-misstatement claims.
