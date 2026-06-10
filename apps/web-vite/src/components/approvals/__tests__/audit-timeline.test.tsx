@@ -1,6 +1,6 @@
 /**
  * AuditTimeline is presentational — `events` + `isLoading` come in via
- * props (the tRPC query lives in `audit-timeline-container.tsx`).
+ * props (the tRPC query lives in `audit-timeline.tsx`).
  * Translation keys resolve against the real English bundle, so assertions
  * are against English strings ("Audit trail", "No activity yet", …).
  */
@@ -11,7 +11,7 @@ import { createRoot } from 'react-dom/client';
 import { afterEach, beforeAll, describe, expect, it } from 'vitest';
 
 import { applyLocale, initI18n } from '../../../i18n/index.js';
-import { AuditTimeline, AuditTimelineSkeleton } from '../audit-timeline.js';
+import { AuditTimelineView, AuditTimelineSkeleton } from '../audit-timeline.js';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -62,14 +62,14 @@ describe('AuditTimeline (web-vite)', () => {
   });
 
   it('renders the heading + empty copy when there are no events', () => {
-    const { container } = renderInto(<AuditTimeline events={[]} />);
+    const { container } = renderInto(<AuditTimelineView events={[]} />);
     expect(container.textContent).toContain('Audit trail');
     expect(container.textContent).toContain('No activity yet');
   });
 
   it('renders a system entry with the submitted label', () => {
     const { container } = renderInto(
-      <AuditTimeline
+      <AuditTimelineView
         events={[
           {
             type: 'system',
@@ -84,7 +84,7 @@ describe('AuditTimeline (web-vite)', () => {
 
   it('renders a routed system entry with the chain name interpolated', () => {
     const { container } = renderInto(
-      <AuditTimeline
+      <AuditTimelineView
         events={[
           {
             type: 'system',
@@ -100,7 +100,7 @@ describe('AuditTimeline (web-vite)', () => {
 
   it('renders a decision entry with the actor + approved badge', () => {
     const { container } = renderInto(
-      <AuditTimeline
+      <AuditTimelineView
         events={[
           {
             type: 'decision',
@@ -119,7 +119,7 @@ describe('AuditTimeline (web-vite)', () => {
 
   it('renders a rejected decision badge', () => {
     const { container } = renderInto(
-      <AuditTimeline
+      <AuditTimelineView
         events={[
           {
             type: 'decision',
@@ -136,7 +136,7 @@ describe('AuditTimeline (web-vite)', () => {
 
   it('renders multiple events in document order', () => {
     const { container } = renderInto(
-      <AuditTimeline
+      <AuditTimelineView
         events={[
           {
             type: 'system',

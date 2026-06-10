@@ -11,7 +11,7 @@
 import { describe, expect, it, vi } from 'vitest';
 
 import { render, screen, setup } from '@/test/test-utils';
-import { ExpiryReminderDefaults } from '../expiry-reminder-defaults';
+import { ExpiryReminderDefaultsView } from '../expiry-reminder-defaults';
 import type { useExpiryReminderDefaults } from '../hooks/use-expiry-reminder-defaults';
 
 type HookReturn = ReturnType<typeof useExpiryReminderDefaults>;
@@ -31,39 +31,39 @@ function buildHook(overrides: Partial<HookReturn> = {}): HookReturn {
   } as HookReturn;
 }
 
-describe('ExpiryReminderDefaults', () => {
+describe('ExpiryReminderDefaultsView', () => {
   it('renders the heading, label and save button', () => {
-    render(<ExpiryReminderDefaults {...buildHook()} />);
+    render(<ExpiryReminderDefaultsView {...buildHook()} />);
     expect(screen.getByText('expiryReminders.heading')).toBeInTheDocument();
     expect(screen.getByLabelText('expiryReminders.label')).toBeInTheDocument();
     expect(screen.getByRole('button')).toBeInTheDocument();
   });
 
   it('renders the placeholder forwarded from the hook translations', () => {
-    render(<ExpiryReminderDefaults {...buildHook()} />);
+    render(<ExpiryReminderDefaultsView {...buildHook()} />);
     const input = screen.getByLabelText('expiryReminders.label');
     expect(input.getAttribute('placeholder')).toBe('expiryReminders.placeholder');
   });
 
   it('reflects the inputValue prop in the controlled input', () => {
-    render(<ExpiryReminderDefaults {...buildHook({ inputValue: '14, 30' })} />);
+    render(<ExpiryReminderDefaultsView {...buildHook({ inputValue: '14, 30' })} />);
     const input = screen.getByLabelText('expiryReminders.label') as HTMLInputElement;
     expect(input.value).toBe('14, 30');
   });
 
   it('disables the save button when not dirty', () => {
-    render(<ExpiryReminderDefaults {...buildHook({ isDirty: false })} />);
+    render(<ExpiryReminderDefaultsView {...buildHook({ isDirty: false })} />);
     expect(screen.getByRole('button')).toBeDisabled();
   });
 
   it('enables the save button when dirty and not pending', () => {
-    render(<ExpiryReminderDefaults {...buildHook({ isDirty: true })} />);
+    render(<ExpiryReminderDefaultsView {...buildHook({ isDirty: true })} />);
     expect(screen.getByRole('button')).toBeEnabled();
   });
 
   it('shows a loading spinner and disables save while pending', () => {
     const { container } = render(
-      <ExpiryReminderDefaults {...buildHook({ isDirty: true, isPending: true })} />,
+      <ExpiryReminderDefaultsView {...buildHook({ isDirty: true, isPending: true })} />,
     );
     expect(container.querySelector('.animate-spin')).toBeInTheDocument();
     expect(screen.getByRole('button')).toBeDisabled();
@@ -72,7 +72,7 @@ describe('ExpiryReminderDefaults', () => {
   it('calls setInputValue when the user types', async () => {
     const setInputValue = vi.fn();
     const { user } = setup(
-      <ExpiryReminderDefaults {...buildHook({ inputValue: '', setInputValue })} />,
+      <ExpiryReminderDefaultsView {...buildHook({ inputValue: '', setInputValue })} />,
     );
     const input = screen.getByLabelText('expiryReminders.label');
     await user.type(input, '7');
@@ -82,7 +82,7 @@ describe('ExpiryReminderDefaults', () => {
   it('calls handleSave when the save button is clicked', async () => {
     const handleSave = vi.fn();
     const { user } = setup(
-      <ExpiryReminderDefaults {...buildHook({ isDirty: true, handleSave })} />,
+      <ExpiryReminderDefaultsView {...buildHook({ isDirty: true, handleSave })} />,
     );
     await user.click(screen.getByRole('button'));
     expect(handleSave).toHaveBeenCalledTimes(1);

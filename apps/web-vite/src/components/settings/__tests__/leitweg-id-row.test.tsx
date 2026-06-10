@@ -28,18 +28,18 @@ vi.mock('../../../i18n/useTranslations.js', () => ({
   useTranslations: () => (key: string) => key,
 }));
 
-vi.mock('../e-invoicing/leitweg-id-create-dialog-container.js', () => ({
-  LeitwegIdCreateDialogContainer: () => null,
+vi.mock('../e-invoicing/leitweg-id-create-dialog.js', () => ({
+  LeitwegIdCreateDialog: () => null,
 }));
 
-vi.mock('../e-invoicing/leitweg-id-delete-dialog-container.js', () => ({
-  LeitwegIdDeleteDialogContainer: () => null,
+vi.mock('../e-invoicing/leitweg-id-delete-dialog.js', () => ({
+  LeitwegIdDeleteDialog: () => null,
 }));
 
 import type { LeitwegIdRowData } from '../e-invoicing/leitweg-id-row.js';
-import { LeitwegIdRow } from '../e-invoicing/leitweg-id-row.js';
+import { LeitwegIdRowView, type LeitwegIdRowViewProps } from '../e-invoicing/leitweg-id-row.js';
 
-type RowProps = React.ComponentProps<typeof LeitwegIdRow>;
+type RowProps = LeitwegIdRowViewProps;
 
 interface Harness {
   container: HTMLDivElement;
@@ -123,9 +123,9 @@ afterEach(() => {
   }
 });
 
-describe('LeitwegIdRow (web-vite)', () => {
+describe('LeitwegIdRowView (web-vite)', () => {
   it('renders the Leitweg value inside an LTR <bdi> for RTL safety', () => {
-    harness = mount(<LeitwegIdRow row={baseRow} t={tFn as RowProps['t']} {...buildHookReturn()} />);
+    harness = mount(<LeitwegIdRowView row={baseRow} t={tFn as RowProps['t']} {...buildHookReturn()} />);
     const valueEl = harness.container.querySelector('[data-testid="leitweg-value-leitweg-1"]');
     expect(valueEl).not.toBeNull();
     expect(valueEl?.textContent).toBe('991-33333TEST-33');
@@ -133,13 +133,13 @@ describe('LeitwegIdRow (web-vite)', () => {
   });
 
   it('renders the default badge when isDefaultForContractor is true', () => {
-    harness = mount(<LeitwegIdRow row={baseRow} t={tFn as RowProps['t']} {...buildHookReturn()} />);
+    harness = mount(<LeitwegIdRowView row={baseRow} t={tFn as RowProps['t']} {...buildHookReturn()} />);
     expect(harness.container.textContent).toContain('defaultBadge');
   });
 
   it('omits the default badge when isDefaultForContractor is false', () => {
     harness = mount(
-      <LeitwegIdRow
+      <LeitwegIdRowView
         row={{ ...baseRow, isDefaultForContractor: false }}
         t={tFn as RowProps['t']}
         {...buildHookReturn()}
@@ -149,14 +149,14 @@ describe('LeitwegIdRow (web-vite)', () => {
   });
 
   it('renders the actions dropdown trigger with an accessible label', () => {
-    harness = mount(<LeitwegIdRow row={baseRow} t={tFn as RowProps['t']} {...buildHookReturn()} />);
+    harness = mount(<LeitwegIdRowView row={baseRow} t={tFn as RowProps['t']} {...buildHookReturn()} />);
     const trigger = harness.container.querySelector('[data-testid="leitweg-actions-leitweg-1"]');
     expect(trigger).not.toBeNull();
     expect(trigger?.getAttribute('aria-label')).toBe('actionsAriaLabel');
   });
 
   it('renders contractor badge when contractor is attached', () => {
-    harness = mount(<LeitwegIdRow row={baseRow} t={tFn as RowProps['t']} {...buildHookReturn()} />);
+    harness = mount(<LeitwegIdRowView row={baseRow} t={tFn as RowProps['t']} {...buildHookReturn()} />);
     expect(harness.container.textContent).toContain('Bundeswehr GmbH');
   });
 });

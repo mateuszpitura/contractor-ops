@@ -9,8 +9,8 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { render, screen, setup } from '../../../test/test-utils.js';
 
-vi.mock('../../settings/e-invoicing/leitweg-id-create-dialog-container.js', () => ({
-  LeitwegIdCreateDialogContainer: ({ open }: { open: boolean }) =>
+vi.mock('../../settings/e-invoicing/leitweg-id-create-dialog.js', () => ({
+  LeitwegIdCreateDialog: ({ open }: { open: boolean }) =>
     open ? (
       <div role="dialog">
         <h2>Create Leitweg-ID</h2>

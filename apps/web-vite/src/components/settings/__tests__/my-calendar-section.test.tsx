@@ -1,5 +1,5 @@
 /**
- * Component is wrapped in a `FeatureGateContainer` that consults tRPC for
+ * Component is wrapped in a `FeatureGate` that consults tRPC for
  * billing tier — stubbed here to a pass-through so the test exercises the
  * loading / connected / disconnected branches of the calendar surface.
  *
@@ -9,13 +9,13 @@
 
 import { describe, expect, it, vi } from 'vitest';
 
-vi.mock('../../billing/feature-gate-container', () => ({
-  FeatureGateContainer: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+vi.mock('../../layout/feature-gate', () => ({
+  FeatureGate: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 
 import { render, screen } from '@/test/test-utils';
 import type { CalendarConnection, useMyCalendarSection } from '../hooks/use-my-calendar-section';
-import { MyCalendarSection, MyCalendarSectionSkeleton } from '../my-calendar-section';
+import { MyCalendarSectionView, MyCalendarSectionSkeleton } from '../my-calendar-section';
 
 type HookReturn = ReturnType<typeof useMyCalendarSection>;
 
@@ -46,7 +46,7 @@ const connectedGoogle: CalendarConnection = {
   tokenExpiresAt: null,
 };
 
-describe('MyCalendarSection', () => {
+describe('MyCalendarSectionView', () => {
   it('renders skeleton placeholders via the Skeleton sibling export', () => {
     const { container } = render(<MyCalendarSectionSkeleton />);
 
@@ -56,7 +56,7 @@ describe('MyCalendarSection', () => {
   });
 
   it('renders disconnected Google + Outlook cards by default', () => {
-    render(<MyCalendarSection {...buildHook()} />);
+    render(<MyCalendarSectionView {...buildHook()} />);
 
     expect(screen.getAllByText('Not connected').length).toBeGreaterThanOrEqual(2);
     expect(screen.getAllByRole('button', { name: 'Connect Calendar' }).length).toBe(2);
@@ -64,7 +64,7 @@ describe('MyCalendarSection', () => {
 
   it('shows the connected badge and account when Google is connected', () => {
     render(
-      <MyCalendarSection {...buildHook({ googleConnection: connectedGoogle, eventCount: 4 })} />,
+      <MyCalendarSectionView {...buildHook({ googleConnection: connectedGoogle, eventCount: 4 })} />,
     );
 
     expect(screen.getByText('Connected')).toBeInTheDocument();

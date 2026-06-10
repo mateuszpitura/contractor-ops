@@ -1,6 +1,6 @@
 /**
- * Tests target `JiraProviderSectionView` with shaped props. FeatureGateContainer
- * and ProviderConnectionCardContainer are stubbed — they have their own tests
+ * Tests target `JiraProviderSectionView` with shaped props. FeatureGate
+ * and ProviderConnectionCard are stubbed — they have their own tests
  * elsewhere; here we verify the section's branching on `isConnected` and
  * `scopeExpansionNeeded`, and that the configure button opens the mapping dialog.
  */
@@ -13,12 +13,12 @@ import { render, screen, setup } from '@/test/test-utils';
 import type { JiraProviderSectionViewProps } from '../jira-provider-section';
 import { JiraProviderSectionView } from '../jira-provider-section';
 
-vi.mock('../../billing/feature-gate-container', () => ({
-  FeatureGateContainer: ({ children }: { children: ReactNode }) => <>{children}</>,
+vi.mock('../../layout/feature-gate.js', () => ({
+  FeatureGate: ({ children }: { children: ReactNode }) => <>{children}</>,
 }));
 
-vi.mock('../../settings/provider-connection-card-container', () => ({
-  ProviderConnectionCardContainer: ({
+vi.mock('../../settings/provider-connection-card.js', () => ({
+  ProviderConnectionCard: ({
     displayName,
     description,
   }: {
@@ -32,7 +32,7 @@ vi.mock('../../settings/provider-connection-card-container', () => ({
   ),
 }));
 
-vi.mock('../jira-status-mapping-dialog-container', () => ({
+vi.mock('../jira-status-mapping-dialog.js', () => ({
   JiraStatusMappingDialog: ({ open }: { open: boolean }) =>
     open ? <div data-testid="status-mapping-dialog" /> : null,
 }));
@@ -67,6 +67,8 @@ function buildProps(overrides: BuildOpts = {}): JiraProviderSectionViewProps {
   return {
     connection,
     isConnected,
+    isPendingMapping: false,
+    needsReauth: false,
     mappingDialogOpen,
     setMappingDialogOpen,
     openMappingDialog,

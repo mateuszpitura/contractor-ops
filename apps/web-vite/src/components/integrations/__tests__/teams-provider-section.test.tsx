@@ -12,12 +12,12 @@ import { render, screen, setup } from '@/test/test-utils';
 import type { TeamsProviderSectionViewProps } from '../teams-provider-section';
 import { TeamsProviderSectionView } from '../teams-provider-section';
 
-vi.mock('../../billing/feature-gate-container', () => ({
-  FeatureGateContainer: ({ children }: { children: ReactNode }) => <>{children}</>,
+vi.mock('../../layout/feature-gate.js', () => ({
+  FeatureGate: ({ children }: { children: ReactNode }) => <>{children}</>,
 }));
 
-vi.mock('../../settings/provider-connection-card-container', () => ({
-  ProviderConnectionCardContainer: ({
+vi.mock('../../settings/provider-connection-card.js', () => ({
+  ProviderConnectionCard: ({
     displayName,
     description,
   }: {
@@ -31,11 +31,11 @@ vi.mock('../../settings/provider-connection-card-container', () => ({
   ),
 }));
 
-vi.mock('../teams-channel-mapping-card-container', () => ({
+vi.mock('../teams-channel-mapping-card.js', () => ({
   TeamsChannelMappingCard: () => <div data-testid="channel-mapping-card" />,
 }));
 
-vi.mock('../teams-fallback-approver-dialog-container', () => ({
+vi.mock('../teams-fallback-approver-dialog.js', () => ({
   TeamsFallbackApproverDialog: ({ open }: { open: boolean }) =>
     open ? <div data-testid="fallback-dialog" /> : null,
 }));
@@ -79,6 +79,7 @@ function buildProps(overrides: BuildOpts = {}): TeamsProviderSectionViewProps {
 
   return {
     isConnected,
+    needsReauth: false,
     defaultTeamId,
     defaultFallbackApproverId,
     fallbackOpen,

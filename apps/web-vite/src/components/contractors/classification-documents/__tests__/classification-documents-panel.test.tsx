@@ -6,8 +6,8 @@
 
 import { describe, expect, it, vi } from 'vitest';
 
-vi.mock('../generate-sds-button-container.js', () => ({
-  GenerateSdsButtonContainer: ({
+vi.mock('../generate-sds-button.js', () => ({
+  GenerateSdsButton: ({
     classificationAssessmentId,
   }: {
     classificationAssessmentId: string;
@@ -21,8 +21,8 @@ vi.mock('../generate-sds-button-container.js', () => ({
   ),
 }));
 
-vi.mock('../generate-drv-bundle-button-container.js', () => ({
-  GenerateDrvBundleButtonContainer: ({
+vi.mock('../generate-drv-bundle-button.js', () => ({
+  GenerateDrvBundleButton: ({
     classificationAssessmentId,
     disabled,
     disabledReason,
@@ -43,7 +43,7 @@ vi.mock('../generate-drv-bundle-button-container.js', () => ({
   ),
 }));
 
-vi.mock('../document-history-list-container.js', () => ({
+vi.mock('../document-history-list.js', () => ({
   DocumentHistoryListContainer: ({ engagementId }: { engagementId: string }) => (
     <div data-testid="history-list" data-engagement={engagementId}>
       history

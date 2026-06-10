@@ -86,7 +86,7 @@ describe('useProjectFormSheet', () => {
     act(() => {
       result.current.createMutation.mutate({ name: 'Mig' });
     });
-    await waitFor(() => expect(toastSuccess).toHaveBeenCalledWith('Project created'));
+    await waitFor(() => expect(toastSuccess).toHaveBeenCalledWith('Project created.'));
     expect(onCreated).toHaveBeenCalledWith({ id: 'p9', name: 'Mig' });
     expect(onOpenChange).toHaveBeenCalledWith(false);
   });
@@ -105,7 +105,7 @@ describe('useProjectFormSheet', () => {
     act(() => {
       result.current.updateMutation.mutate({ id: 'p1', name: 'X' });
     });
-    await waitFor(() => expect(toastSuccess).toHaveBeenCalledWith('Project updated'));
+    await waitFor(() => expect(toastSuccess).toHaveBeenCalledWith('Project updated.'));
     expect(onCreated).not.toHaveBeenCalled();
     expect(onOpenChange).toHaveBeenCalledWith(false);
   });
@@ -121,7 +121,7 @@ describe('useProjectFormSheet', () => {
     act(() => {
       result.current.archiveMutation.mutate({ id: 'p1' });
     });
-    await waitFor(() => expect(toastSuccess).toHaveBeenCalledWith('Project archived'));
+    await waitFor(() => expect(toastSuccess).toHaveBeenCalledWith('Project archived.'));
     expect(onOpenChange).toHaveBeenCalledWith(false);
   });
 
@@ -131,14 +131,14 @@ describe('useProjectFormSheet', () => {
     setTRPCMock({
       'organizationDefinitions.team.list': () => ({ items: [] }),
       'organizationDefinitions.project.create': () => {
-        throw new Error('budget invalid');
+        throw new Error('Something went wrong. Please try again.');
       },
     });
     const { result } = renderHookWithProviders(() => useProjectFormSheet({ onOpenChange }));
     act(() => {
       result.current.createMutation.mutate({ name: 'X' });
     });
-    await waitFor(() => expect(toastError).toHaveBeenCalledWith('budget invalid'));
+    await waitFor(() => expect(toastError).toHaveBeenCalledWith('Something went wrong. Please try again.'));
     expect(onOpenChange).not.toHaveBeenCalledWith(false);
   });
 });

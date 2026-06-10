@@ -13,12 +13,12 @@ import { render, screen } from '@/test/test-utils';
 import type { GoogleWorkspaceProviderSectionViewProps } from '../google-workspace-provider-section';
 import { GoogleWorkspaceProviderSectionView } from '../google-workspace-provider-section';
 
-vi.mock('../../billing/feature-gate-container', () => ({
-  FeatureGateContainer: ({ children }: { children: ReactNode }) => <>{children}</>,
+vi.mock('../../layout/feature-gate.js', () => ({
+  FeatureGate: ({ children }: { children: ReactNode }) => <>{children}</>,
 }));
 
-vi.mock('../../settings/provider-connection-card-container', () => ({
-  ProviderConnectionCardContainer: ({
+vi.mock('../../settings/provider-connection-card.js', () => ({
+  ProviderConnectionCard: ({
     displayName,
     description,
   }: {
@@ -32,13 +32,13 @@ vi.mock('../../settings/provider-connection-card-container', () => ({
   ),
 }));
 
-vi.mock('../google-workspace/directory-import-wizard-container', () => ({
+vi.mock('../google-workspace/directory-import-wizard.js', () => ({
   DirectoryImportWizard: ({ open }: { open: boolean }) => (
     <div data-testid="directory-wizard" data-open={open ? 'true' : 'false'} />
   ),
 }));
 
-vi.mock('../google-workspace/sync-status-section-container', () => ({
+vi.mock('../google-workspace/sync-status-section.js', () => ({
   SyncStatusSection: () => <div data-testid="sync-status-section" />,
 }));
 
@@ -75,6 +75,7 @@ function buildProps(overrides: BuildOpts = {}): GoogleWorkspaceProviderSectionVi
 
   return {
     isConnected,
+    needsReauth: false,
     wizardOpen,
     setWizardOpen,
     onImportClick,

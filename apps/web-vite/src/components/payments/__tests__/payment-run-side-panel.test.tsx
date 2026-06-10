@@ -1,25 +1,24 @@
 /**
  * Web-vite split: PaymentRunSidePanel renders only the loaded variant —
- * the loading skeleton sibling (`PaymentRunSidePanelSkeleton`) and the
- * `showBacsPreview` derivation now live in `PaymentRunSidePanelContainer`.
- * Test injects a stubbed loaded panel (run guaranteed non-null) plus the
- * resolved `showBacsPreview` flag. Container subtrees that still hit
- * tRPC are mocked to inert stubs.
+ * the loading skeleton and `showBacsPreview` derivation live in the wired
+ * `PaymentRunSidePanel` export. Tests target `PaymentRunSidePanelView` with
+ * a stubbed loaded panel plus resolved `showBacsPreview`. Wired subtrees
+ * that still hit tRPC are mocked to inert stubs.
  */
 
-vi.mock('../wht-summary-card-container', () => ({
-  WhtSummaryCardContainer: () => null,
+vi.mock('../wht-summary-card', () => ({
+  WhtSummaryCard: () => null,
 }));
-vi.mock('../bacs/bacs-preview-card-container', () => ({
-  BacsPreviewCardContainer: () => null,
+vi.mock('../bacs/bacs-preview-card', () => ({
+  BacsPreviewCard: () => null,
 }));
-vi.mock('../run/skonto-apply-checkbox-container', () => ({
-  SkontoApplyCheckboxContainer: () => null,
+vi.mock('../run/skonto-apply-checkbox', () => ({
+  SkontoApplyCheckbox: () => null,
 }));
 
 import { render, screen, setup } from '@/test/test-utils';
 import type { usePaymentRunSidePanel } from '../hooks/use-payment-run-side-panel.js';
-import { PaymentRunSidePanel, PaymentRunSidePanelSkeleton } from '../payment-run-side-panel';
+import { PaymentRunSidePanelView, PaymentRunSidePanelSkeleton } from '../payment-run-side-panel';
 
 type Panel = ReturnType<typeof usePaymentRunSidePanel>;
 type LoadedRun = NonNullable<Panel['run']>;
@@ -98,13 +97,13 @@ function makePanel(overrides: Partial<LoadedPanel> = {}): LoadedPanel {
 
 function renderPanel(
   panelOverrides: Partial<LoadedPanel> = {},
-  props: Partial<Parameters<typeof PaymentRunSidePanel>[0]> = {},
+  props: Partial<Parameters<typeof PaymentRunSidePanelView>[0]> = {},
 ) {
   const panel = makePanel(panelOverrides);
   const onOpenChange = vi.fn();
   const onImportStatement = vi.fn();
   const result = render(
-    <PaymentRunSidePanel
+    <PaymentRunSidePanelView
       open
       onOpenChange={onOpenChange}
       onImportStatement={onImportStatement}
@@ -134,7 +133,7 @@ describe('PaymentRunSidePanelSkeleton', () => {
   });
 });
 
-describe('PaymentRunSidePanel', () => {
+describe('PaymentRunSidePanelView', () => {
   it('renders run number when present', () => {
     renderPanel();
     expect(screen.getByText('PR-001')).toBeInTheDocument();
@@ -192,7 +191,7 @@ describe('PaymentRunSidePanel', () => {
   it('invokes onImportStatement with safeRunId when import button is clicked', async () => {
     const onImportStatement = vi.fn();
     const { user } = setup(
-      <PaymentRunSidePanel
+      <PaymentRunSidePanelView
         open
         onOpenChange={vi.fn()}
         onImportStatement={onImportStatement}
@@ -219,7 +218,7 @@ describe('PaymentRunSidePanel', () => {
       run: makeRun({ status: 'COMPLETED' }),
     });
     const { user } = setup(
-      <PaymentRunSidePanel
+      <PaymentRunSidePanelView
         open
         onOpenChange={vi.fn()}
         panel={panel}
@@ -242,7 +241,7 @@ describe('PaymentRunSidePanel', () => {
       run: makeRun({ status: 'EXPORTED' }),
     });
     const { user } = setup(
-      <PaymentRunSidePanel
+      <PaymentRunSidePanelView
         open
         onOpenChange={vi.fn()}
         onImportStatement={vi.fn()}

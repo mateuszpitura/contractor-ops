@@ -1,5 +1,5 @@
 /**
- * TaskChecklist composes TaskCardRunContainer (which fetches tRPC). We mock
+ * TaskChecklist composes TaskCardRunSection (which fetches tRPC). We mock
  * the row container so the test only verifies the list scaffolding (heading +
  * one row per task).
  */
@@ -7,15 +7,15 @@
 import type { ComponentProps } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-vi.mock('../task-card-run-container.js', () => {
+vi.mock('../task-card-run.js', () => {
   const React = require('react');
   return {
-    TaskCardRunContainer: ({ task }: { task: { id: string; title: string } }) =>
+    TaskCardRunSection: ({ task }: { task: { id: string; title: string } }) =>
       React.createElement('div', { 'data-testid': `task-row-${task.id}` }, task.title),
   };
 });
-vi.mock('../../../contracts/contract-detail/linear-linked-issues-panel-container.js', () => ({
-  LinearLinkedIssuesPanelContainer: () => null,
+vi.mock('../../../contracts/contract-detail/linear-linked-issues-panel.js', () => ({
+  LinearLinkedIssuesPanelWired: () => null,
 }));
 
 import { findByText, mount } from '../../__tests__/_render.js';
@@ -61,7 +61,7 @@ describe('TaskChecklist (web-vite)', () => {
     expect(document.body.querySelectorAll("[data-slot='skeleton']").length).toBeGreaterThan(0);
   });
 
-  it('renders one TaskCardRunContainer per task', async () => {
+  it('renders one TaskCardRunSection per task', async () => {
     await mount(
       <TaskChecklist
         tasks={[

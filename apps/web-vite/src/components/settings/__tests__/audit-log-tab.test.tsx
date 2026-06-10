@@ -9,7 +9,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { render, screen, setup } from '@/test/test-utils';
 import type { AuditLogEntry } from '../audit-log/data-table.js';
-import { AuditLogTab } from '../audit-log-tab';
+import { AuditLogTabView } from '../audit-log-tab';
 import type { useAuditLogTab } from '../hooks/use-audit-log-tab';
 
 type HookReturn = ReturnType<typeof useAuditLogTab>;
@@ -65,22 +65,22 @@ function buildHook(overrides: Partial<HookReturn> = {}): HookReturn {
   return base as unknown as HookReturn;
 }
 
-describe('AuditLogTab', () => {
+describe('AuditLogTabView', () => {
   it('renders the title, search input and export CTA', () => {
-    render(<AuditLogTab {...buildHook()} />);
+    render(<AuditLogTabView {...buildHook()} />);
     expect(screen.getByText('title')).toBeInTheDocument();
     expect(screen.getByPlaceholderText('searchPlaceholder')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /exportCta/i })).toBeInTheDocument();
   });
 
   it('disables export when totalCount is 0', () => {
-    render(<AuditLogTab {...buildHook({ totalCount: 0 })} />);
+    render(<AuditLogTabView {...buildHook({ totalCount: 0 })} />);
     expect(screen.getByRole('button', { name: /exportCta/i })).toBeDisabled();
   });
 
   it('enables export and fires handleExport on click when entries exist', async () => {
     const handleExport = vi.fn();
-    const { user } = setup(<AuditLogTab {...buildHook({ totalCount: 5, handleExport })} />);
+    const { user } = setup(<AuditLogTabView {...buildHook({ totalCount: 5, handleExport })} />);
 
     const cta = screen.getByRole('button', { name: /exportCta/i });
     expect(cta).toBeEnabled();
@@ -89,14 +89,14 @@ describe('AuditLogTab', () => {
   });
 
   it('renders the truly-empty state when isTrulyEmpty is true', () => {
-    render(<AuditLogTab {...buildHook({ isTrulyEmpty: true })} />);
+    render(<AuditLogTabView {...buildHook({ isTrulyEmpty: true })} />);
     expect(screen.getByText('heading')).toBeInTheDocument();
     expect(screen.getByText('body')).toBeInTheDocument();
   });
 
   it('renders the active-filter chip row when activeFilterCount > 0', () => {
     render(
-      <AuditLogTab
+      <AuditLogTabView
         {...buildHook({
           actions: ['CREATE'],
           activeFilterCount: 1,
@@ -110,7 +110,7 @@ describe('AuditLogTab', () => {
   it('clears all filters when the "clearAll" link is clicked', async () => {
     const clearAllFilters = vi.fn();
     const { user } = setup(
-      <AuditLogTab
+      <AuditLogTabView
         {...buildHook({
           actions: ['CREATE'],
           activeFilterCount: 1,
@@ -125,7 +125,7 @@ describe('AuditLogTab', () => {
 
   it('forwards typed search text to setLocalSearch', async () => {
     const setLocalSearch = vi.fn();
-    const { user } = setup(<AuditLogTab {...buildHook({ setLocalSearch })} />);
+    const { user } = setup(<AuditLogTabView {...buildHook({ setLocalSearch })} />);
     await user.type(screen.getByPlaceholderText('searchPlaceholder'), 'x');
     expect(setLocalSearch).toHaveBeenCalledWith('x');
   });

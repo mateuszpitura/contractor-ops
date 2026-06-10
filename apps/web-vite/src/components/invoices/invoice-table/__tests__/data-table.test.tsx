@@ -53,6 +53,12 @@ function baseProps(overrides: Partial<TableProps> = {}): TableProps {
       isSubmittingForMatching: false,
       isVoiding: false,
     },
+    selectedRows: [],
+    setSelectedRows: vi.fn(),
+    columnVisibility: {},
+    setColumnVisibility: vi.fn(),
+    sorting: [],
+    onSortingChange: vi.fn(),
     ...overrides,
   } as TableProps;
 }

@@ -19,7 +19,7 @@ vi.mock('../../../../providers/trpc-provider.js', () => ({
 
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 
-import type { FetchProjectsOutput } from '@contractor-ops/validators';
+import type { FetchProjectsOutput, ImportedProject } from '@contractor-ops/validators';
 
 import {
   act,
@@ -33,20 +33,25 @@ import { useOnboardingProjects } from '../use-onboarding-projects.js';
 
 const trpcProxy = createTRPCProxy();
 
-const sampleProjects: FetchProjectsOutput = [
+const sampleProjectRows: ImportedProject[] = [
   {
     sourceProvider: 'JIRA',
     externalId: 'P1',
     name: 'Atlas',
     statuses: [
-      { name: 'Todo', externalId: 's1' },
-      { name: 'Done', externalId: 's2' },
+      { id: 's1', name: 'Todo' },
+      { id: 's2', name: 'Done' },
     ],
-  } as unknown as FetchProjectsOutput[number],
+  },
 ];
 
+const sampleProjects: FetchProjectsOutput = {
+  projects: sampleProjectRows,
+  sourceErrors: [],
+};
+
 function makeHarness(initial?: {
-  projects?: FetchProjectsOutput;
+  projects?: ImportedProject[];
   selections?: Map<string, ProjectSelection>;
   selectedSources?: string[];
 }) {
@@ -54,7 +59,7 @@ function makeHarness(initial?: {
   let projectSelections = initial?.selections ?? new Map<string, ProjectSelection>();
   const selectedSources = initial?.selectedSources ?? ['JIRA', 'GOOGLE_WORKSPACE'];
 
-  const onProjectsChange = vi.fn((next: FetchProjectsOutput) => {
+  const onProjectsChange = vi.fn((next: ImportedProject[]) => {
     projects = next;
   });
   const onProjectSelectionsChange = vi.fn((next: Map<string, ProjectSelection>) => {
@@ -121,7 +126,7 @@ describe('useOnboardingProjects', () => {
     const { useHook, onProjectsChange, onProjectSelectionsChange } = makeHarness();
     renderHookWithProviders(useHook);
     await waitFor(() => expect(onProjectsChange).toHaveBeenCalled());
-    expect(onProjectsChange).toHaveBeenCalledWith(sampleProjects);
+    expect(onProjectsChange).toHaveBeenCalledWith(sampleProjectRows);
     const seeded = onProjectSelectionsChange.mock.calls.at(-1)?.[0] as Map<
       string,
       ProjectSelection
@@ -138,7 +143,7 @@ describe('useOnboardingProjects', () => {
       ['JIRA-P1', { skip: false, name: 'Atlas', steps: [] }],
     ]);
     const { useHook, onProjectSelectionsChange } = makeHarness({
-      projects: sampleProjects,
+      projects: sampleProjectRows,
       selections: startMap,
     });
     const { result } = renderHookWithProviders(useHook);
@@ -155,9 +160,9 @@ describe('useOnboardingProjects', () => {
 
   it('getSelectionFor returns the default when the key is missing', async () => {
     setTRPCMock({ 'onboardingImport.fetchProjects': () => sampleProjects });
-    const { useHook } = makeHarness({ projects: sampleProjects });
+    const { useHook } = makeHarness({ projects: sampleProjectRows });
     const { result } = renderHookWithProviders(useHook);
-    const sel = result.current.getSelectionFor(sampleProjects[0]);
+    const sel = result.current.getSelectionFor(sampleProjectRows[0]);
     expect(sel.name).toBe('Atlas');
     expect(sel.skip).toBe(false);
     expect(sel.steps).toHaveLength(2);

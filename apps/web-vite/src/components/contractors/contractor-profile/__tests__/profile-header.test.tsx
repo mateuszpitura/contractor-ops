@@ -5,12 +5,12 @@
 
 import { describe, expect, it, vi } from 'vitest';
 
-vi.mock('../../../contracts/contract-wizard/wizard-dialog-container.js', () => ({
-  ContractWizardDialogContainer: () => null,
+vi.mock('../../../contracts/contract-wizard/wizard-dialog.js', () => ({
+  ContractWizardDialog: () => null,
 }));
 
-vi.mock('../../../workflows/template-picker-container.js', () => ({
-  TemplatePickerContainer: () => null,
+vi.mock('../../../workflows/template-picker-dialog.js', () => ({
+  TemplatePickerDialog: () => null,
 }));
 
 import { render, screen } from '../../../../test/test-utils.js';

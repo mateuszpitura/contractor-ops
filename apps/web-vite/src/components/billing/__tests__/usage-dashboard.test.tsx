@@ -1,13 +1,19 @@
 /**
- * UsageDashboard is now a pure presentational component. Container
- * (`usage-dashboard-container.tsx`) owns the tRPC query, parsing, and
- * tier derivation. Child cards / grid / dialog are mocked to keep
- * assertions tight against the dashboard's branching logic.
+ * UsageDashboard (wired) owns loading/error/null branches via useUsageDashboard.
+ * UsageDashboardView is presentational — parsed + currentTier only.
  */
 
 import { describe, expect, it, vi } from 'vitest';
 
 import { render, screen, setup } from '@/test/test-utils';
+
+const mockRefetch = vi.fn();
+
+vi.mock('../hooks/use-billing.js', () => ({
+  useUsageDashboard: vi.fn(),
+  parseUsageDashboard: (data: unknown) => data,
+  deriveUsageDashboardTier: () => 'PRO',
+}));
 
 vi.mock('../usage-kpi-card', () => ({
   UsageKpiCard: ({ label, value }: { label: string; value: React.ReactNode }) => (
@@ -38,15 +44,16 @@ vi.mock('../plan-comparison-grid', () => ({
   PlanComparisonGrid: () => <div data-testid="plan-comparison-grid" />,
 }));
 
-vi.mock('../top-up-dialog-container', () => ({
-  TopUpDialogContainer: ({ open }: { open: boolean }) =>
+vi.mock('../top-up-dialog', () => ({
+  TopUpDialog: ({ open }: { open: boolean }) =>
     open ? <div data-testid="top-up-dialog" /> : null,
 }));
 
+import { useUsageDashboard } from '../hooks/use-billing.js';
 import type { TierId } from '../plan-comparison-grid';
-import { UsageDashboard } from '../usage-dashboard';
+import { UsageDashboard, UsageDashboardView } from '../usage-dashboard';
 
-type Parsed = NonNullable<React.ComponentProps<typeof UsageDashboard>['parsed']>;
+type Parsed = NonNullable<React.ComponentProps<typeof UsageDashboardView>['parsed']>;
 
 function makeParsed(override: Partial<Parsed> = {}): Parsed {
   return {
@@ -64,64 +71,55 @@ function makeParsed(override: Partial<Parsed> = {}): Parsed {
   } as Parsed;
 }
 
-interface RenderArgs {
+function mockDashboard(state: {
   isLoading?: boolean;
   isError?: boolean;
+  data?: Parsed | null;
   refetch?: () => void;
-  parsed?: Parsed | null;
-  currentTier?: TierId | null;
+}) {
+  vi.mocked(useUsageDashboard).mockReturnValue({
+    isLoading: state.isLoading ?? false,
+    isError: state.isError ?? false,
+    data: state.data ?? null,
+    refetch: state.refetch ?? mockRefetch,
+  } as ReturnType<typeof useUsageDashboard>);
 }
 
-function renderDashboard(args: RenderArgs = {}) {
-  return render(
-    <UsageDashboard
-      isLoading={args.isLoading ?? false}
-      isError={args.isError ?? false}
-      refetch={args.refetch ?? vi.fn()}
-      parsed={args.parsed === undefined ? makeParsed() : args.parsed}
-      currentTier={args.currentTier ?? 'PRO'}
-    />,
-  );
-}
-
-describe('UsageDashboard (web-vite)', () => {
+describe('UsageDashboard (wired)', () => {
   it('renders loading skeleton when isLoading is true', () => {
-    const { container } = renderDashboard({ isLoading: true, parsed: null });
+    mockDashboard({ isLoading: true, data: null });
+    const { container } = render(<UsageDashboard />);
     expect(container.querySelectorAll("[data-slot='skeleton']").length).toBeGreaterThan(0);
   });
 
   it('shows error state with retry button', async () => {
     const refetch = vi.fn();
-    const { user } = setup(
-      <UsageDashboard
-        isLoading={false}
-        isError
-        refetch={refetch}
-        parsed={null}
-        currentTier={null}
-      />,
-    );
+    mockDashboard({ isError: true, data: null, refetch });
+    const { user } = setup(<UsageDashboard />);
     expect(screen.getByText('Failed to load billing data')).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: /retry/i }));
     expect(refetch).toHaveBeenCalledOnce();
   });
 
   it('renders nothing when not loading, not error, and parsed is null', () => {
-    const { container } = renderDashboard({ parsed: null });
+    mockDashboard({ data: null });
+    const { container } = render(<UsageDashboard />);
     expect(container.innerHTML).toBe('');
   });
+});
 
+describe('UsageDashboardView (presentational)', () => {
   it('shows no subscription state when subscription is null', () => {
     const parsed = makeParsed({
       subscription: null as unknown as Parsed['subscription'],
     });
-    renderDashboard({ parsed, currentTier: null });
+    render(<UsageDashboardView parsed={parsed} currentTier={null} />);
     expect(screen.getByText('No active subscription')).toBeInTheDocument();
     expect(screen.getByText('Choose a plan')).toBeInTheDocument();
   });
 
   it('renders all KPI cards when subscription is present', () => {
-    renderDashboard();
+    render(<UsageDashboardView parsed={makeParsed()} currentTier={'PRO' as TierId} />);
     expect(screen.getByText('Current Plan')).toBeInTheDocument();
     expect(screen.getByTestId('seat-count-card')).toBeInTheDocument();
     expect(screen.getByTestId('billing-date-card')).toBeInTheDocument();
@@ -129,20 +127,17 @@ describe('UsageDashboard (web-vite)', () => {
   });
 
   it('renders OCR Credits card', () => {
-    renderDashboard();
+    render(<UsageDashboardView parsed={makeParsed()} currentTier={'PRO' as TierId} />);
     expect(screen.getByTestId('credit-card')).toBeInTheDocument();
   });
 
   it('opens top-up dialog when buy-more is clicked', async () => {
     const { user } = setup(
-      <UsageDashboard
-        isLoading={false}
-        isError={false}
-        refetch={vi.fn()}
+      <UsageDashboardView
         parsed={makeParsed({
           credits: { balance: 5, allowance: 100, used: 95, tier: 'PRO' },
         })}
-        currentTier="PRO"
+        currentTier={'PRO' as TierId}
       />,
     );
     expect(screen.queryByTestId('top-up-dialog')).not.toBeInTheDocument();
@@ -152,32 +147,38 @@ describe('UsageDashboard (web-vite)', () => {
 
   it('renders the trial badge for TRIALING status', () => {
     const futureDate = new Date(Date.now() + 7 * 86400000).toISOString();
-    renderDashboard({
-      parsed: makeParsed({
-        subscription: {
-          tier: 'PRO',
-          status: 'TRIALING',
-          trialEnd: futureDate,
-          currentPeriodEnd: null,
-          cancelAt: null,
-        },
-      }),
-    });
+    render(
+      <UsageDashboardView
+        parsed={makeParsed({
+          subscription: {
+            tier: 'PRO',
+            status: 'TRIALING',
+            trialEnd: futureDate,
+            currentPeriodEnd: null,
+            cancelAt: null,
+          },
+        })}
+        currentTier={'PRO' as TierId}
+      />,
+    );
     expect(screen.getByText('Trial')).toBeInTheDocument();
   });
 
   it('renders Past due badge for PAST_DUE status', () => {
-    renderDashboard({
-      parsed: makeParsed({
-        subscription: {
-          tier: 'PRO',
-          status: 'PAST_DUE',
-          trialEnd: null,
-          currentPeriodEnd: '2026-06-01',
-          cancelAt: null,
-        },
-      }),
-    });
+    render(
+      <UsageDashboardView
+        parsed={makeParsed({
+          subscription: {
+            tier: 'PRO',
+            status: 'PAST_DUE',
+            trialEnd: null,
+            currentPeriodEnd: '2026-06-01',
+            cancelAt: null,
+          },
+        })}
+        currentTier={'PRO' as TierId}
+      />,
+    );
     expect(screen.getByText('Past due')).toBeInTheDocument();
   });
 });

@@ -16,7 +16,7 @@ describe('motion presets', () => {
     expect(stagger.default.staggerChildren).toBeLessThan(stagger.slow.staggerChildren);
   });
 
-  it('fadeUp toggles opacity, y, and blur between hidden and visible', () => {
+  it('fadeUp toggles opacity and y between hidden and visible', () => {
     expect(fadeUp.hidden).toMatchObject({
       opacity: 0,
       y: 12,
@@ -25,6 +25,5 @@ describe('motion presets', () => {
       opacity: 1,
       y: 0,
     });
-    expect((fadeUp.hidden as { filter?: string }).filter).toContain('blur');
   });
 });

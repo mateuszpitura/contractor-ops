@@ -1,6 +1,6 @@
 /**
- * Web-vite split: BacsSubmitterForm accepts `useBacsSubmitterForm`'s
- * return as a `submitter` prop, so the test injects a shaped stub
+ * Web-vite split: tests target `BacsSubmitterFormView` with a shaped
+ * `submitter` stub — the wired `BacsSubmitterFormView` export calls the hook
  * instead of mocking the BACS tRPC endpoints.
  *
  * NOTE: tests intentionally avoid the masks-with-submitterName branch —
@@ -15,7 +15,7 @@
 
 import { render, screen } from '@/test/test-utils';
 import type { useBacsSubmitterForm } from '../../hooks/use-bacs-submitter-form.js';
-import { BacsSubmitterForm } from '../bacs-submitter-form';
+import { BacsSubmitterFormView } from '../bacs-submitter-form';
 
 type Submitter = ReturnType<typeof useBacsSubmitterForm>;
 
@@ -30,14 +30,14 @@ function makeSubmitter(overrides: Partial<Submitter> = {}): Submitter {
   } as unknown as Submitter;
 }
 
-describe('BacsSubmitterForm', () => {
+describe('BacsSubmitterFormView', () => {
   it('renders the section heading', () => {
-    render(<BacsSubmitterForm featureEnabled submitter={makeSubmitter()} />);
+    render(<BacsSubmitterFormView featureEnabled submitter={makeSubmitter()} />);
     expect(screen.getByText('UK BACS Standard 18 submitter')).toBeInTheDocument();
   });
 
   it('renders all four labelled inputs', () => {
-    render(<BacsSubmitterForm featureEnabled submitter={makeSubmitter()} />);
+    render(<BacsSubmitterFormView featureEnabled submitter={makeSubmitter()} />);
     expect(screen.getByLabelText('Service user number (SUN)')).toBeInTheDocument();
     expect(screen.getByLabelText('Originating sort code')).toBeInTheDocument();
     expect(screen.getByLabelText('Originating account number')).toBeInTheDocument();
@@ -46,14 +46,14 @@ describe('BacsSubmitterForm', () => {
 
   it('renders skeleton loaders for mask hints while loading', () => {
     const { container } = render(
-      <BacsSubmitterForm featureEnabled submitter={makeSubmitter({ isMasksLoading: true })} />,
+      <BacsSubmitterFormView featureEnabled submitter={makeSubmitter({ isMasksLoading: true })} />,
     );
     expect(container.querySelectorAll('[data-slot="skeleton"]').length).toBeGreaterThan(0);
   });
 
   it('shows the saved sun / sortCode / accountNumber masks (without submitterName)', () => {
     render(
-      <BacsSubmitterForm
+      <BacsSubmitterFormView
         featureEnabled
         submitter={makeSubmitter({
           masks: {
@@ -71,25 +71,25 @@ describe('BacsSubmitterForm', () => {
   });
 
   it('renders the feature-flag-off banner when featureEnabled is false', () => {
-    render(<BacsSubmitterForm featureEnabled={false} submitter={makeSubmitter()} />);
+    render(<BacsSubmitterFormView featureEnabled={false} submitter={makeSubmitter()} />);
     expect(screen.getByText(/BACS export is disabled/i)).toBeInTheDocument();
   });
 
   it('disables the Save button when feature is disabled', () => {
-    render(<BacsSubmitterForm featureEnabled={false} submitter={makeSubmitter()} />);
+    render(<BacsSubmitterFormView featureEnabled={false} submitter={makeSubmitter()} />);
     const saveBtn = screen.getByRole('button', { name: /Save changes/i });
     expect(saveBtn).toBeDisabled();
   });
 
   it('disables the Save button when the form is pristine even with feature enabled', () => {
-    render(<BacsSubmitterForm featureEnabled submitter={makeSubmitter()} />);
+    render(<BacsSubmitterFormView featureEnabled submitter={makeSubmitter()} />);
     const saveBtn = screen.getByRole('button', { name: /Save changes/i });
     expect(saveBtn).toBeDisabled();
   });
 
   it('shows the spinner icon when isSaving is true', () => {
     const { container } = render(
-      <BacsSubmitterForm featureEnabled submitter={makeSubmitter({ isSaving: true })} />,
+      <BacsSubmitterFormView featureEnabled submitter={makeSubmitter({ isSaving: true })} />,
     );
     expect(container.querySelector('.animate-spin')).toBeTruthy();
   });

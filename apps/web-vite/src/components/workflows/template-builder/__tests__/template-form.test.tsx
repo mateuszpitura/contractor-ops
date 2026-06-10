@@ -15,14 +15,14 @@ vi.mock('../sortable-task-list.js', () => {
 });
 
 import { click, findButton, findByText, mount, type } from '../../__tests__/_render.js';
-import { TemplateForm } from '../template-form.js';
+import { TemplateFormView } from '../template-form.js';
 import type { TemplateFormValues } from '../use-template-form.js';
 
 afterEach(() => {
   document.body.innerHTML = '';
 });
 
-type Props = Parameters<typeof TemplateForm>[0];
+type Props = Parameters<typeof TemplateFormView>[0];
 
 function StubForm({
   templateStatus = 'DRAFT',
@@ -74,7 +74,7 @@ function StubForm({
     showStatusBadge: isEditing,
   } as Props;
 
-  return <TemplateForm {...props} />;
+  return <TemplateFormView {...props} />;
 }
 
 describe('TemplateForm (web-vite)', () => {

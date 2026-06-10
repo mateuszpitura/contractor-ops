@@ -4,7 +4,7 @@ vi.mock('@/hooks/use-permissions', () => ({
   usePermissions: () => ({ role: 'admin' }),
 }));
 
-import { MatchCard } from '../match-card';
+import { MatchCardView } from '../match-card';
 
 function createInvoice(overrides: Record<string, unknown> = {}) {
   return {
@@ -39,17 +39,17 @@ function createInvoice(overrides: Record<string, unknown> = {}) {
       },
     ],
     ...overrides,
-  } as Parameters<typeof MatchCard>[0]['invoice'];
+  } as Parameters<typeof MatchCardView>[0]['invoice'];
 }
 
 describe('MatchCard', () => {
   it('renders heading for matched invoice', () => {
-    render(<MatchCard invoice={createInvoice()} />);
+    render(<MatchCardView invoice={createInvoice()} />);
     expect(screen.getByText('Matching')).toBeInTheDocument();
   });
 
   it('shows confidence label and score percentage', () => {
-    render(<MatchCard invoice={createInvoice()} />);
+    render(<MatchCardView invoice={createInvoice()} />);
     expect(screen.getByText('Match confidence')).toBeInTheDocument();
     expect(screen.getByText('95%')).toBeInTheDocument();
     expect(screen.getByText('Strong match')).toBeInTheDocument();
@@ -68,7 +68,7 @@ describe('MatchCard', () => {
         },
       ],
     });
-    const { container } = render(<MatchCard invoice={invoice} />);
+    const { container } = render(<MatchCardView invoice={invoice} />);
     expect(container.querySelector('.bg-amber-500.rounded-full')).toBeInTheDocument();
     expect(screen.getByText('Partial match')).toBeInTheDocument();
   });
@@ -86,25 +86,25 @@ describe('MatchCard', () => {
         },
       ],
     });
-    const { container } = render(<MatchCard invoice={invoice} />);
+    const { container } = render(<MatchCardView invoice={invoice} />);
     expect(container.querySelector('.bg-red-500.rounded-full')).toBeInTheDocument();
     expect(screen.getByText('Weak match')).toBeInTheDocument();
   });
 
   it('renders contractor name as link with the contractor id', () => {
-    render(<MatchCard invoice={createInvoice()} />);
+    render(<MatchCardView invoice={createInvoice()} />);
     const link = screen.getByRole('link', { name: 'Acme Corp' });
     expect(link).toHaveAttribute('href', '/en/contractors/ctr-1');
   });
 
   it('renders contract title as link with the contract id', () => {
-    render(<MatchCard invoice={createInvoice()} />);
+    render(<MatchCardView invoice={createInvoice()} />);
     const link = screen.getByRole('link', { name: 'Dev Services' });
     expect(link).toHaveAttribute('href', '/en/contracts/con-1');
   });
 
   it('renders Expected / Actual / Deviation labels for matched results', () => {
-    render(<MatchCard invoice={createInvoice()} />);
+    render(<MatchCardView invoice={createInvoice()} />);
     expect(screen.getByText('Expected')).toBeInTheDocument();
     expect(screen.getByText('Actual')).toBeInTheDocument();
     expect(screen.getByText('Deviation')).toBeInTheDocument();
@@ -123,7 +123,7 @@ describe('MatchCard', () => {
         },
       ],
     });
-    const { container } = render(<MatchCard invoice={invoice} />);
+    const { container } = render(<MatchCardView invoice={invoice} />);
     const deviationEl = container.querySelector('.text-destructive');
     expect(deviationEl).toBeInTheDocument();
     expect(deviationEl?.textContent).toContain('20.0%');
@@ -142,7 +142,7 @@ describe('MatchCard', () => {
         },
       ],
     });
-    const { container } = render(<MatchCard invoice={invoice} />);
+    const { container } = render(<MatchCardView invoice={invoice} />);
     const text = Array.from(container.querySelectorAll('.font-mono.font-medium'))
       .map(el => el.textContent ?? '')
       .join('');
@@ -162,29 +162,29 @@ describe('MatchCard', () => {
         },
       ],
     });
-    render(<MatchCard invoice={invoice} />);
+    render(<MatchCardView invoice={invoice} />);
     expect(screen.queryByText('Expected')).not.toBeInTheDocument();
     expect(screen.queryByText('Deviation')).not.toBeInTheDocument();
   });
 
   it('shows the manual match badge for MANUALLY_CONFIRMED', () => {
-    render(<MatchCard invoice={createInvoice({ matchStatus: 'MANUALLY_CONFIRMED' })} />);
+    render(<MatchCardView invoice={createInvoice({ matchStatus: 'MANUALLY_CONFIRMED' })} />);
     expect(screen.getByText('Manually matched')).toBeInTheDocument();
   });
 
   it('renders contract type badge', () => {
-    render(<MatchCard invoice={createInvoice()} />);
+    render(<MatchCardView invoice={createInvoice()} />);
     expect(screen.getByText('B2B')).toBeInTheDocument();
   });
 
   it('renders NO_ACTIVE_CONTRACT flag badge', () => {
-    render(<MatchCard invoice={createInvoice({ flagsJson: ['NO_ACTIVE_CONTRACT'] })} />);
+    render(<MatchCardView invoice={createInvoice({ flagsJson: ['NO_ACTIVE_CONTRACT'] })} />);
     expect(screen.getByText('No active contract found')).toBeInTheDocument();
   });
 
   it('filters out DUPLICATE_SUSPECTED from flag badges', () => {
     render(
-      <MatchCard
+      <MatchCardView
         invoice={createInvoice({ flagsJson: ['DUPLICATE_SUSPECTED', 'NO_ACTIVE_CONTRACT'] })}
       />,
     );
@@ -193,12 +193,12 @@ describe('MatchCard', () => {
   });
 
   it('does not render an unknown flag badge', () => {
-    render(<MatchCard invoice={createInvoice({ flagsJson: ['UNKNOWN_FLAG'] })} />);
+    render(<MatchCardView invoice={createInvoice({ flagsJson: ['UNKNOWN_FLAG'] })} />);
     expect(screen.queryByText('UNKNOWN_FLAG')).not.toBeInTheDocument();
   });
 
   it('handles empty matchResults without crashing (score falls back to 0)', () => {
-    render(<MatchCard invoice={createInvoice({ matchResults: [] })} />);
+    render(<MatchCardView invoice={createInvoice({ matchResults: [] })} />);
     expect(screen.getByText('Matching')).toBeInTheDocument();
     expect(screen.getByText('0%')).toBeInTheDocument();
   });

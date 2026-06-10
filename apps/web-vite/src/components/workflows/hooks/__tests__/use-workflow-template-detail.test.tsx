@@ -47,14 +47,17 @@ describe('useWorkflowTemplateDetail', () => {
     clearTRPCMock();
   });
 
-  it('reports isNotFound when the API returns null', async () => {
+  it('reports isNotFound when the API returns NOT_FOUND', async () => {
     setTRPCMock({
-      'workflow.getTemplate': () => null,
+      'workflow.getTemplate': () => {
+        const err = new Error('NOT_FOUND');
+        Object.assign(err, { data: { code: 'NOT_FOUND' } });
+        throw err;
+      },
     });
     const { result } = renderHookWithProviders(() => useWorkflowTemplateDetail('missing'));
     await waitFor(() => expect(result.current.isLoading).toBe(false));
     expect(result.current.isNotFound).toBe(true);
-    expect(result.current.template).toBeNull();
     clearTRPCMock();
   });
 

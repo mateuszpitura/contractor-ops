@@ -47,6 +47,8 @@ function Harness(props: { overrides?: Partial<Parameters<typeof WorkflowRunsData
     totalRows,
     sorting: [{ id: 'dueAt', desc: false }],
     onSortingChange: vi.fn(),
+    columnVisibility: {},
+    setColumnVisibility: vi.fn(),
     isLoading: false,
     isRefetching: false,
     activeFilterCount: 0,

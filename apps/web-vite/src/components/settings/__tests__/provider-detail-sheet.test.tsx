@@ -8,7 +8,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { render, screen } from '@/test/test-utils';
 import type { useProviderDetailSheet } from '../hooks/use-provider-detail-sheet';
-import { ProviderDetailSheet } from '../provider-detail-sheet';
+import { ProviderDetailSheetView } from '../provider-detail-sheet';
 
 type HookReturn = ReturnType<typeof useProviderDetailSheet>;
 
@@ -32,7 +32,7 @@ function buildHook(overrides: Partial<HookReturn> = {}): HookReturn {
   } as HookReturn;
 }
 
-function baseProps(overrides: Partial<Parameters<typeof ProviderDetailSheet>[0]> = {}) {
+function baseProps(overrides: Partial<Parameters<typeof ProviderDetailSheetView>[0]> = {}) {
   return {
     provider: 'slack',
     displayName: 'Slack',
@@ -43,12 +43,12 @@ function baseProps(overrides: Partial<Parameters<typeof ProviderDetailSheet>[0]>
     setDisconnectDialogOpen: vi.fn(),
     ...buildHook(),
     ...overrides,
-  } as Parameters<typeof ProviderDetailSheet>[0];
+  } as Parameters<typeof ProviderDetailSheetView>[0];
 }
 
-describe('ProviderDetailSheet', () => {
+describe('ProviderDetailSheetView', () => {
   it('renders the display name header and status badge', () => {
-    render(<ProviderDetailSheet {...baseProps()} />);
+    render(<ProviderDetailSheetView {...baseProps()} />);
     expect(screen.getByText('Slack')).toBeInTheDocument();
     // Status badge renders both in header and in dl row.
     expect(screen.getAllByText('provider.statusDisconnected').length).toBeGreaterThan(0);
@@ -56,28 +56,28 @@ describe('ProviderDetailSheet', () => {
 
   it('shows the reauth and disconnect buttons when status is REAUTH_REQUIRED', () => {
     render(
-      <ProviderDetailSheet {...baseProps(buildHook({ connectionStatus: 'REAUTH_REQUIRED' }))} />,
+      <ProviderDetailSheetView {...baseProps(buildHook({ connectionStatus: 'REAUTH_REQUIRED' }))} />,
     );
     expect(screen.getByRole('button', { name: 'provider.reconnectCta' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'provider.disconnectCta' })).toBeInTheDocument();
   });
 
   it('hides the disconnect button when status is DISCONNECTED', () => {
-    render(<ProviderDetailSheet {...baseProps()} />);
+    render(<ProviderDetailSheetView {...baseProps()} />);
     expect(
       screen.queryByRole('button', { name: 'provider.disconnectCta' }),
     ).not.toBeInTheDocument();
   });
 
   it('renders the sync log empty state when no items exist', () => {
-    render(<ProviderDetailSheet {...baseProps()} />);
+    render(<ProviderDetailSheetView {...baseProps()} />);
     expect(screen.getByText('provider.syncLogEmpty')).toBeInTheDocument();
     expect(screen.getByText('provider.webhookLogEmpty')).toBeInTheDocument();
   });
 
   it('renders sync log rows when items are present', () => {
     render(
-      <ProviderDetailSheet
+      <ProviderDetailSheetView
         {...baseProps(
           buildHook({
             syncItems: [
@@ -102,7 +102,7 @@ describe('ProviderDetailSheet', () => {
 
   it('renders the disconnect confirm dialog body when disconnectDialogOpen is true', () => {
     render(
-      <ProviderDetailSheet
+      <ProviderDetailSheetView
         {...baseProps({
           disconnectDialogOpen: true,
           ...buildHook({ connectionStatus: 'CONNECTED' }),

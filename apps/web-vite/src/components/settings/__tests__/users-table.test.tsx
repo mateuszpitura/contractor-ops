@@ -25,18 +25,18 @@ vi.mock('../../../i18n/useTranslations.js', () => ({
   useTranslations: () => (key: string) => key,
 }));
 
-vi.mock('../deactivate-dialog-container.js', () => ({
-  DeactivateDialogContainer: () => null,
+vi.mock('../deactivate-dialog.js', () => ({
+  DeactivateDialog: () => null,
 }));
 
-vi.mock('../user-consent-sheet-container.js', () => ({
-  UserConsentSheetContainer: () => null,
+vi.mock('../user-consent-sheet.js', () => ({
+  UserConsentSheet: () => null,
 }));
 
 import type { Member } from '../hooks/use-users-table.js';
-import { UsersTable } from '../members/data-table.js';
+import { UsersTableView } from '../members/data-table.js';
 
-type TableProps = React.ComponentProps<typeof UsersTable>;
+type TableProps = React.ComponentProps<typeof UsersTableView>;
 
 interface Harness {
   container: HTMLDivElement;
@@ -122,9 +122,9 @@ afterEach(() => {
   }
 });
 
-describe('UsersTable (web-vite)', () => {
+describe('UsersTableView (web-vite)', () => {
   it('renders the four base column headers plus the actions column', () => {
-    harness = mount(<UsersTable {...buildProps()} />);
+    harness = mount(<UsersTableView {...buildProps()} />);
     const headerCells = Array.from(harness.container.querySelectorAll('thead th')).map(
       th => th.textContent,
     );
@@ -136,7 +136,7 @@ describe('UsersTable (web-vite)', () => {
   });
 
   it('renders one body row per member with name + email', () => {
-    harness = mount(<UsersTable {...buildProps()} />);
+    harness = mount(<UsersTableView {...buildProps()} />);
     const bodyRows = harness.container.querySelectorAll('tbody tr');
     expect(bodyRows.length).toBe(2);
     expect(harness.container.textContent).toContain('Alice Smith');
@@ -151,19 +151,19 @@ describe('UsersTable (web-vite)', () => {
       isFetching: true,
       data: undefined,
     } as unknown as TableProps['membersQuery'];
-    harness = mount(<UsersTable {...buildProps({ membersQuery: loadingQuery })} />);
+    harness = mount(<UsersTableView {...buildProps({ membersQuery: loadingQuery })} />);
     const skeletons = harness.container.querySelectorAll('[data-slot="skeleton"]');
     expect(skeletons.length).toBeGreaterThan(0);
   });
 
   it('renders the empty state body copy when there are no members', () => {
-    harness = mount(<UsersTable {...buildProps({ members: [] })} />);
+    harness = mount(<UsersTableView {...buildProps({ members: [] })} />);
     expect(harness.container.textContent).toContain('emptyState.heading');
     expect(harness.container.textContent).toContain('emptyState.body');
   });
 
   it('hides the actions column header when showActionsColumn is false', () => {
-    harness = mount(<UsersTable {...buildProps({ showActionsColumn: false })} />);
+    harness = mount(<UsersTableView {...buildProps({ showActionsColumn: false })} />);
     const headerCells = Array.from(harness.container.querySelectorAll('thead th')).map(
       th => th.textContent,
     );
@@ -174,7 +174,7 @@ describe('UsersTable (web-vite)', () => {
     // u1 is currentUserId; the row's action cell should not include the
     // destructive "deactivate" button — this is the safety rule that keeps
     // an admin from locking themselves out by misclick.
-    harness = mount(<UsersTable {...buildProps({ currentUserId: 'u1' })} />);
+    harness = mount(<UsersTableView {...buildProps({ currentUserId: 'u1' })} />);
     const aliceRow = Array.from(harness.container.querySelectorAll('tbody tr')).find(tr =>
       tr.textContent?.includes('Alice Smith'),
     );

@@ -11,7 +11,7 @@
 import { describe, expect, it, vi } from 'vitest';
 
 import { render, screen, setup } from '@/test/test-utils';
-import { DeactivateDialog } from '../deactivate-dialog';
+import { DeactivateDialogView } from '../deactivate-dialog';
 import type { useDeactivateDialog } from '../hooks/use-deactivate-dialog';
 
 type HookReturn = ReturnType<typeof useDeactivateDialog>;
@@ -27,10 +27,10 @@ function buildHook(overrides: Partial<HookReturn> = {}): HookReturn {
   } as HookReturn;
 }
 
-describe('DeactivateDialog', () => {
+describe('DeactivateDialogView', () => {
   it('renders title, body and CTAs when open', () => {
     render(
-      <DeactivateDialog open onOpenChange={vi.fn()} userId="u1" userName="John" {...buildHook()} />,
+      <DeactivateDialogView open onOpenChange={vi.fn()} userId="u1" userName="John" {...buildHook()} />,
     );
 
     expect(screen.getByText('title')).toBeInTheDocument();
@@ -41,7 +41,7 @@ describe('DeactivateDialog', () => {
 
   it('does not render content when closed', () => {
     render(
-      <DeactivateDialog
+      <DeactivateDialogView
         open={false}
         onOpenChange={vi.fn()}
         userId="u1"
@@ -55,7 +55,7 @@ describe('DeactivateDialog', () => {
 
   it('renders the pending label and disables CTAs while isPending', () => {
     render(
-      <DeactivateDialog
+      <DeactivateDialogView
         open
         onOpenChange={vi.fn()}
         userId="u1"
@@ -72,7 +72,7 @@ describe('DeactivateDialog', () => {
   it('invokes handleConfirm when the destructive button is clicked', async () => {
     const handleConfirm = vi.fn();
     const { user } = setup(
-      <DeactivateDialog
+      <DeactivateDialogView
         open
         onOpenChange={vi.fn()}
         userId="u1"

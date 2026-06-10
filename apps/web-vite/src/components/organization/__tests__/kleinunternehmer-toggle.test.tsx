@@ -4,7 +4,7 @@
  * Flipping this DE-only flag rewrites VAT handling for every future
  * invoice issued by the organisation. The legacy guard "non-DE orgs
  * never see the toggle" must hold in web-vite too. After the passthrough
- * refactor the DE gate lives in `KleinunternehmerToggleContainer`, so
+ * refactor the DE gate lives in `KleinunternehmerToggle`, so
  * non-DE coverage tests the container; checked/unchecked rendering still
  * tests the presentational view directly with a hand-rolled hook return.
  *
@@ -29,8 +29,7 @@ vi.mock('../hooks/use-kleinunternehmer-toggle.js', () => ({
   useKleinunternehmerToggle: () => useKleinunternehmerToggleMock(),
 }));
 
-import { KleinunternehmerToggle } from '../kleinunternehmer-toggle.js';
-import { KleinunternehmerToggleContainer } from '../kleinunternehmer-toggle-container.js';
+import { KleinunternehmerToggle, KleinunternehmerToggleView } from '../kleinunternehmer-toggle.js';
 
 interface Harness {
   container: HTMLDivElement;
@@ -54,7 +53,7 @@ function unmount(h: Harness) {
   h.container.remove();
 }
 
-type ToggleHookReturn = React.ComponentProps<typeof KleinunternehmerToggle>['toggle'];
+type ToggleHookReturn = React.ComponentProps<typeof KleinunternehmerToggleView>['toggle'];
 
 function buildToggle(overrides: Partial<ToggleHookReturn> = {}): ToggleHookReturn {
   const noop = () => undefined;
@@ -82,7 +81,7 @@ function Harnessed({ isKlein }: { isKlein: boolean }) {
       setConfirmOpen(true);
     },
   });
-  return <KleinunternehmerToggle isKleinunternehmer={isKlein} toggle={toggle} />;
+  return <KleinunternehmerToggleView isKleinunternehmer={isKlein} toggle={toggle} />;
 }
 
 let harness: Harness | undefined;
@@ -99,31 +98,31 @@ afterEach(() => {
   }
 });
 
-describe('KleinunternehmerToggleContainer (web-vite)', () => {
+describe('KleinunternehmerToggle (web-vite)', () => {
   it('renders nothing for non-DE organizations', () => {
     harness = mount(
-      <KleinunternehmerToggleContainer orgCountryCode="GB" isKleinunternehmer={false} />,
+      <KleinunternehmerToggle orgCountryCode="GB" isKleinunternehmer={false} />,
     );
     expect(harness.container.innerHTML).toBe('');
   });
 
   it('renders nothing when orgCountryCode is null', () => {
     harness = mount(
-      <KleinunternehmerToggleContainer orgCountryCode={null} isKleinunternehmer={false} />,
+      <KleinunternehmerToggle orgCountryCode={null} isKleinunternehmer={false} />,
     );
     expect(harness.container.innerHTML).toBe('');
   });
 
   it('renders nothing when orgCountryCode is undefined', () => {
     harness = mount(
-      <KleinunternehmerToggleContainer orgCountryCode={undefined} isKleinunternehmer={false} />,
+      <KleinunternehmerToggle orgCountryCode={undefined} isKleinunternehmer={false} />,
     );
     expect(harness.container.innerHTML).toBe('');
   });
 
   it('renders the toggle view for DE organizations', () => {
     harness = mount(
-      <KleinunternehmerToggleContainer orgCountryCode="DE" isKleinunternehmer={false} />,
+      <KleinunternehmerToggle orgCountryCode="DE" isKleinunternehmer={false} />,
     );
     expect(
       harness.container.querySelector('[data-testid="kleinunternehmer-toggle"]'),

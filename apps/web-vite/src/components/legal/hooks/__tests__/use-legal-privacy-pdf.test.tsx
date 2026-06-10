@@ -60,7 +60,7 @@ describe('useLegalPrivacyPdfDownload', () => {
     toastError.mockClear();
     setTRPCMock({
       'legal.generatePrivacyNoticePdf': () => {
-        throw new Error('rate-limited');
+        throw new Error('Something went wrong. Please try again.');
       },
     });
     const { result } = renderHookWithProviders(() => useLegalPrivacyPdfDownload());
@@ -69,6 +69,6 @@ describe('useLegalPrivacyPdfDownload', () => {
       result.current.mutation.mutate(undefined);
     });
 
-    await waitFor(() => expect(toastError).toHaveBeenCalledWith('rate-limited'));
+    await waitFor(() => expect(toastError).toHaveBeenCalledWith('Something went wrong. Please try again.'));
   });
 });

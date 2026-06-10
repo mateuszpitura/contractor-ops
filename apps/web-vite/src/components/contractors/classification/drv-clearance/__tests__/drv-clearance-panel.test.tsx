@@ -6,8 +6,8 @@
 
 import { describe, expect, it, vi } from 'vitest';
 
-vi.mock('../drv-clearance-form-container.js', () => ({
-  DrvClearanceFormContainer: ({ open }: { open: boolean }) =>
+vi.mock('../drv-clearance-form.js', () => ({
+  DrvClearanceForm: ({ open }: { open: boolean }) =>
     open ? (
       <div role="dialog">
         <h2>File DRV clearance procedure</h2>

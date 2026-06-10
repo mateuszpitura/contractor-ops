@@ -153,13 +153,8 @@ describe('useOnboardingSourceSelection', () => {
     expect(toastError).toHaveBeenCalled();
   });
 
-  it('handleConnect falls back to location redirect when popup is blocked', async () => {
+  it('handleConnect shows popup-blocked toast when window.open returns null', async () => {
     const originalOpen = window.open;
-    const originalLocation = window.location;
-    Object.defineProperty(window, 'location', {
-      configurable: true,
-      value: { href: '' },
-    });
     window.open = vi.fn().mockReturnValue(null);
 
     setTRPCMock({
@@ -173,9 +168,8 @@ describe('useOnboardingSourceSelection', () => {
     await act(async () => {
       await result.current.handleConnect('SLACK');
     });
-    expect(window.location.href).toBe('https://example.com/oauth');
+    expect(toastError).toHaveBeenCalled();
 
     window.open = originalOpen;
-    Object.defineProperty(window, 'location', { configurable: true, value: originalLocation });
   });
 });

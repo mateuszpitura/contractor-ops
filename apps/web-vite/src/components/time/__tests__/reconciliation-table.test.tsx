@@ -19,7 +19,7 @@ vi.mock('../hooks/use-reconciliation-table.js', () => ({
 
 import { render, screen } from '../../../test/test-utils.js';
 import type { UseReconciliationTableReturn } from '../hooks/use-reconciliation-table.js';
-import { ReconciliationTable } from '../reconciliation-table-container.js';
+import { ReconciliationTable } from '../reconciliation-table.js';
 
 function makeItem(over: Record<string, unknown> = {}) {
   return {

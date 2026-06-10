@@ -52,7 +52,7 @@ describe('useApprovalActions', () => {
     });
     const { result } = renderHookWithProviders(() => useApprovalActions('step-42', onSuccess));
     act(() => result.current.approve());
-    await waitFor(() => expect(toastSuccess).toHaveBeenCalledWith('Approved'));
+    await waitFor(() => expect(toastSuccess).toHaveBeenCalledWith('Approved.'));
     expect(onSuccess).toHaveBeenCalled();
   });
 
@@ -65,7 +65,7 @@ describe('useApprovalActions', () => {
     });
     const { result } = renderHookWithProviders(() => useApprovalActions('step-1', onSuccess));
     act(() => result.current.reject('not aligned'));
-    await waitFor(() => expect(toastSuccess).toHaveBeenCalledWith('Rejected'));
+    await waitFor(() => expect(toastSuccess).toHaveBeenCalledWith('Rejected.'));
     expect(handler).toHaveBeenCalledWith({ stepId: 'step-1', comment: 'not aligned' });
     expect(onSuccess).toHaveBeenCalled();
   });
@@ -78,7 +78,7 @@ describe('useApprovalActions', () => {
     });
     const { result } = renderHookWithProviders(() => useApprovalActions('step-1', vi.fn()));
     act(() => result.current.delegate('user-2', 'pls review'));
-    await waitFor(() => expect(toastSuccess).toHaveBeenCalledWith('Delegated'));
+    await waitFor(() => expect(toastSuccess).toHaveBeenCalledWith('Delegated.'));
     expect(handler).toHaveBeenCalledWith({
       stepId: 'step-1',
       delegateToUserId: 'user-2',
@@ -94,7 +94,7 @@ describe('useApprovalActions', () => {
     });
     const { result } = renderHookWithProviders(() => useApprovalActions('step-1', vi.fn()));
     act(() => result.current.requestClarification('need more context'));
-    await waitFor(() => expect(toastSuccess).toHaveBeenCalledWith('Clarification requested'));
+    await waitFor(() => expect(toastSuccess).toHaveBeenCalledWith('Clarification requested.'));
     expect(handler).toHaveBeenCalledWith({
       stepId: 'step-1',
       comment: 'need more context',
@@ -111,7 +111,7 @@ describe('useApprovalActions', () => {
     });
     const { result } = renderHookWithProviders(() => useApprovalActions('step-1', onSuccess));
     act(() => result.current.approve());
-    await waitFor(() => expect(toastError).toHaveBeenCalledWith('Failed to approve'));
+    await waitFor(() => expect(toastError).toHaveBeenCalledWith('Failed to approve.'));
     expect(onSuccess).not.toHaveBeenCalled();
   });
 });

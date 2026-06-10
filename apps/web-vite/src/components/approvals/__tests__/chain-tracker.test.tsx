@@ -1,6 +1,6 @@
 /**
  * ChainTracker is a pure presentational component that receives `flow` +
- * `isLoading` as props — the tRPC query lives in `chain-tracker-container.tsx`,
+ * `isLoading` as props — the tRPC query lives in `chain-tracker.tsx`,
  * so there is no react-query boilerplate here and we exercise the visual logic
  * directly.
  *
@@ -18,7 +18,7 @@ vi.mock('../sla-badge.js', () => ({
 }));
 
 import { applyLocale, initI18n } from '../../../i18n/index.js';
-import { ChainTracker, ChainTrackerSkeleton } from '../chain-tracker.js';
+import { ChainTrackerView, ChainTrackerSkeleton } from '../chain-tracker.js';
 
 // Opt jsdom into React 19's act-aware environment so the renderer stops
 // logging "current testing environment is not configured to support
@@ -75,7 +75,7 @@ describe('ChainTracker', () => {
 
   it('renders step circle for each step with chain name + approver', () => {
     const { container } = renderInto(
-      <ChainTracker
+      <ChainTrackerView
         steps={[
           {
             id: 's1',
@@ -125,7 +125,7 @@ describe('ChainTracker', () => {
 
   it('renders SLA badge for pending steps with a deadline', () => {
     const { container } = renderInto(
-      <ChainTracker
+      <ChainTrackerView
         steps={[
           {
             id: 's1',
@@ -147,7 +147,7 @@ describe('ChainTracker', () => {
 
   it('greys out steps following a rejected step', () => {
     const { container } = renderInto(
-      <ChainTracker
+      <ChainTrackerView
         steps={[
           {
             id: 's1',

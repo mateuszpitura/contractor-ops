@@ -1,9 +1,6 @@
 /**
- * `useIntensityRouter` — body intensity controller. Covers:
- *   - root pathname → 'atelier'
- *   - `/reports` pathname → 'atelier'
- *   - other paths → 'workbench'
- *   - effect writes data-intensity to document.body and restores on unmount
+ * `useIntensityRouter` — body intensity controller.
+ * Atelier: dashboard root + /reports. Everything else: workbench.
  */
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -29,6 +26,7 @@ afterEach(() => {
 describe('intensityForPathname (pure)', () => {
   it('returns atelier on the root pathname', () => {
     expect(intensityForPathname('/')).toBe('atelier');
+    expect(intensityForPathname('')).toBe('atelier');
   });
 
   it('returns atelier under /reports', () => {
@@ -36,13 +34,9 @@ describe('intensityForPathname (pure)', () => {
     expect(intensityForPathname('/reports/q1')).toBe('atelier');
   });
 
-  it('falls through to atelier as the default match (pre-existing /?$ catch-all)', () => {
-    // The legacy ATELIER_ROUTES regex `/?$/` matches any pathname; the
-    // 'workbench' branch is reserved for future negative-match routes. This
-    // test pins the current behavior so the constant cannot be changed
-    // without an accompanying update.
-    expect(intensityForPathname('/contractors')).toBe('atelier');
-    expect(intensityForPathname('/invoices/123')).toBe('atelier');
+  it('returns workbench for operational routes', () => {
+    expect(intensityForPathname('/contractors')).toBe('workbench');
+    expect(intensityForPathname('/invoices/123')).toBe('workbench');
   });
 });
 
@@ -50,7 +44,7 @@ describe('useIntensityRouter', () => {
   it('returns the intensity for the current pathname', () => {
     pathnameRef.current = '/contractors';
     const { result } = renderHookWithProviders(() => useIntensityRouter());
-    expect(result.current).toBe('atelier');
+    expect(result.current).toBe('workbench');
   });
 
   it('writes data-intensity on the body and restores the previous value on unmount', () => {

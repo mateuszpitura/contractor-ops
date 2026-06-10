@@ -1,7 +1,7 @@
 import { render, screen, setup } from '@/test/test-utils';
 
 import {
-  EInvoiceComplianceSummaryTile,
+  EInvoiceComplianceSummaryTileView,
   EInvoiceComplianceSummaryTileSkeleton,
 } from '../einvoice-compliance-summary-tile';
 
@@ -13,7 +13,7 @@ describe('EInvoiceComplianceSummaryTile', () => {
 
   it('renders percentage + body + hides Review CTA when invalid+failed = 0', () => {
     render(
-      <EInvoiceComplianceSummaryTile
+      <EInvoiceComplianceSummaryTileView
         summary={{
           total: 100,
           notGenerated: 10,
@@ -34,7 +34,7 @@ describe('EInvoiceComplianceSummaryTile', () => {
   it('shows Review CTA when needs-attention > 0 and fires callback', async () => {
     const onReview = vi.fn();
     const { user } = setup(
-      <EInvoiceComplianceSummaryTile
+      <EInvoiceComplianceSummaryTileView
         onReviewFilterRequested={onReview}
         summary={{
           total: 100,
@@ -55,7 +55,7 @@ describe('EInvoiceComplianceSummaryTile', () => {
 
   it('KPI colour reflects compliance bands (>=95 = primary)', () => {
     render(
-      <EInvoiceComplianceSummaryTile
+      <EInvoiceComplianceSummaryTileView
         summary={{
           total: 100,
           notGenerated: 0,
@@ -73,7 +73,7 @@ describe('EInvoiceComplianceSummaryTile', () => {
 
   it('renders 100% for empty orgs (total=0, no division by zero)', () => {
     render(
-      <EInvoiceComplianceSummaryTile
+      <EInvoiceComplianceSummaryTileView
         summary={{
           total: 0,
           notGenerated: 0,

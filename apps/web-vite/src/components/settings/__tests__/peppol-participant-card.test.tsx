@@ -25,18 +25,18 @@ vi.mock('../../../i18n/useTranslations.js', () => ({
   useTranslations: () => (key: string) => key,
 }));
 
-vi.mock('../e-invoicing/peppol-participant-register-dialog-container.js', () => ({
-  PeppolParticipantRegisterDialogContainer: () => null,
+vi.mock('../e-invoicing/peppol-participant-register-dialog.js', () => ({
+  PeppolParticipantRegisterDialog: () => null,
 }));
 
-vi.mock('../e-invoicing/peppol-participant-deregister-dialog-container.js', () => ({
-  PeppolParticipantDeregisterDialogContainer: () => null,
+vi.mock('../e-invoicing/peppol-participant-deregister-dialog.js', () => ({
+  PeppolParticipantDeregisterDialog: () => null,
 }));
 
 import type { PeppolParticipantRow } from '../e-invoicing/hooks/use-peppol-participant-card.js';
-import { PeppolParticipantCard } from '../e-invoicing/peppol-participant-card.js';
+import { PeppolParticipantCardView } from '../e-invoicing/peppol-participant-card.js';
 
-type CardProps = React.ComponentProps<typeof PeppolParticipantCard>;
+type CardProps = React.ComponentProps<typeof PeppolParticipantCardView>;
 
 interface Harness {
   container: HTMLDivElement;
@@ -118,7 +118,7 @@ afterEach(() => {
 
 describe('PeppolParticipantCard (web-vite)', () => {
   it('renders the empty-state heading + register CTA when no participant is active', () => {
-    harness = mount(<PeppolParticipantCard {...buildProps()} />);
+    harness = mount(<PeppolParticipantCardView {...buildProps()} />);
     expect(harness.container.textContent).toContain('emptyHeading');
     expect(harness.container.textContent).toContain('ctaNotRegistered');
     // No participant id rendered yet.
@@ -126,7 +126,7 @@ describe('PeppolParticipantCard (web-vite)', () => {
   });
 
   it('shows the active heading + participant identifier when an active row is supplied', () => {
-    harness = mount(<PeppolParticipantCard {...buildProps({ active: activeParticipant })} />);
+    harness = mount(<PeppolParticipantCardView {...buildProps({ active: activeParticipant })} />);
     expect(harness.container.textContent).toContain('activeHeading');
     const idEl = harness.container.querySelector('[data-testid="participant-id"]');
     expect(idEl).not.toBeNull();
@@ -134,12 +134,12 @@ describe('PeppolParticipantCard (web-vite)', () => {
   });
 
   it('renders the ASP provider in the detail list when active', () => {
-    harness = mount(<PeppolParticipantCard {...buildProps({ active: activeParticipant })} />);
+    harness = mount(<PeppolParticipantCardView {...buildProps({ active: activeParticipant })} />);
     expect(harness.container.textContent).toContain('Storecove');
   });
 
   it('exposes a deregister button on the active card', () => {
-    harness = mount(<PeppolParticipantCard {...buildProps({ active: activeParticipant })} />);
+    harness = mount(<PeppolParticipantCardView {...buildProps({ active: activeParticipant })} />);
     const buttons = Array.from(harness.container.querySelectorAll('button')).map(
       b => b.textContent,
     );
@@ -147,7 +147,7 @@ describe('PeppolParticipantCard (web-vite)', () => {
   });
 
   it('renders skeleton placeholders in the loading state', () => {
-    harness = mount(<PeppolParticipantCard {...buildProps({ isLoading: true })} />);
+    harness = mount(<PeppolParticipantCardView {...buildProps({ isLoading: true })} />);
     const skeletons = harness.container.querySelectorAll('[data-slot="skeleton"]');
     expect(skeletons.length).toBeGreaterThan(0);
   });

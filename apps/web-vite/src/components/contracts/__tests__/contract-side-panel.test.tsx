@@ -2,6 +2,7 @@ import { render, screen } from '@/test/test-utils';
 import { ContractSidePanel } from '../contract-side-panel';
 
 vi.mock('@/i18n/navigation', () => ({
+  useLocale: () => 'en',
   Link: ({
     children,
     href,

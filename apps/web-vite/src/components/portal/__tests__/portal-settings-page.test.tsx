@@ -12,7 +12,7 @@ vi.mock('../profile-section', () => ({
   ),
 }));
 
-vi.mock('../notification-preferences-section-container', () => ({
+vi.mock('../notification-preferences-section.js', () => ({
   NotificationPreferencesSectionContainer: () => <div data-testid="notif-prefs-container" />,
 }));
 

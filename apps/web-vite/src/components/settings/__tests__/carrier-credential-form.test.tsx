@@ -7,7 +7,7 @@
 import { describe, expect, it, vi } from 'vitest';
 
 import { render, screen, setup } from '@/test/test-utils';
-import { CarrierCredentialForm } from '../carrier-credential-form';
+import { CarrierCredentialFormView } from '../carrier-credential-form';
 import type { useCarrierCredentialForm } from '../hooks/use-carrier-credential-form';
 
 type HookReturn = ReturnType<typeof useCarrierCredentialForm>;
@@ -33,9 +33,9 @@ function buildHook(overrides: Partial<HookReturn> = {}): HookReturn {
   } as HookReturn;
 }
 
-describe('CarrierCredentialForm (DPD)', () => {
+describe('CarrierCredentialFormView (DPD)', () => {
   it('renders DPD username, password, fid fields and the sandbox checkbox', () => {
-    render(<CarrierCredentialForm carrierLabel="DPD" {...buildHook({ carrier: 'dpd' })} />);
+    render(<CarrierCredentialFormView carrierLabel="DPD" {...buildHook({ carrier: 'dpd' })} />);
 
     expect(screen.getByText('DPD')).toBeInTheDocument();
     expect(screen.getByText('username')).toBeInTheDocument();
@@ -46,7 +46,7 @@ describe('CarrierCredentialForm (DPD)', () => {
 
   it('renders the notConfigured badge when isConnected is false', () => {
     render(
-      <CarrierCredentialForm
+      <CarrierCredentialFormView
         carrierLabel="DPD"
         {...buildHook({ carrier: 'dpd', isConnected: false })}
       />,
@@ -57,7 +57,7 @@ describe('CarrierCredentialForm (DPD)', () => {
 
   it('renders the connected badge when isConnected is true', () => {
     render(
-      <CarrierCredentialForm
+      <CarrierCredentialFormView
         carrierLabel="DPD"
         {...buildHook({ carrier: 'dpd', isConnected: true })}
       />,
@@ -70,7 +70,7 @@ describe('CarrierCredentialForm (DPD)', () => {
     const handleSave = vi.fn();
     const handleTest = vi.fn();
     const { user } = setup(
-      <CarrierCredentialForm
+      <CarrierCredentialFormView
         carrierLabel="DPD"
         {...buildHook({ carrier: 'dpd', handleSave, handleTest })}
       />,
@@ -85,7 +85,7 @@ describe('CarrierCredentialForm (DPD)', () => {
 
   it('disables both buttons while any mutation is pending', () => {
     render(
-      <CarrierCredentialForm
+      <CarrierCredentialFormView
         carrierLabel="DPD"
         {...buildHook({ carrier: 'dpd', isPending: true })}
       />,
@@ -96,9 +96,9 @@ describe('CarrierCredentialForm (DPD)', () => {
   });
 });
 
-describe('CarrierCredentialForm (UPS)', () => {
+describe('CarrierCredentialFormView (UPS)', () => {
   it('renders UPS clientId, clientSecret and accountNumber fields', () => {
-    render(<CarrierCredentialForm carrierLabel="UPS" {...buildHook({ carrier: 'ups' })} />);
+    render(<CarrierCredentialFormView carrierLabel="UPS" {...buildHook({ carrier: 'ups' })} />);
 
     expect(screen.getByText('UPS')).toBeInTheDocument();
     expect(screen.getByText('clientId')).toBeInTheDocument();

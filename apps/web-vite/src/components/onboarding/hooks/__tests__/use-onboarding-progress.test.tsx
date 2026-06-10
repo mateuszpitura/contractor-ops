@@ -133,7 +133,7 @@ describe('useOnboardingProgress', () => {
         failedItems: [{ email: 'a@x.com', error: 'oops' }],
       }),
       'onboardingImport.retryFailedItem': () => {
-        throw new Error('nope');
+        throw new Error('Something went wrong. Please try again.');
       },
     });
     const { result } = renderHookWithProviders(() => useOnboardingProgress({ jobId: 'job-1' }));

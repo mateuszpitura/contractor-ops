@@ -26,9 +26,9 @@ vi.mock('../step-documents', () => ({
 }));
 
 import type { ContractWizardFormValues } from '../wizard-dialog';
-import { ContractWizardDialog } from '../wizard-dialog';
+import { ContractWizardDialogView } from '../wizard-dialog';
 
-type Wizard = Parameters<typeof ContractWizardDialog>[0]['wizard'];
+type Wizard = Parameters<typeof ContractWizardDialogView>[0]['wizard'];
 
 function StubProvider({
   currentStep = 0,
@@ -93,10 +93,10 @@ function StubProvider({
     handleSkipDocuments,
   } as unknown as Wizard;
 
-  return <ContractWizardDialog open={open} wizard={wizard} />;
+  return <ContractWizardDialogView open={open} wizard={wizard} />;
 }
 
-describe('ContractWizardDialog', () => {
+describe('ContractWizardDialogView', () => {
   it('renders dialog with title and step labels', () => {
     render(<StubProvider />);
     expect(screen.getByText('Contract details')).toBeInTheDocument();

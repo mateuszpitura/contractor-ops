@@ -10,17 +10,17 @@
 
 import { describe, expect, it, vi } from 'vitest';
 
-vi.mock('../leitweg-id-create-dialog-container', () => ({
-  LeitwegIdCreateDialogContainer: () => null,
+vi.mock('../leitweg-id-create-dialog.js', () => ({
+  LeitwegIdCreateDialog: () => null,
 }));
-vi.mock('../leitweg-id-delete-dialog-container', () => ({
-  LeitwegIdDeleteDialogContainer: () => null,
+vi.mock('../leitweg-id-delete-dialog.js', () => ({
+  LeitwegIdDeleteDialog: () => null,
 }));
 
 import { render, screen } from '@/test/test-utils';
 import type { useLeitwegIdRow } from '../hooks/use-leitweg-id-row';
 import type { LeitwegIdRowData } from '../leitweg-id-row';
-import { LeitwegIdRow } from '../leitweg-id-row';
+import { LeitwegIdRowView } from '../leitweg-id-row';
 
 type HookReturn = ReturnType<typeof useLeitwegIdRow>;
 
@@ -67,9 +67,9 @@ function renderInTable(ui: React.ReactNode) {
   );
 }
 
-describe('LeitwegIdRow (e-invoicing path)', () => {
+describe('LeitwegIdRowView (e-invoicing path)', () => {
   it('renders the Leitweg value inside an LTR <bdi> for RTL safety', () => {
-    renderInTable(<LeitwegIdRow row={baseRow} t={tStub} {...buildHook()} />);
+    renderInTable(<LeitwegIdRowView row={baseRow} t={tStub} {...buildHook()} />);
 
     const valueEl = screen.getByTestId('leitweg-value-leitweg-1');
     expect(valueEl.textContent).toBe('991-33333TEST-33');
@@ -77,13 +77,13 @@ describe('LeitwegIdRow (e-invoicing path)', () => {
   });
 
   it('renders the default badge when isDefaultForContractor is true', () => {
-    renderInTable(<LeitwegIdRow row={baseRow} t={tStub} {...buildHook()} />);
+    renderInTable(<LeitwegIdRowView row={baseRow} t={tStub} {...buildHook()} />);
     expect(screen.getByText('defaultBadge')).toBeInTheDocument();
   });
 
   it('omits the default badge when isDefaultForContractor is false', () => {
     renderInTable(
-      <LeitwegIdRow
+      <LeitwegIdRowView
         row={{ ...baseRow, isDefaultForContractor: false }}
         t={tStub}
         {...buildHook()}
@@ -93,13 +93,13 @@ describe('LeitwegIdRow (e-invoicing path)', () => {
   });
 
   it('renders the actions dropdown trigger with an accessible label', () => {
-    renderInTable(<LeitwegIdRow row={baseRow} t={tStub} {...buildHook()} />);
+    renderInTable(<LeitwegIdRowView row={baseRow} t={tStub} {...buildHook()} />);
     const trigger = screen.getByTestId('leitweg-actions-leitweg-1');
     expect(trigger.getAttribute('aria-label')).toBe('actionsAriaLabel');
   });
 
   it('renders the contractor badge when contractor is attached', () => {
-    renderInTable(<LeitwegIdRow row={baseRow} t={tStub} {...buildHook()} />);
+    renderInTable(<LeitwegIdRowView row={baseRow} t={tStub} {...buildHook()} />);
     expect(screen.getByText('Bundeswehr GmbH')).toBeInTheDocument();
   });
 });

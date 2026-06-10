@@ -1,6 +1,6 @@
 import { render, screen, setup } from '@/test/test-utils';
 
-import { StatusChipBar, StatusChipBarSkeleton } from '../status-chip-bar';
+import { StatusChipBarView, StatusChipBarSkeleton } from '../status-chip-bar';
 
 describe('StatusChipBar', () => {
   it('skeleton renders without toggle buttons', () => {
@@ -10,7 +10,7 @@ describe('StatusChipBar', () => {
 
   it('renders chip labels with counts derived from the counts map', () => {
     render(
-      <StatusChipBar
+      <StatusChipBarView
         activeStatuses={['RECEIVED']}
         onStatusChange={vi.fn()}
         counts={{
@@ -28,7 +28,7 @@ describe('StatusChipBar', () => {
 
   it('marks the active status with aria-checked=true', () => {
     render(
-      <StatusChipBar
+      <StatusChipBarView
         activeStatuses={['RECEIVED']}
         onStatusChange={vi.fn()}
         counts={{ 'status:RECEIVED': 2 }}
@@ -43,7 +43,7 @@ describe('StatusChipBar', () => {
   it('adds the clicked inactive chip to the selection', async () => {
     const onStatusChange = vi.fn();
     const { user } = setup(
-      <StatusChipBar
+      <StatusChipBarView
         activeStatuses={['RECEIVED']}
         onStatusChange={onStatusChange}
         counts={{ 'status:RECEIVED': 2, 'status:APPROVED': 1 }}
@@ -57,7 +57,7 @@ describe('StatusChipBar', () => {
   it('deselects an active chip when clicked again', async () => {
     const onStatusChange = vi.fn();
     const { user } = setup(
-      <StatusChipBar activeStatuses={['RECEIVED', 'MATCHED']} onStatusChange={onStatusChange} />,
+      <StatusChipBarView activeStatuses={['RECEIVED', 'MATCHED']} onStatusChange={onStatusChange} />,
     );
 
     await user.click(screen.getByRole('switch', { name: /Received/i }));

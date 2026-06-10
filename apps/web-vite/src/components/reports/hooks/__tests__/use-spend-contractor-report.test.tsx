@@ -177,7 +177,7 @@ describe('useSpendContractorReport', () => {
       'report.spendByContractor': () => ({ items: [], total: 0 }),
       'report.spendByContractorChart': () => [],
       'report.exportSpendByContractor': () => {
-        throw new Error('nope');
+        throw new Error('Something went wrong. Please try again.');
       },
     });
     const { result } = renderHookWithProviders(() => useSpendContractorReport(DATE_FROM, DATE_TO));

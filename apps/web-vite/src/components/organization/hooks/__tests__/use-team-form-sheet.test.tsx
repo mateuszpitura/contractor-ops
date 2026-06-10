@@ -54,7 +54,7 @@ describe('useTeamFormSheet', () => {
     act(() => {
       result.current.createMutation.mutate({ name: 'Platform' });
     });
-    await waitFor(() => expect(toastSuccess).toHaveBeenCalledWith('Team created'));
+    await waitFor(() => expect(toastSuccess).toHaveBeenCalledWith('Team created.'));
     expect(onCreated).toHaveBeenCalledWith({ id: 't9', name: 'Platform' });
     expect(onOpenChange).toHaveBeenCalledWith(false);
   });
@@ -70,7 +70,7 @@ describe('useTeamFormSheet', () => {
     act(() => {
       result.current.updateMutation.mutate({ id: 't1', name: 'X' });
     });
-    await waitFor(() => expect(toastSuccess).toHaveBeenCalledWith('Team updated'));
+    await waitFor(() => expect(toastSuccess).toHaveBeenCalledWith('Team updated.'));
     expect(onCreated).not.toHaveBeenCalled();
     expect(onOpenChange).toHaveBeenCalledWith(false);
   });
@@ -85,7 +85,7 @@ describe('useTeamFormSheet', () => {
     act(() => {
       result.current.archiveMutation.mutate({ id: 't1' });
     });
-    await waitFor(() => expect(toastSuccess).toHaveBeenCalledWith('Team archived'));
+    await waitFor(() => expect(toastSuccess).toHaveBeenCalledWith('Team archived.'));
     expect(onOpenChange).toHaveBeenCalledWith(false);
   });
 
@@ -101,7 +101,7 @@ describe('useTeamFormSheet', () => {
     act(() => {
       result.current.createMutation.mutate({ name: 'X' });
     });
-    await waitFor(() => expect(toastError).toHaveBeenCalledWith('duplicate'));
+    await waitFor(() => expect(toastError).toHaveBeenCalledWith('Something went wrong. Please try again.'));
     expect(onOpenChange).not.toHaveBeenCalledWith(false);
   });
 });

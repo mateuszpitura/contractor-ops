@@ -10,20 +10,24 @@ import { render, screen } from '../../../../test/test-utils.js';
 
 const dialogCalls: Array<{ open: boolean; contractorIds: string[] }> = [];
 
-vi.mock('../recompute-compliance-dialog-container.js', () => ({
-  RecomputeComplianceDialogContainer: (props: {
-    open: boolean;
-    contractorIds: string[];
-    onOpenChange: (v: boolean) => void;
-  }) => {
-    dialogCalls.push({ open: props.open, contractorIds: props.contractorIds });
-    return props.open ? (
-      <div role="dialog" data-testid="mock-recompute-dialog">
-        contractors={props.contractorIds.length}
-      </div>
-    ) : null;
-  },
-}));
+vi.mock('../recompute-compliance-dialog.js', async importOriginal => {
+  const actual = await importOriginal<typeof import('../recompute-compliance-dialog.js')>();
+  return {
+    ...actual,
+    RecomputeComplianceDialog: (props: {
+      open: boolean;
+      contractorIds: string[];
+      onOpenChange: (v: boolean) => void;
+    }) => {
+      dialogCalls.push({ open: props.open, contractorIds: props.contractorIds });
+      return props.open ? (
+        <div role="dialog" data-testid="mock-recompute-dialog">
+          contractors={props.contractorIds.length}
+        </div>
+      ) : null;
+    },
+  };
+});
 
 import {
   RecomputeComplianceBulkAction,

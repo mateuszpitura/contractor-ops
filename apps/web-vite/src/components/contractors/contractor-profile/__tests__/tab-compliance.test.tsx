@@ -13,12 +13,12 @@ vi.mock('../../../../lib/format/use-date-formatter.js', () => ({
   }),
 }));
 
-vi.mock('../../country-compliance-section-container.js', () => ({
+vi.mock('../../country-compliance-section.js', () => ({
   CountryComplianceSectionContainer: () => <div data-testid="country-compliance" />,
 }));
 
-vi.mock('../../contractor-e-invoicing-section-container.js', () => ({
-  ContractorEInvoicingSectionContainer: () => <div data-testid="e-invoicing" />,
+vi.mock('../../contractor-e-invoicing-section.js', () => ({
+  ContractorEInvoicingSection: () => <div data-testid="e-invoicing" />,
 }));
 
 // ComplianceItemHistory calls useTRPC internally — stub it out.
@@ -33,7 +33,7 @@ vi.mock('../../compliance/override-compliance-item-button.js', () => ({
   ),
 }));
 
-vi.mock('../../compliance/upload-review-dialog-container.js', () => ({
+vi.mock('../../compliance/upload-review-dialog.js', () => ({
   UploadReviewDialogContainer: ({ documentId }: { documentId: string }) => (
     <div data-testid={`review-dialog-${documentId}`} />
   ),

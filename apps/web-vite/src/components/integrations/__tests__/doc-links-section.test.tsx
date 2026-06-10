@@ -12,7 +12,7 @@ import { render, screen, setup } from '@/test/test-utils';
 import type { DocLinksSectionViewProps } from '../doc-links-section';
 import { DocLinksSectionSkeleton, DocLinksSectionView } from '../doc-links-section';
 
-vi.mock('../attach-doc-dialog-container', () => ({
+vi.mock('../attach-doc-dialog.js', () => ({
   AttachDocDialog: ({ open }: { open: boolean }) =>
     open ? <div data-testid="attach-dialog" /> : null,
 }));

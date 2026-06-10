@@ -6,7 +6,7 @@
 import { MemoryRouter } from 'react-router-dom';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { MyTasksList } from '../my-tasks-list.js';
+import { MyTasksListView } from '../my-tasks-list.js';
 import { click, findByText, mount } from './_render.js';
 
 afterEach(() => {
@@ -62,21 +62,21 @@ function withRouter(node: React.ReactElement, initial = '/en/workflows'): React.
 describe('MyTasksList (web-vite)', () => {
   it('renders skeleton placeholders when loading', async () => {
     const { container } = await mount(
-      withRouter(<MyTasksList {...baseProps} tasks={[]} isLoading />),
+      withRouter(<MyTasksListView {...baseProps} tasks={[]} isLoading />),
     );
     // Skeleton primitive renders an element with `data-slot="skeleton"`.
     expect(container.querySelectorAll("[data-slot='skeleton']").length).toBeGreaterThan(0);
   });
 
   it('renders the empty state when there are no tasks and overdue-only is off', async () => {
-    await mount(withRouter(<MyTasksList {...baseProps} tasks={[]} />));
+    await mount(withRouter(<MyTasksListView {...baseProps} tasks={[]} />));
     expect(findByText(document.body, 'No tasks assigned to you')).not.toBeNull();
   });
 
   it('renders the error heading + retry CTA when isError', async () => {
     const handleRetry = vi.fn();
     await mount(
-      withRouter(<MyTasksList {...baseProps} tasks={[]} isError handleRetry={handleRetry} />),
+      withRouter(<MyTasksListView {...baseProps} tasks={[]} isError handleRetry={handleRetry} />),
     );
     expect(
       findByText(document.body, 'Could not load workflows. Check your connection and try again.'),
@@ -90,7 +90,7 @@ describe('MyTasksList (web-vite)', () => {
   });
 
   it('renders task titles and contractor labels', async () => {
-    await mount(withRouter(<MyTasksList {...baseProps} tasks={sampleTasks} />));
+    await mount(withRouter(<MyTasksListView {...baseProps} tasks={sampleTasks} />));
     expect(findByText(document.body, 'Collect NDA')).not.toBeNull();
     expect(findByText(document.body, 'Setup VPN')).not.toBeNull();
     // displayName falls back to legalName for the second contractor.
@@ -99,7 +99,7 @@ describe('MyTasksList (web-vite)', () => {
   });
 
   it('links each task card to its workflow run', async () => {
-    await mount(withRouter(<MyTasksList {...baseProps} tasks={sampleTasks} />));
+    await mount(withRouter(<MyTasksListView {...baseProps} tasks={sampleTasks} />));
     const links = document.body.querySelectorAll('a');
     expect(links.length).toBeGreaterThanOrEqual(2);
     const hrefs = Array.from(links).map(a => a.getAttribute('href') ?? '');
@@ -111,7 +111,7 @@ describe('MyTasksList (web-vite)', () => {
   });
 
   it('renders the overdue-only switch toggle', async () => {
-    await mount(withRouter(<MyTasksList {...baseProps} tasks={sampleTasks} />));
+    await mount(withRouter(<MyTasksListView {...baseProps} tasks={sampleTasks} />));
     expect(findByText(document.body, 'Overdue only')).not.toBeNull();
   });
 });

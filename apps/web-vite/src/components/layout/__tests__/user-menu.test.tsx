@@ -61,6 +61,50 @@ vi.mock('@contractor-ops/ui/components/shadcn/dropdown-menu', () => ({
   },
   DropdownMenuLabel: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   DropdownMenuSeparator: () => <hr />,
+  DropdownMenuSub: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  DropdownMenuSubTrigger: ({ children }: { children: React.ReactNode }) => <button type="button">{children}</button>,
+  DropdownMenuSubContent: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  DropdownMenuRadioGroup: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  DropdownMenuRadioItem: ({
+    children,
+    onClick,
+  }: {
+    children: React.ReactNode;
+    onClick?: () => void;
+  }) => (
+    <button type="button" onClick={onClick}>
+      {children}
+    </button>
+  ),
+}));
+
+vi.mock('@contractor-ops/ui/components/shadcn/dialog', () => ({
+  Dialog: ({ open, children }: { open?: boolean; children: React.ReactNode }) =>
+    open ? <div data-testid="dialog">{children}</div> : null,
+  DialogContent: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  DialogHeader: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  DialogBody: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  DialogFooter: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  DialogTitle: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  dialogFormLayoutClassName: 'dialog-form-layout',
+}));
+
+vi.mock('@contractor-ops/ui/components/shadcn/input', () => ({
+  Input: (props: React.InputHTMLAttributes<HTMLInputElement>) => <input {...props} />,
+}));
+
+vi.mock('@contractor-ops/ui/components/shadcn/label', () => ({
+  Label: ({ children }: { children: React.ReactNode }) => <label>{children}</label>,
+}));
+
+vi.mock('@contractor-ops/ui/components/shadcn/switch', () => ({
+  Switch: ({ checked, onCheckedChange }: { checked?: boolean; onCheckedChange?: (v: boolean) => void }) => (
+    <button type="button" role="switch" aria-checked={checked} onClick={() => onCheckedChange?.(!checked)} />
+  ),
+}));
+
+vi.mock('../../../providers/theme-provider.js', () => ({
+  useTheme: () => ({ theme: 'system', setTheme: vi.fn() }),
 }));
 
 import { UserMenu, UserMenuSkeleton } from '../user-menu.js';

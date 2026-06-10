@@ -1,7 +1,6 @@
 /**
  * Web-vite split: `NewPaymentRunDialogView` is now a thin dialog shell
- * (frame + step indicator + children slot). Step variant routing moved
- * to `NewPaymentRunDialogContainer`. Tests cover the shell rendering and
+ * (frame + step indicator + children slot). Step variant routing lives in wired `NewPaymentRunDialog`. Tests cover the shell rendering and
  * close behaviour with arbitrary children.
  */
 

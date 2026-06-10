@@ -6,16 +6,16 @@
 import { useForm } from 'react-hook-form';
 import { describe, expect, it, vi } from 'vitest';
 
-vi.mock('../step-company-container.js', () => ({
-  StepCompanyContainer: () => <div data-testid="step-company">Step Company</div>,
+vi.mock('../step-company.js', () => ({
+  StepCompany: () => <div data-testid="step-company">Step Company</div>,
 }));
 
 vi.mock('../step-billing.js', () => ({
   StepBilling: () => <div data-testid="step-billing">Step Billing</div>,
 }));
 
-vi.mock('../step-assignment-container.js', () => ({
-  StepAssignmentContainer: () => <div data-testid="step-assignment">Step Assignment</div>,
+vi.mock('../step-assignment.js', () => ({
+  StepAssignment: () => <div data-testid="step-assignment">Step Assignment</div>,
 }));
 
 import { render, screen, setup } from '../../../../test/test-utils.js';

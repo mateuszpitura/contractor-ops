@@ -54,7 +54,7 @@ describe('useCostCenterFormSheet', () => {
     act(() => {
       result.current.createMutation.mutate({ name: 'OPS', code: 'OPS' });
     });
-    await waitFor(() => expect(toastSuccess).toHaveBeenCalledWith('Cost center created'));
+    await waitFor(() => expect(toastSuccess).toHaveBeenCalledWith('Cost center created.'));
     expect(onCreated).toHaveBeenCalledWith({ id: 'cc1', name: 'OPS' });
     expect(onOpenChange).toHaveBeenCalledWith(false);
   });
@@ -72,7 +72,7 @@ describe('useCostCenterFormSheet', () => {
     act(() => {
       result.current.updateMutation.mutate({ id: 'cc1', name: 'X', code: 'X' });
     });
-    await waitFor(() => expect(toastSuccess).toHaveBeenCalledWith('Cost center updated'));
+    await waitFor(() => expect(toastSuccess).toHaveBeenCalledWith('Cost center updated.'));
     expect(onCreated).not.toHaveBeenCalled();
     expect(onOpenChange).toHaveBeenCalledWith(false);
   });
@@ -87,7 +87,7 @@ describe('useCostCenterFormSheet', () => {
     act(() => {
       result.current.archiveMutation.mutate({ id: 'cc1' });
     });
-    await waitFor(() => expect(toastSuccess).toHaveBeenCalledWith('Cost center archived'));
+    await waitFor(() => expect(toastSuccess).toHaveBeenCalledWith('Cost center archived.'));
     expect(onOpenChange).toHaveBeenCalledWith(false);
   });
 
@@ -96,14 +96,14 @@ describe('useCostCenterFormSheet', () => {
     const onOpenChange = vi.fn();
     setTRPCMock({
       'organizationDefinitions.costCenter.update': () => {
-        throw new Error('conflict');
+        throw new Error('Something went wrong. Please try again.');
       },
     });
     const { result } = renderHookWithProviders(() => useCostCenterFormSheet({ onOpenChange }));
     act(() => {
       result.current.updateMutation.mutate({ id: 'cc1', name: 'X', code: 'X' });
     });
-    await waitFor(() => expect(toastError).toHaveBeenCalledWith('conflict'));
+    await waitFor(() => expect(toastError).toHaveBeenCalledWith('Something went wrong. Please try again.'));
     expect(onOpenChange).not.toHaveBeenCalledWith(false);
   });
 });

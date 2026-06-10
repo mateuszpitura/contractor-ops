@@ -14,8 +14,8 @@ vi.mock('../../../../lib/format/use-date-formatter.js', () => ({
   }),
 }));
 
-vi.mock('../../../contracts/contract-wizard/wizard-dialog-container.js', () => ({
-  ContractWizardDialogContainer: () => null,
+vi.mock('../../../contracts/contract-wizard/wizard-dialog.js', () => ({
+  ContractWizardDialog: () => null,
 }));
 
 import { render, screen } from '../../../../test/test-utils.js';

@@ -6,8 +6,8 @@
 
 import { describe, expect, it, vi } from 'vitest';
 
-vi.mock('../privacy-notice-pdf-download-container.js', () => ({
-  PrivacyNoticePdfDownloadContainer: ({ jurisdiction }: { jurisdiction: string }) => (
+vi.mock('../privacy-notice-pdf-download.js', () => ({
+  PrivacyNoticePdfDownloadWired: ({ jurisdiction }: { jurisdiction: string }) => (
     <button type="button" data-testid="pdf-download">
       Download {jurisdiction}
     </button>

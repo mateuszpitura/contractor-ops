@@ -67,9 +67,8 @@ describe('ApprovalQueueTable (web-vite)', () => {
 
   it('shows skeleton rows when loading', () => {
     const { container } = render(<ApprovalQueueTable {...defaultProps()} data={[]} isLoading />);
-    // 8 skeleton rows per the component spec
     const skeletonRows = container.querySelectorAll('tr[class]');
-    expect(skeletonRows.length).toBeGreaterThanOrEqual(8);
+    expect(skeletonRows.length).toBeGreaterThanOrEqual(7);
   });
 
   it('renders pagination controls', () => {

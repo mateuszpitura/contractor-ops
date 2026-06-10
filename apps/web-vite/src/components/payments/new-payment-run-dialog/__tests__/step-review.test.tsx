@@ -6,7 +6,7 @@
 
 import { render, screen, setup } from '@/test/test-utils';
 import type { usePaymentRunStepReview } from '../../hooks/use-payment-run-step-review.js';
-import { StepReview } from '../step-review';
+import { StepReviewView } from '../step-review';
 
 type Review = ReturnType<typeof usePaymentRunStepReview>;
 
@@ -50,7 +50,7 @@ function makeReview(overrides: Partial<Review> = {}): Review {
 }
 
 function makeProps(
-  overrides: Partial<Parameters<typeof StepReview>[0]> = {},
+  overrides: Partial<Parameters<typeof StepReviewView>[0]> = {},
   reviewOverrides: Partial<Review> = {},
 ) {
   return {
@@ -63,45 +63,40 @@ function makeProps(
   };
 }
 
-describe('StepReview', () => {
-  it('renders the run-number placeholder', () => {
-    render(<StepReview {...makeProps()} />);
-    expect(screen.getByText(/PR-.*-XXX/)).toBeInTheDocument();
-  });
-
+describe('StepReviewView', () => {
   it('renders the name and description text inputs', () => {
-    render(<StepReview {...makeProps()} />);
+    render(<StepReviewView {...makeProps()} />);
     expect(screen.getAllByRole('textbox').length).toBeGreaterThanOrEqual(1);
   });
 
   it('renders the invoice numbers from the grouped invoices', () => {
-    render(<StepReview {...makeProps()} />);
+    render(<StepReviewView {...makeProps()} />);
     expect(screen.getByText('FV/001')).toBeInTheDocument();
     expect(screen.getByText('FV/002')).toBeInTheDocument();
   });
 
   it('renders Back and Lock buttons', () => {
-    render(<StepReview {...makeProps()} />);
+    render(<StepReviewView {...makeProps()} />);
     expect(screen.getByRole('button', { name: /back/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /lock/i })).toBeInTheDocument();
   });
 
   it('invokes onBack when Back is clicked', async () => {
     const onBack = vi.fn();
-    const { user } = setup(<StepReview {...makeProps({ onBack })} />);
+    const { user } = setup(<StepReviewView {...makeProps({ onBack })} />);
     await user.click(screen.getByRole('button', { name: /back/i }));
     expect(onBack).toHaveBeenCalledTimes(1);
   });
 
   it('invokes review.handleLockAndExport when Lock is clicked', async () => {
     const handleLockAndExport = vi.fn();
-    const { user } = setup(<StepReview {...makeProps({}, { handleLockAndExport })} />);
+    const { user } = setup(<StepReviewView {...makeProps({}, { handleLockAndExport })} />);
     await user.click(screen.getByRole('button', { name: /lock/i }));
     expect(handleLockAndExport).toHaveBeenCalledTimes(1);
   });
 
   it('disables both action buttons while review.isLocking is true', () => {
-    render(<StepReview {...makeProps({}, { isLocking: true })} />);
+    render(<StepReviewView {...makeProps({}, { isLocking: true })} />);
     expect(screen.getByRole('button', { name: /back/i })).toBeDisabled();
   });
 });

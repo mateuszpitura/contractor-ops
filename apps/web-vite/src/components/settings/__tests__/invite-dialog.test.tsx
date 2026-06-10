@@ -14,7 +14,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { render, screen, setup } from '@/test/test-utils';
 import type { InviteValues, useInviteDialog } from '../hooks/use-invite-dialog';
-import { InviteDialog } from '../invite-dialog';
+import { InviteDialogView } from '../invite-dialog';
 
 type HookReturn = ReturnType<typeof useInviteDialog>;
 
@@ -36,7 +36,7 @@ function Harness({ open, onSubmit = vi.fn(), isPending = false }: HarnessProps) 
     defaultValues: { email: '', role: 'readonly' },
   });
   return (
-    <InviteDialog
+    <InviteDialogView
       open={open}
       onOpenChange={vi.fn()}
       t={tStub}
@@ -48,7 +48,7 @@ function Harness({ open, onSubmit = vi.fn(), isPending = false }: HarnessProps) 
   );
 }
 
-describe('InviteDialog', () => {
+describe('InviteDialogView', () => {
   it('renders title, email label and submit CTA when open', () => {
     render(<Harness open />);
     expect(screen.getByText('title')).toBeInTheDocument();

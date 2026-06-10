@@ -12,7 +12,7 @@ vi.mock('../pdf-preview.js', () => ({
     open ? <div data-testid="pdf-preview">preview-open</div> : null,
 }));
 
-vi.mock('../version-history-container.js', () => ({
+vi.mock('../version-history.js', () => ({
   VersionHistory: ({ documentId }: { documentId: string }) => (
     <div data-testid="version-history">{documentId}</div>
   ),

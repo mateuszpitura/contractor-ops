@@ -1,6 +1,6 @@
 /**
  * web-vite port. View takes `users`, `bulkActions`, `onComplete` as injected
- * props. TemplatePickerContainer is tRPC-bound so we mock it.
+ * props. TemplatePickerDialog is tRPC-bound so we mock it.
  *
  * i18next-icu doesn't expand bare `{count}` placeholders for the selection
  * label, so assertions key on per-button copy or container shape instead of
@@ -9,8 +9,8 @@
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-vi.mock('../../../workflows/template-picker-container.js', () => ({
-  TemplatePickerContainer: () => null,
+vi.mock('../../../workflows/template-picker-dialog.js', () => ({
+  TemplatePickerDialog: () => null,
 }));
 
 import { render, screen, setup, waitFor } from '../../../../test/test-utils.js';

@@ -8,14 +8,15 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { render, screen, setup } from '@/test/test-utils';
 import type { useLeitwegIdCreateDialog } from '../hooks/use-leitweg-id-create-dialog';
-import { LeitwegIdCreateDialog } from '../leitweg-id-create-dialog';
+import {
+  LeitwegIdCreateDialogView,
+  type LeitwegIdCreateDialogViewProps,
+} from '../leitweg-id-create-dialog';
 
 type HookReturn = ReturnType<typeof useLeitwegIdCreateDialog>;
 
 const tStub = ((key: string) => key) as unknown as HookReturn['t'];
-const tCommonStub = ((key: string) => key) as Parameters<
-  typeof LeitwegIdCreateDialog
->[0]['tCommon'];
+const tCommonStub = ((key: string) => key) as LeitwegIdCreateDialogViewProps['tCommon'];
 
 function buildHook(overrides: Partial<HookReturn> = {}): HookReturn {
   return {
@@ -27,7 +28,7 @@ function buildHook(overrides: Partial<HookReturn> = {}): HookReturn {
   } as HookReturn;
 }
 
-function baseProps(overrides: Partial<Parameters<typeof LeitwegIdCreateDialog>[0]> = {}) {
+function baseProps(overrides: Partial<LeitwegIdCreateDialogViewProps> = {}) {
   return {
     open: true,
     onOpenChange: vi.fn(),
@@ -37,19 +38,19 @@ function baseProps(overrides: Partial<Parameters<typeof LeitwegIdCreateDialog>[0
     setFormError: vi.fn(),
     ...buildHook(),
     ...overrides,
-  } as Parameters<typeof LeitwegIdCreateDialog>[0];
+  } as LeitwegIdCreateDialogViewProps;
 }
 
-describe('LeitwegIdCreateDialog', () => {
+describe('LeitwegIdCreateDialogView', () => {
   it('renders the create heading by default', () => {
-    render(<LeitwegIdCreateDialog {...baseProps()} />);
+    render(<LeitwegIdCreateDialogView {...baseProps()} />);
     expect(screen.getByText('headingCreate')).toBeInTheDocument();
     expect(screen.queryByText('headingEdit')).not.toBeInTheDocument();
   });
 
   it('renders the edit heading when initial is provided', () => {
     render(
-      <LeitwegIdCreateDialog
+      <LeitwegIdCreateDialogView
         {...baseProps({
           initial: {
             id: 'lw-1',
@@ -64,25 +65,25 @@ describe('LeitwegIdCreateDialog', () => {
   });
 
   it('disables the save button while value is empty', () => {
-    render(<LeitwegIdCreateDialog {...baseProps()} />);
+    render(<LeitwegIdCreateDialogView {...baseProps()} />);
     expect(screen.getByTestId('leitweg-save')).toBeDisabled();
   });
 
   it('shows the formError alert when supplied', () => {
-    render(<LeitwegIdCreateDialog {...baseProps({ formError: 'Generic error — please retry' })} />);
+    render(<LeitwegIdCreateDialogView {...baseProps({ formError: 'Generic error — please retry' })} />);
     expect(screen.getByRole('alert')).toHaveTextContent('Generic error — please retry');
   });
 
   it('fires onOpenChange(false) when the cancel button is clicked', async () => {
     const onOpenChange = vi.fn();
-    const { user } = setup(<LeitwegIdCreateDialog {...baseProps({ onOpenChange })} />);
+    const { user } = setup(<LeitwegIdCreateDialogView {...baseProps({ onOpenChange })} />);
 
     await user.click(screen.getByRole('button', { name: 'cancel' }));
     expect(onOpenChange).toHaveBeenCalledWith(false);
   });
 
   it('does not render dialog body when closed', () => {
-    render(<LeitwegIdCreateDialog {...baseProps({ open: false })} />);
+    render(<LeitwegIdCreateDialogView {...baseProps({ open: false })} />);
     expect(screen.queryByText('headingCreate')).not.toBeInTheDocument();
   });
 });

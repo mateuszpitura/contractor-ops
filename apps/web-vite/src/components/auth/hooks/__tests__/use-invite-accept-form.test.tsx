@@ -134,7 +134,7 @@ describe('useInviteAcceptForm', () => {
   });
 
   it('captures to Sentry when signUp throws', async () => {
-    signUpEmailMock.mockRejectedValue(new Error('network down'));
+    signUpEmailMock.mockRejectedValue(new Error('Something went wrong. Please try again.'));
     const { result } = renderHookWithProviders(() => useInviteAcceptForm(args));
     await act(async () => {
       await setPassword(result.current.register, 'supersecret');

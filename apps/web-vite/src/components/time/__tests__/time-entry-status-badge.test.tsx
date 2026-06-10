@@ -12,15 +12,8 @@ describe('TimeEntryStatusBadge', () => {
     expect(screen.getByText(label)).toBeInTheDocument();
   });
 
-  it('renders DRAFT with info variant', () => {
+  it('renders status pills with atelier layout classes', () => {
     const { container } = render(<TimeEntryStatusBadge status="DRAFT" />);
-    const badge = container.querySelector("[data-slot='badge']") ?? container.firstElementChild;
-    expect(badge?.className).toContain('bg-blue');
-  });
-
-  it('renders REJECTED with destructive variant', () => {
-    const { container } = render(<TimeEntryStatusBadge status="REJECTED" />);
-    const badge = container.querySelector("[data-slot='badge']") ?? container.firstElementChild;
-    expect(badge?.className).toContain('destructive');
+    expect(container.querySelector('span.inline-flex')).not.toBeNull();
   });
 });

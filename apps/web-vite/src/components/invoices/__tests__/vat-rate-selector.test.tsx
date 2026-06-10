@@ -2,7 +2,7 @@ import { render, screen } from '@/test/test-utils';
 
 import type { TaxRateOption } from '../hooks/use-vat-rates';
 import {
-  VatRateSelector,
+  VatRateSelectorView,
   VatRateSelectorEmpty,
   VatRateSelectorSkeleton,
 } from '../vat-rate-selector';
@@ -39,22 +39,22 @@ const sampleRates: TaxRateOption[] = [
 
 describe('VatRateSelector', () => {
   it('renders the select trigger with placeholder when no value', () => {
-    render(<VatRateSelector onChange={vi.fn()} rates={sampleRates} />);
+    render(<VatRateSelectorView onChange={vi.fn()} rates={sampleRates} />);
     expect(screen.getByText('Select VAT rate')).toBeInTheDocument();
   });
 
   it('renders the select element as combobox', () => {
-    render(<VatRateSelector onChange={vi.fn()} rates={sampleRates} />);
+    render(<VatRateSelectorView onChange={vi.fn()} rates={sampleRates} />);
     expect(screen.getByRole('combobox')).toBeInTheDocument();
   });
 
   it('disables the combobox when disabled prop is true', () => {
-    render(<VatRateSelector onChange={vi.fn()} disabled rates={sampleRates} />);
+    render(<VatRateSelectorView onChange={vi.fn()} disabled rates={sampleRates} />);
     expect(screen.getByRole('combobox')).toBeDisabled();
   });
 
   it('is not disabled by default', () => {
-    render(<VatRateSelector onChange={vi.fn()} rates={sampleRates} />);
+    render(<VatRateSelectorView onChange={vi.fn()} rates={sampleRates} />);
     expect(screen.getByRole('combobox')).not.toBeDisabled();
   });
 

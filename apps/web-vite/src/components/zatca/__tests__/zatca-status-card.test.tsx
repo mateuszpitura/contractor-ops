@@ -9,7 +9,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { render, screen, setup } from '@/test/test-utils';
 import { useTranslations } from '../../../i18n/useTranslations';
 
-vi.mock('../onboarding-wizard-container', () => ({
+vi.mock('../onboarding-wizard.js', () => ({
   OnboardingWizard: () => <div data-testid="onboarding-wizard">Wizard</div>,
 }));
 

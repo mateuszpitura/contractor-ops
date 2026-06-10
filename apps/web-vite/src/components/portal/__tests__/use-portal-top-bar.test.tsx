@@ -1,4 +1,9 @@
-import { describe, expect, it, vi } from 'vitest';
+import { beforeAll, describe, expect, it, vi } from 'vitest';
+
+beforeAll(() => {
+  vi.stubEnv('VITE_API_URL', 'https://api.test');
+  vi.stubEnv('VITE_APP_URL', 'https://app.test');
+});
 
 import {
   act,

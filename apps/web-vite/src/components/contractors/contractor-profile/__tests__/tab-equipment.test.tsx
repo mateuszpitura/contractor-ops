@@ -42,19 +42,20 @@ function buildProps(override: Overrides = {}): ViewProps {
 
 const sampleItem = (
   over: Partial<ContractorTabEquipmentItem> = {},
-): ContractorTabEquipmentItem => ({
-  assignmentId: 'a1',
-  assignedAt: '2025-01-15T10:00:00Z',
-  equipment: {
-    id: 'eq-1',
-    name: 'MacBook Pro 16',
-    serialNumber: 'SN-12345',
-    type: 'LAPTOP',
-    status: 'ASSIGNED',
-  },
-  latestShipment: null,
-  ...over,
-});
+): ContractorTabEquipmentItem =>
+  ({
+    assignmentId: 'a1',
+    assignedAt: new Date('2025-01-15T10:00:00Z'),
+    equipment: {
+      id: 'eq-1',
+      name: 'MacBook Pro 16',
+      serialNumber: 'SN-12345',
+      type: 'LAPTOP',
+      status: 'ASSIGNED',
+    },
+    latestShipment: null,
+    ...over,
+  }) as ContractorTabEquipmentItem;
 
 describe('TabEquipmentView', () => {
   it('renders empty state when items is empty', () => {

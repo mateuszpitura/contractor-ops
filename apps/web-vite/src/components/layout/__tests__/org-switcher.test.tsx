@@ -60,6 +60,8 @@ vi.mock('@contractor-ops/ui/components/shadcn/dialog', () => ({
   DialogFooter: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   DialogTitle: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   DialogDescription: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  DialogBody: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  dialogFormLayoutClassName: 'dialog-form-layout',
 }));
 
 vi.mock('@contractor-ops/ui/components/shadcn/button', () => ({

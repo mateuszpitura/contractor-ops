@@ -6,11 +6,11 @@
 
 import { describe, expect, it, vi } from 'vitest';
 
-vi.mock('../peppol-participant-register-dialog-container', () => ({
-  PeppolParticipantRegisterDialogContainer: () => null,
+vi.mock('../peppol-participant-register-dialog.js', () => ({
+  PeppolParticipantRegisterDialog: () => null,
 }));
-vi.mock('../peppol-participant-deregister-dialog-container', () => ({
-  PeppolParticipantDeregisterDialogContainer: () => null,
+vi.mock('../peppol-participant-deregister-dialog.js', () => ({
+  PeppolParticipantDeregisterDialog: () => null,
 }));
 
 import { render, screen, setup } from '@/test/test-utils';
@@ -18,7 +18,7 @@ import type {
   PeppolParticipantRow,
   usePeppolParticipantCard,
 } from '../hooks/use-peppol-participant-card';
-import { PeppolParticipantCard } from '../peppol-participant-card';
+import { PeppolParticipantCardView } from '../peppol-participant-card';
 
 type HookReturn = ReturnType<typeof usePeppolParticipantCard>;
 
@@ -44,7 +44,7 @@ function buildHook(overrides: Partial<HookReturn> = {}): HookReturn {
 
 const formatStub = {
   dateTime: () => '2026-04-01 12:00',
-} as unknown as Parameters<typeof PeppolParticipantCard>[0]['format'];
+} as unknown as Parameters<typeof PeppolParticipantCardView>[0]['format'];
 
 const activeRow: PeppolParticipantRow = {
   id: 'p1',
@@ -61,7 +61,7 @@ describe('PeppolParticipantCard', () => {
   it('renders the empty state with register CTA when no active participant', async () => {
     const setRegisterOpen = vi.fn();
     const { user } = setup(
-      <PeppolParticipantCard format={formatStub} {...buildHook({ setRegisterOpen })} />,
+      <PeppolParticipantCardView format={formatStub} {...buildHook({ setRegisterOpen })} />,
     );
 
     expect(screen.getByText('emptyHeading')).toBeInTheDocument();
@@ -73,14 +73,14 @@ describe('PeppolParticipantCard', () => {
 
   it('renders skeletons when loading', () => {
     const { container } = render(
-      <PeppolParticipantCard format={formatStub} {...buildHook({ isLoading: true })} />,
+      <PeppolParticipantCardView format={formatStub} {...buildHook({ isLoading: true })} />,
     );
 
     expect(container.querySelectorAll('[data-slot="skeleton"]').length).toBeGreaterThan(0);
   });
 
   it('renders the active heading, participant identifier and status pill when active', () => {
-    render(<PeppolParticipantCard format={formatStub} {...buildHook({ active: activeRow })} />);
+    render(<PeppolParticipantCardView format={formatStub} {...buildHook({ active: activeRow })} />);
 
     expect(screen.getByText('activeHeading')).toBeInTheDocument();
     expect(screen.getByTestId('participant-id').textContent).toContain(
@@ -92,7 +92,7 @@ describe('PeppolParticipantCard', () => {
   it('fires handleRecheckCapabilities when the recheck button is clicked', async () => {
     const handleRecheckCapabilities = vi.fn();
     const { user } = setup(
-      <PeppolParticipantCard
+      <PeppolParticipantCardView
         format={formatStub}
         {...buildHook({ active: activeRow, handleRecheckCapabilities })}
       />,
@@ -105,7 +105,7 @@ describe('PeppolParticipantCard', () => {
   it('opens the deregister dialog when the destructive button is clicked', async () => {
     const setDeregisterOpen = vi.fn();
     const { user } = setup(
-      <PeppolParticipantCard
+      <PeppolParticipantCardView
         format={formatStub}
         {...buildHook({ active: activeRow, setDeregisterOpen })}
       />,

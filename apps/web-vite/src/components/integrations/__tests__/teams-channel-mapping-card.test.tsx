@@ -14,8 +14,8 @@ import { render, screen, setup } from '@/test/test-utils';
 import type { TeamsChannelMappingCardViewProps } from '../teams-channel-mapping-card';
 import { TeamsChannelMappingCardView } from '../teams-channel-mapping-card';
 
-vi.mock('../../billing/feature-gate-container', () => ({
-  FeatureGateContainer: ({ children }: { children: ReactNode }) => <>{children}</>,
+vi.mock('../../layout/feature-gate.js', () => ({
+  FeatureGate: ({ children }: { children: ReactNode }) => <>{children}</>,
 }));
 
 function MockSelect({

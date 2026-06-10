@@ -18,7 +18,7 @@ vi.mock('../../../../lib/format/use-date-formatter.js', () => ({
 
 import { findByText, mount } from '../../__tests__/_render.js';
 import type { RunHeaderRun } from '../../hooks/use-run-header.js';
-import { RunHeader } from '../run-header.js';
+import { RunHeaderView } from '../run-header.js';
 
 afterEach(() => {
   document.body.innerHTML = '';
@@ -42,7 +42,7 @@ const sampleRun: RunHeaderRun = {
   ],
 };
 
-type Props = Parameters<typeof RunHeader>[0];
+type Props = Parameters<typeof RunHeaderView>[0];
 
 function makeHeader(overrides: Partial<Omit<Props, 'run'>> = {}): Omit<Props, 'run'> {
   const merged = {
@@ -68,18 +68,18 @@ function makeHeader(overrides: Partial<Omit<Props, 'run'>> = {}): Omit<Props, 'r
 
 describe('RunHeader (web-vite)', () => {
   it('renders the workflow template name as the heading', async () => {
-    await mount(withRouter(<RunHeader run={sampleRun} {...makeHeader()} />));
+    await mount(withRouter(<RunHeaderView run={sampleRun} {...makeHeader()} />));
     expect(findByText(document.body, 'Onboarding')).not.toBeNull();
   });
 
   it('renders the contractor display name link', async () => {
-    await mount(withRouter(<RunHeader run={sampleRun} {...makeHeader()} />));
+    await mount(withRouter(<RunHeaderView run={sampleRun} {...makeHeader()} />));
     const links = Array.from(document.body.querySelectorAll('a'));
     expect(links.some(a => (a.textContent ?? '').includes('Acme'))).toBe(true);
   });
 
   it('renders the actions trigger when canCancel is true', async () => {
-    await mount(withRouter(<RunHeader run={sampleRun} {...makeHeader({ canCancel: true })} />));
+    await mount(withRouter(<RunHeaderView run={sampleRun} {...makeHeader({ canCancel: true })} />));
     const buttons = Array.from(document.body.querySelectorAll('button'));
     expect(buttons.length).toBeGreaterThan(0);
   });
@@ -87,7 +87,7 @@ describe('RunHeader (web-vite)', () => {
   it('hides the actions trigger when neither canCancel nor showOverride', async () => {
     await mount(
       withRouter(
-        <RunHeader run={sampleRun} {...makeHeader({ canCancel: false, showOverride: false })} />,
+        <RunHeaderView run={sampleRun} {...makeHeader({ canCancel: false, showOverride: false })} />,
       ),
     );
     // Only the progress + template chrome render — no overflow dropdown.
@@ -98,13 +98,13 @@ describe('RunHeader (web-vite)', () => {
   });
 
   it('renders the cancel confirmation when cancelOpen is true', async () => {
-    await mount(withRouter(<RunHeader run={sampleRun} {...makeHeader({ cancelOpen: true })} />));
+    await mount(withRouter(<RunHeaderView run={sampleRun} {...makeHeader({ cancelOpen: true })} />));
     // Workflows.cancelWorkflowTitle copy
     expect(document.body.textContent).toMatch(/cancel/i);
   });
 
   it('renders the workflow template link to /workflows/templates/:id', async () => {
-    await mount(withRouter(<RunHeader run={sampleRun} {...makeHeader()} />));
+    await mount(withRouter(<RunHeaderView run={sampleRun} {...makeHeader()} />));
     const links = Array.from(document.body.querySelectorAll('a'));
     expect(links.some(a => a.getAttribute('href')?.includes('/workflows/templates/tpl-1'))).toBe(
       true,

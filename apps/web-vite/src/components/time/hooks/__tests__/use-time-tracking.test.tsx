@@ -143,7 +143,7 @@ describe('useTimeTracking', () => {
     setTRPCMock({
       'time.listPending': () => pendingFixture,
       'time.reject': () => {
-        throw new Error('nope');
+        throw new Error('Something went wrong. Please try again.');
       },
     });
     const { result } = renderHookWithProviders(() => useTimeTracking());

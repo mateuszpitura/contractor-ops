@@ -6,13 +6,13 @@
 
 import { describe, expect, it, vi } from 'vitest';
 
-vi.mock('../link-user-popover-container', () => ({
-  LinkUserPopoverContainer: () => <button type="button">LINK_PLACEHOLDER</button>,
+vi.mock('../link-user-popover.js', () => ({
+  LinkUserPopover: () => <button type="button">LINK_PLACEHOLDER</button>,
 }));
 
 import { render, screen, setup } from '@/test/test-utils';
 import type { UserMapping, useSlackUserMapping } from '../hooks/use-slack-user-mapping';
-import { SlackUserMapping, SlackUserMappingSkeleton } from '../slack-user-mapping';
+import { SlackUserMappingView, SlackUserMappingSkeleton } from '../slack-user-mapping';
 
 type HookReturn = ReturnType<typeof useSlackUserMapping>;
 
@@ -61,7 +61,7 @@ describe('SlackUserMapping', () => {
 
   it('renders heading, columns and one row per mapping', () => {
     render(
-      <SlackUserMapping
+      <SlackUserMappingView
         {...buildHook({
           mappings: [linkedMapping, unlinkedMapping],
           totalUsers: 2,
@@ -78,7 +78,7 @@ describe('SlackUserMapping', () => {
 
   it('renders the auto-matched status badge for an auto-linked row', () => {
     render(
-      <SlackUserMapping
+      <SlackUserMappingView
         {...buildHook({
           mappings: [linkedMapping],
           totalUsers: 1,
@@ -92,7 +92,7 @@ describe('SlackUserMapping', () => {
 
   it('renders the link popover placeholder for unlinked rows', () => {
     render(
-      <SlackUserMapping
+      <SlackUserMappingView
         {...buildHook({
           mappings: [unlinkedMapping],
           totalUsers: 1,
@@ -109,7 +109,7 @@ describe('SlackUserMapping', () => {
     const handleUnlink = vi.fn();
     const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
     const { user } = setup(
-      <SlackUserMapping
+      <SlackUserMappingView
         {...buildHook({
           mappings: [linkedMapping],
           totalUsers: 1,
@@ -128,7 +128,7 @@ describe('SlackUserMapping', () => {
     const handleUnlink = vi.fn();
     const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(false);
     const { user } = setup(
-      <SlackUserMapping
+      <SlackUserMappingView
         {...buildHook({
           mappings: [linkedMapping],
           totalUsers: 1,

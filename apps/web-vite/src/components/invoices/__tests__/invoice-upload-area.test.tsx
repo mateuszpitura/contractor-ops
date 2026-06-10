@@ -2,9 +2,9 @@ import { createRef } from 'react';
 
 import { render, screen, setup } from '@/test/test-utils';
 import type { UploadingFile } from '../hooks/use-invoice-upload';
-import { InvoiceUploadArea } from '../invoice-upload-area';
+import { InvoiceUploadAreaView } from '../invoice-upload-area';
 
-function baseProps(overrides: Partial<Parameters<typeof InvoiceUploadArea>[0]> = {}) {
+function baseProps(overrides: Partial<Parameters<typeof InvoiceUploadAreaView>[0]> = {}) {
   const fileInputRef = createRef<HTMLInputElement | null>();
   return {
     t: (key: string, _values?: Record<string, unknown>) => {
@@ -32,33 +32,33 @@ function baseProps(overrides: Partial<Parameters<typeof InvoiceUploadArea>[0]> =
   };
 }
 
-describe('InvoiceUploadArea', () => {
+describe('InvoiceUploadAreaView', () => {
   it('renders the drop-zone with body + accepted-formats copy', () => {
-    render(<InvoiceUploadArea {...baseProps()} />);
+    render(<InvoiceUploadAreaView {...baseProps()} />);
     expect(screen.getByText(/Drag and drop PDF files here/i)).toBeInTheDocument();
     expect(screen.getByText('PDF files only')).toBeInTheDocument();
   });
 
   it('shows neither View PDF nor Hide PDF when there is no OCR session', () => {
-    render(<InvoiceUploadArea {...baseProps()} />);
+    render(<InvoiceUploadAreaView {...baseProps()} />);
     expect(screen.queryByText('Hide PDF')).not.toBeInTheDocument();
     expect(screen.queryByText('View PDF')).not.toBeInTheDocument();
   });
 
   it('exposes Hide PDF toggle when an OCR session is active and review is open', () => {
-    render(<InvoiceUploadArea {...baseProps({ hasOcrSession: true, showPdfReview: true })} />);
+    render(<InvoiceUploadAreaView {...baseProps({ hasOcrSession: true, showPdfReview: true })} />);
     expect(screen.getByText('Hide PDF')).toBeInTheDocument();
   });
 
   it('exposes View PDF toggle when an OCR session is active but review is hidden', () => {
-    render(<InvoiceUploadArea {...baseProps({ hasOcrSession: true, showPdfReview: false })} />);
+    render(<InvoiceUploadAreaView {...baseProps({ hasOcrSession: true, showPdfReview: false })} />);
     expect(screen.getByText('View PDF')).toBeInTheDocument();
   });
 
   it('calls onTogglePdfReview when the toggle button is clicked', async () => {
     const onTogglePdfReview = vi.fn();
     const { user } = setup(
-      <InvoiceUploadArea
+      <InvoiceUploadAreaView
         {...baseProps({ hasOcrSession: true, showPdfReview: true, onTogglePdfReview })}
       />,
     );
@@ -75,7 +75,7 @@ describe('InvoiceUploadArea', () => {
       status: 'error',
     } as UploadingFile;
     const { user } = setup(
-      <InvoiceUploadArea {...baseProps({ files: [errorFile], onRetryFile })} />,
+      <InvoiceUploadAreaView {...baseProps({ files: [errorFile], onRetryFile })} />,
     );
     const retryBtn = screen.getByRole('button', { name: /Retry/i });
     await user.click(retryBtn);
@@ -84,7 +84,7 @@ describe('InvoiceUploadArea', () => {
 
   it('renders an injected OCR review panel via ocrReviewPanel slot', () => {
     render(
-      <InvoiceUploadArea
+      <InvoiceUploadAreaView
         {...baseProps({ ocrReviewPanel: <div data-testid="ocr-slot">slot</div> })}
       />,
     );

@@ -102,7 +102,7 @@ describe('useUserMenu', () => {
 
   it('handleSignOut surfaces a sonner error toast when the auth client returns an error', async () => {
     sessionState.data = { user: { name: 'Ada', email: 'ada@example.com', image: null } };
-    signOutMock.mockResolvedValue({ error: { message: 'network down' } });
+    signOutMock.mockResolvedValue({ error: { message: 'Something went wrong. Please try again.' } });
     const { result } = renderHookWithProviders(() => useUserMenu());
     await act(async () => {
       await result.current.handleSignOut();

@@ -8,15 +8,15 @@
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-vi.mock('../org-switcher-container.js', () => ({
+vi.mock('../org-switcher.js', () => ({
   OrgSwitcherContainer: () => <div data-testid="org-switcher">OrgSwitcher</div>,
 }));
 
-vi.mock('../nav-items-container.js', () => ({
+vi.mock('../nav-items.js', () => ({
   NavItemsContainer: () => <div data-testid="nav-items">NavItems</div>,
 }));
 
-vi.mock('../user-menu-container.js', () => ({
+vi.mock('../user-menu.js', () => ({
   UserMenuContainer: () => <div data-testid="user-menu">UserMenu</div>,
 }));
 

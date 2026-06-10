@@ -5,7 +5,7 @@
  * via dropdown sub-menus the test does not exercise.
  */
 
-vi.mock('../portal-mobile-menu-container', () => ({
+vi.mock('../portal-mobile-menu.js', () => ({
   PortalMobileMenuContainer: () => null,
 }));
 

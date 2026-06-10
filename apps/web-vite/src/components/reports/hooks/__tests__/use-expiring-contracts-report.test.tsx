@@ -133,7 +133,7 @@ describe('useExpiringContractsReport', () => {
       'report.expiringContracts': () => ({ items: [], total: 0 }),
       'report.expiringContractsChart': () => [],
       'report.exportExpiringContracts': () => {
-        throw new Error('nope');
+        throw new Error('Something went wrong. Please try again.');
       },
     });
     const { result } = renderHookWithProviders(() => useExpiringContractsReport());

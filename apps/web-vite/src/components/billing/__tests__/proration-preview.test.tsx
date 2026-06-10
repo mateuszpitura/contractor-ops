@@ -10,10 +10,10 @@ import { render, screen, setup } from '@/test/test-utils';
 import type { TranslateFn } from '../../../i18n/useTranslations';
 
 import {
-  ProrationPreview,
+  ProrationPreviewView,
   ProrationPreviewError,
   ProrationPreviewSkeleton,
-} from '../proration-preview';
+} from '../proration-preview.js';
 
 const labels: Record<string, string> = {
   errorLoad: 'Failed to load proration preview. Please try again.',
@@ -48,10 +48,10 @@ describe('ProrationPreviewError (web-vite)', () => {
   });
 });
 
-describe('ProrationPreview (web-vite)', () => {
+describe('ProrationPreviewView (web-vite)', () => {
   it('renders line items and total for a charge', () => {
     render(
-      <ProrationPreview
+      <ProrationPreviewView
         t={t}
         lines={[{ description: 'Pro plan (remaining)', amountMinor: 15000 }]}
         totalMinor={15000}
@@ -67,7 +67,7 @@ describe('ProrationPreview (web-vite)', () => {
 
   it('renders credit message for negative total', () => {
     render(
-      <ProrationPreview
+      <ProrationPreviewView
         t={t}
         lines={[{ description: 'Unused portion credit', amountMinor: -5000 }]}
         totalMinor={-5000}
@@ -81,7 +81,7 @@ describe('ProrationPreview (web-vite)', () => {
   it('calls onConfirm when Confirm change is clicked', async () => {
     const onConfirm = vi.fn();
     const { user } = setup(
-      <ProrationPreview
+      <ProrationPreviewView
         t={t}
         lines={[{ description: 'Upgrade', amountMinor: 10000 }]}
         totalMinor={10000}
@@ -96,7 +96,7 @@ describe('ProrationPreview (web-vite)', () => {
   it('calls onCancel when Cancel is clicked', async () => {
     const onCancel = vi.fn();
     const { user } = setup(
-      <ProrationPreview
+      <ProrationPreviewView
         t={t}
         lines={[{ description: 'Upgrade', amountMinor: 10000 }]}
         totalMinor={10000}
@@ -110,7 +110,7 @@ describe('ProrationPreview (web-vite)', () => {
 
   it('disables confirm button while isConfirming', () => {
     render(
-      <ProrationPreview
+      <ProrationPreviewView
         t={t}
         lines={[{ description: 'Upgrade', amountMinor: 10000 }]}
         totalMinor={10000}

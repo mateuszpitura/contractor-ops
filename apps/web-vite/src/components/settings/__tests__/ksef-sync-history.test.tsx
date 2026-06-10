@@ -8,7 +8,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { render, screen, setup } from '@/test/test-utils';
 import type { SyncLogEntry, useKsefSyncHistory } from '../hooks/use-ksef-sync-history';
-import { KsefSyncHistory } from '../ksef-sync-history';
+import { KsefSyncHistoryView } from '../ksef-sync-history';
 
 type HookReturn = ReturnType<typeof useKsefSyncHistory>;
 
@@ -37,15 +37,15 @@ const successLog: SyncLogEntry = {
   completedAt: new Date('2026-05-20T10:01:00Z'),
 };
 
-describe('KsefSyncHistory', () => {
+describe('KsefSyncHistoryView', () => {
   it('renders the collapsible trigger with the syncHistoryTitle copy', () => {
-    render(<KsefSyncHistory connectionId="conn-1" {...buildHook()} />);
+    render(<KsefSyncHistoryView {...buildHook()} />);
     expect(screen.getByText('syncHistoryTitle')).toBeInTheDocument();
   });
 
   it('toggles the open state when the trigger is clicked', async () => {
     const setIsOpen = vi.fn();
-    const { user } = setup(<KsefSyncHistory connectionId="conn-1" {...buildHook({ setIsOpen })} />);
+    const { user } = setup(<KsefSyncHistoryView {...buildHook({ setIsOpen })} />);
 
     await user.click(screen.getByRole('button', { name: /syncHistoryTitle/i }));
     expect(setIsOpen).toHaveBeenCalledTimes(1);
@@ -53,22 +53,21 @@ describe('KsefSyncHistory', () => {
 
   it('renders skeleton rows while loading and the section is open', () => {
     const { container } = render(
-      <KsefSyncHistory connectionId="conn-1" {...buildHook({ isOpen: true, isLoading: true })} />,
+      <KsefSyncHistoryView {...buildHook({ isOpen: true, isLoading: true })} />,
     );
 
     expect(container.querySelectorAll('[data-slot="skeleton"]').length).toBeGreaterThan(0);
   });
 
   it('renders the empty-state copy when logs is empty and section is open', () => {
-    render(<KsefSyncHistory connectionId="conn-1" {...buildHook({ isOpen: true })} />);
+    render(<KsefSyncHistoryView {...buildHook({ isOpen: true })} />);
 
     expect(screen.getByText('syncHistoryEmpty')).toBeInTheDocument();
   });
 
   it('renders supplied logs with status and invoice-count badges', () => {
     render(
-      <KsefSyncHistory
-        connectionId="conn-1"
+      <KsefSyncHistoryView
         {...buildHook({ isOpen: true, logs: [successLog] })}
       />,
     );
@@ -79,8 +78,7 @@ describe('KsefSyncHistory', () => {
 
   it('marks zero-invoice success entries with the "no new" pill', () => {
     render(
-      <KsefSyncHistory
-        connectionId="conn-1"
+      <KsefSyncHistoryView
         {...buildHook({
           isOpen: true,
           logs: [

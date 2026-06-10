@@ -7,13 +7,13 @@
 import type { ComponentProps, ReactElement } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-vi.mock('../../../integrations/jira-task-config-container.js', () => ({
+vi.mock('../../../integrations/jira-task-config.js', () => ({
   JiraTaskConfig: () => null,
 }));
-vi.mock('../../../integrations/linear-task-config-container.js', () => ({
+vi.mock('../../../integrations/linear-task-config.js', () => ({
   LinearTaskConfig: () => null,
 }));
-vi.mock('../../calendar-task-config-container.js', () => ({
+vi.mock('../../calendar-task-config.js', () => ({
   CalendarTaskConfig: () => null,
 }));
 vi.mock('../condition-builder.js', () => {

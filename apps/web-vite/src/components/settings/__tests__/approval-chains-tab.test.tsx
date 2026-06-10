@@ -1,18 +1,18 @@
 /**
  * The presentational tab receives chain data + handlers from
- * `useApprovalChainsTab`. It also mounts `ChainEditorDialogContainer`,
+ * `useApprovalChainsTab`. It also mounts `ChainEditorDialog`,
  * which pulls in tRPC — mock that container to keep the test scoped to
  * loading / empty / list / delete-confirm branches.
  */
 
 import { describe, expect, it, vi } from 'vitest';
 
-vi.mock('../chain-editor-dialog-container', () => ({
-  ChainEditorDialogContainer: () => null,
+vi.mock('../chain-editor-dialog.js', () => ({
+  ChainEditorDialog: () => null,
 }));
 
 import { render, screen, setup } from '@/test/test-utils';
-import { ApprovalChainsTab } from '../approval-chains-tab';
+import { ApprovalChainsTabView } from '../approval-chains-tab';
 import type { useApprovalChainsTab } from '../hooks/use-approval-chains-tab';
 
 type HookReturn = ReturnType<typeof useApprovalChainsTab>;
@@ -51,10 +51,10 @@ const sampleChain: Chain = {
   stepsJson: [{}, {}],
 } as unknown as Chain;
 
-describe('ApprovalChainsTab', () => {
+describe('ApprovalChainsTabView', () => {
   it('renders skeleton placeholders while loading', () => {
     const { container } = render(
-      <ApprovalChainsTab
+      <ApprovalChainsTabView
         {...buildHook({
           chainsQuery: { isLoading: true } as HookReturn['chainsQuery'],
         })}
@@ -67,7 +67,7 @@ describe('ApprovalChainsTab', () => {
 
   it('renders the empty state with a create CTA when no chains exist', async () => {
     const handleCreate = vi.fn();
-    const { user } = setup(<ApprovalChainsTab {...buildHook({ chains: [], handleCreate })} />);
+    const { user } = setup(<ApprovalChainsTabView {...buildHook({ chains: [], handleCreate })} />);
 
     expect(screen.getByText('approvals.empty.heading')).toBeInTheDocument();
     expect(screen.getByText('approvals.empty.body')).toBeInTheDocument();
@@ -77,7 +77,7 @@ describe('ApprovalChainsTab', () => {
   });
 
   it('renders the heading, create CTA and chain cards when chains exist', () => {
-    render(<ApprovalChainsTab {...buildHook({ chains: [sampleChain] })} />);
+    render(<ApprovalChainsTabView {...buildHook({ chains: [sampleChain] })} />);
 
     expect(screen.getByText('approvals.heading')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /approvals\.createChain/i })).toBeInTheDocument();
@@ -88,7 +88,7 @@ describe('ApprovalChainsTab', () => {
   it('fires handleToggleActive when the active switch is flipped', async () => {
     const handleToggleActive = vi.fn();
     const { user } = setup(
-      <ApprovalChainsTab {...buildHook({ chains: [sampleChain], handleToggleActive })} />,
+      <ApprovalChainsTabView {...buildHook({ chains: [sampleChain], handleToggleActive })} />,
     );
 
     await user.click(screen.getByRole('switch'));
@@ -99,7 +99,7 @@ describe('ApprovalChainsTab', () => {
   it('opens the delete confirm dialog when the trash icon is clicked', async () => {
     const setDeletingChainId = vi.fn();
     const { user } = setup(
-      <ApprovalChainsTab {...buildHook({ chains: [sampleChain], setDeletingChainId })} />,
+      <ApprovalChainsTabView {...buildHook({ chains: [sampleChain], setDeletingChainId })} />,
     );
 
     await user.click(screen.getByRole('button', { name: /approvals\.delete$/i }));
@@ -108,7 +108,7 @@ describe('ApprovalChainsTab', () => {
 
   it('renders the delete confirm body when deletingChainId is set', () => {
     render(
-      <ApprovalChainsTab {...buildHook({ chains: [sampleChain], deletingChainId: 'chain-1' })} />,
+      <ApprovalChainsTabView {...buildHook({ chains: [sampleChain], deletingChainId: 'chain-1' })} />,
     );
 
     expect(screen.getByText('approvals.deleteConfirm.title')).toBeInTheDocument();

@@ -3,7 +3,7 @@ import { createRef } from 'react';
 import { render, screen } from '@/test/test-utils';
 import type { useIntakeUpload } from '../../hooks/use-intake-upload';
 import {
-  IntakeUploadDialog,
+  IntakeUploadDialogFrame,
   IntakeUploadDropzone,
   IntakeUploadErrorBlock,
 } from '../intake-upload-dialog';
@@ -29,7 +29,7 @@ describe('IntakeUploadDialog', () => {
   it('renders the drop-zone with a file input wired to id=intake-upload-input', () => {
     const upload = makeUpload();
     render(
-      <IntakeUploadDialog open upload={upload} body={<IntakeUploadDropzone upload={upload} />} />,
+      <IntakeUploadDialogFrame open upload={upload} body={<IntakeUploadDropzone upload={upload} />} />,
     );
     const input = document.getElementById('intake-upload-input') as HTMLInputElement | null;
     expect(input).not.toBeNull();
@@ -41,7 +41,7 @@ describe('IntakeUploadDialog', () => {
   it('shows the validating label while isPending is true', () => {
     const upload = makeUpload({ isPending: true });
     render(
-      <IntakeUploadDialog open upload={upload} body={<IntakeUploadDropzone upload={upload} />} />,
+      <IntakeUploadDialogFrame open upload={upload} body={<IntakeUploadDropzone upload={upload} />} />,
     );
     expect(screen.getByText(/Validating/i)).toBeInTheDocument();
   });
@@ -49,7 +49,7 @@ describe('IntakeUploadDialog', () => {
   it('renders an inline error block when localError.kind is wrongType', () => {
     const upload = makeUpload({ localError: { kind: 'wrongType' } });
     render(
-      <IntakeUploadDialog
+      <IntakeUploadDialogFrame
         open
         upload={upload}
         body={
@@ -64,7 +64,7 @@ describe('IntakeUploadDialog', () => {
   it('renders an inline error block when localError.kind is tooLarge', () => {
     const upload = makeUpload({ localError: { kind: 'tooLarge' } });
     render(
-      <IntakeUploadDialog
+      <IntakeUploadDialogFrame
         open
         upload={upload}
         body={
@@ -78,7 +78,7 @@ describe('IntakeUploadDialog', () => {
   it('exposes the try-another button when an error is shown', () => {
     const upload = makeUpload({ localError: { kind: 'generic' } });
     render(
-      <IntakeUploadDialog
+      <IntakeUploadDialogFrame
         open
         upload={upload}
         body={

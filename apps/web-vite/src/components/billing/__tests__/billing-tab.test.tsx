@@ -1,7 +1,7 @@
 /**
- * BillingTabContainer is now decisive: it owns selectedPriceId state,
- * the useBillingTab hook, and composes UsageDashboardContainer +
- * ProrationPreviewContainer + Manage-billing button directly (the old
+ * BillingTab is now decisive: it owns selectedPriceId state,
+ * the useBillingTab hook, and composes UsageDashboard +
+ * ProrationPreview + Manage-billing button directly (the old
  * BillingTab view file is gone). Tests stub the domain hook and child
  * containers so assertions stay focused on container branching.
  */
@@ -26,12 +26,12 @@ vi.mock('../hooks/use-billing', () => ({
   useBillingTab: () => billingTabMock(),
 }));
 
-vi.mock('../usage-dashboard-container', () => ({
-  UsageDashboardContainer: () => <div data-testid="usage-dashboard" />,
+vi.mock('../usage-dashboard', () => ({
+  UsageDashboard: () => <div data-testid="usage-dashboard" />,
 }));
 
-vi.mock('../proration-preview-container', () => ({
-  ProrationPreviewContainer: ({ onCancel }: { onCancel: () => void }) => (
+vi.mock('../proration-preview', () => ({
+  ProrationPreview: ({ onCancel }: { onCancel: () => void }) => (
     <div data-testid="proration-preview">
       <button type="button" onClick={onCancel}>
         Cancel
@@ -40,7 +40,7 @@ vi.mock('../proration-preview-container', () => ({
   ),
 }));
 
-import { BillingTabContainer } from '../billing-tab-container';
+import { BillingTab } from '../billing-tab';
 
 type BillingTabHook = ReturnType<typeof useBillingTab>;
 
@@ -62,36 +62,36 @@ function configureHook(args: SetupArgs = {}) {
   return { checkoutMutation, portalMutation };
 }
 
-describe('BillingTabContainer (web-vite)', () => {
+describe('BillingTab (web-vite)', () => {
   it('renders the usage dashboard container', () => {
     configureHook();
-    render(<BillingTabContainer />);
+    render(<BillingTab />);
     expect(screen.getByTestId('usage-dashboard')).toBeInTheDocument();
   });
 
   it('does not show Manage billing when there is no subscription', () => {
     configureHook({ subscription: null });
-    render(<BillingTabContainer />);
+    render(<BillingTab />);
     expect(screen.queryByRole('button', { name: /manage billing/i })).not.toBeInTheDocument();
   });
 
   it('shows Manage billing when subscription exists', () => {
     configureHook({ subscription: { tier: 'PRO' } });
-    render(<BillingTabContainer />);
+    render(<BillingTab />);
     expect(screen.getByRole('button', { name: /manage billing/i })).toBeInTheDocument();
   });
 
   it('invokes portalMutation.mutate when Manage billing is clicked', async () => {
     const portalMutation = makeMutation();
     configureHook({ subscription: { tier: 'PRO' }, portalMutation });
-    const { user } = setup(<BillingTabContainer />);
+    const { user } = setup(<BillingTab />);
     await user.click(screen.getByRole('button', { name: /manage billing/i }));
     expect(portalMutation.mutate).toHaveBeenCalled();
   });
 
   it('does not render proration preview by default (no selectedPriceId)', () => {
     configureHook({ subscription: { tier: 'PRO' } });
-    render(<BillingTabContainer />);
+    render(<BillingTab />);
     expect(screen.queryByTestId('proration-preview')).not.toBeInTheDocument();
   });
 
@@ -100,13 +100,13 @@ describe('BillingTabContainer (web-vite)', () => {
       subscription: { tier: 'PRO' },
       portalMutation: makeMutation({ isPending: true }),
     });
-    render(<BillingTabContainer />);
+    render(<BillingTab />);
     expect(screen.getByRole('button', { name: /manage billing/i })).toBeDisabled();
   });
 
   it('renders separator between sections', () => {
     configureHook({ subscription: { tier: 'PRO' } });
-    const { container } = render(<BillingTabContainer />);
+    const { container } = render(<BillingTab />);
     expect(container.querySelectorAll("[data-slot='separator']").length).toBeGreaterThan(0);
   });
 });

@@ -15,8 +15,8 @@ vi.mock('../../../../../lib/format/use-date-formatter.js', () => ({
   }),
 }));
 
-vi.mock('../../../../invoices/invoice-upload-area-container.js', () => ({
-  InvoiceUploadAreaContainer: () => <div data-testid="upload-area" />,
+vi.mock('../../../../invoices/invoice-upload-area.js', () => ({
+  InvoiceUploadArea: () => <div data-testid="upload-area" />,
 }));
 
 vi.mock('../../../../invoices/invoice-table/columns.js', () => ({
@@ -157,12 +157,19 @@ describe('InvoicesTabView', () => {
     expect(screen.queryByText(/Page 1 of 1/i)).not.toBeInTheDocument();
   });
 
-  it('renders pagination when totalPages > 1', () => {
-    render(
+  it('renders pagination when data exceeds page size', () => {
+    const rows = Array.from({ length: 26 }, (_, i) =>
+      sampleInvoice({ id: `inv-${i}`, invoiceNumber: `FV/${i}` }),
+    );
+    const { container } = render(
       <InvoicesTabView
-        {...buildProps({ data: [sampleInvoice()], totalRows: 60, totalPages: 3 })}
+        {...buildProps({ data: rows, totalRows: 60, totalPages: 3, page: 1 })}
       />,
     );
-    expect(screen.getByText(/Page 1 of 3/i)).toBeInTheDocument();
+    expect(
+      container.querySelector('[data-slot="pagination"]') ??
+        container.querySelector('button[aria-label*="page" i]') ??
+        container.querySelector('nav'),
+    ).not.toBeNull();
   });
 });

@@ -1,5 +1,5 @@
 /**
- * The web-vite ImportProgressTracker is presentational — it consumes flags
+ * The web-vite ImportProgressTrackerView is presentational — it consumes flags
  * (`isError`, `hasData`, `isComplete`, `isFailed`, `isRunning`,
  * `percentDone`) plus a shaped `progress` object. The tRPC polling lives
  * in the container.
@@ -12,7 +12,7 @@ import {
   ImportProgressComplete,
   ImportProgressError,
   ImportProgressLoading,
-  ImportProgressTracker,
+  ImportProgressTrackerView,
 } from '../import-progress-tracker.js';
 import { click, findButton, mount } from './_render.js';
 
@@ -43,10 +43,10 @@ const baseProps = {
   isFailed: false,
   percentDone: 40,
   onRetry: vi.fn(),
-  isRetrying: false,
+  retryingItemKey: null,
 };
 
-describe('ImportProgressTracker (web-vite)', () => {
+describe('ImportProgressTrackerView (web-vite)', () => {
   it('renders the error sibling with retry button', async () => {
     const onRefetch = vi.fn();
     const { container } = await mount(<ImportProgressError onRefetch={onRefetch} />);
@@ -62,21 +62,23 @@ describe('ImportProgressTracker (web-vite)', () => {
   });
 
   it('renders the progress label + percentage while running', async () => {
-    const { container } = await mount(<ImportProgressTracker {...baseProps} />);
+    const { container } = await mount(<ImportProgressTrackerView {...baseProps} />);
     expect(container.textContent).toContain('40%');
     expect(container.textContent).toMatch(/2.*5/);
   });
 
   it('renders the progressbar with aria values matching the progress shape', async () => {
-    const { container } = await mount(<ImportProgressTracker {...baseProps} />);
+    const { container } = await mount(<ImportProgressTrackerView {...baseProps} />);
     const bar = container.querySelector('[role="progressbar"]');
     expect(bar).not.toBeNull();
-    expect(bar?.getAttribute('aria-valuenow')).toBe('2');
-    expect(bar?.getAttribute('aria-valuemax')).toBe('5');
+    expect(bar?.getAttribute('aria-valuenow')).toBe('40');
+    expect(bar?.getAttribute('aria-valuemax')).toBe('100');
   });
 
   it('renders the completion card sibling with no failures', async () => {
-    const { container } = await mount(withRouter(<ImportProgressComplete importedCount={5} />));
+    const { container } = await mount(
+      withRouter(<ImportProgressComplete importedCount={5} projectsCount={2} />),
+    );
     expect(container.textContent).toContain('Import complete');
     expect(container.textContent).toContain('Go to Dashboard');
   });
@@ -84,7 +86,7 @@ describe('ImportProgressTracker (web-vite)', () => {
   it('renders failed items and lets the user retry each one', async () => {
     const onRetry = vi.fn();
     const { container } = await mount(
-      <ImportProgressTracker
+      <ImportProgressTrackerView
         {...baseProps}
         isFailed={true}
         progress={
@@ -114,7 +116,7 @@ describe('ImportProgressTracker (web-vite)', () => {
   });
 
   it('shows the processing row while items remain', async () => {
-    const { container } = await mount(<ImportProgressTracker {...baseProps} />);
+    const { container } = await mount(<ImportProgressTrackerView {...baseProps} />);
     expect(container.textContent).toContain('Processing');
   });
 });

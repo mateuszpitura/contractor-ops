@@ -1,18 +1,18 @@
 /**
  * Presentational card receives `t`, `tCarriers`, `configOpen`, `isLoading`,
  * `isConfigured` from `useDpdProviderSection`. The configure dialog
- * mounts `CarrierCredentialFormContainer`, which hits tRPC at runtime —
+ * mounts `CarrierCredentialForm`, which hits tRPC at runtime —
  * stubbed here so the test focuses on the card surface.
  */
 
 import { describe, expect, it, vi } from 'vitest';
 
-vi.mock('../carrier-credential-form-container', () => ({
-  CarrierCredentialFormContainer: () => null,
+vi.mock('../carrier-credential-form', () => ({
+  CarrierCredentialForm: () => null,
 }));
 
 import { render, screen, setup } from '@/test/test-utils';
-import { DpdProviderSection, DpdProviderSectionSkeleton } from '../dpd-provider-section';
+import { DpdProviderSectionView, DpdProviderSectionSkeleton } from '../dpd-provider-section';
 import type { useDpdProviderSection } from '../hooks/use-dpd-provider-section';
 
 type HookReturn = ReturnType<typeof useDpdProviderSection>;
@@ -31,7 +31,7 @@ function buildHook(overrides: Partial<HookReturn> = {}): HookReturn {
   } as HookReturn;
 }
 
-describe('DpdProviderSection', () => {
+describe('DpdProviderSectionView', () => {
   it('renders skeletons via the Skeleton sibling export', () => {
     const { container } = render(<DpdProviderSectionSkeleton />);
 
@@ -40,7 +40,7 @@ describe('DpdProviderSection', () => {
   });
 
   it('renders the DPD heading, description and not-configured badge by default', () => {
-    render(<DpdProviderSection {...buildHook()} />);
+    render(<DpdProviderSectionView {...buildHook()} />);
 
     expect(screen.getByText('DPD')).toBeInTheDocument();
     expect(screen.getByText('notConfigured')).toBeInTheDocument();
@@ -48,14 +48,14 @@ describe('DpdProviderSection', () => {
   });
 
   it('renders the connected badge when isConfigured is true', () => {
-    render(<DpdProviderSection {...buildHook({ isConfigured: true })} />);
+    render(<DpdProviderSectionView {...buildHook({ isConfigured: true })} />);
     expect(screen.getByText('connected')).toBeInTheDocument();
     expect(screen.queryByText('notConfigured')).not.toBeInTheDocument();
   });
 
   it('opens the configure dialog when the configure button is clicked', async () => {
     const setConfigOpen = vi.fn();
-    const { user } = setup(<DpdProviderSection {...buildHook({ setConfigOpen })} />);
+    const { user } = setup(<DpdProviderSectionView {...buildHook({ setConfigOpen })} />);
 
     await user.click(screen.getByRole('button', { name: 'configureDpd' }));
     expect(setConfigOpen).toHaveBeenCalledWith(true);

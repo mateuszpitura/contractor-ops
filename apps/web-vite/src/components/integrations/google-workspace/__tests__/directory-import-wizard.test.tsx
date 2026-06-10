@@ -13,8 +13,8 @@ import type { DirectoryImportWizardViewProps } from '../directory-import-wizard'
 import { DirectoryImportWizardView } from '../directory-import-wizard';
 import type { WizardStep } from '../hooks/use-directory-import-wizard';
 
-vi.mock('../../../billing/feature-gate-container', () => ({
-  FeatureGateContainer: ({ children }: { children: ReactNode }) => <>{children}</>,
+vi.mock('../../../layout/feature-gate.js', () => ({
+  FeatureGate: ({ children }: { children: ReactNode }) => <>{children}</>,
 }));
 
 vi.mock('../directory-preview/data-table', () => ({

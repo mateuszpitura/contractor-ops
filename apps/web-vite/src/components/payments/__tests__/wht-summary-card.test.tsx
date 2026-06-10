@@ -1,13 +1,13 @@
 /**
  * Web-vite split: presentational `WhtSummaryCard` receives pre-filtered
  * `whtItems` + `totalItemsCount`. The empty-state branch and ID-collection
- * for `onGenerateAll` live in `WhtSummaryCardContainer`, so the view is
- * a single render path — tests pass already-filtered fixtures.
+ * for `onGenerateAll` live in the wired `WhtSummaryCard` export — tests
+ * target `WhtSummaryCardView` with pre-filtered fixtures.
  */
 
 import { render, screen, setup } from '@/test/test-utils';
 import type { WhtSummaryItem } from '../wht-summary-card';
-import { WhtSummaryCard } from '../wht-summary-card';
+import { WhtSummaryCardView } from '../wht-summary-card';
 
 const t = (key: string, vars?: Record<string, unknown>) => {
   if (!vars) return key;
@@ -35,10 +35,10 @@ const whtItems: WhtSummaryItem[] = [
   },
 ];
 
-function renderCard(overrides: Partial<Parameters<typeof WhtSummaryCard>[0]> = {}) {
+function renderCard(overrides: Partial<Parameters<typeof WhtSummaryCardView>[0]> = {}) {
   const onGenerateAll = vi.fn();
   const result = render(
-    <WhtSummaryCard
+    <WhtSummaryCardView
       t={t}
       locale="en"
       whtItems={whtItems}
@@ -51,7 +51,7 @@ function renderCard(overrides: Partial<Parameters<typeof WhtSummaryCard>[0]> = {
   return { ...result, onGenerateAll };
 }
 
-describe('WhtSummaryCard', () => {
+describe('WhtSummaryCardView', () => {
   it('renders the card title', () => {
     renderCard();
     expect(screen.getByText('summaryTitle')).toBeInTheDocument();
@@ -85,7 +85,7 @@ describe('WhtSummaryCard', () => {
   it('invokes onGenerateAll when the action button is clicked', async () => {
     const onGenerateAll = vi.fn();
     const { user, container } = setup(
-      <WhtSummaryCard
+      <WhtSummaryCardView
         t={t}
         locale="en"
         whtItems={whtItems}

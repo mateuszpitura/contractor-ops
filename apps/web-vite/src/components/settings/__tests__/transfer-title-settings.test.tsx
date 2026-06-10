@@ -10,7 +10,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { render, screen, setup } from '@/test/test-utils';
 import type { useTransferTitleSettings } from '../hooks/use-transfer-title-settings';
-import { TransferTitleSettings } from '../transfer-title-settings';
+import { TransferTitleSettingsView } from '../transfer-title-settings';
 
 type HookReturn = ReturnType<typeof useTransferTitleSettings>;
 
@@ -32,7 +32,7 @@ function Harness({
   });
 
   return (
-    <TransferTitleSettings
+    <TransferTitleSettingsView
       id="ts"
       t={tStub}
       register={form.register}

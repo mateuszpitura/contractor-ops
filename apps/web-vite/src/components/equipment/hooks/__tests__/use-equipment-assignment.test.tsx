@@ -55,7 +55,7 @@ describe('useEquipmentAssign', () => {
     const onSuccess = vi.fn();
     setTRPCMock({
       'equipment.assign': () => {
-        throw new Error('conflict');
+        throw new Error('Something went wrong. Please try again.');
       },
     });
     const { result } = renderHookWithProviders(() =>

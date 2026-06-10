@@ -7,7 +7,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { render, screen, setup } from '@/test/test-utils';
 import type { TranslateFn } from '../../../i18n/useTranslations';
 
-import { TopUpDialog } from '../top-up-dialog';
+import { TopUpDialogView as TopUpDialog } from '../top-up-dialog';
 
 const labels: Record<string, string> = {
   title: 'Buy OCR Credits',
@@ -20,7 +20,7 @@ const labels: Record<string, string> = {
 
 const t = ((key: string) => labels[key] ?? key) as TranslateFn;
 
-describe('TopUpDialog (web-vite)', () => {
+describe('TopUpDialogView (web-vite)', () => {
   it('does not render content when closed', () => {
     render(
       <TopUpDialog

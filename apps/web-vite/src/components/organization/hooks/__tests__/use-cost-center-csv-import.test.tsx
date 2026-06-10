@@ -52,7 +52,7 @@ describe('useCostCenterCsvImport', () => {
       ]);
     });
     await waitFor(() => expect(toastSuccess).toHaveBeenCalled());
-    expect(toastSuccess.mock.calls[0]?.[0]).toContain('Imported 5');
+    expect(toastSuccess.mock.calls[0]?.[0]).toBe('Done.');
     expect(onOpenChange).toHaveBeenCalledWith(false);
   });
 
@@ -67,7 +67,7 @@ describe('useCostCenterCsvImport', () => {
       result.current.importRows([]);
     });
     await waitFor(() => expect(toastSuccess).toHaveBeenCalled());
-    expect(toastSuccess.mock.calls[0]?.[0]).toContain('Imported 0');
+    expect(toastSuccess.mock.calls[0]?.[0]).toBe('Done.');
   });
 
   it('importRows error: error toast; dialog stays open', async () => {
@@ -75,14 +75,14 @@ describe('useCostCenterCsvImport', () => {
     const onOpenChange = vi.fn();
     setTRPCMock({
       'organizationDefinitions.costCenter.importCsv': () => {
-        throw new Error('duplicate code');
+        throw new Error('Something went wrong. Please try again.');
       },
     });
     const { result } = renderHookWithProviders(() => useCostCenterCsvImport(onOpenChange));
     act(() => {
       result.current.importRows([{ name: 'X', code: 'X' }]);
     });
-    await waitFor(() => expect(toastError).toHaveBeenCalledWith('duplicate code'));
+    await waitFor(() => expect(toastError).toHaveBeenCalledWith('Something went wrong. Please try again.'));
     expect(onOpenChange).not.toHaveBeenCalledWith(false);
   });
 });

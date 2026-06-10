@@ -33,27 +33,27 @@ vi.mock('@contractor-ops/ui/components/shadcn/tooltip', () => ({
   TooltipProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 
-vi.mock('../../contracts/contract-wizard/wizard-dialog-container.js', () => ({
-  ContractWizardDialogContainer: ({ open }: { open: boolean }) =>
+vi.mock('../../contracts/contract-wizard/wizard-dialog.js', () => ({
+  ContractWizardDialog: ({ open }: { open: boolean }) =>
     open ? <div data-testid="contract-wizard">wizard</div> : null,
 }));
 
-vi.mock('../../contractors/contractor-wizard/wizard-dialog-container.js', () => ({
-  WizardDialogContainer: ({ open }: { open: boolean }) =>
+vi.mock('../../contractors/contractor-wizard/wizard-dialog.js', () => ({
+  WizardDialog: ({ open }: { open: boolean }) =>
     open ? <div data-testid="contractor-wizard">contractor-wizard</div> : null,
 }));
 
-vi.mock('../../invoices/intake/intake-upload-dialog-container.js', () => ({
-  IntakeUploadDialogContainer: ({ open }: { open: boolean }) =>
+vi.mock('../../invoices/intake/intake-upload-dialog.js', () => ({
+  IntakeUploadDialog: ({ open }: { open: boolean }) =>
     open ? <div data-testid="invoice-upload">invoice-upload</div> : null,
 }));
 
-vi.mock('../../notifications/notification-popover-container.js', () => ({
-  NotificationPopoverContainer: () => <div data-testid="notification-popover" />,
+vi.mock('../../notifications/notification-popover.js', () => ({
+  NotificationPopover: () => <div data-testid="notification-popover" />,
 }));
 
-vi.mock('../../search/command-palette-container.js', () => ({
-  CommandPaletteContainer: () => <div data-testid="command-palette" />,
+vi.mock('../../search/command-palette.js', () => ({
+  CommandPalette: () => <div data-testid="command-palette" />,
 }));
 
 import type { BreadcrumbSegmentView } from '../hooks/use-top-bar-breadcrumbs.js';

@@ -1,5 +1,5 @@
 /**
- * Phase 77 D-15 — IdpDeprovisioningToggleTable presentational tests. The per-row
+ * Phase 77 D-15 — IdpDeprovisioningToggleTableView presentational tests. The per-row
  * switch is disabled when the provider flag is not APPROVED; GWS and Slack rows
  * are independent.
  */
@@ -8,7 +8,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { render, screen } from '@/test/test-utils';
 
 import type { ProviderToggleRow } from '../hooks/use-idp-deprovisioning-toggles';
-import { IdpDeprovisioningToggleTable } from '../idp-deprovisioning-toggle-table';
+import { IdpDeprovisioningToggleTableView } from '../idp-deprovisioning-toggle-table';
 
 function row(overrides: Partial<ProviderToggleRow>): ProviderToggleRow {
   return {
@@ -21,10 +21,10 @@ function row(overrides: Partial<ProviderToggleRow>): ProviderToggleRow {
   };
 }
 
-describe('IdpDeprovisioningToggleTable', () => {
+describe('IdpDeprovisioningToggleTableView', () => {
   it('renders one row per provider', () => {
     render(
-      <IdpDeprovisioningToggleTable
+      <IdpDeprovisioningToggleTableView
         rows={[
           row({ provider: 'GOOGLE_WORKSPACE' }),
           row({ provider: 'SLACK', flagApproved: false, toggleDisabled: true }),
@@ -38,7 +38,7 @@ describe('IdpDeprovisioningToggleTable', () => {
 
   it('disables the switch when the provider flag is not approved', () => {
     render(
-      <IdpDeprovisioningToggleTable
+      <IdpDeprovisioningToggleTableView
         rows={[row({ provider: 'SLACK', flagApproved: false, toggleDisabled: true })]}
         onToggle={vi.fn()}
       />,
@@ -51,7 +51,7 @@ describe('IdpDeprovisioningToggleTable', () => {
   it('GWS and Slack toggle independently — GWS enabled while Slack disabled', () => {
     const onToggle = vi.fn();
     render(
-      <IdpDeprovisioningToggleTable
+      <IdpDeprovisioningToggleTableView
         rows={[
           row({
             provider: 'GOOGLE_WORKSPACE',
@@ -73,7 +73,7 @@ describe('IdpDeprovisioningToggleTable', () => {
   it('calls onToggle with the provider + next enabled value', async () => {
     const onToggle = vi.fn();
     render(
-      <IdpDeprovisioningToggleTable
+      <IdpDeprovisioningToggleTableView
         rows={[row({ provider: 'GOOGLE_WORKSPACE', enabled: false, toggleDisabled: false })]}
         onToggle={onToggle}
       />,

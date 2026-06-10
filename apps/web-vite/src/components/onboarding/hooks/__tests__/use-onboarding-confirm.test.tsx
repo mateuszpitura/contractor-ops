@@ -27,7 +27,7 @@ vi.mock('sonner', () => ({
   },
 }));
 
-import type { FetchProjectsOutput, MergedPerson } from '@contractor-ops/validators';
+import type { ImportedProject, MergedPerson } from '@contractor-ops/validators';
 
 import {
   act,
@@ -47,20 +47,23 @@ const samplePeople = [
   { email: 'c@x.com', name: 'C', status: 'exists' },
 ] as unknown as MergedPerson[];
 
-const sampleProjects: FetchProjectsOutput = [
+const sampleProjects: ImportedProject[] = [
   {
     sourceProvider: 'JIRA',
     externalId: 'P1',
     name: 'Atlas',
-    statuses: [{ name: 'Todo' }, { name: 'Done' }],
+    statuses: [
+      { id: 's1', name: 'Todo' },
+      { id: 's2', name: 'Done' },
+    ],
   },
   {
     sourceProvider: 'LINEAR',
     externalId: 'L1',
     name: 'Orion',
-    statuses: [{ name: 'Backlog' }],
+    statuses: [{ id: 's3', name: 'Backlog' }],
   },
-] as unknown as FetchProjectsOutput;
+];
 
 const peopleSelections = new Map<string, PersonSelection>([
   ['a@x.com', { role: 'admin', skip: false, resolvedConflicts: {} }],
@@ -187,7 +190,73 @@ describe('useOnboardingConfirm', () => {
     );
     act(() => result.current.handleStartImport());
     await waitFor(() => expect(toastError).toHaveBeenCalled());
-    expect(toastError.mock.calls[0]?.[0]).toContain('quota exceeded');
+    expect(toastError.mock.calls[0]?.[0]).toBe('Something went wrong. Please try again.');
     expect(onJobIdChange).not.toHaveBeenCalled();
   });
+
+  it('isEmpty is true when all people skipped and all projects skipped', () => {
+    const emptyPeople = new Map<string, PersonSelection>([
+      ['a@x.com', { role: 'readonly', skip: true, resolvedConflicts: {} }],
+    ]);
+    const emptyProjects = new Map<string, ProjectSelection>([
+      ['JIRA-P1', { skip: true, name: 'Atlas', steps: [] }],
+    ]);
+    const { result } = renderHookWithProviders(() =>
+      useOnboardingConfirm({
+        mergedPeople: samplePeople,
+        personSelections: emptyPeople,
+        projects: sampleProjects,
+        projectSelections: emptyProjects,
+        onJobIdChange: vi.fn(),
+      }),
+    );
+    expect(result.current.isEmpty).toBe(true);
+    expect(result.current.canStart).toBe(false);
+  });
+
+  it('isError is true after startImport mutation fails', async () => {
+    setTRPCMock({
+      'onboardingImport.startImport': () => {
+        throw new Error('network');
+      },
+    });
+    const { result } = renderHookWithProviders(() =>
+      useOnboardingConfirm({
+        mergedPeople: samplePeople,
+        personSelections: peopleSelections,
+        projects: sampleProjects,
+        projectSelections,
+        onJobIdChange: vi.fn(),
+      }),
+    );
+    act(() => result.current.handleStartImport());
+    await waitFor(() => expect(result.current.isError).toBe(true));
+  });
+
+  it('handleRetryStart resets mutation and retries startImport', async () => {
+    let calls = 0;
+    const onJobIdChange = vi.fn();
+    setTRPCMock({
+      'onboardingImport.startImport': () => {
+        calls += 1;
+        if (calls === 1) throw new Error('transient');
+        return { jobId: 'job-retry' };
+      },
+    });
+    const { result } = renderHookWithProviders(() =>
+      useOnboardingConfirm({
+        mergedPeople: samplePeople,
+        personSelections: peopleSelections,
+        projects: sampleProjects,
+        projectSelections,
+        onJobIdChange,
+      }),
+    );
+    act(() => result.current.handleStartImport());
+    await waitFor(() => expect(result.current.isError).toBe(true));
+    act(() => result.current.handleRetryStart());
+    await waitFor(() => expect(onJobIdChange).toHaveBeenCalledWith('job-retry'));
+    expect(result.current.isError).toBe(false);
+  });
+
 });

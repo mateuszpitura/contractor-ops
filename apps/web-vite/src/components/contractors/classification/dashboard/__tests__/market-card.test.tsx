@@ -4,17 +4,16 @@
  * pulls in a tRPC export-mutation.
  */
 
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
-vi.mock('../download-csv-button-container.js', () => ({
-  DownloadCsvButtonContainer: ({ market }: { market: 'GB' | 'DE' }) => (
+vi.mock('../download-csv-button.js', () => ({
+  DownloadCsvButton: ({ market }: { market: 'GB' | 'DE' }) => (
     <button type="button" data-testid={`download-csv-${market.toLowerCase()}`}>
       Download CSV
     </button>
   ),
 }));
 
-import { vi } from 'vitest';
 import { render, screen } from '../../../../../test/test-utils.js';
 import { MarketCardView } from '../market-card.js';
 

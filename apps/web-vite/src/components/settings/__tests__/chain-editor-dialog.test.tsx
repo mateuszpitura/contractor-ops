@@ -7,14 +7,14 @@
 
 import { describe, expect, it, vi } from 'vitest';
 
-vi.mock('../chain-editor-user-picker-container', () => ({
-  ChainEditorUserPickerContainer: () => null,
+vi.mock('../chain-editor-user-picker', () => ({
+  ChainEditorUserPicker: () => null,
 }));
 
 import { useFieldArray, useForm } from 'react-hook-form';
 import { render, screen, setup } from '@/test/test-utils';
 import type { ChainEditorDialogProps } from '../chain-editor-dialog';
-import { ChainEditorDialog } from '../chain-editor-dialog';
+import { ChainEditorDialogView } from '../chain-editor-dialog';
 import type { ChainFormValues } from '../hooks/use-chain-editor-dialog';
 import { DEFAULT_CHAIN_STEP } from '../hooks/use-chain-editor-dialog';
 
@@ -54,7 +54,7 @@ function Harness({
   });
 
   return (
-    <ChainEditorDialog
+    <ChainEditorDialogView
       open={open}
       onOpenChange={vi.fn()}
       chainData={null}

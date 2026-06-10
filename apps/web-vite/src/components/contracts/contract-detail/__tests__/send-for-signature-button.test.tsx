@@ -1,6 +1,6 @@
 /**
  * SendForSignatureButton calls `useSendForSignatureButton` directly (pure
- * derivation hook — no tRPC) and renders SendForSignatureDialogContainer
+ * derivation hook — no tRPC) and renders SendForSignatureDialog
  * (which IS a tRPC consumer). We mock the container to keep this test
  * scoped to the button surface.
  */
@@ -8,8 +8,8 @@
 import { vi } from 'vitest';
 import { render, screen } from '@/test/test-utils';
 
-vi.mock('../send-for-signature-dialog-container.js', () => ({
-  SendForSignatureDialogContainer: () => null,
+vi.mock('../send-for-signature-dialog.js', () => ({
+  SendForSignatureDialog: () => null,
 }));
 
 import { SendForSignatureButton } from '../send-for-signature-button';

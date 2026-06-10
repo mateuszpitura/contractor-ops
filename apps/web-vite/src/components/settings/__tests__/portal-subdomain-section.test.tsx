@@ -10,7 +10,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { render, screen, setup } from '@/test/test-utils';
 import type { usePortalSubdomainSection } from '../hooks/use-portal-subdomain-section';
-import { PortalSubdomainSection } from '../portal-subdomain-section';
+import { PortalSubdomainSectionView } from '../portal-subdomain-section';
 
 type HookReturn = ReturnType<typeof usePortalSubdomainSection>;
 
@@ -32,9 +32,9 @@ function buildHook(overrides: Partial<HookReturn> = {}): HookReturn {
   } as HookReturn;
 }
 
-describe('PortalSubdomainSection', () => {
+describe('PortalSubdomainSectionView', () => {
   it('renders heading, description and save CTA', () => {
-    render(<PortalSubdomainSection {...buildHook()} />);
+    render(<PortalSubdomainSectionView {...buildHook()} />);
 
     expect(screen.getByText('subdomainHeading')).toBeInTheDocument();
     expect(screen.getByText('subdomainCardDescription')).toBeInTheDocument();
@@ -42,30 +42,30 @@ describe('PortalSubdomainSection', () => {
   });
 
   it('reflects the portalSubdomain hook value in the input', () => {
-    render(<PortalSubdomainSection {...buildHook({ portalSubdomain: 'acme' })} />);
+    render(<PortalSubdomainSectionView {...buildHook({ portalSubdomain: 'acme' })} />);
     const input = screen.getByRole('textbox') as HTMLInputElement;
     expect(input.value).toBe('acme');
   });
 
   it('disables the save button when not dirty', () => {
-    render(<PortalSubdomainSection {...buildHook({ isDirty: false })} />);
+    render(<PortalSubdomainSectionView {...buildHook({ isDirty: false })} />);
     expect(screen.getByRole('button')).toBeDisabled();
   });
 
   it('enables the save button when dirty and not pending', () => {
-    render(<PortalSubdomainSection {...buildHook({ isDirty: true })} />);
+    render(<PortalSubdomainSectionView {...buildHook({ isDirty: true })} />);
     expect(screen.getByRole('button')).toBeEnabled();
   });
 
   it('renders an inline error message when subdomainError is provided', () => {
-    render(<PortalSubdomainSection {...buildHook({ subdomainError: 'Subdomain too short' })} />);
+    render(<PortalSubdomainSectionView {...buildHook({ subdomainError: 'Subdomain too short' })} />);
 
     expect(screen.getByRole('alert')).toHaveTextContent('Subdomain too short');
   });
 
   it('renders the spinner and saving label while pending', () => {
     const { container } = render(
-      <PortalSubdomainSection {...buildHook({ isDirty: true, isPending: true })} />,
+      <PortalSubdomainSectionView {...buildHook({ isDirty: true, isPending: true })} />,
     );
 
     expect(container.querySelector('.animate-spin')).toBeInTheDocument();
@@ -74,7 +74,7 @@ describe('PortalSubdomainSection', () => {
 
   it('calls handleSubdomainChange as the user types', async () => {
     const handleSubdomainChange = vi.fn();
-    const { user } = setup(<PortalSubdomainSection {...buildHook({ handleSubdomainChange })} />);
+    const { user } = setup(<PortalSubdomainSectionView {...buildHook({ handleSubdomainChange })} />);
 
     await user.type(screen.getByRole('textbox'), 'a');
     expect(handleSubdomainChange).toHaveBeenCalledWith('a');
@@ -83,7 +83,7 @@ describe('PortalSubdomainSection', () => {
   it('calls handleSaveSubdomain when the save button is clicked', async () => {
     const handleSaveSubdomain = vi.fn();
     const { user } = setup(
-      <PortalSubdomainSection {...buildHook({ isDirty: true, handleSaveSubdomain })} />,
+      <PortalSubdomainSectionView {...buildHook({ isDirty: true, handleSaveSubdomain })} />,
     );
 
     await user.click(screen.getByRole('button', { name: /saveCta/i }));

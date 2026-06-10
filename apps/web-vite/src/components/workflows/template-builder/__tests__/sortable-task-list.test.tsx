@@ -1,6 +1,6 @@
 /**
  * We mock dnd-kit
- * + TaskCardContainer so the test focuses on empty / populated rendering
+ * + TaskCardSection so the test focuses on empty / populated rendering
  * and the onAdd CTA.
  */
 
@@ -42,10 +42,10 @@ vi.mock('@dnd-kit/utilities', () => ({
   CSS: { Transform: { toString: () => '' } },
 }));
 
-vi.mock('../task-card-container.js', () => {
+vi.mock('../task-card.js', () => {
   const React = require('react');
   return {
-    TaskCardContainer: ({ index }: { index: number }) =>
+    TaskCardSection: ({ index }: { index: number }) =>
       React.createElement('div', { 'data-testid': `task-card-${index}` }, `Task ${index}`),
   };
 });
@@ -81,7 +81,7 @@ describe('SortableTaskList (web-vite)', () => {
     expect(findByText(document.body, /add task/i)).not.toBeNull();
   });
 
-  it('renders one TaskCardContainer per field', async () => {
+  it('renders one TaskCardSection per field', async () => {
     await mount(
       <SortableTaskList
         fields={[{ id: 'f1' }, { id: 'f2' }]}

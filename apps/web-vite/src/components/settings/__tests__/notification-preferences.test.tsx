@@ -12,7 +12,7 @@ import { render, screen, setup } from '@/test/test-utils';
 import type { PreferenceFormValues } from '../hooks/use-notification-preferences';
 import { NOTIFICATION_TYPES } from '../hooks/use-notification-preferences';
 import {
-  NotificationPreferences,
+  NotificationPreferencesView,
   NotificationPreferencesSkeleton,
 } from '../notification-preferences';
 
@@ -43,7 +43,7 @@ function Harness({
   });
 
   return (
-    <NotificationPreferences
+    <NotificationPreferencesView
       t={tStub}
       form={form}
       isLoading={false}
@@ -55,7 +55,7 @@ function Harness({
   );
 }
 
-describe('NotificationPreferences', () => {
+describe('NotificationPreferencesView', () => {
   it('renders the loading skeletons via the Skeleton sibling export', () => {
     const { container } = render(<NotificationPreferencesSkeleton />);
     expect(container.querySelectorAll('[data-slot="skeleton"]').length).toBeGreaterThan(0);

@@ -11,7 +11,7 @@ import { render, screen, setup } from '@/test/test-utils';
 import type { JiraTaskConfigViewProps } from '../jira-task-config';
 import { JiraTaskConfigView } from '../jira-task-config';
 
-vi.mock('../jira-project-mapping-dialog-container', () => ({
+vi.mock('../jira-project-mapping-dialog.js', () => ({
   JiraProjectMappingDialog: ({ open }: { open: boolean }) =>
     open ? <div data-testid="project-mapping-dialog" /> : null,
 }));

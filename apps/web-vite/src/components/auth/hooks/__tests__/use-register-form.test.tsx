@@ -140,7 +140,7 @@ describe('useRegisterForm', () => {
   });
 
   it('captures to Sentry when the signUp call throws', async () => {
-    signUpEmailMock.mockRejectedValue(new Error('network down'));
+    signUpEmailMock.mockRejectedValue(new Error('Something went wrong. Please try again.'));
     const { result } = renderHookWithProviders(() => useRegisterForm());
     await act(async () => {
       await setField(result.current.register, 'orgName', 'Acme Co');

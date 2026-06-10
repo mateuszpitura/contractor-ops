@@ -1,12 +1,9 @@
-// Phase 73 · Plan 06 — admin compliance dashboard container tests (COMPL-01).
-// Evolved from the Wave 0 Nyquist scaffold. Mocks the single data hook, the
-// permission gate, the locale-aware Navigate, and the three table modules
-// (stubbed) so the test focuses on container behaviour: KPI cards, tab state,
-// 60s polling wiring, and the loading/empty/error/forbidden branches.
+// Admin compliance dashboard page-content tests (COMPL-01).
 
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { applyLocale, initI18n } from '../../../../i18n/index.js';
+import { ComplianceDashboardPageContent } from '../../../../pages/dashboard/compliance-dashboard.js';
 import { mount } from './_render.js';
 
 const useComplianceDashboardMock = vi.fn();
@@ -27,7 +24,6 @@ vi.mock('react-router-dom', () => ({
   Navigate: ({ to }: { to: string }) => <div data-testid="navigate" data-to={to} />,
   useSearchParams: () => [new URLSearchParams()],
 }));
-// Stub the tables so the container test does not need a router/DataTable chrome.
 vi.mock('../at-risk-table/data-table.js', () => ({
   AtRiskTable: () => <div data-testid="at-risk-table" />,
 }));
@@ -37,8 +33,6 @@ vi.mock('../upcoming-renewals-table/data-table.js', () => ({
 vi.mock('../blocked-payments-table/data-table.js', () => ({
   BlockedPaymentsTable: () => <div data-testid="blocked-payments-table" />,
 }));
-
-import { ComplianceDashboardContainer } from '../compliance-dashboard-container.js';
 
 const populated = {
   isPending: false,
@@ -64,37 +58,37 @@ afterEach(() => {
   vi.clearAllMocks();
 });
 
-describe('compliance-dashboard-container render', () => {
-  it('exports a ComplianceDashboardContainer component', () => {
-    expect(typeof ComplianceDashboardContainer).toBe('function');
+describe('ComplianceDashboardPageContent render', () => {
+  it('exports a ComplianceDashboardPageContent component', () => {
+    expect(typeof ComplianceDashboardPageContent).toBe('function');
   });
 
-  it('renders 3 KPI cards (At risk, Upcoming renewals, Blocked payments) + the default tab table', async () => {
+  it('renders 3 KPI cards + the default tab table', async () => {
     canMock.mockReturnValue(true);
     useComplianceDashboardMock.mockReturnValue(populated);
-    const { container } = await mount(<ComplianceDashboardContainer />);
+    const { container } = await mount(<ComplianceDashboardPageContent />);
     const cards = container.querySelectorAll('button[aria-pressed]');
     expect(cards.length).toBe(3);
     expect(container.querySelector('[data-testid="at-risk-table"]')).not.toBeNull();
   });
 });
 
-describe('compliance-dashboard-container default-tab-at-risk', () => {
+describe('ComplianceDashboardPageContent default-tab-at-risk', () => {
   it('lands on "At risk" tab by default (first card aria-pressed)', async () => {
     canMock.mockReturnValue(true);
     useComplianceDashboardMock.mockReturnValue(populated);
-    const { container } = await mount(<ComplianceDashboardContainer />);
+    const { container } = await mount(<ComplianceDashboardPageContent />);
     const cards = container.querySelectorAll('button[aria-pressed]');
     expect(cards[0]?.getAttribute('aria-pressed')).toBe('true');
     expect(cards[1]?.getAttribute('aria-pressed')).toBe('false');
   });
 });
 
-describe('compliance-dashboard-container card-click-switches-tab', () => {
+describe('ComplianceDashboardPageContent card-click-switches-tab', () => {
   it('clicking the "Upcoming renewals" KPI card switches the active tab table', async () => {
     canMock.mockReturnValue(true);
     useComplianceDashboardMock.mockReturnValue(populated);
-    const { container } = await mount(<ComplianceDashboardContainer />);
+    const { container } = await mount(<ComplianceDashboardPageContent />);
     const cards = container.querySelectorAll<HTMLButtonElement>('button[aria-pressed]');
     const { act } = await import('react');
     await act(async () => {
@@ -105,11 +99,11 @@ describe('compliance-dashboard-container card-click-switches-tab', () => {
   });
 });
 
-describe('compliance-dashboard-container ui-states', () => {
+describe('ComplianceDashboardPageContent ui-states', () => {
   it('renders the skeleton while loading', async () => {
     canMock.mockReturnValue(true);
     useComplianceDashboardMock.mockReturnValue({ ...populated, isPending: true, kpis: undefined });
-    const { container } = await mount(<ComplianceDashboardContainer />);
+    const { container } = await mount(<ComplianceDashboardPageContent />);
     expect(container.querySelectorAll("[data-slot='skeleton']").length).toBeGreaterThanOrEqual(3);
     expect(container.querySelector('button[aria-pressed]')).toBeNull();
   });
@@ -120,24 +114,24 @@ describe('compliance-dashboard-container ui-states', () => {
       ...populated,
       error: new Error('boom'),
     });
-    const { container } = await mount(<ComplianceDashboardContainer />);
+    const { container } = await mount(<ComplianceDashboardPageContent />);
     expect(container.querySelector('[role="alert"]')).not.toBeNull();
   });
 
   it('renders the empty state when isEmpty', async () => {
     canMock.mockReturnValue(true);
     useComplianceDashboardMock.mockReturnValue({ ...populated, isEmpty: true });
-    const { container } = await mount(<ComplianceDashboardContainer />);
+    const { container } = await mount(<ComplianceDashboardPageContent />);
     expect(container.querySelector('button[aria-pressed]')).toBeNull();
     expect(container.querySelector('[data-testid="at-risk-table"]')).toBeNull();
   });
 });
 
-describe('compliance-dashboard-container permission-gate', () => {
+describe('ComplianceDashboardPageContent permission-gate', () => {
   it('redirects to /unauthorized when the caller lacks compliance:read', async () => {
     canMock.mockReturnValue(false);
     useComplianceDashboardMock.mockReturnValue(populated);
-    const { container } = await mount(<ComplianceDashboardContainer />);
+    const { container } = await mount(<ComplianceDashboardPageContent />);
     const nav = container.querySelector('[data-testid="navigate"]');
     expect(nav).not.toBeNull();
     expect(nav?.getAttribute('data-to')).toContain('/unauthorized');

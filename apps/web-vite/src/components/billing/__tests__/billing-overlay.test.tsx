@@ -1,5 +1,5 @@
 /**
- * BillingOverlayContainer is decisive: it branches on overlay flags and
+ * BillingOverlay is decisive: it branches on overlay flags and
  * renders TrialBanner / BillingPastDueBanner / SoftBlockModal siblings.
  * Tests stub `useBillingOverlay` + `useTranslations` so assertions stay
  * focused on container branching without touching tRPC.
@@ -40,7 +40,7 @@ vi.mock('../soft-block-modal', () => ({
 }));
 
 import { BillingPastDueBanner } from '../billing-overlay';
-import { BillingOverlayContainer } from '../billing-overlay-container';
+import { BillingOverlay } from '../billing-overlay';
 
 type Overlay = ReturnType<typeof useBillingOverlay>;
 
@@ -60,12 +60,12 @@ function makeOverlay(override: Partial<Overlay> = {}): Overlay {
   return base as unknown as Overlay;
 }
 
-describe('BillingOverlayContainer (web-vite)', () => {
+describe('BillingOverlay (web-vite)', () => {
   it('renders nothing when subscription is null', () => {
     overlayMock.mockReturnValue(
       makeOverlay({ subscription: null as unknown as Overlay['subscription'] }),
     );
-    const { container } = render(<BillingOverlayContainer />);
+    const { container } = render(<BillingOverlay />);
     expect(container.innerHTML).toBe('');
   });
 
@@ -81,7 +81,7 @@ describe('BillingOverlayContainer (web-vite)', () => {
         trialEnd: futureDate,
       }),
     );
-    render(<BillingOverlayContainer />);
+    render(<BillingOverlay />);
     expect(screen.getByTestId('trial-banner')).toBeInTheDocument();
   });
 
@@ -92,7 +92,7 @@ describe('BillingOverlayContainer (web-vite)', () => {
         isTrialExpired: true,
       }),
     );
-    render(<BillingOverlayContainer />);
+    render(<BillingOverlay />);
     expect(screen.getByTestId('soft-block-modal')).toBeInTheDocument();
   });
 
@@ -103,7 +103,7 @@ describe('BillingOverlayContainer (web-vite)', () => {
         isBlocked: true,
       }),
     );
-    render(<BillingOverlayContainer />);
+    render(<BillingOverlay />);
     expect(screen.getByTestId('soft-block-modal')).toBeInTheDocument();
   });
 
@@ -114,13 +114,13 @@ describe('BillingOverlayContainer (web-vite)', () => {
         isPastDue: true,
       }),
     );
-    render(<BillingOverlayContainer />);
+    render(<BillingOverlay />);
     expect(screen.getByText('Payment failed.')).toBeInTheDocument();
   });
 
   it('renders no overlay elements for ACTIVE subscription', () => {
     overlayMock.mockReturnValue(makeOverlay());
-    render(<BillingOverlayContainer />);
+    render(<BillingOverlay />);
     expect(screen.queryByTestId('trial-banner')).not.toBeInTheDocument();
     expect(screen.queryByTestId('soft-block-modal')).not.toBeInTheDocument();
     expect(screen.queryByText('Payment failed.')).not.toBeInTheDocument();
@@ -139,7 +139,7 @@ describe('BillingOverlayContainer (web-vite)', () => {
         isPastDue: true,
       }),
     );
-    render(<BillingOverlayContainer />);
+    render(<BillingOverlay />);
     expect(screen.getByTestId('trial-banner')).toBeInTheDocument();
     expect(screen.getByRole('alert')).toBeInTheDocument();
   });

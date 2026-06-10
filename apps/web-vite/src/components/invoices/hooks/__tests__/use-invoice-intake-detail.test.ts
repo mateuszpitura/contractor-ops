@@ -15,7 +15,7 @@
 
 import { describe, expect, it } from 'vitest';
 
-import { deriveIsNotFound } from '../use-invoice-intake-detail.js';
+import { deriveIsNotFound } from '../../../../lib/derive-is-not-found.js';
 
 describe('deriveIsNotFound', () => {
   it('returns false on a null / undefined error (happy path)', () => {

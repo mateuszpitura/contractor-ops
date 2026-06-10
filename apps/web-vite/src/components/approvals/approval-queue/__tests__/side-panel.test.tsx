@@ -1,5 +1,5 @@
 /**
- * The panel is split into a container (`ApprovalSidePanelContainer`,
+ * The panel is split into a container (`ApprovalSidePanel`,
  * which owns the useApprovalActions hook) and a pure view
  * (`ApprovalSidePanelView`, which receives `actions` + `resolvedChain` as
  * props). Tests target the view with a shaped `actions` stub so we never need

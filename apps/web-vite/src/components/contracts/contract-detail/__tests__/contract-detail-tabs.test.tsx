@@ -1,30 +1,30 @@
 /**
- * ContractDetailTabs renders Container components for each
- * tab. We mock containers + the underlying `useContractDetailTabs` hook so
- * the test focuses on the tabs surface itself.
+ * ContractDetailTabs renders wired tab sections for each tab. We mock wired
+ * exports + the underlying `useContractDetailTabs` hook so the test focuses
+ * on the tabs surface itself.
  */
 
 import { vi } from 'vitest';
 import { render, screen } from '@/test/test-utils';
 
-vi.mock('../overview-tab-container.js', () => {
+vi.mock('../overview-tab.js', () => {
   const React = require('react');
   return {
-    OverviewTabContainer: () =>
+    OverviewTabWired: () =>
       React.createElement('div', { 'data-testid': 'overview' }, 'Overview'),
   };
 });
-vi.mock('../documents-tab-container.js', () => {
+vi.mock('../documents-tab.js', () => {
   const React = require('react');
   return {
-    DocumentsTabContainer: () =>
+    DocumentsTabWired: () =>
       React.createElement('div', { 'data-testid': 'documents' }, 'Documents'),
   };
 });
-vi.mock('../amendments-tab-container.js', () => {
+vi.mock('../amendments-tab.js', () => {
   const React = require('react');
   return {
-    AmendmentsTabContainer: () =>
+    AmendmentsTabWired: () =>
       React.createElement('div', { 'data-testid': 'amendments' }, 'Amendments'),
   };
 });
@@ -34,8 +34,8 @@ vi.mock('../activity-tab.js', () => {
     ActivityTab: () => React.createElement('div', { 'data-testid': 'activity' }, 'Activity'),
   };
 });
-vi.mock('../linear-linked-issues-panel-container.js', () => ({
-  LinearLinkedIssuesPanelContainer: () => null,
+vi.mock('../linear-linked-issues-panel.js', () => ({
+  LinearLinkedIssuesPanelWired: () => null,
 }));
 vi.mock('../../hooks/use-contract-detail-tabs.js', () => ({
   useContractDetailTabs: () => ({

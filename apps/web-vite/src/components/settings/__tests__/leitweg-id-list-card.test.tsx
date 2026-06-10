@@ -27,22 +27,22 @@ vi.mock('../../../i18n/useTranslations.js', () => ({
   useTranslations: () => (key: string) => key,
 }));
 
-vi.mock('../e-invoicing/leitweg-id-create-dialog-container.js', () => ({
-  LeitwegIdCreateDialogContainer: () => null,
+vi.mock('../e-invoicing/leitweg-id-create-dialog.js', () => ({
+  LeitwegIdCreateDialog: () => null,
 }));
 
-vi.mock('../e-invoicing/leitweg-id-row-container.js', () => ({
-  LeitwegIdRowContainer: ({ row }: { row: { id: string; value: string } }) => (
+vi.mock('../e-invoicing/leitweg-id-row.js', () => ({
+  LeitwegIdRow: ({ row }: { row: { id: string; value: string } }) => (
     <tr data-testid={`row-${row.id}`}>
       <td>{row.value}</td>
     </tr>
   ),
 }));
 
-import { LeitwegIdListCard } from '../e-invoicing/leitweg-id-list-card.js';
+import { LeitwegIdListCardView, type LeitwegIdListCardProps } from '../e-invoicing/leitweg-id-list-card.js';
 import type { LeitwegIdRowData } from '../e-invoicing/leitweg-id-row.js';
 
-type CardProps = React.ComponentProps<typeof LeitwegIdListCard>;
+type CardProps = LeitwegIdListCardProps;
 
 interface Harness {
   container: HTMLDivElement;
@@ -96,9 +96,9 @@ afterEach(() => {
   }
 });
 
-describe('LeitwegIdListCard (web-vite)', () => {
+describe('LeitwegIdListCardView (web-vite)', () => {
   it('renders the empty state when isEmpty is true and not loading', () => {
-    harness = mount(<LeitwegIdListCard {...buildProps({ isEmpty: true })} />);
+    harness = mount(<LeitwegIdListCardView {...buildProps({ isEmpty: true })} />);
     expect(harness.container.textContent).toContain('emptyHeading');
     expect(harness.container.textContent).toContain('emptyBody');
     // No table body when empty.
@@ -106,7 +106,7 @@ describe('LeitwegIdListCard (web-vite)', () => {
   });
 
   it('renders skeletons in the loading state', () => {
-    harness = mount(<LeitwegIdListCard {...buildProps({ isLoading: true })} />);
+    harness = mount(<LeitwegIdListCardView {...buildProps({ isLoading: true })} />);
     const skeletons = harness.container.querySelectorAll('[data-slot="skeleton"]');
     expect(skeletons.length).toBeGreaterThan(0);
     // emptyHeading must not appear under loading.
@@ -119,7 +119,7 @@ describe('LeitwegIdListCard (web-vite)', () => {
       { id: 'b', value: '991-BBB', isDefaultForContractor: false },
       { id: 'c', value: '991-CCC', isDefaultForContractor: false },
     ];
-    harness = mount(<LeitwegIdListCard {...buildProps({ rows, isEmpty: false })} />);
+    harness = mount(<LeitwegIdListCardView {...buildProps({ rows, isEmpty: false })} />);
     expect(harness.container.querySelectorAll('[data-testid^="row-"]').length).toBe(3);
     // Column headers all present.
     const headers = Array.from(harness.container.querySelectorAll('thead th')).map(
@@ -133,7 +133,7 @@ describe('LeitwegIdListCard (web-vite)', () => {
   });
 
   it('always exposes the create CTA in the header', () => {
-    harness = mount(<LeitwegIdListCard {...buildProps()} />);
+    harness = mount(<LeitwegIdListCardView {...buildProps()} />);
     const buttons = Array.from(harness.container.querySelectorAll('button'));
     expect(buttons.some(b => b.textContent?.includes('ctaCreate'))).toBe(true);
   });

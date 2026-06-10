@@ -7,13 +7,13 @@
 import { vi } from 'vitest';
 import { render, screen } from '@/test/test-utils';
 
-vi.mock('../../../documents/drop-zone-container.js', () => {
+vi.mock('../../../documents/drop-zone.js', () => {
   const React = require('react');
   return {
     DropZoneContainer: () => React.createElement('div', { 'data-testid': 'drop-zone' }),
   };
 });
-vi.mock('../../../documents/document-list-container.js', () => {
+vi.mock('../../../documents/document-list.js', () => {
   const React = require('react');
   return {
     DocumentListContainer: () => React.createElement('div', { 'data-testid': 'document-list' }),

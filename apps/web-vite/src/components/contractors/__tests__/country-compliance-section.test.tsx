@@ -8,19 +8,24 @@
 
 import { describe, expect, it, vi } from 'vitest';
 
-vi.mock('../classification/classification-tile-container.js', () => ({
+
+vi.mock('../../../hooks/use-permissions.js', () => ({
+  usePermissions: () => ({ can: () => true, canManageSettings: true }),
+}));
+
+vi.mock('../classification/classification-tile.js', () => ({
   ClassificationTileContainer: ({ engagement }: { engagement: { id: string } }) => (
     <div data-testid="classification-tile" data-engagement={engagement.id} />
   ),
 }));
 
-vi.mock('../revalidate-vat-button-container.js', () => ({
-  RevalidateVatButtonContainer: () => <div data-testid="revalidate-vat" />,
+vi.mock('../revalidate-vat-button.js', () => ({
+  RevalidateVatButton: () => <div data-testid="revalidate-vat" />,
 }));
 
 // The AE branch now mounts the tRPC-bound free-zone assignment surface (D-02);
 // stub it like the other child containers so the dispatch test stays unit-scoped.
-vi.mock('../free-zone/free-zone-assignment-container.js', () => ({
+vi.mock('../free-zone/free-zone-assignment.js', () => ({
   FreeZoneAssignmentContainer: ({ contractorId }: { contractorId: string }) => (
     <div data-testid="free-zone-assignment" data-contractor={contractorId} />
   ),
@@ -45,7 +50,10 @@ interface ConfigShape {
 interface ComplianceOverrides {
   config?: ConfigShape;
   fields?: Record<string, unknown>;
-  contractor?: { latestVatValidationStatus?: string | null; latestVatValidatedAt?: string | null };
+  contractor?: {
+    latestVatValidationStatus?: 'VALID' | 'INVALID' | 'STALE' | 'UNAVAILABLE' | null;
+    latestVatValidatedAt?: string | null;
+  };
   isLoading?: boolean;
   isPending?: boolean;
   saveFields?: ReturnType<typeof vi.fn>;
@@ -169,6 +177,24 @@ describe('CountryComplianceSectionView — country dispatch', () => {
     );
     expect(screen.getByTestId('vat-validation-section')).toBeInTheDocument();
     expect(screen.getByTestId('revalidate-vat')).toBeInTheDocument();
+  });
+
+  it('maps the UPPERCASE tRPC ValidationStatus enum onto the lowercase-driven pill', () => {
+    render(
+      <CountryComplianceSectionView
+        contractorId="contractor-1"
+        compliance={buildCompliance({
+          config: { hasCountryFields: true, countryCode: 'GB' },
+          contractor: { latestVatValidationStatus: 'VALID', latestVatValidatedAt: null },
+        })}
+        engagements={buildEngagements()}
+        formData={{}}
+        onFormDataChange={vi.fn()}
+      />,
+    );
+    const pill = screen.getByTestId('vat-validation-status-pill');
+    expect(pill).toHaveAttribute('data-status', 'valid');
+    expect(screen.getByText('Valid')).toBeInTheDocument();
   });
 
   it('does not render the VAT validation section for AE', () => {

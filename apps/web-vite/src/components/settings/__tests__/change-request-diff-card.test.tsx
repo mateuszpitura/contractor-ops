@@ -9,7 +9,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { render, screen, setup } from '@/test/test-utils';
 import type { ChangeRequestDiffCardProps } from '../change-request-diff-card';
-import { ChangeRequestDiffCard } from '../change-request-diff-card';
+import { ChangeRequestDiffCardView } from '../change-request-diff-card';
 import type { useChangeRequestDiffCard } from '../hooks/use-change-request-diff-card';
 
 type HookReturn = ReturnType<typeof useChangeRequestDiffCard>;
@@ -41,9 +41,9 @@ const baseRequest: ChangeRequestDiffCardProps['request'] = {
   status: 'PENDING',
 };
 
-describe('ChangeRequestDiffCard', () => {
+describe('ChangeRequestDiffCardView', () => {
   it('renders the title, contractor details and changed-field rows', () => {
-    render(<ChangeRequestDiffCard request={baseRequest} {...buildHook()} />);
+    render(<ChangeRequestDiffCardView request={baseRequest} {...buildHook()} />);
 
     expect(screen.getByText('title')).toBeInTheDocument();
     expect(screen.getByText(/Acme GmbH/)).toBeInTheDocument();
@@ -54,7 +54,7 @@ describe('ChangeRequestDiffCard', () => {
   });
 
   it('renders approve and reject buttons when status is PENDING', () => {
-    render(<ChangeRequestDiffCard request={baseRequest} {...buildHook()} />);
+    render(<ChangeRequestDiffCardView request={baseRequest} {...buildHook()} />);
 
     expect(screen.getByRole('button', { name: 'approveChanges' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'rejectChanges' })).toBeInTheDocument();
@@ -62,7 +62,7 @@ describe('ChangeRequestDiffCard', () => {
 
   it('hides approve/reject actions when status is APPROVED', () => {
     render(
-      <ChangeRequestDiffCard request={{ ...baseRequest, status: 'APPROVED' }} {...buildHook()} />,
+      <ChangeRequestDiffCardView request={{ ...baseRequest, status: 'APPROVED' }} {...buildHook()} />,
     );
 
     expect(screen.queryByRole('button', { name: 'approveChanges' })).not.toBeInTheDocument();
@@ -72,7 +72,7 @@ describe('ChangeRequestDiffCard', () => {
   it('fires handleApprove when the approve button is clicked', async () => {
     const handleApprove = vi.fn();
     const { user } = setup(
-      <ChangeRequestDiffCard request={baseRequest} {...buildHook({ handleApprove })} />,
+      <ChangeRequestDiffCardView request={baseRequest} {...buildHook({ handleApprove })} />,
     );
 
     await user.click(screen.getByRole('button', { name: 'approveChanges' }));
@@ -82,7 +82,7 @@ describe('ChangeRequestDiffCard', () => {
   it('opens the reject dialog when the reject button is clicked', async () => {
     const setRejectDialogOpen = vi.fn();
     const { user } = setup(
-      <ChangeRequestDiffCard request={baseRequest} {...buildHook({ setRejectDialogOpen })} />,
+      <ChangeRequestDiffCardView request={baseRequest} {...buildHook({ setRejectDialogOpen })} />,
     );
 
     await user.click(screen.getByRole('button', { name: 'rejectChanges' }));
@@ -91,7 +91,7 @@ describe('ChangeRequestDiffCard', () => {
 
   it('renders reject dialog body and disables the confirm button while rejecting', () => {
     render(
-      <ChangeRequestDiffCard
+      <ChangeRequestDiffCardView
         request={baseRequest}
         {...buildHook({
           rejectDialogOpen: true,

@@ -8,7 +8,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { render, screen } from '@/test/test-utils';
 import { useTranslations } from '../../../i18n/useTranslations';
 
-vi.mock('../tax-details-form-container', () => ({
+vi.mock('../tax-details-form.js', () => ({
   TaxDetailsForm: ({ onSuccess, onCancel }: { onSuccess: () => void; onCancel: () => void }) => (
     <div data-testid="tax-details-form">
       <button type="button" onClick={onSuccess}>
@@ -20,16 +20,16 @@ vi.mock('../tax-details-form-container', () => ({
     </div>
   ),
 }));
-vi.mock('../csr-generation-container', () => ({
+vi.mock('../csr-generation.js', () => ({
   CsrGeneration: () => <div data-testid="csr-generation">CSR Step</div>,
 }));
-vi.mock('../compliance-csid-container', () => ({
+vi.mock('../compliance-csid.js', () => ({
   ComplianceCsid: () => <div data-testid="compliance-csid">CSID Step</div>,
 }));
-vi.mock('../compliance-checks-container', () => ({
+vi.mock('../compliance-checks.js', () => ({
   ComplianceChecks: () => <div data-testid="compliance-checks">Checks Step</div>,
 }));
-vi.mock('../production-certificate-container', () => ({
+vi.mock('../production-certificate.js', () => ({
   ProductionCertificate: () => <div data-testid="production-certificate">Cert Step</div>,
 }));
 

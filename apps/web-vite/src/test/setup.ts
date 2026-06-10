@@ -14,6 +14,20 @@
  */
 
 import '@testing-library/jest-dom/vitest';
+import { beforeEach, vi } from 'vitest';
+
+import { createTRPCProxy, setTRPCMock } from '../test-utils/render-hook.js';
+
+const globalTrpcProxy = createTRPCProxy();
+
+vi.mock('../providers/trpc-provider.js', () => ({
+  useTRPC: () => globalTrpcProxy,
+  usePortalTRPC: () => globalTrpcProxy,
+}));
+
+beforeEach(() => {
+  setTRPCMock({});
+});
 
 // Synchronously init i18next + load English bundle BEFORE any test imports a
 // component. Tests use sync `render(<Component />)` and react-i18next reads

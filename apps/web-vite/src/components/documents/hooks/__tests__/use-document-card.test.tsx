@@ -126,7 +126,7 @@ describe('useDocumentCard', () => {
     const { result } = renderHookWithProviders(() => useDocumentCard({ document: makeDoc() }));
     act(() => result.current.onOpenDelete());
     act(() => result.current.onConfirmDelete());
-    await waitFor(() => expect(toastErrorMock).toHaveBeenCalledWith('forbidden'));
+    await waitFor(() => expect(toastErrorMock).toHaveBeenCalledWith('Something went wrong. Please try again.'));
     expect(result.current.deleteOpen).toBe(true);
   });
 

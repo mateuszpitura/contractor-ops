@@ -83,7 +83,7 @@ describe('useEquipmentUnassign', () => {
     toastError.mockClear();
     setTRPCMock({
       'equipment.unassign': () => {
-        throw new Error('conflict');
+        throw new Error('Something went wrong. Please try again.');
       },
     });
     const { result } = renderHookWithProviders(() => useEquipmentUnassign());

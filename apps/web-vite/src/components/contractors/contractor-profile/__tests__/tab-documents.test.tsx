@@ -1,14 +1,14 @@
 /**
- * web-vite port. Mocks tRPC-bound DropZoneContainer + DocumentCardContainer.
+ * web-vite port. Mocks tRPC-bound DropZone + DocumentCard.
  */
 
 import { describe, expect, it, vi } from 'vitest';
 
-vi.mock('../../../documents/drop-zone-container.js', () => ({
+vi.mock('../../../documents/drop-zone.js', () => ({
   DropZoneContainer: () => <div data-testid="drop-zone" />,
 }));
 
-vi.mock('../../../documents/document-card-container.js', () => ({
+vi.mock('../../../documents/document-card.js', () => ({
   DocumentCardContainer: ({ document }: { document: { id: string; filename: string } }) => (
     <div data-testid={`doc-${document.id}`}>{document.filename}</div>
   ),

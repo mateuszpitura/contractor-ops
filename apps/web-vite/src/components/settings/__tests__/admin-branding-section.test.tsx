@@ -10,7 +10,7 @@ import { createRef } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
 import { render, screen, setup } from '@/test/test-utils';
-import { AdminBrandingSection } from '../admin-branding-section';
+import { AdminBrandingSectionView } from '../admin-branding-section';
 import type { useAdminBrandingSection } from '../hooks/use-admin-branding-section';
 
 type HookReturn = ReturnType<typeof useAdminBrandingSection>;
@@ -37,10 +37,10 @@ function buildHook(overrides: Partial<HookReturn> = {}): HookReturn {
   } as HookReturn;
 }
 
-describe('AdminBrandingSection', () => {
+describe('AdminBrandingSectionView', () => {
   it('renders the loading skeleton while brandingQuery.isLoading is true', () => {
     const { container } = render(
-      <AdminBrandingSection
+      <AdminBrandingSectionView
         {...buildHook({
           brandingQuery: { isLoading: true } as HookReturn['brandingQuery'],
         })}
@@ -52,7 +52,7 @@ describe('AdminBrandingSection', () => {
   });
 
   it('renders heading, description and upload affordance once loaded', () => {
-    render(<AdminBrandingSection {...buildHook()} />);
+    render(<AdminBrandingSectionView {...buildHook()} />);
 
     expect(screen.getByText('heading')).toBeInTheDocument();
     expect(screen.getByText('description')).toBeInTheDocument();
@@ -61,7 +61,7 @@ describe('AdminBrandingSection', () => {
 
   it('renders the logo preview and remove control when a logo is set', () => {
     render(
-      <AdminBrandingSection {...buildHook({ logoPreview: 'https://cdn.example.com/logo.png' })} />,
+      <AdminBrandingSectionView {...buildHook({ logoPreview: 'https://cdn.example.com/logo.png' })} />,
     );
 
     expect(screen.getByRole('img', { name: 'logoAlt' })).toHaveAttribute(
@@ -72,16 +72,16 @@ describe('AdminBrandingSection', () => {
   });
 
   it('disables save while not dirty and enables it once dirty', () => {
-    const { rerender } = render(<AdminBrandingSection {...buildHook({ isDirty: false })} />);
+    const { rerender } = render(<AdminBrandingSectionView {...buildHook({ isDirty: false })} />);
     expect(screen.getByRole('button', { name: /saveCta/i })).toBeDisabled();
 
-    rerender(<AdminBrandingSection {...buildHook({ isDirty: true })} />);
+    rerender(<AdminBrandingSectionView {...buildHook({ isDirty: true })} />);
     expect(screen.getByRole('button', { name: /saveCta/i })).toBeEnabled();
   });
 
   it('shows the saving label and spinner while isSavePending', () => {
     const { container } = render(
-      <AdminBrandingSection {...buildHook({ isDirty: true, isSavePending: true })} />,
+      <AdminBrandingSectionView {...buildHook({ isDirty: true, isSavePending: true })} />,
     );
 
     expect(screen.getByText('saving')).toBeInTheDocument();
@@ -90,7 +90,7 @@ describe('AdminBrandingSection', () => {
 
   it('fires handleSave when the save button is clicked', async () => {
     const handleSave = vi.fn();
-    const { user } = setup(<AdminBrandingSection {...buildHook({ isDirty: true, handleSave })} />);
+    const { user } = setup(<AdminBrandingSectionView {...buildHook({ isDirty: true, handleSave })} />);
 
     await user.click(screen.getByRole('button', { name: /saveCta/i }));
     expect(handleSave).toHaveBeenCalledTimes(1);
@@ -99,7 +99,7 @@ describe('AdminBrandingSection', () => {
   it('fires handleRemoveLogo when the remove control is clicked', async () => {
     const handleRemoveLogo = vi.fn();
     const { user } = setup(
-      <AdminBrandingSection
+      <AdminBrandingSectionView
         {...buildHook({ logoPreview: 'https://cdn.example.com/logo.png', handleRemoveLogo })}
       />,
     );

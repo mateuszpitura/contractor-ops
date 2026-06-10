@@ -8,7 +8,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { render, screen, setup } from '@/test/test-utils';
 import type { useKsefSetupDialog } from '../hooks/use-ksef-setup-dialog';
-import { KsefSetupDialog } from '../ksef-setup-dialog';
+import { KsefSetupDialogView } from '../ksef-setup-dialog';
 
 type HookReturn = ReturnType<typeof useKsefSetupDialog>;
 
@@ -35,9 +35,9 @@ function buildHook(overrides: Partial<HookReturn> = {}): HookReturn {
   } as HookReturn;
 }
 
-describe('KsefSetupDialog', () => {
+describe('KsefSetupDialogView', () => {
   it('renders title, description and NIP helper when open with an orgNip', () => {
-    render(<KsefSetupDialog open onOpenChange={vi.fn()} orgNip="1234567890" {...buildHook()} />);
+    render(<KsefSetupDialogView open onOpenChange={vi.fn()} orgNip="1234567890" {...buildHook()} />);
 
     expect(screen.getByText('connectTitle')).toBeInTheDocument();
     expect(screen.getByText('connectDescription')).toBeInTheDocument();
@@ -48,13 +48,13 @@ describe('KsefSetupDialog', () => {
   });
 
   it('shows the orgNipMissing warning when orgNip is null', () => {
-    render(<KsefSetupDialog open onOpenChange={vi.fn()} orgNip={null} {...buildHook()} />);
+    render(<KsefSetupDialogView open onOpenChange={vi.fn()} orgNip={null} {...buildHook()} />);
     expect(screen.getByText('orgNipMissing')).toBeInTheDocument();
   });
 
   it('disables the save button when isSaveDisabled is true', () => {
     render(
-      <KsefSetupDialog
+      <KsefSetupDialogView
         open
         onOpenChange={vi.fn()}
         orgNip="123"
@@ -67,7 +67,7 @@ describe('KsefSetupDialog', () => {
 
   it('shows the spinner while isPending', () => {
     render(
-      <KsefSetupDialog
+      <KsefSetupDialogView
         open
         onOpenChange={vi.fn()}
         orgNip="123"
@@ -82,7 +82,7 @@ describe('KsefSetupDialog', () => {
   it('fires resetAndClose when the discard button is clicked', async () => {
     const resetAndClose = vi.fn();
     const { user } = setup(
-      <KsefSetupDialog
+      <KsefSetupDialogView
         open
         onOpenChange={vi.fn()}
         orgNip="123"
@@ -97,7 +97,7 @@ describe('KsefSetupDialog', () => {
   it('forwards token input changes via setToken', async () => {
     const setToken = vi.fn();
     const { user } = setup(
-      <KsefSetupDialog open onOpenChange={vi.fn()} orgNip="123" {...buildHook({ setToken })} />,
+      <KsefSetupDialogView open onOpenChange={vi.fn()} orgNip="123" {...buildHook({ setToken })} />,
     );
 
     // tokenLabel appears twice (tab trigger + textarea label) — pick the
@@ -109,7 +109,7 @@ describe('KsefSetupDialog', () => {
   });
 
   it('does not render dialog body when closed', () => {
-    render(<KsefSetupDialog open={false} onOpenChange={vi.fn()} orgNip="123" {...buildHook()} />);
+    render(<KsefSetupDialogView open={false} onOpenChange={vi.fn()} orgNip="123" {...buildHook()} />);
 
     expect(screen.queryByText('connectTitle')).not.toBeInTheDocument();
   });

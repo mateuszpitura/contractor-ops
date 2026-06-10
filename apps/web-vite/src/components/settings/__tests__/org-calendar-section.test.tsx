@@ -7,14 +7,14 @@
 
 import { describe, expect, it, vi } from 'vitest';
 
-vi.mock('../../billing/feature-gate-container', () => ({
-  FeatureGateContainer: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+vi.mock('../../layout/feature-gate', () => ({
+  FeatureGate: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 
 import { render, screen, setup } from '@/test/test-utils';
 import type { CalendarConnection, useMyCalendarSection } from '../hooks/use-my-calendar-section';
 import type { useOrgCalendarSection } from '../hooks/use-org-calendar-section';
-import { OrgCalendarSection, OrgCalendarSectionSkeleton } from '../org-calendar-section';
+import { OrgCalendarSectionView, OrgCalendarSectionSkeleton } from '../org-calendar-section';
 
 type HookReturn = ReturnType<typeof useOrgCalendarSection>;
 
@@ -51,21 +51,21 @@ const connectedOutlook: CalendarConnection = {
 
 type Hook = ReturnType<typeof useMyCalendarSection>;
 
-describe('OrgCalendarSection', () => {
+describe('OrgCalendarSectionView', () => {
   it('renders skeleton placeholders via the Skeleton sibling export', () => {
     const { container } = render(<OrgCalendarSectionSkeleton t={tStub} />);
     expect(container.querySelectorAll('[data-slot="skeleton"]').length).toBeGreaterThan(0);
   });
 
   it('renders disconnected Google + Outlook cards by default', () => {
-    render(<OrgCalendarSection {...buildProps()} />);
+    render(<OrgCalendarSectionView {...buildProps()} />);
     expect(screen.getAllByText('Not connected').length).toBeGreaterThanOrEqual(2);
     expect(screen.getAllByRole('button', { name: 'Connect Calendar' }).length).toBe(2);
   });
 
   it('fires onOutlookConnect when the Outlook connect button is clicked', async () => {
     const onOutlookConnect = vi.fn();
-    const { user } = setup(<OrgCalendarSection {...buildProps({ onOutlookConnect })} />);
+    const { user } = setup(<OrgCalendarSectionView {...buildProps({ onOutlookConnect })} />);
 
     // Both providers share the connect-calendar label; the second one
     // ("Outlook Calendar") is below the first card.
@@ -77,7 +77,7 @@ describe('OrgCalendarSection', () => {
 
   it('shows the connected badge + account when Outlook is connected', () => {
     render(
-      <OrgCalendarSection
+      <OrgCalendarSectionView
         {...buildProps({ outlookConnection: connectedOutlook as Hook['outlookConnection'] })}
       />,
     );

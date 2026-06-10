@@ -6,13 +6,13 @@
 
 import { describe, expect, it, vi } from 'vitest';
 
-vi.mock('../reminder-rule-user-picker-container', () => ({
-  ReminderRuleUserPickerContainer: () => null,
+vi.mock('../reminder-rule-user-picker', () => ({
+  ReminderRuleUserPicker: () => null,
 }));
 
 import { useForm } from 'react-hook-form';
 import { render, screen } from '@/test/test-utils';
-import { ReminderRuleEditor } from '../reminder-rule-editor';
+import { ReminderRuleEditorView } from '../reminder-rule-editor';
 
 const tStub = ((key: string) => key) as never;
 
@@ -60,7 +60,7 @@ function Harness({
   });
 
   return (
-    <ReminderRuleEditor
+    <ReminderRuleEditorView
       open={open}
       onOpenChange={vi.fn()}
       rule={undefined}

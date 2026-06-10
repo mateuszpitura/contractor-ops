@@ -12,12 +12,12 @@ import { render, screen, setup } from '@/test/test-utils';
 import type { LinearProviderSectionViewProps } from '../linear-provider-section';
 import { LinearProviderSectionView } from '../linear-provider-section';
 
-vi.mock('../../billing/feature-gate-container', () => ({
-  FeatureGateContainer: ({ children }: { children: ReactNode }) => <>{children}</>,
+vi.mock('../../layout/feature-gate.js', () => ({
+  FeatureGate: ({ children }: { children: ReactNode }) => <>{children}</>,
 }));
 
-vi.mock('../../settings/provider-connection-card-container', () => ({
-  ProviderConnectionCardContainer: ({
+vi.mock('../../settings/provider-connection-card.js', () => ({
+  ProviderConnectionCard: ({
     displayName,
     description,
   }: {
@@ -31,7 +31,7 @@ vi.mock('../../settings/provider-connection-card-container', () => ({
   ),
 }));
 
-vi.mock('../linear-status-mapping-dialog-container', () => ({
+vi.mock('../linear-status-mapping-dialog.js', () => ({
   LinearStatusMappingDialog: ({ open }: { open: boolean }) =>
     open ? <div data-testid="mapping-dialog" /> : null,
 }));
@@ -68,11 +68,14 @@ function buildProps(overrides: BuildOpts = {}): LinearProviderSectionViewProps {
   }) as TranslateFn;
 
   return {
+    connection: { status: isConnected ? 'CONNECTED' : 'DISCONNECTED' },
     isConnected,
     isPendingMapping,
     needsReauth,
     mappingOpen,
     setMappingOpen,
+    mappingDialogOpen: mappingOpen,
+    setMappingDialogOpen: setMappingOpen,
     openMappingDialog,
     t,
   };

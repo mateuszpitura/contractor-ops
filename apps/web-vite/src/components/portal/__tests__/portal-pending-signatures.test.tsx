@@ -5,8 +5,8 @@
  * envelope details.
  */
 
-vi.mock('../embedded-signing-modal-container', () => ({
-  EmbeddedSigningModalContainer: () => null,
+vi.mock('../embedded-signing-modal', () => ({
+  EmbeddedSigningModalWired: () => null,
 }));
 
 vi.mock('@/lib/format/use-portal-date-formatter.js', () => ({

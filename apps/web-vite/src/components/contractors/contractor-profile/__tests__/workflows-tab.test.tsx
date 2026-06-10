@@ -8,12 +8,12 @@
 import type { ComponentProps, Dispatch, SetStateAction } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
-vi.mock('../../../integrations/jira-activity-summary-container.js', () => ({
+vi.mock('../../../integrations/jira-activity-summary.js', () => ({
   JiraActivitySummary: () => <div data-testid="jira-summary" />,
 }));
 
-vi.mock('../../../workflows/template-picker-container.js', () => ({
-  TemplatePickerContainer: () => null,
+vi.mock('../../../workflows/template-picker-dialog.js', () => ({
+  TemplatePickerDialog: () => null,
 }));
 
 import { render, screen } from '../../../../test/test-utils.js';

@@ -4,20 +4,20 @@ vi.mock('@/hooks/use-permissions', () => ({
   usePermissions: () => ({ role: 'admin' }),
 }));
 
-// VatRateSelectorContainer reaches into tRPC for tax rates — swap for a
+// VatRateSelector reaches into tRPC for tax rates — swap for a
 // presentational stub so the form test stays scoped to its own logic.
-vi.mock('../../vat-rate-selector-container', () => ({
-  VatRateSelectorContainer: () => <div data-testid="vat-rate-selector-stub" />,
+vi.mock('../../vat-rate-selector', () => ({
+  VatRateSelector: () => <div data-testid="vat-rate-selector-stub" />,
 }));
 
 import type { useInvoiceMetadataForm } from '../../hooks/use-invoice-metadata-form';
-import { InvoiceMetadataForm } from '../invoice-metadata-form';
+import { InvoiceMetadataFormView } from '../invoice-metadata-form';
 
 type Mutations = ReturnType<typeof useInvoiceMetadataForm>;
 
 function baseInvoice(
   overrides: Record<string, unknown> = {},
-): Parameters<typeof InvoiceMetadataForm>[0]['invoice'] {
+): Parameters<typeof InvoiceMetadataFormView>[0]['invoice'] {
   return {
     id: 'inv-meta-1',
     invoiceNumber: 'FV/META/01',
@@ -36,7 +36,7 @@ function baseInvoice(
     sellerBankAccount: null,
     status: 'RECEIVED',
     ...overrides,
-  } as Parameters<typeof InvoiceMetadataForm>[0]['invoice'];
+  } as Parameters<typeof InvoiceMetadataFormView>[0]['invoice'];
 }
 
 function makeMutations(overrides: Partial<Mutations> = {}): Mutations {
@@ -54,7 +54,7 @@ function makeMutations(overrides: Partial<Mutations> = {}): Mutations {
 
 describe('InvoiceMetadataForm', () => {
   it('enables editing and shows save / submit actions when status is RECEIVED', () => {
-    render(<InvoiceMetadataForm invoice={baseInvoice()} mutations={makeMutations()} />);
+    render(<InvoiceMetadataFormView invoice={baseInvoice()} mutations={makeMutations()} />);
     expect(screen.getByLabelText(/invoice number/i)).not.toBeDisabled();
     expect(screen.getByRole('button', { name: /save draft/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /submit for matching/i })).toBeInTheDocument();
@@ -62,7 +62,7 @@ describe('InvoiceMetadataForm', () => {
 
   it('disables the invoice-number input and hides save / submit when not RECEIVED', () => {
     render(
-      <InvoiceMetadataForm
+      <InvoiceMetadataFormView
         invoice={baseInvoice({ status: 'APPROVED' })}
         mutations={makeMutations()}
       />,
@@ -74,7 +74,7 @@ describe('InvoiceMetadataForm', () => {
   it('shows a validation error when invoice number is cleared before save', async () => {
     const onSaveDraft = vi.fn();
     const { user } = setup(
-      <InvoiceMetadataForm invoice={baseInvoice()} mutations={makeMutations({ onSaveDraft })} />,
+      <InvoiceMetadataFormView invoice={baseInvoice()} mutations={makeMutations({ onSaveDraft })} />,
     );
     const numberInput = screen.getByLabelText(/invoice number/i);
     await user.clear(numberInput);
@@ -88,7 +88,7 @@ describe('InvoiceMetadataForm', () => {
   it('calls onSaveDraft with the form values when save draft passes validation', async () => {
     const onSaveDraft = vi.fn();
     const { user } = setup(
-      <InvoiceMetadataForm invoice={baseInvoice()} mutations={makeMutations({ onSaveDraft })} />,
+      <InvoiceMetadataFormView invoice={baseInvoice()} mutations={makeMutations({ onSaveDraft })} />,
     );
     await user.click(screen.getByRole('button', { name: /save draft/i }));
     await waitFor(() => {
@@ -102,7 +102,7 @@ describe('InvoiceMetadataForm', () => {
   it('calls onSubmitForMatching when the submit button is used', async () => {
     const onSubmitForMatching = vi.fn();
     const { user } = setup(
-      <InvoiceMetadataForm
+      <InvoiceMetadataFormView
         invoice={baseInvoice()}
         mutations={makeMutations({ onSubmitForMatching })}
       />,
@@ -113,7 +113,7 @@ describe('InvoiceMetadataForm', () => {
 
   it('disables save + submit buttons when isSubmitting', () => {
     render(
-      <InvoiceMetadataForm
+      <InvoiceMetadataFormView
         invoice={baseInvoice()}
         mutations={makeMutations({ isSubmitting: true, isSaving: true })}
       />,
@@ -123,7 +123,7 @@ describe('InvoiceMetadataForm', () => {
   });
 
   it('renders all currency input labels for monetary fields', () => {
-    render(<InvoiceMetadataForm invoice={baseInvoice()} mutations={makeMutations()} />);
+    render(<InvoiceMetadataFormView invoice={baseInvoice()} mutations={makeMutations()} />);
     expect(screen.getByLabelText(/net amount/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/vat amount/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/gross amount/i)).toBeInTheDocument();
@@ -133,7 +133,7 @@ describe('InvoiceMetadataForm', () => {
 
   it('converts minor units to display value for monetary fields', () => {
     render(
-      <InvoiceMetadataForm
+      <InvoiceMetadataFormView
         invoice={baseInvoice({ subtotalMinor: 25050, totalMinor: 50000 })}
         mutations={makeMutations()}
       />,
@@ -143,7 +143,7 @@ describe('InvoiceMetadataForm', () => {
   });
 
   it('renders the more-actions trigger when status is RECEIVED', () => {
-    render(<InvoiceMetadataForm invoice={baseInvoice()} mutations={makeMutations()} />);
+    render(<InvoiceMetadataFormView invoice={baseInvoice()} mutations={makeMutations()} />);
     expect(screen.getByRole('button', { name: /more actions/i })).toBeInTheDocument();
   });
 });

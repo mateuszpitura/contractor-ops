@@ -1,17 +1,17 @@
 /**
- * Container/component split. The detail sheet container is mocked to a
+ * View component tests —. The detail sheet is mocked to a
  * noop to keep the test scoped to the card surface.
  */
 
 import { describe, expect, it, vi } from 'vitest';
 
-vi.mock('../provider-detail-sheet-container', () => ({
-  ProviderDetailSheetContainer: () => null,
+vi.mock('../provider-detail-sheet', () => ({
+  ProviderDetailSheet: () => null,
 }));
 
 import { render, screen, setup } from '@/test/test-utils';
 import type { useProviderConnectionCard } from '../hooks/use-provider-connection-card';
-import { ProviderConnectionCard } from '../provider-connection-card';
+import { ProviderConnectionCardView } from '../provider-connection-card';
 
 type HookReturn = ReturnType<typeof useProviderConnectionCard>;
 
@@ -32,7 +32,7 @@ function buildHook(overrides: Partial<HookReturn> = {}): HookReturn {
   } as HookReturn;
 }
 
-function baseProps(extra: Partial<Parameters<typeof ProviderConnectionCard>[0]> = {}) {
+function baseProps(extra: Partial<Parameters<typeof ProviderConnectionCardView>[0]> = {}) {
   return {
     provider: 'slack',
     displayName: 'Slack',
@@ -44,13 +44,13 @@ function baseProps(extra: Partial<Parameters<typeof ProviderConnectionCard>[0]> 
     setDetailSheetOpen: vi.fn(),
     ...buildHook(),
     ...extra,
-  } as Parameters<typeof ProviderConnectionCard>[0];
+  } as Parameters<typeof ProviderConnectionCardView>[0];
 }
 
-describe('ProviderConnectionCard', () => {
+describe('ProviderConnectionCardView', () => {
   it('renders the loading skeleton while isLoading', () => {
     const { container } = render(
-      <ProviderConnectionCard {...baseProps(buildHook({ isLoading: true }))} />,
+      <ProviderConnectionCardView {...baseProps(buildHook({ isLoading: true }))} />,
     );
     expect(container.querySelectorAll('[data-slot="skeleton"]').length).toBeGreaterThan(0);
   });
@@ -58,7 +58,7 @@ describe('ProviderConnectionCard', () => {
   it('renders the disconnected state with description + connect CTA by default', async () => {
     const handleConnect = vi.fn();
     const { user } = setup(
-      <ProviderConnectionCard {...baseProps({ ...buildHook({ handleConnect }) })} />,
+      <ProviderConnectionCardView {...baseProps({ ...buildHook({ handleConnect }) })} />,
     );
 
     expect(screen.getByText('Slack description text')).toBeInTheDocument();
@@ -69,7 +69,7 @@ describe('ProviderConnectionCard', () => {
 
   it('renders the connected state and manage / disconnect CTAs when CONNECTED', () => {
     render(
-      <ProviderConnectionCard
+      <ProviderConnectionCardView
         {...baseProps(
           buildHook({
             health: {
@@ -89,7 +89,7 @@ describe('ProviderConnectionCard', () => {
 
   it('renders the reauth body when status is REAUTH_REQUIRED', () => {
     render(
-      <ProviderConnectionCard
+      <ProviderConnectionCardView
         {...baseProps(buildHook({ health: { status: 'REAUTH_REQUIRED' } as never }))}
       />,
     );
@@ -101,7 +101,7 @@ describe('ProviderConnectionCard', () => {
 
   it('renders the error body when status is ERROR', () => {
     render(
-      <ProviderConnectionCard
+      <ProviderConnectionCardView
         {...baseProps(buildHook({ health: { status: 'ERROR' } as never }))}
       />,
     );
@@ -112,7 +112,7 @@ describe('ProviderConnectionCard', () => {
 
   it('opens the disconnect dialog body when disconnectDialogOpen is true', () => {
     render(
-      <ProviderConnectionCard
+      <ProviderConnectionCardView
         {...baseProps({
           disconnectDialogOpen: true,
           ...buildHook({ health: { status: 'CONNECTED' } as never }),

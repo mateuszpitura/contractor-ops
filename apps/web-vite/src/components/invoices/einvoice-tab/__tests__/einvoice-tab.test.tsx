@@ -2,15 +2,15 @@ import { render, screen } from '@/test/test-utils';
 
 // EInvoiceTab embeds a tRPC-backed download button container — stub it so the
 // tab test stays isolated to its own composition logic.
-vi.mock('../download-zugferd-pdf-button-container', () => ({
-  DownloadZugferdPdfButtonContainer: () => (
+vi.mock('../download-zugferd-pdf-button', () => ({
+  DownloadZugferdPdfButton: () => (
     <button type="button" data-testid="zugferd-stub">
       Download ZUGFeRD PDF
     </button>
   ),
 }));
 
-import { EInvoiceTab, EInvoiceTabSkeleton } from '../einvoice-tab';
+import { EInvoiceTabView, EInvoiceTabSkeleton } from '../einvoice-tab';
 import type { InvoiceTabData } from '../types';
 
 type TabExtras = {
@@ -54,7 +54,7 @@ function tabProps(tabData: InvoiceTabData = baseData(), extras: TabExtras = {}) 
 
 describe('EInvoiceTab', () => {
   it('emits an aria-live polite announcement region', () => {
-    render(<EInvoiceTab invoiceId="inv_1" {...tabProps()} />);
+    render(<EInvoiceTabView invoiceId="inv_1" {...tabProps()} />);
     expect(document.querySelector('[aria-live="polite"]')).toBeTruthy();
   });
 
@@ -65,7 +65,7 @@ describe('EInvoiceTab', () => {
 
   it('renders an error alert when errorMessage is present', () => {
     render(
-      <EInvoiceTab
+      <EInvoiceTabView
         invoiceId="inv_1"
         {...tabProps(baseData(), { errorMessage: 'Something went wrong' })}
       />,
@@ -75,7 +75,7 @@ describe('EInvoiceTab', () => {
 
   it('renders the Leitweg warning when DE public-sector buyer lacks an ID', () => {
     render(
-      <EInvoiceTab
+      <EInvoiceTabView
         invoiceId="inv_1"
         {...tabProps(baseData({ isPublicSectorBuyer: true, leitwegIdValue: null }))}
       />,
@@ -87,7 +87,7 @@ describe('EInvoiceTab', () => {
 
   it('renders the resolved Leitweg block when isPublicSectorBuyer + leitwegIdValue are set', () => {
     render(
-      <EInvoiceTab
+      <EInvoiceTabView
         invoiceId="inv_1"
         {...tabProps(
           baseData({

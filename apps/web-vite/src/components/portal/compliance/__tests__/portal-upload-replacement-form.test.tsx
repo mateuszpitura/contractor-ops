@@ -9,7 +9,7 @@ import { applyLocale, initI18n } from '../../../../i18n/index.js';
 import { mount } from './_render.js';
 
 // Stub the DropZone to a plain file input so we can drive file selection.
-vi.mock('../../../documents/drop-zone-container.js', () => ({
+vi.mock('../../../documents/drop-zone.js', () => ({
   DropZone: ({ onFilesAccepted }: { onFilesAccepted?: (f: File[]) => void }) => (
     <input
       type="file"

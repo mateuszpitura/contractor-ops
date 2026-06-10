@@ -5,9 +5,18 @@
  * stay focused on dialog branching and parcel-size interaction.
  */
 
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { render, screen, setup } from '@/test/test-utils';
+
+// The InPost paczkomat surface is gated on the build-time geowidget token
+// (`import.meta.env.VITE_INPOST_GEOWIDGET_TOKEN`). Tests that exercise the
+// picker/display path stub a token; the absence path is asserted separately.
+const GEOWIDGET_TOKEN_KEY = 'VITE_INPOST_GEOWIDGET_TOKEN';
+
+afterEach(() => {
+  vi.unstubAllEnvs();
+});
 
 vi.mock('../paczkomat-picker', () => ({
   PaczkomatPicker: () => <div data-testid="paczkomat-picker">Picker</div>,
@@ -85,8 +94,16 @@ describe('CarrierShipmentForm (web-vite)', () => {
   });
 
   it('auto-selects InPost when only InPost is configured', () => {
+    vi.stubEnv(GEOWIDGET_TOKEN_KEY, 'geowidget_test_token');
     render(makeView({ configuredCarriers: ['inpost'] }));
     expect(screen.getByText('Select Paczkomat')).toBeInTheDocument();
+  });
+
+  it('shows the geowidget load-error state for InPost when no token is configured', () => {
+    vi.stubEnv(GEOWIDGET_TOKEN_KEY, '');
+    render(makeView({ configuredCarriers: ['inpost'] }));
+    expect(screen.getByText(/Could not load the Paczkomat map/i)).toBeInTheDocument();
+    expect(screen.queryByText('Select Paczkomat')).not.toBeInTheDocument();
   });
 
   it('renders recipient name for InPost branch', () => {
@@ -95,6 +112,7 @@ describe('CarrierShipmentForm (web-vite)', () => {
   });
 
   it('shows paczkomat display when preferredPaczkomat is provided', () => {
+    vi.stubEnv(GEOWIDGET_TOKEN_KEY, 'geowidget_test_token');
     render(
       makeView({
         configuredCarriers: ['inpost'],

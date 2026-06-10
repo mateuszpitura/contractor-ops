@@ -1,24 +1,16 @@
 /**
- * Container-level test for OnboardingImportContainer (formerly ImportWizard).
- *
- * The wizard composition was lifted from a presentational `ImportWizard`
- * view into the decisive `OnboardingImportContainer` (composes 4 step
- * containers + owns step state + FeatureGate). We mock all 5 children to
- * isolate the container's own concerns:
- *  - step indicator state (`aria-current="step"` on the active circle)
- *  - the page title/subtitle from the OnboardingImport namespace
- *  - the Back/Continue footer disabled-state rules
+ * Page-level test for OnboardingImportPageContent (formerly OnboardingImportContainer).
  */
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-vi.mock('../../billing/feature-gate-container.js', () => ({
-  FeatureGateContainer: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+vi.mock('../../layout/feature-gate.js', () => ({
+  FeatureGate: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 
 const pickJira = (onSourcesChange: (s: string[]) => void) => () => onSourcesChange(['JIRA']);
 
-vi.mock('../source-selection-step-container.js', () => ({
+vi.mock('../source-selection-step.js', () => ({
   SourceSelectionStepContainer: ({
     onSourcesChange,
   }: {
@@ -32,19 +24,19 @@ vi.mock('../source-selection-step-container.js', () => ({
   ),
 }));
 
-vi.mock('../people-review-step-container.js', () => ({
+vi.mock('../people-review-step.js', () => ({
   PeopleReviewStepContainer: () => <div data-testid="step2">step2</div>,
 }));
 
-vi.mock('../project-import-step-container.js', () => ({
+vi.mock('../project-import-step.js', () => ({
   ProjectImportStepContainer: () => <div data-testid="step3">step3</div>,
 }));
 
-vi.mock('../confirm-import-step-container.js', () => ({
+vi.mock('../confirm-import-step.js', () => ({
   ConfirmImportStepContainer: () => <div data-testid="step4">step4</div>,
 }));
 
-import { OnboardingImportContainer } from '../onboarding-import-container.js';
+import { OnboardingImportPageContent } from '../../../pages/dashboard/onboarding-import.js';
 import { click, findButton, mount } from './_render.js';
 
 afterEach(() => {
@@ -52,33 +44,28 @@ afterEach(() => {
   vi.clearAllMocks();
 });
 
-describe('OnboardingImportContainer (web-vite)', () => {
+describe('OnboardingImportPageContent (web-vite)', () => {
   it('renders the page title + subtitle', async () => {
-    const { container } = await mount(<OnboardingImportContainer />);
+    const { container } = await mount(<OnboardingImportPageContent />);
     expect(container.textContent).toContain('Import Your Team');
     expect(container.textContent).toContain('Pull in team members');
   });
 
   it('renders step 1 (source selection) by default', async () => {
-    const { container } = await mount(<OnboardingImportContainer />);
+    const { container } = await mount(<OnboardingImportPageContent />);
     expect(container.querySelector('[data-testid="step1"]')).not.toBeNull();
     expect(container.querySelector('[data-testid="step2"]')).toBeNull();
   });
 
-  // TODO: base-ui Stepper does not propagate aria-current="step" in jsdom from the
-  // controlled `value` prop without an interaction. Container correctly composes
-  // the wizard; this assertion exercises a UI-library behaviour, not container
-  // logic. Re-enable when jsdom + base-ui aria propagation is fixed in the
-  // shared test harness.
   it.skip('marks the current step with aria-current="step"', async () => {
-    const { container } = await mount(<OnboardingImportContainer />);
+    const { container } = await mount(<OnboardingImportPageContent />);
     const current = container.querySelector('[aria-current="step"]');
     expect(current).not.toBeNull();
     expect(current?.textContent ?? '').toContain('Select Sources');
   });
 
   it('renders all four step labels in the indicator', async () => {
-    const { container } = await mount(<OnboardingImportContainer />);
+    const { container } = await mount(<OnboardingImportPageContent />);
     const text = container.textContent ?? '';
     expect(text).toContain('Select Sources');
     expect(text).toContain('Review People');
@@ -87,7 +74,7 @@ describe('OnboardingImportContainer (web-vite)', () => {
   });
 
   it('disables Continue on step 1 until a source is selected', async () => {
-    const { container } = await mount(<OnboardingImportContainer />);
+    const { container } = await mount(<OnboardingImportPageContent />);
     const cont = findButton(container, 'Continue');
     expect(cont).not.toBeNull();
     expect(cont?.disabled).toBe(true);
@@ -102,7 +89,7 @@ describe('OnboardingImportContainer (web-vite)', () => {
   });
 
   it('advances to step 2 when Continue is clicked with a valid source', async () => {
-    const { container } = await mount(<OnboardingImportContainer />);
+    const { container } = await mount(<OnboardingImportPageContent />);
     const pick = Array.from(container.querySelectorAll('button')).find(b =>
       (b.textContent ?? '').includes('pick-jira'),
     );
@@ -110,11 +97,10 @@ describe('OnboardingImportContainer (web-vite)', () => {
     const cont = findButton(container, 'Continue');
     await click(cont as HTMLButtonElement);
     expect(container.querySelector('[data-testid="step2"]')).not.toBeNull();
-    // aria-current="step" propagation tested in skipped sibling test above.
   });
 
   it('renders Back once past step 1', async () => {
-    const { container } = await mount(<OnboardingImportContainer />);
+    const { container } = await mount(<OnboardingImportPageContent />);
     const pick = Array.from(container.querySelectorAll('button')).find(b =>
       (b.textContent ?? '').includes('pick-jira'),
     );

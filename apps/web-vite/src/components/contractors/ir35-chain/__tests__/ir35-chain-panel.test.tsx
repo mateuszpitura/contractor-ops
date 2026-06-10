@@ -1,5 +1,5 @@
 /**
- * web-vite port. View receives mutations as props; AddParticipantDialogContainer
+ * web-vite port. View receives mutations as props; AddParticipantDialog
  * is mocked to avoid tRPC.
  */
 
@@ -13,8 +13,8 @@ vi.mock('../chain-participant-row.js', () => ({
   ),
 }));
 
-vi.mock('../add-participant-dialog-container.js', () => ({
-  AddParticipantDialogContainer: () => <div data-testid="add-participant-dialog" />,
+vi.mock('../add-participant-dialog.js', () => ({
+  AddParticipantDialog: () => <div data-testid="add-participant-dialog" />,
 }));
 
 import { render, screen } from '../../../../test/test-utils.js';

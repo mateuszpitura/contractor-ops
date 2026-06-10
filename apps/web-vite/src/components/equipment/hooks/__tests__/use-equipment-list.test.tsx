@@ -126,7 +126,7 @@ describe('useEquipmentList', () => {
     setTRPCMock({
       'equipment.list': () => ({ items: [{ id: 'eq1' }], total: 1 }),
       'equipment.unassign': () => {
-        throw new Error('conflict');
+        throw new Error('Something went wrong. Please try again.');
       },
     });
     const { result } = renderHookWithProviders(() => useEquipmentList());

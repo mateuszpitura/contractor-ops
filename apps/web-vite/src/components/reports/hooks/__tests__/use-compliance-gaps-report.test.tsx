@@ -152,7 +152,7 @@ describe('useComplianceGapsReport', () => {
       'report.complianceGaps': () => ({ items: [], total: 0 }),
       'report.complianceGapsChart': () => ({ critical: 0, warning: 0, ok: 0 }),
       'report.exportComplianceGaps': () => {
-        throw new Error('nope');
+        throw new Error('Something went wrong. Please try again.');
       },
     });
     const { result } = renderHookWithProviders(() => useComplianceGapsReport());

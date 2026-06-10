@@ -8,7 +8,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { render, screen, setup } from '@/test/test-utils';
 import type { useInvoiceMatchingSettings } from '../hooks/use-invoice-matching-settings';
-import { InvoiceMatchingSettings } from '../invoice-matching-settings';
+import { InvoiceMatchingSettingsView } from '../invoice-matching-settings';
 
 type HookReturn = ReturnType<typeof useInvoiceMatchingSettings>;
 
@@ -29,9 +29,9 @@ function buildHook(overrides: Partial<HookReturn> = {}): HookReturn {
   } as HookReturn;
 }
 
-describe('InvoiceMatchingSettings', () => {
+describe('InvoiceMatchingSettingsView', () => {
   it('renders the email inbox, threshold input and copy button', () => {
-    render(<InvoiceMatchingSettings {...buildHook()} />);
+    render(<InvoiceMatchingSettingsView {...buildHook()} />);
 
     const emailInput = screen.getByLabelText('invoiceEmailInbox') as HTMLInputElement;
     expect(emailInput.value).toBe('invoices@acme.contractorhub.io');
@@ -42,24 +42,24 @@ describe('InvoiceMatchingSettings', () => {
   });
 
   it('disables save while not dirty', () => {
-    render(<InvoiceMatchingSettings {...buildHook({ isDirty: false })} />);
+    render(<InvoiceMatchingSettingsView {...buildHook({ isDirty: false })} />);
     expect(screen.getByRole('button', { name: 'saveCta' })).toBeDisabled();
   });
 
   it('enables save when dirty and shows the saving label while pending', () => {
     const { container, rerender } = render(
-      <InvoiceMatchingSettings {...buildHook({ isDirty: true })} />,
+      <InvoiceMatchingSettingsView {...buildHook({ isDirty: true })} />,
     );
     expect(screen.getByRole('button', { name: 'saveCta' })).toBeEnabled();
 
-    rerender(<InvoiceMatchingSettings {...buildHook({ isDirty: true, isPending: true })} />);
+    rerender(<InvoiceMatchingSettingsView {...buildHook({ isDirty: true, isPending: true })} />);
     expect(screen.getByText('saving')).toBeInTheDocument();
     expect(container.querySelector('.animate-spin')).toBeInTheDocument();
   });
 
   it('fires handleCopyEmail when the copy button is clicked', async () => {
     const handleCopyEmail = vi.fn();
-    const { user } = setup(<InvoiceMatchingSettings {...buildHook({ handleCopyEmail })} />);
+    const { user } = setup(<InvoiceMatchingSettingsView {...buildHook({ handleCopyEmail })} />);
 
     await user.click(screen.getByRole('button', { name: 'copyEmail' }));
     expect(handleCopyEmail).toHaveBeenCalledTimes(1);
@@ -68,7 +68,7 @@ describe('InvoiceMatchingSettings', () => {
   it('fires setThreshold as the threshold input changes', async () => {
     const setThreshold = vi.fn();
     const { user } = setup(
-      <InvoiceMatchingSettings {...buildHook({ threshold: 10, setThreshold })} />,
+      <InvoiceMatchingSettingsView {...buildHook({ threshold: 10, setThreshold })} />,
     );
 
     const input = screen.getByLabelText('deviationThreshold') as HTMLInputElement;
@@ -83,7 +83,7 @@ describe('InvoiceMatchingSettings', () => {
   it('fires handleSave when the save button is clicked', async () => {
     const handleSave = vi.fn();
     const { user } = setup(
-      <InvoiceMatchingSettings {...buildHook({ isDirty: true, handleSave })} />,
+      <InvoiceMatchingSettingsView {...buildHook({ isDirty: true, handleSave })} />,
     );
 
     await user.click(screen.getByRole('button', { name: 'saveCta' }));

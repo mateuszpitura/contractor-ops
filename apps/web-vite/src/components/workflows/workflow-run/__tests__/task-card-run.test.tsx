@@ -14,10 +14,10 @@ vi.mock('../../../../lib/format/use-date-formatter.js', () => ({
     formatDateTime: (v: unknown) => (typeof v === 'string' ? v : ''),
   }),
 }));
-vi.mock('../../../integrations/doc-links-section-container.js', () => ({
+vi.mock('../../../integrations/doc-links-section.js', () => ({
   DocLinksSection: () => null,
 }));
-vi.mock('../linear-task-issue-chip-container.js', () => ({
+vi.mock('../linear-task-issue-chip.js', () => ({
   LinearTaskIssueChip: () => null,
 }));
 

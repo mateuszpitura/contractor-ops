@@ -6,8 +6,8 @@
 
 import { describe, expect, it, vi } from 'vitest';
 
-vi.mock('../peppol-wizard-container.js', () => ({
-  PeppolWizardContainer: () => null,
+vi.mock('../peppol-wizard.js', () => ({
+  PeppolWizard: () => null,
 }));
 
 import { render, screen } from '../../../test/test-utils.js';

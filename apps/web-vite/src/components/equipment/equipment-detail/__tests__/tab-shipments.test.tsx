@@ -1,5 +1,5 @@
 /**
- * Web-vite splits the tab into a container (owns the useEquipmentShipments hook
+ * Web-vite splits the tab into a TabShipments wired export (owns the useEquipmentShipments hook
  * + selected shipment state) and `TabShipmentsView`. The view is single-path
  * (renders the populated table); loading/error/empty variants are exported as
  * sibling components (`TabShipmentsSkeleton`, `TabShipmentsError`,
@@ -17,12 +17,12 @@ import {
   TabShipmentsView,
 } from '../tab-shipments.js';
 
-vi.mock('../shipment-timeline-container.js', () => ({
-  ShipmentTimelineContainer: () => <div data-testid="shipment-timeline" />,
+vi.mock('../shipment-timeline.js', () => ({
+  ShipmentTimeline: () => <div data-testid="shipment-timeline" />,
 }));
 
-vi.mock('../return-approval-banner-container.js', () => ({
-  ReturnApprovalBannerContainer: () => <div data-testid="return-banner" />,
+vi.mock('../return-approval-banner.js', () => ({
+  ReturnApprovalBanner: () => <div data-testid="return-banner" />,
 }));
 
 vi.mock('../../shipment-status-badge.js', () => ({

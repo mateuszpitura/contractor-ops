@@ -3,11 +3,11 @@ import { describe, expect, it, vi } from 'vitest';
 
 // Mock the two tRPC-bound dialog containers so the header render stays presentational
 // (mirrors contractor-profile/__tests__/profile-header.test.tsx).
-vi.mock('../components/contracts/contract-wizard/wizard-dialog-container.js', () => ({
-  ContractWizardDialogContainer: () => null,
+vi.mock('../components/contracts/contract-wizard/wizard-dialog.js', () => ({
+  ContractWizardDialog: () => null,
 }));
-vi.mock('../components/workflows/template-picker-container.js', () => ({
-  TemplatePickerContainer: () => null,
+vi.mock('../components/workflows/template-picker-dialog.js', () => ({
+  TemplatePickerDialog: () => null,
 }));
 
 import type { ProfileHeaderContractor } from '../components/contractors/contractor-profile/profile-header.js';

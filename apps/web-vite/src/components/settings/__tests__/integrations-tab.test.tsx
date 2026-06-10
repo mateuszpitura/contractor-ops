@@ -8,38 +8,38 @@
 import type { ReactNode } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
-vi.mock('../../integrations/google-workspace-provider-section-container', () => ({
+vi.mock('../../integrations/google-workspace-provider-section', () => ({
   GoogleWorkspaceProviderSection: () => null,
 }));
-vi.mock('../../integrations/jira-provider-section-container', () => ({
+vi.mock('../../integrations/jira-provider-section', () => ({
   JiraProviderSection: () => null,
 }));
-vi.mock('../../integrations/linear-provider-section-container', () => ({
+vi.mock('../../integrations/linear-provider-section', () => ({
   LinearProviderSection: () => null,
 }));
-vi.mock('../../integrations/teams-provider-section-container', () => ({
+vi.mock('../../integrations/teams-provider-section', () => ({
   TeamsProviderSection: () => null,
 }));
-vi.mock('../../peppol/peppol-status-card-container', () => ({
-  PeppolStatusCardContainer: () => null,
+vi.mock('../../peppol/peppol-status-card', () => ({
+  PeppolStatusCard: () => null,
 }));
-vi.mock('../../zatca/zatca-status-card-container', () => ({
+vi.mock('../../zatca/zatca-status-card', () => ({
   ZatcaStatusCard: () => null,
 }));
-vi.mock('../dpd-provider-section-container', () => ({
-  DpdProviderSectionContainer: () => null,
+vi.mock('../dpd-provider-section.js', () => ({
+  DpdProviderSection: () => null,
 }));
-vi.mock('../ups-provider-section-container', () => ({
-  UpsProviderSectionContainer: () => null,
+vi.mock('../ups-provider-section.js', () => ({
+  UpsProviderSection: () => null,
 }));
-vi.mock('../ksef-provider-section-container', () => ({
-  KsefProviderSectionContainer: () => null,
+vi.mock('../ksef-provider-section.js', () => ({
+  KsefProviderSection: () => null,
 }));
-vi.mock('../org-calendar-section-container', () => ({
-  OrgCalendarSectionContainer: () => <div data-testid="org-calendar" />,
+vi.mock('../org-calendar-section.js', () => ({
+  OrgCalendarSection: () => <div data-testid="org-calendar" />,
 }));
-vi.mock('../provider-connection-card-container', () => ({
-  ProviderConnectionCardContainer: ({
+vi.mock('../provider-connection-card.js', () => ({
+  ProviderConnectionCard: ({
     displayName,
     description,
   }: {
@@ -52,36 +52,36 @@ vi.mock('../provider-connection-card-container', () => ({
     </div>
   ),
 }));
-vi.mock('../slack-sync-button-container', () => ({
-  SlackSyncButtonContainer: () => <div data-testid="slack-sync-button" />,
+vi.mock('../slack-sync-button.js', () => ({
+  SlackSyncButton: () => <div data-testid="slack-sync-button" />,
 }));
-vi.mock('../slack-user-mapping-container', () => ({
-  SlackUserMappingContainer: () => <div data-testid="slack-user-mapping" />,
+vi.mock('../slack-user-mapping.js', () => ({
+  SlackUserMapping: () => <div data-testid="slack-user-mapping" />,
 }));
-vi.mock('../slack-org-grid-card-container', () => ({
-  SlackOrgGridCardContainer: () => <div data-testid="slack-org-grid" />,
+vi.mock('../slack-org-grid-card.js', () => ({
+  SlackOrgGridCard: () => <div data-testid="slack-org-grid" />,
 }));
-vi.mock('../idp-deprovisioning-toggle-table-container', () => ({
-  IdpDeprovisioningToggleTableContainer: () => <div data-testid="idp-toggle-table" />,
+vi.mock('../idp-deprovisioning-toggle-table.js', () => ({
+  IdpDeprovisioningToggleTable: () => <div data-testid="idp-toggle-table" />,
 }));
-vi.mock('../../integrations/entra-provider-section-container', () => ({
+vi.mock('../../integrations/entra-provider-section', () => ({
   EntraProviderSection: () => <div data-testid="entra-section" />,
 }));
-vi.mock('../../integrations/okta-provider-section-container', () => ({
+vi.mock('../../integrations/okta-provider-section', () => ({
   OktaProviderSection: () => <div data-testid="okta-section" />,
 }));
-vi.mock('../../integrations/github-provider-section-container', () => ({
+vi.mock('../../integrations/github-provider-section', () => ({
   GitHubProviderSection: () => <div data-testid="github-section" />,
 }));
 
 import { render, screen } from '@/test/test-utils';
-import { IntegrationsTab } from '../integrations-tab';
+import { IntegrationsTabView } from '../integrations-tab';
 
 const tStub = (key: string) => key;
 
-describe('IntegrationsTab', () => {
+describe('IntegrationsTabView', () => {
   it('renders the standard provider cards and the org calendar section', () => {
-    render(<IntegrationsTab t={tStub as never} isSlackConnected={false} />);
+    render(<IntegrationsTabView t={tStub as never} isSlackConnected={false} />);
 
     expect(screen.getByTestId('provider-card-Slack')).toBeInTheDocument();
     expect(screen.getByTestId('provider-card-Notion')).toBeInTheDocument();
@@ -90,14 +90,14 @@ describe('IntegrationsTab', () => {
   });
 
   it('hides Slack user-mapping section when Slack is not connected', () => {
-    render(<IntegrationsTab t={tStub as never} isSlackConnected={false} />);
+    render(<IntegrationsTabView t={tStub as never} isSlackConnected={false} />);
 
     expect(screen.queryByTestId('slack-user-mapping')).not.toBeInTheDocument();
     expect(screen.queryByTestId('slack-sync-button')).not.toBeInTheDocument();
   });
 
   it('renders Slack user-mapping section when Slack is connected', () => {
-    render(<IntegrationsTab t={tStub as never} isSlackConnected />);
+    render(<IntegrationsTabView t={tStub as never} isSlackConnected />);
 
     expect(screen.getByTestId('slack-user-mapping')).toBeInTheDocument();
     expect(screen.getByTestId('slack-sync-button')).toBeInTheDocument();

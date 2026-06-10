@@ -4,13 +4,13 @@
 
 import { describe, expect, it, vi } from 'vitest';
 
-vi.mock('../carrier-credential-form-container', () => ({
-  CarrierCredentialFormContainer: () => null,
+vi.mock('../carrier-credential-form', () => ({
+  CarrierCredentialForm: () => null,
 }));
 
 import { render, screen, setup } from '@/test/test-utils';
 import type { useUpsProviderSection } from '../hooks/use-ups-provider-section';
-import { UpsProviderSection, UpsProviderSectionSkeleton } from '../ups-provider-section';
+import { UpsProviderSectionView, UpsProviderSectionSkeleton } from '../ups-provider-section';
 
 type HookReturn = ReturnType<typeof useUpsProviderSection>;
 
@@ -37,7 +37,7 @@ describe('UpsProviderSection', () => {
   });
 
   it('renders the UPS heading, description and not-configured badge by default', () => {
-    render(<UpsProviderSection {...buildHook()} />);
+    render(<UpsProviderSectionView {...buildHook()} />);
 
     expect(screen.getByText('UPS')).toBeInTheDocument();
     expect(screen.getByText('notConfigured')).toBeInTheDocument();
@@ -45,14 +45,14 @@ describe('UpsProviderSection', () => {
   });
 
   it('renders the connected badge when isConfigured is true', () => {
-    render(<UpsProviderSection {...buildHook({ isConfigured: true })} />);
+    render(<UpsProviderSectionView {...buildHook({ isConfigured: true })} />);
     expect(screen.getByText('connected')).toBeInTheDocument();
     expect(screen.queryByText('notConfigured')).not.toBeInTheDocument();
   });
 
   it('opens the configure dialog when the configure button is clicked', async () => {
     const setConfigOpen = vi.fn();
-    const { user } = setup(<UpsProviderSection {...buildHook({ setConfigOpen })} />);
+    const { user } = setup(<UpsProviderSectionView {...buildHook({ setConfigOpen })} />);
 
     await user.click(screen.getByRole('button', { name: 'configureUps' }));
     expect(setConfigOpen).toHaveBeenCalledWith(true);

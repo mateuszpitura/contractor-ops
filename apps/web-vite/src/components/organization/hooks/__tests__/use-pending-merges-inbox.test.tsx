@@ -109,7 +109,7 @@ describe('usePendingMergesInbox', () => {
     await waitFor(() => expect(result.current.items).toHaveLength(1));
     act(() => result.current.openMerge(sampleRow));
     act(() => result.current.keepSeparate());
-    await waitFor(() => expect(toastSuccess).toHaveBeenCalledWith('Merge resolved'));
+    await waitFor(() => expect(toastSuccess).toHaveBeenCalledWith('Merge resolved.'));
     expect(result.current.activeMerge).toBeNull();
     expect(result.current.chosenTarget).toBe('');
   });
@@ -128,7 +128,7 @@ describe('usePendingMergesInbox', () => {
     act(() => result.current.openMerge(sampleRow));
     act(() => result.current.setChosenTarget('p2'));
     act(() => result.current.mergeIntoExisting());
-    await waitFor(() => expect(toastSuccess).toHaveBeenCalledWith('Merge resolved'));
+    await waitFor(() => expect(toastSuccess).toHaveBeenCalledWith('Merge resolved.'));
   });
 
   it('keepSeparate without an active merge is a no-op', async () => {
@@ -155,14 +155,14 @@ describe('usePendingMergesInbox', () => {
         candidates: [],
       }),
       'organizationDefinitions.project.resolveMerge': () => {
-        throw new Error('locked');
+        throw new Error('Something went wrong. Please try again.');
       },
     });
     const { result } = renderHookWithProviders(() => usePendingMergesInbox());
     await waitFor(() => expect(result.current.items).toHaveLength(1));
     act(() => result.current.openMerge(sampleRow));
     act(() => result.current.keepSeparate());
-    await waitFor(() => expect(toastError).toHaveBeenCalledWith('locked'));
+    await waitFor(() => expect(toastError).toHaveBeenCalledWith('Something went wrong. Please try again.'));
   });
 
   it('closeMerge clears activeMerge but preserves chosenTarget snapshot', async () => {

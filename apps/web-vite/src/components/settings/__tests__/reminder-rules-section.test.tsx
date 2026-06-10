@@ -6,13 +6,13 @@
 
 import { describe, expect, it, vi } from 'vitest';
 
-vi.mock('../reminder-rule-editor-container', () => ({
-  ReminderRuleEditorContainer: () => null,
+vi.mock('../reminder-rule-editor', () => ({
+  ReminderRuleEditor: () => null,
 }));
 
 import { render, screen, setup } from '@/test/test-utils';
 import type { ReminderRule, useReminderRulesSection } from '../hooks/use-reminder-rules-section';
-import { ReminderRulesSection } from '../reminder-rules-section';
+import { ReminderRulesSectionView } from '../reminder-rules-section';
 
 type HookReturn = ReturnType<typeof useReminderRulesSection>;
 
@@ -65,7 +65,7 @@ const sampleRule: ReminderRule = {
 describe('ReminderRulesSection', () => {
   it('renders skeletons while loading', () => {
     const { container } = render(
-      <ReminderRulesSection
+      <ReminderRulesSectionView
         {...buildHook({ rulesQuery: { isLoading: true } as HookReturn['rulesQuery'] })}
       />,
     );
@@ -76,7 +76,7 @@ describe('ReminderRulesSection', () => {
 
   it('renders the empty state when there are no rules', async () => {
     const handleCreate = vi.fn();
-    const { user } = setup(<ReminderRulesSection {...buildHook({ rules: [], handleCreate })} />);
+    const { user } = setup(<ReminderRulesSectionView {...buildHook({ rules: [], handleCreate })} />);
 
     expect(screen.getByText('reminderRules.emptyHeading')).toBeInTheDocument();
     expect(screen.getByText('reminderRules.emptyBody')).toBeInTheDocument();
@@ -86,7 +86,7 @@ describe('ReminderRulesSection', () => {
   });
 
   it('renders the heading and rule card when rules exist', () => {
-    render(<ReminderRulesSection {...buildHook({ rules: [sampleRule] })} />);
+    render(<ReminderRulesSectionView {...buildHook({ rules: [sampleRule] })} />);
 
     expect(screen.getByText('reminderRules.heading')).toBeInTheDocument();
     expect(screen.getByText('Contract expiry reminder')).toBeInTheDocument();
@@ -98,7 +98,7 @@ describe('ReminderRulesSection', () => {
   it('fires handleToggleActive when the active switch is flipped', async () => {
     const handleToggleActive = vi.fn();
     const { user } = setup(
-      <ReminderRulesSection {...buildHook({ rules: [sampleRule], handleToggleActive })} />,
+      <ReminderRulesSectionView {...buildHook({ rules: [sampleRule], handleToggleActive })} />,
     );
 
     await user.click(screen.getByRole('switch'));
@@ -107,7 +107,7 @@ describe('ReminderRulesSection', () => {
 
   it('opens the delete confirm dialog with rule body when deletingRuleId is set', () => {
     render(
-      <ReminderRulesSection {...buildHook({ rules: [sampleRule], deletingRuleId: 'rule-1' })} />,
+      <ReminderRulesSectionView {...buildHook({ rules: [sampleRule], deletingRuleId: 'rule-1' })} />,
     );
 
     expect(screen.getByText('reminderRules.deleteConfirm.title')).toBeInTheDocument();

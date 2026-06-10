@@ -30,7 +30,7 @@ describe('useLinearTaskConfig', () => {
     setTRPCMock({
       'linear.connectionStatus': () => new Promise(() => undefined),
       'linear.teams': () => [],
-      'jira.getTaskConfig': () => new Promise(() => undefined),
+      'linear.getTaskConfig': () => new Promise(() => undefined),
     });
     const { result } = renderHookWithProviders(() => useLinearTaskConfig('tt-1'));
     expect(result.current.isConnected).toBe(false);
@@ -42,7 +42,7 @@ describe('useLinearTaskConfig', () => {
     setTRPCMock({
       'linear.connectionStatus': () => ({ id: 'c1', status: 'CONNECTED' }),
       'linear.teams': () => [],
-      'jira.getTaskConfig': () => ({ linearEnabled: false }),
+      'linear.getTaskConfig': () => ({ linearEnabled: false }),
     });
     const { result } = renderHookWithProviders(() => useLinearTaskConfig('tt-1'));
     await waitFor(() => expect(result.current.isConnected).toBe(true));
@@ -56,7 +56,7 @@ describe('useLinearTaskConfig', () => {
     setTRPCMock({
       'linear.connectionStatus': () => ({ id: 'c1', status: 'CONNECTED' }),
       'linear.teams': () => [{ id: 't1', key: 'T', name: 'Team' }],
-      'jira.getTaskConfig': () => ({
+      'linear.getTaskConfig': () => ({
         linearEnabled: false,
         linearTeamId: 't1',
       }),
@@ -78,7 +78,7 @@ describe('useLinearTaskConfig', () => {
     setTRPCMock({
       'linear.connectionStatus': () => ({ id: 'c1', status: 'CONNECTED' }),
       'linear.teams': () => [{ id: 't1', key: 'T', name: 'Team' }],
-      'jira.getTaskConfig': () => ({
+      'linear.getTaskConfig': () => ({
         linearEnabled: false,
         linearTeamId: 't1',
       }),
@@ -104,7 +104,7 @@ describe('useLinearTaskConfig', () => {
         { id: 't1', key: 'T', name: 'Team' },
         { id: 't2', key: 'U', name: 'Other' },
       ],
-      'jira.getTaskConfig': () => ({ linearEnabled: false }),
+      'linear.getTaskConfig': () => ({ linearEnabled: false }),
       'linear.saveTaskConfig': vars => {
         saveCalls.push(vars);
         return { ok: true };

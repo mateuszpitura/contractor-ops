@@ -145,7 +145,7 @@ describe('useDocumentDropZone', () => {
       result.current.onDrop([new File(['x'], 'a.pdf', { type: 'application/pdf' })]);
     });
 
-    await waitFor(() => expect(toastErrorMock).toHaveBeenCalledWith('forbidden'));
+    await waitFor(() => expect(toastErrorMock).toHaveBeenCalledWith('Something went wrong. Please try again.'));
     await waitFor(() => expect(result.current.files[0]?.status).toBe('error'));
   });
 

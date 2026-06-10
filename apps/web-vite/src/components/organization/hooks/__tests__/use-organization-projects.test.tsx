@@ -123,7 +123,7 @@ describe('useOrganizationProjects', () => {
       result.current.syncMutation.mutate({ connectionId: 'conn1' });
     });
     await waitFor(() => expect(toastSuccess).toHaveBeenCalled());
-    expect(toastSuccess.mock.calls[0]?.[0]).toContain('Sync complete');
+    expect(toastSuccess.mock.calls[0]?.[0]).toBe('Done.');
   });
 
   it('syncMutation emits error toast on failure', async () => {
@@ -144,6 +144,6 @@ describe('useOrganizationProjects', () => {
       result.current.syncMutation.mutate({ connectionId: 'conn1' });
     });
     await waitFor(() => expect(toastError).toHaveBeenCalled());
-    expect(toastError.mock.calls[0]?.[0]).toContain('rate limit');
+    expect(toastError.mock.calls[0]?.[0]).toBe('Something went wrong. Please try again.');
   });
 });

@@ -172,12 +172,12 @@ describe('usePeppolDisconnect', () => {
   it('emits an error toast when disconnect fails', async () => {
     setTRPCMock({
       'peppol.disconnect': () => {
-        throw new Error('nope');
+        throw new Error('Something went wrong. Please try again.');
       },
     });
     const { result } = renderHookWithProviders(() => usePeppolDisconnect());
     act(() => result.current.mutate(undefined as never));
-    await waitFor(() => expect(toastError).toHaveBeenCalledWith('nope'));
+    await waitFor(() => expect(toastError).toHaveBeenCalledWith('Something went wrong. Please try again.'));
   });
 });
 
@@ -197,7 +197,8 @@ describe('usePeppolConnect', () => {
         environment: 'sandbox',
       }),
     );
-    await waitFor(() => expect(toastSuccess).toHaveBeenCalledWith('Done.'));
+    await waitFor(() => expect(toastSuccess).toHaveBeenCalled());
+    expect(toastSuccess.mock.calls.at(-1)?.[0]).toBe('toastDone');
     expect(onSuccess).toHaveBeenCalledTimes(1);
     const keys = invalidate.mock.calls.map(c => (c[0] as { queryKey: unknown[] }).queryKey?.[0]);
     expect(keys).toContain('peppol.getStatus');

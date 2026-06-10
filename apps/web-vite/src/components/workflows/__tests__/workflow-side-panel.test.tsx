@@ -8,10 +8,10 @@ import type { ReactElement } from 'react';
 import { MemoryRouter } from 'react-router-dom';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-vi.mock('../workflow-side-panel-linked-jira-container.js', () => ({
+vi.mock('../workflow-side-panel-linked-jira.js', () => ({
   LinkedJiraIssuesSection: () => null,
 }));
-vi.mock('../workflow-side-panel-linked-linear-container.js', () => ({
+vi.mock('../workflow-side-panel-linked-linear.js', () => ({
   LinkedLinearIssuesSection: () => null,
 }));
 

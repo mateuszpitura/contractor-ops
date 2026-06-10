@@ -231,7 +231,7 @@ describe('useResourceMutation', () => {
         useResourceMutation(
           {
             mutationFn: async () => {
-              throw new Error('nope');
+              throw new Error('Something went wrong. Please try again.');
             },
           },
           {
