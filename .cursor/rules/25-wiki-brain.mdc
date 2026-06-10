@@ -1,0 +1,72 @@
+---
+description: Codebase wiki — documentation follows code; keep .planning/brain in sync with apps/packages
+globs:
+  - ".planning/brain/wiki/**/*.md"
+  - ".planning/brain/.raw/**/*"
+  - "apps/**/*.{ts,tsx}"
+  - "packages/**/*.ts"
+alwaysApply: false
+---
+
+# Wiki brain (contractor-ops)
+
+Vault root: **`.planning/brain/`** (not `wiki/` in repo root).
+
+## Principle: documentation follows code
+
+The wiki is a **living compass** — it must **track the code**, not lag behind. Any product change in `apps/` or `packages/` is **incomplete** until matching wiki pages are updated **in the same change set**. Applies to **every** feature, hook, container, component, package, router, service, integration, cron job, schema, flag, and env — not only refactors or new routers.
+
+## Roles
+
+| Layer | Path | Use for |
+|-------|------|---------|
+| Hot cache | `.planning/brain/wiki/hot.md` | Recent domain context (~500 tokens) |
+| Index | `.planning/brain/wiki/index.md` | Catalog — read after hot |
+| Domains | `wiki/domains/` | Business flows (invoice, portal, …) |
+| Patterns | `wiki/patterns/` | Architecture conventions |
+| Structure | `wiki/structure/` | Apps, packages, routers, UI map, services |
+| Integrations | `wiki/integrations/` | External systems |
+| Raw | `.planning/brain/.raw/` | **Immutable** ingest sources — never edit |
+
+## Rules
+
+1. **Never use wiki for code symbol lookup** — `semble search` first, then Read
+2. **Never modify `.raw/`** — sources are immutable copies
+3. **Product code change → wiki change** — same PR/session (`CLAUDE.md` § Documentation follows code)
+4. Use wikilinks `[[page]]` between wiki pages
+5. Append to `wiki/log.md` — do not rewrite history
+6. `hot.md` is overwritten at session end (cache, not journal)
+7. Do not mass-ingest `.planning/milestones/**` — stale WIP
+
+## What to update (by change type)
+
+| You changed… | Update wiki… |
+|--------------|--------------|
+| Feature / user flow | `domains/<area>.md` — Flow, Entry points, UI surface, Agent mistakes |
+| Hook, container, component, route | Domain page + `structure/web-vite-domains.md` |
+| tRPC router / procedure | `structure/api-routers-catalog.md` + domain |
+| `services/` logic | `structure/key-services.md` + domain |
+| New package / export | `structure/packages.md` + consumers |
+| Integration / webhook | `integrations/<provider>.md` + `_index` |
+| Cron / background job | `structure/cron-jobs.md` |
+| Prisma / schema area | `structure/prisma-schema-areas.md` + domain |
+| Feature flag | `patterns/feature-flags.md` |
+| New convention | `patterns/<pattern>.md` or bullet in existing |
+| Call-graph wiring | `graphify update` → `.planning/graphs/graph.json` |
+| New invariant | `.planning/MEMORY.md` |
+
+**Exempt:** test-only, generated, lockfiles, zero-behavior formatting — when unsure, update wiki.
+
+## After any code or wiki change
+
+1. Relevant wiki pages (see table above)
+2. `wiki/log.md` + `wiki/hot.md`
+3. `pnpm check:wiki-brain` (in `lint:ci`)
+4. BM25 rebuild — `wiki/meta/retrieval.md`
+5. Graph / intel / `source_commit` when applicable
+
+Hook on Stop: `KNOWLEDGE_REFRESH_REQUIRED` + `DOC_DRIFT_WARN` if code changed without wiki.
+
+## Plugin
+
+claude-obsidian user-scope — `/wiki`, ingest, lint skills. See `brain/README.md`.

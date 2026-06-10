@@ -19,7 +19,6 @@ packages/db/src/generated
 .cursor/plans
 
 # Planning, docs, audits
-.planning
 .audit-*
 docs
 .dev-logs

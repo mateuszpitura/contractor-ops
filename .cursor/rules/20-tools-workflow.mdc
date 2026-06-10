@@ -12,3 +12,5 @@ alwaysApply: false
 - Web QA/automation: `agent-browser` — open URL, `snapshot -i`, interact via refs, re-snapshot after navigation.
 - Library APIs and patterns: context7 MCP/CLI — verify current docs before implementing.
 - **web-vite UI:** `Page → Container → Component`; tRPC only in `components/{domain}/hooks/` or `src/hooks/`. Run `pnpm check:web-vite-data-layer` before merge. See [`apps/web-vite/ARCHITECTURE.md`](../../apps/web-vite/ARCHITECTURE.md).
+- **Domain / why (not code locations):** after INDEX, read [`.planning/brain/wiki/hot.md`](../../.planning/brain/wiki/hot.md) — symbols still via semble first.
+- **Documentation follows code (binding):** any product change in `apps/` or `packages/` — update matching wiki in the same change set before done; see `CLAUDE.md` § Documentation follows code and [`.cursor/rules/25-wiki-brain.mdc`](25-wiki-brain.mdc). Run `pnpm check:wiki-brain`.
