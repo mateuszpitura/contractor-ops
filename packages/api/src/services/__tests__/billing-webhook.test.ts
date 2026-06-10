@@ -60,7 +60,13 @@ vi.mock('../cache', () => ({
 }));
 
 vi.mock('@contractor-ops/logger', () => ({
-  getIdpAuditLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn(), child: vi.fn() })),
+  getIdpAuditLogger: vi.fn(() => ({
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
+    child: vi.fn(),
+  })),
   createTrpcLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
   createWebhookLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
   createCronLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
@@ -304,8 +310,8 @@ describe('billing-webhook', () => {
     it('does not throw on unhandled event type', async () => {
       const event = makeEvent('some.unknown.event', {});
 
-      // F-ASYNC-13: routeStripeEvent now returns NotificationEvent[]; for
-      // unhandled events it must resolve with an empty array.
+      // routeStripeEvent returns NotificationEvent[]; for unhandled events
+      // it must resolve with an empty array.
       await expect(routeStripeEvent(event, tx)).resolves.toEqual([]);
     });
   });

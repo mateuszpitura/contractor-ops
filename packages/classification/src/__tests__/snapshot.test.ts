@@ -1,4 +1,3 @@
-// Wave 0 scaffold — buildQuestionsSnapshot (D-08, RESEARCH §Pattern 4)
 import { describe, expect, it } from 'vitest';
 
 import { buildQuestionsSnapshot } from '../snapshot.js';
@@ -48,7 +47,7 @@ describe('buildQuestionsSnapshot', () => {
     expect(snap.questions[0]?.id).toBe('q1');
   });
 
-  it('preserves ruleSetVersion + profileId + questions fields (D-08)', () => {
+  it('preserves ruleSetVersion + profileId + questions fields', () => {
     const profile = { profileId: 'ir35', ruleSetVersion: '1.2.3' };
     const snap = buildQuestionsSnapshot(profile, makeRuleSet());
     expect(snap).toMatchObject({
@@ -59,7 +58,7 @@ describe('buildQuestionsSnapshot', () => {
   });
 });
 
-describe('Snapshot immutability under rule-set drift (Plan 02)', () => {
+describe('Snapshot immutability under rule-set drift', () => {
   it('Snapshot-Immutable: mutating a local clone of SCHEIN_QUESTIONS after snapshot creation does NOT affect the snapshot', async () => {
     const { SCHEIN_QUESTIONS, SCHEIN_RULE_SET } = await import(
       '../profiles/scheinselbstandigkeit/rule-set.js'

@@ -1,10 +1,7 @@
-// Phase 74 Plan 02 — 4 KT seed templates per CONTEXT.md D-04 (6-9 task items
-// each per CONTEXT.md SC#1). Sourced from 74-RESEARCH.md § Code Examples >
-// "4 KT Seed Templates (D-04 — Researcher-drafted)" with one extension to
-// Generic Consultant (added `contactDirectory` task) so all four seeds satisfy
-// SC#1's 6-9 task-items invariant.
+// 4 KT seed templates (6-9 task items each). Generic Consultant has an extra
+// `contactDirectory` task to satisfy the 6-item minimum.
 //
-// Plan 75 will hook IP_ASSIGNMENT into the `requiredDocs` arrays where each
+// IP_ASSIGNMENT will be hooked into the `requiredDocs` arrays where each
 // seed currently declares HANDOVER_DOCUMENT.
 
 import type { Seed } from './types';
@@ -48,7 +45,7 @@ export const OFFBOARDING_TEMPLATE_SEEDS: readonly Seed[] = [
         titleI18nKey: 'Offboarding.Templates.SoftwareEngineer.knownIssues.title',
         descriptionI18nKey: 'Offboarding.Templates.SoftwareEngineer.knownIssues.description',
         dueDayOffset: 5,
-        requiredDocs: ['HANDOVER_DOCUMENT'], // Phase 75 hooks IP_ASSIGNMENT here for SE
+        requiredDocs: ['HANDOVER_DOCUMENT'], // IP_ASSIGNMENT will be added here for SE
       },
     ],
   },
@@ -160,8 +157,8 @@ export const OFFBOARDING_TEMPLATE_SEEDS: readonly Seed[] = [
         dueDayOffset: 4,
         requiredDocs: ['HANDOVER_DOCUMENT'],
       },
-      // Plan 74-02 Task 1 added this 6th item so the seed satisfies CONTEXT.md SC#1
-      // (6-9 task items per template). Researcher's draft only had 5 items.
+      // 6th item added so the seed satisfies the 6-9 task-items invariant.
+      // The original draft only had 5 items.
       {
         titleI18nKey: 'Offboarding.Templates.GenericConsultant.contactDirectory.title',
         descriptionI18nKey: 'Offboarding.Templates.GenericConsultant.contactDirectory.description',

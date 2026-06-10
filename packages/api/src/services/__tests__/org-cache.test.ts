@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------
-// Tests for `org-cache.ts` — F-DB-03 cross-region tenant cache.
+// Tests for `org-cache.ts` — cross-region tenant cache.
 // ---------------------------------------------------------------------------
 //
 // Verifies the read-through Upstash cache around the per-request Organization
@@ -39,17 +39,16 @@ const { mockFindUnique } = vi.hoisted(() => ({
 }));
 
 vi.mock('@contractor-ops/db', () => {
-  const __mockDbPrisma = {
+  const MockDbPrisma = {
     organization: {
       findUnique: mockFindUnique,
     },
   };
   return {
-  withRlsTransactions: <T>(c: T) => c,
-  withRlsReads: <T>(c: T) => c,
-  prisma: __mockDbPrisma,
-  prismaRaw: __mockDbPrisma,
-
+    withRlsTransactions: <T>(c: T) => c,
+    withRlsReads: <T>(c: T) => c,
+    prisma: MockDbPrisma,
+    prismaRaw: MockDbPrisma,
   };
 });
 

@@ -1,18 +1,18 @@
-// Phase 74 Plan 05 — tRPC router for KT WorkflowRoleTemplate CRUD + auto-selection
-// helper consumed by Plan 74-08's startOffboardingRun extension.
+// tRPC router for WorkflowRoleTemplate CRUD + auto-selection helper consumed
+// by startOffboardingRun.
 //
 // Multi-tenant: every Prisma query scopes to ctx.organizationId via tenantProcedure.
 // Actor identity (createdByUserId equivalents) is derived from ctx.user.id —
-// Zod schemas explicitly do NOT include actor fields (T-74-05 mitigation).
+// Zod schemas explicitly do NOT include actor fields.
 //
 // Seed templates (isSeed=true) are read-only at the CRUD layer — update/delete
-// return FORBIDDEN. Plan 74-04's onDelete: Cascade on the FK ensures children
-// are removed when an ops-added (isSeed=false) parent is deleted.
+// return FORBIDDEN. onDelete: Cascade on the FK ensures children are removed
+// when an ops-added (isSeed=false) parent is deleted.
 
 import { Prisma } from '@contractor-ops/db/generated/prisma/client';
 import { createLogger } from '@contractor-ops/logger';
-import { TRPCError } from '@trpc/server';
 import { entityIdSchema } from '@contractor-ops/validators';
+import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import {
   ROLE_TEMPLATE_NOT_FOUND,
@@ -196,7 +196,7 @@ export const workflowRolesRouter = router({
     }),
 
   /**
-   * Auto-selection helper for Plan 74-08's startOffboardingRun.
+   * Auto-selection helper for startOffboardingRun.
    * Returns the templateId derived from Contractor.workflowRoleId, or the
    * Generic Consultant seed as the deterministic fallback when NULL.
    */

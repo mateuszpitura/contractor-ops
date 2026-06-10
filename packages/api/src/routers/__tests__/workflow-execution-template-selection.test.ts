@@ -1,5 +1,5 @@
 /**
- * Phase 74 Plan 05 — Auto-selection cases for workflowRoles.selectForContractor.
+ * Auto-selection cases for workflowRoles.selectForContractor.
  *
  * Drives the real `workflowRolesRouter.selectForContractor` query through a
  * tRPC caller (createCallerFactory) so the assertions exercise the router's
@@ -90,9 +90,14 @@ vi.mock('../../services/org-cache', () => ({
 }));
 
 vi.mock('@contractor-ops/logger', () => ({
-  getIdpAuditLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn(), child: vi.fn() })),
-  createLogger: vi.fn(() => ({ info: vi.fn(),
- warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
+  getIdpAuditLogger: vi.fn(() => ({
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
+    child: vi.fn(),
+  })),
+  createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
   createTrpcLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
   createWebhookLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
   createCronLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),

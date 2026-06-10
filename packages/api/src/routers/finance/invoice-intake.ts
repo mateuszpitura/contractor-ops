@@ -1,7 +1,4 @@
-// packages/api/src/routers/invoice-intake.ts
-//
-// Phase 62 · Plan 62-05 Task 1 — tRPC surface for the inbound e-invoice
-// intake pipeline (EINV-03, D-09, D-12).
+// tRPC surface for the inbound e-invoice intake pipeline.
 //
 // Every procedure is:
 //   - tenantProcedure-gated (auth + organization scope set via AsyncLocalStorage),
@@ -20,9 +17,6 @@
 import { createLogger } from '@contractor-ops/logger';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
-
-import { findOrThrow } from '../../lib/find-or-throw';
-
 import {
   CII_XSD_INVALID,
   DUPLICATE_INVOICE_NUMBER,
@@ -35,6 +29,7 @@ import {
   VALIDATION_NOT_REQUIRED,
 } from '../../errors';
 import { router } from '../../init';
+import { findOrThrow } from '../../lib/find-or-throw';
 import { cursorClause, paginateByLastKeptUndefined } from '../../lib/pagination';
 import { requirePermission } from '../../middleware/rbac';
 import { tenantProcedure } from '../../middleware/tenant';
@@ -201,9 +196,9 @@ async function loadIntakeScoped(
   intakeId: string,
   organizationId: string,
 ): Promise<IntakeRowSummary | null> {
-  // F-DB-22 — pre-filter on (id, organizationId) instead of fetch-and-check.
-  // Closes the timing-oracle (cross-org findUnique was slightly slower than
-  // a non-existent id) and removes the fragile post-fetch guard.
+  // Pre-filter on (id, organizationId) instead of fetch-and-check. Closes
+  // the timing-oracle (cross-org findUnique was slightly slower than a
+  // non-existent id) and removes the fragile post-fetch guard.
   return (await (db.invoiceIntakeRequest.findFirst as (args: unknown) => Promise<unknown>)({
     where: { id: intakeId, organizationId },
     select: {
@@ -298,12 +293,10 @@ export const invoiceIntakeRouter = router({
     .use(requirePermission({ invoice: ['read'] }))
     .input(intakeIdInput)
     .query(async ({ ctx, input }) => {
-      // F-DB-22 — pre-filter org-scope in the where clause.
+      // Pre-filter org-scope in the where clause.
       const row = await findOrThrow(
         () =>
-          (
-            ctx.db.invoiceIntakeRequest.findFirst as (args: unknown) => Promise<unknown>
-          )({
+          (ctx.db.invoiceIntakeRequest.findFirst as (args: unknown) => Promise<unknown>)({
             where: { id: input.intakeId, organizationId: ctx.organizationId },
           }) as Promise<Record<string, unknown> | null>,
         INVOICE_NOT_FOUND,
@@ -319,12 +312,10 @@ export const invoiceIntakeRouter = router({
     .use(requirePermission({ invoice: ['read'] }))
     .input(intakeIdInput)
     .query(async ({ ctx, input }): Promise<MatchCandidate[]> => {
-      // F-DB-22 — pre-filter org-scope in the where clause.
+      // Pre-filter org-scope in the where clause.
       const intake = await findOrThrow(
         () =>
-          (
-            ctx.db.invoiceIntakeRequest.findFirst as (args: unknown) => Promise<unknown>
-          )({
+          (ctx.db.invoiceIntakeRequest.findFirst as (args: unknown) => Promise<unknown>)({
             where: { id: input.intakeId, organizationId: ctx.organizationId },
             select: {
               extractedSupplierName: true,
@@ -441,7 +432,7 @@ export const invoiceIntakeRouter = router({
 
   /**
    * Signed 300-second download URL for the extracted CII XML (for PDF
-   * uploads) or the raw file itself (for XML uploads). D-16.
+   * uploads) or the raw file itself (for XML uploads).
    */
   downloadExtractedXml: tenantProcedure
     .use(requirePermission({ invoice: ['read'] }))

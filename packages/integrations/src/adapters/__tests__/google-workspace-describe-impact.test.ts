@@ -1,5 +1,5 @@
 /**
- * Phase 77 D-04 — GoogleWorkspaceAdapter.describeImpact (live + cache-fronted reads).
+ * GoogleWorkspaceAdapter.describeImpact tests.
  * LOCAL-ONLY: MSW handlers, never live sandboxes.
  */
 
@@ -27,7 +27,7 @@ const isTokensListPath = (url: string) => {
 const adapter = () => new GoogleWorkspaceAdapter().withAccessToken('fake-token');
 const USER = 'jane@company.com';
 
-describe('GoogleWorkspaceAdapter.describeImpact (Phase 77 D-04)', () => {
+describe('GoogleWorkspaceAdapter.describeImpact', () => {
   it('returns a GOOGLE_WORKSPACE preview with oauthGrants + null sessionCount', async () => {
     server.use(
       http.get(

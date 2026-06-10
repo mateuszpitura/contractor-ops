@@ -1,5 +1,5 @@
 /**
- * Phase 77 D-08/D-16 — Enterprise-Grid pre-flight detection (the adapter half).
+ * Slack Enterprise-Grid pre-flight detection (the adapter half).
  * `cannot_perform_operation` is the canonical not-on-Grid signal:
  *  - on a deprovision call → PERMANENT_FORBIDDEN (never silently no-ops)
  *  - on describeImpact → non-fatal customMetrics.error = 'NOT_ON_ENTERPRISE_GRID'
@@ -23,7 +23,7 @@ const isScimUserPath = (url: string) => {
 const adapter = () => new SlackAdapter().withOrgGridToken('org-grid-token');
 const USER_ID = 'W08001';
 
-describe('Slack Enterprise-Grid detection (Phase 77 D-08/D-16)', () => {
+describe('Slack Enterprise-Grid detection', () => {
   it('SCIM cannot_perform_operation on a deprovision call → PERMANENT_FORBIDDEN', async () => {
     server.use(
       http.patch(

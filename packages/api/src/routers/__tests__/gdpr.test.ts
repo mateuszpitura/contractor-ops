@@ -8,8 +8,8 @@ const { ORG_ID, USER_ID, mockPrisma, mockRetentionMap } = vi.hoisted(() => {
   const OrgId = 'org-gdpr-00000000-0000-0000-0000-000000000001';
   const UserId = 'user-gdpr-00000000-0000-0000-0000-000000000001';
 
-  // US-INFRA-03 fixture retention map — mutated per-test; EMPTY by default so
-  // the existing erasure tests keep their current behaviour.
+  // Fixture retention map — mutated per-test; EMPTY by default so the
+  // existing erasure tests keep their current behaviour.
   const mockRetentionMap: Record<string, string> = {};
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -131,15 +131,14 @@ vi.mock('@contractor-ops/db', () => ({
   createTenantClient: vi.fn(() => mockPrisma),
   createTenantClientFrom: vi.fn(() => mockPrisma),
   getRegionalClient: vi.fn(() => mockPrisma),
-  // US-INFRA-03 — fixture retention map. Production ships EMPTY (D-06); here we
-  // map the representative `Invoice` fixture to a retained record type so the
+  // Fixture retention map. Production ships EMPTY; here we map the
+  // representative `Invoice` fixture to a retained record type so the
   // statutory-exemption branch is exercised without a real tax table.
   MODEL_RETENTION_TYPE: mockRetentionMap,
   getRetentionCutoff: vi.fn(() => null),
 }));
 
-// F-DB-03 / F-SEC-12 — org-cache must report ACTIVE so tenant middleware
-// does not throw orgSuspended.
+// org-cache must report ACTIVE so tenant middleware does not throw orgSuspended.
 vi.mock('../../services/org-cache', () => ({
   getOrgMeta: vi.fn(async (orgId: string) => ({
     id: orgId,
@@ -173,7 +172,13 @@ vi.mock('@sentry/node', () => {
 });
 
 vi.mock('@contractor-ops/logger', () => ({
-  getIdpAuditLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn(), child: vi.fn() })),
+  getIdpAuditLogger: vi.fn(() => ({
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
+    child: vi.fn(),
+  })),
   createWebhookLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
   createCronLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
   withBodyLogging: vi.fn((_o, fn) => fn),
@@ -200,8 +205,7 @@ vi.mock('@contractor-ops/logger', () => ({
     warn: vi.fn(),
     error: vi.fn(),
   })),
-  createLogger: vi.fn(() => ({ info: vi.fn(),
- warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
+  createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
 }));
 
 vi.mock('@contractor-ops/logger/metrics', () => ({
@@ -273,7 +277,7 @@ describe('gdprRouter', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    // Reset the fixture retention map to EMPTY (production default, D-06).
+    // Reset the fixture retention map to EMPTY (production default).
     for (const k of Object.keys(mockRetentionMap)) delete mockRetentionMap[k];
     mockPrisma.organization.findUnique.mockResolvedValue({
       id: ORG_ID,
@@ -441,10 +445,10 @@ describe('gdprRouter', () => {
     expect(mockPrisma.invoice.deleteMany).not.toHaveBeenCalled();
   });
 
-  // US-INFRA-03 (D-05 #3) — a model under a statutory-retention rule is
-  // soft-deleted-with-exemption (never hard-deleted), surfaced with its citation
-  // in the summary, and the retention-blocked attempt is audit-logged.
-  describe('requestErasure statutory-retention exemption (US-INFRA-03)', () => {
+  // A model under a statutory-retention rule is soft-deleted-with-exemption
+  // (never hard-deleted), surfaced with its citation in the summary, and the
+  // retention-blocked attempt is audit-logged.
+  describe('requestErasure statutory-retention exemption', () => {
     it('retains a statutorily-held model even when retainFinancialRecords is false; surfaces citation + audits', async () => {
       // Fixture: Invoice held under the 1099-NEC 4-year rule (production map empty).
       mockRetentionMap.Invoice = '1099-NEC';

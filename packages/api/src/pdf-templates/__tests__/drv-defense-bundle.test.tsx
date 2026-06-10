@@ -1,4 +1,4 @@
-// Phase 59 Plan 59-04 Task 1 — DRVDefenseBundleDocument template contract tests.
+// DRVDefenseBundleDocument template contract tests.
 import fs from 'node:fs';
 import path from 'node:path';
 
@@ -63,7 +63,7 @@ function renderTree(): string {
   return collectText(element).join(' ');
 }
 
-describe('DRVDefenseBundleDocument (Phase 59 · CLASS-06, D-14/D-15/D-16/D-17/D-18)', () => {
+describe('DRVDefenseBundleDocument', () => {
   it('exports TEMPLATE_VERSION and RENDERER_SLUG', () => {
     expect(TEMPLATE_VERSION).toBe(1);
     expect(RENDERER_SLUG).toBe('drv-defense-bundle');

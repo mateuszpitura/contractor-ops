@@ -119,7 +119,13 @@ vi.mock('@sentry/node', () => {
 });
 
 vi.mock('@contractor-ops/logger', () => ({
-  getIdpAuditLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn(), child: vi.fn() })),
+  getIdpAuditLogger: vi.fn(() => ({
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
+    child: vi.fn(),
+  })),
   createWebhookLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
   createCronLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
   withBodyLogging: vi.fn((_o, fn) => fn),
@@ -146,8 +152,7 @@ vi.mock('@contractor-ops/logger', () => ({
     warn: vi.fn(),
     error: vi.fn(),
   })),
-  createLogger: vi.fn(() => ({ info: vi.fn(),
- warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
+  createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
 }));
 
 vi.mock('@contractor-ops/logger/metrics', () => ({
@@ -487,7 +492,7 @@ describe('jiraRouter', () => {
       entityId: 'tr-1',
     });
 
-    // F-DB-09: paginated envelope { items, nextCursor }
+    // Returns paginated envelope { items, nextCursor }
     expect(result.items).toEqual(JSON.parse(JSON.stringify(links)) as typeof links);
     expect(result.nextCursor).toBeUndefined();
     expect(mockPrisma.externalLink.findMany).toHaveBeenCalledWith(

@@ -9,10 +9,10 @@ import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import * as E from '../../errors';
 import { router } from '../../init';
+import { auditedMutation, auditMutationCtx } from '../../lib/audited-mutation';
 import { requirePermission } from '../../middleware/rbac';
 import { sensitiveActionProcedure } from '../../middleware/sensitive';
 import { tenantProcedure } from '../../middleware/tenant';
-import { auditedMutation, auditMutationCtx } from '../../lib/audited-mutation';
 import { CacheKeys, CacheTTL, cached, invalidateByPrefix } from '../../services/cache';
 import { approveChangeRequest, rejectChangeRequest } from '../../services/portal-change-request';
 import { createRegionalPresignedUploadUrl } from '../../services/regional-storage';
@@ -88,8 +88,8 @@ export const settingsRouter = router({
       // Invalidate all settings caches for this org
       void invalidateByPrefix(CacheKeys.settingsPrefix(ctx.organizationId));
 
-      // F-OBS-05 — settings.update changes org name/legal name/billing email
-      // and other tenant-wide settings; same audit reasoning as organization.update.
+      // settings.update changes org name/legal name/billing email and other
+      // tenant-wide settings; audited for the same reasons as organization.update.
       await auditedMutation(
         auditMutationCtx(ctx),
         {
@@ -319,7 +319,6 @@ export const settingsRouter = router({
   /**
    * Update organization brand color and logo URL.
    * Merges brandColor into settingsJson, updates logo field.
-   * Per D-09, D-11.
    */
   updateBranding: tenantProcedure
     .use(requirePermission({ settings: ['update'] }))
@@ -415,7 +414,6 @@ export const settingsRouter = router({
    * Update the portal subdomain for the organization.
    * Validates subdomain format (3-63 chars, lowercase alphanumeric + hyphens)
    * and checks uniqueness across all organizations.
-   * Per D-10, PORT-08.
    */
   updatePortalDomain: tenantProcedure
     .use(requirePermission({ settings: ['update'] }))
@@ -481,7 +479,6 @@ export const settingsRouter = router({
   /**
    * List contractor change requests for the organization.
    * Optionally filter by status. Includes contractor display info.
-   * Per D-03.
    */
   listChangeRequests: tenantProcedure
     .use(requirePermission({ settings: ['read'] }))
@@ -531,7 +528,6 @@ export const settingsRouter = router({
   /**
    * Approve or reject a contractor change request.
    * Delegates to the change request service for transactional approval.
-   * Per D-02, D-03.
    */
   reviewChangeRequest: tenantProcedure
     .use(requirePermission({ settings: ['update'] }))
@@ -552,8 +548,8 @@ export const settingsRouter = router({
         await rejectChangeRequest(input.requestId, ctx.organizationId, reviewerId, input.comment);
       }
 
-      // F-OBS-05 — change-request review is a tenant-data approval/rejection
-      // step that admins must be able to retrace.
+      // Change-request review is a tenant-data approval/rejection step
+      // that admins must be able to retrace.
       return auditedMutation(
         auditMutationCtx(ctx),
         {
@@ -567,7 +563,5 @@ export const settingsRouter = router({
         },
         async () => ({ success: true as const }),
       );
-
-      return { success: true as const };
     }),
 });

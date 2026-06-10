@@ -12,8 +12,8 @@ import {
 } from '../country-fields.js';
 
 // ---------------------------------------------------------------------------
-// Plan 02 (UK) + Plan 03 (DE) provide known-good validator fixtures.
-// These vectors are stable checksummed values documented in the plan 02/03 tests.
+// Known-good validator fixtures for UK and DE schemas.
+// These vectors are stable checksummed values.
 // ---------------------------------------------------------------------------
 
 const VALID_UTR = '5097172561';
@@ -89,7 +89,7 @@ describe('usEntityTypeEnum', () => {
 });
 
 // ---------------------------------------------------------------------------
-// UK schema — D-04 rules (UI-SPEC §Interaction 1 matrix)
+// UK schema — conditional required-field rules
 // ---------------------------------------------------------------------------
 
 describe('ukCountryFieldsSchema — D-04 required-field rules', () => {
@@ -196,7 +196,7 @@ describe('ukCountryFieldsSchema — D-04 required-field rules', () => {
 });
 
 // ---------------------------------------------------------------------------
-// DE schema — D-04 rules
+// DE schema — conditional required-field rules
 // ---------------------------------------------------------------------------
 
 describe('deCountryFieldsSchema — D-04 required-field rules', () => {
@@ -421,10 +421,10 @@ describe('deCountryFieldsSchema — D-04 required-field rules', () => {
 });
 
 // ---------------------------------------------------------------------------
-// US schema — D-05 rules (84-RESEARCH Open Question 3 + UI-SPEC §A)
+// US schema
 // ---------------------------------------------------------------------------
 
-const VALID_EIN = '12-3456789'; // valid IRS prefix 12 (84-RESEARCH)
+const VALID_EIN = '12-3456789'; // valid IRS prefix 12
 
 describe('usCountryFieldsSchema — D-05 rules', () => {
   it('LLC with valid EIN + full US address → success', () => {

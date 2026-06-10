@@ -21,26 +21,25 @@ const { mockFindUnique, mockTenantStoreRun } = vi.hoisted(() => ({
 const mockScopedClient = { _scoped: true };
 
 vi.mock('@contractor-ops/db', () => {
-  const __mockDbPrisma = {
+  const MockDbPrisma = {
     organization: {
       findUnique: mockFindUnique,
     },
   };
   return {
-  withRlsTransactions: <T>(c: T) => c,
-  withRlsReads: <T>(c: T) => c,
-  prisma: __mockDbPrisma,
-  prismaRaw: __mockDbPrisma,
-  tenantStore: {
-    run: mockTenantStoreRun,
-    getStore: vi.fn(() => null),
-  },
-  getRegionalClient: vi.fn((region: string) => ({
-    _region: region,
-    $extends: vi.fn(),
-  })),
-  createTenantClientFrom: vi.fn(() => mockScopedClient),
-
+    withRlsTransactions: <T>(c: T) => c,
+    withRlsReads: <T>(c: T) => c,
+    prisma: MockDbPrisma,
+    prismaRaw: MockDbPrisma,
+    tenantStore: {
+      run: mockTenantStoreRun,
+      getStore: vi.fn(() => null),
+    },
+    getRegionalClient: vi.fn((region: string) => ({
+      _region: region,
+      $extends: vi.fn(),
+    })),
+    createTenantClientFrom: vi.fn(() => mockScopedClient),
   };
 });
 
@@ -123,8 +122,8 @@ describe('tenant middleware — region routing', () => {
   it('resolves dataRegion=US and selects US regional client (US-INFRA-01 routing)', async () => {
     // A US-billing org (dataRegion='US', assigned at creation via the Better
     // Auth beforeCreateOrganization hook) must route to the us-east-1 client —
-    // never silently fall back to EU. This is US-INFRA-01 success criterion 1's
-    // resolution half: creation assigns US, the tenant boundary honours it.
+    // never silently fall back to EU. Creation assigns US; the tenant boundary
+    // must honour it.
     mockFindUnique.mockResolvedValue({ id: 'org-mock', dataRegion: 'US', status: 'ACTIVE' });
 
     const result = await runTenantMiddleware({

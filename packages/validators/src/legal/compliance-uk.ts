@@ -1,18 +1,18 @@
 // packages/validators/src/legal/compliance-uk.ts
 //
-// LOCKED COMPL DOC NAMES — UK · Phase 73 (D-14, D-15, D-16).
+// LOCKED COMPL DOC NAMES — UK.
 //
-// Per-jurisdiction locked-phrase registry. Keyed by Phase 71 PolicyRuleId.
+// Per-jurisdiction locked-phrase registry keyed by PolicyRuleId.
 // Per-locale phrase map: en + pl + de + ar (ar is REQUIRED so the i18n:parity
 // guard — which peers en against [de, pl, ar] — stays green. Gulf terminology
-// refinement + RTL polish remain Phase 79 scope; this module only guarantees the
+// refinement + RTL polish are deferred; this module only guarantees the
 // ar KEY exists, interim-mirroring en where no authoritative UK-context Arabic term
 // is at hand).
 //
 // DO NOT add any of these identifiers as keys in messages/*.json —
 // the CI guard in __tests__/compl-doc-names-parity.test.ts will fail the build.
 //
-// Each entry ships PENDING in signoff-registry.json per Phase 70 D-09.
+// Each entry ships PENDING in signoff-registry.json.
 // UK legal adviser flips entries to APPROVED in dedicated PRs each carrying
 // a `legalTicketRef`. Production deploy gate: zero PENDING entries in scope.
 
@@ -21,31 +21,31 @@ export const LOCKED_COMPL_NAMES_UK = {
     en: 'UK Right-to-Work Share Code',
     pl: 'Kod udostępniania prawa do pracy (UK)',
     de: 'UK Right-to-Work Share-Code',
-    ar: 'UK Right-to-Work Share Code', // TODO ar legal review (Phase 79)
+    ar: 'UK Right-to-Work Share Code', // TODO ar legal review deferred (Gulf terminology refinement)
   },
   'uk.utr@v1': {
     en: 'HMRC Unique Taxpayer Reference (UTR)',
     pl: 'HMRC Unique Taxpayer Reference (UTR)',
     de: 'HMRC Unique Taxpayer Reference (UTR)',
-    ar: 'HMRC Unique Taxpayer Reference (UTR)', // TODO ar legal review (Phase 79)
+    ar: 'HMRC Unique Taxpayer Reference (UTR)', // TODO ar legal review deferred (Gulf terminology refinement)
   },
   'uk.business_registration@v1': {
     en: 'Companies House Business Registration',
     pl: 'Rejestracja działalności w Companies House',
     de: 'Companies-House-Gewerberegistrierung',
-    ar: 'Companies House Business Registration', // TODO ar legal review (Phase 79)
+    ar: 'Companies House Business Registration', // TODO ar legal review deferred (Gulf terminology refinement)
   },
   'uk.sds@v1': {
     en: 'IR35 Status Determination Statement',
     pl: 'Oświadczenie o ustaleniu statusu IR35',
     de: 'IR35-Statusfeststellungserklärung',
-    ar: 'IR35 Status Determination Statement', // TODO ar legal review (Phase 79)
+    ar: 'IR35 Status Determination Statement', // TODO ar legal review deferred (Gulf terminology refinement)
   },
   'uk.ip_assignment@v1': {
     en: 'UK Intellectual Property Assignment',
     pl: 'Przeniesienie praw własności intelektualnej (UK)',
     de: 'UK Übertragung geistigen Eigentums',
-    ar: 'UK Intellectual Property Assignment', // TODO ar legal review (Phase 79)
+    ar: 'UK Intellectual Property Assignment', // TODO ar legal review deferred (Gulf terminology refinement)
   },
 } as const;
 

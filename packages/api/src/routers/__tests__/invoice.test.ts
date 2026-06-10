@@ -318,7 +318,7 @@ vi.mock('@contractor-ops/logger/metrics', () => ({
 }));
 
 // ---------------------------------------------------------------------------
-// Phase 57 · Plan 04 — gov-api + tax-id-validation mocks
+// gov-api + tax-id-validation mocks
 // ---------------------------------------------------------------------------
 
 const {
@@ -983,10 +983,10 @@ describe('invoice.statusCounts', () => {
 });
 
 // ---------------------------------------------------------------------------
-// Phase 57 · Plan 04 — default rate + Kleinunternehmer + staleness + RC pipeline
+// invoice-line tax pipeline — default rate + Kleinunternehmer + staleness + RC
 // ---------------------------------------------------------------------------
 
-describe('Phase 57 · Plan 04 — invoice-line tax pipeline', () => {
+describe('invoice-line tax pipeline', () => {
   const baseInput = {
     invoiceNumber: 'FV/2026/001',
     issueDate: '2026-04-01',

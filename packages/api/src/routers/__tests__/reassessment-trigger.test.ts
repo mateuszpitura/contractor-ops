@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------
-// reassessmentTrigger router tests — Phase 60 CLASS-08.
+// reassessmentTrigger router tests.
 // ---------------------------------------------------------------------------
 
 import { TRPCError } from '@trpc/server';
@@ -92,7 +92,13 @@ vi.mock('@contractor-ops/db', () => ({
 }));
 
 vi.mock('@contractor-ops/logger', () => ({
-  getIdpAuditLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn(), child: vi.fn() })),
+  getIdpAuditLogger: vi.fn(() => ({
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
+    child: vi.fn(),
+  })),
   createWebhookLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
   withBodyLogging: vi.fn((_o, fn) => fn),
   logIntegrationCall: vi.fn(),
@@ -113,8 +119,7 @@ vi.mock('@contractor-ops/logger', () => ({
     error: vi.fn(),
     debug: vi.fn(),
   })),
-  createLogger: vi.fn(() => ({ info: vi.fn(),
- warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
+  createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
   createTrpcLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
   createCronLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
 }));
@@ -124,7 +129,7 @@ vi.mock('@contractor-ops/logger/metrics', () => ({
 }));
 
 vi.mock('@contractor-ops/feature-flags', async importOriginal => {
-  // Multi-layer enforcement (D-05/D-06):
+  // Multi-layer enforcement:
   //  1. root.ts evaluates `buildFlagBag` at module load to gate classification routers.
   //  2. classificationProcedure middleware calls `evaluate(...)` per-request.
   // Tests that exercise classification need both layers to return enabled=true.

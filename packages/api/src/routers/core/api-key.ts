@@ -78,7 +78,7 @@ export const apiKeyRouter = router({
       },
     });
 
-    // F-OBS-05 — API keys are long-lived bearer tokens for the public API.
+    // API keys are long-lived bearer tokens for the public API.
     // Issuance MUST be in the audit log for forensics + compliance.
     await writeAuditLog({
       organizationId: ctx.organizationId,
@@ -167,7 +167,7 @@ export const apiKeyRouter = router({
       },
     });
 
-    // F-OBS-05 — scope/name changes can broaden API key access surface.
+    // Scope/name changes can broaden API key access surface.
     await writeAuditLog({
       organizationId: ctx.organizationId,
       actorType: 'USER',
@@ -186,42 +186,40 @@ export const apiKeyRouter = router({
   /**
    * Revoke an API key. Immediate and irreversible.
    */
-  revoke: apiKeyAdminProcedure
-    .input(entityIdSchema)
-    .mutation(async ({ ctx, input }) => {
-      const existing = await findOrThrow(
-        () =>
-          ctx.db.organizationApiKey.findFirst({
-            where: {
-              id: input.id,
-              organizationId: ctx.organizationId,
-            },
-          }),
-        'API_KEY_NOT_FOUND',
-      );
+  revoke: apiKeyAdminProcedure.input(entityIdSchema).mutation(async ({ ctx, input }) => {
+    const existing = await findOrThrow(
+      () =>
+        ctx.db.organizationApiKey.findFirst({
+          where: {
+            id: input.id,
+            organizationId: ctx.organizationId,
+          },
+        }),
+      'API_KEY_NOT_FOUND',
+    );
 
-      if (existing.revokedAt) {
-        throw new TRPCError({ code: 'BAD_REQUEST', message: API_KEY_REVOKED });
-      }
+    if (existing.revokedAt) {
+      throw new TRPCError({ code: 'BAD_REQUEST', message: API_KEY_REVOKED });
+    }
 
-      await ctx.db.organizationApiKey.update({
-        where: { id: input.id },
-        data: { revokedAt: new Date() },
-      });
+    await ctx.db.organizationApiKey.update({
+      where: { id: input.id },
+      data: { revokedAt: new Date() },
+    });
 
-      // F-OBS-05 — API key revocation is forensics-critical.
-      await writeAuditLog({
-        organizationId: ctx.organizationId,
-        actorType: 'USER',
-        actorId: ctx.user?.id ?? null,
-        action: 'API_KEY_REVOKE',
-        resourceType: 'ORGANIZATION',
-        resourceId: ctx.organizationId,
-        oldValues: { revokedAt: null, name: existing.name, prefix: existing.prefix },
-        newValues: { revokedAt: new Date().toISOString() },
-        metadata: { apiKeyId: existing.id },
-      });
+    // API key revocation is forensics-critical.
+    await writeAuditLog({
+      organizationId: ctx.organizationId,
+      actorType: 'USER',
+      actorId: ctx.user?.id ?? null,
+      action: 'API_KEY_REVOKE',
+      resourceType: 'ORGANIZATION',
+      resourceId: ctx.organizationId,
+      oldValues: { revokedAt: null, name: existing.name, prefix: existing.prefix },
+      newValues: { revokedAt: new Date().toISOString() },
+      metadata: { apiKeyId: existing.id },
+    });
 
-      return { success: true };
-    }),
+    return { success: true };
+  }),
 });

@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('@contractor-ops/db', () => {
-  const __mockDbPrisma = {
+  const MockDbPrisma = {
     subscription: {
       findUnique: vi.fn(),
       update: vi.fn(),
@@ -9,11 +9,10 @@ vi.mock('@contractor-ops/db', () => {
     contractor: { count: vi.fn() },
   };
   return {
-  withRlsTransactions: <T>(c: T) => c,
-  withRlsReads: <T>(c: T) => c,
-  prisma: __mockDbPrisma,
-  prismaRaw: __mockDbPrisma,
-
+    withRlsTransactions: <T>(c: T) => c,
+    withRlsReads: <T>(c: T) => c,
+    prisma: MockDbPrisma,
+    prismaRaw: MockDbPrisma,
   };
 });
 
@@ -438,8 +437,8 @@ describe('ensureStripeCustomer', () => {
         name: 'New Org',
         metadata: { organizationId: 'org_new' },
       },
-      // F-INT-04 / DRIFT-01: idempotency key is the 64-char hex digest
-      // returned by `deriveIdempotencyKey` (`@contractor-ops/integrations`).
+      // Idempotency key is the 64-char hex digest returned by
+      // `deriveIdempotencyKey` (`@contractor-ops/integrations`).
       // We assert the format rather than a hard-coded literal — the canonical
       // helper's own unit tests pin the exact wire format.
       expect.objectContaining({
@@ -457,8 +456,8 @@ describe('ensureStripeCustomer', () => {
       organizationId: 'org_idem_test',
     });
 
-    // F-INT-04 / DRIFT-01: the key is the 64-char lowercase hex digest produced
-    // by `deriveIdempotencyKey({ orgId, operation: 'stripe.customer.create',
+    // The key is the 64-char lowercase hex digest produced by
+    // `deriveIdempotencyKey({ orgId, operation: 'stripe.customer.create',
     // businessKey: orgId })`. Stability of the key (re-running the same logical
     // call yields the same hex) is what makes Stripe collapse retries.
     const options = mockStripe.customers.create.mock.calls[0][1];

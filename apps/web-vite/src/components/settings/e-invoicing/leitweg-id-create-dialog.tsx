@@ -14,8 +14,8 @@
 // Validation:
 //   - `value` is validated against leitwegIdSchema (structure + MOD-11-10)
 //     in real-time; submission is blocked until it passes.
-//   - Pair constraint (D-07/D-11): enforced server-side via Prisma @@unique
-//     AND client-side via the mutation's CONFLICT → UI-SPEC locked error copy.
+//   - Pair constraint: enforced server-side via Prisma @@unique and client-side
+//     via the mutation's CONFLICT → locked error copy.
 //
 // A11y: role="alert" for the inline error; aria-describedby on value input.
 
@@ -39,8 +39,8 @@ import { Loader2, Pencil, Plus } from 'lucide-react';
 import { useCallback, useEffect, useId, useMemo, useState } from 'react';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { cn } from '../../../lib/utils.js';
-import { useLeitwegIdCreateDialog } from './hooks/use-leitweg-id-create-dialog.js';
 import type { useLeitwegIdCreateDialog as UseLeitwegIdCreateDialog } from './hooks/use-leitweg-id-create-dialog.js';
+import { useLeitwegIdCreateDialog } from './hooks/use-leitweg-id-create-dialog.js';
 
 // ---------------------------------------------------------------------------
 // Props

@@ -1,4 +1,3 @@
-// Wave 0 scaffold — registry behavior (D-02, CLASS-01)
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import {
@@ -79,7 +78,7 @@ describe('classification registry', () => {
     expect(getProfileForCountry('gb')).toBe(p);
   });
 
-  it('extensibility: new profile registered without modifying registry.ts source (CLASS-01)', () => {
+  it('extensibility: new profile registered without modifying registry.ts source', () => {
     // A profile whose implementation lives outside packages/classification/src/registry.ts
     // can be registered purely via `registerProfile` — the registry is closed for modification,
     // open for extension.

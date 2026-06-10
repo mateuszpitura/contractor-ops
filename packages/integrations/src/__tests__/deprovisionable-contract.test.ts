@@ -12,9 +12,8 @@ import {
 } from '../scopes/google-workspace-deprovision-scopes.js';
 import type { Deprovisionable, DeprovisionResult } from '../types/deprovisionable.js';
 
-// Compile-time guarantee (D-13 / SC#5 + Phase 77 D-01): this class only compiles
-// if Deprovisionable requires all four methods. Removing any method below would
-// fail typecheck.
+// Compile-time guarantee: this class only compiles if Deprovisionable requires
+// all four methods. Removing any method below would fail typecheck.
 class TestDeprovisionableAdapter extends BaseAdapter implements Deprovisionable {
   readonly slug = 'test-deprovisionable';
   readonly displayName = 'Test Deprovisionable';
@@ -45,7 +44,7 @@ class TestDeprovisionableAdapter extends BaseAdapter implements Deprovisionable 
   }
 }
 
-describe('Deprovisionable interface (Phase 76 D-13)', () => {
+describe('Deprovisionable interface', () => {
   beforeEach(() => clearAdapters());
 
   it('exports Deprovisionable with suspendAccount + revokeAllSessions + verifyDeprovisioned', () => {
@@ -80,7 +79,7 @@ describe('Deprovisionable interface (Phase 76 D-13)', () => {
   it('GOOGLE_WORKSPACE_DEPROVISION_SCOPES exports the directory + user.security scopes', () => {
     expect(GOOGLE_WORKSPACE_DEPROVISION_SCOPES).toEqual([
       'https://www.googleapis.com/auth/admin.directory.user',
-      // Phase 77 D-07 — token revoke + sign-out sub-actions of revokeAllSessions.
+      // token revoke + sign-out sub-actions of revokeAllSessions.
       'https://www.googleapis.com/auth/admin.directory.user.security',
     ]);
   });

@@ -1,13 +1,12 @@
-// Phase 59 · Plan 03 Task 3 — Add participant dialog.
+// Add participant dialog.
 // Minimal dialog (not shadcn Dialog to keep this scope compact) — calls
 // ir35Chain.upsertParticipant on submit.
 
 import type { ChangeEvent, FormEvent } from 'react';
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { useTranslations } from '../../../i18n/useTranslations.js';
-
-import { useAddIr35Participant } from '../hooks/use-ir35-chain.js';
 import type { useAddIr35Participant as UseAddIr35Participant } from '../hooks/use-ir35-chain.js';
+import { useAddIr35Participant } from '../hooks/use-ir35-chain.js';
 
 export interface AddParticipantDialogProps {
   engagementId: string;

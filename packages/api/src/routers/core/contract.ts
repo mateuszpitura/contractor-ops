@@ -15,10 +15,10 @@ import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import * as E from '../../errors';
 import { router } from '../../init';
+import { auditedMutation, auditMutationCtx } from '../../lib/audited-mutation';
 import { findOrThrow } from '../../lib/find-or-throw';
 import { requirePermission } from '../../middleware/rbac';
 import { tenantProcedure } from '../../middleware/tenant';
-import { auditedMutation, auditMutationCtx } from '../../lib/audited-mutation';
 import { writeAuditLogMany } from '../../services/audit-writer';
 import { syncContractExpiryDeadline } from '../../services/calendar-deadline-sync';
 import { deleteCalendarEvent } from '../../services/calendar-event-service';
@@ -28,9 +28,8 @@ import { checkPermittedActivityScope } from '../../services/permitted-activity-c
 const log = createLogger({ service: 'contract-router' });
 
 /**
- * Phase 60 CLASS-08 — contract fields the reassessment scan treats as
- * material (per D-07 allowlist + identity fields). Only diffs are emitted
- * to keep the audit payload focused.
+ * Contract fields the reassessment scan treats as material. Only diffs are
+ * emitted to keep the audit payload focused.
  */
 const CONTRACT_AUDIT_FIELDS = [
   'rateValueMinor',
@@ -217,7 +216,7 @@ function buildContractCreateData(
     projectId: input.projectId ?? null,
     costCenterId: input.costCenterId ?? null,
     notes: input.notes ?? null,
-    // Phase 79 GULF-03 (D-05/D-06) — engagement activity ISIC codes (scope check).
+    // engagement activity ISIC codes for permitted-activity scope check
     activityIsicCodes: input.activityIsicCodes ?? [],
     status: 'DRAFT' as const,
   };
@@ -235,10 +234,10 @@ export const contractRouter = router({
     .use(requirePermission({ contract: ['create'] }))
     .input(contractCreateSchema)
     .mutation(async ({ ctx, input }) => {
-      // Phase 79 GULF-03 (D-05/D-06/D-07) — contract create + permitted-activity
-      // scope check compose in one transaction so an auto-NOC item + its audit
-      // row commit atomically with the contract. The check is NON-BLOCKING: it
-      // never throws on a mismatch, so contract creation always proceeds (D-07).
+      // contract create + permitted-activity scope check compose in one
+      // transaction so an auto-NOC item + its audit row commit atomically with
+      // the contract. The check is NON-BLOCKING: it never throws on a mismatch,
+      // so contract creation always proceeds.
       const { contract, scopeCheck } = await ctx.db.$transaction(async tx => {
         const created = await tx.contract.create({
           data: buildContractCreateData(ctx.organizationId, input),
@@ -257,7 +256,7 @@ export const contractRouter = router({
 
         // Only run the scope check for a free-zone contractor with a coded
         // permitted set AND a coded contract; the service skips symmetrically on
-        // either side uncoded (D-08). Mismatch fires a non-blocking advisory NOC.
+        // either side uncoded. Mismatch fires a non-blocking advisory NOC.
         let scopeResult: Awaited<ReturnType<typeof checkPermittedActivityScope>> | null = null;
         const permittedCodes = created.contractor?.freeZoneAssignment?.permittedActivityIsicCodes;
         if (permittedCodes && created.activityIsicCodes.length > 0) {
@@ -300,7 +299,7 @@ export const contractRouter = router({
         return { contract: created, scopeCheck: scopeResult };
       });
 
-      // Phase 75 D-01 — fire-and-forget contract health-check QStash job.
+      // Fire-and-forget contract health-check QStash job.
       // Non-fatal: contract creation succeeded; admin can manually re-run from UI.
       try {
         const [{ publishJSONWithContext }, { getServerEnv }] = await Promise.all([
@@ -324,7 +323,7 @@ export const contractRouter = router({
         );
       }
 
-      // Calendar auto-push: sync contract expiry deadline (D-06)
+      // Calendar auto-push: sync contract expiry deadline.
       if (contract.endDate) {
         void syncContractExpiryDeadline(ctx.db, {
           organizationId: ctx.organizationId,
@@ -339,8 +338,8 @@ export const contractRouter = router({
       }
 
       // Surface the permitted-activity scope result so the UI can render the
-      // advisory banner (Plan 06). `null` when the check did not run (D-08 skip
-      // or non-free-zone contractor); `{ mismatch }` otherwise.
+      // advisory banner. `null` when the check did not run (non-free-zone
+      // contractor or uncoded activity); `{ mismatch }` otherwise.
       return { ...contract, permittedActivityScope: scopeCheck };
     }),
 
@@ -415,7 +414,7 @@ export const contractRouter = router({
       coerceDateFields(updateData);
       validateDateOrder(updateData, existing);
 
-      // Phase 60 CLASS-08 — audit contract update; scan reads the diff.
+      // Audit contract update; reassessment scan reads the diff.
       const diff = diffContractFields(existing, updateData);
       const updated = await auditedMutation(
         auditMutationCtx(ctx),
@@ -434,7 +433,7 @@ export const contractRouter = router({
           }),
       );
 
-      // Calendar auto-push: sync or cleanup contract expiry deadline (D-06, D-08)
+      // Calendar auto-push: sync or cleanup contract expiry deadline.
       if (updated.endDate) {
         const contractor = await ctx.db.contractor.findUnique({
           where: { id: updated.contractorId },
@@ -449,7 +448,7 @@ export const contractRouter = router({
           userId: ctx.user?.id,
         }).catch(err => log.error({ err }, 'calendar sync on update failed'));
       } else if (!updated.endDate && existing.endDate) {
-        // endDate was cleared -- delete calendar event (D-08)
+        // endDate was cleared — delete calendar event
         void deleteCalendarEvent(ctx.db, {
           organizationId: ctx.organizationId,
           entityType: 'CONTRACT',
@@ -544,8 +543,8 @@ export const contractRouter = router({
         });
       }
 
-      // Phase 60 CLASS-08 — audit status transition so the reassessment scan
-      // can detect ACTIVE → TERMINATED and similar IR35-relevant events.
+      // Audit status transition so the reassessment scan can detect
+      // ACTIVE → TERMINATED and similar IR35-relevant events.
       const updated = await auditedMutation(
         auditMutationCtx(ctx),
         {
@@ -712,7 +711,7 @@ export const contractRouter = router({
 
       const deletedAt = new Date();
 
-      // Phase 60 CLASS-08 — audit contract soft-delete.
+      // Audit contract soft-delete.
       await auditedMutation(
         auditMutationCtx(ctx),
         {
@@ -732,7 +731,7 @@ export const contractRouter = router({
         },
       );
 
-      // Calendar cleanup: remove contract expiry event (D-08)
+      // Calendar cleanup: remove contract expiry event.
       void deleteCalendarEvent(ctx.db, {
         organizationId: ctx.organizationId,
         entityType: 'CONTRACT',
@@ -801,13 +800,12 @@ export const contractRouter = router({
             data: updateData,
           });
 
-          // F-DB-07 — batch the per-row audit inserts into a single
-          // `auditLog.createMany` via the shared writer. Phase 60 CLASS-08
-          // still wants one audit row per transitioned contract so the
-          // reassessment scan can detect each status change individually;
+          // Batch the per-row audit inserts into a single `auditLog.createMany`
+          // via the shared writer. One audit row per transitioned contract so
+          // the reassessment scan can detect each status change individually;
           // `writeAuditLogMany` writes them all in one round-trip while
           // applying the same before/after JSON discipline as the single-row
-          // helper (DRIFT-03).
+          // helper.
           await writeAuditLogMany({
             tx,
             rows: valid.map(id => {
@@ -833,9 +831,9 @@ export const contractRouter = router({
     }),
 
   /**
-   * Phase 75 D-05 — admin per-contract / bulk health-check re-run. Enqueues one
-   * fire-and-forget QStash job per contract; emits a single audit row per
-   * invocation (D-15 single-write). Anthropic Tier-2 headroom via 2s QStash delay.
+   * Admin per-contract / bulk health-check re-run. Enqueues one fire-and-forget
+   * QStash job per contract; emits a single audit row per invocation.
+   * Anthropic Tier-2 headroom via 2s QStash delay.
    */
   rerunHealthCheck: tenantProcedure
     .use(requirePermission({ contract: ['update'] }))

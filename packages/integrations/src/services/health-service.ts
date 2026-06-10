@@ -1,5 +1,5 @@
-import { prisma, scopeCapabilitiesSchema } from '@contractor-ops/db';
 import type { ScopeCapabilitiesParsed } from '@contractor-ops/db';
+import { prisma, scopeCapabilitiesSchema } from '@contractor-ops/db';
 import { createIntegrationLogger } from '@contractor-ops/logger';
 import { getAllAdapters } from '../registry.js';
 import type { ProviderHealthStatus } from '../types/health.js';
@@ -133,7 +133,7 @@ export async function getAllProviderHealth(
 }
 
 // ---------------------------------------------------------------------------
-// F-INT-23 — Process-level dependency health
+// Process-level dependency health
 // ---------------------------------------------------------------------------
 //
 // `getProviderHealth` / `getAllProviderHealth` answer "is *this org's*

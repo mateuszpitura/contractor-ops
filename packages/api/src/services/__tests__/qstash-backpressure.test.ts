@@ -1,5 +1,5 @@
 /**
- * Unit tests for `qstash-backpressure` (S3-4 / F-SCALE-19).
+ * Unit tests for `qstash-backpressure`.
  *
  * Covers the production-critical contracts of `withBackpressure`:
  *   - happy-path pass-through under capacity
@@ -87,7 +87,13 @@ vi.mock('@contractor-ops/validators', () => ({
 }));
 
 vi.mock('@contractor-ops/logger', () => ({
-  getIdpAuditLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn(), child: vi.fn() })),
+  getIdpAuditLogger: vi.fn(() => ({
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
+    child: vi.fn(),
+  })),
   createLogger: vi.fn(() => ({
     info: vi.fn(),
 

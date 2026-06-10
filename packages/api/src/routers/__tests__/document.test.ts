@@ -102,7 +102,7 @@ vi.mock('@contractor-ops/db', () => ({
 }));
 
 // PDF magic bytes — `%PDF-1.4` followed by zero padding to fill the 4 KB
-// Range GET that confirmUpload's F-SEC-18 sniff pulls from R2.
+// Range GET that confirmUpload's magic-byte sniff pulls from R2.
 // `fileTypeFromBuffer` keys off this signature to return `application/pdf`,
 // which lets the magic-byte sniff match the declared `application/pdf`
 // MIME used throughout this suite. Hoisted so the `vi.mock` factory below
@@ -132,9 +132,9 @@ vi.mock('../../services/r2', () => ({
   })),
 }));
 
-// F-SEC-18 — confirmUpload dynamically imports `@aws-sdk/client-s3` for
-// the Range GET, and the real `file-type` package detects the PDF magic
-// bytes from the buffer the mocked R2 client returns above.
+// confirmUpload dynamically imports `@aws-sdk/client-s3` for the Range GET,
+// and the real `file-type` package detects the PDF magic bytes from the
+// buffer the mocked R2 client returns above.
 vi.mock('@aws-sdk/client-s3', () => ({
   GetObjectCommand: vi.fn(function GetObjectCommand(this: unknown, args: unknown) {
     Object.assign(this as object, args ?? {});
@@ -271,7 +271,13 @@ vi.mock('@sentry/node', () => {
 });
 
 vi.mock('@contractor-ops/logger', () => ({
-  getIdpAuditLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn(), child: vi.fn() })),
+  getIdpAuditLogger: vi.fn(() => ({
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
+    child: vi.fn(),
+  })),
   withBodyLogging: vi.fn((_o, fn) => fn),
   logIntegrationCall: vi.fn(),
   subscribeOpossumEvents: vi.fn(),
@@ -285,8 +291,7 @@ vi.mock('@contractor-ops/logger', () => ({
   PII_MASK_KEYWORDS: [],
   PII_MASK_PATHS: [],
   createTrpcLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
-  createLogger: vi.fn(() => ({ info: vi.fn(),
- warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
+  createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
   createCronLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
   createWebhookLogger: vi.fn(() => ({
     info: vi.fn(),
@@ -418,8 +423,8 @@ describe('document.requestUpload', () => {
     expect(result).toHaveProperty('storageKey');
     expect(result).toHaveProperty('documentId');
 
-    // F-SEC-19: presigned PUT now binds the per-MIME byte cap so R2 rejects
-    // oversize uploads at the edge — signature is
+    // Presigned PUT binds the per-MIME byte cap so R2 rejects oversize uploads
+    // at the edge — signature is
     // (storageKey, mimeType, ttlSec, _checksumSha256?, maxBytes).
     expect(createPresignedUploadUrl).toHaveBeenCalledWith(
       expect.stringContaining(ORG_ID),

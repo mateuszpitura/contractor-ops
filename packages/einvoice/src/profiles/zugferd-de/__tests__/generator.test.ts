@@ -1,4 +1,4 @@
-// Phase 62 · Plan 62-03 Task 5 — generateZugferdPdf end-to-end tests.
+// generateZugferdPdf end-to-end tests.
 //
 // Covers:
 //   1. Happy path bytes > 10000.
@@ -60,7 +60,7 @@ describe('generateZugferdPdf', () => {
   let comfortMinimal: EInvoice;
   let reverseCharge: EInvoice;
   let klein: EInvoice;
-  // Phase 68 D-05 — Skonto-bearing fixture for the embedded-CII BG-20 test.
+  // Skonto-bearing fixture for the embedded-CII BG-20 test.
   let comfortSkonto: EInvoice;
 
   beforeAll(async () => {
@@ -131,18 +131,13 @@ describe('generateZugferdPdf', () => {
   });
 
   // -----------------------------------------------------------------------
-  // Phase 68 · Plan 04 — Skonto BG-20 in embedded CII (end-to-end)
+  // Skonto BG-20 in embedded CII (end-to-end)
   //
-  // Closes the embedded-CII half of the v5.0 audit I-1 finding for the
-  // ZUGFeRD path. The router half (call-shape assertion against the
-  // mocked generator) is locked by Plan 05's
-  // packages/api/src/routers/__tests__/einvoice.generate-zugferd.test.ts
-  // extension. Together the two halves prove the Skonto term reaches the
-  // embedded factur-x.xml when a Skonto-bearing DE invoice is finalized
-  // through the ZUGFeRD path.
+  // Proves the Skonto term reaches the embedded factur-x.xml when a
+  // Skonto-bearing DE invoice is finalized through the ZUGFeRD path.
   // -----------------------------------------------------------------------
 
-  it('Skonto path: extracted CII contains structured BG-20 #SKONTO# extension (Phase 68 D-05/D-08 Layer C)', async () => {
+  it('Skonto path: extracted CII contains structured BG-20 #SKONTO# extension', async () => {
     const out = await generateZugferdPdf({
       invoice: comfortSkonto,
       producedAt: FIXED_TIME,

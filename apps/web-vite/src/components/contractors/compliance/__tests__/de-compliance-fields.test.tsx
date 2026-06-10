@@ -1,7 +1,4 @@
-// Plan 06 — FOUND-02 (DE contractor fields UI) + FOUND-04 (verbatim locked
-// German tax labels in the DOM).
-//
-// Rendering rules verified:
+// DE contractor fields UI — rendering rules verified:
 //   * Bundesland <select> contains exactly the 16 states, alphabetical
 //   * Steuernummer input is disabled until a Bundesland is chosen
 //   * Selecting a Bundesland swaps the Steuernummer format hint
@@ -13,7 +10,7 @@ import { describe, expect, it } from 'vitest';
 import { DeComplianceFields } from '@/components/contractors/compliance/de-compliance-fields';
 import { render, screen, within } from '@/test/test-utils';
 
-describe('DeComplianceFields — Bundesland (FOUND-02)', () => {
+describe('DeComplianceFields — Bundesland', () => {
   it('renders a Bundesland select with 16 options sorted alphabetically', () => {
     render(<DeComplianceFields entityType="EINZELUNTERNEHMEN" isVatRegistered={false} />);
     const select = screen.getByRole('combobox', { name: /Bundesland/i });
@@ -40,7 +37,7 @@ describe('DeComplianceFields — Bundesland (FOUND-02)', () => {
   });
 });
 
-describe('DeComplianceFields — locked German phrases (FOUND-04)', () => {
+describe('DeComplianceFields — locked German phrases', () => {
   it.each([
     'Steuernummer',
     'Umsatzsteuer-Identifikationsnummer (USt-IdNr)',

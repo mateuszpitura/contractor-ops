@@ -2,9 +2,9 @@ import { createMockServer, HttpResponse, http } from '@contractor-ops/test-utils
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { EntraIdAdapter } from '../entra-id-adapter.js';
 
-// Phase 78 IDP-05 — EntraIdAdapter Deprovisionable behavior. Raw Microsoft Graph
-// fetch intercepted by the entra MSW handlers + per-test overrides. LOCAL-ONLY:
-// no live Entra tenant. The access token is carried via withAccessToken.
+// EntraIdAdapter Deprovisionable behavior. Raw Microsoft Graph fetch intercepted
+// by the entra MSW handlers + per-test overrides. LOCAL-ONLY: no live Entra tenant.
+// The access token is carried via withAccessToken.
 
 const { server } = createMockServer({ handlersOnly: true });
 
@@ -20,7 +20,7 @@ const isUser = (url: string) => /^\/v1\.0\/users\/[^/]+$/.test(new URL(url).path
 const isRevoke = (url: string) =>
   /^\/v1\.0\/users\/[^/]+\/revokeSignInSessions$/.test(new URL(url).pathname);
 
-describe('EntraIdAdapter — Deprovisionable contract (Phase 78 IDP-05)', () => {
+describe('EntraIdAdapter — Deprovisionable contract', () => {
   it('implements Deprovisionable', () => {
     const a = adapter();
     expect(typeof a.suspendAccount).toBe('function');

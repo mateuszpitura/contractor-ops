@@ -5,18 +5,17 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 // ---------------------------------------------------------------------------
 
 vi.mock('@contractor-ops/db', () => {
-  const __mockDbPrisma = {
+  const MockDbPrisma = {
     subscription: { findUnique: vi.fn() },
     ocrCreditLedger: { aggregate: vi.fn(), create: vi.fn() },
     member: { findMany: vi.fn() },
     $transaction: vi.fn(),
   };
   return {
-  withRlsTransactions: <T>(c: T) => c,
-  withRlsReads: <T>(c: T) => c,
-  prisma: __mockDbPrisma,
-  prismaRaw: __mockDbPrisma,
-
+    withRlsTransactions: <T>(c: T) => c,
+    withRlsReads: <T>(c: T) => c,
+    prisma: MockDbPrisma,
+    prismaRaw: MockDbPrisma,
   };
 });
 
@@ -439,7 +438,7 @@ describe('checkAndDeductCredit', () => {
       await checkAndDeductCredit(ORG_ID);
 
       expect(mockStripe.billing.meterEvents.create).toHaveBeenCalledOnce();
-      // F-INT-04: meter event identifier is derived from the ledger row id
+      // Meter event identifier is derived from the ledger row id
       // (or organizationId+timestamp fallback) so Stripe natively dedupes
       // concurrent retries within the meter-aggregation window.
       expect(mockStripe.billing.meterEvents.create).toHaveBeenCalledWith(

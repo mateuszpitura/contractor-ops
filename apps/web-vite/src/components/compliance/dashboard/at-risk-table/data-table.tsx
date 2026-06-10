@@ -1,9 +1,7 @@
-
 import type { ReactNode } from 'react';
-import { WorkbenchDataTable } from '../../../table-kit/workbench-data-table.js';
 import { useMemo, useState } from 'react';
-
 import { useTranslations } from '../../../../i18n/useTranslations.js';
+import { WorkbenchDataTable } from '../../../table-kit/workbench-data-table.js';
 import type { AtRiskRow } from '../hooks/use-compliance-dashboard.js';
 import { getAtRiskColumns } from './columns.js';
 
@@ -12,8 +10,8 @@ export interface AtRiskTableProps {
   totalRows: number;
   isRefetching?: boolean;
   /**
-   * Slot for Plan 73-08 to cross-mount `<OverrideComplianceItemButton/>` per row.
-   * Left undefined here; this plan does NOT build the override modal.
+   * Optional slot to cross-mount a per-row action (e.g. override button).
+   * Left undefined here; callers provide it when needed.
    */
   renderRowActions?: (row: AtRiskRow) => ReactNode;
   sectionClassName?: string;

@@ -1,9 +1,9 @@
 /**
  * Exchange rate service — ECB daily rate fetching, cross-rate derivation, and conversion.
  *
- * Per D-05: ECB is the primary source. AED (3.6725 USD peg) and SAR (3.75 USD peg)
- * are derived via USD cross-rates.
- * Per D-06: ExchangeRate table with QStash daily cron.
+ * ECB is the primary source. AED (3.6725 USD peg) and SAR (3.75 USD peg)
+ * are derived via USD cross-rates. Rates are stored in ExchangeRate and
+ * refreshed via a QStash daily cron.
  */
 
 import type { DbClient, PrimaryPrismaClient } from './types';
@@ -306,9 +306,7 @@ export async function convertAmount(
   // exactly ONE HALF-UP round on the integer minor-unit product. Never let NaN/Infinity (from a
   // bad/zero stored rate) silently coerce a money value.
   if (
-    !Number.isFinite(amountMinor) ||
-    !Number.isFinite(fromToEur) ||
-    !Number.isFinite(eurToTarget)
+    !(Number.isFinite(amountMinor) && Number.isFinite(fromToEur) && Number.isFinite(eurToTarget))
   ) {
     return null;
   }

@@ -1,4 +1,4 @@
-// Phase 74 Plan 05 — Post-Organization-create hook.
+// Post-Organization-create hook.
 //
 // Materialises the 4 KT seed templates for a freshly-created organization.
 // Failure path is logged but NOT re-thrown — org creation must not fail
@@ -17,11 +17,11 @@ export async function runPostOrganizationCreateHooks(
 ): Promise<void> {
   try {
     await upsertSeedTemplates(prisma, organizationId);
-    logger.info({ organizationId }, 'Phase 74 — offboarding seed templates upserted');
+    logger.info({ organizationId }, 'offboarding seed templates upserted');
   } catch (err) {
     logger.error(
       { organizationId, err },
-      'Phase 74 — seed upsert failed; org will use NULL workflowRoleId fallback',
+      'seed upsert failed; org will use NULL workflowRoleId fallback',
     );
     // Do NOT re-throw — org creation must succeed even if seeding fails.
   }

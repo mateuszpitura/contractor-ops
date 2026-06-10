@@ -1,16 +1,8 @@
-// Phase 84 · Plan 00 (Wave 0 RED) — US-FIELD-01 / US-FIELD-02 (D-01/D-02/D-09).
-// See .planning/milestones/v7.0-phases/84-.../84-VALIDATION.md.
+// Locks the behavioural contract for two staff-router procedures:
 //
-// Locks the behavioural contract for two not-yet-existing staff-router procedures:
-//
-//   contractor.revealSsn      (Plan 03) — audit-logged, RBAC-gated full-SSN reveal
-//   contractor.updateUsProfile(Plan 03) — SSN→dedicated encrypted columns (never JSONB),
-//                                          EIN→BAD_REQUEST on invalid, USPS failure non-blocking
-//
-// RED because neither procedure key exists on `contractorRouter` yet — the
-// caller invocations reject / the procedure-presence assertions fail until
-// Plan 03 lands them. Mirrors economic-dependency-alert.test.ts (createCaller +
-// makeCaller + mockHasPermission + writeAuditLog mock).
+//   contractor.revealSsn       — audit-logged, RBAC-gated full-SSN reveal
+//   contractor.updateUsProfile — SSN→dedicated encrypted columns (never JSONB),
+//                                EIN→BAD_REQUEST on invalid, USPS failure non-blocking
 
 import { TRPCError } from '@trpc/server';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -196,10 +188,10 @@ beforeEach(() => {
 });
 
 // ---------------------------------------------------------------------------
-// contractor.revealSsn (D-02 / D-09 RBAC + audit + tenant + staff-router-only)
+// contractor.revealSsn (RBAC + audit + tenant + staff-router-only)
 // ---------------------------------------------------------------------------
 
-describe('contractor.revealSsn — RBAC (D-02/D-09)', () => {
+describe('contractor.revealSsn — RBAC', () => {
   it('throws FORBIDDEN when the caller lacks contractorPii:[read]', async () => {
     mockHasPermission.mockResolvedValue({ success: false });
     const caller = makeCaller(ORG_A);
@@ -225,7 +217,7 @@ describe('contractor.revealSsn — happy path + audit', () => {
 
   it('NEVER places the raw SSN value anywhere in the audit-row metadata', () => {
     // Defensive scan: serialise the whole audit input and assert the plaintext
-    // SSN does not appear (T-84-00-01 — no SSN in the append-only audit log).
+    // SSN does not appear in the append-only audit log.
     const serialised = JSON.stringify(auditWrites);
     expect(serialised).not.toContain(PLAINTEXT_SSN);
   });
@@ -252,10 +244,10 @@ describe('contractor.revealSsn — staff-router-only (Pitfall 6)', () => {
 });
 
 // ---------------------------------------------------------------------------
-// contractor.updateUsProfile (D-01 storage invariants + EIN + USPS non-blocking)
+// contractor.updateUsProfile (storage invariants + EIN + USPS non-blocking)
 // ---------------------------------------------------------------------------
 
-describe('contractor.updateUsProfile — SSN storage invariant (D-01, Pitfall 3)', () => {
+describe('contractor.updateUsProfile — SSN storage invariant', () => {
   it('writes a provided SSN to ssnEncrypted/ssnLast4 and NEVER into countryFields JSONB', async () => {
     const caller = makeCaller(ORG_A);
     await (caller.contractor as Rec).updateUsProfile({

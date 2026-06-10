@@ -12,11 +12,11 @@ import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import * as E from '../../errors';
 import { router } from '../../init';
+import { auditedMutation, auditMutationCtx } from '../../lib/audited-mutation';
 import { findOrThrow } from '../../lib/find-or-throw';
 import { requirePermission } from '../../middleware/rbac';
 import { tenantProcedure } from '../../middleware/tenant';
 import { uploadRateLimitMiddleware } from '../../middleware/upload-rate-limit';
-import { auditedMutation, auditMutationCtx } from '../../lib/audited-mutation';
 import { isAllowedMimeType, validateMimeType } from '../../services/mime-validator';
 import { generateStorageKey, getR2BucketName, maxBytesForMime } from '../../services/r2';
 import {
@@ -34,9 +34,9 @@ const log = createLogger({ service: 'document-router' });
 // ---------------------------------------------------------------------------
 
 /**
- * F-SEC-18: synchronous magic-byte MIME sniff. Pulls the first 4 KB of the
- * stored object via a Range GET and runs `file-type` against it. Returns
- * the detected MIME, `null` if the bytes were unreadable / undetectable.
+ * Synchronous magic-byte MIME sniff. Pulls the first 4 KB of the stored
+ * object via a Range GET and runs `file-type` against it. Returns the
+ * detected MIME, `null` if the bytes were unreadable / undetectable.
  *
  * This is the single-call helper used by `confirmUpload` to reject the
  * "PDF declared, HTML uploaded" attack synchronously (no waiting for the
@@ -178,9 +178,9 @@ export const documentRouter = router({
         });
       }
 
-      // F-SEC-19: short-circuit when the client-declared size already
-      // exceeds the per-MIME cap. Avoids creating a stub Document row for
-      // an upload that R2 would reject anyway.
+      // Short-circuit when the client-declared size already exceeds the
+      // per-MIME cap. Avoids creating a stub Document row for an upload
+      // that R2 would reject anyway.
       const cap = maxBytesForMime(input.mimeType);
       if (input.fileSizeBytes > cap) {
         throw new TRPCError({
@@ -213,8 +213,8 @@ export const documentRouter = router({
         data: { storageKey },
       });
 
-      // Generate presigned upload URL (5-minute expiry). F-SEC-19: thread
-      // the per-MIME cap into the signed URL so R2 rejects oversize PUTs
+      // Generate presigned upload URL (5-minute expiry). Thread the
+      // per-MIME cap into the signed URL so R2 rejects oversize PUTs
       // at the edge.
       const uploadUrl = await createRegionalPresignedUploadUrl(
         storageKey,
@@ -242,9 +242,9 @@ export const documentRouter = router({
 
   /**
    * Confirm that a file was uploaded to R2. Verifies the object exists,
-   * enforces the per-MIME byte cap (F-SEC-19), runs synchronous magic-byte
-   * MIME sniffing against the declared mimeType (F-SEC-18), and only then
-   * triggers the async virus-scan pipeline.
+   * enforces the per-MIME byte cap, runs synchronous magic-byte MIME
+   * sniffing against the declared mimeType, and only then triggers the
+   * async virus-scan pipeline.
    *
    * On any guard failure the R2 object is deleted before the error so the
    * attacker can't retain a placeholder for later use.
@@ -275,10 +275,10 @@ export const documentRouter = router({
         });
       }
 
-      // F-SEC-19: re-verify size against the per-MIME cap. The presigned
-      // PUT URL was already signed with ContentLength, but a future code
-      // path that uses a different presigner might bypass that — this is
-      // the second line of defence.
+      // Re-verify size against the per-MIME cap. The presigned PUT URL was
+      // already signed with ContentLength, but a future code path that uses
+      // a different presigner might bypass that — this is the second line
+      // of defence.
       const cap = maxBytesForMime(doc.mimeType);
       const actualBytes = headResponse.ContentLength ?? 0;
       if (actualBytes > cap) {
@@ -295,9 +295,9 @@ export const documentRouter = router({
         });
       }
 
-      // F-SEC-18: synchronous MIME sniff. Pulls the first 4 KB from R2 via
-      // a Range GET, runs `file-type` against the magic bytes, and rejects
-      // (+ deletes the object) if the detected MIME does not match the
+      // Synchronous MIME sniff. Pulls the first 4 KB from R2 via a Range
+      // GET, runs `file-type` against the magic bytes, and rejects (+
+      // deletes the object) if the detected MIME does not match the
       // declared `doc.mimeType`. Closes the "PDF declared, HTML uploaded"
       // gap that bypasses CSP via inline rendering paths.
       const sniffed = await sniffStoredMime(doc.storageKey).catch(err => {
@@ -352,8 +352,8 @@ export const documentRouter = router({
         E.DOCUMENT_NOT_FOUND,
       );
 
-      // F-SEC-15: block downloads for any non-CLEAN scan status. The uploader
-      // may download their own file while the scan is still pending/failed —
+      // Block downloads for any non-CLEAN scan status. The uploader may
+      // download their own file while the scan is still pending/failed —
       // they already have the bytes locally. Everyone else is blocked until
       // the async ClamAV pipeline confirms the file is clean.
       if (doc.virusScanStatus !== 'CLEAN') {
@@ -440,7 +440,7 @@ export const documentRouter = router({
         });
       }
 
-      // F-SEC-19: same per-MIME byte cap as requestUpload.
+      // Same per-MIME byte cap as requestUpload.
       const cap = maxBytesForMime(input.mimeType);
       if (input.fileSizeBytes > cap) {
         throw new TRPCError({
@@ -515,7 +515,7 @@ export const documentRouter = router({
           });
         }
 
-        // Generate presigned upload URL with per-MIME size cap (F-SEC-19).
+        // Generate presigned upload URL with per-MIME size cap.
         const uploadUrl = await createRegionalPresignedUploadUrl(
           storageKey,
           input.mimeType,

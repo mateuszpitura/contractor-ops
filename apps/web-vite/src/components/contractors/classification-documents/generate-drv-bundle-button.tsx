@@ -1,10 +1,10 @@
-// Phase 59 · Plan 04 Task 2 — Generate DRV defense bundle button.
+// Generate DRV defense bundle button.
 // Companion to GenerateSdsButton — same flow, different template + kind.
 
 import { useCallback, useId, useState } from 'react';
 import { useTranslations } from '../../../i18n/useTranslations.js';
-import { useGenerateDrvBundle } from '../hooks/use-classification-documents.js';
 import type { useGenerateDrvBundle as UseGenerateDrvBundle } from '../hooks/use-classification-documents.js';
+import { useGenerateDrvBundle } from '../hooks/use-classification-documents.js';
 
 export interface GenerateDrvBundleButtonProps {
   classificationAssessmentId: string;

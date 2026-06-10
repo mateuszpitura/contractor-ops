@@ -37,12 +37,9 @@ registerAllAdapters();
  * decrypts credentials, refreshes token if expired, and returns adapter.
  */
 async function getGoogleWorkspaceConnection(db: TenantScopedDb, organizationId: string) {
-  const connection = await loadOrgIntegrationConnection(
-    db,
-    organizationId,
-    'GOOGLE_WORKSPACE',
-    { notFoundMessage: GOOGLE_WORKSPACE_NOT_CONNECTED },
-  );
+  const connection = await loadOrgIntegrationConnection(db, organizationId, 'GOOGLE_WORKSPACE', {
+    notFoundMessage: GOOGLE_WORKSPACE_NOT_CONNECTED,
+  });
 
   const adapter = getAdapter('google_workspace') as GoogleWorkspaceAdapter;
   if (!adapter) {
@@ -95,9 +92,9 @@ async function ensureSyncCronSchedule(
       body: JSON.stringify({ organizationId, connectionId }),
       cron: '0 2 * * *', // Daily at 2 AM
       scheduleId,
-      // F-ASYNC-18: bump default retries to 5 — Google Workspace transient
-      // 5xx during a deploy or quota spike shouldn't permanently drop the
-      // daily sync (the next 2AM tick recovers, but the gap is visible).
+      // Bump default retries to 5 — Google Workspace transient 5xx during a
+      // deploy or quota spike shouldn't permanently drop the daily sync (the
+      // next 2AM tick recovers, but the gap is visible).
       retries: 5,
     });
 
@@ -111,9 +108,9 @@ async function ensureSyncCronSchedule(
       },
     });
   } catch (error) {
-    // F-ASYNC-12: surface schedule-create failure on lastErrorMessage so
-    // ops + the UI can see "schedule unhealthy" instead of a CONNECTED
-    // connection with no syncs.
+    // Surface schedule-create failure on lastErrorMessage so ops + the UI
+    // can see "schedule unhealthy" instead of a CONNECTED connection with
+    // no syncs.
     const message = error instanceof Error ? error.message : 'Schedule create failed';
     log.error({ err: error, organizationId, connectionId }, 'failed to create sync cron schedule');
     Sentry.captureException(error, {
@@ -226,7 +223,8 @@ export const googleWorkspaceRouter = router({
           new: users.length - alreadyImported,
         },
       };
-    }),
+    },
+  ),
 
   /**
    * List group memberships for multiple users.
@@ -297,10 +295,10 @@ export const googleWorkspaceRouter = router({
         ctx.organizationId,
       );
 
-      // F-DB-26 — re-fetch group memberships in parallel (chunks of 10) so a
-      // 50-user import doesn't take 50× single-call latency. Same upper-bound
-      // for invite-create below. The chunk size of 10 keeps us well under
-      // Google Directory API + Resend rate limits.
+      // Re-fetch group memberships in parallel (chunks of 10) so a 50-user
+      // import doesn't take 50× single-call latency. Same upper-bound for
+      // invite-create below. The chunk size of 10 keeps us well under Google
+      // Directory API + Resend rate limits.
       const CHUNK = 10;
       const serverGroupMemberships: Record<string, string[]> = {};
       for (let i = 0; i < input.users.length; i += CHUNK) {
@@ -316,8 +314,8 @@ export const googleWorkspaceRouter = router({
       const succeeded: Array<{ email: string; role: string }> = [];
       const failed: Array<{ email: string; error: string }> = [];
 
-      // F-DB-26 — invite-create in parallel chunks of 10 with allSettled so
-      // one failure doesn't abort the whole batch.
+      // Invite-create in parallel chunks of 10 with allSettled so one
+      // failure doesn't abort the whole batch.
       for (let i = 0; i < input.users.length; i += CHUNK) {
         const slice = input.users.slice(i, i + CHUNK);
         const results = await Promise.allSettled(
@@ -380,57 +378,56 @@ export const googleWorkspaceRouter = router({
     permission: { member: ['read'] },
     tier: 'PRO',
   }).mutation(async ({ ctx }) => {
-      const { connection } = await getGoogleWorkspaceConnection(ctx.db, ctx.organizationId);
+    const { connection } = await getGoogleWorkspaceConnection(ctx.db, ctx.organizationId);
 
-      // Ensure cron schedule exists
-      await ensureSyncCronSchedule(ctx.db, connection.id, ctx.organizationId);
+    // Ensure cron schedule exists
+    await ensureSyncCronSchedule(ctx.db, connection.id, ctx.organizationId);
 
-      // Publish immediate sync job
-      const qstashClient = getQStashClient();
-      await qstashClient.publishJSON({
-        url: `${getServerEnv().API_URL}/google-workspace/_sync`,
-        body: {
-          organizationId: ctx.organizationId,
-          connectionId: connection.id,
-        },
-      });
+    // Publish immediate sync job
+    const qstashClient = getQStashClient();
+    await qstashClient.publishJSON({
+      url: `${getServerEnv().API_URL}/google-workspace/_sync`,
+      body: {
+        organizationId: ctx.organizationId,
+        connectionId: connection.id,
+      },
+    });
 
-      return { triggered: true };
-    }),
+    return { triggered: true };
+  }),
 
   /**
    * Get sync status for the Google Workspace connection.
    * Returns connection info and last sync log, or null if not connected.
    */
-  syncStatus: integrationProcedure({ permission: { member: ['read'] } }).query(
-    async ({ ctx }) => {
-      const connection = await loadOrgIntegrationConnection(
-        ctx.db,
-        ctx.organizationId,
-        'GOOGLE_WORKSPACE',
-        { status: 'any', optional: true },
-      );
+  syncStatus: integrationProcedure({ permission: { member: ['read'] } }).query(async ({ ctx }) => {
+    const connection = await loadOrgIntegrationConnection(
+      ctx.db,
+      ctx.organizationId,
+      'GOOGLE_WORKSPACE',
+      { status: 'any', optional: true },
+    );
 
-      if (!connection) {
-        return { connected: false as const };
-      }
+    if (!connection) {
+      return { connected: false as const };
+    }
 
-      const lastSync = await ctx.db.integrationSyncLog.findFirst({
-        where: { integrationConnectionId: connection.id },
-        orderBy: { startedAt: 'desc' },
-        select: {
-          status: true,
-          startedAt: true,
-          completedAt: true,
-        },
-      });
+    const lastSync = await ctx.db.integrationSyncLog.findFirst({
+      where: { integrationConnectionId: connection.id },
+      orderBy: { startedAt: 'desc' },
+      select: {
+        status: true,
+        startedAt: true,
+        completedAt: true,
+      },
+    });
 
-      return {
-        connected: true as const,
-        connectionId: connection.id,
-        lastSyncAt: connection.lastSyncAt,
-        lastSyncStatus: lastSync?.status ?? null,
-        configJson: connection.configJson as Record<string, unknown> | null,
-      };
-    }),
+    return {
+      connected: true as const,
+      connectionId: connection.id,
+      lastSyncAt: connection.lastSyncAt,
+      lastSyncStatus: lastSync?.status ?? null,
+      configJson: connection.configJson as Record<string, unknown> | null,
+    };
+  }),
 });

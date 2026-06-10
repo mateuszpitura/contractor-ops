@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------
-// Phase 60 · CLASS-07 — economic-dependency scan service tests.
+// economic-dependency scan service tests.
 // ---------------------------------------------------------------------------
 //
 // Covers VALIDATION.md rows 60-01-01..08 plus the Kleinunternehmer
@@ -107,7 +107,13 @@ vi.mock('@contractor-ops/db', () => ({
 }));
 
 vi.mock('@contractor-ops/logger', () => ({
-  getIdpAuditLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn(), child: vi.fn() })),
+  getIdpAuditLogger: vi.fn(() => ({
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
+    child: vi.fn(),
+  })),
   withBodyLogging: vi.fn((_o, fn) => fn),
   logIntegrationCall: vi.fn(),
   subscribeOpossumEvents: vi.fn(),

@@ -88,8 +88,8 @@ const {
       findMany: vi.fn(),
       upsert: vi.fn(),
     },
-    // Phase-2 F-SEC-15 — pre-signed PUTs go through the pendingUpload table
-    // so the server can verify a contractor consumed the URL within TTL.
+    // Pre-signed PUTs go through the pendingUpload table so the server can
+    // verify a contractor consumed the URL within TTL.
     pendingUpload: {
       create: vi.fn(async (opts: { data: Rec }) => ({
         id: 'pending-upload-1',
@@ -189,7 +189,13 @@ vi.mock('@sentry/node', () => {
 });
 
 vi.mock('@contractor-ops/logger', () => ({
-  getIdpAuditLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn(), child: vi.fn() })),
+  getIdpAuditLogger: vi.fn(() => ({
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
+    child: vi.fn(),
+  })),
   createLogger: vi.fn(() => ({
     info: vi.fn(),
 
@@ -365,10 +371,9 @@ describe('portal router — requestMagicLink', () => {
 
     expect(out).toEqual({ success: true });
     expect(mockCreateMagicLinkToken).toHaveBeenCalledWith(EMAIL);
-    // F-SEC-09: baseUrl is server-derived from PUBLIC_APP_URL — never
-    // taken from request headers. Assert it's a non-empty absolute URL
-    // rather than pinning to a fixture so the test stays portable across
-    // local/CI/staging env files.
+    // baseUrl is server-derived from PUBLIC_APP_URL — never taken from
+    // request headers. Assert it's a non-empty absolute URL rather than
+    // pinning to a fixture so the test stays portable across env files.
     expect(mockSendPortalMagicLink).toHaveBeenCalledWith(
       expect.objectContaining({
         email: EMAIL,
@@ -798,10 +803,9 @@ describe('portal router — documents, payments, uploads', () => {
       contentType: 'application/pdf',
     });
 
-    // F-SEC-01: server derives the storage key from
-    // (organizationId, documentId) and persists it in PendingUpload —
-    // the client never sees it. The response keeps `storageKey: ''` for
-    // back-compat only; new clients must use `documentId`.
+    // server derives the storage key from (organizationId, documentId) and
+    // persists it in PendingUpload — the client never sees it. The response
+    // keeps `storageKey: ''` for back-compat only; new clients must use `documentId`.
     expect(mockPrisma.pendingUpload.create).toHaveBeenCalled();
     expect(mockGenerateStorageKey).toHaveBeenCalled();
     expect(mockCreatePresignedUploadUrl).toHaveBeenCalled();
@@ -856,10 +860,10 @@ describe('portal router — documents, payments, uploads', () => {
     });
   });
 
-  // F-SEC-01 regression — a forged `storageKey` in the request body must
-  // never reach `Document.create`. With `storageKey` removed from the input
-  // schema, Zod silently strips the unknown key, so even an attacker who
-  // hand-crafts the JSON body cannot influence where the document points.
+  // regression — a forged `storageKey` in the request body must never reach
+  // `Document.create`. With `storageKey` removed from the input schema, Zod
+  // silently strips the unknown key, so even an attacker who hand-crafts the
+  // JSON body cannot influence where the document points.
   // The trusted path comes exclusively from the consumed `PendingUpload`.
   it('submitInvoice ignores attacker-supplied storageKey and uses PendingUpload path', async () => {
     const TRUSTED_KEY = 'orgs/org-portal-main-001/documents/trusted.pdf';

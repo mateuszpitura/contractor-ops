@@ -125,8 +125,8 @@ export const peppolRouter = router({
       });
 
       // Schedule QStash polling CRON (every 15 minutes)
-      // F-ASYNC-12: surface failures via lastErrorMessage + Sentry.
-      // F-ASYNC-18: bump retries 2 → 5 to absorb Storecove transient blips.
+      // Surface failures via lastErrorMessage + Sentry. Retries bumped to
+      // 5 to absorb Storecove transient blips.
       try {
         const qstash = getQStashClient();
         const schedule = await qstash.schedules.create({
@@ -175,158 +175,154 @@ export const peppolRouter = router({
    * Deregisters the participant and sets IntegrationConnection to DISCONNECTED.
    */
   disconnect: integrationSettingsProcedure('update').mutation(async ({ ctx }) => {
-      const participant = await ctx.db.peppolParticipant.findFirst({
-        where: {
-          organizationId: ctx.organizationId,
-          status: { in: ['PENDING', 'REGISTERED', 'ACTIVE'] },
+    const participant = await ctx.db.peppolParticipant.findFirst({
+      where: {
+        organizationId: ctx.organizationId,
+        status: { in: ['PENDING', 'REGISTERED', 'ACTIVE'] },
+      },
+    });
+
+    if (!participant) {
+      throw new TRPCError({
+        code: 'NOT_FOUND',
+        message: E.INTEGRATION_NOT_FOUND,
+      });
+    }
+
+    // Deregister participant
+    await ctx.db.peppolParticipant.update({
+      where: { id: participant.id },
+      data: { status: 'DEREGISTERED' },
+    });
+
+    // Update IntegrationConnection
+    const connection = await loadOrgIntegrationConnection(ctx.db, ctx.organizationId, 'PEPPOL', {
+      status: 'any',
+      optional: true,
+    });
+
+    if (connection) {
+      // Delete QStash schedule if it exists
+      const configJson = (connection.configJson as Record<string, unknown>) ?? {};
+      const scheduleId = configJson.qstashScheduleId as string | undefined;
+
+      if (scheduleId) {
+        try {
+          const qstash = getQStashClient();
+          await qstash.schedules.delete(scheduleId);
+        } catch (error) {
+          // Orphan-tracking log line + Sentry.
+          log.error(
+            {
+              err: error,
+              organizationId: ctx.organizationId,
+              scheduleId,
+              event: 'qstash_schedule_orphans',
+            },
+            'failed to delete Peppol QStash schedule on disconnect — schedule may be orphaned',
+          );
+          Sentry.captureException(error, {
+            tags: {
+              'integration.provider': 'PEPPOL',
+              'qstash.outcome': 'schedule-delete-failed',
+            },
+            extra: { organizationId: ctx.organizationId, scheduleId },
+          });
+        }
+      }
+
+      await ctx.db.integrationConnection.update({
+        where: { id: connection.id },
+        data: {
+          status: 'DISCONNECTED',
+          configJson: { ...configJson, qstashScheduleId: null },
         },
       });
+    }
 
-      if (!participant) {
-        throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: E.INTEGRATION_NOT_FOUND,
-        });
-      }
-
-      // Deregister participant
-      await ctx.db.peppolParticipant.update({
-        where: { id: participant.id },
-        data: { status: 'DEREGISTERED' },
-      });
-
-      // Update IntegrationConnection
-      const connection = await loadOrgIntegrationConnection(
-        ctx.db,
-        ctx.organizationId,
-        'PEPPOL',
-        { status: 'any', optional: true },
-      );
-
-      if (connection) {
-        // Delete QStash schedule if it exists
-        const configJson = (connection.configJson as Record<string, unknown>) ?? {};
-        const scheduleId = configJson.qstashScheduleId as string | undefined;
-
-        if (scheduleId) {
-          try {
-            const qstash = getQStashClient();
-            await qstash.schedules.delete(scheduleId);
-          } catch (error) {
-            // F-ASYNC-12: orphan-tracking log line + Sentry.
-            log.error(
-              {
-                err: error,
-                organizationId: ctx.organizationId,
-                scheduleId,
-                event: 'qstash_schedule_orphans',
-              },
-              'failed to delete Peppol QStash schedule on disconnect — schedule may be orphaned',
-            );
-            Sentry.captureException(error, {
-              tags: {
-                'integration.provider': 'PEPPOL',
-                'qstash.outcome': 'schedule-delete-failed',
-              },
-              extra: { organizationId: ctx.organizationId, scheduleId },
-            });
-          }
-        }
-
-        await ctx.db.integrationConnection.update({
-          where: { id: connection.id },
-          data: {
-            status: 'DISCONNECTED',
-            configJson: { ...configJson, qstashScheduleId: null },
-          },
-        });
-      }
-
-      return { success: true };
-    }),
+    return { success: true };
+  }),
 
   /**
    * Get current Peppol connection status for the organization.
    * Returns participant and connection details, or null if not connected.
    */
   getStatus: integrationSettingsProcedure('read').query(async ({ ctx }) => {
-      const participant = await ctx.db.peppolParticipant.findFirst({
-        where: {
-          organizationId: ctx.organizationId,
-          status: { in: ['PENDING', 'REGISTERED', 'ACTIVE'] },
-        },
-      });
+    const participant = await ctx.db.peppolParticipant.findFirst({
+      where: {
+        organizationId: ctx.organizationId,
+        status: { in: ['PENDING', 'REGISTERED', 'ACTIVE'] },
+      },
+    });
 
-      if (!participant) {
-        return null;
-      }
+    if (!participant) {
+      return null;
+    }
 
-      const connection = await loadOrgIntegrationConnection(
-        ctx.db,
-        ctx.organizationId,
-        'PEPPOL',
-        { status: 'any', optional: true },
-      );
+    const connection = await loadOrgIntegrationConnection(ctx.db, ctx.organizationId, 'PEPPOL', {
+      status: 'any',
+      optional: true,
+    });
 
-      return { participant, connection };
-    }),
+    return { participant, connection };
+  }),
 
   /**
    * Get PeppolParticipant for the organization with transmission counts.
    */
   getParticipant: integrationSettingsProcedure('read').query(async ({ ctx }) => {
-      const participant = await ctx.db.peppolParticipant.findFirst({
+    const participant = await ctx.db.peppolParticipant.findFirst({
+      where: {
+        organizationId: ctx.organizationId,
+        status: { in: ['PENDING', 'REGISTERED', 'ACTIVE'] },
+      },
+      include: {
+        _count: {
+          select: {
+            transmissions: true,
+          },
+        },
+      },
+    });
+
+    if (!participant) {
+      return null;
+    }
+
+    // Get transmission counts by status
+    const [sentCount, receivedCount, failedCount] = await Promise.all([
+      ctx.db.peppolTransmission.count({
         where: {
           organizationId: ctx.organizationId,
-          status: { in: ['PENDING', 'REGISTERED', 'ACTIVE'] },
+          peppolParticipantId: participant.id,
+          direction: 'OUTBOUND',
         },
-        include: {
-          _count: {
-            select: {
-              transmissions: true,
-            },
-          },
+      }),
+      ctx.db.peppolTransmission.count({
+        where: {
+          organizationId: ctx.organizationId,
+          peppolParticipantId: participant.id,
+          direction: 'INBOUND',
         },
-      });
-
-      if (!participant) {
-        return null;
-      }
-
-      // Get transmission counts by status
-      const [sentCount, receivedCount, failedCount] = await Promise.all([
-        ctx.db.peppolTransmission.count({
-          where: {
-            organizationId: ctx.organizationId,
-            peppolParticipantId: participant.id,
-            direction: 'OUTBOUND',
-          },
-        }),
-        ctx.db.peppolTransmission.count({
-          where: {
-            organizationId: ctx.organizationId,
-            peppolParticipantId: participant.id,
-            direction: 'INBOUND',
-          },
-        }),
-        ctx.db.peppolTransmission.count({
-          where: {
-            organizationId: ctx.organizationId,
-            peppolParticipantId: participant.id,
-            status: { in: ['FAILED', 'REJECTED'] },
-          },
-        }),
-      ]);
-
-      return {
-        ...participant,
-        _count: {
-          sentTransmissions: sentCount,
-          receivedTransmissions: receivedCount,
-          failedTransmissions: failedCount,
+      }),
+      ctx.db.peppolTransmission.count({
+        where: {
+          organizationId: ctx.organizationId,
+          peppolParticipantId: participant.id,
+          status: { in: ['FAILED', 'REJECTED'] },
         },
-      };
-    }),
+      }),
+    ]);
+
+    return {
+      ...participant,
+      _count: {
+        sentTransmissions: sentCount,
+        receivedTransmissions: receivedCount,
+        failedTransmissions: failedCount,
+      },
+    };
+  }),
 
   /**
    * Get the latest PeppolTransmission for a specific invoice.
@@ -416,14 +412,14 @@ export const peppolRouter = router({
     }),
 
   // -------------------------------------------------------------------------
-  // Phase 61 · Plan 61-05 — XRechnung capability lookup + participant listing
+  // XRechnung capability lookup + participant listing
   // -------------------------------------------------------------------------
 
   /**
    * Lookup a Peppol participant's SMP-registered document-type capabilities
    * via the Storecove discovery endpoint. Results are cached per-org for
-   * 6h in `PeppolCapabilityCache` (CONTEXT D-11); callers can bypass the
-   * cache with `forceRefresh: true`.
+   * 6h in `PeppolCapabilityCache`; callers can bypass the cache with
+   * `forceRefresh: true`.
    *
    * Surface semantics:
    *  - Always returns the capability list + a computed `supportsXRechnungCii`
@@ -493,10 +489,10 @@ export const peppolRouter = router({
    * — single source of truth).  Consumed by the Plan 07 Settings page.
    */
   listParticipants: integrationSettingsProcedure('read').query(async ({ ctx }) => {
-      const participants = await ctx.db.peppolParticipant.findMany({
-        where: { organizationId: ctx.organizationId },
-        orderBy: { createdAt: 'desc' },
-      });
-      return participants;
-    }),
+    const participants = await ctx.db.peppolParticipant.findMany({
+      where: { organizationId: ctx.organizationId },
+      orderBy: { createdAt: 'desc' },
+    });
+    return participants;
+  }),
 });

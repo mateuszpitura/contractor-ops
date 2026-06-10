@@ -3,7 +3,7 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
-describe('signoff-registry-flags.json — Phase 71 compliance-policy-engine entries', () => {
+describe('signoff-registry-flags.json — compliance-policy-engine entries', () => {
   const Dirname = dirname(fileURLToPath(import.meta.url));
   const jsonPath = resolve(Dirname, '../signoff-registry-flags.json');
   const raw = JSON.parse(readFileSync(jsonPath, 'utf8')) as Record<string, { status: string }>;
@@ -39,7 +39,7 @@ describe('signoff-registry-flags.json — Phase 71 compliance-policy-engine entr
   });
 
   it('does NOT register any of these as runtime FLAGS (they are signoff-only)', async () => {
-    // Phase 70 D-10 boot gate iterates FLAG_KEYS; if these keys appear in the runtime registry
+    // The boot gate iterates FLAG_KEYS; if these keys appear in the runtime registry
     // AND match the gated namespace prefix `compliance-`, the boot gate trips for missing approval.
     // We assert that compliance-policy-engine.* keys are NOT in FLAGS to avoid that trip.
     const { FLAGS } = await import('../registry');

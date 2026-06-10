@@ -42,7 +42,7 @@ vi.mock('@contractor-ops/logger', () => {
 });
 
 vi.mock('@contractor-ops/db', () => {
-  const __mockDbPrisma = {
+  const MockDbPrisma = {
     integrationConnection: {
       findMany: vi.fn(),
       findFirst: vi.fn(),
@@ -52,11 +52,10 @@ vi.mock('@contractor-ops/db', () => {
     },
   };
   return {
-  withRlsTransactions: <T>(c: T) => c,
-  withRlsReads: <T>(c: T) => c,
-  prisma: __mockDbPrisma,
-  prismaRaw: __mockDbPrisma,
-
+    withRlsTransactions: <T>(c: T) => c,
+    withRlsReads: <T>(c: T) => c,
+    prisma: MockDbPrisma,
+    prismaRaw: MockDbPrisma,
   };
 });
 
@@ -224,7 +223,7 @@ describe('SlackMessagingProvider', () => {
 });
 
 // ---------------------------------------------------------------------------
-// TeamsMessagingProvider.sendChannelAlert (Phase 41 — TEAM-03)
+// TeamsMessagingProvider.sendChannelAlert
 // ---------------------------------------------------------------------------
 
 describe('TeamsMessagingProvider.sendChannelAlert', () => {

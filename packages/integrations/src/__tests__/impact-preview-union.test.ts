@@ -2,10 +2,10 @@ import { DeprovisioningProvider } from '@contractor-ops/db/generated/prisma/clie
 import { describe, expect, it } from 'vitest';
 import type { ImpactPreview, ImpactPreviewProvider } from '../idp/impact-preview.js';
 
-// Phase 77 D-01 CI lint — the ImpactPreview union's `provider` discriminants
-// MUST be a subset of the Prisma `DeprovisioningProvider` enum. Phase 78 grows
-// the union (Entra, Okta, …); this list grows with it. A drift between the
-// union and the saga provider enum fails this test.
+// CI lint — the ImpactPreview union's `provider` discriminants MUST be a subset
+// of the Prisma `DeprovisioningProvider` enum. When the union grows (e.g. adding
+// Entra, Okta) this list grows with it. A drift between the union and the saga
+// provider enum fails this test.
 
 // One representative value per current union member. Adding a member to the
 // union without adding it here is a compile error (the array is typed against
@@ -18,7 +18,7 @@ const UNION_PROVIDERS: readonly ImpactPreviewProvider[] = [
   'GITHUB',
 ];
 
-describe('ImpactPreview union ↔ DeprovisioningProvider enum (Phase 77 D-01)', () => {
+describe('ImpactPreview union ↔ DeprovisioningProvider enum', () => {
   const enumValues = Object.values(DeprovisioningProvider) as string[];
 
   it('every union provider discriminant is a valid DeprovisioningProvider enum value', () => {

@@ -39,7 +39,13 @@ vi.mock('@sentry/node', () => {
 });
 
 vi.mock('@contractor-ops/logger', () => ({
-  getIdpAuditLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn(), child: vi.fn() })),
+  getIdpAuditLogger: vi.fn(() => ({
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
+    child: vi.fn(),
+  })),
   withBodyLogging: vi.fn((_o, fn) => fn),
   logIntegrationCall: vi.fn(),
   subscribeOpossumEvents: vi.fn(),
@@ -95,9 +101,9 @@ vi.mock('@contractor-ops/db', () => ({
   createTenantClientFrom: vi.fn((client: unknown) => client),
 }));
 
-// P2-C/F-DB-03 — getOrgMeta uses services/cache.ts which speaks to Upstash
-// Redis. minimalServerEnv sets placeholder Upstash URL/token so the real
-// client tries an HTTP call and hangs the test. Bypass cache → fn() to keep
+// getOrgMeta uses services/cache.ts which speaks to Upstash Redis.
+// minimalServerEnv sets placeholder Upstash URL/token so the real client
+// tries an HTTP call and hangs the test. Bypass cache → fn() to keep
 // tests fast and deterministic.
 vi.mock('../../services/cache', () => ({
   cacheKey: vi.fn((...s: string[]) => s.join(':')),

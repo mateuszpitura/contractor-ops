@@ -1,4 +1,4 @@
-// Phase 72 Wave 2 — GREEN tests for compliance-recovery (D-15).
+// GREEN tests for compliance-recovery.
 
 import { TRPCError } from '@trpc/server';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -19,9 +19,14 @@ vi.mock('@contractor-ops/db/generated/prisma/client', () => ({
   Prisma: { DbNull: Symbol('DbNull') },
 }));
 vi.mock('@contractor-ops/logger', () => ({
-  getIdpAuditLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn(), child: vi.fn() })),
-  createLogger: vi.fn(() => ({ info: vi.fn(),
- warn: vi.fn(), error: vi.fn() })),
+  getIdpAuditLogger: vi.fn(() => ({
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
+    child: vi.fn(),
+  })),
+  createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
 }));
 vi.mock('../compliance-payment-gate', () => ({
   assertContractorPaymentEligibility: mockAssert,
@@ -161,9 +166,9 @@ describe('compliance-recovery resume', () => {
 describe('approval router resumeFromCompliance', () => {
   // The router mutation's resume contract is: re-assert eligibility with
   // throwOnFail:false, and REJECT with PRECONDITION_FAILED when still blocked
-  // (admin cannot override an active block — T-72-05-06). These assertions
-  // exercise that contract at the service boundary the mutation depends on,
-  // without booting the full appRouter (which has unrelated mock requirements).
+  // (admin cannot override an active block). These assertions exercise that
+  // contract at the service boundary the mutation depends on, without booting
+  // the full appRouter (which has unrelated mock requirements).
   it('admin manual-override re-asserts eligibility before transitioning (passes when clear)', async () => {
     mockAssert.mockResolvedValue({ blocked: false, wouldBlock: false, contractorReasons: [] });
     const eligibility = await mockAssert(['ctr-1'], {

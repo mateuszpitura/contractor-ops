@@ -19,7 +19,6 @@ import { writeAuditLog } from '../../services/audit-writer';
 import { CacheKeys, invalidateByPrefix } from '../../services/cache';
 import { handleEquipmentTaskStart } from '../../services/equipment-workflow';
 import { dispatch } from '../../services/notification-service';
-import { calculateProgress } from './workflow-shared';
 import {
   buildIntegrationEligibility,
   computeMaxDueDate,
@@ -29,10 +28,9 @@ import {
   syncLinearTasksAfterStart,
   syncTaskToExternalSystems,
 } from './workflow-execution-shared';
+import { calculateProgress } from './workflow-shared';
 
 export const workflowExecutionRunsRouter = router({
-
-
   /**
    * Start a workflow run from a template for a specific contractor.
    * Instantiates all task runs, evaluates conditions, resolves assignees.
@@ -114,10 +112,10 @@ export const workflowExecutionRunsRouter = router({
         });
         const progress = calculateProgress(allTasks);
 
-        // F-DB-18 — collapse the previous `update + findUniqueOrThrow` pair
-        // into a single `update({ include })` call so we save one round-trip
-        // (and one row lookup) inside the transaction. Prisma returns the
-        // full updated row with the requested relations.
+        // Collapse the previous `update + findUniqueOrThrow` pair into a
+        // single `update({ include })` call to save one round-trip (and one
+        // row lookup) inside the transaction. Prisma returns the full updated
+        // row with the requested relations.
         const fullRun = await tx.workflowRun.update({
           where: { id: workflowRun.id },
           data: { progressPercent: progress.percent },
@@ -192,7 +190,7 @@ export const workflowExecutionRunsRouter = router({
         ctx.user.id,
       );
 
-      // Fire-and-forget: handle EQUIPMENT task integration hooks (Phase 30)
+      // Fire-and-forget: handle EQUIPMENT task integration hooks
       const equipmentTasks = run.run.tasks.filter(
         t => t.status !== 'SKIPPED' && run.equipmentEligibleTaskRunIds.has(t.id),
       );
@@ -208,7 +206,6 @@ export const workflowExecutionRunsRouter = router({
 
       return { ...run.run, calendarTaskCount: run.calendarTaskCount };
     }),
-
 
   /**
    * Cancel a workflow run. Sets all non-terminal tasks to CANCELLED.
@@ -277,7 +274,7 @@ export const workflowExecutionRunsRouter = router({
       });
 
       // Fire-and-forget outbound sync for cancelled tasks with external links
-      // Per D-09/D-10: Linear and Jira always reflect real task state
+      // Linear and Jira always reflect real task state
       const cancelledTasks = run.tasks.filter(t => t.status === 'CANCELLED');
       for (const task of cancelledTasks) {
         syncTaskToExternalSystems(ctx.db, ctx.organizationId, task, 'CANCELLED');
@@ -287,7 +284,6 @@ export const workflowExecutionRunsRouter = router({
 
       return run;
     }),
-
 
   /**
    * Get a workflow run by ID with full relations.
@@ -339,7 +335,6 @@ export const workflowExecutionRunsRouter = router({
 
       return { ...run, tasks: tasksWithOverdue };
     }),
-
 
   /**
    * List workflow runs with pagination, sorting, and filtering.
@@ -425,13 +420,12 @@ export const workflowExecutionRunsRouter = router({
       return { items: itemsWithProgress, total, page, pageSize };
     }),
 
-
   /**
-   * Phase 75 D-12 — admin confirms completion of an offboarding run that still
-   * has PENDING credentials. Requires a >=20-char reason and the IP_VERIFICATION
-   * precondition to be satisfied (or overridden) — this mutation does NOT bypass
-   * the IP block. Emits a single `workflow.completed_with_pending_credentials`
-   * audit row.
+   * Admin confirms completion of an offboarding run that still has PENDING
+   * credentials. Requires a >=20-char reason and the IP_VERIFICATION
+   * precondition to be satisfied (or overridden) — this mutation does NOT
+   * bypass the IP block. Emits a single
+   * `workflow.completed_with_pending_credentials` audit row.
    */
   forceCompleteRunWithPendingCredentials: tenantProcedure
     .use(requirePermission({ workflow: ['execute'] }))

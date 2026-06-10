@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-// Per-task calendar config stored in WorkflowTaskTemplate.configJson (D-09)
+// Per-task calendar config stored in WorkflowTaskTemplate.configJson
 export const calendarTaskConfigSchema = z.object({
   calendarEnabled: z.boolean().default(false),
   titleTemplate: z.string().max(200).optional(),
@@ -9,7 +9,7 @@ export const calendarTaskConfigSchema = z.object({
 });
 export type CalendarTaskConfig = z.infer<typeof calendarTaskConfigSchema>;
 
-// Calendar event metadata stored in ExternalLink.metadataJson (D-11)
+// Calendar event metadata stored in ExternalLink.metadataJson
 export const calendarEventMetadataSchema = z.object({
   eventId: z.string(),
   calendarId: z.string().optional(),
@@ -17,12 +17,12 @@ export const calendarEventMetadataSchema = z.object({
   startTime: z.string(),
   endTime: z.string(),
   link: z.string().optional(),
-  etag: z.string().optional(), // Google Calendar etag for concurrency (Pitfall 4)
+  etag: z.string().optional(), // Google Calendar etag for optimistic concurrency control
   provider: z.enum(['google_calendar', 'outlook_calendar']),
 });
 export type CalendarEventMetadata = z.infer<typeof calendarEventMetadataSchema>;
 
-// Deadline event types (D-08)
+// Deadline event types
 export const deadlineTypeSchema = z.enum(['CONTRACT_EXPIRY', 'APPROVAL_SLA', 'PAYMENT_DUE']);
 export type DeadlineType = z.infer<typeof deadlineTypeSchema>;
 

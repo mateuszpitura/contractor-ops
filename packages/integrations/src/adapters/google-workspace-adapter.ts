@@ -92,7 +92,7 @@ const googleGroupsPageSchema = z.object({
 });
 
 // ---------------------------------------------------------------------------
-// Timeout budgets (F-INT-01 / F-INT-02)
+// Timeout budgets
 // ---------------------------------------------------------------------------
 //
 // OAuth token redemption + refresh — non-idempotent POST. 30s wall-clock,
@@ -162,9 +162,9 @@ const GOOGLE_WORKSPACE_OAUTH_CONFIG: OAuthConfig = {
   scopes: [
     'https://www.googleapis.com/auth/admin.directory.user.readonly',
     'https://www.googleapis.com/auth/admin.directory.group.readonly',
-    // Phase 76 SC#3 — additive write scope for contractor deprovisioning.
+    // Additive write scope for contractor deprovisioning.
     // Read-only directory-import continues working; prompt=consent forces re-OAuth
-    // for the new scope. Traced by lint:scopes (D-15) to the typed-const.
+    // for the new scope. Traced by lint:scopes to the typed-const.
     ...GOOGLE_WORKSPACE_DEPROVISION_SCOPES,
   ],
   redirectPath: '/api/oauth/google_workspace/callback',
@@ -189,11 +189,11 @@ export class GoogleWorkspaceAdapter extends BaseAdapter implements Deprovisionab
   readonly supportsWebhooks = false;
 
   /**
-   * Phase 76 — access token used by the Deprovisionable methods. The saga
-   * step-runner (Plan 76-06) resolves the connection credential and configures
-   * it via {@link withAccessToken} before invoking suspend/revoke. Existing
-   * read methods (listAllDirectoryUsers / listUserGroups) keep taking the token
-   * as a parameter; the Deprovisionable interface signatures take only
+   * Access token used by the Deprovisionable methods. The saga step-runner
+   * resolves the connection credential and configures it via
+   * {@link withAccessToken} before invoking suspend/revoke. Existing read
+   * methods (listAllDirectoryUsers / listUserGroups) keep taking the token as
+   * a parameter; the Deprovisionable interface signatures take only
    * externalUserId, so the token is carried on the instance.
    */
   #deprovisionAccessToken = '';
@@ -445,8 +445,8 @@ export class GoogleWorkspaceAdapter extends BaseAdapter implements Deprovisionab
   }
 
   // -------------------------------------------------------------------------
-  // Deprovisionable (Phase 76 D-13 / Phase 77 D-04/D-05) — Admin SDK Directory API.
-  // Errors are classified via `classifyError` (77-01): TRANSIENT_* are re-thrown
+  // Deprovisionable — Admin SDK Directory API.
+  // Errors are classified via `classifyError`: TRANSIENT_* are re-thrown
   // so the QStash step-runner retries the whole step; PERMANENT_NOT_FOUND maps to
   // an idempotent LIKELY_GONE success; other PERMANENT classes return FAILED.
   // -------------------------------------------------------------------------
@@ -676,7 +676,7 @@ export class GoogleWorkspaceAdapter extends BaseAdapter implements Deprovisionab
         externalUserId,
         externalUserDisplayName: user.name?.fullName ?? externalUserId,
         accountStatus: user.suspended ? 'SUSPENDED' : 'ACTIVE',
-        sessionCount: null, // no live Admin SDK session-count endpoint (D-04)
+        sessionCount: null, // no live Admin SDK session-count endpoint
       },
       customMetrics: {
         oauthGrants,
@@ -689,7 +689,7 @@ export class GoogleWorkspaceAdapter extends BaseAdapter implements Deprovisionab
 
   /**
    * Maps a non-2xx Admin SDK deprovision response to a DeprovisionResult via the
-   * closed-enum classifier (77-01). TRANSIENT_* THROWS (QStash retries the step).
+   * closed-enum classifier. TRANSIENT_* THROWS (QStash retries the step).
    */
   #mapDeprovisionFailure(
     httpStatus: number,
@@ -710,7 +710,7 @@ export class GoogleWorkspaceAdapter extends BaseAdapter implements Deprovisionab
   }
 
   // -------------------------------------------------------------------------
-  // Webhook self-trigger filter (Phase 76 D-09..D-12)
+  // Webhook self-trigger filter
   // -------------------------------------------------------------------------
 
   override async handleWebhook(
@@ -728,12 +728,12 @@ export class GoogleWorkspaceAdapter extends BaseAdapter implements Deprovisionab
           actionKind: 'SUSPEND',
         });
         if (matched) {
-          // D-09 — suppress our own deprovision call from re-firing the v3.0 path.
+          // Suppress our own deprovision call from re-firing the webhook handler path.
           return { suppressed: true, provenanceId: matched.id };
         }
       }
     }
-    // D-11 — non-match (or non-suspend event) flows through to the default path.
+    // Non-match (or non-suspend event) flows through to the default path.
     return;
   }
 

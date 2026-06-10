@@ -1,10 +1,9 @@
-// Phase 59 Plan 59-02 Task 1 — IR35SDSDocument template contract tests (CLASS-03, D-01..D-04).
+// IR35SDSDocument template contract tests.
 //
 // Text content assertions are done by rendering the React tree through
 // react-test-renderer and walking for string children — the PDF binary itself
 // encodes glyphs in ways that defeat plain substring scans. Byte stability is
-// verified on the raw PDF buffer after stripping wall-clock metadata
-// (Pitfall 2 in 59-RESEARCH).
+// verified on the raw PDF buffer after stripping wall-clock metadata.
 
 import { createHash } from 'node:crypto';
 import fs from 'node:fs';
@@ -91,7 +90,7 @@ function stripNonDeterministicPdfMetadata(buf: Buffer): Buffer {
   return Buffer.from(scrubbed, 'binary');
 }
 
-describe('IR35SDSDocument (Phase 59 · CLASS-03, D-01/D-02/D-03/D-04)', () => {
+describe('IR35SDSDocument', () => {
   it('exports TEMPLATE_VERSION and RENDERER_SLUG constants', () => {
     expect(TEMPLATE_VERSION).toBe(1);
     expect(RENDERER_SLUG).toBe('ir35-sds');

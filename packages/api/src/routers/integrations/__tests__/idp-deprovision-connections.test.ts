@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------
-// Phase 78 D-12 — per-provider IdP deprovisioning connection-router tests.
+// Per-provider IdP deprovisioning connection-router tests.
 // ---------------------------------------------------------------------------
 //
 // Verifies the entra/okta/github routers: the per-org enable toggle is gated by
@@ -148,12 +148,12 @@ beforeEach(() => {
 });
 
 // The per-provider routers (entra/okta/github) were consolidated into
-// `deprovisioning.enableProviderForOrg` (MED-1). These tests verify that the
-// unified procedure correctly handles each provider.
+// `deprovisioning.enableProviderForOrg`. These tests verify that the unified
+// procedure correctly handles each provider.
 // The appRouter (full root namespace graph) is heavy to import per test; the
 // default 5s timeout is occasionally hit on a cold fork worker. 20s mirrors the
 // idp-provider-enable.test.ts precedent.
-describe('IdP deprovisioning per-provider toggle via deprovisioning.enableProviderForOrg (Phase 78 D-12 / MED-1)', {
+describe('IdP deprovisioning per-provider toggle via deprovisioning.enableProviderForOrg', {
   timeout: 20000,
 }, () => {
   for (const provider of ['ENTRA', 'OKTA', 'GITHUB'] as const) {

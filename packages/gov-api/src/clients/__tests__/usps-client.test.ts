@@ -1,20 +1,14 @@
-// Phase 84 · Plan 00 (Wave 0 RED) — US-FIELD-03 (D-03) USPS adapter contract.
-// See .planning/milestones/v7.0-phases/84-.../84-VALIDATION.md.
+// UspsAddressClient unit tests.
 //
-// RED until Plan 04 creates `packages/gov-api/src/clients/usps-client.ts`
-// exporting `UspsAddressClient` (subclass of GovApiClient, mirroring
-// hmrc-vat-client.ts). The import below resolves to a not-yet-existing module
-// so the suite fails (Cannot find module).
-//
-// Contract locked here (every US-FIELD-03 row in 84-VALIDATION.md):
+// Contract:
 //   - OAuth token cache: one /oauth2/v3/token POST across two validateAddress calls
-//   - 60/hr GLOBAL self-throttle → { verified:false } WITHOUT throwing (D-03 fail-open)
+//   - 60/hr GLOBAL self-throttle → { verified:false } WITHOUT throwing (fail-open)
 //   - Redis-down / limiter failure → fails open (unverified, never throws to the save path)
 //   - address-result cache hit avoids a second upstream fetch
 //   - malformed USPS response caught by safeParse → unverified, no throw
 //
 // All network + Redis are mocked (mocked fetch + injected limiter/cache); no
-// live USPS creds (LOCAL-ONLY).
+// live USPS creds required.
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { UspsAddressClient } from '../usps-client.js';
@@ -116,10 +110,10 @@ describe('UspsAddressClient — OAuth token cache', () => {
 });
 
 // ---------------------------------------------------------------------------
-// Fail-open: global 60/hr self-throttle (D-03)
+// Fail-open: global 60/hr self-throttle
 // ---------------------------------------------------------------------------
 
-describe('UspsAddressClient — 60/hr global self-throttle (D-03 fail-open)', () => {
+describe('UspsAddressClient — 60/hr global self-throttle (fail-open)', () => {
   it('returns { verified: false } WITHOUT throwing when the global limiter denies', async () => {
     const throttled = {
       checkLimit: vi.fn(async () => ({ allowed: false, remaining: 0, resetMs: 3_600_000 })),

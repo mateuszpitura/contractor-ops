@@ -1,4 +1,4 @@
-// Phase 59 · Plan 03 Task 1 — ir35Chain tRPC router (CLASS-04).
+// ir35Chain tRPC router.
 //
 // Manages IR35 chain participants per engagement with two-timestamp delivery
 // tracking (sdsDeliveredAt / sdsAcknowledgedAt), hybrid identity (linked
@@ -7,8 +7,8 @@
 // Auto-seed rule: On first listByEngagement call for a GB engagement with zero
 // participants, seed CLIENT + WORKER rows.
 
-import { TRPCError } from '@trpc/server';
 import { entityIdSchema } from '@contractor-ops/validators';
+import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 
 import * as E from '../../errors';
@@ -67,7 +67,7 @@ const removeInput = entityIdSchema;
 export const ir35ChainRouter = router({
   /**
    * List chain participants for an engagement. Auto-seeds CLIENT + WORKER
-   * rows on first call for GB engagements with zero participants (D-11).
+   * rows on first call for GB engagements with zero participants.
    */
   listByEngagement: classificationProcedure
     .input(listByEngagementInput)

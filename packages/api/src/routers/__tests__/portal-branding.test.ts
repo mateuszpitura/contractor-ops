@@ -72,10 +72,9 @@ vi.mock('@contractor-ops/db', () => ({
   getRegionalClient: vi.fn(() => mockPrisma),
 }));
 
-// F-DB-03 — tenantMiddleware reads status/region via getOrgMeta. Stub it so
+// tenantMiddleware reads status/region via getOrgMeta. Stub it so
 // individual tests can override `prisma.organization.findUnique` for the
-// HANDLER's own DB lookup without inadvertently failing the F-SEC-12
-// suspended-org gate.
+// handler's own DB lookup without inadvertently failing the suspended-org gate.
 vi.mock('../../services/org-cache', () => ({
   getOrgMeta: vi.fn(async () => ({
     id: 'org-branding-001',
@@ -161,7 +160,13 @@ vi.mock('../../services/stripe-client', () => ({
 }));
 
 vi.mock('@contractor-ops/logger', () => ({
-  getIdpAuditLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn(), child: vi.fn() })),
+  getIdpAuditLogger: vi.fn(() => ({
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
+    child: vi.fn(),
+  })),
   createWebhookLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
   createCronLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
   withBodyLogging: vi.fn((_o, fn) => fn),
@@ -184,8 +189,7 @@ vi.mock('@contractor-ops/logger', () => ({
     debug: vi.fn(),
   })),
   createTrpcLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
-  createLogger: vi.fn(() => ({ info: vi.fn(),
- warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
+  createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
 }));
 
 vi.mock('@contractor-ops/logger/metrics', () => ({

@@ -5,20 +5,21 @@ import { useMemo } from 'react';
 import { useLocale } from '../../i18n/navigation.js';
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { numberLocaleTag } from './format-locale.js';
-import { useOffboardingTrajectory } from './hooks/use-offboarding-trajectory.js';
 import type { OffboardingTrajectory } from './hooks/use-offboarding-trajectory.js';
+import { useOffboardingTrajectory } from './hooks/use-offboarding-trajectory.js';
 
 export interface OffboardingTrajectoryBannerProps {
   trajectory: OffboardingTrajectory;
 }
 
 /**
- * GULF-07 — advisory, non-authoritative, non-gating offboarding band-trajectory banner
- * (D-12). Rendered with the `--warning` (amber) treatment when offboarding is opened for
- * a Saudi-national contract. It surfaces the recorded band verbatim and the current →
- * projected nationalisation rate, with adviser-deferring copy ("Advisory only — verify
- * in Qiwa. The system does not set your band."). It NEVER asserts a projected band, never
- * persists, and renders NO confirm/block/gate action (T-79-07-02). Logical properties only.
+ * Advisory, non-authoritative, non-gating offboarding band-trajectory banner.
+ * Rendered with the `--warning` (amber) treatment when offboarding is opened for
+ * a Saudi-national contract. It surfaces the recorded band verbatim and the
+ * current → projected nationalisation rate, with adviser-deferring copy
+ * ("Advisory only — verify in Qiwa. The system does not set your band."). It
+ * NEVER asserts a projected band, never persists, and renders NO
+ * confirm/block/gate action. Logical properties only.
  */
 export function OffboardingTrajectoryBanner({ trajectory }: OffboardingTrajectoryBannerProps) {
   const t = useTranslations('Saudization.offboardingTrajectory');

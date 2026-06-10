@@ -53,9 +53,8 @@ describe('roles', () => {
     }
   });
 
-  it('admin matches owner on all resources EXCEPT workflow override_blocking_task (Phase 74 D-09)', () => {
-    // Phase 74 introduced workflow:override_blocking_task as an OWNER-only
-    // action. Admin retains every other permission owner has.
+  it('admin matches owner on all resources EXCEPT workflow override_blocking_task', () => {
+    // workflow:override_blocking_task is OWNER-only; admin retains every other permission owner has.
     const owner = roles.owner.statements;
     const admin = roles.admin.statements;
     for (const resource of Object.keys(owner)) {
@@ -72,8 +71,8 @@ describe('roles', () => {
     }
   });
 
-  it('owner and admin both hold idp:override_step_failure + idp:start_run (Phase 77 D-12 / Phase 81 D-10)', () => {
-    // Phase 81 D-10 adds the idp:start_run action alongside override_step_failure.
+  it('owner and admin both hold idp:override_step_failure + idp:start_run', () => {
+    // idp:start_run is granted alongside override_step_failure to owner and admin.
     // Order-tolerant compare — the role array order is not a contract.
     expect(roles.owner.statements.idp?.slice().sort()).toEqual(
       ['override_step_failure', 'start_run'].sort(),
@@ -83,10 +82,10 @@ describe('roles', () => {
     );
   });
 
-  it('it_admin holds EXACTLY idp:start_run and NOT idp:override_step_failure (Phase 81 D-10)', () => {
-    // Phase 81 D-10 (research A1): it_admin is the seeded ACCESS_REVOKE assignee, so
-    // the inline task-card deprovisioning trigger must be usable by it_admin. It gains
-    // ONLY start_run; override_step_failure stays owner/admin-only.
+  it('it_admin holds EXACTLY idp:start_run and NOT idp:override_step_failure', () => {
+    // it_admin is the seeded ACCESS_REVOKE assignee, so the inline task-card
+    // deprovisioning trigger must be usable by it_admin. It gains ONLY start_run;
+    // override_step_failure stays owner/admin-only.
     expect(roles.it_admin.statements.idp).toEqual(['start_run']);
     expect(roles.it_admin.statements.idp).not.toContain('override_step_failure');
   });
@@ -170,10 +169,10 @@ describe('roles', () => {
     }
   });
 
-  // Phase 84 US-FIELD-02 (D-02 / D-09 / Pitfall 1+2) — full 10-role contractorPii:read matrix.
-  // Granted to owner/admin/finance_admin ONLY; external_accountant is DELIBERATELY denied
-  // (external-party full-SSN access is a liability + data-minimization call), as are the other 6.
-  it('contractorPii:read is granted to exactly owner, admin, finance_admin (D-02)', () => {
+  // contractorPii:read is granted to owner/admin/finance_admin ONLY; external_accountant is
+  // DELIBERATELY denied (external-party full-SSN access is a liability + data-minimization call),
+  // as are the other 6.
+  it('contractorPii:read is granted to exactly owner, admin, finance_admin', () => {
     const granted = ['owner', 'admin', 'finance_admin'] as const;
     for (const name of granted) {
       const statements = roles[name].statements as Record<string, readonly string[] | undefined>;
@@ -181,7 +180,7 @@ describe('roles', () => {
     }
   });
 
-  it('contractorPii:read is DENIED to the other 7 roles incl. external_accountant (D-09)', () => {
+  it('contractorPii:read is DENIED to the other 7 roles incl. external_accountant', () => {
     const denied = [
       'ops_manager',
       'team_manager',
@@ -197,7 +196,7 @@ describe('roles', () => {
     }
   });
 
-  it('owner holds contractorPii:read via the allPermissions duplicate (Pitfall 2 — no drift)', () => {
+  it('owner holds contractorPii:read via the allPermissions duplicate (drift regression guard)', () => {
     // Regression guard: adding contractorPii to permissions.ts but forgetting the
     // duplicated allPermissions const in roles.ts would leave owner silently denied.
     const owner = roles.owner.statements as Record<string, readonly string[] | undefined>;

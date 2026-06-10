@@ -1,11 +1,11 @@
 /**
- * Phase 77 D-01/D-02 — presentational impact-preview panel. Per-IdP card showing
- * what deprovisioning will affect, a freshness label, and a Refresh button.
- * Props-in / JSX-out; the container owns loading/failure routing.
+ * Presentational impact-preview panel. Per-IdP card showing what deprovisioning
+ * will affect, a freshness label, and a Refresh button. Props-in / JSX-out;
+ * the container owns loading/failure routing.
  */
 
-import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
 import { Alert, AlertDescription, AlertTitle } from '@contractor-ops/ui/components/shadcn/alert';
+import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import {
   Card,

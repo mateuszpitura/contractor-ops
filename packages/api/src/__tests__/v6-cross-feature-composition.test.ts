@@ -1,9 +1,9 @@
-// Phase 80 · Plan 01 — SC#1 cross-feature composition (F1 + F3 + F4).
+// Cross-feature composition (F1 + F3 + F4).
 //
-// This is the milestone's proof that the four v6.0 gate primitives — already
-// independently unit-tested — actually COMPOSE on the SC#1 mega-scenario: ONE
-// seeded ME-region (UAE) contractor carrying a free-zone BLOCKING license, a
-// Saudi-national assignment, and an open IP_VERIFICATION offboarding task.
+// Proves that the v6.0 gate primitives — already independently unit-tested —
+// actually COMPOSE on the mega-scenario: ONE seeded ME-region (UAE) contractor
+// carrying a free-zone BLOCKING license, a Saudi-national assignment, and an
+// open IP_VERIFICATION offboarding task.
 //
 //   F1 + F3 (payment hard-block): a free-zone BLOCKING item recorded valid
 //     (PENDING) crosses its Asia/Dubai expiry boundary; the region-aware
@@ -15,22 +15,21 @@
 //     `assertRunCompletable` throw PRECONDITION_FAILED with
 //     cause.blockedTaskKind='IP_VERIFICATION'; an override clears it.
 //   Audit (F1/F3 path): the payment gate's would-block path writes a
-//     `compliance.payment.would_block` AuditLog row. The composed F4 hard-block
-//     path (`assertRunCompletable`) writes NO audit row of its own.
+//     `compliance.payment.would_block` AuditLog row. The F4 hard-block path
+//     (`assertRunCompletable`) writes NO audit row of its own.
 //   Locked-phrase guard (green): the Gulf AE/SA locked phrases match verbatim.
 //
-// Seeded DB-free via the gulf-fixtures factories + a hoisted mock-Prisma store
-// (the heavyweight live-DB dev seeder has no Gulf section and is intentionally
-// unused here). Primary analog: free-zone-record-then-expire.test.ts (the test
-// wiring REAL services end-to-end against one shared mutable store). F4 analog:
+// Seeded DB-free via the gulf-fixtures factories + a hoisted mock-Prisma store.
+// Primary analog: free-zone-record-then-expire.test.ts (wires REAL services
+// end-to-end against one shared mutable store). F4 analog:
 // workflow-execution-ip-block.test.ts. No feature source is modified.
 //
 // F2 (IdP deprovisioning) is deliberately NOT composed here: its ACCESS_REVOKE
 // saga runs POST-offboarding-completion, off the blocked path, so it does not
 // belong in this F1/F3/F4 hard-block proof. The F2 end-to-end composition
 // (ACCESS_REVOKE → resolve → multi-provider run) — together with the INT-02
-// payment-block recovery flow — now lives in its own automated proof:
-// 81-int-closure.test.ts (Phase 81 INT-01 + INT-02 closure gate).
+// payment-block recovery flow — lives in its own automated proof:
+// 81-int-closure.test.ts.
 
 import { TRPCError } from '@trpc/server';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -71,9 +70,9 @@ interface ItemRow {
 const { store } = vi.hoisted(() => ({ store: { items: [] as Record<string, unknown>[] } }));
 
 // The audit-writer spy is declared via vi.hoisted so it is the same reference the
-// mocked module exposes AND the test asserts against. The F1/F3 gate path (the
-// payment gate's would-block branch) is what populates the audit rows asserted
-// here; the F4 hard-block leg (assertRunCompletable) adds no audit writer.
+// mocked module exposes AND the test asserts against. The payment gate's
+// would-block branch populates the audit rows asserted here; the F4 hard-block
+// leg (assertRunCompletable) adds no audit writer.
 const { auditWriteSpy } = vi.hoisted(() => ({ auditWriteSpy: vi.fn(async () => undefined) }));
 
 // Region client used by the reminder scan. Holds the shared mutable item store so
@@ -156,10 +155,15 @@ vi.mock('@contractor-ops/db', () => ({
 }));
 vi.mock('@contractor-ops/feature-flags', () => ({ isPaymentBlockEnforced: vi.fn(() => true) }));
 vi.mock('@contractor-ops/logger', () => ({
-  getIdpAuditLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn(), child: vi.fn() })),
+  getIdpAuditLogger: vi.fn(() => ({
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
+    child: vi.fn(),
+  })),
   createCronLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
-  createLogger: vi.fn(() => ({ info: vi.fn(),
- warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
+  createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
 }));
 vi.mock('@contractor-ops/logger/metrics', () => ({
   metrics: { gauge: vi.fn(), increment: vi.fn(), distribution: vi.fn() },
@@ -667,7 +671,7 @@ describe('SC#1 F4 — offboarding IP_VERIFICATION hard-block (writes no audit ro
       expect(cause.openTaskIds).toEqual(['task_ip']);
     }
     // The F4 hard-block path emits NO audit row — it merely throws. The only
-    // audit rows in this composed SC#1 hard-block scenario are the F1/F3 rows
+    // audit rows in this composed hard-block scenario are the F1/F3 rows
     // asserted in the audit describe below.
     expect(auditWriteSpy).not.toHaveBeenCalled();
   });

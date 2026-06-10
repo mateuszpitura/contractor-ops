@@ -1,8 +1,4 @@
-// Phase 74 Plan 01 — Wave 0 typed exports for the offboarding KT-template package.
-//
-// Source of truth: 74-01-PLAN.md `<interfaces>` block.
-// Plan 74-02 fills the OFFBOARDING_TEMPLATE_SEEDS / PTO_KEYWORDS constants,
-// Plan 74-05 fills `upsertSeedTemplates`, Plan 75 extends DocumentType.
+// Typed exports for the offboarding KT-template package.
 
 export type OffboardingTemplateSeedRole =
   | 'software_engineer'
@@ -11,13 +7,12 @@ export type OffboardingTemplateSeedRole =
   | 'generic_consultant';
 
 /**
- * Public alias used by downstream plans that prefer a shorter name (Plan 74-05
- * tRPC CRUD layer, Plan 74-07 settings UI). Intentionally identical to
- * `OffboardingTemplateSeedRole` — not a separate type.
+ * Public alias for consumers that prefer a shorter name. Intentionally
+ * identical to `OffboardingTemplateSeedRole` — not a separate type.
  */
 export type Role = OffboardingTemplateSeedRole;
 
-export type DocumentType = 'HANDOVER_DOCUMENT'; // Phase 75 will extend with IP_ASSIGNMENT etc.
+export type DocumentType = 'HANDOVER_DOCUMENT'; // IP_ASSIGNMENT and other types will be added here
 
 export interface TaskItem {
   readonly titleI18nKey: string;

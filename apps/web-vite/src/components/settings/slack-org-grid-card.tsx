@@ -1,8 +1,8 @@
 /**
- * Phase 77 D-14/D-16 — presentational Slack Org-Grid connection card. A second
- * Slack card (next to the workspace Slack section) for the deprovisioning org-grid
- * connection. Connect is greyed out + a docs link when the org is not on
- * Enterprise Grid. Props-in / JSX-out.
+ * Presentational Slack Org-Grid connection card. A second Slack card (next to
+ * the workspace Slack section) for the deprovisioning org-grid connection.
+ * Connect is greyed out + a docs link when the org is not on Enterprise Grid.
+ * Props-in / JSX-out.
  */
 
 import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
@@ -14,9 +14,8 @@ import {
   CardHeader,
   CardTitle,
 } from '@contractor-ops/ui/components/shadcn/card';
-import { ExternalLink, ShieldCheck } from 'lucide-react';
-
 import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
+import { ExternalLink, ShieldCheck } from 'lucide-react';
 
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { useSlackOrgGridCard } from './hooks/use-slack-org-grid-card.js';

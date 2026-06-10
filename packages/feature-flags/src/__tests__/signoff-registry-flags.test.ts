@@ -1,11 +1,9 @@
-// Phase 70-01 · FOUND6-04 — failing test scaffold for the flag-namespace
-// signoff registry Zod schema. Plan 70-05 implements
-// `signoff-registry-flags-schema.ts`.
+// Zod schema tests for the flag-namespace signoff registry.
 
 import { describe, expect, it } from 'vitest';
 import { FlagSignoffEntrySchema } from '../signoff-registry-flags-schema';
 
-describe('FlagSignoffEntrySchema (FOUND6-04)', () => {
+describe('FlagSignoffEntrySchema', () => {
   it('accepts a minimal PENDING entry', () => {
     const result = FlagSignoffEntrySchema.safeParse({ status: 'PENDING' });
     expect(result.success).toBe(true);

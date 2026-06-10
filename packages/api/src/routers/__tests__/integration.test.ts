@@ -156,7 +156,13 @@ vi.mock('../../services/stripe-client', () => ({
 }));
 
 vi.mock('@contractor-ops/logger', () => ({
-  getIdpAuditLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn(), child: vi.fn() })),
+  getIdpAuditLogger: vi.fn(() => ({
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
+    child: vi.fn(),
+  })),
   createWebhookLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
   createCronLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
   withBodyLogging: vi.fn((_o, fn) => fn),
@@ -179,8 +185,7 @@ vi.mock('@contractor-ops/logger', () => ({
     debug: vi.fn(),
   })),
   createTrpcLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
-  createLogger: vi.fn(() => ({ info: vi.fn(),
- warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
+  createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
 }));
 
 vi.mock('@contractor-ops/logger/metrics', () => ({
@@ -273,10 +278,9 @@ beforeEach(() => {
 // ===========================================================================
 
 describe('integration.getOAuthUrlGeneric', () => {
-  // F-SEC-05 + F-SEC-21: the procedure now returns a local
-  // /api/oauth/{provider}/start URL — NOT the IdP authorize URL — so the
-  // start route can mint a single-use OAuthChallenge and set the
-  // __Host-oauth_state cookie before redirecting to the IdP.
+  // The procedure returns a local /api/oauth/{provider}/start URL — NOT the
+  // IdP authorize URL — so the start route can mint a single-use OAuthChallenge
+  // and set the __Host-oauth_state cookie before redirecting to the IdP.
   function setupGoogleCalendarAdapter() {
     mockGetAdapter.mockReturnValue({
       supportsOAuth: true,

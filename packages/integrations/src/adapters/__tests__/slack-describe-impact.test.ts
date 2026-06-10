@@ -1,5 +1,5 @@
 /**
- * Phase 77 D-04 — SlackAdapter.describeImpact (best-effort, cache-fronted reads).
+ * SlackAdapter.describeImpact tests (best-effort reads).
  * LOCAL-ONLY: MSW handlers.
  */
 
@@ -15,7 +15,7 @@ afterAll(() => server.close());
 const adapter = () => new SlackAdapter().withOrgGridToken('org-grid-token');
 const USER_ID = 'W08001';
 
-describe('SlackAdapter.describeImpact (Phase 77 D-04)', () => {
+describe('SlackAdapter.describeImpact', () => {
   it('returns a SLACK preview with admin/owner booleans + capped channel count', async () => {
     server.use(
       http.post('https://slack.com/api/users.info', () =>

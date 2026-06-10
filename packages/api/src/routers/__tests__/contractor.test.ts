@@ -258,7 +258,13 @@ vi.mock('@sentry/node', () => {
 });
 
 vi.mock('@contractor-ops/logger', () => ({
-  getIdpAuditLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn(), child: vi.fn() })),
+  getIdpAuditLogger: vi.fn(() => ({
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
+    child: vi.fn(),
+  })),
   withBodyLogging: vi.fn((_o, fn) => fn),
   logIntegrationCall: vi.fn(),
   subscribeOpossumEvents: vi.fn(),
@@ -272,8 +278,7 @@ vi.mock('@contractor-ops/logger', () => ({
   PII_MASK_KEYWORDS: [],
   PII_MASK_PATHS: [],
   createTrpcLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
-  createLogger: vi.fn(() => ({ info: vi.fn(),
- warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
+  createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
   createCronLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
   createWebhookLogger: vi.fn(() => ({
     info: vi.fn(),
@@ -295,7 +300,7 @@ vi.mock('@contractor-ops/logger/metrics', () => ({
 }));
 
 // ---------------------------------------------------------------------------
-// Phase 57 · Plan 04 — gov-api + tax-id orchestrator mocks
+// gov-api + tax-id orchestrator mocks
 // ---------------------------------------------------------------------------
 
 const { mockHmrcClient, mockViesClient, validateTaxIdMock } = vi.hoisted(() => ({
@@ -795,12 +800,12 @@ describe('contractor router', () => {
 });
 
 // ---------------------------------------------------------------------------
-// Phase 57 — contractor.revalidateVat (PAY-03, PAY-05). Implemented Plan 57-03.
-// Originally also had a `validateVat` alias which has been removed; the
-// orchestrator's D-07 trigger 3 calls `validateContractorVatId` directly.
+// contractor.revalidateVat — originally also had a `validateVat` alias which
+// has been removed; the orchestrator's trigger 3 calls `validateContractorVatId`
+// directly.
 // ---------------------------------------------------------------------------
 
-describe('contractor.revalidateVat (Phase 57 · Plan 04)', () => {
+describe('contractor.revalidateVat', () => {
   beforeEach(() => {
     validateTaxIdMock.mockClear();
     validateTaxIdMock.mockResolvedValue({
@@ -920,11 +925,10 @@ describe('contractor.revalidateVat (Phase 57 · Plan 04)', () => {
     expect(result.source).toBe('stale-cache');
   });
 
-  it('revalidateVat surfaces responseStatus=invalid to the caller (HMRC 404 sad path) — §2', async () => {
-    // Plan 57-04 Task 3 §2 manual scenario:
-    // "Change the same contractor's VAT ID to GB555555555 (HMRC sandbox 404
-    // fixture). Click Revalidate VAT. Expected: pill flips to red Invalid;
-    // toast shows error."
+  it('revalidateVat surfaces responseStatus=invalid to the caller (HMRC 404 sad path)', async () => {
+    // Manual scenario: change the contractor's VAT ID to GB555555555 (HMRC
+    // sandbox 404 fixture). Click Revalidate VAT. Expected: pill flips to
+    // red Invalid; toast shows error.
     //
     // At the router layer the equivalent assertion is: when the orchestrator
     // returns { responseStatus: 'invalid' } (which is what validateTaxId
@@ -936,7 +940,7 @@ describe('contractor.revalidateVat (Phase 57 · Plan 04)', () => {
     // This is the deterministic substitute for the HMRC sandbox round-trip;
     // wire-level coverage of the 404→invalid mapping lives in
     // packages/gov-api/src/clients/__tests__/hmrc-vat-client.msw.integration.test.ts
-    // (extended in Plan 66-03).
+    // Wire-level coverage of the 404→invalid mapping lives in the HMRC VAT client integration test.
     validateTaxIdMock.mockResolvedValueOnce({
       responseStatus: 'invalid',
       confirmationRef: null,
@@ -962,10 +966,10 @@ describe('contractor.revalidateVat (Phase 57 · Plan 04)', () => {
 });
 
 // ---------------------------------------------------------------------------
-// Phase 57 · Plan 04 — D-07 trigger 1: contractor.update VAT-number-change
+// contractor.update VAT-number-change trigger
 // ---------------------------------------------------------------------------
 
-describe('contractor.update — D-07 trigger 1 (VAT-number-change validation)', () => {
+describe('contractor.update — VAT-number-change validation trigger', () => {
   beforeEach(() => {
     // mockReset clears both history AND implementation queues — avoids
     // queued-once-mock bleed across tests (observed cross-test contamination
@@ -1032,7 +1036,7 @@ describe('contractor.update — D-07 trigger 1 (VAT-number-change validation)', 
 });
 
 // ---------------------------------------------------------------------------
-// Phase 60 CLASS-08 — AuditLog write-through (resolves Open Question #1).
+// AuditLog write-through on contractor mutations.
 // ---------------------------------------------------------------------------
 
 describe('Contractor mutations write AuditLog', () => {

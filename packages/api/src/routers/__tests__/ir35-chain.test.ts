@@ -1,4 +1,4 @@
-// Phase 59 Plan 59-03 Task 1 — ir35Chain router contract tests.
+// ir35Chain router contract tests.
 import { TRPCError } from '@trpc/server';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -202,7 +202,13 @@ vi.mock('@sentry/node', () => {
 });
 
 vi.mock('@contractor-ops/logger', () => ({
-  getIdpAuditLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn(), child: vi.fn() })),
+  getIdpAuditLogger: vi.fn(() => ({
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
+    child: vi.fn(),
+  })),
   createWebhookLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
   createCronLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
   withBodyLogging: vi.fn((_o, fn) => fn),
@@ -225,8 +231,7 @@ vi.mock('@contractor-ops/logger', () => ({
     debug: vi.fn(),
   })),
   createTrpcLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
-  createLogger: vi.fn(() => ({ info: vi.fn(),
- warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
+  createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
 }));
 
 vi.mock('@contractor-ops/logger/metrics', () => ({
@@ -234,10 +239,9 @@ vi.mock('@contractor-ops/logger/metrics', () => ({
 }));
 
 vi.mock('@contractor-ops/feature-flags', async importOriginal => {
-  // Multi-layer enforcement (D-05/D-06):
-  //  1. root.ts evaluates `buildFlagBag` at module load to gate classification routers.
-  //  2. classificationProcedure middleware calls `evaluate(...)` per-request.
-  // Tests that exercise classification need both layers to return enabled=true.
+  // Classification is gated at two layers: root.ts evaluates `buildFlagBag` at
+  // module load, and classificationProcedure middleware calls `evaluate(...)`
+  // per-request. Tests that exercise classification need both to return enabled=true.
   const actual = (await importOriginal()) as Record<string, unknown>;
   const enabledBag = {
     values: { 'module.classification-engine': true },

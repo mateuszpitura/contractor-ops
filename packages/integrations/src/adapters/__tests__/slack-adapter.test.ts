@@ -93,11 +93,10 @@ describe('SlackAdapter', () => {
     });
   });
 
-  describe('deprovision execution path — contract surface (D-08)', () => {
-    // 81-02 multi-provider runs resolve `new SlackAdapter().withOrgGridToken(token)`
-    // directly in the step-runner (idp-deprovisioning-step-runner.ts:204-216). These
-    // assertions lock that the Deprovisionable contract surface stays wired to the
-    // org-grid token so a refactor of the adapter shape fails here, fast.
+  describe('deprovision execution path — contract surface', () => {
+    // Multi-provider runs resolve `new SlackAdapter().withOrgGridToken(token)` directly
+    // in the step-runner. These assertions lock that the Deprovisionable contract surface
+    // stays wired to the org-grid token so a refactor of the adapter shape fails here, fast.
     it('exposes the four Deprovisionable methods after withOrgGridToken', () => {
       const a = new SlackAdapter().withOrgGridToken('org-grid-token');
       expect(typeof a.suspendAccount).toBe('function');
@@ -198,13 +197,13 @@ describe('SlackAdapter', () => {
 });
 
 // ---------------------------------------------------------------------------
-// D-08 regression lock — suspend / revoke / impact fire with the org-grid bearer.
+// Regression lock — suspend / revoke / impact fire with the org-grid bearer.
 //
 // The full behavioral matrix (error-class mapping, email→SCIM-id resolution,
 // rate-limit throws, enterprise-grid detection) lives in the dedicated
 // slack-deprovision / slack-describe-impact / slack-enterprise-grid-detection
 // suites. This block re-asserts ONLY the three must-have truths the multi-provider
-// run (81-02) depends on, against the canonical MSW harness — no behavior change
+// run depends on, against the canonical MSW harness — no behavior change
 // to slack-adapter.ts. Kept outside the `vi.stubGlobal('fetch')` describe above so
 // the MSW server owns the network for these cases.
 // ---------------------------------------------------------------------------
@@ -217,7 +216,7 @@ const isScimUserPath = (url: string) => {
 const ORG_GRID_TOKEN = 'org-grid-token';
 const DEPROVISION_USER_ID = 'W08001';
 
-describe('SlackAdapter — deprovision execution path fires with the org-grid bearer (D-08)', () => {
+describe('SlackAdapter — deprovision execution path fires with the org-grid bearer', () => {
   const { server } = createMockServer({ handlersOnly: true });
   beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
   afterEach(() => server.resetHandlers());

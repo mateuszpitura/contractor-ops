@@ -1,4 +1,4 @@
-// Phase 73 · Plan 05 — compliance-dashboard helper tests (D-01..D-05).
+// compliance-dashboard helper tests.
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -10,9 +10,14 @@ const mockDb = {
 
 vi.mock('@contractor-ops/db', () => ({ prisma: mockDb, prismaRaw: mockDb }));
 vi.mock('@contractor-ops/logger', () => ({
-  getIdpAuditLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn(), child: vi.fn() })),
-  createLogger: vi.fn(() => ({ info: vi.fn(),
- warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
+  getIdpAuditLogger: vi.fn(() => ({
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
+    child: vi.fn(),
+  })),
+  createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
 }));
 vi.mock('../compliance-payment-gate.js', () => ({
   assertContractorPaymentEligibility: vi.fn(async () => ({

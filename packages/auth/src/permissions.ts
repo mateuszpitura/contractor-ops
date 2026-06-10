@@ -15,7 +15,7 @@ export const accessControlStatement = {
   invitation: ['create', 'cancel'],
   contractor: ['create', 'read', 'update', 'delete', 'bulk'],
   contract: ['create', 'read', 'update', 'delete'],
-  compliance: ['read', 'override'], // Phase 73 D-10 — admin override + per-role read
+  compliance: ['read', 'override'], // admin override + per-role read
   document: ['create', 'read', 'update', 'delete'],
   invoice: ['create', 'read', 'update', 'delete', 'approve'],
   workflow: ['create', 'read', 'update', 'delete', 'execute', 'override_blocking_task'],
@@ -38,9 +38,9 @@ export const accessControlStatement = {
   team: ['read', 'create', 'update', 'archive'],
   project: ['read', 'create', 'update', 'archive'],
   costCenter: ['read', 'create', 'update', 'archive'],
-  // Phase 84 US-FIELD-02 (D-02 / D-09) — gate for revealing full SSN PII.
-  // Granted ONLY to owner/admin/finance_admin; deny-by-default for the other 7
-  // roles (external_accountant explicitly DENIED per D-09). See roles.ts.
+  // Gate for revealing full SSN PII. Granted ONLY to owner/admin/finance_admin;
+  // deny-by-default for the other 7 roles (external_accountant explicitly
+  // denied). See roles.ts.
   contractorPii: ['read'],
   'admin:boe-rate': ['read', 'write'],
 } as const;

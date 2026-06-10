@@ -14,7 +14,13 @@ vi.mock('@contractor-ops/feature-flags', () => ({
 }));
 
 vi.mock('@contractor-ops/logger', () => ({
-  getIdpAuditLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn(), child: vi.fn() })),
+  getIdpAuditLogger: vi.fn(() => ({
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
+    child: vi.fn(),
+  })),
   createWebhookLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
   createCronLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
   withBodyLogging: vi.fn((_o, fn) => fn),
@@ -190,9 +196,9 @@ describe('tenantFlaggedProcedure', () => {
     const mockBag = { isEnabled: vi.fn().mockReturnValue(true) };
     mockLazyFlagBag.mockReturnValue(mockBag);
 
-    // Override org to return unusual region. P2-C/F-DB-03 — getOrgMeta /
-    // loadAndAssertActive asserts `status === 'ACTIVE'`, so the override
-    // must keep the active flag while still tweaking the region.
+    // Override org to return unusual region. getOrgMeta / loadAndAssertActive
+    // asserts `status === 'ACTIVE'`, so the override must keep the active flag
+    // while still tweaking the region.
     mockPrisma.organization.findUnique.mockResolvedValue({
       id: 'org-mock',
       dataRegion: 'APAC',

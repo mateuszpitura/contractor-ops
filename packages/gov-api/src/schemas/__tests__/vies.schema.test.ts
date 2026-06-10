@@ -1,4 +1,4 @@
-// Phase 57 · Plan 01 — VIES Zod schema tests (PAY-05 VALIDATION rows 18/19).
+// VIES Zod schema tests.
 
 import { describe, expect, it } from 'vitest';
 
@@ -46,7 +46,7 @@ describe('viesLookupResponseSchema', () => {
     expect(parsed.isValid).toBeUndefined();
   });
 
-  it('rejects a body missing BOTH isValid AND userError (D-08 refinement)', () => {
+  it('rejects a body missing BOTH isValid AND userError (schema refinement)', () => {
     expect(() =>
       viesLookupResponseSchema.parse({
         countryCode: 'DE',

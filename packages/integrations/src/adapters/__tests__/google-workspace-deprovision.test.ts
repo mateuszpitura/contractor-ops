@@ -1,11 +1,10 @@
 /**
- * Phase 77 D-04/D-05 — GoogleWorkspaceAdapter Deprovisionable behavior.
+ * GoogleWorkspaceAdapter Deprovisionable behavior.
  *
- * Replaces the Phase 76 D-16 stub-template assertions (404→SUCCEEDED,
- * 429→RATE_LIMITED-FAILED) with the real 77-02 contract: errors classified via
- * the closed-enum classifier — 404→LIKELY_GONE, 429/503→THROW (QStash retries),
- * 401→PERMANENT_AUTH_EXPIRED, 403→PERMANENT_FORBIDDEN — and revokeAllSessions as
- * two sub-actions (OAuth-grant revoke + sign-out), both required for SUCCEEDED.
+ * Errors are classified via the closed-enum classifier — 404→LIKELY_GONE,
+ * 429/503→THROW (QStash retries), 401→PERMANENT_AUTH_EXPIRED,
+ * 403→PERMANENT_FORBIDDEN — and revokeAllSessions as two sub-actions
+ * (OAuth-grant revoke + sign-out), both required for SUCCEEDED.
  *
  * LOCAL-ONLY constraint: tests run against MSW handlers, never live sandboxes.
  */
@@ -49,7 +48,7 @@ const isSignOutPath = (url: string) => {
 const adapter = () => new GoogleWorkspaceAdapter().withAccessToken('fake-token');
 const USER = 'u@example.com';
 
-describe('GoogleWorkspaceAdapter — Deprovisionable contract (Phase 77 D-04/D-05)', () => {
+describe('GoogleWorkspaceAdapter — Deprovisionable contract', () => {
   it('implements all four Deprovisionable methods', () => {
     const a = adapter();
     expect(typeof a.suspendAccount).toBe('function');

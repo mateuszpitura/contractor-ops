@@ -32,8 +32,8 @@ vi.mock('@contractor-ops/logger', () => {
   };
 });
 
-// F-OBS-01: handleError captures non-tRPC errors and 5xx tRPC errors to
-// Sentry. Stub the wrapper so the test doesn't reach the SDK.
+// handleError captures non-tRPC errors and 5xx tRPC errors to Sentry.
+// Stub the wrapper so the test doesn't reach the SDK.
 vi.mock('../sentry.js', () => ({
   Sentry: {
     captureException: vi.fn(),
@@ -56,7 +56,7 @@ function makeContext() {
   const headerMock = vi.fn();
   return {
     json: jsonMock,
-    // F-OBS-01: handler now reads `c.get('requestId')` and `c.req.path`/`method`.
+    // handler now reads `c.get('requestId')` and `c.req.path`/`method`.
     get: vi.fn(),
     req: { header: vi.fn(), path: '/api/v1/test', method: 'GET' },
     header: headerMock,
@@ -151,12 +151,7 @@ describe('handleError', () => {
     });
   });
 
-  // Phase 82 · Plan 01 · FOUND7-01 (SC#1) — Wave 0 RED scaffold.
-  // The ADD_ON_REQUIRED branch in extractErrorDetails is added by Plan 82-04.
-  // Until then these assertions are RED (the parser falls through to the raw
-  // FORBIDDEN code/message). Encodes the REST mapping contract 82-04 must
-  // satisfy: ADD_ON_REQUIRED → code 'ADD_ON_REQUIRED', riding FORBIDDEN→403.
-  describe('ADD_ON_REQUIRED structured message (Wave 0 RED — 82-04 turns GREEN)', () => {
+  describe('ADD_ON_REQUIRED structured message', () => {
     it('extracts code=ADD_ON_REQUIRED and message mentions the required add-on', () => {
       const c = makeContext();
       const message = JSON.stringify({ type: 'ADD_ON_REQUIRED', requiredAddOn: 'workforce' });

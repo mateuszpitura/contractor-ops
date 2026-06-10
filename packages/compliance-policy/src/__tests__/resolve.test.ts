@@ -16,7 +16,7 @@ describe('resolvePolicyRules — ROADMAP success criteria fixtures', () => {
     const ids = rules.map(r => r.policyRuleId).sort();
     expect(ids).toEqual([
       'uk.business_registration@v1',
-      'uk.ip_assignment@v1', // Phase 75 D-07 — universal at offboarding
+      'uk.ip_assignment@v1', // universal at offboarding
       'uk.right_to_work@v1',
       'uk.sds@v1',
       'uk.utr@v1',
@@ -53,7 +53,7 @@ describe('resolvePolicyRules — ROADMAP success criteria fixtures', () => {
       'de.a1@v1',
       'de.aufenthaltstitel@v1',
       'de.eight_b_estg@v1',
-      'de.werkvertrag_ip@v1', // Phase 75 D-07/D-15 — universal at offboarding
+      'de.werkvertrag_ip@v1', // universal at offboarding
     ]);
   });
 

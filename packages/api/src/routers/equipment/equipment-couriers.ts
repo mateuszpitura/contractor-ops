@@ -16,11 +16,11 @@ import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import { SHIPMENT_NO_INPOST_LABEL } from '../../errors';
 import { router } from '../../init';
+import { auditedMutation, auditMutationCtx } from '../../lib/audited-mutation';
+import { findOrThrow } from '../../lib/find-or-throw';
 import { adminProcedure, requirePermission } from '../../middleware/rbac';
 import { tenantProcedure } from '../../middleware/tenant';
 import { requireTier } from '../../middleware/tier';
-import { auditedMutation, auditMutationCtx } from '../../lib/audited-mutation';
-import { findOrThrow } from '../../lib/find-or-throw';
 import { getCourierClient, loadCourierClient } from '../../services/courier/carrier-factory';
 import { checkShipmentTaskCompletion } from '../../services/equipment-workflow';
 import {
@@ -123,10 +123,10 @@ export const equipmentCouriersRouter = router({
       const newEquipmentStatus =
         input.direction === 'OUTBOUND' ? 'IN_TRANSIT' : 'RETURN_IN_TRANSIT';
 
-      // F-DB-08 — pre-generate shipment IDs so we can group all writes into
-      // four batched calls (createMany x2 + updateMany x2) inside the tx
-      // instead of 4N sequential round-trips holding row locks. The DB
-      // accepts any unique string for the shipment id.
+      // Pre-generate shipment IDs so all writes group into four batched
+      // calls (createMany x2 + updateMany x2) inside the tx instead of
+      // 4N sequential round-trips holding row locks. The DB accepts any
+      // unique string for the shipment id.
       const shipmentRows = equipmentItems.map(eq => ({
         id: randomUUID(),
         organizationId: ctx.organizationId,
@@ -305,9 +305,9 @@ export const equipmentCouriersRouter = router({
       const newEquipmentStatus =
         input.direction === 'OUTBOUND' ? 'IN_TRANSIT' : 'RETURN_IN_TRANSIT';
 
-      // F-DB-08 — pre-filter eligible equipment + pre-generate shipment IDs
-      // so the whole batch lands as createMany x2 + updateMany x1 instead of
-      // 3N sequential round-trips.
+      // Pre-filter eligible equipment + pre-generate shipment IDs so the
+      // whole batch lands as createMany x2 + updateMany x1 instead of 3N
+      // sequential round-trips.
       const eligibleItems = equipmentItems.filter(item => {
         const allowed = EQUIPMENT_STATUS_TRANSITIONS[item.status] ?? [];
         return allowed.includes(newEquipmentStatus);
@@ -477,7 +477,7 @@ export const equipmentCouriersRouter = router({
       const newEquipmentStatus =
         input.direction === 'OUTBOUND' ? 'IN_TRANSIT' : 'RETURN_IN_TRANSIT';
 
-      // F-DB-08 — same grouped-write shape as DPD/InPost.
+      // Same grouped-write shape as DPD/InPost.
       const eligibleItems = equipmentItems.filter(item => {
         const allowed = EQUIPMENT_STATUS_TRANSITIONS[item.status] ?? [];
         return allowed.includes(newEquipmentStatus);
@@ -607,9 +607,9 @@ export const equipmentCouriersRouter = router({
    * never sent back to the client.
    */
   getCourierConfigs: adminProcedure.query(async ({ ctx }) => {
-    // F-DB-24 — defensive upper bound. Realistically a tenant has 1–5
-    // carriers, but the small-N assumption was implicit; cap at 200 so
-    // a misconfigured tenant cannot OOM the request.
+    // Defensive upper bound. Realistically a tenant has 1–5 carriers,
+    // but the small-N assumption was implicit; cap at 200 so a
+    // misconfigured tenant cannot OOM the request.
     const configs = await ctx.db.courierConfig.findMany({
       where: { organizationId: ctx.organizationId },
       select: { carrier: true, createdAt: true, updatedAt: true },

@@ -1,5 +1,5 @@
 /**
- * Phase 77 D-05/D-08/D-14 — SlackAdapter Deprovisionable behavior.
+ * SlackAdapter Deprovisionable behavior.
  * SCIM deactivate + admin.users.session.invalidate via the ORG-GRID token only.
  * LOCAL-ONLY: MSW handlers, never live Slack/SCIM.
  */
@@ -28,7 +28,7 @@ const isScimQuery = (url: string) => {
 const adapter = () => new SlackAdapter().withOrgGridToken('org-grid-token');
 const USER_ID = 'W08001';
 
-describe('SlackAdapter — Deprovisionable (Phase 77 D-05/D-14)', () => {
+describe('SlackAdapter — Deprovisionable', () => {
   it('implements all four Deprovisionable methods', () => {
     const a = adapter();
     expect(typeof a.suspendAccount).toBe('function');

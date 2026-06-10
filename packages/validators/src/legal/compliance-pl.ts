@@ -1,29 +1,29 @@
 // packages/validators/src/legal/compliance-pl.ts
 //
-// LOCKED COMPL DOC NAMES — PL · Phase 73 (D-14, D-15, D-16).
+// LOCKED COMPL DOC NAMES — PL.
 //
 // Per-locale phrase map: en + pl + de + ar (ar REQUIRED for the i18n:parity guard;
 // interim-mirrors en where no authoritative PL-context Arabic term is at hand).
-// Entries ship PENDING per Phase 70 D-09; PL adviser flips to APPROVED in dedicated PRs.
+// Entries ship PENDING; PL adviser flips to APPROVED in dedicated PRs.
 
 export const LOCKED_COMPL_NAMES_PL = {
   'pl.zus_a1@v1': {
     en: 'ZUS A1 certificate',
     pl: 'ZUS A1 (zaświadczenie A1 z ZUS)',
     de: 'ZUS-A1-Bescheinigung',
-    ar: 'ZUS A1 certificate', // TODO ar legal review (Phase 79)
+    ar: 'ZUS A1 certificate', // TODO ar legal review pending
   },
   'pl.udt@v1': {
     en: 'UDT certificate (regulated equipment qualification)',
     pl: 'Uprawnienia UDT (Urząd Dozoru Technicznego)',
     de: 'UDT-Bescheinigung',
-    ar: 'UDT certificate', // TODO ar legal review (Phase 79)
+    ar: 'UDT certificate', // TODO ar legal review pending
   },
   'pl.ip_assignment@v1': {
     en: 'PL — assignment of economic copyright',
     pl: 'PL — Przeniesienie autorskich praw majątkowych',
     de: 'PL — Übertragung wirtschaftlicher Urheberrechte',
-    ar: 'PL — assignment of economic copyright', // TODO ar legal review (Phase 79)
+    ar: 'PL — assignment of economic copyright', // TODO ar legal review pending
   },
 } as const;
 

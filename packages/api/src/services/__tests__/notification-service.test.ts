@@ -63,7 +63,7 @@ vi.mock('@contractor-ops/logger', () => {
 });
 
 vi.mock('@contractor-ops/db', () => {
-  const __mockDbPrisma = {
+  const MockDbPrisma = {
     notification: {
       findFirst: mockFindFirst,
       create: mockCreate,
@@ -84,11 +84,10 @@ vi.mock('@contractor-ops/db', () => {
     },
   };
   return {
-  withRlsTransactions: <T>(c: T) => c,
-  withRlsReads: <T>(c: T) => c,
-  prisma: __mockDbPrisma,
-  prismaRaw: __mockDbPrisma,
-
+    withRlsTransactions: <T>(c: T) => c,
+    withRlsReads: <T>(c: T) => c,
+    prisma: MockDbPrisma,
+    prismaRaw: MockDbPrisma,
   };
 });
 
@@ -243,10 +242,10 @@ describe('dispatch', () => {
   });
 
   it('deduplicates: silently swallows P2002 unique violation on (organizationId, dedupKey)', async () => {
-    // F-ASYNC-04: dedup is enforced at the DB layer via the
-    // (organizationId, dedupKey) unique constraint. The service catches the
-    // P2002 unique violation, treats it as "already delivered", and does
-    // NOT fire side channels (email/Slack) — another worker is responsible.
+    // Dedup is enforced at the DB layer via the (organizationId, dedupKey)
+    // unique constraint. The service catches the P2002 unique violation,
+    // treats it as "already delivered", and does NOT fire side channels
+    // (email/Slack) — another worker is responsible.
     mockPrefFindFirst.mockResolvedValue(defaultPrefs);
     const uniqueErr = Object.assign(new Error('Unique constraint failed'), { code: 'P2002' });
     mockCreate.mockRejectedValueOnce(uniqueErr);

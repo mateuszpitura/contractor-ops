@@ -2,21 +2,21 @@
  * Trial-end notifications handler.
  *
  * Daily 09:00 UTC sweep — Stripe only fires `trial_will_end` at 3 days
- * before expiry; per D-10 we also want notifications at 7 days and 1 day.
+ * before expiry; we also want notifications at 7 days and 1 day.
  *
- *   - F-ASYNC-07 — outer advisory lock prevents overlapping ticks
- *     (timezone shift / scheduler retry / manual re-trigger) from both
- *     fanning out to every TRIALING subscription.
+ *   - Outer advisory lock prevents overlapping ticks (timezone shift /
+ *     scheduler retry / manual re-trigger) from both fanning out to every
+ *     TRIALING subscription.
  *   - Per-org `NotificationCronDedup` row by composite key
  *     `trial-end:{orgId}:{daysUntilEnd}:{YYYY-MM-DD}` — second tick is a
  *     no-op for the same subscription.
- *   - F-SCALE-07 — 60s tx timeout / 10s maxWait so a slow Resend send
- *     can't hold the lock past the next tick.
+ *   - 60s tx timeout / 10s maxWait so a slow Resend send can't hold the
+ *     lock past the next tick.
  */
 
+import { normalizeLocale, resolveMessage } from '@contractor-ops/api/i18n/email-i18n';
 import { tryAcquireXactLock } from '@contractor-ops/api/lib/advisory-lock';
 import { sendAppEmail } from '@contractor-ops/api/services/app-email';
-import { normalizeLocale, resolveMessage } from '@contractor-ops/api/i18n/email-i18n';
 import { dispatch } from '@contractor-ops/api/services/notification-service';
 import { prisma, prismaRaw } from '@contractor-ops/db';
 import { Prisma } from '@contractor-ops/db/generated/prisma/client';

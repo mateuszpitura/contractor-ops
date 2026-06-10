@@ -116,9 +116,9 @@ export const DOCUMENT_FILE_TYPE_NOT_ALLOWED = 'documentFileTypeNotAllowed';
 export const DOCUMENT_NOT_IN_STORAGE = 'documentNotInStorage';
 export const DOCUMENT_INFECTED = 'documentInfected';
 export const DOCUMENT_NOT_ACTIVE = 'documentNotActive';
-// F-SEC-19 — per-content-type byte cap exceeded.
+// Per-content-type byte cap exceeded.
 export const DOCUMENT_FILE_TOO_LARGE = 'documentFileTooLarge';
-// F-SEC-18 — sniffed MIME type does not match the declared mimeType.
+// Sniffed MIME type does not match the declared mimeType.
 export const DOCUMENT_MIME_MISMATCH = 'documentMimeMismatch';
 
 // ─── OCR ─────────────────────────────────────────────────────────
@@ -127,6 +127,7 @@ export const OCR_EXTRACTION_NOT_FOUND = 'ocrExtractionNotFound';
 // ─── Import ──────────────────────────────────────────────────────
 export const IMPORT_NO_DATA_ROWS = 'importNoDataRows';
 export const IMPORT_JOB_STATE_CONFLICT = 'importJobStateConflict';
+export const IMPORT_PROJECT_FAILURE_RETRY_VIA_WIZARD = 'importProjectFailureRetryViaWizard';
 
 // ─── Portal ──────────────────────────────────────────────────────
 export const PORTAL_INVALID_LINK = 'portalInvalidLink';
@@ -394,36 +395,36 @@ export const VALIDATION_START_DATE_REQUIRED = 'validationStartDateRequired';
 export const VALIDATION_DATE_INVALID = 'validationDateInvalid';
 export const VALIDATION_TAX_ID_FK_REQUIRED = 'validationTaxIdFkRequired';
 
-// ─── Phase 75 — Credential vault + IP-verification gate ─────────
+// ─── Credential vault + IP-verification gate ─────────────────────
 export const CREDENTIAL_REFERENCE_NOT_FOUND = 'credentialReferenceNotFound';
 export const CREDENTIAL_REFERENCE_OFFBOARDING_ONLY = 'credentialReferenceOffboardingOnly';
 export const WORKFLOW_IP_VERIFICATION_OPEN = 'workflowIpVerificationOpen';
 export const WORKFLOW_CREDENTIALS_PENDING = 'workflowCredentialsPending';
 
-// ─── Phase 76 — F2 IdP deprovisioning saga + cooldown gate ─────────
+// ─── IdP deprovisioning saga + cooldown gate ──────────────────────
 export const DEPROVISIONING_ASSIGNMENT_NOT_FOUND = 'deprovisioningAssignmentNotFound';
 export const DEPROVISIONING_STEP_NOT_FOUND = 'deprovisioningStepNotFound';
 export const DEPROVISIONING_COOLDOWN_ACTIVE = 'deprovisioningCooldownActive';
 export const DEPROVISIONING_NO_EXTERNAL_USER = 'deprovisioningNoExternalUser';
 
-// ─── Phase 77 — F2 IdP override + per-provider enable + org-grid connect ──
+// ─── IdP override + per-provider enable + org-grid connect ────────
 export const DEPROVISIONING_STEP_NOT_OVERRIDABLE = 'deprovisioningStepNotOverridable';
 export const DEPROVISIONING_PROVIDER_SIGNOFF_PENDING = 'deprovisioningProviderSignoffPending';
 export const DEPROVISIONING_INTEGRATION_NOT_CONFIGURED = 'deprovisioningIntegrationNotConfigured';
 
-// ─── Phase 72 — F1 compliance payment block (COMPL-05) ─────────────
+// ─── Compliance payment block ──────────────────────────────────────
 export const COMPLIANCE_PAYMENT_BLOCKED = 'compliancePaymentBlocked';
 
-// ─── Phase 72 — F1 PENDING_COMPLIANCE recovery (COMPL-06) ──────────
+// ─── PENDING_COMPLIANCE recovery ──────────────────────────────────
 export const APPROVAL_FLOW_NOT_FOUND = 'approvalFlowNotFound';
 export const APPROVAL_NOT_PENDING_COMPLIANCE = 'approvalNotPendingCompliance';
 export const APPROVAL_CANNOT_RESOLVE_CONTRACTOR = 'approvalCannotResolveContractor';
 export const APPROVAL_STILL_COMPLIANCE_BLOCKED = 'approvalStillComplianceBlocked';
 
-// ─── Phase 73 — F1 compliance admin override + audit trail (COMPL-01) ──────────
+// ─── Compliance admin override + audit trail ──────────────────────
 export const COMPLIANCE_ITEM_NOT_FOUND = 'complianceItemNotFound';
 export const COMPLIANCE_ITEM_ALREADY_WAIVED = 'complianceItemAlreadyWaived';
 export const COMPLIANCE_DOCUMENT_NOT_PENDING_REVIEW = 'complianceDocumentNotPendingReview';
 
-// ─── Phase 79 — F3 Gulf (GULF-01/04) ──────────────────────────────────────────
+// ─── Gulf free-zone assignment ────────────────────────────────────
 export const GULF_ASSIGNMENT_NOT_FOUND = 'gulfAssignmentNotFound';

@@ -102,9 +102,9 @@ import { workflowRolesRouter, workflowRouter } from './routers/workflow/index';
  * - equipment: CRUD, assignment, shipment tracking, status management, contractor equipment view
  */
 
-// Phase 64 D-05 — Module-level evaluation of the classification kill-switch.
+// Module-level evaluation of the classification kill-switch.
 // This represents the global platform baseline. Per-org / per-request enforcement
-// is handled by classificationProcedure middleware (D-06, Plan 64-01).
+// is handled by classificationProcedure middleware.
 // Default is false (ship dark) — classification routers are absent from appRouter
 // until the flag is enabled in Unleash.
 //
@@ -122,25 +122,24 @@ const CLASSIFICATION_ENABLED =
   ClassificationFlagBag.isEnabled('module.classification-engine') ||
   Boolean(process.env.QA_DEFAULT_ORG_ID);
 
-// Phase 64 D-05 — Classification routers conditionally registered based on flag.
+// Classification routers conditionally registered based on flag.
 // When OFF: procedures are absent from appRouter at runtime — clients receive
 // METHOD_NOT_FOUND.
-// Defense-in-depth: classificationProcedure middleware (D-06) also blocks
-// per-request.
+// Defense-in-depth: classificationProcedure middleware also blocks per-request.
 // Lifted into a named const so the TYPE of the spread is constant regardless
 // of the runtime branch — client typing always sees these namespaces as
 // present (avoids `T | undefined` on every `trpc.classification?.foo` site).
 // The false branch returns an empty object cast to the same shape, preserving
 // the runtime behaviour exactly.
 const classificationRouters = {
-  classification: classificationRouter, // classification: IR35 + Scheinselbständigkeit engagement classification — draft/autosave/submit/outcome (Phase 58)
-  classificationDashboard: classificationDashboardRouter, // classificationDashboard: per-market compliance health dashboard aggregating Phase-58 assessments + Phase-60 alerts/triggers/DRV clearances (Phase 60 CLASS-10)
-  classificationDocument: classificationDocumentRouter, // classificationDocument: IR35 SDS + DRV defense bundle PDFs — append-only, content-addressed R2 (Phase 59)
-  ir35Chain: ir35ChainRouter, // ir35Chain: IR35 chain participant tracking + SDS delivery / acknowledgement (Phase 59 CLASS-04)
-  ir35Attestation: ir35AttestationRouter, // ir35Attestation: contractor other-client attestation + same-tenant cross-reference for DRV defense bundle (Phase 59 CLASS-06)
-  economicDependencyAlert: economicDependencyAlertRouter, // economicDependencyAlert: per-assignment billing-share band (safe/warning/critical) written by the daily §2 SGB VI scan (Phase 60 CLASS-07)
-  reassessmentTrigger: reassessmentTriggerRouter, // reassessmentTrigger: IR35 SDS reassessment triggers — AuditLog-driven material-change detection + acknowledge/dismiss (Phase 60 CLASS-08)
-  statusfeststellungsverfahren: statusfeststellungsverfahrenRouter, // statusfeststellungsverfahren: DRV § 7a SGB IV clearance procedure CRUD + 90/30/7-day expiry reminders (Phase 60 CLASS-09)
+  classification: classificationRouter, // classification: IR35 + Scheinselbständigkeit engagement classification — draft/autosave/submit/outcome
+  classificationDashboard: classificationDashboardRouter, // classificationDashboard: per-market compliance health dashboard aggregating assessments + alerts/triggers/DRV clearances
+  classificationDocument: classificationDocumentRouter, // classificationDocument: IR35 SDS + DRV defense bundle PDFs — append-only, content-addressed R2
+  ir35Chain: ir35ChainRouter, // ir35Chain: IR35 chain participant tracking + SDS delivery / acknowledgement
+  ir35Attestation: ir35AttestationRouter, // ir35Attestation: contractor other-client attestation + same-tenant cross-reference for DRV defense bundle
+  economicDependencyAlert: economicDependencyAlertRouter, // economicDependencyAlert: per-assignment billing-share band (safe/warning/critical) written by the daily §2 SGB VI scan
+  reassessmentTrigger: reassessmentTriggerRouter, // reassessmentTrigger: IR35 SDS reassessment triggers — AuditLog-driven material-change detection + acknowledge/dismiss
+  statusfeststellungsverfahren: statusfeststellungsverfahrenRouter, // statusfeststellungsverfahren: DRV § 7a SGB IV clearance procedure CRUD + 90/30/7-day expiry reminders
 } as const;
 
 const conditionalClassificationRouters = CLASSIFICATION_ENABLED
@@ -148,9 +147,9 @@ const conditionalClassificationRouters = CLASSIFICATION_ENABLED
   : ({} as typeof classificationRouters);
 
 export const appRouter = router({
-  adminBoeRate: adminBoeRateRouter, // adminBoeRate: Super-admin BoE base rate CRUD — list, insert, update, delete (Phase 63 D-10)
+  adminBoeRate: adminBoeRateRouter, // adminBoeRate: Super-admin BoE base rate CRUD — list, insert, update, delete
   apiKey: apiKeyRouter, // apiKey: Enterprise API key management — create, list, update, revoke
-  bacs: bacsRouter, // bacs: BACS Std 18 file generation — getSubmitterMasks, previewExport, generateExport, validateSortCode, saveSubmitterConfig (Phase 63 D-27)
+  bacs: bacsRouter, // bacs: BACS Std 18 file generation — getSubmitterMasks, previewExport, generateExport, validateSortCode, saveSubmitterConfig
   organization: organizationRouter,
   // Organization Definitions Management — Teams / Projects / Cost Centers
   // exposed under one group so the web client imports a single namespace.
@@ -165,10 +164,10 @@ export const appRouter = router({
   contract: contractRouter,
   document: documentRouter,
   workflow: workflowRouter,
-  workflowRoles: workflowRolesRouter, // Phase 74 — KT role-template CRUD + auto-selection
-  authPermissions: authPermissionsRouter, // Phase 74 — current-user permission introspection (UI gating)
+  workflowRoles: workflowRolesRouter, // workflowRoles: KT role-template CRUD + auto-selection
+  authPermissions: authPermissionsRouter, // authPermissions: current-user permission introspection (UI gating)
   invoice: invoiceRouter,
-  invoiceIntake: invoiceIntakeRouter, // invoiceIntake: inbound XRechnung/ZUGFeRD intake pipeline — upload, parse, match, convert (Phase 62 EINV-03)
+  invoiceIntake: invoiceIntakeRouter, // invoiceIntake: inbound XRechnung/ZUGFeRD intake pipeline — upload, parse, match, convert
   approval: approvalRouter,
   notification: notificationRouter,
   reminder: reminderRouter,
@@ -179,12 +178,12 @@ export const appRouter = router({
   audit: auditRouter,
   import: importRouter,
   search: searchRouter,
-  skonto: skontoRouter, // skonto: German early payment discount CRUD + eligibility evaluation (Phase 63 D-21/D-24)
+  skonto: skontoRouter, // skonto: German early payment discount CRUD + eligibility evaluation
   // portal: moved to portalAppRouter (/api/trpc/portal endpoint)
   esign: esignRouter,
   ocr: ocrRouter,
   ksef: ksefRouter,
-  latePaymentInterest: latePaymentInterestRouter, // latePaymentInterest: LPCDA statutory interest — getForInvoice, getForOrg, waive, revokeWaiver, claim, downloadClaim (Phase 63 D-27)
+  latePaymentInterest: latePaymentInterestRouter, // latePaymentInterest: LPCDA statutory interest — getForInvoice, getForOrg, waive, revokeWaiver, claim, downloadClaim
   legal: legalRouter, // legal: GDPR privacy notice PDF downloads (IDOR-safe, session-derived jurisdiction)
   // portalTime: moved to portalAppRouter (/api/trpc/portal endpoint)
   time: timeRouter,
@@ -193,22 +192,22 @@ export const appRouter = router({
   docs: docsRouter,
   calendar: calendarRouter,
   billing: billingRouter,
-  deprovisioning: deprovisioningRouter, // Phase 76 F2 IdP — deprovisioning eligibility + provider toggle (all 5 providers)
+  deprovisioning: deprovisioningRouter, // deprovisioning: IdP deprovisioning eligibility + provider toggle (all 5 providers)
   equipment: equipmentRouter,
   googleWorkspace: googleWorkspaceRouter, // Google Workspace directory import, group resolution, bulk import, sync
   gdpr: gdprRouter, // GDPR: right to erasure (Art. 17), data portability/export (Art. 20)
   teams: teamsRouter, // Microsoft Teams integration -- channel discovery, channel mapping, connection status
   onboardingImport: onboardingImportRouter, // onboardingImport: Cross-tool import wizard -- source discovery, user merge, project import, async progress
-  complianceAdmin: complianceAdminRouter, // complianceAdmin: Admin compliance dashboard (KPIs, at-risk, renewals, blocked payments), manual override, upload approve/reject, item audit trail — always mounted (Phase 73)
+  complianceAdmin: complianceAdminRouter, // complianceAdmin: Admin compliance dashboard (KPIs, at-risk, renewals, blocked payments), manual override, upload approve/reject, item audit trail — always mounted
   einvoice: einvoiceRouter, // einvoice: E-invoicing compliance statuses per country profile
-  leitwegId: leitwegIdRouter, // leitwegId: German public-sector Leitweg-ID CRUD + contractor/contract default resolution (Phase 61 EINV-05)
+  leitwegId: leitwegIdRouter, // leitwegId: German public-sector Leitweg-ID CRUD + contractor/contract default resolution
   exchangeRate: exchangeRateRouter, // exchangeRate: Daily ECB exchange rates — query, convert, cron fetch
   featureFlags: featureFlagsRouter, // featureFlags: Self-hosted Unleash-backed flag introspection for the web dashboard
   consent: consentRouter, // consent: PDPL consent management — privacy notices, per-purpose consent, admin audit
   peppol: peppolRouter, // peppol: Peppol network integration — participant registration, transmission tracking, ASP management
   tax: taxRouter, // tax: Tax rate lookup, VAT validation, WHT calculation, WHT certificates, tax summary dashboard
   zatca: zatcaRouter, // zatca: ZATCA device onboarding — tax details, CSR generation, compliance CSID, compliance checks, production cert
-  gulf: gulfRouter, // gulf: Phase 79 F3 — UAE free-zone assignment CRUD + Saudization config/headcount/dashboard + GULF-10 drift overrides (region-aware ME)
+  gulf: gulfRouter, // gulf: UAE free-zone assignment CRUD + Saudization config/headcount/dashboard + drift overrides (region-aware ME)
   ...conditionalClassificationRouters,
 });
 

@@ -1,4 +1,4 @@
-// Phase 62 · Plan 62-02 Task 5 — ZUGFeRD-DE profile class + registry entry.
+// ZUGFeRD-DE profile class + registry entry.
 //
 // Conforms to the shared `EInvoiceProfile` contract. The `parse()` method
 // accepts a base64-encoded PDF string (`EInvoiceProfile.parse` signature is
@@ -9,7 +9,7 @@
 // call `parseZugferdPdf` directly instead of going through the profile
 // interface.
 //
-// `generate()` delegates to the PDF/A-3 pipeline shipped by Plan 62-03.
+// `generate()` delegates to the PDF/A-3 pipeline in generator.ts.
 
 import type { ComplianceStatus } from '../../types/compliance.js';
 import { complianceState } from '../../types/compliance.js';
@@ -26,7 +26,7 @@ import { validateZugferdEmbeddedXml } from './validator.js';
  * ZUGFeRD / Factur-X German country profile.
  *
  * Inbound: PDF/A-3 + embedded factur-x.xml extracted and parsed.
- * Outbound: not yet wired — Plan 62-03 adds the PDF/A-3 wrapping pipeline.
+ * Outbound: PDF/A-3 wrapping pipeline via generator.ts.
  */
 export class ZugferdDEProfile implements EInvoiceProfile {
   readonly profileId = ZUGFERD_DE_PROFILE_ID;
@@ -44,9 +44,9 @@ export class ZugferdDEProfile implements EInvoiceProfile {
    * the `EInvoiceProfile.generate(): Promise<string>` contract — callers
    * that need the raw bytes should call `generateZugferdPdf` directly.
    *
-   * Per Phase 68 D-05 — symmetric with `XRechnungDEProfile.generate(invoice, opts)`
-   * so cross-DE callers can stay format-agnostic. Forwards `opts.leitwegId`
-   * and `opts.skontoTerm` into the underlying `generateZugferdPdf` (which
+   * Symmetric with `XRechnungDEProfile.generate(invoice, opts)` so cross-DE
+   * callers can stay format-agnostic. Forwards `opts.leitwegId` and
+   * `opts.skontoTerm` into the underlying `generateZugferdPdf` (which
    * threads them into the embedded CII XML).
    */
   async generate(
@@ -73,9 +73,10 @@ export class ZugferdDEProfile implements EInvoiceProfile {
   }
 
   /**
-   * Validate extracted CII XML against the Phase-61 KoSIT three-layer
-   * pipeline. Input is the XML string (already extracted from the PDF by
-   * the intake service) — use `parseZugferdPdf` upstream to obtain it.
+   * Validate extracted CII XML against the KoSIT three-layer pipeline
+   * (EN 16931 + XRechnung CIUS Schematrons). Input is the XML string
+   * (already extracted from the PDF by the intake service) — use
+   * `parseZugferdPdf` upstream to obtain it.
    */
   async validate(xml: string): Promise<ValidationResult> {
     const report = await validateZugferdEmbeddedXml(xml);
@@ -111,7 +112,7 @@ export class ZugferdDEProfile implements EInvoiceProfile {
       displayName: this.displayName,
       healthScore: 100,
       capabilities: {
-        canGenerate: true, // Plan 62-03 wired the PDF/A-3 pipeline
+        canGenerate: true,
         canParse: true,
         canSign: false,
         canQRCode: false,

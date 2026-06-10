@@ -58,7 +58,7 @@ const notionSearchResponseSchema = z.object({
 });
 
 // ---------------------------------------------------------------------------
-// Timeout budgets (F-INT-01 / F-INT-02)
+// Timeout budgets
 // ---------------------------------------------------------------------------
 //
 // OAuth token redemption + refresh — non-idempotent POST (Notion uses HTTP
@@ -78,11 +78,11 @@ const SEARCH_RETRIES = 2;
 /**
  * Notion uses OAuth 2.0 Authorization Code Grant.
  *
- * CRITICAL: Notion requires HTTP Basic authentication for token exchange
- * (Pitfall 1). Do NOT put client_id/client_secret in the JSON body.
+ * CRITICAL: Notion requires HTTP Basic authentication for token exchange.
+ * Do NOT put client_id/client_secret in the JSON body.
  *
  * Notion does not use scopes — capabilities are configured on the
- * integration page (Pitfall 2).
+ * integration page instead.
  *
  * Env vars required:
  * - NOTION_CLIENT_ID, NOTION_CLIENT_SECRET — for OAuth
@@ -93,11 +93,11 @@ const NOTION_OAUTH_CONFIG: OAuthConfig = {
   clientSecretEnvVar: 'NOTION_CLIENT_SECRET',
   authorizationUrl: 'https://api.notion.com/v1/oauth/authorize',
   tokenUrl: 'https://api.notion.com/v1/oauth/token',
-  scopes: [], // Notion uses integration capabilities, not scopes (Pitfall 2)
+  scopes: [], // Notion uses integration capabilities, not scopes
   redirectPath: '/api/oauth/notion/callback',
 };
 
-/** Notion API version header — pinned to stable version (Pitfall 7) */
+/** Notion API version header — pinned to stable version */
 const NOTION_API_VERSION = '2022-06-28';
 
 // ---------------------------------------------------------------------------
@@ -122,7 +122,7 @@ export class NotionAdapter extends BaseAdapter {
    * Exchanges an authorization code for access/refresh tokens.
    *
    * CRITICAL: Notion requires HTTP Basic auth header with
-   * `Authorization: Basic base64(clientId:clientSecret)` (Pitfall 1).
+   * `Authorization: Basic base64(clientId:clientSecret)`.
    * Putting credentials in the JSON body will fail.
    */
   override async exchangeCodeForTokens(code: string, redirectUri: string): Promise<CredentialBlob> {

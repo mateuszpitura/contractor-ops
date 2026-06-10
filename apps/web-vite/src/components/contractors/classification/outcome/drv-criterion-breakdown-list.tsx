@@ -1,19 +1,19 @@
 // ---------------------------------------------------------------------------
-// DRV criterion breakdown — Phase 58 Plan 05 Task 1.
+// DRV criterion breakdown
 // ---------------------------------------------------------------------------
 // Renders the per-category answer table with TableCaption for screen readers.
 // All prompts are read from the frozen questionsSnapshot — never the live
-// rule-set constant (Pitfall 1).
+// rule-set constant (answers must reflect what was asked at assessment time).
 
 import type {
   QuestionsSnapshot,
   RuleSetQuestion,
   ScheinCategory,
 } from '@contractor-ops/classification';
-import { WorkbenchDataTable } from '../../../table-kit/workbench-data-table.js';
 import type { ColumnDef } from '@tanstack/react-table';
 import { useMemo, useState } from 'react';
 import { useTranslations } from '../../../../i18n/useTranslations.js';
+import { WorkbenchDataTable } from '../../../table-kit/workbench-data-table.js';
 
 type Locale = 'en' | 'pl' | 'de' | 'ar';
 

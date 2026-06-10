@@ -1,4 +1,4 @@
-// Phase 71 D-13..D-16 — Recompute compliance confirm dialog.
+// Recompute compliance confirm dialog.
 
 import {
   AlertDialog,
@@ -20,8 +20,8 @@ import {
 import { useCallback, useState } from 'react';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
-import { useRecomputeCompliance } from '../hooks/use-recompute-compliance.js';
 import type { useRecomputeCompliance as UseRecomputeCompliance } from '../hooks/use-recompute-compliance.js';
+import { useRecomputeCompliance } from '../hooks/use-recompute-compliance.js';
 
 type RecomputeReason = 'policy_version_bump' | 'classification_outcome_change' | 'admin_correction';
 

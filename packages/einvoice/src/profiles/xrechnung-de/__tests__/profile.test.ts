@@ -1,27 +1,20 @@
 // packages/einvoice/src/profiles/xrechnung-de/__tests__/profile.test.ts
 //
-// Phase 68 · Plan 02 — Layer A: profile-level wiring lock.
+// Profile-level wiring lock — BG-20 Skonto forwarding via XRechnungDEProfile.
 //
-// Closes the v5.0 milestone audit I-1 finding: prior to Phase 68 the
-// XRechnungDEProfile wrapper accepted opts.skontoTerm in the type but
-// dropped it before forwarding to generateXRechnungCii. The
-// generator.test.ts Skonto suite (Phase 63 D-23) only exercised the CII
-// helper directly, so the wrapper-level defect slipped past tests.
-//
-// This file specifically calls the WRAPPER methods (generate +
+// The XRechnungDEProfile wrapper must forward opts.skontoTerm into
+// generateXRechnungCii. This file calls the WRAPPER methods (generate +
 // generateAndValidate) on a real XRechnungDEProfile instance and asserts
 // the produced XML contains the structured BG-20 string AND that the
-// KoSIT 3-layer pipeline reports status === 'VALID' on both with-Skonto
-// and without-Skonto branches (D-09 cross-check).
+// KoSIT 3-layer pipeline is exercised on both with-Skonto and without-Skonto
+// branches.
 //
-// NOTE — leitwegId in the KoSIT-validated calls (Phase 68 Plan 02 deviation):
-// The plan's fixtures intentionally omit a leitwegId so the same EInvoice
-// envelope drives both the with-/without-Skonto branches. KoSIT layer 3
-// (XRechnung CIUS Schematron) requires BR-DE-15 ("Buyer reference BT-10
-// must be provided"), so the VALID assertions pass `leitwegId` at call time
-// alongside the Skonto opt. This keeps the fixture symmetry the plan calls
-// for (envelopes are identical) and proves the wrapper forwards BOTH opts
-// correctly. Documented as a Rule-1 deviation in 68-02-SUMMARY.md.
+// NOTE — leitwegId in the KoSIT-validated calls: the fixtures intentionally
+// omit a leitwegId so the same EInvoice envelope drives both branches. KoSIT
+// layer 3 (XRechnung CIUS Schematron) requires BR-DE-15 ("Buyer reference
+// BT-10 must be provided"), so the VALID assertions pass `leitwegId` at call
+// time alongside the Skonto opt. This keeps fixture symmetry and proves the
+// wrapper forwards BOTH opts correctly.
 
 import fs from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
@@ -47,16 +40,13 @@ const SKONTO_TERM: SkontoTermInput = {
 // VALID assertions because BR-DE-15 mandates BT-10 BuyerReference presence.
 const LEITWEG_ID = '04011000-12345-35';
 
-describe('XRechnungDEProfile — Skonto BG-20 wiring (Phase 68 Plan 02 / D-08 Layer A)', () => {
+describe('XRechnungDEProfile — Skonto BG-20 wiring', () => {
   it('forwards opts.skontoTerm into generateXRechnungCii: produced XML contains structured BG-20 #SKONTO# extension', async () => {
     const profile = new XRechnungDEProfile();
     const invoice = await loadFixture('skonto-invoice');
 
     const xml = await profile.generate(invoice, { skontoTerm: SKONTO_TERM });
 
-    // CRITICAL: this is the assertion the audit I-1 fix turns green.
-    // Prior to Plan 02, the wrapper dropped opts.skontoTerm and the
-    // generated XML would NOT contain any of these substrings.
     expect(xml).toContain('<ram:SpecifiedTradePaymentTerms>');
     expect(xml).toContain('#SKONTO#TAGE=7');
     expect(xml).toContain('#PROZENT=3.00');
@@ -82,39 +72,26 @@ describe('XRechnungDEProfile — Skonto BG-20 wiring (Phase 68 Plan 02 / D-08 La
   });
 
   // -----------------------------------------------------------------------
-  // D-09 KoSIT 3-layer cross-check — Phase 68 Plan 02 deviation note:
+  // KoSIT 3-layer cross-check
   //
-  // The plan called for asserting `report.status === 'VALID'` on both
-  // branches. Probing during Plan 02 implementation revealed two
-  // PRE-EXISTING generator XSD-ordering defects unrelated to Skonto
-  // wiring:
+  // There are pre-existing generator XSD child-ordering defects unrelated
+  // to Skonto wiring:
   //   1. <ram:BuyerReference> is emitted AFTER <ram:BuyerTradeParty> but
   //      the CII XSD requires it BEFORE <ram:SellerTradeParty>.
   //   2. <ram:BasisAmount> ordering inside <ram:ApplicableTradeTax>
   //      conflicts with the XSD child order.
   //
-  // Both defects exist on `main` independent of this phase's wiring
-  // fix — the existing `validator.test.ts` only validates hand-crafted
-  // XML fixtures, never generator output, so no prior test surfaced
-  // them. Fixing the generator's XSD-ordering is OUT OF SCOPE for
-  // Phase 68 (which is a wiring fix per CONTEXT D-08).
-  //
-  // The asserts below run the full KoSIT pipeline (XSD → EN16931 SCH →
-  // XRechnung CIUS SCH) and lock the `report.layers` shape (layer count
-  // + presence) so that:
+  // These defects exist independently of Skonto wiring. The asserts below
+  // run the full KoSIT pipeline (XSD → EN16931 SCH → XRechnung CIUS SCH)
+  // and lock the `report.layers` shape so that:
   //   - the wiring path through `generateAndValidate` is proven exercised
-  //     for both Skonto branches (D-09 intent)
-  //   - any FUTURE regression in the wiring cascade still fails noisily
-  //   - when the generator XSD-ordering defects are fixed in a follow-up
-  //     phase, these assertions can be tightened to `'VALID'` without
-  //     restructuring the test file
-  //
-  // Tracked as: Phase 68 follow-up "tighten KoSIT cross-check to VALID
-  // once xrechnung-de generator XSD child-ordering is fixed". See
-  // 68-02-SUMMARY.md "Deviations from Plan" for full context.
+  //     for both Skonto branches
+  //   - any future regression in the wiring cascade still fails noisily
+  //   - when the generator XSD-ordering defects are fixed, these assertions
+  //     can be tightened to `'VALID'` without restructuring the test file
   // -----------------------------------------------------------------------
 
-  it('generateAndValidate runs the KoSIT 3-layer pipeline with Skonto (D-09 cross-check)', async () => {
+  it('generateAndValidate runs the KoSIT 3-layer pipeline with Skonto', async () => {
     const profile = new XRechnungDEProfile();
     const invoice = await loadFixture('skonto-invoice');
 
@@ -136,7 +113,7 @@ describe('XRechnungDEProfile — Skonto BG-20 wiring (Phase 68 Plan 02 / D-08 La
     expect(['VALID', 'WARNINGS', 'INVALID']).toContain(report.status);
   });
 
-  it('generateAndValidate runs the KoSIT 3-layer pipeline without Skonto (no-regression on existing path)', async () => {
+  it('generateAndValidate runs the KoSIT 3-layer pipeline without Skonto (no-regression)', async () => {
     const profile = new XRechnungDEProfile();
     const invoice = await loadFixture('no-skonto-invoice');
 

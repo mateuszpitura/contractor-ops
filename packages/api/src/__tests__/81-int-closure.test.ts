@@ -1,35 +1,29 @@
-// Phase 81 · Plan 06 — INT-01 + INT-02 end-to-end composition (the phase gate).
+// INT-01 + INT-02 end-to-end composition.
 //
-// v6-cross-feature-composition.test.ts:28-30 DELIBERATELY excluded F2 (the IdP
+// v6-cross-feature-composition.test.ts deliberately excluded F2 (the IdP
 // deprovisioning saga) because that test proves the F1/F3/F4 hard-block primitives;
 // F2 runs POST-offboarding off the blocked path. This file closes that gap: it is
-// the binding composition for the TWO seams the v6.0 milestone audit flagged as
-// broken-and-now-wired (81-02 INT-01 server, 81-03 INT-02 recovery, 81-05 INT-01 UI):
+// the binding composition for the two seams that were broken-and-now-wired:
 //
 //   FLOW 1 (INT-01): an offboarding ACCESS_REVOKE card knows only the contractor.
-//     resolveAssignmentForContractor (81-02 D-01) resolves the most-recent ENDED
-//     assignment; the UI derives a deterministic per-assignment idempotencyKey
-//     (deprov:<assignmentId>, 81-05 D-09) and calls startDeprovisioningRun. With the
-//     org enabling GWS + Slack (both signoff-satisfied + resolver-backed), the run
-//     fans out steps for BOTH providers (81-02 D-05 multi-provider derivation) and
-//     one INDEPENDENT QStash job fires per step (IDP-09, no Promise.allSettled).
-//     Pre-81 this was unreachable (no resolver, GWS-only hardcoded, ungated).
+//     resolveAssignmentForContractor resolves the most-recent ENDED assignment; the
+//     UI derives a deterministic per-assignment idempotencyKey (deprov:<assignmentId>)
+//     and calls startDeprovisioningRun. With the org enabling GWS + Slack (both
+//     signoff-satisfied + resolver-backed), the run fans out steps for BOTH providers
+//     and one INDEPENDENT QStash job fires per step (no Promise.allSettled).
 //
 //   FLOW 2 (INT-02): a contractor's portal upload (PENDING_REVIEW document) is
 //     admin-approved via approveUploadReplacement. Inside that tx the item flips
-//     SATISFIED and onComplianceItemSatisfied (81-03 D-12) re-asserts eligibility:
-//     the held PENDING_COMPLIANCE ApprovalFlow containing the item resumes to
-//     PENDING, and a follow-up assertContractorPaymentEligibility for the contractor
-//     no longer blocks. Pre-81 the recovery hook was never called, so an approved
-//     upload left the contractor payment-blocked.
+//     SATISFIED and onComplianceItemSatisfied re-asserts eligibility: the held
+//     PENDING_COMPLIANCE ApprovalFlow containing the item resumes to PENDING, and a
+//     follow-up assertContractorPaymentEligibility for the contractor no longer blocks.
 //
-// Idempotency (carried-forward note from 81-01/02/05): this composition asserts the
-// per-assignment idempotencyKey at the DETERMINISTIC-KEY level (the run is created
-// exactly once for deprov:<assignmentId>) — it does NOT depend on a live-DB P2002
-// unique-violation from the 76-WR1 @@unique([organizationId, idempotencyKey]) index
-// (which is present in the schema source but unconfirmed against the live Neon DB).
-// The dedicated P2002 path is covered at the mocked-Prisma level in
-// deprovisioning-start.test.ts; re-proving it here would only re-test the mock.
+// Idempotency: this composition asserts the per-assignment idempotencyKey at the
+// DETERMINISTIC-KEY level (the run is created exactly once for deprov:<assignmentId>)
+// — it does NOT depend on a live-DB P2002 unique-violation from the
+// @@unique([organizationId, idempotencyKey]) index (which is present in the schema
+// source but unconfirmed against the live Neon DB). The dedicated P2002 path is
+// covered at the mocked-Prisma level in deprovisioning-start.test.ts.
 //
 // DB-free via a hoisted mock-Prisma store + the createCaller harness (mirrors
 // deprovisioning-start.test.ts + compliance-upload-review.test.ts). No feature
@@ -75,7 +69,7 @@ const {
   approvalFlowUpdate,
   queryRaw,
   // Held-flow store: the recovery hook's $queryRaw returns this; flow 2 mutates it
-  // so a follow-up read reflects the resume (PENDING_COMPLIANCE → PENDING).
+  // so a follow-up read reflects the resumed status (PENDING_COMPLIANCE → PENDING).
   heldFlows,
   // EXPIRED+BLOCKING compliance items the payment gate reads. Flow 2 starts with the
   // approved item still blocking and the approve flip empties it, so the gate releases.
@@ -165,7 +159,7 @@ const {
     contractorAssignment: {
       // Serves BOTH callers: the resolver (status='ENDED', orderBy endedAt desc) and
       // the start mutation (by id). Honours id / organizationId / status predicates
-      // and the endedAt-desc ordering so the most-recent ENDED row wins (D-01).
+      // and the endedAt-desc ordering so the most-recent ENDED row wins.
       findFirst: vi.fn(async (args: { where?: Record<string, unknown>; orderBy?: unknown }) => {
         const where = args?.where ?? {};
         let rows = Array.from(assignments.values()).filter(a => {
@@ -333,7 +327,7 @@ import { assertContractorPaymentEligibility } from '../services/compliance-payme
 
 const createCaller = createCallerFactory(appRouter);
 
-/** The UI's deterministic per-assignment idempotency key (81-05 D-09). */
+/** The UI's deterministic per-assignment idempotency key. */
 function deriveIdempotencyKey(assignmentId: string): string {
   return `deprov:${assignmentId}`.slice(0, 128);
 }
@@ -371,7 +365,7 @@ function makeCaller(role = 'it_admin', orgId = ORG_ID, userId = USER_ID) {
 
 /**
  * Seed a contractor with TWO ENDED assignments — an older one and a most-recent one
- * — so the resolver's `endedAt desc` disambiguation (D-01) is load-bearing: it must
+ * — so the resolver's `endedAt desc` disambiguation is load-bearing: it must
  * return the recently-offboarded engagement, not the older row.
  */
 function seedOffboardedContractor() {
@@ -462,16 +456,16 @@ describe('Flow 1 (INT-01) — ACCESS_REVOKE resolve → startDeprovisioningRun c
     'resolves the most-recent ENDED assignment, then creates a run with steps for BOTH enabled providers and fans out one QStash job per step',
     async () => {
       seedOffboardedContractor();
-      const caller = makeCaller(); // it_admin holds idp:start_run (the ACCESS_REVOKE assignee, D-10)
+      const caller = makeCaller(); // it_admin holds idp:start_run (the ACCESS_REVOKE assignee)
 
       // 1. The task card knows only contractorId → server-side resolver returns the
-      //    most-recent ENDED assignment (NOT the older one — endedAt desc, D-01).
+      //    most-recent ENDED assignment (NOT the older one — endedAt desc).
       const resolved = await caller.deprovisioning.resolveAssignmentForContractor({
         contractorId: CONTRACTOR_ID,
       });
       expect(resolved.assignmentId).toBe(ASSIGNMENT_ENDED_RECENT);
 
-      // 2. The UI derives a deterministic per-assignment idempotencyKey (D-09) and starts.
+      // 2. The UI derives a deterministic per-assignment idempotencyKey and starts.
       const idempotencyKey = deriveIdempotencyKey(resolved.assignmentId as string);
       const result = await caller.deprovisioning.startDeprovisioningRun({
         assignmentId: resolved.assignmentId as string,
@@ -479,14 +473,14 @@ describe('Flow 1 (INT-01) — ACCESS_REVOKE resolve → startDeprovisioningRun c
       });
       expect(result).toEqual({ runId: 'run-1', idempotent: false });
 
-      // 3. The run derived BOTH providers (GWS + Slack), suspend + revoke each (D-05).
+      // 3. The run derived BOTH providers (GWS + Slack), suspend + revoke each.
       const createArg = runCreate.mock.calls[0]?.[0];
       const created = (createArg?.data?.steps?.create ?? []) as Array<{ provider: string }>;
       const providers = new Set(created.map(s => s.provider));
       expect(providers).toEqual(new Set(['GOOGLE_WORKSPACE', 'SLACK']));
       expect(created).toHaveLength(4); // 2 providers × {SUSPEND_ACCOUNT, REVOKE_ALL_SESSIONS}
 
-      // 4. One INDEPENDENT QStash job per step — no Promise.allSettled aggregation (IDP-09).
+      // 4. One INDEPENDENT QStash job per step — no Promise.allSettled aggregation.
       expect(publishJSON).toHaveBeenCalledTimes(4);
       const stepUrls = publishJSON.mock.calls.map(c => (c[0] as { url: string }).url);
       for (const url of stepUrls) expect(url).toMatch(/\/idp-deprovisioning\/_step-runner$/);
@@ -496,7 +490,7 @@ describe('Flow 1 (INT-01) — ACCESS_REVOKE resolve → startDeprovisioningRun c
       );
       expect(dedupIds.size).toBe(4);
 
-      // 5. The deterministic key was carried verbatim into the run insert (D-09): a
+      // 5. The deterministic key was carried verbatim into the run insert: a
       //    re-trigger would collide on the same key, returning the existing run.
       expect(createArg?.data?.idempotencyKey).toBe(idempotencyKey);
     },
@@ -576,7 +570,7 @@ describe('Flow 2 (INT-02) — approveUploadReplacement → recovery → held flo
       expect(out.status).toBe('SATISFIED');
 
       // (b) the recovery hook ran in-tx — it read held flows by JSONB containment and
-      //     flipped the held flow PENDING_COMPLIANCE → PENDING (D-12).
+      //     flipped the held flow PENDING_COMPLIANCE → PENDING.
       expect(queryRaw).toHaveBeenCalled();
       expect(approvalFlowUpdate).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -587,7 +581,7 @@ describe('Flow 2 (INT-02) — approveUploadReplacement → recovery → held flo
       expect(heldFlows.find(f => f.id === HELD_FLOW_ID)?.status).toBe('PENDING');
 
       // (c) the payment gate now RELEASES — the approved item is no longer EXPIRED+BLOCKING,
-      //     so a fresh eligibility check for the contractor does not block (COMPL-07/08/11).
+      //     so a fresh eligibility check for the contractor does not block.
       const after = await assertContractorPaymentEligibility([CONTRACTOR_ID], {
         tx: mockPrisma as never,
         throwOnFail: false,

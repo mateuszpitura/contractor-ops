@@ -1,4 +1,4 @@
-// Phase 72 Wave 2 — GREEN tests for compliance-reminder-scan
+// GREEN tests for compliance-reminder-scan.
 //
 // Exercises the band classifier, TZ day-math, the two-pass digest orchestrator,
 // per-band + per-recipient dedup, optimistic-concurrency loss, and the
@@ -138,19 +138,24 @@ const {
 vi.mock('@contractor-ops/db', () => ({
   prisma: mockPrisma,
   prismaRaw: mockPrismaRaw,
-  // Phase 79 region fan-out — the public scan loops SUPPORTED_REGIONS and resolves
-  // a regional client per region. These existing tests assert single-region behaviour,
-  // so we expose a one-region set whose client IS the cron-context mock (mockPrismaRaw),
+  // The public scan loops SUPPORTED_REGIONS and resolves a regional client per
+  // region. These existing tests assert single-region behaviour, so we expose a
+  // one-region set whose client IS the cron-context mock (mockPrismaRaw),
   // keeping every existing findMany/state/digest assertion intact.
   SUPPORTED_REGIONS: ['EU'] as const,
   getRegionalClient: vi.fn(() => mockPrismaRaw),
 }));
 
 vi.mock('@contractor-ops/logger', () => ({
-  getIdpAuditLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn(), child: vi.fn() })),
+  getIdpAuditLogger: vi.fn(() => ({
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
+    child: vi.fn(),
+  })),
   createCronLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
-  createLogger: vi.fn(() => ({ info: vi.fn(),
- warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
+  createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
 }));
 
 vi.mock('@contractor-ops/logger/metrics', () => ({

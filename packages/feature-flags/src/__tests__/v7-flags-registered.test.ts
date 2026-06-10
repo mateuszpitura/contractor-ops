@@ -1,15 +1,8 @@
-// Phase 82 · Plan 01 · FOUND7-02 (SC#2) — Wave 0 RED scaffold.
+// Verifies the "all v7.0 flags registered" contract: every key in V7_FLAG_KEYS
+// must be present in FLAGS and have a signoff-registry entry.
 //
-// Encodes the "all v7.0 flags registered" contract that Plan 82-03 satisfies.
-// RED is the expected Wave 0 state: `V7_FLAG_KEYS` is not exported yet, the 19
-// v7.0 keys are not in FLAGS, and none have a signoff-registry entry. 82-03:
-//   - adds the 19 dot-namespaced FLAGS entries (D-09),
-//   - exports the V7_FLAG_KEYS cohort const (D-10),
-//   - adds a PENDING signoff entry per key.
-// Do NOT register the flags here.
-//
-// Also pins the 5th region-lockstep source (SC#3): regionSchema.options must
-// hold EU/ME/US — asserted here because regionSchema lives in this package
+// Also pins the region-lockstep invariant: regionSchema.options must hold
+// EU/ME/US — asserted here because regionSchema lives in this package
 // (no dependency edge from @contractor-ops/db; see region-lockstep.test.ts).
 
 import { describe, expect, it } from 'vitest';
@@ -17,8 +10,8 @@ import { FLAGS, getFlagSignoff, regionSchema, V7_FLAG_KEYS } from '../index';
 
 const DOT_NAMESPACED = /^[a-z0-9]+(\.[a-z0-9-]+)+$/;
 
-// The canonical 19-key cohort (82-PATTERNS § flags-core, D-09). Duplicated here
-// as the test's source of truth so a drift in V7_FLAG_KEYS is caught, not masked.
+// The canonical 19-key cohort. Duplicated here as the test's source of truth
+// so a drift in V7_FLAG_KEYS is caught, not masked.
 const EXPECTED_V7_KEYS = [
   'module.us-expansion',
   'module.workforce-employees',
@@ -41,12 +34,12 @@ const EXPECTED_V7_KEYS = [
   'payments.ach-payouts',
 ] as const;
 
-describe('V7_FLAG_KEYS cohort (SC#2)', () => {
+describe('V7_FLAG_KEYS cohort', () => {
   it('exports exactly 19 keys', () => {
     expect(V7_FLAG_KEYS).toHaveLength(19);
   });
 
-  it('matches the canonical 19-key set (D-09)', () => {
+  it('matches the canonical 19-key set', () => {
     expect(new Set(V7_FLAG_KEYS as readonly string[])).toEqual(new Set(EXPECTED_V7_KEYS));
   });
 
@@ -57,7 +50,7 @@ describe('V7_FLAG_KEYS cohort (SC#2)', () => {
   });
 });
 
-describe('every V7_FLAG_KEYS key is present in FLAGS ∧ the signoff registry (SC#2 all-keys-present)', () => {
+describe('every V7_FLAG_KEYS key is present in FLAGS and the signoff registry', () => {
   for (const key of EXPECTED_V7_KEYS) {
     it(`'${key}' is defined in FLAGS`, () => {
       expect((FLAGS as Record<string, unknown>)[key]).toBeDefined();
@@ -69,7 +62,7 @@ describe('every V7_FLAG_KEYS key is present in FLAGS ∧ the signoff registry (S
   }
 });
 
-describe('regionSchema lockstep — 5th source includes US (SC#3)', () => {
+describe('regionSchema lockstep — includes US', () => {
   it('regionSchema.options holds exactly EU/ME/US', () => {
     expect(new Set(regionSchema.options)).toEqual(new Set(['EU', 'ME', 'US']));
   });

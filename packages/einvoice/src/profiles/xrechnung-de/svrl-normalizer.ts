@@ -1,9 +1,9 @@
-// Phase 61 · Plan 61-03 Task 2 — SVRL normaliser.
+// SVRL normaliser.
 //
 // Flattens a Schematron Validation Report Language (SVRL) document — emitted
 // by saxon-js's `SaxonJS.transform` after applying the KoSIT EN16931 / XRechnung
 // CIUS SEFs — into the typed `ValidationIssue` shape consumed by
-// `validator.ts` (per-layer aggregation) and the EInvoice tab UI (Plan 61-08).
+// `validator.ts` (per-layer aggregation) and the EInvoice tab UI.
 //
 // SVRL element semantics (per ISO/IEC 19757-3 Annex C):
 //   * <svrl:failed-assert> — assertion that should hold but didn't (problem).
@@ -18,13 +18,11 @@
 //   <missing>   → severity 'error'   → errors[]   (defensive default)
 //   <unknown>   → severity 'error'   → errors[]   (defensive default; logged)
 //
-// SECURITY (T-61-03-01 + T-61-03-05): the parser is configured with
-// `processEntities: false` and `allowBooleanAttributes: false` — XML external
-// entities (XXE) and billion-laughs entity blow-ups are short-circuited at
-// the SVRL parsing boundary. Only the SVRL XML produced by saxon-js's
-// stylesheet engine is parsed here (saxon-js itself does not pass through
-// untrusted DTD declarations), but a second-line defence keeps us safe even
-// if that ever changes.
+// SECURITY: the parser is configured with `processEntities: false` and
+// `allowBooleanAttributes: false` — XML external entities (XXE) and
+// billion-laughs entity blow-ups are short-circuited at the SVRL parsing
+// boundary. Only the SVRL XML produced by saxon-js's stylesheet engine is
+// parsed here, but a second-line defence keeps us safe if that ever changes.
 
 import { createLogger } from '@contractor-ops/logger';
 import { XMLParser } from 'fast-xml-parser';
@@ -55,7 +53,7 @@ const parser = new XMLParser({
   textNodeName: '#text',
   parseAttributeValue: false,
   allowBooleanAttributes: false,
-  processEntities: false, // XXE mitigation (T-61-03-01) + billion-laughs (T-61-03-05)
+  processEntities: false, // XXE + billion-laughs mitigation
   // SVRL nodes can repeat; keep both as arrays even when only one is present.
   isArray: name => ['svrl:failed-assert', 'svrl:successful-report'].includes(name),
   // Strip the svrl: namespace prefix on read so callers can use stable keys.

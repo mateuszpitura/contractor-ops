@@ -1,13 +1,11 @@
-// Phase 79 Wave 2 — GREEN (was Wave 0 RED scaffold).
+// A contract whose ISIC activity code is NOT in the contractor's free-zone
+// permitted code set fires a non-blocking scope-mismatch advisory AND
+// auto-creates a WARNING NOC `ContractorComplianceItem` for the affected
+// engagement. An uncoded contract (no activityIsicCodes) produces no advisory
+// and no NOC (skip-on-uncoded; no MANUAL_REVIEW tristate).
 //
-// Critical behavior C5 (GULF-03, D-05..D-08): a contract whose ISIC activity code
-// is NOT in the contractor's free-zone permitted code set fires a non-blocking
-// scope-mismatch advisory AND auto-creates a WARNING NOC `ContractorComplianceItem`
-// for the affected engagement. An uncoded contract (no activityIsicCodes) → no
-// advisory, no NOC (D-08 — skip-on-uncoded; no MANUAL_REVIEW tristate).
-//
-// Deterministic ISIC-code overlap (D-06), not fuzzy text matching. Contract
-// creation still proceeds (D-07 — advisory is non-gating).
+// Deterministic ISIC-code overlap, not fuzzy text matching. Contract creation
+// still proceeds — the advisory is non-gating.
 //
 // Fixtures: makeFreeZoneAssignment({ permittedActivityIsicCodes: [...] }) from
 // packages/api/src/__tests__/__fixtures__/gulf-fixtures.ts.
@@ -16,9 +14,14 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { makeFreeZoneAssignment, makeMeOrg } from './__fixtures__/gulf-fixtures';
 
 vi.mock('@contractor-ops/logger', () => ({
-  getIdpAuditLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn(), child: vi.fn() })),
-  createLogger: vi.fn(() => ({ info: vi.fn(),
- warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
+  getIdpAuditLogger: vi.fn(() => ({
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
+    child: vi.fn(),
+  })),
+  createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
 }));
 
 import type { PermittedActivityClient } from '../services/permitted-activity-check';
@@ -102,12 +105,12 @@ describe('C5 (GULF-03, D-05..08) permitted-activity scope-mismatch + auto-NOC', 
     expect(result).toEqual({ mismatch: true, nocItemCreated: true });
     expect(items).toHaveLength(1);
     const item = items[0];
-    expect(item?.severity).toBe('WARNING'); // D-07 — surfaced, not payment-blocking
+    expect(item?.severity).toBe('WARNING'); // surfaced as advisory, not payment-blocking
     expect(item?.documentType).toBe(NOC_DOCUMENT_TYPE);
     expect(item?.policyRuleId).toBe(NOC_POLICY_RULE_ID);
     expect(item?.contractId).toBe(CONTRACT_ID); // scoped to the affected engagement
     expect(item?.status).toBe('MISSING'); // required-document, not yet satisfied
-    // Sensitive system-side write is audited (D-17).
+    // Sensitive system-side write is audited.
     expect(audits).toHaveLength(1);
     expect(audits[0]?.data.action).toBe('gulf.permitted_activity.noc.create');
   });
@@ -183,7 +186,7 @@ describe('C5 (GULF-03, D-05..08) permitted-activity scope-mismatch + auto-NOC', 
       organizationId: ME_ORG.id,
       contractorId: 'cl_contractor_zzzzzzzzzzzzzz',
       contractId: CONTRACT_ID,
-      permittedActivityIsicCodes: [], // contractor permitted-set uncoded → skip (D-08 symmetry)
+      permittedActivityIsicCodes: [], // contractor permitted-set uncoded → skip (symmetry with uncoded contract)
       contractActivityIsicCodes: ['4520'],
     });
 

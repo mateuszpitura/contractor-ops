@@ -88,7 +88,7 @@ describe('Profile Registry', () => {
 });
 
 // ---------------------------------------------------------------------------
-// XRechnung-DE registration (Phase 61 · Plan 61-02 Task 2)
+// XRechnung-DE registration
 //
 // Imports the profile module directly (not the package root) to sidestep the
 // zatca -> @contractor-ops/gov-api workspace-dist dependency that breaks in
@@ -151,9 +151,8 @@ describe('Profile Registry — XRechnung-DE', () => {
   });
 
   it('parse() on XRechnung profile round-trips through generator output (Phase 62)', async () => {
-    // Phase 62 Plan 62-02 Task 4 implemented the real CII parser; this test
-    // now asserts the round-trip invariant rather than the former stub's
-    // "throws Phase 62" message.
+    // The real CII parser is implemented; this test asserts the round-trip
+    // invariant.
     const { XRechnungDEProfile } = await import('../profiles/xrechnung-de/index.js');
     const { generateXRechnungCii } = await import('../profiles/xrechnung-de/generator.js');
     registerProfile(new XRechnungDEProfile());
@@ -214,6 +213,6 @@ describe('Profile Registry — XRechnung-DE', () => {
     expect(status.country).toBe('DE');
     expect(status.displayName).toContain(KOSIT_RULE_SET_VERSION);
     expect(status.capabilities.canGenerate).toBe(true);
-    expect(status.capabilities.canParse).toBe(true); // wired in Phase 62 Plan 02
+    expect(status.capabilities.canParse).toBe(true); // parser is wired
   });
 });

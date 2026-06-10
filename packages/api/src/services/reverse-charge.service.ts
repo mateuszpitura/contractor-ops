@@ -35,11 +35,11 @@ const EU_MEMBER_STATES = new Set([
 const GCC_MEMBER_STATES = new Set(['AE', 'SA', 'BH', 'KW', 'OM', 'QA']);
 
 // ---------------------------------------------------------------------------
-// Phase 57 · Plan 03 — §13b UStG domestic reverse-charge service types (D-12.3)
+// §13b UStG domestic reverse-charge service types
 //
 // Section 13b Abs. 2 UStG lists ~12 scenarios where VAT liability shifts from
-// seller to buyer for domestic DE transactions. For Phase 57 we lock the
-// 5 most commonly-invoiced by contractor-ops customers (software houses,
+// seller to buyer for domestic DE transactions. The 5 types below cover the
+// most commonly-invoiced by contractor-ops customers (software houses,
 // agencies, freelancers with building clients). Expansion is deferred; the
 // enum lives here (not in the DB) because it is legally specified, not
 // tenant-configurable. Extending requires Steuerberater sign-off on the
@@ -66,12 +66,12 @@ export interface ReverseChargeResult {
   reason: string;
   rule:
     | 'eu_cross_border_b2b'
-    | 'gb_eu_post_brexit_b2b' // D-12.1 — UK ↔ EU post-Brexit (symmetric)
-    | 'de_domestic_13b_ustg' // D-12.3 — DE domestic §13b UStG
+    | 'gb_eu_post_brexit_b2b' // UK ↔ EU post-Brexit (symmetric)
+    | 'de_domestic_13b_ustg' // DE domestic §13b UStG
     | 'not_applicable';
 }
 
-/** Post-Brexit UK ↔ EU B2B reverse charge detection (D-12.1). */
+/** Post-Brexit UK ↔ EU B2B reverse charge detection. */
 function detectUkEuReverseCharge(
   sellerCountry: string,
   buyerCountry: string,
@@ -96,7 +96,7 @@ function detectUkEuReverseCharge(
   };
 }
 
-/** EU cross-border B2B reverse charge detection (D-12.2). */
+/** EU cross-border B2B reverse charge detection. */
 function detectEuCrossBorderReverseCharge(
   sellerCountry: string,
   buyerCountry: string,
@@ -147,7 +147,7 @@ export function detectReverseCharge(params: {
     };
   }
 
-  // Rule 1 (D-12.3): DE domestic §13b UStG — evaluated BEFORE the generic
+  // Rule 1: DE domestic §13b UStG — evaluated BEFORE the generic
   // same-country short-circuit because §13b is precisely a domestic rule.
   if (
     sellerCountry === 'DE' &&
@@ -167,13 +167,13 @@ export function detectReverseCharge(params: {
     return { shouldApply: false, reason: 'Domestic transaction', rule: 'not_applicable' };
   }
 
-  // Rule 3 (D-12.1): Post-Brexit UK ↔ EU B2B (symmetric). Takes precedence
-  // over the generic EU-cross-border rule when GB is on either side of the
+  // Rule 3: Post-Brexit UK ↔ EU B2B (symmetric). Takes precedence over the
+  // generic EU-cross-border rule when GB is on either side of the
   // transaction, so audit logs surface the correct legal basis.
   const ukEuResult = detectUkEuReverseCharge(sellerCountry, buyerCountry, buyerHasVatId);
   if (ukEuResult) return ukEuResult;
 
-  // Rules 4-5 (D-12.2): EU cross-border B2B.
+  // Rules 4-5: EU cross-border B2B.
   const euResult = detectEuCrossBorderReverseCharge(sellerCountry, buyerCountry, buyerHasVatId);
   if (euResult) return euResult;
 
@@ -198,7 +198,7 @@ export function detectReverseCharge(params: {
  * Pure override-precedence decision shared by every reverse-charge call site.
  *
  * Given the auto-detected outcome and an explicit user override, returns the
- * final flag plus the auto-detected value (the latter feeds the D-13
+ * final flag plus the auto-detected value (the latter feeds the
  * override-with-reason audit). A set override (true/false) always wins; an
  * unset override (null/undefined) defers to auto-detection. No DB, no I/O.
  */
@@ -220,7 +220,7 @@ export async function applyReverseCharge(params: {
   contractorId: string;
   reverseChargeOverride?: boolean | null;
   /**
-   * Phase 57 · Plan 03 (D-12.3) — optional §13b UStG service classification.
+   * Optional §13b UStG service classification.
    * When set AND jurisdiction=DE→DE, triggers domestic reverse charge.
    */
   serviceType?: DE13bServiceType;

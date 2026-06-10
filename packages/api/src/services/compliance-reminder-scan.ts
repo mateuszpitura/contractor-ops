@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------
-// Phase 72 · COMPL-03 — Compliance reminder cascade orchestrator.
+// Compliance reminder cascade orchestrator.
 // ---------------------------------------------------------------------------
 //
 // Fires expiry reminders at 90/60/30/15/7-day bands per ContractorComplianceItem,
@@ -9,7 +9,7 @@
 // Architectural twin: economic-dependency-scan.ts. Differences:
 //   - Bands derived from monotonically-decreasing daysUntilExpiry (not a continuous variable)
 //   - No 30-day re-fire cadence (each band IS the cadence — D60 IS the 30-day re-fire of D90)
-//   - Renewal resets the row to NONE via the listener (D-06), not a "cross-down" path
+//   - Renewal resets the row to NONE via the listener, not a "cross-down" path
 //
 // LESSON: v1.0 invoice-reminder cron lacked a per-recipient digest throttle and
 // produced fatigue-grade spam (one notification per overdue invoice). The two-pass
@@ -18,7 +18,7 @@
 //
 // ---------------------------------------------------------------------------
 
-// TZ boundary math lives in the package that owns the date-fns deps (Phase 71 D-07).
+// TZ boundary math lives in the package that owns the date-fns deps.
 import { daysUntilExpiryInTz, jurisdictionDate } from '@contractor-ops/compliance-policy';
 import type { Prisma } from '@contractor-ops/db';
 import { getRegionalClient, prisma, prismaRaw, SUPPORTED_REGIONS } from '@contractor-ops/db';
@@ -36,7 +36,7 @@ import { resolveRbacRecipients } from './rbac-recipients';
 
 const log = createCronLogger('compliance-reminder-scan');
 
-// F-ASYNC-09 — bound the cross-org scan fan-out (mirror of economic-dependency-scan.ts).
+// Bound cross-org scan fan-out (mirror of economic-dependency-scan.ts).
 const SCAN_FANOUT_CONCURRENCY = 10;
 
 // ---------------------------------------------------------------------------
@@ -86,18 +86,18 @@ export interface ScanResult {
 }
 
 /**
- * Phase 79 Pitfall 18 — the cron has no tenant frame and must run once per
- * data region against that region's physical DB. `runComplianceReminderScan`
- * fans out over SUPPORTED_REGIONS, so the per-region worker receives an explicit
- * Prisma client (the regional writer) rather than closing over the EU-only
+ * The cron has no tenant frame and must run once per data region against that
+ * region's physical DB. `runComplianceReminderScan` fans out over
+ * SUPPORTED_REGIONS, so the per-region worker receives an explicit Prisma
+ * client (the regional writer) rather than closing over the EU-only
  * `prismaRaw`. Structural shape — only the cron-context delegates are needed.
  * Mirrors compliance-payment-gate.ts PaymentGateClient.
  */
 export interface ReminderScanClient {
   contractorComplianceItem: {
     findMany: (args: Prisma.ContractorComplianceItemFindManyArgs) => Promise<unknown>;
-    // Phase 79 CR-01 — the scan persists the free-zone PENDING→EXPIRED transition at
-    // the TZ boundary (reEvaluateFreeZoneStatus). The cron has no tenant frame, so
+    // The scan persists the free-zone PENDING→EXPIRED transition at the TZ
+    // boundary (reEvaluateFreeZoneStatus). The cron has no tenant frame, so
     // this write goes through the regional client threaded from the fan-out.
     update: (args: Prisma.ContractorComplianceItemUpdateArgs) => Promise<unknown>;
   };
@@ -119,15 +119,15 @@ interface ItemForScan {
   contractorId: string;
   documentType: string; // DocumentType enum — there is no `name`-based reminder label on the item
   policyRuleId: string | null;
-  status: string; // needed for the free-zone PENDING→EXPIRED boundary flip (Phase 79 CR-01)
+  status: string; // needed for the free-zone PENDING→EXPIRED boundary flip
   expiresAt: Date | null;
   expiryJurisdictionTz: string | null;
   contractor: { displayName: string };
 }
 
-// Phase 79 CR-01 — free-zone license items are written out-of-band and key the
-// payment gate on status='EXPIRED'. The reminder scan is the cron-context pass that
-// flips them PENDING→EXPIRED at the Asia/Dubai boundary (reEvaluateFreeZoneStatus),
+// Free-zone license items are written out-of-band and key the payment gate on
+// status='EXPIRED'. The reminder scan is the cron-context pass that flips them
+// PENDING→EXPIRED at the Asia/Dubai boundary (reEvaluateFreeZoneStatus),
 // since there is no other tenant-frame-less sweep.
 const FREE_ZONE_POLICY_PREFIX = 'uae.free_zone' as const;
 
@@ -154,12 +154,12 @@ interface DigestGroup {
 // ---------------------------------------------------------------------------
 
 /**
- * Public cron entry — fans the scan out across SUPPORTED_REGIONS (Pitfall 18).
+ * Public cron entry — fans the scan out across SUPPORTED_REGIONS.
  *
  * UAE/KSA orgs live in the ME physical DB; the cron has no tenant frame, so each
  * region is scanned with its OWN regional Prisma client (getRegionalClient). A
  * region whose DATABASE_URL_* env is unset is skipped with a Pino warn (no silent
- * catch, D-17) — the other regions still run. Per-region results are accumulated.
+ * catch) — the other regions still run. Per-region results are accumulated.
  *
  * Signature-compatible with the prior EU-only entry so the cron handler call site
  * (reminders/index.ts) stays `runComplianceReminderScan()`.
@@ -197,9 +197,9 @@ export async function runComplianceReminderScan(now: Date = new Date()): Promise
 /**
  * Per-region worker — runs the two-pass scan against ONE regional client.
  * Every read/write goes through the supplied `client` (no module-level prismaRaw
- * close-over) so ME-region BLOCKING free-zone items enter the cascade (Pitfall 18).
+ * close-over) so ME-region BLOCKING free-zone items enter the cascade.
  * The `region` label region-prefixes the dedup keys so a band/digest claim in one
- * region cannot suppress the same key in another (Open Q3).
+ * region cannot suppress the same key in another.
  */
 export async function runComplianceReminderScanForClient(
   client: ReminderScanClient,
@@ -229,11 +229,11 @@ export async function runComplianceReminderScanForClient(
       },
     })) as ItemForScan[];
 
-    // Phase 79 CR-01 — flip free-zone PENDING items that have crossed their TZ
-    // boundary to EXPIRED BEFORE the band pass, so the BLOCKING payment gate (which
-    // keys on status='EXPIRED') arms for licenses that expire after they were
-    // recorded. Idempotent + region-correct: the write rides the regional client,
-    // and reEvaluateFreeZoneStatus no-ops for already-EXPIRED / non-PENDING rows.
+    // Flip free-zone PENDING items that have crossed their TZ boundary to
+    // EXPIRED before the band pass, so the BLOCKING payment gate (which keys
+    // on status='EXPIRED') arms for licenses that expire after they were
+    // recorded. Idempotent + region-correct: the write rides the regional
+    // client, and reEvaluateFreeZoneStatus no-ops for already-EXPIRED / non-PENDING rows.
     await flipExpiredFreeZoneItems(client, items, now);
 
     // Pass 1: collect band transitions per item, accumulate per-recipient groups.
@@ -258,12 +258,12 @@ export async function runComplianceReminderScanForClient(
 }
 
 /**
- * Phase 79 CR-01 — persist the free-zone PENDING→EXPIRED transition for items whose
- * Asia/Dubai expiry boundary has crossed. This is the missing wiring that arms the
- * GULF-02 payment hard-block for a license that expires AFTER it was recorded: the
- * gate keys on status='EXPIRED', and no other cron-context (tenant-frame-less) pass
- * flips the status. Delegates to the idempotent, region-safe reEvaluateFreeZoneStatus
- * and mutates the in-memory `items` so the subsequent band pass sees the new status.
+ * Persists the free-zone PENDING→EXPIRED transition for items whose Asia/Dubai
+ * expiry boundary has crossed. This arms the payment hard-block for a license
+ * that expires after it was recorded: the gate keys on status='EXPIRED', and no
+ * other cron-context (tenant-frame-less) pass flips the status. Delegates to the
+ * idempotent, region-safe reEvaluateFreeZoneStatus and mutates the in-memory
+ * `items` so the subsequent band pass sees the new status.
  *
  * Per-item failures are logged and skipped — one bad flip never aborts the scan.
  */
@@ -302,9 +302,9 @@ async function flipExpiredFreeZoneItems(
 /**
  * Pass 1 — per-item band processing + per-recipient grouping.
  *
- * F-ASYNC-09 / F-SCALE-05: fan-out is bounded by pLimit(SCAN_FANOUT_CONCURRENCY)
- * to avoid head-of-line blocking on slow per-item DB writes at high BLOCKING-item
- * volume — mirrors the economic-dependency-scan.ts twin.
+ * Fan-out is bounded by pLimit(SCAN_FANOUT_CONCURRENCY) to avoid head-of-line
+ * blocking on slow per-item DB writes at high BLOCKING-item volume — mirrors
+ * the economic-dependency-scan.ts twin.
  *
  * Per-item failures are logged and skipped; they never abort the whole scan.
  */
@@ -371,7 +371,7 @@ async function dispatchDigests(
   for (const group of recipientGroups.values()) {
     try {
       // Region-prefixed so a digest claim in one region cannot suppress the same
-      // (recipient, date) digest in another region (Open Q3, Pitfall 18).
+      // (recipient, date) digest in another region.
       const digestKey = `compl:digest:${region}:${group.recipientUserId}:${group.jurisdictionDate}`;
       const claimed = await claimCronNotificationDedup(digestKey);
       if (!claimed) continue; // already sent today
@@ -420,7 +420,7 @@ async function processItem(
   if (lastFired && bandIndex(nextBand) <= bandIndex(lastFired as ReminderBand)) return null;
 
   // Per-band dedup claim (region- + jurisdictionDate-scoped). Region-prefixed so the
-  // same (item, band, date) claim does not collide across regions (Open Q3, Pitfall 18).
+  // same (item, band, date) claim does not collide across regions.
   const date = jurisdictionDate(now, item.expiryJurisdictionTz);
   const dedupKey = `compl:band:${region}:${item.id}:${nextBand}:${date}`;
   const claimed = await claimCronNotificationDedup(dedupKey);
@@ -523,7 +523,7 @@ async function persistBandFire(
  * The contractor themselves is NOT a platform `User` in this data model (they
  * authenticate via PortalSession, not a User row), so they cannot be a
  * `dispatch` recipientUserId. The direct contractor-email reminder channel is
- * Phase 73 portal scope; Phase 72 dispatches the admin digest only.
+ * portal scope; this function dispatches the admin digest only.
  */
 async function resolveRecipientsForItem(item: ItemForScan): Promise<string[]> {
   return resolveRbacRecipients(item.organizationId, 'contractor:read');
@@ -582,7 +582,7 @@ async function dispatchDigest(client: ReminderScanClient, group: DigestGroup): P
 }
 
 // ---------------------------------------------------------------------------
-// Renewal-reset listener — invoked from classification on expires_at_changed (D-06)
+// Renewal-reset listener — invoked from classification on expires_at_changed
 // ---------------------------------------------------------------------------
 
 export async function onComplianceItemExpiresAtChanged(

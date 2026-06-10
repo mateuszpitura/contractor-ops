@@ -1,4 +1,4 @@
-// Phase 59 · D-07 — content-addressed R2 object-key builder for classification documents.
+// Content-addressed R2 object-key builder for classification documents.
 // Key format: classification-documents/{orgId}/{assessmentId}/{kind}-{ruleSetVersion}-{sha16}.pdf
 // Hash in path enables future byte-dedup without schema changes; org prefix is defence-in-depth
 // against cross-tenant access even if the tRPC layer misroutes.
@@ -8,7 +8,7 @@ import type { ClassificationDocumentKind } from '@contractor-ops/db/generated/pr
 const KIND_PATH_SEGMENT: Record<ClassificationDocumentKind, string> = {
   SDS: 'sds',
   DRV_DEFENSE_BUNDLE: 'drv-defense-bundle',
-  DRV_DECISION_LETTER: 'drv-decision-letter', // Phase 64 D-25
+  DRV_DECISION_LETTER: 'drv-decision-letter',
 };
 
 const SHA256_PREFIX_LENGTH = 16;

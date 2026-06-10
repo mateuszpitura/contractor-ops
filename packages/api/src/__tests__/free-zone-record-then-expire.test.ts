@@ -1,11 +1,9 @@
-// Phase 79 gap-closure — CR-01 (BLOCKER) regression.
-//
-// Critical behavior C1/C2 blind spot: the GULF-02 payment hard-block must arm for
-// a free-zone license that EXPIRES AFTER it was recorded, not only one written
-// already-expired. The realistic admin flow is: record a free-zone assignment
-// while the license is still valid (status PENDING, no block), then the license
-// crosses its Asia/Dubai expiry boundary. The region-aware reminder scan is the
-// only background pass that runs in the cron's tenant-frame-less context, so it
+// Regression: the payment hard-block must arm for a free-zone license that
+// EXPIRES AFTER it was recorded, not only one written already-expired. The
+// realistic admin flow is: record a free-zone assignment while the license is
+// still valid (status PENDING, no block), then the license crosses its
+// Asia/Dubai expiry boundary. The region-aware reminder scan is the only
+// background pass that runs in the cron's tenant-frame-less context, so it
 // must flip free-zone PENDING items to EXPIRED at the boundary (via
 // reEvaluateFreeZoneStatus) — otherwise the row stays PENDING forever and the
 // BLOCKING payment gate (which keys on status='EXPIRED') never engages.
@@ -100,10 +98,15 @@ vi.mock('@contractor-ops/db', () => ({
 }));
 vi.mock('@contractor-ops/feature-flags', () => ({ isPaymentBlockEnforced: vi.fn(() => true) }));
 vi.mock('@contractor-ops/logger', () => ({
-  getIdpAuditLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn(), child: vi.fn() })),
+  getIdpAuditLogger: vi.fn(() => ({
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
+    child: vi.fn(),
+  })),
   createCronLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
-  createLogger: vi.fn(() => ({ info: vi.fn(),
- warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
+  createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
 }));
 vi.mock('@contractor-ops/logger/metrics', () => ({
   metrics: { gauge: vi.fn(), increment: vi.fn(), distribution: vi.fn() },

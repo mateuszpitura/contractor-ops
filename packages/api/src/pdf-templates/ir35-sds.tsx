@@ -1,4 +1,3 @@
-// Phase 59 · Plan 02 — CLASS-03, D-01/D-02/D-03/D-04.
 // Status Determination Statement (SDS) React-PDF template — verdict-first, per-area evidence trailing.
 //
 // Contract:
@@ -150,7 +149,7 @@ export interface SdsOrganization {
   countryCode: string | null;
 }
 
-// Phase 64 · D-21 — SDS approval data for cover page
+// SDS approval data for cover page
 interface SdsApprovalData {
   clientName: string;
   approvedAt: Date;
@@ -265,7 +264,7 @@ export interface IR35SDSDocumentProps {
   organization: SdsOrganization;
   /** Stable timestamp for byte-equal re-renders — typically assessment.completedAt. */
   renderedAt: Date;
-  /** Phase 64 D-21 — optional SDS approval data for cover page */
+  /** Optional SDS approval data for cover page */
   approvalData?: SdsApprovalData | null;
 }
 
@@ -329,7 +328,7 @@ export function IR35SDSDocument({
 
   return (
     <Document title={`SDS — ${contractor.displayName} — ${engagement.displayName}`}>
-      {/* Phase 64 D-21 — cover page when approval data is present */}
+      {/* Cover page when approval data is present */}
       {approvalData != null && <CoverPage approvalData={approvalData} />}
       {/* Page 1 — verdict + engagement details */}
       <Page size="A4" style={styles.page} wrap>

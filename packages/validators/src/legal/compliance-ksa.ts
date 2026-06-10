@@ -1,10 +1,10 @@
 // packages/validators/src/legal/compliance-ksa.ts
 //
-// LOCKED COMPL DOC NAMES — KSA · Phase 73 (D-14, D-15, D-16).
+// LOCKED COMPL DOC NAMES — KSA.
 //
 // Per-locale phrase map: en + pl + de + ar (ar REQUIRED for the i18n:parity guard;
 // authoritative Arabic terms used where well-known — Iqama الإقامة). Entries ship
-// PENDING per Phase 70 D-09; KSA adviser flips to APPROVED in dedicated PRs.
+// PENDING; KSA adviser flips to APPROVED in dedicated PRs.
 
 export const LOCKED_COMPL_NAMES_KSA = {
   'ksa.iqama@v1': {
@@ -23,7 +23,7 @@ export const LOCKED_COMPL_NAMES_KSA = {
     en: 'KSA — transfer of economic rights',
     pl: 'KSA — przeniesienie praw majątkowych',
     de: 'KSA — Übertragung wirtschaftlicher Rechte',
-    ar: 'KSA — transfer of economic rights', // TODO ar legal review (Phase 79)
+    ar: 'KSA — transfer of economic rights', // TODO ar legal review pending
   },
 } as const;
 

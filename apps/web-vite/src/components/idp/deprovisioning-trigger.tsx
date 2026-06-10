@@ -1,6 +1,6 @@
 /**
- * Phase 81 D-02 — presentational deprovisioning trigger: the start button plus
- * the impact-preview confirm dialog. Props-in / JSX-out — no tRPC, no business
+ * Presentational deprovisioning trigger: the start button plus the
+ * impact-preview confirm dialog. Props-in / JSX-out — no tRPC, no business
  * logic. The container injects the cooldown/permission state, the preview slot
  * (the existing ImpactPreviewPanelContainer), and the start/cancel handlers.
  *
@@ -18,6 +18,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@contractor-ops/ui/components/shadcn/dialog';
+import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import {
   Tooltip,
   TooltipContent,
@@ -27,8 +28,6 @@ import {
 import { ShieldOff } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { useCallback } from 'react';
-
-import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 
 import { usePermissions } from '../../hooks/use-permissions.js';
 import { useTranslations } from '../../i18n/useTranslations.js';
@@ -49,7 +48,7 @@ export interface DeprovisioningTriggerProps {
   onConfirmStart: () => void;
   /** A start request is in flight. */
   starting: boolean;
-  /** The existing impact-preview panel, injected by the container (D-02). */
+  /** The existing impact-preview panel, injected by the container. */
   previewSlot: ReactNode;
 }
 

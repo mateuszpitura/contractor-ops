@@ -1,5 +1,3 @@
-// Phase 74 Plan 74-03 — Pitfall 2 regression test (74-RESEARCH.md § Common Pitfalls).
-//
 // Asserts the workflow:override_blocking_task action is granted to OWNER ONLY.
 // CI fails immediately if any future role-table edit accidentally widens the
 // grant to a non-owner role.
@@ -29,7 +27,7 @@ function workflowActionsFor(name: RoleName): readonly string[] {
   return role?.statements?.workflow ?? [];
 }
 
-describe('workflow:override_blocking_task — D-09 / SC#5 OWNER-only', () => {
+describe('workflow:override_blocking_task — OWNER-only', () => {
   it.each(
     ALL_ROLE_NAMES,
   )('role %s — override_blocking_task grant matches owner-only invariant', roleName => {
@@ -43,7 +41,7 @@ describe('workflow:override_blocking_task — D-09 / SC#5 OWNER-only', () => {
     }
   });
 
-  it('exactly one role grants override_blocking_task (Pitfall 2 regression)', () => {
+  it('exactly one role grants override_blocking_task (owner-only regression guard)', () => {
     const granters = ALL_ROLE_NAMES.filter(name =>
       workflowActionsFor(name).includes('override_blocking_task'),
     );

@@ -54,9 +54,9 @@ const {
   const mockGenerateInvoicesCsv = vi.fn(async () => csvResult);
   const mockGenerateComplianceCsv = vi.fn(async () => csvResult);
 
-  // F-SCALE-01 — exports are now enqueued asynchronously via QStash, so the
-  // mutation contract is `{ exportId, status: 'PENDING' }`. Tests verify
-  // delegation to `requestExport`, not the historical inline-CSV envelope.
+  // Exports are enqueued asynchronously via QStash, so the mutation contract
+  // is `{ exportId, status: 'PENDING' }`. Tests verify delegation to
+  // `requestExport`, not the historical inline-CSV envelope.
   let exportCounter = 0;
   const mockRequestExport = vi.fn(async () => ({
     exportId: `exp_${++exportCounter}`,
@@ -112,8 +112,7 @@ vi.mock('@contractor-ops/db', () => ({
   getRegionalClient: vi.fn(() => mockPrisma),
 }));
 
-// F-DB-03 / F-SEC-12 — org-cache must report ACTIVE so tenant middleware
-// does not throw orgSuspended.
+// org-cache must report ACTIVE so tenant middleware does not throw orgSuspended.
 vi.mock('../../services/org-cache', () => ({
   getOrgMeta: vi.fn(async (orgId: string) => ({
     id: orgId,
@@ -142,9 +141,8 @@ vi.mock('../../services/report-export', () => ({
   generateComplianceCsv: mockGenerateComplianceCsv,
 }));
 
-// F-SCALE-01 — short-circuit the async-export framework so we can assert
-// the router's enqueue contract without exercising QStash, R2, or Prisma's
-// `Export` model.
+// Short-circuit the async-export framework so we can assert the router's
+// enqueue contract without exercising QStash, R2, or Prisma's `Export` model.
 vi.mock('../../services/exports/index', () => ({
   requestExport: mockRequestExport,
   EXPORT_REGISTRY: {},
@@ -183,7 +181,13 @@ vi.mock('@sentry/node', () => {
 });
 
 vi.mock('@contractor-ops/logger', () => ({
-  getIdpAuditLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn(), child: vi.fn() })),
+  getIdpAuditLogger: vi.fn(() => ({
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
+    child: vi.fn(),
+  })),
   withBodyLogging: vi.fn((_o, fn) => fn),
   logIntegrationCall: vi.fn(),
   subscribeOpossumEvents: vi.fn(),
@@ -197,8 +201,7 @@ vi.mock('@contractor-ops/logger', () => ({
   PII_MASK_KEYWORDS: [],
   PII_MASK_PATHS: [],
   createTrpcLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
-  createLogger: vi.fn(() => ({ info: vi.fn(),
- warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
+  createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
   createCronLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
   createWebhookLogger: vi.fn(() => ({
     info: vi.fn(),
@@ -921,10 +924,9 @@ describe('report router', () => {
   // =========================================================================
 
   describe('export mutations', () => {
-    // F-SCALE-01 — these mutations no longer return CSV inline. They
-    // persist a PENDING `Export` row and dispatch a QStash message; the
-    // CSV is rendered by `/api/exports/_process`. Tests assert the
-    // delegation contract + envelope shape only.
+    // These mutations no longer return CSV inline. They persist a PENDING
+    // `Export` row and dispatch a QStash message; the CSV is rendered by
+    // `/api/exports/_process`. Tests assert the delegation contract + envelope shape only.
 
     it('exportSpendByContractor delegates to requestExport with the correct type + params', async () => {
       const result = await caller.report.exportSpendByContractor(DATE_RANGE);

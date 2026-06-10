@@ -1,4 +1,4 @@
-// Phase 61 · Plan 61-02 Task 2 — XRechnungDEProfile class + registry hook.
+// XRechnungDEProfile class + registry hook.
 //
 // The profile is a stateless adapter between the shared `EInvoiceProfile`
 // contract and the XRechnung-specific generator / parser / validator modules.
@@ -6,12 +6,6 @@
 // invoked from `packages/einvoice/src/index.ts` (mirrors the KSeF / ZATCA /
 // Peppol-AE convenience-registration pattern), so anyone who `import`s
 // `@contractor-ops/einvoice` gets `getProfile('xrechnung-de')` wired up.
-//
-// `validate()` returns a minimal always-valid result in Plan 61-02; Plan 61-03
-// replaces it with the three-layer KoSIT pipeline (XSD → EN 16931 Schematron →
-// XRechnung CIUS Schematron). `getComplianceStatus()` returns an active-state
-// snapshot with XRechnung capabilities; Plan 61-04 / 61-06 enrich this with
-// org-scoped lifecycle counts from `EInvoiceLifecycle`.
 
 import type { ComplianceStatus } from '../../types/compliance.js';
 import { complianceState } from '../../types/compliance.js';
@@ -26,12 +20,9 @@ import type { ValidationIssue, XRechnungValidationReport } from './validator.js'
 import { validateXRechnungCii } from './validator.js';
 
 /**
- * Re-exported from `./generator.js` so api-side callers (e.g.
- * `packages/api/src/services/einvoice-finalize.ts`) can construct the
+ * Re-exported from `./generator.js` so api-side callers can construct the
  * `skontoTerm` opt without reaching into the internal generator module.
- *
- * Per Phase 68 D-01 — keeps the api → einvoice dependency direction clean
- * (the api package only imports public symbols from `xrechnung-de/index.ts`).
+ * Keeps the api → einvoice dependency direction clean.
  */
 export type { SkontoTermInput };
 
@@ -46,9 +37,8 @@ export interface XRechnungGenerateOptions {
    * `#SKONTO#TAGE=…#PROZENT=…#BASISBETRAG=…#` extension per XRechnung
    * 3.0.2 Anhang E.
    *
-   * Per Phase 68 D-01 — accepts the same type the CII-level helper
-   * (`generateXRechnungCii`) already takes, keeping the einvoice package
-   * self-contained (no api-side type leakage).
+   * Accepts the same type the CII-level helper (`generateXRechnungCii`)
+   * already takes, keeping the einvoice package self-contained.
    *
    * Resolution policy (invoice-level term → billing-profile default →
    * null) lives at the caller (`einvoice-finalize.ts`,
@@ -75,9 +65,8 @@ export class XRechnungDEProfile implements EInvoiceProfile {
   readonly qrCode = undefined;
 
   async generate(invoice: EInvoice, opts?: XRechnungGenerateOptions): Promise<string> {
-    // Phase 68 D-02 — forward the resolved Skonto term (caller-resolved via
-    // services/skonto.ts:resolveSkontoTerm) to the CII helper. Default to
-    // null when omitted so the no-Skonto branch in buildPaymentTerms keeps
+    // Forward the resolved Skonto term to the CII helper. Default to null
+    // when omitted so the no-Skonto branch in buildPaymentTerms keeps
     // emitting the standard <ram:DueDateDateTime>-only payment terms block.
     return generateXRechnungCii(invoice, opts?.leitwegId ?? null, opts?.skontoTerm ?? null);
   }
@@ -92,8 +81,8 @@ export class XRechnungDEProfile implements EInvoiceProfile {
    * XRechnung CIUS Schematron) and project the typed report onto the engine's
    * generic `ValidationResult` shape.
    *
-   * For the FULL per-layer report (used by Plan 61-06's finalize router and
-   * the EInvoice tab UI), call `validateRich` instead.
+   * For the FULL per-layer report (used by the finalize router and the
+   * EInvoice tab UI), call `validateRich` instead.
    */
   async validate(xml: string): Promise<ValidationResult> {
     const report = await validateXRechnungCii(xml);
@@ -102,8 +91,8 @@ export class XRechnungDEProfile implements EInvoiceProfile {
 
   /**
    * Generate XRechnung CII XML, then validate it in one round-trip. Used by
-   * Plan 61-06's `finalizeEInvoice` mutation to atomically build + KoSIT-check
-   * an invoice before persisting to `EInvoiceLifecycle`.
+   * the `finalizeEInvoice` mutation to atomically build + KoSIT-check an
+   * invoice before persisting to `EInvoiceLifecycle`.
    */
   async generateAndValidate(
     invoice: EInvoice,
@@ -116,7 +105,7 @@ export class XRechnungDEProfile implements EInvoiceProfile {
 
   /**
    * Returns the full typed three-layer report (per-layer status + bucketed
-   * issues) without lossy projection. Plan 61-06 / Plan 61-08 consume this.
+   * issues) without lossy projection. Used by the finalize router and UI.
    */
   async validateRich(xml: string): Promise<XRechnungValidationReport> {
     return validateXRechnungCii(xml);
@@ -124,9 +113,8 @@ export class XRechnungDEProfile implements EInvoiceProfile {
 
   /**
    * Minimal compliance snapshot — active, full generate capability, no
-   * signing or QR requirement. Plan 61-06 enriches this with org-scoped
-   * lifecycle counts (validated / transmitted / delivered) to derive a real
-   * `healthScore`.
+   * signing or QR requirement. Enrich with org-scoped lifecycle counts
+   * (validated / transmitted / delivered) to derive a real `healthScore`.
    */
   async getComplianceStatus(_organizationId: string): Promise<ComplianceStatus> {
     return {
@@ -137,7 +125,7 @@ export class XRechnungDEProfile implements EInvoiceProfile {
       healthScore: 100,
       capabilities: {
         canGenerate: true,
-        canParse: true, // inbound parsing wired in Phase 62 Plan 02 Task 4
+        canParse: true,
         canSign: false,
         canQRCode: false,
       },

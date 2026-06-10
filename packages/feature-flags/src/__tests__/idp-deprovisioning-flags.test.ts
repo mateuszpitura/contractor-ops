@@ -2,16 +2,16 @@ import { describe, expect, it } from 'vitest';
 import { FLAGS } from '../flags-core';
 import { getFlagSignoff, isGatedFlag } from '../signoff-registry-flags';
 
-// Phase 77 D-15 — per-provider IdP deprovisioning flags. Both ship dark
-// (default false) and are gated behind a PENDING signoff entry so they cannot
-// be enabled per-org until legal review flips the registry to APPROVED.
+// Per-provider IdP deprovisioning flags. Both ship dark (default false) and
+// are gated behind a PENDING signoff entry so they cannot be enabled per-org
+// until legal review flips the registry to APPROVED.
 
 const PROVIDER_FLAG_KEYS = [
   'module.idp-deprovisioning-gws',
   'module.idp-deprovisioning-slack',
 ] as const;
 
-describe('IdP deprovisioning per-provider flags (Phase 77 D-15)', () => {
+describe('IdP deprovisioning per-provider flags', () => {
   for (const key of PROVIDER_FLAG_KEYS) {
     describe(key, () => {
       it('is declared in FLAGS', () => {

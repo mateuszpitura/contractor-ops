@@ -1,13 +1,12 @@
-// Phase 59 · Plan 03 Task 4 — Other-client attestation form.
+// Other-client attestation form.
 // Captures the contractor's free-text "other clients" statement + typed
-// signature. Persists via ir35Attestation.upsert (Plan 59-04 DRV bundle
-// Section 4 consumes the stored row).
+// signature. Persists via ir35Attestation.upsert.
 
 import type { ChangeEvent, FormEvent } from 'react';
 import { useCallback, useEffect, useId, useState } from 'react';
 import { useTranslations } from '../../../i18n/useTranslations.js';
-import { useOtherClientAttestation } from '../hooks/use-other-client-attestation.js';
 import type { useOtherClientAttestation as UseOtherClientAttestation } from '../hooks/use-other-client-attestation.js';
+import { useOtherClientAttestation } from '../hooks/use-other-client-attestation.js';
 
 export interface OtherClientAttestationFormProps {
   engagementId: string;

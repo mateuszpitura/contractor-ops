@@ -6,6 +6,7 @@ import {
   fetchJiraProjects,
   fetchLinearTeams,
 } from '@contractor-ops/integrations';
+import { createIntegrationLogger } from '@contractor-ops/logger';
 import type {
   FetchPeopleSourceError,
   ImportedProject,
@@ -23,7 +24,6 @@ import {
   retryItemOutputSchema,
   startImportInputSchema,
 } from '@contractor-ops/validators';
-import { createIntegrationLogger } from '@contractor-ops/logger';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import * as E from '../../errors';
@@ -32,12 +32,12 @@ import type { TenantScopedDb } from '../../lib/tenant-db';
 import { requirePermission } from '../../middleware/rbac';
 import { tenantProcedure } from '../../middleware/tenant';
 import { requireTier } from '../../middleware/tier';
+import type { SourcePerson } from '../../services/onboarding-import-service';
 import {
   createWorkflowTemplatesFromProjects,
   fetchUsersFromSource,
   mergeByEmail,
 } from '../../services/onboarding-import-service';
-import type { SourcePerson } from '../../services/onboarding-import-service';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -81,10 +81,7 @@ interface OrgSettings {
   [key: string]: unknown;
 }
 
-async function readOrgSettings(
-  db: TenantScopedDb,
-  organizationId: string,
-): Promise<OrgSettings> {
+async function readOrgSettings(db: TenantScopedDb, organizationId: string): Promise<OrgSettings> {
   const org = await db.organization.findFirst({
     where: { id: organizationId },
     select: { settingsJson: true },
@@ -141,7 +138,7 @@ async function upsertImportJob(
       jobs[job.jobId] = job;
       return { ...settings, importJobs: jobs };
     },
-    expectedRevision !== undefined ? { expectedRevision } : undefined,
+    expectedRevision === undefined ? undefined : { expectedRevision },
   );
 }
 
@@ -199,7 +196,7 @@ async function processPeopleImport(
   people: StartImportInput['people'],
   job: ImportJob,
 ) {
-  // F-DB-26 — issue invites in chunks of 10 in parallel rather than serial.
+  // Issue invites in chunks of 10 in parallel rather than serial.
   // Onboarding 50 users used to take 50× single-call latency; chunked
   // parallelism stays well under Better Auth + Resend rate limits.
   const CHUNK = 10;
@@ -278,22 +275,22 @@ export const onboardingImportRouter = router({
     .use(requirePermission({ settings: ['read'] }))
     .output(listSourcesOutputSchema)
     .query(async ({ ctx }) => {
-    const connections = await ctx.db.integrationConnection.findMany({
-      where: { organizationId: ctx.organizationId },
-      select: { provider: true, status: true, credentialsRef: true },
-    });
+      const connections = await ctx.db.integrationConnection.findMany({
+        where: { organizationId: ctx.organizationId },
+        select: { provider: true, status: true, credentialsRef: true },
+      });
 
-    const connMap = new Map(connections.map(c => [c.provider, c]));
+      const connMap = new Map(connections.map(c => [c.provider, c]));
 
-    return ALL_PROVIDERS.map(provider => {
-      const conn = connMap.get(provider);
-      return {
-        provider,
-        connected: conn?.status === 'CONNECTED' && !!conn.credentialsRef,
-        selected: false,
-      };
-    });
-  }),
+      return ALL_PROVIDERS.map(provider => {
+        const conn = connMap.get(provider);
+        return {
+          provider,
+          connected: conn?.status === 'CONNECTED' && !!conn.credentialsRef,
+          selected: false,
+        };
+      });
+    }),
 
   /**
    * Fetches users from selected sources, merges by email, detects conflicts.
@@ -597,7 +594,7 @@ export const onboardingImportRouter = router({
       if (failedItem.email.startsWith('project:')) {
         throw new TRPCError({
           code: 'BAD_REQUEST',
-          message: 'Project import failures must be retried from the import wizard',
+          message: E.IMPORT_PROJECT_FAILURE_RETRY_VIA_WIZARD,
         });
       }
 

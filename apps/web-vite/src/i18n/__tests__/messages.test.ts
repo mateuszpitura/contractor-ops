@@ -1,5 +1,5 @@
 /**
- * Phase 84-02 · US-LOC-01 — en-US locale registration + fallback chain.
+ * en-US locale registration + fallback chain.
  *
  * en-US is a thin-override locale: it is selectable, carries only divergent
  * keys in `messages/en-US.json`, and inherits every unchanged key from `en`
@@ -18,7 +18,7 @@ import {
   SUPPORTED_LOCALES,
 } from '../messages.js';
 
-describe('en-US locale registration (US-LOC-01)', () => {
+describe('en-US locale registration', () => {
   it('includes en-US in SUPPORTED_LOCALES', () => {
     expect((SUPPORTED_LOCALES as readonly string[]).includes('en-US')).toBe(true);
   });
@@ -45,7 +45,7 @@ describe('en-US locale registration (US-LOC-01)', () => {
   });
 });
 
-describe('pickBestLocale exact en-US match (US-LOC-01)', () => {
+describe('pickBestLocale exact en-US match', () => {
   it('resolves an exact en-US preference to en-US (not normalised to en)', () => {
     expect(pickBestLocale(['en-US'])).toBe('en-US');
   });
@@ -59,7 +59,7 @@ describe('pickBestLocale exact en-US match (US-LOC-01)', () => {
   });
 });
 
-describe('Intl en-US formatting (US-LOC-01)', () => {
+describe('Intl en-US formatting', () => {
   it('formats dates in MM/DD/YYYY order', () => {
     const formatted = new Intl.DateTimeFormat('en-US').format(new Date(Date.UTC(2026, 2, 4)));
     // March 4, 2026 → 3/4/2026 (month-first), never 4/3 (day-first).

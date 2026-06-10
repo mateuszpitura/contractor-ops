@@ -8,23 +8,23 @@
  *      notification to recipients resolved per `recipientMode`
  *      (ENTITY_OWNER / FINANCE_TEAM / ASSIGNEE / SPECIFIC_USER / ROLE).
  *   2. `detectOverdueTasks()` — built-in TASK_OVERDUE detection
- *      (NOTF-01) with 24h dedup via the Notification table itself.
- *   3. `detectDrvClearanceExpiries()` — Phase 60 CLASS-09 sub-job (see
+ *      with 24h dedup via the Notification table itself.
+ *   3. `detectDrvClearanceExpiries()` — DRV clearance expiry sub-job (see
  *      ./drv-clearance-expiries.ts).
  *
- * F-ASYNC-06 — outer per-tx `pg_try_advisory_xact_lock` so overlapping
- * ticks can't double-fire reminders. F-SCALE-07 — 60s tx timeout / 10s
- * maxWait so a slow Resend dispatch can't hold the lock past the next tick.
+ * Outer per-tx `pg_try_advisory_xact_lock` so overlapping ticks can't
+ * double-fire reminders. 60s tx timeout / 10s maxWait so a slow Resend
+ * dispatch can't hold the lock past the next tick.
  */
 
 import { tryAcquireXactLock } from '@contractor-ops/api/lib/advisory-lock';
-import { executeComplianceReminderScan } from '../compliance-reminder.js';
 import { dispatch } from '@contractor-ops/api/services/notification-service';
 import { prisma, prismaRaw } from '@contractor-ops/db';
 import { gcExpiredProvenance } from '@contractor-ops/idp-saga';
 import { metrics } from '@contractor-ops/logger/metrics';
 import { Sentry } from '../../../lib/sentry.js';
 import type { JobHandler } from '../../runner.js';
+import { executeComplianceReminderScan } from '../compliance-reminder.js';
 import { detectDrvClearanceExpiries } from './drv-clearance-expiries.js';
 import { addDays, startOfDay } from './shared.js';
 
@@ -336,9 +336,9 @@ async function detectOverdueTasks(): Promise<number> {
 }
 
 /**
- * Phase 76 D-12 — IdpChangeProvenance 90-day GC. Isolated try/catch so a GC failure
- * never aborts the other reminder sub-tasks (T-76-10-02). Cross-org retention sweep —
- * uses the non-tenant raw client and deletes purely by `initiatedAt < now - 90d`.
+ * IdpChangeProvenance 90-day GC. Isolated try/catch so a GC failure never aborts
+ * the other reminder sub-tasks. Cross-org retention sweep — uses the non-tenant
+ * raw client and deletes purely by `initiatedAt < now - 90d`.
  */
 async function gcIdpProvenance(log: {
   info: (o: unknown, m: string) => void;
@@ -391,9 +391,9 @@ export const remindersHandler: JobHandler = async ctx => {
           evaluateReminderRules(),
           detectOverdueTasks(),
           detectDrvClearanceExpiries(),
-          // Phase 76 D-12 — never rejects (internal try/catch), so it can't abort the others.
+          // Never rejects (internal try/catch), so it can't abort the others.
           gcIdpProvenance(ctx.log),
-          // Phase 72 COMPL-03 — never rejects (top-level try/catch in the helper),
+          // Never rejects (top-level try/catch in the helper),
           // so it can't abort the shared reminders transaction.
           // INTENTIONAL: runComplianceReminderScan uses its own prismaRaw connections,
           // NOT the lock-holding tx above. Crash-isolation is the goal — the scan's

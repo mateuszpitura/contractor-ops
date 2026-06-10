@@ -92,7 +92,7 @@ export const portalEquipmentRouter = router({
 
   /**
    * Request a return of all assigned equipment.
-   * Creates a ReturnRequest with PENDING_APPROVAL status (D-09: admin must approve).
+   * Creates a ReturnRequest with PENDING_APPROVAL status (admin must approve).
    */
   requestReturn: portalProcedure
     .input(returnRequestCreateSchema)
@@ -157,9 +157,8 @@ export const portalEquipmentRouter = router({
           data: { status: 'RETURN_REQUESTED' },
         });
 
-        // Audit log — DRIFT-03: route through shared writer so portal audit
-        // rows share the same shape (oldValues / newValues / metadata
-        // discipline) as core mutations.
+        // Route through shared writer so portal audit rows share the same
+        // shape (oldValues / newValues / metadata discipline) as core mutations.
         await writeAuditLog({
           tx,
           organizationId: ctx.organizationId,
@@ -204,71 +203,69 @@ export const portalEquipmentRouter = router({
    * Cancel a pending return request.
    * Only allowed when status is PENDING_APPROVAL.
    */
-  cancelReturn: portalProcedure
-    .input(entityIdSchema)
-    .mutation(async ({ ctx, input }) => {
-      const returnRequest = await ctx.db.returnRequest.findFirst({
-        where: {
-          id: input.id,
-          contractorId: ctx.contractorId,
-          organizationId: ctx.organizationId,
-        },
+  cancelReturn: portalProcedure.input(entityIdSchema).mutation(async ({ ctx, input }) => {
+    const returnRequest = await ctx.db.returnRequest.findFirst({
+      where: {
+        id: input.id,
+        contractorId: ctx.contractorId,
+        organizationId: ctx.organizationId,
+      },
+    });
+
+    if (!returnRequest) {
+      throw new TRPCError({
+        code: 'NOT_FOUND',
+        message: E.RETURN_REQUEST_NOT_FOUND,
+      });
+    }
+
+    if (returnRequest.status !== 'PENDING_APPROVAL') {
+      throw new TRPCError({
+        code: 'BAD_REQUEST',
+        message: E.RETURN_CANNOT_CANCEL,
+      });
+    }
+
+    const result = await ctx.db.$transaction(async tx => {
+      const updated = await tx.returnRequest.update({
+        where: { id: input.id },
+        data: { status: 'CANCELLED' },
       });
 
-      if (!returnRequest) {
-        throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: E.RETURN_REQUEST_NOT_FOUND,
-        });
-      }
-
-      if (returnRequest.status !== 'PENDING_APPROVAL') {
-        throw new TRPCError({
-          code: 'BAD_REQUEST',
-          message: E.RETURN_CANNOT_CANCEL,
-        });
-      }
-
-      const result = await ctx.db.$transaction(async tx => {
-        const updated = await tx.returnRequest.update({
-          where: { id: input.id },
-          data: { status: 'CANCELLED' },
-        });
-
-        // Revert equipment statuses from RETURN_REQUESTED back to ASSIGNED
-        await tx.equipment.updateMany({
-          where: {
-            organizationId: ctx.organizationId,
-            status: 'RETURN_REQUESTED',
-            assignments: {
-              some: {
-                contractorId: ctx.contractorId,
-                unassignedAt: null,
-              },
+      // Revert equipment statuses from RETURN_REQUESTED back to ASSIGNED
+      await tx.equipment.updateMany({
+        where: {
+          organizationId: ctx.organizationId,
+          status: 'RETURN_REQUESTED',
+          assignments: {
+            some: {
+              contractorId: ctx.contractorId,
+              unassignedAt: null,
             },
           },
-          data: { status: 'ASSIGNED' },
-        });
-
-        // Audit log — DRIFT-03: route through shared writer.
-        await writeAuditLog({
-          tx,
-          organizationId: ctx.organizationId,
-          actorType: 'CONTRACTOR',
-          actorId: ctx.contractorId,
-          actorName: ctx.contractor?.email ?? 'contractor',
-          action: 'returnRequest.cancel',
-          resourceType: 'RETURN_REQUEST',
-          resourceId: input.id,
-          oldValues: { status: returnRequest.status },
-          newValues: { status: 'CANCELLED' },
-        });
-
-        return updated;
+        },
+        data: { status: 'ASSIGNED' },
       });
 
-      return result;
-    }),
+      // Route through shared writer.
+      await writeAuditLog({
+        tx,
+        organizationId: ctx.organizationId,
+        actorType: 'CONTRACTOR',
+        actorId: ctx.contractorId,
+        actorName: ctx.contractor?.email ?? 'contractor',
+        action: 'returnRequest.cancel',
+        resourceType: 'RETURN_REQUEST',
+        resourceId: input.id,
+        oldValues: { status: returnRequest.status },
+        newValues: { status: 'CANCELLED' },
+      });
+
+      return updated;
+    });
+
+    return result;
+  }),
 
   /**
    * Get the return shipping label for an approved return request.

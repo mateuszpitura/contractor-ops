@@ -1,14 +1,10 @@
-// Phase 79 Wave 2 — GREEN (was Wave 0 RED scaffold).
+// The compliance reminder scan iterates SUPPORTED_REGIONS ('EU','ME') so an
+// ME-region BLOCKING free-zone item enters the 90/60/30/15/7 cascade.
 //
-// Critical behavior C3 (GULF-02, Pitfall 18): the compliance reminder scan
-// iterates SUPPORTED_REGIONS ('EU','ME') so an ME-region BLOCKING free-zone item
-// enters the 90/60/30/15/7 cascade.
-//
-// LANDMINE: runComplianceReminderScan previously closed over the module-level
-// prismaRaw client (= DATABASE_URL = EU only) and the reminders cron handler
-// called it once with no region iteration — so UAE/KSA orgs (which live in the ME
-// DB) never received reminders. The scan now accepts a Prisma client and is fanned
-// across getRegionalClient(region) per SUPPORTED_REGIONS.
+// Key fix: runComplianceReminderScan previously closed over the module-level
+// prismaRaw client (= DATABASE_URL = EU only) so UAE/KSA orgs (which live in the
+// ME DB) never received reminders. The scan now fans across
+// getRegionalClient(region) per SUPPORTED_REGIONS.
 //
 // Template: apps/cron-worker/src/jobs/handlers/exchange-rates.ts (fans across
 // SUPPORTED_REGIONS) + packages/db/src/region.ts getRegionalClient.
@@ -33,8 +29,8 @@ const {
     return {
       contractorComplianceItem: {
         findMany: vi.fn(async () => itemsByRegion.get(region) ?? []),
-        // Phase 79 CR-01 — the scan flips free-zone PENDING items to EXPIRED at the
-        // TZ boundary via this update; these fixtures are not yet expired so it no-ops.
+        // The scan flips free-zone PENDING items to EXPIRED at the TZ boundary via
+        // this update; these fixtures are not yet expired so it no-ops.
         update: vi.fn(async (a: { where: { id: string }; data: Record<string, unknown> }) => {
           const list = itemsByRegion.get(region) ?? [];
           const row = list.find(r => r.id === a.where.id);
@@ -90,10 +86,15 @@ vi.mock('@contractor-ops/db', () => ({
   getRegionalClient: mockGetRegionalClient,
 }));
 vi.mock('@contractor-ops/logger', () => ({
-  getIdpAuditLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn(), child: vi.fn() })),
+  getIdpAuditLogger: vi.fn(() => ({
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
+    child: vi.fn(),
+  })),
   createCronLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
-  createLogger: vi.fn(() => ({ info: vi.fn(),
- warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
+  createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
 }));
 vi.mock('@contractor-ops/logger/metrics', () => ({
   metrics: { gauge: vi.fn(), increment: vi.fn(), distribution: vi.fn() },

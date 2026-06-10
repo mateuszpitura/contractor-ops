@@ -1,10 +1,10 @@
-// Phase 75 D-15 — Cross-jurisdiction mismatch evaluator.
+// Cross-jurisdiction mismatch evaluator.
 // Determines whether the cited clauses' jurisdictions agree with the
 // contract's declared jurisdiction. UK boilerplate in a DE contract triggers
 // MANUAL_REVIEW_REQUIRED with a structured flag.
 
-import type { PrismaClient } from '@contractor-ops/db';
 import { mapIsoToJurisdiction } from '@contractor-ops/compliance-policy';
+import type { PrismaClient } from '@contractor-ops/db';
 import type { Jurisdiction } from '@contractor-ops/validators';
 
 export { mapIsoToJurisdiction };

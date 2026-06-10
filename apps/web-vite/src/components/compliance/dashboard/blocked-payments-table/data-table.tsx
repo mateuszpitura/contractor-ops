@@ -1,9 +1,7 @@
-
 import type { ReactNode } from 'react';
-import { WorkbenchDataTable } from '../../../table-kit/workbench-data-table.js';
 import { useMemo, useState } from 'react';
-
 import { useTranslations } from '../../../../i18n/useTranslations.js';
+import { WorkbenchDataTable } from '../../../table-kit/workbench-data-table.js';
 import type { BlockedRow } from '../hooks/use-compliance-dashboard.js';
 import { getBlockedPaymentsColumns } from './columns.js';
 
@@ -11,7 +9,7 @@ export interface BlockedPaymentsTableProps {
   rows: BlockedRow[];
   totalRows: number;
   isRefetching?: boolean;
-  /** Slot for Plan 73-08 to cross-mount per-row override actions; unused here. */
+  /** Optional slot to cross-mount per-row override actions; unused by default. */
   renderRowActions?: (row: BlockedRow) => ReactNode;
   sectionClassName?: string;
 }

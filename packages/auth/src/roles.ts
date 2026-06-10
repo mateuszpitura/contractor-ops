@@ -21,7 +21,7 @@ const allPermissions = {
   invitation: ['create', 'cancel'],
   contractor: ['create', 'read', 'update', 'delete', 'bulk'],
   contract: ['create', 'read', 'update', 'delete'],
-  compliance: ['read', 'override'], // Phase 73 D-10
+  compliance: ['read', 'override'],
   document: ['create', 'read', 'update', 'delete'],
   invoice: ['create', 'read', 'update', 'delete', 'approve'],
   workflow: ['create', 'read', 'update', 'delete', 'execute', 'override_blocking_task'],
@@ -35,9 +35,9 @@ const allPermissions = {
   team: ['read', 'create', 'update', 'archive'],
   project: ['read', 'create', 'update', 'archive'],
   costCenter: ['read', 'create', 'update', 'archive'],
-  // Phase 84 US-FIELD-02 (Pitfall 2) — this `allPermissions` const is a DUPLICATE of
-  // accessControlStatement and is the sole source for the owner role. It MUST stay in
-  // sync with permissions.ts or owner silently loses the new permission.
+  // This `allPermissions` const is a DUPLICATE of accessControlStatement and is
+  // the sole source for the owner role. It MUST stay in sync with permissions.ts
+  // or owner silently loses newly added permissions.
   contractorPii: ['read'],
 } as const;
 
@@ -55,7 +55,7 @@ export const roles = {
     invitation: ['create', 'cancel'],
     contractor: ['create', 'read', 'update', 'delete', 'bulk'],
     contract: ['create', 'read', 'update', 'delete'],
-    compliance: ['read', 'override'], // Phase 73 D-10
+    compliance: ['read', 'override'],
     document: ['create', 'read', 'update', 'delete'],
     invoice: ['create', 'read', 'update', 'delete', 'approve'],
     workflow: ['create', 'read', 'update', 'delete', 'execute'],
@@ -69,13 +69,13 @@ export const roles = {
     team: ['read', 'create', 'update', 'archive'],
     project: ['read', 'create', 'update', 'archive'],
     costCenter: ['read', 'create', 'update', 'archive'],
-    contractorPii: ['read'], // Phase 84 US-FIELD-02 (D-02)
+    contractorPii: ['read'],
   }),
 
   finance_admin: ac.newRole({
     contractor: ['read'],
     contract: ['read'],
-    compliance: ['read'], // Phase 73 D-10
+    compliance: ['read'],
     invoice: ['create', 'read', 'update', 'delete', 'approve'],
     payment: ['create', 'read', 'update', 'export'],
     report: ['read', 'export'],
@@ -84,13 +84,13 @@ export const roles = {
     team: ['read'],
     project: ['read'],
     costCenter: ['read'],
-    contractorPii: ['read'], // Phase 84 US-FIELD-02 (D-02)
+    contractorPii: ['read'],
   }),
 
   ops_manager: ac.newRole({
     contractor: ['create', 'read', 'update', 'delete', 'bulk'],
     contract: ['create', 'read', 'update', 'delete'],
-    compliance: ['read'], // Phase 73 D-10
+    compliance: ['read'],
     invoice: ['create', 'read', 'update'],
     workflow: ['create', 'read', 'update', 'delete', 'execute'],
     report: ['read', 'export'],
@@ -105,7 +105,7 @@ export const roles = {
   team_manager: ac.newRole({
     contractor: ['read', 'update'],
     contract: ['read'],
-    compliance: ['read'], // Phase 73 D-10
+    compliance: ['read'],
     invoice: ['read', 'approve'],
     workflow: ['read', 'execute'],
     report: ['read'],
@@ -119,7 +119,7 @@ export const roles = {
   legal_compliance_viewer: ac.newRole({
     contractor: ['read'],
     contract: ['read'],
-    compliance: ['read'], // Phase 73 D-10
+    compliance: ['read'],
     invoice: ['read'],
     report: ['read'],
     team: ['read'],
@@ -145,7 +145,7 @@ export const roles = {
   external_accountant: ac.newRole({
     contractor: ['read'],
     contract: ['read'],
-    compliance: ['read'], // Phase 73 D-10
+    compliance: ['read'],
     invoice: ['read'],
     payment: ['read'],
     report: ['read', 'export'],
@@ -157,7 +157,7 @@ export const roles = {
   readonly: ac.newRole({
     contractor: ['read'],
     contract: ['read'],
-    compliance: ['read'], // Phase 73 D-10
+    compliance: ['read'],
     invoice: ['read'],
     workflow: ['read'],
     report: ['read'],

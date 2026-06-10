@@ -2,9 +2,9 @@ import { createMockServer, HttpResponse, http } from '@contractor-ops/test-utils
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { OktaAdapter } from '../okta-adapter.js';
 
-// Phase 78 IDP-06 — OktaAdapter Deprovisionable behavior. The @okta/okta-sdk-nodejs
-// client issues real HTTP to the org URL, intercepted by the okta MSW handlers
-// (pathname predicates, host-agnostic). LOCAL-ONLY: no live Okta sandbox.
+// OktaAdapter Deprovisionable behavior. The @okta/okta-sdk-nodejs client issues
+// real HTTP to the org URL, intercepted by the okta MSW handlers (pathname
+// predicates, host-agnostic). LOCAL-ONLY: no live Okta sandbox.
 
 const { server } = createMockServer({ handlersOnly: true });
 
@@ -23,7 +23,7 @@ const isUser = (url: string) => /\/api\/v1\/users\/[^/]+$/.test(new URL(url).pat
 const isSessions = (url: string) =>
   /\/api\/v1\/users\/[^/]+\/sessions$/.test(new URL(url).pathname);
 
-describe('OktaAdapter — Deprovisionable contract (Phase 78 IDP-06)', () => {
+describe('OktaAdapter — Deprovisionable contract', () => {
   it('implements Deprovisionable', () => {
     const a = adapter();
     expect(typeof a.suspendAccount).toBe('function');

@@ -1,18 +1,17 @@
-// Phase 70 · Plan 07 · FOUND6-04 (D-10) — boot-time signoff gate.
+// Boot-time signoff gate tests.
 //
 // The gate iterates FLAG_KEYS, finds gated-namespace flags via isGatedFlag,
-// and process.exit(1) when the flag has no entry in the signoff registry.
+// and calls process.exit(1) when the flag has no entry in the signoff registry.
 // FLAG_SIGNOFF_BYPASS=local downgrades the exit to a stderr warn line.
 //
-// Phase 72 hardening — the gate is now an exported function
-// (`assertFlagSignoffsOrExit`) that the consuming app must call explicitly
-// during boot. Module load no longer has the side effect, so unrelated
-// tooling that imports `@contractor-ops/feature-flags` cannot be killed by a
-// missing-entry gated flag.
+// The gate is an exported function (`assertFlagSignoffsOrExit`) that the
+// consuming app must call explicitly during boot. Module load no longer has
+// the side effect, so unrelated tooling that imports
+// `@contractor-ops/feature-flags` cannot be killed by a missing-entry gated flag.
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-describe('feature-flags boot-time signoff gate (FOUND6-04 — D-10)', () => {
+describe('feature-flags boot-time signoff gate', () => {
   let exitSpy: ReturnType<typeof vi.spyOn>;
   let stderrSpy: ReturnType<typeof vi.spyOn>;
   let originalBypass: string | undefined;
@@ -36,10 +35,9 @@ describe('feature-flags boot-time signoff gate (FOUND6-04 — D-10)', () => {
   });
 
   it('importing registry.js does NOT trigger the gate (no module-load side effect)', async () => {
-    // Phase 72 invariant: a consumer that imports the package — a codegen
-    // script, a sibling-package test, a CLI tool — must never have its
-    // process killed by the boot gate. The check fires only when the app
-    // explicitly invokes assertFlagSignoffsOrExit().
+    // A consumer that imports the package — a codegen script, a sibling-package
+    // test, a CLI tool — must never have its process killed by the boot gate.
+    // The check fires only when the app explicitly invokes assertFlagSignoffsOrExit().
     await import('../registry');
     expect(exitSpy).not.toHaveBeenCalled();
     const flagSignoffCalls = stderrSpy.mock.calls
@@ -48,7 +46,7 @@ describe('feature-flags boot-time signoff gate (FOUND6-04 — D-10)', () => {
     expect(flagSignoffCalls).toEqual([]);
   });
 
-  it('assertFlagSignoffsOrExit() does not exit when no FLAGS are in a gated namespace (current Phase 70 baseline)', async () => {
+  it('assertFlagSignoffsOrExit() does not exit when no FLAGS are in a gated namespace', async () => {
     const { assertFlagSignoffsOrExit } = await import('../registry');
     assertFlagSignoffsOrExit();
     expect(exitSpy).not.toHaveBeenCalled();
@@ -61,12 +59,12 @@ describe('feature-flags boot-time signoff gate (FOUND6-04 — D-10)', () => {
     expect(exitSpy).not.toHaveBeenCalled();
   });
 
-  it('assertFlagSignoffsOrExit() uses [FLAG-SIGNOFF] prefix in stderr (matches D-10 wording contract)', async () => {
+  it('assertFlagSignoffsOrExit() uses [FLAG-SIGNOFF] prefix in stderr', async () => {
     const { assertFlagSignoffsOrExit } = await import('../registry');
     assertFlagSignoffsOrExit();
     const calls = stderrSpy.mock.calls.map(c => String(c[0]));
     const flagSignoffCalls = calls.filter(c => c.includes('[FLAG-SIGNOFF]'));
-    // No gated keys exist at Phase 70 baseline → no [FLAG-SIGNOFF] lines fire.
+    // No currently-declared flags match a gated prefix → no [FLAG-SIGNOFF] lines fire.
     expect(flagSignoffCalls).toEqual([]);
   });
 
@@ -83,34 +81,28 @@ describe('feature-flags boot-time signoff gate (FOUND6-04 — D-10)', () => {
   });
 
   // -------------------------------------------------------------------------
-  // Phase 82 · Plan 01 · FOUND7-02 (SC#2) — Wave 0 RED extension.
-  //
-  // Encodes the v7.0-cohort boot-gate contract that Plan 82-03 satisfies. RED
-  // is the expected Wave 0 state: V7_FLAG_KEYS is not exported yet, the v7.0
-  // namespace prefixes are not in GATED_FLAG_NAMESPACE_PREFIXES, and no v7.0
-  // key has a signoff entry. 82-03 turns these GREEN (prefixes + 19 PENDING
-  // entries + the V7_FLAG_KEYS cohort const). Do NOT register the flags here.
+  // v7.0 cohort boot-gate contract
   // -------------------------------------------------------------------------
 
   it('every v7.0 cohort key is gated AND has a signoff entry (the gate would PASS for the cohort)', async () => {
     const { V7_FLAG_KEYS } = await import('../flags-core');
     const { isGatedFlag, getFlagSignoff } = await import('../signoff-registry-flags');
     for (const key of V7_FLAG_KEYS as readonly string[]) {
-      // Belt-and-suspenders prefix gate (D-10): every v7.0 key must match a
-      // gated namespace prefix so the existing prefix-based gate enforces it.
+      // Every v7.0 key must match a gated namespace prefix so the existing
+      // prefix-based gate enforces it.
       expect(isGatedFlag(key)).toBe(true);
-      // …and must have a registry entry, so assertFlagSignoffsOrExit() does NOT
-      // exit on the cohort once 82-03 lands.
+      // …and must have a registry entry so assertFlagSignoffsOrExit() does NOT
+      // exit on the cohort.
       expect(getFlagSignoff(key)).not.toBeUndefined();
     }
   });
 
   it('a gated v7.0-cohort key MISSING from the registry trips process.exit(1)', async () => {
     // The gate iterates FLAG_KEYS, and for any gated key without a registry
-    // entry calls process.exit(1). At Wave 0 the v7.0 keys are not yet in
-    // FLAGS, so we assert the mechanism via the helpers: pick the first cohort
-    // key, confirm it is gated, and confirm a gated+unregistered key drives the
-    // exit branch (process.exit is mocked in beforeEach).
+    // entry calls process.exit(1). Assert the mechanism via the helpers: pick
+    // the first cohort key, confirm it is gated, and confirm a
+    // gated+unregistered key drives the exit branch (process.exit is mocked
+    // in beforeEach).
     const { V7_FLAG_KEYS } = await import('../flags-core');
     const { isGatedFlag, getFlagSignoff } = await import('../signoff-registry-flags');
     const { assertFlagSignoffsOrExit } = await import('../registry');
@@ -123,7 +115,7 @@ describe('feature-flags boot-time signoff gate (FOUND6-04 — D-10)', () => {
       assertFlagSignoffsOrExit();
       expect(exitSpy).toHaveBeenCalledWith(1);
     } else {
-      // Once 82-03 registers it, the gate passes (no exit) for the cohort.
+      // Once the entry is registered, the gate passes (no exit) for the cohort.
       assertFlagSignoffsOrExit();
       expect(exitSpy).not.toHaveBeenCalled();
     }

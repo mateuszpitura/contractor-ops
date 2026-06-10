@@ -15,9 +15,9 @@ import { AlertCircle, Plus } from 'lucide-react';
 import { useCallback, useState } from 'react';
 import { tDynLoose } from '../../i18n/typed-keys.js';
 import { useTranslations } from '../../i18n/useTranslations.js';
+import { CredentialAddDialog } from './credential-add-dialog.js';
 import type { CredentialRow } from './hooks/use-credentials-tab.js';
 import { useCredentialsTab } from './hooks/use-credentials-tab.js';
-import { CredentialAddDialog } from './credential-add-dialog.js';
 
 export interface CredentialsTabProps {
   rows: CredentialRow[];
@@ -66,7 +66,7 @@ function useLabelFns() {
 }
 
 // ---------------------------------------------------------------------------
-// Remove confirm dialog (WR-5 fix)
+// Remove confirm dialog
 // ---------------------------------------------------------------------------
 
 interface RemoveConfirmDialogProps {

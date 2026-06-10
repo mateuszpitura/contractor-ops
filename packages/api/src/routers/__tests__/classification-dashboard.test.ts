@@ -1,13 +1,13 @@
 // ---------------------------------------------------------------------------
-// Phase 60 · CLASS-10 — classificationDashboard router tests.
+// classificationDashboard router tests.
 // ---------------------------------------------------------------------------
 //
 // Covers:
-//   60-04-01 coverage               (contractorReadProcedure + status='completed')
-//   60-04-02 risk-distribution      (GB + DE bucket mapping; drafts excluded)
-//   60-04-03 overdue                (GB triggers; DE 12-month-old assessments)
-//   60-04-04 active-alerts          (GB trigger count; DE bands + DRV expiry window)
-//   60-04-05 csv-sanitization       (formula-prefix neutralisation end-to-end)
+//   coverage               (contractorReadProcedure + status='completed')
+//   risk-distribution      (GB + DE bucket mapping; drafts excluded)
+//   overdue                (GB triggers; DE 12-month-old assessments)
+//   active-alerts          (GB trigger count; DE bands + DRV expiry window)
+//   csv-sanitization       (formula-prefix neutralisation end-to-end)
 //   60-04-06 csv-format             (UTF-8 BOM + column set + 300s TTL)
 //   + contractor:read gating + cross-org assertion + globalHeader shape.
 
@@ -362,8 +362,7 @@ vi.mock('@contractor-ops/db', () => ({
   getRegionalClient: vi.fn(() => mockPrisma),
 }));
 
-// F-DB-03 / F-SEC-12 — org-cache returns ACTIVE meta so tenant middleware
-// passes the suspended-org check.
+// org-cache returns ACTIVE meta so tenant middleware passes the suspended-org check.
 vi.mock('../../services/org-cache', () => ({
   getOrgMeta: vi.fn(async (orgId: string) => ({
     id: orgId,
@@ -377,7 +376,13 @@ vi.mock('../../services/org-cache', () => ({
 }));
 
 vi.mock('@contractor-ops/logger', () => ({
-  getIdpAuditLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn(), child: vi.fn() })),
+  getIdpAuditLogger: vi.fn(() => ({
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
+    child: vi.fn(),
+  })),
   createWebhookLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
   withBodyLogging: vi.fn((_o, fn) => fn),
   logIntegrationCall: vi.fn(),
@@ -392,8 +397,7 @@ vi.mock('@contractor-ops/logger', () => ({
   LOG_BODY_INCLUDE_PREFIXES: [],
   PII_MASK_KEYWORDS: [],
   PII_MASK_PATHS: [],
-  createLogger: vi.fn(() => ({ info: vi.fn(),
- warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
+  createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
   createTrpcLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
   createCronLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
   createIntegrationLogger: vi.fn(() => ({
@@ -415,10 +419,9 @@ vi.mock('../../services/r2', () => ({
 }));
 
 vi.mock('@contractor-ops/feature-flags', async importOriginal => {
-  // Multi-layer enforcement (D-05/D-06):
-  //  1. root.ts evaluates `buildFlagBag` at module load to gate classification routers.
-  //  2. classificationProcedure middleware calls `evaluate(...)` per-request.
-  // Tests that exercise classification need both layers to return enabled=true.
+  // Classification is gated at two layers: root.ts evaluates `buildFlagBag` at
+  // module load, and classificationProcedure middleware calls `evaluate(...)`
+  // per-request. Tests that exercise classification need both to return enabled=true.
   const actual = (await importOriginal()) as Record<string, unknown>;
   const enabledBag = {
     values: { 'module.classification-engine': true },

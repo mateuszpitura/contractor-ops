@@ -12,8 +12,6 @@
  *   1. Every entry MUST have a `// reason: <text>` comment on the same line.
  *   2. Adding to this list requires PR review (typed `as const satisfies` —
  *      tsc fails when an entry is removed but still referenced anywhere).
- *
- * Phase 70 D-02.
  */
 export const GLOBAL_LOOKUP_MODELS_ALLOWLIST = [
   // ── Global reference data (no tenant scope) ────────────────────────────
@@ -21,7 +19,7 @@ export const GLOBAL_LOOKUP_MODELS_ALLOWLIST = [
   'BoEBaseRateHistory', // reason: Bank of England base-rate timeline — global reference
   'TaxRate', // reason: jurisdictional tax-rate lookup — global reference
   'WithholdingTaxRate', // reason: jurisdictional withholding-tax lookup — global reference
-  'UaeFreeZone', // reason: Phase 79 — global seed of UAE free zones (code + authority-name key); non-PII lookup, no tenant scope
+  'UaeFreeZone', // reason: global seed of UAE free zones (code + authority-name key); non-PII lookup, no tenant scope
 
   // ── Tenant root (cannot reference itself) ──────────────────────────────
   'Organization', // reason: the tenant itself; organizationId points back to id

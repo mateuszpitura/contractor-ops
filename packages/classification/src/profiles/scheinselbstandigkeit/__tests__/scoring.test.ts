@@ -1,8 +1,8 @@
-// Scheinselbständigkeit (DRV) scoring tests — D-14 / D-15.
+// Scheinselbständigkeit (DRV) scoring tests.
 //
 // Covers: weight invariant (sum === 100), boundary tests at 29.9/30/60/60.1,
 // Nicht-anwendbar vs. missing distinction, billing-ratio band 50/70/83/84,
-// and category-zero safety (no NaN — Pitfall 4).
+// and category-zero safety (no NaN).
 
 import { describe, expect, it } from 'vitest';
 
@@ -204,7 +204,7 @@ describe('scoreSchein — threshold boundaries', () => {
   });
 });
 
-describe('scoreSchein — Nicht anwendbar (Pitfall 5)', () => {
+describe('scoreSchein — Nicht anwendbar', () => {
   it('NotApplicable-1: answer with rawScore=0 + isNotApplicable=true contributes 0 and is counted as answered', () => {
     const answers = baseAnswers({
       'DRV-INT-01': { rawScore: 0, isNotApplicable: true },
@@ -255,7 +255,7 @@ describe('scoreSchein — output shape', () => {
     ]);
   });
 
-  it('CategoryZero: category with 0 raw contributes 0 (no NaN — Pitfall 4)', () => {
+  it('CategoryZero: category with 0 raw contributes 0 (no NaN)', () => {
     const { outcome } = scoreSchein(baseAnswers());
     for (const c of outcome.categories) {
       expect(Number.isNaN(c.weightedScore)).toBe(false);

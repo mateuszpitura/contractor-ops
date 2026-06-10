@@ -1,22 +1,22 @@
 // packages/validators/src/legal/compliance-us.ts
 //
-// LOCKED COMPL DOC NAMES — US · Phase 73 (D-14, D-15, D-16).
+// LOCKED COMPL DOC NAMES — US.
 //
-// Added beyond the original 5-jurisdiction plan: Phase 75 registered
-// `us.ip_assignment@v1` in @contractor-ops/compliance-policy, and the D-17 parity
-// guard is data-driven over the FULL `listPolicyRules()` set — so every registered
-// jurisdiction (incl. US) needs a locked-name module or the guard fails. Mirrors the
-// `ip-clauses-index.ts` six-jurisdiction shape.
+// `us.ip_assignment@v1` was registered in @contractor-ops/compliance-policy after
+// the initial five-jurisdiction set; the parity guard is data-driven over the FULL
+// `listPolicyRules()` set — so every registered jurisdiction (incl. US) needs a
+// locked-name module or the guard fails. Mirrors the `ip-clauses-index.ts`
+// six-jurisdiction shape.
 //
 // Per-locale phrase map: en + pl + de + ar (ar REQUIRED for the i18n:parity guard).
-// Entries ship PENDING per Phase 70 D-09; US adviser flips to APPROVED in dedicated PRs.
+// Entries ship PENDING; US adviser flips to APPROVED in dedicated PRs.
 
 export const LOCKED_COMPL_NAMES_US = {
   'us.ip_assignment@v1': {
     en: 'US Intellectual Property Assignment',
     pl: 'Przeniesienie praw własności intelektualnej (US)',
     de: 'US Übertragung geistigen Eigentums',
-    ar: 'US Intellectual Property Assignment', // TODO ar legal review (Phase 79)
+    ar: 'US Intellectual Property Assignment', // TODO ar legal review deferred (Gulf terminology refinement)
   },
 } as const;
 

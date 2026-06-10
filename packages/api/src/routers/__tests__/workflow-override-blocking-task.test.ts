@@ -1,5 +1,5 @@
 /**
- * Phase 74 Plan 08 — overrideBlockingTask mutation tests.
+ * overrideBlockingTask mutation tests.
  *
  * Drives the real `workflowExecutionRouter.overrideBlockingTask` mutation
  * through a tRPC caller (createCallerFactory) so the assertions exercise the
@@ -151,7 +151,13 @@ vi.mock('@sentry/node', () => {
 });
 
 vi.mock('@contractor-ops/logger', () => ({
-  getIdpAuditLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn(), child: vi.fn() })),
+  getIdpAuditLogger: vi.fn(() => ({
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
+    child: vi.fn(),
+  })),
   createWebhookLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
   createCronLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
   withBodyLogging: vi.fn((_o, fn) => fn),
@@ -169,8 +175,7 @@ vi.mock('@contractor-ops/logger', () => ({
   PII_MASK_PATHS: [],
   createIntegrationLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
   createTrpcLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
-  createLogger: vi.fn(() => ({ info: vi.fn(),
- warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
+  createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
 }));
 
 vi.mock('@contractor-ops/logger/metrics', () => ({
@@ -236,9 +241,9 @@ beforeEach(() => {
   );
 });
 
-describe('overrideBlockingTask — D-10/D-11/D-12 + Pitfall 5', () => {
+describe('overrideBlockingTask', () => {
   // =========================================================================
-  // RBAC gate (D-11) — requirePermission({ workflow: ['override_blocking_task'] })
+  // RBAC gate — requirePermission({ workflow: ['override_blocking_task'] })
   // =========================================================================
 
   it('rejects FORBIDDEN when the caller lacks workflow:override_blocking_task', async () => {
@@ -273,7 +278,7 @@ describe('overrideBlockingTask — D-10/D-11/D-12 + Pitfall 5', () => {
   });
 
   // =========================================================================
-  // Happy path (D-10) — single $transaction: skip + override metadata + audit
+  // Happy path — single $transaction: skip + override metadata + audit
   // =========================================================================
 
   it('skips open IP_VERIFICATION tasks, writes overrideMetadata + AuditLog in one $transaction', async () => {
@@ -390,7 +395,7 @@ describe('overrideBlockingTask — D-10/D-11/D-12 + Pitfall 5', () => {
   });
 
   // =========================================================================
-  // Zod input contract (Pitfall 5) — server-side validation is the gate
+  // Zod input contract — server-side validation is the gate
   // =========================================================================
 
   it('rejects a reason shorter than 20 chars before any DB work', async () => {

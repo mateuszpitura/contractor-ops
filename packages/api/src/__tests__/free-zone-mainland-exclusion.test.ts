@@ -1,21 +1,23 @@
-// Phase 79 Wave 2 — GREEN (was Wave 0 RED scaffold).
+// Recording a MAINLAND `FreeZoneAssignment` must write NO free-zone BLOCKING
+// compliance item, so a Mainland (DED-licensed) contractor is NOT payment-blocked
+// on license expiry. Mainland is a recordable enum value but arms no gate.
 //
-// Critical behavior C2 (GULF-01/GULF-02, D-04): recording a MAINLAND
-// `FreeZoneAssignment` writes NO free-zone BLOCKING compliance item, so a
-// Mainland (DED-licensed) contractor is NOT payment-blocked on license expiry.
-// Mainland is a recordable enum value but arms no gate (Pitfall 3).
-//
-// A false-positive here blocks a legitimately-payable contractor. The D-04
-// narrowing lives in the FreeZoneAssignment service write (zone !== 'MAINLAND'),
-// NOT in the policy `appliesIf` (Pitfall 2 — EngagementContext has no zone field).
+// A false-positive here blocks a legitimately-payable contractor. The narrowing
+// lives in the FreeZoneAssignment service write (zone !== 'MAINLAND'), NOT in the
+// policy `appliesIf` (EngagementContext has no zone field).
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { makeFreeZoneAssignment, makeMeOrg } from './__fixtures__/gulf-fixtures';
 
 vi.mock('@contractor-ops/logger', () => ({
-  getIdpAuditLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn(), child: vi.fn() })),
-  createLogger: vi.fn(() => ({ info: vi.fn(),
- warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
+  getIdpAuditLogger: vi.fn(() => ({
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
+    child: vi.fn(),
+  })),
+  createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
 }));
 
 import type { FreeZoneComplianceClient } from '../services/free-zone-compliance';
@@ -145,7 +147,7 @@ describe('C2 (GULF-01/02, D-04) Mainland exclusion — no free-zone item, no pay
     expect(items[0]?.severity).toBe('BLOCKING');
     expect(items[0]?.policyRuleId).toBe(FREE_ZONE_POLICY_RULE_ID);
     expect(items[0]?.status).toBe('EXPIRED');
-    // Sensitive mutation audited (D-17).
+    // Sensitive mutation is audited.
     expect(audits).toHaveLength(1);
     expect(audits[0]?.data.action).toBe('gulf.free_zone.compliance_item.create');
   });

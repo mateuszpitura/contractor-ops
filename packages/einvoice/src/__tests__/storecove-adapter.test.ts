@@ -228,10 +228,10 @@ describe('StorecoveAdapter', () => {
   });
 
   // -----------------------------------------------------------------------
-  // Plan 61-05 — Format discriminator (D-09)
+  // Format discriminator
   // -----------------------------------------------------------------------
 
-  describe('transmitInvoice — format discriminator (Plan 61-05)', () => {
+  describe('transmitInvoice — format discriminator', () => {
     it('maps cii-xrechnung format to STORECOVE_CII_XRECHNUNG_DOC_TYPE_ID', async () => {
       mockFetch.mockResolvedValueOnce(
         jsonResponse({
@@ -282,10 +282,10 @@ describe('StorecoveAdapter', () => {
   });
 
   // -----------------------------------------------------------------------
-  // Plan 61-05 — lookupParticipantCapabilities (D-11)
+  // lookupParticipantCapabilities
   // -----------------------------------------------------------------------
 
-  describe('lookupParticipantCapabilities (Plan 61-05)', () => {
+  describe('lookupParticipantCapabilities', () => {
     it('normalises a Storecove discovery payload to a flat documentTypes array', async () => {
       mockFetch.mockResolvedValueOnce(
         jsonResponse({

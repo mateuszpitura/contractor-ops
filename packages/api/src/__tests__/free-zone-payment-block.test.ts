@@ -1,9 +1,7 @@
-// Phase 79 Wave 2 — GREEN (was Wave 0 RED scaffold).
-//
-// Critical behavior C1 (GULF-02): an EXPIRED free-zone `ContractorComplianceItem`
-// (severity BLOCKING, status EXPIRED, policyRuleId 'uae.free_zone_license@v2',
-// documentType UAE_FREE_ZONE_LICENSE) causes `assertContractorPaymentEligibility`
-// to hard-block payment for an ME-region (UAE) contractor.
+// An EXPIRED free-zone `ContractorComplianceItem` (severity BLOCKING, status
+// EXPIRED, policyRuleId 'uae.free_zone_license@v2', documentType
+// UAE_FREE_ZONE_LICENSE) causes `assertContractorPaymentEligibility` to
+// hard-block payment for an ME-region (UAE) contractor.
 //
 // This is the money gate: a false-negative pays a non-compliant contractor.
 // Analog: packages/api/src/services/__tests__/compliance-payment-gate.test.ts
@@ -36,9 +34,14 @@ const { mockPrisma, itemsFixture } = vi.hoisted(() => {
 vi.mock('@contractor-ops/db', () => ({ prisma: mockPrisma, prismaRaw: mockPrisma }));
 vi.mock('@contractor-ops/feature-flags', () => ({ isPaymentBlockEnforced: vi.fn(() => true) }));
 vi.mock('@contractor-ops/logger', () => ({
-  getIdpAuditLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn(), child: vi.fn() })),
-  createLogger: vi.fn(() => ({ info: vi.fn(),
- warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
+  getIdpAuditLogger: vi.fn(() => ({
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
+    child: vi.fn(),
+  })),
+  createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
 }));
 
 import { assertContractorPaymentEligibility } from '../services/compliance-payment-gate';

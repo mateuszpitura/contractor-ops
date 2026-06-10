@@ -1,10 +1,10 @@
-// Phase 70 · Plan 05 · FOUND6-04 (D-11) — gated namespace prefix coverage.
+// Gated namespace prefix coverage tests.
 
 import { describe, expect, it } from 'vitest';
 
 import { GATED_FLAG_NAMESPACE_PREFIXES, isGatedFlag } from '../signoff-registry-flags';
 
-describe('isGatedFlag (FOUND6-04 — D-11)', () => {
+describe('isGatedFlag', () => {
   it('matches every prefix in GATED_FLAG_NAMESPACE_PREFIXES', () => {
     expect(GATED_FLAG_NAMESPACE_PREFIXES).toContain('compliance-');
     expect(GATED_FLAG_NAMESPACE_PREFIXES).toContain('idp-deprovisioning');
@@ -31,12 +31,12 @@ describe('isGatedFlag (FOUND6-04 — D-11)', () => {
     expect(isGatedFlag('offboarding-ip-clause-detector')).toBe(true);
   });
 
-  it('returns false for module.* keys (Phase 64 disclaimer signoff territory — different gate)', () => {
+  it('returns false for module.* keys (disclaimer signoff uses a different gate)', () => {
     expect(isGatedFlag('module.classification-engine')).toBe(false);
     expect(isGatedFlag('module.legal-approval')).toBe(false);
   });
 
-  it('returns false for payments.* keys (Phase 63 territory — different concern)', () => {
+  it('returns false for payments.* keys (not a legal-sensitive namespace)', () => {
     expect(isGatedFlag('payments.bacs-enabled')).toBe(false);
     expect(isGatedFlag('payments.skonto-enabled')).toBe(false);
   });

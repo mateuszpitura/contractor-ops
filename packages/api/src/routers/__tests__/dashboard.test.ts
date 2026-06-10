@@ -81,10 +81,9 @@ vi.mock('@contractor-ops/db', () => ({
   createTenantClient: vi.fn(() => mockPrisma),
   createTenantClientFrom: vi.fn(() => mockPrisma),
   getRegionalClient: vi.fn(() => mockPrisma),
-  // F-SCALE-06 — read replica routing. The kpis procedure now opts into
-  // `readReplica`; mock both the helper and the typed `SUPPORTED_REGIONS`
-  // array used by `toDataRegion` so dashboard tests run without a real
-  // replica configured.
+  // Read replica routing: the kpis procedure opts into `readReplica`; mock
+  // both the helper and the typed `SUPPORTED_REGIONS` array used by
+  // `toDataRegion` so dashboard tests run without a real replica configured.
   SUPPORTED_REGIONS: ['EU', 'ME'] as const,
   readReplica: vi.fn(async (_region: string, fn: (db: unknown) => Promise<unknown>) =>
     fn(mockPrisma),
@@ -133,7 +132,13 @@ vi.mock('@sentry/node', () => {
 });
 
 vi.mock('@contractor-ops/logger', () => ({
-  getIdpAuditLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn(), child: vi.fn() })),
+  getIdpAuditLogger: vi.fn(() => ({
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
+    child: vi.fn(),
+  })),
   withBodyLogging: vi.fn((_o, fn) => fn),
   logIntegrationCall: vi.fn(),
   subscribeOpossumEvents: vi.fn(),
@@ -147,8 +152,7 @@ vi.mock('@contractor-ops/logger', () => ({
   PII_MASK_KEYWORDS: [],
   PII_MASK_PATHS: [],
   createTrpcLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
-  createLogger: vi.fn(() => ({ info: vi.fn(),
- warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
+  createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
   createCronLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
   createWebhookLogger: vi.fn(() => ({
     info: vi.fn(),
@@ -335,11 +339,11 @@ beforeEach(() => {
 describe('dashboard router', () => {
   describe('kpis', () => {
     /**
-     * F-SCALE-11 — fetchKpis collapsed 8 separate count/aggregate queries
-     * into 4 `$queryRaw` calls (contractor / approvalStep / invoice /
-     * contract+task) using FILTER aggregates that return both the current
-     * and previous values in one row. Tests now stub the four queries
-     * positionally via `mockResolvedValueOnce`.
+     * fetchKpis collapsed 8 separate count/aggregate queries into 4
+     * `$queryRaw` calls (contractor / approvalStep / invoice / contract+task)
+     * using FILTER aggregates that return both the current and previous values
+     * in one row. Tests stub the four queries positionally via
+     * `mockResolvedValueOnce`.
      */
     function stubKpiQueries(
       opts: {
@@ -439,8 +443,8 @@ describe('dashboard router', () => {
       stubKpiQueries();
       await caller.dashboard.kpis();
 
-      // F-SCALE-11 — fetchKpis issues exactly 4 $queryRaw calls; each must
-      // bind ORG_ID as a parameter via the tagged-template `values` array.
+      // fetchKpis issues exactly 4 $queryRaw calls; each must bind ORG_ID as
+      // a parameter via the tagged-template `values` array.
       expect(mockPrisma.$queryRaw).toHaveBeenCalledTimes(4);
       for (const call of mockPrisma.$queryRaw.mock.calls) {
         // Tagged template: arg[0] = strings array, args[1+] = interpolated values

@@ -1,13 +1,14 @@
 /**
- * Phase 77 D-15 — presentational per-provider IdP-deprovisioning enable matrix.
- * Columns: Provider | Connection Status | Flag Status | Action. The per-row
- * switch is disabled (with a tooltip) when the provider's signoff flag is not
- * APPROVED. GWS and Slack rows are independent. Props-in / JSX-out.
+ * Presentational per-provider IdP-deprovisioning enable matrix. Columns:
+ * Provider | Connection Status | Flag Status | Action. The per-row switch is
+ * disabled (with a tooltip) when the provider's signoff flag is not APPROVED.
+ * GWS and Slack rows are independent. Props-in / JSX-out.
  *
  * Raw <Table> is allowlisted in check-web-vite-table-pattern (settings matrix).
  */
 
 import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
+import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { Switch } from '@contractor-ops/ui/components/shadcn/switch';
 import {
   Table,
@@ -23,11 +24,9 @@ import {
   TooltipTrigger,
 } from '@contractor-ops/ui/components/shadcn/tooltip';
 
-import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
-
 import { useTranslations } from '../../i18n/useTranslations.js';
-import { useIdpDeprovisioningToggles } from './hooks/use-idp-deprovisioning-toggles.js';
 import type { ProviderToggleRow, ToggleProvider } from './hooks/use-idp-deprovisioning-toggles.js';
+import { useIdpDeprovisioningToggles } from './hooks/use-idp-deprovisioning-toggles.js';
 
 export interface IdpDeprovisioningToggleTableViewProps {
   rows: ProviderToggleRow[];

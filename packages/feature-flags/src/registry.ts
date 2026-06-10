@@ -21,13 +21,13 @@ import { FLAG_KEYS } from './flags-core';
 import { getFlagSignoff, isGatedFlag } from './signoff-registry-flags';
 
 // ---------------------------------------------------------------------------
-// Phase 70 D-10 — Boot-time signoff gate for legal-sensitive flag namespaces.
+// Boot-time signoff gate for legal-sensitive flag namespaces.
 //
-// Iterates every flag key. For each key whose namespace is gated (D-11),
-// requires a matching entry in the flag-signoff registry. Missing entries
-// trip a stderr error and `process.exit(1)` so an engineer who flips an
-// Unleash flag to APPROVED but forgets the registry entry hits the failure
-// at boot — not in staging.
+// Iterates every flag key. For each key whose namespace is gated, requires a
+// matching entry in the flag-signoff registry. Missing entries trip a stderr
+// error and `process.exit(1)` so an engineer who flips an Unleash flag to
+// APPROVED but forgets the registry entry hits the failure at boot — not in
+// staging.
 //
 // IMPORTANT: This used to run as a top-level for-loop at module load. That
 // meant ANY tooling that imported `@contractor-ops/feature-flags` (codegen
@@ -86,17 +86,17 @@ export function assertFlagSignoffsOrExit(): boolean {
 }
 
 /**
- * Phase 72 D-11 — resolves the runtime state of the `compliance-payment-block` flag.
- * Honours the `FLAG_SIGNOFF_BYPASS=local` engineer-bypass (forces ON) per Phase 70 D-10.
+ * Resolves the runtime state of the `compliance-payment-block` flag.
+ * Honours the `FLAG_SIGNOFF_BYPASS=local` engineer-bypass (forces ON).
  *
- * Returns true when the bypass is active OR the registry entry is APPROVED. Until
- * legal sign-off flips the entry from PENDING to APPROVED (and Plan 72-08 registers
- * it), production returns false — the payment-gate helper takes the "would-block"
- * soft-warn path instead of hard-blocking.
+ * Returns true when the bypass is active OR the registry entry is APPROVED.
+ * Until legal sign-off flips the entry from PENDING to APPROVED, production
+ * returns false — the payment-gate helper takes the "would-block" soft-warn
+ * path instead of hard-blocking.
  */
 export function isPaymentBlockEnforced(): boolean {
   if (process.env.FLAG_SIGNOFF_BYPASS === 'local') return true;
   const entry = getFlagSignoff('compliance-payment-block');
-  if (!entry) return false; // flag not registered yet (Plan 72-08 adds the PENDING entry)
+  if (!entry) return false; // flag not yet registered — defaults to not enforced
   return entry.status === 'APPROVED';
 }

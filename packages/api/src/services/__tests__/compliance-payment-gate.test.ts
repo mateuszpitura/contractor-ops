@@ -1,4 +1,4 @@
-// Phase 72 Wave 2 — GREEN tests for compliance-payment-gate
+// GREEN tests for compliance-payment-gate
 
 import { TRPCError } from '@trpc/server';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -35,7 +35,13 @@ vi.mock('@contractor-ops/feature-flags', () => ({
   isPaymentBlockEnforced: mockIsPaymentBlockEnforced,
 }));
 vi.mock('@contractor-ops/logger', () => ({
-  getIdpAuditLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn(), child: vi.fn() })),
+  getIdpAuditLogger: vi.fn(() => ({
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
+    child: vi.fn(),
+  })),
   createLogger: vi.fn(() => ({
     info: vi.fn(),
 
@@ -85,7 +91,7 @@ describe('compliance-payment-gate assertion', () => {
       assertContractorPaymentEligibility(['ctr-1'], { organizationId: ORG }),
     ).rejects.toMatchObject({ code: 'PRECONDITION_FAILED' });
 
-    // The cause carries the D-10 shape.
+    // The cause carries the structured PRECONDITION_FAILED shape.
     try {
       await assertContractorPaymentEligibility(['ctr-1'], { organizationId: ORG });
       throw new Error('expected throw');

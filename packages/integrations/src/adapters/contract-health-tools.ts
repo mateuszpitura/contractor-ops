@@ -1,6 +1,6 @@
-// Phase 75 D-13 — Anthropic tool_use schema for the contract health check.
+// Anthropic tool_use schema for the contract health check.
 // The schema lives next to ClaudeOcrAdapter (the shared OCR client) — the
-// service in Plan 75-06 imports the tool definition AND the adapter, then
+// contract health service imports the tool definition AND the adapter, then
 // composes them with the contract PDF to perform the IP-assignment check.
 
 import type Anthropic from '@anthropic-ai/sdk';
@@ -33,7 +33,7 @@ export const CONTRACT_HEALTH_TOOL: Anthropic.Tool = {
       verdict: {
         type: 'string',
         enum: ['LIKELY_PRESENT', 'LIKELY_MISSING', 'MANUAL_REVIEW_REQUIRED'],
-        description: 'Tristate verdict per Phase 75 D-06.',
+        description: 'Tristate verdict for IP-assignment presence.',
       },
       citedClauses: {
         type: 'array',

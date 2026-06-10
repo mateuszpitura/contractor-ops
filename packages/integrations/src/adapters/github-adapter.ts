@@ -15,25 +15,25 @@ import { BaseAdapter } from './base-adapter.js';
 
 const log = createIntegrationLogger('github');
 
-// Cap for the per-repo outside-collaborator scan (78 WR-6). GitHub orgs can have
-// thousands of repos; an unbounded paginate + checkCollaborator fan-out exhausts
-// the rate budget and the preview's latency window. At 500 repos the scan covers
-// all but the very largest orgs while staying well inside a single rate-limit window.
+// Cap for the per-repo outside-collaborator scan. GitHub orgs can have thousands
+// of repos; an unbounded paginate + checkCollaborator fan-out exhausts the rate
+// budget and the preview's latency window. At 500 repos the scan covers all but
+// the very largest orgs while staying well inside a single rate-limit window.
 const OUTSIDE_COLLAB_REPO_SCAN_LIMIT = 500;
 
 /**
- * GitHub org `Deprovisionable` adapter (Phase 78 IDP-07) — the provider with a
- * fundamentally different authorization model.
+ * GitHub org `Deprovisionable` adapter — the provider with a fundamentally
+ * different authorization model.
  *
  * Uses `@octokit/rest` with a GitHub-App installation token or classic
- * `admin:org` token decrypted from `IntegrationConnection.credentials`
- * (CONTEXT.md D-09). `externalUserId` is the GitHub username/login.
+ * `admin:org` token decrypted from `IntegrationConnection.credentials`.
+ * `externalUserId` is the GitHub username/login.
  *
  * Key model differences vs the IdP providers:
  *   - suspendAccount    → orgs.removeMember (removes org membership + team access)
  *   - revokeAllSessions → per-PAT credential-authorizations revoke, SAML-SSO ONLY;
  *                         a non-SAML org degrades to SUCCEEDED-with-warning, never FAILED
- *   - outside-collaborator repos SURVIVE org removal (Pitfall 7 "back-door") —
+ *   - outside-collaborator repos SURVIVE org removal ("back-door") —
  *                         flagged via describeImpact.outsideCollaboratorRepoCount,
  *                         NEVER silently treated as fully deprovisioned
  *   - verifyDeprovisioned → checkMembershipForUser 404 / membership !== active → true
@@ -46,7 +46,7 @@ const OUTSIDE_COLLAB_REPO_SCAN_LIMIT = 500;
 export class GitHubAdapter extends BaseAdapter implements Deprovisionable {
   readonly slug = 'github';
   readonly displayName = 'GitHub';
-  readonly supportsOAuth = true; // GitHub App installation (D-09)
+  readonly supportsOAuth = true; // GitHub App installation token
   readonly supportsWebhooks = false;
 
   #org = '';
@@ -116,7 +116,7 @@ export class GitHubAdapter extends BaseAdapter implements Deprovisionable {
 
     // Step 1 — enumerate per-PAT credential authorizations (SAML SSO + Enterprise
     // Cloud only). A 403/404 here means the org is NOT on SAML SSO: degrade to
-    // SUCCEEDED-with-warning, never FAILED (D-04 / T-78-05-02).
+    // SUCCEEDED-with-warning, never FAILED.
     let auths: Array<{ login?: string; credential_id?: number; token_last_eight?: string }>;
     try {
       auths = await octokit.paginate('GET /orgs/{org}/credential-authorizations', {
@@ -219,7 +219,7 @@ export class GitHubAdapter extends BaseAdapter implements Deprovisionable {
     const octokit = this.#octokit();
 
     // Membership read — accountStatus + isOrgOwner. A total failure here throws
-    // for the Phase 77 D-03 proceed-without-preview flow.
+    // for the proceed-without-preview flow.
     let accountStatus: 'ACTIVE' | 'SUSPENDED' | 'NOT_FOUND' = 'ACTIVE';
     let isOrgOwner = false;
     try {
@@ -246,8 +246,8 @@ export class GitHubAdapter extends BaseAdapter implements Deprovisionable {
       { org: this.#org },
     );
 
-    // Outside-collaborator back-door (Pitfall 7): repos the user keeps after org
-    // removal. Surfaced as the headline warning metric.
+    // Outside-collaborator back-door: repos the user keeps after org removal.
+    // Surfaced as the headline warning metric.
     let outsideCollaboratorRepoCount = 0;
     try {
       const collaborators = await octokit.paginate('GET /orgs/{org}/outside_collaborators', {
@@ -324,11 +324,10 @@ export class GitHubAdapter extends BaseAdapter implements Deprovisionable {
    * Count org repos where `username` is an outside collaborator (best-effort).
    *
    * Bounded at {@link OUTSIDE_COLLAB_REPO_SCAN_LIMIT} repos to avoid exhausting
-   * the GitHub rate budget on large orgs (78 WR-6). A 403 response on any
-   * per-repo check (rate-limit or forbidden) is distinguished from a 404
-   * (not-a-collaborator): a 403 aborts the scan and returns 0 with a logged
-   * warning so a throttled scan does not silently under-count the back-door
-   * security signal.
+   * the GitHub rate budget on large orgs. A 403 response on any per-repo check
+   * (rate-limit or forbidden) is distinguished from a 404 (not-a-collaborator):
+   * a 403 aborts the scan and returns 0 with a logged warning so a throttled
+   * scan does not silently under-count the back-door security signal.
    */
   static async #countOutsideCollabRepos(
     octokit: Octokit,
@@ -386,7 +385,7 @@ export class GitHubAdapter extends BaseAdapter implements Deprovisionable {
   /**
    * Maps an Octokit error to a DeprovisionResult via the closed-enum classifier.
    * 404 → LIKELY_GONE (already not a member); TRANSIENT_* re-throws for QStash
-   * retry; a 403 rate-limit is TRANSIENT, a 403 forbidden is PERMANENT (D-13).
+   * retry; a 403 rate-limit is TRANSIENT, a 403 forbidden is PERMANENT.
    */
   #mapFailure(err: unknown, requestSha256: string, op: string): DeprovisionResult {
     const httpStatus = GitHubAdapter.#httpStatus(err);

@@ -29,9 +29,9 @@ const { mockPrisma, mockR2, mockRenderer } = vi.hoisted(() => {
         id: opts.where.id,
         ...opts.data,
       })),
-      // F-ASYNC-15: CAS lock from PENDING_RENDER -> RENDERING. Default
-      // returns { count: 1 } so the render proceeds; tests can override
-      // with { count: 0 } to assert the idempotent skip path.
+      // CAS lock from PENDING_RENDER -> RENDERING. Default returns
+      // { count: 1 } so the render proceeds; tests can override with
+      // { count: 0 } to assert the idempotent skip path.
       updateMany: vi.fn(async () => ({ count: 1 })),
     },
   };
@@ -57,9 +57,14 @@ vi.mock('@contractor-ops/db', () => ({
 }));
 
 vi.mock('@contractor-ops/logger', () => ({
-  getIdpAuditLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn(), child: vi.fn() })),
-  createTrpcLogger: vi.fn(() => ({ info: vi.fn(),
- warn: vi.fn(), error: vi.fn() })),
+  getIdpAuditLogger: vi.fn(() => ({
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
+    child: vi.fn(),
+  })),
+  createTrpcLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
   createWebhookLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
   createCronLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
   withBodyLogging: vi.fn((_o, fn) => fn),
@@ -139,7 +144,7 @@ beforeEach(() => {
   mockPrisma.invoiceInterestClaim.findUnique.mockReset();
   mockPrisma.invoiceInterestClaim.update.mockClear();
   mockPrisma.invoiceInterestClaim.updateMany.mockClear();
-  // F-ASYNC-15: default to CAS-acquired so the rendering path runs.
+  // Default to CAS-acquired so the rendering path runs.
   mockPrisma.invoiceInterestClaim.updateMany.mockResolvedValue({ count: 1 });
   mockR2.putObjectAndSignDownload.mockClear();
   mockRenderer.renderToBuffer.mockClear();

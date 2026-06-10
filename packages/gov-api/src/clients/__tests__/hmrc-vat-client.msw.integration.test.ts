@@ -88,11 +88,10 @@ describe('HmrcVatClient MSW integration', () => {
     expect(result.raw).toBeNull();
   });
 
-  it('checkVatNumber returns invalid after a real network 404 (post-network sad path) — §2', async () => {
-    // Plan 57-04 Task 3 §2 manual scenario:
-    // "Change the same contractor's VAT ID to GB555555555 (HMRC sandbox 404
-    // fixture). Click Revalidate VAT. Expected: pill flips to red Invalid;
-    // toast shows error."
+  it('checkVatNumber returns invalid after a real network 404 (post-network sad path)', async () => {
+    // Validates the post-network 404 → invalid mapping: change a contractor's
+    // VAT ID to an invalid VRN; the HMRC sandbox returns 404; the pill flips
+    // to Invalid.
     //
     // The default HMRC handler returns 404 ONLY for HMRC_SANDBOX_INVALID_VRN
     // ('555555555'), but that VRN fails the inline checksum preflight and the

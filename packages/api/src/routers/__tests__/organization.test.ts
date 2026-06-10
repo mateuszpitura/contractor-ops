@@ -251,7 +251,13 @@ vi.mock('@sentry/node', () => {
 });
 
 vi.mock('@contractor-ops/logger', () => ({
-  getIdpAuditLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn(), child: vi.fn() })),
+  getIdpAuditLogger: vi.fn(() => ({
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
+    child: vi.fn(),
+  })),
   withBodyLogging: vi.fn((_o, fn) => fn),
   logIntegrationCall: vi.fn(),
   subscribeOpossumEvents: vi.fn(),
@@ -264,8 +270,7 @@ vi.mock('@contractor-ops/logger', () => ({
   LOG_BODY_INCLUDE_PREFIXES: [],
   PII_MASK_KEYWORDS: [],
   PII_MASK_PATHS: [],
-  createLogger: vi.fn(() => ({ info: vi.fn(),
- warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
+  createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
   createTrpcLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
   createCronLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
   createWebhookLogger: vi.fn(() => ({
@@ -379,24 +384,20 @@ describe('organization.getCurrent', () => {
 // belongs in the auth package, not in this tRPC router suite.
 
 // ---------------------------------------------------------------------------
-// Phase 57 · Plan 04 + Phase 66 · Plan 02 — setKleinunternehmer DE-only gate
+// setKleinunternehmer DE-only gate
 // ---------------------------------------------------------------------------
 //
-// Plan 57-04 Task 3 §6 manual scenario:
-//   "In a DE org, navigate to Settings → Organization; find the Kleinunternehmer
-//    toggle (should ONLY be visible for DE orgs). Enable the toggle ..."
-//
-// Phase 66 deterministic substitute: assert at the router layer that
+// Asserts at the router layer that:
 //   (a) DE orgs can flip the flag and the persisted data carries it,
 //   (b) non-DE orgs are rejected with FORBIDDEN before the persistence call
 //       (UI hides the toggle for non-DE; the router enforces it as
-//       defense-in-depth — Plan 57-04 Threat T-57-04-02).
+//       defense-in-depth).
 //
 // This block mocks the additional Prisma methods setKleinunternehmer needs
 // (findUniqueOrThrow + update) inline via beforeEach so the changes do not
 // pollute the hoisted mockPrisma factory.
 
-describe('organization.setKleinunternehmer (Phase 57 · Plan 04 / Phase 66)', () => {
+describe('organization.setKleinunternehmer', () => {
   const setKuFindUniqueOrThrow = vi.fn();
   const setKuUpdate = vi.fn();
 

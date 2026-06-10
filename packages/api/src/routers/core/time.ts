@@ -257,7 +257,7 @@ export const timeRouter = router({
   // =========================================================================
 
   /**
-   * Approve a single timesheet. D-08: standalone approval.
+   * Approve a single timesheet.
    */
   approve: tenantProcedure
     .use(requirePermission({ time: ['approve'] }))
@@ -273,7 +273,7 @@ export const timeRouter = router({
     }),
 
   /**
-   * Reject a single timesheet with required reason. D-07.
+   * Reject a single timesheet with required reason.
    */
   reject: tenantProcedure
     .use(requirePermission({ time: ['approve'] }))
@@ -323,7 +323,7 @@ export const timeRouter = router({
     }),
 
   // =========================================================================
-  // Reconciliation queries (Phase 18, Plan 05)
+  // Reconciliation queries
   // =========================================================================
 
   /**
@@ -447,7 +447,7 @@ export const timeRouter = router({
       // Compute reconciliation for the whole page in a fixed number of queries.
       // Contract terms come from the `include` above, so no per-invoice query.
       const batchItems = invoices.flatMap(inv => {
-        if (!inv.contractId || !inv.contract) return [];
+        if (!(inv.contractId && inv.contract)) return [];
 
         const issueDate = inv.issueDate;
         const periodStart =

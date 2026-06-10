@@ -1,11 +1,6 @@
-// Phase 82 · Plan 01 · FOUND7-01 (SC#1) — Wave 0 RED scaffold.
+// requireAddOn entitlement-middleware contract tests.
 //
-// Encodes the requireAddOn entitlement-middleware contract that Plan 82-04
-// implements. RED is the expected Wave 0 state: `../add-on` does not exist
-// yet, so vitest collects this file and the cases fail at import resolution.
-// Do NOT implement requireAddOn here.
-//
-// Contract (locked by 82-CONTEXT D-01/D-02/D-11 + 82-PATTERNS):
+// Contract:
 //   - ADD_ON_KEYS = ['workforce','us-cross-border'] as const (lowercase wire keys).
 //   - requireAddOn(addOn) reads the same Redis-cached getSubscription(orgId) as
 //     requireTier (addOns rides along on the cached Subscription, no 2nd query).
@@ -13,7 +8,7 @@
 //       { type:'ADD_ON_REQUIRED', requiredAddOn:addOn, currentAddOns: sub.addOns ?? [] }).
 //   - workforceProcedure / usCrossBorderProcedure compose
 //       tenantProcedure → requireTier('STARTER') → requireAddOn(addOn)
-//     (D-11: STARTER floor = "any active subscription"; chain order asserted).
+//     (STARTER floor = "any active subscription"; chain order asserted).
 
 import { TRPCError } from '@trpc/server';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -52,7 +47,13 @@ vi.mock('@sentry/node', () => {
 });
 
 vi.mock('@contractor-ops/logger', () => ({
-  getIdpAuditLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn(), child: vi.fn() })),
+  getIdpAuditLogger: vi.fn(() => ({
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
+    child: vi.fn(),
+  })),
   withBodyLogging: vi.fn((_o, fn) => fn),
   logIntegrationCall: vi.fn(),
   subscribeOpossumEvents: vi.fn(),
@@ -115,8 +116,7 @@ vi.mock('../../services/cache', () => ({
 }));
 
 import { t } from '../../init';
-// RED (Wave 0): `../add-on` is implemented in Plan 82-04. Importing it now is the
-// failing edge — the contract below is what 82-04 must satisfy.
+// Import `../add-on` — the contract below is what the middleware must satisfy.
 import { ADD_ON_KEYS, requireAddOn, usCrossBorderProcedure, workforceProcedure } from '../add-on';
 import { tenantProcedure } from '../tenant';
 

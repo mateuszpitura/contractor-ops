@@ -43,12 +43,12 @@ export const ksefRouter = router({
   /**
    * Connect organization to KSeF.
    * Validates credentials, encrypts and stores them, creates QStash cron schedule.
-   * Per D-04: Verify credentials before saving.
+   * Verifies credentials before saving.
    */
   connect: integrationSettingsProcedure('update')
     .input(connectInput)
     .mutation(async ({ ctx, input }) => {
-      // Step 1: Get org NIP (per D-03)
+      // Step 1: Get org NIP
       const org = await ctx.db.organization.findUniqueOrThrow({
         where: { id: ctx.organizationId },
       });
@@ -65,7 +65,7 @@ export const ksefRouter = router({
       // Step 2: Validate input
       ksefConnectionConfigSchema.parse(input);
 
-      // Step 3: Verify credentials before saving (per D-04)
+      // Step 3: Verify credentials before saving
       const client = new KsefApiClient(input.environment);
 
       if (input.authMethod === 'token') {
@@ -98,12 +98,10 @@ export const ksefRouter = router({
       );
 
       // Step 5: Upsert IntegrationConnection (use findFirst + create/update)
-      const existing = await loadOrgIntegrationConnection(
-        ctx.db,
-        ctx.organizationId,
-        'KSEF',
-        { status: 'any', optional: true },
-      );
+      const existing = await loadOrgIntegrationConnection(ctx.db, ctx.organizationId, 'KSEF', {
+        status: 'any',
+        optional: true,
+      });
 
       let connection: IntegrationConnection;
       if (existing) {
@@ -136,12 +134,12 @@ export const ksefRouter = router({
         });
       }
 
-      // Step 6: Create QStash cron schedule (per D-05)
-      // F-ASYNC-12: surface schedule-create failures via lastErrorMessage so
-      // the UI can show "schedule unhealthy" instead of the connection
-      // appearing CONNECTED with no syncs running.
-      // F-ASYNC-18: bump retries 2 → 5 since KSeF gov API stability is
-      // poor; a multi-hour outage would otherwise drop the hourly sync.
+      // Step 6: Create QStash cron schedule
+      // Surface schedule-create failures via lastErrorMessage so the UI can
+      // show "schedule unhealthy" instead of the connection appearing
+      // CONNECTED with no syncs running. Retries bumped to 5 since KSeF
+      // gov API stability is poor; a multi-hour outage would otherwise drop
+      // the hourly sync.
       try {
         const qstash = getQStashClient();
         const schedule = await qstash.schedules.create({
@@ -184,9 +182,9 @@ export const ksefRouter = router({
         });
       }
 
-      // F-OBS-05 — KSeF connect persists encrypted credentials and starts
-      // hourly invoice sync to the Polish tax authority. Audit-worthy.
-      // We never log the credential payload — only authMethod + environment.
+      // KSeF connect persists encrypted credentials and starts hourly invoice
+      // sync to the Polish tax authority. We never log the credential payload
+      // — only authMethod + environment.
       await writeAuditLog({
         organizationId: ctx.organizationId,
         actorType: 'USER',
@@ -210,107 +208,100 @@ export const ksefRouter = router({
    * Deletes QStash schedule and sets status to DISCONNECTED.
    */
   disconnect: integrationSettingsProcedure('update').mutation(async ({ ctx }) => {
-      const connection = await loadOrgIntegrationConnection(
-        ctx.db,
-        ctx.organizationId,
-        'KSEF',
-        { status: 'any', notFoundMessage: E.INTEGRATION_NOT_FOUND },
-      );
+    const connection = await loadOrgIntegrationConnection(ctx.db, ctx.organizationId, 'KSEF', {
+      status: 'any',
+      notFoundMessage: E.INTEGRATION_NOT_FOUND,
+    });
 
-      // Delete QStash schedule if it exists
-      const configJson = (connection.configJson as Record<string, unknown>) ?? {};
-      const scheduleId = configJson.qstashScheduleId as string | undefined;
+    // Delete QStash schedule if it exists
+    const configJson = (connection.configJson as Record<string, unknown>) ?? {};
+    const scheduleId = configJson.qstashScheduleId as string | undefined;
 
-      if (scheduleId) {
-        try {
-          const qstash = getQStashClient();
-          await qstash.schedules.delete(scheduleId);
-        } catch (error) {
-          // F-ASYNC-12: schedule delete failed — schedule will keep firing
-          // for a connection that no longer exists. Surface as a Sentry
-          // event + an ops-greppable log line so the periodic orphan
-          // sweeper (or a human) can clean it up.
-          log.error(
-            {
-              err: error,
-              organizationId: ctx.organizationId,
-              scheduleId,
-              event: 'qstash_schedule_orphans',
-            },
-            'failed to delete KSeF QStash schedule on disconnect — schedule may be orphaned',
-          );
-          Sentry.captureException(error, {
-            tags: {
-              'integration.provider': 'KSEF',
-              'qstash.outcome': 'schedule-delete-failed',
-            },
-            extra: { organizationId: ctx.organizationId, scheduleId },
-          });
-        }
+    if (scheduleId) {
+      try {
+        const qstash = getQStashClient();
+        await qstash.schedules.delete(scheduleId);
+      } catch (error) {
+        // Schedule delete failed — schedule will keep firing for a
+        // connection that no longer exists. Surface as a Sentry event +
+        // an ops-greppable log line so the periodic orphan sweeper (or a
+        // human) can clean it up.
+        log.error(
+          {
+            err: error,
+            organizationId: ctx.organizationId,
+            scheduleId,
+            event: 'qstash_schedule_orphans',
+          },
+          'failed to delete KSeF QStash schedule on disconnect — schedule may be orphaned',
+        );
+        Sentry.captureException(error, {
+          tags: {
+            'integration.provider': 'KSEF',
+            'qstash.outcome': 'schedule-delete-failed',
+          },
+          extra: { organizationId: ctx.organizationId, scheduleId },
+        });
       }
+    }
 
-      await ctx.db.integrationConnection.update({
-        where: { id: connection.id },
-        data: {
-          status: 'DISCONNECTED',
-          configJson: { ...configJson, qstashScheduleId: null },
-        },
-      });
+    await ctx.db.integrationConnection.update({
+      where: { id: connection.id },
+      data: {
+        status: 'DISCONNECTED',
+        configJson: { ...configJson, qstashScheduleId: null },
+      },
+    });
 
-      // F-OBS-05 — disconnecting KSeF stops hourly invoice sync to the
-      // Polish tax authority. Forensics-critical.
-      await writeAuditLog({
-        organizationId: ctx.organizationId,
-        actorType: 'USER',
-        actorId: ctx.user?.id ?? null,
-        action: 'INTEGRATION_DISCONNECT',
-        resourceType: 'ORGANIZATION',
-        resourceId: ctx.organizationId,
-        oldValues: { provider: 'KSEF', status: connection.status },
-        newValues: { status: 'DISCONNECTED' },
-        metadata: { connectionId: connection.id },
-      });
+    // Disconnecting KSeF stops hourly invoice sync to the Polish tax
+    // authority. Forensics-critical.
+    await writeAuditLog({
+      organizationId: ctx.organizationId,
+      actorType: 'USER',
+      actorId: ctx.user?.id ?? null,
+      action: 'INTEGRATION_DISCONNECT',
+      resourceType: 'ORGANIZATION',
+      resourceId: ctx.organizationId,
+      oldValues: { provider: 'KSEF', status: connection.status },
+      newValues: { status: 'DISCONNECTED' },
+      metadata: { connectionId: connection.id },
+    });
 
-      return { success: true };
-    }),
+    return { success: true };
+  }),
 
   /**
-   * Trigger an immediate KSeF sync via QStash (per D-06).
+   * Trigger an immediate KSeF sync via QStash.
    * Dispatches a one-off QStash job (not cron).
    */
   triggerSync: integrationSettingsProcedure('update').mutation(async ({ ctx }) => {
-      const connection = await loadOrgIntegrationConnection(
-        ctx.db,
-        ctx.organizationId,
-        'KSEF',
-        { notFoundMessage: E.INTEGRATION_NOT_CONNECTED },
-      );
+    const connection = await loadOrgIntegrationConnection(ctx.db, ctx.organizationId, 'KSEF', {
+      notFoundMessage: E.INTEGRATION_NOT_CONNECTED,
+    });
 
-      const qstash = getQStashClient();
-      await qstash.publishJSON({
-        url: `${getServerEnv().API_URL}/ksef/_sync`,
-        body: {
-          organizationId: ctx.organizationId,
-          connectionId: connection.id,
-        },
-      });
+    const qstash = getQStashClient();
+    await qstash.publishJSON({
+      url: `${getServerEnv().API_URL}/ksef/_sync`,
+      body: {
+        organizationId: ctx.organizationId,
+        connectionId: connection.id,
+      },
+    });
 
-      return { triggered: true };
-    }),
+    return { triggered: true };
+  }),
 
   /**
-   * Get KSeF sync history (per D-07).
+   * Get KSeF sync history.
    * Returns recent IntegrationSyncLog entries for the KSeF connection.
    */
   syncHistory: integrationSettingsProcedure('read')
     .input(syncHistoryInput)
     .query(async ({ ctx, input }) => {
-      const connection = await loadOrgIntegrationConnection(
-        ctx.db,
-        ctx.organizationId,
-        'KSEF',
-        { status: 'any', optional: true },
-      );
+      const connection = await loadOrgIntegrationConnection(ctx.db, ctx.organizationId, 'KSEF', {
+        status: 'any',
+        optional: true,
+      });
 
       if (!connection) {
         return { logs: [] };
@@ -342,13 +333,11 @@ export const ksefRouter = router({
    * Returns the IntegrationConnection for KSEF provider, or null if not connected.
    */
   connectionStatus: integrationSettingsProcedure('read').query(async ({ ctx }) => {
-      const connection = await loadOrgIntegrationConnection(
-        ctx.db,
-        ctx.organizationId,
-        'KSEF',
-        { status: 'any', optional: true },
-      );
+    const connection = await loadOrgIntegrationConnection(ctx.db, ctx.organizationId, 'KSEF', {
+      status: 'any',
+      optional: true,
+    });
 
-      return connection ? connection : null;
-    }),
+    return connection ? connection : null;
+  }),
 });

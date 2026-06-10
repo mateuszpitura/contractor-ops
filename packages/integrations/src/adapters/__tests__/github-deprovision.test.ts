@@ -2,9 +2,9 @@ import { createMockServer, HttpResponse, http } from '@contractor-ops/test-utils
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { GitHubAdapter } from '../github-adapter.js';
 
-// Phase 78 IDP-07 — GitHubAdapter Deprovisionable behavior. @octokit/rest issues
-// real HTTP to api.github.com, intercepted by the github MSW handlers + per-test
-// overrides. LOCAL-ONLY: no live GitHub org.
+// GitHubAdapter Deprovisionable behavior. @octokit/rest issues real HTTP to
+// api.github.com, intercepted by the github MSW handlers + per-test overrides.
+// LOCAL-ONLY: no live GitHub org.
 
 const { server } = createMockServer({ handlersOnly: true });
 
@@ -18,7 +18,7 @@ const adapter = () => new GitHubAdapter().withCredentials(ORG, 'fake-gh-token');
 
 const GH = 'https://api.github.com';
 
-describe('GitHubAdapter — Deprovisionable contract (Phase 78 IDP-07)', () => {
+describe('GitHubAdapter — Deprovisionable contract', () => {
   it('implements Deprovisionable', () => {
     const a = adapter();
     expect(typeof a.suspendAccount).toBe('function');

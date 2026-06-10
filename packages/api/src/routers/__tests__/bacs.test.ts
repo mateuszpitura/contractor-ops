@@ -126,9 +126,9 @@ vi.mock('../../services/audit-writer', () => ({
   writeAuditLog: mockWriteAuditLog,
 }));
 
-// F-DB-03 — tenantMiddleware reads status/region via getOrgMeta. Stub it so
-// individual tests can override `prisma.organization.findUnique` for the
-// HANDLER's own DB lookup without inadvertently failing the tenant gate.
+// tenantMiddleware reads status/region via getOrgMeta. Stub it so individual
+// tests can override `prisma.organization.findUnique` for the HANDLER's own
+// DB lookup without inadvertently failing the tenant gate.
 vi.mock('../../services/org-cache', () => ({
   getOrgMeta: vi.fn(async () => ({
     id: 'org-bacs-001',
@@ -142,7 +142,13 @@ vi.mock('../../services/org-cache', () => ({
 }));
 
 vi.mock('@contractor-ops/logger', () => ({
-  getIdpAuditLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn(), child: vi.fn() })),
+  getIdpAuditLogger: vi.fn(() => ({
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
+    child: vi.fn(),
+  })),
   createWebhookLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
   createCronLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
   withBodyLogging: vi.fn((_o, fn) => fn),
@@ -165,8 +171,7 @@ vi.mock('@contractor-ops/logger', () => ({
     debug: vi.fn(),
   })),
   createTrpcLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
-  createLogger: vi.fn(() => ({ info: vi.fn(),
- warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
+  createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
 }));
 
 vi.mock('@contractor-ops/logger/metrics', () => ({
@@ -312,10 +317,10 @@ describe('bacsRouter.getSubmitterMasks', () => {
   });
 
   it('throws NOT_FOUND when the organization row is absent (WR-06)', async () => {
-    // WR-06 regression: a missing org row is a tenancy/region invariant
-    // violation, NOT a 'submitter not configured' empty state. Returning
-    // configured=false silently masked the failure mode and produced a
-    // confusing UX (empty form -> save -> opaque error). Surface NOT_FOUND.
+    // A missing org row is a tenancy/region invariant violation, NOT a
+    // 'submitter not configured' empty state. Returning configured=false
+    // silently masked the failure mode and produced a confusing UX
+    // (empty form -> save -> opaque error). Surface NOT_FOUND.
     mockPrisma.organization.findUnique = vi.fn().mockResolvedValue(null);
     await expect(caller.getSubmitterMasks()).rejects.toThrow(/billingOrganizationNotFound/);
   });
@@ -430,10 +435,10 @@ describe('bacsRouter.previewExport / generateExport', () => {
   });
 
   it('generateExport: blocks download when contractor name contains unmappable CJK chars', async () => {
-    // CR-01 regression: `transliterateToBacs.replaced` carries the ORIGINAL
-    // unmappable Unicode character (e.g. '日'), never the literal '?'. The
-    // server-side defensive guard MUST therefore key on `replaced.length > 0`,
-    // not `replaced.includes('?')`. Before this fix, a CJK contractor name
+    // `transliterateToBacs.replaced` carries the ORIGINAL unmappable Unicode
+    // character (e.g. '日'), never the literal '?'. The server-side defensive
+    // guard MUST therefore key on `replaced.length > 0`, not
+    // `replaced.includes('?')`. Without this guard, a CJK contractor name
     // would silently produce a BACS-rejecting file and a signed download URL.
     mockPrisma.organization.findUnique = vi.fn().mockResolvedValue({
       bacsServiceUserNumberEncrypted: 'enc:123456',
@@ -476,10 +481,10 @@ describe('bacsRouter.previewExport / generateExport', () => {
   });
 
   it('generateExport: rejects non-GBP payment runs (CR-02)', async () => {
-    // CR-02 regression: BACS Standard 18 has no currency field — the entire
-    // file is implicitly GBP. A €1000 invoice (amountMinor=100000) would
-    // otherwise be misread by the recipient bank as £1000. The router MUST
-    // refuse the run before reaching the generator.
+    // BACS Standard 18 has no currency field — the entire file is implicitly
+    // GBP. A €1000 invoice (amountMinor=100000) would otherwise be misread by
+    // the recipient bank as £1000. The router MUST refuse the run before
+    // reaching the generator.
     mockPrisma.organization.findUnique = vi.fn().mockResolvedValue({
       bacsServiceUserNumberEncrypted: 'enc:123456',
       bacsSubmitterSortCodeEncrypted: 'enc:112233',
@@ -514,10 +519,10 @@ describe('bacsRouter.previewExport / generateExport', () => {
   });
 
   it('generateExport: rejects DRAFT payment runs (WR-05)', async () => {
-    // WR-05 regression: a DRAFT run is still mutable — the recipient list
-    // could change between BACS file download and submission, and the
-    // Document audit row would point to a 'version' of the run that no
-    // longer exists. The router must require LOCKED+ for generateExport.
+    // A DRAFT run is still mutable — the recipient list could change between
+    // BACS file download and submission, and the Document audit row would
+    // point to a 'version' of the run that no longer exists. The router must
+    // require LOCKED+ for generateExport.
     mockPrisma.organization.findUnique = vi.fn().mockResolvedValue({
       bacsServiceUserNumberEncrypted: 'enc:123456',
       bacsSubmitterSortCodeEncrypted: 'enc:112233',

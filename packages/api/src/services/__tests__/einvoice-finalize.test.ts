@@ -1,11 +1,10 @@
 // packages/api/src/services/__tests__/einvoice-finalize.test.ts
 //
-// Phase 61 · Plan 61-06 Task 1 — finalize service unit tests.
+// finalize service unit tests.
 //
 // Uses an in-memory fake Prisma + a lightweight R2 mock + a lightweight
 // profile mock. The real generator + KoSIT validator run in the einvoice
-// package's test suite (Plan 02 + Plan 03); here we exercise the
-// orchestration contract:
+// package's own test suite; here we exercise the orchestration contract:
 //
 //   1. Happy path VALID → creates lifecycle + 2 events, puts XML to R2,
 //      returns 300s signed URL.
@@ -54,7 +53,7 @@ interface InvoiceRow {
     taxId: string | null;
     countryCode: string;
     isPublicSectorBuyer: boolean;
-    // Phase 68 D-03 — eager-fetched cascade input on the contractor relation.
+    // Eager-fetched cascade input on the contractor relation.
     billingProfiles: Array<{
       id: string;
       skontoTerms: Array<{
@@ -65,7 +64,7 @@ interface InvoiceRow {
       }>;
     }>;
   } | null;
-  // Phase 68 D-03 — eager-fetched invoice-level cascade input.
+  // Eager-fetched invoice-level cascade input.
   skontoTerms: Array<{
     id: string;
     discountPercent: unknown; // Prisma Decimal — modelled as unknown in the fake; tests pass a number
@@ -180,8 +179,8 @@ function makeDb(seed?: {
     );
   }
 
-  // F-DB-17 — invoiceId is globally unique, so we can locate the lifecycle
-  // row by invoiceId alone (no need to know organizationId at lookup time).
+  // invoiceId is globally unique, so we can locate the lifecycle row by
+  // invoiceId alone (no need to know organizationId at lookup time).
   function findLifecycleByInvoiceId(invoiceId: string) {
     return lifecycles.find(r => r.invoiceId === invoiceId) ?? null;
   }
@@ -189,7 +188,7 @@ function makeDb(seed?: {
   const eInvoiceLifecycle = {
     findUnique: vi.fn(
       async (args: {
-        // F-DB-17 — switched to single-column unique (invoiceId).
+        // Switched to single-column unique (invoiceId).
         where: { invoiceId: string };
         select?: Record<string, boolean>;
       }) => {
@@ -393,12 +392,12 @@ function makeInvoice(overrides: Partial<InvoiceRow> = {}): InvoiceRow {
       taxId: 'DE987654321',
       countryCode: 'DE',
       isPublicSectorBuyer: true,
-      // Phase 68 D-03 — empty default; tests opting into the profile-default
-      // branch override `contractor.billingProfiles[0].skontoTerms`.
+      // Empty default; tests opting into the profile-default branch override
+      // `contractor.billingProfiles[0].skontoTerms`.
       billingProfiles: [],
     },
-    // Phase 68 D-03 — empty default; tests opting into the invoice-level
-    // branch override `skontoTerms`.
+    // Empty default; tests opting into the invoice-level branch override
+    // `skontoTerms`.
     skontoTerms: [],
     contract: { id: 'con_1' },
     organization: {
@@ -759,10 +758,10 @@ describe('einvoice-finalize — edge cases', () => {
 });
 
 // ===========================================================================
-// Phase 68 · Plan 03 — Skonto cascade plumbing (Layer B per CONTEXT D-08)
+// Skonto cascade plumbing
 // ===========================================================================
 
-describe('finalizeEInvoice — Skonto BG-20 cascade plumbing (Phase 68 D-03/D-04)', () => {
+describe('finalizeEInvoice — Skonto BG-20 cascade plumbing', () => {
   it('forwards invoice-level SkontoTerm into opts.skontoTerm when set on the invoice', async () => {
     const invoice = makeInvoice({
       skontoTerms: [

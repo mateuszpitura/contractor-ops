@@ -1,4 +1,4 @@
-// IR35 scoring — D-13 dispositive + composite rule coverage.
+// IR35 scoring — dispositive + composite rule coverage.
 //
 // The test matrix covers every dispositive branch, every composite count path,
 // and the ORDER-LOAD-BEARING precedence test (MOO strong-inside beats
@@ -76,7 +76,7 @@ function mkAnswers(spec: {
   return all;
 }
 
-describe('IR35 scoreIr35 — dispositive rules (D-13)', () => {
+describe('IR35 scoreIr35 — dispositive rules', () => {
   it('Dispositive-1: sub=strong-inside dominates 4× leaning-outside → inside', () => {
     const res = scoreIr35(
       mkAnswers({

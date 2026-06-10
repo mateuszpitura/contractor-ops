@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { ErrorClass } from '../idp/error-classifier.js';
 import { classifyError } from '../idp/error-classifier.js';
 
-describe('classifyError (Phase 77 D-07 closed-enum classifier)', () => {
+describe('classifyError (closed-enum classifier)', () => {
   it('maps 429 to TRANSIENT_RATE_LIMIT', () => {
     expect(classifyError({ httpStatus: 429 })).toBe('TRANSIENT_RATE_LIMIT');
   });
@@ -69,9 +69,9 @@ describe('classifyError (Phase 77 D-07 closed-enum classifier)', () => {
   });
 });
 
-// Phase 78 D-13 — per-provider classification for the three new IdPs. The
-// classifier is signal-driven (status/headers/body/code), not provider-keyed,
-// so the `provider` hint is passed for documentation; behavior is asserted.
+// Per-provider classification for the three new IdPs. The classifier is
+// signal-driven (status/headers/body/code), not provider-keyed, so the
+// `provider` hint is passed for documentation; behavior is asserted.
 describe.each([
   { provider: 'ENTRA' as const },
   { provider: 'OKTA' as const },
@@ -104,7 +104,7 @@ describe.each([
   });
 });
 
-describe('classifyError provider-specific cases (Phase 78 D-13)', () => {
+describe('classifyError provider-specific cases', () => {
   it('Entra 403 Authorization_RequestDenied → PERMANENT_FORBIDDEN (no retry)', () => {
     expect(
       classifyError({

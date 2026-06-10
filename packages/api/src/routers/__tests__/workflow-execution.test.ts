@@ -54,7 +54,7 @@ const { mockPrisma, ORG_ID, USER_ID, RUN_ID, TASK_RUN_ID, TEMPLATE_ID, CONTRACTO
         findFirst: vi.fn(),
         findMany: vi.fn(),
         create: vi.fn(),
-        // F-DB-06 — instantiateTaskRuns now batches inserts via createMany
+        // instantiateTaskRuns batches inserts via createMany rather than per-row creates
         createMany: vi.fn(async () => ({ count: 0 })),
         update: vi.fn(),
         updateMany: vi.fn(),
@@ -121,8 +121,7 @@ vi.mock('@contractor-ops/db', () => ({
   getRegionalClient: vi.fn(() => mockPrisma),
 }));
 
-// F-DB-03 / F-SEC-12 — org-cache must report ACTIVE so tenant middleware
-// does not throw orgSuspended.
+// org-cache must report ACTIVE so tenant middleware does not throw orgSuspended.
 vi.mock('../../services/org-cache', () => ({
   getOrgMeta: vi.fn(async (orgId: string) => ({
     id: orgId,
@@ -189,7 +188,13 @@ vi.mock('@sentry/node', () => {
 });
 
 vi.mock('@contractor-ops/logger', () => ({
-  getIdpAuditLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn(), child: vi.fn() })),
+  getIdpAuditLogger: vi.fn(() => ({
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
+    child: vi.fn(),
+  })),
   createWebhookLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
   createCronLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
   withBodyLogging: vi.fn((_o, fn) => fn),
@@ -212,8 +217,7 @@ vi.mock('@contractor-ops/logger', () => ({
     debug: vi.fn(),
   })),
   createTrpcLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
-  createLogger: vi.fn(() => ({ info: vi.fn(),
- warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
+  createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
 }));
 
 vi.mock('@contractor-ops/logger/metrics', () => ({
@@ -814,18 +818,16 @@ describe('workflowExecutionRouter', () => {
         status: 'IN_PROGRESS',
         contractorId: CONTRACTOR_ID,
       });
-      // F-DB-06 — task rows are inserted via `createMany`, not per-row
-      // `create`. The router pre-generates UUIDs and invokes a single
-      // batched insert, so the test only needs to satisfy the mock surface
-      // (the return value is unused — caller refetches via findUniqueOrThrow
-      // below).
+      // task rows are inserted via `createMany`, not per-row `create`. The
+      // router pre-generates UUIDs and invokes a single batched insert, so
+      // the test only needs to satisfy the mock surface (the return value is
+      // unused — caller refetches via findUniqueOrThrow below).
       mockPrisma.workflowTaskRun.createMany.mockResolvedValueOnce({ count: 1 });
       mockPrisma.workflowTaskRun.findMany.mockResolvedValueOnce([
         { status: 'TODO', resultJson: null },
       ]);
-      // F-DB-18 — `update + findUniqueOrThrow` collapsed into a single
-      // `update({ include })` call. The full row (with tasks) is returned
-      // from `update`, not refetched.
+      // `update + findUniqueOrThrow` collapsed into a single `update({ include })`
+      // call. The full row (with tasks) is returned from `update`, not refetched.
       mockPrisma.workflowRun.update.mockResolvedValueOnce({
         id: RUN_ID,
         status: 'IN_PROGRESS',

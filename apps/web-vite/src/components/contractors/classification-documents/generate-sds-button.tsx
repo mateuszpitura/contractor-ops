@@ -1,5 +1,4 @@
-// Phase 59 · Plan 02 Task 3 — Generate SDS button.
-// Phase 64 · D-22 — Extended with SDS approval gate (LEGAL-05).
+// Generate SDS button — extended with an SDS approval gate.
 //
 // Triggers the classificationDocument.generateSds mutation and opens the returned
 // 300s signed R2 URL in a new tab. Before generating, requires the user to
@@ -12,8 +11,8 @@ import { Label } from '@contractor-ops/ui/components/shadcn/label';
 import { SDS_APPROVAL_STATEMENT_EN } from '@contractor-ops/validators';
 import { useCallback, useState } from 'react';
 import { useTranslations } from '../../../i18n/useTranslations.js';
-import { useGenerateSds } from '../hooks/use-classification-documents.js';
 import type { useGenerateSds as UseGenerateSds } from '../hooks/use-classification-documents.js';
+import { useGenerateSds } from '../hooks/use-classification-documents.js';
 
 export interface GenerateSdsButtonProps {
   classificationAssessmentId: string;
@@ -68,7 +67,7 @@ export function GenerateSdsButtonView({
 
   return (
     <div>
-      {/* Phase 64 D-22 — SDS approval gate */}
+      {/* SDS approval gate — must confirm client approval before generating */}
       {!approved && (
         <div className="space-y-4 rounded-lg border border-amber-200 bg-amber-50 p-4">
           <p className="text-sm font-medium">{tApproval('gateTitle')}</p>

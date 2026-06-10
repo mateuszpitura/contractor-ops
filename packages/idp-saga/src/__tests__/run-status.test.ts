@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { deriveRunStatus, recomputeRunStatus } from '../run-status';
 
-describe('deriveRunStatus (Phase 76 D-02)', () => {
+describe('deriveRunStatus', () => {
   it('all SUCCEEDED → COMPLETED', () => {
     expect(
       deriveRunStatus([
@@ -45,7 +45,7 @@ describe('deriveRunStatus (Phase 76 D-02)', () => {
   it('empty steps → PENDING', () => {
     expect(deriveRunStatus([])).toBe('PENDING');
   });
-  // Phase 77 D-11 — MANUAL_COMPLETED counts as terminal-success.
+  // MANUAL_COMPLETED counts as terminal-success.
   it('all MANUAL_COMPLETED → COMPLETED', () => {
     expect(
       deriveRunStatus([
@@ -72,7 +72,7 @@ describe('deriveRunStatus (Phase 76 D-02)', () => {
   });
 });
 
-describe('recomputeRunStatus (Phase 76 D-02 async wrapper)', () => {
+describe('recomputeRunStatus (async wrapper)', () => {
   const makeDb = (
     steps: { status: string; attempts: number }[],
     existingFinishedAt: Date | null = null,
