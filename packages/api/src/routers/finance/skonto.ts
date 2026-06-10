@@ -15,6 +15,7 @@ import {
   SKONTO_DISCOUNT_PERIOD_INVALID,
 } from '../../errors';
 import { router } from '../../init';
+import { findOrThrow } from '../../lib/find-or-throw';
 import type { TenantScopedDb } from '../../lib/tenant-db';
 import { requireFeatureFlag, tenantFlaggedProcedure } from '../../middleware/feature-flag';
 import { requirePermission } from '../../middleware/rbac';
@@ -85,12 +86,10 @@ async function deleteSkontoTermByOwner(
   owner: SkontoTermOwner,
   notFoundMessage: string,
 ) {
-  const existing = await db.skontoTerm.findFirst({
-    where: { ...owner, organizationId },
-  });
-  if (!existing) {
-    throw new TRPCError({ code: 'NOT_FOUND', message: notFoundMessage });
-  }
+  const existing = await findOrThrow(
+    () => db.skontoTerm.findFirst({ where: { ...owner, organizationId } }),
+    notFoundMessage,
+  );
   await db.skontoTerm.delete({ where: { id: existing.id } });
 }
 
@@ -115,13 +114,13 @@ export const skontoRouter = router({
     )
     .mutation(async ({ ctx, input }) => {
       // Verify invoice belongs to tenant
-      const invoice = await ctx.db.invoice.findFirst({
-        where: { id: input.invoiceId, organizationId: ctx.organizationId },
-      });
-
-      if (!invoice) {
-        throw new TRPCError({ code: 'NOT_FOUND', message: INVOICE_NOT_FOUND });
-      }
+      await findOrThrow(
+        () =>
+          ctx.db.invoice.findFirst({
+            where: { id: input.invoiceId, organizationId: ctx.organizationId },
+          }),
+        INVOICE_NOT_FOUND,
+      );
 
       const term = await upsertSkontoTermByOwner(
         ctx.db,
@@ -170,16 +169,16 @@ export const skontoRouter = router({
     )
     .mutation(async ({ ctx, input }) => {
       // Verify billing profile belongs to tenant
-      const profile = await ctx.db.contractorBillingProfile.findFirst({
-        where: {
-          id: input.billingProfileId,
-          organizationId: ctx.organizationId,
-        },
-      });
-
-      if (!profile) {
-        throw new TRPCError({ code: 'NOT_FOUND', message: BILLING_PROFILE_NOT_FOUND });
-      }
+      await findOrThrow(
+        () =>
+          ctx.db.contractorBillingProfile.findFirst({
+            where: {
+              id: input.billingProfileId,
+              organizationId: ctx.organizationId,
+            },
+          }),
+        BILLING_PROFILE_NOT_FOUND,
+      );
 
       const term = await upsertSkontoTermByOwner(
         ctx.db,
@@ -239,28 +238,25 @@ export const skontoRouter = router({
       }),
     )
     .query(async ({ ctx, input }) => {
-      const invoice = await ctx.db.invoice.findFirst({
-        where: { id: input.invoiceId, organizationId: ctx.organizationId },
-        include: {
-          contractor: {
+      const invoice = await findOrThrow(
+        () =>
+          ctx.db.invoice.findFirst({
+            where: { id: input.invoiceId, organizationId: ctx.organizationId },
             include: {
-              billingProfiles: {
-                where: { isDefault: true },
-                include: { skontoTerms: true },
-                take: 1,
+              contractor: {
+                include: {
+                  billingProfiles: {
+                    where: { isDefault: true },
+                    include: { skontoTerms: true },
+                    take: 1,
+                  },
+                },
               },
+              skontoTerms: true,
             },
-          },
-          skontoTerms: true,
-        },
-      });
-
-      if (!invoice) {
-        throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: INVOICE_NOT_FOUND,
-        });
-      }
+          }),
+        INVOICE_NOT_FOUND,
+      );
 
       // Resolve effective skonto term via cascade.
       //

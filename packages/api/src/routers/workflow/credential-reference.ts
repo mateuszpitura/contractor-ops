@@ -3,6 +3,7 @@
 // looksLikeSecretRefinement (D-11). Stores POINTERS only — never secrets.
 
 import {
+  entityIdSchema,
   looksLikeSecretInFreeTextRefinement,
   looksLikeSecretRefinement,
 } from '@contractor-ops/validators';
@@ -10,9 +11,10 @@ import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import * as E from '../../errors';
 import { router } from '../../init';
+import { auditedMutation, auditMutationCtx } from '../../lib/audited-mutation';
+import { findOrThrow } from '../../lib/find-or-throw';
 import { requirePermission } from '../../middleware/rbac';
 import { tenantProcedure } from '../../middleware/tenant';
-import { writeAuditLog } from '../../services/audit-writer';
 
 const VAULT_PROVIDER = z.enum([
   'ONE_PASSWORD',
@@ -43,6 +45,13 @@ const SAFE_TEXT = z.string().min(1).max(2000).superRefine(looksLikeSecretInFreeT
 const SAFE_VAULT_URL = z.string().min(1).max(2000).url().superRefine(looksLikeSecretRefinement);
 const SAFE_NOTES = z.string().max(10000).superRefine(looksLikeSecretInFreeTextRefinement);
 
+function requireUserId(ctx: { user?: { id: string } | null }): string {
+  if (!ctx.user?.id) {
+    throw new TRPCError({ code: 'UNAUTHORIZED' });
+  }
+  return ctx.user.id;
+}
+
 export const credentialReferenceRouter = router({
   create: tenantProcedure
     .use(requirePermission({ workflow: ['execute'] }))
@@ -59,18 +68,34 @@ export const credentialReferenceRouter = router({
     )
     .mutation(async ({ ctx, input }) => {
       // Defend the D-12 UI gate at the server: credentials only on OFFBOARDING runs.
-      const run = await ctx.db.workflowRun.findFirst({
-        where: { id: input.workflowRunId, organizationId: ctx.organizationId },
-        include: { workflowTemplate: { select: { type: true } } },
-      });
-      if (!run) {
-        throw new TRPCError({ code: 'NOT_FOUND', message: E.WORKFLOW_RUN_NOT_FOUND });
-      }
+      const run = await findOrThrow(
+        () =>
+          ctx.db.workflowRun.findFirst({
+            where: { id: input.workflowRunId, organizationId: ctx.organizationId },
+            include: { workflowTemplate: { select: { type: true } } },
+          }),
+        E.WORKFLOW_RUN_NOT_FOUND,
+      );
       if (run.workflowTemplate.type !== 'OFFBOARDING') {
         throw new TRPCError({
           code: 'BAD_REQUEST',
           message: E.CREDENTIAL_REFERENCE_OFFBOARDING_ONLY,
         });
+      }
+
+      if (input.successorUserId) {
+        const successorMember = await ctx.db.member.findFirst({
+          where: {
+            organizationId: ctx.organizationId,
+            userId: input.successorUserId,
+          },
+        });
+        if (!successorMember) {
+          throw new TRPCError({
+            code: 'BAD_REQUEST',
+            message: E.WORKFLOW_ASSIGNEE_NOT_MEMBER,
+          });
+        }
       }
 
       return ctx.db.$transaction(async tx => {
@@ -87,21 +112,22 @@ export const credentialReferenceRouter = router({
             notes: input.notes ?? null,
           },
         });
-        await writeAuditLog({
-          organizationId: ctx.organizationId,
-          actorType: 'USER',
-          actorId: ctx.user?.id ?? null,
-          action: 'credential_reference.created',
-          resourceType: 'WORKFLOW_RUN',
-          resourceId: row.id,
-          newValues: {
-            workflowRunId: input.workflowRunId,
-            vaultProvider: input.vaultProvider,
-            accessType: input.accessType,
-            label: input.label,
+        await auditedMutation(
+          auditMutationCtx(ctx),
+          {
+            action: 'credential_reference.created',
+            resourceType: 'WORKFLOW_RUN',
+            resourceId: input.workflowRunId,
+            newValues: {
+              workflowRunId: input.workflowRunId,
+              vaultProvider: input.vaultProvider,
+              accessType: input.accessType,
+              label: input.label,
+            },
           },
+          async () => row,
           tx,
-        });
+        );
         return row;
       });
     }),
@@ -109,8 +135,7 @@ export const credentialReferenceRouter = router({
   update: tenantProcedure
     .use(requirePermission({ workflow: ['execute'] }))
     .input(
-      z.object({
-        id: z.string().min(1),
+      entityIdSchema.extend({
         label: SAFE_TEXT.optional(),
         vaultProvider: VAULT_PROVIDER.optional(),
         vaultUrl: SAFE_VAULT_URL.optional(),
@@ -120,12 +145,13 @@ export const credentialReferenceRouter = router({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const existing = await ctx.db.credentialReference.findFirst({
-        where: { id: input.id, organizationId: ctx.organizationId },
-      });
-      if (!existing) {
-        throw new TRPCError({ code: 'NOT_FOUND', message: E.CREDENTIAL_REFERENCE_NOT_FOUND });
-      }
+      const existing = await findOrThrow(
+        () =>
+          ctx.db.credentialReference.findFirst({
+            where: { id: input.id, organizationId: ctx.organizationId },
+          }),
+        E.CREDENTIAL_REFERENCE_NOT_FOUND,
+      );
       return ctx.db.$transaction(async tx => {
         const updated = await tx.credentialReference.update({
           where: { id: input.id },
@@ -138,84 +164,90 @@ export const credentialReferenceRouter = router({
             ...(input.notes !== undefined && { notes: input.notes }),
           },
         });
-        await writeAuditLog({
-          organizationId: ctx.organizationId,
-          actorType: 'USER',
-          actorId: ctx.user?.id ?? null,
-          action: 'credential_reference.updated',
-          resourceType: 'WORKFLOW_RUN',
-          resourceId: input.id,
-          oldValues: {
-            label: existing.label,
-            vaultProvider: existing.vaultProvider,
-            accessType: existing.accessType,
+        await auditedMutation(
+          auditMutationCtx(ctx),
+          {
+            action: 'credential_reference.updated',
+            resourceType: 'WORKFLOW_RUN',
+            resourceId: input.id,
+            oldValues: {
+              label: existing.label,
+              vaultProvider: existing.vaultProvider,
+              accessType: existing.accessType,
+            },
+            newValues: {
+              label: updated.label,
+              vaultProvider: updated.vaultProvider,
+              accessType: updated.accessType,
+            },
           },
-          newValues: {
-            label: updated.label,
-            vaultProvider: updated.vaultProvider,
-            accessType: updated.accessType,
-          },
+          async () => updated,
           tx,
-        });
+        );
         return updated;
       });
     }),
 
   markRotated: tenantProcedure
     .use(requirePermission({ workflow: ['execute'] }))
-    .input(z.object({ id: z.string().min(1) }))
+    .input(entityIdSchema)
     .mutation(async ({ ctx, input }) => {
-      const existing = await ctx.db.credentialReference.findFirst({
-        where: { id: input.id, organizationId: ctx.organizationId },
-      });
-      if (!existing) {
-        throw new TRPCError({ code: 'NOT_FOUND', message: E.CREDENTIAL_REFERENCE_NOT_FOUND });
-      }
+      await findOrThrow(
+        () =>
+          ctx.db.credentialReference.findFirst({
+            where: { id: input.id, organizationId: ctx.organizationId },
+          }),
+        E.CREDENTIAL_REFERENCE_NOT_FOUND,
+      );
+      const userId = requireUserId(ctx);
       return ctx.db.$transaction(async tx => {
         const updated = await tx.credentialReference.update({
           where: { id: input.id },
-          data: { status: 'ROTATED', rotatedAt: new Date(), rotatedByUserId: ctx.user?.id ?? null },
+          data: { status: 'ROTATED', rotatedAt: new Date(), rotatedByUserId: userId },
         });
-        await writeAuditLog({
-          organizationId: ctx.organizationId,
-          actorType: 'USER',
-          actorId: ctx.user?.id ?? null,
-          action: 'credential_reference.rotated',
-          resourceType: 'WORKFLOW_RUN',
-          resourceId: input.id,
-          newValues: { status: 'ROTATED', rotatedByUserId: ctx.user?.id ?? null },
+        await auditedMutation(
+          auditMutationCtx(ctx),
+          {
+            action: 'credential_reference.rotated',
+            resourceType: 'WORKFLOW_RUN',
+            resourceId: input.id,
+            newValues: { status: 'ROTATED', rotatedByUserId: userId },
+          },
+          async () => updated,
           tx,
-        });
+        );
         return updated;
       });
     }),
 
   remove: tenantProcedure
     .use(requirePermission({ workflow: ['execute'] }))
-    .input(z.object({ id: z.string().min(1) }))
+    .input(entityIdSchema)
     .mutation(async ({ ctx, input }) => {
-      const existing = await ctx.db.credentialReference.findFirst({
-        where: { id: input.id, organizationId: ctx.organizationId },
-      });
-      if (!existing) {
-        throw new TRPCError({ code: 'NOT_FOUND', message: E.CREDENTIAL_REFERENCE_NOT_FOUND });
-      }
+      const existing = await findOrThrow(
+        () =>
+          ctx.db.credentialReference.findFirst({
+            where: { id: input.id, organizationId: ctx.organizationId },
+          }),
+        E.CREDENTIAL_REFERENCE_NOT_FOUND,
+      );
       await ctx.db.$transaction(async tx => {
         await tx.credentialReference.delete({ where: { id: input.id } });
-        await writeAuditLog({
-          organizationId: ctx.organizationId,
-          actorType: 'USER',
-          actorId: ctx.user?.id ?? null,
-          action: 'credential_reference.removed',
-          resourceType: 'WORKFLOW_RUN',
-          resourceId: input.id,
-          oldValues: {
-            label: existing.label,
-            vaultProvider: existing.vaultProvider,
-            workflowRunId: existing.workflowRunId,
+        await auditedMutation(
+          auditMutationCtx(ctx),
+          {
+            action: 'credential_reference.removed',
+            resourceType: 'WORKFLOW_RUN',
+            resourceId: input.id,
+            oldValues: {
+              label: existing.label,
+              vaultProvider: existing.vaultProvider,
+              workflowRunId: existing.workflowRunId,
+            },
           },
+          async () => ({ id: input.id, removed: true as const }),
           tx,
-        });
+        );
       });
       return { id: input.id, removed: true };
     }),

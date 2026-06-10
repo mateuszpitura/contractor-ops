@@ -2,13 +2,17 @@
  * Equipment shipment procedures: generic shipment CRUD, event tracking,
  * status transitions, and contractor equipment view.
  */
-import { shipmentCreateSchema, shipmentEventCreateSchema } from '@contractor-ops/validators';
+import {
+  entityIdSchema,
+  shipmentCreateSchema,
+  shipmentEventCreateSchema,
+} from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import { router } from '../../init';
 import { requirePermission } from '../../middleware/rbac';
 import { tenantProcedure } from '../../middleware/tenant';
-import { writeAuditLog } from '../../services/audit-writer';
+import { auditMutationCtx, auditedMutation } from '../../lib/audited-mutation';
 import { checkShipmentTaskCompletion } from '../../services/equipment-workflow';
 import {
   EQUIPMENT_NOT_FOUND,
@@ -49,65 +53,64 @@ export const equipmentShipmentsRouter = router({
       const newEquipmentStatus =
         input.direction === 'OUTBOUND' ? 'IN_TRANSIT' : 'RETURN_IN_TRANSIT';
 
-      const shipment = await ctx.db.$transaction(async tx => {
-        const created = await tx.shipment.create({
-          data: {
-            organizationId: ctx.organizationId,
+      let created!: Awaited<ReturnType<typeof ctx.db.shipment.create>>;
+      const shipment = await auditedMutation(
+        auditMutationCtx(ctx),
+        {
+          action: 'shipment.create',
+          resourceType: 'SHIPMENT',
+          get resourceId() {
+            return created.id;
+          },
+          newValues: {
             equipmentId: input.equipmentId,
-            assignmentId: input.workflowTaskRunId ? undefined : undefined,
-            workflowTaskRunId: input.workflowTaskRunId ?? null,
+            equipmentName: equipment.name,
             direction: input.direction,
             carrier: input.carrier,
-            carrierCustom: input.carrierCustom ?? null,
-            trackingNumber: input.trackingNumber ?? null,
-            expectedDeliveryAt: input.expectedDeliveryAt ?? null,
-            currentStatus: 'CREATED',
-            createdByUserId: ctx.user.id,
+            trackingNumber: input.trackingNumber,
           },
-        });
+        },
+        async tx => {
+          created = await tx.shipment.create({
+            data: {
+              organizationId: ctx.organizationId,
+              equipmentId: input.equipmentId,
+              assignmentId: input.workflowTaskRunId ? undefined : undefined,
+              workflowTaskRunId: input.workflowTaskRunId ?? null,
+              direction: input.direction,
+              carrier: input.carrier,
+              carrierCustom: input.carrierCustom ?? null,
+              trackingNumber: input.trackingNumber ?? null,
+              expectedDeliveryAt: input.expectedDeliveryAt ?? null,
+              currentStatus: 'CREATED',
+              createdByUserId: ctx.user.id,
+            },
+          });
 
-        // Create initial event
-        await tx.shipmentEvent.create({
-          data: {
-            organizationId: ctx.organizationId,
-            shipmentId: created.id,
-            status: 'CREATED',
-            notes: input.notes ?? null,
-            createdByUserId: ctx.user.id,
-          },
-        });
+          await tx.shipmentEvent.create({
+            data: {
+              organizationId: ctx.organizationId,
+              shipmentId: created.id,
+              status: 'CREATED',
+              notes: input.notes ?? null,
+              createdByUserId: ctx.user.id,
+            },
+          });
 
-        // Auto-advance equipment status
-        await tx.equipment.update({
-          where: { id: input.equipmentId },
-          data: { status: newEquipmentStatus },
-        });
+          await tx.equipment.update({
+            where: { id: input.equipmentId },
+            data: { status: newEquipmentStatus },
+          });
 
-        return created;
-      });
+          return created;
+        },
+      );
 
       // Fetch with events for return
       const result = await ctx.db.shipment.findUnique({
         where: { id: shipment.id },
         include: {
           events: { orderBy: { occurredAt: 'asc' } },
-        },
-      });
-
-      await writeAuditLog({
-        organizationId: ctx.organizationId,
-        actorType: 'USER',
-        actorId: ctx.user.id,
-        actorName: ctx.user?.name,
-        action: 'shipment.create',
-        resourceType: 'SHIPMENT',
-        resourceId: shipment.id,
-        newValues: {
-          equipmentId: input.equipmentId,
-          equipmentName: equipment.name,
-          direction: input.direction,
-          carrier: input.carrier,
-          trackingNumber: input.trackingNumber,
         },
       });
 
@@ -139,58 +142,55 @@ export const equipmentShipmentsRouter = router({
         });
       }
 
-      await ctx.db.$transaction(async tx => {
-        // Create event
-        await tx.shipmentEvent.create({
-          data: {
-            organizationId: ctx.organizationId,
-            shipmentId: input.shipmentId,
+      await auditedMutation(
+        auditMutationCtx(ctx),
+        {
+          action: 'shipment.updateStatus',
+          resourceType: 'SHIPMENT',
+          resourceId: shipment.id,
+          oldValues: { status: shipment.currentStatus },
+          newValues: {
             status: input.status,
-            notes: input.notes ?? null,
-            createdByUserId: ctx.user.id,
+            equipmentId: shipment.equipmentId,
+            equipmentName: shipment.equipment.name,
           },
-        });
+        },
+        async tx => {
+          await tx.shipmentEvent.create({
+            data: {
+              organizationId: ctx.organizationId,
+              shipmentId: input.shipmentId,
+              status: input.status,
+              notes: input.notes ?? null,
+              createdByUserId: ctx.user.id,
+            },
+          });
 
-        // Update shipment current status
-        await tx.shipment.update({
-          where: { id: input.shipmentId },
-          data: { currentStatus: input.status },
-        });
+          await tx.shipment.update({
+            where: { id: input.shipmentId },
+            data: { currentStatus: input.status },
+          });
 
-        // Auto-advance equipment status if applicable
-        const directionMap = SHIPMENT_TO_EQUIPMENT_STATUS[input.status];
-        const newEquipmentStatus = directionMap?.[shipment.direction];
+          const directionMap = SHIPMENT_TO_EQUIPMENT_STATUS[input.status];
+          const newEquipmentStatus = directionMap?.[shipment.direction];
 
-        if (newEquipmentStatus) {
-          const allowedTransitions = EQUIPMENT_STATUS_TRANSITIONS[shipment.equipment.status] ?? [];
-          if (allowedTransitions.includes(newEquipmentStatus)) {
-            await tx.equipment.update({
-              where: { id: shipment.equipmentId },
-              data: { status: newEquipmentStatus as never },
-            });
+          if (newEquipmentStatus) {
+            const allowedTransitions =
+              EQUIPMENT_STATUS_TRANSITIONS[shipment.equipment.status] ?? [];
+            if (allowedTransitions.includes(newEquipmentStatus)) {
+              await tx.equipment.update({
+                where: { id: shipment.equipmentId },
+                data: { status: newEquipmentStatus as never },
+              });
+            }
           }
-        }
-      });
+        },
+      );
 
       const result = await ctx.db.shipment.findUnique({
         where: { id: input.shipmentId },
         include: {
           events: { orderBy: { occurredAt: 'asc' } },
-        },
-      });
-
-      await writeAuditLog({
-        organizationId: ctx.organizationId,
-        actorType: 'USER',
-        actorId: ctx.user.id,
-        actorName: ctx.user?.name,
-        action: 'shipment.updateStatus',
-        resourceType: 'SHIPMENT',
-        resourceId: shipment.id,
-        newValues: {
-          status: input.status,
-          equipmentId: shipment.equipmentId,
-          equipmentName: shipment.equipment.name,
         },
       });
 
@@ -212,7 +212,7 @@ export const equipmentShipmentsRouter = router({
    */
   getShipment: tenantProcedure
     .use(requirePermission({ equipment: ['read'] }))
-    .input(z.object({ id: z.string() }))
+    .input(entityIdSchema)
     .query(async ({ ctx, input }) => {
       const shipment = await ctx.db.shipment.findFirst({
         where: {
@@ -272,7 +272,7 @@ export const equipmentShipmentsRouter = router({
    */
   deleteShipment: tenantProcedure
     .use(requirePermission({ equipment: ['delete'] }))
-    .input(z.object({ id: z.string() }))
+    .input(entityIdSchema)
     .mutation(async ({ ctx, input }) => {
       const shipment = await ctx.db.shipment.findFirst({
         where: {
@@ -295,14 +295,26 @@ export const equipmentShipmentsRouter = router({
         });
       }
 
-      await ctx.db.$transaction([
-        ctx.db.shipmentEvent.deleteMany({
-          where: { shipmentId: input.id },
-        }),
-        ctx.db.shipment.delete({
-          where: { id: input.id },
-        }),
-      ]);
+      await auditedMutation(
+        auditMutationCtx(ctx),
+        {
+          action: 'shipment.delete',
+          resourceType: 'SHIPMENT',
+          resourceId: input.id,
+          oldValues: {
+            currentStatus: shipment.currentStatus,
+            equipmentId: shipment.equipmentId,
+          },
+        },
+        async tx => {
+          await tx.shipmentEvent.deleteMany({
+            where: { shipmentId: input.id },
+          });
+          await tx.shipment.delete({
+            where: { id: input.id },
+          });
+        },
+      );
 
       return { success: true };
     }),

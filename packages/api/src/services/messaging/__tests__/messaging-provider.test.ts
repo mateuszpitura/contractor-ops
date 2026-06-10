@@ -33,6 +33,7 @@ vi.mock('@contractor-ops/logger', () => {
     PII_MASK_PATHS: [],
 
     createLogger: vi.fn(() => stub),
+
     createTrpcLogger: vi.fn(() => stub),
     createCronLogger: vi.fn(() => stub),
     createWebhookLogger: vi.fn(() => stub),
@@ -40,10 +41,8 @@ vi.mock('@contractor-ops/logger', () => {
   };
 });
 
-vi.mock('@contractor-ops/db', () => ({
-  withRlsTransactions: <T>(c: T) => c,
-  withRlsReads: <T>(c: T) => c,
-  prisma: {
+vi.mock('@contractor-ops/db', () => {
+  const __mockDbPrisma = {
     integrationConnection: {
       findMany: vi.fn(),
       findFirst: vi.fn(),
@@ -51,8 +50,15 @@ vi.mock('@contractor-ops/db', () => ({
     externalLink: {
       findFirst: vi.fn(),
     },
-  },
-}));
+  };
+  return {
+  withRlsTransactions: <T>(c: T) => c,
+  withRlsReads: <T>(c: T) => c,
+  prisma: __mockDbPrisma,
+  prismaRaw: __mockDbPrisma,
+
+  };
+});
 
 vi.mock('../../slack-client', () => ({
   getSlackClient: vi.fn().mockResolvedValue(null),

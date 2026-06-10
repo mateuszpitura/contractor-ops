@@ -8,6 +8,7 @@
 // participants, seed CLIENT + WORKER rows.
 
 import { TRPCError } from '@trpc/server';
+import { entityIdSchema } from '@contractor-ops/validators';
 import { z } from 'zod';
 
 import * as E from '../../errors';
@@ -53,19 +54,15 @@ const reorderInput = z.object({
   orderedIds: z.array(z.string().min(1)).min(1),
 });
 
-const markDeliveredInput = z.object({
-  id: z.string().min(1),
+const markDeliveredInput = entityIdSchema.extend({
   note: z.string().max(500).optional().nullable(),
 });
 
-const markAcknowledgedInput = z.object({
-  id: z.string().min(1),
+const markAcknowledgedInput = entityIdSchema.extend({
   note: z.string().max(500).optional().nullable(),
 });
 
-const removeInput = z.object({
-  id: z.string().min(1),
-});
+const removeInput = entityIdSchema;
 
 export const ir35ChainRouter = router({
   /**

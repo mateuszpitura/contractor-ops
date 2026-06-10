@@ -86,6 +86,7 @@ vi.mock('@contractor-ops/db', () => ({
   withRlsTransactions: <T>(c: T) => c,
   withRlsReads: <T>(c: T) => c,
   prisma: mockPrisma,
+  prismaRaw: mockPrisma,
   tenantStore: {
     run: (_ctx: unknown, fn: () => unknown) => fn(),
     getStore: vi.fn(() => ({ region: 'EU' })),
@@ -118,6 +119,7 @@ vi.mock('@sentry/node', () => {
 });
 
 vi.mock('@contractor-ops/logger', () => ({
+  getIdpAuditLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn(), child: vi.fn() })),
   createWebhookLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
   createCronLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
   withBodyLogging: vi.fn((_o, fn) => fn),
@@ -144,7 +146,8 @@ vi.mock('@contractor-ops/logger', () => ({
     warn: vi.fn(),
     error: vi.fn(),
   })),
-  createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
+  createLogger: vi.fn(() => ({ info: vi.fn(),
+ warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
 }));
 
 vi.mock('@contractor-ops/logger/metrics', () => ({
@@ -253,7 +256,6 @@ describe('jiraRouter', () => {
         organizationId: ORG_ID,
         provider: 'JIRA',
       },
-      select: expect.any(Object),
     });
   });
 
@@ -281,7 +283,7 @@ describe('jiraRouter', () => {
   it('listProjects throws PRECONDITION_FAILED when connection is missing', async () => {
     mockPrisma.integrationConnection.findFirst.mockResolvedValue(null);
     await expect(caller.listProjects({ connectionId: 'missing' })).rejects.toMatchObject({
-      code: 'PRECONDITION_FAILED',
+      code: 'NOT_FOUND',
     });
   });
 
@@ -409,6 +411,12 @@ describe('jiraRouter', () => {
   });
 
   it('getStatusMapping returns empty array when service returns null', async () => {
+    mockPrisma.integrationConnection.findFirst.mockResolvedValue({
+      id: 'conn-1',
+      status: 'CONNECTED',
+      configJson: { cloudId: 'cloud-x' },
+      credentialsRef: 'cred-ref',
+    });
     mockGetStatusMapping.mockResolvedValue(null);
     const result = await caller.getStatusMapping({
       connectionId: 'conn-1',
@@ -418,13 +426,19 @@ describe('jiraRouter', () => {
   });
 
   it('getStatusMapping returns entries from service', async () => {
+    mockPrisma.integrationConnection.findFirst.mockResolvedValue({
+      id: 'conn-1',
+      status: 'CONNECTED',
+      configJson: { cloudId: 'cloud-x' },
+      credentialsRef: 'cred-ref',
+    });
     mockGetStatusMapping.mockResolvedValue([statusMappingEntry]);
     const result = await caller.getStatusMapping({
       connectionId: 'conn-1',
       projectId: 'p1',
     });
     expect(result).toEqual([statusMappingEntry]);
-    expect(mockGetStatusMapping).toHaveBeenCalledWith(mockPrisma, 'conn-1', 'p1');
+    expect(mockGetStatusMapping).toHaveBeenCalledWith(mockPrisma, ORG_ID, 'conn-1', 'p1');
   });
 
   it('getTaskConfig returns jiraEnabled false when template missing', async () => {

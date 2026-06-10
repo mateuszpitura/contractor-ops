@@ -13,6 +13,7 @@ import { z } from 'zod';
 import * as E from '../../errors';
 import { router } from '../../init';
 import { findOrThrow } from '../../lib/find-or-throw';
+import { cursorClause, paginateByLastKept } from '../../lib/pagination';
 import { requireFeatureFlag, tenantFlaggedProcedure } from '../../middleware/feature-flag';
 import { requirePermission } from '../../middleware/rbac';
 import { loadBoeRateHistory } from '../../services/boe-rate-cache';
@@ -177,8 +178,6 @@ export const latePaymentInterestRouter = router({
       }),
     )
     .query(async ({ ctx, input }) => {
-      const pageSize = 20;
-
       // Find overdue GB B2B invoices. Compound order `(dueDate, id)` so
       // the cursor has a deterministic anchor even when multiple invoices
       // share a dueDate.
@@ -204,12 +203,10 @@ export const latePaymentInterestRouter = router({
           interestClaims: true,
         },
         orderBy: [{ dueDate: 'asc' }, { id: 'asc' }],
-        take: pageSize + 1,
-        ...(input.cursor ? { cursor: { id: input.cursor }, skip: 1 } : {}),
+        ...cursorClause(input, 20),
       });
 
-      const hasMore = invoices.length > pageSize;
-      const items = invoices.slice(0, pageSize);
+      const { items, nextCursor } = paginateByLastKept(invoices, input, 20);
 
       // Load BoE rate history once (cached, invalidated on admin writes).
       const rateHistory = await loadBoeRateHistory(ctx.db);
@@ -262,7 +259,7 @@ export const latePaymentInterestRouter = router({
 
       return {
         items: filtered,
-        nextCursor: hasMore ? items[items.length - 1]?.id : null,
+        nextCursor,
       };
     }),
 

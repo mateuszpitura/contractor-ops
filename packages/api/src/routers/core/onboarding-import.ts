@@ -6,17 +6,30 @@ import {
   fetchJiraProjects,
   fetchLinearTeams,
 } from '@contractor-ops/integrations';
-import type { InvitableMemberRole, StartImportInput } from '@contractor-ops/validators';
+import type {
+  FetchPeopleSourceError,
+  ImportedProject,
+  InvitableMemberRole,
+  StartImportInput,
+} from '@contractor-ops/validators';
 import {
   fetchPeopleInputSchema,
+  fetchPeopleOutputSchema,
+  fetchProjectsInputSchema,
+  fetchProjectsOutputSchema,
+  importProgressOutputSchema,
+  listSourcesOutputSchema,
   retryItemInputSchema,
-  sourceProviderSchema,
+  retryItemOutputSchema,
   startImportInputSchema,
 } from '@contractor-ops/validators';
+import { createIntegrationLogger } from '@contractor-ops/logger';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
+import * as E from '../../errors';
 import { router } from '../../init';
 import type { TenantScopedDb } from '../../lib/tenant-db';
+import { requirePermission } from '../../middleware/rbac';
 import { tenantProcedure } from '../../middleware/tenant';
 import { requireTier } from '../../middleware/tier';
 import {
@@ -24,12 +37,25 @@ import {
   fetchUsersFromSource,
   mergeByEmail,
 } from '../../services/onboarding-import-service';
+import type { SourcePerson } from '../../services/onboarding-import-service';
 
 // ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
 
 const ALL_PROVIDERS = ['JIRA', 'LINEAR', 'GOOGLE_WORKSPACE', 'SLACK'] as const;
+
+const fetchPeopleLog = createIntegrationLogger('onboarding-import.fetchPeople');
+const fetchProjectsLog = createIntegrationLogger('onboarding-import.fetchProjects');
+
+const SOURCE_NOT_CONNECTED_MESSAGE = 'Integration not connected';
+const SOURCE_FETCH_FAILED_MESSAGE = 'Failed to fetch from this source';
+
+function isIntegrationReady(
+  connection: { status: string; credentialsRef: string | null } | null | undefined,
+): connection is { status: string; credentialsRef: string } {
+  return connection?.status === 'CONNECTED' && !!connection.credentialsRef;
+}
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -51,48 +77,72 @@ export interface ImportJob {
 
 interface OrgSettings {
   importJobs?: Record<string, ImportJob>;
+  importJobsRevision?: number;
   [key: string]: unknown;
 }
 
-/**
- * Reads the org settingsJson and extracts import job data.
- */
-async function getOrgSettings(
+async function readOrgSettings(
   db: TenantScopedDb,
   organizationId: string,
-): Promise<{ orgId: string; settings: OrgSettings }> {
+): Promise<OrgSettings> {
   const org = await db.organization.findFirst({
     where: { id: organizationId },
-    select: { id: true, settingsJson: true },
+    select: { settingsJson: true },
   });
-
-  return {
-    orgId: organizationId,
-    settings: (org?.settingsJson as OrgSettings) ?? {},
-  };
+  return (org?.settingsJson as OrgSettings) ?? {};
 }
 
-/**
- * Updates a specific import job in org settingsJson.
- */
-async function updateImportJob(
+async function patchImportJobsSettings(
   db: TenantScopedDb,
   organizationId: string,
-  currentSettings: OrgSettings,
-  job: ImportJob,
-): Promise<void> {
-  const jobs = currentSettings.importJobs ?? {};
-  jobs[job.jobId] = job;
+  mutate: (settings: OrgSettings) => OrgSettings,
+  options?: { expectedRevision?: number },
+): Promise<OrgSettings> {
+  return db.$transaction(async tx => {
+    const org = await tx.organization.findFirstOrThrow({
+      where: { id: organizationId },
+      select: { settingsJson: true },
+    });
+    const current = (org.settingsJson as OrgSettings) ?? {};
+    const revision = current.importJobsRevision ?? 0;
 
-  await db.organization.update({
-    where: { id: organizationId },
-    data: {
-      settingsJson: {
-        ...currentSettings,
-        importJobs: jobs,
-      } as unknown as Prisma.InputJsonValue,
-    },
+    if (options?.expectedRevision !== undefined && revision !== options.expectedRevision) {
+      throw new TRPCError({
+        code: 'CONFLICT',
+        message: E.IMPORT_JOB_STATE_CONFLICT,
+      });
+    }
+
+    const next = mutate(current);
+    next.importJobsRevision = revision + 1;
+
+    await tx.organization.update({
+      where: { id: organizationId },
+      data: {
+        settingsJson: next as unknown as Prisma.InputJsonValue,
+      },
+    });
+
+    return next;
   });
+}
+
+async function upsertImportJob(
+  db: TenantScopedDb,
+  organizationId: string,
+  job: ImportJob,
+  expectedRevision?: number,
+): Promise<void> {
+  await patchImportJobsSettings(
+    db,
+    organizationId,
+    settings => {
+      const jobs = { ...(settings.importJobs ?? {}) };
+      jobs[job.jobId] = job;
+      return { ...settings, importJobs: jobs };
+    },
+    expectedRevision !== undefined ? { expectedRevision } : undefined,
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -109,42 +159,27 @@ async function updateImportJob(
 
 async function fetchJiraProjectsForWizard(
   accessToken: string,
-  config: ConnectionConfig,
-): Promise<
-  Array<{
-    sourceProvider: string;
-    externalId: string;
-    name: string;
-    statuses: Array<{ id: string; name: string; color?: string }>;
-  }>
-> {
-  if (!config?.cloudId) return [];
+  cloudId: string,
+): Promise<ImportedProject[]> {
   const projects = await fetchJiraProjects(
     accessToken,
-    { cloudId: config.cloudId },
+    { cloudId },
     {
       includeStatuses: true,
     },
   );
   return projects.map(p => ({
-    sourceProvider: 'JIRA',
+    sourceProvider: 'JIRA' as const,
     externalId: p.externalId,
     name: p.name,
     statuses: p.statuses,
   }));
 }
 
-async function fetchLinearProjectsForWizard(accessToken: string): Promise<
-  Array<{
-    sourceProvider: string;
-    externalId: string;
-    name: string;
-    statuses: Array<{ id: string; name: string; color?: string }>;
-  }>
-> {
+async function fetchLinearProjectsForWizard(accessToken: string): Promise<ImportedProject[]> {
   const teams = await fetchLinearTeams(accessToken, { includeStates: true });
   return teams.map(team => ({
-    sourceProvider: 'LINEAR',
+    sourceProvider: 'LINEAR' as const,
     externalId: team.externalId,
     name: team.name,
     statuses: team.states.map(s => ({ id: s.id, name: s.name, color: s.color })),
@@ -202,23 +237,23 @@ async function processPeopleImport(
  * Processes project imports and tracks results on the job object.
  */
 async function processProjectImport(
+  db: TenantScopedDb,
   projects: StartImportInput['projects'],
   organizationId: string,
-  createdByUserId: string | undefined,
+  createdByUserId: string,
   job: ImportJob,
 ) {
   const nonSkipped = projects.filter(p => !p.skip);
-  if (nonSkipped.length === 0) return;
-
-  try {
-    await createWorkflowTemplatesFromProjects({
-      projects: nonSkipped,
-      organizationId,
-      createdByUserId: createdByUserId ?? '',
-    });
-    job.completedItems += nonSkipped.length;
-  } catch (error) {
-    for (const proj of nonSkipped) {
+  for (const proj of nonSkipped) {
+    try {
+      await createWorkflowTemplatesFromProjects({
+        db,
+        projects: [proj],
+        organizationId,
+        createdByUserId,
+      });
+      job.completedItems++;
+    } catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown error';
       job.failedItems.push({
         email: `project:${proj.externalId}`,
@@ -238,7 +273,11 @@ export const onboardingImportRouter = router({
   /**
    * Lists all 4 supported integration sources with their connection status.
    */
-  listSources: tenantProcedure.use(requireTier('PRO')).query(async ({ ctx }) => {
+  listSources: tenantProcedure
+    .use(requireTier('PRO'))
+    .use(requirePermission({ settings: ['read'] }))
+    .output(listSourcesOutputSchema)
+    .query(async ({ ctx }) => {
     const connections = await ctx.db.integrationConnection.findMany({
       where: { organizationId: ctx.organizationId },
       select: { provider: true, status: true, credentialsRef: true },
@@ -261,41 +300,69 @@ export const onboardingImportRouter = router({
    */
   fetchPeople: tenantProcedure
     .use(requireTier('PRO'))
+    .use(requirePermission({ settings: ['read'] }))
     .input(fetchPeopleInputSchema)
+    .output(fetchPeopleOutputSchema)
     .query(async ({ ctx, input }) => {
-      const allSourcePeople: Array<{
-        email: string;
-        name: string;
-        source: 'JIRA' | 'LINEAR' | 'GOOGLE_WORKSPACE' | 'SLACK';
-        avatarUrl?: string;
-        metadata?: Record<string, unknown>;
-      }> = [];
+      const allSourcePeople: SourcePerson[] = [];
+      const sourceErrors: FetchPeopleSourceError[] = [];
 
-      // Fetch from each requested source using Promise.allSettled
-      const results = await Promise.allSettled(
+      const fetchResults = await Promise.all(
         input.sources.map(async source => {
-          const connection = await ctx.db.integrationConnection.findFirst({
-            where: {
-              organizationId: ctx.organizationId,
-              provider: source,
-              status: 'CONNECTED',
-            },
-          });
+          try {
+            const connection = await ctx.db.integrationConnection.findFirst({
+              where: {
+                organizationId: ctx.organizationId,
+                provider: source,
+                status: 'CONNECTED',
+              },
+            });
 
-          if (!connection) return [];
+            if (!isIntegrationReady(connection)) {
+              return {
+                source,
+                users: [] as SourcePerson[],
+                error: {
+                  code: 'not_connected' as const,
+                  error: SOURCE_NOT_CONNECTED_MESSAGE,
+                },
+              };
+            }
 
-          const credentials = decryptCredentials(
-            connection.credentialsRef,
-            connection.provider.toLowerCase(),
-          );
+            const credentials = decryptCredentials(
+              connection.credentialsRef,
+              connection.provider.toLowerCase(),
+            );
 
-          return fetchUsersFromSource(source, credentials.accessToken, connection.configJson);
+            const users = await fetchUsersFromSource(
+              source,
+              credentials.accessToken,
+              connection.configJson,
+            );
+            return { source, users, error: undefined };
+          } catch (err) {
+            const message = err instanceof Error ? err.message : String(err);
+            fetchPeopleLog.warn(
+              { organizationId: ctx.organizationId, source, error: message },
+              'fetchPeople source failed',
+            );
+            return {
+              source,
+              users: [] as SourcePerson[],
+              error: { code: 'fetch_failed' as const, error: SOURCE_FETCH_FAILED_MESSAGE },
+            };
+          }
         }),
       );
 
-      for (const result of results) {
-        if (result.status === 'fulfilled' && result.value) {
-          allSourcePeople.push(...result.value);
+      for (const result of fetchResults) {
+        allSourcePeople.push(...result.users);
+        if (result.error) {
+          sourceErrors.push({
+            source: result.source,
+            code: result.error.code,
+            error: result.error.error,
+          });
         }
       }
 
@@ -312,7 +379,10 @@ export const onboardingImportRouter = router({
         ),
       );
 
-      return mergeByEmail(allSourcePeople, existingEmails);
+      return {
+        people: mergeByEmail(allSourcePeople, existingEmails),
+        sourceErrors,
+      };
     }),
 
   /**
@@ -320,44 +390,96 @@ export const onboardingImportRouter = router({
    */
   fetchProjects: tenantProcedure
     .use(requireTier('PRO'))
-    .input(z.object({ sources: z.array(sourceProviderSchema) }))
+    .use(requirePermission({ settings: ['read'] }))
+    .input(fetchProjectsInputSchema)
+    .output(fetchProjectsOutputSchema)
     .query(async ({ ctx, input }) => {
-      const projects: Array<{
-        sourceProvider: string;
-        externalId: string;
-        name: string;
-        statuses: Array<{ id: string; name: string; color?: string }>;
-      }> = [];
+      const allProjects: ImportedProject[] = [];
+      const sourceErrors: FetchPeopleSourceError[] = [];
 
-      for (const source of input.sources) {
-        const connection = await ctx.db.integrationConnection.findFirst({
-          where: {
-            organizationId: ctx.organizationId,
-            provider: source,
-            status: 'CONNECTED',
-          },
-        });
+      const pmSources = input.sources.filter(
+        (s): s is 'JIRA' | 'LINEAR' => s === 'JIRA' || s === 'LINEAR',
+      );
 
-        if (!connection) continue;
+      const fetchResults = await Promise.all(
+        pmSources.map(async source => {
+          try {
+            const connection = await ctx.db.integrationConnection.findFirst({
+              where: {
+                organizationId: ctx.organizationId,
+                provider: source,
+                status: 'CONNECTED',
+              },
+            });
 
-        const credentials = decryptCredentials(
-          connection.credentialsRef,
-          connection.provider.toLowerCase(),
-        );
+            if (!isIntegrationReady(connection)) {
+              return {
+                source,
+                projects: [] as ImportedProject[],
+                error: {
+                  code: 'not_connected' as const,
+                  error: SOURCE_NOT_CONNECTED_MESSAGE,
+                },
+              };
+            }
 
-        if (source === 'JIRA') {
-          const jiraResults = await fetchJiraProjectsForWizard(
-            credentials.accessToken,
-            connection.configJson as ConnectionConfig,
-          );
-          projects.push(...jiraResults);
-        } else if (source === 'LINEAR') {
-          const linearResults = await fetchLinearProjectsForWizard(credentials.accessToken);
-          projects.push(...linearResults);
+            const credentials = decryptCredentials(
+              connection.credentialsRef,
+              connection.provider.toLowerCase(),
+            );
+
+            if (source === 'JIRA') {
+              const config = connection.configJson as ConnectionConfig;
+              if (!config?.cloudId) {
+                fetchProjectsLog.warn(
+                  { organizationId: ctx.organizationId, source },
+                  'fetchProjects Jira missing cloudId in connection config',
+                );
+                return {
+                  source,
+                  projects: [] as ImportedProject[],
+                  error: {
+                    code: 'fetch_failed' as const,
+                    error: SOURCE_FETCH_FAILED_MESSAGE,
+                  },
+                };
+              }
+              const jiraResults = await fetchJiraProjectsForWizard(
+                credentials.accessToken,
+                config.cloudId,
+              );
+              return { source, projects: jiraResults, error: undefined };
+            }
+
+            const linearResults = await fetchLinearProjectsForWizard(credentials.accessToken);
+            return { source, projects: linearResults, error: undefined };
+          } catch (err) {
+            const message = err instanceof Error ? err.message : String(err);
+            fetchProjectsLog.warn(
+              { organizationId: ctx.organizationId, source, error: message },
+              'fetchProjects source failed',
+            );
+            return {
+              source,
+              projects: [] as ImportedProject[],
+              error: { code: 'fetch_failed' as const, error: SOURCE_FETCH_FAILED_MESSAGE },
+            };
+          }
+        }),
+      );
+
+      for (const result of fetchResults) {
+        allProjects.push(...result.projects);
+        if (result.error) {
+          sourceErrors.push({
+            source: result.source,
+            code: result.error.code,
+            error: result.error.error,
+          });
         }
       }
 
-      return projects;
+      return { projects: allProjects, sourceErrors };
     }),
 
   /**
@@ -366,14 +488,13 @@ export const onboardingImportRouter = router({
    */
   startImport: tenantProcedure
     .use(requireTier('PRO'))
+    .use(requirePermission({ member: ['create'], workflow: ['update'] }))
     .input(startImportInputSchema)
     .mutation(async ({ ctx, input }) => {
       const jobId = randomUUID();
       const nonSkippedPeople = input.people.filter(p => !p.skip);
       const nonSkippedProjects = input.projects.filter(p => !p.skip);
       const totalItems = nonSkippedPeople.length + nonSkippedProjects.length;
-
-      const { settings } = await getOrgSettings(ctx.db, ctx.organizationId);
 
       const job: ImportJob = {
         jobId,
@@ -383,11 +504,24 @@ export const onboardingImportRouter = router({
         failedItems: [],
       };
 
-      await updateImportJob(ctx.db, ctx.organizationId, settings, job);
+      await upsertImportJob(ctx.db, ctx.organizationId, job);
 
       // Process people and projects
       await processPeopleImport(ctx.headers, ctx.organizationId, input.people, job);
-      await processProjectImport(input.projects, ctx.organizationId, ctx.user?.id, job);
+
+      if (nonSkippedProjects.length > 0) {
+        const createdByUserId = ctx.user?.id;
+        if (!createdByUserId) {
+          throw new TRPCError({ code: 'UNAUTHORIZED' });
+        }
+        await processProjectImport(
+          ctx.db,
+          input.projects,
+          ctx.organizationId,
+          createdByUserId,
+          job,
+        );
+      }
 
       // Determine final status
       if (job.failedItems.length === totalItems) {
@@ -396,9 +530,7 @@ export const onboardingImportRouter = router({
         job.status = 'completed';
       }
 
-      // Re-read settings to avoid overwriting concurrent changes
-      const { settings: freshSettings } = await getOrgSettings(ctx.db, ctx.organizationId);
-      await updateImportJob(ctx.db, ctx.organizationId, freshSettings, job);
+      await upsertImportJob(ctx.db, ctx.organizationId, job);
 
       return { jobId };
     }),
@@ -408,9 +540,11 @@ export const onboardingImportRouter = router({
    */
   getProgress: tenantProcedure
     .use(requireTier('PRO'))
+    .use(requirePermission({ settings: ['read'] }))
     .input(z.object({ jobId: z.string() }))
+    .output(importProgressOutputSchema)
     .query(async ({ ctx, input }) => {
-      const { settings } = await getOrgSettings(ctx.db, ctx.organizationId);
+      const settings = await readOrgSettings(ctx.db, ctx.organizationId);
       const job = settings.importJobs?.[input.jobId];
 
       if (!job) {
@@ -428,10 +562,12 @@ export const onboardingImportRouter = router({
    */
   retryFailedItem: tenantProcedure
     .use(requireTier('PRO'))
+    .use(requirePermission({ member: ['create'] }))
     .input(retryItemInputSchema)
+    .output(retryItemOutputSchema)
     .mutation(async ({ ctx, input }) => {
-      const { settings } = await getOrgSettings(ctx.db, ctx.organizationId);
-
+      const settings = await readOrgSettings(ctx.db, ctx.organizationId);
+      const revision = settings.importJobsRevision ?? 0;
       const job = settings.importJobs?.[input.jobId];
 
       if (!job) {
@@ -441,16 +577,15 @@ export const onboardingImportRouter = router({
         });
       }
 
-      const failedIndex = job.failedItems.findIndex(item => item.email === input.email);
+      const failedIndex = job.failedItems.findIndex(item => item.email === input.itemKey);
 
       if (failedIndex === -1) {
         throw new TRPCError({
           code: 'NOT_FOUND',
-          message: `Failed item ${input.email} not found in job ${input.jobId}`,
+          message: `Failed item ${input.itemKey} not found in job ${input.jobId}`,
         });
       }
 
-      // Retry the invitation with the original role
       const failedItem = job.failedItems[failedIndex];
       if (!failedItem) {
         throw new TRPCError({
@@ -458,11 +593,19 @@ export const onboardingImportRouter = router({
           message: `Failed item at index ${failedIndex} not found`,
         });
       }
+
+      if (failedItem.email.startsWith('project:')) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Project import failures must be retried from the import wizard',
+        });
+      }
+
       try {
         await authApi.createInvitation({
           headers: ctx.headers,
           body: {
-            email: input.email,
+            email: input.itemKey,
             role: (failedItem.role || 'readonly') as InvitableMemberRole,
             organizationId: ctx.organizationId,
           },
@@ -472,16 +615,15 @@ export const onboardingImportRouter = router({
         job.failedItems.splice(failedIndex, 1);
         job.completedItems++;
 
-        await updateImportJob(ctx.db, ctx.organizationId, settings, job);
+        await upsertImportJob(ctx.db, ctx.organizationId, job, revision);
 
         return { success: true };
       } catch (error) {
         const message = error instanceof Error ? error.message : 'Unknown error';
 
-        // Update the error message
         const failedEntry = job.failedItems[failedIndex];
         if (failedEntry) failedEntry.error = message;
-        await updateImportJob(ctx.db, ctx.organizationId, settings, job);
+        await upsertImportJob(ctx.db, ctx.organizationId, job, revision);
 
         return { success: false, error: message };
       }

@@ -11,7 +11,7 @@ import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import { TIMESHEET_NOT_FOUND } from '../../errors';
 import { router } from '../../init';
-import { cursorClause, paginateByExtraRowUndefined } from '../../lib/pagination';
+import { cursorClause, paginateByLastKeptUndefined } from '../../lib/pagination';
 import { requirePermission } from '../../middleware/rbac';
 import { tenantProcedure } from '../../middleware/tenant';
 import {
@@ -124,7 +124,7 @@ export const timeRouter = router({
         },
       });
 
-      return paginateByExtraRowUndefined(rows, input, 20);
+      return paginateByLastKeptUndefined(rows, input, 20);
     }),
 
   /**
@@ -442,7 +442,7 @@ export const timeRouter = router({
         },
       });
 
-      const { items: invoices, nextCursor } = paginateByExtraRowUndefined(rawInvoices, input, 20);
+      const { items: invoices, nextCursor } = paginateByLastKeptUndefined(rawInvoices, input, 20);
 
       // Compute reconciliation for the whole page in a fixed number of queries.
       // Contract terms come from the `include` above, so no per-invoice query.

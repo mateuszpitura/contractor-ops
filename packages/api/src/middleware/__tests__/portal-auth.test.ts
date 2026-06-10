@@ -34,6 +34,7 @@ vi.mock('@sentry/node', () => {
 });
 
 vi.mock('@contractor-ops/logger', () => ({
+  getIdpAuditLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn(), child: vi.fn() })),
   withBodyLogging: vi.fn((_o, fn) => fn),
   logIntegrationCall: vi.fn(),
   subscribeOpossumEvents: vi.fn(),
@@ -49,6 +50,7 @@ vi.mock('@contractor-ops/logger', () => ({
   PII_MASK_PATHS: [],
   createLogger: vi.fn(() => ({
     info: vi.fn(),
+
     warn: vi.fn(),
     error: vi.fn(),
     debug: vi.fn(),
@@ -75,21 +77,26 @@ vi.mock('@contractor-ops/logger/metrics', () => ({
   metrics: { increment: vi.fn(), distribution: vi.fn(), histogram: vi.fn() },
 }));
 
-vi.mock('@contractor-ops/db', () => ({
-  withRlsTransactions: <T>(c: T) => c,
-  withRlsReads: <T>(c: T) => c,
-  prisma: {
+vi.mock('@contractor-ops/db', () => {
+  const __mockDbPrisma = {
     organization: {
       findUnique: vi.fn().mockResolvedValue({ id: 'org-mock', dataRegion: 'EU', status: 'ACTIVE' }),
     },
-  },
+  };
+  return {
+  withRlsTransactions: <T>(c: T) => c,
+  withRlsReads: <T>(c: T) => c,
+  prisma: __mockDbPrisma,
+  prismaRaw: __mockDbPrisma,
   getRegionalClient: vi.fn(() => ({})),
   createTenantClientFrom: vi.fn(() => ({ scoped: true })),
   tenantStore: {
     run: tenantStoreRun,
     getStore: vi.fn(),
   },
-}));
+
+  };
+});
 
 import { t } from '../../init';
 import { portalProcedure } from '../portal-auth';

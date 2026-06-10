@@ -20,20 +20,27 @@ const {
 
 const mockGetQStashClient = vi.hoisted(() => vi.fn(() => ({ publishJSON: mockPublishJSON })));
 
-vi.mock('@contractor-ops/db', () => ({
-  withRlsTransactions: <T>(c: T) => c,
-  withRlsReads: <T>(c: T) => c,
-  prisma: {
+vi.mock('@contractor-ops/db', () => {
+  const __mockDbPrisma = {
     ocrExtraction: {
       create: mockCreate,
       update: mockUpdate,
       findFirst: mockFindFirst,
     },
-  },
-}));
+  };
+  return {
+  withRlsTransactions: <T>(c: T) => c,
+  withRlsReads: <T>(c: T) => c,
+  prisma: __mockDbPrisma,
+  prismaRaw: __mockDbPrisma,
+
+  };
+});
 
 vi.mock('@contractor-ops/logger', () => ({
-  createTrpcLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
+  getIdpAuditLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn(), child: vi.fn() })),
+  createTrpcLogger: vi.fn(() => ({ info: vi.fn(),
+ warn: vi.fn(), error: vi.fn() })),
   createWebhookLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
   createCronLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
   withBodyLogging: vi.fn((_o, fn) => fn),

@@ -11,7 +11,7 @@ import { z } from 'zod';
 import { TRIGGER_NOT_ACKNOWLEDGEABLE, TRIGGER_NOT_DISMISSIBLE } from '../../errors';
 import { router } from '../../init';
 import { findOrThrow } from '../../lib/find-or-throw';
-import { cursorClause, paginateByExtraRow } from '../../lib/pagination';
+import { cursorClause, paginateByLastKept } from '../../lib/pagination';
 import { requirePermission } from '../../middleware/rbac';
 import { classificationProcedure } from '../../middleware/require-classification-flag';
 
@@ -60,7 +60,7 @@ export const reassessmentTriggerRouter = router({
       ...cursorClause(input, 50),
     });
 
-    return paginateByExtraRow(rows, input, 50);
+    return paginateByLastKept(rows, input, 50);
   }),
 
   listByEngagement: contractorReadProcedure

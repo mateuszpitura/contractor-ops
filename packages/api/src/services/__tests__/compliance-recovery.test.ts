@@ -9,12 +9,19 @@ const { mockAssert, mockExpiresReset } = vi.hoisted(() => ({
   mockExpiresReset: vi.fn(async () => undefined),
 }));
 
-vi.mock('@contractor-ops/db', () => ({}));
+vi.mock('@contractor-ops/db', () => ({
+  withRlsTransactions: <T>(c: T) => c,
+  withRlsReads: <T>(c: T) => c,
+  prisma: {},
+  prismaRaw: {},
+}));
 vi.mock('@contractor-ops/db/generated/prisma/client', () => ({
   Prisma: { DbNull: Symbol('DbNull') },
 }));
 vi.mock('@contractor-ops/logger', () => ({
-  createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
+  getIdpAuditLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn(), child: vi.fn() })),
+  createLogger: vi.fn(() => ({ info: vi.fn(),
+ warn: vi.fn(), error: vi.fn() })),
 }));
 vi.mock('../compliance-payment-gate', () => ({
   assertContractorPaymentEligibility: mockAssert,

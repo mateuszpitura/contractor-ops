@@ -87,8 +87,10 @@ vi.mock('@contractor-ops/validators', () => ({
 }));
 
 vi.mock('@contractor-ops/logger', () => ({
+  getIdpAuditLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn(), child: vi.fn() })),
   createLogger: vi.fn(() => ({
     info: vi.fn(),
+
     warn: vi.fn(),
     error: vi.fn(),
     debug: vi.fn(),

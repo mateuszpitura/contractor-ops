@@ -47,6 +47,10 @@ export default defineConfig({
         replacement: path.join(packagesDir, 'validators/src/minimal-server-env.ts'),
       },
       {
+        find: '@contractor-ops/validators/public-api',
+        replacement: path.join(packagesDir, 'validators/src/public-api/index.ts'),
+      },
+      {
         find: '@contractor-ops/validators',
         replacement: path.join(packagesDir, 'validators/src/index.ts'),
       },

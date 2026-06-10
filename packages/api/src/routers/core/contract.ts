@@ -8,6 +8,8 @@ import {
   contractListSchema,
   contractStatusTransitionSchema,
   contractUpdateSchema,
+  entityIdSchema,
+  entityWithDataSchema,
 } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
@@ -16,7 +18,8 @@ import { router } from '../../init';
 import { findOrThrow } from '../../lib/find-or-throw';
 import { requirePermission } from '../../middleware/rbac';
 import { tenantProcedure } from '../../middleware/tenant';
-import { writeAuditLog, writeAuditLogMany } from '../../services/audit-writer';
+import { auditedMutation, auditMutationCtx } from '../../lib/audited-mutation';
+import { writeAuditLogMany } from '../../services/audit-writer';
 import { syncContractExpiryDeadline } from '../../services/calendar-deadline-sync';
 import { deleteCalendarEvent } from '../../services/calendar-event-service';
 import type { PermittedActivityClient } from '../../services/permitted-activity-check';
@@ -269,6 +272,31 @@ export const contractRouter = router({
           });
         }
 
+        await auditedMutation(
+          auditMutationCtx(ctx),
+          {
+            action: 'CREATE',
+            resourceType: 'CONTRACT',
+            resourceId: created.id,
+            resourceName: created.title,
+            oldValues: null,
+            newValues: {
+              status: created.status,
+              startDate:
+                created.startDate instanceof Date
+                  ? created.startDate.toISOString()
+                  : created.startDate,
+              endDate:
+                created.endDate instanceof Date ? created.endDate.toISOString() : created.endDate,
+              rateValueMinor: created.rateValueMinor,
+              rateType: created.rateType,
+              billingModel: created.billingModel,
+            },
+          },
+          async () => created,
+          tx,
+        );
+
         return { contract: created, scopeCheck: scopeResult };
       });
 
@@ -296,31 +324,6 @@ export const contractRouter = router({
         );
       }
 
-      // Phase 60 CLASS-08 — audit contract creation so the reassessment-
-      // trigger scan can walk the AuditLog.
-      await writeAuditLog({
-        organizationId: ctx.organizationId,
-        actorType: 'USER',
-        actorId: ctx.user?.id ?? null,
-        action: 'CREATE',
-        resourceType: 'CONTRACT',
-        resourceId: contract.id,
-        resourceName: contract.title,
-        oldValues: null,
-        newValues: {
-          status: contract.status,
-          startDate:
-            contract.startDate instanceof Date
-              ? contract.startDate.toISOString()
-              : contract.startDate,
-          endDate:
-            contract.endDate instanceof Date ? contract.endDate.toISOString() : contract.endDate,
-          rateValueMinor: contract.rateValueMinor,
-          rateType: contract.rateType,
-          billingModel: contract.billingModel,
-        },
-      });
-
       // Calendar auto-push: sync contract expiry deadline (D-06)
       if (contract.endDate) {
         void syncContractExpiryDeadline(ctx.db, {
@@ -346,7 +349,7 @@ export const contractRouter = router({
    */
   getById: tenantProcedure
     .use(requirePermission({ contract: ['read'] }))
-    .input(z.object({ id: z.string() }))
+    .input(entityIdSchema)
     .query(async ({ ctx, input }) => {
       const contract = await findOrThrow(
         () =>
@@ -393,7 +396,7 @@ export const contractRouter = router({
    */
   update: tenantProcedure
     .use(requirePermission({ contract: ['update'] }))
-    .input(z.object({ id: z.string(), data: contractUpdateSchema }))
+    .input(entityWithDataSchema(contractUpdateSchema))
     .mutation(async ({ ctx, input }) => {
       const existing = await findOrThrow(
         () =>
@@ -412,24 +415,24 @@ export const contractRouter = router({
       coerceDateFields(updateData);
       validateDateOrder(updateData, existing);
 
-      const updated = await ctx.db.contract.update({
-        where: { id: input.id },
-        data: updateData,
-      });
-
       // Phase 60 CLASS-08 — audit contract update; scan reads the diff.
       const diff = diffContractFields(existing, updateData);
-      await writeAuditLog({
-        organizationId: ctx.organizationId,
-        actorType: 'USER',
-        actorId: ctx.user?.id ?? null,
-        action: 'UPDATE',
-        resourceType: 'CONTRACT',
-        resourceId: updated.id,
-        resourceName: updated.title,
-        oldValues: diff.oldValues,
-        newValues: diff.newValues,
-      });
+      const updated = await auditedMutation(
+        auditMutationCtx(ctx),
+        {
+          action: 'UPDATE',
+          resourceType: 'CONTRACT',
+          resourceId: input.id,
+          resourceName: (updateData.title as string | undefined) ?? existing.title,
+          oldValues: diff.oldValues,
+          newValues: diff.newValues,
+        },
+        async tx =>
+          tx.contract.update({
+            where: { id: input.id },
+            data: updateData,
+          }),
+      );
 
       // Calendar auto-push: sync or cleanup contract expiry deadline (D-06, D-08)
       if (updated.endDate) {
@@ -541,32 +544,33 @@ export const contractRouter = router({
         });
       }
 
-      const updateData: Record<string, unknown> = {
-        status: input.targetStatus,
-      };
-
-      if (input.targetStatus === 'TERMINATED') {
-        updateData.terminatedAt = new Date();
-      }
-
-      const updated = await ctx.db.contract.update({
-        where: { id: input.id },
-        data: updateData,
-      });
-
       // Phase 60 CLASS-08 — audit status transition so the reassessment scan
       // can detect ACTIVE → TERMINATED and similar IR35-relevant events.
-      await writeAuditLog({
-        organizationId: ctx.organizationId,
-        actorType: 'USER',
-        actorId: ctx.user?.id ?? null,
-        action: 'STATUS_TRANSITION',
-        resourceType: 'CONTRACT',
-        resourceId: updated.id,
-        resourceName: updated.title,
-        oldValues: { status: contract.status },
-        newValues: { status: updated.status },
-      });
+      const updated = await auditedMutation(
+        auditMutationCtx(ctx),
+        {
+          action: 'STATUS_TRANSITION',
+          resourceType: 'CONTRACT',
+          resourceId: input.id,
+          resourceName: contract.title,
+          oldValues: { status: contract.status },
+          newValues: { status: input.targetStatus },
+        },
+        async tx => {
+          const updateData: Record<string, unknown> = {
+            status: input.targetStatus,
+          };
+
+          if (input.targetStatus === 'TERMINATED') {
+            updateData.terminatedAt = new Date();
+          }
+
+          return tx.contract.update({
+            where: { id: input.id },
+            data: updateData,
+          });
+        },
+      );
 
       return updated;
     }),
@@ -657,14 +661,27 @@ export const contractRouter = router({
         reminderDaysBefore: input.reminderDaysBefore,
       };
 
-      const updated = await ctx.db.contract.update({
-        where: { id: input.contractId },
-        data: {
-          metadataJson: newMetadata as Prisma.InputJsonValue,
+      return auditedMutation(
+        auditMutationCtx(ctx),
+        {
+          action: 'contract.expiry_reminders.update',
+          resourceType: 'CONTRACT',
+          resourceId: input.contractId,
+          resourceName: contract.title,
+          oldValues: {
+            reminderDaysBefore:
+              (currentMetadata.reminderDaysBefore as number[] | undefined) ?? null,
+          },
+          newValues: { reminderDaysBefore: input.reminderDaysBefore },
         },
-      });
-
-      return updated;
+        async tx =>
+          tx.contract.update({
+            where: { id: input.contractId },
+            data: {
+              metadataJson: newMetadata as Prisma.InputJsonValue,
+            },
+          }),
+      );
     }),
 
   /**
@@ -672,7 +689,7 @@ export const contractRouter = router({
    */
   delete: tenantProcedure
     .use(requirePermission({ contract: ['delete'] }))
-    .input(z.object({ id: z.string() }))
+    .input(entityIdSchema)
     .mutation(async ({ ctx, input }) => {
       const contract = await findOrThrow(
         () =>
@@ -693,23 +710,27 @@ export const contractRouter = router({
         });
       }
 
-      await ctx.db.contract.update({
-        where: { id: input.id },
-        data: { deletedAt: new Date() },
-      });
+      const deletedAt = new Date();
 
       // Phase 60 CLASS-08 — audit contract soft-delete.
-      await writeAuditLog({
-        organizationId: ctx.organizationId,
-        actorType: 'USER',
-        actorId: ctx.user?.id ?? null,
-        action: 'DELETE',
-        resourceType: 'CONTRACT',
-        resourceId: input.id,
-        resourceName: contract.title,
-        oldValues: { status: contract.status, deletedAt: null },
-        newValues: { deletedAt: new Date().toISOString() },
-      });
+      await auditedMutation(
+        auditMutationCtx(ctx),
+        {
+          action: 'DELETE',
+          resourceType: 'CONTRACT',
+          resourceId: input.id,
+          resourceName: contract.title,
+          oldValues: { status: contract.status, deletedAt: null },
+          newValues: { deletedAt: deletedAt.toISOString() },
+        },
+        async tx => {
+          await tx.contract.update({
+            where: { id: input.id },
+            data: { deletedAt },
+          });
+          return { success: true as const };
+        },
+      );
 
       // Calendar cleanup: remove contract expiry event (D-08)
       void deleteCalendarEvent(ctx.db, {
@@ -869,22 +890,27 @@ export const contractRouter = router({
         }
       }
       const isBulk = input.contractIds.length > 1;
-      await writeAuditLog({
-        organizationId: ctx.organizationId,
-        actorType: 'USER',
-        actorId: ctx.user?.id ?? null,
-        action: isBulk
-          ? 'compliance.ip_clause.bulk_rerun_started'
-          : 'compliance.ip_clause.manual_rerun',
-        resourceType: isBulk ? 'ORGANIZATION' : 'CONTRACT',
-        resourceId: isBulk ? ctx.organizationId : (input.contractIds[0] ?? ''),
-        newValues: {
-          contractIds: input.contractIds,
-          force: input.force,
-          enqueuedCount: enqueued.length,
-          skippedCount,
+      await auditedMutation(
+        auditMutationCtx(ctx),
+        {
+          action: isBulk
+            ? 'compliance.ip_clause.bulk_rerun_started'
+            : 'compliance.ip_clause.manual_rerun',
+          resourceType: isBulk ? 'ORGANIZATION' : 'CONTRACT',
+          resourceId: isBulk ? ctx.organizationId : (input.contractIds[0] ?? ''),
+          newValues: {
+            contractIds: input.contractIds,
+            force: input.force,
+            enqueuedCount: enqueued.length,
+            skippedCount,
+          },
         },
-      });
+        async () => ({
+          enqueuedCount: enqueued.length,
+          requestedCount: input.contractIds.length,
+          skippedCount,
+        }),
+      );
       return {
         enqueuedCount: enqueued.length,
         requestedCount: input.contractIds.length,

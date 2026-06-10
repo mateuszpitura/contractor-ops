@@ -5,6 +5,7 @@
 // /organization/projects page (manual "Sync now" + Pending Merges inbox).
 
 import {
+  entityIdSchema,
   orgDefinitionArchiveSchema,
   projectCreateSchema,
   projectListSchema,
@@ -13,7 +14,6 @@ import {
   projectUpdateSchema,
 } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
-import { z } from 'zod';
 import {
   INTEGRATION_CONNECTION_NOT_FOUND,
   PENDING_MERGE_NOT_FOUND,
@@ -22,16 +22,16 @@ import {
   PROJECT_NOT_FOUND,
 } from '../../errors';
 import { router } from '../../init';
+import { auditedMutation, auditMutationCtx } from '../../lib/audited-mutation';
 import { cursorClause, paginateByLastKept } from '../../lib/pagination';
+import { findTenantFirstOrThrow, tenantScopedWhere } from '../../lib/tenant-find';
 import { requirePermission } from '../../middleware/rbac';
 import { tenantProcedure } from '../../middleware/tenant';
-import { writeAuditLog } from '../../services/audit-writer';
 import type { SyncableIntegrationConnection } from '../../services/org-definition-sync';
 import {
   syncJiraProjectsToOrgDefinitions,
   syncLinearTeamsToOrgDefinitions,
 } from '../../services/org-definition-sync';
-
 export const projectRouter = router({
   list: tenantProcedure
     .use(requirePermission({ project: ['read'] }))
@@ -79,42 +79,55 @@ export const projectRouter = router({
 
   get: tenantProcedure
     .use(requirePermission({ project: ['read'] }))
-    .input(z.object({ id: z.string().min(1) }))
+    .input(entityIdSchema)
     .query(async ({ ctx, input }) => {
-      const project = await ctx.db.project.findFirst({ where: { id: input.id } });
-      if (!project) throw new TRPCError({ code: 'NOT_FOUND', message: PROJECT_NOT_FOUND });
-      return project;
+      return findTenantFirstOrThrow(
+        () =>
+          ctx.db.project.findFirst({
+            where: tenantScopedWhere(ctx, input.id, { softDelete: false }),
+          }),
+        PROJECT_NOT_FOUND,
+      );
     }),
 
   create: tenantProcedure
     .use(requirePermission({ project: ['create'] }))
     .input(projectCreateSchema)
     .mutation(async ({ ctx, input }) => {
-      const created = await ctx.db.project.create({
-        data: {
-          organizationId: ctx.organizationId,
-          name: input.name,
-          code: input.code,
-          teamId: input.teamId,
-          status: input.status,
-          startDate: input.startDate,
-          endDate: input.endDate,
-          budgetMinor: input.budgetMinor,
-          budgetCurrency: input.budgetCurrency,
-          source: 'MANUAL',
+      let created!: Awaited<ReturnType<typeof ctx.db.project.create>>;
+      return auditedMutation(
+        auditMutationCtx(ctx),
+        {
+          action: 'project.create',
+          resourceType: 'PROJECT',
+          get resourceId() {
+            return created.id;
+          },
+          get resourceName() {
+            return created.name;
+          },
+          get newValues() {
+            return { name: created.name, code: created.code ?? null, status: created.status };
+          },
         },
-      });
-      await writeAuditLog({
-        organizationId: ctx.organizationId,
-        actorType: 'USER',
-        actorId: ctx.user?.id ?? null,
-        action: 'project.create',
-        resourceType: 'PROJECT',
-        resourceId: created.id,
-        resourceName: created.name,
-        newValues: { name: created.name, code: created.code ?? null, status: created.status },
-      });
-      return created;
+        async tx => {
+          created = await tx.project.create({
+            data: {
+              organizationId: ctx.organizationId,
+              name: input.name,
+              code: input.code,
+              teamId: input.teamId,
+              status: input.status,
+              startDate: input.startDate,
+              endDate: input.endDate,
+              budgetMinor: input.budgetMinor,
+              budgetCurrency: input.budgetCurrency,
+              source: 'MANUAL',
+            },
+          });
+          return created;
+        },
+      );
     }),
 
   update: tenantProcedure
@@ -122,54 +135,78 @@ export const projectRouter = router({
     .input(projectUpdateSchema)
     .mutation(async ({ ctx, input }) => {
       const { id, ...rest } = input;
-      const before = await ctx.db.project.findFirst({ where: { id } });
-      if (!before) throw new TRPCError({ code: 'NOT_FOUND', message: PROJECT_NOT_FOUND });
+      const before = await findTenantFirstOrThrow(
+        () =>
+          ctx.db.project.findFirst({
+            where: tenantScopedWhere(ctx, id, { softDelete: false }),
+          }),
+        PROJECT_NOT_FOUND,
+      );
 
-      const updated = await ctx.db.project.update({
-        where: { id },
-        data: {
-          ...rest,
-          ...(rest.startDate === undefined ? {} : { startDate: rest.startDate }),
-          ...(rest.endDate === undefined ? {} : { endDate: rest.endDate }),
+      let updated!: typeof before;
+      return auditedMutation(
+        auditMutationCtx(ctx),
+        {
+          action: 'project.update',
+          resourceType: 'PROJECT',
+          resourceId: id,
+          get resourceName() {
+            return updated.name;
+          },
+          oldValues: { name: before.name, status: before.status, code: before.code ?? null },
+          get newValues() {
+            return { name: updated.name, status: updated.status, code: updated.code ?? null };
+          },
         },
-      });
-      await writeAuditLog({
-        organizationId: ctx.organizationId,
-        actorType: 'USER',
-        actorId: ctx.user?.id ?? null,
-        action: 'project.update',
-        resourceType: 'PROJECT',
-        resourceId: id,
-        resourceName: updated.name,
-        oldValues: { name: before.name, status: before.status, code: before.code ?? null },
-        newValues: { name: updated.name, status: updated.status, code: updated.code ?? null },
-      });
-      return updated;
+        async tx => {
+          updated = await tx.project.update({
+            where: { id },
+            data: {
+              ...rest,
+              ...(rest.startDate === undefined ? {} : { startDate: rest.startDate }),
+              ...(rest.endDate === undefined ? {} : { endDate: rest.endDate }),
+            },
+          });
+          return updated;
+        },
+      );
     }),
 
   archive: tenantProcedure
     .use(requirePermission({ project: ['archive'] }))
     .input(orgDefinitionArchiveSchema)
     .mutation(async ({ ctx, input }) => {
-      const before = await ctx.db.project.findFirst({ where: { id: input.id } });
-      if (!before) throw new TRPCError({ code: 'NOT_FOUND', message: PROJECT_NOT_FOUND });
+      const before = await findTenantFirstOrThrow(
+        () =>
+          ctx.db.project.findFirst({
+            where: tenantScopedWhere(ctx, input.id, { softDelete: false }),
+          }),
+        PROJECT_NOT_FOUND,
+      );
 
-      const updated = await ctx.db.project.update({
-        where: { id: input.id },
-        data: { status: 'ARCHIVED' },
-      });
-      await writeAuditLog({
-        organizationId: ctx.organizationId,
-        actorType: 'USER',
-        actorId: ctx.user?.id ?? null,
-        action: 'project.archive',
-        resourceType: 'PROJECT',
-        resourceId: input.id,
-        resourceName: updated.name,
-        oldValues: { status: before.status },
-        newValues: { status: updated.status },
-      });
-      return updated;
+      let updated!: typeof before;
+      return auditedMutation(
+        auditMutationCtx(ctx),
+        {
+          action: 'project.archive',
+          resourceType: 'PROJECT',
+          resourceId: input.id,
+          get resourceName() {
+            return updated.name;
+          },
+          oldValues: { status: before.status },
+          get newValues() {
+            return { status: updated.status };
+          },
+        },
+        async tx => {
+          updated = await tx.project.update({
+            where: { id: input.id },
+            data: { status: 'ARCHIVED' },
+          });
+          return updated;
+        },
+      );
     }),
 
   // -------------------------------------------------------------------------
@@ -281,62 +318,64 @@ export const projectRouter = router({
           });
         }
 
-        await ctx.db.$transaction(async tx => {
+        return auditedMutation(
+          auditMutationCtx(ctx),
+          {
+            action: 'project.merge.resolve',
+            resourceType: 'PROJECT',
+            resourceId: mergeTargetId,
+            newValues: { source: pending.source, externalId: pending.externalId },
+          },
+          async tx => {
+            await tx.projectExternalLink.create({
+              data: {
+                organizationId: ctx.organizationId,
+                projectId: mergeTargetId,
+                source: pending.source,
+                externalId: pending.externalId,
+              },
+            });
+            await tx.pendingProjectMerge.delete({ where: { id: pending.id } });
+            return { action: 'merge' as const, projectId: mergeTargetId };
+          },
+        );
+      }
+
+      // action === 'keep' → create a fresh Project and link, then drop the pending row.
+      let created!: Awaited<ReturnType<typeof ctx.db.project.create>>;
+      return auditedMutation(
+        auditMutationCtx(ctx),
+        {
+          action: 'project.merge.keep',
+          resourceType: 'PROJECT',
+          get resourceId() {
+            return created.id;
+          },
+          get resourceName() {
+            return created.name;
+          },
+          newValues: { source: pending.source, externalId: pending.externalId },
+        },
+        async tx => {
+          created = await tx.project.create({
+            data: {
+              organizationId: ctx.organizationId,
+              name: pending.incomingName,
+              source: pending.source,
+              externalId: pending.externalId,
+            },
+          });
           await tx.projectExternalLink.create({
             data: {
               organizationId: ctx.organizationId,
-              projectId: mergeTargetId,
+              projectId: created.id,
               source: pending.source,
               externalId: pending.externalId,
             },
           });
           await tx.pendingProjectMerge.delete({ where: { id: pending.id } });
-        });
-
-        await writeAuditLog({
-          organizationId: ctx.organizationId,
-          actorType: 'USER',
-          actorId: ctx.user?.id ?? null,
-          action: 'project.merge.resolve',
-          resourceType: 'PROJECT',
-          resourceId: mergeTargetId,
-          newValues: { source: pending.source, externalId: pending.externalId },
-        });
-        return { action: 'merge', projectId: mergeTargetId };
-      }
-
-      // action === 'keep' → create a fresh Project and link, then drop the pending row.
-      const created = await ctx.db.$transaction(async tx => {
-        const project = await tx.project.create({
-          data: {
-            organizationId: ctx.organizationId,
-            name: pending.incomingName,
-            source: pending.source,
-            externalId: pending.externalId,
-          },
-        });
-        await tx.projectExternalLink.create({
-          data: {
-            organizationId: ctx.organizationId,
-            projectId: project.id,
-            source: pending.source,
-            externalId: pending.externalId,
-          },
-        });
-        await tx.pendingProjectMerge.delete({ where: { id: pending.id } });
-        return project;
-      });
-
-      await writeAuditLog({
-        organizationId: ctx.organizationId,
-        actorType: 'USER',
-        actorId: ctx.user?.id ?? null,
-        action: 'project.merge.keep',
-        resourceType: 'PROJECT',
-        resourceId: created.id,
-        resourceName: created.name,
-        newValues: { source: pending.source, externalId: pending.externalId },
-      });
-      return { action: 'keep', projectId: created.id };
+          return { action: 'keep' as const, projectId: created.id };
+        },
+      );
     }),
 });

@@ -410,7 +410,13 @@ export async function syncTaskStatusToLinear(
   }
 
   // 5. Resolve target stateId from status mapping
-  const targetStateId = await resolveLinearStateId(prisma, connection.id, teamId, newStatus);
+  const targetStateId = await resolveLinearStateId(
+    prisma,
+    connection.organizationId,
+    connection.id,
+    teamId,
+    newStatus,
+  );
 
   if (!targetStateId) {
     // No mapping for this workflow status -- log and return

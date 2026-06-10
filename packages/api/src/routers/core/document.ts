@@ -16,7 +16,7 @@ import { findOrThrow } from '../../lib/find-or-throw';
 import { requirePermission } from '../../middleware/rbac';
 import { tenantProcedure } from '../../middleware/tenant';
 import { uploadRateLimitMiddleware } from '../../middleware/upload-rate-limit';
-import { writeAuditLog } from '../../services/audit-writer';
+import { auditedMutation, auditMutationCtx } from '../../lib/audited-mutation';
 import { isAllowedMimeType, validateMimeType } from '../../services/mime-validator';
 import { generateStorageKey, getR2BucketName, maxBytesForMime } from '../../services/r2';
 import {
@@ -599,45 +599,41 @@ export const documentRouter = router({
         E.DOCUMENT_NOT_FOUND,
       );
 
-      // Soft-delete the document
-      await ctx.db.document.update({
-        where: { id: doc.id },
-        data: { deletedAt: new Date() },
-      });
+      // Soft-delete + unlink in same transaction as audit; R2 cleanup is best-effort after commit.
+      const result = await auditedMutation(
+        auditMutationCtx(ctx),
+        {
+          action: 'DOCUMENT_DELETE',
+          resourceType: 'DOCUMENT',
+          resourceId: doc.id,
+          resourceName: doc.originalFileName,
+          oldValues: {
+            storageKey: doc.storageKey,
+            mimeType: doc.mimeType,
+          },
+        },
+        async tx => {
+          await tx.document.update({
+            where: { id: doc.id },
+            data: { deletedAt: new Date() },
+          });
+          await tx.documentLink.deleteMany({
+            where: {
+              documentId: doc.id,
+              organizationId: ctx.organizationId,
+            },
+          });
+          return { success: true as const };
+        },
+      );
 
-      // Remove R2 object
       try {
         await deleteRegionalObject(doc.storageKey);
       } catch (error) {
         log.error({ err: error, storageKey: doc.storageKey }, 'failed to delete r2 object');
       }
 
-      // Remove associated document links
-      await ctx.db.documentLink.deleteMany({
-        where: {
-          documentId: doc.id,
-          organizationId: ctx.organizationId,
-        },
-      });
-
-      // F-OBS-05 — document deletion is irreversible from the user's POV
-      // (R2 object gone, soft-delete on the row); GDPR + forensics require
-      // the trail.
-      await writeAuditLog({
-        organizationId: ctx.organizationId,
-        actorType: 'USER',
-        actorId: ctx.user?.id ?? null,
-        action: 'DOCUMENT_DELETE',
-        resourceType: 'DOCUMENT',
-        resourceId: doc.id,
-        resourceName: doc.originalFileName,
-        oldValues: {
-          storageKey: doc.storageKey,
-          mimeType: doc.mimeType,
-        },
-      });
-
-      return { success: true };
+      return result;
     }),
 
   /**

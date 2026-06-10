@@ -3,7 +3,7 @@
  *
  * Sub-routers:
  * - workflow-templates.ts — template CRUD, duplication, starter seeding
- * - workflow-execution.ts — run lifecycle, task actions, comments, overdue count
+ * - workflow-execution.ts — mergeRouters for runs, tasks, comments sub-routers
  *
  * Shared utilities (condition evaluation, progress calculation, assignee resolution)
  * live in workflow-shared.ts and are re-exported here for external consumers.

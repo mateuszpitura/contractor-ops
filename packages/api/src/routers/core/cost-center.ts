@@ -8,17 +8,18 @@ import {
   costCenterCsvImportSchema,
   costCenterListSchema,
   costCenterUpdateSchema,
+  entityIdSchema,
   orgDefinitionArchiveSchema,
 } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
-import { z } from 'zod';
 import { COST_CENTER_NOT_FOUND, TEMPLATE_CODES_ALREADY_EXIST } from '../../errors';
 import { router } from '../../init';
+import { auditedMutation, auditMutationCtx } from '../../lib/audited-mutation';
 import { cursorClause, paginateByLastKept } from '../../lib/pagination';
+import { findTenantFirstOrThrow, tenantScopedWhere } from '../../lib/tenant-find';
 import { requirePermission } from '../../middleware/rbac';
 import { tenantProcedure } from '../../middleware/tenant';
-import { writeAuditLog, writeAuditLogMany } from '../../services/audit-writer';
-
+import { writeAuditLogMany } from '../../services/audit-writer';
 export const costCenterRouter = router({
   list: tenantProcedure
     .use(requirePermission({ costCenter: ['read'] }))
@@ -55,36 +56,49 @@ export const costCenterRouter = router({
 
   get: tenantProcedure
     .use(requirePermission({ costCenter: ['read'] }))
-    .input(z.object({ id: z.string().min(1) }))
+    .input(entityIdSchema)
     .query(async ({ ctx, input }) => {
-      const cc = await ctx.db.costCenter.findFirst({ where: { id: input.id } });
-      if (!cc) throw new TRPCError({ code: 'NOT_FOUND', message: COST_CENTER_NOT_FOUND });
-      return cc;
+      return findTenantFirstOrThrow(
+        () =>
+          ctx.db.costCenter.findFirst({
+            where: tenantScopedWhere(ctx, input.id, { softDelete: false }),
+          }),
+        COST_CENTER_NOT_FOUND,
+      );
     }),
 
   create: tenantProcedure
     .use(requirePermission({ costCenter: ['create'] }))
     .input(costCenterCreateSchema)
     .mutation(async ({ ctx, input }) => {
-      const created = await ctx.db.costCenter.create({
-        data: {
-          organizationId: ctx.organizationId,
-          name: input.name,
-          code: input.code,
-          status: input.status,
+      let created!: Awaited<ReturnType<typeof ctx.db.costCenter.create>>;
+      return auditedMutation(
+        auditMutationCtx(ctx),
+        {
+          action: 'costCenter.create',
+          resourceType: 'ORGANIZATION',
+          get resourceId() {
+            return created.id;
+          },
+          get resourceName() {
+            return created.name;
+          },
+          get newValues() {
+            return { name: created.name, code: created.code, status: created.status };
+          },
         },
-      });
-      await writeAuditLog({
-        organizationId: ctx.organizationId,
-        actorType: 'USER',
-        actorId: ctx.user?.id ?? null,
-        action: 'costCenter.create',
-        resourceType: 'ORGANIZATION',
-        resourceId: created.id,
-        resourceName: created.name,
-        newValues: { name: created.name, code: created.code, status: created.status },
-      });
-      return created;
+        async tx => {
+          created = await tx.costCenter.create({
+            data: {
+              organizationId: ctx.organizationId,
+              name: input.name,
+              code: input.code,
+              status: input.status,
+            },
+          });
+          return created;
+        },
+      );
     }),
 
   update: tenantProcedure
@@ -92,47 +106,71 @@ export const costCenterRouter = router({
     .input(costCenterUpdateSchema)
     .mutation(async ({ ctx, input }) => {
       const { id, ...rest } = input;
-      const before = await ctx.db.costCenter.findFirst({ where: { id } });
-      if (!before) throw new TRPCError({ code: 'NOT_FOUND', message: COST_CENTER_NOT_FOUND });
+      const before = await findTenantFirstOrThrow(
+        () =>
+          ctx.db.costCenter.findFirst({
+            where: tenantScopedWhere(ctx, id, { softDelete: false }),
+          }),
+        COST_CENTER_NOT_FOUND,
+      );
 
-      const updated = await ctx.db.costCenter.update({ where: { id }, data: rest });
-      await writeAuditLog({
-        organizationId: ctx.organizationId,
-        actorType: 'USER',
-        actorId: ctx.user?.id ?? null,
-        action: 'costCenter.update',
-        resourceType: 'ORGANIZATION',
-        resourceId: id,
-        resourceName: updated.name,
-        oldValues: { name: before.name, code: before.code, status: before.status },
-        newValues: { name: updated.name, code: updated.code, status: updated.status },
-      });
-      return updated;
+      let updated!: typeof before;
+      return auditedMutation(
+        auditMutationCtx(ctx),
+        {
+          action: 'costCenter.update',
+          resourceType: 'ORGANIZATION',
+          resourceId: id,
+          get resourceName() {
+            return updated.name;
+          },
+          oldValues: { name: before.name, code: before.code, status: before.status },
+          get newValues() {
+            return { name: updated.name, code: updated.code, status: updated.status };
+          },
+        },
+        async tx => {
+          updated = await tx.costCenter.update({ where: { id }, data: rest });
+          return updated;
+        },
+      );
     }),
 
   archive: tenantProcedure
     .use(requirePermission({ costCenter: ['archive'] }))
     .input(orgDefinitionArchiveSchema)
     .mutation(async ({ ctx, input }) => {
-      const before = await ctx.db.costCenter.findFirst({ where: { id: input.id } });
-      if (!before) throw new TRPCError({ code: 'NOT_FOUND', message: COST_CENTER_NOT_FOUND });
+      const before = await findTenantFirstOrThrow(
+        () =>
+          ctx.db.costCenter.findFirst({
+            where: tenantScopedWhere(ctx, input.id, { softDelete: false }),
+          }),
+        COST_CENTER_NOT_FOUND,
+      );
 
-      const updated = await ctx.db.costCenter.update({
-        where: { id: input.id },
-        data: { status: 'ARCHIVED' },
-      });
-      await writeAuditLog({
-        organizationId: ctx.organizationId,
-        actorType: 'USER',
-        actorId: ctx.user?.id ?? null,
-        action: 'costCenter.archive',
-        resourceType: 'ORGANIZATION',
-        resourceId: input.id,
-        resourceName: updated.name,
-        oldValues: { status: before.status },
-        newValues: { status: updated.status },
-      });
-      return updated;
+      let updated!: typeof before;
+      return auditedMutation(
+        auditMutationCtx(ctx),
+        {
+          action: 'costCenter.archive',
+          resourceType: 'ORGANIZATION',
+          resourceId: input.id,
+          get resourceName() {
+            return updated.name;
+          },
+          oldValues: { status: before.status },
+          get newValues() {
+            return { status: updated.status };
+          },
+        },
+        async tx => {
+          updated = await tx.costCenter.update({
+            where: { id: input.id },
+            data: { status: 'ARCHIVED' },
+          });
+          return updated;
+        },
+      );
     }),
 
   importCsv: tenantProcedure

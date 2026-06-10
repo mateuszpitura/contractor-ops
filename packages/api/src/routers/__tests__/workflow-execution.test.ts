@@ -109,6 +109,7 @@ vi.mock('@contractor-ops/db', () => ({
   withRlsTransactions: <T>(c: T) => c,
   withRlsReads: <T>(c: T) => c,
   prisma: mockPrisma,
+  prismaRaw: mockPrisma,
   tenantStore: {
     run: (_ctx: unknown, fn: () => unknown) => fn(),
     getStore: vi.fn(() => ({ region: 'EU' })),
@@ -188,6 +189,7 @@ vi.mock('@sentry/node', () => {
 });
 
 vi.mock('@contractor-ops/logger', () => ({
+  getIdpAuditLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn(), child: vi.fn() })),
   createWebhookLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
   createCronLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
   withBodyLogging: vi.fn((_o, fn) => fn),
@@ -210,7 +212,8 @@ vi.mock('@contractor-ops/logger', () => ({
     debug: vi.fn(),
   })),
   createTrpcLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
-  createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
+  createLogger: vi.fn(() => ({ info: vi.fn(),
+ warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
 }));
 
 vi.mock('@contractor-ops/logger/metrics', () => ({
@@ -272,6 +275,13 @@ const caller = makeCaller();
 
 beforeEach(() => {
   vi.clearAllMocks();
+  mockPrisma.member.findFirst.mockResolvedValue({ role: 'admin', userId: USER_ID });
+  mockPrisma.organization.findUnique.mockResolvedValue({
+    id: 'org-mock',
+    dataRegion: 'EU',
+    status: 'ACTIVE',
+  });
+  mockPrisma.workflowTaskRun.createMany.mockResolvedValue({ count: 0 });
   mockPrisma.$transaction.mockImplementation(
     async (fnOrArray: ((tx: unknown) => Promise<unknown>) | unknown[]) => {
       if (typeof fnOrArray === 'function') return fnOrArray(mockPrisma);
@@ -300,7 +310,7 @@ describe('workflowExecutionRouter', () => {
       mockPrisma.workflowRun.update.mockResolvedValueOnce({
         id: RUN_ID,
         status: 'CANCELLED',
-        cancelledAt: expect.any(Date),
+        cancelledAt: new Date(),
         tasks: [{ id: 'task-1', status: 'CANCELLED', externalRefType: null, externalRefId: null }],
       });
 
@@ -493,6 +503,7 @@ describe('workflowExecutionRouter', () => {
       mockPrisma.workflowTaskRun.findFirst.mockResolvedValueOnce({
         id: TASK_RUN_ID,
         organizationId: ORG_ID,
+        assigneeUserId: USER_ID,
         status: 'IN_PROGRESS',
         startedAt: new Date(),
         externalRefType: null,
@@ -549,6 +560,7 @@ describe('workflowExecutionRouter', () => {
       mockPrisma.workflowTaskRun.findFirst.mockResolvedValueOnce({
         id: TASK_RUN_ID,
         organizationId: ORG_ID,
+        assigneeUserId: USER_ID,
         status: 'TODO',
         externalRefType: null,
         externalRefId: null,
@@ -858,6 +870,7 @@ describe('workflowExecutionRouter', () => {
         id: TASK_RUN_ID,
         organizationId: ORG_ID,
         status: 'IN_PROGRESS',
+        assigneeUserId: USER_ID,
         startedAt: new Date(),
         externalRefType: null,
         externalRefId: null,
@@ -882,7 +895,7 @@ describe('workflowExecutionRouter', () => {
       const runUpdateCall = mockPrisma.workflowRun.update.mock.calls[0]?.[0];
       expect(runUpdateCall.data).toMatchObject({
         status: 'COMPLETED',
-        completedAt: expect.any(Date),
+        completedAt: new Date(),
       });
     });
   });
@@ -1012,6 +1025,11 @@ describe('workflowExecutionRouter', () => {
     it('creates a comment linked to a specific task', async () => {
       mockPrisma.workflowRun.findFirst.mockResolvedValueOnce({
         id: RUN_ID,
+        organizationId: ORG_ID,
+      });
+      mockPrisma.workflowTaskRun.findFirst.mockResolvedValueOnce({
+        id: TASK_RUN_ID,
+        workflowRunId: RUN_ID,
         organizationId: ORG_ID,
       });
       mockPrisma.workflowComment.create.mockResolvedValueOnce({

@@ -30,13 +30,15 @@ const { mockPrisma, mockIsPaymentBlockEnforced, mockWarn, mockError, itemsFixtur
     };
   });
 
-vi.mock('@contractor-ops/db', () => ({ prisma: mockPrisma }));
+vi.mock('@contractor-ops/db', () => ({ prisma: mockPrisma, prismaRaw: mockPrisma }));
 vi.mock('@contractor-ops/feature-flags', () => ({
   isPaymentBlockEnforced: mockIsPaymentBlockEnforced,
 }));
 vi.mock('@contractor-ops/logger', () => ({
+  getIdpAuditLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn(), child: vi.fn() })),
   createLogger: vi.fn(() => ({
     info: vi.fn(),
+
     warn: mockWarn,
     error: mockError,
     debug: vi.fn(),
@@ -128,15 +130,15 @@ describe('compliance-payment-gate assertion', () => {
     expect(where.contractor).toEqual({ is: { organizationId: ORG } });
   });
 
-  it('omits contractor org filter when no organizationId provided (tx path — caller-scoped)', async () => {
+  it('always scopes the tx path by contractor.organizationId (tenant guard cannot be bypassed via tx)', async () => {
     const txFindMany = vi.fn(async () => []);
     const tx = {
       contractorComplianceItem: { findMany: txFindMany },
       auditLog: { create: vi.fn() },
     } as never;
-    await assertContractorPaymentEligibility(['ctr-1'], { tx });
+    await assertContractorPaymentEligibility(['ctr-1'], { tx, organizationId: ORG });
     const where = txFindMany.mock.calls[0]?.[0]?.where as Record<string, unknown>;
-    expect(where.contractor).toBeUndefined();
+    expect(where.contractor).toEqual({ is: { organizationId: ORG } });
   });
 
   it('returns immediately for an empty contractorIds array (no DB query)', async () => {

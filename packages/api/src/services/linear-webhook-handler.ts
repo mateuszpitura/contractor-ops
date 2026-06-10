@@ -241,6 +241,7 @@ export async function processLinearWebhook(
   // 6. Resolve internal status from Linear stateId
   const mappedWorkflowStatus = await resolveInternalStatus(
     prisma,
+    organizationId,
     connectionId,
     teamId,
     newStateId,

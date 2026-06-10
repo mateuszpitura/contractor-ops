@@ -7,9 +7,7 @@
 
 import type { PrismaClient } from '@contractor-ops/db';
 import type { ImpactPreview } from '@contractor-ops/integrations';
-import { classifyError } from '@contractor-ops/integrations';
-import { GoogleWorkspaceAdapter } from '@contractor-ops/integrations/adapters/google-workspace-adapter';
-import { SlackAdapter } from '@contractor-ops/integrations/adapters/slack-adapter';
+import { classifyError, createConfiguredDeprovisionableAdapter } from '@contractor-ops/integrations';
 import { createLogger } from '@contractor-ops/logger';
 import { CacheKeys, CacheTTL, cached, invalidate } from './cache.js';
 import type { DeprovisionProvider } from './idp-token-resolver.js';
@@ -47,12 +45,12 @@ export async function getImpactPreview(args: GetImpactPreviewArgs): Promise<Impa
   }
 
   const runDescribe = (): Promise<ImpactPreview> => {
-    if (provider === 'GOOGLE_WORKSPACE') {
-      return new GoogleWorkspaceAdapter()
-        .withAccessToken(token.accessToken)
-        .describeImpact(externalUserId);
+    if (provider !== 'GOOGLE_WORKSPACE' && provider !== 'SLACK') {
+      throw new Error(`IdP impact preview: unsupported provider ${provider}`);
     }
-    return new SlackAdapter().withOrgGridToken(token.accessToken).describeImpact(externalUserId);
+    return createConfiguredDeprovisionableAdapter(provider, token.accessToken).describeImpact(
+      externalUserId,
+    );
   };
 
   if (forceRefresh) {

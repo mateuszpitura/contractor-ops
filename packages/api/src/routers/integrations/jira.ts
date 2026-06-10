@@ -231,7 +231,13 @@ export const jiraRouter = router({
       }),
     )
     .query(async ({ ctx, input }) => {
-      const mapping = await getStatusMapping(ctx.db, input.connectionId, input.projectId);
+      await loadConnection(ctx.db, input.connectionId, ctx.organizationId);
+      const mapping = await getStatusMapping(
+        ctx.db,
+        ctx.organizationId,
+        input.connectionId,
+        input.projectId,
+      );
 
       return mapping ?? [];
     }),
@@ -403,33 +409,37 @@ export const jiraRouter = router({
   })
     .input(saveJiraStatusMappingInputSchema)
     .mutation(async ({ ctx, input }) => {
-      const connection = await loadConnection(ctx.db, input.connectionId, ctx.organizationId);
+      await loadConnection(ctx.db, input.connectionId, ctx.organizationId);
 
-      await saveStatusMapping(ctx.db, input.connectionId, input.projectId, input.mappings);
+      await saveStatusMapping(
+        ctx.db,
+        ctx.organizationId,
+        input.connectionId,
+        input.projectId,
+        input.mappings,
+      );
 
       // Re-register webhooks for all projects that have status mappings
-      const config = (connection.configJson as JiraConnectionConfig) ?? {};
+      const refreshedConnection = await loadConnection(
+        ctx.db,
+        input.connectionId,
+        ctx.organizationId,
+      );
+      const config = (refreshedConnection.configJson as JiraConnectionConfig) ?? {};
       const statusMappings = config.statusMappings ?? {};
 
-      // Include the just-saved project
-      if (!statusMappings[input.projectId]) {
-        statusMappings[input.projectId] = input.mappings;
-      }
-
       const projectKeys = Object.keys(statusMappings);
+      let webhooksRegistered = true;
       if (projectKeys.length > 0) {
         try {
-          // Gather project keys from Jira (we need keys, not IDs, for JQL)
-          // The project IDs in statusMappings keys need to be resolved to keys
-          // For now, use the project IDs directly in JQL (Jira accepts both)
           await registerJiraWebhooks(ctx.db, input.connectionId, projectKeys);
         } catch (error) {
+          webhooksRegistered = false;
           log.error({ err: error }, 'failed to register webhooks');
-          // Don't fail the save — webhooks can be retried
         }
       }
 
-      return { success: true };
+      return { success: true, webhooksRegistered };
     }),
 
   /**

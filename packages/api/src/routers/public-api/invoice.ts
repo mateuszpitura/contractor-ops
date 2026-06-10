@@ -1,4 +1,8 @@
 import type { Prisma } from '@contractor-ops/db';
+import {
+  entityIdSchema,
+  publicApiInvoiceListInputSchema,
+} from '@contractor-ops/validators/public-api';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import * as E from '../../errors';
@@ -10,26 +14,7 @@ import { requirePermission } from '../../middleware/rbac';
 // Input schemas
 // ---------------------------------------------------------------------------
 
-const listInput = z.object({
-  page: z.coerce.number().int().min(1).default(1),
-  pageSize: z.coerce.number().int().min(1).max(100).default(25),
-  status: z
-    .enum([
-      'RECEIVED',
-      'UNDER_REVIEW',
-      'APPROVAL_PENDING',
-      'APPROVED',
-      'REJECTED',
-      'READY_FOR_PAYMENT',
-      'PARTIALLY_PAID',
-      'PAID',
-      'VOID',
-    ])
-    .optional(),
-  contractorId: z.string().optional(),
-  sortBy: z.enum(['issueDate', 'dueDate', 'createdAt', 'totalMinor']).default('createdAt'),
-  sortOrder: z.enum(['asc', 'desc']).default('desc'),
-});
+const listInput = publicApiInvoiceListInputSchema;
 
 // ---------------------------------------------------------------------------
 // Public API invoice router
@@ -86,7 +71,7 @@ export const publicInvoiceRouter = router({
 
   getById: apiKeyTenantProcedure
     .use(requirePermission({ invoice: ['read'] }))
-    .input(z.object({ id: z.string() }))
+    .input(entityIdSchema)
     .query(async ({ ctx, input }) => {
       const invoice = await ctx.db.invoice.findFirst({
         where: {

@@ -12,7 +12,7 @@ import { router } from '../../init';
 import { requirePermission } from '../../middleware/rbac';
 import { sensitiveActionProcedure } from '../../middleware/sensitive';
 import { tenantProcedure } from '../../middleware/tenant';
-import { writeAuditLog } from '../../services/audit-writer';
+import { auditedMutation, auditMutationCtx } from '../../lib/audited-mutation';
 import { CacheKeys, CacheTTL, cached, invalidateByPrefix } from '../../services/cache';
 import { approveChangeRequest, rejectChangeRequest } from '../../services/portal-change-request';
 import { createRegionalPresignedUploadUrl } from '../../services/regional-storage';
@@ -90,15 +90,16 @@ export const settingsRouter = router({
 
       // F-OBS-05 — settings.update changes org name/legal name/billing email
       // and other tenant-wide settings; same audit reasoning as organization.update.
-      await writeAuditLog({
-        organizationId: ctx.organizationId,
-        actorType: 'USER',
-        actorId: ctx.user?.id ?? null,
-        action: 'SETTINGS_UPDATE',
-        resourceType: 'ORGANIZATION',
-        resourceId: ctx.organizationId,
-        newValues: data,
-      });
+      await auditedMutation(
+        auditMutationCtx(ctx),
+        {
+          action: 'SETTINGS_UPDATE',
+          resourceType: 'ORGANIZATION',
+          resourceId: ctx.organizationId,
+          newValues: data,
+        },
+        async () => updated,
+      );
 
       return updated;
     }),
@@ -148,33 +149,30 @@ export const settingsRouter = router({
         contractExpiryReminderDaysBefore: input.reminderDaysBefore,
       };
 
-      await ctx.db.organization.update({
-        where: { id: ctx.organizationId },
-        data: {
-          settingsJson: newSettings as Prisma.InputJsonValue,
+      return auditedMutation(
+        auditMutationCtx(ctx),
+        {
+          action: 'SETTINGS_EXPIRY_REMINDERS_UPDATE',
+          resourceType: 'ORGANIZATION',
+          resourceId: ctx.organizationId,
+          oldValues: {
+            reminderDaysBefore: (currentSettings.contractExpiryReminderDaysBefore as number[]) ?? [
+              30, 60, 90,
+            ],
+          },
+          newValues: { reminderDaysBefore: input.reminderDaysBefore },
         },
-      });
-
-      void invalidateByPrefix(CacheKeys.settingsPrefix(ctx.organizationId));
-
-      // F-OBS-05 — reminder defaults drive automated outbound notifications;
-      // changes affect contractor-facing workflows.
-      await writeAuditLog({
-        organizationId: ctx.organizationId,
-        actorType: 'USER',
-        actorId: ctx.user?.id ?? null,
-        action: 'SETTINGS_EXPIRY_REMINDERS_UPDATE',
-        resourceType: 'ORGANIZATION',
-        resourceId: ctx.organizationId,
-        oldValues: {
-          reminderDaysBefore: (currentSettings.contractExpiryReminderDaysBefore as number[]) ?? [
-            30, 60, 90,
-          ],
+        async tx => {
+          await tx.organization.update({
+            where: { id: ctx.organizationId },
+            data: {
+              settingsJson: newSettings as Prisma.InputJsonValue,
+            },
+          });
+          void invalidateByPrefix(CacheKeys.settingsPrefix(ctx.organizationId));
+          return { reminderDaysBefore: input.reminderDaysBefore };
         },
-        newValues: { reminderDaysBefore: input.reminderDaysBefore },
-      });
-
-      return { reminderDaysBefore: input.reminderDaysBefore };
+      );
     }),
 
   /**
@@ -225,34 +223,31 @@ export const settingsRouter = router({
         invoiceDeviationThresholdPercent: input.invoiceDeviationThresholdPercent,
       };
 
-      await ctx.db.organization.update({
-        where: { id: ctx.organizationId },
-        data: {
-          settingsJson: newSettings as Prisma.InputJsonValue,
+      return auditedMutation(
+        auditMutationCtx(ctx),
+        {
+          action: 'SETTINGS_INVOICE_THRESHOLD_UPDATE',
+          resourceType: 'ORGANIZATION',
+          resourceId: ctx.organizationId,
+          oldValues: {
+            invoiceDeviationThresholdPercent:
+              (currentSettings.invoiceDeviationThresholdPercent as number) ?? 10,
+          },
+          newValues: { invoiceDeviationThresholdPercent: input.invoiceDeviationThresholdPercent },
         },
-      });
-
-      void invalidateByPrefix(CacheKeys.settingsPrefix(ctx.organizationId));
-
-      // F-OBS-05 — invoice match threshold affects which invoices auto-match
-      // vs flag for manual review; financial control change.
-      await writeAuditLog({
-        organizationId: ctx.organizationId,
-        actorType: 'USER',
-        actorId: ctx.user?.id ?? null,
-        action: 'SETTINGS_INVOICE_THRESHOLD_UPDATE',
-        resourceType: 'ORGANIZATION',
-        resourceId: ctx.organizationId,
-        oldValues: {
-          invoiceDeviationThresholdPercent:
-            (currentSettings.invoiceDeviationThresholdPercent as number) ?? 10,
+        async tx => {
+          await tx.organization.update({
+            where: { id: ctx.organizationId },
+            data: {
+              settingsJson: newSettings as Prisma.InputJsonValue,
+            },
+          });
+          void invalidateByPrefix(CacheKeys.settingsPrefix(ctx.organizationId));
+          return {
+            invoiceDeviationThresholdPercent: input.invoiceDeviationThresholdPercent,
+          };
         },
-        newValues: { invoiceDeviationThresholdPercent: input.invoiceDeviationThresholdPercent },
-      });
-
-      return {
-        invoiceDeviationThresholdPercent: input.invoiceDeviationThresholdPercent,
-      };
+      );
     }),
 
   // =========================================================================
@@ -366,36 +361,33 @@ export const settingsRouter = router({
         updateData.logo = input.logoUrl;
       }
 
-      await ctx.db.organization.update({
-        where: { id: ctx.organizationId },
-        data: updateData,
-      });
-
-      void invalidateByPrefix(CacheKeys.settingsPrefix(ctx.organizationId));
-
-      // F-OBS-05 — branding changes are visible to contractors and can be
-      // used in phishing scenarios; auditable.
-      await writeAuditLog({
-        organizationId: ctx.organizationId,
-        actorType: 'USER',
-        actorId: ctx.user?.id ?? null,
-        action: 'SETTINGS_BRANDING_UPDATE',
-        resourceType: 'ORGANIZATION',
-        resourceId: ctx.organizationId,
-        oldValues: {
-          brandColor: (currentSettings.brandColor as string) ?? null,
-          logo: org?.logo ?? null,
+      return auditedMutation(
+        auditMutationCtx(ctx),
+        {
+          action: 'SETTINGS_BRANDING_UPDATE',
+          resourceType: 'ORGANIZATION',
+          resourceId: ctx.organizationId,
+          oldValues: {
+            brandColor: (currentSettings.brandColor as string) ?? null,
+            logo: org?.logo ?? null,
+          },
+          newValues: {
+            brandColor: (newSettings.brandColor as string) ?? null,
+            logo: input.logoUrl === undefined ? (org?.logo ?? null) : input.logoUrl,
+          },
         },
-        newValues: {
-          brandColor: (newSettings.brandColor as string) ?? null,
-          logo: input.logoUrl === undefined ? (org?.logo ?? null) : input.logoUrl,
+        async tx => {
+          await tx.organization.update({
+            where: { id: ctx.organizationId },
+            data: updateData,
+          });
+          void invalidateByPrefix(CacheKeys.settingsPrefix(ctx.organizationId));
+          return {
+            brandColor: (newSettings.brandColor as string) ?? null,
+            logo: input.logoUrl === undefined ? (org?.logo ?? null) : input.logoUrl,
+          };
         },
-      });
-
-      return {
-        brandColor: (newSettings.brandColor as string) ?? null,
-        logo: input.logoUrl === undefined ? (org?.logo ?? null) : input.logoUrl,
-      };
+      );
     }),
 
   // =========================================================================
@@ -463,25 +455,23 @@ export const settingsRouter = router({
         select: { portalSubdomain: true },
       });
 
-      await ctx.db.organization.update({
-        where: { id: ctx.organizationId },
-        data: { portalSubdomain: input.portalSubdomain ?? null },
-      });
-
-      // F-OBS-05 — portal subdomain is customer-visible; changes affect
-      // tenant routing and email links.
-      await writeAuditLog({
-        organizationId: ctx.organizationId,
-        actorType: 'USER',
-        actorId: ctx.user?.id ?? null,
-        action: 'SETTINGS_PORTAL_DOMAIN_UPDATE',
-        resourceType: 'ORGANIZATION',
-        resourceId: ctx.organizationId,
-        oldValues: { portalSubdomain: previous?.portalSubdomain ?? null },
-        newValues: { portalSubdomain: input.portalSubdomain ?? null },
-      });
-
-      return { success: true as const };
+      return auditedMutation(
+        auditMutationCtx(ctx),
+        {
+          action: 'SETTINGS_PORTAL_DOMAIN_UPDATE',
+          resourceType: 'ORGANIZATION',
+          resourceId: ctx.organizationId,
+          oldValues: { portalSubdomain: previous?.portalSubdomain ?? null },
+          newValues: { portalSubdomain: input.portalSubdomain ?? null },
+        },
+        async tx => {
+          await tx.organization.update({
+            where: { id: ctx.organizationId },
+            data: { portalSubdomain: input.portalSubdomain ?? null },
+          });
+          return { success: true as const };
+        },
+      );
     }),
 
   // =========================================================================
@@ -564,18 +554,19 @@ export const settingsRouter = router({
 
       // F-OBS-05 — change-request review is a tenant-data approval/rejection
       // step that admins must be able to retrace.
-      await writeAuditLog({
-        organizationId: ctx.organizationId,
-        actorType: 'USER',
-        actorId: reviewerId,
-        action: input.action === 'approve' ? 'CHANGE_REQUEST_APPROVE' : 'CHANGE_REQUEST_REJECT',
-        resourceType: 'ORGANIZATION',
-        resourceId: ctx.organizationId,
-        metadata: {
-          changeRequestId: input.requestId,
-          ...(input.comment ? { comment: input.comment } : {}),
+      return auditedMutation(
+        auditMutationCtx(ctx),
+        {
+          action: input.action === 'approve' ? 'CHANGE_REQUEST_APPROVE' : 'CHANGE_REQUEST_REJECT',
+          resourceType: 'ORGANIZATION',
+          resourceId: ctx.organizationId,
+          metadata: {
+            changeRequestId: input.requestId,
+            ...(input.comment ? { comment: input.comment } : {}),
+          },
         },
-      });
+        async () => ({ success: true as const }),
+      );
 
       return { success: true as const };
     }),

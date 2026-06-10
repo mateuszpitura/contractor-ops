@@ -10,16 +10,21 @@ const { mockFindFirst, mockUpdate } = vi.hoisted(() => ({
   mockUpdate: vi.fn(),
 }));
 
-vi.mock('@contractor-ops/db', () => ({
-  withRlsTransactions: <T>(c: T) => c,
-  withRlsReads: <T>(c: T) => c,
-  prisma: {
+vi.mock('@contractor-ops/db', () => {
+  const __mockDbPrisma = {
     integrationConnection: {
       findFirst: mockFindFirst,
       update: mockUpdate,
     },
-  },
-}));
+  };
+  return {
+  withRlsTransactions: <T>(c: T) => c,
+  withRlsReads: <T>(c: T) => c,
+  prisma: __mockDbPrisma,
+  prismaRaw: __mockDbPrisma,
+
+  };
+});
 
 // Mock card imports to prevent missing module errors
 vi.mock('../cards/approval-result-card', () => ({

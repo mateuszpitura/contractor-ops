@@ -4,6 +4,7 @@
 import type { Prisma } from '@contractor-ops/db';
 import type { TemplateCreateInput } from '@contractor-ops/validators';
 import {
+  entityIdSchema,
   templateCreateSchema,
   templateListSchema,
   templateUpdateSchema,
@@ -152,7 +153,7 @@ export const workflowTemplatesRouter = router({
    */
   getTemplate: tenantProcedure
     .use(requirePermission({ workflow: ['read'] }))
-    .input(z.object({ id: z.string() }))
+    .input(entityIdSchema)
     .query(async ({ ctx, input }) => {
       const template = await ctx.db.workflowTemplate.findFirst({
         where: {
@@ -214,7 +215,7 @@ export const workflowTemplatesRouter = router({
    */
   deleteTemplate: tenantProcedure
     .use(requirePermission({ workflow: ['delete'] }))
-    .input(z.object({ id: z.string() }))
+    .input(entityIdSchema)
     .mutation(async ({ ctx, input }) => {
       const template = await ctx.db.workflowTemplate.findFirst({
         where: {
@@ -262,7 +263,7 @@ export const workflowTemplatesRouter = router({
    */
   duplicateTemplate: tenantProcedure
     .use(requirePermission({ workflow: ['create'] }))
-    .input(z.object({ id: z.string() }))
+    .input(entityIdSchema)
     .mutation(async ({ ctx, input }) => {
       const source = await ctx.db.workflowTemplate.findFirst({
         where: {

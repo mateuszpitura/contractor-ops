@@ -64,6 +64,12 @@ vi.mock('@contractor-ops/integrations', () => ({
     verifyDeprovisioned: vi.fn(),
     describeImpact: vi.fn(),
   })),
+  createConfiguredDeprovisionableAdapter: vi.fn(() => ({
+    suspendAccount,
+    revokeAllSessions,
+    verifyDeprovisioned: vi.fn(),
+    describeImpact: vi.fn(),
+  })),
 }));
 // Stub the concrete adapter modules (imported for token-configured construction).
 // withAccessToken/withOrgGridToken return an object with the same suspend/revoke
@@ -93,11 +99,16 @@ vi.mock('@contractor-ops/integrations/adapters/slack-adapter', () => ({
   },
 }));
 // Default: token resolver succeeds (GWS connected). Individual tests override this.
-vi.mock('../services/idp-token-resolver', () => ({
-  resolveDeprovisionToken: vi.fn(async () => ({ ok: true, accessToken: 'tok-test' })),
-}));
+vi.mock('../services/idp-token-resolver', async importOriginal => {
+  const actual = await importOriginal<typeof import('../services/idp-token-resolver')>();
+  return {
+    ...actual,
+    resolveDeprovisionToken: vi.fn(async () => ({ ok: true, accessToken: 'tok-test' })),
+  };
+});
 
 vi.mock('@contractor-ops/logger', () => ({
+  createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
   getIdpAuditLogger: vi.fn(() => ({ info: auditInfo, warn: vi.fn(), error: vi.fn() })),
   // hashExternalUserId is a pure crypto helper; use the real implementation so
   // audit assertions work without coupling tests to a specific hash value.

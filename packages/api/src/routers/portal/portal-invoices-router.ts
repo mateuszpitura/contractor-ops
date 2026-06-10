@@ -1,3 +1,4 @@
+import { entityIdSchema } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import * as E from '../../errors';
@@ -39,7 +40,7 @@ export const portalInvoicesRouter = router({
    * Get invoice detail with timeline, attached files, and payment info.
    * Excludes internal data (batch IDs, reviewer names, cost centers) per D-11/D-12.
    */
-  getInvoice: portalProcedure.input(z.object({ id: z.string() })).query(async ({ ctx, input }) => {
+  getInvoice: portalProcedure.input(entityIdSchema).query(async ({ ctx, input }) => {
     const invoice = await ctx.db.invoice.findFirst({
       where: { id: input.id, contractorId: ctx.contractorId, deletedAt: null },
       select: {

@@ -17,7 +17,7 @@ import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import * as E from '../../errors';
 import { router } from '../../init';
-import { cursorClause, paginateByExtraRowUndefined } from '../../lib/pagination';
+import { cursorClause, paginateByLastKeptUndefined } from '../../lib/pagination';
 import { requirePermission } from '../../middleware/rbac';
 import { tenantProcedure } from '../../middleware/tenant';
 import { writeAuditLog } from '../../services/audit-writer';
@@ -826,7 +826,7 @@ export const einvoiceRouter = router({
         ...cursorClause(input, 50),
       });
 
-      const { items: rows, nextCursor } = paginateByExtraRowUndefined(rawRows, input, 50);
+      const { items: rows, nextCursor } = paginateByLastKeptUndefined(rawRows, input, 50);
 
       return { rows, nextCursor };
     }),

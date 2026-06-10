@@ -38,15 +38,20 @@ const { mockFindUnique } = vi.hoisted(() => ({
   mockFindUnique: vi.fn(),
 }));
 
-vi.mock('@contractor-ops/db', () => ({
-  withRlsTransactions: <T>(c: T) => c,
-  withRlsReads: <T>(c: T) => c,
-  prisma: {
+vi.mock('@contractor-ops/db', () => {
+  const __mockDbPrisma = {
     organization: {
       findUnique: mockFindUnique,
     },
-  },
-}));
+  };
+  return {
+  withRlsTransactions: <T>(c: T) => c,
+  withRlsReads: <T>(c: T) => c,
+  prisma: __mockDbPrisma,
+  prismaRaw: __mockDbPrisma,
+
+  };
+});
 
 // Wire env vars BEFORE importing the module so the singleton Redis is created.
 process.env.UPSTASH_REDIS_REST_URL = 'https://fake-redis.upstash.io';

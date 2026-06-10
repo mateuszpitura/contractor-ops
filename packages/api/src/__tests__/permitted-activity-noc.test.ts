@@ -16,7 +16,9 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { makeFreeZoneAssignment, makeMeOrg } from './__fixtures__/gulf-fixtures';
 
 vi.mock('@contractor-ops/logger', () => ({
-  createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
+  getIdpAuditLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn(), child: vi.fn() })),
+  createLogger: vi.fn(() => ({ info: vi.fn(),
+ warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
 }));
 
 import type { PermittedActivityClient } from '../services/permitted-activity-check';

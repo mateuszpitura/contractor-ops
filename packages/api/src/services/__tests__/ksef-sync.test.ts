@@ -19,6 +19,7 @@ vi.mock('@contractor-ops/db', () => {
     $executeRawUnsafe: vi.fn(async () => 0),
   };
   return {
+    prismaRaw: prisma,
     prisma,
     createTenantClient: vi.fn(() => prisma),
     createTenantClientFrom: vi.fn(() => prisma),
@@ -50,6 +51,7 @@ vi.mock('@contractor-ops/einvoice', () => {
     Object.assign(this, mockKsefClient);
   });
   return {
+    prismaRaw: prisma,
     KsefApiClient: MockKsefApiClient,
     parseFa3Xml: vi.fn().mockReturnValue({ parsed: true }),
     mapKsefToInvoiceFields: vi.fn().mockReturnValue({
@@ -72,6 +74,7 @@ vi.mock('@contractor-ops/einvoice', () => {
 });
 
 vi.mock('@contractor-ops/validators', () => ({
+  getServerEnv: vi.fn(() => process.env),
   ksefConnectionConfigSchema: {
     parse: vi.fn().mockReturnValue({ environment: 'prod', authMethod: 'token' }),
   },
@@ -134,6 +137,7 @@ const CONN_ID = 'conn-1';
 
 function makeConnection(overrides: Record<string, unknown> = {}) {
   return {
+    prismaRaw: prisma,
     id: CONN_ID,
     organizationId: ORG_ID,
     credentialsRef: 'enc-ref',
@@ -145,6 +149,7 @@ function makeConnection(overrides: Record<string, unknown> = {}) {
 
 function makeOrg(overrides: Record<string, unknown> = {}) {
   return {
+    prismaRaw: prisma,
     id: ORG_ID,
     settingsJson: { taxId: '1234567890' },
     ...overrides,
@@ -152,7 +157,8 @@ function makeOrg(overrides: Record<string, unknown> = {}) {
 }
 
 function invoiceMetadata(ref: string) {
-  return { ksefReferenceNumber: ref };
+  return {
+    prismaRaw: prisma, ksefReferenceNumber: ref };
 }
 
 function setupSuccessfulSync(

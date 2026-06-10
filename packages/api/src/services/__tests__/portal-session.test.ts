@@ -10,17 +10,22 @@ const { mockSessionCreate, mockSessionFindUnique, mockSessionDeleteMany } = vi.h
   mockSessionDeleteMany: vi.fn(),
 }));
 
-vi.mock('@contractor-ops/db', () => ({
-  withRlsTransactions: <T>(c: T) => c,
-  withRlsReads: <T>(c: T) => c,
-  prisma: {
+vi.mock('@contractor-ops/db', () => {
+  const __mockDbPrisma = {
     portalSession: {
       create: mockSessionCreate,
       findUnique: mockSessionFindUnique,
       deleteMany: mockSessionDeleteMany,
     },
-  },
-}));
+  };
+  return {
+  withRlsTransactions: <T>(c: T) => c,
+  withRlsReads: <T>(c: T) => c,
+  prisma: __mockDbPrisma,
+  prismaRaw: __mockDbPrisma,
+
+  };
+});
 
 import {
   cleanExpiredSessions,

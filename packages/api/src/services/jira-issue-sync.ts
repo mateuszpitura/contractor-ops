@@ -360,7 +360,13 @@ export async function transitionJiraIssue(
   }
 
   // 3. Look up the Jira transition ID for the new workflow status
-  const mapping = await lookupJiraTransitionId(prisma, connectionId, projectId, newWorkflowStatus);
+  const mapping = await lookupJiraTransitionId(
+    prisma,
+    organizationId,
+    connectionId,
+    projectId,
+    newWorkflowStatus,
+  );
 
   if (!mapping) {
     // No mapping configured — log and return

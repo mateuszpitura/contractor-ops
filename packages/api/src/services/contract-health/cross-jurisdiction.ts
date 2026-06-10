@@ -4,7 +4,10 @@
 // MANUAL_REVIEW_REQUIRED with a structured flag.
 
 import type { PrismaClient } from '@contractor-ops/db';
+import { mapIsoToJurisdiction } from '@contractor-ops/compliance-policy';
 import type { Jurisdiction } from '@contractor-ops/validators';
+
+export { mapIsoToJurisdiction };
 
 /**
  * Resolves a contract's effective jurisdiction with the RESEARCH §3 fallback chain:
@@ -35,31 +38,6 @@ export async function resolveContractJurisdiction(
     null;
   if (!raw) return null;
   return mapIsoToJurisdiction(raw);
-}
-
-// Accepts both alpha-2 (Contractor/Organization.countryCode) and alpha-3
-// (Contract.jurisdiction @db.Char(3)) ISO codes.
-const ISO_TO_JURISDICTION: Record<string, Jurisdiction> = {
-  GBR: 'UK',
-  GB: 'UK',
-  UK: 'UK',
-  DEU: 'DE',
-  DE: 'DE',
-  POL: 'PL',
-  PL: 'PL',
-  USA: 'US',
-  US: 'US',
-  SAU: 'KSA',
-  SA: 'KSA',
-  KSA: 'KSA',
-  ARE: 'UAE',
-  AE: 'UAE',
-  UAE: 'UAE',
-};
-
-export function mapIsoToJurisdiction(iso: string): Jurisdiction | null {
-  const upper = iso.toUpperCase();
-  return ISO_TO_JURISDICTION[upper] ?? null;
 }
 
 export interface CrossJurisdictionAnalysis {

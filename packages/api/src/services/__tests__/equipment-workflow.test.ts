@@ -30,6 +30,7 @@ vi.mock('@contractor-ops/logger', () => {
     PII_MASK_PATHS: [],
 
     createLogger: vi.fn(() => stub),
+
     createTrpcLogger: vi.fn(() => stub),
     createCronLogger: vi.fn(() => stub),
     createWebhookLogger: vi.fn(() => stub),

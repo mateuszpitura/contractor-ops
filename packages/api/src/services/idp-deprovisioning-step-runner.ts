@@ -1,8 +1,6 @@
 import type { createTenantClientFrom, PrismaClient } from '@contractor-ops/db';
 import { insertProvenance, MAX_ATTEMPTS, recomputeRunStatus } from '@contractor-ops/idp-saga';
-import { getDeprovisionableAdapter } from '@contractor-ops/integrations';
-import { GoogleWorkspaceAdapter } from '@contractor-ops/integrations/adapters/google-workspace-adapter';
-import { SlackAdapter } from '@contractor-ops/integrations/adapters/slack-adapter';
+import { createConfiguredDeprovisionableAdapter } from '@contractor-ops/integrations';
 import { getIdpAuditLogger, hashExternalUserId } from '@contractor-ops/logger';
 import { z } from 'zod';
 import { DEPROVISIONING_TOGGLE_PROVIDERS } from '../routers/integrations/deprovisioning.js';
@@ -204,9 +202,7 @@ async function resolveAdapter(db: PrismaClient, body: StepRunnerBody) {
   if (body.provider === 'GOOGLE_WORKSPACE' || body.provider === 'SLACK') {
     const token = await resolveDeprovisionToken(db, body.organizationId, body.provider);
     if (token.ok) {
-      return body.provider === 'GOOGLE_WORKSPACE'
-        ? new GoogleWorkspaceAdapter().withAccessToken(token.accessToken)
-        : new SlackAdapter().withOrgGridToken(token.accessToken);
+      return createConfiguredDeprovisionableAdapter(body.provider, token.accessToken);
     }
     // Token resolver returned not-ok (not connected / decrypt failure) for a
     // known provider — throw so the step records a clear not-connected failure

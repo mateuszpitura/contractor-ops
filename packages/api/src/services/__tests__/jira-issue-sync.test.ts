@@ -14,6 +14,7 @@ vi.mock('@contractor-ops/integrations/services/credential-service', () => ({
 }));
 
 vi.mock('@contractor-ops/validators', () => ({
+  getServerEnv: vi.fn(() => process.env),
   jiraTaskConfigSchema: { safeParse: vi.fn() },
 }));
 

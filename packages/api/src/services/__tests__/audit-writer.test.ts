@@ -8,15 +8,21 @@ const { mockPrismaCreate } = vi.hoisted(() => ({
   mockPrismaCreate: vi.fn(async () => ({ id: 'aud_test' })),
 }));
 
-vi.mock('@contractor-ops/db', () => ({
+vi.mock('@contractor-ops/db', () => {
+  const __mockDbPrisma = {
+    auditLog: { create: mockPrismaCreate },
+  };
+  return {
   withRlsTransactions: <T>(c: T) => c,
   withRlsReads: <T>(c: T) => c,
-  prisma: {
-    auditLog: { create: mockPrismaCreate },
-  },
-}));
+  prisma: __mockDbPrisma,
+  prismaRaw: __mockDbPrisma,
+
+  };
+});
 
 vi.mock('@contractor-ops/logger', () => ({
+  getIdpAuditLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn(), child: vi.fn() })),
   createTrpcLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
   createWebhookLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
   createCronLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
@@ -41,6 +47,7 @@ vi.mock('@contractor-ops/logger', () => ({
   })),
   createLogger: vi.fn(() => ({
     info: vi.fn(),
+
     warn: vi.fn(),
     error: vi.fn(),
     debug: vi.fn(),

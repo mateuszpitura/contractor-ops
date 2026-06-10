@@ -333,7 +333,7 @@ const {
   mockHmrcClient: { checkVatNumber: vi.fn() },
   mockViesClient: { checkVatNumber: vi.fn() },
   validateTaxIdMock: vi.fn(async () => ({
-    responseStatus: 'valid' as const,
+    responseStatus: 'VALID' as const,
     confirmationRef: null,
     source: 'api' as const,
     requestedAt: new Date('2026-04-13T10:00:00Z'),
@@ -1028,7 +1028,7 @@ describe('Phase 57 · Plan 04 — invoice-line tax pipeline', () => {
     isValidationFreshMock.mockReturnValue(true);
     validateTaxIdMock.mockReset();
     validateTaxIdMock.mockResolvedValue({
-      responseStatus: 'valid',
+      responseStatus: 'VALID',
       confirmationRef: null,
       source: 'api',
       requestedAt: new Date('2026-04-13T10:00:00Z'),
@@ -1085,7 +1085,7 @@ describe('Phase 57 · Plan 04 — invoice-line tax pipeline', () => {
       vatId: 'GB193054661',
       type: 'COMPANY',
       latestVatValidatedAt: new Date('2026-04-01T00:00:00Z'),
-      latestVatValidationStatus: 'valid',
+      latestVatValidationStatus: 'VALID',
     });
     detectReverseChargeMock.mockReturnValue({
       shouldApply: true,
@@ -1117,7 +1117,7 @@ describe('Phase 57 · Plan 04 — invoice-line tax pipeline', () => {
       vatId: 'GB193054661',
       type: 'COMPANY',
       latestVatValidatedAt: new Date('2025-01-01T00:00:00Z'), // older than 90d
-      latestVatValidationStatus: 'valid',
+      latestVatValidationStatus: 'VALID',
     });
     isValidationFreshMock.mockReturnValue(false);
 
@@ -1141,7 +1141,7 @@ describe('Phase 57 · Plan 04 — invoice-line tax pipeline', () => {
       vatId: 'GB193054661',
       type: 'COMPANY',
       latestVatValidatedAt: new Date('2026-04-01T00:00:00Z'),
-      latestVatValidationStatus: 'valid',
+      latestVatValidationStatus: 'VALID',
     });
     isValidationFreshMock.mockReturnValue(true);
 
@@ -1161,7 +1161,7 @@ describe('Phase 57 · Plan 04 — invoice-line tax pipeline', () => {
       vatId: 'GB193054661',
       type: 'COMPANY',
       latestVatValidatedAt: new Date('2026-04-01T00:00:00Z'),
-      latestVatValidationStatus: 'valid',
+      latestVatValidationStatus: 'VALID',
     });
     detectReverseChargeMock.mockReturnValue({
       shouldApply: true,

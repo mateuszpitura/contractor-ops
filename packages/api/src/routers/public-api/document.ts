@@ -1,6 +1,7 @@
 import type { Prisma } from '@contractor-ops/db';
+import { entityIdSchema } from '@contractor-ops/validators';
+import { publicApiDocumentListInputSchema } from '@contractor-ops/validators/public-api';
 import { TRPCError } from '@trpc/server';
-import { z } from 'zod';
 import * as E from '../../errors';
 import { router } from '../../init';
 import { apiKeyTenantProcedure } from '../../middleware/api-key-auth';
@@ -11,13 +12,7 @@ import { createRegionalPresignedDownloadUrl } from '../../services/regional-stor
 // Input schemas
 // ---------------------------------------------------------------------------
 
-const listInput = z.object({
-  page: z.coerce.number().int().min(1).default(1),
-  pageSize: z.coerce.number().int().min(1).max(100).default(25),
-  entityType: z.enum(['CONTRACTOR', 'CONTRACT', 'INVOICE']).optional(),
-  entityId: z.string().optional(),
-  sortOrder: z.enum(['asc', 'desc']).default('desc'),
-});
+const listInput = publicApiDocumentListInputSchema;
 
 // ---------------------------------------------------------------------------
 // Public API document router
@@ -72,7 +67,7 @@ export const publicDocumentRouter = router({
 
   getDownloadUrl: apiKeyTenantProcedure
     .use(requirePermission({ document: ['read'] }))
-    .input(z.object({ id: z.string() }))
+    .input(entityIdSchema)
     .query(async ({ ctx, input }) => {
       const doc = await ctx.db.document.findFirst({
         where: {

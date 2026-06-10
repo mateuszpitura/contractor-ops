@@ -42,10 +42,8 @@
 
 import type { Prisma, PrismaClient, TaxIdType, ValidationStatus } from '@contractor-ops/db';
 import type { HmrcVatClient, ViesClient } from '@contractor-ops/gov-api';
-// Pre-flight validators — canonical Phase 56 implementations. These run
-// BEFORE any network I/O (RESEARCH Pattern 3).
-import { isValidGbVat, isValidUstIdNr } from '@contractor-ops/validators';
 import { maskTaxId } from './tax-id-pii';
+import { getTaxIdValidator } from './tax-id-validators/registry.js';
 import type { TaxValidationDb } from './types';
 
 /**
@@ -64,7 +62,7 @@ function taxValidationDelegates(db: TaxValidationDb): PrismaClient {
 export const NINETY_DAYS_MS = 90 * 24 * 60 * 60 * 1000;
 
 // Supported tax-id types — explicit whitelist (dispatch guard).
-const SUPPORTED_TAX_ID_TYPES = new Set<TaxIdType>(['GB_VAT', 'DE_USTIDNR']);
+const SUPPORTED_TAX_ID_TYPES = new Set<TaxIdType>(['GB_VAT', 'DE_USTIDNR'] as const);
 
 // ---------------------------------------------------------------------------
 // Public types
@@ -121,12 +119,6 @@ export function isValidationFresh(
   return now.getTime() - validation.requestedAt.getTime() < NINETY_DAYS_MS;
 }
 
-/** Strip 2-letter country-code prefix. Idempotent for already-stripped input. */
-function stripCountryPrefix(value: string, country: 'GB' | 'DE'): string {
-  const upper = value.trim().toUpperCase().replace(/[\s-]/g, '');
-  return upper.startsWith(country) ? upper.slice(2) : upper;
-}
-
 // ---------------------------------------------------------------------------
 // getLatestValidation — tenant-safe read of the most-recent row
 // ---------------------------------------------------------------------------
@@ -176,8 +168,13 @@ export async function validateTaxId(
     throw new Error(`Unsupported taxIdType: ${String(input.taxIdType)}`);
   }
 
+  const validator = getTaxIdValidator(input.taxIdType);
+  if (!validator) {
+    throw new Error(`Unsupported taxIdType: ${String(input.taxIdType)}`);
+  }
+
   // ---- Pre-flight checksum short-circuit ---------------------------------
-  const preflightOk = runPreflight(input.taxIdType, input.taxIdValue);
+  const preflightOk = validator.runPreflight(input.taxIdValue);
   if (!preflightOk) {
     return persistAndUpdate(
       {
@@ -196,45 +193,18 @@ export async function validateTaxId(
 
   // ---- Dispatch + network call (soft-fail on any upstream/schema error) --
   try {
-    if (input.taxIdType === 'GB_VAT') {
-      const result = await deps.hmrcClient.checkVatNumber(
-        stripCountryPrefix(input.taxIdValue, 'GB'),
-        { organizationId: input.organizationId, useVerifiedLookup: true },
-      );
-      return persistAndUpdate(
-        {
-          input,
-          apiProvider: 'hmrc',
-          responseStatus: result.status === 'valid' ? 'VALID' : 'INVALID',
-          confirmationRef: result.status === 'valid' ? result.confirmationRef : null,
-          responseBody:
-            result.status === 'valid'
-              ? (result.raw as unknown as Prisma.InputJsonValue)
-              : ({ status: 'invalid' } as Prisma.InputJsonValue),
-          errorMessage: null,
-          source: 'api',
-          now,
-        },
-        deps,
-      );
-    }
-
-    // input.taxIdType === 'DE_USTIDNR'
-    const viesResult = await deps.viesClient.checkVatNumber(
-      'DE',
-      stripCountryPrefix(input.taxIdValue, 'DE'),
-      { organizationId: input.organizationId, qualified: true },
+    const dispatchResult = await validator.validate(
+      { organizationId: input.organizationId, taxIdValue: input.taxIdValue },
+      deps,
     );
 
-    // ViesClient can internally soft-fail to 'unavailable' without throwing —
-    // thread that through as-is (no stale promotion, no error message).
-    if (viesResult.status === 'unavailable') {
+    if (dispatchResult.responseStatus === 'UNAVAILABLE') {
       return softFail({
         input,
-        apiProvider: 'vies',
-        errorMessage: `VIES unavailable: ${viesResult.userError}`,
+        apiProvider: dispatchResult.apiProvider,
+        errorMessage: dispatchResult.unavailableMessage ?? 'Upstream unavailable',
         now,
-        responseBody: viesResult.raw as unknown as Prisma.InputJsonValue,
+        responseBody: dispatchResult.responseBody,
         deps,
       });
     }
@@ -242,10 +212,10 @@ export async function validateTaxId(
     return persistAndUpdate(
       {
         input,
-        apiProvider: 'vies',
-        responseStatus: viesResult.status === 'valid' ? 'VALID' : 'INVALID',
-        confirmationRef: viesResult.status === 'valid' ? viesResult.confirmationRef : null,
-        responseBody: viesResult.raw as unknown as Prisma.InputJsonValue,
+        apiProvider: dispatchResult.apiProvider,
+        responseStatus: dispatchResult.responseStatus,
+        confirmationRef: dispatchResult.confirmationRef,
+        responseBody: dispatchResult.responseBody,
         errorMessage: null,
         source: 'api',
         now,
@@ -265,17 +235,6 @@ export async function validateTaxId(
       deps,
     });
   }
-}
-
-// ---------------------------------------------------------------------------
-// Internal: pre-flight router
-// ---------------------------------------------------------------------------
-
-function runPreflight(taxIdType: TaxIdType, value: string): boolean {
-  if (taxIdType === 'GB_VAT') return isValidGbVat(value);
-  if (taxIdType === 'DE_USTIDNR') return isValidUstIdNr(value);
-  // Unreachable — dispatch guard already rejected other types.
-  return false;
 }
 
 // ---------------------------------------------------------------------------

@@ -104,7 +104,9 @@ export const APPROVAL_SELF_APPROVAL_FORBIDDEN = 'approvalSelfApprovalForbidden';
 export const WORKFLOW_TEMPLATE_NOT_FOUND = 'workflowTemplateNotFound';
 export const WORKFLOW_RUN_NOT_FOUND = 'workflowRunNotFound';
 export const WORKFLOW_RUN_ALREADY_CANCELLED = 'workflowRunAlreadyCancelled';
+export const WORKFLOW_RUN_NOT_IN_PROGRESS = 'workflowRunNotInProgress';
 export const WORKFLOW_TASK_NOT_FOUND = 'workflowTaskNotFound';
+export const WORKFLOW_ASSIGNEE_NOT_MEMBER = 'workflowAssigneeNotMember';
 export const WORKFLOW_TASK_INVALID_STATUS = 'workflowTaskInvalidStatus';
 export const WORKFLOW_TASK_CANNOT_SKIP = 'workflowTaskCannotSkip';
 
@@ -124,6 +126,7 @@ export const OCR_EXTRACTION_NOT_FOUND = 'ocrExtractionNotFound';
 
 // ─── Import ──────────────────────────────────────────────────────
 export const IMPORT_NO_DATA_ROWS = 'importNoDataRows';
+export const IMPORT_JOB_STATE_CONFLICT = 'importJobStateConflict';
 
 // ─── Portal ──────────────────────────────────────────────────────
 export const PORTAL_INVALID_LINK = 'portalInvalidLink';

@@ -301,6 +301,17 @@ export async function convertAmount(
     eurToTarget = toRate.rate; // EUR to target directly
   }
 
+  // Money-rounding policy (see wiki/patterns/money-rounding): no decimal.js in this service,
+  // so guard that the integer minor-unit amount and the FX rate factors are finite, then apply
+  // exactly ONE HALF-UP round on the integer minor-unit product. Never let NaN/Infinity (from a
+  // bad/zero stored rate) silently coerce a money value.
+  if (
+    !Number.isFinite(amountMinor) ||
+    !Number.isFinite(fromToEur) ||
+    !Number.isFinite(eurToTarget)
+  ) {
+    return null;
+  }
   const combinedRate = fromToEur * eurToTarget;
   const convertedAmount = Math.round(amountMinor * combinedRate);
 

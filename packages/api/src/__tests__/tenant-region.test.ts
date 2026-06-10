@@ -20,14 +20,17 @@ const { mockFindUnique, mockTenantStoreRun } = vi.hoisted(() => ({
 }));
 const mockScopedClient = { _scoped: true };
 
-vi.mock('@contractor-ops/db', () => ({
-  withRlsTransactions: <T>(c: T) => c,
-  withRlsReads: <T>(c: T) => c,
-  prisma: {
+vi.mock('@contractor-ops/db', () => {
+  const __mockDbPrisma = {
     organization: {
       findUnique: mockFindUnique,
     },
-  },
+  };
+  return {
+  withRlsTransactions: <T>(c: T) => c,
+  withRlsReads: <T>(c: T) => c,
+  prisma: __mockDbPrisma,
+  prismaRaw: __mockDbPrisma,
   tenantStore: {
     run: mockTenantStoreRun,
     getStore: vi.fn(() => null),
@@ -37,7 +40,9 @@ vi.mock('@contractor-ops/db', () => ({
     $extends: vi.fn(),
   })),
   createTenantClientFrom: vi.fn(() => mockScopedClient),
-}));
+
+  };
+});
 
 import { createTenantClientFrom, getRegionalClient } from '@contractor-ops/db';
 

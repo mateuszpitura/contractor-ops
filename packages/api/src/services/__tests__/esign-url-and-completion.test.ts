@@ -38,10 +38,8 @@ const {
   };
 });
 
-vi.mock('@contractor-ops/db', () => ({
-  withRlsTransactions: <T>(c: T) => c,
-  withRlsReads: <T>(c: T) => c,
-  prisma: {
+vi.mock('@contractor-ops/db', () => {
+  const __mockDbPrisma = {
     signingEnvelope: {
       findFirst: mockSigningEnvelopeFindFirst,
     },
@@ -52,8 +50,15 @@ vi.mock('@contractor-ops/db', () => ({
       create: mockSigningEventCreate,
     },
     $transaction: mockTransaction,
-  },
-}));
+  };
+  return {
+  withRlsTransactions: <T>(c: T) => c,
+  withRlsReads: <T>(c: T) => c,
+  prisma: __mockDbPrisma,
+  prismaRaw: __mockDbPrisma,
+
+  };
+});
 
 vi.mock('@contractor-ops/integrations/services/esign-service', () => ({
   createSigningEnvelope: vi.fn(),

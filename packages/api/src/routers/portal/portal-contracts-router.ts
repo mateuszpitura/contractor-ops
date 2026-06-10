@@ -1,3 +1,4 @@
+import { entityIdSchema } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import { router } from '../../init';
@@ -143,7 +144,7 @@ export const portalContractsRouter = router({
    * Get contract detail with attached documents and download URLs.
    * Excludes internal fields. Generates presigned download URLs for documents.
    */
-  getContract: portalProcedure.input(z.object({ id: z.string() })).query(async ({ ctx, input }) => {
+  getContract: portalProcedure.input(entityIdSchema).query(async ({ ctx, input }) => {
     const contract = await ctx.db.contract.findFirst({
       where: { id: input.id, contractorId: ctx.contractorId },
       select: {

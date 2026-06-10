@@ -10,11 +10,17 @@ vi.mock('@contractor-ops/integrations/services/credential-service', () => ({
 }));
 
 vi.mock('@contractor-ops/validators', () => ({
+  getServerEnv: vi.fn(() => process.env),
   jiraWebhookPayloadSchema: { safeParse: vi.fn() },
 }));
 
 vi.mock('../jira-status-mapping', () => ({
   lookupWorkflowStatus: vi.fn(),
+}));
+
+vi.mock('../../routers/workflow/workflow-shared', () => ({
+  validateTransition: vi.fn(() => true),
+  unblockDependentsAndRecomputeRun: vi.fn(async () => undefined),
 }));
 
 import { decryptCredentials } from '@contractor-ops/integrations/services/credential-service';
@@ -43,8 +49,18 @@ const PROJECT_ID = '10000';
 // ---------------------------------------------------------------------------
 
 function createMockPrisma() {
-  return {
+  const client = {
     workflowTaskRun: {
+      findFirst: vi.fn().mockResolvedValue({
+        id: TASK_RUN_ID,
+        status: 'IN_PROGRESS',
+        workflowRunId: 'run-1',
+      }),
+      update: vi.fn().mockResolvedValue({}),
+      updateMany: vi.fn().mockResolvedValue({ count: 0 }),
+      findMany: vi.fn().mockResolvedValue([{ status: 'DONE', resultJson: null }]),
+    },
+    workflowRun: {
       update: vi.fn().mockResolvedValue({}),
     },
     integrationConnection: {
@@ -60,7 +76,9 @@ function createMockPrisma() {
       update: vi.fn().mockResolvedValue({}),
       findFirst: vi.fn(),
     },
-  } as unknown;
+    $transaction: vi.fn(async (fn: (tx: typeof client) => Promise<void>) => fn(client)),
+  };
+  return client as unknown;
 }
 
 // ---------------------------------------------------------------------------
@@ -165,6 +183,7 @@ describe('jira-webhook-handler', () => {
       // The mapped status lookup received the extracted status name
       expect(mockLookupWorkflowStatus).toHaveBeenCalledWith(
         prisma,
+        ORG_ID,
         CONNECTION_ID,
         PROJECT_ID,
         'Done',
@@ -202,6 +221,7 @@ describe('jira-webhook-handler', () => {
 
       expect(mockLookupWorkflowStatus).toHaveBeenCalledWith(
         prisma,
+        ORG_ID,
         CONNECTION_ID,
         PROJECT_ID,
         'In Review',
@@ -219,7 +239,7 @@ describe('jira-webhook-handler', () => {
       await processJiraWebhook(prisma, ORG_ID, CONNECTION_ID, payload);
 
       expect(prisma.workflowTaskRun.update).toHaveBeenCalledWith({
-        where: { id: TASK_RUN_ID },
+        where: { id: TASK_RUN_ID, organizationId: ORG_ID },
         data: { status: 'IN_PROGRESS' },
       });
     });
@@ -419,7 +439,7 @@ describe('jira-webhook-handler', () => {
       await processJiraWebhook(prisma, ORG_ID, CONNECTION_ID, payload);
 
       expect(prisma.workflowTaskRun.update).toHaveBeenCalledWith({
-        where: { id: TASK_RUN_ID },
+        where: { id: TASK_RUN_ID, organizationId: ORG_ID },
         data: { status: 'DONE' },
       });
     });

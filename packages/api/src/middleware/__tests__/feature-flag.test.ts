@@ -14,6 +14,7 @@ vi.mock('@contractor-ops/feature-flags', () => ({
 }));
 
 vi.mock('@contractor-ops/logger', () => ({
+  getIdpAuditLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn(), child: vi.fn() })),
   createWebhookLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
   createCronLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
   withBodyLogging: vi.fn((_o, fn) => fn),
@@ -37,6 +38,7 @@ vi.mock('@contractor-ops/logger', () => ({
   })),
   createLogger: vi.fn(() => ({
     info: vi.fn(),
+
     warn: vi.fn(),
     error: vi.fn(),
   })),
@@ -88,6 +90,7 @@ vi.mock('@contractor-ops/db', () => ({
   withRlsTransactions: <T>(c: T) => c,
   withRlsReads: <T>(c: T) => c,
   prisma: mockPrisma,
+  prismaRaw: mockPrisma,
   tenantStore: {
     run: (_ctx: { organizationId: string; region: string }, fn: () => unknown) => fn(),
     getStore: vi.fn(),

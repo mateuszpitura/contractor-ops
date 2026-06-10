@@ -5,10 +5,8 @@ import { TeamsBotHandler } from '../teams-bot-handler';
 // Mocks
 // ---------------------------------------------------------------------------
 
-vi.mock('@contractor-ops/db', () => ({
-  withRlsTransactions: <T>(c: T) => c,
-  withRlsReads: <T>(c: T) => c,
-  prisma: {
+vi.mock('@contractor-ops/db', () => {
+  const __mockDbPrisma = {
     externalLink: {
       findFirst: vi.fn(),
     },
@@ -50,8 +48,15 @@ vi.mock('@contractor-ops/db', () => ({
         },
       }),
     ),
-  },
-}));
+  };
+  return {
+  withRlsTransactions: <T>(c: T) => c,
+  withRlsReads: <T>(c: T) => c,
+  prisma: __mockDbPrisma,
+  prismaRaw: __mockDbPrisma,
+
+  };
+});
 
 vi.mock('../cards/approval-result-card', () => ({
   buildApprovalResultCard: vi.fn(() => ({

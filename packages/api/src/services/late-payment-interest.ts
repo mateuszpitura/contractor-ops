@@ -240,6 +240,8 @@ export function calculateLateInterest(input: LateInterestInput): LateInterestRes
   const dailyInterestMinor = Math.round(dailyInterest);
 
   // Total accrued = daily × days
+  // Money-rounding policy (see wiki/patterns/money-rounding): statutory interest rounds
+  // HALF-UP on the final accrued claim (compute-then-round, per EU Late Payment Directive / §288 BGB).
   const accruedInterest = dailyInterest * daysOverdue;
   const accruedInterestMinor = Math.round(accruedInterest);
 

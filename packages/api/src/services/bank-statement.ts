@@ -3,6 +3,8 @@
  * Supports MT940 (via mt940js) and CSV statement formats.
  */
 
+import { z } from 'zod';
+
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
@@ -24,6 +26,31 @@ export interface MatchResult {
   confidence: 'exact' | 'partial' | 'unmatched';
   amountMatched: boolean;
   ibanMatched: boolean;
+}
+
+// ---------------------------------------------------------------------------
+// Amount conversion
+// ---------------------------------------------------------------------------
+
+/**
+ * A bank-statement amount expressed in MAJOR units (e.g. 1234.56) from an
+ * untrusted external source (mt940js, CSV cell). Rejects NaN/Infinity so a
+ * malformed value never coerces into a money figure.
+ */
+const externalMajorAmountSchema = z.number().finite();
+
+/**
+ * Convert an external major-unit amount to absolute integer minor units.
+ *
+ * Money-rounding policy (see wiki/patterns/money-rounding): validate the external
+ * value with zod BEFORE any arithmetic — never `parseFloat`-then-scale unchecked —
+ * then apply exactly ONE HALF-UP round to integer minor units. Returns null when
+ * the input is not a finite number so callers can skip the row.
+ */
+function toMinorUnits(majorAmount: number): number | null {
+  const parsed = externalMajorAmountSchema.safeParse(majorAmount);
+  if (!parsed.success) return null;
+  return Math.round(Math.abs(parsed.data) * 100);
 }
 
 // ---------------------------------------------------------------------------
@@ -58,14 +85,20 @@ export function parseMt940(content: string): ParsedTransaction[] {
   const statements = parser.parse(content);
 
   return statements.flatMap(stmt =>
-    stmt.transactions.map(tx => ({
-      amount: Math.round(Math.abs(tx.amount) * 100),
-      currency: stmt.currency ?? 'PLN',
-      description: tx.description ?? '',
-      iban: tx.structuredDetails?.accountIdentification,
-      date: tx.date ?? new Date(),
-      reference: tx.reference,
-    })),
+    stmt.transactions.flatMap(tx => {
+      const amount = toMinorUnits(tx.amount);
+      if (amount === null) return [];
+      return [
+        {
+          amount,
+          currency: stmt.currency ?? 'PLN',
+          description: tx.description ?? '',
+          iban: tx.structuredDetails?.accountIdentification,
+          date: tx.date ?? new Date(),
+          reference: tx.reference,
+        },
+      ];
+    }),
   );
 }
 
@@ -98,10 +131,11 @@ function detectCsvColumns(headers: string[]): CsvColumnIndices {
 
 /**
  * Parses a raw amount string (supporting comma decimals and spaces) into minor units.
+ * Returns null when the cell does not hold a finite number (see `toMinorUnits`).
  */
-function parseAmountMinor(raw: string): number {
+function parseAmountMinor(raw: string): number | null {
   const cleaned = raw.replace(/["']/g, '').trim().replace(/\s/g, '').replace(',', '.');
-  return Math.round(Math.abs(parseFloat(cleaned)) * 100);
+  return toMinorUnits(parseFloat(cleaned));
 }
 
 /**
@@ -133,7 +167,7 @@ export function parseCsvStatement(content: string): ParsedTransaction[] {
   for (let i = 1; i < lines.length; i++) {
     const cells = splitCsvLine(lines[i] ?? '', delimiter);
     const amount = parseAmountMinor(cells[col.amount] ?? '0');
-    if (Number.isNaN(amount) || amount === 0) continue;
+    if (amount === null || amount === 0) continue;
 
     const iban = col.iban >= 0 ? cells[col.iban]?.replace(/["'\s]/g, '').trim() : undefined;
     const dateStr = col.date >= 0 ? cells[col.date]?.replace(/["']/g, '').trim() : undefined;

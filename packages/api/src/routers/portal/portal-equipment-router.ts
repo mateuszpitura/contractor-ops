@@ -1,4 +1,4 @@
-import { returnRequestCreateSchema } from '@contractor-ops/validators';
+import { entityIdSchema, returnRequestCreateSchema } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import * as E from '../../errors';
@@ -205,7 +205,7 @@ export const portalEquipmentRouter = router({
    * Only allowed when status is PENDING_APPROVAL.
    */
   cancelReturn: portalProcedure
-    .input(z.object({ id: z.string() }))
+    .input(entityIdSchema)
     .mutation(async ({ ctx, input }) => {
       const returnRequest = await ctx.db.returnRequest.findFirst({
         where: {

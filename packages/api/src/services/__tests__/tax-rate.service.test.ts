@@ -21,11 +21,13 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 vi.mock('@contractor-ops/db', () => {
   const findMany = vi.fn();
   const findFirst = vi.fn();
+  const prisma = {
+    taxRate: { findMany, findFirst },
+    withholdingTaxRate: { findFirst: vi.fn() },
+  };
   return {
-    prisma: {
-      taxRate: { findMany, findFirst },
-      withholdingTaxRate: { findFirst: vi.fn() },
-    },
+    prisma,
+    prismaRaw: prisma,
     withRlsTransactions: <T>(c: T) => c,
     withRlsReads: <T>(c: T) => c,
   };

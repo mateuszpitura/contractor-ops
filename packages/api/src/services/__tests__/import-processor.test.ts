@@ -13,15 +13,20 @@ const { mockContractorFindMany } = vi.hoisted(() => ({
   mockContractorFindMany: vi.fn(),
 }));
 
-vi.mock('@contractor-ops/db', () => ({
-  withRlsTransactions: <T>(c: T) => c,
-  withRlsReads: <T>(c: T) => c,
-  prisma: {
+vi.mock('@contractor-ops/db', () => {
+  const __mockDbPrisma = {
     contractor: {
       findMany: mockContractorFindMany,
     },
-  },
-}));
+  };
+  return {
+  withRlsTransactions: <T>(c: T) => c,
+  withRlsReads: <T>(c: T) => c,
+  prisma: __mockDbPrisma,
+  prismaRaw: __mockDbPrisma,
+
+  };
+});
 
 describe('normalizeHeader', () => {
   it('lowercases and strips punctuation', () => {

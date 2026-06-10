@@ -19,10 +19,9 @@ import {
   GOOGLE_WORKSPACE_NOT_CONNECTED,
 } from '../../errors';
 import { router } from '../../init';
+import { loadOrgIntegrationConnection } from '../../lib/integration-connection.js';
+import { integrationProcedure } from '../../lib/integration-procedure';
 import type { TenantScopedDb } from '../../lib/tenant-db';
-import { requirePermission } from '../../middleware/rbac';
-import { tenantProcedure } from '../../middleware/tenant';
-import { requireTier } from '../../middleware/tier';
 
 const log = createLogger({ service: 'google-workspace-router' });
 
@@ -38,20 +37,12 @@ registerAllAdapters();
  * decrypts credentials, refreshes token if expired, and returns adapter.
  */
 async function getGoogleWorkspaceConnection(db: TenantScopedDb, organizationId: string) {
-  const connection = await db.integrationConnection.findFirst({
-    where: {
-      organizationId,
-      provider: 'GOOGLE_WORKSPACE',
-      status: 'CONNECTED',
-    },
-  });
-
-  if (!connection) {
-    throw new TRPCError({
-      code: 'NOT_FOUND',
-      message: GOOGLE_WORKSPACE_NOT_CONNECTED,
-    });
-  }
+  const connection = await loadOrgIntegrationConnection(
+    db,
+    organizationId,
+    'GOOGLE_WORKSPACE',
+    { notFoundMessage: GOOGLE_WORKSPACE_NOT_CONNECTED },
+  );
 
   const adapter = getAdapter('google_workspace') as GoogleWorkspaceAdapter;
   if (!adapter) {
@@ -185,9 +176,8 @@ export const googleWorkspaceRouter = router({
    * List all users from the Google Workspace directory.
    * Marks users that already exist as org members.
    */
-  listDirectory: tenantProcedure
-    .use(requirePermission({ member: ['read'] }))
-    .query(async ({ ctx }) => {
+  listDirectory: integrationProcedure({ permission: { member: ['read'] } }).query(
+    async ({ ctx }) => {
       const { credentials, adapter } = await getGoogleWorkspaceConnection(
         ctx.db,
         ctx.organizationId,
@@ -242,9 +232,10 @@ export const googleWorkspaceRouter = router({
    * List group memberships for multiple users.
    * Returns deduplicated groups with member emails.
    */
-  listUserGroups: tenantProcedure
-    .use(requirePermission({ member: ['read'] }))
-    .use(requireTier('PRO'))
+  listUserGroups: integrationProcedure({
+    permission: { member: ['read'] },
+    tier: 'PRO',
+  })
     .input(
       z.object({
         userEmails: z.array(z.email()).min(1).max(500),
@@ -295,9 +286,10 @@ export const googleWorkspaceRouter = router({
    * Bulk import selected users by creating org invitations.
    * SECURITY: Re-fetches group memberships server-side for RBAC role resolution.
    */
-  bulkImport: tenantProcedure
-    .use(requirePermission({ member: ['create'] }))
-    .use(requireTier('PRO'))
+  bulkImport: integrationProcedure({
+    permission: { member: ['create'] },
+    tier: 'PRO',
+  })
     .input(directoryImportInputSchema)
     .mutation(async ({ ctx, input }) => {
       const { connection, credentials, adapter } = await getGoogleWorkspaceConnection(
@@ -384,10 +376,10 @@ export const googleWorkspaceRouter = router({
    * Trigger a manual directory sync via QStash.
    * Ensures cron schedule exists, then publishes immediate sync job.
    */
-  triggerSync: tenantProcedure
-    .use(requirePermission({ member: ['read'] }))
-    .use(requireTier('PRO'))
-    .mutation(async ({ ctx }) => {
+  triggerSync: integrationProcedure({
+    permission: { member: ['read'] },
+    tier: 'PRO',
+  }).mutation(async ({ ctx }) => {
       const { connection } = await getGoogleWorkspaceConnection(ctx.db, ctx.organizationId);
 
       // Ensure cron schedule exists
@@ -410,21 +402,14 @@ export const googleWorkspaceRouter = router({
    * Get sync status for the Google Workspace connection.
    * Returns connection info and last sync log, or null if not connected.
    */
-  syncStatus: tenantProcedure
-    .use(requirePermission({ member: ['read'] }))
-    .query(async ({ ctx }) => {
-      const connection = await ctx.db.integrationConnection.findFirst({
-        where: {
-          organizationId: ctx.organizationId,
-          provider: 'GOOGLE_WORKSPACE',
-        },
-        select: {
-          id: true,
-          status: true,
-          configJson: true,
-          lastSyncAt: true,
-        },
-      });
+  syncStatus: integrationProcedure({ permission: { member: ['read'] } }).query(
+    async ({ ctx }) => {
+      const connection = await loadOrgIntegrationConnection(
+        ctx.db,
+        ctx.organizationId,
+        'GOOGLE_WORKSPACE',
+        { status: 'any', optional: true },
+      );
 
       if (!connection) {
         return { connected: false as const };

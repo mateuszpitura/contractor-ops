@@ -63,6 +63,7 @@ vi.mock('@contractor-ops/db', () => ({
   withRlsTransactions: <T>(c: T) => c,
   withRlsReads: <T>(c: T) => c,
   prisma: mockPrisma,
+  prismaRaw: mockPrisma,
   getRegionalClient: vi.fn(() => mockPrisma),
   tenantStore: {
     run: (_ctx: unknown, fn: () => unknown) => fn(),
@@ -119,6 +120,7 @@ vi.mock('@contractor-ops/logger', () => {
 
     createTrpcLogger: vi.fn(() => stub),
     createLogger: vi.fn(() => stub),
+
     createCronLogger: vi.fn(() => stub),
     createWebhookLogger: vi.fn(() => stub),
     createIntegrationLogger: vi.fn(() => stub),
@@ -228,7 +230,6 @@ describe('ksefRouter', () => {
         organizationId: ORG_ID,
         provider: 'KSEF',
       },
-      select: expect.any(Object),
     });
   });
 

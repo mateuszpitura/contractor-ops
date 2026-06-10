@@ -1,10 +1,12 @@
 import type { Prisma } from '@contractor-ops/db';
+import { randomBytes } from 'node:crypto';
 import { fetchWithTimeout } from '@contractor-ops/integrations';
 import { decryptCredentials } from '@contractor-ops/integrations/services/credential-service';
 import type { JiraIssueMetadata } from '@contractor-ops/validators';
 import { getServerEnv, jiraWebhookPayloadSchema } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import * as E from '../errors';
+import { unblockDependentsAndRecomputeRun, validateTransition } from '../routers/workflow/workflow-shared';
 import { lookupWorkflowStatus } from './jira-status-mapping';
 import type { DbClient } from './types';
 
@@ -208,6 +210,7 @@ export async function processJiraWebhook(
   const projectId = webhookPayload.issue.fields.project.id;
   const mappedWorkflowStatus = await lookupWorkflowStatus(
     prisma,
+    organizationId,
     connectionId,
     projectId,
     newJiraStatusName,
@@ -256,12 +259,48 @@ export async function processJiraWebhook(
   });
 
   try {
-    // 8. Update WorkflowTaskRun status
-    await prisma.workflowTaskRun.update({
-      where: { id: externalLink.entityId },
-      data: {
+    await prisma.$transaction(async tx => {
+      const task = await tx.workflowTaskRun.findFirst({
+        where: {
+          id: externalLink.entityId,
+          organizationId,
+        },
+        select: {
+          id: true,
+          status: true,
+          workflowRunId: true,
+        },
+      });
+
+      if (!task) {
+        throw new Error('Linked workflow task not found');
+      }
+
+      if (!validateTransition(task.status, mappedWorkflowStatus)) {
+        throw new Error(`Invalid task transition ${task.status} -> ${mappedWorkflowStatus}`);
+      }
+
+      const now = new Date();
+      const updateData: Prisma.WorkflowTaskRunUpdateInput = {
         status: mappedWorkflowStatus as Prisma.WorkflowTaskRunUpdateInput['status'],
-      },
+      };
+      if (mappedWorkflowStatus === 'DONE') {
+        updateData.completedAt = now;
+      }
+
+      await tx.workflowTaskRun.update({
+        where: { id: task.id, organizationId },
+        data: updateData,
+      });
+
+      if (mappedWorkflowStatus === 'DONE' || mappedWorkflowStatus === 'SKIPPED') {
+        await unblockDependentsAndRecomputeRun(
+          tx,
+          { id: task.id, workflowRun: { id: task.workflowRunId } },
+          now,
+          { organizationId },
+        );
+      }
     });
 
     // 9. Update ExternalLink metadata
@@ -335,6 +374,8 @@ export async function registerJiraWebhooks(
   connectionId: string,
   projectKeys: string[],
 ): Promise<void> {
+  await deregisterJiraWebhooks(prisma, connectionId);
+
   const connection = await prisma.integrationConnection.findUnique({
     where: { id: connectionId },
   });
@@ -352,6 +393,8 @@ export async function registerJiraWebhooks(
   );
 
   const apiUrl = getServerEnv().API_URL;
+  const config = (connection.configJson as JiraConnectionConfig) ?? {};
+  const webhookSecret = config.webhookSecret ?? randomBytes(32).toString('hex');
 
   // Build JQL filter combining all project keys
   const jqlFilter =
@@ -365,6 +408,7 @@ export async function registerJiraWebhooks(
       {
         jqlFilter,
         events: ['jira:issue_updated'],
+        secret: webhookSecret,
       },
     ],
   };
@@ -388,7 +432,6 @@ export async function registerJiraWebhooks(
   };
 
   // Store webhook IDs in connection config
-  const config = (connection.configJson as JiraConnectionConfig) ?? {};
   const webhookIds = result.webhookRegistrationResult.map(r => r.createdWebhookId);
 
   await prisma.integrationConnection.update({
@@ -396,7 +439,8 @@ export async function registerJiraWebhooks(
     data: {
       configJson: {
         ...config,
-        webhookIds: [...(config.webhookIds ?? []), ...webhookIds],
+        webhookIds,
+        webhookSecret,
         webhookRegisteredAt: new Date().toISOString(),
       },
     },

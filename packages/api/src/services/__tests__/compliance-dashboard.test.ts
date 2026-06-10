@@ -8,9 +8,11 @@ const mockDb = {
   paymentRunComplianceCheck: { findMany: vi.fn() },
 };
 
-vi.mock('@contractor-ops/db', () => ({ prisma: mockDb }));
+vi.mock('@contractor-ops/db', () => ({ prisma: mockDb, prismaRaw: mockDb }));
 vi.mock('@contractor-ops/logger', () => ({
-  createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
+  getIdpAuditLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn(), child: vi.fn() })),
+  createLogger: vi.fn(() => ({ info: vi.fn(),
+ warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
 }));
 vi.mock('../compliance-payment-gate.js', () => ({
   assertContractorPaymentEligibility: vi.fn(async () => ({

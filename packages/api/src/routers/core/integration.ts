@@ -18,7 +18,11 @@ import {
 import { TRPCError } from '@trpc/server';
 import * as E from '../../errors';
 import { router } from '../../init';
-import { cursorClause, paginateByExtraRow } from '../../lib/pagination';
+import {
+  loadOrgIntegrationConnection,
+  type IntegrationProviderSlug,
+} from '../../lib/integration-connection.js';
+import { cursorClause, paginateByLastKept } from '../../lib/pagination';
 import { requirePermission } from '../../middleware/rbac';
 import { tenantProcedure } from '../../middleware/tenant';
 import { writeAuditLog } from '../../services/audit-writer';
@@ -26,6 +30,10 @@ import { syncWorkspaceUsers } from '../../services/slack-client';
 
 // Ensure all provider adapters are registered before any procedure runs
 registerAllAdapters();
+
+function toIntegrationProvider(slug: string): IntegrationProviderSlug {
+  return slug.toUpperCase() as IntegrationProviderSlug;
+}
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -71,14 +79,12 @@ export const integrationRouter = router({
    * Shows matched and unmatched users with their Slack info.
    */
   listUserMappings: tenantProcedure.query(async ({ ctx }) => {
-    // Find Slack integration connection
-    const connection = await ctx.db.integrationConnection.findFirst({
-      where: {
-        organizationId: ctx.organizationId,
-        provider: 'SLACK',
-      },
-      select: { id: true },
-    });
+    const connection = await loadOrgIntegrationConnection(
+      ctx.db,
+      ctx.organizationId,
+      'SLACK',
+      { status: 'any', optional: true },
+    );
 
     if (!connection) {
       return { mappings: [], connectionId: null };
@@ -135,19 +141,12 @@ export const integrationRouter = router({
     .use(requirePermission({ organization: ['update'] }))
     .input(slackUserLinkSchema)
     .mutation(async ({ ctx, input }) => {
-      const connection = await ctx.db.integrationConnection.findFirst({
-        where: {
-          organizationId: ctx.organizationId,
-          provider: 'SLACK',
-        },
-      });
-
-      if (!connection) {
-        throw new TRPCError({
-          code: 'PRECONDITION_FAILED',
-          message: E.INTEGRATION_NOT_CONNECTED,
-        });
-      }
+      const connection = await loadOrgIntegrationConnection(
+        ctx.db,
+        ctx.organizationId,
+        'SLACK',
+        { notFoundMessage: E.INTEGRATION_NOT_CONNECTED },
+      );
 
       const link = await ctx.db.externalLink.create({
         data: {
@@ -228,17 +227,12 @@ export const integrationRouter = router({
   syncUsers: tenantProcedure
     .use(requirePermission({ organization: ['update'] }))
     .mutation(async ({ ctx }) => {
-      const connection = await ctx.db.integrationConnection.findFirst({
-        where: { organizationId: ctx.organizationId, provider: 'SLACK' },
-        select: { id: true },
-      });
-
-      if (!connection) {
-        throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: E.INTEGRATION_NOT_CONNECTED,
-        });
-      }
+      const connection = await loadOrgIntegrationConnection(
+        ctx.db,
+        ctx.organizationId,
+        'SLACK',
+        { notFoundMessage: E.INTEGRATION_NOT_CONNECTED },
+      );
 
       return syncWorkspaceUsers(ctx.organizationId, connection.id);
     }),
@@ -323,19 +317,12 @@ export const integrationRouter = router({
     .use(requirePermission({ organization: ['update'] }))
     .input(disconnectProviderSchema)
     .mutation(async ({ ctx, input }) => {
-      const connection = await ctx.db.integrationConnection.findFirst({
-        where: {
-          organizationId: ctx.organizationId,
-          provider: input.provider.toUpperCase() as 'SLACK',
-        },
-      });
-
-      if (!connection) {
-        throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: E.INTEGRATION_NOT_FOUND,
-        });
-      }
+      const connection = await loadOrgIntegrationConnection(
+        ctx.db,
+        ctx.organizationId,
+        toIntegrationProvider(input.provider),
+        { status: 'any' },
+      );
 
       await ctx.db.integrationConnection.update({
         where: { id: connection.id },
@@ -367,13 +354,12 @@ export const integrationRouter = router({
    * Cursor-based pagination for the detail sheet.
    */
   getSyncLog: tenantProcedure.input(getSyncLogSchema).query(async ({ ctx, input }) => {
-    const connection = await ctx.db.integrationConnection.findFirst({
-      where: {
-        organizationId: ctx.organizationId,
-        provider: input.provider.toUpperCase() as 'SLACK',
-      },
-      select: { id: true },
-    });
+    const connection = await loadOrgIntegrationConnection(
+      ctx.db,
+      ctx.organizationId,
+      toIntegrationProvider(input.provider),
+      { status: 'any', optional: true },
+    );
 
     if (!connection) {
       return { items: [], nextCursor: null };
@@ -394,7 +380,7 @@ export const integrationRouter = router({
       },
     });
 
-    return paginateByExtraRow(rows, input, 10);
+    return paginateByLastKept(rows, input, 10);
   }),
 
   /**
@@ -419,6 +405,6 @@ export const integrationRouter = router({
       },
     });
 
-    return paginateByExtraRow(rows, input, 10);
+    return paginateByLastKept(rows, input, 10);
   }),
 });

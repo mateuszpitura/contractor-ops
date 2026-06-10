@@ -1,0 +1,213 @@
+/**
+ * Classification submit procedures.
+ */
+
+import type { EngagementContext } from '@contractor-ops/compliance-policy';
+import { TRPCError } from '@trpc/server';
+import { CLASSIFICATION_ASSESSMENT_NOT_FOUND } from '../../errors';
+import { router } from '../../init';
+import { findOrThrow } from '../../lib/find-or-throw';
+import {
+  CLASSIFICATION_ALREADY_SUBMITTED,
+  CLASSIFICATION_ONLY_COMPLETED_CAN_ACKNOWLEDGE,
+  POLICY_RULE_SET_VERSION,
+  acknowledgeDisclaimerInput,
+  buildQuestionsSnapshot,
+  contractorUpdateProcedure,
+  extractOutcomeKind,
+  getProfileForCountry,
+  mapCountryCodeToJurisdiction,
+  materialiseFromPolicy,
+  outcomeSchema,
+  releaseHeldApprovalsForContractor,
+  submitInput,
+  supersedeAndMaterialise,
+  type Outcome,
+  type Prisma,
+} from './classification-shared';
+
+export const classificationSubmitRouter = router({
+
+
+  submit: contractorUpdateProcedure.input(submitInput).mutation(async ({ ctx, input }) => {
+    // Phase 71 D-10 — entire body wrapped in $transaction. Atomicity guarantees
+    // the assessment update + the row materialisation/supersession are all-or-nothing.
+    // DO NOT extract any logic out of this transaction without re-evaluating
+    // supersession atomicity.
+    return ctx.db.$transaction(async tx => {
+      const row = await findOrThrow(
+        () =>
+          tx.classificationAssessment.findFirst({
+            where: { id: input.assessmentId },
+          }),
+        CLASSIFICATION_ASSESSMENT_NOT_FOUND,
+      );
+      if (row.status !== 'DRAFT') {
+        throw new TRPCError({
+          code: 'CONFLICT',
+          message: CLASSIFICATION_ALREADY_SUBMITTED,
+        });
+      }
+
+      const profile = getProfileForCountry(row.countryCode);
+
+      let computed: Outcome;
+      try {
+        computed = profile.scoreAssessment(
+          row.answers as Parameters<typeof profile.scoreAssessment>[0],
+        );
+      } catch (err) {
+        // Engine errors (MissingAnswerError, malformed answers, etc.) surface
+        // as a typed BAD_REQUEST so the wizard can highlight the offending
+        // questions instead of leaking a stack trace (Pitfall 5).
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message:
+            err instanceof Error
+              ? `Scoring failed: ${err.message}`
+              : 'Scoring failed: unknown engine error.',
+        });
+      }
+
+      // Validate the computed outcome before persistence.
+      const validatedOutcome = outcomeSchema.parse(computed);
+
+      const shell = profile.buildAssessment(row.contractorAssignmentId);
+      const snapshot = buildQuestionsSnapshot(profile, {
+        profileId: profile.profileId,
+        ruleSetVersion: profile.ruleSetVersion,
+        countryCode: profile.country,
+        questions: shell.questions,
+      });
+
+      const now = new Date();
+
+      // Phase 71 D-10 — find prior completed assessment for outcome-change detection.
+      const prior = await tx.classificationAssessment.findFirst({
+        where: {
+          contractorAssignmentId: row.contractorAssignmentId,
+          status: 'COMPLETED',
+        },
+        orderBy: { completedAt: 'desc' },
+      });
+
+      const updated = await tx.classificationAssessment.update({
+        where: { id: row.id },
+        data: {
+          status: 'COMPLETED',
+          outcome: validatedOutcome,
+          questionsSnapshot: snapshot as unknown as Prisma.InputJsonValue,
+          completedAt: now,
+          // Literal `immutableAfter: new Date` — D-04 append-only marker.
+          immutableAfter: new Date(now),
+          // Phase 71 D-03 — snapshot policy rule set version onto every completed assessment.
+          policyRuleSetVersion: POLICY_RULE_SET_VERSION,
+        },
+      });
+
+      // Phase 71 D-10 — supersession-on-outcome-change OR first-classification materialisation.
+      // EngagementContext.sector is null today (ContractorAssignment has no sector column);
+      // de.eight_b_estg@v1 predicate returns false for null sector → conservative.
+      const jurisdiction = mapCountryCodeToJurisdiction(row.countryCode);
+      if (jurisdiction !== null) {
+        const assignment = await tx.contractorAssignment.findFirst({
+          where: { id: row.contractorAssignmentId },
+          select: {
+            id: true,
+            contractorId: true,
+            contractor: { select: { countryCode: true } },
+          },
+        });
+        if (assignment) {
+          const engagement: EngagementContext = {
+            jurisdiction,
+            outcome: extractOutcomeKind(validatedOutcome),
+            sector: null,
+            // Contractor.countryCode is the closest proxy to nationality today;
+            // when contractorNationality lands on Contractor in a future phase,
+            // swap this read.
+            contractorNationality: assignment.contractor?.countryCode ?? null,
+            requiresRegulatedEquipment: false,
+          };
+          if (!prior) {
+            // First classification — materialise from policy.
+            await materialiseFromPolicy(tx, {
+              organizationId: row.organizationId,
+              contractorId: assignment.contractorId,
+              contractId: null,
+              engagement,
+            });
+          } else if (extractOutcomeKind(prior.outcome) !== extractOutcomeKind(validatedOutcome)) {
+            // Outcome kind changed — supersede prior rows and re-materialise.
+            await supersedeAndMaterialise(tx, {
+              organizationId: row.organizationId,
+              contractorId: assignment.contractorId,
+              contractId: null,
+              engagement,
+              reason: 'CLASSIFICATION_OUTCOME_CHANGE',
+            });
+            // Phase 72 D-15 — supersession can carry items forward to SATISFIED.
+            // Fire the recovery hook for each now-satisfied BLOCKING item so any
+            // PENDING_COMPLIANCE approval flow held by it can re-assert + resume.
+            await releaseHeldApprovalsForContractor(
+              tx,
+              row.organizationId,
+              assignment.contractorId,
+            );
+          }
+          // else: same outcome kind — no row churn (D-10 atomicity preserved by skipping).
+        }
+      }
+
+      // Phase 60 · CLASS-08 — auto-resolve any OPEN/ACKNOWLEDGED reassessment
+      // triggers on this engagement once a fresh GB IR35 assessment has been
+      // submitted. Tenant-scoped client keeps cross-org rows untouched.
+      if (row.countryCode === 'GB') {
+        await tx.reassessmentTrigger.updateMany({
+          where: {
+            contractorAssignmentId: row.contractorAssignmentId,
+            status: { in: ['OPEN', 'ACKNOWLEDGED'] },
+          },
+          data: { status: 'RESOLVED', resolvedAt: now },
+        });
+      }
+
+      return updated;
+    });
+  }),
+
+  // -------------------------------------------------------------------------
+  // acknowledgeDisclaimer — idempotent disclaimer acknowledgement.
+  //
+  // Only operates on completed rows; draft rows throw CONFLICT so the UI
+  // cannot short-circuit the wizard.
+  // -------------------------------------------------------------------------
+
+
+  acknowledgeDisclaimer: contractorUpdateProcedure
+    .input(acknowledgeDisclaimerInput)
+    .mutation(async ({ ctx, input }) => {
+      const row = await findOrThrow(
+        () =>
+          ctx.db.classificationAssessment.findFirst({
+            where: { id: input.assessmentId },
+          }),
+        CLASSIFICATION_ASSESSMENT_NOT_FOUND,
+      );
+      if (row.status !== 'COMPLETED') {
+        throw new TRPCError({
+          code: 'CONFLICT',
+          message: CLASSIFICATION_ONLY_COMPLETED_CAN_ACKNOWLEDGE,
+        });
+      }
+
+      return ctx.db.classificationAssessment.update({
+        where: { id: row.id },
+        data: { disclaimerAcknowledgedAt: new Date() },
+      });
+    }),
+
+  // -------------------------------------------------------------------------
+  // getLatest — most recent completed assessment for a given engagement.
+  // -------------------------------------------------------------------------
+});

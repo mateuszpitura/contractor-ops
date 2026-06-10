@@ -1,7 +1,10 @@
-import type {
-  SubscriptionStatus,
-  SubscriptionTier,
-} from '@contractor-ops/db/generated/prisma/client';
+import {
+  buildSubscriptionData,
+  getSubscriptionIdFromInvoice,
+  handleSubscriptionDeleted as markSubscriptionDeleted,
+  type SubscriptionWithPeriod,
+} from '@contractor-ops/billing/webhook';
+import type { SubscriptionTier } from '@contractor-ops/db/generated/prisma/client';
 import { createLogger } from '@contractor-ops/logger';
 import { metrics } from '@contractor-ops/logger/metrics';
 import { getServerEnv } from '@contractor-ops/validators';
@@ -31,31 +34,6 @@ const log = createLogger({ service: 'billing-webhook' });
  */
 type TxClient = DbClient;
 
-/**
- * Extended Stripe subscription shape that includes period fields.
- * Stripe's webhook payloads include current_period_start/end even though
- * the SDK types for newer API versions may not expose them directly.
- */
-interface SubscriptionWithPeriod extends Stripe.Subscription {
-  current_period_start: number;
-  current_period_end: number;
-}
-
-// ---------------------------------------------------------------------------
-// Stripe status -> DB enum mapping
-// ---------------------------------------------------------------------------
-
-const STRIPE_STATUS_MAP: Record<string, SubscriptionStatus> = {
-  trialing: 'TRIALING',
-  active: 'ACTIVE',
-  past_due: 'PAST_DUE',
-  canceled: 'CANCELED',
-  unpaid: 'UNPAID',
-  incomplete: 'INCOMPLETE',
-  incomplete_expired: 'INCOMPLETE_EXPIRED',
-  paused: 'PAUSED',
-};
-
 function buildBillingUrl(): string {
   const base = getServerEnv().PUBLIC_APP_URL;
   return `${base}/settings?tab=billing`;
@@ -80,19 +58,6 @@ async function sendBillingEmail(params: {
   } catch (error) {
     log.error({ err: error }, 'email send failed');
   }
-}
-
-// ---------------------------------------------------------------------------
-// Helpers to extract subscription ID from invoice
-// ---------------------------------------------------------------------------
-
-function getSubscriptionIdFromInvoice(invoice: Stripe.Invoice): string | null {
-  // In newer Stripe API versions, subscription is under parent.subscription_details
-  const parentSub = invoice.parent?.subscription_details?.subscription;
-  if (parentSub) {
-    return typeof parentSub === 'string' ? parentSub : parentSub.id;
-  }
-  return null;
 }
 
 // ---------------------------------------------------------------------------
@@ -365,7 +330,19 @@ async function handleSubscriptionUpdated(
     return;
   }
 
-  const { tier, data } = buildSubscriptionData(subscription, organizationId);
+  const { tier, data } = buildSubscriptionData(
+    subscription,
+    organizationId,
+    resolveTierFromPriceId,
+    {
+      onUnknownPriceId: ({ priceId, subscriptionId, organizationId: orgId }) => {
+        log.error(
+          { priceId, subscriptionId, organizationId: orgId },
+          'BILLING ALERT: unknown price ID in subscription, defaulting to STARTER - verify Stripe configuration',
+        );
+      },
+    },
+  );
 
   // Check if tier changed (for notification)
   const previousSub = await tx.subscription.findUnique({
@@ -394,60 +371,6 @@ async function handleSubscriptionUpdated(
       pendingNotifications,
     );
   }
-}
-
-function buildSubscriptionData(subscription: SubscriptionWithPeriod, organizationId: string) {
-  const status: SubscriptionStatus = STRIPE_STATUS_MAP[subscription.status] ?? 'ACTIVE';
-  const priceId = subscription.items.data[0]?.price?.id;
-
-  let tier: SubscriptionTier;
-  try {
-    tier = priceId ? resolveTierFromPriceId(priceId) : 'STARTER';
-  } catch {
-    log.error(
-      { priceId, subscriptionId: subscription.id, organizationId },
-      'BILLING ALERT: unknown price ID in subscription, defaulting to STARTER - verify Stripe configuration',
-    );
-    tier = 'STARTER';
-  }
-
-  const { periodStart, periodEnd } = resolveSubscriptionPeriod(subscription);
-
-  const data = {
-    organizationId,
-    stripeCustomerId:
-      typeof subscription.customer === 'string' ? subscription.customer : subscription.customer.id,
-    stripeSubscriptionItemId: subscription.items.data[0]?.id ?? null,
-    stripePriceId: priceId ?? null,
-    tier,
-    status,
-    currentPeriodStart: periodStart,
-    currentPeriodEnd: periodEnd,
-    trialEnd: subscription.trial_end ? new Date(subscription.trial_end * 1000) : null,
-    cancelAtPeriodEnd: subscription.cancel_at_period_end,
-    seatCount: subscription.items.data[0]?.quantity ?? 1,
-  };
-
-  return { tier, status, data };
-}
-
-function resolveSubscriptionPeriod(subscription: SubscriptionWithPeriod): {
-  periodStart: Date;
-  periodEnd: Date;
-} {
-  const periodStart = subscription.current_period_start
-    ? new Date(subscription.current_period_start * 1000)
-    : subscription.start_date
-      ? new Date(subscription.start_date * 1000)
-      : new Date();
-
-  const periodEnd = subscription.current_period_end
-    ? new Date(subscription.current_period_end * 1000)
-    : subscription.start_date
-      ? new Date((subscription.start_date + 30 * 24 * 60 * 60) * 1000)
-      : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
-
-  return { periodStart, periodEnd };
 }
 
 /**
@@ -487,12 +410,8 @@ async function handleSubscriptionDeleted(
   subscription: Stripe.Subscription,
   tx: TxClient,
 ): Promise<void> {
-  const existing = await tx.subscription.findUnique({
-    where: { stripeSubscriptionId: subscription.id },
-    select: { id: true, organizationId: true },
-  });
-
-  if (!existing) {
+  const result = await markSubscriptionDeleted(subscription, tx);
+  if (!result) {
     log.warn(
       { subscriptionId: subscription.id },
       'handleSubscriptionDeleted: subscription not found in DB, skipping',
@@ -500,14 +419,9 @@ async function handleSubscriptionDeleted(
     return;
   }
 
-  await tx.subscription.update({
-    where: { stripeSubscriptionId: subscription.id },
-    data: { status: 'CANCELED' },
-  });
-
   void invalidate(
-    CacheKeys.subscription(existing.organizationId),
-    CacheKeys.creditBalance(existing.organizationId),
+    CacheKeys.subscription(result.organizationId),
+    CacheKeys.creditBalance(result.organizationId),
   );
 }
 

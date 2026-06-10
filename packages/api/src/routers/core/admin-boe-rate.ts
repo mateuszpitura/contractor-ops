@@ -4,6 +4,7 @@
 // All procedures gated on `admin:boe-rate:write` (super-admin only).
 
 import { createLogger } from '@contractor-ops/logger';
+import { entityIdSchema } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import { router } from '../../init';
@@ -134,7 +135,7 @@ export const adminBoeRateRouter = router({
    */
   delete: tenantProcedure
     .use(requirePermission({ 'admin:boe-rate': ['write'] }))
-    .input(z.object({ id: z.string() }))
+    .input(entityIdSchema)
     .mutation(async ({ ctx, input }) => {
       const existing = await findOrThrow(
         () =>

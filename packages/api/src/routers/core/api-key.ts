@@ -1,3 +1,4 @@
+import { entityIdSchema } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import { API_KEY_CANNOT_UPDATE_REVOKED, API_KEY_REVOKED } from '../../errors';
@@ -186,7 +187,7 @@ export const apiKeyRouter = router({
    * Revoke an API key. Immediate and irreversible.
    */
   revoke: apiKeyAdminProcedure
-    .input(z.object({ id: z.string() }))
+    .input(entityIdSchema)
     .mutation(async ({ ctx, input }) => {
       const existing = await findOrThrow(
         () =>

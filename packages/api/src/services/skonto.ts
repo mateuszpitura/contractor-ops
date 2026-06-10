@@ -90,6 +90,8 @@ export function evaluateSkontoEligibility(input: SkontoEligibilityInput): Skonto
   discountDeadline.setDate(discountDeadline.getDate() + skontoTerm.discountPeriodDays);
 
   // Calculate discount amounts (always, for display purposes)
+  // Money-rounding policy (see wiki/patterns/money-rounding): skonto discount FLOORS —
+  // never grant more discount than mathematically due; protects the seller's receivable.
   const discountAmountMinor = Math.floor((invoiceTotalMinor * skontoTerm.discountPercent) / 100);
   const discountedAmountMinor = invoiceTotalMinor - discountAmountMinor;
 

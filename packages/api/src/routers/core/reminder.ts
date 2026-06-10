@@ -1,4 +1,5 @@
 import {
+  entityIdSchema,
   reminderRuleCreateSchema,
   reminderRuleToggleSchema,
   reminderRuleUpdateSchema,
@@ -83,7 +84,7 @@ export const reminderRouter = router({
    */
   update: tenantProcedure
     .use(requirePermission({ organization: ['update'] }))
-    .input(z.object({ id: z.string() }).merge(reminderRuleUpdateSchema))
+    .input(entityIdSchema.merge(reminderRuleUpdateSchema))
     .mutation(async ({ ctx, input }) => {
       const { id, ...data } = input;
 
@@ -137,7 +138,7 @@ export const reminderRouter = router({
    */
   delete: tenantProcedure
     .use(requirePermission({ organization: ['update'] }))
-    .input(z.object({ id: z.string() }))
+    .input(entityIdSchema)
     .mutation(async ({ ctx, input }) => {
       const existing = await ctx.db.reminderRule.findFirst({
         where: { id: input.id, organizationId: ctx.organizationId },

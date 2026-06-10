@@ -14,7 +14,7 @@
 
 import { z } from 'zod';
 import { router } from '../../init';
-import { cursorClause, paginateByExtraRow } from '../../lib/pagination';
+import { cursorClause, paginateByLastKept } from '../../lib/pagination';
 import { requirePermission } from '../../middleware/rbac';
 import { classificationProcedure } from '../../middleware/require-classification-flag';
 
@@ -50,7 +50,7 @@ export const economicDependencyAlertRouter = router({
       ...cursorClause(input, 50),
     });
 
-    return paginateByExtraRow(rows, input, 50);
+    return paginateByLastKept(rows, input, 50);
   }),
 
   listByEngagement: contractorReadProcedure

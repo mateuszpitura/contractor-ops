@@ -26,9 +26,10 @@ import {
   COMPLIANCE_ITEM_NOT_FOUND,
 } from '../../errors';
 import { router } from '../../init';
+import { auditedMutation, auditMutationCtx } from '../../lib/audited-mutation';
+import { findOrThrow } from '../../lib/find-or-throw';
 import { requirePermission } from '../../middleware/rbac';
 import { tenantProcedure } from '../../middleware/tenant';
-import { writeAuditLog } from '../../services/audit-writer';
 import {
   countAtRiskContractors,
   countUpcomingRenewals,
@@ -120,12 +121,13 @@ export const complianceAdminRouter = router({
     .input(overrideItemInput)
     .mutation(async ({ ctx, input }) => {
       return await ctx.db.$transaction(async tx => {
-        const before = await tx.contractorComplianceItem.findFirst({
-          where: { id: input.itemId, organizationId: ctx.organizationId },
-        });
-        if (!before) {
-          throw new TRPCError({ code: 'NOT_FOUND', message: COMPLIANCE_ITEM_NOT_FOUND });
-        }
+        const before = await findOrThrow(
+          () =>
+            tx.contractorComplianceItem.findFirst({
+              where: { id: input.itemId, organizationId: ctx.organizationId },
+            }),
+          COMPLIANCE_ITEM_NOT_FOUND,
+        );
         if (before.status === 'WAIVED') {
           throw new TRPCError({
             code: 'PRECONDITION_FAILED',
@@ -141,25 +143,24 @@ export const complianceAdminRouter = router({
             waivedReasonNote: input.reasonNote,
           },
         });
-        await writeAuditLog({
-          tx,
-          organizationId: ctx.organizationId,
-          actorType: 'USER',
-          actorId: ctx.user.id,
-          actorName: ctx.user.name ?? null,
-          action: 'compliance.item.overridden',
-          resourceType: 'CONTRACTOR',
-          resourceId: before.contractorId,
-          metadata: {
-            itemId: input.itemId,
-            reasonCategory: input.reasonCategory,
-            reasonNote: input.reasonNote,
-            previousStatus: before.status,
-            // Best-effort role snapshot for forensics — role only, never PII (T-73-03-03).
-            actorRoleSnapshot:
-              (ctx.session as unknown as { role?: string } | undefined)?.role ?? null,
+        await auditedMutation(
+          auditMutationCtx(ctx),
+          {
+            action: 'compliance.item.overridden',
+            resourceType: 'CONTRACTOR',
+            resourceId: before.contractorId,
+            metadata: {
+              itemId: input.itemId,
+              reasonCategory: input.reasonCategory,
+              reasonNote: input.reasonNote,
+              previousStatus: before.status,
+              actorRoleSnapshot:
+                (ctx.session as unknown as { role?: string } | undefined)?.role ?? null,
+            },
           },
-        });
+          async () => updated,
+          tx,
+        );
         return updated;
       });
     }),
@@ -177,13 +178,14 @@ export const complianceAdminRouter = router({
     .use(requirePermission({ compliance: ['read'] }))
     .input(z.object({ itemId: cuid, limit: z.number().int().min(1).max(200).default(50) }))
     .query(async ({ ctx, input }) => {
-      const item = await ctx.db.contractorComplianceItem.findFirst({
-        where: { id: input.itemId, organizationId: ctx.organizationId },
-        select: { id: true, contractorId: true },
-      });
-      if (!item) {
-        throw new TRPCError({ code: 'NOT_FOUND', message: COMPLIANCE_ITEM_NOT_FOUND });
-      }
+      const item = await findOrThrow(
+        () =>
+          ctx.db.contractorComplianceItem.findFirst({
+            where: { id: input.itemId, organizationId: ctx.organizationId },
+            select: { id: true, contractorId: true },
+          }),
+        COMPLIANCE_ITEM_NOT_FOUND,
+      );
       return await ctx.db.auditLog.findMany({
         where: {
           organizationId: ctx.organizationId,
@@ -245,13 +247,14 @@ export const complianceAdminRouter = router({
     )
     .mutation(async ({ ctx, input }) => {
       const result = await ctx.db.$transaction(async tx => {
-        const before = await tx.contractorComplianceItem.findFirst({
-          where: { id: input.itemId, organizationId: ctx.organizationId },
-          select: { id: true, contractorId: true, status: true },
-        });
-        if (!before) {
-          throw new TRPCError({ code: 'NOT_FOUND', message: COMPLIANCE_ITEM_NOT_FOUND });
-        }
+        const before = await findOrThrow(
+          () =>
+            tx.contractorComplianceItem.findFirst({
+              where: { id: input.itemId, organizationId: ctx.organizationId },
+              select: { id: true, contractorId: true, status: true },
+            }),
+          COMPLIANCE_ITEM_NOT_FOUND,
+        );
 
         // Verify the document is PENDING_REVIEW, belongs to this org, and is
         // linked to the item's contractor — prevents an admin from corrupting
@@ -294,21 +297,21 @@ export const complianceAdminRouter = router({
           where: { id: input.documentId },
           data: { status: 'ACTIVE' },
         });
-        await writeAuditLog({
-          tx,
-          organizationId: ctx.organizationId,
-          actorType: 'USER',
-          actorId: ctx.user.id,
-          actorName: ctx.user.name ?? null,
-          action: 'compliance.upload.approved',
-          resourceType: 'CONTRACTOR',
-          resourceId: before.contractorId,
-          metadata: {
-            itemId: input.itemId,
-            documentId: input.documentId,
-            expiresAt: input.expiresAt,
+        await auditedMutation(
+          auditMutationCtx(ctx),
+          {
+            action: 'compliance.upload.approved',
+            resourceType: 'CONTRACTOR',
+            resourceId: before.contractorId,
+            metadata: {
+              itemId: input.itemId,
+              documentId: input.documentId,
+              expiresAt: input.expiresAt,
+            },
           },
-        });
+          async () => updated,
+          tx,
+        );
 
         // Phase 81 D-12/D-14 — re-assert contractor eligibility for the approved
         // item so any PENDING_COMPLIANCE ApprovalFlow holding it resumes to PENDING
@@ -357,13 +360,14 @@ export const complianceAdminRouter = router({
     )
     .mutation(async ({ ctx, input }) => {
       const result = await ctx.db.$transaction(async tx => {
-        const item = await tx.contractorComplianceItem.findFirst({
-          where: { id: input.itemId, organizationId: ctx.organizationId },
-          select: { id: true, contractorId: true, policyRuleId: true, status: true },
-        });
-        if (!item) {
-          throw new TRPCError({ code: 'NOT_FOUND', message: COMPLIANCE_ITEM_NOT_FOUND });
-        }
+        const item = await findOrThrow(
+          () =>
+            tx.contractorComplianceItem.findFirst({
+              where: { id: input.itemId, organizationId: ctx.organizationId },
+              select: { id: true, contractorId: true, policyRuleId: true, status: true },
+            }),
+          COMPLIANCE_ITEM_NOT_FOUND,
+        );
 
         // Same ownership + status guard as approveUploadReplacement.
         const doc = await tx.document.findFirst({
@@ -402,22 +406,22 @@ export const complianceAdminRouter = router({
           where: { id: input.itemId },
           data: { satisfiedByDocumentId: null },
         });
-        await writeAuditLog({
-          tx,
-          organizationId: ctx.organizationId,
-          actorType: 'USER',
-          actorId: ctx.user.id,
-          actorName: ctx.user.name ?? null,
-          action: 'compliance.upload.rejected',
-          resourceType: 'CONTRACTOR',
-          resourceId: item.contractorId,
-          metadata: {
-            itemId: input.itemId,
-            documentId: input.documentId,
-            reasonCategory: input.reasonCategory,
-            freeText: input.freeText ?? null,
+        await auditedMutation(
+          auditMutationCtx(ctx),
+          {
+            action: 'compliance.upload.rejected',
+            resourceType: 'CONTRACTOR',
+            resourceId: item.contractorId,
+            metadata: {
+              itemId: input.itemId,
+              documentId: input.documentId,
+              reasonCategory: input.reasonCategory,
+              freeText: input.freeText ?? null,
+            },
           },
-        });
+          async () => item,
+          tx,
+        );
         // Item status intentionally unchanged (D-08) — stays MISSING/EXPIRED.
         return { item, contractorId: item.contractorId, policyRuleId: item.policyRuleId };
       });

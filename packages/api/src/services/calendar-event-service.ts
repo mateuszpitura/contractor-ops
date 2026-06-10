@@ -1,6 +1,10 @@
 import type { Prisma, PrismaClient } from '@contractor-ops/db';
-import { GoogleCalendarAdapter } from '@contractor-ops/integrations/adapters/google-calendar-adapter';
-import { OutlookCalendarAdapter } from '@contractor-ops/integrations/adapters/outlook-calendar-adapter';
+import {
+  getCalendarEventAdapter,
+  getCalendarProviderMeta,
+  isCalendarProviderId,
+  type CalendarProviderId,
+} from '@contractor-ops/integrations';
 import { pLimit } from '@contractor-ops/integrations/services/concurrency';
 import { decryptCredentials } from '@contractor-ops/integrations/services/credential-service';
 import { deriveIdempotencyKey } from '@contractor-ops/integrations/services/idempotency';
@@ -44,16 +48,13 @@ const EXTERNAL_TYPE_MAP = {
   OUTLOOK_CALENDAR: 'OUTLOOK_CALENDAR_EVENT',
 } as const;
 
-const googleAdapter = new GoogleCalendarAdapter();
-const outlookAdapter = new OutlookCalendarAdapter();
-
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
 
 interface CalendarConnection {
   id: string;
-  provider: (typeof CALENDAR_PROVIDERS)[number];
+  provider: CalendarProviderId;
   accessToken: string;
   organizationId: string;
 }
@@ -120,18 +121,20 @@ async function findCalendarConnections(
     },
   });
 
-  return connections.map(
+  return connections.flatMap(
     (conn: { id: string; provider: string; credentialsRef: string; organizationId: string }) => {
-      const providerSlug =
-        conn.provider === 'GOOGLE_CALENDAR' ? 'google-calendar' : 'outlook-calendar';
-      const credentials = decryptCredentials(conn.credentialsRef, providerSlug);
+      if (!isCalendarProviderId(conn.provider)) return [];
+      const meta = getCalendarProviderMeta(conn.provider);
+      const credentials = decryptCredentials(conn.credentialsRef, meta.credentialSlug);
 
-      return {
-        id: conn.id,
-        provider: conn.provider as (typeof CALENDAR_PROVIDERS)[number],
-        accessToken: credentials.accessToken,
-        organizationId: conn.organizationId,
-      };
+      return [
+        {
+          id: conn.id,
+          provider: conn.provider,
+          accessToken: credentials.accessToken,
+          organizationId: conn.organizationId,
+        },
+      ];
     },
   );
 }
@@ -203,17 +206,16 @@ async function createProviderEvent(
   // duplicate insert with 409 (its `event.id` is set from this key);
   // Microsoft Graph correlates via `client-request-id`. Each adapter
   // owns the wire encoding — the service supplies the canonical key.
+  const meta = getCalendarProviderMeta(conn.provider);
   const idempotencyKey = deriveIdempotencyKey({
     orgId: input.organizationId,
-    operation:
-      conn.provider === 'GOOGLE_CALENDAR'
-        ? 'google-calendar.event.create'
-        : 'outlook-calendar.event.create',
+    operation: meta.idempotencyOperationCreate,
     businessKey: `${conn.id}:${input.entityType}:${input.entityId}`,
   });
 
   if (conn.provider === 'GOOGLE_CALENDAR') {
-    const result = await googleAdapter.createEvent(
+    const adapter = getCalendarEventAdapter('GOOGLE_CALENDAR');
+    const result = await adapter.createEvent(
       conn.accessToken,
       {
         summary: input.summary,
@@ -235,11 +237,12 @@ async function createProviderEvent(
         endTime: input.endDateTime,
         link: result.htmlLink,
         etag: result.etag,
-        provider: 'google_calendar',
+        provider: meta.metadataProvider,
       },
     };
   }
 
+  const outlookAdapter = getCalendarEventAdapter('OUTLOOK_CALENDAR');
   const result = await outlookAdapter.createEvent(
     conn.accessToken,
     {
@@ -261,7 +264,7 @@ async function createProviderEvent(
       startTime: input.startDateTime,
       endTime: input.endDateTime,
       link: result.webLink,
-      provider: 'outlook_calendar',
+      provider: meta.metadataProvider,
     },
   };
 }
@@ -366,8 +369,10 @@ async function updateEventForLink(
   const conn = link.integrationConnection;
   if (conn.status !== 'CONNECTED') return;
 
-  const providerSlug = conn.provider === 'GOOGLE_CALENDAR' ? 'google-calendar' : 'outlook-calendar';
-  const credentials = decryptCredentials(conn.credentialsRef, providerSlug);
+  if (!isCalendarProviderId(conn.provider)) return;
+
+  const meta = getCalendarProviderMeta(conn.provider);
+  const credentials = decryptCredentials(conn.credentialsRef, meta.credentialSlug);
   const existingMetadata =
     (link.metadataJson as CalendarEventMetadata) ?? ({} as CalendarEventMetadata);
 
@@ -379,8 +384,9 @@ async function updateEventForLink(
 
   const db = calendarOrm(prisma);
   if (conn.provider === 'GOOGLE_CALENDAR') {
+    const adapter = getCalendarEventAdapter('GOOGLE_CALENDAR');
     const etag = existingMetadata.etag ?? '';
-    const result = await googleAdapter.updateEvent(
+    const result = await adapter.updateEvent(
       credentials.accessToken,
       link.externalId,
       {
@@ -401,11 +407,12 @@ async function updateEventForLink(
           ...fieldOverrides,
           etag: result.etag,
           link: result.htmlLink,
-          provider: 'google_calendar',
+          provider: meta.metadataProvider,
         },
       },
     });
   } else {
+    const outlookAdapter = getCalendarEventAdapter('OUTLOOK_CALENDAR');
     const result = await outlookAdapter.updateEvent(credentials.accessToken, link.externalId, {
       subject: input.summary,
       bodyHtml: input.description,
@@ -421,7 +428,7 @@ async function updateEventForLink(
           ...existingMetadata,
           ...fieldOverrides,
           link: result.webLink,
-          provider: 'outlook_calendar',
+          provider: meta.metadataProvider,
         },
       },
     });
@@ -440,15 +447,19 @@ async function deleteEventForLink(
 
   // Attempt deletion even if disconnected -- best effort
   try {
-    if (conn.status === 'CONNECTED') {
-      const providerSlug =
-        conn.provider === 'GOOGLE_CALENDAR' ? 'google-calendar' : 'outlook-calendar';
-      const credentials = decryptCredentials(conn.credentialsRef, providerSlug);
-
+    if (conn.status === 'CONNECTED' && isCalendarProviderId(conn.provider)) {
+      const meta = getCalendarProviderMeta(conn.provider);
+      const credentials = decryptCredentials(conn.credentialsRef, meta.credentialSlug);
       if (conn.provider === 'GOOGLE_CALENDAR') {
-        await googleAdapter.deleteEvent(credentials.accessToken, link.externalId);
+        await getCalendarEventAdapter('GOOGLE_CALENDAR').deleteEvent(
+          credentials.accessToken,
+          link.externalId,
+        );
       } else {
-        await outlookAdapter.deleteEvent(credentials.accessToken, link.externalId);
+        await getCalendarEventAdapter('OUTLOOK_CALENDAR').deleteEvent(
+          credentials.accessToken,
+          link.externalId,
+        );
       }
     }
     // safe-swallow: provider-side delete is best-effort (event may already be gone); the ExternalLink is removed below regardless

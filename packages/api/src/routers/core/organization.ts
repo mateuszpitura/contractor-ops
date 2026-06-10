@@ -6,7 +6,7 @@ import { router } from '../../init';
 import { isDemoOrg } from '../../lib/demo';
 import { requirePermission } from '../../middleware/rbac';
 import { tenantProcedure } from '../../middleware/tenant';
-import { writeAuditLog } from '../../services/audit-writer';
+import { auditMutationCtx, auditedMutation } from '../../lib/audited-mutation';
 
 export const organizationRouter = router({
   /**
@@ -50,7 +50,7 @@ export const organizationRouter = router({
     .mutation(async ({ ctx, input }) => {
       const org = await ctx.db.organization.findUniqueOrThrow({
         where: { id: ctx.organizationId },
-        select: { countryCode: true },
+        select: { countryCode: true, isKleinunternehmer: true },
       });
       if (org.countryCode !== 'DE') {
         throw new TRPCError({
@@ -58,25 +58,24 @@ export const organizationRouter = router({
           message: KLEINUNTERNEHMER_DE_ONLY,
         });
       }
-      const updated = await ctx.db.organization.update({
-        where: { id: ctx.organizationId },
-        data: { isKleinunternehmer: input.enabled },
-        select: { isKleinunternehmer: true },
-      });
 
-      // F-OBS-05 — Kleinunternehmer toggle changes invoice generation
-      // (forced KU rate, suppressed VAT, § 19 UStG footer). Tax-relevant
-      // changes are audit-worthy.
-      await writeAuditLog({
-        organizationId: ctx.organizationId,
-        actorType: 'USER',
-        actorId: ctx.user?.id ?? null,
-        action: 'ORGANIZATION_KLEINUNTERNEHMER_TOGGLE',
-        resourceType: 'ORGANIZATION',
-        resourceId: ctx.organizationId,
-        newValues: { isKleinunternehmer: updated.isKleinunternehmer },
-      });
-
-      return { isKleinunternehmer: updated.isKleinunternehmer };
+      return auditedMutation(
+        auditMutationCtx(ctx),
+        {
+          action: 'ORGANIZATION_KLEINUNTERNEHMER_TOGGLE',
+          resourceType: 'ORGANIZATION',
+          resourceId: ctx.organizationId,
+          oldValues: { isKleinunternehmer: org.isKleinunternehmer },
+          newValues: { isKleinunternehmer: input.enabled },
+        },
+        async tx => {
+          const updated = await tx.organization.update({
+            where: { id: ctx.organizationId },
+            data: { isKleinunternehmer: input.enabled },
+            select: { isKleinunternehmer: true },
+          });
+          return { isKleinunternehmer: updated.isKleinunternehmer };
+        },
+      );
     }),
 });

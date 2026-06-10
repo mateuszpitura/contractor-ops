@@ -27,18 +27,23 @@ const { mockKsefClient, mockTenantDb } = vi.hoisted(() => ({
 // Mocks
 // ---------------------------------------------------------------------------
 
-vi.mock('@contractor-ops/db', () => ({
+vi.mock('@contractor-ops/db', () => {
+  const __mockDbPrisma = {
+    organization: { findUniqueOrThrow: vi.fn() },
+  };
+  return {
   withRlsTransactions: <T>(c: T) => c,
   withRlsReads: <T>(c: T) => c,
-  prisma: {
-    organization: { findUniqueOrThrow: vi.fn() },
-  },
+  prisma: __mockDbPrisma,
+  prismaRaw: __mockDbPrisma,
   createTenantClientFrom: vi.fn().mockReturnValue(mockTenantDb),
   getRegionalClient: vi.fn().mockReturnValue('regional-client'),
   tenantStore: {
     run: vi.fn((_ctx: unknown, fn: () => Promise<unknown>) => fn()),
   },
-}));
+
+  };
+});
 
 vi.mock('@contractor-ops/einvoice', () => {
   const MockKsefApiClient = vi.fn().mockImplementation(function (this: typeof mockKsefClient) {

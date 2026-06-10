@@ -8,6 +8,7 @@
  */
 import type { Prisma } from '@contractor-ops/db';
 import {
+  entityIdSchema,
   equipmentAssignSchema,
   equipmentCreateSchema,
   equipmentListSchema,
@@ -17,9 +18,10 @@ import {
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import { mergeRouters, router } from '../../init';
+import { auditedMutation, auditMutationCtx } from '../../lib/audited-mutation';
+import { findOrThrow } from '../../lib/find-or-throw';
 import { requirePermission } from '../../middleware/rbac';
 import { tenantProcedure } from '../../middleware/tenant';
-import { writeAuditLog } from '../../services/audit-writer';
 import { equipmentCouriersRouter } from './equipment-couriers';
 import { equipmentReturnsRouter } from './equipment-returns';
 import {
@@ -123,42 +125,39 @@ const equipmentCoreRouter = router({
    */
   getById: tenantProcedure
     .use(requirePermission({ equipment: ['read'] }))
-    .input(z.object({ id: z.string() }))
+    .input(entityIdSchema)
     .query(async ({ ctx, input }) => {
-      const equipment = await ctx.db.equipment.findFirst({
-        where: {
-          id: input.id,
-          organizationId: ctx.organizationId,
-        },
-        include: {
-          assignments: {
-            orderBy: { assignedAt: 'desc' },
+      const equipment = await findOrThrow(
+        () =>
+          ctx.db.equipment.findFirst({
+            where: {
+              id: input.id,
+              organizationId: ctx.organizationId,
+            },
             include: {
-              contractor: {
-                select: { id: true, legalName: true, displayName: true },
+              assignments: {
+                orderBy: { assignedAt: 'desc' },
+                include: {
+                  contractor: {
+                    select: { id: true, legalName: true, displayName: true },
+                  },
+                },
+              },
+              shipments: {
+                orderBy: { createdAt: 'desc' },
+                include: {
+                  events: {
+                    orderBy: { occurredAt: 'asc' },
+                  },
+                },
+              },
+              _count: {
+                select: { shipments: true },
               },
             },
-          },
-          shipments: {
-            orderBy: { createdAt: 'desc' },
-            include: {
-              events: {
-                orderBy: { occurredAt: 'asc' },
-              },
-            },
-          },
-          _count: {
-            select: { shipments: true },
-          },
-        },
-      });
-
-      if (!equipment) {
-        throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: EQUIPMENT_NOT_FOUND,
-        });
-      }
+          }),
+        EQUIPMENT_NOT_FOUND,
+      );
 
       const currentAssignment = equipment.assignments.find(a => !a.unassignedAt) ?? null;
 
@@ -175,32 +174,35 @@ const equipmentCoreRouter = router({
     .use(requirePermission({ equipment: ['create'] }))
     .input(equipmentCreateSchema)
     .mutation(async ({ ctx, input }) => {
-      const equipment = await ctx.db.equipment.create({
-        data: {
-          organizationId: ctx.organizationId,
-          name: input.name,
-          serialNumber: input.serialNumber ?? null,
-          type: input.type,
-          customType: input.customType ?? null,
-          notes: input.notes ?? null,
-          purchaseDate: input.purchaseDate ?? null,
+      let equipment!: Awaited<ReturnType<typeof ctx.db.equipment.create>>;
+      return auditedMutation(
+        auditMutationCtx(ctx),
+        {
+          action: 'equipment.create',
+          resourceType: 'EQUIPMENT',
+          get resourceId() {
+            return equipment.id;
+          },
+          get resourceName() {
+            return equipment.name;
+          },
+          newValues: input as Record<string, unknown>,
         },
-      });
-
-      // Audit log
-      await writeAuditLog({
-        organizationId: ctx.organizationId,
-        actorType: 'USER',
-        actorId: ctx.user?.id,
-        actorName: ctx.user?.name,
-        action: 'equipment.create',
-        resourceType: 'EQUIPMENT',
-        resourceId: equipment.id,
-        resourceName: equipment.name,
-        newValues: input,
-      });
-
-      return equipment;
+        async tx => {
+          equipment = await tx.equipment.create({
+            data: {
+              organizationId: ctx.organizationId,
+              name: input.name,
+              serialNumber: input.serialNumber ?? null,
+              type: input.type,
+              customType: input.customType ?? null,
+              notes: input.notes ?? null,
+              purchaseDate: input.purchaseDate ?? null,
+            },
+          });
+          return equipment;
+        },
+      );
     }),
 
   /**
@@ -212,54 +214,47 @@ const equipmentCoreRouter = router({
     .mutation(async ({ ctx, input }) => {
       const { id, ...fields } = input;
 
-      const existing = await ctx.db.equipment.findFirst({
-        where: { id, organizationId: ctx.organizationId },
-      });
+      const existing = await findOrThrow(
+        () => ctx.db.equipment.findFirst({ where: { id, organizationId: ctx.organizationId } }),
+        EQUIPMENT_NOT_FOUND,
+      );
 
-      if (!existing) {
-        throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: EQUIPMENT_NOT_FOUND,
-        });
-      }
-
-      const equipment = await ctx.db.equipment.update({
-        where: { id },
-        data: {
-          ...(fields.name !== undefined && { name: fields.name }),
-          ...(fields.serialNumber !== undefined && {
-            serialNumber: fields.serialNumber ?? null,
-          }),
-          ...(fields.type !== undefined && { type: fields.type }),
-          ...(fields.customType !== undefined && {
-            customType: fields.customType ?? null,
-          }),
-          ...(fields.notes !== undefined && { notes: fields.notes ?? null }),
-          ...(fields.purchaseDate !== undefined && {
-            purchaseDate: fields.purchaseDate ?? null,
-          }),
+      const equipment = await auditedMutation(
+        auditMutationCtx(ctx),
+        {
+          action: 'equipment.update',
+          resourceType: 'EQUIPMENT',
+          resourceId: id,
+          resourceName: fields.name ?? existing.name,
+          oldValues: {
+            name: existing.name,
+            serialNumber: existing.serialNumber,
+            type: existing.type,
+            customType: existing.customType,
+            notes: existing.notes,
+            purchaseDate: existing.purchaseDate,
+          },
+          newValues: fields as Record<string, unknown>,
         },
-      });
-
-      await writeAuditLog({
-        organizationId: ctx.organizationId,
-        actorType: 'USER',
-        actorId: ctx.user?.id,
-        actorName: ctx.user?.name,
-        action: 'equipment.update',
-        resourceType: 'EQUIPMENT',
-        resourceId: equipment.id,
-        resourceName: equipment.name,
-        oldValues: {
-          name: existing.name,
-          serialNumber: existing.serialNumber,
-          type: existing.type,
-          customType: existing.customType,
-          notes: existing.notes,
-          purchaseDate: existing.purchaseDate,
-        },
-        newValues: fields,
-      });
+        async tx =>
+          tx.equipment.update({
+            where: { id },
+            data: {
+              ...(fields.name !== undefined && { name: fields.name }),
+              ...(fields.serialNumber !== undefined && {
+                serialNumber: fields.serialNumber ?? null,
+              }),
+              ...(fields.type !== undefined && { type: fields.type }),
+              ...(fields.customType !== undefined && {
+                customType: fields.customType ?? null,
+              }),
+              ...(fields.notes !== undefined && { notes: fields.notes ?? null }),
+              ...(fields.purchaseDate !== undefined && {
+                purchaseDate: fields.purchaseDate ?? null,
+              }),
+            },
+          }),
+      );
 
       return equipment;
     }),
@@ -269,24 +264,21 @@ const equipmentCoreRouter = router({
    */
   retire: tenantProcedure
     .use(requirePermission({ equipment: ['delete'] }))
-    .input(z.object({ id: z.string() }))
+    .input(entityIdSchema)
     .mutation(async ({ ctx, input }) => {
-      const equipment = await ctx.db.equipment.findFirst({
-        where: { id: input.id, organizationId: ctx.organizationId },
-        include: {
-          assignments: {
-            where: { unassignedAt: null },
-            take: 1,
-          },
-        },
-      });
-
-      if (!equipment) {
-        throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: EQUIPMENT_NOT_FOUND,
-        });
-      }
+      const equipment = await findOrThrow(
+        () =>
+          ctx.db.equipment.findFirst({
+            where: { id: input.id, organizationId: ctx.organizationId },
+            include: {
+              assignments: {
+                where: { unassignedAt: null },
+                take: 1,
+              },
+            },
+          }),
+        EQUIPMENT_NOT_FOUND,
+      );
 
       if (equipment.assignments.length > 0) {
         throw new TRPCError({
@@ -295,25 +287,22 @@ const equipmentCoreRouter = router({
         });
       }
 
-      const updated = await ctx.db.equipment.update({
-        where: { id: input.id },
-        data: { status: 'RETIRED' },
-      });
-
-      await writeAuditLog({
-        organizationId: ctx.organizationId,
-        actorType: 'USER',
-        actorId: ctx.user?.id,
-        actorName: ctx.user?.name,
-        action: 'equipment.retire',
-        resourceType: 'EQUIPMENT',
-        resourceId: updated.id,
-        resourceName: updated.name,
-        oldValues: { status: equipment.status },
-        newValues: { status: 'RETIRED' },
-      });
-
-      return updated;
+      return auditedMutation(
+        auditMutationCtx(ctx),
+        {
+          action: 'equipment.retire',
+          resourceType: 'EQUIPMENT',
+          resourceId: input.id,
+          resourceName: equipment.name,
+          oldValues: { status: equipment.status },
+          newValues: { status: 'RETIRED' },
+        },
+        async tx =>
+          tx.equipment.update({
+            where: { id: input.id },
+            data: { status: 'RETIRED' },
+          }),
+      );
     }),
 
   // ─── Assignment ─────────────────────────────────────────────────────
@@ -326,19 +315,16 @@ const equipmentCoreRouter = router({
     .use(requirePermission({ equipment: ['update'] }))
     .input(equipmentAssignSchema)
     .mutation(async ({ ctx, input }) => {
-      const equipment = await ctx.db.equipment.findFirst({
-        where: {
-          id: input.equipmentId,
-          organizationId: ctx.organizationId,
-        },
-      });
-
-      if (!equipment) {
-        throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: EQUIPMENT_NOT_FOUND,
-        });
-      }
+      const equipment = await findOrThrow(
+        () =>
+          ctx.db.equipment.findFirst({
+            where: {
+              id: input.equipmentId,
+              organizationId: ctx.organizationId,
+            },
+          }),
+        EQUIPMENT_NOT_FOUND,
+      );
 
       if (equipment.status !== 'AVAILABLE') {
         throw new TRPCError({
@@ -347,55 +333,56 @@ const equipmentCoreRouter = router({
         });
       }
 
-      // Verify contractor exists in same org
-      const contractor = await ctx.db.contractor.findFirst({
-        where: {
-          id: input.contractorId,
-          organizationId: ctx.organizationId,
-          deletedAt: null,
-        },
-      });
+      const contractor = await findOrThrow(
+        () =>
+          ctx.db.contractor.findFirst({
+            where: {
+              id: input.contractorId,
+              organizationId: ctx.organizationId,
+              deletedAt: null,
+            },
+          }),
+        CONTRACTOR_NOT_FOUND,
+      );
 
-      if (!contractor) {
-        throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: CONTRACTOR_NOT_FOUND,
-        });
-      }
-
-      const [assignment, updated] = await ctx.db.$transaction([
-        ctx.db.equipmentAssignment.create({
-          data: {
-            organizationId: ctx.organizationId,
-            equipmentId: input.equipmentId,
-            contractorId: input.contractorId,
-            assignedByUserId: ctx.user.id,
-            notes: input.notes ?? null,
+      let assignment!: Awaited<ReturnType<typeof ctx.db.equipmentAssignment.create>>;
+      let updated!: Awaited<ReturnType<typeof ctx.db.equipment.update>>;
+      return auditedMutation(
+        auditMutationCtx(ctx),
+        {
+          action: 'equipment.assign',
+          resourceType: 'EQUIPMENT',
+          get resourceId() {
+            return updated.id;
           },
-        }),
-        ctx.db.equipment.update({
-          where: { id: input.equipmentId },
-          data: { status: 'ASSIGNED' },
-        }),
-      ]);
-
-      await writeAuditLog({
-        organizationId: ctx.organizationId,
-        actorType: 'USER',
-        actorId: ctx.user?.id,
-        actorName: ctx.user?.name,
-        action: 'equipment.assign',
-        resourceType: 'EQUIPMENT',
-        resourceId: updated.id,
-        resourceName: updated.name,
-        newValues: {
-          contractorId: input.contractorId,
-          contractorName: contractor.displayName,
-          assignmentId: assignment.id,
+          get resourceName() {
+            return updated.name;
+          },
+          newValues: {
+            contractorId: input.contractorId,
+            contractorName: contractor.displayName,
+            get assignmentId() {
+              return assignment.id;
+            },
+          },
         },
-      });
-
-      return updated;
+        async tx => {
+          assignment = await tx.equipmentAssignment.create({
+            data: {
+              organizationId: ctx.organizationId,
+              equipmentId: input.equipmentId,
+              contractorId: input.contractorId,
+              assignedByUserId: ctx.user.id,
+              notes: input.notes ?? null,
+            },
+          });
+          updated = await tx.equipment.update({
+            where: { id: input.equipmentId },
+            data: { status: 'ASSIGNED' },
+          });
+          return updated;
+        },
+      );
     }),
 
   /**
@@ -406,25 +393,22 @@ const equipmentCoreRouter = router({
     .use(requirePermission({ equipment: ['update'] }))
     .input(equipmentUnassignSchema)
     .mutation(async ({ ctx, input }) => {
-      const equipment = await ctx.db.equipment.findFirst({
-        where: {
-          id: input.equipmentId,
-          organizationId: ctx.organizationId,
-        },
-        include: {
-          assignments: {
-            where: { unassignedAt: null },
-            take: 1,
-          },
-        },
-      });
-
-      if (!equipment) {
-        throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: EQUIPMENT_NOT_FOUND,
-        });
-      }
+      const equipment = await findOrThrow(
+        () =>
+          ctx.db.equipment.findFirst({
+            where: {
+              id: input.equipmentId,
+              organizationId: ctx.organizationId,
+            },
+            include: {
+              assignments: {
+                where: { unassignedAt: null },
+                take: 1,
+              },
+            },
+          }),
+        EQUIPMENT_NOT_FOUND,
+      );
 
       const activeAssignment = equipment.assignments[0];
       if (!activeAssignment) {
@@ -434,39 +418,41 @@ const equipmentCoreRouter = router({
         });
       }
 
-      const [, updated] = await ctx.db.$transaction([
-        ctx.db.equipmentAssignment.update({
-          where: { id: activeAssignment.id },
-          data: {
-            unassignedAt: new Date(),
-            unassignedByUserId: ctx.user?.id,
-            notes: input.notes
-              ? `${activeAssignment.notes ? `${activeAssignment.notes}\n` : ''}Unassign: ${input.notes}`
-              : activeAssignment.notes,
+      let updated!: Awaited<ReturnType<typeof ctx.db.equipment.update>>;
+      return auditedMutation(
+        auditMutationCtx(ctx),
+        {
+          action: 'equipment.unassign',
+          resourceType: 'EQUIPMENT',
+          get resourceId() {
+            return updated.id;
           },
-        }),
-        ctx.db.equipment.update({
-          where: { id: input.equipmentId },
-          data: { status: 'AVAILABLE' },
-        }),
-      ]);
-
-      await writeAuditLog({
-        organizationId: ctx.organizationId,
-        actorType: 'USER',
-        actorId: ctx.user?.id,
-        actorName: ctx.user?.name,
-        action: 'equipment.unassign',
-        resourceType: 'EQUIPMENT',
-        resourceId: updated.id,
-        resourceName: updated.name,
-        oldValues: {
-          contractorId: activeAssignment.contractorId,
-          assignmentId: activeAssignment.id,
+          get resourceName() {
+            return updated.name;
+          },
+          oldValues: {
+            contractorId: activeAssignment.contractorId,
+            assignmentId: activeAssignment.id,
+          },
         },
-      });
-
-      return updated;
+        async tx => {
+          await tx.equipmentAssignment.update({
+            where: { id: activeAssignment.id },
+            data: {
+              unassignedAt: new Date(),
+              unassignedByUserId: ctx.user?.id,
+              notes: input.notes
+                ? `${activeAssignment.notes ? `${activeAssignment.notes}\n` : ''}Unassign: ${input.notes}`
+                : activeAssignment.notes,
+            },
+          });
+          updated = await tx.equipment.update({
+            where: { id: input.equipmentId },
+            data: { status: 'AVAILABLE' },
+          });
+          return updated;
+        },
+      );
     }),
 });
 

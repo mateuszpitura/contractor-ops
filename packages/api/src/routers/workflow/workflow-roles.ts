@@ -12,6 +12,7 @@
 import { Prisma } from '@contractor-ops/db/generated/prisma/client';
 import { createLogger } from '@contractor-ops/logger';
 import { TRPCError } from '@trpc/server';
+import { entityIdSchema } from '@contractor-ops/validators';
 import { z } from 'zod';
 import {
   ROLE_TEMPLATE_NOT_FOUND,
@@ -19,6 +20,7 @@ import {
   WORKFLOW_TEMPLATE_SEED_NO_UPDATE,
 } from '../../errors';
 import { router } from '../../init';
+import { findOrThrow } from '../../lib/find-or-throw';
 import { requirePermission } from '../../middleware/rbac';
 import { tenantProcedure } from '../../middleware/tenant';
 
@@ -48,11 +50,9 @@ const createInputSchema = z.object({
   taskItems: z.array(taskItemInputSchema).min(1).max(20),
 });
 
-const updateInputSchema = createInputSchema.extend({
-  id: z.string().min(1),
-});
+const updateInputSchema = createInputSchema.merge(entityIdSchema);
 
-const deleteInputSchema = z.object({ id: z.string().min(1) });
+const deleteInputSchema = entityIdSchema;
 
 const selectForContractorInputSchema = z.object({ contractorId: z.string().min(1) });
 
@@ -118,13 +118,14 @@ export const workflowRolesRouter = router({
     .use(requirePermission({ workflow: ['update'] }))
     .input(updateInputSchema)
     .mutation(async ({ ctx, input }) => {
-      const existing = await ctx.db.workflowRoleTemplate.findFirst({
-        where: { id: input.id, organizationId: ctx.organizationId },
-        select: { id: true, isSeed: true },
-      });
-      if (!existing) {
-        throw new TRPCError({ code: 'NOT_FOUND', message: ROLE_TEMPLATE_NOT_FOUND });
-      }
+      const existing = await findOrThrow(
+        () =>
+          ctx.db.workflowRoleTemplate.findFirst({
+            where: { id: input.id, organizationId: ctx.organizationId },
+            select: { id: true, isSeed: true },
+          }),
+        ROLE_TEMPLATE_NOT_FOUND,
+      );
       if (existing.isSeed) {
         throw new TRPCError({
           code: 'FORBIDDEN',
@@ -175,13 +176,14 @@ export const workflowRolesRouter = router({
     .use(requirePermission({ workflow: ['delete'] }))
     .input(deleteInputSchema)
     .mutation(async ({ ctx, input }) => {
-      const existing = await ctx.db.workflowRoleTemplate.findFirst({
-        where: { id: input.id, organizationId: ctx.organizationId },
-        select: { id: true, isSeed: true },
-      });
-      if (!existing) {
-        throw new TRPCError({ code: 'NOT_FOUND', message: ROLE_TEMPLATE_NOT_FOUND });
-      }
+      const existing = await findOrThrow(
+        () =>
+          ctx.db.workflowRoleTemplate.findFirst({
+            where: { id: input.id, organizationId: ctx.organizationId },
+            select: { id: true, isSeed: true },
+          }),
+        ROLE_TEMPLATE_NOT_FOUND,
+      );
       if (existing.isSeed) {
         throw new TRPCError({
           code: 'FORBIDDEN',

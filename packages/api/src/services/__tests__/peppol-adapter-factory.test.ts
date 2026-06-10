@@ -6,6 +6,7 @@ vi.mock('@contractor-ops/db', () => ({
   withRlsTransactions: <T>(c: T) => c,
   withRlsReads: <T>(c: T) => c,
   prisma: {},
+  prismaRaw: {},
 }));
 
 const mockDecryptCredentials = vi.fn();

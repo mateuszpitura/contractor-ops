@@ -3,6 +3,7 @@ import { decryptCredentials } from '@contractor-ops/integrations/services/creden
 import { createLogger } from '@contractor-ops/logger';
 import type { LinearIssueMetadata } from '@contractor-ops/validators';
 import {
+  linearTaskConfigSchema,
   saveLinearStatusMappingInputSchema,
   saveLinearTaskConfigInputSchema,
 } from '@contractor-ops/validators';
@@ -251,6 +252,29 @@ export const linearRouter = router({
       }
 
       return { success: true };
+    }),
+
+  /**
+   * Read the Linear configuration for a workflow task template.
+   * Parses configJson with the Linear schema so Jira-only fields are dropped.
+   */
+  getTaskConfig: integrationProcedure({ permission: { workflow: ['read'] } })
+    .input(z.object({ taskTemplateId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const template = await ctx.db.workflowTaskTemplate.findFirst({
+        where: {
+          id: input.taskTemplateId,
+          organizationId: ctx.organizationId,
+        },
+        select: { configJson: true },
+      });
+
+      if (!template?.configJson) {
+        return { linearEnabled: false };
+      }
+
+      const parsed = linearTaskConfigSchema.safeParse(template.configJson);
+      return parsed.success ? parsed.data : { linearEnabled: false };
     }),
 
   /**

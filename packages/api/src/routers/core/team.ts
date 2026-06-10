@@ -6,20 +6,19 @@
 // owner/admin via the `team` resource added in packages/auth.
 
 import {
+  entityIdSchema,
   orgDefinitionArchiveSchema,
   teamCreateSchema,
   teamListSchema,
   teamUpdateSchema,
 } from '@contractor-ops/validators';
-import { TRPCError } from '@trpc/server';
-import { z } from 'zod';
 import { TEAM_NOT_FOUND } from '../../errors';
 import { router } from '../../init';
+import { auditedMutation, auditMutationCtx } from '../../lib/audited-mutation';
 import { cursorClause, paginateByLastKept } from '../../lib/pagination';
+import { findTenantFirstOrThrow, tenantScopedWhere } from '../../lib/tenant-find';
 import { requirePermission } from '../../middleware/rbac';
 import { tenantProcedure } from '../../middleware/tenant';
-import { writeAuditLog } from '../../services/audit-writer';
-
 export const teamRouter = router({
   list: tenantProcedure
     .use(requirePermission({ team: ['read'] }))
@@ -62,39 +61,52 @@ export const teamRouter = router({
 
   get: tenantProcedure
     .use(requirePermission({ team: ['read'] }))
-    .input(z.object({ id: z.string().min(1) }))
+    .input(entityIdSchema)
     .query(async ({ ctx, input }) => {
-      const team = await ctx.db.team.findFirst({ where: { id: input.id } });
-      if (!team) throw new TRPCError({ code: 'NOT_FOUND', message: TEAM_NOT_FOUND });
-      return team;
+      return findTenantFirstOrThrow(
+        () =>
+          ctx.db.team.findFirst({
+            where: tenantScopedWhere(ctx, input.id, { softDelete: false }),
+          }),
+        TEAM_NOT_FOUND,
+      );
     }),
 
   create: tenantProcedure
     .use(requirePermission({ team: ['create'] }))
     .input(teamCreateSchema)
     .mutation(async ({ ctx, input }) => {
-      const created = await ctx.db.team.create({
-        data: {
-          organizationId: ctx.organizationId,
-          name: input.name,
-          code: input.code,
-          managerUserId: input.managerUserId,
-          fallbackApproverId: input.fallbackApproverId,
-          status: input.status,
-          source: 'MANUAL',
+      let created!: Awaited<ReturnType<typeof ctx.db.team.create>>;
+      return auditedMutation(
+        auditMutationCtx(ctx),
+        {
+          action: 'team.create',
+          resourceType: 'TEAM',
+          get resourceId() {
+            return created.id;
+          },
+          get resourceName() {
+            return created.name;
+          },
+          get newValues() {
+            return { name: created.name, code: created.code ?? null, status: created.status };
+          },
         },
-      });
-      await writeAuditLog({
-        organizationId: ctx.organizationId,
-        actorType: 'USER',
-        actorId: ctx.user?.id ?? null,
-        action: 'team.create',
-        resourceType: 'TEAM',
-        resourceId: created.id,
-        resourceName: created.name,
-        newValues: { name: created.name, code: created.code ?? null, status: created.status },
-      });
-      return created;
+        async tx => {
+          created = await tx.team.create({
+            data: {
+              organizationId: ctx.organizationId,
+              name: input.name,
+              code: input.code,
+              managerUserId: input.managerUserId,
+              fallbackApproverId: input.fallbackApproverId,
+              status: input.status,
+              source: 'MANUAL',
+            },
+          });
+          return created;
+        },
+      );
     }),
 
   update: tenantProcedure
@@ -102,58 +114,82 @@ export const teamRouter = router({
     .input(teamUpdateSchema)
     .mutation(async ({ ctx, input }) => {
       const { id, ...rest } = input;
-      const before = await ctx.db.team.findFirst({ where: { id } });
-      if (!before) throw new TRPCError({ code: 'NOT_FOUND', message: TEAM_NOT_FOUND });
+      const before = await findTenantFirstOrThrow(
+        () =>
+          ctx.db.team.findFirst({
+            where: tenantScopedWhere(ctx, id, { softDelete: false }),
+          }),
+        TEAM_NOT_FOUND,
+      );
 
-      const updated = await ctx.db.team.update({ where: { id }, data: rest });
-      await writeAuditLog({
-        organizationId: ctx.organizationId,
-        actorType: 'USER',
-        actorId: ctx.user?.id ?? null,
-        action: 'team.update',
-        resourceType: 'TEAM',
-        resourceId: id,
-        resourceName: updated.name,
-        oldValues: {
-          name: before.name,
-          code: before.code ?? null,
-          status: before.status,
-          managerUserId: before.managerUserId,
-          fallbackApproverId: before.fallbackApproverId,
+      let updated!: typeof before;
+      return auditedMutation(
+        auditMutationCtx(ctx),
+        {
+          action: 'team.update',
+          resourceType: 'TEAM',
+          resourceId: id,
+          get resourceName() {
+            return updated.name;
+          },
+          oldValues: {
+            name: before.name,
+            code: before.code ?? null,
+            status: before.status,
+            managerUserId: before.managerUserId,
+            fallbackApproverId: before.fallbackApproverId,
+          },
+          get newValues() {
+            return {
+              name: updated.name,
+              code: updated.code ?? null,
+              status: updated.status,
+              managerUserId: updated.managerUserId,
+              fallbackApproverId: updated.fallbackApproverId,
+            };
+          },
         },
-        newValues: {
-          name: updated.name,
-          code: updated.code ?? null,
-          status: updated.status,
-          managerUserId: updated.managerUserId,
-          fallbackApproverId: updated.fallbackApproverId,
+        async tx => {
+          updated = await tx.team.update({ where: { id }, data: rest });
+          return updated;
         },
-      });
-      return updated;
+      );
     }),
 
   archive: tenantProcedure
     .use(requirePermission({ team: ['archive'] }))
     .input(orgDefinitionArchiveSchema)
     .mutation(async ({ ctx, input }) => {
-      const before = await ctx.db.team.findFirst({ where: { id: input.id } });
-      if (!before) throw new TRPCError({ code: 'NOT_FOUND', message: TEAM_NOT_FOUND });
+      const before = await findTenantFirstOrThrow(
+        () =>
+          ctx.db.team.findFirst({
+            where: tenantScopedWhere(ctx, input.id, { softDelete: false }),
+          }),
+        TEAM_NOT_FOUND,
+      );
 
-      const updated = await ctx.db.team.update({
-        where: { id: input.id },
-        data: { status: 'ARCHIVED' },
-      });
-      await writeAuditLog({
-        organizationId: ctx.organizationId,
-        actorType: 'USER',
-        actorId: ctx.user?.id ?? null,
-        action: 'team.archive',
-        resourceType: 'TEAM',
-        resourceId: input.id,
-        resourceName: updated.name,
-        oldValues: { status: before.status },
-        newValues: { status: updated.status },
-      });
-      return updated;
+      let updated!: typeof before;
+      return auditedMutation(
+        auditMutationCtx(ctx),
+        {
+          action: 'team.archive',
+          resourceType: 'TEAM',
+          resourceId: input.id,
+          get resourceName() {
+            return updated.name;
+          },
+          oldValues: { status: before.status },
+          get newValues() {
+            return { status: updated.status };
+          },
+        },
+        async tx => {
+          updated = await tx.team.update({
+            where: { id: input.id },
+            data: { status: 'ARCHIVED' },
+          });
+          return updated;
+        },
+      );
     }),
 });

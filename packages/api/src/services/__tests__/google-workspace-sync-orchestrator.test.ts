@@ -7,10 +7,8 @@ const { mockCreate, mockFindUniqueOrThrow, mockUpdate, mockSyncLogUpdate } = vi.
   mockSyncLogUpdate: vi.fn(),
 }));
 
-vi.mock('@contractor-ops/db', () => ({
-  withRlsTransactions: <T>(c: T) => c,
-  withRlsReads: <T>(c: T) => c,
-  prisma: {
+vi.mock('@contractor-ops/db', () => {
+  const __mockDbPrisma = {
     integrationSyncLog: {
       create: mockCreate,
       update: mockSyncLogUpdate,
@@ -22,8 +20,15 @@ vi.mock('@contractor-ops/db', () => ({
     // Raw SQL hooks: tenant scoping (search_path) + advisory lock acquire/release.
     $queryRawUnsafe: vi.fn(async () => [{ acquired: true }]),
     $executeRawUnsafe: vi.fn(async () => 0),
-  },
-}));
+  };
+  return {
+  withRlsTransactions: <T>(c: T) => c,
+  withRlsReads: <T>(c: T) => c,
+  prisma: __mockDbPrisma,
+  prismaRaw: __mockDbPrisma,
+
+  };
+});
 
 import { processDirectorySync } from '../google-workspace-sync-orchestrator';
 

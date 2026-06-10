@@ -246,7 +246,7 @@ export const esignRouter = router({
       orderBy: { createdAt: 'desc' },
       include: {
         recipients: {
-          select: { id: true, name: true, email: true, status: true },
+          select: { id: true, name: true, email: true, role: true, routingOrder: true, status: true },
         },
         sentBy: {
           select: { id: true, name: true },

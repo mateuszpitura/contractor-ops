@@ -21,6 +21,8 @@ import { createLogger } from '@contractor-ops/logger';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 
+import { findOrThrow } from '../../lib/find-or-throw';
+
 import {
   CII_XSD_INVALID,
   DUPLICATE_INVOICE_NUMBER,
@@ -33,7 +35,7 @@ import {
   VALIDATION_NOT_REQUIRED,
 } from '../../errors';
 import { router } from '../../init';
-import { cursorClause, paginateByExtraRowUndefined } from '../../lib/pagination';
+import { cursorClause, paginateByLastKeptUndefined } from '../../lib/pagination';
 import { requirePermission } from '../../middleware/rbac';
 import { tenantProcedure } from '../../middleware/tenant';
 import { uploadRateLimitMiddleware } from '../../middleware/upload-rate-limit';
@@ -285,7 +287,7 @@ export const invoiceIntakeRouter = router({
         ...cursorClause(input),
       })) as Array<{ id: string }>;
 
-      return paginateByExtraRowUndefined(rows, input);
+      return paginateByLastKeptUndefined(rows, input);
     }),
 
   /**
@@ -297,14 +299,15 @@ export const invoiceIntakeRouter = router({
     .input(intakeIdInput)
     .query(async ({ ctx, input }) => {
       // F-DB-22 — pre-filter org-scope in the where clause.
-      const row = (await (
-        ctx.db.invoiceIntakeRequest.findFirst as (args: unknown) => Promise<unknown>
-      )({
-        where: { id: input.intakeId, organizationId: ctx.organizationId },
-      })) as Record<string, unknown> | null;
-      if (!row) {
-        throw new TRPCError({ code: 'NOT_FOUND', message: INVOICE_NOT_FOUND });
-      }
+      const row = await findOrThrow(
+        () =>
+          (
+            ctx.db.invoiceIntakeRequest.findFirst as (args: unknown) => Promise<unknown>
+          )({
+            where: { id: input.intakeId, organizationId: ctx.organizationId },
+          }) as Promise<Record<string, unknown> | null>,
+        INVOICE_NOT_FOUND,
+      );
       return row as unknown;
     }),
 
@@ -317,24 +320,24 @@ export const invoiceIntakeRouter = router({
     .input(intakeIdInput)
     .query(async ({ ctx, input }): Promise<MatchCandidate[]> => {
       // F-DB-22 — pre-filter org-scope in the where clause.
-      const intake = (await (
-        ctx.db.invoiceIntakeRequest.findFirst as (args: unknown) => Promise<unknown>
-      )({
-        where: { id: input.intakeId, organizationId: ctx.organizationId },
-        select: {
-          extractedSupplierName: true,
-          extractedSupplierVatId: true,
-          extractedSupplierLeitwegId: true,
-        },
-      })) as {
-        extractedSupplierName: string | null;
-        extractedSupplierVatId: string | null;
-        extractedSupplierLeitwegId: string | null;
-      } | null;
-
-      if (!intake) {
-        throw new TRPCError({ code: 'NOT_FOUND', message: INVOICE_NOT_FOUND });
-      }
+      const intake = await findOrThrow(
+        () =>
+          (
+            ctx.db.invoiceIntakeRequest.findFirst as (args: unknown) => Promise<unknown>
+          )({
+            where: { id: input.intakeId, organizationId: ctx.organizationId },
+            select: {
+              extractedSupplierName: true,
+              extractedSupplierVatId: true,
+              extractedSupplierLeitwegId: true,
+            },
+          }) as Promise<{
+            extractedSupplierName: string | null;
+            extractedSupplierVatId: string | null;
+            extractedSupplierLeitwegId: string | null;
+          } | null>,
+        INVOICE_NOT_FOUND,
+      );
 
       return rankIntakeCandidates(ctx.db as never, ctx.organizationId, {
         supplierName: intake.extractedSupplierName ?? '',

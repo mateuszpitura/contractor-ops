@@ -2,6 +2,10 @@ import { createLogger } from '@contractor-ops/logger';
 import type { LinearStatusMappingEntry } from '@contractor-ops/validators';
 import { linearStatusMappingEntrySchema } from '@contractor-ops/validators';
 import { z } from 'zod';
+import {
+  getIntegrationStatusMapping,
+  saveIntegrationStatusMapping,
+} from './integration-status-mapping.js';
 import type { DbClient } from './types';
 
 const log = createLogger({ service: 'linear-status-mapping' });
@@ -16,6 +20,31 @@ interface ConnectionConfigJson {
   statusMappings?: Record<string, LinearStatusMappingEntry[]>;
   stateCache?: Record<string, Record<string, { name: string; type: string }>>;
   [key: string]: unknown;
+}
+
+function buildLinearConfigWithStateCache(
+  existing: ConnectionConfigJson,
+  statusMappings: Record<string, LinearStatusMappingEntry[]>,
+  teamId: string,
+  mappings: LinearStatusMappingEntry[],
+): ConnectionConfigJson {
+  const existingStateCache = existing.stateCache ?? {};
+  const teamStateCache: Record<string, { name: string; type: string }> = {};
+  for (const mapping of mappings) {
+    teamStateCache[mapping.linearStateId] = {
+      name: mapping.linearStateName,
+      type: mapping.linearStateType,
+    };
+  }
+
+  return {
+    ...existing,
+    statusMappings,
+    stateCache: {
+      ...existingStateCache,
+      [teamId]: teamStateCache,
+    },
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -34,20 +63,19 @@ interface ConnectionConfigJson {
  */
 export async function getStatusMapping(
   prisma: PrismaClient,
+  organizationId: string,
   connectionId: string,
   teamId: string,
 ): Promise<LinearStatusMappingEntry[]> {
-  const connection = await prisma.integrationConnection.findUnique({
-    where: { id: connectionId },
-    select: { configJson: true },
-  });
-
-  const config = (connection?.configJson ?? {}) as ConnectionConfigJson;
-  const raw = config.statusMappings?.[teamId];
+  const raw = await getIntegrationStatusMapping<LinearStatusMappingEntry>(
+    prisma,
+    organizationId,
+    connectionId,
+    teamId,
+  );
 
   if (!raw) return [];
 
-  // Validate each entry to ensure schema compliance
   const parsed = z.array(linearStatusMappingEntrySchema).safeParse(raw);
   return parsed.success ? parsed.data : [];
 }
@@ -71,48 +99,16 @@ export async function getStatusMapping(
  */
 export async function saveStatusMapping(
   prisma: PrismaClient,
+  organizationId: string,
   connectionId: string,
   teamId: string,
   mappings: LinearStatusMappingEntry[],
 ): Promise<void> {
-  const connection = await prisma.integrationConnection.findUniqueOrThrow({
-    where: { id: connectionId },
-  });
-
-  const existingConfig = (connection.configJson as ConnectionConfigJson) ?? {};
-
-  // Merge status mappings, preserving other teams
-  const updatedStatusMappings = {
-    ...(existingConfig.statusMappings ?? {}),
-    [teamId]: mappings,
-  };
-
-  // Build state cache for webhook reverse-lookup (stateId -> { name, type })
-  const existingStateCache = existingConfig.stateCache ?? {};
-  const teamStateCache: Record<string, { name: string; type: string }> = {};
-  for (const mapping of mappings) {
-    teamStateCache[mapping.linearStateId] = {
-      name: mapping.linearStateName,
-      type: mapping.linearStateType,
-    };
-  }
-
-  const updatedConfig = {
-    ...existingConfig,
-    statusMappings: updatedStatusMappings,
-    stateCache: {
-      ...existingStateCache,
-      [teamId]: teamStateCache,
-    },
-  };
-
-  await prisma.integrationConnection.update({
-    where: { id: connectionId },
-    data: {
-      configJson: updatedConfig,
-      // Transition PENDING_MAPPING -> CONNECTED on first mapping save (D-03)
-      ...(connection.status === 'PENDING_MAPPING' ? { status: 'CONNECTED' } : {}),
-    },
+  return saveIntegrationStatusMapping(prisma, organizationId, connectionId, teamId, mappings, {
+    mergeConfig: (existing, statusMappings) =>
+      buildLinearConfigWithStateCache(existing, statusMappings, teamId, mappings),
+    transitionOnSave: connection =>
+      connection.status === 'PENDING_MAPPING' ? { status: 'CONNECTED' } : {},
   });
 }
 
@@ -130,11 +126,12 @@ export async function saveStatusMapping(
  */
 export async function resolveLinearStateId(
   prisma: PrismaClient,
+  organizationId: string,
   connectionId: string,
   teamId: string,
   workflowStatus: string,
 ): Promise<string | null> {
-  const mappings = await getStatusMapping(prisma, connectionId, teamId);
+  const mappings = await getStatusMapping(prisma, organizationId, connectionId, teamId);
   const entry = mappings.find(m => m.workflowStatus === workflowStatus);
   return entry?.linearStateId ?? null;
 }
@@ -155,11 +152,12 @@ export async function resolveLinearStateId(
  */
 export async function resolveInternalStatus(
   prisma: PrismaClient,
+  organizationId: string,
   connectionId: string,
   teamId: string,
   linearStateId: string,
 ): Promise<string | null> {
-  const mappings = await getStatusMapping(prisma, connectionId, teamId);
+  const mappings = await getStatusMapping(prisma, organizationId, connectionId, teamId);
   const entry = mappings.find(m => m.linearStateId === linearStateId);
 
   if (entry) {
@@ -167,8 +165,8 @@ export async function resolveInternalStatus(
   }
 
   // Check stateCache for the state name and log as unmapped (D-04)
-  const connection = await prisma.integrationConnection.findUnique({
-    where: { id: connectionId },
+  const connection = await prisma.integrationConnection.findFirst({
+    where: { id: connectionId, organizationId },
     select: { configJson: true },
   });
 

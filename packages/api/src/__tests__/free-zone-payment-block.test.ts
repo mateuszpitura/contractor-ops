@@ -33,10 +33,12 @@ const { mockPrisma, itemsFixture } = vi.hoisted(() => {
   return { mockPrisma, itemsFixture };
 });
 
-vi.mock('@contractor-ops/db', () => ({ prisma: mockPrisma }));
+vi.mock('@contractor-ops/db', () => ({ prisma: mockPrisma, prismaRaw: mockPrisma }));
 vi.mock('@contractor-ops/feature-flags', () => ({ isPaymentBlockEnforced: vi.fn(() => true) }));
 vi.mock('@contractor-ops/logger', () => ({
-  createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
+  getIdpAuditLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn(), child: vi.fn() })),
+  createLogger: vi.fn(() => ({ info: vi.fn(),
+ warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
 }));
 
 import { assertContractorPaymentEligibility } from '../services/compliance-payment-gate';
