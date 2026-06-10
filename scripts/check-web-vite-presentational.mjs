@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // CI gate — presentational TSX stays free of tRPC / React Query runtime.
 // Scans apps/web-vite/src/components (all .tsx recursively, excluding
-// *-container.tsx, hooks/, feature-flag-context.tsx, feature.tsx).
+// hooks/, feature-flag-context.tsx, feature.tsx).
 // See apps/web-vite/ARCHITECTURE.md.
 
 import { readFileSync } from 'node:fs';
@@ -15,7 +15,6 @@ const COMPONENTS_ROOT = fileURLToPath(new URL('../apps/web-vite/src/components',
 
 /** @param {string} rel */
 function shouldScan(rel) {
-  if (rel.endsWith('-container.tsx')) return false;
   if (rel.includes('/hooks/')) return false;
   const base = rel.split('/').pop() ?? '';
   if (base === 'feature-flag-context.tsx' || base === 'feature.tsx') return false;

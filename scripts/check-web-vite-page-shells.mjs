@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 /**
- * CI gate — pages compose containers only (thin route shells).
+ * CI gate — pages must not be a direct tRPC/React Query boundary.
+ * Orchestration (i18n, params, flags, component imports) is allowed in *PageContent.
  * See apps/web-vite/ARCHITECTURE.md
  */
 
@@ -9,35 +10,103 @@ import { join, relative } from 'node:path';
 
 const ROOT = new URL('../apps/web-vite/src/pages', import.meta.url).pathname;
 
-const IMPORT_FROM_RE = /import\s+(?:type\s+)?(?:[\w*{}\s,$]+\s+from\s+)?['"]([^'"]+)['"]/g;
-
-const FORBIDDEN_LOGIC = [
-  { id: 'useTranslations', pattern: /\buseTranslations\s*\(/, label: 'useTranslations()' },
-  { id: 'useParams', pattern: /\buseParams\s*[<(]/, label: 'useParams()' },
-  { id: 'useSearchParams', pattern: /\buseSearchParams\s*\(/, label: 'useSearchParams()' },
-  { id: 'usePermissions', pattern: /\busePermissions\s*\(/, label: 'usePermissions()' },
-  { id: 'useFlag', pattern: /\buseFlag\s*\(/, label: 'useFlag()' },
-  {
-    id: 'Navigate-import',
-    pattern: /\bimport\b[^;]*\bNavigate\b[^;]*from\s+['"]react-router/,
-    label: 'Navigate import from react-router',
-  },
-  { id: 'Navigate-jsx', pattern: /<Navigate\b/, label: '<Navigate />' },
-  { id: 'Navigate-call', pattern: /\bNavigate\s*\(/, label: 'Navigate()' },
+const FORBIDDEN_CALLS = [
+  { pattern: /\buseTRPC\s*\(/, label: 'useTRPC()' },
+  { pattern: /\buseQuery\s*\(/, label: 'useQuery()' },
+  { pattern: /\buseMutation\s*\(/, label: 'useMutation()' },
+  { pattern: /\buseInfiniteQuery\s*\(/, label: 'useInfiniteQuery()' },
+  { pattern: /\buseSuspenseQuery\s*\(/, label: 'useSuspenseQuery()' },
 ];
 
-/** @param {string} modulePath */
-function isAllowedComponentImport(modulePath) {
-  if (!modulePath.includes('/components/')) return true;
-  if (modulePath.includes('-container')) return true;
-  if (modulePath.includes('page-loading-spinner')) return true;
-  return false;
-}
+const FORBIDDEN_RQ_HOOKS = new Set([
+  'useQuery',
+  'useMutation',
+  'useSuspenseQuery',
+  'useInfiniteQuery',
+]);
 
 /** @param {string} line */
 function isCommentLine(line) {
   const trimmed = line.trimStart();
   return trimmed.startsWith('//') || trimmed.startsWith('*');
+}
+
+/** @param {string} line */
+function stripLineComment(line) {
+  const idx = line.indexOf('//');
+  if (idx === -1) return line;
+  return line.slice(0, idx);
+}
+
+/**
+ * @param {string} inner
+ * @returns {string[]}
+ */
+function splitTopLevelCommaParts(inner) {
+  const parts = [];
+  let depth = 0;
+  let chunk = '';
+  for (let i = 0; i < inner.length; i++) {
+    const c = inner[i];
+    if ((c === '<' || c === '{' || c === '(') && inner[i + 1] !== undefined) {
+      depth++;
+    } else if ((c === '>' || c === '}' || c === ')') && depth > 0) {
+      depth--;
+    } else if (c === ',' && depth === 0) {
+      parts.push(chunk.trim());
+      chunk = '';
+      continue;
+    }
+    chunk += c;
+  }
+  if (chunk.trim().length > 0) parts.push(chunk.trim());
+  return parts.filter(Boolean);
+}
+
+/** @param {string} braceInner */
+function namedImportHasForbiddenReactQueryHook(braceInner) {
+  for (const part of splitTopLevelCommaParts(braceInner)) {
+    const s = part.trim();
+    if (s.startsWith('type ')) continue;
+    const name = s.split(/\s+as\s+/)[0].trim();
+    if (FORBIDDEN_RQ_HOOKS.has(name)) return true;
+  }
+  return false;
+}
+
+/** @param {string} braceInner */
+function namedImportHasUseTrpc(braceInner) {
+  for (const part of splitTopLevelCommaParts(braceInner)) {
+    const s = part.trim();
+    if (s.startsWith('type ')) continue;
+    const name = s.split(/\s+as\s+/)[0].trim();
+    if (name === 'useTRPC') return true;
+  }
+  return false;
+}
+
+/** @param {string} line */
+function hasForbiddenReactQueryImport(line) {
+  const work = stripLineComment(line);
+  if (!work.includes('@tanstack/react-query')) return false;
+  const t = work.trim();
+  if (/^import\s+type\b/.test(t)) return false;
+  const named = t.match(/^import\s*\{([^}]*)\}\s*from\s*['"]@tanstack\/react-query['"]/);
+  if (named) return namedImportHasForbiddenReactQueryHook(named[1]);
+  if (/^import\s+\w+\s+from\s*['"]@tanstack\/react-query['"]/.test(t)) return true;
+  return false;
+}
+
+/** @param {string} line */
+function hasForbiddenTrpcProviderImport(line) {
+  const work = stripLineComment(line);
+  if (!work.includes('trpc-provider')) return false;
+  const t = work.trim();
+  if (/^import\s+type\b/.test(t)) return false;
+  const named = t.match(/^import\s*\{([^}]*)\}\s*from\s*['"][^'"]*trpc-provider[^'"]*['"]/);
+  if (named) return namedImportHasUseTrpc(named[1]);
+  if (/^import\s+useTRPC\s+from\s*['"][^'"]*trpc-provider[^'"]*['"]/.test(t)) return true;
+  return false;
 }
 
 function walk(dir) {
@@ -57,29 +126,36 @@ function walk(dir) {
     const lines = text.split('\n');
 
     for (let i = 0; i < lines.length; i++) {
-      const line = lines[i];
-      if (isCommentLine(line)) continue;
+      const raw = lines[i];
+      if (isCommentLine(raw)) continue;
+      const line = stripLineComment(raw);
 
-      IMPORT_FROM_RE.lastIndex = 0;
-      let importMatch = IMPORT_FROM_RE.exec(line);
-      while (importMatch !== null) {
-        const modulePath = importMatch[1];
-        if (!isAllowedComponentImport(modulePath)) {
-          hits.push({
-            rel,
-            line: i + 1,
-            message: `forbidden component import "${modulePath}" (pages may import *-container or page-loading-spinner only)`,
-          });
-        }
-        importMatch = IMPORT_FROM_RE.exec(line);
+      if (hasForbiddenReactQueryImport(line)) {
+        hits.push({
+          rel,
+          line: i + 1,
+          message:
+            'runtime import from @tanstack/react-query (use domain hooks under components/{domain}/hooks/)',
+        });
+        continue;
+      }
+      if (hasForbiddenTrpcProviderImport(line)) {
+        hits.push({
+          rel,
+          line: i + 1,
+          message: 'runtime import of useTRPC from trpc-provider (use domain hooks)',
+        });
+        continue;
       }
 
-      for (const rule of FORBIDDEN_LOGIC) {
+      if (/\buseQueryState\s*\(/.test(line)) continue;
+
+      for (const rule of FORBIDDEN_CALLS) {
         if (rule.pattern.test(line)) {
           hits.push({
             rel,
             line: i + 1,
-            message: `page must not use ${rule.label} — move logic into a container`,
+            message: `${rule.label} — pages must call domain hooks, not tRPC/React Query directly`,
           });
           break;
         }
@@ -96,7 +172,7 @@ if (hits.length > 0) {
   for (const hit of hits) {
     console.error(`  pages/${hit.rel}:${hit.line}  ${hit.message}`);
   }
-  console.error('\nPages are thin shells: Suspense + compose *Container only.');
+  console.error('\nPages orchestrate via *PageContent or wired sections; data lives in hooks/.');
   console.error('See apps/web-vite/ARCHITECTURE.md');
   process.exit(1);
 }

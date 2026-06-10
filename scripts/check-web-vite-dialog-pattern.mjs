@@ -42,7 +42,7 @@ const PERMANENT_ALLOW = new Set([
   'components/settings/ups-provider-section.tsx',
   // Confirm dialogs — header + footer only, no body content.
   'components/equipment/equipment-detail/equipment-detail-header.tsx',
-  'components/equipment/equipment-list-container.tsx',
+  'pages/dashboard/equipment.tsx',
 ]);
 
 // Not-yet-converted files. Remove each entry as it gains a <DialogBody>.
