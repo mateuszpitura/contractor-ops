@@ -187,15 +187,27 @@ export default defineConfig(async ({ mode }) => {
       // Dev-only CSP relaxation: index.html ships the production CSP for
       // byte-parity with render.yaml. Locally the SPA needs to reach the API
       // (`VITE_API_URL`, typically http://localhost:4000) and Vite's HMR
-      // websocket, neither of which the prod policy allows. This plugin
-      // appends those origins to `connect-src` *only* when Vite is serving
-      // (`apply: 'serve'`) — production builds emit the untouched policy.
+      // websocket, neither of which the prod policy allows. The impeccable
+      // live-mode helper (SSE + long-poll on :8400, serving /live.js) needs
+      // both `connect-src` and `script-src` widened. This plugin appends those
+      // origins *only* when Vite is serving (`apply: 'serve'`) — production
+      // builds and `vite preview` emit the untouched policy, so render.yaml
+      // parity holds.
       mode === 'development' && {
         name: 'dev-csp-relax',
         apply: 'serve',
         transformIndexHtml(html) {
-          const devConnect = [apiUrl, 'ws://localhost:3000', 'http://localhost:3000'].join(' ');
-          return html.replace(/(connect-src 'self')/, `connect-src 'self' ${devConnect}`);
+          // impeccable live-mode helper origin (SSE/poll + /live.js loader).
+          const impeccableLive = 'http://localhost:8400';
+          const devConnect = [
+            apiUrl,
+            'ws://localhost:3000',
+            'http://localhost:3000',
+            impeccableLive,
+          ].join(' ');
+          return html
+            .replace(/(connect-src 'self')/, `connect-src 'self' ${devConnect}`)
+            .replace(/(script-src 'self')/, `script-src 'self' ${impeccableLive}`);
         },
       },
       analyze &&
