@@ -28,6 +28,6 @@ export function useEinvoiceComplianceSummary() {
 
   return {
     isLoading: query.isLoading,
-    summary: (query.data as EInvoiceComplianceSummaryData | undefined) ?? EMPTY_SUMMARY,
+    summary: query.data ?? EMPTY_SUMMARY,
   } as const;
 }

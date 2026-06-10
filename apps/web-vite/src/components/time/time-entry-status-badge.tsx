@@ -1,21 +1,15 @@
-/**
- * Timesheet status badge.
- */
-
-import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
-
-const STATUS_CONFIG = {
-  DRAFT: { variant: 'info' as const, label: 'Draft' },
-  SUBMITTED: { variant: 'warning' as const, label: 'Submitted' },
-  APPROVED: { variant: 'success' as const, label: 'Approved' },
-  REJECTED: { variant: 'destructive' as const, label: 'Rejected' },
-} as const;
+import { AtelierStatusPill, statusToVariant, type TimesheetStatusInput } from '@contractor-ops/ui';
+import { tKey } from '../../i18n/typed-keys.js';
+import { useTranslations } from '../../i18n/useTranslations.js';
+import { enumKey } from '../../lib/enum-key.js';
 
 interface TimeEntryStatusBadgeProps {
-  status: 'DRAFT' | 'SUBMITTED' | 'APPROVED' | 'REJECTED';
+  status: TimesheetStatusInput;
 }
 
 export function TimeEntryStatusBadge({ status }: TimeEntryStatusBadgeProps) {
-  const config = STATUS_CONFIG[status];
-  return <Badge variant={config.variant}>{config.label}</Badge>;
+  const t = useTranslations('Time.filters');
+  const variant = statusToVariant('timesheet', status);
+  const label = tKey(t, enumKey(status));
+  return <AtelierStatusPill variant={variant}>{label}</AtelierStatusPill>;
 }

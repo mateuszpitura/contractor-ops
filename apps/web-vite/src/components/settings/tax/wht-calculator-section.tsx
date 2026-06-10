@@ -20,16 +20,18 @@ import type { WhtServiceType } from '@contractor-ops/validators';
 import { Calculator, Loader2 } from 'lucide-react';
 import { useCallback } from 'react';
 import { tDyn } from '../../../i18n/typed-keys';
-import { formatMinorUnits } from '../../../lib/format-currency';
-import type {
-  ContractorCountry,
+import { formatMinorUnits } from '../../../lib/money.js';
+import {
   useWhtCalculatorSection,
+  CONTRACTOR_COUNTRIES,
+  SERVICE_TYPES,
+  type ContractorCountry,
+  type useWhtCalculatorSection as UseWhtCalculatorSection,
 } from './hooks/use-wht-calculator-section.js';
-import { CONTRACTOR_COUNTRIES, SERVICE_TYPES } from './hooks/use-wht-calculator-section.js';
 
-export type WhtCalculatorSectionProps = ReturnType<typeof useWhtCalculatorSection>;
+export type WhtCalculatorSectionProps = ReturnType<typeof UseWhtCalculatorSection>;
 
-export function WhtCalculatorSection({
+export function WhtCalculatorSectionView({
   t,
   locale,
   contractorResidency,
@@ -189,4 +191,9 @@ export function WhtCalculatorSection({
       </CardContent>
     </Card>
   );
+}
+
+export function WhtCalculatorSection() {
+  const section = useWhtCalculatorSection();
+  return <WhtCalculatorSectionView {...section} />;
 }

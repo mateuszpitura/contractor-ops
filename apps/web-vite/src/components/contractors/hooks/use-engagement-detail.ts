@@ -1,11 +1,17 @@
 import { useQuery } from '@tanstack/react-query';
 
+import { useEntityDetailQuery } from '../../../hooks/use-entity-detail-query.js';
 import { useTRPC } from '../../../providers/trpc-provider.js';
 
 export function useEngagementDetail(engagementId: string) {
   const trpc = useTRPC();
 
-  const latestQuery = useQuery({
+  const {
+    query: latestQuery,
+    data: draft,
+    isNotFound,
+    isLoading,
+  } = useEntityDetailQuery({
     ...trpc.classification.getDraft.queryOptions({
       contractorAssignmentId: engagementId,
     }),
@@ -21,11 +27,6 @@ export function useEngagementDetail(engagementId: string) {
     retry: false,
   });
 
-  const draftError = (latestQuery.error as { data?: { code?: string } } | null | undefined)?.data
-    ?.code;
-  const isNotFound = draftError === 'NOT_FOUND';
-
-  const draft = latestQuery.data;
   const countryCode = draft?.countryCode ?? null;
   const completedAssessmentId = draft && draft.status === 'COMPLETED' ? draft.id : null;
   const attestationSigned = Boolean(attestationQuery.data?.signedAt);
@@ -33,7 +34,7 @@ export function useEngagementDetail(engagementId: string) {
   return {
     latestQuery,
     isNotFound,
-    isLoading: latestQuery.isLoading,
+    isLoading,
     countryCode,
     completedAssessmentId,
     attestationSigned,

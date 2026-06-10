@@ -2,18 +2,25 @@ import type { FlagValues } from '@contractor-ops/feature-flags/browser';
 import { SidebarInset, SidebarProvider } from '@contractor-ops/ui/components/shadcn/sidebar';
 import { Outlet } from 'react-router-dom';
 
-import { BillingOverlayContainer } from '../billing/billing-overlay-container.js';
+import { useTranslations } from '../../i18n/useTranslations.js';
+import { TOS_CURRENT_VERSION } from '../../lib/tos.js';
+import { BillingOverlay } from '../billing/billing-overlay.js';
 import { SearchProvider } from '../search/search-provider.js';
-import { CommandPaletteContainer } from '../shared/command-palette-container.js';
+import { JumpCommandPalette } from '../shared/command-palette.js';
+import { TosReacceptanceModal } from '../tos-reacceptance-modal.js';
 import { AppFooter } from './app-footer.js';
 import { BreadcrumbProvider } from './breadcrumb-context.js';
-import { CookieConsentBannerContainer } from './cookie-consent-banner-container.js';
+import { CookieConsentBannerContainer } from './cookie-consent-banner.js';
 import { DashboardProvider } from './dashboard-context.js';
+import { DashboardShellSkeleton } from './dashboard-shell-skeleton.js';
 import { DemoBanner } from './demo-banner.js';
 import { FeatureFlagProvider } from './feature-flag-context.js';
+import { useAutoActiveOrg } from './hooks/use-auto-active-org.js';
+import { useDashboardShell } from './hooks/use-dashboard-shell.js';
+import { useFlagBagValues } from './hooks/use-flag-bag.js';
 import { IntensityRouter } from './intensity-router.js';
 import { AppSidebar } from './sidebar.js';
-import { TopBarContainer } from './top-bar-container.js';
+import { TopBarContainer } from './top-bar.js';
 
 interface DashboardShellProps {
   skipToContentLabel: string;
@@ -47,7 +54,7 @@ export function DashboardShell({
                 <SidebarInset>
                   {isDemo ? <DemoBanner /> : null}
                   <TopBarContainer />
-                  <BillingOverlayContainer />
+                  <BillingOverlay />
                   {/*
                    * Page scrolls at the document level (`<body>`) — same as
                    * legacy. The atelier-main-surface ::after grain layer needs
@@ -78,12 +85,39 @@ export function DashboardShell({
                   </main>
                 </SidebarInset>
               </IntensityRouter>
-              <CommandPaletteContainer />
+              <JumpCommandPalette />
               <CookieConsentBannerContainer />
             </SidebarProvider>
           </SearchProvider>
         </BreadcrumbProvider>
       </DashboardProvider>
     </FeatureFlagProvider>
+  );
+}
+
+export function DashboardShellContainer() {
+  const tLayout = useTranslations('Layout');
+  const { isLoading, activeOrg, memberRole, activeOrgId, session, needsTosAcceptance, isDemo } =
+    useDashboardShell();
+  useAutoActiveOrg();
+  const flagBag = useFlagBagValues(activeOrgId, session.isPending);
+
+  if (isLoading) {
+    return <DashboardShellSkeleton />;
+  }
+
+  return (
+    <>
+      {needsTosAcceptance ? (
+        <TosReacceptanceModal currentVersion={TOS_CURRENT_VERSION} />
+      ) : null}
+      <DashboardShell
+        skipToContentLabel={tLayout('skipToContent')}
+        activeOrg={activeOrg}
+        memberRole={memberRole}
+        flagBag={flagBag}
+        isDemo={isDemo}
+      />
+    </>
   );
 }

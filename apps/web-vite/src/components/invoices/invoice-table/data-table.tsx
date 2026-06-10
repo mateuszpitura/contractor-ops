@@ -1,8 +1,9 @@
-import { DataTable, InvoicesIllustration } from '@contractor-ops/ui';
-import type { ColumnDef, SortingState } from '@tanstack/react-table';
+import { InvoicesIllustration } from '@contractor-ops/ui';
+import { WorkbenchDataTable } from '../../table-kit/workbench-data-table.js';
+import type { ColumnDef } from '@tanstack/react-table';
 import { Upload } from 'lucide-react';
 import type { ReactNode } from 'react';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { formatDate } from '../../../lib/format-date.js';
 import type { InvoiceListTableProps } from '../hooks/use-invoice-list.js';
@@ -15,6 +16,7 @@ interface InvoiceDataTableProps extends InvoiceListTableProps {
   onUpload: () => void;
   parentLoading?: boolean;
   toolbar: ReactNode;
+  sectionClassName?: string;
 }
 
 export function InvoiceDataTable({
@@ -23,21 +25,23 @@ export function InvoiceDataTable({
   filters,
   onPageChange,
   onPageSizeChange,
-  onSortChange,
   clearFilters,
   isLoading,
   isRefetching,
   activeFilterCount,
   hasFiltersOrSearch,
   bulkActions,
+  sorting,
+  onSortingChange,
+  selectedRows,
+  setSelectedRows,
   onRowClick,
   onUpload,
   parentLoading,
   toolbar,
+  sectionClassName,
 }: InvoiceDataTableProps) {
   const t = useTranslations('Invoices');
-
-  const [selectedRows, setSelectedRows] = useState<InvoiceRow[]>([]);
 
   const formatDateFn = useCallback(
     (value: Date | string | null | undefined) => formatDate(value),
@@ -49,26 +53,9 @@ export function InvoiceDataTable({
     [t, formatDateFn],
   );
 
-  const sorting = useMemo<SortingState>(
-    () => [{ id: filters.sortBy, desc: filters.sortOrder === 'desc' }],
-    [filters.sortBy, filters.sortOrder],
-  );
-
-  const handleSortingChange = useCallback(
-    (updater: SortingState | ((old: SortingState) => SortingState)) => {
-      const next = typeof updater === 'function' ? updater(sorting) : updater;
-      const first = next[0];
-      if (first) {
-        onSortChange(first.id, first.desc ? 'desc' : 'asc');
-      } else {
-        onSortChange('receivedAt', 'desc');
-      }
-    },
-    [sorting, onSortChange],
-  );
-
   return (
-    <DataTable
+    <WorkbenchDataTable
+      sectionClassName={sectionClassName}
       columns={columns}
       data={data}
       totalRows={totalRows}
@@ -77,7 +64,7 @@ export function InvoiceDataTable({
       onPageChange={onPageChange}
       onPageSizeChange={onPageSizeChange}
       sorting={sorting}
-      onSortingChange={handleSortingChange}
+      onSortingChange={onSortingChange}
       isLoading={isLoading}
       isRefetching={isRefetching}
       forceLoading={parentLoading}

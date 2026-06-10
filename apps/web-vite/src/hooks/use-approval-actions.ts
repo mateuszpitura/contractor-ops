@@ -2,11 +2,15 @@
  * Approval queue actions hook.
  */
 
+import type { AppRouter } from '@contractor-ops/api';
+import type { inferRouterInputs } from '@trpc/server';
 import { useCallback } from 'react';
 
 import { COMMON_TOAST } from '../i18n/common-toast-keys.js';
 import { useTRPC } from '../providers/trpc-provider.js';
 import { useResourceMutation } from './use-resource-mutation.js';
+
+type ApprovalInputs = inferRouterInputs<AppRouter>['approval'];
 
 export function useApprovalActions(
   stepId: string,
@@ -73,28 +77,30 @@ export function useApprovalActions(
   );
 
   const approve = useCallback(() => {
-    approveMutation.mutate({ stepId } as Parameters<typeof approveMutation.mutate>[0]);
+    const input: ApprovalInputs['approve'] = { stepId };
+    approveMutation.mutate(input);
   }, [approveMutation, stepId]);
 
   const reject = useCallback(
     (comment: string) => {
-      rejectMutation.mutate({ stepId, comment } as Parameters<typeof rejectMutation.mutate>[0]);
+      const input: ApprovalInputs['reject'] = { stepId, comment };
+      rejectMutation.mutate(input);
     },
     [rejectMutation, stepId],
   );
 
   const delegate = useCallback(
     (userId: string, comment: string) => {
-      delegateMutation.mutate({ stepId, delegateToUserId: userId, comment } as Parameters<
-        typeof delegateMutation.mutate
-      >[0]);
+      const input: ApprovalInputs['delegate'] = { stepId, delegateToUserId: userId, comment };
+      delegateMutation.mutate(input);
     },
     [delegateMutation, stepId],
   );
 
   const requestClarification = useCallback(
     (comment: string) => {
-      clarifyMutation.mutate({ stepId, comment } as Parameters<typeof clarifyMutation.mutate>[0]);
+      const input: ApprovalInputs['requestClarification'] = { stepId, comment };
+      clarifyMutation.mutate(input);
     },
     [clarifyMutation, stepId],
   );

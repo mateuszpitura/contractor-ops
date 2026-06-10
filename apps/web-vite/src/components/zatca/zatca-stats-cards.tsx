@@ -2,9 +2,16 @@ import { Card, CardContent } from '@contractor-ops/ui/components/shadcn/card';
 import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { AlertTriangle, CheckCircle2, Clock } from 'lucide-react';
 
-import type { useZatcaStatsCards } from './hooks/use-zatca-stats-cards.js';
+import { useZatcaStatsCards } from './hooks/use-zatca-stats-cards.js';
+import type { useZatcaStatsCards as UseZatcaStatsCards } from './hooks/use-zatca-stats-cards.js';
 
-export type ZatcaStatsCardsViewProps = Omit<ReturnType<typeof useZatcaStatsCards>, 'isLoading'>;
+export function ZatcaStatsCards() {
+  const { isLoading, ...props } = useZatcaStatsCards();
+  if (isLoading) return <ZatcaStatsCardsSkeleton />;
+  return <ZatcaStatsCardsView {...props} />;
+}
+
+export type ZatcaStatsCardsViewProps = Omit<ReturnType<typeof UseZatcaStatsCards>, 'isLoading'>;
 
 export function ZatcaStatsCardsSkeleton() {
   return (

@@ -1,8 +1,8 @@
 /**
- * Presentational shell for the new payment run wizard.
+ * Presentational shell + wired export for the new payment run wizard.
  *
- * The container picks the active step content; this shell renders the
- * dialog frame + step indicator and yields the body as `children`.
+ * `NewPaymentRunDialog` picks the active step content; `NewPaymentRunDialogView`
+ * renders the dialog frame + step indicator and yields the body as `children`.
  */
 
 import {
@@ -14,8 +14,13 @@ import {
 } from '@contractor-ops/ui/components/shadcn/dialog';
 import { CreditCard } from 'lucide-react';
 import type { ReactNode } from 'react';
+import { useCallback } from 'react';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
+import { useNewPaymentRunDialog } from '../hooks/use-new-payment-run-dialog.js';
+import { StepConfirmation } from './step-confirmation.js';
+import { StepReview } from './step-review.js';
+import { StepSelect } from './step-select.js';
 
 function StepIndicator({ currentStep }: { currentStep: number }) {
   return (
@@ -66,5 +71,58 @@ export function NewPaymentRunDialogView({
         {children}
       </DialogContent>
     </Dialog>
+  );
+}
+
+interface NewPaymentRunDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onViewRun?: (runId: string) => void;
+}
+
+export function NewPaymentRunDialog({
+  open,
+  onOpenChange,
+  onViewRun,
+}: NewPaymentRunDialogProps) {
+  const dialog = useNewPaymentRunDialog({ open, onOpenChange, onViewRun });
+
+  const handleCancelFromSelect = useCallback(() => dialog.handleOpenChange(false), [dialog]);
+  const handleNextFromSelect = useCallback(() => dialog.setStep(2), [dialog]);
+  const handleBackFromReview = useCallback(() => dialog.setStep(1), [dialog]);
+
+  return (
+    <NewPaymentRunDialogView
+      open={dialog.open}
+      step={dialog.step}
+      onOpenChange={dialog.handleOpenChange}>
+      {dialog.step === 1 && (
+        <StepSelect
+          selectedInvoiceIds={dialog.selectedInvoiceIds}
+          onSelectionChange={dialog.setSelectedInvoiceIds}
+          groupByCurrency={dialog.groupByCurrency}
+          onGroupByCurrencyChange={dialog.setGroupByCurrency}
+          onCancel={handleCancelFromSelect}
+          onNext={handleNextFromSelect}
+        />
+      )}
+
+      {dialog.step === 2 && (
+        <StepReview
+          selectedInvoiceIds={dialog.selectedInvoiceIds}
+          groupByCurrency={dialog.groupByCurrency}
+          onBack={handleBackFromReview}
+          onComplete={dialog.handleComplete}
+        />
+      )}
+
+      {dialog.step === 3 && dialog.confirmationData && (
+        <StepConfirmation
+          {...dialog.confirmationData}
+          onViewRun={dialog.handleViewRunFromConfirmation}
+          onClose={dialog.handleClose}
+        />
+      )}
+    </NewPaymentRunDialogView>
   );
 }

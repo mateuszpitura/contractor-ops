@@ -18,15 +18,7 @@ import {
   AlertDialogTitle,
 } from '@contractor-ops/ui/components/shadcn/alert-dialog';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
-import {
-  Dialog,
-  DialogBody,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogSection,
-  DialogTitle,
-} from '@contractor-ops/ui/components/shadcn/dialog';
+import { DialogFooter } from '@contractor-ops/ui/components/shadcn/dialog';
 import {
   billingModelEnum,
   contractTypeEnum,
@@ -37,7 +29,9 @@ import { AlertTriangle, Loader2, Sparkles } from 'lucide-react';
 import { useCallback } from 'react';
 import { z } from 'zod';
 
-import type { useContractWizardDialog } from '../hooks/use-contract-wizard-dialog.js';
+import { WizardDialogShell } from '../../wizard/wizard-dialog-shell.js';
+import { useContractWizardDialog } from '../hooks/use-contract-wizard-dialog.js';
+import type { useContractWizardDialog as UseContractWizardDialog } from '../hooks/use-contract-wizard-dialog.js';
 import { StepDetails } from './step-details.js';
 import { StepDocuments } from './step-documents.js';
 import { StepFinancial } from './step-financial.js';
@@ -60,7 +54,7 @@ const contractWizardSchema = z.object({
 
 export type ContractWizardFormValues = z.infer<typeof contractWizardSchema>;
 
-type Wizard = ReturnType<typeof useContractWizardDialog>;
+type Wizard = ReturnType<typeof UseContractWizardDialog>;
 
 export function StepIndicator({ steps, currentStep }: { steps: string[]; currentStep: number }) {
   return (
@@ -196,7 +190,7 @@ interface ContractWizardDialogProps {
   wizard: Wizard;
 }
 
-export function ContractWizardDialog({ open, wizard }: ContractWizardDialogProps) {
+export function ContractWizardDialogView({ open, wizard }: ContractWizardDialogProps) {
   const {
     t,
     form,
@@ -227,31 +221,18 @@ export function ContractWizardDialog({ open, wizard }: ContractWizardDialogProps
 
   return (
     <>
-      <Dialog open={open} onOpenChange={handleDialogOpenChange}>
-        <DialogContent className="sm:max-w-[640px]" showCloseButton={false}>
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Sparkles className="size-4" />
-              {t('title')}
-            </DialogTitle>
-          </DialogHeader>
-
-          <DialogSection>
-            <StepIndicator steps={stepLabels} currentStep={currentStep} />
-          </DialogSection>
-
-          <DialogBody className="min-h-[320px] px-1">
-            <WizardStepBody
-              currentStep={currentStep}
-              form={form}
-              contractorId={contractorId}
-              stepDetails={stepDetails}
-              preFilledFields={preFilledFields}
-              stepDocuments={stepDocuments}
-              handleSkipDocuments={handleSkipDocuments}
-            />
-          </DialogBody>
-
+      <WizardDialogShell
+        open={open}
+        onOpenChange={handleDialogOpenChange}
+        title={
+          <span className="flex items-center gap-2">
+            <Sparkles className="size-4" />
+            {t('title')}
+          </span>
+        }
+        contentClassName="sm:max-w-[640px]"
+        stepper={<StepIndicator steps={stepLabels} currentStep={currentStep} />}
+        footer={
           <WizardFooter
             currentStep={currentStep}
             isDirty={isDirty}
@@ -262,8 +243,22 @@ export function ContractWizardDialog({ open, wizard }: ContractWizardDialogProps
             handleNext={handleNext}
             t={t}
           />
-        </DialogContent>
-      </Dialog>
+        }
+        showDirtyClose={showDiscardDialog}
+        onConfirmDirtyClose={handleDiscard}
+        onCancelDirtyClose={() => setShowDiscardDialog(false)}>
+        <div className="min-h-[320px] px-1">
+          <WizardStepBody
+            currentStep={currentStep}
+            form={form}
+            contractorId={contractorId}
+            stepDetails={stepDetails}
+            preFilledFields={preFilledFields}
+            stepDocuments={stepDocuments}
+            handleSkipDocuments={handleSkipDocuments}
+          />
+        </div>
+      </WizardDialogShell>
 
       <WizardDiscardDialog
         open={showDiscardDialog}
@@ -273,4 +268,20 @@ export function ContractWizardDialog({ open, wizard }: ContractWizardDialogProps
       />
     </>
   );
+}
+
+interface ContractWizardDialogWiredProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  contractorId?: string;
+}
+
+function ContractWizardDialogOpen(props: ContractWizardDialogWiredProps) {
+  const wizard = useContractWizardDialog(props);
+  return <ContractWizardDialogView open={props.open} wizard={wizard} />;
+}
+
+export function ContractWizardDialog(props: ContractWizardDialogWiredProps) {
+  if (!props.open) return null;
+  return <ContractWizardDialogOpen {...props} />;
 }

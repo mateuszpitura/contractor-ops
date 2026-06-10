@@ -4,7 +4,8 @@ import { Clock, RefreshCw, UserPlus } from 'lucide-react';
 import { useCallback } from 'react';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
-import type { useContractorNotes } from '../hooks/use-contractor-profile.js';
+import { useContractorNotes } from '../hooks/use-contractor-profile.js';
+import type { useContractorNotes as UseContractorNotes } from '../hooks/use-contractor-profile.js';
 
 export type RightRailContractor = {
   id: string;
@@ -16,7 +17,7 @@ export type RightRailContractor = {
 
 export type RightRailViewProps = {
   contractor: RightRailContractor;
-} & ReturnType<typeof useContractorNotes>;
+} & ReturnType<typeof UseContractorNotes>;
 
 function formatRelativeTime(date: string | Date): string {
   const d = typeof date === 'string' ? new Date(date) : date;
@@ -167,4 +168,9 @@ export function RightRailView({
       </div>
     </div>
   );
+}
+
+export function RightRail({ contractor }: { contractor: RightRailContractor }) {
+  const notesState = useContractorNotes(contractor.id, contractor.notes);
+  return <RightRailView contractor={contractor} {...notesState} />;
 }

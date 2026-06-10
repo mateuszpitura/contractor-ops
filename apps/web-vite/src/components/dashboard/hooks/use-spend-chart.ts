@@ -23,6 +23,8 @@ export function useSpendChart() {
 
   return {
     isLoading: query.isPending,
+    isError: query.isError,
+    onRetry: () => query.refetch(),
     rows: query.data ?? [],
     spendRange: spendRange as SpendRange,
     setSpendRange: (value: SpendRange) => setSpendRange(value),

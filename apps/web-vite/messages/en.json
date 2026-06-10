@@ -55,6 +55,11 @@
       "signoffRegistry": "Signoff registry",
       "pendingGate": "Flag ON in Unleash but app-gated — {count} disclaimer(s) PENDING.",
       "pendingGateResolution": "Resolve by submitting a PR updating packages/validators/src/legal/signoff-registry.json",
+      "pendingGateDetail": "to set each PENDING key to APPROVED with approvedBy + approvedAt + approverRole. The PR requires @contractor-ops/legal-platform review (CODEOWNERS).",
+      "statusEnabled": "ENABLED",
+      "statusDisabled": "DISABLED",
+      "allApprovedCount": "All {count} APPROVED",
+      "pendingOfTotal": "{pending} of {total} PENDING",
       "killSwitchDesc": "Classification engine kill-switch. Read-only — toggle in Unleash console.",
       "disclaimerRegistryTitle": "Disclaimer Signoff Registry",
       "allKeysMustBeApproved": "All keys must be APPROVED before the flag can be enabled in production.",
@@ -2488,6 +2493,7 @@
       }
     },
     "InvoiceTab": {
+      "errorTitle": "Error",
       "tabLabel": "E-invoice",
       "generationHeading": "Generation",
       "generationNotGeneratedBody": "No XRechnung XML has been generated for this invoice yet.",
@@ -2515,6 +2521,10 @@
       "transmittedCaptionPattern": "Transmitted {relativeTime} · Message {transmissionId}",
       "deliveryAckPattern": "Delivered {relativeTime}",
       "transmissionHistoryHeading": "Transmission history",
+      "transmissionColWhen": "When",
+      "transmissionColEvent": "Event",
+      "transmissionColDetails": "Details",
+      "transmissionCancel": "Cancel",
       "transmissionEventPattern": "{occurredAt} — {eventType} {detailsOneLiner}",
       "leitwegResolvedPattern": "Resolved Leitweg-ID: {leitwegIdValue} ({source})",
       "leitwegSourceContract": "from contract override",
@@ -2672,6 +2682,7 @@
         "REJECTED": "Rejected"
       },
       "validation": {
+        "heading": "Validation",
         "VALID": "Valid",
         "WARNINGS": "Warnings",
         "INVALID": "Invalid",
@@ -2845,6 +2856,7 @@
         "type": "Type",
         "status": "Status",
         "assignee": "Assignee",
+        "shipment": "Shipment",
         "actions": "Actions",
         "selectAll": "Select all",
         "selectRow": "Select row"
@@ -3165,6 +3177,7 @@
     "workflowTemplateNotFound": "Workflow template not found.",
     "workflowRunNotFound": "Workflow run not found.",
     "workflowRunAlreadyCancelled": "Workflow run has already been cancelled.",
+    "workflowRunNotInProgress": "Workflow run is not in progress.",
     "workflowTaskNotFound": "Task not found.",
     "workflowTaskInvalidStatus": "This status transition is not allowed for this task.",
     "workflowTaskCannotSkip": "This task cannot be skipped in its current status.",
@@ -3393,7 +3406,9 @@
     "approvalNotPendingCompliance": "This approval is not on a compliance hold.",
     "approvalCannotResolveContractor": "Cannot resolve the contractor for this approval.",
     "approvalStillComplianceBlocked": "Contractor still has an expired blocking compliance document; cannot resume the approval.",
-    "deprovisioningProviderSignoffPending": "This provider's deprovisioning feature requires sign-off approval before it can be enabled."
+    "deprovisioningProviderSignoffPending": "This provider's deprovisioning feature requires sign-off approval before it can be enabled.",
+    "workflowAssigneeNotMember": "Selected assignee is not a member of this organization.",
+    "importJobStateConflict": "Import job state changed; refresh and try again."
   },
   "Compliance": {
     "paymentBlockModal": {
@@ -3755,11 +3770,14 @@
         "saveMapping": "Save Mapping",
         "toast": {
           "saved": "Status mapping saved",
-          "saveFailed": "Failed to save status mapping"
+          "saveFailed": "Failed to save status mapping",
+          "webhooksNotRegistered": "Mapping saved, but Jira webhooks could not be registered. Inbound status sync may not work until webhooks are fixed."
         }
       },
       "activitySummary": {
         "title": "Recent Jira Activity",
+        "error": "Couldn't load recent Jira activity",
+        "retry": "Retry",
         "relativeTime": {
           "justNow": "just now",
           "minutesAgo": "{n}m ago",
@@ -4491,11 +4509,26 @@
       "saveCta": "Save preferences"
     },
     "reminders": {
-      "heading": "Custom reminder rules",
-      "description": "Automate reminders for contract expiry, task deadlines, and other recurring events.",
-      "emptyHeading": "No reminder rules",
-      "emptyBody": "Create custom rules to send automatic reminders for contract expiry, task deadlines, and other events.",
-      "editAction": "Edit"
+      "contractExpiring": {
+        "title": "Contract expiring soon: {label}",
+        "body": "A contract is approaching its end date."
+      },
+      "invoiceDueSoon": {
+        "title": "Invoice due soon: {label}",
+        "body": "An invoice is approaching its due date."
+      },
+      "invoiceOverdue": {
+        "title": "Invoice overdue: {label}",
+        "body": "An invoice is past its due date."
+      },
+      "taskOverdue": {
+        "title": "Task overdue: {label}",
+        "body": "{detail}{contractorSuffix}"
+      },
+      "drvExpiry": {
+        "title": "DRV clearance expires in {days} days",
+        "body": "Reference {reference}, valid until {validTo}. Begin the renewal filing — DRV processing typically takes 3-6 months."
+      }
     },
     "reminderEditor": {
       "entityLabel": "Applies to",
@@ -4571,6 +4604,25 @@
         "title": "Equipment return rejected",
         "body": "Reason: {reason}"
       }
+    },
+    "trial": {
+      "ending7d": {
+        "title": "Trial ending in 7 days",
+        "body": "Your trial ends in 7 days. Upgrade to keep your data and full access."
+      },
+      "ending1d": {
+        "title": "Trial ending tomorrow",
+        "body": "Your trial ends tomorrow. Upgrade now to avoid losing access to features."
+      },
+      "email7d": {
+        "subject": "Your Contractor Ops trial ends in 7 days",
+        "body": "Your trial ends in 7 days. Upgrade to keep your data and full access."
+      },
+      "email1d": {
+        "subject": "Your Contractor Ops trial ends tomorrow",
+        "body": "Your trial ends tomorrow. Upgrade now to avoid losing access to features."
+      },
+      "emailCta": "Go to billing settings"
     }
   },
   "OcrReview": {
@@ -4844,7 +4896,9 @@
       "heading": "Where do you manage your team?",
       "subtitle": "Select the tools you want to import from. You can connect new tools right here.",
       "skipLink": "Skip — I'll invite people manually",
-      "connectError": "Failed to start connection. Please try again."
+      "connectError": "Failed to start connection. Please try again.",
+      "connectPermissionError": "You need organization admin permissions to connect integrations.",
+      "popupBlocked": "Pop-up blocked. Allow pop-ups for this site and try Connect again."
     },
     "step2": {
       "heading": "Review team members",
@@ -4874,7 +4928,9 @@
       "resolvedAll": "All conflicts resolved",
       "selectedCount": "{count} selected",
       "statusNew": "New",
-      "statusExists": "Exists"
+      "statusExists": "Exists",
+      "partialSourceErrorsTitle": "Some sources could not be loaded",
+      "partialSourceErrorsBody": "People from other sources are shown below. You can continue reviewing or go back to reconnect failed sources."
     },
     "step3": {
       "heading": "Import projects",
@@ -4885,6 +4941,8 @@
       "addStep": "Add step",
       "emptyHeading": "No projects found",
       "emptyBody": "No projects were found in the selected PM tools. You can create workflow templates manually later.",
+      "partialSourceErrorsTitle": "Some project sources could not be loaded",
+      "partialSourceErrorsBody": "Projects from other sources are shown below. You can continue or go back to reconnect failed sources.",
       "stepFallback": "Step {number}"
     },
     "step4": {
@@ -4893,12 +4951,18 @@
       "peopleCard": "People to import",
       "projectsCard": "Projects to create",
       "startImport": "Start Import",
+      "starting": "Starting…",
+      "roleCount": "{count} × {role}",
+      "totalSteps": "{count, plural, one {# workflow step} other {# workflow steps}}",
       "progressLabel": "Importing {current} of {total}...",
       "completeHeading": "Import complete",
       "completeBody": "{imported} people and {projects} projects imported successfully.",
+      "partialCompleteBody": "{imported} people and {projects} projects imported. Some items failed — retry below or continue to the dashboard.",
       "completeCta": "Go to Dashboard",
       "retryButton": "Retry",
-      "processing": "Processing..."
+      "processing": "Processing...",
+      "failedItemProject": "Project: {name}",
+      "nothingToImport": "Nothing selected to import. Go back and choose people or projects."
     },
     "nav": {
       "back": "Back",
@@ -5574,7 +5638,12 @@
       "label": "Peppol",
       "ariaLabel": "Peppol transmission status: {status}",
       "receiver": "Receiver",
-      "aspRef": "ASP reference"
+      "aspRef": "ASP reference",
+      "statusDelivered": "Delivered",
+      "statusTransmitted": "Transmitted",
+      "statusPending": "Pending",
+      "statusFailed": "Failed",
+      "statusRejected": "Rejected"
     },
     "capabilities": {
       "xrechnungCiiSupported": "Peppol participant supports XRechnung (CII)",
@@ -6006,6 +6075,29 @@
     "exportSuccess": "Report exported ({count} rows)",
     "exportQueued": "Export queued — we will email you the download link.",
     "exportError": "Could not export report. Try again.",
+    "columnToggle": "Toggle columns",
+    "columns": {
+      "contractorName": "Contractor",
+      "invoiceCount": "Invoices",
+      "totalMinor": "Total spend",
+      "avgMinor": "Avg invoice",
+      "lastPaidAt": "Last payment",
+      "teamName": "Team",
+      "contractorCount": "Contractors",
+      "budgetPercent": "Budget %",
+      "contractTitle": "Contract",
+      "endDate": "End date",
+      "daysRemaining": "Days left",
+      "invoiceNumber": "Invoice #",
+      "amountMinor": "Amount",
+      "dueDate": "Due date",
+      "daysOverdue": "Days overdue",
+      "status": "Status",
+      "missingDocuments": "Missing docs",
+      "contractStatus": "Contract status",
+      "overdueTasks": "Overdue tasks",
+      "health": "Health"
+    },
     "contractor": "Contractor",
     "team": "Team",
     "invoices": "Invoices",
@@ -6554,7 +6646,10 @@
       },
       "googleWorkspace": {
         "descriptionDisconnected": "Import your team directory from Google Workspace with role mapping.",
-        "descriptionConnected": "Google Workspace connected. Directory syncs daily at 2:00 AM."
+        "descriptionConnected": "Google Workspace connected. Directory syncs daily at 2:00 AM.",
+        "scopeExpansionWarning": "Re-authentication required — reconnect Google Workspace to restore directory access.",
+        "error": "Could not load Google Workspace integration status.",
+        "retry": "Retry"
       },
       "entra": {
         "title": "Microsoft Entra ID Deprovisioning",
@@ -6604,11 +6699,16 @@
       "teams": {
         "descriptionDisconnected": "Receive notifications and approve invoices directly in Microsoft Teams.",
         "descriptionConnected": "Microsoft Teams connected. Notifications deliver to configured channels.",
+        "scopeExpansionWarning": "Re-authentication required — reconnect Microsoft Teams to restore notifications.",
+        "error": "Could not load Microsoft Teams integration status.",
+        "retry": "Retry",
         "channelMappingHeading": "Channel mapping",
         "channelMappingDescription": "Configure which channel receives each notification type.",
         "saveMapping": "Save mapping",
         "refreshChannels": "Refresh channel list",
         "selectChannel": "Select a channel",
+        "selectTeam": "Select a team",
+        "selectTeamFirst": "Select a team above to configure channel mapping.",
         "noChannels": "No channels available. Ensure the bot is added to at least one team.",
         "channelFetchError": "Could not load Teams channels. Verify the bot is installed in your Teams workspace and try again.",
         "disconnectTitle": "Disconnect Microsoft Teams",
@@ -7199,6 +7299,11 @@
       "from": "From",
       "to": "To",
       "importEntries": "Import Entries"
+    },
+    "sourceBadge": {
+      "manualEntry": "Manual entry",
+      "importedFromOn": "Imported from {source} on {date}",
+      "unknownDate": "unknown date"
     }
   },
   "TopBar": {
@@ -7671,6 +7776,7 @@
       "linkedIssues": "Linked Issues",
       "noLinkedJiraIssues": "No linked Jira issues for this workflow.",
       "linearIssues": "Linear Issues",
+      "noLinkedLinearIssues": "No linked Linear issues for this workflow.",
       "tasksComplete": "{done} of {total} tasks complete"
     },
     "templatePicker": {
@@ -7801,6 +7907,11 @@
     "reassignConfirm": "Reassign task",
     "blockedTooltip": "Waiting for: {title}",
     "conditionSkipped": "Skipped (condition not met)",
+    "taskCompletedBy": "Completed by {user} on {at}",
+    "taskCompletedByUnknown": "unknown",
+    "taskSkippedReason": "Skipped: {reason}",
+    "taskSkippedNoReason": "No reason provided",
+    "taskCreatedAt": "Created {at}",
     "overdue": "Overdue",
     "assignedToLabel": "Assigned to {name}",
     "dueLabel": "Due {date}",

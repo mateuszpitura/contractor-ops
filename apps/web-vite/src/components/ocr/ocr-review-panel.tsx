@@ -1,11 +1,3 @@
-/**
- * Presentational OCR review panel — props-only. All state, populate-effect,
- * cascade animation and accept handler live in `hooks/use-ocr-review-form`;
- * extraction polling lives in `hooks/use-ocr-review`. Composed by
- * `ocr-review-panel-container.tsx`, which also decides between the form
- * card body and the processing overlay (variant pick).
- */
-
 import type { OcrExtractionResult } from '@contractor-ops/integrations/types/ocr';
 import {
   AlertDialog,
@@ -44,7 +36,8 @@ import type {
   OcrReviewFormSetters,
   OcrReviewFormState,
 } from './hooks/use-ocr-review-form.js';
-import { OCR_CURRENCIES } from './hooks/use-ocr-review-form.js';
+import { OCR_CURRENCIES, useOcrReviewForm } from './hooks/use-ocr-review-form.js';
+import { useOcrExtractionResult } from './hooks/use-ocr-review.js';
 import { LineItemsTable } from './line-items-table.js';
 import { NipValidationBadge } from './nip-validation-badge.js';
 import { OcrProcessingOverlay } from './ocr-processing-overlay.js';
@@ -394,5 +387,62 @@ export function OcrReviewFormBody({
         </Button>
       </div>
     </CardContent>
+  );
+}
+
+interface OcrReviewPanelWiredProps {
+  pdfUrl: string;
+  extractionId: string;
+  onAccept: (data: ExtractedInvoiceData) => void;
+  onDiscard: () => void;
+  onRetrigger: () => void;
+  isPortal?: boolean;
+}
+
+export function OcrReviewPanelWired({
+  pdfUrl,
+  extractionId,
+  onAccept,
+  onDiscard,
+  onRetrigger,
+  isPortal = false,
+}: OcrReviewPanelWiredProps) {
+  const { extractionStatus, resultJson, isProcessing, isComplete } = useOcrExtractionResult(
+    extractionId,
+    isPortal,
+  );
+
+  const typedResult =
+    resultJson != null && typeof resultJson === 'object' && !Array.isArray(resultJson)
+      ? (resultJson as unknown as OcrExtractionResult)
+      : null;
+
+  const form = useOcrReviewForm({
+    resultJson: typedResult,
+    isComplete,
+    onAccept,
+  });
+
+  const cardBody = isProcessing ? (
+    <OcrReviewPanelProcessingBody />
+  ) : (
+    <OcrReviewFormBody
+      onDiscard={onDiscard}
+      onRetrigger={onRetrigger}
+      resultJson={typedResult}
+      form={form}
+    />
+  );
+
+  return (
+    <OcrReviewPanel
+      pdfUrl={pdfUrl}
+      extractionStatus={extractionStatus}
+      resultJson={typedResult}
+      onRetrigger={onRetrigger}
+      fieldCount={form.derived.fieldCount}
+      totalFields={form.derived.totalFields}
+      cardBody={cardBody}
+    />
   );
 }

@@ -7,6 +7,7 @@ import {
 } from '@contractor-ops/ui/components/shadcn/card';
 import { ExternalLink } from 'lucide-react';
 import { useCallback } from 'react';
+import { useIntakeDetailValidation } from '../hooks/use-intake-detail-validation.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { useDateFormatter } from '../../../lib/format/use-date-formatter.js';
 import type { ValidationStatus } from './intake-validation-status-pill.js';
@@ -19,7 +20,7 @@ interface ValidationIssue {
   xpath?: string | null;
 }
 
-interface IntakeDetailValidationPaneProps {
+export interface IntakeDetailValidationPaneViewProps {
   validationStatus: ValidationStatus | null;
   validationAcknowledgedAt: Date | string | null;
   validationReportSummary: ValidationIssue[] | null;
@@ -29,7 +30,7 @@ interface IntakeDetailValidationPaneProps {
   className?: string;
 }
 
-export function IntakeDetailValidationPane({
+export function IntakeDetailValidationPaneView({
   validationStatus,
   validationAcknowledgedAt,
   validationReportSummary,
@@ -37,7 +38,7 @@ export function IntakeDetailValidationPane({
   openReport,
   reportLoading,
   className,
-}: IntakeDetailValidationPaneProps) {
+}: IntakeDetailValidationPaneViewProps) {
   const t = useTranslations('EInvoice.intake');
   const tValidation = useTranslations('EInvoice.intake.validation');
   const { formatDate } = useDateFormatter();
@@ -54,7 +55,7 @@ export function IntakeDetailValidationPane({
     <Card className={className} data-slot="intake-detail-validation-pane">
       <CardHeader className="flex-row items-start justify-between gap-2">
         <CardTitle className="text-base">
-          <span className="me-2">Validation</span>
+          <span className="me-2">{tValidation('heading')}</span>
           {validationStatus && <IntakeValidationStatusPill status={validationStatus} />}
         </CardTitle>
         <Button
@@ -106,5 +107,30 @@ export function IntakeDetailValidationPane({
         )}
       </CardContent>
     </Card>
+  );
+}
+
+export interface IntakeDetailValidationPaneProps {
+  intakeId: string;
+  validationStatus: ValidationStatus | null;
+  validationAcknowledgedAt: Date | string | null;
+  validationReportSummary: ValidationIssue[] | null;
+  totalIssueCount?: number;
+  className?: string;
+}
+
+export function IntakeDetailValidationPane(props: IntakeDetailValidationPaneProps) {
+  const { openReport, reportLoading } = useIntakeDetailValidation(props.intakeId);
+
+  return (
+    <IntakeDetailValidationPaneView
+      validationStatus={props.validationStatus}
+      validationAcknowledgedAt={props.validationAcknowledgedAt}
+      validationReportSummary={props.validationReportSummary}
+      totalIssueCount={props.totalIssueCount}
+      className={props.className}
+      openReport={openReport}
+      reportLoading={reportLoading}
+    />
   );
 }

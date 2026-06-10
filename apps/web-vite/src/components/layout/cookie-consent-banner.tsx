@@ -1,14 +1,9 @@
-/**
- * Cookie-consent banner — pure presentational shell. Visibility is decided
- * by `CookieConsentBannerContainer`; this component renders only when
- * mounted.
- */
-
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { Cookie } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 import { useTranslations } from '../../i18n/useTranslations.js';
+import { useCookieConsent } from './hooks/use-cookie-consent.js';
 
 interface CookieConsentBannerProps {
   onAccept: () => void;
@@ -39,4 +34,10 @@ export function CookieConsentBanner({ onAccept }: CookieConsentBannerProps) {
       </div>
     </div>
   );
+}
+
+export function CookieConsentBannerContainer() {
+  const { visible, handleAccept } = useCookieConsent();
+  if (!visible) return null;
+  return <CookieConsentBanner onAccept={handleAccept} />;
 }

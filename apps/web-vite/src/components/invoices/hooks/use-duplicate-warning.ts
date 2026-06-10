@@ -1,24 +1,23 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useCallback } from 'react';
-import { toast } from 'sonner';
 
+import { useResourceMutation } from '../../../hooks/use-resource-mutation.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { useTRPC } from '../../../providers/trpc-provider.js';
 
 export function useDuplicateWarning(invoiceId: string, onDismiss?: () => void) {
   const t = useTranslations('Invoices');
   const trpc = useTRPC();
-  const queryClient = useQueryClient();
 
-  const dismissMutation = useMutation(
+  const dismissMutation = useResourceMutation(
     trpc.invoice.dismissDuplicate.mutationOptions({
       onSuccess: () => {
-        toast.success(t('duplicate.dismissedToast'));
         onDismiss?.();
-        queryClient.invalidateQueries(trpc.invoice.pathFilter());
       },
-      onError: err => toast.error(err.message),
     }),
+    {
+      invalidate: [trpc.invoice.pathFilter()],
+      successMessage: t('duplicate.dismissedToast'),
+    },
   );
 
   const handleDismiss = useCallback(() => {

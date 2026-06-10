@@ -1,27 +1,23 @@
-import { useQuery } from '@tanstack/react-query';
-import { useCallback } from 'react';
-
+import { useEntityDetailQuery } from '../../../hooks/use-entity-detail-query.js';
 import { usePortalTRPC } from '../../../providers/trpc-provider.js';
 
 export function usePortalContractDetail(id: string) {
   const trpc = usePortalTRPC();
-  const contractQuery = useQuery({
+  const {
+    data: contract,
+    handleRetry,
+    isNotFound,
+    isLoading,
+    isError,
+  } = useEntityDetailQuery({
     ...trpc.portal.getContract.queryOptions({ id }),
     enabled: Boolean(id),
   });
 
-  const handleRetry = useCallback(() => {
-    void contractQuery.refetch();
-  }, [contractQuery]);
-
-  const errorCode = (contractQuery.error as { data?: { code?: string } } | null | undefined)?.data
-    ?.code;
-  const isNotFound = errorCode === 'NOT_FOUND';
-
   return {
-    contract: contractQuery.data,
-    isLoading: contractQuery.isPending,
-    isError: contractQuery.isError,
+    contract,
+    isLoading,
+    isError,
     isNotFound,
     handleRetry,
   } as const;

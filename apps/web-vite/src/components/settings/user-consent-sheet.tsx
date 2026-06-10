@@ -17,10 +17,11 @@ import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { CheckCircle2, History, XCircle } from 'lucide-react';
 
 import type { LooseTranslator } from '../../i18n/typed-keys.js';
-import type {
-  ConsentHistoryRow,
-  ConsentMapEntry,
+import {
   useUserConsentSheet,
+  type ConsentHistoryRow,
+  type ConsentMapEntry,
+  type useUserConsentSheet as UseUserConsentSheet,
 } from './hooks/use-user-consent-sheet.js';
 
 interface UserConsentSheetBaseProps {
@@ -31,7 +32,7 @@ interface UserConsentSheetBaseProps {
 }
 
 export type UserConsentSheetProps = UserConsentSheetBaseProps &
-  ReturnType<typeof useUserConsentSheet>;
+  ReturnType<typeof UseUserConsentSheet>;
 
 function CurrentConsentList({
   t,
@@ -140,7 +141,7 @@ function ConsentHistoryTimeline({
   );
 }
 
-export function UserConsentSheet({
+export function UserConsentSheetView({
   userId,
   userName,
   open,
@@ -177,5 +178,18 @@ export function UserConsentSheet({
         </div>
       </SheetContent>
     </Sheet>
+  );
+}
+
+export function UserConsentSheet({ userId, userName, open, onOpenChange }: UserConsentSheetBaseProps) {
+  const sheet = useUserConsentSheet(userId, open);
+  return (
+    <UserConsentSheetView
+      userId={userId}
+      userName={userName}
+      open={open}
+      onOpenChange={onOpenChange}
+      {...sheet}
+    />
   );
 }

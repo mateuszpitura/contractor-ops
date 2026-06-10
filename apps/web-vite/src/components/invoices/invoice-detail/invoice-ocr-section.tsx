@@ -7,8 +7,9 @@ import {
 import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { ExtractionStatusBar } from '../../ocr/extraction-status-bar.js';
+import { useInvoiceOcrSection } from '../hooks/use-invoice-ocr-section.js';
 
-interface InvoiceOcrSectionProps {
+export interface InvoiceOcrSectionViewProps {
   status: 'PENDING' | 'PROCESSING' | 'EXTRACTED' | 'PARTIAL' | 'FAILED';
   fieldCount: number;
   totalFields: number;
@@ -32,15 +33,15 @@ export function InvoiceOcrSectionSkeleton() {
  * Compact, read-only summary of the latest OCR extraction for the
  * invoice's source document.
  *
- * Loading and empty (no extraction) states are owned by the container;
+ * Loading and empty (no extraction) states are owned by the wired export;
  * this view is a single render path for the data-present case.
  */
-export function InvoiceOcrSection({
+export function InvoiceOcrSectionView({
   status,
   fieldCount,
   totalFields,
   errorMessage,
-}: InvoiceOcrSectionProps) {
+}: InvoiceOcrSectionViewProps) {
   const t = useTranslations('Invoices.detail');
 
   return (
@@ -57,5 +58,26 @@ export function InvoiceOcrSection({
         />
       </CardContent>
     </Card>
+  );
+}
+
+interface InvoiceOcrSectionProps {
+  documentId: string;
+}
+
+export function InvoiceOcrSection({ documentId }: InvoiceOcrSectionProps) {
+  const { isLoading, extraction, status, fieldCount, totalFields, errorMessage } =
+    useInvoiceOcrSection(documentId);
+
+  if (isLoading) return <InvoiceOcrSectionSkeleton />;
+  if (!(extraction && status)) return null;
+
+  return (
+    <InvoiceOcrSectionView
+      status={status}
+      fieldCount={fieldCount}
+      totalFields={totalFields}
+      errorMessage={errorMessage}
+    />
   );
 }

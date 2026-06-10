@@ -15,7 +15,7 @@ import {
 import { ChevronDown, Copy, FileCode, Loader2, RefreshCw } from 'lucide-react';
 import { useCallback, useState } from 'react';
 import { toast } from 'sonner';
-import type { useZatcaSubmissionDetail } from './hooks/use-zatca-submission-detail.js';
+import { useZatcaSubmissionDetail } from './hooks/use-zatca-submission-detail.js';
 import type { ZatcaBadgeStatus } from './zatca-status-badge.js';
 import { ZatcaStatusBadge } from './zatca-status-badge.js';
 
@@ -296,4 +296,14 @@ export function ZatcaSubmissionDetailView({
       </div>
     </Collapsible>
   );
+}
+
+export type ZatcaSubmissionDetailProps = Pick<
+  ZatcaSubmissionDetailViewProps,
+  'submission' | 'invoiceId' | 'qrCodeBase64'
+>;
+
+export function ZatcaSubmissionDetail(props: ZatcaSubmissionDetailProps) {
+  const hook = useZatcaSubmissionDetail(props.invoiceId);
+  return <ZatcaSubmissionDetailView {...props} {...hook} />;
 }

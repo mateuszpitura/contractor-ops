@@ -14,7 +14,7 @@ import { AlertTriangle, Loader2 } from 'lucide-react';
 import { useCallback, useState } from 'react';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
-import type { useEquipmentReturnApproval } from '../hooks/use-equipment-detail-actions.js';
+import { useEquipmentReturnApproval } from '../hooks/use-equipment-detail-actions.js';
 
 interface ReturnRequest {
   id: string;
@@ -107,5 +107,16 @@ export function ReturnApprovalBannerView({
         </AlertDialogContent>
       </AlertDialog>
     </>
+  );
+}
+
+export function ReturnApprovalBanner(props: ReturnApprovalBannerProps) {
+  const { approveMutation, rejectMutation } = useEquipmentReturnApproval();
+  return (
+    <ReturnApprovalBannerView
+      {...props}
+      approveMutation={approveMutation}
+      rejectMutation={rejectMutation}
+    />
   );
 }

@@ -23,8 +23,9 @@ import { Pencil, Plus, Trash2 } from 'lucide-react';
 import { useCallback } from 'react';
 import { tKey } from '../../i18n/typed-keys';
 import { renderEmptyStateAction } from '../shared/atelier-bridges.js';
-import { ChainEditorDialogContainer } from './chain-editor-dialog-container.js';
-import type { useApprovalChainsTab } from './hooks/use-approval-chains-tab.js';
+import { ChainEditorDialog } from './chain-editor-dialog.js';
+import { useApprovalChainsTab } from './hooks/use-approval-chains-tab.js';
+import type { useApprovalChainsTab as UseApprovalChainsTab } from './hooks/use-approval-chains-tab.js';
 
 type SettingsTranslateFn = (key: string, params?: Record<string, string | number>) => string;
 
@@ -42,7 +43,7 @@ function formatConditionSummary(conditions: unknown, t: SettingsTranslateFn): st
     .join(', ');
 }
 
-export type ApprovalChainsTabProps = ReturnType<typeof useApprovalChainsTab>;
+export type ApprovalChainsTabProps = ReturnType<typeof UseApprovalChainsTab>;
 
 type Chain = ApprovalChainsTabProps['chains'][number];
 
@@ -121,7 +122,7 @@ function ChainCard({
   );
 }
 
-export function ApprovalChainsTab({
+export function ApprovalChainsTabView({
   t,
   tAria,
   chainsQuery,
@@ -189,7 +190,7 @@ export function ApprovalChainsTab({
           }}
           renderAction={renderEmptyStateAction}
         />
-        <ChainEditorDialogContainer
+        <ChainEditorDialog
           open={editorOpen}
           onOpenChange={setEditorOpen}
           chainData={editingChain}
@@ -226,7 +227,7 @@ export function ApprovalChainsTab({
         ))}
       </div>
 
-      <ChainEditorDialogContainer
+      <ChainEditorDialog
         open={editorOpen}
         onOpenChange={setEditorOpen}
         chainData={editingChain}
@@ -254,4 +255,9 @@ export function ApprovalChainsTab({
       </AlertDialog>
     </>
   );
+}
+
+export function ApprovalChainsTab() {
+  const chains = useApprovalChainsTab();
+  return <ApprovalChainsTabView {...chains} />;
 }

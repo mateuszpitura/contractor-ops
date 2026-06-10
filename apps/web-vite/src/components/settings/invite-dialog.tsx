@@ -21,14 +21,17 @@ import {
 import { Loader2, UserPlus } from 'lucide-react';
 import { useCallback, useId } from 'react';
 
-import type { InviteValues, useInviteDialog } from './hooks/use-invite-dialog.js';
+import { useInviteDialog, type InviteValues } from './hooks/use-invite-dialog.js';
+import type { useInviteDialog as UseInviteDialog } from './hooks/use-invite-dialog.js';
 
-export type InviteDialogProps = {
+interface InviteDialogShellProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-} & ReturnType<typeof useInviteDialog>;
+}
 
-export function InviteDialog({
+export type InviteDialogViewProps = InviteDialogShellProps & ReturnType<typeof UseInviteDialog>;
+
+export function InviteDialogView({
   open,
   onOpenChange,
   t,
@@ -36,7 +39,7 @@ export function InviteDialog({
   roleItems,
   onSubmit,
   isPending,
-}: InviteDialogProps) {
+}: InviteDialogViewProps) {
   const id = useId();
   const {
     register,
@@ -124,4 +127,9 @@ export function InviteDialog({
       </DialogContent>
     </Dialog>
   );
+}
+
+export function InviteDialog({ open, onOpenChange }: InviteDialogShellProps) {
+  const dialog = useInviteDialog({ open, onOpenChange });
+  return <InviteDialogView open={open} onOpenChange={onOpenChange} {...dialog} />;
 }

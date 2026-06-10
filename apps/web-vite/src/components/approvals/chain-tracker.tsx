@@ -21,6 +21,7 @@ import { CheckCircle2, XCircle } from 'lucide-react';
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { getAvatarInitials } from '../../lib/avatar-initials.js';
 import { cn } from '../../lib/utils.js';
+import { useApprovalAuditTrail } from './hooks/use-approval-audit-trail.js';
 import { SlaBadge } from './sla-badge.js';
 
 interface StepData {
@@ -171,12 +172,12 @@ function StepLabel({ step, align }: { step: StepData; align: 'center' | 'start' 
   );
 }
 
-interface ChainTrackerProps {
+interface ChainTrackerViewProps {
   steps: StepData[];
   chainName?: string;
 }
 
-export function ChainTracker({ steps, chainName }: ChainTrackerProps) {
+export function ChainTrackerView({ steps, chainName }: ChainTrackerViewProps) {
   const t = useTranslations('Approvals');
 
   let rejectedIndex = -1;
@@ -263,4 +264,25 @@ export function ChainTracker({ steps, chainName }: ChainTrackerProps) {
       </CardContent>
     </Card>
   );
+}
+
+interface ChainTrackerProps {
+  invoiceId: string;
+}
+
+type ChainTrackerFlow = {
+  steps?: Parameters<typeof ChainTrackerView>[0]['steps'];
+  chainName?: string;
+};
+
+export function ChainTracker({ invoiceId }: ChainTrackerProps) {
+  const audit = useApprovalAuditTrail(invoiceId);
+
+  if (audit.isLoading) return <ChainTrackerSkeleton />;
+
+  const flow = audit.flow as ChainTrackerFlow | undefined;
+  const steps = flow?.steps;
+  if (!steps || steps.length === 0) return null;
+
+  return <ChainTrackerView steps={steps} chainName={flow?.chainName} />;
 }

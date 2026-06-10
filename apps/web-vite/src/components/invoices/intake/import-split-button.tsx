@@ -14,7 +14,8 @@ import { useCallback, useState } from 'react';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { cn } from '../../../lib/utils.js';
-import { IntakeUploadDialogContainer } from './intake-upload-dialog-container.js';
+import { useEinvoiceImportEnabled } from '../hooks/use-einvoice-import-enabled.js';
+import { IntakeUploadDialog } from './intake-upload-dialog.js';
 
 export interface ImportSplitButtonViewProps {
   onCreateNewClick: () => void;
@@ -81,7 +82,33 @@ export function ImportSplitButtonView({
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
-      <IntakeUploadDialogContainer open={uploadOpen} onOpenChange={setUploadOpen} />
+      <IntakeUploadDialog open={uploadOpen} onOpenChange={setUploadOpen} />
     </>
+  );
+}
+
+export function ImportSplitButton({
+  onCreateNewClick,
+  className,
+  disabled = false,
+}: ImportSplitButtonViewProps) {
+  const importEnabled = useEinvoiceImportEnabled();
+
+  if (!importEnabled) {
+    return (
+      <ImportSplitButtonCreateOnly
+        onCreateNewClick={onCreateNewClick}
+        className={className}
+        disabled={disabled}
+      />
+    );
+  }
+
+  return (
+    <ImportSplitButtonView
+      onCreateNewClick={onCreateNewClick}
+      className={className}
+      disabled={disabled}
+    />
   );
 }

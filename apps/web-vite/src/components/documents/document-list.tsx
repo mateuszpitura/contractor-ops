@@ -3,6 +3,8 @@ import { FileText } from 'lucide-react';
 import type { ReactNode } from 'react';
 
 import { useTranslations } from '../../i18n/useTranslations.js';
+import { DocumentCardContainer } from './document-card.js';
+import { useDocumentList } from './hooks/use-document-list.js';
 
 type DocumentListProps = {
   isLoading: boolean;
@@ -41,4 +43,44 @@ export function DocumentList({ isLoading, isEmpty, children }: DocumentListProps
   }
 
   return <div className="space-y-3">{children}</div>;
+}
+
+type DocumentListContainerProps = {
+  entityType: string;
+  entityId: string;
+};
+
+export function DocumentListContainer({ entityType, entityId }: DocumentListContainerProps) {
+  const { documents, isLoading, isEmpty, onUploadNewVersion } = useDocumentList(
+    entityType,
+    entityId,
+  );
+
+  if (isLoading) {
+    return (
+      <DocumentList isLoading isEmpty={false}>
+        {null}
+      </DocumentList>
+    );
+  }
+  if (isEmpty) {
+    return (
+      <DocumentList isLoading={false} isEmpty>
+        {null}
+      </DocumentList>
+    );
+  }
+
+  return (
+    <DocumentList isLoading={false} isEmpty={false}>
+      {documents.map((doc, i) => (
+        <DocumentCardContainer
+          key={doc.id}
+          document={doc}
+          versionNumber={documents.length - i}
+          onUploadNewVersion={onUploadNewVersion}
+        />
+      ))}
+    </DocumentList>
+  );
 }

@@ -1,16 +1,21 @@
-import { DataTable, WorkflowsIllustration } from '@contractor-ops/ui';
-import type { ColumnDef } from '@tanstack/react-table';
-import { Play } from 'lucide-react';
-import { useMemo } from 'react';
+import { AtelierEmptyState, SectionLabel, WorkflowsIllustration } from '@contractor-ops/ui';
+import { WorkbenchDataTable } from '../../table-kit/workbench-data-table.js';
+import type { ColumnDef, Table } from '@tanstack/react-table';
+import { GitBranch, Play, Plus } from 'lucide-react';
+import { useCallback, useMemo } from 'react';
 
+import { useTranslations } from '../../../i18n/useTranslations.js';
+import { renderEmptyStateAction } from '../../shared/atelier-bridges.js';
 import { formatDate } from '../../../lib/format-date.js';
-import type { useWorkflowRunsDataTable } from '../hooks/use-workflow-runs-data-table.js';
+import { useWorkflowRunsDataTable } from '../hooks/use-workflow-runs-data-table.js';
+import type { useWorkflowRunsDataTable as UseWorkflowRunsDataTable } from '../hooks/use-workflow-runs-data-table.js';
 import type { WorkflowRunRow } from './columns.js';
 import { getColumns } from './columns.js';
+import { DataTableColumnToggle } from './data-table-column-toggle.js';
 import { DataTableFilters } from './data-table-filters.js';
 import { DataTableToolbar } from './data-table-toolbar.js';
 
-interface WorkflowRunsDataTableProps extends ReturnType<typeof useWorkflowRunsDataTable> {
+interface WorkflowRunsDataTableProps extends ReturnType<typeof UseWorkflowRunsDataTable> {
   onRowClick: (run: WorkflowRunRow) => void;
   onStartWorkflow: () => void;
   parentLoading?: boolean;
@@ -27,6 +32,8 @@ export function WorkflowRunsDataTable({
   totalRows,
   sorting,
   onSortingChange,
+  columnVisibility,
+  setColumnVisibility,
   isLoading,
   isRefetching,
   activeFilterCount,
@@ -43,6 +50,11 @@ export function WorkflowRunsDataTable({
   parentLoading,
 }: WorkflowRunsDataTableProps) {
   const columns = useMemo<ColumnDef<WorkflowRunRow>[]>(() => getColumns(t, formatDate), [t]);
+
+  const renderColumnToggle = useCallback(
+    (table: Table<WorkflowRunRow>) => <DataTableColumnToggle table={table} />,
+    [],
+  );
 
   const toolbar = (
     <DataTableFilters
@@ -69,7 +81,7 @@ export function WorkflowRunsDataTable({
   );
 
   return (
-    <DataTable
+    <WorkbenchDataTable
       columns={columns}
       data={data}
       totalRows={totalRows}
@@ -79,6 +91,8 @@ export function WorkflowRunsDataTable({
       onPageSizeChange={handlePageSizeChange}
       sorting={sorting}
       onSortingChange={onSortingChange}
+      columnVisibility={columnVisibility}
+      onColumnVisibilityChange={setColumnVisibility}
       isLoading={isLoading}
       isRefetching={isRefetching}
       forceLoading={parentLoading}
@@ -88,6 +102,7 @@ export function WorkflowRunsDataTable({
       onClearFilters={clearFilters}
       clearFiltersLabel={t('clearFiltersChip', { count: activeFilterCount })}
       toolbar={toolbar}
+      rightSlot={renderColumnToggle}
       onRowClick={onRowClick}
       rowClassName={rowClassName}
       getRowId={row => row.id}
@@ -111,5 +126,70 @@ export function WorkflowRunsDataTable({
         dueAt: { shape: 'text', width: 'w-24' },
       }}
     />
+  );
+}
+
+interface WorkflowRunsDataTableSectionProps {
+  onRowClick: (run: WorkflowRunRow) => void;
+  onStartWorkflow: () => void;
+  parentLoading?: boolean;
+  contractorCount: number;
+  canManageTemplates: boolean;
+}
+
+export function WorkflowRunsDataTableSection({
+  onRowClick,
+  onStartWorkflow,
+  parentLoading,
+  contractorCount,
+  canManageTemplates,
+}: WorkflowRunsDataTableSectionProps) {
+  const te = useTranslations('EmptyStates');
+  const table = useWorkflowRunsDataTable();
+
+  const showRunsEmpty =
+    !table.isLoading &&
+    parentLoading !== true &&
+    table.totalRows === 0 &&
+    !table.hasFiltersOrSearch;
+
+  if (showRunsEmpty) {
+    return (
+      <AtelierEmptyState
+        variant="page"
+        illustration={WorkflowsIllustration}
+        heading={table.t('empty.heading')}
+        body={table.t('empty.body')}
+        primaryAction={{
+          label: table.t('empty.cta'),
+          onClick: onStartWorkflow,
+          icon: Play,
+        }}
+        secondaryAction={
+          canManageTemplates
+            ? {
+                label: table.t('templates.newTemplate'),
+                href: '/workflows/templates/new',
+                icon: Plus,
+              }
+            : undefined
+        }
+        prerequisiteMissing={contractorCount === 0}
+        prerequisiteAction={{ label: te('prerequisite.cta'), href: '/contractors' }}
+        renderAction={renderEmptyStateAction}
+      />
+    );
+  }
+
+  return (
+    <>
+      <SectionLabel icon={GitBranch}>{table.t('pageTitle')}</SectionLabel>
+      <WorkflowRunsDataTable
+        {...table}
+        onRowClick={onRowClick}
+        onStartWorkflow={onStartWorkflow}
+        parentLoading={parentLoading}
+      />
+    </>
   );
 }

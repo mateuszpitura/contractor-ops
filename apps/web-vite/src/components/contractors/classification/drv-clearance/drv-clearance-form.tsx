@@ -27,7 +27,8 @@ import {
 import { Textarea } from '@contractor-ops/ui/components/shadcn/textarea';
 import { useCallback, useId, useState } from 'react';
 import { useTranslations } from '../../../../i18n/useTranslations.js';
-import type { Outcome, useDrvClearanceFormMutations } from '../hooks/use-drv-clearance.js';
+import { useDrvClearanceFormMutations } from '../hooks/use-drv-clearance.js';
+import type { Outcome, useDrvClearanceFormMutations as UseDrvClearanceFormMutations } from '../hooks/use-drv-clearance.js';
 
 export interface DrvClearanceFormInitial {
   id: string;
@@ -52,7 +53,7 @@ function formatDateInput(date: Date | null | undefined): string {
 }
 
 export type DrvClearanceFormViewProps = DrvClearanceFormProps &
-  ReturnType<typeof useDrvClearanceFormMutations>;
+  ReturnType<typeof UseDrvClearanceFormMutations>;
 
 export function DrvClearanceFormView({
   open,
@@ -297,4 +298,9 @@ export function DrvClearanceFormView({
       </DialogContent>
     </Dialog>
   );
+}
+
+export function DrvClearanceForm(props: DrvClearanceFormProps) {
+  const mutations = useDrvClearanceFormMutations(() => props.onOpenChange(false));
+  return <DrvClearanceFormView {...props} {...mutations} />;
 }

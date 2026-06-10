@@ -1,4 +1,3 @@
-import { minorToMajor, minorUnitDigits } from '@contractor-ops/shared';
 import type { ContractStatusInput } from '@contractor-ops/ui';
 import { AtelierStatusPill, statusToVariant } from '@contractor-ops/ui';
 import { Card, CardContent } from '@contractor-ops/ui/components/shadcn/card';
@@ -6,6 +5,7 @@ import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 
 import { Link } from '../../i18n/navigation.js';
 import { usePortalDateFormatter } from '../../lib/format/use-portal-date-formatter.js';
+import { formatMoneyAmount } from '../../lib/money.js';
 import { cn } from '../../lib/utils.js';
 
 interface ContractCardContract {
@@ -24,15 +24,6 @@ interface ContractCardContract {
 interface ContractCardProps {
   contract: ContractCardContract;
   className?: string;
-}
-
-function formatAmount(minor: number, currency: string): string {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency,
-    minimumFractionDigits: 0,
-    maximumFractionDigits: minorUnitDigits(currency),
-  }).format(minorToMajor(minor, currency));
 }
 
 function ratePeriodLabel(rateType: string): string {
@@ -60,7 +51,7 @@ export function ContractCard({ contract, className }: ContractCardProps) {
 
   const rate =
     contract.rateValueMinor != null && contract.rateType
-      ? `${formatAmount(contract.rateValueMinor, contract.currency)}${ratePeriodLabel(contract.rateType)}`
+      ? `${formatMoneyAmount(contract.rateValueMinor, contract.currency, 'en-US')}${ratePeriodLabel(contract.rateType)}`
       : null;
 
   return (

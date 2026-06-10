@@ -6,7 +6,8 @@ import type { ChangeEvent, FormEvent } from 'react';
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 
-import type { useAddIr35Participant } from '../hooks/use-ir35-chain.js';
+import { useAddIr35Participant } from '../hooks/use-ir35-chain.js';
+import type { useAddIr35Participant as UseAddIr35Participant } from '../hooks/use-ir35-chain.js';
 
 export interface AddParticipantDialogProps {
   engagementId: string;
@@ -18,7 +19,7 @@ export interface AddParticipantDialogProps {
 type Role = 'AGENCY' | 'PSC';
 
 type AddParticipantDialogViewProps = AddParticipantDialogProps &
-  ReturnType<typeof useAddIr35Participant>;
+  ReturnType<typeof UseAddIr35Participant>;
 
 export function AddParticipantDialogView({
   engagementId,
@@ -154,4 +155,11 @@ export function AddParticipantDialogView({
       </div>
     </div>
   );
+}
+
+export function AddParticipantDialog(props: AddParticipantDialogProps) {
+  const participant = useAddIr35Participant(props.engagementId, props.nextOrderIndex, open => {
+    props.onOpenChange(open);
+  });
+  return <AddParticipantDialogView {...props} {...participant} />;
 }

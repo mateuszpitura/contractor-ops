@@ -1,7 +1,7 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
-import { toast } from 'sonner';
 
+import { useResourceMutation } from '../../../hooks/use-resource-mutation.js';
 import { useCommonToasts } from '../../../i18n/use-common-toasts.js';
 import { useTRPC } from '../../../providers/trpc-provider.js';
 
@@ -22,27 +22,25 @@ interface CandidateInfo {
 
 export function usePendingMergesInbox() {
   const trpc = useTRPC();
-  const queryClient = useQueryClient();
   const toasts = useCommonToasts();
   const pendingQuery = useQuery(trpc.organizationDefinitions.project.pendingMerges.queryOptions());
   const [activeMerge, setActiveMerge] = useState<PendingMergeRow | null>(null);
   const [chosenTarget, setChosenTarget] = useState<string>('');
 
-  const resolveMutation = useMutation(
+  const resolveMutation = useResourceMutation(
     trpc.organizationDefinitions.project.resolveMerge.mutationOptions({
       onSuccess: () => {
-        toast.success(toasts.mergeResolved());
-        void queryClient.invalidateQueries({
-          queryKey: trpc.organizationDefinitions.project.pendingMerges.queryKey(),
-        });
-        void queryClient.invalidateQueries({
-          queryKey: trpc.organizationDefinitions.project.list.queryKey(),
-        });
         setActiveMerge(null);
         setChosenTarget('');
       },
-      onError: err => toast.error(err.message),
     }),
+    {
+      invalidate: [
+        trpc.organizationDefinitions.project.pendingMerges.queryKey(),
+        trpc.organizationDefinitions.project.list.queryKey(),
+      ],
+      successMessage: toasts.mergeResolved(),
+    },
   );
 
   const items = pendingQuery.data?.items ?? [];

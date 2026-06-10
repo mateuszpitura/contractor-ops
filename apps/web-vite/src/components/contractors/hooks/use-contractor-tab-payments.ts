@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useCallback, useMemo, useState } from 'react';
 
-import { formatAmount as formatAmountLib } from '../../../lib/format-currency.js';
+import { formatAmount as formatAmountLib } from '../../../lib/money.js';
 import { useTRPC } from '../../../providers/trpc-provider.js';
 
 export type ContractorTabPaymentRow = {

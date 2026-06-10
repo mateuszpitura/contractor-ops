@@ -4,7 +4,7 @@
 
 import { Suspense } from 'react';
 
-import { ContractorListContainer } from '../../components/contractors/contractor-list-container.js';
+import { ContractorListContainer } from '../../components/contractors/contractor-list.js';
 import { PageLoadingSpinner } from '../../components/shared/page-loading-spinner.js';
 
 export default function ContractorsPage() {

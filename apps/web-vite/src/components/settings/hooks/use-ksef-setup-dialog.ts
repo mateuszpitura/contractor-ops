@@ -1,7 +1,7 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 import { useId, useState } from 'react';
-import { toast } from 'sonner';
 
+import { useResourceMutation } from '../../../hooks/use-resource-mutation.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { useTRPC } from '../../../providers/trpc-provider.js';
 
@@ -31,25 +31,27 @@ export function useKsefSetupDialog({ onOpenChange, orgNip }: UseKsefSetupDialogO
   const [certificatePassword, setCertificatePassword] = useState('');
   const [environment] = useState<'test' | 'prod'>('prod');
 
-  const connectMutation = useMutation(
+  const connectMutation = useResourceMutation(
     trpc.ksef.connect.mutationOptions({
-      onSuccess: () => {
-        toast.success(t('connectedToast'));
-        queryClient.invalidateQueries({
-          queryKey: trpc.ksef.connectionStatus.queryKey(),
-        });
-        queryClient.invalidateQueries({
-          queryKey: trpc.integration.getHealth.queryKey({ provider: 'ksef' }),
-        });
-        queryClient.invalidateQueries({
-          queryKey: trpc.integration.getAllHealth.queryKey(),
-        });
-        resetAndClose();
-      },
-      onError: (error: { message?: string }) => {
-        toast.error(error.message || t('connectionFailedToast'));
+      onSuccess: async () => {
+        await Promise.all([
+          queryClient.invalidateQueries({
+            queryKey: trpc.ksef.connectionStatus.queryKey(),
+          }),
+          queryClient.invalidateQueries({
+            queryKey: trpc.integration.getHealth.queryKey({ provider: 'ksef' }),
+          }),
+          queryClient.invalidateQueries({
+            queryKey: trpc.integration.getAllHealth.queryKey(),
+          }),
+        ]);
       },
     }),
+    {
+      successMessage: t('connectedToast'),
+      errorMessage: t('connectionFailedToast'),
+      onClose: resetAndClose,
+    },
   );
 
   function resetAndClose() {

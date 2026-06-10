@@ -9,7 +9,8 @@ import {
 import { useState } from 'react';
 
 import { useTranslations } from '../../i18n/useTranslations.js';
-import { LeitwegIdInlineSelectorContainer } from './leitweg-id-inline-selector-container.js';
+import { LeitwegIdInlineSelector } from './leitweg-id-inline-selector.js';
+import { useContractorEInvoicing } from './hooks/use-contractor-e-invoicing.js';
 import { PeppolIdentifierFields } from './peppol-identifier-fields.js';
 
 export interface ContractorEInvoicingSectionProps {
@@ -47,7 +48,7 @@ export function ContractorEInvoicingSectionView({
       <CardContent className="space-y-6">
         <PeppolIdentifierFields value={peppol} onChange={setPeppol} />
 
-        <LeitwegIdInlineSelectorContainer
+        <LeitwegIdInlineSelector
           mode="contractor"
           contractorId={contractorId}
           value={selectedLeitweg}
@@ -57,5 +58,17 @@ export function ContractorEInvoicingSectionView({
         />
       </CardContent>
     </Card>
+  );
+}
+
+export function ContractorEInvoicingSection(props: ContractorEInvoicingSectionProps) {
+  const { isPublicSectorBuyer: contractorIsPublicSector } = useContractorEInvoicing(
+    props.contractorId,
+  );
+  return (
+    <ContractorEInvoicingSectionView
+      {...props}
+      contractorIsPublicSector={contractorIsPublicSector}
+    />
   );
 }

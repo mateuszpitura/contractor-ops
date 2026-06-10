@@ -42,7 +42,7 @@ export function useLinearTaskConfig(taskTemplateId: string) {
   const teams = (teamsQuery.data ?? []) as LinearTeam[];
 
   const configQuery = useQuery({
-    ...trpc.jira.getTaskConfig.queryOptions({ taskTemplateId }),
+    ...trpc.linear.getTaskConfig.queryOptions({ taskTemplateId }),
     enabled: !!connection,
   });
 
@@ -62,7 +62,7 @@ export function useLinearTaskConfig(taskTemplateId: string) {
     onSuccess: () => {
       toast.success(tI('configSaved'));
       queryClient.invalidateQueries({
-        queryKey: trpc.jira.getTaskConfig.queryKey({ taskTemplateId }),
+        queryKey: trpc.linear.getTaskConfig.queryKey({ taskTemplateId }),
       });
     },
     onError: () => {

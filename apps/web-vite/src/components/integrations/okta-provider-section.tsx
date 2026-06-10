@@ -16,12 +16,29 @@ import {
 import { CheckCircle2, Clock } from 'lucide-react';
 import { useId } from 'react';
 import { OktaBrandIcon } from './brand-icons.js';
-import type { useOktaProviderSection } from './hooks/use-okta-provider-section.js';
+import { useOktaProviderSection } from './hooks/use-okta-provider-section.js';
 
 export type OktaProviderSectionViewProps = Omit<
   ReturnType<typeof useOktaProviderSection>,
   'isLoading' | 'isError' | 'onRetry'
 >;
+
+export function OktaProviderSection() {
+  const { isLoading, isError, onRetry, t, ...rest } = useOktaProviderSection();
+
+  if (isLoading) return <OktaProviderSectionSkeleton />;
+  if (isError) {
+    return (
+      <div className="space-y-2 rounded-lg border border-destructive/40 p-4" role="alert">
+        <p className="text-sm text-destructive">{t('error')}</p>
+        <button type="button" className="text-sm underline" onClick={onRetry}>
+          {t('retry')}
+        </button>
+      </div>
+    );
+  }
+  return <OktaProviderSectionView t={t} {...rest} />;
+}
 
 export function OktaProviderSectionSkeleton() {
   return (

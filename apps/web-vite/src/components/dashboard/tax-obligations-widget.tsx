@@ -3,6 +3,7 @@
  */
 
 import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import {
   Card,
   CardContent,
@@ -11,16 +12,25 @@ import {
 } from '@contractor-ops/ui/components/shadcn/card';
 import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { AlertCircle, Check, Clock } from 'lucide-react';
-import { Link } from '../../i18n/navigation.js';
+import { Link, useLocale } from '../../i18n/navigation.js';
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { useTaxObligationsWidget } from './hooks/use-tax-obligations-widget.js';
 
-function formatMoney(minor: number): string {
+function formatMoney(minor: number, locale: string): string {
   const major = minor / 100;
-  return major.toLocaleString('en-US', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  });
+  return major.toLocaleString(
+    locale === 'ar'
+      ? 'ar-SA-u-nu-latn'
+      : locale === 'pl'
+        ? 'pl-PL'
+        : locale === 'de'
+          ? 'de-DE'
+          : 'en-US',
+    {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    },
+  );
 }
 
 function TaxObligationsSkeleton() {
@@ -65,10 +75,32 @@ function TaxObligationsSkeleton() {
 
 export function TaxObligationsWidget() {
   const t = useTranslations('Dashboard.taxObligations');
-  const { isLoading, data } = useTaxObligationsWidget();
+  const tDashboard = useTranslations('Dashboard');
+  const locale = useLocale();
+  const { isLoading, isError, onRetry, data } = useTaxObligationsWidget();
 
   if (isLoading) {
     return <TaxObligationsSkeleton />;
+  }
+
+  if (isError) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base font-semibold">{t('title')}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-col items-center justify-center gap-3 py-8 text-center">
+            <p className="text-sm font-medium">
+              {tDashboard('errors.widgetFailed', { name: t('title') })}
+            </p>
+            <Button variant="outline" size="sm" onClick={onRetry}>
+              {tDashboard('errors.retry')}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    );
   }
 
   if (!data) {
@@ -87,7 +119,7 @@ export function TaxObligationsWidget() {
             <div className="flex items-center justify-between">
               <span className="text-muted-foreground">{t('collected')}</span>
               <span className="flex items-center gap-2">
-                <span className="font-mono">{formatMoney(data.vatCollectedMinor)}</span>
+                <span className="font-mono">{formatMoney(data.vatCollectedMinor, locale)}</span>
                 <Badge variant="success" className="text-xs">
                   <Check className="me-1 h-3 w-3" /> {t('statusFiled')}
                 </Badge>
@@ -96,7 +128,7 @@ export function TaxObligationsWidget() {
             <div className="flex items-center justify-between">
               <span className="text-muted-foreground">{t('owed')}</span>
               <span className="flex items-center gap-2">
-                <span className="font-mono">{formatMoney(data.vatOwedMinor)}</span>
+                <span className="font-mono">{formatMoney(data.vatOwedMinor, locale)}</span>
                 <Badge variant="warning" className="text-xs">
                   <Clock className="me-1 h-3 w-3" /> {t('statusPending')}
                 </Badge>
@@ -104,7 +136,7 @@ export function TaxObligationsWidget() {
             </div>
             <div className="flex items-center justify-between">
               <span className="text-muted-foreground">{t('net')}</span>
-              <span className="font-mono font-medium">{formatMoney(data.vatNetMinor)}</span>
+              <span className="font-mono font-medium">{formatMoney(data.vatNetMinor, locale)}</span>
             </div>
           </div>
         </div>
@@ -115,7 +147,7 @@ export function TaxObligationsWidget() {
             <div className="flex items-center justify-between">
               <span className="text-muted-foreground">{t('withheld')}</span>
               <span className="flex items-center gap-2">
-                <span className="font-mono">{formatMoney(data.whtWithheldMinor)}</span>
+                <span className="font-mono">{formatMoney(data.whtWithheldMinor, locale)}</span>
                 <Badge variant="success" className="text-xs">
                   <Check className="me-1 h-3 w-3" />{' '}
                   {t('certsPattern', { count: data.whtCertCount })}
@@ -126,7 +158,7 @@ export function TaxObligationsWidget() {
               <div className="flex items-center justify-between">
                 <span className="text-muted-foreground">{t('pending')}</span>
                 <span className="flex items-center gap-2">
-                  <span className="font-mono">{formatMoney(data.whtPendingMinor)}</span>
+                  <span className="font-mono">{formatMoney(data.whtPendingMinor, locale)}</span>
                   <Badge variant="warning" className="text-xs">
                     <AlertCircle className="me-1 h-3 w-3" />{' '}
                     {t('itemsPattern', { count: data.whtPendingCount })}

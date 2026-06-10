@@ -23,7 +23,7 @@ import { useTranslations } from '../../i18n/useTranslations.js';
 import { isCarrierFormValid } from '../../lib/carrier-validation.js';
 import type { DpdAddress, ParcelSize } from './dpd-fieldset.js';
 import { DpdFieldset } from './dpd-fieldset.js';
-import type { useCarrierShipmentForm } from './hooks/use-carrier-shipment-form.js';
+import { useCarrierShipmentForm } from './hooks/use-carrier-shipment-form.js';
 import { PaczkomatDisplay } from './paczkomat-display.js';
 import type { PaczkomatPoint } from './paczkomat-picker.js';
 import { PaczkomatPicker } from './paczkomat-picker.js';
@@ -67,6 +67,7 @@ export function CarrierShipmentFormView({
 }: CarrierShipmentFormViewProps) {
   const t = useTranslations('Equipment.carrier');
   const tInpost = useTranslations('Equipment.inpost');
+  const tPaczkomat = useTranslations('Equipment.paczkomat');
 
   const CARRIER_LABELS: Record<Carrier, string> = {
     inpost: 'InPost',
@@ -148,11 +149,8 @@ export function CarrierShipmentFormView({
     submitShipment,
   ]);
 
-  // Geowidget token comes from VITE-prefixed env at build time. Optional —
-  // falls back to empty string so the iframe surfaces its own no-token error
-  // state when unset in the build.
-  const geowidgetToken = ((import.meta.env as Record<string, string | undefined>)
-    .VITE_INPOST_GEOWIDGET_TOKEN ?? '') as string;
+  const geowidgetToken: string | undefined = import.meta.env.VITE_INPOST_GEOWIDGET_TOKEN;
+  const geowidgetConfigured = !!geowidgetToken;
 
   if (configuredCarriers.length === 0) {
     return (
@@ -209,7 +207,11 @@ export function CarrierShipmentFormView({
 
                 <div className="space-y-2">
                   <Label>{tInpost('destinationPaczkomat')}</Label>
-                  {selectedPoint ? (
+                  {!geowidgetConfigured ? (
+                    <p className="rounded-md border border-dashed px-3 py-2 text-sm text-muted-foreground">
+                      {tPaczkomat('loadError')}
+                    </p>
+                  ) : selectedPoint ? (
                     <PaczkomatDisplay
                       pointId={selectedPoint.id}
                       pointName={selectedPoint.name}
@@ -277,7 +279,7 @@ export function CarrierShipmentFormView({
         </DialogContent>
       </Dialog>
 
-      {selectedCarrier === 'inpost' && (
+      {selectedCarrier === 'inpost' && !!geowidgetToken && (
         <PaczkomatPicker
           open={pickerOpen}
           onOpenChange={setPickerOpen}
@@ -286,5 +288,17 @@ export function CarrierShipmentFormView({
         />
       )}
     </>
+  );
+}
+
+export function CarrierShipmentForm(props: CarrierShipmentFormProps) {
+  const { isPending, submitShipment } = useCarrierShipmentForm({
+    equipmentIds: props.equipmentIds,
+    direction: props.direction,
+    onSuccess: props.onSuccess,
+    onOpenChange: props.onOpenChange,
+  });
+  return (
+    <CarrierShipmentFormView {...props} isPending={isPending} submitShipment={submitShipment} />
   );
 }

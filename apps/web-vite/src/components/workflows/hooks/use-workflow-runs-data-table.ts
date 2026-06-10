@@ -1,10 +1,12 @@
-import type { SortingState } from '@tanstack/react-table';
 import { useCallback, useMemo } from 'react';
 
+import { useListDataTable } from '../../../hooks/use-list-data-table.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import type { WorkflowRunRow } from '../workflow-runs-table/columns.js';
 import { useWorkflowFilters } from '../workflow-runs-table/use-workflow-filters.js';
 import { useWorkflowRunsTable, useWorkflowRunsTableTemplates } from './use-workflow-ui.js';
+
+const STORAGE_KEY = 'workflow-runs-table-columns';
 
 export function useWorkflowRunsDataTable() {
   const t = useTranslations('Workflows');
@@ -44,27 +46,28 @@ export function useWorkflowRunsDataTable() {
     return result?.total ?? 0;
   }, [runsQuery.data]);
 
-  const sorting = useMemo<SortingState>(
-    () => [{ id: filters.sortBy, desc: filters.sortOrder === 'desc' }],
-    [filters.sortBy, filters.sortOrder],
+  const handleSortChange = useCallback(
+    (sortBy: string, sortOrder: 'asc' | 'desc') => {
+      void setFilters({ sortBy, sortOrder, page: 1 });
+    },
+    [setFilters],
   );
 
-  const handleSortingChange = useCallback(
-    (updater: SortingState | ((old: SortingState) => SortingState)) => {
-      const next = typeof updater === 'function' ? updater(sorting) : updater;
-      const first = next[0];
-      if (first) {
-        void setFilters({
-          sortBy: first.id,
-          sortOrder: first.desc ? 'desc' : 'asc',
-          page: 1,
-        });
-      } else {
-        void setFilters({ sortBy: 'dueAt', sortOrder: 'asc', page: 1 });
-      }
+  const {
+    columnVisibility,
+    setColumnVisibility,
+    sorting,
+    handleSortingChange,
+  } = useListDataTable<WorkflowRunRow>({
+    storageKey: STORAGE_KEY,
+    filters: {
+      sortBy: filters.sortBy,
+      sortOrder: (filters.sortOrder as 'asc' | 'desc') || 'asc',
     },
-    [sorting, setFilters],
-  );
+    onSortChange: handleSortChange,
+    defaultSortBy: 'dueAt',
+    defaultSortOrder: 'asc',
+  });
 
   const handleFiltersChange = useCallback(
     (
@@ -133,6 +136,8 @@ export function useWorkflowRunsDataTable() {
     totalRows,
     sorting,
     onSortingChange: handleSortingChange,
+    columnVisibility,
+    setColumnVisibility,
     isLoading,
     isRefetching,
     activeFilterCount,

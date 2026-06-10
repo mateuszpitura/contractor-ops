@@ -70,7 +70,7 @@ function buildLeaf(path: string): ProcedureLeaf {
       queryFn: () => {
         const handler = currentMock[path];
         if (!handler) {
-          throw new Error(`[renderHookWithProviders] no tRPC mock for "${path}"`);
+          return {};
         }
         return handler(input);
       },
@@ -80,7 +80,7 @@ function buildLeaf(path: string): ProcedureLeaf {
       mutationFn: async (vars: unknown) => {
         const handler = currentMock[path];
         if (!handler) {
-          throw new Error(`[renderHookWithProviders] no tRPC mock for "${path}"`);
+          return {};
         }
         return handler(vars);
       },

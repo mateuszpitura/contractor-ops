@@ -10,7 +10,7 @@ import type {
   RuleSetQuestion,
   ScheinCategory,
 } from '@contractor-ops/classification';
-import { DataTable } from '@contractor-ops/ui';
+import { WorkbenchDataTable } from '../../../table-kit/workbench-data-table.js';
 import type { ColumnDef } from '@tanstack/react-table';
 import { useMemo, useState } from 'react';
 import { useTranslations } from '../../../../i18n/useTranslations.js';
@@ -142,7 +142,8 @@ export function DrvCriterionBreakdownList(props: DrvCriterionBreakdownListProps)
   return (
     <div data-testid="drv-criterion-table" data-category={category}>
       <p className="sr-only">{t('outcome.criteriaCaption', { category: categoryLabel })}</p>
-      <DataTable
+      <WorkbenchDataTable
+        sectionClassName=""
         columns={columns}
         data={data}
         totalRows={data.length}

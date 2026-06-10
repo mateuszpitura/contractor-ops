@@ -12,6 +12,8 @@ export function useApprovalQueueWidget() {
 
   return {
     isLoading: query.isPending,
+    isError: query.isError,
+    onRetry: () => query.refetch(),
     items: query.data?.items ?? [],
   } as const;
 }

@@ -1,7 +1,6 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useRef, useState } from 'react';
-import { toast } from 'sonner';
 
+import { useResourceMutation } from '../../../hooks/use-resource-mutation.js';
 import { useCommonToasts } from '../../../i18n/use-common-toasts.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { validateBankStatementFile } from '../../../lib/file-validation.js';
@@ -19,7 +18,6 @@ export interface BankStatementMatchResult {
 export function useBankStatementImport(options: { runId: string; onClose: () => void }) {
   const t = useTranslations('Payments');
   const trpc = useTRPC();
-  const queryClient = useQueryClient();
   const toasts = useCommonToasts();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -28,7 +26,15 @@ export function useBankStatementImport(options: { runId: string; onClose: () => 
   const [matches, setMatches] = useState<BankStatementMatchResult[]>([]);
   const [selectedMatches, setSelectedMatches] = useState<Set<number>>(new Set());
 
-  const importMutation = useMutation(
+  const resetState = useCallback(() => {
+    setStep('upload');
+    setParseError('');
+    setMatches([]);
+    setSelectedMatches(new Set());
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  }, []);
+
+  const importMutation = useResourceMutation(
     trpc.payment.importStatement.mutationOptions({
       onSuccess: data => {
         const results = ((data as Record<string, unknown>)?.matches ??
@@ -40,37 +46,30 @@ export function useBankStatementImport(options: { runId: string; onClose: () => 
         }
         setSelectedMatches(matchedIndices);
         setStep('results');
-        toast.success(toasts.done());
-        queryClient.invalidateQueries(trpc.payment.pathFilter());
       },
       onError: err => {
         setParseError(err.message || t('errors.failedToImportStatement'));
         setStep('error');
-        toast.error(err.message);
       },
     }),
+    {
+      invalidate: [trpc.payment.pathFilter()],
+      successMessage: toasts.done(),
+    },
   );
 
-  const confirmMutation = useMutation(
-    trpc.payment.confirmStatementMatches.mutationOptions({
-      onSuccess: () => {
-        const matchedCount = selectedMatches.size;
-        toast.success(t('toast.statementImported', { count: matchedCount }));
-        void queryClient.invalidateQueries({ queryKey: [['payment']] });
+  const confirmMutation = useResourceMutation(
+    trpc.payment.confirmStatementMatches.mutationOptions(),
+    {
+      invalidate: [{ queryKey: [['payment']] }],
+      successMessage: t('toast.statementImported', { count: selectedMatches.size }),
+      errorMessage: t('errors.failedToConfirmMatches'),
+      onClose: () => {
         resetState();
         options.onClose();
       },
-      onError: () => toast.error(t('errors.failedToConfirmMatches')),
-    }),
+    },
   );
-
-  const resetState = useCallback(() => {
-    setStep('upload');
-    setParseError('');
-    setMatches([]);
-    setSelectedMatches(new Set());
-    if (fileInputRef.current) fileInputRef.current.value = '';
-  }, []);
 
   const handleClose = useCallback(() => {
     options.onClose();
@@ -120,9 +119,12 @@ export function useBankStatementImport(options: { runId: string; onClose: () => 
 
   const handleConfirm = useCallback(() => {
     const matchesToConfirm = matches
-      .filter(m => m.matched && selectedMatches.has(m.transactionIndex))
+      .filter(
+        (m): m is BankStatementMatchResult & { itemId: string } =>
+          m.matched && selectedMatches.has(m.transactionIndex) && m.itemId != null,
+      )
       .map(m => ({
-        itemId: m.itemId as string,
+        itemId: m.itemId,
         transactionIndex: m.transactionIndex,
       }));
 

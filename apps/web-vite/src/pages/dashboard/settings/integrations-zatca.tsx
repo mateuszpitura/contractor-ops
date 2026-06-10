@@ -1,5 +1,120 @@
-import { ZatcaIntegrationContainer } from '../../../components/zatca/zatca-integration-container.js';
+/**
+ * ZATCA integration settings — route shell with inlined page content.
+ */
+
+import { IntegrationsIllustration } from '@contractor-ops/ui';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import { ArrowLeft } from 'lucide-react';
+
+import { AnimateIn } from '../../../components/shared/animate-in.js';
+import { WorkbenchPageHeader } from '../../../components/shared/workbench-page-header.js';
+import { EnvironmentToggle } from '../../../components/zatca/environment-toggle.js';
+import { useZatcaIntegrationSettings } from '../../../components/zatca/hooks/use-zatca-integration-settings.js';
+import { ZatcaInvoiceChainTable } from '../../../components/zatca/invoice-chain/container.js';
+import { OnboardingWizard } from '../../../components/zatca/onboarding-wizard.js';
+import { ZatcaComplianceWidget } from '../../../components/zatca/zatca-compliance-widget.js';
+import { ZatcaConnectionPill } from '../../../components/zatca/zatca-connection-pill.js';
+import { ZatcaStatsCards } from '../../../components/zatca/zatca-stats-cards.js';
+import { Link } from '../../../i18n/navigation.js';
+
+function ZatcaIntegrationPageContent() {
+  const {
+    closeWizard,
+    isConnected,
+    openWizard,
+    showConnectPanel,
+    showWizard,
+    environment,
+    environmentLabel,
+    setEnvironment,
+    handleWizardComplete,
+    t,
+  } = useZatcaIntegrationSettings();
+
+  return (
+    <div className="space-y-6">
+      <AnimateIn delay={0}>
+        <WorkbenchPageHeader
+          title={t('title')}
+          description={t('description')}
+          actions={
+            <Button
+              variant="ghost"
+              size="icon"
+              render={<Link href="/settings?tab=integrations" />}
+              aria-label={t('backAriaLabel')}>
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+          }
+        />
+      </AnimateIn>
+
+      {!!showConnectPanel && (
+        <AnimateIn delay={1}>
+          <div className="flex flex-col items-center justify-center rounded-xl border border-dashed bg-muted/20 px-6 py-16 text-center">
+            <div className="text-primary/70">
+              <IntegrationsIllustration className="h-24 w-24" />
+            </div>
+            <h2 className="mt-5 text-lg font-semibold">{t('connectTitle')}</h2>
+            <p className="mt-2 max-w-md text-sm text-muted-foreground">{t('connectDescription')}</p>
+            <Button className="mt-6" onClick={openWizard}>
+              {t('connectButton')}
+            </Button>
+          </div>
+        </AnimateIn>
+      )}
+
+      {!!showWizard && (
+        <AnimateIn delay={1}>
+          <OnboardingWizard onComplete={handleWizardComplete} onCancel={closeWizard} />
+        </AnimateIn>
+      )}
+
+      {!!isConnected && (
+        <>
+          <AnimateIn delay={1}>
+            <div className="flex items-center justify-between rounded-lg border bg-card px-4 py-3">
+              <div className="space-y-0.5">
+                <p className="text-sm font-medium">{t('dashboard.statusLabel')}</p>
+                <p className="text-xs text-muted-foreground">{t('dashboard.statusHint')}</p>
+              </div>
+              <ZatcaConnectionPill />
+            </div>
+          </AnimateIn>
+
+          {environment === 'sandbox' && (
+            <AnimateIn delay={1}>
+              <div className="rounded-lg border border-blue-500/30 bg-blue-50 px-4 py-3 text-sm text-blue-700 dark:bg-blue-950/20 dark:text-blue-400">
+                {t('sandboxBanner')}
+              </div>
+            </AnimateIn>
+          )}
+
+          <AnimateIn delay={1}>
+            <ZatcaStatsCards />
+          </AnimateIn>
+
+          <AnimateIn delay={2}>
+            <ZatcaComplianceWidget connectionStatus={environment} environment={environmentLabel} />
+          </AnimateIn>
+
+          <AnimateIn delay={2}>
+            <ZatcaInvoiceChainTable />
+          </AnimateIn>
+
+          <AnimateIn delay={3}>
+            <EnvironmentToggle
+              value={environment}
+              onChange={setEnvironment}
+              productionReady={isConnected}
+            />
+          </AnimateIn>
+        </>
+      )}
+    </div>
+  );
+}
 
 export default function ZatcaIntegrationPage() {
-  return <ZatcaIntegrationContainer />;
+  return <ZatcaIntegrationPageContent />;
 }

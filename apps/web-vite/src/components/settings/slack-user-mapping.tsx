@@ -1,4 +1,4 @@
-import { DataTable } from '@contractor-ops/ui';
+import { WorkbenchDataTable } from '../table-kit/workbench-data-table.js';
 import { Avatar, AvatarFallback, AvatarImage } from '@contractor-ops/ui/components/shadcn/avatar';
 import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
@@ -7,8 +7,12 @@ import type { ColumnDef } from '@tanstack/react-table';
 import { useCallback, useMemo, useState } from 'react';
 import { tDynLoose } from '../../i18n/typed-keys.js';
 import { getAvatarInitials } from '../../lib/avatar-initials';
-import type { UserMapping, useSlackUserMapping } from './hooks/use-slack-user-mapping.js';
-import { LinkUserPopoverContainer } from './link-user-popover-container.js';
+import {
+  useSlackUserMapping,
+  type UserMapping,
+  type useSlackUserMapping as UseSlackUserMapping,
+} from './hooks/use-slack-user-mapping.js';
+import { LinkUserPopover } from './link-user-popover.js';
 
 const STATUS_BADGE: Record<string, { labelKey: string; className: string }> = {
   auto_matched: {
@@ -27,7 +31,7 @@ const STATUS_BADGE: Record<string, { labelKey: string; className: string }> = {
 
 const noopOnLinked = () => undefined;
 
-export type SlackUserMappingProps = ReturnType<typeof useSlackUserMapping>;
+export type SlackUserMappingProps = ReturnType<typeof UseSlackUserMapping>;
 
 interface UnlinkButtonProps {
   externalLinkId: string;
@@ -75,7 +79,7 @@ export function SlackUserMappingSkeleton() {
   );
 }
 
-export function SlackUserMapping({
+export function SlackUserMappingView({
   t,
   mappings,
   totalUsers,
@@ -158,7 +162,7 @@ export function SlackUserMapping({
               />
             );
           }
-          return <LinkUserPopoverContainer userId={m.userId} onLinked={noopOnLinked} />;
+          return <LinkUserPopover userId={m.userId} onLinked={noopOnLinked} />;
         },
       },
     ],
@@ -179,7 +183,8 @@ export function SlackUserMapping({
         })}
       </p>
 
-      <DataTable
+      <WorkbenchDataTable
+        sectionClassName=""
         columns={columns}
         data={mappings}
         totalRows={mappings.length}
@@ -201,4 +206,10 @@ export function SlackUserMapping({
       />
     </div>
   );
+}
+
+export function SlackUserMapping() {
+  const mapping = useSlackUserMapping();
+  if (mapping.isLoading) return <SlackUserMappingSkeleton />;
+  return <SlackUserMappingView {...mapping} />;
 }

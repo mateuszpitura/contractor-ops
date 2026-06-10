@@ -1,5 +1,6 @@
-import { minorToMajor, minorUnitDigits } from '@contractor-ops/shared';
-import { DataTable, WORKBENCH_DATA_TABLE_CLASS } from '@contractor-ops/ui';
+import { formatExtractedTotalMinor } from '../../../lib/money.js';
+import { WORKBENCH_DATA_TABLE_CLASS } from '@contractor-ops/ui';
+import { WorkbenchDataTable } from '../../table-kit/workbench-data-table.js';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import type { ColumnDef } from '@tanstack/react-table';
 import { Inbox, RefreshCw, Upload } from 'lucide-react';
@@ -7,13 +8,14 @@ import { useCallback, useMemo, useState } from 'react';
 import { Link } from '../../../i18n/navigation.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { useDateFormatter } from '../../../lib/format/use-date-formatter.js';
-import type { IntakeRow, useIntakeList } from '../hooks/use-intake-list.js';
+import { useIntakeList, type IntakeRow } from '../hooks/use-intake-list.js';
+import { IntakeUploadDialog } from './intake-upload-dialog.js';
 import { IntakeFilterChips } from './intake-filter-chips.js';
 import { IntakeProfileLevelBadge } from './intake-profile-level-badge.js';
 import { IntakeStatusPill } from './intake-status-pill.js';
 import { IntakeValidationStatusPill } from './intake-validation-status-pill.js';
 
-interface IntakeListProps {
+export interface IntakeListViewProps {
   list: ReturnType<typeof useIntakeList>;
 }
 
@@ -40,24 +42,9 @@ export function IntakeListError({ onRetry }: IntakeListErrorProps) {
   );
 }
 
-function formatTotalMinor(amountMinor: unknown, currency: string | null): string | null {
-  if (amountMinor === null || amountMinor === undefined) return null;
-  const minor = typeof amountMinor === 'string' ? Number(amountMinor) : Number(amountMinor);
-  if (!Number.isFinite(minor)) return null;
-  const safeCurrency = currency ?? 'EUR';
-  try {
-    return new Intl.NumberFormat(undefined, {
-      style: 'currency',
-      currency: safeCurrency,
-    }).format(minorToMajor(minor, safeCurrency));
-  } catch {
-    return `${minorToMajor(minor, safeCurrency).toFixed(minorUnitDigits(safeCurrency))} ${safeCurrency}`;
-  }
-}
-
 const LOAD_MORE_PAGE_SIZE = 100;
 
-export function IntakeList({ list }: IntakeListProps) {
+export function IntakeListView({ list }: IntakeListViewProps) {
   const t = useTranslations('EInvoice.intake');
   const tColumn = useTranslations('EInvoice.intake.column');
   const { formatDate } = useDateFormatter();
@@ -95,7 +82,7 @@ export function IntakeList({ list }: IntakeListProps) {
         header: () => <span className="block text-end">{tColumn('total')}</span>,
         cell: ({ row }) => (
           <span className="block text-end font-mono tabular-nums">
-            {formatTotalMinor(row.original.extractedTotalMinor, row.original.extractedCurrency) ??
+            {formatExtractedTotalMinor(row.original.extractedTotalMinor, row.original.extractedCurrency) ??
               '—'}
           </span>
         ),
@@ -139,7 +126,8 @@ export function IntakeList({ list }: IntakeListProps) {
 
   return (
     <div className={`${WORKBENCH_DATA_TABLE_CLASS} gap-6`} data-slot="intake-list">
-      <DataTable
+      <WorkbenchDataTable
+        sectionClassName=""
         columns={columns}
         data={list.rows}
         totalRows={list.rows.length}
@@ -183,5 +171,29 @@ export function IntakeList({ list }: IntakeListProps) {
         </div>
       ) : null}
     </div>
+  );
+}
+
+interface IntakeListProps {
+  initialStatus?: string | null;
+}
+
+export function IntakeList({ initialStatus }: IntakeListProps) {
+  const list = useIntakeList(initialStatus);
+
+  if (list.isError) {
+    return (
+      <>
+        <IntakeListError onRetry={list.handleRetry} />
+        <IntakeUploadDialog open={list.uploadOpen} onOpenChange={list.setUploadOpen} />
+      </>
+    );
+  }
+
+  return (
+    <>
+      <IntakeListView list={list} />
+      <IntakeUploadDialog open={list.uploadOpen} onOpenChange={list.setUploadOpen} />
+    </>
   );
 }

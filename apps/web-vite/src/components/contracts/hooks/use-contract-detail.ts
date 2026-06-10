@@ -1,33 +1,30 @@
 import { useQuery } from '@tanstack/react-query';
-import { useCallback } from 'react';
+import { useEntityDetailQuery } from '../../../hooks/use-entity-detail-query.js';
 import { useTRPC } from '../../../providers/trpc-provider.js';
 import { useBreadcrumbOverride } from '../../layout/breadcrumb-context.js';
 
 export function useContractDetail(contractId: string) {
   const trpc = useTRPC();
 
-  const contractQuery = useQuery(trpc.contract.getById.queryOptions({ id: contractId }));
-  const contract = contractQuery.data;
+  const {
+    query: contractQuery,
+    data: contract,
+    handleRetry,
+    isNotFound,
+    isLoading,
+    isError,
+  } = useEntityDetailQuery(trpc.contract.getById.queryOptions({ id: contractId }));
 
   useBreadcrumbOverride(contractId, contract?.title);
 
   const connectionsQuery = useQuery(trpc.esign.listConnections.queryOptions());
-  const esignConnections = (connectionsQuery.data ?? []) as unknown[];
+  const esignConnections = connectionsQuery.data ?? [];
 
   const envelopesQuery = useQuery(
     trpc.esign.listEnvelopes.queryOptions({ contractId }, { enabled: !!contractId }),
   );
-  const envelopes = (envelopesQuery.data ?? []) as Array<{ status: string }>;
+  const envelopes = envelopesQuery.data ?? [];
   const activeEnvelope = envelopes.find(e => ['SENT', 'DELIVERED', 'CREATED'].includes(e.status));
-
-  const handleRetry = useCallback(() => {
-    void contractQuery.refetch();
-  }, [contractQuery]);
-
-  const isNotFound =
-    contractQuery.isError &&
-    (contractQuery.error?.message?.includes('not found') ||
-      (contractQuery.error as { data?: { code?: string } })?.data?.code === 'NOT_FOUND');
 
   return {
     contract,
@@ -36,7 +33,7 @@ export function useContractDetail(contractId: string) {
     activeEnvelope,
     handleRetry,
     isNotFound,
-    isLoading: contractQuery.isLoading,
-    isError: contractQuery.isError,
+    isLoading,
+    isError,
   } as const;
 }

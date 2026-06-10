@@ -1,6 +1,7 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { useCallback, useMemo, useState } from 'react';
 
+import { useListDataTable } from '../../../hooks/use-list-data-table.js';
 import { useTRPC } from '../../../providers/trpc-provider.js';
 import type { EquipmentRow } from '../equipment-table/equipment-columns.js';
 
@@ -27,6 +28,7 @@ export interface EquipmentTableQueryInput {
 }
 
 const DEFAULT_PAGE_SIZE = 25;
+const STORAGE_KEY = 'equipment-table-columns';
 
 export function useEquipmentTable(parentLoading?: boolean) {
   const trpc = useTRPC();
@@ -90,6 +92,13 @@ export function useEquipmentTable(parentLoading?: boolean) {
     setPage(1);
   }, []);
 
+  const { sorting, handleSortingChange } = useListDataTable<EquipmentRow>({
+    storageKey: STORAGE_KEY,
+    filters: { sortBy, sortOrder },
+    onSortChange,
+    defaultSortBy: 'createdAt',
+  });
+
   const onClearFilters = useCallback(() => {
     setSearch('');
     setTypeFilter([]);
@@ -122,6 +131,8 @@ export function useEquipmentTable(parentLoading?: boolean) {
     onPageChange,
     onPageSizeChange,
     onSortChange,
+    sorting,
+    handleSortingChange,
     onClearFilters,
     isLoading,
     isRefetching,

@@ -14,14 +14,15 @@ import { EquipmentStatusBadge } from '../../equipment/equipment-status-badge.js'
 import { EquipmentTypeIcon } from '../../equipment/equipment-type-icon.js';
 import { ShipmentCondensed } from '../../equipment/shipment-condensed.js';
 import { renderEmptyStateAction } from '../../shared/atelier-bridges.js';
-import type {
-  ContractorTabEquipmentItem,
+import {
   useContractorTabEquipment,
+  type ContractorTabEquipmentItem,
+  type useContractorTabEquipment as UseContractorTabEquipment,
 } from '../hooks/use-contractor-tab-equipment.js';
 
 type TabEquipmentViewProps = {
   contractorId: string;
-} & ReturnType<typeof useContractorTabEquipment>;
+} & ReturnType<typeof UseContractorTabEquipment>;
 
 export function TabEquipmentEmpty() {
   const t = useTranslations('Equipment');
@@ -78,7 +79,7 @@ export function TabEquipmentView({ items, isLoading, isFetching }: TabEquipmentV
       },
       {
         id: 'shipment',
-        header: () => 'Shipment',
+        header: () => t('list.columns.shipment'),
         cell: ({ row }) => <ShipmentCondensed shipment={row.original.latestShipment} />,
       },
     ],
@@ -124,4 +125,14 @@ export function TabEquipmentView({ items, isLoading, isFetching }: TabEquipmentV
       />
     </div>
   );
+}
+
+export function TabEquipment({ contractorId }: { contractorId: string }) {
+  const equipment = useContractorTabEquipment(contractorId);
+
+  if (!equipment.isLoading && equipment.items.length === 0) {
+    return <TabEquipmentEmpty />;
+  }
+
+  return <TabEquipmentView contractorId={contractorId} {...equipment} />;
 }

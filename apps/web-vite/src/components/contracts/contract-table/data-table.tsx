@@ -1,8 +1,9 @@
-import { ContractsIllustration, DataTable } from '@contractor-ops/ui';
-import type { ColumnDef, SortingState, Table, VisibilityState } from '@tanstack/react-table';
+import { ContractsIllustration } from '@contractor-ops/ui';
+import { WorkbenchDataTable } from '../../table-kit/workbench-data-table.js';
+import type { ColumnDef, Table } from '@tanstack/react-table';
 import { Plus } from 'lucide-react';
 import type { ReactNode } from 'react';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo } from 'react';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { formatDate } from '../../../lib/format-date.js';
@@ -12,14 +13,13 @@ import { getColumns } from './columns.js';
 import { DataTableBulkActions } from './data-table-bulk-actions.js';
 import { DataTableColumnToggle } from './data-table-column-toggle.js';
 
-const STORAGE_KEY = 'contract-table-columns';
-
 interface ContractDataTableProps extends ContractListTableProps {
   onRowClick: (contract: ContractRow) => void;
   onNewContract: () => void;
   onImport?: () => void;
   parentLoading?: boolean;
   toolbar: ReactNode;
+  sectionClassName?: string;
 }
 
 export function ContractDataTable({
@@ -28,68 +28,27 @@ export function ContractDataTable({
   filters,
   onPageChange,
   onPageSizeChange,
-  onSortChange,
   clearFilters,
   isLoading,
   isRefetching,
   activeFilterCount,
   hasFiltersOrSearch,
   bulkActions,
+  columnVisibility,
+  setColumnVisibility,
+  sorting,
+  onSortingChange,
+  selectedRows,
+  setSelectedRows,
   onRowClick,
   onNewContract,
   parentLoading,
   toolbar,
+  sectionClassName,
 }: ContractDataTableProps) {
   const t = useTranslations('Contracts');
 
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
-  const [selectedRows, setSelectedRows] = useState<ContractRow[]>([]);
-
-  useEffect(() => {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) {
-        setColumnVisibility(JSON.parse(stored) as VisibilityState);
-      }
-      // safe-swallow: best-effort column-visibility hydration; corrupt/blocked storage falls back to defaults
-    } catch {
-      // Ignore localStorage errors
-    }
-  }, []);
-
-  const isHydrated = useRef(false);
-  useEffect(() => {
-    if (!isHydrated.current) {
-      isHydrated.current = true;
-      return;
-    }
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(columnVisibility));
-      // safe-swallow: best-effort column-visibility persistence; blocked/full storage is non-fatal
-    } catch {
-      // Ignore localStorage errors
-    }
-  }, [columnVisibility]);
-
   const columns: ColumnDef<ContractRow>[] = useMemo(() => getColumns(t, formatDate), [t]);
-
-  const sorting = useMemo<SortingState>(
-    () => [{ id: filters.sortBy, desc: filters.sortOrder === 'desc' }],
-    [filters.sortBy, filters.sortOrder],
-  );
-
-  const handleSortingChange = useCallback(
-    (updater: SortingState | ((old: SortingState) => SortingState)) => {
-      const next = typeof updater === 'function' ? updater(sorting) : updater;
-      const first = next[0];
-      if (first) {
-        onSortChange(first.id, first.desc ? 'desc' : 'asc');
-      } else {
-        onSortChange('endDate', 'asc');
-      }
-    },
-    [sorting, onSortChange],
-  );
 
   const renderColumnToggle = useCallback(
     (table: Table<ContractRow>) => <DataTableColumnToggle table={table} />,
@@ -97,7 +56,8 @@ export function ContractDataTable({
   );
 
   return (
-    <DataTable
+    <WorkbenchDataTable
+      sectionClassName={sectionClassName}
       columns={columns}
       data={data}
       totalRows={totalRows}
@@ -106,7 +66,7 @@ export function ContractDataTable({
       onPageChange={onPageChange}
       onPageSizeChange={onPageSizeChange}
       sorting={sorting}
-      onSortingChange={handleSortingChange}
+      onSortingChange={onSortingChange}
       columnVisibility={columnVisibility}
       onColumnVisibilityChange={setColumnVisibility}
       isLoading={isLoading}

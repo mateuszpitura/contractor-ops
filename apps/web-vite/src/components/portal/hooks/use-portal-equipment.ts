@@ -1,32 +1,17 @@
+import type { PortalAppRouter } from '@contractor-ops/api';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import type { inferRouterOutputs } from '@trpc/server';
 import { useCallback, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { usePortalTRPC } from '../../../providers/trpc-provider.js';
 
-export type PortalEquipmentItem = {
-  assignmentId: string;
-  assignedAt: string | Date;
-  equipment: {
-    id: string;
-    name: string;
-    serialNumber: string | null;
-    type: string;
-    status: string;
-  };
-  latestShipment: {
-    currentStatus: string;
-    deliveredAt: string | Date | null;
-  } | null;
-};
+type PortalRouterOutputs = inferRouterOutputs<PortalAppRouter>;
 
-export type PortalReturnRequest = {
-  id: string;
-  status: string;
-  shipmentId: string | null;
-  targetPointName: string | null;
-} | null;
+export type PortalEquipmentItem = PortalRouterOutputs['portal']['listEquipment'][number];
+
+export type PortalReturnRequest = PortalRouterOutputs['portal']['getReturnStatus'];
 
 export function usePortalEquipment() {
   const tReturn = useTranslations('Portal.return');
@@ -39,8 +24,8 @@ export function usePortalEquipment() {
   const equipmentQuery = useQuery(trpc.portal.listEquipment.queryOptions());
   const returnStatusQuery = useQuery(trpc.portal.getReturnStatus.queryOptions());
 
-  const equipment = (equipmentQuery.data ?? []) as unknown as PortalEquipmentItem[];
-  const returnRequest = (returnStatusQuery.data ?? null) as PortalReturnRequest;
+  const equipment: PortalEquipmentItem[] = equipmentQuery.data ?? [];
+  const returnRequest: PortalReturnRequest = returnStatusQuery.data ?? null;
 
   const cancelMutation = useMutation(
     trpc.portal.cancelReturn.mutationOptions({

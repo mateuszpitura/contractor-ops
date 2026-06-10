@@ -31,8 +31,10 @@ import { Label } from '@contractor-ops/ui/components/shadcn/label';
 import { peppolParticipantPairSchema } from '@contractor-ops/validators';
 import { Loader2 } from 'lucide-react';
 import { useCallback, useEffect, useId, useMemo, useState } from 'react';
+import { useTranslations } from '../../../i18n/useTranslations.js';
 import { cn } from '../../../lib/utils.js';
-import type { usePeppolParticipantRegisterDialog } from './hooks/use-peppol-participant-register-dialog.js';
+import { usePeppolParticipantRegisterDialog } from './hooks/use-peppol-participant-register-dialog.js';
+import type { usePeppolParticipantRegisterDialog as UsePeppolParticipantRegisterDialog } from './hooks/use-peppol-participant-register-dialog.js';
 
 // ---------------------------------------------------------------------------
 // Props
@@ -43,13 +45,13 @@ interface PeppolParticipantRegisterDialogShellProps {
   onOpenChange: (open: boolean) => void;
 }
 
-export type PeppolParticipantRegisterDialogProps = PeppolParticipantRegisterDialogShellProps &
-  ReturnType<typeof usePeppolParticipantRegisterDialog> & {
+export type PeppolParticipantRegisterDialogViewProps = PeppolParticipantRegisterDialogShellProps &
+  ReturnType<typeof UsePeppolParticipantRegisterDialog> & {
     tCommon: (key: string) => string;
     resetNonce: number;
   };
 
-export function PeppolParticipantRegisterDialog({
+export function PeppolParticipantRegisterDialogView({
   open,
   onOpenChange,
   tCommon,
@@ -57,7 +59,7 @@ export function PeppolParticipantRegisterDialog({
   t,
   connect,
   isPending,
-}: PeppolParticipantRegisterDialogProps) {
+}: PeppolParticipantRegisterDialogViewProps) {
   const schemeId = useId();
   const valueId = useId();
   const schemeErrId = `${schemeId}-err`;
@@ -182,5 +184,27 @@ export function PeppolParticipantRegisterDialog({
         </form>
       </DialogContent>
     </Dialog>
+  );
+}
+
+export function PeppolParticipantRegisterDialog({
+  open,
+  onOpenChange,
+}: PeppolParticipantRegisterDialogShellProps) {
+  const tCommon = useTranslations('Common');
+  const [resetNonce, setResetNonce] = useState(0);
+  const dialog = usePeppolParticipantRegisterDialog({
+    onOpenChange,
+    onReset: () => setResetNonce(n => n + 1),
+  });
+
+  return (
+    <PeppolParticipantRegisterDialogView
+      open={open}
+      onOpenChange={onOpenChange}
+      tCommon={tCommon}
+      resetNonce={resetNonce}
+      {...dialog}
+    />
   );
 }

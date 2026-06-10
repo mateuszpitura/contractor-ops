@@ -4,7 +4,8 @@ import { ExternalLink, Loader2, X } from 'lucide-react';
 import { useCallback } from 'react';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
-import type { useEmbeddedSigningModal } from '../hooks/use-embedded-signing-modal.js';
+import { useEmbeddedSigningModal } from '../hooks/use-embedded-signing-modal.js';
+import type { useEmbeddedSigningModal as UseEmbeddedSigningModal } from '../hooks/use-embedded-signing-modal.js';
 
 type EmbeddedSigningModalProps = {
   envelopeId: string;
@@ -15,7 +16,7 @@ type EmbeddedSigningModalProps = {
   onOpenChange: (open: boolean) => void;
   onComplete: () => void;
   usePortalAuth?: boolean;
-  modal: ReturnType<typeof useEmbeddedSigningModal>;
+  modal: ReturnType<typeof UseEmbeddedSigningModal>;
 };
 
 export function SigningBodyPending() {
@@ -180,5 +181,41 @@ export function EmbeddedSigningModal({
     <EmbeddedSigningModalShell documentTitle={documentTitle} onOpenChange={onOpenChange}>
       {body}
     </EmbeddedSigningModalShell>
+  );
+}
+
+type EmbeddedSigningModalWiredProps = Omit<EmbeddedSigningModalProps, 'modal'>;
+
+export function EmbeddedSigningModalWired({
+  envelopeId,
+  recipientEmail,
+  documentTitle,
+  provider,
+  open,
+  onOpenChange,
+  onComplete,
+  usePortalAuth,
+}: EmbeddedSigningModalWiredProps) {
+  const modal = useEmbeddedSigningModal(
+    envelopeId,
+    recipientEmail,
+    open,
+    onOpenChange,
+    onComplete,
+    usePortalAuth,
+  );
+
+  return (
+    <EmbeddedSigningModal
+      envelopeId={envelopeId}
+      recipientEmail={recipientEmail}
+      documentTitle={documentTitle}
+      provider={provider}
+      open={open}
+      onOpenChange={onOpenChange}
+      onComplete={onComplete}
+      usePortalAuth={usePortalAuth}
+      modal={modal}
+    />
   );
 }

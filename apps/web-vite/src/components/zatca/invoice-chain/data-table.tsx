@@ -1,4 +1,3 @@
-import { DataTable } from '@contractor-ops/ui';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -21,6 +20,7 @@ import type { ColumnDef } from '@tanstack/react-table';
 import { Loader2, RefreshCw } from 'lucide-react';
 import { useCallback, useMemo, useState } from 'react';
 
+import { WorkbenchDataTable } from '../../table-kit/workbench-data-table.js';
 import type { useZatcaInvoiceChainTable } from '../hooks/use-zatca-invoice-chain-table.js';
 import type { ZatcaBadgeStatus } from '../zatca-status-badge.js';
 import { ZatcaStatusBadge } from '../zatca-status-badge.js';
@@ -231,7 +231,7 @@ export function ZatcaInvoiceChainTableView({
         </CardHeader>
 
         <CardContent className="pt-0">
-          <DataTable
+          <WorkbenchDataTable
             columns={columns}
             data={entries}
             totalRows={entries.length}

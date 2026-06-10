@@ -6,8 +6,8 @@ import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { workflowTaskSkipReason } from '@contractor-ops/validators';
 import { useMemo } from 'react';
 import { useTranslations } from '../../../i18n/useTranslations.js';
-import { LinearLinkedIssuesPanelContainer } from '../../contracts/contract-detail/linear-linked-issues-panel-container.js';
-import { TaskCardRunContainer } from './task-card-run-container.js';
+import { LinearLinkedIssuesPanelWired } from '../../contracts/contract-detail/linear-linked-issues-panel.js';
+import { TaskCardRunSection } from './task-card-run.js';
 
 interface TaskRun {
   id: string;
@@ -83,7 +83,7 @@ export function TaskChecklist({
   return (
     <div className="space-y-4">
       <h2 className="text-[20px] font-semibold leading-[1.2]">{t('tasksHeading')}</h2>
-      <LinearLinkedIssuesPanelContainer taskRunIds={taskRunIds} />
+      <LinearLinkedIssuesPanelWired taskRunIds={taskRunIds} />
       <div className="space-y-3">
         {tasks.map(task => {
           const isConditionSkipped =
@@ -93,7 +93,7 @@ export function TaskChecklist({
 
           return (
             <div key={task.id} className={isConditionSkipped ? 'opacity-50' : undefined}>
-              <TaskCardRunContainer
+              <TaskCardRunSection
                 task={task}
                 runId={runId}
                 currentUserId={currentUserId}

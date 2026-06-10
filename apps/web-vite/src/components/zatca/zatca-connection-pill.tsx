@@ -3,9 +3,9 @@ import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { AlertCircle, CheckCircle2, Loader2, Unplug } from 'lucide-react';
 
 import { tDyn } from '../../i18n/typed-keys';
-import type {
+import {
   useZatcaConnectionPill,
-  ZatcaDerivedStatus,
+  type ZatcaDerivedStatus,
 } from './hooks/use-zatca-connection-pill.js';
 
 // ---------------------------------------------------------------------------
@@ -47,6 +47,12 @@ export type ZatcaConnectionPillViewProps = Omit<
   ReturnType<typeof useZatcaConnectionPill>,
   'isLoading'
 >;
+
+export function ZatcaConnectionPill() {
+  const { isLoading, ...props } = useZatcaConnectionPill();
+  if (isLoading) return <ZatcaConnectionPillSkeleton />;
+  return <ZatcaConnectionPillView {...props} />;
+}
 
 export function ZatcaConnectionPillView({ status, t }: ZatcaConnectionPillViewProps) {
   const Icon = STATUS_ICONS[status];

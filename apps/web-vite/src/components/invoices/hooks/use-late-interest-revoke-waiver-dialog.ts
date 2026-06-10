@@ -1,6 +1,4 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { toast } from 'sonner';
-
+import { useResourceMutation } from '../../../hooks/use-resource-mutation.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { useTRPC } from '../../../providers/trpc-provider.js';
 
@@ -10,21 +8,14 @@ export function useLateInterestRevokeWaiverDialog(
 ) {
   const t = useTranslations('Payments.lateInterest.revokeWaiver');
   const trpc = useTRPC();
-  const queryClient = useQueryClient();
 
-  const revokeMutation = useMutation(
-    trpc.latePaymentInterest.revokeWaiver.mutationOptions({
-      onSuccess: () => {
-        toast.success(t('successToast'));
-        void queryClient.invalidateQueries({
-          queryKey: trpc.latePaymentInterest.getForInvoice.queryKey({ invoiceId }),
-        });
-        onOpenChange(false);
-      },
-      onError: (error: { message: string }) => {
-        toast.error(error.message);
-      },
-    }),
+  const revokeMutation = useResourceMutation(
+    trpc.latePaymentInterest.revokeWaiver.mutationOptions(),
+    {
+      invalidate: [trpc.latePaymentInterest.getForInvoice.queryKey({ invoiceId })],
+      successMessage: t('successToast'),
+      onClose: () => onOpenChange(false),
+    },
   );
 
   return {

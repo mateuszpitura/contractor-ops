@@ -2,8 +2,8 @@ import { Card } from '@contractor-ops/ui/components/shadcn/card';
 import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 
 import { useTranslations } from '../../i18n/useTranslations.js';
-import type { usePortalSettingsPage } from './hooks/use-portal-settings-page.js';
-import { NotificationPreferencesSectionContainer } from './notification-preferences-section-container.js';
+import { usePortalSettingsPage } from './hooks/use-portal-settings-page.js';
+import { NotificationPreferencesSectionContainer } from './notification-preferences-section.js';
 import type { ProfileField } from './profile-section.js';
 import { ProfileSection } from './profile-section.js';
 
@@ -74,3 +74,26 @@ export function PortalSettingsPage({ settings }: PortalSettingsPageProps) {
     </div>
   );
 }
+
+export function PortalSettingsContainer() {
+  const settings = usePortalSettingsPage();
+
+  if (settings.isPending) {
+    return (
+      <div className="max-w-[640px]">
+        <PortalSettingsHeader />
+        <PortalSettingsSkeleton />
+      </div>
+    );
+  }
+
+  return (
+    <div className="max-w-[640px]">
+      <PortalSettingsHeader />
+      <PortalSettingsPage settings={settings} />
+    </div>
+  );
+}
+
+/** @deprecated Use PortalSettings */
+export { PortalSettingsContainer as PortalSettings };

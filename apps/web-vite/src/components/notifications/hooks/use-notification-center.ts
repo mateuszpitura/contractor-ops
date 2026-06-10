@@ -1,8 +1,8 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { parseAsInteger, parseAsString, useQueryState } from 'nuqs';
 import { useCallback, useMemo } from 'react';
-import { toast } from 'sonner';
 
+import { useResourceMutation } from '../../../hooks/use-resource-mutation.js';
 import { useRouter } from '../../../i18n/navigation.js';
 import { useCommonToasts } from '../../../i18n/use-common-toasts.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
@@ -36,7 +36,6 @@ export const NOTIFICATION_FILTER_KEYS = [
 export function useNotificationCenter() {
   const t = useTranslations('Notifications');
   const router = useRouter();
-  const queryClient = useQueryClient();
   const trpc = useTRPC();
   const toasts = useCommonToasts();
 
@@ -75,30 +74,21 @@ export function useNotificationCenter() {
   });
   const unreadCount = (unreadQuery.data as { count: number } | undefined)?.count ?? 0;
 
-  const markReadMutation = useMutation(
-    trpc.notification.markRead.mutationOptions({
-      onSuccess: () => {
-        void queryClient.invalidateQueries({
-          queryKey: [['notification']],
-        });
-        toast.success(toasts.done());
-      },
-      onError: err => toast.error(err.message),
-    }),
+  const markReadMutation = useResourceMutation(
+    trpc.notification.markRead.mutationOptions(),
+    {
+      successMessage: toasts.done(),
+      invalidate: [{ queryKey: [['notification']] }],
+    },
   );
 
-  const markAllReadMutation = useMutation(
-    trpc.notification.markAllRead.mutationOptions({
-      onSuccess: () => {
-        toast.success(t('markedAllRead'));
-        void queryClient.invalidateQueries({
-          queryKey: [['notification']],
-        });
-      },
-      onError: () => {
-        toast.error(t('errors.failedToMarkRead'));
-      },
-    }),
+  const markAllReadMutation = useResourceMutation(
+    trpc.notification.markAllRead.mutationOptions(),
+    {
+      successMessage: t('markedAllRead'),
+      errorMessage: t('errors.failedToMarkRead'),
+      invalidate: [{ queryKey: [['notification']] }],
+    },
   );
 
   const handleItemClick = useCallback(

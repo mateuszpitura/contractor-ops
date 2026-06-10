@@ -10,7 +10,7 @@ import {
   TooltipTrigger,
 } from '@contractor-ops/ui/components/shadcn/tooltip';
 
-import { formatMinorUnits as formatMinorUnitsLib } from '../../lib/format-currency.js';
+import { formatMinorUnits as formatMinorUnitsLib } from '../../lib/money.js';
 
 interface DeviationFlagProps {
   deviationPercent: number;

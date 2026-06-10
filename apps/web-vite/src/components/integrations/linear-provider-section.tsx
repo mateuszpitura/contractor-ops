@@ -2,24 +2,30 @@ import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { AlertTriangle } from 'lucide-react';
 
-import { FeatureGateContainer } from '../billing/feature-gate-container.js';
-import { ProviderConnectionCardContainer } from '../settings/provider-connection-card-container.js';
-import type { useLinearProviderSection } from './hooks/use-linear-provider-section.js';
+import { FeatureGate } from '../layout/feature-gate.js';
+import { ProviderConnectionCard } from '../settings/provider-connection-card.js';
+import { useLinearProviderSection } from './hooks/use-linear-provider-section.js';
 import { LinearLogo } from './linear-logo.js';
-import { LinearStatusMappingDialog } from './linear-status-mapping-dialog-container.js';
+import { LinearStatusMappingDialog } from './linear-status-mapping-dialog.js';
 
 export type LinearProviderSectionViewProps = Omit<
   ReturnType<typeof useLinearProviderSection>,
   'isLoading'
 >;
 
+export function LinearProviderSection() {
+  const { isLoading, ...rest } = useLinearProviderSection();
+  if (isLoading) return <LinearProviderSectionSkeleton />;
+  return <LinearProviderSectionView {...rest} />;
+}
+
 export function LinearProviderSectionSkeleton() {
   return (
-    <FeatureGateContainer requiredTier="Pro" featureName="Linear integration">
+    <FeatureGate requiredTier="Pro" featureName="Linear integration">
       <div className="flex h-full flex-col gap-4">
         <Skeleton className="h-24 w-full rounded-md" />
       </div>
-    </FeatureGateContainer>
+    </FeatureGate>
   );
 }
 
@@ -33,9 +39,9 @@ export function LinearProviderSectionView({
   t,
 }: LinearProviderSectionViewProps) {
   return (
-    <FeatureGateContainer requiredTier="Pro" featureName="Linear integration">
+    <FeatureGate requiredTier="Pro" featureName="Linear integration">
       <div className="flex h-full flex-col gap-4">
-        <ProviderConnectionCardContainer
+        <ProviderConnectionCard
           provider="linear"
           displayName="Linear"
           icon={<LinearLogo className="size-8" />}
@@ -64,6 +70,6 @@ export function LinearProviderSectionView({
 
         <LinearStatusMappingDialog open={mappingOpen} onOpenChange={setMappingOpen} />
       </div>
-    </FeatureGateContainer>
+    </FeatureGate>
   );
 }

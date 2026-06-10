@@ -4,7 +4,7 @@ import { Label } from '@contractor-ops/ui/components/shadcn/label';
 import { useState } from 'react';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
-import { DropZone } from '../../documents/drop-zone-container.js';
+import { DropZone } from '../../documents/drop-zone.js';
 
 export interface PortalUploadReplacementFormProps {
   /** Compliance item being renewed (deep-link itemId). */

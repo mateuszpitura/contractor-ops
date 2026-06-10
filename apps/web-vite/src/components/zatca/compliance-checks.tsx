@@ -3,9 +3,10 @@ import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { Progress } from '@contractor-ops/ui/components/shadcn/progress';
 import { ArrowLeft, ArrowRight, Check, Loader2, X } from 'lucide-react';
 import type { ReactNode } from 'react';
-import type { useComplianceChecks } from './hooks/use-compliance-checks.js';
+import { useComplianceChecks } from './hooks/use-compliance-checks.js';
+import type { useComplianceChecks as UseComplianceChecks } from './hooks/use-compliance-checks.js';
 
-type HookResult = ReturnType<typeof useComplianceChecks>;
+type HookResult = ReturnType<typeof UseComplianceChecks>;
 type T = HookResult['t'];
 
 const STATUS_BADGE: Record<
@@ -177,3 +178,34 @@ export type ComplianceChecksViewProps = {
   onSuccess: () => void;
   onBack: () => void;
 } & HookResult;
+
+export function ComplianceChecks(props: Pick<ComplianceChecksViewProps, 'onSuccess' | 'onBack'>) {
+  const hook = useComplianceChecks();
+  const hasActivity = hook.results.length > 0 || hook.isPending;
+
+  if (!hasActivity) {
+    return (
+      <ComplianceChecksIdle
+        onSuccess={props.onSuccess}
+        onBack={props.onBack}
+        runChecks={hook.runChecks}
+        isPending={hook.isPending}
+        t={hook.t}
+      />
+    );
+  }
+
+  return (
+    <ComplianceChecksResults
+      onSuccess={props.onSuccess}
+      onBack={props.onBack}
+      results={hook.results}
+      isPending={hook.isPending}
+      allPassed={hook.allPassed}
+      completedCount={hook.completedCount}
+      progressValue={hook.progressValue}
+      testLabels={hook.testLabels}
+      t={hook.t}
+    />
+  );
+}

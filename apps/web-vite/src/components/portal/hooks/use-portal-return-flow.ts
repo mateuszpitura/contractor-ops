@@ -78,8 +78,7 @@ export function usePortalReturnFlow(options: {
 
   const labelData = labelQuery.data as { data: string; contentType: string } | undefined;
 
-  const geowidgetToken = ((import.meta.env as Record<string, string | undefined>)
-    .VITE_INPOST_GEOWIDGET_TOKEN ?? '') as string;
+  const geowidgetToken: string = import.meta.env.VITE_INPOST_GEOWIDGET_TOKEN ?? '';
 
   return {
     step,

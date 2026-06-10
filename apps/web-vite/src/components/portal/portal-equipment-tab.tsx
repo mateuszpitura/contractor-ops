@@ -166,13 +166,17 @@ export function PortalEquipmentTab({
                   {!!item.equipment.serialNumber && (
                     <span className="font-mono">{item.equipment.serialNumber}</span>
                   )}
-                  {!!item.latestShipment?.deliveredAt && (
-                    <span>
-                      {t('deliveredOn', {
-                        date: format(new Date(item.latestShipment.deliveredAt), 'MMM d, yyyy'),
-                      })}
-                    </span>
-                  )}
+                  {item.latestShipment?.currentStatus === 'DELIVERED' &&
+                    !!item.latestShipment.expectedDeliveryAt && (
+                      <span>
+                        {t('deliveredOn', {
+                          date: format(
+                            new Date(item.latestShipment.expectedDeliveryAt),
+                            'MMM d, yyyy',
+                          ),
+                        })}
+                      </span>
+                    )}
                 </div>
               </div>
             </CardContent>

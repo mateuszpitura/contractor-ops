@@ -1,5 +1,6 @@
-import { DataTable } from '@contractor-ops/ui';
+
 import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
+import { WorkbenchDataTable } from '../../table-kit/workbench-data-table.js';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import {
   DropdownMenu,
@@ -213,7 +214,7 @@ export function ApiKeysDataTable({
   const data = useMemo(() => [...keys], [keys]);
 
   return (
-    <DataTable
+    <WorkbenchDataTable
       columns={columns}
       data={data}
       totalRows={data.length}

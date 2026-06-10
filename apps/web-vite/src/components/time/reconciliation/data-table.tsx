@@ -1,4 +1,5 @@
-import { DataTable, TimeTrackingIllustration } from '@contractor-ops/ui';
+import { TimeTrackingIllustration } from '@contractor-ops/ui';
+import { WorkbenchDataTable } from '../../table-kit/workbench-data-table.js';
 import type { ColumnDef } from '@tanstack/react-table';
 import { format } from 'date-fns';
 import { ExternalLink } from 'lucide-react';
@@ -6,7 +7,7 @@ import { useCallback, useMemo } from 'react';
 
 import { Link } from '../../../i18n/navigation.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
-import { formatMinorUnits as formatMinorUnitsLib } from '../../../lib/format-currency.js';
+import { formatMinorUnits as formatMinorUnitsLib } from '../../../lib/money.js';
 import { DeviationFlag } from '../deviation-flag.js';
 
 interface ReconciliationItem {
@@ -46,6 +47,7 @@ export interface ReconciliationDataTableProps {
   onPageSizeChange: (size: number) => void;
   isLoading: boolean;
   isFetching?: boolean;
+  sectionClassName?: string;
 }
 
 function formatMinorUnits(minor: number): string {
@@ -81,6 +83,7 @@ export function ReconciliationDataTable({
   onPageSizeChange,
   isLoading,
   isFetching,
+  sectionClassName,
 }: ReconciliationDataTableProps) {
   const t = useTranslations('Time');
   const tInvoices = useTranslations('Invoices');
@@ -172,7 +175,8 @@ export function ReconciliationDataTable({
   );
 
   return (
-    <DataTable
+    <WorkbenchDataTable
+      sectionClassName={sectionClassName}
       columns={columns}
       data={items}
       totalRows={totalCount}

@@ -14,11 +14,12 @@ import { Loader2, Save, Upload } from 'lucide-react';
 import { useCallback } from 'react';
 import { BrandColorPicker } from './brand-color-picker';
 import { BrandPreviewStrip } from './brand-preview-strip';
-import type { useAdminBrandingSection } from './hooks/use-admin-branding-section.js';
+import { useAdminBrandingSection } from './hooks/use-admin-branding-section.js';
+import type { useAdminBrandingSection as UseAdminBrandingSection } from './hooks/use-admin-branding-section.js';
 
-export type AdminBrandingSectionProps = ReturnType<typeof useAdminBrandingSection>;
+export type AdminBrandingSectionProps = ReturnType<typeof UseAdminBrandingSection>;
 
-export function AdminBrandingSection({
+export function AdminBrandingSectionView({
   t,
   tSettings,
   fileInputRef,
@@ -123,4 +124,9 @@ export function AdminBrandingSection({
       </CardFooter>
     </Card>
   );
+}
+
+export function AdminBrandingSection() {
+  const section = useAdminBrandingSection();
+  return <AdminBrandingSectionView {...section} />;
 }

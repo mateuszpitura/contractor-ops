@@ -1,10 +1,13 @@
-import { DataTable } from '@contractor-ops/ui';
+
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
-import type { ColumnDef, SortingState } from '@tanstack/react-table';
+import { WorkbenchDataTable } from '../../table-kit/workbench-data-table.js';
+import type { ColumnDef, Table } from '@tanstack/react-table';
 import { RefreshCw } from 'lucide-react';
-import { useCallback, useMemo } from 'react';
+import { useCallback } from 'react';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
+import { useReportTableState } from '../hooks/use-report-table-state.js';
+import { DataTableColumnToggle } from './data-table-column-toggle.js';
 
 interface ReportTableProps<TData> {
   columns: ColumnDef<TData>[];
@@ -63,27 +66,23 @@ export function ReportTable<TData>({
   const tCommon = useTranslations('Common');
   const tErr = useTranslations('Contractors.error');
 
-  const sorting = useMemo<SortingState>(
-    () => [{ id: sortBy, desc: sortOrder === 'desc' }],
-    [sortBy, sortOrder],
-  );
-
-  const handleSortingChange = useCallback(
-    (updater: SortingState | ((old: SortingState) => SortingState)) => {
-      const next = typeof updater === 'function' ? updater(sorting) : updater;
-      const first = next[0];
-      if (first) {
-        onSortChange(first.id, first.desc ? 'desc' : 'asc');
-      }
-    },
-    [sorting, onSortChange],
-  );
+  const { sorting, handleSortingChange, columnVisibility, setColumnVisibility } =
+    useReportTableState<TData>({
+      sortBy,
+      sortOrder,
+      onSortChange,
+    });
 
   const handlePageSizeChange = useCallback(
     (size: number) => {
       onPageSizeChange?.(size);
     },
     [onPageSizeChange],
+  );
+
+  const renderColumnToggle = useCallback(
+    (table: Table<TData>) => <DataTableColumnToggle table={table} />,
+    [],
   );
 
   const resolvedEmptyTitle = emptyTitle ?? tCommon('noData');
@@ -115,7 +114,7 @@ export function ReportTable<TData>({
 
   return (
     <div className="flex flex-col gap-2">
-      <DataTable<TData>
+      <WorkbenchDataTable<TData>
         columns={columns}
         data={data}
         totalRows={effectiveTotalRows}
@@ -125,6 +124,8 @@ export function ReportTable<TData>({
         onPageSizeChange={handlePageSizeChange}
         sorting={sorting}
         onSortingChange={handleSortingChange}
+        columnVisibility={columnVisibility}
+        onColumnVisibilityChange={setColumnVisibility}
         isLoading={isLoading}
         // Skeleton branch must win over the refetch overlay — only mark
         // refetching when fetching without a full reload.
@@ -137,6 +138,7 @@ export function ReportTable<TData>({
         noResultsTitle={resolvedEmptyTitle}
         noResultsDescription={emptyDescription}
         onRowClick={onRowClick}
+        rightSlot={renderColumnToggle}
       />
       {showGrandTotal ? (
         <div className="relative overflow-hidden rounded-xl border border-border/40 bg-gradient-to-r from-muted/20 via-card to-muted/20 shadow-sm">

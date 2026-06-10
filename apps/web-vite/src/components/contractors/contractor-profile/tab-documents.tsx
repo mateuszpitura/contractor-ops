@@ -2,10 +2,11 @@ import { AtelierEmptyState, DocumentsIllustration, SectionLabel } from '@contrac
 import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { Files } from 'lucide-react';
 import { useTranslations } from '../../../i18n/useTranslations.js';
-import { DocumentCardContainer } from '../../documents/document-card-container.js';
-import { DropZoneContainer } from '../../documents/drop-zone-container.js';
+import { DocumentCardContainer } from '../../documents/document-card.js';
+import { DropZoneContainer } from '../../documents/drop-zone.js';
 import type { DocumentListItem } from '../../documents/types.js';
 import { renderEmptyStateAction } from '../../shared/atelier-bridges.js';
+import { useContractorTabDocuments } from '../hooks/use-contractor-tab-documents.js';
 
 type TabDocumentsProps = {
   contractorId: string;
@@ -67,4 +68,13 @@ export function TabDocuments({ contractorId, documents }: TabDocumentsProps) {
       </div>
     </div>
   );
+}
+
+export function TabDocumentsSection({ contractorId }: { contractorId: string }) {
+  const { documents, isLoading } = useContractorTabDocuments(contractorId);
+
+  if (isLoading) return <TabDocumentsSkeleton contractorId={contractorId} />;
+  if (documents.length === 0) return <TabDocumentsEmpty contractorId={contractorId} />;
+
+  return <TabDocuments contractorId={contractorId} documents={documents} />;
 }

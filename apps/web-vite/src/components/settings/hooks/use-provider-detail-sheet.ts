@@ -108,6 +108,8 @@ export function useProviderDetailSheet({
     const result = await oauthUrlQuery.refetch();
     if (result.data?.url) {
       window.location.href = result.data.url;
+    } else {
+      toast.error(t('providerToasts.connectFailed', { provider: displayName }));
     }
   }
 

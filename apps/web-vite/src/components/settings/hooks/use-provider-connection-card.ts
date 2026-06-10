@@ -1,8 +1,9 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
 
+import { useResourceMutation } from '../../../hooks/use-resource-mutation.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { useTRPC } from '../../../providers/trpc-provider.js';
 
@@ -48,37 +49,27 @@ export function useProviderConnectionCard({
     }
   }, [searchParams, provider, displayName, t, queryClient, trpc.integration]);
 
-  const onDisconnectSuccess = () => {
-    toast.success(t('providerToasts.disconnected', { provider: displayName }));
-    queryClient.invalidateQueries({
-      queryKey: trpc.integration.getHealth.queryKey({ provider }),
-    });
-    queryClient.invalidateQueries({
-      queryKey: trpc.integration.getAllHealth.queryKey(),
-    });
-    onDisconnected?.();
-  };
-  const onDisconnectError = () => {
-    toast.error(t('providerToasts.disconnectFailed', { provider: displayName }));
+  const disconnectConfig = {
+    invalidate: [
+      trpc.integration.getHealth.queryKey({ provider }),
+      trpc.integration.getAllHealth.queryKey(),
+    ],
+    successMessage: t('providerToasts.disconnected', { provider: displayName }),
+    errorMessage: t('providerToasts.disconnectFailed', { provider: displayName }),
+    onClose: () => onDisconnected?.(),
   };
 
-  const genericDisconnect = useMutation(
-    trpc.integration.disconnectGeneric.mutationOptions({
-      onSuccess: onDisconnectSuccess,
-      onError: onDisconnectError,
-    }),
+  const genericDisconnect = useResourceMutation(
+    trpc.integration.disconnectGeneric.mutationOptions(),
+    disconnectConfig,
   );
-  const jiraDisconnect = useMutation(
-    trpc.jira.disconnect.mutationOptions({
-      onSuccess: onDisconnectSuccess,
-      onError: onDisconnectError,
-    }),
+  const jiraDisconnect = useResourceMutation(
+    trpc.jira.disconnect.mutationOptions(),
+    disconnectConfig,
   );
-  const ksefDisconnect = useMutation(
-    trpc.ksef.disconnect.mutationOptions({
-      onSuccess: onDisconnectSuccess,
-      onError: onDisconnectError,
-    }),
+  const ksefDisconnect = useResourceMutation(
+    trpc.ksef.disconnect.mutationOptions(),
+    disconnectConfig,
   );
 
   const disconnectMutation =
@@ -93,6 +84,8 @@ export function useProviderConnectionCard({
     const result = await oauthUrlQuery.refetch();
     if (result.data?.url) {
       window.location.href = result.data.url;
+    } else {
+      toast.error(t('providerToasts.connectFailed', { provider: displayName }));
     }
   }
 

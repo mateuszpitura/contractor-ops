@@ -30,10 +30,13 @@ import { Loader2, Plus, Save, X } from 'lucide-react';
 import { useCallback, useId } from 'react';
 import type { ControllerRenderProps } from 'react-hook-form';
 import { Controller } from 'react-hook-form';
-import { ChainEditorUserPickerContainer } from './chain-editor-user-picker-container.js';
+import { ChainEditorUserPicker } from './chain-editor-user-picker.js';
 import type { Condition } from './condition-builder';
 import { ConditionBuilder } from './condition-builder';
-import type { useChainEditorDialog } from './hooks/use-chain-editor-dialog.js';
+import {
+  useChainEditorDialog,
+  type useChainEditorDialog as UseChainEditorDialog,
+} from './hooks/use-chain-editor-dialog.js';
 import {
   CHAIN_APPROVER_ROLES,
   CHAIN_ROLE_LABELS,
@@ -56,7 +59,7 @@ type ChainEditorDialogShellProps = {
 };
 
 export type ChainEditorDialogProps = ChainEditorDialogShellProps &
-  ReturnType<typeof useChainEditorDialog>;
+  ReturnType<typeof UseChainEditorDialog>;
 
 type FormApi = ChainEditorDialogProps['form'];
 type TranslateFn = ChainEditorDialogProps['t'];
@@ -96,7 +99,7 @@ interface UserPickerFieldProps {
 }
 
 function UserPickerField({ field }: UserPickerFieldProps) {
-  return <ChainEditorUserPickerContainer value={field.value} onChange={field.onChange} />;
+  return <ChainEditorUserPicker value={field.value} onChange={field.onChange} />;
 }
 
 interface RoleSelectFieldProps {
@@ -259,7 +262,7 @@ function StepCard({ form, t, index, canRemove, onRemove }: StepCardProps) {
   );
 }
 
-export function ChainEditorDialog({
+export function ChainEditorDialogView({
   open,
   onOpenChange,
   chainData,
@@ -390,4 +393,9 @@ export function ChainEditorDialog({
       </DialogContent>
     </Dialog>
   );
+}
+
+export function ChainEditorDialog(props: ChainEditorDialogShellProps) {
+  const editor = useChainEditorDialog(props);
+  return <ChainEditorDialogView {...props} {...editor} />;
 }

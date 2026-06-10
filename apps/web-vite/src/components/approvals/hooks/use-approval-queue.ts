@@ -1,9 +1,9 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { createParser, parseAsInteger, parseAsString, useQueryState } from 'nuqs';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { toast } from 'sonner';
 
 import { usePermissions } from '../../../hooks/use-permissions.js';
+import { useResourceMutation } from '../../../hooks/use-resource-mutation.js';
 import { useLocale } from '../../../i18n/navigation.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { useTRPC } from '../../../providers/trpc-provider.js';
@@ -119,39 +119,22 @@ export function useApprovalQueue() {
 
   const pageCount = Math.ceil(totalRows / pageSize);
 
-  const approveMutation = useMutation(
-    trpc.approval.approve.mutationOptions({
-      onSuccess: () => {
-        toast.success(t('toast.approved'));
-        void queryClient.invalidateQueries({
-          queryKey: [['approval', 'listPending']],
-        });
-        void queryClient.invalidateQueries({
-          queryKey: [['approval', 'actionableCount']],
-        });
-      },
-      onError: () => {
-        toast.error(t('errors.failedToApprove'));
-      },
-    }),
-  );
+  const approvalInvalidate = [
+    [['approval', 'listPending']] as const,
+    [['approval', 'actionableCount']] as const,
+  ];
 
-  const rejectMutation = useMutation(
-    trpc.approval.reject.mutationOptions({
-      onSuccess: () => {
-        toast.success(t('toast.rejected'));
-        void queryClient.invalidateQueries({
-          queryKey: [['approval', 'listPending']],
-        });
-        void queryClient.invalidateQueries({
-          queryKey: [['approval', 'actionableCount']],
-        });
-      },
-      onError: () => {
-        toast.error(t('errors.failedToReject'));
-      },
-    }),
-  );
+  const approveMutation = useResourceMutation(trpc.approval.approve.mutationOptions(), {
+    invalidate: approvalInvalidate,
+    successMessage: t('toast.approved'),
+    errorMessage: t('errors.failedToApprove'),
+  });
+
+  const rejectMutation = useResourceMutation(trpc.approval.reject.mutationOptions(), {
+    invalidate: approvalInvalidate,
+    successMessage: t('toast.rejected'),
+    errorMessage: t('errors.failedToReject'),
+  });
 
   const columns = useMemo(
     () =>

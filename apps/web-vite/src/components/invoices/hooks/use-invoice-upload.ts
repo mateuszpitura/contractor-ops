@@ -1,9 +1,10 @@
 import * as Sentry from '@sentry/react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 import { TRPCClientError } from '@trpc/client';
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
+import { useResourceMutation } from '../../../hooks/use-resource-mutation.js';
 import { useCommonToasts } from '../../../i18n/use-common-toasts.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { useTRPC } from '../../../providers/trpc-provider.js';
@@ -30,6 +31,12 @@ export function useInvoiceUpload(
   const t = useTranslations('Invoices.upload');
   const toasts = useCommonToasts();
 
+  const uploadStepConfig = {
+    successMessage: toasts.done(),
+    errorMessage: t('error'),
+    suppressErrorToast: () => true,
+  };
+
   const [files, setFiles] = useState<UploadingFile[]>([]);
   const [creditExhausted, setCreditExhausted] = useState(false);
   const [isDragActive, setIsDragActive] = useState(false);
@@ -38,55 +45,39 @@ export function useInvoiceUpload(
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [showPdfReview, setShowPdfReview] = useState(false);
 
-  const requestUploadMutation = useMutation(
-    trpc.document.requestUpload.mutationOptions({
-      onError: err => toast.error(err.message),
-      onSuccess: () => {
-        toast.success(toasts.done());
-        queryClient.invalidateQueries(trpc.document.pathFilter());
-      },
-    }),
+  const pdfUrlRef = useRef<string | null>(null);
+  pdfUrlRef.current = pdfUrl;
+  useEffect(
+    () => () => {
+      if (pdfUrlRef.current) URL.revokeObjectURL(pdfUrlRef.current);
+    },
+    [],
   );
 
-  const confirmUploadMutation = useMutation(
-    trpc.document.confirmUpload.mutationOptions({
-      onError: err => toast.error(err.message),
-      onSuccess: () => {
-        toast.success(toasts.done());
-        queryClient.invalidateQueries(trpc.document.pathFilter());
-      },
-    }),
-  );
+  const requestUploadMutation = useResourceMutation(trpc.document.requestUpload.mutationOptions(), {
+    ...uploadStepConfig,
+    invalidate: [trpc.document.pathFilter()],
+  });
 
-  const createInvoiceMutation = useMutation(
-    trpc.invoice.create.mutationOptions({
-      onError: err => toast.error(err.message),
-      onSuccess: () => {
-        toast.success(toasts.done());
-        queryClient.invalidateQueries(trpc.invoice.pathFilter());
-      },
-    }),
-  );
+  const confirmUploadMutation = useResourceMutation(trpc.document.confirmUpload.mutationOptions(), {
+    ...uploadStepConfig,
+    invalidate: [trpc.document.pathFilter()],
+  });
 
-  const ocrTriggerMutation = useMutation(
-    trpc.ocr.trigger.mutationOptions({
-      onError: err => toast.error(err.message),
-      onSuccess: () => {
-        toast.success(toasts.done());
-        queryClient.invalidateQueries(trpc.ocr.pathFilter());
-      },
-    }),
-  );
+  const createInvoiceMutation = useResourceMutation(trpc.invoice.create.mutationOptions(), {
+    ...uploadStepConfig,
+    invalidate: [trpc.invoice.pathFilter()],
+  });
 
-  const ocrRetriggerMutation = useMutation(
-    trpc.ocr.retrigger.mutationOptions({
-      onError: err => toast.error(err.message),
-      onSuccess: () => {
-        toast.success(toasts.done());
-        queryClient.invalidateQueries(trpc.ocr.pathFilter());
-      },
-    }),
-  );
+  const ocrTriggerMutation = useResourceMutation(trpc.ocr.trigger.mutationOptions(), {
+    ...uploadStepConfig,
+    invalidate: [trpc.ocr.pathFilter()],
+  });
+
+  const ocrRetriggerMutation = useResourceMutation(trpc.ocr.retrigger.mutationOptions(), {
+    ...uploadStepConfig,
+    invalidate: [trpc.ocr.pathFilter()],
+  });
 
   const triggerOcrForPdf = useCallback(
     async (file: File, documentId: string, storageKey: string) => {

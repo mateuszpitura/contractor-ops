@@ -10,7 +10,8 @@ import {
 } from '@contractor-ops/ui/components/shadcn/table';
 import { Flag } from 'lucide-react';
 
-import type { useFeatureFlagsTab } from './hooks/use-feature-flags-tab.js';
+import { useFeatureFlagsTab } from './hooks/use-feature-flags-tab.js';
+import type { useFeatureFlagsTab as UseFeatureFlagsTab } from './hooks/use-feature-flags-tab.js';
 
 // ---------------------------------------------------------------------------
 // Feature Flags admin tab
@@ -22,7 +23,7 @@ import type { useFeatureFlagsTab } from './hooks/use-feature-flags-tab.js';
 // admin UI; this surface is just diagnostic.
 // ---------------------------------------------------------------------------
 
-export type FeatureFlagsTabProps = ReturnType<typeof useFeatureFlagsTab>;
+export type FeatureFlagsTabProps = ReturnType<typeof UseFeatureFlagsTab>;
 
 export function FeatureFlagsTabSkeleton() {
   return (
@@ -83,7 +84,7 @@ export function FeatureFlagsTabError({ t }: { t: FeatureFlagsTabProps['t'] }) {
   );
 }
 
-export function FeatureFlagsTab({ t, flags }: FeatureFlagsTabProps) {
+export function FeatureFlagsTabView({ t, flags }: FeatureFlagsTabProps) {
   return (
     <div className="space-y-4">
       <div>
@@ -140,4 +141,11 @@ export function FeatureFlagsTab({ t, flags }: FeatureFlagsTabProps) {
       )}
     </div>
   );
+}
+
+export function FeatureFlagsTab() {
+  const tab = useFeatureFlagsTab();
+  if (tab.isLoading) return <FeatureFlagsTabSkeleton />;
+  if (tab.isError) return <FeatureFlagsTabError t={tab.t} />;
+  return <FeatureFlagsTabView {...tab} />;
 }

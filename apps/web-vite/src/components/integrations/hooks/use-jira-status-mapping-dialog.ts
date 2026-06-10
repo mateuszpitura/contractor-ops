@@ -1,20 +1,16 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import type { JiraStatusMappingEntry } from '@contractor-ops/validators';
+import { useQuery } from '@tanstack/react-query';
 import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
+import { useResourceMutation } from '../../../hooks/use-resource-mutation.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { useTRPC } from '../../../providers/trpc-provider.js';
 import { WORKFLOW_STATUSES } from '../status-mapping.constants.js';
 
 export { WORKFLOW_STATUSES };
 
-export interface MappingEntry {
-  workflowStatus: string;
-  jiraTransitionId: string;
-  jiraTransitionName: string;
-  jiraTargetStatusName: string;
-  jiraTargetStatusCategory: 'new' | 'indeterminate' | 'done';
-}
+export type MappingEntry = JiraStatusMappingEntry;
 
 export interface UseJiraStatusMappingDialogParams {
   open: boolean;
@@ -29,7 +25,6 @@ export function useJiraStatusMappingDialog({
 }: UseJiraStatusMappingDialogParams) {
   const trpc = useTRPC();
   const t = useTranslations('Integrations.jira.statusMapping');
-  const queryClient = useQueryClient();
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
   const [mappings, setMappings] = useState<MappingEntry[]>([]);
   const [initialMappings, setInitialMappings] = useState<MappingEntry[]>([]);
@@ -76,22 +71,31 @@ export function useJiraStatusMappingDialog({
     }
   }, [existingMappingQuery.data, selectedProjectId]);
 
-  const saveMutation = useMutation({
-    ...trpc.jira.saveStatusMapping.mutationOptions(),
-    onSuccess: () => {
-      toast.success(t('toast.saved'));
-      queryClient.invalidateQueries({
-        queryKey: trpc.jira.getStatusMapping.queryKey({
+  const saveMutation = useResourceMutation(
+    trpc.jira.saveStatusMapping.mutationOptions({
+      onSuccess: data => {
+        if (
+          data &&
+          typeof data === 'object' &&
+          'webhooksRegistered' in data &&
+          !data.webhooksRegistered
+        ) {
+          toast.warning(t('toast.webhooksNotRegistered'));
+        }
+      },
+    }),
+    {
+      successMessage: t('toast.saved'),
+      errorMessage: t('toast.saveFailed'),
+      invalidate: [
+        trpc.jira.getStatusMapping.queryKey({
           connectionId,
           projectId: selectedProjectId ?? '',
         }),
-      });
-      onOpenChange(false);
+      ],
+      onClose: () => onOpenChange(false),
     },
-    onError: () => {
-      toast.error(t('toast.saveFailed'));
-    },
-  });
+  );
 
   const selectedProject = projects.find(p => p.id === selectedProjectId);
 
@@ -107,7 +111,10 @@ export function useJiraStatusMappingDialog({
     });
   }, [mappings, initialMappings]);
 
-  const handleStatusSelect = (workflowStatus: string, jiraStatusId: string) => {
+  const handleStatusSelect = (
+    workflowStatus: MappingEntry['workflowStatus'],
+    jiraStatusId: string,
+  ) => {
     const jiraStatus = jiraStatuses.find(s => s.id === jiraStatusId);
     if (!jiraStatus) return;
 

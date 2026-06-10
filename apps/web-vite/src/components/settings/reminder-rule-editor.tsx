@@ -23,9 +23,12 @@ import { Bell, Loader2, Save } from 'lucide-react';
 import { useCallback, useId, useMemo } from 'react';
 import type { ControllerRenderProps } from 'react-hook-form';
 import { Controller } from 'react-hook-form';
-import type { useReminderRuleEditor } from './hooks/use-reminder-rule-editor.js';
+import {
+  useReminderRuleEditor,
+  type useReminderRuleEditor as UseReminderRuleEditor,
+} from './hooks/use-reminder-rule-editor.js';
 import { REMINDER_ROLE_LABELS, REMINDER_ROLE_OPTIONS } from './hooks/use-reminder-rule-editor.js';
-import { ReminderRuleUserPickerContainer } from './reminder-rule-user-picker-container.js';
+import { ReminderRuleUserPicker } from './reminder-rule-user-picker.js';
 import type { ReminderRule } from './reminder-rules-section';
 
 type ReminderRuleEditorShellProps = {
@@ -35,7 +38,7 @@ type ReminderRuleEditorShellProps = {
 };
 
 export type ReminderRuleEditorProps = ReminderRuleEditorShellProps &
-  ReturnType<typeof useReminderRuleEditor>;
+  ReturnType<typeof UseReminderRuleEditor>;
 
 interface SelectItemOption {
   value: string;
@@ -111,14 +114,14 @@ function UserPickerControlField({ control, name }: UserPickerControlFieldProps) 
   const renderUserPicker = useCallback(
     // biome-ignore lint/suspicious/noExplicitAny: react-hook-form Controller render expects strict form-shape types; widened intentionally for reuse.
     ({ field }: { field: ControllerRenderProps<any, any> }) => (
-      <ReminderRuleUserPickerContainer value={field.value} onChange={field.onChange} />
+      <ReminderRuleUserPicker value={field.value} onChange={field.onChange} />
     ),
     [],
   );
   return <Controller control={control} name={name} render={renderUserPicker} />;
 }
 
-export function ReminderRuleEditor({
+export function ReminderRuleEditorView({
   open,
   onOpenChange,
   rule,
@@ -295,4 +298,9 @@ export function ReminderRuleEditor({
       </DialogContent>
     </Dialog>
   );
+}
+
+export function ReminderRuleEditor(props: ReminderRuleEditorShellProps) {
+  const editor = useReminderRuleEditor(props);
+  return <ReminderRuleEditorView {...props} {...editor} />;
 }

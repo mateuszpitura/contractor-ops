@@ -20,7 +20,7 @@ import { Loader2 } from 'lucide-react';
 import { memo, useCallback } from 'react';
 
 import { useTranslations } from '../../i18n/useTranslations.js';
-import type { useAssignmentDialog } from './hooks/use-equipment-assignment.js';
+import { useAssignmentDialog } from './hooks/use-equipment-assignment.js';
 
 export interface AssignmentDialogProps {
   open: boolean;
@@ -50,16 +50,18 @@ const ContractorOption = memo(function ContractorOption({
   isSelected,
   onSelect,
 }: ContractorOptionProps) {
+  const label = contractor.displayName?.trim() || contractor.legalName?.trim() || contractor.id;
+
   const handleSelect = useCallback(() => {
-    onSelect(contractor.id, contractor.displayName ?? contractor.legalName);
-  }, [contractor.id, contractor.displayName, contractor.legalName, onSelect]);
+    onSelect(contractor.id, label);
+  }, [contractor.id, label, onSelect]);
 
   return (
     <CommandItem
       value={contractor.id}
       onSelect={handleSelect}
       className={isSelected ? 'bg-accent' : ''}>
-      <span>{contractor.displayName ?? contractor.legalName}</span>
+      <span>{label}</span>
     </CommandItem>
   );
 });
@@ -150,4 +152,12 @@ export function AssignmentDialogView({
       </DialogContent>
     </Dialog>
   );
+}
+
+export function AssignmentDialog(props: AssignmentDialogProps) {
+  const dialog = useAssignmentDialog({
+    equipmentId: props.equipmentId,
+    onOpenChange: props.onOpenChange,
+  });
+  return <AssignmentDialogView {...props} {...dialog} />;
 }

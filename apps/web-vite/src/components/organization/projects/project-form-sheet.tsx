@@ -14,7 +14,8 @@ import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 import { useCommonToasts } from '../../../i18n/use-common-toasts.js';
-import type { useProjectFormSheet } from '../hooks/use-project-form-sheet.js';
+import { useProjectFormSheet } from '../hooks/use-project-form-sheet.js';
+import type { useProjectFormSheet as UseProjectFormSheet } from '../hooks/use-project-form-sheet.js';
 
 export interface ProjectRow {
   id: string;
@@ -32,7 +33,7 @@ interface ProjectFormSheetProps {
   onOpenChange: (open: boolean) => void;
   project?: ProjectRow | null;
   onCreated?: (project: { id: string; name: string }) => void;
-  formSheet: ReturnType<typeof useProjectFormSheet>;
+  formSheet: ReturnType<typeof UseProjectFormSheet>;
 }
 
 const formatDateInput = (value: Date | string | null): string => {
@@ -266,4 +267,14 @@ export function ProjectFormSheet({
       </SheetContent>
     </Sheet>
   );
+}
+
+type ProjectFormSheetWiredProps = Omit<ProjectFormSheetProps, 'formSheet'>;
+
+export function ProjectFormSheetWired(props: ProjectFormSheetWiredProps) {
+  const formSheet = useProjectFormSheet({
+    onOpenChange: props.onOpenChange,
+    onCreated: props.onCreated,
+  });
+  return <ProjectFormSheet {...props} formSheet={formSheet} />;
 }

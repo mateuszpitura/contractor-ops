@@ -1,5 +1,6 @@
-import { DataTable } from '@contractor-ops/ui';
+
 import type { ReactNode } from 'react';
+import { WorkbenchDataTable } from '../../../table-kit/workbench-data-table.js';
 import { useMemo, useState } from 'react';
 
 import { useTranslations } from '../../../../i18n/useTranslations.js';
@@ -15,9 +16,16 @@ export interface AtRiskTableProps {
    * Left undefined here; this plan does NOT build the override modal.
    */
   renderRowActions?: (row: AtRiskRow) => ReactNode;
+  sectionClassName?: string;
 }
 
-export function AtRiskTable({ rows, totalRows, isRefetching, renderRowActions }: AtRiskTableProps) {
+export function AtRiskTable({
+  rows,
+  totalRows,
+  isRefetching,
+  renderRowActions,
+  sectionClassName,
+}: AtRiskTableProps) {
   const t = useTranslations('Compliance.dashboard');
   const [pageIndex, setPageIndex] = useState(0);
   const [pageSize, setPageSize] = useState(25);
@@ -37,7 +45,8 @@ export function AtRiskTable({ rows, totalRows, isRefetching, renderRowActions }:
   }, [t, renderRowActions]);
 
   return (
-    <DataTable
+    <WorkbenchDataTable
+      sectionClassName={sectionClassName}
       columns={columns}
       data={rows}
       totalRows={totalRows}

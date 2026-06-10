@@ -26,7 +26,9 @@ import {
   previewTimeFormat,
   TIME_FORMATS,
 } from '../../lib/format-date';
-import type { useOrgSettingsForm } from './hooks/use-org-settings-form.js';
+import { KleinunternehmerToggle } from '../organization/kleinunternehmer-toggle.js';
+import { useOrgKleinunternehmer } from './hooks/use-org-kleinunternehmer.js';
+import { useOrgSettingsForm } from './hooks/use-org-settings-form.js';
 
 export type OrgSettingsFormProps = ReturnType<typeof useOrgSettingsForm>;
 
@@ -339,3 +341,24 @@ export function OrgSettingsForm({
     </form>
   );
 }
+
+export function OrgSettingsFormSection() {
+  const form = useOrgSettingsForm();
+  const kleinunternehmer = useOrgKleinunternehmer();
+
+  if (form.isLoading) return <OrgSettingsFormSkeleton />;
+  return (
+    <div className="space-y-6">
+      <OrgSettingsForm {...form} />
+      {!kleinunternehmer.isLoading && (
+        <KleinunternehmerToggle
+          orgCountryCode={kleinunternehmer.orgCountryCode}
+          isKleinunternehmer={kleinunternehmer.isKleinunternehmer}
+        />
+      )}
+    </div>
+  );
+}
+
+/** @deprecated Use `OrgSettingsFormSection` — alias kept for minimal import churn */
+export const OrgSettingsFormContainer = OrgSettingsFormSection;

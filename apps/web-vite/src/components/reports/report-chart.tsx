@@ -68,10 +68,16 @@ export function ReportChart({
 
   const formatCurrency = useMemo(() => {
     const fmt = new Intl.NumberFormat(
-      locale === 'ar' ? 'ar-SA-u-nu-latn' : locale === 'pl' ? 'pl-PL' : 'en-US',
+      locale === 'ar'
+        ? 'ar-SA-u-nu-latn'
+        : locale === 'pl'
+          ? 'pl-PL'
+          : locale === 'de'
+            ? 'de-DE'
+            : 'en-US',
       {
         style: 'currency',
-        currency: locale === 'ar' ? 'AED' : 'PLN',
+        currency: locale === 'ar' ? 'AED' : locale === 'de' ? 'EUR' : 'PLN',
         minimumFractionDigits: 0,
         maximumFractionDigits: 0,
       },

@@ -21,7 +21,7 @@
  * `string` arm.
  */
 
-import type { QueryKey, UseMutationOptions } from '@tanstack/react-query';
+import type { InvalidateQueryFilters, QueryKey, UseMutationOptions } from '@tanstack/react-query';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useCallback } from 'react';
 import { toast } from 'sonner';
@@ -43,8 +43,18 @@ export type ResourceMessage =
   | { key: TranslationKey; params?: TranslateValues }
   | string;
 
+type InvalidateTarget = QueryKey | InvalidateQueryFilters;
+
+function toInvalidateOptions(target: InvalidateTarget): InvalidateQueryFilters {
+  if (typeof target === 'object' && target !== null && 'queryKey' in target) {
+    return target;
+  }
+  return { queryKey: target as QueryKey };
+}
+
 export interface UseResourceMutationConfig<TError = unknown> {
-  invalidate?: QueryKey[];
+  /** Query key prefix or full `invalidateQueries` filter (e.g. `trpc.foo.pathFilter()`). */
+  invalidate?: InvalidateTarget[];
   successMessage: ResourceMessage;
   errorMessage?: ResourceMessage;
   onClose?: () => void;
@@ -94,7 +104,9 @@ export function useResourceMutation<
 
   const invalidateAll = useCallback(async () => {
     if (!invalidate || invalidate.length === 0) return;
-    await Promise.all(invalidate.map(queryKey => queryClient.invalidateQueries({ queryKey })));
+    await Promise.all(
+      invalidate.map(target => queryClient.invalidateQueries(toInvalidateOptions(target))),
+    );
   }, [invalidate, queryClient]);
 
   return useMutation<TData, TError, TVariables, TContext>({

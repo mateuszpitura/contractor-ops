@@ -11,13 +11,13 @@ import { useCallback } from 'react';
 
 import { tDyn } from '../../../i18n/typed-keys.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
-import { HealthCheckPanelContainer } from '../health-check-panel-container.js';
+import { HealthCheckPanelWired } from '../health-check-panel.js';
 import { useContractDetailTabs } from '../hooks/use-contract-detail-tabs.js';
 import { ActivityTab } from './activity-tab.js';
-import { AmendmentsTabContainer } from './amendments-tab-container.js';
-import { DocumentsTabContainer } from './documents-tab-container.js';
-import { LinearLinkedIssuesPanelContainer } from './linear-linked-issues-panel-container.js';
-import { OverviewTabContainer } from './overview-tab-container.js';
+import { AmendmentsTabWired } from './amendments-tab.js';
+import { DocumentsTabWired } from './documents-tab.js';
+import { LinearLinkedIssuesPanelWired } from './linear-linked-issues-panel.js';
+import { OverviewTabWired } from './overview-tab.js';
 
 type ContractDetail = NonNullable<inferRouterOutputs<AppRouter>['contract']['getById']>;
 
@@ -50,24 +50,24 @@ export function ContractDetailTabs({ contract, contractParties }: ContractDetail
       </TabsList>
 
       <TabsContent value="overview" className="mt-4 min-h-[400px]">
-        <OverviewTabContainer contract={contract} />
+        <OverviewTabWired contract={contract} />
       </TabsContent>
 
       <TabsContent value="documents" className="mt-4 min-h-[400px]">
-        <DocumentsTabContainer contractId={contract.id} contractParties={contractParties} />
+        <DocumentsTabWired contractId={contract.id} contractParties={contractParties} />
       </TabsContent>
 
       <TabsContent value="amendments" className="mt-4 min-h-[400px]">
-        <AmendmentsTabContainer contract={contract} />
+        <AmendmentsTabWired contract={contract} />
       </TabsContent>
 
       <TabsContent value="activity" className="mt-4 min-h-[400px] space-y-6">
         <ActivityTab contract={contract} />
-        <LinearLinkedIssuesPanelContainer taskRunIds={taskRunIds} />
+        <LinearLinkedIssuesPanelWired taskRunIds={taskRunIds} />
       </TabsContent>
 
       <TabsContent value="compliance" className="mt-4 min-h-[400px]">
-        <HealthCheckPanelContainer
+        <HealthCheckPanelWired
           contractId={contract.id}
           resultsJson={contract.complianceFlagsJson}
         />

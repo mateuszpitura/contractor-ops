@@ -25,7 +25,7 @@ import { useCallback, useId, useState } from 'react';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { formatDate } from '../../../lib/format-date.js';
-import type {
+import {
   useAddAmendmentDialog,
   useContractAmendmentsTab,
 } from '../hooks/use-contract-amendments-tab.js';
@@ -196,9 +196,11 @@ function TimelineNode({ amendment, step }: { amendment: Amendment; step: number 
             <div>
               <TimelineTitle className="text-sm font-medium">
                 {amendment.title}
-                <span className="ms-2 text-xs text-muted-foreground">
-                  {amendment.amendmentNumber}
-                </span>
+                {!!amendment.amendmentNumber && (
+                  <span className="ms-2 text-xs text-muted-foreground">
+                    {amendment.amendmentNumber}
+                  </span>
+                )}
               </TimelineTitle>
               <p className="text-xs text-muted-foreground">
                 {t('effective', { date: formatDate(amendment.effectiveDate) })}
@@ -315,4 +317,15 @@ export function AmendmentsTab({ contract, tab, addDialog }: AmendmentsTabProps) 
       />
     </>
   );
+}
+
+type AmendmentsTabWiredProps = {
+  contract: AmendmentsTabProps['contract'];
+};
+
+export function AmendmentsTabWired({ contract }: AmendmentsTabWiredProps) {
+  const tab = useContractAmendmentsTab();
+  const addDialog = useAddAmendmentDialog(contract.id, tab.dialogOpen, tab.setDialogOpen);
+
+  return <AmendmentsTab contract={contract} tab={tab} addDialog={addDialog} />;
 }

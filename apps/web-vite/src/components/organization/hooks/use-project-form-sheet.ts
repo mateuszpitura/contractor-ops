@@ -1,6 +1,6 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { toast } from 'sonner';
+import { useQuery } from '@tanstack/react-query';
 
+import { useResourceMutation } from '../../../hooks/use-resource-mutation.js';
 import { useCommonToasts } from '../../../i18n/use-common-toasts.js';
 import { useTRPC } from '../../../providers/trpc-provider.js';
 
@@ -11,51 +11,41 @@ interface UseProjectFormSheetOptions {
 
 export function useProjectFormSheet({ onOpenChange, onCreated }: UseProjectFormSheetOptions) {
   const trpc = useTRPC();
-  const queryClient = useQueryClient();
   const toasts = useCommonToasts();
 
   const teamsQuery = useQuery(
     trpc.organizationDefinitions.team.list.queryOptions({ status: 'ACTIVE', limit: 200 }),
   );
 
-  const createMutation = useMutation(
+  const createMutation = useResourceMutation(
     trpc.organizationDefinitions.project.create.mutationOptions({
       onSuccess: created => {
-        toast.success(toasts.projectCreated());
-        void queryClient.invalidateQueries({
-          queryKey: trpc.organizationDefinitions.project.list.queryKey(),
-        });
         onCreated?.({ id: created.id, name: created.name });
-        onOpenChange(false);
       },
-      onError: err => toast.error(err.message),
     }),
+    {
+      successMessage: toasts.projectCreated(),
+      invalidate: [trpc.organizationDefinitions.project.list.queryKey()],
+      onClose: () => onOpenChange(false),
+    },
   );
 
-  const updateMutation = useMutation(
-    trpc.organizationDefinitions.project.update.mutationOptions({
-      onSuccess: () => {
-        toast.success(toasts.projectUpdated());
-        void queryClient.invalidateQueries({
-          queryKey: trpc.organizationDefinitions.project.list.queryKey(),
-        });
-        onOpenChange(false);
-      },
-      onError: err => toast.error(err.message),
-    }),
+  const updateMutation = useResourceMutation(
+    trpc.organizationDefinitions.project.update.mutationOptions(),
+    {
+      successMessage: toasts.projectUpdated(),
+      invalidate: [trpc.organizationDefinitions.project.list.queryKey()],
+      onClose: () => onOpenChange(false),
+    },
   );
 
-  const archiveMutation = useMutation(
-    trpc.organizationDefinitions.project.archive.mutationOptions({
-      onSuccess: () => {
-        toast.success(toasts.projectArchived());
-        void queryClient.invalidateQueries({
-          queryKey: trpc.organizationDefinitions.project.list.queryKey(),
-        });
-        onOpenChange(false);
-      },
-      onError: err => toast.error(err.message),
-    }),
+  const archiveMutation = useResourceMutation(
+    trpc.organizationDefinitions.project.archive.mutationOptions(),
+    {
+      successMessage: toasts.projectArchived(),
+      invalidate: [trpc.organizationDefinitions.project.list.queryKey()],
+      onClose: () => onOpenChange(false),
+    },
   );
 
   const teams = teamsQuery.data?.items ?? [];

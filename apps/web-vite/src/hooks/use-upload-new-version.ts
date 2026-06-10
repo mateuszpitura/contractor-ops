@@ -6,6 +6,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useRef } from 'react';
 import { toast } from 'sonner';
 
+import { useTranslatedError } from '../i18n/use-translated-error.js';
 import { useTranslations } from '../i18n/useTranslations.js';
 import { useTRPC } from '../providers/trpc-provider.js';
 
@@ -20,18 +21,19 @@ const MAX_FILE_SIZE = 25 * 1024 * 1024;
 export function useUploadNewVersion() {
   const trpc = useTRPC();
   const t = useTranslations('Documents');
+  const translateError = useTranslatedError();
   const queryClient = useQueryClient();
   const inputRef = useRef<HTMLInputElement | null>(null);
 
   const requestUploadMutation = useMutation(
     trpc.document.uploadNewVersion.mutationOptions({
-      onError: err => toast.error(err.message),
+      onError: err => toast.error(translateError(err) || t('scan.uploadError')),
     }),
   );
 
   const confirmUploadMutation = useMutation(
     trpc.document.confirmUpload.mutationOptions({
-      onError: err => toast.error(err.message),
+      onError: err => toast.error(translateError(err) || t('scan.uploadError')),
     }),
   );
 
@@ -52,8 +54,7 @@ export function useUploadNewVersion() {
           fileSizeBytes: file.size,
         });
 
-        const uploadResult = result as { documentId: string; uploadUrl: string };
-        const { documentId, uploadUrl } = uploadResult;
+        const { documentId, uploadUrl } = result;
 
         const putResponse = await fetch(uploadUrl, {
           method: 'PUT',
@@ -69,12 +70,12 @@ export function useUploadNewVersion() {
         toast.success(t('upload.success', { filename: file.name }), { id: toastId });
         queryClient.invalidateQueries(trpc.document.pathFilter());
       } catch (err) {
-        const message =
-          err instanceof Error ? err.message : t('upload.error', { filename: file.name });
-        toast.error(message, { id: toastId });
+        toast.error(translateError(err) || t('upload.error', { filename: file.name }), {
+          id: toastId,
+        });
       }
     },
-    [t, queryClient, trpc, requestUploadMutation, confirmUploadMutation],
+    [t, translateError, queryClient, trpc, requestUploadMutation, confirmUploadMutation],
   );
 
   const onUploadNewVersion = useCallback(
@@ -85,15 +86,25 @@ export function useUploadNewVersion() {
       input.type = 'file';
       input.accept = ACCEPT_ATTR;
       input.style.display = 'none';
-      input.addEventListener('change', () => {
-        const file = input.files?.[0];
+
+      try {
+        input.addEventListener('change', () => {
+          try {
+            const file = input.files?.[0];
+            if (!file) return;
+            void performUpload(existingDocumentId, file);
+          } finally {
+            input.remove();
+          }
+        });
+        input.addEventListener('cancel', () => input.remove());
+        document.body.appendChild(input);
+        inputRef.current = input;
+        input.click();
+      } catch (err) {
         input.remove();
-        if (!file) return;
-        void performUpload(existingDocumentId, file);
-      });
-      document.body.appendChild(input);
-      inputRef.current = input;
-      input.click();
+        throw err;
+      }
     },
     [performUpload],
   );

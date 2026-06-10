@@ -6,16 +6,16 @@ import { Alert, AlertDescription } from '@contractor-ops/ui/components/shadcn/al
 import { useState } from 'react';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { WorkbenchPageHeader } from '../../shared/workbench-page-header.js';
-import { IntakeDetailActionsBarContainer } from './intake-detail-actions-bar-container.js';
+import { IntakeDetailActionsBar } from './intake-detail-actions-bar.js';
 import { IntakeDetailFieldsPane } from './intake-detail-fields-pane.js';
-import { IntakeDetailMatchPaneContainer } from './intake-detail-match-pane-container.js';
-import { IntakeDetailPdfPaneContainer } from './intake-detail-pdf-pane-container.js';
-import { IntakeDetailValidationPaneContainer } from './intake-detail-validation-pane-container.js';
+import { IntakeDetailMatchPane } from './intake-detail-match-pane.js';
+import { IntakeDetailPdfPane } from './intake-detail-pdf-pane.js';
+import { IntakeDetailValidationPane } from './intake-detail-validation-pane.js';
 import type { ProfileLevel } from './intake-profile-level-badge.js';
 import type { IntakeStatus } from './intake-status-pill.js';
 import type { ValidationStatus } from './intake-validation-status-pill.js';
 
-interface IntakeDetailData {
+export interface IntakeDetailData {
   id: string;
   sourceKind: 'UPLOAD_XML' | 'UPLOAD_PDF';
   status: IntakeStatus;
@@ -66,7 +66,7 @@ export function IntakeDetailClient({ intake, pageTitle }: IntakeDetailClientProp
       )}
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-        <IntakeDetailPdfPaneContainer intakeId={intake.id} sourceKind={intake.sourceKind} />
+        <IntakeDetailPdfPane intakeId={intake.id} sourceKind={intake.sourceKind} />
         <div className="space-y-6">
           <IntakeDetailFieldsPane
             supplierName={intake.extractedSupplierName}
@@ -80,13 +80,13 @@ export function IntakeDetailClient({ intake, pageTitle }: IntakeDetailClientProp
             profileLevel={intake.profileLevel}
             unmappedFields={intake.unmappedFieldsJson}
           />
-          <IntakeDetailValidationPaneContainer
+          <IntakeDetailValidationPane
             intakeId={intake.id}
             validationStatus={intake.validationStatus}
             validationAcknowledgedAt={intake.validationAcknowledgedAt}
             validationReportSummary={intake.validationReportSummary ?? null}
           />
-          <IntakeDetailMatchPaneContainer
+          <IntakeDetailMatchPane
             intakeId={intake.id}
             currentStatus={intake.status}
             onSelectedCandidateChange={setSelectedCandidateId}
@@ -94,7 +94,7 @@ export function IntakeDetailClient({ intake, pageTitle }: IntakeDetailClientProp
         </div>
       </div>
 
-      <IntakeDetailActionsBarContainer
+      <IntakeDetailActionsBar
         intakeId={intake.id}
         status={intake.status}
         validationStatus={intake.validationStatus}

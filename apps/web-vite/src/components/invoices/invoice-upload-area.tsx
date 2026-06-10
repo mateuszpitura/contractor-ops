@@ -9,12 +9,16 @@ import { CheckCircle2, Eye, EyeOff, FileText, Loader2, RotateCcw, XCircle } from
 import type { ChangeEvent, DragEvent, ReactNode, RefObject } from 'react';
 import { memo, useCallback } from 'react';
 
+import { useTranslations } from '../../i18n/useTranslations.js';
 import { useRouter } from '../../i18n/navigation.js';
 import { formatFileSize, truncateFilename as truncateName } from '../../lib/format-file-size.js';
 import { CreditExhaustedInline } from '../billing/credit-exhausted-inline.js';
+import type { ExtractedInvoiceData } from '../ocr/ocr-review-panel.js';
+import { OcrReviewPanelWired } from '../ocr/ocr-review-panel.js';
 import type { UploadingFile } from './hooks/use-invoice-upload.js';
+import { useInvoiceUpload } from './hooks/use-invoice-upload.js';
 
-interface InvoiceUploadAreaProps {
+export interface InvoiceUploadAreaViewProps {
   className?: string;
   t: (key: string, values?: Record<string, unknown>) => string;
   files: UploadingFile[];
@@ -30,7 +34,7 @@ interface InvoiceUploadAreaProps {
   ocrReviewPanel: ReactNode;
 }
 
-export function InvoiceUploadArea({
+export function InvoiceUploadAreaView({
   className,
   t,
   files,
@@ -44,7 +48,7 @@ export function InvoiceUploadArea({
   showPdfReview,
   onTogglePdfReview,
   ocrReviewPanel,
-}: InvoiceUploadAreaProps) {
+}: InvoiceUploadAreaViewProps) {
   const router = useRouter();
 
   const handleDrop = useCallback(
@@ -214,3 +218,57 @@ const UploadFileRow = memo(function UploadFileRow({
     </div>
   );
 });
+
+interface InvoiceUploadAreaProps {
+  onUploadComplete?: () => void;
+  onOcrAccept?: (data: ExtractedInvoiceData) => void;
+  className?: string;
+}
+
+export function InvoiceUploadArea({
+  onUploadComplete,
+  onOcrAccept,
+  className,
+}: InvoiceUploadAreaProps) {
+  const t = useTranslations('Invoices.upload');
+  const upload = useInvoiceUpload(onUploadComplete, onOcrAccept);
+
+  const { setShowPdfReview, ingestFiles } = upload;
+  const togglePdfReview = useCallback(() => {
+    setShowPdfReview(prev => !prev);
+  }, [setShowPdfReview]);
+
+  const handleIngestFiles = useCallback(
+    (files: File[]) => ingestFiles(files, t),
+    [ingestFiles, t],
+  );
+
+  const ocrReviewPanel =
+    upload.showPdfReview && upload.extractionId && upload.pdfUrl ? (
+      <OcrReviewPanelWired
+        pdfUrl={upload.pdfUrl}
+        extractionId={upload.extractionId}
+        onAccept={upload.handleOcrAccept}
+        onDiscard={upload.handleOcrDiscard}
+        onRetrigger={upload.handleOcrRetrigger}
+      />
+    ) : null;
+
+  return (
+    <InvoiceUploadAreaView
+      className={className}
+      t={t}
+      files={upload.files}
+      creditExhausted={upload.creditExhausted}
+      isDragActive={upload.isDragActive}
+      fileInputRef={upload.fileInputRef}
+      onSetDragActive={upload.setIsDragActive}
+      onIngestFiles={handleIngestFiles}
+      onRetryFile={upload.retryFile}
+      hasOcrSession={upload.extractionId != null && upload.pdfUrl != null}
+      showPdfReview={upload.showPdfReview}
+      onTogglePdfReview={togglePdfReview}
+      ocrReviewPanel={ocrReviewPanel}
+    />
+  );
+}

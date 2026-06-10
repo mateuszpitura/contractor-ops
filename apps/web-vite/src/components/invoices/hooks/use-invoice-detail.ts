@@ -1,6 +1,7 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback } from 'react';
-import { toast } from 'sonner';
+import { useEntityDetailQuery } from '../../../hooks/use-entity-detail-query.js';
+import { useResourceMutation } from '../../../hooks/use-resource-mutation.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import type { PeppolTransmissionResult } from '../../../lib/peppol-trpc.js';
 import { getPeppolTrpc } from '../../../lib/peppol-trpc.js';
@@ -16,8 +17,15 @@ export function useInvoiceDetail(invoiceId: string, breadcrumbId?: string) {
   const peppolTrpc = getPeppolTrpc(trpc);
   const zatcaTrpc = useZatcaTrpc();
 
-  const invoiceQuery = useQuery(trpc.invoice.getById.queryOptions({ id: invoiceId }));
-  const invoice = invoiceQuery.data;
+  const {
+    query: invoiceQuery,
+    data: invoice,
+    handleRetry,
+    isNotFound,
+    isLoading,
+    isError,
+    hasData: hasInvoice,
+  } = useEntityDetailQuery(trpc.invoice.getById.queryOptions({ id: invoiceId }));
 
   const sourceFile = invoice?.files?.find(
     (f: { role: string; document?: { id: string }; documentId?: string }) =>
@@ -46,23 +54,11 @@ export function useInvoiceDetail(invoiceId: string, breadcrumbId?: string) {
 
   useBreadcrumbOverride(breadcrumbId ?? invoiceId, invoice?.invoiceNumber);
 
-  const submitForApproval = useMutation(
-    trpc.approval.submitForApproval.mutationOptions({
-      onSuccess: () => {
-        void queryClient.invalidateQueries({
-          queryKey: trpc.invoice.getById.queryKey({ id: invoiceId }),
-        });
-        toast.success(t('detail.submittedForApprovalToast'));
-      },
-      onError: () => {
-        toast.error(t('detail.submitForApprovalError'));
-      },
-    }),
-  );
-
-  const handleRetry = useCallback(() => {
-    void invoiceQuery.refetch();
-  }, [invoiceQuery]);
+  const submitForApproval = useResourceMutation(trpc.approval.submitForApproval.mutationOptions(), {
+    invalidate: [trpc.invoice.getById.queryKey({ id: invoiceId })],
+    successMessage: t('detail.submittedForApprovalToast'),
+    errorMessage: t('detail.submitForApprovalError'),
+  });
 
   const handleInvoiceInvalidate = useCallback(() => {
     void queryClient.invalidateQueries({
@@ -73,10 +69,6 @@ export function useInvoiceDetail(invoiceId: string, breadcrumbId?: string) {
   const handleSubmitForApproval = useCallback(() => {
     if (invoice) submitForApproval.mutate({ invoiceId: invoice.id });
   }, [invoice, submitForApproval]);
-
-  const errorCode = (invoiceQuery.error as { data?: { code?: string } } | null | undefined)?.data
-    ?.code;
-  const isNotFound = errorCode === 'NOT_FOUND';
 
   return {
     invoiceQuery,
@@ -91,9 +83,9 @@ export function useInvoiceDetail(invoiceId: string, breadcrumbId?: string) {
     handleSubmitForApproval,
     isSubmitting: submitForApproval.isPending,
     isNotFound,
-    isLoading: invoiceQuery.isLoading,
-    isError: invoiceQuery.isError,
-    hasInvoice: Boolean(invoice),
+    isLoading,
+    isError,
+    hasInvoice,
     t,
   } as const;
 }

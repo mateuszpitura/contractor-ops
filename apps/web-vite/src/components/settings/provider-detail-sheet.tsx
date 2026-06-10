@@ -28,10 +28,10 @@ import {
 import { addHours, formatDistanceToNow, isBefore } from 'date-fns';
 import { Loader2, Unlink } from 'lucide-react';
 import type { ReactNode } from 'react';
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { tDynLoose } from '../../i18n/typed-keys';
 import { useTranslations } from '../../i18n/useTranslations.js';
-import type { useProviderDetailSheet } from './hooks/use-provider-detail-sheet.js';
+import { useProviderDetailSheet } from './hooks/use-provider-detail-sheet.js';
 
 // ---------------------------------------------------------------------------
 // Status badge styling (shared with ProviderConnectionCard)
@@ -112,7 +112,7 @@ function TokenExpiryDisplay({ expiresAt }: { expiresAt: string | Date | null | u
 // ProviderDetailSheet
 // ---------------------------------------------------------------------------
 
-interface ProviderDetailSheetShellProps {
+interface ProviderDetailSheetViewShellProps {
   provider: string;
   displayName: string;
   icon: ReactNode;
@@ -122,10 +122,10 @@ interface ProviderDetailSheetShellProps {
   setDisconnectDialogOpen: (open: boolean) => void;
 }
 
-export type ProviderDetailSheetProps = ProviderDetailSheetShellProps &
+export type ProviderDetailSheetViewProps = ProviderDetailSheetViewShellProps &
   ReturnType<typeof useProviderDetailSheet>;
 
-export function ProviderDetailSheet({
+export function ProviderDetailSheetView({
   provider,
   displayName,
   icon,
@@ -145,7 +145,7 @@ export function ProviderDetailSheet({
   handleReauthorize,
   handleDisconnect,
   isDisconnectPending,
-}: ProviderDetailSheetProps) {
+}: ProviderDetailSheetViewProps) {
   const statusBadgeClass =
     STATUS_BADGE_CLASSES[connectionStatus] ?? STATUS_BADGE_CLASSES.DISCONNECTED;
   const statusLabelKey = STATUS_LABEL_KEYS[connectionStatus] ?? 'statusDisconnected';
@@ -378,5 +378,43 @@ export function ProviderDetailSheet({
         </AlertDialogContent>
       </AlertDialog>
     </>
+  );
+}
+
+interface ProviderDetailSheetProps {
+  provider: string;
+  displayName: string;
+  icon: ReactNode;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}
+
+export function ProviderDetailSheet({
+  provider,
+  displayName,
+  icon,
+  open,
+  onOpenChange,
+}: ProviderDetailSheetProps) {
+  const [disconnectDialogOpen, setDisconnectDialogOpen] = useState(false);
+  const sheet = useProviderDetailSheet({
+    provider,
+    displayName,
+    open,
+    onOpenChange,
+    onDisconnectDialogClose: () => setDisconnectDialogOpen(false),
+  });
+
+  return (
+    <ProviderDetailSheetView
+      provider={provider}
+      displayName={displayName}
+      icon={icon}
+      open={open}
+      onOpenChange={onOpenChange}
+      disconnectDialogOpen={disconnectDialogOpen}
+      setDisconnectDialogOpen={setDisconnectDialogOpen}
+      {...sheet}
+    />
   );
 }

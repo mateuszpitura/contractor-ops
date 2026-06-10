@@ -1,24 +1,23 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useCallback } from 'react';
-import { toast } from 'sonner';
 
+import { useResourceMutation } from '../../../hooks/use-resource-mutation.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { useTRPC } from '../../../providers/trpc-provider.js';
 
 export function useReverseChargeBanner(invoiceId: string, onToggle?: (newValue: boolean) => void) {
   const t = useTranslations('Invoices.reverseCharge');
   const trpc = useTRPC();
-  const queryClient = useQueryClient();
 
-  const toggleMutation = useMutation(
+  const toggleMutation = useResourceMutation(
     trpc.invoice.toggleReverseCharge.mutationOptions({
       onSuccess: (_: unknown, vars: { isReverseCharge: boolean }) => {
-        toast.success(vars.isReverseCharge ? t('applied') : t('removedToast'));
         onToggle?.(vars.isReverseCharge);
-        queryClient.invalidateQueries(trpc.invoice.pathFilter());
       },
-      onError: err => toast.error(err.message),
     }),
+    {
+      invalidate: [trpc.invoice.pathFilter()],
+      successMessage: t('removedToast'),
+    },
   );
 
   const handleRemove = useCallback(() => {

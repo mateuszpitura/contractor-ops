@@ -25,7 +25,7 @@ import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
 import { useTranslations } from '../../i18n/useTranslations.js';
-import type { useEquipmentShipmentForm } from './hooks/use-equipment-shipment-form.js';
+import { useEquipmentShipmentForm } from './hooks/use-equipment-shipment-form.js';
 
 const shipmentFormSchema = z.object({
   direction: z.enum(['OUTBOUND', 'RETURN']),
@@ -201,4 +201,12 @@ export function ShipmentFormView({
       </DialogContent>
     </Dialog>
   );
+}
+
+export function ShipmentForm(props: ShipmentFormProps) {
+  const { createMutation, isPending } = useEquipmentShipmentForm({
+    equipmentId: props.equipmentId,
+    onSuccess: () => props.onOpenChange(false),
+  });
+  return <ShipmentFormView {...props} createMutation={createMutation} isPending={isPending} />;
 }

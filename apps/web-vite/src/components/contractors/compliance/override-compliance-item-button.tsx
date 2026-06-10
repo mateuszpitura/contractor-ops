@@ -4,7 +4,7 @@ import { useState } from 'react';
 
 import { usePermissions } from '../../../hooks/use-permissions.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
-import { OverrideComplianceItemDialogContainer } from './override-compliance-item-dialog-container.js';
+import { OverrideComplianceItemDialogContainer } from './override-compliance-item-dialog.js';
 
 export interface OverrideComplianceItemButtonProps {
   itemId: string;

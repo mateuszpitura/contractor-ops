@@ -1,10 +1,10 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { useEffect, useId, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
-import { toast } from 'sonner';
 import { z } from 'zod';
 
+import { useResourceMutation } from '../../../hooks/use-resource-mutation.js';
 import { useLocale } from '../../../i18n/navigation.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import type { DateFormatKey, TimeFormatKey } from '../../../lib/format-date';
@@ -174,7 +174,6 @@ export function useOrgSettingsForm() {
   const t = useTranslations('Settings');
   const tToast = useTranslations('Settings.toast');
   const locale = useLocale();
-  const queryClient = useQueryClient();
 
   const timezones = useMemo(() => getAllTimezones(), []);
   const currencies = useMemo(() => getAllCurrencies(), []);
@@ -183,21 +182,11 @@ export function useOrgSettingsForm() {
 
   const settingsQuery = useQuery(trpc.settings.get.queryOptions());
 
-  const updateMutation = useMutation(
-    trpc.settings.update.mutationOptions({
-      onSuccess: () => {
-        toast.success(t('savedToast'));
-        queryClient.invalidateQueries({ queryKey: trpc.settings.get.queryKey() });
-      },
-      onError: (error: unknown) => {
-        const message =
-          typeof error === 'object' && error && 'message' in error
-            ? String((error as { message?: unknown }).message ?? '')
-            : '';
-        toast.error(message || tToast('saveSettingsFailed'));
-      },
-    }),
-  );
+  const updateMutation = useResourceMutation(trpc.settings.update.mutationOptions(), {
+    invalidate: [trpc.settings.get.queryKey()],
+    successMessage: t('savedToast'),
+    errorMessage: tToast('saveSettingsFailed'),
+  });
 
   const form = useForm<SettingsValues>({
     resolver: zodResolver(updateSettingsSchema),

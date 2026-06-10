@@ -14,7 +14,7 @@ import { tDynLoose } from '../../../i18n/typed-keys.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { enumKey } from '../../../lib/enum-key.js';
 import { cn } from '../../../lib/utils.js';
-import type { useEquipmentShipmentEvent } from '../hooks/use-equipment-detail-actions.js';
+import { useEquipmentShipmentEvent } from '../hooks/use-equipment-detail-actions.js';
 
 type ShipmentEvent = {
   id: string;
@@ -249,4 +249,9 @@ export function ShipmentTimelineView({
       </ol>
     </div>
   );
+}
+
+export function ShipmentTimeline(props: ShipmentTimelineProps) {
+  const { mutation: addEventMutation } = useEquipmentShipmentEvent();
+  return <ShipmentTimelineView {...props} addEventMutation={addEventMutation} />;
 }

@@ -20,10 +20,11 @@ import type * as React from 'react';
 import { useCallback } from 'react';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
-import { formatMinorUnits } from '../../../lib/format-currency.js';
-import type { usePaymentRunStepReview } from '../hooks/use-payment-run-step-review.js';
+import { formatMinorUnits } from '../../../lib/money.js';
+import { usePaymentRunStepReview } from '../hooks/use-payment-run-step-review.js';
+import { PaymentBlockModal } from '../payment-block-modal.js';
 
-interface StepReviewProps {
+interface StepReviewViewProps {
   selectedInvoiceIds: string[];
   groupByCurrency: boolean;
   onBack: () => void;
@@ -40,13 +41,13 @@ interface StepReviewProps {
   review: ReturnType<typeof usePaymentRunStepReview>;
 }
 
-export function StepReview({
+export function StepReviewView({
   selectedInvoiceIds,
   groupByCurrency,
   onBack,
   onComplete,
   review,
-}: StepReviewProps) {
+}: StepReviewViewProps) {
   const t = useTranslations('Payments');
 
   const {
@@ -80,11 +81,6 @@ export function StepReview({
   return (
     <>
       <DialogBody className="flex flex-col gap-4">
-        <div className="text-center">
-          <p className="text-[20px] font-semibold">PR-{new Date().getFullYear()}-XXX</p>
-          <p className="text-xs text-muted-foreground">{t('step2.runNumberLabel')}</p>
-        </div>
-
         <div className="grid gap-3">
           <div className="space-y-1.5">
             <Label className="text-xs">{t('step2.nameLabel')}</Label>
@@ -191,6 +187,43 @@ export function StepReview({
           )}
         </Button>
       </DialogFooter>
+    </>
+  );
+}
+
+interface StepReviewProps {
+  selectedInvoiceIds: string[];
+  groupByCurrency: boolean;
+  onBack: () => void;
+  onComplete: (result: {
+    runId: string;
+    runNumber: string;
+    fileBase64: string;
+    fileName: string;
+    invoiceCount: number;
+    totalMinor: number;
+    currency: string;
+    exportFormat: string;
+  }) => void;
+}
+
+// Decision: mutation host — usePaymentRunStepReview owns create +
+// lock-and-export mutations and the isLocking guard. selectedInvoiceIds
+// forwarded by NewPaymentRunDialog; no variant flag.
+export function StepReview(props: StepReviewProps) {
+  const review = usePaymentRunStepReview({
+    selectedInvoiceIds: props.selectedInvoiceIds,
+    groupByCurrency: props.groupByCurrency,
+    onComplete: props.onComplete,
+  });
+  return (
+    <>
+      <StepReviewView {...props} review={review} />
+      <PaymentBlockModal
+        open={review.paymentBlock.open}
+        onClose={review.dismissPaymentBlock}
+        contractorReasons={review.paymentBlock.reasons}
+      />
     </>
   );
 }

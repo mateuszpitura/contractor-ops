@@ -13,7 +13,10 @@ import { Label } from '@contractor-ops/ui/components/shadcn/label';
 import { Textarea } from '@contractor-ops/ui/components/shadcn/textarea';
 import { ArrowDown, ArrowUp, Plus, Trash2 } from 'lucide-react';
 import { useCallback } from 'react';
-import type { useWorkflowRoleFormDialog } from './hooks/use-workflow-role-form-dialog.js';
+import {
+  useWorkflowRoleFormDialog,
+  type useWorkflowRoleFormDialog as UseWorkflowRoleFormDialog,
+} from './hooks/use-workflow-role-form-dialog.js';
 
 type SetTaskField = ReturnType<typeof useWorkflowRoleFormDialog>['setTaskField'];
 type MoveTask = ReturnType<typeof useWorkflowRoleFormDialog>['moveTask'];
@@ -187,9 +190,9 @@ interface WorkflowRoleFormDialogBaseProps {
 }
 
 export type WorkflowRoleFormDialogProps = WorkflowRoleFormDialogBaseProps &
-  ReturnType<typeof useWorkflowRoleFormDialog>;
+  ReturnType<typeof UseWorkflowRoleFormDialog>;
 
-export function WorkflowRoleFormDialog({
+export function WorkflowRoleFormDialogView({
   mode,
   open,
   onOpenChange,
@@ -311,5 +314,23 @@ export function WorkflowRoleFormDialog({
         </DialogFooter>
       </DialogContent>
     </Dialog>
+  );
+}
+
+export function WorkflowRoleFormDialog({
+  mode,
+  initial,
+  open,
+  onOpenChange,
+}: WorkflowRoleFormDialogBaseProps) {
+  const form = useWorkflowRoleFormDialog({ mode, initial, onOpenChange });
+  return (
+    <WorkflowRoleFormDialogView
+      mode={mode}
+      initial={initial}
+      open={open}
+      onOpenChange={onOpenChange}
+      {...form}
+    />
   );
 }

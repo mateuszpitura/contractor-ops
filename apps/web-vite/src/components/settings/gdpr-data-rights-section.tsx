@@ -20,12 +20,13 @@ import { Input } from '@contractor-ops/ui/components/shadcn/input';
 import { Label } from '@contractor-ops/ui/components/shadcn/label';
 import { Download, Loader2, Trash2 } from 'lucide-react';
 import { useCallback } from 'react';
-import type { useGdprDataRightsSection } from './hooks/use-gdpr-data-rights-section.js';
+import { useGdprDataRightsSection } from './hooks/use-gdpr-data-rights-section.js';
+import type { useGdprDataRightsSection as UseGdprDataRightsSection } from './hooks/use-gdpr-data-rights-section.js';
 import { GDPR_CONFIRM_PHRASE } from './hooks/use-gdpr-data-rights-section.js';
 
-export type GdprDataRightsSectionProps = ReturnType<typeof useGdprDataRightsSection>;
+export type GdprDataRightsSectionProps = ReturnType<typeof UseGdprDataRightsSection>;
 
-export function GdprDataRightsSection({
+export function GdprDataRightsSectionView({
   t,
   erasureOpen,
   setErasureOpen,
@@ -130,4 +131,9 @@ export function GdprDataRightsSection({
       </AlertDialog>
     </Card>
   );
+}
+
+export function GdprDataRightsSection() {
+  const section = useGdprDataRightsSection();
+  return <GdprDataRightsSectionView {...section} />;
 }

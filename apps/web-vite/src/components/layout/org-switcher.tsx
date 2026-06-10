@@ -27,6 +27,7 @@ import { memo, useCallback, useId, useState } from 'react';
 import { useTranslations } from '../../i18n/useTranslations.js';
 import type { OrgInfo } from './dashboard-context.js';
 import type { CreateOrgResult, OrgSwitcherListItem } from './hooks/use-org-switcher.js';
+import { useOrgSwitcher } from './hooks/use-org-switcher.js';
 
 interface OrgSwitcherProps {
   currentOrg: OrgInfo | null;
@@ -252,5 +253,25 @@ export function OrgSwitcherEmpty({ currentOrg, onCreateOrg, isCreating }: OrgSwi
         isCreating={isCreating}
       />
     </>
+  );
+}
+
+export function OrgSwitcherContainer() {
+  const { currentOrg, organizations, handleOrgSwitch, createOrg, isCreating } = useOrgSwitcher();
+
+  if (organizations.length === 0) {
+    return (
+      <OrgSwitcherEmpty currentOrg={currentOrg} onCreateOrg={createOrg} isCreating={isCreating} />
+    );
+  }
+
+  return (
+    <OrgSwitcher
+      currentOrg={currentOrg}
+      organizations={organizations}
+      onOrgSwitch={handleOrgSwitch}
+      onCreateOrg={createOrg}
+      isCreating={isCreating}
+    />
   );
 }

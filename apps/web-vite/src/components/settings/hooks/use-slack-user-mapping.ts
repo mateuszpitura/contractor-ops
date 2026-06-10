@@ -1,7 +1,7 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
-import { toast } from 'sonner';
 
+import { useResourceMutation } from '../../../hooks/use-resource-mutation.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { useTRPC } from '../../../providers/trpc-provider.js';
 
@@ -26,24 +26,21 @@ export type UserMapping = {
 export function useLinkUserPopover(userId: string, onLinked: () => void) {
   const trpc = useTRPC();
   const t = useTranslations('Settings');
-  const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
 
-  const linkMutation = useMutation(
+  const linkMutation = useResourceMutation(
     trpc.integration.linkUser.mutationOptions({
       onSuccess: () => {
-        toast.success(t('integrations.toasts.userLinked'));
-        queryClient.invalidateQueries({
-          queryKey: trpc.integration.listUserMappings.queryKey(),
-        });
-        setOpen(false);
         onLinked();
       },
-      onError: () => {
-        toast.error(t('integrations.toasts.linkFailed'));
-      },
     }),
+    {
+      invalidate: [trpc.integration.listUserMappings.queryKey()],
+      successMessage: t('integrations.toasts.userLinked'),
+      errorMessage: t('integrations.toasts.linkFailed'),
+      onClose: () => setOpen(false),
+    },
   );
 
   const handleSelect = (externalId: string) => {
@@ -64,24 +61,15 @@ export function useLinkUserPopover(userId: string, onLinked: () => void) {
 export function useSlackUserMapping() {
   const trpc = useTRPC();
   const t = useTranslations('Settings');
-  const queryClient = useQueryClient();
 
   const mappingsQuery = useQuery(trpc.integration.listUserMappings.queryOptions());
   const mappings = (mappingsQuery.data?.mappings ?? []) as UserMapping[];
 
-  const unlinkMutation = useMutation(
-    trpc.integration.unlinkUser.mutationOptions({
-      onSuccess: () => {
-        toast.success(t('integrations.toasts.userUnlinked'));
-        queryClient.invalidateQueries({
-          queryKey: trpc.integration.listUserMappings.queryKey(),
-        });
-      },
-      onError: () => {
-        toast.error(t('integrations.toasts.linkFailed'));
-      },
-    }),
-  );
+  const unlinkMutation = useResourceMutation(trpc.integration.unlinkUser.mutationOptions(), {
+    invalidate: [trpc.integration.listUserMappings.queryKey()],
+    successMessage: t('integrations.toasts.userUnlinked'),
+    errorMessage: t('integrations.toasts.linkFailed'),
+  });
 
   const totalUsers = mappings.length;
   const matchedUsers = mappings.filter(m => m.status === 'linked').length;

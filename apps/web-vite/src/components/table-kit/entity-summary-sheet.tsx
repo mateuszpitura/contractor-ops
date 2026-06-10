@@ -14,6 +14,8 @@ export interface EntitySummarySheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   title: string;
+  /** Screen-reader-only title while visual title is skeleton chrome. */
+  titleVisuallyHidden?: boolean;
   badges?: ReactNode;
   detailsTitle?: string;
   children?: ReactNode;
@@ -25,6 +27,7 @@ export function EntitySummarySheet({
   open,
   onOpenChange,
   title,
+  titleVisuallyHidden = false,
   badges,
   detailsTitle,
   children,
@@ -39,7 +42,14 @@ export function EntitySummarySheet({
         <ScrollArea className="h-full">
           <div className="p-6 space-y-6">
             <SheetHeader className="space-y-3">
-              <SheetTitle className="text-[20px] font-semibold leading-[1.2]">{title}</SheetTitle>
+              <SheetTitle
+                className={
+                  titleVisuallyHidden
+                    ? 'sr-only'
+                    : 'text-[20px] font-semibold leading-[1.2]'
+                }>
+                {title}
+              </SheetTitle>
               {badges ? <div className="flex items-center gap-2 flex-wrap">{badges}</div> : null}
             </SheetHeader>
 

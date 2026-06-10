@@ -47,6 +47,8 @@ export function useJiraActivitySummary(contractorId: string) {
     activityQuery,
     items,
     relativeTime,
+    isError: activityQuery.isError,
+    onRetry: () => activityQuery.refetch(),
     t,
   } as const;
 }

@@ -11,7 +11,7 @@ import type * as React from 'react';
 import { memo, useCallback } from 'react';
 
 import type { LooseTranslator } from '../../../i18n/typed-keys.js';
-import { formatMinorUnits } from '../../../lib/format-currency.js';
+import { formatMinorUnits } from '../../../lib/money.js';
 import { PaymentRunBadge } from '../payment-run-badge.js';
 
 export type PaymentRunRow = {

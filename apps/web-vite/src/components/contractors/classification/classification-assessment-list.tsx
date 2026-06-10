@@ -1,5 +1,5 @@
 import type { Ir35Outcome, ScheinselbstandigkeitOutcome } from '@contractor-ops/classification';
-import { DataTable } from '@contractor-ops/ui';
+import { WorkbenchDataTable } from '../../table-kit/workbench-data-table.js';
 import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import {
@@ -15,6 +15,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { Link } from '../../../i18n/navigation.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { useDateFormatter } from '../../../lib/format/use-date-formatter.js';
+import { useClassificationAssessmentList } from './hooks/use-classification-assessment-list.js';
 import type { AssessmentRow } from './hooks/use-classification-assessment-list.js';
 
 export interface ClassificationAssessmentListViewProps {
@@ -214,7 +215,8 @@ export function ClassificationAssessmentListView(props: ClassificationAssessment
 
       {/* Desktop table (≥ 1024 px) */}
       <div className="hidden lg:block">
-        <DataTable
+        <WorkbenchDataTable
+          sectionClassName=""
           columns={columns}
           data={data}
           totalRows={data.length}
@@ -293,4 +295,15 @@ export function ClassificationAssessmentListView(props: ClassificationAssessment
       </ul>
     </div>
   );
+}
+
+export function ClassificationAssessmentList(
+  props: Pick<ClassificationAssessmentListViewProps, 'contractorId'>,
+) {
+  const { rows, isPending } = useClassificationAssessmentList(props.contractorId);
+
+  if (isPending) return <ClassificationAssessmentListSkeleton />;
+  if (rows.length === 0) return <ClassificationAssessmentListEmpty />;
+
+  return <ClassificationAssessmentListView contractorId={props.contractorId} rows={rows} />;
 }

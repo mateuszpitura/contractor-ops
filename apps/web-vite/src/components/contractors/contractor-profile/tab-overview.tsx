@@ -14,6 +14,7 @@ import { enumKey } from '../../../lib/enum-key.js';
 import { useDateFormatter } from '../../../lib/format/use-date-formatter.js';
 import { maskTaxId } from '../../../lib/mask-pii.js';
 import { ComplianceHealthBadge } from '../compliance-health-badge.js';
+import { useContractorTabOverview } from '../hooks/use-contractor-tab-overview.js';
 
 type HealthFactor = {
   key: 'documents' | 'contract' | 'tasks' | 'invoices';
@@ -294,4 +295,9 @@ export function TabOverviewView({ contractor, showPii, onSwitchTab }: TabOvervie
       </Card>
     </div>
   );
+}
+
+export function TabOverview({ contractor }: { contractor: TabOverviewContractor }) {
+  const { showPii, onSwitchTab } = useContractorTabOverview();
+  return <TabOverviewView contractor={contractor} showPii={showPii} onSwitchTab={onSwitchTab} />;
 }

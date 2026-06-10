@@ -8,8 +8,9 @@ import {
 import { useCallback, useId, useState } from 'react';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
+import { useIr35ChainPanel } from '../hooks/use-ir35-chain.js';
 
-import { AddParticipantDialogContainer } from './add-participant-dialog-container';
+import { AddParticipantDialog } from './add-participant-dialog.js';
 import { ChainParticipantRow } from './chain-participant-row';
 
 interface MutationLike<I> {
@@ -47,7 +48,7 @@ export function Ir35ChainPanelEmpty({ engagementId }: { engagementId: string }) 
         </button>
       </header>
       <p className="text-sm text-muted-foreground">{t('emptyState')}</p>
-      <AddParticipantDialogContainer
+      <AddParticipantDialog
         engagementId={engagementId}
         open={isAddOpen}
         onOpenChange={setIsAddOpen}
@@ -110,7 +111,7 @@ export function Ir35ChainPanelView({
         </TableBody>
       </Table>
 
-      <AddParticipantDialogContainer
+      <AddParticipantDialog
         engagementId={engagementId}
         open={isAddOpen}
         onOpenChange={setIsAddOpen}
@@ -176,3 +177,27 @@ export interface Ir35ChainParticipantRow {
   createdAt: Date;
   updatedAt: Date;
 }
+
+interface Ir35ChainPanelContainerProps {
+  engagementId: string;
+}
+
+export function Ir35ChainPanelContainer({ engagementId }: Ir35ChainPanelContainerProps) {
+  const { rows, markDelivered, markAcknowledged, removeParticipant } =
+    useIr35ChainPanel(engagementId);
+
+  if (rows.length === 0) return <Ir35ChainPanelEmpty engagementId={engagementId} />;
+
+  return (
+    <Ir35ChainPanelView
+      engagementId={engagementId}
+      rows={rows}
+      markDelivered={markDelivered}
+      markAcknowledged={markAcknowledged}
+      removeParticipant={removeParticipant}
+    />
+  );
+}
+
+/** @deprecated Use Ir35ChainPanel */
+export { Ir35ChainPanelContainer as Ir35ChainPanel };

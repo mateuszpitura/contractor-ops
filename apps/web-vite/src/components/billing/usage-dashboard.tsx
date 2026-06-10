@@ -9,10 +9,15 @@ import { renderEmptyStateAction } from '../shared/atelier-bridges.js';
 import { BillingDateCard } from './billing-date-card';
 import { CreditCard } from './credit-progress-bar';
 import type { UsageDashboardData } from './hooks/use-billing.js';
+import {
+  deriveUsageDashboardTier,
+  parseUsageDashboard,
+  useUsageDashboard,
+} from './hooks/use-billing.js';
 import { PlanComparisonGrid } from './plan-comparison-grid';
 import type { TierId } from './plan-comparison-grid.js';
 import { SeatCountCard } from './seat-count-card';
-import { TopUpDialogContainer } from './top-up-dialog-container';
+import { TopUpDialog } from './top-up-dialog.js';
 import { UsageKpiCard } from './usage-kpi-card';
 
 // ---------------------------------------------------------------------------
@@ -50,50 +55,15 @@ function formatStatus(status: string): string {
 // Component
 // ---------------------------------------------------------------------------
 
-interface UsageDashboardProps {
-  isLoading: boolean;
-  isError: boolean;
-  refetch: () => void;
-  parsed: UsageDashboardData | null;
+interface UsageDashboardViewProps {
+  parsed: UsageDashboardData;
   currentTier: TierId | null;
 }
 
-export function UsageDashboard({
-  isLoading,
-  isError,
-  refetch,
-  parsed,
-  currentTier,
-}: UsageDashboardProps) {
+export function UsageDashboardView({ parsed, currentTier }: UsageDashboardViewProps) {
   const t = useTranslations('Billing.usage');
   const [topUpOpen, setTopUpOpen] = useState(false);
   const handleBuyMore = useCallback(() => setTopUpOpen(true), []);
-
-  // ---- Loading state ----
-  if (isLoading) {
-    return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {Array.from({ length: 4 }).map((_, i) => (
-          // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
-          <div key={`usage-${i}`} className="rounded-xl border p-4 space-y-3">
-            <Skeleton className="h-4 w-20" />
-            <Skeleton className="h-7 w-24" />
-            <Skeleton className="h-2 w-full" />
-          </div>
-        ))}
-      </div>
-    );
-  }
-
-  // ---- Error state ----
-  if (isError) {
-    return (
-      <QueryErrorPanel message={t('errorLoading')} retryLabel={t('retry')} onRetry={refetch} />
-    );
-  }
-
-  // ---- Data not yet available (isPending without isFetching, e.g. disabled query) ----
-  if (!parsed) return null;
 
   const { subscription, credits, activeContractors, includedSeats, planConfig } = parsed;
 
@@ -168,7 +138,43 @@ export function UsageDashboard({
       {/* Plan Comparison Grid */}
       <PlanComparisonGrid currentTier={resolvedTier} onSelectPlan={noopSelectPlan} />
 
-      <TopUpDialogContainer open={topUpOpen} onOpenChange={setTopUpOpen} />
+      <TopUpDialog open={topUpOpen} onOpenChange={setTopUpOpen} />
     </div>
   );
+}
+
+function UsageDashboardSkeleton() {
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      {Array.from({ length: 4 }).map((_, i) => (
+        // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
+        <div key={`usage-${i}`} className="rounded-xl border p-4 space-y-3">
+          <Skeleton className="h-4 w-20" />
+          <Skeleton className="h-7 w-24" />
+          <Skeleton className="h-2 w-full" />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export function UsageDashboard() {
+  const t = useTranslations('Billing.usage');
+  const dashboard = useUsageDashboard();
+  const handleRetry = useCallback(() => void dashboard.refetch(), [dashboard.refetch]);
+
+  if (dashboard.isLoading) return <UsageDashboardSkeleton />;
+
+  if (dashboard.isError) {
+    return (
+      <QueryErrorPanel message={t('errorLoading')} retryLabel={t('retry')} onRetry={handleRetry} />
+    );
+  }
+
+  const parsed = dashboard.data ? parseUsageDashboard(dashboard.data) : null;
+  if (!parsed) return null;
+
+  const currentTier = parsed.subscription ? deriveUsageDashboardTier(parsed.subscription) : null;
+
+  return <UsageDashboardView parsed={parsed} currentTier={currentTier} />;
 }

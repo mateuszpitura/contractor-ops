@@ -19,7 +19,7 @@ import { Link } from '../../i18n/navigation.js';
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { formatDate } from '../../lib/format-date.js';
 import { renderEmptyStateAction } from '../shared/atelier-bridges.js';
-import type { MyTaskRow, useMyTasksList } from './hooks/use-my-tasks-list.js';
+import { useMyTasksList, type MyTaskRow } from './hooks/use-my-tasks-list.js';
 
 const TASK_STATUS_ICON: Record<string, { icon: React.ElementType; className: string }> = {
   TODO: { icon: Circle, className: 'text-muted-foreground' },
@@ -162,24 +162,50 @@ export function MyTasksListBody({ tasks, overdueOnly, setOverdueOnly }: MyTasksL
   );
 }
 
-type MyTasksListProps = ReturnType<typeof useMyTasksList>;
+interface MyTasksListViewProps {
+  tasks: MyTaskRow[];
+  isLoading: boolean;
+  isError: boolean;
+  handleRetry: () => void;
+  overdueOnly: boolean;
+  setOverdueOnly: (value: boolean) => void;
+  onStartWorkflow?: () => void;
+}
 
-/**
- * Legacy combined presentational view — kept for tests. Single render path
- * per variant, picked here via the same flags the container consults.
- */
-export function MyTasksList({
+export function MyTasksListView({
   tasks,
   isLoading,
   isError,
   handleRetry,
   overdueOnly,
   setOverdueOnly,
-}: MyTasksListProps) {
+  onStartWorkflow,
+}: MyTasksListViewProps) {
   if (isError) return <MyTasksListError onRetry={handleRetry} />;
   if (isLoading) return <MyTasksListSkeleton />;
-  if (tasks.length === 0 && !overdueOnly) return <MyTasksListEmpty />;
+  if (tasks.length === 0 && !overdueOnly) {
+    return <MyTasksListEmpty onStartWorkflow={onStartWorkflow} />;
+  }
   return (
     <MyTasksListBody tasks={tasks} overdueOnly={overdueOnly} setOverdueOnly={setOverdueOnly} />
+  );
+}
+
+interface MyTasksListProps {
+  onStartWorkflow?: () => void;
+}
+
+export function MyTasksList({ onStartWorkflow }: MyTasksListProps) {
+  const { tasks, isLoading, isError, handleRetry, overdueOnly, setOverdueOnly } = useMyTasksList();
+  return (
+    <MyTasksListView
+      tasks={tasks}
+      isLoading={isLoading}
+      isError={isError}
+      handleRetry={handleRetry}
+      overdueOnly={overdueOnly}
+      setOverdueOnly={setOverdueOnly}
+      onStartWorkflow={onStartWorkflow}
+    />
   );
 }

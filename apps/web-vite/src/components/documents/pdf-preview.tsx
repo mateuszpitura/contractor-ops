@@ -55,7 +55,7 @@ export function PdfPreviewView({
   const t = useTranslations('Documents');
 
   const handleDownload = useCallback(() => {
-    if (pdfUrl) window.open(pdfUrl, '_blank');
+    if (pdfUrl) window.open(pdfUrl, '_blank', 'noopener,noreferrer');
   }, [pdfUrl]);
 
   return (

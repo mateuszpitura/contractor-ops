@@ -5,9 +5,9 @@
 import { useId } from 'react';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 
-import { DocumentHistoryListContainer } from './document-history-list-container.js';
-import { GenerateDrvBundleButtonContainer } from './generate-drv-bundle-button-container';
-import { GenerateSdsButtonContainer } from './generate-sds-button-container';
+import { DocumentHistoryListContainer } from './document-history-list.js';
+import { GenerateDrvBundleButton } from './generate-drv-bundle-button.js';
+import { GenerateSdsButton } from './generate-sds-button.js';
 
 interface ClassificationDocumentsPanelProps {
   /** ContractorAssignment id (engagement). */
@@ -53,7 +53,7 @@ export function ClassificationDocumentsPanel({
       <div className="flex flex-col gap-4">
         {isGb ? (
           canGenerateSds && completedAssessmentId ? (
-            <GenerateSdsButtonContainer classificationAssessmentId={completedAssessmentId} />
+            <GenerateSdsButton classificationAssessmentId={completedAssessmentId} />
           ) : (
             <div>
               <button
@@ -73,7 +73,7 @@ export function ClassificationDocumentsPanel({
 
         {isDe ? (
           completedAssessmentId ? (
-            <GenerateDrvBundleButtonContainer
+            <GenerateDrvBundleButton
               classificationAssessmentId={completedAssessmentId}
               disabled={!canGenerateDrv}
               disabledReason={drvDisabledReason ?? undefined}

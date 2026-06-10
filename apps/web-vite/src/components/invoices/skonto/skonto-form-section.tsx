@@ -22,8 +22,9 @@ import type { ChangeEvent } from 'react';
 import { useCallback, useEffect, useState } from 'react';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
+import { useSkontoFormSection } from '../hooks/use-skonto-form-section.js';
 
-interface SkontoFormSectionProps {
+export interface SkontoFormSectionViewProps {
   invoiceId?: string;
   profileDefault?: {
     discountPercent: number;
@@ -53,7 +54,7 @@ interface FormErrors {
   netDays?: string;
 }
 
-export function SkontoFormSection({
+export function SkontoFormSectionView({
   invoiceId,
   profileDefault,
   invoiceTerm,
@@ -61,7 +62,7 @@ export function SkontoFormSection({
   onDelete,
   isSaving,
   isDeleting,
-}: SkontoFormSectionProps) {
+}: SkontoFormSectionViewProps) {
   const t = useTranslations('Payments.skonto.form');
 
   const [customizing, setCustomizing] = useState(!!invoiceTerm);
@@ -343,5 +344,39 @@ export function SkontoFormSection({
         </AlertDialogContent>
       </AlertDialog>
     </div>
+  );
+}
+
+interface SkontoFormSectionProps {
+  invoiceId?: string;
+  featureEnabled: boolean;
+  contractorCountryCode: string;
+}
+
+export function SkontoFormSection({
+  invoiceId,
+  featureEnabled,
+  contractorCountryCode,
+}: SkontoFormSectionProps) {
+  const isApplicable = featureEnabled && contractorCountryCode === 'DE';
+
+  const { onSave, onDelete, isSaving, isDeleting, invoiceTerm, profileDefault } =
+    useSkontoFormSection({
+      invoiceId,
+      featureEnabled: isApplicable,
+    });
+
+  if (!isApplicable) return null;
+
+  return (
+    <SkontoFormSectionView
+      invoiceId={invoiceId}
+      onSave={onSave}
+      onDelete={onDelete}
+      isSaving={isSaving}
+      isDeleting={isDeleting}
+      invoiceTerm={invoiceTerm}
+      profileDefault={profileDefault}
+    />
   );
 }

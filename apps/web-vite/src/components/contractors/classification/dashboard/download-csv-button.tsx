@@ -6,6 +6,7 @@ import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { Download, Loader2 } from 'lucide-react';
 
 import { useTranslations } from '../../../../i18n/useTranslations.js';
+import { useClassificationDashboardCsvExport } from '../hooks/use-classification-dashboard.js';
 
 export interface DownloadCsvButtonViewProps {
   market: 'GB' | 'DE';
@@ -34,4 +35,9 @@ export function DownloadCsvButtonView({ market, onExport, isPending }: DownloadC
       <span>{isPending ? t('downloadingLabel') : t('downloadCsv')}</span>
     </Button>
   );
+}
+
+export function DownloadCsvButton(props: Pick<DownloadCsvButtonViewProps, 'market'>) {
+  const { exportCsv, isPending } = useClassificationDashboardCsvExport(props.market);
+  return <DownloadCsvButtonView market={props.market} onExport={exportCsv} isPending={isPending} />;
 }

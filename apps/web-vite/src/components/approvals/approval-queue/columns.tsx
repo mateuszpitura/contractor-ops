@@ -12,7 +12,7 @@ import { memo, useCallback, useId, useState } from 'react';
 
 import { Link } from '../../../i18n/navigation.js';
 import type { LooseTranslator } from '../../../i18n/typed-keys.js';
-import { formatMinorUnits } from '../../../lib/format-currency.js';
+import { formatMinorUnits } from '../../../lib/money.js';
 import { SlaBadge } from '../sla-badge.js';
 
 function stopRowPropagation(e: React.MouseEvent) {
@@ -339,7 +339,7 @@ export function getColumns(
       header: t('columns.sla'),
       cell: ({ row }) => {
         const step = row.original;
-        const slaHours = step.slaStatus?.hoursRemaining == null ? undefined : undefined;
+        const slaHours = step.slaStatus?.hoursRemaining ?? undefined;
 
         return <SlaBadge slaDeadline={step.slaDeadline} status={step.status} slaHours={slaHours} />;
       },

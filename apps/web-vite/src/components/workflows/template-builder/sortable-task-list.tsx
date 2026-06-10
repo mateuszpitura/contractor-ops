@@ -24,7 +24,7 @@ import { useCallback } from 'react';
 import type { UseFormReturn } from 'react-hook-form';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
-import { TaskCardContainer } from './task-card-container.js';
+import { TaskCardSection } from './task-card.js';
 import type { TaskFormValues, TemplateFormValues } from './use-template-form.js';
 
 interface SortableItemProps {
@@ -49,7 +49,7 @@ function SortableItem({ id, index, allTasks, form, onRemove }: SortableItemProps
 
   return (
     <div ref={setNodeRef}>
-      <TaskCardContainer
+      <TaskCardSection
         index={index}
         allTasks={allTasks}
         form={form}

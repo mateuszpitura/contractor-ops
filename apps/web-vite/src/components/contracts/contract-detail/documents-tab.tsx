@@ -3,9 +3,11 @@ import { PenLine } from 'lucide-react';
 import { memo, useCallback } from 'react';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
-import { DocumentListContainer } from '../../documents/document-list-container.js';
-import { DropZoneContainer } from '../../documents/drop-zone-container.js';
-import type { useContractDocumentsTab } from '../hooks/use-contract-documents-tab.js';
+import { DocumentListContainer } from '../../documents/document-list.js';
+import { DropZoneContainer } from '../../documents/drop-zone.js';
+import { useContractDocumentsTab } from '../hooks/use-contract-documents-tab.js';
+import type { useContractDocumentsTab as UseContractDocumentsTab } from '../hooks/use-contract-documents-tab.js';
+import { SendForSignatureDialog } from './send-for-signature-dialog.js';
 
 type DocumentsTabProps = {
   contractId: string;
@@ -14,7 +16,7 @@ type DocumentsTabProps = {
     email: string;
     role: 'signer' | 'countersigner';
   }>;
-  documents: ReturnType<typeof useContractDocumentsTab>;
+  documents: ReturnType<typeof UseContractDocumentsTab>;
 };
 
 function SignableDocumentButton({
@@ -73,5 +75,36 @@ export function DocumentsTab({ contractId, documents }: DocumentsTabProps) {
 
       <DocumentListContainer entityType="CONTRACT" entityId={contractId} />
     </div>
+  );
+}
+
+type DocumentsTabWiredProps = {
+  contractId: string;
+  contractParties?: Array<{
+    name: string;
+    email: string;
+    role: 'signer' | 'countersigner';
+  }>;
+};
+
+export function DocumentsTabWired({
+  contractId,
+  contractParties = [],
+}: DocumentsTabWiredProps) {
+  const documents = useContractDocumentsTab(contractId);
+
+  return (
+    <>
+      <DocumentsTab contractId={contractId} documents={documents} />
+      {documents.signDialogOpen && (
+        <SendForSignatureDialog
+          open={documents.signDialogOpen}
+          onOpenChange={documents.setSignDialogOpen}
+          contractId={contractId}
+          documentId={documents.selectedDocId}
+          contractParties={contractParties}
+        />
+      )}
+    </>
   );
 }

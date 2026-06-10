@@ -59,7 +59,7 @@ const GroupRoleRow = memo(function GroupRoleRow({
         </div>
 
         <div className="flex items-center gap-2">
-          <Select value={mappedRole ?? ''} onValueChange={handleValueChange}>
+          <Select value={mappedRole ?? undefined} onValueChange={handleValueChange}>
             <SelectTrigger className="w-48">
               <SelectValue>{ROLE_LABELS[displayRole]}</SelectValue>
             </SelectTrigger>

@@ -1,5 +1,6 @@
-import { DataTable } from '@contractor-ops/ui';
+
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import { WorkbenchDataTable } from '../../table-kit/workbench-data-table.js';
 import type { ColumnDef } from '@tanstack/react-table';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useCallback } from 'react';
@@ -19,6 +20,7 @@ interface PaymentRunDataTableProps {
   hasActiveFilters?: boolean;
   onClearFilters?: () => void;
   activeFilterCount?: number;
+  sectionClassName?: string;
 }
 
 const noopPageChange = () => undefined;
@@ -36,6 +38,7 @@ export function PaymentRunDataTable({
   hasActiveFilters,
   onClearFilters,
   activeFilterCount = 0,
+  sectionClassName,
 }: PaymentRunDataTableProps) {
   const t = useTranslations('Payments');
 
@@ -43,7 +46,8 @@ export function PaymentRunDataTable({
 
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-3">
-      <DataTable
+      <WorkbenchDataTable
+        sectionClassName={sectionClassName}
         columns={columns}
         data={data}
         totalRows={data.length}

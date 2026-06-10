@@ -1,7 +1,6 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useState } from 'react';
-import { toast } from 'sonner';
 
+import { useResourceMutation } from '../../../hooks/use-resource-mutation.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { useTRPC } from '../../../providers/trpc-provider.js';
 
@@ -20,22 +19,17 @@ export function useTeamsFallbackApproverDialog({
 }: UseTeamsFallbackApproverDialogParams) {
   const trpc = useTRPC();
   const t = useTranslations('Settings.integrations.teams.fallbackApprover');
-  const queryClient = useQueryClient();
   const [selectedUserId, setSelectedUserId] = useState<string | undefined>(
     currentFallbackApproverId ?? undefined,
   );
 
-  const setFallbackMutation = useMutation(
-    trpc.teams.setFallbackApprover.mutationOptions({
-      onSuccess: () => {
-        toast.success(t('toast.saved'));
-        queryClient.invalidateQueries(trpc.teams.pathFilter());
-        onOpenChange(false);
-      },
-      onError: err => {
-        toast.error(err.message);
-      },
-    }),
+  const setFallbackMutation = useResourceMutation(
+    trpc.teams.setFallbackApprover.mutationOptions(),
+    {
+      successMessage: t('toast.saved'),
+      invalidate: [trpc.teams.pathFilter()],
+      onClose: () => onOpenChange(false),
+    },
   );
 
   const handleSave = useCallback(() => {

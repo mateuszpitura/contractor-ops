@@ -1,5 +1,6 @@
 import { minorToMajor } from '@contractor-ops/shared';
-import { DataTable, TeamsIllustration } from '@contractor-ops/ui';
+import { WorkbenchDataTable } from '../../table-kit/workbench-data-table.js';
+import { TeamsIllustration } from '@contractor-ops/ui';
 import type { ColumnDef } from '@tanstack/react-table';
 import { format } from 'date-fns';
 import { Plus } from 'lucide-react';
@@ -109,7 +110,7 @@ export function ProjectTable({
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <DataTable
+      <WorkbenchDataTable
         columns={columns}
         data={rows}
         totalRows={rows.length}

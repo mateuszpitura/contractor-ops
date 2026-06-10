@@ -15,10 +15,10 @@ import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { addHours, formatDistanceToNow, isBefore } from 'date-fns';
 import { Loader2, Unlink } from 'lucide-react';
 import type { ReactNode } from 'react';
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { tDynLoose } from '../../i18n/typed-keys';
-import type { useProviderConnectionCard } from './hooks/use-provider-connection-card.js';
-import { ProviderDetailSheetContainer } from './provider-detail-sheet-container.js';
+import { useProviderConnectionCard } from './hooks/use-provider-connection-card.js';
+import { ProviderDetailSheet } from './provider-detail-sheet.js';
 
 // ---------------------------------------------------------------------------
 // Status badge styling per UI-SPEC semantic colors
@@ -65,7 +65,7 @@ function TokenExpiryBadge({ expiresAt }: { expiresAt: string | Date | null | und
 // ProviderConnectionCard
 // ---------------------------------------------------------------------------
 
-interface ProviderConnectionCardBaseProps {
+interface ProviderConnectionCardViewShellProps {
   provider: string;
   displayName: string;
   icon: ReactNode;
@@ -76,10 +76,10 @@ interface ProviderConnectionCardBaseProps {
   setDetailSheetOpen: (open: boolean) => void;
 }
 
-export type ProviderConnectionCardProps = ProviderConnectionCardBaseProps &
+export type ProviderConnectionCardViewProps = ProviderConnectionCardViewShellProps &
   ReturnType<typeof useProviderConnectionCard>;
 
-export function ProviderConnectionCard({
+export function ProviderConnectionCardView({
   provider,
   displayName,
   icon,
@@ -94,7 +94,7 @@ export function ProviderConnectionCard({
   handleConnect,
   handleDisconnectConfirm,
   isDisconnectPending,
-}: ProviderConnectionCardProps) {
+}: ProviderConnectionCardViewProps) {
   const handleOpenDetailSheet = useCallback(() => setDetailSheetOpen(true), [setDetailSheetOpen]);
   const handleOpenDisconnect = useCallback(
     () => setDisconnectDialogOpen(true),
@@ -220,7 +220,7 @@ export function ProviderConnectionCard({
       </Card>
 
       {/* Detail sheet */}
-      <ProviderDetailSheetContainer
+      <ProviderDetailSheet
         provider={provider}
         displayName={displayName}
         icon={icon}
@@ -255,5 +255,42 @@ export function ProviderConnectionCard({
         </AlertDialogContent>
       </AlertDialog>
     </>
+  );
+}
+
+interface ProviderConnectionCardProps {
+  provider: string;
+  displayName: string;
+  icon: ReactNode;
+  description: string;
+}
+
+export function ProviderConnectionCard({
+  provider,
+  displayName,
+  icon,
+  description,
+}: ProviderConnectionCardProps) {
+  const [disconnectDialogOpen, setDisconnectDialogOpen] = useState(false);
+  const [detailSheetOpen, setDetailSheetOpen] = useState(false);
+
+  const card = useProviderConnectionCard({
+    provider,
+    displayName,
+    onDisconnected: () => setDisconnectDialogOpen(false),
+  });
+
+  return (
+    <ProviderConnectionCardView
+      provider={provider}
+      displayName={displayName}
+      icon={icon}
+      description={description}
+      {...card}
+      disconnectDialogOpen={disconnectDialogOpen}
+      setDisconnectDialogOpen={setDisconnectDialogOpen}
+      detailSheetOpen={detailSheetOpen}
+      setDetailSheetOpen={setDetailSheetOpen}
+    />
   );
 }

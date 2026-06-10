@@ -1,26 +1,24 @@
 import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { Progress } from '@contractor-ops/ui/components/shadcn/progress';
-import { ScrollArea } from '@contractor-ops/ui/components/shadcn/scroll-area';
 import { Separator } from '@contractor-ops/ui/components/shadcn/separator';
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from '@contractor-ops/ui/components/shadcn/sheet';
 import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { workflowTaskSkipReason } from '@contractor-ops/validators';
 import type { ReactNode } from 'react';
 import { useCallback, useMemo } from 'react';
 
+import {
+  EntityDetailItem,
+  EntitySummarySheet,
+} from '../table-kit/entity-summary-sheet.js';
 import { Link } from '../../i18n/navigation.js';
 import { tDynLoose } from '../../i18n/typed-keys.js';
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { enumKey } from '../../lib/enum-key.js';
 import { formatDate } from '../../lib/format-date.js';
-import { LinkedJiraIssuesSection } from './workflow-side-panel-linked-jira-container.js';
-import { LinkedLinearIssuesSection } from './workflow-side-panel-linked-linear-container.js';
+import { LinkedJiraIssuesSection } from './workflow-side-panel-linked-jira.js';
+import { LinkedLinearIssuesSection } from './workflow-side-panel-linked-linear.js';
+import { useWorkflowSidePanelRun } from './hooks/use-workflow-ui.js';
 
 const statusBadgeColors: Record<string, string> = {
   NOT_STARTED: 'bg-muted text-muted-foreground border border-border',
@@ -51,10 +49,20 @@ export type WorkflowSidePanelRun = {
 interface WorkflowSidePanelShellProps {
   open: boolean;
   onClose: () => void;
+  title?: string;
+  badges?: ReactNode;
+  footer?: ReactNode;
   children: ReactNode;
 }
 
-export function WorkflowSidePanelShell({ open, onClose, children }: WorkflowSidePanelShellProps) {
+export function WorkflowSidePanelShell({
+  open,
+  onClose,
+  title = '',
+  badges,
+  footer,
+  children,
+}: WorkflowSidePanelShellProps) {
   const handleOpenChange = useCallback(
     (isOpen: boolean) => {
       if (!isOpen) onClose();
@@ -63,13 +71,14 @@ export function WorkflowSidePanelShell({ open, onClose, children }: WorkflowSide
   );
 
   return (
-    <Sheet open={open} onOpenChange={handleOpenChange}>
-      <SheetContent className="w-[400px] sm:w-[480px] p-0">
-        <ScrollArea className="h-full">
-          <div className="p-6 space-y-6">{children}</div>
-        </ScrollArea>
-      </SheetContent>
-    </Sheet>
+    <EntitySummarySheet
+      open={open}
+      onOpenChange={handleOpenChange}
+      title={title}
+      badges={badges}
+      footer={footer}>
+      {children}
+    </EntitySummarySheet>
   );
 }
 
@@ -111,8 +120,32 @@ interface WorkflowSidePanelContentProps {
   run: WorkflowSidePanelRun;
 }
 
-export function WorkflowSidePanelContent({ run }: WorkflowSidePanelContentProps) {
+export function WorkflowSidePanelHeaderBadges({ run }: { run: WorkflowSidePanelRun }) {
   const t = useTranslations('Workflows');
+
+  return (
+    <>
+      <Badge variant="secondary" className={statusBadgeColors[run.status] ?? ''}>
+        {tDynLoose(t, 'runStatus', enumKey(run.status))}
+      </Badge>
+      {!!run.workflowTemplate && (
+        <span className="text-sm text-muted-foreground">{run.workflowTemplate.name}</span>
+      )}
+    </>
+  );
+}
+
+export function WorkflowSidePanelFooter({ runId }: { runId: string }) {
+  const ts = useTranslations('Workflows.sidePanel');
+
+  return (
+    <Button render={<Link href={`/workflows/${runId}`} />} className="w-full">
+      {ts('openWorkflow')}
+    </Button>
+  );
+}
+
+export function WorkflowSidePanelContent({ run }: WorkflowSidePanelContentProps) {
   const ts = useTranslations('Workflows.sidePanel');
 
   const taskSummary = useMemo(() => {
@@ -145,22 +178,6 @@ export function WorkflowSidePanelContent({ run }: WorkflowSidePanelContentProps)
 
   return (
     <>
-      <SheetHeader className="space-y-3">
-        <SheetTitle className="text-[20px] font-semibold leading-[1.2]">
-          {run.workflowTemplate?.name ?? 'Workflow'}
-        </SheetTitle>
-        <div className="flex items-center gap-2 flex-wrap">
-          <Badge variant="secondary" className={statusBadgeColors[run.status] ?? ''}>
-            {tDynLoose(t, 'runStatus', enumKey(run.status))}
-          </Badge>
-          {!!run.workflowTemplate && (
-            <span className="text-sm text-muted-foreground">{run.workflowTemplate.name}</span>
-          )}
-        </div>
-      </SheetHeader>
-
-      <Separator />
-
       <div className="space-y-3">
         <h3 className="text-[13px] font-medium text-muted-foreground uppercase tracking-wider">
           {ts('progress')}
@@ -210,18 +227,12 @@ export function WorkflowSidePanelContent({ run }: WorkflowSidePanelContentProps)
 
       <div className="grid grid-cols-2 gap-3 text-sm">
         {!!run.startedAt && (
-          <div className="space-y-1">
-            <dt className="text-[13px] text-muted-foreground">{ts('startedOn')}</dt>
-            <dd>{formatDate(run.startedAt)}</dd>
-          </div>
+          <EntityDetailItem
+            label={ts('startedOn')}
+            value={formatDate(run.startedAt)}
+          />
         )}
       </div>
-
-      <Separator />
-
-      <Button render={<Link href={`/workflows/${run.id}`} />} className="w-full">
-        {ts('openWorkflow')}
-      </Button>
     </>
   );
 }
@@ -258,9 +269,38 @@ export function WorkflowSidePanelView({
     body = <WorkflowSidePanelContent run={run} />;
   }
 
+  const title = run?.workflowTemplate?.name ?? '';
+  const badges = run ? <WorkflowSidePanelHeaderBadges run={run} /> : undefined;
+  const footer = run ? <WorkflowSidePanelFooter runId={run.id} /> : undefined;
+
   return (
-    <WorkflowSidePanelShell open={open} onClose={onClose}>
+    <WorkflowSidePanelShell
+      open={open}
+      onClose={onClose}
+      title={title}
+      badges={badges}
+      footer={footer}>
       {body}
     </WorkflowSidePanelShell>
+  );
+}
+
+interface WorkflowSidePanelProps {
+  runId: string | null;
+  onClose: () => void;
+}
+
+export function WorkflowSidePanel({ runId, onClose }: WorkflowSidePanelProps) {
+  const { run, handleRetry, isError, isLoading } = useWorkflowSidePanelRun(runId);
+
+  return (
+    <WorkflowSidePanelView
+      runId={runId}
+      run={run}
+      isLoading={isLoading}
+      isError={isError}
+      handleRetry={handleRetry}
+      onClose={onClose}
+    />
   );
 }

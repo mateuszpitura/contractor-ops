@@ -7,6 +7,7 @@ import { RotateCw } from 'lucide-react';
 import { useCallback } from 'react';
 
 import { useTranslations } from '../../../../i18n/useTranslations.js';
+import { useClassificationDashboardRefreshButton } from '../hooks/use-classification-dashboard.js';
 
 export type RefreshDashboardButtonViewProps = {
   onRefresh: () => Promise<void>;
@@ -48,4 +49,9 @@ export function RefreshDashboardButtonView({
       </span>
     </>
   );
+}
+
+export function RefreshDashboardButton() {
+  const refresh = useClassificationDashboardRefreshButton();
+  return <RefreshDashboardButtonView {...refresh} />;
 }

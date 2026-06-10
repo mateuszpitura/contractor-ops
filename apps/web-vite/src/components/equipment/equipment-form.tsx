@@ -37,7 +37,7 @@ import { tDynLoose } from '../../i18n/typed-keys.js';
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { enumKey } from '../../lib/enum-key.js';
 import { EquipmentTypeIcon } from './equipment-type-icon.js';
-import type { useEquipmentForm } from './hooks/use-equipment-form.js';
+import { useEquipmentForm } from './hooks/use-equipment-form.js';
 
 const EQUIPMENT_TYPES = [
   'LAPTOP',
@@ -210,21 +210,21 @@ export function EquipmentFormView({
                 <PopoverTrigger render={formControlPopoverRender('gap-2')}>
                   <CalendarIcon className="h-4 w-4 text-muted-foreground" />
                   <span className={form.watch('purchaseDate') ? '' : 'text-muted-foreground'}>
-                    {form.watch('purchaseDate')
-                      ? new Date(
-                          form.watch('purchaseDate') as unknown as string,
-                        ).toLocaleDateString()
-                      : t('form.purchaseDatePlaceholder')}
+                    {(() => {
+                      const value = form.watch('purchaseDate');
+                      return value instanceof Date
+                        ? value.toLocaleDateString()
+                        : t('form.purchaseDatePlaceholder');
+                    })()}
                   </span>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="start">
                   <Calendar
                     mode="single"
-                    selected={
-                      form.watch('purchaseDate')
-                        ? new Date(form.watch('purchaseDate') as unknown as string)
-                        : undefined
-                    }
+                    selected={(() => {
+                      const value = form.watch('purchaseDate');
+                      return value instanceof Date ? value : undefined;
+                    })()}
                     onSelect={handlePurchaseDateChange}
                   />
                 </PopoverContent>
@@ -250,4 +250,11 @@ export function EquipmentFormView({
       </DialogContent>
     </Dialog>
   );
+}
+
+export function EquipmentForm(props: EquipmentFormProps) {
+  const { submit, isPending } = useEquipmentForm({
+    onSuccess: () => props.onOpenChange(false),
+  });
+  return <EquipmentFormView {...props} submit={submit} isPending={isPending} />;
 }

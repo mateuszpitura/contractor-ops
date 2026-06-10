@@ -1,9 +1,10 @@
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { ArrowLeft, ArrowRight, Check, Loader2 } from 'lucide-react';
 import type { ReactNode } from 'react';
-import type { useComplianceCsid } from './hooks/use-compliance-csid.js';
+import { useComplianceCsid } from './hooks/use-compliance-csid.js';
+import type { useComplianceCsid as UseComplianceCsid } from './hooks/use-compliance-csid.js';
 
-type HookResult = ReturnType<typeof useComplianceCsid>;
+type HookResult = ReturnType<typeof UseComplianceCsid>;
 type T = HookResult['t'];
 
 function StatusItem({
@@ -157,3 +158,30 @@ export type ComplianceCsidViewProps = {
   onSuccess: () => void;
   onBack: () => void;
 } & HookResult;
+
+export function ComplianceCsid(props: Pick<ComplianceCsidViewProps, 'onSuccess' | 'onBack'>) {
+  const { phase, requestComplianceCsid, isPending, csidReceived, certStored, t } =
+    useComplianceCsid();
+
+  if (phase === 'idle') {
+    return (
+      <ComplianceCsidIdle
+        onSuccess={props.onSuccess}
+        onBack={props.onBack}
+        requestComplianceCsid={requestComplianceCsid}
+        isPending={isPending}
+        t={t}
+      />
+    );
+  }
+
+  return (
+    <ComplianceCsidProgress
+      onSuccess={props.onSuccess}
+      onBack={props.onBack}
+      csidReceived={csidReceived}
+      certStored={certStored}
+      t={t}
+    />
+  );
+}

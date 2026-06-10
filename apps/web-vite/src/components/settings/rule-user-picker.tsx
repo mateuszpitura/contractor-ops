@@ -13,9 +13,9 @@ import {
   PopoverTrigger,
 } from '@contractor-ops/ui/components/shadcn/popover';
 import { useCallback } from 'react';
-import type {
-  RuleUserPickerProps as RuleUserPickerInputProps,
+import {
   useRuleUserPicker,
+  type RuleUserPickerProps as RuleUserPickerInputProps,
 } from './hooks/use-rule-user-picker.js';
 
 export type { RuleUserPickerInputProps as RuleUserPickerProps };
@@ -43,7 +43,7 @@ function UserItem({ user, isChecked, onSelect }: UserItemProps) {
   );
 }
 
-export function RuleUserPicker({
+export function RuleUserPickerView({
   value,
   t,
   pickerOpen,
@@ -89,4 +89,9 @@ export function RuleUserPicker({
       </PopoverContent>
     </Popover>
   );
+}
+
+export function RuleUserPicker(props: RuleUserPickerInputProps) {
+  const picker = useRuleUserPicker(props);
+  return <RuleUserPickerView {...props} {...picker} />;
 }

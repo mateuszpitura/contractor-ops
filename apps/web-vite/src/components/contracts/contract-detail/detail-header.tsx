@@ -26,7 +26,12 @@ import { tDynLoose } from '../../../i18n/typed-keys.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { enumKey } from '../../../lib/enum-key.js';
 import type { ContractAction } from '../actions.js';
-import type { useContractDetailHeader } from '../hooks/use-contract-detail-header.js';
+import {
+  useContractDetailHeader,
+  type useContractDetailHeader as UseContractDetailHeader,
+} from '../hooks/use-contract-detail-header.js';
+import { useEditContractDialog } from '../hooks/use-edit-contract-dialog.js';
+import { EditContractDialog } from './edit-contract-dialog.js';
 import { SendForSignatureButton } from './send-for-signature-button.js';
 
 type DetailHeaderProps = {
@@ -53,7 +58,7 @@ type DetailHeaderProps = {
     }>;
     _firstDocumentId?: string;
   };
-  header: ReturnType<typeof useContractDetailHeader>;
+  header: ReturnType<typeof UseContractDetailHeader>;
 };
 
 function ActionMenuItem({
@@ -210,5 +215,34 @@ export function DetailHeader({ contract, header }: DetailHeaderProps) {
         </AlertDialogContent>
       </AlertDialog>
     </div>
+  );
+}
+
+type DetailHeaderWiredProps = {
+  contract: DetailHeaderProps['contract'];
+};
+
+export function DetailHeaderWired({ contract }: DetailHeaderWiredProps) {
+  const header = useContractDetailHeader(contract.id, contract.status);
+  const edit = useEditContractDialog(
+    {
+      id: contract.id,
+      title: contract.title,
+      startDate: contract.startDate,
+      endDate: contract.endDate,
+      currency: contract.currency,
+      rateValueMinor: contract.rateValueMinor,
+    },
+    header.editOpen,
+    header.setEditOpen,
+  );
+
+  return (
+    <>
+      <DetailHeader contract={contract} header={header} />
+      {header.editOpen && (
+        <EditContractDialog open={header.editOpen} onOpenChange={header.setEditOpen} edit={edit} />
+      )}
+    </>
   );
 }

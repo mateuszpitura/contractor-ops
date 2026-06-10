@@ -1,7 +1,7 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useId, useState } from 'react';
 import { toast } from 'sonner';
 
+import { useResourceMutation } from '../../../../hooks/use-resource-mutation.js';
 import { useTranslations } from '../../../../i18n/useTranslations.js';
 import { useTRPC } from '../../../../providers/trpc-provider.js';
 import type { WorkflowRoleFormInput, WorkflowRoleTaskItem } from '../workflow-role-form-dialog.js';
@@ -31,7 +31,6 @@ export function useWorkflowRoleFormDialog({
 }: UseWorkflowRoleFormDialogOptions) {
   const trpc = useTRPC();
   const t = useTranslations('WorkflowRoles');
-  const queryClient = useQueryClient();
   const id = useId();
 
   const [form, setForm] = useState<WorkflowRoleFormInput>(
@@ -44,25 +43,17 @@ export function useWorkflowRoleFormDialog({
     },
   );
 
-  const onSuccess = useCallback(() => {
-    toast.success(mode === 'create' ? t('toast.created') : t('toast.updated'));
-    queryClient.invalidateQueries(trpc.workflowRoles.pathFilter());
-    onOpenChange(false);
-  }, [mode, t, queryClient, trpc.workflowRoles, onOpenChange]);
+  const createMutation = useResourceMutation(trpc.workflowRoles.create.mutationOptions({}), {
+    invalidate: [trpc.workflowRoles.pathFilter()],
+    successMessage: t('toast.created'),
+    onClose: () => onOpenChange(false),
+  });
 
-  const createMutation = useMutation(
-    trpc.workflowRoles.create.mutationOptions({
-      onSuccess,
-      onError: err => toast.error(err.message),
-    }),
-  );
-
-  const updateMutation = useMutation(
-    trpc.workflowRoles.update.mutationOptions({
-      onSuccess,
-      onError: err => toast.error(err.message),
-    }),
-  );
+  const updateMutation = useResourceMutation(trpc.workflowRoles.update.mutationOptions({}), {
+    invalidate: [trpc.workflowRoles.pathFilter()],
+    successMessage: t('toast.updated'),
+    onClose: () => onOpenChange(false),
+  });
 
   const setField = useCallback(
     <K extends keyof WorkflowRoleFormInput>(field: K, value: WorkflowRoleFormInput[K]) => {

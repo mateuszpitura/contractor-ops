@@ -1,7 +1,7 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { useCallback, useMemo, useState } from 'react';
-import { toast } from 'sonner';
 
+import { useResourceMutation } from '../../../hooks/use-resource-mutation.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { useTRPC } from '../../../providers/trpc-provider.js';
 import { DEFAULT_REPORT_PAGE_SIZE } from '../report-constants.js';
@@ -18,7 +18,6 @@ export type SpendContractorRow = {
 export function useSpendContractorReport(dateFrom: string, dateTo: string) {
   const trpc = useTRPC();
   const t = useTranslations('Reports');
-  const queryClient = useQueryClient();
 
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(DEFAULT_REPORT_PAGE_SIZE);
@@ -42,16 +41,13 @@ export function useSpendContractorReport(dateFrom: string, dateTo: string) {
     trpc.report.spendByContractorChart.queryOptions({ dateFrom, dateTo }),
   );
 
-  const exportMutation = useMutation(
-    trpc.report.exportSpendByContractor.mutationOptions({
-      onSuccess: () => {
-        toast.success(t('exportQueued'));
-        queryClient.invalidateQueries(trpc.report.pathFilter());
-      },
-      onError: () => {
-        toast.error(t('exportError'));
-      },
-    }),
+  const exportMutation = useResourceMutation(
+    trpc.report.exportSpendByContractor.mutationOptions(),
+    {
+      invalidate: [trpc.report.pathFilter()],
+      successMessage: t('exportQueued'),
+      errorMessage: t('exportError'),
+    },
   );
 
   const tableData = useMemo(() => {

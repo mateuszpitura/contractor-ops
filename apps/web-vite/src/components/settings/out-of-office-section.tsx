@@ -13,11 +13,12 @@ import { Textarea } from '@contractor-ops/ui/components/shadcn/textarea';
 import { Loader2, Save } from 'lucide-react';
 import type { ChangeEvent } from 'react';
 import { useCallback } from 'react';
-import type { useOutOfOfficeSection } from './hooks/use-out-of-office-section.js';
+import { useOutOfOfficeSection } from './hooks/use-out-of-office-section.js';
+import type { useOutOfOfficeSection as UseOutOfOfficeSection } from './hooks/use-out-of-office-section.js';
 
-export type OutOfOfficeSectionProps = ReturnType<typeof useOutOfOfficeSection>;
+export type OutOfOfficeSectionProps = ReturnType<typeof UseOutOfOfficeSection>;
 
-export function OutOfOfficeSection({
+export function OutOfOfficeSectionView({
   t,
   timeFormat,
   range,
@@ -87,4 +88,9 @@ export function OutOfOfficeSection({
       </CardFooter>
     </Card>
   );
+}
+
+export function OutOfOfficeSection() {
+  const section = useOutOfOfficeSection();
+  return <OutOfOfficeSectionView {...section} />;
 }

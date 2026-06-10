@@ -12,7 +12,8 @@ import { Label } from '@contractor-ops/ui/components/shadcn/label';
 import { SDS_APPROVAL_STATEMENT_EN } from '@contractor-ops/validators';
 import { useCallback, useState } from 'react';
 import { useTranslations } from '../../../i18n/useTranslations.js';
-import type { useGenerateSds } from '../hooks/use-classification-documents.js';
+import { useGenerateSds } from '../hooks/use-classification-documents.js';
+import type { useGenerateSds as UseGenerateSds } from '../hooks/use-classification-documents.js';
 
 export interface GenerateSdsButtonProps {
   classificationAssessmentId: string;
@@ -20,7 +21,7 @@ export interface GenerateSdsButtonProps {
   alreadyApproved?: boolean;
 }
 
-type GenerateSdsButtonViewProps = GenerateSdsButtonProps & ReturnType<typeof useGenerateSds>;
+type GenerateSdsButtonViewProps = GenerateSdsButtonProps & ReturnType<typeof UseGenerateSds>;
 
 export function GenerateSdsButtonView({
   classificationAssessmentId,
@@ -132,4 +133,9 @@ export function GenerateSdsButtonView({
       ) : null}
     </div>
   );
+}
+
+export function GenerateSdsButton(props: GenerateSdsButtonProps) {
+  const sds = useGenerateSds(props.classificationAssessmentId);
+  return <GenerateSdsButtonView {...props} {...sds} />;
 }

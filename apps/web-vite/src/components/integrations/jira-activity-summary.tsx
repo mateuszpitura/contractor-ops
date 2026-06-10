@@ -1,6 +1,6 @@
 import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 
-import type { useJiraActivitySummary } from './hooks/use-jira-activity-summary.js';
+import { useJiraActivitySummary } from './hooks/use-jira-activity-summary.js';
 import { JiraIssueChip } from './jira-issue-chip.js';
 import { JiraLogo } from './jira-logo.js';
 
@@ -57,4 +57,26 @@ export function JiraActivitySummaryView({ items, relativeTime, t }: JiraActivity
       </div>
     </div>
   );
+}
+
+interface JiraActivitySummaryProps {
+  contractorId: string;
+}
+
+export function JiraActivitySummary({ contractorId }: JiraActivitySummaryProps) {
+  const { activityQuery, items, relativeTime, isError, onRetry, t } =
+    useJiraActivitySummary(contractorId);
+  if (activityQuery.isLoading) return <JiraActivitySummarySkeleton />;
+  if (isError) {
+    return (
+      <div className="space-y-2 rounded-lg border border-destructive/40 p-4" role="alert">
+        <p className="text-sm text-destructive">{t('error')}</p>
+        <button type="button" className="text-sm underline" onClick={onRetry}>
+          {t('retry')}
+        </button>
+      </div>
+    );
+  }
+  if (items.length === 0) return null;
+  return <JiraActivitySummaryView items={items} relativeTime={relativeTime} t={t} />;
 }

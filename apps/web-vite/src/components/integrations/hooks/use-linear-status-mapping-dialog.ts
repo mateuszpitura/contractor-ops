@@ -1,7 +1,7 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { useEffect, useMemo, useState } from 'react';
-import { toast } from 'sonner';
 
+import { useResourceMutation } from '../../../hooks/use-resource-mutation.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { computeSmartDefaultMappings } from '../../../lib/linear-status-mapping.js';
 import { useTRPC } from '../../../providers/trpc-provider.js';
@@ -69,7 +69,6 @@ export function useLinearStatusMappingDialog({
   const trpc = useTRPC();
   const t = useTranslations('Settings.integrations.linear.mapping');
   const tI = useTranslations('Integrations.linear.statusMapping');
-  const queryClient = useQueryClient();
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
   const [mappings, setMappings] = useState<MappingEntry[]>([]);
   const [initialMappings, setInitialMappings] = useState<MappingEntry[]>([]);
@@ -106,31 +105,20 @@ export function useLinearStatusMappingDialog({
       if (team) {
         const defaults = computeSmartDefaults(team.states);
         setMappings(defaults);
-        setInitialMappings([]);
+        setInitialMappings([...defaults]);
       }
     }
   }, [existingMappingQuery.data, selectedTeamId, teams]);
 
-  const saveMutation = useMutation({
-    ...trpc.linear.saveStatusMapping.mutationOptions(),
-    onSuccess: () => {
-      toast.success(tI('toast.saved'));
-      queryClient.invalidateQueries({
-        queryKey: trpc.linear.getStatusMapping.queryKey({
-          teamId: selectedTeamId ?? '',
-        }),
-      });
-      queryClient.invalidateQueries({
-        queryKey: trpc.integration.getHealth.queryKey({ provider: 'linear' }),
-      });
-      queryClient.invalidateQueries({
-        queryKey: trpc.linear.connectionStatus.queryKey(),
-      });
-      onOpenChange(false);
-    },
-    onError: () => {
-      toast.error(tI('toast.saveFailed'));
-    },
+  const saveMutation = useResourceMutation(trpc.linear.saveStatusMapping.mutationOptions(), {
+    successMessage: tI('toast.saved'),
+    errorMessage: tI('toast.saveFailed'),
+    invalidate: [
+      trpc.linear.getStatusMapping.queryKey({ teamId: selectedTeamId ?? '' }),
+      trpc.integration.getHealth.queryKey({ provider: 'linear' }),
+      trpc.linear.connectionStatus.queryKey(),
+    ],
+    onClose: () => onOpenChange(false),
   });
 
   const selectedTeam = teams.find(tm => tm.id === selectedTeamId);

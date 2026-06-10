@@ -2,6 +2,8 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useState } from 'react';
 import { toast } from 'sonner';
 
+import { useTranslatedError } from '../../../i18n/use-translated-error.js';
+import { useTranslations } from '../../../i18n/useTranslations.js';
 import { useTRPC } from '../../../providers/trpc-provider.js';
 
 type UploadStatus =
@@ -23,12 +25,14 @@ export interface UploadingFile {
 
 export function useContractWizardStepDocuments(onDocumentsChange: (documentIds: string[]) => void) {
   const trpc = useTRPC();
+  const t = useTranslations('Documents.scan');
+  const translateError = useTranslatedError();
   const [files, setFiles] = useState<UploadingFile[]>([]);
   const queryClient = useQueryClient();
 
   const requestUploadMutation = useMutation(
     trpc.document.requestUpload.mutationOptions({
-      onError: err => toast.error(err.message),
+      onError: err => toast.error(translateError(err) || t('uploadError')),
       onSuccess: () => {
         queryClient.invalidateQueries(trpc.document.pathFilter());
       },
@@ -37,7 +41,7 @@ export function useContractWizardStepDocuments(onDocumentsChange: (documentIds: 
 
   const confirmUploadMutation = useMutation(
     trpc.document.confirmUpload.mutationOptions({
-      onError: err => toast.error(err.message),
+      onError: err => toast.error(translateError(err) || t('uploadError')),
       onSuccess: () => {
         queryClient.invalidateQueries(trpc.document.pathFilter());
       },

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef } from 'react';
 import type { UseFormReturn } from 'react-hook-form';
 import { toast } from 'sonner';
 
+import { useTranslatedError } from '../../../i18n/use-translated-error.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { useTRPC } from '../../../providers/trpc-provider.js';
 import type { ContractWizardFormValues } from '../contract-wizard/wizard-dialog.js';
@@ -68,12 +69,13 @@ export function useContractWizardPrefill(
 
 export function useContractWizardCreate(uploadedDocumentIds: string[], onSuccess: () => void) {
   const t = useTranslations('Contracts.wizard');
+  const translateError = useTranslatedError();
   const queryClient = useQueryClient();
   const trpc = useTRPC();
 
   const linkToEntityMutation = useMutation(
     trpc.document.linkToEntity.mutationOptions({
-      onError: err => toast.error(err.message),
+      onError: err => toast.error(translateError(err) || t('error')),
       onSuccess: () => {
         queryClient.invalidateQueries(trpc.document.pathFilter());
       },

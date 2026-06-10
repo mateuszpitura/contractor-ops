@@ -34,19 +34,26 @@ import { Link } from '../../../i18n/navigation.js';
 import { tDynLoose } from '../../../i18n/typed-keys.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { enumKey } from '../../../lib/enum-key.js';
-import { formatAmount } from '../../../lib/format-currency.js';
+import { formatAmount } from '../../../lib/money.js';
 import { canViewSensitivePii, maskTaxId } from '../../../lib/mask-pii.js';
-import type { useInvoiceManualMatch } from '../hooks/use-invoice-manual-match.js';
+import { useInvoiceManualMatch } from '../hooks/use-invoice-manual-match.js';
 
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
 
+type Decimalish = number | { toNumber(): number };
+
+function toNumber(value: Decimalish | null | undefined): number {
+  if (value == null) return 0;
+  return typeof value === 'number' ? value : value.toNumber();
+}
+
 type MatchResult = {
   matchScore: number | null;
   expectedAmountMinor: number | null;
   amountDeltaMinor: number | null;
-  amountDeltaPercent: number | null;
+  amountDeltaPercent: Decimalish | null;
   /**
    * JSON payload from Prisma — narrow at use sites with `Array.isArray`
    * / property checks. Typed as `unknown` to accept Prisma `JsonValue`.
@@ -55,7 +62,7 @@ type MatchResult = {
   status: string;
 };
 
-type MatchCardProps = {
+export type MatchCardViewProps = {
   invoice: {
     id: string;
     matchStatus: string;
@@ -126,7 +133,7 @@ const FLAG_CONFIG: Record<
 // Component
 // ---------------------------------------------------------------------------
 
-export function MatchCard({ invoice }: MatchCardProps) {
+export function MatchCardView({ invoice }: MatchCardViewProps) {
   const t = useTranslations('Invoices');
   const { role } = usePermissions();
   const showPii = canViewSensitivePii(role);
@@ -138,7 +145,8 @@ export function MatchCard({ invoice }: MatchCardProps) {
   const displayFlags = flags.filter(f => f !== 'DUPLICATE_SUSPECTED');
 
   const isManual = matchStatus === 'MANUALLY_CONFIRMED';
-  const score = latestResult?.matchScore ?? 0;
+  const score = toNumber(latestResult?.matchScore);
+  const amountDeltaPercent = toNumber(latestResult?.amountDeltaPercent);
   const confidence = getConfidenceConfig(score);
 
   return (
@@ -202,7 +210,7 @@ export function MatchCard({ invoice }: MatchCardProps) {
         )}
 
         {/* Deviation display */}
-        {latestResult?.expectedAmountMinor != null && latestResult.amountDeltaPercent != null && (
+        {latestResult?.expectedAmountMinor != null && latestResult?.amountDeltaPercent != null && (
           <div className="space-y-1 rounded-md border bg-background p-3">
             <div className="flex justify-between text-[13px]">
               <span className="text-muted-foreground">{t('match.expected')}</span>
@@ -220,13 +228,13 @@ export function MatchCard({ invoice }: MatchCardProps) {
               <span className="text-muted-foreground">{t('match.deviation')}</span>
               <span
                 className={`font-mono font-medium ${
-                  Math.abs(latestResult.amountDeltaPercent) > 10
+                  Math.abs(amountDeltaPercent) > 10
                     ? 'text-destructive'
                     : 'text-green-600 dark:text-green-400'
                 }`}>
-                {latestResult.amountDeltaPercent > 0 ? '+' : ''}
-                {latestResult.amountDeltaPercent.toFixed(1)}%
-                {Math.abs(latestResult.amountDeltaPercent) > 10 && (
+                {amountDeltaPercent > 0 ? '+' : ''}
+                {amountDeltaPercent.toFixed(1)}%
+                {Math.abs(amountDeltaPercent) > 10 && (
                   <AlertTriangle className="ms-1 inline h-3 w-3" />
                 )}
               </span>
@@ -439,4 +447,18 @@ export function UnmatchedCard({
       </CardContent>
     </Card>
   );
+}
+
+type MatchCardProps = {
+  invoice: MatchCardViewProps['invoice'];
+  onMatchConfirmed?: () => void;
+};
+
+export function MatchCard({ invoice, onMatchConfirmed }: MatchCardProps) {
+  const isUnmatched = invoice.matchStatus === 'UNMATCHED';
+  const unmatched = useInvoiceManualMatch(invoice.id, onMatchConfirmed, isUnmatched);
+
+  if (isUnmatched) return <UnmatchedCard unmatched={unmatched} />;
+
+  return <MatchCardView invoice={invoice} />;
 }

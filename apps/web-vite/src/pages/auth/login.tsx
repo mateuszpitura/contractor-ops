@@ -1,5 +1,10 @@
-import { AuthLoginContainer } from '../../components/auth/auth-login-container.js';
+import { LoginForm } from '../../components/auth/login-form.js';
+import { AuthLayout } from '../../components/layout/auth-layout.js';
 
 export default function LoginPage() {
-  return <AuthLoginContainer />;
+  return (
+    <AuthLayout>
+      <LoginForm />
+    </AuthLayout>
+  );
 }

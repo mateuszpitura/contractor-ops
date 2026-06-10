@@ -46,8 +46,11 @@ import { tKey } from '../../../i18n/typed-keys.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import type { InvoiceAction } from '../actions.js';
 import { getDetailInvoiceActions } from '../actions.js';
-import type { useInvoiceMetadataForm } from '../hooks/use-invoice-metadata-form.js';
-import { VatRateSelectorContainer } from '../vat-rate-selector-container.js';
+import { useInvoiceMetadataForm } from '../hooks/use-invoice-metadata-form.js';
+import { useFlag } from '../../layout/feature-flag-context.js';
+import { LateInterestCard } from '../late-interest/late-interest-card.js';
+import { SkontoFormSection } from '../skonto/skonto-form-section.js';
+import { VatRateSelector } from '../vat-rate-selector.js';
 
 // ---------------------------------------------------------------------------
 // Local Zod schema (mirrors invoiceUpdateSchema to avoid cross-package dep)
@@ -103,7 +106,7 @@ function toDateString(date: Date): string {
 
 type InvoiceMetadataMutations = ReturnType<typeof useInvoiceMetadataForm>;
 
-type InvoiceMetadataFormProps = {
+export type InvoiceMetadataFormViewProps = {
   mutations: InvoiceMetadataMutations;
   invoice: {
     id: string;
@@ -154,7 +157,7 @@ function dateFieldToOptionalString(value: string | Date | null | undefined): str
  * payload. Centralises the null/undefined coalescing for every optional
  * field so the component body stays simple.
  */
-function getDefaultFormValues(invoice: InvoiceMetadataFormProps['invoice']): InvoiceMetadataValues {
+function getDefaultFormValues(invoice: InvoiceMetadataFormViewProps['invoice']): InvoiceMetadataValues {
   return {
     invoiceNumber: invoice.invoiceNumber,
     issueDate: dateFieldToString(invoice.issueDate),
@@ -339,11 +342,11 @@ function VoidConfirmDialog({
 // Component
 // ---------------------------------------------------------------------------
 
-export function InvoiceMetadataForm({
+export function InvoiceMetadataFormView({
   invoice,
   mutations,
   detailSidecars,
-}: InvoiceMetadataFormProps) {
+}: InvoiceMetadataFormViewProps) {
   const t = useTranslations('Invoices');
   const tDetail = useTranslations('Invoices.detail');
   const tBulk = useTranslations('Invoices.bulkActions');
@@ -570,7 +573,7 @@ export function InvoiceMetadataForm({
               </div>
               <div className="space-y-1.5">
                 <Label>{t('detail.vatRate')}</Label>
-                <VatRateSelectorContainer
+                <VatRateSelector
                   value={vatRateValue ?? undefined}
                   onChange={onVatRateChange}
                   disabled={!isEditable}
@@ -790,6 +793,46 @@ function CurrencyInput({
       disabled={disabled}
       onChange={handleChange}
       onBlur={handleBlur}
+    />
+  );
+}
+
+type InvoiceMetadataFormProps = {
+  invoice: InvoiceMetadataFormViewProps['invoice'];
+  onSubmittedForMatching?: () => void;
+};
+
+export function InvoiceMetadataForm({
+  invoice,
+  onSubmittedForMatching,
+}: InvoiceMetadataFormProps) {
+  const mutations = useInvoiceMetadataForm(invoice.id, onSubmittedForMatching);
+  const skontoEnabled = useFlag('payments.skonto-enabled');
+  const lateInterestEnabled = useFlag('payments.late-interest-enabled');
+  const contractor = invoice.contractor;
+  const country = contractor?.countryCode ?? '';
+  const isBiz = contractor?.isBusinessCustomer ?? false;
+
+  return (
+    <InvoiceMetadataFormView
+      invoice={invoice}
+      mutations={mutations}
+      detailSidecars={
+        <>
+          <LateInterestCard
+            invoiceId={invoice.id}
+            featureEnabled={lateInterestEnabled}
+            contractorCountryCode={country}
+            isBusinessCustomer={isBiz}
+            currency={invoice.currency}
+          />
+          <SkontoFormSection
+            invoiceId={invoice.id}
+            featureEnabled={skontoEnabled}
+            contractorCountryCode={country}
+          />
+        </>
+      }
     />
   );
 }

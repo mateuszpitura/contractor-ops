@@ -1,5 +1,6 @@
-import { DataTable } from '@contractor-ops/ui';
+
 import type { ColumnDef } from '@tanstack/react-table';
+import { WorkbenchDataTable } from '../../table-kit/workbench-data-table.js';
 import { useCallback } from 'react';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
@@ -20,6 +21,7 @@ interface ApprovalQueueTableProps {
   onRowClick: (row: ApprovalQueueRow) => void;
   onSelectionChange?: (ids: string[]) => void;
   isLoading?: boolean;
+  sectionClassName?: string;
 }
 
 function isOverdue(row: ApprovalQueueRow): boolean {
@@ -46,6 +48,7 @@ export function ApprovalQueueTable({
   onRowClick,
   onSelectionChange,
   isLoading,
+  sectionClassName,
 }: ApprovalQueueTableProps) {
   const t = useTranslations('Approvals');
 
@@ -61,7 +64,8 @@ export function ApprovalQueueTable({
   const handlePageChange = useCallback((next: number) => onPageChange(next + 1), [onPageChange]);
 
   return (
-    <DataTable
+    <WorkbenchDataTable
+      sectionClassName={sectionClassName}
       columns={columns}
       data={data}
       totalRows={resolvedTotal}

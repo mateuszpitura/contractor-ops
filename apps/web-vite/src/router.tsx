@@ -18,12 +18,12 @@ import { dashboardRoutes } from './router/dashboard-routes.js';
 import { portalRoutes } from './router/portal-routes.js';
 
 const DashboardShell = lazy(() =>
-  import('./components/layout/dashboard-shell-container.js').then(m => ({
+  import('./components/layout/dashboard-shell.js').then(m => ({
     default: m.DashboardShellContainer,
   })),
 );
 const PortalShell = lazy(() =>
-  import('./components/layout/portal-shell-container.js').then(m => ({
+  import('./components/layout/portal-shell.js').then(m => ({
     default: m.PortalShellContainer,
   })),
 );

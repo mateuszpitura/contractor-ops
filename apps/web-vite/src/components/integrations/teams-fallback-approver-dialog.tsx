@@ -10,8 +10,8 @@ import {
 } from '@contractor-ops/ui/components/shadcn/dialog';
 import { Label } from '@contractor-ops/ui/components/shadcn/label';
 
-import { RuleUserPickerContainer } from '../settings/rule-user-picker-container.js';
-import type { useTeamsFallbackApproverDialog } from './hooks/use-teams-fallback-approver-dialog.js';
+import { RuleUserPicker } from '../settings/rule-user-picker.js';
+import { useTeamsFallbackApproverDialog } from './hooks/use-teams-fallback-approver-dialog.js';
 
 export type TeamsFallbackApproverDialogViewProps = ReturnType<
   typeof useTeamsFallbackApproverDialog
@@ -38,7 +38,7 @@ export function TeamsFallbackApproverDialogView({
 
         <DialogBody className="space-y-3 py-2">
           <Label htmlFor="teams-fallback-approver-picker">{t('approverLabel')}</Label>
-          <RuleUserPickerContainer value={selectedUserId} onChange={setSelectedUserId} />
+          <RuleUserPicker value={selectedUserId} onChange={setSelectedUserId} />
         </DialogBody>
 
         <DialogFooter className="gap-2 sm:gap-2">
@@ -59,4 +59,16 @@ export function TeamsFallbackApproverDialogView({
       </DialogContent>
     </Dialog>
   );
+}
+
+interface TeamsFallbackApproverDialogProps {
+  teamId: string;
+  currentFallbackApproverId?: string | null;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}
+
+export function TeamsFallbackApproverDialog(props: TeamsFallbackApproverDialogProps) {
+  const viewProps = useTeamsFallbackApproverDialog(props);
+  return <TeamsFallbackApproverDialogView {...viewProps} />;
 }

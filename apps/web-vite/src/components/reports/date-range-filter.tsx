@@ -79,7 +79,9 @@ export function DateRangeFilter({ dateFrom, dateTo, onDateChange }: DateRangeFil
   const handleRangeSelect = useCallback(
     (range: DateRange | undefined) => {
       if (range?.from && range?.to) {
-        onDateChange(range.from.toISOString(), range.to.toISOString());
+        const [start, end] =
+          range.from <= range.to ? [range.from, range.to] : [range.to, range.from];
+        onDateChange(start.toISOString(), end.toISOString());
         setPopoverOpen(false);
       }
     },

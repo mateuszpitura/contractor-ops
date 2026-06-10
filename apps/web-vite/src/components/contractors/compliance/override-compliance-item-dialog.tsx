@@ -21,8 +21,11 @@ import { useState } from 'react';
 
 import { tDynLoose } from '../../../i18n/typed-keys.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
-import type { OverrideReasonCategory } from './hooks/use-override-compliance-item.js';
-import { OVERRIDE_REASON_CATEGORIES } from './hooks/use-override-compliance-item.js';
+import {
+  OVERRIDE_REASON_CATEGORIES,
+  useOverrideComplianceItem,
+  type OverrideReasonCategory,
+} from './hooks/use-override-compliance-item.js';
 
 const MIN_NOTE_LENGTH = 20;
 
@@ -111,3 +114,31 @@ export function OverrideComplianceItemDialogView({
     </Dialog>
   );
 }
+
+export interface OverrideComplianceItemDialogContainerProps {
+  itemId: string;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}
+
+export function OverrideComplianceItemDialogContainer({
+  itemId,
+  open,
+  onOpenChange,
+}: OverrideComplianceItemDialogContainerProps) {
+  const { override, isPending } = useOverrideComplianceItem(() => onOpenChange(false));
+
+  return (
+    <OverrideComplianceItemDialogView
+      open={open}
+      onOpenChange={onOpenChange}
+      isPending={isPending}
+      onSubmit={({ reasonCategory, reasonNote }) =>
+        override({ itemId, reasonCategory, reasonNote })
+      }
+    />
+  );
+}
+
+/** @deprecated Use OverrideComplianceItemDialog */
+export { OverrideComplianceItemDialogContainer as OverrideComplianceItemDialog };

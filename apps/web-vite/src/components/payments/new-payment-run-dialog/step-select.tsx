@@ -1,8 +1,8 @@
 /**
- * StepSelect — presentational shell + variant siblings.
+ * StepSelect — presentational shell + variant siblings + wired export.
  *
- * The container picks between `StepSelectEmptyState` (no rows after
- * filters) and `StepSelectDataTable` (rows present). `StepSelect`
+ * The wired `StepSelect` picks between `StepSelectEmptyState` (no rows after
+ * filters) and `StepSelectDataTable` (rows present). `StepSelectView`
  * renders the filter toolbar + footer that wrap both variants and
  * accepts the middle pane as `children`.
  */
@@ -30,11 +30,15 @@ import type { ColumnDef, RowSelectionState } from '@tanstack/react-table';
 import { CalendarIcon } from 'lucide-react';
 import type * as React from 'react';
 import type { ReactNode } from 'react';
-import { useCallback, useId } from 'react';
+import { useCallback, useId, useMemo } from 'react';
+
+import { useDateFormatter } from '../../../lib/format/use-date-formatter.js';
+import { usePaymentRunStepSelect } from '../hooks/use-payment-run-step-select.js';
+import { getColumns } from '../invoice-selection-table/columns.js';
 
 import type { TranslateFn } from '../../../i18n/useTranslations.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
-import { formatAmount } from '../../../lib/format-currency.js';
+import { formatAmount } from '../../../lib/money.js';
 import type { ReadyInvoiceRow } from '../invoice-selection-table/columns.js';
 import { InvoiceSelectionDataTable } from '../invoice-selection-table/data-table.js';
 
@@ -63,7 +67,7 @@ export interface StepSelectFooterModel {
   onNext: () => void;
 }
 
-interface StepSelectProps {
+interface StepSelectViewProps {
   filters: StepSelectFilters;
   footer: StepSelectFooterModel;
   formatDateRange: (from: Date, to?: Date) => string;
@@ -74,13 +78,13 @@ interface StepSelectProps {
   children: ReactNode;
 }
 
-export function StepSelect({
+export function StepSelectView({
   filters,
   footer,
   formatDateRange,
   selectAllMatching,
   children,
-}: StepSelectProps) {
+}: StepSelectViewProps) {
   const t = useTranslations('Payments');
   const reactId = useId();
 
@@ -247,6 +251,122 @@ export function StepSelectDataTable({
       rowSelection={rowSelection}
       onRowSelectionChange={onRowSelectionChange}
     />
+  );
+}
+
+interface StepSelectProps {
+  selectedInvoiceIds: string[];
+  onSelectionChange: (ids: string[]) => void;
+  groupByCurrency: boolean;
+  onGroupByCurrencyChange: (value: boolean) => void;
+  onCancel: () => void;
+  onNext: () => void;
+}
+
+export function StepSelect({
+  selectedInvoiceIds,
+  onSelectionChange,
+  groupByCurrency,
+  onGroupByCurrencyChange,
+  onCancel,
+  onNext,
+}: StepSelectProps) {
+  const t = useTranslations('Payments');
+  const { formatDate } = useDateFormatter();
+  const select = usePaymentRunStepSelect({ selectedInvoiceIds, onSelectionChange });
+
+  const columns = useMemo(() => getColumns(t, formatDate), [t, formatDate]);
+
+  const rowSelection = useMemo(() => {
+    const state: RowSelectionState = {};
+    for (const id of selectedInvoiceIds) state[id] = true;
+    return state;
+  }, [selectedInvoiceIds]);
+
+  const selectableMatchingIds = useMemo(
+    () => select.filteredInvoices.filter(inv => !inv._inRunNumber).map(inv => inv.id),
+    [select.filteredInvoices],
+  );
+
+  const handleSelectAllMatching = useCallback(() => {
+    onSelectionChange(selectableMatchingIds);
+  }, [onSelectionChange, selectableMatchingIds]);
+
+  const selectedInvoices = useMemo(
+    () => select.allInvoices.filter(inv => selectedInvoiceIds.includes(inv.id)),
+    [select.allInvoices, selectedInvoiceIds],
+  );
+
+  const selectionByCurrency = useMemo(() => {
+    const byCurrency = new Map<string, { count: number; totalMinor: number }>();
+    for (const inv of selectedInvoices) {
+      const prev = byCurrency.get(inv.currency) ?? { count: 0, totalMinor: 0 };
+      byCurrency.set(inv.currency, {
+        count: prev.count + 1,
+        totalMinor: prev.totalMinor + inv.amountToPayMinor,
+      });
+    }
+    return Array.from(byCurrency.entries()).map(([currency, { count, totalMinor }]) => ({
+      currency,
+      count,
+      totalMinor,
+    }));
+  }, [selectedInvoices]);
+
+  const uniqueCurrencies = selectionByCurrency.map(s => s.currency);
+  const isEmpty = !select.isLoading && select.filteredInvoices.length === 0;
+
+  const formatDateRange = useCallback(
+    (from: Date, to?: Date) => `${formatDate(from)}${to ? ` - ${formatDate(to)}` : ''}`,
+    [formatDate],
+  );
+
+  let pane: ReactNode;
+  let selectAllMatching: { count: number; onClick: () => void } | null;
+  if (isEmpty) {
+    pane = <StepSelectEmptyState />;
+    selectAllMatching = null;
+  } else {
+    pane = (
+      <StepSelectDataTable
+        data={select.filteredInvoices}
+        columns={columns}
+        isLoading={select.isLoading}
+        rowSelection={rowSelection}
+        onRowSelectionChange={select.handleRowSelectionChange}
+      />
+    );
+    selectAllMatching = {
+      count: selectableMatchingIds.length,
+      onClick: handleSelectAllMatching,
+    };
+  }
+
+  return (
+    <StepSelectView
+      filters={{
+        currency: select.currency,
+        setCurrency: select.setCurrency,
+        dueDateFrom: select.dueDateFrom,
+        setDueDateFrom: select.setDueDateFrom,
+        dueDateTo: select.dueDateTo,
+        setDueDateTo: select.setDueDateTo,
+        contractorSearch: select.contractorSearch,
+        setContractorSearch: select.setContractorSearch,
+      }}
+      footer={{
+        selectedInvoiceIds,
+        selectedInvoiceCountsByCurrency: selectionByCurrency,
+        uniqueCurrencies,
+        groupByCurrency,
+        onGroupByCurrencyChange,
+        onNext,
+        onCancel,
+      }}
+      formatDateRange={formatDateRange}
+      selectAllMatching={selectAllMatching}>
+      {pane}
+    </StepSelectView>
   );
 }
 

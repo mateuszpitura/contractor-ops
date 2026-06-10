@@ -13,11 +13,12 @@ import { SOFTWARE_NOT_LEGAL_ADVICE_EN } from '@contractor-ops/validators';
 import { ExternalLink, ScrollText } from 'lucide-react';
 import { Link } from '../i18n/navigation.js';
 import { useTranslations } from '../i18n/useTranslations.js';
+import { useTosReacceptance } from './legal/hooks/use-tos-reacceptance.js';
 
 /**
  * Presentational ToS re-acceptance modal. Always rendered as an open,
  * non-dismissible dialog — visibility (mount/unmount) is decided by
- * `TosReacceptanceModalContainer` from the hook's `open` flag.
+ * `TosReacceptanceModal` from the hook's `open` flag.
  */
 export interface TosReacceptanceModalViewProps {
   currentVersion: string;
@@ -78,5 +79,21 @@ export function TosReacceptanceModalView({
         </DialogFooter>
       </DialogContent>
     </Dialog>
+  );
+}
+
+interface TosReacceptanceModalProps {
+  currentVersion: string;
+}
+
+export function TosReacceptanceModal({ currentVersion }: TosReacceptanceModalProps) {
+  const { open, isPending, onAccept } = useTosReacceptance();
+  if (!open) return null;
+  return (
+    <TosReacceptanceModalView
+      currentVersion={currentVersion}
+      isPending={isPending}
+      onAccept={onAccept}
+    />
   );
 }

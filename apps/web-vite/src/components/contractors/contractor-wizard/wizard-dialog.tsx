@@ -1,17 +1,4 @@
 import { contractorTypeEnum } from '@contractor-ops/validators';
-import { Check, Loader2 } from 'lucide-react';
-import { useCallback } from 'react';
-import { z } from 'zod';
-
-import { isValidNip } from '../../../lib/nip-validator.js';
-import type { useContractorWizardDialog } from '../hooks/use-contractor-wizard-dialog.js';
-import { StepAssignmentContainer } from './step-assignment-container.js';
-import { StepBilling } from './step-billing.js';
-import { StepCompanyContainer } from './step-company-container.js';
-
-// ---------------------------------------------------------------------------
-// Wizard form schema (mirrors contractorCreateSchema from validators package)
-
 import {
   AlertDialog,
   AlertDialogAction,
@@ -23,15 +10,18 @@ import {
   AlertDialogTitle,
 } from '@contractor-ops/ui/components/shadcn/alert-dialog';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
-import {
-  Dialog,
-  DialogBody,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogSection,
-  DialogTitle,
-} from '@contractor-ops/ui/components/shadcn/dialog';
+import { DialogFooter } from '@contractor-ops/ui/components/shadcn/dialog';
+import { Check, Loader2 } from 'lucide-react';
+import { useCallback } from 'react';
+import { z } from 'zod';
+
+import { WizardDialogShell } from '../../wizard/wizard-dialog-shell.js';
+import { isValidNip } from '../../../lib/nip-validator.js';
+import { useContractorWizardDialog } from '../hooks/use-contractor-wizard-dialog.js';
+import type { useContractorWizardDialog as UseContractorWizardDialog } from '../hooks/use-contractor-wizard-dialog.js';
+import { StepAssignment } from './step-assignment.js';
+import { StepBilling } from './step-billing.js';
+import { StepCompany } from './step-company.js';
 
 function preventEnterSubmit(e: React.KeyboardEvent<HTMLDivElement>) {
   if (e.key === 'Enter' && e.target instanceof HTMLInputElement) {
@@ -107,9 +97,7 @@ const wizardSchema = z.object({
 
 export type WizardFormValues = z.input<typeof wizardSchema>;
 
-// ---------------------------------------------------------------------------
-// Step indicator
-// ---------------------------------------------------------------------------
+type Wizard = ReturnType<typeof UseContractorWizardDialog>;
 
 function StepIndicator({ steps, currentStep }: { steps: string[]; currentStep: number }) {
   return (
@@ -150,11 +138,82 @@ function StepIndicator({ steps, currentStep }: { steps: string[]; currentStep: n
   );
 }
 
-// ---------------------------------------------------------------------------
-// Wizard dialog (presentational)
-// ---------------------------------------------------------------------------
+export function WizardFooter({
+  currentStep,
+  isDirty,
+  isSubmitting,
+  nextLabels,
+  handleBack,
+  handleClose,
+  handleNext,
+  t,
+}: {
+  currentStep: number;
+  isDirty: boolean;
+  isSubmitting: boolean;
+  nextLabels: string[];
+  handleBack: () => void;
+  handleClose: () => void;
+  handleNext: () => void;
+  t: Wizard['t'];
+}) {
+  return (
+    <DialogFooter className="flex-row items-center justify-between gap-2 sm:justify-between">
+      <div>
+        {currentStep > 0 ? (
+          <Button type="button" variant="outline" onClick={handleBack}>
+            {t('back')}
+          </Button>
+        ) : (
+          <Button type="button" variant="ghost" onClick={handleClose}>
+            {isDirty ? t('discardChanges') : t('close')}
+          </Button>
+        )}
+      </div>
+      <Button type="button" onClick={handleNext} disabled={isSubmitting}>
+        {isSubmitting ? (
+          <>
+            <Loader2 className="me-2 h-4 w-4 animate-spin" />
+            {t('submit')}
+          </>
+        ) : (
+          nextLabels[currentStep]
+        )}
+      </Button>
+    </DialogFooter>
+  );
+}
 
-export type WizardDialogViewProps = ReturnType<typeof useContractorWizardDialog>;
+export function WizardDiscardDialog({
+  open,
+  onOpenChange,
+  onDiscard,
+  t,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onDiscard: () => void;
+  t: Wizard['t'];
+}) {
+  return (
+    <AlertDialog open={open} onOpenChange={onOpenChange}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>{t('discardConfirm.title')}</AlertDialogTitle>
+          <AlertDialogDescription>{t('discardConfirm.body')}</AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>{t('discardConfirm.keep')}</AlertDialogCancel>
+          <AlertDialogAction onClick={onDiscard} variant="destructive">
+            {t('discardConfirm.discard')}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
+}
+
+export type WizardDialogViewProps = Wizard;
 
 /**
  * 3-step add contractor wizard dialog.
@@ -178,70 +237,61 @@ export function WizardDialogView({
   handleBack,
   handleDialogOpenChange,
 }: WizardDialogViewProps) {
-  const handleCloseClick = useCallback(() => handleClose(), [handleClose]);
+  const handleCancelDirtyClose = useCallback(
+    () => setShowDiscardDialog(false),
+    [setShowDiscardDialog],
+  );
 
   return (
     <>
-      <Dialog open={open} onOpenChange={handleDialogOpenChange}>
-        <DialogContent className="sm:max-w-[640px]" showCloseButton={false}>
-          <DialogHeader>
-            <DialogTitle>{t('title')}</DialogTitle>
-          </DialogHeader>
+      <WizardDialogShell
+        open={open}
+        onOpenChange={handleDialogOpenChange}
+        title={t('title')}
+        contentClassName="sm:max-w-[640px]"
+        stepper={<StepIndicator steps={stepLabels} currentStep={currentStep} />}
+        footer={
+          <WizardFooter
+            currentStep={currentStep}
+            isDirty={isDirty}
+            isSubmitting={isSubmitting}
+            nextLabels={nextLabels}
+            handleBack={handleBack}
+            handleClose={handleClose}
+            handleNext={handleNext}
+            t={t}
+          />
+        }
+        showDirtyClose={false}
+        onConfirmDirtyClose={handleDiscard}
+        onCancelDirtyClose={handleCancelDirtyClose}>
+        <div
+          className="min-h-[320px] px-1"
+          role="presentation"
+          onKeyDown={preventEnterSubmit}>
+          {currentStep === 0 && <StepCompany form={form} />}
+          {currentStep === 1 && <StepBilling form={form} />}
+          {currentStep === 2 && <StepAssignment form={form} />}
+        </div>
+      </WizardDialogShell>
 
-          {/* Step indicator */}
-          <DialogSection>
-            <StepIndicator steps={stepLabels} currentStep={currentStep} />
-          </DialogSection>
-
-          <DialogBody
-            className="min-h-[320px] px-1"
-            role="presentation"
-            onKeyDown={preventEnterSubmit}>
-            {currentStep === 0 && <StepCompanyContainer form={form} />}
-            {currentStep === 1 && <StepBilling form={form} />}
-            {currentStep === 2 && <StepAssignmentContainer form={form} />}
-          </DialogBody>
-
-          <DialogFooter className="flex-row items-center justify-between gap-2 sm:justify-between">
-            <div>
-              {currentStep > 0 ? (
-                <Button type="button" variant="outline" onClick={handleBack}>
-                  {t('back')}
-                </Button>
-              ) : (
-                <Button type="button" variant="ghost" onClick={handleCloseClick}>
-                  {isDirty ? t('discardChanges') : t('close')}
-                </Button>
-              )}
-            </div>
-            <Button type="button" onClick={handleNext} disabled={isSubmitting}>
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="me-2 h-4 w-4 animate-spin" />
-                  {t('submit')}
-                </>
-              ) : (
-                nextLabels[currentStep]
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-      {/* Discard confirmation */}
-      <AlertDialog open={showDiscardDialog} onOpenChange={setShowDiscardDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{t('discardConfirm.title')}</AlertDialogTitle>
-            <AlertDialogDescription>{t('discardConfirm.body')}</AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>{t('discardConfirm.keep')}</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDiscard} variant="destructive">
-              {t('discardConfirm.discard')}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <WizardDiscardDialog
+        open={showDiscardDialog}
+        onOpenChange={setShowDiscardDialog}
+        onDiscard={handleDiscard}
+        t={t}
+      />
     </>
   );
+}
+
+export function WizardDialog({
+  open,
+  onOpenChange,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) {
+  const dialog = useContractorWizardDialog(open, onOpenChange);
+  return <WizardDialogView {...dialog} />;
 }

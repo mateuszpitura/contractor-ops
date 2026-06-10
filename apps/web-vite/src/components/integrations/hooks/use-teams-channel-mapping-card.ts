@@ -1,4 +1,6 @@
+import type { AppRouter } from '@contractor-ops/api';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import type { inferRouterInputs } from '@trpc/server';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
@@ -17,6 +19,8 @@ export {
   type TeamsChannel,
 };
 
+type SaveChannelMappingInput = inferRouterInputs<AppRouter>['teams']['saveChannelMapping'];
+
 export interface TeamsTeam {
   id: string;
   displayName: string;
@@ -31,7 +35,7 @@ export function useTeamsChannelMappingCard() {
   const [localMapping, setLocalMapping] = useState<Record<string, string>>({});
 
   const teamsQuery = useQuery(trpc.teams.getTeams.queryOptions());
-  const teams = (teamsQuery.data ?? []) as TeamsTeam[];
+  const teams: TeamsTeam[] = teamsQuery.data ?? [];
 
   useEffect(() => {
     if (teams.length === 1 && !selectedTeamId) {
@@ -43,13 +47,13 @@ export function useTeamsChannelMappingCard() {
     ...trpc.teams.getChannels.queryOptions({ teamId: selectedTeamId ?? '' }),
     enabled: !!selectedTeamId,
   });
-  const channels = (channelsQuery.data ?? []) as TeamsChannel[];
+  const channels: TeamsChannel[] = channelsQuery.data ?? [];
 
   const mappingQuery = useQuery(trpc.teams.getChannelMapping.queryOptions());
 
   useEffect(() => {
     if (mappingQuery.data) {
-      setLocalMapping(mappingQuery.data as Record<string, string>);
+      setLocalMapping(mappingQuery.data);
     }
   }, [mappingQuery.data]);
 
@@ -71,9 +75,12 @@ export function useTeamsChannelMappingCard() {
   };
 
   const handleSave = () => {
-    (saveMutation.mutate as unknown as (input: { mapping: Record<string, string> }) => void)({
-      mapping: localMapping,
-    });
+    const mapping: Partial<SaveChannelMappingInput['mapping']> = {};
+    for (const category of NOTIFICATION_CATEGORIES) {
+      const channelId = localMapping[category];
+      if (channelId) mapping[category] = channelId;
+    }
+    saveMutation.mutate({ mapping: mapping as SaveChannelMappingInput['mapping'] });
   };
 
   const handleRefresh = () => {

@@ -14,7 +14,7 @@ import { useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
-import { EInvoiceTabContainer } from '../einvoice-tab/einvoice-tab-container.js';
+import { EInvoiceTab } from '../einvoice-tab/einvoice-tab.js';
 
 const TAB_DETAILS = 'details';
 const TAB_EINVOICE = 'e-invoice';
@@ -62,7 +62,7 @@ export function InvoiceDetailTabs({ invoiceId, details }: InvoiceDetailTabsProps
         {details}
       </TabsContent>
       <TabsContent value={TAB_EINVOICE} className="mt-6">
-        <EInvoiceTabContainer invoiceId={invoiceId} />
+        <EInvoiceTab invoiceId={invoiceId} />
       </TabsContent>
     </Tabs>
   );

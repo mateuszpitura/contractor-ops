@@ -1,8 +1,12 @@
 import type { CSSProperties } from 'react';
 import { Outlet } from 'react-router-dom';
 
-import { PortalTopBarContainer } from '../portal/portal-top-bar-container.js';
+import { useTranslations } from '../../i18n/useTranslations.js';
+import { PortalTopBarContainer } from '../portal/portal-top-bar.js';
 import { PageLoadingSpinner } from '../shared/page-loading-spinner.js';
+import { usePortalShell } from './hooks/use-portal-shell.js';
+import { usePortalShellRedirect } from './hooks/use-portal-shell-redirect.js';
+import { PortalShellSkeleton } from './portal-shell-skeleton.js';
 
 interface PortalShellProps {
   skipToContentLabel: string;
@@ -52,5 +56,28 @@ export function PortalShell({
         </div>
       </main>
     </div>
+  );
+}
+
+export function PortalShellContainer() {
+  const tLayout = useTranslations('Layout');
+  const { isLoading, shouldRedirectToLogin, shellStyle, topBarProps } = usePortalShell();
+
+  usePortalShellRedirect(shouldRedirectToLogin);
+
+  if (isLoading) {
+    return <PortalShellSkeleton />;
+  }
+  if (!topBarProps) {
+    return null;
+  }
+
+  return (
+    <PortalShell
+      skipToContentLabel={tLayout('skipToContent')}
+      isLoading={false}
+      shellStyle={shellStyle}
+      topBarProps={topBarProps}
+    />
   );
 }

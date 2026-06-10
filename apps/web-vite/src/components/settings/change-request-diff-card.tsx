@@ -27,7 +27,10 @@ import { useCallback } from 'react';
 
 import { tDynLoose } from '../../i18n/typed-keys.js';
 import { enumKey } from '../../lib/enum-key.js';
-import type { useChangeRequestDiffCard } from './hooks/use-change-request-diff-card.js';
+import {
+  useChangeRequestDiffCard,
+  type useChangeRequestDiffCard as UseChangeRequestDiffCard,
+} from './hooks/use-change-request-diff-card.js';
 
 const FIELD_LABEL_KEYS: Record<string, string> = {
   bankAccountNumber: 'bankAccount',
@@ -56,9 +59,9 @@ interface ChangeRequestDiffCardBaseProps {
 }
 
 export type ChangeRequestDiffCardProps = ChangeRequestDiffCardBaseProps &
-  ReturnType<typeof useChangeRequestDiffCard>;
+  ReturnType<typeof UseChangeRequestDiffCard>;
 
-export function ChangeRequestDiffCard({
+export function ChangeRequestDiffCardView({
   request,
   t,
   rejectDialogOpen,
@@ -185,4 +188,20 @@ export function ChangeRequestDiffCard({
       </Dialog>
     </>
   );
+}
+
+export function ChangeRequestDiffCard({
+  request,
+  onApproved,
+  onRejected,
+}: ChangeRequestDiffCardBaseProps & {
+  onApproved?: () => void;
+  onRejected?: () => void;
+}) {
+  const card = useChangeRequestDiffCard({
+    requestId: request.id,
+    onApproved,
+    onRejected,
+  });
+  return <ChangeRequestDiffCardView request={request} {...card} />;
 }

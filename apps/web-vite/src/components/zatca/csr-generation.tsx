@@ -1,9 +1,10 @@
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { ArrowLeft, ArrowRight, Loader2 } from 'lucide-react';
 import type { ReactNode } from 'react';
-import type { useCsrGeneration } from './hooks/use-csr-generation.js';
+import { useCsrGeneration } from './hooks/use-csr-generation.js';
+import type { useCsrGeneration as UseCsrGeneration } from './hooks/use-csr-generation.js';
 
-type HookResult = ReturnType<typeof useCsrGeneration>;
+type HookResult = ReturnType<typeof UseCsrGeneration>;
 type T = HookResult['t'];
 type TAria = HookResult['tAria'];
 
@@ -114,3 +115,28 @@ export type CsrGenerationViewProps = {
   onSuccess: () => void;
   onBack: () => void;
 } & HookResult;
+
+export function CsrGeneration(props: Pick<CsrGenerationViewProps, 'onSuccess' | 'onBack'>) {
+  const { csrPem, generateCsr, isPending, t, tAria } = useCsrGeneration();
+
+  if (csrPem) {
+    return (
+      <CsrGenerationGenerated
+        onSuccess={props.onSuccess}
+        onBack={props.onBack}
+        csrPem={csrPem}
+        t={t}
+      />
+    );
+  }
+
+  return (
+    <CsrGenerationIdle
+      onBack={props.onBack}
+      generateCsr={generateCsr}
+      isPending={isPending}
+      t={t}
+      tAria={tAria}
+    />
+  );
+}

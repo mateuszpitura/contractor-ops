@@ -1,10 +1,9 @@
 import { invitableMemberRoleValues } from '@contractor-ops/validators/roles';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
-import { toast } from 'sonner';
 import { z } from 'zod';
+import { useResourceMutation } from '../../../hooks/use-resource-mutation.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { enumKey } from '../../../lib/enum-key.js';
 import { useTRPC } from '../../../providers/trpc-provider.js';
@@ -29,24 +28,13 @@ export function useInviteDialog({ open, onOpenChange }: UseInviteDialogOptions) 
   const tr = useTranslations('Users.roles');
   const trd = useTranslations('Users.roleDescriptions');
   const tToast = useTranslations('Settings.toast');
-  const queryClient = useQueryClient();
 
-  const inviteMutation = useMutation(
-    trpc.user.invite.mutationOptions({
-      onSuccess: () => {
-        toast.success(t('successToast'));
-        queryClient.invalidateQueries({ queryKey: trpc.user.list.queryKey() });
-        onOpenChange(false);
-      },
-      onError: (error: unknown) => {
-        const message =
-          typeof error === 'object' && error && 'message' in error
-            ? String((error as { message?: unknown }).message ?? '')
-            : '';
-        toast.error(message || tToast('inviteFailed'));
-      },
-    }),
-  );
+  const inviteMutation = useResourceMutation(trpc.user.invite.mutationOptions(), {
+    invalidate: [trpc.user.list.queryKey()],
+    successMessage: t('successToast'),
+    errorMessage: tToast('inviteFailed'),
+    onClose: () => onOpenChange(false),
+  });
 
   const form = useForm<InviteValues>({
     resolver: zodResolver(inviteSchema),

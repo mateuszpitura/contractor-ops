@@ -14,6 +14,8 @@ export function useTaxObligationsWidget() {
 
   return {
     isLoading: query.isPending,
+    isError: query.isError,
+    onRetry: () => query.refetch(),
     data: query.data ?? null,
   } as const;
 }

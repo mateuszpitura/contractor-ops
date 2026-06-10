@@ -4,14 +4,18 @@ import type {
   ContractorType,
 } from '@contractor-ops/validators';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
+import type { OnChangeFn, SortingState, VisibilityState } from '@tanstack/react-table';
 import { useCallback, useMemo } from 'react';
 
+import { useListDataTable } from '../../../hooks/use-list-data-table.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { useTRPC } from '../../../providers/trpc-provider.js';
 import type { ContractorRow } from '../contractor-table/columns.js';
 import { useContractorFilters } from '../contractor-table/use-contractor-filters.js';
 import type { ContractorBulkActionsHandlers } from './use-contractor-bulk-actions.js';
 import { useContractorBulkActions } from './use-contractor-bulk-actions.js';
+
+const STORAGE_KEY = 'contractor-table-columns';
 
 export type ContractorUserOption = {
   id?: string;
@@ -60,6 +64,12 @@ export interface ContractorListTableProps {
   activeFilterCount: number;
   hasFiltersOrSearch: boolean;
   bulkActions: ContractorBulkActionsHandlers;
+  columnVisibility: VisibilityState;
+  setColumnVisibility: OnChangeFn<VisibilityState>;
+  sorting: SortingState;
+  onSortingChange: (updater: SortingState | ((old: SortingState) => SortingState)) => void;
+  selectedRows: ContractorRow[];
+  setSelectedRows: (rows: ContractorRow[]) => void;
 }
 
 export interface ContractorListToolbarProps {
@@ -80,7 +90,7 @@ export function useContractorList(options: { onAddContractor: () => void; onImpo
   const [filters, setFilters] = useContractorFilters();
 
   const countQuery = useQuery(trpc.contractor.list.queryOptions({ page: 1, pageSize: 10 }));
-  const totalCount = (countQuery.data as { total: number } | undefined)?.total ?? 0;
+  const totalCount = countQuery.data?.total ?? 0;
   const isCountLoading = countQuery.isLoading || countQuery.isFetching;
   const showEmptyState = !isCountLoading && totalCount === 0;
 
@@ -114,15 +124,12 @@ export function useContractorList(options: { onAddContractor: () => void; onImpo
     placeholderData: keepPreviousData,
   });
 
-  const data = useMemo(() => {
-    const result = contractorsQuery.data as { items: ContractorRow[]; total: number } | undefined;
-    return result?.items ?? [];
-  }, [contractorsQuery.data]);
+  const data = useMemo(
+    () => (contractorsQuery.data?.items ?? []) as ContractorRow[],
+    [contractorsQuery.data],
+  );
 
-  const totalRows = useMemo(() => {
-    const result = contractorsQuery.data as { items: unknown[]; total: number } | undefined;
-    return result?.total ?? 0;
-  }, [contractorsQuery.data]);
+  const totalRows = contractorsQuery.data?.total ?? 0;
 
   const usersQuery = useQuery(trpc.user.list.queryOptions());
   const users = Array.isArray(usersQuery.data) ? (usersQuery.data as ContractorUserOption[]) : [];
@@ -176,6 +183,23 @@ export function useContractorList(options: { onAddContractor: () => void; onImpo
     },
     [setFilters],
   );
+
+  const {
+    columnVisibility,
+    setColumnVisibility,
+    selectedRows,
+    setSelectedRows,
+    sorting,
+    handleSortingChange,
+  } = useListDataTable<ContractorRow>({
+    storageKey: STORAGE_KEY,
+    filters: {
+      sortBy: filters.sortBy,
+      sortOrder: (filters.sortOrder as 'asc' | 'desc') || 'desc',
+    },
+    onSortChange: handleSortChange,
+    defaultSortBy: 'createdAt',
+  });
 
   const clearFilters = useCallback(() => {
     void setFilters({
@@ -239,6 +263,12 @@ export function useContractorList(options: { onAddContractor: () => void; onImpo
     activeFilterCount,
     hasFiltersOrSearch,
     bulkActions,
+    columnVisibility,
+    setColumnVisibility,
+    sorting,
+    onSortingChange: handleSortingChange,
+    selectedRows,
+    setSelectedRows,
   };
 
   return {

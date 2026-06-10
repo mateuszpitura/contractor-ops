@@ -1,14 +1,13 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { endOfMonth, format, startOfISOWeek, startOfMonth } from 'date-fns';
 import { useCallback, useMemo, useState } from 'react';
-import { toast } from 'sonner';
 
+import { useResourceMutation } from '../../../hooks/use-resource-mutation.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { usePortalTRPC } from '../../../providers/trpc-provider.js';
 
 export function usePortalTime() {
   const t = useTranslations('Portal.timeTracking');
-  const queryClient = useQueryClient();
   const trpc = usePortalTRPC();
 
   const [currentWeekStart, setCurrentWeekStart] = useState<Date>(startOfISOWeek(new Date()));
@@ -16,6 +15,9 @@ export function usePortalTime() {
   const openSingleEntry = useCallback(() => setSingleEntryOpen(true), []);
 
   const weekStartStr = format(currentWeekStart, 'yyyy-MM-dd');
+  const timesheetQueryKey = trpc.portalTime.getTimesheet.queryOptions({ weekStartDate: weekStartStr })
+    .queryKey;
+  const listTimesheetsQueryKey = trpc.portalTime.listTimesheets.queryOptions({ limit: 10 }).queryKey;
 
   const timesheetQuery = useQuery(
     trpc.portalTime.getTimesheet.queryOptions({ weekStartDate: weekStartStr }),
@@ -54,70 +56,39 @@ export function usePortalTime() {
     return set;
   }, [providersQuery.data]);
 
-  const saveDraftMutation = useMutation(
-    trpc.portalTime.saveDraftEntries.mutationOptions({
-      onSuccess: () => {
-        void queryClient.invalidateQueries({
-          queryKey: trpc.portalTime.getTimesheet.queryOptions({ weekStartDate: weekStartStr })
-            .queryKey,
-        });
-        toast.success(t('toast.weekSaved'));
-      },
-      onError: err => toast.error(err.message),
-    }),
+  const saveDraftMutation = useResourceMutation(
+    trpc.portalTime.saveDraftEntries.mutationOptions(),
+    {
+      successMessage: t('toast.weekSaved'),
+      invalidate: [{ queryKey: timesheetQueryKey }],
+    },
   );
 
-  const createSingleEntryMutation = useMutation(
-    trpc.portalTime.createSingleEntry.mutationOptions({
-      onSuccess: () => {
-        toast.success(t('toast.entryAdded'));
-        setSingleEntryOpen(false);
-        void queryClient.invalidateQueries({
-          queryKey: trpc.portalTime.getTimesheet.queryOptions({ weekStartDate: weekStartStr })
-            .queryKey,
-        });
-        void queryClient.invalidateQueries({
-          queryKey: trpc.portalTime.listTimesheets.queryOptions({ limit: 10 }).queryKey,
-        });
-      },
-      onError: () => {
-        toast.error(t('toast.entryAddFailed'));
-      },
-    }),
+  const createSingleEntryMutation = useResourceMutation(
+    trpc.portalTime.createSingleEntry.mutationOptions(),
+    {
+      successMessage: t('toast.entryAdded'),
+      errorMessage: t('toast.entryAddFailed'),
+      invalidate: [{ queryKey: timesheetQueryKey }, { queryKey: listTimesheetsQueryKey }],
+      onClose: () => setSingleEntryOpen(false),
+    },
   );
 
-  const submitMutation = useMutation(
-    trpc.portalTime.submitTimesheet.mutationOptions({
-      onSuccess: () => {
-        toast.success(t('toast.timesheetSubmitted'));
-        void queryClient.invalidateQueries({
-          queryKey: trpc.portalTime.getTimesheet.queryOptions({ weekStartDate: weekStartStr })
-            .queryKey,
-        });
-        void queryClient.invalidateQueries({
-          queryKey: trpc.portalTime.listTimesheets.queryOptions({ limit: 10 }).queryKey,
-        });
-      },
-      onError: () => {
-        toast.error(t('toast.timesheetSubmitFailed'));
-      },
-    }),
+  const submitMutation = useResourceMutation(
+    trpc.portalTime.submitTimesheet.mutationOptions(),
+    {
+      successMessage: t('toast.timesheetSubmitted'),
+      errorMessage: t('toast.timesheetSubmitFailed'),
+      invalidate: [{ queryKey: timesheetQueryKey }, { queryKey: listTimesheetsQueryKey }],
+    },
   );
 
-  const syncMutation = useMutation(
-    trpc.portalTime.syncExternal.mutationOptions({
-      onSuccess: () => {
-        void queryClient.invalidateQueries({
-          queryKey: trpc.portalTime.getTimesheet.queryOptions({ weekStartDate: weekStartStr })
-            .queryKey,
-        });
-        void queryClient.invalidateQueries({
-          queryKey: trpc.portalTime.listTimesheets.queryOptions({ limit: 10 }).queryKey,
-        });
-        toast.success(t('toast.synced'));
-      },
-      onError: err => toast.error(err.message),
-    }),
+  const syncMutation = useResourceMutation(
+    trpc.portalTime.syncExternal.mutationOptions(),
+    {
+      successMessage: t('toast.synced'),
+      invalidate: [{ queryKey: timesheetQueryKey }, { queryKey: listTimesheetsQueryKey }],
+    },
   );
 
   const handleWeekChange = useCallback((date: Date) => {

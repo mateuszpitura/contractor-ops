@@ -8,10 +8,13 @@ import { Link } from '../../../i18n/navigation.js';
 import { tDynLoose } from '../../../i18n/typed-keys.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { enumKey } from '../../../lib/enum-key.js';
-import { JiraActivitySummary } from '../../integrations/jira-activity-summary-container.js';
+import { JiraActivitySummary } from '../../integrations/jira-activity-summary.js';
 import { renderEmptyStateAction } from '../../shared/atelier-bridges.js';
-import { TemplatePickerContainer } from '../../workflows/template-picker-container.js';
-import type { useContractorTabWorkflows } from '../hooks/use-contractor-tab-workflows.js';
+import { TemplatePickerDialog } from '../../workflows/template-picker-dialog.js';
+import {
+  useContractorTabWorkflows,
+  type useContractorTabWorkflows as UseContractorTabWorkflows,
+} from '../hooks/use-contractor-tab-workflows.js';
 
 const runStatusBadgeColors: Record<string, string> = {
   NOT_STARTED: 'bg-muted text-muted-foreground border border-border',
@@ -79,7 +82,7 @@ export function WorkflowsTabEmpty({
         renderAction={renderEmptyStateAction}
       />
       <JiraActivitySummary contractorId={contractorId} />
-      <TemplatePickerContainer
+      <TemplatePickerDialog
         open={pickerOpen}
         onOpenChange={setPickerOpen}
         contractorId={contractorId}
@@ -164,7 +167,7 @@ export function WorkflowsTabView({
 
       <JiraActivitySummary contractorId={contractorId} />
 
-      <TemplatePickerContainer
+      <TemplatePickerDialog
         open={pickerOpen}
         onOpenChange={setPickerOpen}
         contractorId={contractorId}
@@ -172,3 +175,27 @@ export function WorkflowsTabView({
     </div>
   );
 }
+
+type WorkflowsTabContainerProps = {
+  contractorId: string;
+};
+
+export function WorkflowsTabContainer({ contractorId }: WorkflowsTabContainerProps) {
+  const workflows = useContractorTabWorkflows(contractorId);
+
+  if (workflows.isLoading) return <WorkflowsTabSkeleton />;
+  if (workflows.items.length === 0) {
+    return (
+      <WorkflowsTabEmpty
+        contractorId={workflows.contractorId}
+        pickerOpen={workflows.pickerOpen}
+        setPickerOpen={workflows.setPickerOpen}
+      />
+    );
+  }
+
+  return <WorkflowsTabView {...workflows} />;
+}
+
+/** @deprecated Use WorkflowsTab */
+export { WorkflowsTabContainer as WorkflowsTab };

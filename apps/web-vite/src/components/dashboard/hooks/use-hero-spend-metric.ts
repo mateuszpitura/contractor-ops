@@ -15,6 +15,8 @@ export function useHeroSpendMetric() {
 
   return {
     isLoading: query.isPending,
+    isError: query.isError,
+    onRetry: () => query.refetch(),
     rows: query.data ?? [],
   } as const;
 }

@@ -1,30 +1,35 @@
 import { KsefBrandIcon } from '../integrations/brand-icons';
-import type { useKsefProviderSection } from './hooks/use-integrations-tab.js';
-import { KsefControlsContainer } from './ksef-controls-container.js';
-import { KsefSetupDialogContainer } from './ksef-setup-dialog-container.js';
-import { ProviderConnectionCardContainer } from './provider-connection-card-container.js';
+import { useKsefProviderSection } from './hooks/use-integrations-tab.js';
+import { KsefControls } from './ksef-controls.js';
+import { KsefSetupDialog } from './ksef-setup-dialog.js';
+import { ProviderConnectionCard } from './provider-connection-card.js';
 
-export type KsefProviderSectionProps = ReturnType<typeof useKsefProviderSection>;
+export type KsefProviderSectionViewProps = ReturnType<typeof useKsefProviderSection>;
 
-export function KsefProviderSection({
+export function KsefProviderSection() {
+  const section = useKsefProviderSection();
+  return <KsefProviderSectionView {...section} />;
+}
+
+export function KsefProviderSectionView({
   tIntegrations,
   setupDialogOpen,
   setSetupDialogOpen,
   orgNip,
   isConnected,
-}: KsefProviderSectionProps) {
+}: KsefProviderSectionViewProps) {
   return (
     <div className="flex h-full flex-col gap-4">
-      <ProviderConnectionCardContainer
+      <ProviderConnectionCard
         provider="ksef"
         displayName="KSeF"
         icon={<KsefBrandIcon className="size-8" />}
         description={tIntegrations('ksef.descriptionDisconnected')}
       />
 
-      {isConnected && <KsefControlsContainer />}
+      {isConnected && <KsefControls />}
 
-      <KsefSetupDialogContainer
+      <KsefSetupDialog
         open={setupDialogOpen}
         onOpenChange={setSetupDialogOpen}
         orgNip={orgNip}

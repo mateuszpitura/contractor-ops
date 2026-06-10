@@ -7,7 +7,24 @@ import {
 import { Progress } from '@contractor-ops/ui/components/shadcn/progress';
 import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { ShieldCheck } from 'lucide-react';
-import type { useZatcaComplianceWidget } from './hooks/use-zatca-compliance-widget.js';
+import { useZatcaComplianceWidget } from './hooks/use-zatca-compliance-widget.js';
+import type { useZatcaComplianceWidget as UseZatcaComplianceWidget } from './hooks/use-zatca-compliance-widget.js';
+
+export type ZatcaComplianceWidgetProps = {
+  connectionStatus?: string;
+  environment?: string;
+  certificateExpiresAt?: string;
+};
+
+export function ZatcaComplianceWidget(props: ZatcaComplianceWidgetProps) {
+  const { isLoading, ...rest } = useZatcaComplianceWidget(
+    props.connectionStatus ?? 'production',
+    props.environment ?? 'Production',
+    props.certificateExpiresAt,
+  );
+  if (isLoading) return <ZatcaComplianceWidgetSkeleton />;
+  return <ZatcaComplianceWidgetView {...rest} />;
+}
 
 const STATUS_DOTS: Record<string, string> = {
   production: 'bg-green-500',
@@ -30,7 +47,7 @@ export function ZatcaComplianceWidgetSkeleton() {
 }
 
 export type ZatcaComplianceWidgetViewProps = Omit<
-  ReturnType<typeof useZatcaComplianceWidget>,
+  ReturnType<typeof UseZatcaComplianceWidget>,
   'isLoading'
 >;
 

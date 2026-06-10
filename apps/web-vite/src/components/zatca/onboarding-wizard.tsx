@@ -5,13 +5,14 @@ import {
   CardTitle,
 } from '@contractor-ops/ui/components/shadcn/card';
 import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
-import { ComplianceChecks } from './compliance-checks-container.js';
-import { ComplianceCsid } from './compliance-csid-container.js';
-import { CsrGeneration } from './csr-generation-container.js';
-import type { useOnboardingWizard } from './hooks/use-onboarding-wizard.js';
-import { ProductionCertificate } from './production-certificate-container.js';
+import { ComplianceChecks } from './compliance-checks.js';
+import { ComplianceCsid } from './compliance-csid.js';
+import { CsrGeneration } from './csr-generation.js';
+import { useOnboardingWizard } from './hooks/use-onboarding-wizard.js';
+import type { useOnboardingWizard as UseOnboardingWizard } from './hooks/use-onboarding-wizard.js';
+import { ProductionCertificate } from './production-certificate.js';
 import { Stepper } from './stepper.js';
-import { TaxDetailsForm } from './tax-details-form-container.js';
+import { TaxDetailsForm } from './tax-details-form.js';
 
 const ONBOARDING_STEP_COUNT = 5;
 
@@ -44,7 +45,7 @@ export function OnboardingWizardSkeleton() {
 export type OnboardingWizardViewProps = {
   onComplete: () => void;
   onCancel: () => void;
-} & Omit<ReturnType<typeof useOnboardingWizard>, 'isLoading'>;
+} & Omit<ReturnType<typeof UseOnboardingWizard>, 'isLoading'>;
 
 export function OnboardingWizardView({
   onComplete,
@@ -74,4 +75,12 @@ export function OnboardingWizardView({
       </CardContent>
     </Card>
   );
+}
+
+export function OnboardingWizard(
+  props: Pick<OnboardingWizardViewProps, 'onComplete' | 'onCancel'>,
+) {
+  const { isLoading, ...rest } = useOnboardingWizard();
+  if (isLoading) return <OnboardingWizardSkeleton />;
+  return <OnboardingWizardView {...props} {...rest} />;
 }

@@ -1,9 +1,9 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { TRPCClientError } from '@trpc/client';
 import type { ChangeEvent, DragEvent } from 'react';
 import { useCallback, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
+import { useResourceMutation } from '../../../hooks/use-resource-mutation.js';
 import { useRouter } from '../../../i18n/navigation.js';
 import { useCommonToasts } from '../../../i18n/use-common-toasts.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
@@ -43,21 +43,17 @@ export function useIntakeUpload(onOpenChange: (open: boolean) => void) {
   const t = useTranslations('EInvoice.intake');
   const router = useRouter();
   const trpc = useTRPC();
-  const queryClient = useQueryClient();
   const toasts = useCommonToasts();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
   const [localError, setLocalError] = useState<IntakeUploadLocalErrorKind | null>(null);
 
-  const uploadMutation = useMutation(
-    trpc.invoiceIntake.upload.mutationOptions({
-      onError: err => toast.error(err.message),
-      onSuccess: () => {
-        toast.success(toasts.done());
-        queryClient.invalidateQueries(trpc.invoiceIntake.pathFilter());
-      },
-    }),
-  );
+  const uploadMutation = useResourceMutation(trpc.invoiceIntake.upload.mutationOptions(), {
+    invalidate: [trpc.invoiceIntake.pathFilter()],
+    successMessage: toasts.done(),
+    errorMessage: t('errorGeneric'),
+    suppressErrorToast: () => true,
+  });
 
   const handleReset = useCallback(() => {
     setLocalError(null);
@@ -102,8 +98,6 @@ export function useIntakeUpload(onOpenChange: (open: boolean) => void) {
 
         if (result.kind === 'DEDUP_RETURNED') {
           toast.message(t('uploadDedupToast'));
-        } else {
-          toast.success(t('uploadSuccessToast', { id: result.intakeId }));
         }
         handleClose(false);
         router.push(`/invoices/intake/${result.intakeId}`);

@@ -1,7 +1,6 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useCallback } from 'react';
-import { toast } from 'sonner';
 
+import { useResourceMutation } from '../../../hooks/use-resource-mutation.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { useTRPC } from '../../../providers/trpc-provider.js';
 import type { DpdAddress, ParcelSize } from '../dpd-fieldset.js';
@@ -18,59 +17,53 @@ export function useCarrierShipmentForm(options: {
 }) {
   const t = useTranslations('Equipment.carrier');
   const trpc = useTRPC();
-  const queryClient = useQueryClient();
 
-  const invalidateQueries = useCallback(() => {
-    void queryClient.invalidateQueries({
-      queryKey: trpc.equipment.getById.queryKey(),
-    });
-    void queryClient.invalidateQueries({
-      queryKey: trpc.equipment.list.queryKey(),
-    });
-  }, [queryClient, trpc]);
+  const shipmentInvalidate = [
+    trpc.equipment.getById.queryKey(),
+    trpc.equipment.list.queryKey(),
+    trpc.equipment.pathFilter(),
+  ];
 
-  const onMutationSuccess = useCallback(
-    (carrierLabel: string) => {
-      toast.success(t('created', { carrier: carrierLabel }));
-      invalidateQueries();
-      options.onSuccess();
-      options.onOpenChange(false);
-    },
-    [t, invalidateQueries, options],
-  );
-
-  const onMutationError = useCallback(() => {
-    toast.error(t('createError'));
-  }, [t]);
-
-  const inpostMutation = useMutation(
+  const inpostMutation = useResourceMutation(
     trpc.equipment.createInPostShipment.mutationOptions({
       onSuccess: () => {
-        onMutationSuccess('InPost');
-        void queryClient.invalidateQueries(trpc.equipment.pathFilter());
+        options.onSuccess();
       },
-      onError: onMutationError,
     }),
+    {
+      invalidate: shipmentInvalidate,
+      successMessage: t('created', { carrier: 'InPost' }),
+      errorMessage: t('createError'),
+      onClose: () => options.onOpenChange(false),
+    },
   );
 
-  const dpdMutation = useMutation(
+  const dpdMutation = useResourceMutation(
     trpc.equipment.createDpdShipment.mutationOptions({
       onSuccess: () => {
-        onMutationSuccess('DPD');
-        void queryClient.invalidateQueries(trpc.equipment.pathFilter());
+        options.onSuccess();
       },
-      onError: onMutationError,
     }),
+    {
+      invalidate: shipmentInvalidate,
+      successMessage: t('created', { carrier: 'DPD' }),
+      errorMessage: t('createError'),
+      onClose: () => options.onOpenChange(false),
+    },
   );
 
-  const upsMutation = useMutation(
+  const upsMutation = useResourceMutation(
     trpc.equipment.createUpsShipment.mutationOptions({
       onSuccess: () => {
-        onMutationSuccess('UPS');
-        void queryClient.invalidateQueries(trpc.equipment.pathFilter());
+        options.onSuccess();
       },
-      onError: onMutationError,
     }),
+    {
+      invalidate: shipmentInvalidate,
+      successMessage: t('created', { carrier: 'UPS' }),
+      errorMessage: t('createError'),
+      onClose: () => options.onOpenChange(false),
+    },
   );
 
   const isPending = inpostMutation.isPending || dpdMutation.isPending || upsMutation.isPending;

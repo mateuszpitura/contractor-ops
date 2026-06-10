@@ -9,9 +9,9 @@
  * `useQuery` / `useMutation` per `scripts/check-web-vite-data-layer.mjs`.
  */
 
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { toast } from 'sonner';
+import { useQuery } from '@tanstack/react-query';
 
+import { useResourceMutation } from '../../../hooks/use-resource-mutation.js';
 import { useCommonToasts } from '../../../i18n/use-common-toasts.js';
 import { useTRPC } from '../../../providers/trpc-provider.js';
 
@@ -27,7 +27,6 @@ export interface OnboardingChecklistData {
 
 export function useOnboardingChecklist(opts: { pdplGate: boolean }): OnboardingChecklistData {
   const trpc = useTRPC();
-  const queryClient = useQueryClient();
   const toasts = useCommonToasts();
 
   const settingsQuery = useQuery(trpc.settings.get.queryOptions());
@@ -36,17 +35,10 @@ export function useOnboardingChecklist(opts: { pdplGate: boolean }): OnboardingC
     enabled: opts.pdplGate,
   });
 
-  const updateMutation = useMutation(
-    trpc.settings.update.mutationOptions({
-      onSuccess: () => {
-        void queryClient.invalidateQueries({
-          queryKey: trpc.settings.get.queryOptions().queryKey,
-        });
-        toast.success(toasts.done());
-      },
-      onError: err => toast.error(err.message),
-    }),
-  );
+  const updateMutation = useResourceMutation(trpc.settings.update.mutationOptions(), {
+    successMessage: toasts.done(),
+    invalidate: [trpc.settings.get.queryOptions().queryKey],
+  });
 
   const metadata = (settingsQuery.data?.metadata ?? {}) as Record<string, unknown>;
   const completedSteps = (metadata.onboardingCompletedSteps as string[] | undefined) ?? [];

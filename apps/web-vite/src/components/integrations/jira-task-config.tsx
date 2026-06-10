@@ -2,8 +2,8 @@ import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { Label } from '@contractor-ops/ui/components/shadcn/label';
 import { Switch } from '@contractor-ops/ui/components/shadcn/switch';
 
-import type { useJiraTaskConfig } from './hooks/use-jira-task-config.js';
-import { JiraProjectMappingDialog } from './jira-project-mapping-dialog-container.js';
+import { useJiraTaskConfig } from './hooks/use-jira-task-config.js';
+import { JiraProjectMappingDialog } from './jira-project-mapping-dialog.js';
 
 export type JiraTaskConfigViewProps = Omit<ReturnType<typeof useJiraTaskConfig>, 'connection'> & {
   connection: NonNullable<ReturnType<typeof useJiraTaskConfig>['connection']>;
@@ -54,4 +54,14 @@ export function JiraTaskConfigView({
       />
     </>
   );
+}
+
+interface JiraTaskConfigProps {
+  taskTemplateId: string;
+}
+
+export function JiraTaskConfig({ taskTemplateId }: JiraTaskConfigProps) {
+  const { connection, ...rest } = useJiraTaskConfig(taskTemplateId);
+  if (!connection) return null;
+  return <JiraTaskConfigView {...rest} connection={connection} />;
 }

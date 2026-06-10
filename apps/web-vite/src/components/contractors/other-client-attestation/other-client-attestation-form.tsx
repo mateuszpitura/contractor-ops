@@ -6,14 +6,15 @@
 import type { ChangeEvent, FormEvent } from 'react';
 import { useCallback, useEffect, useId, useState } from 'react';
 import { useTranslations } from '../../../i18n/useTranslations.js';
-import type { useOtherClientAttestation } from '../hooks/use-other-client-attestation.js';
+import { useOtherClientAttestation } from '../hooks/use-other-client-attestation.js';
+import type { useOtherClientAttestation as UseOtherClientAttestation } from '../hooks/use-other-client-attestation.js';
 
 export interface OtherClientAttestationFormProps {
   engagementId: string;
 }
 
 type OtherClientAttestationFormViewProps = OtherClientAttestationFormProps &
-  ReturnType<typeof useOtherClientAttestation>;
+  ReturnType<typeof UseOtherClientAttestation>;
 
 export function OtherClientAttestationFormView({
   engagementId,
@@ -119,4 +120,9 @@ export function OtherClientAttestationFormView({
       </form>
     </section>
   );
+}
+
+export function OtherClientAttestationForm(props: OtherClientAttestationFormProps) {
+  const attestation = useOtherClientAttestation(props.engagementId);
+  return <OtherClientAttestationFormView {...props} {...attestation} />;
 }

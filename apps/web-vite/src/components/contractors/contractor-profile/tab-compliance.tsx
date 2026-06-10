@@ -16,9 +16,9 @@ import { ComplianceStatusBadge } from '../../compliance/compliance-status-badge.
 import { renderEmptyStateAction } from '../../shared/atelier-bridges.js';
 import { ComplianceItemHistory } from '../compliance/compliance-item-history.js';
 import { OverrideComplianceItemButton } from '../compliance/override-compliance-item-button.js';
-import { UploadReviewDialogContainer } from '../compliance/upload-review-dialog-container.js';
-import { ContractorEInvoicingSectionContainer } from '../contractor-e-invoicing-section-container.js';
-import { CountryComplianceSectionContainer } from '../country-compliance-section-container.js';
+import { UploadReviewDialogContainer } from '../compliance/upload-review-dialog.js';
+import { ContractorEInvoicingSection } from '../contractor-e-invoicing-section.js';
+import { CountryComplianceSectionContainer } from '../country-compliance-section.js';
 
 function toIsoDate(d: Date): string {
   return d.toISOString().slice(0, 10);
@@ -98,7 +98,7 @@ export function TabCompliance({ contractor }: TabComplianceProps) {
     return (
       <div className="space-y-6">
         <CountryComplianceSectionContainer contractorId={contractor.id} />
-        <ContractorEInvoicingSectionContainer contractorId={contractor.id} />
+        <ContractorEInvoicingSection contractorId={contractor.id} />
         <AtelierEmptyState
           variant="subview"
           illustration={ComplianceGapsIllustration}
@@ -113,7 +113,7 @@ export function TabCompliance({ contractor }: TabComplianceProps) {
   return (
     <div className="space-y-4">
       <CountryComplianceSectionContainer contractorId={contractor.id} />
-      <ContractorEInvoicingSectionContainer contractorId={contractor.id} />
+      <ContractorEInvoicingSection contractorId={contractor.id} />
       <h3 className="text-base font-medium">{t('requiredDocuments')}</h3>
 
       <div className="divide-y rounded-xl border bg-card">

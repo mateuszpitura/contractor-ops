@@ -153,7 +153,7 @@ export function StepDocuments({ onSkip, files, onDrop, removeFile }: StepDocumen
         <button
           type="button"
           className="text-sm text-muted-foreground hover:text-foreground underline-offset-4 hover:underline transition-colors"
-          onClick={onSkip}>
+          onClick={() => onSkip?.()}>
           {t('skipDocuments')}
         </button>
       </div>

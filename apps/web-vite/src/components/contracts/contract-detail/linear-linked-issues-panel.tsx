@@ -2,6 +2,7 @@ import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { ExternalLink } from 'lucide-react';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
+import { useLinearLinkedIssuesPanel } from '../hooks/use-linear-linked-issues-panel.js';
 
 type LinearLinkedIssue = {
   id: string;
@@ -88,5 +89,25 @@ export function LinearLinkedIssuesPanel({
         })}
       </ul>
     </section>
+  );
+}
+
+type LinearLinkedIssuesPanelWiredProps = {
+  taskRunIds: string[];
+  heading?: string;
+  maxRows?: number;
+};
+
+export function LinearLinkedIssuesPanelWired({
+  taskRunIds,
+  heading,
+  maxRows,
+}: LinearLinkedIssuesPanelWiredProps) {
+  const panel = useLinearLinkedIssuesPanel(taskRunIds, maxRows);
+
+  if (!panel.isVisible) return null;
+
+  return (
+    <LinearLinkedIssuesPanel heading={heading} isLoading={panel.isLoading} items={panel.items} />
   );
 }

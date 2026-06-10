@@ -5,7 +5,7 @@ import { RefreshCw } from 'lucide-react';
 import { useCallback, useState } from 'react';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
-import { RecomputeComplianceDialogContainer } from './recompute-compliance-dialog-container.js';
+import { RecomputeComplianceDialog } from './recompute-compliance-dialog.js';
 
 interface RecomputeComplianceButtonProps {
   contractorId: string;
@@ -32,7 +32,7 @@ export function RecomputeComplianceButton({
         <RefreshCw className="size-3.5" aria-hidden />
         <span>{t('buttonLabel')}</span>
       </Button>
-      <RecomputeComplianceDialogContainer
+      <RecomputeComplianceDialog
         open={open}
         onOpenChange={setOpen}
         contractorIds={[contractorId]}
@@ -56,7 +56,7 @@ export function RecomputeComplianceBulkAction({
   onSuccess,
 }: RecomputeComplianceBulkActionProps) {
   return (
-    <RecomputeComplianceDialogContainer
+    <RecomputeComplianceDialog
       open={open}
       onOpenChange={onOpenChange}
       contractorIds={contractorIds}

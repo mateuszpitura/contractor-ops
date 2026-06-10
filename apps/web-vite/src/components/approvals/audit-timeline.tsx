@@ -19,21 +19,12 @@ import { tKey } from '../../i18n/typed-keys.js';
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { getAvatarInitials } from '../../lib/avatar-initials.js';
 import { cn } from '../../lib/utils.js';
+import {
+  type ApprovalAuditEvent,
+  useApprovalAuditTrail,
+} from './hooks/use-approval-audit-trail.js';
 
-interface AuditEvent {
-  type: 'system' | 'decision';
-  label: string;
-  timestamp: string;
-  actor?: {
-    id: string;
-    name: string | null;
-    email: string;
-    image: string | null;
-  } | null;
-  comment?: string | null;
-  levelName?: string;
-  chainName?: string;
-}
+type AuditEvent = ApprovalAuditEvent;
 
 const DECISION_CONFIG: Record<
   string,
@@ -215,11 +206,11 @@ function SystemEntry({ event, t, isLast }: { event: AuditEvent; t: TranslateFn; 
   );
 }
 
-interface AuditTimelineProps {
+interface AuditTimelineViewProps {
   events: AuditEvent[];
 }
 
-export function AuditTimeline({ events }: AuditTimelineProps) {
+export function AuditTimelineView({ events }: AuditTimelineViewProps) {
   const t = useTranslations('Approvals');
 
   const tFn = useCallback(
@@ -261,4 +252,16 @@ export function AuditTimeline({ events }: AuditTimelineProps) {
       </CardContent>
     </Card>
   );
+}
+
+interface AuditTimelineProps {
+  invoiceId: string;
+}
+
+export function AuditTimeline({ invoiceId }: AuditTimelineProps) {
+  const audit = useApprovalAuditTrail(invoiceId);
+
+  if (audit.isLoading) return <AuditTimelineSkeleton />;
+
+  return <AuditTimelineView events={audit.events} />;
 }

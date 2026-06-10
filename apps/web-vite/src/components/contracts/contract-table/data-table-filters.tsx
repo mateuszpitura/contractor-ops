@@ -274,9 +274,9 @@ export function DataTableFilters({
             {filters.startDateFrom && filters.startDateTo
               ? `${filters.startDateFrom} – ${filters.startDateTo}`
               : filters.startDateFrom
-                ? `From ${filters.startDateFrom}`
+                ? `${t('dateFrom')} ${filters.startDateFrom}`
                 : filters.startDateTo
-                  ? `To ${filters.startDateTo}`
+                  ? `${t('dateTo')} ${filters.startDateTo}`
                   : t('columns.startDate')}
           </span>
         </PopoverTrigger>

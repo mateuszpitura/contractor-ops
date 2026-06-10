@@ -8,9 +8,9 @@ import {
   SidebarRail,
 } from '@contractor-ops/ui/components/shadcn/sidebar';
 
-import { NavItemsContainer } from './nav-items-container.js';
-import { OrgSwitcherContainer } from './org-switcher-container.js';
-import { UserMenuContainer } from './user-menu-container.js';
+import { NavItemsContainer } from './nav-items.js';
+import { OrgSwitcherContainer } from './org-switcher.js';
+import { UserMenuContainer } from './user-menu.js';
 
 export function AppSidebar() {
   return (

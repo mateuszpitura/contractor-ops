@@ -20,9 +20,13 @@ import { FileText, Upload } from 'lucide-react';
 import { useCallback, useId, useRef, useState } from 'react';
 import { useTranslations } from '../../../../i18n/useTranslations.js';
 
-import type { useDrvDecisionLetterUpload } from '../hooks/use-drv-clearance.js';
+import {
+  useDrvClearanceList,
+  useDrvDecisionLetterUpload,
+  type useDrvDecisionLetterUpload as UseDrvDecisionLetterUpload,
+} from '../hooks/use-drv-clearance.js';
 import type { DrvClearanceFormInitial } from './drv-clearance-form.js';
-import { DrvClearanceFormContainer } from './drv-clearance-form-container.js';
+import { DrvClearanceForm } from './drv-clearance-form.js';
 import type { DrvClearanceRowData } from './drv-clearance-row';
 import { DrvClearanceRow } from './drv-clearance-row';
 
@@ -48,7 +52,7 @@ function toFormInitial(row: DrvClearanceRowData): DrvClearanceFormInitial {
 
 export type StatusfeststellungsverfahrenPanelViewProps = StatusfeststellungsverfahrenPanelProps & {
   rows: DrvClearanceRowData[];
-  uploadMutation: ReturnType<typeof useDrvDecisionLetterUpload>['uploadMutation'];
+  uploadMutation: ReturnType<typeof UseDrvDecisionLetterUpload>['uploadMutation'];
   uploadPending: boolean;
 };
 
@@ -200,14 +204,14 @@ export function StatusfeststellungsverfahrenPanelView({
         </CardContent>
       </Card>
 
-      <DrvClearanceFormContainer
+      <DrvClearanceForm
         open={isCreateOpen}
         onOpenChange={setIsCreateOpen}
         contractorAssignmentId={engagementId}
       />
 
       {editingInitial ? (
-        <DrvClearanceFormContainer
+        <DrvClearanceForm
           open
           onOpenChange={handleEditOpenChange}
           contractorAssignmentId={engagementId}
@@ -217,3 +221,24 @@ export function StatusfeststellungsverfahrenPanelView({
     </>
   );
 }
+
+export function StatusfeststellungsverfahrenPanelContainer(
+  props: StatusfeststellungsverfahrenPanelProps,
+) {
+  const { rows } = useDrvClearanceList(props.engagementId);
+  const { uploadMutation, isPending: uploadPending } = useDrvDecisionLetterUpload(
+    props.classificationAssessmentId,
+  );
+
+  return (
+    <StatusfeststellungsverfahrenPanelView
+      {...props}
+      rows={(rows ?? []) as DrvClearanceRowData[]}
+      uploadMutation={uploadMutation}
+      uploadPending={uploadPending}
+    />
+  );
+}
+
+/** @deprecated Use StatusfeststellungsverfahrenPanel */
+export { StatusfeststellungsverfahrenPanelContainer as StatusfeststellungsverfahrenPanel };

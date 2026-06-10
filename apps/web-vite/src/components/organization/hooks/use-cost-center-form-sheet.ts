@@ -1,6 +1,4 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { toast } from 'sonner';
-
+import { useResourceMutation } from '../../../hooks/use-resource-mutation.js';
 import { useCommonToasts } from '../../../i18n/use-common-toasts.js';
 import { useTRPC } from '../../../providers/trpc-provider.js';
 
@@ -11,47 +9,37 @@ interface UseCostCenterFormSheetOptions {
 
 export function useCostCenterFormSheet({ onOpenChange, onCreated }: UseCostCenterFormSheetOptions) {
   const trpc = useTRPC();
-  const queryClient = useQueryClient();
   const toasts = useCommonToasts();
 
-  const createMutation = useMutation(
+  const createMutation = useResourceMutation(
     trpc.organizationDefinitions.costCenter.create.mutationOptions({
       onSuccess: created => {
-        toast.success(toasts.costCenterCreated());
-        void queryClient.invalidateQueries({
-          queryKey: trpc.organizationDefinitions.costCenter.list.queryKey(),
-        });
         onCreated?.({ id: created.id, name: created.name });
-        onOpenChange(false);
       },
-      onError: err => toast.error(err.message),
     }),
+    {
+      successMessage: toasts.costCenterCreated(),
+      invalidate: [trpc.organizationDefinitions.costCenter.list.queryKey()],
+      onClose: () => onOpenChange(false),
+    },
   );
 
-  const updateMutation = useMutation(
-    trpc.organizationDefinitions.costCenter.update.mutationOptions({
-      onSuccess: () => {
-        toast.success(toasts.costCenterUpdated());
-        void queryClient.invalidateQueries({
-          queryKey: trpc.organizationDefinitions.costCenter.list.queryKey(),
-        });
-        onOpenChange(false);
-      },
-      onError: err => toast.error(err.message),
-    }),
+  const updateMutation = useResourceMutation(
+    trpc.organizationDefinitions.costCenter.update.mutationOptions(),
+    {
+      successMessage: toasts.costCenterUpdated(),
+      invalidate: [trpc.organizationDefinitions.costCenter.list.queryKey()],
+      onClose: () => onOpenChange(false),
+    },
   );
 
-  const archiveMutation = useMutation(
-    trpc.organizationDefinitions.costCenter.archive.mutationOptions({
-      onSuccess: () => {
-        toast.success(toasts.costCenterArchived());
-        void queryClient.invalidateQueries({
-          queryKey: trpc.organizationDefinitions.costCenter.list.queryKey(),
-        });
-        onOpenChange(false);
-      },
-      onError: err => toast.error(err.message),
-    }),
+  const archiveMutation = useResourceMutation(
+    trpc.organizationDefinitions.costCenter.archive.mutationOptions(),
+    {
+      successMessage: toasts.costCenterArchived(),
+      invalidate: [trpc.organizationDefinitions.costCenter.list.queryKey()],
+      onClose: () => onOpenChange(false),
+    },
   );
 
   const isSubmitting = createMutation.isPending || updateMutation.isPending;

@@ -1,52 +1,32 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { useCallback } from 'react';
-import { toast } from 'sonner';
 
+import { useResourceMutation } from '../../../hooks/use-resource-mutation.js';
 import { useCommonToasts } from '../../../i18n/use-common-toasts.js';
 import { useTRPC } from '../../../providers/trpc-provider.js';
 
 export function useIr35ChainPanel(engagementId: string) {
   const trpc = useTRPC();
-  const queryClient = useQueryClient();
   const toasts = useCommonToasts();
 
   const listQuery = useQuery(
     trpc.ir35Chain.listByEngagement.queryOptions({ contractorAssignmentId: engagementId }),
   );
 
-  const invalidateList = useCallback(() => {
-    void queryClient.invalidateQueries({ queryKey: [['ir35Chain', 'listByEngagement']] });
-  }, [queryClient]);
+  const markDelivered = useResourceMutation(trpc.ir35Chain.markDelivered.mutationOptions(), {
+    invalidate: [trpc.ir35Chain.pathFilter()],
+    successMessage: toasts.done(),
+  });
 
-  const markDelivered = useMutation(
-    trpc.ir35Chain.markDelivered.mutationOptions({
-      onSuccess: () => {
-        invalidateList();
-        toast.success(toasts.done());
-      },
-      onError: err => toast.error(err.message),
-    }),
-  );
+  const markAcknowledged = useResourceMutation(trpc.ir35Chain.markAcknowledged.mutationOptions(), {
+    invalidate: [trpc.ir35Chain.pathFilter()],
+    successMessage: toasts.done(),
+  });
 
-  const markAcknowledged = useMutation(
-    trpc.ir35Chain.markAcknowledged.mutationOptions({
-      onSuccess: () => {
-        invalidateList();
-        toast.success(toasts.done());
-      },
-      onError: err => toast.error(err.message),
-    }),
-  );
-
-  const removeParticipant = useMutation(
-    trpc.ir35Chain.removeParticipant.mutationOptions({
-      onSuccess: () => {
-        invalidateList();
-        toast.success(toasts.done());
-      },
-      onError: err => toast.error(err.message),
-    }),
-  );
+  const removeParticipant = useResourceMutation(trpc.ir35Chain.removeParticipant.mutationOptions(), {
+    invalidate: [trpc.ir35Chain.pathFilter()],
+    successMessage: toasts.done(),
+  });
 
   return {
     listQuery,
@@ -63,19 +43,13 @@ export function useAddIr35Participant(
   onOpenChange: (next: boolean) => void,
 ) {
   const trpc = useTRPC();
-  const queryClient = useQueryClient();
   const toasts = useCommonToasts();
 
-  const mutation = useMutation(
-    trpc.ir35Chain.upsertParticipant.mutationOptions({
-      onSuccess: () => {
-        onOpenChange(false);
-        void queryClient.invalidateQueries({ queryKey: [['ir35Chain', 'listByEngagement']] });
-        toast.success(toasts.done());
-      },
-      onError: err => toast.error(err.message),
-    }),
-  );
+  const mutation = useResourceMutation(trpc.ir35Chain.upsertParticipant.mutationOptions(), {
+    invalidate: [trpc.ir35Chain.pathFilter()],
+    successMessage: toasts.done(),
+    onClose: () => onOpenChange(false),
+  });
 
   const addParticipant = useCallback(
     (params: { role: 'AGENCY' | 'PSC'; displayName: string; contactEmail: string | null }) => {

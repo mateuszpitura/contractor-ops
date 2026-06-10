@@ -1,7 +1,6 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useState } from 'react';
-import { toast } from 'sonner';
 
+import { useResourceMutation } from '../../../hooks/use-resource-mutation.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { useTRPC } from '../../../providers/trpc-provider.js';
 import type { DocumentListItem } from '../types.js';
@@ -36,22 +35,16 @@ export function useDocumentCard({
 }: UseDocumentCardOptions): DocumentCardProps {
   const t = useTranslations('Documents');
   const trpc = useTRPC();
-  const queryClient = useQueryClient();
   const triggerDownload = useDocumentDownload();
 
   const [previewOpen, setPreviewOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
 
-  const deleteMutation = useMutation(
-    trpc.document.delete.mutationOptions({
-      onSuccess: () => {
-        toast.success(t('deleted'));
-        void queryClient.invalidateQueries(trpc.document.pathFilter());
-        setDeleteOpen(false);
-      },
-      onError: err => toast.error(err.message),
-    }),
-  );
+  const deleteMutation = useResourceMutation(trpc.document.delete.mutationOptions({}), {
+    successMessage: t('deleted'),
+    invalidate: [trpc.document.pathFilter()],
+    onClose: () => setDeleteOpen(false),
+  });
 
   const isPdf = document.mimeType === 'application/pdf';
   const isInfected = document.virusScanStatus === 'INFECTED';

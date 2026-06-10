@@ -1,9 +1,6 @@
-import { useQueryClient } from '@tanstack/react-query';
 import { useCallback } from 'react';
-import { toast } from 'sonner';
 
 import { useResourceMutation } from '../../../hooks/use-resource-mutation.js';
-import { useCommonToasts } from '../../../i18n/use-common-toasts.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { useTRPC } from '../../../providers/trpc-provider.js';
 
@@ -20,18 +17,10 @@ export interface ContractorBulkActionsHandlers {
 
 export function useContractorBulkActions(count: number): ContractorBulkActionsHandlers {
   const trpc = useTRPC();
-  const queryClient = useQueryClient();
   const tc = useTranslations('Contractors');
-  const toasts = useCommonToasts();
 
   const bulkArchiveMutation = useResourceMutation(
-    trpc.contractor.bulkArchive.mutationOptions({
-      onError: err => toast.error(err.message),
-      onSuccess: () => {
-        toast.success(toasts.done());
-        queryClient.invalidateQueries(trpc.contractor.pathFilter());
-      },
-    }),
+    trpc.contractor.bulkArchive.mutationOptions(),
     {
       invalidate: [contractorPrefixKey],
       successMessage: tc('archived', { count }),
@@ -40,13 +29,7 @@ export function useContractorBulkActions(count: number): ContractorBulkActionsHa
   );
 
   const bulkAssignOwnerMutation = useResourceMutation(
-    trpc.contractor.bulkAssignOwner.mutationOptions({
-      onError: err => toast.error(err.message),
-      onSuccess: () => {
-        toast.success(toasts.done());
-        queryClient.invalidateQueries(trpc.contractor.pathFilter());
-      },
-    }),
+    trpc.contractor.bulkAssignOwner.mutationOptions(),
     {
       invalidate: [contractorPrefixKey],
       successMessage: tc('ownerAssigned', { count }),
@@ -74,13 +57,10 @@ export function useContractorBulkActions(count: number): ContractorBulkActionsHa
         a.download = result.filename;
         a.click();
         URL.revokeObjectURL(url);
-        toast.success(toasts.done());
-        queryClient.invalidateQueries(trpc.contractor.pathFilter());
       },
-      onError: err => toast.error(err.message),
     }),
     {
-      invalidate: [],
+      invalidate: [contractorPrefixKey],
       successMessage: tc('exported', { count }),
       errorMessage: tc('error.loadFailed'),
     },

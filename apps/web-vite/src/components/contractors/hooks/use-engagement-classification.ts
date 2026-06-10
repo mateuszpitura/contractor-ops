@@ -3,10 +3,11 @@ import type {
   QuestionsSnapshot,
   ScheinselbstandigkeitOutcome,
 } from '@contractor-ops/classification';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { TRPCClientError } from '@trpc/client';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { toast } from 'sonner';
 import { useRouter } from '../../../i18n/navigation.js';
+import { useResourceMutation } from '../../../hooks/use-resource-mutation.js';
 import { useCommonToasts } from '../../../i18n/use-common-toasts.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { useDateFormatter } from '../../../lib/format/use-date-formatter.js';
@@ -19,7 +20,6 @@ const SUPPORTED_COUNTRIES = new Set<WizardCountryCode>(['GB', 'DE']);
 export function useClassificationWizardEntry(engagementId: string) {
   const trpc = useTRPC();
   const t = useTranslations('Classification');
-  const queryClient = useQueryClient();
   const toasts = useCommonToasts();
   const [showDriftRecovery, setShowDriftRecovery] = useState(false);
 
@@ -31,42 +31,35 @@ export function useClassificationWizardEntry(engagementId: string) {
     retry: false,
   });
 
-  const createDraftMutation = useMutation(
-    trpc.classification.createDraft.mutationOptions({
-      onSuccess: () => {
-        void queryClient.invalidateQueries({
-          queryKey: [['classification', 'getDraft']],
-        });
-        toast.success(toasts.done());
-      },
-      onError: err => toast.error(err.message),
-    }),
+  const createDraftMutation = useResourceMutation(
+    trpc.classification.createDraft.mutationOptions(),
+    {
+      invalidate: [trpc.classification.pathFilter()],
+      successMessage: toasts.done(),
+    },
   );
 
-  const recreateDraftMutation = useMutation(
+  const recreateDraftMutation = useResourceMutation(
     trpc.classification.recreateDraftAfterDrift.mutationOptions({
       onSuccess: () => {
         setShowDriftRecovery(false);
-        void queryClient.invalidateQueries({
-          queryKey: [['classification', 'getDraft']],
-        });
-        toast.success(toasts.done());
       },
-      onError: err => toast.error(err.message),
     }),
+    {
+      invalidate: [trpc.classification.pathFilter()],
+      successMessage: toasts.done(),
+    },
   );
 
   const driftError =
-    draftQuery.error &&
-    (draftQuery.error as unknown as { data?: { code?: string } }).data?.code ===
-      'PRECONDITION_FAILED'
-      ? (draftQuery.error as unknown as { message: string })
+    draftQuery.error instanceof TRPCClientError &&
+    draftQuery.error.data?.code === 'PRECONDITION_FAILED'
+      ? draftQuery.error
       : null;
 
   const unsupportedCountryError =
-    createDraftMutation.error &&
-    (createDraftMutation.error as { data?: { code?: string } }).data?.code ===
-      'UNSUPPORTED_MEDIA_TYPE';
+    createDraftMutation.error instanceof TRPCClientError &&
+    createDraftMutation.error.data?.code === 'UNSUPPORTED_MEDIA_TYPE';
 
   useEffect(() => {
     if (showDriftRecovery) return;

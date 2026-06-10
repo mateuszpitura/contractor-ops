@@ -22,10 +22,13 @@ import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { CheckCircle2, RefreshCw, XCircle } from 'lucide-react';
 import { useCallback } from 'react';
 import type { LooseTranslator } from '../../../i18n/typed-keys.js';
-import type { useFormatter } from '../../../i18n/useFormatter.js';
-import type { usePeppolParticipantCard } from './hooks/use-peppol-participant-card.js';
-import { PeppolParticipantDeregisterDialogContainer } from './peppol-participant-deregister-dialog-container.js';
-import { PeppolParticipantRegisterDialogContainer } from './peppol-participant-register-dialog-container.js';
+import { useFormatter } from '../../../i18n/useFormatter.js';
+import {
+  usePeppolParticipantCard,
+  type usePeppolParticipantCard as UsePeppolParticipantCard,
+} from './hooks/use-peppol-participant-card.js';
+import { PeppolParticipantDeregisterDialog } from './peppol-participant-deregister-dialog.js';
+import { PeppolParticipantRegisterDialog } from './peppol-participant-register-dialog.js';
 import type { PeppolParticipantStatus } from './peppol-participant-status-pill.js';
 import { PeppolParticipantStatusPill } from './peppol-participant-status-pill.js';
 
@@ -33,11 +36,11 @@ import { PeppolParticipantStatusPill } from './peppol-participant-status-pill.js
 // Component
 // ---------------------------------------------------------------------------
 
-export type PeppolParticipantCardProps = ReturnType<typeof usePeppolParticipantCard> & {
+export type PeppolParticipantCardProps = ReturnType<typeof UsePeppolParticipantCard> & {
   format: ReturnType<typeof useFormatter>;
 };
 
-export function PeppolParticipantCard({
+export function PeppolParticipantCardView({
   format,
   t,
   tDialog,
@@ -136,12 +139,12 @@ export function PeppolParticipantCard({
         )}
       </CardContent>
 
-      <PeppolParticipantRegisterDialogContainer
+      <PeppolParticipantRegisterDialog
         open={registerOpen}
         onOpenChange={setRegisterOpen}
       />
       {active ? (
-        <PeppolParticipantDeregisterDialogContainer
+        <PeppolParticipantDeregisterDialog
           open={deregisterOpen}
           onOpenChange={setDeregisterOpen}
         />
@@ -173,6 +176,12 @@ function statusLabel(
     case 'NOT_REGISTERED':
       return tCard('statusNotRegistered');
   }
+}
+
+export function PeppolParticipantCard() {
+  const format = useFormatter();
+  const card = usePeppolParticipantCard();
+  return <PeppolParticipantCardView format={format} {...card} />;
 }
 
 function DlItem({ label, children }: { label: string; children: React.ReactNode }) {

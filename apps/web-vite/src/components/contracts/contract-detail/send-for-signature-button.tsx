@@ -9,7 +9,7 @@ import { PenLine } from 'lucide-react';
 import { useCallback } from 'react';
 
 import { useSendForSignatureButton } from '../hooks/use-send-for-signature-button.js';
-import { SendForSignatureDialogContainer } from './send-for-signature-dialog-container.js';
+import { SendForSignatureDialog } from './send-for-signature-dialog.js';
 
 type SendForSignatureButtonProps = {
   contractId: string;
@@ -68,7 +68,7 @@ export function SendForSignatureButton({
         {label}
       </Button>
 
-      <SendForSignatureDialogContainer
+      <SendForSignatureDialog
         open={dialogOpen}
         onOpenChange={setDialogOpen}
         contractId={contractId}

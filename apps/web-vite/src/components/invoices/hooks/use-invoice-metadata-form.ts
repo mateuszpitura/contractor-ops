@@ -1,8 +1,4 @@
-import { useQueryClient } from '@tanstack/react-query';
-import { toast } from 'sonner';
-
 import { useResourceMutation } from '../../../hooks/use-resource-mutation.js';
-import { useCommonToasts } from '../../../i18n/use-common-toasts.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { useTRPC } from '../../../providers/trpc-provider.js';
 
@@ -47,57 +43,34 @@ function buildUpdatePayload(values: InvoiceMetadataMutationValues, invoiceId: st
 
 export function useInvoiceMetadataForm(invoiceId: string, onSubmittedForMatching?: () => void) {
   const trpc = useTRPC();
-  const queryClient = useQueryClient();
   const t = useTranslations('Invoices');
-  const toasts = useCommonToasts();
 
   const invoiceQueryKey = trpc.invoice.getById.queryKey({ id: invoiceId });
 
-  const saveDraftMutation = useResourceMutation(
-    trpc.invoice.update.mutationOptions({
-      onError: err => toast.error(err.message),
-      onSuccess: () => {
-        toast.success(toasts.done());
-        queryClient.invalidateQueries(trpc.invoice.pathFilter());
-      },
-    }),
-    {
-      invalidate: [invoiceQueryKey],
-      successMessage: t('detail.savedToast'),
-      errorMessage: t('detail.saveError'),
-    },
-  );
+  const saveDraftMutation = useResourceMutation(trpc.invoice.update.mutationOptions(), {
+    invalidate: [invoiceQueryKey, trpc.invoice.pathFilter()],
+    successMessage: t('detail.savedToast'),
+    errorMessage: t('detail.saveError'),
+  });
 
   const submitForMatchingMutation = useResourceMutation(
     trpc.invoice.submitForMatching.mutationOptions({
       onSuccess: () => {
         onSubmittedForMatching?.();
-        toast.success(toasts.done());
-        queryClient.invalidateQueries(trpc.invoice.pathFilter());
       },
-      onError: err => toast.error(err.message),
     }),
     {
-      invalidate: [invoiceQueryKey],
+      invalidate: [invoiceQueryKey, trpc.invoice.pathFilter()],
       successMessage: t('detail.submittedToast'),
       errorMessage: t('detail.submitError'),
     },
   );
 
-  const voidMutation = useResourceMutation(
-    trpc.invoice.voidInvoice.mutationOptions({
-      onError: err => toast.error(err.message),
-      onSuccess: () => {
-        toast.success(toasts.done());
-        queryClient.invalidateQueries(trpc.invoice.pathFilter());
-      },
-    }),
-    {
-      invalidate: [invoiceQueryKey],
-      successMessage: t('detail.voidedToast'),
-      errorMessage: t('detail.voidError'),
-    },
-  );
+  const voidMutation = useResourceMutation(trpc.invoice.voidInvoice.mutationOptions(), {
+    invalidate: [invoiceQueryKey, trpc.invoice.pathFilter()],
+    successMessage: t('detail.voidedToast'),
+    errorMessage: t('detail.voidError'),
+  });
 
   const onSaveDraft = (values: InvoiceMetadataMutationValues) => {
     saveDraftMutation.mutate(buildUpdatePayload(values, invoiceId));

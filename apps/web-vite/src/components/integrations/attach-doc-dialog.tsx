@@ -12,7 +12,10 @@ import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { Search } from 'lucide-react';
 import { memo, useCallback } from 'react';
 
-import type { DocSearchResult, useAttachDocDialog } from './hooks/use-attach-doc-dialog.js';
+import {
+  type DocSearchResult,
+  useAttachDocDialog,
+} from './hooks/use-attach-doc-dialog.js';
 import { ConfluenceIcon, NotionIcon } from './provider-icons.js';
 
 export type AttachDocDialogViewProps = ReturnType<typeof useAttachDocDialog> & {
@@ -170,4 +173,15 @@ export function AttachDocDialogView({
       </DialogContent>
     </Dialog>
   );
+}
+
+interface AttachDocDialogProps {
+  workflowTaskRunId: string;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}
+
+export function AttachDocDialog(props: AttachDocDialogProps) {
+  const hookProps = useAttachDocDialog(props);
+  return <AttachDocDialogView {...hookProps} {...props} />;
 }

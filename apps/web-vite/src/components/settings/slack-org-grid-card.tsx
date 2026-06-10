@@ -16,24 +16,27 @@ import {
 } from '@contractor-ops/ui/components/shadcn/card';
 import { ExternalLink, ShieldCheck } from 'lucide-react';
 
+import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
+
 import { useTranslations } from '../../i18n/useTranslations.js';
+import { useSlackOrgGridCard } from './hooks/use-slack-org-grid-card.js';
 
 const ENTERPRISE_GRID_DOCS =
   'https://slack.com/help/articles/360000281563-Manage-members-on-Enterprise-Grid';
 
-export interface SlackOrgGridCardProps {
+export interface SlackOrgGridCardViewProps {
   isConnected: boolean;
   notOnEnterpriseGrid: boolean;
   connectDisabled: boolean;
   onConnect: () => void;
 }
 
-export function SlackOrgGridCard({
+export function SlackOrgGridCardView({
   isConnected,
   notOnEnterpriseGrid,
   connectDisabled,
   onConnect,
-}: SlackOrgGridCardProps) {
+}: SlackOrgGridCardViewProps) {
   const t = useTranslations('Idp.slackOrgGrid');
 
   return (
@@ -67,5 +70,22 @@ export function SlackOrgGridCard({
         )}
       </CardContent>
     </Card>
+  );
+}
+
+export function SlackOrgGridCard() {
+  const state = useSlackOrgGridCard();
+
+  if (state.isLoading) {
+    return <Skeleton className="h-36 w-full" data-testid="slack-org-grid-skeleton" />;
+  }
+
+  return (
+    <SlackOrgGridCardView
+      isConnected={state.isConnected}
+      notOnEnterpriseGrid={state.notOnEnterpriseGrid}
+      connectDisabled={state.connectDisabled}
+      onConnect={state.onConnect}
+    />
   );
 }

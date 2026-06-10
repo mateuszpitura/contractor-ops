@@ -20,7 +20,8 @@ import {
 import { useCallback, useState } from 'react';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
-import type { useRecomputeCompliance } from '../hooks/use-recompute-compliance.js';
+import { useRecomputeCompliance } from '../hooks/use-recompute-compliance.js';
+import type { useRecomputeCompliance as UseRecomputeCompliance } from '../hooks/use-recompute-compliance.js';
 
 type RecomputeReason = 'policy_version_bump' | 'classification_outcome_change' | 'admin_correction';
 
@@ -32,7 +33,7 @@ export interface RecomputeComplianceDialogProps {
 }
 
 type RecomputeComplianceDialogViewProps = RecomputeComplianceDialogProps &
-  Pick<ReturnType<typeof useRecomputeCompliance>, 'mutation' | 'isPending'>;
+  Pick<ReturnType<typeof UseRecomputeCompliance>, 'mutation' | 'isPending'>;
 
 export function RecomputeComplianceDialogView({
   open,
@@ -114,4 +115,9 @@ export function RecomputeComplianceDialogView({
       </AlertDialogContent>
     </AlertDialog>
   );
+}
+
+export function RecomputeComplianceDialog(props: RecomputeComplianceDialogProps) {
+  const { mutation, isPending } = useRecomputeCompliance(props.onSuccess);
+  return <RecomputeComplianceDialogView {...props} mutation={mutation} isPending={isPending} />;
 }

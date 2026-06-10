@@ -2,12 +2,12 @@ import type { ComponentProps } from 'react';
 import type { PeppolTransmissionResult } from '../../../lib/peppol-trpc.js';
 import { PeppolInboundBanner } from '../../peppol/peppol-inbound-banner.js';
 import { PeppolQRDisplay } from '../../peppol/peppol-qr-display.js';
-import { PeppolTransmissionStatusContainer } from '../../peppol/peppol-transmission-status-container.js';
-import { ZatcaSubmissionDetail } from '../../zatca/zatca-submission-detail-container.js';
+import { PeppolTransmissionStatus } from '../../peppol/peppol-transmission-status.js';
+import { ZatcaSubmissionDetail } from '../../zatca/zatca-submission-detail.js';
 import type { ZatcaSubmissionResult } from '../../zatca/zatca-trpc.js';
 import { KsefDuplicateBanner } from '../ksef-duplicate-banner.js';
 import { KsefMetadataSection } from '../ksef-metadata-section.js';
-import { SkontoBannerContainer } from '../skonto/skonto-banner-container.js';
+import { SkontoBanner } from '../skonto/skonto-banner.js';
 import { DuplicateWarning } from './duplicate-warning.js';
 
 export interface InvoiceBannerFlags {
@@ -65,7 +65,7 @@ export function IntegrationBanners({
 
   return (
     <>
-      <SkontoBannerContainer invoiceId={invoiceId} featureEnabled={skontoEnabled} />
+      <SkontoBanner invoiceId={invoiceId} featureEnabled={skontoEnabled} />
       {ksefBannerProps ? <KsefDuplicateBanner {...ksefBannerProps} /> : null}
       {!!flags.hasDuplicateFlag && (
         <DuplicateWarning
@@ -92,7 +92,7 @@ export function IntegrationBanners({
         />
       )}
       {!!hasPeppolOutbound && peppolTransmission && (
-        <PeppolTransmissionStatusContainer transmission={peppolTransmission} />
+        <PeppolTransmissionStatus transmission={peppolTransmission} />
       )}
       {!!invoice.qrCodeBase64 && (flags.isPeppolSource || hasPeppolOutbound) && (
         <PeppolQRDisplay

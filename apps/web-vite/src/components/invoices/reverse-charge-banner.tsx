@@ -13,13 +13,14 @@ import {
 import { ChevronDown, Info } from 'lucide-react';
 
 import { useTranslations } from '../../i18n/useTranslations.js';
+import { useReverseChargeBanner } from './hooks/use-reverse-charge-banner.js';
 
-interface ReverseChargeBannerProps {
+interface ReverseChargeBannerViewProps {
   isPending?: boolean;
   onRemove: () => void;
 }
 
-export function ReverseChargeBanner({ isPending = false, onRemove }: ReverseChargeBannerProps) {
+export function ReverseChargeBannerView({ isPending = false, onRemove }: ReverseChargeBannerViewProps) {
   const t = useTranslations('Invoices.reverseCharge');
 
   return (
@@ -45,4 +46,22 @@ export function ReverseChargeBanner({ isPending = false, onRemove }: ReverseChar
       </div>
     </Alert>
   );
+}
+
+interface ReverseChargeBannerProps {
+  invoiceId: string;
+  isReverseCharge: boolean;
+  onToggle?: (newValue: boolean) => void;
+}
+
+export function ReverseChargeBanner({
+  invoiceId,
+  isReverseCharge,
+  onToggle,
+}: ReverseChargeBannerProps) {
+  const { isPending, onRemove } = useReverseChargeBanner(invoiceId, onToggle);
+
+  if (!isReverseCharge) return null;
+
+  return <ReverseChargeBannerView isPending={isPending} onRemove={onRemove} />;
 }

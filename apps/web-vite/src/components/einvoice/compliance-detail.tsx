@@ -10,7 +10,7 @@ import {
 import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { CheckCircle2, FileCheck, XCircle } from 'lucide-react';
 import { useId } from 'react';
-import type { useEinvoiceComplianceDetail } from './hooks/use-einvoice-compliance-detail.js';
+import { useEinvoiceComplianceDetail } from './hooks/use-einvoice-compliance-detail.js';
 
 const stateBadgeVariant: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
   active: 'default',
@@ -164,4 +164,12 @@ export function EInvoiceComplianceDetailView({
       </div>
     </div>
   );
+}
+
+export function EInvoiceComplianceDetail() {
+  const props = useEinvoiceComplianceDetail();
+
+  if (props.isLoading) return <EInvoiceComplianceDetailSkeleton />;
+  if (props.statuses.length === 0) return <EInvoiceComplianceDetailEmpty t={props.t} />;
+  return <EInvoiceComplianceDetailView {...props} />;
 }

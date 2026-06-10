@@ -1,46 +1,37 @@
 import type { EquipmentCreateInput } from '@contractor-ops/validators';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { toast } from 'sonner';
 
+import { useResourceMutation } from '../../../hooks/use-resource-mutation.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { useTRPC } from '../../../providers/trpc-provider.js';
 
 export function useEquipmentForm(options: { onSuccess: () => void }) {
   const t = useTranslations('Equipment');
   const trpc = useTRPC();
-  const queryClient = useQueryClient();
 
-  const createMutation = useMutation(
+  const createMutation = useResourceMutation(
     trpc.equipment.create.mutationOptions({
       onSuccess: () => {
-        toast.success(t('toast.created'));
-        queryClient.invalidateQueries({
-          queryKey: trpc.equipment.list.queryKey(),
-        });
         options.onSuccess();
       },
-      onError: () => {
-        toast.error(t('error.actionFailed'));
-      },
     }),
+    {
+      invalidate: [trpc.equipment.list.queryKey()],
+      successMessage: t('toast.created'),
+      errorMessage: t('error.actionFailed'),
+    },
   );
 
-  const updateMutation = useMutation(
+  const updateMutation = useResourceMutation(
     trpc.equipment.update.mutationOptions({
       onSuccess: () => {
-        toast.success(t('toast.updated'));
-        queryClient.invalidateQueries({
-          queryKey: trpc.equipment.list.queryKey(),
-        });
-        queryClient.invalidateQueries({
-          queryKey: trpc.equipment.getById.queryKey(),
-        });
         options.onSuccess();
       },
-      onError: () => {
-        toast.error(t('error.actionFailed'));
-      },
     }),
+    {
+      invalidate: [trpc.equipment.list.queryKey(), trpc.equipment.getById.queryKey()],
+      successMessage: t('toast.updated'),
+      errorMessage: t('error.actionFailed'),
+    },
   );
 
   const submit = (isEdit: boolean, equipmentId: string | undefined, data: EquipmentCreateInput) => {

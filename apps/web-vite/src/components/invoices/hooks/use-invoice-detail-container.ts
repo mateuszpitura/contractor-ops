@@ -69,9 +69,7 @@ export function useInvoiceDetailContainer(invoiceId: string, breadcrumbId?: stri
   const duplicateDismiss = useDuplicateWarning(invoiceId, detail.handleInvoiceInvalidate);
   const { transmission: peppolBadgeTransmission } = usePeppolStatusBadge(invoiceId);
 
-  const invoiceFlags = detail.invoice
-    ? deriveInvoiceFlags(detail.invoice as unknown as InvoiceFlagsShape)
-    : null;
+  const invoiceFlags = detail.invoice ? deriveInvoiceFlags(detail.invoice) : null;
 
   return {
     ...detail,

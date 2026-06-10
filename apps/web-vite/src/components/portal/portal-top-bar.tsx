@@ -21,9 +21,9 @@ import { getAvatarInitials } from '../../lib/avatar-initials.js';
 import { PORTAL_NAV_ITEMS } from '../../lib/portal-navigation.js';
 import { prefetchRoute } from '../../lib/route-prefetch.js';
 import { cn } from '../../lib/utils.js';
-import type { usePortalTopBar } from './hooks/use-portal-top-bar.js';
+import { usePortalTopBar } from './hooks/use-portal-top-bar.js';
 import { OrgSwitcherList } from './org-switcher-list.js';
-import { PortalMobileMenuContainer } from './portal-mobile-menu-container.js';
+import { PortalMobileMenuContainer } from './portal-mobile-menu.js';
 
 function isNavActive(href: string, pathname: string): boolean {
   const path = pathname.replace(/^\/[a-z]{2}(?=\/)/, '');
@@ -178,4 +178,16 @@ export function PortalTopBar({
       </div>
     </header>
   );
+}
+
+interface PortalTopBarContainerProps {
+  orgName: string;
+  orgLogo?: string | null;
+  contractorName: string;
+  contractorEmail: string;
+}
+
+export function PortalTopBarContainer(props: PortalTopBarContainerProps) {
+  const bar = usePortalTopBar();
+  return <PortalTopBar {...props} bar={bar} />;
 }

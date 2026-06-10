@@ -1,7 +1,7 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { useCallback, useMemo, useState } from 'react';
-import { toast } from 'sonner';
 
+import { useResourceMutation } from '../../../hooks/use-resource-mutation.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { useTRPC } from '../../../providers/trpc-provider.js';
 
@@ -26,41 +26,32 @@ export function useDocLinksSection({ workflowTaskRunId, readOnly }: UseDocLinksS
   const [attachOpen, setAttachOpen] = useState(false);
   const [pendingDetachId, setPendingDetachId] = useState<string | null>(null);
   const [refreshingId, setRefreshingId] = useState<string | null>(null);
-  const queryClient = useQueryClient();
   const t = useTranslations('Integrations');
 
   const listQuery = useQuery({
     ...trpc.docs.list.queryOptions({ workflowTaskRunId }),
   });
 
-  const detachMutation = useMutation({
-    ...trpc.docs.detach.mutationOptions(),
-    onSuccess: () => {
-      toast.success(t('docs.section.toast.removed'));
-      void queryClient.invalidateQueries({
-        queryKey: trpc.docs.list.queryKey({ workflowTaskRunId }),
-      });
-    },
-    onError: () => {
-      toast.error(t('docs.section.toast.removeFailed'));
-    },
+  const listQueryKey = trpc.docs.list.queryKey({ workflowTaskRunId });
+
+  const detachMutation = useResourceMutation(trpc.docs.detach.mutationOptions(), {
+    invalidate: [listQueryKey],
+    successMessage: t('docs.section.toast.removed'),
+    errorMessage: t('docs.section.toast.removeFailed'),
   });
 
-  const refreshMutation = useMutation({
-    ...trpc.docs.refreshMetadata.mutationOptions(),
-    onSuccess: () => {
-      toast.success(t('docs.section.toast.refreshed'));
-      void queryClient.invalidateQueries({
-        queryKey: trpc.docs.list.queryKey({ workflowTaskRunId }),
-      });
+  const refreshMutation = useResourceMutation(
+    trpc.docs.refreshMetadata.mutationOptions({
+      onSettled: () => {
+        setRefreshingId(null);
+      },
+    }),
+    {
+      invalidate: [listQueryKey],
+      successMessage: t('docs.section.toast.refreshed'),
+      errorMessage: t('docs.section.toast.refreshFailed'),
     },
-    onError: err => {
-      toast.error(err.message || t('docs.section.toast.refreshFailed'));
-    },
-    onSettled: () => {
-      setRefreshingId(null);
-    },
-  });
+  );
 
   const handleRefresh = useCallback(
     (externalLinkId: string) => {

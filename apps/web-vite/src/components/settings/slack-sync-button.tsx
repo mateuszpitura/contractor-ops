@@ -10,9 +10,10 @@ import {
 } from '@contractor-ops/ui/components/shadcn/alert-dialog';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { RefreshCw } from 'lucide-react';
-import type { useSlackSyncButton } from './hooks/use-slack-sync-button.js';
+import { useSlackSyncButton } from './hooks/use-slack-sync-button.js';
+import type { useSlackSyncButton as UseSlackSyncButton } from './hooks/use-slack-sync-button.js';
 
-export type SlackSyncButtonProps = ReturnType<typeof useSlackSyncButton>;
+export type SlackSyncButtonProps = ReturnType<typeof UseSlackSyncButton>;
 
 /**
  * "Sync users" CTA for the Slack integration. Wires
@@ -22,7 +23,7 @@ export type SlackSyncButtonProps = ReturnType<typeof useSlackSyncButton>;
  * Gated behind an AlertDialog confirmation per repo convention for
  * destructive/expensive mutations.
  */
-export function SlackSyncButton({
+export function SlackSyncButtonView({
   t,
   confirmOpen,
   setConfirmOpen,
@@ -59,4 +60,9 @@ export function SlackSyncButton({
       </AlertDialog>
     </>
   );
+}
+
+export function SlackSyncButton() {
+  const sync = useSlackSyncButton();
+  return <SlackSyncButtonView {...sync} />;
 }

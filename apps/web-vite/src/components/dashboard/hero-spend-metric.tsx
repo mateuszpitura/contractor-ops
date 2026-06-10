@@ -7,6 +7,7 @@
  */
 
 import { AnimatedNumber, Sparkline, TiltCard } from '@contractor-ops/ui';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { ArrowUpRight, TrendingDown, TrendingUp } from 'lucide-react';
 import { useCallback, useMemo } from 'react';
@@ -17,8 +18,9 @@ import { useHeroSpendMetric } from './hooks/use-hero-spend-metric.js';
 
 export function HeroSpendMetric() {
   const t = useTranslations('Dashboard.heroSpend');
+  const tDashboard = useTranslations('Dashboard');
   const locale = useLocale();
-  const { isLoading, rows } = useHeroSpendMetric();
+  const { isLoading, isError, onRetry, rows } = useHeroSpendMetric();
 
   const monthlyTotals = useMemo(() => {
     if (rows.length === 0) return [] as number[];
@@ -52,6 +54,21 @@ export function HeroSpendMetric() {
 
   if (isLoading) {
     return <Skeleton className="h-[200px] w-full rounded-2xl" />;
+  }
+
+  if (isError) {
+    return (
+      <TiltCard entrance={false} className="w-full">
+        <div className="flex min-h-[152px] flex-col items-center justify-center gap-3 text-center">
+          <p className="text-sm font-medium">
+            {tDashboard('errors.widgetFailed', { name: t('eyebrow') })}
+          </p>
+          <Button variant="outline" size="sm" onClick={onRetry}>
+            {tDashboard('errors.retry')}
+          </Button>
+        </div>
+      </TiltCard>
+    );
   }
 
   const trendDirection: 'up' | 'down' | 'flat' =

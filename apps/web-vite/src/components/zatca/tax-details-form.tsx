@@ -9,7 +9,8 @@ import { Loader2 } from 'lucide-react';
 import { useCallback, useId } from 'react';
 import type { ControllerRenderProps } from 'react-hook-form';
 import { Controller, useForm } from 'react-hook-form';
-import type { useTaxDetailsForm } from './hooks/use-tax-details-form.js';
+import { useTaxDetailsForm } from './hooks/use-tax-details-form.js';
+import type { useTaxDetailsForm as UseTaxDetailsForm } from './hooks/use-tax-details-form.js';
 
 // ---------------------------------------------------------------------------
 // Invoice types field renderer
@@ -76,7 +77,7 @@ export type TaxDetailsFormViewProps = {
   defaultValues?: Partial<ZatcaTaxDetails>;
   onSuccess: () => void;
   onCancel: () => void;
-} & ReturnType<typeof useTaxDetailsForm>;
+} & ReturnType<typeof UseTaxDetailsForm>;
 
 // ---------------------------------------------------------------------------
 // Tax Details Form — Step 1
@@ -241,4 +242,11 @@ export function TaxDetailsFormView({
       </div>
     </form>
   );
+}
+
+export function TaxDetailsForm(
+  props: Omit<TaxDetailsFormViewProps, keyof ReturnType<typeof useTaxDetailsForm>>,
+) {
+  const hook = useTaxDetailsForm(props.onSuccess);
+  return <TaxDetailsFormView {...props} {...hook} />;
 }

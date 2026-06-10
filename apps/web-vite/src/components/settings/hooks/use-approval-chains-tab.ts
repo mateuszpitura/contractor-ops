@@ -1,7 +1,7 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
-import { toast } from 'sonner';
 
+import { useResourceMutation } from '../../../hooks/use-resource-mutation.js';
 import { useCommonToasts } from '../../../i18n/use-common-toasts.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { useTRPC } from '../../../providers/trpc-provider.js';
@@ -21,37 +21,27 @@ export function useApprovalChainsTab() {
   const chainsQuery = useQuery(trpc.approval.listChains.queryOptions());
   const chains = chainsQuery.data ?? [];
 
-  const toggleActiveMutation = useMutation(
+  const toggleActiveMutation = useResourceMutation(
     trpc.approval.updateChain.mutationOptions({
-      onSuccess: () => {
-        queryClient.invalidateQueries({
-          queryKey: trpc.approval.listChains.queryKey(),
-        });
-        toast.success(toasts.done());
-      },
       onError: () => {
-        toast.error(t('approvals.toasts.saveFailed'));
-        queryClient.invalidateQueries({
+        void queryClient.invalidateQueries({
           queryKey: trpc.approval.listChains.queryKey(),
         });
       },
     }),
+    {
+      invalidate: [trpc.approval.listChains.queryKey()],
+      successMessage: toasts.done(),
+      errorMessage: t('approvals.toasts.saveFailed'),
+    },
   );
 
-  const deleteMutation = useMutation(
-    trpc.approval.deleteChain.mutationOptions({
-      onSuccess: () => {
-        toast.success(t('approvals.toasts.deleted'));
-        queryClient.invalidateQueries({
-          queryKey: trpc.approval.listChains.queryKey(),
-        });
-        setDeletingChainId(null);
-      },
-      onError: () => {
-        toast.error(t('approvals.toasts.deleteFailed'));
-      },
-    }),
-  );
+  const deleteMutation = useResourceMutation(trpc.approval.deleteChain.mutationOptions(), {
+    invalidate: [trpc.approval.listChains.queryKey()],
+    successMessage: t('approvals.toasts.deleted'),
+    errorMessage: t('approvals.toasts.deleteFailed'),
+    onClose: () => setDeletingChainId(null),
+  });
 
   const handleToggleActive = (chain: (typeof chains)[number]) => {
     toggleActiveMutation.mutate({

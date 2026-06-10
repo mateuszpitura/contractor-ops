@@ -3,19 +3,23 @@ import {
   Dialog,
   DialogBody,
   DialogContent,
+  DialogFooter,
   DialogHeader,
   DialogSection,
   DialogTitle,
 } from '@contractor-ops/ui/components/shadcn/dialog';
 import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
-import { AlertTriangle, Check } from 'lucide-react';
+import { AlertTriangle, Check, Loader2 } from 'lucide-react';
 import { useCallback } from 'react';
 
-import { FeatureGateContainer } from '../../billing/feature-gate-container.js';
+import { FeatureGate } from '../../layout/feature-gate.js';
 import { DirectoryPreviewTable } from './directory-preview/data-table.js';
 import { DirectorySummaryBar } from './directory-summary-bar.js';
 import { GroupRoleMappingStep } from './group-role-mapping-step.js';
-import type { useDirectoryImportWizard, WizardStep } from './hooks/use-directory-import-wizard.js';
+import {
+  useDirectoryImportWizard,
+  type WizardStep,
+} from './hooks/use-directory-import-wizard.js';
 import { ImportConfirmStep } from './import-confirm-step.js';
 import { RoleAssignmentControls } from './role-assignment-controls.js';
 
@@ -86,7 +90,7 @@ export function DirectoryImportWizardView({
   const handleBackToStep2 = useCallback(() => setStep(2), [setStep]);
 
   return (
-    <FeatureGateContainer requiredTier="Pro" featureName="Google Workspace directory import">
+    <FeatureGate requiredTier="Pro" featureName="Google Workspace directory import">
       <Dialog open={open} onOpenChange={handleOpenChange}>
         <DialogContent className="max-h-[85vh] max-w-3xl sm:max-w-3xl">
           <DialogHeader>
@@ -147,14 +151,6 @@ export function DirectoryImportWizardView({
                         />
                       </>
                     )}
-
-                    {stats.new > 0 && (
-                      <div className="flex justify-end">
-                        <Button onClick={handleGoToStep2} disabled={selectedEmails.size === 0}>
-                          {t('nextRoles')}
-                        </Button>
-                      </div>
-                    )}
                   </>
                 )}
               </div>
@@ -181,13 +177,6 @@ export function DirectoryImportWizardView({
                     defaultRole={defaultRole}
                   />
                 )}
-
-                <div className="flex justify-end gap-2">
-                  <Button variant="outline" onClick={handleBackToStep1}>
-                    {t('back')}
-                  </Button>
-                  <Button onClick={handleGoToStep3}>{t('nextReview')}</Button>
-                </div>
               </div>
             )}
 
@@ -195,14 +184,57 @@ export function DirectoryImportWizardView({
               <ImportConfirmStep
                 userCount={selectedUsers.length}
                 roleBreakdown={roleBreakdown}
-                onConfirm={handleConfirmImport}
-                onBack={handleBackToStep2}
-                isImporting={importMutation.isPending}
               />
             )}
           </DialogBody>
+
+          {step === 1 && !!stats && stats.new > 0 && (
+            <DialogFooter>
+              <Button onClick={handleGoToStep2} disabled={selectedEmails.size === 0}>
+                {t('nextRoles')}
+              </Button>
+            </DialogFooter>
+          )}
+
+          {step === 2 && (
+            <DialogFooter className="gap-2 sm:gap-2">
+              <Button variant="outline" onClick={handleBackToStep1}>
+                {t('back')}
+              </Button>
+              <Button onClick={handleGoToStep3}>{t('nextReview')}</Button>
+            </DialogFooter>
+          )}
+
+          {step === 3 && (
+            <DialogFooter className="gap-2 sm:gap-2">
+              <Button
+                variant="outline"
+                onClick={handleBackToStep2}
+                disabled={importMutation.isPending}>
+                {t('back')}
+              </Button>
+              <Button onClick={handleConfirmImport} disabled={importMutation.isPending}>
+                {!!importMutation.isPending && (
+                  <Loader2 className="me-1.5 size-3.5 animate-spin" aria-hidden="true" />
+                )}
+                {importMutation.isPending
+                  ? t('importing')
+                  : t('importCta', { count: selectedUsers.length })}
+              </Button>
+            </DialogFooter>
+          )}
         </DialogContent>
       </Dialog>
-    </FeatureGateContainer>
+    </FeatureGate>
   );
+}
+
+interface DirectoryImportWizardProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}
+
+export function DirectoryImportWizard(props: DirectoryImportWizardProps) {
+  const viewProps = useDirectoryImportWizard(props);
+  return <DirectoryImportWizardView {...viewProps} />;
 }

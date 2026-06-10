@@ -3,7 +3,8 @@
 
 import { useCallback, useId, useState } from 'react';
 import { useTranslations } from '../../../i18n/useTranslations.js';
-import type { useGenerateDrvBundle } from '../hooks/use-classification-documents.js';
+import { useGenerateDrvBundle } from '../hooks/use-classification-documents.js';
+import type { useGenerateDrvBundle as UseGenerateDrvBundle } from '../hooks/use-classification-documents.js';
 
 export interface GenerateDrvBundleButtonProps {
   classificationAssessmentId: string;
@@ -12,7 +13,7 @@ export interface GenerateDrvBundleButtonProps {
 }
 
 type GenerateDrvBundleButtonViewProps = GenerateDrvBundleButtonProps &
-  ReturnType<typeof useGenerateDrvBundle>;
+  ReturnType<typeof UseGenerateDrvBundle>;
 
 export function GenerateDrvBundleButtonView({
   disabled,
@@ -59,4 +60,9 @@ export function GenerateDrvBundleButtonView({
       ) : null}
     </div>
   );
+}
+
+export function GenerateDrvBundleButton(props: GenerateDrvBundleButtonProps) {
+  const drv = useGenerateDrvBundle(props.classificationAssessmentId);
+  return <GenerateDrvBundleButtonView {...props} {...drv} />;
 }

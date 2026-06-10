@@ -17,12 +17,29 @@ import {
 import { CheckCircle2, Clock, Info, ShieldAlert } from 'lucide-react';
 import { useId } from 'react';
 import { EntraBrandIcon } from './brand-icons.js';
-import type { useEntraProviderSection } from './hooks/use-entra-provider-section.js';
+import { useEntraProviderSection } from './hooks/use-entra-provider-section.js';
 
 export type EntraProviderSectionViewProps = Omit<
   ReturnType<typeof useEntraProviderSection>,
   'isLoading' | 'isError' | 'onRetry'
 >;
+
+export function EntraProviderSection() {
+  const { isLoading, isError, onRetry, t, ...rest } = useEntraProviderSection();
+
+  if (isLoading) return <EntraProviderSectionSkeleton />;
+  if (isError) {
+    return (
+      <div className="space-y-2 rounded-lg border border-destructive/40 p-4" role="alert">
+        <p className="text-sm text-destructive">{t('error')}</p>
+        <button type="button" className="text-sm underline" onClick={onRetry}>
+          {t('retry')}
+        </button>
+      </div>
+    );
+  }
+  return <EntraProviderSectionView t={t} {...rest} />;
+}
 
 export function EntraProviderSectionSkeleton() {
   return (
@@ -74,7 +91,7 @@ export function EntraProviderSectionView({
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
-        {/* Entra-specific informational banners (Phase 78 D-01 / D-02). */}
+        {/* Conditional Access and hybrid-AD caveats admins must read before enabling. */}
         <Alert>
           <Info className="size-4" aria-hidden="true" />
           <AlertTitle>{t('conditionalAccessTitle')}</AlertTitle>

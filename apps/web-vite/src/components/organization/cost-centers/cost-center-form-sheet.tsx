@@ -12,7 +12,8 @@ import {
 } from '@contractor-ops/ui/components/shadcn/sheet';
 import { useCallback, useEffect, useState } from 'react';
 
-import type { useCostCenterFormSheet } from '../hooks/use-cost-center-form-sheet.js';
+import { useCostCenterFormSheet } from '../hooks/use-cost-center-form-sheet.js';
+import type { useCostCenterFormSheet as UseCostCenterFormSheet } from '../hooks/use-cost-center-form-sheet.js';
 
 export interface CostCenterRow {
   id: string;
@@ -25,7 +26,7 @@ interface CostCenterFormSheetProps {
   onOpenChange: (open: boolean) => void;
   costCenter?: CostCenterRow | null;
   onCreated?: (cc: { id: string; name: string }) => void;
-  formSheet: ReturnType<typeof useCostCenterFormSheet>;
+  formSheet: ReturnType<typeof UseCostCenterFormSheet>;
 }
 
 export function CostCenterFormSheet({
@@ -132,4 +133,14 @@ export function CostCenterFormSheet({
       </SheetContent>
     </Sheet>
   );
+}
+
+type CostCenterFormSheetWiredProps = Omit<CostCenterFormSheetProps, 'formSheet'>;
+
+export function CostCenterFormSheetWired(props: CostCenterFormSheetWiredProps) {
+  const formSheet = useCostCenterFormSheet({
+    onOpenChange: props.onOpenChange,
+    onCreated: props.onCreated,
+  });
+  return <CostCenterFormSheet {...props} formSheet={formSheet} />;
 }

@@ -1,13 +1,16 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback } from 'react';
 import { toast } from 'sonner';
 
+import { useResourceMutation } from '../../../hooks/use-resource-mutation.js';
 import { useCommonToasts } from '../../../i18n/use-common-toasts.js';
+import { useTranslatedError } from '../../../i18n/use-translated-error.js';
 import { useTRPC } from '../../../providers/trpc-provider.js';
 
 export function useDocumentHistoryList(engagementId: string) {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
+  const translateError = useTranslatedError();
 
   const listQuery = useQuery(
     trpc.classificationDocument.listByEngagement.queryOptions({
@@ -20,10 +23,14 @@ export function useDocumentHistoryList(engagementId: string) {
       const options = trpc.classificationDocument.getDownloadUrl.queryOptions({
         classificationDocumentId,
       });
-      const data = await queryClient.fetchQuery(options);
-      window.open(data.url, '_blank', 'noopener,noreferrer');
+      try {
+        const data = await queryClient.fetchQuery(options);
+        window.open(data.url, '_blank', 'noopener,noreferrer');
+      } catch (err) {
+        toast.error(translateError(err));
+      }
     },
-    [queryClient, trpc.classificationDocument],
+    [queryClient, trpc.classificationDocument, translateError],
   );
 
   return {
@@ -35,21 +42,14 @@ export function useDocumentHistoryList(engagementId: string) {
 
 export function useGenerateDrvBundle(classificationAssessmentId: string) {
   const trpc = useTRPC();
-  const queryClient = useQueryClient();
   const toasts = useCommonToasts();
 
-  const mutation = useMutation(
-    trpc.classificationDocument.generateDrvDefenseBundle.mutationOptions({
-      onSuccess: () => {
-        void queryClient.invalidateQueries({
-          queryKey: [['classificationDocument', 'listByEngagement']],
-        });
-        toast.success(toasts.done());
-      },
-      onError: err => {
-        toast.error(err.message);
-      },
-    }),
+  const mutation = useResourceMutation(
+    trpc.classificationDocument.generateDrvDefenseBundle.mutationOptions(),
+    {
+      invalidate: [trpc.classificationDocument.pathFilter()],
+      successMessage: toasts.done(),
+    },
   );
 
   const generate = useCallback(
@@ -62,33 +62,19 @@ export function useGenerateDrvBundle(classificationAssessmentId: string) {
 
 export function useGenerateSds(classificationAssessmentId: string) {
   const trpc = useTRPC();
-  const queryClient = useQueryClient();
   const toasts = useCommonToasts();
 
-  const approveSdsMutation = useMutation(
-    trpc.classification.approveSds.mutationOptions({
-      onSuccess: () => {
-        toast.success(toasts.done());
-        queryClient.invalidateQueries(trpc.classification.pathFilter());
-      },
-      onError: err => {
-        toast.error(err.message);
-      },
-    }),
-  );
+  const approveSdsMutation = useResourceMutation(trpc.classification.approveSds.mutationOptions(), {
+    invalidate: [trpc.classification.pathFilter()],
+    successMessage: toasts.done(),
+  });
 
-  const generateMutation = useMutation(
-    trpc.classificationDocument.generateSds.mutationOptions({
-      onSuccess: () => {
-        void queryClient.invalidateQueries({
-          queryKey: [['classificationDocument', 'listByEngagement']],
-        });
-        toast.success(toasts.done());
-      },
-      onError: err => {
-        toast.error(err.message);
-      },
-    }),
+  const generateMutation = useResourceMutation(
+    trpc.classificationDocument.generateSds.mutationOptions(),
+    {
+      invalidate: [trpc.classificationDocument.pathFilter()],
+      successMessage: toasts.done(),
+    },
   );
 
   const approveSds = useCallback(

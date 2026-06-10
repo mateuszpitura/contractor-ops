@@ -8,7 +8,7 @@ import { CheckCircle2 } from 'lucide-react';
 import { useCallback } from 'react';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
-import { formatMinorUnits } from '../../../lib/format-currency.js';
+import { formatMinorUnits } from '../../../lib/money.js';
 
 interface StepConfirmationProps {
   runNumber: string;

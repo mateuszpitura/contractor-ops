@@ -55,6 +55,11 @@
       "signoffRegistry": "Rejestr zatwierdzeń",
       "pendingGate": "Flaga włączona w Unleash, ale zablokowana w aplikacji — {count} klauzul(a) OCZEKUJĄCYCH.",
       "pendingGateResolution": "Rozwiąż, przesyłając PR aktualizujący packages/validators/src/legal/signoff-registry.json",
+      "pendingGateDetail": "aby ustawić każdy klucz PENDING na APPROVED z approvedBy + approvedAt + approverRole. PR wymaga przeglądu @contractor-ops/legal-platform (CODEOWNERS).",
+      "statusEnabled": "WŁĄCZONE",
+      "statusDisabled": "WYŁĄCZONE",
+      "allApprovedCount": "Wszystkie {count} zatwierdzone (APPROVED)",
+      "pendingOfTotal": "{pending} z {total} oczekujących (PENDING)",
       "killSwitchDesc": "Wyłącznik silnika klasyfikacji. Tylko do odczytu — przełączanie w konsoli Unleash.",
       "disclaimerRegistryTitle": "Rejestr zatwierdzeń klauzul",
       "allKeysMustBeApproved": "Wszystkie klucze muszą być ZATWIERDZONE, aby flaga mogła być włączona na produkcji.",
@@ -2488,6 +2493,7 @@
       }
     },
     "InvoiceTab": {
+      "errorTitle": "Błąd",
       "tabLabel": "E-invoice",
       "generationHeading": "Generation",
       "generationNotGeneratedBody": "Dla tej faktury nie wygenerowano jeszcze XML w formacie XRechnung.",
@@ -2515,6 +2521,10 @@
       "transmittedCaptionPattern": "Wysłano {relativeTime} · Wiadomość {transmissionId}",
       "deliveryAckPattern": "Dostarczono {relativeTime}",
       "transmissionHistoryHeading": "Historia transmisji",
+      "transmissionColWhen": "Kiedy",
+      "transmissionColEvent": "Zdarzenie",
+      "transmissionColDetails": "Szczegóły",
+      "transmissionCancel": "Anuluj",
       "transmissionEventPattern": "{occurredAt} — {eventType} {detailsOneLiner}",
       "leitwegResolvedPattern": "Rozwiązany Leitweg-ID: {leitwegIdValue} ({source})",
       "leitwegSourceContract": "z nadpisania umowy",
@@ -2672,6 +2682,7 @@
         "REJECTED": "Rejected"
       },
       "validation": {
+        "heading": "Walidacja",
         "VALID": "Valid",
         "WARNINGS": "Warnings",
         "INVALID": "Invalid",
@@ -2845,6 +2856,7 @@
         "type": "Typ",
         "status": "Status",
         "assignee": "Przypisany",
+        "shipment": "Wysyłka",
         "actions": "Akcje",
         "selectAll": "Zaznacz wszystko",
         "selectRow": "Zaznacz wiersz"
@@ -3165,6 +3177,7 @@
     "workflowTemplateNotFound": "Nie znaleziono szablonu workflow.",
     "workflowRunNotFound": "Nie znaleziono przebiegu workflow.",
     "workflowRunAlreadyCancelled": "Przebieg workflow został już anulowany.",
+    "workflowRunNotInProgress": "Przebieg workflow nie jest w toku.",
     "workflowTaskNotFound": "Nie znaleziono zadania.",
     "workflowTaskInvalidStatus": "Ta zmiana statusu nie jest dozwolona dla tego zadania.",
     "workflowTaskCannotSkip": "To zadanie nie może być pominięte w bieżącym statusie.",
@@ -3393,7 +3406,9 @@
     "approvalNotPendingCompliance": "To zatwierdzenie nie jest wstrzymane z powodu zgodności.",
     "approvalCannotResolveContractor": "Nie można ustalić wykonawcy dla tego zatwierdzenia.",
     "approvalStillComplianceBlocked": "Wykonawca nadal ma wygasły, blokujący dokument zgodności; nie można wznowić zatwierdzenia.",
-    "deprovisioningProviderSignoffPending": "Ta funkcja deprowizji dostawcy wymaga zatwierdzenia przed aktywacją."
+    "deprovisioningProviderSignoffPending": "Ta funkcja deprowizji dostawcy wymaga zatwierdzenia przed aktywacją.",
+    "workflowAssigneeNotMember": "Wybrany przypisany użytkownik nie jest członkiem tej organizacji.",
+    "importJobStateConflict": "Stan zadania importu uległ zmianie; odśwież i spróbuj ponownie."
   },
   "Compliance": {
     "paymentBlockModal": {
@@ -3755,11 +3770,14 @@
         "saveMapping": "Zapisz mapowanie",
         "toast": {
           "saved": "Mapowanie statusów zapisane",
-          "saveFailed": "Nie udało się zapisać mapowania statusów"
+          "saveFailed": "Nie udało się zapisać mapowania statusów",
+          "webhooksNotRegistered": "Mapowanie zapisane, ale nie udało się zarejestrować webhooków Jira. Synchronizacja statusów przychodzących może nie działać, dopóki webhooki nie zostaną naprawione."
         }
       },
       "activitySummary": {
         "title": "Ostatnia aktywność Jira",
+        "error": "Nie udało się załadować ostatniej aktywności Jira",
+        "retry": "Spróbuj ponownie",
         "relativeTime": {
           "justNow": "właśnie teraz",
           "minutesAgo": "{n} min temu",
@@ -3794,7 +3812,8 @@
       "statusMapping": {
         "toast": {
           "saved": "Mapowanie statusów zapisane",
-          "saveFailed": "Nie udało się zapisać mapowania statusów. Spróbuj ponownie."
+          "saveFailed": "Nie udało się zapisać mapowania statusów. Spróbuj ponownie.",
+          "webhooksNotRegistered": "Mapowanie zapisane, ale nie udało się zarejestrować webhooków Jira. Synchronizacja statusów przychodzących może nie działać, dopóki webhooki nie zostaną naprawione."
         },
         "notMapped": "Nie przypisano",
         "workflowStatus": {
@@ -4491,11 +4510,26 @@
       "saveCta": "Zapisz preferencje"
     },
     "reminders": {
-      "heading": "Własne reguły przypomnień",
-      "description": "Automatyzuj przypomnienia o wygasaniu umów, terminach zadań i innych cyklicznych zdarzeniach.",
-      "emptyHeading": "Brak regul przypomnień",
-      "emptyBody": "Utwórz własne reguły automatycznych przypomnień o wygasaniu umów, terminach zadań i innych zdarzeniach.",
-      "editAction": "Edytuj"
+      "contractExpiring": {
+        "title": "Umowa wkrótce wygasa: {label}",
+        "body": "Umowa zbliża się do daty zakończenia."
+      },
+      "invoiceDueSoon": {
+        "title": "Faktura wkrótce do zapłaty: {label}",
+        "body": "Zbliża się termin płatności faktury."
+      },
+      "invoiceOverdue": {
+        "title": "Faktura przeterminowana: {label}",
+        "body": "Minął termin płatności faktury."
+      },
+      "taskOverdue": {
+        "title": "Zadanie przeterminowane: {label}",
+        "body": "{detail}{contractorSuffix}"
+      },
+      "drvExpiry": {
+        "title": "Decyzja DRV wygasa za {days} dni",
+        "body": "Sygnatura {reference}, ważna do {validTo}. Rozpocznij wniosek o przedłużenie — rozpatrzenie przez DRV trwa zwykle 3–6 miesięcy."
+      }
     },
     "reminderEditor": {
       "entityLabel": "Dotyczy",
@@ -4571,6 +4605,25 @@
         "title": "Zwrot sprzętu odrzucony",
         "body": "Powód: {reason}"
       }
+    },
+    "trial": {
+      "ending7d": {
+        "title": "Okres próbny kończy się za 7 dni",
+        "body": "Twój okres próbny kończy się za 7 dni. Przejdź na plan płatny, aby zachować dane i pełny dostęp."
+      },
+      "ending1d": {
+        "title": "Okres próbny kończy się jutro",
+        "body": "Twój okres próbny kończy się jutro. Przejdź na plan płatny teraz, aby nie stracić dostępu do funkcji."
+      },
+      "email7d": {
+        "subject": "Twój okres próbny Contractor Ops kończy się za 7 dni",
+        "body": "Twój okres próbny kończy się za 7 dni. Przejdź na plan płatny, aby zachować dane i pełny dostęp."
+      },
+      "email1d": {
+        "subject": "Twój okres próbny Contractor Ops kończy się jutro",
+        "body": "Twój okres próbny kończy się jutro. Przejdź na plan płatny teraz, aby nie stracić dostępu do funkcji."
+      },
+      "emailCta": "Przejdź do ustawień rozliczeń"
     }
   },
   "OcrReview": {
@@ -4844,7 +4897,9 @@
       "heading": "Gdzie zarzadzasz swoim zespolem?",
       "subtitle": "Wybierz narzedzia, z ktorych chcesz importowac. Mozesz polaczyc nowe narzedzia tutaj.",
       "skipLink": "Pomin -- zaprosze osoby recznie",
-      "connectError": "Nie udalo sie rozpoczac polaczenia. Sprobuj ponownie."
+      "connectError": "Nie udalo sie rozpoczac polaczenia. Sprobuj ponownie.",
+      "connectPermissionError": "Potrzebujesz uprawnien administratora organizacji, aby laczyc integracje.",
+      "popupBlocked": "Wyskakujace okno zablokowane. Zezwol na pop-upy i sprobuj ponownie."
     },
     "step2": {
       "heading": "Sprawdz czlonkow zespolu",
@@ -4874,7 +4929,9 @@
       "resolvedAll": "Wszystkie konflikty rozwiązane",
       "selectedCount": "{count} zaznaczonych",
       "statusNew": "Nowy",
-      "statusExists": "Istnieje"
+      "statusExists": "Istnieje",
+      "partialSourceErrorsTitle": "Nie udało się załadować niektórych źródeł",
+      "partialSourceErrorsBody": "Osoby z innych źródeł są wyświetlane poniżej. Możesz kontynuować przeglądanie lub wrócić, aby ponownie połączyć nieudane źródła."
     },
     "step3": {
       "heading": "Importuj projekty",
@@ -4885,6 +4942,8 @@
       "addStep": "Dodaj krok",
       "emptyHeading": "Nie znaleziono projektow",
       "emptyBody": "Nie znaleziono projektow w wybranych narzedziach PM. Mozesz pozniej recznie utworzyc szablony workflow.",
+      "partialSourceErrorsTitle": "Nie udało się wczytać niektórych źródeł projektów",
+      "partialSourceErrorsBody": "Projekty z innych źródeł są poniżej. Możesz kontynuować lub wrócić, aby ponownie połączyć nieudane źródła.",
       "stepFallback": "Krok {number}"
     },
     "step4": {
@@ -4893,12 +4952,18 @@
       "peopleCard": "Osoby do zaimportowania",
       "projectsCard": "Projekty do utworzenia",
       "startImport": "Rozpocznij import",
+      "starting": "Uruchamianie…",
+      "roleCount": "{count} × {role}",
+      "totalSteps": "{count, plural, one {# krok workflow} few {# kroki workflow} many {# kroków workflow} other {# kroków workflow}}",
       "progressLabel": "Importowanie {current} z {total}...",
       "completeHeading": "Import zakonczony",
       "completeBody": "Zaimportowano {imported} osob i {projects} projektow.",
+      "partialCompleteBody": "Zaimportowano {imported} osob i {projects} projektow. Czesc elementow nie powiodla sie — sprobuj ponownie ponizej lub przejdz do panelu.",
       "completeCta": "Przejdz do pulpitu",
       "retryButton": "Ponow",
-      "processing": "Przetwarzanie..."
+      "processing": "Przetwarzanie...",
+      "failedItemProject": "Projekt: {name}",
+      "nothingToImport": "Nic nie wybrano do importu. Wroc i wybierz osoby lub projekty."
     },
     "nav": {
       "back": "Wstecz",
@@ -5579,7 +5644,12 @@
       "label": "Peppol",
       "ariaLabel": "Status Peppol",
       "receiver": "Odbiorca",
-      "aspRef": "Identyfikator dostawcy"
+      "aspRef": "Identyfikator dostawcy",
+      "statusDelivered": "Dostarczono",
+      "statusTransmitted": "Wysłane",
+      "statusPending": "Oczekuje",
+      "statusFailed": "Nieudane",
+      "statusRejected": "Odrzucono"
     }
   },
   "Portal": {
@@ -6006,6 +6076,29 @@
     "exportSuccess": "Raport wyeksportowany ({count} wierszy)",
     "exportQueued": "Eksport został dodany do kolejki — link do pobrania wyślemy e-mailem.",
     "exportError": "Nie udało się wyeksportować raportu. Spróbuj ponownie.",
+    "columnToggle": "Przełącz kolumny",
+    "columns": {
+      "contractorName": "Kontrahent",
+      "invoiceCount": "Faktury",
+      "totalMinor": "Suma wydatków",
+      "avgMinor": "Średnia faktura",
+      "lastPaidAt": "Ostatnia płatność",
+      "teamName": "Zespół",
+      "contractorCount": "Kontrahenci",
+      "budgetPercent": "Budżet %",
+      "contractTitle": "Umowa",
+      "endDate": "Data zakończenia",
+      "daysRemaining": "Dni do końca",
+      "invoiceNumber": "Nr faktury",
+      "amountMinor": "Kwota",
+      "dueDate": "Termin płatności",
+      "daysOverdue": "Dni po terminie",
+      "status": "Status",
+      "missingDocuments": "Brakujące dokumenty",
+      "contractStatus": "Status umowy",
+      "overdueTasks": "Zaległe zadania",
+      "health": "Zdrowie"
+    },
     "contractor": "Kontrahent",
     "team": "Zespół",
     "invoices": "Faktury",
@@ -6549,7 +6642,10 @@
       },
       "googleWorkspace": {
         "descriptionDisconnected": "Importuj katalog zespołu z Google Workspace z mapowaniem ról.",
-        "descriptionConnected": "Google Workspace połączony. Synchronizacja katalogu codziennie o 2:00."
+        "descriptionConnected": "Google Workspace połączony. Synchronizacja katalogu codziennie o 2:00.",
+        "scopeExpansionWarning": "Wymagane ponowne logowanie — połącz ponownie Google Workspace, aby przywrócić dostęp do katalogu.",
+        "error": "Nie udało się załadować statusu integracji Google Workspace.",
+        "retry": "Ponów"
       },
       "entra": {
         "title": "Deprowizjonowanie Microsoft Entra ID",
@@ -6599,11 +6695,16 @@
       "teams": {
         "descriptionDisconnected": "Otrzymuj powiadomienia i zatwierdzaj faktury bezposrednio w Microsoft Teams.",
         "descriptionConnected": "Microsoft Teams polaczony. Powiadomienia dostarczane na skonfigurowane kanaly.",
+        "scopeExpansionWarning": "Wymagane ponowne logowanie — polacz ponownie Microsoft Teams, aby przywrocic powiadomienia.",
+        "error": "Nie udalo sie zaladowac statusu integracji Microsoft Teams.",
+        "retry": "Ponow",
         "channelMappingHeading": "Mapowanie kanalow",
         "channelMappingDescription": "Skonfiguruj, ktory kanal otrzymuje kazdy typ powiadomien.",
         "saveMapping": "Zapisz mapowanie",
         "refreshChannels": "Odswiez liste kanalow",
         "selectChannel": "Wybierz kanal",
+        "selectTeam": "Wybierz zespół",
+        "selectTeamFirst": "Wybierz zespół powyżej, aby skonfigurować mapowanie kanałów.",
         "noChannels": "Brak dostepnych kanalow. Upewnij sie, ze bot jest dodany do co najmniej jednego zespolu.",
         "channelFetchError": "Nie udalo sie zaladowac kanalow Teams. Sprawdz, czy bot jest zainstalowany w Twoim obszarze roboczym Teams i sprobuj ponownie.",
         "disconnectTitle": "Odlacz Microsoft Teams",
@@ -7199,6 +7300,11 @@
       "from": "Od",
       "to": "Do",
       "importEntries": "Importuj wpisy"
+    },
+    "sourceBadge": {
+      "manualEntry": "Wpis ręczny",
+      "importedFromOn": "Zaimportowano z {source} dnia {date}",
+      "unknownDate": "nieznana data"
     }
   },
   "TopBar": {
@@ -7671,6 +7777,7 @@
       "linkedIssues": "Powiązane zgłoszenia",
       "noLinkedJiraIssues": "Brak powiązanych zgłoszeń Jira dla tego przepływu.",
       "linearIssues": "Zgłoszenia Linear",
+      "noLinkedLinearIssues": "Brak powiązanych zgłoszeń Linear dla tego przepływu.",
       "tasksComplete": "{done} z {total} zadań ukończonych"
     },
     "templatePicker": {
@@ -7801,6 +7908,11 @@
     "reassignConfirm": "Przypisz zadanie",
     "blockedTooltip": "Oczekiwanie na: {title}",
     "conditionSkipped": "Pominiete (warunek niespełniony)",
+    "taskCompletedBy": "Ukończono przez {user} dnia {at}",
+    "taskCompletedByUnknown": "nieznany",
+    "taskSkippedReason": "Pominięto: {reason}",
+    "taskSkippedNoReason": "Nie podano powodu",
+    "taskCreatedAt": "Utworzono {at}",
     "overdue": "Przeterminowane",
     "assignedToLabel": "Przypisane do {name}",
     "dueLabel": "Termin {date}",

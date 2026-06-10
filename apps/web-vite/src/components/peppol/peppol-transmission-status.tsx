@@ -9,6 +9,7 @@ import {
 import { RefreshCw } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { useTranslations } from '../../i18n/useTranslations.js';
+import { usePeppolTransmissionStatus } from './hooks/use-peppol.js';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -179,4 +180,23 @@ export function PeppolTransmissionTimelineFailed({
       }
     />
   );
+}
+
+export function PeppolTransmissionStatus({ transmission }: PeppolTransmissionStatusProps) {
+  const tx = usePeppolTransmissionStatus({
+    transmissionId: transmission.id,
+    status: transmission.status,
+  });
+
+  if (tx.isFailed) {
+    return (
+      <PeppolTransmissionTimelineFailed
+        transmission={transmission}
+        onRetry={tx.onRetry}
+        isRetrying={tx.isRetrying}
+      />
+    );
+  }
+
+  return <PeppolTransmissionTimeline transmission={transmission} />;
 }

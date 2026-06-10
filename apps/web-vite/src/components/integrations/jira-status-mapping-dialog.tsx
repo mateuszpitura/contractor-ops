@@ -1,4 +1,3 @@
-import { DataTable } from '@contractor-ops/ui';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import {
   Dialog,
@@ -26,7 +25,9 @@ import {
 import type { ColumnDef } from '@tanstack/react-table';
 import { AlertTriangle, Loader2 } from 'lucide-react';
 import { memo, useCallback, useMemo, useState } from 'react';
-import type { useJiraStatusMappingDialog } from './hooks/use-jira-status-mapping-dialog.js';
+import { WorkbenchDataTable } from '../table-kit/workbench-data-table.js';
+import type { MappingEntry } from './hooks/use-jira-status-mapping-dialog.js';
+import { useJiraStatusMappingDialog } from './hooks/use-jira-status-mapping-dialog.js';
 import { WORKFLOW_STATUSES } from './status-mapping.constants.js';
 
 export type JiraStatusMappingDialogViewProps = ReturnType<typeof useJiraStatusMappingDialog>;
@@ -62,12 +63,12 @@ const WorkflowStatusCell = memo(function WorkflowStatusCell({
 });
 
 interface JiraStatusSelectCellProps {
-  workflowStatusValue: string;
+  workflowStatusValue: MappingEntry['workflowStatus'];
   mappedId: string | undefined;
   isStatusesLoading: boolean;
   jiraStatuses: JiraStatus[];
   notMappedLabel: string;
-  onStatusSelect: (workflowStatus: string, jiraStatusId: string) => void;
+  onStatusSelect: (workflowStatus: MappingEntry['workflowStatus'], jiraStatusId: string) => void;
 }
 
 const JiraStatusSelectCell = memo(function JiraStatusSelectCell({
@@ -208,7 +209,8 @@ export function JiraStatusMappingDialogView({
 
           {!!selectedProjectId && (
             <div className="max-h-[400px] overflow-auto">
-              <DataTable
+              <WorkbenchDataTable
+                sectionClassName=""
                 columns={columns}
                 data={WORKFLOW_STATUSES as unknown as WorkflowStatusRow[]}
                 totalRows={WORKFLOW_STATUSES.length}
@@ -247,4 +249,15 @@ export function JiraStatusMappingDialogView({
       </DialogContent>
     </Dialog>
   );
+}
+
+interface JiraStatusMappingDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  connectionId: string;
+}
+
+export function JiraStatusMappingDialog(props: JiraStatusMappingDialogProps) {
+  const viewProps = useJiraStatusMappingDialog(props);
+  return <JiraStatusMappingDialogView {...viewProps} />;
 }

@@ -1,6 +1,7 @@
-import { DataTable } from '@contractor-ops/ui';
 import type { ColumnDef } from '@tanstack/react-table';
 import { useMemo, useState } from 'react';
+
+import { WorkbenchDataTable } from '../../table-kit/workbench-data-table.js';
 
 const PROCESSOR_IDS = [
   'vercel',
@@ -76,7 +77,7 @@ export function SubProcessorsTable({ t }: SubProcessorsTableProps) {
   );
 
   return (
-    <DataTable
+    <WorkbenchDataTable
       columns={columns}
       data={rows}
       totalRows={rows.length}

@@ -1,6 +1,6 @@
 import { Suspense } from 'react';
 
-import { PortalInvoiceSubmitContainer } from '../../components/portal/portal-invoice-submit-container.js';
+import { PortalInvoiceSubmitContainer } from '../../components/portal/portal-invoice-submit.js';
 import { PageLoadingSpinner } from '../../components/shared/page-loading-spinner.js';
 
 export default function PortalInvoiceSubmitPage() {

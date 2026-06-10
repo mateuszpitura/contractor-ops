@@ -2,7 +2,7 @@
  * SVRL issue list.
  */
 
-import { DataTable } from '@contractor-ops/ui';
+import { WorkbenchDataTable } from '../../table-kit/workbench-data-table.js';
 import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
 import {
   Collapsible,
@@ -115,7 +115,8 @@ function LayerTable({
   );
 
   return (
-    <DataTable
+    <WorkbenchDataTable
+      sectionClassName=""
       columns={columns}
       data={issues}
       totalRows={issues.length}

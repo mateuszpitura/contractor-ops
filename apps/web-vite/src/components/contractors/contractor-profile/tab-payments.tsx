@@ -13,9 +13,13 @@ import { Link } from '../../../i18n/navigation.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { useDateFormatter } from '../../../lib/format/use-date-formatter.js';
 import { renderEmptyStateAction } from '../../shared/atelier-bridges.js';
-import type {
-  ContractorTabPaymentRow,
+import { Card, CardContent } from '@contractor-ops/ui/components/shadcn/card';
+
+import { DefaultSkontoSection } from '../billing-profile/default-skonto-section.js';
+import { useContractorBillingSkontoSection } from '../hooks/use-contractor-billing-skonto-section.js';
+import {
   useContractorTabPayments,
+  type ContractorTabPaymentRow,
 } from '../hooks/use-contractor-tab-payments.js';
 
 const itemStatusBadgeColors: Record<string, string> = {
@@ -172,3 +176,39 @@ export function TabPaymentsView({
     </div>
   );
 }
+
+type TabPaymentsContainerProps = {
+  contractorId: string;
+};
+
+export function TabPaymentsContainer({ contractorId }: TabPaymentsContainerProps) {
+  const payments = useContractorTabPayments(contractorId);
+  const billingSkonto = useContractorBillingSkontoSection(contractorId);
+
+  const { billingProfileId } = billingSkonto;
+  if (!billingProfileId) {
+    return (
+      <div className="space-y-4">
+        <TabPaymentsView {...payments} contractorId={contractorId} />
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      <Card>
+        <CardContent className="pt-6">
+          <DefaultSkontoSection
+            billingProfileId={billingProfileId}
+            featureEnabled={billingSkonto.featureEnabled}
+            existingDefault={billingSkonto.existingDefault}
+          />
+        </CardContent>
+      </Card>
+      <TabPaymentsView {...payments} contractorId={contractorId} />
+    </div>
+  );
+}
+
+/** @deprecated Use TabPayments */
+export { TabPaymentsContainer as TabPayments };

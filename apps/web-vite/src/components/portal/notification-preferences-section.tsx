@@ -13,7 +13,7 @@ import { useCallback, useState } from 'react';
 
 import type { LooseTranslator } from '../../i18n/typed-keys.js';
 import { useTranslations } from '../../i18n/useTranslations.js';
-import type { useNotificationPreferencesSection } from './hooks/use-notification-preferences-section.js';
+import { useNotificationPreferencesSection } from './hooks/use-notification-preferences-section.js';
 
 type NotificationCategory =
   | 'INVOICE_UPDATES'
@@ -209,4 +209,10 @@ export function NotificationPreferencesSection({
       </Collapsible>
     </Card>
   );
+}
+
+export function NotificationPreferencesSectionContainer() {
+  const prefs = useNotificationPreferencesSection();
+  if (prefs.isPending) return <NotificationPreferencesSkeleton />;
+  return <NotificationPreferencesSection prefs={prefs} />;
 }

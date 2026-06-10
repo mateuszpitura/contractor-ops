@@ -2,8 +2,8 @@
  * Approval-queue widget — top 5 pending approvals with SLA colour-coding.
  */
 
-import { minorToMajor, minorUnitDigits } from '@contractor-ops/shared';
 import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import {
   Card,
   CardAction,
@@ -16,26 +16,8 @@ import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { Link } from '../../i18n/navigation.js';
 import { tKey } from '../../i18n/typed-keys.js';
 import { useTranslations } from '../../i18n/useTranslations.js';
+import { formatMoneyAmount } from '../../lib/money.js';
 import { useApprovalQueueWidget } from './hooks/use-approval-queue-widget.js';
-
-const currencyFormatter = new Intl.NumberFormat('pl-PL', {
-  style: 'currency',
-  currency: 'PLN',
-  minimumFractionDigits: 0,
-  maximumFractionDigits: 2,
-});
-
-function formatAmount(minor: number, currency: string): string {
-  if (currency !== 'PLN') {
-    return new Intl.NumberFormat('pl-PL', {
-      style: 'currency',
-      currency,
-      minimumFractionDigits: 0,
-      maximumFractionDigits: minorUnitDigits(currency),
-    }).format(minorToMajor(minor, currency));
-  }
-  return currencyFormatter.format(minorToMajor(minor, 'PLN'));
-}
 
 function getSlaVariant(status: string): 'success' | 'warning' | 'destructive' | 'secondary' {
   switch (status) {
@@ -74,7 +56,7 @@ const SLA_LABEL_KEYS: Record<string, string> = {
 
 export function ApprovalQueueWidget() {
   const t = useTranslations('Dashboard');
-  const { isLoading, items } = useApprovalQueueWidget();
+  const { isLoading, isError, onRetry, items } = useApprovalQueueWidget();
 
   return (
     <Card>
@@ -92,6 +74,15 @@ export function ApprovalQueueWidget() {
             {Array.from({ length: 5 }).map((_, i) => (
               <Skeleton key={`skel-${i}`} className="h-10 w-full rounded-md" />
             ))}
+          </div>
+        ) : isError ? (
+          <div className="flex flex-col items-center justify-center gap-3 py-8 text-center">
+            <p className="text-sm font-medium">
+              {t('errors.widgetFailed', { name: t('approvals.title') })}
+            </p>
+            <Button variant="outline" size="sm" onClick={onRetry}>
+              {t('errors.retry')}
+            </Button>
           </div>
         ) : items.length === 0 ? (
           <p className="py-8 text-center text-sm text-muted-foreground">{t('approvals.empty')}</p>
@@ -115,7 +106,7 @@ export function ApprovalQueueWidget() {
                     className={`grid grid-cols-[minmax(0,1fr)_7rem_7rem] items-center gap-3 rounded-lg border-s-2 ${accent} ps-3 pe-2.5 py-2.5 transition-all duration-200 hover:bg-muted/40 hover:ps-3.5`}>
                     <span className="min-w-0 truncate text-sm font-medium">{contractorName}</span>
                     <span className="text-end font-display text-sm font-semibold tabular-nums text-foreground">
-                      {formatAmount(amount, currency)}
+                      {formatMoneyAmount(amount, currency, 'pl-PL')}
                     </span>
                     <div className="flex justify-end">
                       {item.slaStatus && (

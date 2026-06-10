@@ -29,7 +29,9 @@ import { toast } from 'sonner';
 import { z } from 'zod';
 
 import type { LooseTranslator } from '../../i18n/typed-keys.js';
+import { useRouter } from '../../i18n/navigation.js';
 import { useTranslations } from '../../i18n/useTranslations.js';
+import { formatMoneyAmount } from '../../lib/money.js';
 import { ConfidenceBadge } from '../ocr/confidence-badge.js';
 import { ExtractionStatusBar } from '../ocr/extraction-status-bar.js';
 import { NipValidationBadge } from '../ocr/nip-validation-badge.js';
@@ -38,6 +40,11 @@ import type {
   PortalActiveContractsQuery,
   PortalInvoiceSubmissionResult,
   PortalInvoiceUploadBundle,
+} from './hooks/use-portal-invoice-submit.js';
+import {
+  usePortalActiveContracts,
+  usePortalInvoiceFileUploadWithOcr,
+  usePortalInvoiceSubmission,
 } from './hooks/use-portal-invoice-submit.js';
 import type { UploadState } from './invoice-submit-upload.js';
 import { UploadSection } from './invoice-submit-upload.js';
@@ -73,15 +80,6 @@ function createInvoiceSubmitSchema(t: LooseTranslator) {
 }
 
 type InvoiceSubmitValues = z.infer<ReturnType<typeof createInvoiceSubmitSchema>>;
-
-function formatAmount(minor: number, currency: string): string {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency,
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 2,
-  }).format(minor / 100);
-}
 
 function getFieldValue(
   fields: Record<string, OcrExtractionField> | undefined,
@@ -152,15 +150,20 @@ function ReviewSummary({
         {!!netAmount && !!selectedContract && (
           <ReviewRow
             label={t('netAmount')}
-            value={formatAmount(Math.round(parseFloat(netAmount) * 100), selectedContract.currency)}
+            value={formatMoneyAmount(
+              Math.round(parseFloat(netAmount) * 100),
+              selectedContract.currency,
+              'en-US',
+            )}
           />
         )}
         {!!grossAmount && !!selectedContract && (
           <ReviewRow
             label={t('grossAmount')}
-            value={formatAmount(
+            value={formatMoneyAmount(
               Math.round(parseFloat(grossAmount) * 100),
               selectedContract.currency,
+              'en-US',
             )}
             bold
           />
@@ -761,5 +764,33 @@ export function InvoiceSubmitForm({
 
       <SubmitInvoiceButton disabled={!canSubmit} isPending={isSubmitting} t={t} />
     </form>
+  );
+}
+
+export function InvoiceSubmitFormContainer() {
+  const t = useTranslations('Portal.submitInvoice');
+  const router = useRouter();
+  const uploadBundle = usePortalInvoiceFileUploadWithOcr(t);
+  const contractsQuery = usePortalActiveContracts();
+  const submission = usePortalInvoiceSubmission(t, uploadBundle.upload, {
+    contractId: '',
+    invoiceNumber: '',
+    issueDate: '',
+    dueDate: '',
+    netAmount: '',
+    grossAmount: '',
+  });
+
+  const onNavigateBilling = useCallback(() => {
+    router.push('/settings?tab=billing');
+  }, [router]);
+
+  return (
+    <InvoiceSubmitForm
+      uploadBundle={uploadBundle}
+      contractsQuery={contractsQuery}
+      submission={submission}
+      onNavigateBilling={onNavigateBilling}
+    />
   );
 }

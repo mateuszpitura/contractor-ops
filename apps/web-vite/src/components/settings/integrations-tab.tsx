@@ -1,25 +1,26 @@
 import { KsefBrandIcon, SlackBrandIcon } from '../integrations/brand-icons';
-import { EntraProviderSection } from '../integrations/entra-provider-section-container.js';
-import { GitHubProviderSection } from '../integrations/github-provider-section-container.js';
-import { GoogleWorkspaceProviderSection } from '../integrations/google-workspace-provider-section-container.js';
+import { EntraProviderSection } from '../integrations/entra-provider-section.js';
+import { GitHubProviderSection } from '../integrations/github-provider-section.js';
+import { GoogleWorkspaceProviderSection } from '../integrations/google-workspace-provider-section.js';
 import { JiraLogo } from '../integrations/jira-logo.js';
-import { JiraProviderSection } from '../integrations/jira-provider-section-container.js';
-import { LinearProviderSection } from '../integrations/linear-provider-section-container.js';
-import { OktaProviderSection } from '../integrations/okta-provider-section-container.js';
+import { JiraProviderSection } from '../integrations/jira-provider-section.js';
+import { LinearProviderSection } from '../integrations/linear-provider-section.js';
+import { OktaProviderSection } from '../integrations/okta-provider-section.js';
 import { ConfluenceIcon, NotionIcon } from '../integrations/provider-icons.js';
-import { TeamsProviderSection } from '../integrations/teams-provider-section-container.js';
-import { PeppolStatusCardContainer } from '../peppol/peppol-status-card-container';
-import { ZatcaStatusCard } from '../zatca/zatca-status-card-container.js';
-import { DpdProviderSectionContainer } from './dpd-provider-section-container.js';
+import { TeamsProviderSection } from '../integrations/teams-provider-section.js';
+import { PeppolStatusCard } from '../peppol/peppol-status-card.js';
+import { ZatcaStatusCard } from '../zatca/zatca-status-card.js';
+import { DpdProviderSection } from './dpd-provider-section.js';
+import { useIntegrationsTab } from './hooks/use-integrations-tab.js';
 import type { IntegrationsTabProps } from './hooks/use-integrations-tab.js';
-import { IdpDeprovisioningToggleTableContainer } from './idp-deprovisioning-toggle-table-container.js';
-import { KsefProviderSectionContainer } from './ksef-provider-section-container.js';
-import { OrgCalendarSectionContainer } from './org-calendar-section-container.js';
-import { ProviderConnectionCardContainer } from './provider-connection-card-container.js';
-import { SlackOrgGridCardContainer } from './slack-org-grid-card-container.js';
-import { SlackSyncButtonContainer } from './slack-sync-button-container.js';
-import { SlackUserMappingContainer } from './slack-user-mapping-container.js';
-import { UpsProviderSectionContainer } from './ups-provider-section-container.js';
+import { IdpDeprovisioningToggleTable } from './idp-deprovisioning-toggle-table.js';
+import { KsefProviderSection } from './ksef-provider-section.js';
+import { OrgCalendarSection } from './org-calendar-section.js';
+import { ProviderConnectionCard } from './provider-connection-card.js';
+import { SlackOrgGridCard } from './slack-org-grid-card.js';
+import { SlackSyncButton } from './slack-sync-button.js';
+import { SlackUserMapping } from './slack-user-mapping.js';
+import { UpsProviderSection } from './ups-provider-section.js';
 
 // ---------------------------------------------------------------------------
 // Provider registry for UI (static for now, will be dynamic in future phases)
@@ -48,7 +49,12 @@ const PROVIDER_CONFIG = [
 
 export type { IntegrationsTabProps };
 
-export function IntegrationsTab({ t, isSlackConnected }: IntegrationsTabProps) {
+export function IntegrationsTab() {
+  const tab = useIntegrationsTab();
+  return <IntegrationsTabView {...tab} />;
+}
+
+export function IntegrationsTabView({ t, isSlackConnected }: IntegrationsTabProps) {
   // Non-KSeF/Jira providers (rendered separately for custom behavior)
   const standardProviders = PROVIDER_CONFIG.filter(
     c => c.provider !== 'ksef' && c.provider !== 'jira',
@@ -59,7 +65,7 @@ export function IntegrationsTab({ t, isSlackConnected }: IntegrationsTabProps) {
       {/* Provider cards grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
         {standardProviders.map(config => (
-          <ProviderConnectionCardContainer
+          <ProviderConnectionCard
             key={config.provider}
             provider={config.provider}
             displayName={config.displayName}
@@ -69,13 +75,13 @@ export function IntegrationsTab({ t, isSlackConnected }: IntegrationsTabProps) {
         ))}
 
         {/* KSeF has custom connect dialog + sync controls */}
-        <KsefProviderSectionContainer />
+        <KsefProviderSection />
 
         {/* ZATCA (Saudi Arabia) has onboarding wizard + status card */}
         <ZatcaStatusCard />
 
         {/* Peppol (UAE) has custom wizard + status card */}
-        <PeppolStatusCardContainer />
+        <PeppolStatusCard />
 
         {/* Jira has custom status mapping controls */}
         <JiraProviderSection />
@@ -87,19 +93,19 @@ export function IntegrationsTab({ t, isSlackConnected }: IntegrationsTabProps) {
         <GoogleWorkspaceProviderSection />
 
         {/* Phase 77 D-14 — Slack Org-Grid deprovisioning connection (second Slack card) */}
-        <SlackOrgGridCardContainer />
+        <SlackOrgGridCard />
 
         {/* Microsoft Teams integration with channel mapping */}
         <TeamsProviderSection />
 
         {/* DPD courier integration */}
-        <DpdProviderSectionContainer />
+        <DpdProviderSection />
 
         {/* UPS courier integration */}
-        <UpsProviderSectionContainer />
+        <UpsProviderSection />
 
         {/* Notion provider card */}
-        <ProviderConnectionCardContainer
+        <ProviderConnectionCard
           provider="notion"
           displayName="Notion"
           icon={<NotionIcon className="size-8" />}
@@ -107,7 +113,7 @@ export function IntegrationsTab({ t, isSlackConnected }: IntegrationsTabProps) {
         />
 
         {/* Confluence provider card */}
-        <ProviderConnectionCardContainer
+        <ProviderConnectionCard
           provider="confluence"
           displayName="Confluence"
           icon={<ConfluenceIcon className="size-8" />}
@@ -131,19 +137,19 @@ export function IntegrationsTab({ t, isSlackConnected }: IntegrationsTabProps) {
           <GitHubProviderSection />
         </div>
 
-        <IdpDeprovisioningToggleTableContainer />
+        <IdpDeprovisioningToggleTable />
       </section>
 
       {/* Organization shared calendar section */}
-      <OrgCalendarSectionContainer />
+      <OrgCalendarSection />
 
       {/* Slack-specific user mapping (preserved for backward compatibility) */}
       {isSlackConnected && (
         <div className="space-y-3">
           <div className="flex justify-end">
-            <SlackSyncButtonContainer />
+            <SlackSyncButton />
           </div>
-          <SlackUserMappingContainer />
+          <SlackUserMapping />
         </div>
       )}
     </div>

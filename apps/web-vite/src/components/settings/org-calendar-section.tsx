@@ -15,10 +15,13 @@ import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { Loader2, Unlink } from 'lucide-react';
 import { useCallback, useState } from 'react';
 import { useTranslations } from '../../i18n/useTranslations.js';
-import { FeatureGateContainer } from '../billing/feature-gate-container';
+import { FeatureGate } from '../layout/feature-gate';
 import { GoogleCalendarIcon, OutlookCalendarIcon } from '../integrations/provider-icons';
 import type { CalendarConnection } from './hooks/use-my-calendar-section.js';
-import type { useOrgCalendarSection } from './hooks/use-org-calendar-section.js';
+import {
+  useOrgCalendarProviderCard,
+  useOrgCalendarSection,
+} from './hooks/use-org-calendar-section.js';
 
 // ---------------------------------------------------------------------------
 // OrgCalendarProviderCard
@@ -143,6 +146,21 @@ export type OrgCalendarSectionProps = ReturnType<typeof useOrgCalendarSection> &
   onOutlookConnect: () => void;
 };
 
+export function OrgCalendarSection() {
+  const section = useOrgCalendarSection();
+  const google = useOrgCalendarProviderCard('google-calendar');
+  const outlook = useOrgCalendarProviderCard('outlook-calendar');
+
+  if (section.isLoading) return <OrgCalendarSectionSkeleton t={section.t} />;
+  return (
+    <OrgCalendarSectionView
+      {...section}
+      onGoogleConnect={google.handleConnect}
+      onOutlookConnect={outlook.handleConnect}
+    />
+  );
+}
+
 export function OrgCalendarSectionSkeleton({ t }: { t: OrgCalendarSectionProps['t'] }) {
   return (
     <div className="space-y-4">
@@ -177,7 +195,7 @@ export function OrgCalendarSectionSkeleton({ t }: { t: OrgCalendarSectionProps['
   );
 }
 
-export function OrgCalendarSection({
+export function OrgCalendarSectionView({
   t,
   googleConnection,
   outlookConnection,
@@ -187,7 +205,7 @@ export function OrgCalendarSection({
   onOutlookConnect,
 }: OrgCalendarSectionProps) {
   return (
-    <FeatureGateContainer requiredTier="Pro" featureName="Calendar integration">
+    <FeatureGate requiredTier="Pro" featureName="Calendar integration">
       <div className="space-y-4">
         <h3 className="text-sm font-semibold">{t('calendarSectionTitle')}</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -209,6 +227,6 @@ export function OrgCalendarSection({
           />
         </div>
       </div>
-    </FeatureGateContainer>
+    </FeatureGate>
   );
 }

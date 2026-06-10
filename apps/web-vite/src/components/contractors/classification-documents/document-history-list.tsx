@@ -6,12 +6,15 @@ import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { useCallback, useId, useState } from 'react';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { useDateFormatter } from '../../../lib/format/use-date-formatter.js';
-import type { useDocumentHistoryList } from '../hooks/use-classification-documents.js';
+import {
+  useDocumentHistoryList,
+  type useDocumentHistoryList as UseDocumentHistoryList,
+} from '../hooks/use-classification-documents.js';
 
 interface DocumentHistoryListViewProps {
   engagementId: string;
-  docs: ReturnType<typeof useDocumentHistoryList>['docs'];
-  downloadDocument: ReturnType<typeof useDocumentHistoryList>['downloadDocument'];
+  docs: ReturnType<typeof UseDocumentHistoryList>['docs'];
+  downloadDocument: ReturnType<typeof UseDocumentHistoryList>['downloadDocument'];
 }
 
 type DocumentKind = 'SDS' | 'DRV_DEFENSE_BUNDLE';
@@ -140,3 +143,25 @@ function DocumentRow({ doc, isOpening, onDownload }: DocumentRowProps) {
     </li>
   );
 }
+
+interface DocumentHistoryListContainerProps {
+  engagementId: string;
+}
+
+export function DocumentHistoryListContainer({ engagementId }: DocumentHistoryListContainerProps) {
+  const { listQuery, docs, downloadDocument } = useDocumentHistoryList(engagementId);
+
+  if (listQuery.isPending) return <DocumentHistoryListSkeleton />;
+  if (docs.length === 0) return <DocumentHistoryListEmpty />;
+
+  return (
+    <DocumentHistoryListView
+      engagementId={engagementId}
+      docs={docs}
+      downloadDocument={downloadDocument}
+    />
+  );
+}
+
+/** @deprecated Use DocumentHistoryList */
+export { DocumentHistoryListContainer as DocumentHistoryList };

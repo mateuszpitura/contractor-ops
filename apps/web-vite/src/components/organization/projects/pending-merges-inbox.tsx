@@ -10,10 +10,11 @@ import {
 } from '@contractor-ops/ui/components/shadcn/dialog';
 import { AlertTriangle } from 'lucide-react';
 import { useCallback } from 'react';
-import type { usePendingMergesInbox } from '../hooks/use-pending-merges-inbox.js';
+import { usePendingMergesInbox } from '../hooks/use-pending-merges-inbox.js';
+import type { usePendingMergesInbox as UsePendingMergesInbox } from '../hooks/use-pending-merges-inbox.js';
 import { SourceBadge } from '../shared/source-badge.js';
 
-type InboxHandle = ReturnType<typeof usePendingMergesInbox>;
+type InboxHandle = ReturnType<typeof UsePendingMergesInbox>;
 type InboxItem = InboxHandle['items'][number];
 type MergeCandidate = InboxHandle['candidates'][string];
 
@@ -58,7 +59,7 @@ function MergeCandidateOption({
   );
 }
 
-export function PendingMergesInbox({ inbox }: { inbox: ReturnType<typeof usePendingMergesInbox> }) {
+export function PendingMergesInbox({ inbox }: { inbox: ReturnType<typeof UsePendingMergesInbox> }) {
   const {
     items,
     candidates,
@@ -143,4 +144,10 @@ export function PendingMergesInbox({ inbox }: { inbox: ReturnType<typeof usePend
       </Dialog>
     </>
   );
+}
+
+export function PendingMergesInboxWired() {
+  const inbox = usePendingMergesInbox();
+  if (inbox.items.length === 0) return null;
+  return <PendingMergesInbox inbox={inbox} />;
 }

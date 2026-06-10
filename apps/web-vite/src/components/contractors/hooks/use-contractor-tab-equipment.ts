@@ -1,29 +1,16 @@
+import type { AppRouter } from '@contractor-ops/api';
 import { useQuery } from '@tanstack/react-query';
+import type { inferRouterOutputs } from '@trpc/server';
 
 import { useTRPC } from '../../../providers/trpc-provider.js';
 
-export type ContractorTabEquipmentItem = {
-  assignmentId: string;
-  assignedAt: string;
-  equipment: {
-    id: string;
-    name: string;
-    serialNumber: string | null;
-    type: string;
-    status: string;
-  };
-  latestShipment: {
-    id: string;
-    carrier: string;
-    currentStatus: string;
-    trackingNumber: string | null;
-  } | null;
-};
+export type ContractorTabEquipmentItem =
+  inferRouterOutputs<AppRouter>['equipment']['listByContractor'][number];
 
 export function useContractorTabEquipment(contractorId: string) {
   const trpc = useTRPC();
   const query = useQuery(trpc.equipment.listByContractor.queryOptions({ contractorId }));
-  const items = (query.data ?? []) as unknown as ContractorTabEquipmentItem[];
+  const items = query.data ?? [];
 
   return {
     items,

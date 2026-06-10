@@ -34,8 +34,10 @@ import { useCallback } from 'react';
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { useDateFormatter } from '../../lib/format/use-date-formatter.js';
 import type { DocumentCardProps } from './hooks/use-document-card.js';
+import { useDocumentCard } from './hooks/use-document-card.js';
 import { PdfPreviewContainer } from './pdf-preview.js';
-import { VersionHistory } from './version-history-container.js';
+import type { DocumentListItem } from './types.js';
+import { VersionHistory } from './version-history.js';
 
 type DocumentCardViewProps = {
   versionNumber?: number;
@@ -220,4 +222,24 @@ export function DocumentCardView({ versionNumber, cardActions }: DocumentCardVie
       </AlertDialog>
     </div>
   );
+}
+
+type DocumentCardContainerProps = {
+  document: DocumentListItem;
+  versionNumber?: number;
+  onUploadNewVersion?: (documentId: string) => void;
+};
+
+export function DocumentCardContainer({
+  document,
+  versionNumber,
+  onUploadNewVersion,
+}: DocumentCardContainerProps) {
+  const cardActions = useDocumentCard({ document, onUploadNewVersion });
+
+  return <DocumentCardView versionNumber={versionNumber} cardActions={cardActions} />;
+}
+
+export function DocumentCard(props: DocumentCardContainerProps) {
+  return <DocumentCardContainer {...props} />;
 }

@@ -22,7 +22,8 @@ import { Loader2, Trash2 } from 'lucide-react';
 import { useCallback, useState } from 'react';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
-import type { useDefaultSkonto } from '../hooks/use-default-skonto.js';
+import { useDefaultSkonto } from '../hooks/use-default-skonto.js';
+import type { useDefaultSkonto as UseDefaultSkonto } from '../hooks/use-default-skonto.js';
 
 export interface DefaultSkontoSectionProps {
   billingProfileId: string;
@@ -47,7 +48,7 @@ interface FormErrors {
 }
 
 type DefaultSkontoSectionViewProps = DefaultSkontoSectionProps &
-  ReturnType<typeof useDefaultSkonto>;
+  ReturnType<typeof UseDefaultSkonto>;
 
 export function DefaultSkontoSectionView({
   billingProfileId,
@@ -261,4 +262,10 @@ export function DefaultSkontoSectionView({
       </CollapsibleContent>
     </Collapsible>
   );
+}
+
+export function DefaultSkontoSection(props: DefaultSkontoSectionProps) {
+  const skonto = useDefaultSkonto(props.billingProfileId);
+  if (!props.featureEnabled) return null;
+  return <DefaultSkontoSectionView {...props} {...skonto} />;
 }

@@ -8,7 +8,8 @@ import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { formatDistanceToNow } from 'date-fns';
 import { ChevronDown, History } from 'lucide-react';
 import { tKey } from '../../i18n/typed-keys';
-import type { useKsefSyncHistory } from './hooks/use-ksef-sync-history.js';
+import { useKsefSyncHistory } from './hooks/use-ksef-sync-history.js';
+import type { useKsefSyncHistory as UseKsefSyncHistory } from './hooks/use-ksef-sync-history.js';
 
 const SYNC_STATUS_STYLES: Record<string, { className: string; labelKey: string }> = {
   SUCCESS: {
@@ -25,13 +26,9 @@ const SYNC_STATUS_STYLES: Record<string, { className: string; labelKey: string }
   },
 };
 
-interface KsefSyncHistoryBaseProps {
-  connectionId: string | undefined;
-}
+export type KsefSyncHistoryViewProps = ReturnType<typeof UseKsefSyncHistory>;
 
-export type KsefSyncHistoryProps = KsefSyncHistoryBaseProps & ReturnType<typeof useKsefSyncHistory>;
-
-export function KsefSyncHistory({ t, isOpen, setIsOpen, logs, isLoading }: KsefSyncHistoryProps) {
+export function KsefSyncHistoryView({ t, isOpen, setIsOpen, logs, isLoading }: KsefSyncHistoryViewProps) {
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
       <CollapsibleTrigger className="flex w-full items-center gap-2 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
@@ -98,4 +95,13 @@ export function KsefSyncHistory({ t, isOpen, setIsOpen, logs, isLoading }: KsefS
       </CollapsibleContent>
     </Collapsible>
   );
+}
+
+interface KsefSyncHistoryProps {
+  connectionId: string | undefined;
+}
+
+export function KsefSyncHistory({ connectionId }: KsefSyncHistoryProps) {
+  const history = useKsefSyncHistory(connectionId);
+  return <KsefSyncHistoryView {...history} />;
 }

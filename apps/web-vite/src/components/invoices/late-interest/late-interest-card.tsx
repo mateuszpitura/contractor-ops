@@ -1,21 +1,12 @@
-// @ts-nocheck
 /**
  * Late-interest summary card.
  *
- * KNOWN DRIFT (pre-existing, not introduced by test migration):
- * `latePaymentInterest.getForInvoice` returns `{ invoiceTotalMinor,
- * rateHistory, payments, waivers, compensationTierMinor, paidAt, … }`.
- * This component reads `data.claims`, `data.daysOverdue`,
- * `data.claimStatus`, `data.waiverStatus`, `data.rateUsed`,
- * `data.accruedInterestMinor`, `data.dailyInterestMinor`,
- * `data.principalOutstandingMinor` — none of which exist on the current
- * API contract. Legacy `apps/web` carries the same code; this is
- * upstream component/router drift not covered by any phase plan.
- *
- * `@ts-nocheck` keeps workspace typecheck green so the legacy delete
- * (Step 18) can proceed. Owner: payments team — needs to either extend
- * the router output OR rewrite the component to compute the fields from
- * the response.
+ * Data source: `latePaymentInterest.getForInvoice`. That procedure spreads
+ * the `LateInterestResult` from `calculateLateInterest` (daysOverdue,
+ * principalOutstandingMinor, rateUsed, dailyInterestMinor,
+ * accruedInterestMinor, compensationTierMinor, totalClaimMinor) and adds
+ * `waiverStatus`, `claimStatus`, `waivers`, and `claims`. The wrapper below
+ * narrows the discriminated union to the applicable branch before rendering.
  */
 
 import { formatMinorAsCurrency } from '@contractor-ops/shared';
@@ -30,25 +21,39 @@ import { Separator } from '@contractor-ops/ui/components/shadcn/separator';
 import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { Download, Loader2 } from 'lucide-react';
 import type { ReactNode } from 'react';
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
-import type { useLateInterestCard } from '../hooks/use-late-interest-card.js';
-import type { useLateInterestClaimDialog } from '../hooks/use-late-interest-claim-dialog.js';
-import type { useLateInterestRevokeWaiverDialog } from '../hooks/use-late-interest-revoke-waiver-dialog.js';
-import type { useLateInterestWaiveDialog } from '../hooks/use-late-interest-waive-dialog.js';
+import { useLateInterestCard } from '../hooks/use-late-interest-card.js';
+import { useLateInterestClaimDialog } from '../hooks/use-late-interest-claim-dialog.js';
+import { useLateInterestRevokeWaiverDialog } from '../hooks/use-late-interest-revoke-waiver-dialog.js';
+import { useLateInterestWaiveDialog } from '../hooks/use-late-interest-waive-dialog.js';
+import type { useLateInterestCard as UseLateInterestCard } from '../hooks/use-late-interest-card.js';
+import type { useLateInterestClaimDialog as UseLateInterestClaimDialog } from '../hooks/use-late-interest-claim-dialog.js';
+import type { useLateInterestRevokeWaiverDialog as UseLateInterestRevokeWaiverDialog } from '../hooks/use-late-interest-revoke-waiver-dialog.js';
+import type { useLateInterestWaiveDialog as UseLateInterestWaiveDialog } from '../hooks/use-late-interest-waive-dialog.js';
 import { ClaimDialog } from './claim-dialog.js';
 import { LateInterestStatusPill } from './late-interest-status-pill.js';
 import { RateCalculationTooltip } from './rate-calculation-tooltip.js';
 import { RevokeWaiverDialog } from './revoke-waiver-dialog.js';
 import { WaiveDialog } from './waive-dialog.js';
 
-type LateInterestData = NonNullable<ReturnType<typeof useLateInterestCard>['data']>;
+type LateInterestResponse = NonNullable<ReturnType<typeof UseLateInterestCard>['data']>;
 
-interface LateInterestCardProps {
+/**
+ * `getForInvoice` is a discriminated union: scope-gate misses return
+ * `{ applicable: false, reason }`, while the eligible branch spreads the full
+ * `LateInterestResult` plus `waiverStatus`, `claimStatus`, `waivers`, `claims`.
+ * The wrapper short-circuits the inapplicable branch before rendering, so the
+ * view only ever receives the eligible shape. `applicable` is typed `boolean`
+ * on the result, so we discriminate on `waiverStatus`, which is unique to it.
+ */
+type LateInterestData = Extract<LateInterestResponse, { waiverStatus: unknown }>;
+
+export interface LateInterestCardViewProps {
   invoiceId: string;
   data: LateInterestData;
-  onDownloadClaim: ReturnType<typeof useLateInterestCard>['onDownloadClaim'];
+  onDownloadClaim: ReturnType<typeof UseLateInterestCard>['onDownloadClaim'];
   isDownloadClaimPending: boolean;
   claimDialogOpen: boolean;
   onClaimDialogOpenChange: (open: boolean) => void;
@@ -56,9 +61,9 @@ interface LateInterestCardProps {
   onWaiveDialogOpenChange: (open: boolean) => void;
   revokeDialogOpen: boolean;
   onRevokeDialogOpenChange: (open: boolean) => void;
-  claimDialog: ReturnType<typeof useLateInterestClaimDialog>;
-  waiveDialog: ReturnType<typeof useLateInterestWaiveDialog>;
-  revokeDialog: ReturnType<typeof useLateInterestRevokeWaiverDialog>;
+  claimDialog: ReturnType<typeof UseLateInterestClaimDialog>;
+  waiveDialog: ReturnType<typeof UseLateInterestWaiveDialog>;
+  revokeDialog: ReturnType<typeof UseLateInterestRevokeWaiverDialog>;
 }
 
 function formatGBP(minorAmount: number, locale: string = 'en-GB'): string {
@@ -89,7 +94,7 @@ export function LateInterestB2cNotApplicable() {
   return <p className="text-sm text-muted-foreground">{t('b2cNotApplicable')}</p>;
 }
 
-export function LateInterestCard({
+export function LateInterestCardView({
   data,
   onDownloadClaim,
   isDownloadClaimPending,
@@ -102,7 +107,7 @@ export function LateInterestCard({
   claimDialog,
   waiveDialog,
   revokeDialog,
-}: LateInterestCardProps) {
+}: LateInterestCardViewProps) {
   const t = useTranslations('Payments.lateInterest');
 
   const latestClaim = data.claims[0] ?? null;
@@ -339,5 +344,55 @@ function DetailRow({ label, value, tooltip }: DetailRowProps) {
       </span>
       <span className="tabular-nums font-medium">{value}</span>
     </div>
+  );
+}
+
+interface LateInterestCardProps {
+  invoiceId: string;
+  featureEnabled: boolean;
+  contractorCountryCode: string;
+  isBusinessCustomer: boolean;
+  currency: string;
+}
+
+export function LateInterestCard(props: LateInterestCardProps) {
+  const card = useLateInterestCard(
+    props.invoiceId,
+    props.featureEnabled,
+    props.contractorCountryCode,
+    props.isBusinessCustomer,
+    props.currency,
+  );
+
+  const [claimDialogOpen, setClaimDialogOpen] = useState(false);
+  const [waiveDialogOpen, setWaiveDialogOpen] = useState(false);
+  const [revokeDialogOpen, setRevokeDialogOpen] = useState(false);
+
+  const claim = useLateInterestClaimDialog(props.invoiceId, setClaimDialogOpen);
+  const waive = useLateInterestWaiveDialog(props.invoiceId, setWaiveDialogOpen);
+  const revoke = useLateInterestRevokeWaiverDialog(props.invoiceId, setRevokeDialogOpen);
+
+  if (!card.isApplicable) return null;
+  if (!props.isBusinessCustomer) return <LateInterestB2cNotApplicable />;
+  if (card.isLoading) return <LateInterestSkeleton />;
+  if (card.isError) return null;
+  if (!card.data?.applicable) return null;
+
+  return (
+    <LateInterestCardView
+      invoiceId={props.invoiceId}
+      data={card.data}
+      onDownloadClaim={card.onDownloadClaim}
+      isDownloadClaimPending={card.isDownloadClaimPending}
+      claimDialogOpen={claimDialogOpen}
+      onClaimDialogOpenChange={setClaimDialogOpen}
+      waiveDialogOpen={waiveDialogOpen}
+      onWaiveDialogOpenChange={setWaiveDialogOpen}
+      revokeDialogOpen={revokeDialogOpen}
+      onRevokeDialogOpenChange={setRevokeDialogOpen}
+      claimDialog={claim}
+      waiveDialog={waive}
+      revokeDialog={revoke}
+    />
   );
 }

@@ -4,7 +4,7 @@ import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { formatDistanceToNow } from 'date-fns';
 import { Loader2 } from 'lucide-react';
 
-import type { useSyncStatusSection } from './hooks/use-sync-status-section.js';
+import { useSyncStatusSection } from './hooks/use-sync-status-section.js';
 
 export type SyncStatusSectionViewProps = Pick<
   ReturnType<typeof useSyncStatusSection>,
@@ -66,5 +66,35 @@ export function SyncStatusSectionView({
         </div>
       </CardContent>
     </Card>
+  );
+}
+
+interface SyncStatusSectionProps {
+  onImportClick: () => void;
+}
+
+export function SyncStatusSection({ onImportClick }: SyncStatusSectionProps) {
+  const { syncStatusQuery, syncStatus, isError, onRetry, triggerSyncMutation, handleTriggerSync, t } =
+    useSyncStatusSection();
+  if (syncStatusQuery.isLoading) return <SyncStatusSectionSkeleton />;
+  if (isError) {
+    return (
+      <div className="space-y-2 rounded-lg border border-destructive/40 p-4" role="alert">
+        <p className="text-sm text-destructive">{t('syncError')}</p>
+        <button type="button" className="text-sm underline" onClick={onRetry}>
+          {t('syncNow')}
+        </button>
+      </div>
+    );
+  }
+  if (!syncStatus?.connected) return null;
+  return (
+    <SyncStatusSectionView
+      onImportClick={onImportClick}
+      syncStatus={syncStatus}
+      triggerSyncMutation={triggerSyncMutation}
+      handleTriggerSync={handleTriggerSync}
+      t={t}
+    />
   );
 }

@@ -5,9 +5,9 @@
  * when its signoff flag is APPROVED; GWS and Slack toggle independently.
  */
 
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { useCallback } from 'react';
-import { toast } from 'sonner';
+import { useResourceMutation } from '../../../hooks/use-resource-mutation.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { useTRPC } from '../../../providers/trpc-provider.js';
 
@@ -28,21 +28,14 @@ export interface ProviderToggleRow {
 export function useIdpDeprovisioningToggles() {
   const trpc = useTRPC();
   const t = useTranslations('Idp.toggleTable');
-  const queryClient = useQueryClient();
 
   const stateQuery = useQuery(trpc.deprovisioning.getProviderToggleState.queryOptions());
 
-  const mutation = useMutation(
-    trpc.deprovisioning.enableProviderForOrg.mutationOptions({
-      onSuccess: () => {
-        toast.success(t('toggleSuccess'));
-        queryClient.invalidateQueries({
-          queryKey: trpc.deprovisioning.getProviderToggleState.queryKey(),
-        });
-      },
-      onError: err => toast.error(err.message || t('toggleFailure')),
-    }),
-  );
+  const mutation = useResourceMutation(trpc.deprovisioning.enableProviderForOrg.mutationOptions(), {
+    invalidate: [trpc.deprovisioning.getProviderToggleState.queryKey()],
+    successMessage: t('toggleSuccess'),
+    errorMessage: t('toggleFailure'),
+  });
 
   const rows: ProviderToggleRow[] = (stateQuery.data?.providers ?? []).map(p => ({
     provider: p.provider,

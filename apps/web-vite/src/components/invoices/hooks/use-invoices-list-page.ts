@@ -23,7 +23,7 @@ function useInvoiceEmail(): string {
 /**
  * Page-level orchestration for the invoices list screen — composes the list
  * data hook with side-panel selection, upload toggle, email copy UX, and the
- * `?action=upload` deep-link effect so `invoices-list-container.tsx` stays JSX-only.
+ * `?action=upload` deep-link effect so `pages/dashboard/invoices.tsx` stays JSX-only.
  */
 export function useInvoicesListPage() {
   const router = useRouter();

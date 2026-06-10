@@ -10,7 +10,7 @@ import type { LooseTranslator } from '../../../i18n/typed-keys.js';
 import { tDynLoose } from '../../../i18n/typed-keys.js';
 import { getAvatarInitials } from '../../../lib/avatar-initials.js';
 import { enumKey } from '../../../lib/enum-key.js';
-import { formatAmount } from '../../../lib/format-currency.js';
+import { formatAmount } from '../../../lib/money.js';
 import { ComplianceHealthBadge } from '../compliance-health-badge.js';
 
 // ---------------------------------------------------------------------------

@@ -15,9 +15,12 @@ import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { Loader2, Unlink } from 'lucide-react';
 import { useCallback, useState } from 'react';
 import { useTranslations } from '../../i18n/useTranslations.js';
-import { FeatureGateContainer } from '../billing/feature-gate-container';
+import { FeatureGate } from '../layout/feature-gate';
 import { GoogleCalendarIcon, OutlookCalendarIcon } from '../integrations/provider-icons';
-import type { CalendarConnection, useMyCalendarSection } from './hooks/use-my-calendar-section.js';
+import {
+  useMyCalendarSection,
+} from './hooks/use-my-calendar-section.js';
+import type { CalendarConnection } from './hooks/use-my-calendar-section.js';
 
 // ---------------------------------------------------------------------------
 // CalendarProviderCard
@@ -140,6 +143,12 @@ function CalendarProviderCard({
 
 export type MyCalendarSectionProps = ReturnType<typeof useMyCalendarSection>;
 
+export function MyCalendarSection() {
+  const section = useMyCalendarSection();
+  if (section.isLoading) return <MyCalendarSectionSkeleton />;
+  return <MyCalendarSectionView {...section} />;
+}
+
 export function MyCalendarSectionSkeleton() {
   return (
     <div className="space-y-4">
@@ -171,7 +180,7 @@ export function MyCalendarSectionSkeleton() {
   );
 }
 
-export function MyCalendarSection({
+export function MyCalendarSectionView({
   t,
   eventCount,
   googleConnection,
@@ -182,7 +191,7 @@ export function MyCalendarSection({
   isDisconnecting,
 }: MyCalendarSectionProps) {
   return (
-    <FeatureGateContainer requiredTier="Pro" featureName="Calendar integration">
+    <FeatureGate requiredTier="Pro" featureName="Calendar integration">
       <div className="space-y-6">
         {/* Calendar provider cards */}
         <div className="space-y-4">
@@ -213,6 +222,6 @@ export function MyCalendarSection({
           <p className="text-xs text-muted-foreground">{t('syncedEventsHelper')}</p>
         </div>
       </div>
-    </FeatureGateContainer>
+    </FeatureGate>
   );
 }

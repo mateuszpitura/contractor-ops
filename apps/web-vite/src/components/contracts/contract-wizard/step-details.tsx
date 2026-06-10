@@ -24,6 +24,7 @@ import {
   SelectValue,
 } from '@contractor-ops/ui/components/shadcn/select';
 import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
+import { contractTypeEnum } from '@contractor-ops/validators';
 import { format } from 'date-fns';
 import { CalendarIcon } from 'lucide-react';
 import { useCallback, useId, useState } from 'react';
@@ -36,15 +37,6 @@ import { enumKey } from '../../../lib/enum-key.js';
 import { canViewSensitivePii, maskTaxId } from '../../../lib/mask-pii.js';
 import type { ContractorListItem } from '../hooks/use-contract-wizard-step-details.js';
 import type { ContractWizardFormValues } from './wizard-dialog.js';
-
-const CONTRACT_TYPES = [
-  'B2B_MASTER_SERVICE',
-  'STATEMENT_OF_WORK',
-  'NDA',
-  'IP_ASSIGNMENT',
-  'DPA',
-  'OTHER',
-] as const;
 
 function ContractorTaxLabel({ taxId, showPii }: { taxId: string | null; showPii: boolean }) {
   if (!taxId) return null;
@@ -212,7 +204,7 @@ export function StepDetails({
   const endDate = watch('endDate');
   const autoRenewal = watch('autoRenewal');
 
-  const contractTypeItems = CONTRACT_TYPES.map(type => ({
+  const contractTypeItems = contractTypeEnum.options.map(type => ({
     value: type,
     label: tDynLoose(t, 'typeOptions', enumKey(type)),
   }));

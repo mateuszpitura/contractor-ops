@@ -16,7 +16,7 @@ import type { LooseTranslator } from '../../i18n/typed-keys.js';
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { PORTAL_NAV_ITEMS } from '../../lib/portal-navigation.js';
 import { cn } from '../../lib/utils.js';
-import type { usePortalMobileMenu } from './hooks/use-portal-top-bar.js';
+import { usePortalMobileMenu } from './hooks/use-portal-top-bar.js';
 import { OrgSwitcherList } from './org-switcher-list.js';
 
 function getNavItems(t: LooseTranslator) {
@@ -165,4 +165,18 @@ export function PortalMobileMenu({
       </SheetContent>
     </Sheet>
   );
+}
+
+interface PortalMobileMenuContainerProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  orgName: string;
+  orgLogo: string | null;
+  contractorName: string;
+  contractorEmail: string;
+}
+
+export function PortalMobileMenuContainer(props: PortalMobileMenuContainerProps) {
+  const menu = usePortalMobileMenu(props.onOpenChange);
+  return <PortalMobileMenu {...props} menu={menu} />;
 }

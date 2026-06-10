@@ -16,8 +16,9 @@ import { useCallback } from 'react';
 
 import { useTranslations } from '../../i18n/useTranslations.js';
 import type { TaxRateOption } from './hooks/use-vat-rates.js';
+import { useVatRates } from './hooks/use-vat-rates.js';
 
-interface VatRateSelectorProps {
+interface VatRateSelectorViewProps {
   value?: string;
   onChange: (code: string) => void;
   disabled?: boolean;
@@ -43,7 +44,7 @@ export function VatRateSelectorEmpty() {
   );
 }
 
-export function VatRateSelector({ value, onChange, disabled, rates }: VatRateSelectorProps) {
+export function VatRateSelectorView({ value, onChange, disabled, rates }: VatRateSelectorViewProps) {
   const t = useTranslations('Invoices.vatRate');
 
   const defaultRates = rates.filter(
@@ -110,4 +111,19 @@ export function VatRateSelector({ value, onChange, disabled, rates }: VatRateSel
       </SelectContent>
     </Select>
   );
+}
+
+interface VatRateSelectorProps {
+  value?: string;
+  onChange: (code: string) => void;
+  disabled?: boolean;
+}
+
+export function VatRateSelector(props: VatRateSelectorProps) {
+  const { isLoading, rates } = useVatRates();
+
+  if (isLoading) return <VatRateSelectorSkeleton />;
+  if (rates.length === 0) return <VatRateSelectorEmpty />;
+
+  return <VatRateSelectorView {...props} rates={rates} />;
 }

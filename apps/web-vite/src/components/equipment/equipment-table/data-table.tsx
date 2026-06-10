@@ -1,11 +1,12 @@
-import { DataTable, EquipmentIllustration } from '@contractor-ops/ui';
-import type { ColumnDef, SortingState } from '@tanstack/react-table';
+import { EquipmentIllustration } from '@contractor-ops/ui';
+import { WorkbenchDataTable } from '../../table-kit/workbench-data-table.js';
+import type { ColumnDef } from '@tanstack/react-table';
 import { Plus } from 'lucide-react';
 import { useCallback, useMemo } from 'react';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
-import type { EquipmentBulkActionsHandlers } from '../hooks/use-equipment-bulk-actions.js';
-import type { useEquipmentTable } from '../hooks/use-equipment-table.js';
+import { useEquipmentBulkActions } from '../hooks/use-equipment-bulk-actions.js';
+import { useEquipmentTable } from '../hooks/use-equipment-table.js';
 import { DataTableBulkActions } from './data-table-bulk-actions.js';
 import type { EquipmentRow } from './equipment-columns.js';
 import { getEquipmentColumns } from './equipment-columns.js';
@@ -18,7 +19,8 @@ type EquipmentTableViewProps = {
   onCreateShipment: (equipment: EquipmentRow) => void;
   onRetire: (equipment: EquipmentRow) => void;
   onAddEquipment: () => void;
-  bulkActions: EquipmentBulkActionsHandlers;
+  bulkActions: ReturnType<typeof useEquipmentBulkActions>;
+  sectionClassName?: string;
 } & ReturnType<typeof useEquipmentTable>;
 
 /**
@@ -42,13 +44,12 @@ export function EquipmentTableView({
   statusFilter,
   page,
   pageSize,
-  sortBy,
-  sortOrder,
   onSearchChange,
   onFiltersChange,
   onPageChange,
   onPageSizeChange,
-  onSortChange,
+  sorting,
+  handleSortingChange,
   onClearFilters,
   isLoading,
   isRefetching,
@@ -57,6 +58,7 @@ export function EquipmentTableView({
   rowSelection,
   setRowSelection,
   bulkActions,
+  sectionClassName,
 }: EquipmentTableViewProps) {
   const t = useTranslations('Equipment');
   const tCommon = useTranslations('Common');
@@ -73,24 +75,6 @@ export function EquipmentTableView({
     [t, tCommon, onEdit, onAssign, onUnassign, onCreateShipment, onRetire],
   );
 
-  const sorting = useMemo<SortingState>(
-    () => [{ id: sortBy, desc: sortOrder === 'desc' }],
-    [sortBy, sortOrder],
-  );
-
-  const handleSortingChange = useCallback(
-    (updater: SortingState | ((old: SortingState) => SortingState)) => {
-      const next = typeof updater === 'function' ? updater(sorting) : updater;
-      const first = next[0];
-      if (first) {
-        onSortChange(first.id, first.desc ? 'desc' : 'asc');
-      } else {
-        onSortChange('createdAt', 'desc');
-      }
-    },
-    [sorting, onSortChange],
-  );
-
   const handlePageChange = useCallback(
     (pageIndex: number) => onPageChange(pageIndex + 1),
     [onPageChange],
@@ -104,7 +88,8 @@ export function EquipmentTableView({
   }, [rowSelection, data]);
 
   return (
-    <DataTable
+    <WorkbenchDataTable
+      sectionClassName={sectionClassName}
       columns={columns}
       data={data}
       totalRows={totalRows}
@@ -155,6 +140,30 @@ export function EquipmentTableView({
       noResultsTitle={t('noResults.heading')}
       noResultsDescription={t('noResults.body')}
       noResultsCta={t('noResults.cta')}
+    />
+  );
+}
+
+interface EquipmentDataTableProps {
+  onEdit: (equipment: EquipmentRow) => void;
+  onAssign: (equipment: EquipmentRow) => void;
+  onUnassign: (equipment: EquipmentRow) => void;
+  onCreateShipment: (equipment: EquipmentRow) => void;
+  onRetire: (equipment: EquipmentRow) => void;
+  onAddEquipment: () => void;
+  parentLoading?: boolean;
+  sectionClassName?: string;
+}
+
+export function EquipmentDataTable(props: EquipmentDataTableProps) {
+  const tableState = useEquipmentTable(props.parentLoading);
+  const bulkActions = useEquipmentBulkActions();
+  return (
+    <EquipmentTableView
+      {...props}
+      {...tableState}
+      bulkActions={bulkActions}
+      sectionClassName={props.sectionClassName}
     />
   );
 }

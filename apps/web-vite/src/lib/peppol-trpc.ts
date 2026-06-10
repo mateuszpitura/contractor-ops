@@ -22,7 +22,10 @@ export interface PeppolTransmissionResult {
 
 interface PeppolTrpcProxy {
   getTransmissionByInvoiceId: {
-    queryOptions: (input: { invoiceId: string }) => { queryKey: unknown[] };
+    queryOptions: (
+      input: { invoiceId: string },
+      options?: { refetchInterval?: number },
+    ) => { queryKey: unknown[]; queryFn: () => Promise<PeppolTransmissionResult | null> };
     queryKey: () => unknown[];
   };
 }

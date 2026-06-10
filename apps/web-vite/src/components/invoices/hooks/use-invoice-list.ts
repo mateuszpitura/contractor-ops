@@ -1,7 +1,9 @@
+import type { SortingState } from '@tanstack/react-table';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { useCallback, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
+import { useListDataTable } from '../../../hooks/use-list-data-table.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { useTRPC } from '../../../providers/trpc-provider.js';
 import type { InvoiceRow } from '../invoice-table/columns.js';
@@ -10,6 +12,8 @@ import { parseFilterParam } from '../invoice-table/compliance-filter-param.js';
 import { useInvoiceFilters } from '../invoice-table/use-invoice-filters.js';
 import type { InvoiceBulkActionsHandlers } from './use-invoice-bulk-actions.js';
 import { useInvoiceBulkActions } from './use-invoice-bulk-actions.js';
+
+const STORAGE_KEY = 'invoice-table-columns';
 
 export interface InvoiceListFilterState {
   status: string[];
@@ -39,6 +43,10 @@ export interface InvoiceListTableProps {
   activeFilterCount: number;
   hasFiltersOrSearch: boolean;
   bulkActions: InvoiceBulkActionsHandlers;
+  sorting: SortingState;
+  onSortingChange: (updater: SortingState | ((old: SortingState) => SortingState)) => void;
+  selectedRows: InvoiceRow[];
+  setSelectedRows: (rows: InvoiceRow[]) => void;
 }
 
 export interface InvoiceListToolbarProps {
@@ -183,6 +191,21 @@ export function useInvoiceList(options: { onUpload: () => void }) {
     [setFilters],
   );
 
+  const {
+    selectedRows,
+    setSelectedRows,
+    sorting,
+    handleSortingChange,
+  } = useListDataTable<InvoiceRow>({
+    storageKey: STORAGE_KEY,
+    filters: {
+      sortBy: filters.sortBy,
+      sortOrder: (filters.sortOrder as 'asc' | 'desc') || 'desc',
+    },
+    onSortChange: handleSortChange,
+    defaultSortBy: 'receivedAt',
+  });
+
   const clearFilters = useCallback(() => {
     void setFilters({
       search: '',
@@ -235,6 +258,10 @@ export function useInvoiceList(options: { onUpload: () => void }) {
     activeFilterCount,
     hasFiltersOrSearch,
     bulkActions,
+    sorting,
+    onSortingChange: handleSortingChange,
+    selectedRows,
+    setSelectedRows,
   };
 
   return {

@@ -1,7 +1,7 @@
-import type { MergedPerson } from '@contractor-ops/validators';
+import type { FetchPeopleSourceError, MergedPerson } from '@contractor-ops/validators';
 import type { InvitableMemberRole } from '@contractor-ops/validators/roles';
 import { useQuery } from '@tanstack/react-query';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 
 import { useTRPC } from '../../../providers/trpc-provider.js';
 import type { PersonSelection } from '../import-wizard.js';
@@ -12,6 +12,14 @@ export interface UseOnboardingPeopleParams {
   onMergedPeopleChange: (people: MergedPerson[]) => void;
   personSelections: Map<string, PersonSelection>;
   onPersonSelectionsChange: (selections: Map<string, PersonSelection>) => void;
+  onStepReadinessChange?: (readiness: PeopleStepReadiness) => void;
+}
+
+export interface PeopleStepReadiness {
+  isLoading: boolean;
+  isError: boolean;
+  allSourcesFailed: boolean;
+  canContinue: boolean;
 }
 
 export interface PeopleCounts {
@@ -25,6 +33,9 @@ export interface UseOnboardingPeopleResult {
   isLoading: boolean;
   isError: boolean;
   isEmpty: boolean;
+  allSourcesFailed: boolean;
+  canContinueStep: boolean;
+  sourceErrors: FetchPeopleSourceError[];
   handleRefetch: () => void;
   filteredPeople: MergedPerson[];
   counts: PeopleCounts;
@@ -43,10 +54,27 @@ export interface UseOnboardingPeopleResult {
   handleBatchRole: (role: InvitableMemberRole) => void;
 }
 
-/**
- * Compute people counts grouped by status. Pure helper so consumers can
- * memoize without re-importing react.
- */
+/** Pure helper for people-review empty / all-failed routing (tested). */
+export function derivePeopleReviewQueryState(input: {
+  isLoading: boolean;
+  isError: boolean;
+  peopleCount: number;
+  sourceErrorsCount: number;
+  selectedSourcesCount: number;
+}): Pick<UseOnboardingPeopleResult, 'isEmpty' | 'allSourcesFailed' | 'canContinueStep'> {
+  const ready = !input.isLoading && !input.isError;
+  const allSourcesFailed =
+    ready &&
+    input.selectedSourcesCount > 0 &&
+    input.sourceErrorsCount === input.selectedSourcesCount;
+  const isEmpty = ready && input.peopleCount === 0 && input.sourceErrorsCount === 0;
+  return {
+    allSourcesFailed,
+    isEmpty,
+    canContinueStep: ready && !allSourcesFailed,
+  };
+}
+
 function deriveCounts(people: MergedPerson[]): PeopleCounts {
   const c: PeopleCounts = { new: 0, conflict: 0, exists: 0, total: people.length };
   for (const p of people) {
@@ -57,6 +85,33 @@ function deriveCounts(people: MergedPerson[]): PeopleCounts {
   return c;
 }
 
+function defaultSelectionFor(person: MergedPerson): PersonSelection {
+  return {
+    role: 'readonly',
+    skip: person.status === 'exists',
+    resolvedConflicts: {},
+  };
+}
+
+function buildInitialSelections(people: MergedPerson[]): Map<string, PersonSelection> {
+  const next = new Map<string, PersonSelection>();
+  for (const person of people) {
+    next.set(person.email, defaultSelectionFor(person));
+  }
+  return next;
+}
+
+function mergeSelections(
+  people: MergedPerson[],
+  previous: Map<string, PersonSelection>,
+): Map<string, PersonSelection> {
+  const next = new Map<string, PersonSelection>();
+  for (const person of people) {
+    next.set(person.email, previous.get(person.email) ?? defaultSelectionFor(person));
+  }
+  return next;
+}
+
 export function useOnboardingPeople(params: UseOnboardingPeopleParams): UseOnboardingPeopleResult {
   const {
     selectedSources,
@@ -64,9 +119,15 @@ export function useOnboardingPeople(params: UseOnboardingPeopleParams): UseOnboa
     onMergedPeopleChange,
     personSelections,
     onPersonSelectionsChange,
+    onStepReadinessChange,
   } = params;
 
   const trpc = useTRPC();
+  const sourcesKey = useMemo(
+    () => [...selectedSources].sort().join(','),
+    [selectedSources],
+  );
+
   const peopleQuery = useQuery({
     ...trpc.onboardingImport.fetchPeople.queryOptions({
       sources: selectedSources as ['JIRA' | 'LINEAR' | 'GOOGLE_WORKSPACE' | 'SLACK'],
@@ -76,30 +137,47 @@ export function useOnboardingPeople(params: UseOnboardingPeopleParams): UseOnboa
 
   const [activeFilter, setActiveFilter] = useState('all');
   const [checkedEmails, setCheckedEmails] = useState<Set<string>>(new Set());
+  const lastSyncedQueryKeyRef = useRef<string>('');
+  const lastSourcesKeyRef = useRef(sourcesKey);
 
-  useEffect(() => {
-    if (peopleQuery.data && mergedPeople.length === 0) {
-      const data = peopleQuery.data as MergedPerson[];
-      onMergedPeopleChange(data);
+  useLayoutEffect(() => {
+    if (!peopleQuery.data) return;
 
-      const next = new Map<string, PersonSelection>();
-      for (const person of data) {
-        next.set(person.email, {
-          role: 'readonly',
-          skip: person.status === 'exists',
-          resolvedConflicts: {},
-        });
-      }
-      onPersonSelectionsChange(next);
+    const syncKey = `${sourcesKey}:${peopleQuery.dataUpdatedAt}`;
+    if (lastSyncedQueryKeyRef.current === syncKey) return;
+    lastSyncedQueryKeyRef.current = syncKey;
+
+    const { people } = peopleQuery.data;
+    const sourcesChanged = lastSourcesKeyRef.current !== sourcesKey;
+    lastSourcesKeyRef.current = sourcesKey;
+
+    onMergedPeopleChange(people);
+    if (sourcesChanged) {
+      onPersonSelectionsChange(buildInitialSelections(people));
+      setCheckedEmails(new Set());
+    } else {
+      onPersonSelectionsChange(mergeSelections(people, personSelections));
+      setCheckedEmails(new Set());
     }
-  }, [peopleQuery.data, mergedPeople.length, onMergedPeopleChange, onPersonSelectionsChange]);
+  }, [
+    peopleQuery.data,
+    peopleQuery.dataUpdatedAt,
+    sourcesKey,
+    onMergedPeopleChange,
+    onPersonSelectionsChange,
+    personSelections,
+  ]);
+
+  const queryPeople = peopleQuery.data?.people ?? [];
+  const sourceErrors = peopleQuery.data?.sourceErrors ?? [];
+  const peopleForDisplay = peopleQuery.data ? queryPeople : mergedPeople;
 
   const filteredPeople = useMemo(() => {
-    if (activeFilter === 'all') return mergedPeople;
-    return mergedPeople.filter(p => p.status === activeFilter);
-  }, [mergedPeople, activeFilter]);
+    if (activeFilter === 'all') return peopleForDisplay;
+    return peopleForDisplay.filter(p => p.status === activeFilter);
+  }, [peopleForDisplay, activeFilter]);
 
-  const counts = useMemo(() => deriveCounts(mergedPeople), [mergedPeople]);
+  const counts = useMemo(() => deriveCounts(peopleForDisplay), [peopleForDisplay]);
 
   const selectableFiltered = useMemo(
     () => filteredPeople.filter(p => p.status !== 'exists'),
@@ -196,13 +274,42 @@ export function useOnboardingPeople(params: UseOnboardingPeopleParams): UseOnboa
   );
 
   const handleRefetch = useCallback(() => {
+    lastSyncedQueryKeyRef.current = '';
     void peopleQuery.refetch();
   }, [peopleQuery]);
 
-  return {
-    isLoading: peopleQuery.isLoading && selectedSources.length > 0,
+  const isLoading =
+    (peopleQuery.isLoading || peopleQuery.isFetching) && selectedSources.length > 0;
+  const { isEmpty, allSourcesFailed, canContinueStep } = derivePeopleReviewQueryState({
+    isLoading,
     isError: peopleQuery.isError,
-    isEmpty: !(peopleQuery.isLoading || peopleQuery.isError) && mergedPeople.length === 0,
+    peopleCount: queryPeople.length,
+    sourceErrorsCount: sourceErrors.length,
+    selectedSourcesCount: selectedSources.length,
+  });
+
+  useEffect(() => {
+    onStepReadinessChange?.({
+      isLoading,
+      isError: peopleQuery.isError,
+      allSourcesFailed,
+      canContinue: canContinueStep,
+    });
+  }, [
+    onStepReadinessChange,
+    isLoading,
+    peopleQuery.isError,
+    allSourcesFailed,
+    canContinueStep,
+  ]);
+
+  return {
+    isLoading,
+    isError: peopleQuery.isError,
+    isEmpty,
+    allSourcesFailed,
+    canContinueStep,
+    sourceErrors,
     handleRefetch,
     filteredPeople,
     counts,

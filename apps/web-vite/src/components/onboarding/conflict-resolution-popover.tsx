@@ -127,6 +127,7 @@ export function ConflictResolutionPopover({
   onResolve,
 }: ConflictResolutionPopoverProps) {
   const t = useTranslations('OnboardingImport.step2');
+  const [open, setOpen] = useState(false);
   const [customValues, setCustomValues] = useState<Record<string, string>>({});
 
   const unresolvedCount = conflicts.filter(c => !resolvedConflicts[c.field]).length;
@@ -136,14 +137,14 @@ export function ConflictResolutionPopover({
   }, []);
 
   return (
-    <Popover>
+    <Popover open={open} onOpenChange={setOpen}>
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger
             render={
               <PopoverTrigger
                 render={
-                  <Badge variant="warning" className="cursor-pointer" aria-expanded={false} />
+                  <Badge variant="warning" className="cursor-pointer" aria-expanded={open} />
                 }>
                 {unresolvedCount > 0 && <AlertTriangle className="size-3" aria-hidden="true" />}
                 {t('columnStatus')} ({unresolvedCount})

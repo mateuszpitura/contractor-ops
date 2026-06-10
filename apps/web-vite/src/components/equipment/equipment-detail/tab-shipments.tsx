@@ -26,10 +26,10 @@ import { memo, useCallback, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
-import type { useEquipmentShipments } from '../hooks/use-equipment-shipments.js';
+import { useEquipmentShipments } from '../hooks/use-equipment-shipments.js';
 import { ShipmentStatusBadge } from '../shipment-status-badge.js';
-import { ReturnApprovalBannerContainer } from './return-approval-banner-container.js';
-import { ShipmentTimelineContainer } from './shipment-timeline-container.js';
+import { ReturnApprovalBanner } from './return-approval-banner.js';
+import { ShipmentTimeline } from './shipment-timeline.js';
 
 interface PendingReturn {
   id: string;
@@ -129,7 +129,7 @@ function PendingReturnBanner({
     ...pendingReturn,
     createdAt: new Date(pendingReturn.createdAt).toISOString(),
   };
-  return <ReturnApprovalBannerContainer returnRequest={normalized} />;
+  return <ReturnApprovalBanner returnRequest={normalized} />;
 }
 
 function renderShipmentsEmptyAction(
@@ -432,7 +432,7 @@ export function TabShipmentsView({
                   <h3 className="mb-3 text-sm font-medium">
                     {t('shipmentsTable.detail.timeline')}
                   </h3>
-                  <ShipmentTimelineContainer
+                  <ShipmentTimeline
                     shipmentId={detailQuery.data.id}
                     currentStatus={detailQuery.data.currentStatus}
                     events={detailQuery.data.events}
@@ -466,5 +466,40 @@ export function TabShipmentsView({
         </AlertDialogContent>
       </AlertDialog>
     </div>
+  );
+}
+
+export function TabShipments(props: TabShipmentsProps) {
+  const [selectedShipmentId, setSelectedShipmentId] = useState<string | null>(null);
+  const shipmentsState = useEquipmentShipments(props.equipmentId, selectedShipmentId);
+
+  const handleRetry = useCallback(() => {
+    void shipmentsState.listQuery.refetch();
+  }, [shipmentsState.listQuery]);
+
+  if (shipmentsState.listQuery.isLoading) {
+    return <TabShipmentsSkeleton pendingReturn={props.pendingReturn} />;
+  }
+
+  if (shipmentsState.listQuery.isError) {
+    return <TabShipmentsError onRetry={handleRetry} />;
+  }
+
+  if (shipmentsState.shipments.length === 0) {
+    return (
+      <TabShipmentsEmpty
+        pendingReturn={props.pendingReturn}
+        onCreateShipment={props.onCreateShipment}
+      />
+    );
+  }
+
+  return (
+    <TabShipmentsView
+      {...props}
+      {...shipmentsState}
+      selectedShipmentId={selectedShipmentId}
+      setSelectedShipmentId={setSelectedShipmentId}
+    />
   );
 }

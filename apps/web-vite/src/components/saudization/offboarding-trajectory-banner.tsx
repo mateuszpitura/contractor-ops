@@ -5,6 +5,7 @@ import { useMemo } from 'react';
 import { useLocale } from '../../i18n/navigation.js';
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { numberLocaleTag } from './format-locale.js';
+import { useOffboardingTrajectory } from './hooks/use-offboarding-trajectory.js';
 import type { OffboardingTrajectory } from './hooks/use-offboarding-trajectory.js';
 
 export interface OffboardingTrajectoryBannerProps {
@@ -59,4 +60,18 @@ export function OffboardingTrajectoryBanner({ trajectory }: OffboardingTrajector
       </AlertDescription>
     </Alert>
   );
+}
+
+export interface OffboardingTrajectoryBannerWiredProps {
+  isSaudi: boolean | null;
+}
+
+export function OffboardingTrajectoryBannerWired({
+  isSaudi,
+}: OffboardingTrajectoryBannerWiredProps) {
+  const { data, isLoading, isError } = useOffboardingTrajectory(isSaudi);
+
+  if (isSaudi !== true || isLoading || isError || data === null) return null;
+
+  return <OffboardingTrajectoryBanner trajectory={data} />;
 }

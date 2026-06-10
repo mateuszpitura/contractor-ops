@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
+import { useTranslatedError } from '../../../../i18n/use-translated-error.js';
 import { useTranslations } from '../../../../i18n/useTranslations.js';
 import { useTRPC } from '../../../../providers/trpc-provider.js';
 import type { LeitwegIdEditInitial } from '../leitweg-id-create-dialog.js';
@@ -48,6 +49,7 @@ export function useLeitwegIdCreateDialog({
   const trpc = useTRPC();
   const t = useTranslations('EInvoice.LeitwegIdDialog');
   const tErrors = useTranslations('EInvoice.Errors');
+  const translateError = useTranslatedError();
   const queryClient = useQueryClient();
 
   const contractorsQuery = useQuery(
@@ -61,14 +63,14 @@ export function useLeitwegIdCreateDialog({
   );
   const contractors = extractContractors(contractorsQuery.data);
 
-  const handleMutationError = (err: { message?: string }) => {
-    const msg = err.message ?? '';
+  const handleMutationError = (err: unknown) => {
+    const msg = err instanceof Error ? err.message : '';
     if (msg.toLowerCase().includes('already') || msg.toLowerCase().includes('conflict')) {
       setFormError(t('errorDuplicate'));
     } else {
       setFormError(msg || tErrors('Generic'));
     }
-    toast.error(err.message);
+    toast.error(translateError(err) || tErrors('Generic'));
   };
 
   const createMutation = useMutation(

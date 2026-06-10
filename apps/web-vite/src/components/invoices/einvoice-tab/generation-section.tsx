@@ -7,6 +7,7 @@ import { Card, CardContent } from '@contractor-ops/ui/components/shadcn/card';
 import { CheckCircle2, Download, FileCode2, Loader2, Sparkles } from 'lucide-react';
 import { useCallback } from 'react';
 
+import { useLocale } from '../../../i18n/navigation.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import type { EInvoiceLifecycleShape } from './types.js';
 
@@ -18,14 +19,14 @@ interface GenerationSectionProps {
   onDownloadXml: () => void;
 }
 
-function formatRelative(date: string | Date | null | undefined): string {
+function formatRelative(date: string | Date | null | undefined, locale: string): string {
   if (!date) return '—';
   const d = typeof date === 'string' ? new Date(date) : date;
   if (Number.isNaN(d.getTime())) return '—';
   const now = Date.now();
   const delta = Math.round((d.getTime() - now) / 1000);
   const abs = Math.abs(delta);
-  const rtf = new Intl.RelativeTimeFormat('en', { numeric: 'auto' });
+  const rtf = new Intl.RelativeTimeFormat(locale, { numeric: 'auto' });
   if (abs < 60) return rtf.format(Math.round(delta), 'second');
   if (abs < 3600) return rtf.format(Math.round(delta / 60), 'minute');
   if (abs < 86_400) return rtf.format(Math.round(delta / 3600), 'hour');
@@ -40,6 +41,7 @@ export function GenerationSection({
   onDownloadXml,
 }: GenerationSectionProps) {
   const t = useTranslations('EInvoice.InvoiceTab');
+  const locale = useLocale();
 
   const handleFinalize = useCallback(() => onFinalize(), [onFinalize]);
   const handleDownload = useCallback(() => onDownloadXml(), [onDownloadXml]);
@@ -53,7 +55,7 @@ export function GenerationSection({
           <div className="space-y-3">
             <p className="text-sm text-muted-foreground">
               {t('generationCaptionPattern', {
-                relativeTime: formatRelative(lifecycle.finalizedAt ?? null),
+                relativeTime: formatRelative(lifecycle.finalizedAt ?? null, locale),
                 ruleSetVersion: lifecycle.ruleSetVersion ?? '—',
                 hashPrefix8: (lifecycle.xmlSha256 ?? '').slice(0, 16) || '—',
               })}

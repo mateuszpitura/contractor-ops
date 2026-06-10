@@ -24,7 +24,11 @@ import {
 } from '@contractor-ops/ui/components/shadcn/tooltip';
 import { Download, FileText, Loader2 } from 'lucide-react';
 
+import { usePermissions } from '../../../hooks/use-permissions.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
+import { canViewSensitivePii } from '../../../lib/mask-pii.js';
+import { useBacsPreview } from '../hooks/use-bacs-preview.js';
+import { BacsPreviewCardUnconfigured } from './bacs-preview-card-unconfigured.js';
 import { BacsPreviewPre } from './bacs-preview-pre.js';
 import type { ModulusWarning } from './modulus-check-warning-list.js';
 import { ModulusCheckWarningList } from './modulus-check-warning-list.js';
@@ -37,7 +41,7 @@ export interface BacsPreviewData {
   modulusWarnings?: unknown[];
 }
 
-interface BacsPreviewCardProps {
+interface BacsPreviewCardViewProps {
   showPii: boolean;
   previewVisible: boolean;
   isPreviewFetching: boolean;
@@ -52,7 +56,7 @@ interface BacsPreviewCardProps {
   isGenerating: boolean;
 }
 
-export function BacsPreviewCard({
+export function BacsPreviewCardView({
   showPii,
   previewVisible,
   isPreviewFetching,
@@ -65,7 +69,7 @@ export function BacsPreviewCard({
   onShowPreview,
   onGenerate,
   isGenerating,
-}: BacsPreviewCardProps) {
+}: BacsPreviewCardViewProps) {
   const t = useTranslations('Payments.bacs');
 
   return (
@@ -139,5 +143,67 @@ export function BacsPreviewCard({
         ) : null}
       </CardContent>
     </Card>
+  );
+}
+
+function toTransliterationWarnings(value: unknown): TransliterationWarning[] {
+  if (!Array.isArray(value)) return [];
+  return value.filter(
+    (w): w is TransliterationWarning =>
+      typeof w === 'object' &&
+      w !== null &&
+      typeof (w as TransliterationWarning).contractorName === 'string' &&
+      Array.isArray((w as TransliterationWarning).replaced),
+  );
+}
+
+function toModulusWarnings(value: unknown): ModulusWarning[] {
+  if (!Array.isArray(value)) return [];
+  return value.filter(
+    (w): w is ModulusWarning =>
+      typeof w === 'object' &&
+      w !== null &&
+      typeof (w as ModulusWarning).contractorName === 'string' &&
+      typeof (w as ModulusWarning).sortCode === 'string' &&
+      Array.isArray((w as ModulusWarning).warnings),
+  );
+}
+
+interface BacsPreviewCardProps {
+  paymentRunId: string;
+}
+
+export function BacsPreviewCard({ paymentRunId }: BacsPreviewCardProps) {
+  const preview = useBacsPreview(paymentRunId);
+  const { role } = usePermissions();
+  const showPii = canViewSensitivePii(role);
+
+  if (preview.submitterNotConfigured) {
+    return <BacsPreviewCardUnconfigured />;
+  }
+
+  const transliterationWarnings = toTransliterationWarnings(
+    preview.previewData?.transliterationWarnings,
+  );
+  const modulusWarnings = toModulusWarnings(preview.previewData?.modulusWarnings);
+  const hasUnmappable = transliterationWarnings.some(w => w.replaced.length > 0);
+  const isPreviewLoading =
+    preview.previewVisible && preview.isPreviewFetching && !preview.previewData;
+
+  return (
+    <BacsPreviewCardView
+      showPii={showPii}
+      previewVisible={preview.previewVisible}
+      isPreviewFetching={preview.isPreviewFetching}
+      isPreviewLoading={isPreviewLoading}
+      previewData={preview.previewData}
+      previewError={preview.previewError}
+      transliterationWarnings={transliterationWarnings}
+      modulusWarnings={modulusWarnings}
+      hasUnmappable={hasUnmappable}
+      onShowPreview={preview.onShowPreview}
+      onGenerate={preview.onGenerate}
+      isGenerating={preview.isGenerating}
+    />
   );
 }

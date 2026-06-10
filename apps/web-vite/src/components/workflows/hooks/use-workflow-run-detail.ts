@@ -1,5 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
-import { useCallback } from 'react';
+import { useEntityDetailQuery } from '../../../hooks/use-entity-detail-query.js';
 import { authClient } from '../../../lib/auth-client.js';
 import { useTRPC } from '../../../providers/trpc-provider.js';
 import { useBreadcrumbOverride } from '../../layout/breadcrumb-context.js';
@@ -9,19 +8,16 @@ export function useWorkflowRunDetail(runId: string) {
   const session = authClient().useSession();
   const currentUserId = session?.data?.user?.id ?? null;
 
-  const runQuery = useQuery(trpc.workflow.getRun.queryOptions({ id: runId }));
-  const run = runQuery.data;
+  const {
+    query: runQuery,
+    data: run,
+    handleRetry,
+    isNotFound,
+    isLoading,
+    isError,
+  } = useEntityDetailQuery(trpc.workflow.getRun.queryOptions({ id: runId }));
 
   useBreadcrumbOverride(runId, run?.workflowTemplate?.name);
-
-  const handleRetry = useCallback(() => {
-    void runQuery.refetch();
-  }, [runQuery]);
-
-  const isNotFound =
-    runQuery.isError &&
-    (runQuery.error?.message?.includes('not found') ||
-      (runQuery.error as { data?: { code?: string } })?.data?.code === 'NOT_FOUND');
 
   return {
     run,
@@ -29,7 +25,7 @@ export function useWorkflowRunDetail(runId: string) {
     currentUserId,
     handleRetry,
     isNotFound,
-    isLoading: runQuery.isLoading,
-    isError: runQuery.isError,
+    isLoading,
+    isError,
   } as const;
 }

@@ -16,13 +16,16 @@ import {
 } from '@contractor-ops/ui/components/shadcn/table';
 import { useCallback } from 'react';
 
-import type { useLeitwegIdListCard } from './hooks/use-leitweg-id-list-card.js';
-import { LeitwegIdCreateDialogContainer } from './leitweg-id-create-dialog-container.js';
-import { LeitwegIdRowContainer } from './leitweg-id-row-container.js';
+import {
+  useLeitwegIdListCard,
+  type useLeitwegIdListCard as UseLeitwegIdListCard,
+} from './hooks/use-leitweg-id-list-card.js';
+import { LeitwegIdCreateDialog } from './leitweg-id-create-dialog.js';
+import { LeitwegIdRow } from './leitweg-id-row.js';
 
-export type LeitwegIdListCardProps = ReturnType<typeof useLeitwegIdListCard>;
+export type LeitwegIdListCardProps = ReturnType<typeof UseLeitwegIdListCard>;
 
-export function LeitwegIdListCard({
+export function LeitwegIdListCardView({
   t,
   createOpen,
   setCreateOpen,
@@ -72,14 +75,19 @@ export function LeitwegIdListCard({
             </TableHeader>
             <TableBody>
               {rows.map(row => (
-                <LeitwegIdRowContainer key={row.id} row={row} />
+                <LeitwegIdRow key={row.id} row={row} />
               ))}
             </TableBody>
           </Table>
         )}
       </CardContent>
 
-      <LeitwegIdCreateDialogContainer open={createOpen} onOpenChange={setCreateOpen} />
+      <LeitwegIdCreateDialog open={createOpen} onOpenChange={setCreateOpen} />
     </Card>
   );
+}
+
+export function LeitwegIdListCard() {
+  const card = useLeitwegIdListCard();
+  return <LeitwegIdListCardView {...card} />;
 }

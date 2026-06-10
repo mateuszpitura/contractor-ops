@@ -1,8 +1,7 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useMemo } from 'react';
-import { toast } from 'sonner';
 
 import { usePermissions } from '../../../hooks/use-permissions.js';
+import { useResourceMutation } from '../../../hooks/use-resource-mutation.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { useSession } from '../../../providers/auth-provider.js';
 import { useTRPC } from '../../../providers/trpc-provider.js';
@@ -57,7 +56,6 @@ export function useUsersTable() {
   const trpc = useTRPC();
   const t = useTranslations('Users');
   const tToast = useTranslations('Settings.toast');
-  const queryClient = useQueryClient();
   const { can } = usePermissions();
   const session = useSession();
   const currentUserId = session.data?.user?.id;
@@ -85,37 +83,17 @@ export function useUsersTable() {
       );
     });
 
-  const updateRoleMutation = useMutation(
-    trpc.user.updateRole.mutationOptions({
-      onSuccess: () => {
-        toast.success(t('roleUpdated'));
-        queryClient.invalidateQueries({ queryKey: trpc.user.list.queryKey() });
-      },
-      onError: (error: unknown) => {
-        const message =
-          typeof error === 'object' && error && 'message' in error
-            ? String((error as { message?: unknown }).message ?? '')
-            : '';
-        toast.error(message || tToast('updateRoleFailed'));
-      },
-    }),
-  );
+  const updateRoleMutation = useResourceMutation(trpc.user.updateRole.mutationOptions(), {
+    invalidate: [trpc.user.list.queryKey()],
+    successMessage: t('roleUpdated'),
+    errorMessage: tToast('updateRoleFailed'),
+  });
 
-  const reactivateMutation = useMutation(
-    trpc.user.reactivate.mutationOptions({
-      onSuccess: () => {
-        toast.success(t('memberReactivated'));
-        queryClient.invalidateQueries({ queryKey: trpc.user.list.queryKey() });
-      },
-      onError: (error: unknown) => {
-        const message =
-          typeof error === 'object' && error && 'message' in error
-            ? String((error as { message?: unknown }).message ?? '')
-            : '';
-        toast.error(message || tToast('reactivateFailed'));
-      },
-    }),
-  );
+  const reactivateMutation = useResourceMutation(trpc.user.reactivate.mutationOptions(), {
+    invalidate: [trpc.user.list.queryKey()],
+    successMessage: t('memberReactivated'),
+    errorMessage: tToast('reactivateFailed'),
+  });
 
   return {
     t,

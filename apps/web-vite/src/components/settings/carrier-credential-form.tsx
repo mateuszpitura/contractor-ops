@@ -12,7 +12,10 @@ import { Label } from '@contractor-ops/ui/components/shadcn/label';
 import { Eye, EyeOff, Loader2, Save, Truck, Wifi } from 'lucide-react';
 import type * as React from 'react';
 import { useCallback, useState } from 'react';
-import type { useCarrierCredentialForm } from './hooks/use-carrier-credential-form.js';
+import {
+  useCarrierCredentialForm,
+  type useCarrierCredentialForm as UseCarrierCredentialForm,
+} from './hooks/use-carrier-credential-form.js';
 
 interface CarrierCredentialFormBaseProps {
   carrier: 'dpd' | 'ups';
@@ -20,7 +23,7 @@ interface CarrierCredentialFormBaseProps {
 }
 
 export type CarrierCredentialFormProps = CarrierCredentialFormBaseProps &
-  ReturnType<typeof useCarrierCredentialForm>;
+  ReturnType<typeof UseCarrierCredentialForm>;
 
 function PasswordField({
   label,
@@ -64,7 +67,7 @@ function PasswordField({
   );
 }
 
-export function CarrierCredentialForm({
+export function CarrierCredentialFormView({
   carrier,
   carrierLabel,
   id,
@@ -203,4 +206,12 @@ export function CarrierCredentialForm({
       </CardContent>
     </Card>
   );
+}
+
+export function CarrierCredentialForm({
+  carrier,
+  carrierLabel,
+}: Pick<CarrierCredentialFormBaseProps, 'carrier' | 'carrierLabel'>) {
+  const form = useCarrierCredentialForm(carrier);
+  return <CarrierCredentialFormView carrierLabel={carrierLabel} {...form} />;
 }

@@ -18,12 +18,12 @@ import type * as React from 'react';
 import { memo, useCallback } from 'react';
 
 import { tKey } from '../../i18n/typed-keys.js';
-import { FeatureGateContainer } from '../billing/feature-gate-container.js';
-import type { useTeamsChannelMappingCard } from './hooks/use-teams-channel-mapping-card.js';
+import { FeatureGate } from '../layout/feature-gate.js';
+import { useTeamsChannelMappingCard } from './hooks/use-teams-channel-mapping-card.js';
 import type { TeamsChannel } from './teams-channel-mapping.constants.js';
 import { CATEGORY_LABEL_KEYS, NOTIFICATION_CATEGORIES } from './teams-channel-mapping.constants.js';
 
-export type ChannelMappingVariant = 'loading' | 'error' | 'empty' | 'list';
+export type ChannelMappingVariant = 'loading' | 'error' | 'empty' | 'selectTeam' | 'list';
 
 export function ChannelMappingError({
   t,
@@ -54,6 +54,14 @@ export function ChannelMappingEmpty({
   t: ReturnType<typeof useTeamsChannelMappingCard>['t'];
 }) {
   return <p className="text-sm text-muted-foreground">{t('noChannels')}</p>;
+}
+
+export function ChannelMappingSelectTeamFirst({
+  t,
+}: {
+  t: ReturnType<typeof useTeamsChannelMappingCard>['t'];
+}) {
+  return <p className="text-sm text-muted-foreground">{t('selectTeamFirst')}</p>;
 }
 
 interface CategoryChannelRowProps {
@@ -177,6 +185,8 @@ export function TeamsChannelMappingCardView({
     body = <ChannelMappingError t={t} />;
   } else if (variant === 'loading') {
     body = <ChannelMappingLoading />;
+  } else if (variant === 'selectTeam') {
+    body = <ChannelMappingSelectTeamFirst t={t} />;
   } else if (variant === 'empty') {
     body = <ChannelMappingEmpty t={t} />;
   } else {
@@ -193,7 +203,7 @@ export function TeamsChannelMappingCardView({
   }
 
   return (
-    <FeatureGateContainer requiredTier="Pro" featureName="Teams channel mapping">
+    <FeatureGate requiredTier="Pro" featureName="Teams channel mapping">
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
@@ -224,8 +234,8 @@ export function TeamsChannelMappingCardView({
         <CardContent className="space-y-4">
           {teams.length > 1 && (
             <Select value={selectedTeamId ?? undefined} onValueChange={handleTeamChange}>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder={t('selectChannel')} />
+              <SelectTrigger className="w-full" aria-label={t('selectTeam')}>
+                <SelectValue placeholder={t('selectTeam')} />
               </SelectTrigger>
               <SelectContent>
                 {teams.map(team => (
@@ -240,6 +250,28 @@ export function TeamsChannelMappingCardView({
           {body}
         </CardContent>
       </Card>
-    </FeatureGateContainer>
+    </FeatureGate>
+  );
+}
+
+export function TeamsChannelMappingCard() {
+  const { isLoadingChannels, isChannelError, selectedTeamId, channels, ...rest } =
+    useTeamsChannelMappingCard();
+
+  let variant: ChannelMappingVariant;
+  if (isChannelError) variant = 'error';
+  else if (isLoadingChannels) variant = 'loading';
+  else if (rest.teams.length > 1 && !selectedTeamId) variant = 'selectTeam';
+  else if (selectedTeamId && channels.length === 0) variant = 'empty';
+  else variant = 'list';
+
+  return (
+    <TeamsChannelMappingCardView
+      {...rest}
+      selectedTeamId={selectedTeamId}
+      channels={channels}
+      variant={variant}
+      isRefreshing={isLoadingChannels}
+    />
   );
 }

@@ -10,11 +10,12 @@ import {
 import { TableCell, TableRow } from '@contractor-ops/ui/components/shadcn/table';
 import { Check, MoreHorizontal } from 'lucide-react';
 import { useCallback } from 'react';
-import type { useTranslations } from '../../../i18n/useTranslations.js';
-import type { useLeitwegIdRow } from './hooks/use-leitweg-id-row.js';
+import { useTranslations } from '../../../i18n/useTranslations.js';
+import { useLeitwegIdRow } from './hooks/use-leitweg-id-row.js';
+import type { useLeitwegIdRow as UseLeitwegIdRow } from './hooks/use-leitweg-id-row.js';
 import type { LeitwegIdEditInitial } from './leitweg-id-create-dialog.js';
-import { LeitwegIdCreateDialogContainer } from './leitweg-id-create-dialog-container.js';
-import { LeitwegIdDeleteDialogContainer } from './leitweg-id-delete-dialog-container.js';
+import { LeitwegIdCreateDialog } from './leitweg-id-create-dialog.js';
+import { LeitwegIdDeleteDialog } from './leitweg-id-delete-dialog.js';
 
 export interface LeitwegIdRowData {
   id: string;
@@ -30,12 +31,12 @@ export interface LeitwegIdRowData {
   notes?: string | null;
 }
 
-export type LeitwegIdRowProps = {
+export type LeitwegIdRowViewProps = {
   row: LeitwegIdRowData;
   t: ReturnType<typeof useTranslations>;
-} & ReturnType<typeof useLeitwegIdRow>;
+} & ReturnType<typeof UseLeitwegIdRow>;
 
-export function LeitwegIdRow({
+export function LeitwegIdRowView({
   row,
   t,
   editOpen,
@@ -45,7 +46,7 @@ export function LeitwegIdRow({
   editInitial,
   isSetDefaultPending,
   handleSetDefault,
-}: LeitwegIdRowProps) {
+}: LeitwegIdRowViewProps) {
   const handleOpenEdit = useCallback(() => setEditOpen(true), [setEditOpen]);
   const handleOpenDelete = useCallback(() => setDeleteOpen(true), [setDeleteOpen]);
 
@@ -125,14 +126,14 @@ export function LeitwegIdRow({
       </TableRow>
 
       {editOpen ? (
-        <LeitwegIdCreateDialogContainer
+        <LeitwegIdCreateDialog
           open={editOpen}
           onOpenChange={setEditOpen}
           initial={editInitial as LeitwegIdEditInitial}
         />
       ) : null}
       {deleteOpen ? (
-        <LeitwegIdDeleteDialogContainer
+        <LeitwegIdDeleteDialog
           open={deleteOpen}
           onOpenChange={setDeleteOpen}
           id={row.id}
@@ -148,4 +149,14 @@ function formatDate(d: Date | string | null | undefined): string {
   const date = typeof d === 'string' ? new Date(d) : d;
   if (Number.isNaN(date.getTime())) return '';
   return date.toISOString().slice(0, 10);
+}
+
+interface LeitwegIdRowProps {
+  row: LeitwegIdRowData;
+}
+
+export function LeitwegIdRow({ row }: LeitwegIdRowProps) {
+  const t = useTranslations('EInvoice.LeitwegIdRow');
+  const rowState = useLeitwegIdRow(row);
+  return <LeitwegIdRowView row={row} t={t} {...rowState} />;
 }

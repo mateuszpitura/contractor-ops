@@ -20,7 +20,7 @@ import { Switch } from '@contractor-ops/ui/components/shadcn/switch';
 import { Loader2 } from 'lucide-react';
 import { useCallback, useId, useMemo } from 'react';
 
-import type { useJiraProjectMappingDialog } from './hooks/use-jira-project-mapping-dialog.js';
+import { useJiraProjectMappingDialog } from './hooks/use-jira-project-mapping-dialog.js';
 
 export type JiraProjectMappingDialogViewProps = ReturnType<typeof useJiraProjectMappingDialog>;
 
@@ -90,7 +90,10 @@ export function JiraProjectMappingDialogView({
 
           <div className="space-y-2">
             <Label>{t('jira.projectMapping.issueType')}</Label>
-            <Select value={issueTypeId} onValueChange={handleIssueTypeChange} disabled={!projectId}>
+            <Select
+              value={issueTypeId}
+              onValueChange={handleIssueTypeChange}
+              disabled={!projectId || issueTypes.length === 0}>
               <SelectTrigger
                 className="w-full"
                 loading={issueTypesQuery.isLoading}
@@ -131,4 +134,16 @@ export function JiraProjectMappingDialogView({
       </DialogContent>
     </Dialog>
   );
+}
+
+interface JiraProjectMappingDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  taskTemplateId: string;
+  connectionId: string;
+}
+
+export function JiraProjectMappingDialog(props: JiraProjectMappingDialogProps) {
+  const viewProps = useJiraProjectMappingDialog(props);
+  return <JiraProjectMappingDialogView {...viewProps} />;
 }

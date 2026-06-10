@@ -1,5 +1,6 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useCallback } from 'react';
+import { TRPCClientError } from '@trpc/client';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
 import { useRouter } from '../../../i18n/navigation.js';
@@ -25,6 +26,7 @@ export interface UseOnboardingSourceSelectionResult {
   handleConnect: (provider: string) => Promise<void>;
   handleRefetch: () => void;
   handleSkip: () => void;
+  connectingProvider: string | null;
 }
 
 const POPUP_W = 600;
@@ -41,6 +43,17 @@ export function useOnboardingSourceSelection(
 
   const sourcesQuery = useQuery(trpc.onboardingImport.listSources.queryOptions());
   const sources = (sourcesQuery.data ?? []) as OnboardingSource[];
+  const oauthPollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [connectingProvider, setConnectingProvider] = useState<string | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (oauthPollRef.current) {
+        clearInterval(oauthPollRef.current);
+        oauthPollRef.current = null;
+      }
+    };
+  }, []);
 
   const handleToggle = useCallback(
     (provider: string) => {
@@ -55,11 +68,13 @@ export function useOnboardingSourceSelection(
 
   const handleConnect = useCallback(
     async (provider: string) => {
+      if (connectingProvider) return;
+      setConnectingProvider(provider);
       try {
         const result = await queryClient.fetchQuery(
           trpc.integration.getOAuthUrlGeneric.queryOptions({ provider }),
         );
-        const url = (result as { url?: string } | undefined)?.url;
+        const url = result?.url;
         if (!url) {
           toast.error(t('step1.connectError'));
           return;
@@ -74,21 +89,33 @@ export function useOnboardingSourceSelection(
         );
 
         if (!popup) {
-          window.location.href = url;
+          toast.error(t('step1.popupBlocked'));
           return;
         }
 
-        const interval = setInterval(() => {
+        if (oauthPollRef.current) {
+          clearInterval(oauthPollRef.current);
+        }
+        oauthPollRef.current = setInterval(() => {
           if (popup.closed) {
-            clearInterval(interval);
+            if (oauthPollRef.current) {
+              clearInterval(oauthPollRef.current);
+              oauthPollRef.current = null;
+            }
             void sourcesQuery.refetch();
           }
         }, 500);
-      } catch {
-        toast.error(t('step1.connectError'));
+      } catch (error) {
+        if (error instanceof TRPCClientError && error.data?.code === 'FORBIDDEN') {
+          toast.error(t('step1.connectPermissionError'));
+        } else {
+          toast.error(t('step1.connectError'));
+        }
+      } finally {
+        setConnectingProvider(null);
       }
     },
-    [queryClient, trpc, sourcesQuery, t],
+    [connectingProvider, queryClient, trpc, sourcesQuery, t],
   );
 
   const handleRefetch = useCallback(() => {
@@ -108,5 +135,6 @@ export function useOnboardingSourceSelection(
     handleConnect,
     handleRefetch,
     handleSkip,
+    connectingProvider,
   };
 }

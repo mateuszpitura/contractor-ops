@@ -1,4 +1,4 @@
-import { DataTable } from '@contractor-ops/ui';
+import { WorkbenchDataTable } from '../table-kit/workbench-data-table.js';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import {
   Dialog,
@@ -28,7 +28,7 @@ import { AlertTriangle, Loader2 } from 'lucide-react';
 import { memo, useCallback, useMemo, useState } from 'react';
 
 import { tKey } from '../../i18n/typed-keys.js';
-import type { useLinearStatusMappingDialog } from './hooks/use-linear-status-mapping-dialog.js';
+import { useLinearStatusMappingDialog } from './hooks/use-linear-status-mapping-dialog.js';
 import { WORKFLOW_STATUS_VALUES } from './status-mapping.constants.js';
 
 export type LinearStatusMappingDialogViewProps = ReturnType<typeof useLinearStatusMappingDialog>;
@@ -240,7 +240,8 @@ export function LinearStatusMappingDialogView({
 
           {selectedTeamId && teamStates.length > 0 && (
             <div className="max-h-[400px] overflow-auto">
-              <DataTable
+              <WorkbenchDataTable
+                sectionClassName=""
                 columns={columns}
                 data={tableData}
                 totalRows={tableData.length}
@@ -279,4 +280,14 @@ export function LinearStatusMappingDialogView({
       </DialogContent>
     </Dialog>
   );
+}
+
+interface LinearStatusMappingDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}
+
+export function LinearStatusMappingDialog(props: LinearStatusMappingDialogProps) {
+  const viewProps = useLinearStatusMappingDialog(props);
+  return <LinearStatusMappingDialogView {...viewProps} />;
 }

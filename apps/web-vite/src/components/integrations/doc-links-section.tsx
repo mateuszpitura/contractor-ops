@@ -13,9 +13,9 @@ import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { FileText } from 'lucide-react';
 import { useCallback } from 'react';
 
-import { AttachDocDialog } from './attach-doc-dialog-container.js';
+import { AttachDocDialog } from './attach-doc-dialog.js';
 import { DocLinkChip } from './doc-link-chip.js';
-import type { useDocLinksSection } from './hooks/use-doc-links-section.js';
+import { useDocLinksSection } from './hooks/use-doc-links-section.js';
 
 export type DocLinksSectionViewProps = Omit<ReturnType<typeof useDocLinksSection>, 'listQuery'> & {
   variant: 'empty' | 'list';
@@ -138,4 +138,16 @@ export function DocLinksSectionView({
       </AlertDialog>
     </div>
   );
+}
+
+interface DocLinksSectionProps {
+  workflowTaskRunId: string;
+  readOnly?: boolean;
+}
+
+export function DocLinksSection(props: DocLinksSectionProps) {
+  const { listQuery, ...rest } = useDocLinksSection(props);
+  if (listQuery.isLoading) return <DocLinksSectionSkeleton readOnly={rest.readOnly} t={rest.t} />;
+  const variant = rest.docLinks.length === 0 ? 'empty' : 'list';
+  return <DocLinksSectionView {...rest} variant={variant} />;
 }

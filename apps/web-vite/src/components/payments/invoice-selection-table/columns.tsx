@@ -9,7 +9,7 @@ import type { ColumnDef, Row, Table } from '@tanstack/react-table';
 import { memo, useCallback } from 'react';
 
 import type { LooseTranslator } from '../../../i18n/typed-keys.js';
-import { formatMinorUnits } from '../../../lib/format-currency.js';
+import { formatMinorUnits } from '../../../lib/money.js';
 
 export type ReadyInvoiceRow = {
   id: string;

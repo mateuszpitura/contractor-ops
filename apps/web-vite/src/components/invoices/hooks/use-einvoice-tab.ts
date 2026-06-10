@@ -1,7 +1,9 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import type { AppRouter } from '@contractor-ops/api';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import type { inferRouterOutputs } from '@trpc/server';
 import { useCallback, useMemo, useState } from 'react';
-import { toast } from 'sonner';
 
+import { useResourceMutation } from '../../../hooks/use-resource-mutation.js';
 import { tKey } from '../../../i18n/typed-keys.js';
 import { useCommonToasts } from '../../../i18n/use-common-toasts.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
@@ -14,6 +16,19 @@ function extractErrorCode(err: unknown): string | undefined {
     return e.data?.code ?? e.message;
   }
   return;
+}
+
+type InvoiceById = inferRouterOutputs<AppRouter>['invoice']['getById'];
+type RawLifecycle = NonNullable<InvoiceById>['eInvoiceLifecycle'];
+type ShapeLifecycle = NonNullable<InvoiceTabData['lifecycle']>;
+
+function toLifecycle(raw: RawLifecycle): InvoiceTabData['lifecycle'] {
+  if (!raw) return null;
+  return {
+    ...raw,
+    validationReportSummary:
+      raw.validationReportSummary as ShapeLifecycle['validationReportSummary'],
+  };
 }
 
 export function useEinvoiceTab(data: InvoiceTabData | undefined, invoiceId: string) {
@@ -33,11 +48,11 @@ export function useEinvoiceTab(data: InvoiceTabData | undefined, invoiceId: stri
 
   const tabData = useMemo<InvoiceTabData | null>(() => {
     if (data) return data;
-    const raw = fallbackQuery.data as { eInvoiceLifecycle?: unknown } | undefined;
+    const raw = fallbackQuery.data;
     if (!raw) return null;
     return {
       invoiceId,
-      lifecycle: (raw.eInvoiceLifecycle as InvoiceTabData['lifecycle']) ?? null,
+      lifecycle: toLifecycle(raw.eInvoiceLifecycle),
       peppolParticipant: null,
       receiverAcceptsXRechnungCii: false,
       leitwegIdValue: null,
@@ -46,12 +61,15 @@ export function useEinvoiceTab(data: InvoiceTabData | undefined, invoiceId: stri
     };
   }, [data, fallbackQuery.data, invoiceId]);
 
-  const invalidateAll = useCallback(() => {
-    void queryClient.invalidateQueries({ queryKey: ['einvoice', 'listByOrg'] });
-    void queryClient.invalidateQueries({
-      queryKey: trpc.invoice.getById.queryKey({ id: invoiceId }),
-    });
-  }, [invoiceId, queryClient, trpc.invoice.getById]);
+  const invalidateTargets = useMemo(
+    () =>
+      [
+        { queryKey: ['einvoice', 'listByOrg'] as const },
+        trpc.invoice.getById.queryKey({ id: invoiceId }),
+        trpc.einvoice.pathFilter(),
+      ] as const,
+    [invoiceId, trpc.einvoice, trpc.invoice.getById],
+  );
 
   const handleError = useCallback(
     (errorCode: string | undefined) => {
@@ -65,49 +83,40 @@ export function useEinvoiceTab(data: InvoiceTabData | undefined, invoiceId: stri
     [tErr],
   );
 
-  const finalizeMutation = useMutation(
+  const finalizeMutation = useResourceMutation(
     trpc.einvoice.finalize.mutationOptions({
-      onSuccess: _result => {
-        setErrorMessage(null);
-        invalidateAll();
-        toast.success(toasts.done());
-        queryClient.invalidateQueries(trpc.einvoice.pathFilter());
-      },
-      onError: err => {
-        handleError(extractErrorCode(err));
-        toast.error(err.message);
-      },
+      onSuccess: () => setErrorMessage(null),
+      onError: err => handleError(extractErrorCode(err)),
     }),
+    {
+      invalidate: [...invalidateTargets],
+      successMessage: toasts.done(),
+      suppressErrorToast: () => true,
+    },
   );
 
-  const revalidateMutation = useMutation(
+  const revalidateMutation = useResourceMutation(
     trpc.einvoice.revalidate.mutationOptions({
-      onSuccess: () => {
-        setErrorMessage(null);
-        invalidateAll();
-        toast.success(toasts.done());
-        queryClient.invalidateQueries(trpc.einvoice.pathFilter());
-      },
-      onError: err => {
-        handleError(extractErrorCode(err));
-        toast.error(err.message);
-      },
+      onSuccess: () => setErrorMessage(null),
+      onError: err => handleError(extractErrorCode(err)),
     }),
+    {
+      invalidate: [...invalidateTargets],
+      successMessage: toasts.done(),
+      suppressErrorToast: () => true,
+    },
   );
 
-  const sendMutation = useMutation(
+  const sendMutation = useResourceMutation(
     trpc.einvoice.send.mutationOptions({
-      onSuccess: () => {
-        setErrorMessage(null);
-        invalidateAll();
-        toast.success(t('sendCta'));
-        queryClient.invalidateQueries(trpc.einvoice.pathFilter());
-      },
-      onError: err => {
-        handleError(extractErrorCode(err));
-        toast.error(err.message);
-      },
+      onSuccess: () => setErrorMessage(null),
+      onError: err => handleError(extractErrorCode(err)),
     }),
+    {
+      invalidate: [...invalidateTargets],
+      successMessage: t('sendCta'),
+      suppressErrorToast: () => true,
+    },
   );
 
   const handleDownloadXml = useCallback(async () => {

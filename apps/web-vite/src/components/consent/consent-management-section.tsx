@@ -19,7 +19,7 @@ import {
 import { Download, FileText, Globe, History, Loader2 } from 'lucide-react';
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { ConsentPurposeToggle } from './consent-purpose-toggle';
-import type { UseConsentManagementResult } from './hooks/use-consent-management.js';
+import { useConsentManagement, type UseConsentManagementResult } from './hooks/use-consent-management.js';
 import { PrivacyNoticeDisplay } from './privacy-notice-display';
 
 export type ConsentManagementSectionViewProps = Omit<
@@ -229,4 +229,13 @@ export function ConsentManagementSectionView({
       ) : null}
     </div>
   );
+}
+
+export function ConsentManagementSection() {
+  const consent = useConsentManagement();
+
+  if (consent.isLoading) return <ConsentManagementSectionLoading />;
+  if (consent.showNotRequired) return <ConsentManagementSectionNotRequired />;
+
+  return <ConsentManagementSectionView {...consent} />;
 }

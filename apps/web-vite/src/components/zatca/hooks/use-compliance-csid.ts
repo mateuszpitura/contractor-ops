@@ -1,6 +1,5 @@
-import { useMutation } from '@tanstack/react-query';
 import { useState } from 'react';
-import { toast } from 'sonner';
+import { useResourceMutation } from '../../../hooks/use-resource-mutation.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { useZatcaTrpc } from './use-zatca-trpc.js';
 
@@ -9,23 +8,27 @@ export function useComplianceCsid() {
   const t = useTranslations('Zatca.complianceCsid');
   const [phase, setPhase] = useState<'idle' | 'submitting' | 'storing' | 'done'>('idle');
 
-  const requestMutation = useMutation({
-    ...zatcaTrpc.requestComplianceCsid.mutationOptions(),
-    onMutate: () => {
-      setPhase('submitting');
+  const requestMutation = useResourceMutation(
+    {
+      ...zatcaTrpc.requestComplianceCsid.mutationOptions(),
+      onMutate: () => {
+        setPhase('submitting');
+      },
+      onSuccess: () => {
+        setPhase('storing');
+        setTimeout(() => {
+          setPhase('done');
+        }, 500);
+      },
+      onError: () => {
+        setPhase('idle');
+      },
     },
-    onSuccess: () => {
-      setPhase('storing');
-      setTimeout(() => {
-        setPhase('done');
-        toast.success(t('toast.success'));
-      }, 500);
+    {
+      successMessage: t('toast.success'),
+      errorMessage: t('toast.error'),
     },
-    onError: (error: Error) => {
-      setPhase('idle');
-      toast.error(error.message || t('toast.error'));
-    },
-  });
+  );
 
   const requestComplianceCsid = () => {
     (requestMutation.mutate as () => void)();

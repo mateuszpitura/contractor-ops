@@ -1,5 +1,6 @@
 import type { MemberStatusInput } from '@contractor-ops/ui';
-import { AtelierStatusPill, DataTable, statusToVariant } from '@contractor-ops/ui';
+import { WorkbenchDataTable } from '../../table-kit/workbench-data-table.js';
+import { AtelierStatusPill, statusToVariant } from '@contractor-ops/ui';
 import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import {
@@ -15,17 +16,23 @@ import { useCallback, useMemo, useState } from 'react';
 import type { LooseTranslator } from '../../../i18n/typed-keys.js';
 import { tDynLoose } from '../../../i18n/typed-keys.js';
 import { enumKey } from '../../../lib/enum-key.js';
-import { DeactivateDialogContainer } from '../deactivate-dialog-container.js';
-import type { useUsersTable } from '../hooks/use-users-table.js';
+import { DeactivateDialog } from '../deactivate-dialog.js';
 import {
   assignableRoles,
   displayName,
   displayStatus,
   roleBadgeColors,
+  useUsersTable,
 } from '../hooks/use-users-table.js';
-import { UserConsentSheetContainer } from '../user-consent-sheet-container.js';
+import { UserConsentSheet } from '../user-consent-sheet.js';
 
-export type UsersTableProps = ReturnType<typeof useUsersTable>;
+export type UsersTableProps = ReturnType<typeof useUsersTable> & {
+  sectionClassName?: string;
+};
+
+interface UsersTableContainerProps {
+  sectionClassName?: string;
+}
 
 type MemberRow = UsersTableProps['members'][number];
 type AssignableRole = (typeof assignableRoles)[number];
@@ -128,7 +135,7 @@ function MemberActionsCell({
   );
 }
 
-export function UsersTable({
+export function UsersTableView({
   t,
   membersQuery,
   members,
@@ -139,6 +146,7 @@ export function UsersTable({
   currentUserId,
   updateRoleMutation,
   reactivateMutation,
+  sectionClassName,
 }: UsersTableProps) {
   const [deactivateTarget, setDeactivateTarget] = useState<{
     userId: string;
@@ -303,7 +311,8 @@ export function UsersTable({
 
   return (
     <>
-      <DataTable
+      <WorkbenchDataTable
+        sectionClassName={sectionClassName}
         columns={columns}
         data={members}
         totalRows={members.length}
@@ -326,7 +335,7 @@ export function UsersTable({
       />
 
       {!!deactivateTarget && (
-        <DeactivateDialogContainer
+        <DeactivateDialog
           open={!!deactivateTarget}
           onOpenChange={handleDeactivateOpenChange}
           userId={deactivateTarget.userId}
@@ -334,7 +343,7 @@ export function UsersTable({
         />
       )}
 
-      <UserConsentSheetContainer
+      <UserConsentSheet
         userId={consentTarget?.userId ?? null}
         userName={consentTarget?.name ?? ''}
         open={!!consentTarget}
@@ -342,4 +351,9 @@ export function UsersTable({
       />
     </>
   );
+}
+
+export function UsersTable({ sectionClassName }: UsersTableContainerProps = {}) {
+  const table = useUsersTable();
+  return <UsersTableView {...table} sectionClassName={sectionClassName} />;
 }

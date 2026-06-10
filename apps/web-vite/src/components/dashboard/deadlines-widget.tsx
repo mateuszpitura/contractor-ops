@@ -3,6 +3,7 @@
  */
 
 import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import {
   Card,
   CardAction,
@@ -53,7 +54,7 @@ const DEADLINE_BADGE_CONFIG: Record<
 
 export function DeadlinesWidget() {
   const t = useTranslations('Dashboard');
-  const { isLoading, items } = useDeadlinesWidget();
+  const { isLoading, isError, onRetry, items } = useDeadlinesWidget();
 
   return (
     <Card>
@@ -73,6 +74,15 @@ export function DeadlinesWidget() {
             {Array.from({ length: 5 }).map((_, i) => (
               <Skeleton key={`skel-${i}`} className="h-10 w-full rounded-md" />
             ))}
+          </div>
+        ) : isError ? (
+          <div className="flex flex-col items-center justify-center gap-3 py-8 text-center">
+            <p className="text-sm font-medium">
+              {t('errors.widgetFailed', { name: t('deadlines.title') })}
+            </p>
+            <Button variant="outline" size="sm" onClick={onRetry}>
+              {t('errors.retry')}
+            </Button>
           </div>
         ) : items.length === 0 ? (
           <p className="py-8 text-center text-sm text-muted-foreground">{t('deadlines.empty')}</p>

@@ -28,7 +28,14 @@ import { ShieldOff } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { useCallback } from 'react';
 
+import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
+
+import { usePermissions } from '../../hooks/use-permissions.js';
 import { useTranslations } from '../../i18n/useTranslations.js';
+import { DeprovisioningRunViewWired } from './deprovisioning-run-view.js';
+import type { UseStartDeprovisioningInput } from './hooks/use-start-deprovisioning.js';
+import { useStartDeprovisioning } from './hooks/use-start-deprovisioning.js';
+import { ImpactPreviewPanelWired } from './impact-preview-panel.js';
 
 export interface DeprovisioningTriggerProps {
   /** Disable the start button (cooldown active or a start is in flight). */
@@ -120,5 +127,81 @@ export function DeprovisioningTrigger({
         </DialogContent>
       </Dialog>
     </>
+  );
+}
+
+function formatEarliest(earliestDate: Date | string | null): string | null {
+  if (!earliestDate) return null;
+  const d = earliestDate instanceof Date ? earliestDate : new Date(earliestDate);
+  if (Number.isNaN(d.getTime())) return null;
+  return d.toISOString().slice(0, 10);
+}
+
+export type DeprovisioningTriggerWiredProps = UseStartDeprovisioningInput;
+
+export function DeprovisioningTriggerWired(props: DeprovisioningTriggerWiredProps) {
+  const t = useTranslations('Idp.trigger');
+  const permissions = usePermissions();
+  const canStart = permissions.can('idp', ['start_run']);
+  const state = useStartDeprovisioning(props);
+
+  if (!canStart) return null;
+
+  if (state.isLoading) {
+    return <Skeleton className="h-9 w-32" data-testid="deprovisioning-trigger-skeleton" />;
+  }
+
+  if (state.isError) {
+    return (
+      <div className="space-y-2 rounded-lg border border-destructive/40 p-3" role="alert">
+        <p className="text-sm text-destructive">{t('error')}</p>
+        <button type="button" className="text-sm underline" onClick={state.onRetry}>
+          {t('retry')}
+        </button>
+      </div>
+    );
+  }
+
+  if (state.isUnresolved || !state.assignmentId) {
+    return (
+      <p className="text-sm text-muted-foreground" role="status">
+        {t('notConfigured')}
+      </p>
+    );
+  }
+
+  if (state.startedRunId) {
+    return (
+      <div className="space-y-2" data-testid="deprovisioning-run-inline">
+        <p className="text-sm font-medium text-muted-foreground" role="status">
+          {t('viewRun')}
+        </p>
+        <DeprovisioningRunViewWired runId={state.startedRunId} />
+      </div>
+    );
+  }
+
+  const earliest = formatEarliest(state.earliestDate);
+  const disabled = !state.allowed || state.isStarting;
+
+  return (
+    <DeprovisioningTrigger
+      disabled={disabled}
+      disabledTooltip={
+        state.allowed
+          ? null
+          : earliest
+            ? t('cooldownTooltip', { date: earliest })
+            : t('cooldownTooltipGeneric')
+      }
+      confirmOpen={state.confirmOpen}
+      onOpenConfirm={state.openConfirm}
+      onCloseConfirm={state.closeConfirm}
+      onConfirmStart={state.start}
+      starting={state.isStarting}
+      previewSlot={
+        <ImpactPreviewPanelWired assignmentId={state.assignmentId} provider="GOOGLE_WORKSPACE" />
+      }
+    />
   );
 }

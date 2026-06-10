@@ -12,25 +12,25 @@ import type { PeppolTransmissionBadgeData } from '../hooks/use-peppol-status-bad
 // Status → variant mapping
 // ---------------------------------------------------------------------------
 
-const TX_VARIANT: Record<string, { label: string; className: string }> = {
+const TX_VARIANT: Record<string, { labelKey: string; className: string }> = {
   DELIVERED: {
-    label: 'Delivered',
+    labelKey: 'statusDelivered',
     className: 'bg-success/10 text-success border-success/20',
   },
   TRANSMITTED: {
-    label: 'Transmitted',
+    labelKey: 'statusTransmitted',
     className: 'bg-info/10 text-info border-info/20',
   },
   PENDING: {
-    label: 'Pending',
+    labelKey: 'statusPending',
     className: 'bg-warning/10 text-warning border-warning/20',
   },
   FAILED: {
-    label: 'Failed',
+    labelKey: 'statusFailed',
     className: 'bg-destructive/10 text-destructive border-destructive/20',
   },
   REJECTED: {
-    label: 'Rejected',
+    labelKey: 'statusRejected',
     className: 'bg-destructive/10 text-destructive border-destructive/20',
   },
 };
@@ -57,6 +57,7 @@ export function PeppolStatusBadge({ transmission }: PeppolStatusBadgeProps) {
   if (!transmission) return null;
 
   const variant = TX_VARIANT[transmission.status] ?? TX_VARIANT.PENDING;
+  const statusLabel = t(variant.labelKey);
 
   return (
     <TooltipProvider>
@@ -67,9 +68,9 @@ export function PeppolStatusBadge({ transmission }: PeppolStatusBadgeProps) {
               variant="outline"
               className={`${variant.className} font-mono text-[11px]`}
               data-slot="peppol-status-badge"
-              aria-label={t('ariaLabel', { status: variant.label })}>
+              aria-label={t('ariaLabel', { status: statusLabel })}>
               <span className="me-1.5 inline-flex h-1.5 w-1.5 rounded-full bg-current opacity-80" />
-              {t('label')} · {variant.label}
+              {t('label')} · {statusLabel}
             </Badge>
           }
         />

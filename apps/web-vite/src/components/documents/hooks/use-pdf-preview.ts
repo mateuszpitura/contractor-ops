@@ -34,7 +34,7 @@ export function usePdfPreview(documentId: string, open: boolean): UsePdfPreviewR
       .fetchQuery(trpc.document.getDownloadUrl.queryOptions({ documentId }))
       .then(data => {
         if (cancelled) return;
-        const url = (data as { url?: string } | undefined)?.url ?? null;
+        const url = data?.url ?? null;
         setPdfUrl(url);
       })
       .catch(() => {

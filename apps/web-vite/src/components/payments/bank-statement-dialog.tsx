@@ -12,9 +12,10 @@ import type * as React from 'react';
 import type { ReactNode, RefObject } from 'react';
 import { useCallback, useState } from 'react';
 
-import type { TranslateFn } from '../../i18n/useTranslations.js';
+import { useTranslations, type TranslateFn } from '../../i18n/useTranslations.js';
 import { BankStatementMatchesDataTable } from './bank-statement/data-table.js';
 import type { BankStatementMatchResult } from './hooks/use-bank-statement-import.js';
+import { useBankStatementImport } from './hooks/use-bank-statement-import.js';
 
 function preventDefault(e: React.DragEvent<HTMLDivElement>) {
   e.preventDefault();
@@ -193,5 +194,64 @@ export function BankStatementResultsStep({
         </Button>
       </div>
     </div>
+  );
+}
+
+interface BankStatementDialogProps {
+  runId: string;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}
+
+export function BankStatementDialog({ runId, open, onOpenChange }: BankStatementDialogProps) {
+  const t = useTranslations('Payments');
+
+  const handleCloseFromHook = useCallback(() => {
+    onOpenChange(false);
+  }, [onOpenChange]);
+
+  const importFlow = useBankStatementImport({ runId, onClose: handleCloseFromHook });
+
+  const matchedCount = importFlow.matches.filter(m => m.matched).length;
+
+  return (
+    <BankStatementDialogShell
+      open={open}
+      onOpenChange={onOpenChange}
+      onCloseAttempt={importFlow.handleClose}
+      t={t}>
+      {importFlow.step === 'upload' && (
+        <BankStatementUploadStep
+          t={t}
+          fileInputRef={importFlow.fileInputRef}
+          onFileSelect={importFlow.handleFileSelect}
+        />
+      )}
+
+      {importFlow.step === 'parsing' && <BankStatementParsingStep t={t} />}
+
+      {importFlow.step === 'results' && (
+        <BankStatementResultsStep
+          t={t}
+          matches={importFlow.matches}
+          selectedMatches={importFlow.selectedMatches}
+          matchedCount={matchedCount}
+          totalCount={importFlow.matches.length}
+          selectedCount={importFlow.selectedMatches.size}
+          onToggleMatch={importFlow.toggleMatch}
+          onCancel={importFlow.handleClose}
+          onConfirm={importFlow.handleConfirm}
+          isConfirmPending={importFlow.isConfirmPending}
+        />
+      )}
+
+      {importFlow.step === 'error' && (
+        <BankStatementErrorStep
+          t={t}
+          parseError={importFlow.parseError}
+          onRetry={importFlow.handleRetry}
+        />
+      )}
+    </BankStatementDialogShell>
   );
 }

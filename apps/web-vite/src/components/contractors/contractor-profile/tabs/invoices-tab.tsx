@@ -19,9 +19,12 @@ import { useTranslations } from '../../../../i18n/useTranslations.js';
 import { useDateFormatter } from '../../../../lib/format/use-date-formatter.js';
 import type { InvoiceRow } from '../../../invoices/invoice-table/columns.js';
 import { getColumns } from '../../../invoices/invoice-table/columns.js';
-import { InvoiceUploadAreaContainer } from '../../../invoices/invoice-upload-area-container.js';
+import { InvoiceUploadArea } from '../../../invoices/invoice-upload-area.js';
 import { renderEmptyStateAction } from '../../../shared/atelier-bridges.js';
-import type { useContractorTabInvoices } from '../../hooks/use-contractor-tab-invoices.js';
+import {
+  useContractorTabInvoices,
+  type useContractorTabInvoices as UseContractorTabInvoices,
+} from '../../hooks/use-contractor-tab-invoices.js';
 
 const PAGE_SIZE = 25;
 
@@ -65,7 +68,7 @@ export function InvoicesTabEmpty({
             <DialogTitle>{t('upload.heading')}</DialogTitle>
           </DialogHeader>
           <DialogBody>
-            <InvoiceUploadAreaContainer onUploadComplete={handleUploadComplete} />
+            <InvoiceUploadArea onUploadComplete={handleUploadComplete} />
           </DialogBody>
         </DialogContent>
       </Dialog>
@@ -138,10 +141,33 @@ export function InvoicesTabView({
             <DialogTitle>{t('upload.heading')}</DialogTitle>
           </DialogHeader>
           <DialogBody>
-            <InvoiceUploadAreaContainer onUploadComplete={handleUploadComplete} />
+            <InvoiceUploadArea onUploadComplete={handleUploadComplete} />
           </DialogBody>
         </DialogContent>
       </Dialog>
     </div>
   );
 }
+
+type InvoicesTabContainerProps = {
+  contractorId: string;
+};
+
+export function InvoicesTabContainer({ contractorId }: InvoicesTabContainerProps) {
+  const invoices = useContractorTabInvoices(contractorId);
+
+  if (!invoices.isLoading && invoices.data.length === 0) {
+    return (
+      <InvoicesTabEmpty
+        uploadOpen={invoices.uploadOpen}
+        setUploadOpen={invoices.setUploadOpen}
+        handleUploadComplete={invoices.handleUploadComplete}
+      />
+    );
+  }
+
+  return <InvoicesTabView {...invoices} />;
+}
+
+/** @deprecated Use InvoicesTab */
+export { InvoicesTabContainer as InvoicesTab };

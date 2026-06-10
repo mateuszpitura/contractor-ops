@@ -1,4 +1,10 @@
-import { DataTable, TemplatesIllustration } from '@contractor-ops/ui';
+import {
+  AtelierEmptyState,
+  SectionLabel,
+  TemplatesIllustration,
+  WORKBENCH_TABLE_SECTION_CLASS,
+} from '@contractor-ops/ui';
+import { WorkbenchDataTable } from '../../table-kit/workbench-data-table.js';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -12,11 +18,15 @@ import {
 import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import type { ColumnDef } from '@tanstack/react-table';
-import { Pencil, Plus, Trash2 } from 'lucide-react';
+import { Pencil, Plus, Trash2, Users2 } from 'lucide-react';
 import { useCallback, useMemo, useState } from 'react';
 
-import type { useWorkflowRolesTable } from './hooks/use-workflow-roles-table.js';
-import { WorkflowRoleFormDialogContainer } from './workflow-role-form-dialog-container.js';
+import { renderEmptyStateAction } from '../../shared/atelier-bridges.js';
+import {
+  useWorkflowRolesTable,
+  type useWorkflowRolesTable as UseWorkflowRolesTable,
+} from './hooks/use-workflow-roles-table.js';
+import { WorkflowRoleFormDialog } from './workflow-role-form-dialog.js';
 
 interface WorkflowRolesTableProps {
   canCreate?: boolean;
@@ -24,7 +34,7 @@ interface WorkflowRolesTableProps {
 }
 
 export type WorkflowRolesTableViewProps = WorkflowRolesTableProps &
-  ReturnType<typeof useWorkflowRolesTable>;
+  ReturnType<typeof UseWorkflowRolesTable>;
 
 type WorkflowRoleRow = WorkflowRolesTableViewProps['rows'][number];
 type EditingPayload = NonNullable<WorkflowRolesTableViewProps['editing']>;
@@ -85,7 +95,7 @@ function RoleActionsCell({ row, editLabel, deleteLabel, onEdit, onDelete }: Role
   );
 }
 
-export function WorkflowRolesTable({
+export function WorkflowRolesTableView({
   canCreate,
   onCreate,
   t,
@@ -170,7 +180,7 @@ export function WorkflowRolesTable({
 
   return (
     <>
-      <DataTable
+      <WorkbenchDataTable
         columns={columns}
         data={rows}
         totalRows={rows.length}
@@ -197,7 +207,7 @@ export function WorkflowRolesTable({
       />
 
       {editing && (
-        <WorkflowRoleFormDialogContainer
+        <WorkflowRoleFormDialog
           mode="edit"
           initial={editing}
           open={!!editing}
@@ -226,5 +236,34 @@ export function WorkflowRolesTable({
         </AlertDialogContent>
       </AlertDialog>
     </>
+  );
+}
+
+export function WorkflowRolesTable(props: WorkflowRolesTableProps) {
+  const table = useWorkflowRolesTable();
+  const { canCreate, onCreate } = props;
+
+  if (table.showFeaturedEmpty) {
+    return (
+      <AtelierEmptyState
+        variant="page"
+        illustration={TemplatesIllustration}
+        heading={table.t('empty.heading')}
+        body={table.t('empty.body')}
+        primaryAction={
+          canCreate && onCreate
+            ? { label: table.t('empty.cta'), onClick: onCreate, icon: Plus }
+            : undefined
+        }
+        renderAction={renderEmptyStateAction}
+      />
+    );
+  }
+
+  return (
+    <section aria-label={table.t('listSectionLabel')} className={WORKBENCH_TABLE_SECTION_CLASS}>
+      <SectionLabel icon={Users2}>{table.t('listSectionLabel')}</SectionLabel>
+      <WorkflowRolesTableView {...props} {...table} />
+    </section>
   );
 }

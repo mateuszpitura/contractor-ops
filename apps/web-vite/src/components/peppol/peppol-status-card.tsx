@@ -16,7 +16,11 @@ import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { Settings, Unlink, Unplug } from 'lucide-react';
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { PeppolBrandIcon } from '../integrations/brand-icons';
+import { useCallback, useState } from 'react';
+
+import { usePeppolStatusCard } from './hooks/use-peppol.js';
 import type { PeppolStatusCardProps as StatusCardHookProps } from './hooks/use-peppol.js';
+import { PeppolWizard } from './peppol-wizard.js';
 
 // ---------------------------------------------------------------------------
 // Status badge mapping
@@ -210,5 +214,35 @@ export function PeppolStatusCardConnected({
         </div>
       </CardContent>
     </Card>
+  );
+}
+
+export function PeppolStatusCard() {
+  const props = usePeppolStatusCard();
+  const [wizardOpen, setWizardOpen] = useState(false);
+
+  const handleConnectClick = useCallback(() => {
+    setWizardOpen(true);
+  }, []);
+
+  if (props.isLoading) return <PeppolStatusCardSkeleton />;
+
+  if (!(props.isConnected && props.participant)) {
+    return (
+      <>
+        <PeppolStatusCardDisconnected onConnectClick={handleConnectClick} />
+        <PeppolWizard open={wizardOpen} onOpenChange={setWizardOpen} />
+      </>
+    );
+  }
+
+  return (
+    <PeppolStatusCardConnected
+      participant={props.participant}
+      connection={props.connection}
+      counts={props.counts}
+      onDisconnect={props.onDisconnect}
+      isDisconnecting={props.isDisconnecting}
+    />
   );
 }

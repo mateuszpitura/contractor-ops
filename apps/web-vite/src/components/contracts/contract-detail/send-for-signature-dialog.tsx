@@ -38,7 +38,8 @@ import { useCallback } from 'react';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { getAvatarInitials } from '../../../lib/avatar-initials.js';
-import type { useSendForSignatureDialog } from '../hooks/use-send-for-signature-dialog.js';
+import { useSendForSignatureDialog } from '../hooks/use-send-for-signature-dialog.js';
+import type { useSendForSignatureDialog as UseSendForSignatureDialog } from '../hooks/use-send-for-signature-dialog.js';
 
 type Signer = {
   id: string;
@@ -57,7 +58,7 @@ type SendForSignatureDialogProps = {
     email: string;
     role: 'signer' | 'countersigner';
   }>;
-  dialog: ReturnType<typeof useSendForSignatureDialog>;
+  dialog: ReturnType<typeof UseSendForSignatureDialog>;
 };
 
 function SortableSignerRow({ signer, index: _index }: { signer: Signer; index: number }) {
@@ -99,7 +100,7 @@ function SortableSignerRow({ signer, index: _index }: { signer: Signer; index: n
 /**
  * Full setup dialog for sending a document for e-signature.
  */
-export function SendForSignatureDialog({
+export function SendForSignatureDialogView({
   open,
   onOpenChange,
   documentId,
@@ -295,4 +296,22 @@ export function SendForSignatureDialog({
       </DialogContent>
     </Dialog>
   );
+}
+
+type SendForSignatureDialogWiredProps = Omit<SendForSignatureDialogProps, 'dialog'>;
+
+function SendForSignatureDialogOpen(props: SendForSignatureDialogWiredProps) {
+  const dialog = useSendForSignatureDialog(
+    props.open,
+    props.onOpenChange,
+    props.contractId,
+    props.documentId,
+    props.contractParties,
+  );
+  return <SendForSignatureDialogView {...props} dialog={dialog} />;
+}
+
+export function SendForSignatureDialog(props: SendForSignatureDialogWiredProps) {
+  if (!props.open) return null;
+  return <SendForSignatureDialogOpen {...props} />;
 }

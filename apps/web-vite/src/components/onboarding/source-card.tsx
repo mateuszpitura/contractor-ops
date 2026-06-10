@@ -23,6 +23,7 @@ interface SourceCardProps {
   selected: boolean;
   onToggle: () => void;
   onConnect: () => void;
+  connectDisabled?: boolean;
 }
 
 // ---------------------------------------------------------------------------
@@ -37,6 +38,7 @@ export function SourceCard({
   selected,
   onToggle,
   onConnect,
+  connectDisabled = false,
 }: SourceCardProps) {
   const t = useTranslations('OnboardingImport.sourceCard');
 
@@ -61,14 +63,15 @@ export function SourceCard({
   return (
     <Card
       className={cn(
-        'cursor-pointer transition-shadow hover:shadow-md',
-        selected && 'ring-2 ring-primary bg-teal-50/50 dark:bg-teal-950/20',
+        'transition-shadow hover:shadow-md',
+        connected && 'cursor-pointer',
+        selected && connected && 'ring-2 ring-primary bg-teal-50/50 dark:bg-teal-950/20',
       )}
-      role="checkbox"
-      aria-checked={selected}
+      role={connected ? 'checkbox' : undefined}
+      aria-checked={connected ? selected : undefined}
       aria-label={name}
-      tabIndex={0}
-      onKeyDown={handleKeyDown}
+      tabIndex={connected ? 0 : undefined}
+      onKeyDown={connected ? handleKeyDown : undefined}
       onClick={connected ? onToggle : undefined}>
       <CardContent className="flex items-center gap-4 py-4">
         {/* Provider icon */}
@@ -100,7 +103,7 @@ export function SourceCard({
             />
           </div>
         ) : (
-          <Button variant="outline" size="sm" onClick={handleConnectClick}>
+          <Button variant="outline" size="sm" onClick={handleConnectClick} disabled={connectDisabled}>
             {t('connect')}
           </Button>
         )}

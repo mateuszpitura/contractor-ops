@@ -10,26 +10,27 @@ import {
   AlertDialogTrigger,
 } from '@contractor-ops/ui/components/shadcn/alert-dialog';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
-import { ScrollArea } from '@contractor-ops/ui/components/shadcn/scroll-area';
 import { Separator } from '@contractor-ops/ui/components/shadcn/separator';
+
 import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from '@contractor-ops/ui/components/shadcn/sheet';
+  EntityDetailItem,
+  EntitySummarySheet,
+} from '../table-kit/entity-summary-sheet.js';
 import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { CheckCircle2, Download, FileUp, Lightbulb, XCircle } from 'lucide-react';
 import { useCallback } from 'react';
-import type { TranslateFn } from '../../i18n/useTranslations.js';
-import { useTranslations } from '../../i18n/useTranslations.js';
-import { formatMinorUnits } from '../../lib/format-currency.js';
+import { useLocale } from '../../i18n/navigation.js';
+import { useTranslations, type TranslateFn } from '../../i18n/useTranslations.js';
+import { useDateFormatter } from '../../lib/format/use-date-formatter.js';
+import { formatMinorUnits } from '../../lib/money.js';
 import { formatRelativeDate } from '../../lib/format-relative-date.js';
-import { BacsPreviewCardContainer } from './bacs/bacs-preview-card-container.js';
-import type { usePaymentRunSidePanel } from './hooks/use-payment-run-side-panel.js';
+import { useFlag } from '../layout/feature-flag-context.js';
+import { BacsPreviewCard } from './bacs/bacs-preview-card.js';
+import { usePaymentRunSidePanel } from './hooks/use-payment-run-side-panel.js';
+import type { usePaymentRunSidePanel as UsePaymentRunSidePanel } from './hooks/use-payment-run-side-panel.js';
 import { PaymentRunBadge } from './payment-run-badge.js';
 import { PaymentRunItemRow } from './payment-run-item-row.js';
-import { WhtSummaryCardContainer } from './wht-summary-card-container.js';
+import { WhtSummaryCard } from './wht-summary-card.js';
 
 interface PaymentRunSidePanelSkeletonProps {
   open: boolean;
@@ -41,46 +42,41 @@ export function PaymentRunSidePanelSkeleton({
   onOpenChange,
 }: PaymentRunSidePanelSkeletonProps) {
   const t = useTranslations('Payments.sidePanel');
+
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="w-[400px] p-0">
-        <ScrollArea className="h-full">
-          <div className="p-6 space-y-6">
-            <SheetHeader className="space-y-3">
-              <SheetTitle className="sr-only">{t('loadingTitle')}</SheetTitle>
-              <div className="flex items-center gap-3">
-                <Skeleton className="h-6 w-48" />
-                <Skeleton className="h-5 w-16 rounded-full" />
-              </div>
-            </SheetHeader>
-            <Separator />
-            <div className="grid grid-cols-2 gap-3">
-              {Array.from({ length: 4 }).map((_, i) => (
-                // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
-                <div key={`payment-run-detail-skel-${i}`} className="space-y-1">
-                  <Skeleton className="h-3 w-20" />
-                  <Skeleton className="h-4 w-28" />
-                </div>
-              ))}
-            </div>
-            <Separator />
-            <div className="space-y-2">
-              {Array.from({ length: 3 }).map((_, i) => (
-                // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
-                <Skeleton key={`payment-run-item-skel-${i}`} className="h-12 w-full rounded-md" />
-              ))}
-            </div>
+    <EntitySummarySheet
+      open={open}
+      onOpenChange={onOpenChange}
+      sheetClassName="w-[400px]"
+      title={t('loadingTitle')}
+      titleVisuallyHidden>
+      <div className="flex items-center gap-3">
+        <Skeleton className="h-6 w-48" />
+        <Skeleton className="h-5 w-16 rounded-full" />
+      </div>
+      <div className="grid grid-cols-2 gap-3">
+        {Array.from({ length: 4 }).map((_, i) => (
+          // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
+          <div key={`payment-run-detail-skel-${i}`} className="space-y-1">
+            <Skeleton className="h-3 w-20" />
+            <Skeleton className="h-4 w-28" />
           </div>
-        </ScrollArea>
-      </SheetContent>
-    </Sheet>
+        ))}
+      </div>
+      <div className="space-y-2">
+        {Array.from({ length: 3 }).map((_, i) => (
+          // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
+          <Skeleton key={`payment-run-item-skel-${i}`} className="h-12 w-full rounded-md" />
+        ))}
+      </div>
+    </EntitySummarySheet>
   );
 }
 
-type Panel = ReturnType<typeof usePaymentRunSidePanel>;
+type Panel = ReturnType<typeof UsePaymentRunSidePanel>;
 type LoadedRun = NonNullable<Panel['run']>;
 
-interface PaymentRunSidePanelProps {
+interface PaymentRunSidePanelViewProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onImportStatement?: (runId: string) => void;
@@ -123,7 +119,7 @@ function DetectedFormatHint({
   );
 }
 
-export function PaymentRunSidePanel({
+export function PaymentRunSidePanelView({
   open,
   onOpenChange,
   onImportStatement,
@@ -133,7 +129,7 @@ export function PaymentRunSidePanel({
   locale,
   formatDate,
   skontoEnabled,
-}: PaymentRunSidePanelProps) {
+}: PaymentRunSidePanelViewProps) {
   const { run, safeRunId, status, items } = panel;
 
   const handleImportStatementClick = useCallback(
@@ -142,50 +138,43 @@ export function PaymentRunSidePanel({
   );
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="w-[400px] p-0">
-        <ScrollArea className="h-full">
-          <div className="p-6 space-y-6">
-            <SheetHeader className="space-y-3">
-              <div className="flex items-center gap-3">
-                <SheetTitle className="text-[20px] font-semibold leading-[1.2]">
-                  {run.runNumber ?? run.id.slice(0, 8)}
-                </SheetTitle>
-                <PaymentRunBadge status={status} />
-              </div>
-            </SheetHeader>
+    <EntitySummarySheet
+      open={open}
+      onOpenChange={onOpenChange}
+      sheetClassName="w-[400px]"
+      title={run.runNumber ?? run.id.slice(0, 8)}
+      badges={<PaymentRunBadge status={status} />}>
+      <div className="grid grid-cols-2 gap-3 text-sm">
+        <EntityDetailItem
+          label={t('sidePanel.created')}
+          value={formatRelativeDate(run.createdAt, locale)}
+        />
+        <EntityDetailItem label={t('sidePanel.exportFormat')} value={run.exportFormat ?? '—'} />
+        <EntityDetailItem label={t('sidePanel.invoices')} value={String(run.invoiceCount)} />
+        <EntityDetailItem
+          label={t('sidePanel.total')}
+          value={formatMinorUnits(run.totalMinor, run.currency, locale)}
+          mono
+        />
+        {!!run.completedAt && (
+          <EntityDetailItem
+            label={t('sidePanel.completedDate')}
+            value={formatDate(run.completedAt)}
+          />
+        )}
+      </div>
 
-            <Separator />
+      {panel.showFormatHint ? (
+        <div className="mt-4">
+          <DetectedFormatHint detectedFormatCounts={panel.detectedFormatCounts} t={t} />
+        </div>
+      ) : null}
 
-            <div className="grid grid-cols-2 gap-3 text-sm">
-              <DetailItem
-                label={t('sidePanel.created')}
-                value={formatRelativeDate(run.createdAt, locale)}
-              />
-              <DetailItem label={t('sidePanel.exportFormat')} value={run.exportFormat ?? '—'} />
-              <DetailItem label={t('sidePanel.invoices')} value={String(run.invoiceCount)} />
-              <DetailItem
-                label={t('sidePanel.total')}
-                value={formatMinorUnits(run.totalMinor, run.currency, locale)}
-                mono
-              />
-              {!!run.completedAt && (
-                <DetailItem
-                  label={t('sidePanel.completedDate')}
-                  value={formatDate(run.completedAt)}
-                />
-              )}
-            </div>
+      <Separator className="my-4" />
 
-            {panel.showFormatHint && (
-              <DetectedFormatHint detectedFormatCounts={panel.detectedFormatCounts} t={t} />
-            )}
+      <WhtSummaryCard paymentRunId={safeRunId} items={items} />
 
-            <Separator />
-
-            <WhtSummaryCardContainer paymentRunId={safeRunId} items={items} />
-
-            <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-2 mt-4">
               {status === 'DRAFT' && (
                 <CancelRunButton
                   status={status}
@@ -233,40 +222,37 @@ export function PaymentRunSidePanel({
                   {t('sidePanel.downloadExport')}
                 </Button>
               )}
-            </div>
+      </div>
 
-            <Separator />
+      <Separator className="my-4" />
 
-            <div className="space-y-2">
-              <h3 className="text-[13px] font-medium text-muted-foreground uppercase tracking-wider">
-                {t('sidePanel.invoices')}
-              </h3>
-              <div className="space-y-1">
-                {items.map(item => (
-                  <PaymentRunItemRow
-                    key={item.id}
-                    item={item}
-                    runStatus={status}
-                    skontoEnabled={skontoEnabled}
-                    onUpdateStatus={panel.onUpdateItemStatus}
-                    onRemoveFromRun={panel.onRemoveFromRun}
-                    isUpdating={panel.isUpdatingItem}
-                    isRemoving={panel.isRemovingItem}
-                  />
-                ))}
-              </div>
-            </div>
+      <div className="space-y-2">
+        <h3 className="text-[13px] font-medium text-muted-foreground uppercase tracking-wider">
+          {t('sidePanel.invoices')}
+        </h3>
+        <div className="space-y-1">
+          {items.map(item => (
+            <PaymentRunItemRow
+              key={item.id}
+              item={item}
+              runStatus={status}
+              skontoEnabled={skontoEnabled}
+              onUpdateStatus={panel.onUpdateItemStatus}
+              onRemoveFromRun={panel.onRemoveFromRun}
+              isUpdating={panel.isUpdatingItem}
+              isRemoving={panel.isRemovingItem}
+            />
+          ))}
+        </div>
+      </div>
 
-            {showBacsPreview ? (
-              <>
-                <Separator />
-                <BacsPreviewCardContainer paymentRunId={safeRunId} />
-              </>
-            ) : null}
-          </div>
-        </ScrollArea>
-      </SheetContent>
-    </Sheet>
+      {showBacsPreview ? (
+        <>
+          <Separator className="my-4" />
+          <BacsPreviewCard paymentRunId={safeRunId} />
+        </>
+      ) : null}
+    </EntitySummarySheet>
   );
 }
 
@@ -310,21 +296,48 @@ function CancelRunButton({
   );
 }
 
-function DetailItem({
-  label,
-  value,
-  mono = false,
-}: {
-  label: string;
-  value: string | null | undefined;
-  mono?: boolean;
-}) {
+interface PaymentRunSidePanelProps {
+  runId: string | null;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onImportStatement?: (runId: string) => void;
+}
+
+export function PaymentRunSidePanel({
+  runId,
+  open,
+  onOpenChange,
+  onImportStatement,
+}: PaymentRunSidePanelProps) {
+  const t = useTranslations('Payments');
+  const locale = useLocale();
+  const { formatDate } = useDateFormatter();
+  const bacsEnabled = useFlag('payments.bacs-enabled');
+  const skontoEnabled = useFlag('payments.skonto-enabled');
+  const panel = usePaymentRunSidePanel({ runId, open, onOpenChange });
+
+  if (panel.isLoading || !panel.run) {
+    return <PaymentRunSidePanelSkeleton open={open} onOpenChange={onOpenChange} />;
+  }
+
+  const exportFormat = panel.run.exportFormat as string | null | undefined;
+  const showBacsPreview =
+    bacsEnabled &&
+    (exportFormat === 'BACS_STD18' ||
+      panel.detectedFormatCounts.some(([format]) => format === 'BACS_STD18'));
+
   return (
-    <div className="space-y-1">
-      <dt className="text-[13px] text-muted-foreground">{label}</dt>
-      <dd className={mono ? 'font-mono text-[13px]' : 'text-sm'}>
-        {value ?? <span className="text-muted-foreground">&mdash;</span>}
-      </dd>
-    </div>
+    <PaymentRunSidePanelView
+      open={open}
+      onOpenChange={onOpenChange}
+      onImportStatement={onImportStatement}
+      panel={{ ...panel, run: panel.run }}
+      showBacsPreview={showBacsPreview}
+      t={t}
+      locale={locale}
+      formatDate={formatDate}
+      skontoEnabled={skontoEnabled}
+    />
   );
 }
+

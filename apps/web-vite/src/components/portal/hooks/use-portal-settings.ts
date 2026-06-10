@@ -1,6 +1,6 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { toast } from 'sonner';
+import { useMutation, useQuery } from '@tanstack/react-query';
 
+import { useResourceMutation } from '../../../hooks/use-resource-mutation.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { usePortalTRPC, useTRPC } from '../../../providers/trpc-provider.js';
 
@@ -36,36 +36,26 @@ export function usePortalProfile() {
 export function usePortalUpdateContactInfo() {
   const t = useTranslations('Portal');
   const trpc = usePortalTRPC();
-  const queryClient = useQueryClient();
 
-  return useMutation(
-    trpc.portal.updateContactInfo.mutationOptions({
-      onError: err => toast.error(err.message),
-      onSuccess: () => {
-        toast.success(t('toast.saved'));
-        void queryClient.invalidateQueries({
-          queryKey: trpc.portal.getProfile.queryOptions().queryKey,
-        });
-      },
-    }),
+  return useResourceMutation(
+    trpc.portal.updateContactInfo.mutationOptions(),
+    {
+      successMessage: t('toast.saved'),
+      invalidate: [{ queryKey: trpc.portal.getProfile.queryOptions().queryKey }],
+    },
   );
 }
 
 export function usePortalSubmitFinancialChange() {
   const t = useTranslations('Portal');
   const trpc = usePortalTRPC();
-  const queryClient = useQueryClient();
 
-  return useMutation(
-    trpc.portal.submitFinancialChangeRequest.mutationOptions({
-      onError: err => toast.error(err.message),
-      onSuccess: () => {
-        toast.success(t('toast.saved'));
-        void queryClient.invalidateQueries({
-          queryKey: trpc.portal.getProfile.queryOptions().queryKey,
-        });
-      },
-    }),
+  return useResourceMutation(
+    trpc.portal.submitFinancialChangeRequest.mutationOptions(),
+    {
+      successMessage: t('toast.saved'),
+      invalidate: [{ queryKey: trpc.portal.getProfile.queryOptions().queryKey }],
+    },
   );
 }
 
@@ -75,16 +65,13 @@ export function usePortalNotificationPreferences() {
 }
 
 export function usePortalUpdateNotificationPreference() {
+  const t = useTranslations('Portal.notificationPreferences');
   const trpc = usePortalTRPC();
-  const queryClient = useQueryClient();
 
-  return useMutation({
-    ...trpc.portal.updateNotificationPreference.mutationOptions(),
-    onSuccess: () => {
-      void queryClient.invalidateQueries({
-        queryKey: trpc.portal.getNotificationPreferences.queryKey(),
-      });
-    },
+  return useResourceMutation(trpc.portal.updateNotificationPreference.mutationOptions(), {
+    invalidate: [trpc.portal.getNotificationPreferences.queryKey()],
+    successMessage: t('toast.updated'),
+    errorMessage: t('errors.updateFailed'),
   });
 }
 

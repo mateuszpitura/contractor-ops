@@ -9,31 +9,27 @@ import {
 } from '@contractor-ops/ui/components/shadcn/alert-dialog';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { Loader2, UserMinus, UserX } from 'lucide-react';
-import type { useDeactivateDialog } from './hooks/use-deactivate-dialog.js';
+import { useDeactivateDialog } from './hooks/use-deactivate-dialog.js';
+import type { useDeactivateDialog as UseDeactivateDialog } from './hooks/use-deactivate-dialog.js';
 
-interface DeactivateDialogBaseProps {
+interface DeactivateDialogShellProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   userId: string;
   userName: string;
 }
 
-export type DeactivateDialogProps = DeactivateDialogBaseProps &
-  ReturnType<typeof useDeactivateDialog>;
+export type DeactivateDialogViewProps = DeactivateDialogShellProps &
+  ReturnType<typeof UseDeactivateDialog>;
 
-/**
- * Confirmation dialog for deactivating a team member.
- * Uses AlertDialog for destructive action confirmation pattern.
- * Calls trpc.user.deactivate on confirm, refreshes the user list on success.
- */
-export function DeactivateDialog({
+export function DeactivateDialogView({
   open,
   onOpenChange,
   userName,
   t,
   isPending,
   handleConfirm,
-}: DeactivateDialogProps) {
+}: DeactivateDialogViewProps) {
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
@@ -62,5 +58,23 @@ export function DeactivateDialog({
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
+  );
+}
+
+export function DeactivateDialog({
+  open,
+  onOpenChange,
+  userId,
+  userName,
+}: DeactivateDialogShellProps) {
+  const dialog = useDeactivateDialog({ open, onOpenChange, userId, userName });
+  return (
+    <DeactivateDialogView
+      open={open}
+      onOpenChange={onOpenChange}
+      userId={userId}
+      userName={userName}
+      {...dialog}
+    />
   );
 }

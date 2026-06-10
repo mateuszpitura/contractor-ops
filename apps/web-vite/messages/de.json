@@ -55,6 +55,11 @@
       "signoffRegistry": "Signoff-Registry",
       "pendingGate": "Flag in Unleash AKTIV, aber app-seitig blockiert — {count} Disclaimer offen (PENDING).",
       "pendingGateResolution": "Auflösen durch PR-Update von `packages/validators/src/legal/signoff-registry.json`",
+      "pendingGateDetail": "um jeden PENDING-Schlüssel mit approvedBy + approvedAt + approverRole auf APPROVED zu setzen. Der PR erfordert ein Review von @contractor-ops/legal-platform (CODEOWNERS).",
+      "statusEnabled": "AKTIVIERT",
+      "statusDisabled": "DEAKTIVIERT",
+      "allApprovedCount": "Alle {count} freigegeben (APPROVED)",
+      "pendingOfTotal": "{pending} von {total} offen (PENDING)",
       "killSwitchDesc": "Kill-Switch der Klassifizierungs-Engine. Schreibgeschützt — Umschalten in der Unleash-Konsole.",
       "disclaimerRegistryTitle": "Disclaimer-Signoff-Registry",
       "allKeysMustBeApproved": "Alle Schlüssel müssen GENEHMIGT sein, bevor das Flag in der Produktion aktiviert werden kann.",
@@ -2488,6 +2493,7 @@
       }
     },
     "InvoiceTab": {
+      "errorTitle": "Fehler",
       "tabLabel": "E-Rechnung",
       "generationHeading": "Erzeugung",
       "generationNotGeneratedBody": "Für diese Rechnung wurde noch kein XRechnung-XML erzeugt.",
@@ -2515,6 +2521,10 @@
       "transmittedCaptionPattern": "Übermittelt {relativeTime} · Nachricht {transmissionId}",
       "deliveryAckPattern": "Zugestellt {relativeTime}",
       "transmissionHistoryHeading": "Übermittlungshistorie",
+      "transmissionColWhen": "Wann",
+      "transmissionColEvent": "Ereignis",
+      "transmissionColDetails": "Details",
+      "transmissionCancel": "Abbrechen",
       "transmissionEventPattern": "{occurredAt} — {eventType} {detailsOneLiner}",
       "leitwegResolvedPattern": "Aufgelöste Leitweg-ID: {leitwegIdValue} ({source})",
       "leitwegSourceContract": "aus Vertragsüberschreibung",
@@ -2672,6 +2682,7 @@
         "REJECTED": "Abgelehnt"
       },
       "validation": {
+        "heading": "Validierung",
         "VALID": "Gültig",
         "WARNINGS": "Warnungen",
         "INVALID": "Ungültig",
@@ -2845,6 +2856,7 @@
         "type": "Typ",
         "status": "Status",
         "assignee": "Assignee",
+        "shipment": "Versand",
         "actions": "Aktionen",
         "selectAll": "Alle auswählen",
         "selectRow": "Zeile auswählen"
@@ -3165,6 +3177,7 @@
     "workflowTemplateNotFound": "Workflow-Vorlage nicht gefunden.",
     "workflowRunNotFound": "Workflow-Lauf nicht gefunden.",
     "workflowRunAlreadyCancelled": "Workflow-Lauf wurde bereits abgebrochen.",
+    "workflowRunNotInProgress": "Workflow-Lauf ist nicht in Bearbeitung.",
     "workflowTaskNotFound": "Aufgabe nicht gefunden.",
     "workflowTaskInvalidStatus": "Dieser Statuswechsel ist für diese Aufgabe nicht zulässig.",
     "workflowTaskCannotSkip": "Diese Aufgabe kann im aktuellen Status nicht übersprungen werden.",
@@ -3393,7 +3406,9 @@
     "approvalNotPendingCompliance": "Diese Genehmigung befindet sich nicht in einer Compliance-Sperre.",
     "approvalCannotResolveContractor": "Der Auftragnehmer für diese Genehmigung kann nicht ermittelt werden.",
     "approvalStillComplianceBlocked": "Der Auftragnehmer hat weiterhin ein abgelaufenes, blockierendes Compliance-Dokument; die Genehmigung kann nicht fortgesetzt werden.",
-    "deprovisioningProviderSignoffPending": "Für diese Anbieter-Deprovisionierungsfunktion ist eine Genehmigung erforderlich, bevor sie aktiviert werden kann."
+    "deprovisioningProviderSignoffPending": "Für diese Anbieter-Deprovisionierungsfunktion ist eine Genehmigung erforderlich, bevor sie aktiviert werden kann.",
+    "workflowAssigneeNotMember": "Der ausgewählte Bearbeiter ist kein Mitglied dieser Organisation.",
+    "importJobStateConflict": "Der Importauftrag hat sich geändert; bitte aktualisieren und erneut versuchen."
   },
   "Compliance": {
     "paymentBlockModal": {
@@ -3755,11 +3770,14 @@
         "saveMapping": "Zuordnung speichern",
         "toast": {
           "saved": "Statuszuordnung gespeichert",
-          "saveFailed": "Aktion fehlgeschlagen: save status mapping."
+          "saveFailed": "Aktion fehlgeschlagen: save status mapping.",
+          "webhooksNotRegistered": "Zuordnung gespeichert, aber Jira-Webhooks konnten nicht registriert werden. Eingehende Statussynchronisation funktioniert möglicherweise erst nach Behebung der Webhooks."
         }
       },
       "activitySummary": {
         "title": "Letzte Jira-Aktivität",
+        "error": "Letzte Jira-Aktivität konnte nicht geladen werden",
+        "retry": "Erneut versuchen",
         "relativeTime": {
           "justNow": "gerade eben",
           "minutesAgo": "vor {n} Min.",
@@ -3794,7 +3812,8 @@
       "statusMapping": {
         "toast": {
           "saved": "Statuszuordnung gespeichert",
-          "saveFailed": "Aktion fehlgeschlagen: save status mapping. Please try again."
+          "saveFailed": "Aktion fehlgeschlagen: save status mapping. Please try again.",
+          "webhooksNotRegistered": "Zuordnung gespeichert, aber Jira-Webhooks konnten nicht registriert werden. Eingehende Statussynchronisation funktioniert möglicherweise erst nach Behebung der Webhooks."
         },
         "notMapped": "Nicht zugeordnet",
         "workflowStatus": {
@@ -4491,11 +4510,26 @@
       "saveCta": "Einstellungen speichern"
     },
     "reminders": {
-      "heading": "Benutzerdefinierte Erinnerungsregeln",
-      "description": "Automatisieren Sie Erinnerungen für Vertragsablauf, Aufgabenfristen und andere wiederkehrende Ereignisse.",
-      "emptyHeading": "Keine Erinnerungsregeln",
-      "emptyBody": "Erstellen Sie benutzerdefinierte Regeln, um automatische Erinnerungen für Vertragsablauf, Aufgabenfristen und andere Ereignisse zu versenden.",
-      "editAction": "Bearbeiten"
+      "contractExpiring": {
+        "title": "Vertrag läuft bald ab: {label}",
+        "body": "Ein Vertrag nähert sich seinem Enddatum."
+      },
+      "invoiceDueSoon": {
+        "title": "Rechnung bald fällig: {label}",
+        "body": "Eine Rechnung nähert sich ihrem Fälligkeitsdatum."
+      },
+      "invoiceOverdue": {
+        "title": "Rechnung überfällig: {label}",
+        "body": "Eine Rechnung ist überfällig."
+      },
+      "taskOverdue": {
+        "title": "Aufgabe überfällig: {label}",
+        "body": "{detail}{contractorSuffix}"
+      },
+      "drvExpiry": {
+        "title": "DRV-Statusfeststellung läuft in {days} Tagen ab",
+        "body": "Aktenzeichen {reference}, gültig bis {validTo}. Beginnen Sie mit dem Verlängerungsantrag — die DRV-Bearbeitung dauert üblicherweise 3–6 Monate."
+      }
     },
     "reminderEditor": {
       "entityLabel": "Gilt für",
@@ -4571,6 +4605,25 @@
         "title": "Geräterückgabe abgelehnt",
         "body": "Grund: {reason}"
       }
+    },
+    "trial": {
+      "ending7d": {
+        "title": "Testphase endet in 7 Tagen",
+        "body": "Ihre Testphase endet in 7 Tagen. Führen Sie ein Upgrade durch, um Ihre Daten und den vollen Zugriff zu behalten."
+      },
+      "ending1d": {
+        "title": "Testphase endet morgen",
+        "body": "Ihre Testphase endet morgen. Führen Sie jetzt ein Upgrade durch, um den Zugriff auf Funktionen nicht zu verlieren."
+      },
+      "email7d": {
+        "subject": "Ihre Contractor-Ops-Testphase endet in 7 Tagen",
+        "body": "Ihre Testphase endet in 7 Tagen. Führen Sie ein Upgrade durch, um Ihre Daten und den vollen Zugriff zu behalten."
+      },
+      "email1d": {
+        "subject": "Ihre Contractor-Ops-Testphase endet morgen",
+        "body": "Ihre Testphase endet morgen. Führen Sie jetzt ein Upgrade durch, um den Zugriff auf Funktionen nicht zu verlieren."
+      },
+      "emailCta": "Zu den Abrechnungseinstellungen"
     }
   },
   "OcrReview": {
@@ -4844,7 +4897,9 @@
       "heading": "Wo verwalten Sie Ihr Team?",
       "subtitle": "Wählen Sie die Tools, aus denen Sie importieren möchten. Sie können neue Tools hier direkt verbinden.",
       "skipLink": "Überspringen – ich lade Personen manuell ein",
-      "connectError": "Aktion fehlgeschlagen: start connection. Please try again."
+      "connectError": "Aktion fehlgeschlagen: start connection. Please try again.",
+      "connectPermissionError": "Sie benötigen Organisations-Admin-Rechte, um Integrationen zu verbinden.",
+      "popupBlocked": "Pop-up blockiert. Erlauben Sie Pop-ups für diese Seite und versuchen Sie es erneut."
     },
     "step2": {
       "heading": "Teammitglieder prüfen",
@@ -4874,7 +4929,9 @@
       "resolvedAll": "Alle Konflikte gelöst",
       "selectedCount": "{count} ausgewählt",
       "statusNew": "Neu",
-      "statusExists": "Vorhanden"
+      "statusExists": "Vorhanden",
+      "partialSourceErrorsTitle": "Einige Quellen konnten nicht geladen werden",
+      "partialSourceErrorsBody": "Personen aus anderen Quellen werden unten angezeigt. Sie können die Prüfung fortsetzen oder zurückgehen, um fehlgeschlagene Quellen erneut zu verbinden."
     },
     "step3": {
       "heading": "Projekte importieren",
@@ -4885,6 +4942,8 @@
       "addStep": "Schritt hinzufügen",
       "emptyHeading": "Keine Projekte gefunden",
       "emptyBody": "In den gewählten PM-Tools wurden keine Projekte gefunden. Sie können Workflow-Vorlagen später manuell erstellen.",
+      "partialSourceErrorsTitle": "Einige Projektquellen konnten nicht geladen werden",
+      "partialSourceErrorsBody": "Projekte aus anderen Quellen werden unten angezeigt. Sie können fortfahren oder zurückgehen, um fehlgeschlagene Quellen erneut zu verbinden.",
       "stepFallback": "Schritt {number}"
     },
     "step4": {
@@ -4893,12 +4952,18 @@
       "peopleCard": "Zu importierende Personen",
       "projectsCard": "Anzulegende Projekte",
       "startImport": "Import starten",
+      "starting": "Wird gestartet…",
+      "roleCount": "{count} × {role}",
+      "totalSteps": "{count, plural, one {# Workflow-Schritt} other {# Workflow-Schritte}}",
       "progressLabel": "Importiere {current} von {total} ...",
       "completeHeading": "Import abgeschlossen",
       "completeBody": "{imported} Personen und {projects} Projekte erfolgreich importiert.",
+      "partialCompleteBody": "{imported} Personen und {projects} Projekte importiert. Einige Elemente sind fehlgeschlagen — unten erneut versuchen oder zum Dashboard wechseln.",
       "completeCta": "Zum Dashboard",
       "retryButton": "Erneut versuchen",
-      "processing": "Verarbeitung läuft..."
+      "processing": "Verarbeitung läuft...",
+      "failedItemProject": "Projekt: {name}",
+      "nothingToImport": "Nichts zum Importieren ausgewählt. Gehen Sie zurück und wählen Sie Personen oder Projekte."
     },
     "nav": {
       "back": "Zurück",
@@ -5574,7 +5639,12 @@
       "label": "Peppol",
       "ariaLabel": "Peppol-Übertragungsstatus: {status}",
       "receiver": "Empfänger",
-      "aspRef": "ASP-Referenz"
+      "aspRef": "ASP-Referenz",
+      "statusDelivered": "Zugestellt",
+      "statusTransmitted": "Übermittelt",
+      "statusPending": "Ausstehend",
+      "statusFailed": "Fehlgeschlagen",
+      "statusRejected": "Abgelehnt"
     },
     "capabilities": {
       "xrechnungCiiSupported": "Peppol-Teilnehmer unterstützt XRechnung (CII)",
@@ -6006,6 +6076,29 @@
     "exportSuccess": "Bericht exportiert ({count} Zeilen)",
     "exportQueued": "Export wurde in die Warteschlange gestellt — wir senden Ihnen den Download-Link per E-Mail.",
     "exportError": "Aktion fehlgeschlagen: export report. Versuchen Sie es erneut.",
+    "columnToggle": "Spalten umschalten",
+    "columns": {
+      "contractorName": "Auftragnehmer",
+      "invoiceCount": "Rechnungen",
+      "totalMinor": "Gesamtausgaben",
+      "avgMinor": "Durchschnittsrechnung",
+      "lastPaidAt": "Letzte Zahlung",
+      "teamName": "Team",
+      "contractorCount": "Auftragnehmer",
+      "budgetPercent": "Budget %",
+      "contractTitle": "Vertrag",
+      "endDate": "Enddatum",
+      "daysRemaining": "Verbleibende Tage",
+      "invoiceNumber": "Rechnung Nr.",
+      "amountMinor": "Betrag",
+      "dueDate": "Fälligkeitsdatum",
+      "daysOverdue": "Tage überfällig",
+      "status": "Status",
+      "missingDocuments": "Fehlende Dokumente",
+      "contractStatus": "Vertragsstatus",
+      "overdueTasks": "Überfällige Aufgaben",
+      "health": "Health"
+    },
     "contractor": "Auftragnehmer",
     "team": "Team",
     "invoices": "Rechnungen",
@@ -6549,7 +6642,10 @@
       },
       "googleWorkspace": {
         "descriptionDisconnected": "Importieren Sie Ihr Team-Verzeichnis aus Google Workspace mit Rollenzuordnung.",
-        "descriptionConnected": "Google Workspace verbunden. Verzeichnis wird täglich um 2:00 Uhr synchronisiert."
+        "descriptionConnected": "Google Workspace verbunden. Verzeichnis wird täglich um 2:00 Uhr synchronisiert.",
+        "scopeExpansionWarning": "Erneute Anmeldung erforderlich — verbinden Sie Google Workspace erneut, um den Verzeichniszugriff wiederherzustellen.",
+        "error": "Google-Workspace-Integrationsstatus konnte nicht geladen werden.",
+        "retry": "Erneut versuchen"
       },
       "entra": {
         "title": "Microsoft Entra ID-Deprovisionierung",
@@ -6599,11 +6695,16 @@
       "teams": {
         "descriptionDisconnected": "Erhalten Sie Benachrichtigungen und geben Sie Rechnungen direkt in Microsoft Teams frei.",
         "descriptionConnected": "Microsoft Teams verbunden. Benachrichtigungen werden an konfigurierte Kanäle gesendet.",
+        "scopeExpansionWarning": "Erneute Anmeldung erforderlich — verbinden Sie Microsoft Teams erneut, um Benachrichtigungen wiederherzustellen.",
+        "error": "Microsoft Teams-Integrationsstatus konnte nicht geladen werden.",
+        "retry": "Erneut versuchen",
         "channelMappingHeading": "Kanalzuordnung",
         "channelMappingDescription": "Legen Sie fest, welcher Kanal welche Benachrichtigungsart empfängt.",
         "saveMapping": "Zuordnung speichern",
         "refreshChannels": "Kanalliste aktualisieren",
         "selectChannel": "Kanal auswählen",
+        "selectTeam": "Team auswählen",
+        "selectTeamFirst": "Wählen Sie oben ein Team aus, um die Kanalzuordnung zu konfigurieren.",
         "noChannels": "Keine Kanäle verfügbar. Stellen Sie sicher, dass der Bot mindestens einem Team hinzugefügt wurde.",
         "channelFetchError": "Teams-Kanäle konnten nicht geladen werden. Prüfen Sie, ob der Bot in Ihrem Teams-Workspace installiert ist, und versuchen Sie es erneut.",
         "disconnectTitle": "Microsoft Teams trennen",
@@ -7199,6 +7300,11 @@
       "from": "Von",
       "to": "Bis",
       "importEntries": "Einträge importieren"
+    },
+    "sourceBadge": {
+      "manualEntry": "Manuelle Erfassung",
+      "importedFromOn": "Importiert aus {source} am {date}",
+      "unknownDate": "unbekanntes Datum"
     }
   },
   "TopBar": {
@@ -7671,6 +7777,7 @@
       "linkedIssues": "Verknüpfte Issues",
       "noLinkedJiraIssues": "Keine verknüpften Jira-Issues für diesen Workflow.",
       "linearIssues": "Linear-Issues",
+      "noLinkedLinearIssues": "Keine verknüpften Linear-Issues für diesen Workflow.",
       "tasksComplete": "{done} von {total} Aufgaben abgeschlossen"
     },
     "templatePicker": {
@@ -7801,6 +7908,11 @@
     "reassignConfirm": "Aufgabe neu zuweisen",
     "blockedTooltip": "Wartet auf: {title}",
     "conditionSkipped": "Übersprungen (Bedingung nicht erfüllt)",
+    "taskCompletedBy": "Abgeschlossen von {user} am {at}",
+    "taskCompletedByUnknown": "unbekannt",
+    "taskSkippedReason": "Übersprungen: {reason}",
+    "taskSkippedNoReason": "Kein Grund angegeben",
+    "taskCreatedAt": "Erstellt {at}",
     "overdue": "Überfällig",
     "assignedToLabel": "Zugewiesen an {name}",
     "dueLabel": "Fällig am {date}",

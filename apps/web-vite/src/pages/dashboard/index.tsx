@@ -1,20 +1,14 @@
 /**
- * Dashboard index — thin route shell.
- *
- * Wraps the bento-layout container in an AtelierBackground so the route
- * picks up the dashboard tier ambient wash. Suspense fallback renders the
- * full bento skeleton (matching the eventual layout) instead of a generic
- * spinner, so the page does not pop between two loading shapes when the
- * lazy chunk lands and bootstrap query starts.
+ * Dashboard index — route shell with inlined page content.
  */
 
 import { AtelierBackground } from '@contractor-ops/ui';
 import { Suspense } from 'react';
 
 import {
-  DashboardHomeContainer,
+  DashboardHome,
   DashboardSkeleton,
-} from '../../components/dashboard/dashboard-home-container.js';
+} from '../../components/dashboard/dashboard-home.js';
 
 export default function DashboardPage() {
   return (
@@ -22,7 +16,7 @@ export default function DashboardPage() {
       <AtelierBackground />
       <div className="relative z-10">
         <Suspense fallback={<DashboardSkeleton />}>
-          <DashboardHomeContainer />
+          <DashboardHome />
         </Suspense>
       </div>
     </div>

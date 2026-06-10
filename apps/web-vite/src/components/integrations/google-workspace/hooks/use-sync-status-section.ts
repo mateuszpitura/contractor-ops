@@ -26,12 +26,14 @@ export function useSyncStatusSection() {
   });
 
   const handleTriggerSync = () => {
-    (triggerSyncMutation.mutate as () => void)();
+    triggerSyncMutation.mutate();
   };
 
   return {
     syncStatusQuery,
     syncStatus,
+    isError: syncStatusQuery.isError,
+    onRetry: () => syncStatusQuery.refetch(),
     triggerSyncMutation,
     handleTriggerSync,
     t,

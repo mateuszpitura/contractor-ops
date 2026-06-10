@@ -1,7 +1,7 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { useId, useState } from 'react';
-import { toast } from 'sonner';
 
+import { useResourceMutation } from '../../../hooks/use-resource-mutation.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { useTRPC } from '../../../providers/trpc-provider.js';
 
@@ -32,24 +32,23 @@ export function useCreateKeyDialog({ onOpenChange }: UseCreateKeyDialogOptions) 
   const t = useTranslations('Settings.apiKeys');
   const tCommon = useTranslations('Common');
   const id = useId();
-  const queryClient = useQueryClient();
   const [name, setName] = useState('');
   const [scopes, setScopes] = useState<ScopeValue[]>([]);
   const [expiresAt, setExpiresAt] = useState('');
   const [createdKey, setCreatedKey] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
 
-  const createMutation = useMutation(
+  const createMutation = useResourceMutation(
     trpc.apiKey.create.mutationOptions({
       onSuccess: data => {
         setCreatedKey(data.plaintext);
-        void queryClient.invalidateQueries({ queryKey: trpc.apiKey.list.queryKey() });
-        toast.success(t('toast.created'));
-      },
-      onError: err => {
-        toast.error(err.message ?? t('toast.createFailed'));
       },
     }),
+    {
+      invalidate: [trpc.apiKey.list.queryKey()],
+      successMessage: t('toast.created'),
+      errorMessage: t('toast.createFailed'),
+    },
   );
 
   function handleCreate() {
@@ -113,20 +112,13 @@ export function useRevokeKeyDialog({ keyId, keyName, onOpenChange }: UseRevokeKe
   const trpc = useTRPC();
   const t = useTranslations('Settings.apiKeys');
   const tCommon = useTranslations('Common');
-  const queryClient = useQueryClient();
 
-  const revokeMutation = useMutation(
-    trpc.apiKey.revoke.mutationOptions({
-      onSuccess: () => {
-        void queryClient.invalidateQueries({ queryKey: trpc.apiKey.list.queryKey() });
-        toast.success(t('toast.revoked', { name: keyName }));
-        onOpenChange(false);
-      },
-      onError: err => {
-        toast.error(err.message ?? t('toast.revokeFailed'));
-      },
-    }),
-  );
+  const revokeMutation = useResourceMutation(trpc.apiKey.revoke.mutationOptions(), {
+    invalidate: [trpc.apiKey.list.queryKey()],
+    successMessage: t('toast.revoked', { name: keyName }),
+    errorMessage: t('toast.revokeFailed'),
+    onClose: () => onOpenChange(false),
+  });
 
   const handleRevoke = () => revokeMutation.mutate({ id: keyId });
 
@@ -155,25 +147,18 @@ export function useEditKeyDialog({
   const t = useTranslations('Settings.apiKeys');
   const tCommon = useTranslations('Common');
   const id = useId();
-  const queryClient = useQueryClient();
   const [name, setName] = useState(initialName);
   const initialScopeSet = initialScopes.filter((s): s is ScopeValue =>
     AVAILABLE_SCOPES.some(a => a.value === s),
   );
   const [scopes, setScopes] = useState<ScopeValue[]>(initialScopeSet);
 
-  const updateMutation = useMutation(
-    trpc.apiKey.update.mutationOptions({
-      onSuccess: () => {
-        void queryClient.invalidateQueries({ queryKey: trpc.apiKey.list.queryKey() });
-        toast.success(t('toast.updated', { name }));
-        onOpenChange(false);
-      },
-      onError: err => {
-        toast.error(err.message ?? t('toast.updateFailed'));
-      },
-    }),
-  );
+  const updateMutation = useResourceMutation(trpc.apiKey.update.mutationOptions(), {
+    invalidate: [trpc.apiKey.list.queryKey()],
+    successMessage: t('toast.updated', { name }),
+    errorMessage: t('toast.updateFailed'),
+    onClose: () => onOpenChange(false),
+  });
 
   const trimmedName = name.trim();
   const nameChanged = trimmedName !== initialName && trimmedName.length > 0;

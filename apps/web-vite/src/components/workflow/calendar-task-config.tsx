@@ -11,8 +11,8 @@ import { useCallback, useState } from 'react';
 
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { CalendarEventConfigDialog } from './calendar-event-config-dialog.js';
-import type { CalendarTaskConfigType } from './hooks/use-calendar-task-config.js';
-import { useCalendarTaskConfig } from './hooks/use-calendar-task-config.js';
+import type { CalendarTaskConfigType } from '../workflows/hooks/use-calendar-task-config.js';
+import { useCalendarTaskConfig } from '../workflows/hooks/use-calendar-task-config.js';
 
 const DURATION_LABELS: Record<string, string> = {
   '30m': '30 min',
@@ -29,24 +29,16 @@ interface CalendarTaskConfigProps {
 export function CalendarTaskConfig({ taskTemplateId }: CalendarTaskConfigProps) {
   const t = useTranslations('CalendarSettings');
   const [dialogOpen, setDialogOpen] = useState(false);
-  const { config, isLoading, isSaving, saveToggle, saveFull } = useCalendarTaskConfig(
-    taskTemplateId,
-    t('eventConfigSaved'),
-  );
+  const { config, configQuery, saveMutation, handleToggle, handleSaveConfig } =
+    useCalendarTaskConfig(taskTemplateId);
 
-  const handleToggle = useCallback(
-    (checked: boolean) => {
-      if (config) saveToggle(checked, config);
-    },
-    [config, saveToggle],
-  );
   const handleConfigureClick = useCallback(() => setDialogOpen(true), []);
   const handleDialogSave = useCallback(
-    (updated: CalendarTaskConfigType) => saveFull(updated),
-    [saveFull],
+    (updated: CalendarTaskConfigType) => handleSaveConfig(updated),
+    [handleSaveConfig],
   );
 
-  if (isLoading) {
+  if (configQuery.isPending) {
     return (
       <div className="flex items-center gap-3">
         <Skeleton className="h-5 w-9" />
@@ -70,7 +62,7 @@ export function CalendarTaskConfig({ taskTemplateId }: CalendarTaskConfigProps) 
         <Switch
           checked={config?.calendarEnabled ?? false}
           onCheckedChange={handleToggle}
-          disabled={!isConfigured || isSaving}
+          disabled={!isConfigured || saveMutation.isPending}
           aria-label={t('createCalendarEvent')}
         />
         <span className="text-sm">{t('createCalendarEvent')}</span>

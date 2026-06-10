@@ -1,26 +1,24 @@
-import { useQuery } from '@tanstack/react-query';
-import { useCallback } from 'react';
+import { useEntityDetailQuery } from '../../../hooks/use-entity-detail-query.js';
 import { useTRPC } from '../../../providers/trpc-provider.js';
 import { useBreadcrumbOverride } from '../../layout/breadcrumb-context.js';
 
 export function useWorkflowTemplateDetail(templateId: string) {
   const trpc = useTRPC();
-  const templateQuery = useQuery(trpc.workflow.getTemplate.queryOptions({ id: templateId }));
-  const template = templateQuery.data;
+  const {
+    data: template,
+    handleRetry,
+    isNotFound,
+    isLoading,
+    isError,
+  } = useEntityDetailQuery(trpc.workflow.getTemplate.queryOptions({ id: templateId }));
 
   useBreadcrumbOverride(templateId, template?.name);
-
-  const handleRetry = useCallback(() => {
-    void templateQuery.refetch();
-  }, [templateQuery]);
-
-  const isNotFound = !(templateQuery.isLoading || templateQuery.isError || template);
 
   return {
     templateId,
     template,
-    isLoading: templateQuery.isLoading,
-    isError: templateQuery.isError,
+    isLoading,
+    isError,
     isNotFound,
     handleRetry,
   } as const;

@@ -12,10 +12,13 @@ import {
 import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 
 import { useTranslations } from '../../../../i18n/useTranslations.js';
-import type { useClassificationMarketCard } from '../hooks/use-classification-dashboard.js';
+import {
+  useClassificationMarketCard,
+  type useClassificationMarketCard as UseClassificationMarketCard,
+} from '../hooks/use-classification-dashboard.js';
 import { ActiveAlertsTile } from './active-alerts-tile.js';
 import { CoverageTile } from './coverage-tile.js';
-import { DownloadCsvButtonContainer } from './download-csv-button-container.js';
+import { DownloadCsvButton } from './download-csv-button.js';
 import { OverdueReassessmentsTile } from './overdue-reassessments-tile.js';
 import { RiskDistributionTile } from './risk-distribution-tile.js';
 
@@ -33,7 +36,7 @@ function TileSkeleton() {
   );
 }
 
-export type MarketCardViewProps = MarketCardProps & ReturnType<typeof useClassificationMarketCard>;
+export type MarketCardViewProps = MarketCardProps & ReturnType<typeof UseClassificationMarketCard>;
 
 export function MarketCardView({
   market,
@@ -105,9 +108,14 @@ export function MarketCardView({
           )}
         </div>
         <div className="flex justify-end">
-          <DownloadCsvButtonContainer market={market} />
+          <DownloadCsvButton market={market} />
         </div>
       </CardContent>
     </Card>
   );
+}
+
+export function MarketCard(props: MarketCardProps) {
+  const marketData = useClassificationMarketCard(props.market);
+  return <MarketCardView {...props} {...marketData} />;
 }

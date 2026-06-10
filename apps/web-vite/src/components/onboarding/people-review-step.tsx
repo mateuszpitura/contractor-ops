@@ -1,4 +1,5 @@
-import { DataTable } from '@contractor-ops/ui';
+import { WorkbenchDataTable } from '../table-kit/workbench-data-table.js';
+import { Alert, AlertDescription, AlertTitle } from '@contractor-ops/ui/components/shadcn/alert';
 import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { Card, CardContent } from '@contractor-ops/ui/components/shadcn/card';
@@ -16,16 +17,18 @@ import {
   TabsList,
   TabsTrigger,
 } from '@contractor-ops/ui/components/shadcn/tabs';
-import type { MergedPerson } from '@contractor-ops/validators';
+import type { FetchPeopleSourceError, MergedPerson } from '@contractor-ops/validators';
 import type { InvitableMemberRole } from '@contractor-ops/validators/roles';
 import { invitableMemberRoleValues } from '@contractor-ops/validators/roles';
 import type { ColumnDef } from '@tanstack/react-table';
-import { RefreshCw, Users } from 'lucide-react';
+import { AlertTriangle, RefreshCw, Users } from 'lucide-react';
 import { useCallback, useMemo, useState } from 'react';
 
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { ConflictResolutionPopover } from './conflict-resolution-popover.js';
-import type { PeopleCounts } from './hooks/use-onboarding-people.js';
+import { PeopleReviewSkeleton } from './onboarding-skeletons.js';
+import type { PeopleCounts, PeopleStepReadiness } from './hooks/use-onboarding-people.js';
+import { useOnboardingPeople } from './hooks/use-onboarding-people.js';
 import type { PersonSelection } from './import-wizard.js';
 
 const SOURCE_COLORS: Record<string, string> = {
@@ -41,6 +44,15 @@ const SOURCE_LABELS: Record<string, string> = {
   GOOGLE_WORKSPACE: 'GWS',
   SLACK: 'Slack',
 };
+
+/** Strip registry `[PROVIDER]` prefix before showing errors in UI. */
+export function formatSourceErrorMessage(error: string): string {
+  return error.replace(/^\[[A-Z_]+\]\s*/, '');
+}
+
+function isInvitableMemberRole(value: string): value is InvitableMemberRole {
+  return (invitableMemberRoleValues as readonly string[]).includes(value);
+}
 
 export interface PeopleReviewStepProps {
   filteredPeople: MergedPerson[];
@@ -59,6 +71,7 @@ export interface PeopleReviewStepProps {
   onBatchImport: () => void;
   onBatchSkip: () => void;
   onBatchRole: (role: InvitableMemberRole) => void;
+  sourceErrors?: FetchPeopleSourceError[];
 }
 
 interface RoleOption {
@@ -129,7 +142,7 @@ function PersonRoleCell({
 }: PersonRoleCellProps) {
   const handleRoleChange = useCallback(
     (val: string | null) => {
-      if (val) onRoleChange(person.email, val as InvitableMemberRole);
+      if (val && isInvitableMemberRole(val)) onRoleChange(person.email, val);
     },
     [person.email, onRoleChange],
   );
@@ -185,6 +198,7 @@ export function PeopleReviewStep({
   onBatchImport,
   onBatchSkip,
   onBatchRole,
+  sourceErrors,
 }: PeopleReviewStepProps) {
   const t = useTranslations('OnboardingImport.step2');
   const tRoles = useTranslations('Users.roles');
@@ -206,7 +220,7 @@ export function PeopleReviewStep({
 
   const handleBatchRoleChange = useCallback(
     (val: string | null) => {
-      if (val) onBatchRole(val as InvitableMemberRole);
+      if (val && isInvitableMemberRole(val)) onBatchRole(val);
     },
     [onBatchRole],
   );
@@ -364,6 +378,10 @@ export function PeopleReviewStep({
     <div className="space-y-6">
       <PeopleReviewHeader />
 
+      {sourceErrors && sourceErrors.length > 0 && (
+        <PeopleReviewPartialSourceErrors sourceErrors={sourceErrors} />
+      )}
+
       <Card>
         <CardContent
           className="flex flex-wrap items-center gap-x-4 gap-y-1 px-4 py-2"
@@ -432,7 +450,8 @@ export function PeopleReviewStep({
         )}
 
         <TabsContent value={activeFilter}>
-          <DataTable
+          <WorkbenchDataTable
+            sectionClassName=""
             columns={columns}
             data={filteredPeople}
             totalRows={filteredPeople.length}
@@ -498,5 +517,147 @@ export function PeopleReviewEmpty() {
       <h3 className="text-lg font-semibold">{t('emptyHeading')}</h3>
       <p className="max-w-md text-center text-sm text-muted-foreground">{t('emptyBody')}</p>
     </div>
+  );
+}
+
+export interface PeopleReviewPartialSourceErrorsProps {
+  sourceErrors: FetchPeopleSourceError[];
+  copyNamespace?: 'OnboardingImport.step2' | 'OnboardingImport.step3';
+}
+
+export function PeopleReviewPartialSourceErrors({
+  sourceErrors,
+  copyNamespace = 'OnboardingImport.step2',
+}: PeopleReviewPartialSourceErrorsProps) {
+  const t = useTranslations(copyNamespace);
+
+  return (
+    <Alert
+      variant="default"
+      role="status"
+      className="border-amber-300/50 bg-amber-500/5"
+      data-testid="people-review-partial-source-errors">
+      <AlertTriangle aria-hidden="true" className="size-5 text-amber-600 dark:text-amber-400" />
+      <AlertTitle className="text-amber-700 dark:text-amber-400">
+        {t('partialSourceErrorsTitle')}
+      </AlertTitle>
+      <AlertDescription className="mt-2 text-sm text-muted-foreground">
+        <p>{t('partialSourceErrorsBody')}</p>
+        <ul className="mt-2 list-disc space-y-1 ps-4">
+          {sourceErrors.map(err => (
+            <li key={`${err.source}-${err.code}`}>
+              <span className="font-medium text-foreground">
+                {SOURCE_LABELS[err.source] ?? err.source}
+              </span>
+              : {formatSourceErrorMessage(err.error)}
+            </li>
+          ))}
+        </ul>
+      </AlertDescription>
+    </Alert>
+  );
+}
+
+export interface PeopleReviewSourceErrorsProps {
+  sourceErrors: FetchPeopleSourceError[];
+  onRefetch: () => void;
+}
+
+export function PeopleReviewSourceErrors({ sourceErrors, onRefetch }: PeopleReviewSourceErrorsProps) {
+  const tCommon = useTranslations('Common');
+  const tErr = useTranslations('Contractors.error');
+
+  return (
+    <div className="flex flex-col items-center gap-4 py-16">
+      <p className="text-sm text-muted-foreground">{tCommon('networkError')}</p>
+      <ul className="max-w-lg space-y-2 text-sm text-muted-foreground">
+        {sourceErrors.map(err => (
+          <li key={`${err.source}-${err.code}`}>
+            <span className="font-medium text-foreground">
+              {SOURCE_LABELS[err.source] ?? err.source}
+            </span>
+            : {formatSourceErrorMessage(err.error)}
+          </li>
+        ))}
+      </ul>
+      <Button variant="outline" size="sm" className="gap-1.5" onClick={onRefetch}>
+        <RefreshCw className="h-3.5 w-3.5" aria-hidden="true" />
+        {tErr('retry')}
+      </Button>
+    </div>
+  );
+}
+
+type PeopleReviewStepContainerProps = {
+  selectedSources: string[];
+  mergedPeople: MergedPerson[];
+  onMergedPeopleChange: (people: MergedPerson[]) => void;
+  personSelections: Map<string, PersonSelection>;
+  onPersonSelectionsChange: (selections: Map<string, PersonSelection>) => void;
+  onStepReadinessChange?: (readiness: PeopleStepReadiness) => void;
+};
+
+export function PeopleReviewStepContainer(props: PeopleReviewStepContainerProps) {
+  const section = useOnboardingPeople(props);
+
+  if (section.isLoading) {
+    return (
+      <div className="space-y-6">
+        <PeopleReviewHeader />
+        <PeopleReviewSkeleton />
+      </div>
+    );
+  }
+
+  if (section.isError) {
+    return (
+      <div className="space-y-6">
+        <PeopleReviewHeader />
+        <PeopleReviewError onRefetch={section.handleRefetch} />
+      </div>
+    );
+  }
+
+  if (section.allSourcesFailed) {
+    return (
+      <div className="space-y-6">
+        <PeopleReviewHeader />
+        <PeopleReviewSourceErrors
+          sourceErrors={section.sourceErrors}
+          onRefetch={section.handleRefetch}
+        />
+      </div>
+    );
+  }
+
+  if (section.isEmpty) {
+    return (
+      <div className="space-y-6">
+        <PeopleReviewHeader />
+        <PeopleReviewEmpty />
+      </div>
+    );
+  }
+
+  return (
+    <PeopleReviewStep
+      filteredPeople={section.filteredPeople}
+      counts={section.counts}
+      activeFilter={section.activeFilter}
+      setActiveFilter={section.setActiveFilter}
+      personSelections={props.personSelections}
+      checkedEmails={section.checkedEmails}
+      allSelected={section.allSelected}
+      someSelected={section.someSelected}
+      onSelectAll={section.handleSelectAll}
+      onRowCheck={section.handleRowCheck}
+      onSkipRow={section.handleSkipRow}
+      onRoleChange={section.handleRoleChange}
+      onResolveConflict={section.handleResolveConflict}
+      onBatchImport={section.handleBatchImport}
+      onBatchSkip={section.handleBatchSkip}
+      onBatchRole={section.handleBatchRole}
+      sourceErrors={section.sourceErrors.length > 0 ? section.sourceErrors : undefined}
+    />
   );
 }

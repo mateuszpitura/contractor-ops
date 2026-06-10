@@ -1,10 +1,10 @@
 import { workflowAssignableRoleValues } from '@contractor-ops/validators/roles';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { toast } from 'sonner';
 import { z } from 'zod';
+import { useResourceMutation } from '../../../hooks/use-resource-mutation.js';
 import type { LooseTranslator } from '../../../i18n/typed-keys.js';
 import { tDyn, tDynLoose } from '../../../i18n/typed-keys.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
@@ -192,7 +192,6 @@ export function useReminderRuleEditor({ open, onOpenChange, rule }: UseReminderR
   const trpc = useTRPC();
   const t = useTranslations('Settings');
   const { triggerItems, entityItems, channelItems, recipientItems } = useSelectorItems(t);
-  const queryClient = useQueryClient();
   const isEditMode = !!rule;
   const { isSlackConnected } = useReminderRuleSlackStatus();
 
@@ -246,35 +245,19 @@ export function useReminderRuleEditor({ open, onOpenChange, rule }: UseReminderR
     }
   }, [open, rule, form]);
 
-  const createMutation = useMutation(
-    trpc.reminder.create.mutationOptions({
-      onSuccess: () => {
-        toast.success(t('reminderRules.toasts.created'));
-        queryClient.invalidateQueries({
-          queryKey: trpc.reminder.list.queryKey(),
-        });
-        onOpenChange(false);
-      },
-      onError: () => {
-        toast.error(t('reminderRules.toasts.saveFailed'));
-      },
-    }),
-  );
+  const createMutation = useResourceMutation(trpc.reminder.create.mutationOptions(), {
+    invalidate: [trpc.reminder.list.queryKey()],
+    successMessage: t('reminderRules.toasts.created'),
+    errorMessage: t('reminderRules.toasts.saveFailed'),
+    onClose: () => onOpenChange(false),
+  });
 
-  const updateMutation = useMutation(
-    trpc.reminder.update.mutationOptions({
-      onSuccess: () => {
-        toast.success(t('reminderRules.toasts.updated'));
-        queryClient.invalidateQueries({
-          queryKey: trpc.reminder.list.queryKey(),
-        });
-        onOpenChange(false);
-      },
-      onError: () => {
-        toast.error(t('reminderRules.toasts.saveFailed'));
-      },
-    }),
-  );
+  const updateMutation = useResourceMutation(trpc.reminder.update.mutationOptions(), {
+    invalidate: [trpc.reminder.list.queryKey()],
+    successMessage: t('reminderRules.toasts.updated'),
+    errorMessage: t('reminderRules.toasts.saveFailed'),
+    onClose: () => onOpenChange(false),
+  });
 
   const isPending = createMutation.isPending || updateMutation.isPending;
 

@@ -1,9 +1,10 @@
 import type { OcrExtractionResult } from '@contractor-ops/integrations/types/ocr';
 import * as Sentry from '@sentry/react';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { TRPCClientError } from '@trpc/client';
 import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import { useResourceMutation } from '../../../hooks/use-resource-mutation.js';
 import { useRouter } from '../../../i18n/navigation.js';
 import type { LooseTranslator } from '../../../i18n/typed-keys.js';
 import { usePortalTRPC, useTRPC } from '../../../providers/trpc-provider.js';
@@ -24,26 +25,23 @@ export function usePortalInvoiceFileUploadWithOcr(t: LooseTranslator) {
   const [pdfBlobUrl, setPdfBlobUrl] = useState<string | null>(null);
   const [ocrPopulated, setOcrPopulated] = useState(false);
   const [creditExhausted, setCreditExhausted] = useState(false);
-  const queryClient = useQueryClient();
   const portalTrpc = usePortalTRPC();
   const trpc = useTRPC();
 
-  const getUploadUrl = useMutation(
-    portalTrpc.portal.getUploadUrl.mutationOptions({
-      onError: err => toast.error(err.message),
-      onSuccess: () => {
-        toast.success(t('toast.uploadReady'));
-      },
-    }),
+  const getUploadUrl = useResourceMutation(
+    portalTrpc.portal.getUploadUrl.mutationOptions(),
+    { successMessage: t('toast.uploadReady') },
   );
 
-  const ocrTriggerMutation = useMutation(
-    trpc.ocr.portalTrigger.mutationOptions({
-      onError: err => toast.error(err.message),
-      onSuccess: () => {
-        toast.success(t('toast.scanComplete'));
-      },
-    }),
+  const ocrTriggerMutation = useResourceMutation(
+    trpc.ocr.portalTrigger.mutationOptions(),
+    {
+      successMessage: t('toast.scanComplete'),
+      suppressErrorToast: error =>
+        error instanceof TRPCClientError &&
+        error.data?.code === 'PRECONDITION_FAILED' &&
+        error.message === 'OCR credits exhausted',
+    },
   );
 
   const ocrQuery = useQuery({
@@ -162,8 +160,6 @@ export function usePortalInvoiceFileUploadWithOcr(t: LooseTranslator) {
     [getUploadUrl, ocrTriggerMutation, t, resetOcrState],
   );
 
-  void queryClient;
-
   return {
     upload,
     extractionStatus,
@@ -195,13 +191,9 @@ export function usePortalInvoiceSubmission(
   const router = useRouter();
   const portalTrpc = usePortalTRPC();
 
-  const submitInvoice = useMutation(
-    portalTrpc.portal.submitInvoice.mutationOptions({
-      onError: err => toast.error(err.message),
-      onSuccess: () => {
-        toast.success(t('toast.invoiceSubmitted'));
-      },
-    }),
+  const submitInvoice = useResourceMutation(
+    portalTrpc.portal.submitInvoice.mutationOptions(),
+    { successMessage: t('toast.invoiceSubmitted') },
   );
 
   const onSubmit = useCallback(
@@ -228,7 +220,7 @@ export function usePortalInvoiceSubmission(
           `/portal/invoices/submit/success?invoiceId=${result.invoiceId}&invoiceNumber=${encodeURIComponent(result.invoiceNumber)}`,
         );
       } catch {
-        toast.error(t('errors.submitFailed'));
+        // toast emitted by useResourceMutation
       }
     },
     [router, submitInvoice, t, upload],

@@ -33,7 +33,10 @@ import {
 import { AlertTriangle } from 'lucide-react';
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { useTranslations } from '../../../i18n/useTranslations.js';
-import type { useClassificationDisclaimerAck } from './hooks/use-classification-disclaimer.js';
+import {
+  useClassificationDisclaimerAck,
+  type useClassificationDisclaimerAck as UseClassificationDisclaimerAck,
+} from './hooks/use-classification-disclaimer.js';
 
 export type ClassificationCountryCode = 'GB' | 'DE';
 
@@ -60,7 +63,7 @@ const DISCLAIMER_COPY: Record<
  * (b) "Return to engagement" → `onDeferred`.
  */
 export type ClassificationDisclaimerDialogViewProps = ClassificationDisclaimerDialogProps &
-  Pick<ReturnType<typeof useClassificationDisclaimerAck>, 'acknowledge' | 'isPending'>;
+  Pick<ReturnType<typeof UseClassificationDisclaimerAck>, 'acknowledge' | 'isPending'>;
 
 export function ClassificationDisclaimerDialogView(props: ClassificationDisclaimerDialogViewProps) {
   const { countryCode, open, onDeferred, acknowledge, isPending } = props;
@@ -158,3 +161,22 @@ export function ClassificationDisclaimerDialogView(props: ClassificationDisclaim
     </AlertDialog>
   );
 }
+
+export function ClassificationDisclaimerDialogContainer(
+  props: ClassificationDisclaimerDialogProps,
+) {
+  const { acknowledge, isPending } = useClassificationDisclaimerAck(
+    props.assessmentId,
+    props.onAcknowledged,
+  );
+  return (
+    <ClassificationDisclaimerDialogView
+      {...props}
+      acknowledge={acknowledge}
+      isPending={isPending}
+    />
+  );
+}
+
+/** @deprecated Use ClassificationDisclaimerDialog */
+export { ClassificationDisclaimerDialogContainer as ClassificationDisclaimerDialog };

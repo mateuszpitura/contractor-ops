@@ -15,9 +15,9 @@ import { memo, useCallback, useState } from 'react';
 
 import { Link, useLocale } from '../../i18n/navigation.js';
 import { useTranslations } from '../../i18n/useTranslations.js';
-import { formatMinorUnits } from '../../lib/format-currency.js';
+import { formatMinorUnits } from '../../lib/money.js';
 import { PaymentItemBadge } from './payment-run-badge.js';
-import { SkontoApplyCheckboxContainer } from './run/skonto-apply-checkbox-container.js';
+import { SkontoApplyCheckbox } from './run/skonto-apply-checkbox.js';
 
 function stopAnchorPropagation(e: React.MouseEvent<HTMLAnchorElement>) {
   e.stopPropagation();
@@ -195,7 +195,7 @@ export function PaymentRunItemRow({
 
       {skontoEnabled && item.currency === 'EUR' ? (
         <div className="mt-2 ps-2">
-          <SkontoApplyCheckboxContainer
+          <SkontoApplyCheckbox
             paymentRunItemId={item.id}
             invoiceId={item.invoiceId}
             enabled={skontoEnabled}

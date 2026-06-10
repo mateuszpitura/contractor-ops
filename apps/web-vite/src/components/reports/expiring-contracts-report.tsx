@@ -39,8 +39,6 @@ const DaysButton = memo(function DaysButton({ value, active, label, onSelect }: 
   );
 });
 
-const noop = () => undefined;
-
 export function ExpiringContractsReport({ report }: ExpiringContractsReportProps) {
   const t = useTranslations('Reports');
   const router = useRouter();
@@ -122,7 +120,7 @@ export function ExpiringContractsReport({ report }: ExpiringContractsReportProps
         dataKey="count"
         nameKey="bucket"
         idKey="bucket"
-        onSegmentClick={noop}
+        onSegmentClick={() => undefined}
         isLoading={report.chartQuery.isLoading}
         isError={report.chartQuery.isError}
         onRetry={report.handleChartRetry}

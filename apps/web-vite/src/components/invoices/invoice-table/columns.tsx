@@ -21,7 +21,7 @@ import { Link } from '../../../i18n/navigation.js';
 import type { LooseTranslator } from '../../../i18n/typed-keys.js';
 import { tDynLoose } from '../../../i18n/typed-keys.js';
 import { enumKey } from '../../../lib/enum-key.js';
-import { formatMinorUnits } from '../../../lib/format-currency.js';
+import { formatMinorUnits } from '../../../lib/money.js';
 import type { EInvoiceComplianceStatus } from './einvoice-compliance-cell.js';
 import { EInvoiceComplianceCell } from './einvoice-compliance-cell.js';
 import { KsefSourceBadge } from './ksef-source-badge.js';

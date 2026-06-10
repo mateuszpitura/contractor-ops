@@ -11,11 +11,12 @@ import { Input } from '@contractor-ops/ui/components/shadcn/input';
 import { Loader2, Save } from 'lucide-react';
 import type { ChangeEvent } from 'react';
 import { useCallback } from 'react';
-import type { usePortalSubdomainSection } from './hooks/use-portal-subdomain-section.js';
+import { usePortalSubdomainSection } from './hooks/use-portal-subdomain-section.js';
+import type { usePortalSubdomainSection as UsePortalSubdomainSection } from './hooks/use-portal-subdomain-section.js';
 
-export type PortalSubdomainSectionProps = ReturnType<typeof usePortalSubdomainSection>;
+export type PortalSubdomainSectionProps = ReturnType<typeof UsePortalSubdomainSection>;
 
-export function PortalSubdomainSection({
+export function PortalSubdomainSectionView({
   id,
   t,
   tSettings,
@@ -78,4 +79,9 @@ export function PortalSubdomainSection({
       </CardFooter>
     </Card>
   );
+}
+
+export function PortalSubdomainSection() {
+  const section = usePortalSubdomainSection();
+  return <PortalSubdomainSectionView {...section} />;
 }

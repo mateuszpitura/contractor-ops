@@ -1,21 +1,17 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import type { AppRouter } from '@contractor-ops/api';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import type { inferRouterOutputs } from '@trpc/server';
 import { useCallback } from 'react';
-import { toast } from 'sonner';
 
+import { useResourceMutation } from '../../../hooks/use-resource-mutation.js';
 import { useCommonToasts } from '../../../i18n/use-common-toasts.js';
 import { useTRPC } from '../../../providers/trpc-provider.js';
 
-export interface OnboardingProgressFailedItem {
-  email: string;
-  error: string;
-}
+type RouterOutputs = inferRouterOutputs<AppRouter>;
 
-export interface OnboardingProgressData {
-  status: 'pending' | 'running' | 'completed' | 'failed' | string;
-  completedItems: number;
-  totalItems: number;
-  failedItems: OnboardingProgressFailedItem[];
-}
+export type OnboardingProgressData = RouterOutputs['onboardingImport']['getProgress'];
+
+export type OnboardingProgressFailedItem = OnboardingProgressData['failedItems'][number];
 
 export interface UseOnboardingProgressParams {
   jobId: string;
@@ -31,7 +27,7 @@ export interface UseOnboardingProgressResult {
   percentDone: number;
   handleRefetch: () => void;
   handleRetry: (email: string) => void;
-  isRetrying: boolean;
+  retryingItemKey: string | null;
 }
 
 const POLL_INTERVAL_MS = 2000;
@@ -47,23 +43,23 @@ export function useOnboardingProgress(
   const progressQuery = useQuery({
     ...trpc.onboardingImport.getProgress.queryOptions({ jobId }),
     refetchInterval: query => {
-      const status = (query.state.data as OnboardingProgressData | undefined)?.status;
+      const status = query.state.data?.status;
       return status === 'completed' || status === 'failed' ? false : POLL_INTERVAL_MS;
     },
   });
 
-  const retryMutation = useMutation({
-    ...trpc.onboardingImport.retryFailedItem.mutationOptions(),
-    onSuccess: () => {
-      void queryClient.invalidateQueries({
-        queryKey: trpc.onboardingImport.getProgress.queryKey({ jobId }),
-      });
-      toast.success(toasts.done());
-    },
-    onError: err => toast.error(err.message),
-  });
+  const retryMutation = useResourceMutation(
+    trpc.onboardingImport.retryFailedItem.mutationOptions({
+      onSuccess: async () => {
+        await queryClient.invalidateQueries({
+          queryKey: trpc.onboardingImport.getProgress.queryKey({ jobId }),
+        });
+      },
+    }),
+    { successMessage: toasts.done() },
+  );
 
-  const progress = progressQuery.data as OnboardingProgressData | undefined;
+  const progress = progressQuery.data;
   const isComplete = progress?.status === 'completed';
   const isFailed = progress?.status === 'failed';
   const isRunning = !!progress && !isComplete && !isFailed;
@@ -78,7 +74,7 @@ export function useOnboardingProgress(
 
   const handleRetry = useCallback(
     (email: string) => {
-      retryMutation.mutate({ jobId, email });
+      retryMutation.mutate({ jobId, itemKey: email });
     },
     [retryMutation, jobId],
   );
@@ -93,6 +89,8 @@ export function useOnboardingProgress(
     percentDone,
     handleRefetch,
     handleRetry,
-    isRetrying: retryMutation.isPending,
+    retryingItemKey: retryMutation.isPending
+      ? (retryMutation.variables?.itemKey ?? null)
+      : null,
   };
 }

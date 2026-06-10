@@ -15,11 +15,19 @@ import {
 } from '@contractor-ops/ui/components/shadcn/popover';
 import { useCallback } from 'react';
 
-import type { useChainEditorUserPicker } from './hooks/use-chain-editor-dialog.js';
+import {
+  useChainEditorUserPicker,
+  type useChainEditorUserPicker as UseChainEditorUserPicker,
+} from './hooks/use-chain-editor-dialog.js';
 
-export type ChainEditorUserPickerProps = ReturnType<typeof useChainEditorUserPicker>;
+interface ChainEditorUserPickerShellProps {
+  value: string | null | undefined;
+  onChange: (userId: string | null) => void;
+}
 
-type UserRow = ChainEditorUserPickerProps['filteredUsers'][number];
+export type ChainEditorUserPickerViewProps = ReturnType<typeof UseChainEditorUserPicker>;
+
+type UserRow = ChainEditorUserPickerViewProps['filteredUsers'][number];
 
 interface UserItemProps {
   user: UserRow;
@@ -43,7 +51,7 @@ function UserItem({ user, roleLabel, isChecked, onSelect }: UserItemProps) {
   );
 }
 
-export function ChainEditorUserPicker({
+export function ChainEditorUserPickerView({
   t,
   open,
   setOpen,
@@ -54,7 +62,7 @@ export function ChainEditorUserPicker({
   value: selectedValue,
   handleSelect,
   roleLabels,
-}: ChainEditorUserPickerProps) {
+}: ChainEditorUserPickerViewProps) {
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger render={formControlPopoverRender(undefined, { size: 'sm' })}>
@@ -91,4 +99,9 @@ export function ChainEditorUserPicker({
       </PopoverContent>
     </Popover>
   );
+}
+
+export function ChainEditorUserPicker(props: ChainEditorUserPickerShellProps) {
+  const picker = useChainEditorUserPicker(props);
+  return <ChainEditorUserPickerView {...picker} />;
 }

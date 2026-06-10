@@ -16,6 +16,8 @@ import { useCallback, useState } from 'react';
 import { tDynLoose } from '../../i18n/typed-keys.js';
 import { useTranslations } from '../../i18n/useTranslations.js';
 import type { CredentialRow } from './hooks/use-credentials-tab.js';
+import { useCredentialsTab } from './hooks/use-credentials-tab.js';
+import { CredentialAddDialog } from './credential-add-dialog.js';
 
 export interface CredentialsTabProps {
   rows: CredentialRow[];
@@ -104,7 +106,7 @@ function RemoveConfirmDialog({ open, onOpenChange, onConfirm }: RemoveConfirmDia
  * grid, so it intentionally avoids the shadcn Table primitive per the
  * web-vite table-pattern guard).
  */
-export function CredentialsTab({
+export function CredentialsTabView({
   rows,
   isLoading,
   isError,
@@ -204,5 +206,46 @@ export function CredentialsTab({
         onConfirm={handleRemoveConfirm}
       />
     </section>
+  );
+}
+
+export interface CredentialsTabSectionProps {
+  workflowRunId: string;
+}
+
+export function CredentialsTabSection({ workflowRunId }: CredentialsTabSectionProps) {
+  const {
+    rows,
+    isLoading,
+    isError,
+    refetch,
+    addDialogOpen,
+    setAddDialogOpen,
+    createMutation,
+    onMarkRotated,
+    onRemove,
+    isMutating,
+  } = useCredentialsTab(workflowRunId);
+
+  return (
+    <>
+      <CredentialsTabView
+        rows={rows}
+        isLoading={isLoading}
+        isError={isError}
+        onRetry={refetch}
+        onAdd={() => setAddDialogOpen(true)}
+        onMarkRotated={onMarkRotated}
+        onRemove={onRemove}
+        isMutating={isMutating}
+      />
+      <CredentialAddDialog
+        open={addDialogOpen}
+        onOpenChange={setAddDialogOpen}
+        workflowRunId={workflowRunId}
+        isSubmitting={createMutation.isPending}
+        onSubmit={input => createMutation.mutate(input)}
+      />
+    </>
   );
 }

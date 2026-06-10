@@ -41,9 +41,10 @@ import type { UseFormReturn } from 'react-hook-form';
 import { tDynLoose } from '../../../i18n/typed-keys.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { enumKey } from '../../../lib/enum-key.js';
-import { JiraTaskConfig } from '../../integrations/jira-task-config-container.js';
-import { LinearTaskConfig } from '../../integrations/linear-task-config-container.js';
-import { CalendarTaskConfig } from '../calendar-task-config-container.js';
+import { JiraTaskConfig } from '../../integrations/jira-task-config.js';
+import { LinearTaskConfig } from '../../integrations/linear-task-config.js';
+import { CalendarTaskConfig } from '../calendar-task-config.js';
+import { useTaskCardTemplateUsers } from '../hooks/use-task-card-template-users.js';
 import { ConditionBuilder, getConditionSummary } from './condition-builder.js';
 import type { TaskFormValues, TemplateFormValues } from './use-template-form.js';
 
@@ -526,5 +527,19 @@ export function TaskCard({
         </CollapsibleContent>
       </Card>
     </Collapsible>
+  );
+}
+
+export function TaskCardSection(props: TaskCardContainerProps) {
+  const assigneeMode = props.form.watch(`tasks.${props.index}.assigneeMode`) ?? 'ROLE_BASED';
+  const { users, usersQuery } = useTaskCardTemplateUsers(props.form, props.index);
+  const isFixedUserLoading = assigneeMode === 'FIXED_USER' && usersQuery.isLoading;
+  return (
+    <TaskCard
+      {...props}
+      users={users}
+      usersQuery={usersQuery}
+      isFixedUserLoading={isFixedUserLoading}
+    />
   );
 }

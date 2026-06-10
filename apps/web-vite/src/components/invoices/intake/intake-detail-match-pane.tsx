@@ -14,10 +14,10 @@ import type { LooseTranslator } from '../../../i18n/typed-keys.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { canViewSensitivePii, maskTaxId } from '../../../lib/mask-pii.js';
 import { cn } from '../../../lib/utils.js';
-import type { useIntakeDetailMatch } from '../hooks/use-intake-detail-match.js';
+import { useIntakeDetailMatch, type useIntakeDetailMatch as UseIntakeDetailMatch } from '../hooks/use-intake-detail-match.js';
 
-interface IntakeDetailMatchPaneProps {
-  match: ReturnType<typeof useIntakeDetailMatch>;
+export interface IntakeDetailMatchPaneViewProps {
+  match: ReturnType<typeof UseIntakeDetailMatch>;
   className?: string;
 }
 
@@ -149,7 +149,7 @@ const MatchCandidateButton = memo(function MatchCandidateButton({
   );
 });
 
-export function IntakeDetailMatchPane({ match, className }: IntakeDetailMatchPaneProps) {
+export function IntakeDetailMatchPaneView({ match, className }: IntakeDetailMatchPaneViewProps) {
   const t = useTranslations('EInvoice.intake');
   const { role } = usePermissions();
   const showPii = canViewSensitivePii(role);
@@ -204,4 +204,33 @@ function renderReason(t: LooseTranslator, reason: { kind: string; distance?: num
     default:
       return String(reason.kind);
   }
+}
+
+export interface IntakeDetailMatchPaneProps {
+  intakeId: string;
+  currentStatus: string;
+  onSelectedCandidateChange?: (contractorId: string | null) => void;
+  className?: string;
+}
+
+export function IntakeDetailMatchPane({
+  intakeId,
+  currentStatus,
+  onSelectedCandidateChange,
+  className,
+}: IntakeDetailMatchPaneProps) {
+  const match = useIntakeDetailMatch(intakeId, currentStatus, onSelectedCandidateChange);
+
+  if (match.isLoading) return <IntakeDetailMatchPaneSkeleton className={className} />;
+  if (match.candidates.length === 0) {
+    return (
+      <IntakeDetailMatchPaneEmpty
+        className={className}
+        alreadyMatched={match.alreadyMatched}
+        onCreateFromData={match.onCreateFromData}
+      />
+    );
+  }
+
+  return <IntakeDetailMatchPaneView className={className} match={match} />;
 }

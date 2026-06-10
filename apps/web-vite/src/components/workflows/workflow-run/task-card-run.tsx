@@ -49,13 +49,17 @@ import { tDynLoose } from '../../../i18n/typed-keys.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { enumKey } from '../../../lib/enum-key.js';
 import { useDateFormatter } from '../../../lib/format/use-date-formatter.js';
-import { DocLinksSection } from '../../integrations/doc-links-section-container.js';
-import type {
-  useReassignTaskPopover,
-  useSkipTaskPopover,
+import { DocLinksSection } from '../../integrations/doc-links-section.js';
+import { DeprovisioningTriggerWired } from '../../idp/deprovisioning-trigger.js';
+import {
   useTaskCardRun,
+  type useReassignTaskPopover,
+  type useSkipTaskPopover,
+  type useTaskCardRun as UseTaskCardRun,
 } from '../hooks/use-task-card-run.js';
-import { LinearTaskIssueChip } from './linear-task-issue-chip-container.js';
+import { TaskAttachments } from './task-attachments.js';
+import { TaskComments } from './task-comments.js';
+import { LinearTaskIssueChip } from './linear-task-issue-chip.js';
 
 const statusIconMap: Record<
   string,
@@ -106,7 +110,7 @@ interface TaskCardRunProps {
   runId: string;
   currentUserId: string | null;
   dependencyTitle?: string;
-  completeMutation: ReturnType<typeof useTaskCardRun>['completeMutation'];
+  completeMutation: ReturnType<typeof UseTaskCardRun>['completeMutation'];
   skip: ReturnType<typeof useSkipTaskPopover>;
   reassign: ReturnType<typeof useReassignTaskPopover>;
   attachmentsSection?: ReactNode;
@@ -302,14 +306,19 @@ function TaskExpandedDetails({
 
       {task.status === 'DONE' && task.completedAt && (
         <p className="text-xs text-muted-foreground">
-          Completed by {task.completedByUserId ?? 'unknown'} on {formatDateTime(task.completedAt)}
+          {t('taskCompletedBy', {
+            user: task.completedByUserId ?? t('taskCompletedByUnknown'),
+            at: formatDateTime(task.completedAt),
+          })}
         </p>
       )}
       {!!isUserSkipped && (
         <p className="text-xs text-muted-foreground">
-          Skipped:{' '}
-          {((task.resultJson as Record<string, unknown>)?.skipReason as string) ??
-            'No reason provided'}
+          {t('taskSkippedReason', {
+            reason:
+              ((task.resultJson as Record<string, unknown>)?.skipReason as string) ??
+              t('taskSkippedNoReason'),
+          })}
         </p>
       )}
       {!!isConditionSkipped && (
@@ -317,7 +326,9 @@ function TaskExpandedDetails({
       )}
 
       <div className="flex items-center gap-4 text-xs text-muted-foreground">
-        {!!task.createdAt && <span>Created {formatDateTime(task.createdAt)}</span>}
+        {!!task.createdAt && (
+          <span>{t('taskCreatedAt', { at: formatDateTime(task.createdAt) })}</span>
+        )}
       </div>
 
       <div className="empty:hidden">
@@ -454,5 +465,39 @@ export function TaskCardRun({
         </CollapsibleContent>
       </div>
     </Collapsible>
+  );
+}
+
+interface TaskCardRunSectionProps {
+  task: TaskCardRunTask;
+  runId: string;
+  currentUserId: string | null;
+  dependencyTitle?: string;
+  contractorId?: string | null;
+}
+
+export function TaskCardRunSection({
+  task,
+  runId,
+  currentUserId,
+  dependencyTitle,
+  contractorId,
+}: TaskCardRunSectionProps) {
+  const actions = useTaskCardRun(runId);
+  const triggerSlot =
+    task.taskType === 'ACCESS_REVOKE' && contractorId ? (
+      <DeprovisioningTriggerWired contractorId={contractorId} />
+    ) : undefined;
+  return (
+    <TaskCardRun
+      task={task}
+      runId={runId}
+      currentUserId={currentUserId}
+      dependencyTitle={dependencyTitle}
+      {...actions}
+      attachmentsSection={<TaskAttachments taskRunId={task.id} />}
+      commentsSection={<TaskComments runId={runId} taskRunId={task.id} />}
+      triggerSlot={triggerSlot}
+    />
   );
 }

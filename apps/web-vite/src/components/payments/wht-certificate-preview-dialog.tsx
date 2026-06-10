@@ -16,7 +16,7 @@ import { useCallback } from 'react';
 import { usePermissions } from '../../hooks/use-permissions.js';
 import { useLocale } from '../../i18n/navigation.js';
 import { useTranslations } from '../../i18n/useTranslations.js';
-import { formatMinorUnits } from '../../lib/format-currency.js';
+import { formatMinorUnits } from '../../lib/money.js';
 import { canViewSensitivePii, maskTaxId } from '../../lib/mask-pii.js';
 
 interface WhtCertificatePreviewProps {

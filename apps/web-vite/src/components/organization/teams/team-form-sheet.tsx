@@ -18,7 +18,8 @@ import {
 } from '@contractor-ops/ui/components/shadcn/sheet';
 import { useCallback, useEffect, useState } from 'react';
 
-import type { useTeamFormSheet } from '../hooks/use-team-form-sheet.js';
+import { useTeamFormSheet } from '../hooks/use-team-form-sheet.js';
+import type { useTeamFormSheet as UseTeamFormSheet } from '../hooks/use-team-form-sheet.js';
 
 export interface TeamRow {
   id: string;
@@ -33,7 +34,7 @@ interface TeamFormSheetProps {
   onOpenChange: (open: boolean) => void;
   team?: TeamRow | null;
   onCreated?: (team: { id: string; name: string }) => void;
-  formSheet: ReturnType<typeof useTeamFormSheet>;
+  formSheet: ReturnType<typeof UseTeamFormSheet>;
 }
 
 export function TeamFormSheet({
@@ -146,4 +147,14 @@ export function TeamFormSheet({
       </SheetContent>
     </Sheet>
   );
+}
+
+type TeamFormSheetWiredProps = Omit<TeamFormSheetProps, 'formSheet'>;
+
+export function TeamFormSheetWired(props: TeamFormSheetWiredProps) {
+  const formSheet = useTeamFormSheet({
+    onOpenChange: props.onOpenChange,
+    onCreated: props.onCreated,
+  });
+  return <TeamFormSheet {...props} formSheet={formSheet} />;
 }

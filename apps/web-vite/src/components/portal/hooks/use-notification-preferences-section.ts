@@ -1,6 +1,3 @@
-import { toast } from 'sonner';
-
-import { useTranslations } from '../../../i18n/useTranslations.js';
 import {
   usePortalNotificationPreferences,
   usePortalUpdateNotificationPreference,
@@ -14,8 +11,6 @@ type NotificationCategory =
   | 'SECURITY_ALERTS';
 
 export function useNotificationPreferencesSection() {
-  const t = useTranslations('Portal.notificationPreferences');
-
   const prefsQuery = usePortalNotificationPreferences();
   const updatePref = usePortalUpdateNotificationPreference();
 
@@ -27,13 +22,7 @@ export function useNotificationPreferencesSection() {
   };
 
   const handleToggle = (category: NotificationCategory, checked: boolean) => {
-    updatePref.mutate(
-      { category, emailEnabled: checked },
-      {
-        onSuccess: () => toast.success(t('toast.updated')),
-        onError: err => toast.error(err.message || t('errors.updateFailed')),
-      },
-    );
+    updatePref.mutate({ category, emailEnabled: checked });
   };
 
   return {

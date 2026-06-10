@@ -1,7 +1,8 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback } from 'react';
 import { toast } from 'sonner';
 
+import { useResourceMutation } from '../../../hooks/use-resource-mutation.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { useTRPC } from '../../../providers/trpc-provider.js';
 
@@ -17,14 +18,12 @@ export function useEquipmentShipments(equipmentId: string, selectedShipmentId: s
     enabled: !!selectedShipmentId,
   });
 
-  const deleteMutation = useMutation(
-    trpc.equipment.deleteShipment.mutationOptions({
-      onSuccess: () => {
-        toast.success(t('toast.shipmentDeleted'));
-        queryClient.invalidateQueries(trpc.equipment.pathFilter());
-      },
-      onError: err => toast.error(err.message),
-    }),
+  const deleteMutation = useResourceMutation(
+    trpc.equipment.deleteShipment.mutationOptions(),
+    {
+      successMessage: t('toast.shipmentDeleted'),
+      invalidate: [trpc.equipment.pathFilter()],
+    },
   );
 
   const fetchLabel = useCallback(

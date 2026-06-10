@@ -1,6 +1,7 @@
 // Per-engagement Classification tile.
 
-import type { Ir35Outcome, ScheinselbstandigkeitOutcome } from '@contractor-ops/classification';
+import type { OutcomeSchemaType } from '@contractor-ops/classification';
+import { outcomeSchema } from '@contractor-ops/classification';
 import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
 import { Bdi } from '@contractor-ops/ui/components/shadcn/bdi';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
@@ -20,6 +21,7 @@ import { tDyn } from '../../../i18n/typed-keys.js';
 import { useFormatter } from '../../../i18n/useFormatter.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { ClassificationEngagementCta } from './classification-engagement-cta.js';
+import { useClassificationTile } from './hooks/use-classification-tile.js';
 
 export interface ClassificationTileEngagement {
   readonly id: string;
@@ -50,7 +52,7 @@ export interface ClassificationTileEmptyProps {
 
 type Tone = 'success' | 'warning' | 'destructive' | 'neutral';
 
-function toneForOutcome(outcome: Ir35Outcome | ScheinselbstandigkeitOutcome): {
+function toneForOutcome(outcome: OutcomeSchemaType): {
   tone: Tone;
   Icon: LucideIcon;
 } {
@@ -128,7 +130,11 @@ export function ClassificationTileView(props: ClassificationTileViewProps) {
   }, [format, latest.completedAt]);
 
   const latestData = latest;
-  const outcome = latestData.outcome as unknown as Ir35Outcome | ScheinselbstandigkeitOutcome;
+  const parsedOutcome = outcomeSchema.safeParse(latestData.outcome);
+  if (!parsedOutcome.success) {
+    return <ClassificationTileEmpty engagement={engagement} />;
+  }
+  const outcome = parsedOutcome.data;
   const { tone, Icon } = toneForOutcome(outcome);
   const verdictLabel =
     outcome.kind === 'IR35'
@@ -184,3 +190,19 @@ export function ClassificationTileView(props: ClassificationTileViewProps) {
     </Card>
   );
 }
+
+export interface ClassificationTileContainerProps {
+  readonly engagement: ClassificationTileEngagement;
+}
+
+export function ClassificationTileContainer(props: ClassificationTileContainerProps) {
+  const { latest, isPending } = useClassificationTile(props.engagement.id);
+
+  if (isPending) return <ClassificationTileSkeleton />;
+  if (!latest?.outcome) return <ClassificationTileEmpty engagement={props.engagement} />;
+
+  return <ClassificationTileView engagement={props.engagement} latest={latest} />;
+}
+
+/** @deprecated Use ClassificationTile */
+export { ClassificationTileContainer as ClassificationTile };

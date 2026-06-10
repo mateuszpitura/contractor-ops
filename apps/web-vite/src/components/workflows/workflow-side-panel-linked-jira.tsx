@@ -6,6 +6,7 @@ import type { ReactNode } from 'react';
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { JiraIssueChip } from '../integrations/jira-issue-chip.js';
 import type { LinkedJiraIssueRow } from './hooks/use-side-panel-linked-jira.js';
+import { useSidePanelLinkedJira } from './hooks/use-side-panel-linked-jira.js';
 
 interface LinkedJiraIssuesSectionShellProps {
   children: ReactNode;
@@ -103,6 +104,29 @@ export function LinkedJiraIssuesView({
   issues,
   handleRetry,
 }: LinkedJiraIssuesViewProps) {
+  if (!showSection) return null;
+
+  let body: ReactNode;
+  if (isError) {
+    body = <LinkedJiraIssuesError onRetry={handleRetry} />;
+  } else if (isLoading) {
+    body = <LinkedJiraIssuesSkeleton />;
+  } else if (issues.length === 0) {
+    body = <LinkedJiraIssuesEmpty />;
+  } else {
+    body = <LinkedJiraIssuesList issues={issues} />;
+  }
+
+  return <LinkedJiraIssuesSectionShell>{body}</LinkedJiraIssuesSectionShell>;
+}
+
+interface LinkedJiraIssuesSectionProps {
+  runId: string;
+}
+
+export function LinkedJiraIssuesSection({ runId }: LinkedJiraIssuesSectionProps) {
+  const { showSection, isLoading, isError, issues, handleRetry } = useSidePanelLinkedJira(runId);
+
   if (!showSection) return null;
 
   let body: ReactNode;

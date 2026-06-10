@@ -37,8 +37,10 @@ import { Textarea } from '@contractor-ops/ui/components/shadcn/textarea';
 import { leitwegIdSchema } from '@contractor-ops/validators';
 import { Loader2, Pencil, Plus } from 'lucide-react';
 import { useCallback, useEffect, useId, useMemo, useState } from 'react';
+import { useTranslations } from '../../../i18n/useTranslations.js';
 import { cn } from '../../../lib/utils.js';
-import type { useLeitwegIdCreateDialog } from './hooks/use-leitweg-id-create-dialog.js';
+import { useLeitwegIdCreateDialog } from './hooks/use-leitweg-id-create-dialog.js';
+import type { useLeitwegIdCreateDialog as UseLeitwegIdCreateDialog } from './hooks/use-leitweg-id-create-dialog.js';
 
 // ---------------------------------------------------------------------------
 // Props
@@ -72,14 +74,14 @@ interface LeitwegIdCreateDialogShellProps {
   onSaved?: (id: string) => void;
 }
 
-export type LeitwegIdCreateDialogProps = LeitwegIdCreateDialogShellProps &
-  ReturnType<typeof useLeitwegIdCreateDialog> & {
+export type LeitwegIdCreateDialogViewProps = LeitwegIdCreateDialogShellProps &
+  ReturnType<typeof UseLeitwegIdCreateDialog> & {
     tCommon: (key: string) => string;
     formError: string | null;
     setFormError: (error: string | null) => void;
   };
 
-export function LeitwegIdCreateDialog({
+export function LeitwegIdCreateDialogView({
   open,
   onOpenChange,
   initial,
@@ -92,7 +94,7 @@ export function LeitwegIdCreateDialog({
   contractors,
   save,
   isPending,
-}: LeitwegIdCreateDialogProps) {
+}: LeitwegIdCreateDialogViewProps) {
   const isEdit = !!initial;
 
   const valueId = useId();
@@ -382,4 +384,35 @@ function formatDateInput(d: Date | string | null | undefined): string {
   if (Number.isNaN(date.getTime())) return '';
   // yyyy-mm-dd for <input type="date">
   return date.toISOString().slice(0, 10);
+}
+
+export function LeitwegIdCreateDialog({
+  open,
+  onOpenChange,
+  initial,
+  prefill,
+  onSaved,
+}: LeitwegIdCreateDialogShellProps) {
+  const tCommon = useTranslations('Common');
+  const [formError, setFormError] = useState<string | null>(null);
+  const dialog = useLeitwegIdCreateDialog({
+    onOpenChange,
+    initial,
+    onSaved,
+    setFormError,
+  });
+
+  return (
+    <LeitwegIdCreateDialogView
+      open={open}
+      onOpenChange={onOpenChange}
+      initial={initial}
+      prefill={prefill}
+      onSaved={onSaved}
+      tCommon={tCommon}
+      formError={formError}
+      setFormError={setFormError}
+      {...dialog}
+    />
+  );
 }

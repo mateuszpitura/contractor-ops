@@ -9,7 +9,7 @@ import {
 import { Switch } from '@contractor-ops/ui/components/shadcn/switch';
 import { useCallback } from 'react';
 
-import type { useLinearTaskConfig } from './hooks/use-linear-task-config.js';
+import { useLinearTaskConfig } from './hooks/use-linear-task-config.js';
 import { LinearLogo } from './linear-logo.js';
 
 export type LinearTaskConfigViewProps = Omit<
@@ -73,4 +73,14 @@ export function LinearTaskConfigView({
       </div>
     </div>
   );
+}
+
+interface LinearTaskConfigProps {
+  taskTemplateId: string;
+}
+
+export function LinearTaskConfig({ taskTemplateId }: LinearTaskConfigProps) {
+  const { connection, isConnected, ...rest } = useLinearTaskConfig(taskTemplateId);
+  if (!(connection && isConnected)) return null;
+  return <LinearTaskConfigView {...rest} />;
 }

@@ -12,7 +12,7 @@ import { useCallback } from 'react';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { getAvatarInitials } from '../../../lib/avatar-initials.js';
-import type { useTaskCommentsSection } from '../hooks/use-task-comments-section.js';
+import { useTaskCommentsSection } from '../hooks/use-task-comments-section.js';
 
 type TaskCommentRow = ReturnType<typeof useTaskCommentsSection>['comments'][number];
 
@@ -120,20 +120,16 @@ export function TaskCommentsComposer({
   );
 }
 
-type TaskCommentsProps = ReturnType<typeof useTaskCommentsSection>;
+type TaskCommentsViewProps = ReturnType<typeof useTaskCommentsSection>;
 
-/**
- * Combined view kept for test compatibility — single render path per variant,
- * picked here via the same flags the container would consult.
- */
-export function TaskComments({
+export function TaskCommentsView({
   body,
   setBody,
   comments,
   isLoading,
   isSubmitting,
   handleSubmit,
-}: TaskCommentsProps) {
+}: TaskCommentsViewProps) {
   const t = useTranslations('Workflows');
 
   return (
@@ -148,4 +144,14 @@ export function TaskComments({
       />
     </div>
   );
+}
+
+interface TaskCommentsProps {
+  runId: string;
+  taskRunId: string;
+}
+
+export function TaskComments({ runId, taskRunId }: TaskCommentsProps) {
+  const section = useTaskCommentsSection(runId, taskRunId);
+  return <TaskCommentsView {...section} />;
 }

@@ -1,6 +1,6 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { toast } from 'sonner';
+import { useQuery } from '@tanstack/react-query';
 
+import { useResourceMutation } from '../../../hooks/use-resource-mutation.js';
 import { useCommonToasts } from '../../../i18n/use-common-toasts.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { useTRPC } from '../../../providers/trpc-provider.js';
@@ -15,41 +15,39 @@ export interface CalendarTaskConfigType {
 export function useCalendarTaskConfig(taskTemplateId: string) {
   const t = useTranslations('CalendarSettings');
   const trpc = useTRPC();
-  const queryClient = useQueryClient();
   const toasts = useCommonToasts();
 
   const configQuery = useQuery(trpc.calendar.getTaskConfig.queryOptions({ taskTemplateId }));
   const config = configQuery.data as CalendarTaskConfigType | undefined;
 
-  const saveMutation = useMutation(
-    trpc.calendar.saveTaskConfig.mutationOptions({
-      onSuccess: () => {
-        queryClient.invalidateQueries({
-          queryKey: trpc.calendar.getTaskConfig.queryKey({ taskTemplateId }),
-        });
-        toast.success(toasts.done());
-      },
-      onError: err => toast.error(err.message),
-    }),
+  const invalidateConfig = [trpc.calendar.getTaskConfig.queryKey({ taskTemplateId })];
+
+  const saveToggleMutation = useResourceMutation(
+    trpc.calendar.saveTaskConfig.mutationOptions(),
+    {
+      successMessage: toasts.done(),
+      invalidate: invalidateConfig,
+    },
+  );
+
+  const saveConfigMutation = useResourceMutation(
+    trpc.calendar.saveTaskConfig.mutationOptions(),
+    {
+      successMessage: t('eventConfigSaved'),
+      invalidate: invalidateConfig,
+    },
   );
 
   const handleToggle = (checked: boolean) => {
     if (!config) return;
-    saveMutation.mutate({
+    saveToggleMutation.mutate({
       taskTemplateId,
       config: { ...config, calendarEnabled: checked },
     });
   };
 
   const handleSaveConfig = (updatedConfig: CalendarTaskConfigType) => {
-    saveMutation.mutate(
-      { taskTemplateId, config: updatedConfig },
-      {
-        onSuccess: () => {
-          toast.success(t('eventConfigSaved'));
-        },
-      },
-    );
+    saveConfigMutation.mutate({ taskTemplateId, config: updatedConfig });
   };
 
   const isConfigured = !!config?.titleTemplate;
@@ -78,7 +76,9 @@ export function useCalendarTaskConfig(taskTemplateId: string) {
     t,
     configQuery,
     config,
-    saveMutation,
+    saveMutation: {
+      isPending: saveToggleMutation.isPending || saveConfigMutation.isPending,
+    },
     handleToggle,
     handleSaveConfig,
     isConfigured,

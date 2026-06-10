@@ -10,10 +10,19 @@ import {
 import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { useCallback } from 'react';
 import { DpdBrandIcon } from '../integrations/brand-icons';
-import { CarrierCredentialFormContainer } from './carrier-credential-form-container.js';
-import type { useDpdProviderSection } from './hooks/use-dpd-provider-section.js';
+import { CarrierCredentialForm } from './carrier-credential-form.js';
+import { useDpdProviderSection } from './hooks/use-dpd-provider-section.js';
 
-export type DpdProviderSectionProps = ReturnType<typeof useDpdProviderSection>;
+export type DpdProviderSectionViewProps = Omit<
+  ReturnType<typeof useDpdProviderSection>,
+  'isLoading'
+>;
+
+export function DpdProviderSection() {
+  const { isLoading, ...rest } = useDpdProviderSection();
+  if (isLoading) return <DpdProviderSectionSkeleton />;
+  return <DpdProviderSectionView {...rest} />;
+}
 
 export function DpdProviderSectionSkeleton() {
   return (
@@ -32,13 +41,13 @@ export function DpdProviderSectionSkeleton() {
   );
 }
 
-export function DpdProviderSection({
+export function DpdProviderSectionView({
   t,
   tCarriers,
   configOpen,
   setConfigOpen,
   isConfigured,
-}: DpdProviderSectionProps) {
+}: DpdProviderSectionViewProps) {
   const openConfig = useCallback(() => setConfigOpen(true), [setConfigOpen]);
   return (
     <div className="flex h-full flex-col gap-4">
@@ -69,7 +78,7 @@ export function DpdProviderSection({
           <DialogHeader>
             <DialogTitleComponent>{t('configureDpd')}</DialogTitleComponent>
           </DialogHeader>
-          <CarrierCredentialFormContainer carrier="dpd" carrierLabel="DPD" />
+          <CarrierCredentialForm carrier="dpd" carrierLabel="DPD" />
         </DialogContent>
       </Dialog>
     </div>

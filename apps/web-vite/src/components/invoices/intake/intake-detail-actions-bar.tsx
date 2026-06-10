@@ -22,14 +22,16 @@ import type { ChangeEvent } from 'react';
 import { useCallback } from 'react';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { cn } from '../../../lib/utils.js';
-import type { useIntakeDetailActions } from '../hooks/use-intake-detail-actions.js';
+import { useIntakeDetailActions } from '../hooks/use-intake-detail-actions.js';
+import type { IntakeStatus } from './intake-status-pill.js';
+import type { ValidationStatus } from './intake-validation-status-pill.js';
 
-interface IntakeDetailActionsBarProps {
+export interface IntakeDetailActionsBarViewProps {
   actions: ReturnType<typeof useIntakeDetailActions>;
   className?: string;
 }
 
-export function IntakeDetailActionsBar({ actions, className }: IntakeDetailActionsBarProps) {
+export function IntakeDetailActionsBarView({ actions, className }: IntakeDetailActionsBarViewProps) {
   const t = useTranslations('EInvoice.intake');
   const setRejectReason = actions.setRejectReason;
   const handleRejectReasonChange = useCallback(
@@ -180,4 +182,25 @@ export function IntakeDetailActionsBar({ actions, className }: IntakeDetailActio
       </AlertDialog>
     </TooltipProvider>
   );
+}
+
+export interface IntakeDetailActionsBarProps {
+  intakeId: string;
+  status: IntakeStatus;
+  validationStatus: ValidationStatus | null;
+  validationAcknowledgedAt: Date | string | null;
+  selectedCandidateId: string | null;
+  className?: string;
+}
+
+export function IntakeDetailActionsBar(props: IntakeDetailActionsBarProps) {
+  const actions = useIntakeDetailActions(
+    props.intakeId,
+    props.status,
+    props.validationStatus,
+    props.validationAcknowledgedAt,
+    props.selectedCandidateId,
+  );
+
+  return <IntakeDetailActionsBarView actions={actions} className={props.className} />;
 }

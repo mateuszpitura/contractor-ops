@@ -1,28 +1,31 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { toast } from 'sonner';
+import { useCallback } from 'react';
 
+import { useResourceMutation } from '../../../hooks/use-resource-mutation.js';
+import { useCommonToasts } from '../../../i18n/use-common-toasts.js';
 import { useTRPC } from '../../../providers/trpc-provider.js';
 
 export function useCostCenterCsvImport(onOpenChange: (open: boolean) => void) {
   const trpc = useTRPC();
-  const queryClient = useQueryClient();
+  const toasts = useCommonToasts();
 
-  const importMutation = useMutation(
+  const importMutation = useResourceMutation(
     trpc.organizationDefinitions.costCenter.importCsv.mutationOptions({
-      onSuccess: result => {
-        toast.success(`Imported ${result.inserted} cost centers`);
-        void queryClient.invalidateQueries({
-          queryKey: trpc.organizationDefinitions.costCenter.list.queryKey(),
-        });
+      onSuccess: () => {
         onOpenChange(false);
       },
-      onError: err => toast.error(err.message),
     }),
+    {
+      invalidate: [trpc.organizationDefinitions.costCenter.list.queryKey()],
+      successMessage: toasts.done(),
+    },
   );
 
-  const importRows = (rows: { name: string; code: string }[]) => {
-    importMutation.mutate({ rows });
-  };
+  const importRows = useCallback(
+    (rows: { name: string; code: string }[]) => {
+      importMutation.mutate({ rows });
+    },
+    [importMutation],
+  );
 
   return {
     importMutation,

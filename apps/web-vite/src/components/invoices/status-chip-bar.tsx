@@ -8,8 +8,9 @@ import { memo, useCallback, useMemo } from 'react';
 
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { cn } from '../../lib/utils.js';
+import { useStatusChipBar } from './hooks/use-status-chip-bar.js';
 
-interface StatusChipBarProps {
+interface StatusChipBarViewProps {
   activeStatuses: string[];
   onStatusChange: (statuses: string[]) => void;
   disabled?: boolean;
@@ -80,12 +81,12 @@ const StatusChipButton = memo(function StatusChipButton({
   );
 });
 
-export function StatusChipBar({
+export function StatusChipBarView({
   activeStatuses,
   onStatusChange,
   disabled,
   counts = {},
-}: StatusChipBarProps) {
+}: StatusChipBarViewProps) {
   const t = useTranslations('Invoices');
 
   const activeSet = useMemo(() => new Set(activeStatuses), [activeStatuses]);
@@ -122,4 +123,18 @@ export function StatusChipBar({
       ))}
     </fieldset>
   );
+}
+
+interface StatusChipBarProps {
+  activeStatuses: string[];
+  onStatusChange: (statuses: string[]) => void;
+  disabled?: boolean;
+}
+
+export function StatusChipBar(props: StatusChipBarProps) {
+  const { isLoading, counts } = useStatusChipBar();
+
+  if (isLoading) return <StatusChipBarSkeleton />;
+
+  return <StatusChipBarView {...props} counts={counts} />;
 }

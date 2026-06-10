@@ -1,7 +1,8 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useState } from 'react';
 import { toast } from 'sonner';
 
+import { useResourceMutation } from '../../../hooks/use-resource-mutation.js';
 import { useRouter } from '../../../i18n/navigation.js';
 import { useCommonToasts } from '../../../i18n/use-common-toasts.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
@@ -27,63 +28,48 @@ export function useIntakeDetailActions(
   const [isXmlPending, setIsXmlPending] = useState(false);
   const [isReportPending, setIsReportPending] = useState(false);
 
-  const invalidateBoth = useCallback(() => {
-    void queryClient.invalidateQueries({
-      queryKey: trpc.invoiceIntake.getById.queryKey({ intakeId }),
-    });
-    void queryClient.invalidateQueries({
-      queryKey: ['invoiceIntake', 'listByOrg'],
-    });
-  }, [intakeId, queryClient, trpc]);
+  const intakeInvalidate = [
+    trpc.invoiceIntake.getById.queryKey({ intakeId }),
+    ['invoiceIntake', 'listByOrg'] as const,
+    trpc.invoiceIntake.pathFilter(),
+  ];
 
-  const convertMutation = useMutation(
+  const intakeMutationConfig = {
+    invalidate: intakeInvalidate,
+    successMessage: toasts.done(),
+    errorMessage: t('errorGeneric'),
+  };
+
+  const convertMutation = useResourceMutation(
     trpc.invoiceIntake.convertToInvoice.mutationOptions({
       onSuccess: result => {
-        invalidateBoth();
         const converted = result as { invoiceId?: string } | undefined;
         if (converted?.invoiceId) {
           router.push(`/invoices/${converted.invoiceId}`);
         }
-        toast.success(toasts.done());
-        queryClient.invalidateQueries(trpc.invoiceIntake.pathFilter());
       },
-      onError: err => toast.error(err instanceof Error ? err.message : t('errorGeneric')),
     }),
+    intakeMutationConfig,
   );
 
-  const confirmMatchMutation = useMutation(
-    trpc.invoiceIntake.confirmMatch.mutationOptions({
-      onSuccess: () => {
-        invalidateBoth();
-        toast.success(toasts.done());
-        queryClient.invalidateQueries(trpc.invoiceIntake.pathFilter());
-      },
-      onError: err => toast.error(err instanceof Error ? err.message : t('errorGeneric')),
-    }),
+  const confirmMatchMutation = useResourceMutation(
+    trpc.invoiceIntake.confirmMatch.mutationOptions(),
+    intakeMutationConfig,
   );
 
-  const acknowledgeMutation = useMutation(
-    trpc.invoiceIntake.acknowledgeValidation.mutationOptions({
-      onSuccess: () => {
-        invalidateBoth();
-        toast.success(toasts.done());
-        queryClient.invalidateQueries(trpc.invoiceIntake.pathFilter());
-      },
-      onError: err => toast.error(err instanceof Error ? err.message : t('errorGeneric')),
-    }),
+  const acknowledgeMutation = useResourceMutation(
+    trpc.invoiceIntake.acknowledgeValidation.mutationOptions(),
+    intakeMutationConfig,
   );
 
-  const rejectMutation = useMutation(
+  const rejectMutation = useResourceMutation(
     trpc.invoiceIntake.reject.mutationOptions({
       onSuccess: () => {
-        invalidateBoth();
         setRejectOpen(false);
         setRejectReason('');
-        toast.success(toasts.done());
-        queryClient.invalidateQueries(trpc.invoiceIntake.pathFilter());
       },
-      onError: err => toast.error(err instanceof Error ? err.message : t('errorGeneric')),
     }),
+    intakeMutationConfig,
   );
 
   const needsValidationAck =

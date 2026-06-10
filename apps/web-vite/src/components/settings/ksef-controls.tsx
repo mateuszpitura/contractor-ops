@@ -1,12 +1,15 @@
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { Loader2 } from 'lucide-react';
 
-import type { useKsefControls } from './hooks/use-integrations-tab.js';
-import { KsefSyncHistoryContainer } from './ksef-sync-history-container.js';
+import {
+  useKsefControls,
+  type useKsefControls as UseKsefControls,
+} from './hooks/use-integrations-tab.js';
+import { KsefSyncHistory } from './ksef-sync-history.js';
 
-export type KsefControlsProps = ReturnType<typeof useKsefControls>;
+export type KsefControlsProps = ReturnType<typeof UseKsefControls>;
 
-export function KsefControls({ t, connection, isPending, handleSync }: KsefControlsProps) {
+export function KsefControlsView({ t, connection, isPending, handleSync }: KsefControlsProps) {
   return (
     <div className="space-y-3">
       <Button variant="outline" size="sm" onClick={handleSync} disabled={isPending}>
@@ -14,7 +17,12 @@ export function KsefControls({ t, connection, isPending, handleSync }: KsefContr
         {isPending ? t('syncing') : t('syncNow')}
       </Button>
 
-      <KsefSyncHistoryContainer connectionId={connection?.id} />
+      <KsefSyncHistory connectionId={connection?.id} />
     </div>
   );
+}
+
+export function KsefControls() {
+  const controls = useKsefControls();
+  return <KsefControlsView {...controls} />;
 }

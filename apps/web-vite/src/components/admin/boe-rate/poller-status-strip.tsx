@@ -8,6 +8,7 @@
 import { CheckCircle2Icon, XCircleIcon } from 'lucide-react';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
+import { useBoeRatePollerStatus } from '../hooks/use-admin-boe-rate.js';
 
 export function PollerStatusStripEmpty() {
   const t = useTranslations('Admin.BoeRate');
@@ -43,5 +44,20 @@ export function PollerStatusStripActive({
           : t('pollerSuccessUnchanged', { date: pollDate })}
       </span>
     </div>
+  );
+}
+
+export function PollerStatusStrip() {
+  const { entries, apiEntries, latestApiEntry, rateChanged } = useBoeRatePollerStatus();
+
+  if (!entries) return null;
+  if (apiEntries.length === 0 || !latestApiEntry) return <PollerStatusStripEmpty />;
+
+  return (
+    <PollerStatusStripActive
+      pollDate={new Date(latestApiEntry.createdAt).toISOString().slice(0, 10)}
+      ratePercent={Number(latestApiEntry.ratePercent).toFixed(2)}
+      rateChanged={rateChanged}
+    />
   );
 }

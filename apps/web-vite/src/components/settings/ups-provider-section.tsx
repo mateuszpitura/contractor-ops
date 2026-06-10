@@ -10,10 +10,19 @@ import {
 import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { useCallback } from 'react';
 import { UpsBrandIcon } from '../integrations/brand-icons';
-import { CarrierCredentialFormContainer } from './carrier-credential-form-container.js';
-import type { useUpsProviderSection } from './hooks/use-ups-provider-section.js';
+import { CarrierCredentialForm } from './carrier-credential-form.js';
+import { useUpsProviderSection } from './hooks/use-ups-provider-section.js';
 
-export type UpsProviderSectionProps = ReturnType<typeof useUpsProviderSection>;
+export type UpsProviderSectionViewProps = Omit<
+  ReturnType<typeof useUpsProviderSection>,
+  'isLoading'
+>;
+
+export function UpsProviderSection() {
+  const { isLoading, ...rest } = useUpsProviderSection();
+  if (isLoading) return <UpsProviderSectionSkeleton />;
+  return <UpsProviderSectionView {...rest} />;
+}
 
 export function UpsProviderSectionSkeleton() {
   return (
@@ -32,13 +41,13 @@ export function UpsProviderSectionSkeleton() {
   );
 }
 
-export function UpsProviderSection({
+export function UpsProviderSectionView({
   t,
   tCarriers,
   configOpen,
   setConfigOpen,
   isConfigured,
-}: UpsProviderSectionProps) {
+}: UpsProviderSectionViewProps) {
   const openConfig = useCallback(() => setConfigOpen(true), [setConfigOpen]);
   return (
     <div className="flex h-full flex-col gap-4">
@@ -71,7 +80,7 @@ export function UpsProviderSection({
           <DialogHeader>
             <DialogTitleComponent>{t('configureUps')}</DialogTitleComponent>
           </DialogHeader>
-          <CarrierCredentialFormContainer carrier="ups" carrierLabel="UPS" />
+          <CarrierCredentialForm carrier="ups" carrierLabel="UPS" />
         </DialogContent>
       </Dialog>
     </div>

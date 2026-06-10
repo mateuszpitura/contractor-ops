@@ -30,7 +30,7 @@ import { useCallback, useId } from 'react';
 import { tDynLoose } from '../../../i18n/typed-keys.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { enumKey } from '../../../lib/enum-key.js';
-import type { useTemplateFormSection } from '../hooks/use-template-form-section.js';
+import { useTemplateFormSection, type useTemplateFormSection as UseTemplateFormSection } from '../hooks/use-template-form-section.js';
 import { SortableTaskList } from './sortable-task-list.js';
 import type { TemplateFormValues } from './use-template-form.js';
 
@@ -48,7 +48,7 @@ const STATUS_BADGE_STYLES: Record<string, string> = {
   ARCHIVED: 'bg-muted/50 text-muted-foreground/60',
 };
 
-type TemplateFormProps = ReturnType<typeof useTemplateFormSection> & {
+type TemplateFormProps = ReturnType<typeof UseTemplateFormSection> & {
   showActivateCta: boolean;
   showArchiveCta: boolean;
   showDuplicateCta: boolean;
@@ -56,7 +56,7 @@ type TemplateFormProps = ReturnType<typeof useTemplateFormSection> & {
   showStatusBadge: boolean;
 };
 
-export function TemplateForm({
+export function TemplateFormView({
   form,
   fields,
   tasks,
@@ -242,5 +242,28 @@ export function TemplateForm({
         />
       </div>
     </form>
+  );
+}
+
+interface TemplateFormSectionProps {
+  templateId?: string;
+}
+
+export function TemplateFormSection({ templateId }: TemplateFormSectionProps) {
+  const form = useTemplateFormSection(templateId);
+  const showActivateCta = form.isEditing && form.templateStatus === 'DRAFT';
+  const showArchiveCta = form.isEditing && form.templateStatus === 'ACTIVE';
+  const showDuplicateCta = form.isEditing;
+  const showDeleteCta = form.isEditing && form.templateStatus === 'DRAFT';
+  const showStatusBadge = form.isEditing;
+  return (
+    <TemplateFormView
+      {...form}
+      showActivateCta={showActivateCta}
+      showArchiveCta={showArchiveCta}
+      showDuplicateCta={showDuplicateCta}
+      showDeleteCta={showDeleteCta}
+      showStatusBadge={showStatusBadge}
+    />
   );
 }

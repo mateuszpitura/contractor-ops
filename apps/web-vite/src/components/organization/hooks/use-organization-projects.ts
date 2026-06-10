@@ -1,13 +1,14 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
-import { toast } from 'sonner';
+import { useResourceMutation } from '../../../hooks/use-resource-mutation.js';
+import { useCommonToasts } from '../../../i18n/use-common-toasts.js';
 import { useTRPC } from '../../../providers/trpc-provider.js';
 import type { ProjectTableRow } from '../projects/data-table.js';
 import type { ProjectRow } from '../projects/project-form-sheet.js';
 
 export function useOrganizationProjects() {
   const trpc = useTRPC();
-  const queryClient = useQueryClient();
+  const toasts = useCommonToasts();
   const [search, setSearch] = useState('');
   const [sheetOpen, setSheetOpen] = useState(false);
   const [editing, setEditing] = useState<ProjectRow | null>(null);
@@ -36,21 +37,12 @@ export function useOrganizationProjects() {
     trpc.organizationDefinitions.project.listSyncableConnections.queryOptions(),
   );
 
-  const syncMutation = useMutation(
-    trpc.organizationDefinitions.project.sync.mutationOptions({
-      onSuccess: result => {
-        toast.success(
-          `Sync complete — inserted ${result.inserted}, linked ${result.linked}, pending ${result.pending}`,
-        );
-        void queryClient.invalidateQueries({
-          queryKey: trpc.organizationDefinitions.project.list.queryKey(),
-        });
-        void queryClient.invalidateQueries({
-          queryKey: trpc.organizationDefinitions.project.pendingMerges.queryKey(),
-        });
-      },
-      onError: err => toast.error(err.message),
-    }),
+  const syncMutation = useResourceMutation(
+    trpc.organizationDefinitions.project.sync.mutationOptions(),
+    {
+      successMessage: toasts.done(),
+      invalidate: [trpc.organizationDefinitions.project.pathFilter()],
+    },
   );
 
   const isLoading = listQuery.isLoading;

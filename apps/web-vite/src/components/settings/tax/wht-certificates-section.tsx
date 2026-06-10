@@ -27,10 +27,13 @@ import {
 } from '@contractor-ops/ui/components/shadcn/table';
 import { Download, Eye, Loader2 } from 'lucide-react';
 import { useCallback } from 'react';
-import { formatMinorUnits } from '../../../lib/format-currency';
-import type { useWhtCertificatesSection } from './hooks/use-wht-certificates-section.js';
+import { formatMinorUnits } from '../../../lib/money.js';
+import {
+  useWhtCertificatesSection,
+  type useWhtCertificatesSection as UseWhtCertificatesSection,
+} from './hooks/use-wht-certificates-section.js';
 
-export type WhtCertificatesSectionProps = ReturnType<typeof useWhtCertificatesSection>;
+export type WhtCertificatesSectionProps = ReturnType<typeof UseWhtCertificatesSection>;
 
 type SetOpenId = WhtCertificatesSectionProps['setOpenId'];
 type HandleDownload = WhtCertificatesSectionProps['handleDownload'];
@@ -128,7 +131,7 @@ export function WhtCertificatesSectionSkeleton({ t }: { t: WhtCertificatesSectio
   );
 }
 
-export function WhtCertificatesSection({
+export function WhtCertificatesSectionView({
   t,
   format,
   locale,
@@ -325,4 +328,10 @@ export function WhtCertificatesSection({
       </Dialog>
     </Card>
   );
+}
+
+export function WhtCertificatesSection() {
+  const section = useWhtCertificatesSection();
+  if (section.listQuery.isLoading) return <WhtCertificatesSectionSkeleton t={section.t} />;
+  return <WhtCertificatesSectionView {...section} />;
 }

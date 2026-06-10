@@ -7,6 +7,7 @@ import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { CheckCircle2 } from 'lucide-react';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
+import { useSkontoBanner } from '../hooks/use-skonto-banner.js';
 
 function formatEUR(minorAmount: number): string {
   return formatMinorAsCurrency(minorAmount, 'EUR', 'de-DE');
@@ -20,7 +21,7 @@ interface SkontoBannerData {
   discountedAmountMinor: number;
 }
 
-interface SkontoBannerProps {
+interface SkontoBannerViewProps {
   data: SkontoBannerData;
 }
 
@@ -28,7 +29,7 @@ export function SkontoBannerSkeleton() {
   return <Skeleton className="h-10 w-full" />;
 }
 
-export function SkontoBanner({ data }: SkontoBannerProps) {
+export function SkontoBannerView({ data }: SkontoBannerViewProps) {
   const t = useTranslations('Payments.skonto');
   const deadline = data.discountDeadline ?? new Date(0);
 
@@ -54,4 +55,20 @@ export function SkontoBanner({ data }: SkontoBannerProps) {
       </p>
     </div>
   );
+}
+
+interface SkontoBannerProps {
+  invoiceId: string;
+  featureEnabled: boolean;
+}
+
+export function SkontoBanner({ invoiceId, featureEnabled }: SkontoBannerProps) {
+  const { isLoading, data } = useSkontoBanner(invoiceId, featureEnabled);
+
+  if (!featureEnabled) return null;
+  if (isLoading) return <SkontoBannerSkeleton />;
+  if (!data) return null;
+  if (data.eligibilityReason === 'NO_SKONTO_CONFIGURED') return null;
+
+  return <SkontoBannerView data={data} />;
 }

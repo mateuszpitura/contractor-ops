@@ -1,7 +1,7 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
+import { useResourceMutation } from '../../../hooks/use-resource-mutation.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { useTRPC } from '../../../providers/trpc-provider.js';
 
@@ -44,7 +44,6 @@ export function useEditContractDialog(
   onOpenChange: (open: boolean) => void,
 ) {
   const t = useTranslations('ContractDetail.edit');
-  const queryClient = useQueryClient();
   const trpc = useTRPC();
 
   const [title, setTitle] = useState(contract.title ?? '');
@@ -62,16 +61,11 @@ export function useEditContractDialog(
     setValue(minorToMajor(contract.rateValueMinor));
   }, [open, contract]);
 
-  const updateMutation = useMutation(
-    trpc.contract.update.mutationOptions({
-      onSuccess: () => {
-        toast.success(t('toast.success'));
-        queryClient.invalidateQueries(trpc.contract.pathFilter());
-        onOpenChange(false);
-      },
-      onError: err => toast.error(err.message),
-    }),
-  );
+  const updateMutation = useResourceMutation(trpc.contract.update.mutationOptions({}), {
+    successMessage: t('toast.success'),
+    invalidate: [trpc.contract.pathFilter()],
+    onClose: () => onOpenChange(false),
+  });
 
   const handleSubmit = useCallback(() => {
     const trimmedTitle = title.trim();

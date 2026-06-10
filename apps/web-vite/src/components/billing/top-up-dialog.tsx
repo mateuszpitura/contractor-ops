@@ -16,9 +16,11 @@ import {
   SelectValue,
 } from '@contractor-ops/ui/components/shadcn/select';
 import { Loader2 } from 'lucide-react';
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 
+import { useTranslations } from '../../i18n/useTranslations.js';
 import type { TranslateFn } from '../../i18n/useTranslations.js';
+import { useTopUpCheckout } from './hooks/use-billing.js';
 
 const CREDIT_BUNDLES = [
   { value: '10', label: '10 credits', priceLabel: '~49 PLN' },
@@ -36,7 +38,7 @@ interface TopUpDialogProps {
   isPending: boolean;
 }
 
-export function TopUpDialog({
+export function TopUpDialogView({
   open,
   onOpenChange,
   t,
@@ -90,5 +92,32 @@ export function TopUpDialog({
         </DialogFooter>
       </DialogContent>
     </Dialog>
+  );
+}
+
+interface TopUpDialogWiredProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}
+
+export function TopUpDialog({ open, onOpenChange }: TopUpDialogWiredProps) {
+  const t = useTranslations('Billing.topUp');
+  const [selectedBundle, setSelectedBundle] = useState<string>('10');
+  const checkoutMutation = useTopUpCheckout();
+
+  const handleConfirm = useCallback(() => {
+    checkoutMutation.checkout(selectedBundle);
+  }, [checkoutMutation, selectedBundle]);
+
+  return (
+    <TopUpDialogView
+      open={open}
+      onOpenChange={onOpenChange}
+      t={t}
+      selectedBundle={selectedBundle}
+      onSelectedBundleChange={setSelectedBundle}
+      onConfirm={handleConfirm}
+      isPending={checkoutMutation.isPending}
+    />
   );
 }

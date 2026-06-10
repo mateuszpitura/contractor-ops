@@ -6,6 +6,7 @@ import type { ReactNode } from 'react';
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { LinearIssueChip } from '../integrations/linear-issue-chip.js';
 import type { LinkedLinearIssueRow } from './hooks/use-side-panel-linked-linear.js';
+import { useSidePanelLinkedLinear } from './hooks/use-side-panel-linked-linear.js';
 
 interface LinkedLinearIssuesSectionShellProps {
   children: ReactNode;
@@ -57,6 +58,11 @@ export function LinkedLinearIssuesError({ onRetry }: LinkedLinearIssuesErrorProp
   );
 }
 
+export function LinkedLinearIssuesEmpty() {
+  const ts = useTranslations('Workflows.sidePanel');
+  return <p className="text-sm text-muted-foreground">{ts('noLinkedLinearIssues')}</p>;
+}
+
 interface LinkedLinearIssuesListProps {
   issues: LinkedLinearIssueRow[];
 }
@@ -105,6 +111,31 @@ export function LinkedLinearIssuesView({
     body = <LinkedLinearIssuesError onRetry={handleRetry} />;
   } else if (isLoading) {
     body = <LinkedLinearIssuesSkeleton />;
+  } else if (issues.length === 0) {
+    body = <LinkedLinearIssuesEmpty />;
+  } else {
+    body = <LinkedLinearIssuesList issues={issues} />;
+  }
+
+  return <LinkedLinearIssuesSectionShell>{body}</LinkedLinearIssuesSectionShell>;
+}
+
+interface LinkedLinearIssuesSectionProps {
+  runId: string;
+}
+
+export function LinkedLinearIssuesSection({ runId }: LinkedLinearIssuesSectionProps) {
+  const { showSection, isLoading, isError, issues, handleRetry } = useSidePanelLinkedLinear(runId);
+
+  if (!showSection) return null;
+
+  let body: ReactNode;
+  if (isError) {
+    body = <LinkedLinearIssuesError onRetry={handleRetry} />;
+  } else if (isLoading) {
+    body = <LinkedLinearIssuesSkeleton />;
+  } else if (issues.length === 0) {
+    body = <LinkedLinearIssuesEmpty />;
   } else {
     body = <LinkedLinearIssuesList issues={issues} />;
   }

@@ -1,6 +1,25 @@
+import type { AppRouter } from '@contractor-ops/api';
 import { useQuery } from '@tanstack/react-query';
+import type { inferRouterOutputs } from '@trpc/server';
 
 import { useTRPC } from '../../../providers/trpc-provider.js';
+
+type AuditTrail = inferRouterOutputs<AppRouter>['approval']['getAuditTrail'];
+
+export interface ApprovalAuditEvent {
+  type: 'system' | 'decision';
+  label: string;
+  timestamp: string;
+  actor?: {
+    id: string;
+    name: string | null;
+    email: string;
+    image: string | null;
+  } | null;
+  comment?: string | null;
+  levelName?: string;
+  chainName?: string;
+}
 
 export function useApprovalAuditTrail(invoiceId: string, enabled = true) {
   const trpc = useTRPC();
@@ -10,15 +29,12 @@ export function useApprovalAuditTrail(invoiceId: string, enabled = true) {
     enabled: !!invoiceId && enabled,
   });
 
-  const data = auditQuery.data as Record<string, unknown> | undefined;
+  const data = auditQuery.data;
 
   return {
     data,
-    events: ((data?.events as Record<string, unknown>[] | undefined) ?? []) as Record<
-      string,
-      unknown
-    >[],
-    flow: data?.flow as { steps?: unknown[]; chainName?: string } | undefined,
+    events: (data?.events ?? []) as unknown as ApprovalAuditEvent[],
+    flow: data?.flow as AuditTrail['flow'],
     isLoading: auditQuery.isLoading,
   } as const;
 }

@@ -23,7 +23,7 @@ import {
 import { Calculator, Loader2 } from 'lucide-react';
 import { useCallback } from 'react';
 
-import type { useReconciliationSpotCheck } from './hooks/use-reconciliation-spot-check.js';
+import { useReconciliationSpotCheck } from './hooks/use-reconciliation-spot-check.js';
 
 function formatHours(minutes: number): string {
   const hours = minutes / 60;
@@ -256,4 +256,9 @@ export function ReconciliationSpotCheckView({
       </CardContent>
     </Card>
   );
+}
+
+export function ReconciliationSpotCheck() {
+  const spotCheck = useReconciliationSpotCheck();
+  return <ReconciliationSpotCheckView {...spotCheck} />;
 }

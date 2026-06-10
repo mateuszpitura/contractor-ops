@@ -1,7 +1,7 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { useCallback, useMemo, useState } from 'react';
-import { toast } from 'sonner';
 
+import { useResourceMutation } from '../../../hooks/use-resource-mutation.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { useTRPC } from '../../../providers/trpc-provider.js';
 import { DEFAULT_REPORT_PAGE_SIZE } from '../report-constants.js';
@@ -19,7 +19,6 @@ export type ExpiringRow = {
 export function useExpiringContractsReport() {
   const trpc = useTRPC();
   const t = useTranslations('Reports');
-  const queryClient = useQueryClient();
 
   const [days, setDays] = useState<'30' | '60' | '90'>('30');
   const [page, setPage] = useState(1);
@@ -39,16 +38,13 @@ export function useExpiringContractsReport() {
 
   const chartQuery = useQuery(trpc.report.expiringContractsChart.queryOptions({ days }));
 
-  const exportMutation = useMutation(
-    trpc.report.exportExpiringContracts.mutationOptions({
-      onSuccess: () => {
-        toast.success(t('exportQueued'));
-        queryClient.invalidateQueries(trpc.report.pathFilter());
-      },
-      onError: () => {
-        toast.error(t('exportError'));
-      },
-    }),
+  const exportMutation = useResourceMutation(
+    trpc.report.exportExpiringContracts.mutationOptions(),
+    {
+      invalidate: [trpc.report.pathFilter()],
+      successMessage: t('exportQueued'),
+      errorMessage: t('exportError'),
+    },
   );
 
   const tableData = useMemo(() => {

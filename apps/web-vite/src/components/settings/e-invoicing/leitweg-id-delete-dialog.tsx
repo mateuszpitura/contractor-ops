@@ -9,7 +9,9 @@ import {
   AlertDialogTitle,
 } from '@contractor-ops/ui/components/shadcn/alert-dialog';
 import { Loader2, Trash2 } from 'lucide-react';
-import type { useLeitwegIdDeleteDialog } from './hooks/use-leitweg-id-delete-dialog.js';
+import { useTranslations } from '../../../i18n/useTranslations.js';
+import { useLeitwegIdDeleteDialog } from './hooks/use-leitweg-id-delete-dialog.js';
+import type { useLeitwegIdDeleteDialog as UseLeitwegIdDeleteDialog } from './hooks/use-leitweg-id-delete-dialog.js';
 import {
   LEITWEG_DELETE_BODY,
   LEITWEG_DELETE_BUTTON,
@@ -21,18 +23,18 @@ interface LeitwegIdDeleteDialogShellProps {
   onOpenChange: (open: boolean) => void;
 }
 
-export type LeitwegIdDeleteDialogProps = LeitwegIdDeleteDialogShellProps &
-  ReturnType<typeof useLeitwegIdDeleteDialog> & {
+export type LeitwegIdDeleteDialogViewProps = LeitwegIdDeleteDialogShellProps &
+  ReturnType<typeof UseLeitwegIdDeleteDialog> & {
     tCommon: (key: string) => string;
   };
 
-export function LeitwegIdDeleteDialog({
+export function LeitwegIdDeleteDialogView({
   open,
   onOpenChange,
   tCommon,
   isPending,
   handleConfirm,
-}: LeitwegIdDeleteDialogProps) {
+}: LeitwegIdDeleteDialogViewProps) {
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
@@ -58,5 +60,19 @@ export function LeitwegIdDeleteDialog({
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
+  );
+}
+
+interface LeitwegIdDeleteDialogProps extends LeitwegIdDeleteDialogShellProps {
+  id: string;
+  value: string;
+}
+
+export function LeitwegIdDeleteDialog({ open, onOpenChange, id, value }: LeitwegIdDeleteDialogProps) {
+  const tCommon = useTranslations('Common');
+  const dialog = useLeitwegIdDeleteDialog({ onOpenChange, id, value });
+
+  return (
+    <LeitwegIdDeleteDialogView open={open} onOpenChange={onOpenChange} tCommon={tCommon} {...dialog} />
   );
 }

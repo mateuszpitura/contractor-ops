@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback } from 'react';
 import { toast } from 'sonner';
 
+import { useTranslatedError } from '../../../i18n/use-translated-error.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { useTRPC } from '../../../providers/trpc-provider.js';
 
@@ -49,6 +50,7 @@ export function useBoeRateInsert(onSuccess: () => void) {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
   const t = useTranslations('Admin.BoeRate');
+  const translateError = useTranslatedError();
 
   return useMutation(
     trpc.adminBoeRate.insert.mutationOptions({
@@ -61,8 +63,8 @@ export function useBoeRateInsert(onSuccess: () => void) {
         });
         onSuccess();
       },
-      onError: (error: { message: string }) => {
-        toast.error(t('toastError'), { description: error.message });
+      onError: error => {
+        toast.error(t('toastError'), { description: translateError(error) });
       },
     }),
   );
@@ -72,6 +74,7 @@ export function useBoeRateUpdate(onSuccess: () => void) {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
   const t = useTranslations('Admin.BoeRate');
+  const translateError = useTranslatedError();
 
   return useMutation(
     trpc.adminBoeRate.update.mutationOptions({
@@ -84,8 +87,8 @@ export function useBoeRateUpdate(onSuccess: () => void) {
         });
         onSuccess();
       },
-      onError: (error: { message: string }) => {
-        toast.error(t('toastError'), { description: error.message });
+      onError: error => {
+        toast.error(t('toastError'), { description: translateError(error) });
       },
     }),
   );
@@ -95,6 +98,7 @@ export function useBoeRateDelete(onSuccess: () => void) {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
   const t = useTranslations('Admin.BoeRate');
+  const translateError = useTranslatedError();
 
   return useMutation(
     trpc.adminBoeRate.delete.mutationOptions({
@@ -107,8 +111,8 @@ export function useBoeRateDelete(onSuccess: () => void) {
         });
         onSuccess();
       },
-      onError: (error: { message: string }) => {
-        toast.error(t('toastError'), { description: error.message });
+      onError: error => {
+        toast.error(t('toastError'), { description: translateError(error) });
       },
     }),
   );

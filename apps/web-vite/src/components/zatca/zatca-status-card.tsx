@@ -17,10 +17,11 @@ import { ArrowRight, Settings, Unlink, Unplug } from 'lucide-react';
 import { Link } from '../../i18n/navigation.js';
 import { tKey } from '../../i18n/typed-keys.js';
 import { ZatcaBrandIcon } from '../integrations/brand-icons.js';
-import type { useZatcaStatusCard } from './hooks/use-zatca-status-card.js';
-import { OnboardingWizard } from './onboarding-wizard-container.js';
+import { useZatcaStatusCard } from './hooks/use-zatca-status-card.js';
+import type { useZatcaStatusCard as UseZatcaStatusCard } from './hooks/use-zatca-status-card.js';
+import { OnboardingWizard } from './onboarding-wizard.js';
 
-type HookResult = ReturnType<typeof useZatcaStatusCard>;
+type HookResult = ReturnType<typeof UseZatcaStatusCard>;
 type StatusConfig = HookResult['statusConfig'];
 type T = HookResult['t'];
 
@@ -182,5 +183,46 @@ export function ZatcaStatusCardConnected({ statusConfig, t }: ZatcaStatusCardCon
         </div>
       </CardContent>
     </Card>
+  );
+}
+
+export function ZatcaStatusCard() {
+  const {
+    isLoading,
+    wizardOpen,
+    openWizard,
+    closeWizard,
+    isConnected,
+    isOnboarding,
+    statusConfig,
+    handleWizardComplete,
+    t,
+  } = useZatcaStatusCard();
+
+  if (isLoading) return <ZatcaStatusCardSkeleton />;
+
+  if (isConnected) return <ZatcaStatusCardConnected statusConfig={statusConfig} t={t} />;
+
+  if (isOnboarding) {
+    return (
+      <ZatcaStatusCardOnboarding
+        wizardOpen={wizardOpen}
+        openWizard={openWizard}
+        closeWizard={closeWizard}
+        handleWizardComplete={handleWizardComplete}
+        statusConfig={statusConfig}
+        t={t}
+      />
+    );
+  }
+
+  return (
+    <ZatcaStatusCardDisconnected
+      wizardOpen={wizardOpen}
+      openWizard={openWizard}
+      closeWizard={closeWizard}
+      handleWizardComplete={handleWizardComplete}
+      t={t}
+    />
   );
 }

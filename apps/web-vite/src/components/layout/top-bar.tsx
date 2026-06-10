@@ -18,12 +18,14 @@ import { FilePlus, Search, Upload, UserPlus } from 'lucide-react';
 import { Fragment } from 'react';
 import { Link } from '../../i18n/navigation.js';
 import { useTranslations } from '../../i18n/useTranslations.js';
-import { WizardDialogContainer as ContractorWizardDialogContainer } from '../contractors/contractor-wizard/wizard-dialog-container.js';
-import { ContractWizardDialogContainer } from '../contracts/contract-wizard/wizard-dialog-container.js';
-import { IntakeUploadDialogContainer } from '../invoices/intake/intake-upload-dialog-container.js';
-import { NotificationPopoverContainer } from '../notifications/notification-popover-container.js';
-import { CommandPaletteContainer } from '../search/command-palette-container.js';
+import { WizardDialog as ContractorWizardDialog } from '../contractors/contractor-wizard/wizard-dialog.js';
+import { ContractWizardDialog } from '../contracts/contract-wizard/wizard-dialog.js';
+import { IntakeUploadDialog } from '../invoices/intake/intake-upload-dialog.js';
+import { NotificationPopover } from '../notifications/notification-popover.js';
+import { CommandPalette } from '../search/command-palette.js';
+import { useTopBar } from './hooks/use-top-bar.js';
 import type { BreadcrumbSegmentView } from './hooks/use-top-bar-breadcrumbs.js';
+import { useTopBarBreadcrumbs } from './hooks/use-top-bar-breadcrumbs.js';
 
 interface TopBarProps {
   hasContractors: boolean;
@@ -175,23 +177,54 @@ export function TopBar({
             <TooltipContent>{t('search')}</TooltipContent>
           </Tooltip>
 
-          <NotificationPopoverContainer />
+          <NotificationPopover />
         </div>
       </header>
       <div className="accent-line sticky top-14 z-30 w-full" />
-      <ContractWizardDialogContainer
+      <ContractWizardDialog
         open={contractWizardOpen}
         onOpenChange={onContractWizardOpenChange}
       />
-      <ContractorWizardDialogContainer
+      <ContractorWizardDialog
         open={contractorWizardOpen}
         onOpenChange={onContractorWizardOpenChange}
       />
-      <IntakeUploadDialogContainer
+      <IntakeUploadDialog
         open={invoiceUploadOpen}
         onOpenChange={onInvoiceUploadOpenChange}
       />
-      <CommandPaletteContainer />
+      <CommandPalette />
     </>
+  );
+}
+
+export function TopBarContainer() {
+  const {
+    hasContractors,
+    contractorWizardOpen,
+    setContractorWizardOpen,
+    openContractorWizard,
+    invoiceUploadOpen,
+    setInvoiceUploadOpen,
+    openInvoiceUpload,
+  } = useTopBar();
+  const { segments, contractWizardOpen, setContractWizardOpen, openContractWizard, openSearch } =
+    useTopBarBreadcrumbs();
+
+  return (
+    <TopBar
+      hasContractors={hasContractors}
+      onOpenContractorWizard={openContractorWizard}
+      onOpenInvoiceUpload={openInvoiceUpload}
+      segments={segments}
+      contractWizardOpen={contractWizardOpen}
+      onContractWizardOpenChange={setContractWizardOpen}
+      onOpenContractWizard={openContractWizard}
+      contractorWizardOpen={contractorWizardOpen}
+      onContractorWizardOpenChange={setContractorWizardOpen}
+      invoiceUploadOpen={invoiceUploadOpen}
+      onInvoiceUploadOpenChange={setInvoiceUploadOpen}
+      onOpenSearch={openSearch}
+    />
   );
 }

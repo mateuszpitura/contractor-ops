@@ -12,11 +12,12 @@ import { Loader2, Save } from 'lucide-react';
 import type * as React from 'react';
 import { useCallback } from 'react';
 
-import type { useExpiryReminderDefaults } from './hooks/use-expiry-reminder-defaults.js';
+import { useExpiryReminderDefaults } from './hooks/use-expiry-reminder-defaults.js';
+import type { useExpiryReminderDefaults as UseExpiryReminderDefaults } from './hooks/use-expiry-reminder-defaults.js';
 
-export type ExpiryReminderDefaultsProps = ReturnType<typeof useExpiryReminderDefaults>;
+export type ExpiryReminderDefaultsProps = ReturnType<typeof UseExpiryReminderDefaults>;
 
-export function ExpiryReminderDefaults({
+export function ExpiryReminderDefaultsView({
   id,
   t,
   inputValue,
@@ -61,4 +62,9 @@ export function ExpiryReminderDefaults({
       </CardFooter>
     </Card>
   );
+}
+
+export function ExpiryReminderDefaults() {
+  const defaults = useExpiryReminderDefaults();
+  return <ExpiryReminderDefaultsView {...defaults} />;
 }

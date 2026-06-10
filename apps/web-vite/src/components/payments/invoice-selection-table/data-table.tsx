@@ -7,8 +7,9 @@
  * canonical primitive's `isRowSelectable` predicate.
  */
 
-import { DataTable } from '@contractor-ops/ui';
+
 import type { ColumnDef, RowSelectionState } from '@tanstack/react-table';
+import { WorkbenchDataTable } from '../../table-kit/workbench-data-table.js';
 import { useCallback, useState } from 'react';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
@@ -53,7 +54,7 @@ export function InvoiceSelectionDataTable({
   );
 
   return (
-    <DataTable
+    <WorkbenchDataTable
       columns={columns}
       data={data}
       totalRows={data.length}

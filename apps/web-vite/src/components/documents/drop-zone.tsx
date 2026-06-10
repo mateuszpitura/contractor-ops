@@ -3,7 +3,7 @@ import { useCallback, useState } from 'react';
 
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { ACCEPTED_TYPES, MAX_FILE_SIZE } from './drop-zone-constants.js';
-import type { useDocumentDropZone } from './hooks/use-document-drop-zone.js';
+import { useDocumentDropZone, type useDocumentDropZone as UseDocumentDropZone } from './hooks/use-document-drop-zone.js';
 import { UploadProgress } from './upload-progress.js';
 
 type UploadFileItem = ReturnType<typeof useDocumentDropZone>['files'][number];
@@ -77,4 +77,37 @@ export function DropZoneView({
       )}
     </div>
   );
+}
+
+type DropZoneProps = {
+  onFilesAccepted?: (files: File[]) => void;
+  onFileRejected?: (files: File[]) => void;
+  disabled?: boolean;
+  entityType?: string;
+  entityId?: string;
+  documentType?: string;
+};
+
+export function DropZone({
+  onFilesAccepted,
+  onFileRejected,
+  disabled,
+  entityType,
+  entityId,
+  documentType = 'OTHER',
+}: DropZoneProps) {
+  const dropZone = useDocumentDropZone({ entityType, entityId, documentType });
+
+  return (
+    <DropZoneView
+      {...dropZone}
+      onFilesAccepted={onFilesAccepted}
+      onFileRejected={onFileRejected}
+      disabled={disabled}
+    />
+  );
+}
+
+export function DropZoneContainer(props: DropZoneProps) {
+  return <DropZone {...props} />;
 }

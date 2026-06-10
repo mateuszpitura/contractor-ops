@@ -3,7 +3,9 @@ import { Card, CardContent } from '@contractor-ops/ui/components/shadcn/card';
 import { Separator } from '@contractor-ops/ui/components/shadcn/separator';
 import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 
+import { useTranslations } from '../../i18n/useTranslations.js';
 import type { TranslateFn } from '../../i18n/useTranslations.js';
+import { useProrationPreview } from './hooks/use-billing.js';
 
 export interface ProrationLine {
   description: string;
@@ -19,7 +21,7 @@ interface ProrationPreviewProps {
   isConfirming?: boolean;
 }
 
-export function ProrationPreview({
+export function ProrationPreviewView({
   t,
   lines,
   totalMinor,
@@ -101,5 +103,36 @@ export function ProrationPreviewError({ t, onCancel }: ProrationPreviewErrorProp
         </div>
       </CardContent>
     </Card>
+  );
+}
+
+interface ProrationPreviewWiredProps {
+  newPriceId: string;
+  onConfirm: () => void;
+  onCancel: () => void;
+  isConfirming?: boolean;
+}
+
+export function ProrationPreview({
+  newPriceId,
+  onConfirm,
+  onCancel,
+  isConfirming,
+}: ProrationPreviewWiredProps) {
+  const t = useTranslations('Billing.proration');
+  const { data, isLoading, isError } = useProrationPreview(newPriceId);
+
+  if (isLoading) return <ProrationPreviewSkeleton />;
+  if (isError || !data) return <ProrationPreviewError t={t} onCancel={onCancel} />;
+
+  return (
+    <ProrationPreviewView
+      t={t}
+      lines={data.lines}
+      totalMinor={data.totalMinor}
+      onConfirm={onConfirm}
+      onCancel={onCancel}
+      isConfirming={isConfirming}
+    />
   );
 }

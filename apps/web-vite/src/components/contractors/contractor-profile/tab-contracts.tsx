@@ -15,11 +15,11 @@ import { tDynLoose } from '../../../i18n/typed-keys.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { enumKey } from '../../../lib/enum-key.js';
 import { useDateFormatter } from '../../../lib/format/use-date-formatter.js';
-import { formatAmount } from '../../../lib/format-currency.js';
-import { ContractWizardDialogContainer } from '../../contracts/contract-wizard/wizard-dialog-container.js';
-import type {
-  ContractorTabContractRow,
+import { formatAmount } from '../../../lib/money.js';
+import { ContractWizardDialog } from '../../contracts/contract-wizard/wizard-dialog.js';
+import {
   useContractorTabContracts,
+  type ContractorTabContractRow,
 } from '../hooks/use-contractor-tab-contracts.js';
 
 const statusBadgeColors: Record<string, string> = {
@@ -77,7 +77,7 @@ export function TabContractsEmpty({
         primaryAction={primaryAction}
         renderAction={renderEmptyStateAction}
       />
-      <ContractWizardDialogContainer
+      <ContractWizardDialog
         open={wizardOpen}
         onOpenChange={setWizardOpen}
         contractorId={contractorId}
@@ -202,7 +202,7 @@ export function TabContractsView({
         onRowClick={handleRowClick}
       />
 
-      <ContractWizardDialogContainer
+      <ContractWizardDialog
         open={wizardOpen}
         onOpenChange={setWizardOpen}
         contractorId={contractorId}
@@ -210,3 +210,26 @@ export function TabContractsView({
     </div>
   );
 }
+
+type TabContractsContainerProps = {
+  contractorId: string;
+};
+
+export function TabContractsContainer({ contractorId }: TabContractsContainerProps) {
+  const contracts = useContractorTabContracts(contractorId);
+
+  if (!contracts.isLoading && contracts.items.length === 0) {
+    return (
+      <TabContractsEmpty
+        contractorId={contracts.contractorId}
+        wizardOpen={contracts.wizardOpen}
+        setWizardOpen={contracts.setWizardOpen}
+      />
+    );
+  }
+
+  return <TabContractsView {...contracts} />;
+}
+
+/** @deprecated Use TabContracts */
+export { TabContractsContainer as TabContracts };

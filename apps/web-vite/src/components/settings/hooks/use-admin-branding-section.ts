@@ -1,7 +1,8 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { useRef, useState } from 'react';
 import { toast } from 'sonner';
 
+import { useResourceMutation } from '../../../hooks/use-resource-mutation.js';
 import { useCommonToasts } from '../../../i18n/use-common-toasts.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { useTRPC } from '../../../providers/trpc-provider.js';
@@ -17,7 +18,6 @@ export function useAdminBrandingSection() {
   const trpc = useTRPC();
   const t = useTranslations('Settings.branding');
   const tSettings = useTranslations('Settings');
-  const queryClient = useQueryClient();
   const toasts = useCommonToasts();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -44,28 +44,22 @@ export function useAdminBrandingSection() {
     },
   });
 
-  const uploadUrlMutation = useMutation(
-    trpc.settings.getLogoUploadUrl.mutationOptions({
-      onError: err => toast.error(err.message),
-      onSuccess: () => {
-        toast.success(toasts.done());
-        queryClient.invalidateQueries(trpc.settings.pathFilter());
-      },
-    }),
+  const uploadUrlMutation = useResourceMutation(
+    trpc.settings.getLogoUploadUrl.mutationOptions(),
+    {
+      successMessage: toasts.done(),
+      invalidate: [trpc.settings.pathFilter()],
+      suppressErrorToast: () => true,
+    },
   );
 
-  const updateBrandingMutation = useMutation(
-    trpc.settings.updateBranding.mutationOptions({
-      onSuccess: () => {
-        toast.success(t('successToast'));
-        queryClient.invalidateQueries({
-          queryKey: trpc.settings.getBranding.queryKey(),
-        });
-      },
-      onError: () => {
-        toast.error(t('errorToast'));
-      },
-    }),
+  const updateBrandingMutation = useResourceMutation(
+    trpc.settings.updateBranding.mutationOptions(),
+    {
+      successMessage: t('successToast'),
+      errorMessage: t('errorToast'),
+      invalidate: [trpc.settings.getBranding.queryKey()],
+    },
   );
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {

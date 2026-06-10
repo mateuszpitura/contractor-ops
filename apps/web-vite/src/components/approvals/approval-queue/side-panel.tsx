@@ -1,6 +1,14 @@
 import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import {
+  Dialog,
+  DialogBody,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@contractor-ops/ui/components/shadcn/dialog';
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -12,13 +20,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@contractor-ops/ui/components/shadcn/popover';
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from '@contractor-ops/ui/components/shadcn/sheet';
+import { SheetDescription } from '@contractor-ops/ui/components/shadcn/sheet';
 import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { Textarea } from '@contractor-ops/ui/components/shadcn/textarea';
 import {
@@ -29,20 +31,17 @@ import {
 import { CheckCircle2, HelpCircle, MoreHorizontal, UserPlus, XCircle } from 'lucide-react';
 import { useCallback, useEffect, useId, useState } from 'react';
 
-function stopPropagationClick(e: React.MouseEvent) {
-  e.stopPropagation();
-}
-function stopPropagationKeyDown(e: React.KeyboardEvent) {
-  e.stopPropagation();
-}
-
-import type { useApprovalActions } from '../../../hooks/use-approval-actions.js';
+import {
+  EntityDetailItem,
+  EntitySummarySheet,
+} from '../../table-kit/entity-summary-sheet.js';
+import { useApprovalActions, type useApprovalActions as UseApprovalActions } from '../../../hooks/use-approval-actions.js';
 import { Link, useLocale } from '../../../i18n/navigation.js';
 import type { LooseTranslator } from '../../../i18n/typed-keys.js';
 import { tKey } from '../../../i18n/typed-keys.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { enumKey } from '../../../lib/enum-key.js';
-import { formatAmount } from '../../../lib/format-currency.js';
+import { formatAmount } from '../../../lib/money.js';
 import type { ApprovalChainStep, ResolvedApprovalChain } from '../hooks/use-approval-chain.js';
 import { SlaBadge } from '../sla-badge.js';
 import type { ApprovalQueueRow } from './columns.js';
@@ -56,7 +55,7 @@ export interface ApprovalSidePanelProps {
     steps: ApprovalChainStep[];
     isLoading: boolean;
   };
-  actions: ReturnType<typeof useApprovalActions>;
+  actions: ReturnType<typeof UseApprovalActions>;
 }
 
 const statusBadgeColors: Record<string, string> = {
@@ -247,9 +246,9 @@ function ClarifyOverlay({
   t: LooseTranslator;
 }) {
   const reactId = useId();
-  const handleEscape = useCallback(
-    (e: React.KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
+  const handleOpenChange = useCallback(
+    (next: boolean) => {
+      if (!next) onClose();
     },
     [onClose],
   );
@@ -258,22 +257,14 @@ function ClarifyOverlay({
     [onCommentChange],
   );
 
-  if (!isOpen) return null;
   return (
-    <div
-      className="fixed inset-0 z-[60] flex items-center justify-center bg-black/10"
-      role="dialog"
-      aria-modal="true"
-      aria-label={t('clarifyPopover.heading')}
-      onClick={onClose}
-      onKeyDown={handleEscape}>
-      <div
-        className="w-96 rounded-xl bg-background p-4 shadow-lg ring-1 ring-border"
-        role="document"
-        onClick={stopPropagationClick}
-        onKeyDown={stopPropagationKeyDown}>
-        <h4 className="font-medium text-sm mb-3">{t('clarifyPopover.heading')}</h4>
-        <div className="space-y-1.5 mb-3">
+    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>{t('clarifyPopover.heading')}</DialogTitle>
+        </DialogHeader>
+
+        <DialogBody className="space-y-1.5">
           <label
             htmlFor={`${reactId}-clarify-comment`}
             className="text-[12px] text-muted-foreground">
@@ -286,17 +277,18 @@ function ClarifyOverlay({
             placeholder={t('clarifyPopover.commentPlaceholder')}
             className="min-h-[80px]"
           />
-        </div>
-        <div className="flex items-center gap-2 justify-end">
+        </DialogBody>
+
+        <DialogFooter>
           <Button variant="ghost" size="sm" onClick={onClose}>
             {t('clarifyPopover.dismiss')}
           </Button>
           <Button size="sm" disabled={comment.length < 1 || isPending} onClick={onSubmit}>
             {t('clarifyPopover.confirm')}
           </Button>
-        </div>
-      </div>
-    </div>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -322,9 +314,9 @@ function DelegateOverlay({
   t: LooseTranslator;
 }) {
   const reactId = useId();
-  const handleEscape = useCallback(
-    (e: React.KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
+  const handleOpenChange = useCallback(
+    (next: boolean) => {
+      if (!next) onClose();
     },
     [onClose],
   );
@@ -337,22 +329,14 @@ function DelegateOverlay({
     [onNoteChange],
   );
 
-  if (!isOpen) return null;
   return (
-    <div
-      className="fixed inset-0 z-[60] flex items-center justify-center bg-black/10"
-      role="dialog"
-      aria-modal="true"
-      aria-label={t('delegatePopover.heading')}
-      onClick={onClose}
-      onKeyDown={handleEscape}>
-      <div
-        className="w-96 rounded-xl bg-background p-4 shadow-lg ring-1 ring-border"
-        role="document"
-        onClick={stopPropagationClick}
-        onKeyDown={stopPropagationKeyDown}>
-        <h4 className="font-medium text-sm mb-3">{t('delegatePopover.heading')}</h4>
-        <div className="space-y-3 mb-3">
+    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>{t('delegatePopover.heading')}</DialogTitle>
+        </DialogHeader>
+
+        <DialogBody className="space-y-3">
           <div className="space-y-1.5">
             <label
               htmlFor={`${reactId}-delegate-user-id`}
@@ -380,17 +364,18 @@ function DelegateOverlay({
               className="min-h-[60px]"
             />
           </div>
-        </div>
-        <div className="flex items-center gap-2 justify-end">
+        </DialogBody>
+
+        <DialogFooter>
           <Button variant="ghost" size="sm" onClick={onClose}>
             {t('delegatePopover.dismiss')}
           </Button>
           <Button size="sm" disabled={!userId.trim() || isPending} onClick={onSubmit}>
             {t('delegatePopover.confirm')}
           </Button>
-        </div>
-      </div>
-    </div>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -488,24 +473,98 @@ export function ApprovalSidePanelView({
     [t],
   );
 
-  return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="right" className="w-[480px] sm:max-w-[480px] overflow-y-auto">
-        <SheetHeader>
-          <SheetTitle className="font-mono text-xl">
-            {invoice?.invoiceNumber ?? t('sidePanel.unknownInvoice')}
-          </SheetTitle>
-          <SheetDescription className="sr-only">{t('sidePanel.description')}</SheetDescription>
-        </SheetHeader>
+  const submittedDate = invoice
+    ? new Date(invoice.createdAt).toLocaleDateString('pl-PL', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+      })
+    : null;
 
-        <div className="space-y-6 px-4 pb-4">
-          <div className="flex items-center gap-2">
+  return (
+    <>
+      <EntitySummarySheet
+        open={open}
+        onOpenChange={onOpenChange}
+        title={invoice?.invoiceNumber ?? t('sidePanel.unknownInvoice')}
+        sheetClassName="w-[480px] sm:max-w-[480px]"
+        badges={
+          <>
             <Badge variant="secondary" className={statusBadgeColors[step.status] ?? ''}>
               {step.status}
             </Badge>
             <SlaBadge slaDeadline={step.slaDeadline} status={step.status} />
-          </div>
+          </>
+        }
+        footer={
+          isPending ? (
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <Button className="flex-1" onClick={handleApprove} disabled={actionsPending}>
+                  <CheckCircle2 className="me-1.5 h-4 w-4" />
+                  {t('sidePanel.approve')}
+                </Button>
 
+                <Popover open={rejectOpen} onOpenChange={setRejectOpen}>
+                  <PopoverTrigger render={renderRejectTrigger} />
+                  <PopoverContent className="w-80 p-4" align="end">
+                    <div className="space-y-3">
+                      <h4 className="font-medium text-sm">{t('rejectPopover.heading')}</h4>
+                      <div className="space-y-1.5">
+                        <label
+                          htmlFor={`${reactId}-side-reject-comment`}
+                          className="text-[12px] text-muted-foreground">
+                          {t('rejectPopover.commentLabel')}
+                        </label>
+                        <Textarea
+                          id={`${reactId}-side-reject-comment`}
+                          value={rejectComment}
+                          onChange={handleRejectCommentChange}
+                          placeholder={t('rejectPopover.commentPlaceholder')}
+                          className="min-h-[80px]"
+                        />
+                        {rejectComment.length > 0 && rejectComment.length < 10 && (
+                          <p className="text-[12px] text-destructive">
+                            {t('rejectPopover.minChars')}
+                          </p>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2 justify-end">
+                        <Button variant="ghost" size="sm" onClick={handleRejectDismiss}>
+                          {t('rejectPopover.dismiss')}
+                        </Button>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          disabled={rejectComment.length < 10 || actionsPending}
+                          onClick={handleRejectConfirm}>
+                          {t('rejectPopover.confirm')}
+                        </Button>
+                      </div>
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              </div>
+
+              <DropdownMenu>
+                <DropdownMenuTrigger render={renderMoreTrigger} />
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuItem onClick={handleOpenClarify}>
+                    <HelpCircle className="me-2 h-4 w-4" />
+                    {t('sidePanel.requestClarification')}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleOpenDelegate}>
+                    <UserPlus className="me-2 h-4 w-4" />
+                    {t('sidePanel.delegateApproval')}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          ) : undefined
+        }>
+        <SheetDescription className="sr-only">{t('sidePanel.description')}</SheetDescription>
+
+        <div className="space-y-6">
           <div className="space-y-2">
             <h4 className="text-[12px] font-medium text-muted-foreground">
               {t('sidePanel.approvalChain')}
@@ -537,106 +596,25 @@ export function ApprovalSidePanelView({
           )}
 
           {!!invoice && (
-            <div className="space-y-1">
-              <h4 className="text-[12px] font-medium text-muted-foreground">
-                {t('sidePanel.amount')}
-              </h4>
-              <p className="font-mono text-sm tabular-nums">
-                {formatAmount(invoice.totalMinor, invoice.currency, locale)}
-              </p>
-            </div>
+            <EntityDetailItem
+              label={t('sidePanel.amount')}
+              value={formatAmount(invoice.totalMinor, invoice.currency, locale)}
+              mono
+            />
           )}
 
           {!!invoice && (
-            <div className="space-y-1">
-              <h4 className="text-[12px] font-medium text-muted-foreground">
-                {t('sidePanel.submitted')}
-              </h4>
-              <p className="text-sm text-muted-foreground">
-                {new Date(invoice.createdAt).toLocaleDateString('pl-PL', {
-                  day: 'numeric',
-                  month: 'long',
-                  year: 'numeric',
-                })}
-              </p>
-            </div>
+            <EntityDetailItem label={t('sidePanel.submitted')} value={submittedDate} />
           )}
 
           {!!step.approver && (
-            <div className="space-y-1">
-              <h4 className="text-[12px] font-medium text-muted-foreground">
-                {t('sidePanel.approver')}
-              </h4>
-              <p className="text-sm">{step.approver.name ?? step.approver.email}</p>
-            </div>
+            <EntityDetailItem
+              label={t('sidePanel.approver')}
+              value={step.approver.name ?? step.approver.email}
+            />
           )}
         </div>
-
-        {isPending && (
-          <div className="border-t p-4 space-y-2">
-            <div className="flex items-center gap-2">
-              <Button className="flex-1" onClick={handleApprove} disabled={actionsPending}>
-                <CheckCircle2 className="me-1.5 h-4 w-4" />
-                {t('sidePanel.approve')}
-              </Button>
-
-              <Popover open={rejectOpen} onOpenChange={setRejectOpen}>
-                <PopoverTrigger render={renderRejectTrigger} />
-                <PopoverContent className="w-80 p-4" align="end">
-                  <div className="space-y-3">
-                    <h4 className="font-medium text-sm">{t('rejectPopover.heading')}</h4>
-                    <div className="space-y-1.5">
-                      <label
-                        htmlFor={`${reactId}-side-reject-comment`}
-                        className="text-[12px] text-muted-foreground">
-                        {t('rejectPopover.commentLabel')}
-                      </label>
-                      <Textarea
-                        id={`${reactId}-side-reject-comment`}
-                        value={rejectComment}
-                        onChange={handleRejectCommentChange}
-                        placeholder={t('rejectPopover.commentPlaceholder')}
-                        className="min-h-[80px]"
-                      />
-                      {rejectComment.length > 0 && rejectComment.length < 10 && (
-                        <p className="text-[12px] text-destructive">
-                          {t('rejectPopover.minChars')}
-                        </p>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-2 justify-end">
-                      <Button variant="ghost" size="sm" onClick={handleRejectDismiss}>
-                        {t('rejectPopover.dismiss')}
-                      </Button>
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        disabled={rejectComment.length < 10 || actionsPending}
-                        onClick={handleRejectConfirm}>
-                        {t('rejectPopover.confirm')}
-                      </Button>
-                    </div>
-                  </div>
-                </PopoverContent>
-              </Popover>
-            </div>
-
-            <DropdownMenu>
-              <DropdownMenuTrigger render={renderMoreTrigger} />
-              <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuItem onClick={handleOpenClarify}>
-                  <HelpCircle className="me-2 h-4 w-4" />
-                  {t('sidePanel.requestClarification')}
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleOpenDelegate}>
-                  <UserPlus className="me-2 h-4 w-4" />
-                  {t('sidePanel.delegateApproval')}
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        )}
-      </SheetContent>
+      </EntitySummarySheet>
 
       <ClarifyOverlay
         open={clarifyOpen}
@@ -659,6 +637,48 @@ export function ApprovalSidePanelView({
         isPending={actionsPending}
         t={t}
       />
-    </Sheet>
+    </>
+  );
+}
+
+type ApprovalSidePanelWiredProps = Omit<ApprovalSidePanelProps, 'actions' | 'step'> & {
+  step: ApprovalSidePanelProps['step'] | null;
+};
+
+function ApprovalSidePanelBound({
+  step,
+  open,
+  onOpenChange,
+  resolvedChain,
+}: Omit<ApprovalSidePanelProps, 'actions'>) {
+  const actions = useApprovalActions(step.id, () => {
+    onOpenChange(false);
+  });
+
+  return (
+    <ApprovalSidePanelView
+      step={step}
+      open={open}
+      onOpenChange={onOpenChange}
+      resolvedChain={resolvedChain}
+      actions={actions}
+    />
+  );
+}
+
+export function ApprovalSidePanel({
+  step,
+  open,
+  onOpenChange,
+  resolvedChain,
+}: ApprovalSidePanelWiredProps) {
+  if (!step) return null;
+  return (
+    <ApprovalSidePanelBound
+      step={step}
+      open={open}
+      onOpenChange={onOpenChange}
+      resolvedChain={resolvedChain}
+    />
   );
 }

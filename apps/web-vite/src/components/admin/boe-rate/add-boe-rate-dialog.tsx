@@ -19,13 +19,14 @@ import { Textarea } from '@contractor-ops/ui/components/shadcn/textarea';
 import { useCallback, useEffect, useState } from 'react';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
-import type { useBoeRateInsert, useBoeRateValidation } from '../hooks/use-admin-boe-rate.js';
+import { useBoeRateInsert, useBoeRateValidation } from '../hooks/use-admin-boe-rate.js';
+import type { useBoeRateInsert as UseBoeRateInsert, useBoeRateValidation as UseBoeRateValidation } from '../hooks/use-admin-boe-rate.js';
 
 interface AddBoeRateDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  validation: ReturnType<typeof useBoeRateValidation>;
-  insertMutation: ReturnType<typeof useBoeRateInsert>;
+  validation: ReturnType<typeof UseBoeRateValidation>;
+  insertMutation: ReturnType<typeof UseBoeRateInsert>;
 }
 
 export function AddBoeRateDialog({
@@ -139,5 +140,23 @@ export function AddBoeRateDialog({
         </form>
       </DialogContent>
     </Dialog>
+  );
+}
+
+interface AddBoeRateDialogWiredProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}
+
+export function AddBoeRateDialogWired({ open, onOpenChange }: AddBoeRateDialogWiredProps) {
+  const validation = useBoeRateValidation();
+  const insertMutation = useBoeRateInsert(() => onOpenChange(false));
+  return (
+    <AddBoeRateDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      validation={validation}
+      insertMutation={insertMutation}
+    />
   );
 }

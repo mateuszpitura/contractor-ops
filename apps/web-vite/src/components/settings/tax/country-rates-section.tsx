@@ -28,15 +28,16 @@ import {
 import { AlertCircle, CheckCircle2, Loader2 } from 'lucide-react';
 import { useCallback } from 'react';
 import { tDyn } from '../../../i18n/typed-keys';
-import type {
-  SupportedCountry,
+import {
   useCountryRatesSection,
+  SUPPORTED_COUNTRIES,
+  type SupportedCountry,
+  type useCountryRatesSection as UseCountryRatesSection,
 } from './hooks/use-country-rates-section.js';
-import { SUPPORTED_COUNTRIES } from './hooks/use-country-rates-section.js';
 
-export type CountryRatesSectionProps = ReturnType<typeof useCountryRatesSection>;
+export type CountryRatesSectionProps = ReturnType<typeof UseCountryRatesSection>;
 
-export function CountryRatesSection({
+export function CountryRatesSectionView({
   t,
   country,
   setCountry,
@@ -178,4 +179,9 @@ export function CountryRatesSection({
       </CardContent>
     </Card>
   );
+}
+
+export function CountryRatesSection() {
+  const section = useCountryRatesSection();
+  return <CountryRatesSectionView {...section} />;
 }

@@ -1,11 +1,8 @@
-import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useState } from 'react';
-import { toast } from 'sonner';
 
 import { useResourceMutation } from '../../../hooks/use-resource-mutation.js';
 import { useRouter } from '../../../i18n/navigation.js';
 import { tKey } from '../../../i18n/typed-keys.js';
-import { useCommonToasts } from '../../../i18n/use-common-toasts.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { useTRPC } from '../../../providers/trpc-provider.js';
 import type { ContractAction } from '../actions.js';
@@ -15,27 +12,17 @@ const ROUTED_ELSEWHERE = new Set(['sendForSignature']);
 const NOT_IMPLEMENTED = new Set(['addAmendment', 'uploadDocument']);
 
 export function useContractDetailHeader(contractId: string, contractStatus: string) {
-  const queryClient = useQueryClient();
   const router = useRouter();
   const t = useTranslations('ContractDetail');
   const trpc = useTRPC();
-  const toasts = useCommonToasts();
   const [terminateOpen, setTerminateOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
 
-  const contractByIdKey = trpc.contract.getById.queryKey();
-
   const terminateMutation = useResourceMutation(
-    trpc.contract.transitionStatus.mutationOptions({
-      onError: err => toast.error(err.message),
-      onSuccess: () => {
-        toast.success(toasts.done());
-        queryClient.invalidateQueries(trpc.contract.pathFilter());
-      },
-    }),
+    trpc.contract.transitionStatus.mutationOptions({}),
     {
-      invalidate: [contractByIdKey],
+      invalidate: [trpc.contract.pathFilter()],
       successMessage: t('actions.terminateSuccess'),
       errorMessage: t('actions.terminateError'),
       onClose: () => setTerminateOpen(false),
@@ -43,15 +30,9 @@ export function useContractDetailHeader(contractId: string, contractStatus: stri
   );
 
   const supersedeMutation = useResourceMutation(
-    trpc.contract.transitionStatus.mutationOptions({
-      onError: err => toast.error(err.message),
-      onSuccess: () => {
-        toast.success(toasts.done());
-        queryClient.invalidateQueries(trpc.contract.pathFilter());
-      },
-    }),
+    trpc.contract.transitionStatus.mutationOptions({}),
     {
-      invalidate: [contractByIdKey],
+      invalidate: [trpc.contract.pathFilter()],
       successMessage: t('actions.supersedeSuccess'),
       errorMessage: t('actions.supersedeError'),
     },
@@ -59,15 +40,12 @@ export function useContractDetailHeader(contractId: string, contractStatus: stri
 
   const deleteMutation = useResourceMutation(
     trpc.contract.delete.mutationOptions({
-      onError: err => toast.error(err.message),
       onSuccess: () => {
-        toast.success(t('actions.deleteSuccess'));
-        queryClient.invalidateQueries(trpc.contract.pathFilter());
         router.push('/contracts');
       },
     }),
     {
-      invalidate: [contractByIdKey],
+      invalidate: [trpc.contract.pathFilter()],
       successMessage: t('actions.deleteSuccess'),
       errorMessage: t('actions.deleteError'),
       onClose: () => setDeleteOpen(false),

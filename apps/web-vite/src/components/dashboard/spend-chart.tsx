@@ -3,6 +3,7 @@
  * and multi-currency stacking (PLN + EUR).
  */
 
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import {
   Card,
   CardContent,
@@ -32,9 +33,12 @@ interface ChartDataPoint {
   EUR: number;
 }
 
-function formatMonthLabel(isoString: string): string {
+function formatMonthLabel(isoString: string, locale: string): string {
   const date = new Date(isoString);
-  return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+  return date.toLocaleDateString(
+    locale === 'ar' ? 'ar-SA-u-nu-latn' : locale === 'pl' ? 'pl-PL' : 'en-US',
+    { month: 'short', year: 'numeric' },
+  );
 }
 
 interface RangeToggleProps {
@@ -129,15 +133,21 @@ export function SpendChart() {
   const reactId = useId();
   const gradPlnId = `${reactId}-gradPLN`;
   const gradEurId = `${reactId}-gradEUR`;
-  const { isLoading, rows, spendRange, setSpendRange } = useSpendChart();
+  const { isLoading, isError, onRetry, rows, spendRange, setSpendRange } = useSpendChart();
 
   const currencyFormatter = useMemo(
     () =>
       new Intl.NumberFormat(
-        locale === 'ar' ? 'ar-SA-u-nu-latn' : locale === 'pl' ? 'pl-PL' : 'en-US',
+        locale === 'ar'
+          ? 'ar-SA-u-nu-latn'
+          : locale === 'pl'
+            ? 'pl-PL'
+            : locale === 'de'
+              ? 'de-DE'
+              : 'en-US',
         {
           style: 'currency',
-          currency: locale === 'ar' ? 'AED' : 'PLN',
+          currency: locale === 'ar' ? 'AED' : locale === 'de' ? 'EUR' : 'PLN',
           minimumFractionDigits: 0,
           maximumFractionDigits: 0,
         },
@@ -149,14 +159,14 @@ export function SpendChart() {
     if (rows.length === 0) return [];
     const monthMap = new Map<string, ChartDataPoint>();
     for (const row of rows) {
-      const label = formatMonthLabel(row.month);
+      const label = formatMonthLabel(row.month, locale);
       const existing = monthMap.get(label) ?? { month: label, PLN: 0, EUR: 0 };
       if (row.currency === 'PLN') existing.PLN = row.totalMinor;
       else if (row.currency === 'EUR') existing.EUR = row.totalMinor;
       monthMap.set(label, existing);
     }
     return Array.from(monthMap.values());
-  }, [rows]);
+  }, [rows, locale]);
 
   const hasEur = chartData.some(d => d.EUR > 0);
 
@@ -174,6 +184,15 @@ export function SpendChart() {
       <CardContent>
         {isLoading ? (
           <Skeleton className="h-[280px] w-full rounded-lg" />
+        ) : isError ? (
+          <div className="flex h-[280px] flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed border-border text-center">
+            <p className="text-sm font-medium">
+              {t('errors.widgetFailed', { name: t('spend.title') })}
+            </p>
+            <Button variant="outline" size="sm" onClick={onRetry}>
+              {t('errors.retry')}
+            </Button>
+          </div>
         ) : chartData.length === 0 ? (
           <div className="flex h-[280px] items-center justify-center rounded-xl border-2 border-dashed border-border text-sm text-muted-foreground">
             {t('spend.empty')}

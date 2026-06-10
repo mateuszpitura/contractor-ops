@@ -9,6 +9,7 @@ import {
 import { ipAssignmentResultsSchema } from '@contractor-ops/validators';
 import { Loader2 } from 'lucide-react';
 import { useTranslations } from '../../i18n/useTranslations.js';
+import { useHealthCheckPanel } from './hooks/use-health-check-panel.js';
 
 export interface HealthCheckPanelProps {
   /** Contract.complianceFlagsJson or ContractHealthCheckRun.resultsJson. */
@@ -128,5 +129,17 @@ export function HealthCheckPanel({
         )}
       </CardContent>
     </Card>
+  );
+}
+
+export interface HealthCheckPanelWiredProps {
+  contractId: string;
+  resultsJson: unknown;
+}
+
+export function HealthCheckPanelWired({ contractId, resultsJson }: HealthCheckPanelWiredProps) {
+  const { onRerun, isRerunning } = useHealthCheckPanel(contractId);
+  return (
+    <HealthCheckPanel resultsJson={resultsJson} onRerun={onRerun} isRerunning={isRerunning} />
   );
 }

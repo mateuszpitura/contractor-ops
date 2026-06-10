@@ -14,6 +14,8 @@ export function useDeadlinesWidget() {
 
   return {
     isLoading: query.isPending,
+    isError: query.isError,
+    onRetry: () => query.refetch(),
     items: query.data ?? [],
   } as const;
 }

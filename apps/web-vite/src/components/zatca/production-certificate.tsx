@@ -1,9 +1,10 @@
 import { Alert, AlertDescription, AlertTitle } from '@contractor-ops/ui/components/shadcn/alert';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { AlertTriangle, ArrowLeft, Check, Loader2, ShieldCheck } from 'lucide-react';
-import type { useProductionCertificate } from './hooks/use-production-certificate.js';
+import { useProductionCertificate } from './hooks/use-production-certificate.js';
+import type { useProductionCertificate as UseProductionCertificate } from './hooks/use-production-certificate.js';
 
-type HookResult = ReturnType<typeof useProductionCertificate>;
+type HookResult = ReturnType<typeof UseProductionCertificate>;
 type T = HookResult['t'];
 
 function StepHeader({ t }: { t: T }) {
@@ -104,3 +105,22 @@ export type ProductionCertificateViewProps = {
   onSuccess: () => void;
   onBack: () => void;
 } & HookResult;
+
+export function ProductionCertificate(
+  props: Pick<ProductionCertificateViewProps, 'onSuccess' | 'onBack'>,
+) {
+  const { completed, exchangeProductionCert, isPending, t } = useProductionCertificate();
+
+  if (completed) {
+    return <ProductionCertificateCompleted onSuccess={props.onSuccess} t={t} />;
+  }
+
+  return (
+    <ProductionCertificateIdle
+      onBack={props.onBack}
+      exchangeProductionCert={exchangeProductionCert}
+      isPending={isPending}
+      t={t}
+    />
+  );
+}

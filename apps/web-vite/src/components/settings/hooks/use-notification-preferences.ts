@@ -1,10 +1,10 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
-import { toast } from 'sonner';
 import { z } from 'zod';
 
+import { useResourceMutation } from '../../../hooks/use-resource-mutation.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { useTRPC } from '../../../providers/trpc-provider.js';
 
@@ -33,7 +33,6 @@ export type PreferenceFormValues = z.infer<typeof preferenceFormSchema>;
 export function useNotificationPreferences() {
   const trpc = useTRPC();
   const t = useTranslations('Settings');
-  const queryClient = useQueryClient();
 
   const preferencesQuery = useQuery(trpc.notification.getPreferences.queryOptions());
   const slackStatusQuery = useQuery(trpc.integration.getSlackStatus.queryOptions());
@@ -74,19 +73,11 @@ export function useNotificationPreferences() {
     }
   }, [preferencesQuery.data, form]);
 
-  const updateMutation = useMutation(
-    trpc.notification.updatePreferences.mutationOptions({
-      onSuccess: () => {
-        toast.success(t('notifications.preferencesSaved'));
-        queryClient.invalidateQueries({
-          queryKey: trpc.notification.getPreferences.queryKey(),
-        });
-      },
-      onError: () => {
-        toast.error(t('notifications.preferencesSaveFailed'));
-      },
-    }),
-  );
+  const updateMutation = useResourceMutation(trpc.notification.updatePreferences.mutationOptions(), {
+    invalidate: [trpc.notification.getPreferences.queryKey()],
+    successMessage: t('notifications.preferencesSaved'),
+    errorMessage: t('notifications.preferencesSaveFailed'),
+  });
 
   const onSubmit = (data: PreferenceFormValues) => {
     updateMutation.mutate({ preferences: data.preferences });

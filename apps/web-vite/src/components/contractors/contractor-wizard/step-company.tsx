@@ -10,12 +10,13 @@ import type { UseFormReturn } from 'react-hook-form';
 import { tDynLoose } from '../../../i18n/typed-keys.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { enumKey } from '../../../lib/enum-key.js';
-import type { useContractorCompanyLookup } from '../hooks/use-contractor-wizard.js';
+import { useContractorCompanyLookup } from '../hooks/use-contractor-wizard.js';
+import type { useContractorCompanyLookup as UseContractorCompanyLookup } from '../hooks/use-contractor-wizard.js';
 import type { WizardFormValues } from './wizard-dialog.js';
 
 interface StepCompanyViewProps {
   form: UseFormReturn<WizardFormValues>;
-  lookup: ReturnType<typeof useContractorCompanyLookup>['lookup'];
+  lookup: ReturnType<typeof UseContractorCompanyLookup>['lookup'];
   isLookupLoading: boolean;
 }
 
@@ -143,4 +144,9 @@ export function StepCompanyView({ form, lookup, isLookupLoading }: StepCompanyVi
       </div>
     </div>
   );
+}
+
+export function StepCompany({ form }: { form: UseFormReturn<WizardFormValues> }) {
+  const { lookup, isLookupLoading } = useContractorCompanyLookup();
+  return <StepCompanyView form={form} lookup={lookup} isLookupLoading={isLookupLoading} />;
 }

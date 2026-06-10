@@ -6,6 +6,7 @@ import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { Loader2, RefreshCw } from 'lucide-react';
 
 import { useTranslations } from '../../i18n/useTranslations.js';
+import { useRevalidateVat } from './hooks/use-revalidate-vat.js';
 
 export interface RevalidateVatButtonViewProps {
   onRevalidate: () => void;
@@ -30,4 +31,9 @@ export function RevalidateVatButtonView({ onRevalidate, isPending }: RevalidateV
       <span>{t('buttonLabel')}</span>
     </Button>
   );
+}
+
+export function RevalidateVatButton({ contractorId }: { contractorId: string }) {
+  const { revalidate, isPending } = useRevalidateVat(contractorId);
+  return <RevalidateVatButtonView onRevalidate={revalidate} isPending={isPending} />;
 }

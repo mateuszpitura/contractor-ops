@@ -1,9 +1,6 @@
-import { useQueryClient } from '@tanstack/react-query';
 import { useCallback } from 'react';
-import { toast } from 'sonner';
 
 import { useResourceMutation } from '../../../hooks/use-resource-mutation.js';
-import { useCommonToasts } from '../../../i18n/use-common-toasts.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { useTRPC } from '../../../providers/trpc-provider.js';
 
@@ -16,18 +13,10 @@ export interface ContractBulkActionsHandlers {
 
 export function useContractBulkActions(count: number): ContractBulkActionsHandlers {
   const trpc = useTRPC();
-  const queryClient = useQueryClient();
   const tc = useTranslations('Contracts');
-  const toasts = useCommonToasts();
 
   const bulkTerminateMutation = useResourceMutation(
-    trpc.contract.bulkTransition.mutationOptions({
-      onError: err => toast.error(err.message),
-      onSuccess: () => {
-        toast.success(toasts.done());
-        queryClient.invalidateQueries(trpc.contract.pathFilter());
-      },
-    }),
+    trpc.contract.bulkTransition.mutationOptions(),
     {
       invalidate: [contractPrefixKey],
       successMessage: tc('terminated', { count }),

@@ -24,7 +24,7 @@ export function useDocumentDownload() {
         const data = await queryClient.fetchQuery(
           trpc.document.getDownloadUrl.queryOptions({ documentId }),
         );
-        const url = (data as { url?: string } | undefined)?.url;
+        const url = data?.url;
         if (!url) {
           toast.error(t('pdfLoadError'));
           return;

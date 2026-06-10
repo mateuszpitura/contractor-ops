@@ -15,24 +15,47 @@ import { useCallback, useId, useMemo } from 'react';
 
 import { usePermissions } from '../../hooks/use-permissions.js';
 import { useTranslations } from '../../i18n/useTranslations.js';
-import { ClassificationTileContainer } from './classification/classification-tile-container.js';
+import { ClassificationTileContainer } from './classification/classification-tile.js';
 import { DeComplianceFields } from './compliance/de-compliance-fields.js';
 import { UkComplianceFields } from './compliance/uk-compliance-fields.js';
 import { UsComplianceFields } from './compliance/us-compliance-fields.js';
-import { FreeZoneAssignmentContainer } from './free-zone/free-zone-assignment-container.js';
-import type {
+import { FreeZoneAssignmentContainer } from './free-zone/free-zone-assignment.js';
+import {
   useContractorEngagements,
   useCountryCompliance,
+  useCountryComplianceForm,
+  type useContractorEngagements as UseContractorEngagements,
+  type useCountryCompliance as UseCountryCompliance,
 } from './hooks/use-country-compliance.js';
-import { RevalidateVatButtonContainer } from './revalidate-vat-button-container.js';
+import { RevalidateVatButton } from './revalidate-vat-button.js';
 import { VatValidationStatusPill } from './vat-validation-status-pill.js';
 
 export interface CountryComplianceSectionViewProps {
   contractorId: string;
-  compliance: ReturnType<typeof useCountryCompliance>;
-  engagements: ReturnType<typeof useContractorEngagements>;
+  compliance: ReturnType<typeof UseCountryCompliance>;
+  engagements: ReturnType<typeof UseContractorEngagements>;
   formData: Record<string, unknown>;
   onFormDataChange: Dispatch<SetStateAction<Record<string, unknown>>>;
+}
+
+type ContractorDetail = NonNullable<
+  ReturnType<typeof UseCountryCompliance>['contractorQuery']['data']
+>;
+
+const VAT_STATUS_MAP: Record<
+  NonNullable<ContractorDetail['latestVatValidationStatus']>,
+  'valid' | 'invalid' | 'stale' | 'unavailable'
+> = {
+  VALID: 'valid',
+  INVALID: 'invalid',
+  STALE: 'stale',
+  UNAVAILABLE: 'unavailable',
+};
+
+function mapVatValidationStatus(
+  status: ContractorDetail['latestVatValidationStatus'] | undefined,
+): 'valid' | 'invalid' | 'stale' | 'unavailable' | null {
+  return status == null ? null : VAT_STATUS_MAP[status];
 }
 
 type EngagementWithClassificationContext = {
@@ -130,11 +153,9 @@ export function CountryComplianceSectionView({
           contractorId={contractorId}
           values={merged}
           onChange={handleFieldChange}
-          ssnLast4={(contractorQuery.data as { ssnLast4?: string | null } | undefined)?.ssnLast4}
+          ssnLast4={contractorQuery.data?.ssnLast4}
           canRevealSsn={can('contractorPii', ['read'])}
-          uspsVerified={
-            (contractorQuery.data as { uspsVerified?: boolean | null } | undefined)?.uspsVerified
-          }
+          uspsVerified={contractorQuery.data?.uspsVerified}
         />
         {(countryCode === 'GB' || countryCode === 'DE') && (
           <div
@@ -142,17 +163,10 @@ export function CountryComplianceSectionView({
             data-testid="vat-validation-section">
             <Label className="text-sm font-medium">{t('vatValidationLabel')}</Label>
             <VatValidationStatusPill
-              status={
-                (contractorQuery.data?.latestVatValidationStatus ?? null) as
-                  | 'valid'
-                  | 'invalid'
-                  | 'stale'
-                  | 'unavailable'
-                  | null
-              }
+              status={mapVatValidationStatus(contractorQuery.data?.latestVatValidationStatus)}
               validatedAt={contractorQuery.data?.latestVatValidatedAt ?? null}
             />
-            <RevalidateVatButtonContainer contractorId={contractorId} />
+            <RevalidateVatButton contractorId={contractorId} />
           </div>
         )}
         <Button onClick={handleSave} disabled={updateMutation.isPending} className="mt-4">
@@ -175,7 +189,7 @@ function ClassificationEngagementsBlock({
   engagements: engagementsState,
 }: {
   contractorId: string;
-  engagements: ReturnType<typeof useContractorEngagements>;
+  engagements: ReturnType<typeof UseContractorEngagements>;
 }) {
   const t = useTranslations('Contractors.countryCompliance');
   const { isLoading, engagements } = engagementsState;
@@ -376,3 +390,37 @@ function SaudiFields({
     </>
   );
 }
+
+interface CountryComplianceSectionContainerProps {
+  contractorId: string;
+}
+
+export function CountryComplianceSectionContainer({
+  contractorId,
+}: CountryComplianceSectionContainerProps) {
+  const compliance = useCountryCompliance(contractorId);
+  const engagements = useContractorEngagements(contractorId);
+  const { formData, setFormData } = useCountryComplianceForm();
+
+  if (compliance.isLoading) {
+    return <CountryComplianceLoadingCard />;
+  }
+
+  const config = compliance.configQuery.data;
+  if (!(config?.hasCountryFields && config.countryCode)) {
+    return null;
+  }
+
+  return (
+    <CountryComplianceSectionView
+      contractorId={contractorId}
+      compliance={compliance}
+      engagements={engagements}
+      formData={formData}
+      onFormDataChange={setFormData}
+    />
+  );
+}
+
+/** @deprecated Use CountryComplianceSection */
+export { CountryComplianceSectionContainer as CountryComplianceSection };

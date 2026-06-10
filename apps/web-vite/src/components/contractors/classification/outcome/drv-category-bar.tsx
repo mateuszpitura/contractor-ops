@@ -123,11 +123,13 @@ export function DrvCategoryBar(props: DrvCategoryBarProps) {
           aria-hidden="true"
           data-testid="drv-threshold-green"
           className="absolute top-0 bottom-0 w-[2px] bg-foreground/40"
+          style={{ left: '30%' }}
         />
         <span
           aria-hidden="true"
           data-testid="drv-threshold-amber"
           className="absolute top-0 bottom-0 w-[2px] bg-foreground/40"
+          style={{ left: '60%' }}
         />
       </div>
 

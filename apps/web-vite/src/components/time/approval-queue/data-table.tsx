@@ -1,4 +1,5 @@
-import { DataTable, iconSize } from '@contractor-ops/ui';
+import { iconSize } from '@contractor-ops/ui';
+import { WorkbenchDataTable } from '../../table-kit/workbench-data-table.js';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -14,7 +15,7 @@ import { Checkbox } from '@contractor-ops/ui/components/shadcn/checkbox';
 import type { ColumnDef } from '@tanstack/react-table';
 import { addDays, format, startOfISOWeek } from 'date-fns';
 import { CheckCircle, XCircle } from 'lucide-react';
-import { memo, useCallback, useMemo, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { RejectionReasonDialog } from '../rejection-reason-dialog.js';
@@ -46,6 +47,7 @@ interface ApprovalQueueTableProps {
   isRejecting?: boolean;
   isBulkApproving?: boolean;
   isBulkRejecting?: boolean;
+  sectionClassName?: string;
 }
 
 function formatPeriod(weekStart: string | Date): string {
@@ -156,6 +158,7 @@ export function ApprovalQueueTable({
   isBulkApproving = false,
   isBulkRejecting = false,
   isLoading = false,
+  sectionClassName,
 }: ApprovalQueueTableProps) {
   const t = useTranslations('Time');
   const tCommon = useTranslations('Common');
@@ -163,7 +166,6 @@ export function ApprovalQueueTable({
   const [rejectingId, setRejectingId] = useState<string | null>(null);
   const [bulkRejectOpen, setBulkRejectOpen] = useState(false);
   const [bulkApproveOpen, setBulkApproveOpen] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [pageIndex, setPageIndex] = useState(0);
   const [pageSize, setPageSize] = useState(25);
 
@@ -190,13 +192,25 @@ export function ApprovalQueueTable({
   const handleSingleReject = useCallback(
     (reason: string) => {
       if (!rejectingId) return;
-      setIsSubmitting(true);
       onReject(rejectingId, reason);
-      setRejectingId(null);
-      setIsSubmitting(false);
     },
     [rejectingId, onReject],
   );
+
+  const prevIsRejecting = useRef(isRejecting);
+  useEffect(() => {
+    if (prevIsRejecting.current && !isRejecting) setRejectingId(null);
+    prevIsRejecting.current = isRejecting;
+  }, [isRejecting]);
+
+  const prevIsBulkRejecting = useRef(isBulkRejecting);
+  useEffect(() => {
+    if (prevIsBulkRejecting.current && !isBulkRejecting) {
+      setSelectedIds(new Set());
+      setBulkRejectOpen(false);
+    }
+    prevIsBulkRejecting.current = isBulkRejecting;
+  }, [isBulkRejecting]);
 
   const handleBulkApproveConfirm = useCallback(() => {
     const ids = Array.from(selectedIds);
@@ -209,8 +223,6 @@ export function ApprovalQueueTable({
     (reason: string) => {
       const ids = Array.from(selectedIds);
       onBulkReject(ids, reason);
-      setSelectedIds(new Set());
-      setBulkRejectOpen(false);
     },
     [selectedIds, onBulkReject],
   );
@@ -369,7 +381,8 @@ export function ApprovalQueueTable({
         </div>
       ) : null}
 
-      <DataTable
+      <WorkbenchDataTable
+        sectionClassName={sectionClassName}
         columns={columns}
         data={timesheets}
         totalRows={timesheets.length}
@@ -395,14 +408,14 @@ export function ApprovalQueueTable({
         open={rejectingId !== null}
         onOpenChange={handleRejectionDialogOpenChange}
         onConfirm={handleSingleReject}
-        isSubmitting={isSubmitting}
+        isSubmitting={isRejecting}
       />
 
       <RejectionReasonDialog
         open={bulkRejectOpen}
         onOpenChange={setBulkRejectOpen}
         onConfirm={handleBulkRejectConfirm}
-        isSubmitting={false}
+        isSubmitting={isBulkRejecting}
         isBulk
         count={selectedArray.length}
       />

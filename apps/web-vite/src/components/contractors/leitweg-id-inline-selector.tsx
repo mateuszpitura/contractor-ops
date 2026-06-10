@@ -8,8 +8,9 @@ import { useCallback, useState } from 'react';
 
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { cn } from '../../lib/utils.js';
-import { LeitwegIdCreateDialogContainer } from '../settings/e-invoicing/leitweg-id-create-dialog-container.js';
-import type { useLeitwegIdInlineSelector } from './hooks/use-leitweg-id-inline-selector.js';
+import { LeitwegIdCreateDialog } from '../settings/e-invoicing/leitweg-id-create-dialog.js';
+import { useLeitwegIdInlineSelector } from './hooks/use-leitweg-id-inline-selector.js';
+import type { useLeitwegIdInlineSelector as UseLeitwegIdInlineSelector } from './hooks/use-leitweg-id-inline-selector.js';
 
 export interface LeitwegIdInlineSelectorProps {
   mode: 'contractor' | 'contract';
@@ -22,7 +23,7 @@ export interface LeitwegIdInlineSelectorProps {
 }
 
 type LeitwegIdInlineSelectorViewProps = LeitwegIdInlineSelectorProps &
-  Pick<ReturnType<typeof useLeitwegIdInlineSelector>, 'options'>;
+  Pick<ReturnType<typeof UseLeitwegIdInlineSelector>, 'options'>;
 
 export function LeitwegIdInlineSelectorView({
   mode,
@@ -84,7 +85,7 @@ export function LeitwegIdInlineSelectorView({
         </Alert>
       ) : null}
 
-      <LeitwegIdCreateDialogContainer
+      <LeitwegIdCreateDialog
         open={dialogOpen}
         onOpenChange={setDialogOpen}
         prefill={{
@@ -95,4 +96,9 @@ export function LeitwegIdInlineSelectorView({
       />
     </div>
   );
+}
+
+export function LeitwegIdInlineSelector(props: LeitwegIdInlineSelectorProps) {
+  const { options } = useLeitwegIdInlineSelector(props.mode, props.contractorId, props.contractId);
+  return <LeitwegIdInlineSelectorView {...props} options={options} />;
 }

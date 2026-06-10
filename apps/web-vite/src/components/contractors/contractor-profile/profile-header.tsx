@@ -26,11 +26,15 @@ import { tDynLoose, tKey } from '../../../i18n/typed-keys.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { getAvatarInitials } from '../../../lib/avatar-initials.js';
 import { enumKey } from '../../../lib/enum-key.js';
-import { ContractWizardDialogContainer } from '../../contracts/contract-wizard/wizard-dialog-container.js';
-import { TemplatePickerContainer } from '../../workflows/template-picker-container.js';
+import { ContractWizardDialog } from '../../contracts/contract-wizard/wizard-dialog.js';
+import { TemplatePickerDialog } from '../../workflows/template-picker-dialog.js';
 import type { ContractorAction } from '../actions.js';
 import { getProfileContractorActions } from '../actions.js';
-import type { useContractorProfileActions } from '../hooks/use-contractor-profile.js';
+import {
+  useContractorProfileActions,
+  type useContractorProfileActions as UseContractorProfileActions,
+} from '../hooks/use-contractor-profile.js';
+import { OffboardingTrajectoryBannerWired } from '../../saudization/offboarding-trajectory-banner.js';
 
 type LifecycleStage = 'DRAFT' | 'ONBOARDING' | 'ACTIVE' | 'OFFBOARDING' | 'ENDED';
 
@@ -46,7 +50,7 @@ export type ProfileHeaderContractor = {
 export type ProfileHeaderViewProps = {
   contractor: ProfileHeaderContractor;
 } & Pick<
-  ReturnType<typeof useContractorProfileActions>,
+  ReturnType<typeof UseContractorProfileActions>,
   'transitionLifecycle' | 'archive' | 'isPending'
 >;
 
@@ -291,13 +295,13 @@ export function ProfileHeaderView({
         ) : null}
       </div>
 
-      <ContractWizardDialogContainer
+      <ContractWizardDialog
         open={wizardOpen}
         onOpenChange={setWizardOpen}
         contractorId={contractor.id}
       />
 
-      <TemplatePickerContainer
+      <TemplatePickerDialog
         open={pickerOpen}
         onOpenChange={setPickerOpen}
         contractorId={contractor.id}
@@ -324,3 +328,23 @@ export function ProfileHeaderView({
     </div>
   );
 }
+
+type ProfileHeaderContainerProps = {
+  contractor: ProfileHeaderContractor & { isSaudi?: boolean | null };
+};
+
+export function ProfileHeaderContainer({ contractor }: ProfileHeaderContainerProps) {
+  const stage = contractor.lifecycleStage as LifecycleStage;
+  const actions = useContractorProfileActions(contractor.id, stage);
+  return (
+    <div className="space-y-4">
+      <ProfileHeaderView contractor={contractor} {...actions} />
+      {stage === 'OFFBOARDING' ? (
+        <OffboardingTrajectoryBannerWired isSaudi={contractor.isSaudi ?? null} />
+      ) : null}
+    </div>
+  );
+}
+
+/** @deprecated Use ProfileHeader */
+export { ProfileHeaderContainer as ProfileHeader };

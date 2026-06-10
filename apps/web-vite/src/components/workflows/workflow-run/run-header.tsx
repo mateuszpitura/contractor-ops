@@ -29,7 +29,7 @@ import { useTranslations } from '../../../i18n/useTranslations.js';
 import { enumKey } from '../../../lib/enum-key.js';
 import { useDateFormatter } from '../../../lib/format/use-date-formatter.js';
 import type { RunHeaderRun, useRunHeader } from '../hooks/use-run-header.js';
-import { getDaysOverdue } from '../hooks/use-run-header.js';
+import { getDaysOverdue, useRunHeader as useRunHeaderHook } from '../hooks/use-run-header.js';
 
 type RunHeaderProps = {
   run: RunHeaderRun;
@@ -136,7 +136,7 @@ function OverrideBlockingTaskDialog({
   );
 }
 
-export function RunHeader({
+export function RunHeaderView({
   run,
   progress,
   isOverdue,
@@ -296,4 +296,14 @@ export function RunHeader({
       </div>
     </div>
   );
+}
+
+interface RunHeaderSectionProps {
+  run: RunHeaderRun;
+}
+
+export function RunHeaderSection({ run }: RunHeaderSectionProps) {
+  const header = useRunHeaderHook(run);
+  const showActions = header.canCancel || header.showOverride;
+  return <RunHeaderView run={run} {...header} showActions={showActions} />;
 }

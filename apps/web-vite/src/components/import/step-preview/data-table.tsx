@@ -1,4 +1,3 @@
-import { DataTable } from '@contractor-ops/ui';
 import {
   Tooltip,
   TooltipContent,
@@ -10,6 +9,7 @@ import { AlertCircle } from 'lucide-react';
 import { useCallback, useMemo, useState } from 'react';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
+import { WorkbenchDataTable } from '../../table-kit/workbench-data-table.js';
 import type { ImportRow } from '../import-wizard-dialog.js';
 
 interface ImportPreviewDataTableProps {
@@ -98,7 +98,7 @@ export function ImportPreviewDataTable({
 
   return (
     <TooltipProvider>
-      <DataTable
+      <WorkbenchDataTable
         columns={columns}
         data={rows}
         totalRows={rows.length}

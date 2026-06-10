@@ -225,21 +225,18 @@ export function useWorkflowOverrideBlockingTask(
 ) {
   const t = useTranslations('Workflows.overrideBlockingTask');
   const trpc = useTRPC();
-  const queryClient = useQueryClient();
 
-  return useMutation(
+  return useResourceMutation(
     trpc.workflow.overrideBlockingTask.mutationOptions({
       onSuccess: () => {
-        toast.success(t('toastSuccess'));
-        queryClient.invalidateQueries({
-          queryKey: trpc.workflow.getRun.queryKey({ id: runId }),
-        });
         options?.onSuccess?.();
       },
-      onError: err => {
-        toast.error(err.message || t('toastFailure'));
-      },
     }),
+    {
+      invalidate: [trpc.workflow.getRun.queryKey({ id: runId })],
+      successMessage: t('toastSuccess'),
+      errorMessage: t('toastFailure'),
+    },
   );
 }
 
@@ -279,7 +276,7 @@ export function useWorkflowReassignTask(
         const member = members.find(m => m.userId === variables.newAssigneeUserId);
         const name = member?.name ?? variables.newAssigneeUserId;
         toast.success(t('toastTaskReassigned', { name }));
-        queryClient.invalidateQueries({
+        void queryClient.invalidateQueries({
           queryKey: trpc.workflow.getRun.queryKey({ id: runId }),
         });
         options?.onSuccess?.(name);

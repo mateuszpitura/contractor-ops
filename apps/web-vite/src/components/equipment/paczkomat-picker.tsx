@@ -11,6 +11,7 @@ import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { MapPin } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+import { useLocale } from '../../i18n/navigation.js';
 import { useTranslations } from '../../i18n/useTranslations.js';
 
 export interface PaczkomatPoint {
@@ -60,6 +61,8 @@ export function PaczkomatPicker({
   geowidgetToken,
 }: PaczkomatPickerProps) {
   const t = useTranslations('Equipment.paczkomat');
+  const locale = useLocale();
+  const widgetLanguage = locale === 'pl' ? 'pl' : 'en';
   const [selectedPoint, setSelectedPoint] = useState<PaczkomatPoint | null>(null);
   const [iframeLoaded, setIframeLoaded] = useState(false);
   const [iframeError, setIframeError] = useState(false);
@@ -103,7 +106,7 @@ export function PaczkomatPicker({
   const handleIframeLoad = useCallback(() => setIframeLoaded(true), []);
   const handleIframeError = useCallback(() => setIframeError(true), []);
 
-  const iframeSrc = `${GEOWIDGET_ORIGIN}?token=${encodeURIComponent(geowidgetToken)}&language=pl&config=parcelcollect`;
+  const iframeSrc = `${GEOWIDGET_ORIGIN}?token=${encodeURIComponent(geowidgetToken)}&language=${widgetLanguage}&config=parcelcollect`;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

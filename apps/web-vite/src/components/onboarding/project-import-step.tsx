@@ -2,7 +2,7 @@ import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { Card, CardContent, CardHeader } from '@contractor-ops/ui/components/shadcn/card';
 import { Input } from '@contractor-ops/ui/components/shadcn/input';
-import type { FetchProjectsOutput } from '@contractor-ops/validators';
+import type { FetchPeopleSourceError, ImportedProject } from '@contractor-ops/validators';
 import {
   ArrowDown,
   ArrowUp,
@@ -19,7 +19,11 @@ import { useCallback, useState } from 'react';
 
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { JiraBrandIcon, LinearBrandIcon } from '../integrations/brand-icons.js';
+import { useOnboardingProjects } from './hooks/use-onboarding-projects.js';
+import type { ProjectsStepReadiness } from './hooks/use-onboarding-projects.js';
 import type { ProjectSelection } from './import-wizard.js';
+import { ProjectImportSkeleton } from './onboarding-skeletons.js';
+import { PeopleReviewPartialSourceErrors, PeopleReviewSourceErrors } from './people-review-step.js';
 
 const SOURCE_ICONS: Record<string, ReactNode> = {
   JIRA: <JiraBrandIcon className="size-4" />,
@@ -27,7 +31,7 @@ const SOURCE_ICONS: Record<string, ReactNode> = {
 };
 
 interface ProjectCardProps {
-  project: FetchProjectsOutput[number];
+  project: ImportedProject;
   selection: ProjectSelection;
   onSelectionChange: (sel: ProjectSelection) => void;
 }
@@ -234,7 +238,7 @@ function ProjectCard({ project, selection, onSelectionChange }: ProjectCardProps
 
 interface ProjectCardItemProps {
   projectKey: string;
-  project: FetchProjectsOutput[number];
+  project: ImportedProject;
   selection: ProjectSelection;
   onSelectionChange: (key: string, selection: ProjectSelection) => void;
 }
@@ -259,10 +263,11 @@ function ProjectCardItem({
 }
 
 export interface ProjectImportStepProps {
-  projects: FetchProjectsOutput;
-  getProjectKey: (project: FetchProjectsOutput[number]) => string;
-  getSelectionFor: (project: FetchProjectsOutput[number]) => ProjectSelection;
+  projects: ImportedProject[];
+  getProjectKey: (project: ImportedProject) => string;
+  getSelectionFor: (project: ImportedProject) => ProjectSelection;
   onSelectionChange: (key: string, selection: ProjectSelection) => void;
+  sourceErrors?: FetchPeopleSourceError[];
 }
 
 export function ProjectImportStep({
@@ -270,12 +275,20 @@ export function ProjectImportStep({
   getProjectKey,
   getSelectionFor,
   onSelectionChange,
+  sourceErrors,
 }: ProjectImportStepProps) {
   const t = useTranslations('OnboardingImport.step3');
 
   return (
     <div className="space-y-6">
       <ProjectImportHeader />
+
+      {sourceErrors && sourceErrors.length > 0 && (
+        <PeopleReviewPartialSourceErrors
+          sourceErrors={sourceErrors}
+          copyNamespace="OnboardingImport.step3"
+        />
+      )}
 
       <div className="space-y-4">
         {projects.map(project => {
@@ -334,5 +347,67 @@ export function ProjectImportEmpty() {
       <h3 className="text-lg font-semibold">{t('emptyHeading')}</h3>
       <p className="max-w-md text-center text-sm text-muted-foreground">{t('emptyBody')}</p>
     </div>
+  );
+}
+
+type ProjectImportStepContainerProps = {
+  selectedSources: string[];
+  projects: ImportedProject[];
+  onProjectsChange: (projects: ImportedProject[]) => void;
+  projectSelections: Map<string, ProjectSelection>;
+  onProjectSelectionsChange: (selections: Map<string, ProjectSelection>) => void;
+  onStepReadinessChange?: (readiness: ProjectsStepReadiness) => void;
+};
+
+export function ProjectImportStepContainer(props: ProjectImportStepContainerProps) {
+  const section = useOnboardingProjects(props);
+
+  if (section.isLoading) {
+    return (
+      <div className="space-y-6">
+        <ProjectImportHeader />
+        <ProjectImportSkeleton />
+      </div>
+    );
+  }
+
+  if (section.isError) {
+    return (
+      <div className="space-y-6">
+        <ProjectImportHeader />
+        <ProjectImportError onRefetch={section.handleRefetch} />
+      </div>
+    );
+  }
+
+  if (section.allSourcesFailed) {
+    return (
+      <div className="space-y-6">
+        <ProjectImportHeader />
+        <PeopleReviewSourceErrors
+          sourceErrors={section.sourceErrors}
+          onRefetch={section.handleRefetch}
+        />
+      </div>
+    );
+  }
+
+  if (section.isEmpty) {
+    return (
+      <div className="space-y-6">
+        <ProjectImportHeader />
+        <ProjectImportEmpty />
+      </div>
+    );
+  }
+
+  return (
+    <ProjectImportStep
+      projects={section.projects}
+      getProjectKey={section.getProjectKey}
+      getSelectionFor={section.getSelectionFor}
+      onSelectionChange={section.handleSelectionChange}
+      sourceErrors={section.sourceErrors.length > 0 ? section.sourceErrors : undefined}
+    />
   );
 }

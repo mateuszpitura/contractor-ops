@@ -13,14 +13,18 @@ import {
 } from '@contractor-ops/ui/components/shadcn/popover';
 import { useCallback } from 'react';
 
-import type { useLinkUserPopover } from './hooks/use-slack-user-mapping.js';
+import { useLinkUserPopover } from './hooks/use-slack-user-mapping.js';
+import type { useLinkUserPopover as UseLinkUserPopover } from './hooks/use-slack-user-mapping.js';
 
-export type LinkUserPopoverProps = {
+interface LinkUserPopoverShellProps {
   userId: string;
   onLinked: () => void;
-} & ReturnType<typeof useLinkUserPopover>;
+}
 
-export function LinkUserPopover({
+export type LinkUserPopoverViewProps = LinkUserPopoverShellProps &
+  ReturnType<typeof UseLinkUserPopover>;
+
+export function LinkUserPopoverView({
   t,
   open,
   setOpen,
@@ -28,7 +32,7 @@ export function LinkUserPopover({
   setSearch,
   handleSelect,
   isLinkPending,
-}: LinkUserPopoverProps) {
+}: LinkUserPopoverViewProps) {
   const handleLink = useCallback(() => handleSelect(search), [handleSelect, search]);
 
   return (
@@ -64,4 +68,9 @@ export function LinkUserPopover({
       </PopoverContent>
     </Popover>
   );
+}
+
+export function LinkUserPopover({ userId, onLinked }: LinkUserPopoverShellProps) {
+  const popover = useLinkUserPopover(userId, onLinked);
+  return <LinkUserPopoverView userId={userId} onLinked={onLinked} {...popover} />;
 }

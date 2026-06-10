@@ -17,12 +17,29 @@ import {
 import { CheckCircle2, Clock, Users } from 'lucide-react';
 import { useId } from 'react';
 import { GitHubBrandIcon } from './brand-icons.js';
-import type { useGitHubProviderSection } from './hooks/use-github-provider-section.js';
+import { useGitHubProviderSection } from './hooks/use-github-provider-section.js';
 
 export type GitHubProviderSectionViewProps = Omit<
   ReturnType<typeof useGitHubProviderSection>,
   'isLoading' | 'isError' | 'onRetry'
 >;
+
+export function GitHubProviderSection() {
+  const { isLoading, isError, onRetry, t, ...rest } = useGitHubProviderSection();
+
+  if (isLoading) return <GitHubProviderSectionSkeleton />;
+  if (isError) {
+    return (
+      <div className="space-y-2 rounded-lg border border-destructive/40 p-4" role="alert">
+        <p className="text-sm text-destructive">{t('error')}</p>
+        <button type="button" className="text-sm underline" onClick={onRetry}>
+          {t('retry')}
+        </button>
+      </div>
+    );
+  }
+  return <GitHubProviderSectionView t={t} {...rest} />;
+}
 
 export function GitHubProviderSectionSkeleton() {
   return (
@@ -74,7 +91,7 @@ export function GitHubProviderSectionView({
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
-        {/* Outside-collaborator back-door note (Phase 78 D-05 / Pitfall 7). */}
+        {/* Outside collaborators bypass org sync, so they need an explicit warning. */}
         <Alert>
           <Users className="size-4" aria-hidden="true" />
           <AlertTitle>{t('outsideCollabTitle')}</AlertTitle>

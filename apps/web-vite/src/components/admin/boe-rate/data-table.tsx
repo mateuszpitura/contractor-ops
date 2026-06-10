@@ -1,12 +1,15 @@
-import { DataTable } from '@contractor-ops/ui';
+
 import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
+import { WorkbenchDataTable } from '../../table-kit/workbench-data-table.js';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import type { ColumnDef } from '@tanstack/react-table';
 import { PencilIcon, TrashIcon } from 'lucide-react';
 import { useCallback, useMemo, useState } from 'react';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
-import type { BoeRateEntry } from '../hooks/use-admin-boe-rate.js';
+import { useBoeRateList, type BoeRateEntry } from '../hooks/use-admin-boe-rate.js';
+import { DeleteBoeRateDialogWired } from './delete-boe-rate-dialog.js';
+import { EditBoeRateDialogWired } from './edit-boe-rate-dialog.js';
 
 interface BoeRateRowActionsProps {
   entry: BoeRateEntry;
@@ -138,7 +141,7 @@ export function BoeRateTable({ entries, isLoading, onEdit, onDelete }: BoeRateTa
   );
 
   return (
-    <DataTable
+    <WorkbenchDataTable
       columns={columns}
       data={rows}
       totalRows={rows.length}
@@ -158,5 +161,44 @@ export function BoeRateTable({ entries, isLoading, onEdit, onDelete }: BoeRateTa
       noResultsTitle={t('noRateEntries')}
       noResultsDescription={t('noRateEntriesBody')}
     />
+  );
+}
+
+export function BoeRateTableSection() {
+  const { entries, isLoading } = useBoeRateList();
+  const [editEntry, setEditEntry] = useState<BoeRateEntry | null>(null);
+  const [deleteEntry, setDeleteEntry] = useState<BoeRateEntry | null>(null);
+
+  const handleEditOpenChange = useCallback((open: boolean) => {
+    if (!open) setEditEntry(null);
+  }, []);
+
+  const handleDeleteOpenChange = useCallback((open: boolean) => {
+    if (!open) setDeleteEntry(null);
+  }, []);
+
+  return (
+    <>
+      <BoeRateTable
+        entries={entries}
+        isLoading={isLoading}
+        onEdit={setEditEntry}
+        onDelete={setDeleteEntry}
+      />
+      {editEntry ? (
+        <EditBoeRateDialogWired
+          entry={editEntry}
+          open={!!editEntry}
+          onOpenChange={handleEditOpenChange}
+        />
+      ) : null}
+      {deleteEntry ? (
+        <DeleteBoeRateDialogWired
+          entry={deleteEntry}
+          open={!!deleteEntry}
+          onOpenChange={handleDeleteOpenChange}
+        />
+      ) : null}
+    </>
   );
 }

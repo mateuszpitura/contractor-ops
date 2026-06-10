@@ -1,15 +1,15 @@
 import { Suspense } from 'react';
 
-import { ClassificationGuardContainer } from '../../../components/classification/classification-guard-container.js';
-import { EngagementClassificationContainer } from '../../../components/contractors/engagement-classification-container.js';
+import { ClassificationGuard } from '../../../components/classification/classification-guard.js';
+import { EngagementClassificationContainer } from '../../../components/contractors/engagement-classification.js';
 import { PageLoadingSpinner } from '../../../components/shared/page-loading-spinner.js';
 
 export default function EngagementClassificationPage() {
   return (
-    <ClassificationGuardContainer>
+    <ClassificationGuard>
       <Suspense fallback={<PageLoadingSpinner />}>
         <EngagementClassificationContainer />
       </Suspense>
-    </ClassificationGuardContainer>
+    </ClassificationGuard>
   );
 }

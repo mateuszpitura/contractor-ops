@@ -1,4 +1,4 @@
-import { DataTable } from '@contractor-ops/ui';
+import { WorkbenchDataTable } from '../../table-kit/workbench-data-table.js';
 import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
 import type { ColumnDef } from '@tanstack/react-table';
 import { AlertCircle, CheckCircle, XCircle } from 'lucide-react';
@@ -32,12 +32,12 @@ export function FlagStatusCard({ flagEnabled }: FlagStatusCardProps) {
         {flagEnabled ? (
           <>
             <CheckCircle className="h-5 w-5 text-green-600" aria-hidden />
-            <span className="font-semibold text-green-800">ENABLED</span>
+            <span className="font-semibold text-green-800">{t('statusEnabled')}</span>
           </>
         ) : (
           <>
             <XCircle className="h-5 w-5 text-red-600" aria-hidden />
-            <span className="font-semibold text-red-700">DISABLED</span>
+            <span className="font-semibold text-red-700">{t('statusDisabled')}</span>
           </>
         )}
       </div>
@@ -62,13 +62,15 @@ export function RegistryStatusCard({ pendingCount, totalCount }: RegistryStatusC
         {allApproved ? (
           <>
             <CheckCircle className="h-5 w-5 text-green-600" aria-hidden />
-            <span className="font-semibold text-green-800">All {totalCount} APPROVED</span>
+            <span className="font-semibold text-green-800">
+              {t('allApprovedCount', { count: totalCount })}
+            </span>
           </>
         ) : (
           <>
             <AlertCircle className="h-5 w-5 text-amber-600" aria-hidden />
             <span className="font-semibold text-amber-700">
-              {pendingCount} of {totalCount} PENDING
+              {t('pendingOfTotal', { pending: pendingCount, total: totalCount })}
             </span>
           </>
         )}
@@ -89,9 +91,8 @@ export function ClassificationOverrideBanner({ pendingCount }: OverrideBannerPro
         {t('pendingGate', { count: pendingCount })}
       </p>
       <p className="mt-1 text-xs text-amber-700">
-        {t('pendingGateResolution')} <code className="font-mono">{t('registryPath')}</code> to set
-        each PENDING key to APPROVED with approvedBy + approvedAt + approverRole. The PR requires
-        @contractor-ops/legal-platform review (CODEOWNERS).
+        {t('pendingGateResolution')} <code className="font-mono">{t('registryPath')}</code>{' '}
+        {t('pendingGateDetail')}
       </p>
     </div>
   );
@@ -161,7 +162,8 @@ export function DisclaimerRegistryTable({ rows }: DisclaimerRegistryTableProps) 
       <h2 className="text-lg font-semibold">{t('disclaimerRegistryTitle')}</h2>
       <p className="mt-1 text-sm text-muted-foreground">{t('allKeysMustBeApproved')}</p>
       <div className="mt-4">
-        <DataTable
+        <WorkbenchDataTable
+          sectionClassName=""
           columns={columns}
           data={rows}
           totalRows={rows.length}

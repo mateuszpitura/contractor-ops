@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader } from '@contractor-ops/ui/components/sha
 import { Clock } from 'lucide-react';
 
 import { useTranslations } from '../../i18n/useTranslations.js';
-import { formatMinorUnits as formatMinorUnitsLib } from '../../lib/format-currency.js';
+import { formatMinorUnits as formatMinorUnitsLib } from '../../lib/money.js';
 import { DeviationFlag } from './deviation-flag.js';
 
 interface TimeReconciliation {

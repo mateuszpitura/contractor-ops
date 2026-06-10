@@ -1,8 +1,7 @@
-import type { FetchProjectsOutput, MergedPerson } from '@contractor-ops/validators';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import type { ImportedProject, MergedPerson } from '@contractor-ops/validators';
 import { useCallback, useMemo } from 'react';
-import { toast } from 'sonner';
 
+import { useResourceMutation } from '../../../hooks/use-resource-mutation.js';
 import { useCommonToasts } from '../../../i18n/use-common-toasts.js';
 import { useTRPC } from '../../../providers/trpc-provider.js';
 import type { PersonSelection, ProjectSelection } from '../import-wizard.js';
@@ -10,7 +9,7 @@ import type { PersonSelection, ProjectSelection } from '../import-wizard.js';
 export interface UseOnboardingConfirmParams {
   mergedPeople: MergedPerson[];
   personSelections: Map<string, PersonSelection>;
-  projects: FetchProjectsOutput;
+  projects: ImportedProject[];
   projectSelections: Map<string, ProjectSelection>;
   onJobIdChange: (jobId: string) => void;
 }
@@ -22,12 +21,15 @@ export interface RoleBreakdownEntry {
 
 export interface UseOnboardingConfirmResult {
   peopleToImport: MergedPerson[];
-  projectsToImport: FetchProjectsOutput;
+  projectsToImport: ImportedProject[];
   roleBreakdown: RoleBreakdownEntry[];
   totalSteps: number;
   isStarting: boolean;
+  isEmpty: boolean;
+  isError: boolean;
   canStart: boolean;
   handleStartImport: () => void;
+  handleRetryStart: () => void;
 }
 
 export function useOnboardingConfirm(
@@ -36,18 +38,19 @@ export function useOnboardingConfirm(
   const { mergedPeople, personSelections, projects, projectSelections, onJobIdChange } = params;
 
   const trpc = useTRPC();
-  const queryClient = useQueryClient();
   const toasts = useCommonToasts();
 
-  const startImportMutation = useMutation({
-    ...trpc.onboardingImport.startImport.mutationOptions(),
-    onSuccess: data => {
-      onJobIdChange(data.jobId);
-      toast.success(toasts.done());
-      void queryClient.invalidateQueries(trpc.onboardingImport.pathFilter());
+  const startImportMutation = useResourceMutation(
+    trpc.onboardingImport.startImport.mutationOptions({
+      onSuccess: data => {
+        onJobIdChange(data.jobId);
+      },
+    }),
+    {
+      successMessage: toasts.done(),
+      invalidate: [trpc.onboardingImport.pathFilter()],
     },
-    onError: err => toast.error(err.message),
-  });
+  );
 
   const peopleToImport = useMemo(
     () =>
@@ -90,7 +93,7 @@ export function useOnboardingConfirm(
       const sel = personSelections.get(p.email);
       return {
         email: p.email,
-        name: p.name,
+        name: sel?.resolvedConflicts?.name ?? p.name,
         role: sel?.role ?? 'readonly',
         skip: false,
       };
@@ -110,13 +113,23 @@ export function useOnboardingConfirm(
     startImportMutation.mutate({ people, projects: projectsPayload });
   }, [peopleToImport, personSelections, projectsToImport, projectSelections, startImportMutation]);
 
+  const canStart = peopleToImport.length > 0 || projectsToImport.length > 0;
+
+  const handleRetryStart = useCallback(() => {
+    startImportMutation.reset();
+    handleStartImport();
+  }, [startImportMutation, handleStartImport]);
+
   return {
     peopleToImport,
     projectsToImport,
     roleBreakdown,
     totalSteps,
     isStarting: startImportMutation.isPending,
-    canStart: peopleToImport.length > 0 || projectsToImport.length > 0,
+    isEmpty: !canStart,
+    isError: startImportMutation.isError,
+    canStart,
     handleStartImport,
+    handleRetryStart,
   };
 }

@@ -9,7 +9,8 @@ import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { useCallback, useState } from 'react';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
-import { DropZoneContainer } from '../../documents/drop-zone-container.js';
+import { DropZoneContainer } from '../../documents/drop-zone.js';
+import { useTaskAttachmentsSection } from '../hooks/use-task-attachments-section.js';
 import type { AttachmentRow } from '../hooks/use-task-attachments-section.js';
 
 interface TaskAttachmentsShellProps {
@@ -102,11 +103,7 @@ interface TaskAttachmentsProps {
   handleRetry: () => void;
 }
 
-/**
- * Combined view kept for legacy/test compatibility — single render path per
- * variant, picked here via the same flags the container would consult.
- */
-export function TaskAttachments({
+export function TaskAttachmentsView({
   taskRunId,
   documents,
   isLoading,
@@ -137,6 +134,19 @@ export function TaskAttachments({
       taskRunId={taskRunId}>
       {body}
     </TaskAttachmentsShell>
+  );
+}
+
+export function TaskAttachments({ taskRunId }: { taskRunId: string }) {
+  const { documents, isLoading, isError, handleRetry } = useTaskAttachmentsSection(taskRunId);
+  return (
+    <TaskAttachmentsView
+      taskRunId={taskRunId}
+      documents={documents}
+      isLoading={isLoading}
+      isError={isError}
+      handleRetry={handleRetry}
+    />
   );
 }
 

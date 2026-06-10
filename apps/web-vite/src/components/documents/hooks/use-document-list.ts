@@ -1,8 +1,25 @@
+import type { AppRouter } from '@contractor-ops/api';
+import type { inferRouterOutputs } from '@trpc/server';
 import { useQuery } from '@tanstack/react-query';
 
 import { useUploadNewVersion } from '../../../hooks/use-upload-new-version.js';
 import { useTRPC } from '../../../providers/trpc-provider.js';
 import type { DocumentListItem } from '../types.js';
+
+type DocumentListOutputItem = inferRouterOutputs<AppRouter>['document']['list']['items'][number];
+
+function toDocumentListItem(item: DocumentListOutputItem): DocumentListItem {
+  return {
+    id: item.id,
+    originalFileName: item.originalFileName,
+    mimeType: item.mimeType,
+    fileSizeBytes: Number(item.fileSizeBytes),
+    virusScanStatus: item.virusScanStatus,
+    createdAt: item.createdAt,
+    uploadedByUserId: item.uploadedByUserId,
+    status: item.status,
+  };
+}
 
 export interface DocumentListProps {
   documents: DocumentListItem[];
@@ -24,7 +41,7 @@ export function useDocumentList(entityType: string, entityId: string): DocumentL
     }),
   );
 
-  const documents = (documentsQuery.data?.items ?? []) as unknown as DocumentListItem[];
+  const documents = (documentsQuery.data?.items ?? []).map(toDocumentListItem);
 
   return {
     documents,

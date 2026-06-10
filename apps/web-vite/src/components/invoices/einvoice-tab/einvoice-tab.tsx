@@ -1,5 +1,5 @@
 /**
- * E-invoice tab parent. Data layer → `hooks/use-einvoice-tab.ts` + `einvoice-tab-container.tsx`
+ * E-invoice tab — presentational view + wired export (`hooks/use-einvoice-tab.ts`).
  */
 
 import { Alert, AlertDescription, AlertTitle } from '@contractor-ops/ui/components/shadcn/alert';
@@ -7,16 +7,16 @@ import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { useRef } from 'react';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
-import type { useEinvoiceTab } from '../hooks/use-einvoice-tab.js';
-import { DownloadZugferdPdfButtonContainer } from './download-zugferd-pdf-button-container.js';
+import { useEinvoiceTab, type useEinvoiceTab as UseEinvoiceTab } from '../hooks/use-einvoice-tab.js';
+import { DownloadZugferdPdfButton } from './download-zugferd-pdf-button.js';
 import { GenerationSection } from './generation-section.js';
 import { LeitwegIdResolvedInline } from './leitweg-id-resolved-inline.js';
 import { TransmissionSection } from './transmission-section.js';
 import type { InvoiceTabData } from './types.js';
 import { ValidationSection } from './validation-section.js';
 
-type EInvoiceTabHookReturn = ReturnType<typeof useEinvoiceTab>;
-type EInvoiceTabProps = {
+type EInvoiceTabHookReturn = ReturnType<typeof UseEinvoiceTab>;
+export type EInvoiceTabViewProps = {
   invoiceId: string;
   tabData: NonNullable<EInvoiceTabHookReturn['tabData']>;
 } & Omit<EInvoiceTabHookReturn, 'isLoading' | 'tabData'>;
@@ -32,7 +32,7 @@ export function EInvoiceTabSkeleton() {
   );
 }
 
-export function EInvoiceTab({
+export function EInvoiceTabView({
   invoiceId,
   tabData,
   errorMessage,
@@ -46,7 +46,8 @@ export function EInvoiceTab({
   onSend,
   onDownloadXml,
   onDownloadReport,
-}: EInvoiceTabProps) {
+}: EInvoiceTabViewProps) {
+  const t = useTranslations('EInvoice.InvoiceTab');
   const announcementRef = useRef<HTMLDivElement | null>(null);
 
   return (
@@ -55,7 +56,7 @@ export function EInvoiceTab({
 
       {errorMessage ? (
         <Alert variant="destructive" data-slot="einvoice-tab-error">
-          <AlertTitle>Error</AlertTitle>
+          <AlertTitle>{t('errorTitle')}</AlertTitle>
           <AlertDescription>{errorMessage}</AlertDescription>
         </Alert>
       ) : null}
@@ -119,7 +120,7 @@ function ZugferdSection({ invoiceId, lifecycle }: ZugferdSectionProps) {
           </h3>
           <p className="text-sm text-muted-foreground">{t('zugferdSectionBody')}</p>
         </div>
-        <DownloadZugferdPdfButtonContainer invoiceId={invoiceId} />
+        <DownloadZugferdPdfButton invoiceId={invoiceId} />
       </div>
       <p className="text-xs text-muted-foreground">
         {generated && generatedAt
@@ -127,5 +128,35 @@ function ZugferdSection({ invoiceId, lifecycle }: ZugferdSectionProps) {
           : t('notYetGenerated')}
       </p>
     </section>
+  );
+}
+
+interface EInvoiceTabProps {
+  data?: InvoiceTabData;
+  invoiceId: string;
+}
+
+export function EInvoiceTab({ data, invoiceId }: EInvoiceTabProps) {
+  const tab = useEinvoiceTab(data, invoiceId);
+
+  if (tab.isLoading) return <EInvoiceTabSkeleton />;
+  if (!tab.tabData) return null;
+
+  return (
+    <EInvoiceTabView
+      invoiceId={invoiceId}
+      tabData={tab.tabData}
+      errorMessage={tab.errorMessage}
+      isFinalizePending={tab.isFinalizePending}
+      isRevalidatePending={tab.isRevalidatePending}
+      isSendPending={tab.isSendPending}
+      isDownloadXmlPending={tab.isDownloadXmlPending}
+      isDownloadReportPending={tab.isDownloadReportPending}
+      onFinalize={tab.onFinalize}
+      onRevalidate={tab.onRevalidate}
+      onSend={tab.onSend}
+      onDownloadXml={tab.onDownloadXml}
+      onDownloadReport={tab.onDownloadReport}
+    />
   );
 }

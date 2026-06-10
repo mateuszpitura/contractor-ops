@@ -8,10 +8,10 @@ import type { LooseTranslator } from '../../i18n/typed-keys.js';
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { usePortalDateFormatter } from '../../lib/format/use-portal-date-formatter.js';
 import { WorkbenchPageHeader } from '../shared/workbench-page-header.js';
-import { EmbeddedSigningModalContainer } from './embedded-signing-modal-container.js';
-import type {
-  PendingSignatureItem,
+import { EmbeddedSigningModalWired } from './embedded-signing-modal.js';
+import {
   usePortalPendingSignaturesView,
+  type PendingSignatureItem,
 } from './hooks/use-portal-pending-signatures-view.js';
 
 function formatRelativeTime(
@@ -153,7 +153,7 @@ function SigningModal({ view }: { view: ReturnType<typeof usePortalPendingSignat
   if (!signingTarget) return null;
 
   return (
-    <EmbeddedSigningModalContainer
+    <EmbeddedSigningModalWired
       envelopeId={signingTarget.envelopeId}
       recipientEmail={signingTarget.recipientEmail}
       documentTitle={signingTarget.documentTitle}
@@ -170,11 +170,7 @@ type PortalPendingSignaturesViewProps = {
   view: ReturnType<typeof usePortalPendingSignaturesView>;
 };
 
-/**
- * Loaded-state inline widget shown on the portal index. Container
- * (`PortalPendingSignaturesContainer`) decides whether to render a skeleton,
- * this loaded view, or nothing when the list is empty.
- */
+/** Loaded-state inline widget shown on the portal index when signatures exist. */
 export function PortalPendingSignatures({ view }: PortalPendingSignaturesViewProps) {
   const t = useTranslations('Portal');
   const { items, handleSign } = view;
@@ -200,10 +196,7 @@ export function PortalSignaturesPageHeader() {
   return <WorkbenchPageHeader title={t('pendingSignatures.title')} />;
 }
 
-/**
- * Loaded-state page body shown on the dedicated `/portal/signatures` route.
- * Container (`PortalSignaturesContainer`) owns the loading/error branches.
- */
+/** Loaded-state page body on `/portal/signatures` when data is ready. */
 export function PortalSignaturesPage({ view }: PortalPendingSignaturesViewProps) {
   const { items, handleSign } = view;
 
@@ -214,3 +207,4 @@ export function PortalSignaturesPage({ view }: PortalPendingSignaturesViewProps)
     </>
   );
 }
+

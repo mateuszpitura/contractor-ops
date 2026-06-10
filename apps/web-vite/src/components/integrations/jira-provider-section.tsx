@@ -2,24 +2,30 @@ import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { AlertTriangle } from 'lucide-react';
 
-import { FeatureGateContainer } from '../billing/feature-gate-container.js';
-import { ProviderConnectionCardContainer } from '../settings/provider-connection-card-container.js';
-import type { useJiraProviderSection } from './hooks/use-jira-provider-section.js';
+import { FeatureGate } from '../layout/feature-gate.js';
+import { ProviderConnectionCard } from '../settings/provider-connection-card.js';
+import { useJiraProviderSection } from './hooks/use-jira-provider-section.js';
 import { JiraLogo } from './jira-logo.js';
-import { JiraStatusMappingDialog } from './jira-status-mapping-dialog-container.js';
+import { JiraStatusMappingDialog } from './jira-status-mapping-dialog.js';
 
 export type JiraProviderSectionViewProps = Omit<
   ReturnType<typeof useJiraProviderSection>,
   'isLoading'
 >;
 
+export function JiraProviderSection() {
+  const { isLoading, ...rest } = useJiraProviderSection();
+  if (isLoading) return <JiraProviderSectionSkeleton />;
+  return <JiraProviderSectionView {...rest} />;
+}
+
 export function JiraProviderSectionSkeleton() {
   return (
-    <FeatureGateContainer requiredTier="Pro" featureName="Jira integration">
+    <FeatureGate requiredTier="Pro" featureName="Jira integration">
       <div className="flex h-full flex-col gap-4">
         <Skeleton className="h-24 w-full rounded-md" />
       </div>
-    </FeatureGateContainer>
+    </FeatureGate>
   );
 }
 
@@ -32,9 +38,9 @@ export function JiraProviderSectionView({
   t,
 }: JiraProviderSectionViewProps) {
   return (
-    <FeatureGateContainer requiredTier="Pro" featureName="Jira integration">
+    <FeatureGate requiredTier="Pro" featureName="Jira integration">
       <div className="flex h-full flex-col gap-4">
-        <ProviderConnectionCardContainer
+        <ProviderConnectionCard
           provider="jira"
           displayName="Jira"
           icon={<JiraLogo className="size-8" />}
@@ -62,6 +68,6 @@ export function JiraProviderSectionView({
           />
         )}
       </div>
-    </FeatureGateContainer>
+    </FeatureGate>
   );
 }

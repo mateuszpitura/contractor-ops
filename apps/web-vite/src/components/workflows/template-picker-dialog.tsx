@@ -19,7 +19,8 @@ import { memo, useCallback } from 'react';
 import { tDynLoose } from '../../i18n/typed-keys.js';
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { enumKey } from '../../lib/enum-key.js';
-import type { TemplateOption, useTemplatePicker } from './hooks/use-template-picker.js';
+import type { TemplateOption, TemplatePickerParams, useTemplatePicker } from './hooks/use-template-picker.js';
+import { useTemplatePicker as useTemplatePickerHook } from './hooks/use-template-picker.js';
 
 const templateTypeBadgeColors: Record<string, string> = {
   ONBOARDING: 'bg-primary/10 text-primary',
@@ -229,4 +230,25 @@ export function TemplatePicker({
       </DialogContent>
     </Dialog>
   );
+}
+
+export function TemplatePickerDialog(props: TemplatePickerParams) {
+  const picker = useTemplatePickerHook(props);
+
+  let listContent: ReactNode;
+  if (picker.isLoading) {
+    listContent = <TemplatePickerListSkeleton />;
+  } else if (picker.templates.length === 0) {
+    listContent = <TemplatePickerListEmpty />;
+  } else {
+    listContent = (
+      <TemplatePickerList
+        templates={picker.templates}
+        selectedId={picker.selectedId}
+        setSelectedId={picker.setSelectedId}
+      />
+    );
+  }
+
+  return <TemplatePicker {...picker} open={props.open} listContent={listContent} />;
 }

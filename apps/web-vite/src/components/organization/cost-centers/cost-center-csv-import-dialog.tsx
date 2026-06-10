@@ -20,7 +20,8 @@ import {
 import { AlertTriangle, FileUp } from 'lucide-react';
 import { memo, useCallback, useEffect, useState } from 'react';
 
-import type { useCostCenterCsvImport } from '../hooks/use-cost-center-csv-import.js';
+import { useCostCenterCsvImport } from '../hooks/use-cost-center-csv-import.js';
+import type { useCostCenterCsvImport as UseCostCenterCsvImport } from '../hooks/use-cost-center-csv-import.js';
 
 interface ParsedRow {
   index: number;
@@ -124,7 +125,7 @@ const CsvImportRow = memo(function CsvImportRow({ row, onToggle }: CsvImportRowP
 interface CostCenterCsvImportDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  csvImport: ReturnType<typeof useCostCenterCsvImport>;
+  csvImport: ReturnType<typeof UseCostCenterCsvImport>;
 }
 
 export function CostCenterCsvImportDialog({
@@ -247,4 +248,11 @@ export function CostCenterCsvImportDialog({
       </DialogContent>
     </Dialog>
   );
+}
+
+type CostCenterCsvImportDialogWiredProps = Omit<CostCenterCsvImportDialogProps, 'csvImport'>;
+
+export function CostCenterCsvImportDialogWired(props: CostCenterCsvImportDialogWiredProps) {
+  const csvImport = useCostCenterCsvImport(props.onOpenChange);
+  return <CostCenterCsvImportDialog {...props} csvImport={csvImport} />;
 }

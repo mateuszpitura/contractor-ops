@@ -3,7 +3,7 @@ import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { Switch } from '@contractor-ops/ui/components/shadcn/switch';
 import { useCallback, useState } from 'react';
 import { CalendarEventConfigDialog } from './calendar-event-config-dialog.js';
-import type { useCalendarTaskConfig } from './hooks/use-calendar-task-config.js';
+import { useCalendarTaskConfig, type useCalendarTaskConfig as UseCalendarTaskConfig } from './hooks/use-calendar-task-config.js';
 
 export function CalendarTaskConfigSkeleton() {
   return (
@@ -15,7 +15,7 @@ export function CalendarTaskConfigSkeleton() {
   );
 }
 
-type CalendarTaskConfigViewProps = Omit<ReturnType<typeof useCalendarTaskConfig>, 'configQuery'>;
+type CalendarTaskConfigViewProps = Omit<ReturnType<typeof UseCalendarTaskConfig>, 'configQuery'>;
 
 export function CalendarTaskConfigView({
   taskTemplateId,
@@ -58,4 +58,14 @@ export function CalendarTaskConfigView({
       />
     </>
   );
+}
+
+interface CalendarTaskConfigProps {
+  taskTemplateId: string;
+}
+
+export function CalendarTaskConfig({ taskTemplateId }: CalendarTaskConfigProps) {
+  const { configQuery, ...viewProps } = useCalendarTaskConfig(taskTemplateId);
+  if (configQuery.isLoading) return <CalendarTaskConfigSkeleton />;
+  return <CalendarTaskConfigView {...viewProps} />;
 }

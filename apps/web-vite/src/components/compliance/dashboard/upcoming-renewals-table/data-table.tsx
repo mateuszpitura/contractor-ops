@@ -1,5 +1,6 @@
-import { DataTable } from '@contractor-ops/ui';
+
 import { useMemo, useState } from 'react';
+import { WorkbenchDataTable } from '../../../table-kit/workbench-data-table.js';
 
 import { useTranslations } from '../../../../i18n/useTranslations.js';
 import type { UpcomingRow } from '../hooks/use-compliance-dashboard.js';
@@ -9,12 +10,14 @@ export interface UpcomingRenewalsTableProps {
   rows: UpcomingRow[];
   totalRows: number;
   isRefetching?: boolean;
+  sectionClassName?: string;
 }
 
 export function UpcomingRenewalsTable({
   rows,
   totalRows,
   isRefetching,
+  sectionClassName,
 }: UpcomingRenewalsTableProps) {
   const t = useTranslations('Compliance.dashboard');
   const [pageIndex, setPageIndex] = useState(0);
@@ -23,7 +26,8 @@ export function UpcomingRenewalsTable({
   const columns = useMemo(() => getUpcomingRenewalsColumns(t), [t]);
 
   return (
-    <DataTable
+    <WorkbenchDataTable
+      sectionClassName={sectionClassName}
       columns={columns}
       data={rows}
       totalRows={totalRows}

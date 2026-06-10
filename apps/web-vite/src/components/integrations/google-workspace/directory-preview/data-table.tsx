@@ -1,5 +1,6 @@
-import { DataTable } from '@contractor-ops/ui';
+
 import { Avatar, AvatarFallback, AvatarImage } from '@contractor-ops/ui/components/shadcn/avatar';
+import { WorkbenchDataTable } from '../../../table-kit/workbench-data-table.js';
 import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
 import { Input } from '@contractor-ops/ui/components/shadcn/input';
 import {
@@ -248,7 +249,7 @@ export function DirectoryPreviewTable({
   const getRowId = useCallback((row: DirectoryUser) => row.primaryEmail, []);
 
   return (
-    <DataTable
+    <WorkbenchDataTable
       columns={columns}
       data={filteredUsers}
       totalRows={filteredUsers.length}

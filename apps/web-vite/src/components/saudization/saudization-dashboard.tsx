@@ -9,7 +9,8 @@ import {
   CardTitle,
 } from '@contractor-ops/ui/components/shadcn/card';
 import { Separator } from '@contractor-ops/ui/components/shadcn/separator';
-import { AlertTriangle, CalendarClock, Info, Pencil, ShieldAlert } from 'lucide-react';
+import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
+import { AlertTriangle, BarChart3, CalendarClock, Info, Pencil, ShieldAlert } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts';
 
@@ -22,7 +23,9 @@ import type {
   UpsertConfigInput,
   UpsertHeadcountInput,
 } from './hooks/use-saudization-config.js';
+import { useSaudizationConfig } from './hooks/use-saudization-config.js';
 import type { SaudizationDashboardData } from './hooks/use-saudization-dashboard.js';
+import { useSaudizationDashboard } from './hooks/use-saudization-dashboard.js';
 import { NitaqatOverrideDialog } from './nitaqat-override-dialog.js';
 import { SaudizationConfigDialog } from './saudization-config-dialog.js';
 
@@ -374,5 +377,120 @@ function IqamaRow({
       <dt className="text-sm text-muted-foreground">{label}</dt>
       <dd className="text-sm font-medium tabular-nums">{formatter.format(value)}</dd>
     </div>
+  );
+}
+
+type ConfigEntryProps = Pick<
+  React.ComponentProps<typeof SaudizationDashboard>,
+  'onSaveBand' | 'isSavingBand' | 'onSaveHeadcount' | 'isSavingHeadcount'
+>;
+
+function SaudizationDashboardSkeleton() {
+  return (
+    <div className="space-y-8">
+      <Skeleton className="h-9 w-64" />
+      <Card>
+        <CardContent className="flex items-center justify-between pt-6">
+          <div className="space-y-3">
+            <Skeleton className="h-4 w-40" />
+            <Skeleton className="h-9 w-28" />
+            <Skeleton className="h-5 w-32" />
+          </div>
+          <Skeleton className="size-40 rounded-full" />
+        </CardContent>
+      </Card>
+      <Skeleton className="h-20 w-full rounded-xl" />
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <Skeleton className="h-44 w-full rounded-xl" />
+        <Skeleton className="h-44 w-full rounded-xl" />
+      </div>
+    </div>
+  );
+}
+
+function SaudizationDashboardError({ onRetry }: { onRetry: () => void }) {
+  const t = useTranslations('Saudization.error');
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-base font-semibold">
+          <AlertTriangle aria-hidden="true" className="size-4 text-warning" />
+          {t('loadHeading')}
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <p className="text-sm text-muted-foreground">{t('loadBody')}</p>
+        <Button type="button" variant="outline" onClick={onRetry}>
+          {t('retry')}
+        </Button>
+      </CardContent>
+    </Card>
+  );
+}
+
+function SaudizationDashboardEmpty(configEntry: ConfigEntryProps) {
+  const t = useTranslations('Saudization.empty');
+  const [open, setOpen] = useState(false);
+  return (
+    <Card>
+      <CardContent className="flex flex-col items-center gap-3 py-12 text-center">
+        <BarChart3 aria-hidden="true" className="size-7 text-muted-foreground" />
+        <p className="text-lg font-semibold">{t('heading')}</p>
+        <p className="max-w-md text-sm text-muted-foreground">{t('body')}</p>
+        <Button onClick={() => setOpen(true)}>{t('cta')}</Button>
+      </CardContent>
+      <SaudizationConfigDialog
+        open={open}
+        onOpenChange={setOpen}
+        initialBand={null}
+        initialSegment={null}
+        initialTotalHeadcount={null}
+        initialSaudiHeadcount={null}
+        {...configEntry}
+      />
+    </Card>
+  );
+}
+
+export function SaudizationDashboardSection() {
+  const dashboardQuery = useSaudizationDashboard();
+  const config = useSaudizationConfig();
+
+  if (dashboardQuery.isLoading) {
+    return <SaudizationDashboardSkeleton />;
+  }
+
+  if (dashboardQuery.isError || dashboardQuery.data === null) {
+    return <SaudizationDashboardError onRetry={dashboardQuery.onRetry} />;
+  }
+
+  const dashboard = dashboardQuery.data;
+  const configEntry: ConfigEntryProps = {
+    onSaveBand: config.saveBand,
+    isSavingBand: config.isSavingBand,
+    onSaveHeadcount: config.saveHeadcount,
+    isSavingHeadcount: config.isSavingHeadcount,
+  };
+
+  const isConfigured =
+    dashboard.band !== null ||
+    dashboard.totalHeadcount !== null ||
+    dashboard.industrySegment !== null;
+
+  if (!isConfigured) {
+    return <SaudizationDashboardEmpty {...configEntry} />;
+  }
+
+  return (
+    <SaudizationDashboard
+      dashboard={dashboard}
+      thresholdsCustom={config.config?.thresholdsCustom ?? false}
+      permittedActivityCatalogueCustom={config.config?.permittedActivityCatalogueCustom ?? false}
+      {...configEntry}
+      onApplyNitaqatOverride={config.applyNitaqatOverride}
+      isApplyingNitaqatOverride={config.isApplyingNitaqatOverride}
+      onApplyActivityOverride={config.applyActivityOverride}
+      isApplyingActivityOverride={config.isApplyingActivityOverride}
+    />
   );
 }

@@ -14,11 +14,19 @@ import {
 } from '@contractor-ops/ui/components/shadcn/popover';
 import { useCallback } from 'react';
 
-import type { useReminderRuleUserPicker } from './hooks/use-reminder-rule-editor.js';
+import {
+  useReminderRuleUserPicker,
+  type useReminderRuleUserPicker as UseReminderRuleUserPicker,
+} from './hooks/use-reminder-rule-editor.js';
 
-export type ReminderRuleUserPickerProps = ReturnType<typeof useReminderRuleUserPicker>;
+interface ReminderRuleUserPickerShellProps {
+  value: string | undefined;
+  onChange: (userId: string) => void;
+}
 
-type UserRow = ReminderRuleUserPickerProps['filteredUsers'][number];
+export type ReminderRuleUserPickerViewProps = ReturnType<typeof UseReminderRuleUserPicker>;
+
+type UserRow = ReminderRuleUserPickerViewProps['filteredUsers'][number];
 
 interface UserItemProps {
   user: UserRow;
@@ -38,7 +46,7 @@ function UserItem({ user, isChecked, onSelect }: UserItemProps) {
   );
 }
 
-export function ReminderRuleUserPicker({
+export function ReminderRuleUserPickerView({
   t,
   pickerOpen,
   setPickerOpen,
@@ -48,7 +56,7 @@ export function ReminderRuleUserPicker({
   filteredUsers,
   value: selectedValue,
   handleSelect,
-}: ReminderRuleUserPickerProps) {
+}: ReminderRuleUserPickerViewProps) {
   return (
     <Popover open={pickerOpen} onOpenChange={setPickerOpen}>
       <PopoverTrigger render={formControlPopoverRender(undefined, { size: 'sm' })}>
@@ -84,4 +92,9 @@ export function ReminderRuleUserPicker({
       </PopoverContent>
     </Popover>
   );
+}
+
+export function ReminderRuleUserPicker(props: ReminderRuleUserPickerShellProps) {
+  const picker = useReminderRuleUserPicker(props);
+  return <ReminderRuleUserPickerView {...picker} />;
 }

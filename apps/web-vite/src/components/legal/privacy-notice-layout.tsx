@@ -5,7 +5,7 @@
 import type { ReactNode } from 'react';
 
 import { useTranslations } from '../../i18n/useTranslations.js';
-import { PrivacyNoticePdfDownloadContainer } from './privacy-notice-pdf-download-container.js';
+import { PrivacyNoticePdfDownloadWired } from './privacy-notice-pdf-download.js';
 
 import { PrivacyNoticeToc } from './privacy-notice-toc.js';
 
@@ -35,7 +35,7 @@ export function PrivacyNoticeLayout({
           <div>
             {versionLabel ? <p className="text-sm text-muted-foreground">{versionLabel}</p> : null}
           </div>
-          <PrivacyNoticePdfDownloadContainer jurisdiction={jurisdiction} />
+          <PrivacyNoticePdfDownloadWired jurisdiction={jurisdiction} />
         </header>
 
         <div className="grid gap-12 lg:grid-cols-[minmax(220px,260px)_1fr]">

@@ -8,12 +8,16 @@ import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { FileText } from 'lucide-react';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { cn } from '../../../lib/utils.js';
-import type { useIntakeXmlPreview } from '../hooks/use-intake-detail-pdf.js';
+import {
+  useIntakeDetailPdf,
+  useIntakeXmlPreview,
+  type useIntakeXmlPreview as UseIntakeXmlPreview,
+} from '../hooks/use-intake-detail-pdf.js';
 
-interface IntakeDetailPdfPaneProps {
+export interface IntakeDetailPdfPaneViewProps {
   url: string;
   isXml: boolean;
-  xmlPreview: ReturnType<typeof useIntakeXmlPreview>;
+  xmlPreview: ReturnType<typeof UseIntakeXmlPreview>;
   className?: string;
 }
 
@@ -70,12 +74,12 @@ export function IntakeDetailPdfPaneNotAvailable({
   );
 }
 
-export function IntakeDetailPdfPane({
+export function IntakeDetailPdfPaneView({
   url,
   isXml,
   xmlPreview,
   className,
-}: IntakeDetailPdfPaneProps) {
+}: IntakeDetailPdfPaneViewProps) {
   const t = useTranslations('EInvoice.intake');
 
   return (
@@ -103,7 +107,7 @@ export function IntakeDetailPdfPane({
 }
 
 interface XmlPreviewProps {
-  xmlPreview: ReturnType<typeof useIntakeXmlPreview>;
+  xmlPreview: ReturnType<typeof UseIntakeXmlPreview>;
 }
 
 function XmlPreview({ xmlPreview }: XmlPreviewProps) {
@@ -123,5 +127,34 @@ function XmlPreview({ xmlPreview }: XmlPreviewProps) {
       aria-label={tTab('xmlSourceAria')}>
       {xmlPreview.text}
     </pre>
+  );
+}
+
+type SourceKind = 'UPLOAD_XML' | 'UPLOAD_PDF';
+
+export interface IntakeDetailPdfPaneProps {
+  intakeId: string;
+  sourceKind: SourceKind;
+  className?: string;
+}
+
+export function IntakeDetailPdfPane({
+  intakeId,
+  sourceKind,
+  className,
+}: IntakeDetailPdfPaneProps) {
+  const pdf = useIntakeDetailPdf(intakeId, sourceKind);
+  const xmlPreview = useIntakeXmlPreview(pdf.isXml ? pdf.url : undefined);
+
+  if (pdf.isLoading) return <IntakeDetailPdfPaneSkeleton className={className} isXml={pdf.isXml} />;
+  if (!pdf.url) return <IntakeDetailPdfPaneNotAvailable className={className} isXml={pdf.isXml} />;
+
+  return (
+    <IntakeDetailPdfPaneView
+      className={className}
+      url={pdf.url}
+      isXml={pdf.isXml}
+      xmlPreview={xmlPreview}
+    />
   );
 }

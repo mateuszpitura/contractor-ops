@@ -15,16 +15,13 @@ import {
   DropdownMenuTrigger,
 } from '@contractor-ops/ui/components/shadcn/dropdown-menu';
 import { Archive, MoreHorizontal, Pencil, Truck, UserMinus, UserPlus } from 'lucide-react';
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { tDynLoose } from '../../../i18n/typed-keys.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { enumKey } from '../../../lib/enum-key.js';
 import { EquipmentStatusBadge } from '../equipment-status-badge.js';
 import { EquipmentTypeIcon } from '../equipment-type-icon.js';
-import type {
-  useEquipmentRetire,
-  useEquipmentUnassign,
-} from '../hooks/use-equipment-detail-actions.js';
+import { useEquipmentRetire, useEquipmentUnassign } from '../hooks/use-equipment-detail-actions.js';
 
 interface Equipment {
   id: string;
@@ -217,5 +214,36 @@ export function EquipmentDetailHeaderView({
         </DialogContent>
       </Dialog>
     </>
+  );
+}
+
+type EquipmentDetailHeaderWiredProps = Pick<
+  EquipmentDetailHeaderProps,
+  'equipment' | 'onEdit' | 'onAssign' | 'onCreateShipment'
+>;
+
+export function EquipmentDetailHeader(props: EquipmentDetailHeaderWiredProps) {
+  const [retireDialogOpen, setRetireDialogOpen] = useState(false);
+  const [unassignDialogOpen, setUnassignDialogOpen] = useState(false);
+
+  const { mutation: retireMutation, retire } = useEquipmentRetire({
+    onSuccess: () => setRetireDialogOpen(false),
+  });
+  const { mutation: unassignMutation, unassign } = useEquipmentUnassign({
+    onSuccess: () => setUnassignDialogOpen(false),
+  });
+
+  return (
+    <EquipmentDetailHeaderView
+      {...props}
+      retireDialogOpen={retireDialogOpen}
+      setRetireDialogOpen={setRetireDialogOpen}
+      unassignDialogOpen={unassignDialogOpen}
+      setUnassignDialogOpen={setUnassignDialogOpen}
+      retireMutation={retireMutation}
+      retire={retire}
+      unassignMutation={unassignMutation}
+      unassign={unassign}
+    />
   );
 }

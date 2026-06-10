@@ -157,6 +157,7 @@ export function EquipmentToolbar({
           <Search className="absolute start-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             placeholder={t('list.filters.search')}
+            aria-label={t('list.filters.search')}
             value={localSearch}
             disabled={filtersDisabled}
             onChange={handleSearchChange}

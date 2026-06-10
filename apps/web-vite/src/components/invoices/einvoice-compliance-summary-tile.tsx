@@ -10,9 +10,12 @@ import { AlertCircle } from 'lucide-react';
 import { useCallback } from 'react';
 
 import { useTranslations } from '../../i18n/useTranslations.js';
-import type { EInvoiceComplianceSummaryData } from './hooks/use-einvoice-compliance-summary.js';
+import {
+  useEinvoiceComplianceSummary,
+  type EInvoiceComplianceSummaryData,
+} from './hooks/use-einvoice-compliance-summary.js';
 
-interface EInvoiceComplianceSummaryTileProps {
+export interface EInvoiceComplianceSummaryTileViewProps {
   onReviewFilterRequested?: () => void;
   summary: EInvoiceComplianceSummaryData;
 }
@@ -50,10 +53,10 @@ export function EInvoiceComplianceSummaryTileSkeleton() {
   );
 }
 
-export function EInvoiceComplianceSummaryTile({
+export function EInvoiceComplianceSummaryTileView({
   onReviewFilterRequested,
   summary,
-}: EInvoiceComplianceSummaryTileProps) {
+}: EInvoiceComplianceSummaryTileViewProps) {
   const t = useTranslations('EInvoice.InvoicesList.SummaryTile');
 
   const handleReviewClick = useCallback(() => {
@@ -94,5 +97,24 @@ export function EInvoiceComplianceSummaryTile({
         ) : null}
       </CardContent>
     </Card>
+  );
+}
+
+interface EInvoiceComplianceSummaryTileProps {
+  onReviewFilterRequested?: () => void;
+}
+
+export function EInvoiceComplianceSummaryTile({
+  onReviewFilterRequested,
+}: EInvoiceComplianceSummaryTileProps) {
+  const { isLoading, summary } = useEinvoiceComplianceSummary();
+
+  if (isLoading) return <EInvoiceComplianceSummaryTileSkeleton />;
+
+  return (
+    <EInvoiceComplianceSummaryTileView
+      summary={summary}
+      onReviewFilterRequested={onReviewFilterRequested}
+    />
   );
 }

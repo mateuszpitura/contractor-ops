@@ -31,7 +31,7 @@ export interface UseSettingsIndexResult {
 }
 
 /**
- * Drives `SettingsIndexContainer`: resolves the active nuqs tab, builds the
+ * Drives settings index page (`SettingsIndexContent`): resolves the active nuqs tab, builds the
  * permission-gated list of renderable tabs (with i18n labels + pin aria
  * labels), and routes routed-tabs (`members`, `workflow-roles`, `tax`) to
  * their dedicated sub-pages while non-routed tabs stay on `?tab=`.

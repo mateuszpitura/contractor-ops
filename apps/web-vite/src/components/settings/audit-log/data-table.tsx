@@ -1,4 +1,5 @@
-import { AuditLogIllustration, DataTable } from '@contractor-ops/ui';
+import { AuditLogIllustration } from '@contractor-ops/ui';
+import { WorkbenchDataTable } from '../../table-kit/workbench-data-table.js';
 import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
 import {
   Tooltip,
@@ -254,7 +255,7 @@ export function AuditLogTable({
   );
 
   return (
-    <DataTable
+    <WorkbenchDataTable
       columns={columns}
       data={data}
       totalRows={totalCount}

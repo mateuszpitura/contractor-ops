@@ -1,4 +1,5 @@
-import { DataTable, TeamsIllustration } from '@contractor-ops/ui';
+import { TeamsIllustration } from '@contractor-ops/ui';
+import { WorkbenchDataTable } from '../../table-kit/workbench-data-table.js';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import type { ColumnDef } from '@tanstack/react-table';
 import { format } from 'date-fns';
@@ -102,7 +103,7 @@ export function TeamTable({
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <DataTable
+      <WorkbenchDataTable
         columns={columns}
         data={rows}
         totalRows={rows.length}

@@ -37,13 +37,14 @@ import type { ControllerRenderProps } from 'react-hook-form';
 import { Controller } from 'react-hook-form';
 import { tDynLoose } from '../../i18n/typed-keys';
 import { useTranslations } from '../../i18n/useTranslations.js';
-import type {
-  PreferenceFormValues,
+import {
   useNotificationPreferences,
+  NOTIFICATION_TYPES,
+  type PreferenceFormValues,
+  type useNotificationPreferences as UseNotificationPreferences,
 } from './hooks/use-notification-preferences.js';
-import { NOTIFICATION_TYPES } from './hooks/use-notification-preferences.js';
 
-export type NotificationPreferencesProps = ReturnType<typeof useNotificationPreferences>;
+export type NotificationPreferencesProps = ReturnType<typeof UseNotificationPreferences>;
 
 type NotificationType = (typeof NOTIFICATION_TYPES)[number];
 
@@ -179,7 +180,7 @@ function ChannelSwitchField({ control, name, ariaLabel }: ChannelSwitchFieldProp
   return <Controller control={control} name={name} render={renderSwitch} />;
 }
 
-export function NotificationPreferences({
+export function NotificationPreferencesView({
   t,
   form,
   isSlackConnected,
@@ -298,4 +299,10 @@ export function NotificationPreferences({
       </Card>
     </form>
   );
+}
+
+export function NotificationPreferences() {
+  const prefs = useNotificationPreferences();
+  if (prefs.isLoading) return <NotificationPreferencesSkeleton />;
+  return <NotificationPreferencesView {...prefs} />;
 }

@@ -16,6 +16,7 @@ import type { UseMutationResult } from '@tanstack/react-query';
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { Link, useLocale } from '../../../../i18n/navigation.js';
 import { useTranslations } from '../../../../i18n/useTranslations.js';
+import { useClassificationWizardShell } from '../hooks/use-classification-wizard-shell.js';
 import { ClassificationAutosaveIndicator } from './classification-autosave-indicator';
 import type { AutosaveStatus } from './classification-autosave-indicator.js';
 import { ClassificationProgressBar } from './classification-progress-bar';
@@ -234,3 +235,31 @@ export function ClassificationWizardShellView({
 // Public helpers for tests — expose the debounce constant so unit tests
 // can assert the 500ms rationale window without re-declaring it.
 export const CLASSIFICATION_RATIONALE_DEBOUNCE_MS = RATIONALE_DEBOUNCE_MS;
+
+export function ClassificationWizardShellContainer(
+  props: Pick<
+    ClassificationWizardShellViewProps,
+    | 'assessmentId'
+    | 'contractorAssignmentId'
+    | 'contractorId'
+    | 'countryCode'
+    | 'initialUpdatedAt'
+    | 'initialAnswers'
+  >,
+) {
+  const shell = useClassificationWizardShell(
+    props.assessmentId,
+    props.contractorId,
+    props.contractorAssignmentId,
+    props.initialUpdatedAt,
+  );
+
+  if (!CLASSIFICATION_WIZARD_SUPPORTED_COUNTRIES.has(props.countryCode)) {
+    return <ClassificationWizardUnsupportedCountry countryCode={props.countryCode} />;
+  }
+
+  return <ClassificationWizardShellView {...props} {...shell} />;
+}
+
+/** @deprecated Use ClassificationWizardShell */
+export { ClassificationWizardShellContainer as ClassificationWizardShell };

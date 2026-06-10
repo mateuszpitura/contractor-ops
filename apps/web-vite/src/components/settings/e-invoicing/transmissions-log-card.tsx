@@ -2,7 +2,7 @@
 // E-invoicing → Log). Consumes `einvoice.listByOrg` for filtered server-
 // side pagination via cursor + status enum.
 
-import { DataTable } from '@contractor-ops/ui';
+import { WorkbenchDataTable } from '../../table-kit/workbench-data-table.js';
 import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import {
@@ -17,11 +17,13 @@ import type { ColumnDef } from '@tanstack/react-table';
 import { useCallback, useMemo } from 'react';
 import type { LooseTranslator } from '../../../i18n/typed-keys.js';
 import { tDynLoose } from '../../../i18n/typed-keys.js';
+import { useTransmissionsLogCard } from './hooks/use-transmissions-log-card.js';
 import type {
   LifecycleRow,
   StatusFilter,
-  useTransmissionsLogCard,
+  useTransmissionsLogCard as UseTransmissionsLogCard,
 } from './hooks/use-transmissions-log-card.js';
+import { useDateFormatter } from '../../../lib/format/use-date-formatter.js';
 
 // ---------------------------------------------------------------------------
 // Pills
@@ -44,11 +46,11 @@ const transmissionPillClass: Record<string, string> = {
 // Card
 // ---------------------------------------------------------------------------
 
-export type TransmissionsLogCardProps = ReturnType<typeof useTransmissionsLogCard> & {
+export type TransmissionsLogCardProps = ReturnType<typeof UseTransmissionsLogCard> & {
   formatDate: (value: Date | string | null | undefined) => string;
 };
 
-export function TransmissionsLogCard({
+export function TransmissionsLogCardView({
   formatDate,
   t,
   status,
@@ -159,7 +161,8 @@ export function TransmissionsLogCard({
           </div>
         ) : (
           <>
-            <DataTable
+            <WorkbenchDataTable
+              sectionClassName=""
               columns={columns}
               data={rows}
               totalRows={rows.length}
@@ -194,4 +197,10 @@ export function TransmissionsLogCard({
       </CardContent>
     </Card>
   );
+}
+
+export function TransmissionsLogCard() {
+  const { formatDate } = useDateFormatter();
+  const card = useTransmissionsLogCard();
+  return <TransmissionsLogCardView formatDate={formatDate} {...card} />;
 }

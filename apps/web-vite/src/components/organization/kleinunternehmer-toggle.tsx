@@ -22,17 +22,18 @@ import { AlertTriangle } from 'lucide-react';
 import { useId } from 'react';
 
 import { useTranslations } from '../../i18n/useTranslations.js';
-import type { useKleinunternehmerToggle } from './hooks/use-kleinunternehmer-toggle.js';
+import { useKleinunternehmerToggle } from './hooks/use-kleinunternehmer-toggle.js';
+import type { useKleinunternehmerToggle as UseKleinunternehmerToggle } from './hooks/use-kleinunternehmer-toggle.js';
 
-interface KleinunternehmerToggleProps {
+interface KleinunternehmerToggleViewProps {
   isKleinunternehmer: boolean;
-  toggle: ReturnType<typeof useKleinunternehmerToggle>;
+  toggle: ReturnType<typeof UseKleinunternehmerToggle>;
 }
 
-export function KleinunternehmerToggle({
+export function KleinunternehmerToggleView({
   isKleinunternehmer,
   toggle,
-}: KleinunternehmerToggleProps) {
+}: KleinunternehmerToggleViewProps) {
   const tCommon = useTranslations('Common');
   const id = useId();
   const {
@@ -88,4 +89,18 @@ export function KleinunternehmerToggle({
       </AlertDialog>
     </div>
   );
+}
+
+interface KleinunternehmerToggleProps {
+  orgCountryCode: string | null | undefined;
+  isKleinunternehmer: boolean;
+}
+
+export function KleinunternehmerToggle({
+  orgCountryCode,
+  isKleinunternehmer,
+}: KleinunternehmerToggleProps) {
+  const toggle = useKleinunternehmerToggle();
+  if (orgCountryCode !== 'DE') return null;
+  return <KleinunternehmerToggleView isKleinunternehmer={isKleinunternehmer} toggle={toggle} />;
 }

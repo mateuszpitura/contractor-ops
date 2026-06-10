@@ -3,6 +3,7 @@ import { useCallback, useState } from 'react';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { useTRPC } from '../../../providers/trpc-provider.js';
+import { useIntegrationHealthProviderSection } from './use-integration-provider-section.js';
 
 export interface TeamsConfigJson {
   defaultTeamId?: string;
@@ -18,25 +19,25 @@ export function useTeamsProviderSection() {
 
   const handleOpenFallback = useCallback(() => setFallbackOpen(true), []);
 
-  const healthQuery = useQuery(
-    trpc.integration.getHealth.queryOptions({ provider: 'microsoft_teams' }),
-  );
-  const health = healthQuery.data as { status: string; connectionId?: string } | null | undefined;
+  const section = useIntegrationHealthProviderSection('microsoft_teams', t);
 
   const connectionStatusQuery = useQuery(trpc.teams.connectionStatus.queryOptions());
-  const connectionStatus = connectionStatusQuery.data as
-    | { id: string; status: string; configJson: Record<string, unknown> | null }
-    | null
-    | undefined;
+  const connectionStatus = connectionStatusQuery.data;
 
-  const isConnected = health?.status === 'CONNECTED' || connectionStatus?.status === 'CONNECTED';
+  const isConnected = section.isConnected && !section.needsReauth;
 
   const configJson = (connectionStatus?.configJson ?? {}) as TeamsConfigJson;
   const defaultTeamId = configJson.defaultTeamId;
   const defaultFallbackApproverId = configJson.defaultFallbackApproverId ?? null;
 
+  const onRetry = useCallback(() => {
+    section.onRetry();
+    void connectionStatusQuery.refetch();
+  }, [section, connectionStatusQuery]);
+
   return {
     isConnected,
+    needsReauth: section.needsReauth,
     defaultTeamId,
     defaultFallbackApproverId,
     fallbackOpen,
@@ -44,6 +45,8 @@ export function useTeamsProviderSection() {
     handleOpenFallback,
     t,
     tFb,
-    isLoading: healthQuery.isLoading || connectionStatusQuery.isLoading,
+    isLoading: section.isLoading || connectionStatusQuery.isLoading,
+    isError: section.isError || connectionStatusQuery.isError,
+    onRetry,
   } as const;
 }

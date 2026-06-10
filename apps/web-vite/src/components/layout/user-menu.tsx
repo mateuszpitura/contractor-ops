@@ -46,6 +46,7 @@ import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { useDensity } from '../../hooks/use-density.js';
 import { Link } from '../../i18n/navigation.js';
 import { useTranslations } from '../../i18n/useTranslations.js';
+import { useUserMenu } from './hooks/use-user-menu.js';
 import type { Theme } from '../../providers/theme-provider.js';
 import { useTheme } from '../../providers/theme-provider.js';
 
@@ -254,5 +255,27 @@ export function UserMenu({ user, displayName, initials, onSignOut, onSaveName }:
         </DialogContent>
       </Dialog>
     </>
+  );
+}
+
+export function UserMenuContainer() {
+  const { isPending, user, displayName, initials, handleSignOut, handleSaveName } = useUserMenu();
+
+  const onSignOut = useCallback(() => {
+    void handleSignOut();
+  }, [handleSignOut]);
+
+  if (isPending) {
+    return <UserMenuSkeleton />;
+  }
+
+  return (
+    <UserMenu
+      user={user}
+      displayName={displayName}
+      initials={initials}
+      onSignOut={onSignOut}
+      onSaveName={handleSaveName}
+    />
   );
 }

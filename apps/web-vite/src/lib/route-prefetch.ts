@@ -49,8 +49,8 @@ const ROUTE_CHUNKS: Record<string, Thunk> = {
  * the time the auth loader resolves and the shell mounts.
  */
 const SHELL_CHUNKS: Array<readonly [string, Thunk]> = [
-  ['shell:dashboard', () => import('../components/layout/dashboard-shell-container.js')],
-  ['shell:portal', () => import('../components/layout/portal-shell-container.js')],
+  ['shell:dashboard', () => import('../components/layout/dashboard-shell.js')],
+  ['shell:portal', () => import('../components/layout/portal-shell.js')],
 ];
 
 const prefetched = new Set<string>();

@@ -18,6 +18,10 @@ import { Bell, CheckCheck } from 'lucide-react';
 import type { ReactNode } from 'react';
 
 import { useTranslations } from '../../i18n/useTranslations.js';
+import { useNotificationPopover } from './hooks/use-notification-popover.js';
+import { NotificationPopoverEmpty } from './notification-popover-empty.js';
+import { NotificationPopoverList } from './notification-popover-list.js';
+import { NotificationPopoverSkeletons } from './notification-popover-skeletons.js';
 
 export interface NotificationPopoverShellProps {
   unreadCount: number;
@@ -83,5 +87,32 @@ export function NotificationPopoverShell({
         {children}
       </PopoverContent>
     </Popover>
+  );
+}
+
+export function NotificationPopover() {
+  const popover = useNotificationPopover();
+
+  const body = popover.isLoading ? (
+    <NotificationPopoverSkeletons />
+  ) : popover.notifications.length === 0 ? (
+    <NotificationPopoverEmpty />
+  ) : (
+    <NotificationPopoverList
+      notifications={popover.notifications}
+      isMarkingRead={popover.isMarkingRead}
+      onItemClick={popover.handleItemClick}
+      onViewAll={popover.handleViewAll}
+    />
+  );
+
+  return (
+    <NotificationPopoverShell
+      unreadCount={popover.unreadCount}
+      isMarkingAllRead={popover.isMarkingAllRead}
+      onOpenChange={popover.handleOpenChange}
+      onMarkAllRead={popover.handleMarkAllRead}>
+      {body}
+    </NotificationPopoverShell>
   );
 }

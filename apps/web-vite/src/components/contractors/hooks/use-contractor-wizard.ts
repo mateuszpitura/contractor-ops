@@ -1,4 +1,6 @@
+import type { AppRouter } from '@contractor-ops/api';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import type { inferRouterOutputs } from '@trpc/server';
 import { useCallback, useState } from 'react';
 import { toast } from 'sonner';
 
@@ -6,11 +8,13 @@ import { useTranslations } from '../../../i18n/useTranslations.js';
 import { useTRPC } from '../../../providers/trpc-provider.js';
 import type { WizardFormValues } from '../contractor-wizard/wizard-dialog.js';
 
+type UserListItem = inferRouterOutputs<AppRouter>['user']['list'][number];
+
 export function useContractorWizardAssignmentOptions() {
   const trpc = useTRPC();
 
   const usersQuery = useQuery(trpc.user.list.queryOptions());
-  const users = Array.isArray(usersQuery.data) ? usersQuery.data : [];
+  const users: UserListItem[] = Array.isArray(usersQuery.data) ? usersQuery.data : [];
 
   const teamsQuery = useQuery(
     trpc.organizationDefinitions.team.list.queryOptions({ status: 'ACTIVE', limit: 200 }),
@@ -22,15 +26,9 @@ export function useContractorWizardAssignmentOptions() {
     trpc.organizationDefinitions.costCenter.list.queryOptions({ status: 'ACTIVE', limit: 200 }),
   );
 
-  const ownerItems = (
-    users as unknown as Array<{
-      id?: string;
-      userId?: string;
-      user?: { id: string; name: string | null; email: string };
-    }>
-  ).map(member => {
-    const userId = member.userId ?? member.user?.id ?? member.id ?? '';
-    const label = member.user?.name ?? member.user?.email ?? userId;
+  const ownerItems = users.map(member => {
+    const userId = String(member.userId ?? member.id ?? '');
+    const label = String(member.name ?? member.email ?? userId);
     return { value: userId, label };
   });
 

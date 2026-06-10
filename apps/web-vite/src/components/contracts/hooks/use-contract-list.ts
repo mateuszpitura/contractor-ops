@@ -5,14 +5,18 @@ import type {
   ContractType,
 } from '@contractor-ops/validators';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
+import type { OnChangeFn, SortingState, VisibilityState } from '@tanstack/react-table';
 import { useCallback, useMemo } from 'react';
 
+import { useListDataTable } from '../../../hooks/use-list-data-table.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { useTRPC } from '../../../providers/trpc-provider.js';
 import type { ContractRow } from '../contract-table/columns.js';
 import { useContractFilters } from '../contract-table/use-contract-filters.js';
 import type { ContractBulkActionsHandlers } from './use-contract-bulk-actions.js';
 import { useContractBulkActions } from './use-contract-bulk-actions.js';
+
+const STORAGE_KEY = 'contract-table-columns';
 
 export type ContractUserOption = {
   id?: string;
@@ -55,6 +59,12 @@ export interface ContractListTableProps {
   activeFilterCount: number;
   hasFiltersOrSearch: boolean;
   bulkActions: ContractBulkActionsHandlers;
+  columnVisibility: VisibilityState;
+  setColumnVisibility: OnChangeFn<VisibilityState>;
+  sorting: SortingState;
+  onSortingChange: (updater: SortingState | ((old: SortingState) => SortingState)) => void;
+  selectedRows: ContractRow[];
+  setSelectedRows: (rows: ContractRow[]) => void;
 }
 
 export interface ContractListToolbarProps {
@@ -188,6 +198,24 @@ export function useContractList(options: { onNewContract: () => void; onImport?:
     [setFilters],
   );
 
+  const {
+    columnVisibility,
+    setColumnVisibility,
+    selectedRows,
+    setSelectedRows,
+    sorting,
+    handleSortingChange,
+  } = useListDataTable<ContractRow>({
+    storageKey: STORAGE_KEY,
+    filters: {
+      sortBy: filters.sortBy,
+      sortOrder: (filters.sortOrder as 'asc' | 'desc') || 'asc',
+    },
+    onSortChange: handleSortChange,
+    defaultSortBy: 'endDate',
+    defaultSortOrder: 'asc',
+  });
+
   const clearFilters = useCallback(() => {
     void setFilters({
       search: '',
@@ -259,6 +287,12 @@ export function useContractList(options: { onNewContract: () => void; onImport?:
     activeFilterCount,
     hasFiltersOrSearch,
     bulkActions,
+    columnVisibility,
+    setColumnVisibility,
+    sorting,
+    onSortingChange: handleSortingChange,
+    selectedRows,
+    setSelectedRows,
   };
 
   return {

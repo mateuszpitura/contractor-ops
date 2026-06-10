@@ -2,7 +2,7 @@
  * Transmission section.
  */
 
-import { DataTable } from '@contractor-ops/ui';
+import { WorkbenchDataTable } from '../../table-kit/workbench-data-table.js';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -131,7 +131,7 @@ export function TransmissionSection({
     () => [
       {
         id: 'when',
-        header: () => 'When',
+        header: () => t('transmissionColWhen'),
         size: 192,
         enableSorting: false,
         cell: ({ row }) => (
@@ -144,7 +144,7 @@ export function TransmissionSection({
       },
       {
         id: 'event',
-        header: () => 'Event',
+        header: () => t('transmissionColEvent'),
         size: 160,
         enableSorting: false,
         cell: ({ row }) => (
@@ -155,7 +155,7 @@ export function TransmissionSection({
       },
       {
         id: 'details',
-        header: () => 'Details',
+        header: () => t('transmissionColDetails'),
         enableSorting: false,
         cell: ({ row }) => {
           const detailsOneLiner = oneLinerFromDetails(row.original.detailsJson);
@@ -220,7 +220,8 @@ export function TransmissionSection({
         {lifecycle && events.length > 0 ? (
           <div className="space-y-2">
             <h4 className="text-base font-semibold">{t('transmissionHistoryHeading')}</h4>
-            <DataTable
+            <WorkbenchDataTable
+              sectionClassName=""
               columns={columns}
               data={events}
               totalRows={events.length}
@@ -252,7 +253,7 @@ export function TransmissionSection({
             <AlertDialogDescription>{t('transmissionNotSentBody')}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={handleCancel}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel onClick={handleCancel}>{t('transmissionCancel')}</AlertDialogCancel>
             <AlertDialogAction onClick={handleConfirm}>{t('sendCta')}</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

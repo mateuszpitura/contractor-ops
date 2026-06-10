@@ -9,7 +9,7 @@ import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { FileCheck } from 'lucide-react';
 import { Link } from '../../i18n/navigation.js';
 import { PeppolComplianceWidget } from '../peppol/peppol-compliance-widget.js';
-import type { useEinvoiceComplianceWidget } from './hooks/use-einvoice-compliance-widget.js';
+import { useEinvoiceComplianceWidget } from './hooks/use-einvoice-compliance-widget.js';
 
 const stateStyles: Record<string, { bg: string; text: string; dot: string }> = {
   active: {
@@ -109,4 +109,12 @@ export function EInvoiceComplianceWidgetView({
       </CardContent>
     </Card>
   );
+}
+
+export function EInvoiceComplianceWidget() {
+  const props = useEinvoiceComplianceWidget();
+
+  if (props.isLoading) return <EInvoiceComplianceWidgetSkeleton />;
+  if (props.statuses.length === 0 && !props.peppolState) return null;
+  return <EInvoiceComplianceWidgetView {...props} />;
 }

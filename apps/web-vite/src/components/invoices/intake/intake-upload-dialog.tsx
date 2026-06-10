@@ -13,17 +13,21 @@ import type { ChangeEvent, DragEvent, KeyboardEvent, ReactNode } from 'react';
 import { useCallback } from 'react';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
-import type { IntakeUploadLocalErrorKind, useIntakeUpload } from '../hooks/use-intake-upload.js';
+import {
+  useIntakeUpload,
+  type IntakeUploadLocalErrorKind,
+  type useIntakeUpload as UseIntakeUpload,
+} from '../hooks/use-intake-upload.js';
 
 const ACCEPT_ATTR = '.xml,.pdf,application/xml,text/xml,application/pdf';
 
-interface IntakeUploadDialogProps {
+export interface IntakeUploadDialogFrameProps {
   open: boolean;
-  upload: ReturnType<typeof useIntakeUpload>;
+  upload: ReturnType<typeof UseIntakeUpload>;
   body: ReactNode;
 }
 
-export function IntakeUploadDialog({ open, upload, body }: IntakeUploadDialogProps) {
+export function IntakeUploadDialogFrame({ open, upload, body }: IntakeUploadDialogFrameProps) {
   const t = useTranslations('EInvoice.intake');
 
   return (
@@ -139,5 +143,34 @@ export function IntakeUploadDropzone({ upload }: IntakeUploadDropzoneProps) {
         />
       </DropZoneSurface>
     </div>
+  );
+}
+
+interface IntakeUploadDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}
+
+export function IntakeUploadDialog({ open, onOpenChange }: IntakeUploadDialogProps) {
+  const upload = useIntakeUpload(onOpenChange);
+
+  if (upload.localError) {
+    return (
+      <IntakeUploadDialogFrame
+        open={open}
+        upload={upload}
+        body={
+          <IntakeUploadErrorBlock localError={upload.localError} onReset={upload.handleReset} />
+        }
+      />
+    );
+  }
+
+  return (
+    <IntakeUploadDialogFrame
+      open={open}
+      upload={upload}
+      body={<IntakeUploadDropzone upload={upload} />}
+    />
   );
 }

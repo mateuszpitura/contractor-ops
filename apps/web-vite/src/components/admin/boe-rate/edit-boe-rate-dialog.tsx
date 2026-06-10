@@ -20,11 +20,12 @@ import { AlertTriangleIcon } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
-import type {
-  BoeRateEntry,
+import {
   useBoeRateUpdate,
   useBoeRateValidation,
+  type BoeRateEntry,
 } from '../hooks/use-admin-boe-rate.js';
+import type { useBoeRateUpdate as UseBoeRateUpdate, useBoeRateValidation as UseBoeRateValidation } from '../hooks/use-admin-boe-rate.js';
 
 export type { BoeRateEntry };
 
@@ -32,8 +33,8 @@ interface EditBoeRateDialogProps {
   entry: BoeRateEntry;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  validation: ReturnType<typeof useBoeRateValidation>;
-  updateMutation: ReturnType<typeof useBoeRateUpdate>;
+  validation: ReturnType<typeof UseBoeRateValidation>;
+  updateMutation: ReturnType<typeof UseBoeRateUpdate>;
 }
 
 export function EditBoeRateDialog({
@@ -139,5 +140,25 @@ export function EditBoeRateDialog({
         </form>
       </DialogContent>
     </Dialog>
+  );
+}
+
+interface EditBoeRateDialogWiredProps {
+  entry: BoeRateEntry;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}
+
+export function EditBoeRateDialogWired({ entry, open, onOpenChange }: EditBoeRateDialogWiredProps) {
+  const validation = useBoeRateValidation();
+  const updateMutation = useBoeRateUpdate(() => onOpenChange(false));
+  return (
+    <EditBoeRateDialog
+      entry={entry}
+      open={open}
+      onOpenChange={onOpenChange}
+      validation={validation}
+      updateMutation={updateMutation}
+    />
   );
 }

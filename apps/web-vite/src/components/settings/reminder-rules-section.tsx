@@ -22,13 +22,17 @@ import { Switch } from '@contractor-ops/ui/components/shadcn/switch';
 import { Pencil, Plus, Trash2 } from 'lucide-react';
 import { useCallback } from 'react';
 import { renderEmptyStateAction } from '../shared/atelier-bridges';
-import type { ReminderRule, useReminderRulesSection } from './hooks/use-reminder-rules-section.js';
+import {
+  useReminderRulesSection,
+  type ReminderRule,
+  type useReminderRulesSection as UseReminderRulesSection,
+} from './hooks/use-reminder-rules-section.js';
 import { CHANNEL_BADGE_VARIANT } from './hooks/use-reminder-rules-section.js';
-import { ReminderRuleEditorContainer } from './reminder-rule-editor-container.js';
+import { ReminderRuleEditor } from './reminder-rule-editor.js';
 
 export type { ReminderRule };
 
-export type ReminderRulesSectionProps = ReturnType<typeof useReminderRulesSection>;
+export type ReminderRulesSectionProps = ReturnType<typeof UseReminderRulesSection>;
 
 interface ReminderRuleCardProps {
   rule: ReminderRule;
@@ -111,7 +115,7 @@ function ReminderRuleCard({
   );
 }
 
-export function ReminderRulesSection({
+export function ReminderRulesSectionView({
   t,
   tAria,
   rulesQuery,
@@ -181,7 +185,7 @@ export function ReminderRulesSection({
           }}
           renderAction={renderEmptyStateAction}
         />
-        <ReminderRuleEditorContainer
+        <ReminderRuleEditor
           open={editorOpen}
           onOpenChange={setEditorOpen}
           rule={editingRule ?? undefined}
@@ -221,7 +225,7 @@ export function ReminderRulesSection({
         ))}
       </div>
 
-      <ReminderRuleEditorContainer
+      <ReminderRuleEditor
         open={editorOpen}
         onOpenChange={setEditorOpen}
         rule={editingRule ?? undefined}
@@ -249,4 +253,9 @@ export function ReminderRulesSection({
       </AlertDialog>
     </>
   );
+}
+
+export function ReminderRulesSection() {
+  const section = useReminderRulesSection();
+  return <ReminderRulesSectionView {...section} />;
 }

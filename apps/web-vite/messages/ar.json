@@ -55,6 +55,11 @@
       "signoffRegistry": "سجل التوقيعات",
       "pendingGate": "العَلم مُفعَّل في Unleash ولكنه مُقيَّد على مستوى التطبيق — {count} إقرار(ات) قيد الانتظار.",
       "pendingGateResolution": "حلّ المشكلة بإرسال PR يُحدّث packages/validators/src/legal/signoff-registry.json",
+      "pendingGateDetail": "لضبط كل مفتاح PENDING على APPROVED مع approvedBy + approvedAt + approverRole. يتطلب الـ PR مراجعة من @contractor-ops/legal-platform (CODEOWNERS).",
+      "statusEnabled": "مُفعَّل",
+      "statusDisabled": "مُعطَّل",
+      "allApprovedCount": "تمت الموافقة على الكل ({count})",
+      "pendingOfTotal": "{pending} من {total} قيد الانتظار",
       "killSwitchDesc": "مفتاح إيقاف محرّك التصنيف. للقراءة فقط — التبديل في وحدة تحكم Unleash.",
       "disclaimerRegistryTitle": "سجل توقيعات الإقرارات",
       "allKeysMustBeApproved": "يجب أن تكون جميع المفاتيح مُعتمَدة قبل تفعيل العَلم في بيئة الإنتاج.",
@@ -2488,6 +2493,7 @@
       }
     },
     "InvoiceTab": {
+      "errorTitle": "خطأ",
       "tabLabel": "E-invoice",
       "generationHeading": "Generation",
       "generationNotGeneratedBody": "لم يُولَّد بعد ملف XRechnung XML لهذه الفاتورة.",
@@ -2515,6 +2521,10 @@
       "transmittedCaptionPattern": "أُرسلت {relativeTime} · رسالة {transmissionId}",
       "deliveryAckPattern": "تم التسليم {relativeTime}",
       "transmissionHistoryHeading": "سجل الإرسال",
+      "transmissionColWhen": "متى",
+      "transmissionColEvent": "الحدث",
+      "transmissionColDetails": "التفاصيل",
+      "transmissionCancel": "إلغاء",
       "transmissionEventPattern": "{occurredAt} — {eventType} {detailsOneLiner}",
       "leitwegResolvedPattern": "Leitweg-ID المُحدَّد: {leitwegIdValue} ({source})",
       "leitwegSourceContract": "من تجاوز العقد",
@@ -2672,6 +2682,7 @@
         "REJECTED": "Rejected"
       },
       "validation": {
+        "heading": "التحقق",
         "VALID": "Valid",
         "WARNINGS": "Warnings",
         "INVALID": "Invalid",
@@ -2845,6 +2856,7 @@
         "type": "النوع",
         "status": "الحالة",
         "assignee": "المكلف",
+        "shipment": "الشحنة",
         "actions": "الإجراءات",
         "selectAll": "تحديد الكل",
         "selectRow": "تحديد الصف"
@@ -3162,6 +3174,7 @@
     "workflowTemplateNotFound": "Workflow template غير موجود.",
     "workflowRunNotFound": "Workflow run غير موجود.",
     "workflowRunAlreadyCancelled": "تم إلغاء تشغيل Workflow بالفعل.",
+    "workflowRunNotInProgress": "تشغيل Workflow ليس قيد التنفيذ.",
     "workflowTaskNotFound": "Task غير موجود.",
     "workflowTaskInvalidStatus": "هذا الانتقال في الحالة غير مسموح به لهذه المهمة.",
     "workflowTaskCannotSkip": "لا يمكن تخطّي هذه المهمة في حالتها الحالية.",
@@ -3393,7 +3406,9 @@
     "approvalNotPendingCompliance": "هذه الموافقة ليست معلّقة بسبب الامتثال.",
     "approvalCannotResolveContractor": "تعذّر تحديد المقاول لهذه الموافقة.",
     "approvalStillComplianceBlocked": "لا يزال لدى المقاول مستند امتثال منتهٍ يمنع الدفع؛ لا يمكن استئناف الموافقة.",
-    "deprovisioningProviderSignoffPending": "تتطلب ميزة إلغاء توفير هذا الموفّر الحصول على موافقة قبل تفعيلها."
+    "deprovisioningProviderSignoffPending": "تتطلب ميزة إلغاء توفير هذا الموفّر الحصول على موافقة قبل تفعيلها.",
+    "workflowAssigneeNotMember": "المُعيَّن المحدد ليس عضوًا في هذه المنظمة.",
+    "importJobStateConflict": "تغيّرت حالة مهمة الاستيراد؛ حدّث الصفحة وحاول مرة أخرى."
   },
   "Compliance": {
     "paymentBlockModal": {
@@ -3755,11 +3770,14 @@
         "saveMapping": "حفظ الربط",
         "toast": {
           "saved": "تم حفظ ربط الحالات",
-          "saveFailed": "فشل حفظ ربط الحالات"
+          "saveFailed": "فشل حفظ ربط الحالات",
+          "webhooksNotRegistered": "تم حفظ الربط، لكن تعذّر تسجيل webhooks الخاصة بـ Jira. قد لا تعمل مزامنة الحالات الواردة حتى يتم إصلاح webhooks."
         }
       },
       "activitySummary": {
         "title": "آخر نشاط في Jira",
+        "error": "تعذّر تحميل آخر نشاط في Jira",
+        "retry": "إعادة المحاولة",
         "relativeTime": {
           "justNow": "الآن",
           "minutesAgo": "منذ {n} دقيقة",
@@ -3794,7 +3812,8 @@
       "statusMapping": {
         "toast": {
           "saved": "تم حفظ ربط الحالات",
-          "saveFailed": "فشل حفظ ربط الحالات. يرجى المحاولة مجددًا."
+          "saveFailed": "فشل حفظ ربط الحالات. يرجى المحاولة مجددًا.",
+          "webhooksNotRegistered": "تم حفظ الربط، لكن تعذّر تسجيل webhooks الخاصة بـ Jira. قد لا تعمل مزامنة الحالات الواردة حتى يتم إصلاح webhooks."
         },
         "notMapped": "غير مرتبط",
         "workflowStatus": {
@@ -4491,11 +4510,26 @@
       "saveCta": "حفظ preferences"
     },
     "reminders": {
-      "heading": "قواعد التذكير المخصصة",
-      "description": "أتمتة التذكيرات لانتهاء العقود والمواعيد النهائية للمهام والأحداث المتكررة الأخرى.",
-      "emptyHeading": "لا توجد قواعد تذكير",
-      "emptyBody": "إنشاء custom rules to send automatic reminders for contract expiry, task deadlines, and other events.",
-      "editAction": "تعديل"
+      "contractExpiring": {
+        "title": "العقد على وشك الانتهاء: {label}",
+        "body": "يقترب أحد العقود من تاريخ انتهائه."
+      },
+      "invoiceDueSoon": {
+        "title": "فاتورة مستحقة قريبًا: {label}",
+        "body": "تقترب إحدى الفواتير من تاريخ استحقاقها."
+      },
+      "invoiceOverdue": {
+        "title": "فاتورة متأخرة: {label}",
+        "body": "تجاوزت إحدى الفواتير تاريخ استحقاقها."
+      },
+      "taskOverdue": {
+        "title": "مهمة متأخرة: {label}",
+        "body": "{detail}{contractorSuffix}"
+      },
+      "drvExpiry": {
+        "title": "تنتهي صلاحية شهادة DRV خلال {days} يومًا",
+        "body": "المرجع {reference}، صالح حتى {validTo}. ابدأ بتقديم طلب التجديد — تستغرق معالجة DRV عادةً من 3 إلى 6 أشهر."
+      }
     },
     "reminderEditor": {
       "entityLabel": "ينطبق على",
@@ -4571,6 +4605,25 @@
         "title": "تم رفض إرجاع المعدات",
         "body": "السبب: {reason}"
       }
+    },
+    "trial": {
+      "ending7d": {
+        "title": "تنتهي الفترة التجريبية خلال 7 أيام",
+        "body": "تنتهي فترتك التجريبية خلال 7 أيام. قم بالترقية للاحتفاظ ببياناتك والوصول الكامل."
+      },
+      "ending1d": {
+        "title": "تنتهي الفترة التجريبية غدًا",
+        "body": "تنتهي فترتك التجريبية غدًا. قم بالترقية الآن لتجنب فقدان الوصول إلى الميزات."
+      },
+      "email7d": {
+        "subject": "تنتهي فترتك التجريبية في Contractor Ops خلال 7 أيام",
+        "body": "تنتهي فترتك التجريبية خلال 7 أيام. قم بالترقية للاحتفاظ ببياناتك والوصول الكامل."
+      },
+      "email1d": {
+        "subject": "تنتهي فترتك التجريبية في Contractor Ops غدًا",
+        "body": "تنتهي فترتك التجريبية غدًا. قم بالترقية الآن لتجنب فقدان الوصول إلى الميزات."
+      },
+      "emailCta": "الانتقال إلى إعدادات الفوترة"
     }
   },
   "OcrReview": {
@@ -4844,7 +4897,9 @@
       "heading": "أين تدير فريقك؟",
       "subtitle": "اختر الأدوات التي تريد الاستيراد منها. يمكنك ربط أدوات جديدة من هنا مباشرة.",
       "skipLink": "تخطٍّ — سأدعو الأشخاص يدويًا",
-      "connectError": "فشل start connection. يرجى المحاولة مجددًا."
+      "connectError": "فشل start connection. يرجى المحاولة مجددًا.",
+      "connectPermissionError": "تحتاج صلاحيات مسؤول المؤسسة لربط التكاملات.",
+      "popupBlocked": "تم حظر النافذة المنبثقة. اسمح بالنوافذ المنبثقة لهذا الموقع وحاول مرة أخرى."
     },
     "step2": {
       "heading": "مراجعة أعضاء الفريق",
@@ -4874,7 +4929,9 @@
       "resolvedAll": "تم حل جميع التعارضات",
       "selectedCount": "{count} محدد",
       "statusNew": "جديد",
-      "statusExists": "موجود"
+      "statusExists": "موجود",
+      "partialSourceErrorsTitle": "تعذّر تحميل بعض المصادر",
+      "partialSourceErrorsBody": "يُعرض أدناه الأشخاص من المصادر الأخرى. يمكنك متابعة المراجعة أو الرجوع لإعادة ربط المصادر الفاشلة."
     },
     "step3": {
       "heading": "استيراد projects",
@@ -4885,6 +4942,8 @@
       "addStep": "إضافة step",
       "emptyHeading": "لم يتم العثور على projects",
       "emptyBody": "لم تُعثَر على مشاريع في أدوات إدارة المشاريع المختارة. يمكنك إنشاء قوالب Workflow يدويًا لاحقًا.",
+      "partialSourceErrorsTitle": "تعذّر تحميل بعض مصادر المشاريع",
+      "partialSourceErrorsBody": "المشاريع من المصادر الأخرى معروضة أدناه. يمكنك المتابعة أو الرجوع لإعادة ربط المصادر الفاشلة.",
       "stepFallback": "خطوة {number}"
     },
     "step4": {
@@ -4893,12 +4952,18 @@
       "peopleCard": "الأشخاص للاستيراد",
       "projectsCard": "المشاريع للإنشاء",
       "startImport": "بدء الاستيراد",
+      "starting": "جارٍ البدء…",
+      "roleCount": "{count} × {role}",
+      "totalSteps": "{count, plural, one {خطوة workflow واحدة} other {# خطوات workflow}}",
       "progressLabel": "جارٍ استيراد {current} من {total}...",
       "completeHeading": "استيراد complete",
       "completeBody": "تم استيراد {imported} أشخاص و {projects} مشاريع بنجاح.",
+      "partialCompleteBody": "تم استيراد {imported} أشخاص و {projects} مشاريع. فشل بعض العناصر — أعد المحاولة أدناه أو انتقل إلى لوحة التحكم.",
       "completeCta": "الانتقال إلى لوحة المعلومات",
       "retryButton": "Retry",
-      "processing": "جارِ المعالجة..."
+      "processing": "جارِ المعالجة...",
+      "failedItemProject": "المشروع: {name}",
+      "nothingToImport": "لم يتم اختيار شيء للاستيراد. ارجع واختر أشخاصًا أو مشاريع."
     },
     "nav": {
       "back": "رجوع",
@@ -5574,7 +5639,12 @@
       "label": "Peppol",
       "ariaLabel": "حالة إرسال Peppol: {status}",
       "receiver": "المستلم",
-      "aspRef": "مرجع ASP"
+      "aspRef": "مرجع ASP",
+      "statusDelivered": "تم التسليم",
+      "statusTransmitted": "تم الإرسال",
+      "statusPending": "قيد الانتظار",
+      "statusFailed": "فشل",
+      "statusRejected": "مرفوض"
     },
     "capabilities": {
       "xrechnungCiiSupported": "مشارك Peppol يدعم XRechnung (CII)",
@@ -6006,6 +6076,29 @@
     "exportSuccess": "تم تصدير التقرير ({count} صفوف)",
     "exportQueued": "تم إدراج التصدير في قائمة الانتظار — سنرسل لك رابط التنزيل عبر البريد الإلكتروني.",
     "exportError": "تعذر export report. حاول مجددًا.",
+    "columnToggle": "تبديل الأعمدة",
+    "columns": {
+      "contractorName": "مقاول",
+      "invoiceCount": "الفواتير",
+      "totalMinor": "إجمالي الإنفاق",
+      "avgMinor": "متوسط الفاتورة",
+      "lastPaidAt": "آخر دفعة",
+      "teamName": "الفريق",
+      "contractorCount": "المقاولون",
+      "budgetPercent": "نسبة الميزانية",
+      "contractTitle": "العقد",
+      "endDate": "تاريخ الانتهاء",
+      "daysRemaining": "الأيام المتبقية",
+      "invoiceNumber": "رقم الفاتورة",
+      "amountMinor": "المبلغ",
+      "dueDate": "تاريخ الاستحقاق",
+      "daysOverdue": "أيام التأخير",
+      "status": "الحالة",
+      "missingDocuments": "المستندات الناقصة",
+      "contractStatus": "حالة العقد",
+      "overdueTasks": "المهام المتأخرة",
+      "health": "الصحة"
+    },
     "contractor": "مقاول",
     "team": "الفريق",
     "invoices": "الفواتير",
@@ -6549,7 +6642,10 @@
       },
       "googleWorkspace": {
         "descriptionDisconnected": "استيراد your team directory from Google Workspace with role mapping.",
-        "descriptionConnected": "Google Workspace متصل. تتم مزامنة الدليل يوميًا في الساعة 2:00 صباحًا."
+        "descriptionConnected": "Google Workspace متصل. تتم مزامنة الدليل يوميًا في الساعة 2:00 صباحًا.",
+        "scopeExpansionWarning": "مطلوب إعادة المصادقة — أعد ربط Google Workspace لاستعادة الوصول إلى الدليل.",
+        "error": "تعذّر تحميل حالة تكامل Google Workspace.",
+        "retry": "إعادة المحاولة"
       },
       "entra": {
         "title": "إلغاء التزويد في Microsoft Entra ID",
@@ -6599,11 +6695,16 @@
       "teams": {
         "descriptionDisconnected": "استقبل الإشعارات واعتمد الفواتير مباشرة من Microsoft Teams.",
         "descriptionConnected": "Microsoft Teams متصل. تُسلَّم الإشعارات إلى القنوات المُكوَّنة.",
+        "scopeExpansionWarning": "مطلوب إعادة المصادقة — أعد ربط Microsoft Teams لاستعادة الإشعارات.",
+        "error": "تعذّر تحميل حالة تكامل Microsoft Teams.",
+        "retry": "إعادة المحاولة",
         "channelMappingHeading": "ربط القنوات",
         "channelMappingDescription": "تكوين which channel receives each notification type.",
         "saveMapping": "حفظ mapping",
         "refreshChannels": "تحديث قائمة القنوات",
         "selectChannel": "اختر قناة",
+        "selectTeam": "اختر فريقًا",
+        "selectTeamFirst": "اختر فريقًا أعلاه لتكوين تعيين القنوات.",
         "noChannels": "لا توجد قنوات متاحة. تأكّد من إضافة الروبوت إلى فريق واحد على الأقل.",
         "channelFetchError": "تعذّر تحميل قنوات Teams. تأكّد من تثبيت الروبوت في مساحة عمل Teams وأعد المحاولة.",
         "disconnectTitle": "فصل Microsoft Teams",
@@ -7199,6 +7300,11 @@
       "from": "من",
       "to": "إلى",
       "importEntries": "استيراد الإدخالات"
+    },
+    "sourceBadge": {
+      "manualEntry": "إدخال يدوي",
+      "importedFromOn": "مستورد من {source} بتاريخ {date}",
+      "unknownDate": "تاريخ غير معروف"
     }
   },
   "TopBar": {
@@ -7671,6 +7777,7 @@
       "linkedIssues": "المشكلات المرتبطة",
       "noLinkedJiraIssues": "لا توجد مشكلات Jira مرتبطة بهذا سير العمل.",
       "linearIssues": "مشكلات Linear",
+      "noLinkedLinearIssues": "لا توجد مشكلات Linear مرتبطة بهذا سير العمل.",
       "tasksComplete": "{done} من {total} مهمة مكتملة"
     },
     "templatePicker": {
@@ -7801,6 +7908,11 @@
     "reassignConfirm": "إعادة إسناد المهمة",
     "blockedTooltip": "بانتظار: {title}",
     "conditionSkipped": "تم التخطّي (لم يتحقّق الشرط)",
+    "taskCompletedBy": "أكمله {user} في {at}",
+    "taskCompletedByUnknown": "غير معروف",
+    "taskSkippedReason": "تم التخطّي: {reason}",
+    "taskSkippedNoReason": "لم يُقدَّم سبب",
+    "taskCreatedAt": "أُنشئ في {at}",
     "overdue": "متأخر",
     "assignedToLabel": "مُسنَدة إلى {name}",
     "dueLabel": "الاستحقاق {date}",

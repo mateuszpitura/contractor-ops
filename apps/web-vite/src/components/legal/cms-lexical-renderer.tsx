@@ -1,3 +1,4 @@
+import { LexicalRenderer as SharedLexicalRenderer } from '@contractor-ops/ui';
 import type { ReactNode } from 'react';
 
 import { A, H1, H2, H3, Li, Ol, P, Strong, Ul } from './privacy-prose.js';
@@ -82,5 +83,15 @@ export function CmsLexicalRenderer({ data }: { data: unknown }): ReactNode {
   if (!(root && Array.isArray(root.children))) {
     return null;
   }
-  return <>{root.children.map(renderBlock)}</>;
+
+  const hasLegalProseNodes = root.children.some(node => {
+    const type = node.type;
+    return type === 'list' || type === 'link' || (type === 'heading' && node.tag === 'h1');
+  });
+
+  if (hasLegalProseNodes) {
+    return <>{root.children.map(renderBlock)}</>;
+  }
+
+  return <SharedLexicalRenderer data={data} />;
 }

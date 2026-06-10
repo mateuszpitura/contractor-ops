@@ -1,12 +1,14 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback } from 'react';
-import { toast } from 'sonner';
 
+import { useResourceMutation } from '../../../hooks/use-resource-mutation.js';
 import { useRouter } from '../../../i18n/navigation.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { useTRPC } from '../../../providers/trpc-provider.js';
 import type { NotificationData } from '../notification-item.js';
 import { getEntityUrl } from '../notification-item.js';
+
+const notificationPrefixKey = ['notification'] as const;
 
 export function useNotificationPopover() {
   const t = useTranslations('Notifications');
@@ -29,37 +31,16 @@ export function useNotificationPopover() {
 
   const notifications = (listQuery.data as { items: NotificationData[] } | undefined)?.items ?? [];
 
-  const markReadMutation = useMutation(
-    trpc.notification.markRead.mutationOptions({
-      onSuccess: () => {
-        void queryClient.invalidateQueries({
-          queryKey: [['notification', 'unreadCount']],
-        });
-        void queryClient.invalidateQueries({
-          queryKey: [['notification', 'list']],
-        });
-        toast.success(t('markedRead'));
-      },
-      onError: err => toast.error(err.message),
-    }),
-  );
+  const markReadMutation = useResourceMutation(trpc.notification.markRead.mutationOptions(), {
+    invalidate: [notificationPrefixKey],
+    successMessage: t('markedRead'),
+  });
 
-  const markAllReadMutation = useMutation(
-    trpc.notification.markAllRead.mutationOptions({
-      onSuccess: () => {
-        toast.success(t('markedAllRead'));
-        void queryClient.invalidateQueries({
-          queryKey: [['notification', 'unreadCount']],
-        });
-        void queryClient.invalidateQueries({
-          queryKey: [['notification', 'list']],
-        });
-      },
-      onError: () => {
-        toast.error(t('errors.failedToMarkRead'));
-      },
-    }),
-  );
+  const markAllReadMutation = useResourceMutation(trpc.notification.markAllRead.mutationOptions(), {
+    invalidate: [notificationPrefixKey],
+    successMessage: t('markedAllRead'),
+    errorMessage: t('errors.failedToMarkRead'),
+  });
 
   const handleItemClick = useCallback(
     (notification: NotificationData) => {

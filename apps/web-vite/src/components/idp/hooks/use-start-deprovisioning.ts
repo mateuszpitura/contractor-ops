@@ -16,6 +16,8 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useMemo, useState } from 'react';
 import { toast } from 'sonner';
+
+import { useTranslatedError } from '../../../i18n/use-translated-error.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { useTRPC } from '../../../providers/trpc-provider.js';
 
@@ -46,12 +48,11 @@ export function useStartDeprovisioning({
 }: UseStartDeprovisioningInput) {
   const trpc = useTRPC();
   const t = useTranslations('Idp.trigger');
+  const translateError = useTranslatedError();
   const queryClient = useQueryClient();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [startedRunId, setStartedRunId] = useState<string | null>(null);
 
-  // D-01 task-card path: a single server round-trip resolves contractorId →
-  // assignmentId. Only enabled when no direct assignmentId was provided.
   const resolverQuery = useQuery({
     ...trpc.deprovisioning.resolveAssignmentForContractor.queryOptions({
       contractorId: contractorId ?? '',
@@ -61,7 +62,6 @@ export function useStartDeprovisioning({
 
   const assignmentId = directAssignmentId ?? resolverQuery.data?.assignmentId ?? null;
 
-  // D-11 cooldown gate. Disabled until we have a concrete assignmentId.
   const eligibilityQuery = useQuery({
     ...trpc.deprovisioning.getDeprovisioningEligibility.queryOptions({
       assignmentId: assignmentId ?? '',
@@ -77,8 +77,6 @@ export function useStartDeprovisioning({
   const startMutation = useMutation(
     trpc.deprovisioning.startDeprovisioningRun.mutationOptions({
       onSuccess: ({ runId }) => {
-        // D-03 — surface the existing run-view (rendered in place by the
-        // container). D-09 — a P2002 collision returns the same run id.
         setStartedRunId(runId);
         setConfirmOpen(false);
         void queryClient.invalidateQueries({
@@ -87,7 +85,10 @@ export function useStartDeprovisioning({
           }),
         });
       },
-      onError: err => toast.error(err.message || t('startFailure')),
+      onError: err => {
+        const text = translateError(err);
+        toast.error(text || t('startFailure'));
+      },
     }),
   );
 
@@ -97,8 +98,6 @@ export function useStartDeprovisioning({
   }, [assignmentId, idempotencyKey, startMutation]);
 
   const eligibility = eligibilityQuery.data;
-  // The resolver can legitimately return null (no ENDED assignment) — that is
-  // a "not configured / nothing to deprovision" empty state, not an error.
   const resolvedToNull =
     !directAssignmentId && resolverQuery.isSuccess && !resolverQuery.data?.assignmentId;
 
@@ -113,13 +112,10 @@ export function useStartDeprovisioning({
       void resolverQuery.refetch();
       void eligibilityQuery.refetch();
     },
-    /** No assignment to act on (contractor never had an ENDED engagement). */
     isUnresolved: resolvedToNull,
-    /** D-11 cooldown — false while inside the 14-day window. */
     allowed: eligibility?.allowed ?? false,
     earliestDate: eligibility?.earliestDate ?? null,
     reason: eligibility?.reason ?? null,
-    /** D-09 — non-null once a run exists for this assignment. */
     startedRunId,
     confirmOpen,
     openConfirm: () => setConfirmOpen(true),

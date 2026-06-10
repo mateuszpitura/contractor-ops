@@ -1,11 +1,10 @@
 import { workflowAssignableRoleValues } from '@contractor-ops/validators/roles';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useFieldArray, useForm } from 'react-hook-form';
-import { toast } from 'sonner';
 import { z } from 'zod';
 
+import { useResourceMutation } from '../../../hooks/use-resource-mutation.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { useTRPC } from '../../../providers/trpc-provider.js';
 import type { ChainData } from '../chain-editor-dialog.js';
@@ -131,7 +130,6 @@ export function useChainEditorDialog({
 }: UseChainEditorDialogOptions) {
   const trpc = useTRPC();
   const t = useTranslations('Settings');
-  const queryClient = useQueryClient();
   const isEditMode = chainData !== null;
 
   const form = useForm<z.input<typeof chainFormSchema>, unknown, ChainFormValues>({
@@ -181,35 +179,19 @@ export function useChainEditorDialog({
     }
   }, [open, chainData, form]);
 
-  const createMutation = useMutation(
-    trpc.approval.createChain.mutationOptions({
-      onSuccess: () => {
-        toast.success(t('approvals.toasts.created'));
-        queryClient.invalidateQueries({
-          queryKey: trpc.approval.listChains.queryKey(),
-        });
-        onOpenChange(false);
-      },
-      onError: () => {
-        toast.error(t('approvals.toasts.saveFailed'));
-      },
-    }),
-  );
+  const createMutation = useResourceMutation(trpc.approval.createChain.mutationOptions(), {
+    invalidate: [trpc.approval.listChains.queryKey()],
+    successMessage: t('approvals.toasts.created'),
+    errorMessage: t('approvals.toasts.saveFailed'),
+    onClose: () => onOpenChange(false),
+  });
 
-  const updateMutation = useMutation(
-    trpc.approval.updateChain.mutationOptions({
-      onSuccess: () => {
-        toast.success(t('approvals.toasts.updated'));
-        queryClient.invalidateQueries({
-          queryKey: trpc.approval.listChains.queryKey(),
-        });
-        onOpenChange(false);
-      },
-      onError: () => {
-        toast.error(t('approvals.toasts.saveFailed'));
-      },
-    }),
-  );
+  const updateMutation = useResourceMutation(trpc.approval.updateChain.mutationOptions(), {
+    invalidate: [trpc.approval.listChains.queryKey()],
+    successMessage: t('approvals.toasts.updated'),
+    errorMessage: t('approvals.toasts.saveFailed'),
+    onClose: () => onOpenChange(false),
+  });
 
   const isPending = createMutation.isPending || updateMutation.isPending;
 

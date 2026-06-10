@@ -14,13 +14,14 @@ import {
 } from '@contractor-ops/ui/components/shadcn/alert-dialog';
 import { useCallback } from 'react';
 import { useTranslations } from '../../../i18n/useTranslations.js';
-import type { BoeRateEntry, useBoeRateDelete } from '../hooks/use-admin-boe-rate.js';
+import { useBoeRateDelete, type BoeRateEntry } from '../hooks/use-admin-boe-rate.js';
+import type { useBoeRateDelete as UseBoeRateDelete } from '../hooks/use-admin-boe-rate.js';
 
 interface DeleteBoeRateDialogProps {
   entry: BoeRateEntry;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  deleteMutation: ReturnType<typeof useBoeRateDelete>;
+  deleteMutation: ReturnType<typeof UseBoeRateDelete>;
 }
 
 export function DeleteBoeRateDialog({
@@ -60,5 +61,27 @@ export function DeleteBoeRateDialog({
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
+  );
+}
+
+interface DeleteBoeRateDialogWiredProps {
+  entry: BoeRateEntry;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}
+
+export function DeleteBoeRateDialogWired({
+  entry,
+  open,
+  onOpenChange,
+}: DeleteBoeRateDialogWiredProps) {
+  const deleteMutation = useBoeRateDelete(() => onOpenChange(false));
+  return (
+    <DeleteBoeRateDialog
+      entry={entry}
+      open={open}
+      onOpenChange={onOpenChange}
+      deleteMutation={deleteMutation}
+    />
   );
 }

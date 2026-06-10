@@ -27,7 +27,7 @@ import { memo, useCallback, useState } from 'react';
 
 import { tKey } from '../../../i18n/typed-keys.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
-import { TemplatePickerContainer } from '../../workflows/template-picker-container.js';
+import { TemplatePickerDialog } from '../../workflows/template-picker-dialog.js';
 import type { ContractorAction } from '../actions.js';
 import { getBulkContractorActions } from '../actions.js';
 import type { ContractorBulkActionsHandlers } from '../hooks/use-contractor-bulk-actions.js';
@@ -207,7 +207,7 @@ export function DataTableBulkActions({
         )}
       </div>
 
-      <TemplatePickerContainer
+      <TemplatePickerDialog
         open={workflowPickerOpen}
         onOpenChange={setWorkflowPickerOpen}
         contractorId={count === 1 ? selectedIds[0] : undefined}

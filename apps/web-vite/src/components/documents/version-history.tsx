@@ -5,6 +5,7 @@ import { useCallback } from 'react';
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { useDateFormatter } from '../../lib/format/use-date-formatter.js';
 import type { VersionHistoryProps, VersionRow } from './hooks/use-version-history.js';
+import { useVersionHistory } from './hooks/use-version-history.js';
 
 export function VersionHistoryCollapsedTrigger({ onToggle }: { onToggle: () => void }) {
   const t = useTranslations('Documents');
@@ -146,6 +147,26 @@ export function VersionHistoryView({
   onToggle,
   onDownloadVersion,
 }: VersionHistoryProps) {
+  if (!expanded) return <VersionHistoryCollapsedTrigger onToggle={onToggle} />;
+  if (isLoading) return <VersionHistoryLoading onToggle={onToggle} />;
+  if (versions.length <= 1) return <VersionHistoryEmpty onToggle={onToggle} />;
+  return (
+    <VersionHistoryList
+      versions={versions}
+      onToggle={onToggle}
+      onDownloadVersion={onDownloadVersion}
+    />
+  );
+}
+
+type VersionHistorySectionProps = {
+  documentId: string;
+};
+
+export function VersionHistory({ documentId }: VersionHistorySectionProps) {
+  const { expanded, isLoading, versions, onToggle, onDownloadVersion } =
+    useVersionHistory(documentId);
+
   if (!expanded) return <VersionHistoryCollapsedTrigger onToggle={onToggle} />;
   if (isLoading) return <VersionHistoryLoading onToggle={onToggle} />;
   if (versions.length <= 1) return <VersionHistoryEmpty onToggle={onToggle} />;

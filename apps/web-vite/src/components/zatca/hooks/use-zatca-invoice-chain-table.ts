@@ -1,6 +1,6 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { useCallback, useState } from 'react';
-import { toast } from 'sonner';
+import { useResourceMutation } from '../../../hooks/use-resource-mutation.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import type { ZatcaChainEntry, ZatcaChainPage } from '../zatca-trpc.js';
 import { useZatcaTrpc } from './use-zatca-trpc.js';
@@ -8,7 +8,6 @@ import { useZatcaTrpc } from './use-zatca-trpc.js';
 export function useZatcaInvoiceChainTable(pageSize = 20) {
   const zatcaTrpc = useZatcaTrpc();
   const t = useTranslations('Zatca.invoiceChain');
-  const queryClient = useQueryClient();
 
   const [pendingResubmit, setPendingResubmit] = useState<{
     invoiceId: string;
@@ -19,19 +18,22 @@ export function useZatcaInvoiceChainTable(pageSize = 20) {
     zatcaTrpc.getInvoiceChain.queryOptions({ limit: pageSize }, { refetchInterval: 30_000 }),
   );
 
-  const resubmitMutation = useMutation({
-    ...zatcaTrpc.resubmit.mutationOptions(),
-    onSuccess: () => {
-      toast.success(t('toast.resubmitSuccess'));
-      queryClient.invalidateQueries({ queryKey: zatcaTrpc.getInvoiceChain.queryKey() });
-      queryClient.invalidateQueries({ queryKey: zatcaTrpc.getComplianceStats.queryKey() });
-      queryClient.invalidateQueries({ queryKey: zatcaTrpc.getStatus.queryKey() });
-      setPendingResubmit(null);
+  const resubmitMutation = useResourceMutation(
+    zatcaTrpc.resubmit.mutationOptions({
+      onSuccess: () => {
+        setPendingResubmit(null);
+      },
+    }),
+    {
+      invalidate: [
+        zatcaTrpc.getInvoiceChain.queryKey(),
+        zatcaTrpc.getComplianceStats.queryKey(),
+        zatcaTrpc.getStatus.queryKey(),
+      ],
+      successMessage: t('toast.resubmitSuccess'),
+      errorMessage: t('toast.resubmitError'),
     },
-    onError: (error: Error) => {
-      toast.error(error.message || t('toast.resubmitError'));
-    },
-  });
+  );
 
   const confirmResubmit = useCallback(() => {
     if (!pendingResubmit) return;

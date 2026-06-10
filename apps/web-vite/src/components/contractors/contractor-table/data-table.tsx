@@ -1,8 +1,9 @@
-import { ContractorsIllustration, DataTable } from '@contractor-ops/ui';
-import type { ColumnDef, SortingState, Table, VisibilityState } from '@tanstack/react-table';
+import { ContractorsIllustration } from '@contractor-ops/ui';
+import { WorkbenchDataTable } from '../../table-kit/workbench-data-table.js';
+import type { ColumnDef, Table } from '@tanstack/react-table';
 import { Plus } from 'lucide-react';
 import type { ReactNode } from 'react';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import type { ContractorListTableProps } from '../hooks/use-contractor-list.js';
 import type { ContractorRow } from './columns.js';
@@ -10,14 +11,13 @@ import { getColumns } from './columns.js';
 import { DataTableBulkActions } from './data-table-bulk-actions.js';
 import { DataTableColumnToggle } from './data-table-column-toggle.js';
 
-const STORAGE_KEY = 'contractor-table-columns';
-
 interface ContractorDataTableProps extends ContractorListTableProps {
   onRowClick: (contractor: ContractorRow) => void;
   onAddContractor: () => void;
   onImport?: () => void;
   parentLoading?: boolean;
   toolbar: ReactNode;
+  sectionClassName?: string;
 }
 
 export function ContractorDataTable({
@@ -27,66 +27,27 @@ export function ContractorDataTable({
   filters,
   onPageChange,
   onPageSizeChange,
-  onSortChange,
   clearFilters,
   isLoading,
   isRefetching,
   activeFilterCount,
   hasFiltersOrSearch,
   bulkActions,
+  columnVisibility,
+  setColumnVisibility,
+  sorting,
+  onSortingChange,
+  selectedRows,
+  setSelectedRows,
   onRowClick,
   onAddContractor,
   parentLoading,
   toolbar,
+  sectionClassName,
 }: ContractorDataTableProps) {
   const t = useTranslations('Contractors');
 
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
-  const [selectedRows, setSelectedRows] = useState<ContractorRow[]>([]);
-
-  useEffect(() => {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) setColumnVisibility(JSON.parse(stored) as VisibilityState);
-      // safe-swallow: best-effort column-visibility hydration; corrupt/blocked storage falls back to defaults
-    } catch {
-      // Ignore localStorage errors
-    }
-  }, []);
-
-  const isHydrated = useRef(false);
-  useEffect(() => {
-    if (!isHydrated.current) {
-      isHydrated.current = true;
-      return;
-    }
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(columnVisibility));
-      // safe-swallow: best-effort column-visibility persistence; blocked/full storage is non-fatal
-    } catch {
-      // Ignore localStorage errors
-    }
-  }, [columnVisibility]);
-
   const columns: ColumnDef<ContractorRow>[] = useMemo(() => getColumns(t), [t]);
-
-  const sorting = useMemo<SortingState>(
-    () => [{ id: filters.sortBy, desc: filters.sortOrder === 'desc' }],
-    [filters.sortBy, filters.sortOrder],
-  );
-
-  const handleSortingChange = useCallback(
-    (updater: SortingState | ((old: SortingState) => SortingState)) => {
-      const next = typeof updater === 'function' ? updater(sorting) : updater;
-      const first = next[0];
-      if (first) {
-        onSortChange(first.id, first.desc ? 'desc' : 'asc');
-      } else {
-        onSortChange('createdAt', 'desc');
-      }
-    },
-    [sorting, onSortChange],
-  );
 
   const renderColumnToggle = useCallback(
     (table: Table<ContractorRow>) => <DataTableColumnToggle table={table} />,
@@ -94,7 +55,8 @@ export function ContractorDataTable({
   );
 
   return (
-    <DataTable
+    <WorkbenchDataTable
+      sectionClassName={sectionClassName}
       columns={columns}
       data={data}
       totalRows={totalRows}
@@ -103,7 +65,7 @@ export function ContractorDataTable({
       onPageChange={onPageChange}
       onPageSizeChange={onPageSizeChange}
       sorting={sorting}
-      onSortingChange={handleSortingChange}
+      onSortingChange={onSortingChange}
       columnVisibility={columnVisibility}
       onColumnVisibilityChange={setColumnVisibility}
       isLoading={isLoading}

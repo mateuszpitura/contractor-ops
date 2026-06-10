@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
-import { useCallback, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
+import { useEntityDetailQuery } from '../../../hooks/use-entity-detail-query.js';
 import { useTRPC } from '../../../providers/trpc-provider.js';
 import { useBreadcrumbOverride } from '../../layout/breadcrumb-context.js';
 
@@ -9,12 +10,17 @@ export function useEquipmentDetail(equipmentId: string) {
   const [assignOpen, setAssignOpen] = useState(false);
   const [shipmentOpen, setShipmentOpen] = useState(false);
 
-  const equipmentQuery = useQuery({
+  const {
+    query: equipmentQuery,
+    data: equipment,
+    handleRetry,
+    isNotFound,
+    isLoading,
+    isError,
+  } = useEntityDetailQuery({
     ...trpc.equipment.getById.queryOptions({ id: equipmentId }),
     enabled: Boolean(equipmentId),
   });
-
-  const equipment = equipmentQuery.data;
 
   const returnRequestsQuery = useQuery({
     ...trpc.equipment.listReturnRequests.queryOptions({
@@ -63,15 +69,6 @@ export function useEquipmentDetail(equipmentId: string) {
 
   useBreadcrumbOverride(equipmentId, equipment?.name);
 
-  const handleRetry = useCallback(() => {
-    void equipmentQuery.refetch();
-  }, [equipmentQuery]);
-
-  const isNotFound =
-    equipmentQuery.isError &&
-    (equipmentQuery.error?.message?.includes('NOT_FOUND') ||
-      (equipmentQuery.error as { data?: { code?: string } })?.data?.code === 'NOT_FOUND');
-
   return {
     equipment,
     equipmentQuery,
@@ -84,8 +81,8 @@ export function useEquipmentDetail(equipmentId: string) {
     setShipmentOpen,
     handleRetry,
     isNotFound,
-    isLoading: equipmentQuery.isLoading,
-    isError: equipmentQuery.isError,
+    isLoading,
+    isError,
     configuredCarriers,
   } as const;
 }

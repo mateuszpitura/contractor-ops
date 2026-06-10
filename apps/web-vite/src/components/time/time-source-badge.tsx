@@ -11,6 +11,9 @@ import {
 } from '@contractor-ops/ui/components/shadcn/tooltip';
 import { Clock, Pencil, Ticket } from 'lucide-react';
 
+import { useTranslations } from '../../i18n/useTranslations.js';
+import { useDateFormatter } from '../../lib/format/use-date-formatter.js';
+
 const SOURCE_CONFIG = {
   MANUAL: {
     icon: Pencil,
@@ -35,13 +38,18 @@ interface TimeSourceBadgeProps {
 }
 
 export function TimeSourceBadge({ source, importedAt }: TimeSourceBadgeProps) {
+  const t = useTranslations('Time.sourceBadge');
+  const { formatDate } = useDateFormatter();
   const config = SOURCE_CONFIG[source];
   const Icon = config.icon;
 
   const tooltipText =
     source === 'MANUAL'
-      ? 'Manual entry'
-      : `Imported from ${config.label} on ${importedAt ? new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(typeof importedAt === 'string' ? new Date(importedAt) : importedAt) : 'unknown date'}`;
+      ? t('manualEntry')
+      : t('importedFromOn', {
+          source: config.label,
+          date: importedAt ? formatDate(importedAt) : t('unknownDate'),
+        });
 
   return (
     <TooltipProvider>

@@ -25,8 +25,11 @@ import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
-import type { useBacsSubmitterForm } from '../hooks/use-bacs-submitter-form.js';
-import { useBacsSubmitterNameSync } from '../hooks/use-bacs-submitter-form.js';
+import {
+  useBacsSubmitterForm,
+  useBacsSubmitterNameSync,
+  type useBacsSubmitterForm as UseBacsSubmitterForm,
+} from '../hooks/use-bacs-submitter-form.js';
 
 const bacsSubmitterFormSchema = z.object({
   serviceUserNumber: serviceUserNumberSchema,
@@ -37,12 +40,12 @@ const bacsSubmitterFormSchema = z.object({
 
 type BacsSubmitterFormValues = z.infer<typeof bacsSubmitterFormSchema>;
 
-interface BacsSubmitterFormProps {
+interface BacsSubmitterFormViewProps {
   featureEnabled: boolean;
-  submitter: ReturnType<typeof useBacsSubmitterForm>;
+  submitter: ReturnType<typeof UseBacsSubmitterForm>;
 }
 
-export function BacsSubmitterForm({ featureEnabled, submitter }: BacsSubmitterFormProps) {
+export function BacsSubmitterFormView({ featureEnabled, submitter }: BacsSubmitterFormViewProps) {
   const t = useTranslations('Payments.bacs');
   const id = useId();
   const { masks, isMasksLoading, onSave, isSaving, submitterNameDefault } = submitter;
@@ -203,4 +206,16 @@ export function BacsSubmitterForm({ featureEnabled, submitter }: BacsSubmitterFo
       </CardContent>
     </Card>
   );
+}
+
+interface BacsSubmitterFormProps {
+  featureEnabled: boolean;
+}
+
+// Decision: form host — view owns react-hook-form locally; useBacsSubmitterForm
+// supplies the save mutation, mask query, and submitter-name sync into the RHF
+// reset cycle. featureEnabled forwarded by payments settings page.
+export function BacsSubmitterForm({ featureEnabled }: BacsSubmitterFormProps) {
+  const submitter = useBacsSubmitterForm();
+  return <BacsSubmitterFormView featureEnabled={featureEnabled} submitter={submitter} />;
 }

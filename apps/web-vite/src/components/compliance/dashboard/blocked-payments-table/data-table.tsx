@@ -1,5 +1,6 @@
-import { DataTable } from '@contractor-ops/ui';
+
 import type { ReactNode } from 'react';
+import { WorkbenchDataTable } from '../../../table-kit/workbench-data-table.js';
 import { useMemo, useState } from 'react';
 
 import { useTranslations } from '../../../../i18n/useTranslations.js';
@@ -12,6 +13,7 @@ export interface BlockedPaymentsTableProps {
   isRefetching?: boolean;
   /** Slot for Plan 73-08 to cross-mount per-row override actions; unused here. */
   renderRowActions?: (row: BlockedRow) => ReactNode;
+  sectionClassName?: string;
 }
 
 export function BlockedPaymentsTable({
@@ -19,6 +21,7 @@ export function BlockedPaymentsTable({
   totalRows,
   isRefetching,
   renderRowActions,
+  sectionClassName,
 }: BlockedPaymentsTableProps) {
   const t = useTranslations('Compliance.dashboard');
   const [pageIndex, setPageIndex] = useState(0);
@@ -39,7 +42,8 @@ export function BlockedPaymentsTable({
   }, [t, renderRowActions]);
 
   return (
-    <DataTable
+    <WorkbenchDataTable
+      sectionClassName={sectionClassName}
       columns={columns}
       data={rows}
       totalRows={totalRows}
