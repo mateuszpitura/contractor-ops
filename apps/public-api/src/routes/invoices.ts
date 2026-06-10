@@ -1,5 +1,7 @@
+import { publicApiInvoiceListInputSchema } from '@contractor-ops/validators/public-api';
 import { Hono } from 'hono';
 import { createPublicCaller } from '../lib/create-caller.js';
+import { parseListQuery } from '../lib/parse-list-query.js';
 
 const invoices = new Hono();
 
@@ -9,26 +11,9 @@ const invoices = new Hono();
  */
 invoices.get('/', async c => {
   const caller = createPublicCaller(c);
-  const query = c.req.query();
+  const input = parseListQuery(publicApiInvoiceListInputSchema, c.req.query());
 
-  const result = await caller.invoice.list({
-    page: query.page ? Number(query.page) : undefined,
-    pageSize: query.pageSize ? Number(query.pageSize) : undefined,
-    status: query.status as
-      | 'RECEIVED'
-      | 'UNDER_REVIEW'
-      | 'APPROVAL_PENDING'
-      | 'APPROVED'
-      | 'REJECTED'
-      | 'READY_FOR_PAYMENT'
-      | 'PARTIALLY_PAID'
-      | 'PAID'
-      | 'VOID'
-      | undefined,
-    contractorId: query.contractorId,
-    sortBy: query.sortBy as 'issueDate' | 'dueDate' | 'createdAt' | 'totalMinor' | undefined,
-    sortOrder: query.sortOrder as 'asc' | 'desc' | undefined,
-  });
+  const result = await caller.invoice.list(input);
 
   return c.json({
     data: result.items,

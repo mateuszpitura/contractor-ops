@@ -85,6 +85,7 @@ export const dataPurgeHandler: JobHandler = async ctx => {
     cutoff.setDate(cutoff.getDate() - RETENTION_DAYS);
 
     const results: Record<string, number> = {};
+    let sweepFailures = 0;
 
     // 1. Snapshot the documents to purge so R2 cleanup + DB deletion
     //    operate on the exact same set (no race between query + delete).
@@ -172,6 +173,7 @@ export const dataPurgeHandler: JobHandler = async ctx => {
         tags: { 'cron.job': 'data-purge', 'purge.target': 'oauth_challenges' },
       });
       results.oauthChallenges = 0;
+      sweepFailures++;
     }
 
     try {
@@ -188,24 +190,27 @@ export const dataPurgeHandler: JobHandler = async ctx => {
         tags: { 'cron.job': 'data-purge', 'purge.target': 'pending_uploads' },
       });
       results.pendingUploads = 0;
+      sweepFailures++;
     }
 
     const totalPurged = Object.values(results).reduce((sum, v) => sum + v, 0);
 
     ctx.log.info(
-      { ...results, totalPurged, retentionDays: RETENTION_DAYS },
+      { ...results, totalPurged, sweepFailures, retentionDays: RETENTION_DAYS },
       'data purge completed',
     );
     metrics.gauge('cron.data_purge.total', totalPurged);
     metrics.gauge('cron.data_purge.documents', results.documents ?? 0);
     metrics.gauge('cron.data_purge.invoices', results.invoices ?? 0);
+    metrics.gauge('cron.data_purge.sweep_failures', sweepFailures);
 
     return {
-      ok: true,
+      ok: sweepFailures === 0,
       durationMs: Math.round(performance.now() - start),
       details: {
         purged: results,
         totalPurged,
+        sweepFailures,
         retentionDays: RETENTION_DAYS,
         cutoffDate: cutoff.toISOString(),
       },

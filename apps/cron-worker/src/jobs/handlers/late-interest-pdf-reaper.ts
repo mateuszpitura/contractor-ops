@@ -40,8 +40,7 @@ async function runReaper(log: Parameters<JobHandler>[0]['log']): Promise<ReaperR
 
   const stuck = await prisma.invoiceInterestClaim.findMany({
     where: {
-      // biome-ignore lint/suspicious/noExplicitAny: enum migration ships with the legacy commit
-      pdfStatus: { in: ['PENDING_RENDER', 'RENDERING' as any] },
+      pdfStatus: { in: ['PENDING_RENDER', 'RENDERING'] },
       createdAt: { lt: cutoff },
     },
     select: {
@@ -81,11 +80,9 @@ async function runReaper(log: Parameters<JobHandler>[0]['log']): Promise<ReaperR
       continue;
     }
 
-    // biome-ignore lint/suspicious/noExplicitAny: enum migration ships with legacy commit
-    if ((row.pdfStatus as any) === 'RENDERING') {
+    if (row.pdfStatus === 'RENDERING') {
       await prisma.invoiceInterestClaim.updateMany({
-        // biome-ignore lint/suspicious/noExplicitAny: enum migration
-        where: { id: row.id, pdfStatus: 'RENDERING' as any },
+        where: { id: row.id, pdfStatus: 'RENDERING' },
         data: { pdfStatus: 'PENDING_RENDER' },
       });
     }

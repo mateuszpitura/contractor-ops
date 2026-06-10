@@ -1,3 +1,4 @@
+import { PostCard as SharedPostCard } from '@contractor-ops/ui/marketing';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 
@@ -9,35 +10,37 @@ type Props = {
   locale: Locale;
 };
 
-export function PostCard({ post, locale }: Props): ReactNode {
-  const date = post.publishedAt ? new Date(post.publishedAt) : null;
+function CmsPostLink({
+  href,
+  className,
+  children,
+}: {
+  href: string;
+  className?: string;
+  children: ReactNode;
+}) {
   return (
-    <article className="post-card">
-      <Link href={`/${locale}/blog/${post.slug}`} className="post-card__link">
-        <p className="eyebrow">
-          {date
-            ? date.toLocaleDateString(locale, {
-                day: 'numeric',
-                month: 'long',
-                year: 'numeric',
-              })
-            : '—'}
-        </p>
-        <h2 className="post-card__title">{post.title}</h2>
-        {post.excerpt ? <p className="post-card__excerpt">{post.excerpt}</p> : null}
-        <footer className="post-card__meta">
-          <span className="post-card__byline">{post.author}</span>
-          {post.tags.length > 0 && (
-            <ul className="post-card__tags">
-              {post.tags.slice(0, 3).map(tag => (
-                <li key={tag} className="tag">
-                  {tag}
-                </li>
-              ))}
-            </ul>
-          )}
-        </footer>
-      </Link>
-    </article>
+    <Link href={href} className={className}>
+      {children}
+    </Link>
+  );
+}
+
+export function PostCard({ post, locale }: Props): ReactNode {
+  return (
+    <SharedPostCard
+      post={{
+        slug: post.slug,
+        title: post.title,
+        excerpt: post.excerpt,
+        publishedAt: post.publishedAt,
+        author: post.author,
+        tags: post.tags,
+      }}
+      locale={locale}
+      href={`/${locale}/blog/${post.slug}`}
+      variant="simple"
+      LinkComponent={CmsPostLink}
+    />
   );
 }

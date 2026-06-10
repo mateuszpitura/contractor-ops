@@ -18,7 +18,7 @@
  */
 
 import { tryAcquireXactLock } from '@contractor-ops/api/lib/advisory-lock';
-import { runComplianceReminderScan } from '@contractor-ops/api/services/compliance-reminder-scan';
+import { executeComplianceReminderScan } from '../compliance-reminder.js';
 import { dispatch } from '@contractor-ops/api/services/notification-service';
 import { prisma, prismaRaw } from '@contractor-ops/db';
 import { gcExpiredProvenance } from '@contractor-ops/idp-saga';
@@ -41,8 +41,14 @@ type ReminderNotificationType = 'CONTRACT_EXPIRING' | 'INVOICE_RECEIVED';
 
 interface ReminderDispatchParams {
   notificationType: ReminderNotificationType;
-  title: string;
-  body: string;
+  /**
+   * Dotted i18n keys into `apps/web-vite/messages/<locale>.json`. The
+   * notification dispatcher (`resolveEventCopy`) resolves them against the
+   * originating org's `Organization.language`, using `metadata` for the
+   * `{label}` placeholder, so in-app + email copy ship in the org locale.
+   */
+  titleKey: string;
+  bodyKey: string;
   entityType: 'CONTRACT' | 'INVOICE';
 }
 
@@ -126,10 +132,11 @@ async function processRuleEntities(
         organizationId: rule.organizationId,
         type: dispatchParams.notificationType,
         recipientUserIds: recipientIds,
-        title: dispatchParams.title.replace('{label}', entity.label),
-        body: dispatchParams.body,
+        title: dispatchParams.titleKey,
+        body: dispatchParams.bodyKey,
         entityType: dispatchParams.entityType,
         entityId: entity.id,
+        metadata: { label: entity.label },
       });
       sent++;
     }
@@ -213,8 +220,8 @@ async function evaluateReminderRules(): Promise<{ processed: number; sent: numbe
         entities,
         {
           notificationType: 'CONTRACT_EXPIRING',
-          title: 'Contract expiring soon: {label}',
-          body: 'A contract is approaching its end date.',
+          titleKey: 'Notifications.reminders.contractExpiring.title',
+          bodyKey: 'Notifications.reminders.contractExpiring.body',
           entityType: 'CONTRACT',
         },
         now,
@@ -232,8 +239,8 @@ async function evaluateReminderRules(): Promise<{ processed: number; sent: numbe
         entities,
         {
           notificationType: 'INVOICE_RECEIVED',
-          title: 'Invoice due soon: {label}',
-          body: 'An invoice is approaching its due date.',
+          titleKey: 'Notifications.reminders.invoiceDueSoon.title',
+          bodyKey: 'Notifications.reminders.invoiceDueSoon.body',
           entityType: 'INVOICE',
         },
         now,
@@ -251,8 +258,8 @@ async function evaluateReminderRules(): Promise<{ processed: number; sent: numbe
         entities,
         {
           notificationType: 'INVOICE_RECEIVED',
-          title: 'Invoice overdue: {label}',
-          body: 'An invoice is past its due date.',
+          titleKey: 'Notifications.reminders.invoiceOverdue.title',
+          bodyKey: 'Notifications.reminders.invoiceOverdue.body',
           entityType: 'INVOICE',
         },
         now,
@@ -303,17 +310,23 @@ async function detectOverdueTasks(): Promise<number> {
     });
     if (recentNotification) continue;
 
-    const contractorName = task.workflowRun?.contractor?.displayName ?? '';
-    const workflowName = task.workflowRun?.workflowTemplate?.name ?? '';
+    const contractorName = task.workflowRun?.contractor?.displayName?.trim() ?? '';
+    const workflowName = task.workflowRun?.workflowTemplate?.name?.trim() ?? '';
+    const bodyLabel = workflowName || task.title;
 
     await dispatch({
       organizationId: task.organizationId,
       type: 'TASK_OVERDUE',
       recipientUserIds: [task.assigneeUserId],
-      title: `Task overdue: ${task.title}`,
-      body: `${workflowName}${contractorName ? ` - ${contractorName}` : ''}`,
+      title: 'Notifications.reminders.taskOverdue.title',
+      body: 'Notifications.reminders.taskOverdue.body',
       entityType: 'WORKFLOW_TASK_RUN',
       entityId: task.id,
+      metadata: {
+        label: task.title,
+        detail: bodyLabel,
+        contractorSuffix: contractorName ? ` - ${contractorName}` : '',
+      },
     });
 
     notified++;
@@ -386,7 +399,7 @@ export const remindersHandler: JobHandler = async ctx => {
           // NOT the lock-holding tx above. Crash-isolation is the goal — the scan's
           // dedup unique index (claimCronNotificationDedup) is the real idempotency
           // guard; the advisory lock does not need to cover these connections.
-          runComplianceReminderScan(),
+          executeComplianceReminderScan(),
         ]);
 
         return {

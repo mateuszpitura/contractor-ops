@@ -52,10 +52,15 @@ export async function detectDrvClearanceExpiries(): Promise<number> {
         organizationId: clearance.organizationId,
         type: band.type,
         recipientUserIds,
-        title: `DRV clearance expires in ${band.days} days`,
-        body: `Reference ${clearance.drvReference}, valid until ${validToIso}. Begin the renewal filing — DRV processing typically takes 3-6 months.`,
+        title: 'Notifications.reminders.drvExpiry.title',
+        body: 'Notifications.reminders.drvExpiry.body',
         entityType: 'CONTRACTOR',
         entityId: clearance.id,
+        metadata: {
+          days: band.days,
+          reference: clearance.drvReference,
+          validTo: validToIso,
+        },
       });
       notified++;
     }

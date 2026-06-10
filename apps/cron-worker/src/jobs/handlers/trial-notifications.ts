@@ -16,8 +16,10 @@
 
 import { tryAcquireXactLock } from '@contractor-ops/api/lib/advisory-lock';
 import { sendAppEmail } from '@contractor-ops/api/services/app-email';
+import { normalizeLocale, resolveMessage } from '@contractor-ops/api/i18n/email-i18n';
 import { dispatch } from '@contractor-ops/api/services/notification-service';
 import { prisma, prismaRaw } from '@contractor-ops/db';
+import { Prisma } from '@contractor-ops/db/generated/prisma/client';
 import { metrics } from '@contractor-ops/logger/metrics';
 import { loadEnv } from '../../env.js';
 import { Sentry } from '../../lib/sentry.js';
@@ -30,30 +32,43 @@ function buildBillingUrl(): string {
   return `${base}/settings?tab=billing`;
 }
 
+/**
+ * Dotted i18n keys into `apps/web-vite/messages/<locale>.json`.
+ *
+ *   - `titleKey` / `bodyKey` are passed straight to `dispatch()`, whose
+ *     `resolveEventCopy` resolves them against the org's `Organization.language`
+ *     for the in-app notification + any side channels it owns.
+ *   - `emailSubjectKey` / `emailBodyKey` are resolved here via `resolveMessage`
+ *     because the trial email is a bespoke `sendAppEmail` HTML send that does
+ *     not flow through the React Email pipeline — so the dispatcher never sees
+ *     these strings.
+ */
 interface TrialTemplate {
-  title: string;
-  body: string;
-  emailSubject: string;
-  emailBody: string;
+  titleKey: string;
+  bodyKey: string;
+  emailSubjectKey: string;
+  emailBodyKey: string;
 }
 
 const TRIAL_NOTIFICATION_TEMPLATES: Record<number, TrialTemplate> = {
   7: {
-    title: 'Trial ending in 7 days',
-    body: 'Your trial ends in 7 days. Upgrade to keep your data and full access.',
-    emailSubject: 'Your Contractor Ops trial ends in 7 days',
-    emailBody: 'Your trial ends in 7 days. Upgrade to keep your data and full access.',
+    titleKey: 'Notifications.trial.ending7d.title',
+    bodyKey: 'Notifications.trial.ending7d.body',
+    emailSubjectKey: 'Notifications.trial.email7d.subject',
+    emailBodyKey: 'Notifications.trial.email7d.body',
   },
   1: {
-    title: 'Trial ending tomorrow',
-    body: 'Your trial ends tomorrow. Upgrade now to avoid losing access to features.',
-    emailSubject: 'Your Contractor Ops trial ends tomorrow',
-    emailBody: 'Your trial ends tomorrow. Upgrade now to avoid losing access to features.',
+    titleKey: 'Notifications.trial.ending1d.title',
+    bodyKey: 'Notifications.trial.ending1d.body',
+    emailSubjectKey: 'Notifications.trial.email1d.subject',
+    emailBodyKey: 'Notifications.trial.email1d.body',
   },
 };
 
+const EMAIL_CTA_KEY = 'Notifications.trial.emailCta';
+
 async function sendTrialNotification(
-  organization: { id: string; billingEmail: string | null },
+  organization: { id: string; billingEmail: string | null; language: string | null },
   adminUserIds: string[],
   template: TrialTemplate,
   daysUntilTrialEnd: number,
@@ -64,12 +79,7 @@ async function sendTrialNotification(
   try {
     await prisma.notificationCronDedup.create({ data: { dedupeKey } });
   } catch (err) {
-    if (
-      typeof err === 'object' &&
-      err !== null &&
-      'code' in err &&
-      (err as { code?: unknown }).code === 'P2002'
-    ) {
+    if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2002') {
       return { skipped: true };
     }
     throw err;
@@ -80,20 +90,24 @@ async function sendTrialNotification(
       organizationId: organization.id,
       type: 'TRIAL_ENDING',
       recipientUserIds: adminUserIds,
-      title: template.title,
-      body: template.body,
+      title: template.titleKey,
+      body: template.bodyKey,
       entityType: 'ORGANIZATION',
       entityId: organization.id,
     });
   }
 
   if (organization.billingEmail) {
+    const locale = normalizeLocale(organization.language);
+    const subject = resolveMessage(template.emailSubjectKey, locale);
+    const body = resolveMessage(template.emailBodyKey, locale);
+    const ctaLabel = resolveMessage(EMAIL_CTA_KEY, locale);
     try {
       await sendAppEmail({
         from: 'Contractor Ops <notifications@contractorhub.io>',
         to: organization.billingEmail,
-        subject: template.emailSubject,
-        html: `<p>${template.emailBody}</p><p><a href="${buildBillingUrl()}">Go to billing settings</a></p>`,
+        subject,
+        html: `<p>${body}</p><p><a href="${buildBillingUrl()}">${ctaLabel}</a></p>`,
       });
     } catch (error) {
       log.error({ err: error }, 'email send failed');
@@ -125,6 +139,7 @@ export const trialNotificationsHandler: JobHandler = async ctx => {
               select: {
                 id: true,
                 billingEmail: true,
+                language: true,
                 members: {
                   where: { role: { in: ['owner', 'admin'] } },
                   select: { userId: true },

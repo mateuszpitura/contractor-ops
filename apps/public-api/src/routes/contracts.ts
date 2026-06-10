@@ -1,5 +1,7 @@
+import { publicApiContractListInputSchema } from '@contractor-ops/validators/public-api';
 import { Hono } from 'hono';
 import { createPublicCaller } from '../lib/create-caller.js';
+import { parseListQuery } from '../lib/parse-list-query.js';
 
 const contracts = new Hono();
 
@@ -9,25 +11,9 @@ const contracts = new Hono();
  */
 contracts.get('/', async c => {
   const caller = createPublicCaller(c);
-  const query = c.req.query();
+  const input = parseListQuery(publicApiContractListInputSchema, c.req.query());
 
-  const result = await caller.contract.list({
-    page: query.page ? Number(query.page) : undefined,
-    pageSize: query.pageSize ? Number(query.pageSize) : undefined,
-    status: query.status as
-      | 'DRAFT'
-      | 'PENDING_SIGNATURE'
-      | 'ACTIVE'
-      | 'EXPIRING'
-      | 'EXPIRED'
-      | 'TERMINATED'
-      | 'SUPERSEDED'
-      | 'ARCHIVED'
-      | undefined,
-    contractorId: query.contractorId,
-    sortBy: query.sortBy as 'title' | 'startDate' | 'endDate' | 'createdAt' | undefined,
-    sortOrder: query.sortOrder as 'asc' | 'desc' | undefined,
-  });
+  const result = await caller.contract.list(input);
 
   return c.json({
     data: result.items,

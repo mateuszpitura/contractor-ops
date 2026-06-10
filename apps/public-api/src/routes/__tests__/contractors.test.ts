@@ -29,6 +29,7 @@ vi.mock('../../lib/create-caller.js', () => ({
 // Imports (after mocks)
 // ---------------------------------------------------------------------------
 
+import { handleError } from '../../lib/error-handler.js';
 import contractors from '../contractors.js';
 
 // ---------------------------------------------------------------------------
@@ -37,6 +38,7 @@ import contractors from '../contractors.js';
 
 const app = new Hono();
 app.route('/', contractors);
+app.onError(handleError);
 
 // ---------------------------------------------------------------------------
 // Fixtures
@@ -95,15 +97,25 @@ describe('GET /contractors', () => {
     });
   });
 
-  it('passes undefined for all params when none provided', async () => {
+  it('applies schema defaults and omits optional filters when none provided', async () => {
     await app.request('/');
     const [input] = mockList.mock.calls[0] as [Record<string, unknown>];
-    expect(input.page).toBeUndefined();
-    expect(input.pageSize).toBeUndefined();
+    expect(input).toMatchObject({
+      page: 1,
+      pageSize: 25,
+      sortBy: 'createdAt',
+      sortOrder: 'desc',
+    });
     expect(input.status).toBeUndefined();
     expect(input.lifecycleStage).toBeUndefined();
-    expect(input.sortBy).toBeUndefined();
-    expect(input.sortOrder).toBeUndefined();
+  });
+
+  it('returns 400 and never calls the caller for an invalid enum value', async () => {
+    const res = await app.request('/?status=NOT_A_STATUS');
+    expect(res.status).toBe(400);
+    expect(mockList).not.toHaveBeenCalled();
+    const body = (await res.json()) as { error: { code: string } };
+    expect(body.error.code).toBe('VALIDATION_ERROR');
   });
 
   it('returns 200 and wraps result in { data, meta }', async () => {

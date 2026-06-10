@@ -1,5 +1,7 @@
+import { publicApiDocumentListInputSchema } from '@contractor-ops/validators/public-api';
 import { Hono } from 'hono';
 import { createPublicCaller } from '../lib/create-caller.js';
+import { parseListQuery } from '../lib/parse-list-query.js';
 
 const documents = new Hono();
 
@@ -9,15 +11,9 @@ const documents = new Hono();
  */
 documents.get('/', async c => {
   const caller = createPublicCaller(c);
-  const query = c.req.query();
+  const input = parseListQuery(publicApiDocumentListInputSchema, c.req.query());
 
-  const result = await caller.document.list({
-    page: query.page ? Number(query.page) : undefined,
-    pageSize: query.pageSize ? Number(query.pageSize) : undefined,
-    entityType: query.entityType as 'CONTRACTOR' | 'CONTRACT' | 'INVOICE' | undefined,
-    entityId: query.entityId,
-    sortOrder: query.sortOrder as 'asc' | 'desc' | undefined,
-  });
+  const result = await caller.document.list(input);
 
   return c.json({
     data: result.items,

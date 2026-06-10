@@ -41,7 +41,7 @@ export const classificationReassessmentTriggersHandler: JobHandler = async ctx =
     return {
       ok: true,
       durationMs: Math.round(performance.now() - start),
-      details: result as unknown as Record<string, unknown>,
+      details: { ...result },
     };
   } catch (err) {
     ctx.log.error({ err }, 'classification-reassessment-triggers cron failed');

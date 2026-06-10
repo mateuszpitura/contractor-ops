@@ -9,7 +9,13 @@
  */
 
 import { runScheduledOrgDefinitionSync } from '@contractor-ops/api/services/org-definition-sync';
-import { createTenantClientFrom, getRegionalClient, prisma, tenantStore } from '@contractor-ops/db';
+import {
+  createTenantClientFrom,
+  getRegionalClient,
+  prisma,
+  type PrismaClient,
+  tenantStore,
+} from '@contractor-ops/db';
 import { Sentry } from '../../lib/sentry.js';
 import type { JobHandler } from '../runner.js';
 
@@ -19,12 +25,7 @@ export const orgDefinitionSyncHandler: JobHandler = async ctx => {
     const summary = await runScheduledOrgDefinitionSync({
       prisma,
       getRegionalClient,
-      createTenantClientFrom: (p: unknown) =>
-        (
-          createTenantClientFrom as unknown as (
-            p: unknown,
-          ) => ReturnType<typeof createTenantClientFrom>
-        )(p),
+      createTenantClientFrom: (p: unknown) => createTenantClientFrom(p as PrismaClient),
       tenantStore,
     });
     ctx.log.info(

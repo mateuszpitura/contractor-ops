@@ -1,5 +1,7 @@
+import { publicApiContractorListInputSchema } from '@contractor-ops/validators/public-api';
 import { Hono } from 'hono';
 import { createPublicCaller } from '../lib/create-caller.js';
+import { parseListQuery } from '../lib/parse-list-query.js';
 
 const contractors = new Hono();
 
@@ -9,22 +11,9 @@ const contractors = new Hono();
  */
 contractors.get('/', async c => {
   const caller = createPublicCaller(c);
-  const query = c.req.query();
+  const input = parseListQuery(publicApiContractorListInputSchema, c.req.query());
 
-  const result = await caller.contractor.list({
-    page: query.page ? Number(query.page) : undefined,
-    pageSize: query.pageSize ? Number(query.pageSize) : undefined,
-    status: query.status as 'ACTIVE' | 'INACTIVE' | 'ARCHIVED' | undefined,
-    lifecycleStage: query.lifecycleStage as
-      | 'DRAFT'
-      | 'ONBOARDING'
-      | 'ACTIVE'
-      | 'OFFBOARDING'
-      | 'ENDED'
-      | undefined,
-    sortBy: query.sortBy as 'legalName' | 'createdAt' | 'updatedAt' | undefined,
-    sortOrder: query.sortOrder as 'asc' | 'desc' | undefined,
-  });
+  const result = await caller.contractor.list(input);
 
   return c.json({
     data: result.items,

@@ -21,32 +21,28 @@
  */
 
 import { isDemoOrg } from '@contractor-ops/api/lib/demo';
-import {
-  recordQueueDepth,
-  withQueueObservability,
-} from '@contractor-ops/api/services/cron-monitor';
+import { recordQueueDepth } from '@contractor-ops/api/services/cron-monitor';
 import { PeppolOrchestrator } from '@contractor-ops/api/services/peppol-orchestrator';
-import {
-  BackpressureRoutes,
-  isBackpressureRejected,
-  withBackpressure,
-} from '@contractor-ops/api/services/qstash-backpressure';
+import { BackpressureRoutes } from '@contractor-ops/api/services/qstash-backpressure';
 import { prisma } from '@contractor-ops/db';
 import { StorecoveAdapter } from '@contractor-ops/einvoice';
 import { getCredentials } from '@contractor-ops/integrations';
 import { createCronLogger, createWebhookLogger } from '@contractor-ops/logger';
-import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
+import type { FastifyInstance, FastifyReply } from 'fastify';
 import { z } from 'zod';
-import { guardQStashRequest } from '../lib/qstash-verify.js';
+import { defineQStashRoute } from '../lib/qstash-route.js';
 import { Sentry } from '../lib/sentry.js';
 
 const log = createCronLogger('peppol-poll');
 const inboundLog = createWebhookLogger('peppol-inbound');
 const outboundLog = createWebhookLogger('peppol-outbound');
 
-const peppolPollBodySchema = z.object({
-  organizationId: z.string().min(1).optional(),
-});
+const peppolPollBodySchema = z.preprocess(
+  value => (value === null || value === undefined ? {} : value),
+  z.object({
+    organizationId: z.string().min(1).optional(),
+  }),
+);
 
 async function pollParticipant(
   organizationId: string,
@@ -105,23 +101,11 @@ async function recordPollError(organizationId: string, error: unknown): Promise<
   }
 }
 
-async function handlerInner(
-  _request: FastifyRequest,
+async function handlePeppolPoll(
+  body: z.infer<typeof peppolPollBodySchema>,
   reply: FastifyReply,
-  rawBody: string,
 ): Promise<FastifyReply> {
-  let parsedJson: unknown;
-  try {
-    parsedJson = rawBody.length > 0 ? JSON.parse(rawBody) : {};
-  } catch {
-    parsedJson = {};
-  }
-
-  const parsed = peppolPollBodySchema.safeParse(parsedJson);
-  if (!parsed.success) {
-    return reply.code(400).send({ error: 'Invalid body' });
-  }
-  const { organizationId } = parsed.data;
+  const { organizationId } = body;
 
   try {
     const orgFilter = organizationId ? { organizationId } : {};
@@ -185,13 +169,11 @@ async function handlerInner(
 }
 
 export function registerPeppolPollRoute(app: FastifyInstance): void {
-  app.post('/peppol/poll', async (request, reply) => {
-    const guard = await guardQStashRequest(request, reply);
-    if (!guard) return reply;
-
-    return guard.run(() =>
-      withQueueObservability('peppol-poll', () => handlerInner(request, reply, guard.rawBody)),
-    );
+  defineQStashRoute(app, {
+    path: '/peppol/poll',
+    observabilityName: 'peppol-poll',
+    bodySchema: peppolPollBodySchema,
+    handler: async (body, { reply }) => handlePeppolPoll(body, reply),
   });
 }
 
@@ -204,26 +186,11 @@ const peppolInboundBodySchema = z.object({
   organizationId: z.string().min(1),
 });
 
-async function inboundHandler(
-  _request: FastifyRequest,
+async function handlePeppolInbound(
+  body: z.infer<typeof peppolInboundBodySchema>,
   reply: FastifyReply,
-  rawBody: string,
 ): Promise<FastifyReply> {
-  let parsedJson: unknown;
-  try {
-    parsedJson = rawBody.length > 0 ? JSON.parse(rawBody) : null;
-  } catch {
-    parsedJson = null;
-  }
-
-  const parsed = peppolInboundBodySchema.safeParse(parsedJson);
-  if (!parsed.success) {
-    const missing = parsed.error.issues.map(i => i.path.join('.')).filter(Boolean);
-    const detail =
-      missing.length > 0 ? `Missing or invalid: ${missing.join(', ')}` : 'Invalid body';
-    return reply.code(400).send({ error: detail });
-  }
-  const { deliveryId, organizationId } = parsed.data;
+  const { deliveryId, organizationId } = body;
 
   try {
     const delivery = await prisma.webhookDelivery.findUnique({
@@ -299,13 +266,11 @@ async function inboundHandler(
 }
 
 export function registerPeppolInboundRoute(app: FastifyInstance): void {
-  app.post('/peppol/inbound', async (request, reply) => {
-    const guard = await guardQStashRequest(request, reply);
-    if (!guard) return reply;
-
-    return guard.run(() =>
-      withQueueObservability('peppol-inbound', () => inboundHandler(request, reply, guard.rawBody)),
-    );
+  defineQStashRoute(app, {
+    path: '/peppol/inbound',
+    observabilityName: 'peppol-inbound',
+    bodySchema: peppolInboundBodySchema,
+    handler: async (body, { reply }) => handlePeppolInbound(body, reply),
   });
 }
 
@@ -348,26 +313,11 @@ const peppolOutboundBodySchema = z.object({
   receiverParticipantId: z.string().min(1),
 });
 
-async function outboundHandlerInner(
-  _request: FastifyRequest,
+async function handlePeppolOutbound(
+  body: z.infer<typeof peppolOutboundBodySchema>,
   reply: FastifyReply,
-  rawBody: string,
 ): Promise<FastifyReply> {
-  let parsedJson: unknown;
-  try {
-    parsedJson = rawBody.length > 0 ? JSON.parse(rawBody) : null;
-  } catch {
-    parsedJson = null;
-  }
-
-  const parsed = peppolOutboundBodySchema.safeParse(parsedJson);
-  if (!parsed.success) {
-    const missing = parsed.error.issues.map(i => i.path.join('.')).filter(Boolean);
-    const detail =
-      missing.length > 0 ? `Missing or invalid: ${missing.join(', ')}` : 'Invalid body';
-    return reply.code(400).send({ error: detail });
-  }
-  const { organizationId, invoiceId, receiverParticipantId } = parsed.data;
+  const { organizationId, invoiceId, receiverParticipantId } = body;
 
   // Demo read-only — never transmit a demo org's invoice to the real Peppol
   // network. This QStash route is a non-tRPC ingress, so the skip lives here.
@@ -433,22 +383,12 @@ async function outboundHandlerInner(
 }
 
 export function registerPeppolOutboundRoute(app: FastifyInstance): void {
-  app.post('/peppol/outbound', async (request, reply) => {
-    const guard = await guardQStashRequest(request, reply);
-    if (!guard) return reply;
-
-    const { key, max } = BackpressureRoutes.PEPPOL_OUTBOUND;
-    return guard.run(async () => {
-      try {
-        return await withBackpressure(key, max, () =>
-          withQueueObservability(key, () => outboundHandlerInner(request, reply, guard.rawBody)),
-        );
-      } catch (err) {
-        if (isBackpressureRejected(err)) {
-          return reply.code(429).header('Retry-After', String(err.retryAfterSec)).send();
-        }
-        throw err;
-      }
-    });
+  const { key, max } = BackpressureRoutes.PEPPOL_OUTBOUND;
+  defineQStashRoute(app, {
+    path: '/peppol/outbound',
+    observabilityName: key,
+    bodySchema: peppolOutboundBodySchema,
+    backpressure: { key, max },
+    handler: async (body, { reply }) => handlePeppolOutbound(body, reply),
   });
 }

@@ -29,6 +29,7 @@ vi.mock('../../lib/create-caller.js', () => ({
 // Imports (after mocks)
 // ---------------------------------------------------------------------------
 
+import { handleError } from '../../lib/error-handler.js';
 import documents from '../documents.js';
 
 // ---------------------------------------------------------------------------
@@ -37,6 +38,7 @@ import documents from '../documents.js';
 
 const app = new Hono();
 app.route('/', documents);
+app.onError(handleError);
 
 // ---------------------------------------------------------------------------
 // Fixtures
@@ -92,14 +94,20 @@ describe('GET /documents', () => {
     });
   });
 
-  it('passes undefined for all params when none provided', async () => {
+  it('applies schema defaults and omits optional filters when none provided', async () => {
     await app.request('/');
     const [input] = mockList.mock.calls[0] as [Record<string, unknown>];
-    expect(input.page).toBeUndefined();
-    expect(input.pageSize).toBeUndefined();
+    expect(input).toMatchObject({ page: 1, pageSize: 25, sortOrder: 'desc' });
     expect(input.entityType).toBeUndefined();
     expect(input.entityId).toBeUndefined();
-    expect(input.sortOrder).toBeUndefined();
+  });
+
+  it('returns 400 and never calls the caller for an invalid entityType', async () => {
+    const res = await app.request('/?entityType=NOT_AN_ENTITY');
+    expect(res.status).toBe(400);
+    expect(mockList).not.toHaveBeenCalled();
+    const body = (await res.json()) as { error: { code: string } };
+    expect(body.error.code).toBe('VALIDATION_ERROR');
   });
 
   it('returns 200 and wraps result in { data, meta }', async () => {

@@ -29,6 +29,7 @@ vi.mock('../../lib/create-caller.js', () => ({
 // Imports (after mocks)
 // ---------------------------------------------------------------------------
 
+import { handleError } from '../../lib/error-handler.js';
 import invoices from '../invoices.js';
 
 // ---------------------------------------------------------------------------
@@ -37,6 +38,7 @@ import invoices from '../invoices.js';
 
 const app = new Hono();
 app.route('/', invoices);
+app.onError(handleError);
 
 // ---------------------------------------------------------------------------
 // Fixtures
@@ -101,15 +103,17 @@ describe('GET /invoices', () => {
     });
   });
 
-  it('passes undefined for all params when none provided', async () => {
+  it('applies schema defaults and omits optional filters when none provided', async () => {
     await app.request('/');
     const [input] = mockList.mock.calls[0] as [Record<string, unknown>];
-    expect(input.page).toBeUndefined();
-    expect(input.pageSize).toBeUndefined();
+    expect(input).toMatchObject({
+      page: 1,
+      pageSize: 25,
+      sortBy: 'createdAt',
+      sortOrder: 'desc',
+    });
     expect(input.status).toBeUndefined();
     expect(input.contractorId).toBeUndefined();
-    expect(input.sortBy).toBeUndefined();
-    expect(input.sortOrder).toBeUndefined();
   });
 
   it('returns 200 and wraps result in { data, meta }', async () => {
@@ -122,10 +126,12 @@ describe('GET /invoices', () => {
     expect(body.meta).toMatchObject({ total: 1, page: 1, pageSize: 25 });
   });
 
-  it('passes an invalid status value through as-is (no transformation)', async () => {
-    await app.request('/?status=INVALID_STATUS');
-    const [input] = mockList.mock.calls[0] as [{ status: unknown }];
-    expect(input.status).toBe('INVALID_STATUS');
+  it('rejects an invalid status value with a 400 instead of forwarding it', async () => {
+    const res = await app.request('/?status=INVALID_STATUS');
+    expect(res.status).toBe(400);
+    expect(mockList).not.toHaveBeenCalled();
+    const body = (await res.json()) as { error: { code: string } };
+    expect(body.error.code).toBe('VALIDATION_ERROR');
   });
 });
 
