@@ -66,12 +66,13 @@ export interface PricingPlan {
 export type PricingByMarket = Record<Market, PricingPlan[]>;
 
 export class PricingMetadataError extends Error {
-  constructor(
-    message: string,
-    public readonly stripeProductId: string,
-    public readonly missingFields: readonly string[],
-  ) {
+  readonly stripeProductId: string;
+  readonly missingFields: readonly string[];
+
+  constructor(message: string, stripeProductId: string, missingFields: readonly string[]) {
     super(message);
     this.name = 'PricingMetadataError';
+    this.stripeProductId = stripeProductId;
+    this.missingFields = missingFields;
   }
 }

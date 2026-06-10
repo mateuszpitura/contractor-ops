@@ -10,16 +10,20 @@ const { mockFindFirst, mockFindMany, mockCount } = vi.hoisted(() => ({
   mockCount: vi.fn(),
 }));
 
-vi.mock('@contractor-ops/db', () => ({
-  prisma: {
-    integrationConnection: { findFirst: mockFindFirst },
-    integrationSyncLog: {
-      findMany: mockFindMany,
-      count: mockCount,
+vi.mock('@contractor-ops/db', async importOriginal => {
+  const actual = await importOriginal<typeof import('@contractor-ops/db')>();
+  return {
+    scopeCapabilitiesSchema: actual.scopeCapabilitiesSchema,
+    prisma: {
+      integrationConnection: { findFirst: mockFindFirst },
+      integrationSyncLog: {
+        findMany: mockFindMany,
+        count: mockCount,
+      },
+      webhookDelivery: { findMany: mockFindMany },
     },
-    webhookDelivery: { findMany: mockFindMany },
-  },
-}));
+  };
+});
 
 // Mock registry
 vi.mock('../registry.js', () => ({
@@ -60,6 +64,7 @@ describe('health-service', () => {
         recentSyncs: [],
         recentWebhooks: [],
         errorCountLast24h: 0,
+        scopeCapabilities: null,
       });
     });
 
@@ -68,6 +73,13 @@ describe('health-service', () => {
       const lastSyncAt = new Date('2026-03-22T08:00:00Z');
       const syncStarted = new Date('2026-03-22T08:00:00Z');
       const webhookReceived = new Date('2026-03-22T09:00:00Z');
+
+      const scopeCapabilities = {
+        provider: 'google' as const,
+        scopes: ['https://www.googleapis.com/auth/admin.directory.user.readonly'],
+        capabilities: ['directory.read' as const],
+        grantedAt: '2026-03-01T10:00:00Z',
+      };
 
       mockFindFirst.mockResolvedValue({
         id: 'conn-1',
@@ -80,6 +92,7 @@ describe('health-service', () => {
         lastErrorMessage: null,
         tokenExpiresAt: new Date('2026-04-01T00:00:00Z'),
         connectedBy: { id: 'user-1', name: 'Admin User' },
+        scopeCapabilities,
       });
 
       // First findMany call = sync logs, second = webhook deliveries
@@ -115,6 +128,30 @@ describe('health-service', () => {
       expect(result.recentWebhooks).toHaveLength(1);
       expect(result.recentWebhooks[0]?.eventType).toBe('message.created');
       expect(result.errorCountLast24h).toBe(0);
+      expect(result.scopeCapabilities).toEqual(scopeCapabilities);
+    });
+
+    it('returns null scopeCapabilities when stored JSONB fails validation', async () => {
+      mockFindFirst.mockResolvedValue({
+        id: 'conn-1',
+        status: 'CONNECTED',
+        displayName: 'Test Workspace',
+        connectedAt: new Date(),
+        lastSyncAt: new Date(),
+        lastSuccessAt: new Date(),
+        lastErrorAt: null,
+        lastErrorMessage: null,
+        tokenExpiresAt: null,
+        connectedBy: { id: 'user-1', name: 'Admin User' },
+        scopeCapabilities: { provider: 'not-a-provider', scopes: [], capabilities: [] },
+      });
+
+      mockFindMany.mockResolvedValue([]);
+      mockCount.mockResolvedValue(0);
+
+      const result = await getProviderHealth('org-1', 'slack');
+
+      expect(result.scopeCapabilities).toBeNull();
     });
 
     it('counts only FAILED syncs within last 24 hours for errorCountLast24h', async () => {

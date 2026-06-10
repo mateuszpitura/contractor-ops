@@ -1,7 +1,21 @@
-import { prisma } from '@contractor-ops/db';
+import { prisma, scopeCapabilitiesSchema } from '@contractor-ops/db';
+import type { ScopeCapabilitiesParsed } from '@contractor-ops/db';
+import { createIntegrationLogger } from '@contractor-ops/logger';
 import { getAllAdapters } from '../registry.js';
 import type { ProviderHealthStatus } from '../types/health.js';
 import { getBreakerSnapshots } from './resilience.js';
+
+const log = createIntegrationLogger('health-service');
+
+function parseScopeCapabilities(raw: unknown): ScopeCapabilitiesParsed | null {
+  if (raw == null) return null;
+  const parsed = scopeCapabilitiesSchema.safeParse(raw);
+  if (!parsed.success) {
+    log.warn({ issues: parsed.error.issues }, 'scopeCapabilities failed validation');
+    return null;
+  }
+  return parsed.data;
+}
 
 // ---------------------------------------------------------------------------
 // Health Service — aggregates provider connection health from multiple sources
@@ -46,6 +60,7 @@ export async function getProviderHealth(
       recentSyncs: [],
       recentWebhooks: [],
       errorCountLast24h: 0,
+      scopeCapabilities: null,
     };
   }
 
@@ -99,6 +114,7 @@ export async function getProviderHealth(
     recentSyncs,
     recentWebhooks,
     errorCountLast24h: errorCount,
+    scopeCapabilities: parseScopeCapabilities(connection.scopeCapabilities),
   };
 }
 

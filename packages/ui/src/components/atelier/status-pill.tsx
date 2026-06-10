@@ -1,10 +1,10 @@
-import type { ReactNode } from 'react';
+import type { ComponentPropsWithoutRef, ReactNode } from 'react';
 import type { AtelierStatusVariant } from '../../status/variants.js';
 import { PulseDot } from './pulse-dot.js';
 
 export type { AtelierStatusVariant };
 
-export interface AtelierStatusPillProps {
+export interface AtelierStatusPillProps extends Omit<ComponentPropsWithoutRef<'span'>, 'children'> {
   variant: AtelierStatusVariant;
   /** Whether the leading dot pulses. Common for live/processing. */
   pulse?: boolean;
@@ -20,9 +20,22 @@ export interface AtelierStatusPillProps {
  * one isn't. SLA mapping lives at the call site via
  * `statusToVariant('approval', sla)` in commit group 4.
  */
-export function AtelierStatusPill({ variant, pulse = false, children }: AtelierStatusPillProps) {
+export function AtelierStatusPill({
+  variant,
+  pulse = false,
+  children,
+  className,
+  ...rest
+}: AtelierStatusPillProps) {
   return (
-    <span className="inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.08em]">
+    <span
+      className={[
+        'inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.08em]',
+        className,
+      ]
+        .filter(Boolean)
+        .join(' ')}
+      {...rest}>
       <PulseDot color={`var(--status-${variant})`} pulse={pulse} />
       {children}
     </span>

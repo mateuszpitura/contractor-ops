@@ -18,6 +18,11 @@
       "types": "./dist/types.d.ts",
       "import": "./dist/types.js",
       "default": "./dist/types.js"
+    },
+    "./webhook": {
+      "types": "./src/webhook/index.ts",
+      "import": "./src/webhook/index.ts",
+      "default": "./src/webhook/index.ts"
     }
   },
   "scripts": {

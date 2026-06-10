@@ -421,7 +421,7 @@ export abstract class GovApiClient {
   ): boolean {
     const deadlineMs = opts?.deadlineMs;
     if (deadlineMs === undefined) return false;
-    return Date.now() - startMs + additionalMs > deadlineMs;
+    return Date.now() - startMs + additionalMs >= deadlineMs;
   }
 
   /**

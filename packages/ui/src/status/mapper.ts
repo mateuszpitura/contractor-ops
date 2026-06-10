@@ -448,6 +448,58 @@ function changeRequestVariant(status: ChangeRequestStatusInput): AtelierStatusVa
   }
 }
 
+// ─── Equipment ─────────────────────────────────────────────────────────
+
+export type EquipmentStatusInput =
+  | 'AVAILABLE'
+  | 'ASSIGNED'
+  | 'IN_TRANSIT'
+  | 'DELIVERED'
+  | 'RETURN_REQUESTED'
+  | 'RETURN_IN_TRANSIT'
+  | 'RETURNED'
+  | 'RETIRED';
+
+function equipmentVariant(status: EquipmentStatusInput): AtelierStatusVariant {
+  switch (status) {
+    case 'AVAILABLE':
+    case 'DELIVERED':
+      return 'success';
+    case 'ASSIGNED':
+      return 'live';
+    case 'IN_TRANSIT':
+    case 'RETURN_IN_TRANSIT':
+      return 'info';
+    case 'RETURN_REQUESTED':
+      return 'warning';
+    case 'RETURNED':
+      return 'neutral';
+    case 'RETIRED':
+      return 'danger';
+    default:
+      return assertExhaustive(status);
+  }
+}
+
+// ─── Timesheet ─────────────────────────────────────────────────────────
+
+export type TimesheetStatusInput = 'DRAFT' | 'SUBMITTED' | 'APPROVED' | 'REJECTED';
+
+function timesheetVariant(status: TimesheetStatusInput): AtelierStatusVariant {
+  switch (status) {
+    case 'DRAFT':
+      return 'info';
+    case 'SUBMITTED':
+      return 'warning';
+    case 'APPROVED':
+      return 'success';
+    case 'REJECTED':
+      return 'danger';
+    default:
+      return assertExhaustive(status);
+  }
+}
+
 // ─── Member / user (Better Auth, lowercase) ────────────────────────────
 
 export type MemberStatusInput = 'active' | 'invited' | 'disabled' | 'banned';
@@ -491,6 +543,8 @@ export type StatusDomainMap = {
   'peppol-transmission': PeppolTransmissionStatusInput;
   zatca: ZatcaSubmissionStatusInput;
   'change-request': ChangeRequestStatusInput;
+  equipment: EquipmentStatusInput;
+  timesheet: TimesheetStatusInput;
   member: MemberStatusInput;
 };
 
@@ -561,6 +615,10 @@ function resolveStatusVariant<D extends StatusDomain>(
       return zatcaVariant(status as ZatcaSubmissionStatusInput);
     case 'change-request':
       return changeRequestVariant(status as ChangeRequestStatusInput);
+    case 'equipment':
+      return equipmentVariant(status as EquipmentStatusInput);
+    case 'timesheet':
+      return timesheetVariant(status as TimesheetStatusInput);
     case 'member':
       return memberVariant(status as MemberStatusInput);
     default:

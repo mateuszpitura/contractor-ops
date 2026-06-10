@@ -77,7 +77,7 @@ describe('feature-flags boot-time signoff gate (FOUND6-04 — D-10)', () => {
     // right verdict for a synthetic gated key — guaranteeing the gate would
     // fire if the key were present in FLAGS.
     const { isGatedFlag, getFlagSignoff } = await import('../signoff-registry-flags');
-    const SYNTHETIC = 'compliance-portal-self-service';
+    const SYNTHETIC = 'compliance-synthetic-boot-gate-ungated-entry';
     expect(isGatedFlag(SYNTHETIC)).toBe(true);
     expect(getFlagSignoff(SYNTHETIC)).toBeUndefined();
   });

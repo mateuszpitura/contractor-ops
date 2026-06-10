@@ -1,2 +1,7 @@
-// @types/saxon-js does not exist on npm
-declare module 'saxon-js';
+declare module 'saxon-js' {
+  const SaxonJS: {
+    transform: (options: Record<string, unknown>) => Promise<unknown> | unknown;
+    getPlatform: () => Record<string, unknown>;
+  };
+  export default SaxonJS;
+}

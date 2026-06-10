@@ -12,11 +12,27 @@ import './policies/ksa';
 import './policies/uae';
 
 export {
+  mapCountryCodeToJurisdiction,
+  mapIsoToJurisdiction,
+} from './jurisdiction-resolver';
+
+export {
   daysUntilExpiryInTz,
   defaultExpiryFromUploadDate,
   isExpired,
   jurisdictionDate,
 } from './expiry';
+
+export {
+  clearComplianceDocs,
+  COMPLIANCE_DOC_REGISTRY,
+  type ComplianceDocRegistryEntry,
+  type ComplianceDocSeverity,
+  complianceDocsForJurisdiction,
+  getComplianceDoc,
+  getComplianceDocRegistry,
+  registerComplianceDoc,
+} from './doc-registry';
 
 export {
   listPolicyRules,
@@ -33,3 +49,16 @@ export type {
   Severity,
 } from './types';
 export { POLICY_RULE_SET_VERSION, type PolicyRuleSetVersion } from './version';
+
+export {
+  evaluatePaymentEligibility,
+  getDocumentTypeLabelKey,
+  groupPaymentBlockReasons,
+} from './payment-gate';
+export type {
+  EvaluatePaymentEligibilityInput,
+  PaymentEligibilityBlockedItem,
+  PaymentEligibilityContractorReason,
+  PaymentEligibilityItemReason,
+  PaymentEligibilityResult,
+} from './payment-gate';

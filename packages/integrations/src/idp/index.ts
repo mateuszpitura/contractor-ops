@@ -3,6 +3,10 @@
 export { mapErrorClassToResult } from './deprovision-result.js';
 export type { ClassifyErrorInput, ErrorClass } from './error-classifier.js';
 export { classifyError } from './error-classifier.js';
+export {
+  createConfiguredDeprovisionableAdapter,
+  type TokenConfiguredDeprovisionProvider,
+} from './create-configured-deprovisionable.js';
 export type {
   EntraImpactCustomMetrics,
   GitHubImpactCustomMetrics,

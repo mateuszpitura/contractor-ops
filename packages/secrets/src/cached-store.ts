@@ -28,13 +28,12 @@ const DEFAULT_MAX_ENTRIES = 1_000;
  */
 export class CachedStore implements SecretStore {
   private readonly cache = new Map<string, CacheEntry>();
+  private readonly backing: SecretStore;
   private readonly ttlMs: number;
   private readonly maxEntries: number;
 
-  constructor(
-    private readonly backing: SecretStore,
-    options?: CachedStoreOptions,
-  ) {
+  constructor(backing: SecretStore, options?: CachedStoreOptions) {
+    this.backing = backing;
     this.ttlMs = options?.ttlMs ?? DEFAULT_TTL_MS;
     this.maxEntries = options?.maxEntries ?? DEFAULT_MAX_ENTRIES;
   }

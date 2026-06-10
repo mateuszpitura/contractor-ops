@@ -1,4 +1,18 @@
 export type {
+  DateRangeInput,
+  EntityIdInput,
+  EntityIdsInput,
+  PaginationInput,
+} from './common-inputs.js';
+export {
+  dateRangeInputSchema,
+  entityIdSchema,
+  entityIdsSchema,
+  entityWithDataSchema,
+  paginationSchema,
+  reportPaginationSchema,
+} from './common-inputs.js';
+export type {
   ApprovalChainCreate,
   ApprovalChainUpdate,
   ApprovalQueue,
@@ -500,7 +514,11 @@ export type {
   BatchImportInput,
   FetchPeopleInput,
   FetchPeopleOutput,
+  FetchPeopleSourceError,
+  FetchPeopleSourceErrorCode,
+  FetchProjectsInput,
   FetchProjectsOutput,
+  ImportedProject,
   ImportProgressOutput,
   ImportProjectInput,
   ListSourcesOutput,
@@ -514,6 +532,9 @@ export {
   conflictSchema,
   fetchPeopleInputSchema,
   fetchPeopleOutputSchema,
+  fetchPeopleSourceErrorCodeSchema,
+  fetchPeopleSourceErrorSchema,
+  fetchProjectsInputSchema,
   fetchProjectsOutputSchema,
   importedProjectSchema,
   importProgressOutputSchema,
@@ -521,6 +542,7 @@ export {
   listSourcesOutputSchema,
   mergedPersonSchema,
   retryItemInputSchema,
+  retryItemOutputSchema,
   sourceEntrySchema,
   sourceProviderSchema,
   startImportInputSchema,
@@ -776,3 +798,15 @@ export {
   zatcaOnboardingStepSchema,
   zatcaTaxDetailsSchema,
 } from './zatca.js';
+
+// Web form enum aliases (Wave G — prefer in web-vite selects / filter chips)
+export {
+  contractorLifecycleStageEnum as contractorLifecycleStage,
+  contractorStatusEnum as contractorStatus,
+  contractorTypeEnum as contractorType,
+  workerTypeEnum as workerType,
+} from './contractor.js';
+export {
+  equipmentStatusEnum as equipmentStatus,
+  equipmentTypeEnum as equipmentType,
+} from './equipment.js';

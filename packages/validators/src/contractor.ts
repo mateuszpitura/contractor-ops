@@ -26,6 +26,10 @@ export const contractorLifecycleStageEnum = z.enum([
 ]);
 export type ContractorLifecycleStage = z.infer<typeof contractorLifecycleStageEnum>;
 
+/** v7 worker model — reserved for phase 89; mirrors planned Prisma enum. */
+export const workerTypeEnum = z.enum(['EMPLOYEE', 'CONTRACTOR', 'FREELANCER', 'AGENCY']);
+export type WorkerType = z.infer<typeof workerTypeEnum>;
+
 export const complianceHealthEnum = z.enum(['green', 'yellow', 'red']);
 export type ComplianceHealth = z.infer<typeof complianceHealthEnum>;
 

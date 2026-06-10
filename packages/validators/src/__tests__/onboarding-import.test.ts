@@ -341,12 +341,12 @@ describe('importProgressOutputSchema', () => {
 
 describe('retryItemInputSchema', () => {
   it('accepts valid input', () => {
-    const r = retryItemInputSchema.safeParse({ jobId: 'job-1', email: 'a@b.com' });
+    const r = retryItemInputSchema.safeParse({ jobId: 'job-1', itemKey: 'a@b.com' });
     expect(r.success).toBe(true);
   });
 
   it('rejects invalid email', () => {
-    const r = retryItemInputSchema.safeParse({ jobId: 'job-1', email: 'bad' });
+    const r = retryItemInputSchema.safeParse({ jobId: 'job-1', itemKey: 'bad' });
     expect(r.success).toBe(false);
   });
 

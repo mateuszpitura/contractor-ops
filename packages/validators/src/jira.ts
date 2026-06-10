@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { workflowTaskStatusEnum } from './workflow.js';
 
 // ---------------------------------------------------------------------------
 // Jira Webhook Payload (inbound)
@@ -62,7 +63,7 @@ export type JiraTaskConfig = z.infer<typeof jiraTaskConfigSchema>;
 // ---------------------------------------------------------------------------
 
 export const jiraStatusMappingEntrySchema = z.object({
-  workflowStatus: z.string(),
+  workflowStatus: workflowTaskStatusEnum,
   jiraTransitionId: z.string(),
   jiraTransitionName: z.string(),
   jiraTargetStatusName: z.string(),

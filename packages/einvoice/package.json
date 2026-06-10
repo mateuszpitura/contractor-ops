@@ -14,6 +14,11 @@
       "import": "./dist/index.js",
       "default": "./dist/index.js"
     },
+    "./orchestration": {
+      "types": "./src/orchestration/index.ts",
+      "import": "./src/orchestration/index.ts",
+      "default": "./src/orchestration/index.ts"
+    },
     "./compliance": {
       "types": "./dist/types/compliance.d.ts",
       "import": "./dist/types/compliance.js",

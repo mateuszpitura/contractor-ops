@@ -61,9 +61,34 @@ export const mergedPersonSchema = z.object({
 
 export type MergedPerson = z.infer<typeof mergedPersonSchema>;
 
-export const fetchPeopleOutputSchema = z.array(mergedPersonSchema);
+export const fetchPeopleSourceErrorCodeSchema = z.enum(['not_connected', 'fetch_failed']);
+
+export type FetchPeopleSourceErrorCode = z.infer<typeof fetchPeopleSourceErrorCodeSchema>;
+
+export const fetchPeopleSourceErrorSchema = z.object({
+  source: sourceProviderSchema,
+  code: fetchPeopleSourceErrorCodeSchema,
+  error: z.string(),
+});
+
+export type FetchPeopleSourceError = z.infer<typeof fetchPeopleSourceErrorSchema>;
+
+export const fetchPeopleOutputSchema = z.object({
+  people: z.array(mergedPersonSchema),
+  sourceErrors: z.array(fetchPeopleSourceErrorSchema),
+});
 
 export type FetchPeopleOutput = z.infer<typeof fetchPeopleOutputSchema>;
+
+// ---------------------------------------------------------------------------
+// fetchProjects input / output
+// ---------------------------------------------------------------------------
+
+export const fetchProjectsInputSchema = z.object({
+  sources: z.array(z.enum(['JIRA', 'LINEAR'])).min(1),
+});
+
+export type FetchProjectsInput = z.infer<typeof fetchProjectsInputSchema>;
 
 // ---------------------------------------------------------------------------
 // batchImport input
@@ -99,7 +124,12 @@ export const importedProjectSchema = z.object({
   ),
 });
 
-export const fetchProjectsOutputSchema = z.array(importedProjectSchema);
+export type ImportedProject = z.infer<typeof importedProjectSchema>;
+
+export const fetchProjectsOutputSchema = z.object({
+  projects: z.array(importedProjectSchema),
+  sourceErrors: z.array(fetchPeopleSourceErrorSchema),
+});
 
 export type FetchProjectsOutput = z.infer<typeof fetchProjectsOutputSchema>;
 
@@ -161,9 +191,24 @@ export type ImportProgressOutput = z.infer<typeof importProgressOutputSchema>;
 // Retry failed item input
 // ---------------------------------------------------------------------------
 
+const retryItemKeySchema = z
+  .string()
+  .min(1)
+  .refine(
+    value => z.email().safeParse(value).success || value.startsWith('project:'),
+    { message: 'itemKey must be an email or project:externalId' },
+  );
+
 export const retryItemInputSchema = z.object({
   jobId: z.string(),
-  email: z.email(),
+  itemKey: retryItemKeySchema,
 });
 
 export type RetryItemInput = z.infer<typeof retryItemInputSchema>;
+
+export const retryItemOutputSchema = z.object({
+  success: z.boolean(),
+  error: z.string().optional(),
+});
+
+export type RetryItemOutput = z.infer<typeof retryItemOutputSchema>;

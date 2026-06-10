@@ -1,5 +1,9 @@
 import { createIntegrationLogger } from '@contractor-ops/logger';
 import type { BaseAdapter } from './adapters/base-adapter.js';
+import {
+  clearUserSourceFetchers,
+  registerBuiltInUserSourceFetchers,
+} from './services/user-source-registry.js';
 import type { CompanyRegistryAdapter, CompanyRegistryProvider } from './types/company-registry.js';
 import type { Deprovisionable } from './types/deprovisionable.js';
 import type { OcrAdapter } from './types/ocr.js';
@@ -51,14 +55,16 @@ export function getAllAdapters(): IntegrationProviderAdapter[] {
 /**
  * Clears all registered adapters. Useful for testing.
  *
- * Clears all four capability registries (provider, OCR, CompanyRegistry,
- * Deprovisionable) to keep them in sync for tests that expect a clean slate.
+ * Clears all capability registries (provider, OCR, CompanyRegistry,
+ * Deprovisionable, UserSource) to keep them in sync for tests.
  */
 export function clearAdapters(): void {
   adapters.clear();
   ocrAdapters.clear();
   companyRegistryAdapters.clear();
   deprovisionableAdapters.clear();
+  clearUserSourceFetchers();
+  registerBuiltInUserSourceFetchers();
 }
 
 // ---------------------------------------------------------------------------

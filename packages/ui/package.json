@@ -91,6 +91,11 @@
       "types": "./dist/lib/row-click.d.ts",
       "import": "./dist/lib/row-click.js"
     },
+    "./marketing": {
+      "types": "./dist/marketing/index.d.ts",
+      "import": "./dist/marketing/index.js",
+      "default": "./dist/marketing/index.js"
+    },
     "./i18n": {
       "types": "./dist/i18n/translations-provider.d.ts",
       "import": "./dist/i18n/translations-provider.js"

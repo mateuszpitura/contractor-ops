@@ -338,3 +338,12 @@ export function registerZugferdDEProfile(): void {
   const profile = new _ZugferdDEProfile();
   _registerProfile(profile);
 }
+
+export {
+  generateOutboundXRechnungCii,
+  generateOutboundZugferdPdf,
+  parseInboundPdf,
+  parseInboundXml,
+  validateInboundEmbeddedXml,
+  validateInboundXRechnungCii,
+} from './orchestration/index.js';

@@ -27,7 +27,11 @@ export type {
   ImpactPreviewProvider,
   SlackImpactCustomMetrics,
 } from './idp/index.js';
-export { classifyError } from './idp/index.js';
+export {
+  classifyError,
+  createConfiguredDeprovisionableAdapter,
+  type TokenConfiguredDeprovisionProvider,
+} from './idp/index.js';
 // Provider Registry
 export {
   clearAdapters,
@@ -108,6 +112,26 @@ export {
   SecretStoreError,
   ZATCA_SECRET_NAMES,
 } from './services/infisical-client.js';
+// Calendar provider registry
+export type { CalendarProviderId, CalendarProviderMeta } from './services/calendar-provider-registry.js';
+export {
+  getCalendarEventAdapter,
+  getCalendarProviderMeta,
+  isCalendarProviderId,
+} from './services/calendar-provider-registry.js';
+// User source registry (onboarding import)
+export type {
+  UserSourceFetcher,
+  UserSourcePerson,
+  UserSourceProviderId,
+} from './types/user-source.js';
+export {
+  clearUserSourceFetchers,
+  fetchUsersFromIntegrationSource,
+  getUserSourceFetcher,
+  registerBuiltInUserSourceFetchers,
+  registerUserSourceFetcher,
+} from './services/user-source-registry.js';
 // Org Definitions sync — Jira / Linear project clients
 export type { JiraProject } from './services/jira-projects-client.js';
 export { fetchJiraProjects } from './services/jira-projects-client.js';

@@ -19,5 +19,6 @@ export * from './components/workbench/index.js';
 export { useHoverCapability } from './hooks/use-hover-capability.js';
 export { useReducedMotion } from './hooks/use-reduced-motion.js';
 export { type IconSize, iconSize } from './icons/sizes.js';
+export * from './marketing/index.js';
 export * from './status/index.js';
 // biome-ignore-end lint/performance/noReExportAll: package barrel

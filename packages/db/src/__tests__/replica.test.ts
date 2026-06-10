@@ -96,7 +96,7 @@ describe('getReplicaClient', () => {
   });
 
   it('throws on unsupported region', () => {
-    expect(() => getReplicaClient('US' as unknown as 'EU')).toThrow(/Unsupported data region: US/);
+    expect(() => getReplicaClient('XX' as unknown as 'EU')).toThrow(/Unsupported data region: XX/);
   });
 });
 

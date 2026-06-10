@@ -6,6 +6,7 @@ export {
   type ContractStatusInput,
   type EInvoiceTransmissionStatusInput,
   type EInvoiceValidationStatusInput,
+  type EquipmentStatusInput,
   type InvoiceMatchStatusInput,
   type InvoiceStatusInput,
   type MemberStatusInput,
@@ -13,6 +14,7 @@ export {
   type PaymentRunStatusInput,
   type PaymentStatusInput,
   type PeppolParticipantStatusInput,
+  type TimesheetStatusInput,
   type PeppolTransmissionStatusInput,
   type StatusDomain,
   type StatusDomainMap,
@@ -21,4 +23,9 @@ export {
   type WorkflowTaskStatusInput,
   type ZatcaSubmissionStatusInput,
 } from './mapper.js';
+export {
+  type PortalInvoiceStatusDisplay,
+  type PortalInvoiceStatusInput,
+  resolvePortalInvoiceStatusDisplay,
+} from './portal-invoice.js';
 export { type AtelierStatusVariant, assertExhaustive } from './variants.js';

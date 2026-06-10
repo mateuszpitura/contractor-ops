@@ -1,3 +1,5 @@
+import type { ScopeCapabilitiesParsed } from '@contractor-ops/db';
+
 /**
  * Health status snapshot for a provider connection.
  * Aggregates connection state, recent activity, and error counts.
@@ -29,4 +31,6 @@ export interface ProviderHealthStatus {
     processedAt: Date | null;
   }>;
   errorCountLast24h: number;
+  /** Parsed IntegrationConnection.scopeCapabilities JSONB; null when absent or invalid. */
+  scopeCapabilities?: ScopeCapabilitiesParsed | null;
 }
