@@ -2,9 +2,9 @@
 gsd_state_version: 1.0
 milestone: v7.0
 milestone_name: GTM Expansion
-status: ready_to_plan
-stopped_at: Phase 84 complete (7/7) — ready to discuss Phase 85
-last_updated: 2026-06-08T15:33:55.330Z
+status: planning
+stopped_at: Phase 85 context gathered
+last_updated: "2026-06-15T23:38:33.852Z"
 last_activity: 2026-06-08
 progress:
   total_phases: 20
@@ -161,7 +161,7 @@ Carried forward from v6.0 milestone close (2026-06-07). Full enumeration: `.plan
 
 ## Session Continuity
 
-Last session: 2026-06-08T15:00:40.060Z
-Stopped at: Completed 84-04-PLAN.md
-Resume file: None
+Last session: 2026-06-15T23:38:33.846Z
+Stopped at: Phase 85 context gathered
+Resume file: .planning/milestones/v7.0-phases/85-theme-a-w-form-intake-tax-treaty-engine/85-CONTEXT.md
 Next command: `/gsd:plan-phase 82`
