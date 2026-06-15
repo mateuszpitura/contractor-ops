@@ -2,13 +2,13 @@
 title: Money rounding policy
 type: pattern
 tags: [money, currency, rounding, finance, validators]
-source_commit: 19f747bca80fe58d162d3e8c3967ec553e057151
+source_commit: 3157f263a
 verify_with:
   - packages/api/src/services/skonto.ts
   - packages/api/src/services/late-payment-interest.ts
   - packages/api/src/services/exchange-rate.ts
   - packages/api/src/services/bank-statement.ts
-updated: 2026-06-10
+updated: 2026-06-15
 ---
 
 # Money rounding policy

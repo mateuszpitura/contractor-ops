@@ -2,11 +2,11 @@
 title: Cron worker jobs
 type: structure
 tags: [structure, cron, background]
-source_commit: 19f747bca80fe58d162d3e8c3967ec553e057151
+source_commit: 3157f263a
 verify_with:
   - apps/cron-worker/src/jobs/handlers/
   - apps/api/src/lib/qstash-route.ts
-updated: 2026-06-09
+updated: 2026-06-15
 ---
 
 # Cron worker jobs

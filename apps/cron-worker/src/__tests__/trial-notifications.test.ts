@@ -9,6 +9,7 @@
  *   5. Transaction throws → ok=false + Sentry capture.
  */
 
+import { Prisma } from '@contractor-ops/db/generated/prisma/client';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const {
@@ -111,7 +112,12 @@ describe('trialNotificationsHandler', () => {
 
   it('counts a P2002 dedup collision as skippedDedup, not sent', async () => {
     mockSubscriptionFindMany.mockResolvedValue([trialingSub()]);
-    mockDedupCreate.mockRejectedValue({ code: 'P2002' });
+    mockDedupCreate.mockRejectedValue(
+      new Prisma.PrismaClientKnownRequestError('Unique constraint failed', {
+        code: 'P2002',
+        clientVersion: '7.8.0',
+      }),
+    );
 
     const result = await trialNotificationsHandler(makeJobContext());
 
