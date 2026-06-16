@@ -2,12 +2,12 @@
 title: API routers catalog
 type: structure
 tags: [structure, api, trpc, catalog]
-source_commit: 19f747bca80fe58d162d3e8c3967ec553e057151
+source_commit: 79c1602848e9f0b2c5a6d3e1f4b7a9c0d2e6f813
 verify_with:
   - packages/api/src/root.ts
   - packages/api/src/portal-root.ts
   - packages/validators/src/onboarding-import.ts
-updated: 2026-06-10
+updated: 2026-06-16
 ---
 
 # API routers catalog
@@ -93,14 +93,26 @@ Gated by `module.classification-engine` or `QA_DEFAULT_ORG_ID` in `root.ts`:
 
 When flag OFF: runtime `METHOD_NOT_FOUND`; client types still see namespaces.
 
+## Conditional US expansion (1 namespace)
+
+Gated by `module.us-expansion` (or `QA_DEFAULT_ORG_ID`) in `root.ts`; each procedure also re-checks the flag per request (`assertUsExpansionEnabled`):
+
+| Namespace | Summary |
+|-----------|---------|
+| `taxForm` | staff read/track of US W-form submissions (status, treaty claim, expiry) + request/remind — no on-behalf signing; full SSN never projected |
+
+When flag OFF: runtime `METHOD_NOT_FOUND`; the portal W-form procedures throw `FORBIDDEN`.
+
 ## Portal portalAppRouter (2 namespaces)
 
 Mount: `/api/trpc/portal/*` (registered **before** staff wildcard).
 
 | Namespace | Summary |
 |-----------|---------|
-| `portal` | auth, invoices, contracts, profile, equipment (merged) |
+| `portal` | auth, invoices, contracts, profile, equipment, US W-form self-cert (merged) |
 | `portalTime` | portal time entries + external sync |
+
+Portal W-form procedures (`getTaxFormDetermination`, `saveTaxFormDraft`, `submitTaxForm`, `getMyTaxForms`) self-gate on `module.us-expansion` per request — the flat portal merge cannot be conditionally spread.
 
 ## Mount points
 

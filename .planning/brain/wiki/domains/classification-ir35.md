@@ -2,11 +2,11 @@
 title: Classification IR35 and DRV
 type: domain
 tags: [classification, ir35, drv, germany]
-source_commit: 70f5782d78e33ba98c82e4ccda2cd4b0b4aff216
+source_commit: 79c1602848e9f0b2c5a6d3e1f4b7a9c0d2e6f813
 verify_with:
   - packages/api/src/root.ts
   - packages/classification/
-updated: 2026-06-09
+updated: 2026-06-16
 ---
 
 # Classification (IR35 / DRV)

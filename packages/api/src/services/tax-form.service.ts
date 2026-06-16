@@ -161,7 +161,7 @@ export interface SupersedeAndInsertInput {
   contractorId: string;
   organizationId: string;
   formType: TaxFormTypeLiteral;
-  snapshot: Record<string, unknown>;
+  snapshot: Prisma.InputJsonValue;
   signerName: string;
   signedAt: Date;
   expiresAt: Date | null;

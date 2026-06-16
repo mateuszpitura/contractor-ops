@@ -2,11 +2,11 @@
 title: API router groups
 type: structure
 tags: [structure, api, trpc]
-source_commit: 70f5782d78e33ba98c82e4ccda2cd4b0b4aff216
+source_commit: 79c1602848e9f0b2c5a6d3e1f4b7a9c0d2e6f813
 verify_with:
   - packages/api/src/routers/
   - packages/api/src/root.ts
-updated: 2026-06-09
+updated: 2026-06-16
 ---
 
 # API router groups
@@ -33,7 +33,7 @@ flowchart LR
 
 | Folder | Namespaces (high level) | Notes |
 |--------|-------------------------|-------|
-| `core/` | organization, user, contractor, contract, approval, audit, time, document, … | `organizationDefinitions` nests team/project/costCenter |
+| `core/` | organization, user, contractor, contract, approval, audit, time, document, tax, taxForm, … | `organizationDefinitions` nests team/project/costCenter; `taxForm` (staff US W-form read/track) flag-gated on `module.us-expansion` |
 | `finance/` | invoice, invoiceIntake, payment, billing, skonto, bacs, … | payment/invoice split into sub-modules |
 | `compliance/` | complianceAdmin, gdpr, consent, zatca, gulf, einvoice, tax + 8 conditional classification* | classification flag-gated |
 | `integrations/` | integration, jira, linear, ksef, peppol, googleWorkspace, teams | OAuth via integration framework |

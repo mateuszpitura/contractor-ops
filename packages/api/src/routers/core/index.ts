@@ -31,6 +31,7 @@ export { reportRouter } from './report';
 export { searchRouter } from './search';
 export { settingsRouter } from './settings';
 export { taxRouter } from './tax';
+export { taxFormRouter } from './tax-form-router';
 export { teamRouter } from './team';
 export { timeRouter } from './time';
 export { userRouter } from './user';

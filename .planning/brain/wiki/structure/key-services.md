@@ -2,12 +2,12 @@
 title: Key API services catalog
 type: structure
 tags: [structure, services, api]
-source_commit: 19f747bca80fe58d162d3e8c3967ec553e057151
+source_commit: 79c1602848e9f0b2c5a6d3e1f4b7a9c0d2e6f813
 verify_with:
   - packages/api/src/services/
   - packages/api/src/services/onboarding-import-service.ts
   - .planning/intel/file-roles.json
-updated: 2026-06-10
+updated: 2026-06-16
 ---
 
 # Key API services catalog
@@ -42,6 +42,9 @@ flowchart TB
 | OCR extraction | `services/ocr-extraction.ts` | [[domains/documents-and-ocr]] |
 | Peppol orchestrator | `services/peppol-orchestrator.ts` | [[integrations/peppol]] |
 | Tax ID validation | `services/tax-id-validation.service.ts` | [[integrations/gov-api]] |
+| US treaty rate | `services/treaty-rate.service.ts` | US treaty rate + article resolution (mirrors reverse-charge; 30% statutory default + reasoned override) |
+| US W-form record | `services/tax-form.service.ts` | immutable W-9/W-8BEN/W-8BEN-E snapshot builder + supersede chain + expiry; full SSN never in snapshot |
+| US form routing | `services/tax-form-routing.ts` | pure W-9 vs W-8BEN/W-8BEN-E determination from country + contractor type |
 | Couriers | `services/courier/` | [[integrations/couriers]] |
 | Outbox | `services/outbox/` | async delivery |
 | Onboarding import | `services/onboarding-import-service.ts` | [[domains/onboarding-and-import]] — mergeByEmail, templates |

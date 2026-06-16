@@ -335,6 +335,7 @@ export const STATUS_VAL_DATES_REQUIRED = 'statusValDatesRequired';
 export const CONTRACTOR_INVALID_NIP = 'contractorInvalidNip';
 export const CONTRACTOR_INVALID_EIN = 'contractorInvalidEin';
 export const CONTRACTOR_INVALID_SSN = 'contractorInvalidSsn';
+export const US_EXPANSION_DISABLED = 'usExpansionDisabled';
 export const VAT_VALIDATION_UNSUPPORTED_COUNTRY = 'vatValidationUnsupportedCountry';
 export const BACS_UNMAPPABLE_CHARACTERS = 'bacsUnmappableCharacters';
 export const PAYMENT_RUN_CANCEL_ADMIN_ONLY = 'paymentRunCancelAdminOnly';
