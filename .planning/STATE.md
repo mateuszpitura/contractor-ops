@@ -4,12 +4,12 @@ milestone: v7.0
 milestone_name: GTM Expansion
 status: executing
 stopped_at: Phase 86 UI-SPEC approved
-last_updated: "2026-06-16T22:09:01.750Z"
-last_activity: 2026-06-16
+last_updated: "2026-06-16T22:40:11.475Z"
+last_activity: 2026-06-16 -- Phase 86 planning complete
 progress:
   total_phases: 20
   completed_phases: 4
-  total_plans: 19
+  total_plans: 27
   completed_plans: 19
   percent: 20
 ---
@@ -32,7 +32,7 @@ See: .planning/PROJECT.md (updated 2026-06-07 — v7.0 GTM Expansion started; v6
 Phase: 85 (theme-a-w-form-intake-tax-treaty-engine) — EXECUTING
 Plan: 4 of 4 complete (portal/staff W-form routers + immutable record service + module.us-expansion gate)
 Status: Ready to execute
-Last activity: 2026-06-16
+Last activity: 2026-06-16 -- Phase 86 planning complete
 
 Progress: [██████████] 100%
 

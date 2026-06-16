@@ -191,7 +191,15 @@ Known gaps / deferred at close: see STATE.md `## Deferred Items` (3 unverified p
   2. A 1099-NEC is generated per recipient using a tax-year-keyed threshold config table ($2,000 for TY2026), with CORRECTED-form support, recipient PDF, and an audit-immutable archive.
   3. A year-end return is built and transmitted via IRS IRIS (XML A2A primary path) and its acknowledgement is parsed; FIRE is documented as a legacy fallback only.
   4. Per-state 1099 filing is produced for states requiring separate filing (CFSF participation where eligible).
-**Plans**: TBD
+**Plans**: 8 plans (4 waves)
+- [ ] 86-01-PLAN.md — Wave 0 RED scaffolds + new packages/iris + IRS XSD bundle (human-action) + checksum guard [wave 1]
+- [ ] 86-02-PLAN.md — Schema (Form1099Nec/IrisSubmission/IrisAck/Tax1099Threshold/StateFilingConfig) + [BLOCKING] multi-region migration + retention/soft-delete registration + module.iris-efile confirm [wave 1]
+- [ ] 86-03-PLAN.md — US-FORM-03 TIN-Match: TinMatchClient seam + mock default + dark e-Services client + 24h cache/retry + mismatch→flag+escalate (never block) [wave 2]
+- [ ] 86-04-PLAN.md — US-FORM-05/07 IRIS: buildIrisXml (XMLBuilder) + xsdValidate (XXE/SSRF-safe) + CFSF B-record code + one ack parser (6 statuses) [wave 2]
+- [ ] 86-05-PLAN.md — US-FORM-04 1099-NEC: payment-date/FX aggregation + tax-year threshold gate + box-4 + CORRECTED supersede + Copy-B PDF + idempotency [wave 2]
+- [ ] 86-06-PLAN.md — US-FORM-04/05/07 wiring: TaxFilingTransmitter factory (Manual default/dark A2A/Vendor stub) + staff/portal routers + per-state output + notify-only cron + cross-org leak test [wave 3]
+- [ ] 86-07-PLAN.md — US-FORM-04/05/07 UI: web-vite staff tax-filing surface + portal e-delivery consent gate + i18n en/en-US/de/pl/ar (RTL) [wave 4]
+- [ ] 86-08-PLAN.md — Documentation-follows-code: US year-end-filing domain page + structure/integrations/patterns wiki + log/hot/MEMORY + check:wiki-brain [wave 4]
 **Research flag**: IRIS A2A has no Node lib — hand-build XML against IRS XSDs, XSD-validate in CI, keep a transmitter-adapter seam (Sovos/1099Pro fallback if TCC not approved by plan-phase). IRS TIN-Matching PAF enrollment is a per-org operational prerequisite — flag as a plan-phase checklist item.
 
 ### Phase 87: Theme A — 1042-S + US Classification + Determination Letter
@@ -394,7 +402,7 @@ Phases execute in numeric order: 82 → 83 → … → 101. After Foundation (82
 | 83. Theme A — US Region Infrastructure | v7.0 | 4/4 | Complete    | 2026-06-07 |
 | 84. Theme A — US Profile Fields + en-US Locale | v7.0 | 7/7 | Complete    | 2026-06-08 |
 | 85. Theme A — W-Form Intake + Tax-Treaty Engine | v7.0 | 4/4 | Complete   | 2026-06-16 |
-| 86. Theme A — TIN-Match → 1099-NEC → IRIS → State | v7.0 | 0/TBD | Not started | - |
+| 86. Theme A — TIN-Match → 1099-NEC → IRIS → State | v7.0 | 0/8 | Planned | - |
 | 87. Theme A — 1042-S + US Classification + Letter | v7.0 | 0/TBD | Not started | - |
 | 88. Theme A — US Payment Rail | v7.0 | 0/TBD | Not started | - |
 | 89. Theme B — Worker Model Abstraction (gate) | v7.0 | 0/TBD | Not started | - |

@@ -25,7 +25,7 @@ The **year-end US information-return loop**, end-to-end on the data captured in 
 
 ### IRIS E-File Transmission (US-FORM-05)
 - **D-01:** **Manual-upload is the DEFAULT, TCC-independent transmit path.** `buildIrisXml()` → `xsdValidate()` (against the IRS XSDs, validated in CI mirroring the XRechnung KoSIT pattern) → admin downloads the validated `.xml` and uploads it to the IRS IRIS portal by hand. This ships and works with **no TCC**, never blocking GA on the ~45-day enrollment clock. Matches the local-only / no-product-theater posture.
-- **D-02:** **Live A2A is built but dark.** The SOAP/MTOM A2A transmit + ack-poll is implemented behind a flag (`iris-a2a-transmit`, registered **PENDING**), exercised only once the IRS TCC is approved. FIRE is **documentation-only** (legacy fallback note), no code.
+- **D-02:** **Live A2A is built but dark.** The SOAP/MTOM A2A transmit + ack-poll is implemented behind the existing **`module.iris-efile`** flag (already registered **PENDING** for IRIS e-file under FOUND7-02 — reused per RESEARCH A1; a separate `iris-a2a-transmit` flag is **NOT** minted, it would be redundant), exercised only once the IRS TCC is approved. FIRE is **documentation-only** (legacy fallback note), no code.
 - **D-03:** **Transmitter-adapter seam** mirroring the payment-export factory: a `TaxFilingTransmitter` interface with `ManualDownload` (default), `IrisA2A` (flag-gated), and `Vendor` (stub — Sovos / 1099Pro fallback path if TCC is never approved). One generation pipeline, swappable transmit tail.
 - **D-04:** **One ack parser, both paths.** For manual filing, the admin **uploads the acknowledgement file IRS returns**; the SAME ack-parser used by the A2A path consumes it and updates submission status (Accepted / Rejected / Partial) + `writeAuditLog`. Guarantees the parser is exercised in production even while A2A is dark, and rejection details stay structured.
 
@@ -46,7 +46,7 @@ The **year-end US information-return loop**, end-to-end on the data captured in 
 - **D-14:** **Non-CFSF output = per-state data file (CSV/summary) + documented manual-portal guidance.** A state-scoped file (recipients, amounts, state income/withholding boxes) plus per-state manual-filing steps — **no bespoke per-state e-file integrations or credentials**. Consistent with the IRIS manual-upload + local-only posture; a per-state e-file format can land later if a customer requires it.
 
 ### Cross-Cutting (carried forward — not re-asked)
-- **D-15:** **Whole surface gated on `module.us-expansion`** via `require-us-expansion-flag.ts` + conditional `root.ts` spread (mirrors P85). New `iris-a2a-transmit` (and any TIN-match-live) flags register **PENDING** in the signoff registry per FOUND7-02.
+- **D-15:** **Whole surface gated on `module.us-expansion`** via `require-us-expansion-flag.ts` + conditional `root.ts` spread (mirrors P85). The dark live-A2A path reuses the existing **`module.iris-efile`** PENDING flag (FOUND7-02, per RESEARCH A1 — no new `iris-a2a-transmit` flag); any live-TIN-match gate likewise reuses/registers a PENDING flag in the signoff registry.
 - **D-16:** **Immutable + supersede archive** for `Form1099Nec` (and IRIS submission records) — append-only, mirrors P85 `TaxFormSubmission` + `WhtCertificate`.
 - **D-17:** **Retention registration:** register `Form1099Nec` → `'1099-NEC'` (4yr) in `MODEL_RETENTION_TYPE` (`packages/db/src/retention-policy.ts`) so the data-purge chokepoint enforces IRS 4-year retention (7yr for backup-withholding records). Closes the P83 wiring point.
 - **D-18:** **Adviser-verify posture** — 1099-NEC, IRIS output, threshold config, and treaty/withholding figures ship with "needs jurisdiction-specific legal/tax-adviser verification before production deploy" annotations (local-only / legal-deferred). No artifact is presented as final legal advice.
@@ -97,10 +97,10 @@ The **year-end US information-return loop**, end-to-end on the data captured in 
 - `apps/cron-worker/src/jobs/registry.ts:29-108` + `runner.ts` + `index.ts` — register the notify-only year-end reminder job (D-05).
 - `packages/db/src/retention-policy.ts:13-58` + `apps/cron-worker/src/jobs/handlers/data-purge.ts:43-45` — register `Form1099Nec` in `MODEL_RETENTION_TYPE` (D-17).
 - `packages/api/src/middleware/require-us-expansion-flag.ts:29-47` + `packages/api/src/root.ts` — flag gating + conditional router spread (D-15).
-- `packages/feature-flags/src/registry.ts` — register `iris-a2a-transmit` (+ live-TIN-match) flags PENDING.
+- `packages/feature-flags/src/registry.ts` — confirm/reuse the existing `module.iris-efile` PENDING flag for the dark A2A path (per RESEARCH A1; do NOT mint `iris-a2a-transmit`); register a PENDING live-TIN-match gate if needed.
 
 ### Documentation-follows-code (update in the same change set)
-- `.planning/brain/wiki/domains/` (US-tax / year-end filing domain page — extend the P85 us-tax-forms page or add a sibling), `wiki/structure/api-routers-catalog.md` (new 1099/IRIS/TIN-match procedures), `wiki/structure/prisma-schema-areas.md` (`Form1099Nec` + IRIS submission + config tables), `wiki/structure/cron-jobs.md` (year-end reminder job), `wiki/integrations/` (IRS IRIS + e-Services TIN-Matching), `wiki/patterns/feature-flags.md` (`iris-a2a-transmit`), `wiki/log.md` + `hot.md`; `.planning/MEMORY.md` for any new invariant.
+- `.planning/brain/wiki/domains/` (US-tax / year-end filing domain page — extend the P85 us-tax-forms page or add a sibling), `wiki/structure/api-routers-catalog.md` (new 1099/IRIS/TIN-match procedures), `wiki/structure/prisma-schema-areas.md` (`Form1099Nec` + IRIS submission + config tables), `wiki/structure/cron-jobs.md` (year-end reminder job), `wiki/integrations/` (IRS IRIS + e-Services TIN-Matching), `wiki/patterns/feature-flags.md` (`module.iris-efile` reuse), `wiki/log.md` + `hot.md`; `.planning/MEMORY.md` for any new invariant.
 
 </canonical_refs>
 
@@ -149,7 +149,7 @@ The **year-end US information-return loop**, end-to-end on the data captured in 
 <deferred>
 ## Deferred Ideas
 
-- **Live IRIS A2A transmit (SOAP/MTOM)** — built but dark behind `iris-a2a-transmit`; activated when the IRS TCC is approved.
+- **Live IRIS A2A transmit (SOAP/MTOM)** — built but dark behind the existing `module.iris-efile` flag; activated when the IRS TCC is approved.
 - **Live IRS e-Services TIN-Matching client** — mock now; live behind a flag once PAF enrollment clears.
 - **Vendor transmitter (Sovos / 1099Pro)** — stub seam only; a real fallback path if the TCC is never approved.
 - **Actual 24% backup-withholding payout reduction** — flag is recorded here; enforcement is **Phase 88**.
