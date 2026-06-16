@@ -1,19 +1,14 @@
-// Form1099NecCopyBDocument template contract tests — Wave-0 RED scaffold (US-FORM-04).
+// Form1099NecCopyBDocument template contract tests.
 //
 // The recipient Copy-B PDF (substitute, black ink, Pub 1179 §4.6) must render to
 // a non-empty Buffer from the stored immutable snapshot and must show the
-// recipient TIN as last-4 ONLY (Pub 1179 masking + the P84/P85 SsnMaskedReveal
-// invariant — a full SSN never reaches the document). Text assertions walk the
-// React tree (the PDF binary encodes glyphs in ways that defeat substring
-// scans), mirroring the ir35-sds template test.
-//
-// The template does not exist yet, so this suite fails at module resolution —
-// terminal-RED accepted for Wave 0.
+// recipient TIN as last-4 ONLY (Pub 1179 masking — a full SSN never reaches the
+// document). Text assertions walk the React tree (the PDF binary encodes glyphs
+// in ways that defeat substring scans), mirroring the ir35-sds template test.
 
 import { renderToBuffer } from '@react-pdf/renderer';
 import type { ReactElement, ReactNode } from 'react';
 import { describe, expect, it } from 'vitest';
-// The implementation does not exist yet — Wave-0 RED (resolution-fail).
 import { Form1099NecCopyBDocument } from '../form-1099-nec-copy-b';
 
 function collectText(node: ReactNode): string[] {
@@ -51,7 +46,7 @@ const FIXTURE = {
   currency: 'USD',
 };
 
-describe('Form1099NecCopyBDocument — recipient Copy B (US-FORM-04 / D-09)', () => {
+describe('Form1099NecCopyBDocument — recipient Copy B', () => {
   it('renders to a non-empty PDF Buffer', async () => {
     const buffer = await renderToBuffer(Form1099NecCopyBDocument(FIXTURE));
 
@@ -64,5 +59,14 @@ describe('Form1099NecCopyBDocument — recipient Copy B (US-FORM-04 / D-09)', ()
 
     expect(text).toContain('1120');
     expect(text).not.toContain('078051120');
+  });
+
+  it('carries the adviser-verify footnote and box-1 / box-4 amounts', () => {
+    const text = collectText(Form1099NecCopyBDocument(FIXTURE)).join(' ');
+
+    expect(text).toMatch(/tax-adviser verification/i);
+    expect(text).toContain('Copy B');
+    // Box 1 nonemployee compensation formatted from minor units.
+    expect(text).toContain('2,500.00');
   });
 });
