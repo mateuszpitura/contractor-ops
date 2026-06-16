@@ -3,12 +3,12 @@
 //
 // Pure routing determination (no DB). The decisive axis for W-9 vs W-8 is
 // countryCode === 'US'; the foreign W-8BEN vs W-8BEN-E split routes on the
-// coarse Contractor.type column (NOT the fine-grained US entity type — Pitfall 1).
+// coarse Contractor.type column, NOT the fine-grained US entity type.
 
 import { describe, expect, it } from 'vitest';
 import { determineFormType } from '../tax-form-routing';
 
-describe('tax-form-routing — determineFormType (US-FORM-02, D-09, Pitfall 1)', () => {
+describe('tax-form-routing — determineFormType', () => {
   it('US contractors route to W-9 regardless of contractor type', () => {
     expect(determineFormType({ countryCode: 'US', contractorType: 'COMPANY' })).toBe('W9');
     expect(determineFormType({ countryCode: 'US', contractorType: 'SOLE_TRADER' })).toBe('W9');
