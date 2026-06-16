@@ -753,6 +753,21 @@ export {
   updateUserRoleSchema,
 } from './user.js';
 export type {
+  LobCategory,
+  TaxFormSubmissionInput,
+  W8BeneFormInput,
+  W8BenFormInput,
+  W9FormInput,
+} from './w-form-validators.js';
+export {
+  lobCategoryEnum,
+  taxFormSubmissionSchema,
+  w8beneEntityTypeEnum,
+  w8beneFormSchema,
+  w8benFormSchema,
+  w9FormSchema,
+} from './w-form-validators.js';
+export type {
   AddCommentInput,
   CancelRunInput,
   MyTasksListInput,
