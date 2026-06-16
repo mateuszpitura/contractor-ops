@@ -2,7 +2,7 @@
 phase: 85-theme-a-w-form-intake-tax-treaty-engine
 plan: 01
 subsystem: tax / treaty-engine
-status: checkpoint-pending
+status: complete
 tags: [prisma, schema, seed, withholding-tax, w-form, treaty-rate, us-expansion]
 requires:
   - "Phase 83 — DataRegion enum widened to {EU, ME, US}"
@@ -41,9 +41,9 @@ decisions:
 metrics:
   duration: "~6m"
   completed: "2026-06-16"
-  tasks_completed: 2
+  tasks_completed: 3
   tasks_total: 3
-  checkpoint_pending: true
+  checkpoint_pending: false
 ---
 
 # Phase 85 Plan 01: W-Form Data Foundation + Treaty-Rate Substrate Summary
@@ -100,31 +100,21 @@ None — plan executed as written for Tasks 1-2. Task 3 was intentionally held a
 
 - **Pre-existing enum-casing offenders** (out of scope): `db:audit-enum-casing` flags 5 lower_snake values on `enum ManualOverrideCategory` in `idp-deprovisioning.prisma` (Phase 76, file unmodified by this plan). The two new enums added here are compliant. Logged to `deferred-items.md`.
 
-## Checkpoint — Awaiting Human Approval
+## Checkpoint — RESOLVED (human-approved, applied 2026-06-16)
 
-The migration + seed against the live Neon EU/ME/US databases are **operational decisions** requiring human approval. The exact remaining commands (Task 3 action, steps 2-4):
+`prisma migrate dev` was **drift-blocked** as anticipated: the live Neon DB (single `contractor-ops` DB, EU region, seed-data only) was ~6 phases behind local history (Phases 72–77 migrations recorded but never applied), and replaying them through the shadow DB fails (`relation "ContractorComplianceItem" does not exist`) because earlier phases created objects via direct DDL rather than migration files. `migrate dev` and `migrate reset` both hit this wall.
 
-```bash
-# 2. Create + apply the migration SQL locally
-pnpm --filter @contractor-ops/db db:migrate:dev --name add_tax_form_submission_and_treaty_article
+**Path taken (operator-approved):** additive direct-DDL **full-sync** — `prisma migrate diff --from-config-datasource --to-schema ./prisma/schema --script` to generate the live-DB→HEAD delta, then `prisma db execute --file` to apply it. The squashed diff needed two manual corrections before it applied cleanly:
+1. **Reorder:** moved `ContractorComplianceItem ADD COLUMN waivedReasonCategory/waivedReasonNote` ahead of the `WaivedReasonCategory` enum-rewrite that alters those columns (Prisma emitted them out of order).
+2. **Stripped 3 artifacts:** `ALTER COLUMN "…searchVector…" DROP DEFAULT` on the generated `tsvector` FTS columns (`Contract.searchVector`, `Contractor.search_vector`, `Invoice.search_vector`) — Postgres rejects DROP DEFAULT on generated columns; these are no-op Prisma/generated-column diff artifacts, not real changes.
 
-# 3. Apply across regions (EU/ME/US; DATABASE_URL_US wired in migrate-all-regions.ts:43)
-pnpm --filter @contractor-ops/db db:migrate:all
+Applied in two passes (db execute is not fully transactional across a multi-statement file): first pass committed the 5 new enums + the `WaivedReasonCategory` rewrite; second pass applied the additive remainder (12 new tables incl. `TaxFormSubmission`, `WithholdingTaxRate.treatyArticle`, 39 indexes, FK constraints). Post-apply `migrate diff` is empty except the 3 permanent `search_vector DROP DEFAULT` artifacts (un-applicable cosmetic drift). Reference-data seed run via `tsx prisma/seed/index.ts` (`seedTaxRates`+`seedWhtRates`+`seedBoeRates`, idempotent upserts) — US treaty rows present. **NB:** `db:seed:dev` was deliberately NOT used (it `--confirm`-wipes tenant data).
 
-# 4. Seed the US treaty rows
-pnpm --filter @contractor-ops/db db:seed   # (or db:seed:dev)
-```
-
-**Migration-history-drift caveat (STATE.md):** prior phases (82-84) hit pre-existing migration-history drift on `prisma migrate dev`. If `db:migrate:dev` is drift-blocked, the documented additive direct-DDL fallback (used in Phases 82-84) applies:
-- `ALTER TABLE "WithholdingTaxRate" ADD COLUMN "treatyArticle" VARCHAR(40)`
-- `CREATE TYPE "TaxFormType"` + `CREATE TYPE "TaxFormStatus"`
-- `CREATE TABLE "TaxFormSubmission"` (+ the two indexes + FKs + supersede self-FK)
-
-Record whichever path is taken (canonical `migrate dev` vs drift-fallback) and confirm EU at minimum applied; per-region production apply is a deploy concern.
+**Outstanding infra debt (NOT phase 85):** the DB schema now matches HEAD, but `_prisma_migrations` still shows Phases 72–77 + this change as un-recorded — the migration history remains out of sync with the actual schema and needs a deliberate reconciliation (`migrate resolve --applied`, or a controlled baseline rebuild) as a separate task. The full-sync applied other phases' schema as a side effect of bringing the single shared DB current, at the operator's explicit direction.
 
 ## Self-Check: PASSED
 
 - Schema files modified + committed (`93d694699`).
-- Seed + regenerated client committed (`98110cae3`).
+- Seed code + regenerated client committed (`98110cae3`).
 - `prisma validate` green; `typecheck --filter @contractor-ops/db` green.
-- No DB-touching command run (migration/seed held).
+- Schema applied to the live DB (full-sync direct-DDL); post-apply diff empty (modulo permanent FTS artifacts); reference seed run.
