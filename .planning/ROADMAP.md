@@ -174,7 +174,11 @@ Known gaps / deferred at close: see STATE.md `## Deferred Items` (3 unverified p
   2. A foreign contractor completes a W-8BEN / W-8BEN-E wizard (treaty country + article picker, FTIN, certifications).
   3. When contractor and payer jurisdictions trigger a treaty (PL/DE/UK/UAE/KSA/IE/NL), the US treaty-rate table is applied automatically.
   4. The W-8BEN treaty article auto-populates from the contractor's home jurisdiction + treaty table.
-**Plans**: TBD
+**Plans**: 4 plans (4 waves)
+- [ ] 85-01-PLAN.md — Data + schema: extend WithholdingTaxRate (treatyArticle) + immutable TaxFormSubmission model + seed US treaty rows + BLOCKING multi-region migration
+- [ ] 85-02-PLAN.md — Treaty-rate engine (resolve/override/default) + form-routing + per-form validators + Wave-0 unit tests
+- [ ] 85-03-PLAN.md — Portal submit/draft/supersede/attest + staff read/track + module.us-expansion gating + audit + integration tests
+- [ ] 85-04-PLAN.md — web-vite portal wizard + staff status card (per UI-SPEC) + i18n (en/de/pl/ar/en-US) + wiki/MEMORY update
 **Research flag**: Standard — treaty table extends the v5.0 reverse-charge engine pattern. Treaty table must precede 1042-S (Phase 87).
 **UI hint**: yes
 
