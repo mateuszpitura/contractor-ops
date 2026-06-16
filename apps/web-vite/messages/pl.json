@@ -3146,6 +3146,7 @@
     "contractorHasActiveWorkflows": "Nie można zarchiwizować kontrahenta z aktywnymi workflow. Najpierw dokończ lub anuluj workflow.",
     "contractorHasActiveContracts": "Nie można zarchiwizować kontrahenta z aktywnymi umowami. Najpierw zakończ lub przypisz umowy inaczej.",
     "contractorInvalidTransition": "Ta zmiana statusu nie jest dozwolona.",
+    "contractorTaxIdExists": "Kontrahent z tym numerem podatkowym już istnieje w tej organizacji.",
     "companyLookupFailed": "Nie udało się pobrać danych firmy.",
     "contractNotFound": "Nie znaleziono umowy.",
     "contractEndDateBeforeStart": "Data zakończenia musi być po dacie rozpoczęcia.",
@@ -3243,6 +3244,9 @@
     "classificationAutosaveRateLimitExceeded": "Zbyt wiele automatycznych zapisów. Spróbuj ponownie później.",
     "classificationAssessmentIdRequired": "Wymagany identyfikator oceny.",
     "classificationEngineDisabled": "Silnik klasyfikacji jest wyłączony dla tej organizacji.",
+    "usExpansionDisabled": "Rejestracja amerykańskich formularzy podatkowych nie jest włączona dla tej organizacji.",
+    "taxFormNotFound": "Nie znaleziono formularza podatkowego.",
+    "taxFormNotDraft": "Edytować można tylko formularz podatkowy w wersji roboczej.",
     "classificationAssessmentNotFound": "Nie znaleziono oceny klasyfikacji.",
     "classificationAssessmentNotCompleted": "Ocena musi być ukończona ze zrzutem pytań przed wygenerowaniem SDS.",
     "classificationGenerateSdsIr35Only": "generateSds dotyczy tylko ocen IR35 (GB).",
@@ -7421,6 +7425,166 @@
     "errors": {
       "createFailed": "Nie udało się utworzyć organizacji. Spróbuj ponownie."
     }
+  },
+  "TaxFormWizard": {
+    "title": "Formularz statusu podatkowego",
+    "subtitle": "Uzupełnij swój amerykański status podatkowy, abyśmy mogli prawidłowo Ci zapłacić.",
+    "step": {
+      "determination": "Formularz",
+      "form": "Dane",
+      "attest": "Potwierdź",
+      "receipt": "Gotowe"
+    },
+    "nav": {
+      "back": "Wstecz",
+      "continueToCertify": "Przejdź do potwierdzenia"
+    },
+    "determination": {
+      "heading": "Potwierdź swój formularz podatkowy",
+      "body": "Na podstawie Twojego profilu przygotujemy formularz {formName}. Jeśli to nieprawidłowe, możesz zmienić go poniżej.",
+      "formName": {
+        "W9": "W-9",
+        "W8BEN": "W-8BEN",
+        "W8BENE": "W-8BEN-E"
+      },
+      "formTypeLabel": "Formularz podatkowy",
+      "formTypeHelp": "Wybierz inny formularz tylko wtedy, gdy zalecany nie pasuje do Twojej sytuacji.",
+      "continue": "Przejdź do danych"
+    },
+    "w9": {
+      "heading": "Twoje dane W-9",
+      "subtitle": "Potwierdź typ podmiotu i dane podatkowe jako osoba amerykańska.",
+      "entityTypeLabel": "Federalna klasyfikacja podatkowa",
+      "entityTypePlaceholder": "Wybierz klasyfikację",
+      "entityTypeRequired": "Wybierz swoją federalną klasyfikację podatkową.",
+      "einLabel": "Numer identyfikacyjny pracodawcy (EIN)",
+      "einPlaceholder": "12-3456789",
+      "einHelp": "Pozostaw puste, jeśli potwierdzisz numerem SSN już zapisanym w aktach.",
+      "backupWithholdingLabel": "Podlegam zapasowemu poborowi podatku (backup withholding)."
+    },
+    "usEntityType": {
+      "SOLE_PROPRIETOR": "Jednoosobowa działalność gospodarcza",
+      "LLC": "Spółka z ograniczoną odpowiedzialnością (LLC)",
+      "C_CORP": "Korporacja typu C",
+      "S_CORP": "Korporacja typu S",
+      "PARTNERSHIP": "Spółka osobowa",
+      "INDIVIDUAL": "Osoba fizyczna"
+    },
+    "w8": {
+      "treatyCountryLabel": "Kraj rezydencji podatkowej",
+      "treatyCountryHelp": "Dwuliterowy kod kraju (np. PL, DE, GB).",
+      "ftinLabel": "Zagraniczny numer identyfikacji podatkowej (FTIN)",
+      "ftinHelp": "Twój numer podatkowy wydany przez kraj rezydencji.",
+      "ftinRequired": "Wprowadź swój zagraniczny numer identyfikacji podatkowej.",
+      "addressLine1Label": "Adres stałego zamieszkania",
+      "addressLine2Label": "Adres, wiersz 2 (opcjonalnie)",
+      "cityLabel": "Miasto",
+      "postalCodeLabel": "Kod pocztowy"
+    },
+    "w8ben": {
+      "heading": "Twoje dane W-8BEN",
+      "subtitle": "Jako właściciel rzeczywisty potwierdź swoją zagraniczną rezydencję i roszczenie z umowy podatkowej."
+    },
+    "w8bene": {
+      "heading": "Twoje dane W-8BEN-E",
+      "subtitle": "Potwierdź klasyfikację podmiotu, roszczenie z umowy podatkowej i zagraniczną rezydencję.",
+      "entityTypeLabel": "Typ podmiotu",
+      "entityTypePlaceholder": "Wybierz typ podmiotu",
+      "lobCategoryLabel": "Ograniczenie korzyści (LOB)",
+      "lobCategoryPlaceholder": "Wybierz kategorię, którą spełniasz",
+      "lobCategoryHelp": "Wybierz kategorię korzyści z umowy, która dotyczy Twojego podmiotu."
+    },
+    "entityType": {
+      "CORPORATION": "Korporacja",
+      "PARTNERSHIP": "Spółka osobowa",
+      "DISREGARDED_ENTITY": "Podmiot transparentny podatkowo",
+      "TRUST": "Trust",
+      "ESTATE": "Masa spadkowa",
+      "GOVERNMENT": "Rząd",
+      "CENTRAL_BANK_OF_ISSUE": "Bank centralny emisji",
+      "TAX_EXEMPT_ORGANIZATION": "Organizacja zwolniona z podatku",
+      "PRIVATE_FOUNDATION": "Fundacja prywatna",
+      "INTERNATIONAL_ORGANIZATION": "Organizacja międzynarodowa"
+    },
+    "lobCategory": {
+      "GOVERNMENT": "Rząd",
+      "TAX_EXEMPT_PENSION_TRUST": "Zwolniony z podatku fundusz lub trust emerytalny",
+      "OTHER_TAX_EXEMPT_ORGANIZATION": "Inna organizacja zwolniona z podatku",
+      "PUBLICLY_TRADED_CORPORATION": "Korporacja notowana publicznie",
+      "SUBSIDIARY_OF_PUBLICLY_TRADED_CORPORATION": "Spółka zależna korporacji notowanej publicznie",
+      "COMPANY_MEETS_OWNERSHIP_BASE_EROSION_TEST": "Spółka spełniająca test własności i erozji podstawy",
+      "COMPANY_MEETS_DERIVATIVE_BENEFITS_TEST": "Spółka spełniająca test korzyści pochodnych",
+      "COMPANY_WITH_ITEM_OF_INCOME_MEETS_ACTIVE_TRADE_BUSINESS_TEST": "Spółka z pozycją dochodu spełniającą test aktywnej działalności",
+      "FAVORABLE_DISCRETIONARY_DETERMINATION": "Uzyskano korzystną decyzję uznaniową",
+      "OTHER": "Inne"
+    },
+    "treaty": {
+      "applied": "Stawka z umowy zastosowana automatycznie: {rate}% na podstawie {article} ({country}).",
+      "noTreaty": "Dla kraju {country} nie obowiązuje umowa podatkowa — stosowana jest domyślna ustawowa stawka 30%.",
+      "adviserNote": "Stawki oczekują na weryfikację przez doradcę podatkowego."
+    },
+    "perjury": {
+      "w9": "Pod rygorem odpowiedzialności karnej za krzywoprzysięstwo oświadczam, że numer podany w tym formularzu jest moim prawidłowym numerem identyfikacji podatkowej, że nie podlegam zapasowemu poborowi podatku (chyba że wskazano powyżej), że jestem osobą amerykańską oraz że wszelki podany kod FATCA jest prawidłowy.",
+      "w8ben": "Pod rygorem odpowiedzialności karnej za krzywoprzysięstwo oświadczam, że zapoznałem się z informacjami w tym formularzu, że jestem osobą fizyczną będącą właścicielem rzeczywistym dochodu, że dochód nie jest faktycznie powiązany z działalnością handlową lub gospodarczą w USA oraz że jestem rezydentem wskazanego kraju umowy.",
+      "w8bene": "Pod rygorem odpowiedzialności karnej za krzywoprzysięstwo oświadczam, że zapoznałem się z informacjami w tym formularzu, że jestem upoważniony do podpisania w imieniu podmiotu będącego właścicielem rzeczywistym dochodu, że podmiot jest rezydentem wskazanego kraju umowy oraz że podmiot spełnia wskazane postanowienie o ograniczeniu korzyści."
+    },
+    "attest": {
+      "heading": "Potwierdź i podpisz",
+      "subtitle": "Przeczytaj każde oświadczenie, a następnie wpisz swoje imię i nazwisko, aby podpisać.",
+      "certificationsLabel": "Oświadczenia",
+      "signatureAffirmation": "Rozumiem, że jest to podpis prawnie wiążący.",
+      "typedNameLabel": "Wpisz pełne imię i nazwisko, aby podpisać",
+      "typedNameHelp": "Wpisz pełne imię i nazwisko dokładnie tak, jak widnieje w Twoim profilu.",
+      "signSubmit": "Podpisz i wyślij",
+      "submitting": "Wysyłanie…",
+      "submitError": "Nie udało się wysłać formularza. Sprawdź swoje dane i spróbuj ponownie."
+    },
+    "receipt": {
+      "heading": "Formularz podatkowy wysłany",
+      "body": "Twój {formName} jest zapisany w aktach. Zarejestrowaliśmy Twój podpis w dniu {date}. Możesz go w każdej chwili przejrzeć lub zaktualizować."
+    },
+    "empty": {
+      "heading": "Brak formularza podatkowego w aktach",
+      "body": "Uzupełnij formularz statusu podatkowego, abyśmy mogli prawidłowo Ci zapłacić. Zajmie to kilka minut.",
+      "start": "Rozpocznij formularz podatkowy"
+    },
+    "error": {
+      "loadHeading": "Nie udało się załadować formularza podatkowego",
+      "loadBody": "Coś poszło nie tak. Odśwież, aby spróbować ponownie.",
+      "reload": "Załaduj formularz ponownie"
+    }
+  },
+  "TaxFormStaff": {
+    "heading": "Status podatkowy",
+    "empty": {
+      "heading": "Nie złożono jeszcze formularza podatkowego",
+      "body": "Ten wykonawca nie wypełnił formularza W. Poproś o niego, aby rozpocząć proces.",
+      "request": "Poproś o formularz podatkowy"
+    },
+    "loadError": "Nie udało się załadować formularzy podatkowych. Odśwież, aby spróbować ponownie.",
+    "reload": "Załaduj formularz ponownie",
+    "formTypeLabel": "Formularz",
+    "treatyLabel": "Roszczenie z umowy",
+    "treatyValue": "{rate}% na podstawie {article}",
+    "treatyNone": "Brak roszczenia z umowy",
+    "signedLabel": "Podpisano",
+    "expiresLabel": "Wygasa",
+    "adviserNote": "Stawki z umów oczekują na weryfikację przez doradcę podatkowego.",
+    "status": {
+      "active": "Aktywny",
+      "draft": "Wersja robocza",
+      "superseded": "Zastąpiony",
+      "expiring": "Wkrótce wygasa",
+      "expired": "Wygasł"
+    },
+    "statusTooltip": {
+      "active": "Ten formularz jest aktywnym rekordem w aktach.",
+      "draft": "Ten formularz to zapisana wersja robocza i nie został jeszcze podpisany.",
+      "superseded": "Ten formularz został zastąpiony nowszym zgłoszeniem.",
+      "expiring": "Ten formularz wkrótce wygaśnie — poproś o zaktualizowany.",
+      "expired": "Ten formularz wygasł — poproś o zaktualizowany."
+    },
+    "pillAriaLabel": "Status formularza podatkowego: {status}"
   },
   "Validation": {
     "required": "To pole jest wymagane",

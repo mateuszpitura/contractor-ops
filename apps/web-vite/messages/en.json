@@ -3146,6 +3146,7 @@
     "contractorHasActiveWorkflows": "Cannot archive contractor with active workflows. Complete or cancel workflows first.",
     "contractorHasActiveContracts": "Cannot archive contractor with active contracts. End or reassign contracts first.",
     "contractorInvalidTransition": "This status transition is not allowed.",
+    "contractorTaxIdExists": "A contractor with this tax ID already exists in this organisation.",
     "companyLookupFailed": "Company lookup failed.",
     "contractNotFound": "Contract not found.",
     "contractEndDateBeforeStart": "End date must be after start date.",
@@ -3243,6 +3244,9 @@
     "classificationAutosaveRateLimitExceeded": "Too many autosaves. Please try again later.",
     "classificationAssessmentIdRequired": "Assessment ID is required.",
     "classificationEngineDisabled": "Classification engine is disabled for this organization.",
+    "usExpansionDisabled": "US tax-form intake is not enabled for this organization.",
+    "taxFormNotFound": "Tax form not found.",
+    "taxFormNotDraft": "Only a draft tax form can be edited.",
     "classificationAssessmentNotFound": "Classification assessment not found.",
     "classificationAssessmentNotCompleted": "Assessment must be completed with a captured questions snapshot before generating an SDS.",
     "classificationGenerateSdsIr35Only": "generateSds only applies to IR35 (GB) classification assessments.",
@@ -7420,6 +7424,166 @@
     "errors": {
       "createFailed": "Couldn't create your organization. Please try again."
     }
+  },
+  "TaxFormWizard": {
+    "title": "Tax status form",
+    "subtitle": "Complete your US tax status so we can pay you correctly.",
+    "step": {
+      "determination": "Form",
+      "form": "Details",
+      "attest": "Certify",
+      "receipt": "Done"
+    },
+    "nav": {
+      "back": "Back",
+      "continueToCertify": "Continue to certify"
+    },
+    "determination": {
+      "heading": "Confirm your tax form",
+      "body": "Based on your profile we'll prepare your {formName}. If this isn't right, you can change it below.",
+      "formName": {
+        "W9": "W-9",
+        "W8BEN": "W-8BEN",
+        "W8BENE": "W-8BEN-E"
+      },
+      "formTypeLabel": "Tax form",
+      "formTypeHelp": "Choose a different form only if the recommended one doesn't fit your situation.",
+      "continue": "Continue to details"
+    },
+    "w9": {
+      "heading": "Your W-9 details",
+      "subtitle": "Confirm your entity type and taxpayer details as a US person.",
+      "entityTypeLabel": "Federal tax classification",
+      "entityTypePlaceholder": "Select your classification",
+      "entityTypeRequired": "Select your federal tax classification.",
+      "einLabel": "Employer Identification Number (EIN)",
+      "einPlaceholder": "12-3456789",
+      "einHelp": "Leave blank if you'll certify with the SSN already on file.",
+      "backupWithholdingLabel": "I am subject to backup withholding."
+    },
+    "usEntityType": {
+      "SOLE_PROPRIETOR": "Sole proprietor",
+      "LLC": "Limited liability company (LLC)",
+      "C_CORP": "C corporation",
+      "S_CORP": "S corporation",
+      "PARTNERSHIP": "Partnership",
+      "INDIVIDUAL": "Individual"
+    },
+    "w8": {
+      "treatyCountryLabel": "Country of tax residence",
+      "treatyCountryHelp": "Two-letter country code (for example PL, DE, GB).",
+      "ftinLabel": "Foreign tax identifying number (FTIN)",
+      "ftinHelp": "Your tax ID issued by your country of residence.",
+      "ftinRequired": "Enter your foreign tax identifying number.",
+      "addressLine1Label": "Permanent residence address",
+      "addressLine2Label": "Address line 2 (optional)",
+      "cityLabel": "City",
+      "postalCodeLabel": "Postal code"
+    },
+    "w8ben": {
+      "heading": "Your W-8BEN details",
+      "subtitle": "Confirm your foreign residence and treaty claim as the beneficial owner."
+    },
+    "w8bene": {
+      "heading": "Your W-8BEN-E details",
+      "subtitle": "Confirm your entity classification, treaty claim, and foreign residence.",
+      "entityTypeLabel": "Entity type",
+      "entityTypePlaceholder": "Select your entity type",
+      "lobCategoryLabel": "Limitation on benefits (LOB)",
+      "lobCategoryPlaceholder": "Select the category you qualify under",
+      "lobCategoryHelp": "Choose the treaty benefits category that applies to your entity."
+    },
+    "entityType": {
+      "CORPORATION": "Corporation",
+      "PARTNERSHIP": "Partnership",
+      "DISREGARDED_ENTITY": "Disregarded entity",
+      "TRUST": "Trust",
+      "ESTATE": "Estate",
+      "GOVERNMENT": "Government",
+      "CENTRAL_BANK_OF_ISSUE": "Central bank of issue",
+      "TAX_EXEMPT_ORGANIZATION": "Tax-exempt organization",
+      "PRIVATE_FOUNDATION": "Private foundation",
+      "INTERNATIONAL_ORGANIZATION": "International organization"
+    },
+    "lobCategory": {
+      "GOVERNMENT": "Government",
+      "TAX_EXEMPT_PENSION_TRUST": "Tax-exempt pension trust or fund",
+      "OTHER_TAX_EXEMPT_ORGANIZATION": "Other tax-exempt organization",
+      "PUBLICLY_TRADED_CORPORATION": "Publicly traded corporation",
+      "SUBSIDIARY_OF_PUBLICLY_TRADED_CORPORATION": "Subsidiary of a publicly traded corporation",
+      "COMPANY_MEETS_OWNERSHIP_BASE_EROSION_TEST": "Company that meets the ownership and base erosion test",
+      "COMPANY_MEETS_DERIVATIVE_BENEFITS_TEST": "Company that meets the derivative benefits test",
+      "COMPANY_WITH_ITEM_OF_INCOME_MEETS_ACTIVE_TRADE_BUSINESS_TEST": "Company with an item of income that meets the active trade or business test",
+      "FAVORABLE_DISCRETIONARY_DETERMINATION": "Favorable discretionary determination received",
+      "OTHER": "Other"
+    },
+    "treaty": {
+      "applied": "Treaty rate applied automatically: {rate}% under {article} ({country}).",
+      "noTreaty": "No tax treaty applies for {country} — the default 30% statutory rate is used.",
+      "adviserNote": "Rates are pending verification by a tax adviser."
+    },
+    "perjury": {
+      "w9": "Under penalties of perjury, I certify that the number shown on this form is my correct taxpayer identification number, that I am not subject to backup withholding (unless indicated above), that I am a US person, and that any FATCA code entered is correct.",
+      "w8ben": "Under penalties of perjury, I declare that I have examined the information on this form and that I am the individual that is the beneficial owner of the income, that the income is not effectively connected with a US trade or business, and that I am a resident of the treaty country claimed.",
+      "w8bene": "Under penalties of perjury, I declare that I have examined the information on this form and that I am authorized to sign for the entity that is the beneficial owner of the income, that the entity is a resident of the treaty country claimed, and that the entity meets the limitation on benefits provision claimed."
+    },
+    "attest": {
+      "heading": "Certify and sign",
+      "subtitle": "Read each certification, then type your legal name to sign.",
+      "certificationsLabel": "Certifications",
+      "signatureAffirmation": "I understand this is a legal signature.",
+      "typedNameLabel": "Type your full legal name to sign",
+      "typedNameHelp": "Enter your full legal name exactly as it appears on your profile.",
+      "signSubmit": "Sign & submit",
+      "submitting": "Submitting…",
+      "submitError": "We couldn't submit your form. Check your entries and try again."
+    },
+    "receipt": {
+      "heading": "Tax form submitted",
+      "body": "Your {formName} is on file. We've recorded your signature on {date}. You can view or update it anytime."
+    },
+    "empty": {
+      "heading": "No tax form on file",
+      "body": "Complete your tax status form so we can pay you correctly. It takes a few minutes.",
+      "start": "Start tax form"
+    },
+    "error": {
+      "loadHeading": "Couldn't load your tax form",
+      "loadBody": "Something went wrong. Refresh to try again.",
+      "reload": "Reload tax form"
+    }
+  },
+  "TaxFormStaff": {
+    "heading": "Tax status",
+    "empty": {
+      "heading": "No tax form submitted yet",
+      "body": "This contractor hasn't completed a W-form. Request one to start the process.",
+      "request": "Request tax form"
+    },
+    "loadError": "Couldn't load tax forms. Reload to try again.",
+    "reload": "Reload tax form",
+    "formTypeLabel": "Form",
+    "treatyLabel": "Treaty claim",
+    "treatyValue": "{rate}% under {article}",
+    "treatyNone": "No treaty claim",
+    "signedLabel": "Signed",
+    "expiresLabel": "Expires",
+    "adviserNote": "Treaty rates are pending verification by a tax adviser.",
+    "status": {
+      "active": "Active",
+      "draft": "Draft",
+      "superseded": "Superseded",
+      "expiring": "Expiring soon",
+      "expired": "Expired"
+    },
+    "statusTooltip": {
+      "active": "This form is the active record on file.",
+      "draft": "This form is a saved draft and not yet signed.",
+      "superseded": "This form was replaced by a newer submission.",
+      "expiring": "This form expires soon — request a refreshed one.",
+      "expired": "This form has expired — request a refreshed one."
+    },
+    "pillAriaLabel": "Tax form status: {status}"
   },
   "Validation": {
     "required": "This field is required",

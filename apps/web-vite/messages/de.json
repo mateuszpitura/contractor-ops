@@ -3146,6 +3146,7 @@
     "contractorHasActiveWorkflows": "Auftragnehmer mit aktiven Workflows kann nicht archiviert werden. Schließen Sie Workflows zunächst ab oder brechen Sie sie ab.",
     "contractorHasActiveContracts": "Auftragnehmer mit aktiven Verträgen kann nicht archiviert werden. Beenden oder weisen Sie Verträge zunächst neu zu.",
     "contractorInvalidTransition": "Dieser Statuswechsel ist nicht zulässig.",
+    "contractorTaxIdExists": "Ein Auftragnehmer mit dieser Steuernummer existiert bereits in dieser Organisation.",
     "companyLookupFailed": "Firmenabfrage fehlgeschlagen.",
     "contractNotFound": "Vertrag nicht gefunden.",
     "contractEndDateBeforeStart": "Enddatum muss nach dem Startdatum liegen.",
@@ -3243,6 +3244,9 @@
     "classificationAutosaveRateLimitExceeded": "Zu viele automatische Speicherungen. Bitte versuchen Sie es später erneut.",
     "classificationAssessmentIdRequired": "Bewertungs-ID erforderlich.",
     "classificationEngineDisabled": "Die Klassifizierungs-Engine ist für diese Organisation deaktiviert.",
+    "usExpansionDisabled": "Die US-Steuerformularerfassung ist für diese Organisation nicht aktiviert.",
+    "taxFormNotFound": "Steuerformular nicht gefunden.",
+    "taxFormNotDraft": "Nur ein Steuerformular im Entwurfsstatus kann bearbeitet werden.",
     "classificationAssessmentNotFound": "Klassifizierungsbewertung nicht gefunden.",
     "classificationAssessmentNotCompleted": "Die Bewertung muss mit einem erfassten Fragen-Snapshot abgeschlossen sein, bevor ein SDS generiert werden kann.",
     "classificationGenerateSdsIr35Only": "generateSds gilt nur für IR35-Klassifizierungsbewertungen (GB).",
@@ -7421,6 +7425,166 @@
     "errors": {
       "createFailed": "Organisation konnte nicht erstellt werden. Bitte versuche es erneut."
     }
+  },
+  "TaxFormWizard": {
+    "title": "Steuerstatus-Formular",
+    "subtitle": "Vervollständigen Sie Ihren US-Steuerstatus, damit wir Sie korrekt bezahlen können.",
+    "step": {
+      "determination": "Formular",
+      "form": "Angaben",
+      "attest": "Bestätigen",
+      "receipt": "Fertig"
+    },
+    "nav": {
+      "back": "Zurück",
+      "continueToCertify": "Weiter zur Bestätigung"
+    },
+    "determination": {
+      "heading": "Bestätigen Sie Ihr Steuerformular",
+      "body": "Anhand Ihres Profils bereiten wir Ihr {formName} vor. Falls dies nicht zutrifft, können Sie es unten ändern.",
+      "formName": {
+        "W9": "W-9",
+        "W8BEN": "W-8BEN",
+        "W8BENE": "W-8BEN-E"
+      },
+      "formTypeLabel": "Steuerformular",
+      "formTypeHelp": "Wählen Sie nur dann ein anderes Formular, wenn das empfohlene nicht zu Ihrer Situation passt.",
+      "continue": "Weiter zu den Angaben"
+    },
+    "w9": {
+      "heading": "Ihre W-9-Angaben",
+      "subtitle": "Bestätigen Sie Ihren Entitätstyp und Ihre Steuerdaten als US-Person.",
+      "entityTypeLabel": "Bundessteuerliche Einstufung",
+      "entityTypePlaceholder": "Einstufung auswählen",
+      "entityTypeRequired": "Wählen Sie Ihre bundessteuerliche Einstufung.",
+      "einLabel": "Arbeitgeber-Identifikationsnummer (EIN)",
+      "einPlaceholder": "12-3456789",
+      "einHelp": "Leer lassen, wenn Sie mit der bereits hinterlegten SSN bestätigen.",
+      "backupWithholdingLabel": "Ich unterliege der Backup-Quellensteuer."
+    },
+    "usEntityType": {
+      "SOLE_PROPRIETOR": "Einzelunternehmer",
+      "LLC": "Gesellschaft mit beschränkter Haftung (LLC)",
+      "C_CORP": "C-Corporation",
+      "S_CORP": "S-Corporation",
+      "PARTNERSHIP": "Personengesellschaft",
+      "INDIVIDUAL": "Einzelperson"
+    },
+    "w8": {
+      "treatyCountryLabel": "Land des steuerlichen Wohnsitzes",
+      "treatyCountryHelp": "Zweistelliger Ländercode (z. B. PL, DE, GB).",
+      "ftinLabel": "Ausländische Steueridentifikationsnummer (FTIN)",
+      "ftinHelp": "Ihre vom Wohnsitzland ausgestellte Steuernummer.",
+      "ftinRequired": "Geben Sie Ihre ausländische Steueridentifikationsnummer ein.",
+      "addressLine1Label": "Ständige Wohnanschrift",
+      "addressLine2Label": "Adresszeile 2 (optional)",
+      "cityLabel": "Stadt",
+      "postalCodeLabel": "Postleitzahl"
+    },
+    "w8ben": {
+      "heading": "Ihre W-8BEN-Angaben",
+      "subtitle": "Bestätigen Sie als wirtschaftlich Berechtigter Ihren ausländischen Wohnsitz und Ihren Abkommensanspruch."
+    },
+    "w8bene": {
+      "heading": "Ihre W-8BEN-E-Angaben",
+      "subtitle": "Bestätigen Sie Ihre Entitätseinstufung, Ihren Abkommensanspruch und Ihren ausländischen Wohnsitz.",
+      "entityTypeLabel": "Entitätstyp",
+      "entityTypePlaceholder": "Entitätstyp auswählen",
+      "lobCategoryLabel": "Limitation on Benefits (LOB)",
+      "lobCategoryPlaceholder": "Wählen Sie die zutreffende Kategorie",
+      "lobCategoryHelp": "Wählen Sie die Abkommensvergünstigungskategorie, die auf Ihre Entität zutrifft."
+    },
+    "entityType": {
+      "CORPORATION": "Kapitalgesellschaft",
+      "PARTNERSHIP": "Personengesellschaft",
+      "DISREGARDED_ENTITY": "Transparente Einheit",
+      "TRUST": "Trust",
+      "ESTATE": "Nachlass",
+      "GOVERNMENT": "Regierung",
+      "CENTRAL_BANK_OF_ISSUE": "Notenbank",
+      "TAX_EXEMPT_ORGANIZATION": "Steuerbefreite Organisation",
+      "PRIVATE_FOUNDATION": "Private Stiftung",
+      "INTERNATIONAL_ORGANIZATION": "Internationale Organisation"
+    },
+    "lobCategory": {
+      "GOVERNMENT": "Regierung",
+      "TAX_EXEMPT_PENSION_TRUST": "Steuerbefreiter Pensionsfonds oder -trust",
+      "OTHER_TAX_EXEMPT_ORGANIZATION": "Andere steuerbefreite Organisation",
+      "PUBLICLY_TRADED_CORPORATION": "Börsennotierte Kapitalgesellschaft",
+      "SUBSIDIARY_OF_PUBLICLY_TRADED_CORPORATION": "Tochtergesellschaft einer börsennotierten Kapitalgesellschaft",
+      "COMPANY_MEETS_OWNERSHIP_BASE_EROSION_TEST": "Unternehmen, das den Eigentums- und Base-Erosion-Test erfüllt",
+      "COMPANY_MEETS_DERIVATIVE_BENEFITS_TEST": "Unternehmen, das den Derivative-Benefits-Test erfüllt",
+      "COMPANY_WITH_ITEM_OF_INCOME_MEETS_ACTIVE_TRADE_BUSINESS_TEST": "Unternehmen mit einer Einkunftsart, die den Active-Trade-or-Business-Test erfüllt",
+      "FAVORABLE_DISCRETIONARY_DETERMINATION": "Günstige Ermessensentscheidung erhalten",
+      "OTHER": "Sonstige"
+    },
+    "treaty": {
+      "applied": "Abkommenssatz automatisch angewendet: {rate}% gemäß {article} ({country}).",
+      "noTreaty": "Für {country} gilt kein Steuerabkommen — es wird der gesetzliche Standardsatz von 30% verwendet.",
+      "adviserNote": "Die Sätze stehen unter Vorbehalt der Prüfung durch einen Steuerberater."
+    },
+    "perjury": {
+      "w9": "Unter Strafandrohung wegen Meineids bestätige ich, dass die auf diesem Formular angegebene Nummer meine korrekte Steueridentifikationsnummer ist, dass ich nicht der Backup-Quellensteuer unterliege (sofern oben nicht anders angegeben), dass ich eine US-Person bin und dass ein etwaiger FATCA-Code korrekt ist.",
+      "w8ben": "Unter Strafandrohung wegen Meineids erkläre ich, dass ich die Angaben auf diesem Formular geprüft habe, dass ich die wirtschaftlich berechtigte natürliche Person der Einkünfte bin, dass die Einkünfte nicht effektiv mit einem US-Handels- oder Geschäftsbetrieb verbunden sind und dass ich im beanspruchten Abkommensstaat ansässig bin.",
+      "w8bene": "Unter Strafandrohung wegen Meineids erkläre ich, dass ich die Angaben auf diesem Formular geprüft habe, dass ich zur Unterzeichnung für die wirtschaftlich berechtigte Einheit befugt bin, dass die Einheit im beanspruchten Abkommensstaat ansässig ist und dass die Einheit die beanspruchte Limitation-on-Benefits-Bestimmung erfüllt."
+    },
+    "attest": {
+      "heading": "Bestätigen und unterschreiben",
+      "subtitle": "Lesen Sie jede Bestätigung und geben Sie dann Ihren rechtlichen Namen zur Unterschrift ein.",
+      "certificationsLabel": "Bestätigungen",
+      "signatureAffirmation": "Ich verstehe, dass dies eine rechtsgültige Unterschrift ist.",
+      "typedNameLabel": "Geben Sie Ihren vollständigen rechtlichen Namen zur Unterschrift ein",
+      "typedNameHelp": "Geben Sie Ihren vollständigen rechtlichen Namen genau so ein, wie er in Ihrem Profil erscheint.",
+      "signSubmit": "Unterschreiben & absenden",
+      "submitting": "Wird gesendet…",
+      "submitError": "Ihr Formular konnte nicht gesendet werden. Prüfen Sie Ihre Angaben und versuchen Sie es erneut."
+    },
+    "receipt": {
+      "heading": "Steuerformular gesendet",
+      "body": "Ihr {formName} ist hinterlegt. Wir haben Ihre Unterschrift am {date} erfasst. Sie können es jederzeit einsehen oder aktualisieren."
+    },
+    "empty": {
+      "heading": "Kein Steuerformular hinterlegt",
+      "body": "Vervollständigen Sie Ihr Steuerstatus-Formular, damit wir Sie korrekt bezahlen können. Es dauert nur wenige Minuten.",
+      "start": "Steuerformular starten"
+    },
+    "error": {
+      "loadHeading": "Steuerformular konnte nicht geladen werden",
+      "loadBody": "Etwas ist schiefgelaufen. Aktualisieren Sie, um es erneut zu versuchen.",
+      "reload": "Steuerformular neu laden"
+    }
+  },
+  "TaxFormStaff": {
+    "heading": "Steuerstatus",
+    "empty": {
+      "heading": "Noch kein Steuerformular eingereicht",
+      "body": "Dieser Auftragnehmer hat noch kein W-Formular ausgefüllt. Fordern Sie eines an, um den Prozess zu starten.",
+      "request": "Steuerformular anfordern"
+    },
+    "loadError": "Steuerformulare konnten nicht geladen werden. Neu laden, um es erneut zu versuchen.",
+    "reload": "Steuerformular neu laden",
+    "formTypeLabel": "Formular",
+    "treatyLabel": "Abkommensanspruch",
+    "treatyValue": "{rate}% gemäß {article}",
+    "treatyNone": "Kein Abkommensanspruch",
+    "signedLabel": "Unterzeichnet",
+    "expiresLabel": "Läuft ab",
+    "adviserNote": "Die Abkommenssätze stehen unter Vorbehalt der Prüfung durch einen Steuerberater.",
+    "status": {
+      "active": "Aktiv",
+      "draft": "Entwurf",
+      "superseded": "Ersetzt",
+      "expiring": "Läuft bald ab",
+      "expired": "Abgelaufen"
+    },
+    "statusTooltip": {
+      "active": "Dieses Formular ist der aktive hinterlegte Datensatz.",
+      "draft": "Dieses Formular ist ein gespeicherter Entwurf und noch nicht unterzeichnet.",
+      "superseded": "Dieses Formular wurde durch eine neuere Einreichung ersetzt.",
+      "expiring": "Dieses Formular läuft bald ab — fordern Sie ein aktualisiertes an.",
+      "expired": "Dieses Formular ist abgelaufen — fordern Sie ein aktualisiertes an."
+    },
+    "pillAriaLabel": "Status des Steuerformulars: {status}"
   },
   "Validation": {
     "required": "Dieses Feld ist erforderlich",

@@ -22,6 +22,7 @@ const PortalCompliancePage = lazy(() => import('../pages/portal/compliance.js'))
 const PortalComplianceUploadReplacementPage = lazy(
   () => import('../pages/portal/compliance-upload-replacement.js'),
 );
+const PortalTaxFormPage = lazy(() => import('../pages/portal/tax-form-page.js'));
 
 function page(element: ReactNode) {
   return <Suspense fallback={null}>{element}</Suspense>;
@@ -45,4 +46,5 @@ export const portalRoutes = [
     path: 'portal/compliance/upload-replacement',
     element: page(<PortalComplianceUploadReplacementPage />),
   },
+  { path: 'portal/tax-form', element: page(<PortalTaxFormPage />) },
 ];
