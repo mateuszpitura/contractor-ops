@@ -2,12 +2,12 @@
 title: web-vite UI domains
 type: structure
 tags: [structure, web-vite, ui]
-source_commit: 19f747bca80fe58d162d3e8c3967ec553e057151
+source_commit: c89762ffe45f4cabdc59f5deeb67eefb39726530
 verify_with:
   - apps/web-vite/src/components/
   - apps/web-vite/ARCHITECTURE.md
   - apps/web-vite/src/router/
-updated: 2026-06-10
+updated: 2026-06-16
 ---
 
 # web-vite UI domains
@@ -32,8 +32,10 @@ Routes: `apps/web-vite/src/router/dashboard-routes.tsx`, `portal-routes.tsx`.
 | `payments/` | [[domains/payments-and-bank-files]] |
 | `approvals/` | [[domains/approvals-engine]] |
 | `contractors/` | [[domains/contractors-engagements]] |
+| `contractors/tax-forms/` | [[domains/us-tax-forms]] — staff W-form status card (`tax-form-status-card.tsx` + `hooks/use-tax-form-status.ts`) |
 | `contracts/` | [[domains/contracts-lifecycle]] |
 | `portal/` | [[domains/portal-external]] |
+| `portal/tax-forms/` | [[domains/us-tax-forms]] — portal W-9/W-8BEN/W-8BEN-E self-cert wizard (`tax-form-wizard.tsx` + `hooks/use-tax-form-wizard.ts`), route `portal/tax-form` |
 | `compliance/` | [[domains/compliance-dashboard]] |
 | `classification/` | [[domains/classification-ir35]] |
 | `workflows/`, `workflow/` | [[domains/workflows-and-roles]] |
@@ -43,7 +45,7 @@ Routes: `apps/web-vite/src/router/dashboard-routes.tsx`, `portal-routes.tsx`.
 | `integrations/` | [[integrations/_index]] |
 | `settings/`, `organization/` | [[domains/settings-and-org-admin]] |
 | `admin/` | [[domains/settings-and-org-admin]] (BoE rate, super-admin) |
-| `onboarding/`, `import/` | [[domains/onboarding-and-import]] — wizard page: `pages/dashboard/onboarding-import.tsx` (`OnboardingImportPageContent`) |
+| `onboarding/`, `import/` | [[domains/onboarding-and-import]] — import wizard page: `pages/dashboard/onboarding-import.tsx` (`OnboardingImportPageContent`); first-run org-create wizard: `onboarding/organization-onboarding.tsx` (`OrganizationOnboardingContainer`), gated by `DashboardShellContainer` when no active org |
 | `billing/` | [[domains/billing-and-feature-gates]] |
 | `search/`, `reports/` | [[domains/search-and-reports]] |
 | `dashboard/` | [[domains/staff-dashboard]] |

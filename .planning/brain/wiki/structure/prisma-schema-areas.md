@@ -2,11 +2,11 @@
 title: Prisma schema areas
 type: structure
 tags: [structure, database, prisma]
-source_commit: 70f5782d78e33ba98c82e4ccda2cd4b0b4aff216
+source_commit: c89762ffe45f4cabdc59f5deeb67eefb39726530
 verify_with:
   - packages/db/prisma/schema/
   - packages/db/src/region.ts
-updated: 2026-06-09
+updated: 2026-06-16
 ---
 
 # Prisma schema areas
@@ -25,6 +25,7 @@ PostgreSQL 17 schema split across files in `packages/db/prisma/schema/`. Multi-r
 | Time tracking | `time-tracking.prisma` | [[domains/time-and-reconciliation]] |
 | E-invoice | `einvoice.prisma` | [[integrations/einvoice-profiles]] |
 | Equipment | equipment models | [[domains/equipment-logistics]] |
+| Tax / WHT / treaty | `tax.prisma` — `WithholdingTaxRate` (shared rate table; `treatyArticle` column drives US treaty auto-populate), `WhtCertificate`, `TaxFormSubmission` (append-only, supersede-chained W-9/W-8BEN/W-8BEN-E record FK'd to `Contractor`) | [[domains/tax-and-wht]], [[domains/us-tax-forms]] |
 
 ## Flow
 

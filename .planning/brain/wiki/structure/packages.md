@@ -2,7 +2,7 @@
 title: Shared packages
 type: structure
 tags: [structure, packages]
-source_commit: 79c1602848e9f0b2c5a6d3e1f4b7a9c0d2e6f813
+source_commit: c89762ffe45f4cabdc59f5deeb67eefb39726530
 verify_with:
   - packages/
   - .planning/codebase/STRUCTURE.md
@@ -22,7 +22,7 @@ updated: 2026-06-16
 | `api` | `packages/api` | tRPC routers, middleware, services, PDF templates |
 | `db` | `packages/db` | Prisma 7 schema, migrations, regional + tenant clients |
 | `auth` | `packages/auth` | Better Auth config |
-| `validators` | `packages/validators` | Shared Zod inputs |
+| `validators` | `packages/validators` | Shared Zod inputs (incl. `w-form-validators.ts` — `taxFormSubmissionSchema` W-9/W-8BEN/W-8BEN-E discriminated union, no full-SSN field; see [[domains/us-tax-forms]]) |
 | `ui` | `packages/ui` | shadcn + workbench `DataTable` |
 | `feature-flags` | `packages/feature-flags` | Unleash wrapper + `registry.ts` |
 | `compliance-policy` | `packages/compliance-policy` | Payment eligibility rules |

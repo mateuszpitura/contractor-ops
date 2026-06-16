@@ -5,6 +5,24 @@ type: log
 
 # Wiki log (append only)
 
+## 2026-06-10 — First-run org onboarding wizard
+
+- `DashboardShellContainer` gates on client session `activeOrganizationId`; no org + no membership → `OrganizationOnboardingContainer` (replaces shell, avoids `tenantNoActiveOrganization`)
+- New: `apps/web-vite/src/components/onboarding/organization-onboarding.tsx` + `hooks/use-organization-onboarding.ts`
+- Create org via Better Auth `authClient.organization.create` + `setActive` (no tRPC); `billingCountry` → data region; `Intl.DisplayNames` for country labels
+- i18n: `OrganizationOnboarding` namespace (en/de/pl/ar)
+- Wiki: [[domains/onboarding-and-import]] § First-run organization onboarding; [[structure/web-vite-domains]]
+
+## 2026-06-10 — Agent delegation (subagent-first)
+
+- Binding: `.claude/core-values.yml` § Delegation & surgical edits → `pnpm standards:gen`
+- `CLAUDE.md` § Agent workflow → Delegation table + orchestrator rule
+- SessionStart: `inject-standards-build.js` → `DELEGATION DEFAULT` block
+- PreToolUse advisory: `no-bulk-script-guard.js` on suspicious Bash (sed/awk/python -e on sources)
+- Cursor: `.cursor/rules/15-delegation-subagents.mdc`; bullet in `20-tools-workflow.mdc`
+- Skill: `.claude/skills/cavecrew/SKILL.md` — anti-script + when-not-to-delegate
+- Wiki: [[patterns/agent-delegation]]
+
 ## 2026-06-09 — Brain vault bootstrap
 
 - Scaffolded `.planning/brain/` from claude-obsidian v1.9.2 (generic + github use case)
@@ -279,6 +297,13 @@ type: log
 - **Verify:** `pnpm check:web-vite-data-layer` OK; equipment vitest scoped run
 - **Wiki:** `web-vite-data-layer.md`, `web-vite-domains.md`, `MEMORY.md` (not `hot.md`)
 
+## 2026-06-10 — UI skills routing (frontend-design + impeccable + marketing stack)
+
+- **Binding:** expanded `30-ui-a11y.mdc`, `core-values.yml` UI section, `CLAUDE.md` § UI skills, `PRODUCT.md` § Design tooling
+- **Hooks:** `ui-workflow-lib.js` `isUiTargetPath` → `apps/web-vite/`, `apps/landing/`, `packages/ui/` (was stale `apps/web/`)
+- **Discoverability:** symlinks `.claude/skills/{design-taste-frontend,image-to-code,redesign-existing-projects,full-output-enforcement}` → `.agents/skills/`
+- **Wiki:** new [[patterns/ui-skills-routing]]; `patterns/_index`, `hot.md`
+
 ## 2026-06-10 — wave 16A workflows container collapse
 
 - **16A:** Collapsed **20** `workflows/` + `workflow/credentials-tab-container.tsx`:
@@ -433,3 +458,25 @@ type: log
 - Jira/Linear status mapping tests aligned to `organizationId` + `$transaction` service API.
 - i18n `Errors`: `workflowAssigneeNotMember`, `importJobStateConflict` (en/de/pl/ar).
 - DB replica test: unsupported region `XX` (US now supported).
+
+### 2026-06-16 — KB enforcement: doc/graph freshness gated, not advisory
+- `scripts/check-wiki-brain.mjs`: added NEW-drift CI gate (source file under a page's `verify_with` changed without the page → error, vs branch base); graph.json/BM25 absence downgraded to WARN (local gitignored artifacts).
+- `.claude/hooks/wiki-brain-inject.sh` Stop: block-once (`{"decision":"block"}`, respects `stop_hook_active`) when apps/packages changed with no wiki; added `GRAPH_WARN` staleness backstop.
+- `.husky/post-commit`: background clean-rebuild of graphify graph on code commits (atomic lock). Discovered `graphify update` MERGES edges → must `rm graph.json` first (clean count 61,598 links vs accumulated 92k→188k); fixed canonical command in CLAUDE.md.
+- `core-values.yml`: routes graphify (call graph/blast radius) + "never assert facts from memory"; semble wired in `.mcp.json` + new `.cursor/mcp.json` (Cursor parity). `ci.yml` ci job → `fetch-depth: 0`.
+
+## 2026-06-16 — US W-form intake: portal self-cert + staff read/track (Phase 85 Wave 3)
+
+- `services/tax-form.service.ts`: `buildFormSnapshot` (immutable record-of-record + server-derived ESIGN attestation; full SSN stripped, last-4 only), `supersedeAndInsert` (append-only re-cert — flips prior ACTIVE → SUPERSEDED then inserts new ACTIVE in one tx), `computeExpiry` (~3yr for W-8, null for W-9).
+- `routers/portal/portal-tax-form-router.ts`: `getTaxFormDetermination` / `saveTaxFormDraft` / `submitTaxForm` / `getMyTaxForms` on `portalProcedure` — IDOR-scoped to `ctx.contractorId`+`ctx.organizationId`, IP derived server-side from `ctx.headers`, `applyTreaty`+snapshot+supersede+CONTRACTOR audit inside `$transaction`. Merged flat into `portal.*`.
+- `routers/core/tax-form-router.ts` (`taxForm` namespace): staff `listFormSubmissions` (status/track, snapshot never projected) + `requestTaxForm` (USER audit, no signed record); `contractor:read` gated. Full-SSN reveal stays on `contractor.revealSsn`.
+- `middleware/require-us-expansion-flag.ts`: `assertUsExpansionEnabled` per-request guard + `isUsExpansionRegistered` boot gate. `root.ts`: conditional-spread `taxForm` behind `module.us-expansion` (mirrors classification). Portal self-gates per request (flat merge can't conditional-spread).
+- Wiki: `domains/portal-external.md`, `structure/api-routers-catalog.md`, `api-router-groups.md`, `key-services.md` updated for the W-form surface.
+
+## 2026-06-16 — US W-form intake: portal wizard + staff status card UI (Phase 85 Wave 4)
+
+- `components/portal/tax-forms/`: `tax-form-wizard.tsx` (container — reui Stepper + AnimateIn + loading/empty/error), `hooks/use-tax-form-wizard.ts` (SOLE tRPC/RHF boundary — `portal.getTaxFormDetermination` + `submitTaxForm`, multi-step state, `formType` discriminant sync), `step-determination` (confirm/override), `step-w9` / `step-w8ben` / `step-w8ben-e`, `step-attest`, `step-receipt`, shared `step-types.ts` / `treaty-claim-caption.tsx` (aria-live announce) / `w8-foreign-fields.tsx`. Thin `pages/portal/tax-form-page.tsx` + route `portal/tax-form`.
+- Attestation gate: real `<input type="checkbox">` perjury items + typed legal-name match + "I understand this is a legal signature" affirmation gate `Sign & submit`; inline `role="alert" aria-live="polite"` submit-failure region preserves entered data; server re-derives ip/timestamp/identity.
+- `components/contractors/tax-forms/tax-form-status-card.tsx` + `hooks/use-tax-form-status.ts`: staff read/track via `taxForm.listFormSubmissions`; status pill (ACTIVE/DRAFT/SUPERSEDED/expiring) reusing the `UspsAddressStatusPill` VARIANT_MAP idiom; full SSN behind `SsnMaskedReveal` (control absent without `contractorPii:read`); adviser note informational.
+- i18n: `TaxFormWizard` + `TaxFormStaff` namespaces across en/de/pl/ar (en-US inherits via fallback); `i18n:parity` green. 12 scoped component tests GREEN (4 states + RTL, attestation gate, submit-failure-preserves-data, receipt, staff pill mapping + PII gating). `check:web-vite-data-layer` green (only the hook touches tRPC).
+- Wiki: NEW `domains/us-tax-forms.md`; `structure/web-vite-domains.md`, `prisma-schema-areas.md`, `packages.md`, `domains/contractors-engagements.md` updated; `hot.md` overwritten; MEMORY invariant appended.

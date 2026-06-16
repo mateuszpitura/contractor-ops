@@ -1,13 +1,40 @@
 ---
 title: Hot cache
 type: hot-cache
-updated: 2026-06-10
-source_commit: 19f747bca80fe58d162d3e8c3967ec553e057151
+updated: 2026-06-16
+source_commit: c89762ffe45f4cabdc59f5deeb67eefb39726530
 ---
 
 # Hot cache
 
 Discovery shortcuts for agents — not a changelog. History lives in `wiki/log.md` and git.
+
+## Agent delegation (subagent-first)
+
+Prefer **Task subagents** over ad-hoc bulk shell scripts on source files.
+
+| Task | Subagent |
+|------|----------|
+| Locate | `cavecrew-investigator` (default); `explore` for prose |
+| Fix ≤2 files | `cavecrew-builder` or main `Edit` after `Read` |
+| Review | `cavecrew-reviewer` |
+| Fix 3+ files | Parallel investigator/builder per file — not one `sed` loop |
+| `/gsd:*` | `gsd-*` per workflow; trivial → `/gsd:fast` inline |
+
+**Forbidden:** `sed -i`, `awk`, `perl -pi`, `python -c/-e`, `node -e` replace on `apps/`/`packages/`/`prisma/`.
+
+**Surfaces:** `core-values.yml`, `CLAUDE.md`, SessionStart hook, `no-bulk-script-guard.js`, `.cursor/rules/15-delegation-subagents.mdc`, [[patterns/agent-delegation]].
+
+## UI skills routing
+
+Layered stack — **not mutex**. Every UI touch:
+
+1. **frontend-design** (plugin, binding)
+2. **semble search**
+3. **web-vite / portal / packages/ui** → impeccable + `PRODUCT.md` product register
+4. **apps/landing** → design-taste (+ image-to-code, redesign, full-output as needed)
+
+Never design-taste on dashboards, tables, or wizards. Detail: [[patterns/ui-skills-routing]] · `30-ui-a11y.mdc` · hooks `[ui]`/`[ui-strict]` on `apps/web-vite/`, `apps/landing/`, `packages/ui/`.
 
 ## web-vite UI layering (current)
 
@@ -20,50 +47,30 @@ Discovery shortcuts for agents — not a changelog. History lives in `wiki/log.m
 
 No `*-container.tsx` files under `apps/web-vite/src/`. Verify: `find apps/web-vite/src -name '*-container.tsx'`.
 
-Canonical shape:
-
-```tsx
-export function FooView(props: FooProps) { /* JSX only */ }
-export function Foo() {
-  const state = useFoo();
-  if (state.isLoading) return <FooSkeleton />;
-  return <FooView {...state} />;
-}
-```
-
-Tests render `FooView` with stub props; mock `layout/feature-gate` or wired sibling imports — not deleted container paths.
-
 ## Gates
 
 ```bash
 pnpm check:web-vite-data-layer
-pnpm check:web-vite-page-shells   # blocks direct tRPC/RQ in pages only
+pnpm check:web-vite-page-shells
 pnpm check:web-vite-presentational
 ```
 
-## Onboarding import (cross-tool wizard)
+**KB freshness (enforced, not advisory):**
+- `pnpm check:wiki-brain` (CI) — **fails** on NEW doc drift: a source file under a page's `verify_with` changed in the diff but the page wasn't updated. graph/BM25 absence = WARN only (local artifacts).
+- Stop hook — **blocks turn-end once** if `apps/`/`packages/` changed with no wiki update this session.
+- `.husky/post-commit` — auto-rebuilds graphify graph (incremental, AST-only, background) on code commits. Graph never silently rots.
 
-| Piece | Path |
-|-------|------|
-| Route shell | `apps/web-vite/src/pages/dashboard/onboarding-import.tsx` — `OnboardingImportPageContent` |
-| Steps | `components/onboarding/*-step.tsx` — wired `*Step` + presentational `*StepView` / siblings (`ConfirmImportStep`, `ConfirmImportStepView`, …); deprecated `*StepContainer` aliases only |
-| Hooks | `components/onboarding/hooks/use-onboarding-{people,projects,confirm,progress,source-selection}.ts`; types in `import-wizard.tsx` |
-| Dashboard checklist (separate) | `components/onboarding/hooks/use-onboarding-checklist.ts` — not part of import wizard |
+## US W-form intake (W-9 / W-8BEN / W-8BEN-E)
 
-**API output shapes** (not flat arrays):
+Portal-primary self-cert (beneficial owner signs). Portal procedures (`getTaxFormDetermination`, `saveTaxFormDraft`, `submitTaxForm`, `getMyTaxForms`) on `routers/portal/portal-tax-form-router.ts` — IDOR-scoped to `ctx.contractorId`; ESIGN ip/actorId/signedAt server-derived; submit = `applyTreaty` + `buildFormSnapshot` + `supersedeAndInsert` + CONTRACTOR audit in one `$transaction`. Append-only: only DRAFT mutable, re-cert supersedes. Full SSN never in `snapshotJson` (last-4 only). Staff get `taxForm` namespace (read/track + request) — no on-behalf signing; full-SSN reveal stays on `contractor.revealSsn`. Whole surface flag-gated on `module.us-expansion` (`middleware/require-us-expansion-flag.ts` + `root.ts` conditional-spread). Services: `treaty-rate.service.ts`, `tax-form.service.ts`, `tax-form-routing.ts`. **UI:** portal wizard `components/portal/tax-forms/` (`tax-form-wizard.tsx` container + `hooks/use-tax-form-wizard.ts` sole tRPC boundary + determination/W-9/W-8BEN/W-8BEN-E/attest/receipt steps; route `portal/tax-form`); attestation gate = real `<input type=checkbox>` perjury + typed-name match + legal-signature affirmation; treaty article/rate announced via `aria-live`. Staff card `components/contractors/tax-forms/tax-form-status-card.tsx` reuses `SsnMaskedReveal` + `UspsAddressStatusPill` idiom. i18n `TaxFormWizard`/`TaxFormStaff` en/de/pl/ar. Detail: [[domains/us-tax-forms]] · [[domains/portal-external]] · [[structure/api-routers-catalog]].
 
-- `fetchPeople` → `{ people, sourceErrors }`
-- `fetchProjects` → `{ projects, sourceErrors }` (only `JIRA` / `LINEAR` fetched)
-- `startImport` → `{ jobId }`; progress via `getProgress({ jobId })`
+## First-run org onboarding
 
-## Integration health
-
-- `integration.getHealth` → `scopeCapabilities` (JSONB)
-- GWS: `useGoogleWorkspaceProviderSection` → `useIntegrationHealthProviderSection` + `GoogleWorkspaceReconnectBanner` in `google-workspace-provider-section.tsx`
-- Shared helper: `integrations/hooks/use-integration-provider-section.ts` (`useIntegrationHealthProviderSection`)
+New user with no org → `DashboardShellContainer` (`components/layout/dashboard-shell.tsx`) renders `OrganizationOnboardingContainer` (`components/onboarding/organization-onboarding.tsx`) instead of the shell, so tenant procedures never throw `tenantNoActiveOrganization`. Create via Better Auth `authClient.organization.create` + `setActive` (no tRPC), then reload. Detail: [[domains/onboarding-and-import]].
 
 ## Reading order
 
-1. [[patterns/web-vite-data-layer]] + `apps/web-vite/ARCHITECTURE.md` (verify both — may drift)
-2. [[structure/web-vite-domains]]
-3. `semble search` before code edits
+1. [[patterns/agent-delegation]] for bulk edits / subagent routing
+2. [[patterns/ui-skills-routing]] for UI skill stack
+3. [[patterns/web-vite-data-layer]] + `apps/web-vite/ARCHITECTURE.md`
+4. `semble search` before code edits

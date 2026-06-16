@@ -2,11 +2,11 @@
 title: Contractors and engagements
 type: domain
 tags: [contractors, hr, compliance]
-source_commit: 70f5782d78e33ba98c82e4ccda2cd4b0b4aff216
+source_commit: c89762ffe45f4cabdc59f5deeb67eefb39726530
 verify_with:
   - packages/api/src/routers/core/contractor-core.ts
   - apps/web-vite/src/components/contractors/
-updated: 2026-06-09
+updated: 2026-06-16
 ---
 
 # Contractors and engagements
@@ -23,6 +23,7 @@ Contractor master data, lifecycle, compliance health, country-specific fields, b
 | Classification UI | `apps/web-vite/src/components/contractors/classification/` |
 | Free-zone (Gulf) | `components/contractors/free-zone/` |
 | Country compliance | `country-compliance-section-container.tsx` |
+| US tax-form status (staff) | `components/contractors/tax-forms/tax-form-status-card.tsx` → [[us-tax-forms]] |
 
 ## UI surface
 

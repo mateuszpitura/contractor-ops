@@ -99,3 +99,22 @@ Collapsed all **20** `workflows/` + `workflow/credentials-tab-container.tsx` pas
 ## Wave 17C1 — zatca/admin/auth/peppol container collapse (2026-06-10)
 
 Collapsed **26** `*-container.tsx` in `zatca/` (12), `admin/` (7), `auth/` (4), `peppol/` (3) — View+wired in co-located files; route orchestrators inlined as `*PageContent` in matching `pages/**`; **zero** containers remain in those four folders.
+
+## KB enforcement — doc/graph freshness is gated, not advisory (2026-06-16)
+
+The graphify + semble + wiki knowledge base is now enforced, not hoped for:
+- **CI doc-drift gate** — `scripts/check-wiki-brain.mjs` fails when a source file under a wiki page's `verify_with` changes in the diff without that page being updated (NEW drift only, vs branch base; `ci.yml` ci job uses `fetch-depth: 0`). graph.json / BM25 absence downgraded to WARN (local gitignored artifacts).
+- **Stop hook block-once** — `.claude/hooks/wiki-brain-inject.sh stop` emits `{"decision":"block"}` once (respects `stop_hook_active`) when `apps/`/`packages/` changed with no wiki update; also emits `GRAPH_WARN` if graph older than newest code commit.
+- **Graph auto-rebuild** — `.husky/post-commit` runs incremental AST-only `graphify update` (LLM keys blanked) in background when a commit touches `apps/`/`packages/`.
+- **Surfacing** — `core-values.yml` Tools/Workflow now routes graphify (call graph / blast radius) + "never assert project facts from memory"; semble wired in `.mcp.json` + new `.cursor/mcp.json` for Cursor parity.
+- **Honest ceiling** — these force *hygiene + freshness*, not *semantic correctness*. No mechanism proves a wiki page is true or that an agent used a result well; an edit-accuracy eval (golden tasks) is the open follow-up.
+
+## US W-form intake + treaty engine (Phase 85, 2026-06-16)
+
+The W-9 / W-8BEN / W-8BEN-E surface captures (does not file) a US tax classification + resolves the treaty claim. Invariants that survive the phase:
+
+- **One treaty engine, one table.** US treaty rows live in the shared `WithholdingTaxRate` table (`sourceCountry='US'`, nullable `treatyArticle` column; `serviceType` reused as the income-type axis = `'business_profits'`). The 4-field `@@unique([sourceCountry, contractorResidency, serviceType, effectiveFrom])` key is load-bearing — adding a 5th field breaks the seed upsert + `calculateWht` lookup. Rates are whole-number percent (30.0 / 0.0 / null). PL/DE/GB/IE/NL → 0% (Article 7); AE/SA have no US treaty → 30%. The same table feeds Phase 87's 1042-S withholding.
+- **`TaxFormSubmission` is append-only + supersede-chained**, FK'd to `Contractor` (NOT `Worker` — that abstraction is Theme B/Phase 89). Re-cert flips the prior ACTIVE row to SUPERSEDED then inserts a new ACTIVE row in one `$transaction`; signed rows are never mutated, only DRAFT rows are.
+- **Portal-primary self-cert.** The beneficial owner signs in the portal (`portalAppRouter`). ESIGN attestation (ip / actorId / signedAt) is 100% server-derived from the session + headers — the client schema omits all three; identity is unforgeable. The W-9 payload never carries a full SSN (last-4 reference only; the SSN stays in its encrypted column with the `contractorPii:read` reveal gate). `buildFormSnapshot` recursively strips full-SSN/TIN keys as a second guard.
+- **Staff get a read/track mirror only** — never an on-behalf signing path (`requestTaxForm` writes an audit event, no record). The staff `taxForm` namespace is a DEDICATED router so `root.ts` can conditionally spread the whole US surface behind `module.us-expansion`; the always-mounted `taxRouter` is never extended for it. Defense-in-depth: boot-gate spread + per-request `assertUsExpansionEnabled` (the flat portal merge can't be conditionally spread, so it self-gates).
+- **web-vite layering holds** — the wizard's only tRPC boundary is `hooks/use-tax-form-wizard.ts`; the container + steps + page are presentational (`check:web-vite-data-layer`). Treaty rate/article auto-populate is advisory display announced via `aria-live`; the authoritative resolution + persistence happen server-side.
