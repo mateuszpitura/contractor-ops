@@ -10,20 +10,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@contractor-ops/ui/components/shadcn/select';
+import { usEntityTypeEnum } from '@contractor-ops/validators';
 import { ArrowRight } from 'lucide-react';
 import { Controller } from 'react-hook-form';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import type { TaxFormStepProps } from './step-types.js';
 
-const US_ENTITY_TYPES = [
-  'SOLE_PROPRIETOR',
-  'LLC',
-  'C_CORP',
-  'S_CORP',
-  'PARTNERSHIP',
-  'INDIVIDUAL',
-] as const;
+// Derived from the shared schema enum so the select offers exactly the entity
+// types the validator accepts — no drift between UI and server.
+const US_ENTITY_TYPES = usEntityTypeEnum.options;
 
 /**
  * W-9 form step for US persons. Captures the entity classification, the EIN (the
