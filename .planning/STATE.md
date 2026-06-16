@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v7.0
 milestone_name: GTM Expansion
 status: Plan 86-01 awaiting human IRS IRIS XSD download (see Blockers)
-stopped_at: "Phase 86 Plan 86-02 paused — Task 3 [BLOCKING] multi-region migration awaiting human approval (Tasks 1-2 committed: schema models + seed + retention)"
-last_updated: "2026-06-16T23:03:07.958Z"
+stopped_at: Completed 86-03-PLAN.md (TIN-match seam + cache/retry/escalation service)
+last_updated: "2026-06-16T23:25:45.148Z"
 last_activity: 2026-06-16 -- 86-01 Tasks 1-2 done (iris pkg + checksum guard + 9 Wave-0 RED scaffolds); paused at IRS-SOR download gate
 progress:
   total_phases: 20
   completed_phases: 4
   total_plans: 27
-  completed_plans: 21
+  completed_plans: 22
   percent: 20
 ---
 
@@ -34,7 +34,7 @@ Plan: 1 of 8 (PAUSED at human-action checkpoint — Task 3 of 3)
 Status: Plan 86-01 awaiting human IRS IRIS XSD download (see Blockers)
 Last activity: 2026-06-16 -- 86-01 Tasks 1-2 done (iris pkg + checksum guard + 9 Wave-0 RED scaffolds); paused at IRS-SOR download gate
 
-Progress: [██████████] 100%
+Progress: [████████░░] 81%
 
 ## v7.0 Roadmap Summary (created 2026-06-07)
 
@@ -116,6 +116,7 @@ Decisions are logged in PROJECT.md Key Decisions table. Recent decisions affecti
 - [Phase 85]: [85-03, 2026-06-16] Portal-primary W-form self-cert on portalAppRouter — every read/write scoped to ctx.contractorId (IDOR), never client-supplied. ESIGN attestation ip/actorId/signedAt 100% server-derived (deriveClientIp(ctx.headers) / ctx.contractorId / new Date()) — client schema omits all three. buildFormSnapshot recursively strips full-SSN/TIN keys (ssn/ssnencrypted/fullssn/scalar-tin), keeps {ssnLast4,ein} — a 2nd PII guard behind the validators schema. supersedeAndInsert is append-only: flips prior ACTIVE→SUPERSEDED then inserts new ACTIVE inside one $transaction; saveTaxFormDraft only ever touches a DRAFT row (signed rows never mutated). Staff read/track on a DEDICATED taxFormRouter (mounted taxForm:) NOT tax.ts — only a separate namespace can be conditionally spread out of appRouter when module.us-expansion is OFF; tax.ts stays always-mounted. Defense-in-depth flag gate: isUsExpansionRegistered() spreads the staff router at boot (METHOD_NOT_FOUND when OFF) + assertUsExpansionEnabled per-request on BOTH surfaces (the flat portal merge cannot be conditionally spread). Form read/track reuses contractor:[read]; full-SSN reveal stays on contractor.revealSsn (contractorPii:[read]) — NO new Better Auth permission (Pitfall 2 avoided). Dead TAX_FORM_NOT_FOUND/NOT_DRAFT error exports removed (append-only makes the reject path unreachable). 25 scoped tests GREEN (immutability/supersede/PII non-leak/ESIGN/W8BENE LOB+article/IDOR/staff RBAC/flag gate).
 - [Phase ?]: [85-04, 2026-06-16] Portal W-form wizard = page→container→hook→component; use-tax-form-wizard.ts the SOLE tRPC boundary. Attestation gate = real <input type=checkbox> perjury + typed legal-name match + signature affirmation. formType discriminant synced via useEffect for the discriminated-union resolver. Staff card reuses UspsAddressStatusPill VARIANT_MAP + SsnMaskedReveal verbatim (absent without contractorPii:read). i18n TaxFormWizard/TaxFormStaff en/de/pl/ar + en-US fallback. Phase 85 COMPLETE (US-FORM-01/02 + US-LOC-02/03).
 - [Phase 86]: [86-01] @contractor-ops/iris package + SHA-256 XSD checksum guard established (mirrors einvoice validator-bundle); D-01 XSD-validate-in-CI seam + D-18 adviser-verify provenance in source.txt; reused fast-xml-parser ^5.7.3 + libxmljs2 ^0.37.0 verbatim (zero new external deps, T-86-01-SC accept); 9 Wave-0 RED scaffolds laid (terminal-RED). PAUSED at human-action checkpoint awaiting IRS IRIS XSD download (IRS-SOR login) before checksums pin.
+- [Phase 86]: TIN-match seam: mock default + dark SSRF-safe e-Services client; mismatch advisory (flag + escalate + audit, never hard-block) — 86-02 migration unapplied + unit test injects only a client, so side-effect persistence is an injected port; the deterministic core ships and is fully tested with no live DB
 
 ### Pending Todos
 
@@ -163,6 +164,7 @@ Carried forward from v6.0 milestone close (2026-06-07). Full enumeration: `.plan
 | Phase 85 P85-03 | ~27m | 3 tasks | 11 files |
 | Phase 85 P04 | ~26m | 3 tasks | 28 files |
 | Phase 86 P01 | 5m | 2 tasks | 15 files |
+| Phase 86 P86-03 | ~13min | 2 tasks | 11 files |
 
 ## Standing Project Constraints
 
@@ -172,7 +174,7 @@ Carried forward from v6.0 milestone close (2026-06-07). Full enumeration: `.plan
 
 ## Session Continuity
 
-Last session: 2026-06-16T23:03:07.951Z
-Stopped at: Phase 86 Plan 86-02 paused — Task 3 [BLOCKING] multi-region migration awaiting human approval (Tasks 1-2 committed: schema models + seed + retention)
-Resume file: .planning/phases/86-theme-a-tin-match-1099-nec-iris-e-file-state-filing/86-02-PLAN.md
+Last session: 2026-06-16T23:25:45.142Z
+Stopped at: Completed 86-03-PLAN.md (TIN-match seam + cache/retry/escalation service)
+Resume file: None
 Next command: execute Phase 85 Plan 04 (web-vite portal wizard + staff status card + i18n)

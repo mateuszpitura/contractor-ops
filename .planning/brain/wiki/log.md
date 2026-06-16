@@ -473,6 +473,11 @@ type: log
 - `middleware/require-us-expansion-flag.ts`: `assertUsExpansionEnabled` per-request guard + `isUsExpansionRegistered` boot gate. `root.ts`: conditional-spread `taxForm` behind `module.us-expansion` (mirrors classification). Portal self-gates per request (flat merge can't conditional-spread).
 - Wiki: `domains/portal-external.md`, `structure/api-routers-catalog.md`, `api-router-groups.md`, `key-services.md` updated for the W-form surface.
 
+## 2026-06-16 — Security hardening doc sync (integration secret allowlist + contractor P2002)
+
+- Integration `connectionStatus` now projects `configJson` through non-secret allowlists (`publicJiraConfig` / `publicLinearConfig` / `publicTeamsConfig`) instead of the raw blob — fixes webhook signing secret (`webhookSecret`/`webhookIds`) leak to any `settings:read` member; Linear/Teams drop `webhooks`/`conversationReferences` proactively. `contractor.create` catches Prisma `P2002` on duplicate org `taxId` → tRPC `CONFLICT` (`E.CONTRACTOR_TAX_ID_EXISTS`, en/de/pl/ar) instead of an unhandled 500; backing `@@unique([organizationId, taxId])` recommended/pending.
+- Wiki: `domains/contractors-engagements.md`, `integrations/jira.md`, `integrations/linear.md`, `integrations/teams.md`, `patterns/registry-plugin.md` (new § connectionStatus secret hygiene), `structure/api-router-groups.md`, `structure/packages.md`; `source_commit` → `57946f64`
+
 ## 2026-06-16 — US W-form intake: portal wizard + staff status card UI (Phase 85 Wave 4)
 
 - `components/portal/tax-forms/`: `tax-form-wizard.tsx` (container — reui Stepper + AnimateIn + loading/empty/error), `hooks/use-tax-form-wizard.ts` (SOLE tRPC/RHF boundary — `portal.getTaxFormDetermination` + `submitTaxForm`, multi-step state, `formType` discriminant sync), `step-determination` (confirm/override), `step-w9` / `step-w8ben` / `step-w8ben-e`, `step-attest`, `step-receipt`, shared `step-types.ts` / `treaty-claim-caption.tsx` (aria-live announce) / `w8-foreign-fields.tsx`. Thin `pages/portal/tax-form-page.tsx` + route `portal/tax-form`.
@@ -480,3 +485,16 @@ type: log
 - `components/contractors/tax-forms/tax-form-status-card.tsx` + `hooks/use-tax-form-status.ts`: staff read/track via `taxForm.listFormSubmissions`; status pill (ACTIVE/DRAFT/SUPERSEDED/expiring) reusing the `UspsAddressStatusPill` VARIANT_MAP idiom; full SSN behind `SsnMaskedReveal` (control absent without `contractorPii:read`); adviser note informational.
 - i18n: `TaxFormWizard` + `TaxFormStaff` namespaces across en/de/pl/ar (en-US inherits via fallback); `i18n:parity` green. 12 scoped component tests GREEN (4 states + RTL, attestation gate, submit-failure-preserves-data, receipt, staff pill mapping + PII gating). `check:web-vite-data-layer` green (only the hook touches tRPC).
 - Wiki: NEW `domains/us-tax-forms.md`; `structure/web-vite-domains.md`, `prisma-schema-areas.md`, `packages.md`, `domains/contractors-engagements.md` updated; `hot.md` overwritten; MEMORY invariant appended.
+
+## 2026-06-17 — AuditLog DB-level append-only + new audit writes + OCR kill-switch
+
+- AuditLog hardened in Postgres (migration `20260617000000_auditlog_append_only`): INSERT-only RLS, `BEFORE UPDATE` trigger rejects all updates, DELETE gated on `allowAuditPurge(tx)` (`packages/db/src/rls.ts`, exported from `index.ts`); GDPR erasure opts in. Wiki: [[patterns/audit-log]], [[patterns/tenant-and-audit]], [[patterns/multi-region-db]], [[structure/prisma-schema-areas]], [[domains/consent-gdpr-pdpl]]
+- New same-tx `writeAuditLog` rows: `approval.approve`/`reject`, `reassessment.acknowledge`/`dismiss` (`resourceType: CONTRACTOR`), `portal.contact.update`. Wiki: [[domains/approvals-engine]], [[domains/classification-ir35]], [[domains/portal-external]]
+- `killswitch.ai-invoice-parser` now wired into `processOcrExtraction` (`resolveOrgRegion` → regional Unleash; off/unknown → skip Claude Vision, persist upload, mark `OcrExtraction` FAILED for manual entry). Wiki: [[patterns/feature-flags]], [[domains/documents-and-ocr]], [[structure/key-services]]
+- `mergeByEmail` now emits lowercase-normalized `canonicalEmail`. Wiki: [[domains/onboarding-and-import]]
+- `scripts/check-wiki-brain.mjs`: compiled emit (`.d.ts`/`.d.ts.map`, and `.js`/`.js.map` with a sibling `.ts`/`.tsx`) is doc-exempt — committed tsc output no longer triggers false drift.
+
+## 2026-06-17 — IRS TIN-Matching seam + cache/retry/escalation service
+
+- New `TinMatchClient` adapter seam (`packages/integrations/src/adapters/tin-match/`): `MockTinMatchClient` (deterministic default, reuses `isValidEin`/`isValidSsn`) + dark `EServicesTinMatchClient` (pinned literal base URL by credential environment, SSRF-safe like peppol-adapter-factory; refuses live calls until PAF enrollment clears). Barrel re-exported from `@contractor-ops/integrations`.
+- New `tin-match.service.ts`: 24h cache (org+recipient+name+TIN-last4 key, never a full TIN) + bounded retry; a mismatch sets the backup-withholding flag + raises an admin escalation + writes an audit row and returns an advisory result — never throws, never hard-blocks the 1099. Side-effect ports are injected so the core is unit-tested with no live DB; `createDbTinMatchPersistence` wires the audit through `writeAuditLog`. Wiki: [[domains/us-tax-forms]], [[structure/key-services]]

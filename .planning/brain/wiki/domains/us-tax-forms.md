@@ -2,7 +2,7 @@
 title: US tax forms (W-9 / W-8BEN / W-8BEN-E) and treaty engine
 type: domain
 tags: [us, tax, w-form, treaty, portal, esign, immutable-record]
-source_commit: c89762ffe45f4cabdc59f5deeb67eefb39726530
+source_commit: 1f89de3934e82783bb2ef4d10dace4859cce21d3
 verify_with:
   - apps/web-vite/src/components/portal/tax-forms/
   - apps/web-vite/src/components/contractors/tax-forms/
@@ -11,8 +11,10 @@ verify_with:
   - packages/api/src/services/tax-form.service.ts
   - packages/api/src/services/treaty-rate.service.ts
   - packages/api/src/services/tax-form-routing.ts
+  - packages/api/src/services/tin-match.service.ts
+  - packages/integrations/src/adapters/tin-match/
   - packages/validators/src/w-form-validators.ts
-updated: 2026-06-16
+updated: 2026-06-17
 ---
 
 # US tax forms (W-9 / W-8BEN / W-8BEN-E) and treaty engine
@@ -49,6 +51,26 @@ auto-detect from (residency, US source, business-profits) against the shared
 needs a reason + `writeAuditLog`. PL/DE/GB/IE/NL reduce to 0% under Article 7; AE/SA
 have no US treaty (30%).
 
+## IRS TIN-Matching
+
+A recipient's name/TIN is validated against IRS records at W-9 intake and re-validated for the
+whole batch at year-end, before 1099 generation. The check runs through a `TinMatchClient`
+adapter seam: a deterministic `MockTinMatchClient` is the shipped default; the live
+`EServicesTinMatchClient` sits behind the seam, dark, until PAF (Payer Account File) enrollment
++ e-Services registration clears — a separate operational prerequisite from the IRIS A2A TCC.
+The live client pins its base URL to one of two compile-time literals selected by the
+credential `environment` (SSRF-safe, mirroring `peppol-adapter-factory`) and refuses to
+transmit while ungated.
+
+`tin-match.service` owns the policy: a 24h result cache (keyed on org+recipient+name+TIN-last4,
+never a full TIN), a bounded retry on transient client failures, and the mismatch handler. A
+non-zero IRS numerical response indicator is **advisory, never a hard block** — it sets the
+recipient backup-withholding flag, raises an admin escalation, and writes an audit row, then
+returns a result; the 1099 still generates with the TIN as captured. The flag-set + escalation
+writers are caller-supplied (the year-end batch / staff router against the applied schema); the
+audit row is written here through `writeAuditLog`. The actual 24% payout reduction is a later
+phase — this surface only records the flag.
+
 ## Entry points
 
 | Piece | Path |
@@ -57,6 +79,8 @@ have no US treaty (30%).
 | Staff read/track | `taxForm.listFormSubmissions` / `requestTaxForm` — `packages/api/src/routers/core/tax-form-router.ts` |
 | Record service | `packages/api/src/services/tax-form.service.ts` (`buildFormSnapshot` / `supersedeAndInsert` / `computeExpiry`) |
 | Treaty engine | `packages/api/src/services/treaty-rate.service.ts` (`resolveTreatyDecision` / `applyTreaty`) |
+| TIN-match service | `packages/api/src/services/tin-match.service.ts` (`matchRecipientTin` / `revalidateBatchTins` / `createDbTinMatchPersistence`) |
+| TIN-match seam | `packages/integrations/src/adapters/tin-match/` (`TinMatchClient` / `MockTinMatchClient` default / `EServicesTinMatchClient` dark) |
 | Form routing | `packages/api/src/services/tax-form-routing.ts` (`determineFormType`) |
 | Validators | `packages/validators/src/w-form-validators.ts` (`taxFormSubmissionSchema` discriminated union) |
 | Flag gate | `packages/api/src/middleware/require-us-expansion-flag.ts` (`assertUsExpansionEnabled`) |
@@ -85,6 +109,9 @@ have no US treaty (30%).
 - Staff cannot sign on behalf — `requestTaxForm` only writes an audit event.
 - Treaty rows live in the shared `WithholdingTaxRate` table (`sourceCountry='US'`,
   `treatyArticle` column); the same table feeds Phase 87's 1042-S withholding.
+- A TIN mismatch is advisory only — it sets the backup-withholding flag + escalates, and the
+  1099 still generates. The TIN-match service never throws on a mismatch and never blocks the
+  year-end loop. A full TIN/SSN never reaches a log line, the cache key, or the audit metadata.
 
 ## Agent mistakes
 
@@ -96,6 +123,8 @@ have no US treaty (30%).
   upsert + `calculateWht` lookup.
 - The treaty claim is advisory display; the authoritative resolution + persistence happen
   server-side.
+- Do NOT call `EServicesTinMatchClient` on the default path — it is dark behind a PAF/flag gate;
+  the shipped default is `MockTinMatchClient`. Do NOT hard-block on a TIN mismatch.
 
 ## Related
 

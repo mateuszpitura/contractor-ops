@@ -40,7 +40,7 @@ Requirements for the v7.0 milestone. Each maps to exactly one phase (filled by r
 
 - [x] **US-FORM-01**: US-resident contractor completes a W-9 collection wizard (TIN + entity type + backup-withholding flag), stored against `Contractor`/`Worker` with audit trail
 - [x] **US-FORM-02**: Foreign contractor of a US client completes a W-8BEN / W-8BEN-E wizard (treaty country + treaty article picker, FTIN, certifications)
-- [ ] **US-FORM-03**: System integrates IRS TIN-Matching (e-Services) with 24h cache, retry, and admin escalation on mismatch
+- [x] **US-FORM-03**: System integrates IRS TIN-Matching (e-Services) with 24h cache, retry, and admin escalation on mismatch
 - [ ] **US-FORM-04**: System generates 1099-NEC per recipient at year-end with a **tax-year-keyed threshold config table ($2,000 for TY2026 per OBBBA)**, CORRECTED-form support, recipient PDF copy, and audit-immutable archive
 - [ ] **US-FORM-05**: System e-files year-end returns via **IRS IRIS (XML A2A, primary/mandatory path)** with TCC-enrollment workflow doc, automated file build, transmit, and acknowledgement parsing; FIRE retained only as a documented legacy fallback
 - [ ] **US-FORM-06**: System generates 1042-S for US-source payments to foreign contractors (withholding rate sourced from the treaty table) with recipient PDF + IRS file
@@ -269,7 +269,7 @@ Which phases cover which requirements. Phase numbering continues from v6.0 (ende
 | US-FORM-02 | Phase 85 | Complete |
 | US-LOC-02 | Phase 85 | Complete |
 | US-LOC-03 | Phase 85 | Complete |
-| US-FORM-03 | Phase 86 | Pending |
+| US-FORM-03 | Phase 86 | Complete |
 | US-FORM-04 | Phase 86 | Pending |
 | US-FORM-05 | Phase 86 | Pending |
 | US-FORM-07 | Phase 86 | Pending |
