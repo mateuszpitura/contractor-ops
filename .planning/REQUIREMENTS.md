@@ -38,8 +38,8 @@ Requirements for the v7.0 milestone. Each maps to exactly one phase (filled by r
 
 ### Theme A — US Cross-Border: Tax-Form Intake (US-FORM)
 
-- [ ] **US-FORM-01**: US-resident contractor completes a W-9 collection wizard (TIN + entity type + backup-withholding flag), stored against `Contractor`/`Worker` with audit trail
-- [ ] **US-FORM-02**: Foreign contractor of a US client completes a W-8BEN / W-8BEN-E wizard (treaty country + treaty article picker, FTIN, certifications)
+- [x] **US-FORM-01**: US-resident contractor completes a W-9 collection wizard (TIN + entity type + backup-withholding flag), stored against `Contractor`/`Worker` with audit trail
+- [x] **US-FORM-02**: Foreign contractor of a US client completes a W-8BEN / W-8BEN-E wizard (treaty country + treaty article picker, FTIN, certifications)
 - [ ] **US-FORM-03**: System integrates IRS TIN-Matching (e-Services) with 24h cache, retry, and admin escalation on mismatch
 - [ ] **US-FORM-04**: System generates 1099-NEC per recipient at year-end with a **tax-year-keyed threshold config table ($2,000 for TY2026 per OBBBA)**, CORRECTED-form support, recipient PDF copy, and audit-immutable archive
 - [ ] **US-FORM-05**: System e-files year-end returns via **IRS IRIS (XML A2A, primary/mandatory path)** with TCC-enrollment workflow doc, automated file build, transmit, and acknowledgement parsing; FIRE retained only as a documented legacy fallback
@@ -71,8 +71,8 @@ Requirements for the v7.0 milestone. Each maps to exactly one phase (filled by r
 ### Theme A — US Locale + Tax-Treaty Engine (US-LOC)
 
 - [x] **US-LOC-01**: `en-US` locale at full key parity vs `en` (date/currency/measure formatting; American-English copy where it diverges from en-GB)
-- [ ] **US-LOC-02**: US tax-treaty rate table (PL/DE/UK/UAE/KSA/IE/NL) auto-applied when contractor + payer jurisdictions trigger a treaty (extends the v5.0 reverse-charge engine pattern)
-- [ ] **US-LOC-03**: W-8BEN treaty-article auto-populate based on contractor home jurisdiction + treaty table
+- [x] **US-LOC-02**: US tax-treaty rate table (PL/DE/UK/UAE/KSA/IE/NL) auto-applied when contractor + payer jurisdictions trigger a treaty (extends the v5.0 reverse-charge engine pattern)
+- [x] **US-LOC-03**: W-8BEN treaty-article auto-populate based on contractor home jurisdiction + treaty table
 
 ### Theme A — US Region Infrastructure (US-INFRA)
 
@@ -265,10 +265,10 @@ Which phases cover which requirements. Phase numbering continues from v6.0 (ende
 | US-FIELD-03 | Phase 84 | Complete |
 | US-FIELD-04 | Phase 84 | Complete |
 | US-LOC-01 | Phase 84 | Complete |
-| US-FORM-01 | Phase 85 | Pending |
-| US-FORM-02 | Phase 85 | Pending |
-| US-LOC-02 | Phase 85 | Pending |
-| US-LOC-03 | Phase 85 | Pending |
+| US-FORM-01 | Phase 85 | Complete |
+| US-FORM-02 | Phase 85 | Complete |
+| US-LOC-02 | Phase 85 | Complete |
+| US-LOC-03 | Phase 85 | Complete |
 | US-FORM-03 | Phase 86 | Pending |
 | US-FORM-04 | Phase 86 | Pending |
 | US-FORM-05 | Phase 86 | Pending |

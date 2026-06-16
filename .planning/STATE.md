@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v7.0
 milestone_name: GTM Expansion
 status: executing
-stopped_at: Phase 85 Plan 03 — W-form intake routers + immutable record service complete
-last_updated: "2026-06-16T19:35:00.000Z"
-last_activity: 2026-06-16 -- Phase 85 Plan 03 committed; portal self-cert + staff read/track + module.us-expansion gate + 25 tests
+stopped_at: Phase 85 Plan 03 complete (portal/staff W-form routers + immutable record service + module.us-expansion gate)
+last_updated: "2026-06-16T20:13:01.098Z"
+last_activity: 2026-06-16
 progress:
   total_phases: 20
-  completed_phases: 3
+  completed_phases: 4
   total_plans: 19
-  completed_plans: 18
-  percent: 15
+  completed_plans: 19
+  percent: 20
 ---
 
 # Project State
@@ -30,11 +30,11 @@ See: .planning/PROJECT.md (updated 2026-06-07 — v7.0 GTM Expansion started; v6
 ## Current Position
 
 Phase: 85 (theme-a-w-form-intake-tax-treaty-engine) — EXECUTING
-Plan: 3 of 4 complete (portal/staff W-form routers + immutable record service + module.us-expansion gate)
-Status: Ready to execute Plan 04 (web-vite wizard + staff status card + i18n)
-Last activity: 2026-06-16 -- Phase 85 Plan 03 committed (portal self-cert + staff read/track + 25 tests)
+Plan: 4 of 4 complete (portal/staff W-form routers + immutable record service + module.us-expansion gate)
+Status: Ready to execute
+Last activity: 2026-06-16
 
-Progress: [██████████] 95%
+Progress: [██████████] 100%
 
 ## v7.0 Roadmap Summary (created 2026-06-07)
 
@@ -114,6 +114,7 @@ Decisions are logged in PROJECT.md Key Decisions table. Recent decisions affecti
 - [Phase 85]: [85-01, 2026-06-16] Treaty engine extends WithholdingTaxRate additively (one nullable treatyArticle column; serviceType reused as income-type axis 'business_profits'; 4-field @@unique key UNTOUCHED — adding a 5th breaks the seed upsert + calculateWht lookup). US seed rows in whole-number percent (30.0/0.0/null, never fractions). AE/SA have NO US income-tax treaty → 30% statutory (treatyRate null); only PL/DE/GB/IE/NL reduce to 0% (Article 7). TaxFormSubmission is append-only + supersede-chain, FK'd to Contractor not Worker (Worker = Theme B/P89). Generated Prisma client is tracked in-repo → committed with schema/seed. Multi-region Neon migration (EU/ME/US) + DB seed HELD at human-verify checkpoint (migration-history-drift fallback from P82-84 available).
 - [Phase 85]: [85-02, 2026-06-16] treaty-rate.service mirrors reverse-charge (pure resolveTreatyDecision + DB applyTreaty); override needs a non-empty reason and flags auditRequired (router writes the audit in P03). applyTreaty resolves the auto-detected value from the table EVEN under an override so the audit captures what was overridden (diverges from reverse-charge which short-circuits with a constant). New PARALLEL service — never edits the SA-gated calculateWht; regression proves calculateWht('US')=null. determineFormType is pure: countryCode==='US'→W9; foreign COMPANY→W8BENE else W8BEN (routes the coarse Contractor.type, NOT the fine-grained US entity type). taxFormSubmissionSchema = Zod discriminatedUnion on formType; W9 carries EIN or SSN last-4 ONLY (no full-SSN field); W8BENE adds LOB line-14b. TaxFormType mirrored as a local literal union to keep determineFormType import-free/pure.
 - [Phase 85]: [85-03, 2026-06-16] Portal-primary W-form self-cert on portalAppRouter — every read/write scoped to ctx.contractorId (IDOR), never client-supplied. ESIGN attestation ip/actorId/signedAt 100% server-derived (deriveClientIp(ctx.headers) / ctx.contractorId / new Date()) — client schema omits all three. buildFormSnapshot recursively strips full-SSN/TIN keys (ssn/ssnencrypted/fullssn/scalar-tin), keeps {ssnLast4,ein} — a 2nd PII guard behind the validators schema. supersedeAndInsert is append-only: flips prior ACTIVE→SUPERSEDED then inserts new ACTIVE inside one $transaction; saveTaxFormDraft only ever touches a DRAFT row (signed rows never mutated). Staff read/track on a DEDICATED taxFormRouter (mounted taxForm:) NOT tax.ts — only a separate namespace can be conditionally spread out of appRouter when module.us-expansion is OFF; tax.ts stays always-mounted. Defense-in-depth flag gate: isUsExpansionRegistered() spreads the staff router at boot (METHOD_NOT_FOUND when OFF) + assertUsExpansionEnabled per-request on BOTH surfaces (the flat portal merge cannot be conditionally spread). Form read/track reuses contractor:[read]; full-SSN reveal stays on contractor.revealSsn (contractorPii:[read]) — NO new Better Auth permission (Pitfall 2 avoided). Dead TAX_FORM_NOT_FOUND/NOT_DRAFT error exports removed (append-only makes the reject path unreachable). 25 scoped tests GREEN (immutability/supersede/PII non-leak/ESIGN/W8BENE LOB+article/IDOR/staff RBAC/flag gate).
+- [Phase ?]: [85-04, 2026-06-16] Portal W-form wizard = page→container→hook→component; use-tax-form-wizard.ts the SOLE tRPC boundary. Attestation gate = real <input type=checkbox> perjury + typed legal-name match + signature affirmation. formType discriminant synced via useEffect for the discriminated-union resolver. Staff card reuses UspsAddressStatusPill VARIANT_MAP + SsnMaskedReveal verbatim (absent without contractorPii:read). i18n TaxFormWizard/TaxFormStaff en/de/pl/ar + en-US fallback. Phase 85 COMPLETE (US-FORM-01/02 + US-LOC-02/03).
 
 ### Pending Todos
 
@@ -157,6 +158,7 @@ Carried forward from v6.0 milestone close (2026-06-07). Full enumeration: `.plan
 | Phase 84 P84-06 | 17min | 3 tasks | 11 files |
 | Phase 85 P85-02 | ~11m | 3 tasks | 8 files |
 | Phase 85 P85-03 | ~27m | 3 tasks | 11 files |
+| Phase 85 P04 | ~26m | 3 tasks | 28 files |
 
 ## Standing Project Constraints
 
@@ -166,7 +168,7 @@ Carried forward from v6.0 milestone close (2026-06-07). Full enumeration: `.plan
 
 ## Session Continuity
 
-Last session: 2026-06-16T19:35:00.000Z
+Last session: 2026-06-16T20:12:49.333Z
 Stopped at: Phase 85 Plan 03 complete (portal/staff W-form routers + immutable record service + module.us-expansion gate)
 Resume file: None
 Next command: execute Phase 85 Plan 04 (web-vite portal wizard + staff status card + i18n)

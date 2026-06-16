@@ -94,7 +94,7 @@ Known gaps / deferred at close: see STATE.md `## Deferred Items` (3 unverified p
 - [x] **Phase 82: v7.0 Foundation — Add-On Billing + Flag Registry + US Region Enablement** - `requireAddOn` middleware, all v7.0 flags PENDING with boot-gate, `us-east-1` 4-place region enablement; starts IRIS TCC ~45-day enrollment clock (completed 2026-06-07)
 - [x] **Phase 83: Theme A — US Region Infrastructure** - `us-east-1` per-org DB routing + US R2 tax-archive bucket + IRS 4yr/7yr retention; precedes any US-data creation (completed 2026-06-07)
 - [x] **Phase 84: Theme A — US Contractor Profile Fields + en-US Locale** - EIN/SSN/USPS-address validators, US profile component, `en-US` full key parity (completed 2026-06-08)
-- [ ] **Phase 85: Theme A — W-Form Intake + Tax-Treaty Engine** - W-9 + W-8BEN/E wizards, US tax-treaty rate table, W-8BEN treaty-article auto-populate
+- [x] **Phase 85: Theme A — W-Form Intake + Tax-Treaty Engine** - W-9 + W-8BEN/E wizards, US tax-treaty rate table, W-8BEN treaty-article auto-populate (completed 2026-06-16)
 - [ ] **Phase 86: Theme A — TIN-Match → 1099-NEC → IRIS E-File → State Filing** - IRS TIN-matching, tax-year-keyed 1099-NEC ($2,000 TY2026), IRIS XML A2A transmit + ack, per-state CFSF
 - [ ] **Phase 87: Theme A — 1042-S + US Classification + Determination Letter** - treaty-rate 1042-S, US rule set (federal/AB5/§530), 1099-K tracker ($20k+200), Determination Letter PDF
 - [ ] **Phase 88: Theme A — US Payment Rail** - ACH NACHA in payment-export factory, USD first-class, Modern Treasury programmatic ACH, Fedwire, Plaid identity
@@ -178,7 +178,7 @@ Known gaps / deferred at close: see STATE.md `## Deferred Items` (3 unverified p
 - [x] 85-01-PLAN.md — Data + schema: extend WithholdingTaxRate (treatyArticle) + immutable TaxFormSubmission model + seed US treaty rows + BLOCKING multi-region migration
 - [x] 85-02-PLAN.md — Treaty-rate engine (resolve/override/default) + form-routing + per-form validators + Wave-0 unit tests
 - [x] 85-03-PLAN.md — Portal submit/draft/supersede/attest + staff read/track + module.us-expansion gating + audit + integration tests
-- [ ] 85-04-PLAN.md — web-vite portal wizard + staff status card (per UI-SPEC) + i18n (en/de/pl/ar/en-US) + wiki/MEMORY update
+- [x] 85-04-PLAN.md — web-vite portal wizard + staff status card (per UI-SPEC) + i18n (en/de/pl/ar/en-US) + wiki/MEMORY update
 **Research flag**: Standard — treaty table extends the v5.0 reverse-charge engine pattern. Treaty table must precede 1042-S (Phase 87).
 **UI hint**: yes
 
@@ -393,7 +393,7 @@ Phases execute in numeric order: 82 → 83 → … → 101. After Foundation (82
 | 82. v7.0 Foundation — Add-On + Flags + US Region | v7.0 | 4/4 | Complete    | 2026-06-07 |
 | 83. Theme A — US Region Infrastructure | v7.0 | 4/4 | Complete    | 2026-06-07 |
 | 84. Theme A — US Profile Fields + en-US Locale | v7.0 | 7/7 | Complete    | 2026-06-08 |
-| 85. Theme A — W-Form Intake + Tax-Treaty Engine | v7.0 | 2/4 | In Progress|  |
+| 85. Theme A — W-Form Intake + Tax-Treaty Engine | v7.0 | 4/4 | Complete   | 2026-06-16 |
 | 86. Theme A — TIN-Match → 1099-NEC → IRIS → State | v7.0 | 0/TBD | Not started | - |
 | 87. Theme A — 1042-S + US Classification + Letter | v7.0 | 0/TBD | Not started | - |
 | 88. Theme A — US Payment Rail | v7.0 | 0/TBD | Not started | - |
