@@ -1,4 +1,6 @@
 import { prisma } from '@contractor-ops/db';
+import { TRPCError } from '@trpc/server';
+import { TREATY_OVERRIDE_REASON_REQUIRED } from '../errors';
 
 // ---------------------------------------------------------------------------
 // US treaty-rate resolution service.
@@ -68,7 +70,8 @@ export interface ResolveTreatyInput {
  * Otherwise the auto-detected treaty rate applies; absent a treaty row it
  * defaults to the 30% statutory rate. No DB, no I/O.
  *
- * @throws when an override rate is supplied without a non-empty reason.
+ * @throws TRPCError BAD_REQUEST when an override rate is supplied without a
+ *   non-empty reason — a structured error so the caller surfaces a 400, not a 500.
  */
 export function resolveTreatyDecision(input: ResolveTreatyInput): TreatyDecision {
   const { autoRate, autoArticle, hasTreatyRow, overrideRate, overrideArticle, overrideReason } =
@@ -78,7 +81,10 @@ export function resolveTreatyDecision(input: ResolveTreatyInput): TreatyDecision
 
   if (hasOverrideRate) {
     if (!overrideReason || overrideReason.trim().length === 0) {
-      throw new Error('Treaty-rate override requires a non-empty reason');
+      throw new TRPCError({
+        code: 'BAD_REQUEST',
+        message: TREATY_OVERRIDE_REASON_REQUIRED,
+      });
     }
     return {
       rate: overrideRate,

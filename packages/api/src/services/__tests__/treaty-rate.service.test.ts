@@ -13,6 +13,7 @@
 //     falls back to the 30% statutory default; a specific residency beats XX;
 //     the lookup carries sourceCountry='US' + serviceType='business_profits'.
 
+import { TRPCError } from '@trpc/server';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('@contractor-ops/db', () => {
@@ -89,17 +90,27 @@ describe('treaty-rate.service — resolveTreatyDecision (US-LOC-02/03, D-10)', (
     expect(decision.autoDetected).toBe(true);
   });
 
-  it('an override without a reason is rejected (reason is required, D-10)', () => {
-    expect(() =>
+  it('an override without a reason is rejected with a structured BAD_REQUEST (reason is required, D-10)', () => {
+    const expectBadRequest = (fn: () => unknown) => {
+      expect(fn).toThrow(TRPCError);
+      try {
+        fn();
+      } catch (err) {
+        expect((err as TRPCError).code).toBe('BAD_REQUEST');
+        expect((err as TRPCError).message).toBe('treatyOverrideReasonRequired');
+      }
+    };
+
+    expectBadRequest(() =>
       resolveTreatyDecision({
         autoRate: 0,
         autoArticle: 'Article 7',
         hasTreatyRow: true,
         overrideRate: 15,
       }),
-    ).toThrow(/reason/i);
+    );
 
-    expect(() =>
+    expectBadRequest(() =>
       resolveTreatyDecision({
         autoRate: 0,
         autoArticle: 'Article 7',
@@ -107,7 +118,7 @@ describe('treaty-rate.service — resolveTreatyDecision (US-LOC-02/03, D-10)', (
         overrideRate: 15,
         overrideReason: '   ',
       }),
-    ).toThrow(/reason/i);
+    );
   });
 
   it('a reason without any override value does NOT switch to the override branch', () => {

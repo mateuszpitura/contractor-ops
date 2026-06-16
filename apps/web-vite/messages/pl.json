@@ -3294,6 +3294,7 @@
     "classificationAssessmentIdRequired": "Wymagany identyfikator oceny.",
     "classificationEngineDisabled": "Silnik klasyfikacji jest wyłączony dla tej organizacji.",
     "usExpansionDisabled": "Rejestracja amerykańskich formularzy podatkowych nie jest włączona dla tej organizacji.",
+    "treatyOverrideReasonRequired": "Aby zmienić stawkę z umowy o unikaniu podwójnego opodatkowania, wymagane jest podanie powodu.",
     "taxFormNotFound": "Nie znaleziono formularza podatkowego.",
     "taxFormNotDraft": "Edytować można tylko formularz podatkowy w wersji roboczej.",
     "classificationAssessmentNotFound": "Nie znaleziono oceny klasyfikacji.",
