@@ -78,11 +78,13 @@ The repo uses a **fluid `clamp()` scale** (`globals.css` `@theme inline`). Body 
 | Display (wizard title, step heading) | `--text-2xl` → `--text-3xl` (clamp ~22–30px) | `text-2xl` / `text-3xl`, `font-display` | semibold (600) | 1.15 (`leading-tight`) | Wizard H1, success-receipt heading |
 | Heading (step card title, section) | `--text-lg` (clamp ~16–18px) | `text-lg`, `font-display` | semibold (600) | 1.75 | Per-step card `<h2>`, staff card title |
 | Body (field values, help, instructions) | `--text-sm` / `--text-base` (clamp 13–15px) | `text-sm` | regular (400) | 1.5 | Field help text, perjury-attestation paragraph, treaty explanation |
-| Label / meta (field labels, status pill, last-4) | `--text-xs` → `--text-sm` (clamp 11–14px) | `text-xs` / `text-sm` | medium (500) for labels, regular for meta | 1.25–1.5 | Form `<Label>`, status badges, "Article 7" caption |
+| Label / meta (field labels, status pill, last-4) | `--text-xs` → `--text-sm` (clamp 11–14px) | `text-xs` / `text-sm` | regular (400) | 1.25–1.5 | Form `<Label>`, status badges, "Article 7" caption |
 
-**Two weights only:** `font-normal` (400) for body/values, `font-semibold` (600) for headings and
-the primary CTA. Labels may use `font-medium` (500) where the codebase already does (`Label`
-default) — this is the existing convention and counts as within contract.
+**Two weights only: 400 and 600 — no exceptions.** `font-normal` (400) for ALL body, values, and
+field labels; `font-semibold` (600) for headings and the primary CTA. **Field labels are
+distinguished from body by SIZE (`text-xs` / `text-sm`), never by weight.** The shadcn `Label`
+default (`font-medium`/500) MUST be overridden to `font-normal` via Tailwind (`className="font-normal"`)
+wherever it is used in this phase. No `font-medium` (500) anywhere.
 
 **Numeric/monospace:** TIN/SSN last-4, FTIN, treaty rate %, and "Article N" render in
 `font-mono tabular-nums` (matches `SsnMaskedReveal` and `hero-metric` precedent) so digits align.
@@ -101,8 +103,13 @@ teal-primary "Precision Craft" palette. Accent (teal `--primary`) is reserved, n
 | Accent (10%) | `--primary` (Deep Teal `oklch(0.44 0.145 178)` light / `0.65` dark) | `bg-primary`, `text-primary` | See reserved list ↓ |
 | Destructive | `--destructive` | `bg-destructive`, `text-destructive` | Validation errors, "override the auto-rate" warning copy, supersede confirmation |
 
+**Focal point:** Primary focal point of every portal wizard screen is the **active wizard step
+card**; specifically the **primary CTA at the bottom of each step card** anchors the screen (single
+accent-filled button, largest interactive target, end of the reading path). Everything else —
+stepper, fields, help text — supports getting the user to that one action.
+
 **Accent (teal `--primary`) reserved EXCLUSIVELY for:**
-1. The single primary CTA per step (`Continue`, `Sign & submit`).
+1. The single primary CTA per step (`Continue to {next step}`, `Sign & submit`).
 2. The active/current stepper indicator + the progress bar fill (`step-current-ring`, `[data-slot="progress-indicator"]`).
 3. Focus-visible ring on inputs/buttons (`--ring` = teal; `focus-glow` / `[data-form-control]:focus-visible`).
 4. The reveal toggle text/icon (`text-primary`, matching `SsnMaskedReveal`).
@@ -139,9 +146,9 @@ red-CIs. Copy below is the **en source-of-truth**; verb+noun and tone are the co
 | Wizard entry CTA (portal landing / staff "request") | **Start tax form** (contractor) / **Request tax form** (staff) |
 | Determination step heading | **Confirm your tax form** |
 | Determination body | *"Based on your profile we'll prepare your **{formName}**. If this isn't right, you can change it below."* (formName = W-9 / W-8BEN / W-8BEN-E) |
-| Step primary CTA (intermediate) | **Continue** |
+| Step primary CTA (intermediate) | **Continue to {next step}** (e.g. "Continue to certify", "Continue to treaty claim") — verb+noun for screen-reader clarity, never a bare "Continue" |
 | Final step primary CTA | **Sign & submit** |
-| Back / secondary | **Back** (ghost/outline; never accent) |
+| Back / secondary | **Back** (ghost/outline secondary nav; never accent) |
 | Save-and-finish-later | **Save draft** |
 | Treaty auto-populate caption | *"Treaty rate applied automatically: **{rate}%** under **{article}** ({country})."* |
 | Treaty no-match (30% default) | *"No tax treaty applies for **{country}** — the default **30%** statutory rate is used."* (warning tone) |
@@ -155,7 +162,7 @@ red-CIs. Copy below is the **en source-of-truth**; verb+noun and tone are the co
 | Empty state heading (staff, no forms for contractor) | **No tax form submitted yet** |
 | Empty state body (staff) | *"This contractor hasn't completed a W-form. Request one to start the process."* + **Request tax form** CTA |
 | Loading state | Skeleton (`animate-shimmer`) for the wizard shell + per-step card; `Loader2` spinner inside the CTA during submit ("Submitting…"). Never a blank screen. |
-| Error state (load failure) | **Couldn't load your tax form** — *"Something went wrong. Refresh to try again."* + **Retry** action |
+| Error state (load failure) | **Couldn't load your tax form** — *"Something went wrong. Refresh to try again."* + **Reload tax form** action |
 | Error state (submit failure) | Inline `role="alert"` under the CTA: *"We couldn't submit your form. Check your entries and try again."* — preserves entered data, never wipes the wizard |
 | Field validation error | Per-field `role="alert"` `text-destructive` text below the input (mirrors `organization-onboarding`) |
 
@@ -201,11 +208,11 @@ Every wizard step and the staff surface MUST specify all four states and meet WC
 
 | Surface | Loading | Empty | Error | A11y notes |
 |---------|---------|-------|-------|-----------|
-| Portal wizard shell | Skeleton card (`animate-shimmer`) while determination/profile loads | "No tax form on file" + Start CTA (pre-wizard) | "Couldn't load your tax form" + Retry | Stepper `aria-label` (wizard progress), `aria-current="step"` on active item; focus moves to the new step's heading on Continue/Back; each field `aria-invalid` + `aria-describedby` error wiring (mirror `organization-onboarding`) |
+| Portal wizard shell | Skeleton card (`animate-shimmer`) while determination/profile loads | "No tax form on file" + Start CTA (pre-wizard) | "Couldn't load your tax form" + Reload tax form | Stepper `aria-label` (wizard progress), `aria-current="step"` on active item; focus moves to the new step's heading on Continue/Back; each field `aria-invalid` + `aria-describedby` error wiring (mirror `organization-onboarding`) |
 | Per-step form | Disabled inputs + CTA spinner during async validation/submit | n/a (always has fields) | Inline `role="alert"` per field + a step-level submit error region | Semantic `<form>`, `<Label htmlFor>`, `noValidate`, required-checkbox group has a group label |
 | Attestation step | CTA spinner "Submitting…" on submit | n/a | `role="alert" aria-live="polite"` submit-failure region, data preserved | Perjury checkboxes are real `<input type=checkbox>` with visible labels; typed-name field accessible name = visible label (Label-in-Name) |
 | Treaty claim display | Inline skeleton on the rate/article line while resolving | n/a (auto-populated or 30% default) | Falls back to 30% statutory + warning note if lookup fails | Rate/article announced via `aria-live="polite"` when it auto-populates so SR users hear the change |
-| Staff status surface | Table/card skeleton rows | "No tax form submitted yet" + Request CTA | Card-level error + Retry | Status pills carry `aria-label`; full SSN absent (not just hidden) without `contractorPii:read` |
+| Staff status surface | Table/card skeleton rows | "No tax form submitted yet" + Request CTA | Card-level error + Reload tax form | Status pills carry `aria-label`; full SSN absent (not just hidden) without `contractorPii:read` |
 
 **RTL (ar):** the wizard MUST work right-to-left. Use logical properties already in the codebase
 (`ms-*`/`me-*`, `ps-*`/`pe-*`, `text-start`/`text-end`), and directional icons flip via `rtl:rotate-180`
