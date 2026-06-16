@@ -18,7 +18,10 @@ export interface TreatyClaimCaptionProps {
 export function TreatyClaimCaption({ treatyClaim, country }: TreatyClaimCaptionProps) {
   const t = useTranslations('TaxFormWizard.treaty');
 
-  const hasTreaty = treatyClaim !== null && treatyClaim.rate < 30 && treatyClaim.article !== null;
+  // A treaty claim is present when the determination resolved an article — not
+  // when the rate happens to fall below the statutory 30%. The rate heuristic
+  // conflated "is this treaty beneficial" with "is there a treaty claim".
+  const hasTreaty = treatyClaim !== null && treatyClaim.article !== null;
 
   return (
     <div className="space-y-2 rounded-md bg-muted p-4" aria-live="polite">
