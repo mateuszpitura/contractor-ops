@@ -76,8 +76,11 @@ export function StepAttest({
     (event: React.ChangeEvent<HTMLInputElement>) => {
       const checked = event.target.checked;
       setPerjuryChecked(checked);
-      setValue('perjuryAccepted', checked === true ? true : (false as never), {
-        shouldValidate: false,
+      // `perjuryAccepted` is `z.literal(true)` — never write `false`.
+      // Unset it on uncheck so the resolver re-validates cleanly when
+      // the box is checked again (a stale `false` would block submit).
+      setValue('perjuryAccepted', checked ? true : (undefined as never), {
+        shouldValidate: true,
       });
     },
     [setValue],

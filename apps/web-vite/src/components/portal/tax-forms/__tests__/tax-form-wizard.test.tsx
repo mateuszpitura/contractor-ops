@@ -138,6 +138,35 @@ describe('TaxFormWizard attestation gate', () => {
     await waitFor(() => expect(submit).toBeEnabled());
   });
 
+  it('re-enables submit after the perjury box is unchecked then checked again', async () => {
+    // Regression: unchecking previously wrote `false` into a z.literal(true)
+    // field with shouldValidate:false, leaving a stale invalid value that
+    // blocked submit even after re-checking. Unsetting + re-validating fixes it.
+    setTRPCMock({
+      'portal.getTaxFormDetermination': () => W9_DETERMINATION,
+      'portal.submitTaxForm': () => ({ id: 'tf-1', status: 'ACTIVE', formType: 'W9' }),
+    });
+    const { user } = setup(<TaxFormWizard />);
+    await advanceToAttest(user);
+
+    const checkboxes = screen.getAllByRole('checkbox');
+    await user.type(
+      screen.getByLabelText('Type your full legal name to sign'),
+      'Jane Q Contractor',
+    );
+    await user.click(checkboxes[1]); // legal-signature affirmation
+
+    // Check → uncheck → re-check the perjury box.
+    await user.click(checkboxes[0]);
+    await user.click(checkboxes[0]);
+    await user.click(checkboxes[0]);
+
+    const submit = screen.getByRole('button', { name: 'Sign & submit' });
+    await waitFor(() => expect(submit).toBeEnabled());
+    await user.click(submit);
+    expect(await screen.findByText('Tax form submitted')).toBeInTheDocument();
+  });
+
   it('preserves data and shows an alert region when submit fails', async () => {
     setTRPCMock({
       'portal.getTaxFormDetermination': () => W9_DETERMINATION,
