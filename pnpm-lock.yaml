@@ -1113,6 +1113,9 @@ importers:
       '@contractor-ops/secrets':
         specifier: workspace:*
         version: link:../secrets
+      '@contractor-ops/validators':
+        specifier: workspace:*
+        version: link:../validators
       '@infisical/sdk':
         specifier: ^5.0.2
         version: 5.0.2

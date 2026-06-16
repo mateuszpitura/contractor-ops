@@ -17,6 +17,16 @@ export { KsefAdapter } from './adapters/ksef-adapter.js';
 export { loadHeavyAdapters, registerAllAdapters } from './adapters/register-all.js';
 export { ResendAdapter } from './adapters/resend-adapter.js';
 export { SlackAdapter } from './adapters/slack-adapter.js';
+// IRS TIN-Matching adapter seam (mock default + dark live e-Services client)
+export {
+  EServicesTinMatchClient,
+  type EServicesTinMatchClientConfig,
+  MockTinMatchClient,
+  type TinMatchClient,
+  type TinMatchInput,
+  type TinMatchResult,
+  type TinType,
+} from './adapters/tin-match/index.js';
 // IdP impact-preview + error-classifier public surface
 export type {
   ClassifyErrorInput,
