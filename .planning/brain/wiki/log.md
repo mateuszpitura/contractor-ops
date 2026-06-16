@@ -5,6 +5,13 @@ type: log
 
 # Wiki log (append only)
 
+## 2026-06-17 — 1099-NEC generation engine + recipient Copy-B PDF
+
+- New: `packages/api/src/services/form-1099-nec.service.ts` — `generateBatch` (box-1 aggregated by payment-date + FX-to-USD per recipient/payer-org), tax-year-keyed `Tax1099Threshold` gate (never a constant: $600 TY2025 / $2,000 TY2026 OBBBA), `computeBox4Minor` backup withholding, `supersedeCorrected`/`fileCorrection` (CORRECTED = supersede in one tx), idempotent batch + `writeAuditLog`; snapshot keeps TIN last-4 only.
+- New: `packages/api/src/services/form-1099-nec-pdf.ts` + `pdf-templates/form-1099-nec-copy-b.tsx` — lazy `renderToBuffer` substitute Copy B (Pub 1179 §4.6) from the immutable snapshot, last-4 TIN, adviser-verify footnote; R2 archive `1099-nec/<orgId>/<id>.pdf` with a `pdfArchiveKey` CAS guard; Copy B only (Copy A goes via IRIS XML).
+- Persistence sink is an injected port — deterministic core unit-tested with no live DB (86-02 migration not yet applied); the schema-applied wiring caller supplies the real writer.
+- Wiki: [[domains/us-tax-forms]] § 1099-NEC generation + entry points + invariants + agent mistakes; [[structure/key-services]] two new rows.
+
 ## 2026-06-10 — First-run org onboarding wizard
 
 - `DashboardShellContainer` gates on client session `activeOrganizationId`; no org + no membership → `OrganizationOnboardingContainer` (replaces shell, avoids `tenantNoActiveOrganization`)

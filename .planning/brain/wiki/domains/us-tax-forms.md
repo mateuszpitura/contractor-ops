@@ -2,7 +2,7 @@
 title: US tax forms (W-9 / W-8BEN / W-8BEN-E) and treaty engine
 type: domain
 tags: [us, tax, w-form, treaty, portal, esign, immutable-record]
-source_commit: 1f89de3934e82783bb2ef4d10dace4859cce21d3
+source_commit: 90fd15c7c91df9513a57165d5d893f0e91ef6688
 verify_with:
   - apps/web-vite/src/components/portal/tax-forms/
   - apps/web-vite/src/components/contractors/tax-forms/
@@ -12,6 +12,9 @@ verify_with:
   - packages/api/src/services/treaty-rate.service.ts
   - packages/api/src/services/tax-form-routing.ts
   - packages/api/src/services/tin-match.service.ts
+  - packages/api/src/services/form-1099-nec.service.ts
+  - packages/api/src/services/form-1099-nec-pdf.ts
+  - packages/api/src/pdf-templates/form-1099-nec-copy-b.tsx
   - packages/integrations/src/adapters/tin-match/
   - packages/validators/src/w-form-validators.ts
 updated: 2026-06-17
@@ -71,6 +74,38 @@ writers are caller-supplied (the year-end batch / staff router against the appli
 audit row is written here through `writeAuditLog`. The actual 24% payout reduction is a later
 phase — this surface only records the flag.
 
+## 1099-NEC generation
+
+`form-1099-nec.service` is the deterministic year-end generation engine (published-threshold
+arithmetic, not a classification verdict). `aggregateBox1` sums box-1 nonemployee compensation
+by payment (settlement) date within the calendar tax year, **per recipient per payer-org**;
+`aggregateBox1Async` FX-converts any non-USD payout to USD at the **payment-date rate** through
+the in-tree `exchange-rate` service (one HALF-UP round on the integer minor-unit product — no
+float drift). A non-USD payout that reaches the synchronous reducer without a pre-converted USD
+amount throws rather than silently understating the box.
+
+Generation is gated by the **tax-year-keyed `Tax1099Threshold` table** (`getBox1ThresholdMinor`),
+never a constant: $600 TY2025, $2,000 TY2026 (OBBBA), inflation-indexed thereafter. `computeBox4Minor`
+records federal backup withholding when the recipient's W-9 backup-withholding flag is set or a
+TIN mismatch exists (the amount withheld; the 24% reduction is a later phase). `buildForm1099NecSnapshot`
+builds the immutable record-of-record with the recipient TIN **last-4 only** (a sanitizer mirroring
+`tax-form.service` strips any forged full-SSN/TIN key) plus an adviser-verify note.
+
+A CORRECTED filing **supersedes, never mutates**: `supersedeCorrected` / `fileCorrection` flip the
+prior ACTIVE row for `(organizationId, payerOrgId, recipientId, taxYear)` to SUPERSEDED then insert
+a new ACTIVE row with `corrected: true` inside one `$transaction`; the filed row is never updated.
+`generateBatch` is wrapped in `idempotency.reserve/complete/clear` so a retried batch returns the
+prior result instead of re-filing, and writes an audit row on generation. The persistence sink is an
+injected port — the deterministic core is unit-tested with no live database; the schema-applied
+router/wiring caller supplies the real writer.
+
+The recipient **Copy-B PDF** (`form-1099-nec-pdf` → `Form1099NecCopyBDocument`) is a substitute
+black-ink form per Pub 1179 §4.6, rendered via a lazy `import('@react-pdf/renderer')` `renderToBuffer`
+from the **stored immutable snapshot** (values as filed, never a live recompute), showing the recipient
+TIN masked to last-4 only and carrying the adviser-verify footnote. It is archived to the US R2 tax
+bucket under `1099-nec/<orgId>/<id>.pdf`; a `pdfArchiveKey` compare-and-swap prevents a double render.
+Copy B ONLY — the IRS Copy A goes via the IRIS XML e-file, never a rendered PDF.
+
 ## Entry points
 
 | Piece | Path |
@@ -81,6 +116,8 @@ phase — this surface only records the flag.
 | Treaty engine | `packages/api/src/services/treaty-rate.service.ts` (`resolveTreatyDecision` / `applyTreaty`) |
 | TIN-match service | `packages/api/src/services/tin-match.service.ts` (`matchRecipientTin` / `revalidateBatchTins` / `createDbTinMatchPersistence`) |
 | TIN-match seam | `packages/integrations/src/adapters/tin-match/` (`TinMatchClient` / `MockTinMatchClient` default / `EServicesTinMatchClient` dark) |
+| 1099-NEC engine | `packages/api/src/services/form-1099-nec.service.ts` (`generateBatch` / `aggregateBox1[Async]` / `getBox1ThresholdMinor` / `computeBox4Minor` / `buildForm1099NecSnapshot` / `supersedeCorrected` / `fileCorrection`) |
+| 1099-NEC Copy-B PDF | `packages/api/src/services/form-1099-nec-pdf.ts` (`renderAndArchiveCopyB` / `renderForm1099NecCopyB`) + `packages/api/src/pdf-templates/form-1099-nec-copy-b.tsx` (`Form1099NecCopyBDocument`) |
 | Form routing | `packages/api/src/services/tax-form-routing.ts` (`determineFormType`) |
 | Validators | `packages/validators/src/w-form-validators.ts` (`taxFormSubmissionSchema` discriminated union) |
 | Flag gate | `packages/api/src/middleware/require-us-expansion-flag.ts` (`assertUsExpansionEnabled`) |
@@ -112,6 +149,13 @@ phase — this surface only records the flag.
 - A TIN mismatch is advisory only — it sets the backup-withholding flag + escalates, and the
   1099 still generates. The TIN-match service never throws on a mismatch and never blocks the
   year-end loop. A full TIN/SSN never reaches a log line, the cache key, or the audit metadata.
+- The 1099-NEC threshold is read from the tax-year-keyed `Tax1099Threshold` table, never a
+  constant ($600 TY2025 / $2,000 TY2026 OBBBA). Box-1 is aggregated by payment-date and
+  FX-converted to USD at the payment-date rate, per recipient per payer-org.
+- A CORRECTED 1099 supersedes (prior ACTIVE → SUPERSEDED, new ACTIVE with `corrected: true`,
+  one `$transaction`); a filed `Form1099Nec` row is never updated. `generateBatch` is idempotent
+  so a retried batch never double-files. The Copy-B PDF renders from the immutable snapshot
+  (last-4 TIN only) — Copy B only, never IRS Copy A.
 
 ## Agent mistakes
 
@@ -125,6 +169,10 @@ phase — this surface only records the flag.
   server-side.
 - Do NOT call `EServicesTinMatchClient` on the default path — it is dark behind a PAF/flag gate;
   the shipped default is `MockTinMatchClient`. Do NOT hard-block on a TIN mismatch.
+- Do NOT embed the 1099 threshold as a constant — read `Tax1099Threshold` by tax year. Do NOT
+  render IRS Copy A as a PDF (Copy B only; Copy A goes via IRIS XML). Do NOT recompute figures in
+  the PDF — render from the immutable snapshot. Do NOT mutate a filed `Form1099Nec` — correct by
+  superseding.
 
 ## Related
 
