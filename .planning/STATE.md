@@ -3,9 +3,9 @@ gsd_state_version: 1.0
 milestone: v7.0
 milestone_name: GTM Expansion
 status: executing
-stopped_at: Phase 85 context gathered
-last_updated: "2026-06-16T00:28:47.809Z"
-last_activity: 2026-06-16 -- Phase 85 planning complete
+stopped_at: Phase 85 Plan 01 — Tasks 1-2 done, Task 3 held at migration checkpoint
+last_updated: "2026-06-16T08:31:00.000Z"
+last_activity: 2026-06-16 -- Phase 85 Plan 01 schema + seed committed; multi-region migration awaiting human approval
 progress:
   total_phases: 20
   completed_phases: 3
@@ -25,14 +25,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-07 — v7.0 GTM Expansion started; v6.0 shipped 2026-06-07)
 
 **Core value:** The invoice-to-payment flow must work end-to-end: invoice arrives, gets matched to contract, routed through approval, and batched for payment — with full audit trail and zero manual tracking in spreadsheets.
-**Current focus:** Phase 85 — theme a — w form intake + tax treaty engine
+**Current focus:** Phase 85 — theme-a-w-form-intake-tax-treaty-engine
 
 ## Current Position
 
-Phase: 85
-Plan: Not started
-Status: Ready to execute
-Last activity: 2026-06-16 -- Phase 85 planning complete
+Phase: 85 (theme-a-w-form-intake-tax-treaty-engine) — EXECUTING
+Plan: 1 of 4 (Tasks 1-2 committed; Task 3 multi-region migration held at human-verify checkpoint)
+Status: Executing Phase 85 — Plan 01 checkpoint-pending
+Last activity: 2026-06-16 -- Phase 85 Plan 01 schema + seed committed; migration awaiting human approval
 
 Progress: [██████████] 100%
 
@@ -111,6 +111,7 @@ Decisions are logged in PROJECT.md Key Decisions table. Recent decisions affecti
 - [Phase ?]: 84-04: USPS adapter fail-open advisory — throttle/5xx/network/Redis-down/malformed/missing-creds → unverified, never throws to save (D-03)
 - [Phase ?]: 84-05: SSN encrypted into dedicated ssnEncrypted/ssnLast4 columns (never countryFields JSONB); revealSsn staff-router-only + contractorPii:[read] + audit-logged (no SSN in row); USPS validation advisory/non-blocking on save (D-01/D-02/D-03)
 - [Phase ?]: [84-06] US contractor UI: SsnMaskedReveal gated reveal (absent-without-contractorPii:read, audit-logged via use-reveal-ssn hook, no full SSN in DOM); UspsAddressStatusPill advisory (never blocks save); case 'US' = place 3 of 3 in CountryFieldsDispatch; reveal-button accessible name = visible text (WCAG Label-in-Name); en base American + de/pl/ar parity + thin en-US overrides
+- [Phase 85]: [85-01, 2026-06-16] Treaty engine extends WithholdingTaxRate additively (one nullable treatyArticle column; serviceType reused as income-type axis 'business_profits'; 4-field @@unique key UNTOUCHED — adding a 5th breaks the seed upsert + calculateWht lookup). US seed rows in whole-number percent (30.0/0.0/null, never fractions). AE/SA have NO US income-tax treaty → 30% statutory (treatyRate null); only PL/DE/GB/IE/NL reduce to 0% (Article 7). TaxFormSubmission is append-only + supersede-chain, FK'd to Contractor not Worker (Worker = Theme B/P89). Generated Prisma client is tracked in-repo → committed with schema/seed. Multi-region Neon migration (EU/ME/US) + DB seed HELD at human-verify checkpoint (migration-history-drift fallback from P82-84 available).
 
 ### Pending Todos
 
