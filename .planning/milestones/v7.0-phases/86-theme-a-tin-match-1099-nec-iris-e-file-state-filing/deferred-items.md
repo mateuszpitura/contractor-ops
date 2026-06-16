@@ -11,3 +11,10 @@
   - 23 breadcrumb comments flagged across `packages/api/src/services/__tests__/{iris-ack-parser,tax-filing-transmitter,tin-match.service}.test.ts` (decision/wave/req IDs in comments).
   - These files were committed in `93431e58c test(86-01)` — not touched by plan 86-02. None of plan 86-02's files are flagged.
   - Out of scope; should be cleaned up under plan 86-01's follow-up or a code-review pass.
+
+## Plan 86-05
+
+- **Remaining `pnpm lint:no-breadcrumbs` failures in other plans' Wave-0 RED scaffolds**
+  - After plan 86-05 cleaned its own two scaffolds (`form-1099-nec.service.test.ts`, `form-1099-nec-copy-b.test.tsx`), the guard still flags breadcrumbs in scaffolds that belong to plans 86-05-IRIS / 86-06: `packages/api/src/services/__tests__/{iris-ack-parser,tax-filing-transmitter}.test.ts` and `packages/api/src/__tests__/security/tax-filing-tenant-isolation.security.test.ts` (decision/wave/req IDs in comments).
+  - These RED scaffolds were committed in Plan 86-01 and are turned GREEN by the IRIS-generator / transmitter / router plans. Each owning plan should strip its own breadcrumbs when it turns its scaffold GREEN.
+  - Out of scope per the SCOPE BOUNDARY rule — plan 86-05 only owns the `form-1099-nec.service` + `form-1099-nec-copy-b` scaffolds, both now clean.

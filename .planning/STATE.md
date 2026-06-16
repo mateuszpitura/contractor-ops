@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v7.0
 milestone_name: GTM Expansion
 status: Plan 86-01 awaiting human IRS IRIS XSD download (see Blockers)
-stopped_at: Completed 86-03-PLAN.md (TIN-match seam + cache/retry/escalation service)
-last_updated: "2026-06-16T23:25:45.148Z"
+stopped_at: Completed 86-05-PLAN.md (1099-NEC generation engine + recipient Copy-B PDF)
+last_updated: "2026-06-16T23:42:53.634Z"
 last_activity: 2026-06-16 -- 86-01 Tasks 1-2 done (iris pkg + checksum guard + 9 Wave-0 RED scaffolds); paused at IRS-SOR download gate
 progress:
   total_phases: 20
   completed_phases: 4
   total_plans: 27
-  completed_plans: 22
+  completed_plans: 23
   percent: 20
 ---
 
@@ -30,11 +30,11 @@ See: .planning/PROJECT.md (updated 2026-06-07 — v7.0 GTM Expansion started; v6
 ## Current Position
 
 Phase: 86 (Theme A — TIN-Match → 1099-NEC → IRIS E-File → State Filing) — EXECUTING
-Plan: 1 of 8 (PAUSED at human-action checkpoint — Task 3 of 3)
-Status: Plan 86-01 awaiting human IRS IRIS XSD download (see Blockers)
-Last activity: 2026-06-16 -- 86-01 Tasks 1-2 done (iris pkg + checksum guard + 9 Wave-0 RED scaffolds); paused at IRS-SOR download gate
+Plan: 86-05 of 8 complete (86-02/03/05 done; 86-01 Task 3 + 86-02 Task 3 multi-region migration held at human gates; 86-04 not yet run)
+Status: Completed 86-05 (1099-NEC generation engine + recipient Copy-B PDF). US-FORM-04 satisfied.
+Last activity: 2026-06-16 -- 86-05 Tasks 1-2 done (form-1099-nec.service aggregation/threshold/box-4/CORRECTED supersede/idempotency + Copy-B PDF render/archive); 17/17 tests GREEN
 
-Progress: [████████░░] 81%
+Progress: [█████████░] 85%
 
 ## v7.0 Roadmap Summary (created 2026-06-07)
 
@@ -117,6 +117,8 @@ Decisions are logged in PROJECT.md Key Decisions table. Recent decisions affecti
 - [Phase ?]: [85-04, 2026-06-16] Portal W-form wizard = page→container→hook→component; use-tax-form-wizard.ts the SOLE tRPC boundary. Attestation gate = real <input type=checkbox> perjury + typed legal-name match + signature affirmation. formType discriminant synced via useEffect for the discriminated-union resolver. Staff card reuses UspsAddressStatusPill VARIANT_MAP + SsnMaskedReveal verbatim (absent without contractorPii:read). i18n TaxFormWizard/TaxFormStaff en/de/pl/ar + en-US fallback. Phase 85 COMPLETE (US-FORM-01/02 + US-LOC-02/03).
 - [Phase 86]: [86-01] @contractor-ops/iris package + SHA-256 XSD checksum guard established (mirrors einvoice validator-bundle); D-01 XSD-validate-in-CI seam + D-18 adviser-verify provenance in source.txt; reused fast-xml-parser ^5.7.3 + libxmljs2 ^0.37.0 verbatim (zero new external deps, T-86-01-SC accept); 9 Wave-0 RED scaffolds laid (terminal-RED). PAUSED at human-action checkpoint awaiting IRS IRIS XSD download (IRS-SOR login) before checksums pin.
 - [Phase 86]: TIN-match seam: mock default + dark SSRF-safe e-Services client; mismatch advisory (flag + escalate + audit, never hard-block) — 86-02 migration unapplied + unit test injects only a client, so side-effect persistence is an injected port; the deterministic core ships and is fully tested with no live DB
+- [Phase 86]: 86-05: 1099-NEC threshold read from the tax-year-keyed Tax1099Threshold table, never a constant ($600 TY2025 / $2,000 TY2026 OBBBA); box-1 aggregated by payment-date + FX-to-USD per recipient/payer-org
+- [Phase 86]: 86-05: box-4 backup withholding + generateBatch persistence are injected ports (no Contractor flag column / 86-02 migration unapplied); CORRECTED = supersede in one tx; the 86-06 wiring caller supplies the real DB writers
 
 ### Pending Todos
 
@@ -165,6 +167,7 @@ Carried forward from v6.0 milestone close (2026-06-07). Full enumeration: `.plan
 | Phase 85 P04 | ~26m | 3 tasks | 28 files |
 | Phase 86 P01 | 5m | 2 tasks | 15 files |
 | Phase 86 P86-03 | ~13min | 2 tasks | 11 files |
+| Phase 86 P05 | ~10min | 2 tasks | 8 files |
 
 ## Standing Project Constraints
 
@@ -174,7 +177,7 @@ Carried forward from v6.0 milestone close (2026-06-07). Full enumeration: `.plan
 
 ## Session Continuity
 
-Last session: 2026-06-16T23:25:45.142Z
-Stopped at: Completed 86-03-PLAN.md (TIN-match seam + cache/retry/escalation service)
+Last session: 2026-06-16T23:42:39.330Z
+Stopped at: Completed 86-05-PLAN.md (1099-NEC generation engine + recipient Copy-B PDF)
 Resume file: None
 Next command: execute Phase 85 Plan 04 (web-vite portal wizard + staff status card + i18n)
