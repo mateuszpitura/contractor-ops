@@ -1,0 +1,16 @@
+IRS IRIS Schemas and Business Rules — Tax Year 2025, schema v2.0 (posted 2025-11-06)
+source: irs.gov — "IRIS Schemas and Business Rules" page / IRS Secure Object Repository (SOR)
+access: requires an IRS account login (human-only download — no public URL, not on npm)
+package: TY2025 IRIS Schema & Business Rules package (1099-NEC payload XSD + Transmission Manifest XSD)
+sha256: <pinned at the human-action checkpoint after the package is downloaded>
+
+re-verify TY2026 (~Nov 2026): the IRS revs the schema per tax year. As of TY2025 the
+schema VersionNum/VersionDt live in the payload manifest, not the message metadata.
+Bundle the schema package matching the tax year being filed and record the
+VersionNum/VersionDt the submission was built against. Re-verify the TY2026 schema when
+it posts (likely ~Nov 2026) and re-pin checksums.txt.
+
+ADVISER-VERIFY: the IRIS XSD bundle, the generated 1099-NEC XML, the threshold config, and
+all treaty/withholding figures need jurisdiction-specific legal/tax-adviser verification
+before any production deploy. No artifact here is presented as final legal advice
+(local-only / legal-deferred posture).

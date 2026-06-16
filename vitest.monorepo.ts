@@ -23,4 +23,5 @@ export const vitestProject = {
   cronWorker: { name: 'cron-worker', groupOrder: 15 },
   webVite: { name: 'web-vite', groupOrder: 16 },
   idpSaga: { name: 'idp-saga', groupOrder: 17 },
+  iris: { name: 'iris', groupOrder: 18 },
 } as const;

@@ -1,0 +1,3 @@
+# SHA-256 of every bundled IRS IRIS .xsd, one `<sha256>  <relpath>` line per file.
+# Empty until the IRS XSDs are placed at the human-action checkpoint; populated by:
+#   pnpm --filter @contractor-ops/iris exec tsx scripts/verify-iris-schema-checksums.ts --write
