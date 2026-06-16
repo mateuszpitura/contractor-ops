@@ -176,7 +176,7 @@ Known gaps / deferred at close: see STATE.md `## Deferred Items` (3 unverified p
   4. The W-8BEN treaty article auto-populates from the contractor's home jurisdiction + treaty table.
 **Plans**: 4 plans (4 waves)
 - [x] 85-01-PLAN.md — Data + schema: extend WithholdingTaxRate (treatyArticle) + immutable TaxFormSubmission model + seed US treaty rows + BLOCKING multi-region migration
-- [ ] 85-02-PLAN.md — Treaty-rate engine (resolve/override/default) + form-routing + per-form validators + Wave-0 unit tests
+- [x] 85-02-PLAN.md — Treaty-rate engine (resolve/override/default) + form-routing + per-form validators + Wave-0 unit tests
 - [ ] 85-03-PLAN.md — Portal submit/draft/supersede/attest + staff read/track + module.us-expansion gating + audit + integration tests
 - [ ] 85-04-PLAN.md — web-vite portal wizard + staff status card (per UI-SPEC) + i18n (en/de/pl/ar/en-US) + wiki/MEMORY update
 **Research flag**: Standard — treaty table extends the v5.0 reverse-charge engine pattern. Treaty table must precede 1042-S (Phase 87).
@@ -393,7 +393,7 @@ Phases execute in numeric order: 82 → 83 → … → 101. After Foundation (82
 | 82. v7.0 Foundation — Add-On + Flags + US Region | v7.0 | 4/4 | Complete    | 2026-06-07 |
 | 83. Theme A — US Region Infrastructure | v7.0 | 4/4 | Complete    | 2026-06-07 |
 | 84. Theme A — US Profile Fields + en-US Locale | v7.0 | 7/7 | Complete    | 2026-06-08 |
-| 85. Theme A — W-Form Intake + Tax-Treaty Engine | v7.0 | 1/4 | In Progress|  |
+| 85. Theme A — W-Form Intake + Tax-Treaty Engine | v7.0 | 2/4 | In Progress|  |
 | 86. Theme A — TIN-Match → 1099-NEC → IRIS → State | v7.0 | 0/TBD | Not started | - |
 | 87. Theme A — 1042-S + US Classification + Letter | v7.0 | 0/TBD | Not started | - |
 | 88. Theme A — US Payment Rail | v7.0 | 0/TBD | Not started | - |

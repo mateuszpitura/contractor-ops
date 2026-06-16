@@ -15,3 +15,14 @@ are auto-fixed; pre-existing offenders in untouched files are recorded here, not
   `TaxFormStatus`) are correct UPPER_SNAKE and are NOT in the offender list.
   Fixing `ManualOverrideCategory` would be a value rename + data migration on an
   unrelated domain — out of scope for 85-01.
+
+## Plan 85-02
+
+- **Pre-existing `locked-phrases-guard` failure** — the full `@contractor-ops/validators`
+  suite has one failing test: `messages/de.json uses formal "Sie" register (no Du/Dir/Dein…)`
+  in `packages/validators/src/__tests__/locked-phrases-guard.test.ts`. Plan 85-02 touches
+  only `packages/api/src/services/*` (treaty-rate, tax-form-routing) and
+  `packages/validators/src/w-form-validators.ts` — NO `de.json` is modified by any 85-02
+  commit. The failure is in a German translation file outside this plan's change set and
+  is therefore out of scope per the executor scope boundary (only issues directly caused
+  by this plan's changes are auto-fixed). All 85-02 scoped test files pass.

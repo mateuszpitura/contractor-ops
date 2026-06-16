@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v7.0
 milestone_name: GTM Expansion
 status: executing
-stopped_at: Phase 85 Plan 01 — Tasks 1-2 done, Task 3 held at migration checkpoint
-last_updated: "2026-06-16T08:31:00.000Z"
-last_activity: 2026-06-16 -- Phase 85 Plan 01 schema + seed committed; multi-region migration awaiting human approval
+stopped_at: Phase 85 Plan 02 — treaty-rate engine + form-routing + W-form validators complete
+last_updated: "2026-06-16T12:40:00.000Z"
+last_activity: 2026-06-16 -- Phase 85 Plan 02 committed; treaty-rate service, form-routing, per-form validators + Wave-0 tests
 progress:
   total_phases: 20
   completed_phases: 3
   total_plans: 19
-  completed_plans: 15
-  percent: 15
+  completed_plans: 16
+  percent: 16
 ---
 
 # Project State
@@ -30,9 +30,9 @@ See: .planning/PROJECT.md (updated 2026-06-07 — v7.0 GTM Expansion started; v6
 ## Current Position
 
 Phase: 85 (theme-a-w-form-intake-tax-treaty-engine) — EXECUTING
-Plan: 1 of 4 (Tasks 1-2 committed; Task 3 multi-region migration held at human-verify checkpoint)
-Status: Executing Phase 85 — Plan 01 checkpoint-pending
-Last activity: 2026-06-16 -- Phase 85 Plan 01 schema + seed committed; migration awaiting human approval
+Plan: 2 of 4 complete (treaty-rate engine + form-routing + W-form validators)
+Status: Executing Phase 85 — Plan 02 complete; next Plan 03 (portal/staff routers)
+Last activity: 2026-06-16 -- Phase 85 Plan 02 committed; treaty-rate service, form-routing, per-form validators + Wave-0 tests
 
 Progress: [██████████] 100%
 
@@ -78,7 +78,7 @@ Progress: [██████████] 100%
 **Velocity:**
 
 - v6.0 shipped: 12 phases (70–81), 90 plans, 392 tasks (full history: `.planning/milestones/v6.0-*`)
-- v7.0: 0 plans completed
+- v7.0: 1 plan completed (85-02; 85-01 schema/seed landed with its migration checkpoint resolved)
 
 *Updated after each plan completion*
 
@@ -112,6 +112,7 @@ Decisions are logged in PROJECT.md Key Decisions table. Recent decisions affecti
 - [Phase ?]: 84-05: SSN encrypted into dedicated ssnEncrypted/ssnLast4 columns (never countryFields JSONB); revealSsn staff-router-only + contractorPii:[read] + audit-logged (no SSN in row); USPS validation advisory/non-blocking on save (D-01/D-02/D-03)
 - [Phase ?]: [84-06] US contractor UI: SsnMaskedReveal gated reveal (absent-without-contractorPii:read, audit-logged via use-reveal-ssn hook, no full SSN in DOM); UspsAddressStatusPill advisory (never blocks save); case 'US' = place 3 of 3 in CountryFieldsDispatch; reveal-button accessible name = visible text (WCAG Label-in-Name); en base American + de/pl/ar parity + thin en-US overrides
 - [Phase 85]: [85-01, 2026-06-16] Treaty engine extends WithholdingTaxRate additively (one nullable treatyArticle column; serviceType reused as income-type axis 'business_profits'; 4-field @@unique key UNTOUCHED — adding a 5th breaks the seed upsert + calculateWht lookup). US seed rows in whole-number percent (30.0/0.0/null, never fractions). AE/SA have NO US income-tax treaty → 30% statutory (treatyRate null); only PL/DE/GB/IE/NL reduce to 0% (Article 7). TaxFormSubmission is append-only + supersede-chain, FK'd to Contractor not Worker (Worker = Theme B/P89). Generated Prisma client is tracked in-repo → committed with schema/seed. Multi-region Neon migration (EU/ME/US) + DB seed HELD at human-verify checkpoint (migration-history-drift fallback from P82-84 available).
+- [Phase 85]: [85-02, 2026-06-16] treaty-rate.service mirrors reverse-charge (pure resolveTreatyDecision + DB applyTreaty); override needs a non-empty reason and flags auditRequired (router writes the audit in P03). applyTreaty resolves the auto-detected value from the table EVEN under an override so the audit captures what was overridden (diverges from reverse-charge which short-circuits with a constant). New PARALLEL service — never edits the SA-gated calculateWht; regression proves calculateWht('US')=null. determineFormType is pure: countryCode==='US'→W9; foreign COMPANY→W8BENE else W8BEN (routes the coarse Contractor.type, NOT the fine-grained US entity type). taxFormSubmissionSchema = Zod discriminatedUnion on formType; W9 carries EIN or SSN last-4 ONLY (no full-SSN field); W8BENE adds LOB line-14b. TaxFormType mirrored as a local literal union to keep determineFormType import-free/pure.
 
 ### Pending Todos
 
@@ -153,6 +154,7 @@ Carried forward from v6.0 milestone close (2026-06-07). Full enumeration: `.plan
 | Phase 84 P84-04 | 9min | 1 tasks | 5 files |
 | Phase 84 P84-05 | 13min | 2 tasks | 2 files |
 | Phase 84 P84-06 | 17min | 3 tasks | 11 files |
+| Phase 85 P85-02 | ~11m | 3 tasks | 8 files |
 
 ## Standing Project Constraints
 
