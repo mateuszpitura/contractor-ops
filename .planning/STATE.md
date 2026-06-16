@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v7.0
 milestone_name: GTM Expansion
-status: executing
-stopped_at: Phase 86 UI-SPEC approved
-last_updated: "2026-06-16T22:53:27.293Z"
-last_activity: 2026-06-16 -- Phase 86 execution started
+status: Plan 86-01 awaiting human IRS IRIS XSD download (see Blockers)
+stopped_at: "Phase 86 Plan 86-02 paused — Task 3 [BLOCKING] multi-region migration awaiting human approval (Tasks 1-2 committed: schema models + seed + retention)"
+last_updated: "2026-06-16T23:03:07.958Z"
+last_activity: 2026-06-16 -- 86-01 Tasks 1-2 done (iris pkg + checksum guard + 9 Wave-0 RED scaffolds); paused at IRS-SOR download gate
 progress:
   total_phases: 20
   completed_phases: 4
   total_plans: 27
-  completed_plans: 20
+  completed_plans: 21
   percent: 20
 ---
 
@@ -127,6 +127,7 @@ Decisions are logged in PROJECT.md Key Decisions table. Recent decisions affecti
 - **Tooling history (v6.0):** several v6.0 plan/execute runs hit a nested-agent `Task`-API limit + a missing `~/.claude/sdk/shared/model-catalog.json` (RESOLVED by 2026-05-31 — `gsd-sdk query` returns valid JSON). If a background `/gsd:plan-phase` run again cannot spawn `gsd-phase-researcher`/`gsd-planner`/`gsd-plan-checker`, run it from a **top-level** interactive session.
 - **`.planning/phases` is a symlink** — stage planning commits via the real `milestones/vX.Y-phases/` path (git add/commit through the symlink fails "beyond a symbolic link").
 - Phase 86-01 Task 3 (human-action): IRS IRIS XSD schema package (TY2025 v2.0) must be downloaded from the IRS Secure Object Repository (IRS-login-only) and placed under packages/iris/src/schema-bundle/, then pinned via 'pnpm --filter @contractor-ops/iris exec tsx scripts/verify-iris-schema-checksums.ts --write'. Generator/validator scaffolds stay RED until then.
+- Plan 86-02 Task 3 [BLOCKING]: multi-region Prisma migration (EU/ME/US) for Form1099Nec/IrisSubmission/IrisAck/Tax1099Threshold/StateFilingConfig + db:generate + db:seed is held at a human gate (mutates live regional DBs). Resume 86-02 after the migration lands and is approved.
 
 ## Deferred Items
 
@@ -171,7 +172,7 @@ Carried forward from v6.0 milestone close (2026-06-07). Full enumeration: `.plan
 
 ## Session Continuity
 
-Last session: 2026-06-16T22:52:30.300Z
-Stopped at: Phase 86 UI-SPEC approved
-Resume file: None
+Last session: 2026-06-16T23:03:07.951Z
+Stopped at: Phase 86 Plan 86-02 paused — Task 3 [BLOCKING] multi-region migration awaiting human approval (Tasks 1-2 committed: schema models + seed + retention)
+Resume file: .planning/phases/86-theme-a-tin-match-1099-nec-iris-e-file-state-filing/86-02-PLAN.md
 Next command: execute Phase 85 Plan 04 (web-vite portal wizard + staff status card + i18n)
