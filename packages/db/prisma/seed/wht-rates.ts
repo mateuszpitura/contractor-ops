@@ -142,6 +142,101 @@ const whtRates = [
     treatyReference: null,
     effectiveFrom: new Date('2020-01-01'),
   },
+
+  // US-source business-profits withholding for foreign contractors.
+  //
+  // Rates and treaty article numbers below are real but PROVISIONAL — they must
+  // be verified by a US tax adviser before any production filing. Treaty
+  // countries (PL/DE/GB/IE/NL) reduce to 0% on business profits not attributable
+  // to a US permanent establishment / fixed base (Article 7). UAE and KSA have no
+  // US income-tax treaty, so they fall to the 30% statutory rate (treatyRate
+  // null), as does the 'XX' fallback for any residency without a seeded row.
+  //
+  // Rates are whole-number percent (30.0 / 0.0 / null) to match the SA rows and
+  // the calculateWht divide-by-100 contract — never store fractions like 0.30.
+  {
+    sourceCountry: 'US',
+    contractorResidency: 'PL',
+    serviceType: 'business_profits',
+    standardRate: 30.0,
+    treatyRate: 0.0,
+    treatyArticle: 'Article 7',
+    treatyReference: 'US-Poland Income Tax Treaty (2013) Article 7 — business profits, no US PE',
+    effectiveFrom: new Date('2014-01-01'),
+  },
+  {
+    sourceCountry: 'US',
+    contractorResidency: 'DE',
+    serviceType: 'business_profits',
+    standardRate: 30.0,
+    treatyRate: 0.0,
+    treatyArticle: 'Article 7',
+    treatyReference: 'US-Germany Income Tax Treaty Article 7 — business profits, no US PE',
+    effectiveFrom: new Date('2008-01-01'),
+  },
+  {
+    sourceCountry: 'US',
+    contractorResidency: 'GB',
+    serviceType: 'business_profits',
+    standardRate: 30.0,
+    treatyRate: 0.0,
+    treatyArticle: 'Article 7',
+    treatyReference: 'US-UK Income Tax Treaty Article 7 — business profits, no US PE',
+    effectiveFrom: new Date('2003-01-01'),
+  },
+  {
+    sourceCountry: 'US',
+    contractorResidency: 'IE',
+    serviceType: 'business_profits',
+    standardRate: 30.0,
+    treatyRate: 0.0,
+    treatyArticle: 'Article 7',
+    treatyReference: 'US-Ireland Income Tax Treaty Article 7 — business profits, no US PE',
+    effectiveFrom: new Date('1998-01-01'),
+  },
+  {
+    sourceCountry: 'US',
+    contractorResidency: 'NL',
+    serviceType: 'business_profits',
+    standardRate: 30.0,
+    treatyRate: 0.0,
+    treatyArticle: 'Article 7',
+    treatyReference: 'US-Netherlands Income Tax Treaty Article 7 — business profits, no US PE',
+    effectiveFrom: new Date('1994-01-01'),
+  },
+  {
+    // UAE has no comprehensive US income-tax treaty — 30% statutory applies.
+    sourceCountry: 'US',
+    contractorResidency: 'AE',
+    serviceType: 'business_profits',
+    standardRate: 30.0,
+    treatyRate: null,
+    treatyArticle: null,
+    treatyReference: 'No US income-tax treaty with the UAE — 30% statutory withholding',
+    effectiveFrom: new Date('2014-01-01'),
+  },
+  {
+    // KSA has no comprehensive US income-tax treaty — 30% statutory applies.
+    sourceCountry: 'US',
+    contractorResidency: 'SA',
+    serviceType: 'business_profits',
+    standardRate: 30.0,
+    treatyRate: null,
+    treatyArticle: null,
+    treatyReference: 'No US income-tax treaty with Saudi Arabia — 30% statutory withholding',
+    effectiveFrom: new Date('2014-01-01'),
+  },
+  {
+    // Fallback for any residency without a seeded treaty row → 30% statutory.
+    sourceCountry: 'US',
+    contractorResidency: 'XX',
+    serviceType: 'business_profits',
+    standardRate: 30.0,
+    treatyRate: null,
+    treatyArticle: null,
+    treatyReference: null,
+    effectiveFrom: new Date('2014-01-01'),
+  },
 ];
 
 export async function seedWhtRates(prisma: PrismaClient) {

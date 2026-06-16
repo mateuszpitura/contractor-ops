@@ -44,6 +44,7 @@ export type WithholdingTaxRateMinAggregateOutputType = {
   standardRate: runtime.Decimal | null
   treatyRate: runtime.Decimal | null
   treatyReference: string | null
+  treatyArticle: string | null
   effectiveFrom: Date | null
   effectiveTo: Date | null
   createdAt: Date | null
@@ -58,6 +59,7 @@ export type WithholdingTaxRateMaxAggregateOutputType = {
   standardRate: runtime.Decimal | null
   treatyRate: runtime.Decimal | null
   treatyReference: string | null
+  treatyArticle: string | null
   effectiveFrom: Date | null
   effectiveTo: Date | null
   createdAt: Date | null
@@ -72,6 +74,7 @@ export type WithholdingTaxRateCountAggregateOutputType = {
   standardRate: number
   treatyRate: number
   treatyReference: number
+  treatyArticle: number
   effectiveFrom: number
   effectiveTo: number
   createdAt: number
@@ -98,6 +101,7 @@ export type WithholdingTaxRateMinAggregateInputType = {
   standardRate?: true
   treatyRate?: true
   treatyReference?: true
+  treatyArticle?: true
   effectiveFrom?: true
   effectiveTo?: true
   createdAt?: true
@@ -112,6 +116,7 @@ export type WithholdingTaxRateMaxAggregateInputType = {
   standardRate?: true
   treatyRate?: true
   treatyReference?: true
+  treatyArticle?: true
   effectiveFrom?: true
   effectiveTo?: true
   createdAt?: true
@@ -126,6 +131,7 @@ export type WithholdingTaxRateCountAggregateInputType = {
   standardRate?: true
   treatyRate?: true
   treatyReference?: true
+  treatyArticle?: true
   effectiveFrom?: true
   effectiveTo?: true
   createdAt?: true
@@ -227,6 +233,7 @@ export type WithholdingTaxRateGroupByOutputType = {
   standardRate: runtime.Decimal
   treatyRate: runtime.Decimal | null
   treatyReference: string | null
+  treatyArticle: string | null
   effectiveFrom: Date
   effectiveTo: Date | null
   createdAt: Date
@@ -264,6 +271,7 @@ export type WithholdingTaxRateWhereInput = {
   standardRate?: Prisma.DecimalFilter<"WithholdingTaxRate"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   treatyRate?: Prisma.DecimalNullableFilter<"WithholdingTaxRate"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   treatyReference?: Prisma.StringNullableFilter<"WithholdingTaxRate"> | string | null
+  treatyArticle?: Prisma.StringNullableFilter<"WithholdingTaxRate"> | string | null
   effectiveFrom?: Prisma.DateTimeFilter<"WithholdingTaxRate"> | Date | string
   effectiveTo?: Prisma.DateTimeNullableFilter<"WithholdingTaxRate"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"WithholdingTaxRate"> | Date | string
@@ -278,6 +286,7 @@ export type WithholdingTaxRateOrderByWithRelationInput = {
   standardRate?: Prisma.SortOrder
   treatyRate?: Prisma.SortOrderInput | Prisma.SortOrder
   treatyReference?: Prisma.SortOrderInput | Prisma.SortOrder
+  treatyArticle?: Prisma.SortOrderInput | Prisma.SortOrder
   effectiveFrom?: Prisma.SortOrder
   effectiveTo?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -296,6 +305,7 @@ export type WithholdingTaxRateWhereUniqueInput = Prisma.AtLeast<{
   standardRate?: Prisma.DecimalFilter<"WithholdingTaxRate"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   treatyRate?: Prisma.DecimalNullableFilter<"WithholdingTaxRate"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   treatyReference?: Prisma.StringNullableFilter<"WithholdingTaxRate"> | string | null
+  treatyArticle?: Prisma.StringNullableFilter<"WithholdingTaxRate"> | string | null
   effectiveFrom?: Prisma.DateTimeFilter<"WithholdingTaxRate"> | Date | string
   effectiveTo?: Prisma.DateTimeNullableFilter<"WithholdingTaxRate"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"WithholdingTaxRate"> | Date | string
@@ -310,6 +320,7 @@ export type WithholdingTaxRateOrderByWithAggregationInput = {
   standardRate?: Prisma.SortOrder
   treatyRate?: Prisma.SortOrderInput | Prisma.SortOrder
   treatyReference?: Prisma.SortOrderInput | Prisma.SortOrder
+  treatyArticle?: Prisma.SortOrderInput | Prisma.SortOrder
   effectiveFrom?: Prisma.SortOrder
   effectiveTo?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -332,6 +343,7 @@ export type WithholdingTaxRateScalarWhereWithAggregatesInput = {
   standardRate?: Prisma.DecimalWithAggregatesFilter<"WithholdingTaxRate"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   treatyRate?: Prisma.DecimalNullableWithAggregatesFilter<"WithholdingTaxRate"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   treatyReference?: Prisma.StringNullableWithAggregatesFilter<"WithholdingTaxRate"> | string | null
+  treatyArticle?: Prisma.StringNullableWithAggregatesFilter<"WithholdingTaxRate"> | string | null
   effectiveFrom?: Prisma.DateTimeWithAggregatesFilter<"WithholdingTaxRate"> | Date | string
   effectiveTo?: Prisma.DateTimeNullableWithAggregatesFilter<"WithholdingTaxRate"> | Date | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"WithholdingTaxRate"> | Date | string
@@ -346,6 +358,7 @@ export type WithholdingTaxRateCreateInput = {
   standardRate: runtime.Decimal | runtime.DecimalJsLike | number | string
   treatyRate?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   treatyReference?: string | null
+  treatyArticle?: string | null
   effectiveFrom: Date | string
   effectiveTo?: Date | string | null
   createdAt?: Date | string
@@ -360,6 +373,7 @@ export type WithholdingTaxRateUncheckedCreateInput = {
   standardRate: runtime.Decimal | runtime.DecimalJsLike | number | string
   treatyRate?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   treatyReference?: string | null
+  treatyArticle?: string | null
   effectiveFrom: Date | string
   effectiveTo?: Date | string | null
   createdAt?: Date | string
@@ -374,6 +388,7 @@ export type WithholdingTaxRateUpdateInput = {
   standardRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   treatyRate?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   treatyReference?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  treatyArticle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   effectiveFrom?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   effectiveTo?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -388,6 +403,7 @@ export type WithholdingTaxRateUncheckedUpdateInput = {
   standardRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   treatyRate?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   treatyReference?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  treatyArticle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   effectiveFrom?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   effectiveTo?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -402,6 +418,7 @@ export type WithholdingTaxRateCreateManyInput = {
   standardRate: runtime.Decimal | runtime.DecimalJsLike | number | string
   treatyRate?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   treatyReference?: string | null
+  treatyArticle?: string | null
   effectiveFrom: Date | string
   effectiveTo?: Date | string | null
   createdAt?: Date | string
@@ -416,6 +433,7 @@ export type WithholdingTaxRateUpdateManyMutationInput = {
   standardRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   treatyRate?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   treatyReference?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  treatyArticle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   effectiveFrom?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   effectiveTo?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -430,6 +448,7 @@ export type WithholdingTaxRateUncheckedUpdateManyInput = {
   standardRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   treatyRate?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   treatyReference?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  treatyArticle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   effectiveFrom?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   effectiveTo?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -451,6 +470,7 @@ export type WithholdingTaxRateCountOrderByAggregateInput = {
   standardRate?: Prisma.SortOrder
   treatyRate?: Prisma.SortOrder
   treatyReference?: Prisma.SortOrder
+  treatyArticle?: Prisma.SortOrder
   effectiveFrom?: Prisma.SortOrder
   effectiveTo?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -470,6 +490,7 @@ export type WithholdingTaxRateMaxOrderByAggregateInput = {
   standardRate?: Prisma.SortOrder
   treatyRate?: Prisma.SortOrder
   treatyReference?: Prisma.SortOrder
+  treatyArticle?: Prisma.SortOrder
   effectiveFrom?: Prisma.SortOrder
   effectiveTo?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -484,6 +505,7 @@ export type WithholdingTaxRateMinOrderByAggregateInput = {
   standardRate?: Prisma.SortOrder
   treatyRate?: Prisma.SortOrder
   treatyReference?: Prisma.SortOrder
+  treatyArticle?: Prisma.SortOrder
   effectiveFrom?: Prisma.SortOrder
   effectiveTo?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -505,6 +527,7 @@ export type WithholdingTaxRateSelect<ExtArgs extends runtime.Types.Extensions.In
   standardRate?: boolean
   treatyRate?: boolean
   treatyReference?: boolean
+  treatyArticle?: boolean
   effectiveFrom?: boolean
   effectiveTo?: boolean
   createdAt?: boolean
@@ -519,6 +542,7 @@ export type WithholdingTaxRateSelectCreateManyAndReturn<ExtArgs extends runtime.
   standardRate?: boolean
   treatyRate?: boolean
   treatyReference?: boolean
+  treatyArticle?: boolean
   effectiveFrom?: boolean
   effectiveTo?: boolean
   createdAt?: boolean
@@ -533,6 +557,7 @@ export type WithholdingTaxRateSelectUpdateManyAndReturn<ExtArgs extends runtime.
   standardRate?: boolean
   treatyRate?: boolean
   treatyReference?: boolean
+  treatyArticle?: boolean
   effectiveFrom?: boolean
   effectiveTo?: boolean
   createdAt?: boolean
@@ -547,13 +572,14 @@ export type WithholdingTaxRateSelectScalar = {
   standardRate?: boolean
   treatyRate?: boolean
   treatyReference?: boolean
+  treatyArticle?: boolean
   effectiveFrom?: boolean
   effectiveTo?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type WithholdingTaxRateOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "sourceCountry" | "contractorResidency" | "serviceType" | "standardRate" | "treatyRate" | "treatyReference" | "effectiveFrom" | "effectiveTo" | "createdAt" | "updatedAt", ExtArgs["result"]["withholdingTaxRate"]>
+export type WithholdingTaxRateOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "sourceCountry" | "contractorResidency" | "serviceType" | "standardRate" | "treatyRate" | "treatyReference" | "treatyArticle" | "effectiveFrom" | "effectiveTo" | "createdAt" | "updatedAt", ExtArgs["result"]["withholdingTaxRate"]>
 
 export type $WithholdingTaxRatePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "WithholdingTaxRate"
@@ -566,6 +592,7 @@ export type $WithholdingTaxRatePayload<ExtArgs extends runtime.Types.Extensions.
     standardRate: runtime.Decimal
     treatyRate: runtime.Decimal | null
     treatyReference: string | null
+    treatyArticle: string | null
     effectiveFrom: Date
     effectiveTo: Date | null
     createdAt: Date
@@ -1000,6 +1027,7 @@ export interface WithholdingTaxRateFieldRefs {
   readonly standardRate: Prisma.FieldRef<"WithholdingTaxRate", 'Decimal'>
   readonly treatyRate: Prisma.FieldRef<"WithholdingTaxRate", 'Decimal'>
   readonly treatyReference: Prisma.FieldRef<"WithholdingTaxRate", 'String'>
+  readonly treatyArticle: Prisma.FieldRef<"WithholdingTaxRate", 'String'>
   readonly effectiveFrom: Prisma.FieldRef<"WithholdingTaxRate", 'DateTime'>
   readonly effectiveTo: Prisma.FieldRef<"WithholdingTaxRate", 'DateTime'>
   readonly createdAt: Prisma.FieldRef<"WithholdingTaxRate", 'DateTime'>

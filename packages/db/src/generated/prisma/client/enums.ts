@@ -1141,6 +1141,24 @@ export const PendingUploadPurpose = {
 export type PendingUploadPurpose = (typeof PendingUploadPurpose)[keyof typeof PendingUploadPurpose]
 
 
+export const TaxFormType = {
+  W9: 'W9',
+  W8BEN: 'W8BEN',
+  W8BENE: 'W8BENE'
+} as const
+
+export type TaxFormType = (typeof TaxFormType)[keyof typeof TaxFormType]
+
+
+export const TaxFormStatus = {
+  DRAFT: 'DRAFT',
+  ACTIVE: 'ACTIVE',
+  SUPERSEDED: 'SUPERSEDED'
+} as const
+
+export type TaxFormStatus = (typeof TaxFormStatus)[keyof typeof TaxFormStatus]
+
+
 export const TaxIdType = {
   GB_VAT: 'GB_VAT',
   DE_USTIDNR: 'DE_USTIDNR'

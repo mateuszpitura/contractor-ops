@@ -164,6 +164,7 @@ export const ModelName = {
   TaxRate: 'TaxRate',
   WithholdingTaxRate: 'WithholdingTaxRate',
   WhtCertificate: 'WhtCertificate',
+  TaxFormSubmission: 'TaxFormSubmission',
   TaxIdValidation: 'TaxIdValidation',
   Timesheet: 'Timesheet',
   TimeEntry: 'TimeEntry',
@@ -2225,6 +2226,7 @@ export const WithholdingTaxRateScalarFieldEnum = {
   standardRate: 'standardRate',
   treatyRate: 'treatyRate',
   treatyReference: 'treatyReference',
+  treatyArticle: 'treatyArticle',
   effectiveFrom: 'effectiveFrom',
   effectiveTo: 'effectiveTo',
   createdAt: 'createdAt',
@@ -2256,6 +2258,26 @@ export const WhtCertificateScalarFieldEnum = {
 } as const
 
 export type WhtCertificateScalarFieldEnum = (typeof WhtCertificateScalarFieldEnum)[keyof typeof WhtCertificateScalarFieldEnum]
+
+
+export const TaxFormSubmissionScalarFieldEnum = {
+  id: 'id',
+  organizationId: 'organizationId',
+  contractorId: 'contractorId',
+  formType: 'formType',
+  status: 'status',
+  snapshotJson: 'snapshotJson',
+  treatyArticle: 'treatyArticle',
+  treatyRate: 'treatyRate',
+  contractorResidency: 'contractorResidency',
+  signerName: 'signerName',
+  signedAt: 'signedAt',
+  expiresAt: 'expiresAt',
+  supersededById: 'supersededById',
+  createdAt: 'createdAt'
+} as const
+
+export type TaxFormSubmissionScalarFieldEnum = (typeof TaxFormSubmissionScalarFieldEnum)[keyof typeof TaxFormSubmissionScalarFieldEnum]
 
 
 export const TaxIdValidationScalarFieldEnum = {

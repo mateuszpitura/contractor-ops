@@ -497,6 +497,7 @@ export const ModelName = {
   TaxRate: 'TaxRate',
   WithholdingTaxRate: 'WithholdingTaxRate',
   WhtCertificate: 'WhtCertificate',
+  TaxFormSubmission: 'TaxFormSubmission',
   TaxIdValidation: 'TaxIdValidation',
   Timesheet: 'Timesheet',
   TimeEntry: 'TimeEntry',
@@ -525,7 +526,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "organizationApiKey" | "approvalChainConfig" | "approvalFlow" | "approvalStep" | "approvalDecision" | "auditLog" | "user" | "userPinnedView" | "session" | "account" | "verification" | "subscription" | "ocrCreditLedger" | "stripeEvent" | "classificationAssessment" | "classificationDocument" | "ir35ChainParticipant" | "ir35OtherClientAttestation" | "economicDependencyAlertState" | "reassessmentTrigger" | "cronScanState" | "statusfeststellungsverfahren" | "classificationEscalationEvent" | "sdsApproval" | "consentRecord" | "privacyNotice" | "consentEvent" | "contract" | "contractAmendment" | "contractRatePeriod" | "document" | "documentLink" | "contractHealthCheckRun" | "contractor" | "contractorContact" | "contractorBillingProfile" | "contractorAssignment" | "contractorTag" | "contractorTagLink" | "complianceRequirementTemplate" | "contractorComplianceItem" | "contractorComplianceReminderState" | "leitwegId" | "eInvoiceLifecycle" | "eInvoiceLifecycleEvent" | "peppolCapabilityCache" | "equipment" | "equipmentAssignment" | "shipment" | "shipmentEvent" | "returnRequest" | "courierConfig" | "signingEnvelope" | "signingRecipient" | "signingEvent" | "exchangeRate" | "export" | "boEBaseRateHistory" | "skontoTerm" | "skontoSnapshot" | "skontoApplication" | "govApiAuditLog" | "freeZoneAssignment" | "saudizationConfig" | "saudiHeadcount" | "uaeFreeZone" | "deprovisioningRun" | "deprovisioningStep" | "idpChangeProvenance" | "integrationConnection" | "externalLink" | "integrationSyncLog" | "webhookDelivery" | "invoice" | "invoiceFile" | "invoiceLine" | "invoiceMatchResult" | "invoiceIntakeRequest" | "invoicePayment" | "invoiceInterestCompensation" | "invoiceInterestWaiver" | "invoiceInterestClaim" | "notification" | "userNotificationPreference" | "comment" | "reminderRule" | "reminderInstance" | "notificationCronDedup" | "oAuthChallenge" | "ocrExtraction" | "organization" | "member" | "invitation" | "team" | "project" | "pendingProjectMerge" | "projectExternalLink" | "costCenter" | "outboxEvent" | "paymentRun" | "paymentRunItem" | "paymentExport" | "paymentRunComplianceCheck" | "peppolParticipant" | "peppolTransmission" | "portalSession" | "portalMagicToken" | "contractorChangeRequest" | "contractorNotificationPreference" | "pendingUpload" | "taxRate" | "withholdingTaxRate" | "whtCertificate" | "taxIdValidation" | "timesheet" | "timeEntry" | "workflowTemplate" | "workflowTaskTemplate" | "workflowRoleTemplate" | "workflowRoleTaskTemplate" | "workflowRun" | "workflowTaskRun" | "workflowComment" | "workflowAttachment" | "credentialReference" | "zatcaInvoiceChain"
+    modelProps: "organizationApiKey" | "approvalChainConfig" | "approvalFlow" | "approvalStep" | "approvalDecision" | "auditLog" | "user" | "userPinnedView" | "session" | "account" | "verification" | "subscription" | "ocrCreditLedger" | "stripeEvent" | "classificationAssessment" | "classificationDocument" | "ir35ChainParticipant" | "ir35OtherClientAttestation" | "economicDependencyAlertState" | "reassessmentTrigger" | "cronScanState" | "statusfeststellungsverfahren" | "classificationEscalationEvent" | "sdsApproval" | "consentRecord" | "privacyNotice" | "consentEvent" | "contract" | "contractAmendment" | "contractRatePeriod" | "document" | "documentLink" | "contractHealthCheckRun" | "contractor" | "contractorContact" | "contractorBillingProfile" | "contractorAssignment" | "contractorTag" | "contractorTagLink" | "complianceRequirementTemplate" | "contractorComplianceItem" | "contractorComplianceReminderState" | "leitwegId" | "eInvoiceLifecycle" | "eInvoiceLifecycleEvent" | "peppolCapabilityCache" | "equipment" | "equipmentAssignment" | "shipment" | "shipmentEvent" | "returnRequest" | "courierConfig" | "signingEnvelope" | "signingRecipient" | "signingEvent" | "exchangeRate" | "export" | "boEBaseRateHistory" | "skontoTerm" | "skontoSnapshot" | "skontoApplication" | "govApiAuditLog" | "freeZoneAssignment" | "saudizationConfig" | "saudiHeadcount" | "uaeFreeZone" | "deprovisioningRun" | "deprovisioningStep" | "idpChangeProvenance" | "integrationConnection" | "externalLink" | "integrationSyncLog" | "webhookDelivery" | "invoice" | "invoiceFile" | "invoiceLine" | "invoiceMatchResult" | "invoiceIntakeRequest" | "invoicePayment" | "invoiceInterestCompensation" | "invoiceInterestWaiver" | "invoiceInterestClaim" | "notification" | "userNotificationPreference" | "comment" | "reminderRule" | "reminderInstance" | "notificationCronDedup" | "oAuthChallenge" | "ocrExtraction" | "organization" | "member" | "invitation" | "team" | "project" | "pendingProjectMerge" | "projectExternalLink" | "costCenter" | "outboxEvent" | "paymentRun" | "paymentRunItem" | "paymentExport" | "paymentRunComplianceCheck" | "peppolParticipant" | "peppolTransmission" | "portalSession" | "portalMagicToken" | "contractorChangeRequest" | "contractorNotificationPreference" | "pendingUpload" | "taxRate" | "withholdingTaxRate" | "whtCertificate" | "taxFormSubmission" | "taxIdValidation" | "timesheet" | "timeEntry" | "workflowTemplate" | "workflowTaskTemplate" | "workflowRoleTemplate" | "workflowRoleTaskTemplate" | "workflowRun" | "workflowTaskRun" | "workflowComment" | "workflowAttachment" | "credentialReference" | "zatcaInvoiceChain"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -8891,6 +8892,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    TaxFormSubmission: {
+      payload: Prisma.$TaxFormSubmissionPayload<ExtArgs>
+      fields: Prisma.TaxFormSubmissionFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.TaxFormSubmissionFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TaxFormSubmissionPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.TaxFormSubmissionFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TaxFormSubmissionPayload>
+        }
+        findFirst: {
+          args: Prisma.TaxFormSubmissionFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TaxFormSubmissionPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.TaxFormSubmissionFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TaxFormSubmissionPayload>
+        }
+        findMany: {
+          args: Prisma.TaxFormSubmissionFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TaxFormSubmissionPayload>[]
+        }
+        create: {
+          args: Prisma.TaxFormSubmissionCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TaxFormSubmissionPayload>
+        }
+        createMany: {
+          args: Prisma.TaxFormSubmissionCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.TaxFormSubmissionCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TaxFormSubmissionPayload>[]
+        }
+        delete: {
+          args: Prisma.TaxFormSubmissionDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TaxFormSubmissionPayload>
+        }
+        update: {
+          args: Prisma.TaxFormSubmissionUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TaxFormSubmissionPayload>
+        }
+        deleteMany: {
+          args: Prisma.TaxFormSubmissionDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.TaxFormSubmissionUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.TaxFormSubmissionUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TaxFormSubmissionPayload>[]
+        }
+        upsert: {
+          args: Prisma.TaxFormSubmissionUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TaxFormSubmissionPayload>
+        }
+        aggregate: {
+          args: Prisma.TaxFormSubmissionAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateTaxFormSubmission>
+        }
+        groupBy: {
+          args: Prisma.TaxFormSubmissionGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.TaxFormSubmissionGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.TaxFormSubmissionCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.TaxFormSubmissionCountAggregateOutputType> | number
+        }
+      }
+    }
     TaxIdValidation: {
       payload: Prisma.$TaxIdValidationPayload<ExtArgs>
       fields: Prisma.TaxIdValidationFieldRefs
@@ -11922,6 +11997,7 @@ export const WithholdingTaxRateScalarFieldEnum = {
   standardRate: 'standardRate',
   treatyRate: 'treatyRate',
   treatyReference: 'treatyReference',
+  treatyArticle: 'treatyArticle',
   effectiveFrom: 'effectiveFrom',
   effectiveTo: 'effectiveTo',
   createdAt: 'createdAt',
@@ -11953,6 +12029,26 @@ export const WhtCertificateScalarFieldEnum = {
 } as const
 
 export type WhtCertificateScalarFieldEnum = (typeof WhtCertificateScalarFieldEnum)[keyof typeof WhtCertificateScalarFieldEnum]
+
+
+export const TaxFormSubmissionScalarFieldEnum = {
+  id: 'id',
+  organizationId: 'organizationId',
+  contractorId: 'contractorId',
+  formType: 'formType',
+  status: 'status',
+  snapshotJson: 'snapshotJson',
+  treatyArticle: 'treatyArticle',
+  treatyRate: 'treatyRate',
+  contractorResidency: 'contractorResidency',
+  signerName: 'signerName',
+  signedAt: 'signedAt',
+  expiresAt: 'expiresAt',
+  supersededById: 'supersededById',
+  createdAt: 'createdAt'
+} as const
+
+export type TaxFormSubmissionScalarFieldEnum = (typeof TaxFormSubmissionScalarFieldEnum)[keyof typeof TaxFormSubmissionScalarFieldEnum]
 
 
 export const TaxIdValidationScalarFieldEnum = {
@@ -13841,6 +13937,34 @@ export type ListEnumPendingUploadPurposeFieldRefInput<$PrismaModel> = FieldRefIn
 
 
 /**
+ * Reference to a field of type 'TaxFormType'
+ */
+export type EnumTaxFormTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'TaxFormType'>
+    
+
+
+/**
+ * Reference to a field of type 'TaxFormType[]'
+ */
+export type ListEnumTaxFormTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'TaxFormType[]'>
+    
+
+
+/**
+ * Reference to a field of type 'TaxFormStatus'
+ */
+export type EnumTaxFormStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'TaxFormStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'TaxFormStatus[]'
+ */
+export type ListEnumTaxFormStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'TaxFormStatus[]'>
+    
+
+
+/**
  * Reference to a field of type 'TaxIdType'
  */
 export type EnumTaxIdTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'TaxIdType'>
@@ -14258,6 +14382,7 @@ export type GlobalOmitConfig = {
   taxRate?: Prisma.TaxRateOmit
   withholdingTaxRate?: Prisma.WithholdingTaxRateOmit
   whtCertificate?: Prisma.WhtCertificateOmit
+  taxFormSubmission?: Prisma.TaxFormSubmissionOmit
   taxIdValidation?: Prisma.TaxIdValidationOmit
   timesheet?: Prisma.TimesheetOmit
   timeEntry?: Prisma.TimeEntryOmit

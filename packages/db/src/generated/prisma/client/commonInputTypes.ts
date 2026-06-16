@@ -2312,6 +2312,40 @@ export type EnumPendingUploadPurposeWithAggregatesFilter<$PrismaModel = never> =
   _max?: Prisma.NestedEnumPendingUploadPurposeFilter<$PrismaModel>
 }
 
+export type EnumTaxFormTypeFilter<$PrismaModel = never> = {
+  equals?: $Enums.TaxFormType | Prisma.EnumTaxFormTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.TaxFormType[] | Prisma.ListEnumTaxFormTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.TaxFormType[] | Prisma.ListEnumTaxFormTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumTaxFormTypeFilter<$PrismaModel> | $Enums.TaxFormType
+}
+
+export type EnumTaxFormStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.TaxFormStatus | Prisma.EnumTaxFormStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.TaxFormStatus[] | Prisma.ListEnumTaxFormStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.TaxFormStatus[] | Prisma.ListEnumTaxFormStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumTaxFormStatusFilter<$PrismaModel> | $Enums.TaxFormStatus
+}
+
+export type EnumTaxFormTypeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.TaxFormType | Prisma.EnumTaxFormTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.TaxFormType[] | Prisma.ListEnumTaxFormTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.TaxFormType[] | Prisma.ListEnumTaxFormTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumTaxFormTypeWithAggregatesFilter<$PrismaModel> | $Enums.TaxFormType
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumTaxFormTypeFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumTaxFormTypeFilter<$PrismaModel>
+}
+
+export type EnumTaxFormStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.TaxFormStatus | Prisma.EnumTaxFormStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.TaxFormStatus[] | Prisma.ListEnumTaxFormStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.TaxFormStatus[] | Prisma.ListEnumTaxFormStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumTaxFormStatusWithAggregatesFilter<$PrismaModel> | $Enums.TaxFormStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumTaxFormStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumTaxFormStatusFilter<$PrismaModel>
+}
+
 export type EnumTaxIdTypeFilter<$PrismaModel = never> = {
   equals?: $Enums.TaxIdType | Prisma.EnumTaxIdTypeFieldRefInput<$PrismaModel>
   in?: $Enums.TaxIdType[] | Prisma.ListEnumTaxIdTypeFieldRefInput<$PrismaModel>
@@ -4805,6 +4839,40 @@ export type NestedEnumPendingUploadPurposeWithAggregatesFilter<$PrismaModel = ne
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumPendingUploadPurposeFilter<$PrismaModel>
   _max?: Prisma.NestedEnumPendingUploadPurposeFilter<$PrismaModel>
+}
+
+export type NestedEnumTaxFormTypeFilter<$PrismaModel = never> = {
+  equals?: $Enums.TaxFormType | Prisma.EnumTaxFormTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.TaxFormType[] | Prisma.ListEnumTaxFormTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.TaxFormType[] | Prisma.ListEnumTaxFormTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumTaxFormTypeFilter<$PrismaModel> | $Enums.TaxFormType
+}
+
+export type NestedEnumTaxFormStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.TaxFormStatus | Prisma.EnumTaxFormStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.TaxFormStatus[] | Prisma.ListEnumTaxFormStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.TaxFormStatus[] | Prisma.ListEnumTaxFormStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumTaxFormStatusFilter<$PrismaModel> | $Enums.TaxFormStatus
+}
+
+export type NestedEnumTaxFormTypeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.TaxFormType | Prisma.EnumTaxFormTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.TaxFormType[] | Prisma.ListEnumTaxFormTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.TaxFormType[] | Prisma.ListEnumTaxFormTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumTaxFormTypeWithAggregatesFilter<$PrismaModel> | $Enums.TaxFormType
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumTaxFormTypeFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumTaxFormTypeFilter<$PrismaModel>
+}
+
+export type NestedEnumTaxFormStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.TaxFormStatus | Prisma.EnumTaxFormStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.TaxFormStatus[] | Prisma.ListEnumTaxFormStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.TaxFormStatus[] | Prisma.ListEnumTaxFormStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumTaxFormStatusWithAggregatesFilter<$PrismaModel> | $Enums.TaxFormStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumTaxFormStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumTaxFormStatusFilter<$PrismaModel>
 }
 
 export type NestedEnumTaxIdTypeFilter<$PrismaModel = never> = {

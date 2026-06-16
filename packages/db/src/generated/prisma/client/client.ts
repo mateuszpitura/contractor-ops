@@ -608,6 +608,11 @@ export type WithholdingTaxRate = Prisma.WithholdingTaxRateModel
  */
 export type WhtCertificate = Prisma.WhtCertificateModel
 /**
+ * Model TaxFormSubmission
+ * 
+ */
+export type TaxFormSubmission = Prisma.TaxFormSubmissionModel
+/**
  * Model TaxIdValidation
  * 
  */
