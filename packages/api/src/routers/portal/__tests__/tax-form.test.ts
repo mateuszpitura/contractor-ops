@@ -345,6 +345,9 @@ describe('portal.submitTaxForm — W-8BEN-E LOB + treaty article (US-FORM-02/US-
     const fields = snapshot.fields as Rec;
     expect(fields.lobCategory).toBe('PUBLICLY_TRADED_CORPORATION');
     expect((snapshot.treatyClaim as Rec).article).toBe('Article 7');
+    // The discriminant lives on snapshot.formType, never duplicated in fields.
+    expect(fields.formType).toBeUndefined();
+    expect(snapshot.formType).toBe('W8BENE');
   });
 });
 

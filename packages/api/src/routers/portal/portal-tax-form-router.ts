@@ -185,7 +185,10 @@ export const portalTaxFormRouter = router({
       treatyClaim = await resolveW8TreatyClaim(input.treatyCountry);
     }
 
-    const { perjuryAccepted, signerName, ...capturedFields } = input;
+    // Strip the discriminant from the persisted snapshot fields — the form type
+    // already lives on `snapshot.formType`; a duplicate `formType` in `fields`
+    // only adds confusion when the record is read back.
+    const { perjuryAccepted, signerName, formType: _formType, ...capturedFields } = input;
 
     const snapshot = buildFormSnapshot({
       formType: input.formType,
