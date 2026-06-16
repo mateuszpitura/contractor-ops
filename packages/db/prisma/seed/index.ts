@@ -5,6 +5,7 @@ import { config as loadEnv } from 'dotenv';
 import pino from 'pino';
 import { createPrismaClientForUrl } from '../../src/client.js';
 import { seedBoeRates } from './boe-rates.js';
+import { seedTax1099Config } from './tax-1099-config.js';
 import { seedTaxRates } from './tax-rates.js';
 import { seedWhtRates } from './wht-rates.js';
 
@@ -31,6 +32,7 @@ async function main() {
   await seedTaxRates(prisma);
   await seedWhtRates(prisma);
   await seedBoeRates(prisma);
+  await seedTax1099Config(prisma);
 }
 
 main()

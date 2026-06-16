@@ -244,6 +244,9 @@ export const FLAGS = deepFreeze({
     jurisdiction: 'ANY',
     owner: 'platform-api',
   },
+  // This is the single gate for the dark IRIS A2A transmit path (1099-NEC
+  // e-file). The A2A transmitter reuses this flag rather than minting a
+  // dedicated per-transmit flag.
   'module.iris-efile': {
     key: 'module.iris-efile',
     description:

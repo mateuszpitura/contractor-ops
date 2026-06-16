@@ -23,7 +23,14 @@ type DelegateWithSoftDelete = {
  * an update that sets deletedAt to the current timestamp.
  * Read operations automatically filter out soft-deleted records.
  */
-const softDeleteModels = new Set(['Organization', 'Contractor', 'Contract', 'Invoice', 'Document']);
+const softDeleteModels = new Set([
+  'Organization',
+  'Contractor',
+  'Contract',
+  'Invoice',
+  'Document',
+  'Form1099Nec',
+]);
 
 /**
  * Inject `deletedAt: null` into the args.where for read & write operations

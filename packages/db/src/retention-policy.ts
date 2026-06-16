@@ -22,13 +22,13 @@ export type RetainedRecordType = keyof typeof RETENTION_YEARS;
 /**
  * Maps a soft-delete Prisma MODEL name → its retention record type.
  *
- * Ships EMPTY (no tax tables registered yet), so production behaviour at all
- * three deletion chokepoints is identical to today. When tax models are added
- * (e.g. `Form1099Nec: '1099-NEC'`) they also join `softDeleteModels`; tests
- * inject a fixture entry to prove the wiring without shipping a production map
- * entry.
+ * Form1099Nec carries the statutory 4-year IRS retention; it also joins
+ * `softDeleteModels` so the deletion chokepoints convert a hard delete to a
+ * soft delete and refuse to purge a row still inside its retention window.
  */
-export const MODEL_RETENTION_TYPE: Partial<Record<string, RetainedRecordType>> = {};
+export const MODEL_RETENTION_TYPE: Partial<Record<string, RetainedRecordType>> = {
+  Form1099Nec: '1099-NEC',
+};
 
 /** Statutory retention period, in years, for a known record type. */
 export function resolveRetentionYears(recordType: RetainedRecordType): number {
