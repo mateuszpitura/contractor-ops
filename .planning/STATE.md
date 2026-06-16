@@ -4,13 +4,13 @@ milestone: v7.0
 milestone_name: GTM Expansion
 status: executing
 stopped_at: Phase 86 UI-SPEC approved
-last_updated: "2026-06-16T22:40:11.475Z"
-last_activity: 2026-06-16 -- Phase 86 planning complete
+last_updated: "2026-06-16T22:53:27.293Z"
+last_activity: 2026-06-16 -- Phase 86 execution started
 progress:
   total_phases: 20
   completed_phases: 4
   total_plans: 27
-  completed_plans: 19
+  completed_plans: 20
   percent: 20
 ---
 
@@ -25,14 +25,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-07 — v7.0 GTM Expansion started; v6.0 shipped 2026-06-07)
 
 **Core value:** The invoice-to-payment flow must work end-to-end: invoice arrives, gets matched to contract, routed through approval, and batched for payment — with full audit trail and zero manual tracking in spreadsheets.
-**Current focus:** Phase 85 — theme-a-w-form-intake-tax-treaty-engine
+**Current focus:** Phase 86 — Theme A — TIN-Match → 1099-NEC → IRIS E-File → State Filing
 
 ## Current Position
 
-Phase: 85 (theme-a-w-form-intake-tax-treaty-engine) — EXECUTING
-Plan: 4 of 4 complete (portal/staff W-form routers + immutable record service + module.us-expansion gate)
-Status: Ready to execute
-Last activity: 2026-06-16 -- Phase 86 planning complete
+Phase: 86 (Theme A — TIN-Match → 1099-NEC → IRIS E-File → State Filing) — EXECUTING
+Plan: 1 of 8 (PAUSED at human-action checkpoint — Task 3 of 3)
+Status: Plan 86-01 awaiting human IRS IRIS XSD download (see Blockers)
+Last activity: 2026-06-16 -- 86-01 Tasks 1-2 done (iris pkg + checksum guard + 9 Wave-0 RED scaffolds); paused at IRS-SOR download gate
 
 Progress: [██████████] 100%
 
@@ -115,6 +115,7 @@ Decisions are logged in PROJECT.md Key Decisions table. Recent decisions affecti
 - [Phase 85]: [85-02, 2026-06-16] treaty-rate.service mirrors reverse-charge (pure resolveTreatyDecision + DB applyTreaty); override needs a non-empty reason and flags auditRequired (router writes the audit in P03). applyTreaty resolves the auto-detected value from the table EVEN under an override so the audit captures what was overridden (diverges from reverse-charge which short-circuits with a constant). New PARALLEL service — never edits the SA-gated calculateWht; regression proves calculateWht('US')=null. determineFormType is pure: countryCode==='US'→W9; foreign COMPANY→W8BENE else W8BEN (routes the coarse Contractor.type, NOT the fine-grained US entity type). taxFormSubmissionSchema = Zod discriminatedUnion on formType; W9 carries EIN or SSN last-4 ONLY (no full-SSN field); W8BENE adds LOB line-14b. TaxFormType mirrored as a local literal union to keep determineFormType import-free/pure.
 - [Phase 85]: [85-03, 2026-06-16] Portal-primary W-form self-cert on portalAppRouter — every read/write scoped to ctx.contractorId (IDOR), never client-supplied. ESIGN attestation ip/actorId/signedAt 100% server-derived (deriveClientIp(ctx.headers) / ctx.contractorId / new Date()) — client schema omits all three. buildFormSnapshot recursively strips full-SSN/TIN keys (ssn/ssnencrypted/fullssn/scalar-tin), keeps {ssnLast4,ein} — a 2nd PII guard behind the validators schema. supersedeAndInsert is append-only: flips prior ACTIVE→SUPERSEDED then inserts new ACTIVE inside one $transaction; saveTaxFormDraft only ever touches a DRAFT row (signed rows never mutated). Staff read/track on a DEDICATED taxFormRouter (mounted taxForm:) NOT tax.ts — only a separate namespace can be conditionally spread out of appRouter when module.us-expansion is OFF; tax.ts stays always-mounted. Defense-in-depth flag gate: isUsExpansionRegistered() spreads the staff router at boot (METHOD_NOT_FOUND when OFF) + assertUsExpansionEnabled per-request on BOTH surfaces (the flat portal merge cannot be conditionally spread). Form read/track reuses contractor:[read]; full-SSN reveal stays on contractor.revealSsn (contractorPii:[read]) — NO new Better Auth permission (Pitfall 2 avoided). Dead TAX_FORM_NOT_FOUND/NOT_DRAFT error exports removed (append-only makes the reject path unreachable). 25 scoped tests GREEN (immutability/supersede/PII non-leak/ESIGN/W8BENE LOB+article/IDOR/staff RBAC/flag gate).
 - [Phase ?]: [85-04, 2026-06-16] Portal W-form wizard = page→container→hook→component; use-tax-form-wizard.ts the SOLE tRPC boundary. Attestation gate = real <input type=checkbox> perjury + typed legal-name match + signature affirmation. formType discriminant synced via useEffect for the discriminated-union resolver. Staff card reuses UspsAddressStatusPill VARIANT_MAP + SsnMaskedReveal verbatim (absent without contractorPii:read). i18n TaxFormWizard/TaxFormStaff en/de/pl/ar + en-US fallback. Phase 85 COMPLETE (US-FORM-01/02 + US-LOC-02/03).
+- [Phase 86]: [86-01] @contractor-ops/iris package + SHA-256 XSD checksum guard established (mirrors einvoice validator-bundle); D-01 XSD-validate-in-CI seam + D-18 adviser-verify provenance in source.txt; reused fast-xml-parser ^5.7.3 + libxmljs2 ^0.37.0 verbatim (zero new external deps, T-86-01-SC accept); 9 Wave-0 RED scaffolds laid (terminal-RED). PAUSED at human-action checkpoint awaiting IRS IRIS XSD download (IRS-SOR login) before checksums pin.
 
 ### Pending Todos
 
@@ -125,6 +126,7 @@ Decisions are logged in PROJECT.md Key Decisions table. Recent decisions affecti
 
 - **Tooling history (v6.0):** several v6.0 plan/execute runs hit a nested-agent `Task`-API limit + a missing `~/.claude/sdk/shared/model-catalog.json` (RESOLVED by 2026-05-31 — `gsd-sdk query` returns valid JSON). If a background `/gsd:plan-phase` run again cannot spawn `gsd-phase-researcher`/`gsd-planner`/`gsd-plan-checker`, run it from a **top-level** interactive session.
 - **`.planning/phases` is a symlink** — stage planning commits via the real `milestones/vX.Y-phases/` path (git add/commit through the symlink fails "beyond a symbolic link").
+- Phase 86-01 Task 3 (human-action): IRS IRIS XSD schema package (TY2025 v2.0) must be downloaded from the IRS Secure Object Repository (IRS-login-only) and placed under packages/iris/src/schema-bundle/, then pinned via 'pnpm --filter @contractor-ops/iris exec tsx scripts/verify-iris-schema-checksums.ts --write'. Generator/validator scaffolds stay RED until then.
 
 ## Deferred Items
 
@@ -159,6 +161,7 @@ Carried forward from v6.0 milestone close (2026-06-07). Full enumeration: `.plan
 | Phase 85 P85-02 | ~11m | 3 tasks | 8 files |
 | Phase 85 P85-03 | ~27m | 3 tasks | 11 files |
 | Phase 85 P04 | ~26m | 3 tasks | 28 files |
+| Phase 86 P01 | 5m | 2 tasks | 15 files |
 
 ## Standing Project Constraints
 
@@ -168,7 +171,7 @@ Carried forward from v6.0 milestone close (2026-06-07). Full enumeration: `.plan
 
 ## Session Continuity
 
-Last session: 2026-06-16T22:09:01.745Z
+Last session: 2026-06-16T22:52:30.300Z
 Stopped at: Phase 86 UI-SPEC approved
-Resume file: .planning/milestones/v7.0-phases/86-theme-a-tin-match-1099-nec-iris-e-file-state-filing/86-UI-SPEC.md
+Resume file: None
 Next command: execute Phase 85 Plan 04 (web-vite portal wizard + staff status card + i18n)
