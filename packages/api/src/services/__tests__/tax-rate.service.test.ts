@@ -31,9 +31,10 @@ vi.mock('@contractor-ops/db', () => {
 });
 
 import { prisma } from '@contractor-ops/db';
-import { getDefaultRateCode, getTaxRatesForCountry } from '../tax-rate.service';
+import { calculateWht, getDefaultRateCode, getTaxRatesForCountry } from '../tax-rate.service';
 
 const mockTaxRate = vi.mocked(prisma.taxRate);
+const mockWht = vi.mocked(prisma.withholdingTaxRate);
 
 const GB_SEED = [
   {
@@ -196,5 +197,43 @@ describe('tax-rate.service — getDefaultRateCode (PAY-02, PAY-04)', () => {
     mockTaxRate.findFirst.mockResolvedValueOnce(null).mockResolvedValueOnce(null);
     const code = await getDefaultRateCode('ZZ');
     expect(code).toBeNull();
+  });
+});
+
+describe('tax-rate.service — calculateWht non-breakage after US treaty rows (US-LOC-02)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('SA org still resolves the SA treaty/standard row unchanged when US rows coexist in the table', async () => {
+    // The table now also holds sourceCountry='US' rows. The SA lookup must be
+    // unaffected: it queries sourceCountry='SA' and applies the divide-by-100
+    // percent contract exactly as before.
+    mockWht.findFirst.mockResolvedValueOnce({
+      contractorResidency: 'PL',
+      serviceType: 'CONSULTING',
+      standardRate: 20,
+      treatyRate: 5,
+      treatyReference: 'Saudi-Poland DTA',
+    } as never);
+
+    const result = await calculateWht('SA', 'PL', 'CONSULTING', 100_000);
+
+    expect(result).not.toBeNull();
+    expect(result?.whtRate).toBe(5);
+    expect(result?.whtAmountMinor).toBe(5_000);
+    expect(result?.treatyApplied).toBe(true);
+
+    // The SA lookup is scoped to sourceCountry='SA' — US rows cannot be selected.
+    const args = mockWht.findFirst.mock.calls[0]?.[0];
+    expect(args?.where?.sourceCountry).toBe('SA');
+  });
+
+  it('US org returns null — the SA gate keeps US source-country rows out of the WHT path', async () => {
+    const result = await calculateWht('US', 'PL', 'CONSULTING', 100_000);
+
+    expect(result).toBeNull();
+    // Gate short-circuits before any DB read — US rows are never queried here.
+    expect(mockWht.findFirst).not.toHaveBeenCalled();
   });
 });
