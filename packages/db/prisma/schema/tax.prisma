@@ -112,6 +112,135 @@ model TaxFormSubmission {
   @@index([organizationId, status, expiresAt])
 }
 
+// 1099-NEC year-end information return + IRS IRIS e-file records.
+//
+// Form1099Nec is an immutable record-of-record: a filed return is never mutated;
+// a CORRECTED return inserts a new row and marks the prior one SUPERSEDED via the
+// supersede chain (mirrors TaxFormSubmission). The snapshot keeps last-4 TIN only,
+// never a full SSN. Both threshold and per-state CFSF rules live in config tables
+// keyed by tax year / state — never hardcoded constants — because the federal
+// threshold rose from $600 (TY2025) to $2,000 (TY2026, OBBBA) and the Combined
+// Federal/State Filing participant list drifts year to year.
+
+enum Form1099Status {
+  DRAFT
+  ACTIVE
+  SUPERSEDED
+}
+
+// The six acknowledgement states the IRS IRIS A2A and manual-upload ack files report.
+enum IrisAckStatus {
+  ACCEPTED
+  REJECTED
+  PROCESSING
+  PARTIALLY_ACCEPTED
+  ACCEPTED_WITH_ERRORS
+  NOT_FOUND
+}
+
+model Form1099Nec {
+  id                         String         @id @default(cuid())
+  organizationId             String
+  // Aggregation axis: box-1 comp is summed per recipient per payer-org. For a
+  // self-org filing this equals organizationId; it is carried explicitly so a
+  // future agent-org-filing-on-behalf-of-payer split is non-breaking.
+  payerOrgId                 String
+  recipientId                String
+  taxYear                    Int
+  status                     Form1099Status @default(DRAFT)
+  // Box amounts in minor units (USD cents). Box 4 is recorded backup
+  // withholding; the actual payout reduction is enforced in a later phase.
+  box1AmountMinor            Int
+  box4BackupWithholdingMinor Int            @default(0)
+  currency                   String         @default("USD") @db.Char(3)
+  // Combined Federal/State Filing state code emitted in the IRIS B-record so the
+  // IRS auto-forwards to participating states.
+  cfsfStateCode              String?        @db.Char(2)
+  corrected                  Boolean        @default(false)
+  // Immutable captured figures (record-of-record); holds last-4 TIN only, never a
+  // full SSN — mirror TaxFormSubmission.snapshotJson.
+  snapshotJson               Json
+  pdfArchiveKey              String?
+  supersededById             String?        @unique
+  // Required for the data-purge soft-delete chokepoint that enforces IRS retention.
+  deletedAt                  DateTime?
+  createdAt                  DateTime       @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  recipient    Contractor   @relation(fields: [recipientId], references: [id])
+  supersededBy Form1099Nec? @relation("Form1099Supersede", fields: [supersededById], references: [id])
+  supersedes   Form1099Nec? @relation("Form1099Supersede")
+
+  @@index([organizationId, payerOrgId, recipientId, taxYear, status])
+  @@index([organizationId, taxYear, status])
+}
+
+// Append-only record of one IRIS transmission, capturing the schema VersionNum /
+// VersionDt the file was built against (the IRS revs the schema per tax year).
+model IrisSubmission {
+  id                String         @id @default(cuid())
+  organizationId    String
+  taxYear           Int
+  schemaVersionNum  String
+  schemaVersionDt   String
+  // manual | iris-a2a | vendor
+  transmitMethod    String
+  // Carries the IRS receipt id being replaced, for a replacement transmission.
+  originalReceiptId String?
+  status            IrisAckStatus?
+  xmlArchiveKey     String?
+  deletedAt         DateTime?
+  createdAt         DateTime       @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  acks         IrisAck[]
+
+  @@index([organizationId, taxYear])
+}
+
+// Append-only parsed acknowledgement. The same parser consumes both the manual
+// uploaded ack file and the A2A poll result.
+model IrisAck {
+  id                   String        @id @default(cuid())
+  organizationId       String
+  submissionId         String
+  status               IrisAckStatus
+  // The IRIS Error Information Group, preserved structurally for rejection detail.
+  errorInformationJson Json?
+  receiptId            String?
+  parsedAt             DateTime      @default(now())
+
+  organization Organization   @relation(fields: [organizationId], references: [id])
+  submission   IrisSubmission @relation(fields: [submissionId], references: [id])
+
+  @@index([organizationId, submissionId])
+}
+
+// Tax-year-keyed 1099-NEC reporting threshold. NEVER a constant: $600 TY2025,
+// $2,000 TY2026 (OBBBA), inflation-indexed thereafter.
+model Tax1099Threshold {
+  id                 String  @id @default(cuid())
+  taxYear            Int     @unique
+  box1ThresholdMinor Int
+  currency           String  @default("USD") @db.Char(3)
+  note               String?
+}
+
+// Per-state Combined Federal/State Filing config. Drives whether a recipient's
+// state is auto-forwarded by the IRS (CFSF) or requires a separate direct filing.
+model StateFilingConfig {
+  id                       String  @id @default(cuid())
+  stateCode                String  @db.Char(2)
+  taxYear                  Int
+  cfsfParticipant          Boolean
+  requiresDirectFiling     Boolean
+  filingThresholdMinor     Int?
+  stateWithholdingBoxRules Json?
+  note                     String?
+
+  @@unique([stateCode, taxYear])
+}
+
 // ---------------------------------------------------------------------------
 // Phase 57 — Tax-ID validation audit trail (HMRC VAT + VIES USt-IdNr)
 // D-04: append-only audit log of every HMRC/VIES call for compliance evidence.
