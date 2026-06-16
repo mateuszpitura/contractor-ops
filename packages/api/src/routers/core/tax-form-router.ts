@@ -84,7 +84,9 @@ export const taxFormRouter = router({
       await writeAuditLog({
         organizationId: ctx.organizationId,
         actorType: 'USER',
-        actorId: ctx.user?.id,
+        // tenantProcedure guarantees ctx.user — never coalesce to an
+        // undefined actor on an authenticated, permission-gated mutation.
+        actorId: ctx.user.id,
         action: 'tax.form.requested',
         resourceType: 'CONTRACTOR',
         resourceId: contractor.id,
