@@ -26,3 +26,22 @@ are auto-fixed; pre-existing offenders in untouched files are recorded here, not
   commit. The failure is in a German translation file outside this plan's change set and
   is therefore out of scope per the executor scope boundary (only issues directly caused
   by this plan's changes are auto-fixed). All 85-02 scoped test files pass.
+
+## Plan 85-03
+
+- **Pre-existing branch-level doc-drift (NOT caused by 85-03)** — `check:wiki-brain`
+  flags three pages for source files that earlier `audit/post-migration-parity`
+  commits (e.g. `bf742ca95`, `9cde858b0`) changed without updating the owning page,
+  PLUS unstaged working-tree edits left by a prior session:
+    - `apps/web-vite/messages/ar.json` → `patterns/i18n-and-locales.md`
+    - `packages/feature-flags/src/evaluator.ts` → `structure/packages.md`
+    - `packages/validators/src/legal/de.d.ts.map` (generated `.d.ts.map` artifact)
+      → `patterns/validators-boundaries.md`
+  None of these files is in any 85-03 commit — the plan only touches
+  `packages/api/src/{services,routers,middleware,errors}` plus the W-form wiki pages.
+  All 8 drift errors that 85-03 *did* cause (`tax-form.service.ts`,
+  `portal-tax-form-router.ts`, `root.ts`) were fixed in the same change set
+  (portal-external, api-routers-catalog, api-router-groups, key-services, packages,
+  classification-ir35). The remaining three are pre-existing branch/working-tree
+  drift, out of scope per the executor scope boundary (CLAUDE.md: only NEW drift vs
+  the branch base retro-bricks; these predate the plan).
