@@ -25,7 +25,7 @@ export type TaxFormType = 'W9' | 'W8BEN' | 'W8BENE';
 /** Wizard step order. Determination → form (W-9 or W-8) → attestation → receipt. */
 export type WizardStep = 'determination' | 'form' | 'attest' | 'receipt';
 
-const STEP_ORDER: WizardStep[] = ['determination', 'form', 'attest', 'receipt'];
+export const STEP_ORDER: WizardStep[] = ['determination', 'form', 'attest', 'receipt'];
 
 export interface TreatyClaim {
   article: string | null;

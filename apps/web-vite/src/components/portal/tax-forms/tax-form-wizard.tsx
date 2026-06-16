@@ -21,7 +21,7 @@ import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { AnimateIn } from '../../shared/animate-in.js';
 import type { WizardStep } from './hooks/use-tax-form-wizard.js';
-import { useTaxFormWizard } from './hooks/use-tax-form-wizard.js';
+import { STEP_ORDER, useTaxFormWizard } from './hooks/use-tax-form-wizard.js';
 import { StepAttest } from './step-attest.js';
 import { StepDetermination } from './step-determination.js';
 import { StepReceipt } from './step-receipt.js';
@@ -35,8 +35,6 @@ const STEP_LABEL_KEYS: Record<WizardStep, string> = {
   attest: 'step.attest',
   receipt: 'step.receipt',
 };
-
-const STEP_ORDER: WizardStep[] = ['determination', 'form', 'attest', 'receipt'];
 
 function WizardSkeleton() {
   return (
