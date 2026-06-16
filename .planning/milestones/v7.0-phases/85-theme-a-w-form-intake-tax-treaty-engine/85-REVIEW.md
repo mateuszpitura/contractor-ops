@@ -37,7 +37,28 @@ findings:
   warning: 5
   info: 3
   total: 12
-status: issues_found
+status: fixed
+remediation:
+  fixed_at: 2026-06-16T00:00:00Z
+  scope: critical_warning
+  fixed: 9
+  skipped: 0
+  resolved:
+    - { id: CR-01, commit: e219510ae }
+    - { id: CR-02, commit: 9131bd5c6 }
+    - { id: CR-03, commit: b1cc9f8f4 }
+    - { id: CR-04, commit: 6d7cc7e51 }
+    - { id: WR-01, commit: 5a18ea096 }
+    - { id: WR-02, commit: a892a2f31 }
+    - { id: WR-03, commit: b4615b64b }
+    - { id: WR-04, commit: 7e31e6fe7 }
+    - { id: WR-05, commit: 7e8252287 }
+  info_not_fixed: [IN-01, IN-02, IN-03]
+  note: >-
+    CR-03 here refers to the corrected CR-03 (step-attest.tsx false-as-never).
+    The original CR-03 (W-9 treatyCountry narrowing) was reclassified to WR-01
+    in the review body and is fixed under that ID. Info findings were out of
+    scope (critical + warning only).
 ---
 
 # Phase 85: Code Review Report
@@ -45,7 +66,7 @@ status: issues_found
 **Reviewed:** 2026-06-16T00:00:00Z
 **Depth:** standard
 **Files Reviewed:** 28
-**Status:** issues_found
+**Status:** fixed — all 4 critical + 5 warning findings resolved (info out of scope)
 
 ## Summary
 
@@ -55,7 +76,7 @@ This phase implements the US W-form intake wizard (W-9 / W-8BEN / W-8BEN-E) and 
 
 ## Critical Issues
 
-### CR-01: `saveTaxFormDraft` stores raw unsanitized client data — full SSN can enter `snapshotJson`
+### CR-01: `saveTaxFormDraft` stores raw unsanitized client data — full SSN can enter `snapshotJson` — RESOLVED (commit e219510ae)
 
 **File:** `packages/api/src/routers/portal/portal-tax-form-router.ts:140-163`
 
@@ -76,7 +97,7 @@ const snapshotJson = {
 
 ---
 
-### CR-02: Treaty-rate `orderBy: { contractorResidency: 'asc' }` does not reliably prefer the specific country over `'XX'`
+### CR-02: Treaty-rate `orderBy: { contractorResidency: 'asc' }` does not reliably prefer the specific country over `'XX'` — RESOLVED (commit 9131bd5c6)
 
 **File:** `packages/api/src/services/treaty-rate.service.ts:155-158`
 
@@ -118,7 +139,7 @@ const hasTreatyRow = row !== null && row.treatyRate !== null && row.contractorRe
 
 ---
 
-### CR-03: `submitTaxForm` accesses `input.treatyCountry` without type narrowing for W-9
+### CR-03: `submitTaxForm` accesses `input.treatyCountry` without type narrowing for W-9 — RECLASSIFIED to WR-01 (fixed under commit 5a18ea096)
 
 **File:** `packages/api/src/routers/portal/portal-tax-form-router.ts:179-181`
 
@@ -144,7 +165,7 @@ The real blocker: `capturedFields` for a W-9 will include `formType`, which is r
 
 ---
 
-### CR-03 (corrected): `perjuryAccepted: false as never` casts a type violation into a runtime value the server will reject, with no client-side guard preventing submission
+### CR-03 (corrected): `perjuryAccepted: false as never` casts a type violation into a runtime value the server will reject, with no client-side guard preventing submission — RESOLVED (commit b1cc9f8f4)
 
 **File:** `apps/web-vite/src/components/portal/tax-forms/step-attest.tsx:97-99`
 
@@ -169,7 +190,7 @@ The `canSubmit` guard already prevents submission when unchecked; the field valu
 
 ---
 
-### CR-04: `requestTaxForm` audit log passes `actorId: ctx.user?.id` which may be `undefined`
+### CR-04: `requestTaxForm` audit log passes `actorId: ctx.user?.id` which may be `undefined` — RESOLVED (commit 6d7cc7e51)
 
 **File:** `packages/api/src/routers/core/tax-form-router.ts:87`
 
@@ -187,7 +208,7 @@ If there is a type concern, add a guard: `if (!ctx.user) throw new TRPCError({ c
 
 ## Warnings
 
-### WR-01: `submitTaxForm` — `capturedFields` spread includes `formType` in `fields`, inflating snapshot
+### WR-01: `submitTaxForm` — `capturedFields` spread includes `formType` in `fields`, inflating snapshot — RESOLVED (commit 5a18ea096)
 
 **File:** `packages/api/src/routers/portal/portal-tax-form-router.ts:184-197`
 
@@ -205,7 +226,7 @@ Then pass `formType` explicitly (it's already passed as `input.formType` to `bui
 
 ---
 
-### WR-02: Treaty-rate `resolveTreatyDecision` throws a plain `Error` for override without reason, instead of a `TRPCError`
+### WR-02: Treaty-rate `resolveTreatyDecision` throws a plain `Error` for override without reason, instead of a `TRPCError` — RESOLVED (commit a892a2f31)
 
 **File:** `packages/api/src/services/treaty-rate.service.ts:80-82`
 
@@ -233,7 +254,7 @@ try {
 
 ---
 
-### WR-03: `STEP_ORDER` is duplicated in `use-tax-form-wizard.ts` and `tax-form-wizard.tsx`
+### WR-03: `STEP_ORDER` is duplicated in `use-tax-form-wizard.ts` and `tax-form-wizard.tsx` — RESOLVED (commit b4615b64b)
 
 **File:** `apps/web-vite/src/components/portal/tax-forms/hooks/use-tax-form-wizard.ts:28` and `apps/web-vite/src/components/portal/tax-forms/tax-form-wizard.tsx:39`
 
@@ -254,7 +275,7 @@ import { STEP_ORDER, useTaxFormWizard } from './hooks/use-tax-form-wizard.js';
 
 ---
 
-### WR-04: W-9 step's `US_ENTITY_TYPES` local constant does not come from the shared `usEntityTypeEnum` — drift risk
+### WR-04: W-9 step's `US_ENTITY_TYPES` local constant does not come from the shared `usEntityTypeEnum` — drift risk — RESOLVED (commit 7e31e6fe7)
 
 **File:** `apps/web-vite/src/components/portal/tax-forms/step-w9.tsx:19-26`
 
@@ -274,7 +295,7 @@ const US_ENTITY_TYPES = usEntityTypeEnum.options;
 
 ---
 
-### WR-05: `treaty-claim-caption.tsx` `hasTreaty` check excludes the 0% rate case when article is present
+### WR-05: `treaty-claim-caption.tsx` `hasTreaty` check excludes the 0% rate case when article is present — RESOLVED (commit 7e8252287)
 
 **File:** `apps/web-vite/src/components/portal/tax-forms/treaty-claim-caption.tsx:21`
 
