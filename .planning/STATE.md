@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v7.0
 milestone_name: GTM Expansion
 status: executing
-stopped_at: Phase 86 context gathered
-last_updated: "2026-06-16T21:42:06.621Z"
+stopped_at: Phase 86 UI-SPEC approved
+last_updated: "2026-06-16T22:09:01.750Z"
 last_activity: 2026-06-16
 progress:
   total_phases: 20
@@ -168,7 +168,7 @@ Carried forward from v6.0 milestone close (2026-06-07). Full enumeration: `.plan
 
 ## Session Continuity
 
-Last session: 2026-06-16T21:42:06.612Z
-Stopped at: Phase 86 context gathered
-Resume file: .planning/milestones/v7.0-phases/86-theme-a-tin-match-1099-nec-iris-e-file-state-filing/86-CONTEXT.md
+Last session: 2026-06-16T22:09:01.745Z
+Stopped at: Phase 86 UI-SPEC approved
+Resume file: .planning/milestones/v7.0-phases/86-theme-a-tin-match-1099-nec-iris-e-file-state-filing/86-UI-SPEC.md
 Next command: execute Phase 85 Plan 04 (web-vite portal wizard + staff status card + i18n)
