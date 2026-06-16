@@ -24,10 +24,14 @@ model WithholdingTaxRate {
   id                  String    @id @default(cuid())
   sourceCountry       String    @db.Char(2)
   contractorResidency String    @db.Char(2)
+  // Income-type axis; for US source rows this carries 'business_profits'.
   serviceType         String    @db.VarChar(50)
   standardRate        Decimal   @db.Decimal(5, 2)
   treatyRate          Decimal?  @db.Decimal(5, 2)
   treatyReference     String?   @db.VarChar(100)
+  // Structured treaty article (e.g. "Article 7") so a W-8BEN line-10 / W-8BEN-E
+  // line-15 claim can be auto-populated; treatyReference stays free-text prose.
+  treatyArticle       String?   @db.VarChar(40)
   effectiveFrom       DateTime  @db.Date
   effectiveTo         DateTime? @db.Date
   createdAt           DateTime  @default(now())
@@ -61,6 +65,51 @@ model WhtCertificate {
   @@unique([organizationId, certificateNumber])
   @@index([organizationId])
   @@index([organizationId, paymentRunItemId])
+}
+
+// US tax-status form (W-9 / W-8BEN / W-8BEN-E) intake.
+// Immutable record-of-record: a signed form is never mutated — re-certification
+// inserts a new row and marks the prior one SUPERSEDED via the supersede chain.
+
+enum TaxFormType {
+  W9
+  W8BEN
+  W8BENE
+}
+
+enum TaxFormStatus {
+  DRAFT
+  ACTIVE
+  SUPERSEDED
+}
+
+model TaxFormSubmission {
+  id                  String        @id @default(cuid())
+  organizationId      String
+  contractorId        String
+  formType            TaxFormType
+  status              TaxFormStatus @default(DRAFT)
+  // Captured form fields + ESIGN attestation (typed name, timestamp, IP, userId).
+  // Never holds a full SSN — only last-4 plus an encrypted-column reference.
+  snapshotJson        Json
+  // Resolved treaty claim mirrored from WithholdingTaxRate at sign time.
+  treatyArticle       String?       @db.VarChar(40)
+  treatyRate          Decimal?      @db.Decimal(5, 2)
+  contractorResidency String?       @db.Char(2)
+  signerName          String?
+  signedAt            DateTime?
+  // W-8BEN/W-8BEN-E claims expire ~3 years after signing.
+  expiresAt           DateTime?
+  supersededById      String?       @unique
+  createdAt           DateTime      @default(now())
+
+  organization Organization       @relation(fields: [organizationId], references: [id])
+  contractor   Contractor         @relation(fields: [contractorId], references: [id])
+  supersededBy TaxFormSubmission? @relation("Supersede", fields: [supersededById], references: [id])
+  supersedes   TaxFormSubmission? @relation("Supersede")
+
+  @@index([organizationId, contractorId, formType, status])
+  @@index([organizationId, status, expiresAt])
 }
 
 // ---------------------------------------------------------------------------

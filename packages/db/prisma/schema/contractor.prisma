@@ -84,6 +84,7 @@ model Contractor {
   equipmentAssignments      EquipmentAssignment[]
   returnRequests            ReturnRequest[]
   taxIdValidations          TaxIdValidation[]
+  taxFormSubmissions        TaxFormSubmission[]
   ir35ChainParticipantLinks Ir35ChainParticipant[]
   leitwegIds                LeitwegId[]
   intakes                   InvoiceIntakeRequest[]             @relation("InvoiceIntakeMatchedContractor")

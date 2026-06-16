@@ -119,6 +119,7 @@ model Organization {
   govApiAuditLogs                GovApiAuditLog[]
   zatcaChainEntries              ZatcaInvoiceChain[]
   taxIdValidations               TaxIdValidation[]
+  taxFormSubmissions             TaxFormSubmission[]
   apiKeys                        OrganizationApiKey[]
   classificationAssessments      ClassificationAssessment[]
   classificationDocuments        ClassificationDocument[]
