@@ -1,8 +1,8 @@
 {
   "_meta": {
-    "updated_at": "2026-06-08T16:03:52Z",
-    "version": 1,
-    "source_commit": "70f5782d78e33ba98c82e4ccda2cd4b0b4aff216"
+    "updated_at": "2026-06-16T00:00:00Z",
+    "version": 2,
+    "source_commit": "57946f642"
   },
   "invariants": [
     {
@@ -59,7 +59,7 @@
         "invoice": "invoice-crud + invoice-matching + invoice-actions → invoice.ts",
         "payment": "payment-core + payment-export + payment-run-ops + payment-import + payment-skonto → payment.ts",
         "approval": "approval-chain + approval-queue + approval-submit → approval.ts",
-        "portal": "portal-auth + portal-invoices + portal-contracts + portal-profile + portal-equipment → portal.ts",
+        "portal": "portal-auth + portal-invoices + portal-contracts + portal-profile + portal-equipment + portal-tax-form → portal.ts",
         "classification": "classification-draft + classification-submit + classification-read → classification.ts"
       },
       "rationale": "Flat namespace for clients; smaller files; shared helpers in *-shared.ts"
@@ -91,6 +91,12 @@
         "flag": "module.classification-engine",
         "registration": "packages/api/src/root.ts conditional spread",
         "middleware": "classificationProcedure defense-in-depth"
+      },
+      "us_expansion_gate": {
+        "flag": "module.us-expansion",
+        "registration": "packages/api/src/root.ts conditionalUsExpansionRouters spread (taxForm namespace)",
+        "middleware": "assertUsExpansionEnabled per-request defense-in-depth (packages/api/src/middleware/require-us-expansion-flag.ts)",
+        "portal_note": "portal tax-form procedures are in the flat merged portalRouter and cannot be conditionally spread — each procedure calls assertUsExpansionEnabled directly"
       }
     },
     {
@@ -123,12 +129,40 @@
       "id": "supply-chain-age",
       "rule": "minimumReleaseAge 7 days on pnpm; no @latest bypass without approval",
       "files": ["pnpm-workspace.yaml", ".npmrc"]
+    },
+    {
+      "id": "wht-rate-additive-extension",
+      "rule": "WithholdingTaxRate is extended additively; US treaty rows add sourceCountry='US' + treatyArticle column alongside existing SA rows",
+      "schema_file": "packages/db/prisma/schema/tax.prisma",
+      "column_added": "treatyArticle String? @db.VarChar(40)",
+      "rationale": "calculateWht (SA WHT) is never touched; applyTreaty uses the same table scoped to sourceCountry='US' + serviceType='business_profits'; backward-compatible additive column"
+    },
+    {
+      "id": "tax-form-append-only",
+      "rule": "TaxFormSubmission is immutable once ACTIVE — re-certification inserts a new ACTIVE row and flips prior to SUPERSEDED; no in-place edits",
+      "schema_file": "packages/db/prisma/schema/tax.prisma",
+      "service": "packages/api/src/services/tax-form.service.ts → supersedeAndInsert",
+      "rationale": "ESIGN-Act compliance; the snapshot JSON is the legal record-of-record; append-only preserves the certification trail"
+    },
+    {
+      "id": "portal-no-idor-contractor-id",
+      "rule": "Portal procedures derive contractorId from the validated session (ctx.contractorId), never from client-supplied input",
+      "example": "packages/api/src/routers/portal/portal-tax-form-router.ts — all queries/mutations scope to ctx.contractorId + ctx.organizationId",
+      "rationale": "Prevents IDOR: a contractor cannot forge another contractor's form submission or read"
+    },
+    {
+      "id": "tax-form-no-full-ssn",
+      "rule": "TaxFormSubmission.snapshotJson never holds a full SSN — only last-4 reference; buildFormSnapshot sanitizes all forbidden key names",
+      "service": "packages/api/src/services/tax-form.service.ts → sanitizeFields (FORBIDDEN_FIELD_KEYS)",
+      "validator": "packages/validators/src/w-form-validators.ts → tinReferenceSchema (ssnLast4 + ein only)",
+      "rationale": "Full SSN lives in the contractor's dedicated encrypted column behind contractorPii:read; keeping it out of the snapshot avoids log-PII exposure"
     }
   ],
   "procedure_stacks": {
     "staff_mutation": "publicProcedure → authedProcedure → tenantProcedure → requirePermission → handler",
-    "portal": "portalProcedure → handler",
-    "classification": "tenantProcedure → classificationProcedure → handler (when flag enabled)"
+    "portal": "portalProcedure → assertUsExpansionEnabled (when us-expansion gated) → handler",
+    "classification": "tenantProcedure → classificationProcedure → handler (when flag enabled)",
+    "tax_form_staff": "tenantProcedure → requirePermission(contractor:read) → assertUsExpansionEnabled → handler"
   },
   "rls": {
     "reads": "withRlsReads — SET LOCAL app.org_id",

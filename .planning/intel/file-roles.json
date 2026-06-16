@@ -1,8 +1,8 @@
 {
   "_meta": {
-    "updated_at": "2026-06-08T16:03:52Z",
-    "version": 1,
-    "source_commit": "70f5782d78e33ba98c82e4ccda2cd4b0b4aff216"
+    "updated_at": "2026-06-16T00:00:00Z",
+    "version": 2,
+    "source_commit": "57946f642"
   },
   "apps": {
     "api-server": {
@@ -68,8 +68,9 @@
       "export": "appRouter",
       "mount": "/api/trpc/*",
       "namespace_count": {
-        "always_mounted": 53,
-        "conditional_classification": 8
+        "always_mounted": 54,
+        "conditional_classification": 8,
+        "conditional_us_expansion": 1
       }
     },
     "portal_router": {
@@ -95,6 +96,11 @@
     "rbac": {
       "path": "packages/api/src/middleware/rbac.ts",
       "role": "requirePermission for staff procedures"
+    },
+    "us_expansion_flag": {
+      "path": "packages/api/src/middleware/require-us-expansion-flag.ts",
+      "exports": ["isUsExpansionRegistered", "assertUsExpansionEnabled"],
+      "role": "Guards taxForm (staff) and portal tax-form procedures behind module.us-expansion; defense-in-depth per request"
     }
   },
   "router_domains": {
@@ -105,7 +111,8 @@
     },
     "core": {
       "path": "packages/api/src/routers/core/",
-      "namespaces": ["contractor", "contract", "approval", "audit", "organization", "user", "settings", "time", "document", "dashboard", "report"]
+      "namespaces": ["contractor", "contract", "approval", "audit", "organization", "user", "settings", "time", "document", "dashboard", "report", "taxForm"],
+      "notes": "taxForm conditionally spread behind module.us-expansion"
     },
     "compliance": {
       "path": "packages/api/src/routers/compliance/",
@@ -115,7 +122,7 @@
     "portal": {
       "path": "packages/api/src/routers/portal/",
       "namespaces": ["portal", "portalTime"],
-      "notes": "portal namespace merged from auth, invoices, contracts, profile, equipment sub-routers"
+      "notes": "portal namespace merged from auth, invoices, contracts, profile, equipment, tax-form sub-routers; tax-form procedures self-gate on module.us-expansion"
     },
     "workflow": {
       "path": "packages/api/src/routers/workflow/",
@@ -159,6 +166,21 @@
     "audited_mutation": {
       "path": "packages/api/src/lib/audited-mutation.ts",
       "role": "Wrapper combining mutation + writeAuditLog in one transaction"
+    },
+    "treaty_rate": {
+      "path": "packages/api/src/services/treaty-rate.service.ts",
+      "exports": ["resolveTreatyDecision", "applyTreaty"],
+      "role": "US treaty-rate resolution for W-8BEN/W-8BEN-E: override-precedence decision (pure) + DB-loading applyTreaty; parallel to calculateWht, never touches it; defaults to 30% statutory when no treaty row applies"
+    },
+    "tax_form_service": {
+      "path": "packages/api/src/services/tax-form.service.ts",
+      "exports": ["buildFormSnapshot", "computeExpiry", "supersedeAndInsert"],
+      "role": "Immutable W-form record service: builds JSON snapshot with server-derived ESIGN attestation (strips full SSN), computes W-8 3-year expiry, append-only supersede within caller transaction"
+    },
+    "tax_form_routing": {
+      "path": "packages/api/src/services/tax-form-routing.ts",
+      "exports": ["determineFormType"],
+      "role": "Pure W-form type routing (no DB): US countryCode→W-9; foreign COMPANY→W-8BEN-E; others→W-8BEN"
     }
   },
   "packages_core": {
@@ -172,7 +194,7 @@
     },
     "validators": {
       "path": "packages/validators",
-      "role": "Shared Zod schemas (entityIdSchema, domain inputs, public-api/)"
+      "role": "Shared Zod schemas (entityIdSchema, domain inputs, public-api/, w-form-validators)"
     },
     "feature_flags": {
       "path": "packages/feature-flags",
@@ -196,8 +218,47 @@
     "payments": "apps/web-vite/src/components/payments/",
     "approvals": "apps/web-vite/src/components/approvals/",
     "portal": "apps/web-vite/src/components/portal/",
+    "portal_tax_forms": {
+      "path": "apps/web-vite/src/components/portal/tax-forms/",
+      "files": {
+        "wizard": "tax-form-wizard.tsx",
+        "hook": "hooks/use-tax-form-wizard.ts"
+      },
+      "page": "apps/web-vite/src/pages/portal/tax-form-page.tsx",
+      "role": "Portal W-form self-certification wizard (W-9 / W-8BEN / W-8BEN-E); flag-gated module.us-expansion"
+    },
     "contractors": "apps/web-vite/src/components/contractors/",
+    "contractors_tax_forms": {
+      "path": "apps/web-vite/src/components/contractors/tax-forms/",
+      "files": {
+        "status_card": "tax-form-status-card.tsx",
+        "hook": "hooks/use-tax-form-status.ts"
+      },
+      "role": "Staff read-only W-form status card on contractor detail page"
+    },
     "compliance": "apps/web-vite/src/components/compliance/",
     "classification": "apps/web-vite/src/components/classification/"
+  },
+  "validators_key_files": {
+    "w_form_validators": {
+      "path": "packages/validators/src/w-form-validators.ts",
+      "exports": [
+        "taxFormSubmissionSchema",
+        "w9FormSchema",
+        "w8benFormSchema",
+        "w8beneFormSchema",
+        "lobCategoryEnum",
+        "w8beneEntityTypeEnum"
+      ],
+      "role": "Discriminated-union Zod schema for W-9/W-8BEN/W-8BEN-E intake; shared by portal wizard RHF resolver and tRPC server input; PII boundary: no full SSN"
+    }
+  },
+  "prisma_schema_areas": {
+    "tax": {
+      "path": "packages/db/prisma/schema/tax.prisma",
+      "models": ["TaxRate", "WithholdingTaxRate", "WhtCertificate", "TaxFormSubmission", "TaxIdValidation"],
+      "enums": ["TaxFormType", "TaxFormStatus", "TaxIdType", "ValidationStatus"],
+      "notes": "TaxFormSubmission added Phase 85 (W-9/W-8BEN/W-8BEN-E intake, append-only); WithholdingTaxRate.treatyArticle column added for W-8 line-10/15 auto-populate"
+    }
   }
 }

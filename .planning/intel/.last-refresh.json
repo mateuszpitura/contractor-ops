@@ -1,6 +1,6 @@
 {
-  "commit": "70f5782d78e33ba98c82e4ccda2cd4b0b4aff216",
-  "refreshed_at": "2026-06-08T16:03:52Z",
+  "commit": "587b80a5467612f4d0554d6ce4bfad5d73df9816",
+  "refreshed_at": "2026-06-16T00:00:00Z",
   "intel_files": [
     "file-roles.json",
     "api-map.json",
@@ -16,5 +16,6 @@
     ".planning/codebase/STACK.md",
     ".planning/codebase/STRUCTURE.md",
     ".planning/codebase/TESTING.md"
-  ]
+  ],
+  "phase_notes": "Phase 85 (Theme A — W-Form Intake + Tax-Treaty Engine): added taxForm staff namespace, portal tax-form procedures, treaty-rate service, tax-form service, tax-form-routing helper, w-form-validators, TaxFormSubmission model, WithholdingTaxRate.treatyArticle column, module.us-expansion flag"
 }

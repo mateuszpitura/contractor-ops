@@ -1,8 +1,8 @@
 {
   "_meta": {
-    "updated_at": "2026-06-08T16:03:52Z",
-    "version": 1,
-    "source_commit": "70f5782d78e33ba98c82e4ccda2cd4b0b4aff216"
+    "updated_at": "2026-06-16T00:00:00Z",
+    "version": 2,
+    "source_commit": "57946f642"
   },
   "endpoints": {
     "staff": {
@@ -105,7 +105,8 @@
         "packages/api/src/routers/portal/portal-invoices-router.ts",
         "packages/api/src/routers/portal/portal-contracts-router.ts",
         "packages/api/src/routers/portal/portal-profile-router.ts",
-        "packages/api/src/routers/portal/portal-equipment-router.ts"
+        "packages/api/src/routers/portal/portal-equipment-router.ts",
+        "packages/api/src/routers/portal/portal-tax-form-router.ts"
       ],
       "key_procedures": {
         "getSession": "portal-auth-router.ts",
@@ -118,8 +119,13 @@
         "getContract": "portal-contracts-router.ts",
         "getProfile": "portal-profile-router.ts",
         "complianceItems": "portal-profile-router.ts",
-        "listEquipment": "portal-equipment-router.ts"
-      }
+        "listEquipment": "portal-equipment-router.ts",
+        "getTaxFormDetermination": "portal-tax-form-router.ts",
+        "getMyTaxForms": "portal-tax-form-router.ts",
+        "saveTaxFormDraft": "portal-tax-form-router.ts",
+        "submitTaxForm": "portal-tax-form-router.ts"
+      },
+      "notes": "portalTaxFormRouter merged flat; each tax-form procedure self-gates on module.us-expansion per request (flat merge cannot conditionally spread)"
     },
     "portalTime": {
       "router_file": "packages/api/src/routers/portal/portal-time.ts",
@@ -130,6 +136,23 @@
         "listTimesheets": "portal-time.ts",
         "syncExternal": "portal-time.ts"
       }
+    },
+    "taxForm": {
+      "flag": "module.us-expansion",
+      "router_file": "packages/api/src/routers/core/tax-form-router.ts",
+      "export": "taxFormRouter",
+      "surface": "staff read/track — no on-behalf signing (portal is the sole signing path)",
+      "key_procedures": {
+        "listFormSubmissions": "tax-form-router.ts — staff list W-form records; status/track only, no PII snapshot",
+        "requestTaxForm": "tax-form-router.ts — audit-logged request event; no signed record created"
+      },
+      "permission": "contractor:read (no new permission introduced)",
+      "mount": "conditionalUsExpansionRouters spread in packages/api/src/root.ts",
+      "services": [
+        "packages/api/src/services/treaty-rate.service.ts",
+        "packages/api/src/services/tax-form.service.ts",
+        "packages/api/src/services/tax-form-routing.ts"
+      ]
     },
     "classification": {
       "flag": "module.classification-engine",
@@ -186,18 +209,25 @@
     {"step": "export", "namespace": "payment", "procedure": "lockAndExport"},
     {"step": "reconcile", "namespace": "payment", "procedure": "importStatement → confirmStatementMatches"}
   ],
-  "conditional_namespaces": {
-    "flag": "module.classification-engine",
-    "qa_bypass_env": "QA_DEFAULT_ORG_ID",
-    "list": [
-      "classification",
-      "classificationDashboard",
-      "classificationDocument",
-      "ir35Chain",
-      "ir35Attestation",
-      "economicDependencyAlert",
-      "reassessmentTrigger",
-      "statusfeststellungsverfahren"
-    ]
-  }
+  "conditional_namespaces": [
+    {
+      "flag": "module.classification-engine",
+      "qa_bypass_env": "QA_DEFAULT_ORG_ID",
+      "list": [
+        "classification",
+        "classificationDashboard",
+        "classificationDocument",
+        "ir35Chain",
+        "ir35Attestation",
+        "economicDependencyAlert",
+        "reassessmentTrigger",
+        "statusfeststellungsverfahren"
+      ]
+    },
+    {
+      "flag": "module.us-expansion",
+      "list": ["taxForm"],
+      "notes": "conditionalUsExpansionRouters spread; middleware packages/api/src/middleware/require-us-expansion-flag.ts; portal tax-form procedures self-gate (flat merge)"
+    }
+  ]
 }
