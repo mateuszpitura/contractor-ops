@@ -144,19 +144,27 @@ export interface ApplyTreatyInput {
 export async function applyTreaty(input: ApplyTreatyInput): Promise<TreatyDecision> {
   const { contractorResidency, asOf = new Date(), override } = input;
 
-  const row = await prisma.withholdingTaxRate.findFirst({
-    where: {
-      sourceCountry: 'US',
-      contractorResidency: { in: [contractorResidency, 'XX'] },
-      serviceType: US_INCOME_TYPE,
-      effectiveFrom: { lte: asOf },
-      OR: [{ effectiveTo: null }, { effectiveTo: { gte: asOf } }],
-    },
-    orderBy: {
-      // Prefer the specific residency over the 'XX' fallback.
-      contractorResidency: 'asc',
-    },
+  // Specificity is resolved by two deterministic queries, not by a lexicographic
+  // sort: an `orderBy contractorResidency: 'asc'` would return the 'XX' fallback
+  // ahead of any country code sorting after 'XX' (e.g. 'ZA', 'ZW'), silently
+  // dropping a real treaty. Query the exact residency first, then fall back to
+  // the 'XX' row only when no specific row matches the temporal window.
+  const baseWhere = {
+    sourceCountry: 'US',
+    serviceType: US_INCOME_TYPE,
+    effectiveFrom: { lte: asOf },
+    OR: [{ effectiveTo: null }, { effectiveTo: { gte: asOf } }],
+  };
+
+  const specificRow = await prisma.withholdingTaxRate.findFirst({
+    where: { ...baseWhere, contractorResidency },
   });
+
+  const row =
+    specificRow ??
+    (await prisma.withholdingTaxRate.findFirst({
+      where: { ...baseWhere, contractorResidency: 'XX' },
+    }));
 
   // A treaty reduction applies only when a non-XX row carries a treaty rate;
   // an 'XX' fallback or a null treaty rate is the 30% statutory default.

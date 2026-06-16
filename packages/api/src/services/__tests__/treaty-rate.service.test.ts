@@ -130,6 +130,8 @@ describe('treaty-rate.service — applyTreaty (US-LOC-02/03)', () => {
   });
 
   it('PL resolves to rate 0 / Article 7 via the US business-profits treaty row', async () => {
+    // First query (specific residency) returns the PL row, so the XX fallback
+    // query is never reached.
     mockWht.findFirst.mockResolvedValueOnce({
       contractorResidency: 'PL',
       standardRate: 30,
@@ -143,17 +145,20 @@ describe('treaty-rate.service — applyTreaty (US-LOC-02/03)', () => {
     expect(decision.rate).toBe(0);
     expect(decision.article).toBe('Article 7');
 
-    // The lookup is keyed on US source + business_profits income axis, specific-first.
+    // The lookup is keyed on US source + business_profits income axis, querying
+    // the exact residency first (no lexicographic orderBy on the fallback).
     const args = mockWht.findFirst.mock.calls[0]?.[0];
     expect(args?.where?.sourceCountry).toBe('US');
     expect(args?.where?.serviceType).toBe('business_profits');
-    expect(args?.where?.contractorResidency).toEqual({ in: ['PL', 'XX'] });
-    expect(args?.orderBy).toEqual({ contractorResidency: 'asc' });
+    expect(args?.where?.contractorResidency).toBe('PL');
+    expect(args?.orderBy).toBeUndefined();
+    // The PL row matched, so the XX fallback query is skipped.
+    expect(mockWht.findFirst).toHaveBeenCalledTimes(1);
   });
 
   it('a residency that only matches the XX fallback row resolves to the 30% statutory default', async () => {
-    // XX fallback row carries treatyRate=null → statutory.
-    mockWht.findFirst.mockResolvedValueOnce({
+    // Specific 'AE' row absent → fall back to the XX row (treatyRate=null → statutory).
+    mockWht.findFirst.mockResolvedValueOnce(null).mockResolvedValueOnce({
       contractorResidency: 'XX',
       standardRate: 30,
       treatyRate: null,
@@ -165,10 +170,13 @@ describe('treaty-rate.service — applyTreaty (US-LOC-02/03)', () => {
     expect(decision.source).toBe('statutory_30');
     expect(decision.rate).toBe(30);
     expect(decision.article).toBeNull();
+    // First query targets the specific residency, second the XX fallback.
+    expect(mockWht.findFirst.mock.calls[0]?.[0]?.where?.contractorResidency).toBe('AE');
+    expect(mockWht.findFirst.mock.calls[1]?.[0]?.where?.contractorResidency).toBe('XX');
   });
 
-  it('no row at all resolves to the 30% statutory default', async () => {
-    mockWht.findFirst.mockResolvedValueOnce(null);
+  it('no row at all (neither specific nor XX) resolves to the 30% statutory default', async () => {
+    mockWht.findFirst.mockResolvedValueOnce(null).mockResolvedValueOnce(null);
 
     const decision = await applyTreaty({ contractorResidency: 'ZZ' });
 
@@ -176,8 +184,8 @@ describe('treaty-rate.service — applyTreaty (US-LOC-02/03)', () => {
     expect(decision.rate).toBe(30);
   });
 
-  it('a specific residency row beats the XX fallback (orderBy contractorResidency asc, specific first)', async () => {
-    // findFirst with orderBy asc returns the specific 'DE' row, not 'XX'.
+  it('a specific residency row beats the XX fallback (two-query lookup, specific first)', async () => {
+    // The specific-residency query returns the 'DE' row, so XX is never queried.
     mockWht.findFirst.mockResolvedValueOnce({
       contractorResidency: 'DE',
       standardRate: 30,
@@ -190,6 +198,27 @@ describe('treaty-rate.service — applyTreaty (US-LOC-02/03)', () => {
     expect(decision.rate).toBe(0);
     expect(decision.article).toBe('Article 7');
     expect(decision.source).toBe('treaty');
+    expect(mockWht.findFirst).toHaveBeenCalledTimes(1);
+  });
+
+  it('a residency that sorts after XX (e.g. ZW) still prefers its specific treaty row over the XX fallback', async () => {
+    // Regression guard: a lexicographic orderBy would have returned the 'XX'
+    // fallback ahead of 'ZW' (which sorts after 'XX'), dropping the real treaty.
+    // The two-query lookup queries 'ZW' first and never reaches XX.
+    mockWht.findFirst.mockResolvedValueOnce({
+      contractorResidency: 'ZW',
+      standardRate: 30,
+      treatyRate: 5,
+      treatyArticle: 'Article 7',
+    } as never);
+
+    const decision = await applyTreaty({ contractorResidency: 'ZW' });
+
+    expect(decision.source).toBe('treaty');
+    expect(decision.rate).toBe(5);
+    expect(decision.article).toBe('Article 7');
+    expect(mockWht.findFirst.mock.calls[0]?.[0]?.where?.contractorResidency).toBe('ZW');
+    expect(mockWht.findFirst).toHaveBeenCalledTimes(1);
   });
 
   it('an override with a reason wins over the auto-detected treaty rate', async () => {
