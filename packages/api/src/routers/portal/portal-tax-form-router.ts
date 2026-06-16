@@ -11,6 +11,7 @@ import type { SnapshotTreatyClaim } from '../../services/tax-form.service';
 import {
   buildFormSnapshot,
   computeExpiry,
+  sanitizeFields,
   supersedeAndInsert,
 } from '../../services/tax-form.service';
 import { determineFormType } from '../../services/tax-form-routing';
@@ -137,9 +138,12 @@ export const portalTaxFormRouter = router({
         select: { id: true },
       });
 
+      // Route the raw client draft through the same forbidden-key sanitizer the
+      // submit path uses — a full SSN/TIN must never reach `snapshotJson`, even
+      // in an unsigned draft.
       const snapshotJson = {
         formType: input.formType,
-        draft: input.draft,
+        draft: sanitizeFields(input.draft) as Record<string, unknown>,
       } satisfies Record<string, unknown> as Prisma.InputJsonValue;
 
       if (existingDraft) {

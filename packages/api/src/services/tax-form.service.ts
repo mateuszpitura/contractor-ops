@@ -73,7 +73,7 @@ const FORBIDDEN_FIELD_KEYS = new Set(['ssn', 'ssnencrypted', 'fullssn', 'tin', '
  * reference. `tin` is allowed only as an object holding `ssnLast4` / `ein`; a
  * `tin` that is a bare string is dropped (we cannot prove it is not a full SSN).
  */
-function sanitizeFields(value: unknown): unknown {
+export function sanitizeFields(value: unknown): unknown {
   if (Array.isArray(value)) {
     return value.map(sanitizeFields);
   }

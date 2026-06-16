@@ -348,6 +348,23 @@ describe('portal.submitTaxForm — W-8BEN-E LOB + treaty article (US-FORM-02/US-
   });
 });
 
+describe('portal.saveTaxFormDraft — PII non-leak (US-FORM-01)', () => {
+  it('strips a full SSN/TIN from the draft before it reaches snapshotJson', async () => {
+    await caller.portal.saveTaxFormDraft({
+      formType: 'W9',
+      draft: {
+        usEntityType: 'INDIVIDUAL',
+        tin: { ssnLast4: '1120', ssn: FULL_SSN },
+        fullSsn: FULL_SSN,
+      },
+    });
+
+    const storedSnapshot = JSON.stringify(taxFormRows[0]?.snapshotJson ?? {});
+    expect(storedSnapshot).not.toContain(FULL_SSN);
+    expect(storedSnapshot).toContain('1120');
+  });
+});
+
 describe('portal.getMyTaxForms — IDOR scoping (US-FORM-01)', () => {
   it('returns only the session contractor rows, never another contractor', async () => {
     await caller.portal.submitTaxForm(w9Submission);
