@@ -211,8 +211,18 @@ Known gaps / deferred at close: see STATE.md `## Deferred Items` (3 unverified p
   2. The classification engine evaluates the US rule set (federal common-law / economic-realities, CA ABC/AB5, §530 safe-harbor flagger).
   3. A CA-worker engagement is flagged on the AB5 watchlist and gets the stricter ABC test by default, with an audit-logged admin override.
   4. A "Classification Determination Letter" PDF generates (mirroring the v5.0 UK SDS), and the 1099-K tracker surfaces cumulative payouts approaching $20,000 + 200 transactions.
-**Plans**: TBD
-**Research flag**: US-CLASS-04 Determination-Letter AI generation likely needs `/gsd:ai-integration-phase`.
+**Plans**: 10 plans (7 waves)
+- [ ] 87-01-PLAN.md — Wave-0 RED scaffolds + 1042-S Pub 1187 XSD human-download checkpoint [wave 1]
+- [ ] 87-02-PLAN.md — [BLOCKING] Prisma schema (Form1042S, Form1099KTrackerState, Tax1099KThreshold, US_DETERMINATION_LETTER, engagement work-state) + multi-region migration gate [wave 2]
+- [ ] 87-03-PLAN.md — US ClassificationProfile rule set + scoring (federal/CA-ABC/§530) + AB5 work-state trigger + audited override (US-CLASS-01/02) [wave 3]
+- [ ] 87-04-PLAN.md — Form1042S service (§875(d) treaty snapshot + supersede + idempotency) + recipient PDF + staff router (US-FORM-06 non-transmit core) [wave 3]
+- [ ] 87-05-PLAN.md — Determination Letter PDF (deterministic, mirror SDS) + render/archive + document-router wiring (US-CLASS-04) [wave 4]
+- [ ] 87-06-PLAN.md — 1099-K informational tracker cron ($20k+200 tax-year config, never files) + read-only profile router (US-CLASS-03) [wave 3]
+- [ ] 87-07-PLAN.md — 1042-S IRIS generator/validator (Pub 1187 XSD) + transmit reuse of the P86 seam (US-FORM-06 IRS-file half; cross-phase P86 gate) [wave 4]
+- [ ] 87-08-PLAN.md — web-vite: classification result + AB5/§530 flags + override dialog + Determination-Letter button + 1099-K band + i18n (US-CLASS-01/02/03/04 UI) [wave 5]
+- [ ] 87-09-PLAN.md — web-vite: 1042-S staff filing (batch/filing card/treaty caption) + portal consent-gated recipient PDF + i18n (US-FORM-06 UI) [wave 6]
+- [ ] 87-10-PLAN.md — Documentation-follows-code: wiki domains/structure/integrations + log/hot + MEMORY + check:wiki-brain [wave 7]
+**Research flag**: US-CLASS-04 Determination-Letter AI generation likely needs `/gsd:ai-integration-phase`. RESOLVED — deterministic React-PDF template per CONTEXT D-01 (no LLM); phase is OFF the ai-integration path.
 **UI hint**: yes
 
 ### Phase 88: Theme A — US Payment Rail
@@ -403,7 +413,7 @@ Phases execute in numeric order: 82 → 83 → … → 101. After Foundation (82
 | 84. Theme A — US Profile Fields + en-US Locale | v7.0 | 7/7 | Complete    | 2026-06-08 |
 | 85. Theme A — W-Form Intake + Tax-Treaty Engine | v7.0 | 4/4 | Complete   | 2026-06-16 |
 | 86. Theme A — TIN-Match → 1099-NEC → IRIS → State | v7.0 | 4/8 | In Progress|  |
-| 87. Theme A — 1042-S + US Classification + Letter | v7.0 | 0/TBD | Not started | - |
+| 87. Theme A — 1042-S + US Classification + Letter | v7.0 | 0/10 | Not started | - |
 | 88. Theme A — US Payment Rail | v7.0 | 0/TBD | Not started | - |
 | 89. Theme B — Worker Model Abstraction (gate) | v7.0 | 0/TBD | Not started | - |
 | 90. Theme B — Employee Registry per Market (×6) | v7.0 | 0/TBD | Not started | - |

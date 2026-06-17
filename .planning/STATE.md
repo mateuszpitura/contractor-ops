@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v7.0
 milestone_name: GTM Expansion
-status: completed
+status: executing
 stopped_at: Phase 87 UI-SPEC approved
-last_updated: "2026-06-17T22:44:55.016Z"
-last_activity: 2026-06-16 -- 86-05 Tasks 1-2 done (form-1099-nec.service aggregation/threshold/box-4/CORRECTED supersede/idempotency + Copy-B PDF render/archive); 17/17 tests GREEN
+last_updated: "2026-06-17T23:28:20.305Z"
+last_activity: 2026-06-17 -- Phase 87 planning complete
 progress:
   total_phases: 20
   completed_phases: 4
-  total_plans: 27
+  total_plans: 37
   completed_plans: 23
   percent: 20
 ---
@@ -31,8 +31,8 @@ See: .planning/PROJECT.md (updated 2026-06-07 — v7.0 GTM Expansion started; v6
 
 Phase: 86 (Theme A — TIN-Match → 1099-NEC → IRIS E-File → State Filing) — EXECUTING
 Plan: 86-05 of 8 complete (86-02/03/05 done; 86-01 Task 3 + 86-02 Task 3 multi-region migration held at human gates; 86-04 not yet run)
-Status: Completed 86-05 (1099-NEC generation engine + recipient Copy-B PDF). US-FORM-04 satisfied.
-Last activity: 2026-06-16 -- 86-05 Tasks 1-2 done (form-1099-nec.service aggregation/threshold/box-4/CORRECTED supersede/idempotency + Copy-B PDF render/archive); 17/17 tests GREEN
+Status: Ready to execute
+Last activity: 2026-06-17 -- Phase 87 planning complete
 
 Progress: [█████████░] 85%
 
