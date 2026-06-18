@@ -36,11 +36,13 @@ describe('EnglishFallbackIndicator (web-vite)', () => {
     expect(findLabelAttr(/has not been translated to/i)).not.toBeNull();
   });
 
-  it('mirrors the description on the tooltip trigger for de target locale', async () => {
+  it('names the tooltip trigger with the description for de target locale', async () => {
     await mount(<EnglishFallbackIndicator targetLocale="de" />);
-    // Both the wrapper span and the TooltipTrigger button carry the description.
-    const labelled = document.body.querySelectorAll('[aria-label*="has not been translated"]');
-    expect(labelled.length).toBeGreaterThanOrEqual(2);
+    // The TooltipTrigger button carries the screen-reader description as its
+    // accessible name (the redundant wrapper aria-label was removed in a11y cleanup).
+    const trigger = findLabelAttr(/has not been translated to/i);
+    expect(trigger).not.toBeNull();
+    expect(trigger?.tagName).toBe('BUTTON');
   });
 
   it('renders an Info trigger that is keyboard-focusable (a11y)', async () => {

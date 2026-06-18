@@ -62,7 +62,7 @@ describe('portal-compliance-upload-replacement render', () => {
         onSubmit={onSubmit}
       />,
     );
-    const dateInput = container.querySelector<HTMLInputElement>('#upload-expires-at');
+    const dateInput = container.querySelector<HTMLInputElement>('input[type="date"]');
     expect(dateInput?.value).toBe('2026-07-26');
     const { act } = await import('react');
     await act(async () => {
@@ -75,7 +75,7 @@ describe('portal-compliance-upload-replacement render', () => {
         dateInput.dispatchEvent(new Event('input', { bubbles: true }));
       }
     });
-    expect(container.querySelector<HTMLInputElement>('#upload-expires-at')?.value).toBe(
+    expect(container.querySelector<HTMLInputElement>('input[type="date"]')?.value).toBe(
       '2027-01-01',
     );
   });

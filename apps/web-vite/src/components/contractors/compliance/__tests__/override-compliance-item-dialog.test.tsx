@@ -23,6 +23,17 @@ function findSubmit(): HTMLButtonElement | null {
   return buttons.find(b => /waive item/i.test(b.textContent ?? '')) ?? null;
 }
 
+// The category Select trigger / note Textarea ids are generated via useId(), so
+// query them structurally rather than by a fixed id: the Select trigger renders
+// as a role="combobox" button, the note is the only Textarea.
+function findCategorySelect(): HTMLElement | null {
+  return document.querySelector<HTMLElement>('[role="combobox"]');
+}
+
+function findNoteTextarea(): HTMLTextAreaElement | null {
+  return document.querySelector<HTMLTextAreaElement>('textarea');
+}
+
 describe('override-compliance-item-dialog render', () => {
   it('exports OverrideComplianceItemDialogView', () => {
     expect(typeof OverrideComplianceItemDialogView).toBe('function');
@@ -38,8 +49,8 @@ describe('override-compliance-item-dialog render', () => {
       />,
     );
     // Dialog content renders in a portal on document.body.
-    expect(document.querySelector('#override-reason-category')).not.toBeNull();
-    expect(document.querySelector('#override-reason-note')).not.toBeNull();
+    expect(findCategorySelect()).not.toBeNull();
+    expect(findNoteTextarea()).not.toBeNull();
   });
 });
 
@@ -72,7 +83,7 @@ describe('override-compliance-item-dialog submit', () => {
         onSubmit={onSubmit}
       />,
     );
-    const note = document.querySelector<HTMLTextAreaElement>('#override-reason-note');
+    const note = findNoteTextarea();
     const { act } = await import('react');
     await act(async () => {
       if (note) {
