@@ -7,7 +7,7 @@
  * canonical primitive's `isRowSelectable` predicate.
  */
 
-import type { ColumnDef, RowSelectionState } from '@tanstack/react-table';
+import type { ColumnDef, Row, RowSelectionState } from '@tanstack/react-table';
 import { useCallback, useState } from 'react';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { WorkbenchDataTable } from '../../table-kit/workbench-data-table.js';
@@ -51,6 +51,13 @@ export function InvoiceSelectionDataTable({
     [],
   );
 
+  const isRowSelectable = useCallback(
+    (row: Row<ReadyInvoiceRow>) => !row.original._inRunNumber,
+    [],
+  );
+
+  const getRowId = useCallback((row: ReadyInvoiceRow) => row.id, []);
+
   return (
     <WorkbenchDataTable
       columns={columns}
@@ -72,8 +79,8 @@ export function InvoiceSelectionDataTable({
       enableRowSelection
       rowSelection={rowSelection}
       onRowSelectionChange={handleRowSelectionChange}
-      isRowSelectable={row => !row.original._inRunNumber}
-      getRowId={row => row.id}
+      isRowSelectable={isRowSelectable}
+      getRowId={getRowId}
       rowClassName={rowClassName}
       skeletonRows={6}
     />

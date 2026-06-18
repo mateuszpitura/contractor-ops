@@ -1,4 +1,5 @@
 // Backward-compat barrel — import from ./invoice-intake/index.js for new code.
+// biome-ignore lint/performance/noBarrelFile: intentional public aggregator — back-compat surface for the invoice-intake service
 export {
   type AcknowledgeValidationInput,
   ALLOWED_PDF_MIMES,

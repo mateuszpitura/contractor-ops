@@ -14,9 +14,6 @@ import { ActivityFeed } from './activity-feed.js';
 import { ApprovalQueueWidget } from './approval-queue-widget.js';
 import { DashboardGreeting } from './dashboard-greeting.js';
 import { DashboardSkeleton } from './dashboard-skeleton.js';
-
-export { DashboardSkeleton } from './dashboard-skeleton.js';
-
 import { DeadlinesWidget } from './deadlines-widget.js';
 import { HeroSpendMetric } from './hero-spend-metric.js';
 import { useDashboardHome } from './hooks/use-dashboard-home.js';

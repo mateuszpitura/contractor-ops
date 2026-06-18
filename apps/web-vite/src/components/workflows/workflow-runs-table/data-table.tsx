@@ -20,6 +20,8 @@ interface WorkflowRunsDataTableProps extends ReturnType<typeof UseWorkflowRunsDa
   parentLoading?: boolean;
 }
 
+const getWorkflowRunRowId = (row: WorkflowRunRow) => row.id;
+
 /**
  * Presentational wrapper for the workflow runs list. Delegates table state +
  * loading lockout to the canonical `DataTable` primitive.
@@ -104,7 +106,7 @@ export function WorkflowRunsDataTable({
       rightSlot={renderColumnToggle}
       onRowClick={onRowClick}
       rowClassName={rowClassName}
-      getRowId={row => row.id}
+      getRowId={getWorkflowRunRowId}
       emptyIcon={<WorkflowsIllustration className="mx-auto h-16 w-16 text-primary/60" />}
       emptyTitle={t('empty.heading')}
       emptyDescription={t('empty.body')}

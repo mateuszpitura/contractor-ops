@@ -45,6 +45,8 @@ export function IntakeListError({ onRetry }: IntakeListErrorProps) {
 
 const LOAD_MORE_PAGE_SIZE = 100;
 
+const noop = () => undefined;
+
 export function IntakeListView({ list }: IntakeListViewProps) {
   const t = useTranslations('EInvoice.intake');
   const tColumn = useTranslations('EInvoice.intake.column');
@@ -138,7 +140,7 @@ export function IntakeListView({ list }: IntakeListViewProps) {
         pageIndex={pageIndex}
         pageSize={LOAD_MORE_PAGE_SIZE}
         onPageChange={setPageIndex}
-        onPageSizeChange={() => undefined}
+        onPageSizeChange={noop}
         isLoading={list.isLoading}
         isRefetching={list.isFetching && !list.isLoading}
         toolbar={filtersToolbar}

@@ -115,5 +115,6 @@ function setup(ui: ReactElement, options?: CustomRenderOptions) {
   return { user, ...result };
 }
 
+// biome-ignore lint/performance/noBarrelFile: test render helper
 export { act, screen, waitFor, within } from '@testing-library/react';
 export { customRender as render, setup };

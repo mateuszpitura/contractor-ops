@@ -3,7 +3,7 @@ import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import type { ColumnDef } from '@tanstack/react-table';
 import { format } from 'date-fns';
 import { Plus, RefreshCw } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { WorkbenchDataTable } from '../../table-kit/workbench-data-table.js';
 import { SourceBadge } from '../shared/source-badge.js';
@@ -43,6 +43,11 @@ export function TeamTable({
   const tProfile = useTranslations('ContractorProfile');
   const [pageIndex, setPageIndex] = useState(0);
   const [pageSize, setPageSize] = useState(25);
+
+  const handlePageSizeChange = useCallback((size: number) => {
+    setPageSize(size);
+    setPageIndex(0);
+  }, []);
 
   const columns = useMemo<ColumnDef<TeamTableRow, unknown>[]>(
     () => [
@@ -110,10 +115,7 @@ export function TeamTable({
         pageIndex={pageIndex}
         pageSize={pageSize}
         onPageChange={setPageIndex}
-        onPageSizeChange={size => {
-          setPageSize(size);
-          setPageIndex(0);
-        }}
+        onPageSizeChange={handlePageSizeChange}
         entityLabel={t('entityTeams', { count: rows.length })}
         isLoading={isLoading}
         hasFiltersOrSearch={hasSearch}

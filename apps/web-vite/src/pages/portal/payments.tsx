@@ -29,6 +29,9 @@ interface PortalPaymentRow {
   paidAt: Date | string | null;
 }
 
+const noop = () => undefined;
+const getPaymentRowId = (row: PortalPaymentRow) => row.id;
+
 function PortalPaymentsPageContent() {
   const t = useTranslations('Portal');
   const router = useRouter();
@@ -94,8 +97,8 @@ function PortalPaymentsPageContent() {
           clientPagination
           pageIndex={0}
           pageSize={rows.length || 1}
-          onPageChange={() => undefined}
-          onPageSizeChange={() => undefined}
+          onPageChange={noop}
+          onPageSizeChange={noop}
           isLoading={isLoading}
           entityLabel={t('payments.title')}
           hideChrome
@@ -109,7 +112,7 @@ function PortalPaymentsPageContent() {
           noResultsTitle={t('payments.emptyTitle')}
           noResultsDescription={t('payments.emptyBody')}
           onRowClick={handleRowClick}
-          getRowId={row => row.id}
+          getRowId={getPaymentRowId}
         />
       </AnimateIn>
     </div>

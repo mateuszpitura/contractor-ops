@@ -57,6 +57,7 @@ export function StepW9({
             <Controller
               control={control}
               name="usEntityType"
+              // biome-ignore lint/nursery/noJsxPropsBind: react-hook-form Controller render prop — extraction is premature optimization
               render={({ field }) => (
                 <Select value={field.value ?? ''} onValueChange={field.onChange}>
                   <SelectTrigger
@@ -103,6 +104,7 @@ export function StepW9({
             <Controller
               control={control}
               name="backupWithholding"
+              // biome-ignore lint/nursery/noJsxPropsBind: react-hook-form Controller render prop — extraction is premature optimization
               render={({ field }) => (
                 <Checkbox
                   id={`${fieldId}-backup`}

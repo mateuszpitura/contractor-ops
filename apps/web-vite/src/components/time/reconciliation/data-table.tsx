@@ -49,6 +49,10 @@ export interface ReconciliationDataTableProps {
   sectionClassName?: string;
 }
 
+function getRowId(row: ReconciliationItem): string {
+  return row.invoice.id;
+}
+
 function formatMinorUnits(minor: number): string {
   return formatMinorUnitsLib(minor, null, 'pl-PL');
 }
@@ -192,7 +196,7 @@ export function ReconciliationDataTable({
       emptyDescription={t('reconciliation.noDataBody')}
       noResultsTitle={t('reconciliation.empty.heading')}
       noResultsDescription={t('reconciliation.empty.body')}
-      getRowId={row => row.invoice.id}
+      getRowId={getRowId}
     />
   );
 }

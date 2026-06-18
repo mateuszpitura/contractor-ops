@@ -122,6 +122,10 @@ export function WorkflowRolesTableView({
   const handleDeleteConfirm = useCallback(() => {
     if (deleting) deleteMutation.mutate({ id: deleting.id });
   }, [deleting, deleteMutation]);
+  const handlePageSizeChange = useCallback((size: number) => {
+    setPageSize(size);
+    setPageIndex(0);
+  }, []);
 
   const columns = useMemo<ColumnDef<WorkflowRoleRow, unknown>[]>(
     () => [
@@ -185,10 +189,7 @@ export function WorkflowRolesTableView({
         pageIndex={pageIndex}
         pageSize={pageSize}
         onPageChange={setPageIndex}
-        onPageSizeChange={size => {
-          setPageSize(size);
-          setPageIndex(0);
-        }}
+        onPageSizeChange={handlePageSizeChange}
         isLoading={listQuery.isLoading}
         isRefetching={listQuery.isFetching && !listQuery.isLoading}
         fill

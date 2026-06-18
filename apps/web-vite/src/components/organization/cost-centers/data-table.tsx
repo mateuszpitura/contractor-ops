@@ -2,7 +2,7 @@ import { TeamsIllustration } from '@contractor-ops/ui';
 import type { ColumnDef } from '@tanstack/react-table';
 import { format } from 'date-fns';
 import { Plus } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { WorkbenchDataTable } from '../../table-kit/workbench-data-table.js';
 import { StatusBadge } from '../shared/status-badge.js';
@@ -33,6 +33,11 @@ export function CostCenterTable({
   const t = useTranslations('Organization');
   const [pageIndex, setPageIndex] = useState(0);
   const [pageSize, setPageSize] = useState(25);
+
+  const handlePageSizeChange = useCallback((size: number) => {
+    setPageSize(size);
+    setPageIndex(0);
+  }, []);
 
   const columns = useMemo<ColumnDef<CostCenterTableRow, unknown>[]>(
     () => [
@@ -78,10 +83,7 @@ export function CostCenterTable({
         pageIndex={pageIndex}
         pageSize={pageSize}
         onPageChange={setPageIndex}
-        onPageSizeChange={size => {
-          setPageSize(size);
-          setPageIndex(0);
-        }}
+        onPageSizeChange={handlePageSizeChange}
         entityLabel={t('entityCostCenters', { count: rows.length })}
         isLoading={isLoading}
         hasFiltersOrSearch={hasSearch}

@@ -109,6 +109,8 @@ interface WorkflowStatusRow {
   label: string;
 }
 
+const getWorkflowStatusRowId = (row: WorkflowStatusRow) => row.value;
+
 const WS_LABEL_KEYS: Record<string, string> = {
   TODO: 'workflowStatus.todo',
   IN_PROGRESS: 'workflowStatus.inProgress',
@@ -148,6 +150,11 @@ export function LinearStatusMappingDialogView({
 
   const [pageIndex, setPageIndex] = useState(0);
   const [pageSize, setPageSize] = useState(25);
+
+  const handlePageSizeChange = useCallback((size: number) => {
+    setPageSize(size);
+    setPageIndex(0);
+  }, []);
 
   const tableData = useMemo<WorkflowStatusRow[]>(
     () =>
@@ -248,15 +255,12 @@ export function LinearStatusMappingDialogView({
                 pageIndex={pageIndex}
                 pageSize={pageSize}
                 onPageChange={setPageIndex}
-                onPageSizeChange={size => {
-                  setPageSize(size);
-                  setPageIndex(0);
-                }}
+                onPageSizeChange={handlePageSizeChange}
                 constrainHeight={false}
                 hideDensityToggle
                 hideChrome
                 hideFooter
-                getRowId={row => row.value}
+                getRowId={getWorkflowStatusRowId}
                 entityLabel={t('workflowStatus')}
                 emptyTitle={t('workflowStatus')}
                 noResultsTitle={t('workflowStatus')}

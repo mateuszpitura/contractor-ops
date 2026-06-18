@@ -15,4 +15,5 @@
 // budget — most providers are happy with 5–10 concurrent calls per process.
 
 export type { LimitFunction } from 'p-limit';
+// biome-ignore lint/performance/noBarrelFile: intentional public aggregator — single workspace-wide re-export of the pinned p-limit primitive
 export { default as pLimit } from 'p-limit';

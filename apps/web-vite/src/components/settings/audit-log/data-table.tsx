@@ -70,6 +70,10 @@ export interface AuditLogEntry {
   createdAt: string;
 }
 
+function getRowId(row: AuditLogEntry): string {
+  return row.id;
+}
+
 interface AuditLogTableProps {
   data: AuditLogEntry[];
   totalCount: number;
@@ -270,7 +274,7 @@ export function AuditLogTable({
       isLoading={isLoading}
       isRefetching={isFetching && !isLoading}
       fill
-      getRowId={row => row.id}
+      getRowId={getRowId}
       onRowClick={handleRowClick}
       renderSubRow={renderSubRow}
       expandedRowIds={expandedRows}

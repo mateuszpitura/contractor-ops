@@ -119,6 +119,8 @@ interface StepDocumentsProps {
 export function StepDocuments({ onSkip, files, onDrop, removeFile }: StepDocumentsProps) {
   const t = useTranslations('Contracts.wizard');
 
+  const handleSkip = useCallback(() => onSkip?.(), [onSkip]);
+
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: ACCEPTED_TYPES,
@@ -153,7 +155,7 @@ export function StepDocuments({ onSkip, files, onDrop, removeFile }: StepDocumen
         <button
           type="button"
           className="text-sm text-muted-foreground hover:text-foreground underline-offset-4 hover:underline transition-colors"
-          onClick={() => onSkip?.()}>
+          onClick={handleSkip}>
           {t('skipDocuments')}
         </button>
       </div>

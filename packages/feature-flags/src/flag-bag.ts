@@ -7,6 +7,7 @@
  * `@contractor-ops/feature-flags/browser` to stay free of the Node polyfills.
  */
 
+// biome-ignore lint/performance/noBarrelFile: not a barrel — owns the Node bag constructors; re-exports the browser-safe slice for a single surface
 export {
   emptyFlagBag,
   type FlagBag,

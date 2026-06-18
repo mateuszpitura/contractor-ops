@@ -9,4 +9,5 @@
 // symbol for future divergence (e.g. EXTENDED-profile extensions), while
 // today's implementation delegates byte-for-byte to the existing validator.
 
+// biome-ignore lint/performance/noBarrelFile: intentional public aggregator — ZUGFeRD-named validator delegate with its own symbol for future divergence
 export { validateXRechnungCii as validateZugferdEmbeddedXml } from '../xrechnung-de/validator.js';

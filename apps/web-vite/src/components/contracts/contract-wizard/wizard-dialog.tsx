@@ -219,6 +219,11 @@ export function ContractWizardDialogView({ open, wizard }: ContractWizardDialogP
     [handleClose],
   );
 
+  const handleCancelDirtyClose = useCallback(
+    () => setShowDiscardDialog(false),
+    [setShowDiscardDialog],
+  );
+
   return (
     <>
       <WizardDialogShell
@@ -246,7 +251,7 @@ export function ContractWizardDialogView({ open, wizard }: ContractWizardDialogP
         }
         showDirtyClose={showDiscardDialog}
         onConfirmDirtyClose={handleDiscard}
-        onCancelDirtyClose={() => setShowDiscardDialog(false)}>
+        onCancelDirtyClose={handleCancelDirtyClose}>
         <div className="min-h-[320px] px-1">
           <WizardStepBody
             currentStep={currentStep}

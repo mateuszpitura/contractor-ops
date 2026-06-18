@@ -31,6 +31,10 @@ function rowClassNameForOverdue(row: ApprovalQueueRow): string {
   return `group ${isOverdue(row) ? 'bg-destructive/5' : ''}`;
 }
 
+function getRowId(row: ApprovalQueueRow): string {
+  return row.id;
+}
+
 export function ApprovalQueueTable({
   data,
   columns,
@@ -81,7 +85,7 @@ export function ApprovalQueueTable({
       rowClassName={rowClassNameForOverdue}
       enableRowSelection
       onSelectionChange={handleSelectionChange}
-      getRowId={row => row.id}
+      getRowId={getRowId}
       emptyTitle={t('empty.heading')}
       emptyDescription={t('empty.body')}
       noResultsTitle={t('noResults.heading')}

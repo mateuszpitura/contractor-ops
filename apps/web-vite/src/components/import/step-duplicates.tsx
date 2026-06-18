@@ -10,6 +10,8 @@ import { WorkbenchDataTable } from '../table-kit/workbench-data-table.js';
 
 import type { ImportRow } from './import-wizard-dialog.js';
 
+const getDuplicateRowId = (row: ImportRow) => String(row.rowNumber);
+
 type DuplicateAction = 'skip' | 'update' | 'create';
 
 interface DuplicateActionRadioProps {
@@ -107,6 +109,11 @@ export function StepDuplicates({
   const handleSkipAll = useCallback(() => handleBulkAction('skip'), [handleBulkAction]);
   const handleUpdateAll = useCallback(() => handleBulkAction('update'), [handleBulkAction]);
 
+  const handlePageSizeChange = useCallback((size: number) => {
+    setPageSize(size);
+    setPageIndex(0);
+  }, []);
+
   const columns = useMemo<ColumnDef<ImportRow, unknown>[]>(
     () => [
       {
@@ -184,14 +191,11 @@ export function StepDuplicates({
         pageIndex={pageIndex}
         pageSize={pageSize}
         onPageChange={setPageIndex}
-        onPageSizeChange={size => {
-          setPageSize(size);
-          setPageIndex(0);
-        }}
+        onPageSizeChange={handlePageSizeChange}
         constrainHeight={false}
         hideDensityToggle
         hideChrome
-        getRowId={row => String(row.rowNumber)}
+        getRowId={getDuplicateRowId}
         entityLabel={t('duplicates.banner', { count: duplicateRows.length })}
         emptyTitle={t('duplicates.banner', { count: 0 })}
         noResultsTitle={t('duplicates.banner', { count: 0 })}

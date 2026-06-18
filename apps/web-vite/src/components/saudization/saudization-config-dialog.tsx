@@ -18,6 +18,7 @@ import {
   SelectValue,
 } from '@contractor-ops/ui/components/shadcn/select';
 import { Loader2 } from 'lucide-react';
+import type { ChangeEvent } from 'react';
 import { useCallback, useEffect, useId, useState } from 'react';
 
 import { useTranslations } from '../../i18n/useTranslations.js';
@@ -95,6 +96,28 @@ export function SaudizationConfigDialog({
     onSaveHeadcount({ totalHeadcount: totalNum, saudiHeadcount: saudiNum });
   }, [total, saudi, onSaveHeadcount]);
 
+  const handleBandChange = useCallback(
+    (value: NitaqatBand | null) => setBand(value as NitaqatBand),
+    [],
+  );
+
+  const handleSegmentChange = useCallback(
+    (e: ChangeEvent<HTMLInputElement>) => setSegment(e.target.value),
+    [],
+  );
+
+  const handleTotalChange = useCallback(
+    (e: ChangeEvent<HTMLInputElement>) => setTotal(e.target.value),
+    [],
+  );
+
+  const handleSaudiChange = useCallback(
+    (e: ChangeEvent<HTMLInputElement>) => setSaudi(e.target.value),
+    [],
+  );
+
+  const handleClose = useCallback(() => onOpenChange(false), [onOpenChange]);
+
   const totalNum = Number.parseInt(total, 10);
   const saudiNum = Number.parseInt(saudi, 10);
   const headcountValid =
@@ -123,7 +146,7 @@ export function SaudizationConfigDialog({
               </Label>
               <Select
                 value={band ?? undefined}
-                onValueChange={value => setBand(value as NitaqatBand)}
+                onValueChange={handleBandChange}
                 disabled={isSavingBand}>
                 <SelectTrigger id={`${id}-band`} className="w-full">
                   <SelectValue placeholder={t('bandPlaceholder')} />
@@ -146,7 +169,7 @@ export function SaudizationConfigDialog({
               <Input
                 id={`${id}-segment`}
                 value={segment}
-                onChange={e => setSegment(e.target.value)}
+                onChange={handleSegmentChange}
                 placeholder={t('segmentPlaceholder')}
                 disabled={isSavingBand}
               />
@@ -184,7 +207,7 @@ export function SaudizationConfigDialog({
                   inputMode="numeric"
                   min={0}
                   value={total}
-                  onChange={e => setTotal(e.target.value)}
+                  onChange={handleTotalChange}
                   disabled={isSavingHeadcount}
                   className="tabular-nums"
                 />
@@ -199,7 +222,7 @@ export function SaudizationConfigDialog({
                   inputMode="numeric"
                   min={0}
                   value={saudi}
-                  onChange={e => setSaudi(e.target.value)}
+                  onChange={handleSaudiChange}
                   disabled={isSavingHeadcount}
                   aria-invalid={headcountError}
                   aria-describedby={headcountError ? `${id}-saudi-error` : undefined}
@@ -223,7 +246,7 @@ export function SaudizationConfigDialog({
         </DialogBody>
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+          <Button variant="outline" onClick={handleClose}>
             {t('close')}
           </Button>
         </DialogFooter>

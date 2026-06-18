@@ -40,4 +40,5 @@ export function useTranslations(namespace?: string): TranslateFn {
 }
 
 /** Re-export react-i18next's namespaced hook so power users can opt out. */
+// biome-ignore lint/performance/noBarrelFile: not a barrel — hook module; single convenience re-export
 export { useTranslation } from 'react-i18next';

@@ -64,7 +64,7 @@ export function GitHubProviderSectionView({
       id={switchId}
       checked={enabled}
       disabled={toggleDisabled}
-      onCheckedChange={checked => onToggle(checked)}
+      onCheckedChange={onToggle}
       aria-label={t('toggleAria')}
     />
   );

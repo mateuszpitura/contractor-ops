@@ -10,13 +10,17 @@ import {
   WORKBENCH_TABLE_SECTION_CLASS,
 } from '@contractor-ops/ui';
 import { ShieldAlert } from 'lucide-react';
+import type { ReactNode } from 'react';
 import { Suspense, useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { AtRiskTable } from '../../components/compliance/dashboard/at-risk-table/data-table.js';
 import { BlockedPaymentsTable } from '../../components/compliance/dashboard/blocked-payments-table/data-table.js';
 import { ComplianceDashboardSkeleton } from '../../components/compliance/dashboard/compliance-dashboard-skeleton.js';
 import { ComplianceKpiCards } from '../../components/compliance/dashboard/compliance-kpi-cards.js';
-import type { ComplianceDashboardTab } from '../../components/compliance/dashboard/hooks/use-compliance-dashboard.js';
+import type {
+  AtRiskRow,
+  ComplianceDashboardTab,
+} from '../../components/compliance/dashboard/hooks/use-compliance-dashboard.js';
 import { useComplianceDashboard } from '../../components/compliance/dashboard/hooks/use-compliance-dashboard.js';
 import { UpcomingRenewalsTable } from '../../components/compliance/dashboard/upcoming-renewals-table/data-table.js';
 import { OverrideComplianceItemButton } from '../../components/contractors/compliance/override-compliance-item-button.js';
@@ -27,6 +31,12 @@ import { WorkbenchPageHeader } from '../../components/shared/workbench-page-head
 import { usePermissions } from '../../hooks/use-permissions.js';
 import { useLocale } from '../../i18n/navigation.js';
 import { useTranslations } from '../../i18n/useTranslations.js';
+
+function renderAtRiskRowActions(row: AtRiskRow): ReactNode {
+  return (
+    <OverrideComplianceItemButton itemId={row.id} severity={row.severity} status={row.status} />
+  );
+}
 
 export function ComplianceDashboardPageContent() {
   const t = useTranslations('Compliance.dashboard');
@@ -98,13 +108,7 @@ export function ComplianceDashboardPageContent() {
               rows={dash.atRiskProps.rows}
               totalRows={dash.atRiskProps.totalRows}
               sectionClassName=""
-              renderRowActions={row => (
-                <OverrideComplianceItemButton
-                  itemId={row.id}
-                  severity={row.severity}
-                  status={row.status}
-                />
-              )}
+              renderRowActions={renderAtRiskRowActions}
             />
           )}
           {tab === 'upcoming-renewals' && (

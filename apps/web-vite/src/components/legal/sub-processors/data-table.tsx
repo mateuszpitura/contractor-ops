@@ -1,5 +1,5 @@
 import type { ColumnDef } from '@tanstack/react-table';
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
 import { WorkbenchDataTable } from '../../table-kit/workbench-data-table.js';
 
@@ -29,9 +29,16 @@ interface SubProcessorsTableProps {
   t: (key: string) => string;
 }
 
+const getProcessorRowId = (row: ProcessorRow) => row.id;
+
 export function SubProcessorsTable({ t }: SubProcessorsTableProps) {
   const [pageIndex, setPageIndex] = useState(0);
   const [pageSize, setPageSize] = useState(25);
+
+  const handlePageSizeChange = useCallback((size: number) => {
+    setPageSize(size);
+    setPageIndex(0);
+  }, []);
 
   const rows = useMemo<ProcessorRow[]>(
     () =>
@@ -85,16 +92,13 @@ export function SubProcessorsTable({ t }: SubProcessorsTableProps) {
       pageIndex={pageIndex}
       pageSize={pageSize}
       onPageChange={setPageIndex}
-      onPageSizeChange={size => {
-        setPageSize(size);
-        setPageIndex(0);
-      }}
+      onPageSizeChange={handlePageSizeChange}
       hideDensityToggle
       constrainHeight={false}
       entityLabel={t('table.processor')}
       emptyTitle={t('table.processor')}
       noResultsTitle={t('table.processor')}
-      getRowId={row => row.id}
+      getRowId={getProcessorRowId}
     />
   );
 }

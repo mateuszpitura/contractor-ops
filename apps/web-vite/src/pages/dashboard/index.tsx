@@ -5,7 +5,8 @@
 import { AtelierBackground } from '@contractor-ops/ui';
 import { Suspense } from 'react';
 
-import { DashboardHome, DashboardSkeleton } from '../../components/dashboard/dashboard-home.js';
+import { DashboardHome } from '../../components/dashboard/dashboard-home.js';
+import { DashboardSkeleton } from '../../components/dashboard/dashboard-skeleton.js';
 
 export default function DashboardPage() {
   return (

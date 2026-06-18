@@ -1,5 +1,6 @@
 import { AnimatedNumber } from '@contractor-ops/ui';
 import { AlertTriangle, CalendarClock, CreditCard } from 'lucide-react';
+import { useCallback } from 'react';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import type { ComplianceDashboardTab } from './hooks/use-compliance-dashboard.js';
@@ -37,6 +38,38 @@ const CARDS: ReadonlyArray<{
   },
 ];
 
+interface KpiCardProps {
+  tab: ComplianceDashboardTab;
+  label: string;
+  icon: typeof AlertTriangle;
+  count: number;
+  isActive: boolean;
+  onSelect: (tab: ComplianceDashboardTab) => void;
+}
+
+function KpiCard({ tab, label, icon: Icon, count, isActive, onSelect }: KpiCardProps) {
+  const handleClick = useCallback(() => onSelect(tab), [onSelect, tab]);
+  return (
+    <button
+      type="button"
+      aria-pressed={isActive}
+      onClick={handleClick}
+      className={`flex flex-col gap-3 rounded-xl border p-5 text-start transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+        isActive
+          ? 'border-primary bg-primary/5 shadow-sm'
+          : 'border-border bg-card hover:border-primary/40 hover:bg-accent/30'
+      }`}>
+      <span className="flex items-center gap-2 text-sm text-muted-foreground">
+        <Icon className="size-4" aria-hidden />
+        {label}
+      </span>
+      <span className="text-3xl font-semibold tabular-nums">
+        <AnimatedNumber value={count} />
+      </span>
+    </button>
+  );
+}
+
 /**
  * Three keyboard-activatable summary cards that drive the dashboard's active
  * tab. Each card is a real `<button>` with `aria-pressed` reflecting selection
@@ -46,31 +79,17 @@ export function ComplianceKpiCards({ kpis, activeTab, onTabChange }: ComplianceK
   const t = useTranslations('Compliance.dashboard');
   return (
     <fieldset className="grid grid-cols-1 gap-4 sm:grid-cols-3" aria-label={t('kpiGroupLabel')}>
-      {CARDS.map(card => {
-        const Icon = card.icon;
-        const isActive = activeTab === card.tab;
-        const count = kpis ? card.read(kpis) : 0;
-        return (
-          <button
-            key={card.tab}
-            type="button"
-            aria-pressed={isActive}
-            onClick={() => onTabChange(card.tab)}
-            className={`flex flex-col gap-3 rounded-xl border p-5 text-start transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
-              isActive
-                ? 'border-primary bg-primary/5 shadow-sm'
-                : 'border-border bg-card hover:border-primary/40 hover:bg-accent/30'
-            }`}>
-            <span className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Icon className="size-4" aria-hidden />
-              {t(card.labelKey)}
-            </span>
-            <span className="text-3xl font-semibold tabular-nums">
-              <AnimatedNumber value={count} />
-            </span>
-          </button>
-        );
-      })}
+      {CARDS.map(card => (
+        <KpiCard
+          key={card.tab}
+          tab={card.tab}
+          label={t(card.labelKey)}
+          icon={card.icon}
+          count={kpis ? card.read(kpis) : 0}
+          isActive={activeTab === card.tab}
+          onSelect={onTabChange}
+        />
+      ))}
     </fieldset>
   );
 }

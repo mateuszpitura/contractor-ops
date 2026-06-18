@@ -169,6 +169,11 @@ export function SlackUserMappingView({
     [t, handleUnlink, isUnlinkPending],
   );
 
+  const handlePageSizeChange = useCallback((size: number) => {
+    setPageSize(size);
+    setPageIndex(0);
+  }, []);
+
   return (
     <div className="space-y-4">
       <div>
@@ -192,10 +197,7 @@ export function SlackUserMappingView({
         pageIndex={pageIndex}
         pageSize={pageSize}
         onPageChange={setPageIndex}
-        onPageSizeChange={size => {
-          setPageSize(size);
-          setPageIndex(0);
-        }}
+        onPageSizeChange={handlePageSizeChange}
         constrainHeight={false}
         hideDensityToggle
         entityLabel={t('integrations.userMapping.entityLabel', { count: mappings.length })}

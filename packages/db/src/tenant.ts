@@ -5,6 +5,7 @@ import type { Prisma } from './generated/prisma/client/client.js';
 // import the "tenant context family" from a single module. Use ONLY in cron
 // cross-org aggregations — never in request handlers (see raw.ts for full
 // rationale).
+// biome-ignore lint/performance/noBarrelFile: not a barrel — tenant-context module; single re-export to group the tenant family
 export { prismaRaw } from './raw.js';
 
 interface TenantContext {

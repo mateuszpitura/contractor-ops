@@ -1,3 +1,4 @@
+// biome-ignore lint/performance/noBarrelFile: intentional public aggregator — landing section components index
 export { BentoFeatures } from './bento-features';
 export { CtaBand } from './cta-band';
 export { FaqSection } from './faq-section';

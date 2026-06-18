@@ -28,6 +28,8 @@ import { usePortalDateFormatter } from '../../lib/format/use-portal-date-formatt
 import { formatMoneyAmount } from '../../lib/money.js';
 
 const stopPropagation = (e: MouseEvent) => e.stopPropagation();
+const noop = () => undefined;
+const getInvoiceRowId = (row: InvoiceRow) => row.id;
 
 interface InvoiceRow {
   id: string;
@@ -143,8 +145,8 @@ function PortalInvoicesPageContent() {
               clientPagination
               pageIndex={0}
               pageSize={rows.length || 1}
-              onPageChange={() => undefined}
-              onPageSizeChange={() => undefined}
+              onPageChange={noop}
+              onPageSizeChange={noop}
               isLoading={isLoading}
               entityLabel={t('invoices.title')}
               hideChrome
@@ -161,7 +163,7 @@ function PortalInvoicesPageContent() {
               noResultsTitle={t('invoices.emptyTitle')}
               noResultsDescription={t('invoices.emptyBody')}
               onRowClick={handleRowClick}
-              getRowId={row => row.id}
+              getRowId={getInvoiceRowId}
             />
           </div>
 

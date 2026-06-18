@@ -3,7 +3,7 @@ import { TeamsIllustration } from '@contractor-ops/ui';
 import type { ColumnDef } from '@tanstack/react-table';
 import { format } from 'date-fns';
 import { Plus } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { WorkbenchDataTable } from '../../table-kit/workbench-data-table.js';
 import { SourceBadge } from '../shared/source-badge.js';
@@ -107,6 +107,11 @@ export function ProjectTable({
     [t, teamNamesById],
   );
 
+  const handlePageSizeChange = useCallback((size: number) => {
+    setPageSize(size);
+    setPageIndex(0);
+  }, []);
+
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       <WorkbenchDataTable
@@ -117,10 +122,7 @@ export function ProjectTable({
         pageIndex={pageIndex}
         pageSize={pageSize}
         onPageChange={setPageIndex}
-        onPageSizeChange={size => {
-          setPageSize(size);
-          setPageIndex(0);
-        }}
+        onPageSizeChange={handlePageSizeChange}
         entityLabel={t('entityProjects', { count: rows.length })}
         isLoading={isLoading}
         hasFiltersOrSearch={hasSearch}

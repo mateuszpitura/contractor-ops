@@ -11,6 +11,10 @@ import type { EquipmentRow } from './equipment-columns.js';
 import { getEquipmentColumns } from './equipment-columns.js';
 import { EquipmentToolbar } from './equipment-toolbar.js';
 
+function getRowId(row: EquipmentRow): string {
+  return row.id;
+}
+
 type EquipmentTableViewProps = {
   onEdit: (equipment: EquipmentRow) => void;
   onAssign: (equipment: EquipmentRow) => void;
@@ -129,7 +133,7 @@ export function EquipmentTableView({
       enableRowSelection
       rowSelection={rowSelection}
       onRowSelectionChange={setRowSelection}
-      getRowId={row => row.id}
+      getRowId={getRowId}
       emptyIllustration={EquipmentIllustration}
       emptyTitle={t('list.emptyTitle')}
       emptyDescription={t('list.emptyDescription')}

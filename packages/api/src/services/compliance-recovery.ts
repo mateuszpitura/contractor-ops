@@ -16,6 +16,7 @@ import { assertContractorPaymentEligibility } from './compliance-payment-gate';
 
 // Renewal-reset listener lives in the reminder-scan service; re-export for a single
 // import surface from the classification listeners.
+// biome-ignore lint/performance/noBarrelFile: not a barrel — recovery service module; single re-export for a unified import surface
 export { onComplianceItemExpiresAtChanged } from './compliance-reminder-scan';
 
 const log = createLogger({ service: 'compliance-recovery' });

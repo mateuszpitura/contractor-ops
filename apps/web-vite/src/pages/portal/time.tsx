@@ -48,6 +48,12 @@ interface TimesheetHistoryRow {
   submittedAt: Date | string | null | undefined;
 }
 
+const noop = (): undefined => undefined;
+
+function getHistoryRowId(row: TimesheetHistoryRow): string {
+  return row.id;
+}
+
 interface TimesheetHistorySectionProps {
   t: ReturnType<typeof useTranslations>;
   tCommon: ReturnType<typeof useTranslations>;
@@ -101,6 +107,11 @@ function TimesheetHistorySection({
     [t],
   );
 
+  const handleRowClick = useCallback(
+    (row: TimesheetHistoryRow) => onSelectWeek(row.weekStartDate),
+    [onSelectWeek],
+  );
+
   if (isError) {
     return (
       <div>
@@ -124,8 +135,8 @@ function TimesheetHistorySection({
         clientPagination
         pageIndex={0}
         pageSize={items.length || 1}
-        onPageChange={() => undefined}
-        onPageSizeChange={() => undefined}
+        onPageChange={noop}
+        onPageSizeChange={noop}
         isLoading={isPending}
         entityLabel={t('pastTimesheets')}
         hideChrome
@@ -138,8 +149,8 @@ function TimesheetHistorySection({
         emptyDescription={t('noEntriesBody')}
         noResultsTitle={t('noEntriesHeading')}
         noResultsDescription={t('noEntriesBody')}
-        onRowClick={row => onSelectWeek(row.weekStartDate)}
-        getRowId={row => row.id}
+        onRowClick={handleRowClick}
+        getRowId={getHistoryRowId}
       />
     </div>
   );

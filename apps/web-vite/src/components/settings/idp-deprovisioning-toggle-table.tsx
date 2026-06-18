@@ -24,6 +24,8 @@ import {
   TooltipTrigger,
 } from '@contractor-ops/ui/components/shadcn/tooltip';
 
+import { useCallback } from 'react';
+
 import { useTranslations } from '../../i18n/useTranslations.js';
 import type { ProviderToggleRow, ToggleProvider } from './hooks/use-idp-deprovisioning-toggles.js';
 import { useIdpDeprovisioningToggles } from './hooks/use-idp-deprovisioning-toggles.js';
@@ -32,6 +34,35 @@ export interface IdpDeprovisioningToggleTableViewProps {
   rows: ProviderToggleRow[];
   onToggle: (provider: ToggleProvider, enabled: boolean) => void;
   pendingProvider?: ToggleProvider;
+}
+
+interface ProviderToggleSwitchProps {
+  provider: ToggleProvider;
+  enabled: boolean;
+  disabled: boolean;
+  ariaLabel: string;
+  onToggle: (provider: ToggleProvider, enabled: boolean) => void;
+}
+
+function ProviderToggleSwitch({
+  provider,
+  enabled,
+  disabled,
+  ariaLabel,
+  onToggle,
+}: ProviderToggleSwitchProps) {
+  const handleCheckedChange = useCallback(
+    (checked: boolean) => onToggle(provider, checked),
+    [provider, onToggle],
+  );
+  return (
+    <Switch
+      checked={enabled}
+      disabled={disabled}
+      onCheckedChange={handleCheckedChange}
+      aria-label={ariaLabel}
+    />
+  );
 }
 
 export function IdpDeprovisioningToggleTableView({
@@ -55,11 +86,12 @@ export function IdpDeprovisioningToggleTableView({
         <TableBody>
           {rows.map(row => {
             const toggle = (
-              <Switch
-                checked={row.enabled}
+              <ProviderToggleSwitch
+                provider={row.provider}
+                enabled={row.enabled}
                 disabled={row.toggleDisabled || pendingProvider === row.provider}
-                onCheckedChange={checked => onToggle(row.provider, checked)}
-                aria-label={t('toggleAria', { provider: t(`provider.${row.provider}`) })}
+                ariaLabel={t('toggleAria', { provider: t(`provider.${row.provider}`) })}
+                onToggle={onToggle}
               />
             );
             return (

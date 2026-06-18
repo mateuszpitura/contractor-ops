@@ -5,4 +5,5 @@
  * the first consumer.
  */
 
+// biome-ignore lint/performance/noBarrelFile: intentional public aggregator — back-compat path re-export of KsefSourceBadge
 export { KsefSourceBadge } from './invoice-table/ksef-source-badge.js';

@@ -71,6 +71,11 @@ export function ReportTable<TData>({
       onSortChange,
     });
 
+  const handlePageChange = useCallback(
+    (nextIndex: number) => onPageChange(nextIndex + 1),
+    [onPageChange],
+  );
+
   const handlePageSizeChange = useCallback(
     (size: number) => {
       onPageSizeChange?.(size);
@@ -118,7 +123,7 @@ export function ReportTable<TData>({
         totalRows={effectiveTotalRows}
         pageIndex={Math.max(0, page - 1)}
         pageSize={pageSize}
-        onPageChange={nextIndex => onPageChange(nextIndex + 1)}
+        onPageChange={handlePageChange}
         onPageSizeChange={handlePageSizeChange}
         sorting={sorting}
         onSortingChange={handleSortingChange}

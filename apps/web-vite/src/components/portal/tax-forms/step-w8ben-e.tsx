@@ -98,6 +98,7 @@ export function StepW8BenE({
             <Controller
               control={control}
               name="entityType"
+              // biome-ignore lint/nursery/noJsxPropsBind: react-hook-form Controller render prop must be a fresh callback receiving current field state
               render={({ field }) => (
                 <Select value={field.value ?? ''} onValueChange={field.onChange}>
                   <SelectTrigger
@@ -125,6 +126,7 @@ export function StepW8BenE({
             <Controller
               control={control}
               name="lobCategory"
+              // biome-ignore lint/nursery/noJsxPropsBind: react-hook-form Controller render prop must be a fresh callback receiving current field state
               render={({ field }) => (
                 <Select value={field.value ?? ''} onValueChange={field.onChange}>
                   <SelectTrigger

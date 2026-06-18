@@ -33,6 +33,33 @@ function isNavActive(href: string, pathname: string): boolean {
   return path.startsWith(href);
 }
 
+interface PortalNavLinkProps {
+  href: string;
+  label: string;
+  icon: (typeof PORTAL_NAV_ITEMS)[number]['icon'];
+  active: boolean;
+}
+
+function PortalNavLink({ href, label, icon: Icon, active }: PortalNavLinkProps) {
+  const handlePrefetch = useCallback(() => prefetchRoute(href), [href]);
+  return (
+    <Link
+      href={href}
+      aria-current={active ? 'page' : undefined}
+      onPointerEnter={handlePrefetch}
+      onFocus={handlePrefetch}
+      className={cn(
+        'inline-flex items-center gap-1.5 border-b-2 pb-[calc(theme(spacing.4)-2px)] pt-4 text-[13px] transition-colors rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+        active
+          ? 'border-primary text-foreground font-semibold'
+          : 'border-transparent text-muted-foreground font-normal hover:text-foreground',
+      )}>
+      <Icon className="h-4 w-4" />
+      {label}
+    </Link>
+  );
+}
+
 interface PortalTopBarProps {
   orgName: string;
   orgLogo?: string | null;
@@ -85,26 +112,15 @@ export function PortalTopBar({
         <nav
           className="hidden md:flex items-center gap-6 flex-1 justify-center"
           aria-label={tAria('portalNavigation')}>
-          {NAV_ITEMS.map(item => {
-            const active = isNavActive(item.href, pathname);
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                aria-current={active ? 'page' : undefined}
-                onPointerEnter={() => prefetchRoute(item.href)}
-                onFocus={() => prefetchRoute(item.href)}
-                className={cn(
-                  'inline-flex items-center gap-1.5 border-b-2 pb-[calc(theme(spacing.4)-2px)] pt-4 text-[13px] transition-colors rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
-                  active
-                    ? 'border-primary text-foreground font-semibold'
-                    : 'border-transparent text-muted-foreground font-normal hover:text-foreground',
-                )}>
-                <item.icon className="h-4 w-4" />
-                {item.label}
-              </Link>
-            );
-          })}
+          {NAV_ITEMS.map(item => (
+            <PortalNavLink
+              key={item.href}
+              href={item.href}
+              label={item.label}
+              icon={item.icon}
+              active={isNavActive(item.href, pathname)}
+            />
+          ))}
         </nav>
 
         <div className="flex-1 md:hidden" />

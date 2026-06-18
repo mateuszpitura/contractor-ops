@@ -2,10 +2,12 @@ import { AtelierEmptyState, ContractorsIllustration, DataTable } from '@contract
 import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
 import type { ColumnDef } from '@tanstack/react-table';
 import { format, formatDistanceStrict } from 'date-fns';
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { Link } from '../../../i18n/navigation.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { renderEmptyStateAction } from '../../shared/atelier-bridges.js';
+
+const getAssignmentRowId = (row: Assignment) => row.id;
 
 interface Assignment {
   id: string;
@@ -32,6 +34,16 @@ export function TabAssignments({ assignments, currentAssignmentId }: TabAssignme
   const tContractors = useTranslations('Contractors');
   const [pageIndex, setPageIndex] = useState(0);
   const [pageSize, setPageSize] = useState(25);
+
+  const handlePageSizeChange = useCallback((size: number) => {
+    setPageSize(size);
+    setPageIndex(0);
+  }, []);
+
+  const getRowClassName = useCallback(
+    (row: Assignment) => (row.id === currentAssignmentId ? 'bg-primary/5' : ''),
+    [currentAssignmentId],
+  );
 
   const columns = useMemo<ColumnDef<Assignment, unknown>[]>(
     () => [
@@ -133,14 +145,11 @@ export function TabAssignments({ assignments, currentAssignmentId }: TabAssignme
       pageIndex={pageIndex}
       pageSize={pageSize}
       onPageChange={setPageIndex}
-      onPageSizeChange={size => {
-        setPageSize(size);
-        setPageIndex(0);
-      }}
+      onPageSizeChange={handlePageSizeChange}
       constrainHeight={false}
       hideDensityToggle
-      getRowId={row => row.id}
-      rowClassName={row => (row.id === currentAssignmentId ? 'bg-primary/5' : '')}
+      getRowId={getAssignmentRowId}
+      rowClassName={getRowClassName}
       entityLabel={tContractors('entityLabel', { count: assignments.length })}
       emptyTitle={t('detail.assignmentsEmpty')}
       emptyDescription={t('detail.assignmentsEmptyDescription')}

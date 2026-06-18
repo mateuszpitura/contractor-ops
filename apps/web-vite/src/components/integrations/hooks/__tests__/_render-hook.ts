@@ -13,6 +13,7 @@
  */
 
 export type { TRPCHandler, TRPCMock } from '../../../../test-utils/render-hook.js';
+// biome-ignore lint/performance/noBarrelFile: test render helper
 export {
   act,
   clearTRPCMock,

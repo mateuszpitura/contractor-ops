@@ -92,6 +92,9 @@ interface RatePeriodRow {
   currency: string;
 }
 
+const noop = () => undefined;
+const getRatePeriodRowId = (row: RatePeriodRow) => `${String(row.validFrom)}-${row.rateType}`;
+
 interface RatePeriodsSectionProps {
   ratePeriods: RatePeriodRow[];
   tableHeading: string;
@@ -154,8 +157,8 @@ function RatePeriodsSection({
           clientPagination
           pageIndex={0}
           pageSize={ratePeriods.length || 1}
-          onPageChange={() => undefined}
-          onPageSizeChange={() => undefined}
+          onPageChange={noop}
+          onPageSizeChange={noop}
           entityLabel={entityLabel}
           emptyTitle={emptyTitle}
           noResultsTitle={emptyTitle}
@@ -163,7 +166,7 @@ function RatePeriodsSection({
           hideFooter
           hideDensityToggle
           constrainHeight={false}
-          getRowId={row => `${String(row.validFrom)}-${row.rateType}`}
+          getRowId={getRatePeriodRowId}
         />
       </div>
     </div>

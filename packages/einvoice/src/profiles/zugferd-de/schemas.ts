@@ -9,6 +9,7 @@
 
 import { z } from 'zod';
 
+// biome-ignore lint/performance/noBarrelFile: not a barrel — profile schema module; re-exports shared envelope schemas alongside its own ZUGFeRD intake schema
 export {
   eInvoiceLineSchema as EInvoiceLineSchema,
   eInvoicePartySchema,

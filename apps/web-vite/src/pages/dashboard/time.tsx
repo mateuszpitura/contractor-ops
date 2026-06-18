@@ -46,6 +46,8 @@ import { ReconciliationSpotCheck } from '../../components/time/reconciliation-sp
 import { TimeEntryStatusBadge } from '../../components/time/time-entry-status-badge.js';
 import { useTranslations } from '../../i18n/useTranslations.js';
 
+const getTimesheetRowId = (row: TimesheetRow) => row.id;
+
 function formatPeriod(weekStart: string | Date): string {
   const start = typeof weekStart === 'string' ? new Date(weekStart) : weekStart;
   const monday = startOfISOWeek(start);
@@ -285,7 +287,7 @@ function TimePageContent() {
                     onPageSizeChange={handleAllPageSizeChange}
                     isLoading={allQuery.isLoading}
                     fill
-                    getRowId={row => row.id}
+                    getRowId={getTimesheetRowId}
                     entityLabel={t('timesheetEntityLabel', { count: allTotalCount })}
                     emptyTitle={t('emptyStates.noTimeEntriesHeading')}
                     emptyDescription={t('emptyStates.noTimeEntriesBody')}

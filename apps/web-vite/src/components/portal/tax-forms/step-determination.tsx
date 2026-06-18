@@ -9,6 +9,7 @@ import {
   SelectValue,
 } from '@contractor-ops/ui/components/shadcn/select';
 import { ArrowRight } from 'lucide-react';
+import { useCallback } from 'react';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import type { TaxFormType } from './hooks/use-tax-form-wizard.js';
@@ -40,6 +41,11 @@ export function StepDetermination({
   const t = useTranslations('TaxFormWizard.determination');
   const formName = t(`formName.${routedFormType}`);
 
+  const handleFormTypeChange = useCallback(
+    (value: TaxFormType | null) => onFormTypeChange(value as TaxFormType),
+    [onFormTypeChange],
+  );
+
   return (
     <Card className="bg-card">
       <CardHeader className="space-y-1">
@@ -51,9 +57,7 @@ export function StepDetermination({
           <Label htmlFor={`${fieldId}-form-type`} className="font-normal text-sm">
             {t('formTypeLabel')}
           </Label>
-          <Select
-            value={activeFormType}
-            onValueChange={value => onFormTypeChange(value as TaxFormType)}>
+          <Select value={activeFormType} onValueChange={handleFormTypeChange}>
             <SelectTrigger id={`${fieldId}-form-type`} className="w-full">
               <SelectValue />
             </SelectTrigger>

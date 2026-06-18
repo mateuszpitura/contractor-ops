@@ -33,6 +33,12 @@ interface DocumentRow {
   downloadUrl: string;
 }
 
+const noop = (): undefined => undefined;
+
+function getDocumentRowId(row: DocumentRow): string {
+  return row.id;
+}
+
 function DownloadButton({ url, label }: { url: string; label: string }) {
   const handleDownload = useCallback(
     () => window.open(url, '_blank', 'noopener,noreferrer'),
@@ -122,8 +128,8 @@ function PortalDocumentsPageContent() {
           clientPagination
           pageIndex={0}
           pageSize={data.length || 1}
-          onPageChange={() => undefined}
-          onPageSizeChange={() => undefined}
+          onPageChange={noop}
+          onPageSizeChange={noop}
           isLoading={isLoading}
           entityLabel={t('documents.title')}
           hideChrome
@@ -136,7 +142,7 @@ function PortalDocumentsPageContent() {
           emptyDescription={t('documents.emptyBody')}
           noResultsTitle={t('documents.emptyTitle')}
           noResultsDescription={t('documents.emptyBody')}
-          getRowId={row => row.id}
+          getRowId={getDocumentRowId}
         />
       </AnimateIn>
     </div>

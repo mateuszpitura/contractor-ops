@@ -9,6 +9,7 @@ import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 
 import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
+import { useCallback } from 'react';
 
 import { usePermissions } from '../../hooks/use-permissions.js';
 import { useTranslations } from '../../i18n/useTranslations.js';
@@ -44,6 +45,46 @@ export interface DeprovisioningRunViewProps {
   overrideServerError?: string;
 }
 
+interface DeprovisioningStepRowProps {
+  step: DeprovisioningStepView;
+  onOpenOverride: (stepId: string | null) => void;
+  t: ReturnType<typeof useTranslations>;
+}
+
+function DeprovisioningStepRow({ step, onOpenOverride, t }: DeprovisioningStepRowProps) {
+  const handleMarkComplete = useCallback(() => onOpenOverride(step.id), [onOpenOverride, step.id]);
+
+  return (
+    <li className="flex items-center justify-between gap-3 p-3">
+      <div className="min-w-0 space-y-1">
+        <div className="flex items-center gap-2">
+          <span className="font-medium">{t(`provider.${step.provider}`)}</span>
+          <span className="text-sm text-muted-foreground">{t(`stepKind.${step.stepKind}`)}</span>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <Badge variant={statusBadgeVariant(step.status)}>{t(`status.${step.status}`)}</Badge>
+          {step.status === 'MANUAL_COMPLETED' ? (
+            <StepOverrideBadge
+              category={step.manualOverrideCategory}
+              note={step.manualOverrideNote}
+              overriddenByUserId={step.manualOverriddenByUserId}
+              overriddenAt={step.manualOverriddenAt}
+            />
+          ) : null}
+          {step.status === 'FAILED' && step.lastErrorMessage ? (
+            <span className="text-xs text-destructive">{step.lastErrorMessage}</span>
+          ) : null}
+        </div>
+      </div>
+      {step.canMarkComplete ? (
+        <Button type="button" variant="outline" size="sm" onClick={handleMarkComplete}>
+          {t('markComplete')}
+        </Button>
+      ) : null}
+    </li>
+  );
+}
+
 export function DeprovisioningRunView({
   steps,
   overrideStepId,
@@ -54,52 +95,23 @@ export function DeprovisioningRunView({
 }: DeprovisioningRunViewProps) {
   const t = useTranslations('Idp.runView');
 
+  const handleDialogOpenChange = useCallback(
+    (open: boolean) => onOpenOverride(open ? overrideStepId : null),
+    [onOpenOverride, overrideStepId],
+  );
+
   return (
     <>
       <ul className="divide-y rounded-lg border">
         {steps.map(step => (
-          <li key={step.id} className="flex items-center justify-between gap-3 p-3">
-            <div className="min-w-0 space-y-1">
-              <div className="flex items-center gap-2">
-                <span className="font-medium">{t(`provider.${step.provider}`)}</span>
-                <span className="text-sm text-muted-foreground">
-                  {t(`stepKind.${step.stepKind}`)}
-                </span>
-              </div>
-              <div className="flex flex-wrap items-center gap-2">
-                <Badge variant={statusBadgeVariant(step.status)}>
-                  {t(`status.${step.status}`)}
-                </Badge>
-                {step.status === 'MANUAL_COMPLETED' ? (
-                  <StepOverrideBadge
-                    category={step.manualOverrideCategory}
-                    note={step.manualOverrideNote}
-                    overriddenByUserId={step.manualOverriddenByUserId}
-                    overriddenAt={step.manualOverriddenAt}
-                  />
-                ) : null}
-                {step.status === 'FAILED' && step.lastErrorMessage ? (
-                  <span className="text-xs text-destructive">{step.lastErrorMessage}</span>
-                ) : null}
-              </div>
-            </div>
-            {step.canMarkComplete ? (
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => onOpenOverride(step.id)}>
-                {t('markComplete')}
-              </Button>
-            ) : null}
-          </li>
+          <DeprovisioningStepRow key={step.id} step={step} onOpenOverride={onOpenOverride} t={t} />
         ))}
       </ul>
       {overrideStepId ? (
         <OverrideStepDialog
           stepId={overrideStepId}
           open={overrideStepId !== null}
-          onOpenChange={open => onOpenOverride(open ? overrideStepId : null)}
+          onOpenChange={handleDialogOpenChange}
           onSubmit={onSubmitOverride}
           pending={overridePending}
           serverError={overrideServerError}

@@ -16,6 +16,7 @@ import type { EInvoiceComplianceFilter } from './invoice-table/compliance-filter
 import { parseFilterParam } from './invoice-table/compliance-filter-param.js';
 
 export type { EInvoiceComplianceFilter } from './invoice-table/compliance-filter-param.js';
+// biome-ignore lint/performance/noBarrelFile: not a barrel — component module; single re-export of the shared filter parser
 export { parseFilterParam } from './invoice-table/compliance-filter-param.js';
 
 const URL_PARAM = 'einvoiceStatus';

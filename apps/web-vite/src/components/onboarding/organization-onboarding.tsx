@@ -134,6 +134,7 @@ function OrgDetailsStep({
               <Controller
                 control={control}
                 name="billingCountry"
+                // biome-ignore lint/nursery/noJsxPropsBind: react-hook-form Controller render prop — extraction is premature optimization
                 render={({ field }) => (
                   <Select
                     value={field.value}

@@ -14,6 +14,7 @@ export type {
   PricingPlan,
   Tier,
 } from '@contractor-ops/billing/types';
+// biome-ignore lint/performance/noBarrelFile: not a barrel — module owns pricing formatters/types; single value re-export of billing constants
 export { MARKET_CURRENCY, MARKETS } from '@contractor-ops/billing/types';
 
 /**

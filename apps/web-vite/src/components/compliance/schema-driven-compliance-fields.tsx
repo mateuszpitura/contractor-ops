@@ -36,6 +36,7 @@ export function SchemaDrivenComplianceFields({
             className="rounded-md border px-3 py-2"
             value={String(values[key] ?? '')}
             disabled={disabled}
+            // biome-ignore lint/nursery/noJsxPropsBind: non-memoized leaf handler — extraction is premature optimization
             onChange={e => onChange(key, e.target.value)}
           />
         </label>

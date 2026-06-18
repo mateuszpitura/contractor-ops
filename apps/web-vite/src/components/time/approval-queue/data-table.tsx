@@ -241,6 +241,11 @@ export function ApprovalQueueTable({
     if (!open) setRejectingId(null);
   }, []);
 
+  const handlePageSizeChange = useCallback((size: number) => {
+    setPageSize(size);
+    setPageIndex(0);
+  }, []);
+
   const columns = useMemo<ColumnDef<TimesheetRow, unknown>[]>(
     () => [
       {
@@ -389,10 +394,7 @@ export function ApprovalQueueTable({
         pageIndex={pageIndex}
         pageSize={pageSize}
         onPageChange={setPageIndex}
-        onPageSizeChange={size => {
-          setPageSize(size);
-          setPageIndex(0);
-        }}
+        onPageSizeChange={handlePageSizeChange}
         isLoading={isLoading}
         fill
         entityLabel={t('timesheetEntityLabel', { count: timesheets.length })}

@@ -21,6 +21,7 @@
  * runtime only.
  */
 
+// biome-ignore lint/performance/noBarrelFile: intentional public aggregator — curated browser-safe public entry for @contractor-ops/feature-flags
 export {
   emptyFlagBag,
   type FlagBag,

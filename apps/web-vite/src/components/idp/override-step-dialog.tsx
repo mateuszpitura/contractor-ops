@@ -80,6 +80,13 @@ export function OverrideStepDialog({
     [],
   );
 
+  const handleCategoryChange = useCallback(
+    (value: ManualOverrideCategory | '' | null) => setCategory(value as ManualOverrideCategory),
+    [],
+  );
+
+  const handleCancel = useCallback(() => onOpenChange(false), [onOpenChange]);
+
   const handleSubmit = useCallback(async () => {
     if (!(noteValid && !pending) || category === '') return;
     await onSubmit({ stepId, category, note: note.trim() });
@@ -98,10 +105,7 @@ export function OverrideStepDialog({
         <DialogBody className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor={`${noteId}-category`}>{t('categoryLabel')}</Label>
-            <Select
-              value={category}
-              onValueChange={value => setCategory(value as ManualOverrideCategory)}
-              disabled={pending}>
+            <Select value={category} onValueChange={handleCategoryChange} disabled={pending}>
               <SelectTrigger id={`${noteId}-category`} aria-label={t('categoryLabel')}>
                 <SelectValue placeholder={t('categoryPlaceholder')} />
               </SelectTrigger>
@@ -141,11 +145,7 @@ export function OverrideStepDialog({
           ) : null}
         </DialogBody>
         <DialogFooter>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => onOpenChange(false)}
-            disabled={pending}>
+          <Button type="button" variant="outline" onClick={handleCancel} disabled={pending}>
             {t('cancel')}
           </Button>
           <Button type="button" onClick={handleSubmit} disabled={!submitEnabled}>

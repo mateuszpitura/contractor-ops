@@ -246,6 +246,11 @@ export function TemplatesTable({
 
   const handleDeleteConfirm = useCallback(() => void handleDelete(), [handleDelete]);
 
+  const handlePageSizeChange = useCallback((size: number) => {
+    setPageSize(size);
+    setPageIndex(0);
+  }, []);
+
   if (!isLoading && templates.length === 0) {
     return (
       <AtelierEmptyState
@@ -273,10 +278,7 @@ export function TemplatesTable({
         pageIndex={pageIndex}
         pageSize={pageSize}
         onPageChange={setPageIndex}
-        onPageSizeChange={size => {
-          setPageSize(size);
-          setPageIndex(0);
-        }}
+        onPageSizeChange={handlePageSizeChange}
         isLoading={isLoading}
         constrainHeight={false}
         emptyIllustration={TemplatesIllustration}

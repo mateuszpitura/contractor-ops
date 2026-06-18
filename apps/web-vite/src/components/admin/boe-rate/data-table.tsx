@@ -52,6 +52,11 @@ export function BoeRateTable({ entries, isLoading, onEdit, onDelete }: BoeRateTa
   const [pageIndex, setPageIndex] = useState(0);
   const [pageSize, setPageSize] = useState(25);
 
+  const handlePageSizeChange = useCallback((size: number) => {
+    setPageSize(size);
+    setPageIndex(0);
+  }, []);
+
   const columns = useMemo<ColumnDef<BoeRateEntry, unknown>[]>(
     () => [
       {
@@ -148,10 +153,7 @@ export function BoeRateTable({ entries, isLoading, onEdit, onDelete }: BoeRateTa
       pageIndex={pageIndex}
       pageSize={pageSize}
       onPageChange={setPageIndex}
-      onPageSizeChange={size => {
-        setPageSize(size);
-        setPageIndex(0);
-      }}
+      onPageSizeChange={handlePageSizeChange}
       isLoading={isLoading}
       hideDensityToggle
       entityLabel={t('entityLabel', { count: rows.length })}

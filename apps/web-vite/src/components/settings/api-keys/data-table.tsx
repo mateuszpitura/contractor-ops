@@ -118,6 +118,11 @@ export function ApiKeysDataTable({
   const [pageIndex, setPageIndex] = useState(0);
   const [pageSize, setPageSize] = useState(25);
 
+  const handlePageSizeChange = useCallback((size: number) => {
+    setPageSize(size);
+    setPageIndex(0);
+  }, []);
+
   const columns = useMemo<ColumnDef<ApiKeyRow, unknown>[]>(
     () => [
       {
@@ -221,10 +226,7 @@ export function ApiKeysDataTable({
       pageIndex={pageIndex}
       pageSize={pageSize}
       onPageChange={setPageIndex}
-      onPageSizeChange={size => {
-        setPageSize(size);
-        setPageIndex(0);
-      }}
+      onPageSizeChange={handlePageSizeChange}
       isLoading={isLoading}
       hideDensityToggle
       constrainHeight={false}

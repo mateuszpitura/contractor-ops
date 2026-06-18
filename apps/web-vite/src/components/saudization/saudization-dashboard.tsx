@@ -11,7 +11,7 @@ import {
 import { Separator } from '@contractor-ops/ui/components/shadcn/separator';
 import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { AlertTriangle, BarChart3, CalendarClock, Info, Pencil, ShieldAlert } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts';
 
 import { useRtlChartConfig } from '../../hooks/use-rtl-chart-config.js';
@@ -111,6 +111,13 @@ export function SaudizationDashboard({
   const bandUpdatedAt = dashboard.bandLastUpdatedAt ? new Date(dashboard.bandLastUpdatedAt) : null;
   const hasOverride = thresholdsCustom || permittedActivityCatalogueCustom;
 
+  const openOverrideDialog = useCallback(() => setOverrideDialogOpen(true), []);
+  const openConfigDialog = useCallback(() => setConfigDialogOpen(true), []);
+  const formatDonutTooltip = useCallback(
+    (value: unknown) => percentFormatter.format(Number(value)),
+    [percentFormatter],
+  );
+
   return (
     <div className="space-y-8">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
@@ -121,11 +128,11 @@ export function SaudizationDashboard({
           <p className="mt-1 text-sm text-muted-foreground">{t('subtitle')}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <Button variant="outline" size="sm" onClick={() => setOverrideDialogOpen(true)}>
+          <Button variant="outline" size="sm" onClick={openOverrideDialog}>
             <ShieldAlert aria-hidden="true" className="me-1.5 size-4" />
             {t('actions.manageOverrides')}
           </Button>
-          <Button size="sm" onClick={() => setConfigDialogOpen(true)}>
+          <Button size="sm" onClick={openConfigDialog}>
             <Pencil aria-hidden="true" className="me-1.5 size-4" />
             {t('actions.editConfig')}
           </Button>
@@ -186,7 +193,7 @@ export function SaudizationDashboard({
                     ))}
                   </Pie>
                   <Tooltip
-                    formatter={(value: unknown) => percentFormatter.format(Number(value))}
+                    formatter={formatDonutTooltip}
                     contentStyle={{
                       borderRadius: '0.75rem',
                       border: '1px solid color-mix(in oklch, var(--color-border) 40%, transparent)',
@@ -431,13 +438,14 @@ function SaudizationDashboardError({ onRetry }: { onRetry: () => void }) {
 function SaudizationDashboardEmpty(configEntry: ConfigEntryProps) {
   const t = useTranslations('Saudization.empty');
   const [open, setOpen] = useState(false);
+  const openDialog = useCallback(() => setOpen(true), []);
   return (
     <Card>
       <CardContent className="flex flex-col items-center gap-3 py-12 text-center">
         <BarChart3 aria-hidden="true" className="size-7 text-muted-foreground" />
         <p className="text-lg font-semibold">{t('heading')}</p>
         <p className="max-w-md text-sm text-muted-foreground">{t('body')}</p>
-        <Button onClick={() => setOpen(true)}>{t('cta')}</Button>
+        <Button onClick={openDialog}>{t('cta')}</Button>
       </CardContent>
       <SaudizationConfigDialog
         open={open}

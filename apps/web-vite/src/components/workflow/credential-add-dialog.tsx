@@ -17,7 +17,7 @@ import {
   SelectValue,
 } from '@contractor-ops/ui/components/shadcn/select';
 import { looksLikeSecret } from '@contractor-ops/validators';
-import { useId, useState } from 'react';
+import { useCallback, useId, useState } from 'react';
 import { useTranslations } from '../../i18n/useTranslations.js';
 
 export interface CredentialAddDialogProps {
@@ -83,6 +83,28 @@ export function CredentialAddDialog({
   const hasSecret = labelSecret.matched || urlSecret.matched;
   const canSubmit = label.length > 0 && vaultUrl.length > 0 && !hasSecret && !isSubmitting;
 
+  const handleLabelChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => setLabel(e.target.value),
+    [],
+  );
+  const handleVaultUrlChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => setVaultUrl(e.target.value),
+    [],
+  );
+  const handleVaultProviderChange = useCallback(
+    (v: string | null) => setVaultProvider(v as VaultProvider),
+    [],
+  );
+  const handleAccessTypeChange = useCallback(
+    (v: string | null) => setAccessType(v as AccessType),
+    [],
+  );
+  const handleCancel = useCallback(() => onOpenChange(false), [onOpenChange]);
+  const handleSubmit = useCallback(
+    () => onSubmit({ workflowRunId, label, vaultUrl, vaultProvider, accessType }),
+    [onSubmit, workflowRunId, label, vaultUrl, vaultProvider, accessType],
+  );
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent data-testid="credential-add-dialog">
@@ -92,7 +114,7 @@ export function CredentialAddDialog({
         <DialogBody className="space-y-4">
           <div className="space-y-1">
             <Label htmlFor={labelId}>{t('dialog.fields.label')}</Label>
-            <Input id={labelId} value={label} onChange={e => setLabel(e.target.value)} />
+            <Input id={labelId} value={label} onChange={handleLabelChange} />
             {labelSecret.matched ? (
               <p className="text-xs text-destructive" data-testid="secret-hint-label">
                 {t('secretPasteHint', { hint: labelSecret.fieldHint ?? '' })}
@@ -101,7 +123,7 @@ export function CredentialAddDialog({
           </div>
           <div className="space-y-1">
             <Label htmlFor={urlId}>{t('dialog.fields.vaultUrl')}</Label>
-            <Input id={urlId} value={vaultUrl} onChange={e => setVaultUrl(e.target.value)} />
+            <Input id={urlId} value={vaultUrl} onChange={handleVaultUrlChange} />
             {urlSecret.matched ? (
               <p className="text-xs text-destructive" data-testid="secret-hint-url">
                 {t('secretPasteHint', { hint: urlSecret.fieldHint ?? '' })}
@@ -110,7 +132,7 @@ export function CredentialAddDialog({
           </div>
           <div className="space-y-1">
             <Label htmlFor={providerId}>{t('dialog.fields.vaultProvider')}</Label>
-            <Select value={vaultProvider} onValueChange={v => setVaultProvider(v as VaultProvider)}>
+            <Select value={vaultProvider} onValueChange={handleVaultProviderChange}>
               <SelectTrigger id={providerId} className="w-full">
                 <SelectValue />
               </SelectTrigger>
@@ -125,7 +147,7 @@ export function CredentialAddDialog({
           </div>
           <div className="space-y-1">
             <Label htmlFor={accessId}>{t('dialog.fields.accessType')}</Label>
-            <Select value={accessType} onValueChange={v => setAccessType(v as AccessType)}>
+            <Select value={accessType} onValueChange={handleAccessTypeChange}>
               <SelectTrigger id={accessId} className="w-full">
                 <SelectValue />
               </SelectTrigger>
@@ -140,13 +162,10 @@ export function CredentialAddDialog({
           </div>
         </DialogBody>
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+          <Button variant="outline" onClick={handleCancel}>
             {t('dialog.cancel')}
           </Button>
-          <Button
-            disabled={!canSubmit}
-            data-testid="credential-add-submit"
-            onClick={() => onSubmit({ workflowRunId, label, vaultUrl, vaultProvider, accessType })}>
+          <Button disabled={!canSubmit} data-testid="credential-add-submit" onClick={handleSubmit}>
             {t('dialog.submit')}
           </Button>
         </DialogFooter>

@@ -1,7 +1,7 @@
 import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
 import type { ColumnDef } from '@tanstack/react-table';
 import { AlertCircle, CheckCircle, XCircle } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { WorkbenchDataTable } from '../../table-kit/workbench-data-table.js';
 import type { ClassificationEngineRow } from '../hooks/use-admin-classification-engine.js';
@@ -101,10 +101,17 @@ interface DisclaimerRegistryTableProps {
   rows: ClassificationEngineRow[];
 }
 
+const getDisclaimerRowId = (row: ClassificationEngineRow) => row.key;
+
 export function DisclaimerRegistryTable({ rows }: DisclaimerRegistryTableProps) {
   const t = useTranslations('Admin.ClassificationEngineFlag');
   const [pageIndex, setPageIndex] = useState(0);
   const [pageSize, setPageSize] = useState(25);
+
+  const handlePageSizeChange = useCallback((size: number) => {
+    setPageSize(size);
+    setPageIndex(0);
+  }, []);
 
   const columns = useMemo<ColumnDef<ClassificationEngineRow, unknown>[]>(
     () => [
@@ -170,14 +177,11 @@ export function DisclaimerRegistryTable({ rows }: DisclaimerRegistryTableProps) 
           pageIndex={pageIndex}
           pageSize={pageSize}
           onPageChange={setPageIndex}
-          onPageSizeChange={size => {
-            setPageSize(size);
-            setPageIndex(0);
-          }}
+          onPageSizeChange={handlePageSizeChange}
           constrainHeight={false}
           hideDensityToggle
           hideChrome
-          getRowId={row => row.key}
+          getRowId={getDisclaimerRowId}
           entityLabel={t('disclaimerRegistryTitle')}
           emptyTitle={t('disclaimerRegistryTitle')}
           noResultsTitle={t('disclaimerRegistryTitle')}

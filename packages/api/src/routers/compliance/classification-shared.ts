@@ -11,6 +11,7 @@ import {
 } from '@contractor-ops/classification';
 import { POLICY_RULE_SET_VERSION } from '@contractor-ops/compliance-policy';
 
+// biome-ignore lint/performance/noBarrelFile: not a barrel — shared helpers/schemas/procedures module; single re-export for sub-routers
 export { mapCountryCodeToJurisdiction } from '@contractor-ops/compliance-policy';
 
 import type { Prisma } from '@contractor-ops/db';

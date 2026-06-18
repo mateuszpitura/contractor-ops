@@ -7,6 +7,7 @@
  * This file remains a re-export so the reminders handler + sub-jobs are unchanged.
  */
 
+// biome-ignore lint/performance/noBarrelFile: intentional public aggregator — single re-export surface for reminders sub-jobs
 export {
   addDays,
   claimCronNotificationDedup,

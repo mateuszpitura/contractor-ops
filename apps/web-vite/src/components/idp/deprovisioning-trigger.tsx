@@ -88,6 +88,7 @@ export function DeprovisioningTrigger({
           <Tooltip>
             {/* span wrapper so the tooltip still fires over a disabled button */}
             <TooltipTrigger
+              // biome-ignore lint/nursery/noJsxPropsBind: Base UI render prop — extraction is premature optimization
               render={(props: React.HTMLAttributes<HTMLSpanElement>) => (
                 <span {...props} className="inline-flex">
                   {startButton}

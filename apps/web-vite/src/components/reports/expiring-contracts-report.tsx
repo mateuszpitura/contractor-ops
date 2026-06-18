@@ -21,6 +21,8 @@ interface ExpiringContractsReportProps {
   report: ReturnType<typeof useExpiringContractsReport>;
 }
 
+const noopSegmentClick = (): undefined => undefined;
+
 type DaysOption = '30' | '60' | '90';
 
 interface DaysButtonProps {
@@ -120,7 +122,7 @@ export function ExpiringContractsReport({ report }: ExpiringContractsReportProps
         dataKey="count"
         nameKey="bucket"
         idKey="bucket"
-        onSegmentClick={() => undefined}
+        onSegmentClick={noopSegmentClick}
         isLoading={report.chartQuery.isLoading}
         isError={report.chartQuery.isError}
         onRetry={report.handleChartRetry}

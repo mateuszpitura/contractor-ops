@@ -12,9 +12,10 @@ import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { AlertCircle, Plus } from 'lucide-react';
-import { useCallback, useState } from 'react';
+import { memo, useCallback, useState } from 'react';
 import { tDynLoose } from '../../i18n/typed-keys.js';
 import { useTranslations } from '../../i18n/useTranslations.js';
+import type { CredentialAddDialogProps } from './credential-add-dialog.js';
 import { CredentialAddDialog } from './credential-add-dialog.js';
 import type { CredentialRow } from './hooks/use-credentials-tab.js';
 import { useCredentialsTab } from './hooks/use-credentials-tab.js';
@@ -96,6 +97,60 @@ function RemoveConfirmDialog({ open, onOpenChange, onConfirm }: RemoveConfirmDia
 }
 
 // ---------------------------------------------------------------------------
+// Row item
+// ---------------------------------------------------------------------------
+
+interface CredentialRowItemProps {
+  row: CredentialRow;
+  providerLabel: string;
+  accessTypeLabel: string;
+  statusLabel: string;
+  markRotatedLabel: string;
+  removeLabel: string;
+  isMutating: boolean;
+  onMarkRotated: (id: string) => void;
+  onRemoveRequest: (id: string) => void;
+}
+
+const CredentialRowItem = memo(function CredentialRowItem({
+  row,
+  providerLabel,
+  accessTypeLabel,
+  statusLabel,
+  markRotatedLabel,
+  removeLabel,
+  isMutating,
+  onMarkRotated,
+  onRemoveRequest,
+}: CredentialRowItemProps) {
+  const handleMarkRotated = useCallback(() => onMarkRotated(row.id), [onMarkRotated, row.id]);
+  const handleRemove = useCallback(() => onRemoveRequest(row.id), [onRemoveRequest, row.id]);
+  return (
+    <li className="flex flex-wrap items-center justify-between gap-3 px-4 py-3">
+      <div className="min-w-0 space-y-0.5">
+        <p className="truncate font-medium">{row.label}</p>
+        <p className="text-xs text-muted-foreground">
+          {providerLabel} · {accessTypeLabel}
+        </p>
+      </div>
+      <div className="flex items-center gap-2">
+        <Badge variant={STATUS_VARIANT[row.status as keyof typeof STATUS_VARIANT] ?? 'secondary'}>
+          {statusLabel}
+        </Badge>
+        {row.status === 'PENDING' && (
+          <Button size="sm" variant="outline" onClick={handleMarkRotated} disabled={isMutating}>
+            {markRotatedLabel}
+          </Button>
+        )}
+        <Button size="sm" variant="ghost" onClick={handleRemove} disabled={isMutating}>
+          {removeLabel}
+        </Button>
+      </div>
+    </li>
+  );
+});
+
+// ---------------------------------------------------------------------------
 // Main component
 // ---------------------------------------------------------------------------
 
@@ -163,40 +218,18 @@ export function CredentialsTabView({
       ) : (
         <ul className="divide-y rounded-md border">
           {rows.map(row => (
-            <li
+            <CredentialRowItem
               key={row.id}
-              className="flex flex-wrap items-center justify-between gap-3 px-4 py-3">
-              <div className="min-w-0 space-y-0.5">
-                <p className="truncate font-medium">{row.label}</p>
-                <p className="text-xs text-muted-foreground">
-                  {labelVaultProvider(row.vaultProvider)} · {labelAccessType(row.accessType)}
-                </p>
-              </div>
-              <div className="flex items-center gap-2">
-                <Badge
-                  variant={
-                    STATUS_VARIANT[row.status as keyof typeof STATUS_VARIANT] ?? 'secondary'
-                  }>
-                  {labelStatus(row.status)}
-                </Badge>
-                {row.status === 'PENDING' && (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => onMarkRotated(row.id)}
-                    disabled={isMutating}>
-                    {t('actions.markRotated')}
-                  </Button>
-                )}
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={() => handleRemoveRequest(row.id)}
-                  disabled={isMutating}>
-                  {t('actions.remove')}
-                </Button>
-              </div>
-            </li>
+              row={row}
+              providerLabel={labelVaultProvider(row.vaultProvider)}
+              accessTypeLabel={labelAccessType(row.accessType)}
+              statusLabel={labelStatus(row.status)}
+              markRotatedLabel={t('actions.markRotated')}
+              removeLabel={t('actions.remove')}
+              isMutating={isMutating}
+              onMarkRotated={onMarkRotated}
+              onRemoveRequest={handleRemoveRequest}
+            />
           ))}
         </ul>
       )}
@@ -228,6 +261,12 @@ export function CredentialsTabSection({ workflowRunId }: CredentialsTabSectionPr
     isMutating,
   } = useCredentialsTab(workflowRunId);
 
+  const handleOpenAddDialog = useCallback(() => setAddDialogOpen(true), [setAddDialogOpen]);
+  const handleSubmit = useCallback<CredentialAddDialogProps['onSubmit']>(
+    input => createMutation.mutate(input),
+    [createMutation],
+  );
+
   return (
     <>
       <CredentialsTabView
@@ -235,7 +274,7 @@ export function CredentialsTabSection({ workflowRunId }: CredentialsTabSectionPr
         isLoading={isLoading}
         isError={isError}
         onRetry={refetch}
-        onAdd={() => setAddDialogOpen(true)}
+        onAdd={handleOpenAddDialog}
         onMarkRotated={onMarkRotated}
         onRemove={onRemove}
         isMutating={isMutating}
@@ -245,7 +284,7 @@ export function CredentialsTabSection({ workflowRunId }: CredentialsTabSectionPr
         onOpenChange={setAddDialogOpen}
         workflowRunId={workflowRunId}
         isSubmitting={createMutation.isPending}
-        onSubmit={input => createMutation.mutate(input)}
+        onSubmit={handleSubmit}
       />
     </>
   );

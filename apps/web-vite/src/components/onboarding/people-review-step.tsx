@@ -53,6 +53,8 @@ function isInvitableMemberRole(value: string): value is InvitableMemberRole {
   return (invitableMemberRoleValues as readonly string[]).includes(value);
 }
 
+const getPersonRowId = (row: MergedPerson) => row.email;
+
 export interface PeopleReviewStepProps {
   filteredPeople: MergedPerson[];
   counts: PeopleCounts;
@@ -373,6 +375,11 @@ export function PeopleReviewStep({
     [personSelections],
   );
 
+  const handlePageSizeChange = useCallback((size: number) => {
+    setPageSize(size);
+    setPageIndex(0);
+  }, []);
+
   return (
     <div className="space-y-6">
       <PeopleReviewHeader />
@@ -458,14 +465,11 @@ export function PeopleReviewStep({
             pageIndex={pageIndex}
             pageSize={pageSize}
             onPageChange={setPageIndex}
-            onPageSizeChange={size => {
-              setPageSize(size);
-              setPageIndex(0);
-            }}
+            onPageSizeChange={handlePageSizeChange}
             constrainHeight={false}
             hideDensityToggle
             hideChrome
-            getRowId={row => row.email}
+            getRowId={getPersonRowId}
             rowClassName={rowClassName}
             entityLabel={t('summaryTotal')}
             emptyTitle={t('emptyHeading')}

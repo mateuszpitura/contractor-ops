@@ -10,7 +10,8 @@ import {
 } from '@contractor-ops/ui/components/shadcn/dialog';
 import { Label } from '@contractor-ops/ui/components/shadcn/label';
 import { Textarea } from '@contractor-ops/ui/components/shadcn/textarea';
-import { useId, useState } from 'react';
+import type { ChangeEvent } from 'react';
+import { useCallback, useId, useState } from 'react';
 import { useTranslations } from '../../i18n/useTranslations.js';
 
 export interface PendingCredential {
@@ -50,6 +51,20 @@ export function PendingCredentialsWarningDialog({
 
   const canConfirm = reason.trim().length >= MIN_REASON && acknowledged && !isSubmitting;
 
+  const handleReasonChange = useCallback(
+    (e: ChangeEvent<HTMLTextAreaElement>) => setReason(e.target.value),
+    [],
+  );
+
+  const handleAcknowledgedChange = useCallback(
+    (v: boolean | 'indeterminate') => setAcknowledged(v === true),
+    [],
+  );
+
+  const handleCancel = useCallback(() => onOpenChange(false), [onOpenChange]);
+
+  const handleConfirm = useCallback(() => onConfirm(reason.trim()), [onConfirm, reason]);
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent data-testid="pending-credentials-dialog">
@@ -71,7 +86,7 @@ export function PendingCredentialsWarningDialog({
             <Textarea
               id={reasonId}
               value={reason}
-              onChange={e => setReason(e.target.value)}
+              onChange={handleReasonChange}
               data-testid="force-reason"
             />
           </div>
@@ -79,7 +94,7 @@ export function PendingCredentialsWarningDialog({
             <Checkbox
               id={ackId}
               checked={acknowledged}
-              onCheckedChange={v => setAcknowledged(v === true)}
+              onCheckedChange={handleAcknowledgedChange}
               data-testid="force-acknowledge"
             />
             <Label htmlFor={ackId} className="text-sm font-normal">
@@ -88,13 +103,10 @@ export function PendingCredentialsWarningDialog({
           </div>
         </DialogBody>
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+          <Button variant="outline" onClick={handleCancel}>
             {t('cancelButton')}
           </Button>
-          <Button
-            disabled={!canConfirm}
-            data-testid="force-confirm"
-            onClick={() => onConfirm(reason.trim())}>
+          <Button disabled={!canConfirm} data-testid="force-confirm" onClick={handleConfirm}>
             {t('confirmButton')}
           </Button>
         </DialogFooter>

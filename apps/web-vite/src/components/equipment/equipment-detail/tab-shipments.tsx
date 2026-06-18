@@ -48,6 +48,8 @@ export interface TabShipmentsProps {
 type ShipmentsHookState = ReturnType<typeof useEquipmentShipments>;
 type Shipment = ShipmentsHookState['shipments'][number];
 
+const getShipmentRowId = (row: Shipment) => row.id;
+
 export type TabShipmentsViewProps = TabShipmentsProps &
   ShipmentsHookState & {
     selectedShipmentId: string | null;
@@ -249,6 +251,10 @@ export function TabShipmentsView({
     [handleFetchLabel],
   );
   const handleStartDelete = useCallback((id: string) => setDeleteTarget(id), []);
+  const handlePageSizeChange = useCallback((size: number) => {
+    setPageSize(size);
+    setPageIndex(0);
+  }, []);
   const handleCloseDeleteDialog = useCallback((open: boolean) => {
     if (!open) setDeleteTarget(null);
   }, []);
@@ -355,13 +361,10 @@ export function TabShipmentsView({
         pageIndex={pageIndex}
         pageSize={pageSize}
         onPageChange={setPageIndex}
-        onPageSizeChange={size => {
-          setPageSize(size);
-          setPageIndex(0);
-        }}
+        onPageSizeChange={handlePageSizeChange}
         constrainHeight={false}
         hideDensityToggle
-        getRowId={row => row.id}
+        getRowId={getShipmentRowId}
         entityLabel={t('shipmentsEntityLabel', { count: shipments.length })}
         emptyTitle={t('detail.shipmentsEmpty')}
         emptyDescription={t('detail.shipmentsEmptyDescription')}

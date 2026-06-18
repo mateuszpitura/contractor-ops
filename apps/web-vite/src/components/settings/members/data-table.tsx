@@ -180,6 +180,10 @@ export function UsersTableView({
   const handleConsentOpenChange = useCallback((openState: boolean) => {
     if (!openState) setConsentTarget(null);
   }, []);
+  const handlePageSizeChange = useCallback((size: number) => {
+    setPageSize(size);
+    setPageIndex(0);
+  }, []);
 
   const columns = useMemo<ColumnDef<MemberRow, unknown>[]>(() => {
     const roleLabel = (role: string) => tDynLoose(t, 'roles', enumKey(role)) ?? role;
@@ -319,10 +323,7 @@ export function UsersTableView({
         pageIndex={pageIndex}
         pageSize={pageSize}
         onPageChange={setPageIndex}
-        onPageSizeChange={size => {
-          setPageSize(size);
-          setPageIndex(0);
-        }}
+        onPageSizeChange={handlePageSizeChange}
         isLoading={membersQuery.isLoading}
         isRefetching={membersQuery.isFetching && !membersQuery.isLoading}
         fill

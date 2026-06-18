@@ -64,6 +64,21 @@ export function NitaqatOverrideDialog({
     setResetKind(null);
   }, [resetKind, onApplyNitaqatOverride, onApplyActivityOverride]);
 
+  const handleApplyNitaqat = useCallback(
+    () => onApplyNitaqatOverride(true),
+    [onApplyNitaqatOverride],
+  );
+  const handleResetNitaqatRequest = useCallback(() => setResetKind('nitaqat'), []);
+  const handleApplyActivity = useCallback(
+    () => onApplyActivityOverride(true),
+    [onApplyActivityOverride],
+  );
+  const handleResetActivityRequest = useCallback(() => setResetKind('activity'), []);
+  const handleClose = useCallback(() => onOpenChange(false), [onOpenChange]);
+  const handleResetDialogOpenChange = useCallback((value: boolean) => {
+    if (!value) setResetKind(null);
+  }, []);
+
   const isResetting =
     (resetKind === 'nitaqat' && isApplyingNitaqatOverride) ||
     (resetKind === 'activity' && isApplyingActivityOverride);
@@ -86,8 +101,8 @@ export function NitaqatOverrideDialog({
               applyLabel={t('applyNitaqat')}
               resetLabel={t('reset')}
               isApplying={isApplyingNitaqatOverride}
-              onApply={() => onApplyNitaqatOverride(true)}
-              onResetRequest={() => setResetKind('nitaqat')}
+              onApply={handleApplyNitaqat}
+              onResetRequest={handleResetNitaqatRequest}
             />
             <OverrideRow
               heading={t('activityHeading')}
@@ -97,20 +112,20 @@ export function NitaqatOverrideDialog({
               applyLabel={t('applyActivity')}
               resetLabel={t('reset')}
               isApplying={isApplyingActivityOverride}
-              onApply={() => onApplyActivityOverride(true)}
-              onResetRequest={() => setResetKind('activity')}
+              onApply={handleApplyActivity}
+              onResetRequest={handleResetActivityRequest}
             />
           </DialogBody>
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => onOpenChange(false)}>
+            <Button variant="outline" onClick={handleClose}>
               {t('close')}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      <AlertDialog open={resetKind !== null} onOpenChange={value => !value && setResetKind(null)}>
+      <AlertDialog open={resetKind !== null} onOpenChange={handleResetDialogOpenChange}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>{t('resetConfirmTitle')}</AlertDialogTitle>

@@ -12,6 +12,8 @@ import { getColumns } from './columns.js';
 import { DataTableBulkActions } from './data-table-bulk-actions.js';
 import { DataTableColumnToggle } from './data-table-column-toggle.js';
 
+const getContractRowId = (row: ContractRow) => row.id;
+
 interface ContractDataTableProps extends ContractListTableProps {
   onRowClick: (contract: ContractRow) => void;
   onNewContract: () => void;
@@ -54,6 +56,8 @@ export function ContractDataTable({
     [],
   );
 
+  const handleBulkComplete = useCallback(() => setSelectedRows([]), [setSelectedRows]);
+
   return (
     <WorkbenchDataTable
       sectionClassName={sectionClassName}
@@ -82,14 +86,14 @@ export function ContractDataTable({
           <BulkActionsRow
             selectedRows={selectedRows}
             bulkActions={bulkActions}
-            onComplete={() => setSelectedRows([])}
+            onComplete={handleBulkComplete}
           />
         ) : undefined
       }
       enableRowSelection
       onSelectionChange={setSelectedRows}
       onRowClick={onRowClick}
-      getRowId={row => row.id}
+      getRowId={getContractRowId}
       rightSlot={renderColumnToggle}
       emptyIcon={<ContractsIllustration className="mx-auto h-16 w-16 text-primary/60" />}
       emptyTitle={t('empty.heading')}

@@ -42,6 +42,9 @@ function normaliseSeverity(raw: string): SvrlSeverity {
   return 'error';
 }
 
+const noop = () => undefined;
+const getSvrlRowId = (row: SvrlIssue, idx: number) => `${row.ruleId}-${idx}`;
+
 interface LayerTableProps {
   issues: SvrlIssue[];
   xpathLabel: string;
@@ -57,8 +60,6 @@ function LayerTable({
   ruleIdHeader,
   messageHeader,
 }: LayerTableProps) {
-  const noop = () => undefined;
-
   const columns = useMemo<ColumnDef<SvrlIssue, unknown>[]>(
     () => [
       {
@@ -124,7 +125,7 @@ function LayerTable({
       pageSize={issues.length || 1}
       onPageChange={noop}
       onPageSizeChange={noop}
-      getRowId={(row, idx) => `${row.ruleId}-${idx}`}
+      getRowId={getSvrlRowId}
       hideChrome
       hideFooter
       hideDensityToggle

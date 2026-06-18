@@ -4,7 +4,7 @@ import { Input } from '@contractor-ops/ui/components/shadcn/input';
 import { Label } from '@contractor-ops/ui/components/shadcn/label';
 import type { TaxFormSubmissionInput } from '@contractor-ops/validators';
 import { Loader2 } from 'lucide-react';
-import { useId, useState } from 'react';
+import { useCallback, useId, useState } from 'react';
 import type { Control, FieldErrors, UseFormRegister, UseFormSetValue } from 'react-hook-form';
 import { useWatch } from 'react-hook-form';
 
@@ -72,6 +72,22 @@ export function StepAttest({
 
   const canSubmit = perjuryChecked && signatureAffirmed && nameMatches && !isSubmitting;
 
+  const handlePerjuryChange = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      const checked = event.target.checked;
+      setPerjuryChecked(checked);
+      setValue('perjuryAccepted', checked === true ? true : (false as never), {
+        shouldValidate: false,
+      });
+    },
+    [setValue],
+  );
+
+  const handleSignatureChange = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => setSignatureAffirmed(event.target.checked),
+    [],
+  );
+
   const errorId = `${localId}-submit-error`;
 
   return (
@@ -91,13 +107,7 @@ export function StepAttest({
                 id={`${fieldId}-perjury`}
                 className="mt-1 size-4 accent-primary"
                 checked={perjuryChecked}
-                onChange={event => {
-                  const checked = event.target.checked;
-                  setPerjuryChecked(checked);
-                  setValue('perjuryAccepted', checked === true ? true : (false as never), {
-                    shouldValidate: false,
-                  });
-                }}
+                onChange={handlePerjuryChange}
               />
               <Label htmlFor={`${fieldId}-perjury`} className="font-normal text-sm leading-snug">
                 {tPerjury(PERJURY_KEYS[formType])}
@@ -110,7 +120,7 @@ export function StepAttest({
                 id={`${fieldId}-signature`}
                 className="mt-1 size-4 accent-primary"
                 checked={signatureAffirmed}
-                onChange={event => setSignatureAffirmed(event.target.checked)}
+                onChange={handleSignatureChange}
               />
               <Label htmlFor={`${fieldId}-signature`} className="font-normal text-sm leading-snug">
                 {t('signatureAffirmation')}

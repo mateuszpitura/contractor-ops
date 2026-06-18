@@ -7,6 +7,7 @@
  * `@contractor-ops/feature-flags/browser` instead.
  */
 
+// biome-ignore lint/performance/noBarrelFile: intentional public aggregator — feature-flags public Node API; module also owns the boot-time signoff gate
 export {
   CLASSIFICATION_ENGINE_FLAG,
   EINVOICE_IMPORT_ENABLED,

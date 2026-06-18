@@ -32,6 +32,7 @@
 // Re-export `generateState` so call sites pick up the same arctic version
 // that's pinned at the workspace root, without adding `arctic` as a direct
 // dep on every package that needs OAuth.
+// biome-ignore lint/performance/noBarrelFile: not a barrel — arctic shim module; single re-export to share the root-pinned arctic version
 export { generateCodeVerifier, generateState } from 'arctic';
 
 /**

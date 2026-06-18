@@ -11,6 +11,10 @@ import type { InvoiceRow } from './columns.js';
 import { getColumns } from './columns.js';
 import { DataTableBulkActions } from './data-table-bulk-actions.js';
 
+function getRowId(row: InvoiceRow): string {
+  return row.id;
+}
+
 interface InvoiceDataTableProps extends InvoiceListTableProps {
   onRowClick: (invoice: InvoiceRow) => void;
   onUpload: () => void;
@@ -48,6 +52,8 @@ export function InvoiceDataTable({
     [],
   );
 
+  const clearSelectedRows = useCallback(() => setSelectedRows([]), [setSelectedRows]);
+
   const columns: ColumnDef<InvoiceRow>[] = useMemo(
     () => getColumns(t, formatDateFn),
     [t, formatDateFn],
@@ -78,14 +84,14 @@ export function InvoiceDataTable({
           <DataTableBulkActions
             selectedRows={selectedRows}
             bulkActions={bulkActions}
-            onComplete={() => setSelectedRows([])}
+            onComplete={clearSelectedRows}
           />
         ) : undefined
       }
       enableRowSelection
       onSelectionChange={setSelectedRows}
       onRowClick={onRowClick}
-      getRowId={row => row.id}
+      getRowId={getRowId}
       emptyIcon={<InvoicesIllustration className="mx-auto h-16 w-16 text-primary/60" />}
       emptyTitle={t('empty.heading')}
       emptyDescription={t('empty.body')}

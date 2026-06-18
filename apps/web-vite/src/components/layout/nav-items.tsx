@@ -6,6 +6,7 @@ import {
   SidebarMenuItem,
 } from '@contractor-ops/ui/components/shadcn/sidebar';
 import { Pin } from 'lucide-react';
+import { useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Link, usePathname } from '../../i18n/navigation.js';
 import { useTranslations } from '../../i18n/useTranslations.js';
@@ -15,6 +16,23 @@ import { useNavBadges } from './hooks/use-nav-badges.js';
 import type { NavItemsGroupView } from './hooks/use-nav-items.js';
 import { useNavItems } from './hooks/use-nav-items.js';
 import { NavActionBadge } from './nav-action-badge.js';
+
+interface NavPrefetchLinkProps {
+  href: string;
+  isActive: boolean;
+}
+
+function NavPrefetchLink({ href, isActive }: NavPrefetchLinkProps) {
+  const handlePrefetch = useCallback(() => prefetchRoute(href), [href]);
+  return (
+    <Link
+      href={href}
+      aria-current={isActive ? 'page' : undefined}
+      onPointerEnter={handlePrefetch}
+      onFocus={handlePrefetch}
+    />
+  );
+}
 
 interface NavItemsProps {
   groups: NavItemsGroupView[];
@@ -52,14 +70,7 @@ export function NavItems({ groups, badgeCounts }: NavItemsProps) {
             {group.items.map(item => (
               <SidebarMenuItem key={item.key} className="relative">
                 <SidebarMenuButton
-                  render={
-                    <Link
-                      href={item.href}
-                      aria-current={item.isActive ? 'page' : undefined}
-                      onPointerEnter={() => prefetchRoute(item.href)}
-                      onFocus={() => prefetchRoute(item.href)}
-                    />
-                  }
+                  render={<NavPrefetchLink href={item.href} isActive={item.isActive} />}
                   isActive={item.isActive}
                   tooltip={item.label}>
                   <item.icon className="h-4 w-4" />
@@ -79,14 +90,7 @@ export function NavItems({ groups, badgeCounts }: NavItemsProps) {
                 data-pinned-tab="true"
                 className="relative">
                 <SidebarMenuButton
-                  render={
-                    <Link
-                      href={tab.href}
-                      aria-current={tab.isActive ? 'page' : undefined}
-                      onPointerEnter={() => prefetchRoute(tab.href)}
-                      onFocus={() => prefetchRoute(tab.href)}
-                    />
-                  }
+                  render={<NavPrefetchLink href={tab.href} isActive={tab.isActive} />}
                   isActive={tab.isActive}
                   tooltip={tab.label}>
                   <tab.icon className="h-4 w-4" />
