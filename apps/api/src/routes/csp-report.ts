@@ -83,7 +83,15 @@ export function registerCspReportRoute(app: FastifyInstance): void {
         data: body['csp-report'],
       });
     } else {
-      log.warn({ body }, 'csp-report: unrecognised payload shape');
+      log.warn(
+        {
+          cspReport: {
+            shape: 'unrecognised',
+            keys: body && typeof body === 'object' ? Object.keys(body) : typeof body,
+          },
+        },
+        'csp-report: unrecognised payload shape',
+      );
     }
 
     return reply.code(204).send();
