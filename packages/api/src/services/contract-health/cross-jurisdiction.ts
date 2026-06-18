@@ -51,7 +51,7 @@ export interface CrossJurisdictionAnalysis {
 
 export function analyzeCrossJurisdiction(
   expectedJurisdiction: Jurisdiction | null,
-  citedClauseJurisdictions: ReadonlyArray<Jurisdiction>,
+  citedClauseJurisdictions: readonly Jurisdiction[],
 ): CrossJurisdictionAnalysis {
   const found = Array.from(new Set(citedClauseJurisdictions));
   if (!expectedJurisdiction) {

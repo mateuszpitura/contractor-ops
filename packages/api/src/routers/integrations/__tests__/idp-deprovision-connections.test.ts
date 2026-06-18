@@ -16,7 +16,7 @@ const USER_ID = 'cluseraaaaaaaaaaaaaaaaaaaaa';
 const { mockPrisma, orgSettings, flagStatus, auditWrites } = vi.hoisted(() => {
   const orgSettings = { value: {} as Record<string, unknown> };
   const flagStatus = { value: 'PENDING' as 'PENDING' | 'APPROVED' };
-  const auditWrites: Array<Record<string, unknown>> = [];
+  const auditWrites: Record<string, unknown>[] = [];
   const mockPrisma = {
     organization: {
       // Returns both the tenant-middleware meta (status/dataRegion) AND the

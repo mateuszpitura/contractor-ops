@@ -95,7 +95,7 @@ function isRateLimitedForbidden(input: ClassifyErrorInput): boolean {
     if (remaining !== undefined && remaining.trim() === '0') return true;
     if (headers['retry-after'] !== undefined && headers['retry-after'].trim() !== '') return true;
   }
-  if (input.responseBody && input.responseBody.toLowerCase().includes('secondary rate limit')) {
+  if (input.responseBody?.toLowerCase().includes('secondary rate limit')) {
     return true;
   }
   return false;

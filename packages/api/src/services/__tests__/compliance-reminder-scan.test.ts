@@ -27,10 +27,10 @@ const {
     version: number;
   }
 
-  const itemsFixture: Array<Record<string, unknown>> = [];
+  const itemsFixture: Record<string, unknown>[] = [];
   const reminderStateByItem = new Map<string, ReminderStateRow>();
   const claimedKeys = new Set<string>();
-  const auditLogCreates: Array<Record<string, unknown>> = [];
+  const auditLogCreates: Record<string, unknown>[] = [];
 
   // All cron-context reads/writes go through prismaRaw (M-NEW-2).
   const reminderStateDelegate = {

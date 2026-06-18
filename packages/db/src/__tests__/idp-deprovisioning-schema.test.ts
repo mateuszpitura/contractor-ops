@@ -54,7 +54,7 @@ describe('Phase 76 schema additions (Plan 76-02)', () => {
   });
 
   it('DeprovisioningRunStatus enum has 5 values', () => {
-    const values: Array<Prisma.DeprovisioningRunUncheckedCreateInput['status']> = [
+    const values: Prisma.DeprovisioningRunUncheckedCreateInput['status'][] = [
       'PENDING',
       'IN_PROGRESS',
       'COMPLETED',
@@ -65,7 +65,7 @@ describe('Phase 76 schema additions (Plan 76-02)', () => {
   });
 
   it('DeprovisioningStepStatus enum has the base 4 values (Phase 77 adds MANUAL_COMPLETED)', () => {
-    const values: Array<Prisma.DeprovisioningStepUncheckedCreateInput['status']> = [
+    const values: Prisma.DeprovisioningStepUncheckedCreateInput['status'][] = [
       'PENDING',
       'IN_PROGRESS',
       'SUCCEEDED',
@@ -77,7 +77,7 @@ describe('Phase 76 schema additions (Plan 76-02)', () => {
   });
 
   it('DeprovisioningStepKind enum has 2 values', () => {
-    const values: Array<Prisma.DeprovisioningStepUncheckedCreateInput['stepKind']> = [
+    const values: Prisma.DeprovisioningStepUncheckedCreateInput['stepKind'][] = [
       'SUSPEND_ACCOUNT',
       'REVOKE_ALL_SESSIONS',
     ];
@@ -85,7 +85,7 @@ describe('Phase 76 schema additions (Plan 76-02)', () => {
   });
 
   it('DeprovisioningProvider enum has 5 values', () => {
-    const values: Array<Prisma.DeprovisioningStepUncheckedCreateInput['provider']> = [
+    const values: Prisma.DeprovisioningStepUncheckedCreateInput['provider'][] = [
       'GOOGLE_WORKSPACE',
       'SLACK',
       'ENTRA',
@@ -96,7 +96,7 @@ describe('Phase 76 schema additions (Plan 76-02)', () => {
   });
 
   it('IdpProvenanceActionKind enum has 2 values', () => {
-    const values: Array<Prisma.IdpChangeProvenanceUncheckedCreateInput['actionKind']> = [
+    const values: Prisma.IdpChangeProvenanceUncheckedCreateInput['actionKind'][] = [
       'SUSPEND',
       'REVOKE_SESSION',
     ];

@@ -253,13 +253,13 @@ function makeDb(seed?: {
     ),
   };
 
-  const auditLogs: Array<Record<string, unknown>> = [];
+  const auditLogs: Record<string, unknown>[] = [];
   const auditLog = {
     create: vi.fn(async (args: { data: Record<string, unknown> }) => {
       auditLogs.push(args.data);
       return { id: `al-${auditLogs.length}` };
     }),
-    createMany: vi.fn(async (args: { data: Array<Record<string, unknown>> }) => {
+    createMany: vi.fn(async (args: { data: Record<string, unknown>[] }) => {
       for (const row of args.data) auditLogs.push(row);
       return { count: args.data.length };
     }),

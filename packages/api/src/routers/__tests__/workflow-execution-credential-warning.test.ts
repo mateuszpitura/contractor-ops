@@ -40,7 +40,7 @@ describe('assertRunCompletable — soft-credential-warning gate (Phase 75 D-12)'
       throw new Error('expected throw');
     } catch (err) {
       const cause = (err as TRPCError).cause as {
-        pendingCredentials: Array<Record<string, unknown>>;
+        pendingCredentials: Record<string, unknown>[];
       };
       const row = cause.pendingCredentials[0];
       expect(row).toHaveProperty('label');

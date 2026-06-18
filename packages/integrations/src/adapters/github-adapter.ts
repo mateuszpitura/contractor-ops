@@ -313,7 +313,7 @@ export class GitHubAdapter extends BaseAdapter implements Deprovisionable {
     filter?: (item: Record<string, unknown>) => boolean,
   ): Promise<number> {
     try {
-      const items = (await octokit.paginate(route, params)) as Array<Record<string, unknown>>;
+      const items = (await octokit.paginate(route, params)) as Record<string, unknown>[];
       return filter ? items.filter(filter).length : items.length;
     } catch {
       return 0;

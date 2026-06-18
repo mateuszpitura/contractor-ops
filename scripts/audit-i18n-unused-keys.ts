@@ -308,7 +308,7 @@ function extractHookNamespaces(text: string): Map<string, HookEntry> {
     /\b(?:export\s+(?:default\s+)?)?(?:function\s+(\w+)\s*[<(]|const\s+(\w+)\s*[:=][^=][^=]*(?:=>|function\b))/g;
   for (const m of text.matchAll(declRe)) {
     const name = m[1] ?? m[2];
-    if (!(name && name.startsWith('use'))) continue;
+    if (!name?.startsWith('use')) continue;
     // Find function body start (next `{` after the match).
     const fromIdx = (m.index ?? 0) + m[0].length;
     const braceIdx = text.indexOf('{', fromIdx);

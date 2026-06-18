@@ -67,7 +67,7 @@ describe('materialiseLikelyMissing (Phase 75 D-07)', () => {
   });
 
   it('uses the jurisdiction IP policyRuleId (DE = werkvertrag_ip, others = ip_assignment)', async () => {
-    const cases: Array<[Jurisdiction, string]> = [
+    const cases: [Jurisdiction, string][] = [
       ['UK', 'uk.ip_assignment@v1'],
       ['DE', 'de.werkvertrag_ip@v1'],
       ['PL', 'pl.ip_assignment@v1'],

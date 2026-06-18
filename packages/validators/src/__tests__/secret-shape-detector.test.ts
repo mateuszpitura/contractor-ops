@@ -9,7 +9,7 @@ import {
 } from '../secret-shape-detector.js';
 
 // Each row: [patternId, label, positive (matches), negative (does not match)]
-const PATTERN_MATRIX: ReadonlyArray<[string, string, string, string]> = [
+const PATTERN_MATRIX: readonly [string, string, string, string][] = [
   ['aws-access-key', 'AWS access key', 'AKIAIOSFODNN7EXAMPLE', 'a-vault-url-only'],
   [
     'github-pat-fine-grained',

@@ -19,7 +19,7 @@ interface FeatureGateProps {
  */
 function FlagGate({ flag, children }: { flag: FlagKey; children: ReactNode }) {
   const enabled = useFlag(flag);
-  return enabled ? <>{children}</> : null;
+  return enabled ? children : null;
 }
 
 /**
@@ -32,7 +32,7 @@ export function FeatureGate({ flag, requiredTier, featureName, children }: Featu
         {children}
       </BillingTierGate>
     ) : (
-      <>{children}</>
+      children
     );
 
   return flag ? <FlagGate flag={flag}>{gated}</FlagGate> : gated;

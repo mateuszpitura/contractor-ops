@@ -117,40 +117,36 @@ export function DirectoryImportWizardView({
                   </div>
                 )}
 
-                {!!directoryData && !!stats && (
-                  <>
-                    {stats.total === 0 ? (
-                      <div className="py-8 text-center">
-                        <h3 className="text-lg font-semibold">{t('emptyNoUsers')}</h3>
-                        <p className="mt-1 text-sm text-muted-foreground">
-                          {t('emptyNoUsersBody')}
-                        </p>
-                      </div>
-                    ) : stats.new === 0 ? (
-                      <div className="py-8 text-center">
-                        <h3 className="text-lg font-semibold">{t('emptyAllImported')}</h3>
-                        <p className="mt-1 text-sm text-muted-foreground">
-                          {t('emptyAllImportedBody')}
-                        </p>
-                      </div>
-                    ) : (
-                      <>
-                        <DirectorySummaryBar
-                          total={stats.total}
-                          alreadyImported={stats.alreadyImported}
-                          newUsers={stats.new}
-                          selected={selectedEmails.size}
-                        />
+                {!!directoryData &&
+                  !!stats &&
+                  (stats.total === 0 ? (
+                    <div className="py-8 text-center">
+                      <h3 className="text-lg font-semibold">{t('emptyNoUsers')}</h3>
+                      <p className="mt-1 text-sm text-muted-foreground">{t('emptyNoUsersBody')}</p>
+                    </div>
+                  ) : stats.new === 0 ? (
+                    <div className="py-8 text-center">
+                      <h3 className="text-lg font-semibold">{t('emptyAllImported')}</h3>
+                      <p className="mt-1 text-sm text-muted-foreground">
+                        {t('emptyAllImportedBody')}
+                      </p>
+                    </div>
+                  ) : (
+                    <>
+                      <DirectorySummaryBar
+                        total={stats.total}
+                        alreadyImported={stats.alreadyImported}
+                        newUsers={stats.new}
+                        selected={selectedEmails.size}
+                      />
 
-                        <DirectoryPreviewTable
-                          users={users}
-                          selectedEmails={selectedEmails}
-                          onSelectionChange={setSelectedEmails}
-                        />
-                      </>
-                    )}
-                  </>
-                )}
+                      <DirectoryPreviewTable
+                        users={users}
+                        selectedEmails={selectedEmails}
+                        onSelectionChange={setSelectedEmails}
+                      />
+                    </>
+                  ))}
               </div>
             )}
 

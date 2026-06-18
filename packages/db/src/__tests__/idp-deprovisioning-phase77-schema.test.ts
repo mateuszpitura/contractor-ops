@@ -8,7 +8,7 @@ import type { Prisma } from '../generated/prisma/client/client.js';
 
 describe('Phase 77 schema additions (Plan 77-01-05)', () => {
   it('DeprovisioningStepStatus enum includes MANUAL_COMPLETED (5 values)', () => {
-    const values: Array<Prisma.DeprovisioningStepUncheckedCreateInput['status']> = [
+    const values: Prisma.DeprovisioningStepUncheckedCreateInput['status'][] = [
       'PENDING',
       'IN_PROGRESS',
       'SUCCEEDED',
@@ -39,7 +39,7 @@ describe('Phase 77 schema additions (Plan 77-01-05)', () => {
   });
 
   it('ErrorClass enum carries all six D-07 values', () => {
-    const values: Array<Prisma.DeprovisioningStepUncheckedCreateInput['errorClass']> = [
+    const values: Prisma.DeprovisioningStepUncheckedCreateInput['errorClass'][] = [
       'TRANSIENT_RATE_LIMIT',
       'TRANSIENT_NETWORK',
       'PERMANENT_NOT_FOUND',
@@ -51,7 +51,7 @@ describe('Phase 77 schema additions (Plan 77-01-05)', () => {
   });
 
   it('ManualOverrideCategory enum carries all five D-10 values', () => {
-    const values: Array<Prisma.DeprovisioningStepUncheckedCreateInput['manualOverrideCategory']> = [
+    const values: Prisma.DeprovisioningStepUncheckedCreateInput['manualOverrideCategory'][] = [
       'verified_via_vendor_console',
       'user_already_inactive',
       'provider_endpoint_deprecated',

@@ -20,7 +20,7 @@ const {
   itemsByRegion,
   claimedKeys,
 } = vi.hoisted(() => {
-  const itemsByRegion = new Map<string, Array<Record<string, unknown>>>();
+  const itemsByRegion = new Map<string, Record<string, unknown>[]>();
   const claimedKeys = new Set<string>();
 
   // A per-region in-memory client. Each region scans only its own items so we can
@@ -173,7 +173,7 @@ describe('C3 (Pitfall 18) reminder region fan-out — ME free-zone items enter t
   it('skips a region gracefully when its DATABASE_URL_* env var is not configured [79-03]', async () => {
     const now = new Date('2026-06-03T09:00:00Z');
     itemsByRegion.set('EU', []);
-    itemsByRegion.set('ME', null as unknown as Array<Record<string, unknown>>); // env unset → getRegionalClient throws
+    itemsByRegion.set('ME', null as unknown as Record<string, unknown>[]); // env unset → getRegionalClient throws
 
     // EU still scans; ME is skipped without throwing.
     const result = await runComplianceReminderScan(now);

@@ -249,7 +249,7 @@ function SelectScrollDownButton({
 export interface SelectValueLabelMissEvent {
   component: 'SelectValueLabel';
   value: string;
-  availableValues: ReadonlyArray<string>;
+  availableValues: readonly string[];
   context?: string;
 }
 
@@ -272,7 +272,7 @@ export interface SelectValueLabelProps {
   /** The current selected value (the enum key, never the label). */
   value: string;
   /** Static or fetched option list — label is rendered for the matching value. */
-  options: ReadonlyArray<SelectValueLabelOption>;
+  options: readonly SelectValueLabelOption[];
   /**
    * Optional human context for the error sink (e.g. component name, field).
    * Useful when many SelectValueLabel instances share the same sink.

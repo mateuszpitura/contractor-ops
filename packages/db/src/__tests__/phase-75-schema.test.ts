@@ -74,7 +74,7 @@ describe('Phase 75 schema additions (Plan 75-02)', () => {
   });
 
   it('IpAssignmentVerdict enum has 3 values', () => {
-    const values: Array<Prisma.ContractHealthCheckRunUncheckedCreateInput['verdict']> = [
+    const values: Prisma.ContractHealthCheckRunUncheckedCreateInput['verdict'][] = [
       'LIKELY_PRESENT',
       'LIKELY_MISSING',
       'MANUAL_REVIEW_REQUIRED',
@@ -83,7 +83,7 @@ describe('Phase 75 schema additions (Plan 75-02)', () => {
   });
 
   it('RunStatus enum has 3 values', () => {
-    const values: Array<Prisma.ContractHealthCheckRunUncheckedCreateInput['status']> = [
+    const values: Prisma.ContractHealthCheckRunUncheckedCreateInput['status'][] = [
       'PENDING',
       'SUCCEEDED',
       'FAILED',
@@ -92,7 +92,7 @@ describe('Phase 75 schema additions (Plan 75-02)', () => {
   });
 
   it('RunTrigger enum has 3 values', () => {
-    const values: Array<Prisma.ContractHealthCheckRunUncheckedCreateInput['triggeredBy']> = [
+    const values: Prisma.ContractHealthCheckRunUncheckedCreateInput['triggeredBy'][] = [
       'UPLOAD',
       'MANUAL',
       'MODEL_BUMP_BULK',
@@ -113,7 +113,7 @@ describe('Phase 75 schema additions (Plan 75-02)', () => {
   });
 
   it('VaultProvider enum has 7 values', () => {
-    const values: Array<Prisma.CredentialReferenceUncheckedCreateInput['vaultProvider']> = [
+    const values: Prisma.CredentialReferenceUncheckedCreateInput['vaultProvider'][] = [
       'ONE_PASSWORD',
       'BITWARDEN',
       'HASHICORP_VAULT',
@@ -126,7 +126,7 @@ describe('Phase 75 schema additions (Plan 75-02)', () => {
   });
 
   it('AccessType enum has 8 values', () => {
-    const values: Array<Prisma.CredentialReferenceUncheckedCreateInput['accessType']> = [
+    const values: Prisma.CredentialReferenceUncheckedCreateInput['accessType'][] = [
       'AWS',
       'GITHUB',
       'GCP',
@@ -140,7 +140,7 @@ describe('Phase 75 schema additions (Plan 75-02)', () => {
   });
 
   it('CredentialStatus enum has 3 values', () => {
-    const values: Array<Prisma.CredentialReferenceUncheckedCreateInput['status']> = [
+    const values: Prisma.CredentialReferenceUncheckedCreateInput['status'][] = [
       'PENDING',
       'ROTATED',
       'NOT_APPLICABLE',

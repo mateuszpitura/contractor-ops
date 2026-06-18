@@ -46,7 +46,7 @@ type OnboardingStep = {
   ctaHref: string;
 };
 
-const ONBOARDING_STEPS: ReadonlyArray<OnboardingStep> = [
+const ONBOARDING_STEPS: readonly OnboardingStep[] = [
   {
     id: 'org-details',
     icon: Building2,
