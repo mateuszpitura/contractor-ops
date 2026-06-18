@@ -62,7 +62,7 @@ export function useIntakeDetailMatch(
   };
 
   const handleCreateFromData = () => {
-    router.push(`/contractors?createFromIntake=${intakeId}`);
+    void router.push(`/contractors?createFromIntake=${intakeId}`);
   };
 
   const alreadyMatched = currentStatus === 'MATCHED' || currentStatus === 'CONVERTED';

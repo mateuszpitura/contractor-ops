@@ -84,7 +84,7 @@ function PortalLoginVerifyPageContent() {
               result.session.expiresAt.toISOString(),
               result.session.signature,
             );
-            router.push('/portal');
+            await router.push('/portal');
           } catch {
             setState({
               status: 'error',
@@ -132,7 +132,7 @@ function PortalLoginVerifyPageContent() {
         const result = await selectOrg.mutateAsync(input);
 
         await setSessionCookie(result.rawToken, result.expiresAt.toISOString(), result.signature);
-        router.push('/portal');
+        await router.push('/portal');
       } catch {
         toast.error(t('verify.errors.orgSelectFailed'));
       }

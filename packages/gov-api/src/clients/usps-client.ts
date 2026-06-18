@@ -324,7 +324,7 @@ export class UspsAddressClient {
   }
 
   private async refreshAccessToken(): Promise<string | null> {
-    if (this.refreshInFlight) return this.refreshInFlight;
+    if (this.refreshInFlight != null) return this.refreshInFlight;
     this.refreshInFlight = this.doRefreshAccessToken().finally(() => {
       this.refreshInFlight = null;
     });

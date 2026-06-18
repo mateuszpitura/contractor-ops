@@ -175,7 +175,7 @@ function DataGridColumnHeaderInner<TData, TValue>({
     let hasPreviousSection = false;
 
     // Filter section
-    if (filter) {
+    if (filter != null) {
       items.push(
         <DropdownMenuGroup key="group-filter">
           <DropdownMenuLabel key="filter">{filter}</DropdownMenuLabel>

@@ -31,11 +31,11 @@ export function EmptyStateRow({
     <TableRow className="hover:bg-transparent">
       <TableCell colSpan={colSpan} className="py-20">
         <div className="mx-auto flex max-w-md flex-col items-center text-center">
-          {icon ? (
+          {icon == null ? null : (
             <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted/60 text-muted-foreground">
               {icon}
             </div>
-          ) : null}
+          )}
           <h3 className="mt-4 text-[15px] font-semibold tracking-tight text-foreground">{title}</h3>
           {description ? (
             <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">{description}</p>

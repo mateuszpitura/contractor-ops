@@ -148,7 +148,7 @@ export function useTimeTracking() {
 
   const handleNavigateToReview = useCallback(
     (contractorId: string, weekStartDate: string) => {
-      router.push(`/time/${contractorId}?week=${weekStartDate}`);
+      void router.push(`/time/${contractorId}?week=${weekStartDate}`);
     },
     [router],
   );

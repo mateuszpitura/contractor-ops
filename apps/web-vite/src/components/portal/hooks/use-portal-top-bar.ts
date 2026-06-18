@@ -24,7 +24,7 @@ export function usePortalTopBar() {
         credentials: 'include',
       });
     } finally {
-      router.push('/portal/login');
+      void router.push('/portal/login');
     }
   }, [logoutMutation, router]);
 
@@ -46,7 +46,7 @@ export function usePortalMobileMenu(onOpenChange: (open: boolean) => void) {
   const handleNavClick = useCallback(
     (href: string) => {
       onOpenChange(false);
-      router.push(href);
+      void router.push(href);
     },
     [onOpenChange, router],
   );
@@ -59,7 +59,7 @@ export function usePortalMobileMenu(onOpenChange: (open: boolean) => void) {
         credentials: 'include',
       });
     } finally {
-      router.push('/portal/login');
+      void router.push('/portal/login');
     }
   }, [onOpenChange, router]);
 

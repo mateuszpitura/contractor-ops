@@ -47,7 +47,7 @@ export async function mount(ui: ReactElement): Promise<Mounted> {
     container,
     root,
     unmount: () => {
-      act(() => {
+      void act(() => {
         root.unmount();
       });
       container.remove();

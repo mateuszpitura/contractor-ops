@@ -10,8 +10,8 @@
 
 import { describe, expect, it } from 'vitest';
 // The implementations do not exist yet — Wave-0 RED (resolution-fail).
-import { buildIrisXml } from '../generator';
-import { xsdValidate } from '../validator';
+import { buildIrisXml } from '../generator.js';
+import { xsdValidate } from '../validator.js';
 
 const goldenInput = {
   taxYear: 2026 as const,

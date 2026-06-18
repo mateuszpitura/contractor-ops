@@ -55,7 +55,7 @@ export function useClassificationWizardMutations(
         void queryClient.invalidateQueries({
           queryKey: [['classification', 'getDraft']],
         });
-        router.push(
+        void router.push(
           `/contractors/${contractorId}/engagements/${contractorAssignmentId}/classification/${result.id}`,
         );
         toast.success(toasts.done());

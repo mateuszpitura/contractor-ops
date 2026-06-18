@@ -47,7 +47,7 @@ export function AtelierPageHeader({
           <p className="mt-1 max-w-2xl text-sm text-muted-foreground">{description}</p>
         ) : null}
       </div>
-      {actions ? <div className="flex shrink-0 items-center gap-2">{actions}</div> : null}
+      {actions == null ? null : <div className="flex shrink-0 items-center gap-2">{actions}</div>}
     </div>
   );
 }

@@ -22,7 +22,7 @@ export function useBillingOverlay() {
   const showTrialBanner = isTrialing && trialEnd !== null && !isTrialExpired;
 
   const handleUpgrade = () => {
-    router.push('/settings?tab=billing');
+    void router.push('/settings?tab=billing');
   };
 
   const handleSelectPlan = (priceId: string) => {

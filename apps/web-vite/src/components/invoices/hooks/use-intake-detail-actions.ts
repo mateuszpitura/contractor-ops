@@ -45,7 +45,7 @@ export function useIntakeDetailActions(
       onSuccess: result => {
         const converted = result as { invoiceId?: string } | undefined;
         if (converted?.invoiceId) {
-          router.push(`/invoices/${converted.invoiceId}`);
+          void router.push(`/invoices/${converted.invoiceId}`);
         }
       },
     }),

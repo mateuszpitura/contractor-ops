@@ -11,7 +11,7 @@
 
 import { describe, expect, it } from 'vitest';
 // The implementation does not exist yet — Wave-0 RED (resolution-fail).
-import { buildIrisXml } from '../generator';
+import { buildIrisXml } from '../generator.js';
 
 describe('buildIrisXml — IRIS 1099-NEC XML (US-FORM-05 / US-FORM-07)', () => {
   it('emits a Transmission Manifest with the schema VersionNum/VersionDt it was built against', () => {

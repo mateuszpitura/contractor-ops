@@ -85,7 +85,7 @@ export function useInviteAcceptForm({
           return;
         }
 
-        navigate('/', { replace: true });
+        void navigate('/', { replace: true });
       } catch (err) {
         Sentry.captureException(err, { tags: { 'auth.flow': 'invite_accept' } });
         toast.error(tc('networkError'));

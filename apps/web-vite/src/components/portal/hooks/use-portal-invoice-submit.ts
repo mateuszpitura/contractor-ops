@@ -211,7 +211,7 @@ export function usePortalInvoiceSubmission(
           fileSizeBytes: upload.fileSizeBytes,
         });
 
-        router.push(
+        void router.push(
           `/portal/invoices/submit/success?invoiceId=${result.invoiceId}&invoiceNumber=${encodeURIComponent(result.invoiceNumber)}`,
         );
         // safe-swallow: the error is surfaced to the user via useResourceMutation's toast.

@@ -54,7 +54,7 @@ export function useWorkflowTemplateForm(
   const createMutation = useResourceMutation(
     trpc.workflow.createTemplate.mutationOptions({
       onSuccess: () => {
-        router.push('/workflows');
+        void router.push('/workflows');
       },
     }),
     {
@@ -80,7 +80,7 @@ export function useWorkflowTemplateForm(
   const deleteMutation = useResourceMutation(
     trpc.workflow.deleteTemplate.mutationOptions({
       onSuccess: () => {
-        router.push('/workflows');
+        void router.push('/workflows');
       },
     }),
     {
@@ -92,7 +92,7 @@ export function useWorkflowTemplateForm(
   const duplicateMutation = useResourceMutation(
     trpc.workflow.duplicateTemplate.mutationOptions({
       onSuccess: data => {
-        router.push(`/workflows/templates/${(data as Record<string, unknown>).id}`);
+        void router.push(`/workflows/templates/${(data as Record<string, unknown>).id}`);
       },
     }),
     {

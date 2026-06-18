@@ -45,7 +45,7 @@ export function useGdprDataRightsSection() {
         setErasureOpen(false);
         setConfirmInput('');
         queryClient.clear();
-        router.push('/login');
+        void router.push('/login');
       },
       onError: err => toast.error(err.message || t('toast.erasureFailed')),
     }),

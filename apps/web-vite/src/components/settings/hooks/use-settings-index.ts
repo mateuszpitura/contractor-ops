@@ -48,18 +48,18 @@ export function useSettingsIndex(): UseSettingsIndexResult {
   const onSettingsTabChange = useCallback(
     (value: string) => {
       if (value === 'members') {
-        router.push('/settings/members');
+        void router.push('/settings/members');
         return;
       }
       if (value === 'workflow-roles') {
-        router.push('/settings/workflow-roles');
+        void router.push('/settings/workflow-roles');
         return;
       }
       if (value === 'tax') {
-        router.push('/settings/tax');
+        void router.push('/settings/tax');
         return;
       }
-      router.replace(`/settings?tab=${value}`);
+      void router.replace(`/settings?tab=${value}`);
     },
     [router],
   );

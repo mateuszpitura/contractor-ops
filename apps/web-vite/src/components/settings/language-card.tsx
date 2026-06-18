@@ -88,7 +88,7 @@ export function LanguageCard() {
   const handleLocaleChange = useCallback(
     (newLocale: Locale) => {
       if (newLocale === locale) return;
-      navigate(localePath(pathname, newLocale), { replace: true });
+      void navigate(localePath(pathname, newLocale), { replace: true });
     },
     [locale, navigate, pathname],
   );

@@ -41,7 +41,7 @@ export function useContractDetailHeader(contractId: string, contractStatus: stri
   const deleteMutation = useResourceMutation(
     trpc.contract.delete.mutationOptions({
       onSuccess: () => {
-        router.push('/contracts');
+        void router.push('/contracts');
       },
     }),
     {

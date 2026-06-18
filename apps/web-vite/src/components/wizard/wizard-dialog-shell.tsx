@@ -82,7 +82,7 @@ export function WizardDialogShell({
           <DialogHeader>
             <DialogTitle>{title}</DialogTitle>
           </DialogHeader>
-          {stepper ? <DialogSection className="pt-2">{stepper}</DialogSection> : null}
+          {stepper == null ? null : <DialogSection className="pt-2">{stepper}</DialogSection>}
           <DialogBody>{children}</DialogBody>
           {footer ?? (
             <DialogFooter className="gap-2 sm:gap-0">

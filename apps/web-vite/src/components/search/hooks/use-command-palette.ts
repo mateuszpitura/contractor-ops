@@ -184,7 +184,7 @@ export function useCommandPalette(): CommandPaletteViewModel {
   const onNavigate = useCallback(
     (href: string) => {
       setOpen(false);
-      router.push(href);
+      void router.push(href);
     },
     [router, setOpen],
   );

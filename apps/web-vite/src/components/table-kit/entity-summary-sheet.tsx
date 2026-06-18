@@ -48,10 +48,12 @@ export function EntitySummarySheet({
                 }>
                 {title}
               </SheetTitle>
-              {badges ? <div className="flex items-center gap-2 flex-wrap">{badges}</div> : null}
+              {badges == null ? null : (
+                <div className="flex items-center gap-2 flex-wrap">{badges}</div>
+              )}
             </SheetHeader>
 
-            {detailsTitle || children ? (
+            {detailsTitle != null || children != null ? (
               <>
                 <Separator />
                 <div className="space-y-3">
@@ -65,12 +67,12 @@ export function EntitySummarySheet({
               </>
             ) : null}
 
-            {footer ? (
+            {footer == null ? null : (
               <>
                 <Separator />
                 {footer}
               </>
-            ) : null}
+            )}
           </div>
         </ScrollArea>
       </SheetContent>

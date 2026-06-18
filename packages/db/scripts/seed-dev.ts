@@ -8143,5 +8143,5 @@ const cli = defineCommand({
 
 const isCli = process.argv[1] !== undefined && process.argv[1] === fileURLToPath(import.meta.url);
 if (isCli) {
-  runMain(cli);
+  void runMain(cli);
 }

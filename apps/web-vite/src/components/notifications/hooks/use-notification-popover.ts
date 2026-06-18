@@ -48,7 +48,7 @@ export function useNotificationPopover() {
         markReadMutation.mutate({ notificationId: notification.id });
       }
       const url = getEntityUrl(notification.entityType, notification.entityId);
-      router.push(url);
+      void router.push(url);
     },
     [markReadMutation, router],
   );
@@ -65,7 +65,7 @@ export function useNotificationPopover() {
   );
 
   const handleViewAll = useCallback(() => {
-    router.push('/notifications');
+    void router.push('/notifications');
   }, [router]);
 
   const handleMarkAllRead = useCallback(() => {

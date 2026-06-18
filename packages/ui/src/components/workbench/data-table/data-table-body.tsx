@@ -109,13 +109,13 @@ export function DataTableBody<TData>({
           return (
             <Fragment key={row.id}>
               <DataRow row={row} onRowClick={onRowClick} rowClassName={rowClassName} />
-              {subRow ? (
+              {subRow == null ? null : (
                 <TableRow className="hover:bg-transparent">
                   <TableCell colSpan={colSpan} className="p-0">
                     {subRow}
                   </TableCell>
                 </TableRow>
-              ) : null}
+              )}
             </Fragment>
           );
         })

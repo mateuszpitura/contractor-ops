@@ -24,7 +24,7 @@
  * package — both directions of import would create a workspace cycle.
  */
 
-import { createIntegrationLogger } from './index.js';
+import { createIntegrationLogger } from './root-logger.js';
 
 export type IntegrationCallOutcome = 'success' | 'failure' | 'timeout' | 'breaker_open';
 

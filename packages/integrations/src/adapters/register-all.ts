@@ -67,7 +67,7 @@ let heavyLoadPromise: Promise<void> | null = null;
  * route handler reaches an await on a heavy adapter.
  */
 function startHeavyLoad(): Promise<void> {
-  if (heavyLoadPromise) return heavyLoadPromise;
+  if (heavyLoadPromise != null) return heavyLoadPromise;
   heavyLoadPromise = (async () => {
     const [
       { DocuSignAdapter },

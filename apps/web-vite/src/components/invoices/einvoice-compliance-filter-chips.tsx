@@ -71,7 +71,7 @@ export function EInvoiceComplianceFilterChips({
         params.set(URL_PARAM, next.join(','));
       }
       const query = params.toString();
-      router.replace(query ? `?${query}` : '?');
+      void router.replace(query ? `?${query}` : '?');
     },
     [router, searchParams, syncToUrl],
   );

@@ -66,7 +66,7 @@ export function useOrgSwitcher(): UseOrgSwitcherResult {
         refetched.contractor.id === target.contractorId;
 
       if (sessionMatchesTarget) {
-        router.push('/portal');
+        void router.push('/portal');
       } else {
         window.location.assign(localePath('/portal', locale));
       }

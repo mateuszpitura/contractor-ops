@@ -11,7 +11,7 @@
  * `router/portal-routes.tsx`.
  */
 
-type Thunk = () => Promise<unknown>;
+export type Thunk = () => Promise<unknown>;
 
 /** Keyed by the locale-stripped nav `href` (see `lib/navigation.ts`). */
 const ROUTE_CHUNKS: Record<string, Thunk> = {
@@ -43,19 +43,9 @@ const ROUTE_CHUNKS: Record<string, Thunk> = {
   '/portal/signatures': () => import('../pages/portal/signatures.js'),
 };
 
-/**
- * Shell container chunks. Warmed on idle so the cold-boot blank frame (the
- * lazy shell chunk downloading behind `Suspense fallback={null}`) is gone by
- * the time the auth loader resolves and the shell mounts.
- */
-const SHELL_CHUNKS: Array<readonly [string, Thunk]> = [
-  ['shell:dashboard', () => import('../components/layout/dashboard-shell.js')],
-  ['shell:portal', () => import('../components/layout/portal-shell.js')],
-];
-
 const prefetched = new Set<string>();
 
-function warm(key: string, thunk: Thunk): void {
+export function warm(key: string, thunk: Thunk): void {
   if (prefetched.has(key)) return;
   prefetched.add(key);
   void thunk().catch(() => {
@@ -71,21 +61,11 @@ export function prefetchRoute(href: string): void {
   if (thunk) warm(href, thunk);
 }
 
-function onIdle(cb: () => void): void {
+export function onIdle(cb: () => void): void {
   if (typeof window === 'undefined') return;
   if (typeof window.requestIdleCallback === 'function') {
     window.requestIdleCallback(cb, { timeout: 2000 });
   } else {
     window.setTimeout(cb, 200);
   }
-}
-
-/**
- * Prefetch the staff + portal shell chunks once the main thread goes idle.
- * Call after the initial render so first paint is never delayed.
- */
-export function prefetchShellsOnIdle(): void {
-  onIdle(() => {
-    for (const [key, thunk] of SHELL_CHUNKS) warm(key, thunk);
-  });
 }

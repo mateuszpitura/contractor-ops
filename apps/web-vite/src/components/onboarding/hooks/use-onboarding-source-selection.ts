@@ -123,7 +123,7 @@ export function useOnboardingSourceSelection(
   }, [sourcesQuery]);
 
   const handleSkip = useCallback(() => {
-    router.push('/settings?tab=members');
+    void router.push('/settings?tab=members');
   }, [router]);
 
   return {

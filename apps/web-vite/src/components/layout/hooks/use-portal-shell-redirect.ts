@@ -9,7 +9,7 @@ export function usePortalShellRedirect(shouldRedirectToLogin: boolean): void {
 
   useEffect(() => {
     if (shouldRedirectToLogin) {
-      navigate(localePath('/portal/login', locale), { replace: true });
+      void navigate(localePath('/portal/login', locale), { replace: true });
     }
   }, [shouldRedirectToLogin, navigate, locale]);
 }

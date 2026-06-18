@@ -287,6 +287,7 @@ export const einvoiceRouter = router({
       //    second event.
       // This sha identifies the PDF bytes for storage dedup; it is NEVER
       // sent to a provider as an Idempotency-Key header.
+      // lint-idempotency-OK reason=content-addressed PDF storage-dedup digest, never used as a provider Idempotency-Key
       const sha = createHash('sha256').update(Buffer.from(pdfBytes)).digest('hex');
       const key = `einvoice-pdf/${ctx.organizationId}/${input.invoiceId}/${sha.slice(0, 16)}.pdf`;
 

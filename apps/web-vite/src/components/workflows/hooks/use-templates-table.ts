@@ -98,7 +98,7 @@ export function useTemplatesTable() {
 
   const handleRowNavigate = useCallback(
     (templateId: string) => {
-      router.push(`/workflows/templates/${templateId}`);
+      void router.push(`/workflows/templates/${templateId}`);
     },
     [router],
   );

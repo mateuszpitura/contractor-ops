@@ -40,19 +40,19 @@ export function AtelierToolbar({
         sticky ? 'sticky top-14 z-20' : ''
       }`}>
       <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:gap-4">
-        {search ? <div className="min-w-0 lg:flex-1">{search}</div> : null}
-        {filters ? (
+        {search == null ? null : <div className="min-w-0 lg:flex-1">{search}</div>}
+        {filters == null ? null : (
           <div className="flex flex-wrap items-center gap-2 lg:flex-nowrap">{filters}</div>
-        ) : null}
-        {actions ? (
+        )}
+        {actions == null ? null : (
           <div className="flex shrink-0 items-center gap-2 lg:ms-auto">{actions}</div>
-        ) : null}
+        )}
       </div>
-      {footer ? (
+      {footer == null ? null : (
         <div className="flex flex-wrap items-center gap-2 border-t border-border/40 pt-3">
           {footer}
         </div>
-      ) : null}
+      )}
     </div>
   );
 }

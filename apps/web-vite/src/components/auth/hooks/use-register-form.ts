@@ -106,7 +106,7 @@ export function useRegisterForm(): RegisterFormProps {
           return;
         }
 
-        navigate('/', { replace: true });
+        void navigate('/', { replace: true });
       } catch (err) {
         Sentry.captureException(err, { tags: { 'auth.flow': 'register' } });
         toast.error(tc('networkError'));

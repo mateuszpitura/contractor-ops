@@ -552,7 +552,7 @@ function OcrStatusBanner({
     <>
       {!!showStatusBar && (
         <ExtractionStatusBar
-          status={extractionStatus as 'PROCESSING' | 'EXTRACTED' | 'PARTIAL' | 'FAILED'}
+          status={extractionStatus as 'PROCESSING' | 'EXTRACTED' | 'PARTIAL' | 'FAILED' | 'SKIPPED'}
           fieldCount={fieldCount}
           totalFields={totalFields}
           errorMessage={resultJson?.errorMessage}
@@ -719,12 +719,12 @@ export function InvoiceSubmitForm({
         tAria={tAria}
       />
 
-      {ocrReviewPanel ? (
+      {ocrReviewPanel == null ? null : (
         <>
           <Separator />
           <div className="space-y-4">{ocrReviewPanel}</div>
         </>
-      ) : null}
+      )}
 
       <Separator />
 
@@ -781,7 +781,7 @@ export function InvoiceSubmitFormContainer() {
   });
 
   const onNavigateBilling = useCallback(() => {
-    router.push('/settings?tab=billing');
+    void router.push('/settings?tab=billing');
   }, [router]);
 
   return (

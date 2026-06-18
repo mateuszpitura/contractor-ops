@@ -39,7 +39,7 @@ export function useCommandPalette(labels: CommandPaletteLabels) {
 
   const go = useCallback(
     (path: string) => () => {
-      navigate(path);
+      void navigate(path);
     },
     [navigate],
   );

@@ -144,10 +144,11 @@ export function useTaxFormWizard(): UseTaxFormWizardResult {
           signedAt: new Date(),
         });
         setStepIndex(STEP_ORDER.indexOf('receipt'));
+        // safe-swallow: the mutation's error state drives the inline alert; the
+        // form values are intentionally preserved so the contractor can retry
+        // without re-entering anything.
       } catch {
-        // The mutation's error state drives the inline alert; the form values
-        // are intentionally preserved so the contractor can retry without
-        // re-entering anything.
+        // No-op — handled via the mutation error state (see note above).
       }
     },
     [submitMutation],

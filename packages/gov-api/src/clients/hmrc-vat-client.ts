@@ -196,7 +196,7 @@ export class HmrcVatClient extends GovApiClient {
 
   private async refreshAccessToken(): Promise<string> {
     // Single-flight: piggyback on an existing refresh if one is running.
-    if (this.refreshInFlight) {
+    if (this.refreshInFlight != null) {
       return this.refreshInFlight;
     }
     this.refreshInFlight = this.doRefreshAccessToken().finally(() => {

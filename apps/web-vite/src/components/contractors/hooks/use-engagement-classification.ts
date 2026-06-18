@@ -200,7 +200,7 @@ export function useClassificationOutcomeView(
   }, [contractorId, engagementId, handleDeferred, router]);
 
   const handleRerun = useCallback(() => {
-    router.push(`/contractors/${contractorId}/engagements/${engagementId}/classification`);
+    void router.push(`/contractors/${contractorId}/engagements/${engagementId}/classification`);
   }, [contractorId, engagementId, router]);
 
   const handlePrint = useCallback(() => {

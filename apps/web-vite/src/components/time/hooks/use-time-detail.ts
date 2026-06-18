@@ -42,7 +42,7 @@ export function useTimeDetail(contractorId: string, week: string | null) {
       onSuccess: () => {
         toast.success(t('toast.approved'));
         invalidate();
-        router.push('/time');
+        void router.push('/time');
       },
       onError: () => toast.error(t('errors.failedToApprove')),
     }),
@@ -53,7 +53,7 @@ export function useTimeDetail(contractorId: string, week: string | null) {
       onSuccess: () => {
         toast.success(t('toast.rejected'));
         invalidate();
-        router.push('/time');
+        void router.push('/time');
       },
       onError: () => toast.error(t('errors.failedToReject')),
     }),
@@ -73,7 +73,7 @@ export function useTimeDetail(contractorId: string, week: string | null) {
   );
 
   const handleBack = useCallback(() => {
-    router.push('/time');
+    void router.push('/time');
   }, [router]);
 
   return {

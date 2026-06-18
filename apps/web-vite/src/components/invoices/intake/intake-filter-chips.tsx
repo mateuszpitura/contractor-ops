@@ -81,7 +81,7 @@ export function IntakeFilterChips({ value, onChange }: IntakeFilterChipsProps) {
         params.set(URL_PARAM, FILTER_TO_STATUS[next]);
       }
       const qs = params.toString();
-      router.replace(`${window.location.pathname}${qs ? `?${qs}` : ''}`);
+      void router.replace(`${window.location.pathname}${qs ? `?${qs}` : ''}`);
     },
     [onChange, router, searchParams],
   );

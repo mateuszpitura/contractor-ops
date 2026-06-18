@@ -69,7 +69,7 @@ export function useInvoicesListPage() {
     const params = new URLSearchParams(searchParams.toString());
     params.set('einvoiceStatus', COMPLIANCE_REVIEW_FILTER);
     const query = params.toString();
-    router.replace(query ? `?${query}` : '?');
+    void router.replace(query ? `?${query}` : '?');
     document
       .querySelector(INVOICES_TABLE_REGION_SELECTOR)
       ?.scrollIntoView({ behavior: 'smooth', block: 'start' });

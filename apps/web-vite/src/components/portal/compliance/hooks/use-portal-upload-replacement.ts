@@ -57,7 +57,7 @@ export function usePortalUploadReplacement() {
 
         await queryClient.invalidateQueries(trpc.portal.complianceItems.pathFilter());
         toast.success(t('upload.success'));
-        router.push('/portal/compliance');
+        void router.push('/portal/compliance');
       } catch (err) {
         toast.error(t('upload.error'));
         throw err;

@@ -51,7 +51,7 @@ function mount(ui: React.ReactNode): Harness {
   document.body.appendChild(container);
   const root = createRoot(container);
   // Row is a <tr>; mount inside a <table><tbody> so the DOM is valid.
-  act(() => {
+  void act(() => {
     root.render(
       <table>
         <tbody>{ui}</tbody>
@@ -62,7 +62,7 @@ function mount(ui: React.ReactNode): Harness {
 }
 
 function unmount(h: Harness) {
-  act(() => {
+  void act(() => {
     h.root.unmount();
   });
   h.container.remove();

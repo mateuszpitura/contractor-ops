@@ -100,7 +100,7 @@ export function useIntakeUpload(onOpenChange: (open: boolean) => void) {
           toast.message(t('uploadDedupToast'));
         }
         handleClose(false);
-        router.push(`/invoices/intake/${result.intakeId}`);
+        void router.push(`/invoices/intake/${result.intakeId}`);
       } catch (err) {
         const code = err instanceof TRPCClientError ? err.data?.code : undefined;
         const message =

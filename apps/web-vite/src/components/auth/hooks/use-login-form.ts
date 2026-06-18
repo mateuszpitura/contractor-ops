@@ -90,7 +90,7 @@ export function useLoginForm(): LoginFormProps {
           setIsLoading(false);
           return;
         }
-        navigate(redirectTo, { replace: true });
+        void navigate(redirectTo, { replace: true });
       } catch (err) {
         // Surface flow failures even when navigate succeeds.
         Sentry.captureException(err, { tags: { 'auth.flow': 'login.password' } });

@@ -73,9 +73,9 @@ export function AtelierTableShell({
           // body's max-height bounds it and the page scrolls instead.
           managed && fill && fillBox,
         )}>
-        {chrome ? (
+        {chrome == null ? null : (
           <div className="shrink-0 border-b border-border/50 bg-muted/40">{chrome}</div>
-        ) : null}
+        )}
         <section
           aria-label="Table content"
           className={cn(
@@ -104,9 +104,9 @@ export function AtelierTableShell({
           </div>
         ) : null}
       </div>
-      {footer ? (
+      {footer == null ? null : (
         <div className="flex shrink-0 items-center justify-between gap-3">{footer}</div>
-      ) : null}
+      )}
     </div>
   );
 }

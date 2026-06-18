@@ -28,17 +28,17 @@ export function AtelierPanel({ header, children, footer, surface = 'medium' }: A
   const glassClass = surface === 'subtle' ? 'glass-subtle' : 'glass-medium';
   return (
     <div className={`flex h-full flex-col overflow-hidden rounded-2xl ${glassClass}`}>
-      {header ? (
+      {header == null ? null : (
         <div className="flex shrink-0 items-center justify-between gap-3 border-b border-border/40 px-5 py-3">
           {header}
         </div>
-      ) : null}
+      )}
       <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4">{children}</div>
-      {footer ? (
+      {footer == null ? null : (
         <div className="flex shrink-0 items-center justify-end gap-2 border-t border-border/40 bg-card/40 px-5 py-3">
           {footer}
         </div>
-      ) : null}
+      )}
     </div>
   );
 }

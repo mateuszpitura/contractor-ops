@@ -36,14 +36,14 @@ function mount(ui: React.ReactNode): Harness {
   const container = document.createElement('div');
   document.body.appendChild(container);
   const root = createRoot(container);
-  act(() => {
+  void act(() => {
     root.render(ui);
   });
   return { container, root };
 }
 
 function unmount(h: Harness) {
-  act(() => {
+  void act(() => {
     h.root.unmount();
   });
   h.container.remove();
@@ -155,7 +155,7 @@ describe('BoeRateTable', () => {
     const deleteBtn = harness.container.querySelector('button[aria-label="ariaDeleteRate"]');
     expect(editBtn).not.toBeNull();
     expect(deleteBtn).not.toBeNull();
-    act(() => {
+    void act(() => {
       (editBtn as HTMLButtonElement).click();
       (deleteBtn as HTMLButtonElement).click();
     });

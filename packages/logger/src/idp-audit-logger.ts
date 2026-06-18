@@ -28,9 +28,8 @@
 
 import { createHash } from 'node:crypto';
 import type { Logger } from 'pino';
-
-import { logger as rootLogger } from './index.js';
 import { PII_MASK_PATHS } from './pii-mask.js';
+import { logger as rootLogger } from './root-logger.js';
 
 /**
  * Hash a contractor's IdP identifier (email) for audit-log emission.

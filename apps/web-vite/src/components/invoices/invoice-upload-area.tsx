@@ -96,7 +96,7 @@ export function InvoiceUploadAreaView({
   );
 
   const handleNavigateBilling = useCallback(() => {
-    router.push('/settings?tab=billing');
+    void router.push('/settings?tab=billing');
   }, [router]);
 
   return (
