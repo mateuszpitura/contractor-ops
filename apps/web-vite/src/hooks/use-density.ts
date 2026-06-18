@@ -8,6 +8,7 @@
 
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { getCookie, setCookie } from '../lib/cookies.js';
 
 type Density = 'comfortable' | 'compact';
 
@@ -17,23 +18,15 @@ interface DensityState {
   toggleDensity: () => void;
 }
 
-const DENSITY_COOKIE_ATTRS = 'path=/; max-age=31536000; samesite=lax';
+const DENSITY_COOKIE_NAME = 'density';
+const DENSITY_COOKIE_MAX_AGE = 31536000;
 
 function writeDensityCookie(value: Density): void {
-  if (typeof document === 'undefined') return;
-  // biome-ignore lint/suspicious/noDocumentCookie: canonical cookie write — mirrors the density preference for the index.html pre-paint prelude that applies the class before first paint
-  document.cookie = `density=${value}; ${DENSITY_COOKIE_ATTRS}`;
+  setCookie(DENSITY_COOKIE_NAME, value, { maxAge: DENSITY_COOKIE_MAX_AGE });
 }
 
 function readDensityCookie(): string | undefined {
-  if (typeof document === 'undefined') return;
-  const parts = document.cookie.split('; ');
-  for (const part of parts) {
-    if (part.startsWith('density=')) {
-      return part.slice('density='.length);
-    }
-  }
-  return;
+  return getCookie(DENSITY_COOKIE_NAME);
 }
 
 const useDensityStore = create<DensityState>()(

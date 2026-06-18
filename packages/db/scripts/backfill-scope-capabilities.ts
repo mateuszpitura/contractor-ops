@@ -86,12 +86,13 @@ async function main() {
 
   // Lazy-import so the pure `backfillScopeCapabilities` export stays testable
   // without dragging the Prisma runtime into vitest's module graph.
-  const { PrismaClient } = await import('@prisma/client');
+  const { Prisma, PrismaClient } = await import('@prisma/client');
   const prisma = new PrismaClient({ datasources: { db: { url: dbUrl } } });
   try {
     const candidates = await prisma.integrationConnection.findMany({
-      // biome-ignore lint/suspicious/noExplicitAny: Prisma JSON null filter requires this cast
-      where: { scopeCapabilities: { equals: null as any } },
+      // `Json?` columns distinguish JSON `null` from SQL NULL; `Prisma.DbNull`
+      // matches rows where scopeCapabilities was never written.
+      where: { scopeCapabilities: { equals: Prisma.DbNull } },
       select: { id: true, provider: true, scopeCapabilities: true },
     });
     log.info({ count: candidates.length }, 'candidates with null scopeCapabilities');

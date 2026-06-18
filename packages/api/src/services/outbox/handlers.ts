@@ -108,8 +108,7 @@ export async function dispatchOutboxEvent(input: DispatchOutboxEventInput): Prom
   // A schema drift here would still surface as a runtime error inside the
   // handler (e.g. "Cannot read property 'recipientUserIds' of undefined")
   // which the drain treats as transient → retry → exhaust → Sentry.
-  // biome-ignore lint/suspicious/noExplicitAny: registry-driven dispatch
-  const typedPayload = input.payload as any;
+  const typedPayload = input.payload as OutboxEventPayloadMap[typeof input.eventType];
   await handler(typedPayload, {
     outboxEventId: input.id,
     organizationId: input.organizationId,

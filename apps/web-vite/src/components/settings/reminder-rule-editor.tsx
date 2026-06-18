@@ -21,7 +21,7 @@ import {
 import { Switch } from '@contractor-ops/ui/components/shadcn/switch';
 import { Bell, Loader2, Save } from 'lucide-react';
 import { useCallback, useId, useMemo } from 'react';
-import type { ControllerRenderProps } from 'react-hook-form';
+import type { Control, ControllerRenderProps, FieldPathByValue } from 'react-hook-form';
 import { Controller } from 'react-hook-form';
 import type { useReminderRuleEditor as UseReminderRuleEditor } from './hooks/use-reminder-rule-editor.js';
 import {
@@ -41,6 +41,15 @@ type ReminderRuleEditorShellProps = {
 export type ReminderRuleEditorProps = ReminderRuleEditorShellProps &
   ReturnType<typeof UseReminderRuleEditor>;
 
+type ReminderRuleControl = ReminderRuleEditorProps['form']['control'];
+type ReminderRuleFormFields = ReminderRuleControl extends Control<infer V> ? V : never;
+
+// Each control component constrains `name` to the fields whose value type it
+// can render (via `FieldPathByValue`), so the Controller's `field.value`
+// resolves to that concrete type instead of the collapsed-to-`unknown` union.
+type StringFieldName = FieldPathByValue<ReminderRuleFormFields, string | undefined>;
+type BooleanFieldName = FieldPathByValue<ReminderRuleFormFields, boolean>;
+
 interface SelectItemOption {
   value: string;
   label: string;
@@ -48,9 +57,8 @@ interface SelectItemOption {
 }
 
 interface SelectControlFieldProps {
-  control: ReminderRuleEditorProps['form']['control'];
-  // biome-ignore lint/suspicious/noExplicitAny: Controller name spans many union members; runtime safe through react-hook-form.
-  name: any;
+  control: ReminderRuleControl;
+  name: StringFieldName;
   items: readonly SelectItemOption[];
   placeholder?: string;
   allowNull?: boolean;
@@ -64,8 +72,7 @@ function SelectControlField({
   allowNull,
 }: SelectControlFieldProps) {
   const renderSelect = useCallback(
-    // biome-ignore lint/suspicious/noExplicitAny: react-hook-form Controller render expects strict form-shape types; widened intentionally for reuse.
-    ({ field }: { field: ControllerRenderProps<any, any> }) => (
+    ({ field }: { field: ControllerRenderProps<ReminderRuleFormFields, StringFieldName> }) => (
       <Select
         value={allowNull ? (field.value ?? undefined) : field.value}
         onValueChange={field.onChange}
@@ -88,16 +95,14 @@ function SelectControlField({
 }
 
 interface SwitchControlFieldProps {
-  control: ReminderRuleEditorProps['form']['control'];
-  // biome-ignore lint/suspicious/noExplicitAny: Controller name spans many union members; runtime safe through react-hook-form.
-  name: any;
+  control: ReminderRuleControl;
+  name: BooleanFieldName;
   id: string;
 }
 
 function SwitchControlField({ control, name, id }: SwitchControlFieldProps) {
   const renderSwitch = useCallback(
-    // biome-ignore lint/suspicious/noExplicitAny: react-hook-form Controller render expects strict form-shape types; widened intentionally for reuse.
-    ({ field }: { field: ControllerRenderProps<any, any> }) => (
+    ({ field }: { field: ControllerRenderProps<ReminderRuleFormFields, BooleanFieldName> }) => (
       <Switch id={id} checked={field.value} onCheckedChange={field.onChange} />
     ),
     [id],
@@ -106,15 +111,13 @@ function SwitchControlField({ control, name, id }: SwitchControlFieldProps) {
 }
 
 interface UserPickerControlFieldProps {
-  control: ReminderRuleEditorProps['form']['control'];
-  // biome-ignore lint/suspicious/noExplicitAny: Controller name spans many union members; runtime safe through react-hook-form.
-  name: any;
+  control: ReminderRuleControl;
+  name: StringFieldName;
 }
 
 function UserPickerControlField({ control, name }: UserPickerControlFieldProps) {
   const renderUserPicker = useCallback(
-    // biome-ignore lint/suspicious/noExplicitAny: react-hook-form Controller render expects strict form-shape types; widened intentionally for reuse.
-    ({ field }: { field: ControllerRenderProps<any, any> }) => (
+    ({ field }: { field: ControllerRenderProps<ReminderRuleFormFields, StringFieldName> }) => (
       <ReminderRuleUserPicker value={field.value} onChange={field.onChange} />
     ),
     [],

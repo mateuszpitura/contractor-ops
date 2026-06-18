@@ -28,8 +28,7 @@ const log = createLogger({ service: 'compliance-recovery' });
  * PaymentGateClient so the same tx can be forwarded to the eligibility re-assertion.
  */
 export interface RecoveryClient extends PaymentGateClient, AuditWriterClient {
-  // biome-ignore lint/suspicious/noExplicitAny: $queryRaw tagged-template signature is intentionally loose
-  $queryRaw: <T = unknown>(query: TemplateStringsArray, ...values: any[]) => Promise<T>;
+  $queryRaw: <T = unknown>(query: TemplateStringsArray, ...values: unknown[]) => Promise<T>;
   approvalFlow: {
     update: (args: Prisma.ApprovalFlowUpdateArgs) => Promise<unknown>;
   };

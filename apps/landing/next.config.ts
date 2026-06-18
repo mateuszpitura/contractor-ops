@@ -13,6 +13,13 @@ const isDev = process.env.NODE_ENV === 'development';
 
 const nextConfig: NextConfig = {
   ...(isDev ? {} : { output: 'export' }),
+  // `next/image`'s default loader needs a running optimizer, which is absent
+  // under `output: 'export'`. Bypass it so blog hero images (CMS-driven,
+  // relative or absolute URLs) render as plain optimized markup with the
+  // layout-shift guarantees `<Image>` provides over a raw `<img>`.
+  images: {
+    unoptimized: true,
+  },
 };
 
 export default nextConfig;

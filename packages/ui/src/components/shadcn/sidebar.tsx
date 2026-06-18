@@ -9,6 +9,7 @@ import * as React from 'react';
 import { useIsMobile } from '../../hooks/use-mobile.js';
 import { computeOverflowShadow } from '../../hooks/use-overflow-scroll-shadow.js';
 import { useUITranslations } from '../../i18n/translations-provider.js';
+import { setCookie } from '../../lib/cookies.js';
 import { cn } from '../../lib/utils.js';
 import { Button } from './button.js';
 import { Input } from './input.js';
@@ -102,8 +103,7 @@ function SidebarProvider({
       }
 
       // This sets the cookie to keep the sidebar state.
-      // biome-ignore lint/suspicious/noDocumentCookie: shadcn/ui sidebar persistence pattern — simple key=value cookie with no sensitive data
-      document.cookie = `${SIDEBAR_COOKIE_NAME}=${openState}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`;
+      setCookie(SIDEBAR_COOKIE_NAME, String(openState), { maxAge: SIDEBAR_COOKIE_MAX_AGE });
     },
     [setOpenProp, open],
   );

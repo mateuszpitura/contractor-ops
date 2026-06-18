@@ -64,14 +64,12 @@ export async function renderClaimPdf(claimId: string): Promise<RenderClaimPdfRes
   // RENDERING before doing any I/O; whoever wins the CAS owns the render.
   // The other delivery short-circuits.
   //
-  // The RENDERING enum literal is added to InvoiceInterestClaimPdfStatus
-  // in the same migration as this code (see invoice.prisma); the generated
-  // Prisma client picks it up after `db generate` runs in the orchestrator
-  // post-merge step. Until then the cast keeps tsc green.
+  // RENDERING is a sentinel state in InvoiceInterestClaimPdfStatus (see
+  // invoice.prisma) owned by whichever worker wins the PENDING_RENDER →
+  // RENDERING compare-and-swap; the loser short-circuits without R2 I/O.
   const claimed = await prisma.invoiceInterestClaim.updateMany({
     where: { id: claim.id, pdfStatus: 'PENDING_RENDER' },
-    // biome-ignore lint/suspicious/noExplicitAny: enum migration ships with this commit
-    data: { pdfStatus: 'RENDERING' as any },
+    data: { pdfStatus: 'RENDERING' },
   });
   if (claimed.count === 0) {
     log.info(

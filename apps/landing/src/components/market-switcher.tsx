@@ -4,6 +4,7 @@ import { Check, Globe } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useLocale } from '@/i18n';
 import { localeConfigs, locales } from '@/i18n/config';
+import { setCookie } from '@/lib/cookies';
 import type { Market } from '@/lib/market';
 import { localeToMarket } from '@/lib/market';
 
@@ -52,22 +53,12 @@ function MarketOptionButton({
 }
 
 function setMarketCookie(market: Market) {
-  if (typeof document === 'undefined') return;
   const maxAge = COOKIE_MAX_AGE_DAYS * 24 * 60 * 60;
   const domain =
     typeof window !== 'undefined' && window.location.hostname.endsWith('contractor-ops.com')
       ? '.contractor-ops.com'
       : undefined;
-  const parts = [
-    `${COOKIE_NAME}=${market}`,
-    `Path=/`,
-    `Max-Age=${maxAge}`,
-    `SameSite=Lax`,
-    'Secure',
-  ];
-  if (domain) parts.push(`Domain=${domain}`);
-  // biome-ignore lint/suspicious/noDocumentCookie: Cookie Store API lacks Safari support; document.cookie is the portable fallback for a non-sensitive market preference.
-  document.cookie = parts.join('; ');
+  setCookie(COOKIE_NAME, market, { maxAge, secure: true, domain });
 }
 
 export function MarketSwitcher() {

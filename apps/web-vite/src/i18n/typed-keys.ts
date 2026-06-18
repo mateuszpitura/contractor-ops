@@ -10,7 +10,12 @@
 
 export type { TranslationKey } from '../generated/i18n/keys';
 
-// biome-ignore lint/suspicious/noExplicitAny: contract mirrors the next-intl shape exactly
+// `key: any` is load-bearing, not laziness: a strict branded-key translator
+// (e.g. next-intl's `t` keyed on the generated union) is only assignable to
+// this `T extends LooseTranslator` constraint when the parameter is `any`.
+// Narrowing `key` to `string` makes `string` incompatible with the branded
+// union and rejects every real translator at the call site — verified.
+// biome-ignore lint/suspicious/noExplicitAny: branded-key translators only satisfy `T extends LooseTranslator` when key/values are `any`; `string`/`unknown` reject them
 export type LooseTranslator = (key: any, values?: any) => string;
 
 /**

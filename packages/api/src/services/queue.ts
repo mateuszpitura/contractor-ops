@@ -87,6 +87,22 @@ const JOB_CONFIG: Record<JobName, JobConfig> = {
 // Producer API
 // ---------------------------------------------------------------------------
 
+/**
+ * The subset of QStash's publish request we populate. `timeout`/`delay` are
+ * plain strings/numbers here; QStash's own type narrows them to typed
+ * duration template-literals, so the value is cast at the `publishJSON`
+ * boundary in {@link enqueueJob}.
+ */
+interface QStashPublishRequest {
+  url: string;
+  body: JobRegistry[JobName];
+  retries: number;
+  timeout?: string;
+  deduplicationId?: string;
+  notBefore?: number;
+  delay?: number;
+}
+
 export interface EnqueueJobOptions {
   /** Override the registry-default retries. */
   retries?: number;
@@ -123,13 +139,7 @@ export async function enqueueJob<TName extends JobName>(
   const retries = opts.retries ?? config.retries;
   const timeout = opts.timeout ?? config.timeout;
 
-  // Upstash's PublishRequest type narrows `delay` and `timeout` to typed
-  // duration template-literal strings (`${bigint}s` etc.). Our string-typed
-  // overrides come from a typed registry above, so widening to `unknown` and
-  // letting QStash validate at runtime is safe — and keeps the producer API
-  // ergonomic.
-  // biome-ignore lint/suspicious/noExplicitAny: QStash typed-duration narrowing
-  const request: any = {
+  const request: QStashPublishRequest = {
     url,
     body: payload,
     retries,
@@ -139,7 +149,13 @@ export async function enqueueJob<TName extends JobName>(
   if (opts.notBefore) request.notBefore = opts.notBefore;
   if (opts.delaySeconds) request.delay = opts.delaySeconds;
 
-  const result = (await getQStashClient().publishJSON(request)) as { messageId: string };
+  // Upstash's `publishJSON` narrows `delay`/`timeout` to typed duration
+  // template-literals (`${bigint}s` etc.). Our overrides come from the typed
+  // registry above, so we cast at this one boundary and let QStash validate
+  // the duration strings at runtime.
+  const result = (await getQStashClient().publishJSON(
+    request as Parameters<ReturnType<typeof getQStashClient>['publishJSON']>[0],
+  )) as { messageId: string };
 
   log.debug({ jobName: name, messageId: result.messageId, dedupId: opts.dedupId }, 'job enqueued');
   return { messageId: result.messageId };

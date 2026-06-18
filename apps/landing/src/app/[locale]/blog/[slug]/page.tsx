@@ -1,4 +1,5 @@
 import { createLogger } from '@contractor-ops/logger';
+import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { extractHeadings, LexicalBody } from '@/components/blog/lexical-body';
@@ -163,12 +164,16 @@ export default async function PostPage({
           </header>
 
           {post.heroImage?.url ? (
-            // biome-ignore lint/performance/noImgElement: blog hero — Next/Image not configured in this static export.
-            <img
-              src={post.heroImage.url}
-              alt={post.heroImage.alt ?? ''}
-              className="mt-10 aspect-[16/9] w-full rounded-2xl border border-border/60 object-cover"
-            />
+            <div className="relative mt-10 aspect-[16/9] w-full overflow-hidden rounded-2xl border border-border/60">
+              <Image
+                src={post.heroImage.url}
+                alt={post.heroImage.alt ?? ''}
+                fill
+                priority
+                sizes="(min-width: 768px) 768px, 100vw"
+                className="object-cover"
+              />
+            </div>
           ) : null}
 
           <div className="mt-12 grid gap-10 lg:grid-cols-[1fr,14rem]">

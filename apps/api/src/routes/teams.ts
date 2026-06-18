@@ -37,7 +37,7 @@
 
 import { TeamsBotHandler } from '@contractor-ops/api/services/teams/teams-bot-handler';
 import { createWebhookLogger } from '@contractor-ops/logger';
-import type { AuthConfiguration } from '@microsoft/agents-hosting';
+import type { AuthConfiguration, TurnContext } from '@microsoft/agents-hosting';
 import { authorizeJWT, CloudAdapter } from '@microsoft/agents-hosting';
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { loadEnv } from '../env.js';
@@ -197,8 +197,7 @@ export function registerTeamsMessagesRoute(app: FastifyInstance): void {
       type RawAdapterProcess = (
         req: unknown,
         res: unknown,
-        // biome-ignore lint/suspicious/noExplicitAny: Bot Framework callback type
-        logic: (context: any) => Promise<void>,
+        logic: (context: TurnContext) => Promise<void>,
       ) => Promise<void>;
       await (getAdapter().process as unknown as RawAdapterProcess)(
         shimReq,

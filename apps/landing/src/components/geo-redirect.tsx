@@ -2,38 +2,28 @@
 
 import { useEffect } from 'react';
 import { locales } from '@/i18n/config';
+import { getCookie, setCookie } from '@/lib/cookies';
 import type { Market } from '@/lib/market';
 import { marketToLocale } from '@/lib/market';
 
 const COOKIE_NAME = 'landing_market';
+const COOKIE_MAX_AGE = 180 * 24 * 60 * 60;
 const GEO_LOOKUP_URL = 'https://ipapi.co/country/';
 
 function readMarketCookie(): Market | null {
-  if (typeof document === 'undefined') return null;
-  const match = document.cookie.match(/(?:^|;\s*)landing_market=([^;]+)/);
-  if (!match) return null;
-  const value = match[1] as Market;
+  const value = getCookie(COOKIE_NAME) as Market | null;
+  if (value === null) return null;
   return (['PL', 'DE', 'INTL', 'UK', 'UAE', 'SA'] as readonly Market[]).includes(value)
     ? value
     : null;
 }
 
 function writeMarketCookie(market: Market) {
-  const maxAge = 180 * 24 * 60 * 60;
   const domain =
     typeof window !== 'undefined' && window.location.hostname.endsWith('contractor-ops.com')
       ? '.contractor-ops.com'
       : undefined;
-  const parts = [
-    `${COOKIE_NAME}=${market}`,
-    `Path=/`,
-    `Max-Age=${maxAge}`,
-    `SameSite=Lax`,
-    'Secure',
-  ];
-  if (domain) parts.push(`Domain=${domain}`);
-  // biome-ignore lint/suspicious/noDocumentCookie: Cookie Store API lacks Safari support; document.cookie is the portable fallback.
-  document.cookie = parts.join('; ');
+  setCookie(COOKIE_NAME, market, { maxAge: COOKIE_MAX_AGE, secure: true, domain });
 }
 
 function pickMarketFromLanguage(languages: readonly string[]): Market | null {
