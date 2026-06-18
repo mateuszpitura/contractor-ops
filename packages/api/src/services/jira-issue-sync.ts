@@ -81,6 +81,7 @@ function buildJiraApiContext(
  * @param taskRunId - The WorkflowTaskRun ID to create a Jira issue for
  * @returns The created issue key and ID
  */
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: sequential Jira issue creation: load task run → resolve config → build payload → POST → persist mapping → audit; cohesive flow.
 export async function createJiraIssue(
   prisma: PrismaClient,
   organizationId: string,
@@ -294,6 +295,7 @@ export async function createJiraIssue(
  * @param taskRunId - The WorkflowTaskRun ID
  * @param newWorkflowStatus - The new WorkflowTaskStatus value
  */
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: sequential Jira transition: resolve external link → map workflow status → find valid transition → POST → audit; cohesive flow.
 export async function transitionJiraIssue(
   prisma: PrismaClient,
   organizationId: string,

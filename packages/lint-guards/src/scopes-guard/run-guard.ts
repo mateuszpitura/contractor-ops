@@ -48,6 +48,7 @@ function basename(filePath: string): string {
   return parts[parts.length - 1] ?? filePath;
 }
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: AST walk over variable declarations unwrapping `as const` array literals to collect string values; nested iteration is inherent to the traversal.
 function collectConstArrayStringLiterals(filePathsProject: Project, into: Set<string>): void {
   for (const sf of filePathsProject.getSourceFiles()) {
     for (const decl of sf.getVariableDeclarations()) {

@@ -510,6 +510,7 @@ function bacsField(raw: string, len: number): { field: string; replaced: string[
  *
  * Throws when any item's `amountMinor` exceeds the 11-digit pence limit.
  */
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: BACS Std 18 file builder — per-item loop with amount-overflow throws, transliteration and modulus warning aggregation, and length guards form one cohesive serialization
 export function generateBacsStandard18(
   items: BacsExportItem[],
   orgBank: BacsOrgBankInfo,

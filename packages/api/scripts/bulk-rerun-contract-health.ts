@@ -31,6 +31,7 @@ function parseArgs(argv: string[]): Args {
   return { organizationId: orgArg, allOrgs, force, dryRun };
 }
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: CLI entrypoint sequential arg-dispatch (parse → validate → resolve org scope → enqueue per-assignment QStash jobs → report); branches map directly to flags.
 async function main(): Promise<void> {
   const args = parseArgs(process.argv.slice(2));
   if (!(args.organizationId || args.allOrgs)) {

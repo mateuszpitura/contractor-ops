@@ -149,75 +149,78 @@ export function ShipmentTimelineView({
       )}
 
       <ol className="relative space-y-0 ps-4">
-        {SHIPMENT_STATUS_ORDER.map((status, index) => {
-          const event = eventByStatus.get(status);
-          const isCompleted = index < currentIndex;
-          const isCurrent = status === currentStatus;
-          const isPending = index > currentIndex && !isTerminal;
+        {SHIPMENT_STATUS_ORDER.map(
+          // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: timeline cell renders completed/current/pending/error variants per step; branch density is intrinsic to the visual states.
+          (status, index) => {
+            const event = eventByStatus.get(status);
+            const isCompleted = index < currentIndex;
+            const isCurrent = status === currentStatus;
+            const isPending = index > currentIndex && !isTerminal;
 
-          if (isTerminal && !event) return null;
+            if (isTerminal && !event) return null;
 
-          return (
-            <li key={status} className="relative pb-6 last:pb-0">
-              {index < SHIPMENT_STATUS_ORDER.length - 1 && (
-                <div
-                  className={cn(
-                    'absolute start-[5px] top-[18px] h-full w-0.5',
-                    isCompleted || isCurrent
-                      ? 'bg-border'
-                      : 'border-s-2 border-dashed border-border/40',
-                  )}
-                />
-              )}
+            return (
+              <li key={status} className="relative pb-6 last:pb-0">
+                {index < SHIPMENT_STATUS_ORDER.length - 1 && (
+                  <div
+                    className={cn(
+                      'absolute start-[5px] top-[18px] h-full w-0.5',
+                      isCompleted || isCurrent
+                        ? 'bg-border'
+                        : 'border-s-2 border-dashed border-border/40',
+                    )}
+                  />
+                )}
 
-              <div className="flex items-start gap-3">
-                <div
-                  className={cn(
-                    'relative z-10 mt-0.5 h-3 w-3 shrink-0 rounded-full border-2',
-                    isCurrent
-                      ? 'border-primary bg-primary/20'
-                      : isCompleted
-                        ? 'border-muted-foreground bg-muted-foreground'
-                        : 'border-border/40 bg-background',
-                  )}
-                />
+                <div className="flex items-start gap-3">
+                  <div
+                    className={cn(
+                      'relative z-10 mt-0.5 h-3 w-3 shrink-0 rounded-full border-2',
+                      isCurrent
+                        ? 'border-primary bg-primary/20'
+                        : isCompleted
+                          ? 'border-muted-foreground bg-muted-foreground'
+                          : 'border-border/40 bg-background',
+                    )}
+                  />
 
-                <div
-                  className={cn(
-                    'flex flex-1 items-start justify-between gap-2',
-                    isCurrent && 'rounded-md bg-primary/5 px-2 py-1 -mx-2',
-                    isPending && 'opacity-40',
-                  )}>
-                  <div>
-                    <span
-                      className={cn(
-                        'text-sm font-medium',
-                        isCurrent && 'text-primary',
-                        isPending && 'text-muted-foreground',
-                      )}>
-                      {tDynLoose(t, 'shipment.status', enumKey(status))}
-                    </span>
-                    {!!event?.notes && (
-                      <p className="mt-0.5 text-xs text-muted-foreground">{event.notes}</p>
+                  <div
+                    className={cn(
+                      'flex flex-1 items-start justify-between gap-2',
+                      isCurrent && 'rounded-md bg-primary/5 px-2 py-1 -mx-2',
+                      isPending && 'opacity-40',
+                    )}>
+                    <div>
+                      <span
+                        className={cn(
+                          'text-sm font-medium',
+                          isCurrent && 'text-primary',
+                          isPending && 'text-muted-foreground',
+                        )}>
+                        {tDynLoose(t, 'shipment.status', enumKey(status))}
+                      </span>
+                      {!!event?.notes && (
+                        <p className="mt-0.5 text-xs text-muted-foreground">{event.notes}</p>
+                      )}
+                    </div>
+
+                    {event && (
+                      <span className="shrink-0 text-xs text-muted-foreground">
+                        {format(new Date(event.occurredAt), 'MMM d, HH:mm')}
+                      </span>
+                    )}
+
+                    {isPending && !event && (
+                      <span className="shrink-0 text-xs text-muted-foreground/40">
+                        {t('shipment.pendingLabel')}
+                      </span>
                     )}
                   </div>
-
-                  {event && (
-                    <span className="shrink-0 text-xs text-muted-foreground">
-                      {format(new Date(event.occurredAt), 'MMM d, HH:mm')}
-                    </span>
-                  )}
-
-                  {isPending && !event && (
-                    <span className="shrink-0 text-xs text-muted-foreground/40">
-                      {t('shipment.pendingLabel')}
-                    </span>
-                  )}
                 </div>
-              </div>
-            </li>
-          );
-        })}
+              </li>
+            );
+          },
+        )}
 
         {(() => {
           const terminalEvent =

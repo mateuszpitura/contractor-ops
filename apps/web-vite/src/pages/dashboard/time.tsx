@@ -60,6 +60,7 @@ function minutesToDisplay(minutes: number): string {
   return hours % 1 === 0 ? `${hours}h` : `${hours.toFixed(1)}h`;
 }
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: time dashboard content renders tab/status-filter, loading/empty/error, and pending/all timesheet branches; the conditional density is intrinsic to the page's states.
 function TimePageContent() {
   const {
     t,

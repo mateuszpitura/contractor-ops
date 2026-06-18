@@ -70,6 +70,7 @@ export function registerStorecoveWebhookRoute(app: FastifyInstance): void {
     });
   }
 
+  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: sequential webhook orchestration — parse, signature verify, idempotency lookup and lifecycle dispatch each guard with an early reply; the ordered reply/db side effects make extraction lossy.
   app.post('/webhooks/storecove', async (request, reply) => {
     const rawBody =
       request.body instanceof Buffer

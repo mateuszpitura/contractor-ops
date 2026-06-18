@@ -150,6 +150,7 @@ export class GitHubAdapter extends BaseAdapter implements Deprovisionable {
         .map(a => a.credential_id)
         .filter((id): id is number => typeof id === 'number')
         .map(credentialId =>
+          // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: per-credential revoke with 404-as-success idempotency + transient/permanent error partitioning; splitting fragments the error-classification flow.
           limit(async () => {
             try {
               await octokit.request(

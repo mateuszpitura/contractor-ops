@@ -87,6 +87,7 @@ export function getBaseLoggerOptions(): LoggerOptions {
  * Axiom is always sent via a custom Writable stream using @axiomhq/js SDK
  * (no worker threads) so it works inside Next.js webpack bundling.
  */
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: logger destination builder — dev/prod + Axiom + Loki stream branches each gated by distinct env signals (AXIOM_DATASET/TOKEN/DEV, LOKI_URL) with per-stream try/catch fallback; assembling the multistream list inline keeps the env→stream wiring in one place.
 function createRootLogger(): Logger {
   const axiomDataset = process.env.AXIOM_DATASET;
   const axiomToken = process.env.AXIOM_TOKEN;

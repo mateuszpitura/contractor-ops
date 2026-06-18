@@ -184,6 +184,7 @@ export function useImportWizardDialog({
     onOpenChange(false);
   }, [resetWizard, onOpenChange]);
 
+  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: wizard step machine — one switch case per step with that step's mutation/guard; keeping the transitions in a single dispatcher is clearer than scattering per-step helpers.
   const handleNext = useCallback(() => {
     switch (currentStep) {
       case 0:

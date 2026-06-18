@@ -165,6 +165,7 @@ const ASSIGNEE_MODES = [
 
 const USER_ROLES = workflowAssignableRoleValues;
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: task card view renders many conditional branches per task type and assignee mode (role/user/conditions); the branch density is intrinsic to the editor's states.
 export function TaskCard({
   index,
   onRemove,

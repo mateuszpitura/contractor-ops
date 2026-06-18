@@ -285,6 +285,7 @@ export abstract class GovApiClient {
    * - Sets Authorization header from loaded bearer token unless `skipAuth: true`
    * - Skips retries for non-idempotent methods unless `retryNonIdempotent: true`
    */
+  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: retry/backoff loop with per-attempt timeout, overall deadline pre-emption, retryable-vs-thrown classification, and last-outcome error/response surfacing; branches are intrinsic to the resilience contract.
   protected async fetch(
     path: string,
     options: RequestInit = {},

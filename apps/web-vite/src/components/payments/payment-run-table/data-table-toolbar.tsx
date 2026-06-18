@@ -103,6 +103,7 @@ export function DataTableToolbar({
   const reactId = useId();
 
   const handleRangeSelect = useCallback(
+    // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: date-range selection state machine handling clear/extend/reset branches across from/to bounds
     (range: { from?: Date; to?: Date } | undefined, triggerDate: Date) => {
       if (!range) {
         onDateFromChange(undefined);

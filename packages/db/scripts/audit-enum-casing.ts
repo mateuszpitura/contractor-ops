@@ -33,6 +33,7 @@ function listSchemaFiles(dir: string): string[] {
  * Walks lines and tracks the enclosing `enum <Name> {` block so values
  * outside enum blocks (model fields, types, comments) are ignored.
  */
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: line-by-line Prisma scanner tracking enclosing enum-block state; branchy parsing is one cohesive traversal.
 function findOffenders(file: string): Offender[] {
   const lines = readFileSync(file, 'utf8').split('\n');
   const offenders: Offender[] = [];

@@ -33,6 +33,7 @@ interface ParsedRow {
 const MAX_BYTES = 5 * 1024 * 1024;
 const MAX_ROWS = 1000;
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: single-pass RFC-4180 CSV character scanner — quote/comma/newline state must stay in one loop to parse correctly.
 function parseCsv(text: string): string[][] {
   const rows: string[][] = [];
   let field = '';

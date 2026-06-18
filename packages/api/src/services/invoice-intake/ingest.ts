@@ -30,6 +30,7 @@ import {
 
 const log = createLogger({ module: 'invoice-intake-service' });
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: linear intake orchestration (validate size/mime, parse PDF/XML, R2 upload, persist, audit) whose ordered branches must stay in one flow
 export async function uploadAndPersist(
   db: PrismaClient,
   input: UploadInput,

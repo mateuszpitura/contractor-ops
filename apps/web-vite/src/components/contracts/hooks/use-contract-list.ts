@@ -91,6 +91,7 @@ function asDateFilter(val: string): string | undefined {
   return val ? new Date(val).toISOString() : undefined;
 }
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: section hook wiring multiple queries + filters + derived empty-state flags
 export function useContractList(options: { onNewContract: () => void; onImport?: () => void }) {
   const trpc = useTRPC();
   const te = useTranslations('EmptyStates');

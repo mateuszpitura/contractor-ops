@@ -96,6 +96,7 @@ export function PricingHero({ views, annualSavings }: PricingHeroProps) {
         <StaggerContainer
           className="mt-12 grid grid-cols-1 gap-5 md:grid-cols-3 items-stretch max-w-4xl mx-auto"
           staggerDelay={0.1}>
+          {/* biome-ignore lint/complexity/noExcessiveCognitiveComplexity: single cohesive pricing-card render with inline price/feature/CTA derivation; extracting a child component would fragment the stagger layout for no readability gain. */}
           {views.map(view => {
             const { plan, features, ctaHref, ctaLabel } = view;
             const price = period === 'month' ? plan.monthly : plan.annual;

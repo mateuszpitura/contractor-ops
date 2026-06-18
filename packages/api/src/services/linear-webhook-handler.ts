@@ -146,6 +146,7 @@ async function resolveStateName(
  * @param connectionId - The IntegrationConnection ID
  * @param payload - The raw webhook payload
  */
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: webhook handler dispatching over parsed Linear event types with per-action branches; cohesive ingress flow clearer inline.
 export async function processLinearWebhook(
   prisma: PrismaClient,
   organizationId: string,

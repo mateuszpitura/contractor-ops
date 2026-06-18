@@ -337,6 +337,7 @@ export async function createLinearIssue(
  * @param taskRunId - The WorkflowTaskRun ID
  * @param newStatus - The new workflow task status
  */
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: sequential outbound-sync orchestration with ordered guard returns and sync-log mutations whose order must not change
 export async function syncTaskStatusToLinear(
   prisma: PrismaClient,
   taskRunId: string,

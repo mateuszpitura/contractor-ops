@@ -38,6 +38,7 @@ export const classificationReadRouter = router({
 
       for (const contractorId of input.contractorIds) {
         try {
+          // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: single Prisma $transaction body loading latest assessment + contractor/assignment context and reconciling derived records atomically; splitting fragments the atomic unit.
           const result = await ctx.db.$transaction(async tx => {
             // 1. Load latest completed assessment with contractor + assignment context.
             const latest = await tx.classificationAssessment.findFirst({

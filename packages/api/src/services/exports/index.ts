@@ -531,6 +531,7 @@ async function handleExpiringContracts(input: DispatchInput): Promise<DispatchRe
 
   // Cursor-paginated stream — bounded memory regardless of contract volume.
   let rowCount = 0;
+  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: cursor-paginated streaming generator (page loop, break conditions, per-row mapping) is one cohesive scan
   async function* rowGen() {
     let cursor: string | undefined;
     while (true) {

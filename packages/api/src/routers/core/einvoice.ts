@@ -552,6 +552,7 @@ export const einvoiceRouter = router({
   send: tenantProcedure
     .use(requirePermission({ invoice: ['update'] }))
     .input(invoiceIdInput)
+    // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: linear Peppol transmit orchestration (load → pre-flight validate → FSM transition → Storecove call → FSM transition → emit event) inside one $transaction; ordering is load-bearing.
     .mutation(async ({ ctx, input }) => {
       // 1. Load lifecycle + contractor scoped by org.
       const invoice = await ctx.db.invoice.findFirst({

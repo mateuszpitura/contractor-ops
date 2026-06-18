@@ -94,6 +94,7 @@ export function LateInterestB2cNotApplicable() {
   return <p className="text-sm text-muted-foreground">{t('b2cNotApplicable')}</p>;
 }
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: presentational state-variant view — one early-return card branch per late-interest status (NOT_YET_OVERDUE / ACCRUING / CLAIMED / WAIVED); the branch count is the status enum, kept colocated for readability.
 export function LateInterestCardView({
   data,
   onDownloadClaim,

@@ -60,6 +60,21 @@ function evictOldestLruWindow(): void {
   if (oldestKey) windows.delete(oldestKey);
 }
 
+function enforceWindowCap(now: number): void {
+  if (windows.size < MAX_WINDOWS) return;
+  // Safety cap: prune expired windows first; then LRU-evict if still
+  // over the cap.
+  for (const [k, w] of windows) {
+    if (now >= w.resetAt) windows.delete(k);
+  }
+  if (windows.size >= MAX_WINDOWS) {
+    const toEvict = Math.ceil(MAX_WINDOWS * 0.1);
+    for (let i = 0; i < toEvict; i++) {
+      evictOldestLruWindow();
+    }
+  }
+}
+
 /**
  * Extracts a rate-limit key from the Authorization header.
  * Uses the key prefix (first 8 chars after co_live_) to avoid
@@ -78,19 +93,7 @@ function fallbackLimit(key: string): { allowed: boolean; remaining: number; rese
   let window = windows.get(key);
 
   if (!window || now >= window.resetAt) {
-    // Safety cap: prune expired windows first; then LRU-evict if still
-    // over the cap.
-    if (windows.size >= MAX_WINDOWS) {
-      for (const [k, w] of windows) {
-        if (now >= w.resetAt) windows.delete(k);
-      }
-      if (windows.size >= MAX_WINDOWS) {
-        const toEvict = Math.ceil(MAX_WINDOWS * 0.1);
-        for (let i = 0; i < toEvict; i++) {
-          evictOldestLruWindow();
-        }
-      }
-    }
+    enforceWindowCap(now);
     window = { count: 0, resetAt: now + windowMs, lastSeenMs: now };
     windows.set(key, window);
   }

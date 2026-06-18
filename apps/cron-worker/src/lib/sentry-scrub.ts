@@ -82,6 +82,7 @@ export function maskEmail(email: unknown): string | undefined {
   return `${email.charAt(0)}***${email.slice(at)}`;
 }
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: flat sequential scrub over many independent, optional Sentry event fields — each guarded null-check is cohesive; splitting would scatter the redaction contract.
 export function scrubSentryEvent(event: ErrorEvent, _hint?: EventHint): ErrorEvent | null {
   if (event.user) {
     if (event.user.email) {

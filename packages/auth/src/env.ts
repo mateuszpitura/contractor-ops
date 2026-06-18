@@ -131,6 +131,7 @@ function parseTrustedOrigins(raw: string | undefined): string[] {
  *
  * Returns a normalized object the rest of the package can consume safely.
  */
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: env schema validation with many conditional refinements across OAuth providers and environments; cohesive validation block.
 export function loadAuthEnv(env: NodeJS.ProcessEnv = process.env): ResolvedAuthEnv {
   const parsed = authEnvSchema.safeParse(env);
   if (!parsed.success) {

@@ -16,6 +16,7 @@ import { Link, useLocale } from '../../i18n/navigation.js';
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { useHeroSpendMetric } from './hooks/use-hero-spend-metric.js';
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: presentational render with cohesive loading/error/empty + trend/locale UI states
 export function HeroSpendMetric() {
   const t = useTranslations('Dashboard.heroSpend');
   const tDashboard = useTranslations('Dashboard');

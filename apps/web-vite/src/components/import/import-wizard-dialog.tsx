@@ -89,6 +89,7 @@ function StepIndicator({
     <nav
       aria-label={tAria('wizardProgress')}
       className="flex items-center justify-center gap-0 py-3">
+      {/* biome-ignore lint/complexity/noExcessiveCognitiveComplexity: JSX step-indicator map with cohesive completed/current/upcoming status branches */}
       {visibleSteps.map((step, index) => {
         const isCompleted = index < visibleIndex;
         const isCurrent = index === visibleIndex;

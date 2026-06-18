@@ -156,6 +156,7 @@ function TimesheetHistorySection({
   );
 }
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: portal page composer — error/loading/disabled state branches plus the assembled timesheet layout; the conditional JSX is the page's required loading/empty/error surface, kept in one composer.
 function PortalTimePageContent() {
   const t = useTranslations('Portal.timeTracking');
   const tCommon = useTranslations('Portal.login.errors');

@@ -129,6 +129,7 @@ export const invoiceCrudRouter = router({
       );
       // ---------------------------------------------------------------------
 
+      // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: single Serializable transaction sequentially creating the invoice and its dependent rows with conditional reverse-charge/VAT branches; the side-effect order is the contract and must stay in one tx body.
       const invoice = await ctx.db.$transaction(async tx => {
         // Create invoice record
         const inv = await tx.invoice.create({

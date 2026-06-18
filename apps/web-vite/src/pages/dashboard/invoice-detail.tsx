@@ -36,6 +36,7 @@ const sourceIconMap: Record<string, React.ComponentType<{ className?: string }>>
   EMAIL_INTAKE: Mail,
 };
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: page content render with cohesive loading/error + conditional integration/section UI states
 function InvoiceDetailPageContent() {
   const params = useParams<{ id: string }>();
   const invoiceId = params.id ?? '';

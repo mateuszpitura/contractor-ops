@@ -35,6 +35,7 @@ const SIGNED_URL_TTL_SECONDS = 5 * 60;
 export function registerExportsRoute(app: FastifyInstance): void {
   app.get<{ Params: { exportId: string } }>(
     '/exports/:exportId/download',
+    // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: sequential auth → tenant-match → status/expiry guards → presign orchestration; each step gates the next with its own error response, so splitting would scatter the request lifecycle.
     async (request, reply) => {
       reply.header('cache-control', 'no-store, private');
 

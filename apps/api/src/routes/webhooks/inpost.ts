@@ -80,6 +80,7 @@ async function matchOrgByShipmentPayload(rawBody: string): Promise<string | null
 }
 
 export function registerInPostWebhookRoute(app: FastifyInstance): void {
+  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: sequential webhook handler — normalize body/headers → load configs → per-config signature verify → parse → resolve tenant → persist → ack; each step gated, cohesive flow.
   app.post('/webhooks/inpost', async (request, reply) => {
     const rawBody =
       request.body instanceof Buffer

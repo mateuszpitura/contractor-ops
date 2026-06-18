@@ -73,6 +73,7 @@ function isPeriod(value: string): value is Period {
   return (PERIODS as readonly string[]).includes(value);
 }
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: sequential required-key + per-field validation gauntlet, each branch throwing a distinct PricingMetadataError — splitting would scatter the field-by-field error contract.
 function parseProductMetadata(product: Stripe.Product): ProductMetadata {
   const md = product.metadata ?? {};
   const missing: string[] = [];
@@ -211,6 +212,7 @@ export function planId(market: Market, tier: Tier): string {
  * missing required metadata — this fails the landing build, surfacing config
  * drift before it reaches production.
  */
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: cache-check → paginate products → paginate prices → per-product normalize/map pipeline; the sequential fetch-then-normalize stages and inline await-for-of pagination loops are intentionally co-located as one source-of-truth flow.
 export async function fetchPricingPlans(
   stripe: Stripe,
   options: FetchOptions = {},

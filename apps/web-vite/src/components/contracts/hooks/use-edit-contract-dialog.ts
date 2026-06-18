@@ -67,6 +67,7 @@ export function useEditContractDialog(
     onClose: () => onOpenChange(false),
   });
 
+  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: sequential field validate-then-build-then-mutate submit orchestration
   const handleSubmit = useCallback(() => {
     const trimmedTitle = title.trim();
     if (!trimmedTitle) {

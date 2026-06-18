@@ -144,6 +144,7 @@ const RESOURCE_TYPE_OPTIONS = [
 
 export type AuditLogTabProps = ReturnType<typeof UseAuditLogTab>;
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: presentational render with cohesive loading/empty/error + filter/pagination UI states
 export function AuditLogTabView({
   t,
   tAria,

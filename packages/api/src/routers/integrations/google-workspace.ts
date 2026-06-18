@@ -289,6 +289,7 @@ export const googleWorkspaceRouter = router({
     tier: 'PRO',
   })
     .input(directoryImportInputSchema)
+    // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: linear bulk-import orchestration (connect → re-fetch group memberships in chunks → resolve roles → create invitations); side-effect order is load-bearing.
     .mutation(async ({ ctx, input }) => {
       const { connection, credentials, adapter } = await getGoogleWorkspaceConnection(
         ctx.db,

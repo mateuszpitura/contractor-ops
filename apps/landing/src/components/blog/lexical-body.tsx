@@ -167,6 +167,7 @@ function renderChildren(children: LexicalNode[] | undefined, ctx: RenderCtx): Re
   return children.map((child, index) => renderNode(child, index, ctx));
 }
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Lexical node renderer dispatches on an exhaustive node-type union; the switch is inherently branchy and cohesive.
 function renderNode(node: LexicalNode, key: number, ctx: RenderCtx): ReactNode {
   if (!isObject(node) || typeof node.type !== 'string') {
     return null;
@@ -341,6 +342,7 @@ export interface ExtractedHeading {
   level: 2 | 3;
 }
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: walks the Lexical tree collecting h2/h3 nodes with slug dedup; nested traversal and guards are intrinsic to AST extraction.
 export function extractHeadings(body: unknown): ExtractedHeading[] {
   if (!isObject(body)) {
     return [];

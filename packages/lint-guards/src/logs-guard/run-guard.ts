@@ -47,6 +47,7 @@ export async function runLogsGuard(opts: LogsGuardOptions): Promise<LogsGuardOff
   const offences: LogsGuardOffence[] = [];
 
   for (const sf of project.getSourceFiles()) {
+    // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: AST visitor — a chain of early-return type guards narrowing each node to a logger call with an object-literal `body` arg; the guard sequence is the matcher and must stay one walker callback.
     sf.forEachDescendant(node => {
       if (node.getKind() !== SyntaxKind.CallExpression) return;
       const call = node as CallExpression;

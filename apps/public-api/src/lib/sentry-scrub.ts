@@ -83,6 +83,7 @@ export function maskEmail(email: unknown): string | undefined {
   return `${email.charAt(0)}***${email.slice(at)}`;
 }
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: exhaustive sequential PII scrubber walking each Sentry event field (user, request headers/data, contexts) with per-field guarded masks; flat branch table reads clearer inline than fragmented helpers.
 export function scrubSentryEvent(event: ErrorEvent, _hint?: EventHint): ErrorEvent | null {
   if (event.user) {
     if (event.user.email) {

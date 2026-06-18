@@ -54,6 +54,7 @@ interface FormErrors {
   netDays?: string;
 }
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: presentational render with cohesive validation/saving/deleting + default/term UI states
 export function SkontoFormSectionView({
   invoiceId,
   profileDefault,

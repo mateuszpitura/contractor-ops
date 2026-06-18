@@ -234,6 +234,7 @@ const XADES_EXTENSION_URI = 'urn:oasis:names:specification:ubl:dsig:enveloped:xa
  * the rest of the document stays byte-identical (which the doc-digest
  * canonicalisation depends on).
  */
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: DOM walk counting empty XAdES ExtensionContent slots with nested element checks; validation is one cohesive unit.
 function assertSingleXadesSlot(xml: string): void {
   const { DOMParser } = getXmldom();
   const doc = new DOMParser().parseFromString(xml, 'text/xml');

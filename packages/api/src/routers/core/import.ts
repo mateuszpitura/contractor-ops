@@ -31,6 +31,7 @@ import {
 /**
  * Handles importing a single contractor row: skip, update, or create.
  */
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: per-row import orchestration — normalize/validate tax id → duplicate detection → branch skip/update/create with audit; cohesive decision table over shared tx, clearer inline.
 async function commitContractorRow(
   tx: TxClient,
   organizationId: string,

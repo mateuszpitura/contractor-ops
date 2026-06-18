@@ -30,6 +30,7 @@ export interface IntegrationEligibility {
  * Scans template tasks and builds maps of which task run IDs are eligible
  * for Jira, Linear, Calendar, and Equipment integrations.
  */
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: per-task scan that safeParses four independent integration configs and conditionally populates four eligibility maps
 export function buildIntegrationEligibility(
   templateTasks: Array<{
     id: string;

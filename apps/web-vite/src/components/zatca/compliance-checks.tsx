@@ -122,6 +122,7 @@ export function ComplianceChecksResults({
           <ol
             className="space-y-3 rounded-lg border bg-muted/20 p-4"
             aria-label={t('resultsLabel')}>
+            {/* biome-ignore lint/complexity/noExcessiveCognitiveComplexity: exhaustive per-row status rendering (cleared/reported/failed/running/pending) — branches map 1:1 to UI states */}
             {testLabels.map((label, i) => {
               const result = results[i];
               const isRunning = isPending && !result;

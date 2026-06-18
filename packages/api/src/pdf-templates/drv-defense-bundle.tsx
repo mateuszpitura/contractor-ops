@@ -372,6 +372,7 @@ export function DRVDefenseBundleDocument({
                 Gewichtung {c.weight}% · Rohwert {c.rawScore} · Gewichteter Wert{' '}
                 {c.weightedScore.toFixed(1)}
               </Text>
+              {/* biome-ignore lint/complexity/noExcessiveCognitiveComplexity: cohesive PDF question-row render with inline answer-type branches (N/A / string / number / weighted) feeding the defense-bundle layout; splitting fragments the document for no gain. */}
               {questions.map(q => {
                 const answer = assessment.answers[q.id];
                 const answerText = answer?.isNotApplicable

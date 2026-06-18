@@ -49,6 +49,7 @@ export async function fetchUsersFromSource(
  * Detects name conflicts and marks existing members.
  * Returns sorted: conflicts first, then new, then exists.
  */
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: email-keyed merge/dedup reducer that detects name conflicts and partitions results into conflicts/new/exists buckets
 export function mergeByEmail(
   sourcePeople: SourcePerson[],
   existingEmails: Set<string>,

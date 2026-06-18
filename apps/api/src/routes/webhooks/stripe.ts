@@ -52,6 +52,7 @@ const SETTLEMENT_EVENT_TYPES = new Set<string>([
 const MAX_AGE_SECONDS = 24 * 60 * 60;
 
 export function registerStripeWebhookRoute(app: FastifyInstance): void {
+  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: signature verify → age/settlement gate → serializable upsert+idempotency tx → post-commit dispatch; the branchy retry-vs-ack control flow is one cohesive webhook contract.
   app.post('/webhooks/stripe', async (request, reply) => {
     const signature = request.headers['stripe-signature'];
     if (typeof signature !== 'string' || signature.length === 0) {

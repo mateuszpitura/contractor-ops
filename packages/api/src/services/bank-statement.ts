@@ -142,6 +142,7 @@ function parseAmountMinor(raw: string): number | null {
  * Parse a CSV bank statement.
  * Detects columns by header names and handles both dot and comma decimal separators.
  */
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: CSV parser scanning lines and per-column optional cells; branches are cohesive field extraction
 export function parseCsvStatement(content: string): ParsedTransaction[] {
   const lines = content
     .split(/\r?\n/)

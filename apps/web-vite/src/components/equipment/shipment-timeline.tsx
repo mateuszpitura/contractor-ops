@@ -129,6 +129,7 @@ export function ShipmentTimeline({ shipmentId, currentStatus, events }: Shipment
       )}
 
       <ol className="relative space-y-0 ps-4">
+        {/* biome-ignore lint/complexity/noExcessiveCognitiveComplexity: per-status timeline row render derives completed/current/pending state and embedded JSX branches */}
         {SHIPMENT_STATUS_ORDER.map((status, index) => {
           const event = eventByStatus.get(status);
           const isCompleted = index < currentIndex;

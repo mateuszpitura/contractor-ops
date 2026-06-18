@@ -267,6 +267,7 @@ async function dedupAndCreateOrAppend(
  * Runs the daily AuditLog-driven reassessment scan. Incremental: persists a
  * CronScanState cursor so historical audits aren't replayed on restart.
  */
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: incremental cron scan over audit rows — cursor management plus per-row trigger-condition evaluation and persistence branches
 export async function runReassessmentTriggerScan(
   now: Date = new Date(),
 ): Promise<ReassessmentScanResult> {

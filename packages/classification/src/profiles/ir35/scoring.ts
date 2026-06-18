@@ -66,6 +66,7 @@ export interface ScoreIr35Result {
  * reasoning string. The reasoning MUST cite the triggering rule so the outcome
  * page can render it verbatim for audit defence.
  */
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: IR35 verdict algorithm — per-area scoring plus the case-law-driven precedence branches (substitution/control/MOO) that determine the outcome; the branch set is the legal ruleset and must read top-to-bottom in one place.
 export function scoreIr35(answers: AnswerMap): ScoreIr35Result {
   // Step 1: score each area.
   const areaMap = new Map<Ir35Area, Ir35AreaResult>();

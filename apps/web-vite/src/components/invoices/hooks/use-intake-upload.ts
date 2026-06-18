@@ -69,6 +69,7 @@ export function useIntakeUpload(onOpenChange: (open: boolean) => void) {
   );
 
   const handleFile = useCallback(
+    // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: file intake handler validates type/size, reads the file, uploads, then maps result/error states in order; cohesive sequential flow.
     async (file: File) => {
       setLocalError(null);
 

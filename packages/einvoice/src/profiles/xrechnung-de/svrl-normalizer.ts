@@ -170,6 +170,7 @@ export function normaliseSvrl(svrlXml: string): NormalisedSvrl {
   return out;
 }
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: recursive SVRL tree walker dispatching on the two issue-bearing node keys (failed-assert / successful-report, prefixed and bare) with array/object recursion; branches mirror the SVRL element grammar.
 function visit(node: unknown, out: NormalisedSvrl): void {
   if (!node) return;
   if (Array.isArray(node)) {

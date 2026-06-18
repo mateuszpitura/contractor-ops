@@ -276,6 +276,7 @@ type WhereBuilderClient = Pick<DbClient, '$queryRaw'>;
  * `complianceHealth` is intentionally NOT handled here: it is derived in JS from
  * compliance-item counts. `list` post-filters on it; `insights` tallies it.
  */
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: query where-clause builder — one guarded predicate per filter facet plus id-set intersection with null short-circuit; the branch count mirrors the filter surface and must stay in one place.
 export async function buildContractorListWhere(
   db: WhereBuilderClient,
   organizationId: string,

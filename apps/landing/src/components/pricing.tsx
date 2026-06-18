@@ -118,6 +118,7 @@ export function Pricing({ views, annualSavings }: PricingProps) {
           <FadeUp className="mx-auto mt-12 max-w-5xl" delay={0.2}>
             <TailarkPricing
               popularLabel={popularBadge}
+              // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: cohesive tier view-model transform — price/period/suffix derivation plus embedded CTA JSX closes over component scope; extracting would scatter rendering logic.
               tiers={views.map((view): TailarkPricingTier => {
                 const { plan, features, ctaHref, ctaLabel } = view;
                 const price = period === 'month' ? plan.monthly : plan.annual;

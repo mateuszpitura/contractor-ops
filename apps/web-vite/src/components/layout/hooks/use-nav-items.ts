@@ -20,6 +20,7 @@ function settingsTabFromSearch(searchParams: URLSearchParams): string {
   return searchParams.get('tab') ?? 'general';
 }
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: nav active-state predicate enumerates the route-shape variants (settings tabs, notifications, prefix matches); the branch density is intrinsic to the matching rules.
 function isNavItemActive(
   pathname: string,
   searchParams: URLSearchParams,

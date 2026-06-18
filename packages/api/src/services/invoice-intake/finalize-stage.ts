@@ -42,6 +42,7 @@ export async function acknowledgeValidation(
   });
 }
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: sequential intake→invoice conversion (load → tenant/status guards → field mapping branches → persist); the ordered validate-then-mutate steps are one cohesive contract.
 export async function convertToInvoice(
   db: PrismaClient,
   input: ConvertToInvoiceInput,

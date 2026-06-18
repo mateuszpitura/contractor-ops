@@ -183,6 +183,7 @@ type MatcherDb = PrismaClient | MatcherReader;
  * explicitly so we can enforce the filter defensively even if the extension
  * is misconfigured.
  */
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: multi-strategy candidate matcher — runs several independent lookup strategies and aggregates scores/reasons per contractor
 export async function rankIntakeCandidates(
   db: MatcherDb,
   orgId: string,

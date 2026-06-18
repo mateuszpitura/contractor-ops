@@ -45,6 +45,7 @@ interface ContractSidePanelProps {
  * Slide-out side panel showing contract summary.
  * Opens from right on row click. 480px on desktop, 400px on tablet.
  */
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: cohesive summary panel render with multiple conditional field sections closing over component scope
 export function ContractSidePanel({ contract, open, onOpenChange }: ContractSidePanelProps) {
   const t = useTranslations('Contracts');
   const ts = useTranslations('Contracts.sidePanel');

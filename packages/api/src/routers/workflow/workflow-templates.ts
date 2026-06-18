@@ -279,6 +279,7 @@ export const workflowTemplatesRouter = router({
         });
       }
 
+      // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: single transaction deep-cloning a workflow template and all its dependent rows (steps/transitions) in order; the sequential create chain is one cohesive duplication contract.
       const duplicate = await ctx.db.$transaction(async tx => {
         const created = await tx.workflowTemplate.create({
           data: {

@@ -38,6 +38,7 @@ export type PeppolParticipantCardProps = ReturnType<typeof UsePeppolParticipantC
   format: ReturnType<typeof useFormatter>;
 };
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: presentational Peppol card view renders active/inactive, lookup, capability, and dialog branches; the conditional density is intrinsic to the card's visual states.
 export function PeppolParticipantCardView({
   format,
   t,

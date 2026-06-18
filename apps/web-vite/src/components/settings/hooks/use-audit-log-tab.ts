@@ -278,6 +278,7 @@ export function useAuditLogTab() {
   }, [setActions, setResourceTypes, setActorId, setDateFrom, setDateTo, setAuditPage]);
 
   const handleDateRangeSelect = useCallback(
+    // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: cohesive range-edit disambiguation — anchors the nearest of an existing from/to to the clicked date; branches are inseparable
     (range: DateRange | undefined, triggerDate: Date) => {
       if (!range) {
         void setDateFrom(null);

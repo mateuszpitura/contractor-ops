@@ -85,6 +85,7 @@ export interface ScoreScheinResult {
  * the user ("please answer all required questions"). Nicht anwendbar with
  * rawScore=0 and isNotApplicable=true is a valid answered-zero.
  */
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: pure scoring over the fixed DRV question/category tables (validate → per-category weighted aggregation → overall verdict); branching mirrors the rule set, not control-flow complexity.
 export function scoreSchein(answers: AnswerMap): ScoreScheinResult {
   // 1. Validate presence.
   for (const q of SCHEIN_QUESTIONS) {

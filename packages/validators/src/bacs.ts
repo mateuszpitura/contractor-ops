@@ -58,6 +58,7 @@ export interface ModulusCheckResult {
  * Returns `{ valid: true }` when no table entries match (sort code range not
  * covered = valid by default per VocaLink spec).
  */
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: VocaLink modulus-check algorithm — the weighting/exception-rule branches (mod10/mod11/double-alternate, rule 1-14) are defined by the spec and must stay as one faithful implementation.
 export function modulusCheck(
   sortCode: string,
   accountNumber: string,

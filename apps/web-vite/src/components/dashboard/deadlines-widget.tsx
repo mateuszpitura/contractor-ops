@@ -90,6 +90,7 @@ export function DeadlinesWidget() {
         ) : (
           <ScrollArea className="max-h-[320px]">
             <div className="flex flex-col gap-2">
+              {/* biome-ignore lint/complexity/noExcessiveCognitiveComplexity: cohesive deadline-row render with inline overdue/remaining derivation and conditional badge/label branches; splitting fragments the list item for no gain. */}
               {items.map(item => {
                 const badge = DEADLINE_BADGE_CONFIG[item.type as DeadlineType];
                 const isOverdue = 'daysOverdue' in item && item.daysOverdue != null;

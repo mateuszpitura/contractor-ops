@@ -262,6 +262,7 @@ async function buildDashboardRows(ctx: DbCtx, market: 'GB' | 'DE'): Promise<Dash
     if (!drvByAssignment.has(key)) drvByAssignment.set(key, d);
   }
 
+  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: per-assignment row builder assembling many market-conditional fields from joined lookups; linear field assembly, not branching logic.
   const rows: DashboardRow[] = assignments.map(a => {
     const assignmentId = a.id as string;
     const contractor = a.contractor as { displayName?: unknown } | undefined;

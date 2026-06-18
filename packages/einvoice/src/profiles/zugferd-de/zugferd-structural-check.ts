@@ -164,6 +164,7 @@ interface MissingMatch {
 
 type EmbeddedMatch = FoundMatch | MissingMatch;
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: PDF/A-3 structural check — walks catalog /AF then /Names /EmbeddedFiles with a shape guard at each lookup; the defensive branch chain is the structural contract and must stay exhaustive in one place.
 function findEmbeddedFacturX(doc: PDFDocument): EmbeddedMatch {
   // First try catalog /AF (populated by pdf-lib attach()).
   const afRef = doc.catalog.get(PDFName.of('AF'));
@@ -222,6 +223,7 @@ function findEmbeddedFacturX(doc: PDFDocument): EmbeddedMatch {
   };
 }
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: recursive PDF name-tree walk — /Names leaf scan plus /Kids descent with a shape guard at each node and cycle-avoidance via `seen`; the branchy traversal is the tree-walk contract.
 function scanNameTree(doc: PDFDocument, node: PDFDict, seen: string[]): FoundMatch | null {
   const namesRef = node.get(PDFName.of('Names'));
   if (namesRef) {

@@ -82,6 +82,7 @@ const QSTASH_CONFIG = {
  * 6. Submit to ZATCA (clearance for standard, reporting for simplified)
  * 7. Update chain entry with response
  */
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: ZATCA submission pipeline — demo-guard → load → build → generate/sign/hash/QR → commit tx → clearance-vs-reporting submit → chain update; the numbered steps are one regulated contract with strict side-effect order.
 export async function submitToZatca(
   options: SubmitToZatcaOptions,
   db?: PrismaClient,

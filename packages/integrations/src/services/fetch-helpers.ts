@@ -120,6 +120,7 @@ interface MaybeStatusBearing {
  *    via AbortError.
  *  - opossum's `errorFilter` so 4xx don't pollute the breaker's window.
  */
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: exhaustive error-shape classifier — Response/TypeError/AbortError/Node-code/nested-cause/SDK-status branches each fail-closed and must stay in one decision table.
 export function isRetryableError(err: unknown): boolean {
   if (err == null) return false;
 
@@ -171,6 +172,7 @@ export function isRetryableError(err: unknown): boolean {
  * body read time as well, use the helper inside an outer try/finally that
  * wraps both the fetch and the body read with the same `clearTimeout`.
  */
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: retry-loop orchestration — per-attempt AbortController/caller-signal/timeout wiring, retry-on-status, Retry-After backoff and try/catch/finally cleanup are sequentially coupled and side-effect-ordered.
 export async function fetchWithTimeout(
   url: string,
   init: RequestInit = {},

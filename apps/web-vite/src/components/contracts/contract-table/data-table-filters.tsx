@@ -78,6 +78,7 @@ interface DataTableFiltersProps {
 /**
  * Filter popover and active filter badges for the contract data table.
  */
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: filter UI — popover controls plus per-facet active-badge rendering with one conditional per filter dimension; the branch count is the filter surface, kept colocated.
 export function DataTableFilters({
   filters,
   onFiltersChange,

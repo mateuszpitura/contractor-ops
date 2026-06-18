@@ -60,6 +60,7 @@ export async function registerRateLimit(app: FastifyInstance, env: Env): Promise
 
   const extractIp = createClientIpExtractor(env.TRUSTED_PROXIES);
 
+  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: cohesive request-lifecycle hook — exemption checks, limiter selection, header writes and 429/503 paths share request/reply side effects; splitting would scatter ordered mutations.
   app.addHook('preHandler', async (request: FastifyRequest, reply: FastifyReply) => {
     const url = request.url;
     // Exempt: Better Auth handles its own throttling on /api/auth/**.

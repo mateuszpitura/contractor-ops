@@ -22,6 +22,7 @@ export function useContractWizardPrefill(
     enabled: !!contractorId,
   });
 
+  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: one-shot pre-fill maps many contractor fields onto the form, each guarded individually; the per-field branches are intrinsic and cohesive.
   useEffect(() => {
     if (contractorQuery.data && !hasPreFilled.current) {
       hasPreFilled.current = true;

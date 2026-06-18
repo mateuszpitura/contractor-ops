@@ -60,6 +60,7 @@ export interface SaudizationDashboardProps {
  *     counts render side-by-side and visually subordinate (`text-muted-foreground`).
  *   - Charts wrap `useRtlChartConfig` for RTL. Logical properties only.
  */
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: dashboard composer — band/headcount/activity-catalogue sections each with their own loading/save-state branches and RTL chart wiring; the conditional JSX is the assembled view surface.
 export function SaudizationDashboard({
   dashboard,
   thresholdsCustom,

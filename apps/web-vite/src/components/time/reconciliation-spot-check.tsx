@@ -37,6 +37,7 @@ function formatMinor(minor: number): string {
   }).format(minor / 100);
 }
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: presentational render with cohesive loading/empty/error + selection/result UI states
 export function ReconciliationSpotCheckView({
   t,
   contractorId,

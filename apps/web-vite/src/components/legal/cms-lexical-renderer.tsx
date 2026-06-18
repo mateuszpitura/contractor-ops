@@ -16,6 +16,7 @@ type AnyNode = {
 const FORMAT_BOLD = 1;
 const FORMAT_ITALIC = 1 << 1;
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: exhaustive Lexical node-type dispatch with bitwise format-flag composition
 function renderInline(node: AnyNode, index: number): ReactNode {
   if (node.type === 'text') {
     const format = typeof node.format === 'number' ? node.format : 0;

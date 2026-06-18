@@ -31,6 +31,7 @@ export const classificationSubmitRouter = router({
     // update + the row materialisation/supersession are all-or-nothing.
     // DO NOT extract any logic out of this transaction without re-evaluating
     // supersession atomicity.
+    // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: atomic submit transaction — validate→supersede→materialise must stay one $transaction body for supersession atomicity
     return ctx.db.$transaction(async tx => {
       const row = await findOrThrow(
         () =>

@@ -70,6 +70,7 @@ export function useSettingsIndex(): UseSettingsIndexResult {
   const canViewTaxAdmin = can('settings', ['read']);
 
   const tabsToRender = useMemo<RenderableSettingsTab[]>(() => {
+    // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: per-tab permission gate table — one branch per settings tab keyed off the permission matrix; the branch count is the matrix, not tangled logic.
     return SETTINGS_TABS.filter(tab => {
       if (tab.key === 'integrations') return canManageIntegrations;
       if (tab.key === 'billing') return canManageBilling;

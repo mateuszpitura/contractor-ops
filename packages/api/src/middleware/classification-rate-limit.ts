@@ -128,6 +128,7 @@ function fallbackCheck(key: string): { allowed: boolean; remaining: number } {
  * classification.saveAnswer procedure. The input MUST contain an
  * `assessmentId` string — otherwise BAD_REQUEST is thrown.
  */
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: rate-limit middleware with sequential input/ctx narrowing guards then sliding-window enforcement — guards are inseparable
 export const classificationSaveAnswerRateLimit = t.middleware(async ({ ctx, input, next }) => {
   const assessmentId =
     typeof input === 'object' && input !== null && 'assessmentId' in input

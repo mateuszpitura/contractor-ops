@@ -247,6 +247,7 @@ function parseParty(
 // Line-item mapping
 // ---------------------------------------------------------------------------
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: CII line-item mapper — one guarded extraction per BG-25 line field (id/name/price/quantity/VAT/allowances) with unmapped-path tracking; the branch count mirrors the line schema and must stay one mapper.
 function parseLine(
   raw: Record<string, unknown>,
   unmapped: Set<string>,
@@ -394,6 +395,7 @@ function detectProfileLevel(guidelineUrn: string | undefined): ZugferdConformanc
  *   (`ZUGFERD_LEVEL_UNSUPPORTED`). The thrown object is a plain JSON shape;
  *   callers must `try/catch` and inspect `.code`.
  */
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: top-level CII parser — BOM strip → XML parse (CII_PARSE_FAILED) → guideline-URN level guard (ZUGFERD_LEVEL_UNSUPPORTED) → header/party/line extraction; the sequential parse-and-validate steps are one document contract.
 export function parseXrechnungCii(xml: string): ParsedXrechnung {
   const stripped = stripBom(xml);
 

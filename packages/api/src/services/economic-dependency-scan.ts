@@ -176,6 +176,7 @@ export interface UpdateBandStateResult {
  * `EconomicDependencyAlertState` sits behind an @@unique on
  * `contractorAssignmentId` so the upsert key is sufficient on its own).
  */
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: band-crossing state machine with sequential up/down/reminder branches feeding a single upsert
 export async function updateBandState(
   assignment: { id: string; organizationId: string },
   share: number,
@@ -297,6 +298,7 @@ export async function runEconomicDependencyScan(now: Date = new Date()): Promise
 
   await Promise.all(
     assignments.map(assignment =>
+      // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: per-assignment scan orchestration — compute share, transition band, then build jurisdiction-specific notification copy with nested emittedType branches
       limit(async () => {
         dispatchedCounter.scanned++;
         try {

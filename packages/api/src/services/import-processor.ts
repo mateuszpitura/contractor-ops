@@ -108,6 +108,7 @@ export function autoMapColumns(
  * Validates a single contractor row against required fields.
  * Applies defaults: type -> "COMPANY", countryCode -> "PL", currency -> "PLN".
  */
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: exhaustive per-field row validation with independent branch checks; flat inline reads clearer than scattering across helpers.
 export function validateContractorRow(row: Record<string, unknown>): {
   valid: boolean;
   errors: Array<{ field: string; message: string }>;

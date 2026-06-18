@@ -45,6 +45,7 @@ interface BacsSubmitterFormViewProps {
   submitter: ReturnType<typeof UseBacsSubmitterForm>;
 }
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: presentational BACS form view renders many conditional field/state branches (feature gate, loading, validation, save); branch density is intrinsic to the form's visual states.
 export function BacsSubmitterFormView({ featureEnabled, submitter }: BacsSubmitterFormViewProps) {
   const t = useTranslations('Payments.bacs');
   const id = useId();

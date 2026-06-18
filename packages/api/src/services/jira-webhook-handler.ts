@@ -89,6 +89,7 @@ function buildJiraApiContext(
  * @param connectionId - The IntegrationConnection ID
  * @param payload - The raw webhook payload
  */
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: sequential webhook pipeline — validate payload, resolve link, transition status, update metadata, and log each branch
 export async function processJiraWebhook(
   prisma: PrismaClient,
   organizationId: string,

@@ -58,6 +58,7 @@ function parseArgs(argv: string[]): { outDir: string; check: boolean } {
   return { outDir, check };
 }
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: CLI entrypoint with two distinct modes (write PDFs vs --check sha256-manifest drift comparison) sharing one fixture-generation loop; keeping both branches inline mirrors the single-pass invocation contract.
 async function main(): Promise<void> {
   const { outDir, check } = parseArgs(process.argv.slice(2));
 

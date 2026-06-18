@@ -86,6 +86,7 @@ export async function approveChangeRequest(
 
   const changes = request.requestedChanges as FinancialChangeFields;
 
+  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: atomic approval transaction: re-read billing profile → apply each requested financial field → update request status → audit; cohesive single-transaction flow.
   await prisma.$transaction(async tx => {
     // Re-read current billing profile to avoid stale-state overwrites
     const billingProfile = await tx.contractorBillingProfile.findFirst({

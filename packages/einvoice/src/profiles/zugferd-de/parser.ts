@@ -171,6 +171,7 @@ function findEmbeddedFacturXXml(doc: PDFDocument): Uint8Array | null {
  * array (leaf) or nested `Kids` arrays (intermediate). The tree may be of
  * arbitrary depth — pdf-lib does not flatten it for us.
  */
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: PDF EmbeddedFiles name-tree walker — two-sweep leaf scan (exact factur-x.xml match, then AFRelationship=Alternative fallback) plus recursive Kids descent; the nested branches encode the Factur-X §5.3.2 resolution order.
 function extractFromEmbeddedFilesTree(node: PDFDict): Uint8Array | null {
   // Leaf: Names = [name1, fileSpec1, name2, fileSpec2, ...]
   const namesArr = node.lookupMaybe(PDFName.of('Names'), PDFArray);

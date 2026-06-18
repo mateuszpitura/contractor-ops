@@ -173,6 +173,7 @@ function RatePeriodsSection({
   );
 }
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: page composer with sequential loading/error/not-found/empty guards plus rate-period and file-size mapping — cohesive render orchestration
 function PortalContractDetailPageContent() {
   const t = useTranslations('Portal');
   const tCommon = useTranslations('Common');

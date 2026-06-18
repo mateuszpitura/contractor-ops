@@ -427,6 +427,7 @@ export const auth = betterAuth({
         }
       }
     }),
+    // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: sequential post-sign-in tracking (reset on success / atomic increment+lock on failure / unknown-email path); ordering and branches are security-load-bearing.
     after: createAuthMiddleware(async ctx => {
       // Track failed/successful sign-in attempts.
       if (ctx.path === '/sign-in/email' && ctx.body?.email) {

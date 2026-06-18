@@ -36,6 +36,7 @@ export function defineQStashRoute<TBody extends z.ZodType>(
     if (!guard) return reply;
 
     const runObserved = () =>
+      // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: linear request orchestration (parse → safeParse → validate → handler) with cohesive error branches
       withQueueObservability(config.observabilityName, async () => {
         let parsedJson: unknown;
         try {

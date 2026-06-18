@@ -93,6 +93,7 @@ interface ParsedRateRow {
  * Rows that do not parse as `DD Mon YYYY,<number>` are skipped silently —
  * BoE occasionally emits empty rows or rows containing footnotes.
  */
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: tolerant BoE CSV parser — header-row scan plus per-line format guards (BOM/CRLF/footnote/empty-row tolerance); the defensive branch set is the parse spec and reads best inline.
 export function parseBoeCsv(csv: string): ParsedRateRow[] {
   const lines = csv.replace(/^﻿/, '').split(/\r?\n/);
 
@@ -255,6 +256,7 @@ interface PollDeps {
  * field of the result so the cron route can serialise them into a JSON
  * response.
  */
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: never-throwing poll orchestration — fetch (with abort/timeout) → parse → diff against stored rate → conditional upsert, each failure mode caught and surfaced via the result; the nested try/catch is the always-resolves contract.
 export async function pollBoeBaseRate(deps: PollDeps = {}): Promise<PollBoeBaseRateResult> {
   const fetcher = deps.fetcher ?? fetch;
   const db = deps.db ?? prisma;

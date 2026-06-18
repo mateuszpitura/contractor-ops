@@ -173,6 +173,7 @@ export const leitwegIdRouter = router({
     const { id, ...patch } = input;
 
     try {
+      // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: atomic update transaction — tenant-scoped lookup, default-flag clearing, and patch must stay one $transaction body
       return await ctx.db.$transaction(async tx => {
         const existing = await tx.leitwegId.findFirst({
           where: { id, organizationId: ctx.organizationId },

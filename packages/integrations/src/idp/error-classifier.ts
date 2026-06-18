@@ -109,6 +109,7 @@ const NETWORK_ERROR_TOKENS = [
   'fetch failed',
 ];
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: unwraps Node fetch's one-level-nested `cause`, then per-candidate narrows unknown→code/message across object/Error/string shapes before token-matching; the defensive type narrowing is irreducible against untyped thrown causes.
 function isNetworkCause(cause: unknown): boolean {
   if (cause == null) return false;
   // Node fetch wraps the underlying network error in `cause`; unwrap one level.

@@ -47,6 +47,7 @@ export const ksefRouter = router({
    */
   connect: integrationSettingsProcedure('update')
     .input(connectInput)
+    // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: sequential connect flow — resolve NIP → validate credentials → encrypt → persist settings → create QStash cron schedule, each step gated; cohesive orchestration.
     .mutation(async ({ ctx, input }) => {
       // Step 1: Get org NIP
       const org = await ctx.db.organization.findUniqueOrThrow({

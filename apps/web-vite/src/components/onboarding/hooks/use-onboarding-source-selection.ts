@@ -67,6 +67,7 @@ export function useOnboardingSourceSelection(
   );
 
   const handleConnect = useCallback(
+    // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: sequential OAuth-connect orchestration (re-entrancy guard → fetch URL → branch on result → redirect/toast) with cohesive try/catch/finally error handling.
     async (provider: string) => {
       if (connectingProvider) return;
       setConnectingProvider(provider);

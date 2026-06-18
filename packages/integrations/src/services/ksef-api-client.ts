@@ -97,6 +97,7 @@ export class KsefApiClient {
    * `AUTH_POLL_WALL_CLOCK_MS` to prevent the polling loop from outliving
    * the caller's deadline.
    */
+  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: KSeF auth polling loop with composed caller+wall-clock abort signals and deadline guard; control flow is one cohesive unit.
   async authenticate(token: string, nip: string, signal?: AbortSignal): Promise<KsefSession> {
     // Compose caller signal + our wall-clock guard so EITHER firing aborts
     // the in-flight fetch and breaks the polling loop.
@@ -266,6 +267,7 @@ export class KsefApiClient {
    * Starts an async query, polls for completion, and returns metadata list.
    * The query uses "subject2" subjectType (buyer perspective).
    */
+  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: async query start + completion polling with wall-clock bound and abort handling; the poll state machine is one cohesive unit.
   async queryInvoices(
     nip: string,
     dateFrom: string,
@@ -579,6 +581,7 @@ export class KsefApiClient {
    * sessions or create duplicate query jobs. Callers that know their POST
    * is safe to retry can opt in via `retryNonIdempotent: true`.
    */
+  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: fetch-with-retry: idempotency gating + 429 Retry-After + 5xx exponential backoff + abort handling; splitting fragments the retry state machine.
   private async fetchWithRetry(
     url: string,
     options: RequestInit,

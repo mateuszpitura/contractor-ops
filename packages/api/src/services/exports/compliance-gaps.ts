@@ -61,6 +61,7 @@ export interface IterateComplianceGapsOptions {
  * Errors propagate to the caller; the iterator stops at the first failed
  * page.
  */
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: cursor-paginated async generator — the loop, per-row compliance-health derivation, and yield logic form one streaming contract that must share the pagination state.
 export async function* iterateComplianceGaps(
   prisma: PrismaClient,
   opts: IterateComplianceGapsOptions,

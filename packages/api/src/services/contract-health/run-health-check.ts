@@ -53,6 +53,7 @@ type GroundedClause = ContractHealthToolInput['citedClauses'][number] & {
   phraseId: IpClausePhraseId | string | undefined;
 };
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: sequential health-check orchestration: demo guard → fetch PDF → idempotency → call model → grade clauses → persist run + audit; cohesive flow clearer inline than scattered across helpers.
 export async function runContractHealthCheck(
   args: RunHealthCheckArgs,
 ): Promise<RunHealthCheckResult> {

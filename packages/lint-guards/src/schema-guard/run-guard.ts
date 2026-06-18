@@ -42,6 +42,7 @@ function stripComments(src: string): string {
   return noBlocks.replace(/\/\/[^\n]*/g, match => ' '.repeat(match.length));
 }
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: line-based Prisma SDL scanner — brace-depth tracking and field/model matching must share one loop over the source lines.
 function parseModels(src: string): ParsedModel[] {
   const lines = stripComments(src).split('\n');
   const models: ParsedModel[] = [];

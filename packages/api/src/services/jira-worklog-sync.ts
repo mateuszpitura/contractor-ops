@@ -229,6 +229,7 @@ async function upsertWorklogEntry(
  * @param endDate - End of date range (YYYY-MM-DD)
  * @returns Count of imported and skipped entries
  */
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: sequential Jira worklog sync — fetch range → per-entry validate/dedupe branches → import-vs-skip tally → persist; the ordered import pipeline shares state and reads top-to-bottom.
 export async function syncJiraWorklogs(
   prisma: PrismaClient,
   organizationId: string,

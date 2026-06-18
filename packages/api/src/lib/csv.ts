@@ -156,6 +156,7 @@ export function streamCsvResponse(opts: StreamCsvOptions): Readable {
     // Pump rows into the stringifier asynchronously; the generator below
     // yields stringifier output chunks as they become available.
     let pumpError: Error | null = null;
+    // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: streaming pump IIFE — per-row formula neutralisation + backpressure (write/drain) + error capture; cohesive async loop sharing stringifier/pumpError state, splitting fragments the stream lifecycle.
     const pump = (async () => {
       try {
         for await (const row of rows) {

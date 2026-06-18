@@ -154,6 +154,7 @@ export function orgBrandingKey(orgId: string): string {
  * legacy settings rows may contain looser values and consumers should never
  * inject unvalidated strings into a CSS variable.
  */
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: defensive color parser — one validated branch per accepted CSS color shape (#RGB/#RRGGBB/hsl/hsla) with reject-to-null fallback; the branch set is the accepted-format allowlist.
 export function parseBrandColor(value: unknown): string | null {
   if (typeof value !== 'string') return null;
   const trimmed = value.trim();

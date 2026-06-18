@@ -344,6 +344,7 @@ function VoidConfirmDialog({
 // Component
 // ---------------------------------------------------------------------------
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: cohesive metadata form render with many permission/PII/validation-gated field sections closing over component scope
 export function InvoiceMetadataFormView({
   invoice,
   mutations,

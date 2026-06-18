@@ -55,6 +55,7 @@ function verifySignature(rawBody: string, signature: string | null, secret: stri
 }
 
 export function registerRevalidateLegalRoute(app: FastifyInstance): void {
+  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: linear webhook guard chain (config → body extract → HMAC verify → parse → required-field check → publish), each branch a distinct 4xx/5xx path
   app.post('/revalidate-legal', async (request, reply) => {
     const secret = loadEnv().CMS_WEBHOOK_SECRET;
     if (!secret) {
