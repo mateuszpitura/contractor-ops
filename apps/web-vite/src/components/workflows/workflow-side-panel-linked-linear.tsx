@@ -27,12 +27,13 @@ export function LinkedLinearIssuesSectionShell({ children }: LinkedLinearIssuesS
   );
 }
 
+const LINEAR_SKELETON_KEYS = ['issue-a', 'issue-b'] as const;
+
 export function LinkedLinearIssuesSkeleton() {
   return (
     <div className="space-y-2">
-      {Array.from({ length: 2 }).map((_, i) => (
-        // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
-        <div key={`wf-linear-${i}`} className="flex items-center gap-2">
+      {LINEAR_SKELETON_KEYS.map(key => (
+        <div key={key} className="flex items-center gap-2">
           <Skeleton className="h-4 w-[100px]" />
           <Skeleton className="h-6 w-[120px] rounded-md" />
         </div>

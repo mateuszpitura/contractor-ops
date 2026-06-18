@@ -23,6 +23,8 @@ interface LinearLinkedIssuesPanelProps {
   items: Array<{ taskRunId: string; issue: LinearLinkedIssue }>;
 }
 
+const LINKED_ISSUE_SKELETON_KEYS = ['row-1', 'row-2'] as const;
+
 /**
  * Renders Linear issues linked to a given set of workflow task runs.
  *
@@ -43,9 +45,8 @@ export function LinearLinkedIssuesPanel({
           <Skeleton className="size-4 rounded" />
           <Skeleton className="h-4 w-32" />
         </div>
-        {Array.from({ length: 2 }).map((_, i) => (
-          // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
-          <div key={`linear-linked-skel-${i}`} className="flex items-center gap-2">
+        {LINKED_ISSUE_SKELETON_KEYS.map(key => (
+          <div key={key} className="flex items-center gap-2">
             <Skeleton className="h-6 w-[140px] rounded-md" />
             <Skeleton className="h-4 w-[200px]" />
           </div>

@@ -33,12 +33,13 @@ function formatRelativeTime(
   return formatDate(d);
 }
 
+const PENDING_SIGNATURE_SKELETON_KEYS = ['card-a', 'card-b'] as const;
+
 export function PendingSignaturesSkeleton() {
   return (
     <div className="space-y-3">
-      {Array.from({ length: 2 }).map((_, i) => (
-        // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
-        <Card key={`skel-${i}`} className="p-4">
+      {PENDING_SIGNATURE_SKELETON_KEYS.map(key => (
+        <Card key={key} className="p-4">
           <div className="flex items-center justify-between">
             <div className="space-y-2">
               <Skeleton className="h-4 w-48" />

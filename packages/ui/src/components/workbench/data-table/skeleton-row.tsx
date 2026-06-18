@@ -30,7 +30,7 @@ export function SkeletonRows<TData>({ table, count, columns }: SkeletonRowsProps
   return (
     <>
       {Array.from({ length: count }).map((_, i) => (
-        // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
+        // biome-ignore lint/suspicious/noArrayIndexKey: count is a runtime prop — identical positional placeholders with no stable field to key on; the whole set is replaced wholesale (never reordered) when real rows arrive
         <TableRow key={`skeleton-${i}`}>
           {table.getVisibleLeafColumns().map(col => (
             <TableCell key={col.id}>

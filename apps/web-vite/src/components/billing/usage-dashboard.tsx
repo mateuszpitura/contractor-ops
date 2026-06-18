@@ -143,12 +143,13 @@ export function UsageDashboardView({ parsed, currentTier }: UsageDashboardViewPr
   );
 }
 
+const USAGE_SKELETON_KEYS = ['credits', 'invoices', 'storage', 'seats'] as const;
+
 function UsageDashboardSkeleton() {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-      {Array.from({ length: 4 }).map((_, i) => (
-        // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
-        <div key={`usage-${i}`} className="rounded-xl border p-4 space-y-3">
+      {USAGE_SKELETON_KEYS.map(key => (
+        <div key={key} className="rounded-xl border p-4 space-y-3">
           <Skeleton className="h-4 w-20" />
           <Skeleton className="h-7 w-24" />
           <Skeleton className="h-2 w-full" />

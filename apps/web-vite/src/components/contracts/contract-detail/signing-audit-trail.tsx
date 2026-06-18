@@ -18,6 +18,8 @@ import { useTranslations } from '../../../i18n/useTranslations.js';
 import { formatDate, formatDateTime } from '../../../lib/format-date.js';
 import type { useSigningAuditTrail } from '../hooks/use-signing-audit-trail.js';
 
+const AUDIT_STEP_SKELETON_KEYS = ['s1', 's2', 's3', 's4', 's5'] as const;
+
 const EVENT_CONFIG: Record<string, { icon: typeof Send; className: string }> = {
   ENVELOPE_CREATED: { icon: Send, className: 'text-muted-foreground' },
   ENVELOPE_SENT: { icon: Send, className: 'text-muted-foreground' },
@@ -90,9 +92,8 @@ export function SigningAuditTrail({ open, onOpenChange, audit }: SigningAuditTra
         <div className="mt-4">
           {isLoading ? (
             <div className="space-y-4">
-              {Array.from({ length: 5 }).map((_, i) => (
-                // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
-                <div key={`audit-step-${i}`} className="flex items-start gap-3 py-2">
+              {AUDIT_STEP_SKELETON_KEYS.map(key => (
+                <div key={key} className="flex items-start gap-3 py-2">
                   <Skeleton className="size-4 rounded-full" />
                   <div className="flex-1 space-y-1">
                     <Skeleton className="h-4 w-48" />

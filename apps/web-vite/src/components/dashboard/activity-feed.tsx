@@ -81,6 +81,17 @@ const RESOURCE_ACCENT: Record<string, string> = {
   APPROVAL_STEP: 'border-s-primary',
 };
 
+const SKELETON_ROW_KEYS = [
+  'row-1',
+  'row-2',
+  'row-3',
+  'row-4',
+  'row-5',
+  'row-6',
+  'row-7',
+  'row-8',
+] as const;
+
 function groupByDay(items: ActivityItem[]): GroupedActivities[] {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -133,9 +144,8 @@ export function ActivityFeed() {
       <CardContent>
         {isLoading ? (
           <div className="flex flex-col gap-2">
-            {Array.from({ length: 8 }).map((_, i) => (
-              // biome-ignore lint/suspicious/noArrayIndexKey: fixed-length skeleton placeholder, never reordered
-              <Skeleton key={`skel-${i}`} className="h-12 w-full rounded-md" />
+            {SKELETON_ROW_KEYS.map(key => (
+              <Skeleton key={key} className="h-12 w-full rounded-md" />
             ))}
           </div>
         ) : grouped.length === 0 ? (

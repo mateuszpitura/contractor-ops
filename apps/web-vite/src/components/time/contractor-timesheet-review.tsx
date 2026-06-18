@@ -186,13 +186,12 @@ export function ContractorTimesheetReview({
                           {title}
                         </span>
                       </TableCell>
-                      {DAY_LABELS.map((_, dayIdx) => {
+                      {DAY_LABELS.map((day, dayIdx) => {
                         const entry = entries.get(dayIdx);
                         const mins = entry?.minutes ?? 0;
                         rowTotal += mins;
                         return (
-                          // biome-ignore lint/suspicious/noArrayIndexKey: fixed weekday columns
-                          <TableCell key={dayIdx} className="px-1 py-2 text-center text-sm">
+                          <TableCell key={day} className="px-1 py-2 text-center text-sm">
                             <div className="relative inline-flex items-center justify-center">
                               <span className={mins > 0 ? 'font-medium' : 'text-muted-foreground'}>
                                 {mins > 0 ? minutesToHours(mins) : '-'}
@@ -221,16 +220,13 @@ export function ContractorTimesheetReview({
                   <TableCell className="px-4 py-3 text-sm font-semibold">
                     {t('review.total')}
                   </TableCell>
-                  {DAY_LABELS.map((_, dayIdx) => {
+                  {DAY_LABELS.map((day, dayIdx) => {
                     let colTotal = 0;
                     for (const [, { entries }] of contracts) {
                       colTotal += entries.get(dayIdx)?.minutes ?? 0;
                     }
                     return (
-                      <TableCell
-                        // biome-ignore lint/suspicious/noArrayIndexKey: fixed weekday columns, never reordered
-                        key={dayIdx}
-                        className="px-1 py-3 text-center text-sm font-semibold">
+                      <TableCell key={day} className="px-1 py-3 text-center text-sm font-semibold">
                         {minutesToHours(colTotal) || '0'}
                       </TableCell>
                     );

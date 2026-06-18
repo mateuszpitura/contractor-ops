@@ -26,6 +26,8 @@ const SYNC_STATUS_STYLES: Record<string, { className: string; labelKey: string }
   },
 };
 
+const SYNC_HISTORY_SKELETON_KEYS = ['row-a', 'row-b', 'row-c'] as const;
+
 export type KsefSyncHistoryViewProps = ReturnType<typeof UseKsefSyncHistory>;
 
 export function KsefSyncHistoryView({
@@ -51,9 +53,8 @@ export function KsefSyncHistoryView({
       <CollapsibleContent>
         {isLoading ? (
           <div className="space-y-2 py-2">
-            {Array.from({ length: 3 }).map((_, i) => (
-              // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
-              <div key={`skel-${i}`} className="flex items-center gap-3">
+            {SYNC_HISTORY_SKELETON_KEYS.map(key => (
+              <div key={key} className="flex items-center gap-3">
                 <Skeleton className="h-4 w-20" />
                 <Skeleton className="h-5 w-12" />
                 <Skeleton className="ms-auto h-5 w-16" />

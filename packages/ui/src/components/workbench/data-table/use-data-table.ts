@@ -86,19 +86,23 @@ export function useDataTable<TData>(opts: UseDataTableOptions<TData>): UseDataTa
     : setUncontrolledRowSelection;
   const previousSignature = useRef<string>(`${pageIndex}:${pageSize}:${JSON.stringify(sorting)}`);
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: setRowSelection identity flips with isControlled; adding it would re-run on every controlled-mode render
   useEffect(() => {
     const signature = `${pageIndex}:${pageSize}:${JSON.stringify(sorting)}`;
     if (signature !== previousSignature.current) {
       previousSignature.current = signature;
+      // Only the uncontrolled branch clears here; call the stable useState
+      // setter directly so this effect doesn't depend on the polymorphic
+      // `setRowSelection` (which is a fresh noop each render in controlled mode).
       if (!isControlled && Object.keys(rowSelection).length > 0) {
-        setRowSelection({});
+        setUncontrolledRowSelection({});
       }
     }
-  }, [pageIndex, pageSize, sorting, rowSelection]);
+  }, [pageIndex, pageSize, sorting, rowSelection, isControlled]);
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: setRowSelection is conditionally bound; stable for the lifetime of a single (controlled|uncontrolled) mode
-  const clearSelection = useCallback(() => setRowSelection({}), []);
+  // Imperative handler (passed to a Clear button's onClick), so a changing
+  // identity is harmless — depending on `setRowSelection` keeps it bound to the
+  // current controlled handler instead of capturing the first-render closure.
+  const clearSelection = useCallback(() => setRowSelection({}), [setRowSelection]);
 
   const handleSortingChange = useCallback<OnChangeFn<SortingState>>(
     updater => {
@@ -152,7 +156,7 @@ export function useDataTable<TData>(opts: UseDataTableOptions<TData>): UseDataTa
     getRowId,
   });
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: rowSelection is the upstream driver of table.getSelectedRowModel() output
+  // biome-ignore lint/correctness/useExhaustiveDependencies: `rowSelection` is an intentional extra dep, not read in the body. `table` is a stable instance (useReactTable holds it in useState), so its identity never changes when selection updates — `rowSelection` is what must invalidate this memo so getSelectedRowModel() is re-read after a selection change.
   const selectedRows = useMemo(
     () => table.getSelectedRowModel().rows.map(row => row.original),
     [table, rowSelection],

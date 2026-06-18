@@ -47,6 +47,8 @@ function getSlaAccent(status: string): string {
   }
 }
 
+const QUEUE_SKELETON_KEYS = ['r1', 'r2', 'r3', 'r4', 'r5'] as const;
+
 const SLA_LABEL_KEYS: Record<string, string> = {
   green: 'approvals.slaOnTrack',
   yellow: 'approvals.slaApproaching',
@@ -71,9 +73,8 @@ export function ApprovalQueueWidget() {
       <CardContent>
         {isLoading ? (
           <div className="flex flex-col gap-2">
-            {Array.from({ length: 5 }).map((_, i) => (
-              // biome-ignore lint/suspicious/noArrayIndexKey: fixed-length skeleton placeholder, never reordered
-              <Skeleton key={`skel-${i}`} className="h-10 w-full rounded-md" />
+            {QUEUE_SKELETON_KEYS.map(key => (
+              <Skeleton key={key} className="h-10 w-full rounded-md" />
             ))}
           </div>
         ) : isError ? (

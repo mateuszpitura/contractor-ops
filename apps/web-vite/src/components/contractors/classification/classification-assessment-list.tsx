@@ -22,6 +22,8 @@ export interface ClassificationAssessmentListViewProps {
   readonly rows: readonly AssessmentRow[];
 }
 
+const SKELETON_ROW_KEYS = ['row-1', 'row-2', 'row-3', 'row-4'] as const;
+
 export function ClassificationAssessmentListSkeleton() {
   return (
     <Card role="status" aria-live="polite" aria-busy="true">
@@ -29,9 +31,8 @@ export function ClassificationAssessmentListSkeleton() {
         <Skeleton className="h-5 w-40" />
       </CardHeader>
       <CardContent className="space-y-3">
-        {Array.from({ length: 4 }).map((_, i) => (
-          // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
-          <div key={`skel-${i}`} className="flex items-center gap-4">
+        {SKELETON_ROW_KEYS.map(key => (
+          <div key={key} className="flex items-center gap-4">
             <Skeleton className="h-4 w-32" />
             <Skeleton className="h-4 w-20" />
             <Skeleton className="h-5 w-16 rounded-full" />

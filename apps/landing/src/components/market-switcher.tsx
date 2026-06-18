@@ -102,26 +102,24 @@ export function MarketSwitcher() {
         {MARKET_LABELS[currentMarket]}
       </button>
       {!!open && (
-        <ul
-          // biome-ignore lint/a11y/noNoninteractiveElementToInteractiveRole: combobox-style listbox built atop <ul>
+        <div
           role="listbox"
           aria-label="Markets"
           className="absolute right-0 mt-2 w-56 overflow-hidden rounded-xl border border-border/60 bg-surface-1/95 shadow-xl backdrop-blur-md z-50">
           {locales.map(locale => {
             const market = localeToMarket(locale);
             return (
-              <li key={locale}>
-                <MarketOptionButton
-                  locale={locale}
-                  isSelected={locale === currentLocale}
-                  marketLabel={MARKET_LABELS[market]}
-                  englishName={localeConfigs[locale].englishName}
-                  onSelect={handleSelect}
-                />
-              </li>
+              <MarketOptionButton
+                key={locale}
+                locale={locale}
+                isSelected={locale === currentLocale}
+                marketLabel={MARKET_LABELS[market]}
+                englishName={localeConfigs[locale].englishName}
+                onSelect={handleSelect}
+              />
             );
           })}
-        </ul>
+        </div>
       )}
     </div>
   );

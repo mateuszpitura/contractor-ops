@@ -126,9 +126,8 @@ export function NotificationPreferencesSkeleton() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {Array.from({ length: 6 }).map((_, i) => (
-              // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
-              <TableRow key={`pref-${i}`}>
+            {NOTIFICATION_TYPES.map(type => (
+              <TableRow key={type}>
                 <TableCell>
                   <div className="flex items-center gap-3">
                     <Skeleton className="size-8 rounded-full" />

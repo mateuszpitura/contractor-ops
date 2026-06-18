@@ -86,9 +86,10 @@ export function IntakeDetailValidationPaneView({
 
         {firstFive.length > 0 ? (
           <ul className="space-y-2 text-xs">
-            {firstFive.map((issue, index) => (
-              // biome-ignore lint/suspicious/noArrayIndexKey: stable order from server
-              <li key={`issue-${index}`} className="rounded-md border p-2">
+            {firstFive.map(issue => (
+              <li
+                key={`${issue.severity}|${issue.ruleId ?? ''}|${issue.xpath ?? ''}|${issue.message ?? ''}`}
+                className="rounded-md border p-2">
                 <span className="me-2 font-mono text-[10px] uppercase">[{issue.severity}]</span>
                 {issue.ruleId ? <span className="me-2 font-mono">{issue.ruleId}</span> : null}
                 <span>{issue.message ?? ''}</span>

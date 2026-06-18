@@ -22,6 +22,8 @@ import { useTranslations } from '../../i18n/useTranslations.js';
 import { usePortalDateFormatter } from '../../lib/format/use-portal-date-formatter.js';
 import { formatMoneyAmount } from '../../lib/money.js';
 
+const PORTAL_DASHBOARD_SKELETON_KEYS = ['r1', 'r2', 'r3', 'r4', 'r5'] as const;
+
 function getFirstName(displayName: string): string {
   return displayName.split(' ')[0] ?? displayName;
 }
@@ -123,9 +125,8 @@ function PortalIndexPageContent() {
         <SectionLabel variant="portal">{t('dashboard.recentActivity')}</SectionLabel>
         <div className="mt-4 space-y-3">
           {isLoading ? (
-            Array.from({ length: 5 }).map((_, i) => (
-              // biome-ignore lint/suspicious/noArrayIndexKey: fixed-length skeleton placeholder, never reordered
-              <div key={`skel-${i}`} className="flex items-center justify-between">
+            PORTAL_DASHBOARD_SKELETON_KEYS.map(key => (
+              <div key={key} className="flex items-center justify-between">
                 <Skeleton className="h-4 w-64" />
                 <Skeleton className="h-3 w-16" />
               </div>

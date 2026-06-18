@@ -16,12 +16,13 @@ import { useTaskCommentsSection } from '../hooks/use-task-comments-section.js';
 
 type TaskCommentRow = ReturnType<typeof useTaskCommentsSection>['comments'][number];
 
+const SKELETON_ROW_KEYS = ['comment-a', 'comment-b'] as const;
+
 export function TaskCommentsSkeleton() {
   return (
     <div className="space-y-3">
-      {Array.from({ length: 2 }).map((_, i) => (
-        // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
-        <div key={`skel-${i}`} className="flex items-start gap-2">
+      {SKELETON_ROW_KEYS.map(key => (
+        <div key={key} className="flex items-start gap-2">
           <Skeleton className="size-6 rounded-full shrink-0" />
           <div className="space-y-1 flex-1">
             <Skeleton className="h-3 w-24" />

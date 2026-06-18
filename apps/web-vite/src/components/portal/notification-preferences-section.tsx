@@ -22,6 +22,14 @@ type NotificationCategory =
   | 'DOCUMENT_UPLOADS'
   | 'SECURITY_ALERTS';
 
+const NOTIFICATION_CATEGORIES: readonly NotificationCategory[] = [
+  'INVOICE_UPDATES',
+  'PAYMENT_CONFIRMATIONS',
+  'CONTRACT_CHANGES',
+  'DOCUMENT_UPLOADS',
+  'SECURITY_ALERTS',
+];
+
 interface CategoryConfig {
   category: NotificationCategory;
   icon: LucideIcon;
@@ -94,10 +102,9 @@ export function NotificationPreferencesSkeleton() {
         <CollapsibleContent>
           <div className="border-t">
             <div className="space-y-1">
-              {Array.from({ length: 5 }).map((_, i) => (
+              {NOTIFICATION_CATEGORIES.map(category => (
                 <div
-                  // biome-ignore lint/suspicious/noArrayIndexKey: fixed-length skeleton placeholder, never reordered
-                  key={`pref-${i}`}
+                  key={`pref-${category}`}
                   className="flex min-h-[48px] items-center justify-between px-4 py-3">
                   <div className="flex items-center gap-3">
                     <Skeleton className="h-5 w-5 rounded" />

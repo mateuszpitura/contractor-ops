@@ -36,6 +36,8 @@ export type WhtCertificatesSectionProps = ReturnType<typeof UseWhtCertificatesSe
 type SetOpenId = WhtCertificatesSectionProps['setOpenId'];
 type HandleDownload = WhtCertificatesSectionProps['handleDownload'];
 
+const CERTIFICATE_SKELETON_KEYS = ['cert-a', 'cert-b', 'cert-c'] as const;
+
 function ViewCertificateButton({
   id,
   label,
@@ -98,9 +100,8 @@ export function WhtCertificatesSectionSkeleton({ t }: { t: WhtCertificatesSectio
               </TableRow>
             </TableHeader>
             <TableBody>
-              {Array.from({ length: 3 }).map((_, i) => (
-                // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
-                <TableRow key={`wht-cert-skel-${i}`}>
+              {CERTIFICATE_SKELETON_KEYS.map(key => (
+                <TableRow key={key}>
                   <TableCell>
                     <Skeleton className="h-4 w-28" />
                   </TableCell>

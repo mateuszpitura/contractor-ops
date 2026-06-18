@@ -12,15 +12,16 @@ type DocumentListProps = {
   children: ReactNode;
 };
 
+const DOCUMENT_SKELETON_KEYS = ['doc-a', 'doc-b', 'doc-c'] as const;
+
 export function DocumentList({ isLoading, isEmpty, children }: DocumentListProps) {
   const t = useTranslations('Documents');
 
   if (isLoading) {
     return (
       <div className="space-y-3">
-        {Array.from({ length: 3 }).map((_, i) => (
-          // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
-          <div key={`skel-${i}`} className="flex items-start gap-4 rounded-lg border p-4">
+        {DOCUMENT_SKELETON_KEYS.map(key => (
+          <div key={key} className="flex items-start gap-4 rounded-lg border p-4">
             <Skeleton className="size-12 rounded-md" />
             <div className="flex-1 space-y-2">
               <Skeleton className="h-4 w-48" />

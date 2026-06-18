@@ -20,6 +20,8 @@ import { EquipmentTypeIcon } from '../equipment/equipment-type-icon.js';
 import { renderEmptyStateAction } from '../shared/atelier-bridges.js';
 import type { PortalEquipmentItem, PortalReturnRequest } from './hooks/use-portal-equipment.js';
 
+const EQUIPMENT_SKELETON_KEYS = ['e1', 'e2', 'e3'] as const;
+
 interface PortalEquipmentTabProps {
   t: ReturnType<typeof useTranslations>;
   tReturn: ReturnType<typeof useTranslations>;
@@ -67,9 +69,8 @@ export function PortalEquipmentTab({
           <Skeleton className="h-9 w-32" />
         </div>
         <div className="space-y-3">
-          {Array.from({ length: 3 }).map((_, i) => (
-            // biome-ignore lint/suspicious/noArrayIndexKey: fixed-length skeleton placeholder, never reordered
-            <Card key={`skel-${i}`}>
+          {EQUIPMENT_SKELETON_KEYS.map(key => (
+            <Card key={key}>
               <CardContent className="flex items-center gap-4 p-4">
                 <Skeleton className="h-6 w-6 shrink-0 rounded" />
                 <div className="min-w-0 flex-1 space-y-2">

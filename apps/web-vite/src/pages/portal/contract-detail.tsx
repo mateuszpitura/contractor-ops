@@ -19,6 +19,18 @@ import { useTranslations } from '../../i18n/useTranslations.js';
 import { usePortalDateFormatter } from '../../lib/format/use-portal-date-formatter.js';
 import { formatMoneyAmount } from '../../lib/money.js';
 
+const SKELETON_FIELD_KEYS = [
+  'field-a',
+  'field-b',
+  'field-c',
+  'field-d',
+  'field-e',
+  'field-f',
+  'field-g',
+  'field-h',
+] as const;
+const SKELETON_ROW_KEYS = ['row-a', 'row-b', 'row-c'] as const;
+
 function formatContractType(type: string): string {
   return type
     .replace(/_/g, ' ')
@@ -215,9 +227,8 @@ function PortalContractDetailPageContent() {
           </div>
           <Card>
             <CardContent className="grid gap-4 p-6 sm:grid-cols-2">
-              {Array.from({ length: 8 }).map((_, i) => (
-                // biome-ignore lint/suspicious/noArrayIndexKey: fixed-length skeleton placeholder, never reordered
-                <div key={`skel-${i}`} className="space-y-1">
+              {SKELETON_FIELD_KEYS.map(key => (
+                <div key={key} className="space-y-1">
                   <Skeleton className="h-3 w-24" />
                   <Skeleton className="h-5 w-36" />
                 </div>
@@ -226,9 +237,8 @@ function PortalContractDetailPageContent() {
           </Card>
           <div className="space-y-3">
             <Skeleton className="h-6 w-32" />
-            {Array.from({ length: 3 }).map((_, i) => (
-              // biome-ignore lint/suspicious/noArrayIndexKey: fixed-length skeleton placeholder, never reordered
-              <Skeleton key={`skel-${i}`} className="h-10 w-full" />
+            {SKELETON_ROW_KEYS.map(key => (
+              <Skeleton key={key} className="h-10 w-full" />
             ))}
           </div>
         </div>

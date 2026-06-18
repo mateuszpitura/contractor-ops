@@ -40,6 +40,15 @@ import { WaiveDialog } from './waive-dialog.js';
 
 type LateInterestResponse = NonNullable<ReturnType<typeof UseLateInterestCard>['data']>;
 
+const SKELETON_ROW_KEYS = [
+  'days-overdue',
+  'principal',
+  'rate',
+  'daily-interest',
+  'accrued',
+  'total-claim',
+] as const;
+
 /**
  * `getForInvoice` is a discriminated union: scope-gate misses return
  * `{ applicable: false, reason }`, while the eligible branch spreads the full
@@ -77,9 +86,8 @@ export function LateInterestSkeleton() {
         <Skeleton className="h-5 w-48" />
       </CardHeader>
       <CardContent className="space-y-3">
-        {Array.from({ length: 6 }).map((_, i) => (
-          // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
-          <div key={`skel-${i}`} className="flex justify-between">
+        {SKELETON_ROW_KEYS.map(key => (
+          <div key={key} className="flex justify-between">
             <Skeleton className="h-4 w-32" />
             <Skeleton className="h-4 w-20" />
           </div>

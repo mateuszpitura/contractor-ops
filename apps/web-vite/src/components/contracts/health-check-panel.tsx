@@ -94,11 +94,17 @@ export function HealthCheckPanel({
           <p className="text-sm text-muted-foreground">{t('noCitedClauses')}</p>
         ) : (
           <ul className="space-y-3">
-            {citedClauses.map((clause, idx) => {
+            {citedClauses.map(clause => {
               const isPending = pendingPhrasesCited?.includes(clause.phraseId) ?? false;
+              const span = clause.regexMatchSpan;
+              // phraseId alone can repeat across distinct citations of the same
+              // phrase, so qualify it by where the match was found: the regex
+              // span when present, else the cited text.
+              const clauseKey = span
+                ? `${clause.phraseId}@${span.startChar}-${span.endChar}`
+                : `${clause.phraseId}:${clause.citedText}`;
               return (
-                // biome-ignore lint/suspicious/noArrayIndexKey: static parse result, never reordered — phraseId can repeat across cited clauses
-                <li key={`${clause.phraseId}-${idx}`} className="border-s-2 border-s-blue-300 ps-3">
+                <li key={clauseKey} className="border-s-2 border-s-blue-300 ps-3">
                   <div className="flex items-center gap-2 text-xs">
                     <Badge variant="outline">{clause.jurisdiction}</Badge>
                     <Badge variant={clause.regexMatched ? 'default' : 'secondary'}>

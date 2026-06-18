@@ -38,6 +38,9 @@ const QUICK_ACTION_ICON = {
   play: Play,
 } as const;
 
+const LOADING_SKELETON_KEYS = ['row-1', 'row-2', 'row-3', 'row-4'] as const;
+const DOC_SKELETON_KEYS = ['row-1', 'row-2', 'row-3'] as const;
+
 function formatRelativeTimeData(timestamp: number): {
   key: string;
   params?: Record<string, number>;
@@ -235,9 +238,8 @@ function MatchedPageCommandItem({
 export function CommandPaletteLoadingBody() {
   return (
     <div className="space-y-2 p-2">
-      {Array.from({ length: 4 }).map((_, i) => (
-        // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
-        <Skeleton key={`skel-${i}`} className="h-8 w-full rounded-md" />
+      {LOADING_SKELETON_KEYS.map(key => (
+        <Skeleton key={key} className="h-8 w-full rounded-md" />
       ))}
     </div>
   );
@@ -371,9 +373,8 @@ export function CommandPaletteSearchingBody({
       {!!isDocLoading && (
         <CommandGroup heading="Docs">
           <div className="space-y-2 p-2">
-            {Array.from({ length: 3 }).map((_, i) => (
-              // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
-              <Skeleton key={`skel-${i}`} className="h-8 w-full rounded-md" />
+            {DOC_SKELETON_KEYS.map(key => (
+              <Skeleton key={key} className="h-8 w-full rounded-md" />
             ))}
           </div>
         </CommandGroup>

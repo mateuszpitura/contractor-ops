@@ -34,6 +34,9 @@ interface PaymentRunSidePanelSkeletonProps {
   onOpenChange: (open: boolean) => void;
 }
 
+const DETAIL_SKELETON_KEYS = ['status', 'total', 'count', 'scheduled'] as const;
+const ITEM_SKELETON_KEYS = ['item-a', 'item-b', 'item-c'] as const;
+
 export function PaymentRunSidePanelSkeleton({
   open,
   onOpenChange,
@@ -52,18 +55,16 @@ export function PaymentRunSidePanelSkeleton({
         <Skeleton className="h-5 w-16 rounded-full" />
       </div>
       <div className="grid grid-cols-2 gap-3">
-        {Array.from({ length: 4 }).map((_, i) => (
-          // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
-          <div key={`payment-run-detail-skel-${i}`} className="space-y-1">
+        {DETAIL_SKELETON_KEYS.map(key => (
+          <div key={key} className="space-y-1">
             <Skeleton className="h-3 w-20" />
             <Skeleton className="h-4 w-28" />
           </div>
         ))}
       </div>
       <div className="space-y-2">
-        {Array.from({ length: 3 }).map((_, i) => (
-          // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
-          <Skeleton key={`payment-run-item-skel-${i}`} className="h-12 w-full rounded-md" />
+        {ITEM_SKELETON_KEYS.map(key => (
+          <Skeleton key={key} className="h-12 w-full rounded-md" />
         ))}
       </div>
     </EntitySummarySheet>

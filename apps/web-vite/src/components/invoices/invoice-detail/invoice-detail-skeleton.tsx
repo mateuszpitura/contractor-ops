@@ -1,7 +1,16 @@
 import { Separator } from '@contractor-ops/ui/components/shadcn/separator';
 import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 
-const FIELD_SKELETON_COUNT = 8;
+const FIELD_SKELETON_KEYS = [
+  'number',
+  'status',
+  'issued',
+  'due',
+  'supplier',
+  'buyer',
+  'net',
+  'total',
+] as const;
 
 /**
  * Section-appropriate skeleton for the invoice detail screen — mirrors the
@@ -33,9 +42,8 @@ export function InvoiceDetailSkeleton() {
           <div className="space-y-6 py-4 lg:py-0">
             <Skeleton className="h-32 rounded-lg" />
             <div className="space-y-3">
-              {Array.from({ length: FIELD_SKELETON_COUNT }).map((_, i) => (
-                // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
-                <div key={`invoice-detail-skel-${i}`} className="space-y-1.5">
+              {FIELD_SKELETON_KEYS.map(key => (
+                <div key={key} className="space-y-1.5">
                   <Skeleton className="h-4 w-24" />
                   <Skeleton className="h-9 w-full" />
                 </div>

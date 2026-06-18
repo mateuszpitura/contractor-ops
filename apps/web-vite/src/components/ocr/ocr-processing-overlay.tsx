@@ -12,6 +12,17 @@ interface OcrProcessingOverlayProps {
   progress?: number;
 }
 
+const FIELD_SKELETON_KEYS = [
+  'invoice-number',
+  'issue-date',
+  'due-date',
+  'supplier',
+  'buyer',
+  'net-amount',
+  'tax-amount',
+  'total-amount',
+] as const;
+
 export function OcrProcessingOverlay({ progress }: OcrProcessingOverlayProps) {
   const t = useTranslations('OcrReview.processingOverlay');
   return (
@@ -31,9 +42,8 @@ export function OcrProcessingOverlay({ progress }: OcrProcessingOverlayProps) {
         </div>
       </div>
       <div className="flex flex-col gap-4 p-4">
-        {Array.from({ length: 8 }).map((_, i) => (
-          // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
-          <div key={`skel-${i}`} className="flex flex-col gap-2">
+        {FIELD_SKELETON_KEYS.map(key => (
+          <div key={key} className="flex flex-col gap-2">
             <Skeleton className="h-4 w-20" />
             <Skeleton className="h-8 w-full" />
           </div>

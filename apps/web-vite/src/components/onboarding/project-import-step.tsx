@@ -196,8 +196,7 @@ function ProjectCard({ project, selection, onSelectionChange }: ProjectCardProps
         {!expanded && (
           <div className="flex flex-wrap gap-1.5">
             {selection.steps.map((step, i) => (
-              // biome-ignore lint/suspicious/noArrayIndexKey: imported steps lack stable id before save
-              <Badge key={`step-chip-${i}`} variant="secondary">
+              <Badge key={`step-chip-${step.sortOrder}`} variant="secondary">
                 {step.name || t('stepFallback', { number: i + 1 })}
               </Badge>
             ))}
@@ -208,8 +207,7 @@ function ProjectCard({ project, selection, onSelectionChange }: ProjectCardProps
           <div className="space-y-2">
             {selection.steps.map((step, i) => (
               <StepRow
-                // biome-ignore lint/suspicious/noArrayIndexKey: imported steps lack stable id before save
-                key={`step-edit-${i}`}
+                key={`step-edit-${step.sortOrder}`}
                 step={step}
                 index={i}
                 isFirst={i === 0}

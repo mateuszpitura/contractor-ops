@@ -34,6 +34,8 @@ import { PageLoadingSpinner } from '../../components/shared/page-loading-spinner
 import { WorkbenchPageHeader } from '../../components/shared/workbench-page-header.js';
 import { useTranslations } from '../../i18n/useTranslations.js';
 
+const CHANGE_REQUEST_SKELETON_KEYS = ['cr-a', 'cr-b', 'cr-c'] as const;
+
 function ApprovalsPageContent() {
   const t = useTranslations('Approvals');
   const te = useTranslations('EmptyStates');
@@ -157,9 +159,8 @@ function ApprovalsPageContent() {
             <TabsContent value="profile-changes" className="mt-4">
               {queue.changeRequestsLoading ? (
                 <div className="space-y-4">
-                  {Array.from({ length: 3 }).map((_, i) => (
-                    // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
-                    <Skeleton key={`skel-${i}`} className="h-48 w-full rounded-xl" />
+                  {CHANGE_REQUEST_SKELETON_KEYS.map(key => (
+                    <Skeleton key={key} className="h-48 w-full rounded-xl" />
                   ))}
                 </div>
               ) : queue.changeRequests.length === 0 ? (

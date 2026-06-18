@@ -24,6 +24,8 @@ import { useFeatureFlagsTab } from './hooks/use-feature-flags-tab.js';
 
 export type FeatureFlagsTabProps = ReturnType<typeof UseFeatureFlagsTab>;
 
+const SKELETON_ROW_KEYS = ['flag-a', 'flag-b', 'flag-c'] as const;
+
 export function FeatureFlagsTabSkeleton() {
   return (
     <div className="space-y-4">
@@ -50,9 +52,8 @@ export function FeatureFlagsTabSkeleton() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {Array.from({ length: 3 }).map((_, i) => (
-              // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
-              <TableRow key={`feature-flag-skel-${i}`}>
+            {SKELETON_ROW_KEYS.map(key => (
+              <TableRow key={key}>
                 <TableCell>
                   <Skeleton className="h-4 w-40" />
                 </TableCell>

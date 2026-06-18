@@ -76,6 +76,8 @@ export type ZatcaInvoiceChainTableViewProps = {
 type HookResult = ReturnType<typeof useZatcaInvoiceChainTable>;
 type ChainEntry = HookResult['entries'][number];
 
+const SKELETON_ROW_KEYS = ['chain-a', 'chain-b', 'chain-c'] as const;
+
 export function ZatcaInvoiceChainTableSkeleton() {
   return (
     <Card>
@@ -85,9 +87,8 @@ export function ZatcaInvoiceChainTableSkeleton() {
       </CardHeader>
       <CardContent className="pt-0">
         <div className="space-y-2 rounded-lg border p-3">
-          {Array.from({ length: 3 }).map((_, i) => (
-            // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
-            <Skeleton key={`zatca-chain-skel-${i}`} className="h-10 w-full" />
+          {SKELETON_ROW_KEYS.map(key => (
+            <Skeleton key={key} className="h-10 w-full" />
           ))}
         </div>
       </CardContent>

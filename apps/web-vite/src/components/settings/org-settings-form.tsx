@@ -32,6 +32,8 @@ import { useOrgSettingsForm } from './hooks/use-org-settings-form.js';
 
 export type OrgSettingsFormProps = ReturnType<typeof useOrgSettingsForm>;
 
+const SKELETON_FIELD_KEYS = ['name', 'timezone', 'currency', 'country', 'vat', 'locale'] as const;
+
 export function OrgSettingsFormSkeleton() {
   return (
     <Card>
@@ -39,9 +41,8 @@ export function OrgSettingsFormSkeleton() {
         <Skeleton className="h-6 w-48" />
       </CardHeader>
       <CardContent className="space-y-4">
-        {Array.from({ length: 6 }).map((_, i) => (
-          // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
-          <div key={`field-${i}`} className="space-y-2">
+        {SKELETON_FIELD_KEYS.map(key => (
+          <div key={key} className="space-y-2">
             <Skeleton className="h-4 w-24" />
             <Skeleton className="h-8 w-full max-w-lg" />
           </div>

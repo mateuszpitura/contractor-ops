@@ -5,6 +5,8 @@ import type { LooseTranslator } from '../../i18n/typed-keys.js';
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { cn } from '../../lib/utils.js';
 
+const TIMELINE_STEP_KEYS = ['submitted', 'review', 'approved', 'scheduled', 'paid'] as const;
+
 function getSteps(t: LooseTranslator) {
   return [
     { key: 'submitted', label: t('submitted') },
@@ -176,21 +178,19 @@ export function StatusTimelineSkeleton() {
   return (
     <div className="py-4">
       <div className="hidden items-center gap-2 md:flex">
-        {Array.from({ length: 5 }).map((_, i) => (
-          // biome-ignore lint/suspicious/noArrayIndexKey: fixed-length skeleton placeholder, never reordered
-          <div key={`timeline-${i}`} className="flex items-center gap-2">
+        {TIMELINE_STEP_KEYS.map((key, index) => (
+          <div key={key} className="flex items-center gap-2">
             <div className="flex flex-col items-center gap-1.5">
               <Skeleton className="h-6 w-6 rounded-full" />
               <Skeleton className="h-3 w-16" />
             </div>
-            {i < 4 && <Skeleton className="h-0.5 w-12" />}
+            {index < TIMELINE_STEP_KEYS.length - 1 && <Skeleton className="h-0.5 w-12" />}
           </div>
         ))}
       </div>
       <div className="flex flex-col gap-2 md:hidden">
-        {Array.from({ length: 5 }).map((_, i) => (
-          // biome-ignore lint/suspicious/noArrayIndexKey: fixed-length skeleton placeholder, never reordered
-          <div key={`event-${i}`} className="flex items-center gap-3">
+        {TIMELINE_STEP_KEYS.map(key => (
+          <div key={key} className="flex items-center gap-3">
             <Skeleton className="h-6 w-6 rounded-full" />
             <Skeleton className="h-3 w-24" />
           </div>

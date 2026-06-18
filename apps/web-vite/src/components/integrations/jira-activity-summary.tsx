@@ -9,6 +9,8 @@ export type JiraActivitySummaryViewProps = Pick<
   'items' | 'relativeTime' | 't'
 >;
 
+const ACTIVITY_SKELETON_KEYS = ['row-a', 'row-b', 'row-c'] as const;
+
 export function JiraActivitySummarySkeleton() {
   return (
     <div className="animate-fade-up rounded-lg border p-4 space-y-3">
@@ -16,9 +18,8 @@ export function JiraActivitySummarySkeleton() {
         <Skeleton className="size-4 rounded" />
         <Skeleton className="h-4 w-32" />
       </div>
-      {Array.from({ length: 3 }).map((_, i) => (
-        // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
-        <div key={`activity-${i}`} className="flex items-center gap-2">
+      {ACTIVITY_SKELETON_KEYS.map(key => (
+        <div key={key} className="flex items-center gap-2">
           <Skeleton className="h-6 w-[120px] rounded-md" />
           <Skeleton className="h-4 w-[200px]" />
           <Skeleton className="ms-auto h-3 w-[60px]" />

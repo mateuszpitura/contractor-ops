@@ -26,6 +26,8 @@ type WorkflowsTabViewProps = {
   contractorId: string;
 } & ReturnType<typeof useContractorTabWorkflows>;
 
+const SKELETON_ROW_KEYS = ['row-1', 'row-2', 'row-3', 'row-4', 'row-5'] as const;
+
 export function WorkflowsTabSkeleton() {
   return (
     <div className="space-y-4">
@@ -34,9 +36,8 @@ export function WorkflowsTabSkeleton() {
         <Skeleton className="h-8 w-32" />
       </div>
       <div className="space-y-2">
-        {Array.from({ length: 5 }).map((_, i) => (
-          // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
-          <div key={`skel-${i}`} className="flex items-center gap-4 rounded-lg border px-4 py-3">
+        {SKELETON_ROW_KEYS.map(key => (
+          <div key={key} className="flex items-center gap-4 rounded-lg border px-4 py-3">
             <Skeleton className="h-4 flex-1 max-w-[280px]" />
             <Skeleton className="h-5 w-20 rounded-full" />
             <Skeleton className="h-4 w-12 tabular-nums" />

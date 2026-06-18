@@ -29,6 +29,8 @@ import { useApprovalChainsTab } from './hooks/use-approval-chains-tab.js';
 
 type SettingsTranslateFn = (key: string, params?: Record<string, string | number>) => string;
 
+const CHAIN_SKELETON_KEYS = ['chain-a', 'chain-b', 'chain-c'] as const;
+
 function formatConditionSummary(conditions: unknown, t: SettingsTranslateFn): string {
   if (!(conditions && Array.isArray(conditions)) || conditions.length === 0) {
     return t('approvals.noConditions');
@@ -160,9 +162,8 @@ export function ApprovalChainsTabView({
           </div>
           <Skeleton className="h-8 w-44" />
         </div>
-        {Array.from({ length: 3 }).map((_, i) => (
-          // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
-          <Card key={`skel-${i}`}>
+        {CHAIN_SKELETON_KEYS.map(key => (
+          <Card key={key}>
             <CardHeader>
               <Skeleton className="h-4 w-48" />
             </CardHeader>

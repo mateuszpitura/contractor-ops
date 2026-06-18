@@ -15,6 +15,8 @@ import type { DocSearchResult } from './hooks/use-attach-doc-dialog.js';
 import { useAttachDocDialog } from './hooks/use-attach-doc-dialog.js';
 import { ConfluenceIcon, NotionIcon } from './provider-icons.js';
 
+const DOC_SKELETON_KEYS = ['d1', 'd2', 'd3'] as const;
+
 export type AttachDocDialogViewProps = ReturnType<typeof useAttachDocDialog> & {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -141,9 +143,8 @@ export function AttachDocDialogView({
 
           {searchQuery.isLoading && debouncedQuery.length > 0 ? (
             <div className="space-y-2 p-1">
-              {Array.from({ length: 3 }).map((_, i) => (
-                // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
-                <div key={`doc-${i}`} className="flex items-center gap-2 p-2">
+              {DOC_SKELETON_KEYS.map(key => (
+                <div key={key} className="flex items-center gap-2 p-2">
                   <Skeleton className="h-3.5 w-3.5 rounded-full shrink-0" />
                   <Skeleton className="h-4 w-[60%]" />
                   <Skeleton className="h-3 w-[30%] ms-auto" />

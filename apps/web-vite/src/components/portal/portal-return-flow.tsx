@@ -34,15 +34,15 @@ interface PortalReturnFlowProps {
 }
 
 function StepIndicator({ currentStep, totalSteps }: { currentStep: number; totalSteps: number }) {
+  const stepNumbers = Array.from({ length: totalSteps }, (_, i) => i + 1);
   return (
     <div className="flex items-center justify-center gap-2" aria-hidden="true">
-      {Array.from({ length: totalSteps }).map((_, i) => (
+      {stepNumbers.map(stepNumber => (
         <div
-          // biome-ignore lint/suspicious/noArrayIndexKey: fixed-length step indicator, never reordered
-          key={`step-${i}`}
+          key={`step-${stepNumber}`}
           className={cn(
             'h-2 w-2 rounded-full transition-colors',
-            i + 1 === currentStep ? 'bg-primary' : 'bg-muted',
+            stepNumber === currentStep ? 'bg-primary' : 'bg-muted',
           )}
         />
       ))}

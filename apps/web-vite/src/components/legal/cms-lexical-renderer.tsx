@@ -16,6 +16,12 @@ type AnyNode = {
 const FORMAT_BOLD = 1;
 const FORMAT_ITALIC = 1 << 1;
 
+/** Flattened text of a node subtree — used to derive stable list-item keys. */
+function nodeText(node: AnyNode): string {
+  if (node.text) return node.text;
+  return (node.children ?? []).map(nodeText).join('');
+}
+
 // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: exhaustive Lexical node-type dispatch with bitwise format-flag composition
 function renderInline(node: AnyNode, index: number): ReactNode {
   if (node.type === 'text') {
@@ -58,18 +64,16 @@ function renderBlock(node: AnyNode, index: number): ReactNode {
       if (node.listType === 'number') {
         return (
           <Ol key={index}>
-            {(node.children ?? []).map((item, j) => (
-              // biome-ignore lint/suspicious/noArrayIndexKey: static lexical parse tree, never reordered — nodes have no stable id
-              <Li key={j}>{(item.children ?? []).map(renderInline)}</Li>
+            {(node.children ?? []).map(item => (
+              <Li key={nodeText(item)}>{(item.children ?? []).map(renderInline)}</Li>
             ))}
           </Ol>
         );
       }
       return (
         <Ul key={index}>
-          {(node.children ?? []).map((item, j) => (
-            // biome-ignore lint/suspicious/noArrayIndexKey: static lexical parse tree, never reordered — nodes have no stable id
-            <Li key={j}>{(item.children ?? []).map(renderInline)}</Li>
+          {(node.children ?? []).map(item => (
+            <Li key={nodeText(item)}>{(item.children ?? []).map(renderInline)}</Li>
           ))}
         </Ul>
       );

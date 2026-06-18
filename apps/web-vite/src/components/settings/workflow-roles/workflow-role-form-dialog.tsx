@@ -284,7 +284,7 @@ export function WorkflowRoleFormDialogView({
               </div>
               {form.taskItems.map((item, idx) => (
                 <TaskItemRow
-                  // biome-ignore lint/suspicious/noArrayIndexKey: order managed via sortOrder
+                  // biome-ignore lint/suspicious/noArrayIndexKey: client-only editable task list with no stable identity field — sortOrder is reassigned to the array index on every add/remove/move, so it offers no improvement over the index
                   key={idx}
                   idx={idx}
                   item={item}

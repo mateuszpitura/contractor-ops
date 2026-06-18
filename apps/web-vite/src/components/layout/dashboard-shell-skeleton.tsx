@@ -29,11 +29,14 @@ import { useTranslations } from '../../i18n/useTranslations.js';
 // Approximate per-group nav item counts (overview / operations / finance /
 // system) from `lib/navigation.ts`. Exact counts are permission-gated, so a
 // representative shape is enough to avoid a layout jump on swap.
+const navGroupItemKeys = (groupKey: string, count: number): readonly string[] =>
+  Array.from({ length: count }, (_, i) => `${groupKey}-item-${i + 1}`);
+
 const NAV_GROUPS = [
-  { key: 'overview', count: 1, hasLabel: false },
-  { key: 'operations', count: 5, hasLabel: true },
-  { key: 'finance', count: 6, hasLabel: true },
-  { key: 'system', count: 3, hasLabel: true },
+  { key: 'overview', itemKeys: navGroupItemKeys('overview', 1), hasLabel: false },
+  { key: 'operations', itemKeys: navGroupItemKeys('operations', 5), hasLabel: true },
+  { key: 'finance', itemKeys: navGroupItemKeys('finance', 6), hasLabel: true },
+  { key: 'system', itemKeys: navGroupItemKeys('system', 3), hasLabel: true },
 ] as const;
 
 export function DashboardShellSkeleton() {
@@ -61,9 +64,8 @@ export function DashboardShellSkeleton() {
             <SidebarGroup key={group.key} className={group.key === 'overview' ? 'pb-0' : undefined}>
               {group.hasLabel ? <Skeleton className="mx-2 mb-2 h-3 w-16" /> : null}
               <SidebarMenu>
-                {Array.from({ length: group.count }).map((_, i) => (
-                  // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
-                  <SidebarMenuItem key={`${group.key}-${i}`}>
+                {group.itemKeys.map(itemKey => (
+                  <SidebarMenuItem key={itemKey}>
                     <SidebarMenuSkeleton showIcon />
                   </SidebarMenuItem>
                 ))}

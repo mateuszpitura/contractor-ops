@@ -37,6 +37,8 @@ const STATUS_VARIANT = {
   NOT_APPLICABLE: 'outline',
 } as const;
 
+const SKELETON_ROW_KEYS = ['cred-a', 'cred-b', 'cred-c'] as const;
+
 // Enum label lookup via the i18n catalog — falls back to the raw value
 // for any unknown enum variant so rendering never silently breaks (INFO-1).
 function useLabelFns() {
@@ -196,9 +198,8 @@ export function CredentialsTabView({
 
       {isLoading ? (
         <div className="space-y-2" data-testid="credentials-loading">
-          {Array.from({ length: 3 }).map((_, i) => (
-            // biome-ignore lint/suspicious/noArrayIndexKey: fixed-length skeleton placeholder, never reordered
-            <Skeleton key={`skel-${i}`} className="h-14 w-full rounded-md" />
+          {SKELETON_ROW_KEYS.map(key => (
+            <Skeleton key={key} className="h-14 w-full rounded-md" />
           ))}
         </div>
       ) : isError ? (

@@ -44,7 +44,7 @@ export function CostCenterFormSheet({
 
   const { createMutation, updateMutation, archiveMutation, isSubmitting } = formSheet;
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: re-run when sheet re-opens.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: `open` is an intentional extra dep — the effect body reads only `costCenter`, but we must re-seed the form when the sheet re-opens on the same (referentially-equal) row after the user edited the fields.
   useEffect(() => {
     setName(costCenter?.name ?? '');
     setCode(costCenter?.code ?? '');

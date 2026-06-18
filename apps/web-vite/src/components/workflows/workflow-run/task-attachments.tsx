@@ -41,12 +41,13 @@ function TaskAttachmentsShell({
   );
 }
 
+const ATTACHMENT_SKELETON_KEYS = ['a1', 'a2'] as const;
+
 export function TaskAttachmentsSkeleton() {
   return (
     <div className="space-y-2">
-      {Array.from({ length: 2 }).map((_, i) => (
-        // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
-        <Skeleton key={`skel-${i}`} className="h-16 w-full rounded-lg" />
+      {ATTACHMENT_SKELETON_KEYS.map(key => (
+        <Skeleton key={key} className="h-16 w-full rounded-lg" />
       ))}
     </div>
   );

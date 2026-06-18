@@ -368,7 +368,7 @@ export function TimesheetGrid({
                           {contract.title}
                         </span>
                       </TableCell>
-                      {DAY_LABELS.map((_, dayIdx) => {
+                      {DAY_LABELS.map((dayLabel, dayIdx) => {
                         const cellKey = getCellKey(contract.id, dayIdx);
                         const imported = isCellImported(contract.id, dayIdx);
                         const source = getCellSource(contract.id, dayIdx);
@@ -376,8 +376,7 @@ export function TimesheetGrid({
 
                         return (
                           <TableCell
-                            // biome-ignore lint/suspicious/noArrayIndexKey: fixed weekday columns, never reordered
-                            key={dayIdx}
+                            key={dayLabel}
                             className={cn('px-1 py-1.5', imported && 'bg-muted/50')}>
                             <div className="relative">
                               <TimesheetCellInput
@@ -421,12 +420,11 @@ export function TimesheetGrid({
                   <TableCell className="px-4 py-3 text-sm font-semibold">
                     {t('grid.total')}
                   </TableCell>
-                  {DAY_LABELS.map((_, dayIdx) => {
+                  {DAY_LABELS.map((dayLabel, dayIdx) => {
                     const colTotal = getColumnTotal(dayIdx);
                     return (
                       <TableCell
-                        // biome-ignore lint/suspicious/noArrayIndexKey: fixed weekday columns, never reordered
-                        key={dayIdx}
+                        key={dayLabel}
                         className="px-1 py-3 text-center text-sm font-semibold">
                         {minutesToHours(colTotal) || '0'}
                       </TableCell>

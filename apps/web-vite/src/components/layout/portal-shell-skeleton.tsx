@@ -12,6 +12,8 @@ import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 
 import { useTranslations } from '../../i18n/useTranslations.js';
 
+const PORTAL_NAV_SKELETON_KEYS = ['n1', 'n2', 'n3', 'n4', 'n5'] as const;
+
 export function PortalShellSkeleton() {
   const t = useTranslations('Common');
 
@@ -24,9 +26,8 @@ export function PortalShellSkeleton() {
             <Skeleton className="h-4 w-28" />
           </div>
           <div className="hidden flex-1 items-center justify-center gap-6 md:flex">
-            {Array.from({ length: 5 }).map((_, i) => (
-              // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
-              <Skeleton key={`portal-nav-${i}`} className="h-4 w-16" />
+            {PORTAL_NAV_SKELETON_KEYS.map(key => (
+              <Skeleton key={key} className="h-4 w-16" />
             ))}
           </div>
           <div className="ms-auto flex shrink-0 items-center gap-2">

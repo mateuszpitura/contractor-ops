@@ -147,15 +147,16 @@ function renderShipmentsEmptyAction(
   );
 }
 
+const SHIPMENT_SKELETON_KEYS = ['row-1', 'row-2', 'row-3'] as const;
+
 export function TabShipmentsSkeleton({ pendingReturn }: { pendingReturn?: PendingReturn | null }) {
   return (
     <div className="space-y-3">
       <PendingReturnBanner pendingReturn={pendingReturn} />
       <div className="rounded-xl border bg-background">
         <div className="space-y-2 p-4">
-          {Array.from({ length: 3 }).map((_, i) => (
-            // biome-ignore lint/suspicious/noArrayIndexKey: fixed-length skeleton placeholder, never reordered
-            <Skeleton key={`shipment-skel-${i}`} className="h-10 w-full" />
+          {SHIPMENT_SKELETON_KEYS.map(key => (
+            <Skeleton key={key} className="h-10 w-full" />
           ))}
         </div>
       </div>

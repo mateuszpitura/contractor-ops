@@ -2,6 +2,10 @@ import { WORKBENCH_TABLE_PAGE_CLASS, WORKBENCH_TABLE_SECTION_CLASS } from '@cont
 import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 
 const TABLE_ROW_COUNT = 8;
+const TABLE_ROW_SKELETON_KEYS = Array.from(
+  { length: TABLE_ROW_COUNT },
+  (_, i) => `invoices-list-skel-${i}`,
+);
 
 /**
  * Layout-stable skeleton for the invoices list route. Preserves the header
@@ -24,9 +28,8 @@ export function InvoicesListSkeleton() {
         <Skeleton className="h-5 w-32" />
         <Skeleton className="h-10 w-full" />
         <div className="space-y-2">
-          {Array.from({ length: TABLE_ROW_COUNT }).map((_, i) => (
-            // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
-            <Skeleton key={`invoices-list-skel-${i}`} className="h-12 w-full rounded-md" />
+          {TABLE_ROW_SKELETON_KEYS.map(key => (
+            <Skeleton key={key} className="h-12 w-full rounded-md" />
           ))}
         </div>
       </section>

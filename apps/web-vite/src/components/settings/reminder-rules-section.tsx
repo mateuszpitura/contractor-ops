@@ -34,6 +34,8 @@ import { ReminderRuleEditor } from './reminder-rule-editor.js';
 
 export type { ReminderRule };
 
+const REMINDER_RULE_SKELETON_KEYS = ['r1', 'r2', 'r3'] as const;
+
 export type ReminderRulesSectionProps = ReturnType<typeof UseReminderRulesSection>;
 
 interface ReminderRuleCardProps {
@@ -157,9 +159,8 @@ export function ReminderRulesSectionView({
           </div>
           <Skeleton className="h-8 w-32" />
         </div>
-        {Array.from({ length: 3 }).map((_, i) => (
-          // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
-          <Card key={`skel-${i}`}>
+        {REMINDER_RULE_SKELETON_KEYS.map(key => (
+          <Card key={key}>
             <CardHeader>
               <Skeleton className="h-4 w-48" />
             </CardHeader>

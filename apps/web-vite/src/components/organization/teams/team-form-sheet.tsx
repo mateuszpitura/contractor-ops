@@ -47,7 +47,7 @@ export function TeamFormSheet({ open, onOpenChange, team, formSheet }: TeamFormS
 
   const { createMutation, updateMutation, archiveMutation, isSubmitting } = formSheet;
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: re-run when sheet re-opens, not only when `team` swaps.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: `open` is an intentional extra dep — the effect body reads only `team`, but we must re-seed the form when the sheet re-opens on the same (referentially-equal) row after the user edited the fields.
   useEffect(() => {
     setName(team?.name ?? '');
     setCode(team?.code ?? '');

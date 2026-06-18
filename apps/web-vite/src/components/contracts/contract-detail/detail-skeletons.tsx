@@ -1,5 +1,8 @@
 import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 
+const TAB_CONTENT_SKELETON_KEYS = ['summary', 'terms', 'parties', 'meta'] as const;
+const TAB_STRIP_SKELETON_KEYS = ['overview', 'terms', 'documents', 'activity'] as const;
+
 /** Header shimmer matching the rendered detail header layout. */
 export function DetailHeaderSkeleton() {
   return (
@@ -27,9 +30,8 @@ export function DetailHeaderSkeleton() {
 export function DetailTabContentSkeleton() {
   return (
     <div className="grid gap-4 lg:grid-cols-2">
-      {Array.from({ length: 4 }).map((_, i) => (
-        // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
-        <div key={`detail-tab-skel-${i}`} className="rounded-xl border bg-card p-4">
+      {TAB_CONTENT_SKELETON_KEYS.map(key => (
+        <div key={key} className="rounded-xl border bg-card p-4">
           <Skeleton className="mb-3 h-5 w-32" />
           <div className="space-y-2">
             <Skeleton className="h-4 w-full" />
@@ -47,9 +49,8 @@ export function DetailTabsSkeleton() {
   return (
     <>
       <div className="mb-4 flex gap-2 border-b pb-2">
-        {Array.from({ length: 4 }).map((_, i) => (
-          // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
-          <Skeleton key={`detail-tabs-skel-${i}`} className="h-7 w-24" />
+        {TAB_STRIP_SKELETON_KEYS.map(key => (
+          <Skeleton key={key} className="h-7 w-24" />
         ))}
       </div>
       <DetailTabContentSkeleton />

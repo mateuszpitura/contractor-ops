@@ -130,10 +130,9 @@ const MatchCandidateButton = memo(function MatchCandidateButton({
         ) : null}
       </div>
       <div className="mt-2 flex flex-wrap gap-1">
-        {candidate.matchReasons.map((reason, index) => (
+        {candidate.matchReasons.map(reason => (
           <span
-            // biome-ignore lint/suspicious/noArrayIndexKey: reasons are stable per candidate
-            key={`reason-${reason.kind}-${index}`}
+            key={`reason-${reason.kind}`}
             className="inline-flex items-center rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
             {renderReason(t, reason)}
           </span>

@@ -12,6 +12,14 @@ import { useTranslations } from '../../../i18n/useTranslations.js';
 import { FreeZoneAssignmentForm } from './free-zone-assignment-form.js';
 import { useFreeZoneAssignment } from './hooks/use-free-zone-assignment.js';
 
+const FZ_FIELD_SKELETON_KEYS = [
+  'legal-name',
+  'jurisdiction',
+  'license',
+  'permit',
+  'status',
+] as const;
+
 interface FreeZoneAssignmentContainerProps {
   contractorId: string;
 }
@@ -55,9 +63,8 @@ function FreeZoneAssignmentSkeleton() {
         <Skeleton className="h-4 w-80" />
       </CardHeader>
       <CardContent className="space-y-4">
-        {Array.from({ length: 5 }).map((_, i) => (
-          // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
-          <div key={`fz-field-${i}`} className="space-y-2">
+        {FZ_FIELD_SKELETON_KEYS.map(key => (
+          <div key={key} className="space-y-2">
             <Skeleton className="h-4 w-32" />
             <Skeleton className="h-9 w-full" />
           </div>

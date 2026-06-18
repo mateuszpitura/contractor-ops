@@ -250,7 +250,7 @@ export function ConditionBuilder({ value, onChange }: ConditionBuilderProps) {
     <div className="space-y-2">
       {value.rules.map((rule, index) => (
         <RuleRow
-          // biome-ignore lint/suspicious/noArrayIndexKey: dynamic form array, rules have no stable id
+          // biome-ignore lint/suspicious/noArrayIndexKey: editable form rows with no identity — field/operator/value all collide for fresh rows ({'',equals,''}), so no composite key is stable; persisted contract is ConditionGroup, adding a client id would change the form shape
           key={`rule-${index}`}
           index={index}
           rule={rule}

@@ -22,6 +22,9 @@ import { PageLoadingSpinner } from '../../components/shared/page-loading-spinner
 import { Link } from '../../i18n/navigation.js';
 import { useTranslations } from '../../i18n/useTranslations.js';
 
+const SKELETON_TAB_KEYS = ['info', 'assignments', 'shipments'] as const;
+const SKELETON_CARD_KEYS = ['card-a', 'card-b'] as const;
+
 function DetailSkeleton() {
   return (
     <div className="space-y-6">
@@ -31,15 +34,13 @@ function DetailSkeleton() {
         <Skeleton className="h-5 w-16 rounded-full" />
       </div>
       <div className="flex gap-2 border-b pb-2">
-        {Array.from({ length: 3 }).map((_, i) => (
-          // biome-ignore lint/suspicious/noArrayIndexKey: fixed-length skeleton placeholder, never reordered
-          <Skeleton key={`skel-${i}`} className="h-7 w-24" />
+        {SKELETON_TAB_KEYS.map(key => (
+          <Skeleton key={key} className="h-7 w-24" />
         ))}
       </div>
       <div className="grid gap-4 md:grid-cols-2">
-        {Array.from({ length: 2 }).map((_, i) => (
-          // biome-ignore lint/suspicious/noArrayIndexKey: fixed-length skeleton placeholder, never reordered
-          <div key={`skel-card-${i}`} className="rounded-xl border bg-card p-4">
+        {SKELETON_CARD_KEYS.map(key => (
+          <div key={key} className="rounded-xl border bg-card p-4">
             <Skeleton className="mb-3 h-5 w-32" />
             <div className="space-y-2">
               <Skeleton className="h-4 w-full" />

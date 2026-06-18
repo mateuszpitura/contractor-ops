@@ -10,6 +10,8 @@ import { TaskChecklist } from '../../../components/workflows/workflow-run/task-c
 import { Link } from '../../../i18n/navigation.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 
+const WORKFLOW_DETAIL_SKELETON_KEYS = ['s1', 's2', 's3', 's4', 's5'] as const;
+
 function RunDetailSkeleton() {
   return (
     <div className="space-y-6">
@@ -23,9 +25,8 @@ function RunDetailSkeleton() {
       </div>
       <div className="space-y-3">
         <Skeleton className="h-6 w-16" />
-        {Array.from({ length: 5 }).map((_, i) => (
-          // biome-ignore lint/suspicious/noArrayIndexKey: fixed-length skeleton placeholder, never reordered
-          <div key={`skel-${i}`} className="flex items-center gap-3 rounded-lg border bg-card p-4">
+        {WORKFLOW_DETAIL_SKELETON_KEYS.map(key => (
+          <div key={key} className="flex items-center gap-3 rounded-lg border bg-card p-4">
             <Skeleton className="size-5 shrink-0 rounded-full" />
             <div className="flex-1 space-y-2">
               <Skeleton className="h-4 w-48" />

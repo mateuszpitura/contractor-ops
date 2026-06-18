@@ -16,6 +16,9 @@ import { Link, useLocale } from '../../i18n/navigation.js';
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { useTaxObligationsWidget } from './hooks/use-tax-obligations-widget.js';
 
+const TAX_OBLIGATION_SKELETON_KEYS_PRIMARY = ['p1', 'p2', 'p3'] as const;
+const TAX_OBLIGATION_SKELETON_KEYS_SECONDARY = ['s1', 's2'] as const;
+
 function formatMoney(minor: number, locale: string): string {
   const major = minor / 100;
   return major.toLocaleString(
@@ -43,9 +46,8 @@ function TaxObligationsSkeleton() {
         <div className="space-y-2">
           <Skeleton className="h-4 w-24" />
           <div className="space-y-2">
-            {Array.from({ length: 3 }).map((_, i) => (
-              // biome-ignore lint/suspicious/noArrayIndexKey: fixed-length skeleton placeholder, never reordered
-              <div key={`skel-row-1-${i}`} className="flex items-center justify-between">
+            {TAX_OBLIGATION_SKELETON_KEYS_PRIMARY.map(key => (
+              <div key={key} className="flex items-center justify-between">
                 <Skeleton className="h-4 w-20" />
                 <div className="flex items-center gap-2">
                   <Skeleton className="h-4 w-16" />
@@ -58,9 +60,8 @@ function TaxObligationsSkeleton() {
         <div className="space-y-2">
           <Skeleton className="h-4 w-24" />
           <div className="space-y-2">
-            {Array.from({ length: 2 }).map((_, i) => (
-              // biome-ignore lint/suspicious/noArrayIndexKey: fixed-length skeleton placeholder, never reordered
-              <div key={`skel-row-2-${i}`} className="flex items-center justify-between">
+            {TAX_OBLIGATION_SKELETON_KEYS_SECONDARY.map(key => (
+              <div key={key} className="flex items-center justify-between">
                 <Skeleton className="h-4 w-20" />
                 <div className="flex items-center gap-2">
                   <Skeleton className="h-4 w-16" />

@@ -73,6 +73,16 @@ function getSystemEventLabel(event: AuditEvent, t: TranslateFn): string {
   }
 }
 
+function getAuditEventKey(event: AuditEvent): string {
+  return [
+    event.type,
+    event.label,
+    event.timestamp,
+    event.levelName ?? '',
+    event.actor?.id ?? '',
+  ].join('|');
+}
+
 function getRelativeTime(timestamp: string): string {
   const now = Date.now();
   const then = new Date(timestamp).getTime();
@@ -91,6 +101,8 @@ function getRelativeTime(timestamp: string): string {
   return new Date(timestamp).toLocaleDateString();
 }
 
+const AUDIT_SKELETON_KEYS = ['entry-a', 'entry-b', 'entry-c'] as const;
+
 export function AuditTimelineSkeleton() {
   return (
     <Card>
@@ -99,8 +111,8 @@ export function AuditTimelineSkeleton() {
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {[0, 1, 2].map(i => (
-            <div key={`audit-entry-${i}`} className="flex gap-3">
+          {AUDIT_SKELETON_KEYS.map(key => (
+            <div key={key} className="flex gap-3">
               <Skeleton className="h-8 w-8 shrink-0 rounded-full" />
               <div className="flex-1 space-y-1.5">
                 <Skeleton className="h-3.5 w-32" />
@@ -229,16 +241,14 @@ export function AuditTimelineView({ events }: AuditTimelineViewProps) {
             {events.map((event, idx) =>
               event.type === 'decision' ? (
                 <HumanEntry
-                  // biome-ignore lint/suspicious/noArrayIndexKey: audit events may share label+timestamp
-                  key={`${event.label}-${event.timestamp}-${idx}`}
+                  key={getAuditEventKey(event)}
                   event={event}
                   t={tFn}
                   isLast={idx === events.length - 1}
                 />
               ) : (
                 <SystemEntry
-                  // biome-ignore lint/suspicious/noArrayIndexKey: audit events may share label+timestamp
-                  key={`${event.label}-${event.timestamp}-${idx}`}
+                  key={getAuditEventKey(event)}
                   event={event}
                   t={tFn}
                   isLast={idx === events.length - 1}

@@ -49,6 +49,9 @@ function getStatusDisplay(
   return { label: t('invoices.status.submitted'), variant: 'info' };
 }
 
+const FIELD_SKELETON_KEYS = ['field-a', 'field-b', 'field-c', 'field-d', 'field-e'] as const;
+const ACTIVITY_SKELETON_KEYS = ['activity-a', 'activity-b', 'activity-c'] as const;
+
 function DetailSkeleton() {
   return (
     <div className="space-y-6">
@@ -60,9 +63,8 @@ function DetailSkeleton() {
       <StatusTimelineSkeleton />
       <Card>
         <CardContent className="space-y-4 pt-4">
-          {Array.from({ length: 5 }).map((_, i) => (
-            // biome-ignore lint/suspicious/noArrayIndexKey: fixed-length skeleton placeholder, never reordered
-            <div key={`skel-${i}`} className="flex items-center justify-between">
+          {FIELD_SKELETON_KEYS.map(key => (
+            <div key={key} className="flex items-center justify-between">
               <Skeleton className="h-4 w-24" />
               <Skeleton className="h-4 w-32" />
             </div>
@@ -71,9 +73,8 @@ function DetailSkeleton() {
       </Card>
       <div className="space-y-3">
         <Skeleton className="h-6 w-20" />
-        {Array.from({ length: 3 }).map((_, i) => (
-          // biome-ignore lint/suspicious/noArrayIndexKey: fixed-length skeleton placeholder, never reordered
-          <div key={`skel-${i}`} className="flex items-center gap-3">
+        {ACTIVITY_SKELETON_KEYS.map(key => (
+          <div key={key} className="flex items-center gap-3">
             <Skeleton className="h-4 w-4 rounded-full" />
             <div className="space-y-1">
               <Skeleton className="h-4 w-48" />

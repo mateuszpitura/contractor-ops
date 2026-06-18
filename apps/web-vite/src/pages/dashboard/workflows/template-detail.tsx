@@ -8,6 +8,8 @@ import { TemplateFormSection } from '../../../components/workflows/template-buil
 import { Link } from '../../../i18n/navigation.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 
+const TEMPLATE_SKELETON_KEYS = ['field-a', 'field-b', 'field-c', 'field-d'] as const;
+
 function TemplateDetailSkeleton() {
   return (
     <div className="space-y-6">
@@ -16,9 +18,8 @@ function TemplateDetailSkeleton() {
         <Skeleton className="h-4 w-48" />
       </div>
       <div className="space-y-4">
-        {Array.from({ length: 4 }).map((_, i) => (
-          // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
-          <Skeleton key={`template-skel-${i}`} className="h-16 w-full rounded-lg" />
+        {TEMPLATE_SKELETON_KEYS.map(key => (
+          <Skeleton key={key} className="h-16 w-full rounded-lg" />
         ))}
       </div>
     </div>

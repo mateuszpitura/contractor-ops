@@ -27,12 +27,13 @@ export function LinkedJiraIssuesSectionShell({ children }: LinkedJiraIssuesSecti
   );
 }
 
+const JIRA_SKELETON_KEYS = ['j1', 'j2'] as const;
+
 export function LinkedJiraIssuesSkeleton() {
   return (
     <div className="space-y-2">
-      {Array.from({ length: 2 }).map((_, i) => (
-        // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
-        <div key={`wf-jira-${i}`} className="flex items-center gap-2">
+      {JIRA_SKELETON_KEYS.map(key => (
+        <div key={key} className="flex items-center gap-2">
           <Skeleton className="h-4 w-[100px]" />
           <Skeleton className="h-6 w-[120px] rounded-md" />
         </div>

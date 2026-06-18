@@ -1,5 +1,7 @@
 import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 
+const KPI_SKELETON_KEYS = ['spend', 'contractors', 'invoices', 'approvals', 'compliance'] as const;
+
 /**
  * Dashboard loading skeleton — mirrors the bento layout exactly so the
  * page does not reflow when the bootstrap query resolves.
@@ -26,9 +28,8 @@ export function DashboardSkeleton() {
       </div>
       <Skeleton className="h-[200px] w-full rounded-2xl" />
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-        {Array.from({ length: 5 }).map((_, i) => (
-          // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
-          <Skeleton key={`kpi-${i}`} className="h-[120px] rounded-2xl" />
+        {KPI_SKELETON_KEYS.map(key => (
+          <Skeleton key={key} className="h-[120px] rounded-2xl" />
         ))}
       </div>
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">

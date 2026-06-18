@@ -15,6 +15,10 @@ import { Stepper } from './stepper.js';
 import { TaxDetailsForm } from './tax-details-form.js';
 
 const ONBOARDING_STEP_COUNT = 5;
+const ONBOARDING_STEP_SKELETON_KEYS = Array.from(
+  { length: ONBOARDING_STEP_COUNT },
+  (_, i) => `onboarding-step-skel-${i}`,
+);
 
 export function OnboardingWizardSkeleton() {
   return (
@@ -22,9 +26,8 @@ export function OnboardingWizardSkeleton() {
       <CardHeader className="space-y-4 border-b">
         <Skeleton className="h-6 w-60" />
         <div className="flex items-center gap-2 md:gap-0">
-          {Array.from({ length: ONBOARDING_STEP_COUNT }).map((_, i) => (
-            // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
-            <div key={`onboarding-step-skel-${i}`} className="flex items-center gap-2 md:flex-1">
+          {ONBOARDING_STEP_SKELETON_KEYS.map((key, i) => (
+            <div key={key} className="flex items-center gap-2 md:flex-1">
               <Skeleton className="size-8 shrink-0 rounded-full" />
               <Skeleton className="h-4 w-20" />
               {i < ONBOARDING_STEP_COUNT - 1 && (

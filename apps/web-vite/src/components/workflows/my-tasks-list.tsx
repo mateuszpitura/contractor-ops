@@ -32,6 +32,8 @@ const TASK_STATUS_ICON: Record<string, { icon: React.ElementType; className: str
   OVERDUE: { icon: AlertCircle, className: 'text-destructive' },
 };
 
+const MY_TASKS_SKELETON_KEYS = ['t1', 't2', 't3', 't4', 't5'] as const;
+
 export function MyTasksListSkeleton() {
   return (
     <div className="space-y-4">
@@ -40,9 +42,8 @@ export function MyTasksListSkeleton() {
         <Skeleton className="h-4 w-32" />
       </div>
       <div className="space-y-3">
-        {Array.from({ length: 5 }).map((_, i) => (
-          // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
-          <Card key={`skel-${i}`} className="flex flex-row items-center gap-4 p-4">
+        {MY_TASKS_SKELETON_KEYS.map(key => (
+          <Card key={key} className="flex flex-row items-center gap-4 p-4">
             <Skeleton className="h-5 w-5 rounded-full shrink-0" />
             <div className="flex-1 space-y-2">
               <Skeleton className="h-4 w-48" />

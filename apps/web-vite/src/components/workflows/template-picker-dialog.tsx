@@ -34,12 +34,13 @@ const templateTypeBadgeColors: Record<string, string> = {
   CUSTOM: 'bg-muted text-muted-foreground',
 };
 
+const SKELETON_ROW_KEYS = ['tpl-a', 'tpl-b', 'tpl-c', 'tpl-d'] as const;
+
 export function TemplatePickerListSkeleton() {
   return (
     <div className="space-y-2 p-1">
-      {Array.from({ length: 4 }).map((_, i) => (
-        // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
-        <div key={`skel-${i}`} className="flex items-center gap-3 rounded-lg border p-3">
+      {SKELETON_ROW_KEYS.map(key => (
+        <div key={key} className="flex items-center gap-3 rounded-lg border p-3">
           <div className="flex-1 space-y-2">
             <Skeleton className="h-4 w-40" />
             <Skeleton className="h-3 w-24" />

@@ -14,6 +14,8 @@ import { WorkbenchPageHeader } from '../shared/workbench-page-header.js';
 import { useEinvoiceImportEnabled } from './hooks/use-einvoice-import-enabled.js';
 import { IntakeList } from './intake/intake-list.js';
 
+const SKELETON_ROW_KEYS = ['row-1', 'row-2', 'row-3', 'row-4', 'row-5'] as const;
+
 export function InvoiceIntakePage() {
   const locale = useLocale();
   const t = useTranslations('EInvoice.intake');
@@ -33,9 +35,8 @@ export function InvoiceIntakePage() {
         <Suspense
           fallback={
             <div className="space-y-2">
-              {Array.from({ length: 5 }).map((_, i) => (
-                // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
-                <Skeleton key={`intake-route-skel-${i}`} className="h-14 w-full rounded-lg" />
+              {SKELETON_ROW_KEYS.map(key => (
+                <Skeleton key={key} className="h-14 w-full rounded-lg" />
               ))}
             </div>
           }>

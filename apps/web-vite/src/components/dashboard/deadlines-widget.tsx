@@ -52,6 +52,8 @@ const DEADLINE_BADGE_CONFIG: Record<
   },
 };
 
+const SKELETON_ROW_KEYS = ['row-1', 'row-2', 'row-3', 'row-4', 'row-5'] as const;
+
 export function DeadlinesWidget() {
   const t = useTranslations('Dashboard');
   const { isLoading, isError, onRetry, items } = useDeadlinesWidget();
@@ -71,9 +73,8 @@ export function DeadlinesWidget() {
       <CardContent>
         {isLoading ? (
           <div className="flex flex-col gap-2">
-            {Array.from({ length: 5 }).map((_, i) => (
-              // biome-ignore lint/suspicious/noArrayIndexKey: fixed-length skeleton placeholder, never reordered
-              <Skeleton key={`skel-${i}`} className="h-10 w-full rounded-md" />
+            {SKELETON_ROW_KEYS.map(key => (
+              <Skeleton key={key} className="h-10 w-full rounded-md" />
             ))}
           </div>
         ) : isError ? (

@@ -7,12 +7,14 @@ import { NotificationPreferencesSectionContainer } from './notification-preferen
 import type { ProfileField } from './profile-section.js';
 import { ProfileSection } from './profile-section.js';
 
+const SETTINGS_CARD_SKELETON_KEYS = ['c1', 'c2', 'c3'] as const;
+const SETTINGS_FIELD_SKELETON_KEYS = ['f1', 'f2', 'f3', 'f4'] as const;
+
 export function PortalSettingsSkeleton() {
   return (
     <div className="space-y-4">
-      {Array.from({ length: 3 }).map((_, i) => (
-        // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
-        <Card key={`skel-${i}`}>
+      {SETTINGS_CARD_SKELETON_KEYS.map(cardKey => (
+        <Card key={cardKey}>
           <div className="flex min-h-[48px] items-center gap-3 px-4 py-3">
             <Skeleton className="h-4 w-4 shrink-0 rounded" />
             <Skeleton className="h-4 w-40" />
@@ -21,9 +23,8 @@ export function PortalSettingsSkeleton() {
             </div>
           </div>
           <div className="space-y-3 border-t px-4 py-4">
-            {Array.from({ length: 4 }).map((__, j) => (
-              // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
-              <div key={`field-${j}`} className="space-y-1.5">
+            {SETTINGS_FIELD_SKELETON_KEYS.map(fieldKey => (
+              <div key={`${cardKey}-${fieldKey}`} className="space-y-1.5">
                 <Skeleton className="h-3 w-24" />
                 <Skeleton className="h-4 w-3/5" />
               </div>
