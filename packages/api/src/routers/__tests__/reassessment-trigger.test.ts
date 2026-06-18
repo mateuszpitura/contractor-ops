@@ -40,14 +40,17 @@ const { mockPrisma, triggers, mockHasPermission } = vi.hoisted(() => {
       }),
       findFirst: vi.fn(async (args: { where?: Record<string, unknown> }) => {
         const where = args?.where ?? {};
-        return (
-          Array.from(triggers.values()).find(t => {
-            if ('organizationId' in where && where.organizationId !== t.organizationId)
-              return false;
-            if ('id' in where && where.id !== t.id) return false;
-            return true;
-          }) ?? null
-        );
+        const row = Array.from(triggers.values()).find(t => {
+          if ('organizationId' in where && where.organizationId !== t.organizationId) return false;
+          if ('id' in where && where.id !== t.id) return false;
+          return true;
+        });
+        if (!row) return null;
+        // Mirror the router's `include: { contractorAssignment: { contractorId } }`.
+        return {
+          ...row,
+          contractorAssignment: { contractorId: `contractor-${row.contractorAssignmentId}` },
+        };
       }),
       update: vi.fn(async (args: { where: { id: string }; data: Partial<TriggerRow> }) => {
         const row = triggers.get(args.where.id);
@@ -56,9 +59,13 @@ const { mockPrisma, triggers, mockHasPermission } = vi.hoisted(() => {
         return row;
       }),
     },
+    auditLog: {
+      create: vi.fn(async () => ({ id: 'audit-1' })),
+    },
     organization: {
       findUnique: vi.fn(async () => ({ dataRegion: 'EU', status: 'ACTIVE' })),
     },
+    $transaction: vi.fn(async (fn: (tx: unknown) => unknown) => fn(mockPrisma)),
   };
   return { mockPrisma, triggers, mockHasPermission };
 });

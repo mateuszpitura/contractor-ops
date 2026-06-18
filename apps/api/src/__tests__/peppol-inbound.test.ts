@@ -57,6 +57,8 @@ vi.mock('@contractor-ops/api/services/peppol-orchestrator', () => ({
 vi.mock('@contractor-ops/db', () => ({
   prisma: {
     webhookDelivery: {
+      findUnique: (...a: unknown[]) =>
+        (mockDeliveryFindUniqueOrThrow as (...a: unknown[]) => unknown)(...a),
       findUniqueOrThrow: (...a: unknown[]) =>
         (mockDeliveryFindUniqueOrThrow as (...a: unknown[]) => unknown)(...a),
       update: (...a: unknown[]) => (mockDeliveryUpdate as (...a: unknown[]) => unknown)(...a),
@@ -67,6 +69,9 @@ vi.mock('@contractor-ops/db', () => ({
     },
     peppolParticipant: { findMany: vi.fn(async () => []) },
   },
+  prismaRaw: {},
+  getRegionalClient: () => ({}),
+  SUPPORTED_REGIONS: ['EU', 'ME', 'US'],
 }));
 
 vi.mock('@contractor-ops/integrations', async importOriginal => {
@@ -112,6 +117,7 @@ beforeEach(() => {
   mockVerify.mockResolvedValue(true);
   mockDeliveryFindUniqueOrThrow.mockResolvedValue({
     id: 'del-1',
+    organizationId: 'org-1',
     payloadJson: { foo: 'bar' },
   });
   mockDeliveryUpdate.mockResolvedValue({});

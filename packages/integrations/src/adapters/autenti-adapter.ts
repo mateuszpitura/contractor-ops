@@ -1,9 +1,11 @@
 import { createHmac, timingSafeEqual } from 'node:crypto';
 import { prisma } from '@contractor-ops/db';
 import { createIntegrationLogger } from '@contractor-ops/logger';
+import { z } from 'zod';
 import { decryptCredentials } from '../services/credential-service.js';
 import { handleSigningWebhook } from '../services/esign-webhook-handler.js';
 import { fetchWithTimeout } from '../services/fetch-helpers.js';
+import { parseJsonResponse } from '../services/parse-json-response.js';
 import { withResilience } from '../services/resilience.js';
 import type { CredentialBlob } from '../types/credentials.js';
 import type {
@@ -25,6 +27,20 @@ import { BaseAdapter } from './base-adapter.js';
 const AUTENTI_API_BASE = 'https://api.autenti.com/api/v2';
 
 const log = createIntegrationLogger('autenti');
+
+/**
+ * Autenti OAuth 2.0 token response (authorization_code + refresh_token grants).
+ * Validated at the credential-persist boundary so a malformed/changed payload
+ * fails closed instead of persisting a corrupt CredentialBlob. Autenti always
+ * returns a rotated refresh_token on both grants. expires_in must be a finite
+ * non-negative number so the derived expiresAt is a valid ISO timestamp.
+ */
+const autentiTokenResponseSchema = z.object({
+  access_token: z.string().min(1),
+  refresh_token: z.string().min(1),
+  expires_in: z.number().finite().nonnegative(),
+  token_type: z.string().min(1),
+});
 
 // ---------------------------------------------------------------------------
 // Autenti Adapter
@@ -104,12 +120,11 @@ export class AutentiAdapter extends BaseAdapter implements ESignAdapter {
       throw new Error(`Autenti OAuth exchange failed: ${text}`);
     }
 
-    const data = (await response.json()) as {
-      access_token: string;
-      refresh_token: string;
-      expires_in: number;
-      token_type: string;
-    };
+    const data = await parseJsonResponse(
+      response,
+      autentiTokenResponseSchema,
+      'autenti:exchangeCodeForTokens',
+    );
 
     return {
       accessToken: data.access_token,
@@ -160,12 +175,11 @@ export class AutentiAdapter extends BaseAdapter implements ESignAdapter {
       throw new Error(`Autenti token refresh failed: ${text}`);
     }
 
-    const data = (await response.json()) as {
-      access_token: string;
-      refresh_token: string;
-      expires_in: number;
-      token_type: string;
-    };
+    const data = await parseJsonResponse(
+      response,
+      autentiTokenResponseSchema,
+      'autenti:refreshToken',
+    );
 
     return {
       accessToken: data.access_token,

@@ -241,19 +241,20 @@ describe('linearRouter', () => {
         organizationId: ORG_ID,
         provider: 'LINEAR',
       },
-      select: {
-        id: true,
-        status: true,
-        configJson: true,
-      },
     });
   });
 
-  it('connectionStatus returns id, status, and configJson when connected', async () => {
+  it('connectionStatus returns id, status, and an allowlisted configJson when connected', async () => {
     mockPrisma.integrationConnection.findFirst.mockResolvedValue({
       id: 'conn-linear',
       status: 'CONNECTED',
-      configJson: { foo: 'bar' },
+      configJson: {
+        statusMappings: { 'team-1': [] },
+        stateCache: { 'team-1': {} },
+        // Secret/internal fields that must never reach a settings:read member.
+        webhooks: { 'team-1': 'wh-1' },
+        webhookSecret: 'deadbeef',
+      },
     });
 
     const result = await caller.connectionStatus();
@@ -261,7 +262,10 @@ describe('linearRouter', () => {
     expect(result).toEqual({
       id: 'conn-linear',
       status: 'CONNECTED',
-      configJson: { foo: 'bar' },
+      configJson: {
+        statusMappings: { 'team-1': [] },
+        stateCache: { 'team-1': {} },
+      },
     });
   });
 
@@ -521,20 +525,21 @@ describe('linearRouter', () => {
   });
 
   describe('tier gating', () => {
-    it('saveStatusMapping and saveTaskConfig include requireTier(PRO) in middleware chain', async () => {
+    it('saveStatusMapping and saveTaskConfig are gated on tier PRO via integrationProcedure', async () => {
       const fs = await import('node:fs');
       const path = await import('node:path');
       const sourceDir = path.resolve(import.meta.dirname, '../../routers');
       const source = fs.readFileSync(path.join(sourceDir, 'integrations/linear.ts'), 'utf-8');
 
-      expect(source).toContain("import { requireTier } from '../../middleware/tier'");
-      expect(source).toContain("requireTier('PRO')");
+      expect(source).toContain(
+        "import { integrationProcedure } from '../../lib/integration-procedure'",
+      );
 
-      const matches = source.match(/\.use\(requireTier\('PRO'\)\)/g);
+      const matches = source.match(/tier: 'PRO'/g);
       expect(matches).toHaveLength(2);
     });
 
-    it('read-only procedures do NOT include requireTier', async () => {
+    it('read-only procedures do NOT include tier gating', async () => {
       const fs = await import('node:fs');
       const path = await import('node:path');
       const sourceDir = path.resolve(import.meta.dirname, '../../routers');
@@ -548,13 +553,10 @@ describe('linearRouter', () => {
         'getLinkedIssues',
         'linkedIssues',
       ]) {
-        const procRegex = new RegExp(
-          `${proc}:\\s*tenantProcedure[\\s\\S]*?(?=\\w+:\\s*tenantProcedure|\\}\\);$)`,
-          'm',
-        );
+        const procRegex = new RegExp(`${proc}:\\s*integrationProcedure\\(([\\s\\S]*?)\\)`, 'm');
         const match = source.match(procRegex);
         if (match) {
-          expect(match[0]).not.toContain('requireTier');
+          expect(match[1]).not.toContain('tier:');
         }
       }
     });

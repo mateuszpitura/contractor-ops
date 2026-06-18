@@ -3370,6 +3370,8 @@
     "tokenRequired": "Token ist für die tokenbasierte Authentifizierung erforderlich.",
     "statusValDatesRequired": "validFrom und validTo sind erforderlich, wenn das Ergebnis SELBSTANDIG oder ABHANGIG ist.",
     "contractorInvalidNip": "Ungültige NIP-Nummer.",
+    "contractorInvalidEin": "Ungültige EIN. Geben Sie eine gültige 9-stellige Employer Identification Number ein (Format 12-3456789).",
+    "contractorInvalidSsn": "Ungültige SSN. Geben Sie eine gültige 9-stellige Social Security Number ein (Format 123-45-6789).",
     "vatValidationUnsupportedCountry": "USt-Validierung wird für dieses Land nicht unterstützt.",
     "bacsUnmappableCharacters": "BACS-Datei enthält nicht abbildbare Zeichen; Transliterationswarnungen vor dem Download beheben.",
     "paymentRunCancelAdminOnly": "Nur Administratoren können exportierte Zahlungsläufe stornieren. Stellen Sie sicher, dass der Export nicht an die Bank übermittelt wurde.",
@@ -3385,6 +3387,8 @@
     "organizationCreateRateLimitExceeded": "Limit für die Erstellung von Organisationen erreicht. Bitte versuchen Sie es später erneut.",
     "uploadRateLimiterUnavailable": "Upload-Ratenbegrenzer nicht verfügbar. Bitte versuchen Sie es später erneut.",
     "uploadRateLimitExceeded": "Upload-Limit erreicht. Bitte versuchen Sie es später erneut.",
+    "reportRateLimiterUnavailable": "Bericht-Ratenbegrenzer nicht verfügbar. Bitte versuchen Sie es später erneut.",
+    "reportRateLimitExceeded": "Bericht-Limit erreicht. Bitte versuchen Sie es später erneut.",
     "billingProfileNotFound": "Abrechnungsprofil nicht gefunden.",
     "whtNotApplicable": "Keine Quellensteuer auf diese Zahlungsposition anwendbar.",
     "clockifyConnectionNotFound": "Clockify-Verbindung nicht gefunden.",
@@ -3413,7 +3417,20 @@
     "deprovisioningProviderSignoffPending": "Für diese Anbieter-Deprovisionierungsfunktion ist eine Genehmigung erforderlich, bevor sie aktiviert werden kann.",
     "workflowAssigneeNotMember": "Der ausgewählte Bearbeiter ist kein Mitglied dieser Organisation.",
     "importJobStateConflict": "Der Importauftrag hat sich geändert; bitte aktualisieren und erneut versuchen.",
-    "importProjectFailureRetryViaWizard": "Fehlgeschlagene Projektimporte müssen über den Importassistenten wiederholt werden."
+    "importProjectFailureRetryViaWizard": "Fehlgeschlagene Projektimporte müssen über den Importassistenten wiederholt werden.",
+    "credentialReferenceNotFound": "Zugangsdaten-Referenz nicht gefunden.",
+    "credentialReferenceOffboardingOnly": "Auf Zugangsdaten-Referenzen kann nur während des Offboardings zugegriffen werden.",
+    "workflowIpVerificationOpen": "Für diesen Workflow ist noch eine Prüfung des geistigen Eigentums offen.",
+    "workflowCredentialsPending": "Für diesen Workflow stehen noch Zugangsdaten aus.",
+    "deprovisioningAssignmentNotFound": "Deprovisioning-Zuweisung nicht gefunden.",
+    "deprovisioningStepNotFound": "Deprovisioning-Schritt nicht gefunden.",
+    "deprovisioningCooldownActive": "Das Deprovisioning befindet sich in einer Abkühlphase; bitte später erneut versuchen.",
+    "deprovisioningNoExternalUser": "Für das Deprovisioning ist kein externer Identitätsanbieter-Benutzer verknüpft.",
+    "deprovisioningStepNotOverridable": "Dieser Deprovisioning-Schritt kann nicht übersteuert werden.",
+    "deprovisioningIntegrationNotConfigured": "Die Identitätsanbieter-Integration ist für das Deprovisioning nicht konfiguriert.",
+    "complianceItemNotFound": "Compliance-Element nicht gefunden.",
+    "complianceItemAlreadyWaived": "Dieses Compliance-Element wurde bereits erlassen.",
+    "complianceDocumentNotPendingReview": "Dieses Compliance-Dokument steht nicht zur Prüfung aus."
   },
   "Compliance": {
     "paymentBlockModal": {
@@ -4710,10 +4727,12 @@
       "statusExtracted": "Extrahiert",
       "statusPartial": "Teilweise",
       "statusFailed": "Fehlgeschlagen",
+      "statusSkipped": "Manuelle Eingabe",
       "extracting": "Rechnungsdaten werden extrahiert...",
       "complete": "Extraktion abgeschlossen — {fieldCount} Felder extrahiert",
       "partial": "Teilweise Extraktion — {fieldCount} von {totalFields} Feldern extrahiert. Bitte die verbleibenden Felder ausfüllen.",
       "failed": "Extraktion fehlgeschlagen. Sie können OCR erneut ausführen oder die Felder manuell ausfüllen.",
+      "skipped": "Die KI-Rechnungserkennung ist deaktiviert — bitte die Rechnungsdaten manuell eingeben oder OCR nach erneuter Aktivierung ausführen.",
       "rerunOcr": "OCR erneut ausführen"
     }
   },

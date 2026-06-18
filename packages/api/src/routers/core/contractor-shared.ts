@@ -1,6 +1,7 @@
 import type { Prisma, TaxIdType } from '@contractor-ops/db';
 import type { UspsAddressCache } from '@contractor-ops/gov-api';
 import { GovApiRateLimiter, USPS_RATE_LIMIT, UspsAddressClient } from '@contractor-ops/gov-api';
+import type { ContractorFilters } from '@contractor-ops/validators';
 import { getServerEnv } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import * as E from '../../errors';
@@ -215,6 +216,133 @@ export function computeListHealthBadge(counts: {
   if (counts.missingOrExpired > 0) return 'red';
   if (counts.pending > 0) return 'yellow';
   return 'green';
+}
+
+// ---------------------------------------------------------------------------
+// Contractor list filtering — shared predicates + where-builder
+//
+// `list` (the table) and `insights` (the band) both build their population from
+// these helpers so a count in the band always matches the rows in the table.
+// ---------------------------------------------------------------------------
+
+const MS_PER_DAY = 24 * 60 * 60 * 1000;
+
+/** Onboarding is "stalled" once a run is BLOCKED or has sat IN_PROGRESS this long. */
+export const STALLED_ONBOARDING_AGE_DAYS = 14;
+
+/** Contractors holding an active/expiring contract that ends within `withinDays`. */
+export function expiringContractsPredicate(
+  now: Date,
+  withinDays: number,
+): Prisma.ContractorWhereInput {
+  return {
+    contracts: {
+      some: {
+        status: { in: ['ACTIVE', 'EXPIRING'] },
+        endDate: { gte: now, lte: new Date(now.getTime() + withinDays * MS_PER_DAY) },
+        deletedAt: null,
+      },
+    },
+  };
+}
+
+/** Contractors with at least one payment-blocked (FAILED) invoice. */
+export function paymentBlockedPredicate(): Prisma.ContractorWhereInput {
+  return { invoices: { some: { paymentStatus: 'FAILED', deletedAt: null } } };
+}
+
+/** Onboarding contractors whose onboarding workflow has stalled. */
+export function stalledOnboardingPredicate(now: Date): Prisma.ContractorWhereInput {
+  const staleBefore = new Date(now.getTime() - STALLED_ONBOARDING_AGE_DAYS * MS_PER_DAY);
+  return {
+    lifecycleStage: 'ONBOARDING',
+    workflowRuns: {
+      some: {
+        OR: [{ status: 'BLOCKED' }, { status: 'IN_PROGRESS', startedAt: { lt: staleBefore } }],
+      },
+    },
+  };
+}
+
+type WhereBuilderClient = Pick<DbClient, '$queryRaw'>;
+
+/**
+ * Build the `Contractor` where-clause shared by `list` and `insights`. Column
+ * facets become direct predicates; the FTS `search` and JSONB `billingModel`
+ * facets resolve to id-sets via raw SQL and are intersected. An id-set facet
+ * that matches nothing returns **null** — callers must short-circuit to an empty
+ * / all-zero result rather than running an unconstrained scan.
+ *
+ * `complianceHealth` is intentionally NOT handled here: it is derived in JS from
+ * compliance-item counts. `list` post-filters on it; `insights` tallies it.
+ */
+export async function buildContractorListWhere(
+  db: WhereBuilderClient,
+  organizationId: string,
+  params: { search?: string; filters?: ContractorFilters },
+  now: Date = new Date(),
+): Promise<Prisma.ContractorWhereInput | null> {
+  const { search, filters } = params;
+  const where: Prisma.ContractorWhereInput = { organizationId, deletedAt: null };
+  const and: Prisma.ContractorWhereInput[] = [];
+
+  if (filters?.status?.length) where.status = { in: filters.status };
+  if (filters?.lifecycleStage?.length) where.lifecycleStage = { in: filters.lifecycleStage };
+  if (filters?.ownerUserId?.length) where.ownerUserId = { in: filters.ownerUserId };
+  if (filters?.primaryTeamId?.length) where.primaryTeamId = { in: filters.primaryTeamId };
+  if (filters?.type?.length) where.type = { in: filters.type };
+  if (filters?.countryCode?.length) where.countryCode = { in: filters.countryCode };
+
+  if (filters?.expiringWithin) and.push(expiringContractsPredicate(now, filters.expiringWithin));
+  if (filters?.paymentBlocked) and.push(paymentBlockedPredicate());
+  if (filters?.stalled) and.push(stalledOnboardingPredicate(now));
+
+  const idSets: string[][] = [];
+
+  if (filters?.billingModel?.length) {
+    const rows = await db.$queryRaw<Array<{ id: string }>>`
+      SELECT id FROM "Contractor"
+      WHERE "organizationId" = ${organizationId}
+        AND "deletedAt" IS NULL
+        AND "customFieldsJson"->>'billingModel' = ANY(${filters.billingModel}::text[])
+    `;
+    if (rows.length === 0) return null;
+    idSets.push(rows.map(r => r.id));
+  }
+
+  if (search && search.length >= 2) {
+    const terms = search
+      .trim()
+      .split(/\s+/)
+      .map(t => t.replace(/[^a-zA-Z0-9À-ɏ]/g, ''))
+      .filter(Boolean)
+      .map(t => `${t}:*`)
+      .join(' & ');
+    if (terms) {
+      const rows = await db.$queryRaw<Array<{ id: string }>>`
+        SELECT id FROM "Contractor"
+        WHERE "organizationId" = ${organizationId}
+          AND "deletedAt" IS NULL
+          AND "search_vector" @@ to_tsquery('simple', ${terms})
+      `;
+      if (rows.length === 0) return null;
+      idSets.push(rows.map(r => r.id));
+    }
+  }
+
+  if (idSets.length > 0) {
+    let intersection = idSets[0] ?? [];
+    for (let i = 1; i < idSets.length; i++) {
+      const set = new Set(idSets[i]);
+      intersection = intersection.filter(id => set.has(id));
+    }
+    if (intersection.length === 0) return null;
+    where.id = { in: intersection };
+  }
+
+  if (and.length > 0) where.AND = and;
+
+  return where;
 }
 
 // ---------------------------------------------------------------------------

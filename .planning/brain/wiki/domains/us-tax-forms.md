@@ -2,7 +2,7 @@
 title: US tax forms (W-9 / W-8BEN / W-8BEN-E) and treaty engine
 type: domain
 tags: [us, tax, w-form, treaty, portal, esign, immutable-record]
-source_commit: 90fd15c7c91df9513a57165d5d893f0e91ef6688
+source_commit: d839f52eb98d86236bd6d0018bdff84de49427b8
 verify_with:
   - apps/web-vite/src/components/portal/tax-forms/
   - apps/web-vite/src/components/contractors/tax-forms/
@@ -17,7 +17,9 @@ verify_with:
   - packages/api/src/pdf-templates/form-1099-nec-copy-b.tsx
   - packages/integrations/src/adapters/tin-match/
   - packages/validators/src/w-form-validators.ts
-updated: 2026-06-17
+  - packages/iris/src/generator.ts
+  - packages/iris/src/validator.ts
+updated: 2026-06-18
 ---
 
 # US tax forms (W-9 / W-8BEN / W-8BEN-E) and treaty engine
@@ -106,6 +108,30 @@ TIN masked to last-4 only and carrying the adviser-verify footnote. It is archiv
 bucket under `1099-nec/<orgId>/<id>.pdf`; a `pdfArchiveKey` compare-and-swap prevents a double render.
 Copy B ONLY — the IRS Copy A goes via the IRIS XML e-file, never a rendered PDF.
 
+## IRIS XML e-file
+
+The IRS Copy A is transmitted as IRIS (Information Returns Intake System) XML, not a
+PDF, by the dedicated [[structure/packages|`@contractor-ops/iris`]] package.
+`buildIrisXml` assembles the 1099-NEC submission with a fast-xml-parser `XMLBuilder`
+(never string-concatenated XML, mirroring `packages/einvoice`): the Transmission
+Manifest carries the schema `VersionNum`/`VersionDt` the payload was built against
+(payload-manifest, re-verified per tax year — not message metadata), each payee
+B-record carries its Combined Federal/State Filing (CFSF) state code, and amounts emit
+as IRIS USAmountType whole dollars. The recipient TIN is emitted **masked (last-4 only**,
+e.g. `XXX-XX-1120`) — the full recipient SSN/TIN is never reconstructed or passed in,
+mirroring the snapshot sanitizer. `xsdValidate` round-trips the XML against the bundled
+IRS IRIS XSD with `libxmljs2` and returns `{ status: 'VALID' | 'INVALID', errors }`
+(the einvoice KoSIT layer-1 report shape); it is SSRF/XXE-safe (`parseXml({ nonet: true })`
+blocks an external `<xs:import schemaLocation="http://…">`, default `noent: false` keeps
+external-entity expansion off).
+
+The IRS IRIS XSDs are a **human-action checkpoint**: a human-only download (IRS SOR
+login — not public, not on npm), placed under `packages/iris/src/schema-bundle/` with the
+SHA-256 of each file pinned in `checksums.txt` (guarded by
+`pnpm --filter @contractor-ops/iris verify:schema-checksums`). The generator works fully
+today; until the XSDs are placed, `xsdValidate` reports `XSD-BUNDLE-MISSING` (INVALID)
+rather than throwing, so the validator's VALID path stays blocked on the human download.
+
 ## Entry points
 
 | Piece | Path |
@@ -118,6 +144,7 @@ Copy B ONLY — the IRS Copy A goes via the IRIS XML e-file, never a rendered PD
 | TIN-match seam | `packages/integrations/src/adapters/tin-match/` (`TinMatchClient` / `MockTinMatchClient` default / `EServicesTinMatchClient` dark) |
 | 1099-NEC engine | `packages/api/src/services/form-1099-nec.service.ts` (`generateBatch` / `aggregateBox1[Async]` / `getBox1ThresholdMinor` / `computeBox4Minor` / `buildForm1099NecSnapshot` / `supersedeCorrected` / `fileCorrection`) |
 | 1099-NEC Copy-B PDF | `packages/api/src/services/form-1099-nec-pdf.ts` (`renderAndArchiveCopyB` / `renderForm1099NecCopyB`) + `packages/api/src/pdf-templates/form-1099-nec-copy-b.tsx` (`Form1099NecCopyBDocument`) |
+| IRIS XML e-file | `packages/iris` (`buildIrisXml` / `xsdValidate`) — Copy A submission XML + bundled-XSD validation; XSD bundle under `src/schema-bundle/` is a human-action checkpoint |
 | Form routing | `packages/api/src/services/tax-form-routing.ts` (`determineFormType`) |
 | Validators | `packages/validators/src/w-form-validators.ts` (`taxFormSubmissionSchema` discriminated union) |
 | Flag gate | `packages/api/src/middleware/require-us-expansion-flag.ts` (`assertUsExpansionEnabled`) |
@@ -156,6 +183,11 @@ Copy B ONLY — the IRS Copy A goes via the IRIS XML e-file, never a rendered PD
   one `$transaction`); a filed `Form1099Nec` row is never updated. `generateBatch` is idempotent
   so a retried batch never double-files. The Copy-B PDF renders from the immutable snapshot
   (last-4 TIN only) — Copy B only, never IRS Copy A.
+- IRIS Copy A is XML, never a PDF: `buildIrisXml` builds it with a real XML builder (never
+  string concatenation), emits the recipient TIN masked to last-4 only, and stamps the schema
+  `VersionNum`/`VersionDt` from the payload manifest. `xsdValidate` is SSRF/XXE-safe and returns
+  `XSD-BUNDLE-MISSING` (INVALID, never throws) until the human-only IRS IRIS XSDs are placed and
+  checksum-verified under `packages/iris/src/schema-bundle/`.
 
 ## Agent mistakes
 
@@ -173,6 +205,10 @@ Copy B ONLY — the IRS Copy A goes via the IRIS XML e-file, never a rendered PD
   render IRS Copy A as a PDF (Copy B only; Copy A goes via IRIS XML). Do NOT recompute figures in
   the PDF — render from the immutable snapshot. Do NOT mutate a filed `Form1099Nec` — correct by
   superseding.
+- Do NOT pass a full SSN/TIN into `buildIrisXml` — the payee TIN is the masked last-4 value. Do
+  NOT string-concatenate IRIS XML — use the `@contractor-ops/iris` builder. Do NOT treat an
+  `XSD-BUNDLE-MISSING` report as a code bug — the IRS IRIS XSDs are a human-only download placed at
+  the `src/schema-bundle/` checkpoint.
 
 ## Related
 
@@ -181,3 +217,4 @@ Copy B ONLY — the IRS Copy A goes via the IRIS XML e-file, never a rendered PD
 - [[domains/contractors-engagements]]
 - [[structure/key-services]]
 - [[structure/api-routers-catalog]]
+- [[structure/packages]]

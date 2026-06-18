@@ -190,7 +190,7 @@ beforeEach(() => {
 describe('compliance-item-audit-trail', () => {
   it('returns audit-log entries ordered by createdAt DESC, org + contractor scoped', async () => {
     const caller = makeCaller();
-    const trail = (await caller.classification.itemAuditTrail({ itemId: ITEM_ID })) as unknown[];
+    const trail = (await caller.complianceAdmin.itemAuditTrail({ itemId: ITEM_ID })) as unknown[];
     expect(trail).toHaveLength(2);
     expect(mockPrisma.auditLog.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -208,13 +208,13 @@ describe('compliance-item-audit-trail', () => {
     mockPrisma.contractorComplianceItem.findFirst.mockResolvedValueOnce(null as never);
     const caller = makeCaller();
     await expect(
-      caller.classification.itemAuditTrail({ itemId: 'cross_org_item' }),
+      caller.complianceAdmin.itemAuditTrail({ itemId: 'cross_org_item' }),
     ).rejects.toThrow();
   });
 
   it('respects limit parameter (default 50, max 200)', async () => {
     const caller = makeCaller();
-    await caller.classification.itemAuditTrail({ itemId: ITEM_ID, limit: 10 });
+    await caller.complianceAdmin.itemAuditTrail({ itemId: ITEM_ID, limit: 10 });
     expect(mockPrisma.auditLog.findMany).toHaveBeenCalledWith(
       expect.objectContaining({ take: 10 }),
     );

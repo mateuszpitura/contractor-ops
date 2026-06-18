@@ -46,6 +46,9 @@ const { mockPrisma, mockVerifyWebhookSignature, mockParseWebhookPayload } = vi.h
 
 vi.mock('@contractor-ops/db', () => ({
   prisma: mockPrisma,
+  prismaRaw: {},
+  getRegionalClient: () => ({}),
+  SUPPORTED_REGIONS: ['EU', 'ME', 'US'],
 }));
 
 // Only the `StorecoveAdapter` constructor needs to be overridden — the

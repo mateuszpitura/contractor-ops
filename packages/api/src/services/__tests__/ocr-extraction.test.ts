@@ -4,18 +4,22 @@ const {
   mockCreate,
   mockUpdate,
   mockFindFirst,
+  mockOrgFindUnique,
   mockCheckCredit,
   mockPublishJSON,
   mockPresignedUrl,
   mockExtractInvoice,
+  mockEvaluate,
 } = vi.hoisted(() => ({
   mockCreate: vi.fn(),
   mockUpdate: vi.fn(),
   mockFindFirst: vi.fn(),
+  mockOrgFindUnique: vi.fn(),
   mockCheckCredit: vi.fn(),
   mockPublishJSON: vi.fn(),
   mockPresignedUrl: vi.fn(),
   mockExtractInvoice: vi.fn(),
+  mockEvaluate: vi.fn(),
 }));
 
 const mockGetQStashClient = vi.hoisted(() => vi.fn(() => ({ publishJSON: mockPublishJSON })));
@@ -27,6 +31,9 @@ vi.mock('@contractor-ops/db', () => {
       update: mockUpdate,
       findFirst: mockFindFirst,
     },
+    organization: {
+      findUnique: mockOrgFindUnique,
+    },
   };
   return {
     withRlsTransactions: <T>(c: T) => c,
@@ -35,6 +42,10 @@ vi.mock('@contractor-ops/db', () => {
     prismaRaw: MockDbPrisma,
   };
 });
+
+vi.mock('@contractor-ops/feature-flags', () => ({
+  evaluate: mockEvaluate,
+}));
 
 vi.mock('@contractor-ops/logger', () => ({
   getIdpAuditLogger: vi.fn(() => ({
@@ -134,6 +145,8 @@ describe('ocr-extraction', () => {
       overallConfidence: 90,
     });
     mockUpdate.mockResolvedValue({});
+    mockOrgFindUnique.mockResolvedValue({ dataRegion: 'EU' });
+    mockEvaluate.mockReturnValue({ enabled: true, reason: 'unleash' });
   });
 
   afterEach(() => {
@@ -228,6 +241,65 @@ describe('ocr-extraction', () => {
         c => (c[0] as { data?: { status?: string } }).data?.status === 'EXTRACTED',
       );
       expect(completionCall).toBeDefined();
+      expect(mockEvaluate).toHaveBeenCalledWith('killswitch.ai-invoice-parser', {
+        organizationId: 'org-1',
+        region: 'EU',
+      });
+    });
+
+    it('skips the AI call and marks SKIPPED (manual-entry) when the kill-switch is off', async () => {
+      mockEvaluate.mockReturnValueOnce({ enabled: false, reason: 'kill-when-unknown' });
+      const fetchSpy = vi.fn();
+      vi.stubGlobal('fetch', fetchSpy);
+
+      await processOcrExtraction({
+        extractionId: 'ext-1',
+        organizationId: 'org-1',
+        storageKey: 'path/doc.pdf',
+      });
+
+      // No AI call, no PDF fetch — the parser is disabled.
+      expect(mockExtractInvoice).not.toHaveBeenCalled();
+      expect(mockPresignedUrl).not.toHaveBeenCalled();
+      expect(fetchSpy).not.toHaveBeenCalled();
+
+      // Row marked SKIPPED for manual entry — NOT FAILED (no retry/alert/red badge),
+      // no resultJson, descriptive errorMessage.
+      const skipUpdate = mockUpdate.mock.calls.find(
+        c => (c[0] as { data?: { status?: string } }).data?.status === 'SKIPPED',
+      );
+      expect(skipUpdate).toBeDefined();
+      const data = (skipUpdate?.[0] as { data: { errorMessage?: string; resultJson?: unknown } })
+        .data;
+      expect(data.errorMessage).toMatch(/manually/i);
+      expect(data.resultJson).toBeUndefined();
+
+      // A flag-off skip is never recorded as a failure.
+      const failUpdate = mockUpdate.mock.calls.find(
+        c => (c[0] as { data?: { status?: string } }).data?.status === 'FAILED',
+      );
+      expect(failUpdate).toBeUndefined();
+    });
+
+    it('invokes the AI extractor when the kill-switch is on', async () => {
+      mockEvaluate.mockReturnValueOnce({ enabled: true, reason: 'unleash' });
+      vi.stubGlobal(
+        'fetch',
+        vi.fn().mockResolvedValue({
+          ok: true,
+          status: 200,
+          statusText: 'OK',
+          arrayBuffer: () => Promise.resolve(new Uint8Array([1, 2, 3]).buffer),
+        }),
+      );
+
+      await processOcrExtraction({
+        extractionId: 'ext-1',
+        organizationId: 'org-1',
+        storageKey: 'path/doc.pdf',
+      });
+
+      expect(mockExtractInvoice).toHaveBeenCalledTimes(1);
     });
 
     it('marks FAILED when PDF download fails', async () => {

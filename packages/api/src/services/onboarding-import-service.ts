@@ -83,7 +83,7 @@ export function mergeByEmail(
     if (existing) {
       existing.sources.push(entry);
     } else {
-      byEmail.set(key, { canonicalEmail: parsedEmail.data, sources: [entry] });
+      byEmail.set(key, { canonicalEmail: key, sources: [entry] });
     }
   }
 

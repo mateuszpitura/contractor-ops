@@ -74,6 +74,9 @@ vi.mock('@contractor-ops/db', () => ({
     },
     peppolParticipant: { findMany: vi.fn(async () => []) },
   },
+  prismaRaw: {},
+  getRegionalClient: () => ({}),
+  SUPPORTED_REGIONS: ['EU', 'ME', 'US'],
 }));
 
 vi.mock('@contractor-ops/integrations', async importOriginal => {

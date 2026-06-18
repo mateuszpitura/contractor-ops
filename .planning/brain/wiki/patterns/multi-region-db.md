@@ -2,12 +2,12 @@
 title: Multi-region database
 type: pattern
 tags: [database, neon, multi-tenant]
-source_commit: 70f5782d78e33ba98c82e4ccda2cd4b0b4aff216
+source_commit: 336516f5da666c16acff84e412a3d338db8bbbb8
 verify_with:
   - packages/db/src/region.ts
   - packages/db/src/client.ts
   - packages/db/src/rls.ts
-updated: 2026-06-09
+updated: 2026-06-17
 ---
 
 # Multi-region database
@@ -41,6 +41,7 @@ flowchart LR
 
 - `withRlsReads` / `withRlsTransactions` for tenant isolation
 - Raw SQL must be tenant-scoped — `pnpm lint:raw-sql`
+- `rls.ts` also exports `allowAuditPurge(tx)` — opts a transaction into the gated `AuditLog` DELETE policy (GDPR erasure only); see [[audit-log]]
 
 ## Related
 

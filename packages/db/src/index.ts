@@ -41,6 +41,7 @@ export {
 } from './retention-policy.js';
 export type { PrismaWithTransaction, RlsContext, RlsReadScopedModel } from './rls.js';
 export {
+  allowAuditPurge,
   RLS_READ_SCOPED_MODELS,
   withRlsReads,
   withRlsSession,

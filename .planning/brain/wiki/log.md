@@ -5,6 +5,12 @@ type: log
 
 # Wiki log (append only)
 
+## 2026-06-18 — IRIS 1099-NEC e-file package (`@contractor-ops/iris`)
+
+- New: `packages/iris` (`@contractor-ops/iris`) — IRS IRIS (Information Returns Intake System) 1099-NEC Copy A e-file XML. `buildIrisXml` (`src/generator.ts`) builds the submission with fast-xml-parser `XMLBuilder` (never string-concatenated XML, mirrors `packages/einvoice`): Transmission Manifest carries the payload-manifest schema `VersionNum`/`VersionDt`, each payee B-record carries its CFSF state code, amounts emit as IRIS USAmountType whole dollars, recipient TIN masked last-4 only. `xsdValidate` (`src/validator.ts`) validates against the bundled IRS IRIS XSD with `libxmljs2` → `{ status: 'VALID' | 'INVALID', errors }` (einvoice KoSIT layer-1 shape); SSRF/XXE-safe (`parseXml({ nonet: true })`, default `noent: false`), bundle dir resolved lazily + entry XSD memoized.
+- XSD bundle is a human-action checkpoint: IRS IRIS XSDs are a human-only download (IRS SOR login, not on npm) placed under `src/schema-bundle/` with SHA-256 pinned in `checksums.txt` (`pnpm --filter @contractor-ops/iris verify:schema-checksums`). Until placed, `xsdValidate` reports `XSD-BUNDLE-MISSING` (INVALID) instead of throwing — generator works today, validator VALID path stays blocked on the human download.
+- Wiki: [[structure/packages]] (`iris` row); [[domains/us-tax-forms]] § IRIS XML e-file + entry point + invariant + agent mistakes.
+
 ## 2026-06-17 — 1099-NEC generation engine + recipient Copy-B PDF
 
 - New: `packages/api/src/services/form-1099-nec.service.ts` — `generateBatch` (box-1 aggregated by payment-date + FX-to-USD per recipient/payer-org), tax-year-keyed `Tax1099Threshold` gate (never a constant: $600 TY2025 / $2,000 TY2026 OBBBA), `computeBox4Minor` backup withholding, `supersedeCorrected`/`fileCorrection` (CORRECTED = supersede in one tx), idempotent batch + `writeAuditLog`; snapshot keeps TIN last-4 only.
@@ -492,6 +498,11 @@ type: log
 - `components/contractors/tax-forms/tax-form-status-card.tsx` + `hooks/use-tax-form-status.ts`: staff read/track via `taxForm.listFormSubmissions`; status pill (ACTIVE/DRAFT/SUPERSEDED/expiring) reusing the `UspsAddressStatusPill` VARIANT_MAP idiom; full SSN behind `SsnMaskedReveal` (control absent without `contractorPii:read`); adviser note informational.
 - i18n: `TaxFormWizard` + `TaxFormStaff` namespaces across en/de/pl/ar (en-US inherits via fallback); `i18n:parity` green. 12 scoped component tests GREEN (4 states + RTL, attestation gate, submit-failure-preserves-data, receipt, staff pill mapping + PII gating). `check:web-vite-data-layer` green (only the hook touches tRPC).
 - Wiki: NEW `domains/us-tax-forms.md`; `structure/web-vite-domains.md`, `prisma-schema-areas.md`, `packages.md`, `domains/contractors-engagements.md` updated; `hot.md` overwritten; MEMORY invariant appended.
+
+## 2026-06-18 — Lifecycle orchestration wiring facts (readiness audit)
+
+- Jira/Linear task linking confirmed **bidirectional** in code: inbound webhooks write back to `WorkflowTaskRun` (`jira-webhook-handler.ts:294`, `linear-webhook-handler.ts:293`, `workflowTaskRun.update`, loop-suppress + dedup). Notion adapter is read-only (search/picker), not bi-di. Wiki: [[domains/workflows-and-roles]], [[integrations/jira]], [[integrations/linear]]
+- A completing OFFBOARDING `WorkflowRun` does **not** auto-start a `DeprovisioningRun`; `startDeprovisioningRun` is called only from the tRPC mutation (UI `components/idp/hooks/use-start-deprovisioning.ts`). Access-revoke task = marker. Wiki: [[domains/idp-deprovisioning]], [[domains/workflows-and-roles]]
 
 ## 2026-06-17 — AuditLog DB-level append-only + new audit writes + OCR kill-switch
 

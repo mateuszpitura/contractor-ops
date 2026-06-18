@@ -70,7 +70,7 @@ case "$MODE" in
     ROOT_TS="$ROOT/packages/api/src/root.ts"
     ROUTER_CAT="$ROOT/$VAULT/wiki/structure/api-routers-catalog.md"
     if [ ! -f "$GRAPH" ]; then
-      printf 'WIKI_WARN: missing .planning/graphs/graph.json — run: graphify update . --no-cluster --force (see %s/README.md)\n' "$VAULT"
+      printf 'WIKI_WARN: missing .planning/graphs/graph.json — run: rm -f graphify-out/graph.json && graphify update . --no-cluster --force (see %s/README.md)\n' "$VAULT"
     fi
     if [ -f "$ROOT_TS" ] && [ -f "$ROUTER_CAT" ] && [ "$ROOT_TS" -nt "$ROUTER_CAT" ]; then
       printf 'WIKI_WARN: root.ts newer than api-routers-catalog.md — update wiki (CLAUDE.md § Documentation follows code)\n'
@@ -86,9 +86,16 @@ case "$MODE" in
     fi
     ;;
   stop)
+    # Stop hooks receive JSON on stdin; stop_hook_active is true when this stop
+    # was already blocked once this cycle — used to block-once-then-allow so we
+    # never loop forever.
+    stdin_json="$(cat || true)"
     if [ ! -d "$WIKI_DIR" ] || [ ! -d "$ROOT/.git" ]; then
       exit 0
     fi
+    stop_active="$(printf '%s' "$stdin_json" | python3 -c 'import sys,json
+try: print("1" if json.load(sys.stdin).get("stop_hook_active") else "0")
+except Exception: print("0")' 2>/dev/null || echo 0)"
     changed_files="$(collect_changed_files)"
     wiki_changed=0
     product_code_changed=0
@@ -103,13 +110,36 @@ case "$MODE" in
         fi
       done <<<"$changed_files"
     fi
+
+    # Hard block (once): product code changed, no wiki touched, not already
+    # blocked this cycle. Emit ONLY the decision JSON on stdout so the model
+    # is forced to act before the turn can end.
+    if [ "$product_code_changed" -eq 1 ] && [ "$wiki_changed" -eq 0 ] && [ "$stop_active" != "1" ]; then
+      reason="DOC DRIFT — you changed product code (apps/ or packages/) but updated NO wiki page this session. Per CLAUDE.md § Documentation follows code: update the matching wiki page(s) now (domains / patterns / structure / integrations), append log.md, overwrite hot.md, run pnpm check:wiki-brain. If this change is genuinely doc-exempt (tests / generated / formatting only), say so explicitly, then stop again."
+      python3 -c 'import json,sys; print(json.dumps({"decision":"block","reason":sys.argv[1]}))' "$reason"
+      exit 0
+    fi
+
+    # Advisory path (wiki was touched, only wiki changed, or already blocked once).
     if [ "$wiki_changed" -eq 1 ]; then
       printf 'WIKI_CHANGED: Wiki under %s/wiki/ modified. Finish: hot.md (overwrite), log.md (append), pnpm check:wiki-brain, BM25 rebuild.\n' "$VAULT"
     fi
     if [ "$product_code_changed" -eq 1 ]; then
       printf 'KNOWLEDGE_REFRESH_REQUIRED: Product code changed (apps/packages). Before done: update matching wiki pages — domains, patterns, structure, integrations as applicable. See CLAUDE.md § Documentation follows code.\n'
       if [ "$wiki_changed" -eq 0 ]; then
-        printf 'DOC_DRIFT_WARN: Product code changed but NO wiki pages updated this session. Documentation must follow code — add or update wiki before marking work complete.\n'
+        printf 'DOC_DRIFT_WARN: product code changed, still no wiki update (already blocked once this turn). Fix before commit — CI check:wiki-brain will fail on new drift.\n'
+      fi
+    fi
+
+    # Local graph freshness backstop (post-commit hook normally keeps it current).
+    graph="$ROOT/.planning/graphs/graph.json"
+    if [ ! -f "$graph" ]; then
+      printf 'GRAPH_WARN: .planning/graphs/graph.json missing — run: rm -f graphify-out/graph.json && graphify update . --no-cluster --force\n'
+    else
+      last_code_commit="$(git -C "$ROOT" log -1 --format=%ct -- apps packages 2>/dev/null || echo 0)"
+      graph_mtime="$(stat -f %m "$graph" 2>/dev/null || stat -c %Y "$graph" 2>/dev/null || echo 0)"
+      if [ "$last_code_commit" -gt "$graph_mtime" ]; then
+        printf 'GRAPH_WARN: graphify graph older than latest apps/packages commit — run: rm -f graphify-out/graph.json && graphify update . --no-cluster --force (or rely on .husky/post-commit)\n'
       fi
     fi
     ;;

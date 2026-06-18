@@ -48,6 +48,9 @@ const { mockPrisma } = vi.hoisted(() => {
     approvalDecision: {
       create: vi.fn(async () => ({})),
     },
+    auditLog: {
+      create: vi.fn(async () => ({ id: 'audit-1' })),
+    },
     invoice: {
       findMany: vi.fn(async () => []),
       findFirst: vi.fn(async () => null),

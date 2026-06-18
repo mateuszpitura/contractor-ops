@@ -2,7 +2,7 @@
 title: Contractors and engagements
 type: domain
 tags: [contractors, hr, compliance]
-source_commit: c89762ffe45f4cabdc59f5deeb67eefb39726530
+source_commit: 57946f64
 verify_with:
   - packages/api/src/routers/core/contractor-core.ts
   - apps/web-vite/src/components/contractors/
@@ -33,6 +33,7 @@ Contractor master data, lifecycle, compliance health, country-specific fields, b
 
 - Tenant-scoped list/detail
 - Classification assessments link to [[classification-ir35]] when flag on
+- `contractor.create` wraps insert in `$transaction` and catches Prisma `P2002`, throwing tRPC `CONFLICT` (`E.CONTRACTOR_TAX_ID_EXISTS`) — a duplicate `taxId` within an org surfaces as a clean conflict, not an unhandled 500. Backing DB `@@unique([organizationId, taxId])` (partial-unique on non-null `taxId`) is recommended/pending; today only `@@index([organizationId, taxId])` exists, so the guard catches the race the moment the constraint lands.
 
 ## Related
 

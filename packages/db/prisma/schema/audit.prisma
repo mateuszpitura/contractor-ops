@@ -25,7 +25,10 @@ model AuditLog {
 
   organization Organization @relation(fields: [organizationId], references: [id])
 
-  // No updatedAt — audit logs are immutable
+  // No updatedAt — audit logs are append-only. DB-enforced: the auditlog_insert
+  // RLS policy allows only INSERT, a BEFORE UPDATE trigger rejects updates, and
+  // DELETE is gated behind the transaction-local app.allow_audit_purge flag set
+  // solely by the GDPR Right-to-Erasure path (migration 20260617000000).
   @@index([organizationId])
   @@index([organizationId, resourceType, resourceId, createdAt])
   @@index([organizationId, actorId, createdAt])

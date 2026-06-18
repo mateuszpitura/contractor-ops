@@ -11,14 +11,16 @@ function person(
 }
 
 describe('mergeByEmail', () => {
-  it('merges duplicate emails case-insensitively and keeps canonical casing', () => {
+  it('merges duplicate emails case-insensitively and normalizes to lowercase', () => {
     const merged = mergeByEmail(
       [person('Alice@Example.com', 'Alice'), person('alice@example.com', 'Alice')],
       new Set(),
     );
 
     expect(merged).toHaveLength(1);
-    expect(merged[0]?.email).toBe('Alice@Example.com');
+    // Email is normalized to lowercase (the documented contract — matched
+    // case-insensitively against existing members and stored normalized).
+    expect(merged[0]?.email).toBe('alice@example.com');
     expect(merged[0]?.status).toBe('new');
     expect(merged[0]?.sources).toHaveLength(2);
   });

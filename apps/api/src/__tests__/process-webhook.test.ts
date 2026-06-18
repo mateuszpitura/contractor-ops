@@ -64,6 +64,12 @@ vi.mock('@contractor-ops/db', () => ({
         (mockIntegrationConnectionFindUnique as (...a: unknown[]) => unknown)(...a),
     },
   },
+  // Module-eval-time exports pulled in transitively via the route's import
+  // graph (compliance-reminder-scan `__deps`). Stubbed so suite collection
+  // doesn't crash; the drain handler under test never touches them.
+  prismaRaw: {},
+  getRegionalClient: () => ({}),
+  SUPPORTED_REGIONS: ['EU', 'ME'],
 }));
 
 vi.mock('@contractor-ops/api/services/cron-monitor', () => ({
@@ -224,5 +230,83 @@ describe('POST /webhooks/_process', () => {
     expect(body.skipped).toBe(true);
     expect(body.reason).toBe('already-claimed');
     expect(handleWebhook).not.toHaveBeenCalled();
+  });
+
+  // ---------------------------------------------------------------------------
+  // Handler throw → FAILED, NOT lost. The 500 is the retry signal: QStash
+  // re-POSTs a non-2xx up to the enqueue-configured `retries` (webhook.process
+  // = 3). The CAS claim flips RECEIVED|FAILED → PROCESSING, so a FAILED row is
+  // re-claimable on the next QStash attempt — the delivery is never dropped.
+  // ---------------------------------------------------------------------------
+
+  it('marks delivery FAILED and returns 500 (QStash-retryable) when handleWebhook throws', async () => {
+    const handleWebhook = vi.fn(async () => {
+      throw new Error('downstream Linear API 503');
+    });
+    mockGetAdapter.mockReturnValue({ handleWebhook });
+    mockFindUnique.mockResolvedValue({
+      id: 'd1',
+      organizationId: 'org-1',
+      deliveryStatus: 'RECEIVED',
+      payloadJson: { foo: 'bar' },
+      integrationConnectionId: 'conn-1',
+      eventType: 'issue.update',
+    });
+
+    const res = await post({ deliveryId: 'd1', provider: 'notion' });
+
+    // 500 — the only status that makes QStash retry. A 200 here would silently
+    // drop the delivery after a single failed attempt.
+    expect(res.statusCode).toBe(500);
+    expect(handleWebhook).toHaveBeenCalledOnce();
+
+    // Row is persisted FAILED with the (truncated) error, not left PROCESSING
+    // (which the stale-reaper would otherwise have to rescue) and not lost.
+    expect(mockUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: 'd1' },
+        data: expect.objectContaining({
+          deliveryStatus: 'FAILED',
+          errorMessage: expect.stringContaining('downstream Linear API 503'),
+        }),
+      }),
+    );
+  });
+
+  it('re-claims a FAILED row on a subsequent QStash attempt (CAS allows FAILED → PROCESSING)', async () => {
+    // QStash redelivers the same deliveryId after the previous attempt 500'd.
+    // The row is now FAILED; the CAS where-clause includes FAILED, so the
+    // worker re-acquires it and runs the handler again — the retry is not lost.
+    const handleWebhook = vi.fn(async () => undefined);
+    mockGetAdapter.mockReturnValue({ handleWebhook });
+    mockFindUnique.mockResolvedValue({
+      id: 'd1',
+      organizationId: 'org-1',
+      deliveryStatus: 'FAILED',
+      payloadJson: { foo: 'bar' },
+      integrationConnectionId: 'conn-1',
+      eventType: 'issue.update',
+    });
+    mockUpdateMany.mockResolvedValue({ count: 1 });
+
+    const res = await post({ deliveryId: 'd1', provider: 'notion' });
+
+    expect(res.statusCode).toBe(200);
+    // The CAS claim targeted a FAILED row (not just RECEIVED).
+    expect(mockUpdateMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          id: 'd1',
+          deliveryStatus: { in: ['RECEIVED', 'FAILED'] },
+        }),
+        data: { deliveryStatus: 'PROCESSING' },
+      }),
+    );
+    expect(handleWebhook).toHaveBeenCalledOnce();
+    expect(mockUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ deliveryStatus: 'PROCESSED' }),
+      }),
+    );
   });
 });

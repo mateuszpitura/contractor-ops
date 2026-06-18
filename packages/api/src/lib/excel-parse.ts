@@ -6,6 +6,13 @@
 import { Readable } from 'node:stream';
 import type { Cell } from 'exceljs';
 
+// DoS guards: bound memory before exceljs unzips/materializes the whole
+// workbook. A malicious .xlsx (zip-bomb dimensions or an inflated row count)
+// would otherwise allocate the entire sheet into heap before any row cap
+// downstream gets a chance to reject it.
+const MAX_SPREADSHEET_BYTES = 10 * 1024 * 1024;
+const MAX_SPREADSHEET_ROWS = 5000;
+
 function cellToDisplayString(cell: Cell): string {
   const v = cell.value;
   if (v === null || v === undefined) return '';
@@ -33,6 +40,12 @@ function isRowEmptyStrings(obj: Record<string, string>): boolean {
  * Read first worksheet as array of plain string records (aligned with prior `sheet_to_json` + defval "").
  */
 export async function parseSpreadsheetBuffer(buffer: Buffer): Promise<Record<string, string>[]> {
+  if (buffer.length > MAX_SPREADSHEET_BYTES) {
+    throw new Error(
+      `File exceeds maximum size of ${MAX_SPREADSHEET_BYTES} bytes (got ${buffer.length})`,
+    );
+  }
+
   const ExcelJS = (await import('exceljs')).default;
   const workbook = new ExcelJS.Workbook();
 
@@ -50,6 +63,14 @@ export async function parseSpreadsheetBuffer(buffer: Buffer): Promise<Record<str
   const sheet = workbook.worksheets[0];
   if (!sheet) {
     throw new Error('File contains no sheets');
+  }
+
+  // Reject oversized sheets before iterating every row into heap. The
+  // declared rowCount excludes the header, matching the downstream cap.
+  if (sheet.rowCount - 1 > MAX_SPREADSHEET_ROWS) {
+    throw new Error(
+      `File exceeds maximum of ${MAX_SPREADSHEET_ROWS} rows (found ${sheet.rowCount - 1})`,
+    );
   }
 
   const headerRow = sheet.getRow(1);

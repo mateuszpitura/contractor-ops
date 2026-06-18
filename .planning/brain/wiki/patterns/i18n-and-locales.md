@@ -7,7 +7,8 @@ verify_with:
   - apps/web-vite/src/i18n/index.ts
   - apps/web-vite/messages/
   - scripts/generate-i18n-types.ts
-updated: 2026-06-10
+  - packages/api/src/__tests__/errors-i18n-parity.test.ts
+updated: 2026-06-16
 ---
 
 # i18n and locales
@@ -48,6 +49,7 @@ flowchart LR
 - Turbo `test` / `typecheck` depend on `i18n:types` — stale generated types break builds
 - RTL (ar): use logical CSS properties — not physical `left`/`right` alone
 - Legal locked phrases: `packages/validators/src/legal/` — not duplicated in message JSON ad-hoc
+- Every API error code (camelCase value exported from `packages/api/src/errors.ts`) needs a matching `Errors.<key>` string in **all four** locale JSONs — enforced by `errors-i18n-parity.test.ts`. Adding a new `TRPCError` message → add the constant + four translations in the same change set.
 
 ## Related
 

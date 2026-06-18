@@ -2,11 +2,11 @@
 title: Approvals engine
 type: domain
 tags: [approvals, workflow]
-source_commit: 70f5782d78e33ba98c82e4ccda2cd4b0b4aff216
+source_commit: 336516f5da666c16acff84e412a3d338db8bbbb8
 verify_with:
   - packages/api/src/services/approval-engine.ts
   - packages/api/src/routers/core/approval-queue.ts
-updated: 2026-06-09
+updated: 2026-06-17
 ---
 
 # Approvals engine
@@ -39,6 +39,7 @@ flowchart TD
 
 - Invoice must be matched before submit — [[invoice-to-payment]]
 - Teams/Slack cards via integration framework
+- `approve` / `reject` each write a same-tx `writeAuditLog` row (`approval.approve` / `approval.reject`) keyed to the flow's `resourceType` / `resourceId` — see [[patterns/audit-log]]
 
 ## Related
 

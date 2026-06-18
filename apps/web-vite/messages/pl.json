@@ -3370,6 +3370,8 @@
     "tokenRequired": "Token jest wymagany dla uwierzytelniania opartego na tokenie.",
     "statusValDatesRequired": "validFrom i validTo są wymagane gdy wynik to SELBSTANDIG lub ABHANGIG.",
     "contractorInvalidNip": "Nieprawidłowy numer NIP.",
+    "contractorInvalidEin": "Nieprawidłowy numer EIN. Podaj prawidłowy 9-cyfrowy numer Employer Identification Number (format 12-3456789).",
+    "contractorInvalidSsn": "Nieprawidłowy numer SSN. Podaj prawidłowy 9-cyfrowy numer Social Security Number (format 123-45-6789).",
     "vatValidationUnsupportedCountry": "Walidacja VAT nie jest obsługiwana dla tego kraju.",
     "bacsUnmappableCharacters": "Plik BACS zawiera znaki, których nie można odwzorować; usuń ostrzeżenia transliteracji przed pobraniem.",
     "paymentRunCancelAdminOnly": "Tylko administratorzy mogą anulować wyeksportowane przebiegi płatności. Upewnij się, że eksport nie został złożony do banku przed anulowaniem.",
@@ -3385,6 +3387,8 @@
     "organizationCreateRateLimitExceeded": "Osiągnięto limit tworzenia organizacji. Spróbuj ponownie później.",
     "uploadRateLimiterUnavailable": "Ogranicznik przesyłania niedostępny. Spróbuj ponownie później.",
     "uploadRateLimitExceeded": "Osiągnięto limit przesyłania. Spróbuj ponownie później.",
+    "reportRateLimiterUnavailable": "Ogranicznik raportów niedostępny. Spróbuj ponownie później.",
+    "reportRateLimitExceeded": "Osiągnięto limit raportów. Spróbuj ponownie później.",
     "billingProfileNotFound": "Nie znaleziono profilu rozliczeniowego.",
     "whtNotApplicable": "Brak podatku u źródła dla tej pozycji płatności.",
     "clockifyConnectionNotFound": "Nie znaleziono połączenia z Clockify.",
@@ -3413,7 +3417,20 @@
     "deprovisioningProviderSignoffPending": "Ta funkcja deprowizji dostawcy wymaga zatwierdzenia przed aktywacją.",
     "workflowAssigneeNotMember": "Wybrany przypisany użytkownik nie jest członkiem tej organizacji.",
     "importJobStateConflict": "Stan zadania importu uległ zmianie; odśwież i spróbuj ponownie.",
-    "importProjectFailureRetryViaWizard": "Nieudane importy projektów należy ponowić z kreatora importu."
+    "importProjectFailureRetryViaWizard": "Nieudane importy projektów należy ponowić z kreatora importu.",
+    "credentialReferenceNotFound": "Nie znaleziono odwołania do poświadczeń.",
+    "credentialReferenceOffboardingOnly": "Dostęp do odwołań do poświadczeń jest możliwy tylko podczas offboardingu.",
+    "workflowIpVerificationOpen": "Dla tego przepływu pracy nadal otwarte jest zadanie weryfikacji własności intelektualnej.",
+    "workflowCredentialsPending": "Dla tego przepływu pracy poświadczenia są nadal oczekujące.",
+    "deprovisioningAssignmentNotFound": "Nie znaleziono przypisania deprovisioningu.",
+    "deprovisioningStepNotFound": "Nie znaleziono kroku deprovisioningu.",
+    "deprovisioningCooldownActive": "Deprovisioning jest w okresie wyczekiwania; spróbuj ponownie później.",
+    "deprovisioningNoExternalUser": "Brak powiązanego użytkownika zewnętrznego dostawcy tożsamości do deprovisioningu.",
+    "deprovisioningStepNotOverridable": "Tego kroku deprovisioningu nie można nadpisać.",
+    "deprovisioningIntegrationNotConfigured": "Integracja dostawcy tożsamości nie jest skonfigurowana do deprovisioningu.",
+    "complianceItemNotFound": "Nie znaleziono elementu zgodności.",
+    "complianceItemAlreadyWaived": "Ten element zgodności został już uchylony.",
+    "complianceDocumentNotPendingReview": "Ten dokument zgodności nie oczekuje na przegląd."
   },
   "Compliance": {
     "paymentBlockModal": {
@@ -4710,10 +4727,12 @@
       "statusExtracted": "Wyodrębniono",
       "statusPartial": "Częściowo",
       "statusFailed": "Nie powiodło się",
+      "statusSkipped": "Wpis ręczny",
       "extracting": "Wyodrębnianie danych faktury...",
       "complete": "Ekstrakcja zakończona — wyodrębniono {fieldCount} pól",
       "partial": "Częściowa ekstrakcja — wyodrębniono {fieldCount} z {totalFields} pól. Proszę uzupełnić pozostałe pola.",
       "failed": "Ekstrakcja nie powiodła się. Możesz uruchomić OCR ponownie lub wypełnić pola ręcznie.",
+      "skipped": "Parsowanie faktur przez AI jest wyłączone — wprowadź dane faktury ręcznie lub uruchom OCR ponownie po jego włączeniu.",
       "rerunOcr": "Uruchom OCR ponownie"
     }
   },

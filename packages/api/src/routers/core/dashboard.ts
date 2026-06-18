@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { router } from '../../init';
 import type { TenantScopedDb } from '../../lib/tenant-db';
 import { requirePermission } from '../../middleware/rbac';
+import { reportRateLimitMiddleware } from '../../middleware/report-rate-limit';
 import { tenantProcedure } from '../../middleware/tenant';
 import { CacheKeys, CacheTTL, cached, cachedSingleflight } from '../../services/cache';
 
@@ -31,6 +32,16 @@ function toDataRegion(region: string): DataRegion {
 // ---------------------------------------------------------------------------
 
 const reportRead = requirePermission({ report: ['read'] });
+
+/**
+ * Base procedure for dashboard reads: tenant scope + `report:read` RBAC +
+ * per-org cost cap. The rate-limit middleware bounds how often one tenant can
+ * run the KPI / trend / deadline aggregates (the per-IP global bucket does
+ * not), sharing the same `report:${orgId}` budget as `report.*`.
+ */
+const rateLimitedDashboardProcedure = tenantProcedure
+  .use(reportRead)
+  .use(reportRateLimitMiddleware);
 
 // ---------------------------------------------------------------------------
 // Data fetchers (extracted for caching)
@@ -310,7 +321,7 @@ export const dashboardRouter = router({
    * `DATABASE_URL_<region>_RO` is unset the helper transparently routes to
    * the writer.
    */
-  kpis: tenantProcedure.use(reportRead).query(async ({ ctx }) => {
+  kpis: rateLimitedDashboardProcedure.query(async ({ ctx }) => {
     const region = toDataRegion(ctx.region);
     return cachedSingleflight(
       CacheKeys.dashboardKpis(ctx.organizationId),
@@ -323,8 +334,7 @@ export const dashboardRouter = router({
    * Monthly spend trend aggregated by currency.
    * Cached for 10 minutes per organization + time range.
    */
-  spendTrend: tenantProcedure
-    .use(reportRead)
+  spendTrend: rateLimitedDashboardProcedure
     .input(
       z.object({
         months: z.enum(['6', '12', 'ytd']),
@@ -342,7 +352,7 @@ export const dashboardRouter = router({
    * Upcoming deadlines combining contract expirations, overdue tasks, and due invoices.
    * Cached for 3 minutes per organization.
    */
-  deadlines: tenantProcedure.use(reportRead).query(async ({ ctx }) => {
+  deadlines: rateLimitedDashboardProcedure.query(async ({ ctx }) => {
     return cached(
       CacheKeys.dashboardDeadlines(ctx.organizationId),
       CacheTTL.DASHBOARD_DEADLINES,
@@ -354,7 +364,7 @@ export const dashboardRouter = router({
    * Recent activity feed from audit log. Last 20 entries.
    * Cached for 2 minutes per organization.
    */
-  activity: tenantProcedure.use(reportRead).query(async ({ ctx }) => {
+  activity: rateLimitedDashboardProcedure.query(async ({ ctx }) => {
     return cached(
       CacheKeys.dashboardActivity(ctx.organizationId),
       CacheTTL.DASHBOARD_ACTIVITY,
@@ -377,8 +387,7 @@ export const dashboardRouter = router({
    * requires updating the SPA dashboard container in
    * `apps/web-vite/src/components/dashboard/dashboard-container.tsx`.
    */
-  bootstrap: tenantProcedure
-    .use(reportRead)
+  bootstrap: rateLimitedDashboardProcedure
     .input(
       z.object({
         spendMonths: z.enum(['6', '12', 'ytd']).default('6'),

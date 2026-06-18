@@ -85,6 +85,20 @@ describe('parseBankStatement', () => {
   it('throws on unsupported extension', () => {
     expect(() => parseBankStatement('x', 'file.pdf')).toThrow(/Unsupported bank statement format/);
   });
+
+  it('throws when a statement yields more than the 5000-transaction cap', () => {
+    const rows = Array.from({ length: 5001 }, (_, i) => `${i + 1}`);
+    const csv = `amount\n${rows.join('\n')}\n`;
+    expect(() => parseBankStatement(csv, 'huge.csv')).toThrow(
+      /exceeds maximum of 5000 transactions/,
+    );
+  });
+
+  it('accepts a statement exactly at the 5000-transaction cap', () => {
+    const rows = Array.from({ length: 5000 }, (_, i) => `${i + 1}`);
+    const csv = `amount\n${rows.join('\n')}\n`;
+    expect(parseBankStatement(csv, 'cap.csv')).toHaveLength(5000);
+  });
 });
 
 describe('matchStatementToRun', () => {

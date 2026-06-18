@@ -194,25 +194,44 @@ export function parseCsvStatement(content: string): ParsedTransaction[] {
 // ---------------------------------------------------------------------------
 
 /**
+ * Upper bound on parsed transactions per statement. Mirrors the import
+ * pipeline's row cap (`import-processor.ts` MAX_IMPORT_ROWS) so the downstream
+ * O(transactions × runItems) matcher cannot be driven to runaway cost by an
+ * oversized statement. A real payment run is orders of magnitude smaller.
+ */
+const MAX_STATEMENT_TRANSACTIONS = 5000;
+
+/**
  * Parse a bank statement by detecting format from filename extension.
  * Supports .mt940 and .csv files.
  */
 export function parseBankStatement(content: string, filename: string): ParsedTransaction[] {
   const ext = filename.split('.').pop()?.toLowerCase();
 
+  let transactions: ParsedTransaction[];
   switch (ext) {
     case 'mt940':
     case 'sta':
     case 'mt9':
-      return parseMt940(content);
+      transactions = parseMt940(content);
+      break;
     case 'csv':
     case 'txt':
-      return parseCsvStatement(content);
+      transactions = parseCsvStatement(content);
+      break;
     default:
       throw new Error(
         `Unsupported bank statement format: .${ext}. Supported formats: .mt940, .sta, .csv, .txt`,
       );
   }
+
+  if (transactions.length > MAX_STATEMENT_TRANSACTIONS) {
+    throw new Error(
+      `Statement exceeds maximum of ${MAX_STATEMENT_TRANSACTIONS} transactions (found ${transactions.length})`,
+    );
+  }
+
+  return transactions;
 }
 
 // ---------------------------------------------------------------------------

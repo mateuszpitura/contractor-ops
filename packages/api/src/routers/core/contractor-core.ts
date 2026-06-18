@@ -311,74 +311,88 @@ export const contractorCoreRouter = router({
         ...companyFields
       } = input;
 
-      const contractor = await ctx.db.$transaction(async tx => {
-        const created = await tx.contractor.create({
-          data: {
+      let contractor: Awaited<ReturnType<typeof ctx.db.contractor.create>>;
+      try {
+        contractor = await ctx.db.$transaction(async tx => {
+          const created = await tx.contractor.create({
+            data: {
+              organizationId: ctx.organizationId,
+              legalName: companyFields.legalName,
+              displayName: companyFields.displayName,
+              type: companyFields.type,
+              taxId: companyFields.taxId,
+              vatId: companyFields.vatId,
+              registrationNumber: companyFields.registrationNumber,
+              email: companyFields.email,
+              phone: companyFields.phone,
+              countryCode: companyFields.countryCode,
+              currency: companyFields.currency,
+              addressLine1: companyFields.addressLine1,
+              addressLine2: companyFields.addressLine2,
+              city: companyFields.city,
+              postalCode: companyFields.postalCode,
+              status: 'ACTIVE',
+              lifecycleStage: 'DRAFT',
+              ownerUserId,
+              primaryTeamId,
+              primaryProjectId,
+              defaultCostCenterId,
+              customFieldsJson: { billingModel, rateValueMinor },
+            },
+          });
+
+          const maskedIban = bankAccount ? `****${bankAccount.replace(/\s/g, '').slice(-4)}` : null;
+
+          await tx.contractorBillingProfile.create({
+            data: {
+              organizationId: ctx.organizationId,
+              contractorId: created.id,
+              legalEntityName: companyFields.legalName,
+              preferredCurrency: companyFields.currency,
+              countryCode: companyFields.countryCode,
+              bankAccountMasked: maskedIban,
+              bankAccountEncrypted: bankAccount
+                ? encryptBankAccount(bankAccount.replace(/\s/g, ''))
+                : null,
+              paymentTermsDays: paymentTermsDays ?? null,
+              validFrom: new Date(),
+              isDefault: true,
+            },
+          });
+
+          await writeAuditLog({
             organizationId: ctx.organizationId,
-            legalName: companyFields.legalName,
-            displayName: companyFields.displayName,
-            type: companyFields.type,
-            taxId: companyFields.taxId,
-            vatId: companyFields.vatId,
-            registrationNumber: companyFields.registrationNumber,
-            email: companyFields.email,
-            phone: companyFields.phone,
-            countryCode: companyFields.countryCode,
-            currency: companyFields.currency,
-            addressLine1: companyFields.addressLine1,
-            addressLine2: companyFields.addressLine2,
-            city: companyFields.city,
-            postalCode: companyFields.postalCode,
-            status: 'ACTIVE',
-            lifecycleStage: 'DRAFT',
-            ownerUserId,
-            primaryTeamId,
-            primaryProjectId,
-            defaultCostCenterId,
-            customFieldsJson: { billingModel, rateValueMinor },
-          },
+            actorType: 'USER',
+            actorId: ctx.user?.id,
+            action: 'CREATE',
+            resourceType: 'CONTRACTOR',
+            resourceId: created.id,
+            resourceName: created.displayName,
+            oldValues: null,
+            newValues: {
+              legalName: created.legalName,
+              displayName: created.displayName,
+              countryCode: created.countryCode,
+              status: created.status,
+              lifecycleStage: created.lifecycleStage,
+            },
+            tx,
+          });
+
+          return created;
         });
-
-        const maskedIban = bankAccount ? `****${bankAccount.replace(/\s/g, '').slice(-4)}` : null;
-
-        await tx.contractorBillingProfile.create({
-          data: {
-            organizationId: ctx.organizationId,
-            contractorId: created.id,
-            legalEntityName: companyFields.legalName,
-            preferredCurrency: companyFields.currency,
-            countryCode: companyFields.countryCode,
-            bankAccountMasked: maskedIban,
-            bankAccountEncrypted: bankAccount
-              ? encryptBankAccount(bankAccount.replace(/\s/g, ''))
-              : null,
-            paymentTermsDays: paymentTermsDays ?? null,
-            validFrom: new Date(),
-            isDefault: true,
-          },
-        });
-
-        await writeAuditLog({
-          organizationId: ctx.organizationId,
-          actorType: 'USER',
-          actorId: ctx.user?.id,
-          action: 'CREATE',
-          resourceType: 'CONTRACTOR',
-          resourceId: created.id,
-          resourceName: created.displayName,
-          oldValues: null,
-          newValues: {
-            legalName: created.legalName,
-            displayName: created.displayName,
-            countryCode: created.countryCode,
-            status: created.status,
-            lifecycleStage: created.lifecycleStage,
-          },
-          tx,
-        });
-
-        return created;
-      });
+      } catch (err) {
+        // A concurrent create can race past the application-level dedup and hit
+        // the @@unique([organizationId, taxId]) constraint; surface it as a
+        // clean CONFLICT rather than an unhandled INTERNAL_SERVER_ERROR.
+        if (typeof err === 'object' && err !== null && 'code' in err && err.code === 'P2002') {
+          throw new TRPCError({
+            code: 'CONFLICT',
+            message: E.CONTRACTOR_TAX_ID_EXISTS,
+          });
+        }
+        throw err;
+      }
 
       void syncSeatCountForOrg(ctx.organizationId);
       void invalidateByPrefix(CacheKeys.dashboardPrefix(ctx.organizationId));

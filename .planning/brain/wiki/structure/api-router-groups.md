@@ -2,7 +2,7 @@
 title: API router groups
 type: structure
 tags: [structure, api, trpc]
-source_commit: 79c1602848e9f0b2c5a6d3e1f4b7a9c0d2e6f813
+source_commit: 57946f64
 verify_with:
   - packages/api/src/routers/
   - packages/api/src/root.ts
@@ -33,7 +33,7 @@ flowchart LR
 
 | Folder | Namespaces (high level) | Notes |
 |--------|-------------------------|-------|
-| `core/` | organization, user, contractor, contract, approval, audit, time, document, tax, taxForm, … | `organizationDefinitions` nests team/project/costCenter; `taxForm` (staff US W-form read/track) flag-gated on `module.us-expansion` |
+| `core/` | organization, user, contractor, contract, approval, audit, time, document, tax, taxForm, … | `organizationDefinitions` nests team/project/costCenter; `taxForm` (staff US W-form read/track) flag-gated on `module.us-expansion`; `contractor.create` surfaces a duplicate `taxId` (within an org) as tRPC `CONFLICT` via a `P2002` guard, not a 500 — see [[domains/contractors-engagements]] |
 | `finance/` | invoice, invoiceIntake, payment, billing, skonto, bacs, … | payment/invoice split into sub-modules |
 | `compliance/` | complianceAdmin, gdpr, consent, zatca, gulf, einvoice, tax + 8 conditional classification* | classification flag-gated |
 | `integrations/` | integration, jira, linear, ksef, peppol, googleWorkspace, teams | OAuth via integration framework |

@@ -586,7 +586,7 @@ describe('peppol.getTransmissions', () => {
     const result = await caller.peppol.getTransmissions({ limit: 10 });
 
     expect(result.transmissions).toHaveLength(10);
-    expect(result.nextCursor).toBe('tx-10');
+    expect(result.nextCursor).toBe('tx-9');
   });
 });
 

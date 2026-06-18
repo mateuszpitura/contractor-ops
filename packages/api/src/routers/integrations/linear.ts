@@ -30,6 +30,23 @@ interface LinearConnectionConfig {
 }
 
 /**
+ * Project a Linear connection's `configJson` down to fields that are safe to
+ * expose to any member with `settings:['read']`. The raw blob can store a
+ * per-connection inbound `webhookSecret` (HMAC signing key) and `webhooks`
+ * (provider webhook IDs); returning those verbatim would let a read-only
+ * member forge signed Linear webhooks or enumerate webhook registrations.
+ * Only non-secret mapping/cache fields are surfaced.
+ */
+function publicLinearConfig(configJson: unknown): Record<string, unknown> | null {
+  if (!configJson || typeof configJson !== 'object' || Array.isArray(configJson)) return null;
+  const config = configJson as LinearConnectionConfig;
+  return {
+    statusMappings: config.statusMappings,
+    stateCache: config.stateCache,
+  };
+}
+
+/**
  * Decrypts Linear credentials from a connection's credentialsRef
  * and returns the access token for API calls.
  */
@@ -74,7 +91,7 @@ export const linearRouter = router({
       return {
         id: connection.id,
         status: connection.status,
-        configJson: connection.configJson as Record<string, unknown> | null,
+        configJson: publicLinearConfig(connection.configJson),
       };
     },
   ),

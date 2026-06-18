@@ -49,6 +49,7 @@ Read [[hot]] first. Code symbols: **semble** — never wiki alone. Discovery: [[
 - [[patterns/multi-region-db]]
 - [[patterns/testing-and-msw]]
 - [[patterns/data-tables-workbench]]
+- [[patterns/agent-delegation]]
 - [[patterns/ci-guards]]
 - [[patterns/i18n-and-locales]]
 - [[patterns/better-auth-staff]]

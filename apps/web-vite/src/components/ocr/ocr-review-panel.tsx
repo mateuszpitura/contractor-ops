@@ -75,7 +75,15 @@ export function OcrReviewPanel({
   return (
     <div className="flex flex-col gap-4">
       <ExtractionStatusBar
-        status={extractionStatus as 'PENDING' | 'PROCESSING' | 'EXTRACTED' | 'PARTIAL' | 'FAILED'}
+        status={
+          extractionStatus as
+            | 'PENDING'
+            | 'PROCESSING'
+            | 'EXTRACTED'
+            | 'PARTIAL'
+            | 'FAILED'
+            | 'SKIPPED'
+        }
         fieldCount={fieldCount}
         totalFields={totalFields}
         errorMessage={resultJson?.errorMessage}

@@ -2,7 +2,7 @@
 title: Linear
 type: integration
 tags: [linear, pm]
-source_commit: 70f5782d78e33ba98c82e4ccda2cd4b0b4aff216
+source_commit: 57946f64
 verify_with:
   - packages/api/src/routers/integrations/linear.ts
   - packages/integrations/src/adapters/linear-adapter.ts
@@ -39,6 +39,7 @@ flowchart LR
 
 - Same status-mapping UX pattern as [[jira]]
 - Tenant-scoped connection per org
+- `connectionStatus` returns an allowlisted `publicLinearConfig` (`statusMappings`, `stateCache`) — `webhooks` / `webhookSecret` are dropped from the client response. Proactive, same allowlist pattern as [[jira]] (see [[patterns/registry-plugin]] § connectionStatus secret hygiene).
 
 ## Related
 

@@ -2,7 +2,11 @@ import { authApi } from '@contractor-ops/auth';
 import { inviteUserSchema, updateUserRoleSchema } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
-import { CANNOT_DEACTIVATE_SELF, LAST_ADMIN_CANNOT_DEACTIVATE } from '../../errors';
+import {
+  CANNOT_DEACTIVATE_SELF,
+  LAST_ADMIN_CANNOT_DEACTIVATE,
+  PERMISSION_DENIED,
+} from '../../errors';
 import { router } from '../../init';
 import { findOrThrow } from '../../lib/find-or-throw';
 import { requirePermission } from '../../middleware/rbac';
@@ -11,6 +15,21 @@ import { tenantProcedure } from '../../middleware/tenant';
 import { writeAuditLog } from '../../services/audit-writer';
 import type { DbClient } from '../../services/types';
 import { userPinsRouter } from './user-pins';
+
+// ---------------------------------------------------------------------------
+// Role privilege gate
+// ---------------------------------------------------------------------------
+
+// Roles that confer org-wide privilege escalation (payment:export,
+// compliance:override, contractor:delete, etc.). Granting one of these is
+// gated by the caller's own role below — `requirePermission({ member:
+// ['update'] })` alone does NOT stop a non-admin (e.g. it_admin) from minting
+// admins or escalating themselves. Maps each privileged target role to the
+// set of caller roles allowed to grant it.
+const ROLE_GRANT_REQUIREMENTS: Record<string, ReadonlySet<string>> = {
+  owner: new Set(['owner']),
+  admin: new Set(['owner', 'admin']),
+};
 
 // ---------------------------------------------------------------------------
 // Deactivation helpers
@@ -234,6 +253,21 @@ export const userRouter = router({
         where: { organizationId: ctx.organizationId, userId: input.userId },
         select: { id: true, role: true },
       });
+
+      // Privilege ceiling: a caller may not grant a role more privileged than
+      // their own. Better Auth's `updateMemberRole` only blocks the owner
+      // transition, so without this gate any `member:['update']` holder below
+      // admin (e.g. it_admin) could mint admins — including escalating itself.
+      const allowedGranters = ROLE_GRANT_REQUIREMENTS[input.role];
+      if (allowedGranters) {
+        const caller = await ctx.db.member.findFirst({
+          where: { organizationId: ctx.organizationId, userId: ctx.user.id },
+          select: { role: true },
+        });
+        if (!(caller && allowedGranters.has(caller.role))) {
+          throw new TRPCError({ code: 'FORBIDDEN', message: PERMISSION_DENIED });
+        }
+      }
 
       const result = await authApi.updateMemberRole({
         headers: ctx.headers,

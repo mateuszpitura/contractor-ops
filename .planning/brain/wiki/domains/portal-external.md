@@ -2,11 +2,11 @@
 title: Contractor portal
 type: domain
 tags: [portal, external, contractors]
-source_commit: 79c1602848e9f0b2c5a6d3e1f4b7a9c0d2e6f813
+source_commit: 336516f5da666c16acff84e412a3d338db8bbbb8
 verify_with:
   - packages/api/src/portal-root.ts
   - packages/api/src/routers/portal/
-updated: 2026-06-16
+updated: 2026-06-17
 ---
 
 # Contractor portal (external)
@@ -49,6 +49,7 @@ The beneficial owner self-certifies a US tax form from the portal — the legall
 
 - [[patterns/portal-auth]] — not in `appRouter`
 - Scoped to `ctx.contractorId` + org from validated session
+- `updateContactInfo` runs in a `$transaction`: reads the prior contact snapshot (org-scoped `findFirst`, NOT_FOUND if absent), updates, then writes a same-tx `writeAuditLog` row (`portal.contact.update`, old/new contact values) — see [[patterns/audit-log]]
 
 ## Related
 

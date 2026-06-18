@@ -2,11 +2,11 @@
 title: Entra Okta GitHub IdP
 type: integration
 tags: [idp, okta, entra, github]
-source_commit: 70f5782d78e33ba98c82e4ccda2cd4b0b4aff216
+source_commit: 57946f642
 verify_with:
   - packages/api/src/routers/integrations/deprovisioning.ts
   - packages/integrations/src/adapters/
-updated: 2026-06-10
+updated: 2026-06-16
 ---
 
 # Entra / Okta / GitHub IdP

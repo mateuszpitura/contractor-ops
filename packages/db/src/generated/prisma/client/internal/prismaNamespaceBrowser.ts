@@ -165,6 +165,11 @@ export const ModelName = {
   WithholdingTaxRate: 'WithholdingTaxRate',
   WhtCertificate: 'WhtCertificate',
   TaxFormSubmission: 'TaxFormSubmission',
+  Form1099Nec: 'Form1099Nec',
+  IrisSubmission: 'IrisSubmission',
+  IrisAck: 'IrisAck',
+  Tax1099Threshold: 'Tax1099Threshold',
+  StateFilingConfig: 'StateFilingConfig',
   TaxIdValidation: 'TaxIdValidation',
   Timesheet: 'Timesheet',
   TimeEntry: 'TimeEntry',
@@ -2278,6 +2283,83 @@ export const TaxFormSubmissionScalarFieldEnum = {
 } as const
 
 export type TaxFormSubmissionScalarFieldEnum = (typeof TaxFormSubmissionScalarFieldEnum)[keyof typeof TaxFormSubmissionScalarFieldEnum]
+
+
+export const Form1099NecScalarFieldEnum = {
+  id: 'id',
+  organizationId: 'organizationId',
+  payerOrgId: 'payerOrgId',
+  recipientId: 'recipientId',
+  taxYear: 'taxYear',
+  status: 'status',
+  box1AmountMinor: 'box1AmountMinor',
+  box4BackupWithholdingMinor: 'box4BackupWithholdingMinor',
+  currency: 'currency',
+  cfsfStateCode: 'cfsfStateCode',
+  corrected: 'corrected',
+  snapshotJson: 'snapshotJson',
+  pdfArchiveKey: 'pdfArchiveKey',
+  supersededById: 'supersededById',
+  deletedAt: 'deletedAt',
+  createdAt: 'createdAt'
+} as const
+
+export type Form1099NecScalarFieldEnum = (typeof Form1099NecScalarFieldEnum)[keyof typeof Form1099NecScalarFieldEnum]
+
+
+export const IrisSubmissionScalarFieldEnum = {
+  id: 'id',
+  organizationId: 'organizationId',
+  taxYear: 'taxYear',
+  schemaVersionNum: 'schemaVersionNum',
+  schemaVersionDt: 'schemaVersionDt',
+  transmitMethod: 'transmitMethod',
+  originalReceiptId: 'originalReceiptId',
+  status: 'status',
+  xmlArchiveKey: 'xmlArchiveKey',
+  deletedAt: 'deletedAt',
+  createdAt: 'createdAt'
+} as const
+
+export type IrisSubmissionScalarFieldEnum = (typeof IrisSubmissionScalarFieldEnum)[keyof typeof IrisSubmissionScalarFieldEnum]
+
+
+export const IrisAckScalarFieldEnum = {
+  id: 'id',
+  organizationId: 'organizationId',
+  submissionId: 'submissionId',
+  status: 'status',
+  errorInformationJson: 'errorInformationJson',
+  receiptId: 'receiptId',
+  parsedAt: 'parsedAt'
+} as const
+
+export type IrisAckScalarFieldEnum = (typeof IrisAckScalarFieldEnum)[keyof typeof IrisAckScalarFieldEnum]
+
+
+export const Tax1099ThresholdScalarFieldEnum = {
+  id: 'id',
+  taxYear: 'taxYear',
+  box1ThresholdMinor: 'box1ThresholdMinor',
+  currency: 'currency',
+  note: 'note'
+} as const
+
+export type Tax1099ThresholdScalarFieldEnum = (typeof Tax1099ThresholdScalarFieldEnum)[keyof typeof Tax1099ThresholdScalarFieldEnum]
+
+
+export const StateFilingConfigScalarFieldEnum = {
+  id: 'id',
+  stateCode: 'stateCode',
+  taxYear: 'taxYear',
+  cfsfParticipant: 'cfsfParticipant',
+  requiresDirectFiling: 'requiresDirectFiling',
+  filingThresholdMinor: 'filingThresholdMinor',
+  stateWithholdingBoxRules: 'stateWithholdingBoxRules',
+  note: 'note'
+} as const
+
+export type StateFilingConfigScalarFieldEnum = (typeof StateFilingConfigScalarFieldEnum)[keyof typeof StateFilingConfigScalarFieldEnum]
 
 
 export const TaxIdValidationScalarFieldEnum = {

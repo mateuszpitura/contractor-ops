@@ -1,0 +1,42 @@
+#!/usr/bin/env sh
+# Auto-refresh the graphify code graph when a commit touches product code.
+# The graph is a local, gitignored artifact (.planning/graphs/graph.json) —
+# keeping it fresh here is what stops agents from querying a stale call graph.
+#
+# IMPORTANT: graph.json must be removed before `graphify update` — the tool MERGES
+# edges into an existing graph.json on every run, so reusing it accumulates
+# duplicate links unboundedly (~92k → 140k → 188k observed). A clean rebuild from
+# the cached AST is deterministic (stable link count) and the only correct path.
+# Full rebuild is ~55s; it runs detached so it never blocks the commit.
+
+# React only to apps/ or packages/ changes in the just-made commit.
+changed=$(git diff-tree --no-commit-id --name-only -r HEAD 2>/dev/null)
+case "$changed" in
+  *apps/* | *packages/*) ;;
+  *) exit 0 ;;
+esac
+
+command -v graphify >/dev/null 2>&1 || exit 0
+
+LOCK=graphify-out/.post-commit.lock
+mkdir -p graphify-out
+
+# Clear a stale lock from a crashed/killed prior rebuild (>15 min old).
+if [ -d "$LOCK" ]; then
+  age=$(( $(date +%s) - $(stat -f %m "$LOCK" 2>/dev/null || stat -c %Y "$LOCK" 2>/dev/null || echo 0) ))
+  [ "$age" -gt 900 ] && rmdir "$LOCK" 2>/dev/null
+fi
+
+# Atomic lock: skip if a rebuild is already in flight (the Stop-hook GRAPH_WARN
+# backstops any commit whose rebuild was skipped).
+mkdir "$LOCK" 2>/dev/null || exit 0
+
+# Detach: clean AST-only rebuild (LLM keys blanked → zero token cost).
+(
+  rm -f graphify-out/graph.json
+  GEMINI_API_KEY= GOOGLE_API_KEY= graphify update . --no-cluster --force \
+    && cp graphify-out/graph.json .planning/graphs/graph.json
+  rmdir "$LOCK" 2>/dev/null
+) >graphify-out/post-commit.log 2>&1 </dev/null &
+
+exit 0

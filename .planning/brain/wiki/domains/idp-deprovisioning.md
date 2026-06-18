@@ -2,11 +2,12 @@
 title: IdP deprovisioning
 type: domain
 tags: [idp, okta, entra, deprovision]
-source_commit: 70f5782d78e33ba98c82e4ccda2cd4b0b4aff216
+source_commit: d839f52eb98d86236bd6d0018bdff84de49427b8
 verify_with:
   - packages/api/src/routers/integrations/deprovisioning.ts
   - apps/web-vite/src/components/idp/
-updated: 2026-06-09
+  - packages/api/src/services/idp-deprovisioning-step-runner.ts
+updated: 2026-06-18
 ---
 
 # IdP deprovisioning
@@ -39,3 +40,4 @@ semble search "deprovisioningRouter"
 ## Agent mistakes
 
 - Deprovision without audit trail
+- Assuming an OFFBOARDING `WorkflowRun` completing auto-starts a `DeprovisioningRun` — it does **not**. `startDeprovisioningRun` is called only from the tRPC mutation (UI `components/idp/hooks/use-start-deprovisioning.ts`); the offboarding template's access-revoke task is a marker, not a saga trigger. Deprovisioning is manual-only — never claim offboarding completion revokes IdP access on its own.

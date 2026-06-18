@@ -1,17 +1,45 @@
 import { Prisma } from '@contractor-ops/db/generated/prisma/client';
+import { createLogger } from '@contractor-ops/logger';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import { EXPORT_ENQUEUE_FAILED } from '../../errors';
 import { router } from '../../init';
 import { requirePermission } from '../../middleware/rbac';
+import { reportRateLimitMiddleware } from '../../middleware/report-rate-limit';
 import { tenantProcedure } from '../../middleware/tenant';
 import { requestExport } from '../../services/exports/index';
+
+const log = createLogger({ service: 'api', component: 'report' });
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
 const reportRead = requirePermission({ report: ['read'] });
+
+/**
+ * Base procedure for the expensive report reads + exports: tenant scope +
+ * `report:read` RBAC + per-org cost cap. The rate-limit middleware bounds how
+ * often one tenant can run these multi-table aggregates / async-export
+ * enqueues, which the per-IP global bucket does not.
+ */
+const rateLimitedReportProcedure = tenantProcedure.use(reportRead).use(reportRateLimitMiddleware);
+
+/**
+ * Hard server-side ceiling on the number of active contractors the
+ * compliance-gap procedures will materialize into JS in a single request.
+ *
+ * `complianceGaps` / `complianceGapsChart` compute health in application code
+ * (filter on `complianceItems` / `contracts` relations that cannot be
+ * expressed as a single SQL predicate), so they must fetch rows before
+ * filtering. Without a cap a tenant with a very large active-contractor table
+ * could force the whole table — plus its nested relations — into one request's
+ * heap. This ceiling bounds the worst case; orgs below it are unaffected and
+ * keep their exact output shape + ordering. Truncation is surfaced honestly
+ * (a `truncated` flag for the paginated procedure, a logged warning for the
+ * chart) rather than silently dropping rows.
+ */
+const COMPLIANCE_GAP_SCAN_CAP = 1000;
 
 // ---------------------------------------------------------------------------
 // Shared input schemas
@@ -85,8 +113,7 @@ export const reportRouter = router({
    * Spend by contractor with pagination, sorting, and date range.
    * Uses raw SQL for grouping paid invoices by contractor.
    */
-  spendByContractor: tenantProcedure
-    .use(reportRead)
+  spendByContractor: rateLimitedReportProcedure
     .input(
       z.object({
         ...dateRangeInput,
@@ -170,8 +197,7 @@ export const reportRouter = router({
   /**
    * Spend by team via Contractor.primaryTeamId -> Team.
    */
-  spendByTeam: tenantProcedure
-    .use(reportRead)
+  spendByTeam: rateLimitedReportProcedure
     .input(
       z.object({
         ...dateRangeInput,
@@ -247,8 +273,7 @@ export const reportRouter = router({
   /**
    * Expiring contracts within N days.
    */
-  expiringContracts: tenantProcedure
-    .use(reportRead)
+  expiringContracts: rateLimitedReportProcedure
     .input(
       z.object({
         days: z.enum(['30', '60', '90']).default('30'),
@@ -309,8 +334,7 @@ export const reportRouter = router({
   /**
    * Overdue invoices (dueDate < now, not paid/cancelled).
    */
-  overdueInvoices: tenantProcedure
-    .use(reportRead)
+  overdueInvoices: rateLimitedReportProcedure
     .input(
       z.object({
         ...paginationInput,
@@ -370,8 +394,7 @@ export const reportRouter = router({
   /**
    * Compliance gaps: contractors with yellow/red health.
    */
-  complianceGaps: tenantProcedure
-    .use(reportRead)
+  complianceGaps: rateLimitedReportProcedure
     .input(
       z.object({
         ...paginationInput,
@@ -379,13 +402,16 @@ export const reportRouter = router({
       }),
     )
     .query(async ({ ctx, input }) => {
-      // Get contractors with compliance issues
+      // Get contractors with compliance issues. Bounded by COMPLIANCE_GAP_SCAN_CAP
+      // BEFORE the in-JS slice so one request can never materialize the whole
+      // active-contractor table (+ nested relations) into the heap.
       const contractors = await ctx.db.contractor.findMany({
         where: {
           organizationId: ctx.organizationId,
           status: 'ACTIVE',
           deletedAt: null,
         },
+        take: COMPLIANCE_GAP_SCAN_CAP,
         include: {
           complianceItems: {
             select: { status: true },
@@ -403,6 +429,14 @@ export const reportRouter = router({
           },
         },
       });
+
+      const truncated = contractors.length >= COMPLIANCE_GAP_SCAN_CAP;
+      if (truncated) {
+        log.warn(
+          { organizationId: ctx.organizationId, cap: COMPLIANCE_GAP_SCAN_CAP },
+          'complianceGaps scan hit the contractor ceiling — result is truncated; org should use the async export for the full set',
+        );
+      }
 
       // Compute health for each contractor
       type GapItem = {
@@ -463,7 +497,7 @@ export const reportRouter = router({
       const offset = (input.page - 1) * input.pageSize;
       const paged = items.slice(offset, offset + input.pageSize);
 
-      return { items: paged, total };
+      return { items: paged, total, truncated };
     }),
 
   // =========================================================================
@@ -473,8 +507,7 @@ export const reportRouter = router({
   /**
    * Top 10 contractors by spend for bar chart.
    */
-  spendByContractorChart: tenantProcedure
-    .use(reportRead)
+  spendByContractorChart: rateLimitedReportProcedure
     .input(z.object({ ...dateRangeInput }))
     .query(async ({ ctx, input }) => {
       const { dateFrom, dateTo } = parseDateRange(input);
@@ -512,8 +545,7 @@ export const reportRouter = router({
   /**
    * All teams with spend for bar chart.
    */
-  spendByTeamChart: tenantProcedure
-    .use(reportRead)
+  spendByTeamChart: rateLimitedReportProcedure
     .input(z.object({ ...dateRangeInput }))
     .query(async ({ ctx, input }) => {
       const { dateFrom, dateTo } = parseDateRange(input);
@@ -551,8 +583,7 @@ export const reportRouter = router({
   /**
    * Expiring contracts grouped by 30-day buckets for chart.
    */
-  expiringContractsChart: tenantProcedure
-    .use(reportRead)
+  expiringContractsChart: rateLimitedReportProcedure
     .input(z.object({ days: z.enum(['30', '60', '90']).default('30') }))
     .query(async ({ ctx, input }) => {
       const now = new Date();
@@ -594,13 +625,17 @@ export const reportRouter = router({
   /**
    * Compliance gaps summary for pie chart.
    */
-  complianceGapsChart: tenantProcedure.use(reportRead).query(async ({ ctx }) => {
+  complianceGapsChart: rateLimitedReportProcedure.query(async ({ ctx }) => {
+    // Same COMPLIANCE_GAP_SCAN_CAP ceiling as `complianceGaps` — this
+    // procedure takes no input, so the cap is purely internal. Bounds the
+    // worst-case heap usage; for orgs under the cap the counts are exact.
     const contractors = await ctx.db.contractor.findMany({
       where: {
         organizationId: ctx.organizationId,
         status: 'ACTIVE',
         deletedAt: null,
       },
+      take: COMPLIANCE_GAP_SCAN_CAP,
       include: {
         complianceItems: {
           select: { status: true },
@@ -618,6 +653,13 @@ export const reportRouter = router({
         },
       },
     });
+
+    if (contractors.length >= COMPLIANCE_GAP_SCAN_CAP) {
+      log.warn(
+        { organizationId: ctx.organizationId, cap: COMPLIANCE_GAP_SCAN_CAP },
+        'complianceGapsChart scan hit the contractor ceiling — counts are computed over a truncated set',
+      );
+    }
 
     let critical = 0;
     let warning = 0;
@@ -659,8 +701,7 @@ export const reportRouter = router({
   /**
    * Enqueue: spend by contractor (date range + optional contractor filter).
    */
-  exportSpendByContractor: tenantProcedure
-    .use(reportRead)
+  exportSpendByContractor: rateLimitedReportProcedure
     .input(z.object({ ...dateRangeInput, contractorId: z.string().optional() }))
     .mutation(async ({ ctx, input }) => {
       return enqueueExport({
@@ -674,8 +715,7 @@ export const reportRouter = router({
   /**
    * Enqueue: spend by team (date range).
    */
-  exportSpendByTeam: tenantProcedure
-    .use(reportRead)
+  exportSpendByTeam: rateLimitedReportProcedure
     .input(z.object({ ...dateRangeInput }))
     .mutation(async ({ ctx, input }) => {
       return enqueueExport({
@@ -689,8 +729,7 @@ export const reportRouter = router({
   /**
    * Enqueue: expiring contracts within the given window.
    */
-  exportExpiringContracts: tenantProcedure
-    .use(reportRead)
+  exportExpiringContracts: rateLimitedReportProcedure
     .input(z.object({ days: z.enum(['30', '60', '90']).default('30') }))
     .mutation(async ({ ctx, input }) => {
       return enqueueExport({
@@ -704,7 +743,7 @@ export const reportRouter = router({
   /**
    * Enqueue: overdue invoices (no input — server uses now()).
    */
-  exportOverdueInvoices: tenantProcedure.use(reportRead).mutation(async ({ ctx }) => {
+  exportOverdueInvoices: rateLimitedReportProcedure.mutation(async ({ ctx }) => {
     return enqueueExport({
       organizationId: ctx.organizationId,
       userId: ctx.session?.user?.id,
@@ -716,7 +755,7 @@ export const reportRouter = router({
   /**
    * Enqueue: compliance gaps (no input).
    */
-  exportComplianceGaps: tenantProcedure.use(reportRead).mutation(async ({ ctx }) => {
+  exportComplianceGaps: rateLimitedReportProcedure.mutation(async ({ ctx }) => {
     return enqueueExport({
       organizationId: ctx.organizationId,
       userId: ctx.session?.user?.id,

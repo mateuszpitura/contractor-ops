@@ -5,11 +5,9 @@
 //   RETENTION_YEARS = { '1099-NEC': 4, 'backup-withholding': 7 }
 //   resolveRetentionYears(recordType): number
 //   getRetentionCutoff(model, now): Date | null  (null when model unmapped)
-//   MODEL_RETENTION_TYPE ships EMPTY — the fixture mapping is injected
-//   test-locally so production behaviour stays unchanged but the wiring proves out.
-//
-// Fixture model: `Invoice` (representative soft-delete model; the real
-// 1099/W-form tables register their own entries separately).
+//   MODEL_RETENTION_TYPE registers each soft-delete tax model on its statutory
+//   record type; getRetentionCutoff also accepts a fixture mapping override so
+//   tests can exercise a representative model without touching production wiring.
 
 import { describe, expect, it } from 'vitest';
 
@@ -19,7 +17,7 @@ import {
   resolveRetentionYears,
 } from '../retention-policy.js';
 
-describe('retention-policy resolver (US-INFRA-03, SC#3 — Wave 0 RED until Plan 04)', () => {
+describe('retention-policy resolver', () => {
   it('resolveRetentionYears maps 1099-NEC to 4 years', () => {
     expect(resolveRetentionYears('1099-NEC')).toBe(4);
   });
@@ -28,9 +26,9 @@ describe('retention-policy resolver (US-INFRA-03, SC#3 — Wave 0 RED until Plan
     expect(resolveRetentionYears('backup-withholding')).toBe(7);
   });
 
-  it('MODEL_RETENTION_TYPE ships EMPTY in Phase 83 (D-06 — no tax tables yet)', () => {
-    // Production map is empty until tax models are registered.
-    expect(Object.keys(MODEL_RETENTION_TYPE)).toHaveLength(0);
+  it('MODEL_RETENTION_TYPE registers Form1099Nec on the 1099-NEC window', () => {
+    // The soft-delete 1099-NEC table carries the statutory 4-year IRS window.
+    expect(MODEL_RETENTION_TYPE.Form1099Nec).toBe('1099-NEC');
   });
 
   it('getRetentionCutoff returns now minus 4 years for a model mapped to 1099-NEC', () => {

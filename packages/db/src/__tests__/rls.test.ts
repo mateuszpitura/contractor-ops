@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
+  allowAuditPurge,
   RLS_READ_SCOPED_MODELS,
   withRlsReads,
   withRlsSession,
@@ -30,6 +31,32 @@ describe('withRlsSession', () => {
     const s1 = sql1?.strings?.join('?');
     expect(s1).toContain('set_config');
     expect(s1).toContain('app.user_id');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// allowAuditPurge opts the tx into the gated AuditLog DELETE policy.
+// ---------------------------------------------------------------------------
+
+describe('allowAuditPurge', () => {
+  it('sets the transaction-local app.allow_audit_purge flag to on', async () => {
+    const executeCalls: unknown[] = [];
+    const tx = {
+      $executeRaw: vi.fn(async (q: unknown) => {
+        executeCalls.push(q);
+      }),
+    };
+
+    await allowAuditPurge(tx as never);
+
+    expect(tx.$executeRaw).toHaveBeenCalledTimes(1);
+    const sql = executeCalls[0] as { strings?: string[] };
+    const text = sql?.strings?.join('?');
+    expect(text).toContain('set_config');
+    expect(text).toContain('app.allow_audit_purge');
+    // Enabled with the literal 'on' value, transaction-local (third arg `true`).
+    expect(text).toContain("'on'");
+    expect(text).toContain('true');
   });
 });
 

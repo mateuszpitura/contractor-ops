@@ -33,6 +33,25 @@ interface JiraConnectionConfig {
 }
 
 /**
+ * Project a Jira connection's `configJson` down to fields that are safe to
+ * expose to any member with `settings:['read']`. The raw blob also stores the
+ * per-connection inbound `webhookSecret` (HMAC signing key) plus `webhookIds`;
+ * returning those verbatim would let a read-only member forge signed Jira
+ * webhooks. Only non-secret display/config fields are surfaced.
+ */
+function publicJiraConfig(configJson: unknown): Record<string, unknown> | null {
+  if (!configJson || typeof configJson !== 'object' || Array.isArray(configJson)) return null;
+  const config = configJson as JiraConnectionConfig;
+  return {
+    cloudId: config.cloudId,
+    siteName: config.siteName,
+    siteUrl: config.siteUrl,
+    statusMappings: config.statusMappings,
+    webhookRegisteredAt: config.webhookRegisteredAt,
+  };
+}
+
+/**
  * Builds the Jira Cloud REST API base URL and authorization headers
  * from a connection's decrypted credentials and config.
  */
@@ -147,7 +166,7 @@ export const jiraRouter = router({
         id: connection.id,
         status: connection.status,
         displayName: connection.displayName,
-        configJson: connection.configJson,
+        configJson: publicJiraConfig(connection.configJson),
         lastSyncAt: connection.lastSyncAt,
         tokenExpiresAt: connection.tokenExpiresAt,
         scopeExpansionNeeded,

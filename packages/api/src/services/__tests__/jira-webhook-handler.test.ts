@@ -440,7 +440,7 @@ describe('jira-webhook-handler', () => {
 
       expect(prisma.workflowTaskRun.update).toHaveBeenCalledWith({
         where: { id: TASK_RUN_ID, organizationId: ORG_ID },
-        data: { status: 'DONE' },
+        data: { status: 'DONE', completedAt: expect.any(Date) },
       });
     });
   });

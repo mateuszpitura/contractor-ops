@@ -1,5 +1,5 @@
 import type { RetainedRecordType } from '@contractor-ops/db';
-import { MODEL_RETENTION_TYPE } from '@contractor-ops/db';
+import { allowAuditPurge, MODEL_RETENTION_TYPE } from '@contractor-ops/db';
 import { z } from 'zod';
 import { router } from '../../init';
 import { requirePermission } from '../../middleware/rbac';
@@ -154,8 +154,11 @@ export const gdprRouter = router({
           results.invoices = await softDeleteByOrgAndCount(tx.invoice, orgId, now);
         }
 
-        // 5-6. Notifications + audit logs (PII).
+        // 5-6. Notifications + audit logs (PII). AuditLog is DB-level
+        //       append-only — opt this transaction into the purge so the
+        //       auditlog_delete RLS policy permits the erasure DELETE.
         results.notifications = await deleteByOrgAndCount(tx.notification, orgId);
+        await allowAuditPurge(tx);
         results.auditLogs = await deleteByOrgAndCount(tx.auditLog, orgId);
 
         // 7. Time tracking

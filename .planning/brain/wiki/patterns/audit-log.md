@@ -2,12 +2,13 @@
 title: Audit log mutations
 type: pattern
 tags: [audit, compliance, lint]
-source_commit: 70f5782d78e33ba98c82e4ccda2cd4b0b4aff216
+source_commit: 336516f5da666c16acff84e412a3d338db8bbbb8
 verify_with:
   - packages/api/src/services/audit-writer.ts
   - scripts/lint-audit-log.mjs
   - packages/api/src/routers/core/audit.ts
-updated: 2026-06-10
+  - packages/db/src/rls.ts
+updated: 2026-06-17
 ---
 
 # Audit log mutations
@@ -47,10 +48,12 @@ flowchart LR
 
 ## Invariants
 
-- Append-only — no UPDATE/DELETE on AuditLog
+- **Append-only at the DB level** (migration `20260617000000_auditlog_append_only`): RLS exposes only an `auditlog_insert` policy; a `BEFORE UPDATE` trigger (`app.reject_auditlog_update`) rejects every UPDATE unconditionally — no app code can mutate an audit row
+- **DELETE is gated, not blanket-blocked**: the `auditlog_delete` policy permits a delete only when the transaction has opted in via `allowAuditPurge(tx)` (`packages/db/src/rls.ts` → `SET LOCAL app.allow_audit_purge = 'on'`, read by `app.audit_purge_allowed()`). The **only** legitimate caller is GDPR Right-to-Erasure (`routers/compliance/gdpr.ts`), which calls it before wiping a tenant's audit rows; ordinary writers never set the flag, so their deletes are denied
 - `organizationId` from session — never client input alone
 - Prefer `auditMutationCtx(ctx)` + `auditedMutation(..., async tx => { ... })` so mutation + audit share one `$transaction`
 - Migrated callers (2026-06-10): contract CRUD + expiry reminders; equipment shipments/returns/couriers; project/team/cost-center/settings; workflow task complete/skip; org `setKleinunternehmer`
+- Same-tx audit rows also on: approval `approve`/`reject` (`approval.approve` / `approval.reject`, `approval-queue.ts`); reassessment `acknowledge`/`dismiss` (`reassessment.acknowledge` / `reassessment.dismiss`, `compliance/reassessment-trigger.ts` — `resourceType: CONTRACTOR`); portal contact update (`portal.contact.update`, `portal/portal-profile-router.ts`)
 - When already inside `ctx.db.$transaction`, pass `tx` as 4th arg to `auditedMutation`
 - Run `pnpm lint:audit-log` when touching listed Prisma models
 
@@ -72,3 +75,5 @@ semble search "writeAuditLog"
 - New payment/compliance mutation without audit row
 - Audit write outside transaction while mutation rolls back
 - Using `console.*` instead of structured log on audit failure
+- Attempting to UPDATE an audit row (e.g. to "correct" it) — the DB trigger rejects it; re-cert / supersede with a new row instead
+- Calling `tx.auditLog.delete*` without `allowAuditPurge(tx)` first — RLS denies the delete (only the GDPR erasure path opts in)

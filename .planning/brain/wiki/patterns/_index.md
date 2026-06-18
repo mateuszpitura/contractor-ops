@@ -19,6 +19,8 @@ updated: 2026-06-09
 | [[entity-id-and-money]] | entityIdSchema + formatMoneyAmount |
 | [[trpc-procedure-stack]] | public → authed → tenant → rbac |
 | [[validators-boundaries]] | Zod everywhere; no bare `as` on external payloads |
+| [[agent-delegation]] | Subagent-first; cavecrew default; no ad-hoc bulk shell edits |
+| [[ui-skills-routing]] | frontend-design → semble → impeccable / design-taste stack |
 | [[money-rounding]] | Integer minor units; HALF-UP default, skonto FLOOR, interest HALF-UP |
 
 ## Auth & access

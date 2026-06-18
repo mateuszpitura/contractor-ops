@@ -1,5 +1,9 @@
 {
   "mcpServers": {
+    "semble": {
+      "command": "uvx",
+      "args": ["--from", "semble[mcp]", "semble"]
+    },
     "shadcn": {
       "command": "npx",
       "args": ["-y", "shadcn@latest", "mcp"]

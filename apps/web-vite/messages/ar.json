@@ -3370,6 +3370,8 @@
     "tokenRequired": "Token مطلوب للمصادقة المعتمدة على Token.",
     "statusValDatesRequired": "validFrom و validTo مطلوبان عندما تكون النتيجة SELBSTANDIG أو ABHANGIG.",
     "contractorInvalidNip": "رقم NIP غير صالح.",
+    "contractorInvalidEin": "رقم EIN غير صالح. أدخل رقم تعريف صاحب العمل (Employer Identification Number) صالحًا مكوّنًا من 9 أرقام (الصيغة 12-3456789).",
+    "contractorInvalidSsn": "رقم SSN غير صالح. أدخل رقم الضمان الاجتماعي (Social Security Number) صالحًا مكوّنًا من 9 أرقام (الصيغة 123-45-6789).",
     "vatValidationUnsupportedCountry": "لا يتم دعم التحقق من VAT لهذه الدولة.",
     "bacsUnmappableCharacters": "ملف BACS يحتوي على أحرف لا يمكن تعيينها؛ يرجى حل تحذيرات النقل الحرفي قبل التنزيل.",
     "paymentRunCancelAdminOnly": "يمكن للمسؤولين فقط إلغاء عمليات الدفع المُصدَّرة. تأكد من عدم إرسال التصدير إلى البنك قبل الإلغاء.",
@@ -3385,6 +3387,8 @@
     "organizationCreateRateLimitExceeded": "تم بلوغ حد إنشاء المنظمات. يرجى المحاولة لاحقًا.",
     "uploadRateLimiterUnavailable": "محدد معدل التحميل غير متاح. يرجى المحاولة لاحقًا.",
     "uploadRateLimitExceeded": "تم بلوغ حد التحميل. يرجى المحاولة لاحقًا.",
+    "reportRateLimiterUnavailable": "محدد معدل التقارير غير متاح. يرجى المحاولة لاحقًا.",
+    "reportRateLimitExceeded": "تم بلوغ حد التقارير. يرجى المحاولة لاحقًا.",
     "billingProfileNotFound": "لم يتم العثور على ملف الفوترة.",
     "whtNotApplicable": "لا توجد ضريبة استقطاع مطبقة على هذا البند.",
     "clockifyConnectionNotFound": "لم يتم العثور على اتصال Clockify.",
@@ -3413,7 +3417,20 @@
     "deprovisioningProviderSignoffPending": "تتطلب ميزة إلغاء توفير هذا الموفّر الحصول على موافقة قبل تفعيلها.",
     "workflowAssigneeNotMember": "المُعيَّن المحدد ليس عضوًا في هذه المنظمة.",
     "importJobStateConflict": "تغيّرت حالة مهمة الاستيراد؛ حدّث الصفحة وحاول مرة أخرى.",
-    "importProjectFailureRetryViaWizard": "يجب إعادة محاولة عمليات استيراد المشاريع الفاشلة من معالج الاستيراد."
+    "importProjectFailureRetryViaWizard": "يجب إعادة محاولة عمليات استيراد المشاريع الفاشلة من معالج الاستيراد.",
+    "credentialReferenceNotFound": "لم يتم العثور على مرجع بيانات الاعتماد.",
+    "credentialReferenceOffboardingOnly": "لا يمكن الوصول إلى مراجع بيانات الاعتماد إلا أثناء إنهاء التعيين.",
+    "workflowIpVerificationOpen": "لا تزال هناك مهمة للتحقق من الملكية الفكرية مفتوحة لسير العمل هذا.",
+    "workflowCredentialsPending": "لا تزال بيانات الاعتماد قيد الانتظار لسير العمل هذا.",
+    "deprovisioningAssignmentNotFound": "لم يتم العثور على تعيين إلغاء التزويد.",
+    "deprovisioningStepNotFound": "لم يتم العثور على خطوة إلغاء التزويد.",
+    "deprovisioningCooldownActive": "إلغاء التزويد في فترة انتظار؛ يرجى المحاولة لاحقًا.",
+    "deprovisioningNoExternalUser": "لا يوجد مستخدم خارجي مرتبط بمزود الهوية لإلغاء التزويد.",
+    "deprovisioningStepNotOverridable": "لا يمكن تجاوز خطوة إلغاء التزويد هذه.",
+    "deprovisioningIntegrationNotConfigured": "لم يتم تكوين تكامل مزود الهوية لإلغاء التزويد.",
+    "complianceItemNotFound": "لم يتم العثور على عنصر الامتثال.",
+    "complianceItemAlreadyWaived": "تم بالفعل التنازل عن عنصر الامتثال هذا.",
+    "complianceDocumentNotPendingReview": "مستند الامتثال هذا ليس قيد المراجعة."
   },
   "Compliance": {
     "paymentBlockModal": {
@@ -4710,10 +4727,12 @@
       "statusExtracted": "تم الاستخراج",
       "statusPartial": "جزئي",
       "statusFailed": "فشل",
+      "statusSkipped": "إدخال يدوي",
       "extracting": "جارٍ استخراج بيانات الفاتورة...",
       "complete": "اكتمل الاستخراج — تم استخراج {fieldCount} حقول",
       "partial": "استخراج جزئي — تم استخراج {fieldCount} من {totalFields} حقول. يرجى ملء الحقول المتبقية.",
       "failed": "فشل الاستخراج. يمكنك إعادة تشغيل OCR أو ملء الحقول يدوياً.",
+      "skipped": "تحليل الفواتير بالذكاء الاصطناعي معطّل — أدخل بيانات الفاتورة يدوياً أو أعد تشغيل OCR بعد إعادة تفعيله.",
       "rerunOcr": "إعادة تشغيل OCR"
     }
   },

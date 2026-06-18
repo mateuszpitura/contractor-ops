@@ -412,7 +412,7 @@ describe('integration.getSyncLog', () => {
     });
 
     expect(result.items).toHaveLength(10);
-    expect(result.nextCursor).toBe('log-10');
+    expect(result.nextCursor).toBe('log-9');
   });
 
   it('returns null nextCursor when fewer items than limit', async () => {
@@ -463,7 +463,7 @@ describe('integration.getWebhookLog', () => {
     });
 
     expect(result.items).toHaveLength(10);
-    expect(result.nextCursor).toBe('wh-10');
+    expect(result.nextCursor).toBe('wh-9');
   });
 
   it('returns null nextCursor when fewer items than limit', async () => {

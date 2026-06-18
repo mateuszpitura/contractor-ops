@@ -162,6 +162,7 @@ export function evaluate(key: FlagKey, ctx: EvalContext): EvalResult {
       const QA_FORCED_KEYS: readonly string[] = [
         'module.classification-engine',
         'einvoice.import-enabled',
+        'module.us-expansion',
       ];
       if (QA_FORCED_KEYS.includes(key)) {
         return { enabled: true, reason: 'unleash' };

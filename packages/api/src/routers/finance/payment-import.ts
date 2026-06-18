@@ -9,13 +9,21 @@ import { writeAuditLog } from '../../services/audit-writer';
 import { matchStatementToRun, parseBankStatement } from '../../services/bank-statement';
 import { autoCompleteRunIfTerminal } from './payment-shared';
 
+/**
+ * Upper bound on the raw statement text. `fileContent` is parsed as UTF-8
+ * (MT940/CSV) — not base64 — so the cap is on characters. 5 MB of statement
+ * text is far beyond any real bank export and keeps the
+ * O(transactions × runItems) matcher bounded against an oversized upload.
+ */
+const MAX_STATEMENT_CHARS = 5_000_000;
+
 export const paymentImportRouter = router({
   importStatement: tenantProcedure
     .use(requirePermission({ payment: ['create'] }))
     .input(
       z.object({
         runId: z.cuid(),
-        fileContent: z.string(),
+        fileContent: z.string().max(MAX_STATEMENT_CHARS, 'Statement file too large (max ~5MB)'),
         fileName: z.string(),
       }),
     )

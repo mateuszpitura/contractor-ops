@@ -22,7 +22,12 @@ const { mockPrisma } = vi.hoisted(() => ({
   },
 }));
 
-vi.mock('@contractor-ops/db', () => ({ prisma: mockPrisma }));
+vi.mock('@contractor-ops/db', () => ({
+  prisma: mockPrisma,
+  prismaRaw: {},
+  getRegionalClient: () => ({}),
+  SUPPORTED_REGIONS: ['EU', 'ME', 'US'],
+}));
 
 import { __resetEnvForTests } from '../env.js';
 import { buildServer } from '../server.js';

@@ -24,16 +24,26 @@
 import { createHmac, timingSafeEqual } from 'node:crypto';
 import { createLogger } from '@contractor-ops/logger';
 import type { FastifyInstance } from 'fastify';
+import { z } from 'zod';
 import { loadEnv } from '../env.js';
 import { Sentry } from '../lib/sentry.js';
 
 const log = createLogger({ service: 'revalidate-legal' });
 
-interface Payload {
-  type?: string;
-  jurisdiction?: string;
-  locale?: string;
-}
+/**
+ * Shape of the CMS invalidation payload. The route is already HMAC-gated; this
+ * schema is defense-in-depth so a signed-but-malformed body is rejected with a
+ * 400 instead of being coerced through an unsafe `as` cast. All fields are
+ * optional here — the required-field check (`type` + `jurisdiction`) stays
+ * explicit below so its 400 reason (`missing_fields`) is preserved.
+ */
+const payloadSchema = z.object({
+  type: z.string().optional(),
+  jurisdiction: z.string().optional(),
+  locale: z.string().optional(),
+});
+
+type Payload = z.infer<typeof payloadSchema>;
 
 function verifySignature(rawBody: string, signature: string | null, secret: string): boolean {
   if (!signature) return false;
@@ -66,10 +76,18 @@ export function registerRevalidateLegalRoute(app: FastifyInstance): void {
     }
 
     let parsed: Payload | null = null;
-    try {
-      parsed = rawBody.length === 0 ? null : (JSON.parse(rawBody) as Payload);
-    } catch {
-      return reply.code(400).send({ ok: false, reason: 'bad_json' });
+    if (rawBody.length > 0) {
+      let raw: unknown;
+      try {
+        raw = JSON.parse(rawBody);
+      } catch {
+        return reply.code(400).send({ ok: false, reason: 'bad_json' });
+      }
+      const result = payloadSchema.safeParse(raw);
+      if (!result.success) {
+        return reply.code(400).send({ ok: false, reason: 'bad_json' });
+      }
+      parsed = result.data;
     }
     const type = parsed?.type;
     const jurisdiction = parsed?.jurisdiction;

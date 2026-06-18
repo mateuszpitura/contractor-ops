@@ -37,4 +37,5 @@ enum OcrExtractionStatus {
   EXTRACTED
   PARTIAL
   FAILED
+  SKIPPED
 }

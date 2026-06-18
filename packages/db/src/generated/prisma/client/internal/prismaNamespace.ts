@@ -498,6 +498,11 @@ export const ModelName = {
   WithholdingTaxRate: 'WithholdingTaxRate',
   WhtCertificate: 'WhtCertificate',
   TaxFormSubmission: 'TaxFormSubmission',
+  Form1099Nec: 'Form1099Nec',
+  IrisSubmission: 'IrisSubmission',
+  IrisAck: 'IrisAck',
+  Tax1099Threshold: 'Tax1099Threshold',
+  StateFilingConfig: 'StateFilingConfig',
   TaxIdValidation: 'TaxIdValidation',
   Timesheet: 'Timesheet',
   TimeEntry: 'TimeEntry',
@@ -526,7 +531,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "organizationApiKey" | "approvalChainConfig" | "approvalFlow" | "approvalStep" | "approvalDecision" | "auditLog" | "user" | "userPinnedView" | "session" | "account" | "verification" | "subscription" | "ocrCreditLedger" | "stripeEvent" | "classificationAssessment" | "classificationDocument" | "ir35ChainParticipant" | "ir35OtherClientAttestation" | "economicDependencyAlertState" | "reassessmentTrigger" | "cronScanState" | "statusfeststellungsverfahren" | "classificationEscalationEvent" | "sdsApproval" | "consentRecord" | "privacyNotice" | "consentEvent" | "contract" | "contractAmendment" | "contractRatePeriod" | "document" | "documentLink" | "contractHealthCheckRun" | "contractor" | "contractorContact" | "contractorBillingProfile" | "contractorAssignment" | "contractorTag" | "contractorTagLink" | "complianceRequirementTemplate" | "contractorComplianceItem" | "contractorComplianceReminderState" | "leitwegId" | "eInvoiceLifecycle" | "eInvoiceLifecycleEvent" | "peppolCapabilityCache" | "equipment" | "equipmentAssignment" | "shipment" | "shipmentEvent" | "returnRequest" | "courierConfig" | "signingEnvelope" | "signingRecipient" | "signingEvent" | "exchangeRate" | "export" | "boEBaseRateHistory" | "skontoTerm" | "skontoSnapshot" | "skontoApplication" | "govApiAuditLog" | "freeZoneAssignment" | "saudizationConfig" | "saudiHeadcount" | "uaeFreeZone" | "deprovisioningRun" | "deprovisioningStep" | "idpChangeProvenance" | "integrationConnection" | "externalLink" | "integrationSyncLog" | "webhookDelivery" | "invoice" | "invoiceFile" | "invoiceLine" | "invoiceMatchResult" | "invoiceIntakeRequest" | "invoicePayment" | "invoiceInterestCompensation" | "invoiceInterestWaiver" | "invoiceInterestClaim" | "notification" | "userNotificationPreference" | "comment" | "reminderRule" | "reminderInstance" | "notificationCronDedup" | "oAuthChallenge" | "ocrExtraction" | "organization" | "member" | "invitation" | "team" | "project" | "pendingProjectMerge" | "projectExternalLink" | "costCenter" | "outboxEvent" | "paymentRun" | "paymentRunItem" | "paymentExport" | "paymentRunComplianceCheck" | "peppolParticipant" | "peppolTransmission" | "portalSession" | "portalMagicToken" | "contractorChangeRequest" | "contractorNotificationPreference" | "pendingUpload" | "taxRate" | "withholdingTaxRate" | "whtCertificate" | "taxFormSubmission" | "taxIdValidation" | "timesheet" | "timeEntry" | "workflowTemplate" | "workflowTaskTemplate" | "workflowRoleTemplate" | "workflowRoleTaskTemplate" | "workflowRun" | "workflowTaskRun" | "workflowComment" | "workflowAttachment" | "credentialReference" | "zatcaInvoiceChain"
+    modelProps: "organizationApiKey" | "approvalChainConfig" | "approvalFlow" | "approvalStep" | "approvalDecision" | "auditLog" | "user" | "userPinnedView" | "session" | "account" | "verification" | "subscription" | "ocrCreditLedger" | "stripeEvent" | "classificationAssessment" | "classificationDocument" | "ir35ChainParticipant" | "ir35OtherClientAttestation" | "economicDependencyAlertState" | "reassessmentTrigger" | "cronScanState" | "statusfeststellungsverfahren" | "classificationEscalationEvent" | "sdsApproval" | "consentRecord" | "privacyNotice" | "consentEvent" | "contract" | "contractAmendment" | "contractRatePeriod" | "document" | "documentLink" | "contractHealthCheckRun" | "contractor" | "contractorContact" | "contractorBillingProfile" | "contractorAssignment" | "contractorTag" | "contractorTagLink" | "complianceRequirementTemplate" | "contractorComplianceItem" | "contractorComplianceReminderState" | "leitwegId" | "eInvoiceLifecycle" | "eInvoiceLifecycleEvent" | "peppolCapabilityCache" | "equipment" | "equipmentAssignment" | "shipment" | "shipmentEvent" | "returnRequest" | "courierConfig" | "signingEnvelope" | "signingRecipient" | "signingEvent" | "exchangeRate" | "export" | "boEBaseRateHistory" | "skontoTerm" | "skontoSnapshot" | "skontoApplication" | "govApiAuditLog" | "freeZoneAssignment" | "saudizationConfig" | "saudiHeadcount" | "uaeFreeZone" | "deprovisioningRun" | "deprovisioningStep" | "idpChangeProvenance" | "integrationConnection" | "externalLink" | "integrationSyncLog" | "webhookDelivery" | "invoice" | "invoiceFile" | "invoiceLine" | "invoiceMatchResult" | "invoiceIntakeRequest" | "invoicePayment" | "invoiceInterestCompensation" | "invoiceInterestWaiver" | "invoiceInterestClaim" | "notification" | "userNotificationPreference" | "comment" | "reminderRule" | "reminderInstance" | "notificationCronDedup" | "oAuthChallenge" | "ocrExtraction" | "organization" | "member" | "invitation" | "team" | "project" | "pendingProjectMerge" | "projectExternalLink" | "costCenter" | "outboxEvent" | "paymentRun" | "paymentRunItem" | "paymentExport" | "paymentRunComplianceCheck" | "peppolParticipant" | "peppolTransmission" | "portalSession" | "portalMagicToken" | "contractorChangeRequest" | "contractorNotificationPreference" | "pendingUpload" | "taxRate" | "withholdingTaxRate" | "whtCertificate" | "taxFormSubmission" | "form1099Nec" | "irisSubmission" | "irisAck" | "tax1099Threshold" | "stateFilingConfig" | "taxIdValidation" | "timesheet" | "timeEntry" | "workflowTemplate" | "workflowTaskTemplate" | "workflowRoleTemplate" | "workflowRoleTaskTemplate" | "workflowRun" | "workflowTaskRun" | "workflowComment" | "workflowAttachment" | "credentialReference" | "zatcaInvoiceChain"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -8966,6 +8971,376 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    Form1099Nec: {
+      payload: Prisma.$Form1099NecPayload<ExtArgs>
+      fields: Prisma.Form1099NecFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.Form1099NecFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$Form1099NecPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.Form1099NecFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$Form1099NecPayload>
+        }
+        findFirst: {
+          args: Prisma.Form1099NecFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$Form1099NecPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.Form1099NecFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$Form1099NecPayload>
+        }
+        findMany: {
+          args: Prisma.Form1099NecFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$Form1099NecPayload>[]
+        }
+        create: {
+          args: Prisma.Form1099NecCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$Form1099NecPayload>
+        }
+        createMany: {
+          args: Prisma.Form1099NecCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.Form1099NecCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$Form1099NecPayload>[]
+        }
+        delete: {
+          args: Prisma.Form1099NecDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$Form1099NecPayload>
+        }
+        update: {
+          args: Prisma.Form1099NecUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$Form1099NecPayload>
+        }
+        deleteMany: {
+          args: Prisma.Form1099NecDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.Form1099NecUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.Form1099NecUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$Form1099NecPayload>[]
+        }
+        upsert: {
+          args: Prisma.Form1099NecUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$Form1099NecPayload>
+        }
+        aggregate: {
+          args: Prisma.Form1099NecAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateForm1099Nec>
+        }
+        groupBy: {
+          args: Prisma.Form1099NecGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.Form1099NecGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.Form1099NecCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.Form1099NecCountAggregateOutputType> | number
+        }
+      }
+    }
+    IrisSubmission: {
+      payload: Prisma.$IrisSubmissionPayload<ExtArgs>
+      fields: Prisma.IrisSubmissionFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.IrisSubmissionFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IrisSubmissionPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.IrisSubmissionFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IrisSubmissionPayload>
+        }
+        findFirst: {
+          args: Prisma.IrisSubmissionFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IrisSubmissionPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.IrisSubmissionFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IrisSubmissionPayload>
+        }
+        findMany: {
+          args: Prisma.IrisSubmissionFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IrisSubmissionPayload>[]
+        }
+        create: {
+          args: Prisma.IrisSubmissionCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IrisSubmissionPayload>
+        }
+        createMany: {
+          args: Prisma.IrisSubmissionCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.IrisSubmissionCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IrisSubmissionPayload>[]
+        }
+        delete: {
+          args: Prisma.IrisSubmissionDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IrisSubmissionPayload>
+        }
+        update: {
+          args: Prisma.IrisSubmissionUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IrisSubmissionPayload>
+        }
+        deleteMany: {
+          args: Prisma.IrisSubmissionDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.IrisSubmissionUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.IrisSubmissionUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IrisSubmissionPayload>[]
+        }
+        upsert: {
+          args: Prisma.IrisSubmissionUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IrisSubmissionPayload>
+        }
+        aggregate: {
+          args: Prisma.IrisSubmissionAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateIrisSubmission>
+        }
+        groupBy: {
+          args: Prisma.IrisSubmissionGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.IrisSubmissionGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.IrisSubmissionCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.IrisSubmissionCountAggregateOutputType> | number
+        }
+      }
+    }
+    IrisAck: {
+      payload: Prisma.$IrisAckPayload<ExtArgs>
+      fields: Prisma.IrisAckFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.IrisAckFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IrisAckPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.IrisAckFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IrisAckPayload>
+        }
+        findFirst: {
+          args: Prisma.IrisAckFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IrisAckPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.IrisAckFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IrisAckPayload>
+        }
+        findMany: {
+          args: Prisma.IrisAckFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IrisAckPayload>[]
+        }
+        create: {
+          args: Prisma.IrisAckCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IrisAckPayload>
+        }
+        createMany: {
+          args: Prisma.IrisAckCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.IrisAckCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IrisAckPayload>[]
+        }
+        delete: {
+          args: Prisma.IrisAckDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IrisAckPayload>
+        }
+        update: {
+          args: Prisma.IrisAckUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IrisAckPayload>
+        }
+        deleteMany: {
+          args: Prisma.IrisAckDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.IrisAckUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.IrisAckUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IrisAckPayload>[]
+        }
+        upsert: {
+          args: Prisma.IrisAckUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IrisAckPayload>
+        }
+        aggregate: {
+          args: Prisma.IrisAckAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateIrisAck>
+        }
+        groupBy: {
+          args: Prisma.IrisAckGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.IrisAckGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.IrisAckCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.IrisAckCountAggregateOutputType> | number
+        }
+      }
+    }
+    Tax1099Threshold: {
+      payload: Prisma.$Tax1099ThresholdPayload<ExtArgs>
+      fields: Prisma.Tax1099ThresholdFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.Tax1099ThresholdFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$Tax1099ThresholdPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.Tax1099ThresholdFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$Tax1099ThresholdPayload>
+        }
+        findFirst: {
+          args: Prisma.Tax1099ThresholdFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$Tax1099ThresholdPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.Tax1099ThresholdFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$Tax1099ThresholdPayload>
+        }
+        findMany: {
+          args: Prisma.Tax1099ThresholdFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$Tax1099ThresholdPayload>[]
+        }
+        create: {
+          args: Prisma.Tax1099ThresholdCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$Tax1099ThresholdPayload>
+        }
+        createMany: {
+          args: Prisma.Tax1099ThresholdCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.Tax1099ThresholdCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$Tax1099ThresholdPayload>[]
+        }
+        delete: {
+          args: Prisma.Tax1099ThresholdDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$Tax1099ThresholdPayload>
+        }
+        update: {
+          args: Prisma.Tax1099ThresholdUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$Tax1099ThresholdPayload>
+        }
+        deleteMany: {
+          args: Prisma.Tax1099ThresholdDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.Tax1099ThresholdUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.Tax1099ThresholdUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$Tax1099ThresholdPayload>[]
+        }
+        upsert: {
+          args: Prisma.Tax1099ThresholdUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$Tax1099ThresholdPayload>
+        }
+        aggregate: {
+          args: Prisma.Tax1099ThresholdAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateTax1099Threshold>
+        }
+        groupBy: {
+          args: Prisma.Tax1099ThresholdGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.Tax1099ThresholdGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.Tax1099ThresholdCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.Tax1099ThresholdCountAggregateOutputType> | number
+        }
+      }
+    }
+    StateFilingConfig: {
+      payload: Prisma.$StateFilingConfigPayload<ExtArgs>
+      fields: Prisma.StateFilingConfigFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.StateFilingConfigFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StateFilingConfigPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.StateFilingConfigFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StateFilingConfigPayload>
+        }
+        findFirst: {
+          args: Prisma.StateFilingConfigFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StateFilingConfigPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.StateFilingConfigFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StateFilingConfigPayload>
+        }
+        findMany: {
+          args: Prisma.StateFilingConfigFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StateFilingConfigPayload>[]
+        }
+        create: {
+          args: Prisma.StateFilingConfigCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StateFilingConfigPayload>
+        }
+        createMany: {
+          args: Prisma.StateFilingConfigCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.StateFilingConfigCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StateFilingConfigPayload>[]
+        }
+        delete: {
+          args: Prisma.StateFilingConfigDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StateFilingConfigPayload>
+        }
+        update: {
+          args: Prisma.StateFilingConfigUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StateFilingConfigPayload>
+        }
+        deleteMany: {
+          args: Prisma.StateFilingConfigDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.StateFilingConfigUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.StateFilingConfigUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StateFilingConfigPayload>[]
+        }
+        upsert: {
+          args: Prisma.StateFilingConfigUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StateFilingConfigPayload>
+        }
+        aggregate: {
+          args: Prisma.StateFilingConfigAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateStateFilingConfig>
+        }
+        groupBy: {
+          args: Prisma.StateFilingConfigGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.StateFilingConfigGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.StateFilingConfigCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.StateFilingConfigCountAggregateOutputType> | number
+        }
+      }
+    }
     TaxIdValidation: {
       payload: Prisma.$TaxIdValidationPayload<ExtArgs>
       fields: Prisma.TaxIdValidationFieldRefs
@@ -12051,6 +12426,83 @@ export const TaxFormSubmissionScalarFieldEnum = {
 export type TaxFormSubmissionScalarFieldEnum = (typeof TaxFormSubmissionScalarFieldEnum)[keyof typeof TaxFormSubmissionScalarFieldEnum]
 
 
+export const Form1099NecScalarFieldEnum = {
+  id: 'id',
+  organizationId: 'organizationId',
+  payerOrgId: 'payerOrgId',
+  recipientId: 'recipientId',
+  taxYear: 'taxYear',
+  status: 'status',
+  box1AmountMinor: 'box1AmountMinor',
+  box4BackupWithholdingMinor: 'box4BackupWithholdingMinor',
+  currency: 'currency',
+  cfsfStateCode: 'cfsfStateCode',
+  corrected: 'corrected',
+  snapshotJson: 'snapshotJson',
+  pdfArchiveKey: 'pdfArchiveKey',
+  supersededById: 'supersededById',
+  deletedAt: 'deletedAt',
+  createdAt: 'createdAt'
+} as const
+
+export type Form1099NecScalarFieldEnum = (typeof Form1099NecScalarFieldEnum)[keyof typeof Form1099NecScalarFieldEnum]
+
+
+export const IrisSubmissionScalarFieldEnum = {
+  id: 'id',
+  organizationId: 'organizationId',
+  taxYear: 'taxYear',
+  schemaVersionNum: 'schemaVersionNum',
+  schemaVersionDt: 'schemaVersionDt',
+  transmitMethod: 'transmitMethod',
+  originalReceiptId: 'originalReceiptId',
+  status: 'status',
+  xmlArchiveKey: 'xmlArchiveKey',
+  deletedAt: 'deletedAt',
+  createdAt: 'createdAt'
+} as const
+
+export type IrisSubmissionScalarFieldEnum = (typeof IrisSubmissionScalarFieldEnum)[keyof typeof IrisSubmissionScalarFieldEnum]
+
+
+export const IrisAckScalarFieldEnum = {
+  id: 'id',
+  organizationId: 'organizationId',
+  submissionId: 'submissionId',
+  status: 'status',
+  errorInformationJson: 'errorInformationJson',
+  receiptId: 'receiptId',
+  parsedAt: 'parsedAt'
+} as const
+
+export type IrisAckScalarFieldEnum = (typeof IrisAckScalarFieldEnum)[keyof typeof IrisAckScalarFieldEnum]
+
+
+export const Tax1099ThresholdScalarFieldEnum = {
+  id: 'id',
+  taxYear: 'taxYear',
+  box1ThresholdMinor: 'box1ThresholdMinor',
+  currency: 'currency',
+  note: 'note'
+} as const
+
+export type Tax1099ThresholdScalarFieldEnum = (typeof Tax1099ThresholdScalarFieldEnum)[keyof typeof Tax1099ThresholdScalarFieldEnum]
+
+
+export const StateFilingConfigScalarFieldEnum = {
+  id: 'id',
+  stateCode: 'stateCode',
+  taxYear: 'taxYear',
+  cfsfParticipant: 'cfsfParticipant',
+  requiresDirectFiling: 'requiresDirectFiling',
+  filingThresholdMinor: 'filingThresholdMinor',
+  stateWithholdingBoxRules: 'stateWithholdingBoxRules',
+  note: 'note'
+} as const
+
+export type StateFilingConfigScalarFieldEnum = (typeof StateFilingConfigScalarFieldEnum)[keyof typeof StateFilingConfigScalarFieldEnum]
+
+
 export const TaxIdValidationScalarFieldEnum = {
   id: 'id',
   organizationId: 'organizationId',
@@ -13965,6 +14417,34 @@ export type ListEnumTaxFormStatusFieldRefInput<$PrismaModel> = FieldRefInputType
 
 
 /**
+ * Reference to a field of type 'Form1099Status'
+ */
+export type EnumForm1099StatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Form1099Status'>
+    
+
+
+/**
+ * Reference to a field of type 'Form1099Status[]'
+ */
+export type ListEnumForm1099StatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Form1099Status[]'>
+    
+
+
+/**
+ * Reference to a field of type 'IrisAckStatus'
+ */
+export type EnumIrisAckStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'IrisAckStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'IrisAckStatus[]'
+ */
+export type ListEnumIrisAckStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'IrisAckStatus[]'>
+    
+
+
+/**
  * Reference to a field of type 'TaxIdType'
  */
 export type EnumTaxIdTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'TaxIdType'>
@@ -14383,6 +14863,11 @@ export type GlobalOmitConfig = {
   withholdingTaxRate?: Prisma.WithholdingTaxRateOmit
   whtCertificate?: Prisma.WhtCertificateOmit
   taxFormSubmission?: Prisma.TaxFormSubmissionOmit
+  form1099Nec?: Prisma.Form1099NecOmit
+  irisSubmission?: Prisma.IrisSubmissionOmit
+  irisAck?: Prisma.IrisAckOmit
+  tax1099Threshold?: Prisma.Tax1099ThresholdOmit
+  stateFilingConfig?: Prisma.StateFilingConfigOmit
   taxIdValidation?: Prisma.TaxIdValidationOmit
   timesheet?: Prisma.TimesheetOmit
   timeEntry?: Prisma.TimeEntryOmit

@@ -110,6 +110,10 @@ const {
       })),
       deleteMany: vi.fn(async () => ({ count: 0 })),
     },
+    auditLog: {
+      create: vi.fn(),
+    },
+    $transaction: vi.fn(async (fn: (tx: Rec) => Promise<unknown>) => fn(mockPrisma)),
   };
 
   return {
@@ -1012,6 +1016,17 @@ describe('portal router — profile + notifications', () => {
   });
 
   it('updateContactInfo updates contractor contact fields', async () => {
+    // Source snapshots the prior contact row inside the tx before writing the audit row.
+    mockPrisma.contractor.findFirst.mockResolvedValueOnce({
+      id: CONTRACTOR_ID,
+      displayName: 'Old Name',
+      phone: null,
+      addressLine1: null,
+      addressLine2: null,
+      city: null,
+      postalCode: null,
+      countryCode: null,
+    });
     mockPrisma.contractor.update.mockResolvedValueOnce({
       id: CONTRACTOR_ID,
       displayName: 'Updated Name',

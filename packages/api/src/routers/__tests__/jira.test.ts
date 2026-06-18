@@ -343,7 +343,7 @@ describe('jiraRouter', () => {
   };
 
   const statusMappingEntry = {
-    workflowStatus: 'Todo',
+    workflowStatus: 'TODO',
     jiraTransitionId: 't1',
     jiraTransitionName: 'To Do',
     jiraTargetStatusName: 'To Do',
@@ -571,9 +571,12 @@ describe('jiraRouter', () => {
   });
 
   it('saveStatusMapping delegates to service and registers webhooks', async () => {
+    // First load (pre-save) and the refreshed load (post-save) both resolve via
+    // findFirst. The refreshed connection must reflect the persisted mapping so
+    // the router derives the project key set it registers webhooks for.
     mockPrisma.integrationConnection.findFirst.mockResolvedValue({
       ...connectedConn,
-      configJson: { cloudId: 'cloud-x', statusMappings: {} },
+      configJson: { cloudId: 'cloud-x', statusMappings: { '10000': [statusMappingEntry] } },
     });
 
     await caller.saveStatusMapping({
@@ -582,7 +585,7 @@ describe('jiraRouter', () => {
       mappings: [statusMappingEntry],
     });
 
-    expect(mockSaveStatusMappingSvc).toHaveBeenCalledWith(mockPrisma, 'conn-1', '10000', [
+    expect(mockSaveStatusMappingSvc).toHaveBeenCalledWith(mockPrisma, ORG_ID, 'conn-1', '10000', [
       statusMappingEntry,
     ]);
     expect(mockRegisterJiraWebhooks).toHaveBeenCalledWith(mockPrisma, 'conn-1', ['10000']);
@@ -646,20 +649,21 @@ describe('jiraRouter', () => {
   });
 
   describe('tier gating', () => {
-    it('saveStatusMapping, saveTaskConfig, and disconnect include requireTier(PRO)', async () => {
+    it('saveStatusMapping, saveTaskConfig, and disconnect are gated on tier PRO via integrationProcedure', async () => {
       const fs = await import('node:fs');
       const path = await import('node:path');
       const sourceDir = path.resolve(import.meta.dirname, '../../routers');
       const source = fs.readFileSync(path.join(sourceDir, 'integrations/jira.ts'), 'utf-8');
 
-      expect(source).toContain("import { requireTier } from '../../middleware/tier'");
-      expect(source).toContain("requireTier('PRO')");
+      expect(source).toContain(
+        "import { integrationProcedure } from '../../lib/integration-procedure'",
+      );
 
-      const matches = source.match(/\.use\(requireTier\('PRO'\)\)/g);
+      const matches = source.match(/tier: 'PRO'/g);
       expect(matches).toHaveLength(3);
     });
 
-    it('read-only procedures do NOT include requireTier', async () => {
+    it('read-only procedures do NOT include tier gating', async () => {
       const fs = await import('node:fs');
       const path = await import('node:path');
       const sourceDir = path.resolve(import.meta.dirname, '../../routers');
@@ -675,13 +679,10 @@ describe('jiraRouter', () => {
         'linkedIssues',
         'recentActivity',
       ]) {
-        const procRegex = new RegExp(
-          `${proc}:\\s*tenantProcedure[\\s\\S]*?(?=\\w+:\\s*tenantProcedure|\\}\\);$)`,
-          'm',
-        );
+        const procRegex = new RegExp(`${proc}:\\s*integrationProcedure\\(([\\s\\S]*?)\\)`, 'm');
         const match = source.match(procRegex);
         if (match) {
-          expect(match[0]).not.toContain('requireTier');
+          expect(match[1]).not.toContain('tier:');
         }
       }
     });

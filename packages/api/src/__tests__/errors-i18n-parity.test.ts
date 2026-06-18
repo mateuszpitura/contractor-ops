@@ -37,12 +37,18 @@ const isPageLayoutEntry = (value: unknown): boolean =>
  * The `validation*` entries here are client-side Zod schema messages used
  * directly by the frontend; they are not raised as API errors. A future
  * Zod sweep may move them under a separate `Validation` namespace.
+ *
+ * `taxFormNotFound` / `taxFormNotDraft` are UI-only strings rendered directly
+ * by the W-form surface; no API procedure raises them (the tax-form routers
+ * 404 with `contractorNotFound`), so they have no errors.ts export by design.
  */
 const ALLOWED_NON_CODE_KEYS = new Set([
   'notFound',
   'serverError',
   'accountLocked',
   'generic',
+  'taxFormNotFound',
+  'taxFormNotDraft',
   'validationFailureReasonRequired',
   'validationIbanInvalid',
   'validationNipInvalid',

@@ -2,16 +2,18 @@
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const { cached, invalidate, describeImpactGws, resolveDeprovisionToken } = vi.hoisted(() => ({
-  cached: vi.fn(),
-  invalidate: vi.fn(async () => undefined),
-  describeImpactGws: vi.fn(),
-  resolveDeprovisionToken: vi.fn(async () => ({
-    ok: true,
-    accessToken: 'tok',
-    connectionId: 'c1',
-  })),
-}));
+const { cached, invalidate, describeImpactGws, describeImpactSlack, resolveDeprovisionToken } =
+  vi.hoisted(() => ({
+    cached: vi.fn(),
+    invalidate: vi.fn(async () => undefined),
+    describeImpactGws: vi.fn(),
+    describeImpactSlack: vi.fn(),
+    resolveDeprovisionToken: vi.fn(async () => ({
+      ok: true,
+      accessToken: 'tok',
+      connectionId: 'c1',
+    })),
+  }));
 
 vi.mock('../services/cache', () => ({
   CacheKeys: { idpPreview: (o: string, p: string, u: string) => `${o}:idp:preview:${p}:${u}` },
@@ -24,7 +26,12 @@ vi.mock('@contractor-ops/integrations', async () => {
   const actual = await vi.importActual<typeof import('@contractor-ops/integrations')>(
     '@contractor-ops/integrations',
   );
-  return { classifyError: actual.classifyError };
+  return {
+    classifyError: actual.classifyError,
+    createConfiguredDeprovisionableAdapter: (provider: 'GOOGLE_WORKSPACE' | 'SLACK') => ({
+      describeImpact: provider === 'SLACK' ? describeImpactSlack : describeImpactGws,
+    }),
+  };
 });
 vi.mock('@contractor-ops/integrations/adapters/google-workspace-adapter', () => ({
   GoogleWorkspaceAdapter: class {

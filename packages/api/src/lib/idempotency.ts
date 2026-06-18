@@ -31,6 +31,25 @@ const redis: Redis | null =
 type MemEntry = { value: string; expiresAtMs: number };
 const memStore = new Map<string, MemEntry>();
 
+// The fallback Map only prunes lazily on re-read, so a key that is reserved
+// but never re-read (e.g. an abandoned idempotency key) lingers until process
+// exit. Sweep expired entries periodically so the Map cannot grow unbounded on
+// a long-lived dev/single-instance process. Only armed on the in-memory path;
+// the prod Upstash path (TTL'd by Redis) is untouched. `.unref()` keeps the
+// timer from holding the event loop open.
+const MEM_SWEEP_INTERVAL_MS = 10 * 60_000;
+
+if (!redis) {
+  setInterval(() => {
+    const now = Date.now();
+    for (const [key, entry] of memStore) {
+      if (now > entry.expiresAtMs) {
+        memStore.delete(key);
+      }
+    }
+  }, MEM_SWEEP_INTERVAL_MS).unref();
+}
+
 function memGet(key: string): string | null {
   const entry = memStore.get(key);
   if (!entry) return null;

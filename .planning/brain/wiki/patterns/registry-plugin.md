@@ -2,7 +2,7 @@
 title: Registry plug-in pattern
 type: pattern
 tags: [patterns, architecture, registry, strategy]
-source_commit: 19f747bca80fe58d162d3e8c3967ec553e057151
+source_commit: 57946f64
 verify_with:
   - packages/integrations/src/registry.ts
   - packages/classification/src/registry.ts
@@ -128,6 +128,18 @@ All `packages/api/src/routers/integrations/*` use these loaders — no inline `f
 No plain `tenantProcedure` in `packages/api/src/routers/integrations/*`. OAuth connect paths for Google Workspace live outside these counted procedures.
 
 **When adding integration routes:** prefer `integrationProcedure` or `integrationSettingsProcedure`; load connections via `loadIntegrationConnection` / `loadOrgIntegrationConnection`.
+
+## `connectionStatus` secret hygiene
+
+Per-connection webhook signing secrets (HMAC) live **inside** the integration `configJson` blob. So any `connectionStatus` (or status-like) procedure **MUST** project `configJson` through a non-secret allowlist and **never** return the raw blob — otherwise any `settings:read` member can read the webhook secret straight out of the status payload.
+
+| Router | Allowlist const | Returned fields (non-secret only) |
+|--------|-----------------|-----------------------------------|
+| `jira.ts` | `publicJiraConfig` | `cloudId`, `siteName`, `siteUrl`, `statusMappings`, `webhookRegisteredAt` |
+| `linear.ts` | `publicLinearConfig` | `statusMappings`, `stateCache` |
+| `teams.ts` | `publicTeamsConfig` | `channelMapping`, `defaultTeamId`, `defaultFallbackApproverId` |
+
+Dropped from every client response: `webhookSecret`, `webhookIds` / `webhooks`, `conversationReferences`, and the raw `configJson`.
 
 ## TypeScript — `erasableSyntaxOnly` (secrets)
 

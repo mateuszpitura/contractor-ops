@@ -171,6 +171,13 @@ const entityTypeSchema = z.enum(['contractor', 'contract']);
 
 const MAX_BASE64_SIZE = 13_333_334; // 10MB binary (base64 overhead ~33%)
 
+/**
+ * Commit row cap — matches `import-processor.ts` MAX_IMPORT_ROWS so the commit
+ * boundary rejects the same oversized payload the parser/validator already
+ * reject, rather than opening an unbounded transaction.
+ */
+const MAX_COMMIT_ROWS = 5000;
+
 const fileInputSchema = z.object({
   fileBase64: z
     .string()
@@ -265,7 +272,9 @@ export const importRouter = router({
     .input(
       z.object({
         entityType: entityTypeSchema,
-        rows: z.array(z.record(z.string(), z.unknown())),
+        rows: z
+          .array(z.record(z.string(), z.unknown()))
+          .max(MAX_COMMIT_ROWS, `Cannot commit more than ${MAX_COMMIT_ROWS} rows`),
         duplicateActions: z.record(z.string(), z.enum(['skip', 'update', 'create'])),
       }),
     )

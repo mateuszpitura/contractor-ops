@@ -5,7 +5,7 @@ import { Loader2 } from 'lucide-react';
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { cn } from '../../lib/utils.js';
 
-type ExtractionStatus = 'PENDING' | 'PROCESSING' | 'EXTRACTED' | 'PARTIAL' | 'FAILED';
+type ExtractionStatus = 'PENDING' | 'PROCESSING' | 'EXTRACTED' | 'PARTIAL' | 'FAILED' | 'SKIPPED';
 
 interface ExtractionStatusBarProps {
   status: ExtractionStatus;
@@ -38,6 +38,11 @@ const STATUS_STYLE: Record<
     variant: 'destructive',
     borderClass: 'border-destructive/30',
   },
+  // AI parser skipped (kill-switch off): manual entry required, not an error.
+  SKIPPED: {
+    variant: 'info',
+    borderClass: 'border-blue-500/30 dark:border-blue-400/30',
+  },
 };
 
 export function ExtractionStatusBar({
@@ -60,6 +65,7 @@ export function ExtractionStatusBar({
     EXTRACTED: t('statusExtracted'),
     PARTIAL: t('statusPartial'),
     FAILED: t('statusFailed'),
+    SKIPPED: t('statusSkipped'),
   };
 
   return (
@@ -94,6 +100,17 @@ export function ExtractionStatusBar({
         {status === 'FAILED' && (
           <div className="flex flex-1 items-center justify-between gap-3">
             <span className="text-sm text-muted-foreground">{errorMessage || t('failed')}</span>
+            {!!onRetry && (
+              <Button variant="outline" size="sm" onClick={onRetry}>
+                {t('rerunOcr')}
+              </Button>
+            )}
+          </div>
+        )}
+
+        {status === 'SKIPPED' && (
+          <div className="flex flex-1 items-center justify-between gap-3">
+            <span className="text-sm text-muted-foreground">{errorMessage || t('skipped')}</span>
             {!!onRetry && (
               <Button variant="outline" size="sm" onClick={onRetry}>
                 {t('rerunOcr')}

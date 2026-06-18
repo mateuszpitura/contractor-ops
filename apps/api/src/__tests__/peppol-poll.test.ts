@@ -63,9 +63,13 @@ vi.mock('@contractor-ops/db', () => ({
     integrationConnection: {
       findFirst: (...a: unknown[]) =>
         (mockConnectionFindFirst as (...a: unknown[]) => unknown)(...a),
+      findMany: vi.fn(async () => []),
       update: (...a: unknown[]) => (mockConnectionUpdate as (...a: unknown[]) => unknown)(...a),
     },
   },
+  prismaRaw: {},
+  getRegionalClient: () => ({}),
+  SUPPORTED_REGIONS: ['EU', 'ME', 'US'],
 }));
 
 vi.mock('@contractor-ops/integrations', async importOriginal => {
@@ -160,7 +164,10 @@ describe('POST /peppol/poll', () => {
     expect(res.statusCode).toBe(200);
     const body = JSON.parse(res.body) as { polled?: number; results?: unknown[] };
     expect(body.polled).toBe(2);
-    expect(mockParticipantFindMany).toHaveBeenCalledWith({ where: { status: 'ACTIVE' } });
+    expect(mockParticipantFindMany).toHaveBeenCalledWith({
+      where: { status: 'ACTIVE' },
+      select: { organizationId: true },
+    });
     expect(mockPollAndProcess).toHaveBeenCalledTimes(2);
   });
 
@@ -170,6 +177,7 @@ describe('POST /peppol/poll', () => {
     expect(res.statusCode).toBe(200);
     expect(mockParticipantFindMany).toHaveBeenCalledWith({
       where: { organizationId: 'org-1', status: 'ACTIVE' },
+      select: { organizationId: true },
     });
     expect(mockPollAndProcess).toHaveBeenCalledWith('org-1');
   });

@@ -15,19 +15,23 @@ import { buildGoogleWorkspaceScopeCapabilities } from '../routes/oauth.js';
 
 const READONLY_SCOPES =
   'https://www.googleapis.com/auth/admin.directory.user.readonly https://www.googleapis.com/auth/admin.directory.group.readonly';
-const WRITE_SCOPE = 'https://www.googleapis.com/auth/admin.directory.user';
+// Write capabilities are appended only when the FULL deprovision scope set
+// (admin.directory.user + admin.directory.user.security) was granted.
+const WRITE_SCOPES = GOOGLE_WORKSPACE_DEPROVISION_SCOPES.join(' ');
 
 beforeAll(() => {
   registerAllAdapters();
 });
 
-describe('Google Workspace OAuth callback (Phase 76 SC#3)', () => {
+describe('Google Workspace OAuth callback', () => {
   it('write-access consent grants directory.write + user.deprovision into scopeCapabilities', () => {
-    const caps = buildGoogleWorkspaceScopeCapabilities(`${READONLY_SCOPES} ${WRITE_SCOPE}`);
+    const caps = buildGoogleWorkspaceScopeCapabilities(`${READONLY_SCOPES} ${WRITE_SCOPES}`);
     expect(caps.provider).toBe('google');
     expect(caps.capabilities).toContain('user.deprovision');
     expect(caps.capabilities).toContain('directory.write');
-    expect(caps.scopes).toContain(WRITE_SCOPE);
+    for (const scope of GOOGLE_WORKSPACE_DEPROVISION_SCOPES) {
+      expect(caps.scopes).toContain(scope);
+    }
   });
 
   it('preserves existing read-only capabilities (additive — directory.read kept, no write caps)', () => {

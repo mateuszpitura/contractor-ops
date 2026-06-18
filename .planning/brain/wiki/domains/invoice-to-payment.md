@@ -2,7 +2,7 @@
 title: Invoice to payment flow
 type: domain
 tags: [finance, invoice, approval, payment]
-source_commit: 70f5782d78e33ba98c82e4ccda2cd4b0b4aff216
+source_commit: 57946f642
 verify_with:
   - packages/api/src/services/invoice-intake/
   - packages/api/src/services/compliance-payment-gate.ts
@@ -55,6 +55,7 @@ stateDiagram-v2
 - Match: `MATCHED` or `MANUALLY_CONFIRMED` before approval submit
 - Payment run blocked when compliance fails — `@contractor-ops/compliance-policy`
 - [[patterns/tenant-and-audit]] on mutations
+- Intake upload (`invoice-intake/ingest.ts`): base64 string length is capped before `Buffer.from` decode (`ceil(INTAKE_MAX_FILE_BYTES / 3) * 4` chars) so an oversized payload is never materialized; the post-decode `INTAKE_MAX_FILE_BYTES` (5 MiB) check stays as a backstop. Both throw `FILE_TOO_LARGE`.
 
 ## Related
 

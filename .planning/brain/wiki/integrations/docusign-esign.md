@@ -42,6 +42,7 @@ sequenceDiagram
 ## Invariants
 
 - Webhook payloads: Zod safeParse
+- OAuth token responses (Autenti `exchangeCodeForTokens` / `refreshToken`): routed through `parseJsonResponse` with a token Zod schema (fail-closed) so a malformed token body never persists as a credential — same convention as the other OAuth adapters
 - Contract status transitions audited
 
 ## Related

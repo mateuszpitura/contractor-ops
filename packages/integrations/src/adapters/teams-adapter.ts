@@ -1,6 +1,8 @@
+import { z } from 'zod';
 import type { LimitFunction } from '../services/concurrency.js';
 import { pLimit } from '../services/concurrency.js';
 import { fetchWithTimeout } from '../services/fetch-helpers.js';
+import { parseJsonResponse } from '../services/parse-json-response.js';
 import { withResilience } from '../services/resilience.js';
 import type { CredentialBlob } from '../types/credentials.js';
 import type { OAuthConfig } from '../types/provider.js';
@@ -111,6 +113,22 @@ const TEAMS_OAUTH_CONFIG: OAuthConfig = {
   redirectPath: '/api/oauth/microsoft_teams/callback',
 };
 
+/**
+ * Azure AD OAuth 2.0 token response (authorization_code + refresh_token grants).
+ * Validated at the credential-persist boundary so a malformed/changed payload
+ * fails closed instead of persisting a corrupt CredentialBlob. refresh_token is
+ * optional — Azure may omit it on refresh; the adapter falls back to the prior
+ * token. expires_in must be a finite non-negative number so the derived
+ * expiresAt is a valid ISO timestamp.
+ */
+const teamsTokenResponseSchema = z.object({
+  access_token: z.string().min(1),
+  refresh_token: z.string().min(1).optional(),
+  expires_in: z.number().finite().nonnegative(),
+  token_type: z.string().min(1),
+  scope: z.string(),
+});
+
 // ---------------------------------------------------------------------------
 // Teams Adapter
 // ---------------------------------------------------------------------------
@@ -185,13 +203,11 @@ export class TeamsAdapter extends BaseAdapter {
       throw new Error(`Microsoft Teams OAuth exchange failed: ${text}`);
     }
 
-    const data = (await response.json()) as {
-      access_token: string;
-      refresh_token?: string;
-      expires_in: number;
-      token_type: string;
-      scope: string;
-    };
+    const data = await parseJsonResponse(
+      response,
+      teamsTokenResponseSchema,
+      'microsoft-teams:exchangeCodeForTokens',
+    );
 
     return {
       accessToken: data.access_token,
@@ -251,13 +267,11 @@ export class TeamsAdapter extends BaseAdapter {
       throw new Error(`Microsoft Teams token refresh failed: ${text}`);
     }
 
-    const data = (await response.json()) as {
-      access_token: string;
-      refresh_token?: string;
-      expires_in: number;
-      token_type: string;
-      scope: string;
-    };
+    const data = await parseJsonResponse(
+      response,
+      teamsTokenResponseSchema,
+      'microsoft-teams:refreshToken',
+    );
 
     return {
       accessToken: data.access_token,

@@ -38,7 +38,7 @@ flowchart LR
 
 - `organizationId` from `ctx.session.session.activeOrganizationId` — **never** client alone
 - Pass `tx` to `writeAuditLog` inside `$transaction`
-- AuditLog append-only — no updates/deletes
+- AuditLog append-only — enforced at the DB level (UPDATE always rejected by trigger; DELETE only inside a tx that calls `allowAuditPurge`, used solely by GDPR erasure). See [[audit-log]]
 - `pnpm lint:audit-log` on sensitive models
 
 ## Related

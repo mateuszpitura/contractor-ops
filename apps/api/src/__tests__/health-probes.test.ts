@@ -39,6 +39,9 @@ vi.mock('@contractor-ops/db', () => ({
   prisma: {
     $queryRaw: (...a: unknown[]) => (mockQueryRaw as (...a: unknown[]) => unknown)(...a),
   },
+  prismaRaw: {},
+  getRegionalClient: () => ({}),
+  SUPPORTED_REGIONS: ['EU', 'ME', 'US'],
 }));
 
 vi.mock('@upstash/redis', () => ({

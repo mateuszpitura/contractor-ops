@@ -88,6 +88,8 @@ model PaymentExport {
 
   complianceChecks PaymentRunComplianceCheck[] // Phase 72 D-16
 
+  // One export row per run — the DB backstop for the atomic lockAndExport guard.
+  @@unique([paymentRunId])
   @@index([organizationId])
   @@index([organizationId, paymentRunId])
 }

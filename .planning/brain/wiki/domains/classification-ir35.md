@@ -2,11 +2,11 @@
 title: Classification IR35 and DRV
 type: domain
 tags: [classification, ir35, drv, germany]
-source_commit: 79c1602848e9f0b2c5a6d3e1f4b7a9c0d2e6f813
+source_commit: 336516f5da666c16acff84e412a3d338db8bbbb8
 verify_with:
   - packages/api/src/root.ts
   - packages/classification/
-updated: 2026-06-16
+updated: 2026-06-17
 ---
 
 # Classification (IR35 / DRV)
@@ -34,7 +34,7 @@ flowchart LR
 | `ir35Chain` | chain participants |
 | `ir35Attestation` | other-client attestation |
 | `economicDependencyAlert` | §2 SGB VI scan |
-| `reassessmentTrigger` | material-change triggers |
+| `reassessmentTrigger` | material-change triggers; `acknowledge`/`dismiss` run in a tx and write a same-tx `writeAuditLog` row (`reassessment.acknowledge` / `reassessment.dismiss`, `resourceType: CONTRACTOR`) — see [[patterns/audit-log]] |
 | `statusfeststellungsverfahren` | DRV § 7a clearance |
 
 Scoring: `packages/classification/`. Cron: [[structure/cron-jobs]].

@@ -77,6 +77,10 @@ vi.mock('@contractor-ops/feature-flags', () => ({
     values: {},
     isEnabled: mockIsEnabled,
   })),
+  // root.ts calls `evaluate('module.us-expansion', ...)` at module load (via
+  // isUsExpansionRegistered) to gate the US-expansion routers. This suite does
+  // not exercise that surface, so keep it disabled.
+  evaluate: vi.fn((_key: string) => ({ enabled: false, reason: 'mocked' })),
 }));
 
 vi.mock('@contractor-ops/auth', () => ({

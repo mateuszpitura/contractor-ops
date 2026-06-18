@@ -58,6 +58,9 @@ vi.mock('@contractor-ops/db', () => ({
   prisma: {
     $transaction: transactionSpy,
   },
+  prismaRaw: {},
+  getRegionalClient: () => ({}),
+  SUPPORTED_REGIONS: ['EU', 'ME', 'US'],
 }));
 
 import { __resetEnvForTests } from '../env.js';

@@ -1,5 +1,7 @@
 import { createHash } from 'node:crypto';
+import { z } from 'zod';
 import { fetchWithTimeout } from '../services/fetch-helpers.js';
+import { parseJsonResponse } from '../services/parse-json-response.js';
 import { withResilience } from '../services/resilience.js';
 import type { CredentialBlob } from '../types/credentials.js';
 import type { OAuthConfig } from '../types/provider.js';
@@ -107,6 +109,22 @@ const GOOGLE_CALENDAR_OAUTH_CONFIG: OAuthConfig = {
   },
 };
 
+/**
+ * Google OAuth 2.0 token response (authorization_code + refresh_token grants).
+ * Validated at the credential-persist boundary so a malformed/changed payload
+ * fails closed instead of persisting a corrupt CredentialBlob. Google omits
+ * refresh_token on the refresh grant (and on re-consent without
+ * access_type=offline), so it is optional. expires_in must be a finite
+ * non-negative number so the derived expiresAt is a valid ISO timestamp.
+ */
+const googleTokenResponseSchema = z.object({
+  access_token: z.string().min(1),
+  refresh_token: z.string().min(1).optional(),
+  expires_in: z.number().finite().nonnegative(),
+  token_type: z.string().min(1),
+  scope: z.string(),
+});
+
 // ---------------------------------------------------------------------------
 // Google Calendar Adapter
 // ---------------------------------------------------------------------------
@@ -163,13 +181,11 @@ export class GoogleCalendarAdapter extends BaseAdapter {
       throw new Error(`Google Calendar OAuth exchange failed: ${text}`);
     }
 
-    const data = (await response.json()) as {
-      access_token: string;
-      refresh_token?: string;
-      expires_in: number;
-      token_type: string;
-      scope: string;
-    };
+    const data = await parseJsonResponse(
+      response,
+      googleTokenResponseSchema,
+      'google-calendar:exchangeCodeForTokens',
+    );
 
     return {
       accessToken: data.access_token,
@@ -220,12 +236,11 @@ export class GoogleCalendarAdapter extends BaseAdapter {
       throw new Error(`Google Calendar token refresh failed: ${text}`);
     }
 
-    const data = (await response.json()) as {
-      access_token: string;
-      expires_in: number;
-      token_type: string;
-      scope: string;
-    };
+    const data = await parseJsonResponse(
+      response,
+      googleTokenResponseSchema,
+      'google-calendar:refreshToken',
+    );
 
     return {
       accessToken: data.access_token,

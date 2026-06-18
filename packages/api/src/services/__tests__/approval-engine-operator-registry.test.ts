@@ -48,7 +48,12 @@ describe('approval-engine-operator-registry compliance-critical', () => {
     );
     expect(result).toBe(true);
     expect(findFirst).toHaveBeenCalledWith({
-      where: { contractorId: 'ctr-1', severity: 'BLOCKING', status: 'EXPIRED' },
+      where: {
+        contractorId: 'ctr-1',
+        severity: 'BLOCKING',
+        status: 'EXPIRED',
+        contractor: { is: { organizationId: 'org-1' } },
+      },
       select: { id: true },
     });
   });

@@ -83,6 +83,9 @@ model Invoice {
   // F-DB-28 — covers dashboard "deadlines" query
   // (paymentStatus filter + dueDate range) and the readyForPayment cursor list.
   @@index([organizationId, paymentStatus, dueDate])
+  // Spend reports filter PAID invoices by a paidAt window; without paidAt in the
+  // index the planner seeks [org,paymentStatus] then scans every PAID row.
+  @@index([organizationId, paymentStatus, paidAt])
 }
 
 model InvoiceFile {

@@ -29,6 +29,22 @@ export async function withRlsSession(
   await tx.$executeRaw(Prisma.sql`select set_config('app.user_id', ${ctx.userId}, true)`);
 }
 
+/**
+ * Opts the current transaction into deleting `AuditLog` rows.
+ *
+ * `AuditLog` is DB-level append-only: the RLS `auditlog_delete` policy only
+ * permits a DELETE when this transaction-local flag is set, and a BEFORE
+ * UPDATE trigger blocks updates unconditionally. The ONLY legitimate caller is
+ * the GDPR Right-to-Erasure path, which wipes a tenant's audit trail as part
+ * of a full-org erasure. Must be called inside the same transaction as the
+ * delete (uses SET LOCAL, so it reverts on commit/rollback).
+ */
+export async function allowAuditPurge(tx: {
+  $executeRaw: (query: Prisma.Sql) => Promise<unknown>;
+}) {
+  await tx.$executeRaw(Prisma.sql`select set_config('app.allow_audit_purge', 'on', true)`);
+}
+
 // ---------------------------------------------------------------------------
 // RLS defense-in-depth via $transaction wrapping
 // ---------------------------------------------------------------------------

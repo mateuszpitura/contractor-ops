@@ -81,6 +81,8 @@ vi.mock('@contractor-ops/db', () => ({
   createTenantClientFrom: vi.fn(),
   getRegionalClient: vi.fn(),
   tenantStore: { run: vi.fn() },
+  prismaRaw: {},
+  SUPPORTED_REGIONS: ['EU', 'ME', 'US'],
 }));
 
 vi.mock('@contractor-ops/validators', async importOriginal => {

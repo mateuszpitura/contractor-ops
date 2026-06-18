@@ -16,7 +16,27 @@ interface TeamsConnectionConfig {
   channelMapping?: Record<string, string>;
   conversationReferences?: Record<string, unknown>;
   teamConversationReferences?: Record<string, unknown>;
+  defaultTeamId?: string;
+  defaultFallbackApproverId?: string | null;
   [key: string]: unknown;
+}
+
+/**
+ * Project a Teams connection's `configJson` down to fields that are safe to
+ * expose to any member with `settings:['read']`. The raw blob stores Bot
+ * Framework `conversationReferences` / `teamConversationReferences` (per-user
+ * and per-channel routing state with service URLs and conversation IDs) which
+ * must not leak to read-only members; only the channel mapping and default
+ * routing config the UI needs are surfaced.
+ */
+function publicTeamsConfig(configJson: unknown): Record<string, unknown> | null {
+  if (!configJson || typeof configJson !== 'object' || Array.isArray(configJson)) return null;
+  const config = configJson as TeamsConnectionConfig;
+  return {
+    channelMapping: config.channelMapping,
+    defaultTeamId: config.defaultTeamId,
+    defaultFallbackApproverId: config.defaultFallbackApproverId,
+  };
 }
 
 /**
@@ -61,7 +81,7 @@ export const teamsRouter = router({
     return {
       id: connection.id,
       status: connection.status,
-      configJson: connection.configJson as Record<string, unknown> | null,
+      configJson: publicTeamsConfig(connection.configJson),
     };
   }),
 

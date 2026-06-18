@@ -48,6 +48,9 @@ vi.mock('@contractor-ops/db', () => ({
       findUnique: (...a: unknown[]) => (mockChainFindUnique as (...a: unknown[]) => unknown)(...a),
     },
   },
+  prismaRaw: {},
+  getRegionalClient: () => ({}),
+  SUPPORTED_REGIONS: ['EU', 'ME', 'US'],
 }));
 
 // `ZatcaApiError` is a real export — we want the actual constructor so

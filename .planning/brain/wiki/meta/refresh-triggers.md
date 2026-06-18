@@ -14,7 +14,7 @@ updated: 2026-06-10
 
 > **Binding:** `CLAUDE.md` § **Documentation follows code** + `.claude/core-values.yml` § Documentation follows code.
 >
-> **Principle:** wiki tracks code — every product change in `apps/` / `packages/` needs matching wiki in the **same change set**. Hook: SessionStart rule block; Stop → `KNOWLEDGE_REFRESH_REQUIRED`; `DOC_DRIFT_WARN` if code changed without wiki.
+> **Principle:** wiki tracks code — every product change in `apps/` / `packages/` needs matching wiki in the **same change set**. This is **gated**: SessionStart rule block; Stop **blocks turn-end once** when code changed without wiki (then `KNOWLEDGE_REFRESH_REQUIRED` / `DOC_DRIFT_WARN`); CI `check:wiki-brain` **fails** on NEW drift (a `verify_with` source file changed without its page); `.husky/post-commit` auto-rebuilds the graphify graph on code commits.
 
 ## When to update what
 

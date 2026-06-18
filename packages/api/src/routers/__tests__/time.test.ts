@@ -468,7 +468,7 @@ describe('time router', () => {
 
       const result = await caller.time.listAll({ limit: 20 });
 
-      expect(result.nextCursor).toBe('ts-20');
+      expect(result.nextCursor).toBe('ts-19');
       expect(result.items).toHaveLength(20);
     });
   });

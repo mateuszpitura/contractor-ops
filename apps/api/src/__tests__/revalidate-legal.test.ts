@@ -141,4 +141,36 @@ describe('POST /revalidate-legal — CMS webhook signature contract', () => {
     expect(res.statusCode).toBe(400);
     expect(res.json()).toMatchObject({ ok: false, reason: 'bad_json' });
   });
+
+  it('rejects 400 when a signed body is valid JSON but the wrong shape', async () => {
+    // Well-formed JSON whose fields fail the schema (type/jurisdiction are
+    // numbers, not strings). HMAC-valid but defense-in-depth Zod rejects it.
+    const body = JSON.stringify({ type: 123, jurisdiction: false });
+    const res = await app.inject({
+      method: 'POST',
+      url: '/revalidate-legal',
+      headers: {
+        'content-type': 'application/json',
+        'x-cms-signature': sign(body),
+      },
+      payload: body,
+    });
+    expect(res.statusCode).toBe(400);
+    expect(res.json()).toMatchObject({ ok: false, reason: 'bad_json' });
+  });
+
+  it('rejects 400 when a signed body is a JSON array, not an object', async () => {
+    const body = JSON.stringify(['type', 'privacy']);
+    const res = await app.inject({
+      method: 'POST',
+      url: '/revalidate-legal',
+      headers: {
+        'content-type': 'application/json',
+        'x-cms-signature': sign(body),
+      },
+      payload: body,
+    });
+    expect(res.statusCode).toBe(400);
+    expect(res.json()).toMatchObject({ ok: false, reason: 'bad_json' });
+  });
 });

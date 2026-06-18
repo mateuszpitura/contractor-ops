@@ -315,8 +315,13 @@ describe('overrideBlockingTask', () => {
       reason: VALID_REASON,
     });
 
-    // Override metadata written onto the run.
-    const runUpdate = mockPrisma.workflowRun.update.mock.calls[0]?.[0];
+    // Override metadata written onto the run. The recompute postlude issues its
+    // own workflowRun.update per skipped task, so select the override write by
+    // its distinguishing data (overrideMetadata) rather than by call index.
+    const runUpdate = mockPrisma.workflowRun.update.mock.calls.find(
+      (call: [{ data?: Record<string, unknown> }]) => 'overrideMetadata' in (call[0]?.data ?? {}),
+    )?.[0];
+    expect(runUpdate).toBeDefined();
     expect(runUpdate.where).toEqual({ id: RUN_ID });
     expect(runUpdate.data.overriddenByUserId).toBe(USER_ID);
     expect(runUpdate.data.overriddenAt).toBeInstanceOf(Date);

@@ -2,7 +2,7 @@
 title: Jira Cloud
 type: integration
 tags: [jira, atlassian]
-source_commit: 70f5782d78e33ba98c82e4ccda2cd4b0b4aff216
+source_commit: 57946f64
 verify_with:
   - packages/api/src/routers/integrations/jira.ts
   - packages/integrations/src/adapters/jira-adapter.ts
@@ -40,6 +40,7 @@ flowchart LR
 - Status mapping shared pattern with Linear — `integration-status-mapping.ts` (save in `$transaction`) + provider services
 - Jira API list/get paths use `jiraApiGet` + Zod; status mapping entries use `workflowTaskStatusEnum`. `registerJiraWebhooks` persists `configJson.webhookSecret` (generated on first register) for HMAC verification. Inbound webhooks validate transitions, org scope, and run `unblockDependentsAndRecomputeRun` on terminal task statuses.
 - `saveStatusMapping` returns `{ success, webhooksRegistered }`; web-vite shows warning toast when mapping saved but webhooks not registered (`Integrations.jira.statusMapping.toast.webhooksNotRegistered`).
+- `connectionStatus` returns an allowlisted `publicJiraConfig` (`cloudId`, `siteName`, `siteUrl`, `statusMappings`, `webhookRegisteredAt`) — **never** the raw `configJson`. The HMAC `webhookSecret` + `webhookIds` are no longer projected to clients; previously any `settings:read` member could read the webhook signing secret straight out of the status payload.
 
 ## Related
 

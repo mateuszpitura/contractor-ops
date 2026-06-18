@@ -211,4 +211,44 @@ describe('parseSpreadsheetBuffer', () => {
       'File contains no sheets',
     );
   });
+
+  it('rejects an oversized buffer before unzipping the workbook', async () => {
+    // The mocked Workbook.load/read consume `pendingSetup`; if the byte cap
+    // fires first, the workbook is never materialized and the setup is left
+    // untouched.
+    prepareWorkbook(['Col'], [['val']]);
+
+    // 10 MiB + 1 byte, ZIP magic so it routes to the xlsx path.
+    const oversized = Buffer.alloc(10 * 1024 * 1024 + 1, 0);
+    oversized[0] = 0x50;
+    oversized[1] = 0x4b;
+
+    await expect(parseSpreadsheetBuffer(oversized)).rejects.toThrow('File exceeds maximum size');
+
+    // The cap fired before any workbook materialization (setup not consumed).
+    expect(pendingSetup).not.toBeNull();
+    pendingSetup = null;
+  });
+
+  it('rejects a sheet whose declared rowCount exceeds the row cap without reading every row', async () => {
+    const getRow = vi.fn((r: number) => makeRow([`v${r}`]));
+    pendingSetup = {
+      worksheets: [
+        {
+          getRow,
+          // header + 5001 data rows = 5002 declared rows (cap is 5000 data rows)
+          rowCount: 5002,
+          columnCount: 1,
+        },
+      ],
+    };
+
+    await expect(parseSpreadsheetBuffer(Buffer.from('data'))).rejects.toThrow(
+      'File exceeds maximum of 5000 rows',
+    );
+
+    // Only the header row (and the cheap colCount probe) is touched — the
+    // per-row materialization loop never runs.
+    expect(getRow.mock.calls.length).toBeLessThan(5000);
+  });
 });

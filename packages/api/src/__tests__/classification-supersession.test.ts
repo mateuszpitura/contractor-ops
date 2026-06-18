@@ -158,7 +158,7 @@ describe('outcomesEqualForPolicyResolution', () => {
 // ---------------------------------------------------------------------------
 
 describe('classification.submit — Phase 71 supersession on outcome change (D-10)', () => {
-  it('first classification on a new engagement materialises rows from policy registry (UK B2B IR35-INSIDE → 4 rows)', async () => {
+  it('first classification on a new engagement materialises rows from policy registry (UK B2B IR35-INSIDE → 5 rows)', async () => {
     const { client, callCounts } = makeClient();
     const result = await materialiseFromPolicy(client, {
       organizationId: 'org_a',
@@ -172,11 +172,12 @@ describe('classification.submit — Phase 71 supersession on outcome change (D-1
         requiresRegulatedEquipment: false,
       },
     });
-    expect(result.inserted).toBe(4);
-    expect(callCounts.create).toBe(4);
+    expect(result.inserted).toBe(5);
+    expect(callCounts.create).toBe(5);
     const ids = rows.map(r => r.policyRuleId).sort();
     expect(ids).toEqual([
       'uk.business_registration@v1',
+      'uk.ip_assignment@v1',
       'uk.right_to_work@v1',
       'uk.sds@v1',
       'uk.utr@v1',
@@ -238,8 +239,8 @@ describe('classification.submit — Phase 71 supersession on outcome change (D-1
       reason: 'classification_outcome_change',
     });
     expect(result.waivedCount).toBe(2);
-    // 1 DE rule applies (de.a1@v1) — DE national → no aufenthaltstitel; sector !== construction → no eight_b_estg
-    expect(result.insertedCount).toBe(1);
+    // 2 DE rules apply (de.a1@v1 + de.werkvertrag_ip@v1) — DE national → no aufenthaltstitel; sector !== construction → no eight_b_estg
+    expect(result.insertedCount).toBe(2);
     const oldRows = rows.filter(r => ['r1', 'r2'].includes(r.id));
     for (const r of oldRows) {
       expect(r.status).toBe('WAIVED');

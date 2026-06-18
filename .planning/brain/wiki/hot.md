@@ -1,8 +1,8 @@
 ---
 title: Hot cache
 type: hot-cache
-updated: 2026-06-16
-source_commit: c89762ffe45f4cabdc59f5deeb67eefb39726530
+updated: 2026-06-17
+source_commit: 336516f5da666c16acff84e412a3d338db8bbbb8
 ---
 
 # Hot cache
@@ -67,6 +67,14 @@ Portal-primary self-cert (beneficial owner signs). Portal procedures (`getTaxFor
 ## First-run org onboarding
 
 New user with no org → `DashboardShellContainer` (`components/layout/dashboard-shell.tsx`) renders `OrganizationOnboardingContainer` (`components/onboarding/organization-onboarding.tsx`) instead of the shell, so tenant procedures never throw `tenantNoActiveOrganization`. Create via Better Auth `authClient.organization.create` + `setActive` (no tRPC), then reload. Detail: [[domains/onboarding-and-import]].
+
+## AuditLog is DB-level append-only
+
+`AuditLog` is append-only in Postgres, not by convention (migration `20260617000000_auditlog_append_only`): a `BEFORE UPDATE` trigger rejects **every** UPDATE; the `auditlog_delete` RLS policy permits a DELETE **only** inside a tx that called `allowAuditPurge(tx)` (`@contractor-ops/db`, `packages/db/src/rls.ts`). Sole caller = GDPR erasure (`routers/compliance/gdpr.ts`). Never `tx.auditLog.update*` (trigger throws) or `.delete*` without `allowAuditPurge` (RLS denies). To "fix" a row, INSERT a new one. Detail: [[patterns/audit-log]] · [[patterns/tenant-and-audit]].
+
+## OCR AI kill-switch
+
+`processOcrExtraction` (`services/ocr-extraction.ts`) gates Claude Vision on `killswitch.ai-invoice-parser` (`default: true`, `killWhenUnknown: true`). Off or Unleash unreachable → skip the AI call, keep the upload persisted, mark `OcrExtraction` FAILED with a manual-entry message + `ocr.skipped` metric. Region for per-org targeting comes from `resolveOrgRegion` (`Organization.dataRegion`, default EU) since the QStash callback has no tenant ctx. Detail: [[domains/documents-and-ocr]] · [[patterns/feature-flags]].
 
 ## Reading order
 

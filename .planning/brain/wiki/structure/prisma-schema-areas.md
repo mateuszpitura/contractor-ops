@@ -2,11 +2,11 @@
 title: Prisma schema areas
 type: structure
 tags: [structure, database, prisma]
-source_commit: c89762ffe45f4cabdc59f5deeb67eefb39726530
+source_commit: 336516f5da666c16acff84e412a3d338db8bbbb8
 verify_with:
   - packages/db/prisma/schema/
   - packages/db/src/region.ts
-updated: 2026-06-16
+updated: 2026-06-17
 ---
 
 # Prisma schema areas
@@ -44,6 +44,8 @@ flowchart LR
 - RLS: `packages/db/src/rls.ts` — `withRlsReads`, `withRlsTransactions`
 - Tenant client: `createTenantClientFrom` via db tenant extension
 - Sensitive mutations: pass `tx` to `writeAuditLog`
+- DB-enforced integrity backstops (migration `20260616000000_security_hardening_constraints`): `Contractor` `@@unique([organizationId, taxId])` (taxId nullable → NULLs distinct, un-registered contractors unaffected); `PaymentExport` `@@unique([paymentRunId])` (one export per run); `Invoice` `@@index([organizationId, paymentStatus, paidAt])` for PAID-by-window spend reports
+- **AuditLog append-only** (migration `20260617000000_auditlog_append_only`): replaces the over-broad `auditlog_write FOR ALL` policy with INSERT-only (`auditlog_insert`) + a gated DELETE (`auditlog_delete`, permitted only when `app.audit_purge_allowed()` is set via `allowAuditPurge(tx)`) + a `BEFORE UPDATE` trigger (`app.reject_auditlog_update`) that rejects every update. See [[patterns/audit-log]]
 
 ## Related
 

@@ -145,4 +145,23 @@ describe('processImportFile', () => {
     expect(result.duplicateRows[0]?.duplicateOf).toBe('c-existing');
     expect(result.validRows).toHaveLength(0);
   });
+
+  it('rejects a sheet exceeding the row cap before processing any row', async () => {
+    const wb = new ExcelJS.Workbook();
+    const ws = wb.addWorksheet('Sheet1');
+    ws.addRow(['legalName', 'taxId', 'email']);
+    // 5001 data rows > MAX_IMPORT_ROWS (5000) — must reject at the parse cap.
+    for (let i = 0; i < 5001; i++) {
+      ws.addRow([`Co ${i}`, '5260250995', `u${i}@example.com`]);
+    }
+    const buf = Buffer.from(await wb.xlsx.writeBuffer());
+    const columnMapping = autoMapColumns(['legalName', 'taxId', 'email'], 'contractor');
+
+    await expect(processImportFile(buf, 'contractor', 'org_1', columnMapping)).rejects.toThrow(
+      'File exceeds maximum of 5000 rows',
+    );
+
+    // The parse cap fired before any duplicate-detection DB work.
+    expect(mockContractorFindMany).not.toHaveBeenCalled();
+  });
 });

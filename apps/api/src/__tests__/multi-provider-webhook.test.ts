@@ -77,6 +77,9 @@ vi.mock('@contractor-ops/db', () => ({
       findMany: (...args: unknown[]) => (mockFindMany as (...a: unknown[]) => unknown)(...args),
     },
   },
+  prismaRaw: {},
+  getRegionalClient: () => ({}),
+  SUPPORTED_REGIONS: ['EU', 'ME', 'US'],
 }));
 
 vi.mock('../lib/webhooks/slack-webhook-context.js', () => ({

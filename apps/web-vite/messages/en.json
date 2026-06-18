@@ -3370,6 +3370,8 @@
     "tokenRequired": "Token is required for token-based authentication.",
     "statusValDatesRequired": "validFrom and validTo are required when outcome is SELBSTANDIG or ABHANGIG.",
     "contractorInvalidNip": "Invalid NIP number.",
+    "contractorInvalidEin": "Invalid EIN. Enter a valid 9-digit Employer Identification Number (format 12-3456789).",
+    "contractorInvalidSsn": "Invalid SSN. Enter a valid 9-digit Social Security Number (format 123-45-6789).",
     "vatValidationUnsupportedCountry": "VAT validation is not supported for this country.",
     "bacsUnmappableCharacters": "BACS file contains unmappable characters; resolve transliteration warnings before downloading.",
     "paymentRunCancelAdminOnly": "Only administrators can cancel exported payment runs. Ensure the export was not submitted to your bank before cancelling.",
@@ -3385,6 +3387,8 @@
     "organizationCreateRateLimitExceeded": "Organization creation rate limit reached. Try again later.",
     "uploadRateLimiterUnavailable": "Upload rate limiter unavailable. Please try again later.",
     "uploadRateLimitExceeded": "Upload rate limit reached. Try again later.",
+    "reportRateLimiterUnavailable": "Report rate limiter unavailable. Please try again later.",
+    "reportRateLimitExceeded": "Report rate limit reached. Try again later.",
     "billingProfileNotFound": "Billing profile not found.",
     "whtNotApplicable": "No withholding tax applicable to this payment item.",
     "clockifyConnectionNotFound": "Clockify connection not found.",
@@ -3413,7 +3417,20 @@
     "deprovisioningProviderSignoffPending": "This provider's deprovisioning feature requires sign-off approval before it can be enabled.",
     "workflowAssigneeNotMember": "Selected assignee is not a member of this organization.",
     "importJobStateConflict": "Import job state changed; refresh and try again.",
-    "importProjectFailureRetryViaWizard": "Project import failures must be retried from the import wizard."
+    "importProjectFailureRetryViaWizard": "Project import failures must be retried from the import wizard.",
+    "credentialReferenceNotFound": "Credential reference not found.",
+    "credentialReferenceOffboardingOnly": "Credential references can only be accessed during offboarding.",
+    "workflowIpVerificationOpen": "An intellectual-property verification task is still open for this workflow.",
+    "workflowCredentialsPending": "Credentials are still pending for this workflow.",
+    "deprovisioningAssignmentNotFound": "Deprovisioning assignment not found.",
+    "deprovisioningStepNotFound": "Deprovisioning step not found.",
+    "deprovisioningCooldownActive": "Deprovisioning is in a cooldown period; try again later.",
+    "deprovisioningNoExternalUser": "No external identity-provider user is linked for deprovisioning.",
+    "deprovisioningStepNotOverridable": "This deprovisioning step cannot be overridden.",
+    "deprovisioningIntegrationNotConfigured": "The identity-provider integration is not configured for deprovisioning.",
+    "complianceItemNotFound": "Compliance item not found.",
+    "complianceItemAlreadyWaived": "This compliance item has already been waived.",
+    "complianceDocumentNotPendingReview": "This compliance document is not pending review."
   },
   "Compliance": {
     "paymentBlockModal": {
@@ -4709,10 +4726,12 @@
       "statusExtracted": "Extracted",
       "statusPartial": "Partial",
       "statusFailed": "Failed",
+      "statusSkipped": "Manual entry",
       "extracting": "Extracting invoice data...",
       "complete": "Extraction complete — {fieldCount} fields extracted",
       "partial": "Partial extraction — {fieldCount} of {totalFields} fields extracted. Please fill in the remaining fields.",
       "failed": "Extraction failed. You can re-run OCR or fill in the fields manually.",
+      "skipped": "AI invoice parsing is disabled — enter the invoice details manually, or re-run OCR once it is re-enabled.",
       "rerunOcr": "Re-run OCR"
     }
   },

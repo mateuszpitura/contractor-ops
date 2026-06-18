@@ -2,13 +2,13 @@
 title: Money rounding policy
 type: pattern
 tags: [money, currency, rounding, finance, validators]
-source_commit: 3157f263a
+source_commit: 57946f642
 verify_with:
   - packages/api/src/services/skonto.ts
   - packages/api/src/services/late-payment-interest.ts
   - packages/api/src/services/exchange-rate.ts
   - packages/api/src/services/bank-statement.ts
-updated: 2026-06-15
+updated: 2026-06-16
 ---
 
 # Money rounding policy
@@ -47,7 +47,7 @@ Only where an invariant demands a fixed direction:
 | Skonto discount | `packages/api/src/services/skonto.ts` | FLOOR |
 | Late-payment interest | `packages/api/src/services/late-payment-interest.ts` | HALF-UP |
 | FX conversion | `packages/api/src/services/exchange-rate.ts` | Finite-guard inputs → single HALF-UP on integer minor units (no `decimal.js` in this service) |
-| Bank statement amounts | `packages/api/src/services/bank-statement.ts` | zod-validate external major amount → single HALF-UP to minor units |
+| Bank statement amounts | `packages/api/src/services/bank-statement.ts` | zod-validate external major amount → single HALF-UP to minor units; parser caps output at 5000 transactions (mirrors import `MAX_IMPORT_ROWS`) so the run matcher stays bounded |
 
 ## Verify live
 

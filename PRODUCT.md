@@ -85,3 +85,27 @@ expensive because it is *exact*, not because it is loud.
 - **Reduced motion & reduced transparency** fully honored
   (`prefers-reduced-motion`, `prefers-reduced-transparency`) — every animated or glassy
   primitive degrades to a calm, legible fallback.
+
+## Design tooling
+
+Agents route UI work through a **layered skill stack** (see
+`.planning/brain/wiki/patterns/ui-skills-routing.md`). This file is the **product**
+register contract for the operational app; `apps/landing` uses the **brand** register
+instead.
+
+| Layer | Skill | When |
+|-------|-------|------|
+| 0 — binding | `frontend-design` plugin | Every UI touch in web-vite, landing, `packages/ui` |
+| 1 — discovery | `semble search` | Before grep and before edits |
+| 2 — product depth | **impeccable** + this file | `apps/web-vite`, `/portal` — `shape`, `craft`, `harden`, `audit` |
+| 2 — marketing depth | **design-taste-frontend** | `apps/landing` only — not dashboards or wizards |
+| Meta | `full-output-enforcement` | Full pages or many complete files — no placeholders |
+
+**Product default:** `frontend-design` → semble → impeccable (`reference/product.md`).
+Density, complete states, restraint — design serves the task.
+
+**Landing default:** `frontend-design` → semble → design-taste (+ optional image-to-code,
+redesign-existing-projects for existing pages). impeccable `audit` optional before merge.
+
+**Anti-pattern:** design-taste on invoice tables, contractor wizards, or compliance
+dashboards — use impeccable `critique` / `harden` instead.

@@ -1,0 +1,11 @@
+-- OcrExtractionStatus — add SKIPPED.
+-- Dedicated terminal state for uploads where the AI invoice parser was skipped
+-- (killswitch.ai-invoice-parser off / Unleash unreachable). Previously these
+-- rows reused FAILED, which downstream retry/alert/UI-error handling misread as
+-- a real extraction failure. SKIPPED means "no AI data — manual entry required"
+-- and remains eligible for reprocessing once the parser is re-enabled.
+--
+-- Additive enum value. ADD VALUE must run outside a transaction; Prisma's raw
+-- migration runner already executes each statement in its own tx context. Apply
+-- via `pnpm db:migrate:all` (packages/db/scripts/migrate-all-regions.ts) post-merge.
+ALTER TYPE "OcrExtractionStatus" ADD VALUE 'SKIPPED';

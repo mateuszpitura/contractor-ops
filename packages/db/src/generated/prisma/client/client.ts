@@ -613,6 +613,31 @@ export type WhtCertificate = Prisma.WhtCertificateModel
  */
 export type TaxFormSubmission = Prisma.TaxFormSubmissionModel
 /**
+ * Model Form1099Nec
+ * 
+ */
+export type Form1099Nec = Prisma.Form1099NecModel
+/**
+ * Model IrisSubmission
+ * 
+ */
+export type IrisSubmission = Prisma.IrisSubmissionModel
+/**
+ * Model IrisAck
+ * 
+ */
+export type IrisAck = Prisma.IrisAckModel
+/**
+ * Model Tax1099Threshold
+ * 
+ */
+export type Tax1099Threshold = Prisma.Tax1099ThresholdModel
+/**
+ * Model StateFilingConfig
+ * 
+ */
+export type StateFilingConfig = Prisma.StateFilingConfigModel
+/**
  * Model TaxIdValidation
  * 
  */

@@ -73,3 +73,8 @@ goals/qa-walk-and-fix/findings/**
 # Post-migration parity audit scratch — never commit
 .audit-scratch/
 .restoration-scratch/
+
+# Security red-team harness — local-only attack scripts, load profiles, findings.
+# Never committed: contains live exploit scripts + may capture sensitive responses.
+# Committed regression coverage lives in *.security.test.ts under each package's __tests__.
+security/harness/

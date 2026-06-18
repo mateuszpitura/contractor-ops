@@ -2,11 +2,11 @@
 title: Shared packages
 type: structure
 tags: [structure, packages]
-source_commit: c89762ffe45f4cabdc59f5deeb67eefb39726530
+source_commit: d839f52e
 verify_with:
   - packages/
   - .planning/codebase/STRUCTURE.md
-updated: 2026-06-16
+updated: 2026-06-18
 ---
 
 # Shared packages
@@ -19,7 +19,7 @@ updated: 2026-06-16
 
 | Package | Path | Role |
 |---------|------|------|
-| `api` | `packages/api` | tRPC routers, middleware, services, PDF templates |
+| `api` | `packages/api` | tRPC routers, middleware, services, PDF templates; standardized error-key registry in `src/errors.ts` (camelCase values → `Errors` i18n namespace) — added `CONTRACTOR_TAX_ID_EXISTS` (`contractorTaxIdExists`), with en/de/pl/ar parity |
 | `db` | `packages/db` | Prisma 7 schema, migrations, regional + tenant clients |
 | `auth` | `packages/auth` | Better Auth config |
 | `validators` | `packages/validators` | Shared Zod inputs (incl. `w-form-validators.ts` — `taxFormSubmissionSchema` W-9/W-8BEN/W-8BEN-E discriminated union, no full-SSN field; see [[domains/us-tax-forms]]) |
@@ -27,6 +27,7 @@ updated: 2026-06-16
 | `feature-flags` | `packages/feature-flags` | Unleash wrapper + `registry.ts` |
 | `compliance-policy` | `packages/compliance-policy` | Payment eligibility rules |
 | `einvoice` | `packages/einvoice` | Country e-invoice profiles |
+| `iris` | `packages/iris` | IRS IRIS 1099-NEC e-file XML — `buildIrisXml` (fast-xml-parser builder, masked last-4 recipient TIN) + `xsdValidate` (libxmljs2, SSRF/XXE-safe); pinned-checksum XSD bundle is a human-action checkpoint (see [[domains/us-tax-forms]]) |
 | `integrations` | `packages/integrations` | Adapter framework |
 | `classification` | `packages/classification` | IR35 / Scheinselbständigkeit scoring |
 | `billing` | `packages/billing` | Stripe webhook handlers |

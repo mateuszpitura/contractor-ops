@@ -373,7 +373,7 @@ describe('organization.getCurrent', () => {
         query: { organizationId: ORG_ID },
       }),
     );
-    expect(result).toEqual(mockOrg);
+    expect(result).toEqual({ ...mockOrg, isDemo: false });
   });
 });
 
@@ -420,7 +420,7 @@ describe('organization.setKleinunternehmer', () => {
     expect(setKuFindUniqueOrThrow).toHaveBeenCalledWith(
       expect.objectContaining({
         where: { id: ORG_ID },
-        select: { countryCode: true },
+        select: { countryCode: true, isKleinunternehmer: true },
       }),
     );
     expect(setKuUpdate).toHaveBeenCalledWith(

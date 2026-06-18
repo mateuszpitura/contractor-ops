@@ -40,6 +40,17 @@ export async function uploadAndPersist(
   const validate = deps.validateEmbeddedXml ?? validateZugferdEmbeddedXml;
   const r2 = deps.r2 ?? { putObjectString, putObjectAndSignDownload };
 
+  // Reject before decoding so an oversized buffer is never materialized.
+  // base64 encodes 3 bytes per 4 chars, so the decoded size is at most
+  // ceil(len / 4) * 3 bytes; bound the string length on that upper estimate.
+  const maxBase64Chars = Math.ceil(INTAKE_MAX_FILE_BYTES / 3) * 4;
+  if (input.fileBase64.length > maxBase64Chars) {
+    throw makeError(
+      'FILE_TOO_LARGE',
+      `Upload exceeds ${INTAKE_MAX_FILE_BYTES} bytes (base64 length ${input.fileBase64.length})`,
+    );
+  }
+
   const bytes = Buffer.from(input.fileBase64, 'base64');
   if (bytes.length > INTAKE_MAX_FILE_BYTES) {
     throw makeError(

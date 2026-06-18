@@ -195,7 +195,7 @@ beforeEach(() => {
 describe('compliance-override-mutation happy-path', () => {
   it('flips ContractorComplianceItem.status to WAIVED and writes audit log', async () => {
     const caller = makeCaller();
-    const out = (await caller.classification.overrideItem({
+    const out = (await caller.complianceAdmin.overrideItem({
       itemId: ITEM_ID,
       reasonCategory: 'TEMPORARY_GRACE_PERIOD',
       reasonNote: 'Renewal pending — admin grace period for 30 days',
@@ -214,7 +214,7 @@ describe('compliance-override-mutation happy-path', () => {
 
   it('sets waivedReason=ADMIN_MANUAL_WAIVE AND waivedReasonCategory + waivedReasonNote per input', async () => {
     const caller = makeCaller();
-    await caller.classification.overrideItem({
+    await caller.complianceAdmin.overrideItem({
       itemId: ITEM_ID,
       reasonCategory: 'ADMIN_CORRECTION',
       reasonNote: 'Misclassified as missing — doc was on file all along',
@@ -233,7 +233,7 @@ describe('compliance-override-mutation permission', () => {
     vi.mocked(authApi.hasPermission).mockResolvedValue({ success: false } as never);
     const caller = makeCaller('readonly');
     await expect(
-      caller.classification.overrideItem({
+      caller.complianceAdmin.overrideItem({
         itemId: ITEM_ID,
         reasonCategory: 'OTHER',
         reasonNote: 'A sufficiently long override rationale here.',
@@ -246,7 +246,7 @@ describe('compliance-override-mutation freetext-min', () => {
   it('rejects reasonNote shorter than 20 chars with BAD_REQUEST', async () => {
     const caller = makeCaller();
     await expect(
-      caller.classification.overrideItem({
+      caller.complianceAdmin.overrideItem({
         itemId: ITEM_ID,
         reasonCategory: 'OTHER',
         reasonNote: 'too short',
@@ -257,7 +257,7 @@ describe('compliance-override-mutation freetext-min', () => {
   it('rejects reasonCategory not in closed enum with BAD_REQUEST', async () => {
     const caller = makeCaller();
     await expect(
-      caller.classification.overrideItem({
+      caller.complianceAdmin.overrideItem({
         itemId: ITEM_ID,
         // @ts-expect-error — bad reason category should fail Zod
         reasonCategory: 'this-is-not-in-the-enum',
@@ -270,7 +270,7 @@ describe('compliance-override-mutation freetext-min', () => {
 describe('compliance-override-mutation audit-emission', () => {
   it('emits AuditLog action=compliance.item.overridden with metadata.itemId + previousStatus', async () => {
     const caller = makeCaller();
-    await caller.classification.overrideItem({
+    await caller.complianceAdmin.overrideItem({
       itemId: ITEM_ID,
       reasonCategory: 'ENGAGEMENT_CHANGED',
       reasonNote: 'Engagement type changed from B2B to employment',
@@ -299,7 +299,7 @@ describe('compliance-override-mutation audit-emission', () => {
     } as never);
     const caller = makeCaller();
     await expect(
-      caller.classification.overrideItem({
+      caller.complianceAdmin.overrideItem({
         itemId: ITEM_ID,
         reasonCategory: 'OTHER',
         reasonNote: 'Attempting to override an already-waived item here.',

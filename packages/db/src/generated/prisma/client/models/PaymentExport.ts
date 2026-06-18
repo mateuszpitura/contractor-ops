@@ -240,11 +240,11 @@ export type PaymentExportOrderByWithRelationInput = {
 
 export type PaymentExportWhereUniqueInput = Prisma.AtLeast<{
   id?: string
+  paymentRunId?: string
   AND?: Prisma.PaymentExportWhereInput | Prisma.PaymentExportWhereInput[]
   OR?: Prisma.PaymentExportWhereInput[]
   NOT?: Prisma.PaymentExportWhereInput | Prisma.PaymentExportWhereInput[]
   organizationId?: Prisma.StringFilter<"PaymentExport"> | string
-  paymentRunId?: Prisma.StringFilter<"PaymentExport"> | string
   documentId?: Prisma.StringNullableFilter<"PaymentExport"> | string | null
   format?: Prisma.EnumPaymentExportFormatFilter<"PaymentExport"> | $Enums.PaymentExportFormat
   status?: Prisma.EnumExportStatusFilter<"PaymentExport"> | $Enums.ExportStatus
@@ -256,7 +256,7 @@ export type PaymentExportWhereUniqueInput = Prisma.AtLeast<{
   document?: Prisma.XOR<Prisma.DocumentNullableScalarRelationFilter, Prisma.DocumentWhereInput> | null
   generatedBy?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   complianceChecks?: Prisma.PaymentRunComplianceCheckListRelationFilter
-}, "id">
+}, "id" | "paymentRunId">
 
 export type PaymentExportOrderByWithAggregationInput = {
   id?: Prisma.SortOrder

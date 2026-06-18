@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { StorecoveApiError, StorecoveClient } from '../client.js';
 
@@ -253,5 +254,63 @@ describe('StorecoveClient', () => {
         expect(apiErr.name).toBe('StorecoveApiError');
       }
     });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Idempotency-Key header — derived from the canonical org:operation:businessKey
+// ---------------------------------------------------------------------------
+
+describe('StorecoveClient — Idempotency-Key header', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('sends Idempotency-Key = sha256(org:storecove.peppol.send:contentDigest) on submitDocument', async () => {
+    mockFetch.mockResolvedValue(
+      jsonResponse({ guid: 'g1', status: 'sent', created_at: '2026-01-01T00:00:00Z' }),
+    );
+
+    const client = new StorecoveClient({ apiKey: 'k', baseUrl: 'https://api.storecove.test' });
+    await client.submitDocument({
+      xml: '<Invoice/>',
+      senderLegalEntityId: 42,
+      receiverIdentifier: '0192:123456',
+      receiverScheme: '0192',
+      documentType: 'invoice',
+      organizationId: 'org-7',
+    });
+
+    const [, init] = mockFetch.mock.calls[0] as [string, RequestInit];
+    const sent = (init.headers as Record<string, string>)['Idempotency-Key'];
+
+    const businessKey = createHash('sha256').update('42|0192:0192:123456|<Invoice/>').digest('hex');
+    const expected = createHash('sha256')
+      .update(`org-7:storecove.peppol.send:${businessKey}`)
+      .digest('hex');
+
+    expect(sent).toBe(expected);
+    expect(sent).toMatch(/^[a-f0-9]{64}$/);
+  });
+
+  it('caller-supplied idempotencyKey overrides the derived content digest', async () => {
+    mockFetch.mockResolvedValue(
+      jsonResponse({ guid: 'g1', status: 'sent', created_at: '2026-01-01T00:00:00Z' }),
+    );
+
+    const client = new StorecoveClient({ apiKey: 'k', baseUrl: 'https://api.storecove.test' });
+    await client.submitDocument({
+      xml: '<Invoice/>',
+      senderLegalEntityId: 1,
+      receiverIdentifier: 'id',
+      receiverScheme: 'sch',
+      documentType: 'invoice',
+      idempotencyKey: 'caller-natural-key-inv-1-rev-2',
+    });
+
+    const [, init] = mockFetch.mock.calls[0] as [string, RequestInit];
+    expect((init.headers as Record<string, string>)['Idempotency-Key']).toBe(
+      'caller-natural-key-inv-1-rev-2',
+    );
   });
 });

@@ -18,6 +18,7 @@ import { tenantProcedure } from '../../middleware/tenant';
 import type { TxClient } from '../../services/approval-engine';
 import { advanceFlow, computeSlaStatus } from '../../services/approval-engine';
 import { approvalStatusToPrismaWhere } from '../../services/approval-filters.js';
+import { writeAuditLog } from '../../services/audit-writer';
 import { CacheKeys, invalidateByPrefix } from '../../services/cache';
 import { syncPaymentDueDeadline } from '../../services/calendar-deadline-sync';
 import {
@@ -233,6 +234,24 @@ export const approvalQueueRouter = router({
           },
         });
 
+        await writeAuditLog({
+          tx,
+          organizationId: ctx.organizationId,
+          actorType: 'USER',
+          actorId: ctx.user?.id,
+          actorName: ctx.user?.name,
+          action: 'approval.approve',
+          resourceType: step.approvalFlow.resourceType,
+          resourceId: step.approvalFlow.resourceId,
+          oldValues: { status: step.status },
+          newValues: { status: 'APPROVED' },
+          metadata: {
+            stepId: step.id,
+            approvalFlowId: step.approvalFlowId,
+            comment: input.comment ?? null,
+          },
+        });
+
         const advanceResult = await advanceFlow(tx as TxClient, step.approvalFlowId);
 
         if (advanceResult.completed) {
@@ -345,6 +364,24 @@ export const approvalQueueRouter = router({
             status: 'REJECTED',
             actedAt: new Date(),
             decision: 'REJECT',
+            comment: input.comment,
+          },
+        });
+
+        await writeAuditLog({
+          tx,
+          organizationId: ctx.organizationId,
+          actorType: 'USER',
+          actorId: ctx.user?.id,
+          actorName: ctx.user?.name,
+          action: 'approval.reject',
+          resourceType: step.approvalFlow.resourceType,
+          resourceId: step.approvalFlow.resourceId,
+          oldValues: { status: step.status },
+          newValues: { status: 'REJECTED' },
+          metadata: {
+            stepId: step.id,
+            approvalFlowId: step.approvalFlowId,
             comment: input.comment,
           },
         });

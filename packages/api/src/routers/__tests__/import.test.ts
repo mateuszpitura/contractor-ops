@@ -577,6 +577,25 @@ describe('import router', () => {
       expect(result.skipped).toBe(1);
     });
 
+    it('rejects a commit payload exceeding the 5000-row cap before opening a transaction', async () => {
+      const rows = Array.from({ length: 5001 }, (_, i) => ({
+        legalName: `Corp ${i}`,
+        taxId: `TAX${i}`,
+        email: `corp${i}@example.com`,
+        countryCode: 'GB',
+      }));
+
+      await expect(
+        caller.import.commit({
+          entityType: 'contractor',
+          rows,
+          duplicateActions: {},
+        }),
+      ).rejects.toThrow();
+
+      expect(mockPrisma.$transaction).not.toHaveBeenCalled();
+    });
+
     it('updates existing contractor when duplicateAction is update', async () => {
       mockPrisma.contractor.findFirst.mockResolvedValueOnce({
         id: CONTRACTOR_ID,

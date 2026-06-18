@@ -2,7 +2,7 @@
 
 Facts that stay true across GSD phases. Update when architecture or policy changes — not for per-phase task lists (those live in `STATE.md`).
 
-**Last updated:** 2026-06-10
+**Last updated:** 2026-06-17
 
 ## web-vite UI (current)
 
@@ -118,3 +118,7 @@ The W-9 / W-8BEN / W-8BEN-E surface captures (does not file) a US tax classifica
 - **Portal-primary self-cert.** The beneficial owner signs in the portal (`portalAppRouter`). ESIGN attestation (ip / actorId / signedAt) is 100% server-derived from the session + headers — the client schema omits all three; identity is unforgeable. The W-9 payload never carries a full SSN (last-4 reference only; the SSN stays in its encrypted column with the `contractorPii:read` reveal gate). `buildFormSnapshot` recursively strips full-SSN/TIN keys as a second guard.
 - **Staff get a read/track mirror only** — never an on-behalf signing path (`requestTaxForm` writes an audit event, no record). The staff `taxForm` namespace is a DEDICATED router so `root.ts` can conditionally spread the whole US surface behind `module.us-expansion`; the always-mounted `taxRouter` is never extended for it. Defense-in-depth: boot-gate spread + per-request `assertUsExpansionEnabled` (the flat portal merge can't be conditionally spread, so it self-gates).
 - **web-vite layering holds** — the wizard's only tRPC boundary is `hooks/use-tax-form-wizard.ts`; the container + steps + page are presentational (`check:web-vite-data-layer`). Treaty rate/article auto-populate is advisory display announced via `aria-live`; the authoritative resolution + persistence happen server-side.
+
+## AuditLog is DB-level append-only (2026-06-17)
+
+`AuditLog` is append-only enforced in Postgres, not just by convention (migration `20260617000000_auditlog_append_only`): a `BEFORE UPDATE` trigger (`app.reject_auditlog_update`) rejects **every** UPDATE unconditionally, and the RLS `auditlog_delete` policy permits a DELETE **only** inside a transaction that has called `allowAuditPurge(tx)` (`@contractor-ops/db` → `SET LOCAL app.allow_audit_purge='on'`, read by `app.audit_purge_allowed()`). The sole legitimate caller is the GDPR Right-to-Erasure path (`routers/compliance/gdpr.ts`); ordinary writers never set the flag, so their deletes are denied. The old over-broad `auditlog_write FOR ALL` policy was replaced by INSERT-only (`auditlog_insert`). To "correct" an audit row, supersede with a new INSERT — never UPDATE.

@@ -1,5 +1,6 @@
 import { prisma } from '@contractor-ops/db';
 import type { Prisma } from '@contractor-ops/db/generated/prisma/client';
+import { evaluate } from '@contractor-ops/feature-flags';
 import { fetchWithTimeout } from '@contractor-ops/integrations';
 import { extractInvoice } from '@contractor-ops/integrations/services/ocr-service';
 import { getQStashClient } from '@contractor-ops/integrations/services/qstash-client';
@@ -74,12 +75,27 @@ export async function triggerOcrExtraction(params: {
 }
 
 /**
+ * Resolves the data region for an org from its immutable `dataRegion` column,
+ * defaulting to EU. Used to pick the regional Unleash client when evaluating
+ * the AI-parser kill-switch (the QStash callback carries no tenant context).
+ */
+async function resolveOrgRegion(organizationId: string): Promise<'EU' | 'ME' | 'US'> {
+  const org = await prisma.organization.findUnique({
+    where: { id: organizationId },
+    select: { dataRegion: true },
+  });
+  return org?.dataRegion ?? 'EU';
+}
+
+/**
  * Processes an OCR extraction job (called by QStash callback).
  *
  * 1. Updates status to PROCESSING
- * 2. Fetches PDF from R2 via presigned download URL
- * 3. Sends to OCR adapter for extraction
- * 4. Persists results (or error) in the OcrExtraction record
+ * 2. Honours the `killswitch.ai-invoice-parser` flag — when off, skips the AI
+ *    call and marks the row for manual entry
+ * 3. Fetches PDF from R2 via presigned download URL
+ * 4. Sends to OCR adapter for extraction
+ * 5. Persists results (or error) in the OcrExtraction record
  */
 export async function processOcrExtraction(params: {
   extractionId: string;
@@ -93,6 +109,42 @@ export async function processOcrExtraction(params: {
   });
 
   try {
+    // Emergency kill-switch: when ops disables the AI invoice parser (or
+    // Unleash is unreachable, since the flag is killWhenUnknown), skip the
+    // Claude Vision call entirely. The upload is already persisted; we mark
+    // the row SKIPPED (not FAILED) so the UI drops into manual-entry fallback
+    // without tripping FAILED-handling (retry/alerts/red badge). A later
+    // retrigger (flag re-enabled) creates a fresh PENDING row and can still
+    // produce a real extraction. Evaluated at the org-context boundary so the
+    // per-org Unleash targeting applies.
+    const region = await resolveOrgRegion(params.organizationId);
+    const parser = evaluate('killswitch.ai-invoice-parser', {
+      organizationId: params.organizationId,
+      region,
+    });
+
+    if (!parser.enabled) {
+      await prisma.ocrExtraction.update({
+        where: { id: params.extractionId },
+        data: {
+          status: 'SKIPPED',
+          errorMessage: 'AI invoice parsing is disabled — enter invoice details manually.',
+          completedAt: new Date(),
+        },
+      });
+
+      log.info(
+        {
+          extractionId: params.extractionId,
+          organizationId: params.organizationId,
+          reason: parser.reason,
+        },
+        'ocr extraction skipped: ai-invoice-parser kill-switch off',
+      );
+      metrics.increment('ocr.skipped', 1, { reason: parser.reason });
+      return;
+    }
+
     // Fetch PDF from R2
     const downloadUrl = await createPresignedDownloadUrl(params.storageKey);
     // PDFs can be large — give the body read headroom.

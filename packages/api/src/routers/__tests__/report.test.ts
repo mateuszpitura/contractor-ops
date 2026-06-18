@@ -8,6 +8,15 @@
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+// The report procedures now chain the per-org read rate-limit middleware, which
+// reads UPSTASH_* at module load. The test env ships placeholder Upstash
+// credentials, so clear them BEFORE module evaluation to force the in-memory
+// fallback (no real network call to the placeholder host).
+vi.hoisted(() => {
+  delete process.env.UPSTASH_REDIS_REST_URL;
+  delete process.env.UPSTASH_REDIS_REST_TOKEN;
+});
+
 // ---------------------------------------------------------------------------
 // Constants (vi.hoisted so mock factories can reference them)
 // ---------------------------------------------------------------------------
@@ -311,6 +320,7 @@ vi.mock('../../services/ocr-extraction', () => ({
 // ---------------------------------------------------------------------------
 
 import { createCallerFactory } from '../../init';
+import { __resetReportRateLimitForTests } from '../../middleware/report-rate-limit';
 import { appRouter } from '../../root';
 
 // ---------------------------------------------------------------------------
@@ -361,6 +371,9 @@ const caller = makeCaller(USER_ID, ORG_ID);
 
 beforeEach(() => {
   vi.clearAllMocks();
+  // Each test issues only a handful of calls; reset the per-org read limiter
+  // so cumulative calls across the file never trip the 30/min cap.
+  __resetReportRateLimitForTests();
   mockPrisma.$queryRaw.mockResolvedValue([]);
   mockPrisma.contractor.findMany.mockResolvedValue([]);
   mockPrisma.contractor.count.mockResolvedValue(0);
@@ -833,6 +846,80 @@ describe('report router', () => {
       expect(result.items[0]).toHaveProperty('missingDocuments', 3);
       expect(result.items[0]).toHaveProperty('overdueTasks', 0);
       expect(result.items[0]).toHaveProperty('health', 'red');
+    });
+
+    // DoS hardening: complianceGaps / complianceGapsChart fetch active
+    // contractors (+ nested relations) into JS before filtering, so the
+    // contractor findMany MUST carry a hard server-side `take` ceiling. A
+    // request can never materialize the whole table.
+    it('caps the contractor findMany with a bounded take', async () => {
+      mockPrisma.contractor.findMany.mockResolvedValue([]);
+
+      await caller.report.complianceGaps({
+        page: 1,
+        pageSize: 20,
+        sortBy: 'health',
+        sortOrder: 'desc',
+      });
+
+      const call = mockPrisma.contractor.findMany.mock.calls[0]?.[0];
+      expect(typeof call?.take).toBe('number');
+      expect(call?.take).toBeGreaterThan(0);
+      expect(call?.take).toBeLessThanOrEqual(1000);
+    });
+
+    it('reports truncated=false for orgs under the cap', async () => {
+      mockPrisma.contractor.findMany.mockResolvedValue([
+        {
+          id: 'c-1',
+          legalName: 'Problem Corp',
+          complianceItems: [],
+          contracts: [],
+          _count: { complianceItems: 1 },
+        },
+      ]);
+
+      const result = await caller.report.complianceGaps({
+        page: 1,
+        pageSize: 20,
+        sortBy: 'health',
+        sortOrder: 'desc',
+      });
+
+      expect(result).toHaveProperty('truncated', false);
+    });
+
+    it('reports truncated=true when the scan ceiling is hit', async () => {
+      // Return exactly the cap (1000) rows — the procedure flags truncation
+      // when the returned count reaches the ceiling.
+      const atCap = Array.from({ length: 1000 }, (_, i) => ({
+        id: `c-${i}`,
+        legalName: `Corp ${i}`,
+        complianceItems: [],
+        contracts: [],
+        _count: { complianceItems: 1 },
+      }));
+      mockPrisma.contractor.findMany.mockResolvedValue(atCap);
+
+      const result = await caller.report.complianceGaps({
+        page: 1,
+        pageSize: 20,
+        sortBy: 'health',
+        sortOrder: 'desc',
+      });
+
+      expect(result.truncated).toBe(true);
+    });
+
+    it('complianceGapsChart caps the contractor findMany with a bounded take', async () => {
+      mockPrisma.contractor.findMany.mockResolvedValue([]);
+
+      await caller.report.complianceGapsChart();
+
+      const call = mockPrisma.contractor.findMany.mock.calls[0]?.[0];
+      expect(typeof call?.take).toBe('number');
+      expect(call?.take).toBeGreaterThan(0);
+      expect(call?.take).toBeLessThanOrEqual(1000);
     });
   });
 

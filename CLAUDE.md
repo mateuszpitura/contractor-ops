@@ -57,13 +57,17 @@ After a GSD phase with a new invariant: append to [`.planning/MEMORY.md`](.plann
 
 **Exempt (wiki not required):** test-only files (`__tests__`, `*.test.ts`), generated code, lockfiles, pure formatting with zero behavior change — when unsure, update wiki.
 
-**Doc drift:** hook emits `DOC_DRIFT_WARN` on Stop if product code changed but no `wiki/` page was updated in the same session.
+**Doc drift is GATED, not advisory:**
+- **CI:** `pnpm check:wiki-brain` **fails** when a source file listed under a wiki page's `verify_with` changes in the diff without that page being updated in the same change set (only NEW drift vs the branch base — pre-existing drift does not retro-brick). graph.json / BM25 absence is WARN-only (local, gitignored artifacts).
+- **Stop hook:** **blocks turn-end once** when `apps/`/`packages/` changed with no `wiki/` page updated this session (block-once-then-allow; say so if genuinely doc-exempt, then stop again).
+- **Graph freshness:** `.husky/post-commit` auto-rebuilds the graphify graph (incremental, AST-only, background) on any commit touching `apps/`/`packages/` — no manual `graphify update` needed for routine work.
 
-Hook: SessionStart injects rule; Stop → `KNOWLEDGE_REFRESH_REQUIRED` / `DOC_DRIFT_WARN`. See [`.planning/brain/wiki/meta/refresh-triggers.md`](.planning/brain/wiki/meta/refresh-triggers.md).
+Hook: SessionStart injects rule; Stop → block (once) / `KNOWLEDGE_REFRESH_REQUIRED` / `DOC_DRIFT_WARN` / `GRAPH_WARN`. See [`.planning/brain/wiki/meta/refresh-triggers.md`](.planning/brain/wiki/meta/refresh-triggers.md).
 
 ```bash
 pnpm check:wiki-brain
-graphify update . --no-cluster --force && cp graphify-out/graph.json .planning/graphs/graph.json
+# rm first — graphify update MERGES edges into an existing graph.json (accumulates duplicate links); clean rebuild is deterministic. Normally automated by .husky/post-commit.
+rm -f graphify-out/graph.json && graphify update . --no-cluster --force && cp graphify-out/graph.json .planning/graphs/graph.json
 cd .planning/brain && find wiki -name '*.md' -exec python3 scripts/contextual-prefix.py {} --no-llm \; && python3 scripts/bm25-index.py build
 ```
 

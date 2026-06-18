@@ -55,4 +55,20 @@ describe('ExtractionStatusBar (web-vite)', () => {
     render(<ExtractionStatusBar status="FAILED" />);
     expect(screen.queryByRole('button', { name: /Re-run OCR/i })).not.toBeInTheDocument();
   });
+
+  it('renders SKIPPED as a manual-entry state, not an error', () => {
+    render(<ExtractionStatusBar status="SKIPPED" />);
+    expect(screen.getByText('Manual entry')).toBeInTheDocument();
+    expect(screen.getByText(/disabled/i)).toBeInTheDocument();
+    // SKIPPED must not surface the failure copy.
+    expect(screen.queryByText(/Extraction failed/)).not.toBeInTheDocument();
+  });
+
+  it('shows the Re-run OCR button for SKIPPED and invokes onRetry', () => {
+    const onRetry = vi.fn();
+    render(<ExtractionStatusBar status="SKIPPED" onRetry={onRetry} />);
+    const retry = screen.getByRole('button', { name: /Re-run OCR/i });
+    retry.click();
+    expect(onRetry).toHaveBeenCalledTimes(1);
+  });
 });

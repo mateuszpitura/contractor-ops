@@ -5,8 +5,9 @@ tags: [dashboard, kpi, widgets]
 source_commit: 70f5782d78e33ba98c82e4ccda2cd4b0b4aff216
 verify_with:
   - packages/api/src/routers/core/dashboard.ts
+  - packages/api/src/middleware/report-rate-limit.ts
   - apps/web-vite/src/components/dashboard/
-updated: 2026-06-10
+updated: 2026-06-16
 ---
 
 # Staff dashboard home
@@ -47,6 +48,7 @@ flowchart LR
 
 - Dashboard reads use read replica + `cached`/`cachedSingleflight` — do not bypass for “quick fix”
 - Widget mutations delegate to domain routers (approvals, not inline in dashboard router)
+- All `dashboard.*` procedures chain `report-rate-limit` → 30/min per org (`report:${orgId}`, shared budget with `report.*`); see [[patterns/trpc-procedure-stack]]
 
 ## Related
 

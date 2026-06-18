@@ -145,6 +145,36 @@ export const contractorUpdateSchema = contractorBaseSchema
 export type ContractorUpdateInput = z.infer<typeof contractorUpdateSchema>;
 
 /**
+ * Shared filter facets for the contractor list. Reused by `contractorListSchema`
+ * (the table query) and `contractorInsightsSchema` (the list insight band) so the
+ * band's counts and the table's rows derive from one filter contract — they can
+ * never drift apart. `complianceHealth` is derived in JS from compliance-item
+ * counts (not a column); every other facet maps to a `where` predicate built by
+ * `buildContractorListWhere`.
+ */
+export const contractorFiltersSchema = z.object({
+  status: z.array(contractorStatusEnum).optional(),
+  lifecycleStage: z.array(contractorLifecycleStageEnum).optional(),
+  type: z.array(contractorTypeEnum).optional(),
+  ownerUserId: z.array(z.string()).optional(),
+  primaryTeamId: z.array(z.string()).optional(),
+  /** 2-letter ISO country codes — the "jurisdiction" composition facet. */
+  countryCode: z.array(z.string().length(2)).optional(),
+  billingModel: z.array(z.string()).optional(),
+  complianceHealth: z.array(complianceHealthEnum).optional(),
+  /** Contractors with an active/expiring contract ending within N days. */
+  expiringWithin: z.number().int().positive().max(365).optional(),
+  /** Contractors with a payment-blocked (FAILED) invoice. */
+  paymentBlocked: z.boolean().optional(),
+  /** Onboarding contractors whose onboarding workflow has stalled. */
+  stalled: z.boolean().optional(),
+  contractEndDateFrom: z.iso.datetime().optional(),
+  contractEndDateTo: z.iso.datetime().optional(),
+});
+
+export type ContractorFilters = z.infer<typeof contractorFiltersSchema>;
+
+/**
  * Schema for listing contractors with pagination, sorting, filtering, and FTS.
  */
 export const contractorListSchema = z.object({
@@ -159,22 +189,21 @@ export const contractorListSchema = z.object({
     .enum(['createdAt', 'legalName', 'displayName', 'status', 'lifecycleStage', 'type'])
     .default('createdAt'),
   sortOrder: z.enum(['asc', 'desc']).default('desc'),
-  filters: z
-    .object({
-      status: z.array(contractorStatusEnum).optional(),
-      lifecycleStage: z.array(contractorLifecycleStageEnum).optional(),
-      type: z.array(contractorTypeEnum).optional(),
-      ownerUserId: z.array(z.string()).optional(),
-      primaryTeamId: z.array(z.string()).optional(),
-      billingModel: z.array(z.string()).optional(),
-      complianceHealth: z.array(complianceHealthEnum).optional(),
-      contractEndDateFrom: z.iso.datetime().optional(),
-      contractEndDateTo: z.iso.datetime().optional(),
-    })
-    .optional(),
+  filters: contractorFiltersSchema.optional(),
 });
 
 export type ContractorListInput = z.infer<typeof contractorListSchema>;
+
+/**
+ * Schema for the contractor list insight band. Shares the list's filter contract
+ * (minus pagination/sort) so the band aggregates over the same population.
+ */
+export const contractorInsightsSchema = z.object({
+  search: z.string().optional(),
+  filters: contractorFiltersSchema.optional(),
+});
+
+export type ContractorInsightsInput = z.infer<typeof contractorInsightsSchema>;
 
 /**
  * Schema for lifecycle stage transitions.

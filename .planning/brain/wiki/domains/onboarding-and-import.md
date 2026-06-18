@@ -1,21 +1,22 @@
 ---
 title: Onboarding and import
 type: domain
-tags: [onboarding, import, migration]
-source_commit: 19f747bca80fe58d162d3e8c3967ec553e057151
+tags: [onboarding, import, migration, organization]
+source_commit: 336516f5da666c16acff84e412a3d338db8bbbb8
 verify_with:
   - packages/api/src/routers/core/onboarding-import.ts
   - packages/api/src/services/onboarding-import-service.ts
   - packages/integrations/src/services/user-source-registry.ts
   - apps/web-vite/src/components/onboarding/
-updated: 2026-06-10
+  - apps/web-vite/src/components/layout/dashboard-shell.tsx
+updated: 2026-06-17
 ---
 
 # Onboarding and import
 
 ## Purpose
 
-Cross-tool import wizard (source discovery, user merge, project import), CSV/XLSX contractor/contract import, onboarding people flow.
+Cross-tool import wizard (source discovery, user merge, project import), CSV/XLSX contractor/contract import, onboarding people flow. Plus the **first-run organization-creation wizard** shown when a signed-in user has no organization yet.
 
 ## Flow — cross-tool people import
 
@@ -124,6 +125,39 @@ People step also requires no unresolved conflicts before the page `computeCanCon
 
 **Orchestrator:** `pages/dashboard/onboarding-import.tsx` (`OnboardingImportPageContent`) — `computeCanContinue` reads `onStepReadinessChange` from step 2/3 hooks.
 
+## First-run organization onboarding (create org)
+
+**Purpose:** a signed-in user with **no active organization and no membership to fall back to** (brand-new account) gets a full-screen "create your organization" wizard instead of the dashboard's `tenantNoActiveOrganization` error.
+
+**Gate** — `apps/web-vite/src/components/layout/dashboard-shell.tsx` (`DashboardShellContainer`) reads the client session synchronously (no tRPC). When `!session.isPending && user && !activeOrganizationId`:
+
+- `auth.useListOrganizations()` empty → render `OrganizationOnboardingContainer`.
+- org list pending, or memberships exist (→ `useAutoActiveOrg` activates the first + reloads) → `DashboardShellSkeleton`.
+
+Gating here means the org-dependent shell + tenant procedures (`organization.getCurrent`, `dashboard.bootstrap`) never mount, so `tenantNoActiveOrganization` ([[patterns/tenant-and-audit]]) is never thrown.
+
+**Flow:**
+
+1. Step 1 — org name + billing country. Submit → `auth.organization.create({ name, slug, billingCountry })` → `auth.organization.setActive({ organizationId })` (Better Auth client; **no** tRPC procedure — see [[settings-and-org-admin]]).
+2. `billingCountry` (ISO 3166-1 alpha-2) → data region server-side via `resolveDataRegionFromBilling` (`US` → US, else EU; never ME). Country names localized at render via `Intl.DisplayNames`.
+3. Step 2 — success + "coming soon" next-action placeholders (invite / import / billing). "Go to dashboard" → `window.location.reload()` so the re-seeded session carries `activeOrganizationId`.
+
+**Entry points:**
+
+| Piece | Path |
+|-------|------|
+| Shell gate | `apps/web-vite/src/components/layout/dashboard-shell.tsx` (`DashboardShellContainer`) |
+| Wizard (wired + views) | `apps/web-vite/src/components/onboarding/organization-onboarding.tsx` (`OrganizationOnboardingContainer`) |
+| Hook (auth boundary + RHF/Zod) | `apps/web-vite/src/components/onboarding/hooks/use-organization-onboarding.ts` |
+| i18n | `OrganizationOnboarding` namespace (en/de/pl/ar; en-US falls back to en) |
+
+**Agent mistakes:**
+
+- Adding a tRPC `organization.create` procedure — the SPA calls Better Auth `authClient.organization.{create,setActive}` directly (the tRPC `create`/`update` were removed).
+- Forgetting `setActive` after create, or skipping the reload — the client session keeps `activeOrganizationId=null` and the dashboard still throws.
+- Rendering the wizard inside the org shell — it must **replace** the shell so tenant procedures never run.
+- Hardcoding country names — localize via `Intl.DisplayNames`; only `billingCountry: 'US'` routes to the US region.
+
 ## Related
 
 - [[integrations/google-workspace]]
@@ -143,7 +177,7 @@ pnpm vitest run packages/api/src/services/__tests__/onboarding-import-service.te
 
 ## Agent mistakes
 
-- Skipping duplicate detection on bulk import (`mergeByEmail` is authoritative for wizard)
+- Skipping duplicate detection on bulk import (`mergeByEmail` is authoritative for wizard) — dedup, existing-member match, and the emitted `canonicalEmail` are all lowercase-normalized (output email is the lowercased key, not first-seen casing)
 - Treating `fetchPeople` / `fetchProjects` return as flat arrays — must read `.people` / `.projects`
 - Adding provider fetch logic in router — register in `user-source-registry.ts`
 - Silent swallow of per-source failures — always populate `sourceErrors`

@@ -46,6 +46,7 @@ const { mockPrisma } = vi.hoisted(() => {
     paymentRun: {
       findMany: vi.fn(async () => []),
       findFirst: vi.fn(async () => null),
+      findFirstOrThrow: vi.fn(async () => ({ id: RUN_ID, status: 'EXPORTED' })),
       findUnique: vi.fn(async () => null),
       create: vi.fn(async (opts: { data: Rec }) => ({
         id: RUN_ID,
@@ -55,6 +56,9 @@ const { mockPrisma } = vi.hoisted(() => {
         id: opts.where.id,
         ...opts.data,
       })),
+      // lockAndExport's atomic DRAFT/LOCKED → EXPORTED guard: default to the
+      // winning transition (count: 1).
+      updateMany: vi.fn(async () => ({ count: 1 })),
     },
     paymentRunItem: {
       findMany: vi.fn(async () => []),
@@ -782,24 +786,29 @@ describe('payment router', () => {
         ],
       });
 
-      // lockAndExport does two findFirst calls (prepare + re-fetch under tx-2 lock).
-      // Mock both with the same row.
-      mockPrisma.paymentRun.findFirst
-        .mockResolvedValueOnce(run)
-        .mockResolvedValueOnce({ status: run.status });
+      // Prepare-tx findFirst returns the DRAFT run with items. The export-tx
+      // then performs the atomic guarded transition (updateMany) and re-reads
+      // via findFirstOrThrow — no second findFirst.
+      mockPrisma.paymentRun.findFirst.mockResolvedValueOnce(run);
+      mockPrisma.paymentRun.findFirstOrThrow.mockResolvedValueOnce({
+        ...run,
+        status: 'EXPORTED',
+      });
 
       const result = await caller.payment.lockAndExport({
         runId: RUN_ID,
         exportFormat: 'CSV',
       });
 
-      // Run updated to EXPORTED
-      const updateCall = mockPrisma.paymentRun.update.mock.calls[0][0];
-      expect(updateCall.data).toMatchObject({
+      // Atomic transition guarded on pre-export statuses, setting EXPORTED.
+      const transitionCall = mockPrisma.paymentRun.updateMany.mock.calls[0][0];
+      expect(transitionCall.where.status).toEqual({ in: ['DRAFT', 'LOCKED'] });
+      expect(transitionCall.where.organizationId).toBe(ORG_ID);
+      expect(transitionCall.data).toMatchObject({
         status: 'EXPORTED',
         exportFormat: 'CSV',
       });
-      expect(updateCall.data.exportedAt).toBeInstanceOf(Date);
+      expect(transitionCall.data.exportedAt).toBeInstanceOf(Date);
 
       // Export record created
       expect(mockPrisma.paymentExport.create).toHaveBeenCalledTimes(1);
@@ -1063,6 +1072,22 @@ describe('payment router', () => {
           fileName: 'stmt.csv',
         }),
       ).rejects.toMatchObject({ code: 'BAD_REQUEST' });
+    });
+
+    it('rejects fileContent exceeding the ~5MB character cap at input validation', async () => {
+      const oversized = 'a'.repeat(5_000_001);
+
+      await expect(
+        caller.payment.importStatement({
+          runId: RUN_ID,
+          fileContent: oversized,
+          fileName: 'stmt.csv',
+        }),
+      ).rejects.toMatchObject({ code: 'BAD_REQUEST' });
+
+      // Input validation rejects before the resolver touches the DB / parser.
+      expect(mockPrisma.paymentRun.findFirst).not.toHaveBeenCalled();
+      expect(parseBankStatement).not.toHaveBeenCalled();
     });
   });
 

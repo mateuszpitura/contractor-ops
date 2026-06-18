@@ -1,0 +1,35 @@
+---
+description: Subagent-first delegation — cavecrew default, no ad-hoc bulk shell edits
+alwaysApply: true
+---
+
+# Delegation & surgical edits (operational)
+
+Binding floor: [`.cursor/rules/00-binding-standards.mdc`](00-binding-standards.mdc) + `CLAUDE.md` § Agent workflow. Full routing: [`.claude/skills/cavecrew/SKILL.md`](../../.claude/skills/cavecrew/SKILL.md).
+
+Cursor **Task** tool = subagent spawn. Prefer subagents over ad-hoc bulk shell scripts on source files.
+
+## Routing (default)
+
+| Task | Subagent |
+|------|----------|
+| Locate symbol / callers | `cavecrew-investigator` (default); `explore` for prose |
+| Fix ≤2 files | `cavecrew-builder` or main `Edit` after `Read` |
+| Review diff/PR | `cavecrew-reviewer`; `bugbot` / `security-review` on request |
+| Fix 3+ files | Main plan → parallel investigator/builder per file |
+| `/gsd:*` phase work | `gsd-*` per workflow; trivial → inline (`/gsd:fast`) |
+
+## Hard stops
+
+- No ad-hoc `sed -i`, `awk`, `perl -pi`, `python -c/-e`, `node -e` replace on `apps/`, `packages/`, `prisma/`, `.planning/`
+- No agent helper scripts (`fix-*.ts`, `bulk-rename.sh`) unless user asks
+- After spawning on a scope: **do not** read/edit that scope in parallel — wait for result
+
+## Allowed shell
+
+- `pnpm` / `npm run` / `turbo` project scripts
+- Read-only `git`
+- Test / typecheck runners
+- Existing repo codemods (`scripts/`, jscodeshift) with user approval
+
+PreToolUse advisory: `.claude/hooks/no-bulk-script-guard.js` on suspicious Bash commands.

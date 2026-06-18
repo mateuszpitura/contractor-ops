@@ -39,6 +39,9 @@ const { mockPrisma } = vi.hoisted(() => {
     contractorChangeRequest: {
       findFirst: vi.fn(),
     },
+    auditLog: {
+      create: vi.fn(async () => ({ id: 'audit-1' })),
+    },
     $transaction: vi.fn(async (fn: (tx: Rec) => Promise<unknown>) => fn(mockPrisma)),
   };
 
@@ -355,6 +358,21 @@ describe('portal.getProfile', () => {
 // ===========================================================================
 
 describe('portal.updateContactInfo', () => {
+  beforeEach(() => {
+    // Source reads the current contact row (findFirst) inside the tx to snapshot
+    // oldValues for the audit row before applying the update.
+    mockPrisma.contractor.findFirst.mockResolvedValue({
+      id: CONTRACTOR_ID,
+      displayName: 'Old Name',
+      phone: null,
+      addressLine1: null,
+      addressLine2: null,
+      city: null,
+      postalCode: null,
+      countryCode: 'PL',
+    });
+  });
+
   it('updates contractor contact fields immediately without approval (PORT-06a)', async () => {
     const updatedData = {
       id: CONTRACTOR_ID,

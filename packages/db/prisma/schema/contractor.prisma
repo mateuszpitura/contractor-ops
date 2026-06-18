@@ -85,6 +85,7 @@ model Contractor {
   returnRequests            ReturnRequest[]
   taxIdValidations          TaxIdValidation[]
   taxFormSubmissions        TaxFormSubmission[]
+  form1099Nec               Form1099Nec[]
   ir35ChainParticipantLinks Ir35ChainParticipant[]
   leitwegIds                LeitwegId[]
   intakes                   InvoiceIntakeRequest[]             @relation("InvoiceIntakeMatchedContractor")
@@ -97,12 +98,15 @@ model Contractor {
   preferredPaczkomatName    String?
   preferredPaczkomatAddress String?
 
+  // Unique per org so a duplicate tax ID is a DB-enforced CONFLICT, not a race.
+  // taxId is nullable; Postgres treats NULLs as distinct, so un-registered
+  // contractors (null taxId) are unaffected. Doubles as the lookup index.
+  @@unique([organizationId, taxId])
   @@index([organizationId])
   @@index([organizationId, status])
   @@index([organizationId, lifecycleStage])
   @@index([organizationId, ownerUserId])
   @@index([organizationId, legalName])
-  @@index([organizationId, taxId])
   @@index([organizationId, workflowRoleId])
 }
 

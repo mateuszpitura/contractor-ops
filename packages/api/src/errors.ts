@@ -62,6 +62,7 @@ export const CONTRACTOR_HAS_UNPAID_INVOICES = 'contractorHasUnpaidInvoices';
 export const CONTRACTOR_HAS_ACTIVE_WORKFLOWS = 'contractorHasActiveWorkflows';
 export const CONTRACTOR_HAS_ACTIVE_CONTRACTS = 'contractorHasActiveContracts';
 export const CONTRACTOR_INVALID_TRANSITION = 'contractorInvalidTransition';
+export const CONTRACTOR_TAX_ID_EXISTS = 'contractorTaxIdExists';
 export const COMPANY_LOOKUP_FAILED = 'companyLookupFailed';
 
 // ─── Contract ────────────────────────────────────────────────────
@@ -355,6 +356,10 @@ export const ORGANIZATION_CREATE_RATE_LIMIT_EXCEEDED = 'organizationCreateRateLi
 // ─── Upload rate limit ──────────────────────────────────────────
 export const UPLOAD_RATE_LIMITER_UNAVAILABLE = 'uploadRateLimiterUnavailable';
 export const UPLOAD_RATE_LIMIT_EXCEEDED = 'uploadRateLimitExceeded';
+
+// ─── Report / dashboard read rate limit ─────────────────────────
+export const REPORT_RATE_LIMITER_UNAVAILABLE = 'reportRateLimiterUnavailable';
+export const REPORT_RATE_LIMIT_EXCEEDED = 'reportRateLimitExceeded';
 
 // ─── Billing / Finance (extended) ───────────────────────────────
 export const BILLING_PROFILE_NOT_FOUND = 'billingProfileNotFound';

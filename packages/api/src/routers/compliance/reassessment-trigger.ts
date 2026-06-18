@@ -14,6 +14,7 @@ import { findOrThrow } from '../../lib/find-or-throw';
 import { cursorClause, paginateByLastKept } from '../../lib/pagination';
 import { requirePermission } from '../../middleware/rbac';
 import { classificationProcedure } from '../../middleware/require-classification-flag';
+import { writeAuditLog } from '../../services/audit-writer';
 
 const cuid = z.string().min(1);
 
@@ -77,7 +78,11 @@ export const reassessmentTriggerRouter = router({
     .input(acknowledgeInput)
     .mutation(async ({ ctx, input }) => {
       const row = await findOrThrow(
-        () => ctx.db.reassessmentTrigger.findFirst({ where: { id: input.id } }),
+        () =>
+          ctx.db.reassessmentTrigger.findFirst({
+            where: { id: input.id },
+            include: { contractorAssignment: { select: { contractorId: true } } },
+          }),
         'Reassessment trigger not found.',
       );
       if (row.status !== 'OPEN') {
@@ -86,19 +91,44 @@ export const reassessmentTriggerRouter = router({
           message: TRIGGER_NOT_ACKNOWLEDGEABLE,
         });
       }
-      return ctx.db.reassessmentTrigger.update({
-        where: { id: input.id },
-        data: {
-          status: 'ACKNOWLEDGED',
-          acknowledgedByUserId: ctx.user?.id,
-          acknowledgedAt: new Date(),
-        },
+      return ctx.db.$transaction(async tx => {
+        const updated = await tx.reassessmentTrigger.update({
+          where: { id: input.id },
+          data: {
+            status: 'ACKNOWLEDGED',
+            acknowledgedByUserId: ctx.user?.id,
+            acknowledgedAt: new Date(),
+          },
+        });
+
+        await writeAuditLog({
+          tx,
+          organizationId: ctx.organizationId,
+          actorType: 'USER',
+          actorId: ctx.user?.id,
+          actorName: ctx.user?.name,
+          action: 'reassessment.acknowledge',
+          resourceType: 'CONTRACTOR',
+          resourceId: row.contractorAssignment.contractorId,
+          oldValues: { status: row.status },
+          newValues: { status: 'ACKNOWLEDGED' },
+          metadata: {
+            triggerId: input.id,
+            contractorAssignmentId: row.contractorAssignmentId,
+          },
+        });
+
+        return updated;
       });
     }),
 
   dismiss: contractorUpdateProcedure.input(dismissInput).mutation(async ({ ctx, input }) => {
     const row = await findOrThrow(
-      () => ctx.db.reassessmentTrigger.findFirst({ where: { id: input.id } }),
+      () =>
+        ctx.db.reassessmentTrigger.findFirst({
+          where: { id: input.id },
+          include: { contractorAssignment: { select: { contractorId: true } } },
+        }),
       'Reassessment trigger not found.',
     );
     if (row.status === 'RESOLVED' || row.status === 'DISMISSED') {
@@ -107,14 +137,36 @@ export const reassessmentTriggerRouter = router({
         message: TRIGGER_NOT_DISMISSIBLE,
       });
     }
-    return ctx.db.reassessmentTrigger.update({
-      where: { id: input.id },
-      data: {
-        status: 'DISMISSED',
-        dismissedByUserId: ctx.user?.id,
-        dismissedAt: new Date(),
-        dismissedReason: input.reason,
-      },
+    return ctx.db.$transaction(async tx => {
+      const updated = await tx.reassessmentTrigger.update({
+        where: { id: input.id },
+        data: {
+          status: 'DISMISSED',
+          dismissedByUserId: ctx.user?.id,
+          dismissedAt: new Date(),
+          dismissedReason: input.reason,
+        },
+      });
+
+      await writeAuditLog({
+        tx,
+        organizationId: ctx.organizationId,
+        actorType: 'USER',
+        actorId: ctx.user?.id,
+        actorName: ctx.user?.name,
+        action: 'reassessment.dismiss',
+        resourceType: 'CONTRACTOR',
+        resourceId: row.contractorAssignment.contractorId,
+        oldValues: { status: row.status },
+        newValues: { status: 'DISMISSED' },
+        metadata: {
+          triggerId: input.id,
+          contractorAssignmentId: row.contractorAssignmentId,
+          reason: input.reason,
+        },
+      });
+
+      return updated;
     });
   }),
 });

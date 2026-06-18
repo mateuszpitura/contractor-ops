@@ -22,6 +22,11 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          # Full history so check:wiki-brain can diff against the PR/branch base
+          # (origin/main merge-base) and flag NEW doc drift. Shallow clone makes
+          # the drift gate a no-op.
+          fetch-depth: 0
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4

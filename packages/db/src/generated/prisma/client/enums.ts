@@ -982,7 +982,8 @@ export const OcrExtractionStatus = {
   PROCESSING: 'PROCESSING',
   EXTRACTED: 'EXTRACTED',
   PARTIAL: 'PARTIAL',
-  FAILED: 'FAILED'
+  FAILED: 'FAILED',
+  SKIPPED: 'SKIPPED'
 } as const
 
 export type OcrExtractionStatus = (typeof OcrExtractionStatus)[keyof typeof OcrExtractionStatus]
@@ -1157,6 +1158,27 @@ export const TaxFormStatus = {
 } as const
 
 export type TaxFormStatus = (typeof TaxFormStatus)[keyof typeof TaxFormStatus]
+
+
+export const Form1099Status = {
+  DRAFT: 'DRAFT',
+  ACTIVE: 'ACTIVE',
+  SUPERSEDED: 'SUPERSEDED'
+} as const
+
+export type Form1099Status = (typeof Form1099Status)[keyof typeof Form1099Status]
+
+
+export const IrisAckStatus = {
+  ACCEPTED: 'ACCEPTED',
+  REJECTED: 'REJECTED',
+  PROCESSING: 'PROCESSING',
+  PARTIALLY_ACCEPTED: 'PARTIALLY_ACCEPTED',
+  ACCEPTED_WITH_ERRORS: 'ACCEPTED_WITH_ERRORS',
+  NOT_FOUND: 'NOT_FOUND'
+} as const
+
+export type IrisAckStatus = (typeof IrisAckStatus)[keyof typeof IrisAckStatus]
 
 
 export const TaxIdType = {

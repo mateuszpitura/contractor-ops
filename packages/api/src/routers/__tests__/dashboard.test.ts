@@ -8,6 +8,15 @@
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+// The dashboard procedures now chain the per-org read rate-limit middleware,
+// which reads UPSTASH_* at module load. The test env ships placeholder Upstash
+// credentials, so clear them BEFORE module evaluation to force the in-memory
+// fallback (no real network call to the placeholder host).
+vi.hoisted(() => {
+  delete process.env.UPSTASH_REDIS_REST_URL;
+  delete process.env.UPSTASH_REDIS_REST_TOKEN;
+});
+
 // ---------------------------------------------------------------------------
 // Constants (vi.hoisted so mock factories can reference them)
 // ---------------------------------------------------------------------------
@@ -270,6 +279,7 @@ vi.mock('../../services/ocr-extraction', () => ({
 // ---------------------------------------------------------------------------
 
 import { createCallerFactory } from '../../init';
+import { __resetReportRateLimitForTests } from '../../middleware/report-rate-limit';
 import { appRouter } from '../../root';
 
 // ---------------------------------------------------------------------------
@@ -320,6 +330,9 @@ const caller = makeCaller(USER_ID, ORG_ID);
 
 beforeEach(() => {
   vi.clearAllMocks();
+  // Reset the per-org read limiter so cumulative dashboard calls across the
+  // file never trip the 30/min cap.
+  __resetReportRateLimitForTests();
   mockPrisma.contractor.count.mockResolvedValue(0);
   mockPrisma.approvalStep.count.mockResolvedValue(0);
   mockPrisma.invoice.aggregate.mockResolvedValue({ _sum: { amountToPayMinor: null } });

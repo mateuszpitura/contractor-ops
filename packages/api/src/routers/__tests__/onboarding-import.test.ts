@@ -22,6 +22,7 @@ const {
   mockFetch,
   mockFetchJiraProjects,
   mockFetchLinearTeams,
+  mockFetchUsersFromIntegrationSource,
   mockGetSubscription,
 } = vi.hoisted(() => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -36,6 +37,7 @@ const {
     },
     organization: {
       findFirst: vi.fn(),
+      findFirstOrThrow: vi.fn(),
       findUnique: vi.fn(async () => ({ id: 'org-1', dataRegion: 'EU' })),
       update: vi.fn(),
     },
@@ -47,6 +49,10 @@ const {
     },
   };
 
+  // Job-state persistence runs inside db.$transaction; expose the same mock
+  // client as the transaction handle so findFirstOrThrow/update resolve.
+  mockPrisma.$transaction = vi.fn(async (fn: (tx: typeof mockPrisma) => unknown) => fn(mockPrisma));
+
   const mockLinearGraphQL = vi.fn();
   const mockCreateInvitation = vi.fn(async () => ({ id: 'inv-1' }));
   const mockGetFullOrganization = vi.fn(async () => ({
@@ -55,6 +61,7 @@ const {
   const mockFetch = vi.fn();
   const mockFetchJiraProjects = vi.fn();
   const mockFetchLinearTeams = vi.fn();
+  const mockFetchUsersFromIntegrationSource = vi.fn(async () => []);
 
   const mockGetSubscription = vi.fn(async () => ({
     id: 'sub_onb_mock',
@@ -70,6 +77,7 @@ const {
     mockFetch,
     mockFetchJiraProjects,
     mockFetchLinearTeams,
+    mockFetchUsersFromIntegrationSource,
     mockGetSubscription,
   };
 });
@@ -204,6 +212,7 @@ vi.mock('@contractor-ops/integrations', () => ({
   fetchWithTimeout: mockFetch,
   fetchJiraProjects: mockFetchJiraProjects,
   fetchLinearTeams: mockFetchLinearTeams,
+  fetchUsersFromIntegrationSource: mockFetchUsersFromIntegrationSource,
 }));
 
 vi.mock('@contractor-ops/integrations/services/credential-service', () => ({
@@ -309,6 +318,7 @@ beforeEach(() => {
   mockPrisma.integrationConnection.findFirst.mockResolvedValue(null);
   mockPrisma.member.findMany.mockResolvedValue([]);
   mockPrisma.organization.findFirst.mockResolvedValue({ id: ORG_ID, settingsJson: {} });
+  mockPrisma.organization.findFirstOrThrow.mockResolvedValue({ id: ORG_ID, settingsJson: {} });
   mockPrisma.organization.update.mockResolvedValue({});
 
   // Reset global fetch
@@ -362,24 +372,21 @@ describe('onboardingImport', () => {
       configJson: { cloudId: 'cloud-1' },
     });
 
-    // Jira API returns 2 users, one with uppercase email
-    mockFetch.mockResolvedValue({
-      ok: true,
-      json: async () => [
-        { emailAddress: 'Alice@Example.com', displayName: 'Alice J', self: 'u1', avatarUrls: {} },
-        { emailAddress: 'bob@example.com', displayName: 'Bob J', self: 'u2', avatarUrls: {} },
-      ],
-    });
+    // Jira user-source fetcher returns 2 normalized users, one with uppercase email
+    mockFetchUsersFromIntegrationSource.mockResolvedValue([
+      { email: 'Alice@Example.com', name: 'Alice J', source: 'JIRA' },
+      { email: 'bob@example.com', name: 'Bob J', source: 'JIRA' },
+    ]);
 
     mockGetFullOrganization.mockResolvedValue({ members: [] });
 
     const result = await caller.fetchPeople({ sources: ['JIRA'] });
 
     // All emails should be normalized to lowercase
-    for (const person of result) {
+    for (const person of result.people) {
       expect(person.email).toBe(person.email.toLowerCase());
     }
-    expect(result.length).toBeGreaterThanOrEqual(2);
+    expect(result.people.length).toBeGreaterThanOrEqual(2);
   });
 
   it('fetchPeople detects conflict when same email has different names across sources', async () => {
@@ -427,10 +434,9 @@ describe('onboardingImport', () => {
     expect(merged).toHaveLength(1);
     expect(merged[0]?.email).toBe('real@example.com');
 
-    // The actual bot filtering happens in fetchUsersFromSource (Slack branch).
-    // We verify the service filters correctly by testing the router endpoint
-    // which calls fetchUsersFromSource under the hood.
-    // Here we verify the Slack fetch path filters bots by checking the mock response.
+    // Bot/deleted/app-user/Slackbot filtering lives inside the integrations
+    // Slack user-source fetcher; the router only consumes its normalized output.
+    // The fetcher therefore yields just the real user for the router to merge.
     mockPrisma.integrationConnection.findFirst.mockResolvedValueOnce({
       id: 'conn-s',
       provider: 'SLACK',
@@ -439,71 +445,17 @@ describe('onboardingImport', () => {
       configJson: {},
     });
 
-    mockFetch.mockResolvedValue({
-      ok: true,
-      json: async () => ({
-        ok: true,
-        members: [
-          // Real user
-          {
-            id: 'U1',
-            deleted: false,
-            is_bot: false,
-            is_app_user: false,
-            profile: { email: 'real@example.com', real_name: 'Real User' },
-          },
-          // Bot user - should be filtered
-          {
-            id: 'U2',
-            deleted: false,
-            is_bot: true,
-            is_app_user: false,
-            profile: { email: 'bot@example.com', real_name: 'Bot' },
-          },
-          // Deleted user - should be filtered
-          {
-            id: 'U3',
-            deleted: true,
-            is_bot: false,
-            is_app_user: false,
-            profile: { email: 'deleted@example.com', real_name: 'Deleted' },
-          },
-          // App user - should be filtered
-          {
-            id: 'U4',
-            deleted: false,
-            is_bot: false,
-            is_app_user: true,
-            profile: { email: 'app@example.com', real_name: 'App' },
-          },
-          // Slackbot - should be filtered
-          {
-            id: 'USLACKBOT',
-            deleted: false,
-            is_bot: false,
-            is_app_user: false,
-            profile: { email: 'slackbot@example.com', real_name: 'Slackbot' },
-          },
-          // No email - should be filtered
-          {
-            id: 'U5',
-            deleted: false,
-            is_bot: false,
-            is_app_user: false,
-            profile: { real_name: 'No Email' },
-          },
-        ],
-        response_metadata: {},
-      }),
-    });
+    mockFetchUsersFromIntegrationSource.mockResolvedValue([
+      { email: 'real@example.com', name: 'Real User', source: 'SLACK' },
+    ]);
 
     mockGetFullOrganization.mockResolvedValue({ members: [] });
 
     const result = await caller.fetchPeople({ sources: ['SLACK'] });
 
     // Only the real user should be returned
-    expect(result).toHaveLength(1);
-    expect(result[0]?.email).toBe('real@example.com');
+    expect(result.people).toHaveLength(1);
+    expect(result.people[0]?.email).toBe('real@example.com');
   });
 
   // -------------------------------------------------------------------------
@@ -555,14 +507,16 @@ describe('onboardingImport', () => {
 
     const result = await caller.fetchProjects({ sources: ['JIRA', 'LINEAR'] });
 
-    expect(result.length).toBeGreaterThanOrEqual(2);
+    expect(result.projects.length).toBeGreaterThanOrEqual(2);
 
-    const jiraProject = result.find((p: { sourceProvider: string }) => p.sourceProvider === 'JIRA');
+    const jiraProject = result.projects.find(
+      (p: { sourceProvider: string }) => p.sourceProvider === 'JIRA',
+    );
     expect(jiraProject).toBeDefined();
     expect(jiraProject?.name).toBe('Project Alpha');
     expect(jiraProject?.statuses.length).toBeGreaterThanOrEqual(1);
 
-    const linearTeam = result.find(
+    const linearTeam = result.projects.find(
       (p: { sourceProvider: string }) => p.sourceProvider === 'LINEAR',
     );
     expect(linearTeam).toBeDefined();
@@ -726,7 +680,7 @@ describe('onboardingImport', () => {
 
     const result = await caller.retryFailedItem({
       jobId,
-      email: 'fail@example.com',
+      itemKey: 'fail@example.com',
     });
 
     expect(result.success).toBe(true);

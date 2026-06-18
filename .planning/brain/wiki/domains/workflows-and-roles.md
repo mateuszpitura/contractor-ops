@@ -2,11 +2,13 @@
 title: Workflows and roles
 type: domain
 tags: [workflows, kt-roles, calendar]
-source_commit: 70f5782d78e33ba98c82e4ccda2cd4b0b4aff216
+source_commit: d839f52eb98d86236bd6d0018bdff84de49427b8
 verify_with:
   - packages/api/src/routers/workflow/
   - packages/api/src/routers/workflow/workflow-roles.ts
-updated: 2026-06-09
+  - packages/api/src/services/jira-webhook-handler.ts
+  - packages/api/src/services/linear-webhook-handler.ts
+updated: 2026-06-18
 ---
 
 # Workflows and roles
@@ -42,3 +44,5 @@ semble search "workflowRoles"
 ## Agent mistakes
 
 - Hardcoding approver users instead of role templates
+- Jira/Linear task linking is **bidirectional**: outbound pushes issue + status, and inbound webhooks write back to `WorkflowTaskRun` (`jira-webhook-handler.ts`, `linear-webhook-handler.ts` — `workflowTaskRun.update` with loop-suppress + dedup). Notion is read-only (search/picker), **not** bi-di — do not pitch or assume Notion status sync.
+- A completing OFFBOARDING run does **not** trigger deprovisioning — the access-revoke task is a marker only. See [[idp-deprovisioning]].

@@ -2,7 +2,7 @@
 title: Microsoft Teams
 type: integration
 tags: [teams, notifications]
-source_commit: 70f5782d78e33ba98c82e4ccda2cd4b0b4aff216
+source_commit: 57946f64
 verify_with:
   - packages/api/src/routers/integrations/teams.ts
   - packages/integrations/src/adapters/teams-adapter.ts
@@ -39,6 +39,7 @@ flowchart TD
 - Approval notifications tie to [[domains/approvals-engine]]
 - Dispatch errors must not silent-catch — [[decisions/tech-debt-hotspots]]
 - Fallback approver dialog for unmapped channels
+- `connectionStatus` returns an allowlisted `publicTeamsConfig` (`channelMapping`, `defaultTeamId`, `defaultFallbackApproverId`) — `conversationReferences` and any secrets are dropped from the client response. Same allowlist pattern as [[jira]] (see [[patterns/registry-plugin]] § connectionStatus secret hygiene).
 
 ## Related
 

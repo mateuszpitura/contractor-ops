@@ -47,6 +47,10 @@ vi.mock('@contractor-ops/idp-saga', () => ({
   gcExpiredProvenance: mockGcExpiredProvenance,
 }));
 
+vi.mock('../jobs/handlers/compliance-reminder.js', () => ({
+  executeComplianceReminderScan: vi.fn().mockResolvedValue({ fires: 0, digests: 0 }),
+}));
+
 vi.mock('@contractor-ops/logger/metrics', () => ({
   metrics: { gauge: vi.fn(), increment: vi.fn() },
 }));
@@ -68,7 +72,7 @@ beforeEach(() => {
   mockGcExpiredProvenance.mockResolvedValue({ deleted: 0 });
 });
 
-describe('Reminders cron — IdpChangeProvenance GC sub-task (Phase 76 D-12)', () => {
+describe('Reminders cron — IdpChangeProvenance GC sub-task', () => {
   it('reminders handler calls gcExpiredProvenance once per invocation', async () => {
     await remindersHandler(makeJobContext());
     expect(mockGcExpiredProvenance).toHaveBeenCalledTimes(1);

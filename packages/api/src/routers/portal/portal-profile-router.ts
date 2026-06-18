@@ -138,30 +138,71 @@ export const portalProfileRouter = router({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const updated = await ctx.db.contractor.update({
-        where: { id: ctx.contractorId },
-        data: {
-          displayName: input.displayName,
-          phone: input.phone,
-          addressLine1: input.addressLine1,
-          addressLine2: input.addressLine2,
-          city: input.city,
-          postalCode: input.postalCode,
-          countryCode: input.countryCode ?? undefined,
-        },
-        select: {
-          id: true,
-          displayName: true,
-          phone: true,
-          addressLine1: true,
-          addressLine2: true,
-          city: true,
-          postalCode: true,
-          countryCode: true,
-        },
-      });
+      const contactSelect = {
+        id: true,
+        displayName: true,
+        phone: true,
+        addressLine1: true,
+        addressLine2: true,
+        city: true,
+        postalCode: true,
+        countryCode: true,
+      } as const;
 
-      return updated;
+      return ctx.db.$transaction(async tx => {
+        const previous = await tx.contractor.findFirst({
+          where: { id: ctx.contractorId, organizationId: ctx.organizationId },
+          select: contactSelect,
+        });
+        if (!previous) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: E.CONTRACTOR_NOT_FOUND });
+        }
+
+        const updated = await tx.contractor.update({
+          where: { id: ctx.contractorId },
+          data: {
+            displayName: input.displayName,
+            phone: input.phone,
+            addressLine1: input.addressLine1,
+            addressLine2: input.addressLine2,
+            city: input.city,
+            postalCode: input.postalCode,
+            countryCode: input.countryCode ?? undefined,
+          },
+          select: contactSelect,
+        });
+
+        await writeAuditLog({
+          tx,
+          organizationId: ctx.organizationId,
+          actorType: 'CONTRACTOR',
+          actorId: ctx.contractorId,
+          actorName: ctx.contractor?.email ?? 'contractor',
+          action: 'portal.contact.update',
+          resourceType: 'CONTRACTOR',
+          resourceId: ctx.contractorId,
+          oldValues: {
+            displayName: previous.displayName,
+            phone: previous.phone,
+            addressLine1: previous.addressLine1,
+            addressLine2: previous.addressLine2,
+            city: previous.city,
+            postalCode: previous.postalCode,
+            countryCode: previous.countryCode,
+          },
+          newValues: {
+            displayName: updated.displayName,
+            phone: updated.phone,
+            addressLine1: updated.addressLine1,
+            addressLine2: updated.addressLine2,
+            city: updated.city,
+            postalCode: updated.postalCode,
+            countryCode: updated.countryCode,
+          },
+        });
+
+        return updated;
+      });
     }),
 
   /**

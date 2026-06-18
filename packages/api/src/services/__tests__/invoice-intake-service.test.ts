@@ -557,6 +557,37 @@ describe('uploadAndPersist', () => {
     expect(db.__rows.intakes).toHaveLength(0);
   });
 
+  it('oversized base64 string is rejected before decode (no parse, no R2, no decode work)', async () => {
+    const db = makeDb();
+    const deps = buildHappyDeps();
+
+    // A base64 string longer than ceil(maxBytes / 3) * 4 decodes to > the cap.
+    // Building the string by length avoids ever materializing the big buffer —
+    // mirrors what an attacker would send and proves the pre-decode guard.
+    const maxBase64Chars = Math.ceil(INTAKE_MAX_FILE_BYTES / 3) * 4;
+    const oversized = 'A'.repeat(maxBase64Chars + 4);
+
+    await expect(
+      uploadAndPersist(
+        db as never,
+        {
+          orgId: ORG_A,
+          userId: USER_1,
+          fileKind: 'pdf',
+          fileBase64: oversized,
+          mime: 'application/pdf',
+          originalFilename: 'huge.pdf',
+        },
+        deps,
+      ),
+    ).rejects.toMatchObject({ code: 'FILE_TOO_LARGE' });
+
+    // No parsing, no R2 writes, no intake row — rejected at the pre-decode gate.
+    expect(deps.parseZugferdPdf).not.toHaveBeenCalled();
+    expect(deps.r2.puts).toHaveLength(0);
+    expect(db.__rows.intakes).toHaveLength(0);
+  });
+
   it('unsupported MIME throws UNSUPPORTED_MIME before any parse', async () => {
     const db = makeDb();
     const deps = buildHappyDeps();

@@ -340,38 +340,37 @@ describe('teamsRouter', () => {
   });
 
   describe('tier gating', () => {
-    it('saveChannelMapping procedure includes requireTier(PRO) in middleware chain', async () => {
+    it('saveChannelMapping procedure is gated on tier PRO via integrationSettingsProcedure', async () => {
       const fs = await import('node:fs');
       const path = await import('node:path');
       const sourceDir = path.resolve(import.meta.dirname, '../../routers');
       const source = fs.readFileSync(path.join(sourceDir, 'integrations/teams.ts'), 'utf-8');
 
       // Verify import exists
-      expect(source).toContain("import { requireTier } from '../../middleware/tier'");
+      expect(source).toContain(
+        "import { integrationSettingsProcedure } from '../../lib/integration-procedure'",
+      );
 
-      // Verify saveChannelMapping has requireTier
-      expect(source).toContain("requireTier('PRO')");
+      // Verify saveChannelMapping carries the PRO tier as the second positional arg
+      expect(source).toContain("integrationSettingsProcedure('update', 'PRO')");
 
       // Count occurrences -- should be exactly 1 (only saveChannelMapping, not read-only procedures)
-      const matches = source.match(/\.use\(requireTier\('PRO'\)\)/g);
+      const matches = source.match(/integrationSettingsProcedure\('[a-z]+', 'PRO'\)/g);
       expect(matches).toHaveLength(1);
     });
 
-    it('read-only procedures (connectionStatus, getTeams, getChannels, getChannelMapping) do NOT include requireTier', async () => {
+    it('read-only procedures (connectionStatus, getTeams, getChannels, getChannelMapping) do NOT include tier gating', async () => {
       const fs = await import('node:fs');
       const path = await import('node:path');
       const sourceDir = path.resolve(import.meta.dirname, '../../routers');
       const source = fs.readFileSync(path.join(sourceDir, 'integrations/teams.ts'), 'utf-8');
 
-      // Extract each read-only procedure block and verify no requireTier
+      // Extract each read-only procedure factory call and verify no tier arg
       for (const proc of ['connectionStatus', 'getTeams', 'getChannels', 'getChannelMapping']) {
-        const procRegex = new RegExp(
-          `${proc}:\\s*tenantProcedure[\\s\\S]*?(?=\\w+:\\s*tenantProcedure|\\}\\);$)`,
-          'm',
-        );
+        const procRegex = new RegExp(`${proc}:\\s*integrationSettingsProcedure\\(([^)]*)\\)`, 'm');
         const match = source.match(procRegex);
         if (match) {
-          expect(match[0]).not.toContain('requireTier');
+          expect(match[1]).not.toContain('PRO');
         }
       }
     });
