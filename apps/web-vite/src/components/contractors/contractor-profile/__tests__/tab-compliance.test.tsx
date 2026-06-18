@@ -29,7 +29,9 @@ vi.mock('../../compliance/compliance-item-history.js', () => ({
 // Stub sub-components that open dialogs so this test stays presentational.
 vi.mock('../../compliance/override-compliance-item-button.js', () => ({
   OverrideComplianceItemButton: ({ status }: { status: string }) => (
-    <button data-testid={`override-btn-${status}`}>override</button>
+    <button type="button" data-testid={`override-btn-${status}`}>
+      override
+    </button>
   ),
 }));
 

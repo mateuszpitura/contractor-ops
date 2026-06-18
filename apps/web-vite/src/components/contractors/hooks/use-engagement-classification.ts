@@ -209,6 +209,7 @@ export function useClassificationOutcomeView(
     }
   }, []);
 
+  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: sequential guard chain deriving a discriminated OutcomeStatus union — each early return maps one distinct state (loading/not-found/unsupported/missing/ready) and is not factorable without losing the narrowing order
   const status = useMemo<OutcomeStatus>(() => {
     if (assessmentQuery.isPending) return { kind: 'loading' };
     const assessment = assessmentQuery.data;
@@ -261,6 +262,7 @@ export function useClassificationOutcomeView(
   } as const;
 }
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: type-narrowing parser over `unknown` persisted answers — one branch per answer-value shape (yes-no/likert/score/billing-ratio) with shape-specific range validation; flattening the guards is intrinsic to the parse
 function reifyAnswers(raw: Record<string, unknown>): Record<string, WizardAnswerValue> {
   const result: Record<string, WizardAnswerValue> = {};
   for (const [questionId, persisted] of Object.entries(raw)) {

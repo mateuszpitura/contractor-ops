@@ -264,6 +264,7 @@ export function WizardDialogView({
         showDirtyClose={false}
         onConfirmDirtyClose={handleDiscard}
         onCancelDirtyClose={handleCancelDirtyClose}>
+        {/* biome-ignore lint/a11y/noStaticElementInteractions: passive Enter-key guard on a presentation wrapper to stop input Enter from submitting the multi-step wizard; not an interactive widget */}
         <div className="min-h-[320px] px-1" role="presentation" onKeyDown={preventEnterSubmit}>
           {currentStep === 0 && <StepCompany form={form} />}
           {currentStep === 1 && <StepBilling form={form} />}

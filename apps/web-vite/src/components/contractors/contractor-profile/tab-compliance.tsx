@@ -6,7 +6,7 @@ import {
   TooltipTrigger,
 } from '@contractor-ops/ui/components/shadcn/tooltip';
 import { FileSearch, ShieldCheck } from 'lucide-react';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { usePermissions } from '../../../hooks/use-permissions.js';
 import { tDynLoose } from '../../../i18n/typed-keys.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
@@ -66,6 +66,8 @@ function ReviewUploadButton({
   const { can } = usePermissions();
   const [open, setOpen] = useState(false);
 
+  const handleOpen = useCallback(() => setOpen(true), []);
+
   if (!can('compliance', ['override'])) return null;
 
   return (
@@ -73,7 +75,7 @@ function ReviewUploadButton({
       <Button
         variant="outline"
         size="sm"
-        onClick={() => setOpen(true)}
+        onClick={handleOpen}
         aria-label={t('reviewButtonAriaLabel')}>
         <FileSearch className="size-4" aria-hidden />
         {t('reviewButtonLabel')}
@@ -117,6 +119,7 @@ export function TabCompliance({ contractor }: TabComplianceProps) {
       <h3 className="text-base font-medium">{t('requiredDocuments')}</h3>
 
       <div className="divide-y rounded-xl border bg-card">
+        {/* biome-ignore lint/complexity/noExcessiveCognitiveComplexity: cohesive compliance-row renderer — status/severity/expiry/pending-review and override/history branches read clearest as one row builder */}
         {contractor.complianceItems.map(item => {
           const isMissing = item.status === 'MISSING';
           const expiringSoon = isExpiringSoon(item.expiresAt);

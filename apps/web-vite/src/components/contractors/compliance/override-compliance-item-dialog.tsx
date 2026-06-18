@@ -17,7 +17,7 @@ import {
   SelectValue,
 } from '@contractor-ops/ui/components/shadcn/select';
 import { Textarea } from '@contractor-ops/ui/components/shadcn/textarea';
-import { useState } from 'react';
+import { useCallback, useId, useState } from 'react';
 
 import { tDynLoose } from '../../../i18n/typed-keys.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
@@ -49,10 +49,27 @@ export function OverrideComplianceItemDialogView({
   onSubmit,
 }: OverrideComplianceItemDialogViewProps) {
   const t = useTranslations('Compliance.override');
+  const categoryId = useId();
+  const noteId = useId();
   const [reasonCategory, setReasonCategory] = useState<OverrideReasonCategory | ''>('');
   const [reasonNote, setReasonNote] = useState('');
 
   const isValid = reasonCategory !== '' && reasonNote.trim().length >= MIN_NOTE_LENGTH;
+
+  const handleCategoryChange = useCallback(
+    (value: OverrideReasonCategory | '' | null) => setReasonCategory(value ?? ''),
+    [],
+  );
+  const handleNoteChange = useCallback(
+    (e: React.ChangeEvent<HTMLTextAreaElement>) => setReasonNote(e.target.value),
+    [],
+  );
+  const handleCancel = useCallback(() => onOpenChange(false), [onOpenChange]);
+  const handleSubmit = useCallback(() => {
+    if (reasonCategory !== '') {
+      onSubmit({ reasonCategory, reasonNote: reasonNote.trim() });
+    }
+  }, [onSubmit, reasonCategory, reasonNote]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -64,11 +81,9 @@ export function OverrideComplianceItemDialogView({
 
         <DialogBody className="flex flex-col gap-4">
           <div className="flex flex-col gap-2">
-            <Label htmlFor="override-reason-category">{t('categoryLabel')}</Label>
-            <Select
-              value={reasonCategory}
-              onValueChange={value => setReasonCategory(value as OverrideReasonCategory)}>
-              <SelectTrigger id="override-reason-category">
+            <Label htmlFor={categoryId}>{t('categoryLabel')}</Label>
+            <Select value={reasonCategory} onValueChange={handleCategoryChange}>
+              <SelectTrigger id={categoryId}>
                 <SelectValue placeholder={t('categoryPlaceholder')} />
               </SelectTrigger>
               <SelectContent>
@@ -82,11 +97,11 @@ export function OverrideComplianceItemDialogView({
           </div>
 
           <div className="flex flex-col gap-2">
-            <Label htmlFor="override-reason-note">{t('noteLabel')}</Label>
+            <Label htmlFor={noteId}>{t('noteLabel')}</Label>
             <Textarea
-              id="override-reason-note"
+              id={noteId}
               value={reasonNote}
-              onChange={e => setReasonNote(e.target.value)}
+              onChange={handleNoteChange}
               placeholder={t('notePlaceholder')}
               rows={4}
             />
@@ -97,16 +112,10 @@ export function OverrideComplianceItemDialogView({
         </DialogBody>
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isPending}>
+          <Button variant="outline" onClick={handleCancel} disabled={isPending}>
             {t('cancel')}
           </Button>
-          <Button
-            disabled={!isValid || isPending}
-            onClick={() => {
-              if (reasonCategory !== '') {
-                onSubmit({ reasonCategory, reasonNote: reasonNote.trim() });
-              }
-            }}>
+          <Button disabled={!isValid || isPending} onClick={handleSubmit}>
             {t('submit')}
           </Button>
         </DialogFooter>
@@ -126,16 +135,26 @@ export function OverrideComplianceItemDialogContainer({
   open,
   onOpenChange,
 }: OverrideComplianceItemDialogContainerProps) {
-  const { override, isPending } = useOverrideComplianceItem(() => onOpenChange(false));
+  const handleClose = useCallback(() => onOpenChange(false), [onOpenChange]);
+  const { override, isPending } = useOverrideComplianceItem(handleClose);
+
+  const handleSubmit = useCallback(
+    ({
+      reasonCategory,
+      reasonNote,
+    }: {
+      reasonCategory: OverrideReasonCategory;
+      reasonNote: string;
+    }) => override({ itemId, reasonCategory, reasonNote }),
+    [override, itemId],
+  );
 
   return (
     <OverrideComplianceItemDialogView
       open={open}
       onOpenChange={onOpenChange}
       isPending={isPending}
-      onSubmit={({ reasonCategory, reasonNote }) =>
-        override({ itemId, reasonCategory, reasonNote })
-      }
+      onSubmit={handleSubmit}
     />
   );
 }

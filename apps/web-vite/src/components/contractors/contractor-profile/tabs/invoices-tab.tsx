@@ -21,10 +21,11 @@ import type { InvoiceRow } from '../../../invoices/invoice-table/columns.js';
 import { getColumns } from '../../../invoices/invoice-table/columns.js';
 import { InvoiceUploadArea } from '../../../invoices/invoice-upload-area.js';
 import { renderEmptyStateAction } from '../../../shared/atelier-bridges.js';
-import type { useContractorTabInvoices as UseContractorTabInvoices } from '../../hooks/use-contractor-tab-invoices.js';
 import { useContractorTabInvoices } from '../../hooks/use-contractor-tab-invoices.js';
 
 const PAGE_SIZE = 25;
+
+const noopPageSizeChange = () => undefined;
 
 type InvoicesTabViewProps = {
   contractorId: string;
@@ -81,7 +82,6 @@ export function InvoicesTabView({
   page,
   setPage,
   data,
-  totalRows,
   totalPages,
   isLoading,
   handleUploadComplete,
@@ -121,7 +121,7 @@ export function InvoicesTabView({
         pageIndex={Math.max(0, page - 1)}
         pageSize={PAGE_SIZE}
         onPageChange={handlePageChange}
-        onPageSizeChange={() => undefined}
+        onPageSizeChange={noopPageSizeChange}
         isLoading={isLoading}
         constrainHeight={false}
         hideDensityToggle

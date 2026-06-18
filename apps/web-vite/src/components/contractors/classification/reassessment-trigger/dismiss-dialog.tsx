@@ -10,7 +10,7 @@ import {
 } from '@contractor-ops/ui/components/shadcn/dialog';
 import { Label } from '@contractor-ops/ui/components/shadcn/label';
 import { Textarea } from '@contractor-ops/ui/components/shadcn/textarea';
-import { useCallback, useState } from 'react';
+import { useCallback, useId, useState } from 'react';
 
 import { useTranslations } from '../../../../i18n/useTranslations.js';
 
@@ -30,6 +30,8 @@ export function ReassessmentTriggerDismissDialog({
   isSubmitting = false,
 }: ReassessmentTriggerDismissDialogProps) {
   const t = useTranslations('Classification.polish.reassessmentTrigger');
+  const reasonId = useId();
+  const reasonErrorId = useId();
   const [reason, setReason] = useState('');
   const [attempted, setAttempted] = useState(false);
   const isValid = reason.length >= MIN_REASON_LENGTH;
@@ -68,19 +70,19 @@ export function ReassessmentTriggerDismissDialog({
           <DialogDescription>{t('dismissBody')}</DialogDescription>
         </DialogHeader>
         <DialogBody className="flex flex-col gap-2">
-          <Label htmlFor="rt-dismiss-reason">{t('dismissReasonLabel')}</Label>
+          <Label htmlFor={reasonId}>{t('dismissReasonLabel')}</Label>
           <Textarea
-            id="rt-dismiss-reason"
+            id={reasonId}
             value={reason}
             onChange={handleReasonChange}
             minLength={MIN_REASON_LENGTH}
             maxLength={1000}
             rows={4}
             aria-invalid={attempted && !isValid ? true : undefined}
-            aria-describedby={attempted && !isValid ? 'rt-dismiss-reason-error' : undefined}
+            aria-describedby={attempted && !isValid ? reasonErrorId : undefined}
           />
           {attempted && !isValid ? (
-            <p id="rt-dismiss-reason-error" role="alert" className="text-destructive text-xs">
+            <p id={reasonErrorId} role="alert" className="text-destructive text-xs">
               {t('dismissReasonMinLength')}
             </p>
           ) : null}

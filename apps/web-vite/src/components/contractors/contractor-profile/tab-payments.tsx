@@ -29,6 +29,8 @@ const itemStatusBadgeColors: Record<string, string> = {
 
 const PAGE_SIZE = 10;
 
+const noopPageSizeChange = (): undefined => undefined;
+
 export type TabPaymentsViewProps = {
   contractorId: string;
 } & ReturnType<typeof useContractorTabPayments>;
@@ -161,7 +163,7 @@ export function TabPaymentsView({
         pageIndex={Math.max(0, page - 1)}
         pageSize={PAGE_SIZE}
         onPageChange={handlePageChange}
-        onPageSizeChange={() => undefined}
+        onPageSizeChange={noopPageSizeChange}
         isLoading={isLoading}
         constrainHeight={false}
         hideDensityToggle

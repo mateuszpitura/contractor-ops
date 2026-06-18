@@ -159,16 +159,16 @@ export function StatusfeststellungsverfahrenPanelView({
                   {uploadPending ? tDrv('uploading') : tDrv('uploadDecisionLetter')}
                 </Button>
               )}
-              {uploadError && (
+              {uploadError ? (
                 <p role="alert" className="text-sm text-destructive">
                   {uploadError}
                 </p>
-              )}
-              {hasDecisionLetter && (
+              ) : null}
+              {hasDecisionLetter ? (
                 <p className="text-sm text-success">
                   {tDrv('uploadedAt', { date: new Date().toLocaleDateString(), user: '' })}
                 </p>
-              )}
+              ) : null}
             </div>
           )}
           {clearanceRows.length === 0 ? (

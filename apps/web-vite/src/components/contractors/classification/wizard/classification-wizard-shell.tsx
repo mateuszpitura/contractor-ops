@@ -68,9 +68,6 @@ export interface ClassificationWizardShellViewProps {
 type WizardStepDefinition = Ir35StepDefinition | ScheinStepDefinition;
 
 export function ClassificationWizardShellView({
-  assessmentId,
-  contractorAssignmentId,
-  contractorId,
   countryCode,
   initialAnswers = {},
   autosaveStatus,

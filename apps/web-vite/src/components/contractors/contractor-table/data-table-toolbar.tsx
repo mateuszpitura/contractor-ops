@@ -331,7 +331,7 @@ export function DataTableToolbar({
       </div>
 
       {/* Active filter badges */}
-      {hasActiveFilters && (
+      {hasActiveFilters ? (
         <div className="flex flex-wrap items-center gap-1.5">
           {filters.lifecycleStage.map(stage => (
             <RemovableFilterBadge
@@ -395,7 +395,7 @@ export function DataTableToolbar({
             {t('clearAll')}
           </button>
         </div>
-      )}
+      ) : null}
     </div>
   );
 }

@@ -11,6 +11,8 @@ import { getColumns } from './columns.js';
 import { DataTableBulkActions } from './data-table-bulk-actions.js';
 import { DataTableColumnToggle } from './data-table-column-toggle.js';
 
+const getContractorRowId = (row: ContractorRow): string => row.id;
+
 interface ContractorDataTableProps extends ContractorListTableProps {
   onRowClick: (contractor: ContractorRow) => void;
   onAddContractor: () => void;
@@ -54,6 +56,8 @@ export function ContractorDataTable({
     [],
   );
 
+  const handleClearSelection = useCallback(() => setSelectedRows([]), [setSelectedRows]);
+
   return (
     <WorkbenchDataTable
       sectionClassName={sectionClassName}
@@ -83,14 +87,14 @@ export function ContractorDataTable({
             selectedRows={selectedRows}
             users={users}
             bulkActions={bulkActions}
-            onComplete={() => setSelectedRows([])}
+            onComplete={handleClearSelection}
           />
         ) : undefined
       }
       enableRowSelection
       onSelectionChange={setSelectedRows}
       onRowClick={onRowClick}
-      getRowId={row => row.id}
+      getRowId={getContractorRowId}
       rightSlot={renderColumnToggle}
       emptyIcon={<ContractorsIllustration className="mx-auto h-16 w-16 text-primary/60" />}
       emptyTitle={t('empty.heading')}

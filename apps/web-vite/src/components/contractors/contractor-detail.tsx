@@ -45,6 +45,7 @@ function TabContentSkeleton() {
   return (
     <div className="grid gap-4 lg:grid-cols-2">
       {Array.from({ length: 4 }).map((_, i) => (
+        // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list, never reordered
         <div key={`skel-${i}`} className="rounded-xl border bg-card p-4">
           <Skeleton className="mb-3 h-5 w-32" />
           <div className="space-y-2">
@@ -100,6 +101,7 @@ export function ContractorDetailContainer() {
             <>
               <div className="mb-4 flex gap-2 border-b pb-2">
                 {Array.from({ length: 8 }).map((_, i) => (
+                  // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list, never reordered
                   <Skeleton key={`tab-skel-${i}`} className="h-7 w-20" />
                 ))}
               </div>

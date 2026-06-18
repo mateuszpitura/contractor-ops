@@ -1,6 +1,6 @@
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { ShieldCheck } from 'lucide-react';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 
 import { usePermissions } from '../../../hooks/use-permissions.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
@@ -27,6 +27,8 @@ export function OverrideComplianceItemButton({
   const { can } = usePermissions();
   const [open, setOpen] = useState(false);
 
+  const handleOpen = useCallback(() => setOpen(true), []);
+
   const eligible =
     can('compliance', ['override']) &&
     severity === 'BLOCKING' &&
@@ -36,11 +38,7 @@ export function OverrideComplianceItemButton({
 
   return (
     <>
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={() => setOpen(true)}
-        aria-label={t('buttonAriaLabel')}>
+      <Button variant="outline" size="sm" onClick={handleOpen} aria-label={t('buttonAriaLabel')}>
         <ShieldCheck className="size-4" aria-hidden />
         {t('buttonLabel')}
       </Button>

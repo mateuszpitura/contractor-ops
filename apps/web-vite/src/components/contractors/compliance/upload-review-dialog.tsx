@@ -24,7 +24,7 @@ import {
   TabsTrigger,
 } from '@contractor-ops/ui/components/shadcn/tabs';
 import { Textarea } from '@contractor-ops/ui/components/shadcn/textarea';
-import { useState } from 'react';
+import { useCallback, useId, useState } from 'react';
 import { tDynLoose } from '../../../i18n/typed-keys.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import type { RejectReasonCategory } from './hooks/use-upload-review.js';
@@ -54,10 +54,34 @@ export function UploadReviewDialog({
   onReject,
 }: UploadReviewDialogProps) {
   const t = useTranslations('Compliance.uploadReview');
+  const expiresAtId = useId();
+  const reasonId = useId();
+  const freeTextId = useId();
   const [tab, setTab] = useState<'approve' | 'reject'>('approve');
   const [expiresAt, setExpiresAt] = useState(defaultExpiresAt);
   const [reasonCategory, setReasonCategory] = useState<RejectReasonCategory | ''>('');
   const [freeText, setFreeText] = useState('');
+
+  const handleTabChange = useCallback((value: string) => setTab(value as 'approve' | 'reject'), []);
+  const handleExpiresAtChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => setExpiresAt(e.target.value),
+    [],
+  );
+  const handleReasonChange = useCallback(
+    (value: RejectReasonCategory | '' | null) => setReasonCategory(value ?? ''),
+    [],
+  );
+  const handleFreeTextChange = useCallback(
+    (e: React.ChangeEvent<HTMLTextAreaElement>) => setFreeText(e.target.value),
+    [],
+  );
+  const handleCancel = useCallback(() => onOpenChange(false), [onOpenChange]);
+  const handleApprove = useCallback(() => onApprove({ expiresAt }), [onApprove, expiresAt]);
+  const handleReject = useCallback(() => {
+    if (reasonCategory !== '') {
+      onReject({ reasonCategory, freeText: freeText.trim() || undefined });
+    }
+  }, [onReject, reasonCategory, freeText]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -68,30 +92,28 @@ export function UploadReviewDialog({
         </DialogHeader>
 
         <DialogBody>
-          <Tabs value={tab} onValueChange={value => setTab(value as 'approve' | 'reject')}>
+          <Tabs value={tab} onValueChange={handleTabChange}>
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="approve">{t('approveTab')}</TabsTrigger>
               <TabsTrigger value="reject">{t('rejectTab')}</TabsTrigger>
             </TabsList>
 
             <TabsContent value="approve" className="flex flex-col gap-2 pt-4">
-              <Label htmlFor="review-expires-at">{t('expiresAtLabel')}</Label>
+              <Label htmlFor={expiresAtId}>{t('expiresAtLabel')}</Label>
               <Input
-                id="review-expires-at"
+                id={expiresAtId}
                 type="date"
                 value={expiresAt}
-                onChange={e => setExpiresAt(e.target.value)}
+                onChange={handleExpiresAtChange}
                 className="max-w-xs"
               />
             </TabsContent>
 
             <TabsContent value="reject" className="flex flex-col gap-4 pt-4">
               <div className="flex flex-col gap-2">
-                <Label htmlFor="review-reason">{t('reasonLabel')}</Label>
-                <Select
-                  value={reasonCategory}
-                  onValueChange={value => setReasonCategory(value as RejectReasonCategory)}>
-                  <SelectTrigger id="review-reason">
+                <Label htmlFor={reasonId}>{t('reasonLabel')}</Label>
+                <Select value={reasonCategory} onValueChange={handleReasonChange}>
+                  <SelectTrigger id={reasonId}>
                     <SelectValue placeholder={t('reasonPlaceholder')} />
                   </SelectTrigger>
                   <SelectContent>
@@ -104,11 +126,11 @@ export function UploadReviewDialog({
                 </Select>
               </div>
               <div className="flex flex-col gap-2">
-                <Label htmlFor="review-freetext">{t('freeTextLabel')}</Label>
+                <Label htmlFor={freeTextId}>{t('freeTextLabel')}</Label>
                 <Textarea
-                  id="review-freetext"
+                  id={freeTextId}
                   value={freeText}
-                  onChange={e => setFreeText(e.target.value)}
+                  onChange={handleFreeTextChange}
                   rows={3}
                 />
               </div>
@@ -117,22 +139,18 @@ export function UploadReviewDialog({
         </DialogBody>
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isPending}>
+          <Button variant="outline" onClick={handleCancel} disabled={isPending}>
             {t('cancel')}
           </Button>
           {tab === 'approve' ? (
-            <Button disabled={!expiresAt || isPending} onClick={() => onApprove({ expiresAt })}>
+            <Button disabled={!expiresAt || isPending} onClick={handleApprove}>
               {t('confirmApprove')}
             </Button>
           ) : (
             <Button
               variant="destructive"
               disabled={reasonCategory === '' || isPending}
-              onClick={() => {
-                if (reasonCategory !== '') {
-                  onReject({ reasonCategory, freeText: freeText.trim() || undefined });
-                }
-              }}>
+              onClick={handleReject}>
               {t('confirmReject')}
             </Button>
           )}
@@ -157,7 +175,18 @@ export function UploadReviewDialogContainer({
   open,
   onOpenChange,
 }: UploadReviewDialogContainerProps) {
-  const { approve, reject, isPending } = useUploadReview(() => onOpenChange(false));
+  const handleClose = useCallback(() => onOpenChange(false), [onOpenChange]);
+  const { approve, reject, isPending } = useUploadReview(handleClose);
+
+  const handleApprove = useCallback(
+    ({ expiresAt }: { expiresAt: string }) => approve({ itemId, documentId, expiresAt }),
+    [approve, itemId, documentId],
+  );
+  const handleReject = useCallback(
+    ({ reasonCategory, freeText }: { reasonCategory: RejectReasonCategory; freeText?: string }) =>
+      reject({ itemId, documentId, reasonCategory, freeText }),
+    [reject, itemId, documentId],
+  );
 
   return (
     <UploadReviewDialog
@@ -165,10 +194,8 @@ export function UploadReviewDialogContainer({
       onOpenChange={onOpenChange}
       isPending={isPending}
       defaultExpiresAt={defaultExpiresAt}
-      onApprove={({ expiresAt }) => approve({ itemId, documentId, expiresAt })}
-      onReject={({ reasonCategory, freeText }) =>
-        reject({ itemId, documentId, reasonCategory, freeText })
-      }
+      onApprove={handleApprove}
+      onReject={handleReject}
     />
   );
 }

@@ -80,6 +80,7 @@ function readPrompt(question: RuleSetQuestion, locale: Locale): string {
   return question.prompt[locale] ?? question.prompt.en;
 }
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: flat type-narrowing chain over an `unknown` answer payload — each branch maps a distinct runtime shape to a display string and is not factorable without losing the guard sequence
 function readAnswerSummary(
   raw: unknown,
   _locale: Locale,

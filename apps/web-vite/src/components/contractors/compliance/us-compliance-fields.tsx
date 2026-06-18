@@ -86,6 +86,7 @@ function FieldError({ id, message }: { id: string; message: string | undefined }
  * is stored, and a plain entry input otherwise. EIN/SSN format errors surface
  * inline via FieldError and never block typing.
  */
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: single cohesive US compliance form — complexity is conditional EIN/SSN surface rendering plus per-field aria and inline format-error ternaries; splitting would fragment one form without reducing real logic
 export function UsComplianceFields(props: UsComplianceFieldsProps) {
   const t = useTranslations('Contractors.compliance.us');
   const id = useId();

@@ -19,7 +19,7 @@ import {
 import { Input } from '@contractor-ops/ui/components/shadcn/input';
 import { Label } from '@contractor-ops/ui/components/shadcn/label';
 import { Loader2, Trash2 } from 'lucide-react';
-import { useCallback, useState } from 'react';
+import { useCallback, useId, useState } from 'react';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import type { useDefaultSkonto as UseDefaultSkonto } from '../hooks/use-default-skonto.js';
@@ -52,12 +52,15 @@ type DefaultSkontoSectionViewProps = DefaultSkontoSectionProps &
 
 export function DefaultSkontoSectionView({
   billingProfileId,
-  featureEnabled,
   existingDefault,
   upsertMutation,
   deleteMutation,
 }: DefaultSkontoSectionViewProps) {
   const t = useTranslations('Payments.skonto.billingProfile');
+
+  const discountPercentId = useId();
+  const discountDaysId = useId();
+  const netDaysId = useId();
 
   const [isOpen, setIsOpen] = useState(!!existingDefault);
   const [errors, setErrors] = useState<FormErrors>({});
@@ -166,9 +169,9 @@ export function DefaultSkontoSectionView({
       <CollapsibleContent className="space-y-4 pt-4">
         <div className="grid grid-cols-3 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="bp-discount-percent">{t('discountPercentLabel')}</Label>
+            <Label htmlFor={discountPercentId}>{t('discountPercentLabel')}</Label>
             <Input
-              id="bp-discount-percent"
+              id={discountPercentId}
               type="number"
               min="0.01"
               max="50"
@@ -179,15 +182,15 @@ export function DefaultSkontoSectionView({
               className="tabular-nums"
               aria-invalid={!!errors.discountPercent}
             />
-            {errors.discountPercent && (
+            {errors.discountPercent ? (
               <p className="text-xs text-destructive">{errors.discountPercent}</p>
-            )}
+            ) : null}
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="bp-discount-days">{t('discountPeriodLabel')}</Label>
+            <Label htmlFor={discountDaysId}>{t('discountPeriodLabel')}</Label>
             <Input
-              id="bp-discount-days"
+              id={discountDaysId}
               type="number"
               min="1"
               step="1"
@@ -197,15 +200,15 @@ export function DefaultSkontoSectionView({
               className="tabular-nums"
               aria-invalid={!!errors.discountDays}
             />
-            {errors.discountDays && (
+            {errors.discountDays ? (
               <p className="text-xs text-destructive">{errors.discountDays}</p>
-            )}
+            ) : null}
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="bp-net-days">{t('netPeriodLabel')}</Label>
+            <Label htmlFor={netDaysId}>{t('netPeriodLabel')}</Label>
             <Input
-              id="bp-net-days"
+              id={netDaysId}
               type="number"
               min="1"
               step="1"
@@ -215,7 +218,7 @@ export function DefaultSkontoSectionView({
               className="tabular-nums"
               aria-invalid={!!errors.netDays}
             />
-            {errors.netDays && <p className="text-xs text-destructive">{errors.netDays}</p>}
+            {errors.netDays ? <p className="text-xs text-destructive">{errors.netDays}</p> : null}
           </div>
         </div>
 
@@ -224,7 +227,7 @@ export function DefaultSkontoSectionView({
             {upsertMutation.isPending ? t('saving') : t('saveTerm')}
           </Button>
 
-          {existingDefault && (
+          {existingDefault ? (
             <Button
               variant="ghost"
               size="sm"
@@ -233,7 +236,7 @@ export function DefaultSkontoSectionView({
               className="text-destructive hover:text-destructive">
               {t('removeDefault')}
             </Button>
-          )}
+          ) : null}
         </div>
 
         <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
@@ -253,7 +256,9 @@ export function DefaultSkontoSectionView({
                 variant="destructive"
                 disabled={deleteMutation.isPending}
                 onClick={handleDeleteConfirm}>
-                {deleteMutation.isPending && <Loader2 className="me-1.5 size-3.5 animate-spin" />}
+                {deleteMutation.isPending ? (
+                  <Loader2 className="me-1.5 size-3.5 animate-spin" />
+                ) : null}
                 {t('delete.confirm')}
               </AlertDialogAction>
             </AlertDialogFooter>

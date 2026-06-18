@@ -60,6 +60,7 @@ export function SsnMaskedReveal({ contractorId, last4, canReveal }: SsnMaskedRev
         ) : (
           <span
             id={`${id}-ssn`}
+            role="img"
             className="font-mono text-sm tabular-nums"
             aria-label={maskedLabel}
             data-testid="ssn-masked-value">

@@ -18,6 +18,7 @@ export interface SteuernummerInputProps {
   required?: boolean;
 }
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: cohesive Steuernummer field — per-Bundesland format/regex validation, derived aria wiring, and valid/error display are tightly coupled and clearer kept together
 export function SteuernummerInput({
   bundesland,
   value,

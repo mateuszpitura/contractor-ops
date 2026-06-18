@@ -20,6 +20,8 @@ import { ContractWizardDialog } from '../../contracts/contract-wizard/wizard-dia
 import type { ContractorTabContractRow } from '../hooks/use-contractor-tab-contracts.js';
 import { useContractorTabContracts } from '../hooks/use-contractor-tab-contracts.js';
 
+const noopPageSizeChange = () => undefined;
+
 const statusBadgeColors: Record<string, string> = {
   DRAFT: 'bg-muted text-muted-foreground border border-border',
   PENDING_SIGNATURE: 'bg-muted text-muted-foreground border border-border',
@@ -188,7 +190,7 @@ export function TabContractsView({
         pageIndex={Math.max(0, page - 1)}
         pageSize={pageSize}
         onPageChange={handlePageChange}
-        onPageSizeChange={() => undefined}
+        onPageSizeChange={noopPageSizeChange}
         isLoading={isLoading}
         constrainHeight={false}
         hideDensityToggle

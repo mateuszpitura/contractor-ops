@@ -57,6 +57,7 @@ function formatDateInput(date: Date | null | undefined): string {
 export type DrvClearanceFormViewProps = DrvClearanceFormProps &
   ReturnType<typeof UseDrvClearanceFormMutations>;
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: cohesive controlled DRV clearance form — six fields with per-field error/aria branches, conditional validity-date section, and create/edit dispatch read clearest in one component
 export function DrvClearanceFormView({
   open,
   onOpenChange,

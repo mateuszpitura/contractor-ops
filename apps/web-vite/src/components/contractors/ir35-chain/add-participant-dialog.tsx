@@ -21,8 +21,6 @@ type AddParticipantDialogViewProps = AddParticipantDialogProps &
   ReturnType<typeof UseAddIr35Participant>;
 
 export function AddParticipantDialogView({
-  engagementId,
-  nextOrderIndex,
   open,
   onOpenChange,
   addParticipant,

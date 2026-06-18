@@ -11,7 +11,7 @@ import type {
   ScheinCategory,
 } from '@contractor-ops/classification';
 import type { ColumnDef } from '@tanstack/react-table';
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useTranslations } from '../../../../i18n/useTranslations.js';
 import { WorkbenchDataTable } from '../../../table-kit/workbench-data-table.js';
 
@@ -81,11 +81,18 @@ type CriterionRow = {
   answerScore: string;
 };
 
+const getCriterionRowId = (row: CriterionRow): string => row.id;
+
 export function DrvCriterionBreakdownList(props: DrvCriterionBreakdownListProps) {
   const { category, categoryLabel, questionsSnapshot, answers, locale } = props;
   const t = useTranslations('Classification');
   const [pageIndex, setPageIndex] = useState(0);
   const [pageSize, setPageSize] = useState(25);
+
+  const handlePageSizeChange = useCallback((size: number) => {
+    setPageSize(size);
+    setPageIndex(0);
+  }, []);
 
   const data = useMemo<CriterionRow[]>(() => {
     return questionsSnapshot.questions
@@ -151,15 +158,12 @@ export function DrvCriterionBreakdownList(props: DrvCriterionBreakdownListProps)
         pageIndex={pageIndex}
         pageSize={pageSize}
         onPageChange={setPageIndex}
-        onPageSizeChange={size => {
-          setPageSize(size);
-          setPageIndex(0);
-        }}
+        onPageSizeChange={handlePageSizeChange}
         constrainHeight={false}
         hideDensityToggle
         hideChrome
         hideFooter
-        getRowId={row => row.id}
+        getRowId={getCriterionRowId}
         entityLabel={categoryLabel}
         emptyTitle={t('outcome.criteriaCaption', { category: categoryLabel })}
         noResultsTitle={t('outcome.criteriaCaption', { category: categoryLabel })}

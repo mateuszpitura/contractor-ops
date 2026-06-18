@@ -9,7 +9,7 @@ import { Checkbox } from '@contractor-ops/ui/components/shadcn/checkbox';
 import { Input } from '@contractor-ops/ui/components/shadcn/input';
 import { Label } from '@contractor-ops/ui/components/shadcn/label';
 import { SDS_APPROVAL_STATEMENT_EN } from '@contractor-ops/validators';
-import { useCallback, useState } from 'react';
+import { useCallback, useId, useState } from 'react';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import type { useGenerateSds as UseGenerateSds } from '../hooks/use-classification-documents.js';
 import { useGenerateSds } from '../hooks/use-classification-documents.js';
@@ -31,6 +31,8 @@ export function GenerateSdsButtonView({
 }: GenerateSdsButtonViewProps) {
   const t = useTranslations('Classification.documents');
   const tApproval = useTranslations('Legal.SdsApproval');
+  const clientNameId = useId();
+  const approvalCheckboxId = useId();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [approved, setApproved] = useState(alreadyApproved);
   const [clientName, setClientName] = useState('');
@@ -73,9 +75,9 @@ export function GenerateSdsButtonView({
           <p className="text-sm font-medium">{tApproval('gateTitle')}</p>
 
           <div className="space-y-1.5">
-            <Label htmlFor="sds-client-name">{tApproval('clientNameLabel')}</Label>
+            <Label htmlFor={clientNameId}>{tApproval('clientNameLabel')}</Label>
             <Input
-              id="sds-client-name"
+              id={clientNameId}
               value={clientName}
               onChange={handleClientNameChange}
               placeholder={tApproval('clientNamePlaceholder')}
@@ -86,12 +88,12 @@ export function GenerateSdsButtonView({
 
           <div className="flex items-start gap-3">
             <Checkbox
-              id="sds-approval-checkbox"
+              id={approvalCheckboxId}
               checked={checked}
               onCheckedChange={handleApprovalCheckedChange}
             />
             <Label
-              htmlFor="sds-approval-checkbox"
+              htmlFor={approvalCheckboxId}
               className="text-xs leading-relaxed text-muted-foreground">
               {SDS_APPROVAL_STATEMENT_EN}
             </Label>
@@ -109,7 +111,7 @@ export function GenerateSdsButtonView({
       )}
 
       {/* Generate SDS button — shown after approval */}
-      {approved && (
+      {approved ? (
         <button
           type="button"
           onClick={handleGenerateClick}
@@ -118,7 +120,7 @@ export function GenerateSdsButtonView({
           className="inline-flex items-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition hover:bg-primary/90 disabled:opacity-60">
           {generateMutation.isPending ? t('generating') : t('generateSds')}
         </button>
-      )}
+      ) : null}
 
       {errorMessage || approveSdsMutation.error || generateMutation.error ? (
         <div

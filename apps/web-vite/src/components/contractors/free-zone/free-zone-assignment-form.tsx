@@ -65,6 +65,35 @@ function toDateInputValue(value: string | null): string {
   return value.slice(0, 10);
 }
 
+function IsicCodeChip({
+  code,
+  isSaving,
+  removeLabel,
+  onRemove,
+}: {
+  code: string;
+  isSaving: boolean;
+  removeLabel: string;
+  onRemove: (code: string) => void;
+}) {
+  const handleRemove = useCallback(() => onRemove(code), [onRemove, code]);
+  return (
+    <li>
+      <Badge variant="secondary" className="gap-1 tabular-nums">
+        {code}
+        <button
+          type="button"
+          onClick={handleRemove}
+          disabled={isSaving}
+          className="-me-1 inline-flex size-4 items-center justify-center rounded-full hover:bg-muted-foreground/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
+          aria-label={removeLabel}>
+          <X aria-hidden="true" className="size-3" />
+        </button>
+      </Badge>
+    </li>
+  );
+}
+
 export function FreeZoneAssignmentForm({ initial, isSaving, onSave }: FreeZoneAssignmentFormProps) {
   const t = useTranslations('Contractors.freeZone.form');
   const tZones = useTranslations('Contractors.freeZone.zones');
@@ -108,6 +137,28 @@ export function FreeZoneAssignmentForm({ initial, isSaving, onSave }: FreeZoneAs
     setIsicCodes(prev => prev.filter(c => c !== code));
   }, []);
 
+  const handleZoneChange = useCallback((value: ZoneCode | null) => setZone(value), []);
+  const handleLicenseNumberChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => setLicenseNumber(e.target.value),
+    [],
+  );
+  const handleLicenseCategoryChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => setLicenseCategory(e.target.value),
+    [],
+  );
+  const handleLicenseExpiresAtChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => setLicenseExpiresAt(e.target.value),
+    [],
+  );
+  const handlePermittedActivitiesChange = useCallback(
+    (e: React.ChangeEvent<HTMLTextAreaElement>) => setPermittedActivitiesText(e.target.value),
+    [],
+  );
+  const handleIsicDraftChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => setIsicDraft(e.target.value),
+    [],
+  );
+
   const handleSubmit = useCallback(
     (e: React.FormEvent<HTMLFormElement>) => {
       e.preventDefault();
@@ -145,10 +196,7 @@ export function FreeZoneAssignmentForm({ initial, isSaving, onSave }: FreeZoneAs
             <Label htmlFor={`${id}-zone`} className="text-base font-semibold">
               {t('zoneLabel')}
             </Label>
-            <Select
-              value={zone ?? undefined}
-              onValueChange={value => setZone(value as ZoneCode)}
-              disabled={isSaving}>
+            <Select value={zone ?? undefined} onValueChange={handleZoneChange} disabled={isSaving}>
               <SelectTrigger id={`${id}-zone`} className="w-full">
                 <SelectValue placeholder={t('zonePlaceholder')} />
               </SelectTrigger>
@@ -170,7 +218,7 @@ export function FreeZoneAssignmentForm({ initial, isSaving, onSave }: FreeZoneAs
               <Input
                 id={`${id}-licenseNumber`}
                 value={licenseNumber}
-                onChange={e => setLicenseNumber(e.target.value)}
+                onChange={handleLicenseNumberChange}
                 placeholder={t('licenseNumberPlaceholder')}
                 disabled={isSaving}
                 className="tabular-nums"
@@ -183,7 +231,7 @@ export function FreeZoneAssignmentForm({ initial, isSaving, onSave }: FreeZoneAs
               <Input
                 id={`${id}-licenseCategory`}
                 value={licenseCategory}
-                onChange={e => setLicenseCategory(e.target.value)}
+                onChange={handleLicenseCategoryChange}
                 placeholder={t('licenseCategoryPlaceholder')}
                 disabled={isSaving}
               />
@@ -198,7 +246,7 @@ export function FreeZoneAssignmentForm({ initial, isSaving, onSave }: FreeZoneAs
               id={`${id}-licenseExpiresAt`}
               type="date"
               value={licenseExpiresAt}
-              onChange={e => setLicenseExpiresAt(e.target.value)}
+              onChange={handleLicenseExpiresAtChange}
               disabled={isSaving}
               className="w-full tabular-nums sm:w-60"
             />
@@ -212,7 +260,7 @@ export function FreeZoneAssignmentForm({ initial, isSaving, onSave }: FreeZoneAs
             <Textarea
               id={`${id}-permittedActivitiesText`}
               value={permittedActivitiesText}
-              onChange={e => setPermittedActivitiesText(e.target.value)}
+              onChange={handlePermittedActivitiesChange}
               placeholder={t('permittedActivitiesPlaceholder')}
               disabled={isSaving}
               rows={3}
@@ -227,7 +275,7 @@ export function FreeZoneAssignmentForm({ initial, isSaving, onSave }: FreeZoneAs
               <Input
                 id={`${id}-isicDraft`}
                 value={isicDraft}
-                onChange={e => setIsicDraft(e.target.value)}
+                onChange={handleIsicDraftChange}
                 onKeyDown={handleIsicKeyDown}
                 placeholder={t('isicCodesPlaceholder')}
                 disabled={isSaving}
@@ -249,19 +297,13 @@ export function FreeZoneAssignmentForm({ initial, isSaving, onSave }: FreeZoneAs
             {isicCodes.length > 0 ? (
               <ul className="flex flex-wrap gap-2 pt-1" aria-label={t('isicCodesLabel')}>
                 {isicCodes.map(code => (
-                  <li key={code}>
-                    <Badge variant="secondary" className="gap-1 tabular-nums">
-                      {code}
-                      <button
-                        type="button"
-                        onClick={() => removeIsicCode(code)}
-                        disabled={isSaving}
-                        className="-me-1 inline-flex size-4 items-center justify-center rounded-full hover:bg-muted-foreground/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
-                        aria-label={t('isicRemoveLabel', { code })}>
-                        <X aria-hidden="true" className="size-3" />
-                      </button>
-                    </Badge>
-                  </li>
+                  <IsicCodeChip
+                    key={code}
+                    code={code}
+                    isSaving={isSaving}
+                    removeLabel={t('isicRemoveLabel', { code })}
+                    onRemove={removeIsicCode}
+                  />
                 ))}
               </ul>
             ) : null}

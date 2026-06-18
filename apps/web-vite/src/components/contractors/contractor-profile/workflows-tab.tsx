@@ -11,7 +11,6 @@ import { enumKey } from '../../../lib/enum-key.js';
 import { JiraActivitySummary } from '../../integrations/jira-activity-summary.js';
 import { renderEmptyStateAction } from '../../shared/atelier-bridges.js';
 import { TemplatePickerDialog } from '../../workflows/template-picker-dialog.js';
-import type { useContractorTabWorkflows as UseContractorTabWorkflows } from '../hooks/use-contractor-tab-workflows.js';
 import { useContractorTabWorkflows } from '../hooks/use-contractor-tab-workflows.js';
 
 const runStatusBadgeColors: Record<string, string> = {

@@ -37,7 +37,7 @@ export function ComplianceItemHistory({ itemId }: ComplianceItemHistoryProps) {
         {t('toggle')}
       </CollapsibleTrigger>
       <CollapsibleContent className="pt-2">
-        {isPending && <Skeleton className="h-16 w-full" />}
+        {isPending ? <Skeleton className="h-16 w-full" /> : null}
         {!isPending && error && (
           <p role="alert" className="text-sm text-destructive">
             {t('error')}

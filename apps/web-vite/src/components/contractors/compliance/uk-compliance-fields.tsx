@@ -70,6 +70,7 @@ function FieldError({ id, message }: { id: string; message: string | undefined }
   );
 }
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: single cohesive UK compliance form — complexity is JSX conditional field rendering plus per-field aria-required/invalid/describedby ternaries; splitting would scatter one form across leaf components without reducing real logic
 export function UkComplianceFields(props: UkComplianceFieldsProps) {
   const t = useTranslations('Contractors.compliance.uk');
   const id = useId();

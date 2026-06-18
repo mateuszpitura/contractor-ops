@@ -17,7 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@contractor-ops/ui/components/shadcn/select';
-import { useCallback, useState } from 'react';
+import { useCallback, useId, useState } from 'react';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import type { useRecomputeCompliance as UseRecomputeCompliance } from '../hooks/use-recompute-compliance.js';
@@ -44,6 +44,7 @@ export function RecomputeComplianceDialogView({
   isPending,
 }: RecomputeComplianceDialogViewProps) {
   const t = useTranslations('Contractors.Compliance.Recompute');
+  const reasonId = useId();
   const [reason, setReason] = useState<RecomputeReason | null>(null);
 
   const handleConfirm = useCallback(() => {
@@ -86,11 +87,11 @@ export function RecomputeComplianceDialogView({
         </AlertDialogHeader>
 
         <div className="space-y-2">
-          <label htmlFor="recompute-reason" className="text-sm font-medium">
+          <label htmlFor={reasonId} className="text-sm font-medium">
             {t('reasonLabel')}
           </label>
           <Select value={reason ?? ''} onValueChange={handleReasonChange}>
-            <SelectTrigger id="recompute-reason" aria-label={t('reasonLabel')}>
+            <SelectTrigger id={reasonId} aria-label={t('reasonLabel')}>
               <SelectValue placeholder={t('reasonPlaceholder')} />
             </SelectTrigger>
             <SelectContent>
