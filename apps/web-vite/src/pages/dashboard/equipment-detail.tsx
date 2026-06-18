@@ -32,11 +32,13 @@ function DetailSkeleton() {
       </div>
       <div className="flex gap-2 border-b pb-2">
         {Array.from({ length: 3 }).map((_, i) => (
+          // biome-ignore lint/suspicious/noArrayIndexKey: fixed-length skeleton placeholder, never reordered
           <Skeleton key={`skel-${i}`} className="h-7 w-24" />
         ))}
       </div>
       <div className="grid gap-4 md:grid-cols-2">
         {Array.from({ length: 2 }).map((_, i) => (
+          // biome-ignore lint/suspicious/noArrayIndexKey: fixed-length skeleton placeholder, never reordered
           <div key={`skel-card-${i}`} className="rounded-xl border bg-card p-4">
             <Skeleton className="mb-3 h-5 w-32" />
             <div className="space-y-2">

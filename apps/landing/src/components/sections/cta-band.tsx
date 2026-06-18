@@ -34,6 +34,7 @@ export function CtaBand({
   }, [router, signupHref]);
 
   return (
+    // biome-ignore lint/correctness/useUniqueElementIds: stable in-page nav/scroll anchor referenced via href="#cta"
     <section id="cta" className="relative isolate overflow-hidden py-24">
       <div
         aria-hidden

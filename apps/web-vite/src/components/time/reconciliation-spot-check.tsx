@@ -21,7 +21,7 @@ import {
   SelectValue,
 } from '@contractor-ops/ui/components/shadcn/select';
 import { Calculator, Loader2 } from 'lucide-react';
-import { useCallback } from 'react';
+import { useCallback, useId } from 'react';
 
 import { useReconciliationSpotCheck } from './hooks/use-reconciliation-spot-check.js';
 
@@ -60,6 +60,11 @@ export function ReconciliationSpotCheckView({
   handleContractorChange,
   handleContractChange,
 }: ReturnType<typeof useReconciliationSpotCheck>) {
+  const contractorSelectId = useId();
+  const contractSelectId = useId();
+  const invoicedId = useId();
+  const fromId = useId();
+  const toId = useId();
   const handleInvoicedChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => setInvoicedInput(e.target.value),
     [setInvoicedInput],
@@ -84,9 +89,9 @@ export function ReconciliationSpotCheckView({
 
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <div className="space-y-1.5">
-            <Label htmlFor="spotcheck-contractor">{t('contractorLabel')}</Label>
+            <Label htmlFor={contractorSelectId}>{t('contractorLabel')}</Label>
             <Select value={contractorId} onValueChange={handleContractorChange}>
-              <SelectTrigger id="spotcheck-contractor" loading={contractorsQuery.isLoading}>
+              <SelectTrigger id={contractorSelectId} loading={contractorsQuery.isLoading}>
                 <SelectValue placeholder={t('contractorPlaceholder')} />
               </SelectTrigger>
               <SelectContent>
@@ -106,12 +111,12 @@ export function ReconciliationSpotCheckView({
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="spotcheck-contract">{t('contractLabel')}</Label>
+            <Label htmlFor={contractSelectId}>{t('contractLabel')}</Label>
             <Select
               value={contractId}
               onValueChange={handleContractChange}
               disabled={!contractorId}>
-              <SelectTrigger id="spotcheck-contract" loading={contractsQuery.isLoading}>
+              <SelectTrigger id={contractSelectId} loading={contractsQuery.isLoading}>
                 <SelectValue
                   placeholder={contractorId ? t('contractPlaceholder') : t('selectContractorFirst')}
                 />
@@ -134,9 +139,9 @@ export function ReconciliationSpotCheckView({
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="spotcheck-invoiced">{t('invoicedAmountLabel')}</Label>
+            <Label htmlFor={invoicedId}>{t('invoicedAmountLabel')}</Label>
             <Input
-              id="spotcheck-invoiced"
+              id={invoicedId}
               type="text"
               inputMode="decimal"
               value={invoicedInput}
@@ -148,9 +153,9 @@ export function ReconciliationSpotCheckView({
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="spotcheck-from">{t('periodStartLabel')}</Label>
+            <Label htmlFor={fromId}>{t('periodStartLabel')}</Label>
             <Input
-              id="spotcheck-from"
+              id={fromId}
               type="date"
               value={periodStart}
               onChange={handlePeriodStartChange}
@@ -159,9 +164,9 @@ export function ReconciliationSpotCheckView({
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="spotcheck-to">{t('periodEndLabel')}</Label>
+            <Label htmlFor={toId}>{t('periodEndLabel')}</Label>
             <Input
-              id="spotcheck-to"
+              id={toId}
               type="date"
               value={periodEnd}
               onChange={handlePeriodEndChange}
@@ -187,7 +192,7 @@ export function ReconciliationSpotCheckView({
           </div>
         )}
 
-        {hasResult && result && (
+        {hasResult && result ? (
           <div className="rounded-lg border bg-muted/40 p-4">
             <div className="mb-3 flex items-center gap-2">
               <p className="text-sm font-medium">{t('resultTitle')}</p>
@@ -244,15 +249,15 @@ export function ReconciliationSpotCheckView({
               })}
             </p>
           </div>
-        )}
+        ) : null}
 
-        {reconciliationQuery.isError && (
+        {reconciliationQuery.isError ? (
           <div className="rounded-lg border border-destructive/40 bg-destructive/5 p-3 text-sm text-destructive">
             {reconciliationQuery.error instanceof Error
               ? reconciliationQuery.error.message
               : t('toast.failed')}
           </div>
-        )}
+        ) : null}
       </CardContent>
     </Card>
   );

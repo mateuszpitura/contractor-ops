@@ -26,7 +26,7 @@ import {
   TableRow,
 } from '@contractor-ops/ui/components/shadcn/table';
 import { AlertCircle, CheckCircle2, Loader2 } from 'lucide-react';
-import { useCallback } from 'react';
+import { useCallback, useId } from 'react';
 import { tDyn } from '../../../i18n/typed-keys';
 import type {
   SupportedCountry,
@@ -47,6 +47,9 @@ export function CountryRatesSectionView({
   rates,
   isLoading,
 }: CountryRatesSectionProps) {
+  const countryId = useId();
+  const validateCodeId = useId();
+
   const handleCountryChange = useCallback(
     (value: SupportedCountry | null) => {
       if (value) setCountry(value);
@@ -66,11 +69,11 @@ export function CountryRatesSectionView({
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="space-y-1.5 sm:max-w-xs">
-          <Label htmlFor="tax-country" className="text-[13px]">
+          <Label htmlFor={countryId} className="text-[13px]">
             {t('countryLabel')}
           </Label>
           <Select value={country} onValueChange={handleCountryChange}>
-            <SelectTrigger id="tax-country" className="w-full">
+            <SelectTrigger id={countryId} className="w-full">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -112,11 +115,15 @@ export function CountryRatesSectionView({
                     </TableCell>
                     <TableCell>
                       <div className="flex flex-wrap gap-1">
-                        {rate.isDefault && <Badge variant="secondary">{t('badge.default')}</Badge>}
-                        {rate.isReverseCharge && (
+                        {rate.isDefault ? (
+                          <Badge variant="secondary">{t('badge.default')}</Badge>
+                        ) : null}
+                        {rate.isReverseCharge ? (
                           <Badge variant="outline">{t('badge.reverseCharge')}</Badge>
-                        )}
-                        {rate.isExempt && <Badge variant="outline">{t('badge.exempt')}</Badge>}
+                        ) : null}
+                        {rate.isExempt ? (
+                          <Badge variant="outline">{t('badge.exempt')}</Badge>
+                        ) : null}
                       </div>
                     </TableCell>
                   </TableRow>
@@ -133,11 +140,11 @@ export function CountryRatesSectionView({
           </div>
           <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-end">
             <div className="flex-1 space-y-1.5 sm:max-w-xs">
-              <Label htmlFor="tax-validate-code" className="text-[13px]">
+              <Label htmlFor={validateCodeId} className="text-[13px]">
                 {t('validation.codeLabel')}
               </Label>
               <Input
-                id="tax-validate-code"
+                id={validateCodeId}
                 value={validateCode}
                 onChange={handleValidateCodeChange}
                 placeholder={t('validation.codePlaceholder')}

@@ -52,6 +52,7 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
     <TranslationProvider translations={t} locale={locale}>
       <StructuredData locale={locale} plans={plans} />
       <Navbar />
+      {/* biome-ignore lint/correctness/useUniqueElementIds: stable skip-link target referenced by href="#main" in layout.tsx */}
       <main id="main">
         <SectionTracker name="hero">
           <Hero market={market} />

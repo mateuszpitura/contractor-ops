@@ -6,7 +6,7 @@ import {
   CardTitle,
 } from '@contractor-ops/ui/components/shadcn/card';
 import { ChevronDown, ChevronRight } from 'lucide-react';
-import { useCallback, useState } from 'react';
+import { useCallback, useId, useState } from 'react';
 import { usePermissions } from '../../../hooks/use-permissions.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { useDateFormatter } from '../../../lib/format/use-date-formatter.js';
@@ -54,6 +54,8 @@ export function IntakeDetailFieldsPane({
   const { formatDate } = useDateFormatter();
   const { role } = usePermissions();
   const showPii = canViewSensitivePii(role);
+  const parsedFieldsId = useId();
+  const unmappedFieldsId = useId();
   const [advancedOpen, setAdvancedOpen] = useState(false);
 
   const formattedTotal = formatTotal(totalMinor, currency);
@@ -67,7 +69,7 @@ export function IntakeDetailFieldsPane({
   }, []);
 
   return (
-    <Card className={className} data-slot="intake-detail-fields-pane" id="parsed-fields">
+    <Card className={className} data-slot="intake-detail-fields-pane" id={parsedFieldsId}>
       <CardHeader>
         <CardTitle className="text-base">{tField('supplierName')}</CardTitle>
       </CardHeader>
@@ -93,14 +95,14 @@ export function IntakeDetailFieldsPane({
           <dd>{profileLevel ? <IntakeProfileLevelBadge level={profileLevel} /> : '—'}</dd>
         </dl>
 
-        {hasUnmapped && (
+        {hasUnmapped ? (
           <div className="border-t pt-4">
             <button
               type="button"
               onClick={toggleAdvanced}
               className="flex w-full items-center justify-between text-sm font-medium text-muted-foreground hover:text-foreground"
               aria-expanded={advancedOpen}
-              aria-controls="intake-unmapped-fields">
+              aria-controls={unmappedFieldsId}>
               <span className="flex items-center gap-1">
                 {advancedOpen ? (
                   <ChevronDown className="h-4 w-4" aria-hidden="true" />
@@ -110,16 +112,16 @@ export function IntakeDetailFieldsPane({
                 {t('advancedSectionHeading')}
               </span>
             </button>
-            {advancedOpen && (
-              <div id="intake-unmapped-fields" className="mt-2">
+            {advancedOpen ? (
+              <div id={unmappedFieldsId} className="mt-2">
                 <p className="mb-2 text-xs text-muted-foreground">{t('unmappedFieldsHeading')}</p>
                 <pre className="max-h-60 overflow-auto rounded-md bg-muted/30 p-3 font-mono text-[11px]">
                   {JSON.stringify(unmappedFields, null, 2)}
                 </pre>
               </div>
-            )}
+            ) : null}
           </div>
-        )}
+        ) : null}
       </CardContent>
     </Card>
   );

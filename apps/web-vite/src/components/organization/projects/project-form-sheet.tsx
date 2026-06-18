@@ -10,7 +10,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@contractor-ops/ui/components/shadcn/sheet';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useId, useState } from 'react';
 import { toast } from 'sonner';
 
 import { useCommonToasts } from '../../../i18n/use-common-toasts.js';
@@ -50,6 +50,14 @@ export function ProjectFormSheet({
 }: ProjectFormSheetProps) {
   const isEdit = Boolean(project);
   const toasts = useCommonToasts();
+
+  const nameId = useId();
+  const codeId = useId();
+  const teamFieldId = useId();
+  const startId = useId();
+  const endId = useId();
+  const budgetId = useId();
+  const currencyId = useId();
 
   const [name, setName] = useState('');
   const [code, setCode] = useState('');
@@ -164,24 +172,18 @@ export function ProjectFormSheet({
           </SheetHeader>
           <div className="flex-1 space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="project-name">Name</Label>
-              <Input
-                id="project-name"
-                value={name}
-                onChange={handleNameChange}
-                required
-                autoFocus
-              />
+              <Label htmlFor={nameId}>Name</Label>
+              <Input id={nameId} value={name} onChange={handleNameChange} required autoFocus />
             </div>
             <div className="grid grid-cols-2 gap-2">
               <div className="space-y-2">
-                <Label htmlFor="project-code">Code</Label>
-                <Input id="project-code" value={code} onChange={handleCodeChange} />
+                <Label htmlFor={codeId}>Code</Label>
+                <Input id={codeId} value={code} onChange={handleCodeChange} />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="project-team">Team</Label>
+                <Label htmlFor={teamFieldId}>Team</Label>
                 <select
-                  id="project-team"
+                  id={teamFieldId}
                   className="border-input bg-background focus-visible:ring-ring h-9 w-full rounded-md border px-2 text-sm focus-visible:outline-none focus-visible:ring-2"
                   value={teamId}
                   onChange={handleTeamChange}>
@@ -196,29 +198,24 @@ export function ProjectFormSheet({
             </div>
             <div className="grid grid-cols-2 gap-2">
               <div className="space-y-2">
-                <Label htmlFor="project-start">Start date</Label>
+                <Label htmlFor={startId}>Start date</Label>
                 <Input
-                  id="project-start"
+                  id={startId}
                   type="date"
                   value={startDate}
                   onChange={handleStartDateChange}
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="project-end">End date</Label>
-                <Input
-                  id="project-end"
-                  type="date"
-                  value={endDate}
-                  onChange={handleEndDateChange}
-                />
+                <Label htmlFor={endId}>End date</Label>
+                <Input id={endId} type="date" value={endDate} onChange={handleEndDateChange} />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-2">
               <div className="space-y-2">
-                <Label htmlFor="project-budget">Budget (minor units)</Label>
+                <Label htmlFor={budgetId}>Budget (minor units)</Label>
                 <Input
-                  id="project-budget"
+                  id={budgetId}
                   type="number"
                   min={1}
                   step={1}
@@ -227,9 +224,9 @@ export function ProjectFormSheet({
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="project-currency">Currency</Label>
+                <Label htmlFor={currencyId}>Currency</Label>
                 <Input
-                  id="project-currency"
+                  id={currencyId}
                   value={budgetCurrency}
                   onChange={handleBudgetCurrencyChange}
                   maxLength={3}

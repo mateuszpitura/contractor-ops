@@ -18,11 +18,11 @@ function PortalComplianceCard({ item }: { item: PortalComplianceItem }) {
         <span className="text-sm font-medium">{label || item.name}</span>
         <ComplianceStatusBadge status={item.status} />
       </div>
-      {needsAction && (
+      {needsAction ? (
         <Link href={renewHref} className={buttonVariants({ size: 'sm', className: 'self-start' })}>
           {t('renewNow')}
         </Link>
-      )}
+      ) : null}
     </li>
   );
 }

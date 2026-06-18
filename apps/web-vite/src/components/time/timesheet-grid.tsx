@@ -375,8 +375,8 @@ export function TimesheetGrid({
                         const cellDisabled = disabled || imported;
 
                         return (
-                          // biome-ignore lint/suspicious/noArrayIndexKey: fixed weekday columns
                           <TableCell
+                            // biome-ignore lint/suspicious/noArrayIndexKey: fixed weekday columns, never reordered
                             key={dayIdx}
                             className={cn('px-1 py-1.5', imported && 'bg-muted/50')}>
                             <div className="relative">
@@ -424,8 +424,8 @@ export function TimesheetGrid({
                   {DAY_LABELS.map((_, dayIdx) => {
                     const colTotal = getColumnTotal(dayIdx);
                     return (
-                      // biome-ignore lint/suspicious/noArrayIndexKey: fixed weekday columns
                       <TableCell
+                        // biome-ignore lint/suspicious/noArrayIndexKey: fixed weekday columns, never reordered
                         key={dayIdx}
                         className="px-1 py-3 text-center text-sm font-semibold">
                         {minutesToHours(colTotal) || '0'}

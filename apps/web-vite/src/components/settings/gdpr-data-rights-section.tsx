@@ -19,7 +19,7 @@ import {
 import { Input } from '@contractor-ops/ui/components/shadcn/input';
 import { Label } from '@contractor-ops/ui/components/shadcn/label';
 import { Download, Loader2, Trash2 } from 'lucide-react';
-import { useCallback } from 'react';
+import { useCallback, useId } from 'react';
 import type { useGdprDataRightsSection as UseGdprDataRightsSection } from './hooks/use-gdpr-data-rights-section.js';
 import {
   GDPR_CONFIRM_PHRASE,
@@ -41,6 +41,7 @@ export function GdprDataRightsSectionView({
   handleErasureConfirm,
   isErasurePending,
 }: GdprDataRightsSectionProps) {
+  const erasureConfirmId = useId();
   const handleOpenErasure = useCallback(() => setErasureOpen(true), [setErasureOpen]);
   const handleConfirmInputChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => setConfirmInput(e.target.value),
@@ -97,11 +98,11 @@ export function GdprDataRightsSectionView({
 
           <div className="space-y-3">
             <div>
-              <Label htmlFor="erasure-confirm">
+              <Label htmlFor={erasureConfirmId}>
                 {t('erasure.typePhrase', { phrase: GDPR_CONFIRM_PHRASE })}
               </Label>
               <Input
-                id="erasure-confirm"
+                id={erasureConfirmId}
                 value={confirmInput}
                 onChange={handleConfirmInputChange}
                 placeholder={GDPR_CONFIRM_PHRASE}
@@ -125,7 +126,7 @@ export function GdprDataRightsSectionView({
               variant="destructive"
               disabled={confirmInput !== GDPR_CONFIRM_PHRASE || isErasurePending}
               onClick={handleErasureConfirm}>
-              {isErasurePending && <Loader2 className="me-1.5 size-3.5 animate-spin" />}
+              {isErasurePending ? <Loader2 className="me-1.5 size-3.5 animate-spin" /> : null}
               {t('erasure.confirm')}
             </AlertDialogAction>
           </AlertDialogFooter>

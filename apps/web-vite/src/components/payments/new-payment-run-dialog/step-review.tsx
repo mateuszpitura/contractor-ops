@@ -41,13 +41,7 @@ interface StepReviewViewProps {
   review: ReturnType<typeof usePaymentRunStepReview>;
 }
 
-export function StepReviewView({
-  selectedInvoiceIds,
-  groupByCurrency,
-  onBack,
-  onComplete,
-  review,
-}: StepReviewViewProps) {
+export function StepReviewView({ onBack, review }: StepReviewViewProps) {
   const t = useTranslations('Payments');
 
   const {
@@ -165,8 +159,8 @@ export function StepReviewView({
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="CSV">{t('step2.formatCsv')}</SelectItem>
-              {hasPLN && <SelectItem value="BANK_FILE">{t('step2.formatElixir')}</SelectItem>}
-              {hasEUR && <SelectItem value="SEPA_XML">{t('step2.formatSepa')}</SelectItem>}
+              {hasPLN ? <SelectItem value="BANK_FILE">{t('step2.formatElixir')}</SelectItem> : null}
+              {hasEUR ? <SelectItem value="SEPA_XML">{t('step2.formatSepa')}</SelectItem> : null}
             </SelectContent>
           </Select>
         </div>

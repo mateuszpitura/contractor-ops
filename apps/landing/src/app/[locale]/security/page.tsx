@@ -55,6 +55,7 @@ export default async function SecurityPage({ params }: { params: Promise<{ local
   return (
     <TranslationProvider translations={t} locale={locale}>
       <Navbar />
+      {/* biome-ignore lint/correctness/useUniqueElementIds: stable skip-link target referenced by href="#main" in layout.tsx */}
       <main id="main" className="pt-32">
         <section className="mx-auto max-w-3xl px-6 text-center">
           <p className="text-xs font-medium uppercase tracking-[0.22em] text-primary">Trust</p>

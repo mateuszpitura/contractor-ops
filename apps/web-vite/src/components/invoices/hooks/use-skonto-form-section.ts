@@ -18,7 +18,7 @@ export function useSkontoFormSection(
   );
 
   const evalQuery = useQuery({
-    ...trpc.skonto.evaluateForInvoice.queryOptions({ invoiceId: invoiceId! }),
+    ...trpc.skonto.evaluateForInvoice.queryOptions({ invoiceId: invoiceId ?? '' }),
     enabled: !!(featureEnabled && invoiceId),
   });
 

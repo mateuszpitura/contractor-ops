@@ -44,6 +44,7 @@ function TaxObligationsSkeleton() {
           <Skeleton className="h-4 w-24" />
           <div className="space-y-2">
             {Array.from({ length: 3 }).map((_, i) => (
+              // biome-ignore lint/suspicious/noArrayIndexKey: fixed-length skeleton placeholder, never reordered
               <div key={`skel-row-1-${i}`} className="flex items-center justify-between">
                 <Skeleton className="h-4 w-20" />
                 <div className="flex items-center gap-2">
@@ -58,6 +59,7 @@ function TaxObligationsSkeleton() {
           <Skeleton className="h-4 w-24" />
           <div className="space-y-2">
             {Array.from({ length: 2 }).map((_, i) => (
+              // biome-ignore lint/suspicious/noArrayIndexKey: fixed-length skeleton placeholder, never reordered
               <div key={`skel-row-2-${i}`} className="flex items-center justify-between">
                 <Skeleton className="h-4 w-20" />
                 <div className="flex items-center gap-2">

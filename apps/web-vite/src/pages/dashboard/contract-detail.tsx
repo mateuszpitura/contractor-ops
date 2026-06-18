@@ -69,7 +69,7 @@ function ContractDetailPageContent() {
         />
       )}
 
-      {activeEnvelope && <SigningProgressBarPanel envelope={activeEnvelope} />}
+      {activeEnvelope ? <SigningProgressBarPanel envelope={activeEnvelope} /> : null}
 
       {isLoading || !contract ? (
         <DetailTabsSkeleton />

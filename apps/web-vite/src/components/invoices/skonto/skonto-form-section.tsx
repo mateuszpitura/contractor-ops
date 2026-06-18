@@ -19,7 +19,7 @@ import { Label } from '@contractor-ops/ui/components/shadcn/label';
 import { Switch } from '@contractor-ops/ui/components/shadcn/switch';
 import { Loader2, Plus, Save, Trash2 } from 'lucide-react';
 import type { ChangeEvent } from 'react';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useId, useState } from 'react';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { useSkontoFormSection } from '../hooks/use-skonto-form-section.js';
@@ -64,6 +64,11 @@ export function SkontoFormSectionView({
   isDeleting,
 }: SkontoFormSectionViewProps) {
   const t = useTranslations('Payments.skonto.form');
+
+  const customizeSkontoId = useId();
+  const discountPercentId = useId();
+  const discountDaysId = useId();
+  const netDaysId = useId();
 
   const [customizing, setCustomizing] = useState(!!invoiceTerm);
   const [showInputs, setShowInputs] = useState(!!invoiceTerm || !profileDefault);
@@ -215,11 +220,11 @@ export function SkontoFormSectionView({
           </Badge>
           <div className="flex items-center gap-2">
             <Switch
-              id="customize-skonto"
+              id={customizeSkontoId}
               checked={customizing}
               onCheckedChange={handleCustomizeToggle}
             />
-            <Label htmlFor="customize-skonto" className="text-sm">
+            <Label htmlFor={customizeSkontoId} className="text-sm">
               {t('customizeToggle')}
             </Label>
           </div>
@@ -233,13 +238,13 @@ export function SkontoFormSectionView({
         </Button>
       )}
 
-      {showInputs && (
+      {showInputs ? (
         <div className="space-y-4">
           <div className="grid grid-cols-3 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="discount-percent">{t('discountPercentLabel')}</Label>
+              <Label htmlFor={discountPercentId}>{t('discountPercentLabel')}</Label>
               <Input
-                id="discount-percent"
+                id={discountPercentId}
                 type="number"
                 min="0.01"
                 max="50"
@@ -250,15 +255,15 @@ export function SkontoFormSectionView({
                 className="tabular-nums"
                 aria-invalid={!!errors.discountPercent}
               />
-              {errors.discountPercent && (
+              {errors.discountPercent ? (
                 <p className="text-xs text-destructive">{errors.discountPercent}</p>
-              )}
+              ) : null}
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="discount-days">{t('discountPeriodLabel')}</Label>
+              <Label htmlFor={discountDaysId}>{t('discountPeriodLabel')}</Label>
               <Input
-                id="discount-days"
+                id={discountDaysId}
                 type="number"
                 min="1"
                 step="1"
@@ -268,15 +273,15 @@ export function SkontoFormSectionView({
                 className="tabular-nums"
                 aria-invalid={!!errors.discountDays}
               />
-              {errors.discountDays && (
+              {errors.discountDays ? (
                 <p className="text-xs text-destructive">{errors.discountDays}</p>
-              )}
+              ) : null}
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="net-days">{t('netPeriodLabel')}</Label>
+              <Label htmlFor={netDaysId}>{t('netPeriodLabel')}</Label>
               <Input
-                id="net-days"
+                id={netDaysId}
                 type="number"
                 min="1"
                 step="1"
@@ -286,11 +291,11 @@ export function SkontoFormSectionView({
                 className="tabular-nums"
                 aria-invalid={!!errors.netDays}
               />
-              {errors.netDays && <p className="text-xs text-destructive">{errors.netDays}</p>}
+              {errors.netDays ? <p className="text-xs text-destructive">{errors.netDays}</p> : null}
             </div>
           </div>
 
-          {previewText && <p className="text-sm text-muted-foreground">{previewText}</p>}
+          {previewText ? <p className="text-sm text-muted-foreground">{previewText}</p> : null}
 
           <div className="flex items-center gap-2">
             <Button onClick={handleSave} size="sm" disabled={isSaving}>
@@ -302,11 +307,11 @@ export function SkontoFormSectionView({
               {isSaving ? t('saving') : t('saveTerm')}
             </Button>
 
-            {invoiceTerm && profileDefault && (
+            {invoiceTerm && profileDefault ? (
               <Button variant="ghost" size="sm" onClick={handleDeleteRequest} disabled={isDeleting}>
                 {t('resetToDefault')}
               </Button>
-            )}
+            ) : null}
 
             {invoiceTerm && !profileDefault && (
               <Button
@@ -320,7 +325,7 @@ export function SkontoFormSectionView({
             )}
           </div>
         </div>
-      )}
+      ) : null}
 
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
@@ -337,7 +342,7 @@ export function SkontoFormSectionView({
               variant="destructive"
               disabled={isDeleting}
               onClick={handleDeleteConfirm}>
-              {isDeleting && <Loader2 className="me-1.5 size-3.5 animate-spin" />}
+              {isDeleting ? <Loader2 className="me-1.5 size-3.5 animate-spin" /> : null}
               {t('delete.confirm')}
             </AlertDialogAction>
           </AlertDialogFooter>

@@ -15,12 +15,14 @@ const COOKIE_KEY = 'portal_session';
 function setCookie(raw: string): void {
   // jsdom assigns each `document.cookie =` write into the cookie jar
   // independently. Clear by expiring before each test (see beforeEach).
+  // biome-ignore lint/suspicious/noDocumentCookie: canonical cookie write — seeds the jsdom cookie jar so the helper-under-test can read it
   document.cookie = raw;
 }
 
 function clearCookies(): void {
   for (const entry of document.cookie.split(';')) {
     const name = entry.split('=')[0]?.trim();
+    // biome-ignore lint/suspicious/noDocumentCookie: canonical cookie write — expires each jsdom cookie to reset state between tests
     if (name) document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/`;
   }
 }

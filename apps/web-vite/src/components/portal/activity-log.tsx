@@ -71,7 +71,7 @@ export function ActivityLog({ entries, maxHeight = '300px' }: ActivityLogProps) 
           const Icon = getIcon(entry.event);
           return (
             <div
-              key={`${entry.event}-${entry.timestamp instanceof Date ? entry.timestamp.getTime() : entry.timestamp}-${i}`}>
+              key={`${entry.event}-${entry.timestamp instanceof Date ? entry.timestamp.getTime() : entry.timestamp}`}>
               <div className="flex items-start gap-3 py-3">
                 <Icon className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
                 <div className="min-w-0 flex-1">

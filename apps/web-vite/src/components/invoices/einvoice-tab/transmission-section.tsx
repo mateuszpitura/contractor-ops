@@ -23,7 +23,7 @@ import {
 } from '@contractor-ops/ui/components/shadcn/tooltip';
 import type { ColumnDef } from '@tanstack/react-table';
 import { Loader2, Send, SendHorizontal } from 'lucide-react';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useId, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { WorkbenchDataTable } from '../../table-kit/workbench-data-table.js';
@@ -99,6 +99,7 @@ export function TransmissionSection({
   const t = useTranslations('EInvoice.InvoiceTab');
   const tErr = useTranslations('EInvoice.Errors');
   const { i18n } = useTranslation();
+  const sendDisabledTooltipId = useId();
   const [confirmOpen, setConfirmOpen] = useState(false);
 
   const handleOpenConfirm = useCallback(() => setConfirmOpen(true), []);
@@ -200,11 +201,11 @@ export function TransmissionSection({
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger>
-                  <span className="inline-flex" aria-describedby="einvoice-send-disabled-tooltip">
+                  <span className="inline-flex" aria-describedby={sendDisabledTooltipId}>
                     {sendButton}
                   </span>
                 </TooltipTrigger>
-                <TooltipContent id="einvoice-send-disabled-tooltip">
+                <TooltipContent id={sendDisabledTooltipId}>
                   {disabledReason === 'VALIDATION_NOT_VALID'
                     ? tErr('KOSIT_VALIDATION_FAILED')
                     : disabledReason === 'PEPPOL_PARTICIPANT_NOT_ACTIVE'

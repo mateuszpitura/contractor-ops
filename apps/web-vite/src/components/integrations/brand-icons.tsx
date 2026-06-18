@@ -15,11 +15,13 @@ const base = 'h-3.5 w-3.5 shrink-0';
 
 function LogoImg({ src, alt, className }: { src: string; alt: string; className?: string }) {
   return (
+    // biome-ignore lint/performance/noImgElement: Vite SPA, no next/image — integration brand logo from public/logos/
     <img
       src={src}
       alt={alt}
       width={14}
       height={14}
+      loading="lazy"
       aria-hidden="true"
       className={cn(base, 'object-contain', className)}
       draggable={false}

@@ -110,7 +110,7 @@ function parseProductMetadata(product: Stripe.Product): ProductMetadata {
     );
   }
 
-  const includedSeats = Number.parseInt(md.included_seats!, 10);
+  const includedSeats = Number.parseInt(md.included_seats ?? '', 10);
   if (!Number.isFinite(includedSeats) || includedSeats < 0) {
     throw new PricingMetadataError(
       `Stripe product ${product.id} has invalid included_seats "${md.included_seats}"`,
@@ -119,7 +119,7 @@ function parseProductMetadata(product: Stripe.Product): ProductMetadata {
     );
   }
 
-  const creditsIncluded = Number.parseInt(md.credits_included!, 10);
+  const creditsIncluded = Number.parseInt(md.credits_included ?? '', 10);
   if (!Number.isFinite(creditsIncluded) || creditsIncluded < 0) {
     throw new PricingMetadataError(
       `Stripe product ${product.id} has invalid credits_included "${md.credits_included}"`,
@@ -128,7 +128,7 @@ function parseProductMetadata(product: Stripe.Product): ProductMetadata {
     );
   }
 
-  const sortOrder = Number.parseInt(md.sort_order!, 10);
+  const sortOrder = Number.parseInt(md.sort_order ?? '', 10);
   if (!Number.isFinite(sortOrder)) {
     throw new PricingMetadataError(
       `Stripe product ${product.id} has invalid sort_order "${md.sort_order}"`,

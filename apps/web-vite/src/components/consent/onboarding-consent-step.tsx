@@ -106,7 +106,7 @@ function ConsentStepContent({
 
   return (
     <div className="space-y-6">
-      {notice && <PrivacyNoticeDisplay notice={notice} />}
+      {notice ? <PrivacyNoticeDisplay notice={notice} /> : null}
 
       <div className="space-y-3">
         <h3 className="text-sm font-semibold">{t('onboarding.requiredConsents')}</h3>

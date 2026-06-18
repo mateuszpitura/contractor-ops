@@ -4,7 +4,7 @@
 
 import { Alert, AlertDescription, AlertTitle } from '@contractor-ops/ui/components/shadcn/alert';
 import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
-import { useRef } from 'react';
+import { useId, useRef } from 'react';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import type { useEinvoiceTab as UseEinvoiceTab } from '../hooks/use-einvoice-tab.js';
@@ -105,18 +105,19 @@ interface ZugferdSectionProps {
 
 function ZugferdSection({ invoiceId, lifecycle }: ZugferdSectionProps) {
   const t = useTranslations('EInvoice.intake');
+  const zugferdSectionHeadingId = useId();
   const generated = (lifecycle as { zugferdPdfKey?: string | null } | null)?.zugferdPdfKey;
   const generatedAt = (lifecycle as { zugferdGeneratedAt?: Date | string | null } | null)
     ?.zugferdGeneratedAt;
 
   return (
     <section
-      aria-labelledby="zugferd-section-heading"
+      aria-labelledby={zugferdSectionHeadingId}
       data-slot="einvoice-tab-zugferd-section"
       className="space-y-3">
       <div className="flex items-center justify-between gap-4">
         <div>
-          <h3 id="zugferd-section-heading" className="font-display text-xl font-semibold">
+          <h3 id={zugferdSectionHeadingId} className="font-display text-xl font-semibold">
             {t('zugferdSectionHeading')}
           </h3>
           <p className="text-sm text-muted-foreground">{t('zugferdSectionBody')}</p>

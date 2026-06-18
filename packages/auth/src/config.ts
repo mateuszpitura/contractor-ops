@@ -474,7 +474,9 @@ export const auth = betterAuth({
               'sign-in for unknown email',
             );
           } else {
-            const { failedLoginAttempts, lockedUntil } = rows[0]!;
+            const row = rows[0];
+            if (!row) return;
+            const { failedLoginAttempts, lockedUntil } = row;
             const justLocked =
               failedLoginAttempts >= MAX_LOGIN_ATTEMPTS &&
               lockedUntil !== null &&

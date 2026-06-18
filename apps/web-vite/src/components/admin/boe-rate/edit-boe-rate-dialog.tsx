@@ -17,7 +17,7 @@ import { Input } from '@contractor-ops/ui/components/shadcn/input';
 import { Label } from '@contractor-ops/ui/components/shadcn/label';
 import { Textarea } from '@contractor-ops/ui/components/shadcn/textarea';
 import { AlertTriangleIcon } from 'lucide-react';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useId, useState } from 'react';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import type {
@@ -47,6 +47,9 @@ export function EditBoeRateDialog({
   const t = useTranslations('Admin.BoeRate');
   const tCommon = useTranslations('Common');
   const { validateRate } = validation;
+
+  const ratePercentId = useId();
+  const notesId = useId();
 
   const [ratePercent, setRatePercent] = useState('');
   const [notes, setNotes] = useState('');
@@ -105,9 +108,9 @@ export function EditBoeRateDialog({
               <Input type="date" value={effectiveDate} disabled className="bg-muted" />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="edit-rate-percent">{t('colRatePercent')}</Label>
+              <Label htmlFor={ratePercentId}>{t('colRatePercent')}</Label>
               <Input
-                id="edit-rate-percent"
+                id={ratePercentId}
                 type="number"
                 step="0.01"
                 min="0"
@@ -119,9 +122,9 @@ export function EditBoeRateDialog({
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="edit-notes">{t('colNotes')}</Label>
+              <Label htmlFor={notesId}>{t('colNotes')}</Label>
               <Textarea
-                id="edit-notes"
+                id={notesId}
                 value={notes}
                 onChange={handleNotesChange}
                 placeholder={t('editNotesPlaceholder')}

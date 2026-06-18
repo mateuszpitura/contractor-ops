@@ -113,11 +113,11 @@ export function BacsSubmitterFormView({ featureEnabled, submitter }: BacsSubmitt
             <p id={`${sunInputId}-helper`} className="text-xs text-muted-foreground">
               {t('sunHelper')}
             </p>
-            {errors.serviceUserNumber && (
+            {errors.serviceUserNumber ? (
               <p className="text-xs text-destructive" role="alert">
                 {errors.serviceUserNumber.message}
               </p>
-            )}
+            ) : null}
           </div>
 
           <div className="space-y-2">
@@ -138,11 +138,11 @@ export function BacsSubmitterFormView({ featureEnabled, submitter }: BacsSubmitt
               className="tabular-nums font-mono"
               {...register('submitterSortCode')}
             />
-            {errors.submitterSortCode && (
+            {errors.submitterSortCode ? (
               <p className="text-xs text-destructive" role="alert">
                 {errors.submitterSortCode.message}
               </p>
-            )}
+            ) : null}
           </div>
 
           <div className="space-y-2">
@@ -163,11 +163,11 @@ export function BacsSubmitterFormView({ featureEnabled, submitter }: BacsSubmitt
               className="tabular-nums font-mono"
               {...register('submitterAccountNumber')}
             />
-            {errors.submitterAccountNumber && (
+            {errors.submitterAccountNumber ? (
               <p className="text-xs text-destructive" role="alert">
                 {errors.submitterAccountNumber.message}
               </p>
-            )}
+            ) : null}
           </div>
 
           <div className="space-y-2">
@@ -180,11 +180,11 @@ export function BacsSubmitterFormView({ featureEnabled, submitter }: BacsSubmitt
               className="font-mono uppercase"
               {...register('submitterName')}
             />
-            {errors.submitterName && (
+            {errors.submitterName ? (
               <p className="text-xs text-destructive" role="alert">
                 {errors.submitterName.message}
               </p>
-            )}
+            ) : null}
           </div>
 
           <div className="flex items-center gap-3 pt-2">

@@ -208,11 +208,11 @@ export function CostCenterCsvImportDialog({
         </DialogHeader>
         <DialogBody className="space-y-4 py-2">
           <Input type="file" accept=".csv,text/csv" onChange={handleFileInputChange} />
-          {fileError && (
+          {fileError ? (
             <div role="alert" className="text-destructive flex items-center gap-2 text-sm">
               <AlertTriangle className="h-4 w-4" /> {fileError}
             </div>
-          )}
+          ) : null}
           {rows.length > 0 && (
             <div className="max-h-72 overflow-y-auto rounded-md border">
               <Table>

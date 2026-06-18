@@ -79,11 +79,11 @@ export function SkontoApplyCheckboxView({
           amount: formatEUR(discountAmountMinor),
         })}
       </Label>
-      {applied && (
+      {applied ? (
         <span className="text-xs tabular-nums text-muted-foreground">
           {t('newAmount', { amount: formatEUR(discountedAmountMinor) })}
         </span>
-      )}
+      ) : null}
     </div>
   );
 }

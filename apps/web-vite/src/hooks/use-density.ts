@@ -21,6 +21,7 @@ const DENSITY_COOKIE_ATTRS = 'path=/; max-age=31536000; samesite=lax';
 
 function writeDensityCookie(value: Density): void {
   if (typeof document === 'undefined') return;
+  // biome-ignore lint/suspicious/noDocumentCookie: canonical cookie write — mirrors the density preference for the index.html pre-paint prelude that applies the class before first paint
   document.cookie = `density=${value}; ${DENSITY_COOKIE_ATTRS}`;
 }
 

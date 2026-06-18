@@ -142,6 +142,7 @@ export function CredentialsTabView({
       {isLoading ? (
         <div className="space-y-2" data-testid="credentials-loading">
           {Array.from({ length: 3 }).map((_, i) => (
+            // biome-ignore lint/suspicious/noArrayIndexKey: fixed-length skeleton placeholder, never reordered
             <Skeleton key={`skel-${i}`} className="h-14 w-full rounded-md" />
           ))}
         </div>

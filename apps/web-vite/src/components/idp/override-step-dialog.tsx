@@ -134,11 +134,11 @@ export function OverrideStepDialog({
             )}
           </div>
 
-          {serverError && (
+          {serverError ? (
             <p role="alert" className="text-sm text-destructive">
               {serverError}
             </p>
-          )}
+          ) : null}
         </DialogBody>
         <DialogFooter>
           <Button

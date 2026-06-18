@@ -203,14 +203,14 @@ export function WorkflowRolesTableView({
         noResultsDescription={t('empty.body')}
       />
 
-      {editing && (
+      {editing ? (
         <WorkflowRoleFormDialog
           mode="edit"
           initial={editing}
           open={!!editing}
           onOpenChange={handleEditDialogOpenChange}
         />
-      )}
+      ) : null}
 
       <AlertDialog open={!!deleting} onOpenChange={handleDeleteDialogOpenChange}>
         <AlertDialogContent>

@@ -3,6 +3,7 @@
  */
 
 import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
+import { useId } from 'react';
 
 import { usePermissions } from '../../../hooks/use-permissions.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
@@ -26,20 +27,21 @@ function formatSortCode(plain: string): string {
 
 export function ModulusCheckWarningList({ warnings }: ModulusCheckWarningListProps) {
   const t = useTranslations('Payments.bacs');
+  const headingId = useId();
   const { role } = usePermissions();
   const showPii = canViewSensitivePii(role);
 
   if (warnings.length === 0) return null;
 
   return (
-    <section aria-labelledby="modulus-check-heading" className="space-y-2">
-      <h3 id="modulus-check-heading" className="text-sm font-medium text-foreground/80">
+    <section aria-labelledby={headingId} className="space-y-2">
+      <h3 id={headingId} className="text-sm font-medium text-foreground/80">
         {t('modulusWarningTitle')}
       </h3>
       <ul className="divide-y divide-border rounded-md border bg-card">
-        {warnings.map((w, idx) => (
+        {warnings.map(w => (
           <li
-            key={`${w.contractorName}-${w.sortCode}-${idx}`}
+            key={`${w.contractorName}-${w.sortCode}`}
             className="flex items-center justify-between gap-3 px-4 py-2 text-sm">
             <div className="flex flex-col gap-0.5 min-w-0 flex-1">
               <span className="font-medium truncate">{w.contractorName}</span>

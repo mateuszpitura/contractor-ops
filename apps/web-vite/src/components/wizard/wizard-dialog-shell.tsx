@@ -65,7 +65,6 @@ export function WizardDialogShell({
   isSubmitting = false,
   nextDisabled = false,
   showBack = true,
-  isLastStep = false,
   footer,
   contentClassName,
   showCloseButton = false,

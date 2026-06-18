@@ -83,7 +83,8 @@ export function modulusCheck(
   let secondCheckPassed = true;
 
   for (let i = 0; i < matches.length; i++) {
-    const entry = matches[i]!;
+    const entry = matches[i];
+    if (!entry) continue;
 
     // Handle known exception categories
     if (entry.exception > 0) {
@@ -133,7 +134,10 @@ function applyModulusCheck(combined: string, entry: ModulusEntry): boolean {
 function mod10Check(digits: number[], weights: number[]): boolean {
   let total = 0;
   for (let i = 0; i < 14 && i < weights.length; i++) {
-    total += digits[i]! * weights[i]!;
+    const digit = digits[i];
+    const weight = weights[i];
+    if (digit === undefined || weight === undefined) continue;
+    total += digit * weight;
   }
   return total % 10 === 0;
 }
@@ -141,7 +145,10 @@ function mod10Check(digits: number[], weights: number[]): boolean {
 function mod11Check(digits: number[], weights: number[]): boolean {
   let total = 0;
   for (let i = 0; i < 14 && i < weights.length; i++) {
-    total += digits[i]! * weights[i]!;
+    const digit = digits[i];
+    const weight = weights[i];
+    if (digit === undefined || weight === undefined) continue;
+    total += digit * weight;
   }
   return total % 11 === 0;
 }
@@ -149,7 +156,10 @@ function mod11Check(digits: number[], weights: number[]): boolean {
 function dblalCheck(digits: number[], weights: number[]): boolean {
   let total = 0;
   for (let i = 0; i < 14 && i < weights.length; i++) {
-    const product = digits[i]! * weights[i]!;
+    const digit = digits[i];
+    const weight = weights[i];
+    if (digit === undefined || weight === undefined) continue;
+    const product = digit * weight;
     // For DBLAL, sum the individual digits of the product
     if (product >= 10) {
       total += Math.floor(product / 10) + (product % 10);

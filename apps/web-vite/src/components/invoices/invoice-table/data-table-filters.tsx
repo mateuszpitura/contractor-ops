@@ -179,7 +179,9 @@ export function DataTableFilters({
 
       {hasActiveFilters && (
         <div className="flex flex-wrap items-center gap-1.5">
-          {filters.overdue && <FilterBadge label={t('overdueFilter')} onRemove={toggleOverdue} />}
+          {filters.overdue ? (
+            <FilterBadge label={t('overdueFilter')} onRemove={toggleOverdue} />
+          ) : null}
           {filters.status.map(s => (
             <FilterBadgeRemovable
               key={`status-${s}`}

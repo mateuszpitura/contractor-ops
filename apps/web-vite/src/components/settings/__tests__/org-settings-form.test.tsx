@@ -55,6 +55,7 @@ function Harness({ isLoading = false, isPending = false }: HarnessProps) {
   });
 
   return (
+    // biome-ignore lint/correctness/useUniqueElementIds: stable test fixture id for single-render harness
     <OrgSettingsForm
       id="org"
       t={tStub}

@@ -30,6 +30,7 @@ export function FaqSection({
   }));
 
   return (
+    // biome-ignore lint/correctness/useUniqueElementIds: stable in-page nav/scroll anchor referenced via href="#faq"
     <section id="faq" className="relative bg-background py-24">
       <div className="mx-auto grid max-w-6xl gap-12 px-6 md:grid-cols-[minmax(0,18rem)_minmax(0,1fr)] md:items-start">
         <header className="z-10 bg-background/95 pb-4 backdrop-blur-sm md:sticky md:top-28">

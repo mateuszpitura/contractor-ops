@@ -1,5 +1,6 @@
 import type { FlagValues } from '@contractor-ops/feature-flags/browser';
 import { SidebarInset, SidebarProvider } from '@contractor-ops/ui/components/shadcn/sidebar';
+import { useId } from 'react';
 import { Outlet } from 'react-router-dom';
 
 import { useTranslations } from '../../i18n/useTranslations.js';
@@ -40,6 +41,7 @@ export function DashboardShell({
   flagBag,
   isDemo,
 }: DashboardShellProps) {
+  const mainContentId = useId();
   return (
     <FeatureFlagProvider bag={flagBag}>
       <DashboardProvider activeOrg={activeOrg} userRole={memberRole}>
@@ -48,7 +50,7 @@ export function DashboardShell({
             <SidebarProvider>
               <IntensityRouter>
                 <a
-                  href="#main-content"
+                  href={`#${mainContentId}`}
                   className="fixed start-4 top-4 z-[100] -translate-y-16 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-lg transition-transform focus:translate-y-0">
                   {skipToContentLabel}
                 </a>
@@ -67,7 +69,7 @@ export function DashboardShell({
                    * scrolling ancestor for `sticky top-0` becomes the viewport.
                    */}
                   <main
-                    id="main-content"
+                    id={mainContentId}
                     className="atelier-main-surface flex min-w-0 flex-1 flex-col p-6">
                     {/*
                      * Wrapper participates in the flex chain. List/table pages

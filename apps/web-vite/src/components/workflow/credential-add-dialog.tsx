@@ -17,7 +17,7 @@ import {
   SelectValue,
 } from '@contractor-ops/ui/components/shadcn/select';
 import { looksLikeSecret } from '@contractor-ops/validators';
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import { useTranslations } from '../../i18n/useTranslations.js';
 
 export interface CredentialAddDialogProps {
@@ -69,6 +69,10 @@ export function CredentialAddDialog({
   onSubmit,
 }: CredentialAddDialogProps) {
   const t = useTranslations('Workflow.credentials');
+  const labelId = useId();
+  const urlId = useId();
+  const providerId = useId();
+  const accessId = useId();
   const [label, setLabel] = useState('');
   const [vaultUrl, setVaultUrl] = useState('');
   const [vaultProvider, setVaultProvider] = useState<VaultProvider>(VAULT_PROVIDERS[0]);
@@ -87,27 +91,27 @@ export function CredentialAddDialog({
         </DialogHeader>
         <DialogBody className="space-y-4">
           <div className="space-y-1">
-            <Label htmlFor="cred-label">{t('dialog.fields.label')}</Label>
-            <Input id="cred-label" value={label} onChange={e => setLabel(e.target.value)} />
-            {labelSecret.matched && (
+            <Label htmlFor={labelId}>{t('dialog.fields.label')}</Label>
+            <Input id={labelId} value={label} onChange={e => setLabel(e.target.value)} />
+            {labelSecret.matched ? (
               <p className="text-xs text-destructive" data-testid="secret-hint-label">
                 {t('secretPasteHint', { hint: labelSecret.fieldHint ?? '' })}
               </p>
-            )}
+            ) : null}
           </div>
           <div className="space-y-1">
-            <Label htmlFor="cred-url">{t('dialog.fields.vaultUrl')}</Label>
-            <Input id="cred-url" value={vaultUrl} onChange={e => setVaultUrl(e.target.value)} />
-            {urlSecret.matched && (
+            <Label htmlFor={urlId}>{t('dialog.fields.vaultUrl')}</Label>
+            <Input id={urlId} value={vaultUrl} onChange={e => setVaultUrl(e.target.value)} />
+            {urlSecret.matched ? (
               <p className="text-xs text-destructive" data-testid="secret-hint-url">
                 {t('secretPasteHint', { hint: urlSecret.fieldHint ?? '' })}
               </p>
-            )}
+            ) : null}
           </div>
           <div className="space-y-1">
-            <Label htmlFor="cred-provider">{t('dialog.fields.vaultProvider')}</Label>
+            <Label htmlFor={providerId}>{t('dialog.fields.vaultProvider')}</Label>
             <Select value={vaultProvider} onValueChange={v => setVaultProvider(v as VaultProvider)}>
-              <SelectTrigger id="cred-provider" className="w-full">
+              <SelectTrigger id={providerId} className="w-full">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -120,9 +124,9 @@ export function CredentialAddDialog({
             </Select>
           </div>
           <div className="space-y-1">
-            <Label htmlFor="cred-access">{t('dialog.fields.accessType')}</Label>
+            <Label htmlFor={accessId}>{t('dialog.fields.accessType')}</Label>
             <Select value={accessType} onValueChange={v => setAccessType(v as AccessType)}>
-              <SelectTrigger id="cred-access" className="w-full">
+              <SelectTrigger id={accessId} className="w-full">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>

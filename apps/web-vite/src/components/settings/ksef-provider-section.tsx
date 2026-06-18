@@ -27,7 +27,7 @@ export function KsefProviderSectionView({
         description={tIntegrations('ksef.descriptionDisconnected')}
       />
 
-      {isConnected && <KsefControls />}
+      {isConnected ? <KsefControls /> : null}
 
       <KsefSetupDialog open={setupDialogOpen} onOpenChange={setSetupDialogOpen} orgNip={orgNip} />
     </div>

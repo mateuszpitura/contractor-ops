@@ -125,7 +125,6 @@ function UserPickerControlField({ control, name }: UserPickerControlFieldProps) 
 export function ReminderRuleEditorView({
   open,
   onOpenChange,
-  rule,
   t,
   form,
   triggerItems,
@@ -206,7 +205,7 @@ export function ReminderRuleEditorView({
               )}
             </div>
 
-            {showOffset && (
+            {showOffset ? (
               <div className="space-y-2">
                 <Label htmlFor={`${id}-rule-offset`}>{t('reminderRules.editor.offset')}</Label>
                 <div className="flex items-center gap-2">
@@ -229,7 +228,7 @@ export function ReminderRuleEditorView({
                   </p>
                 )}
               </div>
-            )}
+            ) : null}
 
             <div className="space-y-2">
               <Label>{t('reminderRules.editor.entityType')}</Label>

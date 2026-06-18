@@ -356,7 +356,6 @@ function TaskExpandedDetails({
 
 export function TaskCardRun({
   task,
-  runId,
   currentUserId,
   dependencyTitle,
   completeMutation,

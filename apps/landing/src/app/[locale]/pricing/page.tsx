@@ -35,6 +35,7 @@ export default async function PricingPage({ params }: { params: Promise<{ locale
   return (
     <TranslationProvider translations={t} locale={locale}>
       <Navbar />
+      {/* biome-ignore lint/correctness/useUniqueElementIds: stable skip-link target referenced by href="#main" in layout.tsx */}
       <main id="main">
         <SectionTracker name="pricing-hero">
           <PricingHero views={views} annualSavings={annualSavings} />

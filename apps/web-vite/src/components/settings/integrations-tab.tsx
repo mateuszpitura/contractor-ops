@@ -144,14 +144,14 @@ export function IntegrationsTabView({ t, isSlackConnected }: IntegrationsTabProp
       <OrgCalendarSection />
 
       {/* Slack-specific user mapping (preserved for backward compatibility) */}
-      {isSlackConnected && (
+      {isSlackConnected ? (
         <div className="space-y-3">
           <div className="flex justify-end">
             <SlackSyncButton />
           </div>
           <SlackUserMapping />
         </div>
-      )}
+      ) : null}
     </div>
   );
 }

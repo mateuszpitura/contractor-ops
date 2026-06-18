@@ -6,4 +6,18 @@ export { canStartDeprovisioning } from './cooldown.js';
 export { gcExpiredProvenance } from './gc.js';
 export { insertProvenance, provenanceLookup } from './provenance.js';
 export { deriveRunStatus, recomputeRunStatus } from './run-status.js';
-export * from './types.js';
+export {
+  type AssignmentStatus,
+  COOLDOWN_DAYS,
+  type CooldownDecision,
+  type CooldownInput,
+  type DeprovisioningProvider,
+  type GcResult,
+  MAX_ATTEMPTS,
+  type ProvenanceActionKind,
+  type ProvenanceLookupInput,
+  type ProvenanceMatchResult,
+  type RunStatus,
+  type StepRow,
+  type StepStatus,
+} from './types.js';

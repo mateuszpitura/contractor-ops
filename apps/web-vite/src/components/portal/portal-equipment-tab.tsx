@@ -68,6 +68,7 @@ export function PortalEquipmentTab({
         </div>
         <div className="space-y-3">
           {Array.from({ length: 3 }).map((_, i) => (
+            // biome-ignore lint/suspicious/noArrayIndexKey: fixed-length skeleton placeholder, never reordered
             <Card key={`skel-${i}`}>
               <CardContent className="flex items-center gap-4 p-4">
                 <Skeleton className="h-6 w-6 shrink-0 rounded" />

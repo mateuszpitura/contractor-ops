@@ -180,11 +180,11 @@ export function WhtCertificatesSectionView({
                     <TableCell>
                       <div className="flex flex-col">
                         <span>{row.contractorName}</span>
-                        {row.contractorTaxId && (
+                        {row.contractorTaxId ? (
                           <span className="text-xs text-muted-foreground">
                             {row.contractorTaxId}
                           </span>
-                        )}
+                        ) : null}
                       </div>
                     </TableCell>
                     <TableCell>
@@ -294,14 +294,14 @@ export function WhtCertificatesSectionView({
                     })}
                   </dd>
                 </div>
-                {detail.treatyApplied && (
+                {detail.treatyApplied ? (
                   <div className="col-span-2">
                     <dt className="text-xs uppercase tracking-wide text-muted-foreground">
                       {t('detail.treaty')}
                     </dt>
                     <dd>{detail.treatyReference ?? t('detail.treatyApplied')}</dd>
                   </div>
-                )}
+                ) : null}
               </dl>
             ) : (
               <p className="py-4 text-sm text-muted-foreground">{t('detail.notFound')}</p>

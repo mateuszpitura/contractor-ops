@@ -38,6 +38,7 @@ export function IntakeUploadDialogFrame({ open, upload, body }: IntakeUploadDial
             <UploadCloud className="size-4" />
             {t('uploadDialogTitle')}
           </DialogTitle>
+          {/* biome-ignore lint/correctness/useUniqueElementIds: stable anchor — referenced by aria-describedby in the sibling IntakeUploadDropzone, which sits behind an opaque ReactNode body prop and cannot share a useId */}
           <DialogDescription id="intake-upload-helper" className="sr-only">
             {t('dropZoneSecondary')}
           </DialogDescription>
@@ -132,6 +133,7 @@ export function IntakeUploadDropzone({ upload }: IntakeUploadDropzoneProps) {
         disabled={isPending}
         label={t('dropZonePrimary')}
         description={t('dropZoneSecondary')}>
+        {/* biome-ignore lint/correctness/useUniqueElementIds: stable test anchor — queried via document.getElementById('intake-upload-input') in intake-upload-dialog.test.tsx */}
         <input
           ref={fileInputRef}
           id="intake-upload-input"

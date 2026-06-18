@@ -152,6 +152,7 @@ export function TabShipmentsSkeleton({ pendingReturn }: { pendingReturn?: Pendin
       <div className="rounded-xl border bg-background">
         <div className="space-y-2 p-4">
           {Array.from({ length: 3 }).map((_, i) => (
+            // biome-ignore lint/suspicious/noArrayIndexKey: fixed-length skeleton placeholder, never reordered
             <Skeleton key={`shipment-skel-${i}`} className="h-10 w-full" />
           ))}
         </div>
@@ -375,17 +376,17 @@ export function TabShipmentsView({
           </SheetHeader>
 
           <div className="space-y-4 px-4 pb-4">
-            {detailQuery.isLoading && (
+            {detailQuery.isLoading ? (
               <div className="space-y-2">
                 <Skeleton className="h-5 w-3/4" />
                 <Skeleton className="h-5 w-1/2" />
                 <Skeleton className="h-32 w-full" />
               </div>
-            )}
+            ) : null}
 
-            {detailQuery.isError && (
+            {detailQuery.isError ? (
               <p className="text-sm text-destructive">{t('error.loadFailed')}</p>
-            )}
+            ) : null}
 
             {!!detailQuery.data && (
               <>

@@ -48,7 +48,7 @@ const WorkflowStatusCell = memo(function WorkflowStatusCell({
   return (
     <div className="flex items-center gap-2">
       <span className="text-sm font-medium">{workflowStatusLabel}</span>
-      {isUnmapped && (
+      {isUnmapped ? (
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger>
@@ -57,7 +57,7 @@ const WorkflowStatusCell = memo(function WorkflowStatusCell({
             <TooltipContent>{unmappedTooltip}</TooltipContent>
           </Tooltip>
         </TooltipProvider>
-      )}
+      ) : null}
     </div>
   );
 });

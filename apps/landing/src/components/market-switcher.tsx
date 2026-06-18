@@ -46,7 +46,7 @@ function MarketOptionButton({
         <span className="font-medium text-foreground">{marketLabel}</span>
         <span className="text-[11px] text-muted-foreground">{englishName}</span>
       </span>
-      {isSelected && <Check className="h-3.5 w-3.5 text-primary" aria-hidden />}
+      {Boolean(isSelected) && <Check className="h-3.5 w-3.5 text-primary" aria-hidden />}
     </button>
   );
 }

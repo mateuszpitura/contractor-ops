@@ -1,7 +1,7 @@
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { Input } from '@contractor-ops/ui/components/shadcn/input';
 import { Label } from '@contractor-ops/ui/components/shadcn/label';
-import { useState } from 'react';
+import { useId, useState } from 'react';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { DropZone } from '../../documents/drop-zone.js';
@@ -32,6 +32,7 @@ export function PortalUploadReplacementForm({
   onSubmit,
 }: PortalUploadReplacementFormProps) {
   const t = useTranslations('Portal.compliance');
+  const expiresAtId = useId();
   const [file, setFile] = useState<File | null>(null);
   const [expiresAt, setExpiresAt] = useState(defaultExpiresAt);
 
@@ -48,13 +49,13 @@ export function PortalUploadReplacementForm({
       <div className="flex flex-col gap-2">
         <h2 className="text-sm font-medium leading-none">{t('upload.fileLabel')}</h2>
         <DropZone onFilesAccepted={files => setFile(files[0] ?? null)} />
-        {file && <p className="text-sm text-muted-foreground">{file.name}</p>}
+        {file ? <p className="text-sm text-muted-foreground">{file.name}</p> : null}
       </div>
 
       <div className="flex flex-col gap-2">
-        <Label htmlFor="upload-expires-at">{t('upload.expiresAtLabel')}</Label>
+        <Label htmlFor={expiresAtId}>{t('upload.expiresAtLabel')}</Label>
         <Input
-          id="upload-expires-at"
+          id={expiresAtId}
           type="date"
           value={expiresAt}
           onChange={e => setExpiresAt(e.target.value)}

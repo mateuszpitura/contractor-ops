@@ -179,7 +179,7 @@ function StepCard({ form, t, index, canRemove, onRemove }: StepCardProps) {
           <div className="flex size-7 items-center justify-center rounded-full bg-muted text-xs font-medium text-muted-foreground">
             {index + 1}
           </div>
-          {canRemove && (
+          {canRemove ? (
             <Button
               type="button"
               variant="ghost"
@@ -189,7 +189,7 @@ function StepCard({ form, t, index, canRemove, onRemove }: StepCardProps) {
               aria-label={t('approvals.editor.removeLevel')}>
               <X className="size-4" />
             </Button>
-          )}
+          ) : null}
         </div>
 
         <div className="space-y-2">
@@ -263,7 +263,6 @@ function StepCard({ form, t, index, canRemove, onRemove }: StepCardProps) {
 export function ChainEditorDialogView({
   open,
   onOpenChange,
-  chainData,
   t,
   form,
   fields,

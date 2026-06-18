@@ -58,9 +58,9 @@ function SwatchButton({ hex, isSelected, ariaLabel, onSelect }: SwatchButtonProp
       onClick={handleClick}
       aria-label={ariaLabel}
       aria-pressed={isSelected}>
-      {isSelected && (
+      {isSelected ? (
         <Check className="absolute inset-0 m-auto h-4 w-4 text-white drop-shadow-sm" />
-      )}
+      ) : null}
     </button>
   );
 }

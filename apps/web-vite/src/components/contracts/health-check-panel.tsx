@@ -76,7 +76,7 @@ export function HealthCheckPanel({
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
-        {crossJurisdictionMismatch && (
+        {crossJurisdictionMismatch ? (
           <div
             className="rounded border border-amber-300 bg-amber-50 p-3 text-amber-900"
             data-testid="cross-jurisdiction-mismatch">
@@ -88,7 +88,7 @@ export function HealthCheckPanel({
               })}
             </p>
           </div>
-        )}
+        ) : null}
 
         {citedClauses.length === 0 ? (
           <p className="text-sm text-muted-foreground">{t('noCitedClauses')}</p>
@@ -97,6 +97,7 @@ export function HealthCheckPanel({
             {citedClauses.map((clause, idx) => {
               const isPending = pendingPhrasesCited?.includes(clause.phraseId) ?? false;
               return (
+                // biome-ignore lint/suspicious/noArrayIndexKey: static parse result, never reordered — phraseId can repeat across cited clauses
                 <li key={`${clause.phraseId}-${idx}`} className="border-s-2 border-s-blue-300 ps-3">
                   <div className="flex items-center gap-2 text-xs">
                     <Badge variant="outline">{clause.jurisdiction}</Badge>
@@ -106,14 +107,14 @@ export function HealthCheckPanel({
                     <span className="text-muted-foreground">
                       {t('confidence', { value: Math.round(clause.confidence * 100) })}
                     </span>
-                    {isPending && (
+                    {isPending ? (
                       <sup
                         data-testid="pending-phrase-marker"
                         className="text-amber-600"
                         aria-label={t('pendingPhraseFooter')}>
                         ¹
                       </sup>
-                    )}
+                    ) : null}
                   </div>
                   <blockquote className="mt-1 italic">{clause.citedText}</blockquote>
                 </li>

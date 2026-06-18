@@ -90,6 +90,7 @@ export default async function PostPage({
     <TranslationProvider translations={t} locale={locale}>
       <ReadingProgress />
       <Navbar />
+      {/* biome-ignore lint/correctness/useUniqueElementIds: stable skip-link target referenced by href="#main" in layout.tsx */}
       <main id="main" className="pt-28 pb-24">
         <article className="mx-auto max-w-3xl px-6">
           <nav aria-label="Breadcrumb" className="mb-6 text-sm text-muted-foreground">

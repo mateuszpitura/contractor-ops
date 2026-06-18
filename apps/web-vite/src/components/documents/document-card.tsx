@@ -173,12 +173,12 @@ export function DocumentCardView({ versionNumber, cardActions }: DocumentCardVie
           </TooltipProvider>
         )}
 
-        {canUploadNewVersion && onUploadNewVersion && (
+        {canUploadNewVersion && onUploadNewVersion ? (
           <Button variant="ghost" size="icon-sm" onClick={onUploadNewVersion}>
             <Upload className="size-3.5" />
             <span className="sr-only">{t('uploadNewVersion')}</span>
           </Button>
-        )}
+        ) : null}
 
         <Button
           variant="ghost"
@@ -191,14 +191,14 @@ export function DocumentCardView({ versionNumber, cardActions }: DocumentCardVie
         </Button>
       </div>
 
-      {isPdf && (
+      {isPdf ? (
         <PdfPreviewContainer
           documentId={doc.id}
           filename={doc.originalFileName}
           open={previewOpen}
           onOpenChange={onPreviewOpenChange}
         />
-      )}
+      ) : null}
 
       <AlertDialog open={deleteOpen} onOpenChange={onDeleteOpenChange}>
         <AlertDialogContent>

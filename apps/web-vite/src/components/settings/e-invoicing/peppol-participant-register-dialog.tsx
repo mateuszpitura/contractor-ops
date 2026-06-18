@@ -55,7 +55,6 @@ export function PeppolParticipantRegisterDialogView({
   open,
   onOpenChange,
   tCommon,
-  resetNonce,
   t,
   connect,
   isPending,

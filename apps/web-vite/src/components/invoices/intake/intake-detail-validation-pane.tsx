@@ -56,7 +56,7 @@ export function IntakeDetailValidationPaneView({
       <CardHeader className="flex-row items-start justify-between gap-2">
         <CardTitle className="text-base">
           <span className="me-2">{tValidation('heading')}</span>
-          {validationStatus && <IntakeValidationStatusPill status={validationStatus} />}
+          {validationStatus ? <IntakeValidationStatusPill status={validationStatus} /> : null}
         </CardTitle>
         <Button
           type="button"
@@ -76,13 +76,13 @@ export function IntakeDetailValidationPaneView({
           </p>
         )}
 
-        {validationAcknowledgedAt && (
+        {validationAcknowledgedAt ? (
           <div className="rounded-md border border-warning/30 bg-amber-500/5 p-3 text-xs text-amber-800 dark:text-amber-300">
             {t('issuesAcceptedPattern', {
               date: formatDate(validationAcknowledgedAt),
             })}
           </div>
-        )}
+        ) : null}
 
         {firstFive.length > 0 ? (
           <ul className="space-y-2 text-xs">
@@ -90,13 +90,13 @@ export function IntakeDetailValidationPaneView({
               // biome-ignore lint/suspicious/noArrayIndexKey: stable order from server
               <li key={`issue-${index}`} className="rounded-md border p-2">
                 <span className="me-2 font-mono text-[10px] uppercase">[{issue.severity}]</span>
-                {issue.ruleId && <span className="me-2 font-mono">{issue.ruleId}</span>}
+                {issue.ruleId ? <span className="me-2 font-mono">{issue.ruleId}</span> : null}
                 <span>{issue.message ?? ''}</span>
-                {issue.xpath && (
+                {issue.xpath ? (
                   <code className="ms-2 block text-[10px] text-muted-foreground">
                     {issue.xpath}
                   </code>
-                )}
+                ) : null}
               </li>
             ))}
           </ul>

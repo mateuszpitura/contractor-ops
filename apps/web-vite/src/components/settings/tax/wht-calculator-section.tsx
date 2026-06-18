@@ -18,7 +18,7 @@ import {
 } from '@contractor-ops/ui/components/shadcn/select';
 import type { WhtServiceType } from '@contractor-ops/validators';
 import { Calculator, Loader2 } from 'lucide-react';
-import { useCallback } from 'react';
+import { useCallback, useId } from 'react';
 import { tDyn } from '../../../i18n/typed-keys';
 import { formatMinorUnits } from '../../../lib/money.js';
 import type {
@@ -48,6 +48,10 @@ export function WhtCalculatorSectionView({
   result,
   hasResult,
 }: WhtCalculatorSectionProps) {
+  const grossId = useId();
+  const countryId = useId();
+  const serviceId = useId();
+
   const handleGrossChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => setGrossAmountInput(e.target.value),
     [setGrossAmountInput],
@@ -74,11 +78,11 @@ export function WhtCalculatorSectionView({
       <CardContent className="space-y-5">
         <div className="grid gap-4 sm:grid-cols-3">
           <div className="space-y-1.5">
-            <Label htmlFor="wht-gross" className="text-[13px]">
+            <Label htmlFor={grossId} className="text-[13px]">
               {t('grossAmountLabel')}
             </Label>
             <Input
-              id="wht-gross"
+              id={grossId}
               type="text"
               inputMode="decimal"
               value={grossAmountInput}
@@ -90,11 +94,11 @@ export function WhtCalculatorSectionView({
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="wht-country" className="text-[13px]">
+            <Label htmlFor={countryId} className="text-[13px]">
               {t('residencyLabel')}
             </Label>
             <Select value={contractorResidency} onValueChange={handleResidencyChange}>
-              <SelectTrigger id="wht-country" className="w-full">
+              <SelectTrigger id={countryId} className="w-full">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -108,11 +112,11 @@ export function WhtCalculatorSectionView({
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="wht-service" className="text-[13px]">
+            <Label htmlFor={serviceId} className="text-[13px]">
               {t('serviceTypeLabel')}
             </Label>
             <Select value={serviceType} onValueChange={handleServiceTypeChange}>
-              <SelectTrigger id="wht-service" className="w-full">
+              <SelectTrigger id={serviceId} className="w-full">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -143,7 +147,7 @@ export function WhtCalculatorSectionView({
           </div>
         )}
 
-        {hasResult && result && (
+        {hasResult && result ? (
           <div className="rounded-lg border bg-muted/40 p-4">
             <div className="mb-3 flex items-center gap-2">
               <p className="text-sm font-medium">{t('result.title')}</p>
@@ -183,13 +187,13 @@ export function WhtCalculatorSectionView({
                 </dd>
               </div>
             </dl>
-            {result.treatyReference && (
+            {result.treatyReference ? (
               <p className="mt-3 text-xs text-muted-foreground">
                 {t('result.treatyReference', { reference: result.treatyReference })}
               </p>
-            )}
+            ) : null}
           </div>
-        )}
+        ) : null}
       </CardContent>
     </Card>
   );

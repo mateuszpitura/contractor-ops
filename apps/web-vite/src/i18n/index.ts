@@ -72,8 +72,9 @@ function silenceLocizeBanner(): () => void {
   }
   return () => {
     for (const m of methods) {
+      const original = originals[m];
       // biome-ignore lint/suspicious/noConsole: see silenceLocizeBanner header
-      if (originals[m]) console[m] = originals[m]!;
+      if (original) console[m] = original;
     }
   };
 }

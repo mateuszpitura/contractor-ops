@@ -63,6 +63,7 @@ export function IntegrationsGrid({
   items,
 }: IntegrationsGridProps) {
   return (
+    // biome-ignore lint/correctness/useUniqueElementIds: stable in-page nav/scroll anchor referenced via href="#integrations"
     <section id="integrations" className="relative py-24">
       <div className="mx-auto max-w-6xl px-6">
         <header className="mx-auto mb-12 max-w-2xl text-center">

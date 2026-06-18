@@ -63,11 +63,11 @@ export function ReturnApprovalBanner({ returnRequest }: ReturnApprovalBannerProp
           </div>
           <div className="flex shrink-0 gap-2">
             <Button variant="destructive" size="sm" onClick={handleOpenReject} disabled={isPending}>
-              {isRejecting && <Loader2 className="me-1.5 h-3.5 w-3.5 animate-spin" />}
+              {isRejecting ? <Loader2 className="me-1.5 h-3.5 w-3.5 animate-spin" /> : null}
               {t('reject')}
             </Button>
             <Button size="sm" onClick={handleApprove} disabled={isPending}>
-              {isApproving && <Loader2 className="me-1.5 h-3.5 w-3.5 animate-spin" />}
+              {isApproving ? <Loader2 className="me-1.5 h-3.5 w-3.5 animate-spin" /> : null}
               {t('approve')}
             </Button>
           </div>
@@ -83,7 +83,7 @@ export function ReturnApprovalBanner({ returnRequest }: ReturnApprovalBannerProp
           <AlertDialogFooter>
             <AlertDialogCancel disabled={isRejecting}>{t('cancelAction')}</AlertDialogCancel>
             <AlertDialogAction variant="destructive" onClick={handleReject} disabled={isRejecting}>
-              {isRejecting && <Loader2 className="me-1.5 h-3.5 w-3.5 animate-spin" />}
+              {isRejecting ? <Loader2 className="me-1.5 h-3.5 w-3.5 animate-spin" /> : null}
               {t('reject')}
             </AlertDialogAction>
           </AlertDialogFooter>

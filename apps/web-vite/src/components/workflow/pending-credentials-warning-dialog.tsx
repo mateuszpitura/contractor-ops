@@ -10,7 +10,7 @@ import {
 } from '@contractor-ops/ui/components/shadcn/dialog';
 import { Label } from '@contractor-ops/ui/components/shadcn/label';
 import { Textarea } from '@contractor-ops/ui/components/shadcn/textarea';
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import { useTranslations } from '../../i18n/useTranslations.js';
 
 export interface PendingCredential {
@@ -43,6 +43,8 @@ export function PendingCredentialsWarningDialog({
   onConfirm,
 }: PendingCredentialsWarningDialogProps) {
   const t = useTranslations('Workflow.pendingCredentialsDialog');
+  const reasonId = useId();
+  const ackId = useId();
   const [reason, setReason] = useState('');
   const [acknowledged, setAcknowledged] = useState(false);
 
@@ -65,9 +67,9 @@ export function PendingCredentialsWarningDialog({
             ))}
           </ul>
           <div className="space-y-1">
-            <Label htmlFor="force-reason">{t('reasonLabel')}</Label>
+            <Label htmlFor={reasonId}>{t('reasonLabel')}</Label>
             <Textarea
-              id="force-reason"
+              id={reasonId}
               value={reason}
               onChange={e => setReason(e.target.value)}
               data-testid="force-reason"
@@ -75,12 +77,12 @@ export function PendingCredentialsWarningDialog({
           </div>
           <div className="flex items-center gap-2">
             <Checkbox
-              id="force-ack"
+              id={ackId}
               checked={acknowledged}
               onCheckedChange={v => setAcknowledged(v === true)}
               data-testid="force-acknowledge"
             />
-            <Label htmlFor="force-ack" className="text-sm font-normal">
+            <Label htmlFor={ackId} className="text-sm font-normal">
               {t('acknowledgeLabel')}
             </Label>
           </div>

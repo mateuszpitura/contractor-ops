@@ -24,6 +24,7 @@ function RunDetailSkeleton() {
       <div className="space-y-3">
         <Skeleton className="h-6 w-16" />
         {Array.from({ length: 5 }).map((_, i) => (
+          // biome-ignore lint/suspicious/noArrayIndexKey: fixed-length skeleton placeholder, never reordered
           <div key={`skel-${i}`} className="flex items-center gap-3 rounded-lg border bg-card p-4">
             <Skeleton className="size-5 shrink-0 rounded-full" />
             <div className="flex-1 space-y-2">

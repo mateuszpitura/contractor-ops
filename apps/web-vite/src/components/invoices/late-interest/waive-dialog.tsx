@@ -19,7 +19,7 @@ import {
 import { Textarea } from '@contractor-ops/ui/components/shadcn/textarea';
 import { Archive } from 'lucide-react';
 import type { ChangeEvent } from 'react';
-import { useCallback, useState } from 'react';
+import { useCallback, useId, useState } from 'react';
 
 import { tDyn } from '../../../i18n/typed-keys.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
@@ -36,6 +36,8 @@ interface WaiveDialogProps {
 
 export function WaiveDialog({ open, onOpenChange, onConfirm, isPending }: WaiveDialogProps) {
   const t = useTranslations('Payments.lateInterest.waive');
+  const waiveTypeId = useId();
+  const waiveReasonId = useId();
 
   const [waiveType, setWaiveType] = useState<WaiveType>('BOTH');
   const [reason, setReason] = useState('');
@@ -68,9 +70,9 @@ export function WaiveDialog({ open, onOpenChange, onConfirm, isPending }: WaiveD
 
         <div className="space-y-4 py-4">
           <div className="space-y-2">
-            <Label htmlFor="waive-type">{t('typeLabel')}</Label>
+            <Label htmlFor={waiveTypeId}>{t('typeLabel')}</Label>
             <Select value={waiveType} onValueChange={handleTypeChange}>
-              <SelectTrigger id="waive-type">
+              <SelectTrigger id={waiveTypeId}>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -84,9 +86,9 @@ export function WaiveDialog({ open, onOpenChange, onConfirm, isPending }: WaiveD
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="waive-reason">{t('reasonLabel')}</Label>
+            <Label htmlFor={waiveReasonId}>{t('reasonLabel')}</Label>
             <Textarea
-              id="waive-reason"
+              id={waiveReasonId}
               value={reason}
               onChange={handleReasonChange}
               placeholder={t('reasonPlaceholder')}

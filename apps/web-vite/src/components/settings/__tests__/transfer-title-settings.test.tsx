@@ -32,6 +32,7 @@ function Harness({
   });
 
   return (
+    // biome-ignore lint/correctness/useUniqueElementIds: stable test fixture id for single-render harness
     <TransferTitleSettingsView
       id="ts"
       t={tStub}

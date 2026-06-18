@@ -48,12 +48,12 @@ export function LinearProviderSectionView({
           description={t('descriptionDisconnected')}
         />
 
-        {isPendingMapping && (
+        {isPendingMapping ? (
           <div className="flex items-center gap-2 rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-800 dark:border-amber-700 dark:bg-amber-950 dark:text-amber-200">
             <AlertTriangle className="size-4 shrink-0" aria-hidden="true" />
             {t('pendingMappingWarning')}
           </div>
-        )}
+        ) : null}
 
         {!!(isConnected || isPendingMapping) && (
           <Button variant="outline" size="sm" onClick={openMappingDialog}>
@@ -61,12 +61,12 @@ export function LinearProviderSectionView({
           </Button>
         )}
 
-        {needsReauth && (
+        {needsReauth ? (
           <div className="flex items-center gap-2 rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-800 dark:border-amber-700 dark:bg-amber-950 dark:text-amber-200">
             <AlertTriangle className="size-4 shrink-0" aria-hidden="true" />
             {t('scopeExpansionWarning')}
           </div>
-        )}
+        ) : null}
 
         <LinearStatusMappingDialog open={mappingOpen} onOpenChange={setMappingOpen} />
       </div>

@@ -12,7 +12,7 @@ import { Label } from '@contractor-ops/ui/components/shadcn/label';
 import { Textarea } from '@contractor-ops/ui/components/shadcn/textarea';
 import { XCircle } from 'lucide-react';
 import type { ChangeEvent } from 'react';
-import { useCallback, useState } from 'react';
+import { useCallback, useId, useState } from 'react';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
 
@@ -32,6 +32,7 @@ export function RevokeWaiverDialog({
   isPending,
 }: RevokeWaiverDialogProps) {
   const t = useTranslations('Payments.lateInterest.revokeWaiver');
+  const revokeReasonId = useId();
 
   const [reason, setReason] = useState('');
   const isReasonValid = reason.trim().length >= 10;
@@ -59,9 +60,9 @@ export function RevokeWaiverDialog({
 
         <div className="space-y-4 py-4">
           <div className="space-y-2">
-            <Label htmlFor="revoke-reason">{t('reasonLabel')}</Label>
+            <Label htmlFor={revokeReasonId}>{t('reasonLabel')}</Label>
             <Textarea
-              id="revoke-reason"
+              id={revokeReasonId}
               value={reason}
               onChange={handleReasonChange}
               placeholder={t('reasonPlaceholder')}

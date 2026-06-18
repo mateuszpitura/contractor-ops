@@ -72,6 +72,7 @@ export function ApprovalQueueWidget() {
         {isLoading ? (
           <div className="flex flex-col gap-2">
             {Array.from({ length: 5 }).map((_, i) => (
+              // biome-ignore lint/suspicious/noArrayIndexKey: fixed-length skeleton placeholder, never reordered
               <Skeleton key={`skel-${i}`} className="h-10 w-full rounded-md" />
             ))}
           </div>
@@ -109,11 +110,11 @@ export function ApprovalQueueWidget() {
                       {formatMoneyAmount(amount, currency, 'pl-PL')}
                     </span>
                     <div className="flex justify-end">
-                      {item.slaStatus && (
+                      {item.slaStatus ? (
                         <Badge variant={getSlaVariant(slaStatus)}>
                           {tKey(t, SLA_LABEL_KEYS[slaStatus] ?? slaStatus)}
                         </Badge>
-                      )}
+                      ) : null}
                     </div>
                   </Link>
                 );

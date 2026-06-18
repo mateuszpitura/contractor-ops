@@ -58,6 +58,7 @@ function renderBlock(node: AnyNode, index: number): ReactNode {
         return (
           <Ol key={index}>
             {(node.children ?? []).map((item, j) => (
+              // biome-ignore lint/suspicious/noArrayIndexKey: static lexical parse tree, never reordered — nodes have no stable id
               <Li key={j}>{(item.children ?? []).map(renderInline)}</Li>
             ))}
           </Ol>
@@ -66,6 +67,7 @@ function renderBlock(node: AnyNode, index: number): ReactNode {
       return (
         <Ul key={index}>
           {(node.children ?? []).map((item, j) => (
+            // biome-ignore lint/suspicious/noArrayIndexKey: static lexical parse tree, never reordered — nodes have no stable id
             <Li key={j}>{(item.children ?? []).map(renderInline)}</Li>
           ))}
         </Ul>

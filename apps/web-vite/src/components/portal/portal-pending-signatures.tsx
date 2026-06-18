@@ -131,11 +131,11 @@ function PendingSignaturesList({
         );
       })}
 
-      {hasMore && (
+      {hasMore ? (
         <Link href="/portal/signatures" className="text-sm text-primary hover:underline">
           {t('pendingSignatures.viewAll')}
         </Link>
-      )}
+      ) : null}
     </div>
   );
 }

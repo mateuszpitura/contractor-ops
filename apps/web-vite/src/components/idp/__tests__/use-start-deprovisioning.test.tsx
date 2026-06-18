@@ -86,7 +86,7 @@ describe('useStartDeprovisioning', () => {
   });
 
   it('starts the run with { assignmentId, idempotencyKey } and surfaces the runId (D-03/D-09)', async () => {
-    const start = vi.fn((vars: unknown) => ({ runId: 'run-99', idempotent: false }));
+    const start = vi.fn((_vars: unknown) => ({ runId: 'run-99', idempotent: false }));
     setTRPCMock({
       'deprovisioning.getDeprovisioningEligibility': () => ({ allowed: true }),
       'deprovisioning.startDeprovisioningRun': start,

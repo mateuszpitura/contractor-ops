@@ -124,6 +124,7 @@ function PortalIndexPageContent() {
         <div className="mt-4 space-y-3">
           {isLoading ? (
             Array.from({ length: 5 }).map((_, i) => (
+              // biome-ignore lint/suspicious/noArrayIndexKey: fixed-length skeleton placeholder, never reordered
               <div key={`skel-${i}`} className="flex items-center justify-between">
                 <Skeleton className="h-4 w-64" />
                 <Skeleton className="h-3 w-16" />

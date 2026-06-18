@@ -95,8 +95,8 @@ export function NotificationPreferencesSkeleton() {
           <div className="border-t">
             <div className="space-y-1">
               {Array.from({ length: 5 }).map((_, i) => (
-                // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
                 <div
+                  // biome-ignore lint/suspicious/noArrayIndexKey: fixed-length skeleton placeholder, never reordered
                   key={`pref-${i}`}
                   className="flex min-h-[48px] items-center justify-between px-4 py-3">
                   <div className="flex items-center gap-3">

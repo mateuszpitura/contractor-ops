@@ -177,6 +177,7 @@ export function StatusTimelineSkeleton() {
     <div className="py-4">
       <div className="hidden items-center gap-2 md:flex">
         {Array.from({ length: 5 }).map((_, i) => (
+          // biome-ignore lint/suspicious/noArrayIndexKey: fixed-length skeleton placeholder, never reordered
           <div key={`timeline-${i}`} className="flex items-center gap-2">
             <div className="flex flex-col items-center gap-1.5">
               <Skeleton className="h-6 w-6 rounded-full" />
@@ -188,6 +189,7 @@ export function StatusTimelineSkeleton() {
       </div>
       <div className="flex flex-col gap-2 md:hidden">
         {Array.from({ length: 5 }).map((_, i) => (
+          // biome-ignore lint/suspicious/noArrayIndexKey: fixed-length skeleton placeholder, never reordered
           <div key={`event-${i}`} className="flex items-center gap-3">
             <Skeleton className="h-6 w-6 rounded-full" />
             <Skeleton className="h-3 w-24" />

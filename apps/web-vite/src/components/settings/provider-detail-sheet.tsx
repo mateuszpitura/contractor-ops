@@ -126,7 +126,6 @@ export type ProviderDetailSheetViewProps = ProviderDetailSheetViewShellProps &
   ReturnType<typeof useProviderDetailSheet>;
 
 export function ProviderDetailSheetView({
-  provider,
   displayName,
   icon,
   open,

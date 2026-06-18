@@ -73,7 +73,7 @@ export function TopBar({
               </BreadcrumbItem>
             ) : (
               segments.map((s, index) => (
-                <Fragment key={`${s.segment}-${index}`}>
+                <Fragment key={s.href}>
                   {index > 0 && <BreadcrumbSeparator />}
                   <BreadcrumbItem className="min-w-0">
                     {s.isLast ? (

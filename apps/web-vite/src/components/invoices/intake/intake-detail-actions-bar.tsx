@@ -19,7 +19,7 @@ import {
 } from '@contractor-ops/ui/components/shadcn/tooltip';
 import { Download, FileText, Loader2, XCircle } from 'lucide-react';
 import type { ChangeEvent } from 'react';
-import { useCallback } from 'react';
+import { useCallback, useId } from 'react';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { cn } from '../../../lib/utils.js';
 import { useIntakeDetailActions } from '../hooks/use-intake-detail-actions.js';
@@ -36,6 +36,8 @@ export function IntakeDetailActionsBarView({
   className,
 }: IntakeDetailActionsBarViewProps) {
   const t = useTranslations('EInvoice.intake');
+  const convertTooltipId = useId();
+  const rejectReasonId = useId();
   const setRejectReason = actions.setRejectReason;
   const handleRejectReasonChange = useCallback(
     (event: ChangeEvent<HTMLTextAreaElement>) => {
@@ -86,7 +88,7 @@ export function IntakeDetailActionsBarView({
         </div>
 
         <div className="flex flex-wrap items-center justify-end gap-2">
-          {actions.showAccept && (
+          {actions.showAccept ? (
             <Button
               type="button"
               variant="secondary"
@@ -95,9 +97,9 @@ export function IntakeDetailActionsBarView({
               data-testid="intake-accept-despite-issues">
               {t('ctaAcceptDespiteIssues')}
             </Button>
-          )}
+          ) : null}
 
-          {actions.canReject && (
+          {actions.canReject ? (
             <Button
               type="button"
               variant="ghost"
@@ -106,9 +108,9 @@ export function IntakeDetailActionsBarView({
               data-testid="intake-reject-trigger">
               {t('ctaRejectImport')}
             </Button>
-          )}
+          ) : null}
 
-          {actions.showConfirmMatch && (
+          {actions.showConfirmMatch ? (
             <Button
               type="button"
               onClick={actions.onConfirmMatch}
@@ -119,7 +121,7 @@ export function IntakeDetailActionsBarView({
               ) : null}
               {t('ctaConfirmMatch')}
             </Button>
-          )}
+          ) : null}
 
           <Tooltip>
             <TooltipTrigger
@@ -129,14 +131,14 @@ export function IntakeDetailActionsBarView({
                   onClick={actions.onConvert}
                   disabled={!actions.canConvert}
                   data-testid="intake-convert-cta"
-                  aria-describedby={actions.convertTooltip ? 'intake-convert-tooltip' : undefined}
+                  aria-describedby={actions.convertTooltip ? convertTooltipId : undefined}
                 />
               }>
               {t('ctaConvert')}
             </TooltipTrigger>
-            {actions.convertTooltip && (
-              <TooltipContent id="intake-convert-tooltip">{actions.convertTooltip}</TooltipContent>
-            )}
+            {actions.convertTooltip ? (
+              <TooltipContent id={convertTooltipId}>{actions.convertTooltip}</TooltipContent>
+            ) : null}
           </Tooltip>
         </div>
       </div>
@@ -151,9 +153,9 @@ export function IntakeDetailActionsBarView({
             <AlertDialogDescription>{t('rejectDialogBody')}</AlertDialogDescription>
           </AlertDialogHeader>
           <div className="space-y-2 py-2">
-            <Label htmlFor="intake-reject-reason">{t('rejectReasonPlaceholder')}</Label>
+            <Label htmlFor={rejectReasonId}>{t('rejectReasonPlaceholder')}</Label>
             <Textarea
-              id="intake-reject-reason"
+              id={rejectReasonId}
               value={actions.rejectReason}
               onChange={handleRejectReasonChange}
               placeholder={t('rejectReasonPlaceholder')}
@@ -163,11 +165,11 @@ export function IntakeDetailActionsBarView({
               required
               data-testid="intake-reject-reason-input"
             />
-            {actions.rejectError && (
+            {actions.rejectError ? (
               <p role="alert" className="text-xs text-destructive">
                 {actions.rejectError}
               </p>
-            )}
+            ) : null}
           </div>
           <AlertDialogFooter>
             <AlertDialogCancel data-testid="intake-reject-cancel">

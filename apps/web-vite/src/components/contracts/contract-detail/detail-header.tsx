@@ -238,9 +238,9 @@ export function DetailHeaderWired({ contract }: DetailHeaderWiredProps) {
   return (
     <>
       <DetailHeader contract={contract} header={header} />
-      {header.editOpen && (
+      {header.editOpen ? (
         <EditContractDialog open={header.editOpen} onOpenChange={header.setEditOpen} edit={edit} />
-      )}
+      ) : null}
     </>
   );
 }

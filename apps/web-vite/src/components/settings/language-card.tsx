@@ -64,11 +64,11 @@ function LocaleButton({
           ? 'border-primary bg-primary/[0.06] shadow-sm ring-1 ring-primary/20'
           : 'border-border bg-transparent',
       )}>
-      {isActive && (
+      {isActive ? (
         <span className="absolute end-2 top-2 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-primary-foreground">
           <Check className="h-3 w-3" strokeWidth={3} />
         </span>
-      )}
+      ) : null}
 
       <Image src={localeFlagSrc[loc]} alt="" width={28} height={28} className="rounded-full" />
 

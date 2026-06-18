@@ -50,7 +50,8 @@ const FORMULA_PREFIXES = new Set(['=', '+', '-', '@']);
  */
 export function escapeCsvField(value: unknown): string {
   let s = value === null || value === undefined ? '' : String(value);
-  if (s.length > 0 && FORMULA_PREFIXES.has(s[0]!)) {
+  const first = s[0];
+  if (first !== undefined && FORMULA_PREFIXES.has(first)) {
     s = `'${s}`;
   }
   if (/[",\r\n]/.test(s)) {
@@ -68,7 +69,8 @@ function neutralizeFormulaPrefix(value: unknown): string | number | boolean | nu
   if (value === null || value === undefined) return value;
   if (typeof value === 'number' || typeof value === 'boolean') return value;
   const s = String(value);
-  if (s.length > 0 && FORMULA_PREFIXES.has(s[0]!)) {
+  const first = s[0];
+  if (first !== undefined && FORMULA_PREFIXES.has(first)) {
     return `'${s}`;
   }
   return s;

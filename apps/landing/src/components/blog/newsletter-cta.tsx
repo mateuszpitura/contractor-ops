@@ -2,7 +2,7 @@
 
 import { Input } from '@contractor-ops/ui/components/shadcn/input';
 import { ArrowRight } from 'lucide-react';
-import { useCallback, useState } from 'react';
+import { useCallback, useId, useState } from 'react';
 
 // Tight ASCII subset of RFC 5321/5322: local@domain.tld. Intentionally
 // rejects unicode + quoted local-parts (`"a b"@x.y`) because our server
@@ -40,6 +40,7 @@ export function NewsletterCta({
   const [email, setEmail] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const errorId = useId();
 
   const onSubmit = useCallback(
     (event: React.FormEvent<HTMLFormElement>) => {
@@ -88,7 +89,7 @@ export function NewsletterCta({
             className="flex-1"
             aria-label={placeholder}
             aria-invalid={error ? true : undefined}
-            aria-describedby={error ? 'newsletter-error' : undefined}
+            aria-describedby={error ? errorId : undefined}
             autoComplete="email"
           />
           <button
@@ -100,7 +101,7 @@ export function NewsletterCta({
         </form>
       )}
       {error ? (
-        <p id="newsletter-error" role="alert" className="mt-2 text-xs font-medium text-rose-300">
+        <p id={errorId} role="alert" className="mt-2 text-xs font-medium text-rose-300">
           {error}
         </p>
       ) : null}

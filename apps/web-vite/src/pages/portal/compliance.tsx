@@ -22,20 +22,20 @@ function PortalCompliancePageContent() {
         <h1 className="text-[28px] font-semibold leading-[1.2]">{t('listHeading')}</h1>
       </AnimateIn>
 
-      {isPending && (
+      {isPending ? (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2" aria-busy aria-live="polite">
           {[0, 1, 2, 3].map(i => (
             // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
             <Skeleton key={i} className="h-28 w-full rounded-xl" />
           ))}
         </div>
-      )}
+      ) : null}
 
-      {!isPending && error && (
+      {!isPending && error ? (
         <p role="alert" className="text-destructive">
           {t('listError')}
         </p>
-      )}
+      ) : null}
 
       {!(isPending || error) && isEmpty && (
         <AtelierEmptyState

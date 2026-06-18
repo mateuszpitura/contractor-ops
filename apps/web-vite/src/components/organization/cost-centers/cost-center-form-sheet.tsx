@@ -10,7 +10,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@contractor-ops/ui/components/shadcn/sheet';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useId, useState } from 'react';
 import type { useCostCenterFormSheet as UseCostCenterFormSheet } from '../hooks/use-cost-center-form-sheet.js';
 import { useCostCenterFormSheet } from '../hooks/use-cost-center-form-sheet.js';
 
@@ -32,10 +32,12 @@ export function CostCenterFormSheet({
   open,
   onOpenChange,
   costCenter,
-  onCreated,
   formSheet,
 }: CostCenterFormSheetProps) {
   const isEdit = Boolean(costCenter);
+
+  const nameId = useId();
+  const codeId = useId();
 
   const [name, setName] = useState('');
   const [code, setCode] = useState('');
@@ -87,13 +89,13 @@ export function CostCenterFormSheet({
           </SheetHeader>
           <div className="flex-1 space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="cc-name">Name</Label>
-              <Input id="cc-name" value={name} onChange={handleNameChange} required autoFocus />
+              <Label htmlFor={nameId}>Name</Label>
+              <Input id={nameId} value={name} onChange={handleNameChange} required autoFocus />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="cc-code">Code</Label>
+              <Label htmlFor={codeId}>Code</Label>
               <Input
-                id="cc-code"
+                id={codeId}
                 value={code}
                 onChange={handleCodeChange}
                 required

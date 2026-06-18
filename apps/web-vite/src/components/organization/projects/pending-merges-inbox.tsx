@@ -54,7 +54,7 @@ function MergeCandidateOption({
         onChange={handleChange}
       />
       <span className="font-medium">{candidate?.name ?? id}</span>
-      {candidate?.source && <SourceBadge source={candidate.source} />}
+      {candidate?.source ? <SourceBadge source={candidate.source} /> : null}
     </label>
   );
 }
@@ -112,7 +112,7 @@ export function PendingMergesInbox({ inbox }: { inbox: ReturnType<typeof UsePend
               ) : null}
             </DialogDescription>
           </DialogHeader>
-          {activeMerge && (
+          {activeMerge ? (
             <DialogBody className="space-y-3 py-2">
               <p className="text-muted-foreground text-sm">
                 Existing project(s) with the same name:
@@ -129,7 +129,7 @@ export function PendingMergesInbox({ inbox }: { inbox: ReturnType<typeof UsePend
                 ))}
               </div>
             </DialogBody>
-          )}
+          ) : null}
           <DialogFooter className="gap-2">
             <Button variant="ghost" onClick={keepSeparate} disabled={resolveMutation.isPending}>
               Keep separate

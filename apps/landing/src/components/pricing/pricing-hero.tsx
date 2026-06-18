@@ -88,9 +88,9 @@ export function PricingHero({ views, annualSavings }: PricingHeroProps) {
               {toggleAnnual}
             </button>
           </div>
-          {annualBadge && period === 'year' && (
+          {annualBadge && period === 'year' ? (
             <p className="text-xs text-primary font-medium">{annualBadge}</p>
-          )}
+          ) : null}
         </FadeUp>
 
         <StaggerContainer
@@ -109,11 +109,11 @@ export function PricingHero({ views, annualSavings }: PricingHeroProps) {
                   className={`card-glow relative flex h-full flex-col rounded-2xl border bg-surface-1/70 p-7 backdrop-blur-sm ${
                     plan.popular ? 'border-primary/40 shadow-lg' : 'border-border/50'
                   }`}>
-                  {plan.popular && (
+                  {plan.popular ? (
                     <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-primary px-4 py-1 text-xs font-semibold text-primary-foreground shadow-sm">
                       {t.pricing.popularBadge ?? 'Most popular'}
                     </div>
-                  )}
+                  ) : null}
 
                   <div className="mb-6">
                     <h3 className="font-display text-lg font-bold text-foreground">{plan.name}</h3>

@@ -54,12 +54,12 @@ export function TeamsProviderSectionView({
   return (
     <FeatureGate requiredTier="Pro" featureName="Microsoft Teams integration">
       <div className="flex h-full flex-col gap-4">
-        {needsReauth && (
+        {needsReauth ? (
           <div className="flex items-center gap-2 rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-800 dark:border-amber-700 dark:bg-amber-950 dark:text-amber-200">
             <AlertTriangle className="size-4 shrink-0" aria-hidden="true" />
             {t('scopeExpansionWarning')}
           </div>
-        )}
+        ) : null}
 
         <ProviderConnectionCard
           provider="microsoft_teams"

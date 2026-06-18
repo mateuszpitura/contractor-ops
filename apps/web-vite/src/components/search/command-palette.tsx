@@ -460,13 +460,13 @@ export function CommandPaletteView({
       className="w-[560px]"
       shouldFilter={!isSearching}>
       <CommandInput placeholder={t('placeholder')} value={query} onValueChange={onQueryChange} />
-      {showAriaLive && (
+      {showAriaLive ? (
         <div className="sr-only" aria-live="polite" aria-atomic="true">
           {searchResultsCount > 0
             ? t('resultsFound', { count: searchResultsCount })
             : t('noResultsFound')}
         </div>
-      )}
+      ) : null}
       <CommandList>
         <CommandEmpty>{t('noResults')}</CommandEmpty>
         {body}

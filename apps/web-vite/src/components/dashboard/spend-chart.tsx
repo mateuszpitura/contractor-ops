@@ -114,6 +114,7 @@ function ChartTooltip({
         <div key={entry.name} className="flex items-baseline gap-2">
           <span
             className="inline-block h-2 w-2 shrink-0 rounded-full"
+            // biome-ignore lint/nursery/noInlineStyles: dynamic computed value — legend swatch colour comes from the Recharts series payload at runtime
             style={{ backgroundColor: entry.color }}
           />
           <span className="text-xs text-muted-foreground">{entry.name}</span>

@@ -132,9 +132,9 @@ function WorkflowsListPageContent() {
           <TabsList className="shrink-0">
             <TabsTrigger value="runs">{t('tabRuns')}</TabsTrigger>
             <TabsTrigger value="tasks">{t('tabMyTasks')}</TabsTrigger>
-            {list.canManageTemplates && (
+            {list.canManageTemplates ? (
               <TabsTrigger value="templates">{t('tabTemplates')}</TabsTrigger>
-            )}
+            ) : null}
           </TabsList>
 
           <TabsContent value="runs" className={WORKBENCH_TABLE_TAB_PANEL_CLASS}>
@@ -151,11 +151,11 @@ function WorkflowsListPageContent() {
             <MyTasksList onStartWorkflow={handleStartWorkflow} />
           </TabsContent>
 
-          {list.canManageTemplates && (
+          {list.canManageTemplates ? (
             <TabsContent value="templates" className={WORKBENCH_TABLE_TAB_PANEL_CLASS}>
               <TemplatesTableSection />
             </TabsContent>
-          )}
+          ) : null}
         </Tabs>
       </AnimateIn>
 

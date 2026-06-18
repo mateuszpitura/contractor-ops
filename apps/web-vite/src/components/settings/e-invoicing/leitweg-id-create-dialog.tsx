@@ -86,7 +86,6 @@ export function LeitwegIdCreateDialogView({
   onOpenChange,
   initial,
   prefill,
-  onSaved,
   tCommon,
   formError,
   setFormError,

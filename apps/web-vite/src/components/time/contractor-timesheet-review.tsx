@@ -227,8 +227,8 @@ export function ContractorTimesheetReview({
                       colTotal += entries.get(dayIdx)?.minutes ?? 0;
                     }
                     return (
-                      // biome-ignore lint/suspicious/noArrayIndexKey: fixed weekday columns
                       <TableCell
+                        // biome-ignore lint/suspicious/noArrayIndexKey: fixed weekday columns, never reordered
                         key={dayIdx}
                         className="px-1 py-3 text-center text-sm font-semibold">
                         {minutesToHours(colTotal) || '0'}

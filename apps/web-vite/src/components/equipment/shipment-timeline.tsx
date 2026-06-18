@@ -122,7 +122,7 @@ export function ShipmentTimeline({ shipmentId, currentStatus, events }: Shipment
             />
           </div>
           <Button size="sm" onClick={handleAddEvent} disabled={!newStatus || isAdding}>
-            {isAdding && <Loader2 className="me-1 h-3 w-3 animate-spin" />}
+            {isAdding ? <Loader2 className="me-1 h-3 w-3 animate-spin" /> : null}
             {t('shipment.addButton')}
           </Button>
         </div>
@@ -175,15 +175,15 @@ export function ShipmentTimeline({ shipmentId, currentStatus, events }: Shipment
                       )}>
                       {tDynLoose(t, 'shipment.status', enumKey(status))}
                     </span>
-                    {event?.notes && (
+                    {event?.notes ? (
                       <p className="mt-0.5 text-xs text-muted-foreground">{event.notes}</p>
-                    )}
+                    ) : null}
                   </div>
-                  {event && (
+                  {event ? (
                     <span className="shrink-0 text-xs text-muted-foreground">
                       {format(new Date(event.occurredAt), 'MMM d, HH:mm')}
                     </span>
-                  )}
+                  ) : null}
                   {isPending && !event && (
                     <span className="shrink-0 text-xs text-muted-foreground/40">
                       {t('shipment.pendingLabel')}
@@ -210,9 +210,9 @@ export function ShipmentTimeline({ shipmentId, currentStatus, events }: Shipment
                     <span className="text-sm font-medium text-primary">
                       {tDynLoose(t, 'shipment.status', enumKey(currentStatus))}
                     </span>
-                    {terminalEvent.notes && (
+                    {terminalEvent.notes ? (
                       <p className="mt-0.5 text-xs text-muted-foreground">{terminalEvent.notes}</p>
-                    )}
+                    ) : null}
                   </div>
                   <span className="shrink-0 text-xs text-muted-foreground">
                     {format(new Date(terminalEvent.occurredAt), 'MMM d, HH:mm')}

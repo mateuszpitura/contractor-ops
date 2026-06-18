@@ -16,7 +16,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@contractor-ops/ui/components/shadcn/sheet';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useId, useState } from 'react';
 import type { useTeamFormSheet as UseTeamFormSheet } from '../hooks/use-team-form-sheet.js';
 import { useTeamFormSheet } from '../hooks/use-team-form-sheet.js';
 
@@ -36,14 +36,11 @@ interface TeamFormSheetProps {
   formSheet: ReturnType<typeof UseTeamFormSheet>;
 }
 
-export function TeamFormSheet({
-  open,
-  onOpenChange,
-  team,
-  onCreated,
-  formSheet,
-}: TeamFormSheetProps) {
+export function TeamFormSheet({ open, onOpenChange, team, formSheet }: TeamFormSheetProps) {
   const isEdit = Boolean(team);
+
+  const nameId = useId();
+  const codeId = useId();
 
   const [name, setName] = useState('');
   const [code, setCode] = useState('');
@@ -95,9 +92,9 @@ export function TeamFormSheet({
           </SheetHeader>
           <div className="flex-1 space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="team-name">Name</Label>
+              <Label htmlFor={nameId}>Name</Label>
               <Input
-                id="team-name"
+                id={nameId}
                 value={name}
                 onChange={handleNameChange}
                 required
@@ -107,9 +104,9 @@ export function TeamFormSheet({
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="team-code">Code</Label>
+              <Label htmlFor={codeId}>Code</Label>
               <Input
-                id="team-code"
+                id={codeId}
                 value={code}
                 onChange={handleCodeChange}
                 placeholder="optional"

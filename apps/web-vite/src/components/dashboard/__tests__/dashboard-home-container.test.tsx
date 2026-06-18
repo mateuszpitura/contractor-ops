@@ -70,6 +70,7 @@ vi.mock('../kpi-cards.js', () => ({
 }));
 
 vi.mock('../dashboard-greeting.js', () => ({
+  // biome-ignore lint/correctness/useUniqueElementIds: mock stub mirrors real heading id asserted via aria-labelledby; hooks unavailable in vi.mock factory
   DashboardGreeting: () => <h1 id="dashboard-heading">Dashboard</h1>,
 }));
 

@@ -16,7 +16,7 @@ import {
 import { Input } from '@contractor-ops/ui/components/shadcn/input';
 import { Label } from '@contractor-ops/ui/components/shadcn/label';
 import { Textarea } from '@contractor-ops/ui/components/shadcn/textarea';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useId, useState } from 'react';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import type {
@@ -41,6 +41,10 @@ export function AddBoeRateDialog({
   const t = useTranslations('Admin.BoeRate');
   const tCommon = useTranslations('Common');
   const { validateRate, validateDate } = validation;
+
+  const effectiveFromId = useId();
+  const ratePercentId = useId();
+  const notesId = useId();
 
   const [effectiveFrom, setEffectiveFrom] = useState('');
   const [ratePercent, setRatePercent] = useState('');
@@ -98,9 +102,9 @@ export function AddBoeRateDialog({
         <form onSubmit={handleSubmit} className={dialogFormLayoutClassName}>
           <DialogBody className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="add-effective-from">{t('colEffectiveFrom')}</Label>
+              <Label htmlFor={effectiveFromId}>{t('colEffectiveFrom')}</Label>
               <Input
-                id="add-effective-from"
+                id={effectiveFromId}
                 type="date"
                 value={effectiveFrom}
                 onChange={handleEffectiveFromChange}
@@ -108,9 +112,9 @@ export function AddBoeRateDialog({
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="add-rate-percent">{t('colRatePercent')}</Label>
+              <Label htmlFor={ratePercentId}>{t('colRatePercent')}</Label>
               <Input
-                id="add-rate-percent"
+                id={ratePercentId}
                 type="number"
                 step="0.01"
                 min="0"
@@ -122,9 +126,9 @@ export function AddBoeRateDialog({
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="add-notes">{t('notesOptionalLabel')}</Label>
+              <Label htmlFor={notesId}>{t('notesOptionalLabel')}</Label>
               <Textarea
-                id="add-notes"
+                id={notesId}
                 value={notes}
                 onChange={handleNotesChange}
                 placeholder={t('notesPlaceholder')}

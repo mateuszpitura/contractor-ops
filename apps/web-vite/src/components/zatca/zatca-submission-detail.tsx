@@ -222,11 +222,13 @@ export function ZatcaSubmissionDetailView({
             {!!qrCodeBase64 && (
               <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
                 <div className="shrink-0">
+                  {/* biome-ignore lint/performance/noImgElement: Vite SPA, no next/image — ZATCA QR code rendered from a base64 data URI */}
                   <img
                     src={`data:image/png;base64,${qrCodeBase64}`}
                     alt={t('qrCodeAlt')}
                     width={64}
                     height={64}
+                    loading="lazy"
                     className="rounded border"
                   />
                 </div>

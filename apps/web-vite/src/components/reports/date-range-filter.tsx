@@ -141,7 +141,7 @@ function PresetButton({
     (props: React.HTMLAttributes<HTMLSpanElement>) => (
       <span {...props} className="flex items-center gap-1.5">
         <CalendarIcon className="h-3.5 w-3.5" />
-        {activePreset === 'custom' && formatDisplay() ? formatDisplay() : labelText}
+        {activePreset === 'custom' && formatDisplay() ? formatDisplay() : <>{labelText}</>}
       </span>
     ),
     [activePreset, formatDisplay, labelText],

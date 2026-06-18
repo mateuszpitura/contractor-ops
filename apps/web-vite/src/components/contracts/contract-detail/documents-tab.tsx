@@ -69,9 +69,9 @@ export function DocumentsTab({ contractId, documents }: DocumentsTabProps) {
     <div className="space-y-6">
       <DropZoneContainer entityType="CONTRACT" entityId={contractId} />
 
-      {showSignButtons && (
+      {showSignButtons ? (
         <SignableDocumentButtons documents={docList} onSend={handleSendForSignature} />
-      )}
+      ) : null}
 
       <DocumentListContainer entityType="CONTRACT" entityId={contractId} />
     </div>
@@ -93,7 +93,7 @@ export function DocumentsTabWired({ contractId, contractParties = [] }: Document
   return (
     <>
       <DocumentsTab contractId={contractId} documents={documents} />
-      {documents.signDialogOpen && (
+      {documents.signDialogOpen ? (
         <SendForSignatureDialog
           open={documents.signDialogOpen}
           onOpenChange={documents.setSignDialogOpen}
@@ -101,7 +101,7 @@ export function DocumentsTabWired({ contractId, contractParties = [] }: Document
           documentId={documents.selectedDocId}
           contractParties={contractParties}
         />
-      )}
+      ) : null}
     </>
   );
 }

@@ -38,6 +38,7 @@ function StepIndicator({ currentStep, totalSteps }: { currentStep: number; total
     <div className="flex items-center justify-center gap-2" aria-hidden="true">
       {Array.from({ length: totalSteps }).map((_, i) => (
         <div
+          // biome-ignore lint/suspicious/noArrayIndexKey: fixed-length step indicator, never reordered
           key={`step-${i}`}
           className={cn(
             'h-2 w-2 rounded-full transition-colors',

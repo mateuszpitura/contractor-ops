@@ -96,9 +96,11 @@ function FeaturedPostCard({
       <Link href={href} className="block focus-visible:outline-none">
         {cover?.url ? (
           <div className="aspect-[16/9] w-full overflow-hidden bg-muted">
+            {/* biome-ignore lint/performance/noImgElement: framework-agnostic UI package (consumed by Vite SPA + landing), no next/image — marketing post cover image; the aspect-ratio wrapper reserves layout space */}
             <img
               src={cover.url}
               alt={cover.alt ?? post.title}
+              loading="lazy"
               className="h-full w-full object-cover"
             />
           </div>

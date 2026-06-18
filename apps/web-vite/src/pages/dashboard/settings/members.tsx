@@ -30,12 +30,12 @@ function MembersSettingsContent() {
           actions={
             <div className="flex items-center gap-2">
               <PinActionButton tabKey="members" />
-              {canInvite && (
+              {canInvite ? (
                 <Button onClick={openInvite}>
                   <UserPlus className="me-2 h-4 w-4" />
                   {t('inviteCta')}
                 </Button>
-              )}
+              ) : null}
             </div>
           }
         />

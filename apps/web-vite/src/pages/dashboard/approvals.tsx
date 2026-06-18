@@ -130,8 +130,8 @@ function ApprovalsPageContent() {
           className={WORKBENCH_TABLE_TABS_CLASS}>
           <TabsList className="shrink-0">
             <TabsTrigger value="my">{t('tabMy')}</TabsTrigger>
-            {queue.isAdmin && <TabsTrigger value="all">{t('tabAll')}</TabsTrigger>}
-            {queue.isAdmin && (
+            {queue.isAdmin ? <TabsTrigger value="all">{t('tabAll')}</TabsTrigger> : null}
+            {queue.isAdmin ? (
               <TabsTrigger value="profile-changes">
                 {t('tabProfileChanges')}
                 {queue.pendingCount > 0 && (
@@ -140,20 +140,20 @@ function ApprovalsPageContent() {
                   </span>
                 )}
               </TabsTrigger>
-            )}
+            ) : null}
           </TabsList>
 
           <TabsContent value="my" className={WORKBENCH_TABLE_TAB_PANEL_CLASS}>
             {renderQueue()}
           </TabsContent>
 
-          {queue.isAdmin && (
+          {queue.isAdmin ? (
             <TabsContent value="all" className={WORKBENCH_TABLE_TAB_PANEL_CLASS}>
               {renderQueue()}
             </TabsContent>
-          )}
+          ) : null}
 
-          {queue.isAdmin && (
+          {queue.isAdmin ? (
             <TabsContent value="profile-changes" className="mt-4">
               {queue.changeRequestsLoading ? (
                 <div className="space-y-4">
@@ -182,7 +182,7 @@ function ApprovalsPageContent() {
                 </div>
               )}
             </TabsContent>
-          )}
+          ) : null}
         </Tabs>
       </AnimateIn>
 

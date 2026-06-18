@@ -11,7 +11,7 @@ import {
 } from '@contractor-ops/ui/components/shadcn/dialog';
 import { Label } from '@contractor-ops/ui/components/shadcn/label';
 import { CheckCircle } from 'lucide-react';
-import { useCallback, useState } from 'react';
+import { useCallback, useId, useState } from 'react';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
 
@@ -24,6 +24,7 @@ interface ClaimDialogProps {
 
 export function ClaimDialog({ open, onOpenChange, onConfirm, isPending }: ClaimDialogProps) {
   const t = useTranslations('Payments.lateInterest.claim');
+  const issueSecondaryInvoiceId = useId();
   const [issueSecondaryInvoice, setIssueSecondaryInvoice] = useState(false);
 
   const handleCheckedChange = useCallback((checked: boolean | 'indeterminate') => {
@@ -51,11 +52,11 @@ export function ClaimDialog({ open, onOpenChange, onConfirm, isPending }: ClaimD
 
         <DialogBody className="flex items-start gap-3 py-4">
           <Checkbox
-            id="issue-secondary-invoice"
+            id={issueSecondaryInvoiceId}
             checked={issueSecondaryInvoice}
             onCheckedChange={handleCheckedChange}
           />
-          <Label htmlFor="issue-secondary-invoice" className="text-sm leading-relaxed">
+          <Label htmlFor={issueSecondaryInvoiceId} className="text-sm leading-relaxed">
             {t('issueSecondaryInvoice')}
           </Label>
         </DialogBody>

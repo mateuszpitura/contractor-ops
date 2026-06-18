@@ -12,7 +12,7 @@ import { Label } from '@contractor-ops/ui/components/shadcn/label';
 import { Textarea } from '@contractor-ops/ui/components/shadcn/textarea';
 import { Loader2, Save } from 'lucide-react';
 import type { ChangeEvent } from 'react';
-import { useCallback } from 'react';
+import { useCallback, useId } from 'react';
 import type { useOutOfOfficeSection as UseOutOfOfficeSection } from './hooks/use-out-of-office-section.js';
 import { useOutOfOfficeSection } from './hooks/use-out-of-office-section.js';
 
@@ -32,6 +32,7 @@ export function OutOfOfficeSectionView({
   isClearPending,
   isSavePending,
 }: OutOfOfficeSectionProps) {
+  const oooReasonId = useId();
   const handleReasonChange = useCallback(
     (e: ChangeEvent<HTMLTextAreaElement>) => setReason(e.target.value),
     [setReason],
@@ -60,9 +61,9 @@ export function OutOfOfficeSectionView({
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="ooo-reason">{t('reason')}</Label>
+          <Label htmlFor={oooReasonId}>{t('reason')}</Label>
           <Textarea
-            id="ooo-reason"
+            id={oooReasonId}
             rows={2}
             value={reason}
             onChange={handleReasonChange}
@@ -74,7 +75,7 @@ export function OutOfOfficeSectionView({
       </CardContent>
       <CardFooter className="justify-end gap-2">
         <Button variant="outline" onClick={handleClear} disabled={isPending}>
-          {isClearPending && <Loader2 className="me-1.5 size-3.5 animate-spin" />}
+          {isClearPending ? <Loader2 className="me-1.5 size-3.5 animate-spin" /> : null}
           {t('clearCta')}
         </Button>
         <Button onClick={handleSave} disabled={!isValid || isPending}>

@@ -414,7 +414,7 @@ export function AuditLogTabView({
                 onRemove={removeResourceType}
               />
             ))}
-            {actorId && (
+            {actorId ? (
               <Badge variant="secondary" className="gap-1 ps-2 pe-1 py-0.5">
                 <span className="text-xs">
                   {actorOptions.find(a => a.id === actorId)?.name ?? actorId}
@@ -429,8 +429,8 @@ export function AuditLogTabView({
                   <X className="h-3 w-3" />
                 </button>
               </Badge>
-            )}
-            {(dateFrom || dateTo) && (
+            ) : null}
+            {dateFrom || dateTo ? (
               <Badge variant="secondary" className="gap-1 ps-2 pe-1 py-0.5">
                 <span className="text-xs">
                   {dateFrom && dateTo
@@ -449,7 +449,7 @@ export function AuditLogTabView({
                   <X className="h-3 w-3" />
                 </button>
               </Badge>
-            )}
+            ) : null}
             <button
               type="button"
               className="ms-1 text-xs text-muted-foreground hover:text-foreground underline"

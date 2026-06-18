@@ -40,9 +40,11 @@ function renderInline(nodes: LexicalSerializedNode[] | undefined): ReactNode {
   if (!nodes?.length) return null;
   return nodes.map((node, index) => {
     if (node.type === 'text' && typeof node.text === 'string') {
+      // biome-ignore lint/suspicious/noArrayIndexKey: static lexical parse tree, never reordered — nodes have no stable id
       return <span key={index}>{node.text}</span>;
     }
     if (node.children?.length) {
+      // biome-ignore lint/suspicious/noArrayIndexKey: static lexical parse tree, never reordered — nodes have no stable id
       return <span key={index}>{renderInline(node.children)}</span>;
     }
     return null;

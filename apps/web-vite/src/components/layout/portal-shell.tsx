@@ -20,12 +20,7 @@ interface PortalShellProps {
   } | null;
 }
 
-export function PortalShell({
-  skipToContentLabel,
-  isLoading,
-  shellStyle,
-  topBarProps,
-}: PortalShellProps) {
+export function PortalShell({ skipToContentLabel, isLoading, topBarProps }: PortalShellProps) {
   if (isLoading) {
     return <PageLoadingSpinner />;
   }

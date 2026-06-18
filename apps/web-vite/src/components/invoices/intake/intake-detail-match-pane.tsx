@@ -123,11 +123,11 @@ const MatchCandidateButton = memo(function MatchCandidateButton({
       aria-pressed={isSelected}>
       <div className="flex items-center justify-between gap-2">
         <span className="font-medium">{candidate.contractorName}</span>
-        {candidate.contractorVatId && (
+        {candidate.contractorVatId ? (
           <span className="font-mono text-xs text-muted-foreground">
             {showPii ? candidate.contractorVatId : maskTaxId(candidate.contractorVatId)}
           </span>
-        )}
+        ) : null}
       </div>
       <div className="mt-2 flex flex-wrap gap-1">
         {candidate.matchReasons.map((reason, index) => (

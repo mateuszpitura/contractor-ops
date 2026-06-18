@@ -51,6 +51,7 @@ const reloadPage = () => {
 function RootErrorFallback() {
   return (
     <main
+      // biome-ignore lint/nursery/noInlineStyles: last-resort error fallback deliberately avoids Tailwind/design-system — the stylesheet or a provider may be the failed dependency, so styles are inlined
       style={{
         display: 'flex',
         flexDirection: 'column',
@@ -61,12 +62,15 @@ function RootErrorFallback() {
         fontFamily: 'system-ui, sans-serif',
         textAlign: 'center',
       }}>
+      {/* biome-ignore lint/nursery/noInlineStyles: see <main> above — error fallback avoids the design system on purpose */}
       <h1 style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>Something went wrong</h1>
+      {/* biome-ignore lint/nursery/noInlineStyles: see <main> above — error fallback avoids the design system on purpose */}
       <p style={{ marginBottom: '1.5rem', color: '#555' }}>
         The application failed to load. Please reload the page.
       </p>
       <button
         onClick={reloadPage}
+        // biome-ignore lint/nursery/noInlineStyles: see <main> above — error fallback avoids the design system on purpose
         style={{
           padding: '0.5rem 1rem',
           borderRadius: '0.375rem',

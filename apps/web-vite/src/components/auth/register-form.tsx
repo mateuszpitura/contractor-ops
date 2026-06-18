@@ -103,7 +103,7 @@ export function RegisterForm() {
             )}
           </div>
 
-          {turnstileSiteKey && (
+          {turnstileSiteKey ? (
             <div className="flex justify-center">
               <Turnstile
                 ref={turnstileRef}
@@ -114,7 +114,7 @@ export function RegisterForm() {
                 options={{ theme: 'auto' }}
               />
             </div>
-          )}
+          ) : null}
 
           <Button type="submit" className="w-full" disabled={turnstileSubmitDisabled}>
             {isLoading ? (

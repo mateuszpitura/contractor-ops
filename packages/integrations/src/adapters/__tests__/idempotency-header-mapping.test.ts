@@ -172,7 +172,7 @@ describe('Entra Graph client-request-id header', () => {
     const { EntraIdAdapter } = await import('../entra-id-adapter.js');
     const USER = 'user-1';
 
-    mockFetch.mockImplementation(async (url: string, init?: RequestInit) => {
+    mockFetch.mockImplementation(async (_url: string, init?: RequestInit) => {
       const method = (init?.method ?? 'GET').toUpperCase();
       if (method === 'GET') {
         // hybrid-AD pre-flight: non-hybrid, account enabled.
