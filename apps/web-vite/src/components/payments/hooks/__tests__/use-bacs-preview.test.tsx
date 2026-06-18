@@ -82,7 +82,6 @@ describe('useBacsPreview', () => {
     setTRPCMock({
       'bacs.previewExport': () => {
         throw new TRPCClientError('Submitter not configured', {
-          // biome-ignore lint/suspicious/noExplicitAny: test-only minimal shape
           result: {
             error: {
               code: -32603,

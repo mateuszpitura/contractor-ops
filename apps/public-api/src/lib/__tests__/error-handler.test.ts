@@ -100,7 +100,6 @@ describe('handleError', () => {
 
     it('falls back to 500 for an unknown TRPCError code', () => {
       const c = makeContext();
-      // biome-ignore lint/plugin/no-untranslated-trpc-error: test fixture for unknown-code fallback
       const err = new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'oops' });
       // Override code after construction to simulate unknown
       Object.defineProperty(err, 'code', { value: 'TOTALLY_UNKNOWN_CODE' });
@@ -115,7 +114,6 @@ describe('handleError', () => {
   describe('JSON body shape', () => {
     it('returns {error:{code,message,status}} for TRPCError', () => {
       const c = makeContext();
-      // biome-ignore lint/plugin/no-untranslated-trpc-error: test fixture for response-shape assertion
       const err = new TRPCError({ code: 'NOT_FOUND', message: 'not here' });
       handleError(err, c);
       const [body] = (c.json as ReturnType<typeof vi.fn>).mock.calls[0] as [
@@ -178,7 +176,6 @@ describe('handleError', () => {
       const c = makeContext();
       const err = new TRPCError({
         code: 'BAD_REQUEST',
-        // biome-ignore lint/plugin/no-untranslated-trpc-error: test fixture exercising the Zod-detection regex
         message: '[{"validation":"invalid type","message":"..."}]',
       });
       handleError(err, c);
@@ -193,7 +190,6 @@ describe('handleError', () => {
       const c = makeContext();
       const err = new TRPCError({
         code: 'BAD_REQUEST',
-        // biome-ignore lint/plugin/no-untranslated-trpc-error: test fixture exercising the Zod-detection regex
         message: 'some "validation" issue',
       });
       handleError(err, c);

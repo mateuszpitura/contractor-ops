@@ -26,7 +26,6 @@ function makeReview(overrides: Partial<Review> = {}): Review {
       currency: 'PLN',
       contractor: { legalName: 'Beta' },
     },
-    // biome-ignore lint/suspicious/noExplicitAny: shape mirrors usePaymentRunStepReview groupedByCurrency invoice entry
   ] as any[];
   const groupedByCurrency = {
     PLN: { invoices, totalMinor: 300000 },

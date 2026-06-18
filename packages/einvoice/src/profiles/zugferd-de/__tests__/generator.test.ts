@@ -120,7 +120,6 @@ describe('generateZugferdPdf', () => {
   it("conformanceLevel: 'MINIMUM' (cast) throws ZugferdLevelUnsupportedForOutput", async () => {
     const err = await generateZugferdPdf({
       invoice: comfortMinimal,
-      // biome-ignore lint/suspicious/noExplicitAny: test-only widening
       conformanceLevel: 'MINIMUM' as unknown as 'COMFORT',
       producedAt: FIXED_TIME,
     }).catch(e => e);

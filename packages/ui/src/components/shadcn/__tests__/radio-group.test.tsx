@@ -6,12 +6,10 @@ describe('RadioGroup', () => {
     render(
       <RadioGroup>
         <label htmlFor="rg-test-a">
-          {/* biome-ignore lint/correctness/useUniqueElementIds: single-render test fixture */}
           <RadioGroupItem id="rg-test-a" value="a" />
           Option A
         </label>
         <label htmlFor="rg-test-b">
-          {/* biome-ignore lint/correctness/useUniqueElementIds: single-render test fixture */}
           <RadioGroupItem id="rg-test-b" value="b" />
           Option B
         </label>
@@ -65,12 +63,10 @@ describe('RadioGroup', () => {
     const { user } = setup(
       <RadioGroup>
         <label htmlFor="rg-click-a">
-          {/* biome-ignore lint/correctness/useUniqueElementIds: single-render test fixture */}
           <RadioGroupItem id="rg-click-a" value="a" />
           Option A
         </label>
         <label htmlFor="rg-click-b">
-          {/* biome-ignore lint/correctness/useUniqueElementIds: single-render test fixture */}
           <RadioGroupItem id="rg-click-b" value="b" />
           Option B
         </label>

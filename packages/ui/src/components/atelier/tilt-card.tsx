@@ -98,7 +98,6 @@ export function TiltCard({
   // The mouse handlers are decorative (visual tilt only); the card
   // itself is not a button. role="presentation" tells AT to ignore them.
   return (
-    // biome-ignore lint/a11y/noStaticElementInteractions: visual-only mousemove handlers, not interactive
     <div
       ref={ref}
       role="presentation"

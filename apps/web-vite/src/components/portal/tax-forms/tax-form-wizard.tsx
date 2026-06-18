@@ -45,7 +45,6 @@ function WizardSkeleton() {
         <Skeleton className="h-6 w-48" />
         <div className="flex items-center gap-2">
           {[0, 1, 2, 3].map(i => (
-            // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
             <div key={`tax-form-step-skel-${i}`} className="flex flex-1 items-center gap-2">
               <Skeleton className="size-6 shrink-0 rounded-full" />
               <Skeleton className="hidden h-4 w-20 sm:block" />

@@ -160,7 +160,6 @@ describe('runDeprovisioningStep (Phase 77 D-04/D-05/D-06)', () => {
       attempts: 3,
       organizationId: 'org-1',
     });
-    // biome-ignore lint/suspicious/noExplicitAny: mock db
     const result = await runDeprovisioningStep(db as any, body);
     expect(result).toEqual({ ok: false, reason: 'max-attempts' });
     expect(suspendAccount).not.toHaveBeenCalled();
@@ -176,7 +175,6 @@ describe('runDeprovisioningStep (Phase 77 D-04/D-05/D-06)', () => {
       attempts: 0,
       organizationId: 'org-1',
     });
-    // biome-ignore lint/suspicious/noExplicitAny: mock db
     await runDeprovisioningStep(db as any, body);
     expect(callOrder).toEqual(['provenance', 'adapter']);
   });
@@ -195,10 +193,8 @@ describe('runDeprovisioningStep (Phase 77 D-04/D-05/D-06)', () => {
       attempts: 0,
       organizationId: 'org-1',
     });
-    // biome-ignore lint/suspicious/noExplicitAny: mock db
     await runDeprovisioningStep(db as any, body);
     const resultUpdate = update.mock.calls.find(
-      // biome-ignore lint/suspicious/noExplicitAny: inspecting mock args
       (c: any[]) => c[0]?.data?.requestSha256 !== undefined,
     );
     expect(resultUpdate?.[0].data.status).toBe('FAILED');
@@ -220,11 +216,9 @@ describe('runDeprovisioningStep (Phase 77 D-04/D-05/D-06)', () => {
       attempts: 0,
       organizationId: 'org-1',
     });
-    // biome-ignore lint/suspicious/noExplicitAny: mock db
     const result = await runDeprovisioningStep(db as any, body);
     expect(result.ok).toBe(true);
     const resultUpdate = update.mock.calls.find(
-      // biome-ignore lint/suspicious/noExplicitAny: inspecting mock args
       (c: any[]) => c[0]?.data?.requestSha256 !== undefined,
     );
     expect(resultUpdate?.[0].data.status).toBe('SUCCEEDED');
@@ -238,13 +232,8 @@ describe('runDeprovisioningStep (Phase 77 D-04/D-05/D-06)', () => {
       attempts: 0,
       organizationId: 'org-1',
     });
-    await runDeprovisioningStep(
-      // biome-ignore lint/suspicious/noExplicitAny: mock db
-      db as any,
-      { ...body, stepKind: 'REVOKE_ALL_SESSIONS' as const },
-    );
+    await runDeprovisioningStep(db as any, { ...body, stepKind: 'REVOKE_ALL_SESSIONS' as const });
     const subActionCalls = auditInfo.mock.calls.filter(
-      // biome-ignore lint/suspicious/noExplicitAny: inspecting mock args
       (c: any[]) => c[0]?.auditEvent === 'deprovision_step_subaction',
     );
     expect(subActionCalls).toHaveLength(2);
@@ -259,7 +248,6 @@ describe('runDeprovisioningStep (Phase 77 D-04/D-05/D-06)', () => {
       attempts: 0,
       organizationId: 'org-1',
     });
-    // biome-ignore lint/suspicious/noExplicitAny: mock db
     await runDeprovisioningStep(db as any, body);
     expect(recomputeRunStatus).toHaveBeenCalledWith(db, 'run-1');
   });
@@ -277,7 +265,6 @@ describe('runDeprovisioningStep (Phase 77 D-04/D-05/D-06)', () => {
       attempts: 0,
       organizationId: 'org-1',
     });
-    // biome-ignore lint/suspicious/noExplicitAny: mock db
     await expect(runDeprovisioningStep(db as any, body)).rejects.toThrow(
       /GOOGLE_WORKSPACE is not connected/,
     );
@@ -293,7 +280,6 @@ describe('runDeprovisioningStep (Phase 77 D-04/D-05/D-06)', () => {
       organizationId: 'org-1',
     });
     await expect(
-      // biome-ignore lint/suspicious/noExplicitAny: mock db
       runDeprovisioningStep(db as any, { ...body, provider: 'ENTRA' as const }),
     ).rejects.toThrow(/no credential resolver registered for provider ENTRA/);
     expect(suspendAccount).not.toHaveBeenCalled();
@@ -307,14 +293,12 @@ describe('runDeprovisioningStep (Phase 77 D-04/D-05/D-06)', () => {
       attempts: 0,
       organizationId: 'org-OTHER',
     });
-    // biome-ignore lint/suspicious/noExplicitAny: mock db
     await expect(runDeprovisioningStep(db as any, body)).rejects.toThrow(StepOrgMismatchError);
     expect(suspendAccount).not.toHaveBeenCalled();
   });
 
   it('throws StepOrgMismatchError when the step does not exist — defense-in-depth (77 WR-04)', async () => {
     const { db } = makeDb(null);
-    // biome-ignore lint/suspicious/noExplicitAny: mock db
     await expect(runDeprovisioningStep(db as any, body)).rejects.toThrow(StepOrgMismatchError);
     expect(suspendAccount).not.toHaveBeenCalled();
   });

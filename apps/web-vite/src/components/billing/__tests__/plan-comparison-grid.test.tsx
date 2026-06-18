@@ -12,7 +12,6 @@ import { describe, expect, it, vi } from 'vitest';
 // at module load. We need to stub the env BEFORE the module is imported, so
 // the stubs run via `vi.hoisted` and we use a dynamic import below.
 vi.hoisted(() => {
-  // biome-ignore lint/correctness/noUndeclaredVariables: vitest globals
   vi.stubEnv('VITE_STRIPE_PRICE_STARTER', 'price_starter_test');
   vi.stubEnv('VITE_STRIPE_PRICE_PRO', 'price_pro_test');
   vi.stubEnv('VITE_STRIPE_PRICE_ENTERPRISE', 'price_enterprise_test');

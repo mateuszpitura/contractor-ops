@@ -179,7 +179,6 @@ describe('overrideStepFailure (Phase 77 D-12)', () => {
       note: VALID_NOTE,
     });
     const stepAudit = writeAuditLog.mock.calls.find(
-      // biome-ignore lint/suspicious/noExplicitAny: inspecting mock args
       (c: any[]) => c[0]?.action === 'idp.deprovisioning.step.manual_completed',
     );
     expect(JSON.stringify(stepAudit?.[0]?.newValues)).not.toContain(VALID_NOTE);

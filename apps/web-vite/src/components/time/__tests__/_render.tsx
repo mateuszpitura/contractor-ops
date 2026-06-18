@@ -25,7 +25,6 @@ export { user as userEvent };
 
 // React 19's `act` requires the host to opt in via this global so it
 // drains effects deterministically inside vitest's jsdom worker.
-// biome-ignore lint/suspicious/noExplicitAny: globalThis property flag
 (globalThis as any).IS_REACT_ACT_ENVIRONMENT = true;
 
 export interface Mounted {

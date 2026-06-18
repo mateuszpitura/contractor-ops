@@ -10,7 +10,6 @@ export function ComplianceDashboardSkeleton() {
     <div className="flex flex-col gap-6" aria-busy aria-live="polite">
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         {[0, 1, 2].map(i => (
-          // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
           <div key={i} className="flex flex-col gap-3 rounded-xl border border-border p-5">
             <Skeleton className="h-4 w-28" />
             <Skeleton className="h-9 w-16" />
@@ -20,7 +19,6 @@ export function ComplianceDashboardSkeleton() {
       <div className="rounded-xl border border-border p-4">
         <Skeleton className="mb-4 h-6 w-40" />
         {[0, 1, 2, 3, 4].map(i => (
-          // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
           <Skeleton key={i} className="mb-2 h-10 w-full" />
         ))}
       </div>

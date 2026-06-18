@@ -80,7 +80,6 @@ describe('PlanComparisonGrid · Stripe price-id env contract', () => {
   //      guarantees this at the source, but we assert at runtime too).
 
   it('sources every plan priceId from import.meta.env.VITE_STRIPE_PRICE_*', () => {
-    // biome-ignore lint/suspicious/noExplicitAny: vitest exposes the env bag as a record
     const env = (import.meta as any).env as Record<string, string | undefined>;
     const expected: Record<TierId, string> = {
       STARTER: env.VITE_STRIPE_PRICE_STARTER ?? '',
@@ -101,7 +100,6 @@ describe('PlanComparisonGrid · Stripe price-id env contract', () => {
   });
 
   it('does NOT leak the legacy NEXT_PUBLIC_STRIPE_PRICE_* keys onto Vite env', () => {
-    // biome-ignore lint/suspicious/noExplicitAny: vitest exposes the env bag as a record
     const env = (import.meta as any).env as Record<string, string | undefined>;
     // Sanity guard for the migration: someone re-adding the Next-shaped
     // env to `.env.example` would not flow through to PLANS, but we still

@@ -95,7 +95,6 @@ describe('getIdpAuditLogger (FOUND6-06 — D-15)', () => {
           token: 'tok-xyz',
           apiKey: 'ak-123',
         },
-        // biome-ignore lint/suspicious/noExplicitAny: redact-test override
       } as any,
       'rotate creds',
     );
@@ -112,7 +111,6 @@ describe('getIdpAuditLogger (FOUND6-06 — D-15)', () => {
       {
         auditEvent: 'webhook-received',
         body: { event_type: 'user.suspended' },
-        // biome-ignore lint/suspicious/noExplicitAny: redact-test override
       } as any,
       'webhook',
     );

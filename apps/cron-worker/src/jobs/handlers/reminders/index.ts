@@ -200,7 +200,6 @@ async function findMatchingInvoices(
   }));
 }
 
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: rule trigger branches ported 1:1
 async function evaluateReminderRules(): Promise<{ processed: number; sent: number }> {
   const now = new Date();
   const today = startOfDay(now);

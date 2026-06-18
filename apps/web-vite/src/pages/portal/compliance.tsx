@@ -25,7 +25,6 @@ function PortalCompliancePageContent() {
       {isPending ? (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2" aria-busy aria-live="polite">
           {[0, 1, 2, 3].map(i => (
-            // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
             <Skeleton key={i} className="h-28 w-full rounded-xl" />
           ))}
         </div>

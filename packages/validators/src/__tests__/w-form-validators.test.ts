@@ -187,7 +187,6 @@ describe('w-form-validators — taxFormSubmissionSchema discriminated union', ()
       formType: 'W9',
       usEntityType: 'INDIVIDUAL',
       backupWithholding: false,
-      // biome-ignore lint/suspicious/noExplicitAny: probing that an out-of-schema full-SSN key is stripped
       ssn: '123-45-6789',
       tin: { ssnLast4: '6789' },
       ...baseAttest,

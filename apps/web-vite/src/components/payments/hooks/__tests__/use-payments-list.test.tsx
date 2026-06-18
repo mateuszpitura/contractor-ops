@@ -72,7 +72,6 @@ describe('usePaymentsList', () => {
     await waitFor(() => expect(result.current.tableProps.data).toHaveLength(1));
 
     act(() => {
-      // biome-ignore lint/suspicious/noExplicitAny: test row payload narrows in callback
       result.current.tableProps.onRowClick(result.current.tableProps.data[0] as any);
     });
     expect(onOpenSidePanel).toHaveBeenCalledWith('run-1');

@@ -68,7 +68,6 @@ export function TaskChecklist({
 
   const titleMap = taskTitleMap ?? new Map(tasks.map(task => [task.id, task.title]));
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: list is consumed by self-hiding panel only
   const taskRunIds = useMemo(() => tasks.map(task => task.id), [tasks]);
 
   if (isLoading) {

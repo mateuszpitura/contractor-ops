@@ -34,7 +34,6 @@ interface ReaperResult {
   requeueFailed: number;
 }
 
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: per-row branching (backfill vs RENDERING revert vs re-enqueue) reads top-to-bottom; splitting would obscure the predicate matrix
 async function runReaper(log: Parameters<JobHandler>[0]['log']): Promise<ReaperResult> {
   const cutoff = new Date(Date.now() - STALE_AFTER_MS);
 

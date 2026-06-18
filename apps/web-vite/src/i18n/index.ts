@@ -59,12 +59,10 @@ async function registerLocaleBundle(locale: Locale): Promise<void> {
  */
 function silenceLocizeBanner(): () => void {
   const methods = ['log', 'info'] as const;
-  // biome-ignore lint/suspicious/noConsole: deliberately wraps `console.log`/`info` to strip i18next's Locize promo banner; originals are restored once init resolves
   const originals: Partial<Record<(typeof methods)[number], typeof console.log>> = {};
   for (const m of methods) {
     // biome-ignore lint/suspicious/noConsole: see silenceLocizeBanner header
     originals[m] = console[m];
-    // biome-ignore lint/suspicious/noConsole: see silenceLocizeBanner header
     console[m] = (...args: unknown[]) => {
       if (typeof args[0] === 'string' && args[0].includes('i18next is made possible')) return;
       originals[m]?.apply(console, args);
@@ -73,7 +71,6 @@ function silenceLocizeBanner(): () => void {
   return () => {
     for (const m of methods) {
       const original = originals[m];
-      // biome-ignore lint/suspicious/noConsole: see silenceLocizeBanner header
       if (original) console[m] = original;
     }
   };

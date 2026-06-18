@@ -53,7 +53,6 @@ vi.mock('@contractor-ops/integrations/adapters/slack-adapter', () => ({
 import { getImpactPreview } from '../services/idp-impact-preview';
 
 const baseArgs = {
-  // biome-ignore lint/suspicious/noExplicitAny: mock db
   db: {} as any,
   organizationId: 'org-1',
   provider: 'GOOGLE_WORKSPACE' as const,

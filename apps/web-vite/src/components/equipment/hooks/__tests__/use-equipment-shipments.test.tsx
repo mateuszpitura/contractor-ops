@@ -112,7 +112,6 @@ describe('useEquipmentShipments', () => {
     });
     const openSpy = vi
       .spyOn(window, 'open')
-      // biome-ignore lint/suspicious/noExplicitAny: jsdom Window typing
       .mockImplementation(() => ({ focus: () => undefined }) as any);
     const { result } = renderHookWithProviders(() => useEquipmentShipments('eq1', null));
     await act(async () => {

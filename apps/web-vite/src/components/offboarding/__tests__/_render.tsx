@@ -12,7 +12,6 @@ import { createRoot } from 'react-dom/client';
 
 import { setupTestI18n } from '../../../test-utils/setup-test-i18n.js';
 
-// biome-ignore lint/suspicious/noExplicitAny: globalThis flag for React 19 act()
 (globalThis as any).IS_REACT_ACT_ENVIRONMENT = true;
 
 export interface Mounted {

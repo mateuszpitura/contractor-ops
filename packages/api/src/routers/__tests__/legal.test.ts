@@ -156,7 +156,6 @@ describe('legalRouter.generatePrivacyNoticePdf — IDOR-by-construction', () => 
     // Zod's default object behaviour drops anything not declared in the
     // schema. Cast to `any` so the test exercises the runtime stripping
     // rather than relying on TypeScript narrowing.
-    // biome-ignore lint/suspicious/noExplicitAny: explicit tamper attempt
     await (caller.generatePrivacyNoticePdf as any)({ jurisdiction: 'SA' });
     const args = mockRequestExport.mock.calls[0]?.[0] as
       | { params?: Record<string, unknown> }
@@ -169,7 +168,6 @@ describe('legalRouter.generatePrivacyNoticePdf — IDOR-by-construction', () => 
 
   it('3. exporter type is fixed at `gdpr-privacy-notice` regardless of caller input', async () => {
     const caller = makeCaller();
-    // biome-ignore lint/suspicious/noExplicitAny: explicit tamper attempt
     await (caller.generatePrivacyNoticePdf as any)({
       jurisdiction: 'AE',
       type: 'drv-defense-bundle',
@@ -181,7 +179,6 @@ describe('legalRouter.generatePrivacyNoticePdf — IDOR-by-construction', () => 
 
   it('4. organizationId always derives from the session — never from caller body', async () => {
     const caller = makeCaller();
-    // biome-ignore lint/suspicious/noExplicitAny: explicit tamper attempt
     await (caller.generatePrivacyNoticePdf as any)({
       organizationId: 'clOTHERORGattacker0000000000',
     });

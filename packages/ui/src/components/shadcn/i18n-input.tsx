@@ -47,7 +47,6 @@ function LocaleListItemButton({
         'flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors hover:bg-accent',
         isActive && 'bg-accent/60 font-medium',
       )}>
-      {/** biome-ignore lint/performance/noImgElement: small static svg under /public */}
       <img
         src={meta.flag}
         alt=""
@@ -160,7 +159,6 @@ export function I18nInput({
         disabled={disabled}
         className="absolute inset-y-0 end-1 my-auto inline-flex h-7 items-center gap-1.5 rounded-md px-2 text-xs font-medium text-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
         aria-label={`Switch language (current: ${activeMeta.label})`}>
-        {/** biome-ignore lint/performance/noImgElement: small static svg under /public */}
         <img
           src={activeMeta.flag}
           alt=""

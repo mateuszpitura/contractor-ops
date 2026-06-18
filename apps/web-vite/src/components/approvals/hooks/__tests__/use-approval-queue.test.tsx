@@ -285,10 +285,7 @@ describe('useApprovalQueue — handlers', () => {
     await waitFor(() => expect(result.current.queueSectionProps.isLoading).toBe(false));
 
     act(() => {
-      result.current.queueSectionProps.onRowClick(
-        // biome-ignore lint/suspicious/noExplicitAny: test row shape mirrors generated columns
-        row as any,
-      );
+      result.current.queueSectionProps.onRowClick(row as any);
     });
     expect(result.current.sidePanelProps.open).toBe(true);
     expect(result.current.sidePanelProps.step?.id).toBe('s1');

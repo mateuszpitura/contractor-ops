@@ -50,7 +50,6 @@ describe('deriveUsageDashboardTier', () => {
   });
 
   it('falls back to STARTER when tier is missing on the row', () => {
-    // biome-ignore lint/suspicious/noExplicitAny: simulating a malformed wire payload
     const broken = { ...mockSubscription, tier: undefined as any };
     expect(deriveUsageDashboardTier(broken)).toBe('STARTER');
   });

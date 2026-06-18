@@ -3,7 +3,6 @@ import { insertProvenance, provenanceLookup } from '../provenance';
 
 type DbArg = Parameters<typeof provenanceLookup>[0];
 
-// biome-ignore lint/suspicious/noExplicitAny: test-only Prisma mock overrides
 const makeDb = (overrides: Partial<{ findFirst: any; updateMany: any; create: any }> = {}) =>
   ({
     idpChangeProvenance: {
@@ -12,7 +11,6 @@ const makeDb = (overrides: Partial<{ findFirst: any; updateMany: any; create: an
       create: vi.fn().mockResolvedValue({ id: 'p-1' }),
       ...overrides,
     },
-    // biome-ignore lint/suspicious/noExplicitAny: cast a partial mock to the Prisma client param type
   }) as any as DbArg;
 
 const baseInput = {
