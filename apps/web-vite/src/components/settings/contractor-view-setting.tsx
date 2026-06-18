@@ -12,6 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@contractor-ops/ui/components/shadcn/select';
+import { useCallback } from 'react';
 import { useTranslations } from '../../i18n/useTranslations.js';
 import type { ContractorListViewMode } from '../contractors/hooks/use-contractor-list-view.js';
 import { useContractorListView } from '../contractors/hooks/use-contractor-list-view.js';
@@ -25,6 +26,10 @@ export function ContractorViewSetting() {
   const t = useTranslations('Settings');
   const { mode, setMode } = useContractorListView();
   const options = useContractorListViewModeOptions();
+  const handleValueChange = useCallback(
+    (value: string | null) => setMode(value as ContractorListViewMode),
+    [setMode],
+  );
 
   return (
     <Card>
@@ -33,10 +38,7 @@ export function ContractorViewSetting() {
         <CardDescription>{t('contractorListView.description')}</CardDescription>
       </CardHeader>
       <CardContent>
-        <Select
-          value={mode}
-          onValueChange={value => setMode(value as ContractorListViewMode)}
-          items={options}>
+        <Select value={mode} onValueChange={handleValueChange} items={options}>
           <SelectTrigger className="w-full max-w-xs">
             <SelectValue />
           </SelectTrigger>

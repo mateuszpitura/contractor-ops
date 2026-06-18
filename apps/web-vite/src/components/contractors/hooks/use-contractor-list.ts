@@ -6,6 +6,7 @@ import { useListDataTable } from '../../../hooks/use-list-data-table.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { useTRPC } from '../../../providers/trpc-provider.js';
 import type { ContractorRow } from '../contractor-table/columns.js';
+import type { ContractorNuqsFilters } from '../contractor-table/use-contractor-filters.js';
 import {
   toContractorFilterInput,
   useContractorFilters,
@@ -82,6 +83,35 @@ export interface ContractorListToolbarProps {
   onImport?: () => void;
 }
 
+function countActiveFilters(filters: ContractorNuqsFilters): number {
+  return (
+    (filters.search.length > 0 ? 1 : 0) +
+    (filters.lifecycleStage.length > 0 ? 1 : 0) +
+    (filters.type.length > 0 ? 1 : 0) +
+    (filters.owner.length > 0 ? 1 : 0) +
+    (filters.team.length > 0 ? 1 : 0) +
+    (filters.billingModel.length > 0 ? 1 : 0) +
+    (filters.health.length > 0 ? 1 : 0) +
+    (filters.country.length > 0 ? 1 : 0) +
+    (filters.expiringWithin == null ? 0 : 1) +
+    (filters.paymentBlocked ? 1 : 0) +
+    (filters.stalled ? 1 : 0)
+  );
+}
+
+function toContractorListQueryInput(filters: ContractorNuqsFilters) {
+  return {
+    page: filters.page,
+    pageSize: filters.pageSize,
+    search: filters.search || undefined,
+    sortBy:
+      (filters.sortBy as 'createdAt' | 'legalName' | 'status' | 'lifecycleStage' | 'type') ||
+      'createdAt',
+    sortOrder: (filters.sortOrder as 'asc' | 'desc') || 'desc',
+    filters: toContractorFilterInput(filters),
+  };
+}
+
 export function useContractorList(options: { onAddContractor: () => void; onImport?: () => void }) {
   const trpc = useTRPC();
   const te = useTranslations('EmptyStates');
@@ -92,19 +122,7 @@ export function useContractorList(options: { onAddContractor: () => void; onImpo
   const isCountLoading = countQuery.isLoading || countQuery.isFetching;
   const showEmptyState = !isCountLoading && totalCount === 0;
 
-  const queryInput = useMemo(
-    () => ({
-      page: filters.page,
-      pageSize: filters.pageSize,
-      search: filters.search || undefined,
-      sortBy:
-        (filters.sortBy as 'createdAt' | 'legalName' | 'status' | 'lifecycleStage' | 'type') ||
-        'createdAt',
-      sortOrder: (filters.sortOrder as 'asc' | 'desc') || 'desc',
-      filters: toContractorFilterInput(filters),
-    }),
-    [filters],
-  );
+  const queryInput = useMemo(() => toContractorListQueryInput(filters), [filters]);
 
   const contractorsQuery = useQuery({
     ...trpc.contractor.list.queryOptions(queryInput),
@@ -126,18 +144,7 @@ export function useContractorList(options: { onAddContractor: () => void; onImpo
   const isLoading = contractorsQuery.isPending && !contractorsQuery.data;
   const isRefetching = contractorsQuery.isFetching && !isLoading;
 
-  const activeFilterCount =
-    (filters.search.length > 0 ? 1 : 0) +
-    (filters.lifecycleStage.length > 0 ? 1 : 0) +
-    (filters.type.length > 0 ? 1 : 0) +
-    (filters.owner.length > 0 ? 1 : 0) +
-    (filters.team.length > 0 ? 1 : 0) +
-    (filters.billingModel.length > 0 ? 1 : 0) +
-    (filters.health.length > 0 ? 1 : 0) +
-    (filters.country.length > 0 ? 1 : 0) +
-    (filters.expiringWithin == null ? 0 : 1) +
-    (filters.paymentBlocked ? 1 : 0) +
-    (filters.stalled ? 1 : 0);
+  const activeFilterCount = countActiveFilters(filters);
   const hasFiltersOrSearch = activeFilterCount > 0;
 
   const handleFiltersChange = useCallback(

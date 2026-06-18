@@ -33,6 +33,11 @@ function FailedItemRow({
   const displayLabel = isProjectFailure
     ? projectLabel(email.slice(PROJECT_FAILED_PREFIX.length))
     : email;
+  const retryButtonContent = isRetrying ? (
+    <Loader2 className="size-3 animate-spin" aria-hidden="true" />
+  ) : (
+    retryLabel
+  );
   return (
     <div className="flex items-center justify-between rounded-lg border border-destructive/20 bg-destructive/5 px-3 py-2">
       <div className="flex items-center gap-2">
@@ -44,11 +49,7 @@ function FailedItemRow({
       </div>
       {!isProjectFailure && (
         <Button variant="ghost" size="sm" onClick={handleRetry} disabled={isRetrying}>
-          {isRetrying ? (
-            <Loader2 className="size-3 animate-spin" aria-hidden="true" />
-          ) : (
-            <>{retryLabel}</>
-          )}
+          {retryButtonContent}
         </Button>
       )}
     </div>

@@ -138,12 +138,16 @@ function PresetButton({
 }: PresetButtonProps) {
   const handleClick = useCallback(() => onPresetClick(preset.id), [onPresetClick, preset.id]);
   const renderTrigger = useCallback(
-    (props: React.HTMLAttributes<HTMLSpanElement>) => (
-      <span {...props} className="flex items-center gap-1.5">
-        <CalendarIcon className="h-3.5 w-3.5" />
-        {activePreset === 'custom' && formatDisplay() ? <>{formatDisplay()}</> : <>{labelText}</>}
-      </span>
-    ),
+    (props: React.HTMLAttributes<HTMLSpanElement>) => {
+      const customDisplay = activePreset === 'custom' ? formatDisplay() : '';
+      const triggerLabel = customDisplay || labelText;
+      return (
+        <span {...props} className="flex items-center gap-1.5">
+          <CalendarIcon className="h-3.5 w-3.5" />
+          {triggerLabel}
+        </span>
+      );
+    },
     [activePreset, formatDisplay, labelText],
   );
 

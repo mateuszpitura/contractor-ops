@@ -39,8 +39,7 @@ export function AttentionRail({
   const t = useTranslations('Contractors');
 
   return (
-    <div
-      role="group"
+    <fieldset
       aria-label={t('insights.attention.title')}
       className="grid grid-cols-2 gap-1 rounded-xl border border-border/60 bg-card/40 p-1 lg:grid-cols-4">
       <RailButton
@@ -48,7 +47,7 @@ export function AttentionRail({
         count={attention.atRiskCompliance}
         label={t('insights.attention.atRisk')}
         onToggle={onToggleAtRisk}
-        affordance={<Dot color="var(--status-danger)" />}
+        affordance={<Dot className="bg-[var(--status-danger)]" />}
       />
       <RailButton
         active={expiringActive}
@@ -81,7 +80,7 @@ export function AttentionRail({
           <Clock className="h-4 w-4 text-[var(--status-processing)]" aria-hidden="true" />
         }
       />
-    </div>
+    </fieldset>
   );
 }
 
@@ -117,7 +116,7 @@ function RailButton({ active, count, label, affordance, onToggle }: RailButtonPr
       </span>
       <span className="min-w-0">
         <span className="block text-sm font-medium tabular-nums">
-          {empty ? t('insights.attention.allClear') : count}
+          {empty ? t('insights.attention.allClear') : String(count)}
         </span>
         <span className="block truncate text-xs text-muted-foreground">{label}</span>
       </span>
@@ -125,12 +124,8 @@ function RailButton({ active, count, label, affordance, onToggle }: RailButtonPr
   );
 }
 
-function Dot({ color }: { color: string }) {
+function Dot({ className }: { className: string }) {
   return (
-    <span
-      aria-hidden="true"
-      className="inline-block h-2.5 w-2.5 rounded-full"
-      style={{ backgroundColor: color }}
-    />
+    <span aria-hidden="true" className={cx('inline-block h-2.5 w-2.5 rounded-full', className)} />
   );
 }

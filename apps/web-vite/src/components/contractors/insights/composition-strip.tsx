@@ -1,4 +1,5 @@
 import { contractorTypeEnum } from '@contractor-ops/validators';
+import { useCallback } from 'react';
 import { tDynLoose } from '../../../i18n/typed-keys.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { enumKey } from '../../../lib/enum-key.js';
@@ -24,6 +25,12 @@ export interface CompositionStripProps {
  */
 export function CompositionStrip({ composition, active, onToggle }: CompositionStripProps) {
   const t = useTranslations('Contractors');
+
+  const toggleLifecycle = useCallback((v: string) => onToggle('lifecycleStage', v), [onToggle]);
+  const toggleType = useCallback((v: string) => onToggle('type', v), [onToggle]);
+  const toggleCountry = useCallback((v: string) => onToggle('country', v), [onToggle]);
+  const toggleHealth = useCallback((v: string) => onToggle('health', v), [onToggle]);
+  const healthLabel = useCallback((v: string) => tDynLoose(t, 'health', enumKey(v)), [t]);
 
   const lifecycleChips = LIFECYCLE_ORDER.filter(s => (composition.lifecycleStage[s] ?? 0) > 0).map(
     s => ({
@@ -53,26 +60,26 @@ export function CompositionStrip({ composition, active, onToggle }: CompositionS
         title={t('columns.lifecycleStage')}
         chips={lifecycleChips}
         activeValues={active.lifecycleStage}
-        onToggle={v => onToggle('lifecycleStage', v)}
+        onToggle={toggleLifecycle}
       />
       <SegmentGroup
         title={t('columns.type')}
         chips={typeChips}
         activeValues={active.type}
-        onToggle={v => onToggle('type', v)}
+        onToggle={toggleType}
       />
       <SegmentGroup
         title={t('insights.composition.jurisdiction')}
         chips={jurisdictionChips}
         activeValues={active.country}
-        onToggle={v => onToggle('country', v)}
+        onToggle={toggleCountry}
       />
       <HealthGroup
         title={t('columns.health')}
         health={composition.health}
         activeValues={active.health}
-        onToggle={v => onToggle('health', v)}
-        label={v => tDynLoose(t, 'health', enumKey(v))}
+        onToggle={toggleHealth}
+        label={healthLabel}
       />
     </div>
   );
@@ -104,10 +111,11 @@ function SegmentGroup({
       {chips.map(chip => (
         <SegmentChip
           key={chip.value}
+          value={chip.value}
           label={chip.label}
           count={chip.count}
           pressed={activeValues.includes(chip.value)}
-          onToggle={() => onToggle(chip.value)}
+          onToggle={onToggle}
         />
       ))}
     </div>
@@ -115,21 +123,24 @@ function SegmentGroup({
 }
 
 function SegmentChip({
+  value,
   label,
   count,
   pressed,
   onToggle,
 }: {
+  value: string;
   label: string;
   count: number;
   pressed: boolean;
-  onToggle: () => void;
+  onToggle: (value: string) => void;
 }) {
+  const handleClick = useCallback(() => onToggle(value), [onToggle, value]);
   return (
     <button
       type="button"
       aria-pressed={pressed}
-      onClick={onToggle}
+      onClick={handleClick}
       className={cx(
         'inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs transition-colors',
         pressed
@@ -142,10 +153,10 @@ function SegmentChip({
   );
 }
 
-const HEALTH_COLOR: Record<(typeof HEALTH_ORDER)[number], string> = {
-  green: 'var(--status-success)',
-  yellow: 'var(--status-warning)',
-  red: 'var(--status-danger)',
+const HEALTH_BG_CLASS: Record<(typeof HEALTH_ORDER)[number], string> = {
+  green: 'bg-[var(--status-success)]',
+  yellow: 'bg-[var(--status-warning)]',
+  red: 'bg-[var(--status-danger)]',
 };
 
 function HealthGroup({
@@ -170,25 +181,18 @@ function HealthGroup({
         {title}
       </span>
       <div className="flex h-2.5 min-w-40 flex-1 overflow-hidden rounded-full border border-border/60">
-        {HEALTH_ORDER.map(key => {
-          const value = health[key];
-          if (value === 0) return null;
-          const pressed = activeValues.includes(key);
-          return (
-            <button
+        {HEALTH_ORDER.map(key =>
+          health[key] > 0 ? (
+            <HealthSegment
               key={key}
-              type="button"
-              aria-pressed={pressed}
-              aria-label={`${label(key)}: ${value}`}
-              onClick={() => onToggle(key)}
-              style={{ flexGrow: value, backgroundColor: HEALTH_COLOR[key] }}
-              className={cx(
-                'h-full transition-opacity',
-                pressed ? 'opacity-100' : 'opacity-70 hover:opacity-100',
-              )}
+              segment={key}
+              value={health[key]}
+              pressed={activeValues.includes(key)}
+              label={label}
+              onToggle={onToggle}
             />
-          );
-        })}
+          ) : null,
+        )}
       </div>
       <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
         {HEALTH_ORDER.map(key =>
@@ -196,8 +200,7 @@ function HealthGroup({
             <span key={key} className="inline-flex items-center gap-1 tabular-nums">
               <span
                 aria-hidden="true"
-                className="inline-block h-2 w-2 rounded-full"
-                style={{ backgroundColor: HEALTH_COLOR[key] }}
+                className={cx('inline-block h-2 w-2 rounded-full', HEALTH_BG_CLASS[key])}
               />
               {health[key]}
             </span>
@@ -205,5 +208,36 @@ function HealthGroup({
         )}
       </div>
     </div>
+  );
+}
+
+function HealthSegment({
+  segment,
+  value,
+  pressed,
+  label,
+  onToggle,
+}: {
+  segment: (typeof HEALTH_ORDER)[number];
+  value: number;
+  pressed: boolean;
+  label: (value: string) => string;
+  onToggle: (value: string) => void;
+}) {
+  const handleClick = useCallback(() => onToggle(segment), [onToggle, segment]);
+  return (
+    <button
+      type="button"
+      aria-pressed={pressed}
+      aria-label={`${label(segment)}: ${value}`}
+      onClick={handleClick}
+      // biome-ignore lint/nursery/noInlineStyles: flex-grow is the data-driven segment proportion (count) computed at runtime; there is no static Tailwind class for an arbitrary numeric grow factor
+      style={{ flexGrow: value }}
+      className={cx(
+        'h-full transition-opacity',
+        HEALTH_BG_CLASS[segment],
+        pressed ? 'opacity-100' : 'opacity-70 hover:opacity-100',
+      )}
+    />
   );
 }

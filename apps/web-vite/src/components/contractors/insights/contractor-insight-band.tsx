@@ -44,17 +44,20 @@ export function ContractorInsightBand() {
   );
 }
 
+const RAIL_SKELETON_KEYS = ['at-risk', 'expiring', 'payment-blocked', 'stalled'] as const;
+const ROW_SKELETON_KEYS = ['lifecycle', 'type', 'health'] as const;
+
 function BandSkeleton() {
   return (
     <div className="space-y-3">
       <div className="grid grid-cols-2 gap-1 rounded-xl border border-border/60 bg-card/40 p-1 lg:grid-cols-4">
-        {Array.from({ length: 4 }).map((_, i) => (
-          <Skeleton key={`rail-${i}`} className="h-12 w-full rounded-lg" />
+        {RAIL_SKELETON_KEYS.map(key => (
+          <Skeleton key={key} className="h-12 w-full rounded-lg" />
         ))}
       </div>
       <div className="flex flex-col gap-2 px-1">
-        {Array.from({ length: 3 }).map((_, i) => (
-          <Skeleton key={`row-${i}`} className="h-6 w-2/3 rounded-full" />
+        {ROW_SKELETON_KEYS.map(key => (
+          <Skeleton key={key} className="h-6 w-2/3 rounded-full" />
         ))}
       </div>
     </div>

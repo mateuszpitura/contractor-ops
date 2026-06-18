@@ -6,6 +6,7 @@ import {
   SelectValue,
 } from '@contractor-ops/ui/components/shadcn/select';
 import { LayoutGrid } from 'lucide-react';
+import { useCallback } from 'react';
 import { tKey } from '../../../i18n/typed-keys.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import type { ContractorListViewMode } from '../hooks/use-contractor-list-view.js';
@@ -39,12 +40,13 @@ export function ViewModeSwitcher() {
   const t = useTranslations('Contractors');
   const { mode, setMode } = useContractorListView();
   const options = useContractorListViewModeOptions();
+  const handleValueChange = useCallback(
+    (value: string | null) => setMode(value as ContractorListViewMode),
+    [setMode],
+  );
 
   return (
-    <Select
-      value={mode}
-      onValueChange={value => setMode(value as ContractorListViewMode)}
-      items={options}>
+    <Select value={mode} onValueChange={handleValueChange} items={options}>
       <SelectTrigger
         className="h-8 w-auto gap-1.5 text-xs"
         aria-label={t('insights.viewMode.label')}>

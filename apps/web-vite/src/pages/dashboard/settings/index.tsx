@@ -114,7 +114,7 @@ function SettingsIndexContent() {
                     value={tab.key}
                     className={cn('gap-1.5', (showsToggle || showsIndicator) && 'pe-1.5')}>
                     <span>{tab.label}</span>
-                    {showsToggle && (
+                    {showsToggle ? (
                       <PinTabToggle
                         tabKey={tab.key}
                         tabLabel={tab.label}
@@ -125,13 +125,13 @@ function SettingsIndexContent() {
                         unpinAriaLabel={tab.unpinAriaLabel}
                         onTogglePin={togglePin}
                       />
-                    )}
-                    {showsIndicator && (
+                    ) : null}
+                    {showsIndicator ? (
                       <Pin
                         aria-hidden="true"
                         className="h-3.5 w-3.5 shrink-0 rotate-45 fill-current text-primary"
                       />
-                    )}
+                    ) : null}
                   </TabsTrigger>
                 );
               })}
@@ -171,41 +171,41 @@ function SettingsIndexContent() {
             <ReminderRulesSection />
           </TabsContent>
 
-          {canManageIntegrations && (
+          {canManageIntegrations ? (
             <TabsContent value="integrations" className="mt-6 space-y-8">
               <EInvoiceComplianceDetail />
               <IntegrationsTab />
             </TabsContent>
-          )}
+          ) : null}
 
-          {canManageBilling && (
+          {canManageBilling ? (
             <TabsContent value="billing" className="mt-6 space-y-8">
               <BillingTab />
             </TabsContent>
-          )}
+          ) : null}
 
-          {canViewAuditLog && (
+          {canViewAuditLog ? (
             <TabsContent value="audit-log" className="mt-6 flex min-h-0 flex-1 flex-col">
               <AuditLogTab />
             </TabsContent>
-          )}
+          ) : null}
 
           <TabsContent value="privacy" className="mt-6 space-y-6">
             <ConsentManagementSection />
             <GdprDataRightsSection />
           </TabsContent>
 
-          {canManageIntegrations && (
+          {canManageIntegrations ? (
             <TabsContent value="api-keys" className="mt-6">
               <ApiKeysTab />
             </TabsContent>
-          )}
+          ) : null}
 
-          {isPlatformAdmin && (
+          {isPlatformAdmin ? (
             <TabsContent value="feature-flags" className="mt-6">
               <FeatureFlagsTab />
             </TabsContent>
-          )}
+          ) : null}
         </Tabs>
       </AnimateIn>
     </div>
