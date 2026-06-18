@@ -1269,6 +1269,26 @@
       "payments": "Zahlungsläufe und Bankdatei-Export werden hier verfügbar sein."
     },
     "overview": {
+      "widgets": {
+        "compliance": {
+          "title": "Compliance",
+          "nextAction": "Nächste: {action}",
+          "allClear": "Vollständig konform"
+        },
+        "financial": {
+          "title": "Finanzpuls",
+          "outstanding": "Offen",
+          "readyToPay": "Zahlbereit",
+          "paid12m": "Bezahlt (12 Mon.)",
+          "avgDaysToPay": "Ø Tage bis Zahlung",
+          "days": "{days} T",
+          "trendSr": "Bezahlte Rechnungen der letzten 12 Monate",
+          "empty": "Noch keine Rechnungen.",
+          "error": "Finanzdaten konnten nicht geladen werden.",
+          "retry": "Erneut versuchen"
+        },
+        "details": "Details"
+      },
       "companyDetails": "Firmendetails",
       "billingInfo": "Abrechnungsinformationen",
       "activeContract": "Aktiver Vertrag",
@@ -1421,6 +1441,35 @@
     "error": "Aktion fehlgeschlagen: add contractor. Try again."
   },
   "Contractors": {
+    "insights": {
+      "title": "Portfolio-Einblicke",
+      "error": "Einblicke nicht verfügbar.",
+      "retry": "Erneut versuchen",
+      "attention": {
+        "title": "Handlungsbedarf",
+        "atRisk": "Compliance-Risiken",
+        "expiring": "Auslaufende Verträge",
+        "expiringSr": "{count} Auftragnehmer mit in 30 Tagen auslaufenden Verträgen",
+        "paymentBlocked": "Zahlung blockiert",
+        "stalled": "Stockendes Onboarding",
+        "allClear": "Alles in Ordnung"
+      },
+      "composition": {
+        "jurisdiction": "Rechtsraum"
+      },
+      "viewMode": {
+        "label": "Ansicht",
+        "visualsFirst": "Einblicke zuerst",
+        "visualsLast": "Einblicke zuletzt",
+        "dataOriented": "Nur Tabelle",
+        "tabbed": "Tabs",
+        "single": "Einzelansicht"
+      },
+      "tabs": {
+        "visuals": "Einblicke",
+        "data": "Tabelle"
+      }
+    },
     "pageTitle": "Auftragnehmer",
     "entityLabel": "{count, plural, one {Auftragnehmer} other {Auftragnehmer}}",
     "clearFiltersChip": "{count, plural, one {# Filter zurücksetzen} other {# Filter zurücksetzen}}",
@@ -6208,6 +6257,10 @@
     }
   },
   "Settings": {
+    "contractorListView": {
+      "label": "Standardansicht für Auftragnehmer",
+      "description": "Wie die Auftragnehmerseite Einblicke und die Datentabelle standardmäßig anordnet."
+    },
     "title": "Organisationseinstellungen",
     "subtitle": "Verwalten Sie Ihre Organisationseinstellungen und Ihr Team",
     "tabs": {

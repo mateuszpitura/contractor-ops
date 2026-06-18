@@ -1269,6 +1269,26 @@
       "payments": "ستكون تشغيلات الدفع وتصدير ملفات البنوك متاحة هنا."
     },
     "overview": {
+      "widgets": {
+        "compliance": {
+          "title": "الامتثال",
+          "nextAction": "التالي: {action}",
+          "allClear": "متوافق تمامًا"
+        },
+        "financial": {
+          "title": "النبض المالي",
+          "outstanding": "مستحق",
+          "readyToPay": "جاهز للدفع",
+          "paid12m": "مدفوع (12 شهرًا)",
+          "avgDaysToPay": "متوسط أيام السداد",
+          "days": "{days} يوم",
+          "trendSr": "اتجاه الفواتير المدفوعة خلال 12 شهرًا",
+          "empty": "لا توجد فواتير بعد.",
+          "error": "تعذّر تحميل البيانات المالية.",
+          "retry": "إعادة المحاولة"
+        },
+        "details": "التفاصيل"
+      },
       "companyDetails": "تفاصيل الشركة",
       "billingInfo": "معلومات الفوترة",
       "activeContract": "العقد النشط",
@@ -1421,6 +1441,35 @@
     "error": "فشل add contractor. حاول مجددًا."
   },
   "Contractors": {
+    "insights": {
+      "title": "رؤى المحفظة",
+      "error": "الرؤى غير متاحة.",
+      "retry": "إعادة المحاولة",
+      "attention": {
+        "title": "يحتاج إلى انتباه",
+        "atRisk": "امتثال معرّض للخطر",
+        "expiring": "عقود على وشك الانتهاء",
+        "expiringSr": "{count} متعاقدين لديهم عقود تنتهي خلال 30 يومًا",
+        "paymentBlocked": "مدفوعات محظورة",
+        "stalled": "تأهيل متوقف",
+        "allClear": "كل شيء على ما يرام"
+      },
+      "composition": {
+        "jurisdiction": "الاختصاص القضائي"
+      },
+      "viewMode": {
+        "label": "العرض",
+        "visualsFirst": "الرؤى أولاً",
+        "visualsLast": "الرؤى أخيرًا",
+        "dataOriented": "الجدول فقط",
+        "tabbed": "علامات تبويب",
+        "single": "لوحة واحدة"
+      },
+      "tabs": {
+        "visuals": "الرؤى",
+        "data": "الجدول"
+      }
+    },
     "pageTitle": "المقاولون",
     "entityLabel": "{count, plural, zero {مقاول} one {مقاول} two {مقاولان} few {مقاولين} many {مقاولاً} other {مقاول}}",
     "clearFiltersChip": "مسح {count, plural, zero {# فلاتر} one {فلتر} two {فلترين} few {# فلاتر} many {# فلتراً} other {# فلتر}}",
@@ -6208,6 +6257,10 @@
     }
   },
   "Settings": {
+    "contractorListView": {
+      "label": "العرض الافتراضي للمتعاقدين",
+      "description": "كيف تنظّم صفحة المتعاقدين الرؤى وجدول البيانات افتراضيًا."
+    },
     "title": "إعدادات المؤسسة",
     "subtitle": "إدارة تفضيلات المؤسسة والفريق",
     "tabs": {

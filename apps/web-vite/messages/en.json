@@ -1269,6 +1269,26 @@
       "payments": "Payment runs and bank file export will be available here."
     },
     "overview": {
+      "widgets": {
+        "compliance": {
+          "title": "Compliance",
+          "nextAction": "Next: {action}",
+          "allClear": "Fully compliant"
+        },
+        "financial": {
+          "title": "Financial pulse",
+          "outstanding": "Outstanding",
+          "readyToPay": "Ready to pay",
+          "paid12m": "Paid (12 mo)",
+          "avgDaysToPay": "Avg days to pay",
+          "days": "{days} d",
+          "trendSr": "12-month paid-invoice trend",
+          "empty": "No invoices yet.",
+          "error": "Couldn't load financials.",
+          "retry": "Retry"
+        },
+        "details": "Details"
+      },
       "companyDetails": "Company details",
       "billingInfo": "Billing information",
       "activeContract": "Active contract",
@@ -1421,6 +1441,35 @@
     "error": "Failed to add contractor. Try again."
   },
   "Contractors": {
+    "insights": {
+      "title": "Portfolio insights",
+      "error": "Insights unavailable.",
+      "retry": "Retry",
+      "attention": {
+        "title": "Needs attention",
+        "atRisk": "At-risk compliance",
+        "expiring": "Contracts expiring",
+        "expiringSr": "{count} contractors with contracts expiring within 30 days",
+        "paymentBlocked": "Payment-blocked",
+        "stalled": "Stalled onboarding",
+        "allClear": "All clear"
+      },
+      "composition": {
+        "jurisdiction": "Jurisdiction"
+      },
+      "viewMode": {
+        "label": "View",
+        "visualsFirst": "Insights first",
+        "visualsLast": "Insights last",
+        "dataOriented": "Table only",
+        "tabbed": "Tabbed",
+        "single": "Single panel"
+      },
+      "tabs": {
+        "visuals": "Insights",
+        "data": "Table"
+      }
+    },
     "pageTitle": "Contractors",
     "entityLabel": "{count, plural, one {contractor} other {contractors}}",
     "clearFiltersChip": "Clear {count, plural, one {# filter} other {# filters}}",
@@ -6207,6 +6256,10 @@
     }
   },
   "Settings": {
+    "contractorListView": {
+      "label": "Default contractors view",
+      "description": "How the contractors page arranges insights and the data table by default."
+    },
     "title": "Organization settings",
     "subtitle": "Manage your organization preferences and team",
     "reimport": {

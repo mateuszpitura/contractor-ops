@@ -2,12 +2,12 @@
 title: web-vite UI domains
 type: structure
 tags: [structure, web-vite, ui]
-source_commit: c89762ffe45f4cabdc59f5deeb67eefb39726530
+source_commit: d839f52eb
 verify_with:
   - apps/web-vite/src/components/
   - apps/web-vite/ARCHITECTURE.md
   - apps/web-vite/src/router/
-updated: 2026-06-16
+updated: 2026-06-18
 ---
 
 # web-vite UI domains
@@ -32,6 +32,8 @@ Routes: `apps/web-vite/src/router/dashboard-routes.tsx`, `portal-routes.tsx`.
 | `payments/` | [[domains/payments-and-bank-files]] |
 | `approvals/` | [[domains/approvals-engine]] |
 | `contractors/` | [[domains/contractors-engagements]] |
+| `contractors/insights/` | [[domains/contractors-engagements]] — list insight band (attention rail + composition strip, view-mode arranger); `hooks/use-contractor-insights.ts` = sole tRPC boundary |
+| `contractors/contractor-profile/overview/` | [[domains/contractors-engagements]] — detail overview widgets (compliance + financial pulse) |
 | `contractors/tax-forms/` | [[domains/us-tax-forms]] — staff W-form status card (`tax-form-status-card.tsx` + `hooks/use-tax-form-status.ts`) |
 | `contracts/` | [[domains/contracts-lifecycle]] |
 | `portal/` | [[domains/portal-external]] |

@@ -1269,6 +1269,26 @@
       "payments": "Przelewy zbiorcze i eksport plików bankowych będzie dostępny tutaj."
     },
     "overview": {
+      "widgets": {
+        "compliance": {
+          "title": "Zgodność",
+          "nextAction": "Następne: {action}",
+          "allClear": "Pełna zgodność"
+        },
+        "financial": {
+          "title": "Puls finansowy",
+          "outstanding": "Do zapłaty",
+          "readyToPay": "Gotowe do zapłaty",
+          "paid12m": "Zapłacone (12 mies.)",
+          "avgDaysToPay": "Śr. dni do zapłaty",
+          "days": "{days} dni",
+          "trendSr": "Trend opłaconych faktur z 12 miesięcy",
+          "empty": "Brak faktur.",
+          "error": "Nie udało się wczytać danych finansowych.",
+          "retry": "Ponów"
+        },
+        "details": "Szczegóły"
+      },
       "companyDetails": "Dane firmy",
       "billingInfo": "Informacje rozliczeniowe",
       "activeContract": "Aktywna umowa",
@@ -1421,6 +1441,35 @@
     "error": "Nie udało się dodać kontrahenta. Spróbuj ponownie."
   },
   "Contractors": {
+    "insights": {
+      "title": "Wgląd w portfel",
+      "error": "Wgląd niedostępny.",
+      "retry": "Ponów",
+      "attention": {
+        "title": "Wymaga uwagi",
+        "atRisk": "Zagrożona zgodność",
+        "expiring": "Wygasające umowy",
+        "expiringSr": "{count} kontrahentów z umowami wygasającymi w ciągu 30 dni",
+        "paymentBlocked": "Zablokowana płatność",
+        "stalled": "Zatrzymane wdrożenie",
+        "allClear": "Wszystko w porządku"
+      },
+      "composition": {
+        "jurisdiction": "Jurysdykcja"
+      },
+      "viewMode": {
+        "label": "Widok",
+        "visualsFirst": "Najpierw wgląd",
+        "visualsLast": "Wgląd na końcu",
+        "dataOriented": "Tylko tabela",
+        "tabbed": "Karty",
+        "single": "Pojedynczy panel"
+      },
+      "tabs": {
+        "visuals": "Wgląd",
+        "data": "Tabela"
+      }
+    },
     "pageTitle": "Kontrahenci",
     "entityLabel": "{count, plural, one {kontrahent} few {kontrahenci} many {kontrahentów} other {kontrahentów}}",
     "clearFiltersChip": "Wyczyść {count, plural, one {# filtr} few {# filtry} many {# filtrów} other {# filtrów}}",
@@ -6208,6 +6257,10 @@
     }
   },
   "Settings": {
+    "contractorListView": {
+      "label": "Domyślny widok kontrahentów",
+      "description": "Jak strona kontrahentów domyślnie rozmieszcza wgląd i tabelę danych."
+    },
     "title": "Ustawienia organizacji",
     "subtitle": "Zarządzaj preferencjami organizacji i zespołem",
     "tabs": {

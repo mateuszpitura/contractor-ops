@@ -22,6 +22,7 @@ import { AdminBrandingSection } from '../../../components/settings/admin-brandin
 import { ApiKeysTab } from '../../../components/settings/api-keys-tab.js';
 import { ApprovalChainsTab } from '../../../components/settings/approval-chains-tab.js';
 import { AuditLogTab } from '../../../components/settings/audit-log-tab.js';
+import { ContractorViewSetting } from '../../../components/settings/contractor-view-setting.js';
 import { ExpiryReminderDefaults } from '../../../components/settings/expiry-reminder-defaults.js';
 import { FeatureFlagsTab } from '../../../components/settings/feature-flags-tab.js';
 import { GdprDataRightsSection } from '../../../components/settings/gdpr-data-rights-section.js';
@@ -151,6 +152,7 @@ function SettingsIndexContent() {
               </CardContent>
             </Card>
             <LanguageCard />
+            <ContractorViewSetting />
             <OrgSettingsFormContainer />
             <ExpiryReminderDefaults />
             <InvoiceMatchingSettings />

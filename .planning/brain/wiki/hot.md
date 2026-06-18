@@ -1,8 +1,8 @@
 ---
 title: Hot cache
 type: hot-cache
-updated: 2026-06-17
-source_commit: 336516f5da666c16acff84e412a3d338db8bbbb8
+updated: 2026-06-18
+source_commit: d839f52eb
 ---
 
 # Hot cache
@@ -75,6 +75,12 @@ New user with no org → `DashboardShellContainer` (`components/layout/dashboard
 ## OCR AI kill-switch
 
 `processOcrExtraction` (`services/ocr-extraction.ts`) gates Claude Vision on `killswitch.ai-invoice-parser` (`default: true`, `killWhenUnknown: true`). Off or Unleash unreachable → skip the AI call, keep the upload persisted, mark `OcrExtraction` FAILED with a manual-entry message + `ocr.skipped` metric. Region for per-org targeting comes from `resolveOrgRegion` (`Organization.dataRegion`, default EU) since the QStash callback has no tenant ctx. Detail: [[domains/documents-and-ocr]] · [[patterns/feature-flags]].
+
+## Contractor list insight band + view modes
+
+The `/contractors` list page is two layers — an insight band (visuals) + the data table — arranged by a per-user view mode. Band = `components/contractors/insights/`: attention rail (at-risk / expiring / payment-blocked / stalled, each a click-to-filter facet) + composition strip (lifecycle / type / jurisdiction chips + health ribbon). Sole tRPC boundary `hooks/use-contractor-insights.ts` → `contractor.insights`. View mode persisted client-side in `hooks/use-contractor-list-view.ts` (Zustand `persist`, localStorage `contractor-list-view`; in-page `ViewModeSwitcher` + Settings `ContractorViewSetting` write the same store — the stored value IS the default). Modes: visuals-first/last, data-oriented, tabbed, single.
+
+**Consistency invariant:** `contractor.insights` and `contractor.list` build the population from the SAME `contractorFiltersSchema` + `buildContractorListWhere` (`contractor-shared.ts`); the band's `atRiskCompliance` is exactly `composition.health.red` via the shared `computeListHealthBadge` JS tally — band counts and table rows can't diverge. Clicks write the shared `useContractorFilters` nuqs state. New `list` facets `countryCode`/`expiringWithin`/`paymentBlocked`/`stalled`. Detail overview leads with compliance + `financialPulse` widgets (`contractor-profile/overview/`), fields demoted to a collapsible. Detail: [[domains/contractors-engagements]] · [[structure/web-vite-domains]].
 
 ## Reading order
 

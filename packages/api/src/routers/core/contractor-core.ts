@@ -1,6 +1,7 @@
 import type { Prisma } from '@contractor-ops/db';
 import {
   contractorCreateSchema,
+  contractorInsightsSchema,
   contractorLifecycleTransitionSchema,
   contractorListSchema,
   contractorUpdateSchema,
@@ -20,6 +21,7 @@ import { CacheKeys, invalidateByPrefix } from '../../services/cache';
 import { captureEvent } from '../../services/posthog';
 import { sanitizeStrings } from '../../services/sanitize';
 import {
+  buildContractorListWhere,
   buildContractorRelationUpdates,
   computeComplianceHealth,
   computeListHealthBadge,
@@ -27,8 +29,14 @@ import {
   handleVatIdChange,
   LEGAL_TRANSITIONS,
   mergeCustomBillingFields,
+  paymentBlockedPredicate,
+  stalledOnboardingPredicate,
   updateBillingProfileIfNeeded,
 } from './contractor-shared.js';
+
+/** Attention-rail "expiring soon" window + sparkline bucket count. */
+const INSIGHTS_EXPIRING_WINDOW_DAYS = 30;
+const INSIGHTS_SPARKLINE_BUCKETS = 6;
 
 export const contractorCoreRouter = router({
   list: tenantProcedure
@@ -37,62 +45,9 @@ export const contractorCoreRouter = router({
     .query(async ({ ctx, input }) => {
       const { page, pageSize, search, sortBy, sortOrder, filters } = input;
 
-      const where: Prisma.ContractorWhereInput = {
-        organizationId: ctx.organizationId,
-        deletedAt: null,
-      };
-
-      if (filters?.status?.length) {
-        where.status = { in: filters.status };
-      }
-      if (filters?.lifecycleStage?.length) {
-        where.lifecycleStage = { in: filters.lifecycleStage };
-      }
-      if (filters?.ownerUserId?.length) {
-        where.ownerUserId = { in: filters.ownerUserId };
-      }
-      if (filters?.primaryTeamId?.length) {
-        where.primaryTeamId = { in: filters.primaryTeamId };
-      }
-      if (filters?.type?.length) {
-        where.type = { in: filters.type };
-      }
-      if (filters?.billingModel?.length) {
-        const bmIds: Array<{ id: string }> = await ctx.db.$queryRaw`
-          SELECT id FROM "Contractor"
-          WHERE "organizationId" = ${ctx.organizationId}
-            AND "deletedAt" IS NULL
-            AND "customFieldsJson"->>'billingModel' = ANY(${filters.billingModel}::text[])
-        `;
-        if (bmIds.length === 0) {
-          return { items: [] as Record<string, unknown>[], total: 0, page, pageSize };
-        }
-        where.id = { ...(where.id as Record<string, unknown>), in: bmIds.map(r => r.id) };
-      }
-
-      if (search && search.length >= 2) {
-        const terms = search
-          .trim()
-          .split(/\s+/)
-          .map(t => t.replace(/[^a-zA-Z0-9\u00C0-\u024F]/g, ''))
-          .filter(Boolean)
-          .map(t => `${t}:*`)
-          .join(' & ');
-
-        if (terms) {
-          const matchingIds: Array<{ id: string }> = await ctx.db.$queryRaw`
-            SELECT id FROM "Contractor"
-            WHERE "organizationId" = ${ctx.organizationId}
-              AND "deletedAt" IS NULL
-              AND "search_vector" @@ to_tsquery('simple', ${terms})
-          `;
-
-          if (matchingIds.length === 0) {
-            return { items: [] as Record<string, unknown>[], total: 0, page, pageSize };
-          }
-
-          where.id = { in: matchingIds.map(r => r.id) };
-        }
+      const where = await buildContractorListWhere(ctx.db, ctx.organizationId, { search, filters });
+      if (where === null) {
+        return { items: [] as Record<string, unknown>[], total: 0, page, pageSize };
       }
 
       const [contractors, total] = await Promise.all([
@@ -291,6 +246,237 @@ export const contractorCoreRouter = router({
         ...contractor,
         complianceItems,
         complianceHealth: health,
+      };
+    }),
+
+  /**
+   * Portfolio insight band for the contractor list. Returns attention rollups
+   * (what needs action) + composition counts (population segments) over the
+   * same filter contract the table uses.
+   *
+   * Faceting model: counts are computed against the "core" population —
+   * everything in the active filter set EXCEPT the composition / attention
+   * facet groups (lifecycle, type, country, health, expiring, paymentBlocked,
+   * stalled). This keeps segment counts from collapsing to zero as the user
+   * drills, so each segment stays a live filter entry-point. `atRiskCompliance`
+   * is the red bucket of the health tally — same `computeListHealthBadge` rule
+   * as `list`, so the band and the table can never disagree on health.
+   */
+  insights: tenantProcedure
+    .use(requirePermission({ contractor: ['read'] }))
+    .input(contractorInsightsSchema)
+    .query(async ({ ctx, input }) => {
+      const now = new Date();
+      const { search, filters } = input;
+
+      const coreWhere = await buildContractorListWhere(
+        ctx.db,
+        ctx.organizationId,
+        {
+          search,
+          filters: filters && {
+            status: filters.status,
+            ownerUserId: filters.ownerUserId,
+            primaryTeamId: filters.primaryTeamId,
+            billingModel: filters.billingModel,
+          },
+        },
+        now,
+      );
+
+      const emptyHealth = { green: 0, yellow: 0, red: 0 };
+      if (coreWhere === null) {
+        return {
+          attention: {
+            atRiskCompliance: 0,
+            expiringContracts: 0,
+            paymentBlocked: 0,
+            stalledOnboarding: 0,
+            expirySparkline: Array<number>(INSIGHTS_SPARKLINE_BUCKETS).fill(0),
+          },
+          composition: {
+            lifecycleStage: {} as Record<string, number>,
+            type: {} as Record<string, number>,
+            jurisdiction: [] as Array<{ countryCode: string; count: number }>,
+            health: emptyHealth,
+          },
+          total: 0,
+        };
+      }
+
+      const [lifecycleGroups, typeGroups, countryGroups, coreContractors, paymentBlocked, stalled] =
+        await Promise.all([
+          ctx.db.contractor.groupBy({
+            by: ['lifecycleStage'],
+            where: coreWhere,
+            _count: { _all: true },
+          }),
+          ctx.db.contractor.groupBy({ by: ['type'], where: coreWhere, _count: { _all: true } }),
+          ctx.db.contractor.groupBy({
+            by: ['countryCode'],
+            where: coreWhere,
+            _count: { _all: true },
+          }),
+          ctx.db.contractor.findMany({
+            where: coreWhere,
+            select: {
+              id: true,
+              _count: {
+                select: {
+                  complianceItems: { where: { status: { in: ['MISSING', 'EXPIRED'] } } },
+                },
+              },
+            },
+          }),
+          ctx.db.contractor.count({ where: { AND: [coreWhere, paymentBlockedPredicate()] } }),
+          ctx.db.contractor.count({ where: { AND: [coreWhere, stalledOnboardingPredicate(now)] } }),
+        ]);
+
+      const ids = coreContractors.map(c => c.id);
+
+      const [pendingCounts, expiringContracts] = await Promise.all([
+        ids.length > 0
+          ? ctx.db.contractorComplianceItem.groupBy({
+              by: ['contractorId'],
+              where: { contractorId: { in: ids }, status: 'PENDING' },
+              _count: true,
+            })
+          : Promise.resolve([] as Array<{ contractorId: string; _count: number }>),
+        ids.length > 0
+          ? ctx.db.contract.findMany({
+              where: {
+                organizationId: ctx.organizationId,
+                contractorId: { in: ids },
+                status: { in: ['ACTIVE', 'EXPIRING'] },
+                endDate: {
+                  gte: now,
+                  lte: new Date(
+                    now.getTime() + INSIGHTS_EXPIRING_WINDOW_DAYS * 24 * 60 * 60 * 1000,
+                  ),
+                },
+                deletedAt: null,
+              },
+              select: { contractorId: true, endDate: true },
+            })
+          : Promise.resolve([] as Array<{ contractorId: string; endDate: Date | null }>),
+      ]);
+
+      const pendingMap = new Map(pendingCounts.map(p => [p.contractorId, p._count]));
+      const health = { green: 0, yellow: 0, red: 0 };
+      for (const c of coreContractors) {
+        const badge = computeListHealthBadge({
+          missingOrExpired: c._count.complianceItems,
+          pending: pendingMap.get(c.id) ?? 0,
+        });
+        health[badge] += 1;
+      }
+
+      const expirySparkline = Array<number>(INSIGHTS_SPARKLINE_BUCKETS).fill(0);
+      const bucketMs =
+        (INSIGHTS_EXPIRING_WINDOW_DAYS * 24 * 60 * 60 * 1000) / INSIGHTS_SPARKLINE_BUCKETS;
+      const expiringContractorIds = new Set<string>();
+      for (const c of expiringContracts) {
+        expiringContractorIds.add(c.contractorId);
+        if (!c.endDate) continue;
+        const idx = Math.min(
+          INSIGHTS_SPARKLINE_BUCKETS - 1,
+          Math.max(0, Math.floor((c.endDate.getTime() - now.getTime()) / bucketMs)),
+        );
+        expirySparkline[idx] = (expirySparkline[idx] ?? 0) + 1;
+      }
+
+      const lifecycleStage: Record<string, number> = {};
+      for (const g of lifecycleGroups) lifecycleStage[g.lifecycleStage] = g._count._all;
+      const type: Record<string, number> = {};
+      for (const g of typeGroups) type[g.type] = g._count._all;
+      const jurisdiction = countryGroups
+        .map(g => ({ countryCode: g.countryCode, count: g._count._all }))
+        .sort((a, b) => b.count - a.count);
+
+      return {
+        attention: {
+          atRiskCompliance: health.red,
+          expiringContracts: expiringContractorIds.size,
+          paymentBlocked,
+          stalledOnboarding: stalled,
+          expirySparkline,
+        },
+        composition: { lifecycleStage, type, jurisdiction, health },
+        total: coreContractors.length,
+      };
+    }),
+
+  /**
+   * Per-contractor financial pulse for the detail overview widget. Single-scan
+   * aggregates + a 12-month paid-invoice trend. Kept off `getById` so the widget
+   * loads (and skeletons) independently of the detail page.
+   */
+  financialPulse: tenantProcedure
+    .use(requirePermission({ contractor: ['read'] }))
+    .input(entityIdSchema)
+    .query(async ({ ctx, input }) => {
+      const contractor = await ctx.db.contractor.findFirst({
+        where: { id: input.id, organizationId: ctx.organizationId, deletedAt: null },
+        select: { id: true, currency: true },
+      });
+      if (!contractor) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: E.CONTRACTOR_NOT_FOUND });
+      }
+
+      const now = new Date();
+      const twelveMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 11, 1);
+
+      type Aggs = {
+        outstandingMinor: bigint;
+        readyToPayMinor: bigint;
+        paidLast12mMinor: bigint;
+        avgDaysToPay: number | null;
+      };
+
+      const [aggRows, trendRows] = await Promise.all([
+        ctx.db.$queryRaw<Aggs[]>`
+          SELECT
+            COALESCE(SUM("amountToPayMinor") FILTER (
+              WHERE "paymentStatus" <> 'PAID' AND "status" <> 'VOID'
+            )::bigint, 0)::bigint AS "outstandingMinor",
+            COALESCE(SUM("amountToPayMinor") FILTER (
+              WHERE "paymentStatus" = 'READY'
+            )::bigint, 0)::bigint AS "readyToPayMinor",
+            COALESCE(SUM("totalMinor") FILTER (
+              WHERE "paymentStatus" = 'PAID' AND "paidAt" >= ${twelveMonthsAgo}
+            )::bigint, 0)::bigint AS "paidLast12mMinor",
+            AVG(EXTRACT(EPOCH FROM ("paidAt" - "readyForPaymentAt")) / 86400.0) FILTER (
+              WHERE "paymentStatus" = 'PAID'
+                AND "paidAt" >= ${twelveMonthsAgo}
+                AND "readyForPaymentAt" IS NOT NULL
+            )::float8 AS "avgDaysToPay"
+          FROM "Invoice"
+          WHERE "organizationId" = ${ctx.organizationId}
+            AND "contractorId" = ${input.id}
+            AND "deletedAt" IS NULL
+        `,
+        ctx.db.$queryRaw<Array<{ month: Date; totalMinor: bigint }>>`
+          SELECT date_trunc('month', "paidAt") AS month,
+                 COALESCE(SUM("totalMinor")::bigint, 0)::bigint AS "totalMinor"
+          FROM "Invoice"
+          WHERE "organizationId" = ${ctx.organizationId}
+            AND "contractorId" = ${input.id}
+            AND "paymentStatus" = 'PAID'
+            AND "paidAt" >= ${twelveMonthsAgo}
+            AND "deletedAt" IS NULL
+          GROUP BY date_trunc('month', "paidAt")
+          ORDER BY month ASC
+        `,
+      ]);
+
+      const agg = aggRows[0];
+      return {
+        outstandingMinor: Number(agg?.outstandingMinor ?? 0),
+        readyToPayMinor: Number(agg?.readyToPayMinor ?? 0),
+        paidLast12mMinor: Number(agg?.paidLast12mMinor ?? 0),
+        avgDaysToPay: agg?.avgDaysToPay == null ? null : Math.round(Number(agg.avgDaysToPay)),
+        invoiceTrendMinor: trendRows.map(r => Number(r.totalMinor)),
+        currency: contractor.currency,
       };
     }),
 

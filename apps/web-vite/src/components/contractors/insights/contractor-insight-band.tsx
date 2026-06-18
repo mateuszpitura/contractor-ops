@@ -1,0 +1,62 @@
+import { AtelierIntensityProvider } from '@contractor-ops/ui';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
+import { useTranslations } from '../../../i18n/useTranslations.js';
+import { AttentionRail } from './attention-rail.js';
+import { CompositionStrip } from './composition-strip.js';
+import { useContractorInsights } from './hooks/use-contractor-insights.js';
+
+/**
+ * Wired insight band for the contractor list — the "visuals" layer. Owns
+ * loading / error branching and composes the attention rail + composition
+ * strip. Its query is independent of the table's, so a band failure degrades to
+ * a retry affordance without taking the table down. Forces `workbench`
+ * intensity so atelier primitives (Sparkline) drop their continuous motion.
+ */
+export function ContractorInsightBand() {
+  const t = useTranslations('Contractors');
+  const insights = useContractorInsights();
+
+  return (
+    <AtelierIntensityProvider value="workbench">
+      <section aria-label={t('insights.title')} className="space-y-3">
+        {insights.isLoading ? (
+          <BandSkeleton />
+        ) : insights.isError ? (
+          <div className="flex items-center justify-between gap-3 rounded-xl border border-border/60 bg-card/40 px-4 py-3">
+            <p className="text-sm text-muted-foreground">{t('insights.error')}</p>
+            <Button variant="outline" size="sm" onClick={insights.onRetry}>
+              {t('insights.retry')}
+            </Button>
+          </div>
+        ) : insights.data ? (
+          <>
+            <AttentionRail attention={insights.data.attention} {...insights.attention} />
+            <CompositionStrip
+              composition={insights.data.composition}
+              active={insights.activeSegments}
+              onToggle={insights.toggleSegment}
+            />
+          </>
+        ) : null}
+      </section>
+    </AtelierIntensityProvider>
+  );
+}
+
+function BandSkeleton() {
+  return (
+    <div className="space-y-3">
+      <div className="grid grid-cols-2 gap-1 rounded-xl border border-border/60 bg-card/40 p-1 lg:grid-cols-4">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <Skeleton key={`rail-${i}`} className="h-12 w-full rounded-lg" />
+        ))}
+      </div>
+      <div className="flex flex-col gap-2 px-1">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <Skeleton key={`row-${i}`} className="h-6 w-2/3 rounded-full" />
+        ))}
+      </div>
+    </div>
+  );
+}

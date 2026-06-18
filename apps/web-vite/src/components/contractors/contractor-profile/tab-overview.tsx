@@ -1,20 +1,19 @@
 import { minorToMajor, minorUnitDigits } from '@contractor-ops/shared';
 import {
   Card,
-  CardAction,
   CardContent,
   CardHeader,
   CardTitle,
 } from '@contractor-ops/ui/components/shadcn/card';
-import { AlertTriangle, CheckCircle2, XCircle } from 'lucide-react';
-import { useCallback } from 'react';
+import { ChevronDown } from 'lucide-react';
 import { tDynLoose } from '../../../i18n/typed-keys.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { enumKey } from '../../../lib/enum-key.js';
 import { useDateFormatter } from '../../../lib/format/use-date-formatter.js';
 import { maskTaxId } from '../../../lib/mask-pii.js';
-import { ComplianceHealthBadge } from '../compliance-health-badge.js';
 import { useContractorTabOverview } from '../hooks/use-contractor-tab-overview.js';
+import { ComplianceStatusWidget } from './overview/compliance-status-widget.js';
+import { FinancialPulseWidget } from './overview/financial-pulse-widget.js';
 
 type HealthFactor = {
   key: 'documents' | 'contract' | 'tasks' | 'invoices';
@@ -77,25 +76,6 @@ export type TabOverviewViewProps = {
   onSwitchTab: (tab: string) => void;
 };
 
-const healthFactorTabMap: Record<string, string> = {
-  documents: 'compliance',
-  contract: 'contracts',
-  tasks: 'workflows',
-  invoices: 'invoices',
-};
-
-const healthStatusIcons = {
-  green: CheckCircle2,
-  yellow: AlertTriangle,
-  red: XCircle,
-} as const;
-
-const healthStatusColors = {
-  green: 'text-green-600 dark:text-green-400',
-  yellow: 'text-amber-600 dark:text-amber-400',
-  red: 'text-red-500 dark:text-red-400',
-} as const;
-
 function FieldRow({
   label,
   value,
@@ -111,32 +91,6 @@ function FieldRow({
       <span className="text-xs text-muted-foreground">{label}</span>
       <span className={`text-sm ${mono ? 'font-mono text-[13px]' : ''}`}>{value}</span>
     </div>
-  );
-}
-
-function HealthFactorButton({
-  factor,
-  onSwitchTab,
-  children,
-}: {
-  factor: HealthFactor;
-  onSwitchTab: (tab: string) => void;
-  children: React.ReactNode;
-}) {
-  const Icon = healthStatusIcons[factor.status];
-  const colorClass = healthStatusColors[factor.status];
-  const targetTab = healthFactorTabMap[factor.key];
-  const handleClick = useCallback(() => {
-    if (targetTab) onSwitchTab(targetTab);
-  }, [targetTab, onSwitchTab]);
-  return (
-    <button
-      type="button"
-      onClick={handleClick}
-      className="flex items-center gap-2 rounded-md px-2 py-1.5 text-start transition-colors hover:bg-muted">
-      <Icon className={`size-4 shrink-0 ${colorClass}`} />
-      <span className="text-sm">{children}</span>
-    </button>
   );
 }
 
@@ -166,77 +120,26 @@ export function TabOverviewView({ contractor, showPii, onSwitchTab }: TabOvervie
     .join(', ');
 
   return (
-    <div className="grid gap-4 lg:grid-cols-2">
-      <Card>
-        <CardHeader>
-          <CardTitle>{t('companyDetails')}</CardTitle>
-        </CardHeader>
-        <CardContent className="grid gap-3">
-          <FieldRow label={t('fields.legalName')} value={contractor.legalName} />
-          <FieldRow label={t('fields.displayName')} value={contractor.displayName} />
-          <FieldRow
-            label={t('fields.type')}
-            value={tDynLoose(tc, 'type', enumKey(contractor.type))}
-          />
-          <FieldRow
-            label={t('fields.nip')}
-            value={showPii ? contractor.taxId : maskTaxId(contractor.taxId)}
-            mono
-          />
-          <FieldRow
-            label={t('fields.vatEu')}
-            value={showPii ? contractor.vatId : maskTaxId(contractor.vatId)}
-            mono
-          />
-          <FieldRow label={t('fields.regon')} value={contractor.registrationNumber} mono />
-          {contractor.email ? (
-            <div className="flex flex-col gap-0.5">
-              <span className="text-xs text-muted-foreground">{t('fields.email')}</span>
-              <a
-                href={`mailto:${contractor.email}`}
-                className="text-sm text-primary hover:underline">
-                {contractor.email}
-              </a>
-            </div>
-          ) : null}
-          <FieldRow label={t('fields.phone')} value={contractor.phone} />
-          <FieldRow label={t('fields.address')} value={formattedAddress} />
-          <FieldRow label={t('fields.country')} value={contractor.countryCode} />
-        </CardContent>
-      </Card>
+    <div className="space-y-4">
+      {/* Lead: what needs action — compliance (wide) + financial pulse */}
+      <div className="grid gap-4 lg:grid-cols-3">
+        <ComplianceStatusWidget
+          className="lg:col-span-2"
+          health={contractor.complianceHealth}
+          onSwitchTab={onSwitchTab}
+        />
+        <FinancialPulseWidget contractorId={contractor.id} currency={contractor.currency} />
+      </div>
 
+      {/* Engagement: active contract + key dates */}
       <Card>
         <CardHeader>
-          <CardTitle>{t('billingInfo')}</CardTitle>
-        </CardHeader>
-        <CardContent className="grid gap-3">
-          <FieldRow label={t('fields.billingModel')} value={billingModel} />
-          <FieldRow label={t('fields.rate')} value={formattedRate} mono />
-          <FieldRow label={t('fields.currency')} value={contractor.currency} />
-          <FieldRow
-            label={t('fields.bankAccount')}
-            value={defaultBilling?.bankAccountMasked}
-            mono
-          />
-          {defaultBilling?.paymentTermsDays == null ? null : (
-            <FieldRow
-              label={t('fields.paymentTerms')}
-              value={t('fields.paymentTermsDays', {
-                days: defaultBilling.paymentTermsDays,
-              })}
-            />
-          )}
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>{t('activeContract')}</CardTitle>
+          <CardTitle className="text-base">{t('activeContract')}</CardTitle>
         </CardHeader>
         <CardContent>
           {activeContract ? (
             <div className="grid gap-2">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between gap-2">
                 <span className="text-sm font-medium">
                   {activeContract.title ?? activeContract.type}
                 </span>
@@ -254,45 +157,85 @@ export function TabOverviewView({ contractor, showPii, onSwitchTab }: TabOvervie
           ) : (
             <p className="text-sm text-muted-foreground">{t('noActiveContract')}</p>
           )}
+
+          <div className="mt-4 grid gap-3 border-t border-border/40 pt-4 sm:grid-cols-3">
+            <FieldRow label={t('createdAt')} value={formatDate(contractor.createdAt)} />
+            <FieldRow label={t('updatedAt')} value={formatDate(contractor.updatedAt)} />
+            <FieldRow
+              label={t('contractEndDate')}
+              value={activeContract?.endDate ? formatDate(activeContract.endDate) : '—'}
+            />
+          </div>
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>{t('healthCard')}</CardTitle>
-          <CardAction>
-            <ComplianceHealthBadge health={contractor.complianceHealth.overall} />
-          </CardAction>
-        </CardHeader>
-        <CardContent className="grid gap-2">
-          {contractor.complianceHealth.factors.map(factor => (
-            <HealthFactorButton key={factor.key} factor={factor} onSwitchTab={onSwitchTab}>
-              {t(
-                `healthChecks.${factor.key}` as
-                  | 'healthChecks.documents'
-                  | 'healthChecks.contract'
-                  | 'healthChecks.tasks'
-                  | 'healthChecks.invoices',
-              )}
-            </HealthFactorButton>
-          ))}
-        </CardContent>
-      </Card>
-
-      <Card className="lg:col-span-2">
-        <CardHeader>
-          <CardTitle>{t('keyDates')}</CardTitle>
-        </CardHeader>
-        <CardContent className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          <FieldRow label={t('createdAt')} value={formatDate(contractor.createdAt)} />
-          <FieldRow label={t('updatedAt')} value={formatDate(contractor.updatedAt)} />
-          <FieldRow
-            label={t('contractEndDate')}
-            value={activeContract?.endDate ? formatDate(activeContract.endDate) : '\u2014'}
+      {/* Reference data — demoted to a collapsible (not the next action) */}
+      <details className="group rounded-xl border border-border/60 bg-card/40">
+        <summary className="flex cursor-pointer list-none items-center justify-between gap-2 px-4 py-3 text-sm font-medium">
+          {t('widgets.details')}
+          <ChevronDown
+            className="h-4 w-4 text-muted-foreground transition-transform group-open:rotate-180"
+            aria-hidden="true"
           />
-          <FieldRow label={t('nextInvoice')} value={'\u2014'} />
-        </CardContent>
-      </Card>
+        </summary>
+        <div className="grid gap-6 border-t border-border/40 px-4 py-4 lg:grid-cols-2">
+          <div className="grid gap-3">
+            <h4 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              {t('companyDetails')}
+            </h4>
+            <FieldRow label={t('fields.legalName')} value={contractor.legalName} />
+            <FieldRow label={t('fields.displayName')} value={contractor.displayName} />
+            <FieldRow
+              label={t('fields.type')}
+              value={tDynLoose(tc, 'type', enumKey(contractor.type))}
+            />
+            <FieldRow
+              label={t('fields.nip')}
+              value={showPii ? contractor.taxId : maskTaxId(contractor.taxId)}
+              mono
+            />
+            <FieldRow
+              label={t('fields.vatEu')}
+              value={showPii ? contractor.vatId : maskTaxId(contractor.vatId)}
+              mono
+            />
+            <FieldRow label={t('fields.regon')} value={contractor.registrationNumber} mono />
+            {contractor.email ? (
+              <div className="flex flex-col gap-0.5">
+                <span className="text-xs text-muted-foreground">{t('fields.email')}</span>
+                <a
+                  href={`mailto:${contractor.email}`}
+                  className="text-sm text-primary hover:underline">
+                  {contractor.email}
+                </a>
+              </div>
+            ) : null}
+            <FieldRow label={t('fields.phone')} value={contractor.phone} />
+            <FieldRow label={t('fields.address')} value={formattedAddress} />
+            <FieldRow label={t('fields.country')} value={contractor.countryCode} />
+          </div>
+
+          <div className="grid gap-3">
+            <h4 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              {t('billingInfo')}
+            </h4>
+            <FieldRow label={t('fields.billingModel')} value={billingModel} />
+            <FieldRow label={t('fields.rate')} value={formattedRate} mono />
+            <FieldRow label={t('fields.currency')} value={contractor.currency} />
+            <FieldRow
+              label={t('fields.bankAccount')}
+              value={defaultBilling?.bankAccountMasked}
+              mono
+            />
+            {defaultBilling?.paymentTermsDays == null ? null : (
+              <FieldRow
+                label={t('fields.paymentTerms')}
+                value={t('fields.paymentTermsDays', { days: defaultBilling.paymentTermsDays })}
+              />
+            )}
+          </div>
+        </div>
+      </details>
     </div>
   );
 }

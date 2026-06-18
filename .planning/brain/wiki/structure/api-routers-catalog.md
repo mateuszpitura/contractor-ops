@@ -29,7 +29,7 @@ Complete namespace index for staff `appRouter` and contractor `portalAppRouter`.
 | `organizationDefinitions` | Nested: `team`, `project`, `costCenter` |
 | `user` | list, invite, roles, deactivate |
 | `settings` | org settings get/update |
-| `contractor` | CRUD, lifecycle, compliance health, bulk |
+| `contractor` | CRUD, lifecycle, compliance health, bulk; `insights` (list-band attention + composition rollups, filter-scoped), `financialPulse` (per-contractor money rollup) |
 | `contract` | CRUD, FTS list, status, amendments |
 | `document` | presigned upload/download, versioning |
 | `workflow` | template CRUD, runs, tasks |

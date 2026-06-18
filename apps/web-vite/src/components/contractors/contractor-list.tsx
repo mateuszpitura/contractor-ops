@@ -19,6 +19,9 @@ import { ContractorDataTable } from './contractor-table/data-table.js';
 import { DataTableToolbar } from './contractor-table/data-table-toolbar.js';
 import { WizardDialog } from './contractor-wizard/wizard-dialog.js';
 import { useContractorList } from './hooks/use-contractor-list.js';
+import { ContractorInsightBand } from './insights/contractor-insight-band.js';
+import { ContractorListView } from './insights/contractor-list-view.js';
+import { ViewModeSwitcher } from './insights/view-mode-switcher.js';
 
 export function ContractorListContainer() {
   const t = useTranslations('Contractors');
@@ -91,22 +94,30 @@ export function ContractorListContainer() {
   return (
     <div className={WORKBENCH_TABLE_PAGE_FILL_CLASS}>
       <AnimateIn delay={0}>
-        <WorkbenchPageHeader title={t('pageTitle')} description={t('pageDescription')} />
+        <div className="flex items-start justify-between gap-3">
+          <WorkbenchPageHeader title={t('pageTitle')} description={t('pageDescription')} />
+          <ViewModeSwitcher />
+        </div>
       </AnimateIn>
 
-      <AnimateIn delay={1} className="flex min-h-0 flex-1 flex-col">
-        <section aria-label={t('pageTitle')} className={WORKBENCH_TABLE_SECTION_CLASS}>
-          <SectionLabel icon={Users}>{t('pageTitle')}</SectionLabel>
-          <ContractorDataTable
-            {...list.tableProps}
-            onRowClick={handleRowClick}
-            onAddContractor={handleAddContractor}
-            onImport={handleOpenImportWizard}
-            parentLoading={list.isCountLoading}
-            toolbar={<DataTableToolbar {...list.toolbarProps} />}
-            sectionClassName=""
-          />
-        </section>
+      <AnimateIn delay={1} className="flex min-h-0 flex-1 flex-col gap-4">
+        <ContractorListView
+          band={<ContractorInsightBand />}
+          table={
+            <section aria-label={t('pageTitle')} className={WORKBENCH_TABLE_SECTION_CLASS}>
+              <SectionLabel icon={Users}>{t('pageTitle')}</SectionLabel>
+              <ContractorDataTable
+                {...list.tableProps}
+                onRowClick={handleRowClick}
+                onAddContractor={handleAddContractor}
+                onImport={handleOpenImportWizard}
+                parentLoading={list.isCountLoading}
+                toolbar={<DataTableToolbar {...list.toolbarProps} />}
+                sectionClassName=""
+              />
+            </section>
+          }
+        />
       </AnimateIn>
 
       <ContractorSidePanel

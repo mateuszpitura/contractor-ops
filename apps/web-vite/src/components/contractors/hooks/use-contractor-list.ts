@@ -1,8 +1,3 @@
-import type {
-  ComplianceHealth,
-  ContractorLifecycleStage,
-  ContractorType,
-} from '@contractor-ops/validators';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import type { OnChangeFn, SortingState, VisibilityState } from '@tanstack/react-table';
 import { useCallback, useMemo } from 'react';
@@ -11,7 +6,10 @@ import { useListDataTable } from '../../../hooks/use-list-data-table.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { useTRPC } from '../../../providers/trpc-provider.js';
 import type { ContractorRow } from '../contractor-table/columns.js';
-import { useContractorFilters } from '../contractor-table/use-contractor-filters.js';
+import {
+  toContractorFilterInput,
+  useContractorFilters,
+} from '../contractor-table/use-contractor-filters.js';
 import type { ContractorBulkActionsHandlers } from './use-contractor-bulk-actions.js';
 import { useContractorBulkActions } from './use-contractor-bulk-actions.js';
 
@@ -103,18 +101,7 @@ export function useContractorList(options: { onAddContractor: () => void; onImpo
         (filters.sortBy as 'createdAt' | 'legalName' | 'status' | 'lifecycleStage' | 'type') ||
         'createdAt',
       sortOrder: (filters.sortOrder as 'asc' | 'desc') || 'desc',
-      filters: {
-        lifecycleStage: filters.lifecycleStage.length
-          ? (filters.lifecycleStage as Array<ContractorLifecycleStage>)
-          : undefined,
-        type: filters.type.length ? (filters.type as Array<ContractorType>) : undefined,
-        ownerUserId: filters.owner.length ? filters.owner : undefined,
-        primaryTeamId: filters.team.length ? filters.team : undefined,
-        billingModel: filters.billingModel.length ? filters.billingModel : undefined,
-        complianceHealth: filters.health.length
-          ? (filters.health as Array<ComplianceHealth>)
-          : undefined,
-      },
+      filters: toContractorFilterInput(filters),
     }),
     [filters],
   );
@@ -146,7 +133,11 @@ export function useContractorList(options: { onAddContractor: () => void; onImpo
     (filters.owner.length > 0 ? 1 : 0) +
     (filters.team.length > 0 ? 1 : 0) +
     (filters.billingModel.length > 0 ? 1 : 0) +
-    (filters.health.length > 0 ? 1 : 0);
+    (filters.health.length > 0 ? 1 : 0) +
+    (filters.country.length > 0 ? 1 : 0) +
+    (filters.expiringWithin == null ? 0 : 1) +
+    (filters.paymentBlocked ? 1 : 0) +
+    (filters.stalled ? 1 : 0);
   const hasFiltersOrSearch = activeFilterCount > 0;
 
   const handleFiltersChange = useCallback(
@@ -210,6 +201,10 @@ export function useContractorList(options: { onAddContractor: () => void; onImpo
       team: [],
       billingModel: [],
       health: [],
+      country: [],
+      expiringWithin: null,
+      paymentBlocked: false,
+      stalled: false,
       page: 1,
     });
   }, [setFilters]);
