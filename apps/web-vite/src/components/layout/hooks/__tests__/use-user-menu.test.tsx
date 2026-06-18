@@ -82,6 +82,7 @@ describe('useUserMenu', () => {
     expect(result.current.displayName).toBe('bob');
   });
 
+  // biome-ignore lint/suspicious/noTemplateCurlyInString: literal placeholder — test name documents the /${locale}/login route shape, not an interpolation
   it('handleSignOut invokes the auth client and navigates to /${locale}/login on success', async () => {
     sessionState.data = { user: { name: 'Ada', email: 'ada@example.com', image: null } };
     signOutMock.mockImplementation(async (args: unknown) => {

@@ -21,9 +21,7 @@ export function EnglishFallbackIndicator({ targetLocale }: EnglishFallbackIndica
     targetLocale === 'pl' ? 'angielski' : targetLocale === 'de' ? 'Englisch' : 'English';
 
   return (
-    <span
-      className="inline-flex items-center gap-1 text-muted-foreground"
-      aria-label={t('srDescription', { targetLocale: localeLabel })}>
+    <span className="inline-flex items-center gap-1 text-muted-foreground">
       <span className="text-xs">{t('suffix')}</span>
       <Tooltip>
         <TooltipTrigger

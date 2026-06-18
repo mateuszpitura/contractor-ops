@@ -39,8 +39,7 @@ export function IntakeProfileLevelBadge({ level, className }: IntakeProfileLevel
         LEVEL_CLASSES[level],
         className,
       )}
-      data-profile-level={level}
-      aria-label={t(level)}>
+      data-profile-level={level}>
       {t(level)}
     </span>
   );

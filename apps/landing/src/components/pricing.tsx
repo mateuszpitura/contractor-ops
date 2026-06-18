@@ -68,8 +68,7 @@ export function Pricing({ views, annualSavings }: PricingProps) {
         <FadeUp className="mt-10 flex flex-col items-center gap-2" delay={0.15}>
           {views.length > 0 && (
             <>
-              <div
-                role="group"
+              <fieldset
                 aria-label="Billing period"
                 className="inline-flex items-center rounded-full border border-border/60 bg-surface-1/60 p-1">
                 <button
@@ -94,7 +93,7 @@ export function Pricing({ views, annualSavings }: PricingProps) {
                   }`}>
                   {toggleAnnual}
                 </button>
-              </div>
+              </fieldset>
               {annualBadge && period === 'year' && (
                 <p className="text-xs font-medium text-primary">{annualBadge}</p>
               )}

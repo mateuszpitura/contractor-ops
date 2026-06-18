@@ -87,6 +87,7 @@ describe('deriveIdempotencyKey', () => {
   // changes the composition (separator, ordering, encoding) this test will
   // catch it before it silently invalidates every in-flight idempotency
   // window across providers.
+  // biome-ignore lint/suspicious/noTemplateCurlyInString: literal placeholder — test name documents the sha256 composition format, not an interpolation
   it('matches the canonical sha256(`${orgId}:${operation}:${businessKey}`) format', () => {
     const orgId = 'org_fixed';
     const operation = 'docusign.envelope.create';

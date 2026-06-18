@@ -28,7 +28,7 @@ import {
 } from '@contractor-ops/ui/components/shadcn/tooltip';
 import { Loader2, Plus, Save, X } from 'lucide-react';
 import { useCallback, useId } from 'react';
-import type { ControllerRenderProps } from 'react-hook-form';
+import type { ControllerRenderProps, FieldPath, FieldValues } from 'react-hook-form';
 import { Controller } from 'react-hook-form';
 import { ChainEditorUserPicker } from './chain-editor-user-picker.js';
 import type { Condition } from './condition-builder';
@@ -62,9 +62,15 @@ export type ChainEditorDialogProps = ChainEditorDialogShellProps &
 type FormApi = ChainEditorDialogProps['form'];
 type TranslateFn = ChainEditorDialogProps['t'];
 
+// Shared render-prop field type for the reusable Controller field components
+// below. They are reused across heterogeneous fields (booleans, user/role
+// pickers, condition arrays), so the field is typed at react-hook-form's own
+// generic defaults rather than pinned to a single field path.
+type ChainControllerField = ControllerRenderProps<FieldValues, FieldPath<FieldValues>>;
+
 interface BooleanSwitchProps {
   id: string;
-  field: ControllerRenderProps<any, any>;
+  field: ChainControllerField;
 }
 
 function BooleanSwitch({ id, field }: BooleanSwitchProps) {
@@ -72,7 +78,7 @@ function BooleanSwitch({ id, field }: BooleanSwitchProps) {
 }
 
 interface ApproverRadioGroupProps {
-  field: ControllerRenderProps<any, any>;
+  field: ChainControllerField;
   userLabel: string;
   roleLabel: string;
 }
@@ -93,7 +99,7 @@ function ApproverRadioGroup({ field, userLabel, roleLabel }: ApproverRadioGroupP
 }
 
 interface UserPickerFieldProps {
-  field: ControllerRenderProps<any, any>;
+  field: ChainControllerField;
 }
 
 function UserPickerField({ field }: UserPickerFieldProps) {
@@ -101,7 +107,7 @@ function UserPickerField({ field }: UserPickerFieldProps) {
 }
 
 interface RoleSelectFieldProps {
-  field: ControllerRenderProps<any, any>;
+  field: ChainControllerField;
   placeholder: string;
 }
 
@@ -125,7 +131,7 @@ function RoleSelectField({ field, placeholder }: RoleSelectFieldProps) {
 }
 
 interface ConditionsFieldProps {
-  field: ControllerRenderProps<any, any>;
+  field: ChainControllerField;
 }
 
 function ConditionsField({ field }: ConditionsFieldProps) {
@@ -143,7 +149,7 @@ interface StepCardProps {
 function StepCard({ form, t, index, canRemove, onRemove }: StepCardProps) {
   const handleRemove = useCallback(() => onRemove(index), [onRemove, index]);
   const renderRadio = useCallback(
-    ({ field }: { field: ControllerRenderProps<any, any> }) => (
+    ({ field }: { field: ChainControllerField }) => (
       <ApproverRadioGroup
         field={field}
         userLabel={t('approvals.editor.approverUser')}
@@ -153,18 +159,18 @@ function StepCard({ form, t, index, canRemove, onRemove }: StepCardProps) {
     [t],
   );
   const renderUserPicker = useCallback(
-    ({ field }: { field: ControllerRenderProps<any, any> }) => <UserPickerField field={field} />,
+    ({ field }: { field: ChainControllerField }) => <UserPickerField field={field} />,
     [],
   );
   const rolePlaceholder = t('approvals.editor.rolePlaceholder');
   const renderRoleSelect = useCallback(
-    ({ field }: { field: ControllerRenderProps<any, any> }) => (
+    ({ field }: { field: ChainControllerField }) => (
       <RoleSelectField field={field} placeholder={rolePlaceholder} />
     ),
     [rolePlaceholder],
   );
   const renderRequiredSwitch = useCallback(
-    ({ field }: { field: ControllerRenderProps<any, any> }) => (
+    ({ field }: { field: ChainControllerField }) => (
       <BooleanSwitch id={`step-required-${index}`} field={field} />
     ),
     [index],
@@ -275,13 +281,13 @@ export function ChainEditorDialogView({
   const id = useId();
 
   const renderDefaultSwitch = useCallback(
-    ({ field }: { field: ControllerRenderProps<any, any> }) => (
+    ({ field }: { field: ChainControllerField }) => (
       <BooleanSwitch id={`${id}-chain-default`} field={field} />
     ),
     [id],
   );
   const renderConditions = useCallback(
-    ({ field }: { field: ControllerRenderProps<any, any> }) => <ConditionsField field={field} />,
+    ({ field }: { field: ChainControllerField }) => <ConditionsField field={field} />,
     [],
   );
   const handleAddLevel = useCallback(() => append({ ...DEFAULT_CHAIN_STEP }), [append]);

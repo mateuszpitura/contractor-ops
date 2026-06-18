@@ -12,7 +12,6 @@
 // assertContractorPaymentEligibility against one shared mutable item store, so it
 // proves the full record → cross-boundary → scan → gate-blocks path.
 
-import { TRPCError } from '@trpc/server';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { makeFreeZoneComplianceItem, makeMeOrg } from './__fixtures__/gulf-fixtures';
 

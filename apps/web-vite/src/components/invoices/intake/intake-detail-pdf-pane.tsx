@@ -119,11 +119,9 @@ function XmlPreview({ xmlPreview }: XmlPreviewProps) {
   }
 
   return (
-    <pre
-      className="max-h-[600px] overflow-auto bg-muted/30 p-4 font-mono text-xs whitespace-pre-wrap break-all"
-      aria-label={tTab('xmlSourceAria')}>
-      {xmlPreview.text}
-    </pre>
+    <section className="max-h-[600px] overflow-auto bg-muted/30" aria-label={tTab('xmlSourceAria')}>
+      <pre className="p-4 font-mono text-xs whitespace-pre-wrap break-all">{xmlPreview.text}</pre>
+    </section>
   );
 }
 

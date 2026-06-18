@@ -111,6 +111,7 @@ export function HealthCheckPanel({
                       <sup
                         data-testid="pending-phrase-marker"
                         className="text-amber-600"
+                        role="note"
                         aria-label={t('pendingPhraseFooter')}>
                         ¹
                       </sup>

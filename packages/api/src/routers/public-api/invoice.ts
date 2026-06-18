@@ -4,7 +4,6 @@ import {
   publicApiInvoiceListInputSchema,
 } from '@contractor-ops/validators/public-api';
 import { TRPCError } from '@trpc/server';
-import { z } from 'zod';
 import * as E from '../../errors';
 import { router } from '../../init';
 import { apiKeyTenantProcedure } from '../../middleware/api-key-auth';

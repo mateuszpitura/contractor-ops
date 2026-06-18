@@ -46,7 +46,11 @@ vi.mock('@contractor-ops/ui/components/shadcn/select', () => ({
   }: {
     children: React.ReactNode;
     'aria-label'?: string;
-  }) => <div aria-label={ariaLabel}>{children}</div>,
+  }) => (
+    <button type="button" aria-label={ariaLabel}>
+      {children}
+    </button>
+  ),
   SelectValue: ({
     children,
     placeholder,

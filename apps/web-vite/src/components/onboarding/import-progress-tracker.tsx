@@ -44,11 +44,7 @@ function FailedItemRow({
       </div>
       {!isProjectFailure && (
         <Button variant="ghost" size="sm" onClick={handleRetry} disabled={isRetrying}>
-          {isRetrying ? (
-            <Loader2 className="size-3 animate-spin" aria-hidden="true" />
-          ) : (
-            <>{retryLabel}</>
-          )}
+          {isRetrying ? <Loader2 className="size-3 animate-spin" aria-hidden="true" /> : retryLabel}
         </Button>
       )}
     </div>

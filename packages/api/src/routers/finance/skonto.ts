@@ -5,7 +5,6 @@
 // All procedures are tenant-scoped. Feature-flagged via payments.skonto-enabled.
 
 import { createLogger } from '@contractor-ops/logger';
-import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import {
   BILLING_PROFILE_NOT_FOUND,

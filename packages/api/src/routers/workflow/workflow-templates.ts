@@ -10,7 +10,6 @@ import {
   templateUpdateSchema,
 } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
-import { z } from 'zod';
 import * as E from '../../errors';
 import { router } from '../../init';
 import { requirePermission } from '../../middleware/rbac';

@@ -90,10 +90,7 @@ export function CookieConsentBanner() {
   const copy = readCopy(locale, translations);
 
   return (
-    <div
-      role="region"
-      aria-label="Cookie consent"
-      className="fixed inset-x-0 bottom-0 z-[100] p-4 sm:p-6">
+    <section aria-label="Cookie consent" className="fixed inset-x-0 bottom-0 z-[100] p-4 sm:p-6">
       <div className="mx-auto flex max-w-2xl flex-col items-start gap-3 rounded-2xl border border-border bg-background/95 p-5 shadow-2xl backdrop-blur-md sm:flex-row sm:items-center sm:gap-4">
         <Cookie className="hidden size-5 shrink-0 text-muted-foreground sm:block" aria-hidden />
         <p className="flex-1 text-sm text-muted-foreground leading-relaxed">
@@ -119,6 +116,6 @@ export function CookieConsentBanner() {
           </button>
         </div>
       </div>
-    </div>
+    </section>
   );
 }

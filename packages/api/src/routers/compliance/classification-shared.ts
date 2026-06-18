@@ -9,7 +9,6 @@ import {
   getProfileForCountry,
   outcomeSchema,
 } from '@contractor-ops/classification';
-import type { EngagementContext, Jurisdiction } from '@contractor-ops/compliance-policy';
 import { POLICY_RULE_SET_VERSION } from '@contractor-ops/compliance-policy';
 
 export { mapCountryCodeToJurisdiction } from '@contractor-ops/compliance-policy';

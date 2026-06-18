@@ -101,6 +101,7 @@ export function GoogleWorkspaceReconnectBanner({
       <div className="flex flex-col gap-2">
         <AlertTitle id={titleId}>{t(titleKey)}</AlertTitle>
         <AlertDescription>{t(bodyKey)}</AlertDescription>
+        {/* biome-ignore lint/a11y/useAnchorContent: Button merges its children (the label) into this render anchor at runtime; the rendered <a> is never empty */}
         <Button render={<a href={reconnectHref} />} className="w-fit">
           {t(buttonKey)}
         </Button>

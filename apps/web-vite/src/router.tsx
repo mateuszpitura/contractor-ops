@@ -11,7 +11,7 @@ import { lazy, Suspense } from 'react';
 import { createBrowserRouter, Outlet, redirect } from 'react-router-dom';
 import { RouteErrorBoundary } from './components/error/route-error-boundary.js';
 import { applyLocale } from './i18n/index.js';
-import { DEFAULT_LOCALE, detectBrowserLocale, isSupportedLocale } from './i18n/messages.js';
+import { detectBrowserLocale, isSupportedLocale } from './i18n/messages.js';
 import { requireAuth } from './lib/require-auth.js';
 import { requirePortalAuth } from './lib/require-portal-auth.js';
 import { dashboardRoutes } from './router/dashboard-routes.js';

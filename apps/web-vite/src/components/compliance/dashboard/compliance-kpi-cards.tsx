@@ -45,10 +45,7 @@ const CARDS: ReadonlyArray<{
 export function ComplianceKpiCards({ kpis, activeTab, onTabChange }: ComplianceKpiCardsProps) {
   const t = useTranslations('Compliance.dashboard');
   return (
-    <div
-      className="grid grid-cols-1 gap-4 sm:grid-cols-3"
-      role="group"
-      aria-label={t('kpiGroupLabel')}>
+    <fieldset className="grid grid-cols-1 gap-4 sm:grid-cols-3" aria-label={t('kpiGroupLabel')}>
       {CARDS.map(card => {
         const Icon = card.icon;
         const isActive = activeTab === card.tab;
@@ -74,6 +71,6 @@ export function ComplianceKpiCards({ kpis, activeTab, onTabChange }: ComplianceK
           </button>
         );
       })}
-    </div>
+    </fieldset>
   );
 }

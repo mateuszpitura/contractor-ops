@@ -17,7 +17,7 @@ import { enumKey } from '../../lib/enum-key';
 import { renderEmptyStateAction } from '../shared/atelier-bridges';
 import { AuditLogTable } from './audit-log/data-table.js';
 import type { useAuditLogTab as UseAuditLogTab } from './hooks/use-audit-log-tab.js';
-import { AUDIT_LOG_PAGE_SIZE, useAuditLogTab } from './hooks/use-audit-log-tab.js';
+import { useAuditLogTab } from './hooks/use-audit-log-tab.js';
 
 function ActorOptionButton({
   id,

@@ -96,7 +96,8 @@ vi.mock('@contractor-ops/ui/components/shadcn/input', () => ({
 }));
 
 vi.mock('@contractor-ops/ui/components/shadcn/label', () => ({
-  Label: ({ children }: { children: React.ReactNode }) => <label>{children}</label>,
+  // biome-ignore lint/a11y/noLabelWithoutControl: passthrough mock of the Label primitive; htmlFor is supplied by the consumer at runtime via spread props
+  Label: (props: React.LabelHTMLAttributes<HTMLLabelElement>) => <label {...props} />,
 }));
 
 vi.mock('@contractor-ops/ui/components/shadcn/switch', () => ({

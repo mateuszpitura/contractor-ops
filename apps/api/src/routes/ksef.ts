@@ -5,7 +5,7 @@
 import { processKsefSync } from '@contractor-ops/api/services/ksef-sync-orchestrator';
 import { registerAllAdapters } from '@contractor-ops/integrations/adapters/register-all';
 import { createCronLogger } from '@contractor-ops/logger';
-import type { FastifyInstance, FastifyReply } from 'fastify';
+import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import { defineQStashRoute } from '../lib/qstash-route.js';
 

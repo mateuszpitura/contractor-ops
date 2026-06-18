@@ -62,6 +62,7 @@ describe('PinTabButton', () => {
     const wrapperClick = vi.fn();
     const { user } = setup(
       // biome-ignore lint/a11y/useKeyWithClickEvents: test-only wrapper
+      // biome-ignore lint/a11y/noStaticElementInteractions: test-only wrapper that asserts click propagation stops at the inner button; making it a real control would change the bubbling being tested
       <div onClick={wrapperClick} role="presentation">
         <PinTabButton
           tabKey="general"

@@ -62,7 +62,12 @@ export class EServicesTinMatchClient implements TinMatchClient {
     // enrollment clears. Until then a constructed-but-ungated client refuses to
     // transmit rather than silently returning a fabricated indicator.
     log.warn(
-      { baseUrl: this.baseUrl, tinType: input.tinType, tinLast4: last4(input.tin) },
+      {
+        baseUrl: this.baseUrl,
+        hasApiKey: this.apiKey.length > 0,
+        tinType: input.tinType,
+        tinLast4: last4(input.tin),
+      },
       'live e-Services TIN-Match client invoked while gate not cleared — refusing live call',
     );
     throw new Error(

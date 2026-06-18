@@ -40,6 +40,7 @@ function OrgSwitcherItem({
   );
 
   return (
+    // biome-ignore lint/a11y/useAriaPropsSupportedByRole: aria-checked is only set when role is menuitemradio (both gated on isMenu); biome cannot correlate the two ternaries
     <button
       type="button"
       role={isMenu ? 'menuitemradio' : undefined}
@@ -103,7 +104,8 @@ export function OrgSwitcherList({
   const switchingLabel = t('switching');
 
   return (
-    <div role={isMenu ? 'group' : undefined} aria-label={t('label')}>
+    // biome-ignore lint/a11y/useAriaPropsSupportedByRole: aria-label is only set when role is group (both gated on isMenu); biome cannot correlate the two ternaries
+    <div role={isMenu ? 'group' : undefined} aria-label={isMenu ? t('label') : undefined}>
       {orgs.map(org => {
         const switching = switchingContractorId === org.contractorId;
         const disabled = org.isCurrent || !!switchingContractorId;

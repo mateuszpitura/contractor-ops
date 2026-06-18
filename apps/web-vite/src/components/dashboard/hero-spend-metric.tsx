@@ -108,6 +108,7 @@ export function HeroSpendMetric() {
 
           <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between sm:gap-6">
             <p
+              role="img"
               aria-label={t('totalAriaLabel', { total: formatPLN(totalMinor) })}
               className="bg-gradient-to-r from-foreground via-primary/80 to-foreground bg-clip-text font-display text-[48px] font-black leading-none tracking-tighter tabular-nums text-transparent sm:text-[64px] lg:text-[72px]">
               <AnimatedNumber value={totalMinor} format={formatPLN} duration={2200} />

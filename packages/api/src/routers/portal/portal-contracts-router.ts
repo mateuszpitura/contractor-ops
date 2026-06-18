@@ -1,6 +1,5 @@
 import { entityIdSchema } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
-import { z } from 'zod';
 import { router } from '../../init';
 import { portalProcedure } from '../../middleware/portal-auth';
 import { mapPortalDocLink, portalDocLinkInclude } from './portal-doc-mapper';

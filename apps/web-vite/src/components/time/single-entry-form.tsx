@@ -34,7 +34,6 @@ import { CalendarDays } from 'lucide-react';
 import { useCallback, useId, useState } from 'react';
 
 import { useTranslations } from '../../i18n/useTranslations.js';
-import { cn } from '../../lib/utils.js';
 
 interface Contract {
   id: string;

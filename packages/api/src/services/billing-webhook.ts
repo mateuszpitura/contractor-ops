@@ -4,7 +4,6 @@ import {
   getSubscriptionIdFromInvoice,
   handleSubscriptionDeleted as markSubscriptionDeleted,
 } from '@contractor-ops/billing/webhook';
-import type { SubscriptionTier } from '@contractor-ops/db/generated/prisma/client';
 import { createLogger } from '@contractor-ops/logger';
 import { metrics } from '@contractor-ops/logger/metrics';
 import { getServerEnv } from '@contractor-ops/validators';

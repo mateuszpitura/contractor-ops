@@ -61,6 +61,7 @@ export function PrivacyNoticeAcknowledgement({
             i18nKey="Consent.privacyAcknowledgement.label"
             components={{
               link: (
+                // biome-ignore lint/a11y/useAnchorContent: <Trans> injects the link text from the translation's <link>…</link> markup at runtime; the anchor is never empty when rendered
                 <a
                   href={jurisdictionUrl}
                   target="_blank"

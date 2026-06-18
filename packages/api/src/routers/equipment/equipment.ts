@@ -16,7 +16,6 @@ import {
   equipmentUpdateSchema,
 } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
-import { z } from 'zod';
 import { mergeRouters, router } from '../../init';
 import { auditedMutation, auditMutationCtx } from '../../lib/audited-mutation';
 import { findOrThrow } from '../../lib/find-or-throw';

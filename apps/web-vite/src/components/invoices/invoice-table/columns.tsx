@@ -222,6 +222,7 @@ export function getColumns(
           if (overdue) {
             return (
               <span
+                role="img"
                 className="inline-flex items-center gap-1.5 text-sm font-medium text-destructive"
                 aria-label={`${fmtDate(dueDate)} — ${t('overdueFilter')}`}>
                 <AlertCircle className="h-3.5 w-3.5" aria-hidden="true" />
