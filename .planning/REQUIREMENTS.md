@@ -82,7 +82,7 @@ Requirements for the v7.0 milestone. Each maps to exactly one phase (filled by r
 
 ### Theme B — Worker Model Abstraction (WORKER) — foundation, ships first
 
-- [ ] **WORKER-01**: `Worker` discriminated-union (Contractor | Employee) via a non-breaking additive migration — extends the existing `Contractor` model with a `workerType` enum defaulting to `CONTRACTOR` (zero data migration for v1–v6 orgs)
+- [ ] **WORKER-01**: `Worker` discriminated-union (Contractor | Employee) on a dedicated `Worker` base table that `Contractor` and `Employee` link to, with `workerType` defaulting to `CONTRACTOR`. *(Amended 2026-06-18, Phase 89 discuss: the original "zero data migration / extend Contractor in place" phrasing is superseded — the chosen normalization requires a ONE-TIME, additive, idempotent, per-region, reversible backfill of a `Worker` row per existing v1–v6 contractor. No contractor row is destroyed or relinked lossily; contractor-path parity must be verified on a staging snapshot of the largest org before the backfill is accepted. See `89-CONTEXT.md` D-01.)*
 - [ ] **WORKER-02**: tRPC namespace split — shared `workerRouter` + existing `contractorRouter` (route shapes preserved) + new `employeeRouter`
 - [ ] **WORKER-03**: RLS / tenant-isolation extension — `organizationId` invariant preserved on `Worker`; HR-only fields gated by per-type RBAC
 - [ ] **WORKER-04**: New roles `HR_ADMIN`, `HR_MANAGER`, `PAYROLL_OFFICER`, `LEAVE_APPROVER` (existing 8 roles unchanged)
