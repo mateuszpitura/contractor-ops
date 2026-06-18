@@ -520,7 +520,9 @@ export function planWorkerBackfill(rows: readonly ContractorForWorker[]): Array<
 
 **Empty?** No — five assumptions flagged; A2 and A5 are the execution-time re-verify items the orchestrator should surface to discuss-phase if the planner picks design B.
 
-## Open Questions
+## Open Questions (RESOLVED)
+
+> **RESOLVED in planning:** Q1 → design (A) adopted (`workerType` on `Worker` only; `WORKER_TYPE_DEFAULTED_MODELS = {'Worker'}`; raw-SQL sites get a regression assertion + CI guard, no predicate) — plans 89-01/89-02. Q2 (A5 nested-relation) → execution-time re-verify with the findUnique→findFirst fallback (89-02 Task 2). Q3 (backfill batching) → ~1k rows per `$transaction` in `backfill-worker.ts` (89-03 Task 1).
 
 1. **Discriminator placement (design A vs B).**
    - What we know: D-01 says `workerType` is the discriminator on the base table; `Contractor` links via FK.

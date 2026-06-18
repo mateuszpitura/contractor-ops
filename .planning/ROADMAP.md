@@ -312,7 +312,15 @@ Plans:
   3. The `organizationId` tenant invariant holds on `Worker`/employee rows, with HR-only fields gated by per-type RBAC and four new roles (`HR_ADMIN`, `HR_MANAGER`, `PAYROLL_OFFICER`, `LEAVE_APPROVER`); existing 8 roles unchanged.
   4. With `workforce-employees` flag off, employee routes are removed from the render tree and return tRPC FORBIDDEN/NOT_FOUND.
 
-**Plans**: TBD
+**Plans**: 6 plans (4 waves)
+
+- [ ] 89-01-PLAN.md — Wave 0 RED scaffolds + contractor.* route-shape snapshot + contractor-parity BASELINE lock (GREEN pre-Worker) [wave 1]
+- [ ] 89-02-PLAN.md — Worker base table + Contractor.workerId @unique sidecar FK (additive Migration A) + withWorkerTypeDefault extension + check:contractor-rawsql-workertype CI guard [wave 2]
+- [ ] 89-03-PLAN.md — [BLOCKING] idempotent/reversible/per-region/audit-logged backfill + Migration B (NOT NULL + FK) LAST after staging-snapshot parity [wave 3]
+- [ ] 89-04-PLAN.md — Router split (workerRouter + skeleton employeeRouter, contractor shape preserved) + three-layer flag-off (conditional-spread + require-workforce-flag guard + web-vite render removal) [wave 3]
+- [ ] 89-05-PLAN.md — employee resource + 4 HR roles (existing roles byte-identical) + Worker cross-org leak test [wave 3]
+- [ ] 89-06-PLAN.md — Documentation-follows-code: worker-foundation wiki domain + structure/patterns + MEMORY invariants + check:wiki-brain [wave 4]
+
 **Research flag**: Standard — locked, verified additive pattern. Pitfall: contractor list/dashboard/payment-run/classification-scan corruption if call sites aren't pre-filtered.
 
 ### Phase 90: Theme B — Employee Registry per Market (×6)
