@@ -383,7 +383,9 @@ const whtAmountMinor = Math.round((grossAmountMinor * decision.rate) / 100); // 
 | A7 | All external packages are legitimate (slopcheck unavailable) | Package Legitimacy Audit | Each install gated behind checkpoint:human-verify; GA floor needs none. |
 | A8 | Same-Day ACH ceiling is $1M now, $10M from 2027-09-17 | State of the Art | If dates/amounts differ, Fedwire-routing threshold is wrong — config value mitigates. |
 
-## Open Questions
+## Open Questions (RESOLVED)
+
+> Q1 (backup-withholding backfill) → resolved forward-only in 88-03 Task 2. Q2 (USD/ECB short-circuit) → resolved by D-06 reconciliation (USD already in ECB; no short-circuit). Q3 (NACHA balanced-vs-unbalanced + Fedwire channel) → Claude's-Discretion in CONTEXT (balanced default; Fedwire = pacs.008, live transmission deferred/adviser-verify).
 
 1. **Backup-withholding backfill (D-03).**
    - Known: P86 stored the flag in `TaxFormSubmission.snapshotJson`; P88 adds `Contractor.backupWithholdingFlagged`.

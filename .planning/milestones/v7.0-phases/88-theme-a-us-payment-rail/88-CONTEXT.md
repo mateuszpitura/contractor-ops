@@ -79,7 +79,7 @@ withholding that Phases 86/87 only *reported* is actually *applied*:
 
 ### Withholding source + currency
 - `packages/api/src/services/tin-match.service.ts` (`setBackupWithholdingFlag` port — wire it, D-03) + `form-1099-nec.service.ts` (`computeBox4Minor`, `convertAmount`) + `treaty-rate.service.ts` (`applyTreaty` — 1042-S rate) + `tax-rate.service.ts` (`calculateWht` — SA path to generalize).
-- `packages/api/src/services/exchange-rate.ts` (`parseEcbXml`, `fetchAndStoreRates`, peg derivations) — add USD=1.0 short-circuit (D-06).
+- `packages/api/src/services/exchange-rate.ts` (`parseEcbXml`, `fetchAndStoreRates`, peg derivations) — USD is ALREADY in the ECB feed + `convertAmount` cross-rates/short-circuits (RESEARCH F-1); add a USD source/target guard test only, NOT a new short-circuit (D-06 reconciled).
 - `packages/db/prisma/schema/organization.prisma` (`defaultCurrency`, `dataRegion`) + `contractor.prisma` (`Contractor.currency`; `ContractorBillingProfile.bankAccountEncrypted/bankAccountMasked/swiftBic` — D-12; add `backupWithholdingFlagged` D-03 + Plaid fields D-08).
 
 ### Integration framework (greenfield adapters)
@@ -100,7 +100,7 @@ withholding that Phases 86/87 only *reported* is actually *applied*:
 ### Reusable Assets
 - **`PaymentRunItem` withholding fields** (`whtAmountMinor`/`whtRate`/`whtTreatyApplied`/`grossAmountMinor`) — the deduction substrate already exists (Saudi-only today); generalize, don't rebuild (D-01).
 - **Payment-export factory** (`payment-export.ts`, `payment-format-detection.ts`, `payment-export-router.ts`) — `ACH_NACHA`/`FEDWIRE` slot in like BACS/SWIFT/SEPA (D-10).
-- **`exchange-rate.ts`** (ECB + peg derivations) — add USD=1.0 short-circuit for the settlement FX (D-06/D-07).
+- **`exchange-rate.ts`** (ECB + peg derivations) — USD already handled by `convertAmount` (RESEARCH F-1); settlement FX reuses it, guard-test USD source/target (D-06/D-07 reconciled — no short-circuit).
 - **`ContractorBillingProfile`** (AES-256-GCM encrypted bank account + masked) — extend with US bank fields + Plaid status (D-08/D-12).
 - **Integration `BaseAdapter` + AES-256-GCM credential store** + the GoogleWorkspace/GitHub OAuth adapters — the seam + mirror for Modern Treasury / Stripe / Plaid (D-04/D-09).
 - **P86 `tin-match.service` `setBackupWithholdingFlag` port** — wire it to the new `Contractor.backupWithholdingFlagged` column (D-03).
