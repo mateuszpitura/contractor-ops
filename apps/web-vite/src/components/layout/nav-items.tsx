@@ -6,6 +6,7 @@ import {
   SidebarMenuItem,
 } from '@contractor-ops/ui/components/shadcn/sidebar';
 import { Pin } from 'lucide-react';
+import type { ComponentPropsWithoutRef } from 'react';
 import { useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Link, usePathname } from '../../i18n/navigation.js';
@@ -17,15 +18,20 @@ import type { NavItemsGroupView } from './hooks/use-nav-items.js';
 import { useNavItems } from './hooks/use-nav-items.js';
 import { NavActionBadge } from './nav-action-badge.js';
 
-interface NavPrefetchLinkProps {
+interface NavPrefetchLinkProps extends Omit<ComponentPropsWithoutRef<typeof Link>, 'href'> {
   href: string;
   isActive: boolean;
 }
 
-function NavPrefetchLink({ href, isActive }: NavPrefetchLinkProps) {
+// Used as a `SidebarMenuButton render={…}` element: Base UI's useRender merges
+// the button's children (icon + label) and props into this element, so we MUST
+// spread `...props` onto the Link — otherwise the merged children are dropped
+// and the nav item renders with no visible icon/label.
+function NavPrefetchLink({ href, isActive, ...props }: NavPrefetchLinkProps) {
   const handlePrefetch = useCallback(() => prefetchRoute(href), [href]);
   return (
     <Link
+      {...props}
       href={href}
       aria-current={isActive ? 'page' : undefined}
       onPointerEnter={handlePrefetch}
