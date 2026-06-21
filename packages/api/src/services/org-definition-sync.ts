@@ -133,7 +133,123 @@ export async function syncLinearTeamsToOrgDefinitions(
 // Internals
 // ---------------------------------------------------------------------------
 
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: per-row sync logic (link / collision / insert / audit) reads cleaner inline than split into five helpers.
+// Name collision with an existing project: queue a pending merge for the
+// operator to resolve rather than auto-linking.
+async function recordPendingMerge(
+  ctx: SyncContext,
+  connection: SyncableIntegrationConnection,
+  source: 'JIRA' | 'LINEAR',
+  project: RemoteProject,
+  candidates: string[],
+): Promise<void> {
+  await ctx.db.pendingProjectMerge.upsert({
+    where: {
+      organizationId_source_externalId: {
+        organizationId: connection.organizationId,
+        source,
+        externalId: project.externalId,
+      },
+    },
+    create: {
+      organizationId: connection.organizationId,
+      source,
+      externalId: project.externalId,
+      incomingName: project.name,
+      candidateProjectIds: candidates,
+    },
+    update: {
+      incomingName: project.name,
+      candidateProjectIds: candidates,
+    },
+  });
+}
+
+interface RemoteProjectIndexes {
+  linksByExternal: Map<string, { id: string; externalId: string; projectId: string }>;
+  projectsByNormalisedName: Map<string, string[]>;
+}
+
+// Classify and apply one remote project against the pre-loaded indexes:
+// refresh an existing link, queue a pending merge on name collision, or insert
+// fresh. On insert, updates the in-memory name index so a second remote project
+// with the same normalised name later in the run merges instead of duplicating.
+async function syncOneRemoteProject(
+  ctx: SyncContext,
+  connection: SyncableIntegrationConnection,
+  source: 'JIRA' | 'LINEAR',
+  project: RemoteProject,
+  indexes: RemoteProjectIndexes,
+): Promise<'linked' | 'pending' | 'inserted'> {
+  const link = indexes.linksByExternal.get(project.externalId);
+  if (link) {
+    // Already imported — just refresh the syncedAt timestamp. No project
+    // edits so user-overridden names survive.
+    await ctx.db.projectExternalLink.update({
+      where: { id: link.id },
+      data: { syncedAt: new Date() },
+    });
+    return 'linked';
+  }
+
+  const normalised = project.name.trim().toLowerCase();
+  const candidates = indexes.projectsByNormalisedName.get(normalised) ?? [];
+  if (candidates.length > 0) {
+    await recordPendingMerge(ctx, connection, source, project, candidates);
+    return 'pending';
+  }
+
+  await insertRemoteProject(ctx, connection, source, project);
+  const updated = indexes.projectsByNormalisedName.get(normalised) ?? [];
+  indexes.projectsByNormalisedName.set(normalised, updated.concat([project.externalId]));
+  return 'inserted';
+}
+
+// Fresh insert for a remote project with no existing link and no name
+// collision: create the project + its external link + audit entry in one
+// transaction.
+async function insertRemoteProject(
+  ctx: SyncContext,
+  connection: SyncableIntegrationConnection,
+  source: 'JIRA' | 'LINEAR',
+  project: RemoteProject,
+): Promise<void> {
+  await ctx.db.$transaction(async tx => {
+    const created = await tx.project.create({
+      data: {
+        organizationId: connection.organizationId,
+        name: project.name,
+        source,
+        externalId: project.externalId,
+      },
+    });
+    await tx.projectExternalLink.create({
+      data: {
+        organizationId: connection.organizationId,
+        projectId: created.id,
+        source,
+        externalId: project.externalId,
+        syncedAt: new Date(),
+      },
+    });
+    await writeAuditLog({
+      organizationId: connection.organizationId,
+      actorType: ctx.actorUserId ? 'USER' : 'INTEGRATION',
+      actorId: ctx.actorUserId ?? null,
+      action: 'project.sync.create',
+      resourceType: 'PROJECT',
+      resourceId: created.id,
+      resourceName: created.name,
+      newValues: {
+        name: created.name,
+        source,
+        externalId: project.externalId,
+        connectionId: connection.id,
+      },
+      tx: tx as unknown as Parameters<typeof writeAuditLog>[0]['tx'],
+    });
+  });
+}
+
 async function syncRemoteProjects(
   ctx: SyncContext,
   connection: SyncableIntegrationConnection,
@@ -185,88 +301,12 @@ async function syncRemoteProjects(
     else projectsByNormalisedName.set(key, [p.id]);
   }
 
+  const indexes: RemoteProjectIndexes = { linksByExternal, projectsByNormalisedName };
+
   for (const project of remote) {
     try {
-      const link = linksByExternal.get(project.externalId);
-      if (link) {
-        // Already imported — just refresh the syncedAt timestamp. No project
-        // edits so user-overridden names survive.
-        await ctx.db.projectExternalLink.update({
-          where: { id: link.id },
-          data: { syncedAt: new Date() },
-        });
-        result.linked++;
-        continue;
-      }
-
-      const normalised = project.name.trim().toLowerCase();
-      const candidates = projectsByNormalisedName.get(normalised) ?? [];
-      if (candidates.length > 0) {
-        await ctx.db.pendingProjectMerge.upsert({
-          where: {
-            organizationId_source_externalId: {
-              organizationId: connection.organizationId,
-              source,
-              externalId: project.externalId,
-            },
-          },
-          create: {
-            organizationId: connection.organizationId,
-            source,
-            externalId: project.externalId,
-            incomingName: project.name,
-            candidateProjectIds: candidates,
-          },
-          update: {
-            incomingName: project.name,
-            candidateProjectIds: candidates,
-          },
-        });
-        result.pending++;
-        continue;
-      }
-
-      // No link, no name collision — fresh insert.
-      await ctx.db.$transaction(async tx => {
-        const created = await tx.project.create({
-          data: {
-            organizationId: connection.organizationId,
-            name: project.name,
-            source,
-            externalId: project.externalId,
-          },
-        });
-        await tx.projectExternalLink.create({
-          data: {
-            organizationId: connection.organizationId,
-            projectId: created.id,
-            source,
-            externalId: project.externalId,
-            syncedAt: new Date(),
-          },
-        });
-        await writeAuditLog({
-          organizationId: connection.organizationId,
-          actorType: ctx.actorUserId ? 'USER' : 'INTEGRATION',
-          actorId: ctx.actorUserId ?? null,
-          action: 'project.sync.create',
-          resourceType: 'PROJECT',
-          resourceId: created.id,
-          resourceName: created.name,
-          newValues: {
-            name: created.name,
-            source,
-            externalId: project.externalId,
-            connectionId: connection.id,
-          },
-          tx: tx as unknown as Parameters<typeof writeAuditLog>[0]['tx'],
-        });
-      });
-      result.inserted++;
-      // Update the in-memory index so a second remote project with the same
-      // normalised name landing in this run triggers a merge, not a duplicate.
-      const updated = projectsByNormalisedName.get(normalised) ?? [];
-      projectsByNormalisedName.set(normalised, updated.concat([project.externalId]));
+      const outcome = await syncOneRemoteProject(ctx, connection, source, project, indexes);
+      result[outcome]++;
     } catch (err) {
       result.errors++;
       log.error(

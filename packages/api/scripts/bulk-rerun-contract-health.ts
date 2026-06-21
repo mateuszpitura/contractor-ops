@@ -31,7 +31,65 @@ function parseArgs(argv: string[]): Args {
   return { organizationId: orgArg, allOrgs, force, dryRun };
 }
 
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: CLI entrypoint sequential arg-dispatch (parse → validate → resolve org scope → enqueue per-assignment QStash jobs → report); branches map directly to flags.
+type QStashClient = ReturnType<typeof getQStashClient>;
+
+async function rerunOrg(
+  db: PrismaClient,
+  qstash: QStashClient | null,
+  url: string,
+  organizationId: string,
+  args: Args,
+): Promise<void> {
+  let enqueued = 0;
+  let cursor: string | undefined;
+
+  for (;;) {
+    const contracts = await db.contract.findMany({
+      where: { organizationId, deletedAt: null },
+      select: { id: true },
+      take: PAGE_SIZE,
+      ...(cursor ? { skip: 1, cursor: { id: cursor } } : {}),
+      orderBy: { id: 'asc' },
+    });
+    if (contracts.length === 0) break;
+
+    for (const c of contracts) {
+      if (args.dryRun) {
+        log.info({ organizationId, contractId: c.id }, 'DRY-RUN would enqueue');
+      } else {
+        await qstash?.publishJSON({
+          url,
+          body: {
+            organizationId,
+            contractId: c.id,
+            triggeredBy: 'MODEL_BUMP_BULK' as const,
+            triggeredByUserId: null,
+            force: args.force,
+          },
+          retries: 3,
+          delay: 2, // 2s pace — Anthropic Tier-2 headroom
+        });
+        enqueued++;
+      }
+    }
+    cursor = contracts[contracts.length - 1]?.id;
+  }
+
+  if (!args.dryRun && enqueued > 0) {
+    await writeAuditLog({
+      organizationId,
+      actorType: 'SYSTEM',
+      actorId: 'bulk-rerun-script',
+      action: 'compliance.ip_clause.bulk_rerun_started',
+      resourceType: 'ORGANIZATION',
+      resourceId: organizationId,
+      newValues: { enqueuedCount: enqueued, force: args.force },
+    });
+  }
+
+  log.info({ organizationId, enqueued, dryRun: args.dryRun }, 'org complete');
+}
+
 async function main(): Promise<void> {
   const args = parseArgs(process.argv.slice(2));
   if (!(args.organizationId || args.allOrgs)) {
@@ -48,54 +106,7 @@ async function main(): Promise<void> {
     : [args.organizationId as string];
 
   for (const organizationId of orgIds) {
-    let enqueued = 0;
-    let cursor: string | undefined;
-
-    for (;;) {
-      const contracts = await db.contract.findMany({
-        where: { organizationId, deletedAt: null },
-        select: { id: true },
-        take: PAGE_SIZE,
-        ...(cursor ? { skip: 1, cursor: { id: cursor } } : {}),
-        orderBy: { id: 'asc' },
-      });
-      if (contracts.length === 0) break;
-
-      for (const c of contracts) {
-        if (args.dryRun) {
-          log.info({ organizationId, contractId: c.id }, 'DRY-RUN would enqueue');
-        } else {
-          await qstash?.publishJSON({
-            url,
-            body: {
-              organizationId,
-              contractId: c.id,
-              triggeredBy: 'MODEL_BUMP_BULK' as const,
-              triggeredByUserId: null,
-              force: args.force,
-            },
-            retries: 3,
-            delay: 2, // 2s pace — Anthropic Tier-2 headroom
-          });
-          enqueued++;
-        }
-      }
-      cursor = contracts[contracts.length - 1]?.id;
-    }
-
-    if (!args.dryRun && enqueued > 0) {
-      await writeAuditLog({
-        organizationId,
-        actorType: 'SYSTEM',
-        actorId: 'bulk-rerun-script',
-        action: 'compliance.ip_clause.bulk_rerun_started',
-        resourceType: 'ORGANIZATION',
-        resourceId: organizationId,
-        newValues: { enqueuedCount: enqueued, force: args.force },
-      });
-    }
-
-    log.info({ organizationId, enqueued, dryRun: args.dryRun }, 'org complete');
+    await rerunOrg(db, qstash, url, organizationId, args);
   }
 
   await db.$disconnect();

@@ -164,35 +164,40 @@ interface MissingMatch {
 
 type EmbeddedMatch = FoundMatch | MissingMatch;
 
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: PDF/A-3 structural check — walks catalog /AF then /Names /EmbeddedFiles with a shape guard at each lookup; the defensive branch chain is the structural contract and must stay exhaustive in one place.
-function findEmbeddedFacturX(doc: PDFDocument): EmbeddedMatch {
-  // First try catalog /AF (populated by pdf-lib attach()).
+// Scan catalog /AF (populated by pdf-lib attach()) for the Factur-X
+// attachment. Returns the match plus every embedded filename seen so the
+// caller can build a WRONG_EMBEDDED_FILENAME message.
+function scanAfArray(doc: PDFDocument): { match: FoundMatch | null; filenames: string[] } {
   const afRef = doc.catalog.get(PDFName.of('AF'));
-  const seenFilenames: string[] = [];
-  if (afRef) {
-    const afArr = doc.context.lookup(afRef);
-    if (!(afArr instanceof PDFArray)) {
-      throw new ZugferdWrappingError(
-        'STRUCTURAL_SHAPE_MISMATCH',
-        `Catalog /AF must be a PDFArray (got ${
-          (afArr as { constructor?: { name?: string } } | null)?.constructor?.name ?? 'undefined'
-        })`,
-      );
-    }
-    const items = afArr.asArray();
-    for (const fsRef of items) {
-      const fs = doc.context.lookup(fsRef as never, PDFDict);
-      const filename = readFileName(fs);
-      if (filename) seenFilenames.push(filename);
-      if (filename === ZUGFERD_ATTACHMENT_FILENAME) {
-        const af = fs.get(PDFName.of('AFRelationship'));
-        return {
-          found: true,
-          afRelationship: af ? af.toString() : null,
-        };
-      }
+  const filenames: string[] = [];
+  if (!afRef) return { match: null, filenames };
+
+  const afArr = doc.context.lookup(afRef);
+  if (!(afArr instanceof PDFArray)) {
+    throw new ZugferdWrappingError(
+      'STRUCTURAL_SHAPE_MISMATCH',
+      `Catalog /AF must be a PDFArray (got ${
+        (afArr as { constructor?: { name?: string } } | null)?.constructor?.name ?? 'undefined'
+      })`,
+    );
+  }
+  for (const fsRef of afArr.asArray()) {
+    const fs = doc.context.lookup(fsRef as never, PDFDict);
+    const filename = readFileName(fs);
+    if (filename) filenames.push(filename);
+    if (filename === ZUGFERD_ATTACHMENT_FILENAME) {
+      const af = fs.get(PDFName.of('AFRelationship'));
+      return { match: { found: true, afRelationship: af ? af.toString() : null }, filenames };
     }
   }
+  return { match: null, filenames };
+}
+
+function findEmbeddedFacturX(doc: PDFDocument): EmbeddedMatch {
+  // First try catalog /AF (populated by pdf-lib attach()).
+  const af = scanAfArray(doc);
+  if (af.match) return af.match;
+  const seenFilenames = af.filenames;
 
   // Fall back to /Names /EmbeddedFiles tree (covers PDFs where /AF is
   // absent but attachments are registered in the names tree).

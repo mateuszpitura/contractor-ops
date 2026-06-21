@@ -58,16 +58,16 @@ function parseArgs(argv: string[]): { outDir: string; check: boolean } {
   return { outDir, check };
 }
 
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: CLI entrypoint with two distinct modes (write PDFs vs --check sha256-manifest drift comparison) sharing one fixture-generation loop; keeping both branches inline mirrors the single-pass invocation contract.
-async function main(): Promise<void> {
-  const { outDir, check } = parseArgs(process.argv.slice(2));
-
-  if (!check) {
-    await fs.mkdir(outDir, { recursive: true });
-  }
-
+/**
+ * Generate every fixture PDF once, returning the sha256 of each. When `write`
+ * is set, each PDF is also written to `outDir` and a line is logged to stdout —
+ * mirroring the single-pass loop the two CLI modes share.
+ */
+async function buildFixtureDigests(
+  outDir: string,
+  write: boolean,
+): Promise<Record<string, string>> {
   const digests: Record<string, string> = {};
-
   for (const name of FIXTURES) {
     const invoice = await loadFixture(name);
     const leitwegId =
@@ -80,7 +80,7 @@ async function main(): Promise<void> {
     });
     digests[name] = sha256(pdf);
 
-    if (!check) {
+    if (write) {
       const outPath = path.join(outDir, `${name}.pdf`);
       await fs.writeFile(outPath, pdf);
       process.stdout.write(
@@ -88,37 +88,57 @@ async function main(): Promise<void> {
       );
     }
   }
+  return digests;
+}
+
+/**
+ * Compare freshly-computed digests against `expected-sha256.txt`. Exits the
+ * process non-zero on a missing manifest or any drift; logs a success line
+ * otherwise.
+ */
+async function checkAgainstManifest(digests: Record<string, string>): Promise<void> {
+  const manifestPath = path.join(FIXTURE_DIR, 'expected-sha256.txt');
+  let manifest: string;
+  try {
+    manifest = await fs.readFile(manifestPath, 'utf-8');
+  } catch {
+    process.stderr.write(
+      `No manifest at ${manifestPath} — run once without --check to create one (or pin manually).\n`,
+    );
+    for (const name of FIXTURES) {
+      process.stderr.write(`${digests[name]}  ${name}.pdf\n`);
+    }
+    process.exit(1);
+  }
+  let ok = true;
+  for (const name of FIXTURES) {
+    const line = manifest.split('\n').find(l => l.trim().endsWith(`${name}.pdf`));
+    if (!line) {
+      process.stderr.write(`missing ${name}.pdf in manifest\n`);
+      ok = false;
+      continue;
+    }
+    const [expected] = line.trim().split(/\s+/);
+    if (expected !== digests[name]) {
+      process.stderr.write(`DRIFT ${name}.pdf: expected ${expected}, got ${digests[name]}\n`);
+      ok = false;
+    }
+  }
+  if (!ok) process.exit(1);
+  process.stdout.write('all fixtures match expected sha256 manifest\n');
+}
+
+async function main(): Promise<void> {
+  const { outDir, check } = parseArgs(process.argv.slice(2));
+
+  if (!check) {
+    await fs.mkdir(outDir, { recursive: true });
+  }
+
+  const digests = await buildFixtureDigests(outDir, !check);
 
   if (check) {
-    const manifestPath = path.join(FIXTURE_DIR, 'expected-sha256.txt');
-    let manifest: string;
-    try {
-      manifest = await fs.readFile(manifestPath, 'utf-8');
-    } catch {
-      process.stderr.write(
-        `No manifest at ${manifestPath} — run once without --check to create one (or pin manually).\n`,
-      );
-      for (const name of FIXTURES) {
-        process.stderr.write(`${digests[name]}  ${name}.pdf\n`);
-      }
-      process.exit(1);
-    }
-    let ok = true;
-    for (const name of FIXTURES) {
-      const line = manifest.split('\n').find(l => l.trim().endsWith(`${name}.pdf`));
-      if (!line) {
-        process.stderr.write(`missing ${name}.pdf in manifest\n`);
-        ok = false;
-        continue;
-      }
-      const [expected] = line.trim().split(/\s+/);
-      if (expected !== digests[name]) {
-        process.stderr.write(`DRIFT ${name}.pdf: expected ${expected}, got ${digests[name]}\n`);
-        ok = false;
-      }
-    }
-    if (!ok) process.exit(1);
-    process.stdout.write('all fixtures match expected sha256 manifest\n');
+    await checkAgainstManifest(digests);
   }
 }
 

@@ -234,7 +234,41 @@ const XADES_EXTENSION_URI = 'urn:oasis:names:specification:ubl:dsig:enveloped:xa
  * the rest of the document stays byte-identical (which the doc-digest
  * canonicalisation depends on).
  */
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: DOM walk counting empty XAdES ExtensionContent slots with nested element checks; validation is one cohesive unit.
+/**
+ * True when `contentEl` has at least one ELEMENT_NODE child (i.e. the slot is
+ * already populated — whitespace-only text content does not count). A populated
+ * XAdES slot means the caller is double-signing.
+ */
+function hasElementChild(contentEl: {
+  childNodes: { length: number; item(i: number): unknown };
+}): boolean {
+  return Array.from({ length: contentEl.childNodes.length }, (_, k) =>
+    contentEl.childNodes.item(k),
+  ).some(n => n != null && (n as { nodeType: number }).nodeType === 1 /* ELEMENT_NODE */);
+}
+
+/**
+ * Count the empty `<ext:ExtensionContent>` slots under a single UBLExtension
+ * that carries the XAdES ExtensionURI; UBLExtensions for other URIs count 0.
+ */
+function countEmptyXadesSlots(ext: {
+  getElementsByTagName(tag: string): { length: number; item(i: number): unknown };
+}): number {
+  const uriEl = ext.getElementsByTagName('ext:ExtensionURI').item(0) as {
+    textContent?: string | null;
+  } | null;
+  if (uriEl?.textContent?.trim() !== XADES_EXTENSION_URI) return 0;
+
+  const contentEls = ext.getElementsByTagName('ext:ExtensionContent');
+  let empty = 0;
+  for (let j = 0; j < contentEls.length; j++) {
+    const contentEl = contentEls.item(j) as Parameters<typeof hasElementChild>[0] | null;
+    if (!contentEl) continue;
+    if (!hasElementChild(contentEl)) empty += 1;
+  }
+  return empty;
+}
+
 function assertSingleXadesSlot(xml: string): void {
   const { DOMParser } = getXmldom();
   const doc = new DOMParser().parseFromString(xml, 'text/xml');
@@ -248,24 +282,7 @@ function assertSingleXadesSlot(xml: string): void {
   for (let i = 0; i < ublExtensions.length; i++) {
     const ext = ublExtensions.item(i);
     if (!ext) continue;
-    const uriEl = ext.getElementsByTagName('ext:ExtensionURI').item(0);
-    const uriText = uriEl?.textContent?.trim();
-    if (uriText !== XADES_EXTENSION_URI) continue;
-    const contentEls = ext.getElementsByTagName('ext:ExtensionContent');
-    for (let j = 0; j < contentEls.length; j++) {
-      const contentEl = contentEls.item(j);
-      if (!contentEl) continue;
-      // We only inject into a slot that is currently empty (whitespace-only
-      // content is fine — fast-xml-parser emits exactly that). If the slot
-      // already contains a Signature, the caller is double-signing, which
-      // we treat as a programmer error.
-      const hasElementChild = Array.from({ length: contentEl.childNodes.length }, (_, k) =>
-        contentEl.childNodes.item(k),
-      ).some(n => n != null && (n as { nodeType: number }).nodeType === 1 /* ELEMENT_NODE */);
-      if (!hasElementChild) {
-        xadesEmptySlots += 1;
-      }
-    }
+    xadesEmptySlots += countEmptyXadesSlots(ext);
   }
 
   if (xadesEmptySlots === 0) {

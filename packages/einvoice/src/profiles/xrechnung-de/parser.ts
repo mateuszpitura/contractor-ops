@@ -395,7 +395,68 @@ function detectProfileLevel(guidelineUrn: string | undefined): ZugferdConformanc
  *   (`ZUGFERD_LEVEL_UNSUPPORTED`). The thrown object is a plain JSON shape;
  *   callers must `try/catch` and inspect `.code`.
  */
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: top-level CII parser — BOM strip → XML parse (CII_PARSE_FAILED) → guideline-URN level guard (ZUGFERD_LEVEL_UNSUPPORTED) → header/party/line extraction; the sequential parse-and-validate steps are one document contract.
+interface SettlementHeader {
+  currencyCode: string;
+  taxBreakdown: EInvoiceTaxSubtotal[];
+  dueDate: string | undefined;
+  taxExclusiveAmount: number;
+  taxInclusiveAmount: number;
+  payableAmount: number;
+}
+
+// Parse the settlement header (currency, tax breakdown, monetary summation,
+// due date) from a CII trade transaction. Throws CII_PARSE_FAILED when the
+// settlement group is missing.
+function parseSettlementHeader(trade: Record<string, unknown>): SettlementHeader {
+  const settlement = trade['ram:ApplicableHeaderTradeSettlement'] as
+    | Record<string, unknown>
+    | undefined;
+  if (!settlement) {
+    throw new CIIParserError('CII_PARSE_FAILED', 'Missing ram:ApplicableHeaderTradeSettlement');
+  }
+  const currencyCode = nodeText(settlement['ram:InvoiceCurrencyCode']) ?? 'EUR';
+
+  const taxRows = settlement['ram:ApplicableTradeTax'] as
+    | Record<string, unknown>
+    | Record<string, unknown>[]
+    | undefined;
+  const taxRowArray: Record<string, unknown>[] = Array.isArray(taxRows)
+    ? taxRows
+    : taxRows
+      ? [taxRows]
+      : [];
+  const taxBreakdown: EInvoiceTaxSubtotal[] = taxRowArray.map(parseTaxSubtotal);
+
+  const paymentTerms = settlement['ram:SpecifiedTradePaymentTerms'] as
+    | Record<string, unknown>
+    | undefined;
+  const dueDate = readDate(
+    paymentTerms?.['ram:DueDateDateTime'] as Record<string, unknown> | undefined,
+  );
+
+  const monSum = settlement['ram:SpecifiedTradeSettlementHeaderMonetarySummation'] as
+    | Record<string, unknown>
+    | undefined;
+  const taxExclusiveAmount = monSum
+    ? ciiToMinorUnits(nodeText(monSum['ram:TaxBasisTotalAmount']) ?? '0')
+    : 0;
+  const taxInclusiveAmount = monSum
+    ? ciiToMinorUnits(nodeText(monSum['ram:GrandTotalAmount']) ?? '0')
+    : 0;
+  const payableAmount = monSum
+    ? ciiToMinorUnits(nodeText(monSum['ram:DuePayableAmount']) ?? '0')
+    : 0;
+
+  return {
+    currencyCode,
+    taxBreakdown,
+    dueDate,
+    taxExclusiveAmount,
+    taxInclusiveAmount,
+    payableAmount,
+  };
+}
+
 export function parseXrechnungCii(xml: string): ParsedXrechnung {
   const stripped = stripBom(xml);
 
@@ -466,44 +527,14 @@ export function parseXrechnungCii(xml: string): ParsedXrechnung {
   );
 
   // --- Settlement header (currency, taxes, monetary summation, due date) --
-  const settlement = trade['ram:ApplicableHeaderTradeSettlement'] as
-    | Record<string, unknown>
-    | undefined;
-  if (!settlement) {
-    throw new CIIParserError('CII_PARSE_FAILED', 'Missing ram:ApplicableHeaderTradeSettlement');
-  }
-  const currencyCode = nodeText(settlement['ram:InvoiceCurrencyCode']) ?? 'EUR';
-
-  const taxRows = settlement['ram:ApplicableTradeTax'] as
-    | Record<string, unknown>
-    | Record<string, unknown>[]
-    | undefined;
-  const taxRowArray: Record<string, unknown>[] = Array.isArray(taxRows)
-    ? taxRows
-    : taxRows
-      ? [taxRows]
-      : [];
-  const taxBreakdown: EInvoiceTaxSubtotal[] = taxRowArray.map(parseTaxSubtotal);
-
-  const paymentTerms = settlement['ram:SpecifiedTradePaymentTerms'] as
-    | Record<string, unknown>
-    | undefined;
-  const dueDate = readDate(
-    paymentTerms?.['ram:DueDateDateTime'] as Record<string, unknown> | undefined,
-  );
-
-  const monSum = settlement['ram:SpecifiedTradeSettlementHeaderMonetarySummation'] as
-    | Record<string, unknown>
-    | undefined;
-  const taxExclusiveAmount = monSum
-    ? ciiToMinorUnits(nodeText(monSum['ram:TaxBasisTotalAmount']) ?? '0')
-    : 0;
-  const taxInclusiveAmount = monSum
-    ? ciiToMinorUnits(nodeText(monSum['ram:GrandTotalAmount']) ?? '0')
-    : 0;
-  const payableAmount = monSum
-    ? ciiToMinorUnits(nodeText(monSum['ram:DuePayableAmount']) ?? '0')
-    : 0;
+  const {
+    currencyCode,
+    taxBreakdown,
+    dueDate,
+    taxExclusiveAmount,
+    taxInclusiveAmount,
+    payableAmount,
+  } = parseSettlementHeader(trade);
 
   // --- Lines --------------------------------------------------------------
   const rawLines = trade['ram:IncludedSupplyChainTradeLineItem'] as

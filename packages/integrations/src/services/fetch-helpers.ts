@@ -120,7 +120,22 @@ interface MaybeStatusBearing {
  *    via AbortError.
  *  - opossum's `errorFilter` so 4xx don't pollute the breaker's window.
  */
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: exhaustive error-shape classifier — Response/TypeError/AbortError/Node-code/nested-cause/SDK-status branches each fail-closed and must stay in one decision table.
+/**
+ * Whether an `Error` (or its undici-nested `cause`) carries a Node network
+ * error code we treat as transient.
+ */
+function hasRetryableNodeCode(err: Error): boolean {
+  const code = (err as Error & { code?: string }).code;
+  if (code && RETRYABLE_ERROR_CODES.has(code)) return true;
+  // undici nests the cause; check it as well.
+  const cause = (err as Error & { cause?: unknown }).cause;
+  if (cause && cause !== err) {
+    const causeCode = (cause as { code?: string }).code;
+    if (causeCode && RETRYABLE_ERROR_CODES.has(causeCode)) return true;
+  }
+  return false;
+}
+
 export function isRetryableError(err: unknown): boolean {
   if (err == null) return false;
 
@@ -142,15 +157,8 @@ export function isRetryableError(err: unknown): boolean {
   }
 
   // Node.js network error codes.
-  if (err instanceof Error) {
-    const code = (err as Error & { code?: string }).code;
-    if (code && RETRYABLE_ERROR_CODES.has(code)) return true;
-    // undici nests the cause; check it as well.
-    const cause = (err as Error & { cause?: unknown }).cause;
-    if (cause && cause !== err) {
-      const causeCode = (cause as { code?: string }).code;
-      if (causeCode && RETRYABLE_ERROR_CODES.has(causeCode)) return true;
-    }
+  if (err instanceof Error && hasRetryableNodeCode(err)) {
+    return true;
   }
 
   // Object/Error with a `status` field (common SDK shape).
@@ -165,6 +173,80 @@ export function isRetryableError(err: unknown): boolean {
 }
 
 /**
+ * Wire a caller-provided `AbortSignal` to abort our internal controller, then
+ * return a cleanup function that detaches the listener. Aborts the controller
+ * immediately when the caller signal has already fired. Returns a no-op
+ * cleanup when there is no caller signal.
+ */
+function linkCallerAbort(
+  controller: AbortController,
+  callerSignal: AbortSignal | null,
+): () => void {
+  if (!callerSignal) {
+    return () => {
+      // No caller signal — nothing to unsubscribe from.
+    };
+  }
+  const onCallerAbort = () => controller.abort(callerSignal.reason);
+  if (callerSignal.aborted) controller.abort(callerSignal.reason);
+  else callerSignal.addEventListener('abort', onCallerAbort, { once: true });
+  return () => callerSignal.removeEventListener('abort', onCallerAbort);
+}
+
+/** Sleep `ms` using the injectable timer (test-friendly). */
+function sleep(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeoutImpl(resolve, ms));
+}
+
+/**
+ * Number of retry attempts actually allowed: non-idempotent methods
+ * (POST/PATCH/DELETE) get zero unless the caller opts in via
+ * `retryNonIdempotent`, since replaying them can have side effects.
+ */
+function resolveEffectiveRetries(
+  method: string | undefined,
+  retries: number,
+  retryNonIdempotent: boolean,
+): number {
+  const upper = (method ?? 'GET').toUpperCase();
+  const isIdempotent = upper === 'GET' || upper === 'HEAD';
+  return isIdempotent || retryNonIdempotent ? retries : 0;
+}
+
+/**
+ * One bounded fetch: wires an `AbortController` to a wall-clock timer plus the
+ * caller's signal, performs the request, and always tears both down before
+ * returning or propagating the error.
+ */
+async function fetchOnceWithTimeout(
+  url: string,
+  init: RequestInit,
+  fetcher: typeof fetch,
+  timeoutMs: number,
+): Promise<Response> {
+  const controller = new AbortController();
+  // If the caller passed their own signal, abort our controller when it fires.
+  const detachCallerAbort = linkCallerAbort(controller, init.signal ?? null);
+  const timer = setTimeoutImpl(() => controller.abort(), timeoutMs);
+  try {
+    return await fetcher(url, { ...init, signal: controller.signal });
+  } finally {
+    clearTimeoutImpl(timer);
+    detachCallerAbort();
+  }
+}
+
+/**
+ * Retry delay before the next attempt: honor a numeric `Retry-After` header
+ * when present, otherwise fall back to jittered exponential backoff.
+ */
+function retryAfterDelayMs(response: Response, attempt: number): number {
+  const retryAfter = response.headers.get('retry-after');
+  if (!retryAfter) return exponentialBackoffMs(attempt);
+  return Math.max(0, parseInt(retryAfter, 10) * 1000) || exponentialBackoffMs(attempt);
+}
+
+/**
  * Fetch with abort-based timeout and optional retry-on-status.
  *
  * The body of the returned response is NOT read here — the caller is
@@ -172,7 +254,6 @@ export function isRetryableError(err: unknown): boolean {
  * body read time as well, use the helper inside an outer try/finally that
  * wraps both the fetch and the body read with the same `clearTimeout`.
  */
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: retry-loop orchestration — per-attempt AbortController/caller-signal/timeout wiring, retry-on-status, Retry-After backoff and try/catch/finally cleanup are sequentially coupled and side-effect-ordered.
 export async function fetchWithTimeout(
   url: string,
   init: RequestInit = {},
@@ -186,27 +267,14 @@ export async function fetchWithTimeout(
     fetcher = fetch,
   } = opts;
 
-  const method = (init.method ?? 'GET').toUpperCase();
-  const isIdempotent = method === 'GET' || method === 'HEAD';
-  const effectiveRetries = isIdempotent || retryNonIdempotent ? retries : 0;
+  const effectiveRetries = resolveEffectiveRetries(init.method, retries, retryNonIdempotent);
 
   let lastError: unknown;
   let lastResponse: Response | null = null;
 
   for (let attempt = 0; attempt <= effectiveRetries; attempt++) {
-    const controller = new AbortController();
-    // If the caller passed their own signal, abort our controller when it fires.
-    const callerSignal = init.signal ?? null;
-    const onCallerAbort = callerSignal ? () => controller.abort(callerSignal.reason) : null;
-    if (callerSignal && onCallerAbort) {
-      if (callerSignal.aborted) controller.abort(callerSignal.reason);
-      else callerSignal.addEventListener('abort', onCallerAbort, { once: true });
-    }
-
-    const timer = setTimeoutImpl(() => controller.abort(), timeoutMs);
-
     try {
-      const response = await fetcher(url, { ...init, signal: controller.signal });
+      const response = await fetchOnceWithTimeout(url, init, fetcher, timeoutMs);
 
       if (response.ok) return response;
 
@@ -217,20 +285,11 @@ export async function fetchWithTimeout(
       lastResponse = response;
 
       // Honor Retry-After when the server sent it.
-      const retryAfter = response.headers.get('retry-after');
-      const delayMs = retryAfter
-        ? Math.max(0, parseInt(retryAfter, 10) * 1000) || exponentialBackoffMs(attempt)
-        : exponentialBackoffMs(attempt);
-      await new Promise(resolve => setTimeoutImpl(resolve, delayMs));
+      await sleep(retryAfterDelayMs(response, attempt));
     } catch (err) {
       lastError = err;
       if (attempt >= effectiveRetries) throw err;
-      await new Promise(resolve => setTimeoutImpl(resolve, exponentialBackoffMs(attempt)));
-    } finally {
-      clearTimeoutImpl(timer);
-      if (callerSignal && onCallerAbort) {
-        callerSignal.removeEventListener('abort', onCallerAbort);
-      }
+      await sleep(exponentialBackoffMs(attempt));
     }
   }
 
@@ -261,12 +320,7 @@ export async function fetchJsonWithTimeout<T = unknown>(
 ): Promise<T> {
   const timeoutMs = opts.timeoutMs ?? DEFAULT_FETCH_TIMEOUT_MS;
   const controller = new AbortController();
-  const callerSignal = init.signal ?? null;
-  const onCallerAbort = callerSignal ? () => controller.abort(callerSignal.reason) : null;
-  if (callerSignal && onCallerAbort) {
-    if (callerSignal.aborted) controller.abort(callerSignal.reason);
-    else callerSignal.addEventListener('abort', onCallerAbort, { once: true });
-  }
+  const detachCallerAbort = linkCallerAbort(controller, init.signal ?? null);
 
   const timer = setTimeoutImpl(() => controller.abort(), timeoutMs);
 
@@ -294,8 +348,6 @@ export async function fetchJsonWithTimeout<T = unknown>(
     return JSON.parse(text) as T;
   } finally {
     clearTimeoutImpl(timer);
-    if (callerSignal && onCallerAbort) {
-      callerSignal.removeEventListener('abort', onCallerAbort);
-    }
+    detachCallerAbort();
   }
 }

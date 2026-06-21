@@ -20,7 +20,28 @@ function settingsTabFromSearch(searchParams: URLSearchParams): string {
   return searchParams.get('tab') ?? 'general';
 }
 
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: nav active-state predicate enumerates the route-shape variants (settings tabs, notifications, prefix matches); the branch density is intrinsic to the matching rules.
+/**
+ * Active-state for the Settings parent entry. It must yield to a pinned-tab
+ * sibling when the active tab is pinned — otherwise both the parent and the
+ * pinned row would highlight.
+ */
+function isSettingsNavActive(
+  pathname: string,
+  searchParams: URLSearchParams,
+  pinnedTabKeys: ReadonlySet<SettingsTabKey>,
+): boolean {
+  const pathMatches = pathname === '/settings' || pathname.startsWith('/settings/');
+  if (!pathMatches) return false;
+  if (pathname === '/settings') {
+    const tab = settingsTabFromSearch(searchParams);
+    if (isSettingsTabKey(tab) && pinnedTabKeys.has(tab)) return false;
+    return true;
+  }
+  const subKey = pathname.slice('/settings/'.length).split('/')[0];
+  if (subKey && isSettingsTabKey(subKey) && pinnedTabKeys.has(subKey)) return false;
+  return true;
+}
+
 function isNavItemActive(
   pathname: string,
   searchParams: URLSearchParams,
@@ -38,19 +59,8 @@ function isNavItemActive(
     return pathname === '/notifications' || pathname.startsWith('/notifications/');
   }
 
-  // Settings entry must yield to a pinned-tab sibling when the active tab is
-  // pinned — otherwise both the parent and the pinned row would highlight.
   if (item.key === 'settings') {
-    const pathMatches = pathname === '/settings' || pathname.startsWith('/settings/');
-    if (!pathMatches) return false;
-    if (pathname === '/settings') {
-      const tab = settingsTabFromSearch(searchParams);
-      if (isSettingsTabKey(tab) && pinnedTabKeys.has(tab)) return false;
-      return true;
-    }
-    const subKey = pathname.slice('/settings/'.length).split('/')[0];
-    if (subKey && isSettingsTabKey(subKey) && pinnedTabKeys.has(subKey)) return false;
-    return true;
+    return isSettingsNavActive(pathname, searchParams, pinnedTabKeys);
   }
 
   return pathname === basePath || pathname.startsWith(`${basePath}/`);

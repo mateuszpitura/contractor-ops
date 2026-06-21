@@ -23,7 +23,115 @@ const MAX_REAPER_ATTEMPTS = 5;
 const BACKOFF_BASE_SECONDS = 60;
 const BACKOFF_MAX_SECONDS = 60 * 60;
 
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: reaper + alerting pipeline; splitting would scatter related side-effects
+type StaleDelivery = {
+  id: string;
+  provider: string;
+  organizationId: string;
+  eventType: string | null;
+  receivedAt: Date;
+  deliveryStatus: string;
+  attempts: number;
+};
+
+type JobHandlerCtx = Parameters<JobHandler>[0];
+
+/**
+ * Re-enqueue stale-but-retriable deliveries with exponential backoff. Each
+ * enqueue failure is logged + reported to Sentry but does not abort the batch.
+ * Returns the count of successfully re-enqueued rows.
+ */
+async function retryStaleDeliveries(
+  toRetry: StaleDelivery[],
+  now: Date,
+  ctx: JobHandlerCtx,
+): Promise<number> {
+  let staleRetried = 0;
+  for (const delivery of toRetry) {
+    const nextAttempts = delivery.attempts + 1;
+    const backoffSeconds = Math.min(
+      BACKOFF_BASE_SECONDS * 2 ** delivery.attempts,
+      BACKOFF_MAX_SECONDS,
+    );
+    const nextAttemptAt = new Date(now.getTime() + backoffSeconds * 1000);
+    try {
+      await prisma.webhookDelivery.update({
+        where: { id: delivery.id },
+        data: {
+          deliveryStatus: 'RECEIVED',
+          attempts: nextAttempts,
+          nextAttemptAt,
+          lastErrorAt: now,
+          lastError: `Reaper re-enqueue (attempt ${nextAttempts}/${MAX_REAPER_ATTEMPTS}) after ${STALE_THRESHOLD_MIN}min stall`,
+        },
+      });
+      await queueWebhookProcessing(delivery.id, delivery.provider.toLowerCase());
+      staleRetried++;
+    } catch (retryErr) {
+      ctx.log.error(
+        {
+          err: retryErr,
+          deliveryId: delivery.id,
+          provider: delivery.provider,
+          attempts: nextAttempts,
+        },
+        'reaper retry enqueue failed',
+      );
+      Sentry.captureException(retryErr, {
+        tags: {
+          'cron.job': 'job-health',
+          'webhook.provider': delivery.provider,
+          'webhook.outcome': 'reaper-retry-failed',
+        },
+        extra: { deliveryId: delivery.id, attempts: nextAttempts },
+      });
+    }
+  }
+  return staleRetried;
+}
+
+/**
+ * Flip deliveries that exhausted their reaper attempts to FAILED (single
+ * `updateMany`) and emit a per-row Sentry warning.
+ */
+async function failExhaustedDeliveries(toFail: StaleDelivery[], now: Date): Promise<void> {
+  if (toFail.length === 0) return;
+
+  await prisma.webhookDelivery.updateMany({
+    where: { id: { in: toFail.map(d => d.id) } },
+    data: {
+      deliveryStatus: 'FAILED',
+      processedAt: now,
+      attempts: { increment: 1 },
+      lastErrorAt: now,
+      lastError: `Reaper exhausted ${MAX_REAPER_ATTEMPTS} attempts`,
+      errorMessage: JSON.stringify({
+        reason: `Stale: stuck in RECEIVED/PROCESSING beyond ${MAX_REAPER_ATTEMPTS} reaper attempts`,
+        failedByHealthCheck: true,
+        failedAt: now.toISOString(),
+      }),
+    },
+  });
+
+  for (const delivery of toFail) {
+    Sentry.captureMessage('webhook delivery stale — reaper marked FAILED', {
+      level: 'warning',
+      tags: {
+        'webhook.provider': delivery.provider,
+        'webhook.outcome': 'reaper-failed',
+        'webhook.observed_status': delivery.deliveryStatus,
+      },
+      extra: {
+        deliveryId: delivery.id,
+        organizationId: delivery.organizationId,
+        eventType: delivery.eventType,
+        receivedAt: delivery.receivedAt,
+        attempts: delivery.attempts + 1,
+        ageMinutes: Math.round((now.getTime() - delivery.receivedAt.getTime()) / 60_000),
+      },
+    });
+  }
+}
+
 export const jobHealthHandler: JobHandler = async ctx => {
   const start = performance.now();
   try {
@@ -48,8 +156,8 @@ export const jobHealthHandler: JobHandler = async ctx => {
       },
     });
 
-    const toRetry: typeof staleDeliveries = [];
-    const toFail: typeof staleDeliveries = [];
+    const toRetry: StaleDelivery[] = [];
+    const toFail: StaleDelivery[] = [];
     for (const delivery of staleDeliveries) {
       if (delivery.attempts + 1 >= MAX_REAPER_ATTEMPTS) {
         toFail.push(delivery);
@@ -58,84 +166,8 @@ export const jobHealthHandler: JobHandler = async ctx => {
       }
     }
 
-    let staleRetried = 0;
-    for (const delivery of toRetry) {
-      const nextAttempts = delivery.attempts + 1;
-      const backoffSeconds = Math.min(
-        BACKOFF_BASE_SECONDS * 2 ** delivery.attempts,
-        BACKOFF_MAX_SECONDS,
-      );
-      const nextAttemptAt = new Date(now.getTime() + backoffSeconds * 1000);
-      try {
-        await prisma.webhookDelivery.update({
-          where: { id: delivery.id },
-          data: {
-            deliveryStatus: 'RECEIVED',
-            attempts: nextAttempts,
-            nextAttemptAt,
-            lastErrorAt: now,
-            lastError: `Reaper re-enqueue (attempt ${nextAttempts}/${MAX_REAPER_ATTEMPTS}) after ${STALE_THRESHOLD_MIN}min stall`,
-          },
-        });
-        await queueWebhookProcessing(delivery.id, delivery.provider.toLowerCase());
-        staleRetried++;
-      } catch (retryErr) {
-        ctx.log.error(
-          {
-            err: retryErr,
-            deliveryId: delivery.id,
-            provider: delivery.provider,
-            attempts: nextAttempts,
-          },
-          'reaper retry enqueue failed',
-        );
-        Sentry.captureException(retryErr, {
-          tags: {
-            'cron.job': 'job-health',
-            'webhook.provider': delivery.provider,
-            'webhook.outcome': 'reaper-retry-failed',
-          },
-          extra: { deliveryId: delivery.id, attempts: nextAttempts },
-        });
-      }
-    }
-
-    if (toFail.length > 0) {
-      await prisma.webhookDelivery.updateMany({
-        where: { id: { in: toFail.map(d => d.id) } },
-        data: {
-          deliveryStatus: 'FAILED',
-          processedAt: now,
-          attempts: { increment: 1 },
-          lastErrorAt: now,
-          lastError: `Reaper exhausted ${MAX_REAPER_ATTEMPTS} attempts`,
-          errorMessage: JSON.stringify({
-            reason: `Stale: stuck in RECEIVED/PROCESSING beyond ${MAX_REAPER_ATTEMPTS} reaper attempts`,
-            failedByHealthCheck: true,
-            failedAt: now.toISOString(),
-          }),
-        },
-      });
-
-      for (const delivery of toFail) {
-        Sentry.captureMessage('webhook delivery stale — reaper marked FAILED', {
-          level: 'warning',
-          tags: {
-            'webhook.provider': delivery.provider,
-            'webhook.outcome': 'reaper-failed',
-            'webhook.observed_status': delivery.deliveryStatus,
-          },
-          extra: {
-            deliveryId: delivery.id,
-            organizationId: delivery.organizationId,
-            eventType: delivery.eventType,
-            receivedAt: delivery.receivedAt,
-            attempts: delivery.attempts + 1,
-            ageMinutes: Math.round((now.getTime() - delivery.receivedAt.getTime()) / 60_000),
-          },
-        });
-      }
-    }
+    const staleRetried = await retryStaleDeliveries(toRetry, now, ctx);
+    await failExhaustedDeliveries(toFail, now);
 
     if (staleRetried > 0 || toFail.length > 0) {
       ctx.log.warn(

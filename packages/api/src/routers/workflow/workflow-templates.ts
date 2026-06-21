@@ -12,6 +12,7 @@ import {
 import { TRPCError } from '@trpc/server';
 import * as E from '../../errors';
 import { router } from '../../init';
+import type { TenantDbTx } from '../../lib/tenant-db';
 import { requirePermission } from '../../middleware/rbac';
 import { tenantProcedure } from '../../middleware/tenant';
 import { WORKFLOW_TEMPLATE_KEYS } from './workflow-shared';
@@ -48,6 +49,62 @@ function buildTaskTemplateCreateManyInput(
     externalUrl: task.externalUrl || null,
     configJson: task.conditions ?? undefined,
   })) as Prisma.WorkflowTaskTemplateCreateManyInput[];
+}
+
+type SourceTaskTemplate = Prisma.WorkflowTaskTemplateGetPayload<true>;
+
+/**
+ * Deep-clone a template's tasks into `newTemplateId` inside the caller's
+ * transaction: first create every task (recording an old→new id map), then
+ * remap `dependsOnTaskTemplateId` so intra-template dependencies point at the
+ * new rows. The two passes share the id map and must run in this order.
+ */
+async function cloneTemplateTasks(
+  tx: TenantDbTx,
+  organizationId: string,
+  newTemplateId: string,
+  sourceTasks: readonly SourceTaskTemplate[],
+): Promise<void> {
+  if (sourceTasks.length === 0) return;
+
+  const oldToNewId = new Map<string, string>();
+
+  for (const task of sourceTasks) {
+    const newTask = await tx.workflowTaskTemplate.create({
+      data: {
+        organizationId,
+        workflowTemplateId: newTemplateId,
+        title: task.title,
+        description: task.description,
+        taskType: task.taskType,
+        sortOrder: task.sortOrder,
+        required: task.required,
+        assigneeMode: task.assigneeMode,
+        assigneeRole: task.assigneeRole,
+        assigneeUserId: task.assigneeUserId,
+        dueOffsetDays: task.dueOffsetDays,
+        dueOffsetHours: task.dueOffsetHours,
+        dependsOnTaskTemplateId: null, // remapped below
+        externalUrl: task.externalUrl,
+        configJson: task.configJson ?? undefined,
+      },
+    });
+    oldToNewId.set(task.id, newTask.id);
+  }
+
+  // Remap dependencies to new IDs.
+  for (const task of sourceTasks) {
+    if (task.dependsOnTaskTemplateId) {
+      const newId = oldToNewId.get(task.id);
+      const newDepId = oldToNewId.get(task.dependsOnTaskTemplateId);
+      if (newId && newDepId) {
+        await tx.workflowTaskTemplate.update({
+          where: { id: newId },
+          data: { dependsOnTaskTemplateId: newDepId },
+        });
+      }
+    }
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -279,7 +336,6 @@ export const workflowTemplatesRouter = router({
         });
       }
 
-      // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: single transaction deep-cloning a workflow template and all its dependent rows (steps/transitions) in order; the sequential create chain is one cohesive duplication contract.
       const duplicate = await ctx.db.$transaction(async tx => {
         const created = await tx.workflowTemplate.create({
           data: {
@@ -294,47 +350,7 @@ export const workflowTemplatesRouter = router({
           },
         });
 
-        if (source.tasks.length > 0) {
-          // Build old-id -> new-id map for dependency remapping
-          const oldToNewId = new Map<string, string>();
-
-          for (const task of source.tasks) {
-            const newTask = await tx.workflowTaskTemplate.create({
-              data: {
-                organizationId: ctx.organizationId,
-                workflowTemplateId: created.id,
-                title: task.title,
-                description: task.description,
-                taskType: task.taskType,
-                sortOrder: task.sortOrder,
-                required: task.required,
-                assigneeMode: task.assigneeMode,
-                assigneeRole: task.assigneeRole,
-                assigneeUserId: task.assigneeUserId,
-                dueOffsetDays: task.dueOffsetDays,
-                dueOffsetHours: task.dueOffsetHours,
-                dependsOnTaskTemplateId: null, // remapped below
-                externalUrl: task.externalUrl,
-                configJson: task.configJson ?? undefined,
-              },
-            });
-            oldToNewId.set(task.id, newTask.id);
-          }
-
-          // Remap dependencies to new IDs
-          for (const task of source.tasks) {
-            if (task.dependsOnTaskTemplateId) {
-              const newId = oldToNewId.get(task.id);
-              const newDepId = oldToNewId.get(task.dependsOnTaskTemplateId);
-              if (newId && newDepId) {
-                await tx.workflowTaskTemplate.update({
-                  where: { id: newId },
-                  data: { dependsOnTaskTemplateId: newDepId },
-                });
-              }
-            }
-          }
-        }
+        await cloneTemplateTasks(tx, ctx.organizationId, created.id, source.tasks);
 
         return tx.workflowTemplate.findUniqueOrThrow({
           where: { id: created.id },

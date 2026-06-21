@@ -510,7 +510,75 @@ function bacsField(raw: string, len: number): { field: string; replaced: string[
  *
  * Throws when any item's `amountMinor` exceeds the 11-digit pence limit.
  */
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: BACS Std 18 file builder — per-item loop with amount-overflow throws, transliteration and modulus warning aggregation, and length guards form one cohesive serialization
+type BacsTransliterationWarning = BacsGenerateResult['transliterationWarnings'][number];
+type BacsModulusWarning = BacsGenerateResult['modulusWarnings'][number];
+
+/**
+ * Build one BACS Std 18 detail line for an item plus any per-item warnings.
+ * Throws on amount overflow (>11 pence digits) or a detail-length mismatch —
+ * both are hard invariants the assembled file must never violate.
+ */
+function buildBacsDetailLine(
+  item: BacsExportItem,
+  orgBank: BacsOrgBankInfo,
+  originatorNameField: string,
+  julian: string,
+): {
+  detail: string;
+  amountMinor: number;
+  transliterationWarning?: BacsTransliterationWarning;
+  modulusWarning?: BacsModulusWarning;
+} {
+  if (item.amountMinor < 0 || item.amountMinor >= BACS_MAX_AMOUNT_PENCE) {
+    throw new Error(
+      `BACS Std 18: amount overflow — amountMinor=${item.amountMinor} exceeds 11-digit pence limit (max ${BACS_MAX_AMOUNT_PENCE - 1})`,
+    );
+  }
+
+  // Transliterate destination name and aggregate any replacements as warnings.
+  const { field: destNameField, replaced: destNameReplaced } = bacsField(item.contractorName, 18);
+  const transliterationWarning =
+    destNameReplaced.length > 0
+      ? { contractorName: item.contractorName, replaced: destNameReplaced }
+      : undefined;
+
+  // Transliterate user reference (paymentReference) — no separate warning entry
+  // since the contractorName covers the per-item warning surface for UI display.
+  const { field: userRefField } = bacsField(item.paymentReference, 18);
+
+  // Modulus check on destination sort code + account.
+  const mc = modulusCheck(item.sortCode, item.accountNumber, VOCALINK_MODULUS_TABLE_V840);
+  const modulusWarning =
+    !mc.valid || mc.warnings.length > 0
+      ? {
+          contractorName: item.contractorName,
+          sortCode: item.sortCode,
+          warnings: mc.warnings.length > 0 ? mc.warnings : ['Modulus check failed'],
+        }
+      : undefined;
+
+  const detail = buildDetailRecord({
+    destSortCode: item.sortCode,
+    destAccount: item.accountNumber,
+    origSortCode: orgBank.submitterSortCode,
+    origAccount: orgBank.submitterAccountNumber,
+    amountPence: item.amountMinor,
+    originatorRef: originatorNameField, // already 18 chars, BACS-safe
+    userRef: userRefField, // already 18 chars, BACS-safe
+    destName: destNameField, // already 18 chars, BACS-safe
+    processingDateJulian: julian,
+  });
+
+  if (detail.length !== BACS_DETAIL_RECORD_LEN) {
+    // Hard guard — should never trigger if buildDetailRecord is correct.
+    throw new Error(
+      `BACS Std 18: detail record length mismatch — got ${detail.length}, expected ${BACS_DETAIL_RECORD_LEN}`,
+    );
+  }
+
+  return { detail, amountMinor: item.amountMinor, transliterationWarning, modulusWarning };
+}
+
 export function generateBacsStandard18(
   items: BacsExportItem[],
   orgBank: BacsOrgBankInfo,
@@ -547,56 +615,11 @@ export function generateBacsStandard18(
   const detailLines: string[] = [];
 
   for (const item of items) {
-    if (item.amountMinor < 0 || item.amountMinor >= BACS_MAX_AMOUNT_PENCE) {
-      throw new Error(
-        `BACS Std 18: amount overflow — amountMinor=${item.amountMinor} exceeds 11-digit pence limit (max ${BACS_MAX_AMOUNT_PENCE - 1})`,
-      );
-    }
-    totalAmount += item.amountMinor;
-
-    // Transliterate destination name and aggregate any replacements as warnings.
-    const { field: destNameField, replaced: destNameReplaced } = bacsField(item.contractorName, 18);
-    if (destNameReplaced.length > 0) {
-      transliterationWarnings.push({
-        contractorName: item.contractorName,
-        replaced: destNameReplaced,
-      });
-    }
-
-    // Transliterate user reference (paymentReference) — no separate warning entry
-    // since the contractorName covers the per-item warning surface for UI display.
-    const { field: userRefField } = bacsField(item.paymentReference, 18);
-
-    // Modulus check on destination sort code + account.
-    const mc = modulusCheck(item.sortCode, item.accountNumber, VOCALINK_MODULUS_TABLE_V840);
-    if (!mc.valid || mc.warnings.length > 0) {
-      modulusWarnings.push({
-        contractorName: item.contractorName,
-        sortCode: item.sortCode,
-        warnings: mc.warnings.length > 0 ? mc.warnings : ['Modulus check failed'],
-      });
-    }
-
-    const detail = buildDetailRecord({
-      destSortCode: item.sortCode,
-      destAccount: item.accountNumber,
-      origSortCode: orgBank.submitterSortCode,
-      origAccount: orgBank.submitterAccountNumber,
-      amountPence: item.amountMinor,
-      originatorRef: originatorNameField, // already 18 chars, BACS-safe
-      userRef: userRefField, // already 18 chars, BACS-safe
-      destName: destNameField, // already 18 chars, BACS-safe
-      processingDateJulian: julian,
-    });
-
-    if (detail.length !== BACS_DETAIL_RECORD_LEN) {
-      // Hard guard — should never trigger if buildDetailRecord is correct.
-      throw new Error(
-        `BACS Std 18: detail record length mismatch — got ${detail.length}, expected ${BACS_DETAIL_RECORD_LEN}`,
-      );
-    }
-
-    detailLines.push(detail);
+    const line = buildBacsDetailLine(item, orgBank, originatorNameField, julian);
+    totalAmount += line.amountMinor;
+    if (line.transliterationWarning) transliterationWarnings.push(line.transliterationWarning);
+    if (line.modulusWarning) modulusWarnings.push(line.modulusWarning);
+    detailLines.push(line.detail);
   }
 
   // --- Trailers -----------------------------------------------------------

@@ -67,6 +67,24 @@ export async function createChangeRequest(
  * Re-reads current billing profile values before applying to avoid
  * stale-state overwrites (research pitfall 3).
  */
+/**
+ * Build the billing-profile patch from the requested financial fields. Only
+ * keys explicitly present in the request are written.
+ */
+function buildBillingProfileUpdate(changes: FinancialChangeFields): Record<string, unknown> {
+  const profileUpdate: Record<string, unknown> = {};
+  if (changes.bankName !== undefined) profileUpdate.bankName = changes.bankName;
+  if (changes.swiftBic !== undefined) profileUpdate.swiftBic = changes.swiftBic;
+  if (changes.taxId !== undefined) profileUpdate.taxId = changes.taxId;
+  if (changes.bankAccountMasked !== undefined) {
+    profileUpdate.bankAccountMasked = changes.bankAccountMasked;
+  }
+  if (changes.bankAccountEncrypted !== undefined) {
+    profileUpdate.bankAccountEncrypted = changes.bankAccountEncrypted;
+  }
+  return profileUpdate;
+}
+
 export async function approveChangeRequest(
   requestId: string,
   organizationId: string,
@@ -86,7 +104,6 @@ export async function approveChangeRequest(
 
   const changes = request.requestedChanges as FinancialChangeFields;
 
-  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: atomic approval transaction: re-read billing profile → apply each requested financial field → update request status → audit; cohesive single-transaction flow.
   await prisma.$transaction(async tx => {
     // Re-read current billing profile to avoid stale-state overwrites
     const billingProfile = await tx.contractorBillingProfile.findFirst({
@@ -104,15 +121,7 @@ export async function approveChangeRequest(
       });
     }
 
-    // Build update data from requested changes
-    const profileUpdate: Record<string, unknown> = {};
-    if (changes.bankName !== undefined) profileUpdate.bankName = changes.bankName;
-    if (changes.swiftBic !== undefined) profileUpdate.swiftBic = changes.swiftBic;
-    if (changes.taxId !== undefined) profileUpdate.taxId = changes.taxId;
-    if (changes.bankAccountMasked !== undefined)
-      profileUpdate.bankAccountMasked = changes.bankAccountMasked;
-    if (changes.bankAccountEncrypted !== undefined)
-      profileUpdate.bankAccountEncrypted = changes.bankAccountEncrypted;
+    const profileUpdate = buildBillingProfileUpdate(changes);
 
     // Apply changes to billing profile
     if (Object.keys(profileUpdate).length > 0) {

@@ -176,7 +176,44 @@ export interface UpdateBandStateResult {
  * `EconomicDependencyAlertState` sits behind an @@unique on
  * `contractorAssignmentId` so the upsert key is sufficient on its own).
  */
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: band-crossing state machine with sequential up/down/reminder branches feeding a single upsert
+/** Notification type for an active (non-resolved) band — warning or critical. */
+function activeBandEmittedType(band: Band): EmittedType {
+  return band === 'CRITICAL'
+    ? 'classification.economic_dependency_critical'
+    : 'classification.economic_dependency_warning';
+}
+
+/**
+ * Map a band transition to the notification (if any) it should fire: up-cross
+ * always fires, down-cross fires "resolved", and a same non-safe band re-fires
+ * on the reminder cadence.
+ */
+function computeBandTransition(
+  previousBand: Band,
+  nextBand: Band,
+  lastReminderAt: Date | null,
+  now: Date,
+): { emittedType: EmittedType; reason: UpdateBandStateResult['reason'] } {
+  const prev = bandIndex(previousBand);
+  const next = bandIndex(nextBand);
+
+  if (next > prev) {
+    // Up-crossing — always fire.
+    return { emittedType: activeBandEmittedType(nextBand), reason: 'cross-up' };
+  }
+  if (next < prev) {
+    // Improvement — fire "resolved" (warning→safe, critical→warning, critical→safe).
+    return { emittedType: 'resolved', reason: 'cross-down' };
+  }
+  if (nextBand !== 'SAFE') {
+    // Same non-safe band — re-fire every REMINDER_CADENCE_DAYS.
+    if (!lastReminderAt || daysBetween(lastReminderAt, now) >= REMINDER_CADENCE_DAYS) {
+      return { emittedType: activeBandEmittedType(nextBand), reason: 'reminder' };
+    }
+  }
+  return { emittedType: null, reason: 'no-change' };
+}
+
 export async function updateBandState(
   assignment: { id: string; organizationId: string },
   share: number,
@@ -192,34 +229,15 @@ export async function updateBandState(
   });
 
   const previousBand: Band = existing?.currentBand ?? 'SAFE';
-
-  let emittedType: EmittedType = null;
-  let reason: UpdateBandStateResult['reason'] = 'no-change';
-  const prev = bandIndex(previousBand);
   const next = bandIndex(nextBand);
+  const prev = bandIndex(previousBand);
 
-  if (next > prev) {
-    // Up-crossing — always fire.
-    emittedType =
-      nextBand === 'CRITICAL'
-        ? 'classification.economic_dependency_critical'
-        : 'classification.economic_dependency_warning';
-    reason = 'cross-up';
-  } else if (next < prev) {
-    // Improvement — fire "resolved" (warning→safe, critical→warning, critical→safe).
-    emittedType = 'resolved';
-    reason = 'cross-down';
-  } else if (next === prev && nextBand !== 'SAFE') {
-    // Same non-safe band — re-fire every REMINDER_CADENCE_DAYS.
-    const lastReminder = existing?.lastReminderAt ?? null;
-    if (!lastReminder || daysBetween(lastReminder, now) >= REMINDER_CADENCE_DAYS) {
-      emittedType =
-        nextBand === 'CRITICAL'
-          ? 'classification.economic_dependency_critical'
-          : 'classification.economic_dependency_warning';
-      reason = 'reminder';
-    }
-  }
+  const { emittedType, reason } = computeBandTransition(
+    previousBand,
+    nextBand,
+    existing?.lastReminderAt ?? null,
+    now,
+  );
 
   const data = {
     organizationId: assignment.organizationId,
@@ -265,6 +283,43 @@ export interface ScanResult {
   notificationsDispatched: number;
 }
 
+/**
+ * Build the jurisdiction-specific (§2 SGB VI) notification copy for an emitted
+ * economic-dependency band event. A "resolved" event dispatches under the
+ * warning type so it threads onto the same notification channel.
+ */
+function buildEconomicDependencyNotification(
+  emittedType: NonNullable<EmittedType>,
+  displayName: string,
+  percent: string,
+): {
+  title: string;
+  body: string;
+  type:
+    | 'classification.economic_dependency_warning'
+    | 'classification.economic_dependency_critical';
+} {
+  if (emittedType === 'resolved') {
+    return {
+      title: `Economic dependency resolved: ${displayName}`,
+      body: `Billing share has returned to ${percent}% — below §2 SGB VI risk thresholds.`,
+      type: 'classification.economic_dependency_warning',
+    };
+  }
+  if (emittedType === 'classification.economic_dependency_critical') {
+    return {
+      title: `Critical economic dependency: ${displayName}`,
+      body: `Billing share is ${percent}% — above the 83.33% §2 SGB VI threshold for arbeitnehmerähnliche Selbständige. Review the engagement.`,
+      type: emittedType,
+    };
+  }
+  return {
+    title: `Economic-dependency warning: ${displayName}`,
+    body: `Billing share is ${percent}% from your organisation over the last 12 months — above the 70% §2 SGB VI warning threshold.`,
+    type: emittedType,
+  };
+}
+
 export async function runEconomicDependencyScan(now: Date = new Date()): Promise<ScanResult> {
   let scanned = 0;
   let crossings = 0;
@@ -298,7 +353,6 @@ export async function runEconomicDependencyScan(now: Date = new Date()): Promise
 
   await Promise.all(
     assignments.map(assignment =>
-      // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: per-assignment scan orchestration — compute share, transition band, then build jurisdiction-specific notification copy with nested emittedType branches
       limit(async () => {
         dispatchedCounter.scanned++;
         try {
@@ -321,23 +375,11 @@ export async function runEconomicDependencyScan(now: Date = new Date()): Promise
 
             if (recipients.length > 0) {
               const percent = (share * 100).toFixed(1);
-              const title =
-                result.emittedType === 'resolved'
-                  ? `Economic dependency resolved: ${assignment.contractor.displayName}`
-                  : result.emittedType === 'classification.economic_dependency_critical'
-                    ? `Critical economic dependency: ${assignment.contractor.displayName}`
-                    : `Economic-dependency warning: ${assignment.contractor.displayName}`;
-              const body =
-                result.emittedType === 'resolved'
-                  ? `Billing share has returned to ${percent}% — below §2 SGB VI risk thresholds.`
-                  : result.emittedType === 'classification.economic_dependency_critical'
-                    ? `Billing share is ${percent}% — above the 83.33% §2 SGB VI threshold for arbeitnehmerähnliche Selbständige. Review the engagement.`
-                    : `Billing share is ${percent}% from your organisation over the last 12 months — above the 70% §2 SGB VI warning threshold.`;
-
-              const type =
-                result.emittedType === 'resolved'
-                  ? 'classification.economic_dependency_warning'
-                  : result.emittedType;
+              const { title, body, type } = buildEconomicDependencyNotification(
+                result.emittedType,
+                assignment.contractor.displayName,
+                percent,
+              );
 
               await dispatch({
                 organizationId: assignment.organizationId,

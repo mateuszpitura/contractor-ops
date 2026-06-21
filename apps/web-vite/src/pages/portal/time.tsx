@@ -156,7 +156,106 @@ function TimesheetHistorySection({
   );
 }
 
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: portal page composer — error/loading/disabled state branches plus the assembled timesheet layout; the conditional JSX is the page's required loading/empty/error surface, kept in one composer.
+type UsePortalTime = ReturnType<typeof usePortalTime>;
+
+function TimesheetWeekSection({
+  isLoading,
+  currentWeekStart,
+  timesheetStatus,
+  timesheet,
+  contracts,
+  isDisabled,
+  submitMutation,
+  handleWeekChange,
+  handleSubmitTimesheet,
+  handleSaveEntries,
+}: Pick<
+  UsePortalTime,
+  | 'currentWeekStart'
+  | 'timesheetStatus'
+  | 'timesheet'
+  | 'contracts'
+  | 'isDisabled'
+  | 'submitMutation'
+  | 'handleWeekChange'
+  | 'handleSubmitTimesheet'
+  | 'handleSaveEntries'
+  | 'isLoading'
+>) {
+  return (
+    <div className="space-y-8">
+      {isLoading ? (
+        <div className="flex items-center justify-between">
+          <Skeleton className="h-10 w-64" />
+          <Skeleton className="h-10 w-40" />
+        </div>
+      ) : (
+        <TimesheetHeader
+          weekStartDate={currentWeekStart}
+          status={timesheetStatus}
+          totalMinutes={timesheet?.totalMinutes ?? 0}
+          onWeekChange={handleWeekChange}
+          onSubmit={handleSubmitTimesheet}
+          isSubmitting={submitMutation.isPending}
+        />
+      )}
+
+      {isLoading ? (
+        <div className="space-y-2">
+          <Skeleton className="h-12 w-full" />
+          <Skeleton className="h-12 w-full" />
+          <Skeleton className="h-12 w-full" />
+          <Skeleton className="h-12 w-full" />
+        </div>
+      ) : (
+        <TimesheetGrid
+          weekStartDate={currentWeekStart}
+          entries={timesheet?.entries ?? []}
+          contracts={contracts}
+          timesheetId={timesheet?.id ?? ''}
+          disabled={isDisabled}
+          rejectionReason={
+            timesheetStatus === 'REJECTED' ? (timesheet?.rejectionReason ?? null) : null
+          }
+          onSave={handleSaveEntries}
+        />
+      )}
+    </div>
+  );
+}
+
+function TimesheetSyncButtons({
+  connectedProviders,
+  syncMutation,
+  handleSync,
+}: Pick<UsePortalTime, 'connectedProviders' | 'syncMutation' | 'handleSync'>) {
+  if (!(connectedProviders.has('CLOCKIFY') || connectedProviders.has('JIRA'))) {
+    return null;
+  }
+  return (
+    <AnimateIn delay={3}>
+      <div className="flex flex-wrap gap-3">
+        {connectedProviders.has('CLOCKIFY') && (
+          <ExternalSyncButton
+            provider="CLOCKIFY"
+            connected={true}
+            onSync={handleSync('CLOCKIFY')}
+            isSyncing={syncMutation.isPending && syncMutation.variables?.provider === 'CLOCKIFY'}
+          />
+        )}
+        {connectedProviders.has('JIRA') && (
+          <ExternalSyncButton
+            provider="JIRA"
+            connected={true}
+            onSync={handleSync('JIRA')}
+            isSyncing={syncMutation.isPending && syncMutation.variables?.provider === 'JIRA'}
+          />
+        )}
+      </div>
+    </AnimateIn>
+  );
+}
+
 function PortalTimePageContent() {
   const t = useTranslations('Portal.timeTracking');
   const tCommon = useTranslations('Portal.login.errors');
@@ -231,70 +330,25 @@ function PortalTimePageContent() {
       </AnimateIn>
 
       <AnimateIn delay={2}>
-        <div className="space-y-8">
-          {isLoading ? (
-            <div className="flex items-center justify-between">
-              <Skeleton className="h-10 w-64" />
-              <Skeleton className="h-10 w-40" />
-            </div>
-          ) : (
-            <TimesheetHeader
-              weekStartDate={currentWeekStart}
-              status={timesheetStatus}
-              totalMinutes={timesheet?.totalMinutes ?? 0}
-              onWeekChange={handleWeekChange}
-              onSubmit={handleSubmitTimesheet}
-              isSubmitting={submitMutation.isPending}
-            />
-          )}
-
-          {isLoading ? (
-            <div className="space-y-2">
-              <Skeleton className="h-12 w-full" />
-              <Skeleton className="h-12 w-full" />
-              <Skeleton className="h-12 w-full" />
-              <Skeleton className="h-12 w-full" />
-            </div>
-          ) : (
-            <TimesheetGrid
-              weekStartDate={currentWeekStart}
-              entries={timesheet?.entries ?? []}
-              contracts={contracts}
-              timesheetId={timesheet?.id ?? ''}
-              disabled={isDisabled}
-              rejectionReason={
-                timesheetStatus === 'REJECTED' ? (timesheet?.rejectionReason ?? null) : null
-              }
-              onSave={handleSaveEntries}
-            />
-          )}
-        </div>
+        <TimesheetWeekSection
+          isLoading={isLoading}
+          currentWeekStart={currentWeekStart}
+          timesheetStatus={timesheetStatus}
+          timesheet={timesheet}
+          contracts={contracts}
+          isDisabled={isDisabled}
+          submitMutation={submitMutation}
+          handleWeekChange={handleWeekChange}
+          handleSubmitTimesheet={handleSubmitTimesheet}
+          handleSaveEntries={handleSaveEntries}
+        />
       </AnimateIn>
 
-      {(connectedProviders.has('CLOCKIFY') || connectedProviders.has('JIRA')) && (
-        <AnimateIn delay={3}>
-          <div className="flex flex-wrap gap-3">
-            {connectedProviders.has('CLOCKIFY') && (
-              <ExternalSyncButton
-                provider="CLOCKIFY"
-                connected={true}
-                onSync={handleSync('CLOCKIFY')}
-                isSyncing={
-                  syncMutation.isPending && syncMutation.variables?.provider === 'CLOCKIFY'
-                }
-              />
-            )}
-            {connectedProviders.has('JIRA') && (
-              <ExternalSyncButton
-                provider="JIRA"
-                connected={true}
-                onSync={handleSync('JIRA')}
-                isSyncing={syncMutation.isPending && syncMutation.variables?.provider === 'JIRA'}
-              />
-            )}
-          </div>
-        </AnimateIn>
-      )}
+      <TimesheetSyncButtons
+        connectedProviders={connectedProviders}
+        syncMutation={syncMutation}
+        handleSync={handleSync}
+      />
 
       <AnimateIn delay={4}>
         <TimesheetHistorySection

@@ -33,6 +33,25 @@ interface CourierConfigJson {
   webhookSecret?: string;
 }
 
+// The raw-body parser registered inside the webhooks plugin scope delivers
+// `request.body` as a Buffer. Signature verification needs the exact bytes.
+function rawBodyFrom(body: unknown): string {
+  if (body instanceof Buffer) return body.toString('utf8');
+  if (typeof body === 'string') return body;
+  return '';
+}
+
+function normalizeHeaders(
+  raw: Record<string, string | string[] | undefined>,
+): Record<string, string> {
+  const headers: Record<string, string> = {};
+  for (const [key, value] of Object.entries(raw)) {
+    if (typeof value === 'string') headers[key] = value;
+    else if (Array.isArray(value)) headers[key] = value.join(',');
+  }
+  return headers;
+}
+
 function matchOrgBySignature(
   configs: Array<{ organizationId: string; configJson: unknown }>,
   rawBody: string,
@@ -80,20 +99,9 @@ async function matchOrgByShipmentPayload(rawBody: string): Promise<string | null
 }
 
 export function registerInPostWebhookRoute(app: FastifyInstance): void {
-  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: sequential webhook handler — normalize body/headers → load configs → per-config signature verify → parse → resolve tenant → persist → ack; each step gated, cohesive flow.
   app.post('/webhooks/inpost', async (request, reply) => {
-    const rawBody =
-      request.body instanceof Buffer
-        ? request.body.toString('utf8')
-        : typeof request.body === 'string'
-          ? request.body
-          : '';
-
-    const headers: Record<string, string> = {};
-    for (const [key, value] of Object.entries(request.headers)) {
-      if (typeof value === 'string') headers[key] = value;
-      else if (Array.isArray(value)) headers[key] = value.join(',');
-    }
+    const rawBody = rawBodyFrom(request.body);
+    const headers = normalizeHeaders(request.headers);
 
     const configs = await prisma.courierConfig.findMany({
       where: { carrier: 'inpost' },

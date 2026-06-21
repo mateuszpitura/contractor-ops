@@ -87,79 +87,86 @@ export function getBaseLoggerOptions(): LoggerOptions {
  * Axiom is always sent via a custom Writable stream using @axiomhq/js SDK
  * (no worker threads) so it works inside Next.js webpack bundling.
  */
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: logger destination builder — dev/prod + Axiom + Loki stream branches each gated by distinct env signals (AXIOM_DATASET/TOKEN/DEV, LOKI_URL) with per-stream try/catch fallback; assembling the multistream list inline keeps the env→stream wiring in one place.
-function createRootLogger(): Logger {
-  const axiomDataset = process.env.AXIOM_DATASET;
-  const axiomToken = process.env.AXIOM_TOKEN;
-  const axiomInDev = process.env.AXIOM_DEV === 'true';
-  const hasAxiom = !!(axiomDataset && axiomToken);
-  const sendToAxiom = hasAxiom && (!isDev || axiomInDev);
-
-  // Local-dev Loki replacement for Axiom. `LOKI_URL` is the only signal —
-  // when present we fan out a Pino stream that pushes to
-  // `${LOKI_URL}/loki/api/v1/push`. Prod leaves `LOKI_URL` unset, the
-  // branch is skipped, and Axiom stays the canonical shipper.
-  const lokiUrl = process.env.LOKI_URL;
-
-  // Build stream list for pino.multistream.
-  const streams: pino.StreamEntry[] = [];
-
-  // ── Pretty stdout (dev) or plain stdout (prod) ────────────────────
+// ── Pretty stdout (dev) or plain stdout (prod) ──────────────────────
+function buildStdoutStream(): pino.StreamEntry {
+  const level = baseOptions.level as pino.Level;
   if (isDev) {
     try {
       const pretty = requireFromHere('pino-pretty') as typeof import('pino-pretty');
-      streams.push({
-        level: baseOptions.level as pino.Level,
+      return {
+        level,
         stream: pretty({
           colorize: true,
           translateTime: 'SYS:HH:MM:ss.l',
           ignore: 'pid,hostname',
           singleLine: true,
         }),
-      });
+      };
     } catch {
-      streams.push({ level: baseOptions.level as pino.Level, stream: process.stdout });
+      return { level, stream: process.stdout };
     }
-  } else {
-    streams.push({ level: baseOptions.level as pino.Level, stream: process.stdout });
   }
+  return { level, stream: process.stdout };
+}
 
-  // ── Axiom stream (sync, no worker threads) ────────────────────────
-  if (sendToAxiom) {
-    try {
-      const { createAxiomStream } = requireFromHere(
-        './axiom-stream.js',
-      ) as typeof import('./axiom-stream.js');
-      streams.push({
-        level: baseOptions.level as pino.Level,
-        stream: createAxiomStream({ dataset: axiomDataset as string, token: axiomToken as string }),
-      });
-    } catch {
-      // Axiom stream failed to initialize — continue with stdout only.
-    }
+// ── Axiom stream (sync, no worker threads) ──────────────────────────
+function buildAxiomStream(): pino.StreamEntry | null {
+  const axiomDataset = process.env.AXIOM_DATASET;
+  const axiomToken = process.env.AXIOM_TOKEN;
+  const axiomInDev = process.env.AXIOM_DEV === 'true';
+  const hasAxiom = !!(axiomDataset && axiomToken);
+  if (!(hasAxiom && (!isDev || axiomInDev))) return null;
+  try {
+    const { createAxiomStream } = requireFromHere(
+      './axiom-stream.js',
+    ) as typeof import('./axiom-stream.js');
+    return {
+      level: baseOptions.level as pino.Level,
+      stream: createAxiomStream({ dataset: axiomDataset as string, token: axiomToken as string }),
+    };
+  } catch {
+    // Axiom stream failed to initialize — continue with stdout only.
+    return null;
   }
+}
 
-  // ── Loki stream (dev-local; opt-in via LOKI_URL) ──────────────────
-  if (lokiUrl) {
-    try {
-      const { createLokiStream } = requireFromHere(
-        './loki-stream.js',
-      ) as typeof import('./loki-stream.js');
-      streams.push({
-        level: baseOptions.level as pino.Level,
-        stream: createLokiStream({
-          url: lokiUrl,
-          // The service tag is overridden per-line when present in the
-          // JSON payload (api-server / cron-worker / public-api set it
-          // via createLogger). `app` is the fallback for the root logger.
-          service: process.env.LOKI_SERVICE_LABEL ?? 'app',
-        }),
-      });
-    } catch {
-      // Loki stream failed to initialize — continue with the streams
-      // that did. Best-effort, dev-only.
-    }
+// ── Loki stream (dev-local; opt-in via LOKI_URL) ────────────────────
+//
+// `LOKI_URL` is the only signal — when present we fan out a Pino stream that
+// pushes to `${LOKI_URL}/loki/api/v1/push`. Prod leaves `LOKI_URL` unset, the
+// branch is skipped, and Axiom stays the canonical shipper.
+function buildLokiStream(): pino.StreamEntry | null {
+  const lokiUrl = process.env.LOKI_URL;
+  if (!lokiUrl) return null;
+  try {
+    const { createLokiStream } = requireFromHere(
+      './loki-stream.js',
+    ) as typeof import('./loki-stream.js');
+    return {
+      level: baseOptions.level as pino.Level,
+      stream: createLokiStream({
+        url: lokiUrl,
+        // The service tag is overridden per-line when present in the
+        // JSON payload (api-server / cron-worker / public-api set it
+        // via createLogger). `app` is the fallback for the root logger.
+        service: process.env.LOKI_SERVICE_LABEL ?? 'app',
+      }),
+    };
+  } catch {
+    // Loki stream failed to initialize — continue with the streams
+    // that did. Best-effort, dev-only.
+    return null;
   }
+}
+
+function createRootLogger(): Logger {
+  const streams: pino.StreamEntry[] = [buildStdoutStream()];
+
+  const axiomStream = buildAxiomStream();
+  if (axiomStream) streams.push(axiomStream);
+
+  const lokiStream = buildLokiStream();
+  if (lokiStream) streams.push(lokiStream);
 
   if (streams.length === 1 && streams[0]) {
     return pino(baseOptions, streams[0].stream as DestinationStream);

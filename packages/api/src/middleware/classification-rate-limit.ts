@@ -123,17 +123,61 @@ function fallbackCheck(key: string): { allowed: boolean; remaining: number } {
 // Middleware
 // ---------------------------------------------------------------------------
 
+/** Coerce a string field off an unknown record, defaulting to `''`. */
+function coerceStringField(source: unknown, field: string): string {
+  if (typeof source === 'object' && source !== null && field in source) {
+    return String((source as Record<string, unknown>)[field] ?? '');
+  }
+  return '';
+}
+
+/**
+ * Sliding-window decision for `key`. Uses Upstash when configured; in
+ * production a Redis outage fails CLOSED (throws SERVICE_UNAVAILABLE) since the
+ * per-pod in-memory fallback cannot cap a multi-pod deploy. dev/test fall back
+ * to in-memory so local runs work.
+ */
+async function isRateLimitAllowed(
+  key: string,
+  organizationId: string,
+  assessmentId: string,
+): Promise<boolean> {
+  if (!upstashLimiter) {
+    return fallbackCheck(key).allowed;
+  }
+
+  try {
+    const result = await upstashLimiter.limit(key);
+    return result.success;
+  } catch (err) {
+    const env = process.env.NODE_ENV ?? 'development';
+    if (env === 'production') {
+      log.error(
+        { err, organizationId, assessmentId },
+        'upstash rate limiter unavailable — failing closed for classification.saveAnswer',
+      );
+      // 503 SERVICE_UNAVAILABLE — autosave clients should back off and
+      // retry. The autosave UX already tolerates transient failures.
+      throw new TRPCError({
+        code: 'SERVICE_UNAVAILABLE',
+        message: CLASSIFICATION_RATE_LIMITER_UNAVAILABLE,
+      });
+    }
+    log.warn(
+      { err, env, organizationId, assessmentId },
+      'upstash rate limiter unavailable — falling back to in-memory (non-prod only)',
+    );
+    return fallbackCheck(key).allowed;
+  }
+}
+
 /**
  * Applies Upstash/in-memory sliding-window rate limit to the upstream
  * classification.saveAnswer procedure. The input MUST contain an
  * `assessmentId` string — otherwise BAD_REQUEST is thrown.
  */
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: rate-limit middleware with sequential input/ctx narrowing guards then sliding-window enforcement — guards are inseparable
 export const classificationSaveAnswerRateLimit = t.middleware(async ({ ctx, input, next }) => {
-  const assessmentId =
-    typeof input === 'object' && input !== null && 'assessmentId' in input
-      ? String((input as { assessmentId: unknown }).assessmentId ?? '')
-      : '';
+  const assessmentId = coerceStringField(input, 'assessmentId');
 
   if (!assessmentId) {
     throw new TRPCError({
@@ -142,47 +186,10 @@ export const classificationSaveAnswerRateLimit = t.middleware(async ({ ctx, inpu
     });
   }
 
-  const organizationId =
-    typeof ctx === 'object' && ctx !== null && 'organizationId' in ctx
-      ? String((ctx as { organizationId: unknown }).organizationId ?? '')
-      : '';
-
+  const organizationId = coerceStringField(ctx, 'organizationId');
   const key = `${organizationId}:${assessmentId}`;
 
-  let allowed = true;
-  if (upstashLimiter) {
-    try {
-      const result = await upstashLimiter.limit(key);
-      allowed = result.success;
-    } catch (err) {
-      // In production, fail-CLOSED if Upstash is unreachable.
-      // The autosave loop is the cheapest possible DoS — a misbehaving
-      // client can hammer saveAnswer at hundreds of req/s. The in-memory
-      // fallback is per-pod and cannot detect the same assessment hitting
-      // a different instance, so a Redis outage means no real cap on a
-      // multi-pod deploy. dev/test still falls back so local runs work.
-      const env = process.env.NODE_ENV ?? 'development';
-      if (env === 'production') {
-        log.error(
-          { err, organizationId, assessmentId },
-          'upstash rate limiter unavailable — failing closed for classification.saveAnswer',
-        );
-        // 503 SERVICE_UNAVAILABLE — autosave clients should back off and
-        // retry. The autosave UX already tolerates transient failures.
-        throw new TRPCError({
-          code: 'SERVICE_UNAVAILABLE',
-          message: CLASSIFICATION_RATE_LIMITER_UNAVAILABLE,
-        });
-      }
-      log.warn(
-        { err, env, organizationId, assessmentId },
-        'upstash rate limiter unavailable — falling back to in-memory (non-prod only)',
-      );
-      allowed = fallbackCheck(key).allowed;
-    }
-  } else {
-    allowed = fallbackCheck(key).allowed;
-  }
+  const allowed = await isRateLimitAllowed(key, organizationId, assessmentId);
 
   if (!allowed) {
     throw new TRPCError({

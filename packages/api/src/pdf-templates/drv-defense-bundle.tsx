@@ -12,6 +12,7 @@
 // @contractor-ops/classification/profiles/*.
 
 import type {
+  AnswerValue,
   Assessment,
   ScheinCategory,
   ScheinCategoryResult,
@@ -51,6 +52,15 @@ const CATEGORY_LABELS: Record<ScheinCategory, string> = {
   'personal-dep': 'Persönliche Abhängigkeit',
   'economic-dep': 'Wirtschaftliche Abhängigkeit',
 };
+
+/** Render the human-readable answer label, narrowing the answer payload union. */
+function formatAnswerText(answer: AnswerValue | undefined): string {
+  if (answer?.isNotApplicable) return 'Nicht anwendbar';
+  if (typeof answer?.value === 'string') return answer.value;
+  if (typeof answer?.value === 'number') return String(answer.value);
+  if (typeof answer?.rawScore === 'number') return `Score ${answer.rawScore}`;
+  return '—';
+}
 
 // ---------------------------------------------------------------------------
 // Styles
@@ -372,18 +382,8 @@ export function DRVDefenseBundleDocument({
                 Gewichtung {c.weight}% · Rohwert {c.rawScore} · Gewichteter Wert{' '}
                 {c.weightedScore.toFixed(1)}
               </Text>
-              {/* biome-ignore lint/complexity/noExcessiveCognitiveComplexity: cohesive PDF question-row render with inline answer-type branches (N/A / string / number / weighted) feeding the defense-bundle layout; splitting fragments the document for no gain. */}
               {questions.map(q => {
-                const answer = assessment.answers[q.id];
-                const answerText = answer?.isNotApplicable
-                  ? 'Nicht anwendbar'
-                  : typeof answer?.value === 'string'
-                    ? answer.value
-                    : typeof answer?.value === 'number'
-                      ? String(answer.value)
-                      : typeof answer?.rawScore === 'number'
-                        ? `Score ${answer.rawScore}`
-                        : '—';
+                const answerText = formatAnswerText(assessment.answers[q.id]);
                 return (
                   <Text key={q.id} style={styles.evidenceQ}>
                     {q.prompt.de} — <Text style={{ color: TEAL_ACCENT }}>{answerText}</Text>

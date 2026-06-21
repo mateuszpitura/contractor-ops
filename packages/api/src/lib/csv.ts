@@ -76,6 +76,18 @@ function neutralizeFormulaPrefix(value: unknown): string | number | boolean | nu
   return s;
 }
 
+/** Neutralise formula prefixes on every cell of a row before stringifying. */
+function sanitiseCsvRow(
+  row: Record<string, unknown>,
+  columns: CsvColumnKey[],
+): Record<string, unknown> {
+  const sanitised: Record<string, unknown> = {};
+  for (const col of columns) {
+    sanitised[col.key] = neutralizeFormulaPrefix(row[col.key]);
+  }
+  return sanitised;
+}
+
 export type CsvColumnKey = { key: string; header: string };
 
 /**
@@ -156,18 +168,12 @@ export function streamCsvResponse(opts: StreamCsvOptions): Readable {
     // Pump rows into the stringifier asynchronously; the generator below
     // yields stringifier output chunks as they become available.
     let pumpError: Error | null = null;
-    // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: streaming pump IIFE — per-row formula neutralisation + backpressure (write/drain) + error capture; cohesive async loop sharing stringifier/pumpError state, splitting fragments the stream lifecycle.
     const pump = (async () => {
       try {
         for await (const row of rows) {
-          // Neutralise per-cell formula prefixes before handing to csv-stringify.
-          const sanitised: Record<string, unknown> = {};
-          for (const col of columns) {
-            sanitised[col.key] = neutralizeFormulaPrefix(row[col.key]);
-          }
           // Backpressure: write returns false when the high-water mark is
           // exceeded; await `drain` to resume.
-          if (!stringifier.write(sanitised)) {
+          if (!stringifier.write(sanitiseCsvRow(row, columns))) {
             await new Promise<void>(resolve => stringifier.once('drain', () => resolve()));
           }
         }

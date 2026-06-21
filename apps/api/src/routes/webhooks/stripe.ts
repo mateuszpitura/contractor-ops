@@ -51,23 +51,23 @@ const SETTLEMENT_EVENT_TYPES = new Set<string>([
 
 const MAX_AGE_SECONDS = 24 * 60 * 60;
 
+// The raw-body parser registered inside the webhooks plugin scope delivers
+// `request.body` as a Buffer. Signature verification needs the exact bytes
+// the signature was computed over.
+function rawBodyFrom(body: unknown): string {
+  if (body instanceof Buffer) return body.toString('utf8');
+  if (typeof body === 'string') return body;
+  return '';
+}
+
 export function registerStripeWebhookRoute(app: FastifyInstance): void {
-  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: signature verify → age/settlement gate → serializable upsert+idempotency tx → post-commit dispatch; the branchy retry-vs-ack control flow is one cohesive webhook contract.
   app.post('/webhooks/stripe', async (request, reply) => {
     const signature = request.headers['stripe-signature'];
     if (typeof signature !== 'string' || signature.length === 0) {
       return reply.code(400).send({ error: 'Missing stripe-signature header' });
     }
 
-    // The raw-body parser registered inside the webhooks plugin scope
-    // delivers `request.body` as a Buffer. Stripe's constructEvent needs
-    // the exact bytes the signature was computed over.
-    const rawBody =
-      request.body instanceof Buffer
-        ? request.body.toString('utf8')
-        : typeof request.body === 'string'
-          ? request.body
-          : '';
+    const rawBody = rawBodyFrom(request.body);
 
     let event: Stripe.Event;
     try {

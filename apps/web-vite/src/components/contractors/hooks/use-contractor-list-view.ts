@@ -23,6 +23,11 @@ export type ContractorListViewMode = (typeof CONTRACTOR_LIST_VIEW_MODES)[number]
 
 export const DEFAULT_CONTRACTOR_LIST_VIEW_MODE: ContractorListViewMode = 'visuals-first';
 
+/** Narrow an untrusted Select value (`string | null`) to a known view mode. */
+export function isContractorListViewMode(value: unknown): value is ContractorListViewMode {
+  return (CONTRACTOR_LIST_VIEW_MODES as readonly string[]).includes(value as string);
+}
+
 interface ContractorListViewState {
   mode: ContractorListViewMode;
   setMode: (mode: ContractorListViewMode) => void;

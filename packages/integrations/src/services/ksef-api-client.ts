@@ -74,6 +74,58 @@ export class KsefApiClient {
         : 'https://ksef.mf.gov.pl/api/v2';
   }
 
+  /**
+   * Compose an optional caller `signal` with a wall-clock guard so EITHER firing
+   * aborts the in-flight fetch and breaks the polling loop. Returns the
+   * composite signal plus a `cleanup` to clear the timer and detach listeners
+   * (call in `finally`).
+   */
+  private static composeWallClockSignal(
+    signal: AbortSignal | undefined,
+    wallClockMs: number,
+    wallClockReason: string,
+  ): { opSignal: AbortSignal; cleanup: () => void } {
+    const wallClockController = new AbortController();
+    const wallClockTimer = setTimeout(
+      () => wallClockController.abort(new Error(wallClockReason)),
+      wallClockMs,
+    );
+    const onCallerAbort = signal
+      ? () => wallClockController.abort(signal.reason ?? new Error('aborted'))
+      : null;
+    if (signal && onCallerAbort) {
+      if (signal.aborted) wallClockController.abort(signal.reason);
+      else signal.addEventListener('abort', onCallerAbort, { once: true });
+    }
+    return {
+      opSignal: wallClockController.signal,
+      cleanup: () => {
+        clearTimeout(wallClockTimer);
+        if (signal && onCallerAbort) signal.removeEventListener('abort', onCallerAbort);
+      },
+    };
+  }
+
+  /** Sleep `ms` but reject immediately if `opSignal` aborts during the wait. */
+  private static abortableSleep(opSignal: AbortSignal, ms: number): Promise<void> {
+    return new Promise<void>((resolve, reject) => {
+      const sleepTimer = setTimeout(resolve, ms);
+      if (opSignal.aborted) {
+        clearTimeout(sleepTimer);
+        reject(opSignal.reason ?? new Error('aborted'));
+        return;
+      }
+      opSignal.addEventListener(
+        'abort',
+        () => {
+          clearTimeout(sleepTimer);
+          reject(opSignal.reason ?? new Error('aborted'));
+        },
+        { once: true },
+      );
+    });
+  }
+
   // -------------------------------------------------------------------------
   // Authentication
   // -------------------------------------------------------------------------
@@ -97,23 +149,12 @@ export class KsefApiClient {
    * `AUTH_POLL_WALL_CLOCK_MS` to prevent the polling loop from outliving
    * the caller's deadline.
    */
-  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: KSeF auth polling loop with composed caller+wall-clock abort signals and deadline guard; control flow is one cohesive unit.
   async authenticate(token: string, nip: string, signal?: AbortSignal): Promise<KsefSession> {
-    // Compose caller signal + our wall-clock guard so EITHER firing aborts
-    // the in-flight fetch and breaks the polling loop.
-    const wallClockController = new AbortController();
-    const wallClockTimer = setTimeout(
-      () => wallClockController.abort(new Error('KSeF authenticate: wall-clock exceeded')),
+    const { opSignal, cleanup } = KsefApiClient.composeWallClockSignal(
+      signal,
       AUTH_POLL_WALL_CLOCK_MS,
+      'KSeF authenticate: wall-clock exceeded',
     );
-    const onCallerAbort = signal
-      ? () => wallClockController.abort(signal.reason ?? new Error('aborted'))
-      : null;
-    if (signal && onCallerAbort) {
-      if (signal.aborted) wallClockController.abort(signal.reason);
-      else signal.addEventListener('abort', onCallerAbort, { once: true });
-    }
-    const opSignal = wallClockController.signal;
 
     try {
       // Step 1: Get public key
@@ -197,22 +238,7 @@ export class KsefApiClient {
         }
 
         // Bail early if the wall-clock fired during the sleep.
-        await new Promise<void>((resolve, reject) => {
-          const sleepTimer = setTimeout(resolve, 1000);
-          if (opSignal.aborted) {
-            clearTimeout(sleepTimer);
-            reject(opSignal.reason ?? new Error('aborted'));
-            return;
-          }
-          opSignal.addEventListener(
-            'abort',
-            () => {
-              clearTimeout(sleepTimer);
-              reject(opSignal.reason ?? new Error('aborted'));
-            },
-            { once: true },
-          );
-        });
+        await KsefApiClient.abortableSleep(opSignal, 1000);
       }
 
       if (!ready) {
@@ -233,10 +259,7 @@ export class KsefApiClient {
 
       return this.session;
     } finally {
-      clearTimeout(wallClockTimer);
-      if (signal && onCallerAbort) {
-        signal.removeEventListener('abort', onCallerAbort);
-      }
+      cleanup();
     }
   }
 
@@ -267,7 +290,6 @@ export class KsefApiClient {
    * Starts an async query, polls for completion, and returns metadata list.
    * The query uses "subject2" subjectType (buyer perspective).
    */
-  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: async query start + completion polling with wall-clock bound and abort handling; the poll state machine is one cohesive unit.
   async queryInvoices(
     nip: string,
     dateFrom: string,
@@ -279,19 +301,11 @@ export class KsefApiClient {
     // Bound the polling wall-clock — without it, the loop can legitimately
     // run for >2min on a hung KSeF endpoint and pin a Render request handler
     // past the platform timeout.
-    const wallClockController = new AbortController();
-    const wallClockTimer = setTimeout(
-      () => wallClockController.abort(new Error('KSeF queryInvoices: wall-clock exceeded')),
+    const { opSignal, cleanup } = KsefApiClient.composeWallClockSignal(
+      signal,
       QUERY_POLL_WALL_CLOCK_MS,
+      'KSeF queryInvoices: wall-clock exceeded',
     );
-    const onCallerAbort = signal
-      ? () => wallClockController.abort(signal.reason ?? new Error('aborted'))
-      : null;
-    if (signal && onCallerAbort) {
-      if (signal.aborted) wallClockController.abort(signal.reason);
-      else signal.addEventListener('abort', onCallerAbort, { once: true });
-    }
-    const opSignal = wallClockController.signal;
 
     try {
       // Start query
@@ -355,22 +369,7 @@ export class KsefApiClient {
         }
 
         // Sleep that respects the wall-clock signal.
-        await new Promise<void>((resolve, reject) => {
-          const sleepTimer = setTimeout(resolve, 2000);
-          if (opSignal.aborted) {
-            clearTimeout(sleepTimer);
-            reject(opSignal.reason ?? new Error('aborted'));
-            return;
-          }
-          opSignal.addEventListener(
-            'abort',
-            () => {
-              clearTimeout(sleepTimer);
-              reject(opSignal.reason ?? new Error('aborted'));
-            },
-            { once: true },
-          );
-        });
+        await KsefApiClient.abortableSleep(opSignal, 2000);
       }
 
       if (!queryResult) {
@@ -381,10 +380,7 @@ export class KsefApiClient {
 
       return queryResult;
     } finally {
-      clearTimeout(wallClockTimer);
-      if (signal && onCallerAbort) {
-        signal.removeEventListener('abort', onCallerAbort);
-      }
+      cleanup();
     }
   }
 
@@ -581,19 +577,28 @@ export class KsefApiClient {
    * sessions or create duplicate query jobs. Callers that know their POST
    * is safe to retry can opt in via `retryNonIdempotent: true`.
    */
-  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: fetch-with-retry: idempotency gating + 429 Retry-After + 5xx exponential backoff + abort handling; splitting fragments the retry state machine.
+  /**
+   * Resolve the effective retry count: GET/HEAD are idempotent and retried by
+   * default; non-idempotent methods only retry when the caller opts in. A
+   * numeric `opts` is the backwards-compat `retries` shorthand.
+   */
+  private static resolveEffectiveRetries(
+    method: string,
+    opts: { retries?: number; retryNonIdempotent?: boolean } | number,
+  ): number {
+    const { retries = 2, retryNonIdempotent = false } =
+      typeof opts === 'number' ? { retries: opts } : opts;
+    const upper = method.toUpperCase();
+    const isIdempotent = upper === 'GET' || upper === 'HEAD';
+    return isIdempotent || retryNonIdempotent ? retries : 0;
+  }
+
   private async fetchWithRetry(
     url: string,
     options: RequestInit,
     opts: { retries?: number; retryNonIdempotent?: boolean } | number = {},
   ): Promise<Response> {
-    // Backwards-compat: a numeric second arg is treated as `retries`.
-    const { retries = 2, retryNonIdempotent = false } =
-      typeof opts === 'number' ? { retries: opts } : opts;
-
-    const method = (options.method ?? 'GET').toUpperCase();
-    const isIdempotent = method === 'GET' || method === 'HEAD';
-    const effectiveRetries = isIdempotent || retryNonIdempotent ? retries : 0;
+    const effectiveRetries = KsefApiClient.resolveEffectiveRetries(options.method ?? 'GET', opts);
 
     let lastError: Error | null = null;
 

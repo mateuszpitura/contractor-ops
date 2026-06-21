@@ -146,7 +146,86 @@ async function resolveStateName(
  * @param connectionId - The IntegrationConnection ID
  * @param payload - The raw webhook payload
  */
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: webhook handler dispatching over parsed Linear event types with per-action branches; cohesive ingress flow clearer inline.
+/**
+ * Mark a sync log FAILED and rethrow: passes `TRPCError`s through untouched,
+ * otherwise wraps in an INTERNAL_SERVER_ERROR with the original cause.
+ */
+async function failInboundSync(
+  prisma: PrismaClient,
+  syncLogId: string,
+  error: unknown,
+): Promise<never> {
+  await prisma.integrationSyncLog.update({
+    where: { id: syncLogId },
+    data: {
+      status: 'FAILED',
+      completedAt: new Date(),
+      errorMessage: error instanceof Error ? error.message : 'Unknown error',
+    },
+  });
+
+  if (error instanceof TRPCError) throw error;
+  throw new TRPCError({
+    code: 'INTERNAL_SERVER_ERROR',
+    message: E.LINEAR_WEBHOOK_PROCESSING_FAILED,
+    cause: error,
+  });
+}
+
+/** Build the refreshed ExternalLink metadata for an inbound Linear update. */
+function buildUpdatedLinearMetadata(args: {
+  issueIdentifier: string;
+  metadata: Record<string, unknown>;
+  data: { id: string; title: string; url: string };
+  externalUrl: string | null;
+  stateName: string;
+  stateType: string;
+}): LinearIssueMetadata {
+  const { issueIdentifier, metadata, data, externalUrl, stateName, stateType } = args;
+  return {
+    identifier: issueIdentifier,
+    linearIssueId: (metadata.linearIssueId as string) ?? data.id,
+    title: data.title,
+    status: stateName,
+    statusType: stateType as LinearIssueMetadata['statusType'],
+    url: (metadata.url as string) ?? externalUrl ?? data.url,
+    lastSyncOrigin: 'LINEAR',
+    lastSyncAt: new Date().toISOString(),
+  };
+}
+
+/**
+ * Whether a webhook for the same issue + target state arrived within the dedup
+ * window — Linear occasionally double-delivers the same state change.
+ */
+async function isDuplicateLinearWebhook(
+  prisma: PrismaClient,
+  organizationId: string,
+  connectionId: string,
+  issueIdentifier: string,
+  newStateId: string,
+): Promise<boolean> {
+  const deduplicationCutoff = new Date(Date.now() - DEDUP_WINDOW_MS);
+  const recentDuplicate = await prisma.integrationSyncLog.findFirst({
+    where: {
+      organizationId,
+      integrationConnectionId: connectionId,
+      direction: 'INBOUND',
+      syncType: 'issue-status-change',
+      startedAt: { gte: deduplicationCutoff },
+      responsePayloadJson: {
+        path: ['identifier'],
+        equals: issueIdentifier,
+      },
+    },
+    orderBy: { startedAt: 'desc' },
+  });
+
+  if (!recentDuplicate) return false;
+  const recentPayload = recentDuplicate.responsePayloadJson as Record<string, unknown> | null;
+  return recentPayload?.newStateId === newStateId;
+}
+
 export async function processLinearWebhook(
   prisma: PrismaClient,
   organizationId: string,
@@ -214,29 +293,17 @@ export async function processLinearWebhook(
     return;
   }
 
-  // 5. Deduplication: Check for duplicate webhook within 5s window
-  const deduplicationCutoff = new Date(Date.now() - DEDUP_WINDOW_MS);
-  const recentDuplicate = await prisma.integrationSyncLog.findFirst({
-    where: {
+  // 5. Deduplication: skip a duplicate webhook within the 5s window
+  if (
+    await isDuplicateLinearWebhook(
+      prisma,
       organizationId,
-      integrationConnectionId: connectionId,
-      direction: 'INBOUND',
-      syncType: 'issue-status-change',
-      startedAt: { gte: deduplicationCutoff },
-      responsePayloadJson: {
-        path: ['identifier'],
-        equals: issueIdentifier,
-      },
-    },
-    orderBy: { startedAt: 'desc' },
-  });
-
-  if (recentDuplicate) {
-    const recentPayload = recentDuplicate.responsePayloadJson as Record<string, unknown> | null;
-    if (recentPayload?.newStateId === newStateId) {
-      // Duplicate webhook -- skip
-      return;
-    }
+      connectionId,
+      issueIdentifier,
+      newStateId,
+    )
+  ) {
+    return;
   }
 
   // 6. Resolve internal status from Linear stateId
@@ -299,16 +366,14 @@ export async function processLinearWebhook(
     });
 
     // 10. Update ExternalLink metadata
-    const updatedMetadata: LinearIssueMetadata = {
-      identifier: issueIdentifier,
-      linearIssueId: (metadata.linearIssueId as string) ?? webhookPayload.data.id,
-      title: webhookPayload.data.title,
-      status: stateName,
-      statusType: stateType as LinearIssueMetadata['statusType'],
-      url: (metadata.url as string) ?? externalLink.externalUrl ?? webhookPayload.data.url,
-      lastSyncOrigin: 'LINEAR',
-      lastSyncAt: new Date().toISOString(),
-    };
+    const updatedMetadata = buildUpdatedLinearMetadata({
+      issueIdentifier,
+      metadata,
+      data: webhookPayload.data,
+      externalUrl: externalLink.externalUrl,
+      stateName,
+      stateType,
+    });
 
     await prisma.externalLink.update({
       where: { id: externalLink.id },
@@ -332,21 +397,7 @@ export async function processLinearWebhook(
       },
     });
   } catch (error) {
-    await prisma.integrationSyncLog.update({
-      where: { id: syncLog.id },
-      data: {
-        status: 'FAILED',
-        completedAt: new Date(),
-        errorMessage: error instanceof Error ? error.message : 'Unknown error',
-      },
-    });
-
-    if (error instanceof TRPCError) throw error;
-    throw new TRPCError({
-      code: 'INTERNAL_SERVER_ERROR',
-      message: E.LINEAR_WEBHOOK_PROCESSING_FAILED,
-      cause: error,
-    });
+    await failInboundSync(prisma, syncLog.id, error);
   }
 }
 

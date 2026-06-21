@@ -39,6 +39,31 @@ export type IntakeUploadLocalErrorKind =
   | { kind: 'levelTooLow'; level?: string }
   | { kind: 'generic'; message?: string };
 
+/** Map a thrown upload error to the local error-state shape shown in the UI. */
+function mapUploadError(err: unknown): IntakeUploadLocalErrorKind {
+  const code = err instanceof TRPCClientError ? err.data?.code : undefined;
+  const message =
+    err instanceof TRPCClientError ? err.message : err instanceof Error ? err.message : '';
+  if (message === 'FILE_TOO_LARGE' || code === 'PAYLOAD_TOO_LARGE') {
+    return { kind: 'tooLarge' };
+  }
+  if (message === 'CII_XSD_INVALID') {
+    const details = (err as { data?: { details?: { errors?: string[] } } }).data?.details;
+    return { kind: 'xsdReject', errors: details?.errors?.join('; ') };
+  }
+  if (message === 'ZUGFERD_NO_XML_ATTACHMENT') {
+    return { kind: 'noXmlAttachment' };
+  }
+  if (message === 'ZUGFERD_LEVEL_UNSUPPORTED') {
+    const details = (err as { data?: { details?: { level?: string } } }).data?.details;
+    return { kind: 'levelTooLow', level: details?.level };
+  }
+  if (message === 'UNSUPPORTED_MIME') {
+    return { kind: 'wrongType' };
+  }
+  return { kind: 'generic', message };
+}
+
 export function useIntakeUpload(onOpenChange: (open: boolean) => void) {
   const t = useTranslations('EInvoice.intake');
   const router = useRouter();
@@ -69,7 +94,6 @@ export function useIntakeUpload(onOpenChange: (open: boolean) => void) {
   );
 
   const handleFile = useCallback(
-    // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: file intake handler validates type/size, reads the file, uploads, then maps result/error states in order; cohesive sequential flow.
     async (file: File) => {
       setLocalError(null);
 
@@ -103,25 +127,7 @@ export function useIntakeUpload(onOpenChange: (open: boolean) => void) {
         handleClose(false);
         void router.push(`/invoices/intake/${result.intakeId}`);
       } catch (err) {
-        const code = err instanceof TRPCClientError ? err.data?.code : undefined;
-        const message =
-          err instanceof TRPCClientError ? err.message : err instanceof Error ? err.message : '';
-        if (message === 'FILE_TOO_LARGE' || code === 'PAYLOAD_TOO_LARGE') {
-          setLocalError({ kind: 'tooLarge' });
-        } else if (message === 'CII_XSD_INVALID') {
-          const details = (err as { data?: { details?: { errors?: string[] } } }).data?.details;
-          const errors = details?.errors?.join('; ');
-          setLocalError({ kind: 'xsdReject', errors });
-        } else if (message === 'ZUGFERD_NO_XML_ATTACHMENT') {
-          setLocalError({ kind: 'noXmlAttachment' });
-        } else if (message === 'ZUGFERD_LEVEL_UNSUPPORTED') {
-          const details = (err as { data?: { details?: { level?: string } } }).data?.details;
-          setLocalError({ kind: 'levelTooLow', level: details?.level });
-        } else if (message === 'UNSUPPORTED_MIME') {
-          setLocalError({ kind: 'wrongType' });
-        } else {
-          setLocalError({ kind: 'generic', message });
-        }
+        setLocalError(mapUploadError(err));
       }
     },
     [handleClose, router, t, uploadMutation],

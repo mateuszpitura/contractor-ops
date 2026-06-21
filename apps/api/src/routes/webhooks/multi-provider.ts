@@ -99,187 +99,278 @@ async function verifyPerConnection(
   return { verification: lastFailure };
 }
 
+/** Project Fastify's header bag to a flat `Record<string, string>`. */
+function collectStringHeaders(
+  rawHeaders: Record<string, string | string[] | undefined>,
+): Record<string, string> {
+  const headers: Record<string, string> = {};
+  for (const [key, value] of Object.entries(rawHeaders)) {
+    if (typeof value === 'string') headers[key] = value;
+    else if (Array.isArray(value)) headers[key] = value.join(',');
+  }
+  return headers;
+}
+
+type ParsedWebhookBody = { ok: true; payload: unknown } | { ok: false; status: 400; error: string };
+
+/**
+ * Parse the raw webhook body. Slack may arrive as JSON or as a form-encoded
+ * `payload` field; every other provider is plain JSON. Returns a discriminated
+ * result so the caller maps a failure to the right HTTP response.
+ */
+function parseWebhookBody(provider: string, rawBody: string): ParsedWebhookBody {
+  try {
+    if (provider === 'slack') {
+      const trimmed = rawBody.trim();
+      if (trimmed.startsWith('{')) {
+        return { ok: true, payload: JSON.parse(trimmed) };
+      }
+      const formParams = new URLSearchParams(rawBody);
+      const payloadStr = formParams.get('payload');
+      if (!payloadStr) {
+        log.warn({ provider }, 'rejected webhook: slack form body missing payload field');
+        return { ok: false, status: 400, error: 'Invalid payload' };
+      }
+      return { ok: true, payload: JSON.parse(payloadStr) };
+    }
+    return { ok: true, payload: JSON.parse(rawBody) };
+  } catch (parseErr) {
+    log.warn(
+      {
+        provider,
+        err: parseErr instanceof Error ? parseErr.message : String(parseErr),
+        requestId: getRequestId(),
+      },
+      'rejected webhook: unparseable JSON body',
+    );
+    return { ok: false, status: 400, error: 'Invalid JSON' };
+  }
+}
+
+type ResolvedWebhookOrg = { orgId: string; connectionId: string | null } | { skip: true };
+
+type OrgCandidate = { orgId: string; connectionId: string | null };
+
+/** Slack fallback: resolve the org/connection from the payload's teamId. */
+async function applySlackOrgFallback(
+  current: OrgCandidate,
+  payloadJson: unknown,
+): Promise<OrgCandidate> {
+  if (current.orgId) return current;
+  const teamId = extractSlackTeamId(payloadJson);
+  if (!teamId) return current;
+  const resolved = await resolveSlackConnectionByTeamId(teamId);
+  if (!resolved) return current;
+  return {
+    orgId: resolved.organizationId,
+    connectionId: current.connectionId ?? resolved.connectionId,
+  };
+}
+
+/** Resend fallback: resolve the org from the verification's organization slug. */
+async function applyResendOrgFallback(
+  current: OrgCandidate,
+  organizationSlug: string | undefined,
+): Promise<OrgCandidate> {
+  if (current.orgId || !organizationSlug) return current;
+  const orgId = await resolveOrgIdBySlug(organizationSlug);
+  return orgId ? { ...current, orgId } : current;
+}
+
+/**
+ * Resolve the organization (and optional connection) the delivery belongs to.
+ * Falls back to a Slack teamId / Resend slug lookup. Returns `{ skip: true }`
+ * (after logging) when the org cannot be resolved — the caller answers 2xx
+ * without persisting so the provider does not redeliver.
+ */
+async function resolveWebhookOrg(
+  provider: string,
+  verification: WebhookVerificationResult,
+  payloadJson: unknown,
+  perConnectionOrgId: string | undefined,
+  perConnectionConnectionId: string | undefined,
+): Promise<ResolvedWebhookOrg> {
+  let candidate: OrgCandidate = {
+    orgId: perConnectionOrgId ?? verification.organizationId ?? '',
+    connectionId: perConnectionConnectionId ?? verification.connectionId ?? null,
+  };
+
+  if (provider === 'slack') {
+    candidate = await applySlackOrgFallback(candidate, payloadJson);
+  }
+
+  if (provider === 'resend') {
+    candidate = await applyResendOrgFallback(candidate, verification.organizationSlug);
+    if (!candidate.orgId) {
+      log.warn(
+        { provider, slug: verification.organizationSlug ?? null },
+        'skipping WebhookDelivery: unresolved organization',
+      );
+      return { skip: true };
+    }
+  }
+
+  if (!candidate.orgId) {
+    log.warn({ provider }, 'skipping WebhookDelivery: missing organizationId');
+    return { skip: true };
+  }
+
+  return { orgId: candidate.orgId, connectionId: candidate.connectionId };
+}
+
+/**
+ * Queue the delivery for async processing. On QStash failure, safe-swallow:
+ * mark the row FAILED + report to Sentry but never throw, so the caller still
+ * returns 2xx and the provider does not redeliver.
+ */
+async function enqueueWebhookProcessing(deliveryId: string, provider: string): Promise<void> {
+  try {
+    const qstash = getQStashClient();
+    await qstash.publishJSON({
+      url: `${loadEnv().API_URL}/webhooks/_process`,
+      body: { deliveryId, provider },
+      retries: 3,
+    });
+  } catch (queueError) {
+    log.error(
+      {
+        err: queueError,
+        provider,
+        deliveryId,
+        requestId: getRequestId(),
+      },
+      'failed to queue for processing',
+    );
+    Sentry.captureException(queueError, {
+      tags: { 'webhook.provider': provider, 'webhook.stage': 'qstash-publish' },
+      extra: { deliveryId, requestId: getRequestId() },
+    });
+    await prisma.webhookDelivery.update({
+      where: { id: deliveryId },
+      data: {
+        deliveryStatus: 'FAILED',
+        errorMessage:
+          `QStash publish failed: ${queueError instanceof Error ? queueError.message : String(queueError)}`.slice(
+            0,
+            500,
+          ),
+      },
+    });
+  }
+}
+
+/** Coerce a Fastify raw body (Buffer or string) to a UTF-8 string. */
+function extractRawBody(body: unknown): string {
+  if (body instanceof Buffer) return body.toString('utf8');
+  if (typeof body === 'string') return body;
+  return '';
+}
+
+type WebhookAdapter = NonNullable<ReturnType<typeof getAdapter>>;
+
+/**
+ * Verify the inbound signature. Per-connection-secret providers (jira/linear)
+ * try each tenant's stored secret; everyone else uses the adapter's static
+ * verifier. Returns the verification result plus any org/connection it bound.
+ */
+async function verifyWebhookRequest(
+  provider: string,
+  adapter: WebhookAdapter,
+  rawBody: string,
+  headers: Record<string, string>,
+): Promise<{
+  verification: WebhookVerificationResult | undefined;
+  organizationId?: string;
+  connectionId?: string;
+}> {
+  if (PER_CONNECTION_SECRET_PROVIDERS.has(provider) && adapter.verifyWebhookSignature) {
+    const verifyFn = adapter.verifyWebhookSignature.bind(adapter);
+    return verifyPerConnection(provider, rawBody, headers, verifyFn);
+  }
+  return { verification: adapter.verifyWebhookSignature?.(rawBody, headers) };
+}
+
 // Adapter registry is process-singleton — register once at module load.
 registerAllAdapters();
 
 export function registerMultiProviderWebhookRoute(app: FastifyInstance): void {
-  app.post<{ Params: { provider: string } }>(
-    '/webhooks/:provider',
-    // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: provider-specific branching ported 1:1 from legacy route
-    async (request, reply) => {
-      const { provider } = request.params;
-      const adapter = getAdapter(provider);
+  app.post<{ Params: { provider: string } }>('/webhooks/:provider', async (request, reply) => {
+    const { provider } = request.params;
+    const adapter = getAdapter(provider);
 
-      if (!adapter?.supportsWebhooks) {
-        return reply.code(404).send({ error: 'Unknown provider' });
-      }
+    if (!adapter?.supportsWebhooks) {
+      return reply.code(404).send({ error: 'Unknown provider' });
+    }
 
-      const rawBody =
-        request.body instanceof Buffer
-          ? request.body.toString('utf8')
-          : typeof request.body === 'string'
-            ? request.body
-            : '';
+    const rawBody = extractRawBody(request.body);
 
-      const headers: Record<string, string> = {};
-      for (const [key, value] of Object.entries(request.headers)) {
-        if (typeof value === 'string') headers[key] = value;
-        else if (Array.isArray(value)) headers[key] = value.join(',');
-      }
+    const headers = collectStringHeaders(request.headers);
 
-      let verification: WebhookVerificationResult | undefined;
-      let perConnectionOrgId: string | undefined;
-      let perConnectionConnectionId: string | undefined;
+    const {
+      verification,
+      organizationId: perConnectionOrgId,
+      connectionId: perConnectionConnectionId,
+    } = await verifyWebhookRequest(provider, adapter, rawBody, headers);
 
-      if (PER_CONNECTION_SECRET_PROVIDERS.has(provider) && adapter.verifyWebhookSignature) {
-        const verifyFn = adapter.verifyWebhookSignature.bind(adapter);
-        const result = await verifyPerConnection(provider, rawBody, headers, verifyFn);
-        verification = result.verification;
-        perConnectionOrgId = result.organizationId;
-        perConnectionConnectionId = result.connectionId;
-      } else {
-        verification = adapter.verifyWebhookSignature?.(rawBody, headers);
-      }
+    if (!verification?.valid) {
+      log.warn(
+        { provider, reason: verification?.reason ?? 'unknown' },
+        'rejected webhook: signature verification failed',
+      );
+      return reply.code(401).send({ error: 'Invalid signature' });
+    }
 
-      if (!verification?.valid) {
-        log.warn(
-          { provider, reason: verification?.reason ?? 'unknown' },
-          'rejected webhook: signature verification failed',
-        );
-        return reply.code(401).send({ error: 'Invalid signature' });
-      }
+    const isSlackViewSubmission = provider === 'slack' && rawBody.includes('view_submission');
 
-      const isSlackViewSubmission = provider === 'slack' && rawBody.includes('view_submission');
+    const parsedBody = parseWebhookBody(provider, rawBody);
+    if (!parsedBody.ok) {
+      return reply.code(parsedBody.status).send({ error: parsedBody.error });
+    }
+    let payloadJson: unknown = parsedBody.payload;
 
-      let payloadJson: unknown;
-      try {
-        if (provider === 'slack') {
-          const trimmed = rawBody.trim();
-          if (trimmed.startsWith('{')) {
-            payloadJson = JSON.parse(trimmed);
-          } else {
-            const formParams = new URLSearchParams(rawBody);
-            const payloadStr = formParams.get('payload');
-            if (!payloadStr) {
-              log.warn({ provider }, 'rejected webhook: slack form body missing payload field');
-              return reply.code(400).send({ error: 'Invalid payload' });
-            }
-            payloadJson = JSON.parse(payloadStr);
-          }
-        } else {
-          payloadJson = JSON.parse(rawBody);
-        }
-      } catch (parseErr) {
-        log.warn(
-          {
-            provider,
-            err: parseErr instanceof Error ? parseErr.message : String(parseErr),
-            requestId: getRequestId(),
-          },
-          'rejected webhook: unparseable JSON body',
-        );
-        return reply.code(400).send({ error: 'Invalid JSON' });
-      }
+    const schemaResult = validateWebhookPayload(provider, payloadJson);
+    if (!schemaResult.ok) {
+      log.warn(
+        { provider, reason: schemaResult.reason },
+        'rejected webhook: schema validation failed',
+      );
+      return reply.code(400).send({ error: 'Invalid payload' });
+    }
+    payloadJson = schemaResult.payload;
 
-      const schemaResult = validateWebhookPayload(provider, payloadJson);
-      if (!schemaResult.ok) {
-        log.warn(
-          { provider, reason: schemaResult.reason },
-          'rejected webhook: schema validation failed',
-        );
-        return reply.code(400).send({ error: 'Invalid payload' });
-      }
-      payloadJson = schemaResult.payload;
+    const org = await resolveWebhookOrg(
+      provider,
+      verification,
+      payloadJson,
+      perConnectionOrgId,
+      perConnectionConnectionId,
+    );
+    if ('skip' in org) {
+      return reply.code(200).send({ received: true, persisted: false });
+    }
 
-      let resolvedOrgId = perConnectionOrgId ?? verification.organizationId ?? '';
-      let resolvedConnectionId = perConnectionConnectionId ?? verification.connectionId ?? null;
+    const delivery = await prisma.webhookDelivery.create({
+      data: {
+        organizationId: org.orgId,
+        provider: adapter.slug.toUpperCase() as never,
+        eventType: verification.eventType ?? 'UNKNOWN',
+        signatureValid: true,
+        payloadJson: payloadJson as never,
+        deliveryStatus: 'RECEIVED',
+        integrationConnectionId: org.connectionId,
+      },
+    });
 
-      if (provider === 'slack') {
-        const teamId = extractSlackTeamId(payloadJson);
-        if (teamId && !resolvedOrgId) {
-          const resolved = await resolveSlackConnectionByTeamId(teamId);
-          if (resolved) {
-            resolvedOrgId = resolved.organizationId;
-            resolvedConnectionId = resolvedConnectionId ?? resolved.connectionId;
-          }
-        }
-      }
+    // Safe-swallow: QStash publish failure marks the row FAILED but we
+    // still return 2xx so the provider doesn't redeliver and create a
+    // second WebhookDelivery row (the at-most-once-per-row invariant
+    // `_process` relies on for claim-update idempotency).
+    await enqueueWebhookProcessing(delivery.id, provider);
 
-      if (provider === 'resend' && verification.organizationSlug && !resolvedOrgId) {
-        const orgId = await resolveOrgIdBySlug(verification.organizationSlug);
-        if (orgId) {
-          resolvedOrgId = orgId;
-        }
-      }
+    if (isSlackViewSubmission) {
+      return reply.code(200).send({ response_action: 'clear' });
+    }
 
-      if (provider === 'resend' && !resolvedOrgId) {
-        log.warn(
-          { provider, slug: verification.organizationSlug ?? null },
-          'skipping WebhookDelivery: unresolved organization',
-        );
-        return reply.code(200).send({ received: true, persisted: false });
-      }
-
-      if (!resolvedOrgId) {
-        log.warn({ provider }, 'skipping WebhookDelivery: missing organizationId');
-        return reply.code(200).send({ received: true, persisted: false });
-      }
-
-      const delivery = await prisma.webhookDelivery.create({
-        data: {
-          organizationId: resolvedOrgId,
-          provider: adapter.slug.toUpperCase() as never,
-          eventType: verification.eventType ?? 'UNKNOWN',
-          signatureValid: true,
-          payloadJson: payloadJson as never,
-          deliveryStatus: 'RECEIVED',
-          integrationConnectionId: resolvedConnectionId,
-        },
-      });
-
-      // Safe-swallow: QStash publish failure marks the row FAILED but we
-      // still return 2xx so the provider doesn't redeliver and create a
-      // second WebhookDelivery row (the at-most-once-per-row invariant
-      // `_process` relies on for claim-update idempotency).
-      try {
-        const qstash = getQStashClient();
-        await qstash.publishJSON({
-          url: `${loadEnv().API_URL}/webhooks/_process`,
-          body: { deliveryId: delivery.id, provider },
-          retries: 3,
-        });
-      } catch (queueError) {
-        log.error(
-          {
-            err: queueError,
-            provider,
-            deliveryId: delivery.id,
-            requestId: getRequestId(),
-          },
-          'failed to queue for processing',
-        );
-        Sentry.captureException(queueError, {
-          tags: { 'webhook.provider': provider, 'webhook.stage': 'qstash-publish' },
-          extra: { deliveryId: delivery.id, requestId: getRequestId() },
-        });
-        await prisma.webhookDelivery.update({
-          where: { id: delivery.id },
-          data: {
-            deliveryStatus: 'FAILED',
-            errorMessage:
-              `QStash publish failed: ${queueError instanceof Error ? queueError.message : String(queueError)}`.slice(
-                0,
-                500,
-              ),
-          },
-        });
-      }
-
-      if (isSlackViewSubmission) {
-        return reply.code(200).send({ response_action: 'clear' });
-      }
-
-      return reply.code(200).send({ received: true });
-    },
-  );
+    return reply.code(200).send({ received: true });
+  });
 }

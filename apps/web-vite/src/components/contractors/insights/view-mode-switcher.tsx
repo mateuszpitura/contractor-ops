@@ -12,6 +12,7 @@ import { useTranslations } from '../../../i18n/useTranslations.js';
 import type { ContractorListViewMode } from '../hooks/use-contractor-list-view.js';
 import {
   CONTRACTOR_LIST_VIEW_MODES,
+  isContractorListViewMode,
   useContractorListView,
 } from '../hooks/use-contractor-list-view.js';
 
@@ -41,7 +42,9 @@ export function ViewModeSwitcher() {
   const { mode, setMode } = useContractorListView();
   const options = useContractorListViewModeOptions();
   const handleValueChange = useCallback(
-    (value: string | null) => setMode(value as ContractorListViewMode),
+    (value: string | null) => {
+      if (isContractorListViewMode(value)) setMode(value);
+    },
     [setMode],
   );
 

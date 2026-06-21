@@ -54,8 +54,33 @@ function verifySignature(rawBody: string, signature: string | null, secret: stri
   return timingSafeEqual(a, b);
 }
 
+/** Read the raw request body as a UTF-8 string (HMAC needs the original bytes). */
+function readRawBody(body: unknown): string {
+  if (body instanceof Buffer) return body.toString('utf8');
+  if (typeof body === 'string') return body;
+  return '';
+}
+
+/**
+ * Parse + schema-validate the (already HMAC-verified) body. An empty body
+ * yields `{ payload: null }` so the required-field check still produces its
+ * `missing_fields` reason; malformed JSON or a schema miss yields `null` to
+ * signal the `bad_json` 400.
+ */
+function parseLegalPayload(rawBody: string): { payload: Payload | null } | null {
+  if (rawBody.length === 0) return { payload: null };
+  let raw: unknown;
+  try {
+    raw = JSON.parse(rawBody);
+  } catch {
+    return null;
+  }
+  const result = payloadSchema.safeParse(raw);
+  if (!result.success) return null;
+  return { payload: result.data };
+}
+
 export function registerRevalidateLegalRoute(app: FastifyInstance): void {
-  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: linear webhook guard chain (config → body extract → HMAC verify → parse → required-field check → publish), each branch a distinct 4xx/5xx path
   app.post('/revalidate-legal', async (request, reply) => {
     const secret = loadEnv().CMS_WEBHOOK_SECRET;
     if (!secret) {
@@ -63,12 +88,7 @@ export function registerRevalidateLegalRoute(app: FastifyInstance): void {
       return reply.code(500).send({ ok: false, reason: 'not_configured' });
     }
 
-    const rawBody =
-      request.body instanceof Buffer
-        ? request.body.toString('utf8')
-        : typeof request.body === 'string'
-          ? request.body
-          : '';
+    const rawBody = readRawBody(request.body);
     const signature = (request.headers['x-cms-signature'] as string | undefined) ?? null;
 
     if (!verifySignature(rawBody, signature, secret)) {
@@ -76,20 +96,11 @@ export function registerRevalidateLegalRoute(app: FastifyInstance): void {
       return reply.code(401).send({ ok: false, reason: 'bad_signature' });
     }
 
-    let parsed: Payload | null = null;
-    if (rawBody.length > 0) {
-      let raw: unknown;
-      try {
-        raw = JSON.parse(rawBody);
-      } catch {
-        return reply.code(400).send({ ok: false, reason: 'bad_json' });
-      }
-      const result = payloadSchema.safeParse(raw);
-      if (!result.success) {
-        return reply.code(400).send({ ok: false, reason: 'bad_json' });
-      }
-      parsed = result.data;
+    const parseResult = parseLegalPayload(rawBody);
+    if (!parseResult) {
+      return reply.code(400).send({ ok: false, reason: 'bad_json' });
     }
+    const parsed = parseResult.payload;
     const type = parsed?.type;
     const jurisdiction = parsed?.jurisdiction;
     if (!(type && jurisdiction)) {

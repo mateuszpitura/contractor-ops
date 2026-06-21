@@ -285,7 +285,6 @@ export abstract class GovApiClient {
    * - Sets Authorization header from loaded bearer token unless `skipAuth: true`
    * - Skips retries for non-idempotent methods unless `retryNonIdempotent: true`
    */
-  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: retry/backoff loop with per-attempt timeout, overall deadline pre-emption, retryable-vs-thrown classification, and last-outcome error/response surfacing; branches are intrinsic to the resilience contract.
   protected async fetch(
     path: string,
     options: RequestInit = {},
@@ -314,69 +313,179 @@ export abstract class GovApiClient {
       // Response captured on attempt N-1 (HIGH: stale-response leak).
       lastResponse = null;
 
-      if (attempt > 0) {
-        const delay = this.retryDelay(attempt, effectiveRetry);
-        // Honour the overall deadline before sleeping — pre-empt pointless waits.
-        if (this.deadlineExceeded(opts, callStartMs, delay)) break;
-        await new Promise(r => setTimeout(r, delay));
+      if (!(await this.waitForNextAttempt(attempt, opts, callStartMs, effectiveRetry))) break;
+
+      const outcome = await this.runFetchAttempt({
+        url,
+        options,
+        opts,
+        path,
+        method,
+        timeoutMs,
+        attempt,
+        effectiveRetry,
+        requestId,
+        callStartMs,
+      });
+
+      if (outcome.kind === 'success') return outcome.response;
+      if (outcome.kind === 'retry') {
+        lastResponse = outcome.response;
+        lastAttemptThrew = false;
+        continue;
       }
+      lastError = outcome.error;
+      lastAttemptThrew = true;
+      if (attempt >= effectiveMaxRetries) break;
+    }
 
-      if (this.deadlineExceeded(opts, callStartMs, 0)) break;
+    // Decide which error/response to surface based on the LAST attempt outcome.
+    return this.surfaceFinalOutcome({
+      lastError,
+      lastResponse,
+      lastAttemptThrew,
+      requestId,
+      callStartMs,
+      path,
+      method,
+      effectiveMaxRetries,
+      url,
+    });
+  }
 
-      try {
-        const attemptStartMs = Date.now();
-        const response = await this.fetchOnce(url, options, opts, path, timeoutMs);
+  /**
+   * Backoff + deadline gate before an attempt. Sleeps the jittered backoff for
+   * retries (attempt > 0), pre-empting the wait when the overall deadline would
+   * be exceeded. Returns `false` (caller breaks the loop) when the deadline has
+   * already passed; `true` to proceed with the attempt.
+   */
+  private async waitForNextAttempt(
+    attempt: number,
+    opts: GovApiFetchOptions | undefined,
+    callStartMs: number,
+    effectiveRetry: GovApiRetryConfig,
+  ): Promise<boolean> {
+    if (attempt > 0) {
+      const delay = this.retryDelay(attempt, effectiveRetry);
+      // Honour the overall deadline before sleeping — pre-empt pointless waits.
+      if (this.deadlineExceeded(opts, callStartMs, delay)) return false;
+      await new Promise(r => setTimeout(r, delay));
+    }
 
-        if (this.isRetryable(response, attempt, effectiveRetry)) {
-          lastResponse = response;
-          lastAttemptThrew = false;
-          this.log.warn(
-            {
-              requestId,
-              attempt: attempt + 1,
-              status: response.status,
-              latencyMs: Date.now() - attemptStartMs,
-              path,
-              method,
-            },
-            'gov-api retryable response, scheduling retry',
-          );
-          continue;
-        }
+    return !this.deadlineExceeded(opts, callStartMs, 0);
+  }
 
-        this.log.info(
-          {
-            requestId,
-            attempt: attempt + 1,
-            status: response.status,
-            latencyMs: Date.now() - callStartMs,
-            path,
-            method,
-          },
-          'gov-api request completed',
-        );
-        return response;
-      } catch (err) {
-        lastError = GovApiClient.toError(err);
-        lastAttemptThrew = true;
+  /**
+   * Run one fetch attempt and classify it: a non-retryable response is a
+   * `success`; a retryable status (with retries left) is a `retry`; a thrown
+   * error is `threw`. Per-attempt logging lives here so the caller only owns
+   * loop control + last-outcome bookkeeping.
+   */
+  private async runFetchAttempt(args: {
+    url: string;
+    options: RequestInit;
+    opts: GovApiFetchOptions | undefined;
+    path: string;
+    method: string;
+    timeoutMs: number;
+    attempt: number;
+    effectiveRetry: GovApiRetryConfig;
+    requestId: string;
+    callStartMs: number;
+  }): Promise<
+    | { kind: 'success'; response: Response }
+    | { kind: 'retry'; response: Response }
+    | { kind: 'threw'; error: Error }
+  > {
+    const {
+      url,
+      options,
+      opts,
+      path,
+      method,
+      timeoutMs,
+      attempt,
+      effectiveRetry,
+      requestId,
+      callStartMs,
+    } = args;
+    try {
+      const attemptStartMs = Date.now();
+      const response = await this.fetchOnce(url, options, opts, path, timeoutMs);
+
+      if (this.isRetryable(response, attempt, effectiveRetry)) {
         this.log.warn(
           {
             requestId,
             attempt: attempt + 1,
-            err: { message: lastError.message, name: lastError.name },
+            status: response.status,
+            latencyMs: Date.now() - attemptStartMs,
             path,
             method,
           },
-          'gov-api fetch attempt threw',
+          'gov-api retryable response, scheduling retry',
         );
-        if (attempt >= effectiveMaxRetries) break;
+        return { kind: 'retry', response };
       }
-    }
 
-    // Decide which error/response to surface based on the LAST attempt outcome.
-    // If the last attempt threw, propagate the thrown error rather than a
-    // stale 5xx Response from an earlier attempt — masking a network outage
-    // as an upstream 500 confuses observability and soft-fail logic.
+      this.log.info(
+        {
+          requestId,
+          attempt: attempt + 1,
+          status: response.status,
+          latencyMs: Date.now() - callStartMs,
+          path,
+          method,
+        },
+        'gov-api request completed',
+      );
+      return { kind: 'success', response };
+    } catch (err) {
+      const error = GovApiClient.toError(err);
+      this.log.warn(
+        {
+          requestId,
+          attempt: attempt + 1,
+          err: { message: error.message, name: error.name },
+          path,
+          method,
+        },
+        'gov-api fetch attempt threw',
+      );
+      return { kind: 'threw', error };
+    }
+  }
+
+  /**
+   * Surface the final retry outcome. If the last attempt threw, propagate the
+   * thrown error rather than a stale 5xx Response from an earlier attempt —
+   * masking a network outage as an upstream 500 confuses observability and
+   * soft-fail logic. Otherwise return the last retryable response, or throw a
+   * synthesised "failed after N attempts" error.
+   */
+  private surfaceFinalOutcome(args: {
+    lastError: Error | null;
+    lastResponse: Response | null;
+    lastAttemptThrew: boolean;
+    requestId: string;
+    callStartMs: number;
+    path: string;
+    method: string;
+    effectiveMaxRetries: number;
+    url: string;
+  }): Response {
+    const {
+      lastError,
+      lastResponse,
+      lastAttemptThrew,
+      requestId,
+      callStartMs,
+      path,
+      method,
+      effectiveMaxRetries,
+      url,
+    } = args;
+
     if (!lastAttemptThrew && lastResponse) {
       this.log.info(
         {

@@ -276,7 +276,62 @@ type WhereBuilderClient = Pick<DbClient, '$queryRaw'>;
  * `complianceHealth` is intentionally NOT handled here: it is derived in JS from
  * compliance-item counts. `list` post-filters on it; `insights` tallies it.
  */
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: query where-clause builder — one guarded predicate per filter facet plus id-set intersection with null short-circuit; the branch count mirrors the filter surface and must stay in one place.
+/** Applies the direct column `in` predicates for the array-valued filter facets. */
+function applyColumnFilters(
+  where: Prisma.ContractorWhereInput,
+  filters: ContractorFilters | undefined,
+): void {
+  if (filters?.status?.length) where.status = { in: filters.status };
+  if (filters?.lifecycleStage?.length) where.lifecycleStage = { in: filters.lifecycleStage };
+  if (filters?.ownerUserId?.length) where.ownerUserId = { in: filters.ownerUserId };
+  if (filters?.primaryTeamId?.length) where.primaryTeamId = { in: filters.primaryTeamId };
+  if (filters?.type?.length) where.type = { in: filters.type };
+  if (filters?.countryCode?.length) where.countryCode = { in: filters.countryCode };
+}
+
+/** Builds the `AND` predicate list for the derived (non-column) filter facets. */
+function buildAndPredicates(
+  filters: ContractorFilters | undefined,
+  now: Date,
+): Prisma.ContractorWhereInput[] {
+  const and: Prisma.ContractorWhereInput[] = [];
+  if (filters?.expiringWithin) and.push(expiringContractsPredicate(now, filters.expiringWithin));
+  if (filters?.paymentBlocked) and.push(paymentBlockedPredicate());
+  if (filters?.stalled) and.push(stalledOnboardingPredicate(now));
+  return and;
+}
+
+/**
+ * Builds a prefix-match `to_tsquery('simple', …)` expression from a free-text
+ * `search` string. Returns `null` when the (sanitized) input yields no usable
+ * term, so the caller can skip the FTS sub-query entirely.
+ */
+function buildFtsQuery(search: string): string | null {
+  const terms = search
+    .trim()
+    .split(/\s+/)
+    .map(t => t.replace(/[^a-zA-Z0-9À-ɏ]/g, ''))
+    .filter(Boolean)
+    .map(t => `${t}:*`)
+    .join(' & ');
+  return terms || null;
+}
+
+/**
+ * Intersects the collected id-sets. Returns `null` when the intersection is
+ * empty — the same short-circuit signal the raw sub-queries use — or when no
+ * id-set facet was applied (nothing to constrain by).
+ */
+function intersectIdSets(idSets: string[][]): string[] | null {
+  if (idSets.length === 0) return [];
+  let intersection = idSets[0] ?? [];
+  for (let i = 1; i < idSets.length; i++) {
+    const set = new Set(idSets[i]);
+    intersection = intersection.filter(id => set.has(id));
+  }
+  return intersection.length === 0 ? null : intersection;
+}
+
 export async function buildContractorListWhere(
   db: WhereBuilderClient,
   organizationId: string,
@@ -285,18 +340,9 @@ export async function buildContractorListWhere(
 ): Promise<Prisma.ContractorWhereInput | null> {
   const { search, filters } = params;
   const where: Prisma.ContractorWhereInput = { organizationId, deletedAt: null };
-  const and: Prisma.ContractorWhereInput[] = [];
 
-  if (filters?.status?.length) where.status = { in: filters.status };
-  if (filters?.lifecycleStage?.length) where.lifecycleStage = { in: filters.lifecycleStage };
-  if (filters?.ownerUserId?.length) where.ownerUserId = { in: filters.ownerUserId };
-  if (filters?.primaryTeamId?.length) where.primaryTeamId = { in: filters.primaryTeamId };
-  if (filters?.type?.length) where.type = { in: filters.type };
-  if (filters?.countryCode?.length) where.countryCode = { in: filters.countryCode };
-
-  if (filters?.expiringWithin) and.push(expiringContractsPredicate(now, filters.expiringWithin));
-  if (filters?.paymentBlocked) and.push(paymentBlockedPredicate());
-  if (filters?.stalled) and.push(stalledOnboardingPredicate(now));
+  applyColumnFilters(where, filters);
+  const and = buildAndPredicates(filters, now);
 
   const idSets: string[][] = [];
 
@@ -312,13 +358,7 @@ export async function buildContractorListWhere(
   }
 
   if (search && search.length >= 2) {
-    const terms = search
-      .trim()
-      .split(/\s+/)
-      .map(t => t.replace(/[^a-zA-Z0-9À-ɏ]/g, ''))
-      .filter(Boolean)
-      .map(t => `${t}:*`)
-      .join(' & ');
+    const terms = buildFtsQuery(search);
     if (terms) {
       const rows = await db.$queryRaw<Array<{ id: string }>>`
         SELECT id FROM "Contractor"
@@ -332,12 +372,8 @@ export async function buildContractorListWhere(
   }
 
   if (idSets.length > 0) {
-    let intersection = idSets[0] ?? [];
-    for (let i = 1; i < idSets.length; i++) {
-      const set = new Set(idSets[i]);
-      intersection = intersection.filter(id => set.has(id));
-    }
-    if (intersection.length === 0) return null;
+    const intersection = intersectIdSets(idSets);
+    if (intersection === null) return null;
     where.id = { in: intersection };
   }
 

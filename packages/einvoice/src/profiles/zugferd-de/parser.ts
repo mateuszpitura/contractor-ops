@@ -167,60 +167,82 @@ function findEmbeddedFacturXXml(doc: PDFDocument): Uint8Array | null {
 }
 
 /**
+ * 1st leaf sweep: match by key name OR by fileSpec /F or /UF on factur-x.xml.
+ * Factur-X §5.3.2 prefers the exact filename, so this runs before the
+ * AFRelationship fallback.
+ */
+function scanLeafForExactFacturX(namesArr: PDFArray): Uint8Array | null {
+  for (let i = 0; i < namesArr.size(); i += 2) {
+    const nameObj = namesArr.lookup(i);
+    const spec = namesArr.lookupMaybe(i + 1, PDFDict);
+    if (!spec) continue;
+    const fileName = readPdfString(nameObj);
+    if (fileName != null && isFacturXFilename(fileName)) {
+      const bytes = extractStreamFromFileSpec(spec);
+      if (bytes) return bytes;
+    }
+    const specName = readFileSpecFilename(spec);
+    if (specName != null && isFacturXFilename(specName)) {
+      const bytes = extractStreamFromFileSpec(spec);
+      if (bytes) return bytes;
+    }
+  }
+  return null;
+}
+
+/**
+ * 2nd leaf sweep: accept any `.xml` attachment carrying
+ * AFRelationship=/Alternative when no exact factur-x.xml filename matched.
+ */
+function scanLeafForAFRelationshipXml(namesArr: PDFArray): Uint8Array | null {
+  for (let i = 0; i < namesArr.size(); i += 2) {
+    const spec = namesArr.lookupMaybe(i + 1, PDFDict);
+    if (!spec) continue;
+    const rel = spec.lookupMaybe(PDFName.of('AFRelationship'), PDFName);
+    const relName = rel?.decodeText();
+    if (relName !== ZUGFERD_AF_RELATIONSHIP) continue;
+    const specName = readFileSpecFilename(spec);
+    if (specName == null) continue;
+    if (!specName.toLowerCase().endsWith('.xml')) continue;
+    const bytes = extractStreamFromFileSpec(spec);
+    if (bytes) return bytes;
+  }
+  return null;
+}
+
+/** Descend into `Kids` intermediate nodes, recursing into each subtree. */
+function descendEmbeddedFilesKids(kidsArr: PDFArray): Uint8Array | null {
+  for (let i = 0; i < kidsArr.size(); i++) {
+    const kid = kidsArr.lookupMaybe(i, PDFDict);
+    if (kid) {
+      const bytes = extractFromEmbeddedFilesTree(kid);
+      if (bytes) return bytes;
+    }
+  }
+  return null;
+}
+
+/**
  * Traverse a `/Names /EmbeddedFiles` dict which either has a flat `Names`
  * array (leaf) or nested `Kids` arrays (intermediate). The tree may be of
- * arbitrary depth — pdf-lib does not flatten it for us.
+ * arbitrary depth — pdf-lib does not flatten it for us. The leaf sweeps and
+ * Kids descent run in the order the Factur-X §5.3.2 resolution mandates.
  */
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: PDF EmbeddedFiles name-tree walker — two-sweep leaf scan (exact factur-x.xml match, then AFRelationship=Alternative fallback) plus recursive Kids descent; the nested branches encode the Factur-X §5.3.2 resolution order.
 function extractFromEmbeddedFilesTree(node: PDFDict): Uint8Array | null {
   // Leaf: Names = [name1, fileSpec1, name2, fileSpec2, ...]
   const namesArr = node.lookupMaybe(PDFName.of('Names'), PDFArray);
   if (namesArr) {
-    // 1st sweep: match by key name OR by fileSpec /F or /UF on factur-x.xml.
-    //            If no exact match found, fall through to the AFRelationship
-    //            fallback scan so an arbitrarily-named .xml with
-    //            AFRelationship=Alternative still resolves (Factur-X spec
-    //            §5.3.2 prefers the exact filename but accepts any AF).
-    for (let i = 0; i < namesArr.size(); i += 2) {
-      const nameObj = namesArr.lookup(i);
-      const spec = namesArr.lookupMaybe(i + 1, PDFDict);
-      if (!spec) continue;
-      const fileName = readPdfString(nameObj);
-      if (fileName != null && isFacturXFilename(fileName)) {
-        const bytes = extractStreamFromFileSpec(spec);
-        if (bytes) return bytes;
-      }
-      const specName = readFileSpecFilename(spec);
-      if (specName != null && isFacturXFilename(specName)) {
-        const bytes = extractStreamFromFileSpec(spec);
-        if (bytes) return bytes;
-      }
-    }
-    // 2nd sweep: accept any .xml attachment with AFRelationship=/Alternative.
-    for (let i = 0; i < namesArr.size(); i += 2) {
-      const spec = namesArr.lookupMaybe(i + 1, PDFDict);
-      if (!spec) continue;
-      const rel = spec.lookupMaybe(PDFName.of('AFRelationship'), PDFName);
-      const relName = rel?.decodeText();
-      if (relName !== ZUGFERD_AF_RELATIONSHIP) continue;
-      const specName = readFileSpecFilename(spec);
-      if (specName == null) continue;
-      if (!specName.toLowerCase().endsWith('.xml')) continue;
-      const bytes = extractStreamFromFileSpec(spec);
-      if (bytes) return bytes;
-    }
+    const exact = scanLeafForExactFacturX(namesArr);
+    if (exact) return exact;
+    const fallback = scanLeafForAFRelationshipXml(namesArr);
+    if (fallback) return fallback;
   }
 
   // Intermediate: Kids = [dict1, dict2, ...]
   const kidsArr = node.lookupMaybe(PDFName.of('Kids'), PDFArray);
   if (kidsArr) {
-    for (let i = 0; i < kidsArr.size(); i++) {
-      const kid = kidsArr.lookupMaybe(i, PDFDict);
-      if (kid) {
-        const bytes = extractFromEmbeddedFilesTree(kid);
-        if (bytes) return bytes;
-      }
-    }
+    const bytes = descendEmbeddedFilesKids(kidsArr);
+    if (bytes) return bytes;
   }
 
   return null;

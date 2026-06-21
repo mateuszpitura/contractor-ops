@@ -144,7 +144,178 @@ const RESOURCE_TYPE_OPTIONS = [
 
 export type AuditLogTabProps = ReturnType<typeof UseAuditLogTab>;
 
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: presentational render with cohesive loading/empty/error + filter/pagination UI states
+type ActorFilterPopoverProps = Pick<
+  AuditLogTabProps,
+  | 'actorOpen'
+  | 'setActorOpen'
+  | 'actorQuery'
+  | 'actorOptions'
+  | 'actorId'
+  | 'visibleActorOptions'
+  | 'MAX_VISIBLE_ACTORS'
+  | 'selectActor'
+  | 't'
+> & {
+  renderActorTrigger: React.ComponentProps<typeof PopoverTrigger>['render'];
+  onActorQueryChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+};
+
+// Actor filter: searchable popover listing actor options with a selected
+// highlight and a "showing N of M" hint when the list is truncated.
+function ActorFilterPopover({
+  actorOpen,
+  setActorOpen,
+  actorQuery,
+  actorOptions,
+  actorId,
+  visibleActorOptions,
+  MAX_VISIBLE_ACTORS,
+  selectActor,
+  t,
+  renderActorTrigger,
+  onActorQueryChange,
+}: ActorFilterPopoverProps) {
+  return (
+    <Popover open={actorOpen} onOpenChange={setActorOpen}>
+      <PopoverTrigger render={renderActorTrigger} />
+      <PopoverContent className="w-64 p-0" align="start">
+        <div className="space-y-2 p-3">
+          <h4 className="text-[13px] font-medium text-foreground">{t('filterActor')}</h4>
+          <Input
+            placeholder={t('filterActorSearchPlaceholder')}
+            value={actorQuery}
+            onChange={onActorQueryChange}
+            className="h-7 text-xs"
+          />
+          {!actorQuery.trim() && actorOptions.length > MAX_VISIBLE_ACTORS && (
+            <p className="text-[10px] text-muted-foreground">
+              {t('filterActorShowingHint', {
+                visible: MAX_VISIBLE_ACTORS,
+                total: actorOptions.length,
+              })}
+            </p>
+          )}
+          <div className="space-y-1">
+            {visibleActorOptions.map(actor => (
+              <ActorOptionButton
+                key={actor.id}
+                id={actor.id}
+                name={actor.name}
+                isSelected={actor.id === actorId}
+                onSelect={selectActor}
+              />
+            ))}
+            {visibleActorOptions.length === 0 && (
+              <p className="px-2 py-1 text-xs text-muted-foreground">{t('filterActorNoMatches')}</p>
+            )}
+          </div>
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
+type ActiveFilterChipsProps = Pick<
+  AuditLogTabProps,
+  | 'actions'
+  | 'resourceTypes'
+  | 'actorId'
+  | 'actorOptions'
+  | 'dateFrom'
+  | 'dateTo'
+  | 't'
+  | 'tAria'
+  | 'removeAction'
+  | 'removeResourceType'
+  | 'clearActor'
+  | 'clearDates'
+  | 'clearAllFilters'
+>;
+
+// Removable chips for every active filter (actions, resources, actor, date
+// range) plus a clear-all control. Rendered only when at least one filter is
+// active.
+function ActiveFilterChips({
+  actions,
+  resourceTypes,
+  actorId,
+  actorOptions,
+  dateFrom,
+  dateTo,
+  t,
+  tAria,
+  removeAction,
+  removeResourceType,
+  clearActor,
+  clearDates,
+  clearAllFilters,
+}: ActiveFilterChipsProps) {
+  return (
+    <div className="flex flex-wrap items-center gap-1.5">
+      {actions.map(a => (
+        <FilterChip
+          key={`a-${a}`}
+          value={a}
+          label={tDynLoose(t, 'actions', enumKey(a))}
+          ariaLabel={tAria('removeFilter', { label: tDynLoose(t, 'actions', enumKey(a)) })}
+          onRemove={removeAction}
+        />
+      ))}
+      {resourceTypes.map(rt => (
+        <FilterChip
+          key={`r-${rt}`}
+          value={rt}
+          label={tDynLoose(t, 'resources', enumKey(rt))}
+          ariaLabel={tAria('removeFilter', { label: tDynLoose(t, 'resources', enumKey(rt)) })}
+          onRemove={removeResourceType}
+        />
+      ))}
+      {actorId ? (
+        <Badge variant="secondary" className="gap-1 ps-2 pe-1 py-0.5">
+          <span className="text-xs">
+            {actorOptions.find(a => a.id === actorId)?.name ?? actorId}
+          </span>
+          <button
+            type="button"
+            className="ms-0.5 rounded-full p-0.5 hover:bg-muted-foreground/20"
+            onClick={clearActor}
+            aria-label={tAria('removeFilter', {
+              label: actorOptions.find(a => a.id === actorId)?.name ?? actorId,
+            })}>
+            <X className="h-3 w-3" />
+          </button>
+        </Badge>
+      ) : null}
+      {dateFrom || dateTo ? (
+        <Badge variant="secondary" className="gap-1 ps-2 pe-1 py-0.5">
+          <span className="text-xs">
+            {dateFrom && dateTo
+              ? `${dateFrom} – ${dateTo}`
+              : dateFrom
+                ? t('dateFromPrefix', { date: dateFrom })
+                : t('dateToPrefix', { date: dateTo })}
+          </span>
+          <button
+            type="button"
+            className="ms-0.5 rounded-full p-0.5 hover:bg-muted-foreground/20"
+            onClick={clearDates}
+            aria-label={tAria('removeFilter', {
+              label: t('filterDateRange'),
+            })}>
+            <X className="h-3 w-3" />
+          </button>
+        </Badge>
+      ) : null}
+      <button
+        type="button"
+        className="ms-1 text-xs text-muted-foreground hover:text-foreground underline"
+        onClick={clearAllFilters}>
+        {t('clearAll')}
+      </button>
+    </div>
+  );
+}
+
 export function AuditLogTabView({
   t,
   tAria,
@@ -276,44 +447,19 @@ export function AuditLogTabView({
 
       <div className="space-y-2">
         <div className="flex flex-wrap items-center gap-3">
-          <Popover open={actorOpen} onOpenChange={setActorOpen}>
-            <PopoverTrigger render={renderActorTrigger} />
-            <PopoverContent className="w-64 p-0" align="start">
-              <div className="space-y-2 p-3">
-                <h4 className="text-[13px] font-medium text-foreground">{t('filterActor')}</h4>
-                <Input
-                  placeholder={t('filterActorSearchPlaceholder')}
-                  value={actorQuery}
-                  onChange={handleActorQueryChange}
-                  className="h-7 text-xs"
-                />
-                {!actorQuery.trim() && actorOptions.length > MAX_VISIBLE_ACTORS && (
-                  <p className="text-[10px] text-muted-foreground">
-                    {t('filterActorShowingHint', {
-                      visible: MAX_VISIBLE_ACTORS,
-                      total: actorOptions.length,
-                    })}
-                  </p>
-                )}
-                <div className="space-y-1">
-                  {visibleActorOptions.map(actor => (
-                    <ActorOptionButton
-                      key={actor.id}
-                      id={actor.id}
-                      name={actor.name}
-                      isSelected={actor.id === actorId}
-                      onSelect={selectActor}
-                    />
-                  ))}
-                  {visibleActorOptions.length === 0 && (
-                    <p className="px-2 py-1 text-xs text-muted-foreground">
-                      {t('filterActorNoMatches')}
-                    </p>
-                  )}
-                </div>
-              </div>
-            </PopoverContent>
-          </Popover>
+          <ActorFilterPopover
+            actorOpen={actorOpen}
+            setActorOpen={setActorOpen}
+            actorQuery={actorQuery}
+            actorOptions={actorOptions}
+            actorId={actorId}
+            visibleActorOptions={visibleActorOptions}
+            MAX_VISIBLE_ACTORS={MAX_VISIBLE_ACTORS}
+            selectActor={selectActor}
+            t={t}
+            renderActorTrigger={renderActorTrigger}
+            onActorQueryChange={handleActorQueryChange}
+          />
 
           <Popover>
             <PopoverTrigger render={renderActionTrigger} />
@@ -396,68 +542,21 @@ export function AuditLogTabView({
         </div>
 
         {activeFilterCount > 0 && (
-          <div className="flex flex-wrap items-center gap-1.5">
-            {actions.map(a => (
-              <FilterChip
-                key={`a-${a}`}
-                value={a}
-                label={tDynLoose(t, 'actions', enumKey(a))}
-                ariaLabel={tAria('removeFilter', { label: tDynLoose(t, 'actions', enumKey(a)) })}
-                onRemove={removeAction}
-              />
-            ))}
-            {resourceTypes.map(rt => (
-              <FilterChip
-                key={`r-${rt}`}
-                value={rt}
-                label={tDynLoose(t, 'resources', enumKey(rt))}
-                ariaLabel={tAria('removeFilter', { label: tDynLoose(t, 'resources', enumKey(rt)) })}
-                onRemove={removeResourceType}
-              />
-            ))}
-            {actorId ? (
-              <Badge variant="secondary" className="gap-1 ps-2 pe-1 py-0.5">
-                <span className="text-xs">
-                  {actorOptions.find(a => a.id === actorId)?.name ?? actorId}
-                </span>
-                <button
-                  type="button"
-                  className="ms-0.5 rounded-full p-0.5 hover:bg-muted-foreground/20"
-                  onClick={clearActor}
-                  aria-label={tAria('removeFilter', {
-                    label: actorOptions.find(a => a.id === actorId)?.name ?? actorId,
-                  })}>
-                  <X className="h-3 w-3" />
-                </button>
-              </Badge>
-            ) : null}
-            {dateFrom || dateTo ? (
-              <Badge variant="secondary" className="gap-1 ps-2 pe-1 py-0.5">
-                <span className="text-xs">
-                  {dateFrom && dateTo
-                    ? `${dateFrom} – ${dateTo}`
-                    : dateFrom
-                      ? t('dateFromPrefix', { date: dateFrom })
-                      : t('dateToPrefix', { date: dateTo })}
-                </span>
-                <button
-                  type="button"
-                  className="ms-0.5 rounded-full p-0.5 hover:bg-muted-foreground/20"
-                  onClick={clearDates}
-                  aria-label={tAria('removeFilter', {
-                    label: t('filterDateRange'),
-                  })}>
-                  <X className="h-3 w-3" />
-                </button>
-              </Badge>
-            ) : null}
-            <button
-              type="button"
-              className="ms-1 text-xs text-muted-foreground hover:text-foreground underline"
-              onClick={clearAllFilters}>
-              {t('clearAll')}
-            </button>
-          </div>
+          <ActiveFilterChips
+            actions={actions}
+            resourceTypes={resourceTypes}
+            actorId={actorId}
+            actorOptions={actorOptions}
+            dateFrom={dateFrom}
+            dateTo={dateTo}
+            t={t}
+            tAria={tAria}
+            removeAction={removeAction}
+            removeResourceType={removeResourceType}
+            clearActor={clearActor}
+            clearDates={clearDates}
+            clearAllFilters={clearAllFilters}
+          />
         )}
       </div>
 

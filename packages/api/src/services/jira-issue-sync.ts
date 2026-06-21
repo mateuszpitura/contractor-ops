@@ -60,6 +60,66 @@ function buildJiraApiContext(
   };
 }
 
+/**
+ * Loads a task run's template and returns the parsed, fully-configured Jira
+ * task config, or `null` when no template / invalid / not Jira-enabled.
+ */
+async function resolveJiraTaskConfig(
+  prisma: PrismaClient,
+  workflowTaskTemplateId: string | null,
+): Promise<JiraTaskConfig | null> {
+  if (!workflowTaskTemplateId) return null;
+  const template = await prisma.workflowTaskTemplate.findUnique({
+    where: { id: workflowTaskTemplateId },
+    select: { configJson: true },
+  });
+  if (!template?.configJson) return null;
+  const parsed = jiraTaskConfigSchema.safeParse(template.configJson);
+  return parsed.success ? parsed.data : null;
+}
+
+/**
+ * Throw on a non-OK Jira response: `TRPCError(UNAUTHORIZED)` on 401 (token
+ * invalid), otherwise an `Error` carrying the status + response body.
+ */
+async function assertJiraResponseOk(response: Response, failurePrefix: string): Promise<void> {
+  if (response.status === 401) {
+    throw new TRPCError({
+      code: 'UNAUTHORIZED',
+      message: E.JIRA_TOKEN_INVALID,
+    });
+  }
+  if (!response.ok) {
+    const text = await response.text();
+    throw new Error(`${failurePrefix} (${response.status}): ${text}`);
+  }
+}
+
+/** Build the Jira create-issue payload (ADF description) for a task run. */
+function buildJiraIssueBody(
+  taskRun: { title: string; description: string | null },
+  jiraConfig: { jiraProjectId?: string | null; jiraIssueTypeId?: string | null },
+) {
+  const descriptionText = taskRun.description ?? taskRun.title;
+  return {
+    fields: {
+      project: { id: jiraConfig.jiraProjectId },
+      issuetype: { id: jiraConfig.jiraIssueTypeId },
+      summary: taskRun.title,
+      description: {
+        type: 'doc',
+        version: 1,
+        content: [
+          {
+            type: 'paragraph',
+            content: [{ type: 'text', text: descriptionText }],
+          },
+        ],
+      },
+    },
+  };
+}
+
 // ---------------------------------------------------------------------------
 // Issue Creation (Outbound)
 // ---------------------------------------------------------------------------
@@ -81,7 +141,6 @@ function buildJiraApiContext(
  * @param taskRunId - The WorkflowTaskRun ID to create a Jira issue for
  * @returns The created issue key and ID
  */
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: sequential Jira issue creation: load task run → resolve config → build payload → POST → persist mapping → audit; cohesive flow.
 export async function createJiraIssue(
   prisma: PrismaClient,
   organizationId: string,
@@ -106,20 +165,7 @@ export async function createJiraIssue(
   }
 
   // Load the task template for Jira config
-  let jiraConfig: JiraTaskConfig | null = null;
-  if (taskRun.workflowTaskTemplateId) {
-    const template = await prisma.workflowTaskTemplate.findUnique({
-      where: { id: taskRun.workflowTaskTemplateId },
-      select: { configJson: true },
-    });
-
-    if (template?.configJson) {
-      const parsed = jiraTaskConfigSchema.safeParse(template.configJson);
-      if (parsed.success) {
-        jiraConfig = parsed.data;
-      }
-    }
-  }
+  const jiraConfig = await resolveJiraTaskConfig(prisma, taskRun.workflowTaskTemplateId);
 
   if (!(jiraConfig?.jiraEnabled && jiraConfig.jiraProjectId && jiraConfig.jiraIssueTypeId)) {
     throw new TRPCError({
@@ -166,24 +212,7 @@ export async function createJiraIssue(
 
   try {
     // 4. POST to Jira issue creation
-    const descriptionText = taskRun.description ?? taskRun.title;
-    const issueBody = {
-      fields: {
-        project: { id: jiraConfig.jiraProjectId },
-        issuetype: { id: jiraConfig.jiraIssueTypeId },
-        summary: taskRun.title,
-        description: {
-          type: 'doc',
-          version: 1,
-          content: [
-            {
-              type: 'paragraph',
-              content: [{ type: 'text', text: descriptionText }],
-            },
-          ],
-        },
-      },
-    };
+    const issueBody = buildJiraIssueBody(taskRun, jiraConfig);
 
     const response = await fetchWithTimeout(`${baseUrl}/issue`, {
       method: 'POST',
@@ -191,17 +220,7 @@ export async function createJiraIssue(
       body: JSON.stringify(issueBody),
     });
 
-    if (response.status === 401) {
-      throw new TRPCError({
-        code: 'UNAUTHORIZED',
-        message: E.JIRA_TOKEN_INVALID,
-      });
-    }
-
-    if (!response.ok) {
-      const text = await response.text();
-      throw new Error(`Jira issue creation failed (${response.status}): ${text}`);
-    }
+    await assertJiraResponseOk(response, 'Jira issue creation failed');
 
     const created = (await response.json()) as JiraCreateIssueResponse;
 
@@ -295,7 +314,22 @@ export async function createJiraIssue(
  * @param taskRunId - The WorkflowTaskRun ID
  * @param newWorkflowStatus - The new WorkflowTaskStatus value
  */
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: sequential Jira transition: resolve external link → map workflow status → find valid transition → POST → audit; cohesive flow.
+/**
+ * Resolve the Jira project ID for a task run from its template config, or
+ * `null` when the template / config / project mapping is missing.
+ */
+async function resolveJiraProjectId(
+  prisma: PrismaClient,
+  taskRunId: string,
+): Promise<string | null> {
+  const taskRun = await prisma.workflowTaskRun.findUnique({
+    where: { id: taskRunId },
+    select: { workflowTaskTemplateId: true },
+  });
+  const jiraConfig = await resolveJiraTaskConfig(prisma, taskRun?.workflowTaskTemplateId ?? null);
+  return jiraConfig?.jiraProjectId ?? null;
+}
+
 export async function transitionJiraIssue(
   prisma: PrismaClient,
   organizationId: string,
@@ -320,28 +354,8 @@ export async function transitionJiraIssue(
 
   const issueKey = externalLink.externalId;
 
-  // 2. Get project ID from metadata or task template config
-  let projectId: string | null = null;
-
-  // Try to get from task template configJson
-  const taskRun = await prisma.workflowTaskRun.findUnique({
-    where: { id: taskRunId },
-    select: { workflowTaskTemplateId: true },
-  });
-
-  if (taskRun?.workflowTaskTemplateId) {
-    const template = await prisma.workflowTaskTemplate.findUnique({
-      where: { id: taskRun.workflowTaskTemplateId },
-      select: { configJson: true },
-    });
-
-    if (template?.configJson) {
-      const parsed = jiraTaskConfigSchema.safeParse(template.configJson);
-      if (parsed.success && parsed.data.jiraProjectId) {
-        projectId = parsed.data.jiraProjectId;
-      }
-    }
-  }
+  // 2. Get project ID from task template config
+  const projectId = await resolveJiraProjectId(prisma, taskRunId);
 
   if (!projectId) {
     // Cannot determine project for mapping lookup
@@ -448,17 +462,7 @@ export async function transitionJiraIssue(
       }),
     });
 
-    if (response.status === 401) {
-      throw new TRPCError({
-        code: 'UNAUTHORIZED',
-        message: E.JIRA_TOKEN_INVALID,
-      });
-    }
-
-    if (!response.ok) {
-      const text = await response.text();
-      throw new Error(`Jira transition failed (${response.status}): ${text}`);
-    }
+    await assertJiraResponseOk(response, 'Jira transition failed');
 
     // 8. Update ExternalLink metadata with new status
     await prisma.externalLink.update({

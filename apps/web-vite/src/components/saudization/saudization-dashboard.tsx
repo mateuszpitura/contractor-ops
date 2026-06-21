@@ -60,7 +60,6 @@ export interface SaudizationDashboardProps {
  *     counts render side-by-side and visually subordinate (`text-muted-foreground`).
  *   - Charts wrap `useRtlChartConfig` for RTL. Logical properties only.
  */
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: dashboard composer — band/headcount/activity-catalogue sections each with their own loading/save-state branches and RTL chart wiring; the conditional JSX is the assembled view surface.
 export function SaudizationDashboard({
   dashboard,
   thresholdsCustom,
@@ -141,78 +140,17 @@ export function SaudizationDashboard({
       </div>
 
       {/* Hero — the manual nationalisation rate is the single focal point. */}
-      <Card>
-        <CardContent className="flex flex-col gap-6 pt-6 md:flex-row md:items-center md:justify-between">
-          <div className="space-y-2">
-            <p className="text-sm font-medium text-muted-foreground">{t('rate.label')}</p>
-            <p className="font-display text-2xl font-semibold tabular-nums text-primary">
-              {rateLabel}
-            </p>
-            <div className="flex flex-wrap items-center gap-2 pt-1">
-              <span className="text-sm text-muted-foreground">{t('band.label')}</span>
-              {bandLabel ? (
-                // Neutral badge ONLY — never colorized to assert a band judgement.
-                <Badge variant="outline" className="font-medium">
-                  {bandLabel}
-                </Badge>
-              ) : (
-                <span className="text-sm text-muted-foreground">{t('band.notSet')}</span>
-              )}
-              {hasOverride ? (
-                <Badge variant="outline" className="border-warning/50 bg-warning/10 text-warning">
-                  {t('override.badge')}
-                </Badge>
-              ) : null}
-            </div>
-            {bandUpdatedAt ? (
-              <p className="text-xs text-muted-foreground">
-                {t('band.lastUpdated', { date: dateFormatter.format(bandUpdatedAt) })}
-              </p>
-            ) : null}
-          </div>
-
-          <div className="h-40 w-40 shrink-0" aria-hidden="true">
-            {donutData.length > 0 ? (
-              <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
-                <PieChart style={chartStyle}>
-                  <Pie
-                    data={donutData}
-                    dataKey="value"
-                    nameKey="key"
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={48}
-                    outerRadius={70}
-                    startAngle={90}
-                    endAngle={-270}
-                    stroke="none">
-                    {donutData.map(entry => (
-                      <Cell
-                        key={entry.key}
-                        fill={entry.key === 'saudi' ? DONUT_PRIMARY : DONUT_REMAINDER}
-                      />
-                    ))}
-                  </Pie>
-                  <Tooltip
-                    formatter={formatDonutTooltip}
-                    contentStyle={{
-                      borderRadius: '0.75rem',
-                      border: '1px solid color-mix(in oklch, var(--color-border) 40%, transparent)',
-                      backgroundColor: 'var(--color-popover)',
-                      color: 'var(--color-popover-foreground)',
-                      fontSize: '0.8rem',
-                    }}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
-            ) : (
-              <div className="flex h-full items-center justify-center rounded-full border-2 border-dashed border-border text-xs text-muted-foreground">
-                {t('rate.noChart')}
-              </div>
-            )}
-          </div>
-        </CardContent>
-      </Card>
+      <SaudizationHeroCard
+        t={t}
+        rateLabel={rateLabel}
+        bandLabel={bandLabel}
+        hasOverride={hasOverride}
+        bandUpdatedAt={bandUpdatedAt}
+        dateFormatter={dateFormatter}
+        donutData={donutData}
+        chartStyle={chartStyle}
+        formatDonutTooltip={formatDonutTooltip}
+      />
 
       {/* Persistent manual-nature callout — the band is never auto-computed. */}
       <Alert variant="default" className="border-warning/50 bg-warning/10">
@@ -265,59 +203,7 @@ export function SaudizationDashboard({
         </CardContent>
       </Card>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        {/* Qiwa-auth coverage gap (D-11 visibility-only). */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg font-semibold">{t('qiwa.title')}</CardTitle>
-            <CardDescription>{t('qiwa.description')}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {dashboard.qiwaGapCount > 0 ? (
-              <Alert variant="default" className="border-warning/50 bg-warning/10">
-                <AlertTriangle aria-hidden="true" className="size-4 text-warning" />
-                <AlertTitle className="tabular-nums">
-                  {t('qiwa.gapCount', { count: dashboard.qiwaGapCount })}
-                </AlertTitle>
-                <AlertDescription>{t('qiwa.gapBody')}</AlertDescription>
-              </Alert>
-            ) : (
-              <p className="text-sm text-muted-foreground">{t('qiwa.empty')}</p>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Iqama expiry roll-up — reused F1 expiry data. */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg font-semibold">{t('iqama.title')}</CardTitle>
-            <CardDescription>{t('iqama.description')}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {dashboard.iqamaRollup.total > 0 ? (
-              <dl className="divide-y divide-border">
-                <IqamaRow
-                  label={t('iqama.tracked')}
-                  value={dashboard.iqamaRollup.total}
-                  formatter={numberFormatter}
-                />
-                <IqamaRow
-                  label={t('iqama.expired')}
-                  value={dashboard.iqamaRollup.expired}
-                  formatter={numberFormatter}
-                />
-                <IqamaRow
-                  label={t('iqama.expiringSoon')}
-                  value={dashboard.iqamaRollup.expiringSoon}
-                  formatter={numberFormatter}
-                />
-              </dl>
-            ) : (
-              <p className="text-sm text-muted-foreground">{t('iqama.empty')}</p>
-            )}
-          </CardContent>
-        </Card>
-      </div>
+      <SaudizationCoverageGrid t={t} dashboard={dashboard} numberFormatter={numberFormatter} />
 
       <Separator />
 
@@ -344,6 +230,171 @@ export function SaudizationDashboard({
         onApplyActivityOverride={onApplyActivityOverride}
         isApplyingActivityOverride={isApplyingActivityOverride}
       />
+    </div>
+  );
+}
+
+interface SaudizationHeroCardProps {
+  t: ReturnType<typeof useTranslations>;
+  rateLabel: string;
+  bandLabel: string | null;
+  hasOverride: boolean;
+  bandUpdatedAt: Date | null;
+  dateFormatter: Intl.DateTimeFormat;
+  donutData: Array<{ key: string; value: number }>;
+  chartStyle: React.CSSProperties;
+  formatDonutTooltip: (value: unknown) => string;
+}
+
+function SaudizationHeroCard({
+  t,
+  rateLabel,
+  bandLabel,
+  hasOverride,
+  bandUpdatedAt,
+  dateFormatter,
+  donutData,
+  chartStyle,
+  formatDonutTooltip,
+}: SaudizationHeroCardProps) {
+  return (
+    <Card>
+      <CardContent className="flex flex-col gap-6 pt-6 md:flex-row md:items-center md:justify-between">
+        <div className="space-y-2">
+          <p className="text-sm font-medium text-muted-foreground">{t('rate.label')}</p>
+          <p className="font-display text-2xl font-semibold tabular-nums text-primary">
+            {rateLabel}
+          </p>
+          <div className="flex flex-wrap items-center gap-2 pt-1">
+            <span className="text-sm text-muted-foreground">{t('band.label')}</span>
+            {bandLabel ? (
+              // Neutral badge ONLY — never colorized to assert a band judgement.
+              <Badge variant="outline" className="font-medium">
+                {bandLabel}
+              </Badge>
+            ) : (
+              <span className="text-sm text-muted-foreground">{t('band.notSet')}</span>
+            )}
+            {hasOverride ? (
+              <Badge variant="outline" className="border-warning/50 bg-warning/10 text-warning">
+                {t('override.badge')}
+              </Badge>
+            ) : null}
+          </div>
+          {bandUpdatedAt ? (
+            <p className="text-xs text-muted-foreground">
+              {t('band.lastUpdated', { date: dateFormatter.format(bandUpdatedAt) })}
+            </p>
+          ) : null}
+        </div>
+
+        <div className="h-40 w-40 shrink-0" aria-hidden="true">
+          {donutData.length > 0 ? (
+            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
+              <PieChart style={chartStyle}>
+                <Pie
+                  data={donutData}
+                  dataKey="value"
+                  nameKey="key"
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={48}
+                  outerRadius={70}
+                  startAngle={90}
+                  endAngle={-270}
+                  stroke="none">
+                  {donutData.map(entry => (
+                    <Cell
+                      key={entry.key}
+                      fill={entry.key === 'saudi' ? DONUT_PRIMARY : DONUT_REMAINDER}
+                    />
+                  ))}
+                </Pie>
+                <Tooltip
+                  formatter={formatDonutTooltip}
+                  contentStyle={{
+                    borderRadius: '0.75rem',
+                    border: '1px solid color-mix(in oklch, var(--color-border) 40%, transparent)',
+                    backgroundColor: 'var(--color-popover)',
+                    color: 'var(--color-popover-foreground)',
+                    fontSize: '0.8rem',
+                  }}
+                />
+              </PieChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="flex h-full items-center justify-center rounded-full border-2 border-dashed border-border text-xs text-muted-foreground">
+              {t('rate.noChart')}
+            </div>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function SaudizationCoverageGrid({
+  t,
+  dashboard,
+  numberFormatter,
+}: {
+  t: ReturnType<typeof useTranslations>;
+  dashboard: SaudizationDashboardData;
+  numberFormatter: Intl.NumberFormat;
+}) {
+  return (
+    <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+      {/* Qiwa-auth coverage gap (visibility-only). */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg font-semibold">{t('qiwa.title')}</CardTitle>
+          <CardDescription>{t('qiwa.description')}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {dashboard.qiwaGapCount > 0 ? (
+            <Alert variant="default" className="border-warning/50 bg-warning/10">
+              <AlertTriangle aria-hidden="true" className="size-4 text-warning" />
+              <AlertTitle className="tabular-nums">
+                {t('qiwa.gapCount', { count: dashboard.qiwaGapCount })}
+              </AlertTitle>
+              <AlertDescription>{t('qiwa.gapBody')}</AlertDescription>
+            </Alert>
+          ) : (
+            <p className="text-sm text-muted-foreground">{t('qiwa.empty')}</p>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Iqama expiry roll-up — reused expiry data. */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg font-semibold">{t('iqama.title')}</CardTitle>
+          <CardDescription>{t('iqama.description')}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {dashboard.iqamaRollup.total > 0 ? (
+            <dl className="divide-y divide-border">
+              <IqamaRow
+                label={t('iqama.tracked')}
+                value={dashboard.iqamaRollup.total}
+                formatter={numberFormatter}
+              />
+              <IqamaRow
+                label={t('iqama.expired')}
+                value={dashboard.iqamaRollup.expired}
+                formatter={numberFormatter}
+              />
+              <IqamaRow
+                label={t('iqama.expiringSoon')}
+                value={dashboard.iqamaRollup.expiringSoon}
+                formatter={numberFormatter}
+              />
+            </dl>
+          ) : (
+            <p className="text-sm text-muted-foreground">{t('iqama.empty')}</p>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }

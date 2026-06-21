@@ -322,6 +322,98 @@ export async function createLinearIssue(
 // Outbound Status Sync
 // ---------------------------------------------------------------------------
 
+// True when this change was itself written by an inbound LINEAR sync within
+// the loop-prevention window — suppress the outbound echo.
+function isLoopSuppressed(metadata: Record<string, unknown>): boolean {
+  const lastSyncOrigin = metadata.lastSyncOrigin as string | undefined;
+  const lastSyncAt = metadata.lastSyncAt as string | undefined;
+  if (lastSyncOrigin !== 'LINEAR' || !lastSyncAt) return false;
+  return Date.now() - new Date(lastSyncAt).getTime() < LOOP_PREVENTION_WINDOW_MS;
+}
+
+// Record a no-op outbound sync when the workflow status has no Linear state
+// mapping — keeps the sync-log timeline complete without calling Linear.
+async function logUnmappedStatus(
+  prisma: PrismaClient,
+  args: {
+    organizationId: string;
+    integrationConnectionId: string;
+    taskRunId: string;
+    identifier: unknown;
+    workflowStatus: string;
+  },
+): Promise<void> {
+  await prisma.integrationSyncLog.create({
+    data: {
+      organizationId: args.organizationId,
+      integrationConnectionId: args.integrationConnectionId,
+      direction: 'OUTBOUND',
+      syncType: 'STATUS_UPDATE_UNMAPPED',
+      entityType: 'WORKFLOW_TASK_RUN',
+      entityId: args.taskRunId,
+      status: 'SUCCESS',
+      completedAt: new Date(),
+      responsePayloadJson: {
+        identifier: args.identifier,
+        workflowStatus: args.workflowStatus,
+        reason: 'No Linear state mapping found for this workflow status',
+      } as Prisma.InputJsonValue,
+    },
+  });
+}
+
+// Record an outbound-sync failure on both the sync log and the connection,
+// then rethrow (preserving an existing TRPCError, otherwise wrapping). Always
+// throws — never returns.
+async function recordSyncFailure(
+  prisma: PrismaClient,
+  syncLogId: string,
+  connectionId: string,
+  error: unknown,
+): Promise<never> {
+  const message = error instanceof Error ? error.message : 'Unknown error';
+  await prisma.integrationSyncLog.update({
+    where: { id: syncLogId },
+    data: { status: 'FAILED', completedAt: new Date(), errorMessage: message },
+  });
+
+  await prisma.integrationConnection.update({
+    where: { id: connectionId },
+    data: { lastErrorAt: new Date(), lastErrorMessage: message },
+  });
+
+  if (error instanceof TRPCError) throw error;
+  throw new TRPCError({
+    code: 'INTERNAL_SERVER_ERROR',
+    message: E.LINEAR_SYNC_FAILED,
+    cause: error,
+  });
+}
+
+// Resolve the Linear team for a task run from its template's configJson.
+// Returns null when the run has no template or the template carries no
+// linearTeamId.
+async function resolveTeamIdForTaskRun(
+  prisma: PrismaClient,
+  taskRunId: string,
+): Promise<string | null> {
+  const taskRun = await prisma.workflowTaskRun.findUnique({
+    where: { id: taskRunId },
+    select: { workflowTaskTemplateId: true },
+  });
+
+  if (!taskRun?.workflowTaskTemplateId) return null;
+
+  const template = await prisma.workflowTaskTemplate.findUnique({
+    where: { id: taskRun.workflowTaskTemplateId },
+    select: { configJson: true },
+  });
+  if (!template?.configJson) return null;
+
+  const config = template.configJson as Record<string, unknown>;
+  return (config.linearTeamId as string) ?? null;
+}
+
 /**
  * Syncs a workflow task status change to the linked Linear issue.
  *
@@ -337,7 +429,6 @@ export async function createLinearIssue(
  * @param taskRunId - The WorkflowTaskRun ID
  * @param newStatus - The new workflow task status
  */
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: sequential outbound-sync orchestration with ordered guard returns and sync-log mutations whose order must not change
 export async function syncTaskStatusToLinear(
   prisma: PrismaClient,
   taskRunId: string,
@@ -359,15 +450,11 @@ export async function syncTaskStatusToLinear(
 
   // 2. Parse metadata and check loop prevention
   const metadata = (externalLink.metadataJson as Record<string, unknown>) ?? {};
-  const lastSyncOrigin = metadata.lastSyncOrigin as string | undefined;
-  const lastSyncAt = metadata.lastSyncAt as string | undefined;
 
-  if (lastSyncOrigin === 'LINEAR' && lastSyncAt) {
-    const syncAge = Date.now() - new Date(lastSyncAt).getTime();
-    if (syncAge < LOOP_PREVENTION_WINDOW_MS) {
-      log.info({ taskRunId, syncAge }, 'suppressing outbound sync (origin=LINEAR)');
-      return;
-    }
+  if (isLoopSuppressed(metadata)) {
+    const syncAge = Date.now() - new Date(metadata.lastSyncAt as string).getTime();
+    log.info({ taskRunId, syncAge }, 'suppressing outbound sync (origin=LINEAR)');
+    return;
   }
 
   // 3. Get connection
@@ -387,22 +474,7 @@ export async function syncTaskStatusToLinear(
   }
 
   // Find teamId: check task template configJson for linearTeamId
-  const taskRun = await prisma.workflowTaskRun.findUnique({
-    where: { id: taskRunId },
-    select: { workflowTaskTemplateId: true },
-  });
-
-  let teamId: string | null = null;
-  if (taskRun?.workflowTaskTemplateId) {
-    const template = await prisma.workflowTaskTemplate.findUnique({
-      where: { id: taskRun.workflowTaskTemplateId },
-      select: { configJson: true },
-    });
-    if (template?.configJson) {
-      const config = template.configJson as Record<string, unknown>;
-      teamId = (config.linearTeamId as string) ?? null;
-    }
-  }
+  const teamId = await resolveTeamIdForTaskRun(prisma, taskRunId);
 
   if (!teamId) {
     log.warn({ taskRunId }, 'cannot determine teamId for task, skipping outbound sync');
@@ -420,22 +492,12 @@ export async function syncTaskStatusToLinear(
 
   if (!targetStateId) {
     // No mapping for this workflow status -- log and return
-    await prisma.integrationSyncLog.create({
-      data: {
-        organizationId: connection.organizationId,
-        integrationConnectionId: connection.id,
-        direction: 'OUTBOUND',
-        syncType: 'STATUS_UPDATE_UNMAPPED',
-        entityType: 'WORKFLOW_TASK_RUN',
-        entityId: taskRunId,
-        status: 'SUCCESS',
-        completedAt: new Date(),
-        responsePayloadJson: {
-          identifier: metadata.identifier,
-          workflowStatus: newStatus,
-          reason: 'No Linear state mapping found for this workflow status',
-        } as Prisma.InputJsonValue,
-      },
+    await logUnmappedStatus(prisma, {
+      organizationId: connection.organizationId,
+      integrationConnectionId: connection.id,
+      taskRunId,
+      identifier: metadata.identifier,
+      workflowStatus: newStatus,
     });
     return;
   }
@@ -518,29 +580,7 @@ export async function syncTaskStatusToLinear(
       },
     });
   } catch (error) {
-    await prisma.integrationSyncLog.update({
-      where: { id: syncLog.id },
-      data: {
-        status: 'FAILED',
-        completedAt: new Date(),
-        errorMessage: error instanceof Error ? error.message : 'Unknown error',
-      },
-    });
-
-    await prisma.integrationConnection.update({
-      where: { id: connection.id },
-      data: {
-        lastErrorAt: new Date(),
-        lastErrorMessage: error instanceof Error ? error.message : 'Unknown error',
-      },
-    });
-
-    if (error instanceof TRPCError) throw error;
-    throw new TRPCError({
-      code: 'INTERNAL_SERVER_ERROR',
-      message: E.LINEAR_SYNC_FAILED,
-      cause: error,
-    });
+    await recordSyncFailure(prisma, syncLog.id, connection.id, error);
   }
 }
 

@@ -5,7 +5,7 @@
 // enclosing procedure prefix is on the includePrefixes allow-list or the
 // site is grandfathered into the baseline.
 
-import type { CallExpression, ObjectLiteralExpression } from 'ts-morph';
+import type { CallExpression, Node, ObjectLiteralExpression } from 'ts-morph';
 import { Project, SyntaxKind } from 'ts-morph';
 
 export interface LogsGuardOptions {
@@ -27,6 +27,26 @@ export interface LogsGuardOffence {
 const REMEDIATION_ANCHOR = 'docs/lint-remediation/lint-logs.md#unredacted-body-log';
 const LOGGER_METHOD_NAMES = new Set(['info', 'warn', 'error', 'debug', 'trace', 'fatal']);
 
+// Narrow a node to a logger-method call whose first argument is an object
+// literal carrying a `body` key (`<expr>.<level>({ body: ... }, ...)`).
+// Returns the matched CallExpression, or null when the node is not such a call.
+function matchBodyLog(node: Node): CallExpression | null {
+  if (node.getKind() !== SyntaxKind.CallExpression) return null;
+  const call = node as CallExpression;
+  const expr = call.getExpression();
+  if (expr.getKind() !== SyntaxKind.PropertyAccessExpression) return null;
+  const propAccess = expr.asKind(SyntaxKind.PropertyAccessExpression);
+  if (!propAccess) return null;
+  if (!LOGGER_METHOD_NAMES.has(propAccess.getName())) return null;
+
+  const firstArg = call.getArguments()[0];
+  if (!firstArg || firstArg.getKind() !== SyntaxKind.ObjectLiteralExpression) return null;
+  const obj = firstArg as ObjectLiteralExpression;
+  if (!obj.getProperty('body')) return null;
+
+  return call;
+}
+
 export async function runLogsGuard(opts: LogsGuardOptions): Promise<LogsGuardOffence[]> {
   const project = new Project({
     skipAddingFilesFromTsConfig: true,
@@ -47,26 +67,9 @@ export async function runLogsGuard(opts: LogsGuardOptions): Promise<LogsGuardOff
   const offences: LogsGuardOffence[] = [];
 
   for (const sf of project.getSourceFiles()) {
-    // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: AST visitor — a chain of early-return type guards narrowing each node to a logger call with an object-literal `body` arg; the guard sequence is the matcher and must stay one walker callback.
     sf.forEachDescendant(node => {
-      if (node.getKind() !== SyntaxKind.CallExpression) return;
-      const call = node as CallExpression;
-      const expr = call.getExpression();
-      if (expr.getKind() !== SyntaxKind.PropertyAccessExpression) return;
-      const propAccess = expr.asKind(SyntaxKind.PropertyAccessExpression);
-      if (!propAccess) return;
-      const methodName = propAccess.getName();
-      if (!LOGGER_METHOD_NAMES.has(methodName)) return;
-
-      // First arg should be an object literal with a `body` key.
-      const args = call.getArguments();
-      const firstArg = args[0];
-      if (!firstArg || firstArg.getKind() !== SyntaxKind.ObjectLiteralExpression) {
-        return;
-      }
-      const obj = firstArg as ObjectLiteralExpression;
-      const bodyProp = obj.getProperty('body');
-      if (!bodyProp) return;
+      const call = matchBodyLog(node);
+      if (!call) return;
 
       const procedure = inferProcedureFromContext(call) ?? 'unknown';
 

@@ -42,7 +42,44 @@ import { useDataTable } from './use-data-table.js';
  * is true. Caller-rendered toolbars can read `useDataTableLoading()` to
  * disable their own filter inputs.
  */
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: canonical primitive composes chrome + bulk + toolbar + body + footer + empty/loading branches; splitting further would scatter conditionals across helpers without simplifying flow
+interface FeaturedEmptyPanelProps {
+  loading: boolean;
+  illustration: NonNullable<DataTableProps<unknown>['emptyIllustration']>;
+  heading: string;
+  body: string;
+  cta: string | undefined;
+  onCta: (() => void) | undefined;
+  ctaIcon: DataTableProps<unknown>['emptyCtaIcon'];
+}
+
+// Full-bleed empty panel for zero-row first-class lists (shown only when an
+// illustration is supplied and no filters/search are active).
+function FeaturedEmptyPanel({
+  loading,
+  illustration,
+  heading,
+  body,
+  cta,
+  onCta,
+  ctaIcon,
+}: FeaturedEmptyPanelProps) {
+  return (
+    <DataTableLoadingContext.Provider value={loading}>
+      <div className={WORKBENCH_EMPTY_STATE_PAGE_CLASS}>
+        <AtelierEmptyState
+          variant="page"
+          illustration={illustration}
+          heading={heading}
+          body={body}
+          primaryAction={onCta && cta ? { label: cta, onClick: onCta, icon: ctaIcon } : undefined}
+          renderAction={defaultRenderAction}
+        />
+      </div>
+    </DataTableLoadingContext.Provider>
+  );
+}
+
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: canonical table primitive — after lifting the featured-empty branch to FeaturedEmptyPanel, the residual is the single composition that wires toolbar/bulk/chrome/header/body/footer with their per-prop loading + clientPagination conditionals; threading those ~30 props into a sibling would scatter the contract without reducing it.
 export function DataTable<TData>(props: DataTableProps<TData>) {
   const {
     columns,
@@ -150,24 +187,17 @@ export function DataTable<TData>(props: DataTableProps<TData>) {
   const showFeaturedEmpty =
     !!EmptyIllustration && !loading && !forceLoading && data.length === 0 && !hasFiltersOrSearch;
 
-  if (showFeaturedEmpty) {
+  if (showFeaturedEmpty && EmptyIllustration) {
     return (
-      <DataTableLoadingContext.Provider value={loading}>
-        <div className={WORKBENCH_EMPTY_STATE_PAGE_CLASS}>
-          <AtelierEmptyState
-            variant="page"
-            illustration={EmptyIllustration}
-            heading={emptyTitle}
-            body={emptyDescription ?? ''}
-            primaryAction={
-              onEmptyCta && emptyCta
-                ? { label: emptyCta, onClick: onEmptyCta, icon: emptyCtaIcon }
-                : undefined
-            }
-            renderAction={defaultRenderAction}
-          />
-        </div>
-      </DataTableLoadingContext.Provider>
+      <FeaturedEmptyPanel
+        loading={loading}
+        illustration={EmptyIllustration}
+        heading={emptyTitle}
+        body={emptyDescription ?? ''}
+        cta={emptyCta}
+        onCta={onEmptyCta}
+        ctaIcon={emptyCtaIcon}
+      />
     );
   }
 

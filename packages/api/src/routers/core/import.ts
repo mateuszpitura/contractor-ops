@@ -28,46 +28,42 @@ import {
 // Commit helpers
 // ---------------------------------------------------------------------------
 
-/**
- * Handles importing a single contractor row: skip, update, or create.
- */
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: per-row import orchestration — normalize/validate tax id → duplicate detection → branch skip/update/create with audit; cohesive decision table over shared tx, clearer inline.
-async function commitContractorRow(
+/** Update an existing contractor matched by tax ID; 'failed' if none found. */
+async function updateExistingContractor(
+  tx: TxClient,
+  organizationId: string,
+  row: Record<string, unknown>,
+  taxId: string,
+): Promise<'updated' | 'failed'> {
+  const existing = await tx.contractor.findFirst({
+    where: { organizationId, taxId, deletedAt: null },
+  });
+  if (!existing) return 'failed';
+
+  await tx.contractor.update({
+    where: { id: existing.id },
+    data: {
+      legalName: String(row.legalName ?? existing.legalName),
+      displayName: String(row.displayName ?? existing.displayName),
+      email: String(row.email ?? existing.email),
+      phone: row.phone ? String(row.phone) : existing.phone,
+      countryCode: String(row.countryCode ?? existing.countryCode),
+      currency: String(row.currency ?? existing.currency),
+      taxId,
+    },
+  });
+  return 'updated';
+}
+
+/** Create a new contractor + default billing profile; 'failed' on any error. */
+async function createContractorFromRow(
   tx: TxClient,
   organizationId: string,
   userId: string | undefined,
   row: Record<string, unknown>,
-  duplicateAction: string | undefined,
-): Promise<'created' | 'updated' | 'skipped' | 'failed'> {
-  const countryCode = String(row.countryCode ?? 'PL');
-  const taxId =
-    normalizeContractorTaxId(countryCode, String(row.taxId ?? row.contractorTaxId ?? '')) ?? '';
-  assertValidContractorTaxId(countryCode, taxId);
-
-  if (duplicateAction === 'skip') return 'skipped';
-
-  if (duplicateAction === 'update') {
-    const existing = await tx.contractor.findFirst({
-      where: { organizationId, taxId, deletedAt: null },
-    });
-    if (!existing) return 'failed';
-
-    await tx.contractor.update({
-      where: { id: existing.id },
-      data: {
-        legalName: String(row.legalName ?? existing.legalName),
-        displayName: String(row.displayName ?? existing.displayName),
-        email: String(row.email ?? existing.email),
-        phone: row.phone ? String(row.phone) : existing.phone,
-        countryCode: String(row.countryCode ?? existing.countryCode),
-        currency: String(row.currency ?? existing.currency),
-        taxId,
-      },
-    });
-    return 'updated';
-  }
-
-  // Create new contractor
+  taxId: string,
+  countryCode: string,
+): Promise<'created' | 'failed'> {
   try {
     const created = await tx.contractor.create({
       data: {
@@ -108,6 +104,30 @@ async function commitContractorRow(
   } catch {
     return 'failed';
   }
+}
+
+/**
+ * Handles importing a single contractor row: skip, update, or create.
+ */
+async function commitContractorRow(
+  tx: TxClient,
+  organizationId: string,
+  userId: string | undefined,
+  row: Record<string, unknown>,
+  duplicateAction: string | undefined,
+): Promise<'created' | 'updated' | 'skipped' | 'failed'> {
+  const countryCode = String(row.countryCode ?? 'PL');
+  const taxId =
+    normalizeContractorTaxId(countryCode, String(row.taxId ?? row.contractorTaxId ?? '')) ?? '';
+  assertValidContractorTaxId(countryCode, taxId);
+
+  if (duplicateAction === 'skip') return 'skipped';
+
+  if (duplicateAction === 'update') {
+    return updateExistingContractor(tx, organizationId, row, taxId);
+  }
+
+  return createContractorFromRow(tx, organizationId, userId, row, taxId, countryCode);
 }
 
 /**

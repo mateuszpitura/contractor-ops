@@ -44,6 +44,11 @@ import { syncJiraProjectsToOrgDefinitions } from '@contractor-ops/api/services/o
 import { auth } from '@contractor-ops/auth';
 import type { CapabilityEnum, DataRegion, Prisma, ScopeCapabilities } from '@contractor-ops/db';
 import { createTenantClientFrom, getRegionalClient, prisma, tenantStore } from '@contractor-ops/db';
+import type {
+  CredentialBlob,
+  IntegrationProviderAdapter,
+  OAuthConfig,
+} from '@contractor-ops/integrations';
 import {
   encryptCredentials,
   GOOGLE_WORKSPACE_DEPROVISION_CAPABILITIES,
@@ -104,13 +109,246 @@ function buildHeaders(headers: Record<string, string | string[] | undefined>): H
   return out;
 }
 
+function buildIdpAuthorizeUrl(
+  oauthConfig: OAuthConfig,
+  args: { clientId: string; redirectUri: string; state: string },
+): string {
+  const params = new URLSearchParams({
+    client_id: args.clientId,
+    response_type: 'code',
+    scope: oauthConfig.scopes.join(' '),
+    redirect_uri: args.redirectUri,
+    state: args.state,
+  });
+  if (oauthConfig.extraAuthParams) {
+    for (const [key, value] of Object.entries(oauthConfig.extraAuthParams)) {
+      params.set(key, value);
+    }
+  }
+  return `${oauthConfig.authorizationUrl}?${params.toString()}`;
+}
+
+type OAuthState = NonNullable<ReturnType<typeof verifyOAuthState>>;
+type OAuthChallenge = NonNullable<Awaited<ReturnType<typeof consumeOAuthChallenge>>>;
+type OAuthAdapter = IntegrationProviderAdapter & {
+  exchangeCodeForTokens: NonNullable<IntegrationProviderAdapter['exchangeCodeForTokens']>;
+};
+
+type OAuthCallbackValidation =
+  | { ok: false; clearCookie: boolean }
+  | { ok: true; adapter: OAuthAdapter; state: OAuthState; challenge: OAuthChallenge; code: string };
+
+/**
+ * Sequential OAuth callback validation: presence of code/state → adapter +
+ * signing secret resolution → HMAC state verification → single-use challenge
+ * consume → state/challenge identity match. On any failure logs the specific
+ * reason and signals whether the binding cookie must be cleared; on success
+ * returns the narrowed adapter plus the verified state and consumed challenge.
+ */
+async function validateOAuthCallback(args: {
+  provider: string;
+  code: string | undefined;
+  stateParam: string | undefined;
+  cookieState: string | null;
+}): Promise<OAuthCallbackValidation> {
+  const { provider, code, stateParam, cookieState } = args;
+
+  if (!(code && stateParam)) {
+    return { ok: false, clearCookie: false };
+  }
+
+  const adapter = getAdapter(provider);
+  if (!(adapter?.supportsOAuth && adapter.exchangeCodeForTokens && adapter.getOAuthConfig)) {
+    callbackLog.error({ provider }, 'no oauth adapter registered');
+    return { ok: false, clearCookie: false };
+  }
+
+  const oauthConfig = adapter.getOAuthConfig();
+  const signingSecret = process.env[oauthConfig.clientSecretEnvVar];
+  if (!signingSecret) {
+    callbackLog.error({ provider, envVar: oauthConfig.clientSecretEnvVar }, 'missing env var');
+    return { ok: false, clearCookie: false };
+  }
+
+  const state = verifyOAuthState(stateParam, provider, signingSecret);
+  if (!state) {
+    callbackLog.error({ provider }, 'invalid or expired state parameter');
+    return { ok: false, clearCookie: false };
+  }
+
+  const challenge = await consumeOAuthChallenge({
+    db: prisma,
+    callbackState: stateParam,
+    cookieState,
+    expectedProvider: provider,
+  });
+
+  if (!challenge) {
+    callbackLog.warn(
+      { provider, hasCookie: !!cookieState, orgId: state.orgId, userId: state.userId },
+      'oauth callback rejected: challenge consume failed',
+    );
+    return { ok: false, clearCookie: true };
+  }
+
+  if (
+    challenge.userId !== state.userId ||
+    (challenge.organizationId && challenge.organizationId !== state.orgId)
+  ) {
+    callbackLog.error({ provider }, 'oauth callback rejected: state/challenge identity mismatch');
+    return { ok: false, clearCookie: true };
+  }
+
+  return { ok: true, adapter: adapter as OAuthAdapter, state, challenge, code };
+}
+
+/**
+ * Build the connection patch and create-or-update the IntegrationConnection
+ * row. For Google Workspace the scopeCapabilities JSONB is derived from the
+ * granted OAuth scopes — write capabilities (user.deprovision + directory.write)
+ * are appended only when the additive admin.directory.user scope was granted, so
+ * an existing read-only connection that re-OAuths gains write access additively.
+ */
+async function upsertIntegrationConnection(args: {
+  provider: string;
+  adapterSlug: string;
+  organizationId: string;
+  existingConnectionId: string | null;
+  actorUserId: string;
+  displayName: string;
+  encrypted: ReturnType<typeof encryptCredentials>;
+  credentials: CredentialBlob;
+}): Promise<{ upsertedConnectionId: string; wasFirstConnect: boolean }> {
+  const { provider, credentials } = args;
+  const gwsScopeCapabilities =
+    provider === 'google_workspace'
+      ? buildGoogleWorkspaceScopeCapabilities(credentials.scope)
+      : undefined;
+
+  const connectionData = {
+    status: (provider === 'linear' ? 'PENDING_MAPPING' : 'CONNECTED') as never,
+    displayName: args.displayName,
+    credentialsRef: args.encrypted,
+    connectedByUserId: args.actorUserId,
+    connectedAt: new Date(),
+    configJson: (credentials.extra ?? {}) as Prisma.InputJsonValue,
+    tokenExpiresAt: credentials.expiresAt ? new Date(credentials.expiresAt) : null,
+    lastErrorAt: null,
+    lastErrorMessage: null,
+    ...(gwsScopeCapabilities
+      ? { scopeCapabilities: gwsScopeCapabilities as unknown as Prisma.InputJsonValue }
+      : {}),
+  };
+
+  if (args.existingConnectionId) {
+    await prisma.integrationConnection.update({
+      where: { id: args.existingConnectionId },
+      data: connectionData,
+    });
+    return { upsertedConnectionId: args.existingConnectionId, wasFirstConnect: false };
+  }
+
+  const created = await prisma.integrationConnection.create({
+    data: {
+      organizationId: args.organizationId,
+      provider: args.adapterSlug.toUpperCase() as never,
+      ...connectionData,
+    },
+  });
+  return { upsertedConnectionId: created.id, wasFirstConnect: true };
+}
+
+/**
+ * Best-effort audit of the credential upsert. The connection is already
+ * persisted, so a failed audit write must not fail the user's connect flow —
+ * log + Sentry-capture rather than rolling back.
+ */
+async function auditConnectionUpsert(args: {
+  provider: string;
+  adapterSlug: string;
+  organizationId: string;
+  actorUserId: string;
+  connectionId: string;
+  displayName: string;
+  wasFirstConnect: boolean;
+}): Promise<void> {
+  try {
+    await writeAuditLog({
+      organizationId: args.organizationId,
+      actorType: 'USER',
+      actorId: args.actorUserId,
+      action: args.wasFirstConnect
+        ? 'integration.connection.connected'
+        : 'integration.connection.updated',
+      resourceType: 'ORGANIZATION',
+      resourceId: args.organizationId,
+      resourceName: args.displayName,
+      metadata: {
+        provider: args.adapterSlug,
+        connectionId: args.connectionId,
+        firstConnect: args.wasFirstConnect,
+      },
+    });
+  } catch (auditErr) {
+    callbackLog.error(
+      { err: auditErr, provider: args.provider, organizationId: args.organizationId },
+      'oauth callback: audit-log write failed (connection already persisted)',
+    );
+    Sentry.captureException(auditErr, {
+      tags: { 'audit.kind': 'integration.connection.upsert', provider: args.provider },
+      extra: { organizationId: args.organizationId, connectionId: args.connectionId },
+    });
+  }
+}
+
+/**
+ * Fire-and-forget first-time Jira connect sync. Errors never block OAuth
+ * completion — log + Sentry-capture only.
+ */
+async function syncJiraOnConnect(args: {
+  organizationId: string;
+  actorUserId: string;
+  connectionId: string;
+  credentialsRef: string;
+  configExtra: Record<string, unknown> | undefined;
+}): Promise<void> {
+  try {
+    const org = await prisma.organization.findUniqueOrThrow({
+      where: { id: args.organizationId },
+      select: { dataRegion: true },
+    });
+    const region: DataRegion = org.dataRegion ?? 'EU';
+    const tenantDb = createTenantClientFrom(getRegionalClient(region));
+    await tenantStore.run({ organizationId: args.organizationId, region }, () =>
+      syncJiraProjectsToOrgDefinitions(
+        { db: tenantDb, actorUserId: args.actorUserId },
+        {
+          id: args.connectionId,
+          organizationId: args.organizationId,
+          provider: 'JIRA',
+          credentialsRef: args.credentialsRef,
+          configJson: (args.configExtra ?? {}) as { cloudId?: string },
+        },
+      ),
+    );
+  } catch (err) {
+    callbackLog.error(
+      { err, provider: 'jira', organizationId: args.organizationId },
+      'jira on-connect sync failed',
+    );
+    Sentry.captureException(err, {
+      tags: { 'sync.kind': 'org-definition-sync.on-connect', provider: 'jira' },
+      extra: { organizationId: args.organizationId, connectionId: args.connectionId },
+    });
+  }
+}
+
 export function registerOAuthRoutes(app: FastifyInstance): void {
   // -----------------------------------------------------------------------
   // GET /api/oauth/:provider/start
   // -----------------------------------------------------------------------
   app.get<{ Params: { provider: string } }>(
     '/api/oauth/:provider/start',
-    // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: linear multi-step state-mint + cookie-set + IdP redirect; splitting fragments the security audit surface
     async (request, reply) => {
       const { provider } = request.params;
       const appUrlEnv = loadEnv().PUBLIC_APP_URL ?? '';
@@ -168,19 +406,7 @@ export function registerOAuthRoutes(app: FastifyInstance): void {
         return noStore(reply).redirect(settingsErrorUrl, 302);
       }
 
-      const params = new URLSearchParams({
-        client_id: clientId,
-        response_type: 'code',
-        scope: oauthConfig.scopes.join(' '),
-        redirect_uri: redirectUri,
-        state,
-      });
-      if (oauthConfig.extraAuthParams) {
-        for (const [key, value] of Object.entries(oauthConfig.extraAuthParams)) {
-          params.set(key, value);
-        }
-      }
-      const idpUrl = `${oauthConfig.authorizationUrl}?${params.toString()}`;
+      const idpUrl = buildIdpAuthorizeUrl(oauthConfig, { clientId, redirectUri, state });
 
       // `__Host-` prefix mandates Secure + no Domain; Path=/api/oauth
       // narrows the cookie to the OAuth start/callback pair so it never
@@ -203,7 +429,6 @@ export function registerOAuthRoutes(app: FastifyInstance): void {
   // -----------------------------------------------------------------------
   app.get<{ Params: { provider: string }; Querystring: Record<string, string> }>(
     '/api/oauth/:provider/callback',
-    // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: linear cookie-verify + state-consume + token-exchange + connection-upsert; splitting fragments the security audit surface
     async (request, reply) => {
       const { provider } = request.params;
       const appUrlEnv = loadEnv().PUBLIC_APP_URL ?? '';
@@ -215,64 +440,21 @@ export function registerOAuthRoutes(app: FastifyInstance): void {
       };
 
       try {
-        const code = request.query.code;
-        const stateParam = request.query.state;
-
-        if (!(code && stateParam)) {
-          return noStore(reply).redirect(settingsUrl('error'), 302);
-        }
-
-        const adapter = getAdapter(provider);
-        if (!(adapter?.supportsOAuth && adapter.exchangeCodeForTokens && adapter.getOAuthConfig)) {
-          callbackLog.error({ provider }, 'no oauth adapter registered');
-          return noStore(reply).redirect(settingsUrl('error'), 302);
-        }
-
-        const oauthConfig = adapter.getOAuthConfig();
-        const signingSecret = process.env[oauthConfig.clientSecretEnvVar];
-        if (!signingSecret) {
-          callbackLog.error(
-            { provider, envVar: oauthConfig.clientSecretEnvVar },
-            'missing env var',
-          );
-          return noStore(reply).redirect(settingsUrl('error'), 302);
-        }
-
-        const state = verifyOAuthState(stateParam, provider, signingSecret);
-        if (!state) {
-          callbackLog.error({ provider }, 'invalid or expired state parameter');
-          return noStore(reply).redirect(settingsUrl('error'), 302);
-        }
-
         const cookieState =
           (request.cookies as Record<string, string | undefined>)[OAUTH_STATE_COOKIE_NAME] ?? null;
-        const challenge = await consumeOAuthChallenge({
-          db: prisma,
-          callbackState: stateParam,
+        const validated = await validateOAuthCallback({
+          provider,
+          code: request.query.code,
+          stateParam: request.query.state,
           cookieState,
-          expectedProvider: provider,
         });
 
-        if (!challenge) {
-          callbackLog.warn(
-            { provider, hasCookie: !!cookieState, orgId: state.orgId, userId: state.userId },
-            'oauth callback rejected: challenge consume failed',
-          );
-          clearCookie();
+        if (!validated.ok) {
+          if (validated.clearCookie) clearCookie();
           return noStore(reply).redirect(settingsUrl('error'), 302);
         }
 
-        if (
-          challenge.userId !== state.userId ||
-          (challenge.organizationId && challenge.organizationId !== state.orgId)
-        ) {
-          callbackLog.error(
-            { provider },
-            'oauth callback rejected: state/challenge identity mismatch',
-          );
-          clearCookie();
-          return noStore(reply).redirect(settingsUrl('error'), 302);
-        }
+        const { adapter, state, challenge, code } = validated;
 
         const credentials = await adapter.exchangeCodeForTokens(code, challenge.redirectUri);
 
@@ -291,114 +473,37 @@ export function registerOAuthRoutes(app: FastifyInstance): void {
           (credentials.extra?.displayName as string) ??
           adapter.displayName;
 
-        // For Google Workspace, derive the scopeCapabilities JSONB from the granted OAuth
-        // scopes. The write capabilities (user.deprovision + directory.write) are appended
-        // ONLY when the additive admin.directory.user scope was granted, so an existing
-        // read-only connection that re-OAuths gains write access additively.
-        const gwsScopeCapabilities =
-          provider === 'google_workspace'
-            ? buildGoogleWorkspaceScopeCapabilities(credentials.scope)
-            : undefined;
-
-        const connectionData = {
-          status: (provider === 'linear' ? 'PENDING_MAPPING' : 'CONNECTED') as never,
+        const { upsertedConnectionId, wasFirstConnect } = await upsertIntegrationConnection({
+          provider,
+          adapterSlug: adapter.slug,
+          organizationId: targetOrgId,
+          existingConnectionId: existingConnection?.id ?? null,
+          actorUserId: challenge.userId,
           displayName,
-          credentialsRef: encrypted,
-          connectedByUserId: challenge.userId,
-          connectedAt: new Date(),
-          configJson: (credentials.extra ?? {}) as Prisma.InputJsonValue,
-          tokenExpiresAt: credentials.expiresAt ? new Date(credentials.expiresAt) : null,
-          lastErrorAt: null,
-          lastErrorMessage: null,
-          ...(gwsScopeCapabilities
-            ? { scopeCapabilities: gwsScopeCapabilities as unknown as Prisma.InputJsonValue }
-            : {}),
-        };
+          encrypted,
+          credentials,
+        });
 
-        let upsertedConnectionId: string;
-        const wasFirstConnect = !existingConnection;
-        if (existingConnection) {
-          await prisma.integrationConnection.update({
-            where: { id: existingConnection.id },
-            data: connectionData,
-          });
-          upsertedConnectionId = existingConnection.id;
-        } else {
-          const created = await prisma.integrationConnection.create({
-            data: {
-              organizationId: targetOrgId,
-              provider: adapter.slug.toUpperCase() as never,
-              ...connectionData,
-            },
-          });
-          upsertedConnectionId = created.id;
-        }
-
-        // Audit the credential upsert. The connection is already persisted,
-        // so a failed audit write must not fail the user's connect flow —
-        // log + Sentry best-effort rather than rolling back.
-        try {
-          await writeAuditLog({
-            organizationId: targetOrgId,
-            actorType: 'USER',
-            actorId: challenge.userId,
-            action: wasFirstConnect
-              ? 'integration.connection.connected'
-              : 'integration.connection.updated',
-            resourceType: 'ORGANIZATION',
-            resourceId: targetOrgId,
-            resourceName: displayName,
-            metadata: {
-              provider: adapter.slug,
-              connectionId: upsertedConnectionId,
-              firstConnect: wasFirstConnect,
-            },
-          });
-        } catch (auditErr) {
-          callbackLog.error(
-            { err: auditErr, provider, organizationId: targetOrgId },
-            'oauth callback: audit-log write failed (connection already persisted)',
-          );
-          Sentry.captureException(auditErr, {
-            tags: { 'audit.kind': 'integration.connection.upsert', provider },
-            extra: { organizationId: targetOrgId, connectionId: upsertedConnectionId },
-          });
-        }
+        await auditConnectionUpsert({
+          provider,
+          adapterSlug: adapter.slug,
+          organizationId: targetOrgId,
+          actorUserId: challenge.userId,
+          connectionId: upsertedConnectionId,
+          displayName,
+          wasFirstConnect,
+        });
 
         // First-time Jira connect → seed Organization > Projects. Errors
         // never block OAuth completion (fire-and-forget with Sentry).
         if (provider === 'jira' && wasFirstConnect) {
-          void (async () => {
-            try {
-              const org = await prisma.organization.findUniqueOrThrow({
-                where: { id: targetOrgId },
-                select: { dataRegion: true },
-              });
-              const region: DataRegion = org.dataRegion ?? 'EU';
-              const tenantDb = createTenantClientFrom(getRegionalClient(region));
-              await tenantStore.run({ organizationId: targetOrgId, region }, () =>
-                syncJiraProjectsToOrgDefinitions(
-                  { db: tenantDb, actorUserId: challenge.userId },
-                  {
-                    id: upsertedConnectionId,
-                    organizationId: targetOrgId,
-                    provider: 'JIRA',
-                    credentialsRef: encrypted,
-                    configJson: (credentials.extra ?? {}) as { cloudId?: string },
-                  },
-                ),
-              );
-            } catch (err) {
-              callbackLog.error(
-                { err, provider, organizationId: targetOrgId },
-                'jira on-connect sync failed',
-              );
-              Sentry.captureException(err, {
-                tags: { 'sync.kind': 'org-definition-sync.on-connect', provider: 'jira' },
-                extra: { organizationId: targetOrgId, connectionId: upsertedConnectionId },
-              });
-            }
-          })();
+          void syncJiraOnConnect({
+            organizationId: targetOrgId,
+            actorUserId: challenge.userId,
+            connectionId: upsertedConnectionId,
+            credentialsRef: encrypted,
+            configExtra: credentials.extra,
+          });
         }
 
         clearCookie();

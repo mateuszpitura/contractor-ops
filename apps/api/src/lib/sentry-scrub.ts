@@ -82,35 +82,40 @@ export function maskEmail(email: unknown): string | undefined {
   return `${email.charAt(0)}***${email.slice(at)}`;
 }
 
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: sequential field-by-field PII scrub over a fixed set of independent Sentry event fields; splitting scatters cohesive redaction logic and harms readability.
-export function scrubSentryEvent(event: ErrorEvent, _hint?: EventHint): ErrorEvent | null {
-  if (event.user) {
-    if (event.user.email) {
-      event.user.email = maskEmail(event.user.email);
-    }
-    if (
-      'ip_address' in event.user &&
-      event.user.ip_address &&
-      event.user.ip_address !== '{{auto}}'
-    ) {
-      event.user.ip_address = '{{auto}}';
-    }
+function scrubUser(user: NonNullable<ErrorEvent['user']>): void {
+  if (user.email) {
+    user.email = maskEmail(user.email);
   }
+  if ('ip_address' in user && user.ip_address && user.ip_address !== '{{auto}}') {
+    user.ip_address = '{{auto}}';
+  }
+}
 
-  if (event.request?.data) {
-    event.request.data = scrubObject(event.request.data) as typeof event.request.data;
+function scrubRequest(request: NonNullable<ErrorEvent['request']>): void {
+  if (request.data) {
+    request.data = scrubObject(request.data) as typeof request.data;
   }
-  if (event.request?.query_string && typeof event.request.query_string === 'string') {
-    event.request.query_string = event.request.query_string.replace(
+  if (request.query_string && typeof request.query_string === 'string') {
+    request.query_string = request.query_string.replace(
       /([?&]?)([^=&?#]+)=([^&]*)/g,
       (_, sep, key, val) => `${sep}${key}=${isPiiKey(key) ? REDACTED : val}`,
     );
   }
-  if (event.request?.headers) {
-    event.request.headers = scrubObject(event.request.headers) as typeof event.request.headers;
+  if (request.headers) {
+    request.headers = scrubObject(request.headers) as typeof request.headers;
   }
-  if (event.request?.cookies) {
-    event.request.cookies = scrubObject(event.request.cookies) as typeof event.request.cookies;
+  if (request.cookies) {
+    request.cookies = scrubObject(request.cookies) as typeof request.cookies;
+  }
+}
+
+export function scrubSentryEvent(event: ErrorEvent, _hint?: EventHint): ErrorEvent | null {
+  if (event.user) {
+    scrubUser(event.user);
+  }
+
+  if (event.request) {
+    scrubRequest(event.request);
   }
 
   if (event.extra) {

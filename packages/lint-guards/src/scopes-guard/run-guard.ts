@@ -8,7 +8,7 @@
 // Adding a write-capable scope literal directly without putting it in a typed-const
 // fails CI. Read-only scopes (`*.readonly`) are exempt.
 
-import type { ArrayLiteralExpression, StringLiteral } from 'ts-morph';
+import type { ArrayLiteralExpression, StringLiteral, VariableDeclaration } from 'ts-morph';
 import { Project, SyntaxKind } from 'ts-morph';
 
 export interface ScopesGuardOptions {
@@ -48,23 +48,32 @@ function basename(filePath: string): string {
   return parts[parts.length - 1] ?? filePath;
 }
 
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: AST walk over variable declarations unwrapping `as const` array literals to collect string values; nested iteration is inherent to the traversal.
+/**
+ * String values of a `const x = [...]` or `const x = [...] as const` array
+ * literal initializer. Empty for any other declaration shape.
+ */
+function constArrayStringValues(decl: VariableDeclaration): string[] {
+  const init = decl.getInitializer();
+  if (!init) return [];
+  // Unwrap `[...] as const` (AsExpression) down to the ArrayLiteralExpression.
+  const arr =
+    init.asKind(SyntaxKind.ArrayLiteralExpression) ??
+    init.asKind(SyntaxKind.AsExpression)?.getExpression().asKind(SyntaxKind.ArrayLiteralExpression);
+  if (!arr) return [];
+
+  const values: string[] = [];
+  for (const el of (arr as ArrayLiteralExpression).getElements()) {
+    const lit = el.asKind(SyntaxKind.StringLiteral);
+    if (lit) values.push((lit as StringLiteral).getLiteralValue());
+  }
+  return values;
+}
+
 function collectConstArrayStringLiterals(filePathsProject: Project, into: Set<string>): void {
   for (const sf of filePathsProject.getSourceFiles()) {
     for (const decl of sf.getVariableDeclarations()) {
-      const init = decl.getInitializer();
-      if (!init) continue;
-      // Unwrap `[...] as const` (AsExpression) down to the ArrayLiteralExpression.
-      const arr =
-        init.asKind(SyntaxKind.ArrayLiteralExpression) ??
-        init
-          .asKind(SyntaxKind.AsExpression)
-          ?.getExpression()
-          .asKind(SyntaxKind.ArrayLiteralExpression);
-      if (!arr) continue;
-      for (const el of (arr as ArrayLiteralExpression).getElements()) {
-        const lit = el.asKind(SyntaxKind.StringLiteral);
-        if (lit) into.add((lit as StringLiteral).getLiteralValue());
+      for (const value of constArrayStringValues(decl)) {
+        into.add(value);
       }
     }
   }

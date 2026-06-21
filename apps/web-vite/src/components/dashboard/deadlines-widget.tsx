@@ -18,6 +18,8 @@ import { tKey } from '../../i18n/typed-keys.js';
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { useDeadlinesWidget } from './hooks/use-deadlines-widget.js';
 
+type DeadlineItem = ReturnType<typeof useDeadlinesWidget>['items'][number];
+
 type DeadlineType = 'CONTRACT_EXPIRING' | 'TASK_OVERDUE' | 'INVOICE_DUE';
 
 function getEntityHref(type: DeadlineType, entityId: string): string {
@@ -53,6 +55,30 @@ const DEADLINE_BADGE_CONFIG: Record<
 };
 
 const SKELETON_ROW_KEYS = ['row-1', 'row-2', 'row-3', 'row-4', 'row-5'] as const;
+
+function DeadlineRow({ item, t }: { item: DeadlineItem; t: ReturnType<typeof useTranslations> }) {
+  const badge = DEADLINE_BADGE_CONFIG[item.type as DeadlineType];
+  const isOverdue = 'daysOverdue' in item && item.daysOverdue != null;
+  const days = (isOverdue ? item.daysOverdue : item.daysRemaining) ?? 0;
+
+  return (
+    <div
+      className={`flex items-center gap-3 rounded-lg border-s-2 ${badge.accent} ps-3 pe-2.5 py-2.5 transition-all duration-200 hover:bg-muted/40 hover:ps-3.5`}>
+      <Badge variant={badge.variant}>{tKey(t, badge.labelKey)}</Badge>
+      <Link
+        href={getEntityHref(item.type as DeadlineType, item.entityId)}
+        className="min-w-0 flex-1 truncate text-sm font-medium hover:underline">
+        {item.entityName}
+      </Link>
+      <span
+        className={`shrink-0 text-xs font-mono tabular-nums ${
+          isOverdue ? 'font-bold text-destructive' : 'text-muted-foreground'
+        }`}>
+        {isOverdue ? t('deadlines.overdue', { days }) : t('deadlines.upcoming', { days })}
+      </span>
+    </div>
+  );
+}
 
 export function DeadlinesWidget() {
   const t = useTranslations('Dashboard');
@@ -91,33 +117,9 @@ export function DeadlinesWidget() {
         ) : (
           <ScrollArea className="max-h-[320px]">
             <div className="flex flex-col gap-2">
-              {/* biome-ignore lint/complexity/noExcessiveCognitiveComplexity: cohesive deadline-row render with inline overdue/remaining derivation and conditional badge/label branches; splitting fragments the list item for no gain. */}
-              {items.map(item => {
-                const badge = DEADLINE_BADGE_CONFIG[item.type as DeadlineType];
-                const isOverdue = 'daysOverdue' in item && item.daysOverdue != null;
-                const days = (isOverdue ? item.daysOverdue : item.daysRemaining) ?? 0;
-
-                return (
-                  <div
-                    key={`${item.type}-${item.entityId}`}
-                    className={`flex items-center gap-3 rounded-lg border-s-2 ${badge.accent} ps-3 pe-2.5 py-2.5 transition-all duration-200 hover:bg-muted/40 hover:ps-3.5`}>
-                    <Badge variant={badge.variant}>{tKey(t, badge.labelKey)}</Badge>
-                    <Link
-                      href={getEntityHref(item.type as DeadlineType, item.entityId)}
-                      className="min-w-0 flex-1 truncate text-sm font-medium hover:underline">
-                      {item.entityName}
-                    </Link>
-                    <span
-                      className={`shrink-0 text-xs font-mono tabular-nums ${
-                        isOverdue ? 'font-bold text-destructive' : 'text-muted-foreground'
-                      }`}>
-                      {isOverdue
-                        ? t('deadlines.overdue', { days })
-                        : t('deadlines.upcoming', { days })}
-                    </span>
-                  </div>
-                );
-              })}
+              {items.map(item => (
+                <DeadlineRow key={`${item.type}-${item.entityId}`} item={item} t={t} />
+              ))}
             </div>
           </ScrollArea>
         )}

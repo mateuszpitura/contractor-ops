@@ -42,7 +42,94 @@ export async function acknowledgeValidation(
   });
 }
 
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: sequential intake→invoice conversion (load → tenant/status guards → field mapping branches → persist); the ordered validate-then-mutate steps are one cohesive contract.
+interface ParsedIntakeInvoice {
+  id?: string;
+  issueDate?: string;
+  dueDate?: string;
+  currencyCode?: string;
+  taxExclusiveAmount?: number;
+  taxInclusiveAmount?: number;
+  payableAmount?: number;
+  supplier?: { id?: string; name?: string };
+  customer?: { id?: string };
+  lines?: Array<{
+    lineNumber: number;
+    description: string;
+    quantity?: number;
+    unit?: string;
+    unitPriceMinor?: number;
+    netAmountMinor?: number;
+    vatRate?: string;
+    vatAmountMinor?: number;
+    grossAmountMinor?: number;
+  }>;
+  taxBreakdown?: Array<{ taxAmountMinor?: number }>;
+}
+
+/** Intake row fields consumed by {@link buildInvoiceFieldsFromIntake}. */
+interface IntakeInvoiceSource {
+  id: string;
+  parsedInvoiceJson: unknown;
+  extractedInvoiceNumber: string | null;
+  extractedSupplierVatId: string | null;
+  extractedSupplierName: string | null;
+  rawFileSha256: string | null;
+}
+
+/**
+ * Pure mapping from the parsed intake payload + intake fallbacks to the scalar
+ * invoice fields and line rows. No DB access, no throws.
+ */
+function buildInvoiceFieldsFromIntake(intake: IntakeInvoiceSource, orgId: string, now: () => Date) {
+  const parsed = intake.parsedInvoiceJson as unknown as ParsedIntakeInvoice;
+
+  const issueDate = parsed.issueDate ? new Date(parsed.issueDate) : now();
+  const dueDate = parsed.dueDate ? new Date(parsed.dueDate) : issueDate;
+  const currency = (parsed.currencyCode ?? 'EUR').toUpperCase();
+  const subtotalMinor = parsed.taxExclusiveAmount ?? 0;
+  const totalMinor = parsed.taxInclusiveAmount ?? subtotalMinor;
+  const amountToPayMinor = parsed.payableAmount ?? totalMinor;
+  const vatAmountMinor =
+    parsed.taxBreakdown && parsed.taxBreakdown.length > 0
+      ? parsed.taxBreakdown.reduce((acc, row) => acc + (row.taxAmountMinor ?? 0), 0)
+      : totalMinor - subtotalMinor;
+
+  const invoiceNumber = parsed.id || intake.extractedInvoiceNumber || `INTAKE-${intake.id}`;
+  const sellerTaxId = parsed.supplier?.id ?? intake.extractedSupplierVatId ?? null;
+  const sellerName = parsed.supplier?.name ?? intake.extractedSupplierName ?? null;
+  const buyerTaxId = parsed.customer?.id ?? null;
+  const duplicateCheckHash = intake.rawFileSha256;
+
+  const linesData = (parsed.lines ?? []).map((line, idx) => ({
+    organizationId: orgId,
+    lineNumber: line.lineNumber ?? idx + 1,
+    description: line.description ?? '',
+    quantity: line.quantity == null ? null : line.quantity,
+    unit: line.unit ?? null,
+    unitPriceMinor: line.unitPriceMinor ?? null,
+    netAmountMinor: line.netAmountMinor ?? null,
+    vatRate: line.vatRate ?? null,
+    vatAmountMinor: line.vatAmountMinor ?? null,
+    grossAmountMinor: line.grossAmountMinor ?? null,
+  }));
+
+  return {
+    issueDate,
+    dueDate,
+    currency,
+    subtotalMinor,
+    totalMinor,
+    amountToPayMinor,
+    vatAmountMinor,
+    invoiceNumber,
+    sellerTaxId,
+    sellerName,
+    buyerTaxId,
+    duplicateCheckHash,
+    linesData,
+  };
+}
+
 export async function convertToInvoice(
   db: PrismaClient,
   input: ConvertToInvoiceInput,
@@ -83,59 +170,21 @@ export async function convertToInvoice(
     );
   }
 
-  const parsed = intake.parsedInvoiceJson as unknown as {
-    id?: string;
-    issueDate?: string;
-    dueDate?: string;
-    currencyCode?: string;
-    taxExclusiveAmount?: number;
-    taxInclusiveAmount?: number;
-    payableAmount?: number;
-    supplier?: { id?: string; name?: string };
-    customer?: { id?: string };
-    lines?: Array<{
-      lineNumber: number;
-      description: string;
-      quantity?: number;
-      unit?: string;
-      unitPriceMinor?: number;
-      netAmountMinor?: number;
-      vatRate?: string;
-      vatAmountMinor?: number;
-      grossAmountMinor?: number;
-    }>;
-    taxBreakdown?: Array<{ taxAmountMinor?: number }>;
-  };
-
-  const issueDate = parsed.issueDate ? new Date(parsed.issueDate) : now();
-  const dueDate = parsed.dueDate ? new Date(parsed.dueDate) : issueDate;
-  const currency = (parsed.currencyCode ?? 'EUR').toUpperCase();
-  const subtotalMinor = parsed.taxExclusiveAmount ?? 0;
-  const totalMinor = parsed.taxInclusiveAmount ?? subtotalMinor;
-  const amountToPayMinor = parsed.payableAmount ?? totalMinor;
-  const vatAmountMinor =
-    parsed.taxBreakdown && parsed.taxBreakdown.length > 0
-      ? parsed.taxBreakdown.reduce((acc, row) => acc + (row.taxAmountMinor ?? 0), 0)
-      : totalMinor - subtotalMinor;
-
-  const invoiceNumber = parsed.id || intake.extractedInvoiceNumber || `INTAKE-${intake.id}`;
-  const sellerTaxId = parsed.supplier?.id ?? intake.extractedSupplierVatId ?? null;
-  const sellerName = parsed.supplier?.name ?? intake.extractedSupplierName ?? null;
-  const buyerTaxId = parsed.customer?.id ?? null;
-  const duplicateCheckHash = intake.rawFileSha256;
-
-  const linesData = (parsed.lines ?? []).map((line, idx) => ({
-    organizationId: input.orgId,
-    lineNumber: line.lineNumber ?? idx + 1,
-    description: line.description ?? '',
-    quantity: line.quantity == null ? null : line.quantity,
-    unit: line.unit ?? null,
-    unitPriceMinor: line.unitPriceMinor ?? null,
-    netAmountMinor: line.netAmountMinor ?? null,
-    vatRate: line.vatRate ?? null,
-    vatAmountMinor: line.vatAmountMinor ?? null,
-    grossAmountMinor: line.grossAmountMinor ?? null,
-  }));
+  const {
+    issueDate,
+    dueDate,
+    currency,
+    subtotalMinor,
+    totalMinor,
+    amountToPayMinor,
+    vatAmountMinor,
+    invoiceNumber,
+    sellerTaxId,
+    sellerName,
+    buyerTaxId,
+    duplicateCheckHash,
+    linesData,
+  } = buildInvoiceFieldsFromIntake(intake, input.orgId, now);
 
   return db.$transaction(async tx => {
     let invoice: { id: string };

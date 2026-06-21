@@ -108,6 +108,37 @@ export class GitHubAdapter extends BaseAdapter implements Deprovisionable {
     }
   }
 
+  /**
+   * Revoke a single per-PAT credential authorization. A 404 is idempotent
+   * success; other errors are partitioned into transient (retry) vs permanent.
+   */
+  async #revokeOneCredentialAuth(
+    octokit: Octokit,
+    credentialId: number,
+    matches: Array<{ credential_id?: number; token_last_eight?: string }>,
+  ): Promise<
+    | { kind: 'ok'; maskedToken?: string }
+    | { kind: 'transient'; err: unknown }
+    | { kind: 'permanent'; err: unknown }
+  > {
+    try {
+      await octokit.request('DELETE /orgs/{org}/credential-authorizations/{credential_id}', {
+        org: this.#org,
+        credential_id: credentialId,
+      });
+      const match = matches.find(m => m.credential_id === credentialId);
+      return { kind: 'ok', maskedToken: match?.token_last_eight };
+    } catch (err) {
+      // 404 ⇒ already revoked (idempotent success).
+      if (GitHubAdapter.#httpStatus(err) === 404) return { kind: 'ok' };
+      const cls = GitHubAdapter.#classify(err);
+      if (cls === 'TRANSIENT_RATE_LIMIT' || cls === 'TRANSIENT_NETWORK') {
+        return { kind: 'transient', err };
+      }
+      return { kind: 'permanent', err };
+    }
+  }
+
   async revokeAllSessions(externalUserId: string): Promise<DeprovisionResult> {
     const requestSha256 = sha256Hex(
       canonicalizeRequest({ op: 'revokeCredentialAuthorizations', org: this.#org }),
@@ -150,21 +181,14 @@ export class GitHubAdapter extends BaseAdapter implements Deprovisionable {
         .map(a => a.credential_id)
         .filter((id): id is number => typeof id === 'number')
         .map(credentialId =>
-          // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: per-credential revoke with 404-as-success idempotency + transient/permanent error partitioning; splitting fragments the error-classification flow.
           limit(async () => {
-            try {
-              await octokit.request(
-                'DELETE /orgs/{org}/credential-authorizations/{credential_id}',
-                { org: this.#org, credential_id: credentialId },
-              );
-              const match = matches.find(m => m.credential_id === credentialId);
-              if (match?.token_last_eight) masked.push(match.token_last_eight);
-            } catch (err) {
-              // 404 ⇒ already revoked (idempotent success).
-              if (GitHubAdapter.#httpStatus(err) === 404) return;
-              const cls = GitHubAdapter.#classify(err);
-              if (cls === 'TRANSIENT_RATE_LIMIT' || cls === 'TRANSIENT_NETWORK') transientErr = err;
-              else permanentErr = err;
+            const result = await this.#revokeOneCredentialAuth(octokit, credentialId, matches);
+            if (result.kind === 'ok') {
+              if (result.maskedToken) masked.push(result.maskedToken);
+            } else if (result.kind === 'transient') {
+              transientErr = result.err;
+            } else {
+              permanentErr = result.err;
             }
           }),
         ),

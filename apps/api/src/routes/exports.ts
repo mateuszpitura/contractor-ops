@@ -32,20 +32,46 @@ const log = createLogger({ service: 'exports-download' });
 
 const SIGNED_URL_TTL_SECONDS = 5 * 60;
 
+/** Project Fastify's raw header bag onto a fetch `Headers` for Better Auth. */
+function toFetchHeaders(headers: FastifyRequest['headers']): Headers {
+  const fwdHeaders = new Headers();
+  for (const [key, value] of Object.entries(headers)) {
+    if (typeof value === 'string') fwdHeaders.set(key, value);
+    else if (Array.isArray(value)) fwdHeaders.set(key, value.join(','));
+  }
+  return fwdHeaders;
+}
+
+/** Sign the R2 object and 302-redirect, or reply 500 if signing fails. */
+async function redirectToSignedDownload(
+  reply: FastifyReply,
+  exportId: string,
+  fileR2Key: string,
+  fileName: string | null,
+): Promise<FastifyReply> {
+  try {
+    const { signedUrl } = await signExistingDownload(
+      fileR2Key,
+      SIGNED_URL_TTL_SECONDS,
+      fileName ?? undefined,
+    );
+    return reply.redirect(signedUrl, 302);
+  } catch (err) {
+    log.error(
+      { err: err instanceof Error ? err.message : String(err), exportId },
+      'export download URL signing failed',
+    );
+    return reply.code(500).send({ error: 'sign failed' });
+  }
+}
+
 export function registerExportsRoute(app: FastifyInstance): void {
   app.get<{ Params: { exportId: string } }>(
     '/exports/:exportId/download',
-    // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: sequential auth → tenant-match → status/expiry guards → presign orchestration; each step gates the next with its own error response, so splitting would scatter the request lifecycle.
     async (request, reply) => {
       reply.header('cache-control', 'no-store, private');
 
-      const fwdHeaders = new Headers();
-      for (const [key, value] of Object.entries(request.headers)) {
-        if (typeof value === 'string') fwdHeaders.set(key, value);
-        else if (Array.isArray(value)) fwdHeaders.set(key, value.join(','));
-      }
-
-      const session = await auth.api.getSession({ headers: fwdHeaders });
+      const session = await auth.api.getSession({ headers: toFetchHeaders(request.headers) });
       if (!session) return reply.code(401).send({ error: 'unauthenticated' });
       const activeOrgId = session.session.activeOrganizationId;
       if (!activeOrgId) return reply.code(403).send({ error: 'no active organization' });
@@ -76,20 +102,7 @@ export function registerExportsRoute(app: FastifyInstance): void {
         return reply.code(410).send({ error: 'export expired' });
       }
 
-      try {
-        const { signedUrl } = await signExistingDownload(
-          row.fileR2Key,
-          SIGNED_URL_TTL_SECONDS,
-          row.fileName ?? undefined,
-        );
-        return reply.redirect(signedUrl, 302);
-      } catch (err) {
-        log.error(
-          { err: err instanceof Error ? err.message : String(err), exportId },
-          'export download URL signing failed',
-        );
-        return reply.code(500).send({ error: 'sign failed' });
-      }
+      return redirectToSignedDownload(reply, exportId, row.fileR2Key, row.fileName);
     },
   );
 }

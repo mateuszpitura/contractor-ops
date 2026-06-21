@@ -24,6 +24,30 @@ export type QStashRouteConfig<TBody extends z.ZodType> = {
   ) => Promise<FastifyReply>;
 };
 
+type ParsedBody<T> = { ok: true; data: T } | { ok: false; detail: string };
+
+function parseQStashBody<TBody extends z.ZodType>(
+  rawBody: string,
+  bodySchema: TBody,
+): ParsedBody<z.infer<TBody>> {
+  let parsedJson: unknown;
+  try {
+    parsedJson = rawBody.length > 0 ? JSON.parse(rawBody) : null;
+  } catch {
+    parsedJson = null;
+  }
+
+  const parsed = bodySchema.safeParse(parsedJson);
+  if (!parsed.success) {
+    const missing = parsed.error.issues.map(i => i.path.join('.')).filter(Boolean);
+    const detail =
+      missing.length > 0 ? `Missing or invalid: ${missing.join(', ')}` : 'Invalid body';
+    return { ok: false, detail };
+  }
+
+  return { ok: true, data: parsed.data };
+}
+
 /**
  * Register a QStash-guarded POST route with observability + Zod body validation.
  */
@@ -36,21 +60,10 @@ export function defineQStashRoute<TBody extends z.ZodType>(
     if (!guard) return reply;
 
     const runObserved = () =>
-      // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: linear request orchestration (parse → safeParse → validate → handler) with cohesive error branches
       withQueueObservability(config.observabilityName, async () => {
-        let parsedJson: unknown;
-        try {
-          parsedJson = guard.rawBody.length > 0 ? JSON.parse(guard.rawBody) : null;
-        } catch {
-          parsedJson = null;
-        }
-
-        const parsed = config.bodySchema.safeParse(parsedJson);
-        if (!parsed.success) {
-          const missing = parsed.error.issues.map(i => i.path.join('.')).filter(Boolean);
-          const detail =
-            missing.length > 0 ? `Missing or invalid: ${missing.join(', ')}` : 'Invalid body';
-          return reply.code(400).send({ error: detail });
+        const parsed = parseQStashBody(guard.rawBody, config.bodySchema);
+        if (!parsed.ok) {
+          return reply.code(400).send({ error: parsed.detail });
         }
 
         return config.handler(parsed.data, { request, reply });

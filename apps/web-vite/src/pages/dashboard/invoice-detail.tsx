@@ -36,59 +36,43 @@ const sourceIconMap: Record<string, React.ComponentType<{ className?: string }>>
   EMAIL_INTAKE: Mail,
 };
 
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: page content render with cohesive loading/error + conditional integration/section UI states
-function InvoiceDetailPageContent() {
-  const params = useParams<{ id: string }>();
-  const invoiceId = params.id ?? '';
-  const {
-    invoice,
-    documentId,
-    pdfUrl,
-    peppolTransmission,
-    reconciliation,
-    zatcaSubmission,
-    handleRetry,
-    handleInvoiceInvalidate,
-    handleSubmitForApproval,
-    isSubmitting,
-    isNotFound,
-    isLoading,
-    isError,
-    hasInvoice,
-    t,
-    duplicateDismiss,
-    peppolBadgeTransmission,
-    invoiceFlags,
-  } = useInvoiceDetailContainer(invoiceId, params.id);
-  const skontoEnabled = useFlag('payments.skonto-enabled');
+type InvoiceDetailContainer = ReturnType<typeof useInvoiceDetailContainer>;
 
-  if (isLoading) {
-    return (
-      <div className="space-y-section-gap min-w-0">
-        <InvoiceDetailSkeleton />
-      </div>
-    );
-  }
+interface InvoiceDetailContentProps {
+  invoiceId: string;
+  invoice: NonNullable<InvoiceDetailContainer['invoice']>;
+  invoiceFlags: NonNullable<InvoiceDetailContainer['invoiceFlags']>;
+  documentId: InvoiceDetailContainer['documentId'];
+  pdfUrl: InvoiceDetailContainer['pdfUrl'];
+  peppolTransmission: InvoiceDetailContainer['peppolTransmission'];
+  reconciliation: InvoiceDetailContainer['reconciliation'];
+  zatcaSubmission: InvoiceDetailContainer['zatcaSubmission'];
+  peppolBadgeTransmission: InvoiceDetailContainer['peppolBadgeTransmission'];
+  duplicateDismiss: InvoiceDetailContainer['duplicateDismiss'];
+  handleInvoiceInvalidate: InvoiceDetailContainer['handleInvoiceInvalidate'];
+  handleSubmitForApproval: InvoiceDetailContainer['handleSubmitForApproval'];
+  isSubmitting: InvoiceDetailContainer['isSubmitting'];
+  t: InvoiceDetailContainer['t'];
+  skontoEnabled: boolean;
+}
 
-  if (isError || !hasInvoice || !invoice || !invoiceFlags) {
-    return (
-      <div className="flex min-h-[400px] flex-col items-center justify-center gap-3 text-center">
-        <h2 className="text-lg font-medium">
-          {isNotFound ? t('detail.notFound') : t('detail.loadError')}
-        </h2>
-        {isNotFound ? (
-          <Button variant="outline" render={<Link href="/invoices" />}>
-            {t('detail.backToInvoices')}
-          </Button>
-        ) : (
-          <Button variant="outline" onClick={handleRetry}>
-            {t('detail.retry')}
-          </Button>
-        )}
-      </div>
-    );
-  }
-
+function InvoiceDetailContent({
+  invoiceId,
+  invoice,
+  invoiceFlags,
+  documentId,
+  pdfUrl,
+  peppolTransmission,
+  reconciliation,
+  zatcaSubmission,
+  peppolBadgeTransmission,
+  duplicateDismiss,
+  handleInvoiceInvalidate,
+  handleSubmitForApproval,
+  isSubmitting,
+  t,
+  skontoEnabled,
+}: InvoiceDetailContentProps) {
   const statusVariant = statusToVariant('invoice', invoice.status as InvoiceStatusInput);
   const SourceIcon = sourceIconMap[invoice.source] ?? Inbox;
 
@@ -167,6 +151,79 @@ function InvoiceDetailPageContent() {
         }
       />
     </div>
+  );
+}
+
+function InvoiceDetailPageContent() {
+  const params = useParams<{ id: string }>();
+  const invoiceId = params.id ?? '';
+  const {
+    invoice,
+    documentId,
+    pdfUrl,
+    peppolTransmission,
+    reconciliation,
+    zatcaSubmission,
+    handleRetry,
+    handleInvoiceInvalidate,
+    handleSubmitForApproval,
+    isSubmitting,
+    isNotFound,
+    isLoading,
+    isError,
+    hasInvoice,
+    t,
+    duplicateDismiss,
+    peppolBadgeTransmission,
+    invoiceFlags,
+  } = useInvoiceDetailContainer(invoiceId, params.id);
+  const skontoEnabled = useFlag('payments.skonto-enabled');
+
+  if (isLoading) {
+    return (
+      <div className="space-y-section-gap min-w-0">
+        <InvoiceDetailSkeleton />
+      </div>
+    );
+  }
+
+  if (isError || !hasInvoice || !invoice || !invoiceFlags) {
+    return (
+      <div className="flex min-h-[400px] flex-col items-center justify-center gap-3 text-center">
+        <h2 className="text-lg font-medium">
+          {isNotFound ? t('detail.notFound') : t('detail.loadError')}
+        </h2>
+        {isNotFound ? (
+          <Button variant="outline" render={<Link href="/invoices" />}>
+            {t('detail.backToInvoices')}
+          </Button>
+        ) : (
+          <Button variant="outline" onClick={handleRetry}>
+            {t('detail.retry')}
+          </Button>
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <InvoiceDetailContent
+      invoiceId={invoiceId}
+      invoice={invoice}
+      invoiceFlags={invoiceFlags}
+      documentId={documentId}
+      pdfUrl={pdfUrl}
+      peppolTransmission={peppolTransmission}
+      reconciliation={reconciliation}
+      zatcaSubmission={zatcaSubmission}
+      peppolBadgeTransmission={peppolBadgeTransmission}
+      duplicateDismiss={duplicateDismiss}
+      handleInvoiceInvalidate={handleInvoiceInvalidate}
+      handleSubmitForApproval={handleSubmitForApproval}
+      isSubmitting={isSubmitting}
+      t={t}
+      skontoEnabled={skontoEnabled}
+    />
   );
 }
 

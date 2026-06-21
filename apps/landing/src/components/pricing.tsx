@@ -33,6 +33,43 @@ function PricingCta({ href, label, popular }: { href: string; label: string; pop
   );
 }
 
+function buildPricingTier(
+  view: LandingPlanView,
+  period: Period,
+  intlLocale: string,
+): TailarkPricingTier {
+  const { plan, features, ctaHref, ctaLabel } = view;
+  const price = period === 'month' ? plan.monthly : plan.annual;
+  const priceAmount = price?.amount ?? null;
+  const checkoutHref = price
+    ? `${ctaHref}&priceId=${price.stripePriceId}&period=${period}`
+    : ctaHref;
+  return {
+    id: plan.id,
+    name: plan.name,
+    priceLabel: formatPrice(priceAmount, price?.currency ?? 'eur', {
+      locale: intlLocale,
+    }),
+    priceSuffix:
+      priceAmount !== null && priceAmount > 0 ? `/ ${period === 'month' ? 'mo' : 'yr'}` : undefined,
+    description: `${plan.description} · Includes ${plan.includedSeats} seats · ${plan.creditsIncluded} OCR credits`,
+    features,
+    popular: plan.popular,
+    cta: (
+      <TrackClick
+        event="pricing_cta_click"
+        properties={{
+          plan: plan.id,
+          tier: plan.tier,
+          market: plan.market,
+          period,
+        }}>
+        <PricingCta href={checkoutHref} label={ctaLabel} popular={plan.popular} />
+      </TrackClick>
+    ),
+  };
+}
+
 export function Pricing({ views, annualSavings }: PricingProps) {
   const locale = useLocale();
   const t = useTranslations();
@@ -118,41 +155,7 @@ export function Pricing({ views, annualSavings }: PricingProps) {
           <FadeUp className="mx-auto mt-12 max-w-5xl" delay={0.2}>
             <TailarkPricing
               popularLabel={popularBadge}
-              // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: cohesive tier view-model transform — price/period/suffix derivation plus embedded CTA JSX closes over component scope; extracting would scatter rendering logic.
-              tiers={views.map((view): TailarkPricingTier => {
-                const { plan, features, ctaHref, ctaLabel } = view;
-                const price = period === 'month' ? plan.monthly : plan.annual;
-                const priceAmount = price?.amount ?? null;
-                const checkoutHref = price
-                  ? `${ctaHref}&priceId=${price.stripePriceId}&period=${period}`
-                  : ctaHref;
-                return {
-                  id: plan.id,
-                  name: plan.name,
-                  priceLabel: formatPrice(priceAmount, price?.currency ?? 'eur', {
-                    locale: intlLocale,
-                  }),
-                  priceSuffix:
-                    priceAmount !== null && priceAmount > 0
-                      ? `/ ${period === 'month' ? 'mo' : 'yr'}`
-                      : undefined,
-                  description: `${plan.description} · Includes ${plan.includedSeats} seats · ${plan.creditsIncluded} OCR credits`,
-                  features,
-                  popular: plan.popular,
-                  cta: (
-                    <TrackClick
-                      event="pricing_cta_click"
-                      properties={{
-                        plan: plan.id,
-                        tier: plan.tier,
-                        market: plan.market,
-                        period,
-                      }}>
-                      <PricingCta href={checkoutHref} label={ctaLabel} popular={plan.popular} />
-                    </TrackClick>
-                  ),
-                };
-              })}
+              tiers={views.map(view => buildPricingTier(view, period, intlLocale))}
             />
           </FadeUp>
         )}

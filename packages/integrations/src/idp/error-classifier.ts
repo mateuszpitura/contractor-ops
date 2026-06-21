@@ -109,7 +109,22 @@ const NETWORK_ERROR_TOKENS = [
   'fetch failed',
 ];
 
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: unwraps Node fetch's one-level-nested `cause`, then per-candidate narrows unknown→code/message across object/Error/string shapes before token-matching; the defensive type narrowing is irreducible against untyped thrown causes.
+/**
+ * Builds the lowercase `code message` haystack for a single thrown candidate,
+ * narrowing the unknown across object (`.code`), Error (`.message`), and raw
+ * string shapes. Returns `''` for shapes with no extractable signal.
+ */
+function candidateNetworkText(candidate: unknown): string {
+  if (candidate == null) return '';
+  const code =
+    typeof candidate === 'object' && 'code' in candidate
+      ? String((candidate as { code: unknown }).code)
+      : '';
+  const message =
+    candidate instanceof Error ? candidate.message : typeof candidate === 'string' ? candidate : '';
+  return `${code} ${message}`.toLowerCase();
+}
+
 function isNetworkCause(cause: unknown): boolean {
   if (cause == null) return false;
   // Node fetch wraps the underlying network error in `cause`; unwrap one level.
@@ -118,18 +133,7 @@ function isNetworkCause(cause: unknown): boolean {
     candidates.push((cause as { cause: unknown }).cause);
   }
   for (const candidate of candidates) {
-    if (candidate == null) continue;
-    const code =
-      typeof candidate === 'object' && 'code' in candidate
-        ? String((candidate as { code: unknown }).code)
-        : '';
-    const message =
-      candidate instanceof Error
-        ? candidate.message
-        : typeof candidate === 'string'
-          ? candidate
-          : '';
-    const haystack = `${code} ${message}`.toLowerCase();
+    const haystack = candidateNetworkText(candidate);
     if (NETWORK_ERROR_TOKENS.some(token => haystack.includes(token))) return true;
   }
   return false;

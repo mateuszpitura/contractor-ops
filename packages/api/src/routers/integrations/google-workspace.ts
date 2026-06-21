@@ -9,7 +9,7 @@ import {
 import type { GoogleWorkspaceAdapter } from '@contractor-ops/integrations/adapters/google-workspace-adapter';
 import { getQStashClient } from '@contractor-ops/integrations/services/qstash-client';
 import { createLogger } from '@contractor-ops/logger';
-import type { DirectoryRole } from '@contractor-ops/validators';
+import type { DirectoryImportInput, DirectoryRole } from '@contractor-ops/validators';
 import { directoryImportInputSchema, getServerEnv } from '@contractor-ops/validators';
 import * as Sentry from '@sentry/node';
 import { TRPCError } from '@trpc/server';
@@ -163,6 +163,90 @@ function resolveUserRole(
   return defaultRole;
 }
 
+// Re-fetch group memberships in parallel (chunks of `chunkSize`) so a 50-user
+// import doesn't take 50× single-call latency. The default chunk of 10 keeps
+// us well under Google Directory API rate limits.
+async function fetchGroupMembershipsInChunks(
+  adapter: GoogleWorkspaceAdapter,
+  accessToken: string,
+  emails: string[],
+  chunkSize = 10,
+): Promise<Record<string, string[]>> {
+  const memberships: Record<string, string[]> = {};
+  for (let i = 0; i < emails.length; i += chunkSize) {
+    const slice = emails.slice(i, i + chunkSize);
+    await Promise.all(
+      slice.map(async email => {
+        const groups = await adapter.listUserGroups(accessToken, email);
+        memberships[email] = groups.map(g => g.email);
+      }),
+    );
+  }
+  return memberships;
+}
+
+interface BulkInviteResult {
+  succeeded: Array<{ email: string; role: DirectoryRole }>;
+  failed: Array<{ email: string; error: string }>;
+}
+
+// Resolve a directory user's role and send their invitation. Returns the
+// `{ email, role }` pair on success; a thrown invitation error is surfaced
+// per-user by the `Promise.allSettled` tally below.
+async function inviteDirectoryUser(
+  headers: Headers,
+  organizationId: string,
+  email: string,
+  serverGroupMemberships: Record<string, string[]>,
+  input: DirectoryImportInput,
+): Promise<{ email: string; role: DirectoryRole }> {
+  const role = resolveUserRole(
+    email,
+    serverGroupMemberships,
+    input.groupRoleMappings,
+    input.userRoleOverrides,
+    input.defaultRole,
+  );
+  await authApi.createInvitation({
+    headers,
+    body: { email, role, organizationId },
+  });
+  return { email, role };
+}
+
+// Invite each directory user in parallel chunks with `allSettled` so one
+// failure doesn't abort the whole batch; tallies successes vs per-user errors.
+async function bulkInviteDirectoryUsers(
+  headers: Headers,
+  organizationId: string,
+  serverGroupMemberships: Record<string, string[]>,
+  input: DirectoryImportInput,
+  chunkSize: number,
+): Promise<BulkInviteResult> {
+  const succeeded: BulkInviteResult['succeeded'] = [];
+  const failed: BulkInviteResult['failed'] = [];
+  for (let i = 0; i < input.users.length; i += chunkSize) {
+    const slice = input.users.slice(i, i + chunkSize);
+    const results = await Promise.allSettled(
+      slice.map(user =>
+        inviteDirectoryUser(headers, organizationId, user.email, serverGroupMemberships, input),
+      ),
+    );
+    for (const [j, r] of results.entries()) {
+      const user = slice[j];
+      if (!user) continue;
+      if (r.status === 'fulfilled') {
+        succeeded.push(r.value);
+      } else {
+        const message =
+          r.reason instanceof Error ? r.reason.message : String(r.reason ?? 'Unknown error');
+        failed.push({ email: user.email, error: message });
+      }
+    }
+  }
+  return { succeeded, failed };
+}
+
 // ---------------------------------------------------------------------------
 // Google Workspace Router
 // ---------------------------------------------------------------------------
@@ -289,68 +373,27 @@ export const googleWorkspaceRouter = router({
     tier: 'PRO',
   })
     .input(directoryImportInputSchema)
-    // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: linear bulk-import orchestration (connect → re-fetch group memberships in chunks → resolve roles → create invitations); side-effect order is load-bearing.
     .mutation(async ({ ctx, input }) => {
       const { connection, credentials, adapter } = await getGoogleWorkspaceConnection(
         ctx.db,
         ctx.organizationId,
       );
 
-      // Re-fetch group memberships in parallel (chunks of 10) so a 50-user
-      // import doesn't take 50× single-call latency. Same upper-bound for
-      // invite-create below. The chunk size of 10 keeps us well under Google
-      // Directory API + Resend rate limits.
       const CHUNK = 10;
-      const serverGroupMemberships: Record<string, string[]> = {};
-      for (let i = 0; i < input.users.length; i += CHUNK) {
-        const slice = input.users.slice(i, i + CHUNK);
-        await Promise.all(
-          slice.map(async user => {
-            const groups = await adapter.listUserGroups(credentials.accessToken, user.email);
-            serverGroupMemberships[user.email] = groups.map(g => g.email);
-          }),
-        );
-      }
+      const serverGroupMemberships = await fetchGroupMembershipsInChunks(
+        adapter,
+        credentials.accessToken,
+        input.users.map(user => user.email),
+        CHUNK,
+      );
 
-      const succeeded: Array<{ email: string; role: string }> = [];
-      const failed: Array<{ email: string; error: string }> = [];
-
-      // Invite-create in parallel chunks of 10 with allSettled so one
-      // failure doesn't abort the whole batch.
-      for (let i = 0; i < input.users.length; i += CHUNK) {
-        const slice = input.users.slice(i, i + CHUNK);
-        const results = await Promise.allSettled(
-          slice.map(async user => {
-            const role = resolveUserRole(
-              user.email,
-              serverGroupMemberships,
-              input.groupRoleMappings,
-              input.userRoleOverrides,
-              input.defaultRole,
-            );
-            await authApi.createInvitation({
-              headers: ctx.headers,
-              body: {
-                email: user.email,
-                role,
-                organizationId: ctx.organizationId,
-              },
-            });
-            return { email: user.email, role };
-          }),
-        );
-        for (const [j, r] of results.entries()) {
-          const user = slice[j];
-          if (!user) continue;
-          if (r.status === 'fulfilled') {
-            succeeded.push(r.value);
-          } else {
-            const message =
-              r.reason instanceof Error ? r.reason.message : String(r.reason ?? 'Unknown error');
-            failed.push({ email: user.email, error: message });
-          }
-        }
-      }
+      const { succeeded, failed } = await bulkInviteDirectoryUsers(
+        ctx.headers,
+        ctx.organizationId,
+        serverGroupMemberships,
+        input,
+        CHUNK,
+      );
 
       // Store import metadata
       const currentConfig = (connection.configJson as Record<string, unknown>) ?? {};

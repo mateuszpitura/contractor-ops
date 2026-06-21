@@ -73,7 +73,27 @@ function isPeriod(value: string): value is Period {
   return (PERIODS as readonly string[]).includes(value);
 }
 
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: sequential required-key + per-field validation gauntlet, each branch throwing a distinct PricingMetadataError — splitting would scatter the field-by-field error contract.
+/**
+ * Parse an integer metadata field, throwing a {@link PricingMetadataError}
+ * keyed to `field` when the value is non-finite or below `min`.
+ */
+function parseIntField(
+  product: Stripe.Product,
+  field: 'included_seats' | 'credits_included' | 'sort_order',
+  min: number | null,
+): number {
+  const raw = product.metadata?.[field];
+  const parsed = Number.parseInt(raw ?? '', 10);
+  if (!Number.isFinite(parsed) || (min !== null && parsed < min)) {
+    throw new PricingMetadataError(
+      `Stripe product ${product.id} has invalid ${field} "${raw}"`,
+      product.id,
+      [field],
+    );
+  }
+  return parsed;
+}
+
 function parseProductMetadata(product: Stripe.Product): ProductMetadata {
   const md = product.metadata ?? {};
   const missing: string[] = [];
@@ -111,32 +131,9 @@ function parseProductMetadata(product: Stripe.Product): ProductMetadata {
     );
   }
 
-  const includedSeats = Number.parseInt(md.included_seats ?? '', 10);
-  if (!Number.isFinite(includedSeats) || includedSeats < 0) {
-    throw new PricingMetadataError(
-      `Stripe product ${product.id} has invalid included_seats "${md.included_seats}"`,
-      product.id,
-      ['included_seats'],
-    );
-  }
-
-  const creditsIncluded = Number.parseInt(md.credits_included ?? '', 10);
-  if (!Number.isFinite(creditsIncluded) || creditsIncluded < 0) {
-    throw new PricingMetadataError(
-      `Stripe product ${product.id} has invalid credits_included "${md.credits_included}"`,
-      product.id,
-      ['credits_included'],
-    );
-  }
-
-  const sortOrder = Number.parseInt(md.sort_order ?? '', 10);
-  if (!Number.isFinite(sortOrder)) {
-    throw new PricingMetadataError(
-      `Stripe product ${product.id} has invalid sort_order "${md.sort_order}"`,
-      product.id,
-      ['sort_order'],
-    );
-  }
+  const includedSeats = parseIntField(product, 'included_seats', 0);
+  const creditsIncluded = parseIntField(product, 'credits_included', 0);
+  const sortOrder = parseIntField(product, 'sort_order', null);
 
   return {
     tier,
@@ -212,7 +209,49 @@ export function planId(market: Market, tier: Tier): string {
  * missing required metadata — this fails the landing build, surfacing config
  * drift before it reaches production.
  */
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: cache-check → paginate products → paginate prices → per-product normalize/map pipeline; the sequential fetch-then-normalize stages and inline await-for-of pagination loops are intentionally co-located as one source-of-truth flow.
+/**
+ * Normalize one Stripe product + its prices into a {@link PricingPlan}.
+ * Throws {@link PricingMetadataError} when the product has no active monthly
+ * or annual price.
+ */
+function buildPlan(product: Stripe.Product, allPrices: readonly Stripe.Price[]): PricingPlan {
+  const metadata = parseProductMetadata(product);
+  const expectedCurrency = MARKET_CURRENCY[metadata.market];
+  const productPrices = allPrices.filter(p => {
+    const productRef = typeof p.product === 'string' ? p.product : p.product.id;
+    return productRef === product.id;
+  });
+
+  const monthlyRaw = productPrices.find(p => p.recurring?.interval === 'month');
+  const annualRaw = productPrices.find(p => p.recurring?.interval === 'year');
+
+  if (!(monthlyRaw || annualRaw)) {
+    throw new PricingMetadataError(
+      `Stripe product ${product.id} (${product.name}) has no active monthly or annual price`,
+      product.id,
+      ['price'],
+    );
+  }
+
+  const monthly = monthlyRaw ? normalizePrice(monthlyRaw, expectedCurrency) : null;
+  const annual = annualRaw ? normalizePrice(annualRaw, expectedCurrency) : null;
+
+  return {
+    id: planId(metadata.market, metadata.tier),
+    market: metadata.market,
+    tier: metadata.tier,
+    name: product.name,
+    description: product.description ?? '',
+    includedSeats: metadata.includedSeats,
+    creditsIncluded: metadata.creditsIncluded,
+    extraSeatPriceId: metadata.extraSeatPriceId,
+    monthly,
+    annual,
+    popular: metadata.popular,
+    sortOrder: metadata.sortOrder,
+  };
+}
+
 export async function fetchPricingPlans(
   stripe: Stripe,
   options: FetchOptions = {},
@@ -252,41 +291,7 @@ export async function fetchPricingPlans(
 
   const plans: PricingPlan[] = [];
   for (const product of products) {
-    const metadata = parseProductMetadata(product);
-    const expectedCurrency = MARKET_CURRENCY[metadata.market];
-    const productPrices = allPrices.filter(p => {
-      const productRef = typeof p.product === 'string' ? p.product : p.product.id;
-      return productRef === product.id;
-    });
-
-    const monthlyRaw = productPrices.find(p => p.recurring?.interval === 'month');
-    const annualRaw = productPrices.find(p => p.recurring?.interval === 'year');
-
-    if (!(monthlyRaw || annualRaw)) {
-      throw new PricingMetadataError(
-        `Stripe product ${product.id} (${product.name}) has no active monthly or annual price`,
-        product.id,
-        ['price'],
-      );
-    }
-
-    const monthly = monthlyRaw ? normalizePrice(monthlyRaw, expectedCurrency) : null;
-    const annual = annualRaw ? normalizePrice(annualRaw, expectedCurrency) : null;
-
-    plans.push({
-      id: planId(metadata.market, metadata.tier),
-      market: metadata.market,
-      tier: metadata.tier,
-      name: product.name,
-      description: product.description ?? '',
-      includedSeats: metadata.includedSeats,
-      creditsIncluded: metadata.creditsIncluded,
-      extraSeatPriceId: metadata.extraSeatPriceId,
-      monthly,
-      annual,
-      popular: metadata.popular,
-      sortOrder: metadata.sortOrder,
-    });
+    plans.push(buildPlan(product, allPrices));
   }
 
   plans.sort((a, b) => {

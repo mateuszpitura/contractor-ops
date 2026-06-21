@@ -37,7 +37,90 @@ function formatMinor(minor: number): string {
   }).format(minor / 100);
 }
 
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: presentational render with cohesive loading/empty/error + selection/result UI states
+// Empty-or-options body shared by the contractor/contract selects: an empty
+// hint while there are no rows (and not loading), otherwise the mapped items.
+function SelectOptions<T>({
+  items,
+  isLoading,
+  emptyLabel,
+  renderItem,
+}: {
+  items: T[];
+  isLoading: boolean;
+  emptyLabel: string;
+  renderItem: (item: T) => React.ReactNode;
+}) {
+  if (items.length === 0 && !isLoading) {
+    return <div className="px-2 py-1.5 text-xs text-muted-foreground">{emptyLabel}</div>;
+  }
+  return <>{items.map(renderItem)}</>;
+}
+
+type ReconciliationSpotCheck = ReturnType<typeof useReconciliationSpotCheck>;
+
+function ReconciliationResultPanel({
+  result,
+  t,
+}: {
+  result: NonNullable<ReconciliationSpotCheck['result']>;
+  t: ReconciliationSpotCheck['t'];
+}) {
+  return (
+    <div className="rounded-lg border bg-muted/40 p-4">
+      <div className="mb-3 flex items-center gap-2">
+        <p className="text-sm font-medium">{t('resultTitle')}</p>
+        <Badge variant={result.withinThreshold ? 'default' : 'destructive'}>
+          {result.withinThreshold ? t('withinThreshold') : t('exceedsThreshold')}
+        </Badge>
+        <span className="text-xs text-muted-foreground">
+          {t('thresholdSuffix', { percent: result.thresholdPercent })}
+        </span>
+      </div>
+      <dl className="grid gap-3 text-sm sm:grid-cols-2 lg:grid-cols-4">
+        <div>
+          <dt className="text-xs uppercase tracking-wide text-muted-foreground">
+            {t('approvedHours')}
+          </dt>
+          <dd className="tabular-nums font-medium">{formatHours(result.approvedMinutes)}</dd>
+        </div>
+        <div>
+          <dt className="text-xs uppercase tracking-wide text-muted-foreground">
+            {t('expectedAmount')}
+          </dt>
+          <dd className="tabular-nums font-medium">{formatMinor(result.expectedAmountMinor)}</dd>
+        </div>
+        <div>
+          <dt className="text-xs uppercase tracking-wide text-muted-foreground">
+            {t('invoicedAmount')}
+          </dt>
+          <dd className="tabular-nums font-medium">{formatMinor(result.invoicedAmountMinor)}</dd>
+        </div>
+        <div>
+          <dt className="text-xs uppercase tracking-wide text-muted-foreground">
+            {t('deviation')}
+          </dt>
+          <dd
+            className={`tabular-nums font-medium ${
+              result.withinThreshold ? 'text-foreground' : 'text-destructive'
+            }`}>
+            {result.deviationMinor >= 0 ? '+' : ''}
+            {formatMinor(result.deviationMinor)}{' '}
+            <span className="text-xs text-muted-foreground">
+              ({result.deviationPercent.toFixed(2)}%)
+            </span>
+          </dd>
+        </div>
+      </dl>
+      <p className="mt-3 text-xs text-muted-foreground">
+        {t('rateFootnote', {
+          rateType: result.rateType,
+          rate: formatMinor(result.rateValueMinor),
+        })}
+      </p>
+    </div>
+  );
+}
+
 export function ReconciliationSpotCheckView({
   t,
   contractorId,
@@ -96,17 +179,16 @@ export function ReconciliationSpotCheckView({
                 <SelectValue placeholder={t('contractorPlaceholder')} />
               </SelectTrigger>
               <SelectContent>
-                {contractors.length === 0 && !contractorsQuery.isLoading ? (
-                  <div className="px-2 py-1.5 text-xs text-muted-foreground">
-                    {t('noContractors')}
-                  </div>
-                ) : (
-                  contractors.map(c => (
+                <SelectOptions
+                  items={contractors}
+                  isLoading={contractorsQuery.isLoading}
+                  emptyLabel={t('noContractors')}
+                  renderItem={c => (
                     <SelectItem key={c.id} value={c.id}>
                       {c.legalName}
                     </SelectItem>
-                  ))
-                )}
+                  )}
+                />
               </SelectContent>
             </Select>
           </div>
@@ -123,18 +205,17 @@ export function ReconciliationSpotCheckView({
                 />
               </SelectTrigger>
               <SelectContent>
-                {contractList.length === 0 && !contractsQuery.isLoading ? (
-                  <div className="px-2 py-1.5 text-xs text-muted-foreground">
-                    {t('noContracts')}
-                  </div>
-                ) : (
-                  contractList.map(contract => (
+                <SelectOptions
+                  items={contractList}
+                  isLoading={contractsQuery.isLoading}
+                  emptyLabel={t('noContracts')}
+                  renderItem={contract => (
                     <SelectItem key={contract.id} value={contract.id}>
                       {contract.title ?? contract.id.slice(0, 8)}
                       {contract.rateType ? ` · ${contract.rateType}` : ''}
                     </SelectItem>
-                  ))
-                )}
+                  )}
+                />
               </SelectContent>
             </Select>
           </div>
@@ -193,64 +274,7 @@ export function ReconciliationSpotCheckView({
           </div>
         )}
 
-        {hasResult && result ? (
-          <div className="rounded-lg border bg-muted/40 p-4">
-            <div className="mb-3 flex items-center gap-2">
-              <p className="text-sm font-medium">{t('resultTitle')}</p>
-              <Badge variant={result.withinThreshold ? 'default' : 'destructive'}>
-                {result.withinThreshold ? t('withinThreshold') : t('exceedsThreshold')}
-              </Badge>
-              <span className="text-xs text-muted-foreground">
-                {t('thresholdSuffix', { percent: result.thresholdPercent })}
-              </span>
-            </div>
-            <dl className="grid gap-3 text-sm sm:grid-cols-2 lg:grid-cols-4">
-              <div>
-                <dt className="text-xs uppercase tracking-wide text-muted-foreground">
-                  {t('approvedHours')}
-                </dt>
-                <dd className="tabular-nums font-medium">{formatHours(result.approvedMinutes)}</dd>
-              </div>
-              <div>
-                <dt className="text-xs uppercase tracking-wide text-muted-foreground">
-                  {t('expectedAmount')}
-                </dt>
-                <dd className="tabular-nums font-medium">
-                  {formatMinor(result.expectedAmountMinor)}
-                </dd>
-              </div>
-              <div>
-                <dt className="text-xs uppercase tracking-wide text-muted-foreground">
-                  {t('invoicedAmount')}
-                </dt>
-                <dd className="tabular-nums font-medium">
-                  {formatMinor(result.invoicedAmountMinor)}
-                </dd>
-              </div>
-              <div>
-                <dt className="text-xs uppercase tracking-wide text-muted-foreground">
-                  {t('deviation')}
-                </dt>
-                <dd
-                  className={`tabular-nums font-medium ${
-                    result.withinThreshold ? 'text-foreground' : 'text-destructive'
-                  }`}>
-                  {result.deviationMinor >= 0 ? '+' : ''}
-                  {formatMinor(result.deviationMinor)}{' '}
-                  <span className="text-xs text-muted-foreground">
-                    ({result.deviationPercent.toFixed(2)}%)
-                  </span>
-                </dd>
-              </div>
-            </dl>
-            <p className="mt-3 text-xs text-muted-foreground">
-              {t('rateFootnote', {
-                rateType: result.rateType,
-                rate: formatMinor(result.rateValueMinor),
-              })}
-            </p>
-          </div>
-        ) : null}
+        {hasResult && result ? <ReconciliationResultPanel result={result} t={t} /> : null}
 
         {reconciliationQuery.isError ? (
           <div className="rounded-lg border border-destructive/40 bg-destructive/5 p-3 text-sm text-destructive">

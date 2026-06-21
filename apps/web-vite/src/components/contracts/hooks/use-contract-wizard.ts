@@ -1,13 +1,48 @@
 import * as Sentry from '@sentry/react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useRef } from 'react';
-import type { UseFormReturn } from 'react-hook-form';
+import type { FieldPath, FieldPathValue, UseFormReturn } from 'react-hook-form';
 import { toast } from 'sonner';
 
 import { useTranslatedError } from '../../../i18n/use-translated-error.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { useTRPC } from '../../../providers/trpc-provider.js';
 import type { ContractWizardFormValues } from '../contract-wizard/wizard-dialog.js';
+
+type PrefillEntry = {
+  [P in FieldPath<ContractWizardFormValues>]: {
+    field: P;
+    value: FieldPathValue<ContractWizardFormValues, P>;
+  };
+}[FieldPath<ContractWizardFormValues>];
+
+/**
+ * Map the saved contractor record onto the contract-wizard fields it can
+ * seed, in apply order. Each field is guarded independently; absent/invalid
+ * values are skipped so the form keeps its own defaults.
+ */
+function collectContractorPrefill(contractor: Record<string, unknown>): PrefillEntry[] {
+  const entries: PrefillEntry[] = [];
+
+  if (contractor.currency) {
+    entries.push({ field: 'currency', value: contractor.currency as string });
+  }
+
+  const customFields = contractor.customFieldsJson as Record<string, unknown> | null;
+  if (customFields) {
+    if (typeof customFields.billingModel === 'string') {
+      entries.push({
+        field: 'billingModel',
+        value: customFields.billingModel as ContractWizardFormValues['billingModel'],
+      });
+    }
+    if (typeof customFields.rateValueMinor === 'number' && customFields.rateValueMinor > 0) {
+      entries.push({ field: 'rateValueMinor', value: customFields.rateValueMinor });
+    }
+  }
+
+  return entries;
+}
 
 export function useContractWizardPrefill(
   form: UseFormReturn<ContractWizardFormValues>,
@@ -22,39 +57,15 @@ export function useContractWizardPrefill(
     enabled: !!contractorId,
   });
 
-  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: one-shot pre-fill maps many contractor fields onto the form, each guarded individually; the per-field branches are intrinsic and cohesive.
   useEffect(() => {
     if (contractorQuery.data && !hasPreFilled.current) {
       hasPreFilled.current = true;
       const preFilledSet = new Set<string>();
 
       const contractor = contractorQuery.data as Record<string, unknown>;
-
-      if (contractor.currency) {
-        form.setValue('currency', contractor.currency as string, {
-          shouldDirty: false,
-        });
-        preFilledSet.add('currency');
-      }
-
-      const customFields = contractor.customFieldsJson as Record<string, unknown> | null;
-
-      if (customFields) {
-        if (typeof customFields.billingModel === 'string') {
-          form.setValue(
-            'billingModel',
-            customFields.billingModel as ContractWizardFormValues['billingModel'],
-            { shouldDirty: false },
-          );
-          preFilledSet.add('billingModel');
-        }
-
-        if (typeof customFields.rateValueMinor === 'number' && customFields.rateValueMinor > 0) {
-          form.setValue('rateValueMinor', customFields.rateValueMinor as number, {
-            shouldDirty: false,
-          });
-          preFilledSet.add('rateValueMinor');
-        }
+      for (const { field, value } of collectContractorPrefill(contractor)) {
+        form.setValue(field, value, { shouldDirty: false });
+        preFilledSet.add(field);
       }
 
       onPrefilled(preFilledSet);

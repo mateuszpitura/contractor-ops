@@ -72,6 +72,57 @@ export type { CommitResult, EntityType, ImportResult, ImportRow, ParseResult };
 // Step indicator
 // ---------------------------------------------------------------------------
 
+function StepIndicatorItem({
+  step,
+  index,
+  visibleIndex,
+  tAria,
+}: {
+  step: { label: string; visible: boolean };
+  index: number;
+  visibleIndex: number;
+  tAria: ReturnType<typeof useTranslations>;
+}) {
+  const isCompleted = index < visibleIndex;
+  const isCurrent = index === visibleIndex;
+  const status = isCompleted ? 'completed' : isCurrent ? 'current' : 'upcoming';
+
+  return (
+    <div className="flex items-center" aria-current={isCurrent ? 'step' : undefined}>
+      {index > 0 && (
+        <div
+          aria-hidden="true"
+          className={`mx-1.5 h-px w-6 sm:mx-2 sm:w-8 ${
+            index <= visibleIndex ? 'bg-primary' : 'bg-border'
+          }`}
+        />
+      )}
+      <span
+        className="flex items-center gap-1.5"
+        role="img"
+        aria-label={tAria('wizardStep', { step: index + 1, label: step.label, status })}>
+        <div
+          aria-hidden="true"
+          className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold transition-colors ${
+            isCompleted
+              ? 'bg-primary text-primary-foreground'
+              : isCurrent
+                ? 'bg-primary/10 text-primary ring-1 ring-primary'
+                : 'bg-muted text-muted-foreground ring-1 ring-border'
+          }`}>
+          {isCompleted ? <Check className="h-3 w-3" /> : index + 1}
+        </div>
+        <span
+          className={`hidden whitespace-nowrap text-[13px] sm:inline ${
+            isCurrent ? 'font-medium text-foreground' : 'text-muted-foreground'
+          }`}>
+          {step.label}
+        </span>
+      </span>
+    </div>
+  );
+}
+
 function StepIndicator({
   steps,
   currentStep,
@@ -89,50 +140,15 @@ function StepIndicator({
     <nav
       aria-label={tAria('wizardProgress')}
       className="flex items-center justify-center gap-0 py-3">
-      {/* biome-ignore lint/complexity/noExcessiveCognitiveComplexity: JSX step-indicator map with cohesive completed/current/upcoming status branches */}
-      {visibleSteps.map((step, index) => {
-        const isCompleted = index < visibleIndex;
-        const isCurrent = index === visibleIndex;
-        const status = isCompleted ? 'completed' : isCurrent ? 'current' : 'upcoming';
-
-        return (
-          <div
-            key={step.label}
-            className="flex items-center"
-            aria-current={isCurrent ? 'step' : undefined}>
-            {index > 0 && (
-              <div
-                aria-hidden="true"
-                className={`mx-1.5 h-px w-6 sm:mx-2 sm:w-8 ${
-                  index <= visibleIndex ? 'bg-primary' : 'bg-border'
-                }`}
-              />
-            )}
-            <span
-              className="flex items-center gap-1.5"
-              role="img"
-              aria-label={tAria('wizardStep', { step: index + 1, label: step.label, status })}>
-              <div
-                aria-hidden="true"
-                className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold transition-colors ${
-                  isCompleted
-                    ? 'bg-primary text-primary-foreground'
-                    : isCurrent
-                      ? 'bg-primary/10 text-primary ring-1 ring-primary'
-                      : 'bg-muted text-muted-foreground ring-1 ring-border'
-                }`}>
-                {isCompleted ? <Check className="h-3 w-3" /> : index + 1}
-              </div>
-              <span
-                className={`hidden whitespace-nowrap text-[13px] sm:inline ${
-                  isCurrent ? 'font-medium text-foreground' : 'text-muted-foreground'
-                }`}>
-                {step.label}
-              </span>
-            </span>
-          </div>
-        );
-      })}
+      {visibleSteps.map((step, index) => (
+        <StepIndicatorItem
+          key={step.label}
+          step={step}
+          index={index}
+          visibleIndex={visibleIndex}
+          tAria={tAria}
+        />
+      ))}
     </nav>
   );
 }

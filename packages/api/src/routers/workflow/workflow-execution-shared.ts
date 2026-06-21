@@ -27,10 +27,44 @@ export interface IntegrationEligibility {
 }
 
 /**
+ * Classify a single template task against the four independent integration
+ * configs, populating the relevant eligibility collections for its run id.
+ */
+function applyTaskEligibility(
+  taskTemplate: { taskType: string; configJson: unknown },
+  runId: string,
+  acc: IntegrationEligibility,
+): void {
+  const jiraParsed = jiraTaskConfigSchema.safeParse(taskTemplate.configJson);
+  if (jiraParsed.success && jiraParsed.data.jiraEnabled) {
+    acc.jiraEligibleTaskRunIds.add(runId);
+  }
+
+  const linearParsed = linearTaskConfigSchema.safeParse(taskTemplate.configJson);
+  if (linearParsed.success && linearParsed.data.linearEnabled && linearParsed.data.linearTeamId) {
+    acc.linearEligibleTaskRuns.set(runId, {
+      teamId: linearParsed.data.linearTeamId,
+      teamKey: linearParsed.data.linearTeamKey ?? '',
+    });
+  }
+
+  const calParsed = calendarTaskConfigSchema.safeParse(taskTemplate.configJson);
+  if (calParsed.success && calParsed.data.calendarEnabled) {
+    acc.calendarConfigMap.set(runId, calParsed.data);
+  }
+
+  if (taskTemplate.taskType === 'EQUIPMENT') {
+    const eqParsed = equipmentTaskConfigSchema.safeParse(taskTemplate.configJson);
+    if (!eqParsed.success || eqParsed.data.equipmentEnabled !== false) {
+      acc.equipmentEligibleTaskRunIds.add(runId);
+    }
+  }
+}
+
+/**
  * Scans template tasks and builds maps of which task run IDs are eligible
  * for Jira, Linear, Calendar, and Equipment integrations.
  */
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: per-task scan that safeParses four independent integration configs and conditionally populates four eligibility maps
 export function buildIntegrationEligibility(
   templateTasks: Array<{
     id: string;
@@ -39,50 +73,20 @@ export function buildIntegrationEligibility(
   }>,
   taskIdMap: Map<string, string>,
 ): IntegrationEligibility {
-  const jiraEligibleTaskRunIds = new Set<string>();
-  const linearEligibleTaskRuns = new Map<string, { teamId: string; teamKey: string }>();
-  const calendarConfigMap = new Map<
-    string,
-    import('@contractor-ops/validators').CalendarTaskConfig
-  >();
-  const equipmentEligibleTaskRunIds = new Set<string>();
+  const acc: IntegrationEligibility = {
+    jiraEligibleTaskRunIds: new Set<string>(),
+    linearEligibleTaskRuns: new Map<string, { teamId: string; teamKey: string }>(),
+    calendarConfigMap: new Map<string, import('@contractor-ops/validators').CalendarTaskConfig>(),
+    equipmentEligibleTaskRunIds: new Set<string>(),
+  };
 
   for (const taskTemplate of templateTasks) {
     const runId = taskIdMap.get(taskTemplate.id);
     if (!runId) continue;
-
-    const jiraParsed = jiraTaskConfigSchema.safeParse(taskTemplate.configJson);
-    if (jiraParsed.success && jiraParsed.data.jiraEnabled) {
-      jiraEligibleTaskRunIds.add(runId);
-    }
-
-    const linearParsed = linearTaskConfigSchema.safeParse(taskTemplate.configJson);
-    if (linearParsed.success && linearParsed.data.linearEnabled && linearParsed.data.linearTeamId) {
-      linearEligibleTaskRuns.set(runId, {
-        teamId: linearParsed.data.linearTeamId,
-        teamKey: linearParsed.data.linearTeamKey ?? '',
-      });
-    }
-
-    const calParsed = calendarTaskConfigSchema.safeParse(taskTemplate.configJson);
-    if (calParsed.success && calParsed.data.calendarEnabled) {
-      calendarConfigMap.set(runId, calParsed.data);
-    }
-
-    if (taskTemplate.taskType === 'EQUIPMENT') {
-      const eqParsed = equipmentTaskConfigSchema.safeParse(taskTemplate.configJson);
-      if (!eqParsed.success || eqParsed.data.equipmentEnabled !== false) {
-        equipmentEligibleTaskRunIds.add(runId);
-      }
-    }
+    applyTaskEligibility(taskTemplate, runId, acc);
   }
 
-  return {
-    jiraEligibleTaskRunIds,
-    linearEligibleTaskRuns,
-    calendarConfigMap,
-    equipmentEligibleTaskRunIds,
-  };
+  return acc;
 }
 
 export const log = createLogger({ service: 'workflow-execution' });

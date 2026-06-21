@@ -57,7 +57,63 @@ function formatDateInput(date: Date | null | undefined): string {
 export type DrvClearanceFormViewProps = DrvClearanceFormProps &
   ReturnType<typeof UseDrvClearanceFormMutations>;
 
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: cohesive controlled DRV clearance form — six fields with per-field error/aria branches, conditional validity-date section, and create/edit dispatch read clearest in one component
+interface ValidityDateFieldsProps {
+  formId: string;
+  t: ReturnType<typeof useTranslations>;
+  validFrom: string;
+  validTo: string;
+  errors: Record<string, string>;
+  onValidFromChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onValidToChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+}
+
+function ValidityDateFields({
+  formId,
+  t,
+  validFrom,
+  validTo,
+  errors,
+  onValidFromChange,
+  onValidToChange,
+}: ValidityDateFieldsProps) {
+  return (
+    <div className="grid grid-cols-2 gap-4">
+      <div className="grid gap-2">
+        <Label htmlFor={`${formId}-validFrom`}>{t('validFromLabel')}</Label>
+        <Input
+          id={`${formId}-validFrom`}
+          type="date"
+          value={validFrom}
+          onChange={onValidFromChange}
+          aria-invalid={Boolean(errors.validFrom)}
+          aria-describedby={errors.validFrom ? `${formId}-validFrom-error` : undefined}
+        />
+        {errors.validFrom ? (
+          <p id={`${formId}-validFrom-error`} role="alert" className="text-sm text-destructive">
+            {errors.validFrom}
+          </p>
+        ) : null}
+      </div>
+      <div className="grid gap-2">
+        <Label htmlFor={`${formId}-validTo`}>{t('validToLabel')}</Label>
+        <Input
+          id={`${formId}-validTo`}
+          type="date"
+          value={validTo}
+          onChange={onValidToChange}
+          aria-invalid={Boolean(errors.validTo)}
+          aria-describedby={errors.validTo ? `${formId}-validTo-error` : undefined}
+        />
+        {errors.validTo ? (
+          <p id={`${formId}-validTo-error`} role="alert" className="text-sm text-destructive">
+            {errors.validTo}
+          </p>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
 export function DrvClearanceFormView({
   open,
   onOpenChange,
@@ -233,46 +289,15 @@ export function DrvClearanceFormView({
             </div>
 
             {showValidityDates ? (
-              <div className="grid grid-cols-2 gap-4">
-                <div className="grid gap-2">
-                  <Label htmlFor={`${formId}-validFrom`}>{t('validFromLabel')}</Label>
-                  <Input
-                    id={`${formId}-validFrom`}
-                    type="date"
-                    value={validFrom}
-                    onChange={handleValidFromChange}
-                    aria-invalid={Boolean(errors.validFrom)}
-                    aria-describedby={errors.validFrom ? `${formId}-validFrom-error` : undefined}
-                  />
-                  {errors.validFrom ? (
-                    <p
-                      id={`${formId}-validFrom-error`}
-                      role="alert"
-                      className="text-sm text-destructive">
-                      {errors.validFrom}
-                    </p>
-                  ) : null}
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor={`${formId}-validTo`}>{t('validToLabel')}</Label>
-                  <Input
-                    id={`${formId}-validTo`}
-                    type="date"
-                    value={validTo}
-                    onChange={handleValidToChange}
-                    aria-invalid={Boolean(errors.validTo)}
-                    aria-describedby={errors.validTo ? `${formId}-validTo-error` : undefined}
-                  />
-                  {errors.validTo ? (
-                    <p
-                      id={`${formId}-validTo-error`}
-                      role="alert"
-                      className="text-sm text-destructive">
-                      {errors.validTo}
-                    </p>
-                  ) : null}
-                </div>
-              </div>
+              <ValidityDateFields
+                formId={formId}
+                t={t}
+                validFrom={validFrom}
+                validTo={validTo}
+                errors={errors}
+                onValidFromChange={handleValidFromChange}
+                onValidToChange={handleValidToChange}
+              />
             ) : null}
 
             <div className="grid gap-2">

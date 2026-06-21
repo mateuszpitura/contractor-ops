@@ -78,7 +78,6 @@ interface DataTableFiltersProps {
 /**
  * Filter popover and active filter badges for the contract data table.
  */
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: filter UI — popover controls plus per-facet active-badge rendering with one conditional per filter dimension; the branch count is the filter surface, kept colocated.
 export function DataTableFilters({
   filters,
   onFiltersChange,
@@ -265,59 +264,29 @@ export function DataTableFilters({
         </PopoverContent>
       </Popover>
 
-      <Popover>
-        <PopoverTrigger
-          render={
-            <Button variant="outline" size="lg" disabled={filtersDisabled} className="gap-1.5" />
-          }>
-          <CalendarIcon className="h-3.5 w-3.5" />
-          <span className="text-xs">
-            {filters.startDateFrom && filters.startDateTo
-              ? `${filters.startDateFrom} – ${filters.startDateTo}`
-              : filters.startDateFrom
-                ? `${t('dateFrom')} ${filters.startDateFrom}`
-                : filters.startDateTo
-                  ? `${t('dateTo')} ${filters.startDateTo}`
-                  : t('columns.startDate')}
-          </span>
-        </PopoverTrigger>
-        <PopoverContent className="w-auto p-0" align="end">
-          <DateRangeCalendarPanel
-            fromValue={filters.startDateFrom}
-            toValue={filters.startDateTo}
-            onApply={handleStartDateRange}
-            onClear={handleClearStartDate}
-            clearLabel={t('clearAll')}
-          />
-        </PopoverContent>
-      </Popover>
+      <DateRangeFilterPopover
+        fromValue={filters.startDateFrom}
+        toValue={filters.startDateTo}
+        fromPrefix={`${t('dateFrom')} `}
+        toPrefix={`${t('dateTo')} `}
+        emptyLabel={t('columns.startDate')}
+        disabled={filtersDisabled}
+        onApply={handleStartDateRange}
+        onClear={handleClearStartDate}
+        clearLabel={t('clearAll')}
+      />
 
-      <Popover>
-        <PopoverTrigger
-          render={
-            <Button variant="outline" size="lg" disabled={filtersDisabled} className="gap-1.5" />
-          }>
-          <CalendarIcon className="h-3.5 w-3.5" />
-          <span className="text-xs">
-            {filters.endDateFrom && filters.endDateTo
-              ? `${filters.endDateFrom} – ${filters.endDateTo}`
-              : filters.endDateFrom
-                ? `From ${filters.endDateFrom}`
-                : filters.endDateTo
-                  ? `To ${filters.endDateTo}`
-                  : t('columns.endDate')}
-          </span>
-        </PopoverTrigger>
-        <PopoverContent className="w-auto p-0" align="end">
-          <DateRangeCalendarPanel
-            fromValue={filters.endDateFrom}
-            toValue={filters.endDateTo}
-            onApply={handleEndDateRange}
-            onClear={handleClearEndDate}
-            clearLabel={t('clearAll')}
-          />
-        </PopoverContent>
-      </Popover>
+      <DateRangeFilterPopover
+        fromValue={filters.endDateFrom}
+        toValue={filters.endDateTo}
+        fromPrefix="From "
+        toPrefix="To "
+        emptyLabel={t('columns.endDate')}
+        disabled={filtersDisabled}
+        onApply={handleEndDateRange}
+        onClear={handleClearEndDate}
+        clearLabel={t('clearAll')}
+      />
     </>
   );
 }
@@ -463,6 +432,62 @@ export function ActiveFilterBadges({
 // ---------------------------------------------------------------------------
 // Sub-components
 // ---------------------------------------------------------------------------
+
+function dateRangeTriggerLabel(
+  fromValue: string,
+  toValue: string,
+  fromPrefix: string,
+  toPrefix: string,
+  emptyLabel: string,
+): string {
+  if (fromValue && toValue) return `${fromValue} – ${toValue}`;
+  if (fromValue) return `${fromPrefix}${fromValue}`;
+  if (toValue) return `${toPrefix}${toValue}`;
+  return emptyLabel;
+}
+
+function DateRangeFilterPopover({
+  fromValue,
+  toValue,
+  fromPrefix,
+  toPrefix,
+  emptyLabel,
+  disabled,
+  onApply,
+  onClear,
+  clearLabel,
+}: {
+  fromValue: string;
+  toValue: string;
+  fromPrefix: string;
+  toPrefix: string;
+  emptyLabel: string;
+  disabled?: boolean;
+  onApply: (range: DateRange | undefined) => void;
+  onClear: () => void;
+  clearLabel: string;
+}) {
+  return (
+    <Popover>
+      <PopoverTrigger
+        render={<Button variant="outline" size="lg" disabled={disabled} className="gap-1.5" />}>
+        <CalendarIcon className="h-3.5 w-3.5" />
+        <span className="text-xs">
+          {dateRangeTriggerLabel(fromValue, toValue, fromPrefix, toPrefix, emptyLabel)}
+        </span>
+      </PopoverTrigger>
+      <PopoverContent className="w-auto p-0" align="end">
+        <DateRangeCalendarPanel
+          fromValue={fromValue}
+          toValue={toValue}
+          onApply={onApply}
+          onClear={onClear}
+          clearLabel={clearLabel}
+        />
+      </PopoverContent>
+    </Popover>
+  );
+}
 
 function DateRangeCalendarPanel({
   fromValue,

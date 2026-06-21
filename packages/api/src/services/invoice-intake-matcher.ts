@@ -174,6 +174,130 @@ type MatcherDb = PrismaClient | MatcherReader;
 // Public entrypoint
 // ---------------------------------------------------------------------------
 
+type MergeFn = (candidate: MatchCandidate) => void;
+
+/** Strategy 1 — VAT-ID exact (case-insensitive). */
+async function matchByVatId(
+  db: MatcherDb,
+  orgId: string,
+  extracted: ExtractedSupplier,
+  merge: MergeFn,
+): Promise<void> {
+  const vatId = extracted.supplierVatId?.trim();
+  if (!vatId) return;
+  try {
+    const hit = await db.contractor.findFirst({
+      where: { organizationId: orgId, vatId: { equals: vatId, mode: 'insensitive' } },
+      select: { id: true, legalName: true, displayName: true, vatId: true },
+    });
+    if (hit) {
+      merge({
+        contractorId: hit.id,
+        displayName: hit.displayName,
+        vatIdentifier: hit.vatId,
+        score: SCORE_VAT_ID,
+        reasons: [{ reason: 'VAT_ID' }],
+      });
+    }
+  } catch (err) {
+    log.warn(
+      { orgId, vatId, err: err instanceof Error ? err.message : String(err) },
+      'VAT_ID strategy query failed',
+    );
+  }
+}
+
+/** Strategy 2 — Leitweg-ID exact on any linked contractor. */
+async function matchByLeitwegId(
+  db: MatcherDb,
+  orgId: string,
+  extracted: ExtractedSupplier,
+  merge: MergeFn,
+): Promise<void> {
+  const leitweg = extracted.supplierLeitwegId?.trim();
+  if (!leitweg) return;
+  try {
+    const rows = await db.leitwegId.findMany({
+      where: { organizationId: orgId, value: leitweg },
+      include: { contractor: true },
+    });
+    for (const row of rows) {
+      if (!row.contractor) continue;
+      merge({
+        contractorId: row.contractor.id,
+        displayName: row.contractor.displayName,
+        vatIdentifier: row.contractor.vatId,
+        score: SCORE_LEITWEG_ID,
+        reasons: [{ reason: 'LEITWEG_ID' }],
+      });
+    }
+  } catch (err) {
+    log.warn(
+      { orgId, err: err instanceof Error ? err.message : String(err) },
+      'LEITWEG_ID strategy query failed',
+    );
+  }
+}
+
+/**
+ * Strategies 3 + 4 — name-based (single DB load, in-memory scan). Pulls the
+ * org's contractors once and evaluates exact-name and the prefix-gated fuzzy
+ * sweep in memory, keeping total DB round-trips ≤3 regardless of org size.
+ */
+async function matchByName(
+  db: MatcherDb,
+  orgId: string,
+  extracted: ExtractedSupplier,
+  merge: MergeFn,
+): Promise<void> {
+  const extractedNormalised = normaliseContractorName(extracted.supplierName);
+  if (extractedNormalised.length === 0) return;
+  const extractedPrefix = extractedNormalised.substring(0, 3);
+  try {
+    const allContractors = await db.contractor.findMany({
+      where: { organizationId: orgId },
+      select: { id: true, legalName: true, displayName: true, vatId: true },
+    });
+
+    for (const contractor of allContractors) {
+      const candidateName = normaliseContractorName(
+        contractor.legalName || contractor.displayName || '',
+      );
+      if (candidateName.length === 0) continue;
+
+      // Strategy 3 — exact normalised match
+      if (candidateName === extractedNormalised) {
+        merge({
+          contractorId: contractor.id,
+          displayName: contractor.displayName,
+          vatIdentifier: contractor.vatId,
+          score: SCORE_EXACT_NAME,
+          reasons: [{ reason: 'EXACT_NAME' }],
+        });
+        continue; // never double-count exact + fuzzy on the same row
+      }
+
+      // Strategy 4 — fuzzy, prefix-gated
+      if (candidateName.substring(0, 3) !== extractedPrefix) continue;
+      const distance = levenshtein(candidateName, extractedNormalised);
+      if (distance <= FUZZY_MAX_DISTANCE) {
+        merge({
+          contractorId: contractor.id,
+          displayName: contractor.displayName,
+          vatIdentifier: contractor.vatId,
+          score: SCORE_FUZZY_BASE - distance * 5,
+          reasons: [{ reason: 'FUZZY_NAME', detail: `distance ${distance}` }],
+        });
+      }
+    }
+  } catch (err) {
+    log.warn(
+      { orgId, err: err instanceof Error ? err.message : String(err) },
+      'Name strategy query failed',
+    );
+  }
+}
+
 /**
  * Rank existing Contractor rows against the supplier signals extracted from
  * a parsed inbound e-invoice. Returns up to `MAX_CANDIDATES` candidates,
@@ -183,7 +307,6 @@ type MatcherDb = PrismaClient | MatcherReader;
  * explicitly so we can enforce the filter defensively even if the extension
  * is misconfigured.
  */
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: multi-strategy candidate matcher — runs several independent lookup strategies and aggregates scores/reasons per contractor
 export async function rankIntakeCandidates(
   db: MatcherDb,
   orgId: string,
@@ -193,7 +316,7 @@ export async function rankIntakeCandidates(
   // row matching via multiple strategies aggregates scores + reasons.
   const merged = new Map<string, MatchCandidate>();
 
-  const merge = (candidate: MatchCandidate) => {
+  const merge: MergeFn = candidate => {
     const existing = merged.get(candidate.contractorId);
     if (!existing) {
       merged.set(candidate.contractorId, candidate);
@@ -208,131 +331,9 @@ export async function rankIntakeCandidates(
     });
   };
 
-  // ── Strategy 1 — VAT-ID exact (case-insensitive) ──────────────────────────
-  const vatId = extracted.supplierVatId?.trim();
-  if (vatId) {
-    try {
-      const hit = await db.contractor.findFirst({
-        where: {
-          organizationId: orgId,
-          vatId: { equals: vatId, mode: 'insensitive' },
-        },
-        select: {
-          id: true,
-          legalName: true,
-          displayName: true,
-          vatId: true,
-        },
-      });
-      if (hit) {
-        merge({
-          contractorId: hit.id,
-          displayName: hit.displayName,
-          vatIdentifier: hit.vatId,
-          score: SCORE_VAT_ID,
-          reasons: [{ reason: 'VAT_ID' }],
-        });
-      }
-    } catch (err) {
-      log.warn(
-        {
-          orgId,
-          vatId,
-          err: err instanceof Error ? err.message : String(err),
-        },
-        'VAT_ID strategy query failed',
-      );
-    }
-  }
-
-  // ── Strategy 2 — Leitweg-ID exact on any linked contractor ────────────────
-  const leitweg = extracted.supplierLeitwegId?.trim();
-  if (leitweg) {
-    try {
-      const rows = await db.leitwegId.findMany({
-        where: { organizationId: orgId, value: leitweg },
-        include: { contractor: true },
-      });
-      for (const row of rows) {
-        if (!row.contractor) continue;
-        merge({
-          contractorId: row.contractor.id,
-          displayName: row.contractor.displayName,
-          vatIdentifier: row.contractor.vatId,
-          score: SCORE_LEITWEG_ID,
-          reasons: [{ reason: 'LEITWEG_ID' }],
-        });
-      }
-    } catch (err) {
-      log.warn(
-        {
-          orgId,
-          err: err instanceof Error ? err.message : String(err),
-        },
-        'LEITWEG_ID strategy query failed',
-      );
-    }
-  }
-
-  // ── Strategies 3 + 4 — name-based (single DB load, in-memory scan) ────────
-  // Pull the org's contractors once and evaluate both exact-name and the
-  // prefix-gated fuzzy sweep in memory. This avoids an N+1 pattern and keeps
-  // the total DB round-trips at ≤3 regardless of org size.
-  const extractedNormalised = normaliseContractorName(extracted.supplierName);
-  if (extractedNormalised.length > 0) {
-    const extractedPrefix = extractedNormalised.substring(0, 3);
-    try {
-      const allContractors = await db.contractor.findMany({
-        where: { organizationId: orgId },
-        select: {
-          id: true,
-          legalName: true,
-          displayName: true,
-          vatId: true,
-        },
-      });
-
-      for (const contractor of allContractors) {
-        const candidateName = normaliseContractorName(
-          contractor.legalName || contractor.displayName || '',
-        );
-        if (candidateName.length === 0) continue;
-
-        // Strategy 3 — exact normalised match
-        if (candidateName === extractedNormalised) {
-          merge({
-            contractorId: contractor.id,
-            displayName: contractor.displayName,
-            vatIdentifier: contractor.vatId,
-            score: SCORE_EXACT_NAME,
-            reasons: [{ reason: 'EXACT_NAME' }],
-          });
-          continue; // never double-count exact + fuzzy on the same row
-        }
-
-        // Strategy 4 — fuzzy, prefix-gated
-        if (candidateName.substring(0, 3) !== extractedPrefix) continue;
-        const distance = levenshtein(candidateName, extractedNormalised);
-        if (distance <= FUZZY_MAX_DISTANCE) {
-          merge({
-            contractorId: contractor.id,
-            displayName: contractor.displayName,
-            vatIdentifier: contractor.vatId,
-            score: SCORE_FUZZY_BASE - distance * 5,
-            reasons: [{ reason: 'FUZZY_NAME', detail: `distance ${distance}` }],
-          });
-        }
-      }
-    } catch (err) {
-      log.warn(
-        {
-          orgId,
-          err: err instanceof Error ? err.message : String(err),
-        },
-        'Name strategy query failed',
-      );
-    }
-  }
+  await matchByVatId(db, orgId, extracted, merge);
+  await matchByLeitwegId(db, orgId, extracted, merge);
+  await matchByName(db, orgId, extracted, merge);
 
   // ── Sort desc by score, stable tie-break on contractorId ──────────────────
   const ranked = [...merged.values()].sort((a, b) => {

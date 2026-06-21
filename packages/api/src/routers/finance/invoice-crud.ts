@@ -15,6 +15,7 @@ import * as E from '../../errors';
 import { router } from '../../init';
 import { auditedMutation, auditMutationCtx } from '../../lib/audited-mutation';
 import { findOrThrow } from '../../lib/find-or-throw';
+import type { TenantDbTx } from '../../lib/tenant-db';
 import { requirePermission } from '../../middleware/rbac';
 import { tenantProcedure } from '../../middleware/tenant';
 import { CacheKeys, invalidateByPrefix } from '../../services/cache';
@@ -32,6 +33,39 @@ import {
   validateInvoiceAmounts,
   validateServicePeriod,
 } from './invoice-shared';
+
+/**
+ * Link each source document to a freshly-created invoice: an
+ * `InvoiceFile` row (SOURCE_ORIGINAL) plus a `DocumentLink` (PRIMARY/INVOICE).
+ * No-op when there are no documents. Runs inside the caller's transaction.
+ */
+async function linkDocumentsToInvoice(
+  tx: TenantDbTx,
+  organizationId: string,
+  invoiceId: string,
+  documentIds: readonly string[],
+): Promise<void> {
+  if (documentIds.length === 0) return;
+
+  await tx.invoiceFile.createMany({
+    data: documentIds.map(documentId => ({
+      organizationId,
+      invoiceId,
+      documentId,
+      role: 'SOURCE_ORIGINAL' as const,
+    })),
+  });
+
+  await tx.documentLink.createMany({
+    data: documentIds.map(documentId => ({
+      organizationId,
+      documentId,
+      entityType: 'INVOICE' as const,
+      entityId: invoiceId,
+      linkRole: 'PRIMARY' as const,
+    })),
+  });
+}
 
 export const invoiceCrudRouter = router({
   /**
@@ -129,7 +163,6 @@ export const invoiceCrudRouter = router({
       );
       // ---------------------------------------------------------------------
 
-      // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: single Serializable transaction sequentially creating the invoice and its dependent rows with conditional reverse-charge/VAT branches; the side-effect order is the contract and must stay in one tx body.
       const invoice = await ctx.db.$transaction(async tx => {
         // Create invoice record
         const inv = await tx.invoice.create({
@@ -187,30 +220,8 @@ export const invoiceCrudRouter = router({
           );
         }
 
-        // Create InvoiceFile records linking each document
-        if (documentIds.length > 0) {
-          await tx.invoiceFile.createMany({
-            data: documentIds.map(documentId => ({
-              organizationId: ctx.organizationId,
-              invoiceId: inv.id,
-              documentId,
-              role: 'SOURCE_ORIGINAL' as const,
-            })),
-          });
-        }
-
-        // Create DocumentLink records with entityType INVOICE
-        if (documentIds.length > 0) {
-          await tx.documentLink.createMany({
-            data: documentIds.map(documentId => ({
-              organizationId: ctx.organizationId,
-              documentId,
-              entityType: 'INVOICE' as const,
-              entityId: inv.id,
-              linkRole: 'PRIMARY' as const,
-            })),
-          });
-        }
+        // Link each source document: InvoiceFile + DocumentLink rows.
+        await linkDocumentsToInvoice(tx, ctx.organizationId, inv.id, documentIds);
 
         return inv;
       });

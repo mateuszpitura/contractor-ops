@@ -14,8 +14,10 @@ import {
 } from '@contractor-ops/ui/components/shadcn/select';
 import { useCallback } from 'react';
 import { useTranslations } from '../../i18n/useTranslations.js';
-import type { ContractorListViewMode } from '../contractors/hooks/use-contractor-list-view.js';
-import { useContractorListView } from '../contractors/hooks/use-contractor-list-view.js';
+import {
+  isContractorListViewMode,
+  useContractorListView,
+} from '../contractors/hooks/use-contractor-list-view.js';
 import { useContractorListViewModeOptions } from '../contractors/insights/view-mode-switcher.js';
 
 /**
@@ -27,7 +29,9 @@ export function ContractorViewSetting() {
   const { mode, setMode } = useContractorListView();
   const options = useContractorListViewModeOptions();
   const handleValueChange = useCallback(
-    (value: string | null) => setMode(value as ContractorListViewMode),
+    (value: string | null) => {
+      if (isContractorListViewMode(value)) setMode(value);
+    },
     [setMode],
   );
 

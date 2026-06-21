@@ -7,6 +7,7 @@ import { TRPCError } from '@trpc/server';
 import { CLASSIFICATION_ASSESSMENT_NOT_FOUND } from '../../errors';
 import { router } from '../../init';
 import { findOrThrow } from '../../lib/find-or-throw';
+import type { DbClient } from '../../services/types';
 import type { Outcome, Prisma } from './classification-shared';
 import {
   acknowledgeDisclaimerInput,
@@ -25,13 +26,80 @@ import {
   supersedeAndMaterialise,
 } from './classification-shared';
 
+type Jurisdiction = NonNullable<ReturnType<typeof mapCountryCodeToJurisdiction>>;
+type TxClient = Parameters<Parameters<DbClient['$transaction']>[0]>[0];
+
+/**
+ * Materialise (first classification) or supersede-and-re-materialise (outcome
+ * kind changed) the policy-derived compliance rows for a submitted assessment.
+ * Runs entirely on the passed transaction client so supersession atomicity is
+ * preserved alongside the assessment update in the caller's `$transaction`.
+ */
+async function applyPolicyMaterialisation(
+  tx: TxClient,
+  args: {
+    jurisdiction: Jurisdiction;
+    organizationId: string;
+    contractorAssignmentId: string;
+    validatedOutcome: Outcome;
+    prior: { outcome: unknown } | null;
+  },
+): Promise<void> {
+  const assignment = await tx.contractorAssignment.findFirst({
+    where: { id: args.contractorAssignmentId },
+    select: {
+      id: true,
+      contractorId: true,
+      contractor: { select: { countryCode: true } },
+    },
+  });
+  if (!assignment) return;
+
+  const engagement: EngagementContext = {
+    jurisdiction: args.jurisdiction,
+    outcome: extractOutcomeKind(args.validatedOutcome),
+    sector: null,
+    // Contractor.countryCode is the closest proxy to nationality today;
+    // when contractorNationality lands on Contractor in a future phase,
+    // swap this read.
+    contractorNationality: assignment.contractor?.countryCode ?? null,
+    requiresRegulatedEquipment: false,
+  };
+
+  if (!args.prior) {
+    // First classification — materialise from policy.
+    await materialiseFromPolicy(tx, {
+      organizationId: args.organizationId,
+      contractorId: assignment.contractorId,
+      contractId: null,
+      engagement,
+    });
+    return;
+  }
+
+  if (extractOutcomeKind(args.prior.outcome) !== extractOutcomeKind(args.validatedOutcome)) {
+    // Outcome kind changed — supersede prior rows and re-materialise.
+    await supersedeAndMaterialise(tx, {
+      organizationId: args.organizationId,
+      contractorId: assignment.contractorId,
+      contractId: null,
+      engagement,
+      reason: 'CLASSIFICATION_OUTCOME_CHANGE',
+    });
+    // Supersession can carry items forward to SATISFIED. Fire the
+    // recovery hook for each now-satisfied BLOCKING item so any
+    // PENDING_COMPLIANCE approval flow held by it can re-assert + resume.
+    await releaseHeldApprovalsForContractor(tx, args.organizationId, assignment.contractorId);
+  }
+  // else: same outcome kind — no row churn (atomicity preserved by skipping).
+}
+
 export const classificationSubmitRouter = router({
   submit: contractorUpdateProcedure.input(submitInput).mutation(async ({ ctx, input }) => {
     // Entire body wrapped in $transaction. Atomicity guarantees the assessment
     // update + the row materialisation/supersession are all-or-nothing.
     // DO NOT extract any logic out of this transaction without re-evaluating
-    // supersession atomicity.
-    // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: atomic submit transaction — validate→supersede→materialise must stay one $transaction body for supersession atomicity
+    // supersession atomicity. Helpers below take `tx` so they remain inside it.
     return ctx.db.$transaction(async tx => {
       const row = await findOrThrow(
         () =>
@@ -108,53 +176,13 @@ export const classificationSubmitRouter = router({
       // de.eight_b_estg@v1 predicate returns false for null sector → conservative.
       const jurisdiction = mapCountryCodeToJurisdiction(row.countryCode);
       if (jurisdiction !== null) {
-        const assignment = await tx.contractorAssignment.findFirst({
-          where: { id: row.contractorAssignmentId },
-          select: {
-            id: true,
-            contractorId: true,
-            contractor: { select: { countryCode: true } },
-          },
+        await applyPolicyMaterialisation(tx, {
+          jurisdiction,
+          organizationId: row.organizationId,
+          contractorAssignmentId: row.contractorAssignmentId,
+          validatedOutcome,
+          prior,
         });
-        if (assignment) {
-          const engagement: EngagementContext = {
-            jurisdiction,
-            outcome: extractOutcomeKind(validatedOutcome),
-            sector: null,
-            // Contractor.countryCode is the closest proxy to nationality today;
-            // when contractorNationality lands on Contractor in a future phase,
-            // swap this read.
-            contractorNationality: assignment.contractor?.countryCode ?? null,
-            requiresRegulatedEquipment: false,
-          };
-          if (!prior) {
-            // First classification — materialise from policy.
-            await materialiseFromPolicy(tx, {
-              organizationId: row.organizationId,
-              contractorId: assignment.contractorId,
-              contractId: null,
-              engagement,
-            });
-          } else if (extractOutcomeKind(prior.outcome) !== extractOutcomeKind(validatedOutcome)) {
-            // Outcome kind changed — supersede prior rows and re-materialise.
-            await supersedeAndMaterialise(tx, {
-              organizationId: row.organizationId,
-              contractorId: assignment.contractorId,
-              contractId: null,
-              engagement,
-              reason: 'CLASSIFICATION_OUTCOME_CHANGE',
-            });
-            // Supersession can carry items forward to SATISFIED. Fire the
-            // recovery hook for each now-satisfied BLOCKING item so any
-            // PENDING_COMPLIANCE approval flow held by it can re-assert + resume.
-            await releaseHeldApprovalsForContractor(
-              tx,
-              row.organizationId,
-              assignment.contractorId,
-            );
-          }
-          // else: same outcome kind — no row churn (atomicity preserved by skipping).
-        }
       }
 
       // Auto-resolve any OPEN/ACKNOWLEDGED reassessment triggers on this

@@ -42,7 +42,19 @@ function stripComments(src: string): string {
   return noBlocks.replace(/\/\/[^\n]*/g, match => ' '.repeat(match.length));
 }
 
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: line-based Prisma SDL scanner — brace-depth tracking and field/model matching must share one loop over the source lines.
+/**
+ * Extract a field name from a model-body line, or `null` when the line is not
+ * a field declaration. A field is an identifier followed by a type token
+ * (capital-letter Prisma scalar/enum/relation); block attributes (`@@…`) and
+ * comment lines are skipped.
+ */
+function extractFieldName(line: string): string | null {
+  const trimmed = line.trim();
+  if (trimmed.startsWith('@@') || trimmed.startsWith('//')) return null;
+  const fieldMatch = line.match(/^\s*([a-zA-Z_][a-zA-Z0-9_]*)\s+[A-Za-z]/);
+  return fieldMatch ? (fieldMatch[1] as string) : null;
+}
+
 function parseModels(src: string): ParsedModel[] {
   const lines = stripComments(src).split('\n');
   const models: ParsedModel[] = [];
@@ -50,32 +62,26 @@ function parseModels(src: string): ParsedModel[] {
   let depth = 0;
 
   for (let i = 0; i < lines.length; i++) {
-    const rawLine = lines[i] ?? '';
-    const line = rawLine;
+    const line = lines[i] ?? '';
     const modelMatch = line.match(/^\s*model\s+([A-Z][A-Za-z0-9_]*)\s*\{/);
     if (modelMatch && depth === 0) {
       current = { name: modelMatch[1] as string, startLine: i + 1, fields: [] };
       depth = 1;
       continue;
     }
-    if (current) {
-      const opens = line.match(/\{/g)?.length ?? 0;
-      const closes = line.match(/\}/g)?.length ?? 0;
-      depth += opens;
-      depth -= closes;
-      // Field declarations: identifier followed by a type token (capital
-      // letter for Prisma scalar/enum/relation types). Skip lines starting
-      // with the double-at prefix (block-level attributes like the
-      // double-at-index directive).
-      const trimmed = line.trim();
-      const fieldMatch = line.match(/^\s*([a-zA-Z_][a-zA-Z0-9_]*)\s+[A-Za-z]/);
-      if (fieldMatch && !trimmed.startsWith('@@') && !trimmed.startsWith('//')) {
-        current.fields.push({ name: fieldMatch[1] as string, line: i + 1 });
-      }
-      if (depth === 0) {
-        models.push(current);
-        current = null;
-      }
+    if (!current) continue;
+
+    const opens = line.match(/\{/g)?.length ?? 0;
+    const closes = line.match(/\}/g)?.length ?? 0;
+    depth += opens - closes;
+
+    const fieldName = extractFieldName(line);
+    if (fieldName) {
+      current.fields.push({ name: fieldName, line: i + 1 });
+    }
+    if (depth === 0) {
+      models.push(current);
+      current = null;
     }
   }
   return models;

@@ -139,10 +139,39 @@ function parseAmountMinor(raw: string): number | null {
 }
 
 /**
+ * Parse one CSV data row into a transaction. Returns null when the row has no
+ * usable (non-zero, finite) amount — the caller skips those rows.
+ */
+function parseCsvRow(
+  line: string,
+  delimiter: string,
+  col: CsvColumnIndices,
+): ParsedTransaction | null {
+  const cells = splitCsvLine(line, delimiter);
+  const amount = parseAmountMinor(cells[col.amount] ?? '0');
+  if (amount === null || amount === 0) return null;
+
+  const iban = col.iban >= 0 ? cells[col.iban]?.replace(/["'\s]/g, '').trim() : undefined;
+  const dateStr = col.date >= 0 ? cells[col.date]?.replace(/["']/g, '').trim() : undefined;
+  const reference =
+    col.reference >= 0 ? cells[col.reference]?.replace(/["']/g, '').trim() : undefined;
+  const description =
+    col.description >= 0 ? (cells[col.description]?.replace(/["']/g, '').trim() ?? '') : '';
+
+  return {
+    amount,
+    currency: 'PLN',
+    description,
+    iban: iban || undefined,
+    date: dateStr ? new Date(dateStr) : new Date(),
+    reference: reference || undefined,
+  };
+}
+
+/**
  * Parse a CSV bank statement.
  * Detects columns by header names and handles both dot and comma decimal separators.
  */
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: CSV parser scanning lines and per-column optional cells; branches are cohesive field extraction
 export function parseCsvStatement(content: string): ParsedTransaction[] {
   const lines = content
     .split(/\r?\n/)
@@ -166,25 +195,8 @@ export function parseCsvStatement(content: string): ParsedTransaction[] {
   const transactions: ParsedTransaction[] = [];
 
   for (let i = 1; i < lines.length; i++) {
-    const cells = splitCsvLine(lines[i] ?? '', delimiter);
-    const amount = parseAmountMinor(cells[col.amount] ?? '0');
-    if (amount === null || amount === 0) continue;
-
-    const iban = col.iban >= 0 ? cells[col.iban]?.replace(/["'\s]/g, '').trim() : undefined;
-    const dateStr = col.date >= 0 ? cells[col.date]?.replace(/["']/g, '').trim() : undefined;
-    const reference =
-      col.reference >= 0 ? cells[col.reference]?.replace(/["']/g, '').trim() : undefined;
-    const description =
-      col.description >= 0 ? (cells[col.description]?.replace(/["']/g, '').trim() ?? '') : '';
-
-    transactions.push({
-      amount,
-      currency: 'PLN',
-      description,
-      iban: iban || undefined,
-      date: dateStr ? new Date(dateStr) : new Date(),
-      reference: reference || undefined,
-    });
+    const tx = parseCsvRow(lines[i] ?? '', delimiter, col);
+    if (tx) transactions.push(tx);
   }
 
   return transactions;

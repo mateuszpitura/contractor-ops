@@ -80,12 +80,61 @@ export interface ScoreScheinResult {
 }
 
 /**
+ * Aggregate the answered criteria for one DRV category into its weighted score
+ * and traffic-light verdict. Required criteria are validated upstream, so an
+ * absent entry here is an unanswered optional criterion and is skipped.
+ */
+function scoreCategory(
+  category: (typeof CATEGORIES_ORDERED)[number],
+  answers: AnswerMap,
+): ScheinCategoryResult {
+  const questionsInCategory = SCHEIN_QUESTIONS.filter(q => q.category === category);
+  const weight = CATEGORY_WEIGHTS[category];
+
+  let sumRaw = 0;
+  let count = 0;
+
+  for (const q of questionsInCategory) {
+    const entry = answers[q.id];
+    if (!entry) continue; // optional criteria only — required already validated.
+    let rawScore: number;
+    if (q.id === 'DRV-ECO-01') {
+      const value = typeof entry.value === 'number' ? entry.value : 0;
+      rawScore = billingRatioToScore(value);
+    } else {
+      rawScore = entry.rawScore ?? 0;
+    }
+    sumRaw += rawScore;
+    count += 1;
+  }
+
+  const maxRaw = count * 3;
+  const weightedScore = maxRaw === 0 ? 0 : (sumRaw / maxRaw) * weight;
+  const averageRaw = maxRaw === 0 ? 0 : sumRaw / count;
+
+  const categoryVerdict: ScheinVerdict =
+    weightedScore < weight * (THRESHOLDS.green / 100)
+      ? 'green'
+      : weightedScore <= weight * (THRESHOLDS.amber / 100)
+        ? 'amber'
+        : 'red';
+
+  return {
+    category,
+    weight,
+    rawScore: averageRaw,
+    weightedScore,
+    verdict: categoryVerdict,
+    drvReferences: drvReferencesForCategory(category),
+  };
+}
+
+/**
  * Pure scoring function for Scheinselbständigkeit. Throws MissingAnswerError
  * when any required criterion is absent — callers must catch and surface to
  * the user ("please answer all required questions"). Nicht anwendbar with
  * rawScore=0 and isNotApplicable=true is a valid answered-zero.
  */
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: pure scoring over the fixed DRV question/category tables (validate → per-category weighted aggregation → overall verdict); branching mirrors the rule set, not control-flow complexity.
 export function scoreSchein(answers: AnswerMap): ScoreScheinResult {
   // 1. Validate presence.
   for (const q of SCHEIN_QUESTIONS) {
@@ -95,48 +144,7 @@ export function scoreSchein(answers: AnswerMap): ScoreScheinResult {
   }
 
   // 2. Per-category aggregation.
-  const categoryResults: ScheinCategoryResult[] = [];
-  for (const category of CATEGORIES_ORDERED) {
-    const questionsInCategory = SCHEIN_QUESTIONS.filter(q => q.category === category);
-    const weight = CATEGORY_WEIGHTS[category];
-
-    let sumRaw = 0;
-    let count = 0;
-
-    for (const q of questionsInCategory) {
-      const entry = answers[q.id];
-      if (!entry) continue; // optional criteria only — required already validated.
-      let rawScore: number;
-      if (q.id === 'DRV-ECO-01') {
-        const value = typeof entry.value === 'number' ? entry.value : 0;
-        rawScore = billingRatioToScore(value);
-      } else {
-        rawScore = entry.rawScore ?? 0;
-      }
-      sumRaw += rawScore;
-      count += 1;
-    }
-
-    const maxRaw = count * 3;
-    const weightedScore = maxRaw === 0 ? 0 : (sumRaw / maxRaw) * weight;
-    const averageRaw = maxRaw === 0 ? 0 : sumRaw / count;
-
-    const categoryVerdict: ScheinVerdict =
-      weightedScore < weight * (THRESHOLDS.green / 100)
-        ? 'green'
-        : weightedScore <= weight * (THRESHOLDS.amber / 100)
-          ? 'amber'
-          : 'red';
-
-    categoryResults.push({
-      category,
-      weight,
-      rawScore: averageRaw,
-      weightedScore,
-      verdict: categoryVerdict,
-      drvReferences: drvReferencesForCategory(category),
-    });
-  }
+  const categoryResults = CATEGORIES_ORDERED.map(category => scoreCategory(category, answers));
 
   // 3. Total + overall verdict.
   const totalScore = categoryResults.reduce((acc, c) => acc + c.weightedScore, 0);

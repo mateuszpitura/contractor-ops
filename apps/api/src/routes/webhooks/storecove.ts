@@ -20,11 +20,12 @@
  * HMAC verify instead — Storecove sends with no Origin header).
  */
 
+import type { Prisma } from '@contractor-ops/db';
 import { prisma } from '@contractor-ops/db';
 import type { WebhookVerification } from '@contractor-ops/einvoice';
 import { StorecoveAdapter } from '@contractor-ops/einvoice';
 import { createWebhookLogger } from '@contractor-ops/logger';
-import type { FastifyInstance } from 'fastify';
+import type { FastifyInstance, FastifyRequest } from 'fastify';
 import { loadEnv } from '../../env.js';
 import { Sentry } from '../../lib/sentry.js';
 
@@ -53,6 +54,106 @@ function buildVerifier(): StorecoveAdapter | null {
   });
 }
 
+/** Read the raw request body as a UTF-8 string (HMAC needs the original bytes). */
+function readRawBody(request: FastifyRequest): string {
+  if (request.body instanceof Buffer) return request.body.toString('utf8');
+  if (typeof request.body === 'string') return request.body;
+  return '';
+}
+
+/** Flatten Fastify's `string | string[] | undefined` header map to plain strings. */
+function flattenHeaders(raw: FastifyRequest['headers']): Record<string, string> {
+  const headers: Record<string, string> = {};
+  for (const [key, value] of Object.entries(raw)) {
+    if (typeof value === 'string') headers[key] = value;
+    else if (Array.isArray(value)) headers[key] = value.join(',');
+  }
+  return headers;
+}
+
+interface MatchedLifecycle {
+  id: string;
+  organizationId: string;
+}
+
+/** Pull `event` + `guid` out of the (loosely-typed) Storecove payload metadata. */
+function readEventMetadata(payload: { metadata?: unknown }): {
+  eventType: string;
+  guid: string;
+} {
+  const metadata = (payload.metadata ?? {}) as Record<string, unknown>;
+  return {
+    eventType: typeof metadata.event === 'string' ? metadata.event : '',
+    guid: typeof metadata.guid === 'string' ? metadata.guid : '',
+  };
+}
+
+/** Idempotency check: has an event already been recorded for this guid? */
+async function hasRecordedEvent(lifecycle: MatchedLifecycle, guid: string): Promise<boolean> {
+  const existingEvent = await prisma.eInvoiceLifecycleEvent.findFirst({
+    where: {
+      organizationId: lifecycle.organizationId,
+      lifecycleId: lifecycle.id,
+      detailsJson: { path: ['guid'], equals: guid },
+    },
+    select: { id: true },
+  });
+  return existingEvent !== null;
+}
+
+/**
+ * Apply the DELIVERED / FAILED outcome inside the caller's transaction:
+ * update the lifecycle row and append the matching lifecycle event. The
+ * success/failure split is the only branch here, so it lives in one helper.
+ */
+async function applyLifecycleOutcome(
+  tx: Prisma.TransactionClient,
+  lifecycle: MatchedLifecycle,
+  isSuccess: boolean,
+  eventType: string,
+  guid: string,
+  now: Date,
+): Promise<void> {
+  if (isSuccess) {
+    await tx.eInvoiceLifecycle.update({
+      where: { id: lifecycle.id },
+      data: {
+        transmissionStatus: 'DELIVERED',
+        deliveredAt: now,
+        deliveryAckJson: { guid, event: eventType, receivedAt: now },
+      },
+    });
+    await tx.eInvoiceLifecycleEvent.create({
+      data: {
+        organizationId: lifecycle.organizationId,
+        lifecycleId: lifecycle.id,
+        eventType: 'DELIVERY_ACK',
+        occurredAt: now,
+        actorUserId: null,
+        detailsJson: { guid, event: eventType },
+      },
+    });
+    return;
+  }
+  await tx.eInvoiceLifecycle.update({
+    where: { id: lifecycle.id },
+    data: {
+      transmissionStatus: 'FAILED',
+      lastErrorJson: { guid, event: eventType, receivedAt: now },
+    },
+  });
+  await tx.eInvoiceLifecycleEvent.create({
+    data: {
+      organizationId: lifecycle.organizationId,
+      lifecycleId: lifecycle.id,
+      eventType: 'DELIVERY_FAILED',
+      occurredAt: now,
+      actorUserId: null,
+      detailsJson: { guid, event: eventType },
+    },
+  });
+}
+
 // Peppol AS4 Access Points (Storecove) interpret a 404 on a known webhook
 // URL as "endpoint gone" and may silently stop retrying deliveries. Answer
 // unsupported verbs with an explicit 405 + `Allow: POST` header per
@@ -70,20 +171,10 @@ export function registerStorecoveWebhookRoute(app: FastifyInstance): void {
     });
   }
 
-  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: sequential webhook orchestration — parse, signature verify, idempotency lookup and lifecycle dispatch each guard with an early reply; the ordered reply/db side effects make extraction lossy.
+  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: residual cost is the linear reply gauntlet — seven ordered guards each terminating in a distinct HTTP status (500 unconfigured, 401 bad signature, 400 bad payload, 200 missing-guid/no-lifecycle/duplicate/unknown-event) interleaved with the lifecycle DB lookup; the pure blocks (body, headers, metadata, idempotency lookup, tx outcome) are already extracted, and moving any guard out would fragment the status-code contract.
   app.post('/webhooks/storecove', async (request, reply) => {
-    const rawBody =
-      request.body instanceof Buffer
-        ? request.body.toString('utf8')
-        : typeof request.body === 'string'
-          ? request.body
-          : '';
-
-    const headers: Record<string, string> = {};
-    for (const [key, value] of Object.entries(request.headers)) {
-      if (typeof value === 'string') headers[key] = value;
-      else if (Array.isArray(value)) headers[key] = value.join(',');
-    }
+    const rawBody = readRawBody(request);
+    const headers = flattenHeaders(request.headers);
 
     const verifier = buildVerifier();
     if (!verifier) {
@@ -110,9 +201,7 @@ export function registerStorecoveWebhookRoute(app: FastifyInstance): void {
       return reply.code(400).send({ error: 'Invalid payload' });
     }
 
-    const metadata = (payload.metadata ?? {}) as Record<string, unknown>;
-    const eventType = typeof metadata.event === 'string' ? metadata.event : '';
-    const guid = typeof metadata.guid === 'string' ? metadata.guid : '';
+    const { eventType, guid } = readEventMetadata(payload);
 
     if (!guid) {
       log.warn({ eventType }, 'Storecove webhook missing guid — discarding');
@@ -133,15 +222,7 @@ export function registerStorecoveWebhookRoute(app: FastifyInstance): void {
       return reply.code(200).send({ received: true });
     }
 
-    const existingEvent = await prisma.eInvoiceLifecycleEvent.findFirst({
-      where: {
-        organizationId: lifecycle.organizationId,
-        lifecycleId: lifecycle.id,
-        detailsJson: { path: ['guid'], equals: guid },
-      },
-      select: { id: true },
-    });
-    if (existingEvent) {
+    if (await hasRecordedEvent(lifecycle, guid)) {
       log.info(
         { guid, eventType, lifecycleId: lifecycle.id },
         'Storecove webhook: duplicate event (guid already recorded) — noop',
@@ -158,46 +239,9 @@ export function registerStorecoveWebhookRoute(app: FastifyInstance): void {
 
     const now = new Date();
     try {
-      await prisma.$transaction(async tx => {
-        if (isSuccess) {
-          await tx.eInvoiceLifecycle.update({
-            where: { id: lifecycle.id },
-            data: {
-              transmissionStatus: 'DELIVERED',
-              deliveredAt: now,
-              deliveryAckJson: { guid, event: eventType, receivedAt: now },
-            },
-          });
-          await tx.eInvoiceLifecycleEvent.create({
-            data: {
-              organizationId: lifecycle.organizationId,
-              lifecycleId: lifecycle.id,
-              eventType: 'DELIVERY_ACK',
-              occurredAt: now,
-              actorUserId: null,
-              detailsJson: { guid, event: eventType },
-            },
-          });
-        } else {
-          await tx.eInvoiceLifecycle.update({
-            where: { id: lifecycle.id },
-            data: {
-              transmissionStatus: 'FAILED',
-              lastErrorJson: { guid, event: eventType, receivedAt: now },
-            },
-          });
-          await tx.eInvoiceLifecycleEvent.create({
-            data: {
-              organizationId: lifecycle.organizationId,
-              lifecycleId: lifecycle.id,
-              eventType: 'DELIVERY_FAILED',
-              occurredAt: now,
-              actorUserId: null,
-              detailsJson: { guid, event: eventType },
-            },
-          });
-        }
-      });
+      await prisma.$transaction(tx =>
+        applyLifecycleOutcome(tx, lifecycle, isSuccess, eventType, guid, now),
+      );
     } catch (err) {
       log.error(
         {

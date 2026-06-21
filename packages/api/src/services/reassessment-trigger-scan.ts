@@ -263,11 +263,45 @@ async function dedupAndCreateOrAppend(
   return { created: true, appended: false };
 }
 
+interface TriggerDispatchPayload {
+  organizationId: string;
+  assignmentId: string;
+  newReasons: TriggerReason[];
+}
+
+/**
+ * Fire a reassessment notification for each newly-created trigger. Appended
+ * triggers are intentionally excluded — the original notification already went
+ * out. Per-payload failures are logged and skipped so one bad recipient lookup
+ * doesn't abort the rest of the batch.
+ */
+async function dispatchTriggerNotifications(
+  dispatchPayloads: readonly TriggerDispatchPayload[],
+): Promise<void> {
+  for (const payload of dispatchPayloads) {
+    try {
+      const recipients = await resolveRbacRecipients(payload.organizationId, 'contractor:read');
+      if (recipients.length === 0) continue;
+
+      await dispatch({
+        organizationId: payload.organizationId,
+        type: 'classification.reassessment_trigger',
+        recipientUserIds: recipients,
+        title: 'Reassessment recommended',
+        body: `${payload.newReasons.length} material change${payload.newReasons.length === 1 ? '' : 's'} detected since the last IR35 SDS. Open the engagement to review.`,
+        entityType: 'CONTRACTOR',
+        entityId: payload.assignmentId,
+      });
+    } catch (err) {
+      log.error({ err, payload }, 'reassessment trigger dispatch failed');
+    }
+  }
+}
+
 /**
  * Runs the daily AuditLog-driven reassessment scan. Incremental: persists a
  * CronScanState cursor so historical audits aren't replayed on restart.
  */
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: incremental cron scan over audit rows — cursor management plus per-row trigger-condition evaluation and persistence branches
 export async function runReassessmentTriggerScan(
   now: Date = new Date(),
 ): Promise<ReassessmentScanResult> {
@@ -299,11 +333,7 @@ export async function runReassessmentTriggerScan(
   let material = 0;
   let triggersCreated = 0;
   let triggersAppended = 0;
-  const dispatchPayloads: Array<{
-    organizationId: string;
-    assignmentId: string;
-    newReasons: TriggerReason[];
-  }> = [];
+  const dispatchPayloads: TriggerDispatchPayload[] = [];
 
   for (const row of rows) {
     scanned += 1;
@@ -337,24 +367,7 @@ export async function runReassessmentTriggerScan(
 
   // Dispatch notifications for newly-created triggers (appended triggers
   // don't re-fire — the original notification already went out).
-  for (const payload of dispatchPayloads) {
-    try {
-      const recipients = await resolveRbacRecipients(payload.organizationId, 'contractor:read');
-      if (recipients.length === 0) continue;
-
-      await dispatch({
-        organizationId: payload.organizationId,
-        type: 'classification.reassessment_trigger',
-        recipientUserIds: recipients,
-        title: 'Reassessment recommended',
-        body: `${payload.newReasons.length} material change${payload.newReasons.length === 1 ? '' : 's'} detected since the last IR35 SDS. Open the engagement to review.`,
-        entityType: 'CONTRACTOR',
-        entityId: payload.assignmentId,
-      });
-    } catch (err) {
-      log.error({ err, payload }, 'reassessment trigger dispatch failed');
-    }
-  }
+  await dispatchTriggerNotifications(dispatchPayloads);
 
   // Advance the cursor to the scan start so future runs resume cleanly.
   await prismaRaw.cronScanState.upsert({

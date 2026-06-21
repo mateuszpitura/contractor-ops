@@ -7,6 +7,7 @@ import type {
 } from '../types/user-source.js';
 import { fetchJsonWithTimeout } from './fetch-helpers.js';
 import { linearGraphQL } from './linear-teams-client.js';
+import type { jiraUserSearchRowSchema } from './user-source-schemas.js';
 import {
   googleDirectoryUsersPageSchema,
   jiraUserSearchResponseSchema,
@@ -65,7 +66,19 @@ export async function fetchUsersFromIntegrationSource(
   return fetcher.fetchUsers(accessToken, metadata);
 }
 
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: paginated Jira users/search fetch loop — page-limit guard, Zod response validation, and per-user email-validate/normalize/skip inside the loop are one provider fetch→validate→map pipeline.
+function mapJiraUser(user: z.infer<typeof jiraUserSearchRowSchema>): UserSourcePerson | null {
+  if (!user.emailAddress?.trim()) return null;
+  const parsedEmail = z.email().safeParse(user.emailAddress.trim());
+  if (!parsedEmail.success) return null;
+  return {
+    email: parsedEmail.data,
+    name: user.displayName ?? parsedEmail.data,
+    source: 'JIRA',
+    avatarUrl: user.avatarUrls?.['48x48'],
+    metadata: { self: user.self },
+  };
+}
+
 async function fetchJiraUsers(accessToken: string, metadata: unknown): Promise<UserSourcePerson[]> {
   const parsedMeta = jiraUserSourceMetadataSchema.safeParse(metadata);
   if (!parsedMeta.success) {
@@ -108,16 +121,8 @@ async function fetchJiraUsers(accessToken: string, metadata: unknown): Promise<U
     if (!page.length) break;
 
     for (const user of page) {
-      if (!user.emailAddress?.trim()) continue;
-      const parsedEmail = z.email().safeParse(user.emailAddress.trim());
-      if (!parsedEmail.success) continue;
-      users.push({
-        email: parsedEmail.data,
-        name: user.displayName ?? parsedEmail.data,
-        source: 'JIRA',
-        avatarUrl: user.avatarUrls?.['48x48'],
-        metadata: { self: user.self },
-      });
+      const mapped = mapJiraUser(user);
+      if (mapped) users.push(mapped);
     }
 
     if (page.length < maxResults) break;
@@ -127,7 +132,24 @@ async function fetchJiraUsers(accessToken: string, metadata: unknown): Promise<U
   return users;
 }
 
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: paginated Linear GraphQL users fetch loop — cursor pagination, page-limit guard, Zod validation, and per-node active/email-validate/normalize filtering are one provider fetch→validate→map pipeline.
+type LinearUserNode = z.infer<
+  typeof linearUsersPageSchema
+>['organization']['users']['nodes'][number];
+
+function mapLinearUser(u: LinearUserNode): UserSourcePerson | null {
+  if (!u.active) return null;
+  if (!u.email?.trim()) return null;
+  const parsedEmail = z.email().safeParse(u.email.trim());
+  if (!parsedEmail.success) return null;
+  return {
+    email: parsedEmail.data,
+    name: u.name,
+    source: 'LINEAR',
+    avatarUrl: u.avatarUrl,
+    metadata: { linearId: u.id },
+  };
+}
+
 async function fetchLinearUsers(accessToken: string): Promise<UserSourcePerson[]> {
   const users: UserSourcePerson[] = [];
   let cursor: string | undefined;
@@ -163,17 +185,8 @@ async function fetchLinearUsers(accessToken: string): Promise<UserSourcePerson[]
 
     const page = parsedPage.data.organization.users;
     for (const u of page.nodes) {
-      if (!u.active) continue;
-      if (!u.email?.trim()) continue;
-      const parsedEmail = z.email().safeParse(u.email.trim());
-      if (!parsedEmail.success) continue;
-      users.push({
-        email: parsedEmail.data,
-        name: u.name,
-        source: 'LINEAR',
-        avatarUrl: u.avatarUrl,
-        metadata: { linearId: u.id },
-      });
+      const mapped = mapLinearUser(u);
+      if (mapped) users.push(mapped);
     }
 
     if (!(page.pageInfo.hasNextPage && page.pageInfo.endCursor)) break;
@@ -183,7 +196,23 @@ async function fetchLinearUsers(accessToken: string): Promise<UserSourcePerson[]
   return users;
 }
 
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: paginated Google Directory users fetch loop — pageToken pagination, page-limit guard, Zod validation, and per-user suspended/archived/email-validate filtering are one provider fetch→validate→map pipeline.
+type GoogleDirectoryUser = NonNullable<
+  z.infer<typeof googleDirectoryUsersPageSchema>['users']
+>[number];
+
+function mapGoogleUser(u: GoogleDirectoryUser): UserSourcePerson | null {
+  if (u.suspended || u.archived) return null;
+  const parsedEmail = z.email().safeParse(u.primaryEmail);
+  if (!parsedEmail.success) return null;
+  return {
+    email: parsedEmail.data,
+    name: u.name?.fullName ?? parsedEmail.data,
+    source: 'GOOGLE_WORKSPACE',
+    avatarUrl: u.thumbnailPhotoUrl,
+    metadata: { googleId: u.id },
+  };
+}
+
 async function fetchGoogleWorkspaceUsers(accessToken: string): Promise<UserSourcePerson[]> {
   const users: UserSourcePerson[] = [];
   let pageToken: string | undefined;
@@ -215,16 +244,8 @@ async function fetchGoogleWorkspaceUsers(accessToken: string): Promise<UserSourc
     }
 
     for (const u of parsed.data.users ?? []) {
-      if (u.suspended || u.archived) continue;
-      const parsedEmail = z.email().safeParse(u.primaryEmail);
-      if (!parsedEmail.success) continue;
-      users.push({
-        email: parsedEmail.data,
-        name: u.name?.fullName ?? parsedEmail.data,
-        source: 'GOOGLE_WORKSPACE',
-        avatarUrl: u.thumbnailPhotoUrl,
-        metadata: { googleId: u.id },
-      });
+      const mapped = mapGoogleUser(u);
+      if (mapped) users.push(mapped);
     }
 
     pageToken = parsed.data.nextPageToken;

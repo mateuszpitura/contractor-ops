@@ -170,7 +170,20 @@ export function normaliseSvrl(svrlXml: string): NormalisedSvrl {
   return out;
 }
 
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: recursive SVRL tree walker dispatching on the two issue-bearing node keys (failed-assert / successful-report, prefixed and bare) with array/object recursion; branches mirror the SVRL element grammar.
+// The two issue-bearing SVRL node keys, each in prefixed and bare form.
+const ISSUE_KEYS = new Set([
+  'svrl:failed-assert',
+  'failed-assert',
+  'svrl:successful-report',
+  'successful-report',
+]);
+
+/** Bucket every `<svrl:*>` element under an issue-bearing key. */
+function collectIssues(value: unknown, out: NormalisedSvrl): void {
+  const list = Array.isArray(value) ? value : [value];
+  for (const el of list) bucket(toIssue(el as SvrlElement), out);
+}
+
 function visit(node: unknown, out: NormalisedSvrl): void {
   if (!node) return;
   if (Array.isArray(node)) {
@@ -181,14 +194,8 @@ function visit(node: unknown, out: NormalisedSvrl): void {
   const obj = node as Record<string, unknown>;
 
   for (const [key, value] of Object.entries(obj)) {
-    if (key === 'svrl:failed-assert' || key === 'failed-assert') {
-      const list = Array.isArray(value) ? value : [value];
-      for (const el of list) bucket(toIssue(el as SvrlElement), out);
-      continue;
-    }
-    if (key === 'svrl:successful-report' || key === 'successful-report') {
-      const list = Array.isArray(value) ? value : [value];
-      for (const el of list) bucket(toIssue(el as SvrlElement), out);
+    if (ISSUE_KEYS.has(key)) {
+      collectIssues(value, out);
       continue;
     }
     if (typeof value === 'object' && value !== null) {

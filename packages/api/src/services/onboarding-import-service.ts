@@ -44,28 +44,67 @@ export async function fetchUsersFromSource(
 // mergeByEmail
 // ---------------------------------------------------------------------------
 
+type EmailGroup = {
+  canonicalEmail: string;
+  sources: Array<{
+    source: string;
+    name: string;
+    avatarUrl?: string;
+    metadata?: Record<string, unknown>;
+  }>;
+};
+
+/**
+ * Resolve a single email group into a {@link MergedPerson}: derive status
+ * (exists/conflict/new) and, on a name conflict, the per-source value list.
+ */
+function buildMergedPerson(group: EmailGroup, existingEmails: Set<string>): MergedPerson {
+  const uniqueNames = [...new Set(group.sources.map(s => s.name))];
+  const isExisting = existingEmails.has(group.canonicalEmail.toLowerCase());
+  const hasConflict = uniqueNames.length > 1;
+
+  let status: 'new' | 'conflict' | 'exists';
+  if (isExisting) {
+    status = 'exists';
+  } else if (hasConflict) {
+    status = 'conflict';
+  } else {
+    status = 'new';
+  }
+
+  const conflicts = hasConflict
+    ? [
+        {
+          field: 'name',
+          values: group.sources.map(s => ({ source: s.source, value: s.name })),
+        },
+      ]
+    : undefined;
+
+  return {
+    email: group.canonicalEmail,
+    name: group.sources[0]?.name ?? '',
+    sources: group.sources.map(s => ({
+      source: s.source as 'JIRA' | 'LINEAR' | 'GOOGLE_WORKSPACE' | 'SLACK',
+      name: s.name,
+      avatarUrl: s.avatarUrl,
+      metadata: s.metadata,
+    })),
+    status,
+    conflicts,
+  };
+}
+
 /**
  * Merges source people by normalized (lowercase) email.
  * Detects name conflicts and marks existing members.
  * Returns sorted: conflicts first, then new, then exists.
  */
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: email-keyed merge/dedup reducer that detects name conflicts and partitions results into conflicts/new/exists buckets
 export function mergeByEmail(
   sourcePeople: SourcePerson[],
   existingEmails: Set<string>,
 ): MergedPerson[] {
-  const byEmail = new Map<
-    string,
-    {
-      canonicalEmail: string;
-      sources: Array<{
-        source: string;
-        name: string;
-        avatarUrl?: string;
-        metadata?: Record<string, unknown>;
-      }>;
-    }
-  >();
+  const byEmail = new Map<string, EmailGroup>();
 
   for (const person of sourcePeople) {
     const trimmed = person.email.trim();
@@ -91,43 +130,7 @@ export function mergeByEmail(
   const merged: MergedPerson[] = [];
 
   for (const [, data] of byEmail) {
-    const uniqueNames = [...new Set(data.sources.map(s => s.name))];
-    const isExisting = existingEmails.has(data.canonicalEmail.toLowerCase());
-    const hasConflict = uniqueNames.length > 1;
-
-    let status: 'new' | 'conflict' | 'exists';
-    if (isExisting) {
-      status = 'exists';
-    } else if (hasConflict) {
-      status = 'conflict';
-    } else {
-      status = 'new';
-    }
-
-    const conflicts = hasConflict
-      ? [
-          {
-            field: 'name',
-            values: data.sources.map(s => ({
-              source: s.source,
-              value: s.name,
-            })),
-          },
-        ]
-      : undefined;
-
-    merged.push({
-      email: data.canonicalEmail,
-      name: data.sources[0]?.name ?? '',
-      sources: data.sources.map(s => ({
-        source: s.source as 'JIRA' | 'LINEAR' | 'GOOGLE_WORKSPACE' | 'SLACK',
-        name: s.name,
-        avatarUrl: s.avatarUrl,
-        metadata: s.metadata,
-      })),
-      status,
-      conflicts,
-    });
+    merged.push(buildMergedPerson(data, existingEmails));
   }
 
   const statusOrder: Record<string, number> = {

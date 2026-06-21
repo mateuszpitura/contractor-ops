@@ -12,12 +12,88 @@ import { router } from '../../init';
 import { loadOrgIntegrationConnection } from '../../lib/integration-connection.js';
 import { integrationSettingsProcedure } from '../../lib/integration-procedure';
 import { writeAuditLog } from '../../services/audit-writer';
+import type { DbClient } from '../../services/types';
 
 const log = createLogger({ service: 'ksef-router' });
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
+
+/**
+ * Verify token-auth KSeF credentials against the gov API before persisting.
+ * No-op for certificate auth. Throws BAD_REQUEST when the token is missing or
+ * rejected so callers never persist unusable credentials.
+ */
+async function assertKsefCredentialsValid(
+  client: KsefApiClient,
+  input: { authMethod: 'token' | 'certificate'; token?: string | undefined },
+  nip: string,
+): Promise<void> {
+  if (input.authMethod !== 'token') return;
+  if (!input.token) {
+    throw new TRPCError({ code: 'BAD_REQUEST', message: E.TOKEN_REQUIRED });
+  }
+  const valid = await client.verifyCredentials(input.token, nip);
+  if (!valid) {
+    throw new TRPCError({
+      code: 'BAD_REQUEST',
+      message: E.KSEF_CREDENTIAL_VERIFICATION_FAILED,
+    });
+  }
+}
+
+/**
+ * Create the hourly KSeF sync QStash schedule and persist its id. On failure,
+ * record `lastErrorMessage` (and report to Sentry) but never throw — the
+ * connection stays CONNECTED and the UI surfaces "schedule unhealthy".
+ */
+async function createKsefSyncSchedule(
+  db: DbClient,
+  organizationId: string,
+  connection: IntegrationConnection,
+): Promise<void> {
+  try {
+    const qstash = getQStashClient();
+    const schedule = await qstash.schedules.create({
+      destination: `${getServerEnv().API_URL}/ksef/_sync`,
+      cron: '0 * * * *',
+      body: JSON.stringify({
+        organizationId,
+        connectionId: connection.id,
+      }),
+      retries: 5,
+    });
+
+    const currentConfig = (connection.configJson as Record<string, unknown>) ?? {};
+    await db.integrationConnection.update({
+      where: { id: connection.id },
+      data: {
+        configJson: {
+          ...currentConfig,
+          qstashScheduleId: schedule.scheduleId,
+        },
+      },
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Schedule create failed';
+    log.error(
+      { err: error, organizationId, connectionId: connection.id },
+      'failed to create KSeF QStash sync schedule',
+    );
+    Sentry.captureException(error, {
+      tags: { 'integration.provider': 'KSEF', 'qstash.outcome': 'schedule-create-failed' },
+      extra: { organizationId, connectionId: connection.id },
+    });
+    await db.integrationConnection.update({
+      where: { id: connection.id },
+      data: {
+        lastErrorAt: new Date(),
+        lastErrorMessage: `QStash schedule create failed: ${message.slice(0, 400)}`,
+      },
+    });
+  }
+}
 
 // ---------------------------------------------------------------------------
 // Input schemas
@@ -47,7 +123,6 @@ export const ksefRouter = router({
    */
   connect: integrationSettingsProcedure('update')
     .input(connectInput)
-    // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: sequential connect flow — resolve NIP → validate credentials → encrypt → persist settings → create QStash cron schedule, each step gated; cohesive orchestration.
     .mutation(async ({ ctx, input }) => {
       // Step 1: Get org NIP
       const org = await ctx.db.organization.findUniqueOrThrow({
@@ -68,22 +143,7 @@ export const ksefRouter = router({
 
       // Step 3: Verify credentials before saving
       const client = new KsefApiClient(input.environment);
-
-      if (input.authMethod === 'token') {
-        if (!input.token) {
-          throw new TRPCError({
-            code: 'BAD_REQUEST',
-            message: E.TOKEN_REQUIRED,
-          });
-        }
-        const valid = await client.verifyCredentials(input.token, nip);
-        if (!valid) {
-          throw new TRPCError({
-            code: 'BAD_REQUEST',
-            message: E.KSEF_CREDENTIAL_VERIFICATION_FAILED,
-          });
-        }
-      }
+      await assertKsefCredentialsValid(client, input, nip);
 
       // Step 4: Build and encrypt credential blob
       const credentialsRef = encryptCredentials(
@@ -135,53 +195,13 @@ export const ksefRouter = router({
         });
       }
 
-      // Step 6: Create QStash cron schedule
+      // Step 6: Create QStash cron schedule.
       // Surface schedule-create failures via lastErrorMessage so the UI can
       // show "schedule unhealthy" instead of the connection appearing
       // CONNECTED with no syncs running. Retries bumped to 5 since KSeF
       // gov API stability is poor; a multi-hour outage would otherwise drop
       // the hourly sync.
-      try {
-        const qstash = getQStashClient();
-        const schedule = await qstash.schedules.create({
-          destination: `${getServerEnv().API_URL}/ksef/_sync`,
-          cron: '0 * * * *',
-          body: JSON.stringify({
-            organizationId: ctx.organizationId,
-            connectionId: connection.id,
-          }),
-          retries: 5,
-        });
-
-        // Store schedule ID in configJson
-        const currentConfig = (connection.configJson as Record<string, unknown>) ?? {};
-        await ctx.db.integrationConnection.update({
-          where: { id: connection.id },
-          data: {
-            configJson: {
-              ...currentConfig,
-              qstashScheduleId: schedule.scheduleId,
-            },
-          },
-        });
-      } catch (error) {
-        const message = error instanceof Error ? error.message : 'Schedule create failed';
-        log.error(
-          { err: error, organizationId: ctx.organizationId, connectionId: connection.id },
-          'failed to create KSeF QStash sync schedule',
-        );
-        Sentry.captureException(error, {
-          tags: { 'integration.provider': 'KSEF', 'qstash.outcome': 'schedule-create-failed' },
-          extra: { organizationId: ctx.organizationId, connectionId: connection.id },
-        });
-        await ctx.db.integrationConnection.update({
-          where: { id: connection.id },
-          data: {
-            lastErrorAt: new Date(),
-            lastErrorMessage: `QStash schedule create failed: ${message.slice(0, 400)}`,
-          },
-        });
-      }
+      await createKsefSyncSchedule(ctx.db, ctx.organizationId, connection);
 
       // KSeF connect persists encrypted credentials and starts hourly invoice
       // sync to the Polish tax authority. We never log the credential payload

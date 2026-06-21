@@ -53,7 +53,59 @@ type GroundedClause = ContractHealthToolInput['citedClauses'][number] & {
   phraseId: IpClausePhraseId | string | undefined;
 };
 
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: sequential health-check orchestration: demo guard → fetch PDF → idempotency → call model → grade clauses → persist run + audit; cohesive flow clearer inline than scattered across helpers.
+/**
+ * Regex-ground the model's cited clauses against the per-jurisdiction phrase
+ * library: the first matching phrase sets `regexMatched`/`phraseId`/span.
+ */
+function groundClauses(citedClauses: ContractHealthToolInput['citedClauses']): GroundedClause[] {
+  const groundedClauses: GroundedClause[] = citedClauses.map(c => ({
+    ...c,
+    regexMatched: false,
+    regexMatchSpan: undefined,
+    phraseId: undefined,
+  }));
+
+  for (const cited of groundedClauses) {
+    const jurisdictionPhrases = IP_CLAUSES_BY_JURISDICTION[cited.jurisdiction];
+    if (!jurisdictionPhrases) continue;
+    for (const [phraseId, entry] of Object.entries(jurisdictionPhrases)) {
+      const match = entry.regex.exec(cited.citedText);
+      if (match) {
+        cited.regexMatched = true;
+        cited.phraseId = phraseId as IpClausePhraseId;
+        cited.regexMatchSpan = { startChar: match.index, endChar: match.index + match[0].length };
+        break;
+      }
+    }
+  }
+
+  return groundedClauses;
+}
+
+/**
+ * Apply the two divergence rules + cross-jurisdiction mismatch to the model's
+ * verdict, escalating to `MANUAL_REVIEW_REQUIRED` where grounding disagrees.
+ */
+function reconcileVerdict(
+  modelVerdict: ContractHealthToolInput['verdict'],
+  toolInput: ContractHealthToolInput,
+  groundedClauses: GroundedClause[],
+  crossJurisdictionMismatch: boolean,
+): ContractHealthToolInput['verdict'] {
+  let verdict = modelVerdict;
+  const anyMatch = groundedClauses.some(c => c.regexMatched);
+  if (verdict === 'LIKELY_PRESENT' && !anyMatch) {
+    verdict = 'MANUAL_REVIEW_REQUIRED'; // divergence rule 1
+  }
+  if (verdict === 'LIKELY_MISSING' && scanRawTextForStrongMatch(toolInput)) {
+    verdict = 'MANUAL_REVIEW_REQUIRED'; // divergence rule 2
+  }
+  if (crossJurisdictionMismatch) {
+    verdict = 'MANUAL_REVIEW_REQUIRED';
+  }
+  return verdict;
+}
+
 export async function runContractHealthCheck(
   args: RunHealthCheckArgs,
 ): Promise<RunHealthCheckResult> {
@@ -107,45 +159,14 @@ export async function runContractHealthCheck(
     const toolInput = await evaluateContractIpAssignment({ pdfBase64, modelId: modelVer });
 
     // 6. Regex grounding.
-    const groundedClauses: GroundedClause[] = toolInput.citedClauses.map(c => ({
-      ...c,
-      regexMatched: false,
-      regexMatchSpan: undefined,
-      phraseId: undefined,
-    }));
+    const groundedClauses = groundClauses(toolInput.citedClauses);
 
-    for (const cited of groundedClauses) {
-      const jurisdictionPhrases = IP_CLAUSES_BY_JURISDICTION[cited.jurisdiction];
-      if (!jurisdictionPhrases) continue;
-      for (const [phraseId, entry] of Object.entries(jurisdictionPhrases)) {
-        const match = entry.regex.exec(cited.citedText);
-        if (match) {
-          cited.regexMatched = true;
-          cited.phraseId = phraseId as IpClausePhraseId;
-          cited.regexMatchSpan = { startChar: match.index, endChar: match.index + match[0].length };
-          break;
-        }
-      }
-    }
-
-    // 7. Apply divergence rules.
-    let verdict = toolInput.verdict;
-    const anyMatch = groundedClauses.some(c => c.regexMatched);
-    if (verdict === 'LIKELY_PRESENT' && !anyMatch) {
-      verdict = 'MANUAL_REVIEW_REQUIRED'; // divergence rule 1
-    }
-    if (verdict === 'LIKELY_MISSING' && scanRawTextForStrongMatch(toolInput)) {
-      verdict = 'MANUAL_REVIEW_REQUIRED'; // divergence rule 2
-    }
-
-    // 8. Cross-jurisdiction mismatch.
+    // 7-8. Divergence rules + cross-jurisdiction mismatch.
     const cjm = analyzeCrossJurisdiction(
       expectedJurisdiction,
       groundedClauses.map(c => c.jurisdiction),
     );
-    if (cjm.mismatch) {
-      verdict = 'MANUAL_REVIEW_REQUIRED';
-    }
+    const verdict = reconcileVerdict(toolInput.verdict, toolInput, groundedClauses, cjm.mismatch);
 
     // 9. PENDING-phrase detection.
     const pendingPhrasesCited = groundedClauses

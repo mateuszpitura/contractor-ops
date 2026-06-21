@@ -89,7 +89,119 @@ function buildJiraApiContext(
  * @param connectionId - The IntegrationConnection ID
  * @param payload - The raw webhook payload
  */
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: sequential webhook pipeline — validate payload, resolve link, transition status, update metadata, and log each branch
+type JiraTxClient = Parameters<Parameters<PrismaClient['$transaction']>[0]>[0];
+
+/**
+ * Apply the reverse-synced status to the linked workflow task inside a
+ * transaction: load the task, validate the transition, patch its status (and
+ * completedAt on DONE), then unblock dependents on a terminal transition.
+ * Throws when the task is missing or the transition is invalid.
+ */
+async function applyTaskTransition(
+  tx: JiraTxClient,
+  args: { entityId: string; organizationId: string; mappedWorkflowStatus: string },
+): Promise<void> {
+  const { entityId, organizationId, mappedWorkflowStatus } = args;
+  const task = await tx.workflowTaskRun.findFirst({
+    where: { id: entityId, organizationId },
+    select: { id: true, status: true, workflowRunId: true },
+  });
+
+  if (!task) {
+    throw new Error('Linked workflow task not found');
+  }
+
+  if (!validateTransition(task.status, mappedWorkflowStatus)) {
+    throw new Error(`Invalid task transition ${task.status} -> ${mappedWorkflowStatus}`);
+  }
+
+  const now = new Date();
+  const updateData: Prisma.WorkflowTaskRunUpdateInput = {
+    status: mappedWorkflowStatus as Prisma.WorkflowTaskRunUpdateInput['status'],
+  };
+  if (mappedWorkflowStatus === 'DONE') {
+    updateData.completedAt = now;
+  }
+
+  await tx.workflowTaskRun.update({
+    where: { id: task.id, organizationId },
+    data: updateData,
+  });
+
+  if (mappedWorkflowStatus === 'DONE' || mappedWorkflowStatus === 'SKIPPED') {
+    await unblockDependentsAndRecomputeRun(
+      tx,
+      { id: task.id, workflowRun: { id: task.workflowRunId } },
+      now,
+      { organizationId },
+    );
+  }
+}
+
+type WebhookContext = {
+  organizationId: string;
+  connectionId: string;
+  issueKey: string;
+  newJiraStatusName: string;
+};
+
+/**
+ * True when this webhook is a bounce-back from our own outbound sync within the
+ * loop-prevention window. Writes a `webhook-loop-suppressed` sync log when so.
+ */
+async function isLoopBounceBack(
+  prisma: PrismaClient,
+  metadata: Record<string, unknown>,
+  ctx: WebhookContext,
+): Promise<boolean> {
+  const lastSyncOrigin = metadata.lastSyncOrigin as string | undefined;
+  const lastSyncAt = metadata.lastSyncAt as string | undefined;
+  if (lastSyncOrigin !== 'APP' || !lastSyncAt) return false;
+
+  const syncAge = Date.now() - new Date(lastSyncAt).getTime();
+  if (syncAge >= LOOP_PREVENTION_WINDOW_MS) return false;
+
+  await prisma.integrationSyncLog.create({
+    data: {
+      organizationId: ctx.organizationId,
+      integrationConnectionId: ctx.connectionId,
+      direction: 'INBOUND',
+      syncType: 'webhook-loop-suppressed',
+      status: 'SUCCESS',
+      completedAt: new Date(),
+      responsePayloadJson: {
+        issueKey: ctx.issueKey,
+        newStatus: ctx.newJiraStatusName,
+        reason: `Suppressed bounce-back (origin=APP, age=${syncAge}ms)`,
+      },
+    },
+  });
+  return true;
+}
+
+/**
+ * True when an identical status-change webhook (same issue + new status) was
+ * already processed within the dedup window.
+ */
+async function isRecentDuplicate(prisma: PrismaClient, ctx: WebhookContext): Promise<boolean> {
+  const deduplicationCutoff = new Date(Date.now() - DEDUP_WINDOW_MS);
+  const recentDuplicate = await prisma.integrationSyncLog.findFirst({
+    where: {
+      organizationId: ctx.organizationId,
+      integrationConnectionId: ctx.connectionId,
+      direction: 'INBOUND',
+      syncType: 'issue-status-change',
+      startedAt: { gte: deduplicationCutoff },
+      responsePayloadJson: { path: ['issueKey'], equals: ctx.issueKey },
+    },
+    orderBy: { startedAt: 'desc' },
+  });
+
+  if (!recentDuplicate) return false;
+  const recentPayload = recentDuplicate.responsePayloadJson as Record<string, unknown> | null;
+  return recentPayload?.newStatus === ctx.newJiraStatusName;
+}
+
 export async function processJiraWebhook(
   prisma: PrismaClient,
   organizationId: string,
@@ -157,57 +269,24 @@ export async function processJiraWebhook(
     return;
   }
 
-  // 4. Loop prevention: Check if this is a bounce-back from our own outbound sync
+  // 4. Loop prevention: skip bounce-backs from our own outbound sync
   const metadata = (externalLink.metadataJson as Record<string, unknown>) ?? {};
-  const lastSyncOrigin = metadata.lastSyncOrigin as string | undefined;
-  const lastSyncAt = metadata.lastSyncAt as string | undefined;
-
-  if (lastSyncOrigin === 'APP' && lastSyncAt) {
-    const syncAge = Date.now() - new Date(lastSyncAt).getTime();
-    if (syncAge < LOOP_PREVENTION_WINDOW_MS) {
-      // This is a bounce-back from our own change — skip processing
-      await prisma.integrationSyncLog.create({
-        data: {
-          organizationId,
-          integrationConnectionId: connectionId,
-          direction: 'INBOUND',
-          syncType: 'webhook-loop-suppressed',
-          status: 'SUCCESS',
-          completedAt: new Date(),
-          responsePayloadJson: {
-            issueKey,
-            newStatus: newJiraStatusName,
-            reason: `Suppressed bounce-back (origin=APP, age=${syncAge}ms)`,
-          },
-        },
-      });
-      return;
-    }
+  if (
+    await isLoopBounceBack(prisma, metadata, {
+      organizationId,
+      connectionId,
+      issueKey,
+      newJiraStatusName,
+    })
+  ) {
+    return;
   }
 
-  // 5. Deduplication: Check for duplicate webhook within 5s window
-  const deduplicationCutoff = new Date(Date.now() - DEDUP_WINDOW_MS);
-  const recentDuplicate = await prisma.integrationSyncLog.findFirst({
-    where: {
-      organizationId,
-      integrationConnectionId: connectionId,
-      direction: 'INBOUND',
-      syncType: 'issue-status-change',
-      startedAt: { gte: deduplicationCutoff },
-      responsePayloadJson: {
-        path: ['issueKey'],
-        equals: issueKey,
-      },
-    },
-    orderBy: { startedAt: 'desc' },
-  });
-
-  if (recentDuplicate) {
-    const recentPayload = recentDuplicate.responsePayloadJson as Record<string, unknown> | null;
-    if (recentPayload?.newStatus === newJiraStatusName) {
-      // Duplicate webhook — skip
-      return;
-    }
+  // 5. Deduplication: skip duplicate webhook within 5s window
+  if (
+    await isRecentDuplicate(prisma, { organizationId, connectionId, issueKey, newJiraStatusName })
+  ) {
+    return;
   }
 
   // 6. Get project ID and look up workflow status mapping
@@ -263,49 +342,13 @@ export async function processJiraWebhook(
   });
 
   try {
-    await prisma.$transaction(async tx => {
-      const task = await tx.workflowTaskRun.findFirst({
-        where: {
-          id: externalLink.entityId,
-          organizationId,
-        },
-        select: {
-          id: true,
-          status: true,
-          workflowRunId: true,
-        },
-      });
-
-      if (!task) {
-        throw new Error('Linked workflow task not found');
-      }
-
-      if (!validateTransition(task.status, mappedWorkflowStatus)) {
-        throw new Error(`Invalid task transition ${task.status} -> ${mappedWorkflowStatus}`);
-      }
-
-      const now = new Date();
-      const updateData: Prisma.WorkflowTaskRunUpdateInput = {
-        status: mappedWorkflowStatus as Prisma.WorkflowTaskRunUpdateInput['status'],
-      };
-      if (mappedWorkflowStatus === 'DONE') {
-        updateData.completedAt = now;
-      }
-
-      await tx.workflowTaskRun.update({
-        where: { id: task.id, organizationId },
-        data: updateData,
-      });
-
-      if (mappedWorkflowStatus === 'DONE' || mappedWorkflowStatus === 'SKIPPED') {
-        await unblockDependentsAndRecomputeRun(
-          tx,
-          { id: task.id, workflowRun: { id: task.workflowRunId } },
-          now,
-          { organizationId },
-        );
-      }
-    });
+    await prisma.$transaction(async tx =>
+      applyTaskTransition(tx, {
+        entityId: externalLink.entityId,
+        organizationId,
+        mappedWorkflowStatus,
+      }),
+    );
 
     // 9. Update ExternalLink metadata
     const updatedMetadata: JiraIssueMetadata = {

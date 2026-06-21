@@ -39,6 +39,67 @@ function hashEmail(email: string): string {
   return createHash('sha256').update(email.toLowerCase().trim()).digest('hex').slice(0, 16);
 }
 
+/** Successful sign-in: clear the failed-attempt counter and any active lock. */
+async function resetFailedLoginAttempts(email: string, emailHash: string): Promise<void> {
+  await prisma.user.updateMany({
+    where: { email },
+    data: { failedLoginAttempts: 0, lockedUntil: null },
+  });
+  log.info({ event: 'auth.signin.success', emailHash }, 'sign-in success');
+}
+
+/**
+ * Failed sign-in: atomically increment `failedLoginAttempts` AND set
+ * `lockedUntil` in one SQL statement. This closes the prior TOCTOU window
+ * between increment and read (two concurrent failed sign-ins could both observe
+ * a pre-lock count and skip the lock). The expression only sets `lockedUntil`
+ * when the post-increment count crosses the threshold; otherwise it leaves the
+ * existing value alone (so a stale lock window is not extended). An email that
+ * matches no row is logged at debug only — never revealed to the caller.
+ */
+async function recordFailedLogin(email: string, emailHash: string): Promise<void> {
+  const lockUntil = new Date(Date.now() + LOCKOUT_DURATION_MIN * 60_000);
+  // safe-raw-sql: User table is global identity (keyed by email, not org-scoped); sign-in lockout has no tenant dimension.
+  const rows = await prisma.$queryRaw<
+    Array<{ failedLoginAttempts: number; lockedUntil: Date | null }>
+  >`
+    UPDATE "User"
+    SET
+      "failedLoginAttempts" = "failedLoginAttempts" + 1,
+      "lockedUntil" = CASE
+        WHEN "failedLoginAttempts" + 1 >= ${MAX_LOGIN_ATTEMPTS}
+        THEN ${lockUntil}
+        ELSE "lockedUntil"
+      END
+    WHERE "email" = ${email}
+    RETURNING "failedLoginAttempts", "lockedUntil"
+  `;
+
+  if (rows.length === 0) {
+    // No row updated — email does not exist. We deliberately do NOT
+    // reveal this; emit a debug log for ops only.
+    log.debug({ event: 'auth.signin.unknown_email', emailHash }, 'sign-in for unknown email');
+    return;
+  }
+
+  const row = rows[0];
+  if (!row) return;
+  const { failedLoginAttempts, lockedUntil } = row;
+  const justLocked =
+    failedLoginAttempts >= MAX_LOGIN_ATTEMPTS &&
+    lockedUntil !== null &&
+    lockedUntil.getTime() > Date.now();
+  log.warn(
+    {
+      event: justLocked ? 'auth.signin.locked_now' : 'auth.signin.failed',
+      emailHash,
+      attempts: failedLoginAttempts,
+      lockUntilMs: lockedUntil ? lockedUntil.getTime() : null,
+    },
+    justLocked ? 'sign-in failed: account locked' : 'sign-in failed',
+  );
+}
+
 // ---------------------------------------------------------------------------
 // Creation-time data-region assignment
 // ---------------------------------------------------------------------------
@@ -427,7 +488,6 @@ export const auth = betterAuth({
         }
       }
     }),
-    // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: sequential post-sign-in tracking (reset on success / atomic increment+lock on failure / unknown-email path); ordering and branches are security-load-bearing.
     after: createAuthMiddleware(async ctx => {
       // Track failed/successful sign-in attempts.
       if (ctx.path === '/sign-in/email' && ctx.body?.email) {
@@ -435,63 +495,9 @@ export const auth = betterAuth({
         const emailHash = hashEmail(email);
 
         if (ctx.context.newSession) {
-          // Successful login: reset failed attempts.
-          await prisma.user.updateMany({
-            where: { email },
-            data: { failedLoginAttempts: 0, lockedUntil: null },
-          });
-          log.info({ event: 'auth.signin.success', emailHash }, 'sign-in success');
+          await resetFailedLoginAttempts(email, emailHash);
         } else {
-          // Failed login: atomically increment AND set `lockedUntil` in a single
-          // SQL statement. This closes the prior TOCTOU window between increment
-          // and read (two concurrent failed sign-ins could both observe a
-          // pre-lock count and skip the lock).
-          //
-          // The expression sets lockedUntil only when the post-increment count
-          // crosses the threshold; otherwise it leaves the existing value alone
-          // (so a stale lock window from a previous run is not extended).
-          const lockUntil = new Date(Date.now() + LOCKOUT_DURATION_MIN * 60_000);
-          // safe-raw-sql: User table is global identity (keyed by email, not org-scoped); sign-in lockout has no tenant dimension.
-          const rows = await prisma.$queryRaw<
-            Array<{ failedLoginAttempts: number; lockedUntil: Date | null }>
-          >`
-            UPDATE "User"
-            SET
-              "failedLoginAttempts" = "failedLoginAttempts" + 1,
-              "lockedUntil" = CASE
-                WHEN "failedLoginAttempts" + 1 >= ${MAX_LOGIN_ATTEMPTS}
-                THEN ${lockUntil}
-                ELSE "lockedUntil"
-              END
-            WHERE "email" = ${email}
-            RETURNING "failedLoginAttempts", "lockedUntil"
-          `;
-
-          if (rows.length === 0) {
-            // No row updated — email does not exist. We deliberately do NOT
-            // reveal this; emit a debug log for ops only.
-            log.debug(
-              { event: 'auth.signin.unknown_email', emailHash },
-              'sign-in for unknown email',
-            );
-          } else {
-            const row = rows[0];
-            if (!row) return;
-            const { failedLoginAttempts, lockedUntil } = row;
-            const justLocked =
-              failedLoginAttempts >= MAX_LOGIN_ATTEMPTS &&
-              lockedUntil !== null &&
-              lockedUntil.getTime() > Date.now();
-            log.warn(
-              {
-                event: justLocked ? 'auth.signin.locked_now' : 'auth.signin.failed',
-                emailHash,
-                attempts: failedLoginAttempts,
-                lockUntilMs: lockedUntil ? lockedUntil.getTime() : null,
-              },
-              justLocked ? 'sign-in failed: account locked' : 'sign-in failed',
-            );
-          }
+          await recordFailedLogin(email, emailHash);
         }
       }
     }),

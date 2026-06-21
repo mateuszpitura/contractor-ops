@@ -29,45 +29,52 @@ function listSchemaFiles(dir: string): string[] {
     .map(entry => join(dir, entry.name));
 }
 
+type EnumLine =
+  | { kind: 'skip' }
+  | { kind: 'enter'; enumName: string }
+  | { kind: 'exit' }
+  | { kind: 'value'; value: string };
+
+/**
+ * Classify a single stripped (comment-free) schema line relative to whether we
+ * are currently inside an `enum <Name> {` block. Pure — holds no parser state.
+ */
+function classifyEnumLine(stripped: string, insideEnum: boolean): EnumLine {
+  if (!insideEnum) {
+    const open = stripped.match(/^enum\s+([A-Za-z_][A-Za-z0-9_]*)\s*\{/);
+    return open ? { kind: 'enter', enumName: open[1] } : { kind: 'skip' };
+  }
+
+  if (stripped === '}') return { kind: 'exit' };
+  if (stripped.startsWith('@@')) return { kind: 'skip' }; // block attrs (e.g. `@@map`)
+
+  const valueMatch = stripped.match(/^([A-Za-z_][A-Za-z0-9_]*)\b/);
+  return valueMatch ? { kind: 'value', value: valueMatch[1] } : { kind: 'skip' };
+}
+
 /**
  * Walks lines and tracks the enclosing `enum <Name> {` block so values
  * outside enum blocks (model fields, types, comments) are ignored.
  */
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: line-by-line Prisma scanner tracking enclosing enum-block state; branchy parsing is one cohesive traversal.
 function findOffenders(file: string): Offender[] {
   const lines = readFileSync(file, 'utf8').split('\n');
   const offenders: Offender[] = [];
   let currentEnum: string | null = null;
 
   for (let i = 0; i < lines.length; i += 1) {
-    const raw = lines[i];
-    const stripped = raw.replace(/\/\/.*$/, '').trim();
+    const stripped = lines[i].replace(/\/\/.*$/, '').trim();
     if (stripped.length === 0) continue;
 
-    if (currentEnum === null) {
-      const open = stripped.match(/^enum\s+([A-Za-z_][A-Za-z0-9_]*)\s*\{/);
-      if (open) currentEnum = open[1];
-      continue;
-    }
+    const classified = classifyEnumLine(stripped, currentEnum !== null);
 
-    if (stripped === '}') {
+    if (classified.kind === 'enter') {
+      currentEnum = classified.enumName;
+    } else if (classified.kind === 'exit') {
       currentEnum = null;
-      continue;
-    }
-
-    if (stripped.startsWith('@@')) continue; // block attrs (e.g. `@@map`)
-
-    const valueMatch = stripped.match(/^([A-Za-z_][A-Za-z0-9_]*)\b/);
-    if (!valueMatch) continue;
-
-    const value = valueMatch[1];
-    if (!UPPER_SNAKE.test(value)) {
-      offenders.push({
-        file,
-        line: i + 1,
-        enumName: currentEnum,
-        value,
-      });
+    } else if (classified.kind === 'value' && currentEnum !== null) {
+      if (!UPPER_SNAKE.test(classified.value)) {
+        offenders.push({ file, line: i + 1, enumName: currentEnum, value: classified.value });
+      }
     }
   }
 

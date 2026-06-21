@@ -22,6 +22,7 @@
 //   CONFLICT; all other unknown errors rethrow unchanged.
 
 import { TRPCError } from '@trpc/server';
+import type { z } from 'zod';
 
 import * as E from '../../errors';
 import { router } from '../../init';
@@ -53,6 +54,27 @@ function isPrismaUniqueViolation(err: unknown): boolean {
     'code' in err &&
     (err as { code?: string }).code === PRISMA_UNIQUE_VIOLATION
   );
+}
+
+type LeitwegIdPatch = Omit<z.infer<typeof updateLeitwegIdInput>, 'id'>;
+
+/**
+ * Build the Prisma update data from a partial Leitweg-ID patch. Only keys that
+ * were explicitly provided are written; an explicit `null` clears the column.
+ */
+function buildLeitwegIdUpdateData(patch: LeitwegIdPatch): Record<string, unknown> {
+  const data: Record<string, unknown> = {};
+  if (patch.value !== undefined) data.value = patch.value;
+  if (patch.description !== undefined) data.description = patch.description ?? null;
+  if (patch.contractorId !== undefined) data.contractorId = patch.contractorId ?? null;
+  if (patch.contractId !== undefined) data.contractId = patch.contractId ?? null;
+  if (patch.isDefaultForContractor !== undefined) {
+    data.isDefaultForContractor = patch.isDefaultForContractor;
+  }
+  if (patch.validFrom !== undefined) data.validFrom = patch.validFrom ?? null;
+  if (patch.validTo !== undefined) data.validTo = patch.validTo ?? null;
+  if (patch.notes !== undefined) data.notes = patch.notes ?? null;
+  return data;
 }
 
 // Shared permission gate for every Leitweg-ID mutation — Leitweg-IDs are a
@@ -173,7 +195,6 @@ export const leitwegIdRouter = router({
     const { id, ...patch } = input;
 
     try {
-      // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: atomic update transaction — tenant-scoped lookup, default-flag clearing, and patch must stay one $transaction body
       return await ctx.db.$transaction(async tx => {
         const existing = await tx.leitwegId.findFirst({
           where: { id, organizationId: ctx.organizationId },
@@ -199,20 +220,7 @@ export const leitwegIdRouter = router({
 
         return tx.leitwegId.update({
           where: { id },
-          data: {
-            ...(patch.value === undefined ? {} : { value: patch.value }),
-            ...(patch.description === undefined ? {} : { description: patch.description ?? null }),
-            ...(patch.contractorId === undefined
-              ? {}
-              : { contractorId: patch.contractorId ?? null }),
-            ...(patch.contractId === undefined ? {} : { contractId: patch.contractId ?? null }),
-            ...(patch.isDefaultForContractor === undefined
-              ? {}
-              : { isDefaultForContractor: patch.isDefaultForContractor }),
-            ...(patch.validFrom === undefined ? {} : { validFrom: patch.validFrom ?? null }),
-            ...(patch.validTo === undefined ? {} : { validTo: patch.validTo ?? null }),
-            ...(patch.notes === undefined ? {} : { notes: patch.notes ?? null }),
-          },
+          data: buildLeitwegIdUpdateData(patch),
           select: listSelect,
         });
       });

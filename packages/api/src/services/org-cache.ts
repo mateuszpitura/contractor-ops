@@ -154,7 +154,56 @@ export function orgBrandingKey(orgId: string): string {
  * legacy settings rows may contain looser values and consumers should never
  * inject unvalidated strings into a CSS variable.
  */
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: defensive color parser — one validated branch per accepted CSS color shape (#RGB/#RRGGBB/hsl/hsla) with reject-to-null fallback; the branch set is the accepted-format allowlist.
+/**
+ * Validates a CSS hsl()/hsla() string (comma- or space-separated args).
+ * Returns the original `trimmed` value when every channel is in range,
+ * otherwise `null`. Caller passes the un-lowercased `trimmed` to return.
+ */
+function parseHslColor(trimmed: string): string | null {
+  const hslMatch = trimmed
+    .toLowerCase()
+    .match(
+      /^hsla?\(\s*(-?\d+(?:\.\d+)?)\s*[, ]\s*(\d+(?:\.\d+)?)%\s*[, ]\s*(\d+(?:\.\d+)?)%\s*(?:[,/]\s*(\d+(?:\.\d+)?%?)\s*)?\)$/,
+    );
+  if (!hslMatch) return null;
+
+  const h = Number(hslMatch[1]);
+  const s = Number(hslMatch[2]);
+  const l = Number(hslMatch[3]);
+  const alphaRaw = hslMatch[4];
+  if (
+    !(
+      Number.isFinite(h) &&
+      Number.isFinite(s) &&
+      Number.isFinite(l) &&
+      s >= 0 &&
+      s <= 100 &&
+      l >= 0 &&
+      l <= 100
+    )
+  ) {
+    return null;
+  }
+  if (alphaRaw !== undefined && !isValidHslAlpha(alphaRaw)) {
+    return null;
+  }
+  return trimmed;
+}
+
+/**
+ * Alpha may be a unit-less number in [0, 1] or a percentage in [0, 100].
+ * Browsers tolerate out-of-range alpha by clamping, but the parser is the
+ * boundary of trust for the inline --primary CSS variable, so reject
+ * anything we wouldn't write ourselves.
+ */
+function isValidHslAlpha(alphaRaw: string): boolean {
+  const isPercent = alphaRaw.endsWith('%');
+  const alpha = Number(isPercent ? alphaRaw.slice(0, -1) : alphaRaw);
+  if (!Number.isFinite(alpha)) return false;
+  if (isPercent) return alpha >= 0 && alpha <= 100;
+  return alpha >= 0 && alpha <= 1;
+}
+
 export function parseBrandColor(value: unknown): string | null {
   if (typeof value !== 'string') return null;
   const trimmed = value.trim();
@@ -165,48 +214,7 @@ export function parseBrandColor(value: unknown): string | null {
     return trimmed.toLowerCase();
   }
 
-  // hsl()/hsla() with comma- or space-separated args
-  const hslMatch = trimmed
-    .toLowerCase()
-    .match(
-      /^hsla?\(\s*(-?\d+(?:\.\d+)?)\s*[, ]\s*(\d+(?:\.\d+)?)%\s*[, ]\s*(\d+(?:\.\d+)?)%\s*(?:[,/]\s*(\d+(?:\.\d+)?%?)\s*)?\)$/,
-    );
-  if (hslMatch) {
-    const h = Number(hslMatch[1]);
-    const s = Number(hslMatch[2]);
-    const l = Number(hslMatch[3]);
-    const alphaRaw = hslMatch[4];
-    if (
-      !(
-        Number.isFinite(h) &&
-        Number.isFinite(s) &&
-        Number.isFinite(l) &&
-        s >= 0 &&
-        s <= 100 &&
-        l >= 0 &&
-        l <= 100
-      )
-    ) {
-      return null;
-    }
-    if (alphaRaw !== undefined) {
-      // Alpha may be a unit-less number in [0, 1] or a percentage in [0, 100].
-      // Browsers tolerate out-of-range alpha by clamping, but the parser is
-      // the boundary of trust for the inline --primary CSS variable, so
-      // reject anything we wouldn't write ourselves.
-      const isPercent = alphaRaw.endsWith('%');
-      const alpha = Number(isPercent ? alphaRaw.slice(0, -1) : alphaRaw);
-      if (!Number.isFinite(alpha)) return null;
-      if (isPercent) {
-        if (alpha < 0 || alpha > 100) return null;
-      } else if (alpha < 0 || alpha > 1) {
-        return null;
-      }
-    }
-    return trimmed;
-  }
-
-  return null;
+  return parseHslColor(trimmed);
 }
 
 /**

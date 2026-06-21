@@ -30,6 +30,19 @@ import {
   writeAuditLog,
 } from './classification-shared';
 
+type RecreateReason = 'policy_version_bump' | 'classification_outcome_change' | 'admin_correction';
+type SupersedeReason =
+  | 'CLASSIFICATION_OUTCOME_CHANGE'
+  | 'SUPERSEDED_BY_POLICY_VERSION'
+  | 'admin_correction';
+
+/** Map the admin-facing recompute reason to the supersession reason enum. */
+function toSupersedeReason(reason: RecreateReason): SupersedeReason {
+  if (reason === 'policy_version_bump') return 'SUPERSEDED_BY_POLICY_VERSION';
+  if (reason === 'classification_outcome_change') return 'CLASSIFICATION_OUTCOME_CHANGE';
+  return 'admin_correction';
+}
+
 export const classificationReadRouter = router({
   recreateComplianceAssessment: adminProcedure
     .input(recreateComplianceAssessmentInput)
@@ -38,7 +51,6 @@ export const classificationReadRouter = router({
 
       for (const contractorId of input.contractorIds) {
         try {
-          // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: single Prisma $transaction body loading latest assessment + contractor/assignment context and reconciling derived records atomically; splitting fragments the atomic unit.
           const result = await ctx.db.$transaction(async tx => {
             // 1. Load latest completed assessment with contractor + assignment context.
             const latest = await tx.classificationAssessment.findFirst({
@@ -104,15 +116,7 @@ export const classificationReadRouter = router({
             };
 
             // 4. Map input reason → supersede reason enum.
-            const supersedeReason:
-              | 'CLASSIFICATION_OUTCOME_CHANGE'
-              | 'SUPERSEDED_BY_POLICY_VERSION'
-              | 'admin_correction' =
-              input.reason === 'policy_version_bump'
-                ? 'SUPERSEDED_BY_POLICY_VERSION'
-                : input.reason === 'classification_outcome_change'
-                  ? 'CLASSIFICATION_OUTCOME_CHANGE'
-                  : 'admin_correction';
+            const supersedeReason = toSupersedeReason(input.reason);
 
             // 5. Run the supersession.
             const supersedeResult = await supersedeAndMaterialise(tx, {

@@ -229,7 +229,141 @@ async function upsertWorklogEntry(
  * @param endDate - End of date range (YYYY-MM-DD)
  * @returns Count of imported and skipped entries
  */
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: sequential Jira worklog sync — fetch range → per-entry validate/dedupe branches → import-vs-skip tally → persist; the ordered import pipeline shares state and reads top-to-bottom.
+/** Per-issue worklog fetch + upsert across the date range; tallies imported vs skipped. */
+async function importWorklogEntries(
+  prisma: PrismaClient,
+  args: {
+    baseUrl: string;
+    authHeaders: Record<string, string>;
+    accountId: string;
+    issues: JiraIssue[];
+    startDate: string;
+    endDate: string;
+    organizationId: string;
+    contractorId: string;
+    contractId: string;
+    timesheetId: string;
+  },
+): Promise<{ imported: number; skipped: number }> {
+  const startDateObj = new Date(`${args.startDate}T00:00:00Z`);
+  const endDateObj = new Date(`${args.endDate}T23:59:59Z`);
+
+  let imported = 0;
+  let skipped = 0;
+
+  for (const issue of args.issues) {
+    const worklogs = await fetchIssueWorklogs(
+      args.baseUrl,
+      args.authHeaders,
+      issue.key,
+      args.accountId,
+      startDateObj,
+      endDateObj,
+    );
+
+    for (const worklog of worklogs) {
+      const result = await upsertWorklogEntry(prisma, {
+        organizationId: args.organizationId,
+        contractorId: args.contractorId,
+        contractId: args.contractId,
+        timesheetId: args.timesheetId,
+        issue,
+        worklog,
+      });
+      if (result === 'imported') imported++;
+      else skipped++;
+    }
+  }
+
+  return { imported, skipped };
+}
+
+/** Marks the sync log + connection as failed. Does not re-throw. */
+async function recordSyncFailure(
+  prisma: PrismaClient,
+  syncLogId: string,
+  connectionId: string,
+  error: unknown,
+): Promise<void> {
+  const message = error instanceof Error ? error.message : 'Unknown error';
+  await prisma.integrationSyncLog.update({
+    where: { id: syncLogId },
+    data: {
+      status: 'FAILED',
+      completedAt: new Date(),
+      errorMessage: message,
+    },
+  });
+
+  await prisma.integrationConnection.update({
+    where: { id: connectionId },
+    data: {
+      lastErrorAt: new Date(),
+      lastErrorMessage: message,
+    },
+  });
+}
+
+/**
+ * JQL-paginates all issues with the author's worklogs in the date range.
+ * Throws a {@link TRPCError} on 401 (invalid token) / 429 (rate limit) and a
+ * plain Error on any other non-OK status.
+ */
+async function searchJiraIssues(
+  baseUrl: string,
+  authHeaders: Record<string, string>,
+  accountId: string,
+  startDate: string,
+  endDate: string,
+): Promise<JiraIssue[]> {
+  const allIssues: JiraIssue[] = [];
+  let startAt = 0;
+  const maxResults = 100;
+
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+  while (true) {
+    const jql = `worklogDate>="${startDate}" AND worklogDate<="${endDate}" AND worklogAuthor="${accountId}"`;
+    const searchUrl = new URL(`${baseUrl}/search`);
+    searchUrl.searchParams.set('jql', jql);
+    searchUrl.searchParams.set('fields', 'key,summary');
+    searchUrl.searchParams.set('maxResults', String(maxResults));
+    searchUrl.searchParams.set('startAt', String(startAt));
+
+    const searchResponse = await fetchWithTimeout(searchUrl.toString(), {
+      headers: authHeaders,
+    });
+
+    if (searchResponse.status === 401) {
+      throw new TRPCError({
+        code: 'UNAUTHORIZED',
+        message: E.JIRA_TOKEN_INVALID,
+      });
+    }
+
+    if (searchResponse.status === 429) {
+      const retryAfter = searchResponse.headers.get('Retry-After');
+      throw new TRPCError({
+        code: 'TOO_MANY_REQUESTS',
+        message: `Jira API rate limit exceeded. Retry after ${retryAfter ?? '60'} seconds.`,
+      });
+    }
+
+    if (!searchResponse.ok) {
+      const text = await searchResponse.text();
+      throw new Error(`Jira search API error (${searchResponse.status}): ${text}`);
+    }
+
+    const searchData = (await searchResponse.json()) as JiraSearchResponse;
+    allIssues.push(...searchData.issues);
+
+    // Check if there are more pages
+    if (startAt + searchData.issues.length >= searchData.total) break;
+    startAt += maxResults;
+  }
+
+  return allIssues;
+}
+
 export async function syncJiraWorklogs(
   prisma: PrismaClient,
   organizationId: string,
@@ -317,78 +451,21 @@ export async function syncJiraWorklogs(
 
   try {
     // Step A: JQL search for issues with user's worklogs in date range
-    const allIssues: JiraIssue[] = [];
-    let startAt = 0;
-    const maxResults = 100;
-
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    while (true) {
-      const jql = `worklogDate>="${startDate}" AND worklogDate<="${endDate}" AND worklogAuthor="${accountId}"`;
-      const searchUrl = new URL(`${baseUrl}/search`);
-      searchUrl.searchParams.set('jql', jql);
-      searchUrl.searchParams.set('fields', 'key,summary');
-      searchUrl.searchParams.set('maxResults', String(maxResults));
-      searchUrl.searchParams.set('startAt', String(startAt));
-
-      const searchResponse = await fetchWithTimeout(searchUrl.toString(), {
-        headers: authHeaders,
-      });
-
-      if (searchResponse.status === 401) {
-        throw new TRPCError({
-          code: 'UNAUTHORIZED',
-          message: E.JIRA_TOKEN_INVALID,
-        });
-      }
-
-      if (searchResponse.status === 429) {
-        const retryAfter = searchResponse.headers.get('Retry-After');
-        throw new TRPCError({
-          code: 'TOO_MANY_REQUESTS',
-          message: `Jira API rate limit exceeded. Retry after ${retryAfter ?? '60'} seconds.`,
-        });
-      }
-
-      if (!searchResponse.ok) {
-        const text = await searchResponse.text();
-        throw new Error(`Jira search API error (${searchResponse.status}): ${text}`);
-      }
-
-      const searchData = (await searchResponse.json()) as JiraSearchResponse;
-      allIssues.push(...searchData.issues);
-
-      // Check if there are more pages
-      if (startAt + searchData.issues.length >= searchData.total) break;
-      startAt += maxResults;
-    }
+    const allIssues = await searchJiraIssues(baseUrl, authHeaders, accountId, startDate, endDate);
 
     // Step B: For each issue, fetch worklogs and filter by author
-    const startDateObj = new Date(`${startDate}T00:00:00Z`);
-    const endDateObj = new Date(`${endDate}T23:59:59Z`);
-
-    for (const issue of allIssues) {
-      const worklogs = await fetchIssueWorklogs(
-        baseUrl,
-        authHeaders,
-        issue.key,
-        accountId,
-        startDateObj,
-        endDateObj,
-      );
-
-      for (const worklog of worklogs) {
-        const result = await upsertWorklogEntry(prisma, {
-          organizationId,
-          contractorId,
-          contractId,
-          timesheetId,
-          issue,
-          worklog,
-        });
-        if (result === 'imported') imported++;
-        else skipped++;
-      }
-    }
+    ({ imported, skipped } = await importWorklogEntries(prisma, {
+      baseUrl,
+      authHeaders,
+      accountId,
+      issues: allIssues,
+      startDate,
+      endDate,
+      organizationId,
+      contractorId,
+      contractId,
+      timesheetId,
+    }));
 
     // 5. Recalculate timesheet totalMinutes
     const totalResult = await prisma.timeEntry.aggregate({
@@ -423,23 +500,7 @@ export async function syncJiraWorklogs(
       },
     });
   } catch (error) {
-    // Update sync log with failure
-    await prisma.integrationSyncLog.update({
-      where: { id: syncLog.id },
-      data: {
-        status: 'FAILED',
-        completedAt: new Date(),
-        errorMessage: error instanceof Error ? error.message : 'Unknown error',
-      },
-    });
-
-    await prisma.integrationConnection.update({
-      where: { id: connectionId },
-      data: {
-        lastErrorAt: new Date(),
-        lastErrorMessage: error instanceof Error ? error.message : 'Unknown error',
-      },
-    });
+    await recordSyncFailure(prisma, syncLog.id, connectionId, error);
 
     // Re-throw TRPCErrors as-is, wrap others
     if (error instanceof TRPCError) throw error;

@@ -159,6 +159,71 @@ type DashboardRow = {
   drvValidTo: Date | null;
 };
 
+interface DashboardLookups {
+  latestByAssignment: Map<string, Record<string, unknown>>;
+  alertByAssignment: Map<string, Record<string, unknown>>;
+  triggerByAssignment: Set<string>;
+  drvByAssignment: Map<string, Record<string, unknown>>;
+}
+
+type DeColumns = Pick<
+  DashboardRow,
+  'latestScore' | 'economicBand' | 'billingShare' | 'drvOutcome' | 'drvValidTo'
+>;
+
+// DE-only columns are `null` for GB rows so the CSV column set stays stable
+// across markets. Returns every DE column as `null` when market !== 'DE'.
+function readDeColumns(
+  market: 'GB' | 'DE',
+  latest: Record<string, unknown> | undefined,
+  alert: Record<string, unknown> | undefined,
+  drv: Record<string, unknown> | undefined,
+): DeColumns {
+  if (market !== 'DE') {
+    return {
+      latestScore: null,
+      economicBand: null,
+      billingShare: null,
+      drvOutcome: null,
+      drvValidTo: null,
+    };
+  }
+  return {
+    latestScore: latest ? readDrvScore(latest.outcome) : null,
+    economicBand: alert ? ((alert.currentBand as string) ?? null) : null,
+    billingShare: alert ? Number(alert.lastBillingShare ?? 0) : null,
+    drvOutcome: drv ? ((drv.outcome as string) ?? null) : null,
+    drvValidTo: drv ? ((drv.validTo as Date | null) ?? null) : null,
+  };
+}
+
+// Assemble one dashboard row by joining an assignment against the pre-indexed
+// lookups.
+function buildDashboardRow(
+  a: Record<string, unknown>,
+  market: 'GB' | 'DE',
+  lookups: DashboardLookups,
+): DashboardRow {
+  const assignmentId = a.id as string;
+  const contractor = a.contractor as { displayName?: unknown } | undefined;
+  const latest = lookups.latestByAssignment.get(assignmentId);
+  const alert = lookups.alertByAssignment.get(assignmentId);
+  const drv = lookups.drvByAssignment.get(assignmentId);
+
+  const readVerdict = market === 'GB' ? readIr35Verdict : readDrvVerdict;
+  const verdict = latest ? readVerdict(latest.outcome) : null;
+
+  return {
+    engagementId: assignmentId,
+    contractorName: typeof contractor?.displayName === 'string' ? contractor.displayName : '',
+    country: market,
+    latestVerdict: verdict,
+    latestCompletedAt: (latest?.completedAt as Date) ?? null,
+    openTrigger: lookups.triggerByAssignment.has(assignmentId),
+    ...readDeColumns(market, latest, alert, drv),
+  };
+}
+
 // ---------------------------------------------------------------------------
 // buildDashboardRows — shared data join for CSV export + (future) UI reuse
 // ---------------------------------------------------------------------------
@@ -262,39 +327,14 @@ async function buildDashboardRows(ctx: DbCtx, market: 'GB' | 'DE'): Promise<Dash
     if (!drvByAssignment.has(key)) drvByAssignment.set(key, d);
   }
 
-  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: per-assignment row builder assembling many market-conditional fields from joined lookups; linear field assembly, not branching logic.
-  const rows: DashboardRow[] = assignments.map(a => {
-    const assignmentId = a.id as string;
-    const contractor = a.contractor as { displayName?: unknown } | undefined;
-    const latest = latestByAssignment.get(assignmentId);
-    const alert = alertByAssignment.get(assignmentId);
-    const drv = drvByAssignment.get(assignmentId);
+  const lookups: DashboardLookups = {
+    latestByAssignment,
+    alertByAssignment,
+    triggerByAssignment,
+    drvByAssignment,
+  };
 
-    const verdict =
-      market === 'GB'
-        ? latest
-          ? readIr35Verdict(latest.outcome)
-          : null
-        : latest
-          ? readDrvVerdict(latest.outcome)
-          : null;
-
-    return {
-      engagementId: assignmentId,
-      contractorName: typeof contractor?.displayName === 'string' ? contractor.displayName : '',
-      country: market,
-      latestVerdict: verdict,
-      latestCompletedAt: (latest?.completedAt as Date) ?? null,
-      latestScore: market === 'DE' && latest ? readDrvScore(latest.outcome) : null,
-      economicBand: market === 'DE' && alert ? ((alert.currentBand as string) ?? null) : null,
-      billingShare: market === 'DE' && alert ? Number(alert.lastBillingShare ?? 0) : null,
-      openTrigger: triggerByAssignment.has(assignmentId),
-      drvOutcome: market === 'DE' && drv ? ((drv.outcome as string) ?? null) : null,
-      drvValidTo: market === 'DE' && drv ? ((drv.validTo as Date | null) ?? null) : null,
-    };
-  });
-
-  return rows;
+  return assignments.map(a => buildDashboardRow(a, market, lookups));
 }
 
 // ---------------------------------------------------------------------------

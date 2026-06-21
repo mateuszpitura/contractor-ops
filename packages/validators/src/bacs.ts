@@ -58,7 +58,21 @@ export interface ModulusCheckResult {
  * Returns `{ valid: true }` when no table entries match (sort code range not
  * covered = valid by default per VocaLink spec).
  */
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: VocaLink modulus-check algorithm — the weighting/exception-rule branches (mod10/mod11/double-alternate, rule 1-14) are defined by the spec and must stay as one faithful implementation.
+/**
+ * Evaluate a single matching modulus entry — applies any overriding exception,
+ * otherwise runs the standard modulus check. Appends spec warnings in place.
+ */
+function evaluateEntry(combined: string, entry: ModulusEntry, warnings: string[]): boolean {
+  if (entry.exception > 0) {
+    const exceptionResult = handleException(entry.exception, combined, entry, warnings);
+    if (exceptionResult !== null) {
+      return exceptionResult;
+    }
+  }
+
+  return applyModulusCheck(combined, entry);
+}
+
 export function modulusCheck(
   sortCode: string,
   accountNumber: string,
@@ -87,17 +101,7 @@ export function modulusCheck(
     const entry = matches[i];
     if (!entry) continue;
 
-    // Handle known exception categories
-    if (entry.exception > 0) {
-      const exceptionResult = handleException(entry.exception, combined, entry, warnings);
-      if (exceptionResult !== null) {
-        if (i === 0) firstCheckPassed = exceptionResult;
-        else secondCheckPassed = exceptionResult;
-        continue;
-      }
-    }
-
-    const passed = applyModulusCheck(combined, entry);
+    const passed = evaluateEntry(combined, entry, warnings);
     if (i === 0) firstCheckPassed = passed;
     else secondCheckPassed = passed;
   }

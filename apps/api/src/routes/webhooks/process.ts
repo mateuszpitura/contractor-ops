@@ -46,7 +46,116 @@ const webhookProcessBodySchema = z.object({
 // Adapter registry is process-singleton — register once at module load.
 registerAllAdapters();
 
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: per-provider dispatch (Jira/Linear/Resend/e-sign) ported 1:1
+type WebhookDeliveryRow = NonNullable<
+  Awaited<ReturnType<typeof prisma.webhookDelivery.findUnique>>
+>;
+
+async function dispatchProviderHandlers(
+  provider: string,
+  effectiveOrgId: string,
+  delivery: WebhookDeliveryRow,
+  webhookResult: unknown,
+  deliveryId: string,
+): Promise<void> {
+  if (provider === 'jira') {
+    const { processJiraWebhook } = await import(
+      '@contractor-ops/api/services/jira-webhook-handler'
+    );
+    await processJiraWebhook(
+      prisma as unknown as Parameters<typeof processJiraWebhook>[0],
+      effectiveOrgId,
+      delivery.integrationConnectionId ?? '',
+      delivery.payloadJson,
+    );
+  }
+
+  if (provider === 'linear') {
+    const { processLinearWebhook } = await import(
+      '@contractor-ops/api/services/linear-webhook-handler'
+    );
+    await processLinearWebhook(
+      prisma as unknown as Parameters<typeof processLinearWebhook>[0],
+      effectiveOrgId,
+      delivery.integrationConnectionId ?? '',
+      delivery.payloadJson,
+    );
+  }
+
+  if (provider === 'resend') {
+    await processResendWebhookDelivery(
+      prisma as unknown as Parameters<typeof processResendWebhookDelivery>[0],
+      {
+        organizationId: effectiveOrgId,
+        eventType: delivery.eventType,
+        payloadJson: delivery.payloadJson,
+      },
+    );
+  }
+
+  const isESignProvider = provider === 'docusign' || provider === 'autenti';
+  if (isESignProvider) {
+    const esignResult = webhookResult as { envelopeId: string; completed: boolean } | undefined;
+
+    if (esignResult?.completed && delivery.integrationConnectionId) {
+      // safe-swallow: a completion side-effect failure must NOT mark the
+      // delivery FAILED — that would re-deliver and re-invoke the
+      // idempotent adapter. Log + Sentry-capture so operators can replay
+      // completion manually via the dead-letter dashboard.
+      try {
+        await handleSigningCompletion(
+          esignResult.envelopeId,
+          delivery.integrationConnectionId,
+          provider.toUpperCase() as 'DOCUSIGN' | 'AUTENTI',
+        );
+      } catch (completionError) {
+        log.error(
+          {
+            err: completionError,
+            envelopeId: esignResult.envelopeId,
+            provider,
+            deliveryId,
+            requestId: getRequestId(),
+          },
+          'failed to handle signing completion',
+        );
+        Sentry.captureException(completionError, {
+          tags: { 'webhook.provider': provider, 'webhook.stage': 'esign-completion' },
+          extra: { deliveryId, envelopeId: esignResult.envelopeId },
+        });
+      }
+    }
+  }
+}
+
+/**
+ * Resolve the effective org id for a delivery, falling back to the linked
+ * integration connection and persisting the backfill. Returns the (possibly
+ * updated) delivery row alongside the resolved org id.
+ */
+async function resolveDeliveryOrgId(
+  delivery: WebhookDeliveryRow,
+  deliveryId: string,
+): Promise<{ effectiveOrgId: string; delivery: WebhookDeliveryRow }> {
+  if (delivery.organizationId || !delivery.integrationConnectionId) {
+    return { effectiveOrgId: delivery.organizationId, delivery };
+  }
+
+  const conn = await prisma.integrationConnection.findUnique({
+    where: { id: delivery.integrationConnectionId },
+    select: { organizationId: true },
+  });
+  if (!conn?.organizationId) {
+    return { effectiveOrgId: delivery.organizationId, delivery };
+  }
+
+  const effectiveOrgId = conn.organizationId;
+  await prisma.webhookDelivery.update({
+    where: { id: deliveryId },
+    data: { organizationId: effectiveOrgId },
+  });
+  return { effectiveOrgId, delivery: { ...delivery, organizationId: effectiveOrgId } };
+}
+
 async function handlerInner(
   _request: FastifyRequest,
   reply: FastifyReply,
@@ -105,21 +214,9 @@ async function handlerInner(
     return reply.code(200).send({ skipped: true, reason: 'already-claimed' });
   }
 
-  let effectiveOrgId = delivery.organizationId;
-  if (!effectiveOrgId && delivery.integrationConnectionId) {
-    const conn = await prisma.integrationConnection.findUnique({
-      where: { id: delivery.integrationConnectionId },
-      select: { organizationId: true },
-    });
-    if (conn?.organizationId) {
-      effectiveOrgId = conn.organizationId;
-      await prisma.webhookDelivery.update({
-        where: { id: deliveryId },
-        data: { organizationId: effectiveOrgId },
-      });
-      delivery = { ...delivery, organizationId: effectiveOrgId };
-    }
-  }
+  const resolved = await resolveDeliveryOrgId(delivery, deliveryId);
+  const effectiveOrgId = resolved.effectiveOrgId;
+  delivery = resolved.delivery;
 
   if (!effectiveOrgId && (provider === 'jira' || provider === 'linear')) {
     await prisma.webhookDelivery.update({
@@ -144,74 +241,7 @@ async function handlerInner(
       delivery.integrationConnectionId ?? '',
     );
 
-    if (provider === 'jira') {
-      const { processJiraWebhook } = await import(
-        '@contractor-ops/api/services/jira-webhook-handler'
-      );
-      await processJiraWebhook(
-        prisma as unknown as Parameters<typeof processJiraWebhook>[0],
-        effectiveOrgId,
-        delivery.integrationConnectionId ?? '',
-        delivery.payloadJson,
-      );
-    }
-
-    if (provider === 'linear') {
-      const { processLinearWebhook } = await import(
-        '@contractor-ops/api/services/linear-webhook-handler'
-      );
-      await processLinearWebhook(
-        prisma as unknown as Parameters<typeof processLinearWebhook>[0],
-        effectiveOrgId,
-        delivery.integrationConnectionId ?? '',
-        delivery.payloadJson,
-      );
-    }
-
-    if (provider === 'resend') {
-      await processResendWebhookDelivery(
-        prisma as unknown as Parameters<typeof processResendWebhookDelivery>[0],
-        {
-          organizationId: effectiveOrgId,
-          eventType: delivery.eventType,
-          payloadJson: delivery.payloadJson,
-        },
-      );
-    }
-
-    const isESignProvider = provider === 'docusign' || provider === 'autenti';
-    if (isESignProvider) {
-      const esignResult = webhookResult as { envelopeId: string; completed: boolean } | undefined;
-
-      if (esignResult?.completed && delivery.integrationConnectionId) {
-        // safe-swallow: a completion side-effect failure must NOT mark the
-        // delivery FAILED — that would re-deliver and re-invoke the
-        // idempotent adapter. Log + Sentry-capture so operators can replay
-        // completion manually via the dead-letter dashboard.
-        try {
-          await handleSigningCompletion(
-            esignResult.envelopeId,
-            delivery.integrationConnectionId,
-            provider.toUpperCase() as 'DOCUSIGN' | 'AUTENTI',
-          );
-        } catch (completionError) {
-          log.error(
-            {
-              err: completionError,
-              envelopeId: esignResult.envelopeId,
-              provider,
-              deliveryId,
-              requestId: getRequestId(),
-            },
-            'failed to handle signing completion',
-          );
-          Sentry.captureException(completionError, {
-            tags: { 'webhook.provider': provider, 'webhook.stage': 'esign-completion' },
-            extra: { deliveryId, envelopeId: esignResult.envelopeId },
-          });
-        }
-      }
-    }
+    await dispatchProviderHandlers(provider, effectiveOrgId, delivery, webhookResult, deliveryId);
 
     await prisma.webhookDelivery.update({
       where: { id: deliveryId },

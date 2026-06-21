@@ -185,6 +185,63 @@ export type OutcomeStatus =
       readonly disclaimerOpen: boolean;
     };
 
+type OutcomeAssessment = {
+  id: string;
+  countryCode?: string | null;
+  outcome: unknown;
+  questionsSnapshot: unknown;
+  ruleSetVersion: string;
+  disclaimerAcknowledgedAt: Date | string | null;
+  completedAt: Date | string | null;
+  answers: unknown;
+};
+
+/**
+ * Pure derivation of the discriminated `OutcomeStatus` from the assessment
+ * query state. Each early return maps one distinct state in narrowing order.
+ */
+function deriveOutcomeStatus(
+  isPending: boolean,
+  assessment: OutcomeAssessment | null | undefined,
+  assessmentId: string,
+  disclaimerDeferred: boolean,
+  formatDateTime: (date: Date) => string,
+): OutcomeStatus {
+  if (isPending) return { kind: 'loading' };
+  if (!assessment || assessment.id !== assessmentId) return { kind: 'not-found' };
+  const countryCode = assessment.countryCode?.toUpperCase();
+  if (!(countryCode && SUPPORTED_OUTCOME_COUNTRIES.has(countryCode))) {
+    return { kind: 'unsupported-country', countryCode: countryCode || '—' };
+  }
+  const outcome = assessment.outcome as Ir35Outcome | ScheinselbstandigkeitOutcome | null;
+  const snapshot = assessment.questionsSnapshot as QuestionsSnapshot | null;
+  if (!(outcome && snapshot)) return { kind: 'missing-outcome' };
+
+  const completedDate =
+    assessment.completedAt instanceof Date
+      ? assessment.completedAt
+      : assessment.completedAt
+        ? new Date(assessment.completedAt)
+        : null;
+  const completedDateStr = completedDate ? formatDateTime(completedDate) : '—';
+  const disclaimerOpen = assessment.disclaimerAcknowledgedAt === null && !disclaimerDeferred;
+
+  return {
+    kind: 'ready',
+    assessment: {
+      id: assessment.id,
+      countryCode: countryCode as 'GB' | 'DE',
+      outcome,
+      questionsSnapshot: snapshot,
+      ruleSetVersion: assessment.ruleSetVersion,
+      disclaimerAcknowledgedAt: assessment.disclaimerAcknowledgedAt ?? null,
+    },
+    answers: (assessment.answers as Record<string, unknown>) ?? {},
+    completedDateStr,
+    disclaimerOpen,
+  };
+}
+
 export function useClassificationOutcomeView(
   assessmentId: string,
   contractorId: string,
@@ -209,49 +266,23 @@ export function useClassificationOutcomeView(
     }
   }, []);
 
-  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: sequential guard chain deriving a discriminated OutcomeStatus union — each early return maps one distinct state (loading/not-found/unsupported/missing/ready) and is not factorable without losing the narrowing order
-  const status = useMemo<OutcomeStatus>(() => {
-    if (assessmentQuery.isPending) return { kind: 'loading' };
-    const assessment = assessmentQuery.data;
-    if (!assessment || assessment.id !== assessmentId) return { kind: 'not-found' };
-    const countryCode = assessment.countryCode?.toUpperCase();
-    if (!(countryCode && SUPPORTED_OUTCOME_COUNTRIES.has(countryCode))) {
-      return { kind: 'unsupported-country', countryCode: countryCode || '—' };
-    }
-    const outcome = assessment.outcome as Ir35Outcome | ScheinselbstandigkeitOutcome | null;
-    const snapshot = assessment.questionsSnapshot as QuestionsSnapshot | null;
-    if (!(outcome && snapshot)) return { kind: 'missing-outcome' };
-
-    const completedDate =
-      assessment.completedAt instanceof Date
-        ? assessment.completedAt
-        : assessment.completedAt
-          ? new Date(assessment.completedAt)
-          : null;
-    const completedDateStr = completedDate ? formatDateTime(completedDate) : '—';
-    const disclaimerOpen = assessment.disclaimerAcknowledgedAt === null && !disclaimerDeferred;
-
-    return {
-      kind: 'ready',
-      assessment: {
-        id: assessment.id,
-        countryCode: countryCode as 'GB' | 'DE',
-        outcome,
-        questionsSnapshot: snapshot,
-        ruleSetVersion: assessment.ruleSetVersion,
-        disclaimerAcknowledgedAt: assessment.disclaimerAcknowledgedAt ?? null,
-      },
-      answers: (assessment.answers as Record<string, unknown>) ?? {},
-      completedDateStr,
-      disclaimerOpen,
-    };
-  }, [
-    assessmentId,
-    assessmentQuery.data,
-    assessmentQuery.isPending,
-    disclaimerDeferred,
-    formatDateTime,
-  ]);
+  const status = useMemo<OutcomeStatus>(
+    () =>
+      deriveOutcomeStatus(
+        assessmentQuery.isPending,
+        assessmentQuery.data as OutcomeAssessment | null | undefined,
+        assessmentId,
+        disclaimerDeferred,
+        formatDateTime,
+      ),
+    [
+      assessmentId,
+      assessmentQuery.data,
+      assessmentQuery.isPending,
+      disclaimerDeferred,
+      formatDateTime,
+    ],
+  );
 
   return {
     status,
@@ -262,53 +293,60 @@ export function useClassificationOutcomeView(
   } as const;
 }
 
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: type-narrowing parser over `unknown` persisted answers — one branch per answer-value shape (yes-no/likert/score/billing-ratio) with shape-specific range validation; flattening the guards is intrinsic to the parse
+/**
+ * Narrow one persisted answer value to its `WizardAnswerValue` shape, or
+ * `undefined` when it matches no known shape / fails range validation.
+ */
+function reifyAnswer(value: unknown): WizardAnswerValue | undefined {
+  if (typeof value === 'string' && (value === 'yes' || value === 'no')) {
+    return { type: 'yes-no', value };
+  }
+  if (typeof value === 'number' && value >= 1 && value <= 5 && Number.isInteger(value)) {
+    return { type: 'likert-5', value: value as 1 | 2 | 3 | 4 | 5 };
+  }
+  if (
+    value !== null &&
+    typeof value === 'object' &&
+    'rawScore' in value &&
+    'isNotApplicable' in value
+  ) {
+    const score = value as { rawScore: number; isNotApplicable: boolean };
+    if (
+      Number.isInteger(score.rawScore) &&
+      score.rawScore >= 0 &&
+      score.rawScore <= 3 &&
+      typeof score.isNotApplicable === 'boolean'
+    ) {
+      return {
+        type: 'score-0-3',
+        value: {
+          rawScore: score.rawScore as 0 | 1 | 2 | 3,
+          isNotApplicable: score.isNotApplicable,
+        },
+      };
+    }
+    // Falls through to the billing-ratio check below, matching the original
+    // no-`continue` flow when the score range validation fails.
+  }
+  if (
+    value !== null &&
+    typeof value === 'object' &&
+    'value' in value &&
+    typeof (value as { value: unknown }).value === 'number'
+  ) {
+    const num = (value as { value: number }).value;
+    if (num >= 0 && num <= 100) {
+      return { type: 'billing-ratio', value: num };
+    }
+  }
+  return;
+}
+
 function reifyAnswers(raw: Record<string, unknown>): Record<string, WizardAnswerValue> {
   const result: Record<string, WizardAnswerValue> = {};
   for (const [questionId, persisted] of Object.entries(raw)) {
-    const value = persisted as unknown;
-    if (typeof value === 'string' && (value === 'yes' || value === 'no')) {
-      result[questionId] = { type: 'yes-no', value };
-      continue;
-    }
-    if (typeof value === 'number' && value >= 1 && value <= 5 && Number.isInteger(value)) {
-      result[questionId] = { type: 'likert-5', value: value as 1 | 2 | 3 | 4 | 5 };
-      continue;
-    }
-    if (
-      value !== null &&
-      typeof value === 'object' &&
-      'rawScore' in value &&
-      'isNotApplicable' in value
-    ) {
-      const score = value as { rawScore: number; isNotApplicable: boolean };
-      if (
-        Number.isInteger(score.rawScore) &&
-        score.rawScore >= 0 &&
-        score.rawScore <= 3 &&
-        typeof score.isNotApplicable === 'boolean'
-      ) {
-        result[questionId] = {
-          type: 'score-0-3',
-          value: {
-            rawScore: score.rawScore as 0 | 1 | 2 | 3,
-            isNotApplicable: score.isNotApplicable,
-          },
-        };
-        continue;
-      }
-    }
-    if (
-      value !== null &&
-      typeof value === 'object' &&
-      'value' in value &&
-      typeof (value as { value: unknown }).value === 'number'
-    ) {
-      const num = (value as { value: number }).value;
-      if (num >= 0 && num <= 100) {
-        result[questionId] = { type: 'billing-ratio', value: num };
-      }
-    }
+    const reified = reifyAnswer(persisted);
+    if (reified !== undefined) result[questionId] = reified;
   }
   return result;
 }

@@ -61,7 +61,41 @@ export interface IterateComplianceGapsOptions {
  * Errors propagate to the caller; the iterator stops at the first failed
  * page.
  */
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: cursor-paginated async generator — the loop, per-row compliance-health derivation, and yield logic form one streaming contract that must share the pagination state.
+/** Contractor row shape consumed by {@link toGapRow} (subset of the findMany result). */
+interface ContractorGapInput {
+  id: string;
+  legalName: string;
+  complianceItems: { status: string }[];
+  contracts: { status: string }[];
+  _count: { complianceItems: number };
+}
+
+/**
+ * Derives the compliance health row for one contractor. Returns `null` for
+ * green (healthy) contractors so the caller skips them — only red/yellow rows
+ * are exported.
+ */
+function toGapRow(c: ContractorGapInput): ComplianceGapRow | null {
+  const missingOrExpired = c._count.complianceItems;
+  const hasPending = c.complianceItems.some(ci => ci.status === 'PENDING');
+  const hasActiveContract = c.contracts.some(con => con.status === 'ACTIVE');
+
+  let health: 'red' | 'yellow' | 'green' = 'green';
+  if (missingOrExpired > 0 || !hasActiveContract) health = 'red';
+  else if (hasPending) health = 'yellow';
+
+  if (health === 'green') return null;
+
+  return {
+    contractorId: c.id,
+    contractorName: c.legalName,
+    missingDocuments: missingOrExpired,
+    contractStatus: hasActiveContract ? 'ACTIVE' : 'NONE',
+    overdueTasks: 0,
+    health,
+  };
+}
+
 export async function* iterateComplianceGaps(
   prisma: PrismaClient,
   opts: IterateComplianceGapsOptions,
@@ -93,24 +127,8 @@ export async function* iterateComplianceGaps(
     if (page.length === 0) break;
 
     for (const c of page) {
-      const missingOrExpired = c._count.complianceItems;
-      const hasPending = c.complianceItems.some(ci => ci.status === 'PENDING');
-      const hasActiveContract = c.contracts.some(con => con.status === 'ACTIVE');
-
-      let health: 'red' | 'yellow' | 'green' = 'green';
-      if (missingOrExpired > 0 || !hasActiveContract) health = 'red';
-      else if (hasPending) health = 'yellow';
-
-      if (health === 'green') continue;
-
-      yield {
-        contractorId: c.id,
-        contractorName: c.legalName,
-        missingDocuments: missingOrExpired,
-        contractStatus: hasActiveContract ? 'ACTIVE' : 'NONE',
-        overdueTasks: 0,
-        health,
-      };
+      const row = toGapRow(c);
+      if (row) yield row;
     }
 
     // Last page — no need for another round-trip when we know we're done.

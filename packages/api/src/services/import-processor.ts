@@ -105,10 +105,59 @@ export function autoMapColumns(
 // ---------------------------------------------------------------------------
 
 /**
+ * Validate the contractor enum + fixed-length fields (type / countryCode /
+ * currency) after defaults are applied. Returns the field errors found.
+ */
+function validateContractorEnumsAndLengths(
+  row: Record<string, unknown>,
+): Array<{ field: string; message: string }> {
+  const errors: Array<{ field: string; message: string }> = [];
+
+  const validTypes = ['SOLE_TRADER', 'COMPANY', 'INDIVIDUAL_FREELANCER', 'OTHER'];
+  if (row.type && !validTypes.includes(String(row.type).toUpperCase())) {
+    errors.push({
+      field: 'type',
+      message: `Invalid type. Must be one of: ${validTypes.join(', ')}`,
+    });
+  }
+
+  if (row.countryCode && String(row.countryCode).trim().length !== 2) {
+    errors.push({
+      field: 'countryCode',
+      message: E.VALIDATION_COUNTRY_CODE_LENGTH,
+    });
+  }
+
+  if (row.currency && String(row.currency).trim().length !== 3) {
+    errors.push({
+      field: 'currency',
+      message: E.VALIDATION_CURRENCY_LENGTH,
+    });
+  }
+
+  return errors;
+}
+
+/**
+ * Apply contractor row defaults in place: type -> "COMPANY",
+ * countryCode -> "PL", currency -> "PLN" when blank.
+ */
+function applyContractorRowDefaults(row: Record<string, unknown>): void {
+  if (!row.type || String(row.type).trim() === '') {
+    row.type = 'COMPANY';
+  }
+  if (!row.countryCode || String(row.countryCode).trim() === '') {
+    row.countryCode = 'PL';
+  }
+  if (!row.currency || String(row.currency).trim() === '') {
+    row.currency = 'PLN';
+  }
+}
+
+/**
  * Validates a single contractor row against required fields.
  * Applies defaults: type -> "COMPANY", countryCode -> "PL", currency -> "PLN".
  */
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: exhaustive per-field row validation with independent branch checks; flat inline reads clearer than scattering across helpers.
 export function validateContractorRow(row: Record<string, unknown>): {
   valid: boolean;
   errors: Array<{ field: string; message: string }>;
@@ -133,46 +182,15 @@ export function validateContractorRow(row: Record<string, unknown>): {
     }
   }
 
-  // Apply defaults (mutate row in place for downstream)
-  if (!row.type || String(row.type).trim() === '') {
-    row.type = 'COMPANY';
-  }
-  if (!row.countryCode || String(row.countryCode).trim() === '') {
-    row.countryCode = 'PL';
-  }
-  if (!row.currency || String(row.currency).trim() === '') {
-    row.currency = 'PLN';
-  }
+  // Apply defaults (mutate row in place for downstream).
+  applyContractorRowDefaults(row);
 
   row.taxId = normalizeContractorTaxId(String(row.countryCode), String(row.taxId ?? ''));
   if (!isValidContractorTaxId(String(row.countryCode), String(row.taxId ?? ''))) {
     errors.push({ field: 'taxId', message: 'Invalid NIP number' });
   }
 
-  // Validate type enum
-  const validTypes = ['SOLE_TRADER', 'COMPANY', 'INDIVIDUAL_FREELANCER', 'OTHER'];
-  if (row.type && !validTypes.includes(String(row.type).toUpperCase())) {
-    errors.push({
-      field: 'type',
-      message: `Invalid type. Must be one of: ${validTypes.join(', ')}`,
-    });
-  }
-
-  // Validate countryCode length
-  if (row.countryCode && String(row.countryCode).trim().length !== 2) {
-    errors.push({
-      field: 'countryCode',
-      message: E.VALIDATION_COUNTRY_CODE_LENGTH,
-    });
-  }
-
-  // Validate currency length
-  if (row.currency && String(row.currency).trim().length !== 3) {
-    errors.push({
-      field: 'currency',
-      message: E.VALIDATION_CURRENCY_LENGTH,
-    });
-  }
+  errors.push(...validateContractorEnumsAndLengths(row));
 
   return { valid: errors.length === 0, errors };
 }

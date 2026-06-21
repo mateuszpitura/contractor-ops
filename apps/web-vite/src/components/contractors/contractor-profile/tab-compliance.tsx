@@ -91,6 +91,85 @@ function ReviewUploadButton({
   );
 }
 
+function ComplianceRow({
+  item,
+  t,
+  tOverride,
+  formatDate,
+}: {
+  item: ComplianceItem;
+  t: ReturnType<typeof useTranslations>;
+  tOverride: ReturnType<typeof useTranslations>;
+  formatDate: ReturnType<typeof useDateFormatter>['formatDate'];
+}) {
+  const isMissing = item.status === 'MISSING';
+  const expiringSoon = isExpiringSoon(item.expiresAt);
+  const statusKey = item.status;
+  const hasPendingReview = item.pendingReviewDocumentId != null;
+
+  return (
+    <div
+      className={`flex items-center justify-between gap-4 px-4 py-3 ${
+        isMissing ? 'bg-red-50 dark:bg-red-950/20' : ''
+      }`}>
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-medium">{item.name}</span>
+          {item.documentType ? (
+            <span className="text-xs text-muted-foreground">({item.documentType})</span>
+          ) : null}
+        </div>
+        {item.expiresAt ? (
+          <div className="mt-0.5 flex items-center gap-1">
+            <span className="text-xs text-muted-foreground">
+              {t('expires')}: {formatDate(item.expiresAt)}
+            </span>
+            {expiringSoon ? (
+              <span className="text-xs font-medium text-amber-600">{t('expiringSoon')}</span>
+            ) : null}
+          </div>
+        ) : null}
+        <div className="mt-1">
+          <ComplianceItemHistory itemId={item.id} />
+        </div>
+      </div>
+
+      <div className="flex shrink-0 items-center gap-2">
+        {hasPendingReview ? (
+          <ReviewUploadButton
+            itemId={item.id}
+            documentId={item.pendingReviewDocumentId as string}
+            defaultExpiresAt={item.expiresAt ? toIsoDate(new Date(item.expiresAt)) : ''}
+          />
+        ) : (
+          <OverrideComplianceItemButton
+            itemId={item.id}
+            severity={item.severity}
+            status={item.status}
+          />
+        )}
+        {item.status === 'WAIVED' ? (
+          <Tooltip>
+            <TooltipTrigger className="inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium bg-muted text-muted-foreground">
+              <ShieldCheck className="me-1 size-3" aria-hidden />
+              {tDynLoose(t, 'status', enumKey(statusKey))}
+            </TooltipTrigger>
+            <TooltipContent>
+              {item.waivedReasonCategory
+                ? t('waivedTooltip', {
+                    category: tDynLoose(tOverride, 'category', item.waivedReasonCategory),
+                  })
+                : t('waivedTooltipGeneric')}
+            </TooltipContent>
+          </Tooltip>
+        ) : (
+          <ComplianceStatusBadge status={item.status} />
+        )}
+      </div>
+    </div>
+  );
+}
+
 export function TabCompliance({ contractor }: TabComplianceProps) {
   const t = useTranslations('ContractorProfile.compliance');
   const tOverride = useTranslations('Compliance.override');
@@ -119,78 +198,15 @@ export function TabCompliance({ contractor }: TabComplianceProps) {
       <h3 className="text-base font-medium">{t('requiredDocuments')}</h3>
 
       <div className="divide-y rounded-xl border bg-card">
-        {/* biome-ignore lint/complexity/noExcessiveCognitiveComplexity: cohesive compliance-row renderer — status/severity/expiry/pending-review and override/history branches read clearest as one row builder */}
-        {contractor.complianceItems.map(item => {
-          const isMissing = item.status === 'MISSING';
-          const expiringSoon = isExpiringSoon(item.expiresAt);
-          const statusKey = item.status;
-          const hasPendingReview = item.pendingReviewDocumentId != null;
-
-          return (
-            <div
-              key={item.id}
-              className={`flex items-center justify-between gap-4 px-4 py-3 ${
-                isMissing ? 'bg-red-50 dark:bg-red-950/20' : ''
-              }`}>
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium">{item.name}</span>
-                  {item.documentType ? (
-                    <span className="text-xs text-muted-foreground">({item.documentType})</span>
-                  ) : null}
-                </div>
-                {item.expiresAt ? (
-                  <div className="mt-0.5 flex items-center gap-1">
-                    <span className="text-xs text-muted-foreground">
-                      {t('expires')}: {formatDate(item.expiresAt)}
-                    </span>
-                    {expiringSoon ? (
-                      <span className="text-xs font-medium text-amber-600">
-                        {t('expiringSoon')}
-                      </span>
-                    ) : null}
-                  </div>
-                ) : null}
-                <div className="mt-1">
-                  <ComplianceItemHistory itemId={item.id} />
-                </div>
-              </div>
-
-              <div className="flex shrink-0 items-center gap-2">
-                {hasPendingReview ? (
-                  <ReviewUploadButton
-                    itemId={item.id}
-                    documentId={item.pendingReviewDocumentId as string}
-                    defaultExpiresAt={item.expiresAt ? toIsoDate(new Date(item.expiresAt)) : ''}
-                  />
-                ) : (
-                  <OverrideComplianceItemButton
-                    itemId={item.id}
-                    severity={item.severity}
-                    status={item.status}
-                  />
-                )}
-                {item.status === 'WAIVED' ? (
-                  <Tooltip>
-                    <TooltipTrigger className="inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium bg-muted text-muted-foreground">
-                      <ShieldCheck className="me-1 size-3" aria-hidden />
-                      {tDynLoose(t, 'status', enumKey(statusKey))}
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      {item.waivedReasonCategory
-                        ? t('waivedTooltip', {
-                            category: tDynLoose(tOverride, 'category', item.waivedReasonCategory),
-                          })
-                        : t('waivedTooltipGeneric')}
-                    </TooltipContent>
-                  </Tooltip>
-                ) : (
-                  <ComplianceStatusBadge status={item.status} />
-                )}
-              </div>
-            </div>
-          );
-        })}
+        {contractor.complianceItems.map(item => (
+          <ComplianceRow
+            key={item.id}
+            item={item}
+            t={t}
+            tOverride={tOverride}
+            formatDate={formatDate}
+          />
+        ))}
       </div>
     </div>
   );
