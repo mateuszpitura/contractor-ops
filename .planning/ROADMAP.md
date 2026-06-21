@@ -344,7 +344,7 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 90-03-PLAN.md — Employee country-fields registry + dedicated PII crypto util + EMPLOYEE_PII_ENCRYPTION_KEY (P89-independent)
+- [x] 90-03-PLAN.md — Employee country-fields registry + dedicated PII crypto util + EMPLOYEE_PII_ENCRYPTION_KEY (P89-independent)
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
@@ -552,7 +552,7 @@ Phases execute in numeric order: 82 → 83 → … → 101. After Foundation (82
 | 87. Theme A — 1042-S + US Classification + Letter | v7.0 | 0/10 | Not started | - |
 | 88. Theme A — US Payment Rail | v7.0 | 0/TBD | Not started | - |
 | 89. Theme B — Worker Model Abstraction (gate) | v7.0 | 0/TBD | Not started | - |
-| 90. Theme B — Employee Registry per Market (×6) | v7.0 | 2/7 | In Progress|  |
+| 90. Theme B — Employee Registry per Market (×6) | v7.0 | 3/7 | In Progress|  |
 | 91. Theme B — Akta Osobowe / Personnel File | v7.0 | 0/TBD | Not started | - |
 | 92. Theme B — Leave + KP-Grade Time Tracking | v7.0 | 0/TBD | Not started | - |
 | 93. Theme B — Employee On/Offboarding | v7.0 | 0/TBD | Not started | - |

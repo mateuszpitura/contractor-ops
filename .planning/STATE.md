@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v7.0
 milestone_name: GTM Expansion
 status: verifying
-stopped_at: Completed 90-02-PLAN.md (greenfield statutory validators + reference seed tables)
-last_updated: "2026-06-21T23:51:00.000Z"
+stopped_at: Completed 90-03-PLAN.md (employee country-fields registry + dedicated PII crypto + EMPLOYEE_PII_ENCRYPTION_KEY; P89-independent)
+last_updated: "2026-06-21T23:44:33.998Z"
 last_activity: 2026-06-21
 progress:
   total_phases: 20
@@ -121,6 +121,8 @@ Decisions are logged in PROJECT.md Key Decisions table. Recent decisions affecti
 - [Phase 86]: 86-05: box-4 backup withholding + generateBatch persistence are injected ports (no Contractor flag column / 86-02 migration unapplied); CORRECTED = supersede in one tx; the 86-06 wiring caller supplies the real DB writers
 - [Phase ?]: [90-01] Wave-0 RED scaffolds: 8 greenfield statutory validators (PESEL/Steuer-IdNr/NI/tax-code/Saudi-ID/Emirates-ID/GOSI/WPS) each pinned with canonical valid+invalid vectors before impl; Emirates-ID asserted as { formatValid, checksumValid } so the Luhn checksum stays advisory and never hard-rejects a format-valid ID; country-fields test locks the no-national-ID-key-in-JSON PII boundary.
 - [Phase ?]: [90-01] P89-independent crypto scaffold (employee-pii-crypto) fails RED on the missing module now; the P89-gated cross-org-leak + registry scaffolds are describe.skip with a HOLD-until-P89 marker and import no P89 surface, so they register+skip cleanly and become the GREEN target when Phase 89 lands EmployeeProfile + employeeRouter + employeePii.
+- [Phase 90]: 90-03: employee country-fields is a parallel employeeCountryFieldsSchemaMap (.strict() per-country), not a fork of the contractor map; no national-ID key (pesel/ssn/iqama/emiratesId) can enter the countryFields JSON
+- [Phase 90]: 90-03: PESEL/Iqama/Emirates-ID encrypt under a dedicated EMPLOYEE_PII_ENCRYPTION_KEY (separate blast radius); US SSN keeps SSN_ENCRYPTION_KEY + ssn-crypto unchanged
 
 ### Pending Todos
 
@@ -171,6 +173,7 @@ Carried forward from v6.0 milestone close (2026-06-07). Full enumeration: `.plan
 | Phase 86 P86-03 | ~13min | 2 tasks | 11 files |
 | Phase 86 P05 | ~10min | 2 tasks | 8 files |
 | Phase 90 P90-01 | 14min | 2 tasks | 5 files |
+| Phase 90 P03 | 4min | 2 tasks | 6 files |
 
 ## Standing Project Constraints
 
@@ -180,7 +183,7 @@ Carried forward from v6.0 milestone close (2026-06-07). Full enumeration: `.plan
 
 ## Session Continuity
 
-Last session: 2026-06-21T23:35:15.849Z
-Stopped at: context exhaustion at 75% (2026-06-21)
+Last session: 2026-06-21T23:44:33.992Z
+Stopped at: Completed 90-03-PLAN.md (employee country-fields registry + dedicated PII crypto + EMPLOYEE_PII_ENCRYPTION_KEY; P89-independent)
 Resume file: None
 Next command: execute Phase 85 Plan 04 (web-vite portal wizard + staff status card + i18n)
