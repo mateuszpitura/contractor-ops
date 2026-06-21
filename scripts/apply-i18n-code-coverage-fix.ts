@@ -881,11 +881,9 @@ for (const locale of LOCALES) {
   }
   writeFileSync(path, `${JSON.stringify(data, null, 2)}\n`);
   applied += perLocale;
-  // biome-ignore lint/suspicious/noConsole: standalone script
   console.log(`[${locale}] wrote ${perLocale} translations to ${path}`);
 }
 
-// biome-ignore lint/suspicious/noConsole: standalone script
 console.log(
   `\nDone — ${applied} translations applied across ${LOCALES.length} locales (${Object.keys(TRANSLATIONS).length} unique keys).`,
 );
