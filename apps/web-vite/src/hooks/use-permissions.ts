@@ -8,10 +8,16 @@
  * membership; the active member lives behind `/organization/get-active-member`.
  */
 
+import type { MemberRole } from '@contractor-ops/auth';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '../providers/auth-provider.js';
 
-const permissions: Record<string, Record<string, string[]>> = {
+// Keyed by `MemberRole` (the canonical role union from @contractor-ops/auth) so
+// a missing or stale role here is a typecheck error — this matrix MUST stay in
+// sync with the server grant map (packages/auth/src/roles.ts). The drift that
+// hid the sidebar for `readonly`/`legal_compliance_viewer` members is now
+// caught at compile time. Type-only import — erased at runtime, no server code.
+const permissions: Record<MemberRole, Record<string, string[]>> = {
   owner: {
     organization: ['update', 'delete'],
     member: ['create', 'read', 'update', 'delete'],
@@ -22,6 +28,7 @@ const permissions: Record<string, Record<string, string[]>> = {
     // boundary — this only governs reveal-control visibility.
     contractorPii: ['read'],
     contract: ['create', 'read', 'update', 'delete'],
+    compliance: ['read', 'override'],
     document: ['create', 'read', 'update', 'delete'],
     invoice: ['create', 'read', 'update', 'delete', 'approve'],
     workflow: ['create', 'read', 'update', 'delete', 'execute', 'override_blocking_task'],
@@ -43,6 +50,7 @@ const permissions: Record<string, Record<string, string[]>> = {
     contractor: ['create', 'read', 'update', 'delete', 'bulk'],
     contractorPii: ['read'], // SSN reveal gate
     contract: ['create', 'read', 'update', 'delete'],
+    compliance: ['read', 'override'],
     document: ['create', 'read', 'update', 'delete'],
     invoice: ['create', 'read', 'update', 'delete', 'approve'],
     workflow: ['create', 'read', 'update', 'delete', 'execute'],
@@ -75,6 +83,7 @@ const permissions: Record<string, Record<string, string[]>> = {
     contractor: ['read'],
     contractorPii: ['read'], // SSN reveal gate
     contract: ['read'],
+    compliance: ['read'],
     invoice: ['create', 'read', 'update', 'delete', 'approve'],
     payment: ['create', 'read', 'update', 'export'],
     report: ['read', 'export'],
@@ -87,6 +96,7 @@ const permissions: Record<string, Record<string, string[]>> = {
   ops_manager: {
     contractor: ['create', 'read', 'update', 'delete', 'bulk'],
     contract: ['create', 'read', 'update', 'delete'],
+    compliance: ['read'],
     invoice: ['create', 'read', 'update'],
     workflow: ['create', 'read', 'update', 'delete', 'execute'],
     report: ['read', 'export'],
@@ -100,6 +110,7 @@ const permissions: Record<string, Record<string, string[]>> = {
   team_manager: {
     contractor: ['read', 'update'],
     contract: ['read'],
+    compliance: ['read'],
     invoice: ['read', 'approve'],
     workflow: ['read', 'execute'],
     report: ['read'],
@@ -110,15 +121,27 @@ const permissions: Record<string, Record<string, string[]>> = {
   external_accountant: {
     contractor: ['read'],
     contract: ['read'],
+    compliance: ['read'],
     invoice: ['read'],
     payment: ['read'],
     report: ['read', 'export'],
     settings: ['read'],
     time: ['read'],
   },
-  observer: {
+  legal_compliance_viewer: {
     contractor: ['read'],
     contract: ['read'],
+    compliance: ['read'],
+    invoice: ['read'],
+    report: ['read'],
+    team: ['read'],
+    project: ['read'],
+    costCenter: ['read'],
+  },
+  readonly: {
+    contractor: ['read'],
+    contract: ['read'],
+    compliance: ['read'],
     invoice: ['read'],
     workflow: ['read'],
     report: ['read'],
@@ -173,7 +196,10 @@ export function usePermissions() {
   return {
     can: (resource: string, actions: string[]): boolean => {
       if (!role) return false;
-      const rolePerms = permissions[role];
+      // `role` is the raw server string; an unknown/legacy value yields no
+      // grants (the `!rolePerms` guard below). The matrix type stays keyed by
+      // MemberRole so missing/stale canonical roles fail typecheck.
+      const rolePerms = permissions[role as MemberRole] as Record<string, string[]> | undefined;
       if (!rolePerms) return false;
       const resourcePerms = rolePerms[resource];
       if (!resourcePerms) return false;

@@ -38,7 +38,7 @@ describe('useContractorTabOverview', () => {
   });
 
   it('exposes showPii=false for a role without sensitive-pii grant (empty perms)', () => {
-    mockRole = 'observer';
+    mockRole = 'readonly';
     const { result } = renderHook(() => useContractorTabOverview());
 
     expect(result.current.showPii).toBe(false);
