@@ -204,6 +204,26 @@ export {
   documentVersionUploadSchema,
 } from './document.js';
 export type {
+  AeEmployeeCountryFields,
+  DeEmployeeCountryFields,
+  PlEmployeeCountryFields,
+  SaEmployeeCountryFields,
+  UkEmployeeCountryFields,
+  UsEmployeeCountryFields,
+} from './employee-country-fields.js';
+export {
+  aeEmployeeCountryFieldsSchema,
+  aeVisaTypeEnum,
+  deEmployeeCountryFieldsSchema,
+  employeeCountryFieldsSchemaMap,
+  plEmployeeCountryFieldsSchema,
+  saEmployeeCountryFieldsSchema,
+  saudizationBandEnum,
+  ukEmployeeCountryFieldsSchema,
+  usEmployeeCountryFieldsSchema,
+  validateEmployeeCountryFields,
+} from './employee-country-fields.js';
+export type {
   Lohnsteuerklasse,
   NfzOddzial,
   SaudizationCategory,
