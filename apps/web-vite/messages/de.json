@@ -7472,18 +7472,18 @@
     },
     "step1": {
       "heading": "Organisationsdetails",
-      "subtitle": "Du kannst diese später in den Einstellungen ändern.",
+      "subtitle": "Sie können diese später in den Einstellungen ändern.",
       "nameLabel": "Name der Organisation",
       "namePlaceholder": "Acme Studio",
       "countryLabel": "Rechnungsland",
-      "countryHelp": "Legt deine Datenregion fest. Dies kann später nicht geändert werden.",
+      "countryHelp": "Legt Ihre Datenregion fest. Dies kann später nicht geändert werden.",
       "countryPlaceholder": "Land auswählen",
       "submit": "Organisation erstellen",
       "submitting": "Wird erstellt…"
     },
     "step2": {
       "heading": "Alles bereit, {orgName}",
-      "subtitle": "Dein Arbeitsbereich ist bereit. Das kannst du als Nächstes einrichten.",
+      "subtitle": "Ihr Arbeitsbereich ist bereit. Das können Sie als Nächstes einrichten.",
       "comingSoon": "Demnächst",
       "next": {
         "inviteTitle": "Team einladen",
