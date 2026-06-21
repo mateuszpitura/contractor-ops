@@ -1,8 +1,8 @@
 ---
 phase: 90
 slug: theme-b-employee-registry-per-market-6
-status: draft
-nyquist_compliant: false
+status: approved
+nyquist_compliant: true
 wave_0_complete: false
 created: 2026-06-21
 ---

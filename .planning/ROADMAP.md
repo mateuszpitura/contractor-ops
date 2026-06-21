@@ -335,7 +335,33 @@ Plans:
   3. A US employee record carries PII-masked SSN, W-4 step-1c filing status, and state withholding for the 10 supported states + free-text fallback.
   4. UAE (Emirates ID + visa + WPS Establishment ID) and KSA (Iqama/National ID + GOSI + Saudization flag) employee records validate.
 
-**Plans**: TBD
+**Plans**: 7 plans
+Plans:
+**Wave 1**
+
+- [ ] 90-01-PLAN.md — Wave-0 RED scaffolds (validators + country-fields + crypto vectors; P89-gated integration skipped)
+- [ ] 90-02-PLAN.md — Greenfield statutory validators + versioned adviser-verify reference seed tables (P89-independent)
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [ ] 90-03-PLAN.md — Employee country-fields registry + dedicated PII crypto util + EMPLOYEE_PII_ENCRYPTION_KEY (P89-independent)
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
+- [ ] 90-04-PLAN.md — [BLOCKING, P89-gated] EmployeeProfile model + employeePii RBAC + cross-org leak + additive multi-region migration
+
+**Wave 4** *(blocked on Wave 3 completion)*
+
+- [ ] 90-05-PLAN.md — [HOLD until P89] employeeRegistryRouter register/revealPii + ELStAM stub + PII-mask paths
+
+**Wave 5** *(blocked on Wave 4 completion)*
+
+- [ ] 90-06-PLAN.md — [HOLD until P89] per-market web-vite registration UI (dispatch, masked reveal, advisory, i18n parity)
+
+**Wave 6** *(blocked on Wave 5 completion)*
+
+- [ ] 90-07-PLAN.md — Documentation-follows-code: employee-registry wiki + MEMORY invariants + graph rebuild
+
 **Research flag**: Standard — reuses v5.0 validators (SV-Nummer) and v4.0 Gulf field patterns. New Prisma models — never add to `globalModels`; cross-org leak test per new tenant-owning model.
 **UI hint**: yes
 
