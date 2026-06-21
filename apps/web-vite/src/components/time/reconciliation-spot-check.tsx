@@ -161,6 +161,23 @@ export function ReconciliationSpotCheckView({
     (e: React.ChangeEvent<HTMLInputElement>) => setPeriodEnd(e.target.value),
     [setPeriodEnd],
   );
+  const renderContractorOption = useCallback(
+    (c: (typeof contractors)[number]) => (
+      <SelectItem key={c.id} value={c.id}>
+        {c.legalName}
+      </SelectItem>
+    ),
+    [],
+  );
+  const renderContractOption = useCallback(
+    (contract: (typeof contractList)[number]) => (
+      <SelectItem key={contract.id} value={contract.id}>
+        {contract.title ?? contract.id.slice(0, 8)}
+        {contract.rateType ? ` · ${contract.rateType}` : ''}
+      </SelectItem>
+    ),
+    [],
+  );
 
   return (
     <Card>
@@ -183,11 +200,7 @@ export function ReconciliationSpotCheckView({
                   items={contractors}
                   isLoading={contractorsQuery.isLoading}
                   emptyLabel={t('noContractors')}
-                  renderItem={c => (
-                    <SelectItem key={c.id} value={c.id}>
-                      {c.legalName}
-                    </SelectItem>
-                  )}
+                  renderItem={renderContractorOption}
                 />
               </SelectContent>
             </Select>
@@ -209,12 +222,7 @@ export function ReconciliationSpotCheckView({
                   items={contractList}
                   isLoading={contractsQuery.isLoading}
                   emptyLabel={t('noContracts')}
-                  renderItem={contract => (
-                    <SelectItem key={contract.id} value={contract.id}>
-                      {contract.title ?? contract.id.slice(0, 8)}
-                      {contract.rateType ? ` · ${contract.rateType}` : ''}
-                    </SelectItem>
-                  )}
+                  renderItem={renderContractOption}
                 />
               </SelectContent>
             </Select>
