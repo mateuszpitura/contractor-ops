@@ -90,12 +90,12 @@ Requirements for the v7.0 milestone. Each maps to exactly one phase (filled by r
 
 ### Theme B — Employee Registry per Market (EMP-REG)
 
-- [x] **EMP-REG-PL-01**: PL employee fields — PESEL (mod-11 + dob check), urząd skarbowy ID, ZUS oddział ID, stanowisko, wymiar etatu (0.10–1.00), stawka brutto, ZUS title code, NFZ oddział
-- [x] **EMP-REG-DE-01**: DE employee fields — Steuer-IdNr (11-digit mod-11), Sozialversicherungsnummer (v5.0 validator), Krankenkasse ID, Lohnsteuerklasse (I–VI), Kinderfreibetrag, Kirchensteuer flag, ELStAM lookup hook
-- [x] **EMP-REG-UK-01**: UK employee fields — NI number (format + DWP exclusion ranges), PAYE reference, tax code (1257L pattern + emergency/W1/M1/K flags), student-loan plan, pension auto-enrol flag
-- [x] **EMP-REG-US-01**: US employee fields — SSN (PII-masked per US-FIELD-02), W-4 step-1c filing status, state withholding (10 highest-population states + free-text fallback)
-- [x] **EMP-REG-AE-01**: UAE employee fields — Emirates ID + visa type + WPS Establishment ID
-- [x] **EMP-REG-SA-01**: KSA employee fields — Iqama / National ID, GOSI registration number, Saudization category contribution flag
+- [ ] **EMP-REG-PL-01**: PL employee fields — PESEL (mod-11 + dob check), urząd skarbowy ID, ZUS oddział ID, stanowisko, wymiar etatu (0.10–1.00), stawka brutto, ZUS title code, NFZ oddział
+- [ ] **EMP-REG-DE-01**: DE employee fields — Steuer-IdNr (11-digit mod-11), Sozialversicherungsnummer (v5.0 validator), Krankenkasse ID, Lohnsteuerklasse (I–VI), Kinderfreibetrag, Kirchensteuer flag, ELStAM lookup hook
+- [ ] **EMP-REG-UK-01**: UK employee fields — NI number (format + DWP exclusion ranges), PAYE reference, tax code (1257L pattern + emergency/W1/M1/K flags), student-loan plan, pension auto-enrol flag
+- [ ] **EMP-REG-US-01**: US employee fields — SSN (PII-masked per US-FIELD-02), W-4 step-1c filing status, state withholding (10 highest-population states + free-text fallback)
+- [ ] **EMP-REG-AE-01**: UAE employee fields — Emirates ID + visa type + WPS Establishment ID
+- [ ] **EMP-REG-SA-01**: KSA employee fields — Iqama / National ID, GOSI registration number, Saudization category contribution flag
 
 ### Theme B — Akta Osobowe / Personnel File (AKTA)
 
