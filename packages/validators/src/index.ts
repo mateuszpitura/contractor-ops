@@ -203,6 +203,43 @@ export {
   documentRequestUploadSchema,
   documentVersionUploadSchema,
 } from './document.js';
+export type {
+  Lohnsteuerklasse,
+  NfzOddzial,
+  SaudizationCategory,
+  StudentLoanPlan,
+  UsWithholding,
+  UsWithholdingState,
+  W4FilingStatus,
+} from './employee-reference-lists.js';
+export {
+  LOHNSTEUERKLASSE,
+  lohnsteuerklasseSchema,
+  NFZ_ODDZIAL_SOURCE,
+  NFZ_ODDZIAL_VERSION,
+  NFZ_ODDZIALY,
+  nfzOddzialSchema,
+  SAUDIZATION_CATEGORY,
+  STUDENT_LOAN_PLAN,
+  saudizationCategorySchema,
+  studentLoanPlanSchema,
+  US_WITHHOLDING_STATES,
+  usWithholdingSchema,
+  usWithholdingStateSchema,
+  W4_FILING_STATUS,
+  w4FilingStatusSchema,
+} from './employee-reference-lists.js';
+export type { EmiratesIdResult } from './employee-validators.js';
+export {
+  classifySaudiId,
+  isValidEmiratesId,
+  isValidGosi,
+  isValidNiNumber,
+  isValidPesel,
+  isValidSteuerIdNr,
+  isValidUkTaxCode,
+  isValidWpsEstablishmentId,
+} from './employee-validators.js';
 export type { ClientEnv, ServerEnv } from './env.js';
 export {
   clientEnvSchema,
@@ -661,6 +698,22 @@ export type {
   PrivacyNoticeSection,
   PrivacyNoticeStructured,
 } from './privacy-notices/types.js';
+export type {
+  Krankenkasse,
+  UrzadSkarbowy,
+  ZusOddzial,
+} from './reference-data/index.js';
+export {
+  KRANKENKASSEN,
+  KRANKENKASSEN_SOURCE,
+  KRANKENKASSEN_VERSION,
+  URZEDY_SKARBOWE,
+  URZEDY_SKARBOWE_SOURCE,
+  URZEDY_SKARBOWE_VERSION,
+  ZUS_ODDZIALY,
+  ZUS_ODDZIALY_SOURCE,
+  ZUS_ODDZIALY_VERSION,
+} from './reference-data/index.js';
 export type {
   ReminderRuleCreateInput,
   ReminderRuleToggleInput,
