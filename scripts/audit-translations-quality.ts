@@ -237,10 +237,10 @@ function auditLocale(
   return findings;
 }
 
-function printSection(
+function printSection<T>(
   label: string,
-  items: readonly unknown[],
-  render: (item: any, i: number) => string,
+  items: readonly T[],
+  render: (item: T, i: number) => string,
 ): void {
   if (items.length === 0) {
     console.log(`    ✓ ${label}: 0`);
