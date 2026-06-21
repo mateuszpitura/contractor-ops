@@ -132,9 +132,10 @@ describe('isValidUkTaxCode', () => {
 // ---------------------------------------------------------------------------
 
 describe('classifySaudiId', () => {
-  // Luhn-valid 10-digit samples: leading 1 = citizen, leading 2 = resident.
-  const CITIZEN_ID = '1000000000';
-  const RESIDENT_ID = '2000000004';
+  // Luhn-valid 10-digit samples (standard right-to-left mod-10): leading 1 =
+  // citizen, leading 2 = resident.
+  const CITIZEN_ID = '1000000008';
+  const RESIDENT_ID = '2000000006';
 
   it('returns 1 for a Luhn-valid leading-1 citizen ID', () => {
     expect(classifySaudiId(CITIZEN_ID)).toBe(1);
@@ -145,11 +146,11 @@ describe('classifySaudiId', () => {
   });
 
   it('returns false when the Luhn check fails', () => {
-    expect(classifySaudiId('1000000001')).toBe(false);
+    expect(classifySaudiId('1000000009')).toBe(false);
   });
 
   it('returns false when the leading digit is neither 1 nor 2', () => {
-    expect(classifySaudiId('3000000000')).toBe(false);
+    expect(classifySaudiId('3000000008')).toBe(false);
   });
 
   it('honours the 1 | 2 | false union contract (never a bare boolean true)', () => {
