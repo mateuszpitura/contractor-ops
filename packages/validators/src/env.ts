@@ -196,6 +196,17 @@ const usFieldsSchema = z.object({
   USPS_CLIENT_SECRET: z.string().optional(),
 });
 
+// ── Employee PII Encryption ─────────────────────────────────────────────────
+// EMPLOYEE_PII_ENCRYPTION_KEY is a dedicated hex-32 key for the non-SSN employee
+// national IDs (PESEL, Iqama, Emirates ID), separate from the SSN and bank keys
+// so each data class has an independent blast radius. The US SSN column keeps
+// using SSN_ENCRYPTION_KEY. Required-in-schema so an unset key fails loud at
+// boot — the employee national-ID write path never silently stores plaintext.
+
+const employeePiiEncryptionSchema = z.object({
+  EMPLOYEE_PII_ENCRYPTION_KEY: hex32,
+});
+
 // ── Cloudflare Turnstile (signup bot protection) ───────────────────────────
 // Optional in development so contributors don't need a Cloudflare app to run
 // the app locally; the signup `before` hook short-circuits the verification
@@ -391,6 +402,7 @@ export const serverEnvSchema = coreSchema
   .merge(linearSchema)
   .merge(bankEncryptionSchema)
   .merge(usFieldsSchema)
+  .merge(employeePiiEncryptionSchema)
   .merge(ocrSchema)
   .merge(qstashSchema)
   .merge(cronSchema)
