@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v7.0
 milestone_name: GTM Expansion
-status: executing
-stopped_at: Phase 90 UI-SPEC approved
-last_updated: "2026-06-21T19:52:36.225Z"
-last_activity: 2026-06-21 -- Phase 90 planning complete
+status: verifying
+stopped_at: Completed 90-01-PLAN.md (Wave-0 RED scaffolds)
+last_updated: "2026-06-21T23:23:36.756Z"
+last_activity: 2026-06-21
 progress:
   total_phases: 20
   completed_phases: 4
   total_plans: 57
-  completed_plans: 23
+  completed_plans: 24
   percent: 20
 ---
 
@@ -31,10 +31,10 @@ See: .planning/PROJECT.md (updated 2026-06-07 — v7.0 GTM Expansion started; v6
 
 Phase: 86 (Theme A — TIN-Match → 1099-NEC → IRIS E-File → State Filing) — EXECUTING
 Plan: 86-05 of 8 complete (86-02/03/05 done; 86-01 Task 3 + 86-02 Task 3 multi-region migration held at human gates; 86-04 not yet run)
-Status: Ready to execute
-Last activity: 2026-06-21 -- Phase 90 planning complete
+Status: Phase complete — ready for verification
+Last activity: 2026-06-21
 
-Progress: [█████████░] 85%
+Progress: [████░░░░░░] 42%
 
 ## v7.0 Roadmap Summary (created 2026-06-07)
 
@@ -119,6 +119,8 @@ Decisions are logged in PROJECT.md Key Decisions table. Recent decisions affecti
 - [Phase 86]: TIN-match seam: mock default + dark SSRF-safe e-Services client; mismatch advisory (flag + escalate + audit, never hard-block) — 86-02 migration unapplied + unit test injects only a client, so side-effect persistence is an injected port; the deterministic core ships and is fully tested with no live DB
 - [Phase 86]: 86-05: 1099-NEC threshold read from the tax-year-keyed Tax1099Threshold table, never a constant ($600 TY2025 / $2,000 TY2026 OBBBA); box-1 aggregated by payment-date + FX-to-USD per recipient/payer-org
 - [Phase 86]: 86-05: box-4 backup withholding + generateBatch persistence are injected ports (no Contractor flag column / 86-02 migration unapplied); CORRECTED = supersede in one tx; the 86-06 wiring caller supplies the real DB writers
+- [Phase ?]: [90-01] Wave-0 RED scaffolds: 8 greenfield statutory validators (PESEL/Steuer-IdNr/NI/tax-code/Saudi-ID/Emirates-ID/GOSI/WPS) each pinned with canonical valid+invalid vectors before impl; Emirates-ID asserted as { formatValid, checksumValid } so the Luhn checksum stays advisory and never hard-rejects a format-valid ID; country-fields test locks the no-national-ID-key-in-JSON PII boundary.
+- [Phase ?]: [90-01] P89-independent crypto scaffold (employee-pii-crypto) fails RED on the missing module now; the P89-gated cross-org-leak + registry scaffolds are describe.skip with a HOLD-until-P89 marker and import no P89 surface, so they register+skip cleanly and become the GREEN target when Phase 89 lands EmployeeProfile + employeeRouter + employeePii.
 
 ### Pending Todos
 
@@ -168,6 +170,7 @@ Carried forward from v6.0 milestone close (2026-06-07). Full enumeration: `.plan
 | Phase 86 P01 | 5m | 2 tasks | 15 files |
 | Phase 86 P86-03 | ~13min | 2 tasks | 11 files |
 | Phase 86 P05 | ~10min | 2 tasks | 8 files |
+| Phase 90 P90-01 | 14min | 2 tasks | 5 files |
 
 ## Standing Project Constraints
 
@@ -177,7 +180,7 @@ Carried forward from v6.0 milestone close (2026-06-07). Full enumeration: `.plan
 
 ## Session Continuity
 
-Last session: 2026-06-21T19:30:21.393Z
-Stopped at: Phase 90 UI-SPEC approved
-Resume file: .planning/milestones/v7.0-phases/90-theme-b-employee-registry-per-market-6/90-UI-SPEC.md
+Last session: 2026-06-21T23:23:36.746Z
+Stopped at: Completed 90-01-PLAN.md (Wave-0 RED scaffolds)
+Resume file: None
 Next command: execute Phase 85 Plan 04 (web-vite portal wizard + staff status card + i18n)
