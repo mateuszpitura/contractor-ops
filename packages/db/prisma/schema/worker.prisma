@@ -1,0 +1,36 @@
+// Worker — the normalized identity root that Contractor (and a future Employee)
+// link to via a sidecar 1:1 FK. The `workerType` discriminator (default
+// CONTRACTOR) lives ONLY here: a Contractor row is inherently a contractor, so
+// Contractor reads need no discriminator, while cross-type reads against Worker
+// are scoped by the withWorkerTypeDefault extension (default CONTRACTOR unless
+// the caller passes an explicit workerType).
+//
+// Tenant-owning: Worker carries `organizationId` and is deliberately absent
+// from `globalModels` in tenant.ts, so it inherits withTenantScope (org scope
+// is injected on every read/mutation).
+
+enum WorkerType {
+  CONTRACTOR
+  EMPLOYEE
+}
+
+model Worker {
+  id             String     @id @default(cuid())
+  organizationId String
+  workerType     WorkerType @default(CONTRACTOR)
+  // Shared identity fields. Contractor-specific data stays on Contractor;
+  // employee-specific data will live on a separate EmployeeProfile.
+  displayName    String
+  email          String?
+  status         String?
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+  deletedAt      DateTime?
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  contractor   Contractor?
+  // employee  Employee?
+
+  @@index([organizationId])
+  @@index([organizationId, workerType])
+}

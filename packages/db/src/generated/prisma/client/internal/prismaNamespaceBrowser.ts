@@ -173,6 +173,7 @@ export const ModelName = {
   TaxIdValidation: 'TaxIdValidation',
   Timesheet: 'Timesheet',
   TimeEntry: 'TimeEntry',
+  Worker: 'Worker',
   WorkflowTemplate: 'WorkflowTemplate',
   WorkflowTaskTemplate: 'WorkflowTaskTemplate',
   WorkflowRoleTemplate: 'WorkflowRoleTemplate',
@@ -823,6 +824,7 @@ export const ContractorScalarFieldEnum = {
   peppolSchemeId: 'peppolSchemeId',
   peppolParticipantValue: 'peppolParticipantValue',
   isBusinessCustomer: 'isBusinessCustomer',
+  workerId: 'workerId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   archivedAt: 'archivedAt',
@@ -2416,6 +2418,21 @@ export const TimeEntryScalarFieldEnum = {
 } as const
 
 export type TimeEntryScalarFieldEnum = (typeof TimeEntryScalarFieldEnum)[keyof typeof TimeEntryScalarFieldEnum]
+
+
+export const WorkerScalarFieldEnum = {
+  id: 'id',
+  organizationId: 'organizationId',
+  workerType: 'workerType',
+  displayName: 'displayName',
+  email: 'email',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  deletedAt: 'deletedAt'
+} as const
+
+export type WorkerScalarFieldEnum = (typeof WorkerScalarFieldEnum)[keyof typeof WorkerScalarFieldEnum]
 
 
 export const WorkflowTemplateScalarFieldEnum = {

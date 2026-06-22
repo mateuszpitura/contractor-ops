@@ -47,6 +47,7 @@ model Organization {
   projectExternalLinks           ProjectExternalLink[]
   pendingProjectMerges           PendingProjectMerge[]
   costCenters                    CostCenter[]
+  workers                        Worker[]
   contractors                    Contractor[]
   contractorContacts             ContractorContact[]
   contractorBillingProfiles      ContractorBillingProfile[]

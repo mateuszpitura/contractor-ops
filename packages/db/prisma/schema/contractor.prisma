@@ -54,6 +54,12 @@ model Contractor {
   peppolParticipantValue    String?                  @db.VarChar(64)
   // Phase 63 (D-11) — B2B customer flag for LPCDA late payment interest eligibility
   isBusinessCustomer        Boolean                  @default(true)
+  // Sidecar 1:1 link to the Worker identity root. Nullable for now (the column
+  // and unique index land additively; the NOT NULL + FK constraint follow once
+  // every existing contractor is backfilled with a Worker row). Contractor.id
+  // is intentionally left untouched so the existing FKs that reference it are
+  // never relinked.
+  workerId                  String?                  @unique
   createdAt                 DateTime                 @default(now())
   updatedAt                 DateTime                 @updatedAt
   archivedAt                DateTime?
@@ -61,6 +67,7 @@ model Contractor {
   search_vector             Unsupported("tsvector")?
 
   organization      Organization          @relation(fields: [organizationId], references: [id])
+  worker            Worker?               @relation(fields: [workerId], references: [id])
   owner             User?                 @relation("ContractorOwner", fields: [ownerUserId], references: [id])
   primaryTeam       Team?                 @relation(fields: [primaryTeamId], references: [id])
   primaryProject    Project?              @relation(fields: [primaryProjectId], references: [id])

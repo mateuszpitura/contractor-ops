@@ -1218,6 +1218,14 @@ export const TimeEntrySource = {
 export type TimeEntrySource = (typeof TimeEntrySource)[keyof typeof TimeEntrySource]
 
 
+export const WorkerType = {
+  CONTRACTOR: 'CONTRACTOR',
+  EMPLOYEE: 'EMPLOYEE'
+} as const
+
+export type WorkerType = (typeof WorkerType)[keyof typeof WorkerType]
+
+
 export const WorkflowTemplateType = {
   ONBOARDING: 'ONBOARDING',
   OFFBOARDING: 'OFFBOARDING',

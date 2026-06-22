@@ -653,6 +653,11 @@ export type Timesheet = Prisma.TimesheetModel
  */
 export type TimeEntry = Prisma.TimeEntryModel
 /**
+ * Model Worker
+ * 
+ */
+export type Worker = Prisma.WorkerModel
+/**
  * Model WorkflowTemplate
  * 
  */

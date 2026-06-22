@@ -61,6 +61,7 @@ export type ContractorMinAggregateOutputType = {
   peppolSchemeId: string | null
   peppolParticipantValue: string | null
   isBusinessCustomer: boolean | null
+  workerId: string | null
   createdAt: Date | null
   updatedAt: Date | null
   archivedAt: Date | null
@@ -107,6 +108,7 @@ export type ContractorMaxAggregateOutputType = {
   peppolSchemeId: string | null
   peppolParticipantValue: string | null
   isBusinessCustomer: boolean | null
+  workerId: string | null
   createdAt: Date | null
   updatedAt: Date | null
   archivedAt: Date | null
@@ -155,6 +157,7 @@ export type ContractorCountAggregateOutputType = {
   peppolSchemeId: number
   peppolParticipantValue: number
   isBusinessCustomer: number
+  workerId: number
   createdAt: number
   updatedAt: number
   archivedAt: number
@@ -203,6 +206,7 @@ export type ContractorMinAggregateInputType = {
   peppolSchemeId?: true
   peppolParticipantValue?: true
   isBusinessCustomer?: true
+  workerId?: true
   createdAt?: true
   updatedAt?: true
   archivedAt?: true
@@ -249,6 +253,7 @@ export type ContractorMaxAggregateInputType = {
   peppolSchemeId?: true
   peppolParticipantValue?: true
   isBusinessCustomer?: true
+  workerId?: true
   createdAt?: true
   updatedAt?: true
   archivedAt?: true
@@ -297,6 +302,7 @@ export type ContractorCountAggregateInputType = {
   peppolSchemeId?: true
   peppolParticipantValue?: true
   isBusinessCustomer?: true
+  workerId?: true
   createdAt?: true
   updatedAt?: true
   archivedAt?: true
@@ -418,6 +424,7 @@ export type ContractorGroupByOutputType = {
   peppolSchemeId: string | null
   peppolParticipantValue: string | null
   isBusinessCustomer: boolean
+  workerId: string | null
   createdAt: Date
   updatedAt: Date
   archivedAt: Date | null
@@ -487,6 +494,7 @@ export type ContractorWhereInput = {
   peppolSchemeId?: Prisma.StringNullableFilter<"Contractor"> | string | null
   peppolParticipantValue?: Prisma.StringNullableFilter<"Contractor"> | string | null
   isBusinessCustomer?: Prisma.BoolFilter<"Contractor"> | boolean
+  workerId?: Prisma.StringNullableFilter<"Contractor"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Contractor"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Contractor"> | Date | string
   archivedAt?: Prisma.DateTimeNullableFilter<"Contractor"> | Date | string | null
@@ -495,6 +503,7 @@ export type ContractorWhereInput = {
   preferredPaczkomatName?: Prisma.StringNullableFilter<"Contractor"> | string | null
   preferredPaczkomatAddress?: Prisma.StringNullableFilter<"Contractor"> | string | null
   organization?: Prisma.XOR<Prisma.OrganizationScalarRelationFilter, Prisma.OrganizationWhereInput>
+  worker?: Prisma.XOR<Prisma.WorkerNullableScalarRelationFilter, Prisma.WorkerWhereInput> | null
   owner?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
   primaryTeam?: Prisma.XOR<Prisma.TeamNullableScalarRelationFilter, Prisma.TeamWhereInput> | null
   primaryProject?: Prisma.XOR<Prisma.ProjectNullableScalarRelationFilter, Prisma.ProjectWhereInput> | null
@@ -566,6 +575,7 @@ export type ContractorOrderByWithRelationInput = {
   peppolSchemeId?: Prisma.SortOrderInput | Prisma.SortOrder
   peppolParticipantValue?: Prisma.SortOrderInput | Prisma.SortOrder
   isBusinessCustomer?: Prisma.SortOrder
+  workerId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   archivedAt?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -574,6 +584,7 @@ export type ContractorOrderByWithRelationInput = {
   preferredPaczkomatName?: Prisma.SortOrderInput | Prisma.SortOrder
   preferredPaczkomatAddress?: Prisma.SortOrderInput | Prisma.SortOrder
   organization?: Prisma.OrganizationOrderByWithRelationInput
+  worker?: Prisma.WorkerOrderByWithRelationInput
   owner?: Prisma.UserOrderByWithRelationInput
   primaryTeam?: Prisma.TeamOrderByWithRelationInput
   primaryProject?: Prisma.ProjectOrderByWithRelationInput
@@ -608,6 +619,7 @@ export type ContractorOrderByWithRelationInput = {
 
 export type ContractorWhereUniqueInput = Prisma.AtLeast<{
   id?: string
+  workerId?: string
   organizationId_taxId?: Prisma.ContractorOrganizationIdTaxIdCompoundUniqueInput
   AND?: Prisma.ContractorWhereInput | Prisma.ContractorWhereInput[]
   OR?: Prisma.ContractorWhereInput[]
@@ -657,6 +669,7 @@ export type ContractorWhereUniqueInput = Prisma.AtLeast<{
   preferredPaczkomatName?: Prisma.StringNullableFilter<"Contractor"> | string | null
   preferredPaczkomatAddress?: Prisma.StringNullableFilter<"Contractor"> | string | null
   organization?: Prisma.XOR<Prisma.OrganizationScalarRelationFilter, Prisma.OrganizationWhereInput>
+  worker?: Prisma.XOR<Prisma.WorkerNullableScalarRelationFilter, Prisma.WorkerWhereInput> | null
   owner?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
   primaryTeam?: Prisma.XOR<Prisma.TeamNullableScalarRelationFilter, Prisma.TeamWhereInput> | null
   primaryProject?: Prisma.XOR<Prisma.ProjectNullableScalarRelationFilter, Prisma.ProjectWhereInput> | null
@@ -687,7 +700,7 @@ export type ContractorWhereUniqueInput = Prisma.AtLeast<{
   deprovisioningRuns?: Prisma.DeprovisioningRunListRelationFilter
   paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckListRelationFilter
   freeZoneAssignment?: Prisma.XOR<Prisma.FreeZoneAssignmentNullableScalarRelationFilter, Prisma.FreeZoneAssignmentWhereInput> | null
-}, "id" | "organizationId_taxId">
+}, "id" | "workerId" | "organizationId_taxId">
 
 export type ContractorOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
@@ -728,6 +741,7 @@ export type ContractorOrderByWithAggregationInput = {
   peppolSchemeId?: Prisma.SortOrderInput | Prisma.SortOrder
   peppolParticipantValue?: Prisma.SortOrderInput | Prisma.SortOrder
   isBusinessCustomer?: Prisma.SortOrder
+  workerId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   archivedAt?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -782,6 +796,7 @@ export type ContractorScalarWhereWithAggregatesInput = {
   peppolSchemeId?: Prisma.StringNullableWithAggregatesFilter<"Contractor"> | string | null
   peppolParticipantValue?: Prisma.StringNullableWithAggregatesFilter<"Contractor"> | string | null
   isBusinessCustomer?: Prisma.BoolWithAggregatesFilter<"Contractor"> | boolean
+  workerId?: Prisma.StringNullableWithAggregatesFilter<"Contractor"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Contractor"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Contractor"> | Date | string
   archivedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Contractor"> | Date | string | null
@@ -832,6 +847,7 @@ export type ContractorCreateInput = {
   preferredPaczkomatName?: string | null
   preferredPaczkomatAddress?: string | null
   organization: Prisma.OrganizationCreateNestedOneWithoutContractorsInput
+  worker?: Prisma.WorkerCreateNestedOneWithoutContractorInput
   owner?: Prisma.UserCreateNestedOneWithoutOwnedContractorsInput
   primaryTeam?: Prisma.TeamCreateNestedOneWithoutContractorsInput
   primaryProject?: Prisma.ProjectCreateNestedOneWithoutContractorsInput
@@ -903,6 +919,7 @@ export type ContractorUncheckedCreateInput = {
   peppolSchemeId?: string | null
   peppolParticipantValue?: string | null
   isBusinessCustomer?: boolean
+  workerId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   archivedAt?: Date | string | null
@@ -978,6 +995,7 @@ export type ContractorUpdateInput = {
   preferredPaczkomatName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   preferredPaczkomatAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutContractorsNestedInput
+  worker?: Prisma.WorkerUpdateOneWithoutContractorNestedInput
   owner?: Prisma.UserUpdateOneWithoutOwnedContractorsNestedInput
   primaryTeam?: Prisma.TeamUpdateOneWithoutContractorsNestedInput
   primaryProject?: Prisma.ProjectUpdateOneWithoutContractorsNestedInput
@@ -1049,6 +1067,7 @@ export type ContractorUncheckedUpdateInput = {
   peppolSchemeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   peppolParticipantValue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isBusinessCustomer?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  workerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1122,6 +1141,7 @@ export type ContractorCreateManyInput = {
   peppolSchemeId?: string | null
   peppolParticipantValue?: string | null
   isBusinessCustomer?: boolean
+  workerId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   archivedAt?: Date | string | null
@@ -1212,6 +1232,7 @@ export type ContractorUncheckedUpdateManyInput = {
   peppolSchemeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   peppolParticipantValue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isBusinessCustomer?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  workerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1285,6 +1306,7 @@ export type ContractorCountOrderByAggregateInput = {
   peppolSchemeId?: Prisma.SortOrder
   peppolParticipantValue?: Prisma.SortOrder
   isBusinessCustomer?: Prisma.SortOrder
+  workerId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   archivedAt?: Prisma.SortOrder
@@ -1331,6 +1353,7 @@ export type ContractorMaxOrderByAggregateInput = {
   peppolSchemeId?: Prisma.SortOrder
   peppolParticipantValue?: Prisma.SortOrder
   isBusinessCustomer?: Prisma.SortOrder
+  workerId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   archivedAt?: Prisma.SortOrder
@@ -1377,6 +1400,7 @@ export type ContractorMinOrderByAggregateInput = {
   peppolSchemeId?: Prisma.SortOrder
   peppolParticipantValue?: Prisma.SortOrder
   isBusinessCustomer?: Prisma.SortOrder
+  workerId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   archivedAt?: Prisma.SortOrder
@@ -1956,6 +1980,38 @@ export type ContractorUpdateOneRequiredWithoutTimeEntriesNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.ContractorUpdateToOneWithWhereWithoutTimeEntriesInput, Prisma.ContractorUpdateWithoutTimeEntriesInput>, Prisma.ContractorUncheckedUpdateWithoutTimeEntriesInput>
 }
 
+export type ContractorCreateNestedOneWithoutWorkerInput = {
+  create?: Prisma.XOR<Prisma.ContractorCreateWithoutWorkerInput, Prisma.ContractorUncheckedCreateWithoutWorkerInput>
+  connectOrCreate?: Prisma.ContractorCreateOrConnectWithoutWorkerInput
+  connect?: Prisma.ContractorWhereUniqueInput
+}
+
+export type ContractorUncheckedCreateNestedOneWithoutWorkerInput = {
+  create?: Prisma.XOR<Prisma.ContractorCreateWithoutWorkerInput, Prisma.ContractorUncheckedCreateWithoutWorkerInput>
+  connectOrCreate?: Prisma.ContractorCreateOrConnectWithoutWorkerInput
+  connect?: Prisma.ContractorWhereUniqueInput
+}
+
+export type ContractorUpdateOneWithoutWorkerNestedInput = {
+  create?: Prisma.XOR<Prisma.ContractorCreateWithoutWorkerInput, Prisma.ContractorUncheckedCreateWithoutWorkerInput>
+  connectOrCreate?: Prisma.ContractorCreateOrConnectWithoutWorkerInput
+  upsert?: Prisma.ContractorUpsertWithoutWorkerInput
+  disconnect?: Prisma.ContractorWhereInput | boolean
+  delete?: Prisma.ContractorWhereInput | boolean
+  connect?: Prisma.ContractorWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.ContractorUpdateToOneWithWhereWithoutWorkerInput, Prisma.ContractorUpdateWithoutWorkerInput>, Prisma.ContractorUncheckedUpdateWithoutWorkerInput>
+}
+
+export type ContractorUncheckedUpdateOneWithoutWorkerNestedInput = {
+  create?: Prisma.XOR<Prisma.ContractorCreateWithoutWorkerInput, Prisma.ContractorUncheckedCreateWithoutWorkerInput>
+  connectOrCreate?: Prisma.ContractorCreateOrConnectWithoutWorkerInput
+  upsert?: Prisma.ContractorUpsertWithoutWorkerInput
+  disconnect?: Prisma.ContractorWhereInput | boolean
+  delete?: Prisma.ContractorWhereInput | boolean
+  connect?: Prisma.ContractorWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.ContractorUpdateToOneWithWhereWithoutWorkerInput, Prisma.ContractorUpdateWithoutWorkerInput>, Prisma.ContractorUncheckedUpdateWithoutWorkerInput>
+}
+
 export type ContractorCreateNestedManyWithoutWorkflowRoleInput = {
   create?: Prisma.XOR<Prisma.ContractorCreateWithoutWorkflowRoleInput, Prisma.ContractorUncheckedCreateWithoutWorkflowRoleInput> | Prisma.ContractorCreateWithoutWorkflowRoleInput[] | Prisma.ContractorUncheckedCreateWithoutWorkflowRoleInput[]
   connectOrCreate?: Prisma.ContractorCreateOrConnectWithoutWorkflowRoleInput | Prisma.ContractorCreateOrConnectWithoutWorkflowRoleInput[]
@@ -2055,6 +2111,7 @@ export type ContractorCreateWithoutOwnerInput = {
   preferredPaczkomatName?: string | null
   preferredPaczkomatAddress?: string | null
   organization: Prisma.OrganizationCreateNestedOneWithoutContractorsInput
+  worker?: Prisma.WorkerCreateNestedOneWithoutContractorInput
   primaryTeam?: Prisma.TeamCreateNestedOneWithoutContractorsInput
   primaryProject?: Prisma.ProjectCreateNestedOneWithoutContractorsInput
   defaultCostCenter?: Prisma.CostCenterCreateNestedOneWithoutContractorsInput
@@ -2124,6 +2181,7 @@ export type ContractorUncheckedCreateWithoutOwnerInput = {
   peppolSchemeId?: string | null
   peppolParticipantValue?: string | null
   isBusinessCustomer?: boolean
+  workerId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   archivedAt?: Date | string | null
@@ -2226,6 +2284,7 @@ export type ContractorScalarWhereInput = {
   peppolSchemeId?: Prisma.StringNullableFilter<"Contractor"> | string | null
   peppolParticipantValue?: Prisma.StringNullableFilter<"Contractor"> | string | null
   isBusinessCustomer?: Prisma.BoolFilter<"Contractor"> | boolean
+  workerId?: Prisma.StringNullableFilter<"Contractor"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Contractor"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Contractor"> | Date | string
   archivedAt?: Prisma.DateTimeNullableFilter<"Contractor"> | Date | string | null
@@ -2276,6 +2335,7 @@ export type ContractorCreateWithoutIr35ChainParticipantLinksInput = {
   preferredPaczkomatName?: string | null
   preferredPaczkomatAddress?: string | null
   organization: Prisma.OrganizationCreateNestedOneWithoutContractorsInput
+  worker?: Prisma.WorkerCreateNestedOneWithoutContractorInput
   owner?: Prisma.UserCreateNestedOneWithoutOwnedContractorsInput
   primaryTeam?: Prisma.TeamCreateNestedOneWithoutContractorsInput
   primaryProject?: Prisma.ProjectCreateNestedOneWithoutContractorsInput
@@ -2346,6 +2406,7 @@ export type ContractorUncheckedCreateWithoutIr35ChainParticipantLinksInput = {
   peppolSchemeId?: string | null
   peppolParticipantValue?: string | null
   isBusinessCustomer?: boolean
+  workerId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   archivedAt?: Date | string | null
@@ -2436,6 +2497,7 @@ export type ContractorUpdateWithoutIr35ChainParticipantLinksInput = {
   preferredPaczkomatName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   preferredPaczkomatAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutContractorsNestedInput
+  worker?: Prisma.WorkerUpdateOneWithoutContractorNestedInput
   owner?: Prisma.UserUpdateOneWithoutOwnedContractorsNestedInput
   primaryTeam?: Prisma.TeamUpdateOneWithoutContractorsNestedInput
   primaryProject?: Prisma.ProjectUpdateOneWithoutContractorsNestedInput
@@ -2506,6 +2568,7 @@ export type ContractorUncheckedUpdateWithoutIr35ChainParticipantLinksInput = {
   peppolSchemeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   peppolParticipantValue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isBusinessCustomer?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  workerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2580,6 +2643,7 @@ export type ContractorCreateWithoutContractsInput = {
   preferredPaczkomatName?: string | null
   preferredPaczkomatAddress?: string | null
   organization: Prisma.OrganizationCreateNestedOneWithoutContractorsInput
+  worker?: Prisma.WorkerCreateNestedOneWithoutContractorInput
   owner?: Prisma.UserCreateNestedOneWithoutOwnedContractorsInput
   primaryTeam?: Prisma.TeamCreateNestedOneWithoutContractorsInput
   primaryProject?: Prisma.ProjectCreateNestedOneWithoutContractorsInput
@@ -2650,6 +2714,7 @@ export type ContractorUncheckedCreateWithoutContractsInput = {
   peppolSchemeId?: string | null
   peppolParticipantValue?: string | null
   isBusinessCustomer?: boolean
+  workerId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   archivedAt?: Date | string | null
@@ -2740,6 +2805,7 @@ export type ContractorUpdateWithoutContractsInput = {
   preferredPaczkomatName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   preferredPaczkomatAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutContractorsNestedInput
+  worker?: Prisma.WorkerUpdateOneWithoutContractorNestedInput
   owner?: Prisma.UserUpdateOneWithoutOwnedContractorsNestedInput
   primaryTeam?: Prisma.TeamUpdateOneWithoutContractorsNestedInput
   primaryProject?: Prisma.ProjectUpdateOneWithoutContractorsNestedInput
@@ -2810,6 +2876,7 @@ export type ContractorUncheckedUpdateWithoutContractsInput = {
   peppolSchemeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   peppolParticipantValue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isBusinessCustomer?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  workerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2884,6 +2951,7 @@ export type ContractorCreateWithoutContactsInput = {
   preferredPaczkomatName?: string | null
   preferredPaczkomatAddress?: string | null
   organization: Prisma.OrganizationCreateNestedOneWithoutContractorsInput
+  worker?: Prisma.WorkerCreateNestedOneWithoutContractorInput
   owner?: Prisma.UserCreateNestedOneWithoutOwnedContractorsInput
   primaryTeam?: Prisma.TeamCreateNestedOneWithoutContractorsInput
   primaryProject?: Prisma.ProjectCreateNestedOneWithoutContractorsInput
@@ -2954,6 +3022,7 @@ export type ContractorUncheckedCreateWithoutContactsInput = {
   peppolSchemeId?: string | null
   peppolParticipantValue?: string | null
   isBusinessCustomer?: boolean
+  workerId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   archivedAt?: Date | string | null
@@ -3044,6 +3113,7 @@ export type ContractorUpdateWithoutContactsInput = {
   preferredPaczkomatName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   preferredPaczkomatAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutContractorsNestedInput
+  worker?: Prisma.WorkerUpdateOneWithoutContractorNestedInput
   owner?: Prisma.UserUpdateOneWithoutOwnedContractorsNestedInput
   primaryTeam?: Prisma.TeamUpdateOneWithoutContractorsNestedInput
   primaryProject?: Prisma.ProjectUpdateOneWithoutContractorsNestedInput
@@ -3114,6 +3184,7 @@ export type ContractorUncheckedUpdateWithoutContactsInput = {
   peppolSchemeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   peppolParticipantValue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isBusinessCustomer?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  workerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -3188,6 +3259,7 @@ export type ContractorCreateWithoutBillingProfilesInput = {
   preferredPaczkomatName?: string | null
   preferredPaczkomatAddress?: string | null
   organization: Prisma.OrganizationCreateNestedOneWithoutContractorsInput
+  worker?: Prisma.WorkerCreateNestedOneWithoutContractorInput
   owner?: Prisma.UserCreateNestedOneWithoutOwnedContractorsInput
   primaryTeam?: Prisma.TeamCreateNestedOneWithoutContractorsInput
   primaryProject?: Prisma.ProjectCreateNestedOneWithoutContractorsInput
@@ -3258,6 +3330,7 @@ export type ContractorUncheckedCreateWithoutBillingProfilesInput = {
   peppolSchemeId?: string | null
   peppolParticipantValue?: string | null
   isBusinessCustomer?: boolean
+  workerId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   archivedAt?: Date | string | null
@@ -3348,6 +3421,7 @@ export type ContractorUpdateWithoutBillingProfilesInput = {
   preferredPaczkomatName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   preferredPaczkomatAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutContractorsNestedInput
+  worker?: Prisma.WorkerUpdateOneWithoutContractorNestedInput
   owner?: Prisma.UserUpdateOneWithoutOwnedContractorsNestedInput
   primaryTeam?: Prisma.TeamUpdateOneWithoutContractorsNestedInput
   primaryProject?: Prisma.ProjectUpdateOneWithoutContractorsNestedInput
@@ -3418,6 +3492,7 @@ export type ContractorUncheckedUpdateWithoutBillingProfilesInput = {
   peppolSchemeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   peppolParticipantValue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isBusinessCustomer?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  workerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -3492,6 +3567,7 @@ export type ContractorCreateWithoutAssignmentsInput = {
   preferredPaczkomatName?: string | null
   preferredPaczkomatAddress?: string | null
   organization: Prisma.OrganizationCreateNestedOneWithoutContractorsInput
+  worker?: Prisma.WorkerCreateNestedOneWithoutContractorInput
   owner?: Prisma.UserCreateNestedOneWithoutOwnedContractorsInput
   primaryTeam?: Prisma.TeamCreateNestedOneWithoutContractorsInput
   primaryProject?: Prisma.ProjectCreateNestedOneWithoutContractorsInput
@@ -3562,6 +3638,7 @@ export type ContractorUncheckedCreateWithoutAssignmentsInput = {
   peppolSchemeId?: string | null
   peppolParticipantValue?: string | null
   isBusinessCustomer?: boolean
+  workerId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   archivedAt?: Date | string | null
@@ -3652,6 +3729,7 @@ export type ContractorUpdateWithoutAssignmentsInput = {
   preferredPaczkomatName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   preferredPaczkomatAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutContractorsNestedInput
+  worker?: Prisma.WorkerUpdateOneWithoutContractorNestedInput
   owner?: Prisma.UserUpdateOneWithoutOwnedContractorsNestedInput
   primaryTeam?: Prisma.TeamUpdateOneWithoutContractorsNestedInput
   primaryProject?: Prisma.ProjectUpdateOneWithoutContractorsNestedInput
@@ -3722,6 +3800,7 @@ export type ContractorUncheckedUpdateWithoutAssignmentsInput = {
   peppolSchemeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   peppolParticipantValue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isBusinessCustomer?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  workerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -3796,6 +3875,7 @@ export type ContractorCreateWithoutTagsInput = {
   preferredPaczkomatName?: string | null
   preferredPaczkomatAddress?: string | null
   organization: Prisma.OrganizationCreateNestedOneWithoutContractorsInput
+  worker?: Prisma.WorkerCreateNestedOneWithoutContractorInput
   owner?: Prisma.UserCreateNestedOneWithoutOwnedContractorsInput
   primaryTeam?: Prisma.TeamCreateNestedOneWithoutContractorsInput
   primaryProject?: Prisma.ProjectCreateNestedOneWithoutContractorsInput
@@ -3866,6 +3946,7 @@ export type ContractorUncheckedCreateWithoutTagsInput = {
   peppolSchemeId?: string | null
   peppolParticipantValue?: string | null
   isBusinessCustomer?: boolean
+  workerId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   archivedAt?: Date | string | null
@@ -3956,6 +4037,7 @@ export type ContractorUpdateWithoutTagsInput = {
   preferredPaczkomatName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   preferredPaczkomatAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutContractorsNestedInput
+  worker?: Prisma.WorkerUpdateOneWithoutContractorNestedInput
   owner?: Prisma.UserUpdateOneWithoutOwnedContractorsNestedInput
   primaryTeam?: Prisma.TeamUpdateOneWithoutContractorsNestedInput
   primaryProject?: Prisma.ProjectUpdateOneWithoutContractorsNestedInput
@@ -4026,6 +4108,7 @@ export type ContractorUncheckedUpdateWithoutTagsInput = {
   peppolSchemeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   peppolParticipantValue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isBusinessCustomer?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  workerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -4100,6 +4183,7 @@ export type ContractorCreateWithoutComplianceItemsInput = {
   preferredPaczkomatName?: string | null
   preferredPaczkomatAddress?: string | null
   organization: Prisma.OrganizationCreateNestedOneWithoutContractorsInput
+  worker?: Prisma.WorkerCreateNestedOneWithoutContractorInput
   owner?: Prisma.UserCreateNestedOneWithoutOwnedContractorsInput
   primaryTeam?: Prisma.TeamCreateNestedOneWithoutContractorsInput
   primaryProject?: Prisma.ProjectCreateNestedOneWithoutContractorsInput
@@ -4170,6 +4254,7 @@ export type ContractorUncheckedCreateWithoutComplianceItemsInput = {
   peppolSchemeId?: string | null
   peppolParticipantValue?: string | null
   isBusinessCustomer?: boolean
+  workerId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   archivedAt?: Date | string | null
@@ -4260,6 +4345,7 @@ export type ContractorUpdateWithoutComplianceItemsInput = {
   preferredPaczkomatName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   preferredPaczkomatAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutContractorsNestedInput
+  worker?: Prisma.WorkerUpdateOneWithoutContractorNestedInput
   owner?: Prisma.UserUpdateOneWithoutOwnedContractorsNestedInput
   primaryTeam?: Prisma.TeamUpdateOneWithoutContractorsNestedInput
   primaryProject?: Prisma.ProjectUpdateOneWithoutContractorsNestedInput
@@ -4330,6 +4416,7 @@ export type ContractorUncheckedUpdateWithoutComplianceItemsInput = {
   peppolSchemeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   peppolParticipantValue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isBusinessCustomer?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  workerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -4404,6 +4491,7 @@ export type ContractorCreateWithoutLeitwegIdsInput = {
   preferredPaczkomatName?: string | null
   preferredPaczkomatAddress?: string | null
   organization: Prisma.OrganizationCreateNestedOneWithoutContractorsInput
+  worker?: Prisma.WorkerCreateNestedOneWithoutContractorInput
   owner?: Prisma.UserCreateNestedOneWithoutOwnedContractorsInput
   primaryTeam?: Prisma.TeamCreateNestedOneWithoutContractorsInput
   primaryProject?: Prisma.ProjectCreateNestedOneWithoutContractorsInput
@@ -4474,6 +4562,7 @@ export type ContractorUncheckedCreateWithoutLeitwegIdsInput = {
   peppolSchemeId?: string | null
   peppolParticipantValue?: string | null
   isBusinessCustomer?: boolean
+  workerId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   archivedAt?: Date | string | null
@@ -4564,6 +4653,7 @@ export type ContractorUpdateWithoutLeitwegIdsInput = {
   preferredPaczkomatName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   preferredPaczkomatAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutContractorsNestedInput
+  worker?: Prisma.WorkerUpdateOneWithoutContractorNestedInput
   owner?: Prisma.UserUpdateOneWithoutOwnedContractorsNestedInput
   primaryTeam?: Prisma.TeamUpdateOneWithoutContractorsNestedInput
   primaryProject?: Prisma.ProjectUpdateOneWithoutContractorsNestedInput
@@ -4634,6 +4724,7 @@ export type ContractorUncheckedUpdateWithoutLeitwegIdsInput = {
   peppolSchemeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   peppolParticipantValue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isBusinessCustomer?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  workerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -4708,6 +4799,7 @@ export type ContractorCreateWithoutEquipmentAssignmentsInput = {
   preferredPaczkomatName?: string | null
   preferredPaczkomatAddress?: string | null
   organization: Prisma.OrganizationCreateNestedOneWithoutContractorsInput
+  worker?: Prisma.WorkerCreateNestedOneWithoutContractorInput
   owner?: Prisma.UserCreateNestedOneWithoutOwnedContractorsInput
   primaryTeam?: Prisma.TeamCreateNestedOneWithoutContractorsInput
   primaryProject?: Prisma.ProjectCreateNestedOneWithoutContractorsInput
@@ -4778,6 +4870,7 @@ export type ContractorUncheckedCreateWithoutEquipmentAssignmentsInput = {
   peppolSchemeId?: string | null
   peppolParticipantValue?: string | null
   isBusinessCustomer?: boolean
+  workerId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   archivedAt?: Date | string | null
@@ -4868,6 +4961,7 @@ export type ContractorUpdateWithoutEquipmentAssignmentsInput = {
   preferredPaczkomatName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   preferredPaczkomatAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutContractorsNestedInput
+  worker?: Prisma.WorkerUpdateOneWithoutContractorNestedInput
   owner?: Prisma.UserUpdateOneWithoutOwnedContractorsNestedInput
   primaryTeam?: Prisma.TeamUpdateOneWithoutContractorsNestedInput
   primaryProject?: Prisma.ProjectUpdateOneWithoutContractorsNestedInput
@@ -4938,6 +5032,7 @@ export type ContractorUncheckedUpdateWithoutEquipmentAssignmentsInput = {
   peppolSchemeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   peppolParticipantValue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isBusinessCustomer?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  workerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -5012,6 +5107,7 @@ export type ContractorCreateWithoutReturnRequestsInput = {
   preferredPaczkomatName?: string | null
   preferredPaczkomatAddress?: string | null
   organization: Prisma.OrganizationCreateNestedOneWithoutContractorsInput
+  worker?: Prisma.WorkerCreateNestedOneWithoutContractorInput
   owner?: Prisma.UserCreateNestedOneWithoutOwnedContractorsInput
   primaryTeam?: Prisma.TeamCreateNestedOneWithoutContractorsInput
   primaryProject?: Prisma.ProjectCreateNestedOneWithoutContractorsInput
@@ -5082,6 +5178,7 @@ export type ContractorUncheckedCreateWithoutReturnRequestsInput = {
   peppolSchemeId?: string | null
   peppolParticipantValue?: string | null
   isBusinessCustomer?: boolean
+  workerId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   archivedAt?: Date | string | null
@@ -5172,6 +5269,7 @@ export type ContractorUpdateWithoutReturnRequestsInput = {
   preferredPaczkomatName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   preferredPaczkomatAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutContractorsNestedInput
+  worker?: Prisma.WorkerUpdateOneWithoutContractorNestedInput
   owner?: Prisma.UserUpdateOneWithoutOwnedContractorsNestedInput
   primaryTeam?: Prisma.TeamUpdateOneWithoutContractorsNestedInput
   primaryProject?: Prisma.ProjectUpdateOneWithoutContractorsNestedInput
@@ -5242,6 +5340,7 @@ export type ContractorUncheckedUpdateWithoutReturnRequestsInput = {
   peppolSchemeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   peppolParticipantValue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isBusinessCustomer?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  workerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -5316,6 +5415,7 @@ export type ContractorCreateWithoutFreeZoneAssignmentInput = {
   preferredPaczkomatName?: string | null
   preferredPaczkomatAddress?: string | null
   organization: Prisma.OrganizationCreateNestedOneWithoutContractorsInput
+  worker?: Prisma.WorkerCreateNestedOneWithoutContractorInput
   owner?: Prisma.UserCreateNestedOneWithoutOwnedContractorsInput
   primaryTeam?: Prisma.TeamCreateNestedOneWithoutContractorsInput
   primaryProject?: Prisma.ProjectCreateNestedOneWithoutContractorsInput
@@ -5386,6 +5486,7 @@ export type ContractorUncheckedCreateWithoutFreeZoneAssignmentInput = {
   peppolSchemeId?: string | null
   peppolParticipantValue?: string | null
   isBusinessCustomer?: boolean
+  workerId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   archivedAt?: Date | string | null
@@ -5476,6 +5577,7 @@ export type ContractorUpdateWithoutFreeZoneAssignmentInput = {
   preferredPaczkomatName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   preferredPaczkomatAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutContractorsNestedInput
+  worker?: Prisma.WorkerUpdateOneWithoutContractorNestedInput
   owner?: Prisma.UserUpdateOneWithoutOwnedContractorsNestedInput
   primaryTeam?: Prisma.TeamUpdateOneWithoutContractorsNestedInput
   primaryProject?: Prisma.ProjectUpdateOneWithoutContractorsNestedInput
@@ -5546,6 +5648,7 @@ export type ContractorUncheckedUpdateWithoutFreeZoneAssignmentInput = {
   peppolSchemeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   peppolParticipantValue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isBusinessCustomer?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  workerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -5620,6 +5723,7 @@ export type ContractorCreateWithoutDeprovisioningRunsInput = {
   preferredPaczkomatName?: string | null
   preferredPaczkomatAddress?: string | null
   organization: Prisma.OrganizationCreateNestedOneWithoutContractorsInput
+  worker?: Prisma.WorkerCreateNestedOneWithoutContractorInput
   owner?: Prisma.UserCreateNestedOneWithoutOwnedContractorsInput
   primaryTeam?: Prisma.TeamCreateNestedOneWithoutContractorsInput
   primaryProject?: Prisma.ProjectCreateNestedOneWithoutContractorsInput
@@ -5690,6 +5794,7 @@ export type ContractorUncheckedCreateWithoutDeprovisioningRunsInput = {
   peppolSchemeId?: string | null
   peppolParticipantValue?: string | null
   isBusinessCustomer?: boolean
+  workerId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   archivedAt?: Date | string | null
@@ -5780,6 +5885,7 @@ export type ContractorUpdateWithoutDeprovisioningRunsInput = {
   preferredPaczkomatName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   preferredPaczkomatAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutContractorsNestedInput
+  worker?: Prisma.WorkerUpdateOneWithoutContractorNestedInput
   owner?: Prisma.UserUpdateOneWithoutOwnedContractorsNestedInput
   primaryTeam?: Prisma.TeamUpdateOneWithoutContractorsNestedInput
   primaryProject?: Prisma.ProjectUpdateOneWithoutContractorsNestedInput
@@ -5850,6 +5956,7 @@ export type ContractorUncheckedUpdateWithoutDeprovisioningRunsInput = {
   peppolSchemeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   peppolParticipantValue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isBusinessCustomer?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  workerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -5924,6 +6031,7 @@ export type ContractorCreateWithoutInvoicesInput = {
   preferredPaczkomatName?: string | null
   preferredPaczkomatAddress?: string | null
   organization: Prisma.OrganizationCreateNestedOneWithoutContractorsInput
+  worker?: Prisma.WorkerCreateNestedOneWithoutContractorInput
   owner?: Prisma.UserCreateNestedOneWithoutOwnedContractorsInput
   primaryTeam?: Prisma.TeamCreateNestedOneWithoutContractorsInput
   primaryProject?: Prisma.ProjectCreateNestedOneWithoutContractorsInput
@@ -5994,6 +6102,7 @@ export type ContractorUncheckedCreateWithoutInvoicesInput = {
   peppolSchemeId?: string | null
   peppolParticipantValue?: string | null
   isBusinessCustomer?: boolean
+  workerId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   archivedAt?: Date | string | null
@@ -6084,6 +6193,7 @@ export type ContractorUpdateWithoutInvoicesInput = {
   preferredPaczkomatName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   preferredPaczkomatAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutContractorsNestedInput
+  worker?: Prisma.WorkerUpdateOneWithoutContractorNestedInput
   owner?: Prisma.UserUpdateOneWithoutOwnedContractorsNestedInput
   primaryTeam?: Prisma.TeamUpdateOneWithoutContractorsNestedInput
   primaryProject?: Prisma.ProjectUpdateOneWithoutContractorsNestedInput
@@ -6154,6 +6264,7 @@ export type ContractorUncheckedUpdateWithoutInvoicesInput = {
   peppolSchemeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   peppolParticipantValue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isBusinessCustomer?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  workerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -6228,6 +6339,7 @@ export type ContractorCreateWithoutIntakesInput = {
   preferredPaczkomatName?: string | null
   preferredPaczkomatAddress?: string | null
   organization: Prisma.OrganizationCreateNestedOneWithoutContractorsInput
+  worker?: Prisma.WorkerCreateNestedOneWithoutContractorInput
   owner?: Prisma.UserCreateNestedOneWithoutOwnedContractorsInput
   primaryTeam?: Prisma.TeamCreateNestedOneWithoutContractorsInput
   primaryProject?: Prisma.ProjectCreateNestedOneWithoutContractorsInput
@@ -6298,6 +6410,7 @@ export type ContractorUncheckedCreateWithoutIntakesInput = {
   peppolSchemeId?: string | null
   peppolParticipantValue?: string | null
   isBusinessCustomer?: boolean
+  workerId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   archivedAt?: Date | string | null
@@ -6388,6 +6501,7 @@ export type ContractorUpdateWithoutIntakesInput = {
   preferredPaczkomatName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   preferredPaczkomatAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutContractorsNestedInput
+  worker?: Prisma.WorkerUpdateOneWithoutContractorNestedInput
   owner?: Prisma.UserUpdateOneWithoutOwnedContractorsNestedInput
   primaryTeam?: Prisma.TeamUpdateOneWithoutContractorsNestedInput
   primaryProject?: Prisma.ProjectUpdateOneWithoutContractorsNestedInput
@@ -6458,6 +6572,7 @@ export type ContractorUncheckedUpdateWithoutIntakesInput = {
   peppolSchemeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   peppolParticipantValue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isBusinessCustomer?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  workerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -6531,6 +6646,7 @@ export type ContractorCreateWithoutOrganizationInput = {
   preferredPaczkomatId?: string | null
   preferredPaczkomatName?: string | null
   preferredPaczkomatAddress?: string | null
+  worker?: Prisma.WorkerCreateNestedOneWithoutContractorInput
   owner?: Prisma.UserCreateNestedOneWithoutOwnedContractorsInput
   primaryTeam?: Prisma.TeamCreateNestedOneWithoutContractorsInput
   primaryProject?: Prisma.ProjectCreateNestedOneWithoutContractorsInput
@@ -6601,6 +6717,7 @@ export type ContractorUncheckedCreateWithoutOrganizationInput = {
   peppolSchemeId?: string | null
   peppolParticipantValue?: string | null
   isBusinessCustomer?: boolean
+  workerId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   archivedAt?: Date | string | null
@@ -6702,6 +6819,7 @@ export type ContractorCreateWithoutPrimaryTeamInput = {
   preferredPaczkomatName?: string | null
   preferredPaczkomatAddress?: string | null
   organization: Prisma.OrganizationCreateNestedOneWithoutContractorsInput
+  worker?: Prisma.WorkerCreateNestedOneWithoutContractorInput
   owner?: Prisma.UserCreateNestedOneWithoutOwnedContractorsInput
   primaryProject?: Prisma.ProjectCreateNestedOneWithoutContractorsInput
   defaultCostCenter?: Prisma.CostCenterCreateNestedOneWithoutContractorsInput
@@ -6771,6 +6889,7 @@ export type ContractorUncheckedCreateWithoutPrimaryTeamInput = {
   peppolSchemeId?: string | null
   peppolParticipantValue?: string | null
   isBusinessCustomer?: boolean
+  workerId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   archivedAt?: Date | string | null
@@ -6872,6 +6991,7 @@ export type ContractorCreateWithoutPrimaryProjectInput = {
   preferredPaczkomatName?: string | null
   preferredPaczkomatAddress?: string | null
   organization: Prisma.OrganizationCreateNestedOneWithoutContractorsInput
+  worker?: Prisma.WorkerCreateNestedOneWithoutContractorInput
   owner?: Prisma.UserCreateNestedOneWithoutOwnedContractorsInput
   primaryTeam?: Prisma.TeamCreateNestedOneWithoutContractorsInput
   defaultCostCenter?: Prisma.CostCenterCreateNestedOneWithoutContractorsInput
@@ -6941,6 +7061,7 @@ export type ContractorUncheckedCreateWithoutPrimaryProjectInput = {
   peppolSchemeId?: string | null
   peppolParticipantValue?: string | null
   isBusinessCustomer?: boolean
+  workerId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   archivedAt?: Date | string | null
@@ -7042,6 +7163,7 @@ export type ContractorCreateWithoutDefaultCostCenterInput = {
   preferredPaczkomatName?: string | null
   preferredPaczkomatAddress?: string | null
   organization: Prisma.OrganizationCreateNestedOneWithoutContractorsInput
+  worker?: Prisma.WorkerCreateNestedOneWithoutContractorInput
   owner?: Prisma.UserCreateNestedOneWithoutOwnedContractorsInput
   primaryTeam?: Prisma.TeamCreateNestedOneWithoutContractorsInput
   primaryProject?: Prisma.ProjectCreateNestedOneWithoutContractorsInput
@@ -7111,6 +7233,7 @@ export type ContractorUncheckedCreateWithoutDefaultCostCenterInput = {
   peppolSchemeId?: string | null
   peppolParticipantValue?: string | null
   isBusinessCustomer?: boolean
+  workerId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   archivedAt?: Date | string | null
@@ -7212,6 +7335,7 @@ export type ContractorCreateWithoutPaymentRunItemsInput = {
   preferredPaczkomatName?: string | null
   preferredPaczkomatAddress?: string | null
   organization: Prisma.OrganizationCreateNestedOneWithoutContractorsInput
+  worker?: Prisma.WorkerCreateNestedOneWithoutContractorInput
   owner?: Prisma.UserCreateNestedOneWithoutOwnedContractorsInput
   primaryTeam?: Prisma.TeamCreateNestedOneWithoutContractorsInput
   primaryProject?: Prisma.ProjectCreateNestedOneWithoutContractorsInput
@@ -7282,6 +7406,7 @@ export type ContractorUncheckedCreateWithoutPaymentRunItemsInput = {
   peppolSchemeId?: string | null
   peppolParticipantValue?: string | null
   isBusinessCustomer?: boolean
+  workerId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   archivedAt?: Date | string | null
@@ -7372,6 +7497,7 @@ export type ContractorUpdateWithoutPaymentRunItemsInput = {
   preferredPaczkomatName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   preferredPaczkomatAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutContractorsNestedInput
+  worker?: Prisma.WorkerUpdateOneWithoutContractorNestedInput
   owner?: Prisma.UserUpdateOneWithoutOwnedContractorsNestedInput
   primaryTeam?: Prisma.TeamUpdateOneWithoutContractorsNestedInput
   primaryProject?: Prisma.ProjectUpdateOneWithoutContractorsNestedInput
@@ -7442,6 +7568,7 @@ export type ContractorUncheckedUpdateWithoutPaymentRunItemsInput = {
   peppolSchemeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   peppolParticipantValue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isBusinessCustomer?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  workerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -7516,6 +7643,7 @@ export type ContractorCreateWithoutPaymentComplianceChecksInput = {
   preferredPaczkomatName?: string | null
   preferredPaczkomatAddress?: string | null
   organization: Prisma.OrganizationCreateNestedOneWithoutContractorsInput
+  worker?: Prisma.WorkerCreateNestedOneWithoutContractorInput
   owner?: Prisma.UserCreateNestedOneWithoutOwnedContractorsInput
   primaryTeam?: Prisma.TeamCreateNestedOneWithoutContractorsInput
   primaryProject?: Prisma.ProjectCreateNestedOneWithoutContractorsInput
@@ -7586,6 +7714,7 @@ export type ContractorUncheckedCreateWithoutPaymentComplianceChecksInput = {
   peppolSchemeId?: string | null
   peppolParticipantValue?: string | null
   isBusinessCustomer?: boolean
+  workerId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   archivedAt?: Date | string | null
@@ -7676,6 +7805,7 @@ export type ContractorUpdateWithoutPaymentComplianceChecksInput = {
   preferredPaczkomatName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   preferredPaczkomatAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutContractorsNestedInput
+  worker?: Prisma.WorkerUpdateOneWithoutContractorNestedInput
   owner?: Prisma.UserUpdateOneWithoutOwnedContractorsNestedInput
   primaryTeam?: Prisma.TeamUpdateOneWithoutContractorsNestedInput
   primaryProject?: Prisma.ProjectUpdateOneWithoutContractorsNestedInput
@@ -7746,6 +7876,7 @@ export type ContractorUncheckedUpdateWithoutPaymentComplianceChecksInput = {
   peppolSchemeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   peppolParticipantValue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isBusinessCustomer?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  workerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -7820,6 +7951,7 @@ export type ContractorCreateWithoutPortalSessionsInput = {
   preferredPaczkomatName?: string | null
   preferredPaczkomatAddress?: string | null
   organization: Prisma.OrganizationCreateNestedOneWithoutContractorsInput
+  worker?: Prisma.WorkerCreateNestedOneWithoutContractorInput
   owner?: Prisma.UserCreateNestedOneWithoutOwnedContractorsInput
   primaryTeam?: Prisma.TeamCreateNestedOneWithoutContractorsInput
   primaryProject?: Prisma.ProjectCreateNestedOneWithoutContractorsInput
@@ -7890,6 +8022,7 @@ export type ContractorUncheckedCreateWithoutPortalSessionsInput = {
   peppolSchemeId?: string | null
   peppolParticipantValue?: string | null
   isBusinessCustomer?: boolean
+  workerId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   archivedAt?: Date | string | null
@@ -7980,6 +8113,7 @@ export type ContractorUpdateWithoutPortalSessionsInput = {
   preferredPaczkomatName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   preferredPaczkomatAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutContractorsNestedInput
+  worker?: Prisma.WorkerUpdateOneWithoutContractorNestedInput
   owner?: Prisma.UserUpdateOneWithoutOwnedContractorsNestedInput
   primaryTeam?: Prisma.TeamUpdateOneWithoutContractorsNestedInput
   primaryProject?: Prisma.ProjectUpdateOneWithoutContractorsNestedInput
@@ -8050,6 +8184,7 @@ export type ContractorUncheckedUpdateWithoutPortalSessionsInput = {
   peppolSchemeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   peppolParticipantValue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isBusinessCustomer?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  workerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -8124,6 +8259,7 @@ export type ContractorCreateWithoutChangeRequestsInput = {
   preferredPaczkomatName?: string | null
   preferredPaczkomatAddress?: string | null
   organization: Prisma.OrganizationCreateNestedOneWithoutContractorsInput
+  worker?: Prisma.WorkerCreateNestedOneWithoutContractorInput
   owner?: Prisma.UserCreateNestedOneWithoutOwnedContractorsInput
   primaryTeam?: Prisma.TeamCreateNestedOneWithoutContractorsInput
   primaryProject?: Prisma.ProjectCreateNestedOneWithoutContractorsInput
@@ -8194,6 +8330,7 @@ export type ContractorUncheckedCreateWithoutChangeRequestsInput = {
   peppolSchemeId?: string | null
   peppolParticipantValue?: string | null
   isBusinessCustomer?: boolean
+  workerId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   archivedAt?: Date | string | null
@@ -8284,6 +8421,7 @@ export type ContractorUpdateWithoutChangeRequestsInput = {
   preferredPaczkomatName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   preferredPaczkomatAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutContractorsNestedInput
+  worker?: Prisma.WorkerUpdateOneWithoutContractorNestedInput
   owner?: Prisma.UserUpdateOneWithoutOwnedContractorsNestedInput
   primaryTeam?: Prisma.TeamUpdateOneWithoutContractorsNestedInput
   primaryProject?: Prisma.ProjectUpdateOneWithoutContractorsNestedInput
@@ -8354,6 +8492,7 @@ export type ContractorUncheckedUpdateWithoutChangeRequestsInput = {
   peppolSchemeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   peppolParticipantValue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isBusinessCustomer?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  workerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -8428,6 +8567,7 @@ export type ContractorCreateWithoutNotificationPreferencesInput = {
   preferredPaczkomatName?: string | null
   preferredPaczkomatAddress?: string | null
   organization: Prisma.OrganizationCreateNestedOneWithoutContractorsInput
+  worker?: Prisma.WorkerCreateNestedOneWithoutContractorInput
   owner?: Prisma.UserCreateNestedOneWithoutOwnedContractorsInput
   primaryTeam?: Prisma.TeamCreateNestedOneWithoutContractorsInput
   primaryProject?: Prisma.ProjectCreateNestedOneWithoutContractorsInput
@@ -8498,6 +8638,7 @@ export type ContractorUncheckedCreateWithoutNotificationPreferencesInput = {
   peppolSchemeId?: string | null
   peppolParticipantValue?: string | null
   isBusinessCustomer?: boolean
+  workerId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   archivedAt?: Date | string | null
@@ -8588,6 +8729,7 @@ export type ContractorUpdateWithoutNotificationPreferencesInput = {
   preferredPaczkomatName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   preferredPaczkomatAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutContractorsNestedInput
+  worker?: Prisma.WorkerUpdateOneWithoutContractorNestedInput
   owner?: Prisma.UserUpdateOneWithoutOwnedContractorsNestedInput
   primaryTeam?: Prisma.TeamUpdateOneWithoutContractorsNestedInput
   primaryProject?: Prisma.ProjectUpdateOneWithoutContractorsNestedInput
@@ -8658,6 +8800,7 @@ export type ContractorUncheckedUpdateWithoutNotificationPreferencesInput = {
   peppolSchemeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   peppolParticipantValue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isBusinessCustomer?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  workerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -8732,6 +8875,7 @@ export type ContractorCreateWithoutTaxFormSubmissionsInput = {
   preferredPaczkomatName?: string | null
   preferredPaczkomatAddress?: string | null
   organization: Prisma.OrganizationCreateNestedOneWithoutContractorsInput
+  worker?: Prisma.WorkerCreateNestedOneWithoutContractorInput
   owner?: Prisma.UserCreateNestedOneWithoutOwnedContractorsInput
   primaryTeam?: Prisma.TeamCreateNestedOneWithoutContractorsInput
   primaryProject?: Prisma.ProjectCreateNestedOneWithoutContractorsInput
@@ -8802,6 +8946,7 @@ export type ContractorUncheckedCreateWithoutTaxFormSubmissionsInput = {
   peppolSchemeId?: string | null
   peppolParticipantValue?: string | null
   isBusinessCustomer?: boolean
+  workerId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   archivedAt?: Date | string | null
@@ -8892,6 +9037,7 @@ export type ContractorUpdateWithoutTaxFormSubmissionsInput = {
   preferredPaczkomatName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   preferredPaczkomatAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutContractorsNestedInput
+  worker?: Prisma.WorkerUpdateOneWithoutContractorNestedInput
   owner?: Prisma.UserUpdateOneWithoutOwnedContractorsNestedInput
   primaryTeam?: Prisma.TeamUpdateOneWithoutContractorsNestedInput
   primaryProject?: Prisma.ProjectUpdateOneWithoutContractorsNestedInput
@@ -8962,6 +9108,7 @@ export type ContractorUncheckedUpdateWithoutTaxFormSubmissionsInput = {
   peppolSchemeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   peppolParticipantValue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isBusinessCustomer?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  workerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -9036,6 +9183,7 @@ export type ContractorCreateWithoutForm1099NecInput = {
   preferredPaczkomatName?: string | null
   preferredPaczkomatAddress?: string | null
   organization: Prisma.OrganizationCreateNestedOneWithoutContractorsInput
+  worker?: Prisma.WorkerCreateNestedOneWithoutContractorInput
   owner?: Prisma.UserCreateNestedOneWithoutOwnedContractorsInput
   primaryTeam?: Prisma.TeamCreateNestedOneWithoutContractorsInput
   primaryProject?: Prisma.ProjectCreateNestedOneWithoutContractorsInput
@@ -9106,6 +9254,7 @@ export type ContractorUncheckedCreateWithoutForm1099NecInput = {
   peppolSchemeId?: string | null
   peppolParticipantValue?: string | null
   isBusinessCustomer?: boolean
+  workerId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   archivedAt?: Date | string | null
@@ -9196,6 +9345,7 @@ export type ContractorUpdateWithoutForm1099NecInput = {
   preferredPaczkomatName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   preferredPaczkomatAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutContractorsNestedInput
+  worker?: Prisma.WorkerUpdateOneWithoutContractorNestedInput
   owner?: Prisma.UserUpdateOneWithoutOwnedContractorsNestedInput
   primaryTeam?: Prisma.TeamUpdateOneWithoutContractorsNestedInput
   primaryProject?: Prisma.ProjectUpdateOneWithoutContractorsNestedInput
@@ -9266,6 +9416,7 @@ export type ContractorUncheckedUpdateWithoutForm1099NecInput = {
   peppolSchemeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   peppolParticipantValue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isBusinessCustomer?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  workerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -9340,6 +9491,7 @@ export type ContractorCreateWithoutTaxIdValidationsInput = {
   preferredPaczkomatName?: string | null
   preferredPaczkomatAddress?: string | null
   organization: Prisma.OrganizationCreateNestedOneWithoutContractorsInput
+  worker?: Prisma.WorkerCreateNestedOneWithoutContractorInput
   owner?: Prisma.UserCreateNestedOneWithoutOwnedContractorsInput
   primaryTeam?: Prisma.TeamCreateNestedOneWithoutContractorsInput
   primaryProject?: Prisma.ProjectCreateNestedOneWithoutContractorsInput
@@ -9410,6 +9562,7 @@ export type ContractorUncheckedCreateWithoutTaxIdValidationsInput = {
   peppolSchemeId?: string | null
   peppolParticipantValue?: string | null
   isBusinessCustomer?: boolean
+  workerId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   archivedAt?: Date | string | null
@@ -9500,6 +9653,7 @@ export type ContractorUpdateWithoutTaxIdValidationsInput = {
   preferredPaczkomatName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   preferredPaczkomatAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutContractorsNestedInput
+  worker?: Prisma.WorkerUpdateOneWithoutContractorNestedInput
   owner?: Prisma.UserUpdateOneWithoutOwnedContractorsNestedInput
   primaryTeam?: Prisma.TeamUpdateOneWithoutContractorsNestedInput
   primaryProject?: Prisma.ProjectUpdateOneWithoutContractorsNestedInput
@@ -9570,6 +9724,7 @@ export type ContractorUncheckedUpdateWithoutTaxIdValidationsInput = {
   peppolSchemeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   peppolParticipantValue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isBusinessCustomer?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  workerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -9644,6 +9799,7 @@ export type ContractorCreateWithoutTimesheetsInput = {
   preferredPaczkomatName?: string | null
   preferredPaczkomatAddress?: string | null
   organization: Prisma.OrganizationCreateNestedOneWithoutContractorsInput
+  worker?: Prisma.WorkerCreateNestedOneWithoutContractorInput
   owner?: Prisma.UserCreateNestedOneWithoutOwnedContractorsInput
   primaryTeam?: Prisma.TeamCreateNestedOneWithoutContractorsInput
   primaryProject?: Prisma.ProjectCreateNestedOneWithoutContractorsInput
@@ -9714,6 +9870,7 @@ export type ContractorUncheckedCreateWithoutTimesheetsInput = {
   peppolSchemeId?: string | null
   peppolParticipantValue?: string | null
   isBusinessCustomer?: boolean
+  workerId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   archivedAt?: Date | string | null
@@ -9804,6 +9961,7 @@ export type ContractorUpdateWithoutTimesheetsInput = {
   preferredPaczkomatName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   preferredPaczkomatAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutContractorsNestedInput
+  worker?: Prisma.WorkerUpdateOneWithoutContractorNestedInput
   owner?: Prisma.UserUpdateOneWithoutOwnedContractorsNestedInput
   primaryTeam?: Prisma.TeamUpdateOneWithoutContractorsNestedInput
   primaryProject?: Prisma.ProjectUpdateOneWithoutContractorsNestedInput
@@ -9874,6 +10032,7 @@ export type ContractorUncheckedUpdateWithoutTimesheetsInput = {
   peppolSchemeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   peppolParticipantValue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isBusinessCustomer?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  workerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -9948,6 +10107,7 @@ export type ContractorCreateWithoutTimeEntriesInput = {
   preferredPaczkomatName?: string | null
   preferredPaczkomatAddress?: string | null
   organization: Prisma.OrganizationCreateNestedOneWithoutContractorsInput
+  worker?: Prisma.WorkerCreateNestedOneWithoutContractorInput
   owner?: Prisma.UserCreateNestedOneWithoutOwnedContractorsInput
   primaryTeam?: Prisma.TeamCreateNestedOneWithoutContractorsInput
   primaryProject?: Prisma.ProjectCreateNestedOneWithoutContractorsInput
@@ -10018,6 +10178,7 @@ export type ContractorUncheckedCreateWithoutTimeEntriesInput = {
   peppolSchemeId?: string | null
   peppolParticipantValue?: string | null
   isBusinessCustomer?: boolean
+  workerId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   archivedAt?: Date | string | null
@@ -10108,6 +10269,7 @@ export type ContractorUpdateWithoutTimeEntriesInput = {
   preferredPaczkomatName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   preferredPaczkomatAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutContractorsNestedInput
+  worker?: Prisma.WorkerUpdateOneWithoutContractorNestedInput
   owner?: Prisma.UserUpdateOneWithoutOwnedContractorsNestedInput
   primaryTeam?: Prisma.TeamUpdateOneWithoutContractorsNestedInput
   primaryProject?: Prisma.ProjectUpdateOneWithoutContractorsNestedInput
@@ -10178,6 +10340,7 @@ export type ContractorUncheckedUpdateWithoutTimeEntriesInput = {
   peppolSchemeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   peppolParticipantValue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isBusinessCustomer?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  workerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -10198,6 +10361,314 @@ export type ContractorUncheckedUpdateWithoutTimeEntriesInput = {
   changeRequests?: Prisma.ContractorChangeRequestUncheckedUpdateManyWithoutContractorNestedInput
   notificationPreferences?: Prisma.ContractorNotificationPreferenceUncheckedUpdateManyWithoutContractorNestedInput
   timesheets?: Prisma.TimesheetUncheckedUpdateManyWithoutContractorNestedInput
+  equipmentAssignments?: Prisma.EquipmentAssignmentUncheckedUpdateManyWithoutContractorNestedInput
+  returnRequests?: Prisma.ReturnRequestUncheckedUpdateManyWithoutContractorNestedInput
+  taxIdValidations?: Prisma.TaxIdValidationUncheckedUpdateManyWithoutContractorNestedInput
+  taxFormSubmissions?: Prisma.TaxFormSubmissionUncheckedUpdateManyWithoutContractorNestedInput
+  form1099Nec?: Prisma.Form1099NecUncheckedUpdateManyWithoutRecipientNestedInput
+  ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantUncheckedUpdateManyWithoutLinkedContractorNestedInput
+  leitwegIds?: Prisma.LeitwegIdUncheckedUpdateManyWithoutContractorNestedInput
+  intakes?: Prisma.InvoiceIntakeRequestUncheckedUpdateManyWithoutMatchedContractorNestedInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutContractorNestedInput
+  paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckUncheckedUpdateManyWithoutContractorNestedInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentUncheckedUpdateOneWithoutContractorNestedInput
+}
+
+export type ContractorCreateWithoutWorkerInput = {
+  id?: string
+  type: $Enums.ContractorType
+  legalName: string
+  displayName: string
+  taxId?: string | null
+  vatId?: string | null
+  registrationNumber?: string | null
+  countryCode: string
+  currency: string
+  email?: string | null
+  phone?: string | null
+  website?: string | null
+  addressLine1?: string | null
+  addressLine2?: string | null
+  city?: string | null
+  postalCode?: string | null
+  status?: $Enums.ContractorStatus
+  lifecycleStage?: $Enums.ContractorLifecycleStage
+  notes?: string | null
+  isSensitive?: boolean
+  customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: string | null
+  ssnLast4?: string | null
+  uspsVerified?: boolean | null
+  uspsValidatedAt?: Date | string | null
+  latestVatValidatedAt?: Date | string | null
+  latestVatValidationStatus?: $Enums.ValidationStatus | null
+  isPublicSectorBuyer?: boolean
+  peppolSchemeId?: string | null
+  peppolParticipantValue?: string | null
+  isBusinessCustomer?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  archivedAt?: Date | string | null
+  deletedAt?: Date | string | null
+  preferredPaczkomatId?: string | null
+  preferredPaczkomatName?: string | null
+  preferredPaczkomatAddress?: string | null
+  organization: Prisma.OrganizationCreateNestedOneWithoutContractorsInput
+  owner?: Prisma.UserCreateNestedOneWithoutOwnedContractorsInput
+  primaryTeam?: Prisma.TeamCreateNestedOneWithoutContractorsInput
+  primaryProject?: Prisma.ProjectCreateNestedOneWithoutContractorsInput
+  defaultCostCenter?: Prisma.CostCenterCreateNestedOneWithoutContractorsInput
+  workflowRole?: Prisma.WorkflowRoleTemplateCreateNestedOneWithoutContractorsInput
+  contacts?: Prisma.ContractorContactCreateNestedManyWithoutContractorInput
+  billingProfiles?: Prisma.ContractorBillingProfileCreateNestedManyWithoutContractorInput
+  assignments?: Prisma.ContractorAssignmentCreateNestedManyWithoutContractorInput
+  contracts?: Prisma.ContractCreateNestedManyWithoutContractorInput
+  complianceItems?: Prisma.ContractorComplianceItemCreateNestedManyWithoutContractorInput
+  workflowRuns?: Prisma.WorkflowRunCreateNestedManyWithoutContractorInput
+  invoices?: Prisma.InvoiceCreateNestedManyWithoutContractorInput
+  paymentRunItems?: Prisma.PaymentRunItemCreateNestedManyWithoutContractorInput
+  tags?: Prisma.ContractorTagLinkCreateNestedManyWithoutContractorInput
+  portalSessions?: Prisma.PortalSessionCreateNestedManyWithoutContractorInput
+  changeRequests?: Prisma.ContractorChangeRequestCreateNestedManyWithoutContractorInput
+  notificationPreferences?: Prisma.ContractorNotificationPreferenceCreateNestedManyWithoutContractorInput
+  timesheets?: Prisma.TimesheetCreateNestedManyWithoutContractorInput
+  timeEntries?: Prisma.TimeEntryCreateNestedManyWithoutContractorInput
+  equipmentAssignments?: Prisma.EquipmentAssignmentCreateNestedManyWithoutContractorInput
+  returnRequests?: Prisma.ReturnRequestCreateNestedManyWithoutContractorInput
+  taxIdValidations?: Prisma.TaxIdValidationCreateNestedManyWithoutContractorInput
+  taxFormSubmissions?: Prisma.TaxFormSubmissionCreateNestedManyWithoutContractorInput
+  form1099Nec?: Prisma.Form1099NecCreateNestedManyWithoutRecipientInput
+  ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantCreateNestedManyWithoutLinkedContractorInput
+  leitwegIds?: Prisma.LeitwegIdCreateNestedManyWithoutContractorInput
+  intakes?: Prisma.InvoiceIntakeRequestCreateNestedManyWithoutMatchedContractorInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutContractorInput
+  paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckCreateNestedManyWithoutContractorInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentCreateNestedOneWithoutContractorInput
+}
+
+export type ContractorUncheckedCreateWithoutWorkerInput = {
+  id?: string
+  organizationId: string
+  type: $Enums.ContractorType
+  legalName: string
+  displayName: string
+  taxId?: string | null
+  vatId?: string | null
+  registrationNumber?: string | null
+  countryCode: string
+  currency: string
+  email?: string | null
+  phone?: string | null
+  website?: string | null
+  addressLine1?: string | null
+  addressLine2?: string | null
+  city?: string | null
+  postalCode?: string | null
+  status?: $Enums.ContractorStatus
+  lifecycleStage?: $Enums.ContractorLifecycleStage
+  ownerUserId?: string | null
+  primaryTeamId?: string | null
+  primaryProjectId?: string | null
+  defaultCostCenterId?: string | null
+  workflowRoleId?: string | null
+  notes?: string | null
+  isSensitive?: boolean
+  customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: string | null
+  ssnLast4?: string | null
+  uspsVerified?: boolean | null
+  uspsValidatedAt?: Date | string | null
+  latestVatValidatedAt?: Date | string | null
+  latestVatValidationStatus?: $Enums.ValidationStatus | null
+  isPublicSectorBuyer?: boolean
+  peppolSchemeId?: string | null
+  peppolParticipantValue?: string | null
+  isBusinessCustomer?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  archivedAt?: Date | string | null
+  deletedAt?: Date | string | null
+  preferredPaczkomatId?: string | null
+  preferredPaczkomatName?: string | null
+  preferredPaczkomatAddress?: string | null
+  contacts?: Prisma.ContractorContactUncheckedCreateNestedManyWithoutContractorInput
+  billingProfiles?: Prisma.ContractorBillingProfileUncheckedCreateNestedManyWithoutContractorInput
+  assignments?: Prisma.ContractorAssignmentUncheckedCreateNestedManyWithoutContractorInput
+  contracts?: Prisma.ContractUncheckedCreateNestedManyWithoutContractorInput
+  complianceItems?: Prisma.ContractorComplianceItemUncheckedCreateNestedManyWithoutContractorInput
+  workflowRuns?: Prisma.WorkflowRunUncheckedCreateNestedManyWithoutContractorInput
+  invoices?: Prisma.InvoiceUncheckedCreateNestedManyWithoutContractorInput
+  paymentRunItems?: Prisma.PaymentRunItemUncheckedCreateNestedManyWithoutContractorInput
+  tags?: Prisma.ContractorTagLinkUncheckedCreateNestedManyWithoutContractorInput
+  portalSessions?: Prisma.PortalSessionUncheckedCreateNestedManyWithoutContractorInput
+  changeRequests?: Prisma.ContractorChangeRequestUncheckedCreateNestedManyWithoutContractorInput
+  notificationPreferences?: Prisma.ContractorNotificationPreferenceUncheckedCreateNestedManyWithoutContractorInput
+  timesheets?: Prisma.TimesheetUncheckedCreateNestedManyWithoutContractorInput
+  timeEntries?: Prisma.TimeEntryUncheckedCreateNestedManyWithoutContractorInput
+  equipmentAssignments?: Prisma.EquipmentAssignmentUncheckedCreateNestedManyWithoutContractorInput
+  returnRequests?: Prisma.ReturnRequestUncheckedCreateNestedManyWithoutContractorInput
+  taxIdValidations?: Prisma.TaxIdValidationUncheckedCreateNestedManyWithoutContractorInput
+  taxFormSubmissions?: Prisma.TaxFormSubmissionUncheckedCreateNestedManyWithoutContractorInput
+  form1099Nec?: Prisma.Form1099NecUncheckedCreateNestedManyWithoutRecipientInput
+  ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantUncheckedCreateNestedManyWithoutLinkedContractorInput
+  leitwegIds?: Prisma.LeitwegIdUncheckedCreateNestedManyWithoutContractorInput
+  intakes?: Prisma.InvoiceIntakeRequestUncheckedCreateNestedManyWithoutMatchedContractorInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutContractorInput
+  paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckUncheckedCreateNestedManyWithoutContractorInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentUncheckedCreateNestedOneWithoutContractorInput
+}
+
+export type ContractorCreateOrConnectWithoutWorkerInput = {
+  where: Prisma.ContractorWhereUniqueInput
+  create: Prisma.XOR<Prisma.ContractorCreateWithoutWorkerInput, Prisma.ContractorUncheckedCreateWithoutWorkerInput>
+}
+
+export type ContractorUpsertWithoutWorkerInput = {
+  update: Prisma.XOR<Prisma.ContractorUpdateWithoutWorkerInput, Prisma.ContractorUncheckedUpdateWithoutWorkerInput>
+  create: Prisma.XOR<Prisma.ContractorCreateWithoutWorkerInput, Prisma.ContractorUncheckedCreateWithoutWorkerInput>
+  where?: Prisma.ContractorWhereInput
+}
+
+export type ContractorUpdateToOneWithWhereWithoutWorkerInput = {
+  where?: Prisma.ContractorWhereInput
+  data: Prisma.XOR<Prisma.ContractorUpdateWithoutWorkerInput, Prisma.ContractorUncheckedUpdateWithoutWorkerInput>
+}
+
+export type ContractorUpdateWithoutWorkerInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumContractorTypeFieldUpdateOperationsInput | $Enums.ContractorType
+  legalName?: Prisma.StringFieldUpdateOperationsInput | string
+  displayName?: Prisma.StringFieldUpdateOperationsInput | string
+  taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  vatId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  registrationNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  countryCode?: Prisma.StringFieldUpdateOperationsInput | string
+  currency?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  addressLine1?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  addressLine2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  postalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumContractorStatusFieldUpdateOperationsInput | $Enums.ContractorStatus
+  lifecycleStage?: Prisma.EnumContractorLifecycleStageFieldUpdateOperationsInput | $Enums.ContractorLifecycleStage
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isSensitive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
+  isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  peppolSchemeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  peppolParticipantValue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isBusinessCustomer?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  preferredPaczkomatId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  preferredPaczkomatName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  preferredPaczkomatAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  organization?: Prisma.OrganizationUpdateOneRequiredWithoutContractorsNestedInput
+  owner?: Prisma.UserUpdateOneWithoutOwnedContractorsNestedInput
+  primaryTeam?: Prisma.TeamUpdateOneWithoutContractorsNestedInput
+  primaryProject?: Prisma.ProjectUpdateOneWithoutContractorsNestedInput
+  defaultCostCenter?: Prisma.CostCenterUpdateOneWithoutContractorsNestedInput
+  workflowRole?: Prisma.WorkflowRoleTemplateUpdateOneWithoutContractorsNestedInput
+  contacts?: Prisma.ContractorContactUpdateManyWithoutContractorNestedInput
+  billingProfiles?: Prisma.ContractorBillingProfileUpdateManyWithoutContractorNestedInput
+  assignments?: Prisma.ContractorAssignmentUpdateManyWithoutContractorNestedInput
+  contracts?: Prisma.ContractUpdateManyWithoutContractorNestedInput
+  complianceItems?: Prisma.ContractorComplianceItemUpdateManyWithoutContractorNestedInput
+  workflowRuns?: Prisma.WorkflowRunUpdateManyWithoutContractorNestedInput
+  invoices?: Prisma.InvoiceUpdateManyWithoutContractorNestedInput
+  paymentRunItems?: Prisma.PaymentRunItemUpdateManyWithoutContractorNestedInput
+  tags?: Prisma.ContractorTagLinkUpdateManyWithoutContractorNestedInput
+  portalSessions?: Prisma.PortalSessionUpdateManyWithoutContractorNestedInput
+  changeRequests?: Prisma.ContractorChangeRequestUpdateManyWithoutContractorNestedInput
+  notificationPreferences?: Prisma.ContractorNotificationPreferenceUpdateManyWithoutContractorNestedInput
+  timesheets?: Prisma.TimesheetUpdateManyWithoutContractorNestedInput
+  timeEntries?: Prisma.TimeEntryUpdateManyWithoutContractorNestedInput
+  equipmentAssignments?: Prisma.EquipmentAssignmentUpdateManyWithoutContractorNestedInput
+  returnRequests?: Prisma.ReturnRequestUpdateManyWithoutContractorNestedInput
+  taxIdValidations?: Prisma.TaxIdValidationUpdateManyWithoutContractorNestedInput
+  taxFormSubmissions?: Prisma.TaxFormSubmissionUpdateManyWithoutContractorNestedInput
+  form1099Nec?: Prisma.Form1099NecUpdateManyWithoutRecipientNestedInput
+  ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantUpdateManyWithoutLinkedContractorNestedInput
+  leitwegIds?: Prisma.LeitwegIdUpdateManyWithoutContractorNestedInput
+  intakes?: Prisma.InvoiceIntakeRequestUpdateManyWithoutMatchedContractorNestedInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutContractorNestedInput
+  paymentComplianceChecks?: Prisma.PaymentRunComplianceCheckUpdateManyWithoutContractorNestedInput
+  freeZoneAssignment?: Prisma.FreeZoneAssignmentUpdateOneWithoutContractorNestedInput
+}
+
+export type ContractorUncheckedUpdateWithoutWorkerInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  organizationId?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumContractorTypeFieldUpdateOperationsInput | $Enums.ContractorType
+  legalName?: Prisma.StringFieldUpdateOperationsInput | string
+  displayName?: Prisma.StringFieldUpdateOperationsInput | string
+  taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  vatId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  registrationNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  countryCode?: Prisma.StringFieldUpdateOperationsInput | string
+  currency?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  addressLine1?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  addressLine2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  postalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumContractorStatusFieldUpdateOperationsInput | $Enums.ContractorStatus
+  lifecycleStage?: Prisma.EnumContractorLifecycleStageFieldUpdateOperationsInput | $Enums.ContractorLifecycleStage
+  ownerUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  primaryTeamId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  primaryProjectId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  defaultCostCenterId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  workflowRoleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isSensitive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  ssnEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
+  isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  peppolSchemeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  peppolParticipantValue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isBusinessCustomer?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  preferredPaczkomatId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  preferredPaczkomatName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  preferredPaczkomatAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contacts?: Prisma.ContractorContactUncheckedUpdateManyWithoutContractorNestedInput
+  billingProfiles?: Prisma.ContractorBillingProfileUncheckedUpdateManyWithoutContractorNestedInput
+  assignments?: Prisma.ContractorAssignmentUncheckedUpdateManyWithoutContractorNestedInput
+  contracts?: Prisma.ContractUncheckedUpdateManyWithoutContractorNestedInput
+  complianceItems?: Prisma.ContractorComplianceItemUncheckedUpdateManyWithoutContractorNestedInput
+  workflowRuns?: Prisma.WorkflowRunUncheckedUpdateManyWithoutContractorNestedInput
+  invoices?: Prisma.InvoiceUncheckedUpdateManyWithoutContractorNestedInput
+  paymentRunItems?: Prisma.PaymentRunItemUncheckedUpdateManyWithoutContractorNestedInput
+  tags?: Prisma.ContractorTagLinkUncheckedUpdateManyWithoutContractorNestedInput
+  portalSessions?: Prisma.PortalSessionUncheckedUpdateManyWithoutContractorNestedInput
+  changeRequests?: Prisma.ContractorChangeRequestUncheckedUpdateManyWithoutContractorNestedInput
+  notificationPreferences?: Prisma.ContractorNotificationPreferenceUncheckedUpdateManyWithoutContractorNestedInput
+  timesheets?: Prisma.TimesheetUncheckedUpdateManyWithoutContractorNestedInput
+  timeEntries?: Prisma.TimeEntryUncheckedUpdateManyWithoutContractorNestedInput
   equipmentAssignments?: Prisma.EquipmentAssignmentUncheckedUpdateManyWithoutContractorNestedInput
   returnRequests?: Prisma.ReturnRequestUncheckedUpdateManyWithoutContractorNestedInput
   taxIdValidations?: Prisma.TaxIdValidationUncheckedUpdateManyWithoutContractorNestedInput
@@ -10252,6 +10723,7 @@ export type ContractorCreateWithoutWorkflowRoleInput = {
   preferredPaczkomatName?: string | null
   preferredPaczkomatAddress?: string | null
   organization: Prisma.OrganizationCreateNestedOneWithoutContractorsInput
+  worker?: Prisma.WorkerCreateNestedOneWithoutContractorInput
   owner?: Prisma.UserCreateNestedOneWithoutOwnedContractorsInput
   primaryTeam?: Prisma.TeamCreateNestedOneWithoutContractorsInput
   primaryProject?: Prisma.ProjectCreateNestedOneWithoutContractorsInput
@@ -10321,6 +10793,7 @@ export type ContractorUncheckedCreateWithoutWorkflowRoleInput = {
   peppolSchemeId?: string | null
   peppolParticipantValue?: string | null
   isBusinessCustomer?: boolean
+  workerId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   archivedAt?: Date | string | null
@@ -10422,6 +10895,7 @@ export type ContractorCreateWithoutWorkflowRunsInput = {
   preferredPaczkomatName?: string | null
   preferredPaczkomatAddress?: string | null
   organization: Prisma.OrganizationCreateNestedOneWithoutContractorsInput
+  worker?: Prisma.WorkerCreateNestedOneWithoutContractorInput
   owner?: Prisma.UserCreateNestedOneWithoutOwnedContractorsInput
   primaryTeam?: Prisma.TeamCreateNestedOneWithoutContractorsInput
   primaryProject?: Prisma.ProjectCreateNestedOneWithoutContractorsInput
@@ -10492,6 +10966,7 @@ export type ContractorUncheckedCreateWithoutWorkflowRunsInput = {
   peppolSchemeId?: string | null
   peppolParticipantValue?: string | null
   isBusinessCustomer?: boolean
+  workerId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   archivedAt?: Date | string | null
@@ -10582,6 +11057,7 @@ export type ContractorUpdateWithoutWorkflowRunsInput = {
   preferredPaczkomatName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   preferredPaczkomatAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutContractorsNestedInput
+  worker?: Prisma.WorkerUpdateOneWithoutContractorNestedInput
   owner?: Prisma.UserUpdateOneWithoutOwnedContractorsNestedInput
   primaryTeam?: Prisma.TeamUpdateOneWithoutContractorsNestedInput
   primaryProject?: Prisma.ProjectUpdateOneWithoutContractorsNestedInput
@@ -10652,6 +11128,7 @@ export type ContractorUncheckedUpdateWithoutWorkflowRunsInput = {
   peppolSchemeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   peppolParticipantValue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isBusinessCustomer?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  workerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -10723,6 +11200,7 @@ export type ContractorCreateManyOwnerInput = {
   peppolSchemeId?: string | null
   peppolParticipantValue?: string | null
   isBusinessCustomer?: boolean
+  workerId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   archivedAt?: Date | string | null
@@ -10773,6 +11251,7 @@ export type ContractorUpdateWithoutOwnerInput = {
   preferredPaczkomatName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   preferredPaczkomatAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutContractorsNestedInput
+  worker?: Prisma.WorkerUpdateOneWithoutContractorNestedInput
   primaryTeam?: Prisma.TeamUpdateOneWithoutContractorsNestedInput
   primaryProject?: Prisma.ProjectUpdateOneWithoutContractorsNestedInput
   defaultCostCenter?: Prisma.CostCenterUpdateOneWithoutContractorsNestedInput
@@ -10842,6 +11321,7 @@ export type ContractorUncheckedUpdateWithoutOwnerInput = {
   peppolSchemeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   peppolParticipantValue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isBusinessCustomer?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  workerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -10914,6 +11394,7 @@ export type ContractorUncheckedUpdateManyWithoutOwnerInput = {
   peppolSchemeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   peppolParticipantValue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isBusinessCustomer?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  workerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -10961,6 +11442,7 @@ export type ContractorCreateManyOrganizationInput = {
   peppolSchemeId?: string | null
   peppolParticipantValue?: string | null
   isBusinessCustomer?: boolean
+  workerId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   archivedAt?: Date | string | null
@@ -11010,6 +11492,7 @@ export type ContractorUpdateWithoutOrganizationInput = {
   preferredPaczkomatId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   preferredPaczkomatName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   preferredPaczkomatAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  worker?: Prisma.WorkerUpdateOneWithoutContractorNestedInput
   owner?: Prisma.UserUpdateOneWithoutOwnedContractorsNestedInput
   primaryTeam?: Prisma.TeamUpdateOneWithoutContractorsNestedInput
   primaryProject?: Prisma.ProjectUpdateOneWithoutContractorsNestedInput
@@ -11080,6 +11563,7 @@ export type ContractorUncheckedUpdateWithoutOrganizationInput = {
   peppolSchemeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   peppolParticipantValue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isBusinessCustomer?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  workerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -11152,6 +11636,7 @@ export type ContractorUncheckedUpdateManyWithoutOrganizationInput = {
   peppolSchemeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   peppolParticipantValue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isBusinessCustomer?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  workerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -11199,6 +11684,7 @@ export type ContractorCreateManyPrimaryTeamInput = {
   peppolSchemeId?: string | null
   peppolParticipantValue?: string | null
   isBusinessCustomer?: boolean
+  workerId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   archivedAt?: Date | string | null
@@ -11249,6 +11735,7 @@ export type ContractorUpdateWithoutPrimaryTeamInput = {
   preferredPaczkomatName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   preferredPaczkomatAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutContractorsNestedInput
+  worker?: Prisma.WorkerUpdateOneWithoutContractorNestedInput
   owner?: Prisma.UserUpdateOneWithoutOwnedContractorsNestedInput
   primaryProject?: Prisma.ProjectUpdateOneWithoutContractorsNestedInput
   defaultCostCenter?: Prisma.CostCenterUpdateOneWithoutContractorsNestedInput
@@ -11318,6 +11805,7 @@ export type ContractorUncheckedUpdateWithoutPrimaryTeamInput = {
   peppolSchemeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   peppolParticipantValue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isBusinessCustomer?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  workerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -11390,6 +11878,7 @@ export type ContractorUncheckedUpdateManyWithoutPrimaryTeamInput = {
   peppolSchemeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   peppolParticipantValue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isBusinessCustomer?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  workerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -11437,6 +11926,7 @@ export type ContractorCreateManyPrimaryProjectInput = {
   peppolSchemeId?: string | null
   peppolParticipantValue?: string | null
   isBusinessCustomer?: boolean
+  workerId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   archivedAt?: Date | string | null
@@ -11487,6 +11977,7 @@ export type ContractorUpdateWithoutPrimaryProjectInput = {
   preferredPaczkomatName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   preferredPaczkomatAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutContractorsNestedInput
+  worker?: Prisma.WorkerUpdateOneWithoutContractorNestedInput
   owner?: Prisma.UserUpdateOneWithoutOwnedContractorsNestedInput
   primaryTeam?: Prisma.TeamUpdateOneWithoutContractorsNestedInput
   defaultCostCenter?: Prisma.CostCenterUpdateOneWithoutContractorsNestedInput
@@ -11556,6 +12047,7 @@ export type ContractorUncheckedUpdateWithoutPrimaryProjectInput = {
   peppolSchemeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   peppolParticipantValue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isBusinessCustomer?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  workerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -11628,6 +12120,7 @@ export type ContractorUncheckedUpdateManyWithoutPrimaryProjectInput = {
   peppolSchemeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   peppolParticipantValue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isBusinessCustomer?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  workerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -11675,6 +12168,7 @@ export type ContractorCreateManyDefaultCostCenterInput = {
   peppolSchemeId?: string | null
   peppolParticipantValue?: string | null
   isBusinessCustomer?: boolean
+  workerId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   archivedAt?: Date | string | null
@@ -11725,6 +12219,7 @@ export type ContractorUpdateWithoutDefaultCostCenterInput = {
   preferredPaczkomatName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   preferredPaczkomatAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutContractorsNestedInput
+  worker?: Prisma.WorkerUpdateOneWithoutContractorNestedInput
   owner?: Prisma.UserUpdateOneWithoutOwnedContractorsNestedInput
   primaryTeam?: Prisma.TeamUpdateOneWithoutContractorsNestedInput
   primaryProject?: Prisma.ProjectUpdateOneWithoutContractorsNestedInput
@@ -11794,6 +12289,7 @@ export type ContractorUncheckedUpdateWithoutDefaultCostCenterInput = {
   peppolSchemeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   peppolParticipantValue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isBusinessCustomer?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  workerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -11866,6 +12362,7 @@ export type ContractorUncheckedUpdateManyWithoutDefaultCostCenterInput = {
   peppolSchemeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   peppolParticipantValue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isBusinessCustomer?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  workerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -11913,6 +12410,7 @@ export type ContractorCreateManyWorkflowRoleInput = {
   peppolSchemeId?: string | null
   peppolParticipantValue?: string | null
   isBusinessCustomer?: boolean
+  workerId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   archivedAt?: Date | string | null
@@ -11963,6 +12461,7 @@ export type ContractorUpdateWithoutWorkflowRoleInput = {
   preferredPaczkomatName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   preferredPaczkomatAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutContractorsNestedInput
+  worker?: Prisma.WorkerUpdateOneWithoutContractorNestedInput
   owner?: Prisma.UserUpdateOneWithoutOwnedContractorsNestedInput
   primaryTeam?: Prisma.TeamUpdateOneWithoutContractorsNestedInput
   primaryProject?: Prisma.ProjectUpdateOneWithoutContractorsNestedInput
@@ -12032,6 +12531,7 @@ export type ContractorUncheckedUpdateWithoutWorkflowRoleInput = {
   peppolSchemeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   peppolParticipantValue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isBusinessCustomer?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  workerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -12104,6 +12604,7 @@ export type ContractorUncheckedUpdateManyWithoutWorkflowRoleInput = {
   peppolSchemeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   peppolParticipantValue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isBusinessCustomer?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  workerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -12390,6 +12891,7 @@ export type ContractorSelect<ExtArgs extends runtime.Types.Extensions.InternalAr
   peppolSchemeId?: boolean
   peppolParticipantValue?: boolean
   isBusinessCustomer?: boolean
+  workerId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   archivedAt?: boolean
@@ -12398,6 +12900,7 @@ export type ContractorSelect<ExtArgs extends runtime.Types.Extensions.InternalAr
   preferredPaczkomatName?: boolean
   preferredPaczkomatAddress?: boolean
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
+  worker?: boolean | Prisma.Contractor$workerArgs<ExtArgs>
   owner?: boolean | Prisma.Contractor$ownerArgs<ExtArgs>
   primaryTeam?: boolean | Prisma.Contractor$primaryTeamArgs<ExtArgs>
   primaryProject?: boolean | Prisma.Contractor$primaryProjectArgs<ExtArgs>
@@ -12470,6 +12973,7 @@ export type ContractorSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ex
   peppolSchemeId?: boolean
   peppolParticipantValue?: boolean
   isBusinessCustomer?: boolean
+  workerId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   archivedAt?: boolean
@@ -12478,6 +12982,7 @@ export type ContractorSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ex
   preferredPaczkomatName?: boolean
   preferredPaczkomatAddress?: boolean
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
+  worker?: boolean | Prisma.Contractor$workerArgs<ExtArgs>
   owner?: boolean | Prisma.Contractor$ownerArgs<ExtArgs>
   primaryTeam?: boolean | Prisma.Contractor$primaryTeamArgs<ExtArgs>
   primaryProject?: boolean | Prisma.Contractor$primaryProjectArgs<ExtArgs>
@@ -12524,6 +13029,7 @@ export type ContractorSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Ex
   peppolSchemeId?: boolean
   peppolParticipantValue?: boolean
   isBusinessCustomer?: boolean
+  workerId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   archivedAt?: boolean
@@ -12532,6 +13038,7 @@ export type ContractorSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Ex
   preferredPaczkomatName?: boolean
   preferredPaczkomatAddress?: boolean
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
+  worker?: boolean | Prisma.Contractor$workerArgs<ExtArgs>
   owner?: boolean | Prisma.Contractor$ownerArgs<ExtArgs>
   primaryTeam?: boolean | Prisma.Contractor$primaryTeamArgs<ExtArgs>
   primaryProject?: boolean | Prisma.Contractor$primaryProjectArgs<ExtArgs>
@@ -12578,6 +13085,7 @@ export type ContractorSelectScalar = {
   peppolSchemeId?: boolean
   peppolParticipantValue?: boolean
   isBusinessCustomer?: boolean
+  workerId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   archivedAt?: boolean
@@ -12587,9 +13095,10 @@ export type ContractorSelectScalar = {
   preferredPaczkomatAddress?: boolean
 }
 
-export type ContractorOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "organizationId" | "type" | "legalName" | "displayName" | "taxId" | "vatId" | "registrationNumber" | "countryCode" | "currency" | "email" | "phone" | "website" | "addressLine1" | "addressLine2" | "city" | "postalCode" | "status" | "lifecycleStage" | "ownerUserId" | "primaryTeamId" | "primaryProjectId" | "defaultCostCenterId" | "workflowRoleId" | "notes" | "isSensitive" | "customFieldsJson" | "countryFields" | "ssnEncrypted" | "ssnLast4" | "uspsVerified" | "uspsValidatedAt" | "latestVatValidatedAt" | "latestVatValidationStatus" | "isPublicSectorBuyer" | "peppolSchemeId" | "peppolParticipantValue" | "isBusinessCustomer" | "createdAt" | "updatedAt" | "archivedAt" | "deletedAt" | "preferredPaczkomatId" | "preferredPaczkomatName" | "preferredPaczkomatAddress", ExtArgs["result"]["contractor"]>
+export type ContractorOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "organizationId" | "type" | "legalName" | "displayName" | "taxId" | "vatId" | "registrationNumber" | "countryCode" | "currency" | "email" | "phone" | "website" | "addressLine1" | "addressLine2" | "city" | "postalCode" | "status" | "lifecycleStage" | "ownerUserId" | "primaryTeamId" | "primaryProjectId" | "defaultCostCenterId" | "workflowRoleId" | "notes" | "isSensitive" | "customFieldsJson" | "countryFields" | "ssnEncrypted" | "ssnLast4" | "uspsVerified" | "uspsValidatedAt" | "latestVatValidatedAt" | "latestVatValidationStatus" | "isPublicSectorBuyer" | "peppolSchemeId" | "peppolParticipantValue" | "isBusinessCustomer" | "workerId" | "createdAt" | "updatedAt" | "archivedAt" | "deletedAt" | "preferredPaczkomatId" | "preferredPaczkomatName" | "preferredPaczkomatAddress", ExtArgs["result"]["contractor"]>
 export type ContractorInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
+  worker?: boolean | Prisma.Contractor$workerArgs<ExtArgs>
   owner?: boolean | Prisma.Contractor$ownerArgs<ExtArgs>
   primaryTeam?: boolean | Prisma.Contractor$primaryTeamArgs<ExtArgs>
   primaryProject?: boolean | Prisma.Contractor$primaryProjectArgs<ExtArgs>
@@ -12624,6 +13133,7 @@ export type ContractorInclude<ExtArgs extends runtime.Types.Extensions.InternalA
 }
 export type ContractorIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
+  worker?: boolean | Prisma.Contractor$workerArgs<ExtArgs>
   owner?: boolean | Prisma.Contractor$ownerArgs<ExtArgs>
   primaryTeam?: boolean | Prisma.Contractor$primaryTeamArgs<ExtArgs>
   primaryProject?: boolean | Prisma.Contractor$primaryProjectArgs<ExtArgs>
@@ -12632,6 +13142,7 @@ export type ContractorIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.E
 }
 export type ContractorIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
+  worker?: boolean | Prisma.Contractor$workerArgs<ExtArgs>
   owner?: boolean | Prisma.Contractor$ownerArgs<ExtArgs>
   primaryTeam?: boolean | Prisma.Contractor$primaryTeamArgs<ExtArgs>
   primaryProject?: boolean | Prisma.Contractor$primaryProjectArgs<ExtArgs>
@@ -12643,6 +13154,7 @@ export type $ContractorPayload<ExtArgs extends runtime.Types.Extensions.Internal
   name: "Contractor"
   objects: {
     organization: Prisma.$OrganizationPayload<ExtArgs>
+    worker: Prisma.$WorkerPayload<ExtArgs> | null
     owner: Prisma.$UserPayload<ExtArgs> | null
     primaryTeam: Prisma.$TeamPayload<ExtArgs> | null
     primaryProject: Prisma.$ProjectPayload<ExtArgs> | null
@@ -12713,6 +13225,7 @@ export type $ContractorPayload<ExtArgs extends runtime.Types.Extensions.Internal
     peppolSchemeId: string | null
     peppolParticipantValue: string | null
     isBusinessCustomer: boolean
+    workerId: string | null
     createdAt: Date
     updatedAt: Date
     archivedAt: Date | null
@@ -13115,6 +13628,7 @@ readonly fields: ContractorFieldRefs;
 export interface Prisma__ContractorClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   organization<T extends Prisma.OrganizationDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.OrganizationDefaultArgs<ExtArgs>>): Prisma.Prisma__OrganizationClient<runtime.Types.Result.GetResult<Prisma.$OrganizationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  worker<T extends Prisma.Contractor$workerArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Contractor$workerArgs<ExtArgs>>): Prisma.Prisma__WorkerClient<runtime.Types.Result.GetResult<Prisma.$WorkerPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   owner<T extends Prisma.Contractor$ownerArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Contractor$ownerArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   primaryTeam<T extends Prisma.Contractor$primaryTeamArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Contractor$primaryTeamArgs<ExtArgs>>): Prisma.Prisma__TeamClient<runtime.Types.Result.GetResult<Prisma.$TeamPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   primaryProject<T extends Prisma.Contractor$primaryProjectArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Contractor$primaryProjectArgs<ExtArgs>>): Prisma.Prisma__ProjectClient<runtime.Types.Result.GetResult<Prisma.$ProjectPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
@@ -13212,6 +13726,7 @@ export interface ContractorFieldRefs {
   readonly peppolSchemeId: Prisma.FieldRef<"Contractor", 'String'>
   readonly peppolParticipantValue: Prisma.FieldRef<"Contractor", 'String'>
   readonly isBusinessCustomer: Prisma.FieldRef<"Contractor", 'Boolean'>
+  readonly workerId: Prisma.FieldRef<"Contractor", 'String'>
   readonly createdAt: Prisma.FieldRef<"Contractor", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Contractor", 'DateTime'>
   readonly archivedAt: Prisma.FieldRef<"Contractor", 'DateTime'>
@@ -13617,6 +14132,25 @@ export type ContractorDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.In
    * Limit how many Contractors to delete.
    */
   limit?: number
+}
+
+/**
+ * Contractor.worker
+ */
+export type Contractor$workerArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Worker
+   */
+  select?: Prisma.WorkerSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Worker
+   */
+  omit?: Prisma.WorkerOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.WorkerInclude<ExtArgs> | null
+  where?: Prisma.WorkerWhereInput
 }
 
 /**

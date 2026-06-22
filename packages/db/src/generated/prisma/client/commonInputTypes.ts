@@ -2465,6 +2465,23 @@ export type EnumTimeEntrySourceWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedEnumTimeEntrySourceFilter<$PrismaModel>
 }
 
+export type EnumWorkerTypeFilter<$PrismaModel = never> = {
+  equals?: $Enums.WorkerType | Prisma.EnumWorkerTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.WorkerType[] | Prisma.ListEnumWorkerTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.WorkerType[] | Prisma.ListEnumWorkerTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumWorkerTypeFilter<$PrismaModel> | $Enums.WorkerType
+}
+
+export type EnumWorkerTypeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.WorkerType | Prisma.EnumWorkerTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.WorkerType[] | Prisma.ListEnumWorkerTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.WorkerType[] | Prisma.ListEnumWorkerTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumWorkerTypeWithAggregatesFilter<$PrismaModel> | $Enums.WorkerType
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumWorkerTypeFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumWorkerTypeFilter<$PrismaModel>
+}
+
 export type EnumWorkflowTemplateTypeFilter<$PrismaModel = never> = {
   equals?: $Enums.WorkflowTemplateType | Prisma.EnumWorkflowTemplateTypeFieldRefInput<$PrismaModel>
   in?: $Enums.WorkflowTemplateType[] | Prisma.ListEnumWorkflowTemplateTypeFieldRefInput<$PrismaModel>
@@ -5043,6 +5060,23 @@ export type NestedEnumTimeEntrySourceWithAggregatesFilter<$PrismaModel = never> 
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumTimeEntrySourceFilter<$PrismaModel>
   _max?: Prisma.NestedEnumTimeEntrySourceFilter<$PrismaModel>
+}
+
+export type NestedEnumWorkerTypeFilter<$PrismaModel = never> = {
+  equals?: $Enums.WorkerType | Prisma.EnumWorkerTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.WorkerType[] | Prisma.ListEnumWorkerTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.WorkerType[] | Prisma.ListEnumWorkerTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumWorkerTypeFilter<$PrismaModel> | $Enums.WorkerType
+}
+
+export type NestedEnumWorkerTypeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.WorkerType | Prisma.EnumWorkerTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.WorkerType[] | Prisma.ListEnumWorkerTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.WorkerType[] | Prisma.ListEnumWorkerTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumWorkerTypeWithAggregatesFilter<$PrismaModel> | $Enums.WorkerType
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumWorkerTypeFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumWorkerTypeFilter<$PrismaModel>
 }
 
 export type NestedEnumWorkflowTemplateTypeFilter<$PrismaModel = never> = {
