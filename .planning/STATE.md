@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v7.0
 milestone_name: GTM Expansion
 status: verifying
-stopped_at: 89-03 Tasks 1-2 done (backfill-worker.ts GREEN + Migration B authored un-applied); Task 3 live per-region apply HELD at the [BLOCKING] human gate — 89-03 NOT fully complete
-last_updated: "2026-06-22T01:50:00.000Z"
+stopped_at: 89-03 Tasks 1-2 done (backfill-worker.ts GREEN turning the Plan-01 RED scaffold green + Migration B authored un-applied; Contractor.workerId kept nullable until the gate). Task 3 live per-region apply HELD at the [BLOCKING] human gate — 89-03 NOT fully complete; WORKER-01 left [ ].
+last_updated: "2026-06-22T10:33:23.432Z"
 last_activity: 2026-06-22
 progress:
   total_phases: 20
   completed_phases: 4
   total_plans: 57
-  completed_plans: 29
+  completed_plans: 31
   percent: 20
 ---
 
@@ -34,7 +34,7 @@ Plan: 86-05 of 8 complete (86-02/03/05 done; 86-01 Task 3 + 86-02 Task 3 multi-r
 Status: Phase complete — ready for verification
 Last activity: 2026-06-22
 
-Progress: [█████░░░░░] 51%
+Progress: [█████░░░░░] 54%
 
 ## v7.0 Roadmap Summary (created 2026-06-07)
 
@@ -128,6 +128,8 @@ Decisions are logged in PROJECT.md Key Decisions table. Recent decisions affecti
 - [Phase ?]: [89-03 Tasks 1-2, 2026-06-22] Worker backfill + Migration B authored CODE + codegen ONLY — NO database migration applied; Task 3 (live per-region apply) HELD at the [BLOCKING] human gate, 89-03 NOT fully complete. scripts/backfill-worker.ts: pure planWorkerBackfill (WHERE workerId IS NULL idempotency guard, never mutates source) turned the Plan-01 RED scaffold GREEN; apply path creates Worker + sets Contractor.workerId atomically in one $transaction step, batched ~1k contractors/tx; one system-actor auditLog.create row per org (action worker.backfill.apply, resourceType ORGANIZATION since EntityType has no WORKER member — written DIRECTLY via Prisma, NOT api's writeAuditLog, to avoid a db→api dep cycle); --dry-run zero-write + --rollback (nulls workerId then drops orphaned Workers, Contractor rows never touched). Migration B (__worker_id_required/migration.sql: ALTER COLUMN SET NOT NULL + ADD FK REFERENCES Worker ON DELETE RESTRICT ON UPDATE CASCADE + paired down.sql) authored un-applied, runs LAST after backfill + staging parity. DEVIATION: Contractor.workerId KEPT NULLABLE in the schema source — promoting it to required ahead of the migration + create-path wiring breaks db:check-drift (CI gate) + the two contractor.create typecheck sites (no Phase-89 plan wires them); the flip-to-required happens in lockstep with applying Migration B at the human gate so the generated client never diverges from the live DB. WORKER-01 left [ ] (Task 3 apply + parity = its acceptance).
 - [Phase ?]: [89-02, 2026-06-22] Worker abstraction landed CODE + codegen ONLY — NO database migration applied. Worker base table (org-scoped, NOT in globalModels → inherits withTenantScope) + WorkerType enum + sidecar nullable Contractor.workerId @unique 1:1 FK (Contractor.id left stable so the 20+ FKs that reference it are never relinked). Migration A authored as un-applied files under prisma/schema/migrations/__worker_base_additive/ (migration.sql + down.sql; additive, reversible, NO NOT NULL/FK — those + the backfill are Plan 03 at the [BLOCKING] per-region human gate). withWorkerTypeDefault ($allOperations, Worker-only model set, explicit-where-wins, no findUnique→findFirst fallback needed under design A) chained outermost: withWorkerTypeDefault(withSoftDelete(withTenantScope(...))) in both client factories — turned the Plan-01 worker-type RED scaffold GREEN (19 tests). check:contractor-rawsql-workertype CI guard (twin of check-raw-sql-tenant-scoped) wired into lint:ci after lint:raw-sql; the 4 known raw FROM "Contractor" sites annotated // contractor-only-raw-sql: (design A — Contractor is contractor-only by table). Contractor-parity + contract-snapshot baselines stayed GREEN. WORKER-* left [ ] per directive.
 - [Phase 88]: [88-01, 2026-06-22] Wave-0 RED scaffolds pin the US payment rail before impl: generateNachaFile (94-char/entry-hash/10-block golden-file, mirrors generateBacsStandard18), generateFedwirePacs008 (pacs.008.001.xx envelope, mirrors generateSwiftXml), generalized applyWithholding (amountMinor = gross − wht; 24% backup §3406 + 1042-S treaty) with a GREEN Saudi-WHT regression guard locking calculateWht (SA-only gate + SA→SA domestic null), a GREEN F-1 currency lock (USD is a normal ECB currency — convertAmount USD→USD rate 1, USD↔EUR via stored rate, missing rate→null; no USD=1.0 special-case), and Modern-Treasury PayoutInitiationAdapter + Plaid PlaidIdentityClient mock-behind-seam scaffolds (advisory fail-open for Plaid). API RED via missing export (is-not-a-function; api tsconfig already excludes __tests__); integrations RED via missing module (Cannot-find-module) — excluded src/**/__tests__/** from the integrations tsconfig (mirrors api/db) so the RED does not brick tsc --noEmit / the composite build. Zero new external deps (NACHA hand-rolled later; modern-treasury/plaid SDKs deferred behind checkpoint:human-verify). No US-PAY-* requirement marked complete (88 = 1/7 plans; schema + [BLOCKING] multi-region migration and the impl/generators/adapters are later waves).
+- [Phase ?]: 89-04: worker/employee tRPC namespaces gated behind module.workforce-employees via three-layer flag-off (root.ts conditional-spread + assertWorkforceEnabled + web-vite useFlag); contractor.* never gated and shape-frozen
+- [Phase ?]: 89-04: skeleton worker/employee routers are read-only (no mutation) so no writeAuditLog/employee-RBAC this phase — RBAC lands in 89-05, employee profile in Phase 90
 
 ### Pending Todos
 
@@ -182,6 +184,7 @@ Carried forward from v6.0 milestone close (2026-06-07). Full enumeration: `.plan
 | Phase 90 P03 | 4min | 2 tasks | 6 files |
 | Phase 89 P01 | ~22min | 2 tasks | 5 files |
 | Phase 88 P88-01 | 9min | 2 tasks | 7 files |
+| Phase 89 P04 | 16min | 2 tasks | 17 files |
 
 ## Standing Project Constraints
 
@@ -191,7 +194,7 @@ Carried forward from v6.0 milestone close (2026-06-07). Full enumeration: `.plan
 
 ## Session Continuity
 
-Last session: 2026-06-22T01:50:00.000Z
+Last session: 2026-06-22T10:33:14.885Z
 Stopped at: 89-03 Tasks 1-2 done (backfill-worker.ts GREEN turning the Plan-01 RED scaffold green + Migration B authored un-applied; Contractor.workerId kept nullable until the gate). Task 3 live per-region apply HELD at the [BLOCKING] human gate — 89-03 NOT fully complete; WORKER-01 left [ ].
-Resume file: .planning/phases/89-theme-b-worker-model-abstraction-serial-gate/89-03-PLAN.md (Task 3)
+Resume file: None
 Next command: resolve the 89-03 Task 3 [BLOCKING] human gate (staging-snapshot backfill apply + parity sign-off + Migration B enforcement, per region), then resume 89-04 (router split)

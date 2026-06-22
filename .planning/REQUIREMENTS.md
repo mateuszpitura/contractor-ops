@@ -83,10 +83,10 @@ Requirements for the v7.0 milestone. Each maps to exactly one phase (filled by r
 ### Theme B — Worker Model Abstraction (WORKER) — foundation, ships first
 
 - [x] **WORKER-01**: `Worker` discriminated-union (Contractor | Employee) on a dedicated `Worker` base table that `Contractor` and `Employee` link to, with `workerType` defaulting to `CONTRACTOR`. *(Amended 2026-06-18, Phase 89 discuss: the original "zero data migration / extend Contractor in place" phrasing is superseded — the chosen normalization requires a ONE-TIME, additive, idempotent, per-region, reversible backfill of a `Worker` row per existing v1–v6 contractor. No contractor row is destroyed or relinked lossily; contractor-path parity must be verified on a staging snapshot of the largest org before the backfill is accepted. See `89-CONTEXT.md` D-01.)* **DONE 2026-06-22 (Contractor side):** Migration A + backfill (1040 contractors → 1040 Workers, 1:1, verified, parity GREEN) + all `contractor.create` paths wired to create+link a Worker + Migration B (NOT NULL + FK) applied on the EU Neon DB. The Employee side of the union lands with Phase 90 (EMP-REG). Router split / RBAC / flag = WORKER-02..05 (89-04/05/06, not yet executed).
-- [ ] **WORKER-02**: tRPC namespace split — shared `workerRouter` + existing `contractorRouter` (route shapes preserved) + new `employeeRouter`
+- [x] **WORKER-02**: tRPC namespace split — shared `workerRouter` + existing `contractorRouter` (route shapes preserved) + new `employeeRouter`
 - [ ] **WORKER-03**: RLS / tenant-isolation extension — `organizationId` invariant preserved on `Worker`; HR-only fields gated by per-type RBAC
 - [ ] **WORKER-04**: New roles `HR_ADMIN`, `HR_MANAGER`, `PAYROLL_OFFICER`, `LEAVE_APPROVER` (existing 8 roles unchanged)
-- [ ] **WORKER-05**: Feature flag `workforce-employees` gates all Theme B routes; flag-off = render-tree removal + tRPC FORBIDDEN (v5.0 classification flag-off pattern)
+- [x] **WORKER-05**: Feature flag `workforce-employees` gates all Theme B routes; flag-off = render-tree removal + tRPC FORBIDDEN (v5.0 classification flag-off pattern)
 
 ### Theme B — Employee Registry per Market (EMP-REG)
 
@@ -284,10 +284,10 @@ Which phases cover which requirements. Phase numbering continues from v6.0 (ende
 | US-PAY-04 | Phase 88 | Pending |
 | US-PAY-05 | Phase 88 | Pending |
 | WORKER-01 | Phase 89 | Pending |
-| WORKER-02 | Phase 89 | Pending |
+| WORKER-02 | Phase 89 | Complete |
 | WORKER-03 | Phase 89 | Pending |
 | WORKER-04 | Phase 89 | Pending |
-| WORKER-05 | Phase 89 | Pending |
+| WORKER-05 | Phase 89 | Complete |
 | EMP-REG-PL-01 | Phase 90 | Pending |
 | EMP-REG-DE-01 | Phase 90 | Pending |
 | EMP-REG-UK-01 | Phase 90 | Pending |
