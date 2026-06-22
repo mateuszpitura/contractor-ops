@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v7.0
 milestone_name: GTM Expansion
 status: verifying
-stopped_at: Completed 89-01-PLAN.md (Wave-0 contractor.* route-shape snapshot + contractor-parity baseline GREEN pre-Worker; backfill + withWorkerTypeDefault RED scaffolds)
-last_updated: "2026-06-22T00:23:13.330Z"
+stopped_at: Completed 89-02-PLAN.md (Worker base table + sidecar Contractor.workerId FK + Migration A authored un-applied; withWorkerTypeDefault chained outermost — Plan-01 worker-type RED now GREEN; check:contractor-rawsql-workertype guard wired into lint:ci)
+last_updated: "2026-06-22T01:23:55.184Z"
 last_activity: 2026-06-22
 progress:
   total_phases: 20
   completed_phases: 4
   total_plans: 57
-  completed_plans: 28
+  completed_plans: 29
   percent: 20
 ---
 
@@ -34,7 +34,7 @@ Plan: 86-05 of 8 complete (86-02/03/05 done; 86-01 Task 3 + 86-02 Task 3 multi-r
 Status: Phase complete — ready for verification
 Last activity: 2026-06-22
 
-Progress: [█████░░░░░] 49%
+Progress: [█████░░░░░] 51%
 
 ## v7.0 Roadmap Summary (created 2026-06-07)
 
@@ -125,6 +125,7 @@ Decisions are logged in PROJECT.md Key Decisions table. Recent decisions affecti
 - [Phase 90]: 90-03: PESEL/Iqama/Emirates-ID encrypt under a dedicated EMPLOYEE_PII_ENCRYPTION_KEY (separate blast radius); US SSN keeps SSN_ENCRYPTION_KEY + ssn-crypto unchanged
 - [Phase ?]: [89-01, 2026-06-22] Wave-0 baselines locked the contractor surface BEFORE any Worker model change: contractor.* route-shape snapshot (19 procedure names + input/output JSON-Schema shapes via appRouter._def.procedures + zod 4 z.toJSONSchema, no zod-to-json-schema dep — A1 confirmed) GREEN on the current router, and a contractor-parity baseline (list/getById/dashboard activeContractors raw count/search FTS raw site/buildContractorListWhere list-payment-run-export predicate + 2 facet raw sites/portal contractor read) GREEN on the pre-Worker schema — the provable regression net (D-03/D-07).
 - [Phase ?]: [89-01, 2026-06-22] backfill-worker + worker-type RED scaffolds are terminal-RED via Cannot-find-module (import a not-yet-existing module), NOT assertion-logic; db tsconfig excludes src/**/__tests__/** so the RED imports do not brick typecheck. planWorkerBackfill idempotency (skip linked, re-run no-op, no source mutation — Plan 03) + withWorkerTypeDefault inject-default+explicit-where-wins across all 8 read ops on Worker only, non-Worker untouched (design A — Plan 02). No WORKER-* requirement marked complete (phase 89 = 1/6 plans; table/extension/backfill/router/RBAC/flag are later waves behind a [BLOCKING] human gate).
+- [Phase ?]: [89-02, 2026-06-22] Worker abstraction landed CODE + codegen ONLY — NO database migration applied. Worker base table (org-scoped, NOT in globalModels → inherits withTenantScope) + WorkerType enum + sidecar nullable Contractor.workerId @unique 1:1 FK (Contractor.id left stable so the 20+ FKs that reference it are never relinked). Migration A authored as un-applied files under prisma/schema/migrations/__worker_base_additive/ (migration.sql + down.sql; additive, reversible, NO NOT NULL/FK — those + the backfill are Plan 03 at the [BLOCKING] per-region human gate). withWorkerTypeDefault ($allOperations, Worker-only model set, explicit-where-wins, no findUnique→findFirst fallback needed under design A) chained outermost: withWorkerTypeDefault(withSoftDelete(withTenantScope(...))) in both client factories — turned the Plan-01 worker-type RED scaffold GREEN (19 tests). check:contractor-rawsql-workertype CI guard (twin of check-raw-sql-tenant-scoped) wired into lint:ci after lint:raw-sql; the 4 known raw FROM "Contractor" sites annotated // contractor-only-raw-sql: (design A — Contractor is contractor-only by table). Contractor-parity + contract-snapshot baselines stayed GREEN. WORKER-* left [ ] per directive.
 - [Phase 88]: [88-01, 2026-06-22] Wave-0 RED scaffolds pin the US payment rail before impl: generateNachaFile (94-char/entry-hash/10-block golden-file, mirrors generateBacsStandard18), generateFedwirePacs008 (pacs.008.001.xx envelope, mirrors generateSwiftXml), generalized applyWithholding (amountMinor = gross − wht; 24% backup §3406 + 1042-S treaty) with a GREEN Saudi-WHT regression guard locking calculateWht (SA-only gate + SA→SA domestic null), a GREEN F-1 currency lock (USD is a normal ECB currency — convertAmount USD→USD rate 1, USD↔EUR via stored rate, missing rate→null; no USD=1.0 special-case), and Modern-Treasury PayoutInitiationAdapter + Plaid PlaidIdentityClient mock-behind-seam scaffolds (advisory fail-open for Plaid). API RED via missing export (is-not-a-function; api tsconfig already excludes __tests__); integrations RED via missing module (Cannot-find-module) — excluded src/**/__tests__/** from the integrations tsconfig (mirrors api/db) so the RED does not brick tsc --noEmit / the composite build. Zero new external deps (NACHA hand-rolled later; modern-treasury/plaid SDKs deferred behind checkpoint:human-verify). No US-PAY-* requirement marked complete (88 = 1/7 plans; schema + [BLOCKING] multi-region migration and the impl/generators/adapters are later waves).
 
 ### Pending Todos
@@ -188,7 +189,7 @@ Carried forward from v6.0 milestone close (2026-06-07). Full enumeration: `.plan
 
 ## Session Continuity
 
-Last session: 2026-06-22T00:22:43.250Z
-Stopped at: Completed 89-01-PLAN.md (Wave-0 contractor.* route-shape snapshot + contractor-parity baseline GREEN pre-Worker; backfill + withWorkerTypeDefault RED scaffolds)
+Last session: 2026-06-22T01:23:55.178Z
+Stopped at: Completed 89-02-PLAN.md (Worker base table + sidecar Contractor.workerId FK + Migration A authored un-applied; withWorkerTypeDefault chained outermost — Plan-01 worker-type RED now GREEN; check:contractor-rawsql-workertype guard wired into lint:ci)
 Resume file: None
 Next command: execute Phase 85 Plan 04 (web-vite portal wizard + staff status card + i18n)
