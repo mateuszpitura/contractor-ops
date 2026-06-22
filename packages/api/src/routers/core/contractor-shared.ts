@@ -347,6 +347,9 @@ export async function buildContractorListWhere(
   const idSets: string[][] = [];
 
   if (filters?.billingModel?.length) {
+    // contractor-only-raw-sql: the Contractor table is inherently contractor-only
+    // (the workerType discriminator lives on the Worker base table, not here), so
+    // this billingModel facet needs no workerType predicate.
     const rows = await db.$queryRaw<Array<{ id: string }>>`
       SELECT id FROM "Contractor"
       WHERE "organizationId" = ${organizationId}
@@ -360,6 +363,9 @@ export async function buildContractorListWhere(
   if (search && search.length >= 2) {
     const terms = buildFtsQuery(search);
     if (terms) {
+      // contractor-only-raw-sql: the Contractor table is inherently contractor-only
+      // (the workerType discriminator lives on the Worker base table, not here), so
+      // this full-text-search facet needs no workerType predicate.
       const rows = await db.$queryRaw<Array<{ id: string }>>`
         SELECT id FROM "Contractor"
         WHERE "organizationId" = ${organizationId}

@@ -70,6 +70,9 @@ export const searchRouter = router({
       // contractor-detail page renders taxId for roles that need it (gated
       // separately).
       const [contractors, contracts, invoices] = await Promise.all([
+        // contractor-only-raw-sql: the Contractor table is inherently contractor-only
+        // (the workerType discriminator lives on the Worker base table, not here), so
+        // this command-palette search needs no workerType predicate.
         ctx.db.$queryRaw<SearchResult[]>`
           SELECT id, "legalName" as name, COALESCE("displayName", '') as subtitle, 'contractor' as type
           FROM "Contractor"

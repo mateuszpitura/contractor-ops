@@ -69,6 +69,9 @@ async function fetchKpis(organizationId: string, db: RawQueryClient) {
   type ContractTaskCounts = { expiringContracts: number; openTasks: number };
 
   const [contractorRows, approvalRows, invoiceRows, contractTaskRows] = await Promise.all([
+    // contractor-only-raw-sql: the Contractor table is inherently contractor-only
+    // (the workerType discriminator lives on the Worker base table, not here), so
+    // this active-contractor count needs no workerType predicate.
     db.$queryRaw<ContractorCounts[]>`
       SELECT
         COUNT(*) FILTER (WHERE TRUE)::int AS "activeContractors",
