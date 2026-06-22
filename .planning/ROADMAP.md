@@ -98,7 +98,7 @@ Known gaps / deferred at close: see STATE.md `## Deferred Items` (3 unverified p
 - [ ] **Phase 86: Theme A — TIN-Match → 1099-NEC → IRIS E-File → State Filing** - IRS TIN-matching, tax-year-keyed 1099-NEC ($2,000 TY2026), IRIS XML A2A transmit + ack, per-state CFSF
 - [ ] **Phase 87: Theme A — 1042-S + US Classification + Determination Letter** - treaty-rate 1042-S, US rule set (federal/AB5/§530), 1099-K tracker ($20k+200), Determination Letter PDF
 - [ ] **Phase 88: Theme A — US Payment Rail** - ACH NACHA in payment-export factory, USD first-class, Modern Treasury programmatic ACH, Fedwire, Plaid identity
-- [ ] **Phase 89: Theme B — Worker Model Abstraction (serial gate)** - additive `workerType` discriminator, router split, RBAC roles, flag gate; the only Theme B serialization point
+- [x] **Phase 89: Theme B — Worker Model Abstraction (serial gate)** - additive `workerType` discriminator, router split, RBAC roles, flag gate; the only Theme B serialization point (completed 2026-06-22)
 - [ ] **Phase 90: Theme B — Employee Registry per Market (×6)** - PL/DE/UK/US/AE/SA statutory-identifier validators on the EmployeeProfile
 - [ ] **Phase 91: Theme B — Akta Osobowe / Personnel File** - 4-section file + per-jurisdiction retention engine + RODO erasure with statutory holds + upload classification
 - [ ] **Phase 92: Theme B — Leave Management + KP-Grade Time Tracking** - per-market leave-balance engine, request workflow, team calendar, employee time + working-time alerts + ewidencja report
@@ -319,7 +319,7 @@ Plans:
 - [x] 89-03-PLAN.md — [BLOCKING] idempotent/reversible/per-region/audit-logged backfill + Migration B (NOT NULL + FK) LAST after staging-snapshot parity [wave 3] — Tasks 1-2 DONE (backfill-worker.ts GREEN + Migration B authored un-applied); Task 3 live per-region apply held at the [BLOCKING] human gate
 - [x] 89-04-PLAN.md — Router split (workerRouter + skeleton employeeRouter, contractor shape preserved) + three-layer flag-off (conditional-spread + require-workforce-flag guard + web-vite render removal) [wave 3]
 - [x] 89-05-PLAN.md — employee resource + 4 HR roles (existing roles byte-identical) + Worker cross-org leak test [wave 3]
-- [ ] 89-06-PLAN.md — Documentation-follows-code: worker-foundation wiki domain + structure/patterns + MEMORY invariants + check:wiki-brain [wave 4]
+- [x] 89-06-PLAN.md — Documentation-follows-code: worker-foundation wiki domain + structure/patterns + MEMORY invariants + check:wiki-brain [wave 4]
 
 **Research flag**: Standard — locked, verified additive pattern. Pitfall: contractor list/dashboard/payment-run/classification-scan corruption if call sites aren't pre-filtered.
 
@@ -551,7 +551,7 @@ Phases execute in numeric order: 82 → 83 → … → 101. After Foundation (82
 | 86. Theme A — TIN-Match → 1099-NEC → IRIS → State | v7.0 | 4/8 | In Progress|  |
 | 87. Theme A — 1042-S + US Classification + Letter | v7.0 | 0/10 | Not started | - |
 | 88. Theme A — US Payment Rail | v7.0 | 1/7 | In Progress|  |
-| 89. Theme B — Worker Model Abstraction (gate) | v7.0 | 5/6 | In Progress|  |
+| 89. Theme B — Worker Model Abstraction (gate) | v7.0 | 6/6 | Complete   | 2026-06-22 |
 | 90. Theme B — Employee Registry per Market (×6) | v7.0 | 3/7 | In Progress|  |
 | 91. Theme B — Akta Osobowe / Personnel File | v7.0 | 0/TBD | Not started | - |
 | 92. Theme B — Leave + KP-Grade Time Tracking | v7.0 | 0/TBD | Not started | - |

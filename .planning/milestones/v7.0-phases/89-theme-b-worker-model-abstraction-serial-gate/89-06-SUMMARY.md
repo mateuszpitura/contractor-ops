@@ -117,6 +117,13 @@ None. Every wiki page reflects the landed code; no placeholder or empty-value st
 
 No requirement marked complete. WORKER-01..05 were already completed by 89-02/03/04/05; this is the documentation-follows-code closure plan and maps to no separate requirement item. WORKER-* checkboxes left as already set by the prior plans.
 
+## Commit
+
+- `df188c74d` — docs(89-06): worker-foundation wiki synthesis + MEMORY invariants (11 files: 1 created + 9 modified docs + the SUMMARY)
+
 ## Self-Check: PASSED
 
-(see appended verification below)
+- Created files verified on disk AND in the committed tree: `worker-foundation.md`, `89-06-SUMMARY.md` — FOUND.
+- Commit `df188c74d` — FOUND in git log.
+- `git cat-file -e HEAD:.planning/brain/wiki/domains/worker-foundation.md` — FOUND in tree (committed, not just on disk).
+- Post-commit deletion check: no deletions. In-flight files (`contractors-engagements.md`, the `hot.md` contractor-band edit, `messages/*.json`, web-vite components) verified unstaged + intact after commit.

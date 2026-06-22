@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v7.0
 milestone_name: GTM Expansion
 status: verifying
-stopped_at: 89-03 Tasks 1-2 done (backfill-worker.ts GREEN turning the Plan-01 RED scaffold green + Migration B authored un-applied; Contractor.workerId kept nullable until the gate). Task 3 live per-region apply HELD at the [BLOCKING] human gate — 89-03 NOT fully complete; WORKER-01 left [ ].
-last_updated: "2026-06-22T10:49:21.497Z"
+stopped_at: 89-06 complete (Worker foundation wiki synthesis) — Phase 89 (Theme B serial gate) fully planned-and-executed, 6/6 plans Complete. Migrations A+B applied with operator approval in 89-03; WORKER-01..05 complete.
+last_updated: "2026-06-22T10:59:28.716Z"
 last_activity: 2026-06-22
 progress:
   total_phases: 20
-  completed_phases: 4
+  completed_phases: 5
   total_plans: 57
-  completed_plans: 32
-  percent: 20
+  completed_plans: 33
+  percent: 25
 ---
 
 # Project State
@@ -34,7 +34,7 @@ Plan: 86-05 of 8 complete (86-02/03/05 done; 86-01 Task 3 + 86-02 Task 3 multi-r
 Status: Phase complete — ready for verification
 Last activity: 2026-06-22
 
-Progress: [██████░░░░] 56%
+Progress: [██████░░░░] 58%
 
 ## v7.0 Roadmap Summary (created 2026-06-07)
 
@@ -131,6 +131,7 @@ Decisions are logged in PROJECT.md Key Decisions table. Recent decisions affecti
 - [Phase ?]: 89-04: worker/employee tRPC namespaces gated behind module.workforce-employees via three-layer flag-off (root.ts conditional-spread + assertWorkforceEnabled + web-vite useFlag); contractor.* never gated and shape-frozen
 - [Phase ?]: 89-04: skeleton worker/employee routers are read-only (no mutation) so no writeAuditLog/employee-RBAC this phase — RBAC lands in 89-05, employee profile in Phase 90
 - [Phase ?]: [89-05, 2026-06-22] employee RBAC resource + 4 HR roles (hr_admin/hr_manager/payroll_officer/leave_approver, snake_case) — each grants only employee (+narrow contractor:read), never a contractor mutation (BFLA fence). owner allPermissions duplicate untouched so owner does not auto-gain employee. All 14 roles frozen in role-permission-matrix; 10 pre-existing unchanged. Worker proven tenant-owning by cross-org leak test (ORG_A never sees ORG_B Worker). WORKER-03/04 complete; routers left additive (employee resource consumed by Phase-90).
+- [Phase ?]: [89-06, 2026-06-22] Worker-model documentation-follows-code closure: new domains/worker-foundation.md + prisma-schema-areas/key-services/api-routers-catalog/patterns/feature-flags refreshed + two MEMORY invariants (Worker base + one-time backfill, Contractor.id stable; workerType-scoped reads via withWorkerTypeDefault explicit-where-wins + the 4 raw-SQL blind-spot sites guarded by check:contractor-rawsql-workertype). check:wiki-brain GREEN. No requirement re-touched (WORKER-01..05 already complete). Phase 89 fully planned-and-executed (6/6 plans).
 
 ### Pending Todos
 
@@ -187,6 +188,7 @@ Carried forward from v6.0 milestone close (2026-06-07). Full enumeration: `.plan
 | Phase 88 P88-01 | 9min | 2 tasks | 7 files |
 | Phase 89 P04 | 16min | 2 tasks | 17 files |
 | Phase 89 P05 | 12min | 2 tasks | 8 files |
+| Phase 89 P06 | 14m | 2 tasks | 10 files |
 
 ## Standing Project Constraints
 
@@ -196,7 +198,7 @@ Carried forward from v6.0 milestone close (2026-06-07). Full enumeration: `.plan
 
 ## Session Continuity
 
-Last session: 2026-06-22T10:48:49.416Z
-Stopped at: 89-03 Tasks 1-2 done (backfill-worker.ts GREEN turning the Plan-01 RED scaffold green + Migration B authored un-applied; Contractor.workerId kept nullable until the gate). Task 3 live per-region apply HELD at the [BLOCKING] human gate — 89-03 NOT fully complete; WORKER-01 left [ ].
+Last session: 2026-06-22T10:58:54.341Z
+Stopped at: 89-06 complete (Worker foundation wiki synthesis — documentation-follows-code) — Phase 89 (Theme B serial gate) fully planned-and-executed, 6/6 plans, status Complete. Migrations A+B were applied with operator approval in 89-03 (Worker live, Contractor.workerId NOT NULL + FK, WORKER-01..05 complete).
 Resume file: None
-Next command: resolve the 89-03 Task 3 [BLOCKING] human gate (staging-snapshot backfill apply + parity sign-off + Migration B enforcement, per region), then resume 89-04 (router split)
+Next command: `/gsd:verify-phase 89` (Theme B gate is closed — the parallel Theme B phases 90–97 can proceed), or resume Theme A (86 verification / 87)
