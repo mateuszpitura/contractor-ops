@@ -283,7 +283,7 @@ Which phases cover which requirements. Phase numbering continues from v6.0 (ende
 | US-PAY-03 | Phase 88 | Pending |
 | US-PAY-04 | Phase 88 | Pending |
 | US-PAY-05 | Phase 88 | Pending |
-| WORKER-01 | Phase 89 | Pending |
+| WORKER-01 | Phase 89 | Complete |
 | WORKER-02 | Phase 89 | Complete |
 | WORKER-03 | Phase 89 | Complete |
 | WORKER-04 | Phase 89 | Complete |
