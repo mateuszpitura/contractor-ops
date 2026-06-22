@@ -366,9 +366,9 @@ export type WorkerUncheckedUpdateManyInput = {
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
-export type WorkerNullableScalarRelationFilter = {
-  is?: Prisma.WorkerWhereInput | null
-  isNot?: Prisma.WorkerWhereInput | null
+export type WorkerScalarRelationFilter = {
+  is?: Prisma.WorkerWhereInput
+  isNot?: Prisma.WorkerWhereInput
 }
 
 export type WorkerListRelationFilter = {
@@ -423,12 +423,10 @@ export type WorkerCreateNestedOneWithoutContractorInput = {
   connect?: Prisma.WorkerWhereUniqueInput
 }
 
-export type WorkerUpdateOneWithoutContractorNestedInput = {
+export type WorkerUpdateOneRequiredWithoutContractorNestedInput = {
   create?: Prisma.XOR<Prisma.WorkerCreateWithoutContractorInput, Prisma.WorkerUncheckedCreateWithoutContractorInput>
   connectOrCreate?: Prisma.WorkerCreateOrConnectWithoutContractorInput
   upsert?: Prisma.WorkerUpsertWithoutContractorInput
-  disconnect?: Prisma.WorkerWhereInput | boolean
-  delete?: Prisma.WorkerWhereInput | boolean
   connect?: Prisma.WorkerWhereUniqueInput
   update?: Prisma.XOR<Prisma.XOR<Prisma.WorkerUpdateToOneWithWhereWithoutContractorInput, Prisma.WorkerUpdateWithoutContractorInput>, Prisma.WorkerUncheckedUpdateWithoutContractorInput>
 }

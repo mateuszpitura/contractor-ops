@@ -50,6 +50,12 @@ const { mockPrisma } = vi.hoisted(() => {
         ...opts.data,
       })),
     },
+    worker: {
+      create: vi.fn(async (opts: { data: Rec }) => ({
+        id: 'worker-1',
+        ...opts.data,
+      })),
+    },
     contractorBillingProfile: {
       create: vi.fn(async (opts: { data: Rec }) => ({
         id: 'bp-1',
@@ -558,6 +564,16 @@ describe('import router', () => {
         currency: 'GBP',
         ownerUserId: USER_ID,
       });
+      // Each imported contractor is created with an atomically-linked Worker.
+      expect(mockPrisma.worker.create).toHaveBeenCalledTimes(1);
+      const workerCall = mockPrisma.worker.create.mock.calls[0]?.[0];
+      expect(workerCall.data).toMatchObject({
+        organizationId: ORG_ID,
+        workerType: 'CONTRACTOR',
+        displayName: 'Acme',
+        email: 'acme@example.com',
+      });
+      expect(createCall.data.workerId).toBe('worker-1');
 
       expect(result).toMatchObject({ created: 1, updated: 0, skipped: 0, failed: 0 });
     });

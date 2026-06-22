@@ -1893,6 +1893,7 @@ async function seedContractors(
       : (['USD', 'EUR', 'AED', 'SAR'] as const);
 
   const contractors: SeededContractor[] = [];
+  const workerRows: Prisma.WorkerCreateManyInput[] = [];
   const contractorRows: Prisma.ContractorCreateManyInput[] = [];
   const contactRows: Prisma.ContractorContactCreateManyInput[] = [];
   const billingRows: Prisma.ContractorBillingProfileCreateManyInput[] = [];
@@ -1945,9 +1946,20 @@ async function seedContractors(
 
     const contractorEmail = `${slugify(legalName)}-${i}@seed.local`;
     const contractorId = randomUUID();
+    const workerId = randomUUID();
+    workerRows.push({
+      id: workerId,
+      organizationId: ctx.organizationId,
+      workerType: 'CONTRACTOR',
+      displayName: legalName,
+      email: contractorEmail,
+      status,
+      createdAt: hiredAt,
+    });
     contractorRows.push({
       id: contractorId,
       organizationId: ctx.organizationId,
+      workerId,
       type: isCompany ? 'COMPANY' : 'SOLE_TRADER',
       legalName,
       displayName: legalName,
@@ -2110,6 +2122,13 @@ async function seedContractors(
     refs.push({ type: 'CONTRACTOR', id: contractorId, name: legalName, createdAt: hiredAt });
   }
 
+  // Wave 0: Worker identity roots — parents of the Contractor.workerId FK.
+  for (let i = 0; i < workerRows.length; i += 1000) {
+    await prisma.worker.createMany({
+      data: workerRows.slice(i, i + 1000),
+      skipDuplicates: true,
+    });
+  }
   // Wave 1: parent contractor rows (wide table → chunk 500)
   for (let i = 0; i < contractorRows.length; i += 500) {
     await prisma.contractor.createMany({

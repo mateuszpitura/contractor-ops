@@ -500,9 +500,19 @@ export const contractorCoreRouter = router({
       let contractor: Awaited<ReturnType<typeof ctx.db.contractor.create>>;
       try {
         contractor = await ctx.db.$transaction(async tx => {
+          const worker = await tx.worker.create({
+            data: {
+              organizationId: ctx.organizationId,
+              workerType: 'CONTRACTOR',
+              displayName: companyFields.displayName,
+              email: companyFields.email ?? null,
+            },
+          });
+
           const created = await tx.contractor.create({
             data: {
               organizationId: ctx.organizationId,
+              workerId: worker.id,
               legalName: companyFields.legalName,
               displayName: companyFields.displayName,
               type: companyFields.type,

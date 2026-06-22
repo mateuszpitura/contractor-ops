@@ -51,6 +51,9 @@ const { mockPrisma, contractorCreate } = vi.hoisted(() => {
       create: contractorCreate,
       count: vi.fn(async () => 1),
     },
+    worker: {
+      create: vi.fn(async (a: { data: Rec }) => ({ id: 'worker-1', ...a.data })),
+    },
     contractorBillingProfile: {
       create: vi.fn(async (a: { data: Rec }) => ({ id: 'bp-1', ...a.data })),
     },

@@ -65,11 +65,22 @@ async function createContractorFromRow(
   countryCode: string,
 ): Promise<'created' | 'failed'> {
   try {
+    const displayName = String(row.displayName ?? row.legalName ?? '');
+    const email = String(row.email ?? '');
+    const worker = await tx.worker.create({
+      data: {
+        organizationId,
+        workerType: 'CONTRACTOR',
+        displayName,
+        email: email || null,
+      },
+    });
     const created = await tx.contractor.create({
       data: {
         organizationId,
+        workerId: worker.id,
         legalName: String(row.legalName ?? ''),
-        displayName: String(row.displayName ?? row.legalName ?? ''),
+        displayName,
         type: String(row.type ?? 'COMPANY') as
           | 'SOLE_TRADER'
           | 'COMPANY'
@@ -77,7 +88,7 @@ async function createContractorFromRow(
           | 'OTHER',
         taxId,
         vatId: row.vatId ? String(row.vatId) : null,
-        email: String(row.email ?? ''),
+        email,
         phone: row.phone ? String(row.phone) : null,
         countryCode,
         currency: String(row.currency ?? 'PLN'),

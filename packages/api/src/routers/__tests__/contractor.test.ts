@@ -60,6 +60,12 @@ const { mockPrisma } = vi.hoisted(() => {
         ...opts.data,
       })),
     },
+    worker: {
+      create: vi.fn(async (opts: { data: Rec }) => ({
+        id: 'new-worker-id',
+        ...opts.data,
+      })),
+    },
     contractorComplianceItem: {
       groupBy: vi.fn(async () => []),
     },
@@ -628,6 +634,30 @@ describe('contractor router', () => {
         preferredCurrency: 'PLN',
         isDefault: true,
       });
+    });
+
+    it('atomically creates a linked Worker (CONTRACTOR) and links it via workerId', async () => {
+      mockPrisma.worker.create.mockResolvedValueOnce({ id: 'wrk_001' });
+      mockPrisma.contractor.create.mockResolvedValueOnce(
+        makeContractor({ id: 'new-contractor-id', legalName: 'New Corp Sp. z o.o.' }),
+      );
+      mockPrisma.contractorBillingProfile.create.mockResolvedValueOnce({
+        id: BILLING_PROFILE_ID,
+      });
+
+      await caller.contractor.create(createInput);
+
+      expect(mockPrisma.worker.create).toHaveBeenCalledTimes(1);
+      const workerCall = mockPrisma.worker.create.mock.calls[0]?.[0];
+      expect(workerCall.data).toMatchObject({
+        organizationId: ORG_ID,
+        workerType: 'CONTRACTOR',
+        displayName: 'New Corp',
+        email: 'new@example.com',
+      });
+
+      const contractorCall = mockPrisma.contractor.create.mock.calls[0]?.[0];
+      expect(contractorCall.data.workerId).toBe('wrk_001');
     });
   });
 
