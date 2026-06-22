@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v7.0
 milestone_name: GTM Expansion
 status: verifying
-stopped_at: Completed 90-03-PLAN.md (employee country-fields registry + dedicated PII crypto + EMPLOYEE_PII_ENCRYPTION_KEY; P89-independent)
-last_updated: "2026-06-21T23:44:33.998Z"
+stopped_at: Completed 89-01-PLAN.md (Wave-0 contractor.* route-shape snapshot + contractor-parity baseline GREEN pre-Worker; backfill + withWorkerTypeDefault RED scaffolds)
+last_updated: "2026-06-22T00:00:41.730Z"
 last_activity: 2026-06-21
 progress:
   total_phases: 20
   completed_phases: 4
   total_plans: 57
-  completed_plans: 26
+  completed_plans: 27
   percent: 20
 ---
 
@@ -34,7 +34,7 @@ Plan: 86-05 of 8 complete (86-02/03/05 done; 86-01 Task 3 + 86-02 Task 3 multi-r
 Status: Phase complete — ready for verification
 Last activity: 2026-06-21
 
-Progress: [████░░░░░░] 42%
+Progress: [█████░░░░░] 47%
 
 ## v7.0 Roadmap Summary (created 2026-06-07)
 
@@ -123,6 +123,8 @@ Decisions are logged in PROJECT.md Key Decisions table. Recent decisions affecti
 - [Phase ?]: [90-01] P89-independent crypto scaffold (employee-pii-crypto) fails RED on the missing module now; the P89-gated cross-org-leak + registry scaffolds are describe.skip with a HOLD-until-P89 marker and import no P89 surface, so they register+skip cleanly and become the GREEN target when Phase 89 lands EmployeeProfile + employeeRouter + employeePii.
 - [Phase 90]: 90-03: employee country-fields is a parallel employeeCountryFieldsSchemaMap (.strict() per-country), not a fork of the contractor map; no national-ID key (pesel/ssn/iqama/emiratesId) can enter the countryFields JSON
 - [Phase 90]: 90-03: PESEL/Iqama/Emirates-ID encrypt under a dedicated EMPLOYEE_PII_ENCRYPTION_KEY (separate blast radius); US SSN keeps SSN_ENCRYPTION_KEY + ssn-crypto unchanged
+- [Phase ?]: [89-01, 2026-06-22] Wave-0 baselines locked the contractor surface BEFORE any Worker model change: contractor.* route-shape snapshot (19 procedure names + input/output JSON-Schema shapes via appRouter._def.procedures + zod 4 z.toJSONSchema, no zod-to-json-schema dep — A1 confirmed) GREEN on the current router, and a contractor-parity baseline (list/getById/dashboard activeContractors raw count/search FTS raw site/buildContractorListWhere list-payment-run-export predicate + 2 facet raw sites/portal contractor read) GREEN on the pre-Worker schema — the provable regression net (D-03/D-07).
+- [Phase ?]: [89-01, 2026-06-22] backfill-worker + worker-type RED scaffolds are terminal-RED via Cannot-find-module (import a not-yet-existing module), NOT assertion-logic; db tsconfig excludes src/**/__tests__/** so the RED imports do not brick typecheck. planWorkerBackfill idempotency (skip linked, re-run no-op, no source mutation — Plan 03) + withWorkerTypeDefault inject-default+explicit-where-wins across all 8 read ops on Worker only, non-Worker untouched (design A — Plan 02). No WORKER-* requirement marked complete (phase 89 = 1/6 plans; table/extension/backfill/router/RBAC/flag are later waves behind a [BLOCKING] human gate).
 
 ### Pending Todos
 
@@ -174,6 +176,7 @@ Carried forward from v6.0 milestone close (2026-06-07). Full enumeration: `.plan
 | Phase 86 P05 | ~10min | 2 tasks | 8 files |
 | Phase 90 P90-01 | 14min | 2 tasks | 5 files |
 | Phase 90 P03 | 4min | 2 tasks | 6 files |
+| Phase 89 P01 | ~22min | 2 tasks | 5 files |
 
 ## Standing Project Constraints
 
@@ -183,7 +186,7 @@ Carried forward from v6.0 milestone close (2026-06-07). Full enumeration: `.plan
 
 ## Session Continuity
 
-Last session: 2026-06-21T23:44:33.992Z
-Stopped at: Completed 90-03-PLAN.md (employee country-fields registry + dedicated PII crypto + EMPLOYEE_PII_ENCRYPTION_KEY; P89-independent)
+Last session: 2026-06-22T00:00:10.602Z
+Stopped at: Completed 89-01-PLAN.md (Wave-0 contractor.* route-shape snapshot + contractor-parity baseline GREEN pre-Worker; backfill + withWorkerTypeDefault RED scaffolds)
 Resume file: None
 Next command: execute Phase 85 Plan 04 (web-vite portal wizard + staff status card + i18n)
