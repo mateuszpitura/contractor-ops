@@ -119,3 +119,19 @@ WORKER-01 left `[ ]` (not marked complete) — Task 3's per-region apply + parit
 ## Self-Check: PASSED
 
 All created files present on disk (`backfill-worker.ts`, `__worker_id_required/migration.sql` + `down.sql`, `89-03-SUMMARY.md`); both task commits (`1b32c161f`, `83307e33a`) present in git history.
+
+## Task 3 — Live Apply (operator-approved, 2026-06-22)
+
+The [BLOCKING] human gate was run with explicit operator approval against the **EU Neon DB** (`DATABASE_URL`=`_EU`=`_ME` → same `ep-spring-meadow-…eu-central-1` instance; `_US` unset). **dry-run-first.**
+
+**Applied:**
+- **Migration A** — via direct `psql` on the migration SQL file ONLY (not `prisma migrate`/`db push`), to avoid sweeping the other pending v7.0 migrations (86 tax models etc.). Additive: `Worker` table + `WorkerType` enum + 2 indexes + nullable `Contractor.workerId` + unique index. `Contractor` count unchanged (1040).
+- **Backfill** — `backfill-worker.ts` (after the `BATCH_SIZE 1000→100` + 60s-tx-timeout fix; the 1000/tx first attempt hit the Neon 5s interactive-tx limit and **rolled back atomically — no partial state**). Result: **1040 Workers created, 1:1 linked, 0 unlinked, 0 orphans, 0 double-links, 0 contractor rows lost.** Idempotent (re-run plans 0). Audited (2 `worker.backfill.apply` rows: 1000 + 40).
+- **Parity GREEN** post-backfill: `worker-regression.test.ts` + `contractor-contract-snapshot.test.ts` (14 tests) pass; full db suite GREEN (174). The 12 api-suite failures are unrelated 88-01 RED scaffolds (NACHA/Fedwire/withholding), not a regression.
+
+**DEFERRED (NOT applied) — Migration B (`workerId` SET NOT NULL + FK):**
+Deliberately NOT applied. Every *existing* contractor is linked, but the `contractor.create` call sites aren't yet wired to create+link a `Worker`, so enforcing NOT NULL would break *new* contractor inserts. Migration B must land **in lockstep with wiring the contractor-creation paths** (a later increment). Until then: `Worker` populated; `Contractor.workerId` **nullable**; schema source keeps `workerId String?`.
+
+**WORKER-01 stays open** (`[ ]`) — backfill of existing rows done; full gate completion (Migration B NOT-NULL/FK + create-path wiring) outstanding.
+
+**Live DB state for future agents:** `Worker` exists + holds 1040 rows (all `CONTRACTOR`); `Contractor.workerId` populated for all 1040 + **nullable**; no FK constraint yet; Migration A applied out-of-band (not in `_prisma_migrations`).

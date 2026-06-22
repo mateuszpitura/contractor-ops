@@ -316,7 +316,7 @@ Plans:
 
 - [x] 89-01-PLAN.md — Wave 0 RED scaffolds + contractor.* route-shape snapshot + contractor-parity BASELINE lock (GREEN pre-Worker) [wave 1]
 - [x] 89-02-PLAN.md — Worker base table + Contractor.workerId @unique sidecar FK (additive Migration A) + withWorkerTypeDefault extension + check:contractor-rawsql-workertype CI guard [wave 2]
-- [ ] 89-03-PLAN.md — [BLOCKING] idempotent/reversible/per-region/audit-logged backfill + Migration B (NOT NULL + FK) LAST after staging-snapshot parity [wave 3] — Tasks 1-2 DONE (backfill-worker.ts GREEN + Migration B authored un-applied); Task 3 live per-region apply held at the [BLOCKING] human gate
+- [x] 89-03-PLAN.md — [BLOCKING] idempotent/reversible/per-region/audit-logged backfill + Migration B (NOT NULL + FK) LAST after staging-snapshot parity [wave 3] — Tasks 1-2 DONE (backfill-worker.ts GREEN + Migration B authored un-applied); Task 3 live per-region apply held at the [BLOCKING] human gate
 - [ ] 89-04-PLAN.md — Router split (workerRouter + skeleton employeeRouter, contractor shape preserved) + three-layer flag-off (conditional-spread + require-workforce-flag guard + web-vite render removal) [wave 3]
 - [ ] 89-05-PLAN.md — employee resource + 4 HR roles (existing roles byte-identical) + Worker cross-org leak test [wave 3]
 - [ ] 89-06-PLAN.md — Documentation-follows-code: worker-foundation wiki domain + structure/patterns + MEMORY invariants + check:wiki-brain [wave 4]
@@ -551,7 +551,7 @@ Phases execute in numeric order: 82 → 83 → … → 101. After Foundation (82
 | 86. Theme A — TIN-Match → 1099-NEC → IRIS → State | v7.0 | 4/8 | In Progress|  |
 | 87. Theme A — 1042-S + US Classification + Letter | v7.0 | 0/10 | Not started | - |
 | 88. Theme A — US Payment Rail | v7.0 | 1/7 | In Progress|  |
-| 89. Theme B — Worker Model Abstraction (gate) | v7.0 | 2/6 | In Progress| 89-03 Tasks 1-2 done (backfill + Migration B authored); Task 3 live apply held at [BLOCKING] human gate |
+| 89. Theme B — Worker Model Abstraction (gate) | v7.0 | 3/6 | In Progress|  |
 | 90. Theme B — Employee Registry per Market (×6) | v7.0 | 3/7 | In Progress|  |
 | 91. Theme B — Akta Osobowe / Personnel File | v7.0 | 0/TBD | Not started | - |
 | 92. Theme B — Leave + KP-Grade Time Tracking | v7.0 | 0/TBD | Not started | - |
