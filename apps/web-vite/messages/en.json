@@ -2420,6 +2420,17 @@
       "certsPattern": "{count} certs",
       "itemsPattern": "{count} items",
       "viewDetails": "View Details"
+    },
+    "workforce": {
+      "cta": "Workforce"
+    }
+  },
+  "Employees": {
+    "title": "Employees",
+    "pageDescription": "Manage your employed workforce alongside contractors.",
+    "comingSoon": {
+      "heading": "Employee management is on the way",
+      "body": "Personnel files, leave, and on/offboarding for employees arrive soon. For now, contractors remain in the Contractors workspace."
     }
   },
   "Documents": {

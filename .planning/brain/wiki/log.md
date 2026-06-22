@@ -5,6 +5,13 @@ type: log
 
 # Wiki log (append only)
 
+## 2026-06-22 — Worker-model router split + workforce flag-off (Theme B)
+
+- New tRPC namespaces behind `module.workforce-employees`: `worker` (shared cross-type reads — `list`/`getById`, explicit `workerType` so the `withWorkerTypeDefault` extension does not force-filter to CONTRACTOR) and `employee` (skeleton, `workerType=EMPLOYEE`, read-only). Both in `packages/api/src/routers/core/{worker,employee}.ts`; Zod `.strict()` inputs block `organizationId`/`workerType` mass-assignment.
+- Three-layer flag-off mirrors the us-expansion gate: `root.ts` conditional-spread (`conditionalWorkforceRouters`, absent → `METHOD_NOT_FOUND`) + per-request `assertWorkforceEnabled` (FORBIDDEN / `workforceDisabled`) in `middleware/require-workforce-flag.ts` + web-vite `useFlag('module.workforce-employees')` render-removal (`dashboard-home.tsx` quick-link + flag-dark `/employees` route at `pages/dashboard/employees.tsx`). Flag already registered PENDING — not re-registered.
+- `contractor.*` is NOT gated and its route shape is unchanged (locked by `contractor-contract-snapshot.test.ts`). New `WORKFORCE_DISABLED` error + `workforceDisabled` i18n key (en/de/pl/ar).
+- Wiki: [[structure/api-routers-catalog]] § Conditional workforce; [[structure/web-vite-domains]] employees row.
+
 ## 2026-06-18 — IRIS 1099-NEC e-file package (`@contractor-ops/iris`)
 
 - New: `packages/iris` (`@contractor-ops/iris`) — IRS IRIS (Information Returns Intake System) 1099-NEC Copy A e-file XML. `buildIrisXml` (`src/generator.ts`) builds the submission with fast-xml-parser `XMLBuilder` (never string-concatenated XML, mirrors `packages/einvoice`): Transmission Manifest carries the payload-manifest schema `VersionNum`/`VersionDt`, each payee B-record carries its CFSF state code, amounts emit as IRIS USAmountType whole dollars, recipient TIN masked last-4 only. `xsdValidate` (`src/validator.ts`) validates against the bundled IRS IRIS XSD with `libxmljs2` → `{ status: 'VALID' | 'INVALID', errors }` (einvoice KoSIT layer-1 shape); SSRF/XXE-safe (`parseXml({ nonet: true })`, default `noent: false`), bundle dir resolved lazily + entry XSD memoized.

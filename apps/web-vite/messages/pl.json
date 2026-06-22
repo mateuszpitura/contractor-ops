@@ -2420,6 +2420,17 @@
       "certsPattern": "{count} cert.",
       "itemsPattern": "{count} poz.",
       "viewDetails": "Pokaż szczegóły"
+    },
+    "workforce": {
+      "cta": "Personel"
+    }
+  },
+  "Employees": {
+    "title": "Pracownicy",
+    "pageDescription": "Zarządzaj zatrudnionym personelem obok wykonawców.",
+    "comingSoon": {
+      "heading": "Zarządzanie pracownikami już wkrótce",
+      "body": "Akta osobowe, urlopy oraz on/offboarding pracowników pojawią się wkrótce. Na razie wykonawcy pozostają w obszarze Wykonawcy."
     }
   },
   "Documents": {

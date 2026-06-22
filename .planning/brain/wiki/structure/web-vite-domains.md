@@ -2,12 +2,12 @@
 title: web-vite UI domains
 type: structure
 tags: [structure, web-vite, ui]
-source_commit: d839f52eb
+source_commit: 4a8c2ee3d
 verify_with:
   - apps/web-vite/src/components/
   - apps/web-vite/ARCHITECTURE.md
   - apps/web-vite/src/router/
-updated: 2026-06-18
+updated: 2026-06-22
 ---
 
 # web-vite UI domains
@@ -43,6 +43,7 @@ Routes: `apps/web-vite/src/router/dashboard-routes.tsx`, `portal-routes.tsx`.
 | `workflows/`, `workflow/` | [[domains/workflows-and-roles]] |
 | `offboarding/` | [[domains/workflows-and-roles]] — override badges/dialogs on offboarding runs |
 | `equipment/` | [[domains/equipment-logistics]] |
+| `pages/dashboard/employees.tsx` | flag-dark workforce skeleton — `/employees` route + a dashboard quick-link both gated by `useFlag('module.workforce-employees')`; renders a coming-soon empty state until the employee profile surface lands in a later phase |
 | `time/` | [[domains/time-and-reconciliation]] |
 | `integrations/` | [[integrations/_index]] |
 | `settings/`, `organization/` | [[domains/settings-and-org-admin]] |

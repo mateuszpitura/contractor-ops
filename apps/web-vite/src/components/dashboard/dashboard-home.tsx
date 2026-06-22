@@ -81,6 +81,9 @@ export function DashboardHome() {
   const hasReportAccess = can('report', ['read']);
   const lateInterestEnabled = useFlag('payments.late-interest-enabled');
   const classificationEnabled = useFlag('module.classification-engine');
+  // Theme B workforce surface ships dark behind this flag; the /employees entry
+  // is absent from the render tree until it is enabled per-org.
+  const workforceEnabled = useFlag('module.workforce-employees');
   const { isPending, error, kpis } = useDashboardHome();
 
   if (isPending) {
@@ -158,6 +161,16 @@ export function DashboardHome() {
           {classificationEnabled && (
             <AnimateIn delay={5}>
               <TaxObligationsWidget />
+            </AnimateIn>
+          )}
+          {workforceEnabled && (
+            <AnimateIn delay={5}>
+              <Button
+                variant="outline"
+                render={<Link href="/employees" />}
+                className="w-full justify-start">
+                {t('workforce.cta')}
+              </Button>
             </AnimateIn>
           )}
         </div>

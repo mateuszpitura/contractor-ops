@@ -1,6 +1,7 @@
 import { buildFlagBag } from '@contractor-ops/feature-flags';
 import { router } from './init';
 import { isUsExpansionRegistered } from './middleware/require-us-expansion-flag';
+import { isWorkforceRegistered } from './middleware/require-workforce-flag';
 import {
   classificationDashboardRouter,
   classificationDocumentRouter,
@@ -29,6 +30,7 @@ import {
   docsRouter,
   documentRouter,
   einvoiceRouter,
+  employeeRouter,
   esignRouter,
   featureFlagsRouter,
   importRouter,
@@ -49,6 +51,7 @@ import {
   teamRouter,
   timeRouter,
   userRouter,
+  workerRouter,
 } from './routers/core/index';
 import { equipmentRouter } from './routers/equipment/index';
 import {
@@ -162,6 +165,22 @@ const conditionalUsExpansionRouters = isUsExpansionRegistered()
   ? usExpansionRouters
   : ({} as typeof usExpansionRouters);
 
+// Worker-model surface (Theme B) ships dark behind `module.workforce-employees`.
+// Mirror the classification / us-expansion gate: the cross-type worker and the
+// skeleton employee procedures are absent from appRouter at runtime when the
+// flag is OFF (clients get METHOD_NOT_FOUND). Defense-in-depth: each procedure
+// re-evaluates the flag per request via assertWorkforceEnabled. The const keeps
+// the spread TYPE constant across branches so client typing always sees the
+// namespaces. contractor.* is NOT gated — it is the always-on existing surface.
+const workforceRouters = {
+  worker: workerRouter, // worker: shared cross-type worker reads (explicit workerType — contractors + employees)
+  employee: employeeRouter, // employee: skeleton employee-type reads (workerType=EMPLOYEE; profile surface lands in a later phase)
+} as const;
+
+const conditionalWorkforceRouters = isWorkforceRegistered()
+  ? workforceRouters
+  : ({} as typeof workforceRouters);
+
 export const appRouter = router({
   adminBoeRate: adminBoeRateRouter, // adminBoeRate: Super-admin BoE base rate CRUD — list, insert, update, delete
   apiKey: apiKeyRouter, // apiKey: Enterprise API key management — create, list, update, revoke
@@ -226,6 +245,7 @@ export const appRouter = router({
   gulf: gulfRouter, // gulf: UAE free-zone assignment CRUD + Saudization config/headcount/dashboard + drift overrides (region-aware ME)
   ...conditionalClassificationRouters,
   ...conditionalUsExpansionRouters,
+  ...conditionalWorkforceRouters,
 });
 
 /** Type-safe router type for client consumption */

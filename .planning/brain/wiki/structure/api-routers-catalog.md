@@ -2,12 +2,12 @@
 title: API routers catalog
 type: structure
 tags: [structure, api, trpc, catalog]
-source_commit: 79c1602848e9f0b2c5a6d3e1f4b7a9c0d2e6f813
+source_commit: 4a8c2ee3d4f6d7341395f3fcaa9989bc2e2d8d04
 verify_with:
   - packages/api/src/root.ts
   - packages/api/src/portal-root.ts
   - packages/validators/src/onboarding-import.ts
-updated: 2026-06-16
+updated: 2026-06-22
 ---
 
 # API routers catalog
@@ -102,6 +102,19 @@ Gated by `module.us-expansion` (or `QA_DEFAULT_ORG_ID`) in `root.ts`; each proce
 | `taxForm` | staff read/track of US W-form submissions (status, treaty claim, expiry) + request/remind — no on-behalf signing; full SSN never projected |
 
 When flag OFF: runtime `METHOD_NOT_FOUND`; the portal W-form procedures throw `FORBIDDEN`.
+
+## Conditional workforce (2 namespaces)
+
+Gated by `module.workforce-employees` (or `QA_DEFAULT_ORG_ID`) in `root.ts`; each procedure also re-checks the flag per request (`assertWorkforceEnabled` in `middleware/require-workforce-flag.ts`):
+
+| Namespace | Summary |
+|-----------|---------|
+| `worker` | shared cross-type worker reads (`list`, `getById`) — pass an explicit `workerType` so the `withWorkerTypeDefault` extension does not force-filter to CONTRACTOR; returns contractors + employees |
+| `employee` | skeleton employee reads (`list`, `workerType=EMPLOYEE`) — read-only; the employee profile surface lands in a later phase |
+
+`contractor.*` is **not** gated — it is the always-on existing surface; the split adds `worker`/`employee` without changing the contractor route shape (locked by `contractor-contract-snapshot.test.ts`).
+
+When flag OFF: runtime `METHOD_NOT_FOUND`; the per-request guard also throws `FORBIDDEN` (`workforceDisabled`). When ON, the web client shows a flag-gated `/employees` entry (`dashboard-home.tsx` → `useFlag('module.workforce-employees')`).
 
 ## Portal portalAppRouter (2 namespaces)
 

@@ -2420,6 +2420,17 @@
       "certsPattern": "{count} Zertif.",
       "itemsPattern": "{count} Posten",
       "viewDetails": "Details anzeigen"
+    },
+    "workforce": {
+      "cta": "Personal"
+    }
+  },
+  "Employees": {
+    "title": "Mitarbeitende",
+    "pageDescription": "Verwalten Sie Ihre angestellte Belegschaft neben den Auftragnehmern.",
+    "comingSoon": {
+      "heading": "Die Personalverwaltung kommt in Kürze",
+      "body": "Personalakten, Abwesenheiten sowie On- und Offboarding für Mitarbeitende folgen bald. Auftragnehmer bleiben vorerst im Auftragnehmer-Arbeitsbereich."
     }
   },
   "Documents": {
