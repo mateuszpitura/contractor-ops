@@ -61,8 +61,18 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT_DIR = resolve(__dirname, '../../..');
 config({ path: resolve(ROOT_DIR, '.env') });
 
-/** How many contractors are created + linked per atomic `$transaction`. */
-const BATCH_SIZE = 1000;
+/**
+ * How many contractors are created + linked per atomic `$transaction`. Kept
+ * small so each chunk completes well within the interactive-transaction timeout
+ * over a pooled (Neon) connection — each step is two round-trips (create Worker
+ * + update Contractor), and a 1000-row chunk exceeds the 5s default. Per-chunk
+ * atomicity + the `WHERE workerId IS NULL` idempotency guard make a resumed
+ * re-run pick up exactly the unlinked remainder.
+ */
+const BATCH_SIZE = 100;
+
+/** Interactive-transaction budget per chunk (generous for pooled-connection latency). */
+const TX_TIMEOUT_MS = 60_000;
 
 /**
  * The contractor projection the backfill needs: identity to copy onto the new
@@ -143,22 +153,25 @@ async function applyBackfill(
     // transaction so a contractor is never left half-linked. The whole chunk is
     // atomic: if any pair fails, the entire chunk rolls back and a re-run
     // resumes from the unlinked remainder.
-    await prisma.$transaction(async tx => {
-      for (const step of batch) {
-        const worker = await tx.worker.create({
-          data: {
-            organizationId: step.worker.organizationId,
-            displayName: step.worker.displayName,
-            email: step.worker.email,
-          },
-          select: { id: true },
-        });
-        await tx.contractor.update({
-          where: { id: step.contractorId },
-          data: { workerId: worker.id },
-        });
-      }
-    });
+    await prisma.$transaction(
+      async tx => {
+        for (const step of batch) {
+          const worker = await tx.worker.create({
+            data: {
+              organizationId: step.worker.organizationId,
+              displayName: step.worker.displayName,
+              email: step.worker.email,
+            },
+            select: { id: true },
+          });
+          await tx.contractor.update({
+            where: { id: step.contractorId },
+            data: { workerId: worker.id },
+          });
+        }
+      },
+      { timeout: TX_TIMEOUT_MS },
+    );
 
     for (const step of batch) {
       perOrgCount.set(
@@ -202,15 +215,18 @@ async function rollbackBackfill(prisma: BackfillPrisma): Promise<Map<string, num
 
   const perOrgCount = new Map<string, number>();
   for (const batch of chunk(linked, BATCH_SIZE)) {
-    await prisma.$transaction(async tx => {
-      // Null the links first so no FK protects the Worker rows from deletion.
-      await tx.contractor.updateMany({
-        where: { id: { in: batch.map(c => c.id) } },
-        data: { workerId: null },
-      });
-      const workerIds = batch.map(c => c.workerId).filter((id): id is string => id !== null);
-      await tx.worker.deleteMany({ where: { id: { in: workerIds } } });
-    });
+    await prisma.$transaction(
+      async tx => {
+        // Null the links first so no FK protects the Worker rows from deletion.
+        await tx.contractor.updateMany({
+          where: { id: { in: batch.map(c => c.id) } },
+          data: { workerId: null },
+        });
+        const workerIds = batch.map(c => c.workerId).filter((id): id is string => id !== null);
+        await tx.worker.deleteMany({ where: { id: { in: workerIds } } });
+      },
+      { timeout: TX_TIMEOUT_MS },
+    );
 
     for (const c of batch) {
       perOrgCount.set(c.organizationId, (perOrgCount.get(c.organizationId) ?? 0) + 1);
