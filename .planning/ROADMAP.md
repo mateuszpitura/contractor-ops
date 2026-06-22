@@ -272,7 +272,7 @@ Known gaps / deferred at close: see STATE.md `## Deferred Items` (3 unverified p
 Plans:
 **Wave 1**
 
-- [ ] 88-01-PLAN.md — Wave-0 RED scaffolds (NACHA/Fedwire/withholding+SA-regression/currency/MT+Plaid mocks)
+- [x] 88-01-PLAN.md — Wave-0 RED scaffolds (NACHA/Fedwire/withholding+SA-regression/currency/MT+Plaid mocks)
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
@@ -550,7 +550,7 @@ Phases execute in numeric order: 82 → 83 → … → 101. After Foundation (82
 | 85. Theme A — W-Form Intake + Tax-Treaty Engine | v7.0 | 4/4 | Complete   | 2026-06-16 |
 | 86. Theme A — TIN-Match → 1099-NEC → IRIS → State | v7.0 | 4/8 | In Progress|  |
 | 87. Theme A — 1042-S + US Classification + Letter | v7.0 | 0/10 | Not started | - |
-| 88. Theme A — US Payment Rail | v7.0 | 0/TBD | Not started | - |
+| 88. Theme A — US Payment Rail | v7.0 | 1/7 | In Progress|  |
 | 89. Theme B — Worker Model Abstraction (gate) | v7.0 | 1/6 | In Progress|  |
 | 90. Theme B — Employee Registry per Market (×6) | v7.0 | 3/7 | In Progress|  |
 | 91. Theme B — Akta Osobowe / Personnel File | v7.0 | 0/TBD | Not started | - |
