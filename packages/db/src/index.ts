@@ -56,25 +56,31 @@ export {
 export { withSoftDelete } from './soft-delete.js';
 export { tenantStore, withTenantScope } from './tenant.js';
 export type { CapabilityEnum, ProviderId, ScopeCapabilities } from './types/scope-capabilities.js';
+export { withWorkerTypeDefault } from './worker-type.js';
 
 import { prisma as basePrisma } from './client.js';
 import { withSoftDelete } from './soft-delete.js';
 import type { PrismaExtensible } from './tenant.js';
 import { withTenantScope } from './tenant.js';
+import { withWorkerTypeDefault } from './worker-type.js';
 
 /**
- * Creates a tenant-scoped Prisma client with soft-delete support.
+ * Creates a tenant-scoped Prisma client with soft-delete support and the
+ * worker-type default. The extension order is load-bearing: worker-type is
+ * outermost so the `workerType = 'CONTRACTOR'` default rides on top of the
+ * tenant-scope and soft-delete predicates.
  * Use tenantStore.run({ organizationId }, callback) to set the tenant context
  * before executing queries.
  */
 export function createTenantClient() {
-  return withSoftDelete(withTenantScope(basePrisma));
+  return withWorkerTypeDefault(withSoftDelete(withTenantScope(basePrisma)));
 }
 
 /**
- * Applies tenant scope + soft-delete extensions to an existing Prisma client
- * (useful for `prisma.$transaction(async (tx) => ...)` where `tx` is the client).
+ * Applies tenant scope + soft-delete + worker-type-default extensions to an
+ * existing Prisma client (useful for `prisma.$transaction(async (tx) => ...)`
+ * where `tx` is the client). Same outermost ordering as createTenantClient.
  */
 export function createTenantClientFrom<T extends PrismaExtensible>(prisma: T) {
-  return withSoftDelete(withTenantScope(prisma));
+  return withWorkerTypeDefault(withSoftDelete(withTenantScope(prisma)));
 }
