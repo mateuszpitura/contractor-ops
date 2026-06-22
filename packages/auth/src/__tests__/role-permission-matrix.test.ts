@@ -148,6 +148,28 @@ const EXPECTED: Record<RoleName, Record<string, readonly string[]>> = {
   platform_operator: {
     'admin:boe-rate': ['read', 'write'],
   },
+  hr_admin: {
+    employee: ['create', 'read', 'update', 'delete', 'approve_leave'],
+    contractor: ['read'],
+    team: ['read'],
+    project: ['read'],
+    costCenter: ['read'],
+  },
+  hr_manager: {
+    employee: ['read', 'update'],
+    contractor: ['read'],
+    team: ['read'],
+    project: ['read'],
+    costCenter: ['read'],
+  },
+  payroll_officer: {
+    employee: ['read'],
+    payment: ['read'],
+    report: ['read', 'export'],
+  },
+  leave_approver: {
+    employee: ['read', 'approve_leave'],
+  },
 };
 
 const sorted = (a: readonly string[]) => [...a].sort();

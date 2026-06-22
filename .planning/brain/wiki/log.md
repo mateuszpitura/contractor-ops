@@ -5,6 +5,14 @@ type: log
 
 # Wiki log (append only)
 
+## 2026-06-22 — Worker-model per-type RBAC + HR roles + tenant leak test (Theme B)
+
+- New `employee` RBAC resource in `packages/auth/src/permissions.ts` (`create`/`read`/`update`/`delete`/`approve_leave`) — the per-type surface for the worker-model employee abstraction, kept separate from `contractor` so HR-only fields gate independently.
+- Four HR roles in `packages/auth/src/roles.ts`: `hr_admin` (full employee CRUD + approve_leave), `hr_manager` (employee read/update), `payroll_officer` (employee read + payment read + report read/export), `leave_approver` (employee read + approve_leave). Each grants only `employee` (plus narrow `contractor:read` where needed) and NEVER a contractor mutation (BFLA fence). Requirement names are UPPER_SNAKE; reconciled to the codebase snake_case `RoleName` convention. `owner` is sourced from a duplicated `allPermissions` const that intentionally omits `employee`, so `owner` does not hold the HR-only resource (left untouched).
+- `role-permission-matrix.test.ts` freezes the exact grant for all 14 roles; `roles.test.ts` proves the 10 pre-existing roles' grant set is unchanged and the HR roles respect the contractor-mutation fence.
+- `Worker` is tenant-owning (carries `organizationId`, absent from `globalModels` in `packages/db/src/tenant.ts`) — `packages/api/src/__tests__/worker-tenant-isolation.test.ts` proves an ORG_A caller never sees ORG_B Worker rows via `worker.list`/`getById`.
+- Wiki: [[patterns/rbac-permissions]] § Resources and roles (employee resource + 14 roles + HR fence).
+
 ## 2026-06-22 — Worker-model router split + workforce flag-off (Theme B)
 
 - New tRPC namespaces behind `module.workforce-employees`: `worker` (shared cross-type reads — `list`/`getById`, explicit `workerType` so the `withWorkerTypeDefault` extension does not force-filter to CONTRACTOR) and `employee` (skeleton, `workerType=EMPLOYEE`, read-only). Both in `packages/api/src/routers/core/{worker,employee}.ts`; Zod `.strict()` inputs block `organizationId`/`workerType` mass-assignment.

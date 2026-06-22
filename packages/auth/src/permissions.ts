@@ -42,6 +42,11 @@ export const accessControlStatement = {
   // deny-by-default for the other 7 roles (external_accountant explicitly
   // denied). See roles.ts.
   contractorPii: ['read'],
+  // Per-type RBAC surface for the worker-model employee abstraction. Distinct
+  // from `contractor` so HR-only fields and the employee surface are gated
+  // independently and the HR roles below cannot reach contractor mutations.
+  // `approve_leave` is the HR-only action held by the leave-approver role.
+  employee: ['create', 'read', 'update', 'delete', 'approve_leave'],
   'admin:boe-rate': ['read', 'write'],
 } as const;
 

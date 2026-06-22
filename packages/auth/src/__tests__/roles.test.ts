@@ -3,7 +3,8 @@ import { accessControlStatement } from '../permissions.js';
 import { roles } from '../roles.js';
 
 describe('roles', () => {
-  const roleNames = [
+  /** The 10 platform roles that predate the worker-model HR roles. */
+  const existingRoleNames = [
     'owner',
     'admin',
     'finance_admin',
@@ -16,6 +17,11 @@ describe('roles', () => {
     'platform_operator',
   ] as const;
 
+  /** HR roles introduced for the worker-model employee abstraction. */
+  const hrRoleNames = ['hr_admin', 'hr_manager', 'payroll_officer', 'leave_approver'] as const;
+
+  const roleNames = [...existingRoleNames, ...hrRoleNames] as const;
+
   it('defines all exported platform roles', () => {
     expect(Object.keys(roles)).toHaveLength(roleNames.length);
     for (const name of roleNames) {
@@ -23,12 +29,19 @@ describe('roles', () => {
     }
   });
 
-  it('owner matches the full access control statement except platform-only admin:boe-rate', () => {
+  it('owner matches the full access control statement except platform-only admin:boe-rate and HR-only employee', () => {
     const o = roles.owner.statements;
     for (const [resource, actions] of Object.entries(accessControlStatement)) {
       if (resource === 'admin:boe-rate') {
         // admin:boe-rate is a global platform resource exclusive to
         // platform_operator. Per-org roles (owner included) must NOT have it.
+        expect(o[resource as keyof typeof o]).toBeUndefined();
+        continue;
+      }
+      if (resource === 'employee') {
+        // `employee` is an HR-only resource granted exclusively to the worker-model
+        // HR roles. Owner is sourced from the duplicated allPermissions const, which
+        // deliberately does not carry `employee`, so owner does not hold it.
         expect(o[resource as keyof typeof o]).toBeUndefined();
         continue;
       }
@@ -201,5 +214,62 @@ describe('roles', () => {
     // duplicated allPermissions const in roles.ts would leave owner silently denied.
     const owner = roles.owner.statements as Record<string, readonly string[] | undefined>;
     expect(owner.contractorPii).toEqual(['read']);
+  });
+
+  // --- Worker-model HR roles + per-type RBAC -------------------------------
+
+  it('the employee resource is present in the access control statement', () => {
+    expect(accessControlStatement).toHaveProperty('employee');
+    expect([...accessControlStatement.employee].sort()).toEqual(
+      ['approve_leave', 'create', 'delete', 'read', 'update'].sort(),
+    );
+  });
+
+  it('the four HR roles exist with the documented employee grants', () => {
+    expect(roles.hr_admin.statements.employee?.slice().sort()).toEqual(
+      ['approve_leave', 'create', 'delete', 'read', 'update'].sort(),
+    );
+    expect(roles.hr_manager.statements.employee?.slice().sort()).toEqual(['read', 'update'].sort());
+    expect(roles.payroll_officer.statements.employee).toEqual(['read']);
+    expect(roles.leave_approver.statements.employee?.slice().sort()).toEqual(
+      ['approve_leave', 'read'].sort(),
+    );
+  });
+
+  it('no HR role can create, update, delete, or bulk-mutate contractors (BFLA fence)', () => {
+    const mutations = ['create', 'update', 'delete', 'bulk'];
+    for (const name of hrRoleNames) {
+      const contractor = (roles[name].statements.contractor ?? []) as readonly string[];
+      for (const action of mutations) {
+        expect(contractor, `${name} must not hold contractor:${action}`).not.toContain(action);
+      }
+    }
+  });
+
+  it('no HR role holds contractorPii, payment-write, idp, member, or organization access', () => {
+    for (const name of hrRoleNames) {
+      const s = roles[name].statements as Record<string, readonly string[] | undefined>;
+      expect(s.contractorPii, `${name} must not reveal SSN PII`).toBeUndefined();
+      expect(s.idp, `${name} must not hold idp actions`).toBeUndefined();
+      expect(s.member, `${name} must not manage members`).toBeUndefined();
+      expect(s.organization, `${name} must not manage the organization`).toBeUndefined();
+      const payment = (s.payment ?? []) as readonly string[];
+      for (const action of payment) {
+        expect(action, `${name} payment grant must be read-only`).toBe('read');
+      }
+    }
+  });
+
+  // The 10 pre-existing platform roles must stay byte-identical after the HR
+  // roles were added. The exact per-role grant for every role (existing + new)
+  // is frozen in role-permission-matrix.test.ts. This guard freezes the SET of
+  // pre-existing role names so none is removed or renamed, and re-asserts that
+  // the new HR roles are strictly additive (no existing key mutated).
+  it('the 10 pre-existing role names are all still present and unchanged in count', () => {
+    for (const name of existingRoleNames) {
+      expect(roles[name]?.statements, `${name} role must still exist`).toBeDefined();
+    }
+    // Existing + the 4 additive HR roles, nothing else.
+    expect(Object.keys(roles).sort()).toEqual([...existingRoleNames, ...hrRoleNames].sort());
   });
 });

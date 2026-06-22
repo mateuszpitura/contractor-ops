@@ -1,7 +1,9 @@
 import { ac } from './permissions.js';
 
 /**
- * 9 predefined roles for the Contractor Ops platform.
+ * Predefined roles for the Contractor Ops platform: the 10 core roles plus the
+ * four worker-model HR roles (hr_admin, hr_manager, payroll_officer,
+ * leave_approver) that gate the employee surface.
  *
  * Each role grants a specific subset of permissions defined in permissions.ts.
  * Roles are assigned to organization members and enforced via tRPC middleware.
@@ -176,6 +178,38 @@ export const roles = {
    */
   platform_operator: ac.newRole({
     'admin:boe-rate': ['read', 'write'],
+  }),
+
+  // HR roles for the worker-model employee abstraction. Each grants ONLY the
+  // `employee` resource (plus a read on `contractor` for shared worker context
+  // where the role needs it) and NEVER contractor create/update/delete/bulk —
+  // an HR role must not be able to mutate contractors. Names follow the existing
+  // snake_case role convention (the requirement document lists them UPPER_SNAKE;
+  // the codebase keys roles in snake_case, so they are reconciled here).
+  hr_admin: ac.newRole({
+    employee: ['create', 'read', 'update', 'delete', 'approve_leave'],
+    contractor: ['read'],
+    team: ['read'],
+    project: ['read'],
+    costCenter: ['read'],
+  }),
+
+  hr_manager: ac.newRole({
+    employee: ['read', 'update'],
+    contractor: ['read'],
+    team: ['read'],
+    project: ['read'],
+    costCenter: ['read'],
+  }),
+
+  payroll_officer: ac.newRole({
+    employee: ['read'],
+    payment: ['read'],
+    report: ['read', 'export'],
+  }),
+
+  leave_approver: ac.newRole({
+    employee: ['read', 'approve_leave'],
   }),
 } as const;
 
