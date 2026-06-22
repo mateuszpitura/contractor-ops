@@ -54,11 +54,14 @@ model Contractor {
   peppolParticipantValue    String?                  @db.VarChar(64)
   // Phase 63 (D-11) — B2B customer flag for LPCDA late payment interest eligibility
   isBusinessCustomer        Boolean                  @default(true)
-  // Sidecar 1:1 link to the Worker identity root. Nullable for now (the column
-  // and unique index land additively; the NOT NULL + FK constraint follow once
-  // every existing contractor is backfilled with a Worker row). Contractor.id
-  // is intentionally left untouched so the existing FKs that reference it are
-  // never relinked.
+  // Sidecar 1:1 link to the Worker identity root. Still nullable in the schema
+  // source because the live DB column is still nullable: the column + unique
+  // index landed additively, a one-time backfill sets every existing row, and
+  // only then does the authored Migration B promote it to NOT NULL + FK. The
+  // schema source is flipped to required (and the create paths wired to also
+  // create a Worker) in lockstep with that migration so the generated client
+  // never diverges from the live DB. Contractor.id is intentionally left
+  // untouched so the existing FKs that reference it are never relinked.
   workerId                  String?                  @unique
   createdAt                 DateTime                 @default(now())
   updatedAt                 DateTime                 @updatedAt
