@@ -4,13 +4,13 @@ milestone: v7.0
 milestone_name: GTM Expansion
 status: verifying
 stopped_at: 89-03 Tasks 1-2 done (backfill-worker.ts GREEN turning the Plan-01 RED scaffold green + Migration B authored un-applied; Contractor.workerId kept nullable until the gate). Task 3 live per-region apply HELD at the [BLOCKING] human gate — 89-03 NOT fully complete; WORKER-01 left [ ].
-last_updated: "2026-06-22T10:33:23.432Z"
+last_updated: "2026-06-22T10:49:21.497Z"
 last_activity: 2026-06-22
 progress:
   total_phases: 20
   completed_phases: 4
   total_plans: 57
-  completed_plans: 31
+  completed_plans: 32
   percent: 20
 ---
 
@@ -34,7 +34,7 @@ Plan: 86-05 of 8 complete (86-02/03/05 done; 86-01 Task 3 + 86-02 Task 3 multi-r
 Status: Phase complete — ready for verification
 Last activity: 2026-06-22
 
-Progress: [█████░░░░░] 54%
+Progress: [██████░░░░] 56%
 
 ## v7.0 Roadmap Summary (created 2026-06-07)
 
@@ -130,6 +130,7 @@ Decisions are logged in PROJECT.md Key Decisions table. Recent decisions affecti
 - [Phase 88]: [88-01, 2026-06-22] Wave-0 RED scaffolds pin the US payment rail before impl: generateNachaFile (94-char/entry-hash/10-block golden-file, mirrors generateBacsStandard18), generateFedwirePacs008 (pacs.008.001.xx envelope, mirrors generateSwiftXml), generalized applyWithholding (amountMinor = gross − wht; 24% backup §3406 + 1042-S treaty) with a GREEN Saudi-WHT regression guard locking calculateWht (SA-only gate + SA→SA domestic null), a GREEN F-1 currency lock (USD is a normal ECB currency — convertAmount USD→USD rate 1, USD↔EUR via stored rate, missing rate→null; no USD=1.0 special-case), and Modern-Treasury PayoutInitiationAdapter + Plaid PlaidIdentityClient mock-behind-seam scaffolds (advisory fail-open for Plaid). API RED via missing export (is-not-a-function; api tsconfig already excludes __tests__); integrations RED via missing module (Cannot-find-module) — excluded src/**/__tests__/** from the integrations tsconfig (mirrors api/db) so the RED does not brick tsc --noEmit / the composite build. Zero new external deps (NACHA hand-rolled later; modern-treasury/plaid SDKs deferred behind checkpoint:human-verify). No US-PAY-* requirement marked complete (88 = 1/7 plans; schema + [BLOCKING] multi-region migration and the impl/generators/adapters are later waves).
 - [Phase ?]: 89-04: worker/employee tRPC namespaces gated behind module.workforce-employees via three-layer flag-off (root.ts conditional-spread + assertWorkforceEnabled + web-vite useFlag); contractor.* never gated and shape-frozen
 - [Phase ?]: 89-04: skeleton worker/employee routers are read-only (no mutation) so no writeAuditLog/employee-RBAC this phase — RBAC lands in 89-05, employee profile in Phase 90
+- [Phase ?]: [89-05, 2026-06-22] employee RBAC resource + 4 HR roles (hr_admin/hr_manager/payroll_officer/leave_approver, snake_case) — each grants only employee (+narrow contractor:read), never a contractor mutation (BFLA fence). owner allPermissions duplicate untouched so owner does not auto-gain employee. All 14 roles frozen in role-permission-matrix; 10 pre-existing unchanged. Worker proven tenant-owning by cross-org leak test (ORG_A never sees ORG_B Worker). WORKER-03/04 complete; routers left additive (employee resource consumed by Phase-90).
 
 ### Pending Todos
 
@@ -185,6 +186,7 @@ Carried forward from v6.0 milestone close (2026-06-07). Full enumeration: `.plan
 | Phase 89 P01 | ~22min | 2 tasks | 5 files |
 | Phase 88 P88-01 | 9min | 2 tasks | 7 files |
 | Phase 89 P04 | 16min | 2 tasks | 17 files |
+| Phase 89 P05 | 12min | 2 tasks | 8 files |
 
 ## Standing Project Constraints
 
@@ -194,7 +196,7 @@ Carried forward from v6.0 milestone close (2026-06-07). Full enumeration: `.plan
 
 ## Session Continuity
 
-Last session: 2026-06-22T10:33:14.885Z
+Last session: 2026-06-22T10:48:49.416Z
 Stopped at: 89-03 Tasks 1-2 done (backfill-worker.ts GREEN turning the Plan-01 RED scaffold green + Migration B authored un-applied; Contractor.workerId kept nullable until the gate). Task 3 live per-region apply HELD at the [BLOCKING] human gate — 89-03 NOT fully complete; WORKER-01 left [ ].
 Resume file: None
 Next command: resolve the 89-03 Task 3 [BLOCKING] human gate (staging-snapshot backfill apply + parity sign-off + Migration B enforcement, per region), then resume 89-04 (router split)
