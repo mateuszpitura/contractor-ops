@@ -337,6 +337,7 @@ export const CONTRACTOR_INVALID_NIP = 'contractorInvalidNip';
 export const CONTRACTOR_INVALID_EIN = 'contractorInvalidEin';
 export const CONTRACTOR_INVALID_SSN = 'contractorInvalidSsn';
 export const US_EXPANSION_DISABLED = 'usExpansionDisabled';
+export const WORKFORCE_DISABLED = 'workforceDisabled';
 export const TREATY_OVERRIDE_REASON_REQUIRED = 'treatyOverrideReasonRequired';
 export const VAT_VALIDATION_UNSUPPORTED_COUNTRY = 'vatValidationUnsupportedCountry';
 export const BACS_UNMAPPABLE_CHARACTERS = 'bacsUnmappableCharacters';

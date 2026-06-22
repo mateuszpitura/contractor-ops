@@ -3294,6 +3294,7 @@
     "classificationAssessmentIdRequired": "يلزم معرّف التقييم.",
     "classificationEngineDisabled": "محرك التصنيف معطّل لهذه المنظمة.",
     "usExpansionDisabled": "إدخال نماذج الضرائب الأمريكية غير مُفعّل لهذه المنظمة.",
+    "workforceDisabled": "إدارة شؤون العاملين غير مُفعّلة لهذه المنظمة.",
     "treatyOverrideReasonRequired": "يلزم تقديم سبب لتجاوز معدل المعاهدة الضريبية.",
     "taxFormNotFound": "لم يتم العثور على النموذج الضريبي.",
     "taxFormNotDraft": "يمكن تعديل النموذج الضريبي في حالة المسودة فقط.",

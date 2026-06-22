@@ -3294,6 +3294,7 @@
     "classificationAssessmentIdRequired": "Bewertungs-ID erforderlich.",
     "classificationEngineDisabled": "Die Klassifizierungs-Engine ist für diese Organisation deaktiviert.",
     "usExpansionDisabled": "Die US-Steuerformularerfassung ist für diese Organisation nicht aktiviert.",
+    "workforceDisabled": "Die Personalverwaltung ist für diese Organisation nicht aktiviert.",
     "treatyOverrideReasonRequired": "Zum Überschreiben des Abkommenssatzes ist eine Begründung erforderlich.",
     "taxFormNotFound": "Steuerformular nicht gefunden.",
     "taxFormNotDraft": "Nur ein Steuerformular im Entwurfsstatus kann bearbeitet werden.",
