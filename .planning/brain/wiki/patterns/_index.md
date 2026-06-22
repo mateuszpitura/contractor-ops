@@ -23,6 +23,15 @@ updated: 2026-06-09
 | [[ui-skills-routing]] | frontend-design → semble → impeccable / design-taste stack |
 | [[money-rounding]] | Integer minor units; HALF-UP default, skonto FLOOR, interest HALF-UP |
 
+## Worker-model abstraction (reusable in Phases 90–97)
+
+| Idiom | Rule |
+|-------|------|
+| `withWorkerTypeDefault` extension | A central Prisma `$allOperations` link injects a discriminator default (`workerType='CONTRACTOR'`) on reads **unless the caller sets it** — explicit-where-wins; chained outermost over soft-delete + tenant-scope. Raw `FROM "Contractor"` SQL is its blind spot — guarded by `check:contractor-rawsql-workertype` (in `lint:ci`) + a `// contractor-only-raw-sql:` annotation. Detail: [[domains/worker-foundation]] |
+| Per-type RBAC + BFLA fence | A new sibling resource (`employee`) gates a type's HR-only fields independently of `contractor`; per-type roles never carry a cross-type mutation. Added to `accessControlStatement` only — NOT the `owner` `allPermissions` duplicate. Detail: [[rbac-permissions]] |
+| Three-layer flag-off | `root.ts` conditional-spread (`METHOD_NOT_FOUND`) → per-request `assert*Enabled` (`FORBIDDEN`) → web-vite `useFlag` render-removal. The reusable flag-dark idiom shared with classification / us-expansion. Detail: [[feature-flags]] |
+| Two-step additive migration | Add nullable column + table (A) → idempotent reversible backfill → `NOT NULL` + FK (B, **last**). B never in the migration that added the column. Detail: [[domains/worker-foundation]] |
+
 ## Auth & access
 
 | Page | Rule |

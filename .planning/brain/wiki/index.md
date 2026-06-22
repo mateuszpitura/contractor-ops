@@ -61,6 +61,7 @@ Read [[hot]] first. Code symbols: **semble** — never wiki alone. Discovery: [[
 - [[domains/invoice-to-payment]]
 - [[domains/portal-external]]
 - [[domains/contractors-engagements]]
+- [[domains/worker-foundation]]
 - [[domains/contracts-lifecycle]]
 - [[domains/documents-and-ocr]]
 - [[domains/notifications-and-reminders]]

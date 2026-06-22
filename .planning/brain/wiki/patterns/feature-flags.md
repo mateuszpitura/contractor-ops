@@ -2,12 +2,13 @@
 title: Feature flags
 type: pattern
 tags: [feature-flags, unleash]
-source_commit: db71d4e71ed9623787762fc87c2f22a77fb5325c
+source_commit: cbe299a91a59179244c0085ea8c65dbf40ab654c
 verify_with:
   - packages/feature-flags/src/registry.ts
   - packages/feature-flags/README.md
   - packages/api/src/services/ocr-extraction.ts
-updated: 2026-06-18
+  - packages/api/src/middleware/require-workforce-flag.ts
+updated: 2026-06-22
 ---
 
 # Feature flags
@@ -26,6 +27,7 @@ Self-hosted Unleash OSS behind `@contractor-ops/feature-flags` wrapper. Keys dec
 | tRPC introspection | `featureFlags` router |
 | Classification gate | `module.classification-engine` in `root.ts` |
 | OCR kill-switch consumer | `services/ocr-extraction.ts` evaluates `killswitch.ai-invoice-parser` |
+| Workforce gate | `module.workforce-employees` — `middleware/require-workforce-flag.ts` (`assertWorkforceEnabled` / `isWorkforceRegistered`) + `root.ts` conditional-spread of `worker`/`employee`; mirrors `module.us-expansion`. See [[domains/worker-foundation]] |
 
 ## Invariants
 

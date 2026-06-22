@@ -2,11 +2,13 @@
 title: API routers catalog
 type: structure
 tags: [structure, api, trpc, catalog]
-source_commit: 4a8c2ee3d4f6d7341395f3fcaa9989bc2e2d8d04
+source_commit: cbe299a91a59179244c0085ea8c65dbf40ab654c
 verify_with:
   - packages/api/src/root.ts
   - packages/api/src/portal-root.ts
   - packages/validators/src/onboarding-import.ts
+  - packages/api/src/routers/core/worker.ts
+  - packages/api/src/routers/core/employee.ts
 updated: 2026-06-22
 ---
 
@@ -114,7 +116,7 @@ Gated by `module.workforce-employees` (or `QA_DEFAULT_ORG_ID`) in `root.ts`; eac
 
 `contractor.*` is **not** gated — it is the always-on existing surface; the split adds `worker`/`employee` without changing the contractor route shape (locked by `contractor-contract-snapshot.test.ts`).
 
-When flag OFF: runtime `METHOD_NOT_FOUND`; the per-request guard also throws `FORBIDDEN` (`workforceDisabled`). When ON, the web client shows a flag-gated `/employees` entry (`dashboard-home.tsx` → `useFlag('module.workforce-employees')`).
+When flag OFF: runtime `METHOD_NOT_FOUND`; the per-request guard also throws `FORBIDDEN` (`workforceDisabled`). When ON, the web client shows a flag-gated `/employees` entry (`dashboard-home.tsx` → `useFlag('module.workforce-employees')`). Both read cross-type `Worker` rows behind the `withWorkerTypeDefault` extension; per-type HR-only fields gate on the separate `employee` RBAC resource. Full model + flow: [[domains/worker-foundation]].
 
 ## Portal portalAppRouter (2 namespaces)
 

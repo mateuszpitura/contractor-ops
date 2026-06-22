@@ -2,12 +2,14 @@
 title: Key API services catalog
 type: structure
 tags: [structure, services, api]
-source_commit: 336516f5da666c16acff84e412a3d338db8bbbb8
+source_commit: cbe299a91a59179244c0085ea8c65dbf40ab654c
 verify_with:
   - packages/api/src/services/
   - packages/api/src/services/onboarding-import-service.ts
+  - packages/db/src/worker-type.ts
+  - packages/db/scripts/backfill-worker.ts
   - .planning/intel/file-roles.json
-updated: 2026-06-17
+updated: 2026-06-22
 ---
 
 # Key API services catalog
@@ -53,6 +55,8 @@ flowchart TB
 | Onboarding import | `services/onboarding-import-service.ts` | [[domains/onboarding-and-import]] — mergeByEmail, templates |
 | Tenant find | `lib/tenant-find.ts` | scoped lookups |
 | Audited mutation | `lib/audited-mutation.ts` | audit + tx wrapper |
+| Worker backfill | `packages/db/scripts/backfill-worker.ts` | [[domains/worker-foundation]] — idempotent (`WHERE workerId IS NULL`) + reversible (`--rollback`) + per-region one-time backfill; create+link a `Worker` per contractor atomically per `$transaction`, batched; one system-actor `worker.backfill.apply` audit row per org (written directly via Prisma — db sits below api, no `writeAuditLog` import) |
+| workerType extension | `packages/db/src/worker-type.ts` | [[domains/worker-foundation]] — `withWorkerTypeDefault` chained outermost in the tenant client (`withWorkerTypeDefault(withSoftDelete(withTenantScope(...)))`); injects `workerType='CONTRACTOR'` on Worker reads unless the caller sets it (explicit-where-wins) |
 
 ## Invariants
 

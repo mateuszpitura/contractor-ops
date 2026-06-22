@@ -5,6 +5,16 @@ type: log
 
 # Wiki log (append only)
 
+## 2026-06-22 — Worker foundation synthesis (documentation-follows-code, Theme B gate)
+
+- New domain page [[domains/worker-foundation]] — the whole worker-model abstraction in one compass: `Worker` identity root (org-scoped, `workerType WorkerType @default(CONTRACTOR)`, NOT in `globalModels`) + `Contractor.workerId` sidecar 1:1 FK (`Contractor.id` stable, not a re-key); idempotent reversible per-region backfill + two-step migration ordering (A nullable → backfill → B NOT NULL+FK last); `withWorkerTypeDefault` explicit-where-wins extension + the 4 raw-SQL blind-spot sites guarded by `check:contractor-rawsql-workertype`; `worker`/`employee` router split + three-layer flag-off; per-type `employee` RBAC + 4 HR roles (BFLA fence); Worker tenant isolation. Purpose/Flow/Entry points/Invariants/Agent mistakes.
+- [[structure/prisma-schema-areas]] — Worker model area row + the `withWorkerTypeDefault` raw-SQL-blind-spot invariant; source_commit bumped.
+- [[structure/key-services]] — `backfill-worker.ts` + `worker-type.ts` rows; source_commit bumped.
+- [[structure/api-routers-catalog]] — workforce section cross-linked to the domain page; `worker.ts`/`employee.ts` added to verify_with; source_commit bumped.
+- [[patterns/_index]] — new "Worker-model abstraction" table (extension / per-type RBAC / three-layer flag-off / two-step migration idioms, reusable in Phases 90–97).
+- [[patterns/feature-flags]] — `module.workforce-employees` gate row + verify_with; source_commit bumped.
+- `.planning/MEMORY.md` — two invariants (Worker base + one-time backfill; `workerType`-scoped reads + raw-SQL guard) + router-count anchor refreshed (workforce conditional namespaces).
+
 ## 2026-06-22 — Worker-model per-type RBAC + HR roles + tenant leak test (Theme B)
 
 - New `employee` RBAC resource in `packages/auth/src/permissions.ts` (`create`/`read`/`update`/`delete`/`approve_leave`) — the per-type surface for the worker-model employee abstraction, kept separate from `contractor` so HR-only fields gate independently.

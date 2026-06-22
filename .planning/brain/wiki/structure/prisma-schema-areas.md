@@ -2,11 +2,13 @@
 title: Prisma schema areas
 type: structure
 tags: [structure, database, prisma]
-source_commit: 336516f5da666c16acff84e412a3d338db8bbbb8
+source_commit: cbe299a91a59179244c0085ea8c65dbf40ab654c
 verify_with:
   - packages/db/prisma/schema/
   - packages/db/src/region.ts
-updated: 2026-06-17
+  - packages/db/prisma/schema/worker.prisma
+  - packages/db/src/worker-type.ts
+updated: 2026-06-22
 ---
 
 # Prisma schema areas
@@ -26,6 +28,7 @@ PostgreSQL 17 schema split across files in `packages/db/prisma/schema/`. Multi-r
 | E-invoice | `einvoice.prisma` | [[integrations/einvoice-profiles]] |
 | Equipment | equipment models | [[domains/equipment-logistics]] |
 | Tax / WHT / treaty | `tax.prisma` — `WithholdingTaxRate` (shared rate table; `treatyArticle` column drives US treaty auto-populate), `WhtCertificate`, `TaxFormSubmission` (append-only, supersede-chained W-9/W-8BEN/W-8BEN-E record FK'd to `Contractor`) | [[domains/tax-and-wht]], [[domains/us-tax-forms]] |
+| Worker model | `worker.prisma` — `Worker` identity root (`organizationId`, `workerType WorkerType @default(CONTRACTOR)`, shared `displayName`/`email`/`status`, soft-delete; tenant-owning, NOT in `globalModels`) + `WorkerType` enum; `Contractor.workerId String @unique` 1:1 sidecar FK (`Contractor.id` unchanged). Two-step additive ordering: nullable column + table → backfill → NOT NULL + FK | [[domains/worker-foundation]] |
 
 ## Flow
 
@@ -46,6 +49,7 @@ flowchart LR
 - Sensitive mutations: pass `tx` to `writeAuditLog`
 - DB-enforced integrity backstops (migration `20260616000000_security_hardening_constraints`): `Contractor` `@@unique([organizationId, taxId])` (taxId nullable → NULLs distinct, un-registered contractors unaffected); `PaymentExport` `@@unique([paymentRunId])` (one export per run); `Invoice` `@@index([organizationId, paymentStatus, paidAt])` for PAID-by-window spend reports
 - **AuditLog append-only** (migration `20260617000000_auditlog_append_only`): replaces the over-broad `auditlog_write FOR ALL` policy with INSERT-only (`auditlog_insert`) + a gated DELETE (`auditlog_delete`, permitted only when `app.audit_purge_allowed()` is set via `allowAuditPurge(tx)`) + a `BEFORE UPDATE` trigger (`app.reject_auditlog_update`) that rejects every update. See [[patterns/audit-log]]
+- **Worker reads are `workerType`-scoped centrally** — `withWorkerTypeDefault` (`packages/db/src/worker-type.ts`) is chained outermost in the tenant client and injects `workerType='CONTRACTOR'` unless the caller sets it (explicit-where-wins). Its blind spot is raw `FROM "Contractor"` SQL — the 4 known sites are contractor-only-by-table and annotated `// contractor-only-raw-sql:`; `check:contractor-rawsql-workertype` (in `lint:ci`) fails any new unannotated one. See [[domains/worker-foundation]]
 
 ## Related
 
