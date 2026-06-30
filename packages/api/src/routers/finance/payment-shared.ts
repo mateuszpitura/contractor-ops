@@ -2,6 +2,7 @@ import { createLogger } from '@contractor-ops/logger';
 import { orgBankInfoSchema } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import * as E from '../../errors';
+import { writeAuditLog } from '../../services/audit-writer';
 import type { ExportItem, OrgBankInfo } from '../../services/payment-export';
 import {
   generateCsv,
@@ -11,6 +12,7 @@ import {
   resolveTransferTitle,
 } from '../../services/payment-export';
 import { calculateWht } from '../../services/tax-rate.service';
+import { applyTreaty } from '../../services/treaty-rate.service';
 import type { DbClient } from '../../services/types';
 
 export const log = createLogger({ service: 'payment-router' });
@@ -124,8 +126,9 @@ export function groupInvoicesByCurrency(
 
 /**
  * Persists payment-run items for the given run and flips the source invoices
- * to `IN_RUN`. Also applies WHT calculations when the organization is in a
- * jurisdiction that requires it (Saudi cross-border).
+ * to `IN_RUN`. Also applies withholding deductions when the organization is in
+ * a jurisdiction that requires it (Saudi cross-border WHT, US backup
+ * withholding, or 1042-S treaty withholding).
  *
  * All writes are routed through `tx` so they participate in the caller's
  * transaction — no behavior change from the previous inline implementation.
@@ -151,8 +154,8 @@ export async function seedRunItems(
     })),
   });
 
-  // WHT calculations must run after items exist (they update items in-place).
-  await _applyWhtIfSaudi(tx, args.organizationId, args.runId);
+  // Withholding deductions must run after items exist (they update items in-place).
+  await applyWithholdingToRun(tx, args.organizationId, args.runId);
 
   await tx.invoice.updateMany({
     where: { id: { in: args.invoices.map(inv => inv.id) } },
@@ -277,49 +280,210 @@ export function _buildExportItems(
 }
 
 /**
- * Applies withholding tax calculations for Saudi organizations on cross-border payments.
+ * US backup-withholding rate under IRC §3406. A recipient whose TIN fails IRS
+ * matching has 24% of each payout withheld until the mismatch is resolved.
+ *
+ * LOCAL-ONLY: the figure is adviser-verify before production (legal sign-off is
+ * deferred for the US payout rail). It is a flat statutory rate, not a
+ * per-recipient lookup.
  */
-export async function _applyWhtIfSaudi(
+const US_BACKUP_WITHHOLDING_RATE = 24;
+
+/** Which legal basis produced a withholding deduction, for the audit trail. */
+export type WithholdingBasis = 'sa_wht' | 'us_backup' | 'treaty_1042s';
+
+export interface WithholdingOrgInput {
+  countryCode: string | null;
+  /** Regional data residency (`US` marks the US source even when countryCode is unset). */
+  dataRegion?: string | null;
+}
+
+export interface WithholdingContractorInput {
+  countryCode: string;
+  backupWithholdingFlagged?: boolean | null;
+}
+
+export interface WithholdingItemInput {
+  grossAmountMinor: number;
+  contractor: WithholdingContractorInput;
+}
+
+export interface WithholdingDecision {
+  grossAmountMinor: number;
+  /** Net payout after the deduction (gross − whtAmountMinor). */
+  amountMinor: number;
+  whtAmountMinor: number;
+  /** Applied rate in whole-number percent. */
+  whtRate: number;
+  whtTreatyApplied: boolean;
+  whtTreatyReference: string | null;
+  whtServiceType: string | null;
+  basis: WithholdingBasis;
+}
+
+/**
+ * Resolve the withholding deduction for a single payment-run item, generalizing
+ * the former Saudi-only path into one jurisdiction-agnostic deduction. The
+ * recorded `whtAmountMinor` is the single source of truth the 1099 box-4 /
+ * 1042-S box-2 aggregates report — the deduction is computed here, never
+ * recomputed in the forms.
+ *
+ * Branches, in precedence order:
+ *   - Saudi org cross-border → the existing `calculateWht` path (unchanged).
+ *   - US source + a backup-withholding-flagged recipient → 24% (IRC §3406).
+ *   - US source + a foreign recipient → the resolved 1042-S treaty rate, or the
+ *     30% statutory default when no treaty applies.
+ *
+ * Returns `null` when no withholding applies (domestic US recipient, a 0% treaty
+ * outcome, or a non-withholding jurisdiction); the caller leaves such items
+ * untouched. A single HALF-UP round is applied at the rate — amounts are never
+ * chain-rounded, preserving the gross/net integer invariant.
+ */
+export async function applyWithholding(args: {
+  org: WithholdingOrgInput;
+  item: WithholdingItemInput;
+}): Promise<WithholdingDecision | null> {
+  const { org, item } = args;
+  const gross = item.grossAmountMinor;
+
+  // Saudi cross-border WHT — the original single-jurisdiction path, unchanged.
+  if (org.countryCode === 'SA') {
+    const wht = await calculateWht(
+      org.countryCode,
+      item.contractor.countryCode,
+      'technical_services',
+      gross,
+    );
+    if (!wht) return null;
+    return {
+      grossAmountMinor: gross,
+      amountMinor: wht.netAmountMinor,
+      whtAmountMinor: wht.whtAmountMinor,
+      whtRate: wht.whtRate,
+      whtTreatyApplied: wht.treatyApplied,
+      whtTreatyReference: wht.treatyReference,
+      whtServiceType: 'technical_services',
+      basis: 'sa_wht',
+    };
+  }
+
+  const isUsSource = org.countryCode === 'US' || org.dataRegion === 'US';
+  if (!isUsSource) return null;
+
+  // Backup withholding (IRC §3406): a flagged recipient's payout is reduced 24%.
+  if (item.contractor.backupWithholdingFlagged === true) {
+    const whtAmountMinor = Math.round((gross * US_BACKUP_WITHHOLDING_RATE) / 100);
+    return {
+      grossAmountMinor: gross,
+      amountMinor: gross - whtAmountMinor,
+      whtAmountMinor,
+      whtRate: US_BACKUP_WITHHOLDING_RATE,
+      whtTreatyApplied: false,
+      whtTreatyReference: null,
+      whtServiceType: null,
+      basis: 'us_backup',
+    };
+  }
+
+  // 1042-S withholding on a foreign recipient: the resolved treaty rate, or the
+  // 30% statutory default when no treaty row applies.
+  if (item.contractor.countryCode !== 'US') {
+    const treaty = await applyTreaty({ contractorResidency: item.contractor.countryCode });
+    const whtAmountMinor = Math.round((gross * treaty.rate) / 100);
+    if (whtAmountMinor <= 0) return null;
+    return {
+      grossAmountMinor: gross,
+      amountMinor: gross - whtAmountMinor,
+      whtAmountMinor,
+      whtRate: treaty.rate,
+      whtTreatyApplied: treaty.source === 'treaty',
+      whtTreatyReference: treaty.article,
+      whtServiceType: null,
+      basis: 'treaty_1042s',
+    };
+  }
+
+  // US domestic recipient, not backup-flagged → no withholding.
+  return null;
+}
+
+/**
+ * Applies the withholding deduction to every item in a payment run, recording
+ * the withheld figure on each `PaymentRunItem` (the source of truth) and writing
+ * an audit row per applied item.
+ *
+ * Non-withholding jurisdictions short-circuit before any item read, preserving
+ * the original SA-only early return for every other org.
+ */
+export async function applyWithholdingToRun(
   tx: TxClient,
   organizationId: string,
   paymentRunId: string,
 ): Promise<void> {
   const org = await tx.organization.findUniqueOrThrow({
     where: { id: organizationId },
-    select: { countryCode: true },
+    select: { countryCode: true, dataRegion: true },
   });
 
-  if (org.countryCode !== 'SA') return;
+  const isSaudi = org.countryCode === 'SA';
+  const isUsSource = org.countryCode === 'US' || org.dataRegion === 'US';
+  if (!(isSaudi || isUsSource)) return;
 
   const items = await tx.paymentRunItem.findMany({
     where: { paymentRunId },
-    include: { contractor: { select: { countryCode: true } } },
+    include: {
+      contractor: { select: { countryCode: true, backupWithholdingFlagged: true } },
+    },
   });
 
   for (const item of items) {
-    const whtResult = await calculateWht(
-      org.countryCode,
-      item.contractor.countryCode,
-      'technical_services',
-      item.amountMinor,
-    );
-    if (!whtResult) continue;
+    const decision = await applyWithholding({
+      org: { countryCode: org.countryCode, dataRegion: org.dataRegion },
+      item: {
+        grossAmountMinor: item.amountMinor,
+        contractor: {
+          countryCode: item.contractor.countryCode,
+          backupWithholdingFlagged: item.contractor.backupWithholdingFlagged,
+        },
+      },
+    });
+    if (!decision) continue;
 
     await tx.paymentRunItem.update({
       where: { id: item.id },
       data: {
-        grossAmountMinor: item.amountMinor,
-        amountMinor: whtResult.netAmountMinor,
-        whtAmountMinor: whtResult.whtAmountMinor,
-        whtRate: whtResult.whtRate,
-        whtTreatyApplied: whtResult.treatyApplied,
-        whtTreatyReference: whtResult.treatyReference,
-        whtServiceType: 'technical_services',
+        grossAmountMinor: decision.grossAmountMinor,
+        amountMinor: decision.amountMinor,
+        whtAmountMinor: decision.whtAmountMinor,
+        whtRate: decision.whtRate,
+        whtTreatyApplied: decision.whtTreatyApplied,
+        whtTreatyReference: decision.whtTreatyReference,
+        whtServiceType: decision.whtServiceType,
       },
     });
-    await tx.invoice.update({
-      where: { id: item.invoiceId },
-      data: { withholdingMinor: whtResult.whtAmountMinor },
+
+    // The Saudi path additionally records the withheld figure on the source
+    // invoice; the US backup / 1042-S branches do not touch the invoice.
+    if (decision.basis === 'sa_wht') {
+      await tx.invoice.update({
+        where: { id: item.invoiceId },
+        data: { withholdingMinor: decision.whtAmountMinor },
+      });
+    }
+
+    await writeAuditLog({
+      tx,
+      organizationId,
+      actorType: 'SYSTEM',
+      action: 'payment_run.withholding_applied',
+      resourceType: 'PAYMENT_RUN',
+      resourceId: paymentRunId,
+      metadata: {
+        paymentRunItemId: item.id,
+        whtRate: decision.whtRate,
+        whtAmountMinor: decision.whtAmountMinor,
+        basis: decision.basis,
+      },
     });
   }
 }
