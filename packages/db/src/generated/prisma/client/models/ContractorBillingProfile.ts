@@ -62,6 +62,13 @@ export type ContractorBillingProfileMinAggregateOutputType = {
   ukSortCodeMasked: string | null
   ukAccountNumberEncrypted: string | null
   ukAccountNumberMasked: string | null
+  usRoutingNumberEncrypted: string | null
+  usRoutingNumberMasked: string | null
+  usAccountNumberEncrypted: string | null
+  usAccountNumberMasked: string | null
+  plaidVerificationStatus: string | null
+  plaidVerifiedAt: Date | null
+  plaidAccountId: string | null
 }
 
 export type ContractorBillingProfileMaxAggregateOutputType = {
@@ -92,6 +99,13 @@ export type ContractorBillingProfileMaxAggregateOutputType = {
   ukSortCodeMasked: string | null
   ukAccountNumberEncrypted: string | null
   ukAccountNumberMasked: string | null
+  usRoutingNumberEncrypted: string | null
+  usRoutingNumberMasked: string | null
+  usAccountNumberEncrypted: string | null
+  usAccountNumberMasked: string | null
+  plaidVerificationStatus: string | null
+  plaidVerifiedAt: Date | null
+  plaidAccountId: string | null
 }
 
 export type ContractorBillingProfileCountAggregateOutputType = {
@@ -122,6 +136,13 @@ export type ContractorBillingProfileCountAggregateOutputType = {
   ukSortCodeMasked: number
   ukAccountNumberEncrypted: number
   ukAccountNumberMasked: number
+  usRoutingNumberEncrypted: number
+  usRoutingNumberMasked: number
+  usAccountNumberEncrypted: number
+  usAccountNumberMasked: number
+  plaidVerificationStatus: number
+  plaidVerifiedAt: number
+  plaidAccountId: number
   _all: number
 }
 
@@ -162,6 +183,13 @@ export type ContractorBillingProfileMinAggregateInputType = {
   ukSortCodeMasked?: true
   ukAccountNumberEncrypted?: true
   ukAccountNumberMasked?: true
+  usRoutingNumberEncrypted?: true
+  usRoutingNumberMasked?: true
+  usAccountNumberEncrypted?: true
+  usAccountNumberMasked?: true
+  plaidVerificationStatus?: true
+  plaidVerifiedAt?: true
+  plaidAccountId?: true
 }
 
 export type ContractorBillingProfileMaxAggregateInputType = {
@@ -192,6 +220,13 @@ export type ContractorBillingProfileMaxAggregateInputType = {
   ukSortCodeMasked?: true
   ukAccountNumberEncrypted?: true
   ukAccountNumberMasked?: true
+  usRoutingNumberEncrypted?: true
+  usRoutingNumberMasked?: true
+  usAccountNumberEncrypted?: true
+  usAccountNumberMasked?: true
+  plaidVerificationStatus?: true
+  plaidVerifiedAt?: true
+  plaidAccountId?: true
 }
 
 export type ContractorBillingProfileCountAggregateInputType = {
@@ -222,6 +257,13 @@ export type ContractorBillingProfileCountAggregateInputType = {
   ukSortCodeMasked?: true
   ukAccountNumberEncrypted?: true
   ukAccountNumberMasked?: true
+  usRoutingNumberEncrypted?: true
+  usRoutingNumberMasked?: true
+  usAccountNumberEncrypted?: true
+  usAccountNumberMasked?: true
+  plaidVerificationStatus?: true
+  plaidVerifiedAt?: true
+  plaidAccountId?: true
   _all?: true
 }
 
@@ -339,6 +381,13 @@ export type ContractorBillingProfileGroupByOutputType = {
   ukSortCodeMasked: string | null
   ukAccountNumberEncrypted: string | null
   ukAccountNumberMasked: string | null
+  usRoutingNumberEncrypted: string | null
+  usRoutingNumberMasked: string | null
+  usAccountNumberEncrypted: string | null
+  usAccountNumberMasked: string | null
+  plaidVerificationStatus: string | null
+  plaidVerifiedAt: Date | null
+  plaidAccountId: string | null
   _count: ContractorBillingProfileCountAggregateOutputType | null
   _avg: ContractorBillingProfileAvgAggregateOutputType | null
   _sum: ContractorBillingProfileSumAggregateOutputType | null
@@ -392,6 +441,13 @@ export type ContractorBillingProfileWhereInput = {
   ukSortCodeMasked?: Prisma.StringNullableFilter<"ContractorBillingProfile"> | string | null
   ukAccountNumberEncrypted?: Prisma.StringNullableFilter<"ContractorBillingProfile"> | string | null
   ukAccountNumberMasked?: Prisma.StringNullableFilter<"ContractorBillingProfile"> | string | null
+  usRoutingNumberEncrypted?: Prisma.StringNullableFilter<"ContractorBillingProfile"> | string | null
+  usRoutingNumberMasked?: Prisma.StringNullableFilter<"ContractorBillingProfile"> | string | null
+  usAccountNumberEncrypted?: Prisma.StringNullableFilter<"ContractorBillingProfile"> | string | null
+  usAccountNumberMasked?: Prisma.StringNullableFilter<"ContractorBillingProfile"> | string | null
+  plaidVerificationStatus?: Prisma.StringNullableFilter<"ContractorBillingProfile"> | string | null
+  plaidVerifiedAt?: Prisma.DateTimeNullableFilter<"ContractorBillingProfile"> | Date | string | null
+  plaidAccountId?: Prisma.StringNullableFilter<"ContractorBillingProfile"> | string | null
   organization?: Prisma.XOR<Prisma.OrganizationScalarRelationFilter, Prisma.OrganizationWhereInput>
   contractor?: Prisma.XOR<Prisma.ContractorScalarRelationFilter, Prisma.ContractorWhereInput>
   invoices?: Prisma.InvoiceListRelationFilter
@@ -427,6 +483,13 @@ export type ContractorBillingProfileOrderByWithRelationInput = {
   ukSortCodeMasked?: Prisma.SortOrderInput | Prisma.SortOrder
   ukAccountNumberEncrypted?: Prisma.SortOrderInput | Prisma.SortOrder
   ukAccountNumberMasked?: Prisma.SortOrderInput | Prisma.SortOrder
+  usRoutingNumberEncrypted?: Prisma.SortOrderInput | Prisma.SortOrder
+  usRoutingNumberMasked?: Prisma.SortOrderInput | Prisma.SortOrder
+  usAccountNumberEncrypted?: Prisma.SortOrderInput | Prisma.SortOrder
+  usAccountNumberMasked?: Prisma.SortOrderInput | Prisma.SortOrder
+  plaidVerificationStatus?: Prisma.SortOrderInput | Prisma.SortOrder
+  plaidVerifiedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  plaidAccountId?: Prisma.SortOrderInput | Prisma.SortOrder
   organization?: Prisma.OrganizationOrderByWithRelationInput
   contractor?: Prisma.ContractorOrderByWithRelationInput
   invoices?: Prisma.InvoiceOrderByRelationAggregateInput
@@ -465,6 +528,13 @@ export type ContractorBillingProfileWhereUniqueInput = Prisma.AtLeast<{
   ukSortCodeMasked?: Prisma.StringNullableFilter<"ContractorBillingProfile"> | string | null
   ukAccountNumberEncrypted?: Prisma.StringNullableFilter<"ContractorBillingProfile"> | string | null
   ukAccountNumberMasked?: Prisma.StringNullableFilter<"ContractorBillingProfile"> | string | null
+  usRoutingNumberEncrypted?: Prisma.StringNullableFilter<"ContractorBillingProfile"> | string | null
+  usRoutingNumberMasked?: Prisma.StringNullableFilter<"ContractorBillingProfile"> | string | null
+  usAccountNumberEncrypted?: Prisma.StringNullableFilter<"ContractorBillingProfile"> | string | null
+  usAccountNumberMasked?: Prisma.StringNullableFilter<"ContractorBillingProfile"> | string | null
+  plaidVerificationStatus?: Prisma.StringNullableFilter<"ContractorBillingProfile"> | string | null
+  plaidVerifiedAt?: Prisma.DateTimeNullableFilter<"ContractorBillingProfile"> | Date | string | null
+  plaidAccountId?: Prisma.StringNullableFilter<"ContractorBillingProfile"> | string | null
   organization?: Prisma.XOR<Prisma.OrganizationScalarRelationFilter, Prisma.OrganizationWhereInput>
   contractor?: Prisma.XOR<Prisma.ContractorScalarRelationFilter, Prisma.ContractorWhereInput>
   invoices?: Prisma.InvoiceListRelationFilter
@@ -500,6 +570,13 @@ export type ContractorBillingProfileOrderByWithAggregationInput = {
   ukSortCodeMasked?: Prisma.SortOrderInput | Prisma.SortOrder
   ukAccountNumberEncrypted?: Prisma.SortOrderInput | Prisma.SortOrder
   ukAccountNumberMasked?: Prisma.SortOrderInput | Prisma.SortOrder
+  usRoutingNumberEncrypted?: Prisma.SortOrderInput | Prisma.SortOrder
+  usRoutingNumberMasked?: Prisma.SortOrderInput | Prisma.SortOrder
+  usAccountNumberEncrypted?: Prisma.SortOrderInput | Prisma.SortOrder
+  usAccountNumberMasked?: Prisma.SortOrderInput | Prisma.SortOrder
+  plaidVerificationStatus?: Prisma.SortOrderInput | Prisma.SortOrder
+  plaidVerifiedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  plaidAccountId?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.ContractorBillingProfileCountOrderByAggregateInput
   _avg?: Prisma.ContractorBillingProfileAvgOrderByAggregateInput
   _max?: Prisma.ContractorBillingProfileMaxOrderByAggregateInput
@@ -538,6 +615,13 @@ export type ContractorBillingProfileScalarWhereWithAggregatesInput = {
   ukSortCodeMasked?: Prisma.StringNullableWithAggregatesFilter<"ContractorBillingProfile"> | string | null
   ukAccountNumberEncrypted?: Prisma.StringNullableWithAggregatesFilter<"ContractorBillingProfile"> | string | null
   ukAccountNumberMasked?: Prisma.StringNullableWithAggregatesFilter<"ContractorBillingProfile"> | string | null
+  usRoutingNumberEncrypted?: Prisma.StringNullableWithAggregatesFilter<"ContractorBillingProfile"> | string | null
+  usRoutingNumberMasked?: Prisma.StringNullableWithAggregatesFilter<"ContractorBillingProfile"> | string | null
+  usAccountNumberEncrypted?: Prisma.StringNullableWithAggregatesFilter<"ContractorBillingProfile"> | string | null
+  usAccountNumberMasked?: Prisma.StringNullableWithAggregatesFilter<"ContractorBillingProfile"> | string | null
+  plaidVerificationStatus?: Prisma.StringNullableWithAggregatesFilter<"ContractorBillingProfile"> | string | null
+  plaidVerifiedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"ContractorBillingProfile"> | Date | string | null
+  plaidAccountId?: Prisma.StringNullableWithAggregatesFilter<"ContractorBillingProfile"> | string | null
 }
 
 export type ContractorBillingProfileCreateInput = {
@@ -566,6 +650,13 @@ export type ContractorBillingProfileCreateInput = {
   ukSortCodeMasked?: string | null
   ukAccountNumberEncrypted?: string | null
   ukAccountNumberMasked?: string | null
+  usRoutingNumberEncrypted?: string | null
+  usRoutingNumberMasked?: string | null
+  usAccountNumberEncrypted?: string | null
+  usAccountNumberMasked?: string | null
+  plaidVerificationStatus?: string | null
+  plaidVerifiedAt?: Date | string | null
+  plaidAccountId?: string | null
   organization: Prisma.OrganizationCreateNestedOneWithoutContractorBillingProfilesInput
   contractor: Prisma.ContractorCreateNestedOneWithoutBillingProfilesInput
   invoices?: Prisma.InvoiceCreateNestedManyWithoutBillingProfileInput
@@ -601,6 +692,13 @@ export type ContractorBillingProfileUncheckedCreateInput = {
   ukSortCodeMasked?: string | null
   ukAccountNumberEncrypted?: string | null
   ukAccountNumberMasked?: string | null
+  usRoutingNumberEncrypted?: string | null
+  usRoutingNumberMasked?: string | null
+  usAccountNumberEncrypted?: string | null
+  usAccountNumberMasked?: string | null
+  plaidVerificationStatus?: string | null
+  plaidVerifiedAt?: Date | string | null
+  plaidAccountId?: string | null
   invoices?: Prisma.InvoiceUncheckedCreateNestedManyWithoutBillingProfileInput
   paymentRunItems?: Prisma.PaymentRunItemUncheckedCreateNestedManyWithoutBillingProfileInput
   skontoTerms?: Prisma.SkontoTermUncheckedCreateNestedManyWithoutBillingProfileInput
@@ -632,6 +730,13 @@ export type ContractorBillingProfileUpdateInput = {
   ukSortCodeMasked?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ukAccountNumberEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ukAccountNumberMasked?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  usRoutingNumberEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  usRoutingNumberMasked?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  usAccountNumberEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  usAccountNumberMasked?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  plaidVerificationStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  plaidVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  plaidAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutContractorBillingProfilesNestedInput
   contractor?: Prisma.ContractorUpdateOneRequiredWithoutBillingProfilesNestedInput
   invoices?: Prisma.InvoiceUpdateManyWithoutBillingProfileNestedInput
@@ -667,6 +772,13 @@ export type ContractorBillingProfileUncheckedUpdateInput = {
   ukSortCodeMasked?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ukAccountNumberEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ukAccountNumberMasked?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  usRoutingNumberEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  usRoutingNumberMasked?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  usAccountNumberEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  usAccountNumberMasked?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  plaidVerificationStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  plaidVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  plaidAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   invoices?: Prisma.InvoiceUncheckedUpdateManyWithoutBillingProfileNestedInput
   paymentRunItems?: Prisma.PaymentRunItemUncheckedUpdateManyWithoutBillingProfileNestedInput
   skontoTerms?: Prisma.SkontoTermUncheckedUpdateManyWithoutBillingProfileNestedInput
@@ -700,6 +812,13 @@ export type ContractorBillingProfileCreateManyInput = {
   ukSortCodeMasked?: string | null
   ukAccountNumberEncrypted?: string | null
   ukAccountNumberMasked?: string | null
+  usRoutingNumberEncrypted?: string | null
+  usRoutingNumberMasked?: string | null
+  usAccountNumberEncrypted?: string | null
+  usAccountNumberMasked?: string | null
+  plaidVerificationStatus?: string | null
+  plaidVerifiedAt?: Date | string | null
+  plaidAccountId?: string | null
 }
 
 export type ContractorBillingProfileUpdateManyMutationInput = {
@@ -728,6 +847,13 @@ export type ContractorBillingProfileUpdateManyMutationInput = {
   ukSortCodeMasked?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ukAccountNumberEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ukAccountNumberMasked?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  usRoutingNumberEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  usRoutingNumberMasked?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  usAccountNumberEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  usAccountNumberMasked?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  plaidVerificationStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  plaidVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  plaidAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type ContractorBillingProfileUncheckedUpdateManyInput = {
@@ -758,6 +884,13 @@ export type ContractorBillingProfileUncheckedUpdateManyInput = {
   ukSortCodeMasked?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ukAccountNumberEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ukAccountNumberMasked?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  usRoutingNumberEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  usRoutingNumberMasked?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  usAccountNumberEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  usAccountNumberMasked?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  plaidVerificationStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  plaidVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  plaidAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type ContractorBillingProfileListRelationFilter = {
@@ -798,6 +931,13 @@ export type ContractorBillingProfileCountOrderByAggregateInput = {
   ukSortCodeMasked?: Prisma.SortOrder
   ukAccountNumberEncrypted?: Prisma.SortOrder
   ukAccountNumberMasked?: Prisma.SortOrder
+  usRoutingNumberEncrypted?: Prisma.SortOrder
+  usRoutingNumberMasked?: Prisma.SortOrder
+  usAccountNumberEncrypted?: Prisma.SortOrder
+  usAccountNumberMasked?: Prisma.SortOrder
+  plaidVerificationStatus?: Prisma.SortOrder
+  plaidVerifiedAt?: Prisma.SortOrder
+  plaidAccountId?: Prisma.SortOrder
 }
 
 export type ContractorBillingProfileAvgOrderByAggregateInput = {
@@ -832,6 +972,13 @@ export type ContractorBillingProfileMaxOrderByAggregateInput = {
   ukSortCodeMasked?: Prisma.SortOrder
   ukAccountNumberEncrypted?: Prisma.SortOrder
   ukAccountNumberMasked?: Prisma.SortOrder
+  usRoutingNumberEncrypted?: Prisma.SortOrder
+  usRoutingNumberMasked?: Prisma.SortOrder
+  usAccountNumberEncrypted?: Prisma.SortOrder
+  usAccountNumberMasked?: Prisma.SortOrder
+  plaidVerificationStatus?: Prisma.SortOrder
+  plaidVerifiedAt?: Prisma.SortOrder
+  plaidAccountId?: Prisma.SortOrder
 }
 
 export type ContractorBillingProfileMinOrderByAggregateInput = {
@@ -862,6 +1009,13 @@ export type ContractorBillingProfileMinOrderByAggregateInput = {
   ukSortCodeMasked?: Prisma.SortOrder
   ukAccountNumberEncrypted?: Prisma.SortOrder
   ukAccountNumberMasked?: Prisma.SortOrder
+  usRoutingNumberEncrypted?: Prisma.SortOrder
+  usRoutingNumberMasked?: Prisma.SortOrder
+  usAccountNumberEncrypted?: Prisma.SortOrder
+  usAccountNumberMasked?: Prisma.SortOrder
+  plaidVerificationStatus?: Prisma.SortOrder
+  plaidVerifiedAt?: Prisma.SortOrder
+  plaidAccountId?: Prisma.SortOrder
 }
 
 export type ContractorBillingProfileSumOrderByAggregateInput = {
@@ -1031,6 +1185,13 @@ export type ContractorBillingProfileCreateWithoutContractorInput = {
   ukSortCodeMasked?: string | null
   ukAccountNumberEncrypted?: string | null
   ukAccountNumberMasked?: string | null
+  usRoutingNumberEncrypted?: string | null
+  usRoutingNumberMasked?: string | null
+  usAccountNumberEncrypted?: string | null
+  usAccountNumberMasked?: string | null
+  plaidVerificationStatus?: string | null
+  plaidVerifiedAt?: Date | string | null
+  plaidAccountId?: string | null
   organization: Prisma.OrganizationCreateNestedOneWithoutContractorBillingProfilesInput
   invoices?: Prisma.InvoiceCreateNestedManyWithoutBillingProfileInput
   paymentRunItems?: Prisma.PaymentRunItemCreateNestedManyWithoutBillingProfileInput
@@ -1064,6 +1225,13 @@ export type ContractorBillingProfileUncheckedCreateWithoutContractorInput = {
   ukSortCodeMasked?: string | null
   ukAccountNumberEncrypted?: string | null
   ukAccountNumberMasked?: string | null
+  usRoutingNumberEncrypted?: string | null
+  usRoutingNumberMasked?: string | null
+  usAccountNumberEncrypted?: string | null
+  usAccountNumberMasked?: string | null
+  plaidVerificationStatus?: string | null
+  plaidVerifiedAt?: Date | string | null
+  plaidAccountId?: string | null
   invoices?: Prisma.InvoiceUncheckedCreateNestedManyWithoutBillingProfileInput
   paymentRunItems?: Prisma.PaymentRunItemUncheckedCreateNestedManyWithoutBillingProfileInput
   skontoTerms?: Prisma.SkontoTermUncheckedCreateNestedManyWithoutBillingProfileInput
@@ -1126,6 +1294,13 @@ export type ContractorBillingProfileScalarWhereInput = {
   ukSortCodeMasked?: Prisma.StringNullableFilter<"ContractorBillingProfile"> | string | null
   ukAccountNumberEncrypted?: Prisma.StringNullableFilter<"ContractorBillingProfile"> | string | null
   ukAccountNumberMasked?: Prisma.StringNullableFilter<"ContractorBillingProfile"> | string | null
+  usRoutingNumberEncrypted?: Prisma.StringNullableFilter<"ContractorBillingProfile"> | string | null
+  usRoutingNumberMasked?: Prisma.StringNullableFilter<"ContractorBillingProfile"> | string | null
+  usAccountNumberEncrypted?: Prisma.StringNullableFilter<"ContractorBillingProfile"> | string | null
+  usAccountNumberMasked?: Prisma.StringNullableFilter<"ContractorBillingProfile"> | string | null
+  plaidVerificationStatus?: Prisma.StringNullableFilter<"ContractorBillingProfile"> | string | null
+  plaidVerifiedAt?: Prisma.DateTimeNullableFilter<"ContractorBillingProfile"> | Date | string | null
+  plaidAccountId?: Prisma.StringNullableFilter<"ContractorBillingProfile"> | string | null
 }
 
 export type ContractorBillingProfileCreateWithoutSkontoTermsInput = {
@@ -1154,6 +1329,13 @@ export type ContractorBillingProfileCreateWithoutSkontoTermsInput = {
   ukSortCodeMasked?: string | null
   ukAccountNumberEncrypted?: string | null
   ukAccountNumberMasked?: string | null
+  usRoutingNumberEncrypted?: string | null
+  usRoutingNumberMasked?: string | null
+  usAccountNumberEncrypted?: string | null
+  usAccountNumberMasked?: string | null
+  plaidVerificationStatus?: string | null
+  plaidVerifiedAt?: Date | string | null
+  plaidAccountId?: string | null
   organization: Prisma.OrganizationCreateNestedOneWithoutContractorBillingProfilesInput
   contractor: Prisma.ContractorCreateNestedOneWithoutBillingProfilesInput
   invoices?: Prisma.InvoiceCreateNestedManyWithoutBillingProfileInput
@@ -1188,6 +1370,13 @@ export type ContractorBillingProfileUncheckedCreateWithoutSkontoTermsInput = {
   ukSortCodeMasked?: string | null
   ukAccountNumberEncrypted?: string | null
   ukAccountNumberMasked?: string | null
+  usRoutingNumberEncrypted?: string | null
+  usRoutingNumberMasked?: string | null
+  usAccountNumberEncrypted?: string | null
+  usAccountNumberMasked?: string | null
+  plaidVerificationStatus?: string | null
+  plaidVerifiedAt?: Date | string | null
+  plaidAccountId?: string | null
   invoices?: Prisma.InvoiceUncheckedCreateNestedManyWithoutBillingProfileInput
   paymentRunItems?: Prisma.PaymentRunItemUncheckedCreateNestedManyWithoutBillingProfileInput
 }
@@ -1234,6 +1423,13 @@ export type ContractorBillingProfileUpdateWithoutSkontoTermsInput = {
   ukSortCodeMasked?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ukAccountNumberEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ukAccountNumberMasked?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  usRoutingNumberEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  usRoutingNumberMasked?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  usAccountNumberEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  usAccountNumberMasked?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  plaidVerificationStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  plaidVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  plaidAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutContractorBillingProfilesNestedInput
   contractor?: Prisma.ContractorUpdateOneRequiredWithoutBillingProfilesNestedInput
   invoices?: Prisma.InvoiceUpdateManyWithoutBillingProfileNestedInput
@@ -1268,6 +1464,13 @@ export type ContractorBillingProfileUncheckedUpdateWithoutSkontoTermsInput = {
   ukSortCodeMasked?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ukAccountNumberEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ukAccountNumberMasked?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  usRoutingNumberEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  usRoutingNumberMasked?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  usAccountNumberEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  usAccountNumberMasked?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  plaidVerificationStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  plaidVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  plaidAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   invoices?: Prisma.InvoiceUncheckedUpdateManyWithoutBillingProfileNestedInput
   paymentRunItems?: Prisma.PaymentRunItemUncheckedUpdateManyWithoutBillingProfileNestedInput
 }
@@ -1298,6 +1501,13 @@ export type ContractorBillingProfileCreateWithoutInvoicesInput = {
   ukSortCodeMasked?: string | null
   ukAccountNumberEncrypted?: string | null
   ukAccountNumberMasked?: string | null
+  usRoutingNumberEncrypted?: string | null
+  usRoutingNumberMasked?: string | null
+  usAccountNumberEncrypted?: string | null
+  usAccountNumberMasked?: string | null
+  plaidVerificationStatus?: string | null
+  plaidVerifiedAt?: Date | string | null
+  plaidAccountId?: string | null
   organization: Prisma.OrganizationCreateNestedOneWithoutContractorBillingProfilesInput
   contractor: Prisma.ContractorCreateNestedOneWithoutBillingProfilesInput
   paymentRunItems?: Prisma.PaymentRunItemCreateNestedManyWithoutBillingProfileInput
@@ -1332,6 +1542,13 @@ export type ContractorBillingProfileUncheckedCreateWithoutInvoicesInput = {
   ukSortCodeMasked?: string | null
   ukAccountNumberEncrypted?: string | null
   ukAccountNumberMasked?: string | null
+  usRoutingNumberEncrypted?: string | null
+  usRoutingNumberMasked?: string | null
+  usAccountNumberEncrypted?: string | null
+  usAccountNumberMasked?: string | null
+  plaidVerificationStatus?: string | null
+  plaidVerifiedAt?: Date | string | null
+  plaidAccountId?: string | null
   paymentRunItems?: Prisma.PaymentRunItemUncheckedCreateNestedManyWithoutBillingProfileInput
   skontoTerms?: Prisma.SkontoTermUncheckedCreateNestedManyWithoutBillingProfileInput
 }
@@ -1378,6 +1595,13 @@ export type ContractorBillingProfileUpdateWithoutInvoicesInput = {
   ukSortCodeMasked?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ukAccountNumberEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ukAccountNumberMasked?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  usRoutingNumberEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  usRoutingNumberMasked?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  usAccountNumberEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  usAccountNumberMasked?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  plaidVerificationStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  plaidVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  plaidAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutContractorBillingProfilesNestedInput
   contractor?: Prisma.ContractorUpdateOneRequiredWithoutBillingProfilesNestedInput
   paymentRunItems?: Prisma.PaymentRunItemUpdateManyWithoutBillingProfileNestedInput
@@ -1412,6 +1636,13 @@ export type ContractorBillingProfileUncheckedUpdateWithoutInvoicesInput = {
   ukSortCodeMasked?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ukAccountNumberEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ukAccountNumberMasked?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  usRoutingNumberEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  usRoutingNumberMasked?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  usAccountNumberEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  usAccountNumberMasked?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  plaidVerificationStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  plaidVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  plaidAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   paymentRunItems?: Prisma.PaymentRunItemUncheckedUpdateManyWithoutBillingProfileNestedInput
   skontoTerms?: Prisma.SkontoTermUncheckedUpdateManyWithoutBillingProfileNestedInput
 }
@@ -1442,6 +1673,13 @@ export type ContractorBillingProfileCreateWithoutOrganizationInput = {
   ukSortCodeMasked?: string | null
   ukAccountNumberEncrypted?: string | null
   ukAccountNumberMasked?: string | null
+  usRoutingNumberEncrypted?: string | null
+  usRoutingNumberMasked?: string | null
+  usAccountNumberEncrypted?: string | null
+  usAccountNumberMasked?: string | null
+  plaidVerificationStatus?: string | null
+  plaidVerifiedAt?: Date | string | null
+  plaidAccountId?: string | null
   contractor: Prisma.ContractorCreateNestedOneWithoutBillingProfilesInput
   invoices?: Prisma.InvoiceCreateNestedManyWithoutBillingProfileInput
   paymentRunItems?: Prisma.PaymentRunItemCreateNestedManyWithoutBillingProfileInput
@@ -1475,6 +1713,13 @@ export type ContractorBillingProfileUncheckedCreateWithoutOrganizationInput = {
   ukSortCodeMasked?: string | null
   ukAccountNumberEncrypted?: string | null
   ukAccountNumberMasked?: string | null
+  usRoutingNumberEncrypted?: string | null
+  usRoutingNumberMasked?: string | null
+  usAccountNumberEncrypted?: string | null
+  usAccountNumberMasked?: string | null
+  plaidVerificationStatus?: string | null
+  plaidVerifiedAt?: Date | string | null
+  plaidAccountId?: string | null
   invoices?: Prisma.InvoiceUncheckedCreateNestedManyWithoutBillingProfileInput
   paymentRunItems?: Prisma.PaymentRunItemUncheckedCreateNestedManyWithoutBillingProfileInput
   skontoTerms?: Prisma.SkontoTermUncheckedCreateNestedManyWithoutBillingProfileInput
@@ -1532,6 +1777,13 @@ export type ContractorBillingProfileCreateWithoutPaymentRunItemsInput = {
   ukSortCodeMasked?: string | null
   ukAccountNumberEncrypted?: string | null
   ukAccountNumberMasked?: string | null
+  usRoutingNumberEncrypted?: string | null
+  usRoutingNumberMasked?: string | null
+  usAccountNumberEncrypted?: string | null
+  usAccountNumberMasked?: string | null
+  plaidVerificationStatus?: string | null
+  plaidVerifiedAt?: Date | string | null
+  plaidAccountId?: string | null
   organization: Prisma.OrganizationCreateNestedOneWithoutContractorBillingProfilesInput
   contractor: Prisma.ContractorCreateNestedOneWithoutBillingProfilesInput
   invoices?: Prisma.InvoiceCreateNestedManyWithoutBillingProfileInput
@@ -1566,6 +1818,13 @@ export type ContractorBillingProfileUncheckedCreateWithoutPaymentRunItemsInput =
   ukSortCodeMasked?: string | null
   ukAccountNumberEncrypted?: string | null
   ukAccountNumberMasked?: string | null
+  usRoutingNumberEncrypted?: string | null
+  usRoutingNumberMasked?: string | null
+  usAccountNumberEncrypted?: string | null
+  usAccountNumberMasked?: string | null
+  plaidVerificationStatus?: string | null
+  plaidVerifiedAt?: Date | string | null
+  plaidAccountId?: string | null
   invoices?: Prisma.InvoiceUncheckedCreateNestedManyWithoutBillingProfileInput
   skontoTerms?: Prisma.SkontoTermUncheckedCreateNestedManyWithoutBillingProfileInput
 }
@@ -1612,6 +1871,13 @@ export type ContractorBillingProfileUpdateWithoutPaymentRunItemsInput = {
   ukSortCodeMasked?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ukAccountNumberEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ukAccountNumberMasked?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  usRoutingNumberEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  usRoutingNumberMasked?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  usAccountNumberEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  usAccountNumberMasked?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  plaidVerificationStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  plaidVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  plaidAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutContractorBillingProfilesNestedInput
   contractor?: Prisma.ContractorUpdateOneRequiredWithoutBillingProfilesNestedInput
   invoices?: Prisma.InvoiceUpdateManyWithoutBillingProfileNestedInput
@@ -1646,6 +1912,13 @@ export type ContractorBillingProfileUncheckedUpdateWithoutPaymentRunItemsInput =
   ukSortCodeMasked?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ukAccountNumberEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ukAccountNumberMasked?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  usRoutingNumberEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  usRoutingNumberMasked?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  usAccountNumberEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  usAccountNumberMasked?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  plaidVerificationStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  plaidVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  plaidAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   invoices?: Prisma.InvoiceUncheckedUpdateManyWithoutBillingProfileNestedInput
   skontoTerms?: Prisma.SkontoTermUncheckedUpdateManyWithoutBillingProfileNestedInput
 }
@@ -1677,6 +1950,13 @@ export type ContractorBillingProfileCreateManyContractorInput = {
   ukSortCodeMasked?: string | null
   ukAccountNumberEncrypted?: string | null
   ukAccountNumberMasked?: string | null
+  usRoutingNumberEncrypted?: string | null
+  usRoutingNumberMasked?: string | null
+  usAccountNumberEncrypted?: string | null
+  usAccountNumberMasked?: string | null
+  plaidVerificationStatus?: string | null
+  plaidVerifiedAt?: Date | string | null
+  plaidAccountId?: string | null
 }
 
 export type ContractorBillingProfileUpdateWithoutContractorInput = {
@@ -1705,6 +1985,13 @@ export type ContractorBillingProfileUpdateWithoutContractorInput = {
   ukSortCodeMasked?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ukAccountNumberEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ukAccountNumberMasked?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  usRoutingNumberEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  usRoutingNumberMasked?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  usAccountNumberEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  usAccountNumberMasked?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  plaidVerificationStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  plaidVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  plaidAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutContractorBillingProfilesNestedInput
   invoices?: Prisma.InvoiceUpdateManyWithoutBillingProfileNestedInput
   paymentRunItems?: Prisma.PaymentRunItemUpdateManyWithoutBillingProfileNestedInput
@@ -1738,6 +2025,13 @@ export type ContractorBillingProfileUncheckedUpdateWithoutContractorInput = {
   ukSortCodeMasked?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ukAccountNumberEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ukAccountNumberMasked?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  usRoutingNumberEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  usRoutingNumberMasked?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  usAccountNumberEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  usAccountNumberMasked?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  plaidVerificationStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  plaidVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  plaidAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   invoices?: Prisma.InvoiceUncheckedUpdateManyWithoutBillingProfileNestedInput
   paymentRunItems?: Prisma.PaymentRunItemUncheckedUpdateManyWithoutBillingProfileNestedInput
   skontoTerms?: Prisma.SkontoTermUncheckedUpdateManyWithoutBillingProfileNestedInput
@@ -1770,6 +2064,13 @@ export type ContractorBillingProfileUncheckedUpdateManyWithoutContractorInput = 
   ukSortCodeMasked?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ukAccountNumberEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ukAccountNumberMasked?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  usRoutingNumberEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  usRoutingNumberMasked?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  usAccountNumberEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  usAccountNumberMasked?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  plaidVerificationStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  plaidVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  plaidAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type ContractorBillingProfileCreateManyOrganizationInput = {
@@ -1799,6 +2100,13 @@ export type ContractorBillingProfileCreateManyOrganizationInput = {
   ukSortCodeMasked?: string | null
   ukAccountNumberEncrypted?: string | null
   ukAccountNumberMasked?: string | null
+  usRoutingNumberEncrypted?: string | null
+  usRoutingNumberMasked?: string | null
+  usAccountNumberEncrypted?: string | null
+  usAccountNumberMasked?: string | null
+  plaidVerificationStatus?: string | null
+  plaidVerifiedAt?: Date | string | null
+  plaidAccountId?: string | null
 }
 
 export type ContractorBillingProfileUpdateWithoutOrganizationInput = {
@@ -1827,6 +2135,13 @@ export type ContractorBillingProfileUpdateWithoutOrganizationInput = {
   ukSortCodeMasked?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ukAccountNumberEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ukAccountNumberMasked?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  usRoutingNumberEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  usRoutingNumberMasked?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  usAccountNumberEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  usAccountNumberMasked?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  plaidVerificationStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  plaidVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  plaidAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   contractor?: Prisma.ContractorUpdateOneRequiredWithoutBillingProfilesNestedInput
   invoices?: Prisma.InvoiceUpdateManyWithoutBillingProfileNestedInput
   paymentRunItems?: Prisma.PaymentRunItemUpdateManyWithoutBillingProfileNestedInput
@@ -1860,6 +2175,13 @@ export type ContractorBillingProfileUncheckedUpdateWithoutOrganizationInput = {
   ukSortCodeMasked?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ukAccountNumberEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ukAccountNumberMasked?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  usRoutingNumberEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  usRoutingNumberMasked?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  usAccountNumberEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  usAccountNumberMasked?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  plaidVerificationStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  plaidVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  plaidAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   invoices?: Prisma.InvoiceUncheckedUpdateManyWithoutBillingProfileNestedInput
   paymentRunItems?: Prisma.PaymentRunItemUncheckedUpdateManyWithoutBillingProfileNestedInput
   skontoTerms?: Prisma.SkontoTermUncheckedUpdateManyWithoutBillingProfileNestedInput
@@ -1892,6 +2214,13 @@ export type ContractorBillingProfileUncheckedUpdateManyWithoutOrganizationInput 
   ukSortCodeMasked?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ukAccountNumberEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ukAccountNumberMasked?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  usRoutingNumberEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  usRoutingNumberMasked?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  usAccountNumberEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  usAccountNumberMasked?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  plaidVerificationStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  plaidVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  plaidAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 
@@ -1971,6 +2300,13 @@ export type ContractorBillingProfileSelect<ExtArgs extends runtime.Types.Extensi
   ukSortCodeMasked?: boolean
   ukAccountNumberEncrypted?: boolean
   ukAccountNumberMasked?: boolean
+  usRoutingNumberEncrypted?: boolean
+  usRoutingNumberMasked?: boolean
+  usAccountNumberEncrypted?: boolean
+  usAccountNumberMasked?: boolean
+  plaidVerificationStatus?: boolean
+  plaidVerifiedAt?: boolean
+  plaidAccountId?: boolean
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
   contractor?: boolean | Prisma.ContractorDefaultArgs<ExtArgs>
   invoices?: boolean | Prisma.ContractorBillingProfile$invoicesArgs<ExtArgs>
@@ -2007,6 +2343,13 @@ export type ContractorBillingProfileSelectCreateManyAndReturn<ExtArgs extends ru
   ukSortCodeMasked?: boolean
   ukAccountNumberEncrypted?: boolean
   ukAccountNumberMasked?: boolean
+  usRoutingNumberEncrypted?: boolean
+  usRoutingNumberMasked?: boolean
+  usAccountNumberEncrypted?: boolean
+  usAccountNumberMasked?: boolean
+  plaidVerificationStatus?: boolean
+  plaidVerifiedAt?: boolean
+  plaidAccountId?: boolean
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
   contractor?: boolean | Prisma.ContractorDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["contractorBillingProfile"]>
@@ -2039,6 +2382,13 @@ export type ContractorBillingProfileSelectUpdateManyAndReturn<ExtArgs extends ru
   ukSortCodeMasked?: boolean
   ukAccountNumberEncrypted?: boolean
   ukAccountNumberMasked?: boolean
+  usRoutingNumberEncrypted?: boolean
+  usRoutingNumberMasked?: boolean
+  usAccountNumberEncrypted?: boolean
+  usAccountNumberMasked?: boolean
+  plaidVerificationStatus?: boolean
+  plaidVerifiedAt?: boolean
+  plaidAccountId?: boolean
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
   contractor?: boolean | Prisma.ContractorDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["contractorBillingProfile"]>
@@ -2071,9 +2421,16 @@ export type ContractorBillingProfileSelectScalar = {
   ukSortCodeMasked?: boolean
   ukAccountNumberEncrypted?: boolean
   ukAccountNumberMasked?: boolean
+  usRoutingNumberEncrypted?: boolean
+  usRoutingNumberMasked?: boolean
+  usAccountNumberEncrypted?: boolean
+  usAccountNumberMasked?: boolean
+  plaidVerificationStatus?: boolean
+  plaidVerifiedAt?: boolean
+  plaidAccountId?: boolean
 }
 
-export type ContractorBillingProfileOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "organizationId" | "contractorId" | "legalEntityName" | "billingEmail" | "countryCode" | "addressLine1" | "addressLine2" | "city" | "postalCode" | "bankAccountMasked" | "bankAccountEncrypted" | "bankName" | "swiftBic" | "preferredCurrency" | "paymentTermsDays" | "taxId" | "vatId" | "isDefault" | "validFrom" | "validTo" | "createdAt" | "updatedAt" | "ukSortCodeEncrypted" | "ukSortCodeMasked" | "ukAccountNumberEncrypted" | "ukAccountNumberMasked", ExtArgs["result"]["contractorBillingProfile"]>
+export type ContractorBillingProfileOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "organizationId" | "contractorId" | "legalEntityName" | "billingEmail" | "countryCode" | "addressLine1" | "addressLine2" | "city" | "postalCode" | "bankAccountMasked" | "bankAccountEncrypted" | "bankName" | "swiftBic" | "preferredCurrency" | "paymentTermsDays" | "taxId" | "vatId" | "isDefault" | "validFrom" | "validTo" | "createdAt" | "updatedAt" | "ukSortCodeEncrypted" | "ukSortCodeMasked" | "ukAccountNumberEncrypted" | "ukAccountNumberMasked" | "usRoutingNumberEncrypted" | "usRoutingNumberMasked" | "usAccountNumberEncrypted" | "usAccountNumberMasked" | "plaidVerificationStatus" | "plaidVerifiedAt" | "plaidAccountId", ExtArgs["result"]["contractorBillingProfile"]>
 export type ContractorBillingProfileInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
   contractor?: boolean | Prisma.ContractorDefaultArgs<ExtArgs>
@@ -2128,6 +2485,13 @@ export type $ContractorBillingProfilePayload<ExtArgs extends runtime.Types.Exten
     ukSortCodeMasked: string | null
     ukAccountNumberEncrypted: string | null
     ukAccountNumberMasked: string | null
+    usRoutingNumberEncrypted: string | null
+    usRoutingNumberMasked: string | null
+    usAccountNumberEncrypted: string | null
+    usAccountNumberMasked: string | null
+    plaidVerificationStatus: string | null
+    plaidVerifiedAt: Date | null
+    plaidAccountId: string | null
   }, ExtArgs["result"]["contractorBillingProfile"]>
   composites: {}
 }
@@ -2583,6 +2947,13 @@ export interface ContractorBillingProfileFieldRefs {
   readonly ukSortCodeMasked: Prisma.FieldRef<"ContractorBillingProfile", 'String'>
   readonly ukAccountNumberEncrypted: Prisma.FieldRef<"ContractorBillingProfile", 'String'>
   readonly ukAccountNumberMasked: Prisma.FieldRef<"ContractorBillingProfile", 'String'>
+  readonly usRoutingNumberEncrypted: Prisma.FieldRef<"ContractorBillingProfile", 'String'>
+  readonly usRoutingNumberMasked: Prisma.FieldRef<"ContractorBillingProfile", 'String'>
+  readonly usAccountNumberEncrypted: Prisma.FieldRef<"ContractorBillingProfile", 'String'>
+  readonly usAccountNumberMasked: Prisma.FieldRef<"ContractorBillingProfile", 'String'>
+  readonly plaidVerificationStatus: Prisma.FieldRef<"ContractorBillingProfile", 'String'>
+  readonly plaidVerifiedAt: Prisma.FieldRef<"ContractorBillingProfile", 'DateTime'>
+  readonly plaidAccountId: Prisma.FieldRef<"ContractorBillingProfile", 'String'>
 }
     
 
