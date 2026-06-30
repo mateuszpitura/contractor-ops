@@ -307,3 +307,42 @@ export function createDbTinMatchPersistence(
     },
   };
 }
+
+/**
+ * Minimal Prisma surface the backup-withholding-flag writer needs — the
+ * tenant-scoped client or a transaction client both satisfy it.
+ */
+export interface BackupWithholdingFlagDb {
+  contractor: {
+    updateMany(args: {
+      where: { id: string; organizationId: string };
+      data: { backupWithholdingFlagged: boolean };
+    }): Promise<{ count: number }>;
+  };
+}
+
+/**
+ * Build the concrete writer that persists `Contractor.backupWithholdingFlagged
+ * = true` for a TIN-mismatch recipient. This closes the previously-unwired flag
+ * port: the backup-withholding decision used to live only in
+ * `TaxFormSubmission.snapshotJson`, so the payout path had nothing queryable to
+ * read. The set is tenant-scoped (id + organizationId) and idempotent via
+ * `updateMany` — re-running TIN matching writes the same value and a missing /
+ * cross-tenant row is a no-op rather than a throw. The TIN never reaches the
+ * write; only the boolean flag is persisted.
+ *
+ * Backfill is forward-only: a contractor flagged in an earlier snapshot reads
+ * `false` from the column until it is re-run through TIN matching. The 24%
+ * backup-withholding deduction the flag drives at payout is adviser-verify
+ * before production — legal sign-off for the US payout rail is deferred.
+ */
+export function createBackupWithholdingFlagWriter(
+  db: BackupWithholdingFlagDb,
+): DbBackedPersistenceWriters['setBackupWithholdingFlag'] {
+  return async ({ organizationId, recipientId }) => {
+    await db.contractor.updateMany({
+      where: { id: recipientId, organizationId },
+      data: { backupWithholdingFlagged: true },
+    });
+  };
+}
