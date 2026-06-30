@@ -2,10 +2,10 @@
 gsd_state_version: 1.0
 milestone: v7.0
 milestone_name: GTM Expansion
-status: verifying
-stopped_at: 89-06 complete (Worker foundation wiki synthesis) — Phase 89 (Theme B serial gate) fully planned-and-executed, 6/6 plans Complete. Migrations A+B applied with operator approval in 89-03; WORKER-01..05 complete.
-last_updated: "2026-06-22T10:59:28.716Z"
-last_activity: 2026-06-22
+status: executing
+stopped_at: Phase 91 context gathered
+last_updated: "2026-06-30T23:19:19.257Z"
+last_activity: 2026-06-30 -- Phase 88 execution started
 progress:
   total_phases: 20
   completed_phases: 5
@@ -25,14 +25,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-07 — v7.0 GTM Expansion started; v6.0 shipped 2026-06-07)
 
 **Core value:** The invoice-to-payment flow must work end-to-end: invoice arrives, gets matched to contract, routed through approval, and batched for payment — with full audit trail and zero manual tracking in spreadsheets.
-**Current focus:** Phase 86 — Theme A — TIN-Match → 1099-NEC → IRIS E-File → State Filing
+**Current focus:** Phase 88 — theme-a-us-payment-rail
 
 ## Current Position
 
-Phase: 86 (Theme A — TIN-Match → 1099-NEC → IRIS E-File → State Filing) — EXECUTING
-Plan: 86-05 of 8 complete (86-02/03/05 done; 86-01 Task 3 + 86-02 Task 3 multi-region migration held at human gates; 86-04 not yet run)
-Status: Phase complete — ready for verification
-Last activity: 2026-06-22
+Phase: 88 (theme-a-us-payment-rail) — EXECUTING
+Plan: 1 of 7
+Status: Executing Phase 88
+Last activity: 2026-06-30 -- Phase 88 execution started
 
 Progress: [██████░░░░] 58%
 
@@ -198,7 +198,7 @@ Carried forward from v6.0 milestone close (2026-06-07). Full enumeration: `.plan
 
 ## Session Continuity
 
-Last session: 2026-06-22T10:58:54.341Z
-Stopped at: 89-06 complete (Worker foundation wiki synthesis — documentation-follows-code) — Phase 89 (Theme B serial gate) fully planned-and-executed, 6/6 plans, status Complete. Migrations A+B were applied with operator approval in 89-03 (Worker live, Contractor.workerId NOT NULL + FK, WORKER-01..05 complete).
-Resume file: None
+Last session: 2026-06-30T23:19:19.251Z
+Stopped at: Phase 91 context gathered
+Resume file: .planning/milestones/v7.0-phases/91-theme-b-akta-osobowe-personnel-file/91-CONTEXT.md
 Next command: `/gsd:verify-phase 89` (Theme B gate is closed — the parallel Theme B phases 90–97 can proceed), or resume Theme A (86 verification / 87)
