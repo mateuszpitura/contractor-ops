@@ -1231,6 +1231,40 @@ export type EnumEInvoiceLifecycleEventTypeWithAggregatesFilter<$PrismaModel = ne
   _max?: Prisma.NestedEnumEInvoiceLifecycleEventTypeFilter<$PrismaModel>
 }
 
+export type EnumNitaqatBandNullableFilter<$PrismaModel = never> = {
+  equals?: $Enums.NitaqatBand | Prisma.EnumNitaqatBandFieldRefInput<$PrismaModel> | null
+  in?: $Enums.NitaqatBand[] | Prisma.ListEnumNitaqatBandFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.NitaqatBand[] | Prisma.ListEnumNitaqatBandFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumNitaqatBandNullableFilter<$PrismaModel> | $Enums.NitaqatBand | null
+}
+
+export type EnumEmploymentStatusNullableFilter<$PrismaModel = never> = {
+  equals?: $Enums.EmploymentStatus | Prisma.EnumEmploymentStatusFieldRefInput<$PrismaModel> | null
+  in?: $Enums.EmploymentStatus[] | Prisma.ListEnumEmploymentStatusFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.EmploymentStatus[] | Prisma.ListEnumEmploymentStatusFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumEmploymentStatusNullableFilter<$PrismaModel> | $Enums.EmploymentStatus | null
+}
+
+export type EnumNitaqatBandNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.NitaqatBand | Prisma.EnumNitaqatBandFieldRefInput<$PrismaModel> | null
+  in?: $Enums.NitaqatBand[] | Prisma.ListEnumNitaqatBandFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.NitaqatBand[] | Prisma.ListEnumNitaqatBandFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumNitaqatBandNullableWithAggregatesFilter<$PrismaModel> | $Enums.NitaqatBand | null
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumNitaqatBandNullableFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumNitaqatBandNullableFilter<$PrismaModel>
+}
+
+export type EnumEmploymentStatusNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.EmploymentStatus | Prisma.EnumEmploymentStatusFieldRefInput<$PrismaModel> | null
+  in?: $Enums.EmploymentStatus[] | Prisma.ListEnumEmploymentStatusFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.EmploymentStatus[] | Prisma.ListEnumEmploymentStatusFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumEmploymentStatusNullableWithAggregatesFilter<$PrismaModel> | $Enums.EmploymentStatus | null
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumEmploymentStatusNullableFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumEmploymentStatusNullableFilter<$PrismaModel>
+}
+
 export type EnumEquipmentTypeFilter<$PrismaModel = never> = {
   equals?: $Enums.EquipmentType | Prisma.EnumEquipmentTypeFieldRefInput<$PrismaModel>
   in?: $Enums.EquipmentType[] | Prisma.ListEnumEquipmentTypeFieldRefInput<$PrismaModel>
@@ -1467,23 +1501,6 @@ export type EnumUaeFreeZoneCodeWithAggregatesFilter<$PrismaModel = never> = {
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumUaeFreeZoneCodeFilter<$PrismaModel>
   _max?: Prisma.NestedEnumUaeFreeZoneCodeFilter<$PrismaModel>
-}
-
-export type EnumNitaqatBandNullableFilter<$PrismaModel = never> = {
-  equals?: $Enums.NitaqatBand | Prisma.EnumNitaqatBandFieldRefInput<$PrismaModel> | null
-  in?: $Enums.NitaqatBand[] | Prisma.ListEnumNitaqatBandFieldRefInput<$PrismaModel> | null
-  notIn?: $Enums.NitaqatBand[] | Prisma.ListEnumNitaqatBandFieldRefInput<$PrismaModel> | null
-  not?: Prisma.NestedEnumNitaqatBandNullableFilter<$PrismaModel> | $Enums.NitaqatBand | null
-}
-
-export type EnumNitaqatBandNullableWithAggregatesFilter<$PrismaModel = never> = {
-  equals?: $Enums.NitaqatBand | Prisma.EnumNitaqatBandFieldRefInput<$PrismaModel> | null
-  in?: $Enums.NitaqatBand[] | Prisma.ListEnumNitaqatBandFieldRefInput<$PrismaModel> | null
-  notIn?: $Enums.NitaqatBand[] | Prisma.ListEnumNitaqatBandFieldRefInput<$PrismaModel> | null
-  not?: Prisma.NestedEnumNitaqatBandNullableWithAggregatesFilter<$PrismaModel> | $Enums.NitaqatBand | null
-  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
-  _min?: Prisma.NestedEnumNitaqatBandNullableFilter<$PrismaModel>
-  _max?: Prisma.NestedEnumNitaqatBandNullableFilter<$PrismaModel>
 }
 
 export type EnumDeprovisioningRunStatusFilter<$PrismaModel = never> = {
@@ -3828,6 +3845,40 @@ export type NestedEnumEInvoiceLifecycleEventTypeWithAggregatesFilter<$PrismaMode
   _max?: Prisma.NestedEnumEInvoiceLifecycleEventTypeFilter<$PrismaModel>
 }
 
+export type NestedEnumNitaqatBandNullableFilter<$PrismaModel = never> = {
+  equals?: $Enums.NitaqatBand | Prisma.EnumNitaqatBandFieldRefInput<$PrismaModel> | null
+  in?: $Enums.NitaqatBand[] | Prisma.ListEnumNitaqatBandFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.NitaqatBand[] | Prisma.ListEnumNitaqatBandFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumNitaqatBandNullableFilter<$PrismaModel> | $Enums.NitaqatBand | null
+}
+
+export type NestedEnumEmploymentStatusNullableFilter<$PrismaModel = never> = {
+  equals?: $Enums.EmploymentStatus | Prisma.EnumEmploymentStatusFieldRefInput<$PrismaModel> | null
+  in?: $Enums.EmploymentStatus[] | Prisma.ListEnumEmploymentStatusFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.EmploymentStatus[] | Prisma.ListEnumEmploymentStatusFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumEmploymentStatusNullableFilter<$PrismaModel> | $Enums.EmploymentStatus | null
+}
+
+export type NestedEnumNitaqatBandNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.NitaqatBand | Prisma.EnumNitaqatBandFieldRefInput<$PrismaModel> | null
+  in?: $Enums.NitaqatBand[] | Prisma.ListEnumNitaqatBandFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.NitaqatBand[] | Prisma.ListEnumNitaqatBandFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumNitaqatBandNullableWithAggregatesFilter<$PrismaModel> | $Enums.NitaqatBand | null
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumNitaqatBandNullableFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumNitaqatBandNullableFilter<$PrismaModel>
+}
+
+export type NestedEnumEmploymentStatusNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.EmploymentStatus | Prisma.EnumEmploymentStatusFieldRefInput<$PrismaModel> | null
+  in?: $Enums.EmploymentStatus[] | Prisma.ListEnumEmploymentStatusFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.EmploymentStatus[] | Prisma.ListEnumEmploymentStatusFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumEmploymentStatusNullableWithAggregatesFilter<$PrismaModel> | $Enums.EmploymentStatus | null
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumEmploymentStatusNullableFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumEmploymentStatusNullableFilter<$PrismaModel>
+}
+
 export type NestedEnumEquipmentTypeFilter<$PrismaModel = never> = {
   equals?: $Enums.EquipmentType | Prisma.EnumEquipmentTypeFieldRefInput<$PrismaModel>
   in?: $Enums.EquipmentType[] | Prisma.ListEnumEquipmentTypeFieldRefInput<$PrismaModel>
@@ -4064,23 +4115,6 @@ export type NestedEnumUaeFreeZoneCodeWithAggregatesFilter<$PrismaModel = never> 
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumUaeFreeZoneCodeFilter<$PrismaModel>
   _max?: Prisma.NestedEnumUaeFreeZoneCodeFilter<$PrismaModel>
-}
-
-export type NestedEnumNitaqatBandNullableFilter<$PrismaModel = never> = {
-  equals?: $Enums.NitaqatBand | Prisma.EnumNitaqatBandFieldRefInput<$PrismaModel> | null
-  in?: $Enums.NitaqatBand[] | Prisma.ListEnumNitaqatBandFieldRefInput<$PrismaModel> | null
-  notIn?: $Enums.NitaqatBand[] | Prisma.ListEnumNitaqatBandFieldRefInput<$PrismaModel> | null
-  not?: Prisma.NestedEnumNitaqatBandNullableFilter<$PrismaModel> | $Enums.NitaqatBand | null
-}
-
-export type NestedEnumNitaqatBandNullableWithAggregatesFilter<$PrismaModel = never> = {
-  equals?: $Enums.NitaqatBand | Prisma.EnumNitaqatBandFieldRefInput<$PrismaModel> | null
-  in?: $Enums.NitaqatBand[] | Prisma.ListEnumNitaqatBandFieldRefInput<$PrismaModel> | null
-  notIn?: $Enums.NitaqatBand[] | Prisma.ListEnumNitaqatBandFieldRefInput<$PrismaModel> | null
-  not?: Prisma.NestedEnumNitaqatBandNullableWithAggregatesFilter<$PrismaModel> | $Enums.NitaqatBand | null
-  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
-  _min?: Prisma.NestedEnumNitaqatBandNullableFilter<$PrismaModel>
-  _max?: Prisma.NestedEnumNitaqatBandNullableFilter<$PrismaModel>
 }
 
 export type NestedEnumDeprovisioningRunStatusFilter<$PrismaModel = never> = {

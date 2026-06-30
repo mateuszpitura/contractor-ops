@@ -400,10 +400,6 @@ export type SaudizationConfigNullableScalarRelationFilter = {
   isNot?: Prisma.SaudizationConfigWhereInput | null
 }
 
-export type NullableEnumNitaqatBandFieldUpdateOperationsInput = {
-  set?: $Enums.NitaqatBand | null
-}
-
 export type SaudizationConfigCreateNestedOneWithoutOrganizationInput = {
   create?: Prisma.XOR<Prisma.SaudizationConfigCreateWithoutOrganizationInput, Prisma.SaudizationConfigUncheckedCreateWithoutOrganizationInput>
   connectOrCreate?: Prisma.SaudizationConfigCreateOrConnectWithoutOrganizationInput

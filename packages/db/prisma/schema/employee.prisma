@@ -1,0 +1,63 @@
+// Per-market employee personnel record. Hybrid storage attached 1:1 to the
+// Worker identity root (workerType = EMPLOYEE): bulk non-PII per-country fields
+// live in the `countryFields` JSON column, national-person identifiers live in
+// dedicated encrypted columns, and the three filterable attributes the HR and
+// payroll dashboards sort/scope on are promoted to typed columns.
+//
+// Tenant-owning: EmployeeProfile carries `organizationId` and is deliberately
+// absent from `globalModels` in tenant.ts, so every read/mutation inherits the
+// withTenantScope predicate (org scope injected automatically). A cross-org read
+// can never surface another org's personnel record.
+
+model EmployeeProfile {
+  id             String @id @default(cuid())
+  organizationId String
+  // 1:1 sidecar link to the Worker identity root. The unique FK makes one
+  // EmployeeProfile per employee a DB-enforced invariant; employee-specific
+  // data hangs here so the shared Worker row stays type-agnostic.
+  workerId       String @unique
+
+  countryCode   String
+  // Bulk non-PII, RBAC-gated per-country payroll/registration fields, validated
+  // wholesale by the per-market employeeCountryFieldsSchemaMap at the router
+  // boundary. National-person identifiers are rejected from this JSON by the
+  // .strict() schemas — they only ever land in the encrypted columns below.
+  countryFields Json?
+
+  // National-person identifiers, encrypted at rest in dedicated columns and
+  // NEVER stored in countryFields JSON. Each *Encrypted column holds
+  // `iv:authTag:ciphertext` (AES-256-GCM); the paired *Last4 is the plain
+  // trailing-4 for masked display. Full reveal is an audit-logged path gated by
+  // the employeePii:read permission.
+  peselEncrypted      String?
+  peselLast4          String?
+  ssnEncrypted        String?
+  ssnLast4            String?
+  iqamaEncrypted      String?
+  iqamaLast4          String?
+  emiratesIdEncrypted String?
+  emiratesIdLast4     String?
+
+  // Promoted typed columns — the attributes the HR/payroll dashboards filter and
+  // sort on, lifted out of JSON so they are indexable and strongly typed.
+  saudizationCategory NitaqatBand?
+  etat                Decimal?          @db.Decimal(3, 2)
+  employmentStatus    EmploymentStatus?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  worker       Worker       @relation(fields: [workerId], references: [id])
+
+  @@unique([organizationId, workerId])
+  @@index([organizationId])
+  @@index([organizationId, employmentStatus])
+}
+
+enum EmploymentStatus {
+  ACTIVE
+  ON_LEAVE
+  SUSPENDED
+  TERMINATED
+}

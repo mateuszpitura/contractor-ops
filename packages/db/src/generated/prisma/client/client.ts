@@ -272,6 +272,11 @@ export type EInvoiceLifecycleEvent = Prisma.EInvoiceLifecycleEventModel
  */
 export type PeppolCapabilityCache = Prisma.PeppolCapabilityCacheModel
 /**
+ * Model EmployeeProfile
+ * 
+ */
+export type EmployeeProfile = Prisma.EmployeeProfileModel
+/**
  * Model Equipment
  * 
  */

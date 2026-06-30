@@ -491,6 +491,16 @@ export const EInvoiceLifecycleEventType = {
 export type EInvoiceLifecycleEventType = (typeof EInvoiceLifecycleEventType)[keyof typeof EInvoiceLifecycleEventType]
 
 
+export const EmploymentStatus = {
+  ACTIVE: 'ACTIVE',
+  ON_LEAVE: 'ON_LEAVE',
+  SUSPENDED: 'SUSPENDED',
+  TERMINATED: 'TERMINATED'
+} as const
+
+export type EmploymentStatus = (typeof EmploymentStatus)[keyof typeof EmploymentStatus]
+
+
 export const EquipmentType = {
   LAPTOP: 'LAPTOP',
   MONITOR: 'MONITOR',

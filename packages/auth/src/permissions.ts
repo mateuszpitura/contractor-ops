@@ -47,6 +47,11 @@ export const accessControlStatement = {
   // independently and the HR roles below cannot reach contractor mutations.
   // `approve_leave` is the HR-only action held by the leave-approver role.
   employee: ['create', 'read', 'update', 'delete', 'approve_leave'],
+  // Gate for revealing full employee national-ID PII (PESEL/SSN/Iqama/Emirates
+  // ID). Separate from contractorPii so the employee personnel surface is gated
+  // independently. Granted least-privilege to owner/admin/hr_admin only; every
+  // other role (including the read-only HR roles) is deny-by-default. See roles.ts.
+  employeePii: ['read'],
   'admin:boe-rate': ['read', 'write'],
 } as const;
 
