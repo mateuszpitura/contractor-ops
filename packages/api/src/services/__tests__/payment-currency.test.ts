@@ -17,6 +17,8 @@ import { convertAmount } from '../exchange-rate';
 
 /** Stored EUR->USD rate for the fixture (mirrors the ECB daily feed shape). */
 const EUR_USD = 1.0836;
+/** Stored EUR->PLN rate — a third currency to prove USD cross-rates like any other. */
+const EUR_PLN = 4.2815;
 
 /**
  * Minimal Prisma-shaped stub exposing only `exchangeRate.findFirst`, the single
@@ -62,6 +64,24 @@ describe('convertAmount — USD settlement', () => {
   it('returns null when the USD rate is missing (no coerced 1.0)', async () => {
     const db = makeDbStub({});
     const result = await convertAmount(db, 100_000, 'EUR', 'USD');
+    expect(result).toBeNull();
+  });
+});
+
+describe('convertAmount — USD cross-rate to a third currency (no special-case)', () => {
+  it('converts USD -> PLN through EUR as base (both legs use the stored rate)', async () => {
+    const db = makeDbStub({ 'EUR->USD': EUR_USD, 'EUR->PLN': EUR_PLN });
+    const result = await convertAmount(db, 100_000, 'USD', 'PLN');
+    expect(result).not.toBeNull();
+    // USD->PLN = (1 / EUR_USD) * EUR_PLN — USD is cross-rated, never short-circuited to 1.
+    expect(result?.amountMinor).toBe(Math.round(100_000 * ((1 / EUR_USD) * EUR_PLN)));
+  });
+
+  it('returns null when only the USD leg of a USD -> PLN cross-rate is missing', async () => {
+    // PLN present, USD absent: proves the real getRate lookup runs for the USD leg
+    // rather than being bypassed by a USD short-circuit.
+    const db = makeDbStub({ 'EUR->PLN': EUR_PLN });
+    const result = await convertAmount(db, 100_000, 'USD', 'PLN');
     expect(result).toBeNull();
   });
 });
