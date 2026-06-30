@@ -41,6 +41,7 @@ const allPermissions = {
   // the sole source for the owner role. It MUST stay in sync with permissions.ts
   // or owner silently loses newly added permissions.
   contractorPii: ['read'],
+  employeePii: ['read'],
 } as const;
 
 export const roles = {
@@ -72,6 +73,7 @@ export const roles = {
     project: ['read', 'create', 'update', 'archive'],
     costCenter: ['read', 'create', 'update', 'archive'],
     contractorPii: ['read'],
+    employeePii: ['read'],
   }),
 
   finance_admin: ac.newRole({
@@ -188,6 +190,9 @@ export const roles = {
   // the codebase keys roles in snake_case, so they are reconciled here).
   hr_admin: ac.newRole({
     employee: ['create', 'read', 'update', 'delete', 'approve_leave'],
+    // Full national-ID reveal is HR-admin-only among the HR roles; hr_manager,
+    // payroll_officer and leave_approver get the employee surface but never PII.
+    employeePii: ['read'],
     contractor: ['read'],
     team: ['read'],
     project: ['read'],

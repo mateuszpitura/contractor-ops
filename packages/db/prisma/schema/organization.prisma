@@ -48,6 +48,7 @@ model Organization {
   pendingProjectMerges           PendingProjectMerge[]
   costCenters                    CostCenter[]
   workers                        Worker[]
+  employeeProfiles               EmployeeProfile[]
   contractors                    Contractor[]
   contractorContacts             ContractorContact[]
   contractorBillingProfiles      ContractorBillingProfile[]

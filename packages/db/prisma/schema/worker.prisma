@@ -27,9 +27,10 @@ model Worker {
   updatedAt      DateTime   @updatedAt
   deletedAt      DateTime?
 
-  organization Organization @relation(fields: [organizationId], references: [id])
-  contractor   Contractor?
-  // employee  Employee?
+  organization    Organization     @relation(fields: [organizationId], references: [id])
+  contractor      Contractor?
+  // 1:1 sidecar carrying employee-specific data when workerType = EMPLOYEE.
+  employeeProfile EmployeeProfile?
 
   @@index([organizationId])
   @@index([organizationId, workerType])

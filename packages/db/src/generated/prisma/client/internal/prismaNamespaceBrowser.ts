@@ -97,6 +97,7 @@ export const ModelName = {
   EInvoiceLifecycle: 'EInvoiceLifecycle',
   EInvoiceLifecycleEvent: 'EInvoiceLifecycleEvent',
   PeppolCapabilityCache: 'PeppolCapabilityCache',
+  EmployeeProfile: 'EmployeeProfile',
   Equipment: 'Equipment',
   EquipmentAssignment: 'EquipmentAssignment',
   Shipment: 'Shipment',
@@ -1055,6 +1056,30 @@ export const PeppolCapabilityCacheScalarFieldEnum = {
 } as const
 
 export type PeppolCapabilityCacheScalarFieldEnum = (typeof PeppolCapabilityCacheScalarFieldEnum)[keyof typeof PeppolCapabilityCacheScalarFieldEnum]
+
+
+export const EmployeeProfileScalarFieldEnum = {
+  id: 'id',
+  organizationId: 'organizationId',
+  workerId: 'workerId',
+  countryCode: 'countryCode',
+  countryFields: 'countryFields',
+  peselEncrypted: 'peselEncrypted',
+  peselLast4: 'peselLast4',
+  ssnEncrypted: 'ssnEncrypted',
+  ssnLast4: 'ssnLast4',
+  iqamaEncrypted: 'iqamaEncrypted',
+  iqamaLast4: 'iqamaLast4',
+  emiratesIdEncrypted: 'emiratesIdEncrypted',
+  emiratesIdLast4: 'emiratesIdLast4',
+  saudizationCategory: 'saudizationCategory',
+  etat: 'etat',
+  employmentStatus: 'employmentStatus',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type EmployeeProfileScalarFieldEnum = (typeof EmployeeProfileScalarFieldEnum)[keyof typeof EmployeeProfileScalarFieldEnum]
 
 
 export const EquipmentScalarFieldEnum = {
