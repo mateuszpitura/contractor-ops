@@ -165,6 +165,8 @@ enum PaymentExportFormat {
   XML
   API_PUSH
   BACS_STD18
+  ACH_NACHA
+  FEDWIRE
 }
 
 enum ExportStatus {

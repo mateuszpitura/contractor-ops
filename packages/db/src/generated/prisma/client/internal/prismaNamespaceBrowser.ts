@@ -818,6 +818,7 @@ export const ContractorScalarFieldEnum = {
   ssnLast4: 'ssnLast4',
   uspsVerified: 'uspsVerified',
   uspsValidatedAt: 'uspsValidatedAt',
+  backupWithholdingFlagged: 'backupWithholdingFlagged',
   latestVatValidatedAt: 'latestVatValidatedAt',
   latestVatValidationStatus: 'latestVatValidationStatus',
   isPublicSectorBuyer: 'isPublicSectorBuyer',
@@ -880,7 +881,14 @@ export const ContractorBillingProfileScalarFieldEnum = {
   ukSortCodeEncrypted: 'ukSortCodeEncrypted',
   ukSortCodeMasked: 'ukSortCodeMasked',
   ukAccountNumberEncrypted: 'ukAccountNumberEncrypted',
-  ukAccountNumberMasked: 'ukAccountNumberMasked'
+  ukAccountNumberMasked: 'ukAccountNumberMasked',
+  usRoutingNumberEncrypted: 'usRoutingNumberEncrypted',
+  usRoutingNumberMasked: 'usRoutingNumberMasked',
+  usAccountNumberEncrypted: 'usAccountNumberEncrypted',
+  usAccountNumberMasked: 'usAccountNumberMasked',
+  plaidVerificationStatus: 'plaidVerificationStatus',
+  plaidVerifiedAt: 'plaidVerifiedAt',
+  plaidAccountId: 'plaidAccountId'
 } as const
 
 export type ContractorBillingProfileScalarFieldEnum = (typeof ContractorBillingProfileScalarFieldEnum)[keyof typeof ContractorBillingProfileScalarFieldEnum]

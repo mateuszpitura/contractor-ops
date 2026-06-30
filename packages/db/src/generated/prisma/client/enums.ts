@@ -1078,7 +1078,9 @@ export const PaymentExportFormat = {
   MT940: 'MT940',
   XML: 'XML',
   API_PUSH: 'API_PUSH',
-  BACS_STD18: 'BACS_STD18'
+  BACS_STD18: 'BACS_STD18',
+  ACH_NACHA: 'ACH_NACHA',
+  FEDWIRE: 'FEDWIRE'
 } as const
 
 export type PaymentExportFormat = (typeof PaymentExportFormat)[keyof typeof PaymentExportFormat]

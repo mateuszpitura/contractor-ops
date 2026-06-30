@@ -55,6 +55,7 @@ export type ContractorMinAggregateOutputType = {
   ssnLast4: string | null
   uspsVerified: boolean | null
   uspsValidatedAt: Date | null
+  backupWithholdingFlagged: boolean | null
   latestVatValidatedAt: Date | null
   latestVatValidationStatus: $Enums.ValidationStatus | null
   isPublicSectorBuyer: boolean | null
@@ -102,6 +103,7 @@ export type ContractorMaxAggregateOutputType = {
   ssnLast4: string | null
   uspsVerified: boolean | null
   uspsValidatedAt: Date | null
+  backupWithholdingFlagged: boolean | null
   latestVatValidatedAt: Date | null
   latestVatValidationStatus: $Enums.ValidationStatus | null
   isPublicSectorBuyer: boolean | null
@@ -151,6 +153,7 @@ export type ContractorCountAggregateOutputType = {
   ssnLast4: number
   uspsVerified: number
   uspsValidatedAt: number
+  backupWithholdingFlagged: number
   latestVatValidatedAt: number
   latestVatValidationStatus: number
   isPublicSectorBuyer: number
@@ -200,6 +203,7 @@ export type ContractorMinAggregateInputType = {
   ssnLast4?: true
   uspsVerified?: true
   uspsValidatedAt?: true
+  backupWithholdingFlagged?: true
   latestVatValidatedAt?: true
   latestVatValidationStatus?: true
   isPublicSectorBuyer?: true
@@ -247,6 +251,7 @@ export type ContractorMaxAggregateInputType = {
   ssnLast4?: true
   uspsVerified?: true
   uspsValidatedAt?: true
+  backupWithholdingFlagged?: true
   latestVatValidatedAt?: true
   latestVatValidationStatus?: true
   isPublicSectorBuyer?: true
@@ -296,6 +301,7 @@ export type ContractorCountAggregateInputType = {
   ssnLast4?: true
   uspsVerified?: true
   uspsValidatedAt?: true
+  backupWithholdingFlagged?: true
   latestVatValidatedAt?: true
   latestVatValidationStatus?: true
   isPublicSectorBuyer?: true
@@ -418,6 +424,7 @@ export type ContractorGroupByOutputType = {
   ssnLast4: string | null
   uspsVerified: boolean | null
   uspsValidatedAt: Date | null
+  backupWithholdingFlagged: boolean | null
   latestVatValidatedAt: Date | null
   latestVatValidationStatus: $Enums.ValidationStatus | null
   isPublicSectorBuyer: boolean
@@ -488,6 +495,7 @@ export type ContractorWhereInput = {
   ssnLast4?: Prisma.StringNullableFilter<"Contractor"> | string | null
   uspsVerified?: Prisma.BoolNullableFilter<"Contractor"> | boolean | null
   uspsValidatedAt?: Prisma.DateTimeNullableFilter<"Contractor"> | Date | string | null
+  backupWithholdingFlagged?: Prisma.BoolNullableFilter<"Contractor"> | boolean | null
   latestVatValidatedAt?: Prisma.DateTimeNullableFilter<"Contractor"> | Date | string | null
   latestVatValidationStatus?: Prisma.EnumValidationStatusNullableFilter<"Contractor"> | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFilter<"Contractor"> | boolean
@@ -569,6 +577,7 @@ export type ContractorOrderByWithRelationInput = {
   ssnLast4?: Prisma.SortOrderInput | Prisma.SortOrder
   uspsVerified?: Prisma.SortOrderInput | Prisma.SortOrder
   uspsValidatedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  backupWithholdingFlagged?: Prisma.SortOrderInput | Prisma.SortOrder
   latestVatValidatedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   latestVatValidationStatus?: Prisma.SortOrderInput | Prisma.SortOrder
   isPublicSectorBuyer?: Prisma.SortOrder
@@ -655,6 +664,7 @@ export type ContractorWhereUniqueInput = Prisma.AtLeast<{
   ssnLast4?: Prisma.StringNullableFilter<"Contractor"> | string | null
   uspsVerified?: Prisma.BoolNullableFilter<"Contractor"> | boolean | null
   uspsValidatedAt?: Prisma.DateTimeNullableFilter<"Contractor"> | Date | string | null
+  backupWithholdingFlagged?: Prisma.BoolNullableFilter<"Contractor"> | boolean | null
   latestVatValidatedAt?: Prisma.DateTimeNullableFilter<"Contractor"> | Date | string | null
   latestVatValidationStatus?: Prisma.EnumValidationStatusNullableFilter<"Contractor"> | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFilter<"Contractor"> | boolean
@@ -735,6 +745,7 @@ export type ContractorOrderByWithAggregationInput = {
   ssnLast4?: Prisma.SortOrderInput | Prisma.SortOrder
   uspsVerified?: Prisma.SortOrderInput | Prisma.SortOrder
   uspsValidatedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  backupWithholdingFlagged?: Prisma.SortOrderInput | Prisma.SortOrder
   latestVatValidatedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   latestVatValidationStatus?: Prisma.SortOrderInput | Prisma.SortOrder
   isPublicSectorBuyer?: Prisma.SortOrder
@@ -790,6 +801,7 @@ export type ContractorScalarWhereWithAggregatesInput = {
   ssnLast4?: Prisma.StringNullableWithAggregatesFilter<"Contractor"> | string | null
   uspsVerified?: Prisma.BoolNullableWithAggregatesFilter<"Contractor"> | boolean | null
   uspsValidatedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Contractor"> | Date | string | null
+  backupWithholdingFlagged?: Prisma.BoolNullableWithAggregatesFilter<"Contractor"> | boolean | null
   latestVatValidatedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Contractor"> | Date | string | null
   latestVatValidationStatus?: Prisma.EnumValidationStatusNullableWithAggregatesFilter<"Contractor"> | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolWithAggregatesFilter<"Contractor"> | boolean
@@ -833,6 +845,7 @@ export type ContractorCreateInput = {
   ssnLast4?: string | null
   uspsVerified?: boolean | null
   uspsValidatedAt?: Date | string | null
+  backupWithholdingFlagged?: boolean | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -913,6 +926,7 @@ export type ContractorUncheckedCreateInput = {
   ssnLast4?: string | null
   uspsVerified?: boolean | null
   uspsValidatedAt?: Date | string | null
+  backupWithholdingFlagged?: boolean | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -981,6 +995,7 @@ export type ContractorUpdateInput = {
   ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  backupWithholdingFlagged?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1061,6 +1076,7 @@ export type ContractorUncheckedUpdateInput = {
   ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  backupWithholdingFlagged?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1135,6 +1151,7 @@ export type ContractorCreateManyInput = {
   ssnLast4?: string | null
   uspsVerified?: boolean | null
   uspsValidatedAt?: Date | string | null
+  backupWithholdingFlagged?: boolean | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -1178,6 +1195,7 @@ export type ContractorUpdateManyMutationInput = {
   ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  backupWithholdingFlagged?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1226,6 +1244,7 @@ export type ContractorUncheckedUpdateManyInput = {
   ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  backupWithholdingFlagged?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1300,6 +1319,7 @@ export type ContractorCountOrderByAggregateInput = {
   ssnLast4?: Prisma.SortOrder
   uspsVerified?: Prisma.SortOrder
   uspsValidatedAt?: Prisma.SortOrder
+  backupWithholdingFlagged?: Prisma.SortOrder
   latestVatValidatedAt?: Prisma.SortOrder
   latestVatValidationStatus?: Prisma.SortOrder
   isPublicSectorBuyer?: Prisma.SortOrder
@@ -1347,6 +1367,7 @@ export type ContractorMaxOrderByAggregateInput = {
   ssnLast4?: Prisma.SortOrder
   uspsVerified?: Prisma.SortOrder
   uspsValidatedAt?: Prisma.SortOrder
+  backupWithholdingFlagged?: Prisma.SortOrder
   latestVatValidatedAt?: Prisma.SortOrder
   latestVatValidationStatus?: Prisma.SortOrder
   isPublicSectorBuyer?: Prisma.SortOrder
@@ -1394,6 +1415,7 @@ export type ContractorMinOrderByAggregateInput = {
   ssnLast4?: Prisma.SortOrder
   uspsVerified?: Prisma.SortOrder
   uspsValidatedAt?: Prisma.SortOrder
+  backupWithholdingFlagged?: Prisma.SortOrder
   latestVatValidatedAt?: Prisma.SortOrder
   latestVatValidationStatus?: Prisma.SortOrder
   isPublicSectorBuyer?: Prisma.SortOrder
@@ -2097,6 +2119,7 @@ export type ContractorCreateWithoutOwnerInput = {
   ssnLast4?: string | null
   uspsVerified?: boolean | null
   uspsValidatedAt?: Date | string | null
+  backupWithholdingFlagged?: boolean | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -2175,6 +2198,7 @@ export type ContractorUncheckedCreateWithoutOwnerInput = {
   ssnLast4?: string | null
   uspsVerified?: boolean | null
   uspsValidatedAt?: Date | string | null
+  backupWithholdingFlagged?: boolean | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -2278,6 +2302,7 @@ export type ContractorScalarWhereInput = {
   ssnLast4?: Prisma.StringNullableFilter<"Contractor"> | string | null
   uspsVerified?: Prisma.BoolNullableFilter<"Contractor"> | boolean | null
   uspsValidatedAt?: Prisma.DateTimeNullableFilter<"Contractor"> | Date | string | null
+  backupWithholdingFlagged?: Prisma.BoolNullableFilter<"Contractor"> | boolean | null
   latestVatValidatedAt?: Prisma.DateTimeNullableFilter<"Contractor"> | Date | string | null
   latestVatValidationStatus?: Prisma.EnumValidationStatusNullableFilter<"Contractor"> | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFilter<"Contractor"> | boolean
@@ -2321,6 +2346,7 @@ export type ContractorCreateWithoutIr35ChainParticipantLinksInput = {
   ssnLast4?: string | null
   uspsVerified?: boolean | null
   uspsValidatedAt?: Date | string | null
+  backupWithholdingFlagged?: boolean | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -2400,6 +2426,7 @@ export type ContractorUncheckedCreateWithoutIr35ChainParticipantLinksInput = {
   ssnLast4?: string | null
   uspsVerified?: boolean | null
   uspsValidatedAt?: Date | string | null
+  backupWithholdingFlagged?: boolean | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -2483,6 +2510,7 @@ export type ContractorUpdateWithoutIr35ChainParticipantLinksInput = {
   ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  backupWithholdingFlagged?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -2562,6 +2590,7 @@ export type ContractorUncheckedUpdateWithoutIr35ChainParticipantLinksInput = {
   ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  backupWithholdingFlagged?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -2629,6 +2658,7 @@ export type ContractorCreateWithoutContractsInput = {
   ssnLast4?: string | null
   uspsVerified?: boolean | null
   uspsValidatedAt?: Date | string | null
+  backupWithholdingFlagged?: boolean | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -2708,6 +2738,7 @@ export type ContractorUncheckedCreateWithoutContractsInput = {
   ssnLast4?: string | null
   uspsVerified?: boolean | null
   uspsValidatedAt?: Date | string | null
+  backupWithholdingFlagged?: boolean | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -2791,6 +2822,7 @@ export type ContractorUpdateWithoutContractsInput = {
   ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  backupWithholdingFlagged?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -2870,6 +2902,7 @@ export type ContractorUncheckedUpdateWithoutContractsInput = {
   ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  backupWithholdingFlagged?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -2937,6 +2970,7 @@ export type ContractorCreateWithoutContactsInput = {
   ssnLast4?: string | null
   uspsVerified?: boolean | null
   uspsValidatedAt?: Date | string | null
+  backupWithholdingFlagged?: boolean | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -3016,6 +3050,7 @@ export type ContractorUncheckedCreateWithoutContactsInput = {
   ssnLast4?: string | null
   uspsVerified?: boolean | null
   uspsValidatedAt?: Date | string | null
+  backupWithholdingFlagged?: boolean | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -3099,6 +3134,7 @@ export type ContractorUpdateWithoutContactsInput = {
   ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  backupWithholdingFlagged?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -3178,6 +3214,7 @@ export type ContractorUncheckedUpdateWithoutContactsInput = {
   ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  backupWithholdingFlagged?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -3245,6 +3282,7 @@ export type ContractorCreateWithoutBillingProfilesInput = {
   ssnLast4?: string | null
   uspsVerified?: boolean | null
   uspsValidatedAt?: Date | string | null
+  backupWithholdingFlagged?: boolean | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -3324,6 +3362,7 @@ export type ContractorUncheckedCreateWithoutBillingProfilesInput = {
   ssnLast4?: string | null
   uspsVerified?: boolean | null
   uspsValidatedAt?: Date | string | null
+  backupWithholdingFlagged?: boolean | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -3407,6 +3446,7 @@ export type ContractorUpdateWithoutBillingProfilesInput = {
   ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  backupWithholdingFlagged?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -3486,6 +3526,7 @@ export type ContractorUncheckedUpdateWithoutBillingProfilesInput = {
   ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  backupWithholdingFlagged?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -3553,6 +3594,7 @@ export type ContractorCreateWithoutAssignmentsInput = {
   ssnLast4?: string | null
   uspsVerified?: boolean | null
   uspsValidatedAt?: Date | string | null
+  backupWithholdingFlagged?: boolean | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -3632,6 +3674,7 @@ export type ContractorUncheckedCreateWithoutAssignmentsInput = {
   ssnLast4?: string | null
   uspsVerified?: boolean | null
   uspsValidatedAt?: Date | string | null
+  backupWithholdingFlagged?: boolean | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -3715,6 +3758,7 @@ export type ContractorUpdateWithoutAssignmentsInput = {
   ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  backupWithholdingFlagged?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -3794,6 +3838,7 @@ export type ContractorUncheckedUpdateWithoutAssignmentsInput = {
   ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  backupWithholdingFlagged?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -3861,6 +3906,7 @@ export type ContractorCreateWithoutTagsInput = {
   ssnLast4?: string | null
   uspsVerified?: boolean | null
   uspsValidatedAt?: Date | string | null
+  backupWithholdingFlagged?: boolean | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -3940,6 +3986,7 @@ export type ContractorUncheckedCreateWithoutTagsInput = {
   ssnLast4?: string | null
   uspsVerified?: boolean | null
   uspsValidatedAt?: Date | string | null
+  backupWithholdingFlagged?: boolean | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -4023,6 +4070,7 @@ export type ContractorUpdateWithoutTagsInput = {
   ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  backupWithholdingFlagged?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -4102,6 +4150,7 @@ export type ContractorUncheckedUpdateWithoutTagsInput = {
   ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  backupWithholdingFlagged?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -4169,6 +4218,7 @@ export type ContractorCreateWithoutComplianceItemsInput = {
   ssnLast4?: string | null
   uspsVerified?: boolean | null
   uspsValidatedAt?: Date | string | null
+  backupWithholdingFlagged?: boolean | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -4248,6 +4298,7 @@ export type ContractorUncheckedCreateWithoutComplianceItemsInput = {
   ssnLast4?: string | null
   uspsVerified?: boolean | null
   uspsValidatedAt?: Date | string | null
+  backupWithholdingFlagged?: boolean | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -4331,6 +4382,7 @@ export type ContractorUpdateWithoutComplianceItemsInput = {
   ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  backupWithholdingFlagged?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -4410,6 +4462,7 @@ export type ContractorUncheckedUpdateWithoutComplianceItemsInput = {
   ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  backupWithholdingFlagged?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -4477,6 +4530,7 @@ export type ContractorCreateWithoutLeitwegIdsInput = {
   ssnLast4?: string | null
   uspsVerified?: boolean | null
   uspsValidatedAt?: Date | string | null
+  backupWithholdingFlagged?: boolean | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -4556,6 +4610,7 @@ export type ContractorUncheckedCreateWithoutLeitwegIdsInput = {
   ssnLast4?: string | null
   uspsVerified?: boolean | null
   uspsValidatedAt?: Date | string | null
+  backupWithholdingFlagged?: boolean | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -4639,6 +4694,7 @@ export type ContractorUpdateWithoutLeitwegIdsInput = {
   ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  backupWithholdingFlagged?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -4718,6 +4774,7 @@ export type ContractorUncheckedUpdateWithoutLeitwegIdsInput = {
   ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  backupWithholdingFlagged?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -4785,6 +4842,7 @@ export type ContractorCreateWithoutEquipmentAssignmentsInput = {
   ssnLast4?: string | null
   uspsVerified?: boolean | null
   uspsValidatedAt?: Date | string | null
+  backupWithholdingFlagged?: boolean | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -4864,6 +4922,7 @@ export type ContractorUncheckedCreateWithoutEquipmentAssignmentsInput = {
   ssnLast4?: string | null
   uspsVerified?: boolean | null
   uspsValidatedAt?: Date | string | null
+  backupWithholdingFlagged?: boolean | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -4947,6 +5006,7 @@ export type ContractorUpdateWithoutEquipmentAssignmentsInput = {
   ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  backupWithholdingFlagged?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -5026,6 +5086,7 @@ export type ContractorUncheckedUpdateWithoutEquipmentAssignmentsInput = {
   ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  backupWithholdingFlagged?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -5093,6 +5154,7 @@ export type ContractorCreateWithoutReturnRequestsInput = {
   ssnLast4?: string | null
   uspsVerified?: boolean | null
   uspsValidatedAt?: Date | string | null
+  backupWithholdingFlagged?: boolean | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -5172,6 +5234,7 @@ export type ContractorUncheckedCreateWithoutReturnRequestsInput = {
   ssnLast4?: string | null
   uspsVerified?: boolean | null
   uspsValidatedAt?: Date | string | null
+  backupWithholdingFlagged?: boolean | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -5255,6 +5318,7 @@ export type ContractorUpdateWithoutReturnRequestsInput = {
   ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  backupWithholdingFlagged?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -5334,6 +5398,7 @@ export type ContractorUncheckedUpdateWithoutReturnRequestsInput = {
   ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  backupWithholdingFlagged?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -5401,6 +5466,7 @@ export type ContractorCreateWithoutFreeZoneAssignmentInput = {
   ssnLast4?: string | null
   uspsVerified?: boolean | null
   uspsValidatedAt?: Date | string | null
+  backupWithholdingFlagged?: boolean | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -5480,6 +5546,7 @@ export type ContractorUncheckedCreateWithoutFreeZoneAssignmentInput = {
   ssnLast4?: string | null
   uspsVerified?: boolean | null
   uspsValidatedAt?: Date | string | null
+  backupWithholdingFlagged?: boolean | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -5563,6 +5630,7 @@ export type ContractorUpdateWithoutFreeZoneAssignmentInput = {
   ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  backupWithholdingFlagged?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -5642,6 +5710,7 @@ export type ContractorUncheckedUpdateWithoutFreeZoneAssignmentInput = {
   ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  backupWithholdingFlagged?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -5709,6 +5778,7 @@ export type ContractorCreateWithoutDeprovisioningRunsInput = {
   ssnLast4?: string | null
   uspsVerified?: boolean | null
   uspsValidatedAt?: Date | string | null
+  backupWithholdingFlagged?: boolean | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -5788,6 +5858,7 @@ export type ContractorUncheckedCreateWithoutDeprovisioningRunsInput = {
   ssnLast4?: string | null
   uspsVerified?: boolean | null
   uspsValidatedAt?: Date | string | null
+  backupWithholdingFlagged?: boolean | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -5871,6 +5942,7 @@ export type ContractorUpdateWithoutDeprovisioningRunsInput = {
   ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  backupWithholdingFlagged?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -5950,6 +6022,7 @@ export type ContractorUncheckedUpdateWithoutDeprovisioningRunsInput = {
   ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  backupWithholdingFlagged?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -6017,6 +6090,7 @@ export type ContractorCreateWithoutInvoicesInput = {
   ssnLast4?: string | null
   uspsVerified?: boolean | null
   uspsValidatedAt?: Date | string | null
+  backupWithholdingFlagged?: boolean | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -6096,6 +6170,7 @@ export type ContractorUncheckedCreateWithoutInvoicesInput = {
   ssnLast4?: string | null
   uspsVerified?: boolean | null
   uspsValidatedAt?: Date | string | null
+  backupWithholdingFlagged?: boolean | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -6179,6 +6254,7 @@ export type ContractorUpdateWithoutInvoicesInput = {
   ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  backupWithholdingFlagged?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -6258,6 +6334,7 @@ export type ContractorUncheckedUpdateWithoutInvoicesInput = {
   ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  backupWithholdingFlagged?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -6325,6 +6402,7 @@ export type ContractorCreateWithoutIntakesInput = {
   ssnLast4?: string | null
   uspsVerified?: boolean | null
   uspsValidatedAt?: Date | string | null
+  backupWithholdingFlagged?: boolean | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -6404,6 +6482,7 @@ export type ContractorUncheckedCreateWithoutIntakesInput = {
   ssnLast4?: string | null
   uspsVerified?: boolean | null
   uspsValidatedAt?: Date | string | null
+  backupWithholdingFlagged?: boolean | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -6487,6 +6566,7 @@ export type ContractorUpdateWithoutIntakesInput = {
   ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  backupWithholdingFlagged?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -6566,6 +6646,7 @@ export type ContractorUncheckedUpdateWithoutIntakesInput = {
   ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  backupWithholdingFlagged?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -6633,6 +6714,7 @@ export type ContractorCreateWithoutOrganizationInput = {
   ssnLast4?: string | null
   uspsVerified?: boolean | null
   uspsValidatedAt?: Date | string | null
+  backupWithholdingFlagged?: boolean | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -6711,6 +6793,7 @@ export type ContractorUncheckedCreateWithoutOrganizationInput = {
   ssnLast4?: string | null
   uspsVerified?: boolean | null
   uspsValidatedAt?: Date | string | null
+  backupWithholdingFlagged?: boolean | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -6805,6 +6888,7 @@ export type ContractorCreateWithoutPrimaryTeamInput = {
   ssnLast4?: string | null
   uspsVerified?: boolean | null
   uspsValidatedAt?: Date | string | null
+  backupWithholdingFlagged?: boolean | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -6883,6 +6967,7 @@ export type ContractorUncheckedCreateWithoutPrimaryTeamInput = {
   ssnLast4?: string | null
   uspsVerified?: boolean | null
   uspsValidatedAt?: Date | string | null
+  backupWithholdingFlagged?: boolean | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -6977,6 +7062,7 @@ export type ContractorCreateWithoutPrimaryProjectInput = {
   ssnLast4?: string | null
   uspsVerified?: boolean | null
   uspsValidatedAt?: Date | string | null
+  backupWithholdingFlagged?: boolean | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -7055,6 +7141,7 @@ export type ContractorUncheckedCreateWithoutPrimaryProjectInput = {
   ssnLast4?: string | null
   uspsVerified?: boolean | null
   uspsValidatedAt?: Date | string | null
+  backupWithholdingFlagged?: boolean | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -7149,6 +7236,7 @@ export type ContractorCreateWithoutDefaultCostCenterInput = {
   ssnLast4?: string | null
   uspsVerified?: boolean | null
   uspsValidatedAt?: Date | string | null
+  backupWithholdingFlagged?: boolean | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -7227,6 +7315,7 @@ export type ContractorUncheckedCreateWithoutDefaultCostCenterInput = {
   ssnLast4?: string | null
   uspsVerified?: boolean | null
   uspsValidatedAt?: Date | string | null
+  backupWithholdingFlagged?: boolean | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -7321,6 +7410,7 @@ export type ContractorCreateWithoutPaymentRunItemsInput = {
   ssnLast4?: string | null
   uspsVerified?: boolean | null
   uspsValidatedAt?: Date | string | null
+  backupWithholdingFlagged?: boolean | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -7400,6 +7490,7 @@ export type ContractorUncheckedCreateWithoutPaymentRunItemsInput = {
   ssnLast4?: string | null
   uspsVerified?: boolean | null
   uspsValidatedAt?: Date | string | null
+  backupWithholdingFlagged?: boolean | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -7483,6 +7574,7 @@ export type ContractorUpdateWithoutPaymentRunItemsInput = {
   ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  backupWithholdingFlagged?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -7562,6 +7654,7 @@ export type ContractorUncheckedUpdateWithoutPaymentRunItemsInput = {
   ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  backupWithholdingFlagged?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -7629,6 +7722,7 @@ export type ContractorCreateWithoutPaymentComplianceChecksInput = {
   ssnLast4?: string | null
   uspsVerified?: boolean | null
   uspsValidatedAt?: Date | string | null
+  backupWithholdingFlagged?: boolean | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -7708,6 +7802,7 @@ export type ContractorUncheckedCreateWithoutPaymentComplianceChecksInput = {
   ssnLast4?: string | null
   uspsVerified?: boolean | null
   uspsValidatedAt?: Date | string | null
+  backupWithholdingFlagged?: boolean | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -7791,6 +7886,7 @@ export type ContractorUpdateWithoutPaymentComplianceChecksInput = {
   ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  backupWithholdingFlagged?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -7870,6 +7966,7 @@ export type ContractorUncheckedUpdateWithoutPaymentComplianceChecksInput = {
   ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  backupWithholdingFlagged?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -7937,6 +8034,7 @@ export type ContractorCreateWithoutPortalSessionsInput = {
   ssnLast4?: string | null
   uspsVerified?: boolean | null
   uspsValidatedAt?: Date | string | null
+  backupWithholdingFlagged?: boolean | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -8016,6 +8114,7 @@ export type ContractorUncheckedCreateWithoutPortalSessionsInput = {
   ssnLast4?: string | null
   uspsVerified?: boolean | null
   uspsValidatedAt?: Date | string | null
+  backupWithholdingFlagged?: boolean | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -8099,6 +8198,7 @@ export type ContractorUpdateWithoutPortalSessionsInput = {
   ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  backupWithholdingFlagged?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -8178,6 +8278,7 @@ export type ContractorUncheckedUpdateWithoutPortalSessionsInput = {
   ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  backupWithholdingFlagged?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -8245,6 +8346,7 @@ export type ContractorCreateWithoutChangeRequestsInput = {
   ssnLast4?: string | null
   uspsVerified?: boolean | null
   uspsValidatedAt?: Date | string | null
+  backupWithholdingFlagged?: boolean | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -8324,6 +8426,7 @@ export type ContractorUncheckedCreateWithoutChangeRequestsInput = {
   ssnLast4?: string | null
   uspsVerified?: boolean | null
   uspsValidatedAt?: Date | string | null
+  backupWithholdingFlagged?: boolean | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -8407,6 +8510,7 @@ export type ContractorUpdateWithoutChangeRequestsInput = {
   ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  backupWithholdingFlagged?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -8486,6 +8590,7 @@ export type ContractorUncheckedUpdateWithoutChangeRequestsInput = {
   ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  backupWithholdingFlagged?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -8553,6 +8658,7 @@ export type ContractorCreateWithoutNotificationPreferencesInput = {
   ssnLast4?: string | null
   uspsVerified?: boolean | null
   uspsValidatedAt?: Date | string | null
+  backupWithholdingFlagged?: boolean | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -8632,6 +8738,7 @@ export type ContractorUncheckedCreateWithoutNotificationPreferencesInput = {
   ssnLast4?: string | null
   uspsVerified?: boolean | null
   uspsValidatedAt?: Date | string | null
+  backupWithholdingFlagged?: boolean | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -8715,6 +8822,7 @@ export type ContractorUpdateWithoutNotificationPreferencesInput = {
   ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  backupWithholdingFlagged?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -8794,6 +8902,7 @@ export type ContractorUncheckedUpdateWithoutNotificationPreferencesInput = {
   ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  backupWithholdingFlagged?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -8861,6 +8970,7 @@ export type ContractorCreateWithoutTaxFormSubmissionsInput = {
   ssnLast4?: string | null
   uspsVerified?: boolean | null
   uspsValidatedAt?: Date | string | null
+  backupWithholdingFlagged?: boolean | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -8940,6 +9050,7 @@ export type ContractorUncheckedCreateWithoutTaxFormSubmissionsInput = {
   ssnLast4?: string | null
   uspsVerified?: boolean | null
   uspsValidatedAt?: Date | string | null
+  backupWithholdingFlagged?: boolean | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -9023,6 +9134,7 @@ export type ContractorUpdateWithoutTaxFormSubmissionsInput = {
   ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  backupWithholdingFlagged?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -9102,6 +9214,7 @@ export type ContractorUncheckedUpdateWithoutTaxFormSubmissionsInput = {
   ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  backupWithholdingFlagged?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -9169,6 +9282,7 @@ export type ContractorCreateWithoutForm1099NecInput = {
   ssnLast4?: string | null
   uspsVerified?: boolean | null
   uspsValidatedAt?: Date | string | null
+  backupWithholdingFlagged?: boolean | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -9248,6 +9362,7 @@ export type ContractorUncheckedCreateWithoutForm1099NecInput = {
   ssnLast4?: string | null
   uspsVerified?: boolean | null
   uspsValidatedAt?: Date | string | null
+  backupWithholdingFlagged?: boolean | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -9331,6 +9446,7 @@ export type ContractorUpdateWithoutForm1099NecInput = {
   ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  backupWithholdingFlagged?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -9410,6 +9526,7 @@ export type ContractorUncheckedUpdateWithoutForm1099NecInput = {
   ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  backupWithholdingFlagged?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -9477,6 +9594,7 @@ export type ContractorCreateWithoutTaxIdValidationsInput = {
   ssnLast4?: string | null
   uspsVerified?: boolean | null
   uspsValidatedAt?: Date | string | null
+  backupWithholdingFlagged?: boolean | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -9556,6 +9674,7 @@ export type ContractorUncheckedCreateWithoutTaxIdValidationsInput = {
   ssnLast4?: string | null
   uspsVerified?: boolean | null
   uspsValidatedAt?: Date | string | null
+  backupWithholdingFlagged?: boolean | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -9639,6 +9758,7 @@ export type ContractorUpdateWithoutTaxIdValidationsInput = {
   ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  backupWithholdingFlagged?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -9718,6 +9838,7 @@ export type ContractorUncheckedUpdateWithoutTaxIdValidationsInput = {
   ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  backupWithholdingFlagged?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -9785,6 +9906,7 @@ export type ContractorCreateWithoutTimesheetsInput = {
   ssnLast4?: string | null
   uspsVerified?: boolean | null
   uspsValidatedAt?: Date | string | null
+  backupWithholdingFlagged?: boolean | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -9864,6 +9986,7 @@ export type ContractorUncheckedCreateWithoutTimesheetsInput = {
   ssnLast4?: string | null
   uspsVerified?: boolean | null
   uspsValidatedAt?: Date | string | null
+  backupWithholdingFlagged?: boolean | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -9947,6 +10070,7 @@ export type ContractorUpdateWithoutTimesheetsInput = {
   ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  backupWithholdingFlagged?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -10026,6 +10150,7 @@ export type ContractorUncheckedUpdateWithoutTimesheetsInput = {
   ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  backupWithholdingFlagged?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -10093,6 +10218,7 @@ export type ContractorCreateWithoutTimeEntriesInput = {
   ssnLast4?: string | null
   uspsVerified?: boolean | null
   uspsValidatedAt?: Date | string | null
+  backupWithholdingFlagged?: boolean | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -10172,6 +10298,7 @@ export type ContractorUncheckedCreateWithoutTimeEntriesInput = {
   ssnLast4?: string | null
   uspsVerified?: boolean | null
   uspsValidatedAt?: Date | string | null
+  backupWithholdingFlagged?: boolean | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -10255,6 +10382,7 @@ export type ContractorUpdateWithoutTimeEntriesInput = {
   ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  backupWithholdingFlagged?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -10334,6 +10462,7 @@ export type ContractorUncheckedUpdateWithoutTimeEntriesInput = {
   ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  backupWithholdingFlagged?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -10401,6 +10530,7 @@ export type ContractorCreateWithoutWorkerInput = {
   ssnLast4?: string | null
   uspsVerified?: boolean | null
   uspsValidatedAt?: Date | string | null
+  backupWithholdingFlagged?: boolean | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -10480,6 +10610,7 @@ export type ContractorUncheckedCreateWithoutWorkerInput = {
   ssnLast4?: string | null
   uspsVerified?: boolean | null
   uspsValidatedAt?: Date | string | null
+  backupWithholdingFlagged?: boolean | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -10563,6 +10694,7 @@ export type ContractorUpdateWithoutWorkerInput = {
   ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  backupWithholdingFlagged?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -10642,6 +10774,7 @@ export type ContractorUncheckedUpdateWithoutWorkerInput = {
   ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  backupWithholdingFlagged?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -10709,6 +10842,7 @@ export type ContractorCreateWithoutWorkflowRoleInput = {
   ssnLast4?: string | null
   uspsVerified?: boolean | null
   uspsValidatedAt?: Date | string | null
+  backupWithholdingFlagged?: boolean | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -10787,6 +10921,7 @@ export type ContractorUncheckedCreateWithoutWorkflowRoleInput = {
   ssnLast4?: string | null
   uspsVerified?: boolean | null
   uspsValidatedAt?: Date | string | null
+  backupWithholdingFlagged?: boolean | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -10881,6 +11016,7 @@ export type ContractorCreateWithoutWorkflowRunsInput = {
   ssnLast4?: string | null
   uspsVerified?: boolean | null
   uspsValidatedAt?: Date | string | null
+  backupWithholdingFlagged?: boolean | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -10960,6 +11096,7 @@ export type ContractorUncheckedCreateWithoutWorkflowRunsInput = {
   ssnLast4?: string | null
   uspsVerified?: boolean | null
   uspsValidatedAt?: Date | string | null
+  backupWithholdingFlagged?: boolean | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -11043,6 +11180,7 @@ export type ContractorUpdateWithoutWorkflowRunsInput = {
   ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  backupWithholdingFlagged?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -11122,6 +11260,7 @@ export type ContractorUncheckedUpdateWithoutWorkflowRunsInput = {
   ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  backupWithholdingFlagged?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -11194,6 +11333,7 @@ export type ContractorCreateManyOwnerInput = {
   ssnLast4?: string | null
   uspsVerified?: boolean | null
   uspsValidatedAt?: Date | string | null
+  backupWithholdingFlagged?: boolean | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -11237,6 +11377,7 @@ export type ContractorUpdateWithoutOwnerInput = {
   ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  backupWithholdingFlagged?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -11315,6 +11456,7 @@ export type ContractorUncheckedUpdateWithoutOwnerInput = {
   ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  backupWithholdingFlagged?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -11388,6 +11530,7 @@ export type ContractorUncheckedUpdateManyWithoutOwnerInput = {
   ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  backupWithholdingFlagged?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -11436,6 +11579,7 @@ export type ContractorCreateManyOrganizationInput = {
   ssnLast4?: string | null
   uspsVerified?: boolean | null
   uspsValidatedAt?: Date | string | null
+  backupWithholdingFlagged?: boolean | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -11479,6 +11623,7 @@ export type ContractorUpdateWithoutOrganizationInput = {
   ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  backupWithholdingFlagged?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -11557,6 +11702,7 @@ export type ContractorUncheckedUpdateWithoutOrganizationInput = {
   ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  backupWithholdingFlagged?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -11630,6 +11776,7 @@ export type ContractorUncheckedUpdateManyWithoutOrganizationInput = {
   ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  backupWithholdingFlagged?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -11678,6 +11825,7 @@ export type ContractorCreateManyPrimaryTeamInput = {
   ssnLast4?: string | null
   uspsVerified?: boolean | null
   uspsValidatedAt?: Date | string | null
+  backupWithholdingFlagged?: boolean | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -11721,6 +11869,7 @@ export type ContractorUpdateWithoutPrimaryTeamInput = {
   ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  backupWithholdingFlagged?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -11799,6 +11948,7 @@ export type ContractorUncheckedUpdateWithoutPrimaryTeamInput = {
   ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  backupWithholdingFlagged?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -11872,6 +12022,7 @@ export type ContractorUncheckedUpdateManyWithoutPrimaryTeamInput = {
   ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  backupWithholdingFlagged?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -11920,6 +12071,7 @@ export type ContractorCreateManyPrimaryProjectInput = {
   ssnLast4?: string | null
   uspsVerified?: boolean | null
   uspsValidatedAt?: Date | string | null
+  backupWithholdingFlagged?: boolean | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -11963,6 +12115,7 @@ export type ContractorUpdateWithoutPrimaryProjectInput = {
   ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  backupWithholdingFlagged?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -12041,6 +12194,7 @@ export type ContractorUncheckedUpdateWithoutPrimaryProjectInput = {
   ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  backupWithholdingFlagged?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -12114,6 +12268,7 @@ export type ContractorUncheckedUpdateManyWithoutPrimaryProjectInput = {
   ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  backupWithholdingFlagged?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -12162,6 +12317,7 @@ export type ContractorCreateManyDefaultCostCenterInput = {
   ssnLast4?: string | null
   uspsVerified?: boolean | null
   uspsValidatedAt?: Date | string | null
+  backupWithholdingFlagged?: boolean | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -12205,6 +12361,7 @@ export type ContractorUpdateWithoutDefaultCostCenterInput = {
   ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  backupWithholdingFlagged?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -12283,6 +12440,7 @@ export type ContractorUncheckedUpdateWithoutDefaultCostCenterInput = {
   ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  backupWithholdingFlagged?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -12356,6 +12514,7 @@ export type ContractorUncheckedUpdateManyWithoutDefaultCostCenterInput = {
   ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  backupWithholdingFlagged?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -12404,6 +12563,7 @@ export type ContractorCreateManyWorkflowRoleInput = {
   ssnLast4?: string | null
   uspsVerified?: boolean | null
   uspsValidatedAt?: Date | string | null
+  backupWithholdingFlagged?: boolean | null
   latestVatValidatedAt?: Date | string | null
   latestVatValidationStatus?: $Enums.ValidationStatus | null
   isPublicSectorBuyer?: boolean
@@ -12447,6 +12607,7 @@ export type ContractorUpdateWithoutWorkflowRoleInput = {
   ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  backupWithholdingFlagged?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -12525,6 +12686,7 @@ export type ContractorUncheckedUpdateWithoutWorkflowRoleInput = {
   ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  backupWithholdingFlagged?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -12598,6 +12760,7 @@ export type ContractorUncheckedUpdateManyWithoutWorkflowRoleInput = {
   ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   uspsVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   uspsValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  backupWithholdingFlagged?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
   isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -12885,6 +13048,7 @@ export type ContractorSelect<ExtArgs extends runtime.Types.Extensions.InternalAr
   ssnLast4?: boolean
   uspsVerified?: boolean
   uspsValidatedAt?: boolean
+  backupWithholdingFlagged?: boolean
   latestVatValidatedAt?: boolean
   latestVatValidationStatus?: boolean
   isPublicSectorBuyer?: boolean
@@ -12967,6 +13131,7 @@ export type ContractorSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ex
   ssnLast4?: boolean
   uspsVerified?: boolean
   uspsValidatedAt?: boolean
+  backupWithholdingFlagged?: boolean
   latestVatValidatedAt?: boolean
   latestVatValidationStatus?: boolean
   isPublicSectorBuyer?: boolean
@@ -13023,6 +13188,7 @@ export type ContractorSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Ex
   ssnLast4?: boolean
   uspsVerified?: boolean
   uspsValidatedAt?: boolean
+  backupWithholdingFlagged?: boolean
   latestVatValidatedAt?: boolean
   latestVatValidationStatus?: boolean
   isPublicSectorBuyer?: boolean
@@ -13079,6 +13245,7 @@ export type ContractorSelectScalar = {
   ssnLast4?: boolean
   uspsVerified?: boolean
   uspsValidatedAt?: boolean
+  backupWithholdingFlagged?: boolean
   latestVatValidatedAt?: boolean
   latestVatValidationStatus?: boolean
   isPublicSectorBuyer?: boolean
@@ -13095,7 +13262,7 @@ export type ContractorSelectScalar = {
   preferredPaczkomatAddress?: boolean
 }
 
-export type ContractorOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "organizationId" | "type" | "legalName" | "displayName" | "taxId" | "vatId" | "registrationNumber" | "countryCode" | "currency" | "email" | "phone" | "website" | "addressLine1" | "addressLine2" | "city" | "postalCode" | "status" | "lifecycleStage" | "ownerUserId" | "primaryTeamId" | "primaryProjectId" | "defaultCostCenterId" | "workflowRoleId" | "notes" | "isSensitive" | "customFieldsJson" | "countryFields" | "ssnEncrypted" | "ssnLast4" | "uspsVerified" | "uspsValidatedAt" | "latestVatValidatedAt" | "latestVatValidationStatus" | "isPublicSectorBuyer" | "peppolSchemeId" | "peppolParticipantValue" | "isBusinessCustomer" | "workerId" | "createdAt" | "updatedAt" | "archivedAt" | "deletedAt" | "preferredPaczkomatId" | "preferredPaczkomatName" | "preferredPaczkomatAddress", ExtArgs["result"]["contractor"]>
+export type ContractorOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "organizationId" | "type" | "legalName" | "displayName" | "taxId" | "vatId" | "registrationNumber" | "countryCode" | "currency" | "email" | "phone" | "website" | "addressLine1" | "addressLine2" | "city" | "postalCode" | "status" | "lifecycleStage" | "ownerUserId" | "primaryTeamId" | "primaryProjectId" | "defaultCostCenterId" | "workflowRoleId" | "notes" | "isSensitive" | "customFieldsJson" | "countryFields" | "ssnEncrypted" | "ssnLast4" | "uspsVerified" | "uspsValidatedAt" | "backupWithholdingFlagged" | "latestVatValidatedAt" | "latestVatValidationStatus" | "isPublicSectorBuyer" | "peppolSchemeId" | "peppolParticipantValue" | "isBusinessCustomer" | "workerId" | "createdAt" | "updatedAt" | "archivedAt" | "deletedAt" | "preferredPaczkomatId" | "preferredPaczkomatName" | "preferredPaczkomatAddress", ExtArgs["result"]["contractor"]>
 export type ContractorInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
   worker?: boolean | Prisma.WorkerDefaultArgs<ExtArgs>
@@ -13219,6 +13386,7 @@ export type $ContractorPayload<ExtArgs extends runtime.Types.Extensions.Internal
     ssnLast4: string | null
     uspsVerified: boolean | null
     uspsValidatedAt: Date | null
+    backupWithholdingFlagged: boolean | null
     latestVatValidatedAt: Date | null
     latestVatValidationStatus: $Enums.ValidationStatus | null
     isPublicSectorBuyer: boolean
@@ -13720,6 +13888,7 @@ export interface ContractorFieldRefs {
   readonly ssnLast4: Prisma.FieldRef<"Contractor", 'String'>
   readonly uspsVerified: Prisma.FieldRef<"Contractor", 'Boolean'>
   readonly uspsValidatedAt: Prisma.FieldRef<"Contractor", 'DateTime'>
+  readonly backupWithholdingFlagged: Prisma.FieldRef<"Contractor", 'Boolean'>
   readonly latestVatValidatedAt: Prisma.FieldRef<"Contractor", 'DateTime'>
   readonly latestVatValidationStatus: Prisma.FieldRef<"Contractor", 'ValidationStatus'>
   readonly isPublicSectorBuyer: Prisma.FieldRef<"Contractor", 'Boolean'>
