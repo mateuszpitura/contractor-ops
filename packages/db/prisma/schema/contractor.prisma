@@ -45,6 +45,10 @@ model Contractor {
   // Phase 84 (US-FIELD-03 / D-03) — USPS CASS advisory verification flag + last-validated instant.
   uspsVerified              Boolean?
   uspsValidatedAt           DateTime?
+  // Backup-withholding decision flag (IRC §3406). Queryable boolean the payment-run
+  // seeding reads at payout time to deduct the statutory 24%. Set advisory-only by the
+  // TIN-match result; additive-nullable (existing rows default NULL — zero data migration).
+  backupWithholdingFlagged  Boolean?
   // Phase 57 (D-05) — denormalized VAT validation summary (source of truth = TaxIdValidation)
   latestVatValidatedAt      DateTime?
   latestVatValidationStatus ValidationStatus?
@@ -171,6 +175,21 @@ model ContractorBillingProfile {
   ukSortCodeMasked         String?
   ukAccountNumberEncrypted String?
   ukAccountNumberMasked    String?
+
+  // US ACH bank fields (routing + account), encrypted+masked pairs mirroring the UK BACS
+  // pair. The *Encrypted columns hold AES-256-GCM `iv:authTag:ciphertext`; the *Masked
+  // columns are the only display surface — full routing/account values are never logged.
+  usRoutingNumberEncrypted String?
+  usRoutingNumberMasked    String?
+  usAccountNumberEncrypted String?
+  usAccountNumberMasked    String?
+
+  // Plaid bank-account verification (advisory, fail-open — mirrors the USPS verification
+  // posture). plaidVerificationStatus is a String (VERIFIED/PENDING/FAILED) rather than a
+  // global enum to avoid enum churn while the live Plaid path stays flag-dark.
+  plaidVerificationStatus String?
+  plaidVerifiedAt         DateTime?
+  plaidAccountId          String?
 
   invoices        Invoice[]
   paymentRunItems PaymentRunItem[]
