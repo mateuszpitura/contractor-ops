@@ -14,7 +14,13 @@
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { TinMatchPersistence } from '../tin-match.service';
-import { clearTinMatchCache, matchRecipientTin, revalidateBatchTins } from '../tin-match.service';
+import {
+  clearTinMatchCache,
+  createBackupWithholdingFlagWriter,
+  createDbTinMatchPersistence,
+  matchRecipientTin,
+  revalidateBatchTins,
+} from '../tin-match.service';
 
 beforeEach(() => {
   clearTinMatchCache();
@@ -136,6 +142,57 @@ describe('tin-match.service — cache + retry', () => {
 
     expect(match).toHaveBeenCalledTimes(2);
     expect(result.matched).toBe(true);
+  });
+});
+
+describe('tin-match.service — backup-withholding flag column writer', () => {
+  function mockFlagDb() {
+    return { contractor: { updateMany: vi.fn(async () => ({ count: 1 })) } };
+  }
+
+  it('persists Contractor.backupWithholdingFlagged=true, tenant-scoped and idempotent', async () => {
+    const db = mockFlagDb();
+    const writer = createBackupWithholdingFlagWriter(db);
+
+    await writer({ organizationId: 'org-1', recipientId: 'rcpt-1', tinLast4: '1120' });
+    expect(db.contractor.updateMany).toHaveBeenCalledWith({
+      where: { id: 'rcpt-1', organizationId: 'org-1' },
+      data: { backupWithholdingFlagged: true },
+    });
+
+    // A re-run is the same idempotent set — the flag is never toggled off.
+    await writer({ organizationId: 'org-1', recipientId: 'rcpt-1', tinLast4: '1120' });
+    expect(db.contractor.updateMany).toHaveBeenCalledTimes(2);
+  });
+
+  it('never lets a full TIN reach the column write (only the boolean is persisted)', async () => {
+    const db = mockFlagDb();
+    const writer = createBackupWithholdingFlagWriter(db);
+
+    await writer({ organizationId: 'org-1', recipientId: 'rcpt-1', tinLast4: '1120' });
+
+    const call = db.contractor.updateMany.mock.calls[0]?.[0];
+    expect(JSON.stringify(call)).not.toContain('078051120');
+    expect(call?.data).toEqual({ backupWithholdingFlagged: true });
+  });
+
+  it('the DB-backed persistence wires the column writer for the mismatch path', async () => {
+    const db = mockFlagDb();
+    const persistence = createDbTinMatchPersistence({
+      setBackupWithholdingFlag: createBackupWithholdingFlagWriter(db),
+      createEscalation: vi.fn(async () => undefined),
+    });
+
+    await persistence.setBackupWithholdingFlag({
+      organizationId: 'org-1',
+      recipientId: 'rcpt-1',
+      tinLast4: '1120',
+    });
+
+    expect(db.contractor.updateMany).toHaveBeenCalledWith({
+      where: { id: 'rcpt-1', organizationId: 'org-1' },
+      data: { backupWithholdingFlagged: true },
+    });
   });
 });
 
