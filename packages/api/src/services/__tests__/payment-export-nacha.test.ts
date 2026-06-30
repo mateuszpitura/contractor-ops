@@ -96,9 +96,7 @@ function toLines(buffer: Buffer): string[] {
   return buffer.toString('ascii').split(/\r?\n/).filter(Boolean);
 }
 
-// Skipped: the NACHA generator is not implemented yet (Wave-0 RED scaffold).
-// Un-skip when `generateNachaFile` lands so these pinned contracts go GREEN.
-describe.skip('generateNachaFile', () => {
+describe('generateNachaFile', () => {
   it('returns a buffer with a .txt extension', () => {
     const result = generateNachaFile(entryFixtures, originFixture);
     expect(result.fileBuffer).toBeInstanceOf(Buffer);
