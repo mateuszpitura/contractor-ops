@@ -1,0 +1,53 @@
+// EwidencjaSnapshot — the immutable record-of-record for the PL "ewidencja czasu
+// pracy" (working-time register, KP art. 149). Each generation freezes the
+// KP §149 field set (hours + start/end, night, overtime, days-off with type,
+// dyżur, zwolnienia/absences) into `snapshotJson` so the register is a
+// point-in-time evidentiary document, not a live projection of mutable rows.
+//
+// Immutability is DB-enforced, never by convention: a BEFORE UPDATE trigger
+// raises restrict_violation for every row and an insert-only RLS policy blocks
+// mutation from any path (including a BYPASSRLS / owner role). Regenerating a
+// register does NOT mutate the prior row — it INSERTS a new row with an
+// incremented `version` and a `previousSnapshotId` back-pointer set at insert
+// time, so the strict update-reject trigger never conflicts with a supersede.
+// The "current" register for a period is the highest `version` row for
+// (organizationId, workerId, periodKey); no status flip is written.
+//
+// Tenant-owning: carries `organizationId` and is deliberately absent from
+// `globalModels`, so it inherits withTenantScope. No `updatedAt` and no
+// `deletedAt` — the row is written once and never changes or soft-deletes.
+
+enum EwidencjaStatus {
+  ACTIVE
+  SUPERSEDED
+}
+
+model EwidencjaSnapshot {
+  id                 String          @id @default(cuid())
+  organizationId     String
+  workerId           String
+  // Period the register covers. periodKey (e.g. "2026-01") is the human/query
+  // key; periodStart/periodEnd bound it as calendar dates.
+  periodStart        DateTime        @db.Date
+  periodEnd          DateTime        @db.Date
+  periodKey          String
+  // Increments per regeneration of the same (org, worker, period). The tuple
+  // unique below keeps the version chain linear.
+  version            Int
+  // Back-pointer to the immediately-prior version, set AT INSERT. Never a
+  // forward UPDATE of the prior row — that is what keeps the table append-only.
+  previousSnapshotId String?
+  // Retained for downstream readability; the current register is resolved by
+  // max(version), not by mutating this to SUPERSEDED (the trigger forbids it).
+  status             EwidencjaStatus @default(ACTIVE)
+  // Frozen KP §149 field set for the period.
+  snapshotJson       Json
+  generatedByUserId  String?
+  createdAt          DateTime        @default(now())
+
+  previousSnapshot EwidencjaSnapshot?  @relation("EwidencjaSupersede", fields: [previousSnapshotId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  supersededBy     EwidencjaSnapshot[] @relation("EwidencjaSupersede")
+
+  @@unique([organizationId, workerId, periodKey, version])
+  @@index([organizationId, workerId, periodKey])
+}
