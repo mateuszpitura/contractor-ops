@@ -2,7 +2,7 @@
 title: US payment rail
 type: domain
 tags: [payments, ach, nacha, fedwire, pacs008, withholding, usd, plaid, modern-treasury, ach-return]
-source_commit: d7198de9f3cc471b337d8e69f67b547d52640fe0
+source_commit: cec2745a3d4b4b9234b54d1ea9c77be24705f803
 verify_with:
   - packages/api/src/services/payment-export.ts
   - packages/api/src/services/payment-format-detection.ts
@@ -60,6 +60,7 @@ flowchart TD
 
 - **`PayoutInitiationAdapter`** (`packages/integrations/src/adapters/payout/`) — interface + deterministic `MockModernTreasuryAdapter` (GA default, `payment_order` shape, `pending → approved → processing → sent → completed → reconciled` lifecycle) + dark `LiveModernTreasuryAdapter` + `StripeTreasuryAdapter` stub. The live SDK is referenced only in comments (lazy import inside the dark branch); the package builds with **zero external deps**.
 - **`PlaidIdentityClient`** (`packages/integrations/src/adapters/plaid/`) — interface (`verify` → VERIFIED/PENDING/FAILED) + deterministic `MockPlaidIdentityClient` (GA default, advisory fail-open — an unverified status carries `advisoryWarning`, never throws/blocks) + dark `LivePlaidIdentityClient`.
+- **`payment.verifyBillingProfilePlaid`** (`payment-core.ts`) — the reachable, mock-triggerable **onboarding write path** that makes `ContractorBillingProfile.plaidVerificationStatus` real (so the payout advisory read stops always taking the unverified branch). Same gate as `initiatePayout` (`payment:export` + `assertUsExpansionEnabled`) + tenant-scoped `.strict()` Zod (`billingProfileId`); loads the profile scoped by `{ id, organizationId }` (foreign-org → NOT_FOUND), runs `MockPlaidIdentityClient.verify` against the **masked** US routing/account + `contractor.legalName`, and persists `plaidVerificationStatus` + `plaidVerifiedAt` + `plaidAccountId`. Advisory fail-open — a non-VERIFIED result is written and returned as `{ status, advisoryWarning }`, never throws/blocks; masked audit `contractor_billing_profile.plaid_verified` (billingProfileId + status only). No SDK installed; the live Plaid Link flow stays flag-dark. See [[integrations/plaid]].
 - **`payment.initiatePayout`** (opt-in) — `tenantProcedure` + `requirePermission({ payment: ['export'] })` + `assertUsExpansionEnabled` + the `payments.ach-payouts` flag (dark default); `.strict()` Zod (`runId`, `idempotencyKey`, `provider`, optional `settlementCurrency`). The `_initiatePayoutForRun` helper is idempotent (Upstash reserve/complete/clear — no double-pay), reads the per-item Plaid advisory via the exact tenant-scoped `PaymentRunItem.billingProfile.plaidVerificationStatus` include (never `contractor.billingProfiles[]`), settles per item, and writes a masked-only `payment_run.payout_initiated` audit row. The NACHA/Fedwire **file** export remains the always-available GA default; programmatic init is the opt-in automation layer.
 
 ## ACH return-code handling
@@ -85,6 +86,7 @@ When an RDFI cannot post a credit it returns the entry with an R-code. The file-
 | Settlement currency + FX | `services/payment-settlement.ts` — `resolveSettlementCurrency`, `convertForSettlement` |
 | Export-item settlement wiring | `routers/finance/payment-shared.ts` — `_buildExportItems` |
 | Opt-in payout | `routers/finance/payment-core.ts` — `payment.initiatePayout` → `_initiatePayoutForRun` |
+| Plaid onboarding verify (write) | `routers/finance/payment-core.ts` — `payment.verifyBillingProfilePlaid` → `MockPlaidIdentityClient.verify` → persists `ContractorBillingProfile.plaidVerificationStatus` |
 | ACH return-file ingestion | `routers/finance/payment-core.ts` — `payment.ingestAchReturnFile` → `parseNachaReturnFile` + `applyAchReturns` (`services/ach-return.service.ts`) |
 | Payout / Plaid seams | `packages/integrations/src/adapters/payout/`, `packages/integrations/src/adapters/plaid/` |
 

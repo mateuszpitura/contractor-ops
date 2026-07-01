@@ -2,11 +2,12 @@
 title: Plaid Identity (bank verification)
 type: integration
 tags: [integrations, plaid, identity, bank-verification, mock-behind-seam, flag-dark, fail-open]
-source_commit: 2e6c4892ed6881b636499fb108a94f261e7e6e5e
+source_commit: cec2745a3d4b4b9234b54d1ea9c77be24705f803
 verify_with:
   - packages/integrations/src/adapters/plaid/plaid-identity-client.ts
   - packages/integrations/src/adapters/plaid/mock-plaid-identity-client.ts
   - packages/integrations/src/adapters/plaid/plaid-identity-client-live.ts
+  - packages/api/src/routers/finance/payment-core.ts
   - packages/feature-flags/src/flags-core.ts
   - packages/integrations/.env.example
 updated: 2026-07-01
@@ -41,12 +42,14 @@ flowchart LR
 | Seam barrel + flat compat | `adapters/plaid/index.ts`, `adapters/plaid-adapter.ts` |
 | Persisted status | `ContractorBillingProfile.plaidVerificationStatus` / `plaidVerifiedAt` / `plaidAccountId` ([[structure/prisma-schema-areas]]) |
 | Payout-time advisory read | `_initiatePayoutForRun` — `PaymentRunItem.billingProfile.plaidVerificationStatus` include |
+| Onboarding write trigger | `payment.verifyBillingProfilePlaid` (`routers/finance/payment-core.ts`) — the mock-triggerable mutation that *writes* the status |
 | Flag | `payments.plaid-verification` (`packages/feature-flags/src/flags-core.ts`) |
 | Env keys | `packages/integrations/.env.example` |
 
 ## Invariants
 
 - **Advisory fail-open** — `MockPlaidIdentityClient` returns an `advisoryWarning` on an unverified status; `verified` carries none. The payout reads the **persisted** `plaidVerificationStatus` (set at onboarding), NOT a live per-payout Plaid call, via a tenant-scoped `PaymentRunItem.billingProfile` include (never `contractor.billingProfiles[]`). A PENDING/null status warns + audits, never throws or blocks.
+- **The write path is `payment.verifyBillingProfilePlaid`** (`payment-core.ts`) — the reachable, mock-triggerable mutation that *sets* the status the payout later reads. Gated like `initiatePayout` (`payment:export` + `assertUsExpansionEnabled`) + tenant-scoped `.strict()` Zod (`billingProfileId`). It loads the profile scoped by `{ id, organizationId }` (foreign-org → NOT_FOUND, never verified), runs the mock against the profile's **masked** US routing/account + `contractor.legalName`, and persists `plaidVerificationStatus` + `plaidVerifiedAt` + `plaidAccountId`. It is itself fail-open: a non-VERIFIED result is written and returned as `{ status, advisoryWarning }` — it never throws on an unverified account and never blocks onboarding. The audit `contractor_billing_profile.plaid_verified` carries `billingProfileId` + status only (no bank data). No SDK is installed — the mock is the GA default and the live Link → `public_token` → verify flow stays flag-dark.
 - **Non-gated flag** — `payments.plaid-verification` gates **only** the live client; the mock advisory default is always on. It is deliberately non-gated (the only gated payments prefix is `payments.ach-`), so it needs no signoff-registry entry and is not part of the v7.0 cohort. See [[patterns/feature-flags]].
 - **Status is `String?`, not a Prisma enum** — VERIFIED/PENDING/FAILED avoids global-enum churn while the live path is dark (matches the `uspsVerified` advisory pattern).
 - **Zero external deps on the GA path** — the `plaid` SDK is referenced only in comments (lazy import inside the dark branch).
