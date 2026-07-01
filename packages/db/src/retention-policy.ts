@@ -13,8 +13,17 @@
 export const RETENTION_YEARS = {
   '1099-NEC': 4,
   'backup-withholding': 7,
-  // US tax models and per-jurisdiction personnel-file rules register
-  // additional record types here.
+  // Personnel-file ("akta osobowe" / Personalakte) windows, keyed by the same
+  // recordType tokens the per-jurisdiction section registry names. Seeded
+  // reference data pending legal/tax-adviser verification (LOCAL-ONLY).
+  'pl-akta-post2019': 10,
+  'pl-akta-legacy': 50,
+  'de-personalakte-tax': 10,
+  'de-accident-records': 30,
+  'uk-personnel-general': 6,
+  'uk-personnel-financial': 7,
+  'us-i9-post-hire': 3,
+  'us-i9-post-termination': 1,
 } as const;
 
 export type RetainedRecordType = keyof typeof RETENTION_YEARS;
