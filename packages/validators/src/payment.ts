@@ -2,7 +2,13 @@ import { isValidBIC, isValidIBAN } from 'ibantools';
 import { z } from 'zod';
 
 // ---------------------------------------------------------------------------
-// Prisma enum mirrors (string unions -- validators package has no Prisma dep)
+// Prisma enum mirrors (string unions -- validators package has no Prisma dep).
+//
+// paymentExportFormatEnum mirrors the *selectable file-export* subset of the
+// Prisma PaymentExportFormat enum — the formats the file-export factory can
+// actually generate. Its source of truth is
+// packages/db/prisma/schema/payment.prisma; every option here must remain a
+// member of that enum (a parity test enforces the strict-subset invariant).
 // ---------------------------------------------------------------------------
 
 // ---------------------------------------------------------------------------
@@ -47,7 +53,14 @@ export const paymentRunItemStatusEnum = z.enum([
   'SKIPPED',
 ]);
 
-export const paymentExportFormatEnum = z.enum(['CSV', 'BANK_FILE', 'SEPA_XML', 'SWIFT_XML']);
+export const paymentExportFormatEnum = z.enum([
+  'CSV',
+  'BANK_FILE',
+  'SEPA_XML',
+  'SWIFT_XML',
+  'ACH_NACHA',
+  'FEDWIRE',
+]);
 
 // ---------------------------------------------------------------------------
 // Payment Run schemas
