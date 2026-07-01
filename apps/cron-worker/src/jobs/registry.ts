@@ -12,6 +12,7 @@ import { classificationEconomicDependencyHandler } from './handlers/classificati
 import { classificationReassessmentTriggersHandler } from './handlers/classification-reassessment-triggers.js';
 import { dataPurgeHandler } from './handlers/data-purge.js';
 import { exchangeRatesHandler } from './handlers/exchange-rates.js';
+import { form1099kTrackerHandler } from './handlers/form-1099k-tracker.js';
 import { inpostStatusPollHandler } from './handlers/inpost-status-poll.js';
 import { jobHealthHandler } from './handlers/job-health.js';
 import { lateInterestPdfReaperHandler } from './handlers/late-interest-pdf-reaper.js';
@@ -34,6 +35,7 @@ export function getJobDefinitions(env: {
   CRON_ORG_DEFINITION_SYNC_SCHEDULE: string;
   CRON_CLASSIFICATION_REASSESSMENT_TRIGGERS_SCHEDULE: string;
   CRON_CLASSIFICATION_ECONOMIC_DEPENDENCY_SCHEDULE: string;
+  CRON_FORM_1099K_TRACKER_SCHEDULE: string;
   CRON_INPOST_STATUS_POLL_SCHEDULE: string;
   CRON_JOB_HEALTH_SCHEDULE: string;
   CRON_LATE_INTEREST_PDF_REAPER_SCHEDULE: string;
@@ -74,6 +76,13 @@ export function getJobDefinitions(env: {
         schedule: env.CRON_CLASSIFICATION_ECONOMIC_DEPENDENCY_SCHEDULE,
       },
       handler: classificationEconomicDependencyHandler,
+    },
+    {
+      meta: {
+        name: 'form-1099k-tracker',
+        schedule: env.CRON_FORM_1099K_TRACKER_SCHEDULE,
+      },
+      handler: form1099kTrackerHandler,
     },
     {
       meta: {

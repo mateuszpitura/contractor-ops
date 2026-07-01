@@ -37,6 +37,10 @@ export const NOTIFICATION_TYPES = [
   // Admin review of a contractor portal upload-replacement
   'compliance.upload.approved',
   'compliance.upload.rejected',
+  // Informational 1099-K threshold heads-up (never a filing) — proactive when a
+  // contractor's tax-year USD payouts near or cross the $20,000 + 200 threshold
+  'tax.form_1099k_approaching',
+  'tax.form_1099k_over',
 ] as const;
 
 export const notificationTypeEnum = z.enum(NOTIFICATION_TYPES);

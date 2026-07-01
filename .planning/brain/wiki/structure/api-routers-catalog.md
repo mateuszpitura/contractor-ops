@@ -2,7 +2,7 @@
 title: API routers catalog
 type: structure
 tags: [structure, api, trpc, catalog]
-source_commit: 65cdee081
+source_commit: 01c17af08
 verify_with:
   - packages/api/src/root.ts
   - packages/api/src/portal-root.ts
@@ -97,13 +97,15 @@ Gated by `module.classification-engine` or `QA_DEFAULT_ORG_ID` in `root.ts`:
 
 When flag OFF: runtime `METHOD_NOT_FOUND`; client types still see namespaces.
 
-## Conditional US expansion (1 namespace)
+## Conditional US expansion (3 namespaces)
 
 Gated by `module.us-expansion` (or `QA_DEFAULT_ORG_ID`) in `root.ts`; each procedure also re-checks the flag per request (`assertUsExpansionEnabled`):
 
 | Namespace | Summary |
 |-----------|---------|
 | `taxForm` | staff read/track of US W-form submissions (status, treaty claim, expiry) + request/remind — no on-behalf signing; full SSN never projected |
+| `form1042s` | staff Form 1042-S generate/correct/recipient-copy + `contractorPii:read`-gated full-FTIN reveal; box figures always server-derived from settled USD payouts + the W-form on file |
+| `form1099kTracker` | read-only informational 1099-K band for the contractor profile (`getTrackerState`): band + cumulative settled-USD payout + transaction count + the tax-year threshold. Band state is written **exclusively** by the `form-1099k-tracker` cron — the router never mutates it. Purely informational; the platform never files a 1099-K |
 
 When flag OFF: runtime `METHOD_NOT_FOUND`; the portal W-form procedures throw `FORBIDDEN`.
 

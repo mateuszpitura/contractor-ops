@@ -2,11 +2,11 @@
 title: Cron worker jobs
 type: structure
 tags: [structure, cron, background]
-source_commit: 3157f263a
+source_commit: 01c17af08
 verify_with:
   - apps/cron-worker/src/jobs/handlers/
   - apps/api/src/lib/qstash-route.ts
-updated: 2026-06-15
+updated: 2026-07-01
 ---
 
 # Cron worker jobs
@@ -37,6 +37,7 @@ sequenceDiagram
 | `boe-rate-poll.ts` | BoE base rate | [[domains/payments-and-bank-files]] |
 | `compliance-reminder.ts` | compliance renewals | [[domains/compliance-dashboard]] |
 | `classification-economic-dependency.ts` | §2 SGB VI scan | [[domains/classification-ir35]] |
+| `form-1099k-tracker.ts` | informational 1099-K band scan (`module.us-expansion`; never files) | [[domains/us-tax-forms]] |
 | `classification-reassessment-triggers.ts` | IR35 triggers | [[domains/classification-ir35]] |
 | `reminders/` + `drv-clearance-expiries.ts` | DRV expiry | [[domains/classification-ir35]] |
 | `token-refresh.ts` | OAuth token refresh | [[integrations/framework-core]] |

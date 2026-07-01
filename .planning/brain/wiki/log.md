@@ -5,6 +5,12 @@ type: log
 
 # Wiki log (append only)
 
+## 2026-07-01 — Informational 1099-K threshold tracker (documentation-follows-code, Theme A gate)
+
+- [[domains/us-tax-forms]] — new "1099-K informational threshold tracker" section + entry-point row + invariant + agent-mistake note: `form-1099k-tracker.service` (`bandFor1099K`/`updateTrackerBandState`/`runForm1099KTrackerScan`) sums cumulative settled USD payouts + transaction count per contractor and bands SAFE→APPROACHING→OVER against the tax-year-keyed `Tax1099KThreshold` ($20,000 + 200, OBBBA — never a constant, never $600); `OVER` needs BOTH dimensions, `APPROACHING` at 80% of either; up-cross fires a proactive heads-up, same non-safe band re-fires past the 30d cadence (`lastReminderAt`); `pLimit(10)`, `createCronLogger`, sole writer of `Form1099KTrackerState`; purely informational — no filing/generate/transmit path. Read-only `form1099kTracker.getTrackerState` surfaces the band for the profile. verify_with + source_commit bumped.
+- [[structure/api-routers-catalog]] — "Conditional US expansion" section refreshed from 1 → 3 namespaces (adds the already-merged `form1042s` + the new read-only `form1099kTracker`); source_commit bumped.
+- [[structure/cron-jobs]] — `form-1099k-tracker.ts` entry-point row (informational 1099-K band scan, `module.us-expansion`, never files); source_commit + updated bumped.
+
 ## 2026-07-01 — Employee registry synthesis (documentation-follows-code, Theme B gate)
 
 - New domain page [[domains/employee-registry]] — the per-market employee onboarding surface in one compass: an employee is a `Worker(workerType='EMPLOYEE')` + a tenant-owning 1:1 `EmployeeProfile` (`workerId @unique` FK, NO standalone `Employee` table); `employeeRegistryRouter` (`register`/`revealPii`/`listReferenceLists`) `mergeRouters`-composed into the staff `employeeRouter`; `register` validates per-market fields (`validateEmployeeCountryFields` + 8 greenfield ID validators), encrypts the 4 national IDs into dedicated `*Encrypted`/`*Last4` columns, `omit`s every `*Encrypted` on return, Emirates-ID checksum advisory (`checksumAdvisory`, never throws), audit `resourceType: 'ORGANIZATION'`; `revealPii` `employeePii:read` field-routed decrypt + audit, staff-only; seeded LOCAL-ONLY reference lists + no-network ELStAM stub. Purpose/Flow/Entry points/Storage shape/UI surface/Invariants/Live state/Agent mistakes; verify_with → the real shipped source.

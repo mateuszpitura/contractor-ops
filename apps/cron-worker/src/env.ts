@@ -46,6 +46,7 @@ const envSchema = z.object({
   CRON_ORG_DEFINITION_SYNC_SCHEDULE: z.string().default('0 4 * * *'),
   CRON_CLASSIFICATION_REASSESSMENT_TRIGGERS_SCHEDULE: z.string().default('0 3 * * *'),
   CRON_CLASSIFICATION_ECONOMIC_DEPENDENCY_SCHEDULE: z.string().default('0 2 * * *'),
+  CRON_FORM_1099K_TRACKER_SCHEDULE: z.string().default('0 5 * * *'),
   CRON_INPOST_STATUS_POLL_SCHEDULE: z.string().default('0 * * * *'),
   CRON_JOB_HEALTH_SCHEDULE: z.string().default('*/5 * * * *'),
   CRON_LATE_INTEREST_PDF_REAPER_SCHEDULE: z.string().default('*/5 * * * *'),

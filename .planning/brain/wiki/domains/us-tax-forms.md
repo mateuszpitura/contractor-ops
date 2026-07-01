@@ -2,12 +2,15 @@
 title: US tax forms (W-9 / W-8BEN / W-8BEN-E) and treaty engine
 type: domain
 tags: [us, tax, w-form, treaty, portal, esign, immutable-record]
-source_commit: d839f52eb98d86236bd6d0018bdff84de49427b8
+source_commit: 01c17af08
 verify_with:
   - apps/web-vite/src/components/portal/tax-forms/
   - apps/web-vite/src/components/contractors/tax-forms/
   - packages/api/src/routers/portal/portal-tax-form-router.ts
   - packages/api/src/routers/core/tax-form-router.ts
+  - packages/api/src/services/form-1099k-tracker.service.ts
+  - packages/api/src/routers/finance/form-1099k-tracker-router.ts
+  - apps/cron-worker/src/jobs/handlers/form-1099k-tracker.ts
   - packages/api/src/services/tax-form.service.ts
   - packages/api/src/services/treaty-rate.service.ts
   - packages/api/src/services/tax-form-routing.ts
@@ -19,7 +22,7 @@ verify_with:
   - packages/validators/src/w-form-validators.ts
   - packages/iris/src/generator.ts
   - packages/iris/src/validator.ts
-updated: 2026-06-18
+updated: 2026-07-01
 ---
 
 # US tax forms (W-9 / W-8BEN / W-8BEN-E) and treaty engine
@@ -132,11 +135,33 @@ SHA-256 of each file pinned in `checksums.txt` (guarded by
 today; until the XSDs are placed, `xsdValidate` reports `XSD-BUNDLE-MISSING` (INVALID)
 rather than throwing, so the validator's VALID path stays blocked on the human download.
 
+## 1099-K informational threshold tracker
+
+`form-1099k-tracker.service` is a **purely informational** band tracker — NOT a filing. A
+daily cron (`apps/cron-worker/src/jobs/handlers/form-1099k-tracker.ts`, dark behind
+`module.us-expansion`) sums each contractor's cumulative **settled USD payouts** (`PaymentRunItem`
+`status=PAID`, `currency=USD`, run `completedAt` in the calendar tax year — the same settled-payment
+source the 1042-S box figures use) plus the transaction count, then `bandFor1099K` transitions an
+informational band SAFE → APPROACHING → OVER against the **tax-year-keyed `Tax1099KThreshold`**
+($20,000 + 200 — OBBBA restored the pre-ARPA figures; never the stale $600, never a constant).
+
+`OVER` requires **both** the gross-amount **and** the transaction-count thresholds crossed (the
+federal 1099-K rule); `APPROACHING` is a proximity heads-up when either dimension reaches 80% of its
+threshold. `updateTrackerBandState` fires a proactive heads-up notification on an up-crossing and
+re-fires a sustained non-safe band only once the reminder cadence (30d) elapses (`lastReminderAt`
+dedup); a down-crossing resolves silently. The scan is bounded (`pLimit(10)`), logs via
+`createCronLogger` (no `console.*`), and writes `Form1099KTrackerState` (one row per
+`(contractorId, taxYear)`) as the **sole writer**. The platform is not the settlement entity (TPSO)
+for these payouts — the scan has **no filing/generate/transmit call path**. The read-only
+`form1099kTracker.getTrackerState` procedure surfaces the band + totals + threshold for the
+contractor profile; it never mutates band state.
+
 ## Entry points
 
 | Piece | Path |
 |-------|------|
 | Portal procedures | `portal.getTaxFormDetermination` / `saveTaxFormDraft` / `submitTaxForm` / `getMyTaxForms` — `packages/api/src/routers/portal/portal-tax-form-router.ts` |
+| 1099-K tracker | `packages/api/src/services/form-1099k-tracker.service.ts` (`bandFor1099K` / `updateTrackerBandState` / `runForm1099KTrackerScan`) + cron `apps/cron-worker/src/jobs/handlers/form-1099k-tracker.ts` + read router `packages/api/src/routers/finance/form-1099k-tracker-router.ts` (`getTrackerState`) |
 | Staff read/track | `taxForm.listFormSubmissions` / `requestTaxForm` — `packages/api/src/routers/core/tax-form-router.ts` |
 | Record service | `packages/api/src/services/tax-form.service.ts` (`buildFormSnapshot` / `supersedeAndInsert` / `computeExpiry`) |
 | Treaty engine | `packages/api/src/services/treaty-rate.service.ts` (`resolveTreatyDecision` / `applyTreaty`) |
@@ -188,6 +213,10 @@ rather than throwing, so the validator's VALID path stays blocked on the human d
   `VersionNum`/`VersionDt` from the payload manifest. `xsdValidate` is SSRF/XXE-safe and returns
   `XSD-BUNDLE-MISSING` (INVALID, never throws) until the human-only IRS IRIS XSDs are placed and
   checksum-verified under `packages/iris/src/schema-bundle/`.
+- The 1099-K tracker is informational only: no code path in the scan or the read router files,
+  generates, or transmits a 1099-K. `Form1099KTrackerState` is written **exclusively** by the cron
+  (the read router never mutates it); `OVER` needs **both** the amount and count thresholds crossed;
+  the threshold is read per tax year from `Tax1099KThreshold` ($20,000 + 200 OBBBA), never a constant.
 
 ## Agent mistakes
 
@@ -209,6 +238,10 @@ rather than throwing, so the validator's VALID path stays blocked on the human d
   NOT string-concatenate IRIS XML — use the `@contractor-ops/iris` builder. Do NOT treat an
   `XSD-BUNDLE-MISSING` report as a code bug — the IRS IRIS XSDs are a human-only download placed at
   the `src/schema-bundle/` checkpoint.
+- Do NOT add a filing/generate/transmit path to the 1099-K tracker — it is informational only. Do
+  NOT let the read router write `Form1099KTrackerState` (the cron is the sole writer). Do NOT band on
+  a single dimension for `OVER` (both amount AND count) or hard-code the threshold (read
+  `Tax1099KThreshold` by tax year).
 
 ## Related
 
