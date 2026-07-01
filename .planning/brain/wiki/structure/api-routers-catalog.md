@@ -2,14 +2,15 @@
 title: API routers catalog
 type: structure
 tags: [structure, api, trpc, catalog]
-source_commit: cbe299a91a59179244c0085ea8c65dbf40ab654c
+source_commit: 2e6c4892ed6881b636499fb108a94f261e7e6e5e
 verify_with:
   - packages/api/src/root.ts
   - packages/api/src/portal-root.ts
   - packages/validators/src/onboarding-import.ts
   - packages/api/src/routers/core/worker.ts
   - packages/api/src/routers/core/employee.ts
-updated: 2026-06-22
+  - packages/api/src/routers/finance/payment-core.ts
+updated: 2026-07-01
 ---
 
 # API routers catalog
@@ -43,7 +44,7 @@ Complete namespace index for staff `appRouter` and contractor `portalAppRouter`.
 | `notification` | list, unread, preferences |
 | `reminder` | reminder rules + instances |
 | `integration` | Slack OAuth, mappings; `getHealth` returns `scopeCapabilities` |
-| `payment` | runs, lock+export, bank import |
+| `payment` | runs, lock+export (CSV/Elixir/SEPA/BACS/SWIFT + US `ACH_NACHA`/`FEDWIRE`), bank import; opt-in `initiatePayout` (programmatic ACH, US-expansion + `payments.ach-payouts` gated) — see **Notable contracts** + [[domains/us-payment-rail]] |
 | `dashboard` | KPIs, spend, deadlines |
 | `report` | spend, expiring, compliance gaps |
 | `audit` | audit log list + export |
@@ -207,6 +208,19 @@ Retries a single failed invitation from `failedItems`; updates job in `settingsJ
 ### `integration.getHealth`
 
 Returns `scopeCapabilities` parsed from `IntegrationConnection.scopeCapabilities` JSONB (`health-service.ts`). Used by GWS reconnect banner via `useIntegrationHealthProviderSection`.
+
+### `payment.initiatePayout`
+
+Opt-in programmatic-ACH payout (`payment-core.ts` → `_initiatePayoutForRun`). The NACHA/Fedwire **file** export (`lockAndExport`) remains the always-available default; this originates payouts via the `PayoutInitiationAdapter` (Modern Treasury mock by default; live is dark).
+
+| Field | Type / notes |
+|-------|----------------|
+| Input | `.strict()` — `runId` (cuid), `idempotencyKey` (1–200), `provider` (`MODERN_TREASURY` \| `STRIPE_TREASURY`, default MT), optional `settlementCurrency` (3-char per-run override) |
+| Gating | `assertUsExpansionEnabled` + `payments.ach-payouts` flag (dark default → `FORBIDDEN` / `PAYMENT_ACH_PAYOUTS_DISABLED`) |
+| Permission | `payment:export` |
+| Behavior | idempotent (Upstash reserve/complete/clear — no double-pay; PENDING → `CONFLICT` / `PAYMENT_PAYOUT_IN_PROGRESS`); per-item settlement conversion (missing rate → `UNPROCESSABLE_CONTENT`); per-item Plaid advisory fail-open; masked-only `payment_run.payout_initiated` audit |
+
+Amount/currency are server-derived from the locked run's items — the client never supplies them. Full flow: [[domains/us-payment-rail]].
 
 ## Related
 

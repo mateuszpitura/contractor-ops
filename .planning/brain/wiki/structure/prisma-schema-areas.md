@@ -2,13 +2,13 @@
 title: Prisma schema areas
 type: structure
 tags: [structure, database, prisma]
-source_commit: cbe299a91a59179244c0085ea8c65dbf40ab654c
+source_commit: 2e6c4892ed6881b636499fb108a94f261e7e6e5e
 verify_with:
   - packages/db/prisma/schema/
   - packages/db/src/region.ts
   - packages/db/prisma/schema/worker.prisma
   - packages/db/src/worker-type.ts
-updated: 2026-06-22
+updated: 2026-07-01
 ---
 
 # Prisma schema areas
@@ -29,6 +29,7 @@ PostgreSQL 17 schema split across files in `packages/db/prisma/schema/`. Multi-r
 | Equipment | equipment models | [[domains/equipment-logistics]] |
 | Tax / WHT / treaty | `tax.prisma` — `WithholdingTaxRate` (shared rate table; `treatyArticle` column drives US treaty auto-populate), `WhtCertificate`, `TaxFormSubmission` (append-only, supersede-chained W-9/W-8BEN/W-8BEN-E record FK'd to `Contractor`) | [[domains/tax-and-wht]], [[domains/us-tax-forms]] |
 | Worker model | `worker.prisma` — `Worker` identity root (`organizationId`, `workerType WorkerType @default(CONTRACTOR)`, shared `displayName`/`email`/`status`, soft-delete; tenant-owning, NOT in `globalModels`) + `WorkerType` enum; `Contractor.workerId String @unique` 1:1 sidecar FK (`Contractor.id` unchanged). Two-step additive ordering: nullable column + table → backfill → NOT NULL + FK | [[domains/worker-foundation]] |
+| US payment rail | `contractor.prisma` — `Contractor.backupWithholdingFlagged Boolean?` (FK-free queryable flag the payment-run seeding reads to deduct IRC §3406 24%); `ContractorBillingProfile` US ACH `usRoutingNumber`/`usAccountNumber` encrypted+masked pairs (AES-256-GCM, mirrors the UK BACS pair) + Plaid advisory `plaidVerificationStatus String?` (VERIFIED/PENDING/FAILED — not a Prisma enum) / `plaidVerifiedAt` / `plaidAccountId`. `payment.prisma` — `PaymentExportFormat` enum gains `ACH_NACHA` + `FEDWIRE`; `PaymentRunItem` withholding fields (`grossAmountMinor`/`whtAmountMinor`/`whtRate`/`whtTreatyApplied`) are the deduction substrate and the single source of truth the 1099/1042-S aggregate. Additive-only migration `20260701000000_phase88_us_payment_rail_schema` (nullable columns + enum ADD VALUE) | [[domains/us-payment-rail]] |
 
 ## Flow
 

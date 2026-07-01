@@ -68,6 +68,7 @@ Read [[hot]] first. Code symbols: **semble** — never wiki alone. Discovery: [[
 - [[domains/approvals-engine]]
 - [[domains/workflows-and-roles]]
 - [[domains/payments-and-bank-files]]
+- [[domains/us-payment-rail]]
 - [[domains/compliance-dashboard]]
 - [[domains/classification-ir35]]
 - [[domains/equipment-logistics]]
@@ -87,6 +88,8 @@ Read [[hot]] first. Code symbols: **semble** — never wiki alone. Discovery: [[
 
 - [[integrations/_index]]
 - [[integrations/framework-core]]
+- [[integrations/modern-treasury]]
+- [[integrations/plaid]]
 - [[integrations/ksef]]
 - [[integrations/peppol]]
 - [[integrations/zatca]]

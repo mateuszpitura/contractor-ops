@@ -2,13 +2,15 @@
 title: Money rounding policy
 type: pattern
 tags: [money, currency, rounding, finance, validators]
-source_commit: 57946f642
+source_commit: 2e6c4892ed6881b636499fb108a94f261e7e6e5e
 verify_with:
   - packages/api/src/services/skonto.ts
   - packages/api/src/services/late-payment-interest.ts
   - packages/api/src/services/exchange-rate.ts
   - packages/api/src/services/bank-statement.ts
-updated: 2026-06-16
+  - packages/api/src/routers/finance/payment-shared.ts
+  - packages/api/src/services/payment-settlement.ts
+updated: 2026-07-01
 ---
 
 # Money rounding policy
@@ -48,6 +50,8 @@ Only where an invariant demands a fixed direction:
 | Late-payment interest | `packages/api/src/services/late-payment-interest.ts` | HALF-UP |
 | FX conversion | `packages/api/src/services/exchange-rate.ts` | Finite-guard inputs → single HALF-UP on integer minor units (no `decimal.js` in this service) |
 | Bank statement amounts | `packages/api/src/services/bank-statement.ts` | zod-validate external major amount → single HALF-UP to minor units; parser caps output at 5000 transactions (mirrors import `MAX_IMPORT_ROWS`) so the run matcher stays bounded |
+| Withholding deduction | `packages/api/src/routers/finance/payment-shared.ts` (`applyWithholding`) | ONE HALF-UP round of `whtAmountMinor` at the rate (SA WHT / US §3406 24% / 1042-S treaty), then `amountMinor = grossAmountMinor − whtAmountMinor` — integer gross/net invariant, no chained round |
+| Settlement FX | `packages/api/src/services/payment-settlement.ts` (`convertForSettlement`) | Delegates verbatim to `convertAmount` — single HALF-UP on integer minor units at the payment-date ECB rate; rate 1 same-currency; `null` on a missing rate (never a coerced 1.0 or a silently zeroed payout) |
 
 ## Verify live
 

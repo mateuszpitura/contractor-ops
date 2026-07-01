@@ -2,13 +2,14 @@
 title: Feature flags
 type: pattern
 tags: [feature-flags, unleash]
-source_commit: cbe299a91a59179244c0085ea8c65dbf40ab654c
+source_commit: 2e6c4892ed6881b636499fb108a94f261e7e6e5e
 verify_with:
   - packages/feature-flags/src/registry.ts
+  - packages/feature-flags/src/flags-core.ts
   - packages/feature-flags/README.md
   - packages/api/src/services/ocr-extraction.ts
   - packages/api/src/middleware/require-workforce-flag.ts
-updated: 2026-06-22
+updated: 2026-07-01
 ---
 
 # Feature flags
@@ -28,6 +29,8 @@ Self-hosted Unleash OSS behind `@contractor-ops/feature-flags` wrapper. Keys dec
 | Classification gate | `module.classification-engine` in `root.ts` |
 | OCR kill-switch consumer | `services/ocr-extraction.ts` evaluates `killswitch.ai-invoice-parser` |
 | Workforce gate | `module.workforce-employees` — `middleware/require-workforce-flag.ts` (`assertWorkforceEnabled` / `isWorkforceRegistered`) + `root.ts` conditional-spread of `worker`/`employee`; mirrors `module.us-expansion`. See [[domains/worker-foundation]] |
+| Programmatic-ACH gate | `payments.ach-payouts` (default OFF, signoff PENDING→APPROVED) — **REUSED**, not re-minted, to gate the opt-in `payment.initiatePayout` programmatic-ACH path; the NACHA/Fedwire file export stays GA. See [[domains/us-payment-rail]], [[integrations/modern-treasury]] |
+| Plaid live-client gate | `payments.plaid-verification` (default OFF, **non-gated**) — gates ONLY the live Plaid Identity client; the deterministic mock advisory default is always on (fail-open). Non-gated because the only gated payments prefix is `payments.ach-`, so it needs no signoff-registry entry and is not in the v7.0 cohort. See [[integrations/plaid]] |
 
 ## Invariants
 

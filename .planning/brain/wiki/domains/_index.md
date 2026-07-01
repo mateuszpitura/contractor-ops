@@ -15,6 +15,7 @@ updated: 2026-06-09
 |------|------|
 | [[invoice-to-payment]] | intake → match → approval → payment |
 | [[payments-and-bank-files]] | runs, BACS, export/import, skonto, LPC |
+| [[us-payment-rail]] | NACHA/Fedwire, USD settlement, withholding deduction, programmatic ACH + Plaid seams |
 | [[billing-and-feature-gates]] | Stripe tiers + feature gating |
 
 ## People & engagements

@@ -46,6 +46,13 @@ updated: 2026-06-09
 | [[infisical-secrets]] | Secret store (stub gap — see tech-debt) |
 | [[unleash-flags]] | Feature flags OSS |
 
+## US payment rail (mock-behind-seam, flag-dark)
+
+| Page | Provider |
+|------|----------|
+| [[modern-treasury]] | Programmatic ACH origination (opt-in, `payments.ach-payouts`) |
+| [[plaid]] | Plaid Identity bank verification (advisory fail-open) |
+
 ## Observability, logistics & registries
 
 | Page | Provider |
