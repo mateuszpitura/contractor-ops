@@ -24,7 +24,7 @@ const ORG_ID = 'org-00000000-0000-0000-0000-000000000001';
 const WORKER_UNDER_HOLD = 'worker-hold-001';
 const WORKER_FULLY_ERASABLE = 'worker-erasable-001';
 
-const { mockPrisma } = vi.hoisted(() => {
+const { mockPrisma, getPersonnelRetentionCutoff } = vi.hoisted(() => {
   type Rec = Record<string, unknown>;
 
   const Org = 'org-00000000-0000-0000-0000-000000000001';
@@ -35,6 +35,35 @@ const { mockPrisma } = vi.hoisted(() => {
     organizationId: Org,
     workerType: 'EMPLOYEE',
   };
+
+  // Both workers are US so their SECTION_A carries the two-anchor I-9 rule while
+  // SECTION_B/C/D carry no federal window — the one jurisdiction that yields a
+  // partial hold. Dates are anchored relative to "now" so the windows stay on the
+  // intended side of today whenever the suite runs: the held worker's I-9 window
+  // (max hire+3y, termination+1y) is still in the future; the erasable worker's
+  // has long since passed.
+  const YEAR_MS = 365.25 * 24 * 60 * 60 * 1000;
+  const nowMs = Date.now();
+  const personnelFiles: Rec[] = [
+    {
+      id: 'pf-hold',
+      organizationId: Org,
+      workerId: 'worker-hold-001',
+      deletedAt: null,
+      countryCode: 'US',
+      hireDate: new Date(nowMs - 1 * YEAR_MS),
+      terminatedAt: new Date(nowMs - 0.5 * YEAR_MS),
+    },
+    {
+      id: 'pf-era',
+      organizationId: Org,
+      workerId: 'worker-erasable-001',
+      deletedAt: null,
+      countryCode: 'US',
+      hireDate: new Date(nowMs - 16 * YEAR_MS),
+      terminatedAt: new Date(nowMs - 15 * YEAR_MS),
+    },
+  ];
 
   function model(collection: Rec[]) {
     return {
@@ -47,19 +76,82 @@ const { mockPrisma } = vi.hoisted(() => {
     };
   }
 
+  // Dependency-free port of @contractor-ops/db's event-anchored retention
+  // resolver. The pure resolver carries no Prisma import, but the db package is
+  // fully mocked here (so a live client is never constructed); given the real
+  // per-jurisdiction rules and the file's event dates it returns the real
+  // per-section disposition, so the assertions exercise genuine retention math.
+  const RETENTION_YEARS: Record<string, number> = {
+    'pl-akta-post2019': 10,
+    'pl-akta-legacy': 50,
+    'de-personalakte-tax': 10,
+    'de-accident-records': 30,
+    'uk-personnel-general': 6,
+    'uk-personnel-financial': 7,
+    'us-i9-post-hire': 3,
+    'us-i9-post-termination': 1,
+  };
+  type RuleInput = { recordType: string; anchor: string; citation: string; years?: number };
+  type Dates = {
+    hireDate: Date | null;
+    terminationDate: Date | null;
+    documentDate: Date | null;
+    now: Date;
+  };
+  function anchorDateFor(anchor: string, dates: Dates): Date | null {
+    if (anchor === 'HIRE_DATE') return dates.hireDate;
+    if (anchor === 'TERMINATION_DATE') return dates.terminationDate;
+    if (anchor === 'DOCUMENT_DATE') return dates.documentDate;
+    return null;
+  }
+  function getPersonnelRetentionCutoff(rules: RuleInput[], dates: Dates) {
+    if (!rules || rules.length === 0) {
+      return { erasable: true, retainUntil: null, citation: null };
+    }
+    let binding: { retainUntil: Date; citation: string } | null = null;
+    for (const rule of rules) {
+      const anchorDate = anchorDateFor(rule.anchor, dates);
+      if (anchorDate == null) {
+        return { erasable: false, retainUntil: null, citation: rule.citation };
+      }
+      const years = RETENTION_YEARS[rule.recordType] ?? rule.years;
+      if (years === undefined) {
+        return { erasable: false, retainUntil: null, citation: rule.citation };
+      }
+      const retainUntil = new Date(anchorDate);
+      retainUntil.setFullYear(retainUntil.getFullYear() + years);
+      if (binding === null || retainUntil.getTime() > binding.retainUntil.getTime()) {
+        binding = { retainUntil, citation: rule.citation };
+      }
+    }
+    if (binding === null) {
+      return { erasable: false, retainUntil: null, citation: null };
+    }
+    return {
+      erasable: dates.now.getTime() >= binding.retainUntil.getTime(),
+      retainUntil: binding.retainUntil,
+      citation: binding.citation,
+    };
+  }
+
   const mockPrisma: Rec = {
     organization: model([orgRecord]),
     worker: model([workerHold, workerErasable]),
-    personnelFile: model([
-      { id: 'pf-hold', organizationId: Org, workerId: 'worker-hold-001', deletedAt: null },
-      { id: 'pf-era', organizationId: Org, workerId: 'worker-erasable-001', deletedAt: null },
-    ]),
+    personnelFile: {
+      ...model(personnelFiles),
+      // Resolve the file by the requested worker so the two fixtures do not
+      // collapse onto one record (the generic findFirst ignores the where).
+      findFirst: vi.fn(
+        async (args: { where?: { workerId?: string } }) =>
+          personnelFiles.find(f => f.workerId === args?.where?.workerId) ?? null,
+      ),
+    },
     personnelFileDocument: model([]),
     $queryRaw: vi.fn(async () => []),
     $transaction: vi.fn(async (fn: (tx: Rec) => Promise<unknown>) => fn(mockPrisma)),
   };
 
-  return { mockPrisma };
+  return { mockPrisma, getPersonnelRetentionCutoff };
 });
 
 vi.mock('@contractor-ops/feature-flags', async importOriginal => {
@@ -100,6 +192,7 @@ vi.mock('@contractor-ops/db', () => ({
   createTenantClientFrom: vi.fn(() => mockPrisma),
   getRegionalClient: vi.fn(() => mockPrisma),
   preWarmRegionalClients: vi.fn(),
+  getPersonnelRetentionCutoff,
 }));
 
 // Spy on the audit writer so the retained-under-statute audit call is asserted.
