@@ -170,6 +170,9 @@ export const ModelName = {
   IrisAck: 'IrisAck',
   Tax1099Threshold: 'Tax1099Threshold',
   StateFilingConfig: 'StateFilingConfig',
+  Form1042S: 'Form1042S',
+  Form1099KTrackerState: 'Form1099KTrackerState',
+  Tax1099KThreshold: 'Tax1099KThreshold',
   TaxIdValidation: 'TaxIdValidation',
   Timesheet: 'Timesheet',
   TimeEntry: 'TimeEntry',
@@ -899,6 +902,7 @@ export const ContractorAssignmentScalarFieldEnum = {
   isSaudi: 'isSaudi',
   nationality: 'nationality',
   qiwaContractAuthenticated: 'qiwaContractAuthenticated',
+  workState: 'workState',
   status: 'status',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
@@ -2360,6 +2364,66 @@ export const StateFilingConfigScalarFieldEnum = {
 } as const
 
 export type StateFilingConfigScalarFieldEnum = (typeof StateFilingConfigScalarFieldEnum)[keyof typeof StateFilingConfigScalarFieldEnum]
+
+
+export const Form1042SScalarFieldEnum = {
+  id: 'id',
+  organizationId: 'organizationId',
+  payerOrgId: 'payerOrgId',
+  recipientId: 'recipientId',
+  taxYear: 'taxYear',
+  status: 'status',
+  box1IncomeCode: 'box1IncomeCode',
+  box2GrossIncomeMinor: 'box2GrossIncomeMinor',
+  box3aChap3ExemptionCode: 'box3aChap3ExemptionCode',
+  box3bChap3Rate: 'box3bChap3Rate',
+  box4aChap4ExemptionCode: 'box4aChap4ExemptionCode',
+  box4bChap4Rate: 'box4bChap4Rate',
+  box7FederalTaxWithheldMinor: 'box7FederalTaxWithheldMinor',
+  recipientChap3StatusCode: 'recipientChap3StatusCode',
+  recipientChap4StatusCode: 'recipientChap4StatusCode',
+  recipientLobCode: 'recipientLobCode',
+  treatyArticle: 'treatyArticle',
+  currency: 'currency',
+  corrected: 'corrected',
+  snapshotJson: 'snapshotJson',
+  pdfArchiveKey: 'pdfArchiveKey',
+  supersededById: 'supersededById',
+  deletedAt: 'deletedAt',
+  createdAt: 'createdAt'
+} as const
+
+export type Form1042SScalarFieldEnum = (typeof Form1042SScalarFieldEnum)[keyof typeof Form1042SScalarFieldEnum]
+
+
+export const Form1099KTrackerStateScalarFieldEnum = {
+  id: 'id',
+  organizationId: 'organizationId',
+  contractorId: 'contractorId',
+  taxYear: 'taxYear',
+  currentBand: 'currentBand',
+  cumulativePayoutMinor: 'cumulativePayoutMinor',
+  transactionCount: 'transactionCount',
+  lastScannedAt: 'lastScannedAt',
+  lastCrossedAt: 'lastCrossedAt',
+  lastReminderAt: 'lastReminderAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type Form1099KTrackerStateScalarFieldEnum = (typeof Form1099KTrackerStateScalarFieldEnum)[keyof typeof Form1099KTrackerStateScalarFieldEnum]
+
+
+export const Tax1099KThresholdScalarFieldEnum = {
+  id: 'id',
+  taxYear: 'taxYear',
+  amountThresholdMinor: 'amountThresholdMinor',
+  transactionCountThreshold: 'transactionCountThreshold',
+  currency: 'currency',
+  note: 'note'
+} as const
+
+export type Tax1099KThresholdScalarFieldEnum = (typeof Tax1099KThresholdScalarFieldEnum)[keyof typeof Tax1099KThresholdScalarFieldEnum]
 
 
 export const TaxIdValidationScalarFieldEnum = {

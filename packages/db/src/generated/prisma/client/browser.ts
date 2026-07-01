@@ -614,6 +614,21 @@ export type Tax1099Threshold = Prisma.Tax1099ThresholdModel
  */
 export type StateFilingConfig = Prisma.StateFilingConfigModel
 /**
+ * Model Form1042S
+ * 
+ */
+export type Form1042S = Prisma.Form1042SModel
+/**
+ * Model Form1099KTrackerState
+ * 
+ */
+export type Form1099KTrackerState = Prisma.Form1099KTrackerStateModel
+/**
+ * Model Tax1099KThreshold
+ * 
+ */
+export type Tax1099KThreshold = Prisma.Tax1099KThresholdModel
+/**
  * Model TaxIdValidation
  * 
  */

@@ -241,6 +241,119 @@ model StateFilingConfig {
   @@unique([stateCode, taxYear])
 }
 
+// Form 1042-S — foreign-person US-source income withholding return (Chapter 3/4).
+//
+// Immutable record-of-record mirroring Form1099Nec: a filed return is never
+// mutated; a CORRECTED return inserts a new row and marks the prior one
+// SUPERSEDED via the supersede chain. snapshotJson holds the recipient foreign
+// TIN last-4 only, never the full FTIN. Box amounts are USD minor units.
+// The income / status / exemption / LOB code columns carry the raw i1042-S
+// Appendix B/C code strings — the exact Appendix B/C values must be tax-adviser
+// verified at coding time before any production filing.
+enum Form1042SStatus {
+  DRAFT
+  ACTIVE
+  SUPERSEDED
+}
+
+model Form1042S {
+  id                          String          @id @default(cuid())
+  organizationId              String
+  // Filing axis carried explicitly so a future agent-org-filing-on-behalf-of
+  // split stays non-breaking (mirrors Form1099Nec.payerOrgId).
+  payerOrgId                  String
+  recipientId                 String
+  taxYear                     Int
+  status                      Form1042SStatus @default(DRAFT)
+  // i1042-S income code (Appendix B) — verify exact values with a tax adviser.
+  box1IncomeCode              String?         @db.VarChar(2)
+  // Box 2 gross income, USD minor units (cents).
+  box2GrossIncomeMinor        Int
+  // Box 3a chapter-3 exemption code (Appendix B) — adviser-verify.
+  box3aChap3ExemptionCode     String?         @db.VarChar(2)
+  box3bChap3Rate              Decimal?        @db.Decimal(5, 2)
+  // Box 4a chapter-4 exemption code (Appendix B) — adviser-verify.
+  box4aChap4ExemptionCode     String?         @db.VarChar(2)
+  box4bChap4Rate              Decimal?        @db.Decimal(5, 2)
+  // Box 7 federal tax withheld, USD minor units.
+  box7FederalTaxWithheldMinor Int             @default(0)
+  // Box 13j recipient chapter-3 status code (Appendix C) — adviser-verify.
+  recipientChap3StatusCode    String?         @db.VarChar(2)
+  // Box 13k recipient chapter-4 status code (Appendix C) — adviser-verify.
+  recipientChap4StatusCode    String?         @db.VarChar(2)
+  // Box 13n limitation-on-benefits code (Appendix C) — adviser-verify.
+  recipientLobCode            String?         @db.VarChar(2)
+  // Treaty article claimed, mirrored from WithholdingTaxRate at generation time.
+  treatyArticle               String?         @db.VarChar(40)
+  currency                    String          @default("USD") @db.Char(3)
+  corrected                   Boolean         @default(false)
+  // Immutable captured figures (record-of-record); holds recipient FTIN last-4
+  // only, never a full foreign TIN — mirror Form1099Nec.snapshotJson.
+  snapshotJson                Json
+  pdfArchiveKey               String?
+  supersededById              String?         @unique
+  // Required for the data-purge soft-delete chokepoint that enforces IRS retention.
+  deletedAt                   DateTime?
+  createdAt                   DateTime        @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  recipient    Contractor   @relation(fields: [recipientId], references: [id])
+  supersededBy Form1042S?   @relation("Form1042SSupersede", fields: [supersededById], references: [id])
+  supersedes   Form1042S?   @relation("Form1042SSupersede")
+
+  @@index([organizationId, payerOrgId, recipientId, taxYear, status])
+  @@index([organizationId, taxYear, status])
+}
+
+// Form 1099-K informational band tracker — one row per contractor per tax year.
+//
+// Written exclusively by the periodic 1099-K tracker cron: it sums cumulative
+// payout (USD minor units) + transaction count for the tax year and transitions
+// SAFE -> APPROACHING -> OVER against the tax-year-keyed Tax1099KThreshold config.
+// Up-crossings fire a proactive notification; same-band re-fire is suppressed via
+// lastReminderAt. Informational only — the platform is not the settlement entity
+// (TPSO) and never files a 1099-K.
+enum Form1099KBand {
+  SAFE
+  APPROACHING
+  OVER
+}
+
+model Form1099KTrackerState {
+  id                    String        @id @default(cuid())
+  organizationId        String
+  contractorId          String
+  taxYear               Int
+  currentBand           Form1099KBand @default(SAFE)
+  cumulativePayoutMinor Int           @default(0)
+  transactionCount      Int           @default(0)
+  lastScannedAt         DateTime?
+  lastCrossedAt         DateTime?
+  lastReminderAt        DateTime?
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  contractor   Contractor   @relation(fields: [contractorId], references: [id])
+
+  @@unique([contractorId, taxYear])
+  @@index([organizationId], map: "F1099K_org_idx")
+  @@index([organizationId, currentBand], map: "F1099K_org_band_idx")
+  @@index([organizationId, lastScannedAt], map: "F1099K_org_scanned_idx")
+}
+
+// Tax-year-keyed 1099-K informational reporting threshold. NEVER a constant:
+// OBBBA reverted the ARPA $600 back to $20,000 + 200 transactions. Re-verify each
+// tax-year figure against the current IRS 1099-K guidance before production reliance.
+model Tax1099KThreshold {
+  id                        String  @id @default(cuid())
+  taxYear                   Int     @unique
+  amountThresholdMinor      Int
+  transactionCountThreshold Int
+  currency                  String  @default("USD") @db.Char(3)
+  note                      String?
+}
+
 // ---------------------------------------------------------------------------
 // Phase 57 — Tax-ID validation audit trail (HMRC VAT + VIES USt-IdNr)
 // D-04: append-only audit log of every HMRC/VIES call for compliance evidence.

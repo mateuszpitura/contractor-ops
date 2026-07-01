@@ -6,6 +6,7 @@ import pino from 'pino';
 import { createPrismaClientForUrl } from '../../src/client.js';
 import { seedBoeRates } from './boe-rates.js';
 import { seedTax1099Config } from './tax-1099-config.js';
+import { seedTax1099KThreshold } from './tax-1099k-threshold.js';
 import { seedTaxRates } from './tax-rates.js';
 import { seedWhtRates } from './wht-rates.js';
 
@@ -33,6 +34,7 @@ async function main() {
   await seedWhtRates(prisma);
   await seedBoeRates(prisma);
   await seedTax1099Config(prisma);
+  await seedTax1099KThreshold(prisma);
 }
 
 main()

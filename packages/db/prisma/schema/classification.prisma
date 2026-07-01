@@ -50,6 +50,7 @@ enum ClassificationDocumentKind {
   SDS
   DRV_DEFENSE_BUNDLE
   DRV_DECISION_LETTER // Phase 64 D-25 — uploaded proof of DRV Statusfeststellungsverfahren outcome
+  US_DETERMINATION_LETTER // deterministic US worker-classification determination letter (federal common-law + AB5 + §530)
 }
 
 model ClassificationDocument {

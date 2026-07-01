@@ -86,6 +86,8 @@ model Contractor {
   taxIdValidations          TaxIdValidation[]
   taxFormSubmissions        TaxFormSubmission[]
   form1099Nec               Form1099Nec[]
+  form1042s                 Form1042S[]
+  form1099kTrackerStates    Form1099KTrackerState[]
   ir35ChainParticipantLinks Ir35ChainParticipant[]
   leitwegIds                LeitwegId[]
   intakes                   InvoiceIntakeRequest[]             @relation("InvoiceIntakeMatchedContractor")
@@ -193,6 +195,10 @@ model ContractorAssignment {
   isSaudi                   Boolean?
   nationality               String? // ISO 3166-1 alpha-2
   qiwaContractAuthenticated Boolean?         @default(false) // 2026-04-15 Qiwa authorisation requirement
+  // US state where the engagement work is performed; the primary AB5 trigger.
+  // Falls back to the contractor's US state when unset — AB5 governs work
+  // performed in CA, not residence. Nullable-additive (existing rows stay NULL).
+  workState                 String?          @db.Char(2)
   status                    AssignmentStatus @default(ACTIVE)
   createdAt                 DateTime         @default(now())
   updatedAt                 DateTime         @updatedAt
