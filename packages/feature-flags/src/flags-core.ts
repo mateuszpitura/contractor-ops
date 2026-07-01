@@ -83,6 +83,16 @@ export const FLAGS = deepFreeze({
     owner: 'ops',
     killWhenUnknown: true,
   },
+  'killswitch.ai-personnel-classifier': {
+    key: 'killswitch.ai-personnel-classifier',
+    description:
+      'Emergency disable for the AI document→section classifier (Claude Vision) on personnel-file uploads. killWhenUnknown=true so an Unleash outage forces the classifier OFF instead of running on its `default: true` fallback: an incident routes uploads to the admin classify-step (PENDING_REVIEW) rather than auto-misclassifying special-category personnel PII. The upload is always persisted first — the kill-switch never blocks it.',
+    default: true,
+    category: 'kill-switch',
+    jurisdiction: 'ANY',
+    owner: 'ops',
+    killWhenUnknown: true,
+  },
   // UK Payments & Financial Features
   'payments.bacs-enabled': {
     key: 'payments.bacs-enabled',
