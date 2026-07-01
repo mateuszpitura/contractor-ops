@@ -66,6 +66,16 @@ function toneForOutcome(outcome: OutcomeSchemaType): {
         return { tone: 'warning', Icon: ShieldQuestion };
     }
   }
+  if (outcome.kind === 'US_CLASSIFICATION') {
+    switch (outcome.verdict) {
+      case 'independent-contractor':
+        return { tone: 'success', Icon: CircleCheck };
+      case 'employee':
+        return { tone: 'destructive', Icon: ShieldX };
+      case 'indeterminate':
+        return { tone: 'warning', Icon: ShieldQuestion };
+    }
+  }
   switch (outcome.verdict) {
     case 'green':
       return { tone: 'success', Icon: CircleCheck };
