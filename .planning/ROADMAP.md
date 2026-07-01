@@ -97,7 +97,7 @@ Known gaps / deferred at close: see STATE.md `## Deferred Items` (3 unverified p
 - [x] **Phase 85: Theme A — W-Form Intake + Tax-Treaty Engine** - W-9 + W-8BEN/E wizards, US tax-treaty rate table, W-8BEN treaty-article auto-populate (completed 2026-06-16)
 - [ ] **Phase 86: Theme A — TIN-Match → 1099-NEC → IRIS E-File → State Filing** - IRS TIN-matching, tax-year-keyed 1099-NEC ($2,000 TY2026), IRIS XML A2A transmit + ack, per-state CFSF
 - [ ] **Phase 87: Theme A — 1042-S + US Classification + Determination Letter** - treaty-rate 1042-S, US rule set (federal/AB5/§530), 1099-K tracker ($20k+200), Determination Letter PDF
-- [ ] **Phase 88: Theme A — US Payment Rail** - ACH NACHA in payment-export factory, USD first-class, Modern Treasury programmatic ACH, Fedwire, Plaid identity
+- [x] **Phase 88: Theme A — US Payment Rail** - ACH NACHA in payment-export factory, USD first-class, Modern Treasury programmatic ACH, Fedwire, Plaid identity (completed 2026-07-01)
 - [x] **Phase 89: Theme B — Worker Model Abstraction (serial gate)** - additive `workerType` discriminator, router split, RBAC roles, flag gate; the only Theme B serialization point (completed 2026-06-22)
 - [ ] **Phase 90: Theme B — Employee Registry per Market (×6)** - PL/DE/UK/US/AE/SA statutory-identifier validators on the EmployeeProfile
 - [ ] **Phase 91: Theme B — Akta Osobowe / Personnel File** - 4-section file + per-jurisdiction retention engine + RODO erasure with statutory holds + upload classification
@@ -296,7 +296,7 @@ Plans:
 
 **Wave 7** *(blocked on Wave 6 completion)*
 
-- [ ] 88-07-PLAN.md — Documentation-follows-code wiki + MEMORY invariant
+- [x] 88-07-PLAN.md — Documentation-follows-code wiki + MEMORY invariant
 
 **Research flag**: Standard — NACHA is a payment-export factory extension; `@midlandsbank/node-nacha` is a formatter helper (hand-roll ODFI-specific fields). The W-9 backup-withholding flag must actually reduce payout by 24%, not just be stored.
 
@@ -582,7 +582,7 @@ Phases execute in numeric order: 82 → 83 → … → 101. After Foundation (82
 | 85. Theme A — W-Form Intake + Tax-Treaty Engine | v7.0 | 4/4 | Complete   | 2026-06-16 |
 | 86. Theme A — TIN-Match → 1099-NEC → IRIS → State | v7.0 | 4/8 | In Progress|  |
 | 87. Theme A — 1042-S + US Classification + Letter | v7.0 | 0/10 | Not started | - |
-| 88. Theme A — US Payment Rail | v7.0 | 6/7 | In Progress|  |
+| 88. Theme A — US Payment Rail | v7.0 | 7/7 | Complete   | 2026-07-01 |
 | 89. Theme B — Worker Model Abstraction (gate) | v7.0 | 6/6 | Complete   | 2026-06-22 |
 | 90. Theme B — Employee Registry per Market (×6) | v7.0 | 3/7 | In Progress|  |
 | 91. Theme B — Akta Osobowe / Personnel File | v7.0 | 0/TBD | Not started | - |
