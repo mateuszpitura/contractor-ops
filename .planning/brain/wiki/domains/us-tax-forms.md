@@ -2,14 +2,22 @@
 title: US tax forms (W-9 / W-8BEN / W-8BEN-E) and treaty engine
 type: domain
 tags: [us, tax, w-form, treaty, portal, esign, immutable-record]
-source_commit: 01c17af08
+source_commit: 673e3168f
 verify_with:
   - apps/web-vite/src/components/portal/tax-forms/
   - apps/web-vite/src/components/contractors/tax-forms/
+  - apps/web-vite/src/components/contractors/form-1099k-band.tsx
+  - apps/web-vite/src/components/contractors/hooks/use-1099k-tracker.ts
+  - apps/web-vite/src/components/contractors/classification/us-classification-result.tsx
+  - apps/web-vite/src/components/contractors/classification/ab5-watchlist-flag.tsx
+  - apps/web-vite/src/components/contractors/classification/classification-override-dialog.tsx
+  - apps/web-vite/src/components/contractors/classification/hooks/use-us-classification.ts
+  - apps/web-vite/src/components/contractors/classification-documents/generate-determination-letter-button.tsx
   - packages/api/src/routers/portal/portal-tax-form-router.ts
   - packages/api/src/routers/core/tax-form-router.ts
   - packages/api/src/services/form-1099k-tracker.service.ts
   - packages/api/src/routers/finance/form-1099k-tracker-router.ts
+  - packages/api/src/routers/compliance/classification-override.ts
   - apps/cron-worker/src/jobs/handlers/form-1099k-tracker.ts
   - packages/api/src/services/tax-form.service.ts
   - packages/api/src/services/treaty-rate.service.ts
@@ -183,6 +191,21 @@ contractor profile; it never mutates band state.
 - Staff status card: `apps/web-vite/src/components/contractors/tax-forms/tax-form-status-card.tsx`
   + `hooks/use-tax-form-status.ts` — status pill (ACTIVE/DRAFT/SUPERSEDED/expiring) reusing the
   `UspsAddressStatusPill` idiom; full SSN behind `SsnMaskedReveal` (`contractorPii:read`).
+- 1099-K informational band (profile): `apps/web-vite/src/components/contractors/form-1099k-band.tsx`
+  + `hooks/use-1099k-tracker.ts` (read-only sole tRPC boundary → `form1099kTracker.getTrackerState`).
+  SAFE (secondary) / APPROACHING / OVER render amber `warning` at most — never `destructive`, never a
+  `role="alert"`; mono cumulative-payout + txn-count vs the tax-year threshold; **no filing affordance**.
+- Staff US classification result: `apps/web-vite/src/components/contractors/classification/us-classification-result.tsx`
+  (wired 4-state section) + `hooks/use-us-classification.ts` (sole boundary → `classification.getLatest`
+  + reason-required `classification.override`). Sticky `ClassificationAdvisoryBanner` + a blocking
+  disclaimer gate (reuses `classification.acknowledgeDisclaimer`) precede the verdict pill; the
+  `ab5-watchlist-flag.tsx` is amber `warning` (never `destructive`) and the §530 chip is `info`;
+  `classification-override-dialog.tsx` uses DialogBody/DialogFooter with a required reason + acknowledgement.
+- Determination letter (staff): `apps/web-vite/src/components/contractors/classification-documents/generate-determination-letter-button.tsx`
+  + `hooks/use-generate-determination-letter.ts` — an SDS-mirror approval gate (typed client name +
+  checkbox) unlocking `classificationDocument.generateUsDeterminationLetter`; the archived letter surfaces
+  as the `US_DETERMINATION_LETTER` row in `document-history-list.tsx`. Wired for `countryCode === 'US'`
+  in `classification-documents-panel.tsx`.
 
 ## Invariants
 
@@ -220,6 +243,13 @@ contractor profile; it never mutates band state.
 
 ## Agent mistakes
 
+- The 1099-K profile band is read-only + informational: do NOT add a file / generate / fix CTA, a
+  `destructive` band, or a `role="alert"` — amber `warning` is the ceiling (OVER included). The band
+  reads state; the cron is the only writer.
+- The US classification UI is advisory, never a verdict: keep the sticky advisory banner + the blocking
+  disclaimer before the outcome, keep the AB5 flag amber `warning` (never `destructive`) and the §530
+  chip `info`. The override is reason-required and audit-logged server-side — never let the client assert
+  the verdict.
 - Do NOT add a full-SSN field to the wizard or snapshot — reuse the encrypted column.
 - Do NOT extend the always-mounted `taxRouter` for the staff surface — the dedicated
   `taxForm` router is what `root.ts` conditionally spreads behind `module.us-expansion`.
