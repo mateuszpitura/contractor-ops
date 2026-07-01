@@ -2432,6 +2432,149 @@
     "comingSoon": {
       "heading": "Employee management is on the way",
       "body": "Personnel files, leave, and on/offboarding for employees arrive soon. For now, contractors remain in the Contractors workspace."
+    },
+    "registry": {
+      "pageTitle": "Register employee",
+      "pageDescription": "Capture an employee's market-specific statutory details."
+    },
+    "compliance": {
+      "registeredToast": "Employee registered.",
+      "registerErrorToast": "Could not register the employee. Check the details and try again.",
+      "loadError": "Could not load registration details. Retry.",
+      "retry": "Retry",
+      "cardTitle": "{country} statutory details",
+      "cardTitleGeneric": "Statutory details",
+      "incompleteFields": "{count} fields to complete",
+      "displayNameLabel": "Full name",
+      "displayNamePlaceholder": "e.g. Jan Kowalski",
+      "emailLabel": "Work email",
+      "emailPlaceholder": "name@company.com",
+      "marketLabel": "Market",
+      "selectMarketPrompt": "Select a market to capture its statutory fields.",
+      "registerButton": "Register employee",
+      "noRegisterPermission": "You do not have permission to register employees. Ask an HR administrator.",
+      "countries": {
+        "PL": "Poland",
+        "DE": "Germany",
+        "GB": "United Kingdom",
+        "US": "United States",
+        "AE": "United Arab Emirates",
+        "SA": "Saudi Arabia"
+      },
+      "pii": {
+        "reveal": "Reveal",
+        "hide": "Hide",
+        "maskedHint": "Only the last 4 digits are shown. Reveal is logged.",
+        "revealFailed": "Could not reveal. Try again.",
+        "maskedAriaLabel": "{field} ending in {last4}. Reveal is logged.",
+        "ssnLabel": "Social Security Number",
+        "peselLabel": "PESEL",
+        "iqamaLabel": "Iqama / national ID",
+        "emiratesIdLabel": "Emirates ID"
+      },
+      "pl": {
+        "stanowiskoLabel": "Job title",
+        "stanowiskoPlaceholder": "e.g. Senior Developer",
+        "peselLabel": "PESEL",
+        "peselPlaceholder": "11 digits",
+        "peselFormatError": "Enter a valid PESEL.",
+        "etatLabel": "Working-time fraction (etat)",
+        "etatPlaceholder": "e.g. 1.00",
+        "stawkaBruttoLabel": "Gross rate",
+        "stawkaBruttoPlaceholder": "e.g. 8500.00",
+        "urzadSkarbowyLabel": "Tax office code",
+        "urzadSkarbowyPlaceholder": "4 digits",
+        "zusTitleCodeLabel": "ZUS title code",
+        "zusTitleCodePlaceholder": "6 digits",
+        "nfzOddzialLabel": "NFZ regional branch",
+        "nfzOddzialPlaceholder": "Select a branch",
+        "nfzOddzialSearch": "Search NFZ branches…",
+        "nfzOddzialEmpty": "No matches",
+        "adviserVerifyNote": "Statutory list — verify with a local payroll adviser before relying on it for filings.",
+        "statutoryNote": "PESEL is encrypted at rest and revealed only to authorised roles."
+      },
+      "de": {
+        "lohnsteuerklasseLabel": "Tax class (Lohnsteuerklasse)",
+        "steuerIdNrLabel": "Tax ID (Steuer-IdNr)",
+        "steuerIdNrPlaceholder": "11 digits",
+        "steuerIdNrFormatError": "Tax ID format not recognised.",
+        "svNummerLabel": "Social insurance number (SV-Nummer)",
+        "svNummerPlaceholder": "e.g. 65 160894 D 001",
+        "svNummerFormatError": "Social insurance number format not recognised.",
+        "krankenkasseLabel": "Health insurer (Krankenkasse)",
+        "krankenkassePlaceholder": "8-digit Betriebsnummer",
+        "kinderfreibetragLabel": "Child allowances (Kinderfreibetrag)",
+        "kinderfreibetragPlaceholder": "e.g. 1.0",
+        "kirchensteuerLabel": "Liable for church tax (Kirchensteuer)",
+        "elstamNote": "ELStAM details are advisory — confirm with a local payroll adviser."
+      },
+      "uk": {
+        "taxCodeLabel": "Tax code",
+        "taxCodePlaceholder": "e.g. 1257L",
+        "taxCodeFormatError": "Enter a valid tax code.",
+        "niNumberLabel": "National Insurance number",
+        "niNumberPlaceholder": "e.g. QQ123456C",
+        "niFormatError": "Enter a valid National Insurance number.",
+        "studentLoanPlanLabel": "Student-loan plan",
+        "studentLoanPlan": {
+          "PLAN_1": "Plan 1",
+          "PLAN_2": "Plan 2",
+          "PLAN_4": "Plan 4",
+          "PLAN_5": "Plan 5",
+          "POSTGRAD": "Postgraduate loan",
+          "NONE": "None"
+        },
+        "payeReferenceLabel": "PAYE reference",
+        "payeReferencePlaceholder": "e.g. 123/AB456",
+        "pensionEnrolledLabel": "Enrolled in workplace pension"
+      },
+      "us": {
+        "filingStatusLabel": "W-4 filing status",
+        "filingStatus": {
+          "SINGLE": "Single or married filing separately",
+          "MARRIED_FILING_JOINTLY": "Married filing jointly",
+          "HEAD_OF_HOUSEHOLD": "Head of household"
+        },
+        "stateWithholdingLabel": "State withholding",
+        "stateOtherOption": "Other state",
+        "stateOtherLabel": "State",
+        "stateOtherPlaceholder": "e.g. WA",
+        "ssnLabel": "Social Security Number",
+        "ssnPlaceholder": "e.g. 123-45-6789",
+        "ssnFormatError": "Enter a valid Social Security Number."
+      },
+      "ae": {
+        "visaTypeLabel": "Visa type",
+        "visaType": {
+          "EMPLOYMENT": "Employment",
+          "GOLDEN": "Golden",
+          "INVESTOR": "Investor",
+          "FAMILY": "Family",
+          "FREELANCE": "Freelance"
+        },
+        "wpsEstablishmentIdLabel": "WPS establishment ID",
+        "wpsEstablishmentIdPlaceholder": "Up to 13 digits",
+        "wpsAdvisory": "We could not verify this WPS establishment ID — save allowed.",
+        "emiratesIdLabel": "Emirates ID",
+        "emiratesIdPlaceholder": "784-YYYY-NNNNNNN-N",
+        "emiratesIdFormatError": "Enter a valid Emirates ID (784-YYYY-NNNNNNN-N).",
+        "emiratesIdChecksumAdvisory": "We could not verify this Emirates ID's check digit. You can still save — please confirm it is correct."
+      },
+      "sa": {
+        "saudizationCategoryLabel": "Saudization (Nitaqat) band",
+        "saudizationBand": {
+          "PLATINUM": "Platinum",
+          "GREEN": "Green",
+          "YELLOW": "Yellow",
+          "RED": "Red"
+        },
+        "gosiNumberLabel": "GOSI registration number",
+        "gosiNumberPlaceholder": "9 digits",
+        "gosiAdvisory": "We could not verify this GOSI number — save allowed.",
+        "iqamaLabel": "Iqama / national ID",
+        "iqamaPlaceholder": "10 digits",
+        "iqamaFormatError": "Enter a valid Iqama or national ID."
+      }
     }
   },
   "Documents": {

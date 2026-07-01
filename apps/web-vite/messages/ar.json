@@ -2432,6 +2432,149 @@
     "comingSoon": {
       "heading": "إدارة الموظفين قادمة قريبًا",
       "body": "ملفات الموظفين والإجازات وإجراءات الالتحاق وإنهاء الخدمة ستتوفر قريبًا. في الوقت الحالي يبقى المتعاقدون في مساحة عمل المتعاقدين."
+    },
+    "registry": {
+      "pageTitle": "تسجيل موظف",
+      "pageDescription": "سجِّل البيانات القانونية للموظف الخاصة بالسوق."
+    },
+    "compliance": {
+      "registeredToast": "تم تسجيل الموظف.",
+      "registerErrorToast": "تعذّر تسجيل الموظف. تحقّق من البيانات وحاول مرة أخرى.",
+      "loadError": "تعذّر تحميل بيانات التسجيل. أعد المحاولة.",
+      "retry": "أعد المحاولة",
+      "cardTitle": "البيانات القانونية — {country}",
+      "cardTitleGeneric": "البيانات القانونية",
+      "incompleteFields": "الحقول المتبقية: {count}",
+      "displayNameLabel": "الاسم الكامل",
+      "displayNamePlaceholder": "مثال: يان كوفالسكي",
+      "emailLabel": "البريد الإلكتروني للعمل",
+      "emailPlaceholder": "name@company.com",
+      "marketLabel": "السوق",
+      "selectMarketPrompt": "اختر سوقًا لإدخال حقوله القانونية.",
+      "registerButton": "تسجيل الموظف",
+      "noRegisterPermission": "لا تملك صلاحية تسجيل الموظفين. تواصل مع مسؤول الموارد البشرية.",
+      "countries": {
+        "PL": "بولندا",
+        "DE": "ألمانيا",
+        "GB": "المملكة المتحدة",
+        "US": "الولايات المتحدة",
+        "AE": "الإمارات العربية المتحدة",
+        "SA": "المملكة العربية السعودية"
+      },
+      "pii": {
+        "reveal": "إظهار",
+        "hide": "إخفاء",
+        "maskedHint": "تُعرض آخر 4 أرقام فقط. يُسجَّل الإظهار.",
+        "revealFailed": "تعذّر الإظهار. حاول مرة أخرى.",
+        "maskedAriaLabel": "{field} ينتهي بـ {last4}. يُسجَّل الإظهار.",
+        "ssnLabel": "رقم الضمان الاجتماعي (SSN)",
+        "peselLabel": "PESEL",
+        "iqamaLabel": "الإقامة / الهوية الوطنية",
+        "emiratesIdLabel": "الهوية الإماراتية"
+      },
+      "pl": {
+        "stanowiskoLabel": "المسمى الوظيفي",
+        "stanowiskoPlaceholder": "مثال: مطوّر أول",
+        "peselLabel": "PESEL",
+        "peselPlaceholder": "11 رقمًا",
+        "peselFormatError": "أدخل رقم PESEL صحيحًا.",
+        "etatLabel": "نسبة الدوام (etat)",
+        "etatPlaceholder": "مثال: 1.00",
+        "stawkaBruttoLabel": "الأجر الإجمالي",
+        "stawkaBruttoPlaceholder": "مثال: 8500.00",
+        "urzadSkarbowyLabel": "رمز مكتب الضرائب",
+        "urzadSkarbowyPlaceholder": "4 أرقام",
+        "zusTitleCodeLabel": "رمز عنوان ZUS",
+        "zusTitleCodePlaceholder": "6 أرقام",
+        "nfzOddzialLabel": "فرع NFZ الإقليمي",
+        "nfzOddzialPlaceholder": "اختر فرعًا",
+        "nfzOddzialSearch": "ابحث في فروع NFZ…",
+        "nfzOddzialEmpty": "لا توجد نتائج",
+        "adviserVerifyNote": "قائمة قانونية — تحقّق منها مع مستشار رواتب محلي قبل الاعتماد عليها في الإقرارات.",
+        "statutoryNote": "يُشفَّر رقم PESEL عند التخزين ولا يُكشف إلا للأدوار المصرّح لها."
+      },
+      "de": {
+        "lohnsteuerklasseLabel": "فئة الضريبة (Lohnsteuerklasse)",
+        "steuerIdNrLabel": "رقم التعريف الضريبي (Steuer-IdNr)",
+        "steuerIdNrPlaceholder": "11 رقمًا",
+        "steuerIdNrFormatError": "تنسيق الرقم الضريبي غير معروف.",
+        "svNummerLabel": "رقم التأمين الاجتماعي (SV-Nummer)",
+        "svNummerPlaceholder": "مثال: 65 160894 D 001",
+        "svNummerFormatError": "تنسيق رقم التأمين الاجتماعي غير معروف.",
+        "krankenkasseLabel": "صندوق التأمين الصحي (Krankenkasse)",
+        "krankenkassePlaceholder": "رقم مؤسسة من 8 أرقام",
+        "kinderfreibetragLabel": "إعفاءات الأطفال (Kinderfreibetrag)",
+        "kinderfreibetragPlaceholder": "مثال: 1.0",
+        "kirchensteuerLabel": "خاضع لضريبة الكنيسة (Kirchensteuer)",
+        "elstamNote": "بيانات ELStAM استرشادية — أكِّدها مع مستشار رواتب محلي."
+      },
+      "uk": {
+        "taxCodeLabel": "الرمز الضريبي",
+        "taxCodePlaceholder": "مثال: 1257L",
+        "taxCodeFormatError": "أدخل رمزًا ضريبيًا صحيحًا.",
+        "niNumberLabel": "رقم التأمين الوطني",
+        "niNumberPlaceholder": "مثال: QQ123456C",
+        "niFormatError": "أدخل رقم تأمين وطني صحيحًا.",
+        "studentLoanPlanLabel": "خطة قرض الطالب",
+        "studentLoanPlan": {
+          "PLAN_1": "الخطة 1",
+          "PLAN_2": "الخطة 2",
+          "PLAN_4": "الخطة 4",
+          "PLAN_5": "الخطة 5",
+          "POSTGRAD": "قرض الدراسات العليا",
+          "NONE": "لا شيء"
+        },
+        "payeReferenceLabel": "مرجع PAYE",
+        "payeReferencePlaceholder": "مثال: 123/AB456",
+        "pensionEnrolledLabel": "مُسجَّل في معاش العمل"
+      },
+      "us": {
+        "filingStatusLabel": "حالة الإقرار W-4",
+        "filingStatus": {
+          "SINGLE": "أعزب أو متزوج يقدّم إقرارًا منفصلًا",
+          "MARRIED_FILING_JOINTLY": "متزوج يقدّم إقرارًا مشتركًا",
+          "HEAD_OF_HOUSEHOLD": "رب الأسرة"
+        },
+        "stateWithholdingLabel": "الاستقطاع على مستوى الولاية",
+        "stateOtherOption": "ولاية أخرى",
+        "stateOtherLabel": "الولاية",
+        "stateOtherPlaceholder": "مثال: WA",
+        "ssnLabel": "رقم الضمان الاجتماعي (SSN)",
+        "ssnPlaceholder": "مثال: 123-45-6789",
+        "ssnFormatError": "أدخل رقم ضمان اجتماعي صحيحًا."
+      },
+      "ae": {
+        "visaTypeLabel": "نوع التأشيرة",
+        "visaType": {
+          "EMPLOYMENT": "عمل",
+          "GOLDEN": "ذهبية",
+          "INVESTOR": "مستثمر",
+          "FAMILY": "عائلية",
+          "FREELANCE": "عمل حر"
+        },
+        "wpsEstablishmentIdLabel": "معرّف منشأة WPS",
+        "wpsEstablishmentIdPlaceholder": "حتى 13 رقمًا",
+        "wpsAdvisory": "تعذّر التحقق من معرّف منشأة WPS — يُسمح بالحفظ.",
+        "emiratesIdLabel": "الهوية الإماراتية",
+        "emiratesIdPlaceholder": "784-YYYY-NNNNNNN-N",
+        "emiratesIdFormatError": "أدخل هوية إماراتية صحيحة (784-YYYY-NNNNNNN-N).",
+        "emiratesIdChecksumAdvisory": "تعذّر التحقق من رقم التحقق لهذه الهوية الإماراتية. يمكنك الحفظ — يرجى تأكيد صحتها."
+      },
+      "sa": {
+        "saudizationCategoryLabel": "نطاق السعودة (نطاقات)",
+        "saudizationBand": {
+          "PLATINUM": "بلاتيني",
+          "GREEN": "أخضر",
+          "YELLOW": "أصفر",
+          "RED": "أحمر"
+        },
+        "gosiNumberLabel": "رقم تسجيل التأمينات (GOSI)",
+        "gosiNumberPlaceholder": "9 أرقام",
+        "gosiAdvisory": "تعذّر التحقق من رقم GOSI — يُسمح بالحفظ.",
+        "iqamaLabel": "الإقامة / الهوية الوطنية",
+        "iqamaPlaceholder": "10 أرقام",
+        "iqamaFormatError": "أدخل رقم إقامة أو هوية وطنية صحيحًا."
+      }
     }
   },
   "Documents": {

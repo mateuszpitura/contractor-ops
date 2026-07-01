@@ -2432,6 +2432,149 @@
     "comingSoon": {
       "heading": "Die Personalverwaltung kommt in Kürze",
       "body": "Personalakten, Abwesenheiten sowie On- und Offboarding für Mitarbeitende folgen bald. Auftragnehmer bleiben vorerst im Auftragnehmer-Arbeitsbereich."
+    },
+    "registry": {
+      "pageTitle": "Mitarbeitenden registrieren",
+      "pageDescription": "Erfassen Sie die marktspezifischen gesetzlichen Angaben einer/eines Mitarbeitenden."
+    },
+    "compliance": {
+      "registeredToast": "Mitarbeitende/r registriert.",
+      "registerErrorToast": "Registrierung fehlgeschlagen. Bitte prüfen Sie die Angaben und versuchen Sie es erneut.",
+      "loadError": "Registrierungsdaten konnten nicht geladen werden. Erneut versuchen.",
+      "retry": "Erneut versuchen",
+      "cardTitle": "Gesetzliche Angaben — {country}",
+      "cardTitleGeneric": "Gesetzliche Angaben",
+      "incompleteFields": "{count} Felder auszufüllen",
+      "displayNameLabel": "Vollständiger Name",
+      "displayNamePlaceholder": "z. B. Jan Kowalski",
+      "emailLabel": "Dienstliche E-Mail",
+      "emailPlaceholder": "name@firma.de",
+      "marketLabel": "Markt",
+      "selectMarketPrompt": "Wählen Sie einen Markt, um dessen gesetzliche Felder zu erfassen.",
+      "registerButton": "Mitarbeitenden registrieren",
+      "noRegisterPermission": "Sie sind nicht berechtigt, Mitarbeitende zu registrieren. Wenden Sie sich an eine HR-Administration.",
+      "countries": {
+        "PL": "Polen",
+        "DE": "Deutschland",
+        "GB": "Vereinigtes Königreich",
+        "US": "Vereinigte Staaten",
+        "AE": "Vereinigte Arabische Emirate",
+        "SA": "Saudi-Arabien"
+      },
+      "pii": {
+        "reveal": "Anzeigen",
+        "hide": "Verbergen",
+        "maskedHint": "Es werden nur die letzten 4 Ziffern angezeigt. Das Anzeigen wird protokolliert.",
+        "revealFailed": "Anzeigen fehlgeschlagen. Bitte erneut versuchen.",
+        "maskedAriaLabel": "{field} endet auf {last4}. Das Anzeigen wird protokolliert.",
+        "ssnLabel": "Sozialversicherungsnummer (SSN)",
+        "peselLabel": "PESEL",
+        "iqamaLabel": "Iqama / nationale ID",
+        "emiratesIdLabel": "Emirates ID"
+      },
+      "pl": {
+        "stanowiskoLabel": "Berufsbezeichnung",
+        "stanowiskoPlaceholder": "z. B. Senior Developer",
+        "peselLabel": "PESEL",
+        "peselPlaceholder": "11 Ziffern",
+        "peselFormatError": "Bitte eine gültige PESEL eingeben.",
+        "etatLabel": "Beschäftigungsgrad (etat)",
+        "etatPlaceholder": "z. B. 1,00",
+        "stawkaBruttoLabel": "Bruttosatz",
+        "stawkaBruttoPlaceholder": "z. B. 8500,00",
+        "urzadSkarbowyLabel": "Finanzamt-Code",
+        "urzadSkarbowyPlaceholder": "4 Ziffern",
+        "zusTitleCodeLabel": "ZUS-Titelcode",
+        "zusTitleCodePlaceholder": "6 Ziffern",
+        "nfzOddzialLabel": "NFZ-Regionalstelle",
+        "nfzOddzialPlaceholder": "Stelle auswählen",
+        "nfzOddzialSearch": "NFZ-Stellen suchen…",
+        "nfzOddzialEmpty": "Keine Treffer",
+        "adviserVerifyNote": "Gesetzliche Liste — vor der Nutzung für Meldungen mit einer lokalen Lohnberatung prüfen.",
+        "statutoryNote": "PESEL wird verschlüsselt gespeichert und nur berechtigten Rollen angezeigt."
+      },
+      "de": {
+        "lohnsteuerklasseLabel": "Steuerklasse (Lohnsteuerklasse)",
+        "steuerIdNrLabel": "Steuer-Identifikationsnummer (Steuer-IdNr)",
+        "steuerIdNrPlaceholder": "11 Ziffern",
+        "steuerIdNrFormatError": "Format der Steuer-IdNr nicht erkannt.",
+        "svNummerLabel": "Sozialversicherungsnummer (SV-Nummer)",
+        "svNummerPlaceholder": "z. B. 65 160894 D 001",
+        "svNummerFormatError": "Format der Sozialversicherungsnummer nicht erkannt.",
+        "krankenkasseLabel": "Krankenkasse",
+        "krankenkassePlaceholder": "8-stellige Betriebsnummer",
+        "kinderfreibetragLabel": "Kinderfreibeträge",
+        "kinderfreibetragPlaceholder": "z. B. 1,0",
+        "kirchensteuerLabel": "Kirchensteuerpflichtig",
+        "elstamNote": "ELStAM-Angaben sind Richtwerte — mit einer lokalen Lohnberatung bestätigen."
+      },
+      "uk": {
+        "taxCodeLabel": "Steuercode",
+        "taxCodePlaceholder": "z. B. 1257L",
+        "taxCodeFormatError": "Bitte einen gültigen Steuercode eingeben.",
+        "niNumberLabel": "National-Insurance-Nummer",
+        "niNumberPlaceholder": "z. B. QQ123456C",
+        "niFormatError": "Bitte eine gültige National-Insurance-Nummer eingeben.",
+        "studentLoanPlanLabel": "Studienkredit-Plan",
+        "studentLoanPlan": {
+          "PLAN_1": "Plan 1",
+          "PLAN_2": "Plan 2",
+          "PLAN_4": "Plan 4",
+          "PLAN_5": "Plan 5",
+          "POSTGRAD": "Postgraduierten-Darlehen",
+          "NONE": "Keiner"
+        },
+        "payeReferenceLabel": "PAYE-Referenz",
+        "payeReferencePlaceholder": "z. B. 123/AB456",
+        "pensionEnrolledLabel": "In betriebliche Altersvorsorge aufgenommen"
+      },
+      "us": {
+        "filingStatusLabel": "W-4-Steuerstatus",
+        "filingStatus": {
+          "SINGLE": "Alleinstehend oder getrennt veranlagt",
+          "MARRIED_FILING_JOINTLY": "Verheiratet, gemeinsam veranlagt",
+          "HEAD_OF_HOUSEHOLD": "Haushaltsvorstand"
+        },
+        "stateWithholdingLabel": "Landeseinbehalt",
+        "stateOtherOption": "Anderer Bundesstaat",
+        "stateOtherLabel": "Bundesstaat",
+        "stateOtherPlaceholder": "z. B. WA",
+        "ssnLabel": "Sozialversicherungsnummer (SSN)",
+        "ssnPlaceholder": "z. B. 123-45-6789",
+        "ssnFormatError": "Bitte eine gültige Sozialversicherungsnummer eingeben."
+      },
+      "ae": {
+        "visaTypeLabel": "Visumtyp",
+        "visaType": {
+          "EMPLOYMENT": "Beschäftigung",
+          "GOLDEN": "Golden",
+          "INVESTOR": "Investor",
+          "FAMILY": "Familie",
+          "FREELANCE": "Freiberuflich"
+        },
+        "wpsEstablishmentIdLabel": "WPS-Betriebs-ID",
+        "wpsEstablishmentIdPlaceholder": "Bis zu 13 Ziffern",
+        "wpsAdvisory": "Diese WPS-Betriebs-ID konnte nicht verifiziert werden — Speichern möglich.",
+        "emiratesIdLabel": "Emirates ID",
+        "emiratesIdPlaceholder": "784-JJJJ-NNNNNNN-N",
+        "emiratesIdFormatError": "Bitte eine gültige Emirates ID eingeben (784-JJJJ-NNNNNNN-N).",
+        "emiratesIdChecksumAdvisory": "Die Prüfziffer dieser Emirates ID konnte nicht verifiziert werden. Sie können dennoch speichern — bitte prüfen Sie die Richtigkeit."
+      },
+      "sa": {
+        "saudizationCategoryLabel": "Saudisierung (Nitaqat) — Kategorie",
+        "saudizationBand": {
+          "PLATINUM": "Platin",
+          "GREEN": "Grün",
+          "YELLOW": "Gelb",
+          "RED": "Rot"
+        },
+        "gosiNumberLabel": "GOSI-Registrierungsnummer",
+        "gosiNumberPlaceholder": "9 Ziffern",
+        "gosiAdvisory": "Diese GOSI-Nummer konnte nicht verifiziert werden — Speichern möglich.",
+        "iqamaLabel": "Iqama / nationale ID",
+        "iqamaPlaceholder": "10 Ziffern",
+        "iqamaFormatError": "Bitte eine gültige Iqama oder nationale ID eingeben."
+      }
     }
   },
   "Documents": {
