@@ -159,7 +159,7 @@ Top-level required contract (per template). Per-surface copy follows below.
 - Destructive: Delete a draft day entry: confirm "Delete this time entry?" (records are day-grain; deletion allowed only pre-lock).
 
 **S4 — ewidencja report**
-- Primary CTA: `Generate report`; on existing: `Regenerate` + `Export` (PDF/CSV).
+- Primary CTA: `Generate report`; on existing: `Regenerate` + `Export` (PDF/CSV). The single-word `Regenerate`/`Export` secondary CTAs sit adjacent to the noun-bearing `Generate report` primary and share its referent — intentional (same reuse-pattern logic as S1 row verbs); do not expand.
 - Immutable treatment copy: `Archived` badge + `Lock` icon; tooltip "Immutable KP §149 record — cannot be edited (retained 3 years)."
 - Superseded rows: dimmed + chip "Superseded {date}".
 - Empty (page): heading "No record generated for this period" / body "Generate the KP §149 working-time record (ewidencja czasu pracy) for {employee}, {period}. Once generated it is archived and cannot be edited."
@@ -263,14 +263,14 @@ This phase introduces **no new third-party registry blocks**. All UI composes ex
 
 ## Checker Sign-Off
 
-- [ ] Dimension 1 Copywriting: PASS
-- [ ] Dimension 2 Visuals: PASS
-- [ ] Dimension 3 Color: PASS
-- [ ] Dimension 4 Typography: PASS
-- [ ] Dimension 5 Spacing: PASS
-- [ ] Dimension 6 Registry Safety: PASS
+- [x] Dimension 1 Copywriting: PASS (FLAG resolved — S1 + S4 single-word CTAs carry explicit reuse-pattern exception notes)
+- [x] Dimension 2 Visuals: PASS
+- [x] Dimension 3 Color: PASS
+- [x] Dimension 4 Typography: PASS (revised to exactly 4 sizes / 2 weights for S1–S5)
+- [x] Dimension 5 Spacing: PASS
+- [x] Dimension 6 Registry Safety: PASS
 
-**Approval:** pending
+**Approval:** approved 2026-07-01 (gsd-ui-checker — UI-SPEC VERIFIED after 1 revision)
 
 ---
 
