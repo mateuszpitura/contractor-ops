@@ -32,8 +32,15 @@ export { getRegionalClient, preWarmRegionalClients, SUPPORTED_REGIONS } from './
 export { getReplicaClient, readReplica, resetReplicaStateForTests } from './replica.js';
 // Statutory retention resolver shared by the three deletion chokepoints
 // (soft-delete extension, data-purge cron, gdpr erasure).
-export type { RetainedRecordType } from './retention-policy.js';
+export type {
+  PersonnelRetentionDates,
+  PersonnelRetentionResult,
+  PersonnelRetentionRuleInput,
+  RetainedRecordType,
+  RetentionAnchor,
+} from './retention-policy.js';
 export {
+  getPersonnelRetentionCutoff,
   getRetentionCutoff,
   MODEL_RETENTION_TYPE,
   RETENTION_YEARS,

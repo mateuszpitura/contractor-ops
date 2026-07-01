@@ -65,3 +65,14 @@ export function getRetentionCutoff(
   cutoff.setFullYear(cutoff.getFullYear() - RETENTION_YEARS[recordType]);
   return cutoff;
 }
+
+// The event-anchored personnel-file resolver lives in its own module but reads
+// years from RETENTION_YEARS above (one source of truth). Re-exported here so
+// every retention consumer imports the whole primitive from one place.
+export {
+  getPersonnelRetentionCutoff,
+  type PersonnelRetentionDates,
+  type PersonnelRetentionResult,
+  type PersonnelRetentionRuleInput,
+  type RetentionAnchor,
+} from './personnel-retention.js';
