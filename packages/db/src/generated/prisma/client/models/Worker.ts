@@ -217,6 +217,7 @@ export type WorkerWhereInput = {
   organization?: Prisma.XOR<Prisma.OrganizationScalarRelationFilter, Prisma.OrganizationWhereInput>
   contractor?: Prisma.XOR<Prisma.ContractorNullableScalarRelationFilter, Prisma.ContractorWhereInput> | null
   employeeProfile?: Prisma.XOR<Prisma.EmployeeProfileNullableScalarRelationFilter, Prisma.EmployeeProfileWhereInput> | null
+  personnelFile?: Prisma.XOR<Prisma.PersonnelFileNullableScalarRelationFilter, Prisma.PersonnelFileWhereInput> | null
 }
 
 export type WorkerOrderByWithRelationInput = {
@@ -232,6 +233,7 @@ export type WorkerOrderByWithRelationInput = {
   organization?: Prisma.OrganizationOrderByWithRelationInput
   contractor?: Prisma.ContractorOrderByWithRelationInput
   employeeProfile?: Prisma.EmployeeProfileOrderByWithRelationInput
+  personnelFile?: Prisma.PersonnelFileOrderByWithRelationInput
 }
 
 export type WorkerWhereUniqueInput = Prisma.AtLeast<{
@@ -250,6 +252,7 @@ export type WorkerWhereUniqueInput = Prisma.AtLeast<{
   organization?: Prisma.XOR<Prisma.OrganizationScalarRelationFilter, Prisma.OrganizationWhereInput>
   contractor?: Prisma.XOR<Prisma.ContractorNullableScalarRelationFilter, Prisma.ContractorWhereInput> | null
   employeeProfile?: Prisma.XOR<Prisma.EmployeeProfileNullableScalarRelationFilter, Prisma.EmployeeProfileWhereInput> | null
+  personnelFile?: Prisma.XOR<Prisma.PersonnelFileNullableScalarRelationFilter, Prisma.PersonnelFileWhereInput> | null
 }, "id">
 
 export type WorkerOrderByWithAggregationInput = {
@@ -294,6 +297,7 @@ export type WorkerCreateInput = {
   organization: Prisma.OrganizationCreateNestedOneWithoutWorkersInput
   contractor?: Prisma.ContractorCreateNestedOneWithoutWorkerInput
   employeeProfile?: Prisma.EmployeeProfileCreateNestedOneWithoutWorkerInput
+  personnelFile?: Prisma.PersonnelFileCreateNestedOneWithoutWorkerInput
 }
 
 export type WorkerUncheckedCreateInput = {
@@ -308,6 +312,7 @@ export type WorkerUncheckedCreateInput = {
   deletedAt?: Date | string | null
   contractor?: Prisma.ContractorUncheckedCreateNestedOneWithoutWorkerInput
   employeeProfile?: Prisma.EmployeeProfileUncheckedCreateNestedOneWithoutWorkerInput
+  personnelFile?: Prisma.PersonnelFileUncheckedCreateNestedOneWithoutWorkerInput
 }
 
 export type WorkerUpdateInput = {
@@ -322,6 +327,7 @@ export type WorkerUpdateInput = {
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutWorkersNestedInput
   contractor?: Prisma.ContractorUpdateOneWithoutWorkerNestedInput
   employeeProfile?: Prisma.EmployeeProfileUpdateOneWithoutWorkerNestedInput
+  personnelFile?: Prisma.PersonnelFileUpdateOneWithoutWorkerNestedInput
 }
 
 export type WorkerUncheckedUpdateInput = {
@@ -336,6 +342,7 @@ export type WorkerUncheckedUpdateInput = {
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   contractor?: Prisma.ContractorUncheckedUpdateOneWithoutWorkerNestedInput
   employeeProfile?: Prisma.EmployeeProfileUncheckedUpdateOneWithoutWorkerNestedInput
+  personnelFile?: Prisma.PersonnelFileUncheckedUpdateOneWithoutWorkerNestedInput
 }
 
 export type WorkerCreateManyInput = {
@@ -494,6 +501,20 @@ export type WorkerUncheckedUpdateManyWithoutOrganizationNestedInput = {
   deleteMany?: Prisma.WorkerScalarWhereInput | Prisma.WorkerScalarWhereInput[]
 }
 
+export type WorkerCreateNestedOneWithoutPersonnelFileInput = {
+  create?: Prisma.XOR<Prisma.WorkerCreateWithoutPersonnelFileInput, Prisma.WorkerUncheckedCreateWithoutPersonnelFileInput>
+  connectOrCreate?: Prisma.WorkerCreateOrConnectWithoutPersonnelFileInput
+  connect?: Prisma.WorkerWhereUniqueInput
+}
+
+export type WorkerUpdateOneRequiredWithoutPersonnelFileNestedInput = {
+  create?: Prisma.XOR<Prisma.WorkerCreateWithoutPersonnelFileInput, Prisma.WorkerUncheckedCreateWithoutPersonnelFileInput>
+  connectOrCreate?: Prisma.WorkerCreateOrConnectWithoutPersonnelFileInput
+  upsert?: Prisma.WorkerUpsertWithoutPersonnelFileInput
+  connect?: Prisma.WorkerWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.WorkerUpdateToOneWithWhereWithoutPersonnelFileInput, Prisma.WorkerUpdateWithoutPersonnelFileInput>, Prisma.WorkerUncheckedUpdateWithoutPersonnelFileInput>
+}
+
 export type EnumWorkerTypeFieldUpdateOperationsInput = {
   set?: $Enums.WorkerType
 }
@@ -509,6 +530,7 @@ export type WorkerCreateWithoutContractorInput = {
   deletedAt?: Date | string | null
   organization: Prisma.OrganizationCreateNestedOneWithoutWorkersInput
   employeeProfile?: Prisma.EmployeeProfileCreateNestedOneWithoutWorkerInput
+  personnelFile?: Prisma.PersonnelFileCreateNestedOneWithoutWorkerInput
 }
 
 export type WorkerUncheckedCreateWithoutContractorInput = {
@@ -522,6 +544,7 @@ export type WorkerUncheckedCreateWithoutContractorInput = {
   updatedAt?: Date | string
   deletedAt?: Date | string | null
   employeeProfile?: Prisma.EmployeeProfileUncheckedCreateNestedOneWithoutWorkerInput
+  personnelFile?: Prisma.PersonnelFileUncheckedCreateNestedOneWithoutWorkerInput
 }
 
 export type WorkerCreateOrConnectWithoutContractorInput = {
@@ -551,6 +574,7 @@ export type WorkerUpdateWithoutContractorInput = {
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutWorkersNestedInput
   employeeProfile?: Prisma.EmployeeProfileUpdateOneWithoutWorkerNestedInput
+  personnelFile?: Prisma.PersonnelFileUpdateOneWithoutWorkerNestedInput
 }
 
 export type WorkerUncheckedUpdateWithoutContractorInput = {
@@ -564,6 +588,7 @@ export type WorkerUncheckedUpdateWithoutContractorInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   employeeProfile?: Prisma.EmployeeProfileUncheckedUpdateOneWithoutWorkerNestedInput
+  personnelFile?: Prisma.PersonnelFileUncheckedUpdateOneWithoutWorkerNestedInput
 }
 
 export type WorkerCreateWithoutEmployeeProfileInput = {
@@ -577,6 +602,7 @@ export type WorkerCreateWithoutEmployeeProfileInput = {
   deletedAt?: Date | string | null
   organization: Prisma.OrganizationCreateNestedOneWithoutWorkersInput
   contractor?: Prisma.ContractorCreateNestedOneWithoutWorkerInput
+  personnelFile?: Prisma.PersonnelFileCreateNestedOneWithoutWorkerInput
 }
 
 export type WorkerUncheckedCreateWithoutEmployeeProfileInput = {
@@ -590,6 +616,7 @@ export type WorkerUncheckedCreateWithoutEmployeeProfileInput = {
   updatedAt?: Date | string
   deletedAt?: Date | string | null
   contractor?: Prisma.ContractorUncheckedCreateNestedOneWithoutWorkerInput
+  personnelFile?: Prisma.PersonnelFileUncheckedCreateNestedOneWithoutWorkerInput
 }
 
 export type WorkerCreateOrConnectWithoutEmployeeProfileInput = {
@@ -619,6 +646,7 @@ export type WorkerUpdateWithoutEmployeeProfileInput = {
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutWorkersNestedInput
   contractor?: Prisma.ContractorUpdateOneWithoutWorkerNestedInput
+  personnelFile?: Prisma.PersonnelFileUpdateOneWithoutWorkerNestedInput
 }
 
 export type WorkerUncheckedUpdateWithoutEmployeeProfileInput = {
@@ -632,6 +660,7 @@ export type WorkerUncheckedUpdateWithoutEmployeeProfileInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   contractor?: Prisma.ContractorUncheckedUpdateOneWithoutWorkerNestedInput
+  personnelFile?: Prisma.PersonnelFileUncheckedUpdateOneWithoutWorkerNestedInput
 }
 
 export type WorkerCreateWithoutOrganizationInput = {
@@ -645,6 +674,7 @@ export type WorkerCreateWithoutOrganizationInput = {
   deletedAt?: Date | string | null
   contractor?: Prisma.ContractorCreateNestedOneWithoutWorkerInput
   employeeProfile?: Prisma.EmployeeProfileCreateNestedOneWithoutWorkerInput
+  personnelFile?: Prisma.PersonnelFileCreateNestedOneWithoutWorkerInput
 }
 
 export type WorkerUncheckedCreateWithoutOrganizationInput = {
@@ -658,6 +688,7 @@ export type WorkerUncheckedCreateWithoutOrganizationInput = {
   deletedAt?: Date | string | null
   contractor?: Prisma.ContractorUncheckedCreateNestedOneWithoutWorkerInput
   employeeProfile?: Prisma.EmployeeProfileUncheckedCreateNestedOneWithoutWorkerInput
+  personnelFile?: Prisma.PersonnelFileUncheckedCreateNestedOneWithoutWorkerInput
 }
 
 export type WorkerCreateOrConnectWithoutOrganizationInput = {
@@ -701,6 +732,78 @@ export type WorkerScalarWhereInput = {
   deletedAt?: Prisma.DateTimeNullableFilter<"Worker"> | Date | string | null
 }
 
+export type WorkerCreateWithoutPersonnelFileInput = {
+  id?: string
+  workerType?: $Enums.WorkerType
+  displayName: string
+  email?: string | null
+  status?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  organization: Prisma.OrganizationCreateNestedOneWithoutWorkersInput
+  contractor?: Prisma.ContractorCreateNestedOneWithoutWorkerInput
+  employeeProfile?: Prisma.EmployeeProfileCreateNestedOneWithoutWorkerInput
+}
+
+export type WorkerUncheckedCreateWithoutPersonnelFileInput = {
+  id?: string
+  organizationId: string
+  workerType?: $Enums.WorkerType
+  displayName: string
+  email?: string | null
+  status?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  contractor?: Prisma.ContractorUncheckedCreateNestedOneWithoutWorkerInput
+  employeeProfile?: Prisma.EmployeeProfileUncheckedCreateNestedOneWithoutWorkerInput
+}
+
+export type WorkerCreateOrConnectWithoutPersonnelFileInput = {
+  where: Prisma.WorkerWhereUniqueInput
+  create: Prisma.XOR<Prisma.WorkerCreateWithoutPersonnelFileInput, Prisma.WorkerUncheckedCreateWithoutPersonnelFileInput>
+}
+
+export type WorkerUpsertWithoutPersonnelFileInput = {
+  update: Prisma.XOR<Prisma.WorkerUpdateWithoutPersonnelFileInput, Prisma.WorkerUncheckedUpdateWithoutPersonnelFileInput>
+  create: Prisma.XOR<Prisma.WorkerCreateWithoutPersonnelFileInput, Prisma.WorkerUncheckedCreateWithoutPersonnelFileInput>
+  where?: Prisma.WorkerWhereInput
+}
+
+export type WorkerUpdateToOneWithWhereWithoutPersonnelFileInput = {
+  where?: Prisma.WorkerWhereInput
+  data: Prisma.XOR<Prisma.WorkerUpdateWithoutPersonnelFileInput, Prisma.WorkerUncheckedUpdateWithoutPersonnelFileInput>
+}
+
+export type WorkerUpdateWithoutPersonnelFileInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  workerType?: Prisma.EnumWorkerTypeFieldUpdateOperationsInput | $Enums.WorkerType
+  displayName?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  organization?: Prisma.OrganizationUpdateOneRequiredWithoutWorkersNestedInput
+  contractor?: Prisma.ContractorUpdateOneWithoutWorkerNestedInput
+  employeeProfile?: Prisma.EmployeeProfileUpdateOneWithoutWorkerNestedInput
+}
+
+export type WorkerUncheckedUpdateWithoutPersonnelFileInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  organizationId?: Prisma.StringFieldUpdateOperationsInput | string
+  workerType?: Prisma.EnumWorkerTypeFieldUpdateOperationsInput | $Enums.WorkerType
+  displayName?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  contractor?: Prisma.ContractorUncheckedUpdateOneWithoutWorkerNestedInput
+  employeeProfile?: Prisma.EmployeeProfileUncheckedUpdateOneWithoutWorkerNestedInput
+}
+
 export type WorkerCreateManyOrganizationInput = {
   id?: string
   workerType?: $Enums.WorkerType
@@ -723,6 +826,7 @@ export type WorkerUpdateWithoutOrganizationInput = {
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   contractor?: Prisma.ContractorUpdateOneWithoutWorkerNestedInput
   employeeProfile?: Prisma.EmployeeProfileUpdateOneWithoutWorkerNestedInput
+  personnelFile?: Prisma.PersonnelFileUpdateOneWithoutWorkerNestedInput
 }
 
 export type WorkerUncheckedUpdateWithoutOrganizationInput = {
@@ -736,6 +840,7 @@ export type WorkerUncheckedUpdateWithoutOrganizationInput = {
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   contractor?: Prisma.ContractorUncheckedUpdateOneWithoutWorkerNestedInput
   employeeProfile?: Prisma.EmployeeProfileUncheckedUpdateOneWithoutWorkerNestedInput
+  personnelFile?: Prisma.PersonnelFileUncheckedUpdateOneWithoutWorkerNestedInput
 }
 
 export type WorkerUncheckedUpdateManyWithoutOrganizationInput = {
@@ -764,6 +869,7 @@ export type WorkerSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
   contractor?: boolean | Prisma.Worker$contractorArgs<ExtArgs>
   employeeProfile?: boolean | Prisma.Worker$employeeProfileArgs<ExtArgs>
+  personnelFile?: boolean | Prisma.Worker$personnelFileArgs<ExtArgs>
 }, ExtArgs["result"]["worker"]>
 
 export type WorkerSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -809,6 +915,7 @@ export type WorkerInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
   contractor?: boolean | Prisma.Worker$contractorArgs<ExtArgs>
   employeeProfile?: boolean | Prisma.Worker$employeeProfileArgs<ExtArgs>
+  personnelFile?: boolean | Prisma.Worker$personnelFileArgs<ExtArgs>
 }
 export type WorkerIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
@@ -823,6 +930,7 @@ export type $WorkerPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
     organization: Prisma.$OrganizationPayload<ExtArgs>
     contractor: Prisma.$ContractorPayload<ExtArgs> | null
     employeeProfile: Prisma.$EmployeeProfilePayload<ExtArgs> | null
+    personnelFile: Prisma.$PersonnelFilePayload<ExtArgs> | null
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1231,6 +1339,7 @@ export interface Prisma__WorkerClient<T, Null = never, ExtArgs extends runtime.T
   organization<T extends Prisma.OrganizationDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.OrganizationDefaultArgs<ExtArgs>>): Prisma.Prisma__OrganizationClient<runtime.Types.Result.GetResult<Prisma.$OrganizationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   contractor<T extends Prisma.Worker$contractorArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Worker$contractorArgs<ExtArgs>>): Prisma.Prisma__ContractorClient<runtime.Types.Result.GetResult<Prisma.$ContractorPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   employeeProfile<T extends Prisma.Worker$employeeProfileArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Worker$employeeProfileArgs<ExtArgs>>): Prisma.Prisma__EmployeeProfileClient<runtime.Types.Result.GetResult<Prisma.$EmployeeProfilePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  personnelFile<T extends Prisma.Worker$personnelFileArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Worker$personnelFileArgs<ExtArgs>>): Prisma.Prisma__PersonnelFileClient<runtime.Types.Result.GetResult<Prisma.$PersonnelFilePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1705,6 +1814,25 @@ export type Worker$employeeProfileArgs<ExtArgs extends runtime.Types.Extensions.
    */
   include?: Prisma.EmployeeProfileInclude<ExtArgs> | null
   where?: Prisma.EmployeeProfileWhereInput
+}
+
+/**
+ * Worker.personnelFile
+ */
+export type Worker$personnelFileArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the PersonnelFile
+   */
+  select?: Prisma.PersonnelFileSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the PersonnelFile
+   */
+  omit?: Prisma.PersonnelFileOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.PersonnelFileInclude<ExtArgs> | null
+  where?: Prisma.PersonnelFileWhereInput
 }
 
 /**

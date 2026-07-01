@@ -2295,6 +2295,40 @@ export type EnumPeppolTransmissionStatusWithAggregatesFilter<$PrismaModel = neve
   _max?: Prisma.NestedEnumPeppolTransmissionStatusFilter<$PrismaModel>
 }
 
+export type EnumPersonnelFileSectionNullableFilter<$PrismaModel = never> = {
+  equals?: $Enums.PersonnelFileSection | Prisma.EnumPersonnelFileSectionFieldRefInput<$PrismaModel> | null
+  in?: $Enums.PersonnelFileSection[] | Prisma.ListEnumPersonnelFileSectionFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.PersonnelFileSection[] | Prisma.ListEnumPersonnelFileSectionFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumPersonnelFileSectionNullableFilter<$PrismaModel> | $Enums.PersonnelFileSection | null
+}
+
+export type EnumPersonnelDocClassificationMethodFilter<$PrismaModel = never> = {
+  equals?: $Enums.PersonnelDocClassificationMethod | Prisma.EnumPersonnelDocClassificationMethodFieldRefInput<$PrismaModel>
+  in?: $Enums.PersonnelDocClassificationMethod[] | Prisma.ListEnumPersonnelDocClassificationMethodFieldRefInput<$PrismaModel>
+  notIn?: $Enums.PersonnelDocClassificationMethod[] | Prisma.ListEnumPersonnelDocClassificationMethodFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumPersonnelDocClassificationMethodFilter<$PrismaModel> | $Enums.PersonnelDocClassificationMethod
+}
+
+export type EnumPersonnelFileSectionNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.PersonnelFileSection | Prisma.EnumPersonnelFileSectionFieldRefInput<$PrismaModel> | null
+  in?: $Enums.PersonnelFileSection[] | Prisma.ListEnumPersonnelFileSectionFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.PersonnelFileSection[] | Prisma.ListEnumPersonnelFileSectionFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumPersonnelFileSectionNullableWithAggregatesFilter<$PrismaModel> | $Enums.PersonnelFileSection | null
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumPersonnelFileSectionNullableFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumPersonnelFileSectionNullableFilter<$PrismaModel>
+}
+
+export type EnumPersonnelDocClassificationMethodWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.PersonnelDocClassificationMethod | Prisma.EnumPersonnelDocClassificationMethodFieldRefInput<$PrismaModel>
+  in?: $Enums.PersonnelDocClassificationMethod[] | Prisma.ListEnumPersonnelDocClassificationMethodFieldRefInput<$PrismaModel>
+  notIn?: $Enums.PersonnelDocClassificationMethod[] | Prisma.ListEnumPersonnelDocClassificationMethodFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumPersonnelDocClassificationMethodWithAggregatesFilter<$PrismaModel> | $Enums.PersonnelDocClassificationMethod
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumPersonnelDocClassificationMethodFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumPersonnelDocClassificationMethodFilter<$PrismaModel>
+}
+
 export type EnumContractorChangeRequestStatusFilter<$PrismaModel = never> = {
   equals?: $Enums.ContractorChangeRequestStatus | Prisma.EnumContractorChangeRequestStatusFieldRefInput<$PrismaModel>
   in?: $Enums.ContractorChangeRequestStatus[] | Prisma.ListEnumContractorChangeRequestStatusFieldRefInput<$PrismaModel>
@@ -4907,6 +4941,40 @@ export type NestedEnumPeppolTransmissionStatusWithAggregatesFilter<$PrismaModel 
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumPeppolTransmissionStatusFilter<$PrismaModel>
   _max?: Prisma.NestedEnumPeppolTransmissionStatusFilter<$PrismaModel>
+}
+
+export type NestedEnumPersonnelFileSectionNullableFilter<$PrismaModel = never> = {
+  equals?: $Enums.PersonnelFileSection | Prisma.EnumPersonnelFileSectionFieldRefInput<$PrismaModel> | null
+  in?: $Enums.PersonnelFileSection[] | Prisma.ListEnumPersonnelFileSectionFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.PersonnelFileSection[] | Prisma.ListEnumPersonnelFileSectionFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumPersonnelFileSectionNullableFilter<$PrismaModel> | $Enums.PersonnelFileSection | null
+}
+
+export type NestedEnumPersonnelDocClassificationMethodFilter<$PrismaModel = never> = {
+  equals?: $Enums.PersonnelDocClassificationMethod | Prisma.EnumPersonnelDocClassificationMethodFieldRefInput<$PrismaModel>
+  in?: $Enums.PersonnelDocClassificationMethod[] | Prisma.ListEnumPersonnelDocClassificationMethodFieldRefInput<$PrismaModel>
+  notIn?: $Enums.PersonnelDocClassificationMethod[] | Prisma.ListEnumPersonnelDocClassificationMethodFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumPersonnelDocClassificationMethodFilter<$PrismaModel> | $Enums.PersonnelDocClassificationMethod
+}
+
+export type NestedEnumPersonnelFileSectionNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.PersonnelFileSection | Prisma.EnumPersonnelFileSectionFieldRefInput<$PrismaModel> | null
+  in?: $Enums.PersonnelFileSection[] | Prisma.ListEnumPersonnelFileSectionFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.PersonnelFileSection[] | Prisma.ListEnumPersonnelFileSectionFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumPersonnelFileSectionNullableWithAggregatesFilter<$PrismaModel> | $Enums.PersonnelFileSection | null
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumPersonnelFileSectionNullableFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumPersonnelFileSectionNullableFilter<$PrismaModel>
+}
+
+export type NestedEnumPersonnelDocClassificationMethodWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.PersonnelDocClassificationMethod | Prisma.EnumPersonnelDocClassificationMethodFieldRefInput<$PrismaModel>
+  in?: $Enums.PersonnelDocClassificationMethod[] | Prisma.ListEnumPersonnelDocClassificationMethodFieldRefInput<$PrismaModel>
+  notIn?: $Enums.PersonnelDocClassificationMethod[] | Prisma.ListEnumPersonnelDocClassificationMethodFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumPersonnelDocClassificationMethodWithAggregatesFilter<$PrismaModel> | $Enums.PersonnelDocClassificationMethod
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumPersonnelDocClassificationMethodFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumPersonnelDocClassificationMethodFilter<$PrismaModel>
 }
 
 export type NestedEnumContractorChangeRequestStatusFilter<$PrismaModel = never> = {

@@ -31,6 +31,8 @@ model Worker {
   contractor      Contractor?
   // 1:1 sidecar carrying employee-specific data when workerType = EMPLOYEE.
   employeeProfile EmployeeProfile?
+  // 1:1 jurisdiction-correct personnel file ("akta osobowe") for employees.
+  personnelFile   PersonnelFile?
 
   @@index([organizationId])
   @@index([organizationId, workerType])

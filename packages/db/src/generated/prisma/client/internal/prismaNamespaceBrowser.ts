@@ -157,6 +157,8 @@ export const ModelName = {
   PaymentRunComplianceCheck: 'PaymentRunComplianceCheck',
   PeppolParticipant: 'PeppolParticipant',
   PeppolTransmission: 'PeppolTransmission',
+  PersonnelFile: 'PersonnelFile',
+  PersonnelFileDocument: 'PersonnelFileDocument',
   PortalSession: 'PortalSession',
   PortalMagicToken: 'PortalMagicToken',
   ContractorChangeRequest: 'ContractorChangeRequest',
@@ -2163,6 +2165,39 @@ export const PeppolTransmissionScalarFieldEnum = {
 } as const
 
 export type PeppolTransmissionScalarFieldEnum = (typeof PeppolTransmissionScalarFieldEnum)[keyof typeof PeppolTransmissionScalarFieldEnum]
+
+
+export const PersonnelFileScalarFieldEnum = {
+  id: 'id',
+  organizationId: 'organizationId',
+  workerId: 'workerId',
+  countryCode: 'countryCode',
+  hireDate: 'hireDate',
+  terminatedAt: 'terminatedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  deletedAt: 'deletedAt'
+} as const
+
+export type PersonnelFileScalarFieldEnum = (typeof PersonnelFileScalarFieldEnum)[keyof typeof PersonnelFileScalarFieldEnum]
+
+
+export const PersonnelFileDocumentScalarFieldEnum = {
+  id: 'id',
+  organizationId: 'organizationId',
+  personnelFileId: 'personnelFileId',
+  documentId: 'documentId',
+  section: 'section',
+  documentDate: 'documentDate',
+  classificationMethod: 'classificationMethod',
+  aiSectionGuess: 'aiSectionGuess',
+  aiConfidence: 'aiConfidence',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  deletedAt: 'deletedAt'
+} as const
+
+export type PersonnelFileDocumentScalarFieldEnum = (typeof PersonnelFileDocumentScalarFieldEnum)[keyof typeof PersonnelFileDocumentScalarFieldEnum]
 
 
 export const PortalSessionScalarFieldEnum = {

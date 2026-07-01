@@ -573,6 +573,16 @@ export type PeppolParticipant = Prisma.PeppolParticipantModel
  */
 export type PeppolTransmission = Prisma.PeppolTransmissionModel
 /**
+ * Model PersonnelFile
+ * 
+ */
+export type PersonnelFile = Prisma.PersonnelFileModel
+/**
+ * Model PersonnelFileDocument
+ * 
+ */
+export type PersonnelFileDocument = Prisma.PersonnelFileDocumentModel
+/**
  * Model PortalSession
  * 
  */

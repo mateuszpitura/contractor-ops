@@ -317,6 +317,7 @@ export type DocumentWhereInput = {
   invoiceFiles?: Prisma.InvoiceFileListRelationFilter
   paymentExports?: Prisma.PaymentExportListRelationFilter
   workflowAttachments?: Prisma.WorkflowAttachmentListRelationFilter
+  personnelFileDocument?: Prisma.XOR<Prisma.PersonnelFileDocumentNullableScalarRelationFilter, Prisma.PersonnelFileDocumentWhereInput> | null
 }
 
 export type DocumentOrderByWithRelationInput = {
@@ -342,6 +343,7 @@ export type DocumentOrderByWithRelationInput = {
   invoiceFiles?: Prisma.InvoiceFileOrderByRelationAggregateInput
   paymentExports?: Prisma.PaymentExportOrderByRelationAggregateInput
   workflowAttachments?: Prisma.WorkflowAttachmentOrderByRelationAggregateInput
+  personnelFileDocument?: Prisma.PersonnelFileDocumentOrderByWithRelationInput
 }
 
 export type DocumentWhereUniqueInput = Prisma.AtLeast<{
@@ -370,6 +372,7 @@ export type DocumentWhereUniqueInput = Prisma.AtLeast<{
   invoiceFiles?: Prisma.InvoiceFileListRelationFilter
   paymentExports?: Prisma.PaymentExportListRelationFilter
   workflowAttachments?: Prisma.WorkflowAttachmentListRelationFilter
+  personnelFileDocument?: Prisma.XOR<Prisma.PersonnelFileDocumentNullableScalarRelationFilter, Prisma.PersonnelFileDocumentWhereInput> | null
 }, "id">
 
 export type DocumentOrderByWithAggregationInput = {
@@ -442,6 +445,7 @@ export type DocumentCreateInput = {
   invoiceFiles?: Prisma.InvoiceFileCreateNestedManyWithoutDocumentInput
   paymentExports?: Prisma.PaymentExportCreateNestedManyWithoutDocumentInput
   workflowAttachments?: Prisma.WorkflowAttachmentCreateNestedManyWithoutDocumentInput
+  personnelFileDocument?: Prisma.PersonnelFileDocumentCreateNestedOneWithoutDocumentInput
 }
 
 export type DocumentUncheckedCreateInput = {
@@ -466,6 +470,7 @@ export type DocumentUncheckedCreateInput = {
   invoiceFiles?: Prisma.InvoiceFileUncheckedCreateNestedManyWithoutDocumentInput
   paymentExports?: Prisma.PaymentExportUncheckedCreateNestedManyWithoutDocumentInput
   workflowAttachments?: Prisma.WorkflowAttachmentUncheckedCreateNestedManyWithoutDocumentInput
+  personnelFileDocument?: Prisma.PersonnelFileDocumentUncheckedCreateNestedOneWithoutDocumentInput
 }
 
 export type DocumentUpdateInput = {
@@ -490,6 +495,7 @@ export type DocumentUpdateInput = {
   invoiceFiles?: Prisma.InvoiceFileUpdateManyWithoutDocumentNestedInput
   paymentExports?: Prisma.PaymentExportUpdateManyWithoutDocumentNestedInput
   workflowAttachments?: Prisma.WorkflowAttachmentUpdateManyWithoutDocumentNestedInput
+  personnelFileDocument?: Prisma.PersonnelFileDocumentUpdateOneWithoutDocumentNestedInput
 }
 
 export type DocumentUncheckedUpdateInput = {
@@ -514,6 +520,7 @@ export type DocumentUncheckedUpdateInput = {
   invoiceFiles?: Prisma.InvoiceFileUncheckedUpdateManyWithoutDocumentNestedInput
   paymentExports?: Prisma.PaymentExportUncheckedUpdateManyWithoutDocumentNestedInput
   workflowAttachments?: Prisma.WorkflowAttachmentUncheckedUpdateManyWithoutDocumentNestedInput
+  personnelFileDocument?: Prisma.PersonnelFileDocumentUncheckedUpdateOneWithoutDocumentNestedInput
 }
 
 export type DocumentCreateManyInput = {
@@ -777,6 +784,20 @@ export type DocumentUpdateOneWithoutPaymentExportsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.DocumentUpdateToOneWithWhereWithoutPaymentExportsInput, Prisma.DocumentUpdateWithoutPaymentExportsInput>, Prisma.DocumentUncheckedUpdateWithoutPaymentExportsInput>
 }
 
+export type DocumentCreateNestedOneWithoutPersonnelFileDocumentInput = {
+  create?: Prisma.XOR<Prisma.DocumentCreateWithoutPersonnelFileDocumentInput, Prisma.DocumentUncheckedCreateWithoutPersonnelFileDocumentInput>
+  connectOrCreate?: Prisma.DocumentCreateOrConnectWithoutPersonnelFileDocumentInput
+  connect?: Prisma.DocumentWhereUniqueInput
+}
+
+export type DocumentUpdateOneRequiredWithoutPersonnelFileDocumentNestedInput = {
+  create?: Prisma.XOR<Prisma.DocumentCreateWithoutPersonnelFileDocumentInput, Prisma.DocumentUncheckedCreateWithoutPersonnelFileDocumentInput>
+  connectOrCreate?: Prisma.DocumentCreateOrConnectWithoutPersonnelFileDocumentInput
+  upsert?: Prisma.DocumentUpsertWithoutPersonnelFileDocumentInput
+  connect?: Prisma.DocumentWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.DocumentUpdateToOneWithWhereWithoutPersonnelFileDocumentInput, Prisma.DocumentUpdateWithoutPersonnelFileDocumentInput>, Prisma.DocumentUncheckedUpdateWithoutPersonnelFileDocumentInput>
+}
+
 export type DocumentCreateNestedOneWithoutWorkflowAttachmentsInput = {
   create?: Prisma.XOR<Prisma.DocumentCreateWithoutWorkflowAttachmentsInput, Prisma.DocumentUncheckedCreateWithoutWorkflowAttachmentsInput>
   connectOrCreate?: Prisma.DocumentCreateOrConnectWithoutWorkflowAttachmentsInput
@@ -812,6 +833,7 @@ export type DocumentCreateWithoutLinksInput = {
   invoiceFiles?: Prisma.InvoiceFileCreateNestedManyWithoutDocumentInput
   paymentExports?: Prisma.PaymentExportCreateNestedManyWithoutDocumentInput
   workflowAttachments?: Prisma.WorkflowAttachmentCreateNestedManyWithoutDocumentInput
+  personnelFileDocument?: Prisma.PersonnelFileDocumentCreateNestedOneWithoutDocumentInput
 }
 
 export type DocumentUncheckedCreateWithoutLinksInput = {
@@ -835,6 +857,7 @@ export type DocumentUncheckedCreateWithoutLinksInput = {
   invoiceFiles?: Prisma.InvoiceFileUncheckedCreateNestedManyWithoutDocumentInput
   paymentExports?: Prisma.PaymentExportUncheckedCreateNestedManyWithoutDocumentInput
   workflowAttachments?: Prisma.WorkflowAttachmentUncheckedCreateNestedManyWithoutDocumentInput
+  personnelFileDocument?: Prisma.PersonnelFileDocumentUncheckedCreateNestedOneWithoutDocumentInput
 }
 
 export type DocumentCreateOrConnectWithoutLinksInput = {
@@ -874,6 +897,7 @@ export type DocumentUpdateWithoutLinksInput = {
   invoiceFiles?: Prisma.InvoiceFileUpdateManyWithoutDocumentNestedInput
   paymentExports?: Prisma.PaymentExportUpdateManyWithoutDocumentNestedInput
   workflowAttachments?: Prisma.WorkflowAttachmentUpdateManyWithoutDocumentNestedInput
+  personnelFileDocument?: Prisma.PersonnelFileDocumentUpdateOneWithoutDocumentNestedInput
 }
 
 export type DocumentUncheckedUpdateWithoutLinksInput = {
@@ -897,6 +921,7 @@ export type DocumentUncheckedUpdateWithoutLinksInput = {
   invoiceFiles?: Prisma.InvoiceFileUncheckedUpdateManyWithoutDocumentNestedInput
   paymentExports?: Prisma.PaymentExportUncheckedUpdateManyWithoutDocumentNestedInput
   workflowAttachments?: Prisma.WorkflowAttachmentUncheckedUpdateManyWithoutDocumentNestedInput
+  personnelFileDocument?: Prisma.PersonnelFileDocumentUncheckedUpdateOneWithoutDocumentNestedInput
 }
 
 export type DocumentCreateWithoutInvoiceFilesInput = {
@@ -920,6 +945,7 @@ export type DocumentCreateWithoutInvoiceFilesInput = {
   links?: Prisma.DocumentLinkCreateNestedManyWithoutDocumentInput
   paymentExports?: Prisma.PaymentExportCreateNestedManyWithoutDocumentInput
   workflowAttachments?: Prisma.WorkflowAttachmentCreateNestedManyWithoutDocumentInput
+  personnelFileDocument?: Prisma.PersonnelFileDocumentCreateNestedOneWithoutDocumentInput
 }
 
 export type DocumentUncheckedCreateWithoutInvoiceFilesInput = {
@@ -943,6 +969,7 @@ export type DocumentUncheckedCreateWithoutInvoiceFilesInput = {
   links?: Prisma.DocumentLinkUncheckedCreateNestedManyWithoutDocumentInput
   paymentExports?: Prisma.PaymentExportUncheckedCreateNestedManyWithoutDocumentInput
   workflowAttachments?: Prisma.WorkflowAttachmentUncheckedCreateNestedManyWithoutDocumentInput
+  personnelFileDocument?: Prisma.PersonnelFileDocumentUncheckedCreateNestedOneWithoutDocumentInput
 }
 
 export type DocumentCreateOrConnectWithoutInvoiceFilesInput = {
@@ -982,6 +1009,7 @@ export type DocumentUpdateWithoutInvoiceFilesInput = {
   links?: Prisma.DocumentLinkUpdateManyWithoutDocumentNestedInput
   paymentExports?: Prisma.PaymentExportUpdateManyWithoutDocumentNestedInput
   workflowAttachments?: Prisma.WorkflowAttachmentUpdateManyWithoutDocumentNestedInput
+  personnelFileDocument?: Prisma.PersonnelFileDocumentUpdateOneWithoutDocumentNestedInput
 }
 
 export type DocumentUncheckedUpdateWithoutInvoiceFilesInput = {
@@ -1005,6 +1033,7 @@ export type DocumentUncheckedUpdateWithoutInvoiceFilesInput = {
   links?: Prisma.DocumentLinkUncheckedUpdateManyWithoutDocumentNestedInput
   paymentExports?: Prisma.PaymentExportUncheckedUpdateManyWithoutDocumentNestedInput
   workflowAttachments?: Prisma.WorkflowAttachmentUncheckedUpdateManyWithoutDocumentNestedInput
+  personnelFileDocument?: Prisma.PersonnelFileDocumentUncheckedUpdateOneWithoutDocumentNestedInput
 }
 
 export type DocumentCreateWithoutOrganizationInput = {
@@ -1028,6 +1057,7 @@ export type DocumentCreateWithoutOrganizationInput = {
   invoiceFiles?: Prisma.InvoiceFileCreateNestedManyWithoutDocumentInput
   paymentExports?: Prisma.PaymentExportCreateNestedManyWithoutDocumentInput
   workflowAttachments?: Prisma.WorkflowAttachmentCreateNestedManyWithoutDocumentInput
+  personnelFileDocument?: Prisma.PersonnelFileDocumentCreateNestedOneWithoutDocumentInput
 }
 
 export type DocumentUncheckedCreateWithoutOrganizationInput = {
@@ -1051,6 +1081,7 @@ export type DocumentUncheckedCreateWithoutOrganizationInput = {
   invoiceFiles?: Prisma.InvoiceFileUncheckedCreateNestedManyWithoutDocumentInput
   paymentExports?: Prisma.PaymentExportUncheckedCreateNestedManyWithoutDocumentInput
   workflowAttachments?: Prisma.WorkflowAttachmentUncheckedCreateNestedManyWithoutDocumentInput
+  personnelFileDocument?: Prisma.PersonnelFileDocumentUncheckedCreateNestedOneWithoutDocumentInput
 }
 
 export type DocumentCreateOrConnectWithoutOrganizationInput = {
@@ -1123,6 +1154,7 @@ export type DocumentCreateWithoutPaymentExportsInput = {
   links?: Prisma.DocumentLinkCreateNestedManyWithoutDocumentInput
   invoiceFiles?: Prisma.InvoiceFileCreateNestedManyWithoutDocumentInput
   workflowAttachments?: Prisma.WorkflowAttachmentCreateNestedManyWithoutDocumentInput
+  personnelFileDocument?: Prisma.PersonnelFileDocumentCreateNestedOneWithoutDocumentInput
 }
 
 export type DocumentUncheckedCreateWithoutPaymentExportsInput = {
@@ -1146,6 +1178,7 @@ export type DocumentUncheckedCreateWithoutPaymentExportsInput = {
   links?: Prisma.DocumentLinkUncheckedCreateNestedManyWithoutDocumentInput
   invoiceFiles?: Prisma.InvoiceFileUncheckedCreateNestedManyWithoutDocumentInput
   workflowAttachments?: Prisma.WorkflowAttachmentUncheckedCreateNestedManyWithoutDocumentInput
+  personnelFileDocument?: Prisma.PersonnelFileDocumentUncheckedCreateNestedOneWithoutDocumentInput
 }
 
 export type DocumentCreateOrConnectWithoutPaymentExportsInput = {
@@ -1185,6 +1218,7 @@ export type DocumentUpdateWithoutPaymentExportsInput = {
   links?: Prisma.DocumentLinkUpdateManyWithoutDocumentNestedInput
   invoiceFiles?: Prisma.InvoiceFileUpdateManyWithoutDocumentNestedInput
   workflowAttachments?: Prisma.WorkflowAttachmentUpdateManyWithoutDocumentNestedInput
+  personnelFileDocument?: Prisma.PersonnelFileDocumentUpdateOneWithoutDocumentNestedInput
 }
 
 export type DocumentUncheckedUpdateWithoutPaymentExportsInput = {
@@ -1207,6 +1241,119 @@ export type DocumentUncheckedUpdateWithoutPaymentExportsInput = {
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   links?: Prisma.DocumentLinkUncheckedUpdateManyWithoutDocumentNestedInput
   invoiceFiles?: Prisma.InvoiceFileUncheckedUpdateManyWithoutDocumentNestedInput
+  workflowAttachments?: Prisma.WorkflowAttachmentUncheckedUpdateManyWithoutDocumentNestedInput
+  personnelFileDocument?: Prisma.PersonnelFileDocumentUncheckedUpdateOneWithoutDocumentNestedInput
+}
+
+export type DocumentCreateWithoutPersonnelFileDocumentInput = {
+  id?: string
+  storageKey: string
+  originalFileName: string
+  mimeType: string
+  fileSizeBytes: bigint | number
+  checksumSha256: string
+  documentType: $Enums.DocumentType
+  status?: $Enums.DocumentStatus
+  visibility?: $Enums.DocumentVisibility
+  uploadedByUserId?: string | null
+  source: $Enums.DocumentSource
+  virusScanStatus?: $Enums.VirusScanStatus
+  encrypted?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  organization: Prisma.OrganizationCreateNestedOneWithoutDocumentsInput
+  links?: Prisma.DocumentLinkCreateNestedManyWithoutDocumentInput
+  invoiceFiles?: Prisma.InvoiceFileCreateNestedManyWithoutDocumentInput
+  paymentExports?: Prisma.PaymentExportCreateNestedManyWithoutDocumentInput
+  workflowAttachments?: Prisma.WorkflowAttachmentCreateNestedManyWithoutDocumentInput
+}
+
+export type DocumentUncheckedCreateWithoutPersonnelFileDocumentInput = {
+  id?: string
+  organizationId: string
+  storageKey: string
+  originalFileName: string
+  mimeType: string
+  fileSizeBytes: bigint | number
+  checksumSha256: string
+  documentType: $Enums.DocumentType
+  status?: $Enums.DocumentStatus
+  visibility?: $Enums.DocumentVisibility
+  uploadedByUserId?: string | null
+  source: $Enums.DocumentSource
+  virusScanStatus?: $Enums.VirusScanStatus
+  encrypted?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  links?: Prisma.DocumentLinkUncheckedCreateNestedManyWithoutDocumentInput
+  invoiceFiles?: Prisma.InvoiceFileUncheckedCreateNestedManyWithoutDocumentInput
+  paymentExports?: Prisma.PaymentExportUncheckedCreateNestedManyWithoutDocumentInput
+  workflowAttachments?: Prisma.WorkflowAttachmentUncheckedCreateNestedManyWithoutDocumentInput
+}
+
+export type DocumentCreateOrConnectWithoutPersonnelFileDocumentInput = {
+  where: Prisma.DocumentWhereUniqueInput
+  create: Prisma.XOR<Prisma.DocumentCreateWithoutPersonnelFileDocumentInput, Prisma.DocumentUncheckedCreateWithoutPersonnelFileDocumentInput>
+}
+
+export type DocumentUpsertWithoutPersonnelFileDocumentInput = {
+  update: Prisma.XOR<Prisma.DocumentUpdateWithoutPersonnelFileDocumentInput, Prisma.DocumentUncheckedUpdateWithoutPersonnelFileDocumentInput>
+  create: Prisma.XOR<Prisma.DocumentCreateWithoutPersonnelFileDocumentInput, Prisma.DocumentUncheckedCreateWithoutPersonnelFileDocumentInput>
+  where?: Prisma.DocumentWhereInput
+}
+
+export type DocumentUpdateToOneWithWhereWithoutPersonnelFileDocumentInput = {
+  where?: Prisma.DocumentWhereInput
+  data: Prisma.XOR<Prisma.DocumentUpdateWithoutPersonnelFileDocumentInput, Prisma.DocumentUncheckedUpdateWithoutPersonnelFileDocumentInput>
+}
+
+export type DocumentUpdateWithoutPersonnelFileDocumentInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  storageKey?: Prisma.StringFieldUpdateOperationsInput | string
+  originalFileName?: Prisma.StringFieldUpdateOperationsInput | string
+  mimeType?: Prisma.StringFieldUpdateOperationsInput | string
+  fileSizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  checksumSha256?: Prisma.StringFieldUpdateOperationsInput | string
+  documentType?: Prisma.EnumDocumentTypeFieldUpdateOperationsInput | $Enums.DocumentType
+  status?: Prisma.EnumDocumentStatusFieldUpdateOperationsInput | $Enums.DocumentStatus
+  visibility?: Prisma.EnumDocumentVisibilityFieldUpdateOperationsInput | $Enums.DocumentVisibility
+  uploadedByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  source?: Prisma.EnumDocumentSourceFieldUpdateOperationsInput | $Enums.DocumentSource
+  virusScanStatus?: Prisma.EnumVirusScanStatusFieldUpdateOperationsInput | $Enums.VirusScanStatus
+  encrypted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  organization?: Prisma.OrganizationUpdateOneRequiredWithoutDocumentsNestedInput
+  links?: Prisma.DocumentLinkUpdateManyWithoutDocumentNestedInput
+  invoiceFiles?: Prisma.InvoiceFileUpdateManyWithoutDocumentNestedInput
+  paymentExports?: Prisma.PaymentExportUpdateManyWithoutDocumentNestedInput
+  workflowAttachments?: Prisma.WorkflowAttachmentUpdateManyWithoutDocumentNestedInput
+}
+
+export type DocumentUncheckedUpdateWithoutPersonnelFileDocumentInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  organizationId?: Prisma.StringFieldUpdateOperationsInput | string
+  storageKey?: Prisma.StringFieldUpdateOperationsInput | string
+  originalFileName?: Prisma.StringFieldUpdateOperationsInput | string
+  mimeType?: Prisma.StringFieldUpdateOperationsInput | string
+  fileSizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  checksumSha256?: Prisma.StringFieldUpdateOperationsInput | string
+  documentType?: Prisma.EnumDocumentTypeFieldUpdateOperationsInput | $Enums.DocumentType
+  status?: Prisma.EnumDocumentStatusFieldUpdateOperationsInput | $Enums.DocumentStatus
+  visibility?: Prisma.EnumDocumentVisibilityFieldUpdateOperationsInput | $Enums.DocumentVisibility
+  uploadedByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  source?: Prisma.EnumDocumentSourceFieldUpdateOperationsInput | $Enums.DocumentSource
+  virusScanStatus?: Prisma.EnumVirusScanStatusFieldUpdateOperationsInput | $Enums.VirusScanStatus
+  encrypted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  links?: Prisma.DocumentLinkUncheckedUpdateManyWithoutDocumentNestedInput
+  invoiceFiles?: Prisma.InvoiceFileUncheckedUpdateManyWithoutDocumentNestedInput
+  paymentExports?: Prisma.PaymentExportUncheckedUpdateManyWithoutDocumentNestedInput
   workflowAttachments?: Prisma.WorkflowAttachmentUncheckedUpdateManyWithoutDocumentNestedInput
 }
 
@@ -1231,6 +1378,7 @@ export type DocumentCreateWithoutWorkflowAttachmentsInput = {
   links?: Prisma.DocumentLinkCreateNestedManyWithoutDocumentInput
   invoiceFiles?: Prisma.InvoiceFileCreateNestedManyWithoutDocumentInput
   paymentExports?: Prisma.PaymentExportCreateNestedManyWithoutDocumentInput
+  personnelFileDocument?: Prisma.PersonnelFileDocumentCreateNestedOneWithoutDocumentInput
 }
 
 export type DocumentUncheckedCreateWithoutWorkflowAttachmentsInput = {
@@ -1254,6 +1402,7 @@ export type DocumentUncheckedCreateWithoutWorkflowAttachmentsInput = {
   links?: Prisma.DocumentLinkUncheckedCreateNestedManyWithoutDocumentInput
   invoiceFiles?: Prisma.InvoiceFileUncheckedCreateNestedManyWithoutDocumentInput
   paymentExports?: Prisma.PaymentExportUncheckedCreateNestedManyWithoutDocumentInput
+  personnelFileDocument?: Prisma.PersonnelFileDocumentUncheckedCreateNestedOneWithoutDocumentInput
 }
 
 export type DocumentCreateOrConnectWithoutWorkflowAttachmentsInput = {
@@ -1293,6 +1442,7 @@ export type DocumentUpdateWithoutWorkflowAttachmentsInput = {
   links?: Prisma.DocumentLinkUpdateManyWithoutDocumentNestedInput
   invoiceFiles?: Prisma.InvoiceFileUpdateManyWithoutDocumentNestedInput
   paymentExports?: Prisma.PaymentExportUpdateManyWithoutDocumentNestedInput
+  personnelFileDocument?: Prisma.PersonnelFileDocumentUpdateOneWithoutDocumentNestedInput
 }
 
 export type DocumentUncheckedUpdateWithoutWorkflowAttachmentsInput = {
@@ -1316,6 +1466,7 @@ export type DocumentUncheckedUpdateWithoutWorkflowAttachmentsInput = {
   links?: Prisma.DocumentLinkUncheckedUpdateManyWithoutDocumentNestedInput
   invoiceFiles?: Prisma.InvoiceFileUncheckedUpdateManyWithoutDocumentNestedInput
   paymentExports?: Prisma.PaymentExportUncheckedUpdateManyWithoutDocumentNestedInput
+  personnelFileDocument?: Prisma.PersonnelFileDocumentUncheckedUpdateOneWithoutDocumentNestedInput
 }
 
 export type DocumentCreateManyOrganizationInput = {
@@ -1358,6 +1509,7 @@ export type DocumentUpdateWithoutOrganizationInput = {
   invoiceFiles?: Prisma.InvoiceFileUpdateManyWithoutDocumentNestedInput
   paymentExports?: Prisma.PaymentExportUpdateManyWithoutDocumentNestedInput
   workflowAttachments?: Prisma.WorkflowAttachmentUpdateManyWithoutDocumentNestedInput
+  personnelFileDocument?: Prisma.PersonnelFileDocumentUpdateOneWithoutDocumentNestedInput
 }
 
 export type DocumentUncheckedUpdateWithoutOrganizationInput = {
@@ -1381,6 +1533,7 @@ export type DocumentUncheckedUpdateWithoutOrganizationInput = {
   invoiceFiles?: Prisma.InvoiceFileUncheckedUpdateManyWithoutDocumentNestedInput
   paymentExports?: Prisma.PaymentExportUncheckedUpdateManyWithoutDocumentNestedInput
   workflowAttachments?: Prisma.WorkflowAttachmentUncheckedUpdateManyWithoutDocumentNestedInput
+  personnelFileDocument?: Prisma.PersonnelFileDocumentUncheckedUpdateOneWithoutDocumentNestedInput
 }
 
 export type DocumentUncheckedUpdateManyWithoutOrganizationInput = {
@@ -1483,6 +1636,7 @@ export type DocumentSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs
   invoiceFiles?: boolean | Prisma.Document$invoiceFilesArgs<ExtArgs>
   paymentExports?: boolean | Prisma.Document$paymentExportsArgs<ExtArgs>
   workflowAttachments?: boolean | Prisma.Document$workflowAttachmentsArgs<ExtArgs>
+  personnelFileDocument?: boolean | Prisma.Document$personnelFileDocumentArgs<ExtArgs>
   _count?: boolean | Prisma.DocumentCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["document"]>
 
@@ -1555,6 +1709,7 @@ export type DocumentInclude<ExtArgs extends runtime.Types.Extensions.InternalArg
   invoiceFiles?: boolean | Prisma.Document$invoiceFilesArgs<ExtArgs>
   paymentExports?: boolean | Prisma.Document$paymentExportsArgs<ExtArgs>
   workflowAttachments?: boolean | Prisma.Document$workflowAttachmentsArgs<ExtArgs>
+  personnelFileDocument?: boolean | Prisma.Document$personnelFileDocumentArgs<ExtArgs>
   _count?: boolean | Prisma.DocumentCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type DocumentIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1572,6 +1727,7 @@ export type $DocumentPayload<ExtArgs extends runtime.Types.Extensions.InternalAr
     invoiceFiles: Prisma.$InvoiceFilePayload<ExtArgs>[]
     paymentExports: Prisma.$PaymentExportPayload<ExtArgs>[]
     workflowAttachments: Prisma.$WorkflowAttachmentPayload<ExtArgs>[]
+    personnelFileDocument: Prisma.$PersonnelFileDocumentPayload<ExtArgs> | null
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1990,6 +2146,7 @@ export interface Prisma__DocumentClient<T, Null = never, ExtArgs extends runtime
   invoiceFiles<T extends Prisma.Document$invoiceFilesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Document$invoiceFilesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InvoiceFilePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   paymentExports<T extends Prisma.Document$paymentExportsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Document$paymentExportsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PaymentExportPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   workflowAttachments<T extends Prisma.Document$workflowAttachmentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Document$workflowAttachmentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$WorkflowAttachmentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  personnelFileDocument<T extends Prisma.Document$personnelFileDocumentArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Document$personnelFileDocumentArgs<ExtArgs>>): Prisma.Prisma__PersonnelFileDocumentClient<runtime.Types.Result.GetResult<Prisma.$PersonnelFileDocumentPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2530,6 +2687,25 @@ export type Document$workflowAttachmentsArgs<ExtArgs extends runtime.Types.Exten
   take?: number
   skip?: number
   distinct?: Prisma.WorkflowAttachmentScalarFieldEnum | Prisma.WorkflowAttachmentScalarFieldEnum[]
+}
+
+/**
+ * Document.personnelFileDocument
+ */
+export type Document$personnelFileDocumentArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the PersonnelFileDocument
+   */
+  select?: Prisma.PersonnelFileDocumentSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the PersonnelFileDocument
+   */
+  omit?: Prisma.PersonnelFileDocumentOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.PersonnelFileDocumentInclude<ExtArgs> | null
+  where?: Prisma.PersonnelFileDocumentWhereInput
 }
 
 /**

@@ -1,0 +1,95 @@
+// Jurisdiction-correct personnel file ("akta osobowe") attached 1:1 to the
+// Worker identity root. PersonnelFile is the retention/section anchor for an
+// employee: it carries the jurisdiction key (countryCode, copied from the
+// worker's EmployeeProfile at file creation so retention/section rules resolve
+// without a join) and the two retention read-seam columns. hireDate is the
+// hire anchor (EmployeeProfile has no hire column); terminatedAt is populated
+// by offboarding — while it is null the employee is active and the file is
+// retained indefinitely, so the clock only starts once a termination lands.
+//
+// A PersonnelFileDocument links each stored Document into exactly one section
+// (the 4-section view is realized as an enum on the link, not a row-per-section
+// table). It never forks the Document stack — it 1:1-references an existing
+// Document by a unique documentId.
+//
+// Tenant-owning: both models carry `organizationId` and are deliberately absent
+// from `globalModels` in tenant.ts, so every read/mutation inherits the
+// withTenantScope predicate. A cross-org read can never surface another org's
+// personnel file or its documents.
+
+enum PersonnelFileSection {
+  SECTION_A
+  SECTION_B
+  SECTION_C
+  SECTION_D
+}
+
+enum PersonnelDocClassificationMethod {
+  DETERMINISTIC
+  AI
+  MANUAL
+  PENDING
+}
+
+model PersonnelFile {
+  id             String @id @default(cuid())
+  organizationId String
+  // 1:1 sidecar link to the Worker identity root. The unique FK makes one
+  // personnel file per employee a DB-enforced invariant.
+  workerId       String @unique
+
+  // Jurisdiction key, snapshotted from the worker's EmployeeProfile.countryCode
+  // at file creation. Retention windows and the section registry resolve off it.
+  countryCode String
+
+  // Retention read-seams. hireDate is the hire anchor (no hire column exists on
+  // EmployeeProfile); terminatedAt is the termination anchor populated on
+  // offboarding — null means active, so the file is retained indefinitely until
+  // a termination event starts the clock.
+  hireDate     DateTime? @db.Date
+  terminatedAt DateTime?
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  organization Organization            @relation(fields: [organizationId], references: [id])
+  worker       Worker                  @relation(fields: [workerId], references: [id])
+  documents    PersonnelFileDocument[]
+
+  @@unique([organizationId, workerId])
+  @@index([organizationId])
+}
+
+model PersonnelFileDocument {
+  id              String @id @default(cuid())
+  organizationId  String
+  personnelFileId String
+  // 1:1 link into the existing Document stack — the document is stored once and
+  // referenced here, never duplicated.
+  documentId      String @unique
+
+  // Canonical section assignment. Null until the document is classified into one
+  // of the four sections (deterministic map, AI fallback, or admin classify).
+  section PersonnelFileSection?
+
+  // Effective document date anchor; falls back to Document.createdAt when unset.
+  documentDate DateTime? @db.Date
+
+  // How `section` was resolved. PENDING until classification runs; the AI guess
+  // and its confidence are retained for the admin review step.
+  classificationMethod PersonnelDocClassificationMethod @default(PENDING)
+  aiSectionGuess       PersonnelFileSection?
+  aiConfidence         Int?
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  personnelFile PersonnelFile @relation(fields: [personnelFileId], references: [id])
+  document      Document      @relation(fields: [documentId], references: [id])
+  organization  Organization  @relation(fields: [organizationId], references: [id])
+
+  @@index([organizationId])
+  @@index([personnelFileId])
+}

@@ -148,10 +148,12 @@ model Document {
 
   organization Organization @relation(fields: [organizationId], references: [id])
 
-  links               DocumentLink[]
-  invoiceFiles        InvoiceFile[]
-  paymentExports      PaymentExport[]
-  workflowAttachments WorkflowAttachment[]
+  links                 DocumentLink[]
+  invoiceFiles          InvoiceFile[]
+  paymentExports        PaymentExport[]
+  workflowAttachments   WorkflowAttachment[]
+  // 1:1 link into a personnel file section (documentId is unique on the join).
+  personnelFileDocument PersonnelFileDocument?
 
   @@index([organizationId])
   @@index([organizationId, documentType, status])

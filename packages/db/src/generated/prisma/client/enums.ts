@@ -1135,6 +1135,26 @@ export const PeppolTransmissionStatus = {
 export type PeppolTransmissionStatus = (typeof PeppolTransmissionStatus)[keyof typeof PeppolTransmissionStatus]
 
 
+export const PersonnelFileSection = {
+  SECTION_A: 'SECTION_A',
+  SECTION_B: 'SECTION_B',
+  SECTION_C: 'SECTION_C',
+  SECTION_D: 'SECTION_D'
+} as const
+
+export type PersonnelFileSection = (typeof PersonnelFileSection)[keyof typeof PersonnelFileSection]
+
+
+export const PersonnelDocClassificationMethod = {
+  DETERMINISTIC: 'DETERMINISTIC',
+  AI: 'AI',
+  MANUAL: 'MANUAL',
+  PENDING: 'PENDING'
+} as const
+
+export type PersonnelDocClassificationMethod = (typeof PersonnelDocClassificationMethod)[keyof typeof PersonnelDocClassificationMethod]
+
+
 export const ContractorChangeRequestStatus = {
   PENDING: 'PENDING',
   APPROVED: 'APPROVED',

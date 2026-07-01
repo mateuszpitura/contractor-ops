@@ -49,6 +49,8 @@ model Organization {
   costCenters                    CostCenter[]
   workers                        Worker[]
   employeeProfiles               EmployeeProfile[]
+  personnelFiles                 PersonnelFile[]
+  personnelFileDocuments         PersonnelFileDocument[]
   contractors                    Contractor[]
   contractorContacts             ContractorContact[]
   contractorBillingProfiles      ContractorBillingProfile[]
