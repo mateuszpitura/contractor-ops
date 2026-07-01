@@ -1,5 +1,5 @@
-// Settlement wiring on the export path (D-07) + the ACH_NACHA / FEDWIRE
-// dispatch branches.
+// Settlement wiring on the export path + the ACH_NACHA / FEDWIRE dispatch
+// branches.
 //
 // `_buildExportItems` must settle each run item BEFORE the export buffer is
 // generated: it resolves the settlement currency (per-run override, else the
