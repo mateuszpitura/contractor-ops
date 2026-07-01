@@ -65,19 +65,27 @@ vi.mock('@contractor-ops/feature-flags', async importOriginal => {
   };
 });
 
-vi.mock('@contractor-ops/auth', () => ({
-  auth: {
-    api: {
+// Keep the real access-control `roles` matrix (the per-section grants under
+// test) while stubbing the session/permission API surface. hasPermission is
+// forced-true so the getFile procedure gate passes for every role — the
+// per-section lock is decided by the real role statements, not this mock.
+vi.mock('@contractor-ops/auth', async importOriginal => {
+  const actual = await importOriginal<typeof import('@contractor-ops/auth')>();
+  return {
+    ...actual,
+    auth: {
+      api: {
+        getSession: vi.fn(),
+        hasPermission: vi.fn().mockResolvedValue({ success: true }),
+      },
+    },
+    authApi: {
       getSession: vi.fn(),
       hasPermission: vi.fn().mockResolvedValue({ success: true }),
+      getFullOrganization: vi.fn(),
     },
-  },
-  authApi: {
-    getSession: vi.fn(),
-    hasPermission: vi.fn().mockResolvedValue({ success: true }),
-    getFullOrganization: vi.fn(),
-  },
-}));
+  };
+});
 
 vi.mock('@contractor-ops/db', () => ({
   withRlsTransactions: <T>(c: T) => c,
@@ -95,6 +103,11 @@ vi.mock('@contractor-ops/db', () => ({
   createTenantClientFrom: vi.fn(() => mockPrisma),
   getRegionalClient: vi.fn(() => mockPrisma),
   preWarmRegionalClients: vi.fn(),
+  getPersonnelRetentionCutoff: vi.fn(() => ({
+    erasable: false,
+    retainUntil: null,
+    citation: null,
+  })),
 }));
 
 vi.mock('../services/cache', () => ({

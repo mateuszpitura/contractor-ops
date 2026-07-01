@@ -125,19 +125,25 @@ vi.mock('@contractor-ops/feature-flags', async importOriginal => {
   };
 });
 
-vi.mock('@contractor-ops/auth', () => ({
-  auth: {
-    api: {
+// Keep the real access-control `roles` matrix (so the hr_admin caller resolves
+// real per-section grants) while stubbing the session/permission API surface.
+vi.mock('@contractor-ops/auth', async importOriginal => {
+  const actual = await importOriginal<typeof import('@contractor-ops/auth')>();
+  return {
+    ...actual,
+    auth: {
+      api: {
+        getSession: vi.fn(),
+        hasPermission: vi.fn().mockResolvedValue({ success: true }),
+      },
+    },
+    authApi: {
       getSession: vi.fn(),
       hasPermission: vi.fn().mockResolvedValue({ success: true }),
+      getFullOrganization: vi.fn(),
     },
-  },
-  authApi: {
-    getSession: vi.fn(),
-    hasPermission: vi.fn().mockResolvedValue({ success: true }),
-    getFullOrganization: vi.fn(),
-  },
-}));
+  };
+});
 
 vi.mock('@contractor-ops/db', () => ({
   withRlsTransactions: <T>(c: T) => c,
@@ -155,6 +161,11 @@ vi.mock('@contractor-ops/db', () => ({
   createTenantClientFrom: vi.fn(() => mockPrisma),
   getRegionalClient: vi.fn(() => mockPrisma),
   preWarmRegionalClients: vi.fn(),
+  getPersonnelRetentionCutoff: vi.fn(() => ({
+    erasable: false,
+    retainUntil: null,
+    citation: null,
+  })),
 }));
 
 vi.mock('../services/cache', () => ({
