@@ -392,19 +392,22 @@ export function submitAbmeldungSv(input: AbmeldungSvInput): GovStubResult {
 | A5 | Per-market template content is authored as typed-const seeds (not user-entered) and materialized DRAFT on boot | Pattern 3 | If content must be legally vetted before shipping, seeds ship watermarked-DRAFT (consistent with Standing Constraint). |
 | A6 | `StatutoryCertificate` as a new dedicated model (vs reusing `Document` only) | Pattern 4 | If reusing `Document`+`WorkflowAttachment` alone, the immutable-snapshot + CAS guard must be reimplemented; dedicated model is cleaner. Discretion. |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Dated termination signal shape (Discretion D-01).**
    - Known: no dated termination field exists; `EmploymentStatus` is a bare enum `[VERIFIED: employee.prisma:45,58-63]`; `ContractorAssignment.endedAt` is the proven precedent (Phase 76 D-06 "administrative termination instant, distinct from activeTo, drives the 14-day cooldown") `[VERIFIED: contractor.prisma:212-215]`.
    - Unclear: whether HR needs a full event history.
    - Recommendation: **`EmployeeProfile.terminatedAt DateTime?`** for v7.0 (mirrors `endedAt`, minimal blast radius, feeds cooldown directly); revisit `EmploymentEvent` in v7.5 if audit history is required.
+   - RESOLVED: `EmployeeProfile.terminatedAt DateTime?` adopted for v7.0 (see Plan 93-02).
 
 2. **v7.0 cert subset vs v7.5 deferrals.**
    - Known: the full list (świadectwo pracy, PIT-11, Arbeitszeugnis qualified+simple, Lohnsteuerbescheinigung, P45, P11D, W-2, COBRA, 401k) is large; each is a react-pdf template + locked disclaimer.
    - Recommendation: ship the **structured, form-shaped** certs first (świadectwo pracy, P45, W-2, Lohnsteuerbescheinigung, simple Arbeitszeugnis); defer **free-text narrative** (qualified Arbeitszeugnis) and **US benefits packets** (COBRA, 401k rollover) to v7.5. Planner locks the subset.
+   - RESOLVED: v7.0 ships the structured form-shaped certs; qualified Arbeitszeugnis + COBRA/401k deferred to v7.5 (see Plan 93-06).
 
 3. **Onboarding vs offboarding template taxonomy (Discretion).**
    - Recommendation: two `WorkflowTemplate.type` values already exist (`ONBOARDING`/`OFFBOARDING`) `[VERIFIED: workflow.prisma:255-257]`; seed 8 templates = 4 jurisdictions × 2 types, keyed `@@unique([organizationId, jurisdiction, type, seedKey])`.
+   - RESOLVED: 8 templates = 4 jurisdictions × 2 types (ONBOARDING/OFFBOARDING) (see Plan 93-05).
 
 ## Environment Availability
 

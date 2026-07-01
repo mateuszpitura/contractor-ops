@@ -462,7 +462,19 @@ Plans:
   2. A per-market offboarding workflow runs for PL / DE / UK / US (świadectwo pracy/ekwiwalent/ZUS ZWUA/PIT-11; Arbeitszeugnis/Abmeldung SV/Lohnsteuerbescheinigung; P45/final RTI/pension/P11D; final paycheck/COBRA/W-2/401k).
   3. Employee offboarding composes with v6.0 F4 (IP verification, KT templates, IdP deprovisioning) by extending the existing run rather than duplicating it.
 
-**Plans**: TBD
+**Plans**: 10 plans (5 waves)
+
+- [ ] 93-01-PLAN.md — Wave 0 RED test scaffolds (worker startRun/deprovisioning, cert PDF, gov stubs, two-org cross-leak) [wave 1]
+- [ ] 93-02-PLAN.md — [BLOCKING] Schema foundation: EntityType +EMPLOYEE/WORKER, WorkflowRun.workerId, DeprovisioningRun nullable FKs + workerId, EmployeeProfile.terminatedAt, WorkflowTemplate jurisdiction/seedKey/@@unique, StatutoryCertificate + un-applied migration + db:generate [wave 1]
+- [ ] 93-03-PLAN.md — WorkflowRun worker-keying: discriminated-union startRunSchema + startRun worker branch + subject-agnostic resolveAssignee [wave 2]
+- [ ] 93-04-PLAN.md — DeprovisioningRun saga worker-keying (the spine): worker branch + terminatedAt cooldown + COUNTRY_TZ US [wave 2]
+- [ ] 93-05-PLAN.md — Per-market PL/DE/UK/US on/offboarding WorkflowTemplate seeds + idempotent boot-upsert + post-org-create-hook wiring [wave 2]
+- [ ] 93-06-PLAN.md — Statutory cert PDFs: locked adviser-verify disclaimer + statutory-cert-pdf service + 6 react-pdf templates (v7.0 subset) [wave 2]
+- [ ] 93-07-PLAN.md — Gov stub seams (I-9+E-Verify, ZUS ZWUA, Abmeldung SV, HMRC RTI, PIT filing) [wave 2]
+- [ ] 93-08-PLAN.md — employee-lifecycle-router (start on/offboard + generateCert + recordTermination) + root.ts mount [wave 3]
+- [ ] 93-09-PLAN.md — web-vite: worker-keyed deprovisioning trigger + employee lifecycle surface + i18n en/de/pl/ar/en-US [wave 4]
+- [ ] 93-10-PLAN.md — Documentation-follows-code: wiki + MEMORY invariants + check:wiki-brain [wave 5]
+
 **Research flag**: Standard — extends v6.0 F4 offboarding saga. Legal annotation required on statutory-paperwork copy (Standing Constraint).
 **UI hint**: yes
 
@@ -609,7 +621,7 @@ Phases execute in numeric order: 82 → 83 → … → 101. After Foundation (82
 | 90. Theme B — Employee Registry per Market (×6) | v7.0 | 7/7 | Complete    | 2026-07-01 |
 | 91. Theme B — Akta Osobowe / Personnel File | v7.0 | 0/TBD | Not started | - |
 | 92. Theme B — Leave + KP-Grade Time Tracking | v7.0 | 0/16 | Planned     | - |
-| 93. Theme B — Employee On/Offboarding | v7.0 | 0/TBD | Not started | - |
+| 93. Theme B — Employee On/Offboarding | v7.0 | 0/10 | Planned     | - |
 | 94. Theme B — Payroll Integration Adapters | v7.0 | 0/TBD | Not started | - |
 | 95. Theme B — HRIS Two-Way Sync | v7.0 | 0/TBD | Not started | - |
 | 96. Theme B — Employee Self-Service Portal | v7.0 | 0/TBD | Not started | - |
