@@ -2,7 +2,7 @@
 //
 // `scoreUsClassification` does not exist yet, so importing `../scoring.js` fails
 // at resolution and this suite is terminal-RED until the scorer lands. The
-// assertions pin the D-03 rule shape the pure scorer must satisfy:
+// assertions pin the rule shape the pure scorer must satisfy:
 //   - the federal base is the IRS common-law three-category weighted composite
 //     (behavioral / financial / relationship) — NOT the DOL 2024 economic-reality
 //     rule (which is under active rulemaking and must not be the primary base);
