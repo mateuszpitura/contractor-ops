@@ -288,7 +288,7 @@ Plans:
 
 **Wave 5** *(blocked on Wave 4 completion)*
 
-- [ ] 88-04-PLAN.md — Hand-rolled NACHA + Fedwire pacs.008 generators + detectFormat US routing (US-PAY-01/04)
+- [x] 88-04-PLAN.md — Hand-rolled NACHA + Fedwire pacs.008 generators + detectFormat US routing (US-PAY-01/04)
 
 **Wave 6** *(blocked on Wave 5 completion)*
 
@@ -377,7 +377,21 @@ Plans:
   3. A RODO/GDPR erasure request honors erasure only past the retention window and flags blocked sections with a statutory citation (never claims full erasure during a hold).
   4. A document uploaded to the file is auto-classified to section A/B/C/D; an ambiguous document triggers an admin classify step.
 
-**Plans**: TBD
+**Plans**: 12 plans (6 waves)
+
+- [ ] 91-01-PLAN.md — Wave-0 RED test scaffolds (retention/registry/RBAC/tenant-leak/erasure/classifier) [wave 1]
+- [ ] 91-02-PLAN.md — [BLOCKING] Prisma schema: PersonnelFile + PersonnelFileDocument (SECTION_A..D enum-on-link, hireDate/terminatedAt read-seam) + additive migration + push (AKTA-01) [wave 1]
+- [ ] 91-03-PLAN.md — compliance-policy per-jurisdiction registries: section taxonomy + event-anchor retention rules (PL/DE/UK/US) (AKTA-01/02) [wave 1]
+- [ ] 91-04-PLAN.md — Per-section RBAC grain: employeeFileA..D wired into the 4 HR roles, owner/contractor BFLA fence (AKTA-01) [wave 1]
+- [ ] 91-05-PLAN.md — Retention engine: akta years on the shared map + event-anchor resolver (max()+indefinite) + soft-delete & data-purge chokepoints (AKTA-02) [wave 2]
+- [ ] 91-06-PLAN.md — Document→section classifier service + killswitch.ai-personnel-classifier (taxonomy→AI→admin) (AKTA-04) [wave 2]
+- [ ] 91-07-PLAN.md — personnelFile router foundation: per-section read (permission-layer) + retention display + flag-gated mount + sub-router stubs (AKTA-01/02) [wave 3]
+- [ ] 91-08-PLAN.md — Classify-step router: attach→classifier wiring + admin approve/reject + pending-review queue (AKTA-04) [wave 4]
+- [ ] 91-09-PLAN.md — Per-employee erasure router: per-section dispositions + never-claim-full-erasure + audit (AKTA-03) [wave 4]
+- [ ] 91-10-PLAN.md — web-vite: 4-section shell (5 states) + retention panel + read hook + PersonnelFile i18n ×4 (AKTA-01/02 UI) [wave 4]
+- [ ] 91-11-PLAN.md — web-vite: classify review queue + erasure disposition view (criterion-#3 banner) + validators locked-phrase + i18n ×4 (AKTA-03/04 UI) [wave 5]
+- [ ] 91-12-PLAN.md — Documentation-follows-code: personnel-file wiki + structure/patterns + MEMORY invariants + check:wiki-brain + phase gate [wave 6]
+
 **Research flag**: Standard — composes with v6.0 F1 compliance-document engine + document infra. Legal annotation required on retention-rule copy (Standing Constraint).
 **UI hint**: yes
 
@@ -550,7 +564,7 @@ Phases execute in numeric order: 82 → 83 → … → 101. After Foundation (82
 | 85. Theme A — W-Form Intake + Tax-Treaty Engine | v7.0 | 4/4 | Complete   | 2026-06-16 |
 | 86. Theme A — TIN-Match → 1099-NEC → IRIS → State | v7.0 | 4/8 | In Progress|  |
 | 87. Theme A — 1042-S + US Classification + Letter | v7.0 | 0/10 | Not started | - |
-| 88. Theme A — US Payment Rail | v7.0 | 4/7 | In Progress|  |
+| 88. Theme A — US Payment Rail | v7.0 | 5/7 | In Progress|  |
 | 89. Theme B — Worker Model Abstraction (gate) | v7.0 | 6/6 | Complete   | 2026-06-22 |
 | 90. Theme B — Employee Registry per Market (×6) | v7.0 | 3/7 | In Progress|  |
 | 91. Theme B — Akta Osobowe / Personnel File | v7.0 | 0/TBD | Not started | - |
