@@ -12,5 +12,25 @@
         "US": "United States"
       }
     }
+  },
+  "UsClassification": {
+    "disclaimer": {
+      "acknowledgement": "I understand this is decision-support, not a legal determination, and I'll confirm any classification with a qualified advisor before I rely on it."
+    },
+    "ab5": {
+      "tooltip": "California AB5 watchlist: this engagement performs work in California, where the stricter ABC test applies. Review with your advisor — this is a flag, not a determination."
+    },
+    "section530": {
+      "label": "§530 relief",
+      "tooltip": "May be eligible for §530 safe-harbor relief. Confirm reporting consistency, substantive consistency, and a reasonable basis with your advisor."
+    },
+    "factors": {
+      "behavioral": "Behavioral control"
+    },
+    "citations": {
+      "federal": "IRS common-law test (Rev. Rul. 87-41): behavioral control, financial control, and the relationship of the parties.",
+      "section530": "§530 of the Revenue Act of 1978 — safe-harbor relief where reporting consistency, substantive consistency, and a reasonable basis are met."
+    },
+    "adviserVerify": "Figures, forms, and classifications shown here need verification by a jurisdiction-specific legal or tax advisor before you rely on them."
   }
 }

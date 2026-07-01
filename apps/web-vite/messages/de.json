@@ -580,7 +580,10 @@
       "toastSdsGenerated": "SDS erstellt – Download wird geöffnet…",
       "errorGenericTitle": "Dokument konnte nicht erstellt werden",
       "kindSds": "Status Determination Statement",
-      "kindDrvDefenseBundle": "DRV-Defensivdokumentation"
+      "kindDrvDefenseBundle": "DRV-Defensivdokumentation",
+      "kindUsDeterminationLetter": "US-Einstufungsschreiben",
+      "kindDrvDecisionLetter": "DRV-Bescheid",
+      "generateDeterminationLetter": "Einstufungsschreiben erstellen"
     },
     "disclaimer": {
       "title": "Bevor Sie das Ergebnis ansehen",
@@ -9129,6 +9132,103 @@
       "toast": {
         "error": "Der Löschantrag konnte nicht verarbeitet werden. Versuchen Sie es erneut."
       }
+    }
+  },
+  "UsClassification": {
+    "title": "US-Arbeitnehmerklassifizierung",
+    "empty": {
+      "heading": "Noch keine US-Klassifizierungsbewertung",
+      "body": "Führen Sie eine Bewertung durch, um zu sehen, wie dieses Engagement gegen den bundesrechtlichen Common-Law-Test, den kalifornischen ABC-Test und die §530-Entlastung abschneidet — zu Ihrer Orientierung, nicht als rechtliche Feststellung.",
+      "cta": "US-Klassifizierungsbewertung starten"
+    },
+    "error": {
+      "load": "Wir konnten dies nicht laden. Prüfen Sie Ihre Verbindung und versuchen Sie es erneut.",
+      "reload": "Neu laden"
+    },
+    "disclaimer": {
+      "title": "Bevor Sie dieses Ergebnis ansehen",
+      "acknowledgement": "Ich verstehe, dass dies eine Entscheidungshilfe ist, keine rechtliche Feststellung, und ich werde jede Klassifizierung mit einer qualifizierten Beraterin oder einem qualifizierten Berater bestätigen, bevor ich mich darauf verlasse.",
+      "acknowledging": "Wird gespeichert…",
+      "confirm": "Ergebnis ansehen"
+    },
+    "verdict": {
+      "employee": "Wahrscheinlich Arbeitnehmer",
+      "independent-contractor": "Wahrscheinlich selbständig",
+      "indeterminate": "Unbestimmt"
+    },
+    "ab5": {
+      "label": "AB5-Beobachtungsliste",
+      "tooltip": "Kalifornische AB5-Beobachtungsliste: Dieses Engagement wird in Kalifornien erbracht, wo der strengere ABC-Test gilt. Prüfen Sie dies mit Ihrer Beraterin oder Ihrem Berater — dies ist ein Hinweis, keine Feststellung."
+    },
+    "section530": {
+      "label": "§530-Entlastung",
+      "tooltip": "Möglicherweise für die §530-Safe-Harbour-Entlastung geeignet. Bestätigen Sie die Meldekonsistenz, die inhaltliche Konsistenz und eine angemessene Grundlage mit Ihrer Beraterin oder Ihrem Berater."
+    },
+    "ruleSetVersion": "Regelsatz {version}",
+    "computedOn": "Bewertet am {date}",
+    "factors": {
+      "heading": "Bundesrechtliche Common-Law-Faktoren",
+      "behavioral": "Verhaltenskontrolle",
+      "financial": "Finanzielle Kontrolle",
+      "relationship": "Beziehung der Parteien",
+      "employeeSignals": "Arbeitnehmersignale",
+      "contractorSignals": "Auftragnehmersignale"
+    },
+    "citations": {
+      "federal": "IRS-Common-Law-Test (Rev. Rul. 87-41): Verhaltenskontrolle, finanzielle Kontrolle und Beziehung der Parteien.",
+      "ab5": "California Labor Code §2775 (der ABC-Test), eingeschränkt durch AB2257.",
+      "section530": "§530 des Revenue Act von 1978 — Safe-Harbour-Entlastung, wenn Meldekonsistenz, inhaltliche Konsistenz und eine angemessene Grundlage erfüllt sind."
+    },
+    "adviserVerify": "Die hier angezeigten Zahlen, Formulare und Klassifizierungen müssen vor der Verwendung von einer rechts- oder steuerberatenden Person der jeweiligen Rechtsordnung geprüft werden.",
+    "live": {
+      "verdict": "Klassifizierungsergebnis: {verdict}.",
+      "verdictWithAb5": "Klassifizierungsergebnis: {verdict}. Der AB5-Beobachtungslisten-Hinweis gilt."
+    },
+    "override": {
+      "trigger": "Klassifizierung überschreiben",
+      "title": "Klassifizierung überschreiben",
+      "descriptionPrefix": "Halten Sie fest, warum Sie das bewertete Ergebnis überschreiben für",
+      "descriptionSuffix": "Dies wird im Audit-Log protokolliert. Eine Begründung ist erforderlich.",
+      "verdictLabel": "Überschreibendes Ergebnis",
+      "verdictPlaceholder": "Ergebnis wählen",
+      "reasonLabel": "Begründung",
+      "reasonPlaceholder": "Erläutern Sie, warum Sie das bewertete Ergebnis überschreiben",
+      "reasonHint": "Wird im Audit-Log neben dem bewerteten Ergebnis erfasst.",
+      "ackLabel": "Ich bestätige, dass diese Überschreibung eine menschliche Entscheidung widerspiegelt, keine Systemfeststellung, und dass ich dafür die Verantwortung übernehme.",
+      "auditBadge": "Protokolliert",
+      "auditNote": "Das bewertete Ergebnis bleibt erhalten; Ihre Überschreibung wird darüber erfasst.",
+      "cancel": "Abbrechen",
+      "submit": "Überschreibung speichern",
+      "submitting": "Wird gespeichert…"
+    },
+    "letter": {
+      "gateTitle": "Bestätigen, bevor das Einstufungsschreiben erstellt wird",
+      "clientNameLabel": "Name des Kunden oder Empfängers",
+      "clientNamePlaceholder": "Name auf dem Einstufungsschreiben",
+      "approvalStatement": "Ich bestätige, dass ich die hier angezeigten bewerteten Faktoren, Hinweise und Zitate geprüft habe und dass dieses Einstufungsschreiben sie mit dem heutigen Stand festhält. Dieses Werkzeug stellt keine Rechtsberatung dar.",
+      "generate": "Einstufungsschreiben erstellen",
+      "generating": "Wird erstellt…",
+      "errorTitle": "Wir konnten das Einstufungsschreiben nicht erstellen"
+    }
+  },
+  "Form1099KTracker": {
+    "title": "1099-K-Schwelle",
+    "loadError": "Wir konnten den 1099-K-Tracker nicht laden. Versuchen Sie es erneut.",
+    "reload": "Neu laden",
+    "band": {
+      "SAFE": "Sicher",
+      "APPROACHING": "Annähernd",
+      "OVER": "Überschritten"
+    },
+    "empty": "Für {taxYear} sind noch keine meldepflichtigen Auszahlungen erfasst.",
+    "across": "über {count} Auszahlungen in diesem Jahr",
+    "thresholdCaption": "Schwelle",
+    "thresholdValue": "{amount} / {count} Transaktionen",
+    "thresholdUnknown": "die 1099-K-Meldeschwelle",
+    "copy": {
+      "SAFE": "Weit unter der 1099-K-Meldeschwelle — nichts zu tun.",
+      "APPROACHING": "Nähert sich der 1099-K-Meldeschwelle. Dies ist nur informativ — wir reichen keine 1099-K ein.",
+      "OVER": "Über der 1099-K-Meldeschwelle. Ihre Zahlungsabwicklungsstelle — nicht diese Plattform — reicht eine etwaige 1099-K ein. Dies ist nur ein Hinweis."
     }
   }
 }
