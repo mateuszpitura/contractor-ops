@@ -10,7 +10,9 @@
 // Production wording flips PENDING→APPROVED via post-deploy PR per
 // `packages/feature-flags/src/signoff-registry-flags.json`.
 
+import { registerLeaveAccrualRule } from '../leave-registry';
 import { registerPolicyRule } from '../registry';
+import { registerWorkingTimeLimit } from '../wt-registry';
 
 registerPolicyRule({
   policyRuleId: 'uk.right_to_work@v1',
@@ -77,4 +79,31 @@ registerPolicyRule({
   draftLegalText:
     "UK contractors must execute an IP-assignment under Copyright, Designs and Patents Act 1988 s.90(1) (assignment) and s.91 (future copyright). Best practice includes: 'hereby (absolutely and irrevocably) assigns', 'present and future rights', and an explicit waiver of moral rights under CDPA 1988 s.87. (PENDING legal review by UK adviser)",
   expirySemantic: 'no_expiry', // executed IP assignment is permanent
+});
+
+// Statutory annual leave — 5.6 weeks, capped at 28 days for a 5-day-week worker
+// (reg 13 gives 4 weeks, reg 13A adds 1.6 weeks). Part-time scales pro-rata by
+// etat. Only the reg-13A 1.6-week portion (8 days) may carry into the next leave
+// year by agreement; the reg-13 4-week portion is generally use-it-or-lose-it.
+registerLeaveAccrualRule({
+  jurisdiction: 'UK',
+  leaveKind: 'ANNUAL',
+  baseEntitlementDays: () => 28,
+  proRataByEtat: true,
+  carryoverPolicy: { maxDays: 8, expiresMonthsIntoNextYear: 12 },
+  draftLegalText:
+    'WTR 1998 reg 13 (4 weeks) + reg 13A (1.6 weeks) = 5.6 weeks, capped at 28 days for a 5-day week. Part-time pro-rata. Reg-13A 1.6 weeks (up to 8 days) may be carried into the next leave year by a relevant agreement; the reg-13 4 weeks generally cannot be carried ([ASSUMED, adviser-verify]). [CITED: WTR 1998 reg 13/13A] (PENDING legal review by UK adviser)',
+});
+
+registerWorkingTimeLimit({
+  jurisdiction: 'UK',
+  maxDailyMinutes: null,
+  maxDailyHardCeilingMinutes: null,
+  weeklyAvgMaxMinutes: 2880,
+  weeklyWindowWeeks: 17,
+  weeklyOptOutAllowed: true,
+  nightWindow: { startHour: 23, endHour: 6 },
+  // No statutory overtime premium under the WTR — overtime pay is contract-governed.
+  draftLegalText:
+    'WTR 1998 reg 4: average 48h/week over a 17-week reference period, with an individual written opt-out permitted (store the flag). Reg 6: night workers average ≤8h per 24h with NO opt-out from the night limit; a night worker normally works ≥3h between 23:00-06:00. No statutory daily maximum and no statutory overtime premium (contract-governed). [CITED: WTR 1998 reg 4/6] (PENDING legal review by UK adviser)',
 });

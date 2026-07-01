@@ -5,7 +5,9 @@
 //  2. de.aufenthaltstitel@v1 — Aufenthaltstitel residence permit (BLOCKING; conditional on non-EU nationality)
 //  3. de.eight_b_estg@v1 — §48b EStG Freistellungsbescheinigung (BLOCKING; conditional on construction sector)
 
+import { registerLeaveAccrualRule } from '../leave-registry';
 import { registerPolicyRule } from '../registry';
+import { registerWorkingTimeLimit } from '../wt-registry';
 
 const EU_NATIONALITIES = new Set([
   'AT',
@@ -102,4 +104,32 @@ registerPolicyRule({
   draftLegalText:
     "DE-jurisdiction contracts MUST grant Nutzungsrechte per UrhG §31 (Einräumung von Nutzungsrechten — exclusive `ausschließliches Nutzungsrecht` or non-exclusive `einfaches Nutzungsrecht`) rather than transfer authorship. UrhG §7 (Schöpferprinzip) makes authorship inalienable: only natural persons can be authors and rights cannot be assigned. UK-style 'hereby assigns' boilerplate is INSUFFICIENT under DE law — Phase 75 verdict engine triggers MANUAL_REVIEW_REQUIRED with crossJurisdictionMismatch flag (D-15) when only UK-namespace phrases match a DE contract. UrhG §31 Abs. 5 (Zweckübertragungsregel) further constrains the scope of granted rights to what the contractual purpose requires. (PENDING legal review by Steuerberater + Werkvertrag-aware adviser)",
   expirySemantic: 'no_expiry', // usage-rights grant is permanent
+});
+
+// Statutory minimum annual leave. BUrlG states 24 Werktage on a 6-day week,
+// which is the widely-cited 20 Arbeitstage on the standard 5-day week; CBAs and
+// contracts routinely raise this to 25-30 days (org override, not encoded here).
+registerLeaveAccrualRule({
+  jurisdiction: 'DE',
+  leaveKind: 'ANNUAL',
+  baseEntitlementDays: () => 20,
+  proRataByEtat: true,
+  carryoverPolicy: { maxDays: null, expiresMonthsIntoNextYear: 3 },
+  draftLegalText:
+    'BUrlG §3: gesetzlicher Mindesturlaub 24 Werktage (6-Tage-Woche) = mind. 20 Arbeitstage (5-Tage-Woche). Tarifvertrag/Arbeitsvertrag heben dies häufig auf 25-30 Tage an (Org-Override). Resturlaub verfällt grundsätzlich zum 31.03. des Folgejahres bei Übertragung (§7 Abs. 3; adviser-verify). [CITED: BUrlG §3] (PENDING legal review by Steuerberater)',
+});
+
+registerWorkingTimeLimit({
+  jurisdiction: 'DE',
+  maxDailyMinutes: 480,
+  maxDailyHardCeilingMinutes: 600,
+  weeklyAvgMaxMinutes: 2880,
+  weeklyWindowWeeks: 24,
+  weeklyOptOutAllowed: false,
+  nightWindow: { startHour: 23, endHour: 6 },
+  // No fixed statutory overtime premium in ArbZG — OT/night pay is contract/CBA
+  // governed (§6 Abs. 5 requires an "angemessener" night surcharge or time off),
+  // so no numeric premium is encoded here; payroll applies the CBA rate.
+  draftLegalText:
+    'ArbZG §3: werktägliche Arbeitszeit 8h, verlängerbar auf 10h wenn im 6-Monats-/24-Wochen-Durchschnitt ≤8h. Nachtzeit 23:00-06:00 (Bäckereien/Konditoreien 22:00-05:00); Nachtarbeit = >2h in der Nachtzeit; §6 Abs. 5 verlangt einen angemessenen Zuschlag ODER Freizeitausgleich — kein fester gesetzlicher Prozentsatz (tarifabhängig, oft ~25%; [ASSUMED, adviser-verify]). Kein gesetzlicher Überstundenzuschlag in ArbZG (vertraglich/tariflich geregelt). [CITED: ArbZG §3/§6] (PENDING legal review by Steuerberater)',
 });
