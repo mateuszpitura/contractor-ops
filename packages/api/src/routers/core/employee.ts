@@ -1,8 +1,9 @@
 import { z } from 'zod';
-import { router } from '../../init';
+import { mergeRouters, router } from '../../init';
 import { requirePermission } from '../../middleware/rbac';
 import { assertWorkforceEnabled } from '../../middleware/require-workforce-flag';
 import { tenantProcedure } from '../../middleware/tenant';
+import { employeeRegistryRouter } from '../employee/employee-registry-router.js';
 
 // ---------------------------------------------------------------------------
 // Skeleton employee surface (Theme B). Employee-specific profile data (personnel
@@ -15,7 +16,7 @@ import { tenantProcedure } from '../../middleware/tenant';
 // workerType cannot be injected by the client.
 // ---------------------------------------------------------------------------
 
-export const employeeRouter = router({
+const employeeBaseRouter = router({
   /**
    * List employee-type workers in the caller's org. Read-only skeleton — the
    * employee profile surface is out of scope until the workforce phase.
@@ -50,3 +51,7 @@ export const employeeRouter = router({
       });
     }),
 });
+
+// The skeleton read surface plus the registration / PII-reveal / reference-list
+// procedures, exposed as a single `employee.*` namespace.
+export const employeeRouter = mergeRouters(employeeBaseRouter, employeeRegistryRouter);

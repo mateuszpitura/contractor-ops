@@ -336,6 +336,15 @@ export const STATUS_VAL_DATES_REQUIRED = 'statusValDatesRequired';
 export const CONTRACTOR_INVALID_NIP = 'contractorInvalidNip';
 export const CONTRACTOR_INVALID_EIN = 'contractorInvalidEin';
 export const CONTRACTOR_INVALID_SSN = 'contractorInvalidSsn';
+
+// ─── Employee registry — per-market statutory national IDs ──────
+export const EMPLOYEE_INVALID_PESEL = 'employeeInvalidPesel';
+export const EMPLOYEE_INVALID_SSN = 'employeeInvalidSsn';
+export const EMPLOYEE_INVALID_IQAMA = 'employeeInvalidIqama';
+export const EMPLOYEE_INVALID_EMIRATES_ID = 'employeeInvalidEmiratesId';
+// Soft advisory returned (never thrown) when a format-valid Emirates ID fails
+// the advisory Luhn-variant checksum.
+export const EMPLOYEE_EMIRATES_ID_CHECKSUM_ADVISORY = 'employeeEmiratesIdChecksumAdvisory';
 export const US_EXPANSION_DISABLED = 'usExpansionDisabled';
 export const WORKFORCE_DISABLED = 'workforceDisabled';
 export const TREATY_OVERRIDE_REASON_REQUIRED = 'treatyOverrideReasonRequired';
