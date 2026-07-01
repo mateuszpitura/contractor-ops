@@ -39,7 +39,10 @@ const allPermissions = {
   costCenter: ['read', 'create', 'update', 'archive'],
   // This `allPermissions` const is a DUPLICATE of accessControlStatement and is
   // the sole source for the owner role. It MUST stay in sync with permissions.ts
-  // or owner silently loses newly added permissions.
+  // or owner silently loses newly added permissions — with ONE deliberate
+  // exception: the HR-only resources (`employee` and the personnel-file sections
+  // employeeFileA..D) are intentionally omitted so the owner cannot reach the HR
+  // personnel surface. That absence is the fence, not drift — do not "sync" it.
   contractorPii: ['read'],
   employeePii: ['read'],
 } as const;
@@ -193,6 +196,12 @@ export const roles = {
     // Full national-ID reveal is HR-admin-only among the HR roles; hr_manager,
     // payroll_officer and leave_approver get the employee surface but never PII.
     employeePii: ['read'],
+    // Full personnel-file access: the HR administrator reads and writes every
+    // section (A: master/leave, B: discipline, C: pay, D: other).
+    employeeFileA: ['read', 'write'],
+    employeeFileB: ['read', 'write'],
+    employeeFileC: ['read', 'write'],
+    employeeFileD: ['read', 'write'],
     contractor: ['read'],
     team: ['read'],
     project: ['read'],
@@ -201,6 +210,12 @@ export const roles = {
 
   hr_manager: ac.newRole({
     employee: ['read', 'update'],
+    // Manages most of the file but the pay section (C) is read-only — payroll
+    // figures are not a line manager's to edit.
+    employeeFileA: ['read', 'write'],
+    employeeFileB: ['read', 'write'],
+    employeeFileC: ['read'],
+    employeeFileD: ['read', 'write'],
     contractor: ['read'],
     team: ['read'],
     project: ['read'],
@@ -209,12 +224,17 @@ export const roles = {
 
   payroll_officer: ac.newRole({
     employee: ['read'],
+    // Payroll reaches only the pay section, and only to read it — never
+    // discipline (B) or the rest of the file.
+    employeeFileC: ['read'],
     payment: ['read'],
     report: ['read', 'export'],
   }),
 
   leave_approver: ac.newRole({
     employee: ['read', 'approve_leave'],
+    // Leave approval needs only the master/leave section, read-only.
+    employeeFileA: ['read'],
   }),
 } as const;
 

@@ -38,6 +38,7 @@ const EXPECTED: Record<RoleName, Record<string, readonly string[]>> = {
     project: ['read', 'create', 'update', 'archive'],
     costCenter: ['read', 'create', 'update', 'archive'],
     contractorPii: ['read'],
+    employeePii: ['read'],
   },
   admin: {
     organization: ['update', 'delete'],
@@ -60,6 +61,7 @@ const EXPECTED: Record<RoleName, Record<string, readonly string[]>> = {
     project: ['read', 'create', 'update', 'archive'],
     costCenter: ['read', 'create', 'update', 'archive'],
     contractorPii: ['read'],
+    employeePii: ['read'],
   },
   finance_admin: {
     contractor: ['read'],
@@ -150,6 +152,11 @@ const EXPECTED: Record<RoleName, Record<string, readonly string[]>> = {
   },
   hr_admin: {
     employee: ['create', 'read', 'update', 'delete', 'approve_leave'],
+    employeePii: ['read'],
+    employeeFileA: ['read', 'write'],
+    employeeFileB: ['read', 'write'],
+    employeeFileC: ['read', 'write'],
+    employeeFileD: ['read', 'write'],
     contractor: ['read'],
     team: ['read'],
     project: ['read'],
@@ -157,6 +164,10 @@ const EXPECTED: Record<RoleName, Record<string, readonly string[]>> = {
   },
   hr_manager: {
     employee: ['read', 'update'],
+    employeeFileA: ['read', 'write'],
+    employeeFileB: ['read', 'write'],
+    employeeFileC: ['read'],
+    employeeFileD: ['read', 'write'],
     contractor: ['read'],
     team: ['read'],
     project: ['read'],
@@ -164,11 +175,13 @@ const EXPECTED: Record<RoleName, Record<string, readonly string[]>> = {
   },
   payroll_officer: {
     employee: ['read'],
+    employeeFileC: ['read'],
     payment: ['read'],
     report: ['read', 'export'],
   },
   leave_approver: {
     employee: ['read', 'approve_leave'],
+    employeeFileA: ['read'],
   },
 };
 
