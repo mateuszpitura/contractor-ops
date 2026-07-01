@@ -241,7 +241,7 @@ Known gaps / deferred at close: see STATE.md `## Deferred Items` (3 unverified p
 
 **Plans**: 10 plans (7 waves)
 
-- [ ] 87-01-PLAN.md — Wave-0 RED scaffolds + 1042-S Pub 1187 XSD human-download checkpoint [wave 1]
+- [x] 87-01-PLAN.md — Wave-0 RED scaffolds + 1042-S Pub 1187 XSD human-download checkpoint [wave 1]
 - [ ] 87-02-PLAN.md — [BLOCKING] Prisma schema (Form1042S, Form1099KTrackerState, Tax1099KThreshold, US_DETERMINATION_LETTER, engagement work-state) + multi-region migration gate [wave 2]
 - [ ] 87-03-PLAN.md — US ClassificationProfile rule set + scoring (federal/CA-ABC/§530) + AB5 work-state trigger + audited override (US-CLASS-01/02) [wave 3]
 - [ ] 87-04-PLAN.md — Form1042S service (§875(d) treaty snapshot + supersede + idempotency) + recipient PDF + staff router (US-FORM-06 non-transmit core) [wave 3]
@@ -581,7 +581,7 @@ Phases execute in numeric order: 82 → 83 → … → 101. After Foundation (82
 | 84. Theme A — US Profile Fields + en-US Locale | v7.0 | 7/7 | Complete    | 2026-06-08 |
 | 85. Theme A — W-Form Intake + Tax-Treaty Engine | v7.0 | 4/4 | Complete   | 2026-06-16 |
 | 86. Theme A — TIN-Match → 1099-NEC → IRIS → State | v7.0 | 4/8 | In Progress|  |
-| 87. Theme A — 1042-S + US Classification + Letter | v7.0 | 0/10 | Not started | - |
+| 87. Theme A — 1042-S + US Classification + Letter | v7.0 | 1/10 | In Progress|  |
 | 88. Theme A — US Payment Rail | v7.0 | 7/7 | Gaps (SC#1/#4) | -          |
 | 89. Theme B — Worker Model Abstraction (gate) | v7.0 | 6/6 | Complete   | 2026-06-22 |
 | 90. Theme B — Employee Registry per Market (×6) | v7.0 | 7/7 | Complete    | 2026-07-01 |
