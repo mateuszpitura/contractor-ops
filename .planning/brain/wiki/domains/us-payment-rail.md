@@ -1,14 +1,15 @@
 ---
 title: US payment rail
 type: domain
-tags: [payments, ach, nacha, fedwire, pacs008, withholding, usd, plaid, modern-treasury]
-source_commit: 2e6c4892ed6881b636499fb108a94f261e7e6e5e
+tags: [payments, ach, nacha, fedwire, pacs008, withholding, usd, plaid, modern-treasury, ach-return]
+source_commit: d7198de9f3cc471b337d8e69f67b547d52640fe0
 verify_with:
   - packages/api/src/services/payment-export.ts
   - packages/api/src/services/payment-format-detection.ts
   - packages/api/src/services/payment-settlement.ts
   - packages/api/src/routers/finance/payment-shared.ts
   - packages/api/src/routers/finance/payment-core.ts
+  - packages/api/src/services/ach-return.service.ts
   - packages/api/src/services/tin-match.service.ts
 updated: 2026-07-01
 ---
@@ -61,6 +62,18 @@ flowchart TD
 - **`PlaidIdentityClient`** (`packages/integrations/src/adapters/plaid/`) — interface (`verify` → VERIFIED/PENDING/FAILED) + deterministic `MockPlaidIdentityClient` (GA default, advisory fail-open — an unverified status carries `advisoryWarning`, never throws/blocks) + dark `LivePlaidIdentityClient`.
 - **`payment.initiatePayout`** (opt-in) — `tenantProcedure` + `requirePermission({ payment: ['export'] })` + `assertUsExpansionEnabled` + the `payments.ach-payouts` flag (dark default); `.strict()` Zod (`runId`, `idempotencyKey`, `provider`, optional `settlementCurrency`). The `_initiatePayoutForRun` helper is idempotent (Upstash reserve/complete/clear — no double-pay), reads the per-item Plaid advisory via the exact tenant-scoped `PaymentRunItem.billingProfile.plaidVerificationStatus` include (never `contractor.billingProfiles[]`), settles per item, and writes a masked-only `payment_run.payout_initiated` audit row. The NACHA/Fedwire **file** export remains the always-available GA default; programmatic init is the opt-in automation layer.
 
+## ACH return-code handling
+
+When an RDFI cannot post a credit it returns the entry with an R-code. The file-first GA path: the operator downloads the NACHA return file their bank produced and uploads it.
+
+- **Reachable entry point** — `payment.ingestAchReturnFile` (`payment-core.ts`): same gate as `initiatePayout` (`tenantProcedure` + `requirePermission({ payment: ['export'] })` + `assertUsExpansionEnabled`, applied **before** any parse/apply), `.strict()` Zod (`runId` cuid, `returnFileText` bounded `min(1).max(5_000_000)`). It calls `parseNachaReturnFile` → `applyAchReturns` and returns the `{ failed, advisory, skipped, unmatched }` summary **verbatim**.
+- **Disposition** — `mapReturnCodeToStatus` (`ach-return.service.ts`): R01 (insufficient funds), R02 (account closed), R03 (no account) and the rest of the R-family → **FAILED** with a human reason; NOC / C-code corrections → **advisory** (the payout settled; the bank is asking for corrected account details next time) and never fail a payout. An unrecognised non-correction code defaults to FAILED (fail-safe — an unposted credit is never silently treated as settled).
+- **Apply** — `applyAchReturns` loads run items tenant-scoped (`where { paymentRunId, organizationId }`), matches each entry `individualId → invoice.invoiceNumber` (fallback `paymentReference`), flips a transitionable matched item (`PENDING/EXPORTED/PAID`) to `status='FAILED' + failureReason`, and writes one masked `payment_run.ach_return_applied` audit row per transition — all inside a single `$transaction`.
+- **Idempotent + never-un-fail** — an already-`FAILED` item is skipped, so a re-uploaded / re-delivered file is a no-op and a return can never revert a failure.
+- **`unmatched` is the operator-safety signal** — a FAILED-disposition entry that matches no live item is counted `unmatched` (never silently dropped). `unmatched:0` = the file applied cleanly to this run; `unmatched > 0` = a wrong-`runId` / mis-uploaded file (a foreign-org run flips nothing — every entry surfaces as unmatched), distinguishable from an indistinguishable all-zeros no-op. A high unmatched proportion logs a warn inside `applyAchReturns`.
+- **Malformed vs. benign** — a benign empty / non-return upload parses to zero entries and returns all-zeros without throwing; a file that carries return addenda-99 records yet parses to nothing is structurally broken and rejected `BAD_REQUEST` (`E.PAYMENT_ACH_RETURN_FILE_INVALID`). The procedure also writes a masked ingestion-summary audit (`payment_run.ach_return_ingested`) carrying only sizes + the disposition tallies — no bank data, no raw file text.
+- **Deferred seam** — the live Modern Treasury return-webhook (`PayoutInitiationAdapter.handleWebhook`) would feed the same `applyAchReturns` once the programmatic-ACH live path is enabled; it is referenced, not built (programmatic ACH stays dark/opt-in), so file upload is the only reachable return path today.
+
 ## Entry points
 
 | Piece | Path |
@@ -72,6 +85,7 @@ flowchart TD
 | Settlement currency + FX | `services/payment-settlement.ts` — `resolveSettlementCurrency`, `convertForSettlement` |
 | Export-item settlement wiring | `routers/finance/payment-shared.ts` — `_buildExportItems` |
 | Opt-in payout | `routers/finance/payment-core.ts` — `payment.initiatePayout` → `_initiatePayoutForRun` |
+| ACH return-file ingestion | `routers/finance/payment-core.ts` — `payment.ingestAchReturnFile` → `parseNachaReturnFile` + `applyAchReturns` (`services/ach-return.service.ts`) |
 | Payout / Plaid seams | `packages/integrations/src/adapters/payout/`, `packages/integrations/src/adapters/plaid/` |
 
 ## UI surface
@@ -87,6 +101,7 @@ No dedicated new staff screen in this rail — the payout run + lock/export flow
 - Settlement FX is a single HALF-UP round via `convertAmount`; a missing rate throws, never zeroes. See [[patterns/money-rounding]].
 - Programmatic ACH + live Plaid are mock-behind-seam, flag-dark; Plaid is advisory fail-open. Bank routing/account are AES-256-GCM encrypted + masked-only; never logged full.
 - Whole surface gated on `module.us-expansion` + US region; programmatic ACH additionally behind `payments.ach-payouts`.
+- ACH returns are ingested through the reachable `payment.ingestAchReturnFile` (R01/R02/R03 → FAILED + reason; NOC/COR → advisory), idempotent + masked-audited; the returned `unmatched` count distinguishes a mis-uploaded / wrong-run file from a clean no-bounce run. The live return-webhook is a documented deferred seam.
 
 ## Related
 
@@ -105,6 +120,8 @@ semble search "generateNachaFile"
 semble search "applyWithholding"
 semble search "detectUsFormat"
 grep -n "initiatePayout" packages/api/src/routers/finance/payment-core.ts
+grep -n "ingestAchReturnFile" packages/api/src/routers/finance/payment-core.ts
+semble search "applyAchReturns"
 ```
 
 ## Agent mistakes
@@ -115,3 +132,6 @@ grep -n "initiatePayout" packages/api/src/routers/finance/payment-core.ts
 - Importing a third-party NACHA package — the generator is hand-rolled on purpose (supply-chain floor).
 - Reading Plaid status via `contractor.billingProfiles[]` instead of the tenant-scoped `PaymentRunItem.billingProfile.plaidVerificationStatus` include.
 - Treating Plaid as a hard gate — it is advisory fail-open while mocked.
+- Treating `ingestAchReturnFile`'s all-zeros result and its `unmatched > 0` result as the same "nothing happened" — `unmatched > 0` means the file did not match this run (wrong-run / mis-upload), not a clean no-bounce run.
+- Building the live Modern Treasury return-webhook — it is a deferred seam; the reachable path is the operator's NACHA return-file upload.
+- Dropping the `unmatched` field when surfacing the result — it is the operator's "did this file apply to the right run?" signal.
