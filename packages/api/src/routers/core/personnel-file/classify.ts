@@ -7,6 +7,8 @@ import {
   DOCUMENT_INFECTED,
   DOCUMENT_NOT_FOUND,
   PERSONNEL_DOCUMENT_ALREADY_ATTACHED,
+  PERSONNEL_DOCUMENT_NOT_PENDING_REVIEW,
+  PERSONNEL_FILE_DOCUMENT_NOT_FOUND,
   PERSONNEL_FILE_NOT_FOUND,
 } from '../../../errors';
 import { router } from '../../../init';
@@ -35,6 +37,12 @@ import { sectionToShortCode } from './section-access';
 // document to the admin classify-step (Document → PENDING_REVIEW). The upload is
 // NEVER blocked — the bytes are already stored, so a classifier failure degrades
 // to the admin queue rather than surfacing an error.
+//
+// classifyApprove / classifyReject are the admin classify-step: an HR/compliance
+// admin assigns the section (approve → MANUAL + Document ACTIVE) or discards the
+// link (reject → Document ARCHIVED), each with a forensic audit row written in
+// the same transaction. pendingReviewQueue lists the caller-org's awaiting
+// documents for that step. All three admin actions require compliance:override.
 // ---------------------------------------------------------------------------
 
 const log = createLogger({ service: 'personnel-classify-router' });
@@ -45,6 +53,21 @@ const attachInput = z
     documentId: z.string().min(1),
     documentType: z.string().min(1),
     documentDate: z.coerce.date().optional(),
+  })
+  .strict();
+
+const approveInput = z
+  .object({
+    personnelFileDocumentId: z.string().min(1),
+    section: z.enum(['SECTION_A', 'SECTION_B', 'SECTION_C', 'SECTION_D']),
+  })
+  .strict();
+
+const rejectInput = z
+  .object({
+    personnelFileDocumentId: z.string().min(1),
+    reason: z.enum(['wrong_employee', 'not_personnel_doc', 'duplicate', 'illegible']),
+    note: z.string().max(1000).optional(),
   })
   .strict();
 
@@ -245,5 +268,156 @@ export const classifyRouter = router({
         section: columns.section ? sectionToShortCode[columns.section] : null,
         status: documentStatus,
       };
+    }),
+
+  /**
+   * Admin classify-step — approve. Assigns the admin-chosen section (MANUAL) and
+   * flips the document ACTIVE (filed). Only a PENDING_REVIEW personnel document
+   * owned by the caller org is eligible; the section assignment is audited in-tx.
+   */
+  classifyApprove: tenantProcedure
+    .use(requirePermission({ compliance: ['override'] }))
+    .input(approveInput)
+    .mutation(async ({ ctx, input }) => {
+      return ctx.db.$transaction(async tx => {
+        const pfd = await tx.personnelFileDocument.findFirst({
+          where: { id: input.personnelFileDocumentId, organizationId: ctx.organizationId },
+          select: { id: true, documentId: true, document: { select: { id: true, status: true } } },
+        });
+        if (!pfd?.document) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: PERSONNEL_FILE_DOCUMENT_NOT_FOUND });
+        }
+        if (pfd.document.status !== 'PENDING_REVIEW') {
+          throw new TRPCError({
+            code: 'PRECONDITION_FAILED',
+            message: PERSONNEL_DOCUMENT_NOT_PENDING_REVIEW,
+          });
+        }
+
+        const updated = await auditedMutation(
+          auditMutationCtx(ctx),
+          {
+            action: 'personnel_file.document.classify_approved',
+            resourceType: 'DOCUMENT',
+            resourceId: pfd.documentId,
+            metadata: { personnelFileDocumentId: pfd.id, section: input.section },
+          },
+          async innerTx => {
+            const row = await innerTx.personnelFileDocument.update({
+              where: { id: pfd.id },
+              data: { section: input.section, classificationMethod: 'MANUAL' },
+              select: { id: true, section: true },
+            });
+            await innerTx.document.update({
+              where: { id: pfd.documentId },
+              data: { status: 'ACTIVE' },
+            });
+            return row;
+          },
+          tx,
+        );
+
+        return {
+          personnelFileDocumentId: updated.id,
+          section: updated.section ? sectionToShortCode[updated.section] : null,
+          status: 'ACTIVE' as const,
+        };
+      });
+    }),
+
+  /**
+   * Admin classify-step — reject. Archives the document (never deletes the bytes)
+   * with a closed-enum reason; the personnel-file link is retained for the audit
+   * trail but no longer appears in the queue once the document leaves
+   * PENDING_REVIEW. Audited in-tx.
+   */
+  classifyReject: tenantProcedure
+    .use(requirePermission({ compliance: ['override'] }))
+    .input(rejectInput)
+    .mutation(async ({ ctx, input }) => {
+      return ctx.db.$transaction(async tx => {
+        const pfd = await tx.personnelFileDocument.findFirst({
+          where: { id: input.personnelFileDocumentId, organizationId: ctx.organizationId },
+          select: { id: true, documentId: true, document: { select: { id: true, status: true } } },
+        });
+        if (!pfd?.document) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: PERSONNEL_FILE_DOCUMENT_NOT_FOUND });
+        }
+        if (pfd.document.status !== 'PENDING_REVIEW') {
+          throw new TRPCError({
+            code: 'PRECONDITION_FAILED',
+            message: PERSONNEL_DOCUMENT_NOT_PENDING_REVIEW,
+          });
+        }
+
+        await auditedMutation(
+          auditMutationCtx(ctx),
+          {
+            action: 'personnel_file.document.classify_rejected',
+            resourceType: 'DOCUMENT',
+            resourceId: pfd.documentId,
+            metadata: {
+              personnelFileDocumentId: pfd.id,
+              reason: input.reason,
+              note: input.note ?? null,
+            },
+          },
+          async innerTx => {
+            await innerTx.document.update({
+              where: { id: pfd.documentId },
+              data: { status: 'ARCHIVED' },
+            });
+            return pfd;
+          },
+          tx,
+        );
+
+        return {
+          personnelFileDocumentId: pfd.id,
+          status: 'ARCHIVED' as const,
+          reason: input.reason,
+        };
+      });
+    }),
+
+  /**
+   * The admin pending-review queue: the caller-org's personnel documents whose
+   * underlying Document is PENDING_REVIEW, projected for the admin classify-step
+   * UI (employee, jurisdiction, filename, upload time, and any below-threshold AI
+   * section guess). Tenant-scoped — only the caller org's awaiting documents.
+   */
+  pendingReviewQueue: tenantProcedure
+    .use(requirePermission({ compliance: ['override'] }))
+    .query(async ({ ctx }) => {
+      assertWorkforceEnabled(ctx.organizationId, ctx.region);
+
+      const rows = await ctx.db.personnelFileDocument.findMany({
+        where: {
+          organizationId: ctx.organizationId,
+          deletedAt: null,
+          document: { status: 'PENDING_REVIEW' },
+        },
+        orderBy: [{ createdAt: 'asc' }],
+        select: {
+          id: true,
+          documentId: true,
+          aiSectionGuess: true,
+          aiConfidence: true,
+          createdAt: true,
+          personnelFile: { select: { workerId: true, countryCode: true } },
+          document: { select: { originalFileName: true, createdAt: true } },
+        },
+      });
+
+      return rows.map(row => ({
+        personnelFileDocumentId: row.id,
+        documentId: row.documentId,
+        workerId: row.personnelFile.workerId,
+        jurisdiction: mapCountryCodeToJurisdiction(row.personnelFile.countryCode),
+        fileName: row.document?.originalFileName ?? null,
+        uploadedAt: row.document?.createdAt ?? row.createdAt,
+        aiSectionGuess: row.aiSectionGuess ? sectionToShortCode[row.aiSectionGuess] : null,
+        aiConfidence: row.aiConfidence,
+      }));
     }),
 });
