@@ -310,6 +310,19 @@ export const FLAGS = deepFreeze({
     jurisdiction: 'ANY',
     owner: 'payments',
   },
+  // Gates only the LIVE Plaid Identity client; the deterministic mock is the
+  // always-on default and its advisory result is fail-open (never blocks a
+  // payout). Non-gated (the only gated payments prefix is `payments.ach-`), so
+  // it needs no signoff-registry entry and is not part of the v7.0 cohort.
+  'payments.plaid-verification': {
+    key: 'payments.plaid-verification',
+    description:
+      'US contractor bank-account verification via the live Plaid Identity client (Theme A). Ship dark — the mock advisory default is always on; the live client activates only when this flag flips and Plaid credentials land.',
+    default: false,
+    category: 'payments',
+    jurisdiction: 'ANY',
+    owner: 'payments',
+  },
   'payroll.symfonia': {
     key: 'payroll.symfonia',
     description:

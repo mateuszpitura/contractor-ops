@@ -26,6 +26,16 @@ export {
   type PayoutWebhookEvent,
   StripeTreasuryAdapter,
 } from './adapters/payout/index.js';
+// Plaid Identity verification seam (mock default + dark live client; advisory fail-open)
+export {
+  LivePlaidIdentityClient,
+  type LivePlaidIdentityClientConfig,
+  MockPlaidIdentityClient,
+  type PlaidIdentityClient,
+  type PlaidVerificationResult,
+  type PlaidVerificationStatus,
+  type PlaidVerifyInput,
+} from './adapters/plaid/index.js';
 export { loadHeavyAdapters, registerAllAdapters } from './adapters/register-all.js';
 export { ResendAdapter } from './adapters/resend-adapter.js';
 export { SlackAdapter } from './adapters/slack-adapter.js';
