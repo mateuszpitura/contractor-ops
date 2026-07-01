@@ -97,7 +97,7 @@ Known gaps / deferred at close: see STATE.md `## Deferred Items` (3 unverified p
 - [x] **Phase 85: Theme A — W-Form Intake + Tax-Treaty Engine** - W-9 + W-8BEN/E wizards, US tax-treaty rate table, W-8BEN treaty-article auto-populate (completed 2026-06-16)
 - [ ] **Phase 86: Theme A — TIN-Match → 1099-NEC → IRIS E-File → State Filing** - IRS TIN-matching, tax-year-keyed 1099-NEC ($2,000 TY2026), IRIS XML A2A transmit + ack, per-state CFSF
 - [ ] **Phase 87: Theme A — 1042-S + US Classification + Determination Letter** - treaty-rate 1042-S, US rule set (federal/AB5/§530), 1099-K tracker ($20k+200), Determination Letter PDF
-- [x] **Phase 88: Theme A — US Payment Rail** - ACH NACHA in payment-export factory, USD first-class, Modern Treasury programmatic ACH, Fedwire, Plaid identity (completed 2026-07-01)
+- [ ] **Phase 88: Theme A — US Payment Rail** - ACH NACHA in payment-export factory, USD first-class, Modern Treasury programmatic ACH, Fedwire, Plaid identity (7/7 plans executed; verification gaps_found 2026-07-01 — NACHA/Fedwire export path unreachable + ACH return-codes unimplemented; needs gap closure)
 - [x] **Phase 89: Theme B — Worker Model Abstraction (serial gate)** - additive `workerType` discriminator, router split, RBAC roles, flag gate; the only Theme B serialization point (completed 2026-06-22)
 - [ ] **Phase 90: Theme B — Employee Registry per Market (×6)** - PL/DE/UK/US/AE/SA statutory-identifier validators on the EmployeeProfile
 - [ ] **Phase 91: Theme B — Akta Osobowe / Personnel File** - 4-section file + per-jurisdiction retention engine + RODO erasure with statutory holds + upload classification
