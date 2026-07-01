@@ -1,5 +1,8 @@
 import type { Prisma } from '@contractor-ops/db';
 import type { PaymentRun } from '@contractor-ops/db/generated/prisma/client';
+import { evaluate } from '@contractor-ops/feature-flags';
+import type { PayoutInitiationAdapter } from '@contractor-ops/integrations';
+import { MockModernTreasuryAdapter, StripeTreasuryAdapter } from '@contractor-ops/integrations';
 import {
   paymentRunCreateSchema,
   paymentRunListSchema,
@@ -16,10 +19,13 @@ import {
   reserve as reserveIdempotency,
 } from '../../lib/idempotency';
 import { requirePermission } from '../../middleware/rbac';
+import { assertUsExpansionEnabled } from '../../middleware/require-us-expansion-flag';
 import { tenantProcedure } from '../../middleware/tenant';
 import { writeAuditLogMany } from '../../services/audit-writer';
 import { assertContractorPaymentEligibility } from '../../services/compliance-payment-gate';
+import type { PayoutProvider } from './payment-shared';
 import {
+  _initiatePayoutForRun,
   allocateRunNumber,
   groupInvoicesByCurrency,
   IDEMPOTENCY_TTL_SECONDS,
@@ -27,6 +33,14 @@ import {
   seedRunItems,
   validateInvoicesForRun,
 } from './payment-shared';
+
+/** Resolve the payout adapter for a provider. Mock is the GA default; the live
+ * Modern Treasury originator and the Stripe stub are dark until wired. */
+function resolvePayoutAdapter(provider: PayoutProvider): PayoutInitiationAdapter {
+  return provider === 'STRIPE_TREASURY'
+    ? new StripeTreasuryAdapter()
+    : new MockModernTreasuryAdapter();
+}
 
 export const paymentCoreRouter = router({
   readyForPayment: tenantProcedure
@@ -345,5 +359,49 @@ export const paymentCoreRouter = router({
       const nextCursor = hasMore ? trimmed[trimmed.length - 1]?.id : undefined;
 
       return { items: trimmed, nextCursor };
+    }),
+
+  // Opt-in programmatic-ACH payout. File export (lockAndExport) remains the
+  // always-available default; this originates payouts via the PayoutInitiationAdapter
+  // (Modern Treasury mock by default; live is dark). Gated on the US-expansion
+  // surface + the existing payments.ach-payouts flag, idempotent, and audited.
+  initiatePayout: tenantProcedure
+    .use(requirePermission({ payment: ['export'] }))
+    .input(
+      z
+        .object({
+          runId: z.cuid(),
+          idempotencyKey: z.string().min(1).max(200),
+          provider: z.enum(['MODERN_TREASURY', 'STRIPE_TREASURY']).default('MODERN_TREASURY'),
+          // Per-run settlement-currency override (else the contractor's currency).
+          settlementCurrency: z.string().length(3).optional(),
+        })
+        .strict(),
+    )
+    .mutation(async ({ ctx, input }) => {
+      assertUsExpansionEnabled(ctx.organizationId, ctx.region);
+
+      const flagRegion = ctx.region === 'ME' ? ('ME' as const) : ('EU' as const);
+      const flag = evaluate('payments.ach-payouts', {
+        organizationId: ctx.organizationId,
+        region: flagRegion,
+      });
+      if (!flag.enabled) {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: E.PAYMENT_ACH_PAYOUTS_DISABLED,
+          cause: { flag: 'payments.ach-payouts', reason: flag.reason },
+        });
+      }
+
+      return _initiatePayoutForRun(ctx.db, {
+        organizationId: ctx.organizationId,
+        userId: ctx.user.id,
+        runId: input.runId,
+        idempotencyKey: input.idempotencyKey,
+        provider: input.provider,
+        settlementCurrency: input.settlementCurrency,
+        adapter: resolvePayoutAdapter(input.provider),
+      });
     }),
 });

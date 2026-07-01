@@ -1,7 +1,13 @@
+import type { PayoutInitiationAdapter, PayoutOrderStatus } from '@contractor-ops/integrations';
 import { createLogger } from '@contractor-ops/logger';
 import { orgBankInfoSchema } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import * as E from '../../errors';
+import {
+  clear as clearIdempotency,
+  complete as completeIdempotency,
+  reserve as reserveIdempotency,
+} from '../../lib/idempotency';
 import { writeAuditLog } from '../../services/audit-writer';
 import type {
   ExportItem,
@@ -629,3 +635,191 @@ export const VALID_TRANSITIONS: Record<string, string[]> = {
   FAILED: ['DRAFT'],
   CANCELLED: [],
 };
+
+// ---------------------------------------------------------------------------
+// Opt-in programmatic-ACH payout initiation
+// ---------------------------------------------------------------------------
+
+/** The provider whose PayoutInitiationAdapter originates the payout. */
+export type PayoutProvider = 'MODERN_TREASURY' | 'STRIPE_TREASURY';
+
+/** The result of initiating a payout for a single run item. */
+export interface PayoutItemResult {
+  itemId: string;
+  orderId: string;
+  status: PayoutOrderStatus;
+  settlementCurrency: string;
+  settledAmountMinor: number;
+  /** Present iff the item's bank account is not Plaid-VERIFIED (advisory only). */
+  advisoryWarning?: string;
+}
+
+/** The result of initiating payouts for a whole payment run. */
+export interface InitiatePayoutResult {
+  runId: string;
+  provider: PayoutProvider;
+  orders: PayoutItemResult[];
+  /** Every per-item advisory warning collected during the run (fail-open). */
+  advisoryWarnings: string[];
+}
+
+export interface InitiatePayoutArgs {
+  organizationId: string;
+  userId: string;
+  runId: string;
+  idempotencyKey: string;
+  provider: PayoutProvider;
+  /** Optional per-run settlement-currency override (else the contractor's currency). */
+  settlementCurrency?: string;
+  /** The provider adapter (mock default; live is dark). Injected for testability. */
+  adapter: PayoutInitiationAdapter;
+  /** Payment date used for the settlement FX lookup (defaults to now). */
+  paymentDate?: Date;
+}
+
+/**
+ * Initiate a programmatic-ACH payout for every item in a locked payment run.
+ *
+ * Idempotent (no double-pay): the whole initiation is guarded by an Upstash
+ * reservation keyed on the org + caller idempotency key — a duplicate retry
+ * returns the cached result and never re-originates. The run's items are loaded
+ * tenant-scoped (`where: { paymentRunId, organizationId }`) so no cross-tenant
+ * profile is ever read.
+ *
+ * Plaid advisory is fail-open: an item whose billing profile is missing or whose
+ * `plaidVerificationStatus` is not VERIFIED surfaces a per-item warning, but the
+ * payout still proceeds — it WARNS, never blocks.
+ *
+ * Each item's amount is settled through the settlement seam (per-run override,
+ * else the contractor's currency) at the payment-date ECB rate before it is sent
+ * to the adapter; a missing rate surfaces UNPROCESSABLE_CONTENT rather than a
+ * silently zeroed payout.
+ *
+ * Gating (US-expansion + the payments.ach-payouts flag) and permission checks
+ * are the caller's responsibility — this helper assumes an already-authorised,
+ * opted-in request.
+ */
+export async function _initiatePayoutForRun(
+  db: DbClient,
+  args: InitiatePayoutArgs,
+): Promise<InitiatePayoutResult> {
+  const cacheKey = `payout-init:${args.organizationId}:${args.idempotencyKey}`;
+
+  const hit = await reserveIdempotency<InitiatePayoutResult>(cacheKey, IDEMPOTENCY_TTL_SECONDS);
+  if (hit.kind === 'HIT') return hit.result;
+  if (hit.kind === 'PENDING') {
+    throw new TRPCError({ code: 'CONFLICT', message: E.PAYMENT_PAYOUT_IN_PROGRESS });
+  }
+
+  try {
+    // Tenant-scoped item load. The Plaid advisory reads the per-item profile the
+    // run actually pays out to (via billingProfileId) — never contractor.billingProfiles[].
+    const items = await db.paymentRunItem.findMany({
+      where: { paymentRunId: args.runId, organizationId: args.organizationId },
+      include: {
+        billingProfile: {
+          select: {
+            plaidVerificationStatus: true,
+            usRoutingNumberMasked: true,
+            usAccountNumberMasked: true,
+          },
+        },
+        contractor: { select: { legalName: true, currency: true } },
+      },
+    });
+
+    if (items.length === 0) {
+      throw new TRPCError({ code: 'NOT_FOUND', message: E.PAYMENT_RUN_NOT_FOUND });
+    }
+
+    const paymentDate = args.paymentDate ?? new Date();
+    const orders: PayoutItemResult[] = [];
+    const advisoryWarnings: string[] = [];
+
+    for (const item of items) {
+      const status = item.billingProfile?.plaidVerificationStatus ?? null;
+      let advisoryWarning: string | undefined;
+      if (item.billingProfile == null || status !== 'VERIFIED') {
+        advisoryWarning = item.billingProfile
+          ? `Payout item ${item.id}: bank account Plaid status is ${status ?? 'unknown'} (not VERIFIED) — proceeding advisory-only.`
+          : `Payout item ${item.id}: no billing profile on file for Plaid verification — proceeding advisory-only.`;
+        advisoryWarnings.push(advisoryWarning);
+      }
+
+      const contractorCurrency = item.contractor?.currency ?? item.currency;
+      const settlementCurrency = resolveSettlementCurrency({
+        contractorCurrency,
+        perRunOverride: args.settlementCurrency,
+      });
+      const settled = await convertForSettlement(
+        db,
+        item.amountMinor,
+        item.currency,
+        settlementCurrency,
+        paymentDate,
+      );
+      if (!settled) {
+        throw new TRPCError({
+          code: 'UNPROCESSABLE_CONTENT',
+          message: E.PAYMENT_SETTLEMENT_RATE_UNAVAILABLE,
+        });
+      }
+
+      const order = await args.adapter.initiatePayout({
+        idempotencyKey: `${args.idempotencyKey}:${item.id}`,
+        amountMinor: settled.amountMinor,
+        currency: settlementCurrency,
+        receiverName: item.contractor?.legalName ?? '',
+        // Masked-only — full routing/account are AES-256-GCM at rest and only
+        // decrypted inside the live originator, never passed to the mock/audit.
+        routingNumber: item.billingProfile?.usRoutingNumberMasked ?? '',
+        accountNumber: item.billingProfile?.usAccountNumberMasked ?? '',
+      });
+
+      orders.push({
+        itemId: item.id,
+        orderId: order.id,
+        status: order.status,
+        settlementCurrency,
+        settledAmountMinor: settled.amountMinor,
+        advisoryWarning,
+      });
+    }
+
+    const result: InitiatePayoutResult = {
+      runId: args.runId,
+      provider: args.provider,
+      orders,
+      advisoryWarnings,
+    };
+
+    await writeAuditLog({
+      tx: db,
+      organizationId: args.organizationId,
+      actorType: 'USER',
+      actorId: args.userId,
+      action: 'payment_run.payout_initiated',
+      resourceType: 'PAYMENT_RUN',
+      resourceId: args.runId,
+      // Masked metadata only — never full routing/account numbers.
+      metadata: {
+        provider: args.provider,
+        itemCount: orders.length,
+        advisoryWarningCount: advisoryWarnings.length,
+        orders: orders.map(o => ({
+          itemId: o.itemId,
+          orderId: o.orderId,
+          status: o.status,
+          settlementCurrency: o.settlementCurrency,
+          settledAmountMinor: o.settledAmountMinor,
+        })),
+      },
+    });
+
+    await completeIdempotency(cacheKey, result, IDEMPOTENCY_TTL_SECONDS);
+    return result;
+  } catch (err) {
+    await clearIdempotency(cacheKey);
+    throw err;
+  }
+}
