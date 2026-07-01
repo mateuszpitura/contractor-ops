@@ -59,6 +59,7 @@ import {
   bacsRouter,
   billingRouter,
   exchangeRateRouter,
+  form1042sRouter,
   invoiceIntakeRouter,
   invoiceRouter,
   latePaymentInterestRouter,
@@ -160,6 +161,7 @@ const conditionalClassificationRouters = CLASSIFICATION_ENABLED
 // branches so client typing always sees the namespace.
 const usExpansionRouters = {
   taxForm: taxFormRouter, // taxForm: staff read/track of US W-form submissions + request/remind (no on-behalf signing)
+  form1042s: form1042sRouter, // form1042s: staff Form 1042-S generate/correct/recipient-copy + gated full-FTIN reveal
 } as const;
 
 const conditionalUsExpansionRouters = isUsExpansionRegistered()

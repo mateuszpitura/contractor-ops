@@ -18,6 +18,16 @@ import {
   renderForm1042SRecipientCopy,
 } from '../form-1042s-pdf';
 
+// Stub the R2 upload so the CAS render path exercises the archive contract
+// without a live object-store round-trip (the test env points R2 at a
+// placeholder host). The render itself still runs react-pdf for real.
+vi.mock('../r2', () => ({
+  putObjectAndSignDownload: vi.fn(async () => ({
+    signedUrl: 'https://r2/signed',
+    expiresInSeconds: 60,
+  })),
+}));
+
 const SNAPSHOT = {
   taxYear: 2026,
   payerName: 'Acme Org',

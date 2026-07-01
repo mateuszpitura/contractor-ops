@@ -1,9 +1,7 @@
-// Form 1042-S year-end service — Wave-0 RED scaffold.
+// Form 1042-S year-end service.
 //
-// `form-1042s.service` does not exist yet, so importing it fails at resolution
-// and this suite is terminal-RED until the service lands. The assertions pin the
-// D-06 / D-07 contract the service must satisfy, mirroring the shipped
-// form-1099-nec.service sibling:
+// The assertions pin the contract the service must satisfy, mirroring the
+// shipped form-1099-nec.service sibling:
 //   - box-2 rate is resolved via applyTreaty behind the §875(d) gate: a complete
 //     W-8 chain claims the treaty rate, an incomplete one falls back to the 30%
 //     statutory rate;
@@ -26,6 +24,36 @@ import {
   resolveBox2Rate,
   routeFormType,
 } from '../form-1042s.service';
+
+vi.mock('../audit-writer', () => ({
+  writeAuditLog: vi.fn(async () => undefined),
+  writeAuditLogMany: vi.fn(async () => undefined),
+}));
+
+// Drive idempotency from a deterministic in-memory store so the batch tests
+// exercise the reserve/complete/clear dedupe contract without a live Redis
+// round-trip (the test env points UPSTASH at a placeholder host).
+const idemStore = new Map<string, unknown>();
+const PENDING = Symbol('pending');
+vi.mock('../../lib/idempotency', () => ({
+  reserve: vi.fn(async (key: string) => {
+    const existing = idemStore.get(key);
+    if (existing === undefined) {
+      idemStore.set(key, PENDING);
+      return { kind: 'MISS' as const };
+    }
+    if (existing === PENDING) {
+      return { kind: 'PENDING' as const };
+    }
+    return { kind: 'HIT' as const, result: existing };
+  }),
+  complete: vi.fn(async (key: string, result: unknown) => {
+    idemStore.set(key, result);
+  }),
+  clear: vi.fn(async (key: string) => {
+    idemStore.delete(key);
+  }),
+}));
 
 /** Statutory US withholding rate applied when no treaty claim survives the gate. */
 const STATUTORY_RATE = 30;
@@ -97,15 +125,18 @@ describe('fileCorrection1042S — supersede + insert in one $transaction', () =>
       auditLog: { create: auditCreate, createMany: vi.fn() },
     };
 
-    await fileCorrection1042S(tx as never, {
-      organizationId: 'org_1',
-      payerOrgId: 'org_1',
-      recipientId: 'rec_1',
-      taxYear: 2026,
-      snapshotJson: {},
-      box2GrossIncomeMinor: 500_000,
-      box7FederalTaxWithheldMinor: 75_000,
-    } as never);
+    await fileCorrection1042S(
+      tx as never,
+      {
+        organizationId: 'org_1',
+        payerOrgId: 'org_1',
+        recipientId: 'rec_1',
+        taxYear: 2026,
+        snapshotJson: {},
+        box2GrossIncomeMinor: 500_000,
+        box7FederalTaxWithheldMinor: 75_000,
+      } as never,
+    );
 
     expect(updateMany).toHaveBeenCalledWith(
       expect.objectContaining({

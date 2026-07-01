@@ -5,6 +5,7 @@
 export { bacsRouter } from './bacs';
 export { billingRouter } from './billing';
 export { exchangeRateRouter } from './exchange-rate';
+export { form1042sRouter } from './form-1042s-router';
 export { invoiceRouter } from './invoice';
 export { invoiceIntakeRouter } from './invoice-intake';
 export { latePaymentInterestRouter } from './late-payment-interest';
