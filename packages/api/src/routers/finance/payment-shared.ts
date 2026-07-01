@@ -3,14 +3,22 @@ import { orgBankInfoSchema } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import * as E from '../../errors';
 import { writeAuditLog } from '../../services/audit-writer';
-import type { ExportItem, OrgBankInfo } from '../../services/payment-export';
+import type {
+  ExportItem,
+  NachaExportItem,
+  NachaOrgBankInfo,
+  OrgBankInfo,
+} from '../../services/payment-export';
 import {
   generateCsv,
   generateElixir,
+  generateFedwirePacs008,
+  generateNachaFile,
   generateSepaXml,
   generateSwiftXml,
   resolveTransferTitle,
 } from '../../services/payment-export';
+import { convertForSettlement, resolveSettlementCurrency } from '../../services/payment-settlement';
 import { calculateWht } from '../../services/tax-rate.service';
 import { applyTreaty } from '../../services/treaty-rate.service';
 import type { DbClient } from '../../services/types';
@@ -185,14 +193,42 @@ export async function allocateRunNumber(tx: TxClient, organizationId: string): P
 }
 
 /**
- * Generates an export file buffer and extension based on the format.
+ * Maps an {@link ExportItem} to the NACHA per-entry shape. Routing/account come
+ * from the decrypted US bank fields when present; the masked account is the
+ * fallback so the dispatch never emits an empty account field.
+ */
+function toNachaItem(item: ExportItem): NachaExportItem {
+  return {
+    receiverName: item.contractorName,
+    routingNumber: item.usRoutingNumber ?? '',
+    accountNumber: item.usAccountNumber ?? item.iban,
+    amountMinor: item.amountMinor,
+    individualId: item.invoiceNumber,
+  };
+}
+
+/** Maps org bank info to the NACHA origination shape (hand-set ODFI fields). */
+function toNachaOrgBank(orgBank: OrgBankInfo): NachaOrgBankInfo {
+  return {
+    immediateDestination: orgBank.achImmediateDestination ?? '',
+    immediateOrigin: orgBank.achImmediateOrigin ?? '',
+    companyName: orgBank.name,
+    companyId: orgBank.achCompanyId ?? '',
+    odfiRoutingPrefix: orgBank.achOdfiRoutingPrefix ?? '',
+  };
+}
+
+/**
+ * Generates an export file buffer and extension based on the format. Returns any
+ * generator warnings (currently NACHA receiver-name transliteration/truncation)
+ * so the caller can surface them rather than silently dropping them.
  */
 export async function _generateExportFileForFormat(
   format: string,
   exportItems: ExportItem[],
   orgBank: OrgBankInfo,
   runRef: string,
-): Promise<{ fileBuffer: Buffer; ext: string }> {
+): Promise<{ fileBuffer: Buffer; ext: string; warnings?: string[] }> {
   if (format === 'CSV') {
     return { fileBuffer: await generateCsv(exportItems), ext: 'csv' };
   }
@@ -201,6 +237,20 @@ export async function _generateExportFileForFormat(
   }
   if (format === 'SWIFT_XML') {
     return { fileBuffer: generateSwiftXml(exportItems, orgBank, runRef), ext: 'xml' };
+  }
+  if (format === 'ACH_NACHA') {
+    const result = generateNachaFile(exportItems.map(toNachaItem), toNachaOrgBank(orgBank));
+    const warnings = result.warnings.flatMap(w => w.warnings);
+    if (warnings.length > 0) {
+      log.warn(
+        { count: warnings.length },
+        'NACHA export produced receiver-name warnings — review before submission',
+      );
+    }
+    return { fileBuffer: result.fileBuffer, ext: result.ext, warnings };
+  }
+  if (format === 'FEDWIRE') {
+    return { fileBuffer: generateFedwirePacs008(exportItems, orgBank, runRef), ext: 'xml' };
   }
   return { fileBuffer: generateSepaXml(exportItems, orgBank, runRef), ext: 'xml' };
 }
@@ -229,9 +279,17 @@ export async function autoCompleteRunIfTerminal(tx: TxClient, paymentRunId: stri
 }
 
 /**
- * Builds ExportItem array from payment run items with resolved transfer titles.
+ * Builds the ExportItem array from payment-run items with resolved transfer
+ * titles, applying the per-payout settlement conversion BEFORE the export buffer
+ * is generated (the file must carry the settled amount, not the raw run amount).
+ *
+ * For each item the settlement currency is resolved (a per-run override wins,
+ * else the contractor's own currency) and the gross is converted at the
+ * payment-date ECB rate. A missing rate throws rather than emitting a zeroed
+ * amount — the payout is never silently settled to nothing.
  */
-export function _buildExportItems(
+export async function _buildExportItems(
+  db: DbClient,
   items: Array<{
     amountMinor: number;
     currency: string;
@@ -241,7 +299,7 @@ export function _buildExportItems(
       servicePeriodStart: Date | null;
       servicePeriodEnd: Date | null;
     };
-    contractor: { legalName: string; taxId: string | null };
+    contractor: { legalName: string; taxId: string | null; currency: string };
     billingProfile: {
       bankAccountMasked: string | null;
       swiftBic: string | null;
@@ -249,8 +307,11 @@ export function _buildExportItems(
     } | null;
   }>,
   transferTitleTemplate: string,
-): ExportItem[] {
-  return items.map(item => {
+  settlement: { paymentDate: Date; perRunOverride?: string },
+): Promise<ExportItem[]> {
+  const exportItems: ExportItem[] = [];
+
+  for (const item of items) {
     const billingPeriod =
       item.invoice.servicePeriodStart && item.invoice.servicePeriodEnd
         ? `${item.invoice.servicePeriodStart.toISOString().slice(0, 10)} - ${item.invoice.servicePeriodEnd.toISOString().slice(0, 10)}`
@@ -264,19 +325,41 @@ export function _buildExportItems(
       contractorName: item.contractor.legalName,
     });
 
-    return {
+    const settlementCurrency = resolveSettlementCurrency({
+      contractorCurrency: item.contractor.currency,
+      perRunOverride: settlement.perRunOverride,
+    });
+
+    const settled = await convertForSettlement(
+      db,
+      item.amountMinor,
+      item.currency,
+      settlementCurrency,
+      settlement.paymentDate,
+    );
+
+    if (!settled) {
+      throw new TRPCError({
+        code: 'UNPROCESSABLE_CONTENT',
+        message: E.PAYMENT_SETTLEMENT_RATE_UNAVAILABLE,
+      });
+    }
+
+    exportItems.push({
       contractorName: item.contractor.legalName,
       iban: item.billingProfile?.bankAccountMasked ?? '',
-      amountMinor: item.amountMinor,
-      currency: item.currency,
+      amountMinor: settled.amountMinor,
+      currency: settlementCurrency,
       invoiceNumber,
       taxId: item.contractor.taxId,
       bankName: item.billingProfile?.bankName ?? null,
       swiftBic: item.billingProfile?.swiftBic ?? null,
       dueDate: item.invoice.dueDate ?? new Date(),
       transferTitle,
-    };
-  });
+    });
+  }
+
+  return exportItems;
 }
 
 /**
@@ -516,6 +599,13 @@ export async function _resolveOrgBankInfo(
   }
   const bankAccount = bankAccountParse.success ? bankAccountParse.data : {};
 
+  // US ACH origination fields are hand-set per the org's ODFI spec and read
+  // defensively from org settings — absent for orgs that have not configured
+  // ACH origination, in which case the NACHA origin fields serialize blank.
+  const achOrigin = (settingsJson.achOrigin ?? {}) as Record<string, unknown>;
+  const achString = (value: unknown): string | undefined =>
+    typeof value === 'string' && value.trim() ? value.trim() : undefined;
+
   return {
     transferTitleTemplate:
       (settingsJson.paymentTransferTitleTemplate as string | undefined) ?? '{invoice_number}',
@@ -523,6 +613,10 @@ export async function _resolveOrgBankInfo(
       name: org?.name ?? '',
       iban: bankAccount.iban ?? '',
       bic: bankAccount.bic ?? '',
+      achImmediateDestination: achString(achOrigin.immediateDestination),
+      achImmediateOrigin: achString(achOrigin.immediateOrigin),
+      achCompanyId: achString(achOrigin.companyId),
+      achOdfiRoutingPrefix: achString(achOrigin.odfiRoutingPrefix),
     },
   };
 }

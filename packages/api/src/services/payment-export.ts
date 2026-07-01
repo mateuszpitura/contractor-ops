@@ -31,12 +31,22 @@ export type ExportItem = {
   serviceCategory?: string;
   purposeCodeOverride?: string;
   creditorCountry?: string;
+  // US ACH fields — routing + account for a NACHA entry, decrypted by the
+  // caller. When absent the ACH dispatch falls back to the masked account.
+  usRoutingNumber?: string;
+  usAccountNumber?: string;
 };
 
 export type OrgBankInfo = {
   name: string;
   iban: string;
   bic: string;
+  // US ACH origination fields (hand-set per the ODFI spec), populated from org
+  // settings when the org has configured ACH origination.
+  achImmediateDestination?: string;
+  achImmediateOrigin?: string;
+  achCompanyId?: string;
+  achOdfiRoutingPrefix?: string;
 };
 
 // ---------------------------------------------------------------------------
@@ -360,6 +370,70 @@ export function generateSwiftXml(items: ExportItem[], org: OrgBankInfo, runNumbe
 ${transactions}
     </PmtInf>
   </CstmrCdtTrfInitn>
+</Document>`;
+
+  return Buffer.from(xml, 'utf-8');
+}
+
+// ---------------------------------------------------------------------------
+// Fedwire ISO 20022 pacs.008 Export (US high-value)
+// ---------------------------------------------------------------------------
+
+/**
+ * Generate a Fedwire ISO 20022 pacs.008.001.08 customer-credit-transfer XML for
+ * a high-value US payout above the Same-Day ACH ceiling. Mirrors
+ * {@link generateSwiftXml} but uses the FI-to-FI `pacs.008` message type with a
+ * Fedwire clearing-system settlement block.
+ *
+ * Adviser-verify: live FedLine transmission is a bank channel (deferred). This
+ * export is the pacs.008 message the operator hands to their bank — Fedwire's
+ * legacy FAIM flat file was retired 2025-07-14, so there is no self-serve
+ * uploadable batch file.
+ */
+export function generateFedwirePacs008(
+  items: ExportItem[],
+  org: OrgBankInfo,
+  runNumber: string,
+): Buffer {
+  const msgId = runNumber.replace(/[^a-zA-Z0-9-]/g, '').substring(0, 35);
+  const now = new Date().toISOString();
+  const currency = items[0]?.currency ?? 'USD';
+  const totalAmount = items.reduce((sum, i) => sum + i.amountMinor, 0);
+
+  const transactions = items
+    .map((item, i) => {
+      const txId = `${msgId}-${String(i + 1).padStart(4, '0')}`;
+      const bic = item.swiftBic ?? 'NOTPROVIDED';
+
+      return `      <CdtTrfTxInf>
+        <PmtId><EndToEndId>${txId}</EndToEndId><TxId>${txId}</TxId></PmtId>
+        <IntrBkSttlmAmt Ccy="${escapeXml(item.currency)}">${minorToDecimal(item.amountMinor, item.currency)}</IntrBkSttlmAmt>
+        <ChrgBr>SHAR</ChrgBr>
+        <Dbtr><Nm>${escapeXml(org.name)}</Nm></Dbtr>
+        <DbtrAcct><Id><Othr><Id>${escapeXml(org.iban)}</Id></Othr></Id></DbtrAcct>
+        <DbtrAgt><FinInstnId><BICFI>${escapeXml(org.bic)}</BICFI></FinInstnId></DbtrAgt>
+        <CdtrAgt><FinInstnId><BICFI>${escapeXml(bic)}</BICFI></FinInstnId></CdtrAgt>
+        <Cdtr><Nm>${escapeXml(item.contractorName)}</Nm></Cdtr>
+        <CdtrAcct><Id><Othr><Id>${escapeXml(item.iban)}</Id></Othr></Id></CdtrAcct>
+        <RmtInf><Ustrd>${escapeXml(item.transferTitle)}</Ustrd></RmtInf>
+      </CdtTrfTxInf>`;
+    })
+    .join('\n');
+
+  const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:pacs.008.001.08"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <FIToFICstmrCdtTrf>
+    <GrpHdr>
+      <MsgId>${msgId}</MsgId>
+      <CreDtTm>${now}</CreDtTm>
+      <NbOfTxs>${items.length}</NbOfTxs>
+      <CtrlSum>${minorToDecimal(totalAmount, currency)}</CtrlSum>
+      <SttlmInf><SttlmMtd>CLRG</SttlmMtd><ClrSys><Cd>FDW</Cd></ClrSys></SttlmInf>
+      <InstgAgt><FinInstnId><BICFI>${escapeXml(org.bic)}</BICFI></FinInstnId></InstgAgt>
+    </GrpHdr>
+${transactions}
+  </FIToFICstmrCdtTrf>
 </Document>`;
 
   return Buffer.from(xml, 'utf-8');

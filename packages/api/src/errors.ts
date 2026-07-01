@@ -91,6 +91,7 @@ export const PAYMENT_RUN_ITEM_NOT_FOUND = 'paymentRunItemNotFound';
 export const PAYMENT_RUN_NOT_DRAFT = 'paymentRunNotDraft';
 export const PAYMENT_INVOICE_NOT_IN_RUN = 'paymentInvoiceNotInRun';
 export const PAYMENT_MIXED_CURRENCIES = 'paymentMixedCurrencies';
+export const PAYMENT_SETTLEMENT_RATE_UNAVAILABLE = 'paymentSettlementRateUnavailable';
 
 // ─── Approval ────────────────────────────────────────────────────
 export const APPROVAL_CHAIN_NOT_FOUND = 'approvalChainNotFound';
