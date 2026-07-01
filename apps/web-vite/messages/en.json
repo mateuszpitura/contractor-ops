@@ -1452,7 +1452,8 @@
         "expiringSr": "{count} contractors with contracts expiring within 30 days",
         "paymentBlocked": "Payment-blocked",
         "stalled": "Stalled onboarding",
-        "allClear": "All clear"
+        "allClear": "All clear",
+        "needsAction": "Needs action"
       },
       "composition": {
         "jurisdiction": "Jurisdiction"

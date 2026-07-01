@@ -1452,7 +1452,8 @@
         "expiringSr": "{count} Auftragnehmer mit in 30 Tagen auslaufenden Verträgen",
         "paymentBlocked": "Zahlung blockiert",
         "stalled": "Stockendes Onboarding",
-        "allClear": "Alles in Ordnung"
+        "allClear": "Alles in Ordnung",
+        "needsAction": "Handlung nötig"
       },
       "composition": {
         "jurisdiction": "Rechtsraum"

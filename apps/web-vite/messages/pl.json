@@ -1452,7 +1452,8 @@
         "expiringSr": "{count} kontrahentów z umowami wygasającymi w ciągu 30 dni",
         "paymentBlocked": "Zablokowana płatność",
         "stalled": "Zatrzymane wdrożenie",
-        "allClear": "Wszystko w porządku"
+        "allClear": "Wszystko w porządku",
+        "needsAction": "Wymaga działania"
       },
       "composition": {
         "jurisdiction": "Jurysdykcja"

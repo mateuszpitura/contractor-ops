@@ -1452,7 +1452,8 @@
         "expiringSr": "{count} متعاقدين لديهم عقود تنتهي خلال 30 يومًا",
         "paymentBlocked": "مدفوعات محظورة",
         "stalled": "تأهيل متوقف",
-        "allClear": "كل شيء على ما يرام"
+        "allClear": "كل شيء على ما يرام",
+        "needsAction": "يتطلب إجراءً"
       },
       "composition": {
         "jurisdiction": "الاختصاص القضائي"
