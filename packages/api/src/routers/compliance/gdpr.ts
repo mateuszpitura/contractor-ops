@@ -23,6 +23,22 @@ import { deleteRegionalObject } from '../../services/regional-storage';
 const RETENTION_CITATIONS: Record<RetainedRecordType, string> = {
   '1099-NEC': 'IRS 1099-NEC: 4-year retention (26 CFR 1.6001-1)',
   'backup-withholding': 'IRS backup-withholding records: 7-year retention (26 CFR 31.6001-1)',
+  'pl-akta-post2019':
+    'PL akta osobowe: 10-year retention from end of employment (Kodeks pracy art. 94(4)-94(6); PENDING legal/tax adviser verification)',
+  'pl-akta-legacy':
+    'PL akta osobowe (pre-2019 regime): 50-year retention from end of employment (Kodeks pracy art. 94(5); PENDING legal/tax adviser verification)',
+  'de-personalakte-tax':
+    'DE Personalakte: 10-year retention for tax/commercial records (AO section 147 / HGB section 257; PENDING legal/tax adviser verification)',
+  'de-accident-records':
+    'DE occupational-health/accident records: 30-year retention (ArbMedVV / DGUV Vorschrift 1; PENDING legal/tax adviser verification)',
+  'uk-personnel-general':
+    'UK personnel records: 6-year retention after employment ends (Limitation Act 1980; PENDING legal/tax adviser verification)',
+  'uk-personnel-financial':
+    'UK pay/financial records: 7-year retention (HMRC PAYE + Limitation Act 1980; PENDING legal/tax adviser verification)',
+  'us-i9-post-hire':
+    'US Form I-9: retained 3 years after hire (8 CFR 274a.2; PENDING legal/tax adviser verification)',
+  'us-i9-post-termination':
+    'US Form I-9: retained 1 year after termination, whichever is later (8 CFR 274a.2; PENDING legal/tax adviser verification)',
 };
 
 // ---------------------------------------------------------------------------

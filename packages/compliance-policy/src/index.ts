@@ -10,6 +10,7 @@ import './policies/pl';
 import './policies/us';
 import './policies/ksa';
 import './policies/uae';
+import './personnel-registry';
 
 export {
   COMPLIANCE_DOC_REGISTRY,
@@ -44,6 +45,21 @@ export {
   getDocumentTypeLabelKey,
   groupPaymentBlockReasons,
 } from './payment-gate';
+export {
+  clearPersonnelSections,
+  getPersonnelRetentionRules,
+  getPersonnelSections,
+  PERSONNEL_SECTION_REGISTRY,
+  registerPersonnelSection,
+  resolveSectionForDocumentType,
+} from './personnel-registry';
+export type {
+  PersonnelFileSection,
+  PersonnelRetentionRecordType,
+  PersonnelRetentionRule,
+  PersonnelSection,
+  RetentionAnchor,
+} from './personnel-types';
 export {
   listPolicyRules,
   parsePolicyRuleId,
