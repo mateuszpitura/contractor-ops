@@ -72,6 +72,77 @@ export interface PolicyRule {
 }
 
 /**
+ * Statutory leave categories. ANNUAL is the paid-vacation entitlement every
+ * market defines; the rest carry per-market rules where they exist.
+ */
+export type LeaveKind = 'ANNUAL' | 'PARENTAL' | 'BEREAVEMENT' | 'STUDY' | 'SICK';
+
+/**
+ * Per-market statutory leave-accrual rule. Separate from PolicyRule: leave has
+ * no uploaded document, expiry, or DocumentType — it maps a (jurisdiction,
+ * leaveKind) to a base entitlement that scales by tenure and, optionally, the
+ * employment fraction (etat). Registered on import from policies/<cc>.ts, keyed
+ * on the shared Jurisdiction type.
+ */
+export interface LeaveAccrualRule {
+  jurisdiction: Jurisdiction;
+  leaveKind: LeaveKind;
+  /** Statutory base entitlement in days for a full-time worker at the given tenure. */
+  baseEntitlementDays: (ctx: { tenureYears: number }) => number;
+  /** Whether the base entitlement scales by the employment fraction (etat). */
+  proRataByEtat: boolean;
+  /**
+   * How unused entitlement rolls into the next year.
+   *  - `maxDays` null = no explicit statutory cap on carried days.
+   *  - `expiresMonthsIntoNextYear` = months after year-end the carried days lapse
+   *    (e.g. PL 9 = grant by Sep 30); null = no statutory lapse deadline encoded.
+   */
+  carryoverPolicy: {
+    maxDays: number | null;
+    expiresMonthsIntoNextYear: number | null;
+  };
+  /**
+   * Best-effort draft legal text carrying the cited statute + adviser-verify
+   * annotation. PENDING sign-off per the standing legal-review constraint
+   * (local-only deploy; jurisdiction legal/tax-adviser sign-off deferred).
+   */
+  draftLegalText: string;
+}
+
+/**
+ * Per-jurisdiction working-time limit rule. Feeds the on-entry synchronous
+ * check and the daily rolling-window scan. Separate from PolicyRule for the
+ * same reason as LeaveAccrualRule — no document, expiry, or DocumentType.
+ */
+export interface WorkingTimeLimitRule {
+  jurisdiction: Jurisdiction;
+  /** Statutory daily norm in minutes; null where the market caps weekly only (UK). */
+  maxDailyMinutes: number | null;
+  /** Absolute daily ceiling in minutes above the norm; null where none exists. */
+  maxDailyHardCeilingMinutes: number | null;
+  /** Average weekly cap in minutes measured over `weeklyWindowWeeks`. */
+  weeklyAvgMaxMinutes: number;
+  /** Reference-period length in weeks the weekly average is measured across. */
+  weeklyWindowWeeks: number;
+  /** Whether an individual written opt-out from the weekly cap is permitted (UK). */
+  weeklyOptOutAllowed: boolean;
+  /** Night-work window as local hours [startHour, endHour); null where undefined. */
+  nightWindow: { startHour: number; endHour: number } | null;
+  /**
+   * Overtime uplift percentages where a statutory premium exists.
+   *  - `standardPct` = base overtime uplift on the hourly rate.
+   *  - `premiumPct` = enhanced-band uplift (night / rest-day / holiday / over-norm).
+   * Omitted where the market has no statutory OT premium (contract/CBA-governed).
+   */
+  overtimePremium?: { standardPct: number; premiumPct: number };
+  /**
+   * Best-effort draft legal text carrying the cited statute + adviser-verify
+   * annotation. PENDING sign-off per the standing legal-review constraint.
+   */
+  draftLegalText: string;
+}
+
+/**
  * Parses a PolicyRuleId into its stable namespace + version.
  * Throws if the input does not match the expected shape.
  */

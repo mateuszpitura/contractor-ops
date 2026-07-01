@@ -33,6 +33,11 @@ export {
   mapCountryCodeToJurisdiction,
   mapIsoToJurisdiction,
 } from './jurisdiction-resolver';
+export {
+  listLeaveAccrualRules,
+  registerLeaveAccrualRule,
+  resolveLeaveAccrual,
+} from './leave-registry';
 export type {
   EvaluatePaymentEligibilityInput,
   PaymentEligibilityBlockedItem,
@@ -69,9 +74,17 @@ export {
 export type {
   EngagementContext,
   Jurisdiction,
+  LeaveAccrualRule,
+  LeaveKind,
   ParsedPolicyRuleId,
   PolicyRule,
   PolicyRuleId,
   Severity,
+  WorkingTimeLimitRule,
 } from './types';
 export { POLICY_RULE_SET_VERSION, type PolicyRuleSetVersion } from './version';
+export {
+  listWorkingTimeLimits,
+  registerWorkingTimeLimit,
+  resolveWtLimits,
+} from './wt-registry';
