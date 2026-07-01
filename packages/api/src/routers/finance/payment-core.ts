@@ -2,7 +2,11 @@ import type { Prisma } from '@contractor-ops/db';
 import type { PaymentRun } from '@contractor-ops/db/generated/prisma/client';
 import { evaluate } from '@contractor-ops/feature-flags';
 import type { PayoutInitiationAdapter } from '@contractor-ops/integrations';
-import { MockModernTreasuryAdapter, StripeTreasuryAdapter } from '@contractor-ops/integrations';
+import {
+  MockModernTreasuryAdapter,
+  MockPlaidIdentityClient,
+  StripeTreasuryAdapter,
+} from '@contractor-ops/integrations';
 import {
   paymentRunCreateSchema,
   paymentRunListSchema,
@@ -475,5 +479,79 @@ export const paymentCoreRouter = router({
       });
 
       return summary;
+    }),
+
+  // Mock-triggerable Plaid Identity onboarding verification — the write path that
+  // makes ContractorBillingProfile.plaidVerificationStatus real. It runs the
+  // deterministic MockPlaidIdentityClient (the GA default) against the profile's
+  // masked US routing/account + the contractor's legal name and persists whatever
+  // status it returns, so the payout-time advisory read now has a non-null value
+  // to differentiate verified from unverified accounts.
+  //
+  // Advisory + fail-open: a non-VERIFIED result (PENDING/FAILED) is persisted and
+  // returned as an advisory warning — it never throws and never blocks onboarding
+  // or payout. Same gate as initiatePayout so a non-US or unpermissioned caller is
+  // rejected before any profile is loaded or written.
+  //
+  // The live Plaid Link → public_token → verify flow stays behind the
+  // payments.plaid-verification flag with its live SDK deferred (referenced only
+  // in the dark client); this reachable trigger is mock-only and installs no SDK.
+  verifyBillingProfilePlaid: tenantProcedure
+    .use(requirePermission({ payment: ['export'] }))
+    .input(z.object({ billingProfileId: z.cuid() }).strict())
+    .mutation(async ({ ctx, input }) => {
+      assertUsExpansionEnabled(ctx.organizationId, ctx.region);
+
+      const profile = await ctx.db.contractorBillingProfile.findFirst({
+        where: { id: input.billingProfileId, organizationId: ctx.organizationId },
+        select: {
+          id: true,
+          contractorId: true,
+          plaidAccountId: true,
+          usRoutingNumberMasked: true,
+          usAccountNumberMasked: true,
+          contractor: { select: { legalName: true } },
+        },
+      });
+      if (!profile) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: E.BILLING_PROFILE_NOT_FOUND,
+        });
+      }
+
+      const client = new MockPlaidIdentityClient();
+      const result = await client.verify({
+        // Prefer an already-linked Plaid account id; otherwise derive a
+        // deterministic id from the profile so the mock is stable per profile.
+        accountId: profile.plaidAccountId ?? `plaid-acct-${profile.id}`,
+        legalName: profile.contractor.legalName,
+        routingNumber: profile.usRoutingNumberMasked ?? '',
+        accountNumber: profile.usAccountNumberMasked ?? '',
+      });
+
+      await ctx.db.contractorBillingProfile.update({
+        where: { id: profile.id },
+        data: {
+          plaidVerificationStatus: result.status,
+          plaidVerifiedAt: new Date(),
+          plaidAccountId: result.plaidAccountId ?? profile.plaidAccountId,
+        },
+      });
+
+      // Masked audit: only the profile id and the resulting status are recorded —
+      // never the routing/account (which reach the mock masked and stay masked).
+      await writeAuditLog({
+        tx: ctx.db,
+        organizationId: ctx.organizationId,
+        actorType: 'USER',
+        actorId: ctx.user.id,
+        action: 'contractor_billing_profile.plaid_verified',
+        resourceType: 'CONTRACTOR',
+        resourceId: profile.contractorId,
+        metadata: { billingProfileId: profile.id, status: result.status },
+      });
+
+      return { status: result.status, advisoryWarning: result.advisoryWarning };
     }),
 });

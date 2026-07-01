@@ -31,3 +31,33 @@ Out of 88-06 scope (SCOPE BOUNDARY); belongs to whoever introduced the two new c
 on the base branch. Either migrate them to a package env schema and re-run the ratchet in
 tighten mode, or bump the baseline in the same change set that legitimises them.
 - [pre-existing, out of scope] lint:no-breadcrumbs fails on packages/api/src/pdf-templates/__tests__/us-determination-letter.test.tsx:5 and packages/api/src/services/__tests__/form-1099k-tracker.service.test.ts:5 (decision-id comments from sibling phases). Not touched by 88-10.
+
+## 88 — tin-match backup-withholding writer deferred to Phase 86 (year-end batch owner)
+
+**Disposition: DEFER to Phase 86 — this is NOT a Phase 88 gap; it is a recorded, documented seam.**
+
+The backup-withholding writer already exists and is correct, but has **zero production
+callers** because the trigger that would call it belongs to a phase that has not landed:
+
+- `createBackupWithholdingFlagWriter` (`packages/api/src/services/tin-match.service.ts:339`)
+  persists `Contractor.backupWithholdingFlagged = true` via a tenant-scoped idempotent
+  `updateMany({ where: { id: recipientId, organizationId }, data: { backupWithholdingFlagged: true } })`
+  (boolean only — the TIN never reaches the write; advisory, never hard-blocks the 1099).
+- `createDbTinMatchPersistence` (`tin-match.service.ts:290`) wires that writer into the
+  `setBackupWithholdingFlag` port the tin-match service calls on a confirmed TIN mismatch.
+- The **read side is already live**: `applyWithholding` (`payment-shared.ts`) reads
+  `Contractor.backupWithholdingFlagged` to deduct the 24% IRC §3406 backup withholding at
+  payment-run seeding, and `form-1099-nec.service.ts` aggregates it into box 4.
+
+**The seam (why it stays unwired here):** the only thing missing is the *trigger* — a
+year-end IRS TIN-match batch (the bulk `/mp/verify` reconciliation staff router / job) that
+would run every recipient's TIN and call `setBackupWithholdingFlag` on a mismatch. That
+year-end tin-match batch is owned by **Phase 86** (the year-end IRIS/1099 batch phase), not
+by the Phase 88 payout rail. Wiring a standalone trigger here would duplicate the batch
+Phase 86 already owns and would run against a LOCAL-ONLY posture with no live year-end batch
+yet. The correct disposition is therefore a **documented defer**, not a silent omission and
+not a wire.
+
+**Phase 86 action:** when the year-end tin-match batch lands, call
+`createDbTinMatchPersistence` (which composes `createBackupWithholdingFlagWriter`) from the
+batch's per-recipient mismatch path — no new writer code is needed, only the trigger.
