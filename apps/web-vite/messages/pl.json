@@ -9110,6 +9110,25 @@
         "rejected": "Dokument odrzucony",
         "error": "Coś poszło nie tak. Spróbuj ponownie."
       }
+    },
+    "erasure": {
+      "requestCta": "Zażądaj usunięcia",
+      "confirmTitle": "Zażądać usunięcia danych tego pracownika?",
+      "confirmBody": "Każda część zostanie sprawdzona pod kątem okresu przechowywania i nie wszystko może zostać usunięte od razu. Części nadal objęte ustawowym obowiązkiem przechowywania zostają zachowane.",
+      "confirmAction": "Zażądaj usunięcia",
+      "cancel": "Anuluj",
+      "pending": "Przetwarzanie usunięcia…",
+      "fullyErased": "Wszystkie części usunięte",
+      "partialErased": "Usunięto {erased} z {total} części — {retained} zachowano na mocy ustawowego obowiązku przechowywania",
+      "sectionRetained": "Przechowywane do {date} — {citation}",
+      "retainedNoDate": "Przechowywane — {citation}",
+      "disposition": {
+        "erased": "Usunięte",
+        "retained": "Zachowane"
+      },
+      "toast": {
+        "error": "Nie udało się przetworzyć żądania usunięcia. Spróbuj ponownie."
+      }
     }
   }
 }

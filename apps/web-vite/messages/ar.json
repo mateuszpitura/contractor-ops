@@ -9110,6 +9110,25 @@
         "rejected": "تم رفض المستند",
         "error": "حدث خطأ ما. حاول مرة أخرى."
       }
+    },
+    "erasure": {
+      "requestCta": "طلب المحو",
+      "confirmTitle": "طلب محو بيانات هذا الموظف؟",
+      "confirmBody": "يقيّم هذا كل قسم مقابل فترة احتفاظه وقد لا يمحو كل شيء فورًا. تبقى الأقسام التي ما زالت خاضعة لالتزام احتفاظ قانوني محفوظة.",
+      "confirmAction": "طلب المحو",
+      "cancel": "إلغاء",
+      "pending": "جارٍ معالجة المحو…",
+      "fullyErased": "تم محو جميع الأقسام",
+      "partialErased": "تم محو {erased} من {total} أقسام — تم الاحتفاظ بـ {retained} بموجب التزام احتفاظ قانوني",
+      "sectionRetained": "يُحتفظ به حتى {date} — {citation}",
+      "retainedNoDate": "محفوظ — {citation}",
+      "disposition": {
+        "erased": "ممحو",
+        "retained": "محفوظ"
+      },
+      "toast": {
+        "error": "تعذّرت معالجة طلب المحو. حاول مرة أخرى."
+      }
     }
   }
 }

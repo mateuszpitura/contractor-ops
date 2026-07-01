@@ -9109,6 +9109,25 @@
         "rejected": "Document rejected",
         "error": "Something went wrong. Try again."
       }
+    },
+    "erasure": {
+      "requestCta": "Request erasure",
+      "confirmTitle": "Request data erasure for this employee?",
+      "confirmBody": "This evaluates every section against its retention window and may not erase everything immediately. Sections still under a statutory hold are retained.",
+      "confirmAction": "Request erasure",
+      "cancel": "Cancel",
+      "pending": "Processing erasure…",
+      "fullyErased": "All sections erased",
+      "partialErased": "{erased} of {total} sections erased — {retained} retained under statutory hold",
+      "sectionRetained": "Retained until {date} — {citation}",
+      "retainedNoDate": "Retained — {citation}",
+      "disposition": {
+        "erased": "Erased",
+        "retained": "Retained"
+      },
+      "toast": {
+        "error": "Couldn't process the erasure request. Try again."
+      }
     }
   }
 }

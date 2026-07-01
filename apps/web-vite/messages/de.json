@@ -9110,6 +9110,25 @@
         "rejected": "Dokument abgelehnt",
         "error": "Etwas ist schiefgelaufen. Versuchen Sie es erneut."
       }
+    },
+    "erasure": {
+      "requestCta": "Löschung beantragen",
+      "confirmTitle": "Datenlöschung für diesen Mitarbeiter beantragen?",
+      "confirmBody": "Dabei wird jeder Abschnitt gegen seine Aufbewahrungsfrist geprüft; möglicherweise wird nicht alles sofort gelöscht. Abschnitte, die noch einer gesetzlichen Aufbewahrungspflicht unterliegen, bleiben erhalten.",
+      "confirmAction": "Löschung beantragen",
+      "cancel": "Abbrechen",
+      "pending": "Löschung wird verarbeitet…",
+      "fullyErased": "Alle Abschnitte gelöscht",
+      "partialErased": "{erased} von {total} Abschnitten gelöscht — {retained} aufgrund gesetzlicher Aufbewahrungspflicht behalten",
+      "sectionRetained": "Aufbewahrung bis {date} — {citation}",
+      "retainedNoDate": "Aufbewahrt — {citation}",
+      "disposition": {
+        "erased": "Gelöscht",
+        "retained": "Aufbewahrt"
+      },
+      "toast": {
+        "error": "Der Löschantrag konnte nicht verarbeitet werden. Versuchen Sie es erneut."
+      }
     }
   }
 }
