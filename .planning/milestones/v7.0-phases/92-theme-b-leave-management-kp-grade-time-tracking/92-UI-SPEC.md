@@ -71,18 +71,18 @@ Exceptions: **team calendar (S2) day cells** — use a fixed min touch/click tar
 
 ## Typography
 
-Contract weights: **2** — regular `400` (body) + semibold `600` (headings/emphasis, always paired with `font-display` for h1–h3 and KPI values).
+**Phase contract = exactly 4 sizes** (`12 / 14 / 20 / 28`) and **2 weights** (regular `400` + semibold `600`; `600` always paired with `font-display` for headings and KPI values). New and adapted surfaces S1–S5 use only these.
 
 | Role | Size | Weight | Line Height | Font | Where |
 |------|------|--------|-------------|------|-------|
+| Label / caption | 12px (`text-[12px]`) | 400 | 1.4 | sans, `uppercase tracking-wide` for group labels | field labels, muted section headings, chain-step captions |
 | Body | 14px (`text-sm`) | 400 | 1.5 (`leading-relaxed`/normal) | sans | table cells, panel copy, form values |
-| Label / caption | 12px (`text-[12px]`) | 500* | 1.4 | sans, `uppercase tracking-wide` for group labels | field labels, muted section headings, badges, chain-step captions |
-| Heading | 20px (`text-[20px]`) | 600 | 1.2 (`leading-tight`) | `font-display` | section/empty-state headings; **24px** for the page `<h1>` (`AtelierPageHeader`) |
+| Heading | 20px (`text-[20px]`) | 600 | 1.2 (`leading-tight`) | `font-display` | section + empty-state headings |
 | Display | 28px (`text-[28px]`) | 600 | 1.2 (`leading-[1.2]`) | `font-display` | KPI values (balance days, hours this week) in summary cards |
 
-\* **Inherited exception:** the shared `packages/ui` primitives (badges, micro-labels, chips, chain captions) already use `font-medium` (500). This is an existing-system weight, **not introduced by this phase** — reuse it as-is on those primitives; do not add new 500-weight typography beyond what the primitives ship. New body/heading text uses 400/600 only.
+**Page `<h1>` is OUT of this phase's typography contract.** The page title is owned entirely by the existing, unmodified `AtelierPageHeader` primitive (which ships its own 24px `<h1>`). This phase does not restyle it, so that size is neither declared nor counted here.
 
-Inherited size ramp also present and permitted where a reuse target already uses it: `10px` (uppercase eyebrow, bold), `11px` (group labels), `13px` (secondary body / chain rows). Do not introduce sizes outside this ramp.
+**Frozen inherited ramp — read-only, MUST NOT appear in S1–S5.** Already-shipped `packages/ui` sub-components this phase reuses *without restyling* (`sla-badge`, `chain-tracker`, `audit-timeline`, badges/chips/micro-labels) carry their own `10px`/`11px`/`13px` sizes and `font-medium` (500) weight. These are frozen existing-system values: reuse those primitives as-is, but do **not** introduce any `10/11/13px` size or new `500`-weight text in any new or adapted surface. New surface typography uses the 4 sizes + 2 weights above, exclusively.
 
 ---
 
@@ -135,7 +135,7 @@ Top-level required contract (per template). Per-surface copy follows below.
 ### Per-surface copy (all strings i18n-keyed — en/de/pl/ar)
 
 **S1 — Leave queue**
-- Row/panel CTAs: `Approve` · `Reject` (destructive) · `Request clarification` · `Delegate` (reuse `Approvals` action keys; add `Leave.*` row-variant keys).
+- Row/panel CTAs: `Approve` · `Reject` (destructive) · `Request clarification` · `Delegate` (reuse `Approvals` action keys; add `Leave.*` row-variant keys). These single-word row verbs are an **intentional reuse-pattern exception** — they inherit the already-shipped approval-queue row actions where the leave-request row context makes the referent unambiguous; do not expand them to `Approve request` etc. in the queue rows (the side-panel already carries the noun).
 - Header action: `Record sick leave` (opens direct-entry dialog — NOT an approval; sick = notification).
 - Empty (page): heading "No leave requests to review" / body as above.
 - Sub-empty (filtered): "No requests match these filters." / "Clear filters".
@@ -187,6 +187,13 @@ Every surface declares loading / empty / error explicitly (web-vite wired-sectio
 | S5 alert | n/a (event-driven) | n/a | toast on dispatch failure | dismissible banner; deep-links to time record |
 
 Balance-after preview (S1 side-panel): show `available − requested = remaining` with `tabular-nums`; if remaining < 0 render `--status-danger` + "Insufficient balance" (blocks submit).
+
+**Primary visual anchor per surface** (what the eye lands on first — planner must preserve this hierarchy):
+- **S1 queue:** the side-panel **balance-after figure** (`Display` size, `tabular-nums`) is the anchor; the row table is secondary chrome.
+- **S2 calendar:** the **capacity heatmap band + conflict marker** draw first; date numerals and avatar chips are subordinate.
+- **S3 entry:** the **three KPI summary cards** (hours this week / overtime this month / limit status) anchor above the day-grain form.
+- **S4 ewidencja:** the **`Archived`/`Lock` badge on the active snapshot** plus the dimmed superseded rows establish the active-vs-historical hierarchy.
+- **S5 alert:** the **status-colored banner headline** (warning/danger) is the single focal element; the "View time record" CTA is secondary.
 
 ---
 
