@@ -2,8 +2,8 @@
 phase: 92
 slug: theme-b-leave-management-kp-grade-time-tracking
 status: draft
-nyquist_compliant: false
-wave_0_complete: false
+nyquist_compliant: true
+wave_0_complete: true
 created: 2026-07-01
 ---
 
@@ -22,6 +22,7 @@ created: 2026-07-01
 | **Config file** | per-package `vitest.config.ts`; db excludes `src/**/__tests__/**` from typecheck (RED scaffolds don't brick tsc) |
 | **Quick run command** | `pnpm --filter @contractor-ops/api test <path>` (scoped — NEVER unscoped web-vite: kills RAM per MEMORY) |
 | **Full suite command** | `pnpm test` (turbo → vitest) — run tests, never cite counts from memory |
+| **i18n parity** | root `pnpm i18n:parity` (`scripts/i18n-parity.mjs`) — NOT a `--filter` script; `check:i18n` does not exist |
 | **Estimated runtime** | scoped ~10-40s per package; full suite minutes (do not run unscoped web-vite) |
 
 ---
@@ -30,7 +31,7 @@ created: 2026-07-01
 
 - **After every task commit:** Run the scoped quick command for the touched package (`pnpm --filter @contractor-ops/<pkg> test <path>`).
 - **After every plan wave:** `pnpm --filter @contractor-ops/api test && pnpm --filter @contractor-ops/compliance-policy test && pnpm --filter @contractor-ops/db test` (avoid unscoped web-vite full run).
-- **Before `/gsd:verify-work`:** Full suite green + `pnpm typecheck` + `pnpm check:web-vite-data-layer` + `pnpm check:wiki-brain`.
+- **Before `/gsd:verify-work`:** Full suite green + `pnpm typecheck` + `pnpm i18n:parity` + `pnpm check:web-vite-data-layer` + `pnpm check:wiki-brain`.
 - **Max feedback latency:** < 60 seconds (scoped package run).
 
 ---
@@ -42,6 +43,7 @@ created: 2026-07-01
 | LEAVE-01 | PL 20/26 by tenure; part-time `etat` pro-rata rounds up; carryover cap; balance = Σ ledger | unit | `pnpm --filter @contractor-ops/api test leave-balance` | ❌ W0 |
 | LEAVE-01 | Per-market entitlement resolves for PL/DE/UK/US/UAE/KSA via registry | unit | `pnpm --filter @contractor-ops/compliance-policy test leave-registry` | ❌ W0 |
 | LEAVE-02 | Leave request routes through approval-chain (Flow/Step created, `resourceType='LEAVE_REQUEST'`); approve → ledger deduction + balance decrement | integration | `pnpm --filter @contractor-ops/api test leave-approval` | ❌ W0 |
+| LEAVE-02 | **RBAC: a `leave_approver`-only session approves a LEAVE_REQUEST (succeeds); an invoice-only approver is FORBIDDEN on leave; a `leave_approver` is FORBIDDEN on an INVOICE (no over-grant)** | integration | `pnpm --filter @contractor-ops/api test leave-approval-rbac` | ❌ W0 |
 | LEAVE-02 | Manual sick entry writes a DIRECT ledger row + notification, creates NO ApprovalFlow | integration | `pnpm --filter @contractor-ops/api test leave-sick-direct` | ❌ W0 |
 | LEAVE-02 | Blackout period rejects overlapping vacation request | unit | `pnpm --filter @contractor-ops/api test leave-blackout` | ❌ W0 |
 | LEAVE-03 | Overlapping same-team approved leave raises a conflict warning; capacity heatmap aggregates | unit | `pnpm --filter @contractor-ops/web-vite test team-calendar` | ❌ W0 |
@@ -62,6 +64,7 @@ created: 2026-07-01
 - [ ] `packages/api/src/services/__tests__/leave-balance.test.ts` — LEAVE-01 (Σ ledger + pro-rata + carryover)
 - [ ] `packages/compliance-policy/src/__tests__/leave-registry.test.ts` + `wt-registry.test.ts` — per-market rule resolution
 - [ ] `packages/api/src/__tests__/leave-approval.test.ts` + `leave-sick-direct.test.ts` — LEAVE-02
+- [ ] `packages/api/src/__tests__/leave-approval-rbac.test.ts` — LEAVE-02 RBAC gate (leave_approver approves LEAVE_REQUEST; invoice-only forbidden; no over-grant) → Plan 07 turns GREEN
 - [ ] `packages/api/src/services/__tests__/wt-limit-check.test.ts` + `wt-limit-scan.test.ts` — TIME-EMP-02
 - [ ] `packages/api/src/services/__tests__/ewidencja-builder.test.ts` — TIME-EMP-03 field coverage + supersede
 - [ ] `packages/db/src/__tests__/ewidencja-immutable.test.ts` — DB trigger rejects UPDATE
@@ -82,11 +85,11 @@ created: 2026-07-01
 
 ## Validation Sign-Off
 
-- [ ] All tasks have `<automated>` verify or Wave 0 dependencies
-- [ ] Sampling continuity: no 3 consecutive tasks without automated verify
-- [ ] Wave 0 covers all MISSING references
-- [ ] No watch-mode flags
-- [ ] Feedback latency < 60s
-- [ ] `nyquist_compliant: true` set in frontmatter
+- [x] All tasks have `<automated>` verify or Wave 0 dependencies
+- [x] Sampling continuity: no 3 consecutive tasks without automated verify
+- [x] Wave 0 covers all MISSING references (incl. the leave-approval-rbac Blocker-1 contract)
+- [x] No watch-mode flags
+- [x] Feedback latency < 60s
+- [x] `nyquist_compliant: true` set in frontmatter
 
-**Approval:** pending
+**Approval:** approved 2026-07-01 (post-revision — Blocker 1 RBAC gate + Blocker 2 i18n script fixed; leave-approval-rbac Wave-0 contract added).

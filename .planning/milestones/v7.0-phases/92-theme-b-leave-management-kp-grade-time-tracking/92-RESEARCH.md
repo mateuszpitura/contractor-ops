@@ -519,18 +519,18 @@ Note: `updateMany` in `supersedeAndInsertEwidencja` flips a **prior** row's stat
 
 ## Open Questions
 
-1. **Ewidencja retention: 3 years vs 10 years.**
+1. **Ewidencja retention: 3 years vs 10 years.** **[RESOLVED → 92-04:** keep `'KP-ewidencja':3` as the immutability/claim floor; **NO purge at 3 years** — the 10-year KP §94⁴ statutory retention is preserved and escalated to the adviser (local-only / legal-deferred).**]**
    - What we know: Phase D-06 + criterion-4 say "3-year immutable archive"; `RETENTION_YEARS['KP-ewidencja']=3`. PL dokumentacja pracownicza (which includes karta ewidencji) is **10 years** for post-2019 hires (KP §94⁴). The KP §291 employment-claim limitation is **3 years**.
    - What's unclear: Whether the phase intends 3 years as the *immutability guarantee window* (aligned to claim-limitation) while the underlying record still lives 10 years, OR a genuine 3-year purge (which would under-retain a statutory document).
    - Recommendation: Keep `'KP-ewidencja':3` as the **immutability/claim window** but do NOT purge at 3 years — treat 3 as a floor, escalate the 10-year statutory retention to the adviser, and consider adding a separate `'PL-dokumentacja':10` record type. Surface to discuss-phase before locking the purge semantics.
 
-2. **Supersede vs strict BEFORE-UPDATE trigger conflict (ewidencja).**
+2. **Supersede vs strict BEFORE-UPDATE trigger conflict (ewidencja).** **[RESOLVED → 92-04 / 92-08:** INSERT-only supersede — "latest ACTIVE wins" by `createdAt`, the prior row is never UPDATEd; the append-only trigger rejects all UPDATEs.**]**
    - What we know: `buildFormSnapshot` supersede flips the prior row's `status` via `updateMany`. A strict "reject all UPDATE" trigger (like auditlog) would block that flip.
    - Recommendation: Either (a) never UPDATE — model "latest ACTIVE wins" purely by INSERT + `createdAt` ordering (no status flip), or (b) scope the trigger to reject UPDATEs to content columns (`snapshotJson`, `periodKey`) while allowing a one-way `status: ACTIVE→SUPERSEDED`. Planner picks; document the choice.
 
-3. **Leave-chain routing conditions.** Invoice chains route on amount/contractorType. Do leave chains need conditions (e.g., duration >X days → extra approver) or is a single default `LEAVE_REQUEST` chain sufficient for v7.0? Recommendation: default chain + optional duration condition reusing `evaluateConditions` shape; keep minimal.
+3. **Leave-chain routing conditions.** **[RESOLVED → 92-07:** a single default `LEAVE_REQUEST` chain for v7.0; duration/type-conditioned routing is deferred (out of scope).**]** Invoice chains route on amount/contractorType. Do leave chains need conditions (e.g., duration >X days → extra approver) or is a single default `LEAVE_REQUEST` chain sufficient for v7.0? Recommendation: default chain + optional duration condition reusing `evaluateConditions` shape; keep minimal.
 
-4. **Team-calendar "same-team" definition.** Conflict warnings fire on overlapping same-team requests — team membership source is `Member`/`Team`/`Project` (org definitions). Confirm which grouping (Team vs cost-center vs manager) defines "same team" for the capacity heatmap.
+4. **Team-calendar "same-team" definition.** **[RESOLVED → 92-02 / 92-09:** "same team" = `LeaveRequest.teamId` (existing Team model); `EmployeeProfile` has no direct `teamId`; null → an "Unassigned" bucket.**]** Conflict warnings fire on overlapping same-team requests — team membership source is `Member`/`Team`/`Project` (org definitions). Confirm which grouping (Team vs cost-center vs manager) defines "same team" for the capacity heatmap.
 
 ## Environment Availability
 
