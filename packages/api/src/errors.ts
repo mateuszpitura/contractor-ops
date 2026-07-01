@@ -349,6 +349,7 @@ export const EMPLOYEE_INVALID_EMIRATES_ID = 'employeeInvalidEmiratesId';
 // the advisory Luhn-variant checksum.
 export const EMPLOYEE_EMIRATES_ID_CHECKSUM_ADVISORY = 'employeeEmiratesIdChecksumAdvisory';
 export const US_EXPANSION_DISABLED = 'usExpansionDisabled';
+export const FORM_1042S_NOT_FOUND = 'form1042sNotFound';
 export const WORKFORCE_DISABLED = 'workforceDisabled';
 export const TREATY_OVERRIDE_REASON_REQUIRED = 'treatyOverrideReasonRequired';
 export const CLASSIFICATION_OVERRIDE_REASON_REQUIRED = 'classificationOverrideReasonRequired';
