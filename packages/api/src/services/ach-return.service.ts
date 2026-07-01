@@ -16,7 +16,11 @@
  * return-file entry point that feeds it live files is wired separately.
  */
 
+import { createLogger } from '@contractor-ops/logger';
+import { writeAuditLog } from './audit-writer';
 import type { DbClient } from './types';
+
+const log = createLogger({ service: 'ach-return' });
 
 /** Whether a return code fails the payout or is a non-failing correction. */
 export type AchReturnDisposition = 'FAILED' | 'ADVISORY';
@@ -48,9 +52,13 @@ export interface ApplyAchReturnsResult {
   failed: number;
   advisory: number;
   skipped: number;
+  /**
+   * FAILED-disposition entries whose individualId matched no live run item.
+   * Distinguishes a clean no-bounce run (0) from a wrong-run / mis-uploaded
+   * file (high) — the operator-safety signal.
+   */
+  unmatched: number;
 }
-
-const NOT_IMPLEMENTED = 'ach-return.service is a contract stub — no implementation yet';
 
 /** Specific return codes that carry a distinct operator-facing reason. */
 const RETURN_REASONS: Record<string, string> = {
@@ -143,14 +151,139 @@ export function parseNachaReturnFile(fileText: string): AchReturnEntry[] {
   return entries;
 }
 
+// Statuses a live payout item can transition FROM into FAILED. An already-FAILED
+// item is never re-transitioned (idempotent re-delivery, and a return is never
+// allowed to un-fail); a SKIPPED item was excluded from the run, so a return for
+// it is anomalous and left untouched.
+const TRANSITIONABLE_STATUSES = new Set(['PENDING', 'EXPORTED', 'PAID']);
+
+// Above this proportion of unmatched FAILED entries the file most likely targets
+// the wrong run or was mis-uploaded — worth an operator-facing warn.
+const HIGH_UNMATCHED_RATIO = 0.5;
+
+type LoadedRunItem = {
+  id: string;
+  status: string;
+  failureReason: string | null;
+  paymentReference: string | null;
+  invoice: { invoiceNumber: string | null } | null;
+};
+
+/** Match a return entry to its live item by invoice number, then payment reference. */
+function matchItem(items: LoadedRunItem[], individualId: string): LoadedRunItem | null {
+  if (individualId.length === 0) return null;
+  return (
+    items.find(i => i.invoice?.invoiceNumber === individualId) ??
+    items.find(i => i.paymentReference === individualId) ??
+    null
+  );
+}
+
 /**
- * Apply parsed returns to a payment run: R-code entries flip their live
- * PaymentRunItem to FAILED, C-code entries are recorded advisory-only, and an
- * already-applied entry is skipped (idempotent re-delivery).
+ * Apply parsed returns to a payment run. R-code entries flip their matched live
+ * PaymentRunItem to FAILED with a failureReason; C-code / NOC entries are
+ * recorded advisory-only (no status change). The whole apply runs in a single
+ * transaction so a partial failure never leaves a half-applied run.
+ *
+ * Money-movement invariants:
+ *   - Tenant-scoped: items are loaded `where { paymentRunId, organizationId }`,
+ *     so a foreign-org item is never matched or flipped.
+ *   - Idempotent: an already-FAILED item is skipped — a re-delivered file is a
+ *     no-op, and a return can never un-fail an item.
+ *   - Audited: one masked audit row per applied transition (failure or advisory);
+ *     metadata carries itemId / returnCode / reason / amount only, never bank data.
+ *   - A FAILED-disposition entry that matches no live item is counted `unmatched`
+ *     (never silently dropped) so a wrong-run / mis-uploaded file is visible.
  */
-export function applyAchReturns(
-  _db: DbClient,
-  _args: ApplyAchReturnsArgs,
+export async function applyAchReturns(
+  db: DbClient,
+  args: ApplyAchReturnsArgs,
 ): Promise<ApplyAchReturnsResult> {
-  throw new Error(NOT_IMPLEMENTED);
+  const { organizationId, paymentRunId, actorId, entries } = args;
+
+  const result = await db.$transaction(async tx => {
+    const items = (await tx.paymentRunItem.findMany({
+      where: { paymentRunId, organizationId },
+      include: { invoice: { select: { invoiceNumber: true } } },
+    })) as LoadedRunItem[];
+
+    let failed = 0;
+    let advisory = 0;
+    let skipped = 0;
+    let unmatched = 0;
+
+    for (const entry of entries) {
+      const mapping = mapReturnCodeToStatus(entry.returnCode);
+      const match = matchItem(items, entry.individualId);
+
+      if (mapping.disposition === 'ADVISORY') {
+        await writeAuditLog({
+          tx,
+          organizationId,
+          actorType: 'USER',
+          actorId,
+          action: 'payment_run.ach_correction_advised',
+          resourceType: 'PAYMENT_RUN',
+          resourceId: paymentRunId,
+          metadata: {
+            itemId: match?.id ?? null,
+            individualId: entry.individualId,
+            returnCode: mapping.code,
+            reason: mapping.reason,
+            amountMinor: entry.amountMinor,
+          },
+        });
+        advisory += 1;
+        continue;
+      }
+
+      if (!match) {
+        unmatched += 1;
+        continue;
+      }
+
+      if (!TRANSITIONABLE_STATUSES.has(match.status)) {
+        skipped += 1;
+        continue;
+      }
+
+      const failureReason = `ACH return ${mapping.code}: ${mapping.reason}`;
+      await tx.paymentRunItem.update({
+        where: { id: match.id },
+        data: { status: 'FAILED', failureReason },
+      });
+      // Reflect the transition locally so a second entry in the same file that
+      // targets this item is skipped rather than re-flipped.
+      match.status = 'FAILED';
+      match.failureReason = failureReason;
+
+      await writeAuditLog({
+        tx,
+        organizationId,
+        actorType: 'USER',
+        actorId,
+        action: 'payment_run.ach_return_applied',
+        resourceType: 'PAYMENT_RUN',
+        resourceId: paymentRunId,
+        metadata: {
+          itemId: match.id,
+          returnCode: mapping.code,
+          reason: mapping.reason,
+          amountMinor: entry.amountMinor,
+        },
+      });
+      failed += 1;
+    }
+
+    return { failed, advisory, skipped, unmatched };
+  });
+
+  if (entries.length > 0 && result.unmatched / entries.length >= HIGH_UNMATCHED_RATIO) {
+    log.warn(
+      { paymentRunId, unmatched: result.unmatched, total: entries.length },
+      'ACH return file has a high unmatched proportion — verify it targets this run',
+    );
+  }
+
+  return result;
 }
