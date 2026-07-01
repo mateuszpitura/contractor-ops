@@ -273,7 +273,6 @@ export function AuditLogTable({
       }
       isLoading={isLoading}
       isRefetching={isFetching && !isLoading}
-      fill
       getRowId={getRowId}
       onRowClick={handleRowClick}
       renderSubRow={renderSubRow}

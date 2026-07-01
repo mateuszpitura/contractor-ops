@@ -32,14 +32,14 @@ export const WORKBENCH_TABLE_SECTION_CLASS =
 export const WORKBENCH_DATA_TABLE_CLASS = 'flex min-h-0 flex-1 flex-col gap-4';
 
 /** Cap-mode scrollable table body height (px). Body = min(content, this). */
-export const WORKBENCH_TABLE_BODY_MAX_HEIGHT_PX = 300;
+export const WORKBENCH_TABLE_BODY_MAX_HEIGHT_PX = 400;
 
 /**
  * Tailwind class applied to AtelierTableShell's scroll region in cap mode.
- * Caps the body so tall tables scroll internally at 300px while short tables
+ * Caps the body so tall tables scroll internally at 400px while short tables
  * shrink to content; the page scrolls for everything else.
  */
-export const WORKBENCH_TABLE_BODY_MAX_HEIGHT_CLASS = 'max-h-[300px]';
+export const WORKBENCH_TABLE_BODY_MAX_HEIGHT_CLASS = 'max-h-[400px]';
 
 /** Tabs root on list pages with a table tab panel. */
 export const WORKBENCH_TABLE_TABS_CLASS = 'flex min-h-0 flex-1 flex-col';

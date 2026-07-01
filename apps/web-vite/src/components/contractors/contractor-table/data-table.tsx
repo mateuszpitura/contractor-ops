@@ -75,7 +75,6 @@ export function ContractorDataTable({
       isLoading={isLoading}
       isRefetching={isRefetching}
       forceLoading={parentLoading}
-      fill
       entityLabel={t('entityLabel', { count: totalRows })}
       hasFiltersOrSearch={hasFiltersOrSearch}
       onClearFilters={clearFilters}

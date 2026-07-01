@@ -1,6 +1,5 @@
 import type { FlagValues } from '@contractor-ops/feature-flags/browser';
 import { SidebarInset, SidebarProvider } from '@contractor-ops/ui/components/shadcn/sidebar';
-import { useId } from 'react';
 import { Outlet } from 'react-router-dom';
 
 import { useTranslations } from '../../i18n/useTranslations.js';
@@ -41,7 +40,12 @@ export function DashboardShell({
   flagBag,
   isDemo,
 }: DashboardShellProps) {
-  const mainContentId = useId();
+  // Stable literal (not useId): the workbench scroll-model gate in globals.css
+  // targets `main#main-content` to make `main` the scroll owner on list/table
+  // pages. A generated id silently breaks that gate — the inset locks to the
+  // viewport but main never gets `overflow-y:auto`, so tall pages clip instead
+  // of scrolling. Also the canonical skip-to-content target.
+  const mainContentId = 'main-content';
   return (
     <FeatureFlagProvider bag={flagBag}>
       <DashboardProvider activeOrg={activeOrg} userRole={memberRole}>

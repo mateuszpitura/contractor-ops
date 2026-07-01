@@ -1,10 +1,13 @@
 import { Sparkline } from '@contractor-ops/ui';
-import { Ban, Check, Clock } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
+import { Ban, CalendarClock, Clock, ShieldAlert } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import type { ContractorAttention } from './types.js';
 
 const cx = (...c: Array<string | false | undefined>) => c.filter(Boolean).join(' ');
+const tint = (cssVar: string, pct: number) =>
+  `color-mix(in oklch, var(${cssVar}) ${pct}%, transparent)`;
 
 export interface AttentionRailProps {
   attention: ContractorAttention;
@@ -19,11 +22,12 @@ export interface AttentionRailProps {
 }
 
 /**
- * Actionable triage strip — one partitioned panel, NOT a tile grid. Each item
- * is a button with a deliberately distinct affordance (dot / sparkline / icon)
- * that applies a table filter; a zero-count item degrades to a calm, disabled
- * "all clear" state. No oversized numerals, count-up, or glow (operational
- * restraint).
+ * Actionable triage strip rendered as ledger rows — tinted icon chip + label +
+ * a right-aligned, status-tinted figure. Each item is a button that applies a
+ * table filter; a zero-count item degrades to a calm, disabled state (its own
+ * icon + an "all clear" line, so no two items read alike). No glow, no count-up
+ * (operational restraint) — the figure column and the status tint carry the
+ * signal toward "what needs action next".
  */
 export function AttentionRail({
   attention,
@@ -39,93 +43,103 @@ export function AttentionRail({
   const t = useTranslations('Contractors');
 
   return (
-    <fieldset
+    <div
+      role="group"
       aria-label={t('insights.attention.title')}
-      className="grid grid-cols-2 gap-1 rounded-xl border border-border/60 bg-card/40 p-1 lg:grid-cols-4">
-      <RailButton
-        active={atRiskActive}
+      className="grid grid-cols-1 gap-1 sm:grid-cols-2 lg:grid-cols-4">
+      <RailItem
+        cssVar="--status-danger"
+        icon={ShieldAlert}
         count={attention.atRiskCompliance}
         label={t('insights.attention.atRisk')}
+        active={atRiskActive}
         onToggle={onToggleAtRisk}
-        affordance={<Dot className="bg-[var(--status-danger)]" />}
       />
-      <RailButton
-        active={expiringActive}
+      <RailItem
+        cssVar="--status-warning"
+        icon={CalendarClock}
         count={attention.expiringContracts}
         label={t('insights.attention.expiring')}
+        active={expiringActive}
         onToggle={onToggleExpiring}
-        affordance={
-          <Sparkline
-            data={attention.expirySparkline}
-            srLabel={t('insights.attention.expiringSr', { count: attention.expiringContracts })}
-            w={52}
-            h={20}
-            color="var(--status-warning)"
-          />
+        trailing={
+          attention.expiringContracts > 0 ? (
+            <Sparkline
+              data={attention.expirySparkline}
+              srLabel={t('insights.attention.expiringSr', { count: attention.expiringContracts })}
+              w={44}
+              h={18}
+              color="var(--status-warning)"
+            />
+          ) : null
         }
       />
-      <RailButton
-        active={paymentBlockedActive}
+      <RailItem
+        cssVar="--status-blocked"
+        icon={Ban}
         count={attention.paymentBlocked}
         label={t('insights.attention.paymentBlocked')}
+        active={paymentBlockedActive}
         onToggle={onTogglePaymentBlocked}
-        affordance={<Ban className="h-4 w-4 text-[var(--status-blocked)]" aria-hidden="true" />}
       />
-      <RailButton
-        active={stalledActive}
+      <RailItem
+        cssVar="--status-processing"
+        icon={Clock}
         count={attention.stalledOnboarding}
         label={t('insights.attention.stalled')}
+        active={stalledActive}
         onToggle={onToggleStalled}
-        affordance={
-          <Clock className="h-4 w-4 text-[var(--status-processing)]" aria-hidden="true" />
-        }
       />
-    </fieldset>
+    </div>
   );
 }
 
-interface RailButtonProps {
-  active: boolean;
+interface RailItemProps {
+  cssVar: string;
+  icon: LucideIcon;
   count: number;
   label: string;
-  affordance: ReactNode;
+  active: boolean;
   onToggle: () => void;
+  trailing?: ReactNode;
 }
 
-function RailButton({ active, count, label, affordance, onToggle }: RailButtonProps) {
+function RailItem({ cssVar, icon: Icon, count, label, active, onToggle, trailing }: RailItemProps) {
   const t = useTranslations('Contractors');
-  const empty = count === 0;
+  const has = count > 0;
 
   return (
     <button
       type="button"
-      disabled={empty}
+      disabled={!has}
       aria-pressed={active}
       onClick={onToggle}
       className={cx(
-        'flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-start transition-colors',
-        empty ? 'cursor-default opacity-60' : 'hover:bg-muted/50',
+        'flex items-center gap-3 rounded-lg px-3 py-2.5 text-start transition-colors',
+        has ? 'hover:bg-muted/60' : 'cursor-default',
         active && 'bg-muted ring-1 ring-inset ring-border',
       )}>
-      <span className="flex w-14 shrink-0 items-center justify-center">
-        {empty ? (
-          <Check className="h-4 w-4 text-[var(--status-success)]" aria-hidden="true" />
-        ) : (
-          affordance
+      <span
+        aria-hidden="true"
+        className={cx(
+          'flex size-9 shrink-0 items-center justify-center rounded-lg',
+          !has && 'bg-muted',
         )}
+        style={has ? { backgroundColor: tint(cssVar, 14), color: `var(${cssVar})` } : undefined}>
+        <Icon className={cx('size-4', !has && 'text-muted-foreground/70')} aria-hidden="true" />
       </span>
-      <span className="min-w-0">
-        <span className="block text-sm font-medium tabular-nums">
-          {empty ? t('insights.attention.allClear') : String(count)}
+      <span className="flex min-w-0 flex-1 flex-col">
+        <span className="truncate text-[13px] font-medium text-foreground">{label}</span>
+        <span className="truncate text-[11px] text-muted-foreground">
+          {has ? t('insights.attention.needsAction') : t('insights.attention.allClear')}
         </span>
-        <span className="block truncate text-xs text-muted-foreground">{label}</span>
+      </span>
+      {trailing}
+      <span
+        className={cx('text-lg font-semibold tabular-nums', !has && 'text-muted-foreground/50')}
+        style={has ? { color: `var(${cssVar})` } : undefined}>
+        {count}
       </span>
     </button>
-  );
-}
-
-function Dot({ className }: { className: string }) {
-  return (
-    <span aria-hidden="true" className={cx('inline-block h-2.5 w-2.5 rounded-full', className)} />
   );
 }

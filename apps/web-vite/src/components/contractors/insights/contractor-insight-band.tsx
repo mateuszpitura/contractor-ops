@@ -30,14 +30,18 @@ export function ContractorInsightBand() {
             </Button>
           </div>
         ) : insights.data ? (
-          <>
-            <AttentionRail attention={insights.data.attention} {...insights.attention} />
-            <CompositionStrip
-              composition={insights.data.composition}
-              active={insights.activeSegments}
-              onToggle={insights.toggleSegment}
-            />
-          </>
+          <div className="overflow-hidden rounded-xl border border-border/60 bg-card/40">
+            <div className="p-1.5">
+              <AttentionRail attention={insights.data.attention} {...insights.attention} />
+            </div>
+            <div className="border-t border-border/60 px-3 py-3">
+              <CompositionStrip
+                composition={insights.data.composition}
+                active={insights.activeSegments}
+                onToggle={insights.toggleSegment}
+              />
+            </div>
+          </div>
         ) : null}
       </section>
     </AtelierIntensityProvider>
@@ -49,13 +53,13 @@ const ROW_SKELETON_KEYS = ['lifecycle', 'type', 'health'] as const;
 
 function BandSkeleton() {
   return (
-    <div className="space-y-3">
-      <div className="grid grid-cols-2 gap-1 rounded-xl border border-border/60 bg-card/40 p-1 lg:grid-cols-4">
+    <div className="overflow-hidden rounded-xl border border-border/60 bg-card/40">
+      <div className="grid grid-cols-1 gap-1 p-1.5 sm:grid-cols-2 lg:grid-cols-4">
         {RAIL_SKELETON_KEYS.map(key => (
           <Skeleton key={key} className="h-12 w-full rounded-lg" />
         ))}
       </div>
-      <div className="flex flex-col gap-2 px-1">
+      <div className="flex flex-col gap-2 border-t border-border/60 px-3 py-3">
         {ROW_SKELETON_KEYS.map(key => (
           <Skeleton key={key} className="h-6 w-2/3 rounded-full" />
         ))}

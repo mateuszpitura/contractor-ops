@@ -2,6 +2,7 @@ import {
   AtelierEmptyState,
   ContractorsIllustration,
   SectionLabel,
+  WORKBENCH_TABLE_PAGE_CLASS,
   WORKBENCH_TABLE_PAGE_FILL_CLASS,
   WORKBENCH_TABLE_SECTION_CLASS,
 } from '@contractor-ops/ui';
@@ -92,7 +93,7 @@ export function ContractorListContainer() {
   }
 
   return (
-    <div className={WORKBENCH_TABLE_PAGE_FILL_CLASS}>
+    <div className={WORKBENCH_TABLE_PAGE_CLASS}>
       <AnimateIn delay={0}>
         <div className="flex items-start justify-between gap-3">
           <WorkbenchPageHeader title={t('pageTitle')} description={t('pageDescription')} />

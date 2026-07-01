@@ -3,12 +3,26 @@ import { useCallback } from 'react';
 import { tDynLoose } from '../../../i18n/typed-keys.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { enumKey } from '../../../lib/enum-key.js';
+import type { ProportionSegment } from './proportion-bar.js';
+import { ProportionBar } from './proportion-bar.js';
 import type { ContractorComposition } from './types.js';
 
 const cx = (...c: Array<string | false | undefined>) => c.filter(Boolean).join(' ');
 
 const LIFECYCLE_ORDER = ['DRAFT', 'ONBOARDING', 'ACTIVE', 'OFFBOARDING', 'ENDED'] as const;
 const HEALTH_ORDER = ['green', 'yellow', 'red'] as const;
+
+const HEALTH_COLOR: Record<(typeof HEALTH_ORDER)[number], string> = {
+  green: 'var(--status-success)',
+  yellow: 'var(--status-warning)',
+  red: 'var(--status-danger)',
+};
+
+const HEALTH_BG_CLASS: Record<(typeof HEALTH_ORDER)[number], string> = {
+  green: 'bg-[var(--status-success)]',
+  yellow: 'bg-[var(--status-warning)]',
+  red: 'bg-[var(--status-danger)]',
+};
 
 export type CompositionGroup = 'lifecycleStage' | 'type' | 'country' | 'health';
 
@@ -18,10 +32,31 @@ export interface CompositionStripProps {
   onToggle: (group: CompositionGroup, value: string) => void;
 }
 
+interface Chip {
+  value: string;
+  label: string;
+  count: number;
+}
+
+/** Monochrome proportion segments — biggest share is the darkest primary tint. */
+function monoSegments(chips: Chip[]): ProportionSegment[] {
+  const byShare = [...chips].sort((a, b) => b.count - a.count).map(c => c.value);
+  return chips.map(chip => {
+    const pct = Math.max(32, 84 - byShare.indexOf(chip.value) * 16);
+    return {
+      key: chip.value,
+      label: chip.label,
+      value: chip.count,
+      color: `color-mix(in oklch, var(--primary) ${pct}%, transparent)`,
+    };
+  });
+}
+
 /**
- * Population segments as a navigable filter surface — rows of toggle chips with
- * live counts (NOT a pie chart). Compliance health is the one earned viz: a thin
- * proportion ribbon whose segments are themselves the filter targets.
+ * Population segments as a navigable filter surface — each group is a small
+ * proportion bar (visual weight) over a row of toggle chips (exact labels +
+ * counts + filter state). Health is the one status-coloured, directly clickable
+ * bar.
  */
 export function CompositionStrip({ composition, active, onToggle }: CompositionStripProps) {
   const t = useTranslations('Contractors');
@@ -55,7 +90,7 @@ export function CompositionStrip({ composition, active, onToggle }: CompositionS
   }));
 
   return (
-    <div className="space-y-3 px-1">
+    <div className="space-y-3">
       <SegmentGroup
         title={t('columns.lifecycleStage')}
         chips={lifecycleChips}
@@ -85,12 +120,6 @@ export function CompositionStrip({ composition, active, onToggle }: CompositionS
   );
 }
 
-interface Chip {
-  value: string;
-  label: string;
-  count: number;
-}
-
 function SegmentGroup({
   title,
   chips,
@@ -104,21 +133,34 @@ function SegmentGroup({
 }) {
   if (chips.length === 0) return null;
   return (
-    <div className="flex flex-wrap items-center gap-1.5">
-      <span className="me-1 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
-        {title}
-      </span>
-      {chips.map(chip => (
-        <SegmentChip
-          key={chip.value}
-          value={chip.value}
-          label={chip.label}
-          count={chip.count}
-          pressed={activeValues.includes(chip.value)}
-          onToggle={onToggle}
-        />
-      ))}
+    <div className="space-y-1.5">
+      <div className="flex items-center gap-3">
+        <GroupLabel>{title}</GroupLabel>
+        {chips.length >= 2 ? (
+          <ProportionBar segments={monoSegments(chips)} className="max-w-[200px]" />
+        ) : null}
+      </div>
+      <div className="flex flex-wrap items-center gap-1.5">
+        {chips.map(chip => (
+          <SegmentChip
+            key={chip.value}
+            value={chip.value}
+            label={chip.label}
+            count={chip.count}
+            pressed={activeValues.includes(chip.value)}
+            onToggle={onToggle}
+          />
+        ))}
+      </div>
     </div>
+  );
+}
+
+function GroupLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <span className="w-24 shrink-0 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+      {children}
+    </span>
   );
 }
 
@@ -153,12 +195,6 @@ function SegmentChip({
   );
 }
 
-const HEALTH_BG_CLASS: Record<(typeof HEALTH_ORDER)[number], string> = {
-  green: 'bg-[var(--status-success)]',
-  yellow: 'bg-[var(--status-warning)]',
-  red: 'bg-[var(--status-danger)]',
-};
-
 function HealthGroup({
   title,
   health,
@@ -175,25 +211,18 @@ function HealthGroup({
   const total = health.green + health.yellow + health.red;
   if (total === 0) return null;
 
+  const segments: ProportionSegment[] = HEALTH_ORDER.filter(k => health[k] > 0).map(k => ({
+    key: k,
+    label: label(k),
+    value: health[k],
+    color: HEALTH_COLOR[k],
+    active: activeValues.includes(k),
+  }));
+
   return (
-    <div className="flex flex-wrap items-center gap-2">
-      <span className="me-1 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
-        {title}
-      </span>
-      <div className="flex h-2.5 min-w-40 flex-1 overflow-hidden rounded-full border border-border/60">
-        {HEALTH_ORDER.map(key =>
-          health[key] > 0 ? (
-            <HealthSegment
-              key={key}
-              segment={key}
-              value={health[key]}
-              pressed={activeValues.includes(key)}
-              label={label}
-              onToggle={onToggle}
-            />
-          ) : null,
-        )}
-      </div>
+    <div className="flex flex-wrap items-center gap-3">
+      <GroupLabel>{title}</GroupLabel>
+      <ProportionBar segments={segments} onSelect={onToggle} className="min-w-40 max-w-[260px]" />
       <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
         {HEALTH_ORDER.map(key =>
           health[key] > 0 ? (
@@ -208,36 +237,5 @@ function HealthGroup({
         )}
       </div>
     </div>
-  );
-}
-
-function HealthSegment({
-  segment,
-  value,
-  pressed,
-  label,
-  onToggle,
-}: {
-  segment: (typeof HEALTH_ORDER)[number];
-  value: number;
-  pressed: boolean;
-  label: (value: string) => string;
-  onToggle: (value: string) => void;
-}) {
-  const handleClick = useCallback(() => onToggle(segment), [onToggle, segment]);
-  return (
-    <button
-      type="button"
-      aria-pressed={pressed}
-      aria-label={`${label(segment)}: ${value}`}
-      onClick={handleClick}
-      // biome-ignore lint/nursery/noInlineStyles: flex-grow is the data-driven segment proportion (count) computed at runtime; there is no static Tailwind class for an arbitrary numeric grow factor
-      style={{ flexGrow: value }}
-      className={cx(
-        'h-full transition-opacity',
-        HEALTH_BG_CLASS[segment],
-        pressed ? 'opacity-100' : 'opacity-70 hover:opacity-100',
-      )}
-    />
   );
 }
