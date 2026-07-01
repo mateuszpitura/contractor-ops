@@ -2,10 +2,11 @@
 title: API routers catalog
 type: structure
 tags: [structure, api, trpc, catalog]
-source_commit: 01c17af08
+source_commit: f9d9cc241
 verify_with:
   - packages/api/src/root.ts
   - packages/api/src/portal-root.ts
+  - packages/api/src/routers/compliance/classification-document.tsx
   - packages/validators/src/onboarding-import.ts
   - packages/api/src/routers/core/worker.ts
   - packages/api/src/routers/core/employee.ts
@@ -88,7 +89,7 @@ Gated by `module.classification-engine` or `QA_DEFAULT_ORG_ID` in `root.ts`:
 |-----------|---------|
 | `classification` | IR35 + Scheinselbständigkeit assessments |
 | `classificationDashboard` | per-market compliance health |
-| `classificationDocument` | IR35 SDS + DRV PDFs (R2) |
+| `classificationDocument` | IR35 SDS + DRV + US determination-letter PDFs (R2) |
 | `ir35Chain` | chain participants + SDS delivery |
 | `ir35Attestation` | other-client attestation |
 | `economicDependencyAlert` | §2 SGB VI billing-share bands |

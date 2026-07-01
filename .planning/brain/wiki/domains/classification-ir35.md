@@ -2,11 +2,12 @@
 title: Classification IR35 and DRV
 type: domain
 tags: [classification, ir35, drv, germany]
-source_commit: 336516f5da666c16acff84e412a3d338db8bbbb8
+source_commit: f9d9cc241
 verify_with:
   - packages/api/src/root.ts
   - packages/classification/
-updated: 2026-06-17
+  - packages/api/src/pdf-templates/us-determination-letter.tsx
+updated: 2026-07-01
 ---
 
 # Classification (IR35 / DRV)
@@ -30,7 +31,7 @@ flowchart LR
 |-----------|------|
 | `classification` | assessments draft/autosave/submit |
 | `classificationDashboard` | per-market health |
-| `classificationDocument` | SDS + DRV bundles |
+| `classificationDocument` | SDS + DRV bundles + US determination letter |
 | `ir35Chain` | chain participants |
 | `ir35Attestation` | other-client attestation |
 | `economicDependencyAlert` | §2 SGB VI scan |
