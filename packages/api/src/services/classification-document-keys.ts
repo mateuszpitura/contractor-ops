@@ -9,6 +9,7 @@ const KIND_PATH_SEGMENT: Record<ClassificationDocumentKind, string> = {
   SDS: 'sds',
   DRV_DEFENSE_BUNDLE: 'drv-defense-bundle',
   DRV_DECISION_LETTER: 'drv-decision-letter',
+  US_DETERMINATION_LETTER: 'us-determination-letter',
 };
 
 const SHA256_PREFIX_LENGTH = 16;

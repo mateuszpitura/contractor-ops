@@ -3,9 +3,11 @@
 // ---------------------------------------------------------------------------
 
 // Profile registrations (side-effect imports — must run before the registry is consulted).
-// IR35 (GB) and Scheinselbständigkeit (DE) register themselves on first load.
+// IR35 (GB), Scheinselbständigkeit (DE), and US worker classification register
+// themselves on first load.
 import './profiles/ir35/index.js';
 import './profiles/scheinselbstandigkeit/index.js';
+import './profiles/us/index.js';
 
 // Client-safe rule-set re-exports (wizard UI consumes these).
 // NOTE: Scoring functions from profiles/*/scoring are NEVER re-exported
@@ -26,6 +28,23 @@ export {
   SCHEIN_RULE_SET,
   THRESHOLDS as SCHEIN_THRESHOLDS,
 } from './profiles/scheinselbstandigkeit/rule-set.js';
+// US worker-classification rule-set re-exports (wizard UI + server callers).
+// The AB5 work-state resolver + injector are safe to import server-side; the
+// scoring function is NOT re-exported here (server-only, like the other profiles).
+export {
+  resolveUsWorkState,
+  UsClassificationProfile,
+  withUsWorkState,
+} from './profiles/us/index.js';
+export {
+  RULE_SET_VERSION as US_RULE_SET_VERSION,
+  US_AB5_PRONG_IDS,
+  US_FEDERAL_YES_DIRECTION,
+  US_QUESTIONS,
+  US_RULE_SET,
+  US_SECTION_530_IDS,
+  US_WORK_STATE_CONTEXT_KEY,
+} from './profiles/us/rule-set.js';
 
 // Registry
 export {
@@ -80,6 +99,11 @@ export type {
   ScheinCategoryResult,
   ScheinselbstandigkeitOutcome,
   ScheinVerdict,
+  UsClassificationOutcome,
+  UsClassificationVerdict,
+  UsFederalCategory,
+  UsFederalFactorResult,
+  UsQuestionCategory,
 } from './types/outcome.js';
 export type { ClassificationProfile } from './types/profile.js';
 export type {

@@ -3451,6 +3451,8 @@
     "usExpansionDisabled": "إدخال نماذج الضرائب الأمريكية غير مُفعّل لهذه المنظمة.",
     "workforceDisabled": "إدارة شؤون العاملين غير مُفعّلة لهذه المنظمة.",
     "treatyOverrideReasonRequired": "يلزم تقديم سبب لتجاوز معدل المعاهدة الضريبية.",
+    "classificationOverrideReasonRequired": "يلزم تقديم سبب لتجاوز تصنيف العامل.",
+    "classificationOverrideUsOnly": "تجاوز التصنيف متاح فقط لعقود العمل في الولايات المتحدة.",
     "taxFormNotFound": "لم يتم العثور على النموذج الضريبي.",
     "taxFormNotDraft": "يمكن تعديل النموذج الضريبي في حالة المسودة فقط.",
     "classificationAssessmentNotFound": "لم يتم العثور على تقييم التصنيف.",

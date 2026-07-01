@@ -3451,6 +3451,8 @@
     "usExpansionDisabled": "US tax-form intake is not enabled for this organization.",
     "workforceDisabled": "Workforce management is not enabled for this organization.",
     "treatyOverrideReasonRequired": "A reason is required to override the treaty rate.",
+    "classificationOverrideReasonRequired": "A reason is required to override a worker classification.",
+    "classificationOverrideUsOnly": "Classification override is only available for US engagements.",
     "taxFormNotFound": "Tax form not found.",
     "taxFormNotDraft": "Only a draft tax form can be edited.",
     "classificationAssessmentNotFound": "Classification assessment not found.",

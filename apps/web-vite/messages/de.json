@@ -3451,6 +3451,8 @@
     "usExpansionDisabled": "Die US-Steuerformularerfassung ist für diese Organisation nicht aktiviert.",
     "workforceDisabled": "Die Personalverwaltung ist für diese Organisation nicht aktiviert.",
     "treatyOverrideReasonRequired": "Zum Überschreiben des Abkommenssatzes ist eine Begründung erforderlich.",
+    "classificationOverrideReasonRequired": "Zum Überschreiben einer Arbeitnehmerklassifizierung ist eine Begründung erforderlich.",
+    "classificationOverrideUsOnly": "Die Klassifizierungsüberschreibung ist nur für US-Engagements verfügbar.",
     "taxFormNotFound": "Steuerformular nicht gefunden.",
     "taxFormNotDraft": "Nur ein Steuerformular im Entwurfsstatus kann bearbeitet werden.",
     "classificationAssessmentNotFound": "Klassifizierungsbewertung nicht gefunden.",

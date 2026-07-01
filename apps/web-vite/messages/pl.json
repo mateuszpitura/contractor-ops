@@ -3451,6 +3451,8 @@
     "usExpansionDisabled": "Rejestracja amerykańskich formularzy podatkowych nie jest włączona dla tej organizacji.",
     "workforceDisabled": "Zarządzanie personelem nie jest włączone dla tej organizacji.",
     "treatyOverrideReasonRequired": "Aby zmienić stawkę z umowy o unikaniu podwójnego opodatkowania, wymagane jest podanie powodu.",
+    "classificationOverrideReasonRequired": "Aby zmienić klasyfikację pracownika, wymagane jest podanie powodu.",
+    "classificationOverrideUsOnly": "Zmiana klasyfikacji jest dostępna tylko dla zaangażowań w USA.",
     "taxFormNotFound": "Nie znaleziono formularza podatkowego.",
     "taxFormNotDraft": "Edytować można tylko formularz podatkowy w wersji roboczej.",
     "classificationAssessmentNotFound": "Nie znaleziono oceny klasyfikacji.",
