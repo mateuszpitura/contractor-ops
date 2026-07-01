@@ -28,6 +28,9 @@
 | `packages/feature-flags/src/flags-core.ts` (REUSE `payments.ach-payouts`; maybe `+1-2 PENDING`) | config | n/a | `payments.ach-payouts` (already registered) + `module.us-expansion` | exact |
 | `apps/api` payout-init tRPC procedure (MODIFY/NEW in finance router) | controller | request-response (mutation) | `paymentExportRouter.lockAndExport` + `runExportTransaction` | exact |
 | `packages/api/src/services/__tests__/payment-export-{nacha,fedwire}.test.ts` + `*-adapter.test.ts` (NEW) | test | n/a | `payment-export-swift.test.ts` / `payment-export.test.ts` | exact |
+| `packages/api/src/services/ach-return.service.ts` (NEW — Gap C) | service / parser + status-transition | untrusted-file parse → DB-mutation in tx | `_initiatePayoutForRun` (`payment-shared.ts:702` — tenant-scoped load + per-item update + masked audit) + `generateNachaFile` layout (parser mirror) + `audit-writer.ts` `writeAuditLog` | role-match |
+| `packages/api/src/routers/finance/payment-core.ts` (MODIFY: `+ingestAchReturnFile` — Gap C; `+verifyBillingProfilePlaid` — Plaid onboarding) | controller / tRPC mutation | request-response (mutation) | `initiatePayout` gating + audit shape (same file, `:364-406`) + `bacs.ts:230-231` decrypt precedent (Plaid masked-field read) | exact |
+| `packages/api/src/routers/finance/__tests__/{payment-ach-return,payment-plaid-onboarding}.test.ts` (NEW) | test | n/a | `payment-payout-init.test.ts` (fake-db + tRPC caller harness) | exact |
 
 ---
 
@@ -233,6 +236,16 @@ if (transition.count !== 1) { /* idempotent — another caller advanced it; skip
 
 ---
 
+### `ach-return.service.ts` + `payment-core.ts` return/verify procedures (Gap C + Plaid onboarding)
+
+**`ach-return.service.ts` (NEW — service, parser + idempotent status-transition):** hand-rolled NACHA return-file parser (mirrors the fixed-width column offsets of `generateNachaFile`, `payment-export.ts`, so the parser reads a file the generator could emit) + `mapReturnCodeToStatus` (R01/R02/R03 → FAILED, NOC/COR → advisory) + `applyAchReturns`. The apply layer mirrors `_initiatePayoutForRun` (`payment-shared.ts:702`) — tenant-scoped `findMany`, per-item `update`, one masked `writeAuditLog` per transition, all inside a single `db.$transaction`. Idempotent (an already-FAILED-with-this-code item is skipped) and returns `{ failed, advisory, skipped, unmatched }` where `unmatched` distinguishes a mis-uploaded/wrong-run file from a clean no-bounce run (operator-safety signal; a high unmatched proportion logs a warn via `@contractor-ops/logger`, counts only). No external NACHA parser dependency.
+
+**`payment-core.ts` `ingestAchReturnFile` (MODIFY — controller, tRPC mutation):** the reachable return-file entry point — mirrors `initiatePayout`'s gate (`:364-406`: `tenantProcedure` → `requirePermission({payment:['export']})` → `assertUsExpansionEnabled` → `.strict()` Zod) then delegates to `parseNachaReturnFile` → `applyAchReturns`, returning the `{failed, advisory, skipped, unmatched}` summary verbatim. Test harness: `payment-payout-init.test.ts` (fake-db + tRPC caller). The live Modern-Treasury return-webhook (`PayoutInitiationAdapter.handleWebhook`) is a documented deferred seam, not built.
+
+**`payment-core.ts` `verifyBillingProfilePlaid` (MODIFY — controller, tRPC mutation):** the onboarding verification trigger that persists `plaidVerificationStatus`. Same `initiatePayout` gate; loads the tenant-scoped `ContractorBillingProfile` (masked US routing/account — the `bacs.ts:230-231` masked-read precedent), calls `MockPlaidIdentityClient.verify` (the GA default; live client flag-dark per 88-06), writes status + `writeAuditLog`. **Fail-open advisory** (D-08, mirrors USPS `uspsVerified`) — never throws on a non-VERIFIED status.
+
+---
+
 ## Shared Patterns
 
 ### Idempotency on payout init (D-13 — no double-pay)
@@ -255,7 +268,7 @@ catch (e) { await clear(idempotencyKey); throw e; }
 **Source:** `flags-core.ts:304-312` — `payments.ach-payouts` is **already registered** (PENDING, default false, category `payments`, jurisdiction `ANY`). Reuse it for programmatic ACH. `module.us-expansion` (`:211-214`) gates the surface. Mint a new PENDING entry **only** for a distinct Plaid live path if needed — never re-add `payments.ach-payouts`. All via `@contractor-ops/feature-flags` `evaluate`.
 
 ### Audit on sensitive mutations (D-13)
-**Source:** `writeAuditLog` (used at `payment-export-router.ts:68`) — pass `tx` to commit atomically. **Apply to:** payout init, withholding application, Plaid verification-status change. Metadata carries **masked** bank data only (last-4); full routing/account never logged (D-12, `tin-match.service.ts:305` precedent).
+**Source:** `writeAuditLog` (used at `payment-export-router.ts:68`) — pass `tx` to commit atomically. **Apply to:** payout init, withholding application, ACH return-code application, Plaid verification-status change. Metadata carries **masked** bank data only (last-4); full routing/account never logged (D-12, `tin-match.service.ts:305` precedent).
 
 ### AES-256-GCM for secrets + bank data (D-12)
 **Source:** `credential-service.ts` (provider creds) + the `ContractorBillingProfile.uk*Encrypted` field pattern. Never hand-roll crypto. `iv:authTag:ciphertext`, per-provider/per-field key.
@@ -286,5 +299,6 @@ None. Every surface has a strong in-tree analog. The only genuinely **new domain
 
 **Analog search scope:** `packages/api/src/services/`, `packages/api/src/routers/finance/`, `packages/api/src/middleware/`, `packages/api/src/lib/`, `packages/integrations/src/{adapters,services,types}/`, `packages/db/prisma/schema/`, `packages/feature-flags/src/`, `packages/api/src/services/__tests__/`.
 **Files read (analogs):** payment-export.ts, payment-format-detection.ts, payment-shared.ts, payment-export-router.ts, tax-rate.service.ts, treaty-rate.service.ts, tin-match.service.ts, exchange-rate.ts, base-adapter.ts, credential-service.ts, github-adapter.ts (partial), tin-match/{tin-match-client,mock-tin-match-client}.ts, require-us-expansion-flag.ts, idempotency.ts, form-1099-nec.service.ts (grep), flags-core.ts (sections), payment.prisma + contractor.prisma (sections), provider.ts (grep), payment-export-swift.test.ts (partial).
-**Pattern extraction date:** 2026-06-18
+**Pattern extraction date:** 2026-06-18 (Gap C classification rows added 2026-07-01)
 **Documentation-follows-code touch points (planner must schedule in-change-set):** `wiki/domains/` (US payout rail), `wiki/structure/{api-routers-catalog,prisma-schema-areas}.md`, `wiki/integrations/` (Modern Treasury / Stripe Treasury / Plaid), `wiki/patterns/{money-rounding,feature-flags}.md`, `wiki/log.md` + `hot.md`; `.planning/MEMORY.md` ("payment run is the withholding source of truth" invariant).
+</content>
