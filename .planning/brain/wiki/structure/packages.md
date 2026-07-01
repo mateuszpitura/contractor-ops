@@ -2,11 +2,11 @@
 title: Shared packages
 type: structure
 tags: [structure, packages]
-source_commit: d839f52e
+source_commit: 65cdee081
 verify_with:
   - packages/
   - .planning/codebase/STRUCTURE.md
-updated: 2026-06-18
+updated: 2026-07-01
 ---
 
 # Shared packages
@@ -19,10 +19,10 @@ updated: 2026-06-18
 
 | Package | Path | Role |
 |---------|------|------|
-| `api` | `packages/api` | tRPC routers, middleware, services, PDF templates; standardized error-key registry in `src/errors.ts` (camelCase values → `Errors` i18n namespace) — added `CONTRACTOR_TAX_ID_EXISTS` (`contractorTaxIdExists`), with en/de/pl/ar parity |
+| `api` | `packages/api` | tRPC routers, middleware, services, PDF templates; standardized error-key registry in `src/errors.ts` (camelCase values → `Errors` i18n namespace) — added `CONTRACTOR_TAX_ID_EXISTS` (`contractorTaxIdExists`), with en/de/pl/ar parity. Employee registry: `services/employee-pii-crypto.ts` (`encryptPii`/`decryptPii`/`maskLast4` on `EMPLOYEE_PII_ENCRYPTION_KEY`) + `services/elstam-stub.ts` (no-network `lookupElstam` seam); see [[domains/employee-registry]] |
 | `db` | `packages/db` | Prisma 7 schema, migrations, regional + tenant clients |
 | `auth` | `packages/auth` | Better Auth config |
-| `validators` | `packages/validators` | Shared Zod inputs (incl. `w-form-validators.ts` — `taxFormSubmissionSchema` W-9/W-8BEN/W-8BEN-E discriminated union, no full-SSN field; see [[domains/us-tax-forms]]) |
+| `validators` | `packages/validators` | Shared Zod inputs (incl. `w-form-validators.ts` — `taxFormSubmissionSchema` W-9/W-8BEN/W-8BEN-E discriminated union, no full-SSN field; see [[domains/us-tax-forms]]). Employee registry: `employee-validators.ts` (8 greenfield statutory ID validators — PESEL/Steuer-IdNr/NI/UK tax-code/Saudi-ID/Emirates-ID/GOSI/WPS; `EmiratesIdResult` advisory checksum), `employee-country-fields.ts` (`employeeCountryFieldsSchemaMap` PL/DE/GB/US/AE/SA `.strict()` + `validateEmployeeCountryFields`, parallel-not-fork of the contractor map), `employee-reference-lists.ts` (inline NFZ/Lohnsteuerklasse/student-loan/W-4/US-state/Saudization enums) + `reference-data/{zus-oddzialy,urzedy-skarbowe,krankenkassen}.ts` (versioned adviser-verify LOCAL-ONLY seeds); `EMPLOYEE_PII_ENCRYPTION_KEY` in `env.ts`. See [[domains/employee-registry]] |
 | `ui` | `packages/ui` | shadcn + workbench `DataTable` |
 | `feature-flags` | `packages/feature-flags` | Unleash wrapper + `registry.ts` |
 | `compliance-policy` | `packages/compliance-policy` | Payment eligibility rules |
