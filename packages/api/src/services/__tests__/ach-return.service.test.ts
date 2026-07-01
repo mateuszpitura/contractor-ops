@@ -1,10 +1,10 @@
-import { describe, expect, it } from 'vitest';
-import { mapReturnCodeToStatus, parseNachaReturnFile } from '../ach-return.service';
-
-// The DB-apply idempotency contract (applyAchReturns flips a live PaymentRunItem
-// to FAILED and a re-delivered return file is a no-op) is authored with its DB
-// harness alongside the ingestion implementation. This file pins the pure
-// parse + map contract only. Every case fails today against the throwing stub.
+import { describe, expect, it, vi } from 'vitest';
+import type { AchReturnEntry } from '../ach-return.service';
+import {
+  applyAchReturns,
+  mapReturnCodeToStatus,
+  parseNachaReturnFile,
+} from '../ach-return.service';
 
 // Right-justify / left-justify helpers so each fixed-width NACHA field lands at
 // the exact column offset the parser reads (mirroring the generator's layout).
@@ -76,5 +76,217 @@ describe('parseNachaReturnFile', () => {
     expect(entry?.amountMinor).toBe(50_000_00);
     expect(entry?.returnCode).toBe('R01');
     expect(entry?.addendaInfo).toContain('INSUFFICIENT FUNDS');
+  });
+
+  it('skips stray / malformed records defensively and never throws', () => {
+    const noisy = ['GARBAGE LINE — NOT A NACHA RECORD', RETURN_FILE, '', '7 tiny'].join('\r\n');
+
+    const entries = parseNachaReturnFile(noisy);
+
+    expect(entries).toHaveLength(1);
+    expect(entries[0]?.returnCode).toBe('R01');
+    expect(entries[0]?.individualId).toBe('INV-US-001');
+  });
+});
+
+// --- applyAchReturns: idempotent, tenant-scoped status transition ------------
+// A bounced ACH credit must reliably flip its live PaymentRunItem to FAILED,
+// exactly once, with a masked audit row — and a re-delivered file must be a
+// no-op. A wrong-run / mis-uploaded file surfaces via `unmatched`, never a
+// silent no-op. The fake db mirrors the payout-init harness (findMany/update
+// spies + a $transaction that runs its callback), no live DB.
+
+const ORG_ID = 'org-1';
+const OTHER_ORG_ID = 'org-2';
+const ACTOR_ID = 'user-1';
+const RUN_ID = 'run-1';
+
+type FakeItem = {
+  id: string;
+  organizationId: string;
+  paymentRunId: string;
+  status: string;
+  failureReason: string | null;
+  paymentReference: string | null;
+  amountMinor: number;
+  invoice: { invoiceNumber: string | null } | null;
+};
+
+function makeItem(overrides: Partial<FakeItem> = {}): FakeItem {
+  return {
+    id: 'item-1',
+    organizationId: ORG_ID,
+    paymentRunId: RUN_ID,
+    status: 'EXPORTED',
+    failureReason: null,
+    paymentReference: null,
+    amountMinor: 50_000_00,
+    invoice: { invoiceNumber: 'INV-US-001' },
+    ...overrides,
+  };
+}
+
+function makeEntry(overrides: Partial<AchReturnEntry> = {}): AchReturnEntry {
+  return {
+    traceNumber: '021000020000001',
+    individualId: 'INV-US-001',
+    amountMinor: 50_000_00,
+    returnCode: 'R01',
+    addendaInfo: 'INSUFFICIENT FUNDS',
+    ...overrides,
+  };
+}
+
+/**
+ * Minimal Prisma-shaped stub. `paymentRunItem.findMany` echoes the tenant-scoped
+ * subset, `paymentRunItem.update` mutates the in-memory row so a re-apply sees
+ * the FAILED state (the idempotency assertion), `auditLog.create` is spied. The
+ * `$transaction` runs its callback against the same client.
+ */
+function makeDb(items: FakeItem[]) {
+  const findMany = vi.fn(
+    async ({ where }: { where: { paymentRunId: string; organizationId: string } }) =>
+      items.filter(
+        i => i.paymentRunId === where.paymentRunId && i.organizationId === where.organizationId,
+      ),
+  );
+  const update = vi.fn(async ({ where, data }: { where: { id: string }; data: Partial<FakeItem> }) => {
+    const item = items.find(i => i.id === where.id);
+    if (item) Object.assign(item, data);
+    return item ?? {};
+  });
+  const auditCreate = vi.fn(async () => ({}));
+  const client = {
+    paymentRunItem: { findMany, update },
+    auditLog: { create: auditCreate },
+  };
+  const db = {
+    ...client,
+    $transaction: async (fn: (tx: typeof client) => Promise<unknown>) => fn(client),
+  } as never;
+  return { db, findMany, update, auditCreate };
+}
+
+describe('applyAchReturns — failure transition', () => {
+  it('flips a matched live item to FAILED with a reason and one masked audit row', async () => {
+    const items = [makeItem({ status: 'EXPORTED' })];
+    const { db, update, auditCreate } = makeDb(items);
+
+    const result = await applyAchReturns(db, {
+      organizationId: ORG_ID,
+      paymentRunId: RUN_ID,
+      actorId: ACTOR_ID,
+      entries: [makeEntry({ returnCode: 'R01' })],
+    });
+
+    expect(result).toEqual({ failed: 1, advisory: 0, skipped: 0, unmatched: 0 });
+
+    expect(update).toHaveBeenCalledTimes(1);
+    const upd = update.mock.calls[0]?.[0] as { data: { status: string; failureReason: string } };
+    expect(upd.data.status).toBe('FAILED');
+    expect(upd.data.failureReason).toContain('R01');
+    expect(upd.data.failureReason.toLowerCase()).toContain('insufficient');
+
+    expect(auditCreate).toHaveBeenCalledTimes(1);
+    const row = auditCreate.mock.calls[0]?.[0] as { data: { action: string; metadataJson: unknown } };
+    expect(row.data.action).toBe('payment_run.ach_return_applied');
+    const serialized = JSON.stringify(row.data.metadataJson);
+    expect(serialized).toContain('R01');
+    expect(serialized).not.toContain('routingNumber');
+    expect(serialized).not.toContain('accountNumber');
+  });
+});
+
+describe('applyAchReturns — advisory (NOC/COR never fails a payout)', () => {
+  it('records a COR/NOC entry as advisory without changing status', async () => {
+    const items = [makeItem({ status: 'PAID', invoice: { invoiceNumber: 'INV-US-002' } })];
+    const { db, update, auditCreate } = makeDb(items);
+
+    const result = await applyAchReturns(db, {
+      organizationId: ORG_ID,
+      paymentRunId: RUN_ID,
+      actorId: ACTOR_ID,
+      entries: [makeEntry({ individualId: 'INV-US-002', returnCode: 'C01' })],
+    });
+
+    expect(result).toEqual({ failed: 0, advisory: 1, skipped: 0, unmatched: 0 });
+    expect(update).not.toHaveBeenCalled();
+    expect(items[0]?.status).toBe('PAID');
+
+    expect(auditCreate).toHaveBeenCalledTimes(1);
+    const row = auditCreate.mock.calls[0]?.[0] as { data: { action: string } };
+    expect(row.data.action).toBe('payment_run.ach_correction_advised');
+  });
+});
+
+describe('applyAchReturns — idempotency (re-delivered file is a no-op)', () => {
+  it('skips an already-FAILED item on a second identical apply (no re-update, no duplicate audit)', async () => {
+    const items = [makeItem({ status: 'EXPORTED' })];
+    const { db, update, auditCreate } = makeDb(items);
+    const args = {
+      organizationId: ORG_ID,
+      paymentRunId: RUN_ID,
+      actorId: ACTOR_ID,
+      entries: [makeEntry({ returnCode: 'R01' })],
+    };
+
+    const first = await applyAchReturns(db, args);
+    expect(first).toEqual({ failed: 1, advisory: 0, skipped: 0, unmatched: 0 });
+
+    const second = await applyAchReturns(db, args);
+    expect(second).toEqual({ failed: 0, advisory: 0, skipped: 1, unmatched: 0 });
+
+    expect(update).toHaveBeenCalledTimes(1);
+    expect(auditCreate).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('applyAchReturns — unmatched signal (operator safety)', () => {
+  it('counts a FAILED-disposition entry with no matching item as unmatched, not skipped', async () => {
+    const items = [makeItem({ status: 'EXPORTED', invoice: { invoiceNumber: 'INV-US-001' } })];
+    const { db, update, auditCreate } = makeDb(items);
+
+    const result = await applyAchReturns(db, {
+      organizationId: ORG_ID,
+      paymentRunId: RUN_ID,
+      actorId: ACTOR_ID,
+      entries: [makeEntry({ individualId: 'INV-WRONG-999', returnCode: 'R01' })],
+    });
+
+    expect(result).toEqual({ failed: 0, advisory: 0, skipped: 0, unmatched: 1 });
+    expect(update).not.toHaveBeenCalled();
+    expect(auditCreate).not.toHaveBeenCalled();
+  });
+});
+
+describe('applyAchReturns — tenant isolation', () => {
+  it('never touches a foreign-org item; its entry surfaces as unmatched', async () => {
+    const items = [
+      makeItem({
+        id: 'item-foreign',
+        organizationId: OTHER_ORG_ID,
+        status: 'EXPORTED',
+        invoice: { invoiceNumber: 'INV-US-001' },
+      }),
+    ];
+    const { db, findMany, update, auditCreate } = makeDb(items);
+
+    const result = await applyAchReturns(db, {
+      organizationId: ORG_ID,
+      paymentRunId: RUN_ID,
+      actorId: ACTOR_ID,
+      entries: [makeEntry({ individualId: 'INV-US-001', returnCode: 'R01' })],
+    });
+
+    expect(result).toEqual({ failed: 0, advisory: 0, skipped: 0, unmatched: 1 });
+    expect(update).not.toHaveBeenCalled();
+    expect(auditCreate).not.toHaveBeenCalled();
+    expect(items[0]?.status).toBe('EXPORTED');
+
+    const call = findMany.mock.calls[0]?.[0] as {
+      where: { paymentRunId: string; organizationId: string };
+    };
+    expect(call.where).toEqual({ paymentRunId: RUN_ID, organizationId: ORG_ID });
+    expect(call.where.organizationId).not.toBe(OTHER_ORG_ID);
   });
 });
