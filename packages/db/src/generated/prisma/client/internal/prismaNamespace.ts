@@ -490,6 +490,8 @@ export const ModelName = {
   PaymentRunComplianceCheck: 'PaymentRunComplianceCheck',
   PeppolParticipant: 'PeppolParticipant',
   PeppolTransmission: 'PeppolTransmission',
+  PersonnelFile: 'PersonnelFile',
+  PersonnelFileDocument: 'PersonnelFileDocument',
   PortalSession: 'PortalSession',
   PortalMagicToken: 'PortalMagicToken',
   ContractorChangeRequest: 'ContractorChangeRequest',
@@ -536,7 +538,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "organizationApiKey" | "approvalChainConfig" | "approvalFlow" | "approvalStep" | "approvalDecision" | "auditLog" | "user" | "userPinnedView" | "session" | "account" | "verification" | "subscription" | "ocrCreditLedger" | "stripeEvent" | "classificationAssessment" | "classificationDocument" | "ir35ChainParticipant" | "ir35OtherClientAttestation" | "economicDependencyAlertState" | "reassessmentTrigger" | "cronScanState" | "statusfeststellungsverfahren" | "classificationEscalationEvent" | "sdsApproval" | "consentRecord" | "privacyNotice" | "consentEvent" | "contract" | "contractAmendment" | "contractRatePeriod" | "document" | "documentLink" | "contractHealthCheckRun" | "contractor" | "contractorContact" | "contractorBillingProfile" | "contractorAssignment" | "contractorTag" | "contractorTagLink" | "complianceRequirementTemplate" | "contractorComplianceItem" | "contractorComplianceReminderState" | "leitwegId" | "eInvoiceLifecycle" | "eInvoiceLifecycleEvent" | "peppolCapabilityCache" | "employeeProfile" | "equipment" | "equipmentAssignment" | "shipment" | "shipmentEvent" | "returnRequest" | "courierConfig" | "signingEnvelope" | "signingRecipient" | "signingEvent" | "exchangeRate" | "export" | "boEBaseRateHistory" | "skontoTerm" | "skontoSnapshot" | "skontoApplication" | "govApiAuditLog" | "freeZoneAssignment" | "saudizationConfig" | "saudiHeadcount" | "uaeFreeZone" | "deprovisioningRun" | "deprovisioningStep" | "idpChangeProvenance" | "integrationConnection" | "externalLink" | "integrationSyncLog" | "webhookDelivery" | "invoice" | "invoiceFile" | "invoiceLine" | "invoiceMatchResult" | "invoiceIntakeRequest" | "invoicePayment" | "invoiceInterestCompensation" | "invoiceInterestWaiver" | "invoiceInterestClaim" | "notification" | "userNotificationPreference" | "comment" | "reminderRule" | "reminderInstance" | "notificationCronDedup" | "oAuthChallenge" | "ocrExtraction" | "organization" | "member" | "invitation" | "team" | "project" | "pendingProjectMerge" | "projectExternalLink" | "costCenter" | "outboxEvent" | "paymentRun" | "paymentRunItem" | "paymentExport" | "paymentRunComplianceCheck" | "peppolParticipant" | "peppolTransmission" | "portalSession" | "portalMagicToken" | "contractorChangeRequest" | "contractorNotificationPreference" | "pendingUpload" | "taxRate" | "withholdingTaxRate" | "whtCertificate" | "taxFormSubmission" | "form1099Nec" | "irisSubmission" | "irisAck" | "tax1099Threshold" | "stateFilingConfig" | "form1042S" | "form1099KTrackerState" | "tax1099KThreshold" | "taxIdValidation" | "timesheet" | "timeEntry" | "worker" | "workflowTemplate" | "workflowTaskTemplate" | "workflowRoleTemplate" | "workflowRoleTaskTemplate" | "workflowRun" | "workflowTaskRun" | "workflowComment" | "workflowAttachment" | "credentialReference" | "zatcaInvoiceChain"
+    modelProps: "organizationApiKey" | "approvalChainConfig" | "approvalFlow" | "approvalStep" | "approvalDecision" | "auditLog" | "user" | "userPinnedView" | "session" | "account" | "verification" | "subscription" | "ocrCreditLedger" | "stripeEvent" | "classificationAssessment" | "classificationDocument" | "ir35ChainParticipant" | "ir35OtherClientAttestation" | "economicDependencyAlertState" | "reassessmentTrigger" | "cronScanState" | "statusfeststellungsverfahren" | "classificationEscalationEvent" | "sdsApproval" | "consentRecord" | "privacyNotice" | "consentEvent" | "contract" | "contractAmendment" | "contractRatePeriod" | "document" | "documentLink" | "contractHealthCheckRun" | "contractor" | "contractorContact" | "contractorBillingProfile" | "contractorAssignment" | "contractorTag" | "contractorTagLink" | "complianceRequirementTemplate" | "contractorComplianceItem" | "contractorComplianceReminderState" | "leitwegId" | "eInvoiceLifecycle" | "eInvoiceLifecycleEvent" | "peppolCapabilityCache" | "employeeProfile" | "equipment" | "equipmentAssignment" | "shipment" | "shipmentEvent" | "returnRequest" | "courierConfig" | "signingEnvelope" | "signingRecipient" | "signingEvent" | "exchangeRate" | "export" | "boEBaseRateHistory" | "skontoTerm" | "skontoSnapshot" | "skontoApplication" | "govApiAuditLog" | "freeZoneAssignment" | "saudizationConfig" | "saudiHeadcount" | "uaeFreeZone" | "deprovisioningRun" | "deprovisioningStep" | "idpChangeProvenance" | "integrationConnection" | "externalLink" | "integrationSyncLog" | "webhookDelivery" | "invoice" | "invoiceFile" | "invoiceLine" | "invoiceMatchResult" | "invoiceIntakeRequest" | "invoicePayment" | "invoiceInterestCompensation" | "invoiceInterestWaiver" | "invoiceInterestClaim" | "notification" | "userNotificationPreference" | "comment" | "reminderRule" | "reminderInstance" | "notificationCronDedup" | "oAuthChallenge" | "ocrExtraction" | "organization" | "member" | "invitation" | "team" | "project" | "pendingProjectMerge" | "projectExternalLink" | "costCenter" | "outboxEvent" | "paymentRun" | "paymentRunItem" | "paymentExport" | "paymentRunComplianceCheck" | "peppolParticipant" | "peppolTransmission" | "personnelFile" | "personnelFileDocument" | "portalSession" | "portalMagicToken" | "contractorChangeRequest" | "contractorNotificationPreference" | "pendingUpload" | "taxRate" | "withholdingTaxRate" | "whtCertificate" | "taxFormSubmission" | "form1099Nec" | "irisSubmission" | "irisAck" | "tax1099Threshold" | "stateFilingConfig" | "form1042S" | "form1099KTrackerState" | "tax1099KThreshold" | "taxIdValidation" | "timesheet" | "timeEntry" | "worker" | "workflowTemplate" | "workflowTaskTemplate" | "workflowRoleTemplate" | "workflowRoleTaskTemplate" | "workflowRun" | "workflowTaskRun" | "workflowComment" | "workflowAttachment" | "credentialReference" | "zatcaInvoiceChain"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -8384,6 +8386,154 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    PersonnelFile: {
+      payload: Prisma.$PersonnelFilePayload<ExtArgs>
+      fields: Prisma.PersonnelFileFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.PersonnelFileFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PersonnelFilePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.PersonnelFileFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PersonnelFilePayload>
+        }
+        findFirst: {
+          args: Prisma.PersonnelFileFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PersonnelFilePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.PersonnelFileFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PersonnelFilePayload>
+        }
+        findMany: {
+          args: Prisma.PersonnelFileFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PersonnelFilePayload>[]
+        }
+        create: {
+          args: Prisma.PersonnelFileCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PersonnelFilePayload>
+        }
+        createMany: {
+          args: Prisma.PersonnelFileCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.PersonnelFileCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PersonnelFilePayload>[]
+        }
+        delete: {
+          args: Prisma.PersonnelFileDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PersonnelFilePayload>
+        }
+        update: {
+          args: Prisma.PersonnelFileUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PersonnelFilePayload>
+        }
+        deleteMany: {
+          args: Prisma.PersonnelFileDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.PersonnelFileUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.PersonnelFileUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PersonnelFilePayload>[]
+        }
+        upsert: {
+          args: Prisma.PersonnelFileUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PersonnelFilePayload>
+        }
+        aggregate: {
+          args: Prisma.PersonnelFileAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregatePersonnelFile>
+        }
+        groupBy: {
+          args: Prisma.PersonnelFileGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.PersonnelFileGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.PersonnelFileCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.PersonnelFileCountAggregateOutputType> | number
+        }
+      }
+    }
+    PersonnelFileDocument: {
+      payload: Prisma.$PersonnelFileDocumentPayload<ExtArgs>
+      fields: Prisma.PersonnelFileDocumentFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.PersonnelFileDocumentFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PersonnelFileDocumentPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.PersonnelFileDocumentFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PersonnelFileDocumentPayload>
+        }
+        findFirst: {
+          args: Prisma.PersonnelFileDocumentFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PersonnelFileDocumentPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.PersonnelFileDocumentFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PersonnelFileDocumentPayload>
+        }
+        findMany: {
+          args: Prisma.PersonnelFileDocumentFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PersonnelFileDocumentPayload>[]
+        }
+        create: {
+          args: Prisma.PersonnelFileDocumentCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PersonnelFileDocumentPayload>
+        }
+        createMany: {
+          args: Prisma.PersonnelFileDocumentCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.PersonnelFileDocumentCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PersonnelFileDocumentPayload>[]
+        }
+        delete: {
+          args: Prisma.PersonnelFileDocumentDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PersonnelFileDocumentPayload>
+        }
+        update: {
+          args: Prisma.PersonnelFileDocumentUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PersonnelFileDocumentPayload>
+        }
+        deleteMany: {
+          args: Prisma.PersonnelFileDocumentDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.PersonnelFileDocumentUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.PersonnelFileDocumentUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PersonnelFileDocumentPayload>[]
+        }
+        upsert: {
+          args: Prisma.PersonnelFileDocumentUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PersonnelFileDocumentPayload>
+        }
+        aggregate: {
+          args: Prisma.PersonnelFileDocumentAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregatePersonnelFileDocument>
+        }
+        groupBy: {
+          args: Prisma.PersonnelFileDocumentGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.PersonnelFileDocumentGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.PersonnelFileDocumentCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.PersonnelFileDocumentCountAggregateOutputType> | number
+        }
+      }
+    }
     PortalSession: {
       payload: Prisma.$PortalSessionPayload<ExtArgs>
       fields: Prisma.PortalSessionFieldRefs
@@ -12680,6 +12830,39 @@ export const PeppolTransmissionScalarFieldEnum = {
 export type PeppolTransmissionScalarFieldEnum = (typeof PeppolTransmissionScalarFieldEnum)[keyof typeof PeppolTransmissionScalarFieldEnum]
 
 
+export const PersonnelFileScalarFieldEnum = {
+  id: 'id',
+  organizationId: 'organizationId',
+  workerId: 'workerId',
+  countryCode: 'countryCode',
+  hireDate: 'hireDate',
+  terminatedAt: 'terminatedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  deletedAt: 'deletedAt'
+} as const
+
+export type PersonnelFileScalarFieldEnum = (typeof PersonnelFileScalarFieldEnum)[keyof typeof PersonnelFileScalarFieldEnum]
+
+
+export const PersonnelFileDocumentScalarFieldEnum = {
+  id: 'id',
+  organizationId: 'organizationId',
+  personnelFileId: 'personnelFileId',
+  documentId: 'documentId',
+  section: 'section',
+  documentDate: 'documentDate',
+  classificationMethod: 'classificationMethod',
+  aiSectionGuess: 'aiSectionGuess',
+  aiConfidence: 'aiConfidence',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  deletedAt: 'deletedAt'
+} as const
+
+export type PersonnelFileDocumentScalarFieldEnum = (typeof PersonnelFileDocumentScalarFieldEnum)[keyof typeof PersonnelFileDocumentScalarFieldEnum]
+
+
 export const PortalSessionScalarFieldEnum = {
   id: 'id',
   token: 'token',
@@ -14859,6 +15042,34 @@ export type ListEnumPeppolTransmissionStatusFieldRefInput<$PrismaModel> = FieldR
 
 
 /**
+ * Reference to a field of type 'PersonnelFileSection'
+ */
+export type EnumPersonnelFileSectionFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PersonnelFileSection'>
+    
+
+
+/**
+ * Reference to a field of type 'PersonnelFileSection[]'
+ */
+export type ListEnumPersonnelFileSectionFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PersonnelFileSection[]'>
+    
+
+
+/**
+ * Reference to a field of type 'PersonnelDocClassificationMethod'
+ */
+export type EnumPersonnelDocClassificationMethodFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PersonnelDocClassificationMethod'>
+    
+
+
+/**
+ * Reference to a field of type 'PersonnelDocClassificationMethod[]'
+ */
+export type ListEnumPersonnelDocClassificationMethodFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PersonnelDocClassificationMethod[]'>
+    
+
+
+/**
  * Reference to a field of type 'ContractorChangeRequestStatus'
  */
 export type EnumContractorChangeRequestStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ContractorChangeRequestStatus'>
@@ -15395,6 +15606,8 @@ export type GlobalOmitConfig = {
   paymentRunComplianceCheck?: Prisma.PaymentRunComplianceCheckOmit
   peppolParticipant?: Prisma.PeppolParticipantOmit
   peppolTransmission?: Prisma.PeppolTransmissionOmit
+  personnelFile?: Prisma.PersonnelFileOmit
+  personnelFileDocument?: Prisma.PersonnelFileDocumentOmit
   portalSession?: Prisma.PortalSessionOmit
   portalMagicToken?: Prisma.PortalMagicTokenOmit
   contractorChangeRequest?: Prisma.ContractorChangeRequestOmit

@@ -242,7 +242,7 @@ Known gaps / deferred at close: see STATE.md `## Deferred Items` (3 unverified p
 **Plans**: 10 plans (7 waves)
 
 - [x] 87-01-PLAN.md — Wave-0 RED scaffolds + 1042-S Pub 1187 XSD human-download checkpoint [wave 1]
-- [ ] 87-02-PLAN.md — [BLOCKING] Prisma schema (Form1042S, Form1099KTrackerState, Tax1099KThreshold, US_DETERMINATION_LETTER, engagement work-state) + multi-region migration gate [wave 2]
+- [x] 87-02-PLAN.md — [BLOCKING] Prisma schema (Form1042S, Form1099KTrackerState, Tax1099KThreshold, US_DETERMINATION_LETTER, engagement work-state) + multi-region migration gate [wave 2]
 - [ ] 87-03-PLAN.md — US ClassificationProfile rule set + scoring (federal/CA-ABC/§530) + AB5 work-state trigger + audited override (US-CLASS-01/02) [wave 3]
 - [ ] 87-04-PLAN.md — Form1042S service (§875(d) treaty snapshot + supersede + idempotency) + recipient PDF + staff router (US-FORM-06 non-transmit core) [wave 3]
 - [ ] 87-05-PLAN.md — Determination Letter PDF (deterministic, mirror SDS) + render/archive + document-router wiring (US-CLASS-04) [wave 4]
@@ -268,7 +268,7 @@ Known gaps / deferred at close: see STATE.md `## Deferred Items` (3 unverified p
   4. A Fedwire wire-transfer file (ISO 20022 pacs.008) exports for high-value payouts above the Same-Day ACH ceiling, with the ceiling held as a config value (not a constant).
   5. A US contractor bank account is verifiable via Plaid Identity at onboarding; an unverified status produces an advisory warning and never blocks the payout.
 
-**Plans**: 7 plans
+**Plans**: 12 plans (7 shipped + 5 gap-closure)
 Plans:
 **Wave 1**
 
@@ -297,6 +297,28 @@ Plans:
 **Wave 7** *(blocked on Wave 6 completion)*
 
 - [x] 88-07-PLAN.md — Documentation-follows-code wiki + MEMORY invariant
+
+**Gap closure** *(`/gsd:plan-phase 88 --gaps` — SC#1 + SC#4 FAILED, 2 secondary WARNINGs; runs via `/gsd:execute-phase 88 --gaps-only`)*
+
+**Wave 8** *(RED scaffolds)*
+
+- [ ] 88-08-PLAN.md — RED: enum-parity + US-routing/grouping + e2e lockAndExport US-export + ACH return-code contract stub (US-PAY-01/04)
+
+**Wave 9** *(blocked on Wave 8)*
+
+- [ ] 88-09-PLAN.md — Gap A enum mirror + Gap B thread detectUsFormat + US-aware grouping + decrypt US routing/account into ExportItem (US-PAY-01/04)
+
+**Wave 10** *(blocked on Wave 9)*
+
+- [ ] 88-10-PLAN.md — Gap C: ACH return-code service — parseNachaReturnFile + mapReturnCodeToStatus + idempotent applyAchReturns (US-PAY-01)
+
+**Wave 11** *(blocked on Wave 10)*
+
+- [ ] 88-11-PLAN.md — Gap C entry point: paymentCore.ingestAchReturnFile (reachable, gated, idempotent) + return-flow wiki (US-PAY-01)
+
+**Wave 12** *(blocked on Wave 11)*
+
+- [ ] 88-12-PLAN.md — Plaid onboarding verification wiring (US-PAY-05 write half) + tin-match writer defer to P86 + gap-closure doc sweep
 
 **Research flag**: Standard — NACHA is a payment-export factory extension; `@midlandsbank/node-nacha` is a formatter helper (hand-roll ODFI-specific fields). The W-9 backup-withholding flag must actually reduce payout by 24%, not just be stored.
 
@@ -581,7 +603,7 @@ Phases execute in numeric order: 82 → 83 → … → 101. After Foundation (82
 | 84. Theme A — US Profile Fields + en-US Locale | v7.0 | 7/7 | Complete    | 2026-06-08 |
 | 85. Theme A — W-Form Intake + Tax-Treaty Engine | v7.0 | 4/4 | Complete   | 2026-06-16 |
 | 86. Theme A — TIN-Match → 1099-NEC → IRIS → State | v7.0 | 4/8 | In Progress|  |
-| 87. Theme A — 1042-S + US Classification + Letter | v7.0 | 1/10 | In Progress|  |
+| 87. Theme A — 1042-S + US Classification + Letter | v7.0 | 2/10 | In Progress|  |
 | 88. Theme A — US Payment Rail | v7.0 | 7/7 | Gaps (SC#1/#4) | -          |
 | 89. Theme B — Worker Model Abstraction (gate) | v7.0 | 6/6 | Complete   | 2026-06-22 |
 | 90. Theme B — Employee Registry per Market (×6) | v7.0 | 7/7 | Complete    | 2026-07-01 |
