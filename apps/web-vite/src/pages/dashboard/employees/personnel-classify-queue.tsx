@@ -4,7 +4,8 @@
  * Reached only when `module.workforce-employees` is enabled; the flag gate and
  * all data access live in the wired view. Auth gating lives on the shell parent
  * in router.tsx. Surfaces the PENDING_REVIEW personnel documents an admin must
- * classify into section A/B/C/D (AKTA-04 admin classify-step).
+ * classify into section A/B/C/D — the reachable admin classify-step for uploads
+ * the automatic classifier could not confidently place.
  */
 
 import { Suspense } from 'react';
