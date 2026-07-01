@@ -348,19 +348,19 @@ Plans:
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
-- [ ] 90-04-PLAN.md — [BLOCKING, P89-gated] EmployeeProfile model + employeePii RBAC + cross-org leak + additive multi-region migration
+- [x] 90-04-PLAN.md — [BLOCKING, P89-gated] EmployeeProfile model + employeePii RBAC + cross-org leak + additive multi-region migration
 
 **Wave 4** *(blocked on Wave 3 completion)*
 
-- [ ] 90-05-PLAN.md — [HOLD until P89] employeeRegistryRouter register/revealPii + ELStAM stub + PII-mask paths
+- [x] 90-05-PLAN.md — [HOLD until P89] employeeRegistryRouter register/revealPii + ELStAM stub + PII-mask paths
 
 **Wave 5** *(blocked on Wave 4 completion)*
 
-- [ ] 90-06-PLAN.md — [HOLD until P89] per-market web-vite registration UI (dispatch, masked reveal, advisory, i18n parity)
+- [x] 90-06-PLAN.md — [HOLD until P89] per-market web-vite registration UI (dispatch, masked reveal, advisory, i18n parity)
 
 **Wave 6** *(blocked on Wave 5 completion)*
 
-- [ ] 90-07-PLAN.md — Documentation-follows-code: employee-registry wiki + MEMORY invariants + graph rebuild
+- [x] 90-07-PLAN.md — Documentation-follows-code: employee-registry wiki + MEMORY invariants + graph rebuild
 
 **Research flag**: Standard — reuses v5.0 validators (SV-Nummer) and v4.0 Gulf field patterns. New Prisma models — never add to `globalModels`; cross-org leak test per new tenant-owning model.
 **UI hint**: yes
@@ -582,9 +582,9 @@ Phases execute in numeric order: 82 → 83 → … → 101. After Foundation (82
 | 85. Theme A — W-Form Intake + Tax-Treaty Engine | v7.0 | 4/4 | Complete   | 2026-06-16 |
 | 86. Theme A — TIN-Match → 1099-NEC → IRIS → State | v7.0 | 4/8 | In Progress|  |
 | 87. Theme A — 1042-S + US Classification + Letter | v7.0 | 0/10 | Not started | - |
-| 88. Theme A — US Payment Rail | v7.0 | 7/7 | Complete   | 2026-07-01 |
+| 88. Theme A — US Payment Rail | v7.0 | 7/7 | Gaps (SC#1/#4) | -          |
 | 89. Theme B — Worker Model Abstraction (gate) | v7.0 | 6/6 | Complete   | 2026-06-22 |
-| 90. Theme B — Employee Registry per Market (×6) | v7.0 | 3/7 | In Progress|  |
+| 90. Theme B — Employee Registry per Market (×6) | v7.0 | 7/7 | Complete    | 2026-07-01 |
 | 91. Theme B — Akta Osobowe / Personnel File | v7.0 | 0/TBD | Not started | - |
 | 92. Theme B — Leave + KP-Grade Time Tracking | v7.0 | 0/16 | Planned     | - |
 | 93. Theme B — Employee On/Offboarding | v7.0 | 0/TBD | Not started | - |
