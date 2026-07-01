@@ -47,3 +47,25 @@ Out-of-scope discoveries logged during plan execution (NOT fixed here).
 - **Fix owner:** add the 4 HR roles to `ROLE_CONTRACTOR_ACTIONS` (`hr_admin:
   ['read']`, `hr_manager: ['read']`, `payroll_officer: []`, `leave_approver: []`) —
   matches the test's own remediation note.
+
+## From Plan 90-06 (per-market registration UI)
+
+### Frontend RBAC mirror missing `employee` + `employeePii` grants and HR roles
+
+- **Files:** `apps/web-vite/src/hooks/use-permissions.ts` (grant mirror) +
+  `packages/auth/src/role-normalization.ts` (`memberRoles` union).
+- **Issue:** the server (`packages/auth/src/roles.ts` + `permissions.ts`) grants
+  `employeePii: ['read']` to owner + admin, and `employee: [...]` to the HR roles
+  (`hr_admin`/`hr_manager`/`payroll_officer`/`leave_approver`). The web-vite mirror
+  omits `employee`/`employeePii`, and `memberRoles` does not yet include the HR
+  roles.
+- **Effect:** `can('employee',['create'])` and `can('employeePii',['read'])` are
+  false for all current member roles, so the registration Register control shows a
+  muted "ask an HR administrator" note and the PII reveal control is absent
+  (fail-safe, matches threat T-90-06-01).
+- **Not fixed here** because (a) it is outside 90-06's `files_modified`, and (b)
+  adding grants for roles not present in `memberRoles` would diverge the mirror from
+  the server contract that CLAUDE.md requires to stay in lockstep.
+- **Fix owner:** the plan that owns the HR-role frontend surface — wire the HR roles
+  into `memberRoles` and mirror the server `employee`/`employeePii` grants in
+  `usePermissions`.
