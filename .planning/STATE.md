@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v7.0
 milestone_name: GTM Expansion
 status: executing
-stopped_at: Phase 92 context gathered
-last_updated: "2026-06-30T23:55:14.064Z"
+stopped_at: Phase 93 context gathered
+last_updated: "2026-07-01T00:30:20.706Z"
 last_activity: 2026-06-30 -- Phase 88 execution started
 progress:
   total_phases: 20
   completed_phases: 5
-  total_plans: 60
-  completed_plans: 37
+  total_plans: 69
+  completed_plans: 39
   percent: 25
 ---
 
@@ -198,7 +198,7 @@ Carried forward from v6.0 milestone close (2026-06-07). Full enumeration: `.plan
 
 ## Session Continuity
 
-Last session: 2026-06-30T23:55:14.058Z
-Stopped at: Phase 92 context gathered
-Resume file: .planning/milestones/v7.0-phases/92-theme-b-leave-management-kp-grade-time-tracking/92-CONTEXT.md
+Last session: 2026-07-01T00:30:20.698Z
+Stopped at: Phase 93 context gathered
+Resume file: .planning/milestones/v7.0-phases/93-theme-b-employee-on-offboarding/93-CONTEXT.md
 Next command: `/gsd:verify-phase 89` (Theme B gate is closed — the parallel Theme B phases 90–97 can proceed), or resume Theme A (86 verification / 87)
