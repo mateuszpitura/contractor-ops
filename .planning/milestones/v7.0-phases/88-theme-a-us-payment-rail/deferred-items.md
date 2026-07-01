@@ -19,3 +19,14 @@ Present on base commit `42f4412f5` and unrelated to the 88-03 withholding work (
 source touched). Out of 88-03 scope (SCOPE BOUNDARY); belongs to whoever owns the
 payroll_officer role rollout. The 88-03 suites (payment-withholding, tax-rate.service,
 tin-match, treaty-rate) are all green.
+
+## 88-06 — pre-existing check:no-process-env ratchet drift (NOT introduced here)
+`pnpm check:no-process-env` reports 184 raw `process.env` reads vs a committed baseline of
+182 (`scripts/.process-env-ratchet.json`). The +2 drift is present on base commit
+`4da605fe8` — none of the 88-06 changed files contain `process.env` (verified via
+`git diff <base> -- '*.ts' | grep '^+.*process.env'` → empty). The 88-06 integrations
+adapters read provider keys only through the existing `credential-service.getProviderEncryptionKey`
+dynamic per-slug path (no new raw env access), and the payout-init procedure adds none.
+Out of 88-06 scope (SCOPE BOUNDARY); belongs to whoever introduced the two new call sites
+on the base branch. Either migrate them to a package env schema and re-run the ratchet in
+tighten mode, or bump the baseline in the same change set that legitimises them.
