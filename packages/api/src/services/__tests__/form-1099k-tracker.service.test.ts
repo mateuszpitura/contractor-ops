@@ -2,7 +2,7 @@
 //
 // `form-1099k-tracker.service` does not exist yet, so importing it fails at
 // resolution and this suite is terminal-RED until the tracker lands. The
-// assertions pin the D-10 / D-11 contract, mirroring the shipped
+// assertions pin the informational-tracker contract, mirroring the shipped
 // economic-dependency-scan sibling:
 //   - the band transitions SAFE → APPROACHING → OVER against a tax-year-keyed
 //     config of $20,000 AND 200 transactions (the OBBBA figures — NOT the stale
@@ -12,13 +12,8 @@
 //   - the scan is purely informational and NEVER files a 1099-K.
 
 import { describe, expect, it } from 'vitest';
-
-import {
-  bandFor1099K,
-  type Form1099KBand,
-  type Form1099KThresholdConfig,
-  updateTrackerBandState,
-} from '../form-1099k-tracker.service';
+import type { Form1099KBand, Form1099KThresholdConfig } from '../form-1099k-tracker.service';
+import { bandFor1099K, updateTrackerBandState } from '../form-1099k-tracker.service';
 
 // OBBBA TY2026 threshold config: $20,000 gross AND 200 transactions.
 const TY2026_CONFIG: Form1099KThresholdConfig = {
