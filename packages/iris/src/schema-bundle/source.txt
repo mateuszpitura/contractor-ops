@@ -14,3 +14,31 @@ ADVISER-VERIFY: the IRIS XSD bundle, the generated 1099-NEC XML, the threshold c
 all treaty/withholding figures need jurisdiction-specific legal/tax-adviser verification
 before any production deploy. No artifact here is presented as final legal advice
 (local-only / legal-deferred posture).
+
+---
+
+1042-S (Publication 1187) — PENDING HUMAN SOR DOWNLOAD (not yet bundled)
+source: irs.gov — "IRIS Schemas and Business Rules" page / IRS Secure Object Repository (SOR)
+access: requires an IRS account login (human-only download — no public URL, not on npm)
+package: 1042-S IRIS Schema & Business Rules package, Publication 1187 (1042-S payload XSD +
+         its Transmission Manifest XSD) — DISTINCT from the 1099-series package above.
+status: NOT PRESENT. The 1042-S payload XSD has not been downloaded, so checksums.txt carries
+        NO 1042-S entry. The autonomous execution environment cannot perform an IRS SOR login,
+        so this download is deferred to a human.
+
+Human steps to complete the bundle (mirrors the 1099-series procedure above):
+  1. Log in to the IRS Secure Object Repository (IRS-SOR / IRIS) with an IRS account.
+  2. Download the 1042-S IRIS schema package (Publication 1187, filing-year 2026/TY2026):
+     the 1042-S payload XSD + its Transmission Manifest XSD.
+  3. Place the XSD file(s) in this directory alongside the 1099-series schema files.
+  4. Update the provenance above (IRS-SOR URL, download date, filing-year, package SHA-256).
+  5. Pin the checksum so checksums.txt gains a 1042-S XSD SHA-256 entry:
+       pnpm --filter @contractor-ops/iris exec tsx scripts/verify-iris-schema-checksums.ts --write
+
+Until this lands, buildIris1042SXml + the 1042-S XSD validator (xsdValidate1042S) stay RED —
+the deterministic 1042-S core (model, box mapping, recipient PDF, classification,
+determination letter, 1099-K tracker) is unaffected and proceeds independently.
+
+ADVISER-VERIFY: the 1042-S income/status codes, XSD element names, and all treaty/withholding
+figures need jurisdiction-specific tax-adviser verification; re-verify the TY2026 schema when
+it posts (~Nov 2026) and re-pin checksums.txt.
