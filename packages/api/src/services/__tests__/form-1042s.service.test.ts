@@ -1,9 +1,7 @@
-// Form 1042-S year-end service — Wave-0 RED scaffold.
+// Form 1042-S year-end service.
 //
-// `form-1042s.service` does not exist yet, so importing it fails at resolution
-// and this suite is terminal-RED until the service lands. The assertions pin the
-// D-06 / D-07 contract the service must satisfy, mirroring the shipped
-// form-1099-nec.service sibling:
+// The assertions pin the contract the service must satisfy, mirroring the
+// shipped form-1099-nec.service sibling:
 //   - box-2 rate is resolved via applyTreaty behind the §875(d) gate: a complete
 //     W-8 chain claims the treaty rate, an incomplete one falls back to the 30%
 //     statutory rate;
