@@ -57,6 +57,8 @@ const ENTITY_ROUTES: Record<string, string> = {
   WORKFLOW_TASK_RUN: '/workflows',
   APPROVAL_FLOW: '/approvals',
   DOCUMENT: '/documents',
+  LEAVE_REQUEST: '/leave',
+  EMPLOYEE_TIME_RECORD: '/employee-time',
 };
 
 function buildEntityUrl(entityType: string, entityId: string): string {

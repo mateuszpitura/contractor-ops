@@ -20,7 +20,12 @@ export const approvalDecisionTypeEnum = z.enum([
   'DELEGATE',
 ]);
 
-export const approvalResourceTypeEnum = z.enum(['INVOICE', 'DOCUMENT', 'CONTRACT']);
+export const approvalResourceTypeEnum = z.enum([
+  'INVOICE',
+  'DOCUMENT',
+  'CONTRACT',
+  'LEAVE_REQUEST',
+]);
 
 // ---------------------------------------------------------------------------
 // Condition and step config schemas
