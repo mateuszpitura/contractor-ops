@@ -14,6 +14,18 @@ export {
 export { DataportCompanyRegistryAdapter } from './adapters/dataport-company-registry-adapter.js';
 export { DocuSignAdapter } from './adapters/docusign-adapter.js';
 export { KsefAdapter } from './adapters/ksef-adapter.js';
+// Programmatic-ACH payout-initiation seam (mock default + dark live originator + Stripe stub)
+export {
+  LiveModernTreasuryAdapter,
+  type LiveModernTreasuryAdapterConfig,
+  MockModernTreasuryAdapter,
+  type PayoutInitiationAdapter,
+  type PayoutInput,
+  type PayoutOrder,
+  type PayoutOrderStatus,
+  type PayoutWebhookEvent,
+  StripeTreasuryAdapter,
+} from './adapters/payout/index.js';
 export { loadHeavyAdapters, registerAllAdapters } from './adapters/register-all.js';
 export { ResendAdapter } from './adapters/resend-adapter.js';
 export { SlackAdapter } from './adapters/slack-adapter.js';
