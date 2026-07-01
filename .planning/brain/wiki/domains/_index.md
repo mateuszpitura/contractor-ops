@@ -25,6 +25,7 @@ updated: 2026-06-09
 | [[contractors-engagements]] | contractor CRUD, lifecycle, compliance health |
 | [[worker-foundation]] | worker-model union (Worker root + workerType), backfill, per-type RBAC |
 | [[employee-registry]] | per-market employee onboarding — validators, encrypted national-ID PII, seeded reference lists |
+| [[personnel-file]] | jurisdiction-correct akta osobowe / Personalakte — 4 sections + per-section RBAC, retention clock, RODO erasure, doc classifier |
 | [[contracts-lifecycle]] | wizard, esign, amendments, health |
 | [[portal-external]] | contractor portal (separate router) |
 

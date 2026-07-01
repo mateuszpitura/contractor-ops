@@ -2,14 +2,17 @@
 title: Key API services catalog
 type: structure
 tags: [structure, services, api]
-source_commit: cbe299a91a59179244c0085ea8c65dbf40ab654c
+source_commit: 105a8ccf64b34c611493215eb3519e8922343839
 verify_with:
   - packages/api/src/services/
   - packages/api/src/services/onboarding-import-service.ts
   - packages/db/src/worker-type.ts
   - packages/db/scripts/backfill-worker.ts
+  - packages/api/src/services/personnel-classifier.ts
+  - packages/db/src/retention-policy.ts
+  - packages/compliance-policy/src/personnel-registry.ts
   - .planning/intel/file-roles.json
-updated: 2026-06-22
+updated: 2026-07-01
 ---
 
 # Key API services catalog
@@ -57,6 +60,8 @@ flowchart TB
 | Audited mutation | `lib/audited-mutation.ts` | audit + tx wrapper |
 | Worker backfill | `packages/db/scripts/backfill-worker.ts` | [[domains/worker-foundation]] — idempotent (`WHERE workerId IS NULL`) + reversible (`--rollback`) + per-region one-time backfill; create+link a `Worker` per contractor atomically per `$transaction`, batched; one system-actor `worker.backfill.apply` audit row per org (written directly via Prisma — db sits below api, no `writeAuditLog` import) |
 | workerType extension | `packages/db/src/worker-type.ts` | [[domains/worker-foundation]] — `withWorkerTypeDefault` chained outermost in the tenant client (`withWorkerTypeDefault(withSoftDelete(withTenantScope(...)))`); injects `workerType='CONTRACTOR'` on Worker reads unless the caller sets it (explicit-where-wins) |
+| Personnel retention resolver | `packages/db/src/retention-policy.ts` (`getPersonnelRetentionCutoff`) + `personnel-retention.ts` facade | [[domains/personnel-file]] — event-anchored resolver on the SHARED retention primitive (no parallel engine): per-rule anchor `HIRE_DATE\|TERMINATION_DATE\|DOCUMENT_DATE`, `anchor + RETENTION_YEARS[token]`, `max()` combinator (US I-9 `max(hire+3y, term+1y)`, 8 CFR 274a.2), indefinite-while-active (missing anchor → `retainUntil` null, never erasable — fail-closed). Years live only on `RETENTION_YEARS` (single source, 8 akta tokens); the section+rule registry is `packages/compliance-policy/src/personnel-registry.ts` (register-on-import, PL/DE/UK/US, `resolveSectionForDocumentType`). Both deletion chokepoints route personnel rows (soft-delete guard + data-purge cron akta-hold-aware sweep) |
+| Personnel document classifier | `packages/api/src/services/personnel-classifier.ts` | [[domains/personnel-file]] — `classifyPersonnelDocument`: deterministic taxonomy → `killswitch.ai-personnel-classifier`-gated Claude-Vision seam → `PENDING_REVIEW` admin step; thresholds `PERSONNEL_CLASSIFY_MIN_CONFIDENCE`=85 / `_MARGIN`=15; kill-switch off/unreachable → admin (no model call), **never blocks the persisted upload**; concrete Claude adapter injected as a seam (deferred → AI tail degrades to admin queue) |
 
 ## Invariants
 
