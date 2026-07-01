@@ -776,7 +776,7 @@ describe('payment router', () => {
               servicePeriodStart: null,
               servicePeriodEnd: null,
             },
-            contractor: { legalName: 'Acme', taxId: '1234567890' },
+            contractor: { legalName: 'Acme', taxId: '1234567890', currency: 'PLN' },
             billingProfile: {
               bankAccountMasked: 'PL12345678901234567890123456',
               swiftBic: 'BREXPLPW',

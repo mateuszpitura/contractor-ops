@@ -215,6 +215,7 @@ export const paymentExportRouter = router({
                   select: {
                     legalName: true,
                     taxId: true,
+                    currency: true,
                   },
                 },
                 billingProfile: {
@@ -300,7 +301,17 @@ export const paymentExportRouter = router({
         };
       }
 
-      const exportItems = _buildExportItems(prepared.run.items, prepared.transferTitleTemplate);
+      // Settle each item at the export (payment) date before the file is built,
+      // so the exported amount/currency is the settled value, not the raw run
+      // amount. The per-run settlement-currency override is threaded by the
+      // programmatic payout path; the file export defaults to the contractor's
+      // currency.
+      const exportItems = await _buildExportItems(
+        ctx.db,
+        prepared.run.items,
+        prepared.transferTitleTemplate,
+        { paymentDate: new Date() },
+      );
       const { fileBuffer, ext } = await _generateExportFileForFormat(
         input.exportFormat,
         exportItems,

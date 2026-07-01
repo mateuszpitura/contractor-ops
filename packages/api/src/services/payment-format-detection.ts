@@ -62,8 +62,43 @@ export const EU_IBAN_COUNTRIES = new Set([
  * - `BANK_FILE`: Polish Elixir type 110 flat file (PLN + PL IBAN)
  * - `CSV`: Generic CSV with org-defined column mapping
  * - `BACS_STD18`: UK BACS Standard 18 Direct Credit fixed-width file
+ * - `ACH_NACHA`: US ACH NACHA fixed-width credit file (USD + US bank)
+ * - `FEDWIRE`: US high-value wire as an ISO 20022 pacs.008 XML (above the
+ *   Same-Day ACH ceiling)
  */
-export type ExportFormat = 'SEPA_XML' | 'SWIFT_XML' | 'BANK_FILE' | 'CSV' | 'BACS_STD18';
+export type ExportFormat =
+  | 'SEPA_XML'
+  | 'SWIFT_XML'
+  | 'BANK_FILE'
+  | 'CSV'
+  | 'BACS_STD18'
+  | 'ACH_NACHA'
+  | 'FEDWIRE';
+
+// ---------------------------------------------------------------------------
+// Same-Day ACH ceiling (config, not a constant inside detect)
+// ---------------------------------------------------------------------------
+
+/** Same-Day ACH per-payment ceiling in cents, in effect until 2027-09-17: $1,000,000.00. */
+export const SAME_DAY_ACH_CEILING_MINOR_CURRENT = 1_000_000_00;
+
+/** Same-Day ACH per-payment ceiling in cents from 2027-09-17: $10,000,000.00. */
+export const SAME_DAY_ACH_CEILING_MINOR_2027 = 10_000_000_00;
+
+/** The date the Same-Day ACH ceiling rises from $1M to $10M. */
+export const SAME_DAY_ACH_CEILING_EFFECTIVE_2027 = new Date('2027-09-17T00:00:00Z');
+
+/**
+ * Resolve the Same-Day ACH per-payment ceiling (in cents) in effect on a given
+ * date. Above this ceiling a US payout routes to Fedwire rather than ACH. The
+ * ceiling is a moving config value ($1M now, $10M from 2027-09-17) — never a
+ * constant baked into the routing rule.
+ */
+export function sameDayAchCeilingMinor(asOf: Date = new Date()): number {
+  return asOf >= SAME_DAY_ACH_CEILING_EFFECTIVE_2027
+    ? SAME_DAY_ACH_CEILING_MINOR_2027
+    : SAME_DAY_ACH_CEILING_MINOR_CURRENT;
+}
 
 /**
  * Destination identity for routing decisions. UK accounts use sort code +
@@ -141,6 +176,28 @@ export function detectFormatForDestination(
   }
 
   return 'SWIFT_XML';
+}
+
+/**
+ * Detect the US export format for a USD payout to a US bank account.
+ *
+ * Returns `null` for anything that is not a USD payout to a US bank (the caller
+ * falls back to the SEPA/SWIFT routing). Otherwise a payout at or below the
+ * Same-Day ACH per-payment ceiling routes to `ACH_NACHA`; a payout above it
+ * routes to `FEDWIRE`.
+ *
+ * The ceiling is supplied by the caller (from {@link sameDayAchCeilingMinor}) so
+ * the moving $1M→$10M threshold stays a config value rather than a constant
+ * baked into this rule.
+ */
+export function detectUsFormat(
+  currency: string,
+  isUsBank: boolean,
+  amountMinor: number,
+  sameDayCeilingMinor: number,
+): ExportFormat | null {
+  if (currency !== 'USD' || !isUsBank) return null;
+  return amountMinor > sameDayCeilingMinor ? 'FEDWIRE' : 'ACH_NACHA';
 }
 
 // ---------------------------------------------------------------------------
