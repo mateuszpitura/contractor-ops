@@ -459,3 +459,6 @@ export const PERSONNEL_FILE_NOT_FOUND = 'personnelFileNotFound';
 export const PERSONNEL_FILE_DOCUMENT_NOT_FOUND = 'personnelFileDocumentNotFound';
 export const PERSONNEL_DOCUMENT_ALREADY_ATTACHED = 'personnelDocumentAlreadyAttached';
 export const PERSONNEL_DOCUMENT_NOT_PENDING_REVIEW = 'personnelDocumentNotPendingReview';
+
+// ─── ACH return-code ingestion (US payout rail) ───────────────────
+export const PAYMENT_ACH_RETURN_FILE_INVALID = 'paymentAchReturnFileInvalid';

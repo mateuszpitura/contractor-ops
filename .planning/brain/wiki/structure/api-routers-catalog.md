@@ -2,7 +2,7 @@
 title: API routers catalog
 type: structure
 tags: [structure, api, trpc, catalog]
-source_commit: f9d9cc241
+source_commit: d7198de9f
 verify_with:
   - packages/api/src/root.ts
   - packages/api/src/portal-root.ts
@@ -46,7 +46,7 @@ Complete namespace index for staff `appRouter` and contractor `portalAppRouter`.
 | `notification` | list, unread, preferences |
 | `reminder` | reminder rules + instances |
 | `integration` | Slack OAuth, mappings; `getHealth` returns `scopeCapabilities` |
-| `payment` | runs, lock+export (CSV/Elixir/SEPA/BACS/SWIFT + US `ACH_NACHA`/`FEDWIRE`), bank import; opt-in `initiatePayout` (programmatic ACH, US-expansion + `payments.ach-payouts` gated) — see **Notable contracts** + [[domains/us-payment-rail]] |
+| `payment` | runs, lock+export (CSV/Elixir/SEPA/BACS/SWIFT + US `ACH_NACHA`/`FEDWIRE`), bank import; opt-in `initiatePayout` (programmatic ACH, US-expansion + `payments.ach-payouts` gated); `ingestAchReturnFile` (upload a NACHA return file → flip bounced items to FAILED, US-expansion gated) — see **Notable contracts** + [[domains/us-payment-rail]] |
 | `dashboard` | KPIs, spend, deadlines |
 | `report` | spend, expiring, compliance gaps |
 | `audit` | audit log list + export |
@@ -225,6 +225,20 @@ Opt-in programmatic-ACH payout (`payment-core.ts` → `_initiatePayoutForRun`). 
 | Behavior | idempotent (Upstash reserve/complete/clear — no double-pay; PENDING → `CONFLICT` / `PAYMENT_PAYOUT_IN_PROGRESS`); per-item settlement conversion (missing rate → `UNPROCESSABLE_CONTENT`); per-item Plaid advisory fail-open; masked-only `payment_run.payout_initiated` audit |
 
 Amount/currency are server-derived from the locked run's items — the client never supplies them. Full flow: [[domains/us-payment-rail]].
+
+### `payment.ingestAchReturnFile`
+
+Reachable ACH return-file ingestion (`payment-core.ts` → `parseNachaReturnFile` + `applyAchReturns` in `services/ach-return.service.ts`). The operator uploads the NACHA return file their bank produced; bounced credits flip to FAILED. The live Modern Treasury return-webhook is a documented deferred seam, not built.
+
+| Field | Type / notes |
+|-------|----------------|
+| Input | `.strict()` — `runId` (cuid), `returnFileText` (string, `min(1).max(5_000_000)`) |
+| Gating | `assertUsExpansionEnabled` (US-expansion + region → `FORBIDDEN` / `US_EXPANSION_DISABLED`), applied before any parse/apply |
+| Permission | `payment:export` |
+| Returns | `{ failed, advisory, skipped, unmatched }` verbatim from `applyAchReturns` |
+| Behavior | R01/R02/R03 (+ R-family) → item `FAILED` + reason; NOC/COR → advisory (no status change); tenant-scoped; idempotent (already-FAILED item skipped → re-upload is a no-op); `unmatched > 0` flags a wrong-run / mis-uploaded file; a return-addenda file that parses to nothing → `BAD_REQUEST` / `PAYMENT_ACH_RETURN_FILE_INVALID`; masked per-item `payment_run.ach_return_applied` + ingestion-summary `payment_run.ach_return_ingested` audit rows |
+
+Full flow: [[domains/us-payment-rail]] (ACH return-code handling).
 
 ## Related
 

@@ -21,7 +21,8 @@ import {
 import { requirePermission } from '../../middleware/rbac';
 import { assertUsExpansionEnabled } from '../../middleware/require-us-expansion-flag';
 import { tenantProcedure } from '../../middleware/tenant';
-import { writeAuditLogMany } from '../../services/audit-writer';
+import { applyAchReturns, parseNachaReturnFile } from '../../services/ach-return.service';
+import { writeAuditLog, writeAuditLogMany } from '../../services/audit-writer';
 import { assertContractorPaymentEligibility } from '../../services/compliance-payment-gate';
 import type { PayoutProvider } from './payment-shared';
 import {
@@ -403,5 +404,76 @@ export const paymentCoreRouter = router({
         settlementCurrency: input.settlementCurrency,
         adapter: resolvePayoutAdapter(input.provider),
       });
+    }),
+
+  // File-first GA return-code ingestion. When an RDFI cannot post a credit it
+  // returns the entry in a NACHA return file the operator downloads from their
+  // bank; uploading it here parses the file and applies the returns to the run,
+  // flipping bounced credits (R01/R02/R03 …) to FAILED and recording NOC/COR
+  // corrections as advisory. Same gate as initiatePayout so a non-US or
+  // unpermissioned caller is rejected before any payment state is touched.
+  //
+  // The live Modern Treasury return-webhook is a deferred seam: once the
+  // programmatic-ACH live path is enabled it would feed the same applyAchReturns
+  // via PayoutInitiationAdapter.handleWebhook. It is intentionally not built here
+  // because programmatic ACH stays dark/opt-in, so the file upload is the only
+  // reachable return-ingestion path today.
+  ingestAchReturnFile: tenantProcedure
+    .use(requirePermission({ payment: ['export'] }))
+    .input(
+      z
+        .object({
+          runId: z.cuid(),
+          returnFileText: z.string().min(1).max(5_000_000),
+        })
+        .strict(),
+    )
+    .mutation(async ({ ctx, input }) => {
+      assertUsExpansionEnabled(ctx.organizationId, ctx.region);
+
+      const entries = parseNachaReturnFile(input.returnFileText);
+
+      // The parser is defensive and never throws — a benign empty / non-return
+      // upload yields zero entries and a clean all-zeros result. But a file that
+      // carries return addenda-99 records yet parses to nothing is structurally
+      // broken (wrong layout / truncated); surface it rather than report a
+      // zeros-everywhere no-op the operator cannot distinguish from "no bounces".
+      if (entries.length === 0 && /^799/m.test(input.returnFileText)) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: E.PAYMENT_ACH_RETURN_FILE_INVALID,
+        });
+      }
+
+      const summary = await applyAchReturns(ctx.db, {
+        organizationId: ctx.organizationId,
+        paymentRunId: input.runId,
+        actorId: ctx.user.id,
+        entries,
+      });
+
+      // Ingestion-level masked audit, in addition to the per-item transition
+      // audit applyAchReturns writes: records who ingested a return file against
+      // which run and the resulting disposition counts. No bank data and no raw
+      // file content — only sizes and the summary tallies.
+      await writeAuditLog({
+        tx: ctx.db,
+        organizationId: ctx.organizationId,
+        actorType: 'USER',
+        actorId: ctx.user.id,
+        action: 'payment_run.ach_return_ingested',
+        resourceType: 'PAYMENT_RUN',
+        resourceId: input.runId,
+        metadata: {
+          entryCount: entries.length,
+          fileBytes: input.returnFileText.length,
+          failed: summary.failed,
+          advisory: summary.advisory,
+          skipped: summary.skipped,
+          unmatched: summary.unmatched,
+        },
+      });
+
+      return summary;
     }),
 });
