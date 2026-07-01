@@ -10,7 +10,7 @@ import { tenantProcedure } from '../../middleware/tenant';
 import { writeAuditLog } from '../../services/audit-writer';
 import { assertContractorPaymentEligibility } from '../../services/compliance-payment-gate';
 import { buildSnapshotForContractor } from '../../services/payment-export-compliance-snapshot';
-import { detectFormat } from '../../services/payment-format-detection';
+import { detectFormatForDestination } from '../../services/payment-format-detection';
 import type { DbClient } from '../../services/types';
 import type { TxClient } from './payment-shared';
 import {
@@ -223,6 +223,8 @@ export const paymentExportRouter = router({
                     bankAccountMasked: true,
                     swiftBic: true,
                     bankName: true,
+                    usRoutingNumberEncrypted: true,
+                    usAccountNumberEncrypted: true,
                   },
                 },
               },
@@ -380,7 +382,11 @@ export const paymentExportRouter = router({
                 include: {
                   billingProfiles: {
                     take: 1,
-                    select: { bankAccountMasked: true },
+                    select: {
+                      bankAccountMasked: true,
+                      usRoutingNumberEncrypted: true,
+                      usAccountNumberEncrypted: true,
+                    },
                   },
                 },
               },
@@ -398,8 +404,24 @@ export const paymentExportRouter = router({
 
       const detections = run.items.map(item => {
         const currency = item.invoice?.currency ?? run.currency;
-        const iban = item.contractor?.billingProfiles[0]?.bankAccountMasked ?? '';
-        const format = detectFormat(currency, iban);
+        const profile = item.contractor?.billingProfiles[0];
+        const iban = profile?.bankAccountMasked ?? '';
+
+        // Presence-only US signal: the advisory picks the US rail from the mere
+        // existence of the encrypted routing/account, so the ciphertext is
+        // reduced to a sentinel before it reaches the routing object — it is
+        // never decrypted, logged, or returned in the response.
+        const format = detectFormatForDestination(
+          currency,
+          {
+            iban: iban || null,
+            ukSortCodeEncrypted: null,
+            ukAccountNumberEncrypted: null,
+            usRoutingNumberEncrypted: profile?.usRoutingNumberEncrypted ? 'present' : null,
+            usAccountNumberEncrypted: profile?.usAccountNumberEncrypted ? 'present' : null,
+          },
+          { amountMinor: item.amountMinor },
+        );
 
         return {
           paymentRunItemId: item.id,

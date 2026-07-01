@@ -104,11 +104,17 @@ export function sameDayAchCeilingMinor(asOf: Date = new Date()): number {
  * Destination identity for routing decisions. UK accounts use sort code +
  * account number (no IBAN); EU accounts use IBAN. Both may be present for a
  * UK account that also has a GB IBAN — in that case BACS_STD18 wins.
+ *
+ * The US routing/account signals are optional so callers that only know an
+ * IBAN or UK pair keep constructing a valid destination without them; when both
+ * are present the destination is treated as a US bank for USD routing.
  */
 export interface Destination {
   iban: string | null;
   ukSortCodeEncrypted: string | null;
   ukAccountNumberEncrypted: string | null;
+  usRoutingNumberEncrypted?: string | null;
+  usAccountNumberEncrypted?: string | null;
 }
 
 // ---------------------------------------------------------------------------
@@ -146,20 +152,29 @@ export function detectFormat(currency: string, iban: string): ExportFormat {
 
 /**
  * Detect the appropriate payment export format for a destination that may
- * carry either UK sort code + account number OR a SEPA/IBAN identifier.
+ * carry UK sort code + account number, US routing + account number, OR a
+ * SEPA/IBAN identifier.
  *
- * Rules:
- * 1. **GBP + UK sort code + UK account number -> BACS_STD18** (checked BEFORE IBAN)
- * 2. PLN + Polish IBAN -> BANK_FILE
- * 3. EUR + EU/EEA IBAN -> SEPA_XML
- * 4. Everything else -> SWIFT_XML
+ * Rules (in precedence order):
+ * 1. **GBP + UK sort code + UK account number -> BACS_STD18** (checked BEFORE US/IBAN)
+ * 2. **USD + US routing + US account -> ACH_NACHA / FEDWIRE** (by the Same-Day ACH ceiling)
+ * 3. PLN + Polish IBAN -> BANK_FILE
+ * 4. EUR + EU/EEA IBAN -> SEPA_XML
+ * 5. Everything else -> SWIFT_XML
  *
  * The BACS check runs first because a UK payee may carry a GB IBAN AND UK
  * account fields — for GBP transfers BACS Std 18 is preferred over SWIFT.
+ *
+ * The US branch is entered ONLY when a defined `amountMinor` is supplied: the
+ * ACH-vs-Fedwire rail is chosen by comparing the payout amount against the
+ * Same-Day ACH ceiling, so without an amount there is no way to pick a rail. A
+ * caller that omits the amount therefore falls straight through to the IBAN
+ * fallback rather than silently defaulting a US destination to ACH.
  */
 export function detectFormatForDestination(
   currency: string,
   destination: Destination,
+  options?: { amountMinor?: number; asOf?: Date; sameDayCeilingMinor?: number },
 ): ExportFormat {
   // 1. GBP + UK sort code + account -> BACS Standard 18
   if (
@@ -170,7 +185,18 @@ export function detectFormatForDestination(
     return 'BACS_STD18';
   }
 
-  // Fallback: legacy IBAN-based routing.
+  // 2. USD + US bank -> ACH_NACHA / FEDWIRE, but only when the amount is known
+  // (the rail is chosen against the Same-Day ACH ceiling).
+  if (options?.amountMinor !== undefined) {
+    const isUsBank = Boolean(
+      destination.usRoutingNumberEncrypted && destination.usAccountNumberEncrypted,
+    );
+    const ceiling = options.sameDayCeilingMinor ?? sameDayAchCeilingMinor(options.asOf);
+    const usFormat = detectUsFormat(currency, isUsBank, options.amountMinor, ceiling);
+    if (usFormat !== null) return usFormat;
+  }
+
+  // 3. Fallback: legacy IBAN-based routing.
   if (destination.iban) {
     return detectFormat(currency, destination.iban);
   }
@@ -207,12 +233,22 @@ export function detectUsFormat(
 /**
  * Group payment items by their detected export format.
  * Returns a map of format -> items for batch generation.
+ *
+ * US-aware: an item carrying decrypted US routing + account is routed to
+ * ACH_NACHA / FEDWIRE by the Same-Day ACH ceiling (resolved from `asOf`);
+ * every other item falls back to the currency + IBAN detection.
  */
-export function groupItemsByFormat(items: ExportItem[]): Map<ExportFormat, ExportItem[]> {
+export function groupItemsByFormat(
+  items: ExportItem[],
+  asOf: Date = new Date(),
+): Map<ExportFormat, ExportItem[]> {
   const groups = new Map<ExportFormat, ExportItem[]>();
+  const ceiling = sameDayAchCeilingMinor(asOf);
 
   for (const item of items) {
-    const format = detectFormat(item.currency, item.iban);
+    const isUsBank = Boolean(item.usRoutingNumber && item.usAccountNumber);
+    const usFormat = detectUsFormat(item.currency, isUsBank, item.amountMinor, ceiling);
+    const format = usFormat ?? detectFormat(item.currency, item.iban);
     const existing = groups.get(format) ?? [];
     existing.push(item);
     groups.set(format, existing);
