@@ -4,8 +4,12 @@ import type { Destination } from '../payment-format-detection';
 import {
   detectFormat,
   detectFormatForDestination,
+  detectUsFormat,
   EU_IBAN_COUNTRIES,
   groupItemsByFormat,
+  SAME_DAY_ACH_CEILING_MINOR_2027,
+  SAME_DAY_ACH_CEILING_MINOR_CURRENT,
+  sameDayAchCeilingMinor,
 } from '../payment-format-detection';
 
 describe('EU_IBAN_COUNTRIES', () => {
@@ -183,5 +187,57 @@ describe('detectFormatForDestination', () => {
   it('falls back to SWIFT_XML when neither IBAN nor UK account fields are present', () => {
     const dest = makeDest();
     expect(detectFormatForDestination('USD', dest)).toBe('SWIFT_XML');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// detectUsFormat — ACH_NACHA / FEDWIRE routing on the Same-Day ACH ceiling
+// ---------------------------------------------------------------------------
+
+describe('sameDayAchCeilingMinor', () => {
+  it('is $1M (in cents) before 2027-09-17', () => {
+    expect(sameDayAchCeilingMinor(new Date('2026-07-01T00:00:00Z'))).toBe(
+      SAME_DAY_ACH_CEILING_MINOR_CURRENT,
+    );
+    expect(SAME_DAY_ACH_CEILING_MINOR_CURRENT).toBe(1_000_000_00);
+  });
+
+  it('rises to $10M (in cents) on 2027-09-17', () => {
+    expect(sameDayAchCeilingMinor(new Date('2027-09-17T00:00:00Z'))).toBe(
+      SAME_DAY_ACH_CEILING_MINOR_2027,
+    );
+    expect(sameDayAchCeilingMinor(new Date('2028-01-01T00:00:00Z'))).toBe(
+      SAME_DAY_ACH_CEILING_MINOR_2027,
+    );
+    expect(SAME_DAY_ACH_CEILING_MINOR_2027).toBe(10_000_000_00);
+  });
+});
+
+describe('detectUsFormat', () => {
+  const ceiling = SAME_DAY_ACH_CEILING_MINOR_CURRENT;
+
+  it('returns null when the currency is not USD', () => {
+    expect(detectUsFormat('EUR', true, 50_000_00, ceiling)).toBeNull();
+  });
+
+  it('returns null when the destination is not a US bank', () => {
+    expect(detectUsFormat('USD', false, 50_000_00, ceiling)).toBeNull();
+  });
+
+  it('routes USD + US bank at or below the ceiling to ACH_NACHA', () => {
+    expect(detectUsFormat('USD', true, 50_000_00, ceiling)).toBe('ACH_NACHA');
+    // Exactly at the ceiling is NOT above it — still ACH.
+    expect(detectUsFormat('USD', true, ceiling, ceiling)).toBe('ACH_NACHA');
+  });
+
+  it('routes USD + US bank ABOVE the ceiling to FEDWIRE (boundary flips at ceiling + 1)', () => {
+    expect(detectUsFormat('USD', true, ceiling + 1, ceiling)).toBe('FEDWIRE');
+    expect(detectUsFormat('USD', true, 5_000_000_00, ceiling)).toBe('FEDWIRE');
+  });
+
+  it('honors a raised ceiling supplied as config (the $10M 2027 value keeps a $5M payout on ACH)', () => {
+    expect(detectUsFormat('USD', true, 5_000_000_00, SAME_DAY_ACH_CEILING_MINOR_2027)).toBe(
+      'ACH_NACHA',
+    );
   });
 });

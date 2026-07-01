@@ -57,9 +57,7 @@ const items: ExportItem[] = [
   },
 ];
 
-// Skipped: the Fedwire pacs.008 generator is not implemented yet (Wave-0 RED scaffold).
-// Un-skip when `generateFedwirePacs008` lands so these pinned contracts go GREEN.
-describe.skip('generateFedwirePacs008', () => {
+describe('generateFedwirePacs008', () => {
   // Deferred into beforeAll so the not-yet-implemented generator is only called
   // when the suite actually runs (un-skipped) — a bare describe-body call would
   // execute during collection even while skipped.
