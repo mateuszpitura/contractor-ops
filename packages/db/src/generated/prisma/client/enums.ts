@@ -85,7 +85,8 @@ export type ClassificationAssessmentStatus = (typeof ClassificationAssessmentSta
 export const ClassificationDocumentKind = {
   SDS: 'SDS',
   DRV_DEFENSE_BUNDLE: 'DRV_DEFENSE_BUNDLE',
-  DRV_DECISION_LETTER: 'DRV_DECISION_LETTER'
+  DRV_DECISION_LETTER: 'DRV_DECISION_LETTER',
+  US_DETERMINATION_LETTER: 'US_DETERMINATION_LETTER'
 } as const
 
 export type ClassificationDocumentKind = (typeof ClassificationDocumentKind)[keyof typeof ClassificationDocumentKind]
@@ -1191,6 +1192,24 @@ export const IrisAckStatus = {
 } as const
 
 export type IrisAckStatus = (typeof IrisAckStatus)[keyof typeof IrisAckStatus]
+
+
+export const Form1042SStatus = {
+  DRAFT: 'DRAFT',
+  ACTIVE: 'ACTIVE',
+  SUPERSEDED: 'SUPERSEDED'
+} as const
+
+export type Form1042SStatus = (typeof Form1042SStatus)[keyof typeof Form1042SStatus]
+
+
+export const Form1099KBand = {
+  SAFE: 'SAFE',
+  APPROACHING: 'APPROACHING',
+  OVER: 'OVER'
+} as const
+
+export type Form1099KBand = (typeof Form1099KBand)[keyof typeof Form1099KBand]
 
 
 export const TaxIdType = {

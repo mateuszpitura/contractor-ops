@@ -2414,6 +2414,40 @@ export type EnumIrisAckStatusWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedEnumIrisAckStatusFilter<$PrismaModel>
 }
 
+export type EnumForm1042SStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.Form1042SStatus | Prisma.EnumForm1042SStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.Form1042SStatus[] | Prisma.ListEnumForm1042SStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.Form1042SStatus[] | Prisma.ListEnumForm1042SStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumForm1042SStatusFilter<$PrismaModel> | $Enums.Form1042SStatus
+}
+
+export type EnumForm1042SStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.Form1042SStatus | Prisma.EnumForm1042SStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.Form1042SStatus[] | Prisma.ListEnumForm1042SStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.Form1042SStatus[] | Prisma.ListEnumForm1042SStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumForm1042SStatusWithAggregatesFilter<$PrismaModel> | $Enums.Form1042SStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumForm1042SStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumForm1042SStatusFilter<$PrismaModel>
+}
+
+export type EnumForm1099KBandFilter<$PrismaModel = never> = {
+  equals?: $Enums.Form1099KBand | Prisma.EnumForm1099KBandFieldRefInput<$PrismaModel>
+  in?: $Enums.Form1099KBand[] | Prisma.ListEnumForm1099KBandFieldRefInput<$PrismaModel>
+  notIn?: $Enums.Form1099KBand[] | Prisma.ListEnumForm1099KBandFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumForm1099KBandFilter<$PrismaModel> | $Enums.Form1099KBand
+}
+
+export type EnumForm1099KBandWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.Form1099KBand | Prisma.EnumForm1099KBandFieldRefInput<$PrismaModel>
+  in?: $Enums.Form1099KBand[] | Prisma.ListEnumForm1099KBandFieldRefInput<$PrismaModel>
+  notIn?: $Enums.Form1099KBand[] | Prisma.ListEnumForm1099KBandFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumForm1099KBandWithAggregatesFilter<$PrismaModel> | $Enums.Form1099KBand
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumForm1099KBandFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumForm1099KBandFilter<$PrismaModel>
+}
+
 export type EnumTaxIdTypeFilter<$PrismaModel = never> = {
   equals?: $Enums.TaxIdType | Prisma.EnumTaxIdTypeFieldRefInput<$PrismaModel>
   in?: $Enums.TaxIdType[] | Prisma.ListEnumTaxIdTypeFieldRefInput<$PrismaModel>
@@ -5026,6 +5060,40 @@ export type NestedEnumIrisAckStatusWithAggregatesFilter<$PrismaModel = never> = 
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumIrisAckStatusFilter<$PrismaModel>
   _max?: Prisma.NestedEnumIrisAckStatusFilter<$PrismaModel>
+}
+
+export type NestedEnumForm1042SStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.Form1042SStatus | Prisma.EnumForm1042SStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.Form1042SStatus[] | Prisma.ListEnumForm1042SStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.Form1042SStatus[] | Prisma.ListEnumForm1042SStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumForm1042SStatusFilter<$PrismaModel> | $Enums.Form1042SStatus
+}
+
+export type NestedEnumForm1042SStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.Form1042SStatus | Prisma.EnumForm1042SStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.Form1042SStatus[] | Prisma.ListEnumForm1042SStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.Form1042SStatus[] | Prisma.ListEnumForm1042SStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumForm1042SStatusWithAggregatesFilter<$PrismaModel> | $Enums.Form1042SStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumForm1042SStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumForm1042SStatusFilter<$PrismaModel>
+}
+
+export type NestedEnumForm1099KBandFilter<$PrismaModel = never> = {
+  equals?: $Enums.Form1099KBand | Prisma.EnumForm1099KBandFieldRefInput<$PrismaModel>
+  in?: $Enums.Form1099KBand[] | Prisma.ListEnumForm1099KBandFieldRefInput<$PrismaModel>
+  notIn?: $Enums.Form1099KBand[] | Prisma.ListEnumForm1099KBandFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumForm1099KBandFilter<$PrismaModel> | $Enums.Form1099KBand
+}
+
+export type NestedEnumForm1099KBandWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.Form1099KBand | Prisma.EnumForm1099KBandFieldRefInput<$PrismaModel>
+  in?: $Enums.Form1099KBand[] | Prisma.ListEnumForm1099KBandFieldRefInput<$PrismaModel>
+  notIn?: $Enums.Form1099KBand[] | Prisma.ListEnumForm1099KBandFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumForm1099KBandWithAggregatesFilter<$PrismaModel> | $Enums.Form1099KBand
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumForm1099KBandFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumForm1099KBandFilter<$PrismaModel>
 }
 
 export type NestedEnumTaxIdTypeFilter<$PrismaModel = never> = {

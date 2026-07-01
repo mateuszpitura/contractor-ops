@@ -504,6 +504,9 @@ export const ModelName = {
   IrisAck: 'IrisAck',
   Tax1099Threshold: 'Tax1099Threshold',
   StateFilingConfig: 'StateFilingConfig',
+  Form1042S: 'Form1042S',
+  Form1099KTrackerState: 'Form1099KTrackerState',
+  Tax1099KThreshold: 'Tax1099KThreshold',
   TaxIdValidation: 'TaxIdValidation',
   Timesheet: 'Timesheet',
   TimeEntry: 'TimeEntry',
@@ -533,7 +536,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "organizationApiKey" | "approvalChainConfig" | "approvalFlow" | "approvalStep" | "approvalDecision" | "auditLog" | "user" | "userPinnedView" | "session" | "account" | "verification" | "subscription" | "ocrCreditLedger" | "stripeEvent" | "classificationAssessment" | "classificationDocument" | "ir35ChainParticipant" | "ir35OtherClientAttestation" | "economicDependencyAlertState" | "reassessmentTrigger" | "cronScanState" | "statusfeststellungsverfahren" | "classificationEscalationEvent" | "sdsApproval" | "consentRecord" | "privacyNotice" | "consentEvent" | "contract" | "contractAmendment" | "contractRatePeriod" | "document" | "documentLink" | "contractHealthCheckRun" | "contractor" | "contractorContact" | "contractorBillingProfile" | "contractorAssignment" | "contractorTag" | "contractorTagLink" | "complianceRequirementTemplate" | "contractorComplianceItem" | "contractorComplianceReminderState" | "leitwegId" | "eInvoiceLifecycle" | "eInvoiceLifecycleEvent" | "peppolCapabilityCache" | "employeeProfile" | "equipment" | "equipmentAssignment" | "shipment" | "shipmentEvent" | "returnRequest" | "courierConfig" | "signingEnvelope" | "signingRecipient" | "signingEvent" | "exchangeRate" | "export" | "boEBaseRateHistory" | "skontoTerm" | "skontoSnapshot" | "skontoApplication" | "govApiAuditLog" | "freeZoneAssignment" | "saudizationConfig" | "saudiHeadcount" | "uaeFreeZone" | "deprovisioningRun" | "deprovisioningStep" | "idpChangeProvenance" | "integrationConnection" | "externalLink" | "integrationSyncLog" | "webhookDelivery" | "invoice" | "invoiceFile" | "invoiceLine" | "invoiceMatchResult" | "invoiceIntakeRequest" | "invoicePayment" | "invoiceInterestCompensation" | "invoiceInterestWaiver" | "invoiceInterestClaim" | "notification" | "userNotificationPreference" | "comment" | "reminderRule" | "reminderInstance" | "notificationCronDedup" | "oAuthChallenge" | "ocrExtraction" | "organization" | "member" | "invitation" | "team" | "project" | "pendingProjectMerge" | "projectExternalLink" | "costCenter" | "outboxEvent" | "paymentRun" | "paymentRunItem" | "paymentExport" | "paymentRunComplianceCheck" | "peppolParticipant" | "peppolTransmission" | "portalSession" | "portalMagicToken" | "contractorChangeRequest" | "contractorNotificationPreference" | "pendingUpload" | "taxRate" | "withholdingTaxRate" | "whtCertificate" | "taxFormSubmission" | "form1099Nec" | "irisSubmission" | "irisAck" | "tax1099Threshold" | "stateFilingConfig" | "taxIdValidation" | "timesheet" | "timeEntry" | "worker" | "workflowTemplate" | "workflowTaskTemplate" | "workflowRoleTemplate" | "workflowRoleTaskTemplate" | "workflowRun" | "workflowTaskRun" | "workflowComment" | "workflowAttachment" | "credentialReference" | "zatcaInvoiceChain"
+    modelProps: "organizationApiKey" | "approvalChainConfig" | "approvalFlow" | "approvalStep" | "approvalDecision" | "auditLog" | "user" | "userPinnedView" | "session" | "account" | "verification" | "subscription" | "ocrCreditLedger" | "stripeEvent" | "classificationAssessment" | "classificationDocument" | "ir35ChainParticipant" | "ir35OtherClientAttestation" | "economicDependencyAlertState" | "reassessmentTrigger" | "cronScanState" | "statusfeststellungsverfahren" | "classificationEscalationEvent" | "sdsApproval" | "consentRecord" | "privacyNotice" | "consentEvent" | "contract" | "contractAmendment" | "contractRatePeriod" | "document" | "documentLink" | "contractHealthCheckRun" | "contractor" | "contractorContact" | "contractorBillingProfile" | "contractorAssignment" | "contractorTag" | "contractorTagLink" | "complianceRequirementTemplate" | "contractorComplianceItem" | "contractorComplianceReminderState" | "leitwegId" | "eInvoiceLifecycle" | "eInvoiceLifecycleEvent" | "peppolCapabilityCache" | "employeeProfile" | "equipment" | "equipmentAssignment" | "shipment" | "shipmentEvent" | "returnRequest" | "courierConfig" | "signingEnvelope" | "signingRecipient" | "signingEvent" | "exchangeRate" | "export" | "boEBaseRateHistory" | "skontoTerm" | "skontoSnapshot" | "skontoApplication" | "govApiAuditLog" | "freeZoneAssignment" | "saudizationConfig" | "saudiHeadcount" | "uaeFreeZone" | "deprovisioningRun" | "deprovisioningStep" | "idpChangeProvenance" | "integrationConnection" | "externalLink" | "integrationSyncLog" | "webhookDelivery" | "invoice" | "invoiceFile" | "invoiceLine" | "invoiceMatchResult" | "invoiceIntakeRequest" | "invoicePayment" | "invoiceInterestCompensation" | "invoiceInterestWaiver" | "invoiceInterestClaim" | "notification" | "userNotificationPreference" | "comment" | "reminderRule" | "reminderInstance" | "notificationCronDedup" | "oAuthChallenge" | "ocrExtraction" | "organization" | "member" | "invitation" | "team" | "project" | "pendingProjectMerge" | "projectExternalLink" | "costCenter" | "outboxEvent" | "paymentRun" | "paymentRunItem" | "paymentExport" | "paymentRunComplianceCheck" | "peppolParticipant" | "peppolTransmission" | "portalSession" | "portalMagicToken" | "contractorChangeRequest" | "contractorNotificationPreference" | "pendingUpload" | "taxRate" | "withholdingTaxRate" | "whtCertificate" | "taxFormSubmission" | "form1099Nec" | "irisSubmission" | "irisAck" | "tax1099Threshold" | "stateFilingConfig" | "form1042S" | "form1099KTrackerState" | "tax1099KThreshold" | "taxIdValidation" | "timesheet" | "timeEntry" | "worker" | "workflowTemplate" | "workflowTaskTemplate" | "workflowRoleTemplate" | "workflowRoleTaskTemplate" | "workflowRun" | "workflowTaskRun" | "workflowComment" | "workflowAttachment" | "credentialReference" | "zatcaInvoiceChain"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -9417,6 +9420,228 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    Form1042S: {
+      payload: Prisma.$Form1042SPayload<ExtArgs>
+      fields: Prisma.Form1042SFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.Form1042SFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$Form1042SPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.Form1042SFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$Form1042SPayload>
+        }
+        findFirst: {
+          args: Prisma.Form1042SFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$Form1042SPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.Form1042SFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$Form1042SPayload>
+        }
+        findMany: {
+          args: Prisma.Form1042SFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$Form1042SPayload>[]
+        }
+        create: {
+          args: Prisma.Form1042SCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$Form1042SPayload>
+        }
+        createMany: {
+          args: Prisma.Form1042SCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.Form1042SCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$Form1042SPayload>[]
+        }
+        delete: {
+          args: Prisma.Form1042SDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$Form1042SPayload>
+        }
+        update: {
+          args: Prisma.Form1042SUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$Form1042SPayload>
+        }
+        deleteMany: {
+          args: Prisma.Form1042SDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.Form1042SUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.Form1042SUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$Form1042SPayload>[]
+        }
+        upsert: {
+          args: Prisma.Form1042SUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$Form1042SPayload>
+        }
+        aggregate: {
+          args: Prisma.Form1042SAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateForm1042S>
+        }
+        groupBy: {
+          args: Prisma.Form1042SGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.Form1042SGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.Form1042SCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.Form1042SCountAggregateOutputType> | number
+        }
+      }
+    }
+    Form1099KTrackerState: {
+      payload: Prisma.$Form1099KTrackerStatePayload<ExtArgs>
+      fields: Prisma.Form1099KTrackerStateFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.Form1099KTrackerStateFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$Form1099KTrackerStatePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.Form1099KTrackerStateFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$Form1099KTrackerStatePayload>
+        }
+        findFirst: {
+          args: Prisma.Form1099KTrackerStateFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$Form1099KTrackerStatePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.Form1099KTrackerStateFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$Form1099KTrackerStatePayload>
+        }
+        findMany: {
+          args: Prisma.Form1099KTrackerStateFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$Form1099KTrackerStatePayload>[]
+        }
+        create: {
+          args: Prisma.Form1099KTrackerStateCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$Form1099KTrackerStatePayload>
+        }
+        createMany: {
+          args: Prisma.Form1099KTrackerStateCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.Form1099KTrackerStateCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$Form1099KTrackerStatePayload>[]
+        }
+        delete: {
+          args: Prisma.Form1099KTrackerStateDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$Form1099KTrackerStatePayload>
+        }
+        update: {
+          args: Prisma.Form1099KTrackerStateUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$Form1099KTrackerStatePayload>
+        }
+        deleteMany: {
+          args: Prisma.Form1099KTrackerStateDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.Form1099KTrackerStateUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.Form1099KTrackerStateUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$Form1099KTrackerStatePayload>[]
+        }
+        upsert: {
+          args: Prisma.Form1099KTrackerStateUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$Form1099KTrackerStatePayload>
+        }
+        aggregate: {
+          args: Prisma.Form1099KTrackerStateAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateForm1099KTrackerState>
+        }
+        groupBy: {
+          args: Prisma.Form1099KTrackerStateGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.Form1099KTrackerStateGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.Form1099KTrackerStateCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.Form1099KTrackerStateCountAggregateOutputType> | number
+        }
+      }
+    }
+    Tax1099KThreshold: {
+      payload: Prisma.$Tax1099KThresholdPayload<ExtArgs>
+      fields: Prisma.Tax1099KThresholdFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.Tax1099KThresholdFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$Tax1099KThresholdPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.Tax1099KThresholdFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$Tax1099KThresholdPayload>
+        }
+        findFirst: {
+          args: Prisma.Tax1099KThresholdFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$Tax1099KThresholdPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.Tax1099KThresholdFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$Tax1099KThresholdPayload>
+        }
+        findMany: {
+          args: Prisma.Tax1099KThresholdFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$Tax1099KThresholdPayload>[]
+        }
+        create: {
+          args: Prisma.Tax1099KThresholdCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$Tax1099KThresholdPayload>
+        }
+        createMany: {
+          args: Prisma.Tax1099KThresholdCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.Tax1099KThresholdCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$Tax1099KThresholdPayload>[]
+        }
+        delete: {
+          args: Prisma.Tax1099KThresholdDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$Tax1099KThresholdPayload>
+        }
+        update: {
+          args: Prisma.Tax1099KThresholdUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$Tax1099KThresholdPayload>
+        }
+        deleteMany: {
+          args: Prisma.Tax1099KThresholdDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.Tax1099KThresholdUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.Tax1099KThresholdUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$Tax1099KThresholdPayload>[]
+        }
+        upsert: {
+          args: Prisma.Tax1099KThresholdUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$Tax1099KThresholdPayload>
+        }
+        aggregate: {
+          args: Prisma.Tax1099KThresholdAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateTax1099KThreshold>
+        }
+        groupBy: {
+          args: Prisma.Tax1099KThresholdGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.Tax1099KThresholdGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.Tax1099KThresholdCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.Tax1099KThresholdCountAggregateOutputType> | number
+        }
+      }
+    }
     TaxIdValidation: {
       payload: Prisma.$TaxIdValidationPayload<ExtArgs>
       fields: Prisma.TaxIdValidationFieldRefs
@@ -11199,6 +11424,7 @@ export const ContractorAssignmentScalarFieldEnum = {
   isSaudi: 'isSaudi',
   nationality: 'nationality',
   qiwaContractAuthenticated: 'qiwaContractAuthenticated',
+  workState: 'workState',
   status: 'status',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
@@ -12684,6 +12910,66 @@ export const StateFilingConfigScalarFieldEnum = {
 } as const
 
 export type StateFilingConfigScalarFieldEnum = (typeof StateFilingConfigScalarFieldEnum)[keyof typeof StateFilingConfigScalarFieldEnum]
+
+
+export const Form1042SScalarFieldEnum = {
+  id: 'id',
+  organizationId: 'organizationId',
+  payerOrgId: 'payerOrgId',
+  recipientId: 'recipientId',
+  taxYear: 'taxYear',
+  status: 'status',
+  box1IncomeCode: 'box1IncomeCode',
+  box2GrossIncomeMinor: 'box2GrossIncomeMinor',
+  box3aChap3ExemptionCode: 'box3aChap3ExemptionCode',
+  box3bChap3Rate: 'box3bChap3Rate',
+  box4aChap4ExemptionCode: 'box4aChap4ExemptionCode',
+  box4bChap4Rate: 'box4bChap4Rate',
+  box7FederalTaxWithheldMinor: 'box7FederalTaxWithheldMinor',
+  recipientChap3StatusCode: 'recipientChap3StatusCode',
+  recipientChap4StatusCode: 'recipientChap4StatusCode',
+  recipientLobCode: 'recipientLobCode',
+  treatyArticle: 'treatyArticle',
+  currency: 'currency',
+  corrected: 'corrected',
+  snapshotJson: 'snapshotJson',
+  pdfArchiveKey: 'pdfArchiveKey',
+  supersededById: 'supersededById',
+  deletedAt: 'deletedAt',
+  createdAt: 'createdAt'
+} as const
+
+export type Form1042SScalarFieldEnum = (typeof Form1042SScalarFieldEnum)[keyof typeof Form1042SScalarFieldEnum]
+
+
+export const Form1099KTrackerStateScalarFieldEnum = {
+  id: 'id',
+  organizationId: 'organizationId',
+  contractorId: 'contractorId',
+  taxYear: 'taxYear',
+  currentBand: 'currentBand',
+  cumulativePayoutMinor: 'cumulativePayoutMinor',
+  transactionCount: 'transactionCount',
+  lastScannedAt: 'lastScannedAt',
+  lastCrossedAt: 'lastCrossedAt',
+  lastReminderAt: 'lastReminderAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type Form1099KTrackerStateScalarFieldEnum = (typeof Form1099KTrackerStateScalarFieldEnum)[keyof typeof Form1099KTrackerStateScalarFieldEnum]
+
+
+export const Tax1099KThresholdScalarFieldEnum = {
+  id: 'id',
+  taxYear: 'taxYear',
+  amountThresholdMinor: 'amountThresholdMinor',
+  transactionCountThreshold: 'transactionCountThreshold',
+  currency: 'currency',
+  note: 'note'
+} as const
+
+export type Tax1099KThresholdScalarFieldEnum = (typeof Tax1099KThresholdScalarFieldEnum)[keyof typeof Tax1099KThresholdScalarFieldEnum]
 
 
 export const TaxIdValidationScalarFieldEnum = {
@@ -14657,6 +14943,34 @@ export type ListEnumIrisAckStatusFieldRefInput<$PrismaModel> = FieldRefInputType
 
 
 /**
+ * Reference to a field of type 'Form1042SStatus'
+ */
+export type EnumForm1042SStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Form1042SStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'Form1042SStatus[]'
+ */
+export type ListEnumForm1042SStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Form1042SStatus[]'>
+    
+
+
+/**
+ * Reference to a field of type 'Form1099KBand'
+ */
+export type EnumForm1099KBandFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Form1099KBand'>
+    
+
+
+/**
+ * Reference to a field of type 'Form1099KBand[]'
+ */
+export type ListEnumForm1099KBandFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Form1099KBand[]'>
+    
+
+
+/**
  * Reference to a field of type 'TaxIdType'
  */
 export type EnumTaxIdTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'TaxIdType'>
@@ -15095,6 +15409,9 @@ export type GlobalOmitConfig = {
   irisAck?: Prisma.IrisAckOmit
   tax1099Threshold?: Prisma.Tax1099ThresholdOmit
   stateFilingConfig?: Prisma.StateFilingConfigOmit
+  form1042S?: Prisma.Form1042SOmit
+  form1099KTrackerState?: Prisma.Form1099KTrackerStateOmit
+  tax1099KThreshold?: Prisma.Tax1099KThresholdOmit
   taxIdValidation?: Prisma.TaxIdValidationOmit
   timesheet?: Prisma.TimesheetOmit
   timeEntry?: Prisma.TimeEntryOmit
