@@ -252,6 +252,9 @@ importers:
       '@contractor-ops/api':
         specifier: workspace:*
         version: link:../../packages/api
+      '@contractor-ops/compliance-policy':
+        specifier: workspace:*
+        version: link:../../packages/compliance-policy
       '@contractor-ops/db':
         specifier: workspace:*
         version: link:../../packages/db
