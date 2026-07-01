@@ -2,13 +2,14 @@
 title: API routers catalog
 type: structure
 tags: [structure, api, trpc, catalog]
-source_commit: 2e6c4892ed6881b636499fb108a94f261e7e6e5e
+source_commit: 65cdee081
 verify_with:
   - packages/api/src/root.ts
   - packages/api/src/portal-root.ts
   - packages/validators/src/onboarding-import.ts
   - packages/api/src/routers/core/worker.ts
   - packages/api/src/routers/core/employee.ts
+  - packages/api/src/routers/employee/employee-registry-router.ts
   - packages/api/src/routers/finance/payment-core.ts
 updated: 2026-07-01
 ---
@@ -113,7 +114,7 @@ Gated by `module.workforce-employees` (or `QA_DEFAULT_ORG_ID`) in `root.ts`; eac
 | Namespace | Summary |
 |-----------|---------|
 | `worker` | shared cross-type worker reads (`list`, `getById`) — pass an explicit `workerType` so the `withWorkerTypeDefault` extension does not force-filter to CONTRACTOR; returns contractors + employees |
-| `employee` | skeleton employee reads (`list`, `workerType=EMPLOYEE`) — read-only; the employee profile surface lands in a later phase |
+| `employee` | employee reads (`list`, `workerType=EMPLOYEE`) + the registry surface `mergeRouters`-composed from `employee-registry-router.ts` (`employeeRegistryRouter`): `register` (`employee:create`, creates `Worker(EMPLOYEE)` + `EmployeeProfile` in one `$transaction`, per-market validation, encrypts 4 national IDs, `omit`s every `*Encrypted`, `employee.registered` audit), `revealPii` (`employeePii:read`, field-routed decrypt + `<field>.revealed` audit, **staff-only** — absent from `portalAppRouter`), `listReferenceLists` (`employee:read`, seeded non-PII tuples). Full model + flow: [[domains/employee-registry]] |
 
 `contractor.*` is **not** gated — it is the always-on existing surface; the split adds `worker`/`employee` without changing the contractor route shape (locked by `contractor-contract-snapshot.test.ts`).
 

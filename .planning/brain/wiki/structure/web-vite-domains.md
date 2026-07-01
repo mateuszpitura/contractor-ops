@@ -2,12 +2,12 @@
 title: web-vite UI domains
 type: structure
 tags: [structure, web-vite, ui]
-source_commit: 4a8c2ee3d
+source_commit: 65cdee081
 verify_with:
   - apps/web-vite/src/components/
   - apps/web-vite/ARCHITECTURE.md
   - apps/web-vite/src/router/
-updated: 2026-06-22
+updated: 2026-07-01
 ---
 
 # web-vite UI domains
@@ -43,7 +43,8 @@ Routes: `apps/web-vite/src/router/dashboard-routes.tsx`, `portal-routes.tsx`.
 | `workflows/`, `workflow/` | [[domains/workflows-and-roles]] |
 | `offboarding/` | [[domains/workflows-and-roles]] — override badges/dialogs on offboarding runs |
 | `equipment/` | [[domains/equipment-logistics]] |
-| `pages/dashboard/employees.tsx` | flag-dark workforce skeleton — `/employees` route + a dashboard quick-link both gated by `useFlag('module.workforce-employees')`; renders a coming-soon empty state until the employee profile surface lands in a later phase |
+| `employees/` | [[domains/employee-registry]] — per-market employee registration; `employee-registration-page.tsx` (thin flag-gated composer) at `/employees`, entire tree render-tree-removed when `useFlag('module.workforce-employees')` is off (no skeleton stub) |
+| `employees/compliance/` | [[domains/employee-registry]] — wired `EmployeeComplianceSection` + `EmployeeFieldsDispatch` (PL/DE/UK/US/AE/SA, `default: return null`) + `EmployeePiiMaskedReveal` (absent without `employeePii:read`) + `reference-list-picker` + `field-primitives` (three-class feedback); `hooks/use-employee-compliance.ts` (register + listReferenceLists) = sole tRPC boundary, `hooks/use-reveal-employee-pii.ts` holds the reveal in local state (never cached). No `*-container.tsx` |
 | `time/` | [[domains/time-and-reconciliation]] |
 | `integrations/` | [[integrations/_index]] |
 | `settings/`, `organization/` | [[domains/settings-and-org-admin]] |

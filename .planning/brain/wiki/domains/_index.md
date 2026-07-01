@@ -23,6 +23,8 @@ updated: 2026-06-09
 | Page | Flow |
 |------|------|
 | [[contractors-engagements]] | contractor CRUD, lifecycle, compliance health |
+| [[worker-foundation]] | worker-model union (Worker root + workerType), backfill, per-type RBAC |
+| [[employee-registry]] | per-market employee onboarding — validators, encrypted national-ID PII, seeded reference lists |
 | [[contracts-lifecycle]] | wizard, esign, amendments, health |
 | [[portal-external]] | contractor portal (separate router) |
 
