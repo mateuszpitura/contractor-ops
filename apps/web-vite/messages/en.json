@@ -8943,5 +8943,121 @@
       "retry": "Retry",
       "startFailure": "Could not start the deprovisioning run."
     }
+  },
+  "PersonnelFile": {
+    "shell": {
+      "header": "Personnel file",
+      "jurisdictionAria": "Jurisdiction",
+      "active": "Active",
+      "terminated": "Terminated {date}",
+      "retentionSummaryToggle": "Retention summary",
+      "uploadCta": "Upload document",
+      "notFoundHeading": "Personnel file not found",
+      "notFoundBody": "This employee record may have been removed or you may not have access.",
+      "backToEmployees": "Back to employees"
+    },
+    "sections": {
+      "empty": {
+        "heading": "No documents in this section yet",
+        "body": "Upload a document and it will be classified into the correct section automatically."
+      },
+      "locked": {
+        "heading": "Section locked",
+        "body": "You don't have permission to view this section. Contact an HR administrator if you need access."
+      },
+      "error": {
+        "heading": "Couldn't load this section",
+        "body": "Something went wrong loading these documents. Try again.",
+        "retry": "Retry"
+      },
+      "status": {
+        "locked": "Locked",
+        "empty": "Empty",
+        "populated": "Documents"
+      },
+      "adviserVerifyAria": "Retention and section guidance",
+      "citationChip": "Statutory",
+      "documentCaption": "Personnel document",
+      "collapse": "Collapse section",
+      "expand": "Expand section",
+      "PL": {
+        "A": {
+          "label": "Recruitment records (Part A)",
+          "adviserVerifyNote": "Section structure and retention windows are seeded reference data pending legal or tax adviser verification."
+        },
+        "B": {
+          "label": "Employment history (Part B)",
+          "adviserVerifyNote": "Section structure and retention windows are seeded reference data pending legal or tax adviser verification."
+        },
+        "C": {
+          "label": "End of employment (Part C)",
+          "adviserVerifyNote": "Section structure and retention windows are seeded reference data pending legal or tax adviser verification."
+        },
+        "D": {
+          "label": "Disciplinary liability (Part D)",
+          "adviserVerifyNote": "Section structure and retention windows are seeded reference data pending legal or tax adviser verification."
+        }
+      },
+      "DE": {
+        "A": {
+          "label": "Master data",
+          "adviserVerifyNote": "These sections are organizational groupings, not a statutory structure; retention windows are seeded reference data pending adviser verification."
+        },
+        "B": {
+          "label": "Contract & pay",
+          "adviserVerifyNote": "These sections are organizational groupings, not a statutory structure; retention windows are seeded reference data pending adviser verification."
+        },
+        "C": {
+          "label": "Certificates",
+          "adviserVerifyNote": "These sections are organizational groupings, not a statutory structure; retention windows are seeded reference data pending adviser verification."
+        },
+        "D": {
+          "label": "Warnings & other",
+          "adviserVerifyNote": "These sections are organizational groupings, not a statutory structure; retention windows are seeded reference data pending adviser verification."
+        }
+      },
+      "UK": {
+        "A": {
+          "label": "Personal & recruitment",
+          "adviserVerifyNote": "These sections are organizational groupings, not a statutory structure; retention windows are seeded reference data pending adviser verification."
+        },
+        "B": {
+          "label": "Employment & pay",
+          "adviserVerifyNote": "These sections are organizational groupings, not a statutory structure; retention windows are seeded reference data pending adviser verification."
+        },
+        "C": {
+          "label": "Certificates & references",
+          "adviserVerifyNote": "These sections are organizational groupings, not a statutory structure; retention windows are seeded reference data pending adviser verification."
+        },
+        "D": {
+          "label": "Disciplinary & performance",
+          "adviserVerifyNote": "These sections are organizational groupings, not a statutory structure; retention windows are seeded reference data pending adviser verification."
+        }
+      },
+      "US": {
+        "A": {
+          "label": "I-9 & work authorization",
+          "adviserVerifyNote": "Section structure and retention windows are seeded reference data pending legal or tax adviser verification."
+        },
+        "B": {
+          "label": "Employment & pay",
+          "adviserVerifyNote": "Section structure and retention windows are seeded reference data pending legal or tax adviser verification."
+        },
+        "C": {
+          "label": "Certifications & training",
+          "adviserVerifyNote": "Section structure and retention windows are seeded reference data pending legal or tax adviser verification."
+        },
+        "D": {
+          "label": "Disciplinary & performance",
+          "adviserVerifyNote": "Section structure and retention windows are seeded reference data pending legal or tax adviser verification."
+        }
+      }
+    },
+    "retention": {
+      "whileEmployed": "Retained while employed",
+      "retainedUntil": "Retained until {date}",
+      "citationLabel": "Statutory basis",
+      "adviserVerifyNote": "Retention windows shown here are seeded reference data pending jurisdiction legal or tax adviser verification. Confirm exact statutory periods before relying on this for compliance decisions."
+    }
   }
 }
