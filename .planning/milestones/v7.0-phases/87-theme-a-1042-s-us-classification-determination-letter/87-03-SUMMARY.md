@@ -163,6 +163,10 @@ None - no external service configuration required. The override surface is gated
 - Wiki synthesis (domain page + api-routers-catalog for `classification.override`) is deferred to the phase's dedicated wiki-synthesis plan per the GSD flow.
 - Advisory posture (D-05) is preserved end-to-end: verdicts are decision-support with adviser-verify annotations, never a legal determination.
 
+## Self-Check: PASSED
+
+All 6 created source files and the SUMMARY exist on disk; all 5 commits (`5f4fa08`, `b555986`, `f7dcd52`, `d6d797e`, `d2b8d26`) are present in the branch history.
+
 ---
 *Phase: 87-theme-a-1042-s-us-classification-determination-letter*
 *Completed: 2026-07-01*
