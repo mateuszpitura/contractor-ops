@@ -40,6 +40,14 @@ import {
   LPCDA_STATUTORY_RATE_LABEL,
   RESERVED_GB_LEGAL_KEYS,
 } from '../legal/gb.js';
+import {
+  LOCKED_PERSONNEL_FILE_PHRASES,
+  PERSONNEL_FILE_RETENTION_ADVISER_VERIFY_AR,
+  PERSONNEL_FILE_RETENTION_ADVISER_VERIFY_DE,
+  PERSONNEL_FILE_RETENTION_ADVISER_VERIFY_EN,
+  PERSONNEL_FILE_RETENTION_ADVISER_VERIFY_PL,
+  RESERVED_PERSONNEL_FILE_LEGAL_KEYS,
+} from '../legal/personnel-file.js';
 import { LOCKED_SA_PHRASES, RESERVED_SA_LEGAL_KEYS } from '../legal/sa.js';
 import { getAllPending, getRegistry, isAllApproved } from '../legal/signoff-registry.js';
 import rawRegistry from '../legal/signoff-registry.json' with { type: 'json' };
@@ -663,6 +671,75 @@ describe('Phase 79 — SA locked phrases (Nitaqat band labels + Qiwa terms)', ()
     expect(
       violations,
       `SA locked keys leaked into ${locale}.json: ${violations.join(', ')}`,
+    ).toEqual([]);
+  });
+});
+
+// -----------------------------------------------------------------------------
+// Personnel-file (akta osobowe) locked adviser-verify disclaimer.
+// The erasure result view foots its disposition list with this per-locale
+// disclaimer as a locked constant (not a freely-editable i18n string) so the
+// legal wording cannot silently drift. The retention.adviserVerifyNote i18n
+// VALUE legitimately mirrors it, so only the reserved KEY is guarded, not the
+// value (mirrors the AE/SA statutory-label pattern).
+// -----------------------------------------------------------------------------
+
+describe('Personnel-file locked adviser-verify disclaimer', () => {
+  it('RESERVED_PERSONNEL_FILE_LEGAL_KEYS mirrors LOCKED_PERSONNEL_FILE_PHRASES keys', () => {
+    expect([...RESERVED_PERSONNEL_FILE_LEGAL_KEYS].sort()).toEqual(
+      Object.keys(LOCKED_PERSONNEL_FILE_PHRASES).sort(),
+    );
+  });
+
+  it('every LOCKED_PERSONNEL_FILE_PHRASES value is a non-empty string', () => {
+    for (const [key, value] of Object.entries(LOCKED_PERSONNEL_FILE_PHRASES)) {
+      expect(typeof value, `${key} is not a string`).toBe('string');
+      expect(value.length, `${key} is empty`).toBeGreaterThan(0);
+    }
+  });
+
+  it('EN adviser-verify phrase matches the canonical wording verbatim', () => {
+    expect(PERSONNEL_FILE_RETENTION_ADVISER_VERIFY_EN).toBe(
+      'Retention windows shown here are seeded reference data pending jurisdiction legal or tax adviser verification. Confirm exact statutory periods before relying on this for compliance decisions.',
+    );
+  });
+
+  it('DE adviser-verify phrase matches the canonical wording verbatim', () => {
+    expect(PERSONNEL_FILE_RETENTION_ADVISER_VERIFY_DE).toBe(
+      'Die hier angezeigten Aufbewahrungsfristen sind Referenzdaten und müssen noch von einem Rechts- oder Steuerberater der jeweiligen Rechtsordnung bestätigt werden. Bestätigen Sie die genauen gesetzlichen Fristen, bevor Sie sich für Compliance-Entscheidungen darauf verlassen.',
+    );
+  });
+
+  it('PL adviser-verify phrase matches the canonical wording verbatim', () => {
+    expect(PERSONNEL_FILE_RETENTION_ADVISER_VERIFY_PL).toBe(
+      'Pokazane tutaj okresy przechowywania to wstępne dane referencyjne wymagające weryfikacji przez radcę prawnego lub doradcę podatkowego właściwej jurysdykcji. Potwierdź dokładne okresy ustawowe, zanim wykorzystasz je do decyzji dotyczących zgodności.',
+    );
+  });
+
+  it('AR adviser-verify phrase matches the canonical wording verbatim', () => {
+    expect(PERSONNEL_FILE_RETENTION_ADVISER_VERIFY_AR).toBe(
+      'فترات الاحتفاظ المعروضة هنا بيانات مرجعية أولية بانتظار التحقق من مستشار قانوني أو ضريبي مختص بالاختصاص القضائي. تأكّد من الفترات القانونية الدقيقة قبل الاعتماد عليها في قرارات الامتثال.',
+    );
+  });
+
+  it('DE adviser-verify phrase uses the formal Sie register (no Du/Dir/Dein…)', () => {
+    expect(
+      /["\s](Du|Dir|Dein[a-z]*)[^a-zA-Z]/.test(` ${PERSONNEL_FILE_RETENTION_ADVISER_VERIFY_DE} `),
+    ).toBe(false);
+  });
+
+  it.each(
+    locales,
+  )('messages/%s.json does not define any PERSONNEL_FILE_RETENTION_ADVISER_VERIFY_* key', locale => {
+    const messages = loadMessages(locale);
+    if (messages === null) return;
+    const keys = flatKeys(messages);
+    const violations = keys.filter(k =>
+      RESERVED_PERSONNEL_FILE_LEGAL_KEYS.some(r => k === r || k.endsWith(`.${r}`)),
+    );
+    expect(
+      violations,
+      `Personnel-file locked keys leaked into ${locale}.json: ${violations.join(', ')}`,
     ).toEqual([]);
   });
 });

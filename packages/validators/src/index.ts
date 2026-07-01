@@ -515,6 +515,15 @@ export {
   ipAssignmentResultsSchema,
   PHRASE_ID_REGEX,
 } from './legal/ip-clauses-results-schema.js';
+export type { LockedPersonnelFilePhraseKey } from './legal/personnel-file.js';
+export {
+  LOCKED_PERSONNEL_FILE_PHRASES,
+  PERSONNEL_FILE_RETENTION_ADVISER_VERIFY_AR,
+  PERSONNEL_FILE_RETENTION_ADVISER_VERIFY_DE,
+  PERSONNEL_FILE_RETENTION_ADVISER_VERIFY_EN,
+  PERSONNEL_FILE_RETENTION_ADVISER_VERIFY_PL,
+  RESERVED_PERSONNEL_FILE_LEGAL_KEYS,
+} from './legal/personnel-file.js';
 export type { LockedSaPhraseKey } from './legal/sa.js';
 export {
   LOCKED_SA_PHRASES,
