@@ -9059,6 +9059,57 @@
       "retainedUntil": "Przechowywane do {date}",
       "citationLabel": "Podstawa prawna",
       "adviserVerifyNote": "Pokazane tutaj okresy przechowywania to wstępne dane referencyjne wymagające weryfikacji przez radcę prawnego lub doradcę podatkowego właściwej jurysdykcji. Potwierdź dokładne okresy ustawowe, zanim wykorzystasz je do decyzji dotyczących zgodności."
+    },
+    "classifyReview": {
+      "title": "Sprawdź klasyfikację dokumentu",
+      "description": "Przypisz ten dokument do części akt osobowych albo go odrzuć.",
+      "approveTab": "Zatwierdź",
+      "rejectTab": "Odrzuć",
+      "sectionLabel": "Część",
+      "sectionPlaceholder": "Wybierz część",
+      "confirmApprove": "Zatwierdź i przypisz część",
+      "reasonLabel": "Powód",
+      "reasonPlaceholder": "Wybierz powód",
+      "freeTextLabel": "Notatka (opcjonalnie)",
+      "confirmReject": "Odrzuć dokument",
+      "cancel": "Anuluj",
+      "approve": "Zatwierdź",
+      "reject": "Odrzuć",
+      "none": "—",
+      "entityLabel": "dokumenty",
+      "reason": {
+        "wrong_employee": "Niewłaściwy pracownik",
+        "not_personnel_doc": "To nie jest dokument osobowy",
+        "duplicate": "Duplikat",
+        "illegible": "Nieczytelny / wymaga ponownego przesłania"
+      },
+      "confidence": {
+        "high": "Wysoka pewność: {confidence}%",
+        "medium": "Średnia pewność: {confidence}% — zweryfikuj",
+        "low": "Niska pewność: {confidence}% — wymagana ręczna weryfikacja"
+      },
+      "columns": {
+        "employee": "Pracownik",
+        "jurisdiction": "Jurysdykcja",
+        "document": "Dokument",
+        "uploaded": "Przesłano",
+        "aiGuess": "Sugestia AI",
+        "actions": "Akcje"
+      },
+      "empty": {
+        "heading": "Brak dokumentów do sprawdzenia",
+        "body": "Wszystkie przesłane pliki zostały sklasyfikowane."
+      },
+      "error": {
+        "heading": "Nie udało się załadować listy do sprawdzenia",
+        "body": "Coś poszło nie tak podczas ładowania oczekujących dokumentów. Spróbuj ponownie.",
+        "retry": "Spróbuj ponownie"
+      },
+      "toast": {
+        "approved": "Dokument sklasyfikowany",
+        "rejected": "Dokument odrzucony",
+        "error": "Coś poszło nie tak. Spróbuj ponownie."
+      }
     }
   }
 }

@@ -9058,6 +9058,57 @@
       "retainedUntil": "Retained until {date}",
       "citationLabel": "Statutory basis",
       "adviserVerifyNote": "Retention windows shown here are seeded reference data pending jurisdiction legal or tax adviser verification. Confirm exact statutory periods before relying on this for compliance decisions."
+    },
+    "classifyReview": {
+      "title": "Review document classification",
+      "description": "Assign this document to a personnel-file section, or reject it.",
+      "approveTab": "Approve",
+      "rejectTab": "Reject",
+      "sectionLabel": "Section",
+      "sectionPlaceholder": "Select a section",
+      "confirmApprove": "Approve & assign section",
+      "reasonLabel": "Reason",
+      "reasonPlaceholder": "Select a reason",
+      "freeTextLabel": "Note (optional)",
+      "confirmReject": "Reject document",
+      "cancel": "Cancel",
+      "approve": "Approve",
+      "reject": "Reject",
+      "none": "—",
+      "entityLabel": "documents",
+      "reason": {
+        "wrong_employee": "Wrong employee",
+        "not_personnel_doc": "Not a personnel document",
+        "duplicate": "Duplicate",
+        "illegible": "Illegible / needs re-upload"
+      },
+      "confidence": {
+        "high": "High confidence: {confidence}%",
+        "medium": "Medium confidence: {confidence}% — please verify",
+        "low": "Low confidence: {confidence}% — manual review needed"
+      },
+      "columns": {
+        "employee": "Employee",
+        "jurisdiction": "Jurisdiction",
+        "document": "Document",
+        "uploaded": "Uploaded",
+        "aiGuess": "AI guess",
+        "actions": "Actions"
+      },
+      "empty": {
+        "heading": "Nothing pending review",
+        "body": "All uploads have been classified."
+      },
+      "error": {
+        "heading": "Couldn't load the review queue",
+        "body": "Something went wrong loading pending documents. Try again.",
+        "retry": "Retry"
+      },
+      "toast": {
+        "approved": "Document classified",
+        "rejected": "Document rejected",
+        "error": "Something went wrong. Try again."
+      }
     }
   }
 }

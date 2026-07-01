@@ -9059,6 +9059,57 @@
       "retainedUntil": "Aufbewahrung bis {date}",
       "citationLabel": "Gesetzliche Grundlage",
       "adviserVerifyNote": "Die hier angezeigten Aufbewahrungsfristen sind Referenzdaten und müssen noch von einem Rechts- oder Steuerberater der jeweiligen Rechtsordnung bestätigt werden. Bestätigen Sie die genauen gesetzlichen Fristen, bevor Sie sich für Compliance-Entscheidungen darauf verlassen."
+    },
+    "classifyReview": {
+      "title": "Dokumentklassifizierung prüfen",
+      "description": "Weisen Sie dieses Dokument einem Abschnitt der Personalakte zu oder lehnen Sie es ab.",
+      "approveTab": "Genehmigen",
+      "rejectTab": "Ablehnen",
+      "sectionLabel": "Abschnitt",
+      "sectionPlaceholder": "Abschnitt auswählen",
+      "confirmApprove": "Genehmigen & Abschnitt zuweisen",
+      "reasonLabel": "Grund",
+      "reasonPlaceholder": "Grund auswählen",
+      "freeTextLabel": "Notiz (optional)",
+      "confirmReject": "Dokument ablehnen",
+      "cancel": "Abbrechen",
+      "approve": "Genehmigen",
+      "reject": "Ablehnen",
+      "none": "—",
+      "entityLabel": "Dokumente",
+      "reason": {
+        "wrong_employee": "Falscher Mitarbeiter",
+        "not_personnel_doc": "Kein Personaldokument",
+        "duplicate": "Duplikat",
+        "illegible": "Unleserlich / erneut hochladen"
+      },
+      "confidence": {
+        "high": "Hohe Konfidenz: {confidence}%",
+        "medium": "Mittlere Konfidenz: {confidence}% — bitte prüfen",
+        "low": "Niedrige Konfidenz: {confidence}% — manuelle Prüfung erforderlich"
+      },
+      "columns": {
+        "employee": "Mitarbeiter",
+        "jurisdiction": "Rechtsordnung",
+        "document": "Dokument",
+        "uploaded": "Hochgeladen",
+        "aiGuess": "KI-Vorschlag",
+        "actions": "Aktionen"
+      },
+      "empty": {
+        "heading": "Nichts zur Prüfung offen",
+        "body": "Alle Uploads wurden klassifiziert."
+      },
+      "error": {
+        "heading": "Prüfliste konnte nicht geladen werden",
+        "body": "Beim Laden der offenen Dokumente ist ein Fehler aufgetreten. Versuchen Sie es erneut.",
+        "retry": "Erneut versuchen"
+      },
+      "toast": {
+        "approved": "Dokument klassifiziert",
+        "rejected": "Dokument abgelehnt",
+        "error": "Etwas ist schiefgelaufen. Versuchen Sie es erneut."
+      }
     }
   }
 }
