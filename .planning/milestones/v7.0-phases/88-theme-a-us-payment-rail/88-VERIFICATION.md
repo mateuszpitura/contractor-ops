@@ -1,12 +1,26 @@
 ---
 phase: 88-theme-a-us-payment-rail
 verified: 2026-07-01T03:30:00Z
-status: gaps_found
-score: 3/5 truths verified (2 FAILED, 2 supplementary WARNING findings)
+reverified: 2026-07-01T14:05:00Z
+status: passed
+score: 5/5 truths verified (initial gaps SC#1 + SC#4 closed by gap plans 88-08..88-12; SC#5 onboarding half wired; tin-match writer deferred to Phase 86 with recorded seam)
 overrides_applied: 0
+reverification:
+  summary: "Gap plans 88-08 (RED scaffolds) → 88-09 (Gap A enum mirror + Gap B US-format wiring) → 88-10 (Gap C ACH return-code service) → 88-11 (Gap C reachable ingestAchReturnFile entry) → 88-12 (Plaid onboarding verifyBillingProfilePlaid + tin-match defer) closed the two FAILED truths and the SC#5 partial. Evidence: 66 gap tests green + reachability greps now positive."
+  sc1_status: passed
+  sc4_status: passed
+  sc5_status: passed
+  probes:
+    - "paymentExportFormatEnum now includes ACH_NACHA + FEDWIRE (packages/validators/src/payment.ts:61-62); parity test asserts subset-of-Prisma + presence."
+    - "detectUsFormat has production callers: payment-format-detection.ts:195 (detectFormatForDestination) + :250 (groupItemsByFormat); detectFormatForDestination is reachable via payment-export-router.ts:414 (getFormatDetection advisory)."
+    - "lockAndExport produces NACHA .txt (<=ceiling) + Fedwire pacs.008 .xml (>ceiling) end-to-end carrying the item's decrypted US routing/account (payment-us-export.e2e green)."
+    - "ACH return codes reachable: paymentCore.ingestAchReturnFile (payment-core.ts:425) → parseNachaReturnFile + applyAchReturns; R01/R02/R03 → FAILED, NOC/COR → advisory (ach-return.service + payment-ach-return green); idempotent + tenant-scoped + audited + unmatched signal."
+    - "Plaid onboarding verify wired: paymentCore.verifyBillingProfilePlaid (payment-core.ts:499) runs MockPlaidIdentityClient and persists plaidVerificationStatus (advisory + fail-open); payout advisory read now has a real non-null status."
+    - "tin-match backupWithholdingFlagged writer still has zero production callers BY DESIGN — explicitly deferred to Phase 86 (year-end batch owner) with the seam recorded in deferred-items.md (not a silent drop)."
 gaps:
   - truth: "A payment run can export a balanced ACH NACHA file (PPD/CCD/CTX) as a new format in the existing payment-export factory, with valid effective-entry-date and return-code handling."
-    status: failed
+    status: closed
+    closed_by: "88-09 (enum mirror + US-format wiring, lockAndExport reachable) + 88-10/88-11 (ACH return-code service + reachable ingestAchReturnFile)"
     reason: "generateNachaFile is real, unit-tested, and produces a spec-correct 94-char PPD/CCD/CTX file with a valid effective-entry-date field — but it is NOT reachable from any tRPC procedure. The only caller of the internal dispatch (_generateExportFileForFormat) is payment-export-router.ts's lockAndExport, whose Zod input (paymentRunLockSchema.exportFormat -> paymentExportFormatEnum in packages/validators/src/payment.ts) still only allows CSV | BANK_FILE | SEPA_XML | SWIFT_XML. Unlike BACS (which got its own dedicated bacs.ts router/procedure), NACHA has no equivalent reachable entry point. Additionally, ACH return-code (R01/R02/R03...) handling — explicitly named in the ROADMAP success criterion and in 88-CONTEXT.md — has zero implementation anywhere in the codebase (no parsing, no retry, no returned/failed payout status)."
     artifacts:
       - path: "packages/api/src/services/payment-export.ts"
@@ -17,7 +31,8 @@ gaps:
       - "A reachable tRPC procedure (mirroring bacs.ts's dedicated router) or an extended paymentExportFormatEnum that lets an org actually select/generate an ACH_NACHA file end-to-end."
       - "ACH return-code (R01/R02/R03...) ingestion/handling + retry, or an explicit, documented descope of that clause with an override."
   - truth: "A Fedwire wire-transfer file (ISO 20022 pacs.008) exports for high-value payouts above the Same-Day ACH ceiling, with the ceiling held as a config value (not a constant)."
-    status: failed
+    status: closed
+    closed_by: "88-09 (detectUsFormat threaded into detectFormatForDestination + reachable via getFormatDetection; ceiling routes FEDWIRE vs ACH_NACHA end-to-end)"
     reason: "generateFedwirePacs008 and the dated sameDayAchCeilingMinor() config function are both real and unit-tested (boundary-tested at the ceiling and at the 2027 transition). But detectUsFormat — the function that actually applies the ceiling to route FEDWIRE vs ACH_NACHA — is never called from any production code path (grep across packages/api/src confirms zero call sites outside its own definition and test files). Combined with the same paymentExportFormatEnum gap above, there is no way for a real payment run to produce a Fedwire file today."
     artifacts:
       - path: "packages/api/src/services/payment-format-detection.ts"
@@ -25,7 +40,8 @@ gaps:
     missing:
       - "A production call site for detectUsFormat (auto-routing a US payout run) and a reachable procedure/enum member for FEDWIRE, mirroring the fix needed for ACH_NACHA above."
   - truth: "A US contractor bank account is verifiable via Plaid Identity at onboarding; an unverified status produces an advisory warning and never blocks the payout."
-    status: partial
+    status: closed
+    closed_by: "88-12 (verifyBillingProfilePlaid onboarding trigger writes plaidVerificationStatus via MockPlaidIdentityClient, advisory + fail-open)"
     reason: "The 'never blocks' half is fully verified: initiatePayout reads PaymentRunItem.billingProfile.plaidVerificationStatus per item (tenant-scoped) and surfaces a non-blocking advisory warning when unverified or the profile is null — tested for fail-open behavior and tenant isolation. The 'verifiable at onboarding' half is not wired: grep across packages/api confirms no production code ever calls PlaidIdentityClient.verify / MockPlaidIdentityClient, and there is no write path anywhere to ContractorBillingProfile.plaidVerificationStatus outside migrations/tests. This may be an accepted consequence of the deliberately deferred live Plaid SDK/Link integration (which needs end-user interaction) — but even a mock-triggerable onboarding verification call was not wired, so plaidVerificationStatus can never become non-null in the shipped state, meaning the payout path will always take the 'unverified' branch."
     artifacts:
       - path: "packages/integrations/src/adapters/plaid/plaid-identity-client.ts"
@@ -46,8 +62,19 @@ human_verification:
 
 **Phase Goal:** US and cross-border payouts settle through ACH/wire rails with USD as a first-class currency and optional programmatic initiation.
 **Verified:** 2026-07-01T03:30:00Z
-**Status:** gaps_found
-**Re-verification:** No — initial verification
+**Status:** passed — re-verified 2026-07-01 after gap closure (plans 88-08..88-12)
+**Re-verification:** Yes — initial verdict was `gaps_found` (SC#1 + SC#4 FAILED, SC#5 PARTIAL); the gap plans below closed all three.
+
+## Re-verification — Gap Closure (2026-07-01)
+
+Gap plans **88-08 → 88-12** closed the two FAILED truths and the SC#5 partial. The downstream generators (`generateNachaFile`, `generateFedwirePacs008`), the string dispatch in `_generateExportFileForFormat`, and the Prisma enum members already existed — the failures were reachability wiring, now landed:
+
+- **SC#1 → PASS.** `paymentExportFormatEnum` mirrors `ACH_NACHA`/`FEDWIRE` (validators/src/payment.ts:61-62), so `lockAndExport` accepts them; `_buildExportItems` decrypts + surfaces the item's US routing/account into `ExportItem`; the pre-existing dispatch reaches `generateNachaFile`. **ACH return-code handling now exists and is reachable**: `ach-return.service.ts` (`parseNachaReturnFile` + `mapReturnCodeToStatus` R01/R02/R03→FAILED, NOC/COR→advisory + idempotent tenant-scoped `applyAchReturns`) behind `paymentCore.ingestAchReturnFile` (payment-core.ts:425), US-gated + `payment:export`-gated + audited + `{failed,advisory,skipped,unmatched}` summary.
+- **SC#4 → PASS.** `detectUsFormat` now has production callers (payment-format-detection.ts:195 in `detectFormatForDestination`, :250 in `groupItemsByFormat`); `detectFormatForDestination` is reachable via the `getFormatDetection` advisory (payment-export-router.ts:414). A USD-to-US-bank run ≤ Same-Day-ACH ceiling routes `ACH_NACHA`, above it `FEDWIRE`; the e2e proves NACHA `.txt` + Fedwire pacs.008 `.xml` emit end-to-end.
+- **SC#5 → PASS.** `paymentCore.verifyBillingProfilePlaid` (payment-core.ts:499) runs `MockPlaidIdentityClient` and persists `ContractorBillingProfile.plaidVerificationStatus` (+ `plaidVerifiedAt`, `plaidAccountId`), advisory + fail-open (never throws/blocks); the payout advisory read now has a real non-null status to differentiate.
+- **Supplementary (tin-match) — deferred, not dropped.** `createBackupWithholdingFlagWriter`/`createDbTinMatchPersistence` keep zero production callers **by design**: explicitly deferred to **Phase 86** (year-end batch owner) with the seam recorded in `deferred-items.md`.
+
+**Re-verification evidence:** `pnpm --filter @contractor-ops/api exec vitest run payment-export-format-parity payment-format-detection payment-us-export.e2e ach-return.service payment-ach-return payment-plaid-onboarding` → **6 files / 66 tests passed** on the merged main; reachability greps (above) now positive; `check:wiki-brain` 0 errors.
 
 ## Goal Achievement
 
@@ -55,11 +82,11 @@ human_verification:
 
 | # | Truth | Status | Evidence |
 |---|-------|--------|----------|
-| 1 | A payment run can export a balanced ACH NACHA file (PPD/CCD/CTX), with valid effective-entry-date and return-code handling. | FAILED | `generateNachaFile` (payment-export.ts:911) is real, hand-rolled, zero-dep, 94-char records, correct entry hash, control totals, 10-line blocking, PPD/CCD/CTX-parameterizable, effective-entry-date populated (batch header). **Unreachable in production**: the only caller chain is `_generateExportFileForFormat` → `payment-export-router.ts` `lockAndExport`, whose Zod input is gated by `paymentExportFormatEnum = z.enum(['CSV','BANK_FILE','SEPA_XML','SWIFT_XML'])` (packages/validators/src/payment.ts:50) — `ACH_NACHA` was never added. No dedicated router (unlike `bacs.ts`) was built. **Return-code (R01/R02/R03…) handling is entirely absent** — zero occurrences anywhere in the merged codebase (confirmed via exhaustive grep). |
+| 1 | A payment run can export a balanced ACH NACHA file (PPD/CCD/CTX), with valid effective-entry-date and return-code handling. | PASS (closed 88-08..88-11 — see Re-verification) | `generateNachaFile` (payment-export.ts:911) is real, hand-rolled, zero-dep, 94-char records, correct entry hash, control totals, 10-line blocking, PPD/CCD/CTX-parameterizable, effective-entry-date populated (batch header). **Unreachable in production**: the only caller chain is `_generateExportFileForFormat` → `payment-export-router.ts` `lockAndExport`, whose Zod input is gated by `paymentExportFormatEnum = z.enum(['CSV','BANK_FILE','SEPA_XML','SWIFT_XML'])` (packages/validators/src/payment.ts:50) — `ACH_NACHA` was never added. No dedicated router (unlike `bacs.ts`) was built. **Return-code (R01/R02/R03…) handling is entirely absent** — zero occurrences anywhere in the merged codebase (confirmed via exhaustive grep). |
 | 2 | USD is selectable as a first-class currency with per-org default, exchange-rate sourcing, and settlement-currency choice on cross-border payouts. | VERIFIED | `exchange-rate.ts` `convertAmount` is byte-unchanged and confirmed to have no `USD=1.0` short-circuit — USD cross-rates through the real stored EUR↔USD rate; same-currency short-circuits to rate 1; missing rate returns `null` (read in full, lines 262-321). `payment-settlement.ts` `resolveSettlementCurrency`/`convertForSettlement` exist and are genuinely wired: reachable via `lockAndExport` → `_buildExportItems` (payment-shared.ts:334/339) AND via `initiatePayout` → `_initiatePayoutForRun` (payment-shared.ts:750/754). 28 currency/settlement tests + the full 304-test payment suite pass. |
 | 3 | An opt-in org can initiate programmatic ACH payouts via a Modern Treasury / Stripe Treasury adapter on the integration framework. | VERIFIED | `payment-core.ts` `initiatePayout` tenantProcedure exists, gated by `requirePermission({payment:['export']})` + `assertUsExpansionEnabled` + the existing `payments.ach-payouts` flag (dark default); `.strict()` Zod input; idempotent via `reserve/complete/clear` (tested — no double-pay); `writeAuditLog` on init (masked-only metadata); `PayoutInitiationAdapter` interface + deterministic `MockModernTreasuryAdapter` (default) + dark `LiveModernTreasuryAdapter` + `StripeTreasuryAdapter` stub all exist and compile with zero new dependencies (`git diff` on package.json confirms no modern-treasury/stripe/plaid SDK added). 10/10 payout-init tests + tenant-isolation test pass. |
-| 4 | A Fedwire wire-transfer file (ISO 20022 pacs.008) exports for high-value payouts above the Same-Day ACH ceiling, ceiling as config (not constant). | FAILED | `generateFedwirePacs008` and `sameDayAchCeilingMinor(asOf)` (dated $1M → $10M 2027-09-17 config, not a constant) both exist and are unit/boundary-tested. **`detectUsFormat`, the function that applies the ceiling to route FEDWIRE vs ACH_NACHA, is never called from any production code path** (grep confirms zero call sites outside its own file/tests). Same unreachable-enum problem as Truth 1 — no procedure can request `FEDWIRE`. |
-| 5 | A US contractor bank account is verifiable via Plaid Identity at onboarding; an unverified status produces an advisory warning and never blocks the payout. | PARTIAL (see gaps) | The **advisory / never-blocks** half is solid and tested: `initiatePayout` → `_initiatePayoutForRun` reads `PaymentRunItem.billingProfile.plaidVerificationStatus` via a tenant-scoped include and surfaces a non-blocking warning when unverified/null (fail-open unit-tested, tenant-isolation unit-tested). The **"verifiable at onboarding"** half has no production caller: `PlaidIdentityClient`/`MockPlaidIdentityClient` are exported from the integrations barrel but never invoked by any router/service in `packages/api` or `apps/*`, and there is no write path anywhere to `ContractorBillingProfile.plaidVerificationStatus` outside migrations/tests. |
+| 4 | A Fedwire wire-transfer file (ISO 20022 pacs.008) exports for high-value payouts above the Same-Day ACH ceiling, ceiling as config (not constant). | PASS (closed 88-09 — see Re-verification) | `generateFedwirePacs008` and `sameDayAchCeilingMinor(asOf)` (dated $1M → $10M 2027-09-17 config, not a constant) both exist and are unit/boundary-tested. **`detectUsFormat`, the function that applies the ceiling to route FEDWIRE vs ACH_NACHA, is never called from any production code path** (grep confirms zero call sites outside its own file/tests). Same unreachable-enum problem as Truth 1 — no procedure can request `FEDWIRE`. |
+| 5 | A US contractor bank account is verifiable via Plaid Identity at onboarding; an unverified status produces an advisory warning and never blocks the payout. | PASS (onboarding half wired 88-12 — see Re-verification) | The **advisory / never-blocks** half is solid and tested: `initiatePayout` → `_initiatePayoutForRun` reads `PaymentRunItem.billingProfile.plaidVerificationStatus` via a tenant-scoped include and surfaces a non-blocking warning when unverified/null (fail-open unit-tested, tenant-isolation unit-tested). The **"verifiable at onboarding"** half has no production caller: `PlaidIdentityClient`/`MockPlaidIdentityClient` are exported from the integrations barrel but never invoked by any router/service in `packages/api` or `apps/*`, and there is no write path anywhere to `ContractorBillingProfile.plaidVerificationStatus` outside migrations/tests. |
 
 **Score:** 3/5 ROADMAP success criteria fully verified (2 FAILED, with 1 of the 3 "verified" truths carrying an additional partial/WARNING finding below).
 
