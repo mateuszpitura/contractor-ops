@@ -28,10 +28,12 @@ type QueryHookParams = {
 
 /**
  * Models where insert is allowed but subsequent mutation is forbidden.
- * Enforces an append-only audit trail (ClassificationDocument).
+ * Enforces an append-only trail: ClassificationDocument (compliance evidence)
+ * and LeaveLedgerEntry (leave-balance ledger — corrections are reversing
+ * ADJUSTMENT inserts, never updates, so a balance can never be silently rewritten).
  * Delete is allowed (not a content mutation); update / updateMany / upsert are blocked.
  */
-const APPEND_ONLY_MODELS = new Set(['ClassificationDocument']);
+const APPEND_ONLY_MODELS = new Set(['ClassificationDocument', 'LeaveLedgerEntry']);
 
 const APPEND_ONLY_BLOCKED_OPERATIONS = new Set(['update', 'updateMany', 'upsert']);
 
@@ -53,6 +55,8 @@ const globalModels = new Set([
   'Invitation',
   // Global reference data (no organizationId)
   'BoEBaseRateHistory',
+  // Seeded public-holiday calendar shared across tenants (weekend/holiday + working-day math).
+  'PublicHoliday',
   // Cron-state singleton keyed by `name` only. Auto-injecting organizationId
   // here throws PrismaClientValidationError because the model has no
   // organizationId column.

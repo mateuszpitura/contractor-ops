@@ -35,9 +35,10 @@ model Worker {
   personnelFile   PersonnelFile?
 
   // Employee leave + statutory-time records (present when workerType = EMPLOYEE).
-  leaveRequests      LeaveRequest[]
-  leaveLedgerEntries LeaveLedgerEntry[]
-  leaveBalances      LeaveBalance[]
+  leaveRequests       LeaveRequest[]
+  leaveLedgerEntries  LeaveLedgerEntry[]
+  leaveBalances       LeaveBalance[]
+  employeeTimeRecords EmployeeTimeRecord[]
 
   @@index([organizationId])
   @@index([organizationId, workerType])

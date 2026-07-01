@@ -1,0 +1,17 @@
+// PublicHoliday — global seeded reference calendar (local-only; no live holiday
+// API by design). Like ExchangeRate it carries no organizationId and is
+// registered in `globalModels`, so withTenantScope never injects an org filter.
+// Shared across every tenant for weekend/holiday-premium and working-day math.
+// `region` disambiguates sub-national holidays (e.g. a German Bundesland).
+
+model PublicHoliday {
+  id          String   @id @default(cuid())
+  countryCode String
+  holidayDate DateTime @db.Date
+  name        String
+  region      String?
+  createdAt   DateTime @default(now())
+
+  @@unique([countryCode, holidayDate, region])
+  @@index([countryCode, holidayDate])
+}
