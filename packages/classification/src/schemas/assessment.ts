@@ -72,8 +72,36 @@ export const scheinOutcomeSchema = z.object({
   computedAt: z.string(),
 });
 
+// --- US worker classification --------------------------------------------
+
+export const usClassificationVerdictSchema = z.enum([
+  'employee',
+  'independent-contractor',
+  'indeterminate',
+]);
+
+export const usFederalFactorResultSchema = z.object({
+  category: z.enum(['behavioral', 'financial', 'relationship']),
+  employeeSignals: z.number().int().min(0),
+  contractorSignals: z.number().int().min(0),
+});
+
+export const usClassificationOutcomeSchema = z.object({
+  kind: z.literal('US_CLASSIFICATION'),
+  ruleSetVersion: z.string(),
+  verdict: usClassificationVerdictSchema,
+  federalFactors: z.array(usFederalFactorResultSchema).readonly(),
+  ab5Flag: z.boolean(),
+  section530ReliefEligible: z.boolean(),
+  computedAt: z.string(),
+});
+
 // --- Union ----------------------------------------------------------------
 
-export const outcomeSchema = z.discriminatedUnion('kind', [ir35OutcomeSchema, scheinOutcomeSchema]);
+export const outcomeSchema = z.discriminatedUnion('kind', [
+  ir35OutcomeSchema,
+  scheinOutcomeSchema,
+  usClassificationOutcomeSchema,
+]);
 
 export type OutcomeSchemaType = z.infer<typeof outcomeSchema>;

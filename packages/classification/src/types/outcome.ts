@@ -69,12 +69,48 @@ export interface ScheinselbstandigkeitOutcome {
   readonly computedAt: string; // ISO-8601
 }
 
+// --- US worker classification --------------------------------------------
+//
+// The federal IRS common-law three-category base (behavioral / financial /
+// relationship) is combined with a dispositive CA-ABC (AB5) overlay when the
+// work is performed in California, plus a §530 relief-eligibility flag. The
+// output is advisory decision-support — never a final legal determination.
+
+/** US question categories: the three federal common-law factors plus the CA-ABC overlay and §530 relief. */
+export type UsQuestionCategory = 'behavioral' | 'financial' | 'relationship' | 'ab5' | 'section530';
+
+/** The three federal IRS common-law factor groups. */
+export type UsFederalCategory = 'behavioral' | 'financial' | 'relationship';
+
+/** Advisory US verdict — never asserted as a legal determination. */
+export type UsClassificationVerdict = 'employee' | 'independent-contractor' | 'indeterminate';
+
+/** Per-factor tally for one federal common-law category. */
+export interface UsFederalFactorResult {
+  readonly category: UsFederalCategory;
+  readonly employeeSignals: number;
+  readonly contractorSignals: number;
+}
+
+/** US worker-classification outcome — federal common-law base + AB5 overlay + §530 flag. */
+export interface UsClassificationOutcome {
+  readonly kind: 'US_CLASSIFICATION';
+  readonly ruleSetVersion: string;
+  readonly verdict: UsClassificationVerdict;
+  readonly federalFactors: readonly UsFederalFactorResult[];
+  /** True when the CA-ABC overlay was applied (work performed in California). */
+  readonly ab5Flag: boolean;
+  /** §530 safe-harbor relief eligibility — a flag surfaced for adviser review, never a verdict change. */
+  readonly section530ReliefEligible: boolean;
+  readonly computedAt: string; // ISO-8601
+}
+
 /** Discriminated union of all country outcomes. */
-export type Outcome = Ir35Outcome | ScheinselbstandigkeitOutcome;
+export type Outcome = Ir35Outcome | ScheinselbstandigkeitOutcome | UsClassificationOutcome;
 
 /** Minimal view passed to renderers (UI-side). */
 export interface OutcomeView {
   readonly kind: Outcome['kind'];
-  readonly verdict: Ir35Verdict | ScheinVerdict;
+  readonly verdict: Ir35Verdict | ScheinVerdict | UsClassificationVerdict;
   readonly summary: string;
 }
