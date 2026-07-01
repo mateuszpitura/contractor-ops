@@ -179,8 +179,11 @@ states (loading / locked / empty / error / populated). The **locked card is
 server-driven and mounts no document body or count** (per-section RBAC made undeniable in
 the UI — BFLA fence held client-side). A page-level retention panel + per-section posture
 chips carry an amber adviser-verify note. The admin **classify-review queue**
-(`WorkbenchDataTable` + Approve/Reject dialog) clears `pendingReviewQueue`. The **RODO
-erasure flow** (`PersonnelErasureDialog` → `ErasureResultView`) branches STRICTLY on
+(`WorkbenchDataTable` + Approve/Reject dialog) clears `pendingReviewQueue`; it is reachable
+at its own flag-gated admin route `employees/personnel-classify-queue` (thin page →
+`PersonnelClassifyQueueView` → `PersonnelClassifyQueuePanel`). The **RODO erasure flow**
+(`PersonnelErasureDialog` → `ErasureResultView`) is mounted in the personnel-file shell
+below the four section cards, and branches STRICTLY on
 `fullErasureClaimed` — a partial-erasure warning whenever `false` (even 1-of-4 retained),
 full-erasure success only when `true`; the retained rows use `ShieldAlert` (not the RBAC
 `Lock`) + statutory citation. The adviser-verify foot-note renders a test-guarded

@@ -14,6 +14,7 @@ import { useFormatter } from '../../../i18n/useFormatter.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { useFlag } from '../../layout/feature-flag-context.js';
 import { usePersonnelFile } from './hooks/use-personnel-file.js';
+import { PersonnelErasureDialog } from './personnel-erasure-dialog.js';
 import type { SectionJurisdiction } from './personnel-file-section-card.js';
 import { PersonnelFileSectionCard } from './personnel-file-section-card.js';
 import { PersonnelRetentionPanel } from './personnel-retention-panel.js';
@@ -108,6 +109,10 @@ function PersonnelFile({ workerId }: { workerId: string }) {
           />
         ))}
       </div>
+
+      <section aria-label={t('erasure.requestCta')} className="border-t pt-section-gap">
+        <PersonnelErasureDialog workerId={workerId} jurisdiction={sectionJurisdiction} />
+      </section>
     </main>
   );
 }

@@ -1,10 +1,12 @@
 ---
 phase: 91-theme-b-akta-osobowe-personnel-file
 verified: 2026-07-01T14:45:00Z
-status: gaps_found
-score: 2/4 must-haves fully verified (2 backend-verified but UI-orphaned)
+reverified: 2026-07-01T17:35:00Z
+status: passed
+score: 4/4 must-haves verified (2 UI orphans mounted in re-verification)
 overrides_applied: 0
-gaps:
+resolution: "Both gaps closed 2026-07-01. PersonnelErasureDialog mounted in personnel-file-shell.tsx below the section cards (AKTA-03 now staff-reachable). PersonnelClassifyQueuePanel mounted via new flag-gated route employees/personnel-classify-queue (thin page → PersonnelClassifyQueueView → Panel; AKTA-04 admin classify-step now staff-reachable). web-vite typecheck 16/16, layering gates OK, personnel-file component tests 6/6."
+gaps_closed:
   - truth: "A RODO/GDPR erasure request honors erasure only past the retention window and flags blocked sections with a statutory citation (never claims full erasure during a hold)."
     status: partial
     reason: "Backend (personnelFile.requestErasure) is fully correct, tested, and legally honest (fullErasureClaimed = retained.length===0). But the staff-facing PersonnelErasureDialog component that lets a human actually trigger and see this flow is never imported/mounted anywhere in the app (route, page, or shell) — it exists only in its own file and a unit test. A staff user has no way to reach the erasure flow through the product."

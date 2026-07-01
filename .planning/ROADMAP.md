@@ -619,7 +619,7 @@ Phases execute in numeric order: 82 → 83 → … → 101. After Foundation (82
 | 88. Theme A — US Payment Rail | v7.0 | 12/12 | Complete   | 2026-07-01 |
 | 89. Theme B — Worker Model Abstraction (gate) | v7.0 | 6/6 | Complete   | 2026-06-22 |
 | 90. Theme B — Employee Registry per Market (×6) | v7.0 | 7/7 | Complete    | 2026-07-01 |
-| 91. Theme B — Akta Osobowe / Personnel File | v7.0 | 0/TBD | Not started | - |
+| 91. Theme B — Akta Osobowe / Personnel File | v7.0 | 12/12 | Complete    | 2026-07-01 |
 | 92. Theme B — Leave + KP-Grade Time Tracking | v7.0 | 0/16 | Planned     | - |
 | 93. Theme B — Employee On/Offboarding | v7.0 | 0/10 | Planned     | - |
 | 94. Theme B — Payroll Integration Adapters | v7.0 | 0/TBD | Not started | - |

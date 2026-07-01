@@ -13,6 +13,7 @@ import { memo, useCallback, useMemo, useState } from 'react';
 import { tDynLoose } from '../../../../i18n/typed-keys.js';
 import { useFormatter } from '../../../../i18n/useFormatter.js';
 import { useTranslations } from '../../../../i18n/useTranslations.js';
+import { useFlag } from '../../../layout/feature-flag-context.js';
 import { getConfidenceConfig } from '../../../ocr/confidence-badge.js';
 import { WorkbenchDataTable } from '../../../table-kit/workbench-data-table.js';
 import type {
@@ -272,6 +273,18 @@ function ClassifyQueueError({ onRetry }: { onRetry: () => void }) {
  * the approve/reject dialog. Renders loading/empty (via the table) and a
  * queue-level error with Retry.
  */
+/**
+ * Flag-gated composer for the admin personnel-document classify-review route.
+ * When `module.workforce-employees` is OFF the whole surface leaves the render
+ * tree (mirrors the personnel-file shell), so the gated route never resolves to
+ * a stub. All data access lives in {@link PersonnelClassifyQueuePanel}'s hook.
+ */
+export function PersonnelClassifyQueueView() {
+  const workforceEnabled = useFlag('module.workforce-employees');
+  if (!workforceEnabled) return null;
+  return <PersonnelClassifyQueuePanel />;
+}
+
 export function PersonnelClassifyQueuePanel({ sectionClassName }: { sectionClassName?: string }) {
   const [reviewRow, setReviewRow] = useState<PersonnelClassifyQueueRow | null>(null);
   const [reviewTab, setReviewTab] = useState<'approve' | 'reject'>('approve');
