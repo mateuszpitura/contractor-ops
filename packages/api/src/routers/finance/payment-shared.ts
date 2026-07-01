@@ -9,6 +9,7 @@ import {
   reserve as reserveIdempotency,
 } from '../../lib/idempotency';
 import { writeAuditLog } from '../../services/audit-writer';
+import { decryptBankAccount } from '../../services/bank-account-crypto';
 import type {
   ExportItem,
   NachaExportItem,
@@ -310,6 +311,8 @@ export async function _buildExportItems(
       bankAccountMasked: string | null;
       swiftBic: string | null;
       bankName: string | null;
+      usRoutingNumberEncrypted?: string | null;
+      usAccountNumberEncrypted?: string | null;
     } | null;
   }>,
   transferTitleTemplate: string,
@@ -351,6 +354,16 @@ export async function _buildExportItems(
       });
     }
 
+    // Decrypt the US routing/account only when both are present. The plaintext
+    // stays inside this function and reaches only the export file buffer — it is
+    // never logged, and the export audit trail carries no routing/account.
+    const usRoutingEncrypted = item.billingProfile?.usRoutingNumberEncrypted;
+    const usAccountEncrypted = item.billingProfile?.usAccountNumberEncrypted;
+    const usRoutingNumber =
+      usRoutingEncrypted && usAccountEncrypted ? decryptBankAccount(usRoutingEncrypted) : undefined;
+    const usAccountNumber =
+      usRoutingEncrypted && usAccountEncrypted ? decryptBankAccount(usAccountEncrypted) : undefined;
+
     exportItems.push({
       contractorName: item.contractor.legalName,
       iban: item.billingProfile?.bankAccountMasked ?? '',
@@ -362,6 +375,8 @@ export async function _buildExportItems(
       swiftBic: item.billingProfile?.swiftBic ?? null,
       dueDate: item.invoice.dueDate ?? new Date(),
       transferTitle,
+      usRoutingNumber,
+      usAccountNumber,
     });
   }
 

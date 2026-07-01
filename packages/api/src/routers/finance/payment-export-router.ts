@@ -223,6 +223,8 @@ export const paymentExportRouter = router({
                     bankAccountMasked: true,
                     swiftBic: true,
                     bankName: true,
+                    usRoutingNumberEncrypted: true,
+                    usAccountNumberEncrypted: true,
                   },
                 },
               },
