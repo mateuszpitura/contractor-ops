@@ -54,6 +54,61 @@ export interface IrisSubmissionInput {
   payees: IrisPayee[];
 }
 
+/** Withholding agent on a 1042-S. Their own EIN appears in full on the return. */
+export interface Iris1042SWithholdingAgent {
+  /** Withholding agent EIN (9 digits, the agent's own identifier). */
+  tin: string;
+  name: string;
+}
+
+/**
+ * 1042-S recipient record.
+ *
+ * The 1042-S is a distinct IRS schema (Publication 1187) from the 1099 series —
+ * chapter 3/4 status codes, income codes, and treaty fields — so it uses a
+ * sibling record shape rather than the 1099 payee.
+ *
+ * `recipientFtin` is the already-masked value (last-4 only, e.g. `'XXX-XX-4821'`).
+ * The full foreign TIN MUST NOT be passed here or emitted — only the masked form
+ * survives into the payload.
+ */
+export interface Iris1042SRecipient {
+  /** Masked recipient foreign TIN — last-4 only (e.g. `'XXX-XX-4821'`). Never the full FTIN. */
+  recipientFtin: string;
+  recipientName: string;
+  /** Income code (box 1; i1042s Appendix B), e.g. `'17'`. */
+  incomeCode: string;
+  /** Box 2 gross income, in minor units (cents). */
+  grossIncomeBox2Minor: number;
+  /** Chapter 3 exemption code (box 3a; i1042s Appendix B). */
+  chap3ExemptionCode: string;
+  /** Chapter 3 withholding rate, in basis points (`1500` = 15.00%). */
+  chap3RateBp: number;
+  /** Chapter 4 exemption code (box 4a; i1042s Appendix C). */
+  chap4ExemptionCode: string;
+  /** Chapter 4 withholding rate, in basis points. */
+  chap4RateBp: number;
+  /** Box 7 federal tax withheld, in minor units (cents). */
+  federalTaxWithheldBox7Minor: number;
+  /** Recipient chapter-3 status code (box 13j). */
+  recipientChap3StatusCode: string;
+  /** Recipient chapter-4 status code (box 13k). */
+  recipientChap4StatusCode: string;
+  /** Limitation on Benefits (LOB) code (box 13n). */
+  recipientLobCode: string;
+  /** Treaty article claimed, e.g. `'Article 7'`. */
+  treatyArticle: string;
+}
+
+/** Input to {@link buildIris1042SXml}. */
+export interface Iris1042SSubmissionInput {
+  /** Filing tax year, e.g. `2026`. */
+  taxYear: number;
+  schemaVersion: IrisSchemaVersion;
+  withholdingAgent: Iris1042SWithholdingAgent;
+  recipients: Iris1042SRecipient[];
+}
+
 /** A single XSD validation problem. */
 export interface IrisValidationError {
   code: string;
