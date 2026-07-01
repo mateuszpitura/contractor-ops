@@ -50,6 +50,17 @@ export const PII_MASK_PATHS = [
   '*.ein',
   '*.EIN',
 
+  // Employee national-person identifiers (per-market registry). Full values live
+  // only in dedicated encrypted columns and surface via the audit-logged reveal
+  // path — they must never reach logs. Mirrors the `*.ssn` treatment above.
+  '*.pesel',
+  '*.PESEL',
+  '*.iqama',
+  '*.emiratesId',
+  '*.emiratesID',
+  '*.nationalId',
+  '*.nationalID',
+
   // Country-scoped bundles
   '*.countryFields.utr',
   '*.countryFields.UTR',
@@ -68,6 +79,10 @@ export const PII_MASK_PATHS = [
   '*.countryFields.SSN',
   '*.countryFields.ein',
   '*.countryFields.EIN',
+  '*.countryFields.pesel',
+  '*.countryFields.iqama',
+  '*.countryFields.emiratesId',
+  '*.countryFields.nationalId',
 
   // Default-redact request/response bodies. Top-level `body` and any `*.body`
   // (one level of wrapping) emit `[REDACTED]` by default. Routers wanting
@@ -105,6 +120,10 @@ export const PII_MASK_KEYWORDS = [
   'socialInsuranceNumber',
   'ssn',
   'ein',
+  'pesel',
+  'iqama',
+  'emiratesId',
+  'nationalId',
 ] as const;
 
 export type PiiMaskKeyword = (typeof PII_MASK_KEYWORDS)[number];
