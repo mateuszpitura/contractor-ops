@@ -30,3 +30,4 @@ dynamic per-slug path (no new raw env access), and the payout-init procedure add
 Out of 88-06 scope (SCOPE BOUNDARY); belongs to whoever introduced the two new call sites
 on the base branch. Either migrate them to a package env schema and re-run the ratchet in
 tighten mode, or bump the baseline in the same change set that legitimises them.
+- [pre-existing, out of scope] lint:no-breadcrumbs fails on packages/api/src/pdf-templates/__tests__/us-determination-letter.test.tsx:5 and packages/api/src/services/__tests__/form-1099k-tracker.service.test.ts:5 (decision-id comments from sibling phases). Not touched by 88-10.
