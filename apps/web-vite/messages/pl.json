@@ -2432,6 +2432,149 @@
     "comingSoon": {
       "heading": "Zarządzanie pracownikami już wkrótce",
       "body": "Akta osobowe, urlopy oraz on/offboarding pracowników pojawią się wkrótce. Na razie wykonawcy pozostają w obszarze Wykonawcy."
+    },
+    "registry": {
+      "pageTitle": "Zarejestruj pracownika",
+      "pageDescription": "Zapisz dane ustawowe pracownika właściwe dla danego rynku."
+    },
+    "compliance": {
+      "registeredToast": "Pracownik zarejestrowany.",
+      "registerErrorToast": "Nie udało się zarejestrować pracownika. Sprawdź dane i spróbuj ponownie.",
+      "loadError": "Nie udało się wczytać danych rejestracji. Spróbuj ponownie.",
+      "retry": "Spróbuj ponownie",
+      "cardTitle": "Dane ustawowe — {country}",
+      "cardTitleGeneric": "Dane ustawowe",
+      "incompleteFields": "Pozostało pól: {count}",
+      "displayNameLabel": "Imię i nazwisko",
+      "displayNamePlaceholder": "np. Jan Kowalski",
+      "emailLabel": "Służbowy e-mail",
+      "emailPlaceholder": "imie@firma.pl",
+      "marketLabel": "Rynek",
+      "selectMarketPrompt": "Wybierz rynek, aby wprowadzić jego pola ustawowe.",
+      "registerButton": "Zarejestruj pracownika",
+      "noRegisterPermission": "Nie masz uprawnień do rejestrowania pracowników. Skontaktuj się z administratorem HR.",
+      "countries": {
+        "PL": "Polska",
+        "DE": "Niemcy",
+        "GB": "Wielka Brytania",
+        "US": "Stany Zjednoczone",
+        "AE": "Zjednoczone Emiraty Arabskie",
+        "SA": "Arabia Saudyjska"
+      },
+      "pii": {
+        "reveal": "Pokaż",
+        "hide": "Ukryj",
+        "maskedHint": "Widoczne są tylko ostatnie 4 cyfry. Pokazanie jest rejestrowane.",
+        "revealFailed": "Nie udało się pokazać. Spróbuj ponownie.",
+        "maskedAriaLabel": "{field} zakończone na {last4}. Pokazanie jest rejestrowane.",
+        "ssnLabel": "Numer ubezpieczenia społecznego (SSN)",
+        "peselLabel": "PESEL",
+        "iqamaLabel": "Iqama / krajowy numer ID",
+        "emiratesIdLabel": "Emirates ID"
+      },
+      "pl": {
+        "stanowiskoLabel": "Stanowisko",
+        "stanowiskoPlaceholder": "np. Starszy programista",
+        "peselLabel": "PESEL",
+        "peselPlaceholder": "11 cyfr",
+        "peselFormatError": "Podaj prawidłowy PESEL.",
+        "etatLabel": "Wymiar etatu",
+        "etatPlaceholder": "np. 1,00",
+        "stawkaBruttoLabel": "Stawka brutto",
+        "stawkaBruttoPlaceholder": "np. 8500,00",
+        "urzadSkarbowyLabel": "Kod urzędu skarbowego",
+        "urzadSkarbowyPlaceholder": "4 cyfry",
+        "zusTitleCodeLabel": "Kod tytułu ZUS",
+        "zusTitleCodePlaceholder": "6 cyfr",
+        "nfzOddzialLabel": "Oddział wojewódzki NFZ",
+        "nfzOddzialPlaceholder": "Wybierz oddział",
+        "nfzOddzialSearch": "Szukaj oddziałów NFZ…",
+        "nfzOddzialEmpty": "Brak wyników",
+        "adviserVerifyNote": "Lista ustawowa — przed wykorzystaniem do rozliczeń potwierdź u lokalnego doradcy płacowego.",
+        "statutoryNote": "PESEL jest szyfrowany i ujawniany tylko uprawnionym rolom."
+      },
+      "de": {
+        "lohnsteuerklasseLabel": "Klasa podatkowa (Lohnsteuerklasse)",
+        "steuerIdNrLabel": "Numer identyfikacji podatkowej (Steuer-IdNr)",
+        "steuerIdNrPlaceholder": "11 cyfr",
+        "steuerIdNrFormatError": "Nie rozpoznano formatu numeru podatkowego.",
+        "svNummerLabel": "Numer ubezpieczenia społecznego (SV-Nummer)",
+        "svNummerPlaceholder": "np. 65 160894 D 001",
+        "svNummerFormatError": "Nie rozpoznano formatu numeru ubezpieczenia społecznego.",
+        "krankenkasseLabel": "Kasa chorych (Krankenkasse)",
+        "krankenkassePlaceholder": "8-cyfrowy Betriebsnummer",
+        "kinderfreibetragLabel": "Ulgi na dzieci (Kinderfreibetrag)",
+        "kinderfreibetragPlaceholder": "np. 1,0",
+        "kirchensteuerLabel": "Podlega podatkowi kościelnemu (Kirchensteuer)",
+        "elstamNote": "Dane ELStAM mają charakter orientacyjny — potwierdź u lokalnego doradcy płacowego."
+      },
+      "uk": {
+        "taxCodeLabel": "Kod podatkowy",
+        "taxCodePlaceholder": "np. 1257L",
+        "taxCodeFormatError": "Podaj prawidłowy kod podatkowy.",
+        "niNumberLabel": "Numer ubezpieczenia (National Insurance)",
+        "niNumberPlaceholder": "np. QQ123456C",
+        "niFormatError": "Podaj prawidłowy numer National Insurance.",
+        "studentLoanPlanLabel": "Plan kredytu studenckiego",
+        "studentLoanPlan": {
+          "PLAN_1": "Plan 1",
+          "PLAN_2": "Plan 2",
+          "PLAN_4": "Plan 4",
+          "PLAN_5": "Plan 5",
+          "POSTGRAD": "Kredyt podyplomowy",
+          "NONE": "Brak"
+        },
+        "payeReferenceLabel": "Numer PAYE",
+        "payeReferencePlaceholder": "np. 123/AB456",
+        "pensionEnrolledLabel": "Zapisany do pracowniczego programu emerytalnego"
+      },
+      "us": {
+        "filingStatusLabel": "Status rozliczenia W-4",
+        "filingStatus": {
+          "SINGLE": "Samotny lub małżonek rozliczający się osobno",
+          "MARRIED_FILING_JOINTLY": "Małżeństwo rozliczające się wspólnie",
+          "HEAD_OF_HOUSEHOLD": "Głowa gospodarstwa domowego"
+        },
+        "stateWithholdingLabel": "Zaliczka stanowa",
+        "stateOtherOption": "Inny stan",
+        "stateOtherLabel": "Stan",
+        "stateOtherPlaceholder": "np. WA",
+        "ssnLabel": "Numer ubezpieczenia społecznego (SSN)",
+        "ssnPlaceholder": "np. 123-45-6789",
+        "ssnFormatError": "Podaj prawidłowy numer SSN."
+      },
+      "ae": {
+        "visaTypeLabel": "Rodzaj wizy",
+        "visaType": {
+          "EMPLOYMENT": "Zatrudnienie",
+          "GOLDEN": "Złota",
+          "INVESTOR": "Inwestor",
+          "FAMILY": "Rodzinna",
+          "FREELANCE": "Freelance"
+        },
+        "wpsEstablishmentIdLabel": "Identyfikator zakładu WPS",
+        "wpsEstablishmentIdPlaceholder": "Do 13 cyfr",
+        "wpsAdvisory": "Nie udało się zweryfikować identyfikatora WPS — zapis dozwolony.",
+        "emiratesIdLabel": "Emirates ID",
+        "emiratesIdPlaceholder": "784-RRRR-NNNNNNN-N",
+        "emiratesIdFormatError": "Podaj prawidłowy Emirates ID (784-RRRR-NNNNNNN-N).",
+        "emiratesIdChecksumAdvisory": "Nie udało się zweryfikować cyfry kontrolnej tego Emirates ID. Możesz zapisać — potwierdź poprawność."
+      },
+      "sa": {
+        "saudizationCategoryLabel": "Kategoria saudyzacji (Nitaqat)",
+        "saudizationBand": {
+          "PLATINUM": "Platynowa",
+          "GREEN": "Zielona",
+          "YELLOW": "Żółta",
+          "RED": "Czerwona"
+        },
+        "gosiNumberLabel": "Numer rejestracyjny GOSI",
+        "gosiNumberPlaceholder": "9 cyfr",
+        "gosiAdvisory": "Nie udało się zweryfikować numeru GOSI — zapis dozwolony.",
+        "iqamaLabel": "Iqama / krajowy numer ID",
+        "iqamaPlaceholder": "10 cyfr",
+        "iqamaFormatError": "Podaj prawidłową Iqamę lub krajowy numer ID."
+      }
     }
   },
   "Documents": {
