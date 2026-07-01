@@ -407,7 +407,25 @@ Plans:
   3. Employee time tracking (distinct from v2.0 B2B time) captures overtime, night-shift, and weekend/holiday work, and raises per-jurisdiction working-time-limit alerts (PL 8h/48h, DE ArbZG, UK 48h WTR opt-out, US FLSA >40h non-exempt).
   4. A PL "ewidencja czasu pracy" report generates per KP §149 with a 3-year audit-immutable archive.
 
-**Plans**: TBD
+**Plans**: 16 plans (9 waves) — execution BLOCKED until Phase 90 completes (leave/time attach to Worker(EMPLOYEE) + read EmployeeProfile.etat)
+
+- [ ] 92-01-PLAN.md — Wave-0 RED test scaffolds (all VALIDATION.md files) + shared employee/holiday fixtures [wave 1]
+- [ ] 92-02-PLAN.md — Leave + employee-time + reference Prisma schema + tenant.ts (append-only ledger / PublicHoliday global) [wave 1]
+- [ ] 92-03-PLAN.md — Four-place LEAVE_REQUEST/EMPLOYEE_TIME_RECORD enum extension + leave/employee-time validators + ENTITY_ROUTES [wave 1]
+- [ ] 92-04-PLAN.md — Ewidencja immutable schema + append-only trigger migration + retention (no-purge floor) [wave 1]
+- [ ] 92-05-PLAN.md — compliance-policy leave + WT registries + 6 per-market policy modules [wave 1]
+- [ ] 92-06-PLAN.md — [BLOCKING] Prisma push/generate + ewidencja migration apply (per-region human gate) [wave 2]
+- [ ] 92-07-PLAN.md — Leave-balance service + approval-chain LEAVE_REQUEST seams + cross-org leak GREEN [wave 3]
+- [ ] 92-08-PLAN.md — WT-limit sync check + ewidencja-builder (INSERT-only) + ewidencja-immutable DB GREEN [wave 3]
+- [ ] 92-09-PLAN.md — Leave router (submit/sick-direct/CRUD/blackout + team-calendar read) [wave 4]
+- [ ] 92-10-PLAN.md — WT-limit daily scan (region fan-out + digest) + cron sub-job [wave 4]
+- [ ] 92-11-PLAN.md — Employee-time + ewidencja routers + mount all three + flag-off GREEN [wave 5]
+- [ ] 92-12-PLAN.md — S1 leave queue + balance card + all i18n namespaces (en/de/pl/ar) [wave 6]
+- [ ] 92-13-PLAN.md — S2 team calendar (new build) + team-calendar test GREEN [wave 7]
+- [ ] 92-14-PLAN.md — S3 employee time entry + S5 WT-limit banner [wave 7]
+- [ ] 92-15-PLAN.md — S4 ewidencja report + immutable/supersede-chain treatment [wave 7]
+- [ ] 92-16-PLAN.md — Documentation-follows-code: leave+time wiki + MEMORY invariants + check:wiki-brain [wave 8]
+
 **Research flag**: Standard — e-ZLA/eAU auto-pull explicitly deferred to v7.5; v7.0 ships manual sick-leave entry only.
 **UI hint**: yes
 
@@ -568,7 +586,7 @@ Phases execute in numeric order: 82 → 83 → … → 101. After Foundation (82
 | 89. Theme B — Worker Model Abstraction (gate) | v7.0 | 6/6 | Complete   | 2026-06-22 |
 | 90. Theme B — Employee Registry per Market (×6) | v7.0 | 3/7 | In Progress|  |
 | 91. Theme B — Akta Osobowe / Personnel File | v7.0 | 0/TBD | Not started | - |
-| 92. Theme B — Leave + KP-Grade Time Tracking | v7.0 | 0/TBD | Not started | - |
+| 92. Theme B — Leave + KP-Grade Time Tracking | v7.0 | 0/16 | Planned     | - |
 | 93. Theme B — Employee On/Offboarding | v7.0 | 0/TBD | Not started | - |
 | 94. Theme B — Payroll Integration Adapters | v7.0 | 0/TBD | Not started | - |
 | 95. Theme B — HRIS Two-Way Sync | v7.0 | 0/TBD | Not started | - |
