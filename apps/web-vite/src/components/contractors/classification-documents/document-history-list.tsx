@@ -17,10 +17,27 @@ interface DocumentHistoryListViewProps {
 
 const SKELETON_ROW_KEYS = ['skel-0', 'skel-1', 'skel-2'] as const;
 
-type DocumentKind = 'SDS' | 'DRV_DEFENSE_BUNDLE';
+type DocumentKind =
+  | 'SDS'
+  | 'DRV_DEFENSE_BUNDLE'
+  | 'DRV_DECISION_LETTER'
+  | 'US_DETERMINATION_LETTER';
 
-function kindLabelKey(kind: DocumentKind): 'kindSds' | 'kindDrvDefenseBundle' {
-  return kind === 'SDS' ? 'kindSds' : 'kindDrvDefenseBundle';
+type KindLabelKey =
+  | 'kindSds'
+  | 'kindDrvDefenseBundle'
+  | 'kindDrvDecisionLetter'
+  | 'kindUsDeterminationLetter';
+
+const KIND_LABEL_KEYS: Record<DocumentKind, KindLabelKey> = {
+  SDS: 'kindSds',
+  DRV_DEFENSE_BUNDLE: 'kindDrvDefenseBundle',
+  DRV_DECISION_LETTER: 'kindDrvDecisionLetter',
+  US_DETERMINATION_LETTER: 'kindUsDeterminationLetter',
+};
+
+function kindLabelKey(kind: DocumentKind): KindLabelKey {
+  return KIND_LABEL_KEYS[kind] ?? 'kindSds';
 }
 
 export function DocumentHistoryListSkeleton() {

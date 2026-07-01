@@ -28,3 +28,19 @@ Out-of-scope discoveries logged during plan execution (not fixed — belong to o
     / `tax.form_1099k_over` not assignable to the notification-type union.
 
   87-05's own files are all typecheck-clean. Owner: the originating plans (87-03 / 87-06).
+
+## From Plan 87-08 (US classification result + determination letter + 1099-K band UI)
+
+- **i18n_review (ar):** the new `UsClassification.*` and `Form1099KTracker.*` Arabic strings in
+  `apps/web-vite/messages/ar.json` are machine-assisted translations shipped at key parity. They are
+  tagged here for native Arabic review per the standing i18n_review deferred item — the tax/legal
+  wording (`§530`, `AB5`, `1099-K`, "settlor") should be confirmed by a native reviewer. `i18n:parity`
+  is green; this is a review flag, not a parity gap.
+
+- **Out-of-scope pre-existing web-vite test failures (observed, NOT fixed):** a full `vitest run` of
+  the web-vite suite surfaced ~5 failing test files unrelated to this plan's scope (e.g.
+  `src/components/integrations/__tests__/okta-provider-section.test.tsx`). They are outside the
+  classification / tax-forms / 1099-K surface this plan touched and were present on the merged base.
+  Not fixed here (scope boundary). The classification + classification-documents + contractors test
+  dirs and the two new test files (`us-classification-result.test.tsx`, `form-1099k-band.test.tsx`)
+  are all green.

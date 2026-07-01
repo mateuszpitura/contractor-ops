@@ -5,6 +5,7 @@ import { useId } from 'react';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 
 import { DocumentHistoryListContainer } from './document-history-list.js';
+import { GenerateDeterminationLetterButton } from './generate-determination-letter-button.js';
 import { GenerateDrvBundleButton } from './generate-drv-bundle-button.js';
 import { GenerateSdsButton } from './generate-sds-button.js';
 
@@ -29,9 +30,11 @@ export function ClassificationDocumentsPanel({
   const headingId = useId();
   const sdsDisabledId = useId();
   const drvDisabledId = useId();
+  const usDisabledId = useId();
 
   const isGb = countryCode === 'GB';
   const isDe = countryCode === 'DE';
+  const isUs = countryCode === 'US';
   const canGenerateSds = Boolean(isGb && completedAssessmentId);
   const canGenerateDrv = Boolean(isDe && completedAssessmentId && attestationSigned);
   const drvDisabledReason = completedAssessmentId
@@ -89,6 +92,26 @@ export function ClassificationDocumentsPanel({
               </button>
               <p id={drvDisabledId} className="mt-2 text-xs text-muted-foreground">
                 {t('drvDisabledNeedAssessment')}
+              </p>
+            </div>
+          )
+        ) : null}
+
+        {isUs ? (
+          completedAssessmentId ? (
+            <GenerateDeterminationLetterButton classificationAssessmentId={completedAssessmentId} />
+          ) : (
+            <div>
+              <button
+                type="button"
+                disabled
+                aria-disabled="true"
+                aria-describedby={usDisabledId}
+                className="inline-flex items-center rounded-md border bg-muted px-4 py-2 text-sm text-muted-foreground">
+                {t('generateDeterminationLetter')}
+              </button>
+              <p id={usDisabledId} className="mt-2 text-xs text-muted-foreground">
+                {t('generateDisabled')}
               </p>
             </div>
           )

@@ -755,7 +755,10 @@
       "toastSdsGenerated": "SDS wygenerowane — otwieram pobieranie…",
       "errorGenericTitle": "Nie udało się wygenerować dokumentu",
       "kindSds": "Oświadczenie o statusie (SDS)",
-      "kindDrvDefenseBundle": "Pakiet obrony audytowej DRV"
+      "kindDrvDefenseBundle": "Pakiet obrony audytowej DRV",
+      "kindUsDeterminationLetter": "Pismo klasyfikacyjne (USA)",
+      "kindDrvDecisionLetter": "Decyzja DRV",
+      "generateDeterminationLetter": "Wygeneruj pismo klasyfikacyjne"
     },
     "ExpertHelp": {
       "title": "Uzyskaj pomoc eksperta",
@@ -9129,6 +9132,103 @@
       "toast": {
         "error": "Nie udało się przetworzyć żądania usunięcia. Spróbuj ponownie."
       }
+    }
+  },
+  "UsClassification": {
+    "title": "Klasyfikacja pracownika (USA)",
+    "empty": {
+      "heading": "Brak oceny klasyfikacji (USA)",
+      "body": "Uruchom ocenę, aby zobaczyć, jak to zaangażowanie wypada wobec federalnego testu common-law, kalifornijskiego testu ABC oraz ulgi z §530 — dla Twojej orientacji, nie jako ustalenie prawne.",
+      "cta": "Rozpocznij ocenę klasyfikacji (USA)"
+    },
+    "error": {
+      "load": "Nie udało się tego wczytać. Sprawdź połączenie i spróbuj ponownie.",
+      "reload": "Odśwież"
+    },
+    "disclaimer": {
+      "title": "Zanim zobaczysz ten wynik",
+      "acknowledgement": "Rozumiem, że jest to wsparcie decyzyjne, a nie ustalenie prawne, i potwierdzę każdą klasyfikację u wykwalifikowanego doradcy, zanim się na niej oprę.",
+      "acknowledging": "Zapisywanie…",
+      "confirm": "Zobacz wynik"
+    },
+    "verdict": {
+      "employee": "Prawdopodobnie pracownik",
+      "independent-contractor": "Prawdopodobnie wykonawca",
+      "indeterminate": "Nieokreślone"
+    },
+    "ab5": {
+      "label": "Lista obserwacyjna AB5",
+      "tooltip": "Kalifornijska lista obserwacyjna AB5: to zaangażowanie jest wykonywane w Kalifornii, gdzie obowiązuje surowszy test ABC. Skonsultuj to z doradcą — to sygnał, a nie ustalenie."
+    },
+    "section530": {
+      "label": "Ulga §530",
+      "tooltip": "Możliwe, że kwalifikuje się do ulgi bezpiecznej przystani §530. Potwierdź spójność raportowania, spójność merytoryczną i uzasadnioną podstawę u swojego doradcy."
+    },
+    "ruleSetVersion": "Zestaw reguł {version}",
+    "computedOn": "Oceniono {date}",
+    "factors": {
+      "heading": "Federalne czynniki common-law",
+      "behavioral": "Kontrola behawioralna",
+      "financial": "Kontrola finansowa",
+      "relationship": "Relacja stron",
+      "employeeSignals": "sygnały pracownika",
+      "contractorSignals": "sygnały wykonawcy"
+    },
+    "citations": {
+      "federal": "Test common-law IRS (Rev. Rul. 87-41): kontrola behawioralna, kontrola finansowa i relacja stron.",
+      "ab5": "California Labor Code §2775 (test ABC), zawężony przez AB2257.",
+      "section530": "§530 Revenue Act z 1978 r. — ulga bezpiecznej przystani, gdy spełnione są spójność raportowania, spójność merytoryczna i uzasadniona podstawa."
+    },
+    "adviserVerify": "Pokazane tutaj kwoty, formularze i klasyfikacje wymagają weryfikacji przez radcę prawnego lub doradcę podatkowego właściwej jurysdykcji, zanim się na nich oprzesz.",
+    "live": {
+      "verdict": "Wynik klasyfikacji: {verdict}.",
+      "verdictWithAb5": "Wynik klasyfikacji: {verdict}. Obowiązuje sygnał listy obserwacyjnej AB5."
+    },
+    "override": {
+      "trigger": "Zastąp klasyfikację",
+      "title": "Zastąp klasyfikację",
+      "descriptionPrefix": "Zapisz, dlaczego zastępujesz oceniony wynik dla",
+      "descriptionSuffix": "Jest to rejestrowane w dzienniku audytu. Uzasadnienie jest wymagane.",
+      "verdictLabel": "Zastępujący wynik",
+      "verdictPlaceholder": "Wybierz wynik",
+      "reasonLabel": "Uzasadnienie",
+      "reasonPlaceholder": "Wyjaśnij, dlaczego zastępujesz oceniony wynik",
+      "reasonHint": "Rejestrowane w dzienniku audytu obok ocenionego wyniku.",
+      "ackLabel": "Potwierdzam, że to zastąpienie odzwierciedla decyzję człowieka, a nie ustalenie systemu, i biorę za nie odpowiedzialność.",
+      "auditBadge": "Zarejestrowane",
+      "auditNote": "Oceniony wynik jest zachowany; Twoje zastąpienie jest rejestrowane na jego podstawie.",
+      "cancel": "Anuluj",
+      "submit": "Zapisz zastąpienie",
+      "submitting": "Zapisywanie…"
+    },
+    "letter": {
+      "gateTitle": "Potwierdź przed wygenerowaniem pisma klasyfikacyjnego",
+      "clientNameLabel": "Nazwa klienta lub odbiorcy",
+      "clientNamePlaceholder": "Nazwa na piśmie klasyfikacyjnym",
+      "approvalStatement": "Potwierdzam, że przejrzałem/przejrzałam pokazane tutaj ocenione czynniki, sygnały i cytaty oraz że to pismo klasyfikacyjne zapisuje je na dzień dzisiejszy. To narzędzie nie stanowi porady prawnej.",
+      "generate": "Wygeneruj pismo klasyfikacyjne",
+      "generating": "Generowanie…",
+      "errorTitle": "Nie udało się wygenerować pisma klasyfikacyjnego"
+    }
+  },
+  "Form1099KTracker": {
+    "title": "Próg 1099-K",
+    "loadError": "Nie udało się wczytać monitora 1099-K. Spróbuj ponownie.",
+    "reload": "Odśwież",
+    "band": {
+      "SAFE": "Bezpiecznie",
+      "APPROACHING": "Zbliża się",
+      "OVER": "Przekroczono"
+    },
+    "empty": "Brak zarejestrowanych wypłat podlegających zgłoszeniu za {taxYear}.",
+    "across": "w ramach {count} wypłat w tym roku",
+    "thresholdCaption": "Próg",
+    "thresholdValue": "{amount} / {count} transakcji",
+    "thresholdUnknown": "próg zgłaszania 1099-K",
+    "copy": {
+      "SAFE": "Znacznie poniżej progu zgłaszania 1099-K — nic do zrobienia.",
+      "APPROACHING": "Zbliża się do progu zgłaszania 1099-K. To informacja — nie składamy 1099-K.",
+      "OVER": "Powyżej progu zgłaszania 1099-K. Twój podmiot rozliczający płatności — a nie ta platforma — składa ewentualne 1099-K. To tylko informacja."
     }
   }
 }

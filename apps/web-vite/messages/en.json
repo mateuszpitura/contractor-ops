@@ -580,7 +580,10 @@
       "toastSdsGenerated": "SDS generated — opening download…",
       "errorGenericTitle": "Could not generate document",
       "kindSds": "Status Determination Statement",
-      "kindDrvDefenseBundle": "DRV audit defence bundle"
+      "kindDrvDefenseBundle": "DRV audit defence bundle",
+      "kindUsDeterminationLetter": "US determination letter",
+      "kindDrvDecisionLetter": "DRV decision letter",
+      "generateDeterminationLetter": "Generate determination letter"
     },
     "disclaimer": {
       "title": "Before you view the outcome",
@@ -9128,6 +9131,103 @@
       "toast": {
         "error": "Couldn't process the erasure request. Try again."
       }
+    }
+  },
+  "UsClassification": {
+    "title": "US worker classification",
+    "empty": {
+      "heading": "No US classification assessment yet",
+      "body": "Run an assessment to see how this engagement scores against the federal common-law test, the California ABC test, and §530 relief — for your reference, not as a legal determination.",
+      "cta": "Start US classification assessment"
+    },
+    "error": {
+      "load": "We couldn't load this. Check your connection and try again.",
+      "reload": "Reload"
+    },
+    "disclaimer": {
+      "title": "Before you view this result",
+      "acknowledgement": "I understand this is decision-support, not a legal determination, and I'll confirm any classification with a qualified adviser before I rely on it.",
+      "acknowledging": "Saving…",
+      "confirm": "View result"
+    },
+    "verdict": {
+      "employee": "Likely employee",
+      "independent-contractor": "Likely contractor",
+      "indeterminate": "Indeterminate"
+    },
+    "ab5": {
+      "label": "AB5 watchlist",
+      "tooltip": "California AB5 watchlist: this engagement performs work in California, where the stricter ABC test applies. Review with your adviser — this is a flag, not a determination."
+    },
+    "section530": {
+      "label": "§530 relief",
+      "tooltip": "May be eligible for §530 safe-harbour relief. Confirm reporting consistency, substantive consistency, and a reasonable basis with your adviser."
+    },
+    "ruleSetVersion": "Rule set {version}",
+    "computedOn": "Assessed {date}",
+    "factors": {
+      "heading": "Federal common-law factors",
+      "behavioral": "Behavioural control",
+      "financial": "Financial control",
+      "relationship": "Relationship of the parties",
+      "employeeSignals": "employee signals",
+      "contractorSignals": "contractor signals"
+    },
+    "citations": {
+      "federal": "IRS common-law test (Rev. Rul. 87-41): behavioural control, financial control, and the relationship of the parties.",
+      "ab5": "California Labor Code §2775 (the ABC test), as narrowed by AB2257.",
+      "section530": "§530 of the Revenue Act of 1978 — safe-harbour relief where reporting consistency, substantive consistency, and a reasonable basis are met."
+    },
+    "adviserVerify": "Figures, forms, and classifications shown here need verification by a jurisdiction-specific legal or tax adviser before you rely on them.",
+    "live": {
+      "verdict": "Classification result: {verdict}.",
+      "verdictWithAb5": "Classification result: {verdict}. California AB5 watchlist flag applies."
+    },
+    "override": {
+      "trigger": "Override classification",
+      "title": "Override classification",
+      "descriptionPrefix": "Record why you're overriding the assessed outcome for",
+      "descriptionSuffix": "This is audit-logged. A reason is required.",
+      "verdictLabel": "Override verdict",
+      "verdictPlaceholder": "Choose a verdict",
+      "reasonLabel": "Reason",
+      "reasonPlaceholder": "Explain why you're overriding the assessed outcome",
+      "reasonHint": "Recorded in the audit log alongside the assessed outcome.",
+      "ackLabel": "I confirm this override reflects a human decision, not a system determination, and I take responsibility for it.",
+      "auditBadge": "Audit-logged",
+      "auditNote": "The assessed outcome is preserved; your override is recorded on top of it.",
+      "cancel": "Cancel",
+      "submit": "Save override",
+      "submitting": "Saving…"
+    },
+    "letter": {
+      "gateTitle": "Confirm before generating the determination letter",
+      "clientNameLabel": "Client or recipient name",
+      "clientNamePlaceholder": "Name on the determination letter",
+      "approvalStatement": "I confirm I've reviewed the scored factors, flags, and citations shown here, and that this determination letter records them as of today. This tool does not constitute legal advice.",
+      "generate": "Generate determination letter",
+      "generating": "Generating…",
+      "errorTitle": "We couldn't generate the determination letter"
+    }
+  },
+  "Form1099KTracker": {
+    "title": "1099-K threshold",
+    "loadError": "We couldn't load the 1099-K tracker. Try again.",
+    "reload": "Reload",
+    "band": {
+      "SAFE": "Safe",
+      "APPROACHING": "Approaching",
+      "OVER": "Over"
+    },
+    "empty": "No reportable payouts tracked for {taxYear} yet.",
+    "across": "across {count} payouts this year",
+    "thresholdCaption": "Threshold",
+    "thresholdValue": "{amount} / {count} transactions",
+    "thresholdUnknown": "the 1099-K reporting threshold",
+    "copy": {
+      "SAFE": "Well below the 1099-K reporting threshold — nothing to do.",
+      "APPROACHING": "Approaching the 1099-K reporting threshold. This is informational — we don't file 1099-K.",
+      "OVER": "Over the 1099-K reporting threshold. Your payment settlor — not this platform — files any 1099-K. This is a heads-up only."
     }
   }
 }
