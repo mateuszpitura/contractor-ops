@@ -450,3 +450,7 @@ export const COMPLIANCE_DOCUMENT_NOT_PENDING_REVIEW = 'complianceDocumentNotPend
 
 // ─── Gulf free-zone assignment ────────────────────────────────────
 export const GULF_ASSIGNMENT_NOT_FOUND = 'gulfAssignmentNotFound';
+
+// ─── Personnel file ("akta osobowe") classify step ────────────────
+export const PERSONNEL_FILE_NOT_FOUND = 'personnelFileNotFound';
+export const PERSONNEL_DOCUMENT_ALREADY_ATTACHED = 'personnelDocumentAlreadyAttached';
