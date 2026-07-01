@@ -144,6 +144,10 @@ None new. Test fixtures use synthetic routing/account numbers only (per the plan
 - **88-10 (Gap C):** implement `ach-return.service.ts` against the locked contract (parser mirrors the NACHA generator's column layout used in the Task 3 fixture). Turns Task 3 green.
 - **Blocker note:** running the e2e end-to-end (green) will require the sibling `classification`/`integrations` builds to be repaired, or continued use of the narrowed payment-router harness.
 
+## Self-Check: PASSED
+
+All five source files + the SUMMARY exist on disk; all four commits (`f783ab20c`, `c99512ea0`, `b3e5d3bfb`, `c7de52833`) are present in the git log.
+
 ---
 *Phase: 88-theme-a-us-payment-rail*
 *Completed: 2026-07-01*
