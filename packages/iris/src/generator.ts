@@ -11,7 +11,12 @@
 // pinned IRS IRIS XSD bundle (src/schema-bundle). See types.ts.
 
 import { XMLBuilder } from 'fast-xml-parser';
-import type { IrisPayee, IrisSubmissionInput } from './types.js';
+import type {
+  Iris1042SRecipient,
+  Iris1042SSubmissionInput,
+  IrisPayee,
+  IrisSubmissionInput,
+} from './types.js';
 
 const builder = new XMLBuilder({
   ignoreAttributes: false,
@@ -45,6 +50,38 @@ function buildPayeeRecord(payee: IrisPayee): Record<string, unknown> {
 }
 
 /**
+ * IRIS withholding-rate elements carry a percentage with two decimals; convert
+ * basis points (`1500`) to that string form (`'15.00'`).
+ */
+function toRatePercent(basisPoints: number): string {
+  return (basisPoints / 100).toFixed(2);
+}
+
+/**
+ * Build a single 1042-S recipient record group.
+ *
+ * The full foreign TIN is never reconstructed — only the masked last-4
+ * `recipientFtin` supplied by the caller reaches the payload.
+ */
+function build1042SRecipientRecord(recipient: Iris1042SRecipient): Record<string, unknown> {
+  return {
+    RecipientFTIN: recipient.recipientFtin,
+    RecipientName: recipient.recipientName,
+    IncomeCd: recipient.incomeCode,
+    GrossIncomeBox2Amt: toUsAmount(recipient.grossIncomeBox2Minor),
+    Chap3ExemptionCd: recipient.chap3ExemptionCode,
+    Chap3WithholdingRt: toRatePercent(recipient.chap3RateBp),
+    Chap4ExemptionCd: recipient.chap4ExemptionCode,
+    Chap4WithholdingRt: toRatePercent(recipient.chap4RateBp),
+    FederalTaxWithheldBox7Amt: toUsAmount(recipient.federalTaxWithheldBox7Minor),
+    RecipientChap3StatusCd: recipient.recipientChap3StatusCode,
+    RecipientChap4StatusCd: recipient.recipientChap4StatusCode,
+    RecipientLOBCd: recipient.recipientLobCode,
+    TreatyArticleTxt: recipient.treatyArticle,
+  };
+}
+
+/**
  * Generate an IRIS 1099-NEC XML submission string from canonical input.
  *
  * @returns Well-formed IRIS XML (UTF-8 string). Validate it with
@@ -67,6 +104,39 @@ export function buildIrisXml(input: IrisSubmissionInput): string {
         PayerStateCd: input.payer.stateCode,
       },
       PayeeRecordGrp: input.payees.map(buildPayeeRecord),
+    },
+  };
+
+  return builder.build(doc);
+}
+
+/**
+ * Generate an IRIS 1042-S XML submission string from canonical input.
+ *
+ * A sibling of {@link buildIrisXml} rather than a parameterised 1099 builder:
+ * the 1042-S (Publication 1187) record layout differs materially — chapter 3/4
+ * status/exemption codes, income codes, and treaty fields — so it gets its own
+ * recipient record while sharing the Transmission Manifest shape and the
+ * XMLBuilder (never string-concatenated XML — entity-escape bugs surface as
+ * opaque XSD failures).
+ *
+ * @returns Well-formed IRIS XML (UTF-8 string). Validate it with
+ *   {@link xsdValidate1042S} before transmission.
+ */
+export function buildIris1042SXml(input: Iris1042SSubmissionInput): string {
+  const doc = {
+    '?xml': { '@_version': '1.0', '@_encoding': 'UTF-8' },
+    Form1042SSubmission: {
+      TransmissionManifest: {
+        TaxYr: input.taxYear,
+        VersionNum: input.schemaVersion.versionNum,
+        VersionDt: input.schemaVersion.versionDt,
+      },
+      WithholdingAgent: {
+        WithholdingAgentTIN: input.withholdingAgent.tin,
+        WithholdingAgentName: input.withholdingAgent.name,
+      },
+      RecipientRecordGrp: input.recipients.map(build1042SRecipientRecord),
     },
   };
 

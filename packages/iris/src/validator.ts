@@ -34,15 +34,35 @@ interface EntrySchema {
   baseUrl: string;
 }
 
-let entryPromise: Promise<EntrySchema | null> | undefined;
+/**
+ * Which IRIS form's XSD to validate against. Each form (1099-NEC, 1042-S) has
+ * its own payload schema inside the same bundle, selected by filename.
+ */
+type IrisForm = '1099' | '1042s';
 
 /**
- * Lazily load + memoise the entry XSD from the bundle. Returns null when no
- * `.xsd` has been placed yet (the human-action checkpoint is pending).
+ * Filename matcher for each form's payload XSD entry point. Its `<xs:import>`s
+ * resolve against `baseUrl` to the sibling manifest XSD. Real filenames are
+ * known once the pinned bundle lands — revisit then.
  */
-function loadEntrySchema(): Promise<EntrySchema | null> {
-  if (entryPromise !== undefined) return entryPromise;
-  entryPromise = (async () => {
+const ENTRY_MATCHERS: Record<IrisForm, RegExp> = {
+  '1099': /1099|nec/i,
+  '1042s': /1042/i,
+};
+
+const entryPromises = new Map<IrisForm, Promise<EntrySchema | null>>();
+
+/**
+ * Lazily load + memoise the entry XSD for `form` from the bundle. Returns null
+ * when no matching `.xsd` has been placed yet (the human-action checkpoint is
+ * pending). A form-specific entry is never substituted from another form's
+ * schema — a missing 1042-S XSD reports missing rather than validating against
+ * the 1099 schema.
+ */
+function loadEntrySchema(form: IrisForm): Promise<EntrySchema | null> {
+  const cached = entryPromises.get(form);
+  if (cached !== undefined) return cached;
+  const promise = (async () => {
     const bundleDir = getBundleDir();
     let files: string[];
     try {
@@ -51,26 +71,24 @@ function loadEntrySchema(): Promise<EntrySchema | null> {
       return null;
     }
     if (files.length === 0) return null;
-    // Prefer the 1099-NEC payload schema as the validation entry point; its
-    // `<xs:import>`s resolve against `baseUrl` to the sibling manifest XSD.
-    // Filenames are known once the real bundle is pinned — revisit then.
-    const entry = files.find(f => /1099|nec|payload/i.test(f)) ?? [...files].sort()[0];
+    const entry = files.find(f => ENTRY_MATCHERS[form].test(f));
     if (entry === undefined) return null;
     const xsd = await readFile(path.join(bundleDir, entry), 'utf8');
     return { xsd, baseUrl: bundleDir + path.sep };
   })();
-  return entryPromise;
+  entryPromises.set(form, promise);
+  return promise;
 }
 
 /**
- * Validate an IRIS XML string against the bundled IRS IRIS XSD.
+ * Core: validate an IRIS XML string against the bundled entry XSD for `form`.
  *
  * Never throws on a bad instance — XML/validation problems surface in
  * `report.errors`. Only re-throws on a corrupt schema bundle (a programmer
  * error, not a validation outcome).
  */
-export async function xsdValidate(xml: string): Promise<IrisValidationReport> {
-  const entry = await loadEntrySchema();
+async function validateAgainstBundle(xml: string, form: IrisForm): Promise<IrisValidationReport> {
+  const entry = await loadEntrySchema(form);
 
   if (entry === null) {
     log.warn(
@@ -130,4 +148,24 @@ export async function xsdValidate(xml: string): Promise<IrisValidationReport> {
         : String(e).trim(),
   }));
   return { status: 'INVALID', errors };
+}
+
+/**
+ * Validate a 1099-NEC IRIS XML string against the bundled IRS IRIS XSD.
+ *
+ * Never throws on a bad instance — problems surface in `report.errors`.
+ */
+export function xsdValidate(xml: string): Promise<IrisValidationReport> {
+  return validateAgainstBundle(xml, '1099');
+}
+
+/**
+ * Validate a 1042-S IRIS XML string against the bundled IRS Publication 1187
+ * XSD. Uses libxmljs2 `{ nonet: true }` (no SSRF) with the default
+ * `noent: false` (no XXE), reading the checksum-pinned schema bundle.
+ *
+ * Never throws on a bad instance — problems surface in `report.errors`.
+ */
+export function xsdValidate1042S(xml: string): Promise<IrisValidationReport> {
+  return validateAgainstBundle(xml, '1042s');
 }
