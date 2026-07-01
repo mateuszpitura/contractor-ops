@@ -45,6 +45,13 @@ describe('roles', () => {
         expect(o[resource as keyof typeof o]).toBeUndefined();
         continue;
       }
+      if (resource.startsWith('employeeFile')) {
+        // The per-section personnel-file resources are HR-only. Like `employee`,
+        // they are absent from the owner's allPermissions duplicate so the owner
+        // cannot silently reach a personnel-file section it was never granted.
+        expect(o[resource as keyof typeof o]).toBeUndefined();
+        continue;
+      }
       expect(o[resource as keyof typeof o]?.slice().sort()).toEqual([...actions].sort());
     }
   });

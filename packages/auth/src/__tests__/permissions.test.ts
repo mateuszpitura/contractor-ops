@@ -26,6 +26,11 @@ describe('accessControlStatement', () => {
       'costCenter',
       'contractorPii',
       'employee',
+      'employeePii',
+      'employeeFileA',
+      'employeeFileB',
+      'employeeFileC',
+      'employeeFileD',
       'admin:boe-rate',
     ];
     const keys = Object.keys(accessControlStatement);
