@@ -30,6 +30,11 @@ const softDeleteModels = new Set([
   'Invoice',
   'Document',
   'Form1099Nec',
+  // Personnel files carry statutory retention windows; a delete here must never
+  // hard-delete. The windowed hard-delete is the data-purge cron's job, so an
+  // unconditional soft-delete at this chokepoint is the correct, minimal guard.
+  'PersonnelFile',
+  'PersonnelFileDocument',
 ]);
 
 /**
