@@ -292,7 +292,7 @@ Plans:
 
 **Wave 6** *(blocked on Wave 5 completion)*
 
-- [ ] 88-06-PLAN.md — Modern Treasury + Plaid mock-behind-seam adapters + opt-in payout-init procedure (US-PAY-03/05)
+- [x] 88-06-PLAN.md — Modern Treasury + Plaid mock-behind-seam adapters + opt-in payout-init procedure (US-PAY-03/05)
 
 **Wave 7** *(blocked on Wave 6 completion)*
 
@@ -564,7 +564,7 @@ Phases execute in numeric order: 82 → 83 → … → 101. After Foundation (82
 | 85. Theme A — W-Form Intake + Tax-Treaty Engine | v7.0 | 4/4 | Complete   | 2026-06-16 |
 | 86. Theme A — TIN-Match → 1099-NEC → IRIS → State | v7.0 | 4/8 | In Progress|  |
 | 87. Theme A — 1042-S + US Classification + Letter | v7.0 | 0/10 | Not started | - |
-| 88. Theme A — US Payment Rail | v7.0 | 5/7 | In Progress|  |
+| 88. Theme A — US Payment Rail | v7.0 | 6/7 | In Progress|  |
 | 89. Theme B — Worker Model Abstraction (gate) | v7.0 | 6/6 | Complete   | 2026-06-22 |
 | 90. Theme B — Employee Registry per Market (×6) | v7.0 | 3/7 | In Progress|  |
 | 91. Theme B — Akta Osobowe / Personnel File | v7.0 | 0/TBD | Not started | - |
