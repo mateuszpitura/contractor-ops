@@ -241,3 +241,113 @@ describe('detectUsFormat', () => {
     );
   });
 });
+
+// ---------------------------------------------------------------------------
+// detectFormatForDestination — US-bank routing precedence
+//
+// A USD payout to a US bank (routing/account present, no IBAN) must resolve to
+// ACH_NACHA at/below the Same-Day ACH ceiling and FEDWIRE above it, checked
+// BETWEEN the BACS rail and the IBAN fallback. The amount is carried in an
+// options arg; the pre-existing BACS/SEPA/SWIFT precedence must not regress.
+// ---------------------------------------------------------------------------
+
+describe('detectFormatForDestination — US ACH/Fedwire routing', () => {
+  const ceiling = SAME_DAY_ACH_CEILING_MINOR_CURRENT;
+
+  // A US-bank destination: encrypted routing + account present, no IBAN, no UK pair.
+  const usBankDestination = {
+    iban: null,
+    ukSortCodeEncrypted: null,
+    ukAccountNumberEncrypted: null,
+    usRoutingNumberEncrypted: 'enc:123456789',
+    usAccountNumberEncrypted: 'enc:000987654321',
+  };
+
+  it('routes a USD US-bank payout at or below the ceiling to ACH_NACHA', () => {
+    expect(detectFormatForDestination('USD', usBankDestination, { amountMinor: 50_000_00 })).toBe(
+      'ACH_NACHA',
+    );
+    expect(detectFormatForDestination('USD', usBankDestination, { amountMinor: ceiling })).toBe(
+      'ACH_NACHA',
+    );
+  });
+
+  it('routes a USD US-bank payout above the ceiling to FEDWIRE', () => {
+    expect(detectFormatForDestination('USD', usBankDestination, { amountMinor: ceiling + 1 })).toBe(
+      'FEDWIRE',
+    );
+  });
+
+  it('keeps GBP + UK sort/account on BACS_STD18 (US branch never shadows BACS)', () => {
+    const gbpUkDestination = {
+      iban: 'GB29NWBK60161331926819',
+      ukSortCodeEncrypted: 'enc:abc',
+      ukAccountNumberEncrypted: 'enc:def',
+    };
+    expect(detectFormatForDestination('GBP', gbpUkDestination)).toBe('BACS_STD18');
+  });
+
+  it('keeps EUR + EU IBAN on SEPA_XML (no US regression)', () => {
+    const eurDestination = {
+      iban: 'DE89370400440532013000',
+      ukSortCodeEncrypted: null,
+      ukAccountNumberEncrypted: null,
+    };
+    expect(detectFormatForDestination('EUR', eurDestination)).toBe('SEPA_XML');
+  });
+
+  it('falls through to SWIFT_XML for a US-bank destination when no amount is supplied', () => {
+    // Without an amount the US branch cannot pick a rail, so routing must fall
+    // straight through to the IBAN fallback rather than silently defaulting to ACH.
+    expect(detectFormatForDestination('USD', usBankDestination)).toBe('SWIFT_XML');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// groupItemsByFormat — US-aware split
+//
+// A mixed run (a USD US-bank item at/below the ceiling, a USD US-bank item above
+// it, and a EUR EU-IBAN item) must split into ACH_NACHA + FEDWIRE + SEPA_XML.
+// ---------------------------------------------------------------------------
+
+describe('groupItemsByFormat — US-aware split', () => {
+  const makeUsItem = (amountMinor: number): ExportItem => ({
+    contractorName: 'US Payee',
+    iban: '',
+    amountMinor,
+    currency: 'USD',
+    invoiceNumber: 'INV-US',
+    taxId: null,
+    bankName: null,
+    swiftBic: null,
+    dueDate: new Date('2026-06-01'),
+    transferTitle: 'Payment',
+    usRoutingNumber: '123456789',
+    usAccountNumber: '000987654321',
+  });
+
+  const eurItem: ExportItem = {
+    contractorName: 'EU Payee',
+    iban: 'DE89370400440532013000',
+    amountMinor: 25_000_00,
+    currency: 'EUR',
+    invoiceNumber: 'INV-EU',
+    taxId: null,
+    bankName: null,
+    swiftBic: null,
+    dueDate: new Date('2026-06-01'),
+    transferTitle: 'Payment',
+  };
+
+  it('splits a mixed USD-US-bank / EUR-IBAN run into ACH_NACHA + FEDWIRE + SEPA_XML', () => {
+    const groups = groupItemsByFormat([
+      makeUsItem(50_000_00),
+      makeUsItem(SAME_DAY_ACH_CEILING_MINOR_CURRENT + 1),
+      eurItem,
+    ]);
+
+    expect(groups.get('ACH_NACHA')?.length).toBe(1);
+    expect(groups.get('FEDWIRE')?.length).toBe(1);
+    expect(groups.get('SEPA_XML')?.length).toBe(1);
+  });
+});
