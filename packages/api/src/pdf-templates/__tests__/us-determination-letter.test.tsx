@@ -1,9 +1,7 @@
-// US Determination-Letter template contract tests — Wave-0 RED scaffold.
+// US Determination-Letter template contract tests.
 //
-// `../us-determination-letter` does not exist yet, so importing it fails at
-// resolution and this suite is terminal-RED until the template lands. The
-// assertions pin the D-01 / D-05 contract, mirroring the shipped ir35-sds
-// template:
+// The assertions pin the deterministic no-LLM render contract plus the locked
+// advisory-footer contract, mirroring the shipped ir35-sds template:
 //   - a byte-stable render for a stable renderedAt (deterministic, no wall-clock
 //     bleed);
 //   - TEMPLATE_VERSION + RENDERER_SLUG = 'us-determination-letter' exports;
@@ -64,7 +62,12 @@ const FIXTURE = {
       computedAt: FIXTURE_RENDERED_AT.toISOString(),
     },
   },
-  engagement: { id: 'eng_1', displayName: 'Backend build', activeFrom: FIXTURE_RENDERED_AT, activeTo: null },
+  engagement: {
+    id: 'eng_1',
+    displayName: 'Backend build',
+    activeFrom: FIXTURE_RENDERED_AT,
+    activeTo: null,
+  },
   contractor: { id: 'rec_1', displayName: 'Jean Contractor' },
   organization: { id: 'org_1', name: 'Acme Org', countryCode: 'US' },
   renderedAt: FIXTURE_RENDERED_AT,
@@ -138,7 +141,9 @@ describe('UsDeterminationLetterDocument', () => {
     const templatePath = path.join(__dirname, '..', 'us-determination-letter.tsx');
     const src = fs.readFileSync(templatePath, 'utf8');
     expect(src).toMatch(/from ['"]@contractor-ops\/validators['"]/);
-    expect(src).not.toMatch(/SOFTWARE_NOT_LEGAL_ADVICE_EN.*messages|messages.*SOFTWARE_NOT_LEGAL_ADVICE_EN/);
+    expect(src).not.toMatch(
+      /SOFTWARE_NOT_LEGAL_ADVICE_EN.*messages|messages.*SOFTWARE_NOT_LEGAL_ADVICE_EN/,
+    );
   });
 
   it('has no LLM call path — the render is fully deterministic', () => {

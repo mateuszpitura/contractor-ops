@@ -168,6 +168,18 @@ export const EXPORT_REGISTRY = {
     maxAgeDays: 7,
     requiredPermission: { contractor: ['read'] as const },
   }),
+  'classification-document-us-determination-letter': defineExport({
+    type: 'classification-document-us-determination-letter',
+    displayName: 'US classification determination letter',
+    paramsSchema: z.object({
+      classificationAssessmentId: z.string().min(1),
+      classificationDocumentId: z.string().min(1).optional(),
+    }),
+    mimeType: 'application/pdf',
+    filename: params => `US-Determination-${params.classificationAssessmentId.slice(-8)}.pdf`,
+    maxAgeDays: 7,
+    requiredPermission: { contractor: ['read'] as const },
+  }),
   'gdpr-privacy-notice': defineExport({
     type: 'gdpr-privacy-notice',
     displayName: 'GDPR privacy notice',

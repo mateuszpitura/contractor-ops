@@ -189,6 +189,8 @@ export const CLASSIFICATION_ENGINE_DISABLED = 'classificationEngineDisabled';
 export const CLASSIFICATION_ASSESSMENT_NOT_FOUND = 'classificationAssessmentNotFound';
 export const CLASSIFICATION_ASSESSMENT_NOT_COMPLETED = 'classificationAssessmentNotCompleted';
 export const CLASSIFICATION_GENERATE_SDS_IR35_ONLY = 'classificationGenerateSdsIr35Only';
+export const CLASSIFICATION_DETERMINATION_LETTER_US_ONLY =
+  'classificationDeterminationLetterUsOnly';
 export const SDS_NOT_APPROVED = 'sdsNotApproved';
 export const CLASSIFICATION_DRV_BUNDLE_NOT_COMPLETED = 'classificationDrvBundleNotCompleted';
 export const CLASSIFICATION_DRV_BUNDLE_DE_ONLY = 'classificationDrvBundleDeOnly';

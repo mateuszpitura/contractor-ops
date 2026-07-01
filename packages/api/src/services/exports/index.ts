@@ -327,6 +327,8 @@ async function dispatchHandler(input: DispatchInput): Promise<DispatchResult> {
       return handleClassificationDocumentSds(input);
     case 'drv-defense-bundle':
       return handleDrvDefenseBundle(input);
+    case 'classification-document-us-determination-letter':
+      return handleUsDeterminationLetter(input);
     case 'gdpr-privacy-notice':
       return handleGdprPrivacyNotice(input);
     default: {
@@ -672,6 +674,30 @@ async function handleClassificationDocumentSds(input: DispatchInput): Promise<Di
   };
 
   const { buffer, contentDisposition } = await renderSdsPdfBuffer({
+    organizationId: input.claim.organizationId,
+    classificationAssessmentId: params.classificationAssessmentId,
+    classificationDocumentId: params.classificationDocumentId,
+    requestedByUserId: input.claim.requestedByUserId,
+  });
+
+  await streamObjectUpload({
+    key: input.r2Key,
+    body: buffer,
+    contentType: input.claim.mimeType,
+    contentDisposition,
+  });
+
+  return { rowCount: null };
+}
+
+async function handleUsDeterminationLetter(input: DispatchInput): Promise<DispatchResult> {
+  const { renderDeterminationLetterPdfBuffer } = await import('../classification-document-render');
+  const params = input.params as {
+    classificationAssessmentId: string;
+    classificationDocumentId?: string;
+  };
+
+  const { buffer, contentDisposition } = await renderDeterminationLetterPdfBuffer({
     organizationId: input.claim.organizationId,
     classificationAssessmentId: params.classificationAssessmentId,
     classificationDocumentId: params.classificationDocumentId,

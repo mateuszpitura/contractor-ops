@@ -19,6 +19,7 @@ import {
   CLASSIFICATION_ASSESSMENT_NOT_COMPLETED,
   CLASSIFICATION_ASSESSMENT_NOT_FOUND,
   CLASSIFICATION_ATTESTATION_REQUIRED,
+  CLASSIFICATION_DETERMINATION_LETTER_US_ONLY,
   CLASSIFICATION_DOCUMENT_NOT_FOUND,
   CLASSIFICATION_DRV_BUNDLE_DE_ONLY,
   CLASSIFICATION_DRV_BUNDLE_NOT_COMPLETED,
@@ -33,6 +34,7 @@ import { router } from '../../init';
 import { findOrThrow } from '../../lib/find-or-throw';
 import { requirePermission } from '../../middleware/rbac';
 import { classificationProcedure } from '../../middleware/require-classification-flag';
+import { assertUsExpansionEnabled } from '../../middleware/require-us-expansion-flag';
 import { buildClassificationDocumentKey } from '../../services/classification-document-keys';
 import { requestExport } from '../../services/exports/index';
 import { deleteObject, putObjectAndSignDownload, signExistingDownload } from '../../services/r2';
@@ -72,6 +74,10 @@ const generateDrvDefenseBundleInputSchema = z.object({
   classificationAssessmentId: z.string().min(1),
 });
 
+const generateUsDeterminationLetterInputSchema = z.object({
+  classificationAssessmentId: z.string().min(1),
+});
+
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
@@ -79,6 +85,14 @@ const generateDrvDefenseBundleInputSchema = z.object({
 function sanitizeFilename(s: string): string {
   return s.replace(/[/\\?%*:|"<>]/g, '-').slice(0, 80);
 }
+
+// Human-readable download-filename prefix per document kind.
+const KIND_DOWNLOAD_LABEL: Record<string, string> = {
+  SDS: 'SDS',
+  DRV_DEFENSE_BUNDLE: 'DRV-Defense',
+  DRV_DECISION_LETTER: 'DRV-Decision',
+  US_DETERMINATION_LETTER: 'US-Determination',
+};
 
 // ---------------------------------------------------------------------------
 // Router
@@ -231,6 +245,65 @@ export const classificationDocumentRouter = router({
     }),
 
   /**
+   * Enqueue a US classification Determination Letter PDF generation job.
+   *
+   * Staff-only (no contractor self-generation) and gated behind the
+   * us-expansion flag for the caller's org/region. Same async contract as
+   * `generateSds`: the mutation validates the legal preconditions (completed
+   * assessment + `outcome.kind === 'US_CLASSIFICATION'`) and the deterministic
+   * render + append-only archive + audit happen off the request path.
+   */
+  generateUsDeterminationLetter: classificationProcedure
+    .input(generateUsDeterminationLetterInputSchema)
+    .mutation(async ({ input, ctx }) => {
+      if (!ctx.session?.user?.id) {
+        throw new TRPCError({ code: 'UNAUTHORIZED' });
+      }
+
+      assertUsExpansionEnabled(ctx.organizationId, ctx.region);
+
+      const assessment = await ctx.db.classificationAssessment
+        .findUniqueOrThrow({
+          where: { id: input.classificationAssessmentId },
+          select: {
+            id: true,
+            status: true,
+            questionsSnapshot: true,
+            outcome: true,
+          },
+        })
+        .catch(() => {
+          throw new TRPCError({
+            code: 'NOT_FOUND',
+            message: CLASSIFICATION_ASSESSMENT_NOT_FOUND,
+          });
+        });
+
+      if (assessment.status !== 'COMPLETED' || assessment.questionsSnapshot === null) {
+        throw new TRPCError({
+          code: 'PRECONDITION_FAILED',
+          message: CLASSIFICATION_ASSESSMENT_NOT_COMPLETED,
+        });
+      }
+      const outcome = assessment.outcome as { kind?: string } | null;
+      if (!outcome || outcome.kind !== 'US_CLASSIFICATION') {
+        throw new TRPCError({
+          code: 'PRECONDITION_FAILED',
+          message: CLASSIFICATION_DETERMINATION_LETTER_US_ONLY,
+        });
+      }
+
+      const result = await requestExport({
+        organizationId: ctx.organizationId,
+        requestedByUserId: ctx.session.user.id,
+        type: 'classification-document-us-determination-letter',
+        params: { classificationAssessmentId: input.classificationAssessmentId },
+      });
+
+      return result;
+    }),
+
+  /**
    * Re-sign an existing ClassificationDocument for download. Does NOT
    * re-upload — bytes remain byte-exact.
    */
@@ -257,7 +330,7 @@ export const classificationDocumentRouter = router({
 
       const contractorName =
         doc.classificationAssessment.contractorAssignment.contractor.displayName;
-      const kindLabel = doc.kind === 'SDS' ? 'SDS' : 'DRV-Defense';
+      const kindLabel = KIND_DOWNLOAD_LABEL[doc.kind] ?? 'Classification-Document';
       const downloadFilename = sanitizeFilename(`${kindLabel}-${contractorName}.pdf`);
 
       const { signedUrl, expiresInSeconds } = await signExistingDownload(

@@ -35,6 +35,12 @@ import {
   RENDERER_SLUG as SDS_RENDERER_SLUG,
   TEMPLATE_VERSION as SDS_TEMPLATE_VERSION,
 } from '../pdf-templates/ir35-sds';
+import {
+  RENDERER_SLUG as US_DETERMINATION_RENDERER_SLUG,
+  TEMPLATE_VERSION as US_DETERMINATION_TEMPLATE_VERSION,
+  UsDeterminationLetterDocument,
+} from '../pdf-templates/us-determination-letter';
+import { writeAuditLog } from './audit-writer';
 import { buildClassificationDocumentKey } from './classification-document-keys';
 import { deleteObject } from './r2';
 
@@ -338,6 +344,140 @@ export async function renderDrvDefenseBundlePdfBuffer(
       );
       throw err;
     }
+  }
+
+  return {
+    buffer,
+    contentDisposition: `attachment; filename="${downloadFilename}"`,
+    documentId,
+    contentAddressedKey: key,
+    sha256Hash,
+  };
+}
+
+export type RenderDeterminationLetterParams = RenderSdsParams;
+
+/**
+ * Render the US Classification Determination Letter PDF to a Buffer + persist an
+ * append-only `ClassificationDocument` row, then audit-log the generation.
+ *
+ * The letter is rendered from the FROZEN assessment snapshot — the
+ * `ruleSetVersion` written to the row is copied verbatim from the assessment,
+ * never recomputed, so a re-render can never drift from the assessed outcome.
+ * Unlike the SDS path there is no server-side approval row: the typed-name
+ * acknowledgement is enforced UI-side and the server records the requesting
+ * user via `generatedByUserId` + the audit event.
+ */
+export async function renderDeterminationLetterPdfBuffer(
+  params: RenderDeterminationLetterParams,
+): Promise<RenderResult> {
+  const assessment = await prisma.classificationAssessment.findFirstOrThrow({
+    where: {
+      id: params.classificationAssessmentId,
+      organizationId: params.organizationId,
+    },
+    include: {
+      contractorAssignment: {
+        include: { contractor: true, organization: true },
+      },
+    },
+  });
+
+  if (assessment.status !== 'COMPLETED' || assessment.questionsSnapshot === null) {
+    throw new Error(
+      'Assessment must be completed with a captured questions snapshot before generating a determination letter.',
+    );
+  }
+  const outcome = assessment.outcome as { kind?: string } | null;
+  if (!outcome || outcome.kind !== 'US_CLASSIFICATION') {
+    throw new Error(
+      'generateUsDeterminationLetter only applies to US worker-classification assessments.',
+    );
+  }
+
+  const renderedAt = assessment.completedAt ?? new Date(0);
+  const engagement = assessment.contractorAssignment;
+  const contractor = engagement.contractor;
+  const organization = engagement.organization;
+
+  const { renderToBuffer } = await import('@react-pdf/renderer');
+  const buffer = await renderToBuffer(
+    UsDeterminationLetterDocument({
+      assessment: assessment as unknown as Parameters<
+        typeof UsDeterminationLetterDocument
+      >[0]['assessment'],
+      engagement: {
+        id: engagement.id,
+        displayName: contractor.displayName,
+        activeFrom: engagement.activeFrom,
+        activeTo: engagement.activeTo,
+      },
+      contractor: { id: contractor.id, displayName: contractor.displayName },
+      organization: {
+        id: organization.id,
+        name: organization.name,
+        countryCode: organization.countryCode,
+      },
+      renderedAt,
+    }),
+  );
+
+  const sha256Hash = createHash('sha256').update(buffer).digest('hex');
+  const key = buildClassificationDocumentKey({
+    organizationId: params.organizationId,
+    classificationAssessmentId: assessment.id,
+    kind: 'US_DETERMINATION_LETTER',
+    ruleSetVersion: assessment.ruleSetVersion,
+    sha256: sha256Hash,
+  });
+  const rendererVersion = `@react-pdf/renderer@${REACT_PDF_VERSION}+${US_DETERMINATION_RENDERER_SLUG}@${US_DETERMINATION_TEMPLATE_VERSION}`;
+
+  const downloadFilename = sanitizeFilename(
+    `US-Determination-${contractor.displayName}-${engagement.id}.pdf`,
+  );
+
+  let documentId = params.classificationDocumentId;
+  if (!documentId) {
+    try {
+      const row = await prisma.classificationDocument.create({
+        data: {
+          organizationId: params.organizationId,
+          classificationAssessmentId: assessment.id,
+          kind: 'US_DETERMINATION_LETTER',
+          pdfKey: key,
+          sha256Hash,
+          byteSize: buffer.byteLength,
+          rendererVersion,
+          ruleSetVersion: assessment.ruleSetVersion,
+          generatedByUserId: params.requestedByUserId ?? '',
+        },
+      });
+      documentId = row.id;
+    } catch (err) {
+      // safe-swallow: R2 cleanup is best-effort after a failed DB insert; the original error is logged below and rethrown
+      await deleteObject(key).catch(() => undefined);
+      log.error(
+        { err: err instanceof Error ? err.message : String(err), assessmentId: assessment.id },
+        'determination letter insert failed during async render',
+      );
+      throw err;
+    }
+
+    await writeAuditLog({
+      organizationId: params.organizationId,
+      actorType: params.requestedByUserId ? 'USER' : 'SYSTEM',
+      actorId: params.requestedByUserId,
+      action: 'classification.determinationLetter.generate',
+      resourceType: 'DOCUMENT',
+      resourceId: documentId,
+      resourceName: downloadFilename,
+      metadata: {
+        kind: 'US_DETERMINATION_LETTER',
+        classificationAssessmentId: assessment.id,
+        ruleSetVersion: assessment.ruleSetVersion,
+        sha256Hash,
+      },
+    });
   }
 
   return {
