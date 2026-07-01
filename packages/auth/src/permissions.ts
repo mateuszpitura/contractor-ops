@@ -52,6 +52,15 @@ export const accessControlStatement = {
   // independently. Granted least-privilege to owner/admin/hr_admin only; every
   // other role (including the read-only HR roles) is deny-by-default. See roles.ts.
   employeePii: ['read'],
+  // Per-section grain for the personnel file. The file is split into four
+  // sections (A: master/leave data, B: discipline, C: pay, D: other) and each
+  // section is its own resource so access is decided section-by-section — a
+  // payroll role can reach section C (pay) without seeing section B (discipline).
+  // Enforced at the permission layer, not by app-level row filtering.
+  employeeFileA: ['read', 'write'],
+  employeeFileB: ['read', 'write'],
+  employeeFileC: ['read', 'write'],
+  employeeFileD: ['read', 'write'],
   'admin:boe-rate': ['read', 'write'],
 } as const;
 
