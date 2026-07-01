@@ -431,21 +431,25 @@ return {
 
 **Threshold rationale (A10):** misclassifying a discipline doc (B/D) into the pay section (C) is a privacy/RBAC breach, so the system should bias toward routing-to-admin. The invoice OCR uses a 0–100 confidence scale (`ocr.ts:22`); recommend the section classifier auto-assign only when top-section confidence ≥ 85 AND (top − second) ≥ 15; otherwise `PENDING_REVIEW`. Planner sets the final number.
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Where does the hire-date anchor come from?**
    - What we know: Worker has `status String?` but no dates; P90 `EmployeeProfile` (mid-execution) promotes "employment status" + `etat` + Saudization but the hire/start-date column is not yet confirmed in the live tree.
    - What's unclear: whether P90 lands a `hireDate`/`employmentStartDate` the retention resolver can read.
    - Recommendation: the planner verifies the P90 `EmployeeProfile` final columns at plan time; if no hire date exists, P91 adds a nullable `hireDate` on `PersonnelFile` (set at file creation) as the HIRE_DATE anchor. DOCUMENT_DATE comes from `PersonnelFileDocument.documentDate` (new column) or `Document.createdAt` fallback.
+   - **RESOLVED:** 91-02 — P90 `EmployeeProfile` has NO hire/start-date column (confirmed at plan time), so 91-02 adds nullable `PersonnelFile.hireDate` (@db.Date, HIRE_DATE anchor set at file creation) + `PersonnelFileDocument.documentDate` (DOCUMENT_DATE anchor, `Document.createdAt` fallback); `PersonnelFile.terminatedAt` is the TERMINATION_DATE read-seam (null → indefinite).
 
 2. **One model or two for sections?**
    - What we know: D-01 leans canonical enum + registry; the section can be an enum on the document link.
    - Recommendation: `PersonnelFileDocument { section SECTION_A|B|C|D }` (enum-on-link); no separate `PersonnelFileSection` table. RBAC keys on the enum literal.
+   - **RESOLVED:** 91-02 — enum-on-link `PersonnelFileDocument.section PersonnelFileSection?` (SECTION_A..D), no separate section table; RBAC keys on the enum literal via `employeeFileA..D` (91-04).
 
 3. **Extend `gdpr.ts` or add a `personnelFile.requestErasure`?**
    - Recommendation: NEW per-employee procedure (the org-wide one stays). Reuse `RETENTION_CITATIONS` + the `retainedUnderStatute` audit idiom at per-section grain.
+   - **RESOLVED:** 91-09 — NEW per-employee `personnelFile.requestErasure`; the org-wide `gdpr.ts` procedure stays; reuses the `retainedUnderStatute`/`erasure_retained_under_statute` audit idiom at per-section grain.
 
 4. **PL cz. E (sobriety) — in scope?** See A8. Recommend confirming with the user; default to A/B/C/D and leave the enum extensible.
+   - **RESOLVED:** D-01 locks the 4-section A/B/C/D view; 91-02's `PersonnelFileSection` enum has exactly four values (SECTION_A..D) and stays extensible; PL cz. E (sobriety) is OUT of scope for this phase.
 
 ## Environment Availability
 

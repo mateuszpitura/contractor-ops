@@ -42,13 +42,24 @@ created: 2026-07-01
 
 | Task ID | Plan | Wave | Requirement | Threat Ref | Secure Behavior | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|------------|-----------------|-----------|-------------------|-------------|--------|
-| 91-XX-XX | XX | 1 | AKTA-01 | — | per-section RBAC enforced at permission layer (positive + negative/BFLA: owner never granted, contractor never mutates) | unit | `pnpm --filter @contractor-ops/auth test` | ❌ W0 | ⬜ pending |
-| 91-XX-XX | XX | 1 | AKTA-02 | — | per-jurisdiction retention cutoff math incl. US I-9 max(HIRE+3y, TERM+1y) + active-employee indefinite-retain | unit | `pnpm --filter @contractor-ops/db test` | ❌ W0 | ⬜ pending |
-| 91-XX-XX | XX | 1 | AKTA-03 | — | per-section erasure disposition; never claims full erasure while any hold active (fullErasureClaimed:false) | unit | `pnpm --filter @contractor-ops/api test` | ❌ W0 | ⬜ pending |
-| 91-XX-XX | XX | 1 | AKTA-04 | — | taxonomy-hit + AI-fallback + killswitch-off→admin + low-confidence→admin | unit | `pnpm --filter @contractor-ops/api test` | ❌ W0 | ⬜ pending |
-| 91-XX-XX | XX | 1 | AKTA-01..04 | — | PersonnelFile cross-org tenant-leak regression (clone worker-tenant-isolation.test.ts) | unit | `pnpm --filter @contractor-ops/api test` | ❌ W0 | ⬜ pending |
+| 91-01-T1 | 01 | 0 | AKTA-02 | T-91-01-01 | RED scaffold: retention resolver math (4 jurisdictions + US I-9 max() + active→indefinite) | unit | `pnpm --filter @contractor-ops/db test personnel-retention.test.ts` | ❌ → creates | ⬜ pending |
+| 91-01-T1 | 01 | 0 | AKTA-01/02 | T-91-01-01 | RED scaffold: registry register-on-import + duplicate-id throw + recordType ⊆ RETENTION_YEARS | unit | `pnpm --filter @contractor-ops/compliance-policy test personnel-registry.test.ts` | ❌ → creates | ⬜ pending |
+| 91-01-T2 | 01 | 0 | AKTA-01 | T-91-01-01 | RED scaffold: employeeFileA..D structural + owner BFLA fence + 4 HR roles matrix | unit | `pnpm --filter @contractor-ops/auth test personnel-file-rbac.test.ts` | ❌ → creates | ⬜ pending |
+| 91-01-T2 | 01 | 0 | AKTA-01..04 | T-91-01-01 | RED scaffold: PersonnelFile absent from globalModels + ORG_A never sees ORG_B file | unit | `pnpm --filter @contractor-ops/api test personnel-file-tenant-isolation.test.ts` | ❌ → creates | ⬜ pending |
+| 91-01-T2 | 01 | 0 | AKTA-01 | T-91-01-01 | RED scaffold: payroll_officer gets section B locked over the wire | unit | `pnpm --filter @contractor-ops/api test personnel-file-rbac-router.test.ts` | ❌ → creates | ⬜ pending |
+| 91-01-T3 | 01 | 0 | AKTA-03 | T-91-01-01 | RED scaffold: per-section disposition + fullErasureClaimed===false under any hold | unit | `pnpm --filter @contractor-ops/api test personnel-erasure.test.ts` | ❌ → creates | ⬜ pending |
+| 91-01-T3 | 01 | 0 | AKTA-04 | T-91-01-01 | RED scaffold: taxonomy-hit / AI-fallback / killswitch-off→admin / low-confidence→admin | unit | `pnpm --filter @contractor-ops/api test personnel-classifier.test.ts` | ❌ → creates | ⬜ pending |
+| 91-05-T1 | 05 | 2 | AKTA-02 | T-91-05-01 | GREEN: akta years on shared RETENTION_YEARS + event-anchor resolver (max()+indefinite) | unit | `pnpm --filter @contractor-ops/db test personnel-retention.test.ts` | ❌ W0 → GREEN | ⬜ pending |
+| 91-03-T2 | 03 | 1 | AKTA-01/02 | T-91-03-02 | GREEN: section + retention-rule registries register on import (PL/DE/UK/US) | unit | `pnpm --filter @contractor-ops/compliance-policy test personnel-registry.test.ts` | ❌ W0 → GREEN | ⬜ pending |
+| 91-04-T2 | 04 | 1 | AKTA-01 | T-91-04-01 | GREEN: section matrix wired to 4 HR roles; owner allPermissions fence intact | unit | `pnpm --filter @contractor-ops/auth test personnel-file-rbac.test.ts` | ❌ W0 → GREEN | ⬜ pending |
+| 91-07-T2 | 07 | 3 | AKTA-01..04 | T-91-07-02 | GREEN: cross-org getFile → NOT_FOUND (ctx.db tenant scope) | unit | `pnpm --filter @contractor-ops/api test personnel-file-tenant-isolation.test.ts` | ❌ W0 → GREEN | ⬜ pending |
+| 91-07-T2 | 07 | 3 | AKTA-01 | T-91-07-01 | GREEN: per-section read gated at permission layer (payroll→B locked, no payload) | unit | `pnpm --filter @contractor-ops/api test personnel-file-rbac-router.test.ts` | ❌ W0 → GREEN | ⬜ pending |
+| 91-09-T1 | 09 | 4 | AKTA-03 | T-91-09-01 | GREEN: per-section erasure dispositions + never-over-claim audit | unit | `pnpm --filter @contractor-ops/api test personnel-erasure.test.ts` | ❌ W0 → GREEN | ⬜ pending |
+| 91-06-T2 | 06 | 2 | AKTA-04 | T-91-06-02 | GREEN: classifier taxonomy→AI→admin routing; killswitch fail-safe to PENDING | unit | `pnpm --filter @contractor-ops/api test personnel-classifier.test.ts` | ❌ W0 → GREEN | ⬜ pending |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
+*File Exists: `❌ → creates` = 91-01 authors the RED scaffold in wave 0 · `❌ W0 → GREEN` = file lands RED in wave 0, turned GREEN by the listed consumer task/plan.*
+*Rows above the first GREEN row are the seven Wave-0 RED scaffolds (all authored in plan 91-01, wave 0); each is turned GREEN by exactly one downstream consumer task.*
 
 ---
 

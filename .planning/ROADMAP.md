@@ -377,9 +377,9 @@ Plans:
   3. A RODO/GDPR erasure request honors erasure only past the retention window and flags blocked sections with a statutory citation (never claims full erasure during a hold).
   4. A document uploaded to the file is auto-classified to section A/B/C/D; an ambiguous document triggers an admin classify step.
 
-**Plans**: 12 plans (6 waves)
+**Plans**: 12 plans (waves 0–6)
 
-- [ ] 91-01-PLAN.md — Wave-0 RED test scaffolds (retention/registry/RBAC/tenant-leak/erasure/classifier) [wave 1]
+- [ ] 91-01-PLAN.md — Wave-0 RED test scaffolds (retention/registry/RBAC/tenant-leak/erasure/classifier) [wave 0]
 - [ ] 91-02-PLAN.md — [BLOCKING] Prisma schema: PersonnelFile + PersonnelFileDocument (SECTION_A..D enum-on-link, hireDate/terminatedAt read-seam) + additive migration + push (AKTA-01) [wave 1]
 - [ ] 91-03-PLAN.md — compliance-policy per-jurisdiction registries: section taxonomy + event-anchor retention rules (PL/DE/UK/US) (AKTA-01/02) [wave 1]
 - [ ] 91-04-PLAN.md — Per-section RBAC grain: employeeFileA..D wired into the 4 HR roles, owner/contractor BFLA fence (AKTA-01) [wave 1]
