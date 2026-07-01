@@ -60,6 +60,7 @@ import {
   billingRouter,
   exchangeRateRouter,
   form1042sRouter,
+  form1099kTrackerRouter,
   invoiceIntakeRouter,
   invoiceRouter,
   latePaymentInterestRouter,
@@ -162,6 +163,7 @@ const conditionalClassificationRouters = CLASSIFICATION_ENABLED
 const usExpansionRouters = {
   taxForm: taxFormRouter, // taxForm: staff read/track of US W-form submissions + request/remind (no on-behalf signing)
   form1042s: form1042sRouter, // form1042s: staff Form 1042-S generate/correct/recipient-copy + gated full-FTIN reveal
+  form1099kTracker: form1099kTrackerRouter, // form1099kTracker: read-only informational 1099-K band for the contractor profile (cron-written, never files)
 } as const;
 
 const conditionalUsExpansionRouters = isUsExpansionRegistered()

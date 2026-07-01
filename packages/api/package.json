@@ -176,6 +176,11 @@
       "import": "./src/services/economic-dependency-scan.ts",
       "default": "./src/services/economic-dependency-scan.ts"
     },
+    "./services/form-1099k-tracker.service": {
+      "types": "./src/services/form-1099k-tracker.service.ts",
+      "import": "./src/services/form-1099k-tracker.service.ts",
+      "default": "./src/services/form-1099k-tracker.service.ts"
+    },
     "./services/rbac-recipients": {
       "types": "./src/services/rbac-recipients.ts",
       "import": "./src/services/rbac-recipients.ts",
