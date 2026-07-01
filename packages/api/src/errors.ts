@@ -350,6 +350,7 @@ export const EMPLOYEE_INVALID_EMIRATES_ID = 'employeeInvalidEmiratesId';
 export const EMPLOYEE_EMIRATES_ID_CHECKSUM_ADVISORY = 'employeeEmiratesIdChecksumAdvisory';
 export const US_EXPANSION_DISABLED = 'usExpansionDisabled';
 export const WORKFORCE_DISABLED = 'workforceDisabled';
+export const PERSONNEL_FILE_NOT_FOUND = 'personnelFileNotFound';
 export const TREATY_OVERRIDE_REASON_REQUIRED = 'treatyOverrideReasonRequired';
 export const CLASSIFICATION_OVERRIDE_REASON_REQUIRED = 'classificationOverrideReasonRequired';
 export const CLASSIFICATION_OVERRIDE_US_ONLY = 'classificationOverrideUsOnly';
