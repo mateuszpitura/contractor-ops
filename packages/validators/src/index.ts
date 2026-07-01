@@ -203,6 +203,16 @@ export {
   documentRequestUploadSchema,
   documentVersionUploadSchema,
 } from './document.js';
+export type {
+  AbsenceKind,
+  EmployeeTimeSource,
+  UpsertEmployeeTimeRecordInput,
+} from './employee-time.js';
+export {
+  absenceKindEnum,
+  employeeTimeSourceEnum,
+  upsertEmployeeTimeRecordInput,
+} from './employee-time.js';
 export type { ClientEnv, ServerEnv } from './env.js';
 export {
   clientEnvSchema,
@@ -347,6 +357,26 @@ export {
   saveJiraStatusMappingInputSchema,
   saveJiraTaskConfigInputSchema,
 } from './jira.js';
+export type {
+  BlackoutPeriodUpsertInput,
+  LeaveAdjustmentInput,
+  LeaveKind,
+  LeaveLedgerType,
+  LeaveRequestStatus,
+  LeaveTypeUpsertInput,
+  RecordSickAbsenceInput,
+  SubmitLeaveRequestInput,
+} from './leave.js';
+export {
+  blackoutPeriodUpsertInput,
+  leaveAdjustmentInput,
+  leaveKindEnum,
+  leaveLedgerTypeEnum,
+  leaveRequestStatusEnum,
+  leaveTypeUpsertInput,
+  recordSickAbsenceInput,
+  submitLeaveRequestInput,
+} from './leave.js';
 // UAE/KSA locked statutory phrases
 export type { LockedAePhraseKey } from './legal/ae.js';
 export {
