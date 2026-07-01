@@ -8944,5 +8944,121 @@
       "retry": "Erneut versuchen",
       "startFailure": "Der Deprovisionierungslauf konnte nicht gestartet werden."
     }
+  },
+  "PersonnelFile": {
+    "shell": {
+      "header": "Personalakte",
+      "jurisdictionAria": "Rechtsraum",
+      "active": "Aktiv",
+      "terminated": "Beendet {date}",
+      "retentionSummaryToggle": "Aufbewahrungsübersicht",
+      "uploadCta": "Dokument hochladen",
+      "notFoundHeading": "Personalakte nicht gefunden",
+      "notFoundBody": "Dieser Mitarbeiterdatensatz wurde möglicherweise entfernt oder Sie haben keinen Zugriff.",
+      "backToEmployees": "Zurück zu Mitarbeitern"
+    },
+    "sections": {
+      "empty": {
+        "heading": "Noch keine Dokumente in diesem Abschnitt",
+        "body": "Laden Sie ein Dokument hoch – es wird automatisch dem richtigen Abschnitt zugeordnet."
+      },
+      "locked": {
+        "heading": "Abschnitt gesperrt",
+        "body": "Sie haben keine Berechtigung, diesen Abschnitt anzuzeigen. Wenden Sie sich an einen HR-Administrator, wenn Sie Zugriff benötigen."
+      },
+      "error": {
+        "heading": "Abschnitt konnte nicht geladen werden",
+        "body": "Beim Laden dieser Dokumente ist ein Fehler aufgetreten. Versuchen Sie es erneut.",
+        "retry": "Erneut versuchen"
+      },
+      "status": {
+        "locked": "Gesperrt",
+        "empty": "Leer",
+        "populated": "Dokumente"
+      },
+      "adviserVerifyAria": "Hinweise zu Aufbewahrung und Abschnitt",
+      "citationChip": "Gesetzlich",
+      "documentCaption": "Personaldokument",
+      "collapse": "Abschnitt einklappen",
+      "expand": "Abschnitt ausklappen",
+      "PL": {
+        "A": {
+          "label": "Einstellungsunterlagen (Teil A)",
+          "adviserVerifyNote": "Abschnittsstruktur und Aufbewahrungsfristen sind Referenzdaten und müssen noch von einem Rechts- oder Steuerberater bestätigt werden."
+        },
+        "B": {
+          "label": "Beschäftigungsverlauf (Teil B)",
+          "adviserVerifyNote": "Abschnittsstruktur und Aufbewahrungsfristen sind Referenzdaten und müssen noch von einem Rechts- oder Steuerberater bestätigt werden."
+        },
+        "C": {
+          "label": "Beendigung des Arbeitsverhältnisses (Teil C)",
+          "adviserVerifyNote": "Abschnittsstruktur und Aufbewahrungsfristen sind Referenzdaten und müssen noch von einem Rechts- oder Steuerberater bestätigt werden."
+        },
+        "D": {
+          "label": "Ordnungshaftung (Teil D)",
+          "adviserVerifyNote": "Abschnittsstruktur und Aufbewahrungsfristen sind Referenzdaten und müssen noch von einem Rechts- oder Steuerberater bestätigt werden."
+        }
+      },
+      "DE": {
+        "A": {
+          "label": "Stammdaten",
+          "adviserVerifyNote": "Diese Abschnitte sind organisatorische Gruppierungen, keine gesetzliche Struktur; die Aufbewahrungsfristen sind Referenzdaten und müssen noch von einem Berater bestätigt werden."
+        },
+        "B": {
+          "label": "Vertrag & Entgelt",
+          "adviserVerifyNote": "Diese Abschnitte sind organisatorische Gruppierungen, keine gesetzliche Struktur; die Aufbewahrungsfristen sind Referenzdaten und müssen noch von einem Berater bestätigt werden."
+        },
+        "C": {
+          "label": "Bescheinigungen",
+          "adviserVerifyNote": "Diese Abschnitte sind organisatorische Gruppierungen, keine gesetzliche Struktur; die Aufbewahrungsfristen sind Referenzdaten und müssen noch von einem Berater bestätigt werden."
+        },
+        "D": {
+          "label": "Abmahnungen & Sonstiges",
+          "adviserVerifyNote": "Diese Abschnitte sind organisatorische Gruppierungen, keine gesetzliche Struktur; die Aufbewahrungsfristen sind Referenzdaten und müssen noch von einem Berater bestätigt werden."
+        }
+      },
+      "UK": {
+        "A": {
+          "label": "Persönliches & Einstellung",
+          "adviserVerifyNote": "Diese Abschnitte sind organisatorische Gruppierungen, keine gesetzliche Struktur; die Aufbewahrungsfristen sind Referenzdaten und müssen noch von einem Berater bestätigt werden."
+        },
+        "B": {
+          "label": "Beschäftigung & Vergütung",
+          "adviserVerifyNote": "Diese Abschnitte sind organisatorische Gruppierungen, keine gesetzliche Struktur; die Aufbewahrungsfristen sind Referenzdaten und müssen noch von einem Berater bestätigt werden."
+        },
+        "C": {
+          "label": "Nachweise & Referenzen",
+          "adviserVerifyNote": "Diese Abschnitte sind organisatorische Gruppierungen, keine gesetzliche Struktur; die Aufbewahrungsfristen sind Referenzdaten und müssen noch von einem Berater bestätigt werden."
+        },
+        "D": {
+          "label": "Disziplinar & Leistung",
+          "adviserVerifyNote": "Diese Abschnitte sind organisatorische Gruppierungen, keine gesetzliche Struktur; die Aufbewahrungsfristen sind Referenzdaten und müssen noch von einem Berater bestätigt werden."
+        }
+      },
+      "US": {
+        "A": {
+          "label": "I-9 & Arbeitserlaubnis",
+          "adviserVerifyNote": "Abschnittsstruktur und Aufbewahrungsfristen sind Referenzdaten und müssen noch von einem Rechts- oder Steuerberater bestätigt werden."
+        },
+        "B": {
+          "label": "Beschäftigung & Vergütung",
+          "adviserVerifyNote": "Abschnittsstruktur und Aufbewahrungsfristen sind Referenzdaten und müssen noch von einem Rechts- oder Steuerberater bestätigt werden."
+        },
+        "C": {
+          "label": "Zertifizierungen & Schulungen",
+          "adviserVerifyNote": "Abschnittsstruktur und Aufbewahrungsfristen sind Referenzdaten und müssen noch von einem Rechts- oder Steuerberater bestätigt werden."
+        },
+        "D": {
+          "label": "Disziplinar & Leistung",
+          "adviserVerifyNote": "Abschnittsstruktur und Aufbewahrungsfristen sind Referenzdaten und müssen noch von einem Rechts- oder Steuerberater bestätigt werden."
+        }
+      }
+    },
+    "retention": {
+      "whileEmployed": "Aufbewahrung während der Beschäftigung",
+      "retainedUntil": "Aufbewahrung bis {date}",
+      "citationLabel": "Gesetzliche Grundlage",
+      "adviserVerifyNote": "Die hier angezeigten Aufbewahrungsfristen sind Referenzdaten und müssen noch von einem Rechts- oder Steuerberater der jeweiligen Rechtsordnung bestätigt werden. Bestätigen Sie die genauen gesetzlichen Fristen, bevor Sie sich für Compliance-Entscheidungen darauf verlassen."
+    }
   }
 }

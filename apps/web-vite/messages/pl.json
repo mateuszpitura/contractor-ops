@@ -8944,5 +8944,121 @@
       "retry": "Ponów",
       "startFailure": "Nie można rozpocząć procesu deprowizjonowania."
     }
+  },
+  "PersonnelFile": {
+    "shell": {
+      "header": "Akta osobowe",
+      "jurisdictionAria": "Jurysdykcja",
+      "active": "Zatrudniony",
+      "terminated": "Zakończono {date}",
+      "retentionSummaryToggle": "Podsumowanie przechowywania",
+      "uploadCta": "Prześlij dokument",
+      "notFoundHeading": "Nie znaleziono akt osobowych",
+      "notFoundBody": "Ten rekord pracownika mógł zostać usunięty lub nie masz do niego dostępu.",
+      "backToEmployees": "Powrót do pracowników"
+    },
+    "sections": {
+      "empty": {
+        "heading": "Brak dokumentów w tej sekcji",
+        "body": "Prześlij dokument, a zostanie automatycznie przypisany do właściwej sekcji."
+      },
+      "locked": {
+        "heading": "Sekcja zablokowana",
+        "body": "Nie masz uprawnień do wyświetlenia tej sekcji. Skontaktuj się z administratorem HR, jeśli potrzebujesz dostępu."
+      },
+      "error": {
+        "heading": "Nie można załadować tej sekcji",
+        "body": "Coś poszło nie tak podczas ładowania dokumentów. Spróbuj ponownie.",
+        "retry": "Ponów"
+      },
+      "status": {
+        "locked": "Zablokowana",
+        "empty": "Pusta",
+        "populated": "Dokumenty"
+      },
+      "adviserVerifyAria": "Wskazówki dotyczące przechowywania i sekcji",
+      "citationChip": "Ustawowe",
+      "documentCaption": "Dokument pracowniczy",
+      "collapse": "Zwiń sekcję",
+      "expand": "Rozwiń sekcję",
+      "PL": {
+        "A": {
+          "label": "Dane rekrutacyjne (cz. A)",
+          "adviserVerifyNote": "Struktura części i okresy przechowywania to dane referencyjne wymagające weryfikacji przez radcę prawnego lub doradcę podatkowego."
+        },
+        "B": {
+          "label": "Przebieg zatrudnienia (cz. B)",
+          "adviserVerifyNote": "Struktura części i okresy przechowywania to dane referencyjne wymagające weryfikacji przez radcę prawnego lub doradcę podatkowego."
+        },
+        "C": {
+          "label": "Ustanie zatrudnienia (cz. C)",
+          "adviserVerifyNote": "Struktura części i okresy przechowywania to dane referencyjne wymagające weryfikacji przez radcę prawnego lub doradcę podatkowego."
+        },
+        "D": {
+          "label": "Odpowiedzialność porządkowa (cz. D)",
+          "adviserVerifyNote": "Struktura części i okresy przechowywania to dane referencyjne wymagające weryfikacji przez radcę prawnego lub doradcę podatkowego."
+        }
+      },
+      "DE": {
+        "A": {
+          "label": "Dane podstawowe",
+          "adviserVerifyNote": "Te sekcje to grupy organizacyjne, a nie struktura ustawowa; okresy przechowywania to dane referencyjne wymagające weryfikacji przez doradcę."
+        },
+        "B": {
+          "label": "Umowa i wynagrodzenie",
+          "adviserVerifyNote": "Te sekcje to grupy organizacyjne, a nie struktura ustawowa; okresy przechowywania to dane referencyjne wymagające weryfikacji przez doradcę."
+        },
+        "C": {
+          "label": "Zaświadczenia",
+          "adviserVerifyNote": "Te sekcje to grupy organizacyjne, a nie struktura ustawowa; okresy przechowywania to dane referencyjne wymagające weryfikacji przez doradcę."
+        },
+        "D": {
+          "label": "Upomnienia i inne",
+          "adviserVerifyNote": "Te sekcje to grupy organizacyjne, a nie struktura ustawowa; okresy przechowywania to dane referencyjne wymagające weryfikacji przez doradcę."
+        }
+      },
+      "UK": {
+        "A": {
+          "label": "Dane osobowe i rekrutacja",
+          "adviserVerifyNote": "Te sekcje to grupy organizacyjne, a nie struktura ustawowa; okresy przechowywania to dane referencyjne wymagające weryfikacji przez doradcę."
+        },
+        "B": {
+          "label": "Zatrudnienie i wynagrodzenie",
+          "adviserVerifyNote": "Te sekcje to grupy organizacyjne, a nie struktura ustawowa; okresy przechowywania to dane referencyjne wymagające weryfikacji przez doradcę."
+        },
+        "C": {
+          "label": "Zaświadczenia i referencje",
+          "adviserVerifyNote": "Te sekcje to grupy organizacyjne, a nie struktura ustawowa; okresy przechowywania to dane referencyjne wymagające weryfikacji przez doradcę."
+        },
+        "D": {
+          "label": "Dyscyplina i wyniki",
+          "adviserVerifyNote": "Te sekcje to grupy organizacyjne, a nie struktura ustawowa; okresy przechowywania to dane referencyjne wymagające weryfikacji przez doradcę."
+        }
+      },
+      "US": {
+        "A": {
+          "label": "I-9 i zezwolenie na pracę",
+          "adviserVerifyNote": "Struktura części i okresy przechowywania to dane referencyjne wymagające weryfikacji przez radcę prawnego lub doradcę podatkowego."
+        },
+        "B": {
+          "label": "Zatrudnienie i wynagrodzenie",
+          "adviserVerifyNote": "Struktura części i okresy przechowywania to dane referencyjne wymagające weryfikacji przez radcę prawnego lub doradcę podatkowego."
+        },
+        "C": {
+          "label": "Certyfikaty i szkolenia",
+          "adviserVerifyNote": "Struktura części i okresy przechowywania to dane referencyjne wymagające weryfikacji przez radcę prawnego lub doradcę podatkowego."
+        },
+        "D": {
+          "label": "Dyscyplina i wyniki",
+          "adviserVerifyNote": "Struktura części i okresy przechowywania to dane referencyjne wymagające weryfikacji przez radcę prawnego lub doradcę podatkowego."
+        }
+      }
+    },
+    "retention": {
+      "whileEmployed": "Przechowywane przez czas zatrudnienia",
+      "retainedUntil": "Przechowywane do {date}",
+      "citationLabel": "Podstawa prawna",
+      "adviserVerifyNote": "Pokazane tutaj okresy przechowywania to wstępne dane referencyjne wymagające weryfikacji przez radcę prawnego lub doradcę podatkowego właściwej jurysdykcji. Potwierdź dokładne okresy ustawowe, zanim wykorzystasz je do decyzji dotyczących zgodności."
+    }
   }
 }

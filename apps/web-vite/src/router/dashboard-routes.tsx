@@ -17,6 +17,7 @@ const PaymentsPage = lazy(() => import('../pages/dashboard/payments.js'));
 const ContractsPage = lazy(() => import('../pages/dashboard/contracts.js'));
 const EquipmentPage = lazy(() => import('../pages/dashboard/equipment.js'));
 const EmployeesPage = lazy(() => import('../pages/dashboard/employees.js'));
+const PersonnelFilePage = lazy(() => import('../pages/dashboard/employees/personnel-file.js'));
 const ApprovalsPage = lazy(() => import('../pages/dashboard/approvals.js'));
 const SettingsIndexPage = lazy(() => import('../pages/dashboard/settings/index.js'));
 const CalendarSettingsPage = lazy(() => import('../pages/dashboard/settings/calendar.js'));
@@ -85,6 +86,7 @@ export const dashboardRoutes = [
   { path: 'contracts', element: page(<ContractsPage />) },
   { path: 'equipment', element: page(<EquipmentPage />) },
   { path: 'employees', element: page(<EmployeesPage />) },
+  { path: 'employees/:workerId/personnel-file', element: page(<PersonnelFilePage />) },
   { path: 'approvals', element: page(<ApprovalsPage />) },
   { path: 'settings', element: page(<SettingsIndexPage />) },
   { path: 'settings/calendar', element: page(<CalendarSettingsPage />) },

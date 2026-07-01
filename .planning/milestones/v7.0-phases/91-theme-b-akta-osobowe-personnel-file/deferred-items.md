@@ -67,3 +67,14 @@
   `getPersonnelRetentionCutoff` resolver, which **91-05** builds
   (`packages/db/src/personnel-retention.ts`). 91-03 only owns the registry
   scaffold (`personnel-registry.test.ts`, now GREEN).
+
+## 91-10 execution
+
+- **Pre-existing `@contractor-ops/web-vite` typecheck offender (NOT introduced by
+  91-10):** `src/components/contractors/classification/classification-tile.tsx:55`
+  — `toneForOutcome` reports `TS2366: Function lacks ending return statement`. The
+  file is not in this plan's diff (`git diff --name-only HEAD` excludes it). Out of
+  scope (SCOPE BOUNDARY: only auto-fix issues directly caused by this task). All
+  five new personnel-file files + the route registration add ZERO typecheck errors
+  (verified: no error references `personnel-file/`, `personnel-file.tsx`, or the
+  `employees/:workerId/personnel-file` route entry).
