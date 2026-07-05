@@ -1,16 +1,9 @@
 /**
- * Unit tests for routes/contracts.ts
- *
- * Covers: GET / query param coercion + forwarding, GET /:id forwarding.
+ * Unit tests for routes/contracts.ts (createRoute + cursor + filter/sort).
  */
 
 import { Hono } from 'hono';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-
-// ---------------------------------------------------------------------------
-// Caller stub — must use vi.hoisted() because vi.mock() is hoisted above
-// top-level const declarations.
-// ---------------------------------------------------------------------------
 
 const { mockList, mockGetById, mockCreatePublicCaller } = vi.hoisted(() => {
   const mockList = vi.fn();
@@ -21,131 +14,56 @@ const { mockList, mockGetById, mockCreatePublicCaller } = vi.hoisted(() => {
   return { mockList, mockGetById, mockCreatePublicCaller };
 });
 
-vi.mock('../../lib/create-caller.js', () => ({
-  createPublicCaller: mockCreatePublicCaller,
-}));
-
-// ---------------------------------------------------------------------------
-// Imports (after mocks)
-// ---------------------------------------------------------------------------
+vi.mock('../../lib/create-caller.js', () => ({ createPublicCaller: mockCreatePublicCaller }));
 
 import { handleError } from '../../lib/error-handler.js';
+import { encodeCursor } from '../../lib/openapi-cursor.js';
 import contracts from '../contracts.js';
-
-// ---------------------------------------------------------------------------
-// App setup
-// ---------------------------------------------------------------------------
 
 const app = new Hono();
 app.route('/', contracts);
 app.onError(handleError);
 
-// ---------------------------------------------------------------------------
-// Fixtures
-// ---------------------------------------------------------------------------
-
-function makeListResult(overrides = {}) {
-  return { items: [], total: 0, page: 1, pageSize: 25, ...overrides };
-}
-
-// ---------------------------------------------------------------------------
-// Tests
-// ---------------------------------------------------------------------------
-
 describe('GET /contracts', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockList.mockResolvedValue(makeListResult());
+    mockList.mockResolvedValue({ items: [], nextCursor: undefined });
   });
 
-  it('forwards page and pageSize as numbers', async () => {
-    await app.request('/?page=3&pageSize=50');
-    const [input] = mockList.mock.calls[0] as [{ page: unknown; pageSize: unknown }][];
-    expect(input).toMatchObject({ page: 3, pageSize: 50 });
+  it('parses filter[status] and filter[contractorId] into a nested filter', async () => {
+    await app.request('/?filter[status]=EXPIRED&filter[contractorId]=c-1');
+    const [input] = mockList.mock.calls[0] as [{ filter?: Record<string, string> }];
+    expect(input.filter).toMatchObject({ status: 'EXPIRED', contractorId: 'c-1' });
   });
 
-  it('forwards status query param', async () => {
-    await app.request('/?status=ACTIVE');
-    const [input] = mockList.mock.calls[0] as [{ status: unknown }][];
-    expect(input).toMatchObject({ status: 'ACTIVE' });
+  it('decodes the opaque cursor and applies defaults', async () => {
+    await app.request(`/?cursor=${encodeCursor('ct-3')}`);
+    const [input] = mockList.mock.calls[0] as [{ cursor?: string; limit: number; sort: string }];
+    expect(input).toMatchObject({ cursor: 'ct-3', limit: 25, sort: '-createdAt' });
   });
 
-  it('forwards contractorId query param', async () => {
-    await app.request('/?contractorId=con_42');
-    const [input] = mockList.mock.calls[0] as [{ contractorId: unknown }][];
-    expect(input).toMatchObject({ contractorId: 'con_42' });
-  });
-
-  it('forwards sortBy and sortOrder query params', async () => {
-    await app.request('/?sortBy=startDate&sortOrder=asc');
-    const [input] = mockList.mock.calls[0] as [{ sortBy: unknown; sortOrder: unknown }][];
-    expect(input).toMatchObject({ sortBy: 'startDate', sortOrder: 'asc' });
-  });
-
-  it('forwards all params together correctly', async () => {
-    await app.request(
-      '/?page=1&pageSize=5&status=DRAFT&contractorId=c1&sortBy=title&sortOrder=asc',
-    );
-    const [input] = mockList.mock.calls[0] as [Record<string, unknown>];
-    expect(input).toMatchObject({
-      page: 1,
-      pageSize: 5,
-      status: 'DRAFT',
-      contractorId: 'c1',
-      sortBy: 'title',
-      sortOrder: 'asc',
-    });
-  });
-
-  it('applies schema defaults and omits optional filters when none provided', async () => {
-    await app.request('/');
-    const [input] = mockList.mock.calls[0] as [Record<string, unknown>];
-    expect(input).toMatchObject({
-      page: 1,
-      pageSize: 25,
-      sortBy: 'createdAt',
-      sortOrder: 'desc',
-    });
-    expect(input.status).toBeUndefined();
-    expect(input.contractorId).toBeUndefined();
-  });
-
-  it('returns 400 and never calls the caller for an invalid enum value', async () => {
-    const res = await app.request('/?status=NOT_A_STATUS');
+  it('rejects an unknown filter key with 400 (.strict())', async () => {
+    const res = await app.request('/?filter[bogus]=x');
     expect(res.status).toBe(400);
     expect(mockList).not.toHaveBeenCalled();
-    const body = (await res.json()) as { error: { code: string } };
-    expect(body.error.code).toBe('VALIDATION_ERROR');
   });
 
-  it('returns 200 and wraps result in { data, meta }', async () => {
-    const items = [{ id: 'cnt-1', title: 'Contract A' }];
-    mockList.mockResolvedValueOnce({ items, total: 1, page: 1, pageSize: 25 });
+  it('wraps the last page as { data, meta: { nextCursor: null, hasMore: false } }', async () => {
+    mockList.mockResolvedValueOnce({ items: [{ id: 'ct-1' }], nextCursor: undefined });
     const res = await app.request('/');
-    expect(res.status).toBe(200);
-    const body = (await res.json()) as { data: unknown[]; meta: unknown };
-    expect(body.data).toEqual(items);
-    expect(body.meta).toMatchObject({ total: 1, page: 1, pageSize: 25 });
+    const body = (await res.json()) as { meta: { nextCursor: null; hasMore: boolean } };
+    expect(body.meta).toEqual({ nextCursor: null, hasMore: false });
   });
 });
 
-describe('GET /contracts/:id', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
+describe('GET /contracts/{id}', () => {
+  beforeEach(() => vi.clearAllMocks());
 
-  it('calls caller.contract.getById with the route param id', async () => {
-    mockGetById.mockResolvedValueOnce({ id: 'cnt-abc' });
-    await app.request('/cnt-abc');
-    expect(mockGetById).toHaveBeenCalledWith({ id: 'cnt-abc' });
-  });
-
-  it('wraps the result as { data }', async () => {
-    const contract = { id: 'cnt-xyz', title: 'Dev Contract' };
+  it('forwards the id and wraps the result as { data }', async () => {
+    const contract = { id: 'ct-xyz' };
     mockGetById.mockResolvedValueOnce(contract);
-    const res = await app.request('/cnt-xyz');
-    expect(res.status).toBe(200);
-    const body = (await res.json()) as { data: unknown };
-    expect(body).toEqual({ data: contract });
+    const res = await app.request('/ct-xyz');
+    expect(mockGetById).toHaveBeenCalledWith({ id: 'ct-xyz' });
+    expect(await res.json()).toEqual({ data: contract });
   });
 });

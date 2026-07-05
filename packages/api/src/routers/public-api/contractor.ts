@@ -6,6 +6,8 @@ import {
 import { TRPCError } from '@trpc/server';
 import * as E from '../../errors';
 import { router } from '../../init';
+import { cursorClause, paginateByLastKeptUndefined } from '../../lib/pagination';
+import { publicOrderBy } from '../../lib/public-cursor';
 import { apiKeyTenantProcedure } from '../../middleware/api-key-auth';
 import { requirePermission } from '../../middleware/rbac';
 
@@ -24,43 +26,37 @@ export const publicContractorRouter = router({
     .use(requirePermission({ contractor: ['read'] }))
     .input(listInput)
     .query(async ({ ctx, input }) => {
-      const { page, pageSize, status, lifecycleStage, sortBy, sortOrder } = input;
-
       const where: Prisma.ContractorWhereInput = {
         organizationId: ctx.organizationId,
         deletedAt: null,
       };
 
-      if (status) where.status = status;
-      if (lifecycleStage) where.lifecycleStage = lifecycleStage;
+      if (input.filter?.status) where.status = input.filter.status;
+      if (input.filter?.lifecycleStage) where.lifecycleStage = input.filter.lifecycleStage;
 
-      const [items, total] = await Promise.all([
-        ctx.db.contractor.findMany({
-          where,
-          skip: (page - 1) * pageSize,
-          take: pageSize,
-          orderBy: { [sortBy]: sortOrder },
-          select: {
-            id: true,
-            legalName: true,
-            displayName: true,
-            type: true,
-            taxId: true,
-            vatId: true,
-            email: true,
-            phone: true,
-            countryCode: true,
-            currency: true,
-            status: true,
-            lifecycleStage: true,
-            createdAt: true,
-            updatedAt: true,
-          },
-        }),
-        ctx.db.contractor.count({ where }),
-      ]);
+      const rows = await ctx.db.contractor.findMany({
+        where,
+        orderBy: publicOrderBy(input.sort),
+        select: {
+          id: true,
+          legalName: true,
+          displayName: true,
+          type: true,
+          taxId: true,
+          vatId: true,
+          email: true,
+          phone: true,
+          countryCode: true,
+          currency: true,
+          status: true,
+          lifecycleStage: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+        ...cursorClause({ cursor: input.cursor, limit: input.limit }),
+      });
 
-      return { items, total, page, pageSize };
+      return paginateByLastKeptUndefined(rows, { cursor: input.cursor, limit: input.limit });
     }),
 
   getById: apiKeyTenantProcedure

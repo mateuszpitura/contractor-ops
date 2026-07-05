@@ -1,34 +1,73 @@
 import { publicApiInvoiceListInputSchema } from '@contractor-ops/validators/public-api';
-import { Hono } from 'hono';
-import { createPublicCaller } from '../lib/create-caller.js';
-import { parseListQuery } from '../lib/parse-list-query.js';
+import { createRoute, OpenAPIHono, z } from '@hono/zod-openapi';
+import { decodeCursor } from '../lib/openapi-cursor.js';
+import {
+  createPublicCaller,
+  envelope,
+  errorResponses,
+  itemOkResponse,
+  listOkResponse,
+  listQuery,
+} from '../lib/openapi-route.js';
 
-const invoices = new Hono();
+const invoices = new OpenAPIHono();
 
-/**
- * GET /invoices
- * List invoices with pagination and optional filters.
- */
-invoices.get('/', async c => {
-  const caller = createPublicCaller(c);
-  const input = parseListQuery(publicApiInvoiceListInputSchema, c.req.query());
+const invoiceItem = z
+  .object({
+    id: z.string(),
+    invoiceNumber: z.string().nullable(),
+    issueDate: z.string(),
+    dueDate: z.string().nullable(),
+    currency: z.string(),
+    subtotalMinor: z.number().nullable(),
+    vatAmountMinor: z.number().nullable(),
+    totalMinor: z.number().nullable(),
+    amountToPayMinor: z.number().nullable(),
+    sellerTaxId: z.string().nullable(),
+    sellerName: z.string().nullable(),
+    status: z.string(),
+    matchStatus: z.string(),
+    source: z.string(),
+    contractorId: z.string().nullable(),
+    contractId: z.string().nullable(),
+    isReverseCharge: z.boolean(),
+    createdAt: z.string(),
+    updatedAt: z.string(),
+  })
+  .openapi('PublicInvoice');
 
-  const result = await caller.invoice.list(input);
-
-  return c.json({
-    data: result.items,
-    meta: { total: result.total, page: result.page, pageSize: result.pageSize },
-  });
+const listRoute = createRoute({
+  method: 'get',
+  path: '/',
+  request: { query: listQuery(publicApiInvoiceListInputSchema) },
+  responses: {
+    200: listOkResponse(invoiceItem, 'Cursor page of invoices'),
+    ...errorResponses,
+  },
 });
 
-/**
- * GET /invoices/:id
- * Get a single invoice by ID with contractor and contract details.
- */
-invoices.get('/:id', async c => {
+invoices.openapi(listRoute, async c => {
+  const input = c.req.valid('query');
   const caller = createPublicCaller(c);
-  const result = await caller.invoice.getById({ id: c.req.param('id') });
-  return c.json({ data: result });
+  const result = await caller.invoice.list({ ...input, cursor: decodeCursor(input.cursor) });
+  return envelope(c, result);
+});
+
+const getByIdRoute = createRoute({
+  method: 'get',
+  path: '/{id}',
+  request: { params: z.object({ id: z.string() }) },
+  responses: {
+    200: itemOkResponse(invoiceItem, 'A single invoice with contractor and contract details'),
+    ...errorResponses,
+  },
+});
+
+invoices.openapi(getByIdRoute, async c => {
+  const { id } = c.req.valid('param');
+  const caller = createPublicCaller(c);
+  const result = await caller.invoice.getById({ id });
+  return c.json({ data: result }, 200);
 });
 
 export default invoices;

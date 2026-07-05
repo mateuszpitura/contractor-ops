@@ -80,7 +80,7 @@ import app from '../app.js';
 // hardcoded module constant (NOT env-configurable), so over-limit tests must
 // loop past 100 rather than shrink the limit via env.
 const LIMIT = 100;
-const GUARDED_ROUTE = '/api/v1/contractors';
+const GUARDED_ROUTE = '/v1/contractors';
 
 /** Build the Authorization header the limiter keys on. */
 function bearer(suffix: string) {

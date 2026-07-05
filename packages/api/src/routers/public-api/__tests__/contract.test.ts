@@ -257,9 +257,7 @@ describe('publicContractRouter', () => {
       const result = await caller.list({});
 
       expect(result.items).toHaveLength(2);
-      expect(result.total).toBe(2);
-      expect(result.page).toBe(1);
-      expect(result.pageSize).toBe(25);
+      expect(result.nextCursor).toBeUndefined();
 
       const whereArg = (mockDb.contract.findMany as ReturnType<typeof vi.fn>).mock.calls[0]?.[0]
         .where;
@@ -268,10 +266,9 @@ describe('publicContractRouter', () => {
 
     it('filters by status when provided', async () => {
       mockDb.contract.findMany.mockResolvedValueOnce([makeContract({ status: 'EXPIRED' })]);
-      mockDb.contract.count.mockResolvedValueOnce(1);
 
       const caller = makeCaller();
-      await caller.list({ status: 'EXPIRED' });
+      await caller.list({ filter: { status: 'EXPIRED' } });
 
       const whereArg = (mockDb.contract.findMany as ReturnType<typeof vi.fn>).mock.calls[0]?.[0]
         .where;
@@ -280,10 +277,9 @@ describe('publicContractRouter', () => {
 
     it('filters by contractorId when provided', async () => {
       mockDb.contract.findMany.mockResolvedValueOnce([]);
-      mockDb.contract.count.mockResolvedValueOnce(0);
 
       const caller = makeCaller();
-      await caller.list({ contractorId: CONTRACTOR_ID });
+      await caller.list({ filter: { contractorId: CONTRACTOR_ID } });
 
       const whereArg = (mockDb.contract.findMany as ReturnType<typeof vi.fn>).mock.calls[0]?.[0]
         .where;

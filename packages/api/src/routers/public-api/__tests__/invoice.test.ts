@@ -260,9 +260,7 @@ describe('publicInvoiceRouter', () => {
       const result = await caller.list({});
 
       expect(result.items).toHaveLength(2);
-      expect(result.total).toBe(2);
-      expect(result.page).toBe(1);
-      expect(result.pageSize).toBe(25);
+      expect(result.nextCursor).toBeUndefined();
 
       const whereArg = (mockDb.invoice.findMany as ReturnType<typeof vi.fn>).mock.calls[0]?.[0]
         .where;
@@ -271,10 +269,9 @@ describe('publicInvoiceRouter', () => {
 
     it('filters by status when provided', async () => {
       mockDb.invoice.findMany.mockResolvedValueOnce([makeInvoice({ status: 'APPROVED' })]);
-      mockDb.invoice.count.mockResolvedValueOnce(1);
 
       const caller = makeCaller();
-      await caller.list({ status: 'APPROVED' });
+      await caller.list({ filter: { status: 'APPROVED' } });
 
       const whereArg = (mockDb.invoice.findMany as ReturnType<typeof vi.fn>).mock.calls[0]?.[0]
         .where;
@@ -283,10 +280,9 @@ describe('publicInvoiceRouter', () => {
 
     it('filters by contractorId when provided', async () => {
       mockDb.invoice.findMany.mockResolvedValueOnce([]);
-      mockDb.invoice.count.mockResolvedValueOnce(0);
 
       const caller = makeCaller();
-      await caller.list({ contractorId: CONTRACTOR_ID });
+      await caller.list({ filter: { contractorId: CONTRACTOR_ID } });
 
       const whereArg = (mockDb.invoice.findMany as ReturnType<typeof vi.fn>).mock.calls[0]?.[0]
         .where;

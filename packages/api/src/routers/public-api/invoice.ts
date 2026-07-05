@@ -6,6 +6,8 @@ import {
 import { TRPCError } from '@trpc/server';
 import * as E from '../../errors';
 import { router } from '../../init';
+import { cursorClause, paginateByLastKeptUndefined } from '../../lib/pagination';
+import { publicOrderBy } from '../../lib/public-cursor';
 import { apiKeyTenantProcedure } from '../../middleware/api-key-auth';
 import { requirePermission } from '../../middleware/rbac';
 
@@ -24,48 +26,42 @@ export const publicInvoiceRouter = router({
     .use(requirePermission({ invoice: ['read'] }))
     .input(listInput)
     .query(async ({ ctx, input }) => {
-      const { page, pageSize, status, contractorId, sortBy, sortOrder } = input;
-
       const where: Prisma.InvoiceWhereInput = {
         organizationId: ctx.organizationId,
         deletedAt: null,
       };
 
-      if (status) where.status = status;
-      if (contractorId) where.contractorId = contractorId;
+      if (input.filter?.status) where.status = input.filter.status;
+      if (input.filter?.contractorId) where.contractorId = input.filter.contractorId;
 
-      const [items, total] = await Promise.all([
-        ctx.db.invoice.findMany({
-          where,
-          skip: (page - 1) * pageSize,
-          take: pageSize,
-          orderBy: { [sortBy]: sortOrder },
-          select: {
-            id: true,
-            invoiceNumber: true,
-            issueDate: true,
-            dueDate: true,
-            currency: true,
-            subtotalMinor: true,
-            vatAmountMinor: true,
-            totalMinor: true,
-            amountToPayMinor: true,
-            sellerTaxId: true,
-            sellerName: true,
-            status: true,
-            matchStatus: true,
-            source: true,
-            contractorId: true,
-            contractId: true,
-            isReverseCharge: true,
-            createdAt: true,
-            updatedAt: true,
-          },
-        }),
-        ctx.db.invoice.count({ where }),
-      ]);
+      const rows = await ctx.db.invoice.findMany({
+        where,
+        orderBy: publicOrderBy(input.sort),
+        select: {
+          id: true,
+          invoiceNumber: true,
+          issueDate: true,
+          dueDate: true,
+          currency: true,
+          subtotalMinor: true,
+          vatAmountMinor: true,
+          totalMinor: true,
+          amountToPayMinor: true,
+          sellerTaxId: true,
+          sellerName: true,
+          status: true,
+          matchStatus: true,
+          source: true,
+          contractorId: true,
+          contractId: true,
+          isReverseCharge: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+        ...cursorClause({ cursor: input.cursor, limit: input.limit }),
+      });
 
-      return { items, total, page, pageSize };
+      return paginateByLastKeptUndefined(rows, { cursor: input.cursor, limit: input.limit });
     }),
 
   getById: apiKeyTenantProcedure

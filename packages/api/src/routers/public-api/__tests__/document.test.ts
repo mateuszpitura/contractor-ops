@@ -267,9 +267,7 @@ describe('publicDocumentRouter', () => {
       const result = await caller.list({});
 
       expect(result.items).toHaveLength(2);
-      expect(result.total).toBe(2);
-      expect(result.page).toBe(1);
-      expect(result.pageSize).toBe(25);
+      expect(result.nextCursor).toBeUndefined();
 
       const whereArg = (mockDb.document.findMany as ReturnType<typeof vi.fn>).mock.calls[0]?.[0]
         .where;
@@ -278,10 +276,9 @@ describe('publicDocumentRouter', () => {
 
     it('filters by entityType and entityId via relation link', async () => {
       mockDb.document.findMany.mockResolvedValueOnce([makeDocument()]);
-      mockDb.document.count.mockResolvedValueOnce(1);
 
       const caller = makeCaller();
-      await caller.list({ entityType: 'INVOICE', entityId: ENTITY_ID });
+      await caller.list({ filter: { entityType: 'INVOICE', entityId: ENTITY_ID } });
 
       const whereArg = (mockDb.document.findMany as ReturnType<typeof vi.fn>).mock.calls[0]?.[0]
         .where;
@@ -302,7 +299,7 @@ describe('publicDocumentRouter', () => {
       mockDb.document.count.mockResolvedValueOnce(0);
 
       const caller = makeCaller();
-      await caller.list({ entityType: 'CONTRACTOR' });
+      await caller.list({ filter: { entityType: 'CONTRACTOR' } });
 
       const whereArg = (mockDb.document.findMany as ReturnType<typeof vi.fn>).mock.calls[0]?.[0]
         .where;

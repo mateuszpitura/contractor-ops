@@ -4,6 +4,8 @@ import { publicApiContractListInputSchema } from '@contractor-ops/validators/pub
 import { TRPCError } from '@trpc/server';
 import * as E from '../../errors';
 import { router } from '../../init';
+import { cursorClause, paginateByLastKeptUndefined } from '../../lib/pagination';
+import { publicOrderBy } from '../../lib/public-cursor';
 import { apiKeyTenantProcedure } from '../../middleware/api-key-auth';
 import { requirePermission } from '../../middleware/rbac';
 
@@ -22,43 +24,37 @@ export const publicContractRouter = router({
     .use(requirePermission({ contract: ['read'] }))
     .input(listInput)
     .query(async ({ ctx, input }) => {
-      const { page, pageSize, status, contractorId, sortBy, sortOrder } = input;
-
       const where: Prisma.ContractWhereInput = {
         organizationId: ctx.organizationId,
         deletedAt: null,
       };
 
-      if (status) where.status = status;
-      if (contractorId) where.contractorId = contractorId;
+      if (input.filter?.status) where.status = input.filter.status;
+      if (input.filter?.contractorId) where.contractorId = input.filter.contractorId;
 
-      const [items, total] = await Promise.all([
-        ctx.db.contract.findMany({
-          where,
-          skip: (page - 1) * pageSize,
-          take: pageSize,
-          orderBy: { [sortBy]: sortOrder },
-          select: {
-            id: true,
-            title: true,
-            type: true,
-            status: true,
-            startDate: true,
-            endDate: true,
-            currency: true,
-            billingModel: true,
-            rateType: true,
-            rateValueMinor: true,
-            autoRenewal: true,
-            contractorId: true,
-            createdAt: true,
-            updatedAt: true,
-          },
-        }),
-        ctx.db.contract.count({ where }),
-      ]);
+      const rows = await ctx.db.contract.findMany({
+        where,
+        orderBy: publicOrderBy(input.sort),
+        select: {
+          id: true,
+          title: true,
+          type: true,
+          status: true,
+          startDate: true,
+          endDate: true,
+          currency: true,
+          billingModel: true,
+          rateType: true,
+          rateValueMinor: true,
+          autoRenewal: true,
+          contractorId: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+        ...cursorClause({ cursor: input.cursor, limit: input.limit }),
+      });
 
-      return { items, total, page, pageSize };
+      return paginateByLastKeptUndefined(rows, { cursor: input.cursor, limit: input.limit });
     }),
 
   getById: apiKeyTenantProcedure

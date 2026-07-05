@@ -79,8 +79,8 @@ describe('OpenAPI metadata spike — validators Zod-4 ↔ @hono/zod-openapi', ()
     const names = params.map(p => (p as { name?: string }).name);
     // Load-bearing fact for reads: the validators schema's fields surface as
     // query parameters even though it was created by plain (validators) zod.
-    expect(names).toContain('status');
-    expect(names).toContain('sortBy');
+    expect(names).toContain('cursor');
+    expect(names).toContain('sort');
     for (const p of params) {
       expect((p as { in?: string }).in).toBe('query');
     }

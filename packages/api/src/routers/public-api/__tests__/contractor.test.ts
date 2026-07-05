@@ -254,9 +254,8 @@ describe('publicContractorRouter', () => {
       const result = await caller.list({});
 
       expect(result.items).toHaveLength(2);
-      expect(result.total).toBe(2);
-      expect(result.page).toBe(1);
-      expect(result.pageSize).toBe(25);
+      // Cursor mode: no total/page/pageSize; nextCursor is undefined on the last page.
+      expect(result.nextCursor).toBeUndefined();
 
       const whereArg = (mockDb.contractor.findMany as ReturnType<typeof vi.fn>).mock.calls[0]?.[0]
         .where;
@@ -265,10 +264,9 @@ describe('publicContractorRouter', () => {
 
     it('filters by status when provided', async () => {
       mockDb.contractor.findMany.mockResolvedValueOnce([makeContractor({ status: 'INACTIVE' })]);
-      mockDb.contractor.count.mockResolvedValueOnce(1);
 
       const caller = makeCaller();
-      await caller.list({ status: 'INACTIVE' });
+      await caller.list({ filter: { status: 'INACTIVE' } });
 
       const whereArg = (mockDb.contractor.findMany as ReturnType<typeof vi.fn>).mock.calls[0]?.[0]
         .where;
@@ -277,10 +275,9 @@ describe('publicContractorRouter', () => {
 
     it('filters by lifecycleStage when provided', async () => {
       mockDb.contractor.findMany.mockResolvedValueOnce([]);
-      mockDb.contractor.count.mockResolvedValueOnce(0);
 
       const caller = makeCaller();
-      await caller.list({ lifecycleStage: 'ONBOARDING' });
+      await caller.list({ filter: { lifecycleStage: 'ONBOARDING' } });
 
       const whereArg = (mockDb.contractor.findMany as ReturnType<typeof vi.fn>).mock.calls[0]?.[0]
         .where;

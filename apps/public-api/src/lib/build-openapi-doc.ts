@@ -12,6 +12,10 @@ import type { OpenAPIHono } from '@hono/zod-openapi';
 // biome-ignore lint/suspicious/noExplicitAny: OpenAPIHono is generic over its
 // route env/schema; the doc builder is agnostic to those type parameters.
 export function buildOpenApiDocument(app: OpenAPIHono<any, any, any>) {
+  // The app is mounted at `basePath('/v1')`, so the derived paths already carry
+  // the `/v1` version segment (e.g. `/v1/contractors`). `servers` must therefore
+  // be the bare API origin — NOT `/v1` — or consumers would double-prefix to
+  // `/v1/v1/...`.
   return app.getOpenAPI31Document({
     openapi: '3.1.0',
     info: {
@@ -20,6 +24,6 @@ export function buildOpenApiDocument(app: OpenAPIHono<any, any, any>) {
       description:
         'REST API for Enterprise customers to integrate Contractor Ops with external systems.',
     },
-    servers: [{ url: '/v1' }],
+    servers: [{ url: 'https://api.contractor-ops.com', description: 'Production' }],
   });
 }

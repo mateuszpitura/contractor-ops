@@ -1,34 +1,69 @@
 import { publicApiDocumentListInputSchema } from '@contractor-ops/validators/public-api';
-import { Hono } from 'hono';
-import { createPublicCaller } from '../lib/create-caller.js';
-import { parseListQuery } from '../lib/parse-list-query.js';
+import { createRoute, OpenAPIHono, z } from '@hono/zod-openapi';
+import { decodeCursor } from '../lib/openapi-cursor.js';
+import {
+  createPublicCaller,
+  envelope,
+  errorResponses,
+  listOkResponse,
+  listQuery,
+} from '../lib/openapi-route.js';
 
-const documents = new Hono();
+const documents = new OpenAPIHono();
 
-/**
- * GET /documents
- * List documents with pagination. Optionally filter by linked entity.
- */
-documents.get('/', async c => {
-  const caller = createPublicCaller(c);
-  const input = parseListQuery(publicApiDocumentListInputSchema, c.req.query());
+const documentItem = z
+  .object({
+    id: z.string(),
+    originalFileName: z.string(),
+    mimeType: z.string(),
+    fileSizeBytes: z.number(),
+    documentType: z.string(),
+    status: z.string(),
+    virusScanStatus: z.string(),
+    createdAt: z.string(),
+    updatedAt: z.string(),
+  })
+  .openapi('PublicDocument');
 
-  const result = await caller.document.list(input);
-
-  return c.json({
-    data: result.items,
-    meta: { total: result.total, page: result.page, pageSize: result.pageSize },
-  });
+const listRoute = createRoute({
+  method: 'get',
+  path: '/',
+  request: { query: listQuery(publicApiDocumentListInputSchema) },
+  responses: {
+    200: listOkResponse(documentItem, 'Cursor page of documents'),
+    ...errorResponses,
+  },
 });
 
-/**
- * GET /documents/:id/download-url
- * Get a presigned download URL for a document.
- */
-documents.get('/:id/download-url', async c => {
+documents.openapi(listRoute, async c => {
+  const input = c.req.valid('query');
   const caller = createPublicCaller(c);
-  const result = await caller.document.getDownloadUrl({ id: c.req.param('id') });
-  return c.json({ data: result });
+  const result = await caller.document.list({ ...input, cursor: decodeCursor(input.cursor) });
+  return envelope(c, result);
+});
+
+const downloadUrlItem = z
+  .object({ url: z.string(), expiresIn: z.number() })
+  .openapi('PublicDocumentDownloadUrl');
+
+const downloadUrlRoute = createRoute({
+  method: 'get',
+  path: '/{id}/download-url',
+  request: { params: z.object({ id: z.string() }) },
+  responses: {
+    200: {
+      content: { 'application/json': { schema: z.object({ data: downloadUrlItem }) } },
+      description: 'A short-lived presigned download URL for the document',
+    },
+    ...errorResponses,
+  },
+});
+
+documents.openapi(downloadUrlRoute, async c => {
+  const { id } = c.req.valid('param');
+  const caller = createPublicCaller(c);
+  const result = await caller.document.getDownloadUrl({ id });
+  return c.json({ data: result }, 200);
 });
 
 export default documents;
