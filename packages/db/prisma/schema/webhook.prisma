@@ -1,0 +1,91 @@
+// Outbound webhooks — signed, PII-safe event delivery to customer-supplied URLs.
+//
+// NAME-DISTINCT from the INBOUND `WebhookDelivery` (integration.prisma), which
+// records provider → us deliveries with its own status enum, dedup constraint,
+// and job-health reaper. These three models are the OUTBOUND surface: the
+// subscription endpoint, one delivery attempt, and the dead-letter queue. They
+// carry a required `organizationId` (RLS auto-scopes, mirroring OutboxEvent) and
+// use their own `OutboundWebhookStatus` enum so the inbound reaper never touches
+// them.
+
+// The endpoint an org registers. `secretEncrypted` is the per-subscription HMAC
+// secret stored ENCRYPTED at rest (recoverable — we re-sign every delivery, so it
+// is never one-way hashed like an API key). `eventFilter` is the set of event
+// types this endpoint receives; the fan-out handler matches on it.
+model WebhookSubscription {
+  id              String    @id @default(cuid())
+  organizationId  String
+  url             String
+  eventFilter     String[]
+  secretEncrypted String
+  includePii      Boolean   @default(false)
+  httpAllowed     Boolean   @default(false)
+  enabled         Boolean   @default(true)
+  maxRetries      Int       @default(6)
+  lastSuccessAt   DateTime?
+  lastFailureAt   DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  organization Organization             @relation(fields: [organizationId], references: [id])
+  attempts     WebhookDeliveryAttempt[]
+  deadLetters  WebhookDeadLetter[]
+
+  @@index([organizationId, enabled])
+}
+
+// One outbound send attempt. `payloadJson` is the redaction-applied snapshot
+// (redact runs in the fan-out handler BEFORE this row is written, so no PII sits
+// in a deliverable row). The deliver drain claims rows via
+// `WHERE status IN (PENDING, FAILED) AND nextAttemptAt <= now()`.
+model WebhookDeliveryAttempt {
+  id             String                @id @default(cuid())
+  subscriptionId String
+  organizationId String
+  outboxEventId  String?
+  eventType      String
+  payloadJson    Json
+  status         OutboundWebhookStatus @default(PENDING)
+  attempts       Int                   @default(0)
+  nextAttemptAt  DateTime              @default(now())
+  responseStatus Int?
+  lastError      String?
+  deliveredAt    DateTime?
+  createdAt      DateTime              @default(now())
+
+  organization Organization        @relation(fields: [organizationId], references: [id])
+  subscription WebhookSubscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+
+  @@index([status, nextAttemptAt])
+  @@index([subscriptionId, createdAt])
+}
+
+// Dead-letter queue — an attempt that exhausted the backoff schedule. Retained
+// for forensics + operator replay; `replayedAt` records a replay.
+model WebhookDeadLetter {
+  id             String    @id @default(cuid())
+  subscriptionId String
+  organizationId String
+  attemptId      String?
+  eventType      String
+  payloadJson    Json
+  lastError      String
+  attempts       Int
+  failedAt       DateTime  @default(now())
+  replayedAt     DateTime?
+
+  organization Organization        @relation(fields: [organizationId], references: [id])
+  subscription WebhookSubscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, failedAt])
+
+  @@map("webhook_failures")
+}
+
+enum OutboundWebhookStatus {
+  PENDING
+  SENDING
+  DELIVERED
+  FAILED
+  DEAD
+}

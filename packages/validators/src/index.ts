@@ -936,3 +936,10 @@ export {
   zatcaOnboardingStepSchema,
   zatcaTaxDetailsSchema,
 } from './zatca.js';
+export {
+  WEBHOOK_EVENT_TYPES,
+  webhookEventTypeSchema,
+  webhookEventEnvelopeSchema,
+  type WebhookEventType,
+  type WebhookEventEnvelope,
+} from './webhooks/index.js';

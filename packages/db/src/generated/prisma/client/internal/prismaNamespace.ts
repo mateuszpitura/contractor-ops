@@ -521,6 +521,9 @@ export const ModelName = {
   TaxIdValidation: 'TaxIdValidation',
   Timesheet: 'Timesheet',
   TimeEntry: 'TimeEntry',
+  WebhookSubscription: 'WebhookSubscription',
+  WebhookDeliveryAttempt: 'WebhookDeliveryAttempt',
+  WebhookDeadLetter: 'WebhookDeadLetter',
   Worker: 'Worker',
   WorkflowTemplate: 'WorkflowTemplate',
   WorkflowTaskTemplate: 'WorkflowTaskTemplate',
@@ -547,7 +550,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "organizationApiKey" | "apiKeyIpEvent" | "approvalChainConfig" | "approvalFlow" | "approvalStep" | "approvalDecision" | "auditLog" | "user" | "userPinnedView" | "session" | "account" | "verification" | "subscription" | "ocrCreditLedger" | "stripeEvent" | "classificationAssessment" | "classificationDocument" | "ir35ChainParticipant" | "ir35OtherClientAttestation" | "economicDependencyAlertState" | "reassessmentTrigger" | "cronScanState" | "statusfeststellungsverfahren" | "classificationEscalationEvent" | "sdsApproval" | "consentRecord" | "privacyNotice" | "consentEvent" | "contract" | "contractAmendment" | "contractRatePeriod" | "document" | "documentLink" | "contractHealthCheckRun" | "contractor" | "contractorContact" | "contractorBillingProfile" | "contractorAssignment" | "contractorTag" | "contractorTagLink" | "complianceRequirementTemplate" | "contractorComplianceItem" | "contractorComplianceReminderState" | "leitwegId" | "eInvoiceLifecycle" | "eInvoiceLifecycleEvent" | "peppolCapabilityCache" | "employeeTimeRecord" | "employeeProfile" | "equipment" | "equipmentAssignment" | "shipment" | "shipmentEvent" | "returnRequest" | "courierConfig" | "signingEnvelope" | "signingRecipient" | "signingEvent" | "ewidencjaSnapshot" | "exchangeRate" | "export" | "boEBaseRateHistory" | "skontoTerm" | "skontoSnapshot" | "skontoApplication" | "govApiAuditLog" | "freeZoneAssignment" | "saudizationConfig" | "saudiHeadcount" | "uaeFreeZone" | "deprovisioningRun" | "deprovisioningStep" | "idpChangeProvenance" | "integrationConnection" | "externalLink" | "integrationSyncLog" | "webhookDelivery" | "invoice" | "invoiceFile" | "invoiceLine" | "invoiceMatchResult" | "invoiceIntakeRequest" | "invoicePayment" | "invoiceInterestCompensation" | "invoiceInterestWaiver" | "invoiceInterestClaim" | "leaveType" | "blackoutPeriod" | "leaveRequest" | "leaveLedgerEntry" | "leaveBalance" | "notification" | "userNotificationPreference" | "comment" | "reminderRule" | "reminderInstance" | "notificationCronDedup" | "oAuthChallenge" | "ocrExtraction" | "organization" | "member" | "invitation" | "team" | "project" | "pendingProjectMerge" | "projectExternalLink" | "costCenter" | "outboxEvent" | "paymentRun" | "paymentRunItem" | "paymentExport" | "paymentRunComplianceCheck" | "peppolParticipant" | "peppolTransmission" | "personnelFile" | "personnelFileDocument" | "portalSession" | "portalMagicToken" | "contractorChangeRequest" | "contractorNotificationPreference" | "pendingUpload" | "publicHoliday" | "taxRate" | "withholdingTaxRate" | "whtCertificate" | "taxFormSubmission" | "form1099Nec" | "irisSubmission" | "irisAck" | "tax1099Threshold" | "stateFilingConfig" | "form1042S" | "form1099KTrackerState" | "tax1099KThreshold" | "taxIdValidation" | "timesheet" | "timeEntry" | "worker" | "workflowTemplate" | "workflowTaskTemplate" | "workflowRoleTemplate" | "workflowRoleTaskTemplate" | "workflowRun" | "workflowTaskRun" | "workflowComment" | "workflowAttachment" | "credentialReference" | "zatcaInvoiceChain"
+    modelProps: "organizationApiKey" | "apiKeyIpEvent" | "approvalChainConfig" | "approvalFlow" | "approvalStep" | "approvalDecision" | "auditLog" | "user" | "userPinnedView" | "session" | "account" | "verification" | "subscription" | "ocrCreditLedger" | "stripeEvent" | "classificationAssessment" | "classificationDocument" | "ir35ChainParticipant" | "ir35OtherClientAttestation" | "economicDependencyAlertState" | "reassessmentTrigger" | "cronScanState" | "statusfeststellungsverfahren" | "classificationEscalationEvent" | "sdsApproval" | "consentRecord" | "privacyNotice" | "consentEvent" | "contract" | "contractAmendment" | "contractRatePeriod" | "document" | "documentLink" | "contractHealthCheckRun" | "contractor" | "contractorContact" | "contractorBillingProfile" | "contractorAssignment" | "contractorTag" | "contractorTagLink" | "complianceRequirementTemplate" | "contractorComplianceItem" | "contractorComplianceReminderState" | "leitwegId" | "eInvoiceLifecycle" | "eInvoiceLifecycleEvent" | "peppolCapabilityCache" | "employeeTimeRecord" | "employeeProfile" | "equipment" | "equipmentAssignment" | "shipment" | "shipmentEvent" | "returnRequest" | "courierConfig" | "signingEnvelope" | "signingRecipient" | "signingEvent" | "ewidencjaSnapshot" | "exchangeRate" | "export" | "boEBaseRateHistory" | "skontoTerm" | "skontoSnapshot" | "skontoApplication" | "govApiAuditLog" | "freeZoneAssignment" | "saudizationConfig" | "saudiHeadcount" | "uaeFreeZone" | "deprovisioningRun" | "deprovisioningStep" | "idpChangeProvenance" | "integrationConnection" | "externalLink" | "integrationSyncLog" | "webhookDelivery" | "invoice" | "invoiceFile" | "invoiceLine" | "invoiceMatchResult" | "invoiceIntakeRequest" | "invoicePayment" | "invoiceInterestCompensation" | "invoiceInterestWaiver" | "invoiceInterestClaim" | "leaveType" | "blackoutPeriod" | "leaveRequest" | "leaveLedgerEntry" | "leaveBalance" | "notification" | "userNotificationPreference" | "comment" | "reminderRule" | "reminderInstance" | "notificationCronDedup" | "oAuthChallenge" | "ocrExtraction" | "organization" | "member" | "invitation" | "team" | "project" | "pendingProjectMerge" | "projectExternalLink" | "costCenter" | "outboxEvent" | "paymentRun" | "paymentRunItem" | "paymentExport" | "paymentRunComplianceCheck" | "peppolParticipant" | "peppolTransmission" | "personnelFile" | "personnelFileDocument" | "portalSession" | "portalMagicToken" | "contractorChangeRequest" | "contractorNotificationPreference" | "pendingUpload" | "publicHoliday" | "taxRate" | "withholdingTaxRate" | "whtCertificate" | "taxFormSubmission" | "form1099Nec" | "irisSubmission" | "irisAck" | "tax1099Threshold" | "stateFilingConfig" | "form1042S" | "form1099KTrackerState" | "tax1099KThreshold" | "taxIdValidation" | "timesheet" | "timeEntry" | "webhookSubscription" | "webhookDeliveryAttempt" | "webhookDeadLetter" | "worker" | "workflowTemplate" | "workflowTaskTemplate" | "workflowRoleTemplate" | "workflowRoleTaskTemplate" | "workflowRun" | "workflowTaskRun" | "workflowComment" | "workflowAttachment" | "credentialReference" | "zatcaInvoiceChain"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -10689,6 +10692,228 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    WebhookSubscription: {
+      payload: Prisma.$WebhookSubscriptionPayload<ExtArgs>
+      fields: Prisma.WebhookSubscriptionFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.WebhookSubscriptionFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebhookSubscriptionPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.WebhookSubscriptionFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebhookSubscriptionPayload>
+        }
+        findFirst: {
+          args: Prisma.WebhookSubscriptionFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebhookSubscriptionPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.WebhookSubscriptionFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebhookSubscriptionPayload>
+        }
+        findMany: {
+          args: Prisma.WebhookSubscriptionFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebhookSubscriptionPayload>[]
+        }
+        create: {
+          args: Prisma.WebhookSubscriptionCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebhookSubscriptionPayload>
+        }
+        createMany: {
+          args: Prisma.WebhookSubscriptionCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.WebhookSubscriptionCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebhookSubscriptionPayload>[]
+        }
+        delete: {
+          args: Prisma.WebhookSubscriptionDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebhookSubscriptionPayload>
+        }
+        update: {
+          args: Prisma.WebhookSubscriptionUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebhookSubscriptionPayload>
+        }
+        deleteMany: {
+          args: Prisma.WebhookSubscriptionDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.WebhookSubscriptionUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.WebhookSubscriptionUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebhookSubscriptionPayload>[]
+        }
+        upsert: {
+          args: Prisma.WebhookSubscriptionUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebhookSubscriptionPayload>
+        }
+        aggregate: {
+          args: Prisma.WebhookSubscriptionAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateWebhookSubscription>
+        }
+        groupBy: {
+          args: Prisma.WebhookSubscriptionGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.WebhookSubscriptionGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.WebhookSubscriptionCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.WebhookSubscriptionCountAggregateOutputType> | number
+        }
+      }
+    }
+    WebhookDeliveryAttempt: {
+      payload: Prisma.$WebhookDeliveryAttemptPayload<ExtArgs>
+      fields: Prisma.WebhookDeliveryAttemptFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.WebhookDeliveryAttemptFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebhookDeliveryAttemptPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.WebhookDeliveryAttemptFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebhookDeliveryAttemptPayload>
+        }
+        findFirst: {
+          args: Prisma.WebhookDeliveryAttemptFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebhookDeliveryAttemptPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.WebhookDeliveryAttemptFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebhookDeliveryAttemptPayload>
+        }
+        findMany: {
+          args: Prisma.WebhookDeliveryAttemptFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebhookDeliveryAttemptPayload>[]
+        }
+        create: {
+          args: Prisma.WebhookDeliveryAttemptCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebhookDeliveryAttemptPayload>
+        }
+        createMany: {
+          args: Prisma.WebhookDeliveryAttemptCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.WebhookDeliveryAttemptCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebhookDeliveryAttemptPayload>[]
+        }
+        delete: {
+          args: Prisma.WebhookDeliveryAttemptDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebhookDeliveryAttemptPayload>
+        }
+        update: {
+          args: Prisma.WebhookDeliveryAttemptUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebhookDeliveryAttemptPayload>
+        }
+        deleteMany: {
+          args: Prisma.WebhookDeliveryAttemptDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.WebhookDeliveryAttemptUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.WebhookDeliveryAttemptUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebhookDeliveryAttemptPayload>[]
+        }
+        upsert: {
+          args: Prisma.WebhookDeliveryAttemptUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebhookDeliveryAttemptPayload>
+        }
+        aggregate: {
+          args: Prisma.WebhookDeliveryAttemptAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateWebhookDeliveryAttempt>
+        }
+        groupBy: {
+          args: Prisma.WebhookDeliveryAttemptGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.WebhookDeliveryAttemptGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.WebhookDeliveryAttemptCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.WebhookDeliveryAttemptCountAggregateOutputType> | number
+        }
+      }
+    }
+    WebhookDeadLetter: {
+      payload: Prisma.$WebhookDeadLetterPayload<ExtArgs>
+      fields: Prisma.WebhookDeadLetterFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.WebhookDeadLetterFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebhookDeadLetterPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.WebhookDeadLetterFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebhookDeadLetterPayload>
+        }
+        findFirst: {
+          args: Prisma.WebhookDeadLetterFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebhookDeadLetterPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.WebhookDeadLetterFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebhookDeadLetterPayload>
+        }
+        findMany: {
+          args: Prisma.WebhookDeadLetterFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebhookDeadLetterPayload>[]
+        }
+        create: {
+          args: Prisma.WebhookDeadLetterCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebhookDeadLetterPayload>
+        }
+        createMany: {
+          args: Prisma.WebhookDeadLetterCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.WebhookDeadLetterCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebhookDeadLetterPayload>[]
+        }
+        delete: {
+          args: Prisma.WebhookDeadLetterDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebhookDeadLetterPayload>
+        }
+        update: {
+          args: Prisma.WebhookDeadLetterUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebhookDeadLetterPayload>
+        }
+        deleteMany: {
+          args: Prisma.WebhookDeadLetterDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.WebhookDeadLetterUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.WebhookDeadLetterUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebhookDeadLetterPayload>[]
+        }
+        upsert: {
+          args: Prisma.WebhookDeadLetterUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebhookDeadLetterPayload>
+        }
+        aggregate: {
+          args: Prisma.WebhookDeadLetterAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateWebhookDeadLetter>
+        }
+        groupBy: {
+          args: Prisma.WebhookDeadLetterGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.WebhookDeadLetterGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.WebhookDeadLetterCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.WebhookDeadLetterCountAggregateOutputType> | number
+        }
+      }
+    }
     Worker: {
       payload: Prisma.$WorkerPayload<ExtArgs>
       fields: Prisma.WorkerFieldRefs
@@ -14038,6 +14263,60 @@ export const TimeEntryScalarFieldEnum = {
 export type TimeEntryScalarFieldEnum = (typeof TimeEntryScalarFieldEnum)[keyof typeof TimeEntryScalarFieldEnum]
 
 
+export const WebhookSubscriptionScalarFieldEnum = {
+  id: 'id',
+  organizationId: 'organizationId',
+  url: 'url',
+  eventFilter: 'eventFilter',
+  secretEncrypted: 'secretEncrypted',
+  includePii: 'includePii',
+  httpAllowed: 'httpAllowed',
+  enabled: 'enabled',
+  maxRetries: 'maxRetries',
+  lastSuccessAt: 'lastSuccessAt',
+  lastFailureAt: 'lastFailureAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type WebhookSubscriptionScalarFieldEnum = (typeof WebhookSubscriptionScalarFieldEnum)[keyof typeof WebhookSubscriptionScalarFieldEnum]
+
+
+export const WebhookDeliveryAttemptScalarFieldEnum = {
+  id: 'id',
+  subscriptionId: 'subscriptionId',
+  organizationId: 'organizationId',
+  outboxEventId: 'outboxEventId',
+  eventType: 'eventType',
+  payloadJson: 'payloadJson',
+  status: 'status',
+  attempts: 'attempts',
+  nextAttemptAt: 'nextAttemptAt',
+  responseStatus: 'responseStatus',
+  lastError: 'lastError',
+  deliveredAt: 'deliveredAt',
+  createdAt: 'createdAt'
+} as const
+
+export type WebhookDeliveryAttemptScalarFieldEnum = (typeof WebhookDeliveryAttemptScalarFieldEnum)[keyof typeof WebhookDeliveryAttemptScalarFieldEnum]
+
+
+export const WebhookDeadLetterScalarFieldEnum = {
+  id: 'id',
+  subscriptionId: 'subscriptionId',
+  organizationId: 'organizationId',
+  attemptId: 'attemptId',
+  eventType: 'eventType',
+  payloadJson: 'payloadJson',
+  lastError: 'lastError',
+  attempts: 'attempts',
+  failedAt: 'failedAt',
+  replayedAt: 'replayedAt'
+} as const
+
+export type WebhookDeadLetterScalarFieldEnum = (typeof WebhookDeadLetterScalarFieldEnum)[keyof typeof WebhookDeadLetterScalarFieldEnum]
+
+
 export const WorkerScalarFieldEnum = {
   id: 'id',
   organizationId: 'organizationId',
@@ -16135,6 +16414,20 @@ export type ListEnumTimeEntrySourceFieldRefInput<$PrismaModel> = FieldRefInputTy
 
 
 /**
+ * Reference to a field of type 'OutboundWebhookStatus'
+ */
+export type EnumOutboundWebhookStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'OutboundWebhookStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'OutboundWebhookStatus[]'
+ */
+export type ListEnumOutboundWebhookStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'OutboundWebhookStatus[]'>
+    
+
+
+/**
  * Reference to a field of type 'WorkerType'
  */
 export type EnumWorkerTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'WorkerType'>
@@ -16548,6 +16841,9 @@ export type GlobalOmitConfig = {
   taxIdValidation?: Prisma.TaxIdValidationOmit
   timesheet?: Prisma.TimesheetOmit
   timeEntry?: Prisma.TimeEntryOmit
+  webhookSubscription?: Prisma.WebhookSubscriptionOmit
+  webhookDeliveryAttempt?: Prisma.WebhookDeliveryAttemptOmit
+  webhookDeadLetter?: Prisma.WebhookDeadLetterOmit
   worker?: Prisma.WorkerOmit
   workflowTemplate?: Prisma.WorkflowTemplateOmit
   workflowTaskTemplate?: Prisma.WorkflowTaskTemplateOmit

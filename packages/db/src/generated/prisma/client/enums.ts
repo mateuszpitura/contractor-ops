@@ -1335,6 +1335,17 @@ export const TimeEntrySource = {
 export type TimeEntrySource = (typeof TimeEntrySource)[keyof typeof TimeEntrySource]
 
 
+export const OutboundWebhookStatus = {
+  PENDING: 'PENDING',
+  SENDING: 'SENDING',
+  DELIVERED: 'DELIVERED',
+  FAILED: 'FAILED',
+  DEAD: 'DEAD'
+} as const
+
+export type OutboundWebhookStatus = (typeof OutboundWebhookStatus)[keyof typeof OutboundWebhookStatus]
+
+
 export const WorkerType = {
   CONTRACTOR: 'CONTRACTOR',
   EMPLOYEE: 'EMPLOYEE'

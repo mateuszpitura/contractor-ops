@@ -2652,6 +2652,23 @@ export type EnumTimeEntrySourceWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedEnumTimeEntrySourceFilter<$PrismaModel>
 }
 
+export type EnumOutboundWebhookStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.OutboundWebhookStatus | Prisma.EnumOutboundWebhookStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.OutboundWebhookStatus[] | Prisma.ListEnumOutboundWebhookStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.OutboundWebhookStatus[] | Prisma.ListEnumOutboundWebhookStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumOutboundWebhookStatusFilter<$PrismaModel> | $Enums.OutboundWebhookStatus
+}
+
+export type EnumOutboundWebhookStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.OutboundWebhookStatus | Prisma.EnumOutboundWebhookStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.OutboundWebhookStatus[] | Prisma.ListEnumOutboundWebhookStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.OutboundWebhookStatus[] | Prisma.ListEnumOutboundWebhookStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumOutboundWebhookStatusWithAggregatesFilter<$PrismaModel> | $Enums.OutboundWebhookStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumOutboundWebhookStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumOutboundWebhookStatusFilter<$PrismaModel>
+}
+
 export type EnumWorkerTypeFilter<$PrismaModel = never> = {
   equals?: $Enums.WorkerType | Prisma.EnumWorkerTypeFieldRefInput<$PrismaModel>
   in?: $Enums.WorkerType[] | Prisma.ListEnumWorkerTypeFieldRefInput<$PrismaModel>
@@ -5434,6 +5451,23 @@ export type NestedEnumTimeEntrySourceWithAggregatesFilter<$PrismaModel = never> 
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumTimeEntrySourceFilter<$PrismaModel>
   _max?: Prisma.NestedEnumTimeEntrySourceFilter<$PrismaModel>
+}
+
+export type NestedEnumOutboundWebhookStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.OutboundWebhookStatus | Prisma.EnumOutboundWebhookStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.OutboundWebhookStatus[] | Prisma.ListEnumOutboundWebhookStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.OutboundWebhookStatus[] | Prisma.ListEnumOutboundWebhookStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumOutboundWebhookStatusFilter<$PrismaModel> | $Enums.OutboundWebhookStatus
+}
+
+export type NestedEnumOutboundWebhookStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.OutboundWebhookStatus | Prisma.EnumOutboundWebhookStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.OutboundWebhookStatus[] | Prisma.ListEnumOutboundWebhookStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.OutboundWebhookStatus[] | Prisma.ListEnumOutboundWebhookStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumOutboundWebhookStatusWithAggregatesFilter<$PrismaModel> | $Enums.OutboundWebhookStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumOutboundWebhookStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumOutboundWebhookStatusFilter<$PrismaModel>
 }
 
 export type NestedEnumWorkerTypeFilter<$PrismaModel = never> = {
