@@ -7,10 +7,13 @@
  *      here the caller is stubbed to throw that same NOT_FOUND so the assertion
  *      is on the Hono route wiring + error mapping (the REAL flag gate 404 is
  *      proven at the tRPC layer in `packages/api` public-api-flag.security.test).
- *   2. Spec/SDK invisibility — every write path is `hide:true`, so the derived
- *      OpenAPI 3.1 document carries ZERO write operations.
+ *   2. Spec/SDK visibility — after the Phase-100 OWASP gate passed, the write
+ *      routes are un-hidden, so the derived OpenAPI 3.1 document now carries the
+ *      write operations (they enter the spec / Scalar / SDK). The per-org flag
+ *      gate is UNCHANGED, so layer 1 (404 when the module is off) still holds —
+ *      un-hiding a route ≠ enabling it for an org.
  *
- * Phase 99 builds the transport; the flag flip + un-hide is a Phase-100 act.
+ * Phase 99 built the transport double-dark; Phase 100 flipped it behind the gate.
  */
 
 import { TRPCError } from '@trpc/server';
@@ -116,17 +119,18 @@ describe('write routes are dark — 404 when module.public-api is OFF', () => {
   }
 });
 
-describe('write routes are absent from the derived OpenAPI 3.1 document (hide:true)', () => {
-  it('the doc contains ZERO write operations', () => {
+describe('write routes are present in the derived OpenAPI 3.1 document (un-hidden)', () => {
+  it('the doc now contains the un-hidden write operations', () => {
     const doc = buildOpenApiDocument(app);
     const writeVerbs = ['post', 'patch', 'put', 'delete'];
-    for (const [path, ops] of Object.entries(doc.paths ?? {})) {
+    let writeOps = 0;
+    for (const ops of Object.values(doc.paths ?? {})) {
       for (const verb of writeVerbs) {
-        expect(
-          (ops as Record<string, unknown>)[verb],
-          `${verb} ${path} must be hidden`,
-        ).toBeUndefined();
+        if ((ops as Record<string, unknown>)[verb]) writeOps += 1;
       }
     }
+    // The 11 un-hidden write routes across the 6 delivered entities are now in
+    // the spec. `_initiatePayoutForRun` stays deferred (never exposed).
+    expect(writeOps).toBe(WRITE_ROUTES.length);
   });
 });

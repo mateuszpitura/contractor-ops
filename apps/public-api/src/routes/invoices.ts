@@ -76,12 +76,11 @@ invoices.openapi(getByIdRoute, async c => {
   return c.json({ data: result }, 200);
 });
 
-// --- Hidden write routes (double-dark) ---
+// --- Write routes (live behind the per-org module.public-api flag gate) ---
 
 const createRouteDef = createRoute({
   method: 'post',
   path: '/',
-  hide: true,
   request: { body: jsonBody(publicApiInvoiceCreateInputSchema) },
   responses: writeResponses,
 });
@@ -95,7 +94,6 @@ invoices.openapi(createRouteDef, async c => {
 const voidRouteDef = createRoute({
   method: 'patch',
   path: '/void',
-  hide: true,
   request: { body: jsonBody(publicApiInvoiceVoidInputSchema) },
   responses: writeResponses,
 });

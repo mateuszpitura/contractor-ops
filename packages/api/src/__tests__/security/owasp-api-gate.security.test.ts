@@ -16,18 +16,43 @@ import { PUBLIC_API_SCOPES } from '../../lib/scope-utils';
 const SSRF_MODULE = '../../services/webhooks/ssrf-guard';
 const VALIDATORS_MODULE = '@contractor-ops/validators';
 
+/**
+ * The delivered public WRITE surface — every mutating procedure carries one of
+ * these scopes (the P99 BFLA matrix). A write reachable without a member here is
+ * an unscoped mutation.
+ */
+const DELIVERED_WRITE_SCOPES = [
+  'contractor:create',
+  'contractor:update',
+  'invoice:create',
+  'invoice:update',
+  'payment:create',
+  'payment:update',
+  'payment:export',
+  'workflow:create',
+  'workflow:execute',
+  'workflow:update',
+] as const;
+
 describe('OWASP API1:2023 — BOLA (broken object-level authorization)', () => {
-  it('the write scope matrix requires object-scoped permissions (no unscoped mutation)', () => {
-    // Every mutating public scope is entity-scoped (`entity:verb`), never a bare wildcard.
+  it('every mutating public scope is object-scoped (entity:verb), never a bare wildcard', () => {
     const mutating = PUBLIC_API_SCOPES.filter(s => /:(create|update|delete|export|execute)$/.test(s));
     expect(mutating.length).toBeGreaterThan(0);
     for (const scope of mutating) {
       expect(scope).toMatch(/^[a-z_]+:(create|update|delete|export|execute)$/);
+      expect(scope).not.toBe('*');
     }
   });
 });
 
 describe('OWASP API5:2023 — BFLA (broken function-level authorization)', () => {
+  it('every delivered write scope is a member of the public taxonomy (reuses the P99 matrix)', () => {
+    const registry = new Set<string>(PUBLIC_API_SCOPES);
+    for (const scope of DELIVERED_WRITE_SCOPES) {
+      expect(registry.has(scope)).toBe(true);
+    }
+  });
+
   it('webhooks:manage is a first-class public scope (added in 100-08)', () => {
     expect(PUBLIC_API_SCOPES).toContain('webhooks:manage');
   });

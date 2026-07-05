@@ -72,13 +72,13 @@ contractors.openapi(getByIdRoute, async c => {
   return c.json({ data: result }, 200);
 });
 
-// --- Hidden write routes (double-dark: hide:true keeps them out of the spec/SDK;
-//     the tRPC layer inherits the per-org flag gate + scope check + tier quota) ---
+// --- Write routes. Live in the derived spec/SDK; the tRPC layer enforces the
+//     per-org `module.public-api` flag gate + scope check + tier quota, so an
+//     org without the flag still 404s. ---
 
 const createRouteDef = createRoute({
   method: 'post',
   path: '/',
-  hide: true,
   request: { body: jsonBody(publicApiContractorCreateInputSchema) },
   responses: writeResponses,
 });
@@ -92,7 +92,6 @@ contractors.openapi(createRouteDef, async c => {
 const updateRouteDef = createRoute({
   method: 'patch',
   path: '/',
-  hide: true,
   request: { body: jsonBody(publicApiContractorUpdateInputSchema) },
   responses: writeResponses,
 });
