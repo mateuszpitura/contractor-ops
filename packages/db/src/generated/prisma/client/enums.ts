@@ -326,7 +326,8 @@ export const EntityType = {
   LEAVE_REQUEST: 'LEAVE_REQUEST',
   EMPLOYEE_TIME_RECORD: 'EMPLOYEE_TIME_RECORD',
   WORKER: 'WORKER',
-  EMPLOYEE: 'EMPLOYEE'
+  EMPLOYEE: 'EMPLOYEE',
+  MARKETPLACE_LISTING: 'MARKETPLACE_LISTING'
 } as const
 
 export type EntityType = (typeof EntityType)[keyof typeof EntityType]
@@ -1016,6 +1017,27 @@ export const LeaveLedgerType = {
 } as const
 
 export type LeaveLedgerType = (typeof LeaveLedgerType)[keyof typeof LeaveLedgerType]
+
+
+export const MarketplacePlatform = {
+  ZAPIER: 'ZAPIER',
+  N8N: 'N8N',
+  MAKE: 'MAKE'
+} as const
+
+export type MarketplacePlatform = (typeof MarketplacePlatform)[keyof typeof MarketplacePlatform]
+
+
+export const MarketplaceListingStatus = {
+  DRAFT: 'DRAFT',
+  SUBMITTED: 'SUBMITTED',
+  IN_REVIEW: 'IN_REVIEW',
+  LIVE: 'LIVE',
+  REJECTED: 'REJECTED',
+  NEEDS_CHANGES: 'NEEDS_CHANGES'
+} as const
+
+export type MarketplaceListingStatus = (typeof MarketplaceListingStatus)[keyof typeof MarketplaceListingStatus]
 
 
 export const NotificationChannel = {

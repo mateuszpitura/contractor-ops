@@ -151,6 +151,7 @@ const EXPECTED: Record<RoleName, Record<string, readonly string[]>> = {
   },
   platform_operator: {
     'admin:boe-rate': ['read', 'write'],
+    'admin:marketplace': ['read', 'write'],
   },
   hr_admin: {
     employee: ['create', 'read', 'update', 'delete', 'approve_leave'],

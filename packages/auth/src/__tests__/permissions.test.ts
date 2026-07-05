@@ -32,6 +32,7 @@ describe('accessControlStatement', () => {
       'employeeFileC',
       'employeeFileD',
       'admin:boe-rate',
+      'admin:marketplace',
       'classification',
       'auditLog',
     ];

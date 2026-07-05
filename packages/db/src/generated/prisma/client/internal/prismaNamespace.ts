@@ -476,6 +476,7 @@ export const ModelName = {
   LeaveRequest: 'LeaveRequest',
   LeaveLedgerEntry: 'LeaveLedgerEntry',
   LeaveBalance: 'LeaveBalance',
+  MarketplaceListing: 'MarketplaceListing',
   Notification: 'Notification',
   UserNotificationPreference: 'UserNotificationPreference',
   Comment: 'Comment',
@@ -551,7 +552,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "organizationApiKey" | "apiKeyIpEvent" | "approvalChainConfig" | "approvalFlow" | "approvalStep" | "approvalDecision" | "auditLog" | "user" | "userPinnedView" | "session" | "account" | "verification" | "subscription" | "ocrCreditLedger" | "stripeEvent" | "classificationAssessment" | "classificationDocument" | "ir35ChainParticipant" | "ir35OtherClientAttestation" | "economicDependencyAlertState" | "reassessmentTrigger" | "cronScanState" | "statusfeststellungsverfahren" | "classificationEscalationEvent" | "sdsApproval" | "consentRecord" | "privacyNotice" | "consentEvent" | "contract" | "contractAmendment" | "contractRatePeriod" | "document" | "documentLink" | "contractHealthCheckRun" | "contractor" | "contractorContact" | "contractorBillingProfile" | "contractorAssignment" | "contractorTag" | "contractorTagLink" | "complianceRequirementTemplate" | "contractorComplianceItem" | "contractorComplianceReminderState" | "leitwegId" | "eInvoiceLifecycle" | "eInvoiceLifecycleEvent" | "peppolCapabilityCache" | "employeeTimeRecord" | "employeeProfile" | "statutoryCertificate" | "equipment" | "equipmentAssignment" | "shipment" | "shipmentEvent" | "returnRequest" | "courierConfig" | "signingEnvelope" | "signingRecipient" | "signingEvent" | "ewidencjaSnapshot" | "exchangeRate" | "export" | "boEBaseRateHistory" | "skontoTerm" | "skontoSnapshot" | "skontoApplication" | "govApiAuditLog" | "freeZoneAssignment" | "saudizationConfig" | "saudiHeadcount" | "uaeFreeZone" | "deprovisioningRun" | "deprovisioningStep" | "idpChangeProvenance" | "integrationConnection" | "externalLink" | "integrationSyncLog" | "webhookDelivery" | "invoice" | "invoiceFile" | "invoiceLine" | "invoiceMatchResult" | "invoiceIntakeRequest" | "invoicePayment" | "invoiceInterestCompensation" | "invoiceInterestWaiver" | "invoiceInterestClaim" | "leaveType" | "blackoutPeriod" | "leaveRequest" | "leaveLedgerEntry" | "leaveBalance" | "notification" | "userNotificationPreference" | "comment" | "reminderRule" | "reminderInstance" | "notificationCronDedup" | "oAuthChallenge" | "ocrExtraction" | "organization" | "member" | "invitation" | "team" | "project" | "pendingProjectMerge" | "projectExternalLink" | "costCenter" | "outboxEvent" | "paymentRun" | "paymentRunItem" | "paymentExport" | "paymentRunComplianceCheck" | "peppolParticipant" | "peppolTransmission" | "personnelFile" | "personnelFileDocument" | "portalSession" | "portalMagicToken" | "contractorChangeRequest" | "contractorNotificationPreference" | "pendingUpload" | "publicHoliday" | "taxRate" | "withholdingTaxRate" | "whtCertificate" | "taxFormSubmission" | "form1099Nec" | "irisSubmission" | "irisAck" | "tax1099Threshold" | "stateFilingConfig" | "form1042S" | "form1099KTrackerState" | "tax1099KThreshold" | "taxIdValidation" | "timesheet" | "timeEntry" | "webhookSubscription" | "webhookDeliveryAttempt" | "webhookDeadLetter" | "worker" | "workflowTemplate" | "workflowTaskTemplate" | "workflowRoleTemplate" | "workflowRoleTaskTemplate" | "workflowRun" | "workflowTaskRun" | "workflowComment" | "workflowAttachment" | "credentialReference" | "zatcaInvoiceChain"
+    modelProps: "organizationApiKey" | "apiKeyIpEvent" | "approvalChainConfig" | "approvalFlow" | "approvalStep" | "approvalDecision" | "auditLog" | "user" | "userPinnedView" | "session" | "account" | "verification" | "subscription" | "ocrCreditLedger" | "stripeEvent" | "classificationAssessment" | "classificationDocument" | "ir35ChainParticipant" | "ir35OtherClientAttestation" | "economicDependencyAlertState" | "reassessmentTrigger" | "cronScanState" | "statusfeststellungsverfahren" | "classificationEscalationEvent" | "sdsApproval" | "consentRecord" | "privacyNotice" | "consentEvent" | "contract" | "contractAmendment" | "contractRatePeriod" | "document" | "documentLink" | "contractHealthCheckRun" | "contractor" | "contractorContact" | "contractorBillingProfile" | "contractorAssignment" | "contractorTag" | "contractorTagLink" | "complianceRequirementTemplate" | "contractorComplianceItem" | "contractorComplianceReminderState" | "leitwegId" | "eInvoiceLifecycle" | "eInvoiceLifecycleEvent" | "peppolCapabilityCache" | "employeeTimeRecord" | "employeeProfile" | "statutoryCertificate" | "equipment" | "equipmentAssignment" | "shipment" | "shipmentEvent" | "returnRequest" | "courierConfig" | "signingEnvelope" | "signingRecipient" | "signingEvent" | "ewidencjaSnapshot" | "exchangeRate" | "export" | "boEBaseRateHistory" | "skontoTerm" | "skontoSnapshot" | "skontoApplication" | "govApiAuditLog" | "freeZoneAssignment" | "saudizationConfig" | "saudiHeadcount" | "uaeFreeZone" | "deprovisioningRun" | "deprovisioningStep" | "idpChangeProvenance" | "integrationConnection" | "externalLink" | "integrationSyncLog" | "webhookDelivery" | "invoice" | "invoiceFile" | "invoiceLine" | "invoiceMatchResult" | "invoiceIntakeRequest" | "invoicePayment" | "invoiceInterestCompensation" | "invoiceInterestWaiver" | "invoiceInterestClaim" | "leaveType" | "blackoutPeriod" | "leaveRequest" | "leaveLedgerEntry" | "leaveBalance" | "marketplaceListing" | "notification" | "userNotificationPreference" | "comment" | "reminderRule" | "reminderInstance" | "notificationCronDedup" | "oAuthChallenge" | "ocrExtraction" | "organization" | "member" | "invitation" | "team" | "project" | "pendingProjectMerge" | "projectExternalLink" | "costCenter" | "outboxEvent" | "paymentRun" | "paymentRunItem" | "paymentExport" | "paymentRunComplianceCheck" | "peppolParticipant" | "peppolTransmission" | "personnelFile" | "personnelFileDocument" | "portalSession" | "portalMagicToken" | "contractorChangeRequest" | "contractorNotificationPreference" | "pendingUpload" | "publicHoliday" | "taxRate" | "withholdingTaxRate" | "whtCertificate" | "taxFormSubmission" | "form1099Nec" | "irisSubmission" | "irisAck" | "tax1099Threshold" | "stateFilingConfig" | "form1042S" | "form1099KTrackerState" | "tax1099KThreshold" | "taxIdValidation" | "timesheet" | "timeEntry" | "webhookSubscription" | "webhookDeliveryAttempt" | "webhookDeadLetter" | "worker" | "workflowTemplate" | "workflowTaskTemplate" | "workflowRoleTemplate" | "workflowRoleTaskTemplate" | "workflowRun" | "workflowTaskRun" | "workflowComment" | "workflowAttachment" | "credentialReference" | "zatcaInvoiceChain"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -7363,6 +7364,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    MarketplaceListing: {
+      payload: Prisma.$MarketplaceListingPayload<ExtArgs>
+      fields: Prisma.MarketplaceListingFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.MarketplaceListingFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MarketplaceListingPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.MarketplaceListingFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MarketplaceListingPayload>
+        }
+        findFirst: {
+          args: Prisma.MarketplaceListingFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MarketplaceListingPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.MarketplaceListingFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MarketplaceListingPayload>
+        }
+        findMany: {
+          args: Prisma.MarketplaceListingFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MarketplaceListingPayload>[]
+        }
+        create: {
+          args: Prisma.MarketplaceListingCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MarketplaceListingPayload>
+        }
+        createMany: {
+          args: Prisma.MarketplaceListingCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.MarketplaceListingCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MarketplaceListingPayload>[]
+        }
+        delete: {
+          args: Prisma.MarketplaceListingDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MarketplaceListingPayload>
+        }
+        update: {
+          args: Prisma.MarketplaceListingUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MarketplaceListingPayload>
+        }
+        deleteMany: {
+          args: Prisma.MarketplaceListingDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.MarketplaceListingUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.MarketplaceListingUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MarketplaceListingPayload>[]
+        }
+        upsert: {
+          args: Prisma.MarketplaceListingUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MarketplaceListingPayload>
+        }
+        aggregate: {
+          args: Prisma.MarketplaceListingAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateMarketplaceListing>
+        }
+        groupBy: {
+          args: Prisma.MarketplaceListingGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.MarketplaceListingGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.MarketplaceListingCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.MarketplaceListingCountAggregateOutputType> | number
+        }
+      }
+    }
     Notification: {
       payload: Prisma.$NotificationPayload<ExtArgs>
       fields: Prisma.NotificationFieldRefs
@@ -13559,6 +13634,23 @@ export const LeaveBalanceScalarFieldEnum = {
 export type LeaveBalanceScalarFieldEnum = (typeof LeaveBalanceScalarFieldEnum)[keyof typeof LeaveBalanceScalarFieldEnum]
 
 
+export const MarketplaceListingScalarFieldEnum = {
+  id: 'id',
+  platform: 'platform',
+  status: 'status',
+  versionPin: 'versionPin',
+  lastReviewFeedback: 'lastReviewFeedback',
+  listingUrl: 'listingUrl',
+  submittedAt: 'submittedAt',
+  wentLiveAt: 'wentLiveAt',
+  updatedByUserId: 'updatedByUserId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type MarketplaceListingScalarFieldEnum = (typeof MarketplaceListingScalarFieldEnum)[keyof typeof MarketplaceListingScalarFieldEnum]
+
+
 export const NotificationScalarFieldEnum = {
   id: 'id',
   organizationId: 'organizationId',
@@ -16099,6 +16191,34 @@ export type ListEnumLeaveLedgerTypeFieldRefInput<$PrismaModel> = FieldRefInputTy
 
 
 /**
+ * Reference to a field of type 'MarketplacePlatform'
+ */
+export type EnumMarketplacePlatformFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'MarketplacePlatform'>
+    
+
+
+/**
+ * Reference to a field of type 'MarketplacePlatform[]'
+ */
+export type ListEnumMarketplacePlatformFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'MarketplacePlatform[]'>
+    
+
+
+/**
+ * Reference to a field of type 'MarketplaceListingStatus'
+ */
+export type EnumMarketplaceListingStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'MarketplaceListingStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'MarketplaceListingStatus[]'
+ */
+export type ListEnumMarketplaceListingStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'MarketplaceListingStatus[]'>
+    
+
+
+/**
  * Reference to a field of type 'NotificationChannel'
  */
 export type EnumNotificationChannelFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'NotificationChannel'>
@@ -16957,6 +17077,7 @@ export type GlobalOmitConfig = {
   leaveRequest?: Prisma.LeaveRequestOmit
   leaveLedgerEntry?: Prisma.LeaveLedgerEntryOmit
   leaveBalance?: Prisma.LeaveBalanceOmit
+  marketplaceListing?: Prisma.MarketplaceListingOmit
   notification?: Prisma.NotificationOmit
   userNotificationPreference?: Prisma.UserNotificationPreferenceOmit
   comment?: Prisma.CommentOmit

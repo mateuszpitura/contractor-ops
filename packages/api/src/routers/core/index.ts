@@ -22,6 +22,7 @@ export { importRouter } from './import';
 export { integrationRouter } from './integration';
 export { legalRouter } from './legal';
 export { leitwegIdRouter } from './leitweg-id';
+export { marketplaceListingRouter } from './marketplace-listing';
 export { notificationRouter } from './notification';
 export { ocrRouter } from './ocr';
 export { onboardingImportRouter } from './onboarding-import';

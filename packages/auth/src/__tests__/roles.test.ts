@@ -32,9 +32,9 @@ describe('roles', () => {
   it('owner matches the full access control statement except platform-only admin:boe-rate and HR-only employee', () => {
     const o = roles.owner.statements;
     for (const [resource, actions] of Object.entries(accessControlStatement)) {
-      if (resource === 'admin:boe-rate') {
-        // admin:boe-rate is a global platform resource exclusive to
-        // platform_operator. Per-org roles (owner included) must NOT have it.
+      if (resource === 'admin:boe-rate' || resource === 'admin:marketplace') {
+        // The admin:* resources are global platform resources exclusive to
+        // platform_operator. Per-org roles (owner included) must NOT have them.
         expect(o[resource as keyof typeof o]).toBeUndefined();
         continue;
       }

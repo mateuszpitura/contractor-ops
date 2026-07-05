@@ -187,6 +187,7 @@ export const roles = {
    */
   platform_operator: ac.newRole({
     'admin:boe-rate': ['read', 'write'],
+    'admin:marketplace': ['read', 'write'],
   }),
 
   // HR roles for the worker-model employee abstraction. Each grants ONLY the

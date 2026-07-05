@@ -502,6 +502,11 @@ export type LeaveLedgerEntry = Prisma.LeaveLedgerEntryModel
  */
 export type LeaveBalance = Prisma.LeaveBalanceModel
 /**
+ * Model MarketplaceListing
+ * 
+ */
+export type MarketplaceListing = Prisma.MarketplaceListingModel
+/**
  * Model Notification
  * 
  */
