@@ -18,7 +18,7 @@ const log = createLogger({ service: 'public-api', component: 'rate-limiter' });
 // This is intentionally best-effort on a multi-instance deploy — production
 // deployments MUST set the Upstash env for correct enforcement.
 
-const KEY_PREFIX = 'co_live_';
+const KEY_PREFIXES = ['co_live_', 'co_test_'] as const;
 
 const windowMs = 60_000; // 1 minute
 const maxRequestsPerKey = 100;
@@ -82,9 +82,10 @@ function enforceWindowCap(now: number): void {
  */
 function extractRateLimitKey(c: Context): string | null {
   const auth = c.req.header('authorization') ?? '';
-  if (!auth.startsWith(`Bearer ${KEY_PREFIX}`)) return null;
+  const prefix = KEY_PREFIXES.find(p => auth.startsWith(`Bearer ${p}`));
+  if (!prefix) return null;
 
-  const random = auth.slice(`Bearer ${KEY_PREFIX}`.length);
+  const random = auth.slice(`Bearer ${prefix}`.length);
   return `rl:${random.slice(0, 12)}`;
 }
 

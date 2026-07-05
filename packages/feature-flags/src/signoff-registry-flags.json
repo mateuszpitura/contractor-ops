@@ -119,6 +119,18 @@
     "status": "PENDING",
     "notes": "v7.0 Theme C — outbound webhooks gate. Ship dark; flip APPROVED post-deploy. Engineers dev with FLAG_SIGNOFF_BYPASS=local."
   },
+  "module.developer-portal": {
+    "status": "PENDING",
+    "notes": "v7.0 Theme C — developer portal (enriched Scalar /docs) gate. Ship dark; flip APPROVED post-deploy. Engineers dev with FLAG_SIGNOFF_BYPASS=local."
+  },
+  "module.public-status-page": {
+    "status": "PENDING",
+    "notes": "v7.0 Theme C — public status page (/status.json + landing UI) gate. Exposes only coarse component states, no tenant data. Ship dark; flip APPROVED post-deploy. Engineers dev with FLAG_SIGNOFF_BYPASS=local."
+  },
+  "module.api-sandbox": {
+    "status": "PENDING",
+    "notes": "v7.0 Theme C — free API sandbox tier gate (co_test_ keys against isSandbox orgs, 100 req/day). Ship dark; flip APPROVED post-deploy. Engineers dev with FLAG_SIGNOFF_BYPASS=local."
+  },
   "module.iris-efile": {
     "status": "PENDING",
     "notes": "v7.0 Theme A — IRIS A2A e-file gate (IRIS-primary; FIRE decommissions 2026-12-31). Ship dark; flip APPROVED post-deploy. Engineers dev with FLAG_SIGNOFF_BYPASS=local."

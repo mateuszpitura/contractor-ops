@@ -11924,6 +11924,7 @@ export const OrganizationApiKeyScalarFieldEnum = {
   prefix: 'prefix',
   hash: 'hash',
   scopes: 'scopes',
+  environment: 'environment',
   createdByUserId: 'createdByUserId',
   actingUserId: 'actingUserId',
   lastUsedAt: 'lastUsedAt',
@@ -13796,6 +13797,7 @@ export const OrganizationScalarFieldEnum = {
   language: 'language',
   fiscalYearStartMonth: 'fiscalYearStartMonth',
   status: 'status',
+  isSandbox: 'isSandbox',
   isKleinunternehmer: 'isKleinunternehmer',
   billingEmail: 'billingEmail',
   bacsServiceUserNumberEncrypted: 'bacsServiceUserNumberEncrypted',
@@ -14794,6 +14796,20 @@ export type StringFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 
  * Reference to a field of type 'String[]'
  */
 export type ListStringFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'String[]'>
+    
+
+
+/**
+ * Reference to a field of type 'ApiKeyEnvironment'
+ */
+export type EnumApiKeyEnvironmentFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ApiKeyEnvironment'>
+    
+
+
+/**
+ * Reference to a field of type 'ApiKeyEnvironment[]'
+ */
+export type ListEnumApiKeyEnvironmentFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ApiKeyEnvironment[]'>
     
 
 

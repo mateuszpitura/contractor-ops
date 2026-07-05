@@ -55,6 +55,9 @@ try {
  *   - 'module.hr-'              → Staff HR dashboard (module.hr-dashboard)
  *   - 'module.iris-'            → IRIS A2A e-file (module.iris-efile)
  *   - 'module.public-api'       → Public API (module.public-api)
+ *   - 'module.public-status-page' → Public status page
+ *   - 'module.developer-portal' → Developer portal
+ *   - 'module.api-sandbox'      → Free API sandbox tier
  *   - 'module.outbound-'        → Outbound webhooks (module.outbound-webhooks)
  *   - 'integration.personio-'   → Personio sync
  *   - 'integration.bamboohr-'   → BambooHR sync
@@ -75,6 +78,9 @@ export const GATED_FLAG_NAMESPACE_PREFIXES = [
   'module.hr-',
   'module.iris-',
   'module.public-api',
+  'module.public-status-page',
+  'module.developer-portal',
+  'module.api-sandbox',
   'module.outbound-',
   'integration.personio-',
   'integration.bamboohr-',

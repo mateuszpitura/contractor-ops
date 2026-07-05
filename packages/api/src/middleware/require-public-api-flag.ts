@@ -7,7 +7,7 @@
 //
 // Uses NOT_FOUND (not FORBIDDEN) so a tenant without the module cannot even
 // confirm the API exists — the entire surface (reads + the dark writes) is
-// invisible until an org is granted the flag in Phase 99.
+// invisible until an org is granted the flag.
 
 import { evaluate } from '@contractor-ops/feature-flags';
 import { createLogger } from '@contractor-ops/logger';
@@ -37,6 +37,30 @@ export function assertPublicApiEnabled(organizationId: string, region: string): 
       code: 'NOT_FOUND',
       message: PUBLIC_API_DISABLED,
       cause: { flag: 'module.public-api', reason: result.reason },
+    });
+  }
+}
+
+/**
+ * Assert the global `module.api-sandbox` flag is enabled; throws NOT_FOUND
+ * (dark) otherwise. Sandbox (`co_test_`) keys gate on this instead of the
+ * per-org `module.public-api` + Enterprise tier, so a free sandbox key works
+ * without a paid subscription once the sandbox surface is switched on.
+ */
+export function assertApiSandboxEnabled(organizationId: string, region: string): void {
+  const evalRegion = region === 'ME' ? ('ME' as const) : ('EU' as const);
+
+  const result = evaluate('module.api-sandbox', { organizationId, region: evalRegion });
+
+  if (!result.enabled) {
+    log.warn(
+      { organizationId, reason: result.reason, flag: 'module.api-sandbox' },
+      'Sandbox API request blocked: module disabled',
+    );
+    throw new TRPCError({
+      code: 'NOT_FOUND',
+      message: PUBLIC_API_DISABLED,
+      cause: { flag: 'module.api-sandbox', reason: result.reason },
     });
   }
 }

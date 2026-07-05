@@ -13,13 +13,30 @@ import { getServerEnv } from '@contractor-ops/validators';
  * (a boolean read plus an `includes` over a tiny array) — safe to call from the
  * hot `authedProcedure` middleware path.
  */
+/**
+ * Sandbox org ids seen in this process. Populated whenever a `co_test_` key
+ * resolves (api-key-service), so the sync `isDemoOrg` side-effect skips
+ * (outbox/email/ZATCA/payout) also cover a persistent sandbox org without a DB
+ * query on the hot path. Defense-in-depth: a sandbox org is already read-only at
+ * the mutation guard (via a context `isSandbox` flag), so it never reaches these
+ * chokepoints — but if it ever did, the skip still fires.
+ */
+const sandboxOrgIds = new Set<string>();
+
+/** Record an org as a sandbox so the sync demo skips honor it in this process. */
+export function markSandboxOrg(orgId: string): void {
+  sandboxOrgIds.add(orgId);
+}
+
 export function isDemoOrg(orgId: string | null | undefined): boolean {
   const env = getServerEnv();
   if (env.DEMO_MODE) return true;
+  if (!orgId) return false;
+  if (sandboxOrgIds.has(orgId)) return true;
   // `?? []` is defensive: the schema always materializes an array, but partial
   // `getServerEnv` mocks in unrelated tests may omit it — never throw here on
   // the hot guard path.
-  return !!orgId && (env.DEMO_ORG_IDS ?? []).includes(orgId);
+  return (env.DEMO_ORG_IDS ?? []).includes(orgId);
 }
 
 /**
@@ -36,6 +53,9 @@ export function isGlobalDemo(): boolean {
 /** Minimal structural view of the tRPC context needed to resolve the demo org. */
 type DemoContext = {
   organizationId?: string | null;
+  // Set by the API-key auth middleware from the resolved key's org: a sandbox
+  // org is demo-isolated regardless of the env DEMO_* config.
+  isSandbox?: boolean | null;
   session?: { session?: { activeOrganizationId?: string | null } | null } | null;
 };
 
@@ -54,5 +74,6 @@ export function resolveDemoOrgId(ctx: DemoContext): string | null {
  * a global `DEMO_MODE` deployment is treated as demo.
  */
 export function isDemoContext(ctx: DemoContext): boolean {
+  if (ctx.isSandbox === true) return true;
   return isDemoOrg(resolveDemoOrgId(ctx));
 }

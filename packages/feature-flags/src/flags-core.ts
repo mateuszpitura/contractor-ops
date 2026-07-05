@@ -272,6 +272,33 @@ export const FLAGS = deepFreeze({
     jurisdiction: 'ANY',
     owner: 'platform-api',
   },
+  'module.developer-portal': {
+    key: 'module.developer-portal',
+    description:
+      'Developer portal (Theme C): the enriched Scalar /docs surface (webhook catalog, SDK guides, recipes, changelog, deprecations). Ship dark — requires signoff PENDING→APPROVED before enabling.',
+    default: false,
+    category: 'module',
+    jurisdiction: 'ANY',
+    owner: 'platform-api',
+  },
+  'module.public-status-page': {
+    key: 'module.public-status-page',
+    description:
+      'Public status page (Theme C): the unauthenticated /status.json aggregator + landing status UI. Exposes only coarse component states — no tenant data. Ship dark — requires signoff PENDING→APPROVED before enabling.',
+    default: false,
+    category: 'module',
+    jurisdiction: 'ANY',
+    owner: 'platform-api',
+  },
+  'module.api-sandbox': {
+    key: 'module.api-sandbox',
+    description:
+      'Free public-API sandbox (Theme C): gates external self-serve issuance of co_test_ keys against isSandbox orgs (100 req/day). Ship dark — requires signoff PENDING→APPROVED before enabling.',
+    default: false,
+    category: 'module',
+    jurisdiction: 'ANY',
+    owner: 'platform-api',
+  },
   // This is the single gate for the dark IRIS A2A transmit path (1099-NEC
   // e-file). The A2A transmitter reuses this flag rather than minting a
   // dedicated per-transmit flag.

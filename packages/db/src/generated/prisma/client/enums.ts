@@ -9,6 +9,14 @@
 * 🟢 You can import this file directly.
 */
 
+export const ApiKeyEnvironment = {
+  LIVE: 'LIVE',
+  SANDBOX: 'SANDBOX'
+} as const
+
+export type ApiKeyEnvironment = (typeof ApiKeyEnvironment)[keyof typeof ApiKeyEnvironment]
+
+
 export const ApprovalStatus = {
   NOT_STARTED: 'NOT_STARTED',
   PENDING: 'PENDING',

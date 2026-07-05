@@ -30,6 +30,7 @@ export type OrganizationApiKeyMinAggregateOutputType = {
   name: string | null
   prefix: string | null
   hash: string | null
+  environment: $Enums.ApiKeyEnvironment | null
   createdByUserId: string | null
   actingUserId: string | null
   lastUsedAt: Date | null
@@ -48,6 +49,7 @@ export type OrganizationApiKeyMaxAggregateOutputType = {
   name: string | null
   prefix: string | null
   hash: string | null
+  environment: $Enums.ApiKeyEnvironment | null
   createdByUserId: string | null
   actingUserId: string | null
   lastUsedAt: Date | null
@@ -67,6 +69,7 @@ export type OrganizationApiKeyCountAggregateOutputType = {
   prefix: number
   hash: number
   scopes: number
+  environment: number
   createdByUserId: number
   actingUserId: number
   lastUsedAt: number
@@ -87,6 +90,7 @@ export type OrganizationApiKeyMinAggregateInputType = {
   name?: true
   prefix?: true
   hash?: true
+  environment?: true
   createdByUserId?: true
   actingUserId?: true
   lastUsedAt?: true
@@ -105,6 +109,7 @@ export type OrganizationApiKeyMaxAggregateInputType = {
   name?: true
   prefix?: true
   hash?: true
+  environment?: true
   createdByUserId?: true
   actingUserId?: true
   lastUsedAt?: true
@@ -124,6 +129,7 @@ export type OrganizationApiKeyCountAggregateInputType = {
   prefix?: true
   hash?: true
   scopes?: true
+  environment?: true
   createdByUserId?: true
   actingUserId?: true
   lastUsedAt?: true
@@ -216,6 +222,7 @@ export type OrganizationApiKeyGroupByOutputType = {
   prefix: string
   hash: string
   scopes: string[]
+  environment: $Enums.ApiKeyEnvironment
   createdByUserId: string
   actingUserId: string
   lastUsedAt: Date | null
@@ -256,6 +263,7 @@ export type OrganizationApiKeyWhereInput = {
   prefix?: Prisma.StringFilter<"OrganizationApiKey"> | string
   hash?: Prisma.StringFilter<"OrganizationApiKey"> | string
   scopes?: Prisma.StringNullableListFilter<"OrganizationApiKey">
+  environment?: Prisma.EnumApiKeyEnvironmentFilter<"OrganizationApiKey"> | $Enums.ApiKeyEnvironment
   createdByUserId?: Prisma.StringFilter<"OrganizationApiKey"> | string
   actingUserId?: Prisma.StringFilter<"OrganizationApiKey"> | string
   lastUsedAt?: Prisma.DateTimeNullableFilter<"OrganizationApiKey"> | Date | string | null
@@ -279,6 +287,7 @@ export type OrganizationApiKeyOrderByWithRelationInput = {
   prefix?: Prisma.SortOrder
   hash?: Prisma.SortOrder
   scopes?: Prisma.SortOrder
+  environment?: Prisma.SortOrder
   createdByUserId?: Prisma.SortOrder
   actingUserId?: Prisma.SortOrder
   lastUsedAt?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -305,6 +314,7 @@ export type OrganizationApiKeyWhereUniqueInput = Prisma.AtLeast<{
   prefix?: Prisma.StringFilter<"OrganizationApiKey"> | string
   hash?: Prisma.StringFilter<"OrganizationApiKey"> | string
   scopes?: Prisma.StringNullableListFilter<"OrganizationApiKey">
+  environment?: Prisma.EnumApiKeyEnvironmentFilter<"OrganizationApiKey"> | $Enums.ApiKeyEnvironment
   createdByUserId?: Prisma.StringFilter<"OrganizationApiKey"> | string
   actingUserId?: Prisma.StringFilter<"OrganizationApiKey"> | string
   lastUsedAt?: Prisma.DateTimeNullableFilter<"OrganizationApiKey"> | Date | string | null
@@ -328,6 +338,7 @@ export type OrganizationApiKeyOrderByWithAggregationInput = {
   prefix?: Prisma.SortOrder
   hash?: Prisma.SortOrder
   scopes?: Prisma.SortOrder
+  environment?: Prisma.SortOrder
   createdByUserId?: Prisma.SortOrder
   actingUserId?: Prisma.SortOrder
   lastUsedAt?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -353,6 +364,7 @@ export type OrganizationApiKeyScalarWhereWithAggregatesInput = {
   prefix?: Prisma.StringWithAggregatesFilter<"OrganizationApiKey"> | string
   hash?: Prisma.StringWithAggregatesFilter<"OrganizationApiKey"> | string
   scopes?: Prisma.StringNullableListFilter<"OrganizationApiKey">
+  environment?: Prisma.EnumApiKeyEnvironmentWithAggregatesFilter<"OrganizationApiKey"> | $Enums.ApiKeyEnvironment
   createdByUserId?: Prisma.StringWithAggregatesFilter<"OrganizationApiKey"> | string
   actingUserId?: Prisma.StringWithAggregatesFilter<"OrganizationApiKey"> | string
   lastUsedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"OrganizationApiKey"> | Date | string | null
@@ -371,6 +383,7 @@ export type OrganizationApiKeyCreateInput = {
   prefix: string
   hash: string
   scopes?: Prisma.OrganizationApiKeyCreatescopesInput | string[]
+  environment?: $Enums.ApiKeyEnvironment
   lastUsedAt?: Date | string | null
   revokedAt?: Date | string | null
   expiresAt?: Date | string | null
@@ -392,6 +405,7 @@ export type OrganizationApiKeyUncheckedCreateInput = {
   prefix: string
   hash: string
   scopes?: Prisma.OrganizationApiKeyCreatescopesInput | string[]
+  environment?: $Enums.ApiKeyEnvironment
   createdByUserId: string
   actingUserId: string
   lastUsedAt?: Date | string | null
@@ -411,6 +425,7 @@ export type OrganizationApiKeyUpdateInput = {
   prefix?: Prisma.StringFieldUpdateOperationsInput | string
   hash?: Prisma.StringFieldUpdateOperationsInput | string
   scopes?: Prisma.OrganizationApiKeyUpdatescopesInput | string[]
+  environment?: Prisma.EnumApiKeyEnvironmentFieldUpdateOperationsInput | $Enums.ApiKeyEnvironment
   lastUsedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   revokedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   expiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -432,6 +447,7 @@ export type OrganizationApiKeyUncheckedUpdateInput = {
   prefix?: Prisma.StringFieldUpdateOperationsInput | string
   hash?: Prisma.StringFieldUpdateOperationsInput | string
   scopes?: Prisma.OrganizationApiKeyUpdatescopesInput | string[]
+  environment?: Prisma.EnumApiKeyEnvironmentFieldUpdateOperationsInput | $Enums.ApiKeyEnvironment
   createdByUserId?: Prisma.StringFieldUpdateOperationsInput | string
   actingUserId?: Prisma.StringFieldUpdateOperationsInput | string
   lastUsedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -452,6 +468,7 @@ export type OrganizationApiKeyCreateManyInput = {
   prefix: string
   hash: string
   scopes?: Prisma.OrganizationApiKeyCreatescopesInput | string[]
+  environment?: $Enums.ApiKeyEnvironment
   createdByUserId: string
   actingUserId: string
   lastUsedAt?: Date | string | null
@@ -470,6 +487,7 @@ export type OrganizationApiKeyUpdateManyMutationInput = {
   prefix?: Prisma.StringFieldUpdateOperationsInput | string
   hash?: Prisma.StringFieldUpdateOperationsInput | string
   scopes?: Prisma.OrganizationApiKeyUpdatescopesInput | string[]
+  environment?: Prisma.EnumApiKeyEnvironmentFieldUpdateOperationsInput | $Enums.ApiKeyEnvironment
   lastUsedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   revokedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   expiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -487,6 +505,7 @@ export type OrganizationApiKeyUncheckedUpdateManyInput = {
   prefix?: Prisma.StringFieldUpdateOperationsInput | string
   hash?: Prisma.StringFieldUpdateOperationsInput | string
   scopes?: Prisma.OrganizationApiKeyUpdatescopesInput | string[]
+  environment?: Prisma.EnumApiKeyEnvironmentFieldUpdateOperationsInput | $Enums.ApiKeyEnvironment
   createdByUserId?: Prisma.StringFieldUpdateOperationsInput | string
   actingUserId?: Prisma.StringFieldUpdateOperationsInput | string
   lastUsedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -514,6 +533,7 @@ export type OrganizationApiKeyCountOrderByAggregateInput = {
   prefix?: Prisma.SortOrder
   hash?: Prisma.SortOrder
   scopes?: Prisma.SortOrder
+  environment?: Prisma.SortOrder
   createdByUserId?: Prisma.SortOrder
   actingUserId?: Prisma.SortOrder
   lastUsedAt?: Prisma.SortOrder
@@ -532,6 +552,7 @@ export type OrganizationApiKeyMaxOrderByAggregateInput = {
   name?: Prisma.SortOrder
   prefix?: Prisma.SortOrder
   hash?: Prisma.SortOrder
+  environment?: Prisma.SortOrder
   createdByUserId?: Prisma.SortOrder
   actingUserId?: Prisma.SortOrder
   lastUsedAt?: Prisma.SortOrder
@@ -550,6 +571,7 @@ export type OrganizationApiKeyMinOrderByAggregateInput = {
   name?: Prisma.SortOrder
   prefix?: Prisma.SortOrder
   hash?: Prisma.SortOrder
+  environment?: Prisma.SortOrder
   createdByUserId?: Prisma.SortOrder
   actingUserId?: Prisma.SortOrder
   lastUsedAt?: Prisma.SortOrder
@@ -588,6 +610,10 @@ export type StringFieldUpdateOperationsInput = {
 export type OrganizationApiKeyUpdatescopesInput = {
   set?: string[]
   push?: string | string[]
+}
+
+export type EnumApiKeyEnvironmentFieldUpdateOperationsInput = {
+  set?: $Enums.ApiKeyEnvironment
 }
 
 export type NullableDateTimeFieldUpdateOperationsInput = {
@@ -748,6 +774,7 @@ export type OrganizationApiKeyCreateWithoutIpEventsInput = {
   prefix: string
   hash: string
   scopes?: Prisma.OrganizationApiKeyCreatescopesInput | string[]
+  environment?: $Enums.ApiKeyEnvironment
   lastUsedAt?: Date | string | null
   revokedAt?: Date | string | null
   expiresAt?: Date | string | null
@@ -768,6 +795,7 @@ export type OrganizationApiKeyUncheckedCreateWithoutIpEventsInput = {
   prefix: string
   hash: string
   scopes?: Prisma.OrganizationApiKeyCreatescopesInput | string[]
+  environment?: $Enums.ApiKeyEnvironment
   createdByUserId: string
   actingUserId: string
   lastUsedAt?: Date | string | null
@@ -802,6 +830,7 @@ export type OrganizationApiKeyUpdateWithoutIpEventsInput = {
   prefix?: Prisma.StringFieldUpdateOperationsInput | string
   hash?: Prisma.StringFieldUpdateOperationsInput | string
   scopes?: Prisma.OrganizationApiKeyUpdatescopesInput | string[]
+  environment?: Prisma.EnumApiKeyEnvironmentFieldUpdateOperationsInput | $Enums.ApiKeyEnvironment
   lastUsedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   revokedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   expiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -822,6 +851,7 @@ export type OrganizationApiKeyUncheckedUpdateWithoutIpEventsInput = {
   prefix?: Prisma.StringFieldUpdateOperationsInput | string
   hash?: Prisma.StringFieldUpdateOperationsInput | string
   scopes?: Prisma.OrganizationApiKeyUpdatescopesInput | string[]
+  environment?: Prisma.EnumApiKeyEnvironmentFieldUpdateOperationsInput | $Enums.ApiKeyEnvironment
   createdByUserId?: Prisma.StringFieldUpdateOperationsInput | string
   actingUserId?: Prisma.StringFieldUpdateOperationsInput | string
   lastUsedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -840,6 +870,7 @@ export type OrganizationApiKeyCreateWithoutCreatedByInput = {
   prefix: string
   hash: string
   scopes?: Prisma.OrganizationApiKeyCreatescopesInput | string[]
+  environment?: $Enums.ApiKeyEnvironment
   lastUsedAt?: Date | string | null
   revokedAt?: Date | string | null
   expiresAt?: Date | string | null
@@ -860,6 +891,7 @@ export type OrganizationApiKeyUncheckedCreateWithoutCreatedByInput = {
   prefix: string
   hash: string
   scopes?: Prisma.OrganizationApiKeyCreatescopesInput | string[]
+  environment?: $Enums.ApiKeyEnvironment
   actingUserId: string
   lastUsedAt?: Date | string | null
   revokedAt?: Date | string | null
@@ -888,6 +920,7 @@ export type OrganizationApiKeyCreateWithoutActingUserInput = {
   prefix: string
   hash: string
   scopes?: Prisma.OrganizationApiKeyCreatescopesInput | string[]
+  environment?: $Enums.ApiKeyEnvironment
   lastUsedAt?: Date | string | null
   revokedAt?: Date | string | null
   expiresAt?: Date | string | null
@@ -908,6 +941,7 @@ export type OrganizationApiKeyUncheckedCreateWithoutActingUserInput = {
   prefix: string
   hash: string
   scopes?: Prisma.OrganizationApiKeyCreatescopesInput | string[]
+  environment?: $Enums.ApiKeyEnvironment
   createdByUserId: string
   lastUsedAt?: Date | string | null
   revokedAt?: Date | string | null
@@ -956,6 +990,7 @@ export type OrganizationApiKeyScalarWhereInput = {
   prefix?: Prisma.StringFilter<"OrganizationApiKey"> | string
   hash?: Prisma.StringFilter<"OrganizationApiKey"> | string
   scopes?: Prisma.StringNullableListFilter<"OrganizationApiKey">
+  environment?: Prisma.EnumApiKeyEnvironmentFilter<"OrganizationApiKey"> | $Enums.ApiKeyEnvironment
   createdByUserId?: Prisma.StringFilter<"OrganizationApiKey"> | string
   actingUserId?: Prisma.StringFilter<"OrganizationApiKey"> | string
   lastUsedAt?: Prisma.DateTimeNullableFilter<"OrganizationApiKey"> | Date | string | null
@@ -990,6 +1025,7 @@ export type OrganizationApiKeyCreateWithoutOrganizationInput = {
   prefix: string
   hash: string
   scopes?: Prisma.OrganizationApiKeyCreatescopesInput | string[]
+  environment?: $Enums.ApiKeyEnvironment
   lastUsedAt?: Date | string | null
   revokedAt?: Date | string | null
   expiresAt?: Date | string | null
@@ -1009,6 +1045,7 @@ export type OrganizationApiKeyUncheckedCreateWithoutOrganizationInput = {
   prefix: string
   hash: string
   scopes?: Prisma.OrganizationApiKeyCreatescopesInput | string[]
+  environment?: $Enums.ApiKeyEnvironment
   createdByUserId: string
   actingUserId: string
   lastUsedAt?: Date | string | null
@@ -1055,6 +1092,7 @@ export type OrganizationApiKeyCreateManyCreatedByInput = {
   prefix: string
   hash: string
   scopes?: Prisma.OrganizationApiKeyCreatescopesInput | string[]
+  environment?: $Enums.ApiKeyEnvironment
   actingUserId: string
   lastUsedAt?: Date | string | null
   revokedAt?: Date | string | null
@@ -1073,6 +1111,7 @@ export type OrganizationApiKeyCreateManyActingUserInput = {
   prefix: string
   hash: string
   scopes?: Prisma.OrganizationApiKeyCreatescopesInput | string[]
+  environment?: $Enums.ApiKeyEnvironment
   createdByUserId: string
   lastUsedAt?: Date | string | null
   revokedAt?: Date | string | null
@@ -1090,6 +1129,7 @@ export type OrganizationApiKeyUpdateWithoutCreatedByInput = {
   prefix?: Prisma.StringFieldUpdateOperationsInput | string
   hash?: Prisma.StringFieldUpdateOperationsInput | string
   scopes?: Prisma.OrganizationApiKeyUpdatescopesInput | string[]
+  environment?: Prisma.EnumApiKeyEnvironmentFieldUpdateOperationsInput | $Enums.ApiKeyEnvironment
   lastUsedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   revokedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   expiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1110,6 +1150,7 @@ export type OrganizationApiKeyUncheckedUpdateWithoutCreatedByInput = {
   prefix?: Prisma.StringFieldUpdateOperationsInput | string
   hash?: Prisma.StringFieldUpdateOperationsInput | string
   scopes?: Prisma.OrganizationApiKeyUpdatescopesInput | string[]
+  environment?: Prisma.EnumApiKeyEnvironmentFieldUpdateOperationsInput | $Enums.ApiKeyEnvironment
   actingUserId?: Prisma.StringFieldUpdateOperationsInput | string
   lastUsedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   revokedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1129,6 +1170,7 @@ export type OrganizationApiKeyUncheckedUpdateManyWithoutCreatedByInput = {
   prefix?: Prisma.StringFieldUpdateOperationsInput | string
   hash?: Prisma.StringFieldUpdateOperationsInput | string
   scopes?: Prisma.OrganizationApiKeyUpdatescopesInput | string[]
+  environment?: Prisma.EnumApiKeyEnvironmentFieldUpdateOperationsInput | $Enums.ApiKeyEnvironment
   actingUserId?: Prisma.StringFieldUpdateOperationsInput | string
   lastUsedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   revokedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1146,6 +1188,7 @@ export type OrganizationApiKeyUpdateWithoutActingUserInput = {
   prefix?: Prisma.StringFieldUpdateOperationsInput | string
   hash?: Prisma.StringFieldUpdateOperationsInput | string
   scopes?: Prisma.OrganizationApiKeyUpdatescopesInput | string[]
+  environment?: Prisma.EnumApiKeyEnvironmentFieldUpdateOperationsInput | $Enums.ApiKeyEnvironment
   lastUsedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   revokedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   expiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1166,6 +1209,7 @@ export type OrganizationApiKeyUncheckedUpdateWithoutActingUserInput = {
   prefix?: Prisma.StringFieldUpdateOperationsInput | string
   hash?: Prisma.StringFieldUpdateOperationsInput | string
   scopes?: Prisma.OrganizationApiKeyUpdatescopesInput | string[]
+  environment?: Prisma.EnumApiKeyEnvironmentFieldUpdateOperationsInput | $Enums.ApiKeyEnvironment
   createdByUserId?: Prisma.StringFieldUpdateOperationsInput | string
   lastUsedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   revokedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1185,6 +1229,7 @@ export type OrganizationApiKeyUncheckedUpdateManyWithoutActingUserInput = {
   prefix?: Prisma.StringFieldUpdateOperationsInput | string
   hash?: Prisma.StringFieldUpdateOperationsInput | string
   scopes?: Prisma.OrganizationApiKeyUpdatescopesInput | string[]
+  environment?: Prisma.EnumApiKeyEnvironmentFieldUpdateOperationsInput | $Enums.ApiKeyEnvironment
   createdByUserId?: Prisma.StringFieldUpdateOperationsInput | string
   lastUsedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   revokedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1202,6 +1247,7 @@ export type OrganizationApiKeyCreateManyOrganizationInput = {
   prefix: string
   hash: string
   scopes?: Prisma.OrganizationApiKeyCreatescopesInput | string[]
+  environment?: $Enums.ApiKeyEnvironment
   createdByUserId: string
   actingUserId: string
   lastUsedAt?: Date | string | null
@@ -1220,6 +1266,7 @@ export type OrganizationApiKeyUpdateWithoutOrganizationInput = {
   prefix?: Prisma.StringFieldUpdateOperationsInput | string
   hash?: Prisma.StringFieldUpdateOperationsInput | string
   scopes?: Prisma.OrganizationApiKeyUpdatescopesInput | string[]
+  environment?: Prisma.EnumApiKeyEnvironmentFieldUpdateOperationsInput | $Enums.ApiKeyEnvironment
   lastUsedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   revokedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   expiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1239,6 +1286,7 @@ export type OrganizationApiKeyUncheckedUpdateWithoutOrganizationInput = {
   prefix?: Prisma.StringFieldUpdateOperationsInput | string
   hash?: Prisma.StringFieldUpdateOperationsInput | string
   scopes?: Prisma.OrganizationApiKeyUpdatescopesInput | string[]
+  environment?: Prisma.EnumApiKeyEnvironmentFieldUpdateOperationsInput | $Enums.ApiKeyEnvironment
   createdByUserId?: Prisma.StringFieldUpdateOperationsInput | string
   actingUserId?: Prisma.StringFieldUpdateOperationsInput | string
   lastUsedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1258,6 +1306,7 @@ export type OrganizationApiKeyUncheckedUpdateManyWithoutOrganizationInput = {
   prefix?: Prisma.StringFieldUpdateOperationsInput | string
   hash?: Prisma.StringFieldUpdateOperationsInput | string
   scopes?: Prisma.OrganizationApiKeyUpdatescopesInput | string[]
+  environment?: Prisma.EnumApiKeyEnvironmentFieldUpdateOperationsInput | $Enums.ApiKeyEnvironment
   createdByUserId?: Prisma.StringFieldUpdateOperationsInput | string
   actingUserId?: Prisma.StringFieldUpdateOperationsInput | string
   lastUsedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1308,6 +1357,7 @@ export type OrganizationApiKeySelect<ExtArgs extends runtime.Types.Extensions.In
   prefix?: boolean
   hash?: boolean
   scopes?: boolean
+  environment?: boolean
   createdByUserId?: boolean
   actingUserId?: boolean
   lastUsedAt?: boolean
@@ -1332,6 +1382,7 @@ export type OrganizationApiKeySelectCreateManyAndReturn<ExtArgs extends runtime.
   prefix?: boolean
   hash?: boolean
   scopes?: boolean
+  environment?: boolean
   createdByUserId?: boolean
   actingUserId?: boolean
   lastUsedAt?: boolean
@@ -1354,6 +1405,7 @@ export type OrganizationApiKeySelectUpdateManyAndReturn<ExtArgs extends runtime.
   prefix?: boolean
   hash?: boolean
   scopes?: boolean
+  environment?: boolean
   createdByUserId?: boolean
   actingUserId?: boolean
   lastUsedAt?: boolean
@@ -1376,6 +1428,7 @@ export type OrganizationApiKeySelectScalar = {
   prefix?: boolean
   hash?: boolean
   scopes?: boolean
+  environment?: boolean
   createdByUserId?: boolean
   actingUserId?: boolean
   lastUsedAt?: boolean
@@ -1388,7 +1441,7 @@ export type OrganizationApiKeySelectScalar = {
   updatedAt?: boolean
 }
 
-export type OrganizationApiKeyOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "organizationId" | "name" | "prefix" | "hash" | "scopes" | "createdByUserId" | "actingUserId" | "lastUsedAt" | "revokedAt" | "expiresAt" | "supersededAt" | "supersededByKeyId" | "graceExpiresAt" | "createdAt" | "updatedAt", ExtArgs["result"]["organizationApiKey"]>
+export type OrganizationApiKeyOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "organizationId" | "name" | "prefix" | "hash" | "scopes" | "environment" | "createdByUserId" | "actingUserId" | "lastUsedAt" | "revokedAt" | "expiresAt" | "supersededAt" | "supersededByKeyId" | "graceExpiresAt" | "createdAt" | "updatedAt", ExtArgs["result"]["organizationApiKey"]>
 export type OrganizationApiKeyInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
   createdBy?: boolean | Prisma.UserDefaultArgs<ExtArgs>
@@ -1422,6 +1475,7 @@ export type $OrganizationApiKeyPayload<ExtArgs extends runtime.Types.Extensions.
     prefix: string
     hash: string
     scopes: string[]
+    environment: $Enums.ApiKeyEnvironment
     createdByUserId: string
     actingUserId: string
     lastUsedAt: Date | null
@@ -1865,6 +1919,7 @@ export interface OrganizationApiKeyFieldRefs {
   readonly prefix: Prisma.FieldRef<"OrganizationApiKey", 'String'>
   readonly hash: Prisma.FieldRef<"OrganizationApiKey", 'String'>
   readonly scopes: Prisma.FieldRef<"OrganizationApiKey", 'String[]'>
+  readonly environment: Prisma.FieldRef<"OrganizationApiKey", 'ApiKeyEnvironment'>
   readonly createdByUserId: Prisma.FieldRef<"OrganizationApiKey", 'String'>
   readonly actingUserId: Prisma.FieldRef<"OrganizationApiKey", 'String'>
   readonly lastUsedAt: Prisma.FieldRef<"OrganizationApiKey", 'DateTime'>

@@ -18,6 +18,11 @@ model Organization {
   language                            String?
   fiscalYearStartMonth                Int?               @default(1)
   status                              OrganizationStatus @default(ACTIVE)
+  // Free-forever public-API sandbox marker. A sandbox org holds only seeded
+  // fixture data and inherits the demo read-only isolation (isDemoOrg widens to
+  // honor this), so it fires no real side-effect. A `co_test_` API key resolves
+  // ONLY to an org with this set — resolveByPrefix fails closed both ways.
+  isSandbox                           Boolean            @default(false)
   // Phase 57 (D-11) — Kleinunternehmerregelung §19 UStG toggle (DE orgs only)
   isKleinunternehmer                  Boolean            @default(false)
   billingEmail                        String?
