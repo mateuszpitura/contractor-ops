@@ -19,6 +19,25 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
+    services:
+      # Throwaway Postgres 17 (matches the prod engine) the migration↔schema
+      # drift check replays every migration into. It is reset by the check and
+      # holds no real data — never point MIGRATE_SHADOW_DATABASE_URL at a
+      # regional database.
+      migrate-shadow:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: migrate_shadow
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -44,10 +63,23 @@ jobs:
         run: pnpm --filter @contractor-ops/db run db:check-drift
 
       # Migrations must reproduce the schema (guards the "model in schema, no
-      # CREATE TABLE migration" class). Skips with a WARN unless a throwaway
-      # MIGRATE_SHADOW_DATABASE_URL is provisioned — never gates on infra absence.
-      - name: Verify migrations reproduce the schema
+      # CREATE TABLE migration" class). The `migrate-shadow` service above
+      # provides MIGRATE_SHADOW_DATABASE_URL so the check RUNS TO COMPLETION and
+      # prints its precise drift diff — no longer a silent WARN-skip on a missing
+      # shadow.
+      #
+      # REPORT-ONLY (continue-on-error) for now: the full --from-migrations replay
+      # applies cleanly, but the diff still reports a large PRE-EXISTING accumulated
+      # db-push drift tail (generated searchVector columns, PK drops, dropped
+      # uniques, additive enum variants/columns) that is unsafe to reconstruct
+      # blind, so the script exits 1 and would brick every unrelated PR as a hard
+      # gate. FLIP to hard-gate (drop continue-on-error) once that drift tail is
+      # reconciled in a dedicated migration change set.
+      - name: Verify migrations reproduce the schema (report-only until drift tail reconciled)
         run: pnpm --filter @contractor-ops/db run db:check-migration-drift
+        continue-on-error: true
+        env:
+          MIGRATE_SHADOW_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/migrate_shadow
 
       - name: Format check (biome)
         run: pnpm run format:check
