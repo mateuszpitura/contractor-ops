@@ -44,6 +44,9 @@ export const NOTIFICATION_TYPES = [
   // Employee sick absence recorded (a direct notification to leave approvers /
   // HR, never an approval request — sick is reported, not routed for approval).
   'LEAVE_SICK_RECORDED',
+  // Daily working-time scan: a worker's rolling weekly average crossed the
+  // statutory 48h cap (per-recipient digest, one per day).
+  'employee.wt_limit_breach',
 ] as const;
 
 export const notificationTypeEnum = z.enum(NOTIFICATION_TYPES);

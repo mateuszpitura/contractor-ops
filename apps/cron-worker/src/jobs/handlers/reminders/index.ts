@@ -27,6 +27,7 @@ import type { JobHandler } from '../../runner.js';
 import { executeComplianceReminderScan } from '../compliance-reminder.js';
 import { detectDrvClearanceExpiries } from './drv-clearance-expiries.js';
 import { addDays, startOfDay } from './shared.js';
+import { executeWtLimitScan } from './wt-limit-scan.js';
 
 const REMINDERS_LOCK_KEY = 'reminders';
 
@@ -377,6 +378,8 @@ export const remindersHandler: JobHandler = async ctx => {
             idpProvenanceGced: 0,
             complianceReminderFires: 0,
             complianceReminderDigests: 0,
+            wtLimitBreaches: 0,
+            wtLimitDigests: 0,
           };
         }
 
@@ -386,6 +389,7 @@ export const remindersHandler: JobHandler = async ctx => {
           drvExpiriesNotified,
           idpProvenanceGced,
           complianceReminderResult,
+          wtLimitScanResult,
         ] = await Promise.all([
           evaluateReminderRules(),
           detectOverdueTasks(),
@@ -399,6 +403,10 @@ export const remindersHandler: JobHandler = async ctx => {
           // dedup unique index (claimCronNotificationDedup) is the real idempotency
           // guard; the advisory lock does not need to cover these connections.
           executeComplianceReminderScan(),
+          // Same crash-isolation contract: runWtLimitScan fans out over its own
+          // regional clients and never rejects; the dedup unique index is the
+          // idempotency guard, not the lock-holding tx above.
+          executeWtLimitScan(),
         ]);
 
         return {
@@ -410,6 +418,8 @@ export const remindersHandler: JobHandler = async ctx => {
           idpProvenanceGced,
           complianceReminderFires: complianceReminderResult.fires,
           complianceReminderDigests: complianceReminderResult.digests,
+          wtLimitBreaches: wtLimitScanResult.breaches,
+          wtLimitDigests: wtLimitScanResult.digests,
         };
       },
       { timeout: 60_000, maxWait: 10_000 },
@@ -423,6 +433,8 @@ export const remindersHandler: JobHandler = async ctx => {
       metrics.gauge('cron.reminders.idp_provenance_gced', result.idpProvenanceGced);
       metrics.gauge('cron.reminders.compliance_reminder_fires', result.complianceReminderFires);
       metrics.gauge('cron.reminders.compliance_reminder_digests', result.complianceReminderDigests);
+      metrics.gauge('cron.reminders.wt_limit_breaches', result.wtLimitBreaches);
+      metrics.gauge('cron.reminders.wt_limit_digests', result.wtLimitDigests);
     }
 
     return {
