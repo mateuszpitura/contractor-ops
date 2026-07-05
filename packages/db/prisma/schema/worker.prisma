@@ -34,6 +34,12 @@ model Worker {
   // 1:1 jurisdiction-correct personnel file ("akta osobowe") for employees.
   personnelFile   PersonnelFile?
 
+  // Employee leave + statutory-time records (present when workerType = EMPLOYEE).
+  leaveRequests       LeaveRequest[]
+  leaveLedgerEntries  LeaveLedgerEntry[]
+  leaveBalances       LeaveBalance[]
+  employeeTimeRecords EmployeeTimeRecord[]
+
   @@index([organizationId])
   @@index([organizationId, workerType])
 }

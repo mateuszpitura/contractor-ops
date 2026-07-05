@@ -1,0 +1,150 @@
+// Leave-domain record-of-record: per-org leave types + blackout windows, the
+// leave request routed through the approval-chain, the append-only balance
+// ledger (balance = Σ signed minutes), and a per-year balance cache.
+//
+// Tenant-owning: every model here carries `organizationId` + an `organization`
+// relation and is deliberately ABSENT from `globalModels` in tenant.ts, so each
+// read/mutation inherits withTenantScope. LeaveLedgerEntry is additionally
+// registered in APPEND_ONLY_MODELS — rows are written once and corrected only by
+// reversing ADJUSTMENT inserts, never updated.
+
+model LeaveType {
+  id               String    @id @default(cuid())
+  organizationId   String
+  name             String
+  code             String
+  kind             LeaveKind
+  requiresApproval Boolean   @default(true)
+  paid             Boolean   @default(true)
+  active           Boolean   @default(true)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+
+  leaveRequests      LeaveRequest[]
+  leaveLedgerEntries LeaveLedgerEntry[]
+  leaveBalances      LeaveBalance[]
+
+  @@unique([organizationId, code])
+  @@index([organizationId])
+  @@index([organizationId, kind])
+}
+
+model BlackoutPeriod {
+  id             String   @id @default(cuid())
+  organizationId String
+  startDate      DateTime @db.Date
+  endDate        DateTime @db.Date
+  teamId         String?
+  reason         String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  team         Team?        @relation(fields: [teamId], references: [id])
+
+  @@index([organizationId])
+  @@index([organizationId, startDate, endDate])
+  @@index([organizationId, teamId])
+}
+
+model LeaveRequest {
+  id               String             @id @default(cuid())
+  organizationId   String
+  workerId         String
+  leaveTypeId      String
+  startDate        DateTime           @db.Date
+  endDate          DateTime           @db.Date
+  requestedMinutes Int
+  status           LeaveRequestStatus @default(PENDING)
+  // Snapshot of the requester's team so the calendar can group same-team
+  // requests; nullable because EmployeeProfile carries no direct team link.
+  teamId           String?
+  // Loose reference to the generic approval-chain flow (resource-agnostic engine
+  // keys on resourceType + resourceId, so no FK constraint here).
+  approvalFlowId   String?
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  worker       Worker       @relation(fields: [workerId], references: [id])
+  leaveType    LeaveType    @relation(fields: [leaveTypeId], references: [id])
+  team         Team?        @relation(fields: [teamId], references: [id])
+
+  @@index([organizationId])
+  @@index([organizationId, workerId])
+  @@index([organizationId, status])
+  @@index([organizationId, teamId, startDate, endDate])
+}
+
+model LeaveLedgerEntry {
+  id              String          @id @default(cuid())
+  organizationId  String
+  workerId        String
+  leaveTypeId     String
+  entryType       LeaveLedgerType
+  // Signed: ACCRUAL/CARRYOVER positive, DEDUCTION negative. Minutes give
+  // part-day precision; balance = Σ minutes over the ledger.
+  minutes         Int
+  effectiveDate   DateTime        @db.Date
+  // Origin of the entry (approved LeaveRequest id, accrual-run id, …).
+  sourceRef       String?
+  // Mandatory context for ADJUSTMENT rows (audit trail).
+  reason          String?
+  createdByUserId String?
+  createdAt       DateTime        @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  worker       Worker       @relation(fields: [workerId], references: [id])
+  leaveType    LeaveType    @relation(fields: [leaveTypeId], references: [id])
+
+  @@index([organizationId, workerId, leaveTypeId, effectiveDate])
+}
+
+model LeaveBalance {
+  id               String   @id @default(cuid())
+  organizationId   String
+  workerId         String
+  leaveTypeId      String
+  year             Int
+  entitledMinutes  Int      @default(0)
+  usedMinutes      Int      @default(0)
+  carryoverMinutes Int      @default(0)
+  // Materialization timestamp; the reconciliation oracle re-sums the ledger and
+  // refreshes this cache row in the same transaction as each ledger insert.
+  recomputedAt     DateTime @default(now())
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  worker       Worker       @relation(fields: [workerId], references: [id])
+  leaveType    LeaveType    @relation(fields: [leaveTypeId], references: [id])
+
+  @@unique([organizationId, workerId, leaveTypeId, year])
+  @@index([organizationId, workerId])
+}
+
+enum LeaveKind {
+  ANNUAL
+  SICK
+  PARENTAL
+  BEREAVEMENT
+  STUDY
+  UNPAID
+  OTHER
+}
+
+enum LeaveRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+enum LeaveLedgerType {
+  ACCRUAL
+  DEDUCTION
+  CARRYOVER
+  ADJUSTMENT
+}

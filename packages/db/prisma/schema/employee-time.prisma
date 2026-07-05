@@ -1,0 +1,56 @@
+// Employee statutory working-time record — one row per worker per calendar day.
+// Deliberately distinct from the contractor-coupled TimeEntry (time-tracking.prisma):
+// this keys on the Worker identity root (workerType = EMPLOYEE), never on a
+// Contractor/Contract, and carries the statutory dimensions payroll and the KP
+// §149 ewidencja need — overtime bands, night minutes, weekend/holiday work,
+// on-call (dyżur), and the UK WTR 48h opt-out flag.
+//
+// Tenant-owning: carries `organizationId`, holds an `organization` relation, and
+// stays out of `globalModels` so it inherits withTenantScope.
+
+model EmployeeTimeRecord {
+  id                    String             @id @default(cuid())
+  organizationId        String
+  workerId              String
+  workDate              DateTime           @db.Date
+  startTime             DateTime?
+  endTime               DateTime?
+  workedMinutes         Int                @default(0)
+  // Minutes worked inside the jurisdiction night window.
+  nightMinutes          Int                @default(0)
+  // PL premium bands (50% standard OT, 100% night/Sunday/holiday/day-off/weekly-norm);
+  // other jurisdictions store total OT and let the working-time rule set the premium.
+  overtimeMinutes50     Int                @default(0)
+  overtimeMinutes100    Int                @default(0)
+  weekendHolidayMinutes Int                @default(0)
+  // PL dyżur — the ewidencja requires on-call duration plus the place it was served.
+  onCallMinutes         Int                @default(0)
+  onCallLocation        String?
+  absenceKind           AbsenceKind?
+  wtOptOut              Boolean            @default(false)
+  source                EmployeeTimeSource @default(MANUAL)
+  createdAt             DateTime           @default(now())
+  updatedAt             DateTime           @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  worker       Worker       @relation(fields: [workerId], references: [id])
+
+  @@unique([organizationId, workerId, workDate])
+  @@index([organizationId, workerId, workDate])
+}
+
+enum EmployeeTimeSource {
+  MANUAL
+  IMPORTED
+}
+
+enum AbsenceKind {
+  VACATION
+  SICK
+  PARENTAL
+  BEREAVEMENT
+  STUDY
+  UNPAID
+  OTHER_JUSTIFIED
+  UNJUSTIFIED
+}

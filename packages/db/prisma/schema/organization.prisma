@@ -51,6 +51,12 @@ model Organization {
   employeeProfiles               EmployeeProfile[]
   personnelFiles                 PersonnelFile[]
   personnelFileDocuments         PersonnelFileDocument[]
+  leaveTypes                     LeaveType[]
+  blackoutPeriods                BlackoutPeriod[]
+  leaveRequests                  LeaveRequest[]
+  leaveLedgerEntries             LeaveLedgerEntry[]
+  leaveBalances                  LeaveBalance[]
+  employeeTimeRecords            EmployeeTimeRecord[]
   contractors                    Contractor[]
   contractorContacts             ContractorContact[]
   contractorBillingProfiles      ContractorBillingProfile[]
@@ -237,6 +243,8 @@ model Team {
   projects              Project[]
   contractorAssignments ContractorAssignment[]
   contracts             Contract[]
+  leaveRequests         LeaveRequest[]
+  blackoutPeriods       BlackoutPeriod[]
 
   @@index([organizationId])
   @@index([organizationId, status])
