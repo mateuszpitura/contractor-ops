@@ -46,7 +46,7 @@ vi.mock('@contractor-ops/auth', () => ({
   authApi: { getSession: vi.fn(), hasPermission: vi.fn(), getFullOrganization: vi.fn() },
 }));
 
-const WORKFORCE_NAMESPACES = ['worker.', 'employee.'];
+const WORKFORCE_NAMESPACES = ['worker.', 'employee.', 'leave.', 'employeeTime.', 'ewidencja.'];
 
 function namespacePresent(procedures: Record<string, unknown>, prefix: string): boolean {
   return Object.keys(procedures).some(path => path.startsWith(prefix));

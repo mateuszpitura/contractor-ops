@@ -80,6 +80,9 @@ import {
 // portalRouter and portalTimeRouter are exposed via `portalAppRouter` (see ./portal-root.ts)
 // at the /api/trpc/portal endpoint — kept out of `appRouter` to reduce TS inference cost.
 import { workflowRolesRouter, workflowRouter } from './routers/workflow/index';
+import { employeeTimeRouter } from './routers/workforce/employee-time';
+import { ewidencjaRouter } from './routers/workforce/ewidencja';
+import { leaveRouter } from './routers/workforce/leave';
 
 /**
  * Root tRPC router merging all sub-routers.
@@ -181,6 +184,9 @@ const workforceRouters = {
   worker: workerRouter, // worker: shared cross-type worker reads (explicit workerType — contractors + employees)
   employee: employeeRouter, // employee: skeleton employee-type reads (workerType=EMPLOYEE; profile surface lands in a later phase)
   personnelFile: personnelFileRouter, // personnelFile: gated akta-osobowe personnel file (read/section-access/classify/erasure)
+  leave: leaveRouter, // leave: leave requests (approval chain), direct sick, leave-type/blackout config, team calendar
+  employeeTime: employeeTimeRouter, // employeeTime: day-grain statutory time records + synchronous WT-limit check
+  ewidencja: ewidencjaRouter, // ewidencja: PL KP §149 working-time register generate + read (INSERT-only versions)
 } as const;
 
 const conditionalWorkforceRouters = isWorkforceRegistered()
