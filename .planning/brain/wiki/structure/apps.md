@@ -2,7 +2,7 @@
 title: Deployable apps
 type: structure
 tags: [structure, apps]
-source_commit: 70f5782d78e33ba98c82e4ccda2cd4b0b4aff216
+source_commit: b618a39e5
 verify_with:
   - .planning/intel/file-roles.json
   - apps/api/src/index.ts
@@ -53,6 +53,10 @@ Staff + portal UI: **only** `apps/web-vite`. See [[web-vite-domains]]. CMS + lan
 semble search "buildServer"
 semble search "portalAppRouter"
 ```
+
+## Boot side effects (apps/api `index.ts`)
+
+After `app.listen`, `index.ts` ensures the global transactional-outbox drain QStash schedule (`ensureOutboxDrainSchedule`, upsert by fixed `scheduleId`) and asserts it — non-fatal, skips without `QSTASH_TOKEN`. See [[patterns/transactional-outbox]].
 
 ## Agent mistakes
 

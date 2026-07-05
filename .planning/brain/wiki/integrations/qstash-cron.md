@@ -5,8 +5,9 @@ tags: [qstash, cron, upstash]
 source_commit: 70f5782d78e33ba98c82e4ccda2cd4b0b4aff216
 verify_with:
   - apps/api/src/lib/qstash-route.ts
+  - apps/api/src/lib/outbox-drain-schedule.ts
   - apps/cron-worker/src/jobs/handlers/
-updated: 2026-06-10
+updated: 2026-07-05
 ---
 
 # QStash + cron worker
@@ -39,11 +40,19 @@ sequenceDiagram
 | Monitor | `cron-monitor.ts` (`withQueueObservability`) |
 | Handlers | [[structure/cron-jobs]] |
 
+## Schedules
+
+Two kinds of QStash schedule exist:
+
+- **Per-tenant** — created inside connect procedures when an org enables an integration: KSeF (`routers/integrations/ksef.ts`), Peppol (`peppol.ts`), Google-Workspace (`google-workspace.ts`). Each stores its `qstashScheduleId` on the connection and deletes it on disconnect.
+- **Global** — the transactional-outbox drain. `ensureOutboxDrainSchedule` (`apps/api/src/lib/outbox-drain-schedule.ts`) runs at API boot, upserts one schedule (fixed `scheduleId: 'outbox-drain'`, cron `* * * * *`) targeting `${API_URL}/outbox/_drain`, and asserts it by read-back. Non-fatal / skipped without `QSTASH_TOKEN`. See [[patterns/transactional-outbox]].
+
 ## Invariants
 
 - Cron: `createCronLogger` — no `console.*`
 - `cronProcedure` + `CRON_SECRET` for internal triggers
 - Handler bodies validated with Zod
+- Boot-time global schedules use a **fixed** `scheduleId` (upsert) so re-deploys never accumulate duplicates.
 
 ## Related
 

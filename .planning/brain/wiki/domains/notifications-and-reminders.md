@@ -2,7 +2,7 @@
 title: Notifications and reminders
 type: domain
 tags: [notifications, reminders, email, slack]
-source_commit: 70f5782d78e33ba98c82e4ccda2cd4b0b4aff216
+source_commit: b618a39e5
 verify_with:
   - packages/api/src/routers/core/notification.ts
   - packages/api/src/routers/core/reminder.ts
@@ -69,6 +69,8 @@ the Resend `Idempotency-Key` collapse a redrive to a single delivery →
 | Dispatch service | `packages/api/src/services/notification-service.ts` |
 | Outbox service + helper | `packages/api/src/services/outbox/` (`enqueueNotificationOutboxEvent`, `drainOutboxBatch`) |
 | Drain route + schedule | `apps/api/src/routes/outbox.ts` + `apps/api/src/lib/outbox-schedule.ts` |
+| Durable enqueue | `packages/api/src/services/outbox/` (`enqueueNotificationDispatch`) → [[patterns/transactional-outbox]] |
+| Drain schedule | `apps/api/src/lib/outbox-drain-schedule.ts` (global, @ boot) |
 | Reminder-rule cron | `cron-worker/.../reminders/index.ts` |
 | Approval-SLA cron | `cron-worker/.../reminders/approval-sla.ts` |
 | Compliance reminders | `apps/cron-worker/.../compliance-reminder.ts` |
@@ -80,6 +82,8 @@ the Resend `Idempotency-Key` collapse a redrive to a single delivery →
 
 - Preferences CRUD scoped to tenant user
 - New notification sites: enqueue through the outbox inside the announcing `$transaction`, not post-commit `dispatch().catch()` (at-most-once). Direct `dispatch()` is tolerated only where no enclosing tx owns the state change — [[decisions/tech-debt-hotspots]]
+- **Durable notifications go through the transactional outbox.** Producers whose notification must fire iff a DB write commits call `enqueueNotificationDispatch({ tx, event, dedupKey? })` (`services/outbox/`) **inside** the enclosing `$transaction`; a global QStash schedule drains `/outbox/_drain` and delivers exactly-once keyed on the `OutboxEvent.id` (threaded into `dispatch(payload, { outboxEventId })` → `Notification.dedupKey` + Resend `Idempotency-Key`). A bare post-commit `dispatch(...)` is **at-most-once** (a crash between commit and dispatch drops it) — money-path sites (approvals, invoices, Stripe billing) use the outbox. See [[patterns/transactional-outbox]].
+- Silent catch in direct dispatch remains for non-durable sends (cross-org scans, digests) — [[decisions/tech-debt-hotspots]]
 - Teams/Slack channels via [[integrations/teams]] framework
 - Outbox is single-event-type (`notification.dispatch`) today; add a type in `services/outbox/handlers.ts` before outboxing a non-notification side effect
 - **A `ReminderInstance` is skipped only when `SENT`, never merely because it exists.** The reminder cron (`reminders/index.ts`) re-dispatches any row still `PENDING` (a prior tick's `dispatch` threw) rather than treating "row present" as done — otherwise the `(reminderRuleId, entityType, entityId, scheduledFor)` unique would strand the reminder forever. Per-rule try/catch isolates a poison rule/org from the rest of the run.
@@ -92,6 +96,7 @@ the Resend `Idempotency-Key` collapse a redrive to a single delivery →
 - [[classification-ir35]]
 - [[settings-and-org-admin]]
 - [[patterns/logging-and-errors]]
+- [[patterns/transactional-outbox]]
 
 ## Verify live
 

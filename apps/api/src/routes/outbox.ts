@@ -14,8 +14,9 @@
  *      dashboards can chart drain pressure independently of depth.
  *   6. 200 on success; 500 on error → QStash retries with backoff.
  *
- * Polled every 30 s by a QStash schedule. Exempt from CSRF origin guard
- * via the `/outbox/` prefix.
+ * Polled every minute by a global QStash schedule (created at API boot by
+ * `ensureOutboxDrainSchedule`; one minute is the QStash cron floor). Exempt
+ * from CSRF origin guard via the `/outbox/` prefix.
  */
 
 import {

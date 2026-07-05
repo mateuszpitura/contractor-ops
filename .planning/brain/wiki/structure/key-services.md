@@ -3,6 +3,7 @@ title: Key API services catalog
 type: structure
 tags: [structure, services, api]
 source_commit: 5d6e26a17
+source_commit: b618a39e5
 verify_with:
   - packages/api/src/services/
   - packages/api/src/services/onboarding-import-service.ts
@@ -70,6 +71,7 @@ flowchart TB
 | US 1042-S transmit tail | `services/form-1042s-transmit.service.ts` | `buildAndValidate1042S` — sibling of the shared `tax-filing-transmitter` seam for the Pub 1187 schema; runs `buildIris1042SXml` → `xsdValidate1042S`, returns the validated XML only on VALID, BUNDLE_UNAVAILABLE (non-throwing) until the human Pub 1187 XSD lands; the `form1042s` router records the `IrisSubmission` + parses the ack via the shared `iris-ack-parser` |
 | Couriers | `services/courier/` | [[integrations/couriers]] |
 | Outbox | `services/outbox/` | transactional outbox — WIRED. Producers `enqueueNotificationOutboxEvent({tx, event, dedupKey})` (typed wrapper over `enqueueOutboxEvent`) INSIDE their `$transaction` so the notification commits atomically with the state change (exactly-once vs the old post-commit `dispatch().catch()` at-most-once). `drainOutboxBatch` (claim `FOR UPDATE SKIP LOCKED` → dispatch → finalize) runs off the boot-ensured `outbox-drain` QStash schedule → `POST /outbox/_drain`. Handler threads `OutboxEvent.id` into `notification-service` (`(organizationId, dedupKey)` unique + Resend `Idempotency-Key`). Only event type today: `notification.dispatch`. [[domains/notifications-and-reminders]] |
+| Outbox | `services/outbox/` | durable exactly-once side effects — `enqueueNotificationDispatch({tx})` inside the business `$transaction`; global drain schedule ensured at boot. [[patterns/transactional-outbox]] |
 | Onboarding import | `services/onboarding-import-service.ts` | [[domains/onboarding-and-import]] — mergeByEmail, templates |
 | Tenant find | `lib/tenant-find.ts` | scoped lookups |
 | Audited mutation | `lib/audited-mutation.ts` | audit + tx wrapper |
