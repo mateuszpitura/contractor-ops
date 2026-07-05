@@ -139,10 +139,38 @@ vi.mock('@sentry/node', () => {
   };
 });
 
-import { createCallerFactory } from '../../init';
+import { createCallerFactory, publicProcedure, t } from '../../init';
+import { enforceApiTierQuota } from '../../middleware/api-tier-quota';
 import { publicContractorRouter } from '../../routers/public-api/contractor';
 
 const createCaller = createCallerFactory(publicContractorRouter);
+
+// The real chain gates public keys at ENTERPRISE (requireTier) BEFORE the quota,
+// so STARTER/PRO never reach it in production (their quotas are latent). Exercise
+// the quota middleware in isolation to prove the per-tier 429 behavior.
+const quotaOnlyRouter = t.router({
+  ping: publicProcedure.use(enforceApiTierQuota).query(() => ({ ok: true as const })),
+});
+const createQuotaOnlyCaller = t.createCallerFactory(quotaOnlyRouter);
+
+function callQuota(tier: string, count: number) {
+  mockGetSubscription.mockResolvedValue({
+    id: 'sub_1',
+    organizationId: ORG_ID,
+    tier,
+    status: 'ACTIVE',
+    currentPeriodStart: new Date('2026-01-01'),
+    currentPeriodEnd: new Date('2027-01-01'),
+  });
+  incrCounter.mockResolvedValue(count);
+  const caller = createQuotaOnlyCaller({
+    headers: new Headers(),
+    session: null,
+    user: null,
+    organizationId: ORG_ID,
+  } as never);
+  return caller.ping();
+}
 
 function makeCaller(tier: string) {
   mockResolveApiKey.mockResolvedValue({
@@ -181,19 +209,26 @@ beforeEach(() => {
 
 describe('per-tier monthly quota', () => {
   it('throws TOO_MANY_REQUESTS for a STARTER key over its monthly quota', async () => {
-    incrCounter.mockResolvedValue(1_001); // STARTER limit is 1 000
-    const caller = makeCaller('STARTER');
-    await expect(caller.list({})).rejects.toMatchObject({ code: 'TOO_MANY_REQUESTS' });
+    await expect(callQuota('STARTER', 1_001)).rejects.toMatchObject({ code: 'TOO_MANY_REQUESTS' });
+  });
+
+  it('allows a STARTER key at exactly its quota (boundary)', async () => {
+    await expect(callQuota('STARTER', 1_000)).resolves.toMatchObject({ ok: true });
   });
 
   it('throws TOO_MANY_REQUESTS for a PRO key over its monthly quota', async () => {
-    incrCounter.mockResolvedValue(10_001); // PRO limit is 10 000
-    const caller = makeCaller('PRO');
-    await expect(caller.list({})).rejects.toMatchObject({ code: 'TOO_MANY_REQUESTS' });
+    await expect(callQuota('PRO', 10_001)).rejects.toMatchObject({ code: 'TOO_MANY_REQUESTS' });
   });
 
   it('never throws quota for an ENTERPRISE key (unlimited, no counter write)', async () => {
     incrCounter.mockResolvedValue(9_999_999);
+    await expect(callQuota('ENTERPRISE', 9_999_999)).resolves.toMatchObject({ ok: true });
+    expect(incrCounter).not.toHaveBeenCalled();
+  });
+
+  it('is wired into the full apiKeyTenantProcedure chain (ENTERPRISE passes through)', async () => {
+    // Proves the middleware is in the real chain: an ENTERPRISE key reads a list
+    // and the quota short-circuits (no counter write).
     const caller = makeCaller('ENTERPRISE');
     await expect(caller.list({})).resolves.toMatchObject({ items: [] });
     expect(incrCounter).not.toHaveBeenCalled();

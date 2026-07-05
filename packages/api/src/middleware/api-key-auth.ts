@@ -2,6 +2,7 @@ import { TRPCError } from '@trpc/server';
 import * as E from '../errors';
 import { publicProcedure, t } from '../init';
 import { appendApiKeyIpEvent, resolveApiKey, touchLastUsed } from '../services/api-key-service';
+import { enforceApiTierQuota } from './api-tier-quota';
 import { demoReadOnly } from './demo';
 import { assertPublicApiEnabled } from './require-public-api-flag';
 import { runWithTenantContext } from './tenant';
@@ -116,13 +117,14 @@ const publicApiFlagGate = t.middleware(async ({ ctx, next }) => {
  * Procedure for public API endpoints authenticated via Organization API Key.
  *
  * Chain: publicProcedure → apiKeyAuth → publicApiFlagGate → requireTier(ENTERPRISE)
- *        → demoReadOnly → handler
+ *        → enforceApiTierQuota → demoReadOnly → handler
  *
  * Provides: ctx.db, ctx.organizationId, ctx.region, ctx.authMode,
- *           ctx.apiKeyId, ctx.apiKeyScopes, ctx.subscription
+ *           ctx.apiKeyId, ctx.apiKeyScopes, ctx.apiKeyActingUserId, ctx.subscription
  */
 export const apiKeyTenantProcedure = publicProcedure
   .use(apiKeyAuthMiddleware)
   .use(publicApiFlagGate)
   .use(requireTier('ENTERPRISE'))
+  .use(enforceApiTierQuota)
   .use(demoReadOnly);
