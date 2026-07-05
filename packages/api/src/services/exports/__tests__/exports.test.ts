@@ -26,11 +26,12 @@ import { defineExport, EXPORT_REGISTRY, getExportDefinition, parseExportParams }
 // ---------------------------------------------------------------------------
 
 describe('export registry', () => {
-  it('exposes all 8 contractually-required export types', () => {
+  it('exposes all 9 contractually-required export types', () => {
     const keys = Object.keys(EXPORT_REGISTRY).sort();
     expect(keys).toEqual(
       [
         'classification-document-sds',
+        'classification-document-us-determination-letter',
         'compliance-gaps',
         'drv-defense-bundle',
         'expiring-contracts',
@@ -40,6 +41,27 @@ describe('export registry', () => {
         'spend-by-team',
       ].sort(),
     );
+  });
+
+  it('registers the US determination letter export with the expected shape', () => {
+    const def = getExportDefinition('classification-document-us-determination-letter');
+    expect(def.type).toBe('classification-document-us-determination-letter');
+    expect(def.displayName).toBe('US classification determination letter');
+    expect(def.mimeType).toBe('application/pdf');
+    expect(def.maxAgeDays).toBe(7);
+    expect(def.requiredPermission).toEqual({ contractor: ['read'] });
+    expect(def.filename({ classificationAssessmentId: 'someid12345678' })).toBe(
+      'US-Determination-12345678.pdf',
+    );
+    // classificationAssessmentId is required; classificationDocumentId is optional.
+    expect(() =>
+      parseExportParams('classification-document-us-determination-letter', {}),
+    ).toThrow();
+    expect(
+      parseExportParams('classification-document-us-determination-letter', {
+        classificationAssessmentId: 'a1',
+      }),
+    ).toEqual({ classificationAssessmentId: 'a1' });
   });
 
   it('throws on unknown type', () => {
