@@ -11,6 +11,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const {
   mockDocumentFindMany,
+  mockPersonnelDocFindMany,
+  mockPersonnelFileFindMany,
   mockTransaction,
   mockDeleteObject,
   mockPurgeOAuth,
@@ -20,6 +22,8 @@ const {
   mockGetRetentionCutoff,
 } = vi.hoisted(() => ({
   mockDocumentFindMany: vi.fn(),
+  mockPersonnelDocFindMany: vi.fn(),
+  mockPersonnelFileFindMany: vi.fn(),
   mockTransaction: vi.fn(),
   mockDeleteObject: vi.fn(),
   mockPurgeOAuth: vi.fn(),
@@ -35,6 +39,8 @@ const {
 vi.mock('@contractor-ops/db', () => ({
   prisma: {
     document: { findMany: mockDocumentFindMany },
+    personnelFileDocument: { findMany: mockPersonnelDocFindMany },
+    personnelFile: { findMany: mockPersonnelFileFindMany },
     $transaction: mockTransaction,
   },
   getRetentionCutoff: mockGetRetentionCutoff,
@@ -77,6 +83,11 @@ function makeTxStub(counts: Record<string, number> = {}) {
     invoice: { deleteMany: make('invoice') },
     contract: { deleteMany: make('contract') },
     contractor: { deleteMany: make('contractor') },
+    personnelFileDocument: {
+      deleteMany: make('personnelFileDocument'),
+      findMany: vi.fn(async () => []),
+    },
+    personnelFile: { deleteMany: make('personnelFile') },
   };
 }
 
@@ -89,6 +100,8 @@ function cutoffOf(mock: ReturnType<typeof vi.fn>): Date {
 beforeEach(() => {
   vi.clearAllMocks();
   mockDocumentFindMany.mockResolvedValue([]);
+  mockPersonnelDocFindMany.mockResolvedValue([]);
+  mockPersonnelFileFindMany.mockResolvedValue([]);
   mockTransaction.mockImplementation(async (cb: (tx: unknown) => unknown) => cb(makeTxStub()));
   mockDeleteObject.mockResolvedValue(undefined);
   mockPurgeOAuth.mockResolvedValue(0);
