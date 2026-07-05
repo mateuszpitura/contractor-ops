@@ -6,9 +6,10 @@
 -- does NOT alter any existing table and performs NO backfill — every existing
 -- row is untouched, so applying it cannot fail on existing data.
 --
--- ORDERING: requires the Worker table (from __worker_base_additive) to already
--- exist in the target region, because EmployeeProfile.workerId references it. If
--- the Worker migration is still held, this one HOLDS behind it.
+-- ORDERING: requires the Worker table (from 20260705160000_worker_base_additive)
+-- to already exist in the target region, because EmployeeProfile.workerId
+-- references it. The timestamp ordering guarantees the worker base migration
+-- replays first.
 --
 -- Reversibility: every statement here is undone by the paired down.sql in this
 -- directory. No existing row is touched destructively; a rollback drops only the
@@ -21,12 +22,11 @@
 CREATE TYPE "EmploymentStatus" AS ENUM ('ACTIVE', 'ON_LEAVE', 'SUSPENDED', 'TERMINATED');
 
 -- CreateEnum
--- NitaqatBand is a Gulf (KSA) enum first referenced HERE, as the type of
--- EmployeeProfile.saudizationCategory. The Gulf domain tables that also use it
--- (SaudizationConfig.band in gulf.prisma) are managed out-of-band via db push and
--- have no migration of their own, so this additive step is the first — and only —
--- migration to reference the type; it must therefore create it before the
--- EmployeeProfile table below. Values mirror `enum NitaqatBand` in the schema.
+-- NitaqatBand is a Gulf (KSA) enum used both HERE (EmployeeProfile.saudizationCategory)
+-- and by the gulf-domain tables (SaudizationConfig.band in gulf.prisma). It is
+-- CREATED here because this migration replays before 20260705160004_gulf_domain,
+-- so the type already exists when the gulf tables reference it; the gulf migration
+-- therefore does NOT re-create it. Values mirror `enum NitaqatBand` in the schema.
 CREATE TYPE "NitaqatBand" AS ENUM ('PLATINUM', 'HIGH_GREEN', 'MID_GREEN', 'LOW_GREEN', 'YELLOW', 'RED');
 
 -- CreateTable

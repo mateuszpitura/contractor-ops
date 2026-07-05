@@ -8,10 +8,10 @@
 -- existing table and performs NO backfill — every existing row is untouched, so
 -- applying it cannot fail on existing data.
 --
--- ORDERING: requires the Worker table (from __worker_base_additive) and the
--- Document table to already exist in the target region, because PersonnelFile
--- references Worker and PersonnelFileDocument references Document. If those
--- migrations are still held, this one HOLDS behind them.
+-- ORDERING: requires the Worker table (from 20260705160000_worker_base_additive)
+-- and the Document table (from the baseline) to already exist in the target
+-- region, because PersonnelFile references Worker and PersonnelFileDocument
+-- references Document. The timestamp ordering guarantees both replay first.
 --
 -- Reversibility: every statement here is undone by the paired down.sql in this
 -- directory. No existing row is touched destructively; a rollback drops only the

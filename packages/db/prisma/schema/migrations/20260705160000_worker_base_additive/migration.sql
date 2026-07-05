@@ -1,9 +1,10 @@
 -- Worker base table + sidecar Contractor.workerId FK column (additive, reversible).
 --
 -- This is the FIRST of the two-step Worker migration. It is intentionally
--- additive only: it creates the Worker identity root and adds a NULLABLE
--- Contractor.workerId column with a unique index. It does NOT enforce NOT NULL
--- and does NOT add the foreign-key constraint — those land in a later migration
+-- additive only: it creates the Worker identity root (with its tenant FK to
+-- Organization) and adds a NULLABLE Contractor.workerId column with a unique
+-- index. It does NOT enforce Contractor.workerId NOT NULL and does NOT add the
+-- Contractor → Worker foreign key — those land in 20260705160001_worker_id_required
 -- only after every existing contractor row has been backfilled with a Worker.
 --
 -- Reversibility: every statement here is undone by the paired down.sql in this
@@ -37,7 +38,10 @@ CREATE INDEX "Worker_organizationId_idx" ON "Worker"("organizationId");
 -- CreateIndex
 CREATE INDEX "Worker_organizationId_workerType_idx" ON "Worker"("organizationId", "workerType");
 
--- AlterTable (nullable — NOT NULL + FK deferred until after backfill)
+-- AddForeignKey (Worker tenant FK — Organization exists from the baseline)
+ALTER TABLE "Worker" ADD CONSTRAINT "Worker_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "Organization"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AlterTable (nullable — NOT NULL + Contractor→Worker FK deferred until after backfill)
 ALTER TABLE "Contractor" ADD COLUMN "workerId" TEXT;
 
 -- CreateIndex
