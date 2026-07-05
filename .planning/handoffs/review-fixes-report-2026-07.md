@@ -1,11 +1,11 @@
 # Review-Fix Execution Report — 2026-07-05
 
-Execution of the fix backlog in [`codebase-review-2026-07-05.md`](./codebase-review-2026-07-05.md), run as 8 waves of parallel subagents in one shared worktree.
+Execution of the fix backlog in [`codebase-review-2026-07-05.md`](./codebase-review-2026-07-05.md), run as 8 waves of parallel subagents in one shared worktree, plus a follow-up batch (FW-1..FW-3) closing the discovered follow-ups.
 
 - **Branch:** `review-fixes`
 - **Base commit:** `2bd9229ae` (main, 92 wave-1 merged)
-- **Head commit:** `c45588d36`
-- **Commits:** 36 (task-tagged, atomic)
+- **Head commit:** `ae3415e94`
+- **Commits:** 44 (task-tagged, atomic; 36 waves + 1 report + 7 follow-up)
 - **Worktree:** `.claude/worktrees/review-fixes` (NOT merged, NOT pushed, NOT pruned)
 
 ## Final gate results
@@ -13,7 +13,7 @@ Execution of the fix backlog in [`codebase-review-2026-07-05.md`](./codebase-rev
 | Gate | Result | Notes |
 |------|--------|-------|
 | Full `pnpm typecheck` | 41/42 packages green | Only failure = **pre-existing base debt**: `apps/web-vite` `leave/__tests__/team-calendar.test.tsx` imports `team-calendar-view` (never implemented). Added by base commit `c5a2c8d0e` (phase-92 "Wave-0 RED/HOLD contracts"); **untouched by any review-fix wave**. Every package this work modified typechecks clean. |
-| `@contractor-ops/api` tests | **4006 passed, 0 failed** (17 skip, 27 todo) | Green. |
+| `@contractor-ops/api` tests | **4017 passed, 0 failed** (17 skip, 27 todo) | Green (re-run after the follow-up batch). |
 | `@contractor-ops/cron-worker` tests | **81/81** | Green. |
 | `@contractor-ops/api-server` tests | 192 passed, **1 failed** | Failure = **pre-existing**: `teams-auth-config.test.ts` forces `NODE_ENV=production` and trips an UPSTASH guard; observed failing in Wave 1 immediately after branching. No wave touched teams-auth source. |
 | `@contractor-ops/public-api` tests | **117/117** | Green. |
@@ -97,13 +97,23 @@ Execution of the fix backlog in [`codebase-review-2026-07-05.md`](./codebase-rev
 
 One hand-authored additive migration `20260705000000_us_tax_form_tables_plus_additive_integrity`, live-verified `migrate diff` empty (up + down) on a Postgres-17 shadow, covering: **T0-6** (9 tables), **T0-5** index, **INT-0-5** (peppol unique), **INT-0-8c** (`PaymentRunItem.settlementRate/Date`), **INT-0-9** (`AchReturnLedgerEntry`), **INT-0-10** (claim unique), **INT-1-2d** (`CronJobRunState`). Plus `db:check-migration-drift` script + CI wiring. `INT-0-4` added a second small additive migration (`20260705120000_subscription_last_event_created`).
 
-## Follow-ups discovered during execution (not in scope, worth a ticket)
+## Follow-up batch (FW-1..FW-3) — the discovered follow-ups, now applied
 
-1. **Autenti e-sign adapter** has no idempotency key — a send retried after a failed DB tx can duplicate a provider process. Needs an intent/outbox row before the provider call (new table). DocuSign is fine.
-2. **1099-NEC batch generation** (`form-1099-nec.service.ts`) has the same non-transactional shape T0-5 fixed for 1042-S — apply the same `$transaction` + P2002-skip once it has an equivalent active-key index.
-3. **Pre-existing schema↔migration gap:** Gulf enum `NitaqatBand` is used by `__employee_profile_additive` but created by no migration — the new drift-check WARN-degrades on it today and will gate correctly once that history gap is repaired.
-4. **8 outbox dispatch sites deferred** (INT-1-1) require a tx refactor to convert — they remain at-most-once until then.
-5. **Pre-existing base-branch red:** web-vite `team-calendar-view` RED test, `teams-auth-config` UPSTASH test, `no-process-env` 184>182, 11 phase-92 test breadcrumbs, `root.ts` catalog drift — all inherited, all owned by the phase-92/93 leave feature or the T2-4/T2-6/T1-5 tiers.
+Ran after the waves as a single-owner migration step + disjoint service agents + an outbox-tail agent. All green (full api suite re-run: 4017 passed, 0 failed).
+
+| Follow-up | Status | Commit(s) | Note |
+|-----------|--------|-----------|------|
+| Autenti e-sign idempotency | **fixed** | `60258402c` (table), `3ac579b1b` (service) | Autenti v2 API verified to have NO idempotency mechanism → new `EsignEnvelopeIntent` table, unique `(organizationId, documentId, signerSetHash)`; the orchestrator claims an intent row (deterministic `signerSetHash`) before the provider call, short-circuits/reuses on a dup, P2002→resolve winner. Envelope-create moved after the intent claim. |
+| 1099-NEC transactional | **fixed** | `60258402c` (index), `671b24f0d` (service) | `Form1099Nec_active_key` partial unique + batch wrapped in `$transaction`, P2002-as-skip — mirrors the T0-5 1042-S fix. |
+| NitaqatBand missing-type gap | **fixed** | `60258402c` | `CREATE TYPE "NitaqatBand"` added to the migration that first uses it (verified live). **Note:** the *full* `--from-migrations` replay is still blocked by a **larger, separate** pre-existing issue — the `__`-prefixed manual-gate migrations replay before `baseline`, and the whole gulf domain has zero migrations. Fixing that means re-timestamping the manual-gate migrations + authoring the gulf domain; out of follow-up scope. Drift check WARN-degrades on it by design. |
+| T0-4 org-create hook (was never wired) | **fixed** | `cbcf8a2bb` | `afterCreateOrganization` seeds workflow role templates via `@contractor-ops/offboarding-templates` (avoids a circular api→auth dep — the reason the hook was dead); idempotent cross-region backfill script `packages/api/scripts/backfill-workflow-role-templates.ts`. Also cleared a pre-existing `offboarding-templates` moduleResolution error. |
+| 8 deferred outbox sites | **5 converted, 3 left by design** | `5a1d59bf2`, `fa6d91369` | Converted all sites with a single committed state-change: workflow `reassignTask`, credit-exhausted, compliance-upload-outcome, 1099-K tracker heads-up, economic-dependency alert (each now enqueues in-tx). The 3 genuine aggregate/digest/diff notifications (KSeF sync-complete, compliance expiry digest, Google-Workspace ×2) stay direct-dispatch with why-comments — no single committed row to bind an enqueue to. Two sibling integration tests (`compliance-upload-review`, `81-int-closure`) reframed for deferred delivery (`ae3415e94`). |
+
+## Remaining (deferred / other-owner / human)
+
+- **AR i18n** (I18N-Q-2/-6): AR locale is machine-draft — needs a **human native/legal review**, cannot be code-fixed. Flagged, not resolved.
+- **Larger deferred backlog** (not follow-ups): T1-* security tier, T2-1/2-3/2-5/2-6, T3-2..T3-7, INT-1-5/1-8, INT-2-*, INT-3-*, CMS-0-*, A11Y-1..5, GL-1-1/4/5/6, COV — see the wave ledger's "not done" rows. GL-0-6/GL-1-3/T2-4 remain other-session-owned.
+- **Pre-existing base-branch reds** (all inherited, none introduced here): web-vite `team-calendar-view` RED test, `teams-auth-config` UPSTASH test, `no-process-env` 184>182, 11 phase-92 test breadcrumbs, `root.ts` catalog drift, and the manual-gate-migration/gulf-domain replay gap.
 
 ## Operational note — external-session git collision
 
@@ -111,4 +121,6 @@ A concurrent worktree-recovery session (flagged out-of-scope in the handover) mu
 
 ## Handoff
 
-Branch `review-fixes` @ `c45588d36`, base `2bd9229ae`. **Not merged / not pushed / not pruned** — merge decision stays with the main session. Recommend resolving the pre-existing base-branch reds (team-calendar impl, process-env ratchet, root.ts catalog) on `main` before merge, since they will surface in CI regardless of this branch.
+Branch `review-fixes` @ `ae3415e94`, base `2bd9229ae` (44 commits, linear). **Not merged / not pushed / not pruned** — merge decision stays with the main session. Recommend resolving the pre-existing base-branch reds (team-calendar impl, process-env ratchet, root.ts catalog, manual-gate-migration/gulf replay) on `main` before merge, since they will surface in CI regardless of this branch.
+
+**Post-merge follow-ups to ticket:** the manual-gate migration ordering + gulf-domain migration (unblocks the full drift replay); the AR-locale native/legal review; and the larger deferred backlog listed under "Remaining" above.
