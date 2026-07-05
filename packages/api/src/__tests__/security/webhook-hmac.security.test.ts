@@ -80,3 +80,40 @@ describe('generateWebhookSecret — per-subscription secret (INTEG-WEBHOOK-04)',
     expect(a).not.toBe(b);
   });
 });
+
+describe('shipped TS verifier round-trip — drift guard (INTEG-WEBHOOK-05)', () => {
+  // Non-literal import path so tsc does not pull the docs verifier into the api
+  // program; vitest resolves it at runtime. Proves the documented verifier the
+  // subscriber copies cannot drift from the live signer.
+  const verifierUrl = new URL(
+    '../../../../../apps/public-api/docs/webhooks/verifiers/verify.ts',
+    import.meta.url,
+  ).href;
+
+  async function loadDocVerifier() {
+    const mod = (await import(verifierUrl)) as {
+      verifyWebhookSignature: (
+        secret: string,
+        rawBody: string,
+        header: string,
+        nowMs?: number,
+      ) => boolean;
+    };
+    return mod.verifyWebhookSignature;
+  }
+
+  it('accepts a fresh signWebhookPayload output', async () => {
+    const { signWebhookPayload } = await import(SIGNER_MODULE);
+    const docVerify = await loadDocVerifier();
+    const { header } = signWebhookPayload(SECRET, BODY, T);
+    expect(docVerify(SECRET, BODY, header, T)).toBe(true);
+  });
+
+  it('rejects a stale timestamp and a tampered body', async () => {
+    const { signWebhookPayload } = await import(SIGNER_MODULE);
+    const docVerify = await loadDocVerifier();
+    const { header } = signWebhookPayload(SECRET, BODY, T);
+    expect(docVerify(SECRET, BODY, header, T + FIVE_MIN + 1)).toBe(false);
+    expect(docVerify(SECRET, `${BODY} `, header, T)).toBe(false);
+  });
+});
