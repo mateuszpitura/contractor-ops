@@ -2,6 +2,7 @@ import { entityIdSchema } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import {
+  API_KEY_CANNOT_ROTATE_SUPERSEDED,
   API_KEY_CANNOT_UPDATE_REVOKED,
   API_KEY_REVOKED,
   INVALID_ACTING_USER,
@@ -279,4 +280,92 @@ export const apiKeyRouter = router({
 
     return { success: true };
   }),
+
+  /**
+   * Rotate an API key with a grace window: issue a NEW key inheriting the old
+   * key's name/scopes/actingUserId/expiresAt, mark the old key superseded, and
+   * keep the old key valid until `graceExpiresAt` (default 24h, max 168h) for a
+   * zero-downtime cutover. Returns the new plaintext EXACTLY ONCE.
+   */
+  rotate: apiKeyAdminProcedure
+    .input(z.object({ id: z.string(), graceHours: z.number().int().positive().optional() }))
+    .mutation(async ({ ctx, input }) => {
+      const creatorId = ctx.user?.id;
+      if (!creatorId) {
+        throw new TRPCError({ code: 'UNAUTHORIZED', message: UNAUTHORIZED });
+      }
+
+      const existing = await findOrThrow(
+        () =>
+          ctx.db.organizationApiKey.findFirst({
+            where: { id: input.id, organizationId: ctx.organizationId },
+          }),
+        'API_KEY_NOT_FOUND',
+      );
+
+      if (existing.revokedAt) {
+        throw new TRPCError({ code: 'BAD_REQUEST', message: API_KEY_REVOKED });
+      }
+      if (existing.supersededAt) {
+        throw new TRPCError({ code: 'BAD_REQUEST', message: API_KEY_CANNOT_ROTATE_SUPERSEDED });
+      }
+
+      const DEFAULT_GRACE_HOURS = 24;
+      const MAX_GRACE_HOURS = 168;
+      const graceHours = Math.min(input.graceHours ?? DEFAULT_GRACE_HOURS, MAX_GRACE_HOURS);
+      const now = new Date();
+      const graceExpiresAt = new Date(now.getTime() + graceHours * 60 * 60 * 1000);
+
+      const { plaintext, prefix, hash } = generateApiKey();
+
+      const newKey = await ctx.db.$transaction(async tx => {
+        const created = await tx.organizationApiKey.create({
+          data: {
+            organizationId: ctx.organizationId,
+            name: existing.name,
+            prefix,
+            hash,
+            scopes: existing.scopes,
+            createdByUserId: creatorId,
+            actingUserId: existing.actingUserId,
+            expiresAt: existing.expiresAt,
+          },
+          select: {
+            id: true,
+            name: true,
+            prefix: true,
+            scopes: true,
+            expiresAt: true,
+            createdAt: true,
+          },
+        });
+
+        await tx.organizationApiKey.update({
+          where: { id: existing.id },
+          data: { supersededAt: now, supersededByKeyId: created.id, graceExpiresAt },
+        });
+
+        // Rotation is forensics-critical (old + new prefix + grace window).
+        await writeAuditLog({
+          tx,
+          organizationId: ctx.organizationId,
+          actorType: 'USER',
+          actorId: creatorId,
+          action: 'API_KEY_ROTATE',
+          resourceType: 'ORGANIZATION',
+          resourceId: ctx.organizationId,
+          oldValues: { apiKeyId: existing.id, prefix: existing.prefix },
+          newValues: {
+            apiKeyId: created.id,
+            prefix: created.prefix,
+            graceExpiresAt: graceExpiresAt.toISOString(),
+          },
+          metadata: { apiKeyId: created.id, supersededKeyId: existing.id },
+        });
+
+        return created;
+      });
+
+      return { ...newKey, graceExpiresAt, plaintext };
+    }),
 });

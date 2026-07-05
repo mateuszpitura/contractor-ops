@@ -168,6 +168,7 @@ export const INVALID_API_KEY = 'invalidApiKey';
 export const API_KEY_REVOKED = 'apiKeyRevoked';
 export const API_KEY_EXPIRED = 'apiKeyExpired';
 export const API_KEY_CANNOT_UPDATE_REVOKED = 'apiKeyCannotUpdateRevoked';
+export const API_KEY_CANNOT_ROTATE_SUPERSEDED = 'apiKeyCannotRotateSuperseded';
 export const INVALID_ACTING_USER = 'invalidActingUser';
 export const API_QUOTA_EXCEEDED = 'apiQuotaExceeded';
 

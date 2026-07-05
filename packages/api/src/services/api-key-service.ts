@@ -114,11 +114,18 @@ export function resolveApiKey(plaintext: string) {
 }
 
 async function resolveByPrefix(plaintext: string, prefix: string) {
+  const now = new Date();
   const candidates = await prisma.organizationApiKey.findMany({
     where: {
       prefix,
       revokedAt: null,
-      OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
+      AND: [
+        // Not expired.
+        { OR: [{ expiresAt: null }, { expiresAt: { gt: now } }] },
+        // Rotation grace: a superseded key resolves ONLY until graceExpiresAt,
+        // then hard-stops. A never-superseded key always passes this clause.
+        { OR: [{ supersededAt: null }, { graceExpiresAt: { gt: now } }] },
+      ],
     },
     take: MAX_PREFIX_CANDIDATES,
     include: {
