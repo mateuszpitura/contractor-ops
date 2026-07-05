@@ -155,6 +155,10 @@ vi.mock('../../services/notification-service', () => ({
   dispatch: vi.fn(async () => undefined),
 }));
 
+vi.mock('../../services/outbox', () => ({
+  enqueueNotificationOutboxEvent: vi.fn(async () => 'oxe_test'),
+}));
+
 vi.mock('../../services/calendar-event-service', () => ({
   deleteCalendarEvent: vi.fn(async () => undefined),
 }));
@@ -405,7 +409,7 @@ import { createCallerFactory } from '../../init';
 import { appRouter } from '../../root';
 import { deleteCalendarEvent } from '../../services/calendar-event-service';
 import { computeDuplicateCheckHash, runAutoMatch } from '../../services/invoice-matching';
-import { dispatch } from '../../services/notification-service';
+import { enqueueNotificationOutboxEvent } from '../../services/outbox';
 
 // ---------------------------------------------------------------------------
 // Caller helper
@@ -600,7 +604,7 @@ describe('invoice.create', () => {
     });
   });
 
-  it('dispatches notification to finance_admin members', async () => {
+  it('enqueues an INVOICE_RECEIVED outbox event for finance_admin members', async () => {
     mockPrisma.invoice.findFirst.mockResolvedValue(null);
     mockPrisma.invoice.create.mockResolvedValue(makeInvoice());
     mockPrisma.member.findMany.mockResolvedValue([
@@ -619,14 +623,18 @@ describe('invoice.create', () => {
       select: { userId: true },
     });
 
-    // Verify dispatch called with correct recipients
-    expect(dispatch).toHaveBeenCalledWith(
+    // The notification is enqueued into the outbox INSIDE the create tx
+    // (exactly-once), not dispatched post-commit fire-and-forget.
+    expect(enqueueNotificationOutboxEvent).toHaveBeenCalledWith(
       expect.objectContaining({
-        organizationId: ORG_ID,
-        type: 'INVOICE_RECEIVED',
-        recipientUserIds: ['finance-user-1', 'finance-user-2'],
-        entityType: 'INVOICE',
-        entityId: INVOICE_ID,
+        event: expect.objectContaining({
+          organizationId: ORG_ID,
+          type: 'INVOICE_RECEIVED',
+          recipientUserIds: ['finance-user-1', 'finance-user-2'],
+          entityType: 'INVOICE',
+          entityId: INVOICE_ID,
+        }),
+        dedupKey: `invoice-received:${INVOICE_ID}`,
       }),
     );
   });

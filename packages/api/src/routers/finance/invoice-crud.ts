@@ -20,7 +20,8 @@ import { requirePermission } from '../../middleware/rbac';
 import { tenantProcedure } from '../../middleware/tenant';
 import { CacheKeys, invalidateByPrefix } from '../../services/cache';
 import { computeDuplicateCheckHash } from '../../services/invoice-matching';
-import { dispatch } from '../../services/notification-service';
+import type { OutboxTransactionalClient } from '../../services/outbox';
+import { enqueueNotificationOutboxEvent } from '../../services/outbox';
 import { sanitizeStrings } from '../../services/sanitize';
 import type { ContractorTaxSnapshot } from './invoice-shared';
 import {
@@ -64,6 +65,47 @@ async function linkDocumentsToInvoice(
       entityId: invoiceId,
       linkRole: 'PRIMARY' as const,
     })),
+  });
+}
+
+/**
+ * Enqueue the INVOICE_RECEIVED notification for the finance team INSIDE the
+ * caller's transaction, so it commits atomically with the invoice insert and
+ * is delivered exactly-once by the outbox drain. No-op with no recipients.
+ */
+async function enqueueInvoiceReceivedNotification(
+  tx: OutboxTransactionalClient,
+  params: {
+    organizationId: string;
+    recipientUserIds: string[];
+    invoiceId: string;
+    invoiceNumber: string;
+    sellerName: string | null;
+    totalMinor: number;
+    currency: string;
+  },
+): Promise<void> {
+  if (params.recipientUserIds.length === 0) return;
+
+  const amount = (params.totalMinor / 100).toFixed(2);
+  await enqueueNotificationOutboxEvent({
+    tx,
+    event: {
+      organizationId: params.organizationId,
+      type: 'INVOICE_RECEIVED',
+      recipientUserIds: params.recipientUserIds,
+      title: `New invoice received: ${params.invoiceNumber}`,
+      body: `From ${params.sellerName ?? 'Unknown'} - ${amount} ${params.currency}`,
+      entityType: 'INVOICE',
+      entityId: params.invoiceId,
+      metadata: {
+        invoiceNumber: params.invoiceNumber,
+        contractorName: params.sellerName ?? 'Unknown',
+        amount,
+        currency: params.currency,
+      },
+    },
+    dedupKey: `invoice-received:${params.invoiceId}`,
   });
 }
 
@@ -163,6 +205,10 @@ export const invoiceCrudRouter = router({
       );
       // ---------------------------------------------------------------------
 
+      // Finance-team recipients are org-scoped and independent of the invoice
+      // row, so resolve them before opening the tx; the enqueue happens inside.
+      const financeUserIds = await getFinanceTeamUserIds(ctx.db, ctx.organizationId);
+
       const invoice = await ctx.db.$transaction(async tx => {
         // Create invoice record
         const inv = await tx.invoice.create({
@@ -223,30 +269,20 @@ export const invoiceCrudRouter = router({
         // Link each source document: InvoiceFile + DocumentLink rows.
         await linkDocumentsToInvoice(tx, ctx.organizationId, inv.id, documentIds);
 
+        // Notify the finance team through the outbox (see helper) so the
+        // send commits atomically with the invoice insert (exactly-once).
+        await enqueueInvoiceReceivedNotification(tx as unknown as OutboxTransactionalClient, {
+          organizationId: ctx.organizationId,
+          recipientUserIds: financeUserIds,
+          invoiceId: inv.id,
+          invoiceNumber: inv.invoiceNumber,
+          sellerName: invoiceData.sellerName ?? null,
+          totalMinor: invoiceData.totalMinor,
+          currency: invoiceData.currency,
+        });
+
         return inv;
       });
-
-      // Fire-and-forget: dispatch INVOICE_RECEIVED to finance team
-      const financeUserIds = await getFinanceTeamUserIds(ctx.db, ctx.organizationId);
-      if (financeUserIds.length > 0) {
-        dispatch({
-          organizationId: ctx.organizationId,
-          type: 'INVOICE_RECEIVED',
-          recipientUserIds: financeUserIds,
-          title: `New invoice received: ${invoice.invoiceNumber}`,
-          body: `From ${invoiceData.sellerName ?? 'Unknown'} - ${(invoiceData.totalMinor / 100).toFixed(2)} ${invoiceData.currency}`,
-          entityType: 'INVOICE',
-          entityId: invoice.id,
-          metadata: {
-            invoiceNumber: invoice.invoiceNumber,
-            contractorName: invoiceData.sellerName ?? 'Unknown',
-            amount: (invoiceData.totalMinor / 100).toFixed(2),
-            currency: invoiceData.currency,
-          },
-        }).catch(_err => {
-          /* fire-and-forget */
-        });
-      }
 
       void invalidateByPrefix(CacheKeys.dashboardPrefix(ctx.organizationId));
 

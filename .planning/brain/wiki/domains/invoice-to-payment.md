@@ -54,6 +54,7 @@ stateDiagram-v2
 
 - Match: `MATCHED` or `MANUALLY_CONFIRMED` before approval submit
 - Payment run blocked when compliance fails — `@contractor-ops/compliance-policy`
+- INVOICE_RECEIVED notification (`invoice-crud.ts` create) is enqueued through the outbox INSIDE the create tx (`enqueueNotificationOutboxEvent`, dedupKey `invoice-received:<id>`), not post-commit fire-and-forget — exactly-once. See [[notifications-and-reminders]]
 - [[patterns/tenant-and-audit]] on mutations
 - Intake upload (`invoice-intake/ingest.ts`): base64 string length is capped before `Buffer.from` decode (`ceil(INTAKE_MAX_FILE_BYTES / 3) * 4` chars) so an oversized payload is never materialized; the post-decode `INTAKE_MAX_FILE_BYTES` (5 MiB) check stays as a backstop. Both throw `FILE_TOO_LARGE`.
 

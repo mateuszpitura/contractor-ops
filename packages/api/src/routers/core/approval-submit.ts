@@ -12,8 +12,68 @@ import { createApprovalFlow, routeToChain } from '../../services/approval-engine
 import { writeAuditLog } from '../../services/audit-writer';
 import { syncApprovalSlaDeadline } from '../../services/calendar-deadline-sync';
 import { assertContractorPaymentEligibility } from '../../services/compliance-payment-gate';
-import { dispatch } from '../../services/notification-service';
+import type { OutboxTransactionalClient } from '../../services/outbox';
+import { enqueueNotificationOutboxEvent } from '../../services/outbox';
 import { buildAuditEvents, plain } from './approval-shared';
+
+/**
+ * Enqueue the APPROVAL_REQUEST notification for the first approver INSIDE the
+ * caller's transaction, so the send commits atomically with the flow + the
+ * invoice status flip and is delivered exactly-once by the outbox drain.
+ * No-op when the first step has no assigned approver.
+ */
+async function enqueueApprovalRequestNotification(
+  tx: TxClient,
+  input: {
+    organizationId: string;
+    flowId: string;
+    firstStep: { id: string; approverUserId: string | null; slaDeadline: Date | null } | null;
+    invoice: {
+      id: string;
+      invoiceNumber: string | null;
+      contractorId: string | null;
+      totalMinor: number;
+      currency: string;
+    };
+  },
+): Promise<void> {
+  const { firstStep, invoice } = input;
+  if (!firstStep?.approverUserId) return;
+
+  const contractor = invoice.contractorId
+    ? await tx.contractor.findUnique({
+        where: { id: invoice.contractorId },
+        select: { legalName: true },
+      })
+    : null;
+  const slaDeadline = firstStep.slaDeadline ? new Date(firstStep.slaDeadline).toISOString() : '';
+  const amount = minorToMajor(invoice.totalMinor, invoice.currency).toFixed(
+    minorUnitDigits(invoice.currency),
+  );
+
+  await enqueueNotificationOutboxEvent({
+    tx: tx as unknown as OutboxTransactionalClient,
+    event: {
+      organizationId: input.organizationId,
+      type: 'APPROVAL_REQUEST',
+      recipientUserIds: [firstStep.approverUserId],
+      title: `Approval requested for ${invoice.invoiceNumber}`,
+      body: `${contractor?.legalName ?? 'Unknown'} - ${amount} ${invoice.currency}. SLA: ${slaDeadline}`,
+      entityType: 'INVOICE',
+      entityId: invoice.id,
+      metadata: {
+        invoiceNumber: invoice.invoiceNumber,
+        contractorName: contractor?.legalName ?? 'Unknown',
+        amount,
+        currency: invoice.currency,
+        slaDeadline,
+        invoiceId: invoice.id,
+        flowId: input.flowId,
+      },
+    },
+    dedupKey: `approval-request:${firstStep.id}`,
+  });
+}
 
 export const approvalSubmitRouter = router({
   submitForApproval: tenantProcedure
@@ -72,50 +132,27 @@ export const approvalSubmitRouter = router({
           data: { status: 'APPROVAL_PENDING' },
         });
 
-        return { approvalFlow, invoice };
-      });
-
-      const firstStep = await ctx.db.approvalStep.findFirst({
-        where: { approvalFlowId: flow.approvalFlow.id, organizationId: ctx.organizationId },
-        orderBy: { stepOrder: 'asc' },
-      });
-      if (firstStep?.approverUserId) {
-        const inv = flow.invoice;
-        const contractor = inv.contractorId
-          ? await ctx.db.contractor.findUnique({
-              where: { id: inv.contractorId },
-              select: { legalName: true },
-            })
-          : null;
-
-        const slaDeadline = firstStep.slaDeadline
-          ? new Date(firstStep.slaDeadline).toISOString()
-          : '';
-
-        dispatch({
-          organizationId: ctx.organizationId,
-          type: 'APPROVAL_REQUEST',
-          recipientUserIds: [firstStep.approverUserId],
-          title: `Approval requested for ${inv.invoiceNumber}`,
-          body: `${contractor?.legalName ?? 'Unknown'} - ${minorToMajor(inv.totalMinor, inv.currency).toFixed(minorUnitDigits(inv.currency))} ${inv.currency}. SLA: ${slaDeadline}`,
-          entityType: 'INVOICE',
-          entityId: inv.id,
-          metadata: {
-            invoiceNumber: inv.invoiceNumber,
-            contractorName: contractor?.legalName ?? 'Unknown',
-            amount: minorToMajor(inv.totalMinor, inv.currency).toFixed(
-              minorUnitDigits(inv.currency),
-            ),
-            currency: inv.currency,
-            slaDeadline,
-            invoiceId: inv.id,
-            flowId: flow.approvalFlow.id,
-          },
-        }).catch(_err => {
-          /* fire-and-forget */
+        // The first step was just created by createApprovalFlow inside this
+        // tx, so it is visible here. Enqueue the approval-request
+        // notification INSIDE the tx (see helper) so it commits atomically
+        // with the flow + the invoice status flip and is delivered
+        // exactly-once by the outbox drain — not post-commit fire-and-forget.
+        const firstStep = await tx.approvalStep.findFirst({
+          where: { approvalFlowId: approvalFlow.id, organizationId: ctx.organizationId },
+          orderBy: { stepOrder: 'asc' },
         });
-      }
 
+        await enqueueApprovalRequestNotification(tx as TxClient, {
+          organizationId: ctx.organizationId,
+          flowId: approvalFlow.id,
+          firstStep,
+          invoice,
+        });
+
+        return { approvalFlow, invoice, firstStep };
+      });
+
+      const firstStep = flow.firstStep;
       if (firstStep?.slaDeadline) {
         void syncApprovalSlaDeadline(ctx.db, {
           organizationId: ctx.organizationId,

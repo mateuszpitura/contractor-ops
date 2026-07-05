@@ -41,6 +41,7 @@ flowchart LR
 
 - `requireTier` middleware on premium routers — server-side gate
 - Webhook signature verification on inbound Stripe events
+- Webhook notifications (payment-failed / trial / subscription-changed): `routeStripeEvent` collects a `NotificationEvent[]`; the route (`webhooks/stripe.ts`) enqueues each into the outbox INSIDE the Serializable tx (dedupKey `stripe:<eventId>:<i>`), not the old post-commit `dispatchStripeWebhookNotifications` — exactly-once. See [[domains/notifications-and-reminders]]
 
 ## Related
 

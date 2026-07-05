@@ -23,7 +23,7 @@
 import type { FastifyInstance } from 'fastify';
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
-const { constructEventSpy, routeEventSpy, dispatchSpy, transactionSpy, txStripeEvent } = vi.hoisted(
+const { constructEventSpy, routeEventSpy, enqueueSpy, transactionSpy, txStripeEvent } = vi.hoisted(
   () => {
     type StripeEventRow = { processedAt: Date | null } | null;
     const txStripeEvent = {
@@ -34,7 +34,7 @@ const { constructEventSpy, routeEventSpy, dispatchSpy, transactionSpy, txStripeE
     return {
       constructEventSpy: vi.fn(),
       routeEventSpy: vi.fn(),
-      dispatchSpy: vi.fn(),
+      enqueueSpy: vi.fn(),
       transactionSpy: vi.fn(),
       txStripeEvent,
     };
@@ -51,7 +51,10 @@ vi.mock('@contractor-ops/api/services/stripe-client', () => ({
 
 vi.mock('@contractor-ops/api/services/billing-webhook', () => ({
   routeStripeEvent: routeEventSpy,
-  dispatchStripeWebhookNotifications: dispatchSpy,
+}));
+
+vi.mock('@contractor-ops/api/services/outbox', () => ({
+  enqueueNotificationOutboxEvent: enqueueSpy,
 }));
 
 vi.mock('@contractor-ops/db', () => ({
@@ -97,7 +100,8 @@ afterAll(async () => {
 beforeEach(() => {
   constructEventSpy.mockReset();
   routeEventSpy.mockReset();
-  dispatchSpy.mockReset();
+  enqueueSpy.mockReset();
+  enqueueSpy.mockResolvedValue('oxe_test');
   transactionSpy.mockReset();
   txStripeEvent.findUnique.mockReset();
   txStripeEvent.upsert.mockReset();
@@ -141,10 +145,20 @@ describe('POST /webhooks/stripe', () => {
     expect(routeEventSpy).not.toHaveBeenCalled();
   });
 
-  it('first delivery runs the transaction, upserts the row, routes the event, stamps processedAt', async () => {
+  it('first delivery runs the transaction, upserts the row, routes the event, enqueues the outbox, stamps processedAt', async () => {
     constructEventSpy.mockReturnValue(freshEvent());
     txStripeEvent.findUnique.mockResolvedValue(null);
-    routeEventSpy.mockResolvedValue([{ kind: 'notification.send', userId: 'u1' }]);
+    routeEventSpy.mockResolvedValue([
+      {
+        organizationId: 'org_1',
+        type: 'SUBSCRIPTION_CHANGED',
+        recipientUserIds: ['u1'],
+        title: 't',
+        body: 'b',
+        entityType: 'ORGANIZATION',
+        entityId: 'org_1',
+      },
+    ]);
 
     const res = await app.inject({
       method: 'POST',
@@ -183,9 +197,17 @@ describe('POST /webhooks/stripe', () => {
         data: expect.objectContaining({ processedAt: expect.any(Date) }),
       }),
     );
-    // Notification dispatch fires AFTER tx commit (the route awaits the tx
-    // and only then calls dispatchStripeWebhookNotifications).
-    expect(dispatchSpy).toHaveBeenCalledTimes(1);
+    // Each routed notification is enqueued into the outbox INSIDE the tx
+    // (exactly-once), not dispatched fire-and-forget after commit. The tx
+    // client is threaded through so the row commits with the state change.
+    expect(enqueueSpy).toHaveBeenCalledTimes(1);
+    expect(enqueueSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        event: expect.objectContaining({ type: 'SUBSCRIPTION_CHANGED' }),
+        dedupKey: 'stripe:evt_test_1:0',
+        tx: expect.anything(),
+      }),
+    );
   });
 
   it('retry delivery (processedAt already set) is idempotent — no route, no dispatch', async () => {
@@ -207,7 +229,7 @@ describe('POST /webhooks/stripe', () => {
     // processing path inside it never fires.
     expect(transactionSpy).toHaveBeenCalledTimes(1);
     expect(routeEventSpy).not.toHaveBeenCalled();
-    expect(dispatchSpy).not.toHaveBeenCalled();
+    expect(enqueueSpy).not.toHaveBeenCalled();
     expect(txStripeEvent.upsert).not.toHaveBeenCalled();
     expect(txStripeEvent.update).not.toHaveBeenCalled();
   });
@@ -233,7 +255,7 @@ describe('POST /webhooks/stripe', () => {
     expect(body.skipped).toBe('late_delivery');
     expect(transactionSpy).not.toHaveBeenCalled();
     expect(routeEventSpy).not.toHaveBeenCalled();
-    expect(dispatchSpy).not.toHaveBeenCalled();
+    expect(enqueueSpy).not.toHaveBeenCalled();
   });
 
   it('settlement events bypass the 24h window (Stripe redelivers refunds + disputes for days)', async () => {

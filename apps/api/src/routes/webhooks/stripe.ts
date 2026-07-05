@@ -10,9 +10,11 @@
  *        - Upsert `StripeEvent { stripeEventId, eventType, payloadJson }`.
  *        - Skip processing if `processedAt` is already set (idempotency).
  *        - `routeStripeEvent` returns a queue of NotificationEvents.
+ *        - Enqueue each into the transactional outbox (same tx) so it
+ *          commits atomically with the state change and is delivered
+ *          exactly-once by the drain — a rollback drops the notification
+ *          with the write, a crash after commit still delivers via drain.
  *        - Mark processed before commit.
- *      Notifications dispatch AFTER commit so a tx rollback cannot send
- *      a phantom user-facing message.
  *   5. 500 on processing error so Stripe retries; 200 on success.
  *
  * Exempt from the CSRF origin guard (handled by HMAC signature verify
@@ -24,10 +26,9 @@
  * parsing on sibling routes.
  */
 
-import {
-  dispatchStripeWebhookNotifications,
-  routeStripeEvent,
-} from '@contractor-ops/api/services/billing-webhook';
+import { routeStripeEvent } from '@contractor-ops/api/services/billing-webhook';
+import type { OutboxTransactionalClient } from '@contractor-ops/api/services/outbox';
+import { enqueueNotificationOutboxEvent } from '@contractor-ops/api/services/outbox';
 import { stripe } from '@contractor-ops/api/services/stripe-client';
 import { prisma } from '@contractor-ops/db';
 import { createWebhookLogger } from '@contractor-ops/logger';
@@ -95,7 +96,7 @@ export function registerStripeWebhookRoute(app: FastifyInstance): void {
     }
 
     try {
-      const pendingNotifications = await prisma.$transaction(
+      const enqueuedNotifications = await prisma.$transaction(
         async tx => {
           const existing = await tx.stripeEvent.findUnique({
             where: { stripeEventId: event.id },
@@ -118,6 +119,21 @@ export function registerStripeWebhookRoute(app: FastifyInstance): void {
             tx as unknown as Parameters<typeof routeStripeEvent>[1],
           );
 
+          // Enqueue each notification into the transactional outbox INSIDE
+          // this transaction so it commits atomically with the StripeEvent
+          // state change and is delivered exactly-once by the drain — instead
+          // of a post-commit fire-and-forget that is silently lost if the
+          // process dies between commit and send. Stripe idempotency
+          // (StripeEvent unique + the processedAt guard above) already blocks
+          // re-enqueue on redelivery; the dedupKey is a second-line guard.
+          for (const [index, notification] of events.entries()) {
+            await enqueueNotificationOutboxEvent({
+              tx: tx as unknown as OutboxTransactionalClient,
+              event: notification,
+              dedupKey: `stripe:${event.id}:${index}`,
+            });
+          }
+
           await tx.stripeEvent.update({
             where: { stripeEventId: event.id },
             data: { processedAt: new Date() },
@@ -131,11 +147,10 @@ export function registerStripeWebhookRoute(app: FastifyInstance): void {
         },
       );
 
-      if (pendingNotifications.length > 0) {
-        await dispatchStripeWebhookNotifications(pendingNotifications);
-      }
-
-      log.info({ eventId: event.id, eventType: event.type }, 'event processed');
+      log.info(
+        { eventId: event.id, eventType: event.type, enqueued: enqueuedNotifications.length },
+        'event processed',
+      );
       metrics.increment('webhook.processed', 1, {
         provider: 'stripe',
         eventType: event.type,

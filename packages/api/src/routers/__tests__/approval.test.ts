@@ -133,6 +133,10 @@ vi.mock('../../services/notification-service', () => ({
   dispatch: vi.fn(async () => undefined),
 }));
 
+vi.mock('../../services/outbox', () => ({
+  enqueueNotificationOutboxEvent: vi.fn(async () => 'oxe_test'),
+}));
+
 vi.mock('../../services/calendar-deadline-sync', () => ({
   syncPaymentDueDeadline: vi.fn(async () => undefined),
   syncApprovalSlaDeadline: vi.fn(async () => undefined),

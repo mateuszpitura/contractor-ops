@@ -5,7 +5,11 @@ type: log
 
 # Wiki log (append only)
 
-## 2026-07-05 — 1042-S staff filing card + portal consent-gated download (Theme A HOLD resolved)
+## 2026-07-05 — Transactional outbox WIRED (INT-1-1, reliability S1)
+
+- The outbox (`services/outbox/`) was built-correct but completely unwired: zero production callers of `enqueueOutboxEvent`, no QStash schedule polling `/outbox/_drain`. Notifications went out post-commit fire-and-forget (`dispatch().catch()`) = at-most-once, lost on a crash between commit and dispatch.
+- **Infra:** new typed producer helper `enqueueNotificationOutboxEvent({tx, event, dedupKey})` (`services/outbox/index.ts`); new boot bootstrap `apps/api/src/lib/outbox-schedule.ts` `ensureOutboxDrainSchedule` (idempotent `schedules.create({scheduleId:'outbox-drain', cron:'* * * * *'})` + list-assert), called from `apps/api/src/index.ts` `main()` gated on `QSTASH_TOKEN`, non-fatal. Only event type remains `notification.dispatch` (all dispatch sites are notifications). Exactly-once path proven by a commit→skip-dispatch→drain test.
+- **Money-path sites** converted to enqueue INSIDE the existing `$transaction`: Stripe billing webhook (`apps/api/src/routes/webhooks/stripe.ts` — enqueues the `routeStripeEvent` notification queue before the tx commits, replaces the post-commit `dispatchStripeWebhookNotifications`), `approval-submit.ts` (APPROVAL_REQUEST), `invoice-crud.ts` (INVOICE_RECEIVED). Wiki: [[domains/notifications-and-reminders]], [[structure/key-services]], [[structure/apps]].
 
 - **Cross-phase HOLD resolved (Plan 09 Tasks 2-3):** with the P86 IRIS seam now on main, the staff 1042-S filing card + portal consent-gated recipient PDF are built, reusing the shared components verbatim (never rebuilt).
 - Backend: new `form-1042s-transmit.service` (`buildAndValidate1042S`, sibling of the shared `tax-filing-transmitter` for Pub 1187) + three `form1042s` procedures (`buildAndValidateXml` / `downloadValidatedXml` / `uploadAck`) mirroring the 1099 tail — idempotent download, ack via the shared `iris-ack-parser`, the Pub 1187 schema version as the `IrisSubmission` discriminator (no form-type migration), BUNDLE_UNAVAILABLE (non-throwing) until the human XSD lands. New portal `downloadForm1042S` gates the recipient 1042-S Copy B on the SAME e-delivery consent (IDOR-scoped, FTIN last-4).
