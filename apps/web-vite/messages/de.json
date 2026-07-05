@@ -5049,6 +5049,14 @@
       "drvExpiry": {
         "title": "DRV-Statusfeststellung läuft in {days} Tagen ab",
         "body": "Aktenzeichen {reference}, gültig bis {validTo}. Beginnen Sie mit dem Verlängerungsantrag — die DRV-Bearbeitung dauert üblicherweise 3–6 Monate."
+      },
+      "approvalOverdue": {
+        "title": "Genehmigung überfällig: {label}",
+        "body": "Diese Genehmigung ist {hours} Std. über der SLA-Frist und erfordert Ihre Entscheidung."
+      },
+      "approvalEscalated": {
+        "title": "Genehmigung eskaliert: {label}",
+        "body": "Ein früherer Genehmigungsschritt ist überfällig. Diese Anfrage wurde zur Prüfung an Sie eskaliert."
       }
     },
     "reminderEditor": {

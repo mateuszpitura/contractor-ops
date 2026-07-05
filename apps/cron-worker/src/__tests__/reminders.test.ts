@@ -3,7 +3,8 @@
  *
  * The handler fans out its sub-jobs inside one advisory-locked tx, running
  * every DB read/write on the lock-holding `tx` connection:
- * `evaluateReminderRules`, `detectOverdueTasks`, `detectDrvClearanceExpiries`.
+ * `evaluateReminderRules`, `detectOverdueTasks`, `detectDrvClearanceExpiries`,
+ * `detectOverdueApprovals`.
  *
  * Coverage:
  *   1. Advisory lock not acquired → ok=true + skipped.
@@ -11,6 +12,7 @@
  *   3. Transaction throws → ok=false + Sentry capture.
  *   4. A dispatch failure leaves the row PENDING → the next tick re-sends.
  *   5. A poison rule is isolated → sibling rules still process.
+ *   6. An approval step past its SLA → the assigned approver is notified.
  */
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -123,6 +125,7 @@ describe('remindersHandler', () => {
       ruleErrors: 0,
       overdueTasksNotified: 0,
       drvExpiriesNotified: 0,
+      overdueApprovalsNotified: 0,
       complianceReminderFires: 0,
       complianceReminderDigests: 0,
     });
@@ -228,5 +231,33 @@ describe('remindersHandler', () => {
     expect(result.details).toMatchObject({ processed: 2, sent: 1, ruleErrors: 1 });
     // The healthy rule still dispatched despite the poison rule throwing.
     expect(mockDispatch).toHaveBeenCalledTimes(1);
+  });
+
+  it('notifies the assigned approver when an approval step breaches its SLA', async () => {
+    tx.approvalStep.findMany.mockResolvedValue([
+      {
+        id: 'step1',
+        organizationId: 'org1',
+        approvalFlowId: 'flow1',
+        stepOrder: 1,
+        name: 'Finance review',
+        approverUserId: 'approver1',
+        slaDeadline: new Date(Date.now() - 5 * 60 * 60 * 1000),
+      },
+    ]);
+
+    const result = await remindersHandler(makeJobContext());
+
+    expect(result.ok).toBe(true);
+    expect(result.details).toMatchObject({ overdueApprovalsNotified: 1 });
+    expect(mockDispatch).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: 'APPROVAL_REQUEST',
+        entityType: 'APPROVAL_FLOW',
+        entityId: 'step1',
+        recipientUserIds: ['approver1'],
+        title: 'Notifications.reminders.approvalOverdue.title',
+      }),
+    );
   });
 });

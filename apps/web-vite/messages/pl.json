@@ -5049,6 +5049,14 @@
       "drvExpiry": {
         "title": "Decyzja DRV wygasa za {days} dni",
         "body": "Sygnatura {reference}, ważna do {validTo}. Rozpocznij wniosek o przedłużenie — rozpatrzenie przez DRV trwa zwykle 3–6 miesięcy."
+      },
+      "approvalOverdue": {
+        "title": "Zatwierdzenie przeterminowane: {label}",
+        "body": "To zatwierdzenie jest {hours} godz. po terminie SLA i wymaga Twojej decyzji."
+      },
+      "approvalEscalated": {
+        "title": "Zatwierdzenie eskalowane: {label}",
+        "body": "Wcześniejszy krok zatwierdzenia jest przeterminowany. Ten wniosek został eskalowany do Ciebie do przeglądu."
       }
     },
     "reminderEditor": {

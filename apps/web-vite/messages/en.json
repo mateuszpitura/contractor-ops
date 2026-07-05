@@ -5048,6 +5048,14 @@
       "drvExpiry": {
         "title": "DRV clearance expires in {days} days",
         "body": "Reference {reference}, valid until {validTo}. Begin the renewal filing — DRV processing typically takes 3-6 months."
+      },
+      "approvalOverdue": {
+        "title": "Approval overdue: {label}",
+        "body": "This approval is {hours}h past its SLA deadline and needs your decision."
+      },
+      "approvalEscalated": {
+        "title": "Approval escalated: {label}",
+        "body": "An earlier approval step is overdue. This request has been escalated to you for review."
       }
     },
     "reminderEditor": {

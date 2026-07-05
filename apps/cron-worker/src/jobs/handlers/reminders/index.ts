@@ -13,6 +13,8 @@
  *      with 24h dedup via the Notification table itself.
  *   3. `detectDrvClearanceExpiries()` — DRV clearance expiry sub-job (see
  *      ./drv-clearance-expiries.ts).
+ *   4. `detectOverdueApprovals()` — approval-SLA breach nudges + one-shot
+ *      escalation to the next chain step (see ./approval-sla.ts).
  *
  * Every sub-job runs on the lock-holding transaction connection (`tx`), so the
  * `pg_advisory_xact_lock` genuinely serializes the guarded reads/writes — a tx
@@ -37,6 +39,7 @@ import type { Logger } from 'pino';
 import { Sentry } from '../../../lib/sentry.js';
 import type { JobHandler } from '../../runner.js';
 import { executeComplianceReminderScan } from '../compliance-reminder.js';
+import { detectOverdueApprovals } from './approval-sla.js';
 import { detectDrvClearanceExpiries } from './drv-clearance-expiries.js';
 import { addDays, startOfDay } from './shared.js';
 import { executeWtLimitScan } from './wt-limit-scan.js';
@@ -470,6 +473,7 @@ export const remindersHandler: JobHandler = async ctx => {
             ruleErrors: 0,
             overdueTasksNotified: 0,
             drvExpiriesNotified: 0,
+            overdueApprovalsNotified: 0,
             idpProvenanceGced: 0,
             complianceReminderFires: 0,
             complianceReminderDigests: 0,
@@ -484,6 +488,7 @@ export const remindersHandler: JobHandler = async ctx => {
           ruleResults,
           overdueTasksNotified,
           drvExpiriesNotified,
+          overdueApprovalsNotified,
           idpProvenanceGced,
           complianceReminderResult,
           wtLimitScanResult,
@@ -500,6 +505,7 @@ export const remindersHandler: JobHandler = async ctx => {
           ),
           runIsolated(ctx.log, 'detect_overdue_tasks', () => detectOverdueTasks(tx), 0),
           runIsolated(ctx.log, 'detect_drv_expiries', () => detectDrvClearanceExpiries(tx), 0),
+          runIsolated(ctx.log, 'detect_overdue_approvals', () => detectOverdueApprovals(tx), 0),
           // Never rejects (internal try/catch), so it can't abort the others.
           gcIdpProvenance(ctx.log),
           // Never rejects (top-level try/catch in the helper),
@@ -522,6 +528,7 @@ export const remindersHandler: JobHandler = async ctx => {
           ruleErrors: ruleResults.errors,
           overdueTasksNotified,
           drvExpiriesNotified,
+          overdueApprovalsNotified,
           idpProvenanceGced,
           complianceReminderFires: complianceReminderResult.fires,
           complianceReminderDigests: complianceReminderResult.digests,
@@ -538,6 +545,7 @@ export const remindersHandler: JobHandler = async ctx => {
       metrics.gauge('cron.reminders.rule_errors', result.ruleErrors);
       metrics.gauge('cron.reminders.overdue_tasks', result.overdueTasksNotified);
       metrics.gauge('cron.reminders.drv_expiries', result.drvExpiriesNotified);
+      metrics.gauge('cron.reminders.overdue_approvals', result.overdueApprovalsNotified);
       metrics.gauge('cron.reminders.idp_provenance_gced', result.idpProvenanceGced);
       metrics.gauge('cron.reminders.compliance_reminder_fires', result.complianceReminderFires);
       metrics.gauge('cron.reminders.compliance_reminder_digests', result.complianceReminderDigests);

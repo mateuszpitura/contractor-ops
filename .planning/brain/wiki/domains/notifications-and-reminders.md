@@ -70,6 +70,7 @@ the Resend `Idempotency-Key` collapse a redrive to a single delivery →
 | Outbox service + helper | `packages/api/src/services/outbox/` (`enqueueNotificationOutboxEvent`, `drainOutboxBatch`) |
 | Drain route + schedule | `apps/api/src/routes/outbox.ts` + `apps/api/src/lib/outbox-schedule.ts` |
 | Reminder-rule cron | `cron-worker/.../reminders/index.ts` |
+| Approval-SLA cron | `cron-worker/.../reminders/approval-sla.ts` |
 | Compliance reminders | `apps/cron-worker/.../compliance-reminder.ts` |
 | DRV reminders | `cron-worker/.../reminders/drv-clearance-expiries.ts` |
 | UI | `apps/web-vite/src/components/notifications/` |
@@ -82,6 +83,7 @@ the Resend `Idempotency-Key` collapse a redrive to a single delivery →
 - Teams/Slack channels via [[integrations/teams]] framework
 - Outbox is single-event-type (`notification.dispatch`) today; add a type in `services/outbox/handlers.ts` before outboxing a non-notification side effect
 - **A `ReminderInstance` is skipped only when `SENT`, never merely because it exists.** The reminder cron (`reminders/index.ts`) re-dispatches any row still `PENDING` (a prior tick's `dispatch` threw) rather than treating "row present" as done — otherwise the `(reminderRuleId, entityType, entityId, scheduledFor)` unique would strand the reminder forever. Per-rule try/catch isolates a poison rule/org from the rest of the run.
+- **Approval-SLA breaches are surfaced by `reminders/approval-sla.ts`**, a reminders sub-job (`detectOverdueApprovals`) that nudges the assigned approver (`APPROVAL_REQUEST`) when an `ApprovalStep` passes `slaDeadline` and escalates to the next chain step after N daily breaches — see [[approvals-engine]]. Copy keys: `Notifications.reminders.approvalOverdue.*` / `approvalEscalated.*` (all four locales).
 
 ## Related
 
