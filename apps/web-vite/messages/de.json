@@ -9376,5 +9376,313 @@
     "reload": "Neu laden",
     "tinMask": "TIN endet auf {last4}",
     "adviserNote": "Die hier gezeigten Zahlen und Formulare müssen vor Verwendung von einem für die Jurisdiktion zuständigen Steuerberater geprüft werden."
+  },
+  "Leave": {
+    "pageTitle": "Urlaub",
+    "pageDescription": "Abwesenheitsanträge und Salden prüfen und Abwesenheiten für Ihr Team erfassen.",
+    "sectionLabel": "Urlaubsanträge",
+    "entityLabel": "Anträge",
+    "columns": {
+      "worker": "Mitarbeiter",
+      "type": "Urlaubsart",
+      "dates": "Zeitraum",
+      "days": "Tage",
+      "status": "Status",
+      "actions": "Aktionen"
+    },
+    "status": {
+      "PENDING": "Ausstehend",
+      "APPROVED": "Genehmigt",
+      "REJECTED": "Abgelehnt",
+      "CANCELLED": "Storniert"
+    },
+    "filters": {
+      "all": "Alle",
+      "PENDING": "Ausstehend",
+      "APPROVED": "Genehmigt",
+      "REJECTED": "Abgelehnt"
+    },
+    "actions": {
+      "approve": "Genehmigen",
+      "reject": "Ablehnen",
+      "requestClarification": "Rückfrage stellen",
+      "delegate": "Delegieren",
+      "recordSick": "Krankheit erfassen",
+      "submitRequest": "Antrag einreichen",
+      "viewDetails": "Details anzeigen"
+    },
+    "empty": {
+      "heading": "Keine Urlaubsanträge zu prüfen",
+      "body": "Genehmigte und ausstehende Abwesenheitsanträge Ihres Teams erscheinen hier. Neue Einreichungen werden automatisch an Sie weitergeleitet."
+    },
+    "filtered": {
+      "heading": "Keine Anträge entsprechen diesen Filtern.",
+      "clear": "Filter zurücksetzen"
+    },
+    "error": {
+      "message": "Die Urlaubsliste konnte nicht geladen werden. Prüfen Sie Ihre Verbindung und versuchen Sie es erneut.",
+      "retry": "Erneut versuchen"
+    },
+    "panel": {
+      "title": "Urlaubsantrag",
+      "detailsTitle": "Antragsdetails",
+      "worker": "Mitarbeiter",
+      "type": "Urlaubsart",
+      "startDate": "Startdatum",
+      "endDate": "Enddatum",
+      "requested": "Beantragt",
+      "submitted": "Eingereicht"
+    },
+    "balance": {
+      "title": "Urlaubssaldo",
+      "entitlement": "Anspruch",
+      "used": "Verbraucht",
+      "carryover": "Übertrag",
+      "remaining": "Verbleibend",
+      "afterTitle": "Saldo nach diesem Antrag",
+      "afterFormula": "{available} verfügbar − {requested} beantragt",
+      "remainingValue": "{days} Tage",
+      "insufficient": "Unzureichender Saldo",
+      "insufficientHint": "Dieser Antrag übersteigt den verfügbaren Saldo und kann nicht eingereicht werden."
+    },
+    "approvalRow": {
+      "type": "Urlaubsart",
+      "dateRange": "Zeitraum",
+      "days": "Tage",
+      "balanceAfter": "Saldo danach",
+      "conflict": "Konflikt",
+      "blackout": "Sperrzeitraum"
+    },
+    "reject": {
+      "heading": "Antrag ablehnen",
+      "label": "Begründung angeben (mind. 10 Zeichen)",
+      "placeholder": "Erläutern Sie, warum dieser Antrag abgelehnt wird…",
+      "minChars": "Bitte mindestens 10 Zeichen eingeben.",
+      "confirm": "Antrag ablehnen",
+      "cancel": "Abbrechen"
+    },
+    "sick": {
+      "trigger": "Krankheit erfassen",
+      "title": "Krankheit erfassen",
+      "description": "Dies erfasst eine Abwesenheit direkt und benachrichtigt den Mitarbeiter. Es durchläuft keine Genehmigung.",
+      "worker": "Mitarbeiter",
+      "workerPlaceholder": "Mitarbeiter auswählen",
+      "startDate": "Startdatum",
+      "endDate": "Enddatum",
+      "hours": "Stunden",
+      "hoursPlaceholder": "z. B. 8",
+      "note": "Notiz",
+      "noteOptional": "(optional)",
+      "notePlaceholder": "Kontext zu dieser Abwesenheit hinzufügen…",
+      "confirm": "Abwesenheit erfassen",
+      "submitting": "Wird erfasst…",
+      "cancel": "Abbrechen",
+      "validation": {
+        "workerRequired": "Mitarbeiter auswählen.",
+        "dateRequired": "Datum auswählen.",
+        "hoursRange": "Stunden zwischen 0,25 und 24 eingeben.",
+        "dateOrder": "Das Enddatum muss am oder nach dem Startdatum liegen."
+      }
+    },
+    "calendar": {
+      "title": "Teamkalender",
+      "sectionLabel": "Teamverfügbarkeit",
+      "viewMonth": "Monat",
+      "viewQuarter": "Quartal",
+      "conflict": "Konflikt",
+      "conflictTooltip": "{count} überschneidende Anträge an diesem Tag für {team}",
+      "capacity": "{percent}% abwesend",
+      "outOf": "{out} von {total} abwesend",
+      "holiday": "Feiertag",
+      "unassignedTeam": "Nicht zugeordnet",
+      "moreRequests": "+{count} weitere",
+      "legend": {
+        "title": "Kapazität",
+        "available": "Verfügbar",
+        "busy": "Ausgelastet",
+        "over": "Überlastet"
+      },
+      "empty": {
+        "heading": "Keine Abwesenheiten geplant",
+        "body": "Wenn Ihr Team Urlaub bucht oder Abwesenheiten erfasst, erscheint dies hier. Überschneidende Anträge werden automatisch markiert."
+      },
+      "error": {
+        "message": "Der Teamkalender konnte nicht geladen werden. Versuchen Sie es erneut.",
+        "retry": "Erneut versuchen"
+      },
+      "weekdays": {
+        "mon": "Mo",
+        "tue": "Di",
+        "wed": "Mi",
+        "thu": "Do",
+        "fri": "Fr",
+        "sat": "Sa",
+        "sun": "So"
+      },
+      "cellLabel": "{date}: {percent}% des Teams abwesend, {count} Anträge"
+    },
+    "toast": {
+      "sickRecorded": "Krankheit erfasst.",
+      "requestSubmitted": "Urlaubsantrag eingereicht.",
+      "sickError": "Diese Abwesenheit konnte nicht erfasst werden. Versuchen Sie es erneut.",
+      "requestError": "Dieser Antrag konnte nicht eingereicht werden. Versuchen Sie es erneut."
+    },
+    "notification": {
+      "approvalRequest": {
+        "title": "Urlaubsantrag wartet auf Genehmigung",
+        "body": "Ein Urlaubsantrag wurde eingereicht und wartet auf Ihre Genehmigung."
+      },
+      "sickRecorded": {
+        "title": "Krankheit erfasst",
+        "body": "Eine krankheitsbedingte Abwesenheit wurde für einen Mitarbeiter erfasst."
+      }
+    }
+  },
+  "EmployeeTime": {
+    "pageTitle": "Mitarbeiterzeiten",
+    "pageDescription": "Gesetzliche Arbeitszeit erfassen und Arbeitszeitgrenzen überwachen.",
+    "sectionLabel": "Zeiteinträge",
+    "entityLabel": "Einträge",
+    "summary": {
+      "thisWeek": "Stunden diese Woche",
+      "overtimeThisMonth": "Überstunden diesen Monat",
+      "limitStatus": "Grenzstatus",
+      "withinLimit": "Innerhalb der Grenze",
+      "approaching": "Grenze nähert sich",
+      "breached": "Grenze überschritten"
+    },
+    "columns": {
+      "date": "Datum",
+      "worked": "Gearbeitet",
+      "night": "Nacht",
+      "overtime": "Überstunden",
+      "weekendHoliday": "Wochenende / Feiertag",
+      "onCall": "Rufbereitschaft",
+      "absence": "Abwesenheit",
+      "actions": "Aktionen"
+    },
+    "form": {
+      "title": "Zeit erfassen",
+      "editTitle": "Zeiteintrag bearbeiten",
+      "description": "Tägliche Arbeitszeit erfassen. Gesetzliche Grenzen werden beim Speichern geprüft.",
+      "date": "Datum",
+      "datePlaceholder": "Datum wählen",
+      "hoursWorked": "Gearbeitete Stunden",
+      "nightHours": "Nachtstunden",
+      "overtime": "Überstunden",
+      "weekendHoliday": "Wochenende / Feiertag",
+      "onCall": "Rufbereitschaft (dyżur)",
+      "onCallLocation": "Ort der Rufbereitschaft",
+      "onCallLocationPlaceholder": "z. B. Zuhause, Einsatzort",
+      "absenceType": "Abwesenheitsart",
+      "absenceNone": "Keine (gearbeitet)",
+      "notes": "Notizen",
+      "notesOptional": "(optional)",
+      "notesPlaceholder": "Kontext zu diesem Eintrag hinzufügen…",
+      "save": "Eintrag speichern",
+      "saving": "Wird gespeichert…",
+      "saveAnyway": "Trotzdem speichern",
+      "cancel": "Abbrechen",
+      "hoursPlaceholder": "0",
+      "validation": {
+        "dateRequired": "Datum auswählen.",
+        "hoursRange": "Wert zwischen 0 und 24 Stunden eingeben."
+      }
+    },
+    "absenceKind": {
+      "VACATION": "Urlaub",
+      "SICK": "Krank",
+      "PARENTAL": "Elternzeit",
+      "BEREAVEMENT": "Trauerfall",
+      "STUDY": "Bildungsurlaub",
+      "UNPAID": "Unbezahlt",
+      "OTHER_JUSTIFIED": "Sonstige (entschuldigt)",
+      "UNJUSTIFIED": "Unentschuldigt"
+    },
+    "empty": {
+      "heading": "Noch keine Stunden erfasst",
+      "body": "Erfassen Sie hier tägliche Arbeitszeit, Überstunden und Nachtschichtstunden. Gesetzliche Grenzen werden beim Speichern geprüft."
+    },
+    "error": {
+      "message": "Dieser Zeiteintrag konnte nicht gespeichert werden. Versuchen Sie es erneut.",
+      "loadMessage": "Zeiteinträge konnten nicht geladen werden. Versuchen Sie es erneut.",
+      "retry": "Erneut versuchen"
+    },
+    "delete": {
+      "title": "Diesen Zeiteintrag löschen?",
+      "description": "Dies entfernt die für den Tag erfasste Zeit. Löschen ist nur vor der Sperrung des Eintrags möglich.",
+      "confirm": "Löschen",
+      "cancel": "Abbrechen"
+    },
+    "toast": {
+      "saved": "Zeiteintrag gespeichert.",
+      "deleted": "Zeiteintrag gelöscht."
+    },
+    "wtLimit": {
+      "title": "Arbeitszeitgrenze",
+      "approachingTitle": "Arbeitszeitgrenze nähert sich",
+      "breachTitle": "Arbeitszeitgrenze überschritten",
+      "viewRecord": "Zeiteintrag anzeigen",
+      "saveAnyway": "Trotzdem speichern",
+      "dismiss": "Schließen",
+      "daily": {
+        "approaching": "Hinweis — {name} nähert sich der Tagesgrenze von {limit} Std. ({actual} Std. erfasst). Sie können trotzdem speichern.",
+        "breach": "{name} hat {actual} Std. erfasst — über der Tagesgrenze von {limit} Std. Sie können trotzdem speichern."
+      },
+      "weekly": {
+        "approaching": "Hinweis — {name} nähert sich der Wochengrenze von {limit} Std. ({actual} Std. diese Woche). Sie können trotzdem speichern.",
+        "breach": "{name} hat diese Woche {actual} Std. erfasst — über der Wochengrenze von {limit} Std. Sie können trotzdem speichern."
+      },
+      "night": {
+        "approaching": "Hinweis — {name} nähert sich der Nachtarbeitsgrenze von {limit} Std. ({actual} Std. erfasst).",
+        "breach": "{name} hat {actual} Std. Nachtarbeit erfasst — über der Grenze von {limit} Std."
+      },
+      "notification": {
+        "title": "Arbeitszeitgrenze überschritten",
+        "body": "Ein oder mehrere Mitarbeiter haben eine gesetzliche Arbeitszeitgrenze überschritten."
+      }
+    }
+  },
+  "Ewidencja": {
+    "title": "Arbeitszeitnachweis (ewidencja czasu pracy)",
+    "sectionLabel": "KP §149 Nachweis",
+    "entityLabel": "Nachweise",
+    "generate": "Bericht erstellen",
+    "regenerate": "Neu erstellen",
+    "export": "Exportieren",
+    "exportPdf": "Als PDF exportieren",
+    "exportCsv": "Als CSV exportieren",
+    "archived": "Archiviert",
+    "archivedTooltip": "Unveränderlicher KP §149-Nachweis — kann nicht bearbeitet werden (3 Jahre aufbewahrt).",
+    "superseded": "Ersetzt am {date}",
+    "active": "Aktiv",
+    "columns": {
+      "period": "Zeitraum",
+      "version": "Version",
+      "status": "Status",
+      "generated": "Erstellt",
+      "generatedBy": "Erstellt von",
+      "actions": "Aktionen"
+    },
+    "empty": {
+      "heading": "Für diesen Zeitraum wurde kein Nachweis erstellt",
+      "body": "Erstellen Sie den KP §149-Arbeitszeitnachweis (ewidencja czasu pracy) für {employee}, {period}. Nach der Erstellung wird er archiviert und kann nicht bearbeitet werden."
+    },
+    "error": {
+      "message": "Das ewidencja-Archiv konnte nicht geladen werden. Versuchen Sie es erneut.",
+      "retry": "Erneut versuchen"
+    },
+    "regenerateConfirm": {
+      "title": "Nachweis neu erstellen?",
+      "description": "Beim Neuerstellen wird ein neuer unveränderlicher Snapshot erzeugt und der aktuelle als ersetzt markiert. Der alte Nachweis bleibt im Archiv. Fortfahren?",
+      "confirm": "Neu erstellen",
+      "cancel": "Abbrechen"
+    },
+    "chainTitle": "Versionsverlauf",
+    "versionLabel": "Version {version}",
+    "toast": {
+      "generated": "Arbeitszeitnachweis erstellt.",
+      "regenerated": "Arbeitszeitnachweis neu erstellt."
+    }
   }
 }

@@ -9376,5 +9376,313 @@
     "reload": "Odśwież",
     "tinMask": "TIN kończący się na {last4}",
     "adviserNote": "Kwoty i formularze pokazane tutaj wymagają weryfikacji przez doradcę podatkowego właściwego dla jurysdykcji, zanim na nich polegniesz."
+  },
+  "Leave": {
+    "pageTitle": "Urlopy",
+    "pageDescription": "Przeglądaj wnioski urlopowe i salda oraz rejestruj nieobecności swojego zespołu.",
+    "sectionLabel": "Wnioski urlopowe",
+    "entityLabel": "wniosków",
+    "columns": {
+      "worker": "Pracownik",
+      "type": "Rodzaj urlopu",
+      "dates": "Termin",
+      "days": "Dni",
+      "status": "Status",
+      "actions": "Akcje"
+    },
+    "status": {
+      "PENDING": "Oczekujący",
+      "APPROVED": "Zatwierdzony",
+      "REJECTED": "Odrzucony",
+      "CANCELLED": "Anulowany"
+    },
+    "filters": {
+      "all": "Wszystkie",
+      "PENDING": "Oczekujące",
+      "APPROVED": "Zatwierdzone",
+      "REJECTED": "Odrzucone"
+    },
+    "actions": {
+      "approve": "Zatwierdź",
+      "reject": "Odrzuć",
+      "requestClarification": "Poproś o wyjaśnienie",
+      "delegate": "Deleguj",
+      "recordSick": "Zarejestruj chorobę",
+      "submitRequest": "Złóż wniosek",
+      "viewDetails": "Zobacz szczegóły"
+    },
+    "empty": {
+      "heading": "Brak wniosków urlopowych do rozpatrzenia",
+      "body": "Zatwierdzone i oczekujące wnioski urlopowe Twojego zespołu pojawią się tutaj. Nowe zgłoszenia trafiają do Ciebie automatycznie."
+    },
+    "filtered": {
+      "heading": "Żaden wniosek nie pasuje do tych filtrów.",
+      "clear": "Wyczyść filtry"
+    },
+    "error": {
+      "message": "Nie udało się załadować listy urlopów. Sprawdź połączenie i spróbuj ponownie.",
+      "retry": "Spróbuj ponownie"
+    },
+    "panel": {
+      "title": "Wniosek urlopowy",
+      "detailsTitle": "Szczegóły wniosku",
+      "worker": "Pracownik",
+      "type": "Rodzaj urlopu",
+      "startDate": "Data rozpoczęcia",
+      "endDate": "Data zakończenia",
+      "requested": "Wnioskowano",
+      "submitted": "Złożono"
+    },
+    "balance": {
+      "title": "Saldo urlopowe",
+      "entitlement": "Wymiar",
+      "used": "Wykorzystano",
+      "carryover": "Przeniesienie",
+      "remaining": "Pozostało",
+      "afterTitle": "Saldo po tym wniosku",
+      "afterFormula": "{available} dostępne − {requested} wnioskowane",
+      "remainingValue": "{days} dni",
+      "insufficient": "Niewystarczające saldo",
+      "insufficientHint": "Ten wniosek przekracza dostępne saldo i nie może zostać złożony."
+    },
+    "approvalRow": {
+      "type": "Rodzaj urlopu",
+      "dateRange": "Termin",
+      "days": "Dni",
+      "balanceAfter": "Saldo po",
+      "conflict": "Konflikt",
+      "blackout": "Okres blokady"
+    },
+    "reject": {
+      "heading": "Odrzuć wniosek",
+      "label": "Podaj powód (min. 10 znaków)",
+      "placeholder": "Wyjaśnij, dlaczego ten wniosek został odrzucony…",
+      "minChars": "Wprowadź co najmniej 10 znaków.",
+      "confirm": "Odrzuć wniosek",
+      "cancel": "Anuluj"
+    },
+    "sick": {
+      "trigger": "Zarejestruj chorobę",
+      "title": "Zarejestruj chorobę",
+      "description": "Rejestruje nieobecność bezpośrednio i powiadamia pracownika. Nie przechodzi przez zatwierdzanie.",
+      "worker": "Pracownik",
+      "workerPlaceholder": "Wybierz pracownika",
+      "startDate": "Data rozpoczęcia",
+      "endDate": "Data zakończenia",
+      "hours": "Godziny",
+      "hoursPlaceholder": "np. 8",
+      "note": "Notatka",
+      "noteOptional": "(opcjonalnie)",
+      "notePlaceholder": "Dodaj kontekst tej nieobecności…",
+      "confirm": "Zarejestruj nieobecność",
+      "submitting": "Rejestrowanie…",
+      "cancel": "Anuluj",
+      "validation": {
+        "workerRequired": "Wybierz pracownika.",
+        "dateRequired": "Wybierz datę.",
+        "hoursRange": "Wprowadź godziny od 0,25 do 24.",
+        "dateOrder": "Data zakończenia musi być tego samego dnia lub po dacie rozpoczęcia."
+      }
+    },
+    "calendar": {
+      "title": "Kalendarz zespołu",
+      "sectionLabel": "Dostępność zespołu",
+      "viewMonth": "Miesiąc",
+      "viewQuarter": "Kwartał",
+      "conflict": "Konflikt",
+      "conflictTooltip": "{count} nakładających się wniosków tego dnia dla zespołu {team}",
+      "capacity": "{percent}% nieobecnych",
+      "outOf": "{out} z {total} nieobecnych",
+      "holiday": "Dzień ustawowo wolny",
+      "unassignedTeam": "Nieprzypisani",
+      "moreRequests": "+{count} więcej",
+      "legend": {
+        "title": "Dostępność",
+        "available": "Dostępny",
+        "busy": "Zajęty",
+        "over": "Przekroczono"
+      },
+      "empty": {
+        "heading": "Brak zaplanowanych nieobecności",
+        "body": "Gdy zespół zarezerwuje urlop lub zarejestruje nieobecność, pojawi się tutaj. Nakładające się wnioski są automatycznie oznaczane."
+      },
+      "error": {
+        "message": "Nie udało się załadować kalendarza zespołu. Spróbuj ponownie.",
+        "retry": "Spróbuj ponownie"
+      },
+      "weekdays": {
+        "mon": "Pon",
+        "tue": "Wt",
+        "wed": "Śr",
+        "thu": "Czw",
+        "fri": "Pt",
+        "sat": "Sob",
+        "sun": "Nd"
+      },
+      "cellLabel": "{date}: {percent}% zespołu nieobecnych, {count} wniosków"
+    },
+    "toast": {
+      "sickRecorded": "Chorobę zarejestrowano.",
+      "requestSubmitted": "Wniosek urlopowy złożony.",
+      "sickError": "Nie udało się zarejestrować tej nieobecności. Spróbuj ponownie.",
+      "requestError": "Nie udało się złożyć tego wniosku. Spróbuj ponownie."
+    },
+    "notification": {
+      "approvalRequest": {
+        "title": "Wniosek urlopowy oczekuje na zatwierdzenie",
+        "body": "Złożono wniosek urlopowy, który oczekuje na Twoje zatwierdzenie."
+      },
+      "sickRecorded": {
+        "title": "Chorobę zarejestrowano",
+        "body": "Zarejestrowano nieobecność chorobową pracownika."
+      }
+    }
+  },
+  "EmployeeTime": {
+    "pageTitle": "Czas pracy pracowników",
+    "pageDescription": "Rejestruj ustawowy czas pracy i monitoruj limity czasu pracy.",
+    "sectionLabel": "Wpisy czasu pracy",
+    "entityLabel": "wpisów",
+    "summary": {
+      "thisWeek": "Godziny w tym tygodniu",
+      "overtimeThisMonth": "Nadgodziny w tym miesiącu",
+      "limitStatus": "Status limitu",
+      "withinLimit": "W granicach limitu",
+      "approaching": "Zbliża się do limitu",
+      "breached": "Przekroczono limit"
+    },
+    "columns": {
+      "date": "Data",
+      "worked": "Przepracowane",
+      "night": "Nocne",
+      "overtime": "Nadgodziny",
+      "weekendHoliday": "Weekend / święto",
+      "onCall": "Dyżur",
+      "absence": "Nieobecność",
+      "actions": "Akcje"
+    },
+    "form": {
+      "title": "Zarejestruj czas",
+      "editTitle": "Edytuj wpis czasu",
+      "description": "Rejestruj dzienny czas pracy. Limity ustawowe są sprawdzane przy zapisie.",
+      "date": "Data",
+      "datePlaceholder": "Wybierz datę",
+      "hoursWorked": "Przepracowane godziny",
+      "nightHours": "Godziny nocne",
+      "overtime": "Nadgodziny",
+      "weekendHoliday": "Weekend / święto",
+      "onCall": "Dyżur",
+      "onCallLocation": "Miejsce dyżuru",
+      "onCallLocationPlaceholder": "np. Dom, Obiekt",
+      "absenceType": "Rodzaj nieobecności",
+      "absenceNone": "Brak (przepracowano)",
+      "notes": "Notatki",
+      "notesOptional": "(opcjonalnie)",
+      "notesPlaceholder": "Dodaj kontekst tego wpisu…",
+      "save": "Zapisz wpis",
+      "saving": "Zapisywanie…",
+      "saveAnyway": "Zapisz mimo to",
+      "cancel": "Anuluj",
+      "hoursPlaceholder": "0",
+      "validation": {
+        "dateRequired": "Wybierz datę.",
+        "hoursRange": "Wprowadź wartość od 0 do 24 godzin."
+      }
+    },
+    "absenceKind": {
+      "VACATION": "Urlop wypoczynkowy",
+      "SICK": "Chorobowe",
+      "PARENTAL": "Rodzicielski",
+      "BEREAVEMENT": "Okolicznościowy",
+      "STUDY": "Szkoleniowy",
+      "UNPAID": "Bezpłatny",
+      "OTHER_JUSTIFIED": "Inna (usprawiedliwiona)",
+      "UNJUSTIFIED": "Nieusprawiedliwiona"
+    },
+    "empty": {
+      "heading": "Nie zarejestrowano jeszcze godzin",
+      "body": "Rejestruj tutaj dzienny czas pracy, nadgodziny i godziny nocne. Limity ustawowe są sprawdzane przy zapisie."
+    },
+    "error": {
+      "message": "Nie udało się zapisać tego wpisu czasu. Spróbuj ponownie.",
+      "loadMessage": "Nie udało się załadować wpisów czasu. Spróbuj ponownie.",
+      "retry": "Spróbuj ponownie"
+    },
+    "delete": {
+      "title": "Usunąć ten wpis czasu?",
+      "description": "Usuwa zarejestrowany czas dla tego dnia. Usunięcie jest możliwe tylko przed zablokowaniem wpisu.",
+      "confirm": "Usuń",
+      "cancel": "Anuluj"
+    },
+    "toast": {
+      "saved": "Wpis czasu zapisany.",
+      "deleted": "Wpis czasu usunięty."
+    },
+    "wtLimit": {
+      "title": "Limit czasu pracy",
+      "approachingTitle": "Zbliża się limit czasu pracy",
+      "breachTitle": "Przekroczono limit czasu pracy",
+      "viewRecord": "Zobacz wpis czasu",
+      "saveAnyway": "Zapisz mimo to",
+      "dismiss": "Zamknij",
+      "daily": {
+        "approaching": "Uwaga — {name} zbliża się do dziennego limitu {limit} h (zarejestrowano {actual} h). Możesz mimo to zapisać.",
+        "breach": "{name} zarejestrował(a) {actual} h — powyżej dziennego limitu {limit} h. Możesz mimo to zapisać."
+      },
+      "weekly": {
+        "approaching": "Uwaga — {name} zbliża się do tygodniowego limitu {limit} h ({actual} h w tym tygodniu). Możesz mimo to zapisać.",
+        "breach": "{name} zarejestrował(a) w tym tygodniu {actual} h — powyżej tygodniowego limitu {limit} h. Możesz mimo to zapisać."
+      },
+      "night": {
+        "approaching": "Uwaga — {name} zbliża się do limitu pracy nocnej {limit} h (zarejestrowano {actual} h).",
+        "breach": "{name} zarejestrował(a) {actual} h pracy nocnej — powyżej limitu {limit} h."
+      },
+      "notification": {
+        "title": "Przekroczono limit czasu pracy",
+        "body": "Jeden lub więcej pracowników przekroczyło ustawowy limit czasu pracy."
+      }
+    }
+  },
+  "Ewidencja": {
+    "title": "Ewidencja czasu pracy",
+    "sectionLabel": "Ewidencja KP §149",
+    "entityLabel": "ewidencji",
+    "generate": "Generuj raport",
+    "regenerate": "Wygeneruj ponownie",
+    "export": "Eksportuj",
+    "exportPdf": "Eksportuj do PDF",
+    "exportCsv": "Eksportuj do CSV",
+    "archived": "Zarchiwizowana",
+    "archivedTooltip": "Niezmienna ewidencja KP §149 — nie można edytować (przechowywana 3 lata).",
+    "superseded": "Zastąpiona {date}",
+    "active": "Aktywna",
+    "columns": {
+      "period": "Okres",
+      "version": "Wersja",
+      "status": "Status",
+      "generated": "Wygenerowano",
+      "generatedBy": "Wygenerował(a)",
+      "actions": "Akcje"
+    },
+    "empty": {
+      "heading": "Nie wygenerowano ewidencji dla tego okresu",
+      "body": "Wygeneruj ewidencję czasu pracy KP §149 dla {employee}, {period}. Po wygenerowaniu jest archiwizowana i nie można jej edytować."
+    },
+    "error": {
+      "message": "Nie udało się załadować archiwum ewidencji. Spróbuj ponownie.",
+      "retry": "Spróbuj ponownie"
+    },
+    "regenerateConfirm": {
+      "title": "Wygenerować ewidencję ponownie?",
+      "description": "Ponowne wygenerowanie tworzy nowy niezmienny snapshot i oznacza bieżący jako zastąpiony. Stara ewidencja pozostaje w archiwum. Kontynuować?",
+      "confirm": "Wygeneruj ponownie",
+      "cancel": "Anuluj"
+    },
+    "chainTitle": "Historia wersji",
+    "versionLabel": "Wersja {version}",
+    "toast": {
+      "generated": "Ewidencja czasu pracy wygenerowana.",
+      "regenerated": "Ewidencja czasu pracy wygenerowana ponownie."
+    }
   }
 }

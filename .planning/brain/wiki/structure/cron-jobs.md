@@ -5,8 +5,10 @@ tags: [structure, cron, background]
 source_commit: 18d6df46b
 verify_with:
   - apps/cron-worker/src/jobs/handlers/
+  - apps/cron-worker/src/jobs/handlers/reminders/wt-limit-scan.ts
+  - packages/api/src/services/wt-limit-scan.ts
   - apps/api/src/lib/qstash-route.ts
-updated: 2026-07-01
+updated: 2026-07-05
 ---
 
 # Cron worker jobs
@@ -41,6 +43,7 @@ sequenceDiagram
 | `year-end-1099-reminder.ts` | notify-only 1099-NEC batch-due reminder (`module.us-expansion`; **never generates or transmits**; mid-January, deduped per tax year) | [[domains/us-tax-year-end-filing]] |
 | `classification-reassessment-triggers.ts` | IR35 triggers | [[domains/classification-ir35]] |
 | `reminders/` + `drv-clearance-expiries.ts` | DRV expiry | [[domains/classification-ir35]] |
+| `reminders/wt-limit-scan.ts` (`runWtLimitScan`) | daily working-time-limit scan — region fan-out, per-worker rolling weekly average, ONE `employee.wt_limit_breach` digest per recipient/day (region-prefixed dedup key); `module.workforce-employees` | [[domains/leave-and-time]] |
 | `token-refresh.ts` | OAuth token refresh | [[integrations/framework-core]] |
 | `org-definition-sync.ts` | org definitions | [[domains/settings-and-org-admin]] |
 | `trial-notifications.ts` | billing trial | [[domains/billing-and-feature-gates]] |

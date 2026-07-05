@@ -9,10 +9,14 @@ verify_with:
   - packages/db/src/worker-type.ts
   - packages/db/scripts/backfill-worker.ts
   - packages/api/src/services/personnel-classifier.ts
+  - packages/api/src/services/leave-balance.ts
+  - packages/api/src/services/wt-limit-check.ts
+  - packages/api/src/services/wt-limit-scan.ts
+  - packages/api/src/services/ewidencja-builder.ts
   - packages/db/src/retention-policy.ts
   - packages/compliance-policy/src/personnel-registry.ts
   - .planning/intel/file-roles.json
-updated: 2026-07-01
+updated: 2026-07-05
 ---
 
 # Key API services catalog
@@ -62,6 +66,10 @@ flowchart TB
 | workerType extension | `packages/db/src/worker-type.ts` | [[domains/worker-foundation]] — `withWorkerTypeDefault` chained outermost in the tenant client (`withWorkerTypeDefault(withSoftDelete(withTenantScope(...)))`); injects `workerType='CONTRACTOR'` on Worker reads unless the caller sets it (explicit-where-wins) |
 | Personnel retention resolver | `packages/db/src/retention-policy.ts` (`getPersonnelRetentionCutoff`) + `personnel-retention.ts` facade | [[domains/personnel-file]] — event-anchored resolver on the SHARED retention primitive (no parallel engine): per-rule anchor `HIRE_DATE\|TERMINATION_DATE\|DOCUMENT_DATE`, `anchor + RETENTION_YEARS[token]`, `max()` combinator (US I-9 `max(hire+3y, term+1y)`, 8 CFR 274a.2), indefinite-while-active (missing anchor → `retainUntil` null, never erasable — fail-closed). Years live only on `RETENTION_YEARS` (single source, 8 akta tokens); the section+rule registry is `packages/compliance-policy/src/personnel-registry.ts` (register-on-import, PL/DE/UK/US, `resolveSectionForDocumentType`). Both deletion chokepoints route personnel rows (soft-delete guard + data-purge cron akta-hold-aware sweep) |
 | Personnel document classifier | `packages/api/src/services/personnel-classifier.ts` | [[domains/personnel-file]] — `classifyPersonnelDocument`: deterministic taxonomy → `killswitch.ai-personnel-classifier`-gated Claude-Vision seam → `PENDING_REVIEW` admin step; thresholds `PERSONNEL_CLASSIFY_MIN_CONFIDENCE`=85 / `_MARGIN`=15; kill-switch off/unreachable → admin (no model call), **never blocks the persisted upload**; concrete Claude adapter injected as a seam (deferred → AI tail degrades to admin queue) |
+| Leave balance | `packages/api/src/services/leave-balance.ts` | [[domains/leave-and-time]] — `computeLeaveBalance(rows)` = Σ `LeaveLedgerEntry.minutes` (append-only ledger; corrections are reversing `ADJUSTMENT` rows) + `recomputeBalanceCache` per (worker, leaveType, year); never throws on a missing entitlement |
+| WT-limit sync check | `packages/api/src/services/wt-limit-check.ts` | [[domains/leave-and-time]] — pure per-jurisdiction `checkWtLimits` returning a NON-blocking `findings[]` (daily-ceiling / current-week heuristic) with dotted i18n copy-keys; the on-save half of WT alerting, never throws |
+| WT-limit daily scan | `packages/api/src/services/wt-limit-scan.ts` | [[domains/leave-and-time]] + [[structure/cron-jobs]] — `runWtLimitScan` fans out over regions, computes the true rolling weekly average, and dispatches ONE `employee.wt_limit_breach` digest per recipient/day, deduped by a region-prefixed key |
+| Ewidencja builder | `packages/api/src/services/ewidencja-builder.ts` | [[domains/leave-and-time]] — `buildEwidencjaSnapshot` freezes the KP §149 field set; `supersedeAndInsertEwidencja` INSERTs a superseding version (`version+1` + `previousSnapshotId`), never UPDATE (DB trigger `app.reject_ewidencja_update` enforces immutability) |
 
 ## Invariants
 

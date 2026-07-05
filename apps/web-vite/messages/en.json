@@ -9375,5 +9375,313 @@
     "reload": "Reload",
     "tinMask": "TIN ending {last4}",
     "adviserNote": "Figures and forms shown here need verification by a jurisdiction-specific tax adviser before you rely on them."
+  },
+  "Leave": {
+    "pageTitle": "Leave",
+    "pageDescription": "Review time-off requests, balances, and record absences for your team.",
+    "sectionLabel": "Leave requests",
+    "entityLabel": "requests",
+    "columns": {
+      "worker": "Employee",
+      "type": "Leave type",
+      "dates": "Dates",
+      "days": "Days",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "status": {
+      "PENDING": "Pending",
+      "APPROVED": "Approved",
+      "REJECTED": "Rejected",
+      "CANCELLED": "Cancelled"
+    },
+    "filters": {
+      "all": "All",
+      "PENDING": "Pending",
+      "APPROVED": "Approved",
+      "REJECTED": "Rejected"
+    },
+    "actions": {
+      "approve": "Approve",
+      "reject": "Reject",
+      "requestClarification": "Request clarification",
+      "delegate": "Delegate",
+      "recordSick": "Record sick leave",
+      "submitRequest": "Submit request",
+      "viewDetails": "View details"
+    },
+    "empty": {
+      "heading": "No leave requests to review",
+      "body": "Approved and pending time-off requests from your team appear here. New submissions route to you automatically."
+    },
+    "filtered": {
+      "heading": "No requests match these filters.",
+      "clear": "Clear filters"
+    },
+    "error": {
+      "message": "We couldn't load the leave queue. Check your connection and try again.",
+      "retry": "Try again"
+    },
+    "panel": {
+      "title": "Leave request",
+      "detailsTitle": "Request details",
+      "worker": "Employee",
+      "type": "Leave type",
+      "startDate": "Start date",
+      "endDate": "End date",
+      "requested": "Requested",
+      "submitted": "Submitted"
+    },
+    "balance": {
+      "title": "Leave balance",
+      "entitlement": "Entitlement",
+      "used": "Used",
+      "carryover": "Carryover",
+      "remaining": "Remaining",
+      "afterTitle": "Balance after this request",
+      "afterFormula": "{available} available − {requested} requested",
+      "remainingValue": "{days} days",
+      "insufficient": "Insufficient balance",
+      "insufficientHint": "This request exceeds the available balance and cannot be submitted."
+    },
+    "approvalRow": {
+      "type": "Leave type",
+      "dateRange": "Dates",
+      "days": "Days",
+      "balanceAfter": "Balance after",
+      "conflict": "Conflict",
+      "blackout": "Blackout period"
+    },
+    "reject": {
+      "heading": "Reject request",
+      "label": "Add a reason (min 10 characters)",
+      "placeholder": "Explain why this request is rejected…",
+      "minChars": "Please enter at least 10 characters.",
+      "confirm": "Reject request",
+      "cancel": "Cancel"
+    },
+    "sick": {
+      "trigger": "Record sick leave",
+      "title": "Record sick leave",
+      "description": "This records an absence directly and notifies the employee. It does not go through approval.",
+      "worker": "Employee",
+      "workerPlaceholder": "Select an employee",
+      "startDate": "Start date",
+      "endDate": "End date",
+      "hours": "Hours",
+      "hoursPlaceholder": "e.g. 8",
+      "note": "Note",
+      "noteOptional": "(optional)",
+      "notePlaceholder": "Add context for this absence…",
+      "confirm": "Record absence",
+      "submitting": "Recording…",
+      "cancel": "Cancel",
+      "validation": {
+        "workerRequired": "Select an employee.",
+        "dateRequired": "Select a date.",
+        "hoursRange": "Enter hours between 0.25 and 24.",
+        "dateOrder": "The end date must be on or after the start date."
+      }
+    },
+    "calendar": {
+      "title": "Team calendar",
+      "sectionLabel": "Team availability",
+      "viewMonth": "Month",
+      "viewQuarter": "Quarter",
+      "conflict": "Conflict",
+      "conflictTooltip": "{count} overlapping requests on this day for {team}",
+      "capacity": "{percent}% out",
+      "outOf": "{out} of {total} out",
+      "holiday": "Public holiday",
+      "unassignedTeam": "Unassigned",
+      "moreRequests": "+{count} more",
+      "legend": {
+        "title": "Capacity",
+        "available": "Available",
+        "busy": "Busy",
+        "over": "Over capacity"
+      },
+      "empty": {
+        "heading": "No time off scheduled",
+        "body": "When your team books vacation or records absences it shows here. Overlapping requests are flagged automatically."
+      },
+      "error": {
+        "message": "We couldn't load the team calendar. Try again.",
+        "retry": "Try again"
+      },
+      "weekdays": {
+        "mon": "Mon",
+        "tue": "Tue",
+        "wed": "Wed",
+        "thu": "Thu",
+        "fri": "Fri",
+        "sat": "Sat",
+        "sun": "Sun"
+      },
+      "cellLabel": "{date}: {percent}% of team out, {count} requests"
+    },
+    "toast": {
+      "sickRecorded": "Sick absence recorded.",
+      "requestSubmitted": "Leave request submitted.",
+      "sickError": "We couldn't record this absence. Try again.",
+      "requestError": "We couldn't submit this request. Try again."
+    },
+    "notification": {
+      "approvalRequest": {
+        "title": "Leave request awaiting approval",
+        "body": "A leave request has been submitted and is awaiting your approval."
+      },
+      "sickRecorded": {
+        "title": "Sick absence recorded",
+        "body": "A sick absence has been recorded for an employee."
+      }
+    }
+  },
+  "EmployeeTime": {
+    "pageTitle": "Employee time",
+    "pageDescription": "Record statutory working time and track working-time limits.",
+    "sectionLabel": "Time entries",
+    "entityLabel": "entries",
+    "summary": {
+      "thisWeek": "Hours this week",
+      "overtimeThisMonth": "Overtime this month",
+      "limitStatus": "Limit status",
+      "withinLimit": "Within limit",
+      "approaching": "Approaching limit",
+      "breached": "Over limit"
+    },
+    "columns": {
+      "date": "Date",
+      "worked": "Worked",
+      "night": "Night",
+      "overtime": "Overtime",
+      "weekendHoliday": "Weekend / holiday",
+      "onCall": "On-call",
+      "absence": "Absence",
+      "actions": "Actions"
+    },
+    "form": {
+      "title": "Record time",
+      "editTitle": "Edit time entry",
+      "description": "Record daily working time. Statutory limits are checked when you save.",
+      "date": "Date",
+      "datePlaceholder": "Pick a date",
+      "hoursWorked": "Hours worked",
+      "nightHours": "Night hours",
+      "overtime": "Overtime",
+      "weekendHoliday": "Weekend / holiday",
+      "onCall": "On-call (dyżur)",
+      "onCallLocation": "On-call location",
+      "onCallLocationPlaceholder": "e.g. Home, Site",
+      "absenceType": "Absence type",
+      "absenceNone": "None (worked)",
+      "notes": "Notes",
+      "notesOptional": "(optional)",
+      "notesPlaceholder": "Add context for this entry…",
+      "save": "Save entry",
+      "saving": "Saving…",
+      "saveAnyway": "Save anyway",
+      "cancel": "Cancel",
+      "hoursPlaceholder": "0",
+      "validation": {
+        "dateRequired": "Select a date.",
+        "hoursRange": "Enter a value between 0 and 24 hours."
+      }
+    },
+    "absenceKind": {
+      "VACATION": "Vacation",
+      "SICK": "Sick",
+      "PARENTAL": "Parental",
+      "BEREAVEMENT": "Bereavement",
+      "STUDY": "Study",
+      "UNPAID": "Unpaid",
+      "OTHER_JUSTIFIED": "Other (justified)",
+      "UNJUSTIFIED": "Unjustified"
+    },
+    "empty": {
+      "heading": "No hours logged yet",
+      "body": "Record daily working time, overtime, and night-shift hours here. Statutory limits are checked as you save."
+    },
+    "error": {
+      "message": "We couldn't save this time entry. Try again.",
+      "loadMessage": "We couldn't load time records. Try again.",
+      "retry": "Try again"
+    },
+    "delete": {
+      "title": "Delete this time entry?",
+      "description": "This removes the day's recorded time. Deletion is only allowed before the record is locked.",
+      "confirm": "Delete",
+      "cancel": "Cancel"
+    },
+    "toast": {
+      "saved": "Time entry saved.",
+      "deleted": "Time entry deleted."
+    },
+    "wtLimit": {
+      "title": "Working-time limit",
+      "approachingTitle": "Working-time limit approaching",
+      "breachTitle": "Working-time limit exceeded",
+      "viewRecord": "View time record",
+      "saveAnyway": "Save anyway",
+      "dismiss": "Dismiss",
+      "daily": {
+        "approaching": "Heads up — {name} is approaching the {limit}h daily limit ({actual}h logged). You can still save.",
+        "breach": "{name} logged {actual}h — over the {limit}h daily limit. You can still save."
+      },
+      "weekly": {
+        "approaching": "Heads up — {name} is approaching the {limit}h weekly limit ({actual}h this week). You can still save.",
+        "breach": "{name} logged {actual}h this week — over the {limit}h weekly limit. You can still save."
+      },
+      "night": {
+        "approaching": "Heads up — {name} is approaching the {limit}h night-work limit ({actual}h logged).",
+        "breach": "{name} logged {actual}h of night work — over the {limit}h limit."
+      },
+      "notification": {
+        "title": "Working-time limit exceeded",
+        "body": "One or more employees exceeded a statutory working-time limit."
+      }
+    }
+  },
+  "Ewidencja": {
+    "title": "Working-time record (ewidencja czasu pracy)",
+    "sectionLabel": "KP §149 record",
+    "entityLabel": "records",
+    "generate": "Generate report",
+    "regenerate": "Regenerate",
+    "export": "Export",
+    "exportPdf": "Export as PDF",
+    "exportCsv": "Export as CSV",
+    "archived": "Archived",
+    "archivedTooltip": "Immutable KP §149 record — cannot be edited (retained 3 years).",
+    "superseded": "Superseded {date}",
+    "active": "Active",
+    "columns": {
+      "period": "Period",
+      "version": "Version",
+      "status": "Status",
+      "generated": "Generated",
+      "generatedBy": "Generated by",
+      "actions": "Actions"
+    },
+    "empty": {
+      "heading": "No record generated for this period",
+      "body": "Generate the KP §149 working-time record (ewidencja czasu pracy) for {employee}, {period}. Once generated it is archived and cannot be edited."
+    },
+    "error": {
+      "message": "We couldn't load the ewidencja archive. Try again.",
+      "retry": "Try again"
+    },
+    "regenerateConfirm": {
+      "title": "Regenerate record?",
+      "description": "Regenerating creates a new immutable snapshot and marks the current one as superseded. The old record stays in the archive. Continue?",
+      "confirm": "Regenerate",
+      "cancel": "Cancel"
+    },
+    "chainTitle": "Version history",
+    "versionLabel": "Version {version}",
+    "toast": {
+      "generated": "Working-time record generated.",
+      "regenerated": "Working-time record regenerated."
+    }
   }
 }

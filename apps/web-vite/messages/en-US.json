@@ -38,5 +38,16 @@
   },
   "Tax1099Filing": {
     "download": "Download validated XML"
+  },
+  "Leave": {
+    "pageTitle": "Time off",
+    "actions": {
+      "recordSick": "Record sick day"
+    }
+  },
+  "EmployeeTime": {
+    "form": {
+      "onCall": "On-call"
+    }
   }
 }

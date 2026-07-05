@@ -88,6 +88,8 @@ export function getEntityUrl(entityType: string | null, entityId: string | null)
     WORKFLOW_RUN: `/workflows/${entityId}`,
     WORKFLOW_TASK_RUN: `/workflows`,
     ORGANIZATION: `/settings`,
+    LEAVE_REQUEST: `/leave`,
+    EMPLOYEE_TIME_RECORD: `/employee-time`,
   };
 
   return routes[entityType] ?? '/notifications';

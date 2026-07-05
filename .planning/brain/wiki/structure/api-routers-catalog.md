@@ -14,8 +14,11 @@ verify_with:
   - packages/api/src/routers/core/employee.ts
   - packages/api/src/routers/employee/employee-registry-router.ts
   - packages/api/src/routers/core/personnel-file/index.ts
+  - packages/api/src/routers/workforce/leave.ts
+  - packages/api/src/routers/workforce/employee-time.ts
+  - packages/api/src/routers/workforce/ewidencja.ts
   - packages/api/src/routers/finance/payment-core.ts
-updated: 2026-07-01
+updated: 2026-07-05
 ---
 
 # API routers catalog
@@ -114,7 +117,7 @@ Gated by `module.us-expansion` (or `QA_DEFAULT_ORG_ID`) in `root.ts`; each proce
 
 When flag OFF: runtime `METHOD_NOT_FOUND`; the portal W-form + 1099 procedures throw `FORBIDDEN`.
 
-## Conditional workforce (3 namespaces)
+## Conditional workforce (6 namespaces)
 
 Gated by `module.workforce-employees` (or `QA_DEFAULT_ORG_ID`) in `root.ts`; each procedure also re-checks the flag per request (`assertWorkforceEnabled` in `middleware/require-workforce-flag.ts`):
 
@@ -123,6 +126,9 @@ Gated by `module.workforce-employees` (or `QA_DEFAULT_ORG_ID`) in `root.ts`; eac
 | `worker` | shared cross-type worker reads (`list`, `getById`) — pass an explicit `workerType` so the `withWorkerTypeDefault` extension does not force-filter to CONTRACTOR; returns contractors + employees |
 | `employee` | employee reads (`list`, `workerType=EMPLOYEE`) + the registry surface `mergeRouters`-composed from `employee-registry-router.ts` (`employeeRegistryRouter`): `register` (`employee:create`, creates `Worker(EMPLOYEE)` + `EmployeeProfile` in one `$transaction`, per-market validation, encrypts 4 national IDs, `omit`s every `*Encrypted`, `employee.registered` audit), `revealPii` (`employeePii:read`, field-routed decrypt + `<field>.revealed` audit, **staff-only** — absent from `portalAppRouter`), `listReferenceLists` (`employee:read`, seeded non-PII tuples). Full model + flow: [[domains/employee-registry]] |
 | `personnelFile` | jurisdiction-correct personnel file (akta osobowe) `mergeRouters`-composed from `routers/core/personnel-file/{read,classify,erasure}.ts`. **read:** `getFile` (per-section `{ locked \| unlocked+documents }` + retention posture — the lock is decided at the permission layer by `hasSectionPermission` BEFORE querying, a locked section returns NO document payload/count; cross-org read → `null`) + `getRetentionSummary`. **classify:** `attachDocument` (`employee:update` — links a virus-scanned `Document`, runs the hybrid classifier, files ACTIVE or routes ambiguous → `PENDING_REVIEW`, never blocks the upload), `classifyApprove`/`classifyReject`/`pendingReviewQueue` (`compliance:override`, in-tx audit). **erasure:** `requestErasure` (`employee:delete` — per-section erased/retained dispositions, `fullErasureClaimed = retained.length===0`, `personnel_file.erasure_retained_under_statute` audit). Full model + flow: [[domains/personnel-file]] |
+| `leave` | employee leave: `submitLeaveRequest` (routes through the generic approval chain — `createApprovalFlow` `resourceType='LEAVE_REQUEST'`; approve/reject is the shared resourceType-gated procedure, not a fork), `recordSickAbsence` (direct negative `DEDUCTION` ledger row + `LEAVE_SICK_RECORDED` dispatch, zero ApprovalFlow), `getBalance` (Σ append-only `LeaveLedgerEntry`), `listRequests`, `listTeamCalendar` (per-team day buckets + ≥2-overlap conflict + seeded `PublicHoliday`), `leaveType.*`, `blackout.*`. All `employee` RBAC + `assertWorkforceEnabled`. Full model + flow: [[domains/leave-and-time]] |
+| `employeeTime` | day-grain statutory time: `upsertRecord` (one row per worker/`workDate` on the DISTINCT `EmployeeTimeRecord`, returns `{ record, findings }` — the sync `checkWtLimits` breach is a NON-blocking advisory, never a throw), `listRecords`, `weekSummary`. Never the contractor `time.*`. Full model + flow: [[domains/leave-and-time]] |
+| `ewidencja` | PL KP §149 working-time register: `generate` (INSERT-only via `buildEwidencjaSnapshot` + `supersedeAndInsertEwidencja` — regenerating INSERTs `version+1` + `previousSnapshotId`; a `BEFORE UPDATE` trigger `app.reject_ewidencja_update` rejects any UPDATE), `list`, `get` (highest-version = current). No edit/delete. Full model + flow: [[domains/leave-and-time]] |
 
 `contractor.*` is **not** gated — it is the always-on existing surface; the split adds `worker`/`employee` without changing the contractor route shape (locked by `contractor-contract-snapshot.test.ts`).
 
