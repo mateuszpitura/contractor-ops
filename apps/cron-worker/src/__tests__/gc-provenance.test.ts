@@ -64,7 +64,32 @@ import { makeJobContext } from './_helpers.js';
 
 beforeEach(() => {
   vi.clearAllMocks();
-  mockTransaction.mockImplementation(async (cb: (tx: unknown) => unknown) => cb({}));
+  // The reminders handler runs its rule + overdue + DRV sub-tasks on the
+  // advisory-lock-holding transaction connection, so the tx must expose the
+  // delegates they touch; route the spied finders through it and stub the rest.
+  mockTransaction.mockImplementation(async (cb: (tx: unknown) => unknown) =>
+    cb({
+      reminderRule: { findMany: mockReminderRuleFindMany },
+      workflowTaskRun: { findMany: mockWorkflowTaskRunFindMany },
+      statusfeststellungsverfahren: { findMany: mockStatusfestFindMany },
+      approvalStep: {
+        findMany: vi.fn().mockResolvedValue([]),
+        findFirst: vi.fn().mockResolvedValue(null),
+      },
+      contract: { findMany: vi.fn().mockResolvedValue([]) },
+      invoice: { findMany: vi.fn().mockResolvedValue([]) },
+      member: { findMany: vi.fn().mockResolvedValue([]) },
+      notification: {
+        count: vi.fn().mockResolvedValue(0),
+        findFirst: vi.fn().mockResolvedValue(null),
+      },
+      reminderInstance: {
+        create: vi.fn().mockResolvedValue({}),
+        findFirst: vi.fn().mockResolvedValue(null),
+        updateMany: vi.fn().mockResolvedValue({ count: 0 }),
+      },
+    }),
+  );
   mockTryAcquireLock.mockResolvedValue(true);
   mockReminderRuleFindMany.mockResolvedValue([]);
   mockWorkflowTaskRunFindMany.mockResolvedValue([]);
