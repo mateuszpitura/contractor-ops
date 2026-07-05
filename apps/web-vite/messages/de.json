@@ -4725,7 +4725,8 @@
     "classification": "Klassifizierung",
     "organization": "Organisation",
     "tax": "Steuern",
-    "workflow-roles": "Workflow-Rollen"
+    "workflow-roles": "Workflow-Rollen",
+    "taxFiling": "Steuermeldung"
   },
   "Notifications": {
     "popover": {
@@ -9229,6 +9230,42 @@
       "SAFE": "Weit unter der 1099-K-Meldeschwelle — nichts zu tun.",
       "APPROACHING": "Nähert sich der 1099-K-Meldeschwelle. Dies ist nur informativ — wir reichen keine 1099-K ein.",
       "OVER": "Über der 1099-K-Meldeschwelle. Ihre Zahlungsabwicklungsstelle — nicht diese Plattform — reicht eine etwaige 1099-K ein. Dies ist nur ein Hinweis."
+    }
+  },
+  "Tax1042SBatch": {
+    "pageTitle": "1042-S-Meldung",
+    "pageDescription": "Prüfen Sie den Steuereinbehalt für ausländische Empfänger, bevor Sie einreichen. Es wird nichts automatisch eingereicht — Sie prüfen zuerst.",
+    "heading": "1042-S-Stapelprüfung",
+    "generateCta": "1042-S-Stapel erstellen",
+    "regenerateCta": "Stapel neu erstellen",
+    "loadError": "Wir konnten dies nicht laden. Prüfen Sie Ihre Verbindung und versuchen Sie es erneut.",
+    "reload": "Neu laden",
+    "empty": {
+      "heading": "Noch kein 1042-S-Stapel für {taxYear}",
+      "body": "Erstellen Sie einen Stapel, um den Steuereinbehalt für ausländische Empfänger vor der Einreichung zu prüfen. Es wird nichts automatisch eingereicht — Sie prüfen zuerst."
+    },
+    "generatedAnnounce": "1042-S-Stapel für {taxYear} mit {count} Empfängern erstellt.",
+    "adviserNote": "Die hier angezeigten Zahlen, Formulare und Einstufungen müssen vor der Verwendung durch eine für die jeweilige Rechtsordnung zuständige Rechts- oder Steuerberatung überprüft werden.",
+    "correctedBadge": "Korrigiert",
+    "noFtin": "Keine FTIN hinterlegt",
+    "rateUnknown": "Nicht ermittelt",
+    "columns": {
+      "income": "Bruttoeinkommen (Feld 2)",
+      "rate": "Satz (Feld 3b)",
+      "withheld": "Einbehalten (Feld 7)"
+    },
+    "summary": {
+      "heading": "Stapelübersicht",
+      "taxYear": "Steuerjahr",
+      "recipients": "Empfänger",
+      "grossTotal": "Brutto gesamt (Feld 2)",
+      "withheldTotal": "Einbehalten gesamt (Feld 7)"
+    },
+    "treaty": {
+      "statutoryBadge": "30 % gesetzlich",
+      "statutory": "Kein vollständiges W-8 hinterlegt — Einbehalt zum gesetzlichen Satz von 30 % gemeldet. Reichen Sie ein gültiges W-8 ein, um einen Abkommenssatz zu beanspruchen.",
+      "appliedBadge": "Abkommenssatz",
+      "applied": "Abkommenssatz {rate} gemäß {article} angewendet (W-8 hinterlegt)."
     }
   }
 }
