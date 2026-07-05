@@ -121,6 +121,9 @@ export class ResendAdapter extends BaseAdapter {
       valid: true,
       eventType,
       organizationSlug,
+      // `svix-id` is Svix's canonical, unique-per-message idempotency key — the
+      // ingress route dedups WebhookDelivery rows on it.
+      providerEventId: svixId,
     };
   }
 

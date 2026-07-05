@@ -286,4 +286,63 @@ describe('POST /webhooks/:provider', () => {
     expect(mockCreate).not.toHaveBeenCalled();
     expect(mockPublishJSON).not.toHaveBeenCalled();
   });
+
+  it('persists providerEventId and collapses a duplicate upstream event (P2002 → 200 idempotent)', async () => {
+    mockGetAdapter.mockReturnValue({
+      slug: 'notion',
+      supportsWebhooks: true,
+      verifyWebhookSignature: vi.fn(() => ({
+        valid: true,
+        organizationId: 'org-1',
+        eventType: 'invoice.paid',
+        providerEventId: 'evt_dup',
+      })),
+    });
+    const p2002 = Object.assign(new Error('Unique constraint failed'), { code: 'P2002' });
+    mockCreate.mockRejectedValueOnce(p2002);
+
+    const res = await post('notion', JSON.stringify({ id: 'evt_dup', type: 'invoice.paid' }));
+    expect(res.statusCode).toBe(200);
+    const body = JSON.parse(res.body) as { idempotent?: boolean };
+    expect(body.idempotent).toBe(true);
+
+    expect(mockCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ providerEventId: 'evt_dup' }),
+      }),
+    );
+    // The duplicate must not be re-enqueued — the original row already was.
+    expect(mockPublishJSON).not.toHaveBeenCalled();
+  });
+
+  it('keeps the delivery RECEIVED (not FAILED) when QStash publish fails so the reaper replays it', async () => {
+    mockGetAdapter.mockReturnValue({
+      slug: 'notion',
+      supportsWebhooks: true,
+      verifyWebhookSignature: vi.fn(() => ({
+        valid: true,
+        organizationId: 'org-1',
+        eventType: 'invoice.paid',
+      })),
+    });
+    mockPublishJSON.mockRejectedValueOnce(new Error('qstash unreachable'));
+
+    const res = await post('notion', JSON.stringify({ id: 'evt_2', type: 'invoice.paid' }));
+    expect(res.statusCode).toBe(200);
+
+    // The row is annotated with the error but stays RECEIVED — the reaper only
+    // replays RECEIVED/PROCESSING rows; flipping to FAILED here would park it.
+    expect(mockUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: 'del-1' },
+        data: expect.objectContaining({
+          lastError: expect.stringContaining('QStash publish failed'),
+        }),
+      }),
+    );
+    const updateCalls = mockUpdate.mock.calls as unknown as Array<
+      [{ data: Record<string, unknown> }]
+    >;
+    expect(updateCalls[0]?.[0]?.data.deliveryStatus).toBeUndefined();
+  });
 });

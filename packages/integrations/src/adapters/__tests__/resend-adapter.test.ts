@@ -70,6 +70,7 @@ describe('ResendAdapter', () => {
       expect(r.valid).toBe(true);
       expect(r.eventType).toBe('email.received');
       expect(r.organizationSlug).toBe('acme');
+      expect(r.providerEventId).toBe('msg_1');
       expect(mockVerify).toHaveBeenCalledWith(
         expect.objectContaining({
           payload: '{"x":1}',

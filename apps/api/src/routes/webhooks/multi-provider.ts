@@ -15,9 +15,15 @@
  * (Slack) or a slug lookup (Resend). Both hit the Upstash cache via
  * `resolveSlackConnectionByTeamId` / `resolveOrgIdBySlug`.
  *
- * QStash publish failures mark the WebhookDelivery row as FAILED and still
- * return 2xx so the provider does not redeliver (the row is durable; the
- * dead-letter replay cron picks it up).
+ * QStash publish failures leave the WebhookDelivery row RECEIVED (error
+ * recorded) and still return 2xx so the provider does not redeliver. The row
+ * is durable and un-processed, so the job-health reaper replays it on its
+ * normal stale-RECEIVED backoff — FAILED is reserved for terminal reaper
+ * exhaustion, so a transient publish failure must not pre-empt it there.
+ *
+ * Duplicate upstream deliveries collapse via the DB-unique on
+ * (provider, providerEventId): the second insert hits P2002 and the route
+ * 200-OKs it as idempotent.
  */
 
 import { prisma } from '@contractor-ops/db';
@@ -39,6 +45,16 @@ import {
 const log = createWebhookLogger('generic');
 
 const PER_CONNECTION_SECRET_PROVIDERS = new Set(['jira', 'linear']);
+
+/** Prisma unique-constraint violation (used for webhook-delivery dedup). */
+function isUniqueConstraintViolation(err: unknown): boolean {
+  return (
+    typeof err === 'object' &&
+    err !== null &&
+    'code' in err &&
+    (err as { code?: unknown }).code === 'P2002'
+  );
+}
 
 interface ConnectionConfigWithWebhookSecret {
   webhookSecret?: string | null;
@@ -245,15 +261,22 @@ async function enqueueWebhookProcessing(deliveryId: string, provider: string): P
       tags: { 'webhook.provider': provider, 'webhook.stage': 'qstash-publish' },
       extra: { deliveryId, requestId: getRequestId() },
     });
+    // Keep the row RECEIVED (do NOT flip to FAILED): the event was accepted
+    // but never handed to the async processor, which is exactly the
+    // stale-RECEIVED case the reaper replays. FAILED is terminal from the
+    // reaper's perspective, so flipping here would park the row. Record the
+    // error so on-call has a fingerprint on the still-replayable row.
+    const message =
+      `QStash publish failed: ${queueError instanceof Error ? queueError.message : String(queueError)}`.slice(
+        0,
+        500,
+      );
     await prisma.webhookDelivery.update({
       where: { id: deliveryId },
       data: {
-        deliveryStatus: 'FAILED',
-        errorMessage:
-          `QStash publish failed: ${queueError instanceof Error ? queueError.message : String(queueError)}`.slice(
-            0,
-            500,
-          ),
+        lastErrorAt: new Date(),
+        lastError: message,
+        errorMessage: message,
       },
     });
   }
@@ -349,22 +372,39 @@ export function registerMultiProviderWebhookRoute(app: FastifyInstance): void {
       return reply.code(200).send({ received: true, persisted: false });
     }
 
-    const delivery = await prisma.webhookDelivery.create({
-      data: {
-        organizationId: org.orgId,
-        provider: adapter.slug.toUpperCase() as never,
-        eventType: verification.eventType ?? 'UNKNOWN',
-        signatureValid: true,
-        payloadJson: payloadJson as never,
-        deliveryStatus: 'RECEIVED',
-        integrationConnectionId: org.connectionId,
-      },
-    });
+    let delivery: { id: string };
+    try {
+      delivery = await prisma.webhookDelivery.create({
+        data: {
+          organizationId: org.orgId,
+          provider: adapter.slug.toUpperCase() as never,
+          eventType: verification.eventType ?? 'UNKNOWN',
+          signatureValid: true,
+          payloadJson: payloadJson as never,
+          deliveryStatus: 'RECEIVED',
+          integrationConnectionId: org.connectionId,
+          providerEventId: verification.providerEventId ?? null,
+        },
+      });
+    } catch (createErr) {
+      // DB-enforced dedup on (provider, providerEventId): a duplicate upstream
+      // delivery collapses to the first row (P2002 on the second insert). The
+      // first request already enqueued processing, so this one is a no-op.
+      if (isUniqueConstraintViolation(createErr)) {
+        log.info(
+          { provider, providerEventId: verification.providerEventId },
+          'duplicate upstream webhook event — collapsed to existing delivery row',
+        );
+        return reply.code(200).send({ received: true, idempotent: true });
+      }
+      throw createErr;
+    }
 
-    // Safe-swallow: QStash publish failure marks the row FAILED but we
-    // still return 2xx so the provider doesn't redeliver and create a
-    // second WebhookDelivery row (the at-most-once-per-row invariant
-    // `_process` relies on for claim-update idempotency).
+    // Safe-swallow: a QStash publish failure leaves the row RECEIVED (error
+    // recorded) but we still return 2xx so the provider doesn't redeliver and
+    // create a second WebhookDelivery row (the at-most-once-per-row invariant
+    // `_process` relies on for claim-update idempotency); the reaper replays
+    // the un-processed RECEIVED row.
     await enqueueWebhookProcessing(delivery.id, provider);
 
     if (isSlackViewSubmission) {

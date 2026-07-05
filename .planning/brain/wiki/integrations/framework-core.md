@@ -2,13 +2,15 @@
 title: Integration framework core
 type: integration
 tags: [integrations, adapters, oauth]
-source_commit: 19f747bca80fe58d162d3e8c3967ec553e057151
+source_commit: 3e4749ae7
 verify_with:
   - packages/integrations/src/registry.ts
   - packages/integrations/src/adapters/register-all.ts
   - packages/integrations/src/services/health-service.ts
   - packages/integrations/src/services/user-source-registry.ts
-updated: 2026-06-10
+  - apps/api/src/routes/webhooks/multi-provider.ts
+  - packages/integrations/src/types/webhook.ts
+updated: 2026-07-05
 ---
 
 # Integration framework core
@@ -46,6 +48,7 @@ flowchart LR
 | User source (onboarding) | `services/user-source-registry.ts` — JIRA/LINEAR/GWS/SLACK directory fetch |
 | Generic Slack | `integration` router + `slack-adapter.ts` |
 | Inbound webhooks | `apps/api/src/plugins/webhooks.ts` |
+| Multi-provider ingress | `apps/api/src/routes/webhooks/multi-provider.ts` — verify → persist `WebhookDelivery` → QStash |
 | Staff UI | `apps/web-vite/src/components/integrations/` |
 
 ## UI surface
@@ -57,6 +60,8 @@ flowchart LR
 - New provider: adapter + `register-all` + tRPC router + UI section
 - External JSON: `safeParse` — no bare `as` ([[patterns/validators-boundaries]])
 - Webhook routes guarded — `pnpm check:webhook-routes`
+- **Inbound webhook dedup = `WebhookDelivery.providerEventId`** — the ingress route persists a unique-per-delivery id from the VERIFIED payload (`WebhookVerificationResult.providerEventId`; e.g. Resend/Svix `svix-id`). DB-unique `(provider, providerEventId)` collapses a duplicate upstream delivery: the second insert hits P2002 → route 200-OKs it. Populate it only where a reliable per-event id exists — a key stable across distinct events (e.g. DocuSign `envelopeId`) would drop legitimate deliveries, so those providers leave it unset (NULLs never collide → dedup simply off).
+- **QStash publish failure leaves the row `RECEIVED`** (error recorded on `lastError`), NOT `FAILED` — the row is un-processed, so the `job-health` reaper replays it on its stale-`RECEIVED` backoff. `FAILED` is reserved for terminal reaper exhaustion; flipping there at ingress would park the row forever.
 
 ## Related
 
