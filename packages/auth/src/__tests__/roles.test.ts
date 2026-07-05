@@ -73,10 +73,13 @@ describe('roles', () => {
     }
   });
 
-  it('admin matches owner on all resources EXCEPT workflow override_blocking_task', () => {
+  it('admin matches owner on all resources EXCEPT workflow override_blocking_task + public-API-only reads', () => {
     // workflow:override_blocking_task is OWNER-only; admin retains every other permission owner has.
+    // classification/auditLog are public-REST read gates consumed by API keys + owner only —
+    // deliberately NOT granted to admin (or any named role).
     const owner = roles.owner.statements;
     const admin = roles.admin.statements;
+    const ownerOnlyResources = new Set(['classification', 'auditLog']);
     for (const resource of Object.keys(owner)) {
       const ownerActions = (owner[resource as keyof typeof owner] ?? []) as readonly string[];
       const adminActions = (admin[resource as keyof typeof admin] ?? []) as readonly string[];
@@ -85,6 +88,8 @@ describe('roles', () => {
         const expected = ownerActions.filter(a => a !== 'override_blocking_task');
         expect([...adminActions].sort()).toEqual([...expected].sort());
         expect(adminActions).not.toContain('override_blocking_task');
+      } else if (ownerOnlyResources.has(resource)) {
+        expect(adminActions).toEqual([]);
       } else {
         expect([...adminActions].sort()).toEqual([...ownerActions].sort());
       }

@@ -62,6 +62,11 @@ export const accessControlStatement = {
   employeeFileC: ['read', 'write'],
   employeeFileD: ['read', 'write'],
   'admin:boe-rate': ['read', 'write'],
+  // Public REST read gate for worker-classification determinations. Read-only:
+  // the API exposes classification results, never a write/verdict surface.
+  classification: ['read'],
+  // Public REST read gate for the immutable audit trail (append-only log).
+  auditLog: ['read'],
 } as const;
 
 export const ac = createAccessControl(accessControlStatement);
