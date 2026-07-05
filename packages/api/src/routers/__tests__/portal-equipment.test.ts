@@ -61,6 +61,10 @@ const { mockPrisma } = vi.hoisted(() => {
       upsert: vi.fn(),
     },
     $transaction: vi.fn(async (fn: (tx: Rec) => Promise<unknown>) => fn(mockPrisma)),
+    // The transactional outbox enqueues via `$executeRawUnsafe` on the tx
+    // client (EQUIPMENT_RETURN_REQUESTED on create).
+    $executeRaw: vi.fn(async () => 1),
+    $executeRawUnsafe: vi.fn(async () => 1),
   };
 
   return { mockPrisma };

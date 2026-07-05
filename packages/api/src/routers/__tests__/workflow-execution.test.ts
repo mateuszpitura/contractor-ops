@@ -83,6 +83,10 @@ const { mockPrisma, ORG_ID, USER_ID, RUN_ID, TASK_RUN_ID, TEMPLATE_ID, CONTRACTO
         if (typeof fnOrArray === 'function') return fnOrArray(mockPrisma);
         return Promise.all(fnOrArray);
       }),
+      // The transactional outbox enqueues via `$executeRawUnsafe` on the tx
+      // client (TASK_ASSIGNED on workflow start).
+      $executeRaw: vi.fn(async () => 1),
+      $executeRawUnsafe: vi.fn(async () => 1),
     };
 
     return { mockPrisma, ORG_ID, USER_ID, RUN_ID, TASK_RUN_ID, TEMPLATE_ID, CONTRACTOR_ID };

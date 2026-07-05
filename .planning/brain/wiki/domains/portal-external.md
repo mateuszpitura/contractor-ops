@@ -2,7 +2,7 @@
 title: Contractor portal
 type: domain
 tags: [portal, external, contractors]
-source_commit: 336516f5da666c16acff84e412a3d338db8bbbb8
+source_commit: b618a39e5
 verify_with:
   - packages/api/src/portal-root.ts
   - packages/api/src/routers/portal/
@@ -49,6 +49,7 @@ The beneficial owner self-certifies a US tax form from the portal — the legall
 
 - [[patterns/portal-auth]] — not in `appRouter`
 - Scoped to `ctx.contractorId` + org from validated session
+- `requestReturn` (portal equipment) enqueues the `EQUIPMENT_RETURN_REQUESTED` admin notification into the transactional outbox **inside** its create tx (`enqueueNotificationDispatch({ tx })`, dedupKey `EQUIPMENT_RETURN_REQUESTED:${returnRequestId}`) — delivered exactly-once by the drain (org-channel alert; empty per-user list by design). See [[patterns/transactional-outbox]].
 - `updateContactInfo` runs in a `$transaction`: reads the prior contact snapshot (org-scoped `findFirst`, NOT_FOUND if absent), updates, then writes a same-tx `writeAuditLog` row (`portal.contact.update`, old/new contact values) — see [[patterns/audit-log]]
 
 ## Related

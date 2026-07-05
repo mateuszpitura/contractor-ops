@@ -62,6 +62,10 @@ const { mockPrisma, mockInPostCreateShipment, mockDispatch } = vi.hoisted(() => 
     contractor: { count: vi.fn(async () => 0) },
     member: { findFirst: vi.fn(async () => ({ role: 'admin' })) },
     $transaction: vi.fn(async (fn: (tx: Rec) => Promise<unknown>) => fn(mockPrisma)),
+    // The transactional outbox enqueues via `$executeRawUnsafe` on the tx
+    // client (EQUIPMENT_RETURN_APPROVED / _REJECTED notifications).
+    $executeRaw: vi.fn(async () => 1),
+    $executeRawUnsafe: vi.fn(async () => 1),
   };
 
   return {

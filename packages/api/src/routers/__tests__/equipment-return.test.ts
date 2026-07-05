@@ -92,6 +92,10 @@ const { mockPrisma, mockInPostClient } = vi.hoisted(() => {
       }
       return fnOrArray;
     }),
+    // The transactional outbox enqueues via `$executeRawUnsafe` on the tx
+    // client (EQUIPMENT_RETURN_REQUESTED on portal return-request create).
+    $executeRaw: vi.fn(async () => 1),
+    $executeRawUnsafe: vi.fn(async () => 1),
   };
 
   const mockInPostClient = {

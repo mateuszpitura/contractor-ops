@@ -2,7 +2,7 @@
 title: Equipment logistics
 type: domain
 tags: [equipment, shipments, couriers]
-source_commit: 19f747bca80fe58d162d3e8c3967ec553e057151
+source_commit: b618a39e5
 verify_with:
   - packages/api/src/routers/equipment/
   - packages/api/src/services/courier/
@@ -29,6 +29,7 @@ Equipment CRUD, contractor assignment, shipment tracking (InPost/DPD/UPS), retur
 - Shipment create / status event / delete — `auditedMutation` + `auditMutationCtx` (same txn as audit row)
 - Return approve / reject — DB writes + audit in one txn (InPost label call stays pre-txn)
 - Return notifications (APPROVED/REJECTED/REQUESTED, `equipment-returns.ts` + `portal-equipment-router.ts`) are enqueued through the outbox INSIDE that same txn (`enqueueNotificationOutboxEvent`, dedupKey `equipment-return-*:<id>`) — exactly-once, not post-commit fire-and-forget. See [[notifications-and-reminders]]
+- Return approve / reject — DB writes + audit in one txn (InPost label call stays pre-txn); the `EQUIPMENT_RETURN_APPROVED` / `_REJECTED` contractor notification is now enqueued into the transactional outbox **inside** that `auditedMutation` tx (`enqueueNotificationDispatch({ tx })`, dedupKey `EQUIPMENT_RETURN_APPROVED|_REJECTED:${returnRequestId}`) — delivered exactly-once by the drain, not post-commit fire-and-forget. See [[patterns/transactional-outbox]].
 - Courier shipment creates (`equipment-couriers`) — same pattern
 
 ## Related

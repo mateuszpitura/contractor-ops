@@ -2,7 +2,7 @@
 title: Workflows and roles
 type: domain
 tags: [workflows, kt-roles, calendar]
-source_commit: d839f52eb98d86236bd6d0018bdff84de49427b8
+source_commit: b618a39e5
 verify_with:
   - packages/api/src/routers/workflow/
   - packages/api/src/routers/workflow/workflow-roles.ts
@@ -26,6 +26,10 @@ Workflow template CRUD, run lifecycle, task actions, KT role templates for auto-
 | Calendar router | `packages/api/src/routers/core/calendar.ts` |
 | Calendar sync | `packages/api/src/services/calendar-deadline-sync.ts` |
 | UI | `apps/web-vite/src/components/workflows/`, `workflow/` |
+
+## Invariants
+
+- Starting a run enqueues each active assignee's `TASK_ASSIGNED` notification into the transactional outbox **inside** the run-creation tx (`enqueueNotificationDispatch({ tx })`, dedupKey `TASK_ASSIGNED:${taskRunId}`) — delivered exactly-once by the drain, not post-commit fire-and-forget. `reassignTask` still dispatches directly (single non-transactional `update`, no enclosing tx). See [[patterns/transactional-outbox]].
 
 ## Related
 
