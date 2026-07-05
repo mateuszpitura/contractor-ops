@@ -164,3 +164,102 @@ describe('generateBatch1042S — idempotent', () => {
     expect(second.idempotent).toBe(true);
   });
 });
+
+/** One 1042-S batch recipient with an incomplete W-8 chain (no treaty resolver needed). */
+function recipient1042S(recipientId: string) {
+  return {
+    recipientId,
+    formType: 'W8BEN' as const,
+    payerName: 'Acme Org',
+    recipientName: `Recipient ${recipientId}`,
+    recipientFtinLast4: '4821',
+    contractorResidency: 'GB',
+    // Incomplete chain forces the statutory rate so resolveBox2Rate never calls
+    // the live treaty resolver — the test stays about persistence, not rates.
+    w8ChainComplete: false,
+    box2GrossIncomeMinor: 500_000,
+    box7FederalTaxWithheldMinor: 150_000,
+    box1IncomeCode: '17',
+  };
+}
+
+/**
+ * A rollback-simulating `$transaction` double: the tx buffers `create`d rows and
+ * only flushes them to `committed` when the callback resolves. A throw inside the
+ * callback discards the buffer — modeling a Postgres transaction rollback.
+ */
+function makeRollbackPersist(createImpl: (data: unknown) => Promise<{ id: string }>) {
+  const committed: unknown[] = [];
+  const persist = {
+    $transaction: async <T>(
+      fn: (tx: {
+        form1042S: { create: (a: { data: unknown }) => Promise<{ id: string }> };
+      }) => Promise<T>,
+    ): Promise<T> => {
+      const staged: unknown[] = [];
+      const tx = {
+        form1042S: {
+          create: async ({ data }: { data: unknown }) => {
+            const res = await createImpl(data);
+            staged.push(data);
+            return res;
+          },
+        },
+      };
+      const out = await fn(tx);
+      committed.push(...staged);
+      return out;
+    },
+  };
+  return { persist, committed };
+}
+
+describe('generateBatch1042S — transactional persistence + P2002-as-skip', () => {
+  it('rolls back the whole batch (zero rows persisted) when a create throws mid-batch', async () => {
+    const { persist, committed } = makeRollbackPersist(async data => {
+      if ((data as { recipientId: string }).recipientId === 'rec_2') {
+        throw new Error('boom');
+      }
+      return { id: 'row' };
+    });
+
+    await expect(
+      generateBatch1042S(
+        {
+          organizationId: 'org_tx',
+          payerOrgId: 'org_tx',
+          taxYear: 2030,
+          recipients: [recipient1042S('rec_1'), recipient1042S('rec_2'), recipient1042S('rec_3')],
+        },
+        { db: {} as never, persist: persist as never },
+      ),
+    ).rejects.toThrow('boom');
+
+    // Full rollback: not even the rec_1 row that inserted before the throw survives.
+    expect(committed).toHaveLength(0);
+  });
+
+  it('treats a Form1042S_active_key P2002 as an idempotent skip — no duplicates, no error', async () => {
+    const { persist, committed } = makeRollbackPersist(async () => {
+      throw Object.assign(new Error('Unique constraint failed'), {
+        code: 'P2002',
+        meta: { target: 'Form1042S_active_key' },
+      });
+    });
+
+    const result = await generateBatch1042S(
+      {
+        organizationId: 'org_dup',
+        payerOrgId: 'org_dup',
+        taxYear: 2031,
+        recipients: [recipient1042S('rec_1'), recipient1042S('rec_2')],
+      },
+      { db: {} as never, persist: persist as never },
+    );
+
+    expect(result.idempotent).toBe(true);
+    expect(result.generated).toHaveLength(2);
+    // Nothing new persisted — the prior batch already filed these ACTIVE rows.
+    expect(committed).toHaveLength(0);
+  });
+});

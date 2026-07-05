@@ -525,14 +525,24 @@ export interface GeneratedForm1042S {
 }
 
 /**
- * Minimal Prisma create surface used by `generateBatch1042S` to persist ACTIVE
- * 1042-S rows. Kept structural so a `$transaction` tx, the tenant client, or a
- * test double satisfy it.
+ * Minimal Prisma create surface for a single ACTIVE 1042-S row — the shape of the
+ * `$transaction` tx client the batch inserts through. Kept structural so a real
+ * Prisma tx or a test double satisfy it.
  */
 export interface Form1042SCreateClient {
   form1042S: {
     create: (args: { data: Prisma.Form1042SUncheckedCreateInput }) => Promise<{ id: string }>;
   };
+}
+
+/**
+ * Transaction-capable persistence sink injected into `generateBatch1042S`. The
+ * whole batch is inserted inside one interactive transaction so a mid-batch throw
+ * rolls back every row — a partial year-end filing is never left behind. The real
+ * writer is the tenant Prisma client; unit tests pass a rollback-simulating double.
+ */
+export interface Form1042SPersistClient {
+  $transaction: <T>(fn: (tx: Form1042SCreateClient) => Promise<T>) => Promise<T>;
 }
 
 export interface GenerateBatch1042SDeps {
@@ -544,7 +554,7 @@ export interface GenerateBatch1042SDeps {
    * the schema-applied router / wiring caller). When omitted, rows are computed
    * but not persisted.
    */
-  persist?: Form1042SCreateClient;
+  persist?: Form1042SPersistClient;
   /**
    * Treaty resolver injected by the router for the live record-of-record path
    * (`applyTreaty`). Defaults to the live DB-backed resolver; unit tests pass an
@@ -567,13 +577,39 @@ export interface GenerateBatch1042SResult {
 }
 
 /**
+ * True when `err` is the P2002 unique-constraint violation raised by the
+ * `Form1042S_active_key` partial index (at most one ACTIVE return per org /
+ * payer-org / recipient / tax year). Detected structurally so the service takes
+ * no direct dependency on the Prisma error class. A fresh ACTIVE-row insert can
+ * only collide on this index — `id` is a new cuid and `supersededById` is null —
+ * so a missing/opaque `meta.target` still resolves to this violation.
+ */
+function isActive1042SKeyViolation(err: unknown): boolean {
+  if (typeof err !== 'object' || err === null || (err as { code?: unknown }).code !== 'P2002') {
+    return false;
+  }
+  const target = (err as { meta?: { target?: unknown } }).meta?.target;
+  if (typeof target === 'string') {
+    return target.includes('Form1042S_active_key') || target.includes('recipientId');
+  }
+  if (Array.isArray(target)) {
+    return target.includes('recipientId');
+  }
+  return true;
+}
+
+/**
  * Generate a tax-year 1042-S batch for one payer-org. For each recipient it
  * routes on the W-form on file (W-9 recipients are skipped — they are 1099-NEC),
- * resolves the box-3b chapter-3 rate behind the §875(d) gate, builds the
- * immutable snapshot, and (when a persistence sink is supplied) inserts an
- * ACTIVE row. Wrapped in idempotency reserve/complete/clear so a retried batch
- * returns the prior result instead of re-filing. Writes an audit row on
- * generation. REPORTED-ONLY — never mutates a payout.
+ * resolves the box-3b chapter-3 rate behind the §875(d) gate, and builds the
+ * immutable snapshot. When a persistence sink is supplied, every ACTIVE row is
+ * inserted inside ONE interactive transaction, so a mid-batch throw rolls back
+ * the whole batch — a partial year-end filing is never left behind. A re-run that
+ * collides with an already-filed batch (P2002 on `Form1042S_active_key`) is
+ * treated as an idempotent skip: no duplicate rows, no error. Wrapped in
+ * idempotency reserve/complete/clear so a retried batch returns the prior result
+ * instead of re-filing. Writes an audit row on generation. REPORTED-ONLY — never
+ * mutates a payout.
  */
 export async function generateBatch1042S(
   input: GenerateBatch1042SInput,
@@ -602,6 +638,7 @@ export async function generateBatch1042S(
     const generated: GeneratedForm1042S[] = [];
     const skippedRecipientIds: string[] = [];
     const escalatedRecipientIds: string[] = [];
+    const rowsToPersist: Prisma.Form1042SUncheckedCreateInput[] = [];
 
     for (const recipient of recipients) {
       if (routeFormType(recipient.formType) !== '1042-S') {
@@ -643,31 +680,29 @@ export async function generateBatch1042S(
       });
 
       if (persist) {
-        await persist.form1042S.create({
-          data: {
-            organizationId,
-            payerOrgId,
-            recipientId: recipient.recipientId,
-            taxYear,
-            status: 'ACTIVE',
-            corrected: false,
-            box1IncomeCode: recipient.box1IncomeCode,
-            box2GrossIncomeMinor: recipient.box2GrossIncomeMinor,
-            box3aChap3ExemptionCode: recipient.box3aChap3ExemptionCode ?? null,
-            box3bChap3Rate: rateBpToPercentDecimal(box3bChap3RateBp),
-            box4aChap4ExemptionCode: recipient.box4aChap4ExemptionCode ?? null,
-            box4bChap4Rate:
-              recipient.box4bChap4RateBp == null
-                ? null
-                : rateBpToPercentDecimal(recipient.box4bChap4RateBp),
-            box7FederalTaxWithheldMinor: recipient.box7FederalTaxWithheldMinor,
-            recipientChap3StatusCode: recipient.recipientChap3StatusCode ?? null,
-            recipientChap4StatusCode: recipient.recipientChap4StatusCode ?? null,
-            recipientLobCode: recipient.recipientLobCode ?? null,
-            treatyArticle: box2.article,
-            currency: USD,
-            snapshotJson: snapshotJson as unknown as Prisma.InputJsonValue,
-          },
+        rowsToPersist.push({
+          organizationId,
+          payerOrgId,
+          recipientId: recipient.recipientId,
+          taxYear,
+          status: 'ACTIVE',
+          corrected: false,
+          box1IncomeCode: recipient.box1IncomeCode,
+          box2GrossIncomeMinor: recipient.box2GrossIncomeMinor,
+          box3aChap3ExemptionCode: recipient.box3aChap3ExemptionCode ?? null,
+          box3bChap3Rate: rateBpToPercentDecimal(box3bChap3RateBp),
+          box4aChap4ExemptionCode: recipient.box4aChap4ExemptionCode ?? null,
+          box4bChap4Rate:
+            recipient.box4bChap4RateBp == null
+              ? null
+              : rateBpToPercentDecimal(recipient.box4bChap4RateBp),
+          box7FederalTaxWithheldMinor: recipient.box7FederalTaxWithheldMinor,
+          recipientChap3StatusCode: recipient.recipientChap3StatusCode ?? null,
+          recipientChap4StatusCode: recipient.recipientChap4StatusCode ?? null,
+          recipientLobCode: recipient.recipientLobCode ?? null,
+          treatyArticle: box2.article,
+          currency: USD,
+          snapshotJson: snapshotJson as unknown as Prisma.InputJsonValue,
         });
       }
 
@@ -679,6 +714,34 @@ export async function generateBatch1042S(
         gatedByIncompleteW8: box2.gatedByIncompleteW8,
         snapshotJson,
       });
+    }
+
+    // Persist the whole batch in ONE interactive transaction: a mid-batch throw
+    // rolls back every row rather than leaving a partial year-end filing. A P2002
+    // on the `Form1042S_active_key` partial index means a prior successful batch
+    // already filed these ACTIVE rows — the transaction rolled back, so treat the
+    // re-run as an idempotent skip (no duplicate rows, no error) and cache it so
+    // later retries short-circuit on the reservation.
+    if (persist && rowsToPersist.length > 0) {
+      try {
+        await persist.$transaction(async tx => {
+          for (const data of rowsToPersist) {
+            await tx.form1042S.create({ data });
+          }
+        });
+      } catch (err) {
+        if (isActive1042SKeyViolation(err)) {
+          const skipResult: GenerateBatch1042SResult = {
+            idempotent: true,
+            generated,
+            skippedRecipientIds,
+            escalatedRecipientIds,
+          };
+          await complete(key, skipResult, BATCH_IDEMPOTENCY_TTL_SECONDS);
+          return skipResult;
+        }
+        throw err;
+      }
     }
 
     await writeAuditLog({

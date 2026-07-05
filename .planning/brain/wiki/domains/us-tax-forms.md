@@ -4,6 +4,7 @@ type: domain
 tags: [us, tax, w-form, treaty, portal, esign, immutable-record]
 source_commit: 5d6e26a17
 source_commit: f9de62452
+source_commit: 28061f01e
 verify_with:
   - packages/db/prisma/schema/tax.prisma
   - packages/db/prisma/schema/migrations/20260705000000_us_tax_form_tables_plus_additive_integrity/
@@ -176,9 +177,13 @@ file (W-8 → 1042-S, W-9 → 1099-NEC), never nationality.
 Immutability mirrors 1099-NEC: `buildForm1042SSnapshot` keeps `recipientFtinLast4` only (its sanitizer
 strips forged `ftin`/`tin`/`ssn` keys); a CORRECTED filing supersedes — `fileCorrection1042S` flips the
 prior ACTIVE row to SUPERSEDED then inserts a new ACTIVE row with `corrected: true` in one `$transaction`
-(audited `form1042s.correction`); the filed row is never mutated. `generateBatch1042S` is idempotent
-(reserve/complete/clear, audited `form1042s.generate`) and **REPORTED-only** — the core has zero
-payment-write call paths. The recipient-copy PDF (`form-1042s-pdf` → `form-1042s-recipient-copy.tsx`)
+(audited `form1042s.correction`); the filed row is never mutated. `generateBatch1042S` inserts the
+whole batch inside ONE interactive `persist.$transaction`, so a mid-batch throw rolls back every row
+(never a partial year-end filing); it is idempotent (reserve/complete/clear, audited
+`form1042s.generate`) and **REPORTED-only** — the core has zero payment-write call paths. A re-run that
+collides with an already-filed batch surfaces P2002 on the `Form1042S_active_key` partial index; the
+service treats that as an idempotent skip (`isActive1042SKeyViolation` → returns `idempotent: true`, no
+duplicate rows, no error) rather than propagating the constraint error. The recipient-copy PDF (`form-1042s-pdf` → `form-1042s-recipient-copy.tsx`)
 renders a substitute black-ink form from the immutable snapshot (FTIN last-4 only), CAS-guarded, archived
 to the US R2 tax bucket under `1042-s/<orgId>/<id>.pdf`.
 
@@ -336,14 +341,19 @@ contractor profile; it never mutates band state.
   a 1099 submission (no IrisSubmission form-type column). The portal recipient PDF reuses the SAME
   e-delivery consent gate (IDOR-scoped, FTIN last-4).
   transmit tail + portal consent step reuse the P86 seam verbatim once it lands — never rebuilt.
+  mutates); `generateBatch1042S` is transactional (one `$transaction`, full rollback on a mid-batch
+  throw) + idempotent (P2002 on `Form1042S_active_key` = skip) + REPORTED-only (zero payment writes).
+  The 1042-S transmit tail + portal consent step reuse the P86 seam verbatim once it lands — never rebuilt.
 - **Schema↔migration:** the nine US tax-form tables (previously in `tax.prisma` with NO CREATE TABLE
   migration → a fresh regional DB errored `relation does not exist`) now have a hand-authored additive
   migration (`20260705000000_us_tax_form_tables_plus_additive_integrity`), guarded going forward by
   `pnpm --filter @contractor-ops/db db:check-migration-drift`. `Form1042S` gains a partial UNIQUE
   `Form1042S_active_key` on `(org, payerOrgId, recipientId, taxYear) WHERE status='ACTIVE'` — the DB
   backstop making batch generation idempotent even under concurrency (only ACTIVE constrained; DRAFT +
-  SUPERSEDED unbounded). Wrapping the per-recipient persist in one `$transaction` + catching P2002 as an
-  idempotent skip is a later change set — the index is the schema half.
+  SUPERSEDED unbounded). `generateBatch1042S` now inserts the whole batch inside one
+  `persist.$transaction` (mid-batch throw rolls back every row) and catches the `Form1042S_active_key`
+  P2002 as an idempotent skip (`isActive1042SKeyViolation` → `idempotent: true`, no duplicates) — the
+  index is the DB backstop, the transaction + P2002-skip is the service half.
 
 ## Agent mistakes
 
