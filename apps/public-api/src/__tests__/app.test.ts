@@ -82,7 +82,7 @@ const UNTRUSTED_ORIGIN = 'https://evil.example.com';
 
 describe('Health check', () => {
   it('GET /api/v1/health returns 200 { status: "ok" }', async () => {
-    const res = await app.request('/api/v1/health');
+    const res = await app.request('/v1/health');
     expect(res.status).toBe(200);
     const body = (await res.json()) as { status: string };
     expect(body).toEqual({ status: 'ok' });
@@ -95,14 +95,14 @@ describe('Health check', () => {
 
 describe('OpenAPI spec', () => {
   it('GET /api/v1/openapi.json returns 200 with the spec', async () => {
-    const res = await app.request('/api/v1/openapi.json');
+    const res = await app.request('/v1/openapi.json');
     expect(res.status).toBe(200);
     const body = (await res.json()) as { openapi: string };
     expect(body.openapi).toBe('3.1.0');
   });
 
   it('openapi.json response has Content-Type application/json', async () => {
-    const res = await app.request('/api/v1/openapi.json');
+    const res = await app.request('/v1/openapi.json');
     expect(res.headers.get('content-type')).toMatch(/application\/json/);
   });
 });
@@ -113,12 +113,12 @@ describe('OpenAPI spec', () => {
 
 describe('404 handling', () => {
   it('unknown route returns 404', async () => {
-    const res = await app.request('/api/v1/does-not-exist');
+    const res = await app.request('/v1/does-not-exist');
     expect(res.status).toBe(404);
   });
 
   it('unknown route returns JSON error body with code=NOT_FOUND', async () => {
-    const res = await app.request('/api/v1/does-not-exist');
+    const res = await app.request('/v1/does-not-exist');
     const body = (await res.json()) as { error: { code: string; status: number } };
     expect(body.error.code).toBe('NOT_FOUND');
     expect(body.error.status).toBe(404);
@@ -131,12 +131,12 @@ describe('404 handling', () => {
 
 describe('Security headers', () => {
   it('X-Frame-Options: DENY is set', async () => {
-    const res = await app.request('/api/v1/health');
+    const res = await app.request('/v1/health');
     expect(res.headers.get('x-frame-options')).toBe('DENY');
   });
 
   it('X-Content-Type-Options: nosniff is set', async () => {
-    const res = await app.request('/api/v1/health');
+    const res = await app.request('/v1/health');
     expect(res.headers.get('x-content-type-options')).toBe('nosniff');
   });
 });
@@ -147,7 +147,7 @@ describe('Security headers', () => {
 
 describe('Request ID', () => {
   it('X-Request-Id header is present in response', async () => {
-    const res = await app.request('/api/v1/health');
+    const res = await app.request('/v1/health');
     expect(res.headers.get('x-request-id')).toBeTruthy();
   });
 });
@@ -158,7 +158,7 @@ describe('Request ID', () => {
 
 describe('CORS', () => {
   it('OPTIONS from allowed origin returns Access-Control-Allow-Origin matching origin', async () => {
-    const res = await app.request('/api/v1/health', {
+    const res = await app.request('/v1/health', {
       method: 'OPTIONS',
       headers: {
         Origin: ALLOWED_ORIGIN,
@@ -169,7 +169,7 @@ describe('CORS', () => {
   });
 
   it('OPTIONS from untrusted origin does NOT echo origin in ACAO', async () => {
-    const res = await app.request('/api/v1/health', {
+    const res = await app.request('/v1/health', {
       method: 'OPTIONS',
       headers: {
         Origin: UNTRUSTED_ORIGIN,
@@ -181,7 +181,7 @@ describe('CORS', () => {
   });
 
   it('exposeHeaders includes X-RateLimit-Limit', async () => {
-    const res = await app.request('/api/v1/health', {
+    const res = await app.request('/v1/health', {
       method: 'OPTIONS',
       headers: {
         Origin: ALLOWED_ORIGIN,
@@ -193,7 +193,7 @@ describe('CORS', () => {
   });
 
   it('exposeHeaders includes Retry-After', async () => {
-    const res = await app.request('/api/v1/health', {
+    const res = await app.request('/v1/health', {
       method: 'OPTIONS',
       headers: {
         Origin: ALLOWED_ORIGIN,
@@ -206,16 +206,13 @@ describe('CORS', () => {
 });
 
 // ---------------------------------------------------------------------------
-// /docs disabled by default
+// /docs — Scalar via the vendored npm dep (no CDN/SRI, no ENABLE_API_DOCS gate)
 // ---------------------------------------------------------------------------
 
-describe('/docs when ENABLE_API_DOCS is not set', () => {
-  it('returns 404 for /docs when docs are disabled', async () => {
-    const res = await app.request('/api/v1/docs');
-    expect(res.status).toBe(404);
+describe('/docs (Scalar dependency)', () => {
+  it('serves the interactive docs page (200 HTML)', async () => {
+    const res = await app.request('/v1/docs');
+    expect(res.status).toBe(200);
+    expect(res.headers.get('content-type') ?? '').toMatch(/text\/html/);
   });
 });
-
-// SRI gating and /docs CSP tests live in app-sri.test.ts which has no
-// static app import and can therefore use vi.resetModules() + dynamic import
-// to exercise different ENABLE_API_DOCS / SCALAR_SRI_HASH values at load time.

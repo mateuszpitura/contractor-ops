@@ -394,7 +394,7 @@ services:
         value: "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://*.r2.cloudflarestorage.com; connect-src 'self' https://*.sentry.io https://*.ingest.sentry.io; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none';"
 
   # ── Web Service: Public REST API (Enterprise) ──────────────────────────
-  # Hono + tRPC caller, OpenAPI at /api/v1/docs, scoped API-key auth.
+  # Hono + tRPC caller, OpenAPI at /v1/docs, scoped API-key auth.
   # Mount on a dedicated subdomain (e.g. api.contractor-ops.com) — bind that
   # custom domain on this service, not on `web`.
   - type: web
@@ -407,7 +407,7 @@ services:
     dockerfilePath: ./apps/public-api/Dockerfile
     dockerContext: .
     dockerCommand: node apps/public-api/dist/index.js
-    healthCheckPath: /api/v1/health
+    healthCheckPath: /v1/health
     scaling:
       minInstances: 2
       maxInstances: 6
