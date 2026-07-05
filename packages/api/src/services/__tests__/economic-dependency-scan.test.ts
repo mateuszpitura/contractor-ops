@@ -10,6 +10,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const {
   mockPrismaRaw,
   mockDispatch,
+  mockEnqueue,
   mockResolveRecipients,
   mockMetricsGauge,
   stateByAssignment,
@@ -86,11 +87,17 @@ const {
       ),
     },
     member: { findMany: vi.fn(async () => []) },
+    // Pass-through interactive tx: the orchestrator wraps the alert-state
+    // upsert + the outbox enqueue in one $transaction.
+    $transaction: vi.fn(async (fn: (tx: typeof mockPrismaRaw) => Promise<unknown>) =>
+      fn(mockPrismaRaw),
+    ),
   };
 
   return {
     mockPrismaRaw,
     mockDispatch: vi.fn(async () => undefined),
+    mockEnqueue: vi.fn(async () => 'oxe_test_1'),
     mockResolveRecipients: vi.fn(async () => ['user-1']),
     mockMetricsGauge: vi.fn(),
     stateByAssignment,
@@ -156,6 +163,10 @@ vi.mock('../notification-service', () => ({
   dispatch: mockDispatch,
 }));
 
+vi.mock('../outbox', () => ({
+  enqueueNotificationDispatch: mockEnqueue,
+}));
+
 vi.mock('../rbac-recipients', () => ({
   resolveRbacRecipients: mockResolveRecipients,
 }));
@@ -181,6 +192,7 @@ function resetFixtures() {
   mockPrismaRaw.economicDependencyAlertState.findUnique.mockClear();
   mockPrismaRaw.economicDependencyAlertState.upsert.mockClear();
   mockDispatch.mockClear();
+  mockEnqueue.mockClear();
   mockResolveRecipients.mockClear();
   mockMetricsGauge.mockClear();
   stateByAssignment.clear();
@@ -398,7 +410,7 @@ describe('updateBandState', () => {
 // ---------------------------------------------------------------------------
 
 describe('runEconomicDependencyScan (orchestrator)', () => {
-  it('[RBAC] dispatches with recipientUserIds from resolveRbacRecipients', async () => {
+  it('[RBAC] enqueues with recipientUserIds from resolveRbacRecipients, inside the alert-state tx', async () => {
     assignmentsFixture.push({
       id: ASSIGNMENT_A,
       organizationId: ORG_A,
@@ -422,12 +434,17 @@ describe('runEconomicDependencyScan (orchestrator)', () => {
     expect(result.crossings).toBe(1);
     expect(result.notificationsDispatched).toBe(1);
     expect(mockResolveRecipients).toHaveBeenCalledWith(ORG_A, 'contractor:read');
-    expect(mockDispatch).toHaveBeenCalledTimes(1);
-    const call = mockDispatch.mock.calls[0][0];
-    expect(call.recipientUserIds).toEqual(['user-a', 'user-b']);
-    expect(call.type).toBe('classification.economic_dependency_warning');
-    expect(call.organizationId).toBe(ORG_A);
-    expect(call.entityType).toBe('CONTRACTOR');
+    // Enqueued into the transactional outbox on the SAME tx client the
+    // alert-state upsert ran on — atomic, not a post-commit dispatch.
+    expect(mockDispatch).not.toHaveBeenCalled();
+    expect(mockEnqueue).toHaveBeenCalledTimes(1);
+    const arg = mockEnqueue.mock.calls[0][0];
+    expect(arg.tx).toBe(mockPrismaRaw);
+    expect(mockPrismaRaw.economicDependencyAlertState.upsert).toHaveBeenCalled();
+    expect(arg.event.recipientUserIds).toEqual(['user-a', 'user-b']);
+    expect(arg.event.type).toBe('classification.economic_dependency_warning');
+    expect(arg.event.organizationId).toBe(ORG_A);
+    expect(arg.event.entityType).toBe('CONTRACTOR');
   });
 
   it('[replay] repeat scan with no new invoices emits 0 new notifications', async () => {
@@ -451,10 +468,10 @@ describe('runEconomicDependencyScan (orchestrator)', () => {
     await runEconomicDependencyScan(t0);
 
     // Five minutes later, same share → no new notification.
-    mockDispatch.mockClear();
+    mockEnqueue.mockClear();
     const t1 = new Date(t0.getTime() + 5 * 60 * 1000);
     await runEconomicDependencyScan(t1);
-    expect(mockDispatch).not.toHaveBeenCalled();
+    expect(mockEnqueue).not.toHaveBeenCalled();
   });
 
   it('[cross-org] dispatches exactly once per up-crossing even with multi-org invoices', async () => {
@@ -476,8 +493,8 @@ describe('runEconomicDependencyScan (orchestrator)', () => {
     const res = await runEconomicDependencyScan(new Date('2026-04-14T00:00:00Z'));
     expect(res.notificationsDispatched).toBe(1);
     // Share = 700k / 1M = 0.70 → warning
-    const call = mockDispatch.mock.calls[0][0];
-    expect(call.type).toBe('classification.economic_dependency_warning');
+    const call = mockEnqueue.mock.calls[0][0];
+    expect(call.event.type).toBe('classification.economic_dependency_warning');
   });
 
   it('Kleinunternehmer non-interaction: thresholds fire identically regardless of VAT regime', async () => {
@@ -503,7 +520,9 @@ describe('runEconomicDependencyScan (orchestrator)', () => {
 
     const res = await runEconomicDependencyScan(new Date('2026-04-14T00:00:00Z'));
     expect(res.notificationsDispatched).toBe(1);
-    expect(mockDispatch.mock.calls[0][0].type).toBe('classification.economic_dependency_warning');
+    expect(mockEnqueue.mock.calls[0][0].event.type).toBe(
+      'classification.economic_dependency_warning',
+    );
   });
 
   it('filters assignments by status=ACTIVE + contractor.countryCode=DE in the findMany where-clause', async () => {

@@ -2,12 +2,13 @@
 title: Classification IR35 and DRV
 type: domain
 tags: [classification, ir35, drv, germany]
-source_commit: f9d9cc241
+source_commit: 5a1d59bf2
 verify_with:
   - packages/api/src/root.ts
   - packages/classification/
   - packages/api/src/pdf-templates/us-determination-letter.tsx
-updated: 2026-07-01
+  - packages/api/src/services/economic-dependency-scan.ts
+updated: 2026-07-05
 ---
 
 # Classification (IR35 / DRV)
@@ -49,6 +50,7 @@ Scoring: `packages/classification/`. Cron: [[structure/cron-jobs]].
 - [[patterns/feature-flags]] — `module.classification-engine`
 - `classificationProcedure` middleware defense-in-depth
 - When OFF: runtime `METHOD_NOT_FOUND`
+- The §2 SGB VI economic-dependency scan (`economic-dependency-scan.ts`) writes each assignment's `EconomicDependencyAlertState` upsert and enqueues the band heads-up into the transactional outbox in **one `$transaction`** ([[patterns/transactional-outbox]]) — exactly-once via the drain, closing the crash window where `lastReminderAt` was bumped but the notice dropped.
 
 ## Related
 

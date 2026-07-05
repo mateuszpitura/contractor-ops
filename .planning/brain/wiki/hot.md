@@ -4,7 +4,7 @@ type: hot-cache
 updated: 2026-07-06
 source_commit: efb2b0794
 updated: 2026-07-05
-source_commit: cbcf8a2bb
+source_commit: 5a1d59bf2
 ---
 
 # Hot cache

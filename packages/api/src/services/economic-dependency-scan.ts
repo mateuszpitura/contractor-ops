@@ -37,14 +37,16 @@
 //   same band (non-safe) + lastReminderAt ≥ 30d : re-fire reminder
 //   same band (safe)    : no-op
 //
-// The orchestrator iterates DE ACTIVE contractor assignments and writes
-// EconomicDependencyAlertState atomically with an upsert.
+// The orchestrator iterates DE ACTIVE contractor assignments and, per
+// assignment, writes EconomicDependencyAlertState and enqueues the heads-up
+// into the transactional outbox in one $transaction, so the notice is durably
+// scheduled iff the band-state upsert commits (drain delivers exactly-once).
 
 import { prisma, prismaRaw } from '@contractor-ops/db';
 import { pLimit } from '@contractor-ops/integrations/services/concurrency';
 import { createCronLogger } from '@contractor-ops/logger';
 import { metrics } from '@contractor-ops/logger/metrics';
-import { dispatch } from './notification-service';
+import { enqueueNotificationDispatch } from './outbox';
 import { resolveRbacRecipients } from './rbac-recipients';
 
 const log = createCronLogger('classification-economic-dependency');
@@ -218,13 +220,15 @@ export async function updateBandState(
   assignment: { id: string; organizationId: string },
   share: number,
   now: Date,
+  client: Pick<typeof prismaRaw, 'economicDependencyAlertState'> = prismaRaw,
 ): Promise<UpdateBandStateResult> {
   const nextBand = bandFor(share);
 
-  // Use prismaRaw because we need to upsert without a tenant frame;
-  // organizationId is set explicitly in both branches.
+  // `client` defaults to prismaRaw (no tenant frame — organizationId is set
+  // explicitly in both branches); the orchestrator passes an interactive `tx`
+  // so the upsert commits atomically with the outbox enqueue.
   // PHASE-60-CROSS-ORG-AGGREGATE: cron context has no tenant frame.
-  const existing = await prismaRaw.economicDependencyAlertState.findUnique({
+  const existing = await client.economicDependencyAlertState.findUnique({
     where: { contractorAssignmentId: assignment.id },
   });
 
@@ -248,7 +252,7 @@ export async function updateBandState(
     lastReminderAt: emittedType ? now : (existing?.lastReminderAt ?? null),
   };
 
-  await prismaRaw.economicDependencyAlertState.upsert({
+  await client.economicDependencyAlertState.upsert({
     where: { contractorAssignmentId: assignment.id },
     create: {
       contractorAssignmentId: assignment.id,
@@ -361,47 +365,55 @@ export async function runEconomicDependencyScan(now: Date = new Date()): Promise
             assignment.organizationId,
             now,
           );
-          const result = await updateBandState(assignment, share, now);
 
-          if (result.reason === 'cross-up' || result.reason === 'cross-down') {
-            dispatchedCounter.crossings++;
-          }
+          // Upsert the alert state and (when a band event fires) enqueue the
+          // heads-up atomically. The outbox row commits iff the alert-state
+          // upsert commits, so a crash can no longer set lastReminderAt to
+          // "notified" while dropping the notice; the drain delivers it
+          // exactly-once. No dedupKey — the state machine (lastReminderAt +
+          // cadence) already gates emission and each emit deserves its own row.
+          await prismaRaw.$transaction(async tx => {
+            const result = await updateBandState(assignment, share, now, tx);
 
-          if (result.emittedType) {
-            const recipients = await resolveRbacRecipients(
-              assignment.organizationId,
-              'contractor:read',
-            );
+            if (result.reason === 'cross-up' || result.reason === 'cross-down') {
+              dispatchedCounter.crossings++;
+            }
 
-            if (recipients.length > 0) {
-              const percent = (share * 100).toFixed(1);
-              const { title, body, type } = buildEconomicDependencyNotification(
-                result.emittedType,
-                assignment.contractor.displayName,
-                percent,
+            if (result.emittedType) {
+              const recipients = await resolveRbacRecipients(
+                assignment.organizationId,
+                'contractor:read',
               );
 
-              // Direct dispatch (not outboxed): advisory heads-up from the
-              // cross-org economic-dependency cron scan. Same per-assignment
-              // alert-state upsert shape as the outboxed form-1099k tracker;
-              // left as a direct at-most-once dispatch here.
-              await dispatch({
-                organizationId: assignment.organizationId,
-                type,
-                recipientUserIds: recipients,
-                title,
-                body,
-                entityType: 'CONTRACTOR',
-                entityId: assignment.id,
-                metadata: {
-                  billingShare: share,
-                  band: result.currentBand,
-                  reason: result.reason,
-                },
-              });
-              dispatchedCounter.value++;
+              if (recipients.length > 0) {
+                const percent = (share * 100).toFixed(1);
+                const { title, body, type } = buildEconomicDependencyNotification(
+                  result.emittedType,
+                  assignment.contractor.displayName,
+                  percent,
+                );
+
+                await enqueueNotificationDispatch({
+                  tx,
+                  event: {
+                    organizationId: assignment.organizationId,
+                    type,
+                    recipientUserIds: recipients,
+                    title,
+                    body,
+                    entityType: 'CONTRACTOR',
+                    entityId: assignment.id,
+                    metadata: {
+                      billingShare: share,
+                      band: result.currentBand,
+                      reason: result.reason,
+                    },
+                  },
+                });
+                dispatchedCounter.value++;
+              }
             }
-          }
+          });
         } catch (err) {
           log.error(
             { err, assignmentId: assignment.id, organizationId: assignment.organizationId },
@@ -429,4 +441,4 @@ export async function runEconomicDependencyScan(now: Date = new Date()): Promise
 
 // Re-export prisma alias for tests that need to stub it via the same path.
 // biome-ignore lint/style/useNamingConvention: test-internals export uses double-underscore prefix
-export const __deps = { prisma, prismaRaw, dispatch, resolveRbacRecipients };
+export const __deps = { prisma, prismaRaw, resolveRbacRecipients };

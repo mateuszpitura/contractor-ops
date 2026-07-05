@@ -2,7 +2,7 @@
 title: Transactional outbox (durable notifications)
 type: pattern
 tags: [outbox, notifications, delivery, qstash, crash-safety]
-source_commit: cbcf8a2bb
+source_commit: 5a1d59bf2
 verify_with:
   - packages/api/src/services/outbox/index.ts
   - packages/api/src/services/outbox/handlers.ts
@@ -13,6 +13,7 @@ verify_with:
   - packages/api/src/services/credit-service.ts
   - packages/api/src/routers/compliance/compliance-admin.ts
   - packages/api/src/services/form-1099k-tracker.service.ts
+  - packages/api/src/services/economic-dependency-scan.ts
 updated: 2026-07-05
 ---
 
@@ -55,8 +56,9 @@ Each of these enqueues `notification.dispatch` **inside** the `$transaction` tha
 | `services/credit-service.ts` (`checkAndDeductCredit`) | `CREDIT_EXHAUSTED` | OcrCreditLedger deduction that hits 0 (dedupKey `CREDIT_EXHAUSTED:{org}:{periodStart}`) |
 | `routers/compliance/compliance-admin.ts` (`approve`/`rejectUploadReplacement`) | `compliance.upload.approved` / `.rejected` | ContractorComplianceItem/Document flip (dedupKey = reviewed documentId) |
 | `services/form-1099k-tracker.service.ts` (`processContractor`) | `tax.form_1099k_approaching` / `_over` | Form1099KTrackerState band upsert |
+| `services/economic-dependency-scan.ts` (`runEconomicDependencyScan`) | `classification.economic_dependency_warning` / `_critical` / `resolved` | EconomicDependencyAlertState band upsert (§2 SGB VI) |
 
-The credit / compliance / 1099-K sites resolve their recipients (and build i18n copy) as reads, then run the state write + enqueue in one `$transaction`. The 1099-K and credit sites pass **no** dedupKey where the state machine (band `lastReminderAt` cadence; the exhaustion boundary) already gates emission and each emit deserves its own durable row.
+The credit / compliance / 1099-K sites resolve their recipients (and build i18n copy) as reads, then run the state write + enqueue in one `$transaction`. The 1099-K and economic-dependency sites pass **no** dedupKey where the state machine (band `lastReminderAt` cadence; the exhaustion boundary) already gates emission and each emit deserves its own durable row. `economic-dependency-scan` threads the interactive `tx` into `updateBandState` (an optional last param defaulting to `prismaRaw`) so the alert-state upsert commits atomically with the enqueue.
 
 ## When NOT to convert
 
@@ -65,7 +67,6 @@ Do **not** wrap a write in a new transaction just to enqueue. A pure post-event 
 - `services/ksef-sync-orchestrator.ts` — announces the **aggregate** outcome of a whole KSeF sync run (`invoicesCreated` across many rows), not one committed write.
 - `services/compliance-reminder-scan.ts` — a per-recipient expiry **digest** rolling up many `(document, band, expiresAt)` fires into one notice.
 - `services/google-workspace-sync-orchestrator.ts` (×2 — new-hire / departure) — **directory-diff** observations; the synced-email snapshot is persisted separately in `persistSyncSuccess`, so there is no single write to bind to.
-- `services/economic-dependency-scan.ts` — advisory cross-org cron heads-up. **Structural twin** of the outboxed `form-1099k-tracker` (same per-assignment `economicDependencyAlertState` upsert + post-write dispatch); left as direct dispatch here, so it carries the same at-most-once `lastReminderAt` silent-drop window the tracker's conversion closed — a candidate for the same treatment.
 
 ## Adding a new event type
 
