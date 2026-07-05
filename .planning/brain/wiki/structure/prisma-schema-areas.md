@@ -90,7 +90,8 @@ pnpm typecheck --filter=@contractor-ops/db
 
 Additive, drift-safe, authored un-applied (per-region apply is a deferred human gate):
 
-- `EntityType += WORKER, EMPLOYEE` (and `AuditEntityType` mirror in `audit-writer.ts`).
+- `EntityType += WORKER, EMPLOYEE, MARKETPLACE_LISTING, INCIDENT` (and `AuditEntityType` mirror in `audit-writer.ts`).
+- **Theme C (Phase 101, un-applied `__phase101_*`):** `Organization.isSandbox` + `OrganizationApiKey.environment` (new `ApiKeyEnvironment { LIVE SANDBOX }`) — the sandbox axis; `resolveByPrefix` fails closed on any mismatch. `IncidentReport` (global, `IncidentStatus`/`IncidentSeverity` enums) — public status-page incident history. `MarketplaceListing` (Phase-101 marketplace tracker) is a separate un-applied migration. See [[domains/developer-experience]].
 - `WorkflowRun.workerId?` (+ `worker Worker?` relation + `@@index([organizationId, workerId])`) — the employee-run subject, mutually exclusive with `contractorId` (defence-in-depth CHECK `contractor XOR worker`).
 - `WorkflowTemplate.jurisdiction? + seedKey? + @@unique([organizationId, jurisdiction, type, seedKey])` — the idempotent per-market boot-upsert key (employee-templates seeds).
 - `DeprovisioningRun`: `contractorId`/`assignmentId` relaxed to nullable + `workerId?` (+ relation + index + CHECK) — an employee run keys off `workerId`; DROP NOT NULL is non-destructive.

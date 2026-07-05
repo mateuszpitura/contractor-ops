@@ -1,8 +1,8 @@
 ---
 title: Hot cache
 type: hot-cache
-updated: 2026-07-05
-source_commit: 84855c0a7
+updated: 2026-07-06
+source_commit: efb2b0794
 ---
 
 # Hot cache
@@ -32,7 +32,11 @@ Discovery shortcuts for agents — not a changelog. History lives in `wiki/log.m
 
 ## Public API keys / scopes / rate limits / write surface (Theme C)
 
-Full surface: [[domains/public-api-surface]]. Read = 9 entities; WRITE = 6 entities (contractor/invoice/payment/paymentRun/workflow/workflowTask). **Phase 100 passed the OWASP gate and UN-HID the 11 write routes** (now in the spec/SDK); the per-org `module.public-api` flag gate still 404s a non-granted org — the grant is a manual Unleash act. `_initiatePayoutForRun` stays deferred. Code: `apps/public-api/src/routes/*` (Hono) + `packages/api/src/routers/public-api/*` (tRPC + `write-shared.ts`), `middleware/api-key-auth.ts` (chain: apiKeyAuth → `publicApiFlagGate` → `requireTier` → `enforceApiTierQuota` → `demoReadOnly`), `services/api-key-service.ts` (HMAC + grace-aware `resolveByPrefix` + `appendApiKeyIpEvent`), `routers/core/api-key.ts` (create/rotate/ipLog/usage + `actingUserId` guard). Invariants: `actingUserId` is attribution-only (scopes authorize); every write carries a mandatory `requirePermission` scope; rotation grace default 24h/max 168h; per-tier monthly quota composes with the pre-auth burst limiter. See [[patterns/rate-limit]], [[patterns/tenant-and-audit]].
+Full surface: [[domains/public-api-surface]]. Read = 9 entities; WRITE = 6 entities (contractor/invoice/payment/paymentRun/workflow/workflowTask). **Phase 100 passed the OWASP gate and UN-HID the 11 write routes** (now in the spec/SDK); the per-org `module.public-api` flag gate still 404s a non-granted org — the grant is a manual Unleash act. `_initiatePayoutForRun` stays deferred. Code: `apps/public-api/src/routes/*` (Hono) + `packages/api/src/routers/public-api/*` (tRPC + `write-shared.ts`), `middleware/api-key-auth.ts` (chain: apiKeyAuth → **`apiKeyAccessGate`** → `demoReadOnly`; the single access gate branches on the key environment — LIVE = `module.public-api` + Enterprise tier + monthly quota via `assertMinimumTier`; SANDBOX = `module.api-sandbox` + 100/day, no tier), `services/api-key-service.ts` (HMAC + grace-aware `resolveByPrefix` **fail-closed on any `co_test_`/`co_live_` ↔ `isSandbox` mismatch** + `appendApiKeyIpEvent`), `routers/core/api-key.ts` (create/rotate/ipLog/usage/**createSandboxKey** + `actingUserId` guard). Invariants: `actingUserId` is attribution-only (scopes authorize); every write carries a mandatory `requirePermission` scope; rotation grace default 24h/max 168h; per-tier monthly quota composes with the pre-auth burst limiter. See [[patterns/rate-limit]], [[patterns/tenant-and-audit]].
+
+## Developer experience — sandbox + status + portal (Theme C, Phase 101)
+
+Full surface: [[domains/developer-experience]]. **Sandbox (load-bearing isolation):** `OrganizationApiKey.environment` (`LIVE`|`SANDBOX`) + `Organization.isSandbox`; a `co_test_` key resolves ONLY to a sandbox org, `co_live_` ONLY to production — `resolveByPrefix` fails closed BOTH ways. Reuses the demo read-only layer (ctx `isSandbox` → `demoReadOnly`; `isDemoOrg` cache). Gates on global `module.api-sandbox` + 100/day (`SANDBOX_DAILY_REQUEST_QUOTA`). `services/sandbox-provisioning.ts` (`provisionSandboxOrg`/`issueSandboxKey`) + `apiKey.createSandboxKey`. Greens `sandbox-isolation.security.test.ts`; OWASP fence unregressed. **Status page:** `/v1/status.json` (`routes/status.ts`, `module.public-status-page`, cached) → `services/status-aggregator.ts` maps webhookDelivery+outboxEvent thresholds into 3 coarse states + incidents; timeout-guarded, fail-safe, NO tenant data. `IncidentReport` + `incident` router. **Portal:** extends Scalar `/v1/docs` with `/docs/{webhooks,sdks,recipes,changelog,deprecations}` + `/collections/{postman,insomnia}.json` behind `module.developer-portal` (404 off); `lib/portal-content.ts` sources every page from the artifacts the API generates; collections from `@contractor-ops/marketplace-manifests`. **Agent traps:** never invent a "sandbox mode" (reuse demo read-only + fail-closed prefix↔org); the status payload carries no tenant data; marketplace/collection artifacts are GENERATED. Deferred: 3 un-applied migrations + 3 default-off flags; web UI (plan 09) + n8n/Zapier live-SDK packages (plans 06/07). EXTERNAL-ENABLEMENT #27–34.
 
 ## Outbound webhooks + integration security (Theme C, Phase 100)
 
