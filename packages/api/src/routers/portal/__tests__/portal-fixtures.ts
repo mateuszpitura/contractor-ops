@@ -303,6 +303,20 @@ function makeModelStub(rows: Rec[]) {
       rows.push(row);
       return row;
     },
+    upsert: async (args: { where?: unknown; create: Rec; update?: Rec }) => {
+      const existing = rows.find(r => matchWhere(r, args.where));
+      if (existing) {
+        Object.assign(existing, args.update ?? {});
+        return existing;
+      }
+      const row = {
+        id: (args.create.id as string) ?? `gen-${rows.length + 1}`,
+        deletedAt: null,
+        ...args.create,
+      };
+      rows.push(row);
+      return row;
+    },
     update: async (args: { where?: unknown; data?: Rec }) => {
       const row = rows.find(r => matchWhere(r, args.where));
       if (row) Object.assign(row, args.data ?? {});

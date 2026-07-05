@@ -1,6 +1,11 @@
 import { router } from './init';
 import { isEmployeePortalRegistered } from './middleware/require-employee-portal-flag';
-import { portalEmployeeRouter, portalRouter, portalTimeRouter } from './routers/portal/index';
+import {
+  portalEmployeeRouter,
+  portalManagerRouter,
+  portalRouter,
+  portalTimeRouter,
+} from './routers/portal/index';
 
 /**
  * Separate tRPC router for the contractor portal.
@@ -12,14 +17,19 @@ import { portalEmployeeRouter, portalRouter, portalTimeRouter } from './routers/
  * keeps the merged `AppRouter` type smaller, dramatically reducing TypeScript
  * inference cost for the dashboard client (which never calls portal procedures).
  */
-// The employee self-service surface ships dark behind `module.employee-portal`.
-// Mirror the staff conditionalWorkforceRouters gate: portalEmployee is absent
-// from portalAppRouter at boot when the flag is unregistered (METHOD_NOT_FOUND);
-// the const keeps the spread TYPE constant so the client typing always sees the
-// namespace. portalEmployeeProcedure re-asserts the flag per request.
+// The employee self-service surface (employee + manager) ships dark behind
+// `module.employee-portal`. Mirror the staff conditionalWorkforceRouters gate:
+// both namespaces are absent from portalAppRouter at boot when the flag is
+// unregistered (METHOD_NOT_FOUND); the const keeps the spread TYPE constant so
+// the client typing always sees them. portalEmployeeProcedure /
+// portalManagerProcedure re-assert the flag (and, for manager, ≥1 report) per
+// request.
 const conditionalEmployeePortalRouters = isEmployeePortalRegistered()
-  ? { portalEmployee: portalEmployeeRouter }
-  : ({} as { portalEmployee: typeof portalEmployeeRouter });
+  ? { portalEmployee: portalEmployeeRouter, portalManager: portalManagerRouter }
+  : ({} as {
+      portalEmployee: typeof portalEmployeeRouter;
+      portalManager: typeof portalManagerRouter;
+    });
 
 export const portalAppRouter = router({
   portal: portalRouter,
