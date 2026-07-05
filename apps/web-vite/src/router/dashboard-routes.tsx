@@ -44,6 +44,7 @@ const TeamsPage = lazy(() => import('../pages/dashboard/organization/teams.js'))
 const WorkflowsPage = lazy(() => import('../pages/dashboard/workflows.js'));
 const TimePage = lazy(() => import('../pages/dashboard/time.js'));
 const ReportsPage = lazy(() => import('../pages/dashboard/reports.js'));
+const HrDashboardPage = lazy(() => import('../pages/dashboard/hr.js'));
 const TaxFilingPage = lazy(() => import('../pages/dashboard/tax-filing.js'));
 const ClassificationPage = lazy(() => import('../pages/dashboard/classification.js'));
 const ComplianceDashboardPage = lazy(() => import('../pages/dashboard/compliance-dashboard.js'));
@@ -122,6 +123,7 @@ export const dashboardRoutes = [
   { path: 'workflows', element: page(<WorkflowsPage />) },
   { path: 'time', element: page(<TimePage />) },
   { path: 'reports', element: page(<ReportsPage />) },
+  { path: 'dashboard/hr', element: page(<HrDashboardPage />) },
   { path: 'tax-filing', element: page(<TaxFilingPage />) },
   { path: 'classification', element: page(<ClassificationPage />) },
   { path: 'compliance/dashboard', element: page(<ComplianceDashboardPage />) },

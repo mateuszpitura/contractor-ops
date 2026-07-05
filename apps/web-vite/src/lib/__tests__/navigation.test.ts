@@ -40,6 +40,14 @@ describe('navigationGroups', () => {
     expect(classification?.flag).toBe('module.classification-engine');
   });
 
+  it('hr entry is gated behind hr-dashboard flag + the four HR roles', () => {
+    const hr = navigationItems.find(i => i.key === 'hr');
+    expect(hr?.flag).toBe('module.hr-dashboard');
+    expect(hr?.href).toBe('/dashboard/hr');
+    expect(hr?.permission).toBeNull();
+    expect(hr?.roles).toEqual(['hr_admin', 'hr_manager', 'payroll_officer', 'leave_approver']);
+  });
+
   it('navigationItems is flatMap of all groups', () => {
     const flat = navigationGroups.flatMap(g => g.items);
     expect(navigationItems).toEqual(flat);
