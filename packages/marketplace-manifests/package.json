@@ -29,6 +29,7 @@
     "typecheck:fast": "tsgo --noEmit"
   },
   "dependencies": {
+    "@contractor-ops/logger": "workspace:*",
     "@contractor-ops/validators": "workspace:*"
   },
   "devDependencies": {

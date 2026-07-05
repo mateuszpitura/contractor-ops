@@ -5,8 +5,10 @@
 // A CLI `generate --check` diff-gate asserts the committed artifacts equal a
 // fresh generation, so nothing drifts from the API.
 
+export { generateInsomnia, type InsomniaExport } from './generate-insomnia.js';
 export { generateMake, type MakeBlueprint } from './generate-make.js';
 export { generateN8n, type N8nDescriptor } from './generate-n8n.js';
+export { generatePostman, type PostmanCollection } from './generate-postman.js';
 export { generateZapier, type ZapierApp } from './generate-zapier.js';
 export * from './load-spec.js';
 
