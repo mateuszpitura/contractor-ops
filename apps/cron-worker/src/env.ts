@@ -59,6 +59,14 @@ const envSchema = z.object({
   CRON_YEAR_END_1099_REMINDER_SCHEDULE: z.string().default('0 8 15 1 *'),
   CRON_STRIPE_RECONCILE_SCHEDULE: z.string().default('0 1 * * *'),
 
+  /**
+   * Default per-run wall-clock budget (ms) for a cron tick. The runner races
+   * each handler against this; on breach it abandons the handler and pages
+   * Sentry. Individual jobs can override it in the registry's static meta.
+   * Default 5 min.
+   */
+  CRON_JOB_DEFAULT_MAX_MS: z.coerce.number().int().positive().default(300_000),
+
   /** Observability. */
   SENTRY_DSN: z.string().url().optional(),
 });

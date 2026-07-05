@@ -9,12 +9,17 @@
  *   3. Counts recent failures (last hour) + queue depth.
  *   4. Fires Sentry alerts when failure-rate or queue-depth thresholds
  *      breach.
+ *   5. Cron liveness: compares each persisted `CronJobRunState.lastSuccessAt`
+ *      against the job's nominal interval and alerts when a job has not
+ *      succeeded in more than 2× its interval (a scheduler that silently
+ *      stopped firing a job is otherwise undetectable).
  */
 
-import { prisma } from '@contractor-ops/db';
+import { prisma, prismaRaw } from '@contractor-ops/db';
 import { queueWebhookProcessing } from '@contractor-ops/integrations/services/webhook-dispatcher';
 import { metrics } from '@contractor-ops/logger/metrics';
 import { Sentry } from '../../lib/sentry.js';
+import { CRON_JOB_INTERVALS_MS } from '../job-meta.js';
 import type { JobHandler } from '../runner.js';
 
 const STALE_THRESHOLD_MIN = 15;
@@ -22,6 +27,8 @@ const FAILURE_ALERT_THRESHOLD = 10;
 const MAX_REAPER_ATTEMPTS = 5;
 const BACKOFF_BASE_SECONDS = 60;
 const BACKOFF_MAX_SECONDS = 60 * 60;
+/** A job is stale once it has not succeeded in more than this × its interval. */
+const STALE_INTERVAL_MULTIPLIER = 2;
 
 type StaleDelivery = {
   id: string;
@@ -132,6 +139,68 @@ async function failExhaustedDeliveries(toFail: StaleDelivery[], now: Date): Prom
   }
 }
 
+/**
+ * Compare each persisted cron job's `lastSuccessAt` against its nominal
+ * interval and alert on any that has not succeeded in more than
+ * `STALE_INTERVAL_MULTIPLIER × interval`. A job that has a row but never
+ * succeeded is measured from `createdAt`. Jobs without a known interval
+ * (legacy rows) are skipped. Its own try/catch — a failure here must not
+ * abort the webhook reaper above.
+ */
+async function checkStaleCronJobs(now: Date, ctx: JobHandlerCtx): Promise<number> {
+  try {
+    const states = await prismaRaw.cronJobRunState.findMany({
+      select: { jobName: true, lastSuccessAt: true, createdAt: true },
+    });
+
+    let stale = 0;
+    for (const state of states) {
+      const intervalMs = CRON_JOB_INTERVALS_MS[state.jobName];
+      if (intervalMs === undefined) continue;
+
+      const reference = state.lastSuccessAt ?? state.createdAt;
+      const ageMs = now.getTime() - reference.getTime();
+      if (ageMs <= intervalMs * STALE_INTERVAL_MULTIPLIER) continue;
+
+      stale++;
+      const ageMinutes = Math.round(ageMs / 60_000);
+      const intervalMinutes = Math.round(intervalMs / 60_000);
+      const msg = `Background job alert: cron job "${state.jobName}" has not succeeded in ${ageMinutes}min (interval ${intervalMinutes}min, threshold ${STALE_INTERVAL_MULTIPLIER}×)`;
+      ctx.log.error(
+        {
+          jobName: state.jobName,
+          lastSuccessAt: state.lastSuccessAt,
+          ageMs,
+          intervalMs,
+        },
+        msg,
+      );
+      Sentry.captureMessage(msg, {
+        level: 'error',
+        tags: {
+          'cron.job': 'job-health',
+          'alert.type': 'cron_job_stale',
+          'stale.job': state.jobName,
+        },
+        extra: {
+          lastSuccessAt: state.lastSuccessAt?.toISOString() ?? 'never',
+          ageMinutes,
+          intervalMinutes,
+        },
+      });
+    }
+
+    metrics.gauge('jobs.cron.stale', stale);
+    return stale;
+  } catch (err) {
+    ctx.log.error({ err }, 'cron staleness check failed');
+    Sentry.captureException(err, {
+      tags: { 'cron.job': 'job-health', 'alert.type': 'cron_job_stale_check_failed' },
+    });
+    return 0;
+  }
+}
+
 export const jobHealthHandler: JobHandler = async ctx => {
   const start = performance.now();
   try {
@@ -168,6 +237,8 @@ export const jobHealthHandler: JobHandler = async ctx => {
 
     const staleRetried = await retryStaleDeliveries(toRetry, now, ctx);
     await failExhaustedDeliveries(toFail, now);
+
+    const staleCronJobs = await checkStaleCronJobs(now, ctx);
 
     if (staleRetried > 0 || toFail.length > 0) {
       ctx.log.warn(
@@ -224,6 +295,7 @@ export const jobHealthHandler: JobHandler = async ctx => {
         recentFailureCount,
         staleRetried,
         staleCleared: toFail.length,
+        staleCronJobs,
       },
       'job health check completed',
     );
@@ -236,7 +308,11 @@ export const jobHealthHandler: JobHandler = async ctx => {
         recentFailureCount,
         staleRetried,
         staleCleared: toFail.length,
-        healthy: recentFailureCount <= FAILURE_ALERT_THRESHOLD && pendingCount <= 100,
+        staleCronJobs,
+        healthy:
+          recentFailureCount <= FAILURE_ALERT_THRESHOLD &&
+          pendingCount <= 100 &&
+          staleCronJobs === 0,
       },
     };
   } catch (err) {

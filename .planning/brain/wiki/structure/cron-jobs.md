@@ -5,6 +5,7 @@ tags: [structure, cron, background]
 source_commit: f0779951
 source_commit: f9de62452
 source_commit: 28061f01e
+source_commit: c8f8ffdbc
 verify_with:
   - apps/cron-worker/src/jobs/handlers/
   - apps/cron-worker/src/jobs/handlers/reminders/wt-limit-scan.ts
@@ -61,7 +62,9 @@ sequenceDiagram
 
 ## Invariants
 
-- **Per-job last-success is persisted, not in-memory.** `CronJobRunState` (`packages/db/prisma/schema/cron.prisma`, global/non-tenant, keyed `jobName @unique`, `lastSuccessAt`/`lastRunAt`) survives cron-worker restarts (the previous in-memory `lastSuccessByJob` map was wiped on restart, hiding missed ticks). `job-health.ts` reads it to alert on staleness (`now - lastSuccessAt` beyond the schedule interval) — today job-health watches only `WebhookDelivery`, so a dead cron job is undetected. The runner-side write + health staleness comparison land in a later change set; the table + unique are the schema backstop.
+- **The runner (`jobs/runner.ts`) guards every job in one place, not per handler.** Each tick gets: (1) an **in-process overlap guard** — a `Set` of in-flight job names; a tick whose previous run is still running is skipped + WARN-logged (`cron.tick.skipped_overlap`); (2) a **per-tick Postgres advisory lock** `pg_try_advisory_xact_lock('cron', jobName)` held for the whole handler by keeping its transaction open while the handler runs on separate pool connections — a second replica that can't acquire it skips the tick (`cron.tick.skipped_locked`); (3) a **hard wall-clock timeout** (`maxMs`, per-job in `jobs/job-meta.ts`, default `CRON_JOB_DEFAULT_MAX_MS`=5 min) via `Promise.race` — a hung handler is abandoned and a `cron.outcome=timeout` message is sent to Sentry (the handler keeps running on its pool connections since JS can't cancel a promise; the guard releases so the next tick may retry). `reminders` self-locks on its own `cron:reminders` key inside its handler — a distinct key from the runner's `cron:<jobName>`, so they never collide.
+- **Per-job last-success is persisted, not in-memory.** The runner upserts `CronJobRunState` (`packages/db/prisma/schema/cron.prisma`, global/non-tenant, keyed `jobName @unique`) on every run — `lastRunAt` each tick, `lastSuccessAt` on success — so state survives a cron-worker restart (the in-memory `lastSuccessByJob` map, still served by `/health`, is wiped on restart, which used to hide missed ticks). On boot, `runStartupCatchUp` re-runs each **must-run daily job** (`catchUpOnBoot` in `job-meta.ts`) whose persisted `lastSuccessAt` predates one interval, so a restart that spanned a daily window doesn't silently skip a day.
+- **`job-health.ts` alerts on a dead cron job, not just stale webhooks.** Alongside the `WebhookDelivery` reaper it reads every `CronJobRunState` row and, using the nominal cadence in `CRON_JOB_INTERVALS_MS` (`jobs/job-meta.ts`), fires a Sentry `alert.type=cron_job_stale` when `now - (lastSuccessAt ?? createdAt) > 2 × interval` for a job (a scheduler that silently stopped firing a job is otherwise undetectable). Jobs without a known interval are skipped; the staleness check is isolated in its own try/catch so it can't abort the webhook reaper.
 - `createCronLogger` — no `console.*`
 - QStash routes: `defineQStashRoute` + Zod body (`apps/api/src/lib/qstash-route.ts`)
 - `cronProcedure` with `Authorization: Bearer CRON_SECRET`

@@ -9,7 +9,7 @@ import cron from 'node-cron';
 import { loadEnv } from './env.js';
 import { buildHealthServer } from './health.js';
 import { getJobDefinitions } from './jobs/registry.js';
-import { runJob } from './jobs/runner.js';
+import { runJob, runStartupCatchUp } from './jobs/runner.js';
 
 const log = createLogger({ service: 'cron-worker' });
 
@@ -74,6 +74,13 @@ async function main(): Promise<void> {
   };
   process.once('SIGTERM', () => void shutdown('SIGTERM'));
   process.once('SIGINT', () => void shutdown('SIGINT'));
+
+  // Catch up must-run daily jobs whose last success predates a restart that
+  // spanned their scheduled window. Runs in the background so boot (and the
+  // shutdown handlers above) are not blocked; each run is guarded + persisted.
+  void runStartupCatchUp(jobs, log).catch(err => {
+    log.error({ err }, 'startup catch-up crashed');
+  });
 }
 
 void main();

@@ -24,6 +24,7 @@ import { stripeReconcileHandler } from './handlers/stripe-reconcile.js';
 import { tokenRefreshHandler } from './handlers/token-refresh.js';
 import { trialNotificationsHandler } from './handlers/trial-notifications.js';
 import { yearEnd1099ReminderHandler } from './handlers/year-end-1099-reminder.js';
+import { buildJobMeta } from './job-meta.js';
 import type { JobHandler, JobMeta } from './runner.js';
 
 export interface JobDefinition {
@@ -49,95 +50,84 @@ export function getJobDefinitions(env: {
   CRON_REMINDERS_SCHEDULE: string;
   CRON_YEAR_END_1099_REMINDER_SCHEDULE: string;
   CRON_STRIPE_RECONCILE_SCHEDULE: string;
+  CRON_JOB_DEFAULT_MAX_MS: number;
 }): JobDefinition[] {
+  const defaultMaxMs = env.CRON_JOB_DEFAULT_MAX_MS;
+  const meta = (name: string, schedule: string): JobMeta =>
+    buildJobMeta(name, schedule, defaultMaxMs);
   return [
     {
-      meta: { name: 'token-refresh', schedule: env.CRON_TOKEN_REFRESH_SCHEDULE },
+      meta: meta('token-refresh', env.CRON_TOKEN_REFRESH_SCHEDULE),
       handler: tokenRefreshHandler,
     },
     {
-      meta: { name: 'data-purge', schedule: env.CRON_DATA_PURGE_SCHEDULE },
+      meta: meta('data-purge', env.CRON_DATA_PURGE_SCHEDULE),
       handler: dataPurgeHandler,
     },
     {
-      meta: { name: 'exchange-rates', schedule: env.CRON_EXCHANGE_RATES_SCHEDULE },
+      meta: meta('exchange-rates', env.CRON_EXCHANGE_RATES_SCHEDULE),
       handler: exchangeRatesHandler,
     },
     {
-      meta: { name: 'boe-rate-poll', schedule: env.CRON_BOE_RATE_POLL_SCHEDULE },
+      meta: meta('boe-rate-poll', env.CRON_BOE_RATE_POLL_SCHEDULE),
       handler: boeRatePollHandler,
     },
     {
-      meta: { name: 'org-definition-sync', schedule: env.CRON_ORG_DEFINITION_SYNC_SCHEDULE },
+      meta: meta('org-definition-sync', env.CRON_ORG_DEFINITION_SYNC_SCHEDULE),
       handler: orgDefinitionSyncHandler,
     },
     {
-      meta: { name: 'hris-sync', schedule: env.CRON_HRIS_SYNC_SCHEDULE },
+      meta: meta('hris-sync', env.CRON_HRIS_SYNC_SCHEDULE),
       handler: hrisSyncHandler,
     },
     {
-      meta: {
-        name: 'classification-reassessment-triggers',
-        schedule: env.CRON_CLASSIFICATION_REASSESSMENT_TRIGGERS_SCHEDULE,
-      },
+      meta: meta(
+        'classification-reassessment-triggers',
+        env.CRON_CLASSIFICATION_REASSESSMENT_TRIGGERS_SCHEDULE,
+      ),
       handler: classificationReassessmentTriggersHandler,
     },
     {
-      meta: {
-        name: 'classification-economic-dependency',
-        schedule: env.CRON_CLASSIFICATION_ECONOMIC_DEPENDENCY_SCHEDULE,
-      },
+      meta: meta(
+        'classification-economic-dependency',
+        env.CRON_CLASSIFICATION_ECONOMIC_DEPENDENCY_SCHEDULE,
+      ),
       handler: classificationEconomicDependencyHandler,
     },
     {
-      meta: {
-        name: 'form-1099k-tracker',
-        schedule: env.CRON_FORM_1099K_TRACKER_SCHEDULE,
-      },
+      meta: meta('form-1099k-tracker', env.CRON_FORM_1099K_TRACKER_SCHEDULE),
       handler: form1099kTrackerHandler,
     },
     {
-      meta: {
-        name: 'inpost-status-poll',
-        schedule: env.CRON_INPOST_STATUS_POLL_SCHEDULE,
-      },
+      meta: meta('inpost-status-poll', env.CRON_INPOST_STATUS_POLL_SCHEDULE),
       handler: inpostStatusPollHandler,
     },
     {
-      meta: { name: 'job-health', schedule: env.CRON_JOB_HEALTH_SCHEDULE },
+      meta: meta('job-health', env.CRON_JOB_HEALTH_SCHEDULE),
       handler: jobHealthHandler,
     },
     {
-      meta: { name: 'api-key-leak-alarm', schedule: env.CRON_API_KEY_LEAK_ALARM_SCHEDULE },
+      meta: meta('api-key-leak-alarm', env.CRON_API_KEY_LEAK_ALARM_SCHEDULE),
       handler: apiKeyLeakAlarmHandler,
     },
     {
-      meta: {
-        name: 'late-interest-pdf-reaper',
-        schedule: env.CRON_LATE_INTEREST_PDF_REAPER_SCHEDULE,
-      },
+      meta: meta('late-interest-pdf-reaper', env.CRON_LATE_INTEREST_PDF_REAPER_SCHEDULE),
       handler: lateInterestPdfReaperHandler,
     },
     {
-      meta: {
-        name: 'trial-notifications',
-        schedule: env.CRON_TRIAL_NOTIFICATIONS_SCHEDULE,
-      },
+      meta: meta('trial-notifications', env.CRON_TRIAL_NOTIFICATIONS_SCHEDULE),
       handler: trialNotificationsHandler,
     },
     {
-      meta: { name: 'reminders', schedule: env.CRON_REMINDERS_SCHEDULE },
+      meta: meta('reminders', env.CRON_REMINDERS_SCHEDULE),
       handler: remindersHandler,
     },
     {
-      meta: {
-        name: 'year-end-1099-reminder',
-        schedule: env.CRON_YEAR_END_1099_REMINDER_SCHEDULE,
-      },
+      meta: meta('year-end-1099-reminder', env.CRON_YEAR_END_1099_REMINDER_SCHEDULE),
       handler: yearEnd1099ReminderHandler,
     },
     {
-      meta: { name: 'stripe-reconcile', schedule: env.CRON_STRIPE_RECONCILE_SCHEDULE },
+      meta: meta('stripe-reconcile', env.CRON_STRIPE_RECONCILE_SCHEDULE),
       handler: stripeReconcileHandler,
     },
   ];

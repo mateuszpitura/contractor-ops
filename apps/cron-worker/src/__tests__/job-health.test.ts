@@ -6,6 +6,7 @@
  *   2. Stale delivery under the attempt cap → re-enqueued to QStash.
  *   3. Stale delivery at the attempt cap → flipped to FAILED.
  *   4. Delivery query throws → ok=false + Sentry capture.
+ *   5. A cron job whose persisted last success exceeds 2× its interval alerts.
  */
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -15,6 +16,7 @@ const {
   mockDeliveryUpdate,
   mockDeliveryUpdateMany,
   mockDeliveryCount,
+  mockCronRunStateFindMany,
   mockQueueWebhook,
   mockGauge,
   mockCaptureException,
@@ -24,6 +26,7 @@ const {
   mockDeliveryUpdate: vi.fn(),
   mockDeliveryUpdateMany: vi.fn(),
   mockDeliveryCount: vi.fn(),
+  mockCronRunStateFindMany: vi.fn(),
   mockQueueWebhook: vi.fn(),
   mockGauge: vi.fn(),
   mockCaptureException: vi.fn(),
@@ -38,6 +41,9 @@ vi.mock('@contractor-ops/db', () => ({
       updateMany: mockDeliveryUpdateMany,
       count: mockDeliveryCount,
     },
+  },
+  prismaRaw: {
+    cronJobRunState: { findMany: mockCronRunStateFindMany },
   },
 }));
 
@@ -77,6 +83,7 @@ beforeEach(() => {
   mockDeliveryUpdate.mockResolvedValue({});
   mockDeliveryUpdateMany.mockResolvedValue({ count: 0 });
   mockDeliveryCount.mockResolvedValue(0);
+  mockCronRunStateFindMany.mockResolvedValue([]);
   mockQueueWebhook.mockResolvedValue(undefined);
 });
 
@@ -122,5 +129,41 @@ describe('jobHealthHandler', () => {
     expect(result.ok).toBe(false);
     expect(result.details).toMatchObject({ error: 'neon connection refused' });
     expect(mockCaptureException).toHaveBeenCalledTimes(1);
+  });
+
+  it('alerts when a cron job has not succeeded in more than 2× its interval', async () => {
+    // reminders runs daily (interval 24h); last success 3 days ago is well past 2×.
+    mockCronRunStateFindMany.mockResolvedValue([
+      {
+        jobName: 'reminders',
+        lastSuccessAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
+        createdAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+      },
+    ]);
+
+    const result = await jobHealthHandler(makeJobContext());
+
+    expect(result.ok).toBe(true);
+    expect(result.details).toMatchObject({ staleCronJobs: 1, healthy: false });
+    expect(mockCaptureMessage).toHaveBeenCalledTimes(1);
+    const [msg, opts] = mockCaptureMessage.mock.calls[0];
+    expect(msg).toContain('reminders');
+    expect(opts.tags['alert.type']).toBe('cron_job_stale');
+    expect(opts.tags['stale.job']).toBe('reminders');
+  });
+
+  it('does not alert when a cron job succeeded within its interval', async () => {
+    mockCronRunStateFindMany.mockResolvedValue([
+      {
+        jobName: 'reminders',
+        lastSuccessAt: new Date(Date.now() - 60 * 60 * 1000),
+        createdAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+      },
+    ]);
+
+    const result = await jobHealthHandler(makeJobContext());
+
+    expect(result.details).toMatchObject({ staleCronJobs: 0, healthy: true });
+    expect(mockCaptureMessage).not.toHaveBeenCalled();
   });
 });
