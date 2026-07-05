@@ -9232,6 +9232,46 @@
       "OVER": "Über der 1099-K-Meldeschwelle. Ihre Zahlungsabwicklungsstelle — nicht diese Plattform — reicht eine etwaige 1099-K ein. Dies ist nur ein Hinweis."
     }
   },
+  "Tax1042SConsent": {
+    "heading": "Elektronische Zustellung Ihres 1042-S",
+    "subtitle": "Wählen Sie, wie Sie Ihr 1042-S erhalten.",
+    "consentLabel": "Ich stimme zu, mein 1042-S elektronisch zu erhalten. Ich bestätige, dass ich eine PDF-Datei öffnen und drucken kann, verstehe, dass ich eine Papierkopie anfordern kann, und kann diese Zustimmung jederzeit widerrufen.",
+    "affirm": "Zustimmen und mein 1042-S herunterladen",
+    "withdraw": "Zustimmung zur elektronischen Zustellung widerrufen",
+    "withdrawConfirm": "Zustimmung widerrufen: Sie erhalten Ihr 1042-S dann nicht mehr elektronisch, sondern als Papierkopie. Sie können jederzeit erneut zustimmen. Fortfahren?",
+    "withdrawConfirmYes": "Zustimmung widerrufen",
+    "withdrawConfirmNo": "Elektronische Zustellung beibehalten",
+    "noConsent": "Sie haben der elektronischen Zustellung nicht zugestimmt. Eine Papierkopie Ihres 1042-S wird an Ihre hinterlegte Adresse gesendet.",
+    "download": "Mein 1042-S herunterladen (Copy B)",
+    "downloadError": "Wir konnten Ihren Download nicht vorbereiten. Bitte versuchen Sie es erneut.",
+    "loadError": "Wir konnten dies nicht laden. Überprüfen Sie Ihre Verbindung und versuchen Sie es erneut.",
+    "reload": "Neu laden",
+    "tinMask": "FTIN endet auf {last4}",
+    "adviserNote": "Die hier angezeigten Beträge und Formulare müssen vor der Verwendung von einem für die jeweilige Rechtsordnung zuständigen Steuerberater überprüft werden."
+  },
+  "Tax1042SFiling": {
+    "heading": "IRS-E-File (1042-S)",
+    "loadError": "Wir konnten dies nicht laden. Überprüfen Sie Ihre Verbindung und versuchen Sie es erneut.",
+    "reload": "Neu laden",
+    "empty": {
+      "heading": "Noch nichts eingereicht",
+      "body": "Sobald Sie einen Stapel erstellt haben, erstellen und laden Sie hier die validierte 1042-S-XML herunter und laden Sie dann die IRS-Bestätigung hoch, um das Ergebnis zu erfassen."
+    },
+    "bundleUnavailable": "Die Schemavalidierung steht noch aus (IRS-Freischaltung erforderlich) — die Datei kann noch nicht eingereicht werden.",
+    "validationFailed": "Die 1042-S-Datei hat die Schemavalidierung nicht bestanden und kann nicht eingereicht werden. Die Validierungsfehler sind unten aufgeführt — korrigieren Sie die Empfängerdaten und erstellen Sie den Stapel neu.",
+    "download": "Validierte 1042-S-XML herunterladen",
+    "ackParseFailed": "Wir konnten diese Bestätigungsdatei nicht lesen. Vergewissern Sie sich, dass es die vom IRS für diese Einreichung zurückgegebene Datei ist, und laden Sie sie erneut hoch.",
+    "rejected": "Der IRS hat diese Einreichung abgelehnt. Sehen Sie die Fehlerdetails pro Empfänger unten, reichen Sie eine Korrektur ein und übertragen Sie erneut.",
+    "correction": {
+      "prompt": "Korrektur einreichen für:",
+      "title": "Korrektur einreichen",
+      "body": "Korrektur einreichen: Dies ersetzt das zuvor eingereichte 1042-S für {recipient}. Der ursprüngliche Datensatz bleibt erhalten und wird nie bearbeitet. Fortfahren?",
+      "reasonLabel": "Grund",
+      "confirm": "Korrektur einreichen",
+      "cancel": "Abbrechen"
+    },
+    "adviserNote": "Die hier angezeigten Beträge, Formulare und Einstufungen müssen vor der Verwendung von einem für die jeweilige Rechtsordnung zuständigen Rechts- oder Steuerberater überprüft werden."
+  },
   "Tax1042SBatch": {
     "pageTitle": "1042-S-Meldung",
     "pageDescription": "Prüfen Sie den Steuereinbehalt für ausländische Empfänger, bevor Sie einreichen. Es wird nichts automatisch eingereicht — Sie prüfen zuerst.",

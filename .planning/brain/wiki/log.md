@@ -5,6 +5,14 @@ type: log
 
 # Wiki log (append only)
 
+## 2026-07-05 — 1042-S staff filing card + portal consent-gated download (Theme A HOLD resolved)
+
+- **Cross-phase HOLD resolved (Plan 09 Tasks 2-3):** with the P86 IRIS seam now on main, the staff 1042-S filing card + portal consent-gated recipient PDF are built, reusing the shared components verbatim (never rebuilt).
+- Backend: new `form-1042s-transmit.service` (`buildAndValidate1042S`, sibling of the shared `tax-filing-transmitter` for Pub 1187) + three `form1042s` procedures (`buildAndValidateXml` / `downloadValidatedXml` / `uploadAck`) mirroring the 1099 tail — idempotent download, ack via the shared `iris-ack-parser`, the Pub 1187 schema version as the `IrisSubmission` discriminator (no form-type migration), BUNDLE_UNAVAILABLE (non-throwing) until the human XSD lands. New portal `downloadForm1042S` gates the recipient 1042-S Copy B on the SAME e-delivery consent (IDOR-scoped, FTIN last-4).
+- UI: `tax-1042s-filing-card` (reuses `IrisStatusPill` + `AckUploadField` + `CorrectionDialog`) mounted on `/tax-filing`; portal `copy-1042s-download` reuses `useEdeliveryConsent` + `StepEdeliveryConsent`; `CorrectionDialog` + `StepEdeliveryConsent` gained a `namespace` prop for correct form-type copy. Added `Tax1042SFiling` + `Tax1042SConsent` namespaces across en/de/pl/ar at parity (de/pl/ar machine-translated, flagged for native review; en-US inherits en).
+- Wiki: [[domains/us-tax-forms]] transmit-tail paragraph / UI-surface / entry-points / invariant / agent-mistake updated (HOLD → built); [[structure/web-vite-domains]] + [[structure/api-routers-catalog]] + [[structure/key-services]] rows + source_commit bumped.
+- **Verification:** `@contractor-ops/api` typecheck green; web-vite typecheck clean except the pre-existing Phase-92 `team-calendar` scaffold (another stream); `check:web-vite-data-layer` / `dialog-pattern` OK; `i18n:parity` OK; scoped `form-1042s` / `iris-ack` tests 27/27.
+
 ## 2026-07-05 — 1042-S staff surface mounted + Phase 87 US-expansion synthesis (Theme A gate)
 
 - **Mounted the orphaned 1042-S staff batch review** (Plan 09 Task 1): the recovered wired `tax-1042s-batch-panel` + `tax-1042s-batch-summary` + `treaty-rate-caption` + `hooks/use-1042s-batch.ts` typechecked but had no route/nav/i18n. Added a thin `/tax-filing` page (`pages/dashboard/tax-filing.tsx` — Suspense + `module.us-expansion` flag gate + `contractor:read`), the dashboard route, and a flag-gated Finance nav entry (`Landmark`); added the `Tax1042SBatch` i18n namespace + `Navigation.taxFiling` across en/de/pl/ar at parity (en-US inherits en). FTIN stays last-4 via the gated `SsnMaskedReveal`; the 30% statutory branch is an amber advisory caption, never a filing block.

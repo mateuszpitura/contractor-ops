@@ -9232,6 +9232,46 @@
       "OVER": "Powyżej progu zgłaszania 1099-K. Twój podmiot rozliczający płatności — a nie ta platforma — składa ewentualne 1099-K. To tylko informacja."
     }
   },
+  "Tax1042SConsent": {
+    "heading": "Elektroniczne dostarczanie formularza 1042-S",
+    "subtitle": "Wybierz sposób otrzymywania formularza 1042-S.",
+    "consentLabel": "Wyrażam zgodę na otrzymywanie mojego formularza 1042-S drogą elektroniczną. Potwierdzam, że mogę otworzyć i wydrukować plik PDF, rozumiem, że mogę poprosić o kopię papierową, i mogę wycofać tę zgodę w dowolnym momencie.",
+    "affirm": "Wyraź zgodę i pobierz mój 1042-S",
+    "withdraw": "Wycofaj zgodę na dostarczanie elektroniczne",
+    "withdrawConfirm": "Wycofaj zgodę: Przestaniesz otrzymywać formularz 1042-S drogą elektroniczną i otrzymasz kopię papierową. Możesz ponownie wyrazić zgodę w dowolnym momencie. Kontynuować?",
+    "withdrawConfirmYes": "Wycofaj zgodę",
+    "withdrawConfirmNo": "Zachowaj dostarczanie elektroniczne",
+    "noConsent": "Nie wyraziłeś zgody na dostarczanie elektroniczne. Papierowa kopia Twojego formularza 1042-S zostanie wysłana na adres podany w aktach.",
+    "download": "Pobierz mój 1042-S (Copy B)",
+    "downloadError": "Nie udało się przygotować pobierania. Spróbuj ponownie.",
+    "loadError": "Nie udało się tego załadować. Sprawdź połączenie i spróbuj ponownie.",
+    "reload": "Odśwież",
+    "tinMask": "FTIN kończący się na {last4}",
+    "adviserNote": "Kwoty i formularze wyświetlane tutaj wymagają weryfikacji przez doradcę prawnego lub podatkowego właściwego dla danej jurysdykcji, zanim na nich polegasz."
+  },
+  "Tax1042SFiling": {
+    "heading": "IRS e-file (1042-S)",
+    "loadError": "Nie udało się tego załadować. Sprawdź połączenie i spróbuj ponownie.",
+    "reload": "Odśwież",
+    "empty": {
+      "heading": "Nic jeszcze nie złożono",
+      "body": "Po wygenerowaniu partii utwórz i pobierz tutaj zweryfikowany plik XML 1042-S, a następnie prześlij potwierdzenie IRS, aby zapisać wynik."
+    },
+    "bundleUnavailable": "Walidacja schematu oczekuje na aktywację IRS — pliku nie można jeszcze złożyć.",
+    "validationFailed": "Plik 1042-S nie przeszedł walidacji schematu i nie może zostać złożony. Błędy walidacji są wymienione poniżej — popraw dane odbiorcy i wygeneruj ponownie.",
+    "download": "Pobierz zweryfikowany plik XML 1042-S",
+    "ackParseFailed": "Nie udało się odczytać tego pliku potwierdzenia. Upewnij się, że to plik zwrócony przez IRS dla tego zgłoszenia, i prześlij go ponownie.",
+    "rejected": "IRS odrzucił to zgłoszenie. Zobacz szczegóły błędów dla poszczególnych odbiorców poniżej, złóż korektę, a następnie prześlij ponownie.",
+    "correction": {
+      "prompt": "Złóż korektę dla:",
+      "title": "Złóż korektę",
+      "body": "Złóż korektę: To zastępuje wcześniej złożony formularz 1042-S dla {recipient}. Oryginalny zapis jest zachowany i nigdy nie jest edytowany. Kontynuować?",
+      "reasonLabel": "Powód",
+      "confirm": "Złóż korektę",
+      "cancel": "Anuluj"
+    },
+    "adviserNote": "Kwoty, formularze i klasyfikacje wyświetlane tutaj wymagają weryfikacji przez doradcę prawnego lub podatkowego właściwego dla danej jurysdykcji, zanim na nich polegasz."
+  },
   "Tax1042SBatch": {
     "pageTitle": "Deklaracja 1042-S",
     "pageDescription": "Sprawdź podatek u źródła dla zagranicznych odbiorców przed złożeniem. Nic nie jest składane automatycznie — najpierw weryfikujesz.",

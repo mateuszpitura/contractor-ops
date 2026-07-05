@@ -2,6 +2,7 @@ import { Suspense } from 'react';
 import { Navigate } from 'react-router-dom';
 
 import { Tax1042SBatchPanel } from '../../components/contractors/tax-filing/tax-1042s-batch-panel.js';
+import { Tax1042SFilingCard } from '../../components/contractors/tax-filing/tax-1042s-filing-card.js';
 import { useFlag } from '../../components/layout/feature-flag-context.js';
 import { AnimateIn } from '../../components/shared/animate-in.js';
 import { PageLoadingSpinner } from '../../components/shared/page-loading-spinner.js';
@@ -34,6 +35,9 @@ function TaxFilingPageContent() {
       </AnimateIn>
       <AnimateIn delay={1}>
         <Tax1042SBatchPanel />
+      </AnimateIn>
+      <AnimateIn delay={2}>
+        <Tax1042SFilingCard />
       </AnimateIn>
     </div>
   );

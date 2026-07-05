@@ -2,7 +2,7 @@
 title: web-vite UI domains
 type: structure
 tags: [structure, web-vite, ui]
-source_commit: 2aabc35c8
+source_commit: 5d6e26a17
 verify_with:
   - apps/web-vite/src/components/
   - apps/web-vite/ARCHITECTURE.md
@@ -37,10 +37,10 @@ Routes: `apps/web-vite/src/router/dashboard-routes.tsx`, `portal-routes.tsx`.
 | `contractors/insights/` | [[domains/contractors-engagements]] — list insight band (attention rail + composition strip, view-mode arranger); `hooks/use-contractor-insights.ts` = sole tRPC boundary |
 | `contractors/contractor-profile/overview/` | [[domains/contractors-engagements]] — detail overview widgets (compliance + financial pulse) |
 | `contractors/tax-forms/` | [[domains/us-tax-forms]] — staff W-form status card (`tax-form-status-card.tsx` + `hooks/use-tax-form-status.ts`) |
-| `contractors/tax-filing/` | [[domains/us-tax-forms]] — staff 1042-S batch review workspace (`tax-1042s-batch-panel.tsx` + `tax-1042s-batch-summary.tsx` + `treaty-rate-caption.tsx`; `hooks/use-1042s-batch.ts` = sole tRPC boundary → `form1042s.list`/`generateBatch`). Page `pages/dashboard/tax-filing.tsx` at `/tax-filing`, flag-gated `module.us-expansion` + `contractor:read`. FTIN last-4 via `SsnMaskedReveal`; 30% statutory = amber advisory, never a filing block. The filing card (download XML / ack upload) + portal 1042-S consent download are HELD on the P86 `iris-status-pill`/`ack-upload-field`/`step-edelivery-consent` seam |
+| `contractors/tax-filing/` | [[domains/us-tax-forms]] — staff 1042-S batch review + filing workspace (`tax-1042s-batch-panel.tsx` + `tax-1042s-batch-summary.tsx` + `treaty-rate-caption.tsx` + `tax-1042s-filing-card.tsx`; `hooks/use-1042s-batch.ts` + `hooks/use-1042s-filing.ts` = sole tRPC boundaries → `form1042s.list`/`generateBatch`/`buildAndValidateXml`/`downloadValidatedXml`/`uploadAck`/`fileCorrection`). Page `pages/dashboard/tax-filing.tsx` at `/tax-filing`, flag-gated `module.us-expansion` + `contractor:read`. FTIN last-4 via `SsnMaskedReveal`; 30% statutory = amber advisory, never a filing block. The filing card reuses the shared `iris-status-pill` + `ack-upload-field` + `correction-dialog` (`namespace` prop); BUNDLE_UNAVAILABLE until the Pub 1187 XSD lands |
 | `contracts/` | [[domains/contracts-lifecycle]] |
 | `portal/` | [[domains/portal-external]] |
-| `portal/tax-forms/` | [[domains/us-tax-forms]] — portal W-9/W-8BEN/W-8BEN-E self-cert wizard (`tax-form-wizard.tsx` + `hooks/use-tax-form-wizard.ts`), route `portal/tax-form` |
+| `portal/tax-forms/` | [[domains/us-tax-forms]] — portal W-9/W-8BEN/W-8BEN-E self-cert wizard (`tax-form-wizard.tsx` + `hooks/use-tax-form-wizard.ts`), route `portal/tax-form`; plus the consent-gated recipient PDF downloads `copy-b-download.tsx` (1099) + `copy-1042s-download.tsx` (1042-S), both reusing `hooks/use-edelivery-consent.ts` + `step-edelivery-consent.tsx` (`namespace` prop) → `portal.downloadCopyB` / `portal.downloadForm1042S` |
 | `compliance/` | [[domains/compliance-dashboard]] |
 | `classification/` | [[domains/classification-ir35]] |
 | `workflows/`, `workflow/` | [[domains/workflows-and-roles]] |

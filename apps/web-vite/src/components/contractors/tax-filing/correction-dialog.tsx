@@ -21,10 +21,16 @@ export interface CorrectionDialogProps {
   recipientName: string;
   onConfirm: (reason: string) => Promise<void>;
   isSubmitting: boolean;
+  /**
+   * Translation namespace carrying the `correction.*` keys. Defaults to the
+   * 1099-NEC filing copy; the 1042-S filing card passes `Tax1042SFiling` so the
+   * same supersede confirm reads with the correct form type.
+   */
+  namespace?: string;
 }
 
 /**
- * CORRECTED-filing confirm. A correction supersedes the previously-filed 1099-NEC
+ * CORRECTED-filing confirm. A correction supersedes the previously-filed return
  * (the original is kept, never edited) — the copy states that reversibility. Not
  * a delete: content scrolls in DialogBody, the sticky DialogFooter holds actions.
  */
@@ -34,8 +40,9 @@ export function CorrectionDialog({
   recipientName,
   onConfirm,
   isSubmitting,
+  namespace = 'Tax1099Filing',
 }: CorrectionDialogProps) {
-  const t = useTranslations('Tax1099Filing');
+  const t = useTranslations(namespace);
   const reasonId = useId();
   const [reason, setReason] = useState('');
 

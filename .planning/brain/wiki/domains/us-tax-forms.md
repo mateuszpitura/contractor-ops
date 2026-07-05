@@ -2,21 +2,27 @@
 title: US tax forms (W-9 / W-8BEN / W-8BEN-E) and treaty engine
 type: domain
 tags: [us, tax, w-form, treaty, portal, esign, immutable-record]
-source_commit: 2aabc35c8
+source_commit: 5d6e26a17
 verify_with:
   - apps/web-vite/src/components/portal/tax-forms/
   - apps/web-vite/src/components/contractors/tax-forms/
   - apps/web-vite/src/components/contractors/tax-filing/
   - apps/web-vite/src/pages/dashboard/tax-filing.tsx
   - packages/api/src/services/form-1042s.service.ts
+  - packages/api/src/services/form-1042s-transmit.service.ts
   - packages/api/src/services/form-1042s-pdf.ts
   - packages/api/src/pdf-templates/form-1042s-recipient-copy.tsx
   - packages/api/src/routers/finance/form-1042s-router.ts
+  - packages/api/src/routers/portal/portal-tax-1099-router.ts
   - apps/web-vite/src/components/contractors/form-1099k-band.tsx
   - apps/web-vite/src/components/contractors/hooks/use-1099k-tracker.ts
   - apps/web-vite/src/components/contractors/classification/us-classification-result.tsx
   - apps/web-vite/src/components/contractors/classification/ab5-watchlist-flag.tsx
   - apps/web-vite/src/components/contractors/classification/classification-override-dialog.tsx
+  - apps/web-vite/src/components/contractors/tax-filing/tax-1042s-filing-card.tsx
+  - apps/web-vite/src/components/contractors/tax-filing/hooks/use-1042s-filing.ts
+  - apps/web-vite/src/components/portal/tax-forms/copy-1042s-download.tsx
+  - apps/web-vite/src/components/portal/tax-forms/hooks/use-edelivery-consent.ts
   - apps/web-vite/src/components/contractors/classification/hooks/use-us-classification.ts
   - apps/web-vite/src/components/contractors/classification-documents/generate-determination-letter-button.tsx
   - packages/api/src/routers/portal/portal-tax-form-router.ts
@@ -36,7 +42,7 @@ verify_with:
   - packages/validators/src/w-form-validators.ts
   - packages/iris/src/generator.ts
   - packages/iris/src/validator.ts
-updated: 2026-07-01
+updated: 2026-07-05
 ---
 
 # US tax forms (W-9 / W-8BEN / W-8BEN-E) and treaty engine
@@ -180,9 +186,15 @@ status, 13n LOB, treaty article) with a real XML builder (never string concat) a
 FTIN only. `xsdValidate1042S` is form-parameterized (`ENTRY_MATCHERS` per-form loader, so a missing
 1042-S XSD reports missing rather than validating against the 1099 schema), SSRF/XXE-safe, and stays
 `XSD-BUNDLE-MISSING` until the human-only IRS Pub 1187 XSDs land under `packages/iris/src/schema-bundle/`.
-The **transmit tail** (download-XML / upload-ack) is a documented **cross-phase HOLD** on the P86
-`TaxFilingTransmitter` seam + `iris-ack-parser` — no `form-1042s-transmit.service.ts` and no transmit
-procedures exist; they append to `form-1042s-router.ts` verbatim once P86 lands, never rebuilt.
+The **transmit tail** reuses the shared IRIS seam for the Pub 1187 form: `form-1042s-transmit.service`
+(`buildAndValidate1042S`) runs the same build+validate pipeline over `buildIris1042SXml`/`xsdValidate1042S`,
+and `form1042s.buildAndValidateXml` / `downloadValidatedXml` / `uploadAck` mirror the 1099 tail — the
+ManualDownload path returns the validated XML only on VALID (BUNDLE_UNAVAILABLE until the Pub 1187 XSD
+lands, never throwing), records an `IrisSubmission` once per (org, tax year) via idempotency stamped with
+the **Pub 1187 schema version**, and the ack upload runs through the single shared XXE-safe
+`iris-ack-parser`. That schema version is the discriminator that keeps a 1042-S acknowledgement off a 1099
+submission on the shared `IrisSubmission`/`IrisAck` ledger (no form-type column needed); the download also
+threads the created submission id to the ack for an exact match.
 
 See [[integrations/irs-1042s]] for the IRIS transmit/XSD integration surface.
 
@@ -223,7 +235,10 @@ contractor profile; it never mutates band state.
 | IRIS XML e-file | `packages/iris` (`buildIrisXml` / `xsdValidate`) — Copy A submission XML + bundled-XSD validation; XSD bundle under `src/schema-bundle/` is a human-action checkpoint |
 | 1042-S core | `packages/api/src/services/form-1042s.service.ts` (`resolveBox2Rate` §875(d) gate / `routeFormType` / `buildForm1042SSnapshot` / `generateBatch1042S` / `supersedeCorrected1042S` / `fileCorrection1042S`) |
 | 1042-S recipient PDF | `packages/api/src/services/form-1042s-pdf.ts` (`renderAndArchiveRecipientCopy`) + `packages/api/src/pdf-templates/form-1042s-recipient-copy.tsx` |
-| 1042-S staff router | `form1042s.generateBatch` / `fileCorrection` / `getRecipientCopyUrl` / `list` / `revealRecipientFtin` (contractorPii:read) — `packages/api/src/routers/finance/form-1042s-router.ts` (us-expansion gated) |
+| 1042-S staff router | `form1042s.generateBatch` / `buildAndValidateXml` / `downloadValidatedXml` / `uploadAck` / `fileCorrection` / `getRecipientCopyUrl` / `list` / `revealRecipientFtin` (contractorPii:read) — `packages/api/src/routers/finance/form-1042s-router.ts` (us-expansion gated) |
+| 1042-S transmit tail | `packages/api/src/services/form-1042s-transmit.service.ts` (`buildAndValidate1042S`) — Pub 1187 build+validate over the shared IRIS seam |
+| 1042-S portal download | `portal.downloadForm1042S` (consent-gated recipient Copy B) — `packages/api/src/routers/portal/portal-tax-1099-router.ts` |
+| 1042-S filing UI | `apps/web-vite/src/components/contractors/tax-filing/tax-1042s-filing-card.tsx` + `hooks/use-1042s-filing.ts`; portal `components/portal/tax-forms/copy-1042s-download.tsx` (reuses `hooks/use-edelivery-consent.ts`) |
 | 1042-S IRIS | `packages/iris` (`buildIris1042SXml` / `xsdValidate1042S`) — Pub 1187 sibling builder + form-parameterized XSD |
 | Form routing | `packages/api/src/services/tax-form-routing.ts` (`determineFormType`) |
 | Validators | `packages/validators/src/w-form-validators.ts` (`taxFormSubmissionSchema` discriminated union) |
@@ -245,8 +260,19 @@ contractor profile; it never mutates band state.
   reachable via the flag-gated Finance nav entry (`Landmark`). FTIN last-4 only via the gated
   `SsnMaskedReveal`; a recipient without a complete W-8 renders the amber 30% statutory caption
   (`treaty-rate-caption.tsx`, `data-basis="statutory"`) — never a filing block. Review-before-file
-  (Generate produces a reviewable summary; filing is a separate action). The staff filing card
-  (download XML / ack upload) + the portal 1042-S consent-gated recipient PDF are HELD on the P86 seam.
+  (Generate produces a reviewable summary; filing is a separate action).
+- Staff 1042-S filing card: `apps/web-vite/src/components/contractors/tax-filing/tax-1042s-filing-card.tsx`
+  + `hooks/use-1042s-filing.ts` (sole tRPC boundary → `form1042s.buildAndValidateXml` / `downloadValidatedXml`
+  / `uploadAck` / `fileCorrection`). Reuses the shared `IrisStatusPill` + `AckUploadField` + `CorrectionDialog`
+  (the last two gain a `namespace` prop so the shared components read as 1042-S); 4-state, download validated
+  XML / upload ack / supersede correction, Rejected announced via `aria-live="assertive"`. Mounted on the
+  `/tax-filing` page below the batch panel; BUNDLE_UNAVAILABLE renders as a muted pending state until the Pub
+  1187 XSD lands.
+- Portal 1042-S recipient PDF: `apps/web-vite/src/components/portal/tax-forms/copy-1042s-download.tsx` reuses
+  the SAME `useEdeliveryConsent` hook + `StepEdeliveryConsent` step (namespace `Tax1042SConsent`) to gate the
+  recipient's 1042-S Copy B download on stored e-delivery consent → `portal.downloadForm1042S`; without consent
+  the affirmative step + paper-copy messaging show, the download is not offered. FTIN last-4 only; IDOR-scoped
+  to `ctx.contractorId` server-side.
 - 1099-K informational band (profile): `apps/web-vite/src/components/contractors/form-1099k-band.tsx`
   + `hooks/use-1099k-tracker.ts` (read-only sole tRPC boundary → `form1099kTracker.getTrackerState`).
   SAFE (secondary) / APPROACHING / OVER render amber `warning` at most — never `destructive`, never a
@@ -302,7 +328,10 @@ contractor profile; it never mutates band state.
   an amber advisory caption). FTIN is last-4 only everywhere (snapshot, PDF, IRIS XML, DOM); the full
   reveal is a separate `contractorPii:read` audited procedure. A CORRECTED 1042-S supersedes (never
   mutates); `generateBatch1042S` is idempotent + REPORTED-only (zero payment writes). The 1042-S
-  transmit tail + portal consent step reuse the P86 seam verbatim once it lands — never rebuilt.
+  transmit tail reuses the shared IRIS seam (build/validate + `iris-ack-parser`); its download is
+  idempotent and the ack lookup is scoped to the Pub 1187 schema version so a 1042-S ack never lands on
+  a 1099 submission (no IrisSubmission form-type column). The portal recipient PDF reuses the SAME
+  e-delivery consent gate (IDOR-scoped, FTIN last-4).
 
 ## Agent mistakes
 
@@ -340,8 +369,10 @@ contractor profile; it never mutates band state.
   advisory caption, not a gate). Do NOT pass a full FTIN into the snapshot, the recipient PDF, or
   `buildIris1042SXml` (last-4 only). Do NOT string-concatenate the 1042-S IRIS XML (sibling
   `buildIris1042SXml`), and treat `XSD-BUNDLE-MISSING` as the human Pub 1187 XSD checkpoint, not a bug.
-  Do NOT rebuild the 1042-S transmit tail or the portal consent step — they reuse the P86 seam verbatim
-  once it lands (cross-phase HOLD).
+  Do NOT rebuild the 1042-S transmit tail or the portal consent step — the transmit procedures reuse the
+  shared IRIS seam + `iris-ack-parser`, and the portal 1042-S download reuses the SAME `useEdeliveryConsent`
+  gate + `StepEdeliveryConsent` step (namespace prop). Do NOT add an `IrisSubmission` form-type column — the
+  Pub 1187 schema version already discriminates a 1042-S submission from a 1099 one.
 
 ## Related
 

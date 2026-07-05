@@ -6,6 +6,7 @@ import { router } from '../../init';
 import { portalProcedure } from '../../middleware/portal-auth';
 import { assertUsExpansionEnabled } from '../../middleware/require-us-expansion-flag';
 import { writeAuditLog } from '../../services/audit-writer';
+import { form1042sArchiveKey, renderAndArchiveRecipientCopy } from '../../services/form-1042s-pdf';
 import { form1099NecArchiveKey, renderAndArchiveCopyB } from '../../services/form-1099-nec-pdf';
 import { signExistingDownload } from '../../services/r2';
 
@@ -166,6 +167,59 @@ export const portalTax1099Router = router({
         actorType: 'CONTRACTOR',
         actorId: ctx.contractorId,
         action: 'form1099.copyb.downloaded',
+        resourceType: 'CONTRACTOR',
+        resourceId: ctx.contractorId,
+        ipAddress: deriveClientIp(ctx.headers),
+        metadata: { taxYear: input.taxYear, formId: form.id },
+      });
+
+      return { consented: true as const, signedUrl, expiresInSeconds };
+    }),
+
+  /**
+   * Download the recipient's own Form 1042-S recipient copy (Copy B) PDF for a
+   * tax year — furnished ONLY when a live electronic-delivery consent is on
+   * record. The SAME affirmative IRS Pub 1179 §4.6 consent gates this second form
+   * type; without consent, no PDF is offered and the recipient is told a paper
+   * copy will be mailed. Scoped to the portal-session `ctx.contractorId` (IDOR
+   * guard). The PDF renders the recipient foreign TIN last-4 only.
+   */
+  downloadForm1042S: portalProcedure
+    .input(z.object({ taxYear: z.number().int().min(2020).max(2100) }).strict())
+    .mutation(async ({ ctx, input }) => {
+      assertUsExpansionEnabled(ctx.organizationId, ctx.region);
+
+      const consent = await readConsentState(ctx.db, ctx.organizationId, ctx.contractorId);
+      if (!consent.consented) {
+        return { consented: false as const, paperCopy: true as const };
+      }
+
+      const form = await ctx.db.form1042S.findFirst({
+        where: {
+          organizationId: ctx.organizationId,
+          recipientId: ctx.contractorId,
+          taxYear: input.taxYear,
+          status: 'ACTIVE',
+        },
+        select: { id: true },
+      });
+      if (!form) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: E.FORM_1042S_NOT_FOUND });
+      }
+
+      await renderAndArchiveRecipientCopy(ctx.db, form.id);
+      const key = form1042sArchiveKey(ctx.organizationId, form.id);
+      const { signedUrl, expiresInSeconds } = await signExistingDownload(
+        key,
+        300,
+        `1042-s-${input.taxYear}.pdf`,
+      );
+
+      await writeAuditLog({
+        organizationId: ctx.organizationId,
+        actorType: 'CONTRACTOR',
+        actorId: ctx.contractorId,
+        action: 'form1042s.copyb.downloaded',
         resourceType: 'CONTRACTOR',
         resourceId: ctx.contractorId,
         ipAddress: deriveClientIp(ctx.headers),

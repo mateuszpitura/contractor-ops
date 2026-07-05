@@ -2,7 +2,7 @@
 title: API routers catalog
 type: structure
 tags: [structure, api, trpc, catalog]
-source_commit: 2aabc35c8
+source_commit: 5d6e26a17
 verify_with:
   - packages/api/src/root.ts
   - packages/api/src/portal-root.ts
@@ -111,7 +111,7 @@ Gated by `module.us-expansion` (or `QA_DEFAULT_ORG_ID`) in `root.ts`; each proce
 | Namespace | Summary |
 |-----------|---------|
 | `taxForm` | staff read/track of US W-form submissions (status, treaty claim, expiry) + request/remind — no on-behalf signing; full SSN never projected |
-| `form1042s` | staff Form 1042-S generate/correct/recipient-copy + `contractorPii:read`-gated full-FTIN reveal; box figures always server-derived from settled USD payouts + the W-form on file |
+| `form1042s` | staff Form 1042-S generate / build+validate XML / download validated XML / upload ack / correct / recipient-copy + `contractorPii:read`-gated full-FTIN reveal; box figures always server-derived from settled USD payouts + the W-form on file; the transmit tail reuses the shared IRIS seam (Pub 1187 build/validate via `form-1042s-transmit.service` + shared `iris-ack-parser`), stamping the Pub 1187 schema version so an ack never lands on a 1099 submission; BUNDLE_UNAVAILABLE (non-throwing) until the human Pub 1187 XSD lands |
 | `form1099kTracker` | read-only informational 1099-K band for the contractor profile (`getTrackerState`): band + cumulative settled-USD payout + transaction count + the tax-year threshold. Band state is written **exclusively** by the `form-1099k-tracker` cron — the router never mutates it. Purely informational; the platform never files a 1099-K |
 | `tax1099` | staff 1099-NEC year-end filing (`routers/finance/tax-1099-router.ts`): `list`, `generateBatch` (review-before-file — aggregates box-1 by payment date, never transmits), `buildAndValidateXml` / `downloadValidatedXml` (ManualDownload default — build IRIS XML → `xsdValidate` → download; records an `IrisSubmission` via idempotency), `uploadAck` (XXE-safe `parseIrisAck` → `IrisAck`), `listTinMismatches` / `escalateMismatch` / `resolveMismatch` (**amber advisory, never blocks generation**), `fileCorrection` (supersede), `getStateFilingOutput` (CFSF code vs per-state CSV). Zod-strict, audited, box figures server-derived. Full loop: [[domains/us-tax-year-end-filing]] |
 
@@ -143,7 +143,7 @@ Mount: `/api/trpc/portal/*` (registered **before** staff wildcard).
 | `portal` | auth, invoices, contracts, profile, equipment, US W-form self-cert (merged) |
 | `portalTime` | portal time entries + external sync |
 
-Portal W-form procedures (`getTaxFormDetermination`, `saveTaxFormDraft`, `submitTaxForm`, `getMyTaxForms`) self-gate on `module.us-expansion` per request — the flat portal merge cannot be conditionally spread. The portal 1099-NEC procedures (`portal-tax-1099-router.ts`: `getEdeliveryConsent`, `recordEdeliveryConsent`, `withdrawConsent`, `downloadCopyB`) are merged the same way — every read/write scoped to `ctx.contractorId` (IDOR); consent is a server-derived, append-only AuditLog fact; Copy-B is furnished only with stored consent (else a paper-copy flag).
+Portal W-form procedures (`getTaxFormDetermination`, `saveTaxFormDraft`, `submitTaxForm`, `getMyTaxForms`) self-gate on `module.us-expansion` per request — the flat portal merge cannot be conditionally spread. The portal recipient-tax procedures (`portal-tax-1099-router.ts`: `getEdeliveryConsent`, `recordEdeliveryConsent`, `withdrawConsent`, `downloadCopyB`, `downloadForm1042S`) are merged the same way — every read/write scoped to `ctx.contractorId` (IDOR); consent is a server-derived, append-only AuditLog fact; the recipient Copy-B (1099-NEC) and Copy-B (1042-S) PDFs are furnished only with the SAME stored consent (else a paper-copy flag).
 
 ## Mount points
 

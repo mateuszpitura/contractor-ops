@@ -1,9 +1,11 @@
 import type { Prisma } from '@contractor-ops/db';
+import type { Iris1042SSubmissionInput } from '@contractor-ops/iris';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 
 import * as E from '../../errors';
 import { router } from '../../init';
+import { clear, complete, reserve } from '../../lib/idempotency';
 import { requirePermission } from '../../middleware/rbac';
 import { assertUsExpansionEnabled } from '../../middleware/require-us-expansion-flag';
 import { tenantProcedure } from '../../middleware/tenant';
@@ -16,6 +18,8 @@ import {
   resolveBox2Rate,
 } from '../../services/form-1042s.service';
 import { form1042sArchiveKey, renderAndArchiveRecipientCopy } from '../../services/form-1042s-pdf';
+import { buildAndValidate1042S } from '../../services/form-1042s-transmit.service';
+import { parseIrisAck } from '../../services/iris-ack-parser';
 import { signExistingDownload } from '../../services/r2';
 import { decryptSsn } from '../../services/ssn-crypto';
 import { applyTreaty } from '../../services/treaty-rate.service';
@@ -88,6 +92,97 @@ async function aggregateBox2GrossMinor(
 function chap3WithheldMinor(box2GrossMinor: number, ratePercent: number): number {
   return Math.round((box2GrossMinor * ratePercent) / 100);
 }
+
+/**
+ * IRS Publication 1187 schema version the 1042-S payload is built against —
+ * distinct from the 1099 IRIS schema. ADVISER-VERIFY + re-pin per tax year
+ * against the downloaded IRS SOR (Pub 1187) package before production filing.
+ * Also the discriminator that keeps a 1042-S IrisSubmission from being matched by
+ * a 1099 acknowledgement (and vice versa) on the shared submission ledger.
+ */
+const FORM_1042S_SCHEMA_VERSION = { versionNum: 'PUB1187-1.0', versionDt: '2025-11-06' } as const;
+
+const TRANSMIT_IDEMPOTENCY_TTL_SECONDS = 24 * 60 * 60;
+
+/** Format a recipient foreign TIN last-4 into the masked IRIS payload form. */
+function maskFtin(last4: string | null | undefined): string {
+  return `XXX-XX-${(last4 ?? '0000').slice(-4)}`;
+}
+
+/** A whole-percent Decimal rate (e.g. `15.00`) as basis points (`1500`). */
+function rateToBasisPoints(rate: Prisma.Decimal | null): number {
+  return rate === null ? 0 : Math.round(Number(rate) * 100);
+}
+
+/** The ACTIVE 1042-S columns needed to assemble the IRIS payload. */
+interface Form1042STransmitRow {
+  box1IncomeCode: string | null;
+  box2GrossIncomeMinor: number;
+  box3aChap3ExemptionCode: string | null;
+  box3bChap3Rate: Prisma.Decimal | null;
+  box4aChap4ExemptionCode: string | null;
+  box4bChap4Rate: Prisma.Decimal | null;
+  box7FederalTaxWithheldMinor: number;
+  recipientChap3StatusCode: string | null;
+  recipientChap4StatusCode: string | null;
+  recipientLobCode: string | null;
+  treatyArticle: string | null;
+  recipient: { legalName: string; ssnLast4: string | null };
+}
+
+/**
+ * Assemble the canonical Pub 1187 submission input from the org's ACTIVE 1042-S
+ * rows. The recipient FTIN is the last-4 mask — a full foreign TIN never enters
+ * the IRIS payload. Pure (no DB): the procedure fetches the rows so the scoped
+ * tenant client stays the sole data boundary.
+ */
+function buildIris1042SInput(
+  taxYear: number,
+  withholdingAgentName: string,
+  rows: Form1042STransmitRow[],
+): Iris1042SSubmissionInput {
+  return {
+    taxYear,
+    schemaVersion: FORM_1042S_SCHEMA_VERSION,
+    withholdingAgent: {
+      // The withholding-agent EIN is captured at enablement; a full EIN never
+      // comes from client input. ADVISER-VERIFY before production filing.
+      tin: '000000000',
+      name: withholdingAgentName,
+    },
+    recipients: rows.map(row => ({
+      recipientFtin: maskFtin(row.recipient.ssnLast4),
+      recipientName: row.recipient.legalName,
+      incomeCode: row.box1IncomeCode ?? INDEPENDENT_SERVICES_INCOME_CODE,
+      grossIncomeBox2Minor: row.box2GrossIncomeMinor,
+      chap3ExemptionCode: row.box3aChap3ExemptionCode ?? '',
+      chap3RateBp: rateToBasisPoints(row.box3bChap3Rate),
+      chap4ExemptionCode: row.box4aChap4ExemptionCode ?? '',
+      chap4RateBp: rateToBasisPoints(row.box4bChap4Rate),
+      federalTaxWithheldBox7Minor: row.box7FederalTaxWithheldMinor,
+      recipientChap3StatusCode: row.recipientChap3StatusCode ?? '',
+      recipientChap4StatusCode: row.recipientChap4StatusCode ?? '',
+      recipientLobCode: row.recipientLobCode ?? '',
+      treatyArticle: row.treatyArticle ?? '',
+    })),
+  };
+}
+
+/** The ACTIVE-row select shared by the build/validate + download procedures. */
+const TRANSMIT_ROW_SELECT = {
+  box1IncomeCode: true,
+  box2GrossIncomeMinor: true,
+  box3aChap3ExemptionCode: true,
+  box3bChap3Rate: true,
+  box4aChap4ExemptionCode: true,
+  box4bChap4Rate: true,
+  box7FederalTaxWithheldMinor: true,
+  recipientChap3StatusCode: true,
+  recipientChap4StatusCode: true,
+  recipientLobCode: true,
+  treatyArticle: true,
+  recipient: { select: { legalName: true, ssnLast4: true } },
+} as const;
 
 export const form1042sRouter = router({
   /**
@@ -217,6 +312,217 @@ export const form1042sRouter = router({
         generatedCount: result.generated.length,
         skippedCount: result.skippedRecipientIds.length,
         escalatedCount: result.escalatedRecipientIds.length,
+      };
+    }),
+
+  /**
+   * Build the Pub 1187 1042-S XML for the tax-year batch and XSD-validate it,
+   * returning the validation report (never the raw XML on this path). Until the
+   * IRS 1042-S XSD bundle is placed the report is BUNDLE_UNAVAILABLE (validity
+   * unproven) — nothing files on that outcome. Review-before-file: this never
+   * transmits.
+   */
+  buildAndValidateXml: tenantProcedure
+    .use(requirePermission({ contractor: ['read'] }))
+    .input(z.object({ taxYear: z.number().int().min(2020).max(2100) }).strict())
+    .query(async ({ ctx, input }) => {
+      assertUsExpansionEnabled(ctx.organizationId, ctx.region);
+
+      const org = await ctx.db.organization.findUnique({
+        where: { id: ctx.organizationId },
+        select: { name: true, legalName: true },
+      });
+      const rows = await ctx.db.form1042S.findMany({
+        where: {
+          organizationId: ctx.organizationId,
+          payerOrgId: ctx.organizationId,
+          taxYear: input.taxYear,
+          status: 'ACTIVE',
+        },
+        select: TRANSMIT_ROW_SELECT,
+      });
+
+      const agentName = org?.legalName ?? org?.name ?? ctx.organizationId;
+      const result = await buildAndValidate1042S(
+        buildIris1042SInput(input.taxYear, agentName, rows),
+      );
+
+      return {
+        taxYear: input.taxYear,
+        recipientCount: rows.length,
+        status: result.validation.status,
+        ready: result.ready,
+        errors: result.validation.errors,
+      };
+    }),
+
+  /**
+   * ManualDownload: build + XSD-validate the 1042-S XML and, when valid, return it
+   * for the operator to download and upload to IRIS. Records the IrisSubmission
+   * once per (org, tax year) via idempotency so a retried download does not create
+   * duplicate submission rows, and stamps the Pub 1187 schema version so the
+   * shared submission ledger never confuses a 1042-S with a 1099. Audited.
+   */
+  downloadValidatedXml: tenantProcedure
+    .use(requirePermission({ contractor: ['update'] }))
+    .input(z.object({ taxYear: z.number().int().min(2020).max(2100) }).strict())
+    .mutation(async ({ ctx, input }) => {
+      assertUsExpansionEnabled(ctx.organizationId, ctx.region);
+
+      const org = await ctx.db.organization.findUnique({
+        where: { id: ctx.organizationId },
+        select: { name: true, legalName: true },
+      });
+      const rows = await ctx.db.form1042S.findMany({
+        where: {
+          organizationId: ctx.organizationId,
+          payerOrgId: ctx.organizationId,
+          taxYear: input.taxYear,
+          status: 'ACTIVE',
+        },
+        select: TRANSMIT_ROW_SELECT,
+      });
+
+      const agentName = org?.legalName ?? org?.name ?? ctx.organizationId;
+      const result = await buildAndValidate1042S(
+        buildIris1042SInput(input.taxYear, agentName, rows),
+      );
+
+      if (!(result.ready && result.xml)) {
+        return {
+          taxYear: input.taxYear,
+          ready: false as const,
+          status: result.validation.status,
+          errors: result.validation.errors,
+        };
+      }
+
+      const key = `form1042s:transmit:${ctx.organizationId}:${input.taxYear}`;
+      const hit = await reserve<{ submissionId: string }>(key, TRANSMIT_IDEMPOTENCY_TTL_SECONDS);
+      let submissionId: string | undefined;
+      if (hit.kind === 'HIT') {
+        submissionId = hit.result.submissionId;
+      } else if (hit.kind === 'MISS') {
+        try {
+          const submission = await ctx.db.irisSubmission.create({
+            data: {
+              organizationId: ctx.organizationId,
+              taxYear: input.taxYear,
+              schemaVersionNum: FORM_1042S_SCHEMA_VERSION.versionNum,
+              schemaVersionDt: FORM_1042S_SCHEMA_VERSION.versionDt,
+              transmitMethod: 'manual',
+            },
+            select: { id: true },
+          });
+          submissionId = submission.id;
+          await writeAuditLog({
+            organizationId: ctx.organizationId,
+            actorType: 'USER',
+            actorId: ctx.user.id,
+            action: 'form1042s.iris.xml_downloaded',
+            resourceType: 'ORGANIZATION',
+            resourceId: ctx.organizationId,
+            metadata: { taxYear: input.taxYear, submissionId, transmitMethod: 'manual' },
+          });
+          await complete(key, { submissionId }, TRANSMIT_IDEMPOTENCY_TTL_SECONDS);
+        } catch (err) {
+          await clear(key);
+          throw err;
+        }
+      }
+
+      return {
+        taxYear: input.taxYear,
+        ready: true as const,
+        status: result.validation.status,
+        submissionId,
+        xml: result.xml,
+      };
+    }),
+
+  /**
+   * Parse an uploaded IRS 1042-S acknowledgement file, update the submission's
+   * status, and append an immutable IrisAck row with the Error Information Group.
+   * The submission lookup is scoped to the Pub 1187 schema version so a 1042-S ack
+   * never lands on a 1099 submission for the same (org, tax year). The ack file is
+   * untrusted — `parseIrisAck` is XXE-safe and never `as`-casts.
+   */
+  uploadAck: tenantProcedure
+    .use(requirePermission({ contractor: ['update'] }))
+    .input(
+      z
+        .object({
+          taxYear: z.number().int().min(2020).max(2100),
+          submissionId: z.string().min(1).optional(),
+          ackXml: z.string().min(1).max(5_000_000),
+        })
+        .strict(),
+    )
+    .mutation(async ({ ctx, input }) => {
+      assertUsExpansionEnabled(ctx.organizationId, ctx.region);
+
+      let parsed: ReturnType<typeof parseIrisAck>;
+      try {
+        parsed = parseIrisAck(input.ackXml);
+      } catch {
+        throw new TRPCError({ code: 'BAD_REQUEST', message: E.IRIS_ACK_PARSE_FAILED });
+      }
+
+      const submission = await ctx.db.irisSubmission.findFirst({
+        where: {
+          organizationId: ctx.organizationId,
+          taxYear: input.taxYear,
+          schemaVersionNum: FORM_1042S_SCHEMA_VERSION.versionNum,
+          ...(input.submissionId ? { id: input.submissionId } : {}),
+        },
+        orderBy: [{ createdAt: 'desc' }],
+        select: { id: true },
+      });
+      if (!submission) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: E.FORM_1042S_NOT_FOUND });
+      }
+
+      await ctx.db.$transaction(async tx => {
+        await tx.irisSubmission.update({
+          where: { id: submission.id },
+          data: {
+            status: parsed.status,
+            ...(parsed.originalReceiptId ? { originalReceiptId: parsed.originalReceiptId } : {}),
+          },
+        });
+        await tx.irisAck.create({
+          data: {
+            organizationId: ctx.organizationId,
+            submissionId: submission.id,
+            status: parsed.status,
+            receiptId: parsed.receiptId ?? null,
+            ...(parsed.errorInformation.length > 0
+              ? {
+                  errorInformationJson: parsed.errorInformation as unknown as Prisma.InputJsonValue,
+                }
+              : {}),
+          },
+        });
+        await writeAuditLog({
+          tx,
+          organizationId: ctx.organizationId,
+          actorType: 'USER',
+          actorId: ctx.user.id,
+          action: 'form1042s.iris.ack_uploaded',
+          resourceType: 'ORGANIZATION',
+          resourceId: submission.id,
+          metadata: {
+            taxYear: input.taxYear,
+            ackStatus: parsed.status,
+            errorCount: parsed.errorInformation.length,
+          },
+        });
+      });
+
+      return {
+        submissionId: submission.id,
+        status: parsed.status,
+        errorCount: parsed.errorInformation.length,
       };
     }),
 

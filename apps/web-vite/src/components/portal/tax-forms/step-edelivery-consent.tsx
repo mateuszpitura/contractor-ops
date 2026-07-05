@@ -9,6 +9,13 @@ import { useTranslations } from '../../../i18n/useTranslations.js';
 export interface StepEdeliveryConsentProps {
   onAffirm: () => Promise<void>;
   isSubmitting: boolean;
+  /**
+   * Translation namespace carrying the consent `heading` / `subtitle` /
+   * `consentLabel` / `affirm` keys. Defaults to the 1099-NEC copy; the 1042-S
+   * recipient download passes `Tax1042SConsent` so the same affirmative step
+   * reads with the correct form type.
+   */
+  namespace?: string;
 }
 
 /**
@@ -17,8 +24,12 @@ export interface StepEdeliveryConsentProps {
  * implied or pre-checked consent. The audited consent (IP / timestamp / identity)
  * is re-derived server-side; this step captures only the affirmative act.
  */
-export function StepEdeliveryConsent({ onAffirm, isSubmitting }: StepEdeliveryConsentProps) {
-  const t = useTranslations('Tax1099Consent');
+export function StepEdeliveryConsent({
+  onAffirm,
+  isSubmitting,
+  namespace = 'Tax1099Consent',
+}: StepEdeliveryConsentProps) {
+  const t = useTranslations(namespace);
   const fieldId = useId();
   const [checked, setChecked] = useState(false);
 
