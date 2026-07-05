@@ -39,6 +39,8 @@ const EXPECTED: Record<RoleName, Record<string, readonly string[]>> = {
     costCenter: ['read', 'create', 'update', 'archive'],
     contractorPii: ['read'],
     employeePii: ['read'],
+    classification: ['read'],
+    auditLog: ['read'],
   },
   admin: {
     organization: ['update', 'delete'],

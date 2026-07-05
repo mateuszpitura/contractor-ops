@@ -4,6 +4,8 @@ import { publicApiDocumentListInputSchema } from '@contractor-ops/validators/pub
 import { TRPCError } from '@trpc/server';
 import * as E from '../../errors';
 import { router } from '../../init';
+import { cursorClause, paginateByLastKeptUndefined } from '../../lib/pagination';
+import { publicOrderBy } from '../../lib/public-cursor';
 import { apiKeyTenantProcedure } from '../../middleware/api-key-auth';
 import { requirePermission } from '../../middleware/rbac';
 import { createRegionalPresignedDownloadUrl } from '../../services/regional-storage';
@@ -23,46 +25,40 @@ export const publicDocumentRouter = router({
     .use(requirePermission({ document: ['read'] }))
     .input(listInput)
     .query(async ({ ctx, input }) => {
-      const { page, pageSize, entityType, entityId, sortOrder } = input;
-
       const where: Prisma.DocumentWhereInput = {
         organizationId: ctx.organizationId,
         deletedAt: null,
       };
 
       // Filter by entity link via Prisma relation filter (single query, uses JOIN)
-      if (entityType && entityId) {
+      if (input.filter?.entityType && input.filter?.entityId) {
         where.links = {
           some: {
             organizationId: ctx.organizationId,
-            entityType,
-            entityId,
+            entityType: input.filter.entityType,
+            entityId: input.filter.entityId,
           },
         };
       }
 
-      const [items, total] = await Promise.all([
-        ctx.db.document.findMany({
-          where,
-          skip: (page - 1) * pageSize,
-          take: pageSize,
-          orderBy: { createdAt: sortOrder },
-          select: {
-            id: true,
-            originalFileName: true,
-            mimeType: true,
-            fileSizeBytes: true,
-            documentType: true,
-            status: true,
-            virusScanStatus: true,
-            createdAt: true,
-            updatedAt: true,
-          },
-        }),
-        ctx.db.document.count({ where }),
-      ]);
+      const rows = await ctx.db.document.findMany({
+        where,
+        orderBy: publicOrderBy(input.sort),
+        select: {
+          id: true,
+          originalFileName: true,
+          mimeType: true,
+          fileSizeBytes: true,
+          documentType: true,
+          status: true,
+          virusScanStatus: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+        ...cursorClause({ cursor: input.cursor, limit: input.limit }),
+      });
 
-      return { items, total, page, pageSize };
+      return paginateByLastKeptUndefined(rows, { cursor: input.cursor, limit: input.limit });
     }),
 
   getDownloadUrl: apiKeyTenantProcedure

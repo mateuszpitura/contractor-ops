@@ -45,6 +45,10 @@ const allPermissions = {
   // personnel surface. That absence is the fence, not drift — do not "sync" it.
   contractorPii: ['read'],
   employeePii: ['read'],
+  // Public REST read gates (API-key + owner only; not granted to any named role).
+  // Kept in sync with accessControlStatement to preserve the owner-superset invariant.
+  classification: ['read'],
+  auditLog: ['read'],
 } as const;
 
 export const roles = {

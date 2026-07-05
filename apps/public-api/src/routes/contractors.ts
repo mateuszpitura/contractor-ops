@@ -1,34 +1,71 @@
-import { publicApiContractorListInputSchema } from '@contractor-ops/validators/public-api';
-import { Hono } from 'hono';
-import { createPublicCaller } from '../lib/create-caller.js';
-import { parseListQuery } from '../lib/parse-list-query.js';
+import {
+  entityIdSchema,
+  publicApiContractorListInputSchema,
+} from '@contractor-ops/validators/public-api';
+import { createRoute, OpenAPIHono, z } from '@hono/zod-openapi';
+import { decodeCursor } from '../lib/openapi-cursor.js';
+import {
+  createPublicCaller,
+  envelope,
+  errorResponses,
+  itemOkResponse,
+  listOkResponse,
+  listQuery,
+} from '../lib/openapi-route.js';
 
-const contractors = new Hono();
+const contractors = new OpenAPIHono();
 
-/**
- * GET /contractors
- * List contractors with pagination and optional filters.
- */
-contractors.get('/', async c => {
-  const caller = createPublicCaller(c);
-  const input = parseListQuery(publicApiContractorListInputSchema, c.req.query());
+const contractorItem = z
+  .object({
+    id: z.string(),
+    legalName: z.string(),
+    displayName: z.string().nullable(),
+    type: z.string(),
+    taxId: z.string().nullable(),
+    vatId: z.string().nullable(),
+    email: z.string().nullable(),
+    phone: z.string().nullable(),
+    countryCode: z.string().nullable(),
+    currency: z.string().nullable(),
+    status: z.string(),
+    lifecycleStage: z.string(),
+    createdAt: z.string(),
+    updatedAt: z.string(),
+  })
+  .openapi('PublicContractor');
 
-  const result = await caller.contractor.list(input);
-
-  return c.json({
-    data: result.items,
-    meta: { total: result.total, page: result.page, pageSize: result.pageSize },
-  });
+const listRoute = createRoute({
+  method: 'get',
+  path: '/',
+  request: { query: listQuery(publicApiContractorListInputSchema) },
+  responses: {
+    200: listOkResponse(contractorItem, 'Cursor page of contractors'),
+    ...errorResponses,
+  },
 });
 
-/**
- * GET /contractors/:id
- * Get a single contractor by ID.
- */
-contractors.get('/:id', async c => {
+contractors.openapi(listRoute, async c => {
+  const input = c.req.valid('query');
   const caller = createPublicCaller(c);
-  const result = await caller.contractor.getById({ id: c.req.param('id') });
-  return c.json({ data: result });
+  const result = await caller.contractor.list({ ...input, cursor: decodeCursor(input.cursor) });
+  return envelope(c, result);
+});
+
+const getByIdRoute = createRoute({
+  method: 'get',
+  path: '/{id}',
+  request: { params: z.object({ id: z.string() }) },
+  responses: {
+    200: itemOkResponse(contractorItem, 'A single contractor'),
+    ...errorResponses,
+  },
+});
+
+contractors.openapi(getByIdRoute, async c => {
+  const { id } = c.req.valid('param');
+  const caller = createPublicCaller(c);
+  const result = await caller.contractor.getById(entityIdSchema.parse({ id }));
+  return c.json({ data: result }, 200);
 });
 
 export default contractors;

@@ -36,25 +36,176 @@ export {
   paginationSchema,
 };
 
-export const publicApiContractorListInputSchema = paginationSchema.extend({
-  status: contractorStatusEnum.optional(),
-  lifecycleStage: contractorLifecycleStageEnum.optional(),
-  sortBy: z.enum(['legalName', 'createdAt', 'updatedAt']).default('createdAt'),
-  sortOrder: z.enum(['asc', 'desc']).default('desc'),
+// ---------------------------------------------------------------------------
+// Cursor pagination base (public REST) — replaces offset for public lists.
+// ---------------------------------------------------------------------------
+
+/**
+ * Shared `.strict()` base for every public list input: an opaque `cursor` token
+ * + a bounded `limit`. Per-entity schemas extend this with a `.strict()`
+ * `filter` allowlist and a `sort` enum (leading `-` = desc, JSON:API convention):
+ *
+ *   publicListBaseSchema.extend({
+ *     filter: z.object({ status: fooStatusEnum.optional() }).strict().optional(),
+ *     sort: z.enum(['createdAt', '-createdAt']).default('-createdAt'),
+ *   }).strict()
+ *
+ * `.strict()` rejects unknown top-level + filter keys (mass-assignment / unknown
+ * filter injection). The offset `paginationSchema` is retained only for the
+ * legacy equipment list — do not reuse it for new public lists.
+ */
+export const publicListBaseSchema = z
+  .object({
+    cursor: z.string().optional(),
+    limit: z.coerce.number().int().min(1).max(100).default(25),
+  })
+  .strict();
+
+export type PublicListBaseInput = z.infer<typeof publicListBaseSchema>;
+
+/** Cursor-mode response meta — no `total` (COUNT is dropped in cursor mode). */
+export const publicListMetaSchema = z.object({
+  nextCursor: z.string().nullable(),
+  hasMore: z.boolean(),
 });
 
-export const publicApiContractListInputSchema = paginationSchema.extend({
-  status: contractStatusEnum.optional(),
-  contractorId: z.string().optional(),
-  sortBy: z.enum(['title', 'startDate', 'endDate', 'createdAt']).default('createdAt'),
-  sortOrder: z.enum(['asc', 'desc']).default('desc'),
-});
+/**
+ * Builds the standard public list response envelope schema `{ data, meta }` for
+ * a given item schema. Used by route `createRoute` response definitions.
+ */
+export function publicListEnvelope<T extends z.ZodTypeAny>(item: T) {
+  return z.object({ data: z.array(item), meta: publicListMetaSchema });
+}
 
-export const publicApiDocumentListInputSchema = paginationSchema.extend({
-  entityType: publicApiDocumentEntityTypeEnum.optional(),
-  entityId: z.string().optional(),
-  sortOrder: z.enum(['asc', 'desc']).default('desc'),
-});
+export const publicApiContractorListInputSchema = publicListBaseSchema
+  .extend({
+    filter: z
+      .object({
+        status: contractorStatusEnum.optional(),
+        lifecycleStage: contractorLifecycleStageEnum.optional(),
+      })
+      .strict()
+      .optional(),
+    sort: z
+      .enum(['createdAt', '-createdAt', 'updatedAt', '-updatedAt', 'legalName', '-legalName'])
+      .default('-createdAt'),
+  })
+  .strict();
+
+export const publicApiContractListInputSchema = publicListBaseSchema
+  .extend({
+    filter: z
+      .object({
+        status: contractStatusEnum.optional(),
+        contractorId: z.string().optional(),
+      })
+      .strict()
+      .optional(),
+    sort: z
+      .enum([
+        'createdAt',
+        '-createdAt',
+        'startDate',
+        '-startDate',
+        'endDate',
+        '-endDate',
+        'title',
+        '-title',
+      ])
+      .default('-createdAt'),
+  })
+  .strict();
+
+export const publicApiDocumentListInputSchema = publicListBaseSchema
+  .extend({
+    filter: z
+      .object({
+        entityType: publicApiDocumentEntityTypeEnum.optional(),
+        entityId: z.string().optional(),
+      })
+      .strict()
+      .optional(),
+    sort: z.enum(['createdAt', '-createdAt']).default('-createdAt'),
+  })
+  .strict();
+
+// ---------------------------------------------------------------------------
+// Net-new public read list DTOs (payments, payment_runs, workflows,
+// workflow_tasks, classifications, compliance_documents, audit_log).
+//
+// Filter VALUES are `z.string()` for the 0.x prerelease surface — the field set
+// is still `.strict()`-allowlisted (unknown filters rejected), and the value is
+// forwarded to a tenant-scoped Prisma `where`. Enum-tighten before SDK 1.0.
+// ---------------------------------------------------------------------------
+
+const cursorSort = z.enum(['createdAt', '-createdAt']).default('-createdAt');
+
+export const publicApiPaymentListInputSchema = publicListBaseSchema
+  .extend({
+    filter: z
+      .object({ status: z.string().optional(), contractorId: z.string().optional() })
+      .strict()
+      .optional(),
+    sort: cursorSort,
+  })
+  .strict();
+
+export const publicApiPaymentRunListInputSchema = publicListBaseSchema
+  .extend({
+    filter: z.object({ status: z.string().optional() }).strict().optional(),
+    sort: cursorSort,
+  })
+  .strict();
+
+export const publicApiWorkflowListInputSchema = publicListBaseSchema
+  .extend({
+    filter: z
+      .object({ status: z.string().optional(), contractorId: z.string().optional() })
+      .strict()
+      .optional(),
+    sort: cursorSort,
+  })
+  .strict();
+
+export const publicApiWorkflowTaskListInputSchema = publicListBaseSchema
+  .extend({
+    filter: z
+      .object({ status: z.string().optional(), workflowRunId: z.string().optional() })
+      .strict()
+      .optional(),
+    sort: cursorSort,
+  })
+  .strict();
+
+export const publicApiClassificationListInputSchema = publicListBaseSchema
+  .extend({
+    filter: z
+      .object({ status: z.string().optional(), countryCode: z.string().optional() })
+      .strict()
+      .optional(),
+    sort: cursorSort,
+  })
+  .strict();
+
+export const publicApiComplianceDocumentListInputSchema = publicListBaseSchema
+  .extend({
+    filter: z
+      .object({ kind: z.string().optional(), classificationAssessmentId: z.string().optional() })
+      .strict()
+      .optional(),
+    sort: cursorSort,
+  })
+  .strict();
+
+export const publicApiAuditLogListInputSchema = publicListBaseSchema
+  .extend({
+    filter: z
+      .object({ action: z.string().optional(), resourceType: z.string().optional() })
+      .strict()
+      .optional(),
+    sort: cursorSort,
+  })
+  .strict();
 
 export const publicApiEquipmentListInputSchema = paginationSchema.extend({
   status: equipmentStatusEnum.optional(),
@@ -64,9 +215,26 @@ export const publicApiEquipmentListInputSchema = paginationSchema.extend({
   sortOrder: z.enum(['asc', 'desc']).default('desc'),
 });
 
-export const publicApiInvoiceListInputSchema = paginationSchema.extend({
-  status: invoiceStatusEnum.optional(),
-  contractorId: z.string().optional(),
-  sortBy: z.enum(['issueDate', 'dueDate', 'createdAt', 'totalMinor']).default('createdAt'),
-  sortOrder: z.enum(['asc', 'desc']).default('desc'),
-});
+export const publicApiInvoiceListInputSchema = publicListBaseSchema
+  .extend({
+    filter: z
+      .object({
+        status: invoiceStatusEnum.optional(),
+        contractorId: z.string().optional(),
+      })
+      .strict()
+      .optional(),
+    sort: z
+      .enum([
+        'createdAt',
+        '-createdAt',
+        'issueDate',
+        '-issueDate',
+        'dueDate',
+        '-dueDate',
+        'totalMinor',
+        '-totalMinor',
+      ])
+      .default('-createdAt'),
+  })
+  .strict();

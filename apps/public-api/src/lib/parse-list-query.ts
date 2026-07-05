@@ -41,3 +41,28 @@ export function parseListQuery<TSchema extends SafeParsableSchema>(
   }
   return result.data as ParsedOutput<TSchema>;
 }
+
+/**
+ * Collapses flat Hono query keys of the form `filter[field]=value` into a nested
+ * `{ filter: { field: value } }` object, passing every other key (cursor, limit,
+ * sort) through untouched. Run this BEFORE `.strict()` validation so the list
+ * schema sees a `filter` object it can allowlist — a raw `.strict()` schema would
+ * otherwise reject the flat `"filter[status]"` key outright.
+ */
+export function parseBracketedQuery(
+  query: Record<string, string | undefined>,
+): Record<string, unknown> {
+  const out: Record<string, unknown> = {};
+  const filter: Record<string, string> = {};
+  for (const [key, value] of Object.entries(query)) {
+    if (value == null) continue;
+    const match = key.match(/^filter\[([^\]]+)\]$/);
+    if (match?.[1]) {
+      filter[match[1]] = value;
+    } else {
+      out[key] = value;
+    }
+  }
+  if (Object.keys(filter).length > 0) out.filter = filter;
+  return out;
+}

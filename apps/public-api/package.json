@@ -21,6 +21,8 @@
     "@contractor-ops/logger": "workspace:*",
     "@contractor-ops/validators": "workspace:*",
     "@hono/node-server": "^2.0.1",
+    "@hono/zod-openapi": "1.4.0",
+    "@scalar/hono-api-reference": "0.11.6",
     "@sentry/node": "^10.51.0",
     "@trpc/server": "^11.17.0",
     "@upstash/ratelimit": "^2.0.8",

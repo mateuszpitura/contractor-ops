@@ -1,22 +1,31 @@
-import { Hono } from 'hono';
+import { OpenAPIHono } from '@hono/zod-openapi';
+import { Scalar } from '@scalar/hono-api-reference';
 import { cors } from 'hono/cors';
 import { requestId } from 'hono/request-id';
 import { secureHeaders } from 'hono/secure-headers';
+import { buildOpenApiDocument } from './lib/build-openapi-doc.js';
 import { handleError } from './lib/error-handler.js';
 import { observabilityMiddleware } from './lib/observability-middleware.js';
 import { rateLimitMiddleware } from './lib/rate-limiter.js';
-import { openApiSpec } from './openapi.js';
+import { versionHeaders } from './lib/version-headers.js';
+import auditLog from './routes/audit-log.js';
+import classifications from './routes/classifications.js';
+import complianceDocuments from './routes/compliance-documents.js';
 import contractors from './routes/contractors.js';
 import contracts from './routes/contracts.js';
 import documents from './routes/documents.js';
 import featureFlags from './routes/feature-flags.js';
 import invoices from './routes/invoices.js';
+import paymentRuns from './routes/payment-runs.js';
+import payments from './routes/payments.js';
+import workflowTasks from './routes/workflow-tasks.js';
+import workflows from './routes/workflows.js';
 
 // ---------------------------------------------------------------------------
-// Public API v1
+// Public API v1 — OpenAPIHono host (OpenAPI 3.1 derived from route definitions)
 // ---------------------------------------------------------------------------
 
-const app = new Hono().basePath('/api/v1');
+const app = new OpenAPIHono().basePath('/v1');
 
 /**
  * CORS allowlist — first-party origins only.
@@ -104,6 +113,7 @@ app.use(
   }),
 );
 app.use('*', rateLimitMiddleware);
+app.use('*', versionHeaders);
 
 // --- Routes ---
 app.route('/contractors', contractors);
@@ -111,73 +121,22 @@ app.route('/invoices', invoices);
 app.route('/contracts', contracts);
 app.route('/documents', documents);
 app.route('/feature-flags', featureFlags);
+app.route('/payments', payments);
+app.route('/payment-runs', paymentRuns);
+app.route('/workflows', workflows);
+app.route('/workflow-tasks', workflowTasks);
+app.route('/classifications', classifications);
+app.route('/compliance-documents', complianceDocuments);
+app.route('/audit-log', auditLog);
 
 // --- Health check (outside auth) ---
 app.get('/health', c => c.json({ status: 'ok' }));
 
-// --- OpenAPI spec ---
-app.get('/openapi.json', c => c.json(openApiSpec));
+// --- OpenAPI spec (derived from route definitions — no hand-written literal) ---
+app.get('/openapi.json', c => c.json(buildOpenApiDocument(app)));
 
-// --- Interactive docs ---
-// Gated behind ENABLE_API_DOCS. Disabled by default so forgetting to pin
-// a real SRI hash can't result in a broken (or, worse, silently compromised)
-// public docs page. When enabled, the server fails fast at startup if the
-// SRI hash is still the placeholder — better to refuse to boot than to
-// serve an unverified 3rd-party script.
-const DOCS_ENABLED = process.env.ENABLE_API_DOCS === 'true';
-const SCALAR_VERSION = '1.25.28';
-// Regenerate when bumping SCALAR_VERSION:
-//   curl -sL https://cdn.jsdelivr.net/npm/@scalar/api-reference@<ver>/dist/browser/standalone.js \
-//     | openssl dgst -sha384 -binary | openssl base64 -A
-const SCALAR_SRI_PLACEHOLDER = 'sha384-REPLACE_WITH_PINNED_HASH_BEFORE_ENABLING_IN_PROD';
-const SCALAR_SRI = process.env.SCALAR_SRI_HASH ?? SCALAR_SRI_PLACEHOLDER;
-
-if (DOCS_ENABLED && SCALAR_SRI === SCALAR_SRI_PLACEHOLDER) {
-  throw new Error(
-    'ENABLE_API_DOCS=true but SCALAR_SRI_HASH is the placeholder. ' +
-      'Pin a real subresource-integrity hash for @scalar/api-reference@' +
-      SCALAR_VERSION +
-      ' before enabling /docs. ' +
-      'See apps/public-api/src/app.ts for the regen command.',
-  );
-}
-
-if (DOCS_ENABLED) {
-  app.get('/docs', c => {
-    const scriptUrl = `https://cdn.jsdelivr.net/npm/@scalar/api-reference@${SCALAR_VERSION}/dist/browser/standalone.js`;
-
-    const csp = [
-      "default-src 'none'",
-      "script-src 'self' https://cdn.jsdelivr.net",
-      "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com",
-      'font-src https://fonts.gstatic.com https://cdn.jsdelivr.net',
-      "img-src 'self' data: https:",
-      "connect-src 'self'",
-      "frame-ancestors 'none'",
-      "base-uri 'none'",
-      "form-action 'none'",
-    ].join('; ');
-
-    c.header('Content-Security-Policy', csp);
-
-    const html = `<!DOCTYPE html>
-<html>
-<head>
-  <title>Contractor Ops API</title>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-</head>
-<body>
-  <script id="api-reference" data-url="/api/v1/openapi.json"></script>
-  <script
-    src="${scriptUrl}"
-    integrity="${SCALAR_SRI}"
-    crossorigin="anonymous"></script>
-</body>
-</html>`;
-    return c.html(html);
-  });
-}
+// --- Interactive docs (Scalar via the vendored npm dep — no CDN/SRI) ---
+app.get('/docs', Scalar({ url: '/v1/openapi.json' }));
 
 // --- Error handler ---
 app.onError(handleError);

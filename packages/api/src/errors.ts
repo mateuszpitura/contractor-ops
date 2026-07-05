@@ -362,6 +362,7 @@ export const LEAVE_NO_CHAIN_CONFIGURED = 'leaveNoChainConfigured';
 export const LEAVE_REQUEST_NOT_FOUND = 'leaveRequestNotFound';
 export const BLACKOUT_PERIOD_NOT_FOUND = 'blackoutPeriodNotFound';
 export const EMPLOYEE_WORKER_NOT_FOUND = 'employeeWorkerNotFound';
+export const PUBLIC_API_DISABLED = 'publicApiDisabled';
 export const TREATY_OVERRIDE_REASON_REQUIRED = 'treatyOverrideReasonRequired';
 export const CLASSIFICATION_OVERRIDE_REASON_REQUIRED = 'classificationOverrideReasonRequired';
 export const CLASSIFICATION_OVERRIDE_US_ONLY = 'classificationOverrideUsOnly';

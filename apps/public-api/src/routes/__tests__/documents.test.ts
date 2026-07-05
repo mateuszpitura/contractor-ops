@@ -1,16 +1,9 @@
 /**
- * Unit tests for routes/documents.ts
- *
- * Covers: GET / query param coercion + forwarding, GET /:id/download-url.
+ * Unit tests for routes/documents.ts (createRoute + cursor + filter/sort).
  */
 
 import { Hono } from 'hono';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-
-// ---------------------------------------------------------------------------
-// Caller stub — must use vi.hoisted() because vi.mock() is hoisted above
-// top-level const declarations.
-// ---------------------------------------------------------------------------
 
 const { mockList, mockGetDownloadUrl, mockCreatePublicCaller } = vi.hoisted(() => {
   const mockList = vi.fn();
@@ -21,136 +14,60 @@ const { mockList, mockGetDownloadUrl, mockCreatePublicCaller } = vi.hoisted(() =
   return { mockList, mockGetDownloadUrl, mockCreatePublicCaller };
 });
 
-vi.mock('../../lib/create-caller.js', () => ({
-  createPublicCaller: mockCreatePublicCaller,
-}));
-
-// ---------------------------------------------------------------------------
-// Imports (after mocks)
-// ---------------------------------------------------------------------------
+vi.mock('../../lib/create-caller.js', () => ({ createPublicCaller: mockCreatePublicCaller }));
 
 import { handleError } from '../../lib/error-handler.js';
+import { encodeCursor } from '../../lib/openapi-cursor.js';
 import documents from '../documents.js';
-
-// ---------------------------------------------------------------------------
-// App setup
-// ---------------------------------------------------------------------------
 
 const app = new Hono();
 app.route('/', documents);
 app.onError(handleError);
 
-// ---------------------------------------------------------------------------
-// Fixtures
-// ---------------------------------------------------------------------------
-
-function makeListResult(overrides = {}) {
-  return { items: [], total: 0, page: 1, pageSize: 25, ...overrides };
-}
-
-// ---------------------------------------------------------------------------
-// Tests
-// ---------------------------------------------------------------------------
-
 describe('GET /documents', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockList.mockResolvedValue(makeListResult());
+    mockList.mockResolvedValue({ items: [], nextCursor: undefined });
   });
 
-  it('forwards page and pageSize as numbers', async () => {
-    await app.request('/?page=2&pageSize=20');
-    const [input] = mockList.mock.calls[0] as [{ page: unknown; pageSize: unknown }];
-    expect(input).toMatchObject({ page: 2, pageSize: 20 });
+  it('parses filter[entityType] and filter[entityId] into a nested filter', async () => {
+    await app.request('/?filter[entityType]=INVOICE&filter[entityId]=e-1');
+    const [input] = mockList.mock.calls[0] as [{ filter?: Record<string, string> }];
+    expect(input.filter).toMatchObject({ entityType: 'INVOICE', entityId: 'e-1' });
   });
 
-  it('forwards entityType query param', async () => {
-    await app.request('/?entityType=CONTRACTOR');
-    const [input] = mockList.mock.calls[0] as [{ entityType: unknown }];
-    expect(input).toMatchObject({ entityType: 'CONTRACTOR' });
+  it('decodes the opaque cursor and applies defaults', async () => {
+    await app.request(`/?cursor=${encodeCursor('doc-2')}`);
+    const [input] = mockList.mock.calls[0] as [{ cursor?: string; limit: number; sort: string }];
+    expect(input).toMatchObject({ cursor: 'doc-2', limit: 25, sort: '-createdAt' });
   });
 
-  it('forwards entityId query param', async () => {
-    await app.request('/?entityId=ent-abc');
-    const [input] = mockList.mock.calls[0] as [{ entityId: unknown }];
-    expect(input).toMatchObject({ entityId: 'ent-abc' });
-  });
-
-  it('forwards sortOrder query param', async () => {
-    await app.request('/?sortOrder=asc');
-    const [input] = mockList.mock.calls[0] as [{ sortOrder: unknown }];
-    expect(input).toMatchObject({ sortOrder: 'asc' });
-  });
-
-  it('forwards all params together correctly', async () => {
-    await app.request('/?page=1&pageSize=10&entityType=CONTRACT&entityId=cnt-1&sortOrder=desc');
-    const [input] = mockList.mock.calls[0] as [Record<string, unknown>];
-    expect(input).toMatchObject({
-      page: 1,
-      pageSize: 10,
-      entityType: 'CONTRACT',
-      entityId: 'cnt-1',
-      sortOrder: 'desc',
-    });
-  });
-
-  it('applies schema defaults and omits optional filters when none provided', async () => {
-    await app.request('/');
-    const [input] = mockList.mock.calls[0] as [Record<string, unknown>];
-    expect(input).toMatchObject({ page: 1, pageSize: 25, sortOrder: 'desc' });
-    expect(input.entityType).toBeUndefined();
-    expect(input.entityId).toBeUndefined();
-  });
-
-  it('returns 400 and never calls the caller for an invalid entityType', async () => {
-    const res = await app.request('/?entityType=NOT_AN_ENTITY');
+  it('rejects an unknown filter key with 400 (.strict())', async () => {
+    const res = await app.request('/?filter[bogus]=x');
     expect(res.status).toBe(400);
     expect(mockList).not.toHaveBeenCalled();
-    const body = (await res.json()) as { error: { code: string } };
-    expect(body.error.code).toBe('VALIDATION_ERROR');
   });
 
-  it('returns 200 and wraps result in { data, meta }', async () => {
-    const items = [{ id: 'doc-1', name: 'Contract.pdf' }];
-    mockList.mockResolvedValueOnce({ items, total: 1, page: 1, pageSize: 25 });
+  it('wraps the result in the { data, meta } cursor envelope', async () => {
+    mockList.mockResolvedValueOnce({ items: [{ id: 'doc-1' }], nextCursor: undefined });
     const res = await app.request('/');
-    expect(res.status).toBe(200);
-    const body = (await res.json()) as { data: unknown[]; meta: unknown };
-    expect(body.data).toEqual(items);
-    expect(body.meta).toMatchObject({ total: 1, page: 1, pageSize: 25 });
+    const body = (await res.json()) as {
+      data: unknown[];
+      meta: { nextCursor: null; hasMore: boolean };
+    };
+    expect(body.data).toHaveLength(1);
+    expect(body.meta).toEqual({ nextCursor: null, hasMore: false });
   });
 });
 
-describe('GET /documents/:id/download-url', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
+describe('GET /documents/{id}/download-url', () => {
+  beforeEach(() => vi.clearAllMocks());
 
-  it('calls caller.document.getDownloadUrl with the route param id', async () => {
-    mockGetDownloadUrl.mockResolvedValueOnce({
-      url: 'https://example.com/signed',
-      expiresAt: '2099-01-01',
-    });
-    await app.request('/doc-abc/download-url');
-    expect(mockGetDownloadUrl).toHaveBeenCalledWith({ id: 'doc-abc' });
-  });
-
-  it('wraps the result as { data }', async () => {
-    const result = { url: 'https://r2.example.com/signed?token=xyz', expiresAt: '2099-12-31' };
-    mockGetDownloadUrl.mockResolvedValueOnce(result);
+  it('forwards the id and wraps the presigned url as { data }', async () => {
+    const dl = { url: 'https://signed.example/doc', expiresIn: 900 };
+    mockGetDownloadUrl.mockResolvedValueOnce(dl);
     const res = await app.request('/doc-xyz/download-url');
-    expect(res.status).toBe(200);
-    const body = (await res.json()) as { data: unknown };
-    expect(body).toEqual({ data: result });
-  });
-
-  it('passes the exact document id from the URL to the caller', async () => {
-    const docId = 'doc-unique-123';
-    mockGetDownloadUrl.mockResolvedValueOnce({
-      url: 'https://r2.example.com/file',
-      expiresAt: '2099',
-    });
-    await app.request(`/${docId}/download-url`);
-    expect(mockGetDownloadUrl).toHaveBeenCalledWith({ id: docId });
+    expect(mockGetDownloadUrl).toHaveBeenCalledWith({ id: 'doc-xyz' });
+    expect(await res.json()).toEqual({ data: dl });
   });
 });
