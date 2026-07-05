@@ -30,7 +30,15 @@ const { mockPrisma, mockIsPaymentBlockEnforced, mockWarn, mockError, itemsFixtur
     };
   });
 
-vi.mock('@contractor-ops/db', () => ({ prisma: mockPrisma, prismaRaw: mockPrisma }));
+vi.mock('@contractor-ops/db', () => ({
+  prisma: mockPrisma,
+  prismaRaw: mockPrisma,
+  // No-tx audit writes resolve their regional client from tenant context; the
+  // gate runs inside a tenant request, so surface an EU region + the same
+  // recording client so the audit row lands on `mockPrisma.auditLog`.
+  tenantStore: { getStore: () => ({ organizationId: 'org-test', region: 'EU' }) },
+  getRegionalClient: () => mockPrisma,
+}));
 vi.mock('@contractor-ops/feature-flags', () => ({
   isPaymentBlockEnforced: mockIsPaymentBlockEnforced,
 }));

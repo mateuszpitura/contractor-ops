@@ -16,7 +16,7 @@
 //     (audit is append-only per audit.prisma contract).
 
 import type { Prisma } from '@contractor-ops/db';
-import { prisma } from '@contractor-ops/db';
+import { getRegionalClient, prisma, tenantStore } from '@contractor-ops/db';
 import { createLogger } from '@contractor-ops/logger';
 
 const log = createLogger({ service: 'audit-writer' });
@@ -86,8 +86,59 @@ export interface WriteAuditLogInput {
   metadata?: Record<string, unknown> | null;
   ipAddress?: string | null;
   userAgent?: string | null;
+  /**
+   * Explicit data region for the org. When omitted the region is resolved from
+   * the active tenant context (AsyncLocalStorage) and, failing that, the global
+   * Organization directory. Ignored when `tx` is supplied (the tx is already
+   * pinned to a region). Provide it explicitly only from contexts that have no
+   * tenant context to lean on.
+   */
+  region?: string;
   /** Optional Prisma transaction client — when supplied the insert joins the caller's transaction. */
   tx?: AuditWriterClient;
+}
+
+/**
+ * Resolves the Prisma client the audit row must be written through.
+ *
+ * When the caller supplies `tx` the row joins their (already regional)
+ * transaction. Otherwise the client is pinned to the org's data region so an
+ * audit row for an ME/US org can never land in the global `DATABASE_URL`
+ * database: regional GDPR erasure deletes `AuditLog` on the regional client, so
+ * a mis-routed row is both a residency crossing and un-erasable.
+ *
+ * Region resolution order: explicit `region` → active tenant context → global
+ * Organization directory (`dataRegion`, the same source `tenantMiddleware` and
+ * the OAuth callback resolve region from). If none resolves we throw rather
+ * than silently fall back to the global client.
+ */
+async function resolveAuditWriterClient(params: {
+  tx?: AuditWriterClient;
+  region?: string;
+  organizationId: string;
+}): Promise<AuditWriterClient> {
+  if (params.tx) {
+    return params.tx;
+  }
+
+  let region = params.region ?? tenantStore.getStore()?.region;
+  if (!region) {
+    const org = await prisma.organization.findUnique({
+      where: { id: params.organizationId },
+      select: { dataRegion: true },
+    });
+    region = org?.dataRegion ?? undefined;
+  }
+
+  if (!region) {
+    throw new Error(
+      `writeAuditLog: cannot resolve data region for organization ${params.organizationId} ` +
+        '(no tx, no explicit region, no tenant context, org absent from directory); ' +
+        'refusing to write the audit row to the global database.',
+    );
+  }
+
+  return getRegionalClient(region) as unknown as AuditWriterClient;
 }
 
 /**
@@ -131,7 +182,11 @@ function buildAuditLogRow(input: WriteAuditLogInput): Prisma.AuditLogUncheckedCr
  */
 export async function writeAuditLog(input: WriteAuditLogInput): Promise<void> {
   const data = buildAuditLogRow(input);
-  const client: AuditWriterClient = input.tx ?? (prisma as unknown as AuditWriterClient);
+  const client = await resolveAuditWriterClient({
+    tx: input.tx,
+    region: input.region,
+    organizationId: input.organizationId,
+  });
 
   try {
     await client.auditLog.create({ data });
@@ -155,14 +210,21 @@ export async function writeAuditLog(input: WriteAuditLogInput): Promise<void> {
  * {@link WriteAuditLogInput} minus the transaction client — that is supplied
  * once at the batch level so every row commits in the same transaction.
  */
-export type WriteAuditLogManyRow = Omit<WriteAuditLogInput, 'tx'>;
+export type WriteAuditLogManyRow = Omit<WriteAuditLogInput, 'tx' | 'region'>;
 
 export interface WriteAuditLogManyInput {
   /** Audit rows to insert. Each row is validated independently. */
   rows: readonly WriteAuditLogManyRow[];
   /**
+   * Explicit data region for the batch. When omitted the region is resolved
+   * from the active tenant context and, failing that, the global Organization
+   * directory. Ignored when `tx` is supplied.
+   */
+  region?: string;
+  /**
    * Optional Prisma transaction client — when supplied the batch insert joins
-   * the caller's transaction. Defaults to the shared `prisma` client.
+   * the caller's transaction. Otherwise the batch is pinned to the org's data
+   * region (never the global client).
    */
   tx?: AuditWriterClient;
 }
@@ -182,7 +244,11 @@ export async function writeAuditLogMany(input: WriteAuditLogManyInput): Promise<
   }
 
   const data = input.rows.map(buildAuditLogRow);
-  const client: AuditWriterClient = input.tx ?? (prisma as unknown as AuditWriterClient);
+  const client = await resolveAuditWriterClient({
+    tx: input.tx,
+    region: input.region,
+    organizationId: data[0]?.organizationId ?? '',
+  });
 
   try {
     await client.auditLog.createMany({ data });

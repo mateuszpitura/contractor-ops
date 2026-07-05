@@ -4,7 +4,7 @@ type: hot-cache
 updated: 2026-07-06
 source_commit: efb2b0794
 updated: 2026-07-05
-source_commit: 64f25f0a8
+source_commit: a691aface4b1b0f4ec333f2f69d9705e0c0338fa
 ---
 
 # Hot cache
@@ -125,7 +125,7 @@ New user with no org → `DashboardShellContainer` (`components/layout/dashboard
 
 ## AuditLog is DB-level append-only
 
-`AuditLog` is append-only in Postgres, not by convention (migration `20260617000000_auditlog_append_only`): a `BEFORE UPDATE` trigger rejects **every** UPDATE; the `auditlog_delete` RLS policy permits a DELETE **only** inside a tx that called `allowAuditPurge(tx)` (`@contractor-ops/db`, `packages/db/src/rls.ts`). Sole caller = GDPR erasure (`routers/compliance/gdpr.ts`). Never `tx.auditLog.update*` (trigger throws) or `.delete*` without `allowAuditPurge` (RLS denies). To "fix" a row, INSERT a new one. Detail: [[patterns/audit-log]] · [[patterns/tenant-and-audit]].
+`AuditLog` is append-only in Postgres, not by convention (migration `20260617000000_auditlog_append_only`): a `BEFORE UPDATE` trigger rejects **every** UPDATE; the `auditlog_delete` RLS policy permits a DELETE **only** inside a tx that called `allowAuditPurge(tx)` (`@contractor-ops/db`, `packages/db/src/rls.ts`). Sole caller = GDPR erasure (`routers/compliance/gdpr.ts`). Never `tx.auditLog.update*` (trigger throws) or `.delete*` without `allowAuditPurge` (RLS denies). To "fix" a row, INSERT a new one. **Region-pinned:** `writeAuditLog` with no `tx` resolves the org region (explicit `region` → `tenantStore` → global `Organization.dataRegion`) and writes via `getRegionalClient` — it **throws** rather than fall back to the global `DATABASE_URL`, so ME/US rows stay in-region (else regional erasure can't reach them). Detail: [[patterns/audit-log]] · [[patterns/tenant-and-audit]].
 
 ## Approval decide = compare-and-swap (not read-then-write)
 

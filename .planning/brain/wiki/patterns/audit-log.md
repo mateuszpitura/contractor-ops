@@ -2,7 +2,7 @@
 title: Audit log mutations
 type: pattern
 tags: [audit, compliance, lint]
-source_commit: 2832af75dda044f0eda4c54a3797234dd89b21f6
+source_commit: a691aface4b1b0f4ec333f2f69d9705e0c0338fa
 verify_with:
   - packages/api/src/services/audit-writer.ts
   - scripts/lint-audit-log.mjs
@@ -53,6 +53,7 @@ flowchart LR
 - **Append-only at the DB level** (migration `20260617000000_auditlog_append_only`): RLS exposes only an `auditlog_insert` policy; a `BEFORE UPDATE` trigger (`app.reject_auditlog_update`) rejects every UPDATE unconditionally — no app code can mutate an audit row
 - **DELETE is gated, not blanket-blocked**: the `auditlog_delete` policy permits a delete only when the transaction has opted in via `allowAuditPurge(tx)` (`packages/db/src/rls.ts` → `SET LOCAL app.allow_audit_purge = 'on'`, read by `app.audit_purge_allowed()`). The **only** legitimate caller is GDPR Right-to-Erasure (`routers/compliance/gdpr.ts`), which calls it before wiping a tenant's audit rows; ordinary writers never set the flag, so their deletes are denied
 - `organizationId` from session — never client input alone
+- **Region-pinned writes (data residency)**: `writeAuditLog` / `writeAuditLogMany` never fall back to the global `DATABASE_URL` client. With no `tx` the writer resolves the org's data region (explicit `region` arg → tenant context `tenantStore` → global `Organization.dataRegion` directory) and writes through `getRegionalClient(region)`; if none resolves it **throws** rather than mis-route the row. Keeps ME/US audit rows (SSN/FTIN reveals, GDPR-erasure audits, OAuth-connect + async determination-letter writes) in-region so regional erasure — `gdpr.ts` deletes `auditLog` on the regional client — can actually reach them. In-tx callers keep using their (already-regional) `tx`.
 - Prefer `auditMutationCtx(ctx)` + `auditedMutation(..., async tx => { ... })` so mutation + audit share one `$transaction`
 - Migrated callers (2026-06-10): contract CRUD + expiry reminders; equipment shipments/returns/couriers; project/team/cost-center/settings; workflow task complete/skip; org `setKleinunternehmer`
 - Same-tx audit rows also on: approval `approve`/`reject` (`approval.approve` / `approval.reject`, `approval-queue.ts`); reassessment `acknowledge`/`dismiss` (`reassessment.acknowledge` / `reassessment.dismiss`, `compliance/reassessment-trigger.ts` — `resourceType: CONTRACTOR`); portal contact update (`portal.contact.update`, `portal/portal-profile-router.ts`)

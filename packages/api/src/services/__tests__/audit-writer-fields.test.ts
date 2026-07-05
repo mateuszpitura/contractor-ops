@@ -11,13 +11,30 @@
  */
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const { mockPrisma } = vi.hoisted(() => ({
-  mockPrisma: {
+const { mockPrisma, mockRegionalClient, mockGetRegionalClient, mockGetStore } = vi.hoisted(() => {
+  const mockRegionalClient = {
     auditLog: { create: vi.fn(async () => ({})), createMany: vi.fn(async () => ({ count: 0 })) },
-  },
-}));
+  };
+  const getStore: () => { organizationId: string; region: string } | undefined = () => ({
+    organizationId: 'org-1',
+    region: 'EU',
+  });
+  return {
+    mockPrisma: {
+      auditLog: { create: vi.fn(async () => ({})), createMany: vi.fn(async () => ({ count: 0 })) },
+      organization: { findUnique: vi.fn(async () => ({ dataRegion: 'EU' })) },
+    },
+    mockRegionalClient,
+    mockGetRegionalClient: vi.fn((_region: string) => mockRegionalClient),
+    mockGetStore: vi.fn(getStore),
+  };
+});
 
-vi.mock('@contractor-ops/db', () => ({ prisma: mockPrisma }));
+vi.mock('@contractor-ops/db', () => ({
+  prisma: mockPrisma,
+  getRegionalClient: mockGetRegionalClient,
+  tenantStore: { getStore: mockGetStore },
+}));
 vi.mock('@contractor-ops/logger', () => ({
   createLogger: () => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() }),
 }));
@@ -101,11 +118,15 @@ describe('writeAuditLog — atomic transaction routing', () => {
     await writeAuditLog({ ...base, tx });
     expect(tx.auditLog.create).toHaveBeenCalledTimes(1);
     expect(mockPrisma.auditLog.create).not.toHaveBeenCalled();
+    expect(mockGetRegionalClient).not.toHaveBeenCalled();
   });
 
-  it('falls back to the default prisma client when no tx is supplied', async () => {
+  it('routes no-tx writes through the org-region client, never the global prisma', async () => {
+    mockGetStore.mockReturnValueOnce({ organizationId: 'org-1', region: 'ME' });
     await writeAuditLog(base);
-    expect(mockPrisma.auditLog.create).toHaveBeenCalledTimes(1);
+    expect(mockGetRegionalClient).toHaveBeenCalledWith('ME');
+    expect(mockRegionalClient.auditLog.create).toHaveBeenCalledTimes(1);
+    expect(mockPrisma.auditLog.create).not.toHaveBeenCalled();
   });
 });
 
