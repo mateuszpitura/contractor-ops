@@ -24,6 +24,7 @@ const PersonnelClassifyQueuePage = lazy(
 const ApprovalsPage = lazy(() => import('../pages/dashboard/approvals.js'));
 const LeavePage = lazy(() => import('../pages/dashboard/leave.js'));
 const TeamCalendarPage = lazy(() => import('../pages/dashboard/leave/team-calendar.js'));
+const EmployeeTimePage = lazy(() => import('../pages/dashboard/employee-time.js'));
 const SettingsIndexPage = lazy(() => import('../pages/dashboard/settings/index.js'));
 const CalendarSettingsPage = lazy(() => import('../pages/dashboard/settings/calendar.js'));
 const EInvoicingSettingsPage = lazy(() => import('../pages/dashboard/settings/e-invoicing.js'));
@@ -100,6 +101,7 @@ export const dashboardRoutes = [
   { path: 'approvals', element: page(<ApprovalsPage />) },
   { path: 'leave', element: page(<LeavePage />) },
   { path: 'leave/calendar', element: page(<TeamCalendarPage />) },
+  { path: 'employee-time', element: page(<EmployeeTimePage />) },
   { path: 'settings', element: page(<SettingsIndexPage />) },
   { path: 'settings/calendar', element: page(<CalendarSettingsPage />) },
   { path: 'settings/e-invoicing', element: page(<EInvoicingSettingsPage />) },
