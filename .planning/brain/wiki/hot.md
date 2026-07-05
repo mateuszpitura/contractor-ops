@@ -4,7 +4,7 @@ type: hot-cache
 updated: 2026-07-06
 source_commit: efb2b0794
 updated: 2026-07-05
-source_commit: a691aface4b1b0f4ec333f2f69d9705e0c0338fa
+source_commit: 671b24f0d7790ac32119330a0a589dffdcfece36
 ---
 
 # Hot cache
@@ -134,6 +134,10 @@ The four `sentry-scrub.ts` `beforeSend` copies (`apps/api`, `apps/public-api`, `
 ## Approval decide = compare-and-swap (not read-then-write)
 
 `approve` / `reject` + `bulkApprove` / `bulkReject` (`packages/api/src/routers/core/approval-queue.ts`) commit the step transition with a guarded `updateMany({ where: { id, status: 'PENDING', approverUserId }, data })`, NOT `update({ where: { id } })`. The `findFirst` + `validateStepForAction` read only gates early 404/403/permission; the CAS is the real lock. Decision row, `writeAuditLog`, flow advancement, and finalize run only when `count === 1`; a `count === 0` loser throws `CONFLICT` (`approvalStepAlreadyDecided`). Closes the TOCTOU window where a concurrent approve + reject both read `PENDING` and both act. Detail: [[domains/approvals-engine]].
+
+## E-sign envelope creation = intent-row idempotent
+
+`sendForSignature` (`packages/api/src/services/esign-orchestrator.ts`) creates the provider envelope BEFORE its local `$transaction`, so a rolled-back tx would orphan the process and let a retry duplicate it. DocuSign is safe on its own (`X-DocuSign-Idempotency-Key`); **Autenti's `document-processes` POSTs honor no idempotency header** — dedup lives on our side. Every send claims an `EsignEnvelopeIntent` row (unique `(organizationId, documentId, signerSetHash)`, `signerSetHash = sha256(documentId | sorted(email:role:routingOrder))`) **before** the provider call and stamps `externalEnvelopeId` back onto it **before** the tx. Retry paths: intent already has an id → return the persisted `SigningEnvelope` (via `(provider, externalEnvelopeId)` unique) or re-drive **only** persistence against the existing process (`reuseProviderEnvelope`) — never a second provider create; concurrent claim → P2002 caught → reuse the winner, or fail closed `CONFLICT` if the winner is mid-flight. Do NOT move the provider call after the tx or drop the intent claim. Detail: [[integrations/docusign-esign]].
 
 ## OCR AI kill-switch
 

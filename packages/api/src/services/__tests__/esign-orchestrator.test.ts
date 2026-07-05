@@ -3,38 +3,55 @@ import * as E from '../../errors';
 import { sendForSignature } from '../esign-orchestrator';
 import { createPresignedDownloadUrl } from '../r2';
 
-const { mockDocumentFindFirst, mockTx, mockTransaction, mockCreateSigningEnvelope } = vi.hoisted(
-  () => {
-    const mockCreateSigningEnvelope = vi.fn();
+const {
+  mockDocumentFindFirst,
+  mockTx,
+  mockTransaction,
+  mockCreateSigningEnvelope,
+  mockIntentFindUnique,
+  mockIntentCreate,
+  mockIntentUpdate,
+  mockSigningEnvelopeFindUnique,
+} = vi.hoisted(() => {
+  const mockCreateSigningEnvelope = vi.fn();
 
-    const mockTx = {
-      signingEnvelope: {
-        create: vi.fn(),
-        findUniqueOrThrow: vi.fn(),
-      },
-      signingRecipient: { create: vi.fn() },
-      signingEvent: { create: vi.fn() },
-      contract: { update: vi.fn() },
-      externalLink: { create: vi.fn() },
-    };
+  const mockTx = {
+    signingEnvelope: {
+      create: vi.fn(),
+      findUniqueOrThrow: vi.fn(),
+    },
+    signingRecipient: { create: vi.fn() },
+    signingEvent: { create: vi.fn() },
+    contract: { update: vi.fn() },
+    externalLink: { create: vi.fn() },
+  };
 
-    const mockTransaction = vi.fn(async (fn: (tx: typeof mockTx) => Promise<unknown>) =>
-      fn(mockTx),
-    );
+  const mockTransaction = vi.fn(async (fn: (tx: typeof mockTx) => Promise<unknown>) => fn(mockTx));
 
-    return {
-      mockDocumentFindFirst: vi.fn(),
-      mockTx,
-      mockTransaction,
-      mockCreateSigningEnvelope,
-    };
-  },
-);
+  return {
+    mockDocumentFindFirst: vi.fn(),
+    mockTx,
+    mockTransaction,
+    mockCreateSigningEnvelope,
+    mockIntentFindUnique: vi.fn(),
+    mockIntentCreate: vi.fn(),
+    mockIntentUpdate: vi.fn(),
+    mockSigningEnvelopeFindUnique: vi.fn(),
+  };
+});
 
 vi.mock('@contractor-ops/db', () => {
   const MockDbPrisma = {
     document: {
       findFirst: mockDocumentFindFirst,
+    },
+    esignEnvelopeIntent: {
+      findUnique: mockIntentFindUnique,
+      create: mockIntentCreate,
+      update: mockIntentUpdate,
+    },
+    signingEnvelope: {
+      findUnique: mockSigningEnvelopeFindUnique,
     },
     $transaction: mockTransaction,
   };
@@ -77,6 +94,12 @@ describe('sendForSignature', () => {
       originalFileName: 'invoice.pdf',
       documentType: 'INVOICE',
     });
+
+    // Default: no prior intent row (fresh send path).
+    mockIntentFindUnique.mockResolvedValue(null);
+    mockIntentCreate.mockResolvedValue({ id: 'intent-1' });
+    mockIntentUpdate.mockResolvedValue({});
+    mockSigningEnvelopeFindUnique.mockResolvedValue(null);
 
     mockCreateSigningEnvelope.mockResolvedValue({
       externalEnvelopeId: 'ext-env-1',
@@ -409,5 +432,114 @@ describe('sendForSignature', () => {
         }),
       }),
     );
+  });
+
+  const autentiSend = () =>
+    sendForSignature({
+      organizationId: 'org_1',
+      userId: 'user_1',
+      documentId: 'doc_1',
+      connectionId: 'conn_1',
+      provider: 'AUTENTI',
+      signers: [{ name: 'S', email: 's@e.com', role: 'signer', routingOrder: 1 }],
+    });
+
+  it('claims an intent row before calling the provider (Autenti)', async () => {
+    await autentiSend();
+
+    expect(mockIntentCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          organizationId: 'org_1',
+          documentId: 'doc_1',
+          provider: 'AUTENTI',
+          integrationConnectionId: 'conn_1',
+          signerSetHash: expect.any(String),
+        }),
+      }),
+    );
+    // The provider process id is stamped back onto the intent row before the tx.
+    expect(mockIntentUpdate).toHaveBeenCalledWith({
+      where: { id: 'intent-1' },
+      data: { externalEnvelopeId: 'ext-env-1' },
+    });
+  });
+
+  it('reuses the existing envelope on a duplicate send — one provider process', async () => {
+    // First send creates the provider process (fresh path).
+    await autentiSend();
+    expect(mockCreateSigningEnvelope).toHaveBeenCalledTimes(1);
+
+    // Second send: intent row now carries the provider id and a persisted
+    // envelope exists → short-circuit, no second provider create.
+    mockIntentFindUnique.mockResolvedValue({ id: 'intent-1', externalEnvelopeId: 'ext-env-1' });
+    mockSigningEnvelopeFindUnique.mockResolvedValue({ id: 'env-internal-1', recipients: [] });
+
+    const reused = await autentiSend();
+
+    expect(reused.id).toBe('env-internal-1');
+    expect(mockCreateSigningEnvelope).toHaveBeenCalledTimes(1);
+    expect(mockSigningEnvelopeFindUnique).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: {
+          provider_externalEnvelopeId: { provider: 'AUTENTI', externalEnvelopeId: 'ext-env-1' },
+        },
+      }),
+    );
+  });
+
+  it('retry after a rolled-back tx reuses the process instead of duplicating it', async () => {
+    // First attempt: provider process created + intent stamped, then the local
+    // transaction rolls back.
+    mockTransaction.mockRejectedValueOnce(new Error('tx rolled back'));
+    await expect(autentiSend()).rejects.toThrow('tx rolled back');
+    expect(mockCreateSigningEnvelope).toHaveBeenCalledTimes(1);
+    expect(mockIntentUpdate).toHaveBeenCalledWith({
+      where: { id: 'intent-1' },
+      data: { externalEnvelopeId: 'ext-env-1' },
+    });
+
+    // Retry: intent row carries the provider id but no envelope was persisted
+    // (tx rolled back) → re-drive local persistence, no second provider create.
+    mockIntentFindUnique.mockResolvedValue({ id: 'intent-1', externalEnvelopeId: 'ext-env-1' });
+    mockSigningEnvelopeFindUnique.mockResolvedValue(null);
+
+    const envelope = await autentiSend();
+
+    expect(envelope.id).toBe('env-internal-1');
+    expect(mockCreateSigningEnvelope).toHaveBeenCalledTimes(1);
+    expect(mockTx.signingEnvelope.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ externalEnvelopeId: 'ext-env-1' }),
+      }),
+    );
+  });
+
+  it('resolves the existing envelope when a concurrent create wins (P2002)', async () => {
+    // No intent on first read; our create loses the race with a P2002; the
+    // winner already recorded a provider id + persisted envelope.
+    mockIntentFindUnique
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce({ id: 'intent-1', externalEnvelopeId: 'ext-env-1' });
+    mockIntentCreate.mockRejectedValue({ code: 'P2002' });
+    mockSigningEnvelopeFindUnique.mockResolvedValue({ id: 'env-internal-1', recipients: [] });
+
+    const envelope = await autentiSend();
+
+    expect(envelope.id).toBe('env-internal-1');
+    expect(mockCreateSigningEnvelope).not.toHaveBeenCalled();
+  });
+
+  it('refuses to create a duplicate when the concurrent winner is mid-flight (P2002, no external id)', async () => {
+    mockIntentFindUnique
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce({ id: 'intent-1', externalEnvelopeId: null });
+    mockIntentCreate.mockRejectedValue({ code: 'P2002' });
+
+    await expect(autentiSend()).rejects.toMatchObject({
+      code: 'CONFLICT',
+      message: E.ESIGN_NO_EXTERNAL_ID,
+    });
+    expect(mockCreateSigningEnvelope).not.toHaveBeenCalled();
   });
 });

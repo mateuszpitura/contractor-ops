@@ -122,10 +122,60 @@ async function fetchDocumentContent(
 // ---------------------------------------------------------------------------
 
 /**
- * Creates a signing envelope with the specified provider, saves the envelope
- * and recipient records in the database, and updates contract status if applicable.
+ * Detects a Prisma unique-constraint violation (P2002) without importing the
+ * Prisma error class into this module's dependency graph.
  */
-export async function sendForSignature(params: SendForSignatureParams) {
+function isUniqueViolation(err: unknown): boolean {
+  return (
+    typeof err === 'object' &&
+    err !== null &&
+    'code' in err &&
+    (err as { code?: unknown }).code === 'P2002'
+  );
+}
+
+/**
+ * Deterministic digest of the logical signer set for one send. Combined with
+ * `organizationId` + `documentId` (the other two thirds of the intent-row
+ * dedup key) it identifies a single logical envelope. Mirrors the DocuSign
+ * adapter's `businessKey`: a hash over the document identity and the sorted
+ * signer set (email + role + routing order), so a resend of the same document
+ * to the same signers collapses to one key regardless of array ordering.
+ */
+function computeSignerSetHash(
+  documentId: string,
+  signers: SendForSignatureParams['signers'],
+): string {
+  const canonicalSigners = signers
+    .map(s => `${s.email}:${s.role}:${s.routingOrder}`)
+    .sort()
+    .join(',');
+  return createHash('sha256').update(`${documentId}|${canonicalSigners}`).digest('hex');
+}
+
+interface PersistEnvelopeArgs {
+  organizationId: string;
+  userId: string;
+  contractId?: string;
+  documentId: string;
+  connectionId: string;
+  provider: ESignProvider;
+  signers: SendForSignatureParams['signers'];
+  message?: string;
+  expiresInDays: number;
+  reminderIntervalDays?: number;
+  externalEnvelopeId: string;
+  /** Provider recipient mapping; empty when re-driving persistence for an existing process. */
+  providerSigners: ReadonlyArray<{ externalRecipientId?: string | null; email: string }>;
+}
+
+/**
+ * Writes the local SigningEnvelope + recipients + events (+ contract status /
+ * external link) for a provider process that has already been created. Kept
+ * separate from the provider call so a retry can re-drive persistence against
+ * an existing process without issuing a second provider create.
+ */
+async function persistEnvelopeRecords(args: PersistEnvelopeArgs) {
   const {
     organizationId,
     userId,
@@ -135,50 +185,25 @@ export async function sendForSignature(params: SendForSignatureParams) {
     provider,
     signers,
     message,
-    expiresInDays = 14,
+    expiresInDays,
     reminderIntervalDays,
-  } = params;
+    externalEnvelopeId,
+    providerSigners,
+  } = args;
 
-  // Fetch and prepare the document
-  const { document, documentBase64 } = await fetchDocumentContent(organizationId, documentId);
-
-  // Call the provider adapter to create the envelope.
-  // `organizationId` is plumbed through so the adapter's idempotency-key
-  // derivation (DRIFT-01) shares the canonical orgId scope.
-  const result = await createProviderEnvelope({
-    provider,
-    connectionId,
-    request: {
-      organizationId,
-      documentBase64,
-      documentName: document.originalFileName,
-      signers: signers.map(s => ({
-        name: s.name,
-        email: s.email,
-        role: s.role,
-        routingOrder: s.routingOrder,
-      })),
-      message,
-      expiresInDays,
-      reminderIntervalDays,
-    },
-  });
-
-  // Compute expiry date
   const expiresAt = new Date();
   expiresAt.setDate(expiresAt.getDate() + expiresInDays);
 
   const now = new Date();
 
-  // Create all records in a single transaction
-  const envelope = await prisma.$transaction(async tx => {
+  return prisma.$transaction(async tx => {
     // a. Create SigningEnvelope
     const env = await tx.signingEnvelope.create({
       data: {
         organizationId,
         integrationConnectionId: connectionId,
         provider: provider as never,
-        externalEnvelopeId: result.externalEnvelopeId,
+        externalEnvelopeId,
         contractId: contractId ?? null,
         documentId,
         status: 'SENT',
@@ -193,7 +218,7 @@ export async function sendForSignature(params: SendForSignatureParams) {
 
     // b. Create SigningRecipient records
     for (const signer of signers) {
-      const externalRecipient = result.signers.find(s => s.email === signer.email);
+      const externalRecipient = providerSigners.find(s => s.email === signer.email);
       await tx.signingRecipient.create({
         data: {
           signingEnvelopeId: env.id,
@@ -219,7 +244,7 @@ export async function sendForSignature(params: SendForSignatureParams) {
     });
 
     // d. Create ENVELOPE_SENT event
-    const firstSigner = signers.sort((a, b) => a.routingOrder - b.routingOrder)[0];
+    const firstSigner = [...signers].sort((a, b) => a.routingOrder - b.routingOrder)[0];
     await tx.signingEvent.create({
       data: {
         organizationId,
@@ -246,7 +271,7 @@ export async function sendForSignature(params: SendForSignatureParams) {
         entityType: contractId ? 'CONTRACT' : 'DOCUMENT',
         entityId: contractId ?? documentId,
         externalType: `${provider}_ENVELOPE`,
-        externalId: result.externalEnvelopeId,
+        externalId: externalEnvelopeId,
       },
     });
 
@@ -256,8 +281,156 @@ export async function sendForSignature(params: SendForSignatureParams) {
       include: { recipients: true },
     });
   });
+}
 
-  return envelope;
+/**
+ * Reuses a provider process that a prior (or concurrent) attempt already
+ * created for this logical send. Returns the persisted envelope if it exists;
+ * otherwise re-drives only the local persistence against the existing process
+ * (the case where the earlier local transaction rolled back after the provider
+ * call). Never issues a second provider create.
+ */
+async function reuseProviderEnvelope(args: Omit<PersistEnvelopeArgs, 'providerSigners'>) {
+  const existing = await prisma.signingEnvelope.findUnique({
+    where: {
+      provider_externalEnvelopeId: {
+        provider: args.provider as never,
+        externalEnvelopeId: args.externalEnvelopeId,
+      },
+    },
+    include: { recipients: true },
+  });
+
+  if (existing) return existing;
+
+  return persistEnvelopeRecords({ ...args, providerSigners: [] });
+}
+
+/**
+ * Creates a signing envelope with the specified provider, saves the envelope
+ * and recipient records in the database, and updates contract status if applicable.
+ *
+ * Idempotency for non-idempotent providers: the provider process is created
+ * BEFORE the local transaction, so a rolled-back transaction would otherwise
+ * orphan the process and let a retry create a duplicate. DocuSign is protected
+ * by its server-honored `X-DocuSign-Idempotency-Key`, but Autenti's multi-step
+ * `document-processes` POSTs honor no idempotency header. An `EsignEnvelopeIntent`
+ * row keyed on `(organizationId, documentId, signerSetHash)` is claimed BEFORE
+ * the provider call and stamped with `externalEnvelopeId` once the create
+ * returns; a retry reuses the recorded process instead of duplicating it.
+ */
+export async function sendForSignature(params: SendForSignatureParams) {
+  const {
+    organizationId,
+    userId,
+    contractId,
+    documentId,
+    connectionId,
+    provider,
+    signers,
+    message,
+    expiresInDays = 14,
+    reminderIntervalDays,
+  } = params;
+
+  const signerSetHash = computeSignerSetHash(documentId, signers);
+  const dedupKey = {
+    organizationId_documentId_signerSetHash: { organizationId, documentId, signerSetHash },
+  };
+
+  const reuseArgs: Omit<PersistEnvelopeArgs, 'providerSigners' | 'externalEnvelopeId'> = {
+    organizationId,
+    userId,
+    contractId,
+    documentId,
+    connectionId,
+    provider,
+    signers,
+    message,
+    expiresInDays,
+    reminderIntervalDays,
+  };
+
+  // A provider process was already created for this logical send — reuse it.
+  const existingIntent = await prisma.esignEnvelopeIntent.findUnique({ where: dedupKey });
+  if (existingIntent?.externalEnvelopeId) {
+    return reuseProviderEnvelope({
+      ...reuseArgs,
+      externalEnvelopeId: existingIntent.externalEnvelopeId,
+    });
+  }
+
+  // Claim the intent row before touching the provider. We own it if we created
+  // it (or if a prior attempt claimed it but never recorded a provider id).
+  let intentId = existingIntent?.id ?? null;
+  if (!intentId) {
+    try {
+      const created = await prisma.esignEnvelopeIntent.create({
+        data: {
+          organizationId,
+          documentId,
+          contractId: contractId ?? null,
+          provider: provider as never,
+          integrationConnectionId: connectionId,
+          signerSetHash,
+        },
+        select: { id: true },
+      });
+      intentId = created.id;
+    } catch (err) {
+      if (!isUniqueViolation(err)) throw err;
+      // A concurrent send claimed the same logical envelope first. Reuse its
+      // process rather than creating a duplicate at the provider.
+      const winner = await prisma.esignEnvelopeIntent.findUnique({ where: dedupKey });
+      if (winner?.externalEnvelopeId) {
+        return reuseProviderEnvelope({
+          ...reuseArgs,
+          externalEnvelopeId: winner.externalEnvelopeId,
+        });
+      }
+      // The winner is mid-flight and has not recorded a provider id yet;
+      // refuse to create a second process. The caller retries once it settles.
+      throw new TRPCError({ code: 'CONFLICT', message: E.ESIGN_NO_EXTERNAL_ID });
+    }
+  }
+
+  // Fetch and prepare the document, then create the provider envelope.
+  const { document, documentBase64 } = await fetchDocumentContent(organizationId, documentId);
+
+  // `organizationId` is plumbed through so the adapter's idempotency-key
+  // derivation shares the canonical orgId scope.
+  const result = await createProviderEnvelope({
+    provider,
+    connectionId,
+    request: {
+      organizationId,
+      documentBase64,
+      documentName: document.originalFileName,
+      signers: signers.map(s => ({
+        name: s.name,
+        email: s.email,
+        role: s.role,
+        routingOrder: s.routingOrder,
+      })),
+      message,
+      expiresInDays,
+      reminderIntervalDays,
+    },
+  });
+
+  // Record the provider process id on the intent row BEFORE the local
+  // transaction, so a rollback below still leaves a durable pointer for a
+  // retry to reuse instead of orphaning the process and duplicating it.
+  await prisma.esignEnvelopeIntent.update({
+    where: { id: intentId },
+    data: { externalEnvelopeId: result.externalEnvelopeId },
+  });
+
+  return persistEnvelopeRecords({
+    ...reuseArgs,
+    externalEnvelopeId: result.externalEnvelopeId,
+    providerSigners: result.signers,
+  });
 }
 
 // ---------------------------------------------------------------------------
