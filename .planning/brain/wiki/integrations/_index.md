@@ -61,7 +61,15 @@ updated: 2026-06-09
 | [[couriers]] | InPost / DPD / UPS |
 | [[gov-api]] | VIES, HMRC, GUS / company registry |
 
+## US tax (flag-dark)
+
+| Page | Provider |
+|------|----------|
+| [[irs-iris]] | IRS IRIS 1099-NEC e-file — ManualDownload default, dark A2A (`module.iris-efile`), SOR XSD bundle |
+| [[irs-eservices-tin-matching]] | IRS e-Services name/TIN matching (per-org PAF; mock default) |
+
 ## Related
 
 - [[domains/invoice-to-payment]]
+- [[domains/us-tax-year-end-filing]]
 - [[patterns/feature-flags]]

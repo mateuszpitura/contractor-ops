@@ -2,10 +2,12 @@
 title: API routers catalog
 type: structure
 tags: [structure, api, trpc, catalog]
-source_commit: 105a8ccf64b34c611493215eb3519e8922343839
+source_commit: 18d6df46b
 verify_with:
   - packages/api/src/root.ts
   - packages/api/src/portal-root.ts
+  - packages/api/src/routers/finance/tax-1099-router.ts
+  - packages/api/src/routers/portal/portal-tax-1099-router.ts
   - packages/api/src/routers/compliance/classification-document.tsx
   - packages/validators/src/onboarding-import.ts
   - packages/api/src/routers/core/worker.ts
@@ -99,7 +101,7 @@ Gated by `module.classification-engine` or `QA_DEFAULT_ORG_ID` in `root.ts`:
 
 When flag OFF: runtime `METHOD_NOT_FOUND`; client types still see namespaces.
 
-## Conditional US expansion (3 namespaces)
+## Conditional US expansion (4 namespaces)
 
 Gated by `module.us-expansion` (or `QA_DEFAULT_ORG_ID`) in `root.ts`; each procedure also re-checks the flag per request (`assertUsExpansionEnabled`):
 
@@ -108,8 +110,9 @@ Gated by `module.us-expansion` (or `QA_DEFAULT_ORG_ID`) in `root.ts`; each proce
 | `taxForm` | staff read/track of US W-form submissions (status, treaty claim, expiry) + request/remind — no on-behalf signing; full SSN never projected |
 | `form1042s` | staff Form 1042-S generate/correct/recipient-copy + `contractorPii:read`-gated full-FTIN reveal; box figures always server-derived from settled USD payouts + the W-form on file |
 | `form1099kTracker` | read-only informational 1099-K band for the contractor profile (`getTrackerState`): band + cumulative settled-USD payout + transaction count + the tax-year threshold. Band state is written **exclusively** by the `form-1099k-tracker` cron — the router never mutates it. Purely informational; the platform never files a 1099-K |
+| `tax1099` | staff 1099-NEC year-end filing (`routers/finance/tax-1099-router.ts`): `list`, `generateBatch` (review-before-file — aggregates box-1 by payment date, never transmits), `buildAndValidateXml` / `downloadValidatedXml` (ManualDownload default — build IRIS XML → `xsdValidate` → download; records an `IrisSubmission` via idempotency), `uploadAck` (XXE-safe `parseIrisAck` → `IrisAck`), `listTinMismatches` / `escalateMismatch` / `resolveMismatch` (**amber advisory, never blocks generation**), `fileCorrection` (supersede), `getStateFilingOutput` (CFSF code vs per-state CSV). Zod-strict, audited, box figures server-derived. Full loop: [[domains/us-tax-year-end-filing]] |
 
-When flag OFF: runtime `METHOD_NOT_FOUND`; the portal W-form procedures throw `FORBIDDEN`.
+When flag OFF: runtime `METHOD_NOT_FOUND`; the portal W-form + 1099 procedures throw `FORBIDDEN`.
 
 ## Conditional workforce (3 namespaces)
 
@@ -134,7 +137,7 @@ Mount: `/api/trpc/portal/*` (registered **before** staff wildcard).
 | `portal` | auth, invoices, contracts, profile, equipment, US W-form self-cert (merged) |
 | `portalTime` | portal time entries + external sync |
 
-Portal W-form procedures (`getTaxFormDetermination`, `saveTaxFormDraft`, `submitTaxForm`, `getMyTaxForms`) self-gate on `module.us-expansion` per request — the flat portal merge cannot be conditionally spread.
+Portal W-form procedures (`getTaxFormDetermination`, `saveTaxFormDraft`, `submitTaxForm`, `getMyTaxForms`) self-gate on `module.us-expansion` per request — the flat portal merge cannot be conditionally spread. The portal 1099-NEC procedures (`portal-tax-1099-router.ts`: `getEdeliveryConsent`, `recordEdeliveryConsent`, `withdrawConsent`, `downloadCopyB`) are merged the same way — every read/write scoped to `ctx.contractorId` (IDOR); consent is a server-derived, append-only AuditLog fact; Copy-B is furnished only with stored consent (else a paper-copy flag).
 
 ## Mount points
 

@@ -1,13 +1,25 @@
 ---
 title: Hot cache
 type: hot-cache
-updated: 2026-07-01
-source_commit: 105a8ccf6
+updated: 2026-07-05
+source_commit: 18d6df46b
 ---
 
 # Hot cache
 
 Discovery shortcuts for agents — not a changelog. History lives in `wiki/log.md` and git.
+
+## US tax year-end filing (Theme A, flag-dark)
+
+The TIN-match → 1099-NEC → IRIS e-file → state-filing loop lives in
+[[domains/us-tax-year-end-filing]]. Code: `packages/iris` (`buildIrisXml` +
+`xsdValidate` → non-throwing `BUNDLE_UNAVAILABLE` until the SOR XSD bundle lands),
+`services/{iris-ack-parser,tax-filing-transmitter,state-filing-output,form-1099-nec.service}.ts`,
+`routers/finance/tax-1099-router.ts` + `routers/portal/portal-tax-1099-router.ts`,
+`cron year-end-1099-reminder` (notify-only). Dark behind `module.us-expansion`
+(+ `module.iris-efile` for A2A). Invariants: threshold is the tax-year-keyed
+`Tax1099Threshold` table; TIN mismatch never blocks; CORRECTED = supersede; Copy B
+only; reuse `module.iris-efile` (no new flag).
 
 ## Agent delegation (subagent-first)
 
