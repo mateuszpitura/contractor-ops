@@ -9,10 +9,17 @@
  *   4. Parse the payload (Zod-validated by the adapter); 400 on malformed.
  *   5. Look up the matching `EInvoiceLifecycle` row by `transmissionId =
  *      payload.metadata.guid` — Storecove guids are globally unique.
- *   6. Idempotency check: skip if we already recorded an event for this
- *      guid (`eInvoiceLifecycleEvent.detailsJson.guid` path lookup).
- *   7. Inside a single transaction, update lifecycle status to
- *      DELIVERED / FAILED + write a DELIVERY_ACK / DELIVERY_FAILED event.
+ *   6. Route the status change through the transmission FSM
+ *      (`transitionTransmission`): a delivery ack recovers a transient
+ *      FAILED → DELIVERED; a late `failed` after DELIVERED throws and is
+ *      treated as a 200 no-op (no status regression).
+ *   7. Inside a single transaction, update lifecycle status + write a
+ *      DELIVERY_ACK / DELIVERY_FAILED event stamped with a per-event
+ *      `providerEventId` (`${guid}:${event}`). The DB-unique on
+ *      (organizationId, providerEventId) dedups a re-delivery of the SAME
+ *      event: the second insert hits P2002 → caught → 200 idempotent. The
+ *      guid alone is stable per transmission (a `failed` then a `delivered`
+ *      share it), so keying dedup on guid-only would drop the real delivery.
  *   8. Unknown event types → 200 noop (Storecove won't retry).
  *
  * Lives under the webhook plugin scope so the raw-body content-type
@@ -20,6 +27,11 @@
  * HMAC verify instead — Storecove sends with no Origin header).
  */
 
+import type { TransmissionEvent } from '@contractor-ops/api/services/einvoice-lifecycle-fsm';
+import {
+  IllegalFsmTransitionError,
+  transitionTransmission,
+} from '@contractor-ops/api/services/einvoice-lifecycle-fsm';
 import type { Prisma } from '@contractor-ops/db';
 import { prisma } from '@contractor-ops/db';
 import type { WebhookVerification } from '@contractor-ops/einvoice';
@@ -88,37 +100,38 @@ function readEventMetadata(payload: { metadata?: unknown }): {
   };
 }
 
-/** Idempotency check: has an event already been recorded for this guid? */
-async function hasRecordedEvent(lifecycle: MatchedLifecycle, guid: string): Promise<boolean> {
-  const existingEvent = await prisma.eInvoiceLifecycleEvent.findFirst({
-    where: {
-      organizationId: lifecycle.organizationId,
-      lifecycleId: lifecycle.id,
-      detailsJson: { path: ['guid'], equals: guid },
-    },
-    select: { id: true },
-  });
-  return existingEvent !== null;
+/** Prisma unique-constraint violation (used for per-event dedup). */
+function isUniqueConstraintViolation(err: unknown): boolean {
+  return (
+    typeof err === 'object' &&
+    err !== null &&
+    'code' in err &&
+    (err as { code?: unknown }).code === 'P2002'
+  );
 }
 
 /**
  * Apply the DELIVERED / FAILED outcome inside the caller's transaction:
- * update the lifecycle row and append the matching lifecycle event. The
- * success/failure split is the only branch here, so it lives in one helper.
+ * write the FSM-resolved `nextStatus` and append the matching lifecycle
+ * event, stamped with the per-event `providerEventId` that the DB-unique
+ * dedups on. The success/failure split is the only branch here, so it lives
+ * in one helper.
  */
 async function applyLifecycleOutcome(
   tx: Prisma.TransactionClient,
   lifecycle: MatchedLifecycle,
+  nextStatus: ReturnType<typeof transitionTransmission>,
   isSuccess: boolean,
   eventType: string,
   guid: string,
+  providerEventId: string,
   now: Date,
 ): Promise<void> {
   if (isSuccess) {
     await tx.eInvoiceLifecycle.update({
       where: { id: lifecycle.id },
       data: {
-        transmissionStatus: 'DELIVERED',
+        transmissionStatus: nextStatus,
         deliveredAt: now,
         deliveryAckJson: { guid, event: eventType, receivedAt: now },
       },
@@ -131,6 +144,7 @@ async function applyLifecycleOutcome(
         occurredAt: now,
         actorUserId: null,
         detailsJson: { guid, event: eventType },
+        providerEventId,
       },
     });
     return;
@@ -138,7 +152,7 @@ async function applyLifecycleOutcome(
   await tx.eInvoiceLifecycle.update({
     where: { id: lifecycle.id },
     data: {
-      transmissionStatus: 'FAILED',
+      transmissionStatus: nextStatus,
       lastErrorJson: { guid, event: eventType, receivedAt: now },
     },
   });
@@ -150,6 +164,7 @@ async function applyLifecycleOutcome(
       occurredAt: now,
       actorUserId: null,
       detailsJson: { guid, event: eventType },
+      providerEventId,
     },
   });
 }
@@ -171,7 +186,7 @@ export function registerStorecoveWebhookRoute(app: FastifyInstance): void {
     });
   }
 
-  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: residual cost is the linear reply gauntlet — seven ordered guards each terminating in a distinct HTTP status (500 unconfigured, 401 bad signature, 400 bad payload, 200 missing-guid/no-lifecycle/duplicate/unknown-event) interleaved with the lifecycle DB lookup; the pure blocks (body, headers, metadata, idempotency lookup, tx outcome) are already extracted, and moving any guard out would fragment the status-code contract.
+  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: residual cost is the linear reply gauntlet — ordered guards each terminating in a distinct HTTP status (500 unconfigured, 401 bad signature, 400 bad payload, 200 missing-guid/no-lifecycle/unknown-event/illegal-transition/duplicate) interleaved with the lifecycle DB lookup and the FSM transition; the pure blocks (body, headers, metadata, tx outcome) are already extracted, and moving any guard out would fragment the status-code contract.
   app.post('/webhooks/storecove', async (request, reply) => {
     const rawBody = readRawBody(request);
     const headers = flattenHeaders(request.headers);
@@ -222,14 +237,6 @@ export function registerStorecoveWebhookRoute(app: FastifyInstance): void {
       return reply.code(200).send({ received: true });
     }
 
-    if (await hasRecordedEvent(lifecycle, guid)) {
-      log.info(
-        { guid, eventType, lifecycleId: lifecycle.id },
-        'Storecove webhook: duplicate event (guid already recorded) — noop',
-      );
-      return reply.code(200).send({ received: true, idempotent: true });
-    }
-
     const isSuccess = SUCCESS_EVENTS.has(eventType);
     const isFailure = FAILED_EVENTS.has(eventType);
     if (!(isSuccess || isFailure)) {
@@ -237,12 +244,58 @@ export function registerStorecoveWebhookRoute(app: FastifyInstance): void {
       return reply.code(200).send({ received: true, ignored: true });
     }
 
+    // Route the status change through the transmission FSM. A late `failed`
+    // after DELIVERED (or an ack with no transmission recorded) is not a legal
+    // transition — the FSM throws and we treat it as a 200 no-op so a stale
+    // event can never regress the lifecycle status.
+    const transmissionEvent: TransmissionEvent = isSuccess ? 'delivery_ack' : 'delivery_failed';
+    let nextStatus: ReturnType<typeof transitionTransmission>;
+    try {
+      nextStatus = transitionTransmission(lifecycle.transmissionStatus, transmissionEvent);
+    } catch (err) {
+      if (err instanceof IllegalFsmTransitionError) {
+        log.info(
+          {
+            guid,
+            eventType,
+            currentStatus: lifecycle.transmissionStatus,
+            lifecycleId: lifecycle.id,
+          },
+          'Storecove webhook: transition not permitted from current status — noop',
+        );
+        return reply.code(200).send({ received: true, ignored: true });
+      }
+      throw err;
+    }
+
+    // Per-event dedup key. The guid is stable per transmission (a `failed`
+    // then a `delivered` share it), so key on (guid, event) — the DB-unique
+    // collapses a re-delivery of the SAME event while letting a distinct later
+    // event through.
+    const providerEventId = `${guid}:${eventType}`;
+
     const now = new Date();
     try {
       await prisma.$transaction(tx =>
-        applyLifecycleOutcome(tx, lifecycle, isSuccess, eventType, guid, now),
+        applyLifecycleOutcome(
+          tx,
+          lifecycle,
+          nextStatus,
+          isSuccess,
+          eventType,
+          guid,
+          providerEventId,
+          now,
+        ),
       );
     } catch (err) {
+      if (isUniqueConstraintViolation(err)) {
+        log.info(
+          { guid, eventType, lifecycleId: lifecycle.id },
+          'Storecove webhook: duplicate event (providerEventId already recorded) — noop',
+        );
+        return reply.code(200).send({ received: true, idempotent: true });
+      }
       log.error(
         {
           guid,

@@ -8,7 +8,9 @@
  *   2. Valid signature + failed  event → lifecycle FAILED    + DELIVERY_FAILED.
  *   3. Invalid signature → 401, no DB writes.
  *   4. Unknown event type → 200, no DB writes beyond lifecycle lookup.
- *   5. Re-delivery idempotency — same guid twice → only one event written.
+ *   5. Re-delivery idempotency — duplicate providerEventId → P2002 → 200 noop.
+ *   6. Recovery — `delivered` on a FAILED lifecycle → DELIVERED.
+ *   7. No regression — late `failed` on a DELIVERED lifecycle → 200 noop.
  *
  * `STORECOVE_WEBHOOK_SECRET` is exported into the env in setup.ts (this
  * file's own beforeAll); the `StorecoveAdapter` is mocked so we never
@@ -141,6 +143,7 @@ describe('POST /webhooks/storecove', () => {
         data: expect.objectContaining({
           eventType: 'DELIVERY_ACK',
           lifecycleId: 'lc-1',
+          providerEventId: `${GUID}:invoice.transmission.success`,
         }),
       }),
     );
@@ -208,16 +211,64 @@ describe('POST /webhooks/storecove', () => {
     expect(mockPrisma.eInvoiceLifecycleEvent.create).not.toHaveBeenCalled();
   });
 
-  it('idempotent re-delivery: same guid twice → only one event row written', async () => {
-    mockPrisma.eInvoiceLifecycleEvent.findFirst.mockResolvedValueOnce({ id: 'ev-prior' });
+  it('idempotent re-delivery: duplicate providerEventId → P2002 caught → 200 idempotent', async () => {
+    const p2002 = Object.assign(new Error('Unique constraint failed'), { code: 'P2002' });
+    mockPrisma.eInvoiceLifecycleEvent.create.mockRejectedValueOnce(p2002);
 
     const res = await inject({ event: 'invoice.transmission.success', guid: GUID });
     expect(res.statusCode).toBe(200);
 
-    expect(mockPrisma.eInvoiceLifecycle.update).not.toHaveBeenCalled();
-    expect(mockPrisma.eInvoiceLifecycleEvent.create).not.toHaveBeenCalled();
+    // The insert is attempted; the DB-unique on (organizationId, providerEventId)
+    // rejects the second write with P2002, which the route swallows.
+    expect(mockPrisma.eInvoiceLifecycleEvent.create).toHaveBeenCalled();
 
     const body = JSON.parse(res.body) as { idempotent?: boolean };
     expect(body.idempotent).toBe(true);
+  });
+
+  it('recovery: `delivered` on a FAILED lifecycle → DELIVERED (not stuck FAILED)', async () => {
+    mockPrisma.eInvoiceLifecycle.findFirst.mockResolvedValueOnce({
+      id: 'lc-1',
+      organizationId: 'org-1',
+      transmissionStatus: 'FAILED',
+    });
+
+    const res = await inject({ event: 'invoice.transmission.success', guid: GUID });
+    expect(res.statusCode).toBe(200);
+
+    expect(mockPrisma.eInvoiceLifecycle.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: 'lc-1' },
+        data: expect.objectContaining({ transmissionStatus: 'DELIVERED' }),
+      }),
+    );
+  });
+
+  it('no regression: late `failed` on a DELIVERED lifecycle → 200 noop, status untouched', async () => {
+    mockVerifyWebhookSignature.mockReturnValueOnce({
+      valid: true,
+      eventType: 'invoice.transmission.failed',
+    });
+    mockParseWebhookPayload.mockResolvedValueOnce({
+      documentId: GUID,
+      senderParticipantId: '',
+      receiverParticipantId: '',
+      xml: '',
+      receivedAt: new Date(),
+      metadata: { event: 'invoice.transmission.failed', guid: GUID },
+    });
+    mockPrisma.eInvoiceLifecycle.findFirst.mockResolvedValueOnce({
+      id: 'lc-1',
+      organizationId: 'org-1',
+      transmissionStatus: 'DELIVERED',
+    });
+
+    const res = await inject({ event: 'invoice.transmission.failed', guid: GUID });
+    expect(res.statusCode).toBe(200);
+
+    const body = JSON.parse(res.body) as { ignored?: boolean };
+    expect(body.ignored).toBe(true);
+    expect(mockPrisma.eInvoiceLifecycle.update).not.toHaveBeenCalled();
+    expect(mockPrisma.eInvoiceLifecycleEvent.create).not.toHaveBeenCalled();
   });
 });

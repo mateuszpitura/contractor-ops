@@ -75,6 +75,8 @@ describe('transitionTransmission — legal edges', () => {
     ['SENT', 'delivery_ack', 'DELIVERED'],
     ['SENT', 'delivery_failed', 'FAILED'],
     ['FAILED', 'retry', 'QUEUED'],
+    // Recovery — a real delivery ack after a transient transmission failure.
+    ['FAILED', 'delivery_ack', 'DELIVERED'],
     // Idempotent webhook re-delivery — DELIVERED is a terminal sink.
     ['DELIVERED', 'delivery_ack', 'DELIVERED'],
   ] as [

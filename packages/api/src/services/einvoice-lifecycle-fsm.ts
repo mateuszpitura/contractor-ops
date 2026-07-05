@@ -22,15 +22,20 @@
 //   WARNINGS      → VALID | WARNINGS | INVALID
 //   INVALID       → VALID | WARNINGS | INVALID
 //
-// Transmission FSM (linear with one retry edge and one terminal sink):
+// Transmission FSM (linear with one retry edge, one recovery edge, and one
+// terminal sink):
 //   NOT_SENT  → QUEUED
 //   QUEUED    → SENT | FAILED
 //   SENT      → DELIVERED | FAILED
 //   FAILED    → QUEUED              (retry)
+//   FAILED    → DELIVERED           (delivery_ack — recovery: a transient
+//                                    transmission failure followed by a real
+//                                    delivery ack; the ack is authoritative)
 //   DELIVERED → DELIVERED           (idempotent; webhook re-deliveries)
 //   Illegal:
 //     NOT_SENT  → SENT | DELIVERED | FAILED (must go via QUEUED first)
-//     DELIVERED → anything besides DELIVERED
+//     DELIVERED → anything besides DELIVERED (a late `failed` after delivery
+//                                    is a no-op — the caller catches the throw)
 //     SENT      → QUEUED (explicit retry only allowed from FAILED)
 
 import type {
@@ -138,6 +143,11 @@ const TRANSMISSION_TABLE: Readonly<Record<string, EInvoiceTransmissionStatus>> =
   'SENT|delivery_ack': 'DELIVERED',
   'SENT|delivery_failed': 'FAILED',
   'FAILED|retry': 'QUEUED',
+  // Recovery edge: a transient transmission `failed` can be followed by a
+  // genuine delivery ack (Storecove/AS4 retries internally). The ack is
+  // authoritative, so FAILED → DELIVERED is a legal recovery — otherwise a
+  // late-but-real delivery would leave the row stuck FAILED.
+  'FAILED|delivery_ack': 'DELIVERED',
   // DELIVERED is terminal and idempotent on webhook re-delivery only.
   'DELIVERED|delivery_ack': 'DELIVERED',
 });
@@ -148,10 +158,13 @@ const TRANSMISSION_TABLE: Readonly<Record<string, EInvoiceTransmissionStatus>> =
  * is not defined in the table.
  *
  * Idempotency contract: `delivery_ack` on `DELIVERED` is a no-op transition
- * (returns `DELIVERED`). Every other event on a `DELIVERED` row throws.
- * Callers dedup webhook re-deliveries on Storecove's `guid` BEFORE calling
- * this function, so a stale / duplicate ack never masquerades as a state
- * change.
+ * (returns `DELIVERED`). A late `delivery_failed` on a `DELIVERED` row throws
+ * (the caller treats the throw as a no-op, so a stale failure never regresses
+ * a delivered transmission). Callers dedup webhook re-deliveries on a
+ * per-event key (`EInvoiceLifecycleEvent.providerEventId`, DB-unique) so a
+ * duplicate of the SAME event collapses before reaching this function, while
+ * a distinct later event (e.g. a real `delivered` after a transient `failed`)
+ * still drives the transition.
  */
 export function transitionTransmission(
   current: EInvoiceTransmissionStatus,
