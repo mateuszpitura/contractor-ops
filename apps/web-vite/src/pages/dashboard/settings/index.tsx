@@ -20,6 +20,7 @@ import { ConsentManagementSection } from '../../../components/consent/consent-ma
 import { EInvoiceComplianceDetail } from '../../../components/einvoice/compliance-detail.js';
 import { AdminBrandingSection } from '../../../components/settings/admin-branding-section.js';
 import { ApiKeysTab } from '../../../components/settings/api-keys-tab.js';
+import { WebhooksTab } from '../../../components/settings/webhooks-tab.js';
 import { ApprovalChainsTab } from '../../../components/settings/approval-chains-tab.js';
 import { AuditLogTab } from '../../../components/settings/audit-log-tab.js';
 import { ContractorViewSetting } from '../../../components/settings/contractor-view-setting.js';
@@ -198,6 +199,12 @@ function SettingsIndexContent() {
           {canManageIntegrations ? (
             <TabsContent value="api-keys" className="mt-6">
               <ApiKeysTab />
+            </TabsContent>
+          ) : null}
+
+          {canManageIntegrations ? (
+            <TabsContent value="webhooks" className="mt-6">
+              <WebhooksTab />
             </TabsContent>
           ) : null}
 

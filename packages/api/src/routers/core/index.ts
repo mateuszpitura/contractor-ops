@@ -4,6 +4,7 @@
 
 export { adminBoeRateRouter } from './admin-boe-rate';
 export { apiKeyRouter } from './api-key';
+export { webhookSubscriptionRouter } from './webhook-subscription';
 export { approvalRouter } from './approval';
 export { auditRouter } from './audit';
 export { authPermissionsRouter } from './auth-permissions';

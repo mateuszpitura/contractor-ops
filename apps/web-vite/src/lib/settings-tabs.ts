@@ -12,6 +12,7 @@ import {
   ShieldCheck,
   Users,
   Users2,
+  Webhook,
 } from 'lucide-react';
 import type { Messages } from '../i18n/messages.js';
 
@@ -32,6 +33,7 @@ export type SettingsTabKey =
   | 'audit-log'
   | 'privacy'
   | 'api-keys'
+  | 'webhooks'
   | 'feature-flags'
   | 'members'
   | 'workflow-roles'
@@ -88,6 +90,12 @@ export const SETTINGS_TABS: readonly SettingsTabDef[] = [
     key: 'api-keys',
     i18nKey: 'apiKeys',
     icon: Key,
+    permission: { resource: 'organization', actions: ['update'] },
+  },
+  {
+    key: 'webhooks',
+    i18nKey: 'webhooks',
+    icon: Webhook,
     permission: { resource: 'organization', actions: ['update'] },
   },
   {

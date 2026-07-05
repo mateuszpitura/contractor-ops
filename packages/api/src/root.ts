@@ -19,6 +19,7 @@ import {
 import {
   adminBoeRateRouter,
   apiKeyRouter,
+  webhookSubscriptionRouter,
   approvalRouter,
   auditRouter,
   authPermissionsRouter,
@@ -198,6 +199,7 @@ const conditionalWorkforceRouters = isWorkforceRegistered()
 export const appRouter = router({
   adminBoeRate: adminBoeRateRouter, // adminBoeRate: Super-admin BoE base rate CRUD — list, insert, update, delete
   apiKey: apiKeyRouter, // apiKey: Enterprise API key management — create, list, update, revoke
+  webhookSubscription: webhookSubscriptionRouter, // webhookSubscription: outbound webhook endpoints — create, list, update, rotateSecret, delete, testFire, listDeliveries
   bacs: bacsRouter, // bacs: BACS Std 18 file generation — getSubmitterMasks, previewExport, generateExport, validateSortCode, saveSubmitterConfig
   organization: organizationRouter,
   // Organization Definitions Management — Teams / Projects / Cost Centers
