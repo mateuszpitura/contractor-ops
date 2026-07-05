@@ -2,7 +2,7 @@
 title: Cron worker jobs
 type: structure
 tags: [structure, cron, background]
-source_commit: 18d6df46b
+source_commit: f0779951
 verify_with:
   - apps/cron-worker/src/jobs/handlers/
   - apps/cron-worker/src/jobs/handlers/reminders/wt-limit-scan.ts
@@ -46,6 +46,7 @@ sequenceDiagram
 | `reminders/wt-limit-scan.ts` (`runWtLimitScan`) | daily working-time-limit scan — region fan-out, per-worker rolling weekly average, ONE `employee.wt_limit_breach` digest per recipient/day (region-prefixed dedup key); `module.workforce-employees` | [[domains/leave-and-time]] |
 | `token-refresh.ts` | OAuth token refresh | [[integrations/framework-core]] |
 | `org-definition-sync.ts` | org definitions | [[domains/settings-and-org-admin]] |
+| `hris-sync.ts` (`runScheduledHrisSync`, `CRON_HRIS_SYNC_SCHEDULE` hourly) | HRIS two-way sync — fan-out over CONNECTED Personio/BambooHR connections, `lastSyncAt` throttle, per-connection `tenantStore.run` pull | [[domains/hris-sync]] |
 | `trial-notifications.ts` | billing trial | [[domains/billing-and-feature-gates]] |
 | `data-purge.ts` | GDPR retention | [[domains/consent-gdpr-pdpl]] |
 | `inpost-status-poll.ts` | courier polling | [[domains/equipment-logistics]] |

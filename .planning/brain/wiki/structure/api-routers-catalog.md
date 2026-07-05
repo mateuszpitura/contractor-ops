@@ -2,7 +2,7 @@
 title: API routers catalog
 type: structure
 tags: [structure, api, trpc, catalog]
-source_commit: 3126586be
+source_commit: f0779951
 verify_with:
   - packages/api/src/root.ts
   - packages/api/src/portal-root.ts
@@ -18,6 +18,7 @@ verify_with:
   - packages/api/src/routers/workforce/leave.ts
   - packages/api/src/routers/workforce/employee-time.ts
   - packages/api/src/routers/workforce/ewidencja.ts
+  - packages/api/src/routers/workforce/hris-sync-router.ts
   - packages/api/src/routers/finance/payment-core.ts
 updated: 2026-07-05
 ---
@@ -119,7 +120,7 @@ Gated by `module.us-expansion` (or `QA_DEFAULT_ORG_ID`) in `root.ts`; each proce
 
 When flag OFF: runtime `METHOD_NOT_FOUND`; the portal W-form + 1099 procedures throw `FORBIDDEN`.
 
-## Conditional workforce (6 namespaces)
+## Conditional workforce (7 namespaces)
 
 Gated by `module.workforce-employees` (or `QA_DEFAULT_ORG_ID`) in `root.ts`; each procedure also re-checks the flag per request (`assertWorkforceEnabled` in `middleware/require-workforce-flag.ts`):
 
@@ -132,6 +133,7 @@ Gated by `module.workforce-employees` (or `QA_DEFAULT_ORG_ID`) in `root.ts`; eac
 | `leave` | employee leave: `submitLeaveRequest` (routes through the generic approval chain — `createApprovalFlow` `resourceType='LEAVE_REQUEST'`; approve/reject is the shared resourceType-gated procedure, not a fork), `recordSickAbsence` (direct negative `DEDUCTION` ledger row + `LEAVE_SICK_RECORDED` dispatch, zero ApprovalFlow), `getBalance` (Σ append-only `LeaveLedgerEntry`), `listRequests`, `listTeamCalendar` (per-team day buckets + ≥2-overlap conflict + seeded `PublicHoliday`), `leaveType.*`, `blackout.*`. All `employee` RBAC + `assertWorkforceEnabled`. Full model + flow: [[domains/leave-and-time]] |
 | `employeeTime` | day-grain statutory time: `upsertRecord` (one row per worker/`workDate` on the DISTINCT `EmployeeTimeRecord`, returns `{ record, findings }` — the sync `checkWtLimits` breach is a NON-blocking advisory, never a throw), `listRecords`, `weekSummary`. Never the contractor `time.*`. Full model + flow: [[domains/leave-and-time]] |
 | `ewidencja` | PL KP §149 working-time register: `generate` (INSERT-only via `buildEwidencjaSnapshot` + `supersedeAndInsertEwidencja` — regenerating INSERTs `version+1` + `previousSnapshotId`; a `BEFORE UPDATE` trigger `app.reject_ewidencja_update` rejects any UPDATE), `list`, `get` (highest-version = current). No edit/delete. Full model + flow: [[domains/leave-and-time]] |
+| `hrisSync` | HRIS two-way sync (Personio / BambooHR), `integrationSettingsProcedure`-based, each mutation re-asserts `assertWorkforceEnabled` + the per-provider `integration.*-sync` flag: `getStatus`/`getMapping` (credential-safe `publicHrisConfig`), `connect` (XOR — a P2002 on the raw-SQL one-HRIS-per-org partial index → typed CONFLICT; audits + fires a fire-and-forget first pull), `disconnect`, `syncNow` (`runHrisPull`), `setMapping` (`.strict()` field-mapping in `configJson`). Full model + flow: [[domains/hris-sync]] |
 
 `contractor.*` is **not** gated — it is the always-on existing surface; the split adds `worker`/`employee` without changing the contractor route shape (locked by `contractor-contract-snapshot.test.ts`).
 

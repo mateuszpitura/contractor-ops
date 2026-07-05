@@ -9,6 +9,11 @@ source_commit: 3126586be
 
 Discovery shortcuts for agents — not a changelog. History lives in `wiki/log.md` and git.
 
+## HRIS two-way sync (Personio + BambooHR, Theme B)
+
+- Loop-free by a DISJOINT field partition — pull writes the HRIS-owned allowlist (`HrisWritableEmployeePatch`), push carries CO-owned events; `assertNotHrisOwnedField` guards. Engine: `packages/api/src/services/hris-sync/*` + `outbox/hris-push*.ts`. Router: `hrisSync` (workforce, dark). Adapters: `personio-adapter.ts` (bearer), `bamboohr-adapter.ts` (OAuth). Full: [[domains/hris-sync]].
+- **Agent traps:** `invoice.paid` is NOT an outbox type (3 `hris.*.push` were added); one-HRIS-per-org is a raw-SQL partial index (`provider::text IN (...)`), not a Prisma `@@unique`; national-ID fields are never HRIS-writable; producers are EMPLOYEE-guarded.
+
 ## Public API keys / scopes / rate limits / write surface (Theme C)
 
 Full surface: [[domains/public-api-surface]]. Read = 9 entities; WRITE = 6 entities (contractor/invoice/payment/paymentRun/workflow/workflowTask). **Phase 100 passed the OWASP gate and UN-HID the 11 write routes** (now in the spec/SDK); the per-org `module.public-api` flag gate still 404s a non-granted org — the grant is a manual Unleash act. `_initiatePayoutForRun` stays deferred. Code: `apps/public-api/src/routes/*` (Hono) + `packages/api/src/routers/public-api/*` (tRPC + `write-shared.ts`), `middleware/api-key-auth.ts` (chain: apiKeyAuth → `publicApiFlagGate` → `requireTier` → `enforceApiTierQuota` → `demoReadOnly`), `services/api-key-service.ts` (HMAC + grace-aware `resolveByPrefix` + `appendApiKeyIpEvent`), `routers/core/api-key.ts` (create/rotate/ipLog/usage + `actingUserId` guard). Invariants: `actingUserId` is attribution-only (scopes authorize); every write carries a mandatory `requirePermission` scope; rotation grace default 24h/max 168h; per-tier monthly quota composes with the pre-auth burst limiter. See [[patterns/rate-limit]], [[patterns/tenant-and-audit]].
