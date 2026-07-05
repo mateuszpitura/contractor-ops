@@ -158,11 +158,11 @@ Requirements for the v7.0 milestone. Each maps to exactly one phase (filled by r
 
 ### Theme C — Public REST API Surface (INTEG-API)
 
-- [ ] **INTEG-API-01**: `apps/public-api` (Hono) gains read+write endpoints for contractors / invoices / payments / payment_runs / workflows / workflow_tasks / classifications / compliance_documents / audit_log — Zod input validation on every endpoint, tenant-scoped via API key, `.strict()` DTOs to block mass-assignment of `organizationId`/`workerType`/money fields
-- [ ] **INTEG-API-02**: OpenAPI 3.1 spec auto-generated from Zod schemas (`@hono/zod-openapi`), published to a Scalar developer portal
-- [ ] **INTEG-API-03**: API versioning policy — `/v1/*` base path, `Sunset` header per RFC 8594, breaking changes only on major-version bump
-- [ ] **INTEG-API-04**: Cursor-based pagination + standardized `?filter[field]=` / `?sort=` conventions across all list endpoints
-- [ ] **INTEG-API-05**: Auto-generated TypeScript + Python SDKs (from OpenAPI) published to npm + PyPI as `@contractor-ops/sdk` / `contractor-ops-sdk`
+- [x] **INTEG-API-01**: `apps/public-api` (Hono) gains read+write endpoints for contractors / invoices / payments / payment_runs / workflows / workflow_tasks / classifications / compliance_documents / audit_log — Zod input validation on every endpoint, tenant-scoped via API key, `.strict()` DTOs to block mass-assignment of `organizationId`/`workerType`/money fields
+- [x] **INTEG-API-02**: OpenAPI 3.1 spec auto-generated from Zod schemas (`@hono/zod-openapi`), published to a Scalar developer portal
+- [x] **INTEG-API-03**: API versioning policy — `/v1/*` base path, `Sunset` header per RFC 8594, breaking changes only on major-version bump
+- [x] **INTEG-API-04**: Cursor-based pagination + standardized `?filter[field]=` / `?sort=` conventions across all list endpoints
+- [x] **INTEG-API-05**: Auto-generated TypeScript + Python SDKs (from OpenAPI) published to npm + PyPI as `@contractor-ops/sdk` / `contractor-ops-sdk`
 
 ### Theme C — API Key Management + Scopes (INTEG-AUTH)
 
@@ -329,11 +329,11 @@ Which phases cover which requirements. Phase numbering continues from v6.0 (ende
 | HR-DASH-03 | Phase 97 | Pending |
 | HR-DASH-04 | Phase 97 | Pending |
 | HR-DASH-05 | Phase 97 | Pending |
-| INTEG-API-01 | Phase 98 | Pending |
-| INTEG-API-02 | Phase 98 | Pending |
-| INTEG-API-03 | Phase 98 | Pending |
-| INTEG-API-04 | Phase 98 | Pending |
-| INTEG-API-05 | Phase 98 | Pending |
+| INTEG-API-01 | Phase 98 | Complete |
+| INTEG-API-02 | Phase 98 | Complete |
+| INTEG-API-03 | Phase 98 | Complete |
+| INTEG-API-04 | Phase 98 | Complete |
+| INTEG-API-05 | Phase 98 | Complete |
 | INTEG-AUTH-01 | Phase 99 | Pending |
 | INTEG-AUTH-02 | Phase 99 | Pending |
 | INTEG-AUTH-03 | Phase 99 | Pending |

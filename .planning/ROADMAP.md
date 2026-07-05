@@ -107,7 +107,7 @@ Known gaps / deferred at close: see STATE.md `## Deferred Items` (3 unverified p
 - [ ] **Phase 95: Theme B — HRIS Two-Way Sync (Personio + BambooHR)** - both adapters, source-of-truth field partition, one-HRIS-per-org constraint, pull/push handlers
 - [ ] **Phase 96: Theme B — Employee Self-Service Portal** - `/employee/*` routes on v2 portal, employee + manager dashboards, en/pl/de/ar/en-US parity
 - [ ] **Phase 97: Theme B — HR Dashboard** - headcount / vacation-utilization / document-expiry / probation-watchlist / Gulf-rollup widgets
-- [ ] **Phase 98: Theme C — Public REST API Surface (foundation gate)** - read+write endpoints with `.strict()` DTOs, OpenAPI 3.1, versioning, cursor pagination, TS/Python SDKs
+- [x] **Phase 98: Theme C — Public REST API Surface (foundation gate)** - read+write endpoints with `.strict()` DTOs, OpenAPI 3.1, versioning, cursor pagination, TS/Python SDKs (completed 2026-07-05)
 - [ ] **Phase 99: Theme C — API Keys + Scopes + Rate Limiting** - HMAC-SHA256 keys, per-endpoint scope enforcement (BFLA fix), Developer page, per-tier rate limits, mutation audit
 - [ ] **Phase 100: Theme C — Outbound Webhooks + Integration Security** - WebhookSubscription on the outbox dispatcher, HMAC + DLQ + PII redaction, SSRF guard with DNS-rebind, OWASP review gate
 - [ ] **Phase 101: Theme C — Marketplace Listings + Dev Experience** - Zapier / n8n / Make listings + status dashboard, dev portal, Postman/Insomnia, public status page, sandbox tier
@@ -626,7 +626,7 @@ Phases execute in numeric order: 82 → 83 → … → 101. After Foundation (82
 | 95. Theme B — HRIS Two-Way Sync | v7.0 | 0/TBD | Not started | - |
 | 96. Theme B — Employee Self-Service Portal | v7.0 | 0/TBD | Not started | - |
 | 97. Theme B — HR Dashboard | v7.0 | 0/TBD | Not started | - |
-| 98. Theme C — Public REST API Surface (gate) | v7.0 | 0/TBD | Not started | - |
+| 98. Theme C — Public REST API Surface (gate) | v7.0 | 8/12 | Complete    | 2026-07-05 |
 | 99. Theme C — API Keys + Scopes + Rate Limiting | v7.0 | 0/TBD | Not started | - |
 | 100. Theme C — Outbound Webhooks + Integration Security | v7.0 | 0/TBD | Not started | - |
 | 101. Theme C — Marketplace Listings + Developer Experience | v7.0 | 0/TBD | Not started | - |

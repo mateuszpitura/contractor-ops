@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v7.0
 milestone_name: GTM Expansion
-status: executing
-stopped_at: context exhaustion at 75% (2026-07-05)
-last_updated: "2026-07-05T19:48:48.330Z"
+status: ready_to_plan
+stopped_at: Phase 98 complete (8/12) — ready to discuss Phase 99
+last_updated: 2026-07-05T22:13:10.657Z
 last_activity: 2026-07-01 -- Phase 93 planning complete
 progress:
   total_phases: 20
   completed_phases: 15
   total_plans: 176
-  completed_plans: 145
+  completed_plans: 161
   percent: 75
 ---
 
@@ -25,14 +25,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-07 — v7.0 GTM Expansion started; v6.0 shipped 2026-06-07)
 
 **Core value:** The invoice-to-payment flow must work end-to-end: invoice arrives, gets matched to contract, routed through approval, and batched for payment — with full audit trail and zero manual tracking in spreadsheets.
-**Current focus:** Phase 87 — theme-a-1042-s-us-classification-determination-letter
+**Current focus:** Phase 99 — theme c api keys scopes rate limiting
 
 ## Current Position
 
-Phase: 87 (theme-a-1042-s-us-classification-determination-letter) — EXECUTING
-Plan: 1 of 10
-Status: Ready to execute
-Last activity: 2026-07-01 -- Phase 93 planning complete
+Phase: 99
+Plan: Not started
+Status: Ready to plan
+Last activity: 2026-07-05
 
 Progress: [██████░░░░] 58%
 
