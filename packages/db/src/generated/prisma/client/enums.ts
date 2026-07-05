@@ -529,6 +529,18 @@ export const EmploymentStatus = {
 export type EmploymentStatus = (typeof EmploymentStatus)[keyof typeof EmploymentStatus]
 
 
+export const EmploymentType = {
+  FULL_TIME: 'FULL_TIME',
+  PART_TIME: 'PART_TIME',
+  FIXED_TERM: 'FIXED_TERM',
+  TEMPORARY: 'TEMPORARY',
+  APPRENTICE: 'APPRENTICE',
+  SEASONAL: 'SEASONAL'
+} as const
+
+export type EmploymentType = (typeof EmploymentType)[keyof typeof EmploymentType]
+
+
 export const StatutoryCertificateStatus = {
   DRAFT: 'DRAFT',
   ISSUED: 'ISSUED',
@@ -1233,6 +1245,18 @@ export const PersonnelDocClassificationMethod = {
 } as const
 
 export type PersonnelDocClassificationMethod = (typeof PersonnelDocClassificationMethod)[keyof typeof PersonnelDocClassificationMethod]
+
+
+export const EmployeeDocCategory = {
+  VISA: 'VISA',
+  WORK_PERMIT: 'WORK_PERMIT',
+  CONTRACT_RENEWAL: 'CONTRACT_RENEWAL',
+  MEDICAL_CERT: 'MEDICAL_CERT',
+  TRAINING_CERT: 'TRAINING_CERT',
+  OTHER: 'OTHER'
+} as const
+
+export type EmployeeDocCategory = (typeof EmployeeDocCategory)[keyof typeof EmployeeDocCategory]
 
 
 export const PortalSubjectType = {

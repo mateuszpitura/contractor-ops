@@ -52,6 +52,17 @@ const REGISTRY_COUNTRY_CODES = ['PL', 'DE', 'GB', 'US', 'AE', 'SA'] as const;
 
 const employmentStatusSchema = z.enum(['ACTIVE', 'ON_LEAVE', 'SUSPENDED', 'TERMINATED']);
 
+// Contract-type axis (distinct from the employmentStatus lifecycle axis) the HR
+// headcount breakdown groups by.
+const employmentTypeSchema = z.enum([
+  'FULL_TIME',
+  'PART_TIME',
+  'FIXED_TERM',
+  'TEMPORARY',
+  'APPRENTICE',
+  'SEASONAL',
+]);
+
 // Decimal(3,2) part-time fraction (0.10–1.00) kept as a string to avoid float
 // drift before it reaches the typed column.
 const etatSchema = z
@@ -78,6 +89,12 @@ const registerInputSchema = z
     employmentStatus: employmentStatusSchema.optional(),
     saudizationCategory: saudizationCategorySchema.optional(),
     etat: etatSchema.optional(),
+    // HR-dashboard capture columns — read-only aggregations groupBy/window over
+    // these; the registry write is the only path that populates them.
+    department: z.string().trim().min(1).max(120).optional(),
+    employmentType: employmentTypeSchema.optional(),
+    contractEndDate: z.coerce.date().optional(),
+    probationEndsAt: z.coerce.date().optional(),
   })
   .strict();
 
@@ -128,6 +145,10 @@ export const employeeRegistryRouter = router({
         employmentStatus: input.employmentStatus,
         saudizationCategory: input.saudizationCategory,
         etat: input.etat,
+        department: input.department,
+        employmentType: input.employmentType,
+        contractEndDate: input.contractEndDate,
+        probationEndsAt: input.probationEndsAt,
       };
 
       if (input.pesel) {

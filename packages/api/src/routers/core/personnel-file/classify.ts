@@ -53,6 +53,12 @@ const attachInput = z
     documentId: z.string().min(1),
     documentType: z.string().min(1),
     documentDate: z.coerce.date().optional(),
+    // Optional compliance-expiry capture the HR-dashboard doc-expiry widget reads
+    // (TZ-correct band math over expiresAt, grouped by docCategory).
+    expiresAt: z.coerce.date().optional(),
+    docCategory: z
+      .enum(['VISA', 'WORK_PERMIT', 'CONTRACT_RENEWAL', 'MEDICAL_CERT', 'TRAINING_CERT', 'OTHER'])
+      .optional(),
   })
   .strict();
 
@@ -247,6 +253,8 @@ export const classifyRouter = router({
               documentId: input.documentId,
               section: columns.section,
               documentDate: input.documentDate ?? null,
+              expiresAt: input.expiresAt ?? null,
+              docCategory: input.docCategory ?? null,
               classificationMethod: classification.classificationMethod,
               aiSectionGuess: columns.aiSectionGuess,
               aiConfidence: columns.aiConfidence,

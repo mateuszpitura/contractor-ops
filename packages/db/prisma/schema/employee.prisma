@@ -48,6 +48,19 @@ model EmployeeProfile {
   // ContractorAssignment.endedAt. Written when transitioning to TERMINATED.
   terminatedAt        DateTime?
 
+  // HR-dashboard aggregation columns, promoted out of JSON so the headcount
+  // groupBy and the probation date-window scan are indexable + strongly typed.
+  // `employmentType` is the CONTRACT-TYPE axis (full-time / fixed-term / …) and
+  // is deliberately DISTINCT from `employmentStatus`, which is the lifecycle axis
+  // (ACTIVE / ON_LEAVE / SUSPENDED / TERMINATED). `contractEndDate` is a
+  // SCHEDULED calendar end, distinct from the administrative `terminatedAt`
+  // instant; a permanent/indefinite contract has none. `probationEndsAt` is the
+  // watchlist anchor; null when the worker has no probation period.
+  department      String?
+  employmentType  EmploymentType?
+  contractEndDate DateTime?       @db.Date
+  probationEndsAt DateTime?       @db.Date
+
   // Reporting-line edge: the Worker this employee reports to (their manager).
   // Nullable self-relation (an employee may have no manager). Same-org integrity
   // is enforced by the reports resolver (which always filters organizationId),
@@ -66,6 +79,10 @@ model EmployeeProfile {
   @@index([organizationId])
   @@index([organizationId, employmentStatus])
   @@index([organizationId, managerWorkerId])
+  @@index([organizationId, department])
+  @@index([organizationId, employmentType])
+  @@index([organizationId, contractEndDate])
+  @@index([organizationId, probationEndsAt])
 }
 
 enum EmploymentStatus {
@@ -73,6 +90,17 @@ enum EmploymentStatus {
   ON_LEAVE
   SUSPENDED
   TERMINATED
+}
+
+// Contract-type axis for the HR headcount breakdown — the shape of the
+// engagement, DISTINCT from the EmploymentStatus lifecycle axis.
+enum EmploymentType {
+  FULL_TIME
+  PART_TIME
+  FIXED_TERM
+  TEMPORARY
+  APPRENTICE
+  SEASONAL
 }
 
 // Draft statutory termination-paperwork certificate (świadectwo pracy, PIT-11,

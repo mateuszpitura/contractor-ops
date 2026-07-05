@@ -1143,6 +1143,10 @@ export const EmployeeProfileScalarFieldEnum = {
   etat: 'etat',
   employmentStatus: 'employmentStatus',
   terminatedAt: 'terminatedAt',
+  department: 'department',
+  employmentType: 'employmentType',
+  contractEndDate: 'contractEndDate',
+  probationEndsAt: 'probationEndsAt',
   managerWorkerId: 'managerWorkerId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
@@ -2368,6 +2372,8 @@ export const PersonnelFileDocumentScalarFieldEnum = {
   classificationMethod: 'classificationMethod',
   aiSectionGuess: 'aiSectionGuess',
   aiConfidence: 'aiConfidence',
+  expiresAt: 'expiresAt',
+  docCategory: 'docCategory',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   deletedAt: 'deletedAt'
