@@ -1,5 +1,14 @@
+import type { Jurisdiction, PersonnelRetentionRule } from '@contractor-ops/compliance-policy';
+import {
+  getPersonnelSections,
+  mapCountryCodeToJurisdiction,
+} from '@contractor-ops/compliance-policy';
 import type { RetainedRecordType } from '@contractor-ops/db';
-import { allowAuditPurge, MODEL_RETENTION_TYPE } from '@contractor-ops/db';
+import {
+  allowAuditPurge,
+  getPersonnelRetentionCutoff,
+  MODEL_RETENTION_TYPE,
+} from '@contractor-ops/db';
 import { z } from 'zod';
 import { router } from '../../init';
 import { requirePermission } from '../../middleware/rbac';
@@ -83,6 +92,86 @@ async function softDeleteByOrgAndCount(
     data: { deletedAt: now },
   });
   return result.count;
+}
+
+/**
+ * Hard-delete every row of a worker-scoped model for the given worker ids and
+ * return the count. Used for the leave / statutory-time records that hang off an
+ * erased employee's Worker identity root.
+ */
+async function deleteByWorkersAndCount(
+  model: {
+    deleteMany: (args: {
+      where: { organizationId: string; workerId: { in: string[] } };
+    }) => Promise<{ count: number }>;
+  },
+  organizationId: string,
+  workerIds: string[],
+): Promise<number> {
+  const result = await model.deleteMany({ where: { organizationId, workerId: { in: workerIds } } });
+  return result.count;
+}
+
+// ---------------------------------------------------------------------------
+// Employee personnel-file retention resolver
+// ---------------------------------------------------------------------------
+
+/**
+ * File-level retention rules for a jurisdiction: the union of every section's
+ * lifecycle-anchored rules (hire/termination), deduped by recordType.
+ * DOCUMENT_DATE rules (e.g. DE accident records) are per-document — resolved on
+ * the PersonnelFileDocument by the data-purge cron — so excluding them keeps a
+ * file with no document date from being held forever. Mirrors the file-level
+ * resolution the purge cron applies before a permanent delete.
+ */
+function personnelFileLevelRules(jurisdiction: Jurisdiction): PersonnelRetentionRule[] {
+  const seen = new Set<string>();
+  const rules: PersonnelRetentionRule[] = [];
+  for (const section of getPersonnelSections(jurisdiction)) {
+    for (const rule of section.retentionRules) {
+      if (rule.anchor === 'DOCUMENT_DATE' || seen.has(rule.recordType)) continue;
+      seen.add(rule.recordType);
+      rules.push(rule);
+    }
+  }
+  return rules;
+}
+
+type PersonnelFileRetentionRow = {
+  countryCode: string;
+  hireDate: Date | null;
+  terminatedAt: Date | null;
+  deletedAt: Date | null;
+} | null;
+
+/**
+ * Whether an employee's national identifiers are held by an active statutory
+ * personnel-file window (akta osobowe / Personalakte / UK file / US I-9).
+ *
+ * A worker with no personnel file (or an already soft-deleted one) has no active
+ * hold — its identifiers are erasable. Otherwise the file-level window is
+ * resolved off hire/termination: an unresolved jurisdiction or an in-window file
+ * is HELD (fail-closed) so an erasure never destroys a statutorily retained ID.
+ */
+function resolveEmployeeHold(
+  file: PersonnelFileRetentionRow,
+  now: Date,
+): { held: boolean; citation: string | null } {
+  if (!file || file.deletedAt) return { held: false, citation: null };
+  const jurisdiction = mapCountryCodeToJurisdiction(file.countryCode);
+  if (!jurisdiction) {
+    return {
+      held: true,
+      citation: 'Statutory personnel-file retention hold (jurisdiction unresolved)',
+    };
+  }
+  const result = getPersonnelRetentionCutoff(personnelFileLevelRules(jurisdiction), {
+    hireDate: file.hireDate,
+    terminationDate: file.terminatedAt,
+    documentDate: null,
+    now,
+  });
+  return { held: !result.erasable, citation: result.citation };
 }
 
 // ---------------------------------------------------------------------------
@@ -274,6 +363,167 @@ export const gdprRouter = router({
         results.comments = await deleteByOrgAndCount(tx.comment, orgId);
         results.reminderInstances = await deleteByOrgAndCount(tx.reminderInstance, orgId);
         results.reminderRules = await deleteByOrgAndCount(tx.reminderRule, orgId);
+
+        // -----------------------------------------------------------------
+        // 17b. Employee identity subtree — national-person identifiers.
+        //      PESEL/SSN/iqama/Emirates ID live in EmployeeProfile encrypted
+        //      columns and are reachable by NO other erasure path, so an org
+        //      erasure MUST null them here. Personnel files carry
+        //      per-jurisdiction statutory windows (akta osobowe / Personalakte /
+        //      UK file / US I-9); a worker whose file is still inside its window
+        //      is HELD — identifiers + personnel/leave records survive and the
+        //      citation is surfaced (mirrors the retained-under-statute handling).
+        // -----------------------------------------------------------------
+        const employeeWorkers = await tx.worker.findMany({
+          where: { organizationId: orgId, workerType: 'EMPLOYEE', deletedAt: null },
+          select: {
+            id: true,
+            personnelFile: {
+              select: {
+                id: true,
+                countryCode: true,
+                hireDate: true,
+                terminatedAt: true,
+                deletedAt: true,
+              },
+            },
+          },
+        });
+
+        const erasableWorkerIds: string[] = [];
+        const erasablePersonnelFileIds: string[] = [];
+        let personnelFilesHeld = 0;
+        for (const worker of employeeWorkers) {
+          const { held, citation } = resolveEmployeeHold(worker.personnelFile, now);
+          if (held) {
+            personnelFilesHeld++;
+            if (citation) retainedUnderStatute.PersonnelFile = citation;
+            continue;
+          }
+          erasableWorkerIds.push(worker.id);
+          if (worker.personnelFile) erasablePersonnelFileIds.push(worker.personnelFile.id);
+        }
+        results.personnelFilesHeld = personnelFilesHeld;
+
+        if (erasableWorkerIds.length > 0) {
+          // National-person identifiers: null both the ciphertext and the masked
+          // last-4 so nothing recoverable survives the erasure.
+          results.employeeProfilesCleared = (
+            await tx.employeeProfile.updateMany({
+              where: { organizationId: orgId, workerId: { in: erasableWorkerIds } },
+              data: {
+                peselEncrypted: null,
+                peselLast4: null,
+                ssnEncrypted: null,
+                ssnLast4: null,
+                iqamaEncrypted: null,
+                iqamaLast4: null,
+                emiratesIdEncrypted: null,
+                emiratesIdLast4: null,
+              },
+            })
+          ).count;
+
+          // Personnel file + its documents: soft-delete so the data-purge cron
+          // finalises removal after the tenant-wide window.
+          if (erasablePersonnelFileIds.length > 0) {
+            results.personnelFileDocuments = (
+              await tx.personnelFileDocument.updateMany({
+                where: {
+                  organizationId: orgId,
+                  personnelFileId: { in: erasablePersonnelFileIds },
+                  deletedAt: null,
+                },
+                data: { deletedAt: now },
+              })
+            ).count;
+            results.personnelFiles = (
+              await tx.personnelFile.updateMany({
+                where: {
+                  organizationId: orgId,
+                  id: { in: erasablePersonnelFileIds },
+                  deletedAt: null,
+                },
+                data: { deletedAt: now },
+              })
+            ).count;
+          }
+
+          // Leave + statutory working-time records for the erased employees.
+          results.leaveRequests = await deleteByWorkersAndCount(
+            tx.leaveRequest,
+            orgId,
+            erasableWorkerIds,
+          );
+          results.leaveLedgerEntries = await deleteByWorkersAndCount(
+            tx.leaveLedgerEntry,
+            orgId,
+            erasableWorkerIds,
+          );
+          results.leaveBalances = await deleteByWorkersAndCount(
+            tx.leaveBalance,
+            orgId,
+            erasableWorkerIds,
+          );
+          results.employeeTimeRecords = await deleteByWorkersAndCount(
+            tx.employeeTimeRecord,
+            orgId,
+            erasableWorkerIds,
+          );
+
+          // Soft-delete the erased employee identity roots + drop the contact email.
+          results.employeeWorkers = (
+            await tx.worker.updateMany({
+              where: { organizationId: orgId, id: { in: erasableWorkerIds }, deletedAt: null },
+              data: { deletedAt: now, email: null },
+            })
+          ).count;
+        }
+
+        // Org-level leave config holds no personal data; drop it only when no
+        // worker is still held (a held worker's leave rows still reference it).
+        if (personnelFilesHeld === 0) {
+          results.leaveTypes = await deleteByOrgAndCount(tx.leaveType, orgId);
+          results.blackoutPeriods = await deleteByOrgAndCount(tx.blackoutPeriod, orgId);
+        }
+
+        // -----------------------------------------------------------------
+        // 17c. Tax records (contractor-facing US / international filings).
+        //      Governed by the same retainFinancialRecords flag as invoices +
+        //      payments: kept for tax compliance by default, purged when the
+        //      caller opts to erase financial records. A model under a statutory
+        //      retention rule (Form1099Nec — IRS 4-year, 26 CFR 1.6001-1) is
+        //      ALWAYS retained-with-exemption, superseding the flag; the paired
+        //      Form1042S withholding return is soft-deleted (never hard-deleted)
+        //      so any retention window still applies.
+        // -----------------------------------------------------------------
+        if (isRetained('Form1099Nec')) {
+          results.form1099Nec = 0;
+          results.form1099NecRetained = await tx.form1099Nec.count({
+            where: { organizationId: orgId, deletedAt: null },
+          });
+          recordRetention('Form1099Nec');
+        } else if (input.retainFinancialRecords) {
+          results.form1099Nec = 0;
+          results.form1099NecRetained = await tx.form1099Nec.count({
+            where: { organizationId: orgId, deletedAt: null },
+          });
+        } else {
+          results.form1099Nec = await softDeleteByOrgAndCount(tx.form1099Nec, orgId, now);
+        }
+
+        if (!input.retainFinancialRecords) {
+          results.form1042s = await softDeleteByOrgAndCount(tx.form1042S, orgId, now);
+          results.irisAcks = await deleteByOrgAndCount(tx.irisAck, orgId);
+          results.irisSubmissions = await deleteByOrgAndCount(tx.irisSubmission, orgId);
+          results.taxFormSubmissions = await deleteByOrgAndCount(tx.taxFormSubmission, orgId);
+          results.whtCertificates = await deleteByOrgAndCount(tx.whtCertificate, orgId);
+          results.taxIdValidations = await deleteByOrgAndCount(tx.taxIdValidation, orgId);
+          results.form1099KTrackerStates = await deleteByOrgAndCount(
+            tx.form1099KTrackerState,
+            orgId,
+          );
+        }
 
         // -----------------------------------------------------------------
         // 18. Portal magic tokens (global model, filtered by contractor email)

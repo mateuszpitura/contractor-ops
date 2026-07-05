@@ -4,106 +4,197 @@
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const { ORG_ID, USER_ID, mockPrisma, mockRetentionMap } = vi.hoisted(() => {
-  const OrgId = 'org-gdpr-00000000-0000-0000-0000-000000000001';
-  const UserId = 'user-gdpr-00000000-0000-0000-0000-000000000001';
+const { ORG_ID, USER_ID, mockPrisma, mockRetentionMap, getPersonnelRetentionCutoff } = vi.hoisted(
+  () => {
+    const OrgId = 'org-gdpr-00000000-0000-0000-0000-000000000001';
+    const UserId = 'user-gdpr-00000000-0000-0000-0000-000000000001';
 
-  // Fixture retention map — mutated per-test; EMPTY by default so the
-  // existing erasure tests keep their current behaviour.
-  const mockRetentionMap: Record<string, string> = {};
+    // Fixture retention map — mutated per-test; EMPTY by default so the
+    // existing erasure tests keep their current behaviour.
+    const mockRetentionMap: Record<string, string> = {};
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  type Rec = Record<string, unknown>;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    type Rec = Record<string, unknown>;
 
-  const mockPrisma: Rec = {
-    organization: {
-      findUnique: vi.fn(),
-    },
-    contractor: {
-      findMany: vi.fn(async () => []),
-      updateMany: vi.fn(async () => ({ count: 0 })),
-    },
-    contract: {
-      findMany: vi.fn(async () => []),
-      updateMany: vi.fn(async () => ({ count: 0 })),
-    },
-    document: {
-      findMany: vi.fn(async () => []),
-      updateMany: vi.fn(async () => ({ count: 0 })),
-    },
-    invoice: {
-      findMany: vi.fn(async () => []),
-      updateMany: vi.fn(async () => ({ count: 0 })),
-      deleteMany: vi.fn(async () => ({ count: 0 })),
-      count: vi.fn(async () => 0),
-    },
-    invoiceLine: { deleteMany: vi.fn(async () => ({ count: 0 })) },
-    invoiceMatchResult: { deleteMany: vi.fn(async () => ({ count: 0 })) },
-    invoiceFile: { deleteMany: vi.fn(async () => ({ count: 0 })) },
-    documentLink: { deleteMany: vi.fn(async () => ({ count: 0 })) },
-    notification: {
-      deleteMany: vi.fn(async () => ({ count: 0 })),
-    },
-    auditLog: {
-      findMany: vi.fn(async () => []),
-      deleteMany: vi.fn(async () => ({ count: 0 })),
-      create: vi.fn(async () => ({})),
-    },
-    member: {
-      findMany: vi.fn(async () => []),
-      deleteMany: vi.fn(async () => ({ count: 0 })),
-    },
-    timeEntry: { deleteMany: vi.fn(async () => ({ count: 0 })) },
-    timesheet: { deleteMany: vi.fn(async () => ({ count: 0 })) },
-    paymentExport: { deleteMany: vi.fn(async () => ({ count: 0 })) },
-    paymentRunItem: { deleteMany: vi.fn(async () => ({ count: 0 })) },
-    paymentRun: {
-      deleteMany: vi.fn(async () => ({ count: 0 })),
-      count: vi.fn(async () => 0),
-    },
-    shipmentEvent: { deleteMany: vi.fn(async () => ({ count: 0 })) },
-    returnRequest: { deleteMany: vi.fn(async () => ({ count: 0 })) },
-    shipment: { deleteMany: vi.fn(async () => ({ count: 0 })) },
-    equipmentAssignment: { deleteMany: vi.fn(async () => ({ count: 0 })) },
-    equipment: { deleteMany: vi.fn(async () => ({ count: 0 })) },
-    courierConfig: { deleteMany: vi.fn(async () => ({ count: 0 })) },
-    approvalDecision: { deleteMany: vi.fn(async () => ({ count: 0 })) },
-    approvalStep: { deleteMany: vi.fn(async () => ({ count: 0 })) },
-    approvalFlow: { deleteMany: vi.fn(async () => ({ count: 0 })) },
-    approvalChainConfig: { deleteMany: vi.fn(async () => ({ count: 0 })) },
-    comment: { deleteMany: vi.fn(async () => ({ count: 0 })) },
-    complianceRequirementTemplate: { deleteMany: vi.fn(async () => ({ count: 0 })) },
-    contractorAssignment: { deleteMany: vi.fn(async () => ({ count: 0 })) },
-    contractorBillingProfile: { deleteMany: vi.fn(async () => ({ count: 0 })) },
-    contractorChangeRequest: { deleteMany: vi.fn(async () => ({ count: 0 })) },
-    contractorComplianceItem: { deleteMany: vi.fn(async () => ({ count: 0 })) },
-    contractorContact: { deleteMany: vi.fn(async () => ({ count: 0 })) },
-    contractorNotificationPreference: { deleteMany: vi.fn(async () => ({ count: 0 })) },
-    contractorTag: { deleteMany: vi.fn(async () => ({ count: 0 })) },
-    externalLink: { deleteMany: vi.fn(async () => ({ count: 0 })) },
-    integrationConnection: { deleteMany: vi.fn(async () => ({ count: 0 })) },
-    integrationSyncLog: { deleteMany: vi.fn(async () => ({ count: 0 })) },
-    ocrExtraction: { deleteMany: vi.fn(async () => ({ count: 0 })) },
-    portalMagicToken: { deleteMany: vi.fn(async () => ({ count: 0 })) },
-    portalSession: { deleteMany: vi.fn(async () => ({ count: 0 })) },
-    reminderInstance: { deleteMany: vi.fn(async () => ({ count: 0 })) },
-    reminderRule: { deleteMany: vi.fn(async () => ({ count: 0 })) },
-    signingEnvelope: { deleteMany: vi.fn(async () => ({ count: 0 })) },
-    signingEvent: { deleteMany: vi.fn(async () => ({ count: 0 })) },
-    signingRecipient: { deleteMany: vi.fn(async () => ({ count: 0 })) },
-    userNotificationPreference: { deleteMany: vi.fn(async () => ({ count: 0 })) },
-    webhookDelivery: { deleteMany: vi.fn(async () => ({ count: 0 })) },
-    workflowAttachment: { deleteMany: vi.fn(async () => ({ count: 0 })) },
-    workflowComment: { deleteMany: vi.fn(async () => ({ count: 0 })) },
-    workflowRun: { deleteMany: vi.fn(async () => ({ count: 0 })) },
-    workflowTaskRun: { deleteMany: vi.fn(async () => ({ count: 0 })) },
-    workflowTaskTemplate: { deleteMany: vi.fn(async () => ({ count: 0 })) },
-    workflowTemplate: { deleteMany: vi.fn(async () => ({ count: 0 })) },
-    $transaction: vi.fn(async (fn: (tx: Rec) => Promise<unknown>) => fn(mockPrisma)),
-  };
+    // Dependency-free port of @contractor-ops/db's event-anchored retention
+    // resolver (the db package is fully mocked here). Paired with the REAL
+    // per-jurisdiction personnel rules from @contractor-ops/compliance-policy
+    // (not mocked), the erasure resolves genuine hire/termination retention math.
+    const RETENTION_YEARS: Record<string, number> = {
+      'pl-akta-post2019': 10,
+      'pl-akta-legacy': 50,
+      'de-personalakte-tax': 10,
+      'de-accident-records': 30,
+      'uk-personnel-general': 6,
+      'uk-personnel-financial': 7,
+      'us-i9-post-hire': 3,
+      'us-i9-post-termination': 1,
+    };
+    type RuleInput = { recordType: string; anchor: string; citation: string; years?: number };
+    type Dates = {
+      hireDate: Date | null;
+      terminationDate: Date | null;
+      documentDate: Date | null;
+      now: Date;
+    };
+    function anchorDateFor(anchor: string, dates: Dates): Date | null {
+      if (anchor === 'HIRE_DATE') return dates.hireDate;
+      if (anchor === 'TERMINATION_DATE') return dates.terminationDate;
+      if (anchor === 'DOCUMENT_DATE') return dates.documentDate;
+      return null;
+    }
+    function getPersonnelRetentionCutoff(rules: RuleInput[], dates: Dates) {
+      if (!rules || rules.length === 0) {
+        return { erasable: true, retainUntil: null, citation: null };
+      }
+      let binding: { retainUntil: Date; citation: string } | null = null;
+      for (const rule of rules) {
+        const anchorDate = anchorDateFor(rule.anchor, dates);
+        if (anchorDate == null) {
+          return { erasable: false, retainUntil: null, citation: rule.citation };
+        }
+        const years = RETENTION_YEARS[rule.recordType] ?? rule.years;
+        if (years === undefined) {
+          return { erasable: false, retainUntil: null, citation: rule.citation };
+        }
+        const retainUntil = new Date(anchorDate);
+        retainUntil.setFullYear(retainUntil.getFullYear() + years);
+        if (binding === null || retainUntil.getTime() > binding.retainUntil.getTime()) {
+          binding = { retainUntil, citation: rule.citation };
+        }
+      }
+      if (binding === null) {
+        return { erasable: false, retainUntil: null, citation: null };
+      }
+      return {
+        erasable: dates.now.getTime() >= binding.retainUntil.getTime(),
+        retainUntil: binding.retainUntil,
+        citation: binding.citation,
+      };
+    }
 
-  return { ORG_ID: OrgId, USER_ID: UserId, mockPrisma, mockRetentionMap };
-});
+    const mockPrisma: Rec = {
+      organization: {
+        findUnique: vi.fn(),
+      },
+      contractor: {
+        findMany: vi.fn(async () => []),
+        updateMany: vi.fn(async () => ({ count: 0 })),
+      },
+      contract: {
+        findMany: vi.fn(async () => []),
+        updateMany: vi.fn(async () => ({ count: 0 })),
+      },
+      document: {
+        findMany: vi.fn(async () => []),
+        updateMany: vi.fn(async () => ({ count: 0 })),
+      },
+      invoice: {
+        findMany: vi.fn(async () => []),
+        updateMany: vi.fn(async () => ({ count: 0 })),
+        deleteMany: vi.fn(async () => ({ count: 0 })),
+        count: vi.fn(async () => 0),
+      },
+      invoiceLine: { deleteMany: vi.fn(async () => ({ count: 0 })) },
+      invoiceMatchResult: { deleteMany: vi.fn(async () => ({ count: 0 })) },
+      invoiceFile: { deleteMany: vi.fn(async () => ({ count: 0 })) },
+      documentLink: { deleteMany: vi.fn(async () => ({ count: 0 })) },
+      notification: {
+        deleteMany: vi.fn(async () => ({ count: 0 })),
+      },
+      auditLog: {
+        findMany: vi.fn(async () => []),
+        deleteMany: vi.fn(async () => ({ count: 0 })),
+        create: vi.fn(async () => ({})),
+      },
+      member: {
+        findMany: vi.fn(async () => []),
+        deleteMany: vi.fn(async () => ({ count: 0 })),
+      },
+      timeEntry: { deleteMany: vi.fn(async () => ({ count: 0 })) },
+      timesheet: { deleteMany: vi.fn(async () => ({ count: 0 })) },
+      paymentExport: { deleteMany: vi.fn(async () => ({ count: 0 })) },
+      paymentRunItem: { deleteMany: vi.fn(async () => ({ count: 0 })) },
+      paymentRun: {
+        deleteMany: vi.fn(async () => ({ count: 0 })),
+        count: vi.fn(async () => 0),
+      },
+      shipmentEvent: { deleteMany: vi.fn(async () => ({ count: 0 })) },
+      returnRequest: { deleteMany: vi.fn(async () => ({ count: 0 })) },
+      shipment: { deleteMany: vi.fn(async () => ({ count: 0 })) },
+      equipmentAssignment: { deleteMany: vi.fn(async () => ({ count: 0 })) },
+      equipment: { deleteMany: vi.fn(async () => ({ count: 0 })) },
+      courierConfig: { deleteMany: vi.fn(async () => ({ count: 0 })) },
+      approvalDecision: { deleteMany: vi.fn(async () => ({ count: 0 })) },
+      approvalStep: { deleteMany: vi.fn(async () => ({ count: 0 })) },
+      approvalFlow: { deleteMany: vi.fn(async () => ({ count: 0 })) },
+      approvalChainConfig: { deleteMany: vi.fn(async () => ({ count: 0 })) },
+      comment: { deleteMany: vi.fn(async () => ({ count: 0 })) },
+      complianceRequirementTemplate: { deleteMany: vi.fn(async () => ({ count: 0 })) },
+      contractorAssignment: { deleteMany: vi.fn(async () => ({ count: 0 })) },
+      contractorBillingProfile: { deleteMany: vi.fn(async () => ({ count: 0 })) },
+      contractorChangeRequest: { deleteMany: vi.fn(async () => ({ count: 0 })) },
+      contractorComplianceItem: { deleteMany: vi.fn(async () => ({ count: 0 })) },
+      contractorContact: { deleteMany: vi.fn(async () => ({ count: 0 })) },
+      contractorNotificationPreference: { deleteMany: vi.fn(async () => ({ count: 0 })) },
+      contractorTag: { deleteMany: vi.fn(async () => ({ count: 0 })) },
+      externalLink: { deleteMany: vi.fn(async () => ({ count: 0 })) },
+      integrationConnection: { deleteMany: vi.fn(async () => ({ count: 0 })) },
+      integrationSyncLog: { deleteMany: vi.fn(async () => ({ count: 0 })) },
+      ocrExtraction: { deleteMany: vi.fn(async () => ({ count: 0 })) },
+      portalMagicToken: { deleteMany: vi.fn(async () => ({ count: 0 })) },
+      portalSession: { deleteMany: vi.fn(async () => ({ count: 0 })) },
+      reminderInstance: { deleteMany: vi.fn(async () => ({ count: 0 })) },
+      reminderRule: { deleteMany: vi.fn(async () => ({ count: 0 })) },
+      signingEnvelope: { deleteMany: vi.fn(async () => ({ count: 0 })) },
+      signingEvent: { deleteMany: vi.fn(async () => ({ count: 0 })) },
+      signingRecipient: { deleteMany: vi.fn(async () => ({ count: 0 })) },
+      userNotificationPreference: { deleteMany: vi.fn(async () => ({ count: 0 })) },
+      webhookDelivery: { deleteMany: vi.fn(async () => ({ count: 0 })) },
+      workflowAttachment: { deleteMany: vi.fn(async () => ({ count: 0 })) },
+      workflowComment: { deleteMany: vi.fn(async () => ({ count: 0 })) },
+      workflowRun: { deleteMany: vi.fn(async () => ({ count: 0 })) },
+      workflowTaskRun: { deleteMany: vi.fn(async () => ({ count: 0 })) },
+      workflowTaskTemplate: { deleteMany: vi.fn(async () => ({ count: 0 })) },
+      workflowTemplate: { deleteMany: vi.fn(async () => ({ count: 0 })) },
+      // Employee / personnel-file / leave subtree (national-person identifiers).
+      worker: {
+        findMany: vi.fn(async () => []),
+        updateMany: vi.fn(async () => ({ count: 0 })),
+      },
+      employeeProfile: { updateMany: vi.fn(async () => ({ count: 0 })) },
+      personnelFile: { updateMany: vi.fn(async () => ({ count: 0 })) },
+      personnelFileDocument: { updateMany: vi.fn(async () => ({ count: 0 })) },
+      leaveRequest: { deleteMany: vi.fn(async () => ({ count: 0 })) },
+      leaveLedgerEntry: { deleteMany: vi.fn(async () => ({ count: 0 })) },
+      leaveBalance: { deleteMany: vi.fn(async () => ({ count: 0 })) },
+      employeeTimeRecord: { deleteMany: vi.fn(async () => ({ count: 0 })) },
+      leaveType: { deleteMany: vi.fn(async () => ({ count: 0 })) },
+      blackoutPeriod: { deleteMany: vi.fn(async () => ({ count: 0 })) },
+      // Tax records (contractor-facing filings).
+      form1099Nec: {
+        count: vi.fn(async () => 0),
+        updateMany: vi.fn(async () => ({ count: 0 })),
+      },
+      form1042S: { updateMany: vi.fn(async () => ({ count: 0 })) },
+      irisAck: { deleteMany: vi.fn(async () => ({ count: 0 })) },
+      irisSubmission: { deleteMany: vi.fn(async () => ({ count: 0 })) },
+      taxFormSubmission: { deleteMany: vi.fn(async () => ({ count: 0 })) },
+      whtCertificate: { deleteMany: vi.fn(async () => ({ count: 0 })) },
+      taxIdValidation: { deleteMany: vi.fn(async () => ({ count: 0 })) },
+      form1099KTrackerState: { deleteMany: vi.fn(async () => ({ count: 0 })) },
+      $transaction: vi.fn(async (fn: (tx: Rec) => Promise<unknown>) => fn(mockPrisma)),
+    };
+
+    return {
+      ORG_ID: OrgId,
+      USER_ID: UserId,
+      mockPrisma,
+      mockRetentionMap,
+      getPersonnelRetentionCutoff,
+    };
+  },
+);
 
 vi.mock('@contractor-ops/auth', () => ({
   auth: {
@@ -137,6 +228,7 @@ vi.mock('@contractor-ops/db', () => ({
   // statutory-exemption branch is exercised without a real tax table.
   MODEL_RETENTION_TYPE: mockRetentionMap,
   getRetentionCutoff: vi.fn(() => null),
+  getPersonnelRetentionCutoff,
 }));
 
 // org-cache must report ACTIVE so tenant middleware does not throw orgSuspended.
@@ -299,6 +391,16 @@ describe('gdprRouter', () => {
     mockPrisma.notification.deleteMany.mockResolvedValue({ count: 1 });
     mockPrisma.auditLog.deleteMany.mockResolvedValue({ count: 1 });
     mockPrisma.auditLog.create.mockResolvedValue({});
+    // Employee/personnel/tax subtree defaults — no employees, empty counts, so
+    // each test starts from a clean slate and opts into its own fixtures.
+    mockPrisma.worker.findMany.mockResolvedValue([]);
+    mockPrisma.worker.updateMany.mockResolvedValue({ count: 0 });
+    mockPrisma.employeeProfile.updateMany.mockResolvedValue({ count: 0 });
+    mockPrisma.personnelFile.updateMany.mockResolvedValue({ count: 0 });
+    mockPrisma.personnelFileDocument.updateMany.mockResolvedValue({ count: 0 });
+    mockPrisma.form1099Nec.count.mockResolvedValue(0);
+    mockPrisma.form1099Nec.updateMany.mockResolvedValue({ count: 0 });
+    mockPrisma.form1042S.updateMany.mockResolvedValue({ count: 0 });
   });
 
   it('exportData queries all entity lists scoped to organizationId', async () => {
@@ -567,6 +669,156 @@ describe('gdprRouter', () => {
 
       expect(mockDeleteRegionalObject).not.toHaveBeenCalled();
       expect(out.summary.r2ObjectsCleaned).toBe(0);
+    });
+  });
+
+  // National-person identifiers (PESEL/SSN/iqama/Emirates ID) live in
+  // EmployeeProfile encrypted columns reachable by NO other erasure path. An
+  // org erasure must null them for every erasable employee while preserving the
+  // records of any worker still inside an active personnel-file retention window.
+  describe('requestErasure employee/personnel subtree', () => {
+    const YEAR_MS = 365.25 * 24 * 60 * 60 * 1000;
+
+    it('nulls EmployeeProfile national-ID ciphertext + last-4 for an erasable employee', async () => {
+      // No personnel file → no statutory hold → identifiers erasable.
+      mockPrisma.worker.findMany.mockResolvedValue([
+        { id: 'worker-erasable', personnelFile: null },
+      ]);
+      mockPrisma.employeeProfile.updateMany.mockResolvedValue({ count: 1 });
+
+      const out = await caller.requestErasure({
+        confirmPhrase: 'DELETE ALL DATA',
+        retainFinancialRecords: true,
+      });
+
+      expect(out.success).toBe(true);
+      expect(mockPrisma.employeeProfile.updateMany).toHaveBeenCalledWith({
+        where: { organizationId: ORG_ID, workerId: { in: ['worker-erasable'] } },
+        data: {
+          peselEncrypted: null,
+          peselLast4: null,
+          ssnEncrypted: null,
+          ssnLast4: null,
+          iqamaEncrypted: null,
+          iqamaLast4: null,
+          emiratesIdEncrypted: null,
+          emiratesIdLast4: null,
+        },
+      });
+      const summary = out.summary as {
+        employeeProfilesCleared: number;
+        personnelFilesHeld: number;
+      };
+      expect(summary.employeeProfilesCleared).toBe(1);
+      expect(summary.personnelFilesHeld).toBe(0);
+    });
+
+    it('erases a terminated employee past the US I-9 window + soft-deletes the file', async () => {
+      const nowMs = Date.now();
+      // US I-9: hired 16y ago, terminated 15y ago → max(hire+3y, termination+1y)
+      // long past → erasable.
+      mockPrisma.worker.findMany.mockResolvedValue([
+        {
+          id: 'worker-past',
+          personnelFile: {
+            id: 'pf-past',
+            countryCode: 'US',
+            hireDate: new Date(nowMs - 16 * YEAR_MS),
+            terminatedAt: new Date(nowMs - 15 * YEAR_MS),
+            deletedAt: null,
+          },
+        },
+      ]);
+      mockPrisma.employeeProfile.updateMany.mockResolvedValue({ count: 1 });
+      mockPrisma.personnelFile.updateMany.mockResolvedValue({ count: 1 });
+      mockPrisma.personnelFileDocument.updateMany.mockResolvedValue({ count: 2 });
+
+      const out = await caller.requestErasure({
+        confirmPhrase: 'DELETE ALL DATA',
+        retainFinancialRecords: true,
+      });
+
+      expect(mockPrisma.employeeProfile.updateMany).toHaveBeenCalled();
+      // Personnel file + docs soft-deleted so the data-purge cron finalises them.
+      expect(mockPrisma.personnelFileDocument.updateMany).toHaveBeenCalledWith({
+        where: { organizationId: ORG_ID, personnelFileId: { in: ['pf-past'] }, deletedAt: null },
+        data: { deletedAt: expect.any(Date) },
+      });
+      const summary = out.summary as { personnelFilesHeld: number; personnelFiles: number };
+      expect(summary.personnelFilesHeld).toBe(0);
+      expect(summary.personnelFiles).toBe(1);
+    });
+
+    it('preserves national IDs for an employee under an active statutory window + surfaces citation', async () => {
+      const nowMs = Date.now();
+      // US I-9: hired 1y ago, terminated 0.5y ago → both windows still in the
+      // future → HELD, so the identifiers must NOT be touched.
+      mockPrisma.worker.findMany.mockResolvedValue([
+        {
+          id: 'worker-held',
+          personnelFile: {
+            id: 'pf-held',
+            countryCode: 'US',
+            hireDate: new Date(nowMs - 1 * YEAR_MS),
+            terminatedAt: new Date(nowMs - 0.5 * YEAR_MS),
+            deletedAt: null,
+          },
+        },
+      ]);
+
+      const out = await caller.requestErasure({
+        confirmPhrase: 'DELETE ALL DATA',
+        retainFinancialRecords: true,
+      });
+
+      expect(out.success).toBe(true);
+      expect(mockPrisma.employeeProfile.updateMany).not.toHaveBeenCalled();
+      expect(mockPrisma.personnelFile.updateMany).not.toHaveBeenCalled();
+
+      const summary = out.summary as {
+        personnelFilesHeld: number;
+        retainedUnderStatute: Record<string, string>;
+      };
+      expect(summary.personnelFilesHeld).toBe(1);
+      expect(summary.retainedUnderStatute.PersonnelFile).toBeTruthy();
+      expect(out.message).toContain('PersonnelFile');
+      // The retention-blocked attempt is audit-logged.
+      expect(mockPrisma.auditLog.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            action: 'organization.erasure_retained_under_statute',
+          }),
+        }),
+      );
+    });
+
+    it('retains contractor tax records when financial records are retained', async () => {
+      await caller.requestErasure({
+        confirmPhrase: 'DELETE ALL DATA',
+        retainFinancialRecords: true,
+      });
+
+      expect(mockPrisma.whtCertificate.deleteMany).not.toHaveBeenCalled();
+      expect(mockPrisma.taxIdValidation.deleteMany).not.toHaveBeenCalled();
+      expect(mockPrisma.form1042S.updateMany).not.toHaveBeenCalled();
+      // Statutory 1099-NEC returns are counted (retained), never deleted.
+      expect(mockPrisma.form1099Nec.count).toHaveBeenCalled();
+    });
+
+    it('purges contractor tax records when financial records are erased', async () => {
+      await caller.requestErasure({
+        confirmPhrase: 'DELETE ALL DATA',
+        retainFinancialRecords: false,
+      });
+
+      expect(mockPrisma.whtCertificate.deleteMany).toHaveBeenCalledWith({
+        where: { organizationId: ORG_ID },
+      });
+      expect(mockPrisma.taxIdValidation.deleteMany).toHaveBeenCalledWith({
+        where: { organizationId: ORG_ID },
+      });
+      // 1042-S withholding returns are soft-deleted (never hard-deleted).
+      expect(mockPrisma.form1042S.updateMany).toHaveBeenCalled();
     });
   });
 });
