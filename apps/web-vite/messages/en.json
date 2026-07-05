@@ -6096,6 +6096,52 @@
         "subtitle": "Where to find your pay stubs.",
         "unavailableTitle": "Pay stubs live in payroll",
         "externalPayroll": "Your pay stubs are issued by your payroll system. Ask your HR team for access."
+      },
+      "team": {
+        "title": "My team",
+        "subtitle": "Your direct reports and their pending requests.",
+        "overview": {
+          "title": "Team",
+          "description": "Your direct reports.",
+          "unnamedReport": "Team member",
+          "pendingLeave": "{count} pending",
+          "forbiddenTitle": "Not a manager",
+          "forbidden": "You don't have any direct reports yet.",
+          "errorTitle": "Something went wrong",
+          "error": "We couldn't load your team. Try again in a moment.",
+          "emptyTitle": "No reports",
+          "empty": "You don't have any direct reports yet."
+        },
+        "approvals": {
+          "title": "Approvals",
+          "description": "Review and act on your reports' time-off requests.",
+          "unnamedReport": "Team member",
+          "approve": "Approve",
+          "approvedToast": "Request approved.",
+          "rejectedToast": "Request rejected.",
+          "actionError": "We couldn't complete that. Try again.",
+          "forbiddenTitle": "Not a manager",
+          "forbidden": "You don't have any direct reports yet.",
+          "errorTitle": "Something went wrong",
+          "error": "We couldn't load approvals. Try again in a moment.",
+          "emptyTitle": "All caught up",
+          "empty": "There are no pending requests to review.",
+          "status": {
+            "PENDING": "Pending",
+            "APPROVED": "Approved",
+            "REJECTED": "Rejected",
+            "CANCELLED": "Cancelled"
+          },
+          "reject": {
+            "action": "Reject",
+            "title": "Reject request",
+            "description": "Reject {name}'s time-off request?",
+            "reason": "Reason",
+            "reasonPlaceholder": "Optional note for your report",
+            "cancel": "Cancel",
+            "confirm": "Reject request"
+          }
+        }
       }
     },
     "nav": {

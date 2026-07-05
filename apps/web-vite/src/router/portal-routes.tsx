@@ -28,6 +28,8 @@ const EmployeeLeavePage = lazy(() => import('../pages/portal/employee/leave.js')
 const EmployeeTimePage = lazy(() => import('../pages/portal/employee/time.js'));
 const EmployeeDocumentsPage = lazy(() => import('../pages/portal/employee/documents.js'));
 const EmployeePayPage = lazy(() => import('../pages/portal/employee/pay.js'));
+const ManagerTeamPage = lazy(() => import('../pages/portal/employee/team/index.js'));
+const ManagerApprovalsPage = lazy(() => import('../pages/portal/employee/team/approvals.js'));
 
 function page(element: ReactNode) {
   return <Suspense fallback={null}>{element}</Suspense>;
@@ -57,4 +59,6 @@ export const portalRoutes = [
   { path: 'portal/employee/time', element: page(<EmployeeTimePage />) },
   { path: 'portal/employee/documents', element: page(<EmployeeDocumentsPage />) },
   { path: 'portal/employee/pay', element: page(<EmployeePayPage />) },
+  { path: 'portal/employee/team', element: page(<ManagerTeamPage />) },
+  { path: 'portal/employee/team/approvals', element: page(<ManagerApprovalsPage />) },
 ];
