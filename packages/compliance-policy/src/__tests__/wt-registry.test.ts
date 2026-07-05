@@ -10,6 +10,8 @@ import { describe, expect, it } from 'vitest';
 import '../policies/pl';
 import '../policies/de';
 import '../policies/uk';
+import '../policies/uae';
+import '../policies/ksa';
 import { listWorkingTimeLimits, resolveWtLimits } from '../wt-registry';
 
 describe('working-time-limit registry', () => {
@@ -36,7 +38,23 @@ describe('working-time-limit registry', () => {
     expect(rule?.weeklyOptOutAllowed).toBe(true);
   });
 
+  it('resolves UAE 48h weekly cap with a 2h daily overtime ceiling and 25/50 premium', () => {
+    const rule = resolveWtLimits('UAE');
+    expect(rule?.maxDailyMinutes).toBe(480);
+    expect(rule?.maxDailyHardCeilingMinutes).toBe(600);
+    expect(rule?.weeklyAvgMaxMinutes).toBe(2880);
+    expect(rule?.overtimePremium).toEqual({ standardPct: 25, premiumPct: 50 });
+  });
+
+  it('resolves KSA 8h daily norm + 48h weekly cap + 50% overtime premium', () => {
+    const rule = resolveWtLimits('KSA');
+    expect(rule?.maxDailyMinutes).toBe(480);
+    expect(rule?.weeklyAvgMaxMinutes).toBe(2880);
+    expect(rule?.overtimePremium).toEqual({ standardPct: 50, premiumPct: 50 });
+  });
+
   it('returns undefined for an unregistered jurisdiction', () => {
+    // US (FLSA) has no statutory max-hours cap — intentionally unregistered.
     expect(resolveWtLimits('US')).toBeUndefined();
   });
 

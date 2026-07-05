@@ -5,6 +5,18 @@ type: log
 
 # Wiki log (append only)
 
+## 2026-07-06 — UAE + KSA statutory leave/working-time rules (Phase 92 reconcile, Theme B)
+
+Closed a real scope gap found while reconciling Phase 92: the per-market leave-accrual + working-time
+registries (`compliance-policy` `leave-registry.ts` / `wt-registry.ts`) only covered PL/DE/UK. Registered
+**UAE** (Federal Decree-Law No. 33/2021 Art. 17/19/29 — 30-day annual leave, 48h/wk, 2h/day OT ceiling,
+25/50% premium) and **KSA** (Royal Decree M/51 Art. 98/107/109 — 21→30-day annual leave at 5yr, 48h/wk,
+50% OT) in `policies/{uae,ksa}.ts`, each cited + `PENDING legal review` adviser-verify. Documented in
+`policies/us.ts` that **US is intentionally unregistered** (no federal statutory paid-leave floor; FLSA has
+no max-hours cap) — `resolve*('US')` returns `undefined` → org-policy fallback; US remains the test's
+"unregistered exemplar". Added UAE/KSA assertions to `leave-registry.test.ts` + `wt-registry.test.ts`.
+Updated [[domains/leave-and-time]].
+
 ## 2026-07-05 — Staff HR dashboard UI (Phase 97, Theme B)
 
 New [[domains/hr-dashboard]]: the web-vite `/dashboard/hr` surface on the 97-03/04/05 `hrDashboard.*` procedures.

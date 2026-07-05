@@ -90,6 +90,7 @@ Staff/manager surfaces in `apps/web-vite`, each a thin flag-gated page + wired s
 - **`LEAVE_REQUEST` extends the generic approval chain at exactly two seams** (route → `routeToLeaveChain`, finalize → shared approve/reject); no leave-specific approval fork. The resourceType→permission gate keeps `leave_approver` off `invoice:approve`.
 - **The WT-limit daily scan fans out over regions with region-prefixed dedup keys** — one digest per recipient/day per region.
 - **On-save WT breach is a warning, not a gate** — `upsertRecord` commits and returns `findings`; it never throws on breach.
+- **Statutory leave-accrual + working-time rules are per-market registries in `compliance-policy`** (`leave-registry.ts` / `wt-registry.ts`, registered on import from `policies/<cc>.ts`). Registered markets: **PL, DE, UK, UAE, KSA** (ANNUAL leave + a working-time limit each). **US is intentionally unregistered** — federal law has no statutory paid-leave floor and the FLSA sets no maximum-hours cap (overtime-premium only), so `resolveLeaveAccrual('US','ANNUAL')` / `resolveWtLimits('US')` return `undefined` and the caller falls back to org policy (documented in `policies/us.ts`; do not add a fabricated rule). All registered rule values carry a cited statute + `PENDING legal review` adviser-verify annotation.
 
 ## Related
 

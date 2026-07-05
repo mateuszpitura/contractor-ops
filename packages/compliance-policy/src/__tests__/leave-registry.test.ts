@@ -12,6 +12,8 @@ import { describe, expect, it } from 'vitest';
 import '../policies/pl';
 import '../policies/de';
 import '../policies/uk';
+import '../policies/uae';
+import '../policies/ksa';
 import { listLeaveAccrualRules, resolveLeaveAccrual } from '../leave-registry';
 
 describe('leave-accrual registry', () => {
@@ -43,7 +45,22 @@ describe('leave-accrual registry', () => {
     expect(rule?.carryoverPolicy.maxDays).toBe(8);
   });
 
+  it('resolves UAE 30-day entitlement after 1 year of service (pro-rata by etat)', () => {
+    const rule = resolveLeaveAccrual('UAE', 'ANNUAL');
+    expect(rule?.baseEntitlementDays({ tenureYears: 2 })).toBe(30);
+    expect(rule?.baseEntitlementDays({ tenureYears: 0 })).toBe(24);
+    expect(rule?.proRataByEtat).toBe(true);
+  });
+
+  it('resolves KSA annual leave: 21 days under 5 years, 30 at or above', () => {
+    const rule = resolveLeaveAccrual('KSA', 'ANNUAL');
+    expect(rule?.baseEntitlementDays({ tenureYears: 3 })).toBe(21);
+    expect(rule?.baseEntitlementDays({ tenureYears: 5 })).toBe(30);
+    expect(rule?.proRataByEtat).toBe(true);
+  });
+
   it('returns undefined for an unregistered (jurisdiction, kind) so the caller falls back to org policy', () => {
+    // US has no federal statutory paid-leave floor — intentionally unregistered.
     expect(resolveLeaveAccrual('US', 'ANNUAL')).toBeUndefined();
   });
 
