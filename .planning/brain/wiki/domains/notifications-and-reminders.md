@@ -10,6 +10,7 @@ verify_with:
   - packages/api/src/services/outbox/index.ts
   - packages/api/src/services/outbox/handlers.ts
   - apps/api/src/lib/outbox-schedule.ts
+  - apps/cron-worker/src/jobs/handlers/reminders/index.ts
 updated: 2026-07-05
 ---
 
@@ -68,6 +69,7 @@ the Resend `Idempotency-Key` collapse a redrive to a single delivery →
 | Dispatch service | `packages/api/src/services/notification-service.ts` |
 | Outbox service + helper | `packages/api/src/services/outbox/` (`enqueueNotificationOutboxEvent`, `drainOutboxBatch`) |
 | Drain route + schedule | `apps/api/src/routes/outbox.ts` + `apps/api/src/lib/outbox-schedule.ts` |
+| Reminder-rule cron | `cron-worker/.../reminders/index.ts` |
 | Compliance reminders | `apps/cron-worker/.../compliance-reminder.ts` |
 | DRV reminders | `cron-worker/.../reminders/drv-clearance-expiries.ts` |
 | UI | `apps/web-vite/src/components/notifications/` |
@@ -79,6 +81,7 @@ the Resend `Idempotency-Key` collapse a redrive to a single delivery →
 - New notification sites: enqueue through the outbox inside the announcing `$transaction`, not post-commit `dispatch().catch()` (at-most-once). Direct `dispatch()` is tolerated only where no enclosing tx owns the state change — [[decisions/tech-debt-hotspots]]
 - Teams/Slack channels via [[integrations/teams]] framework
 - Outbox is single-event-type (`notification.dispatch`) today; add a type in `services/outbox/handlers.ts` before outboxing a non-notification side effect
+- **A `ReminderInstance` is skipped only when `SENT`, never merely because it exists.** The reminder cron (`reminders/index.ts`) re-dispatches any row still `PENDING` (a prior tick's `dispatch` threw) rather than treating "row present" as done — otherwise the `(reminderRuleId, entityType, entityId, scheduledFor)` unique would strand the reminder forever. Per-rule try/catch isolates a poison rule/org from the rest of the run.
 
 ## Related
 
@@ -100,3 +103,4 @@ semble search "reminderRouter"
 - Adding notification side effects with empty catch post-commit (at-most-once) — enqueue through the outbox inside the tx instead
 - Enqueuing the outbox row OUTSIDE the `$transaction` (defeats atomicity — the row must commit with the state change)
 - Reminder instances without cascade delete on rule toggle-off
+- Treating a present `ReminderInstance` row as "already sent" (skip only on `status='SENT'`)

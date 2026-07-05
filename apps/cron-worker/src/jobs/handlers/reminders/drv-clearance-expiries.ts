@@ -10,7 +10,7 @@
 
 import { dispatch } from '@contractor-ops/api/services/notification-service';
 import { resolveRbacRecipients } from '@contractor-ops/api/services/rbac-recipients';
-import { prismaRaw } from '@contractor-ops/db';
+import type { Prisma } from '@contractor-ops/db';
 import { addDays, claimCronNotificationDedup, startOfDay } from './shared.js';
 
 const DRV_EXPIRY_BANDS = [
@@ -19,7 +19,7 @@ const DRV_EXPIRY_BANDS = [
   { days: 7, type: 'classification.drv_expiry_7d' as const },
 ];
 
-export async function detectDrvClearanceExpiries(): Promise<number> {
+export async function detectDrvClearanceExpiries(db: Prisma.TransactionClient): Promise<number> {
   const now = new Date();
   const today = startOfDay(now);
   let notified = 0;
@@ -28,7 +28,7 @@ export async function detectDrvClearanceExpiries(): Promise<number> {
     const target = addDays(today, band.days);
     const targetEnd = addDays(target, 1);
 
-    const clearances = await prismaRaw.statusfeststellungsverfahren.findMany({
+    const clearances = await db.statusfeststellungsverfahren.findMany({
       where: {
         validTo: { gte: target, lt: targetEnd },
         outcome: { in: ['SELBSTANDIG', 'ABHANGIG'] },
