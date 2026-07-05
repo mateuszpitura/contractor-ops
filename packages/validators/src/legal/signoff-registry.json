@@ -11,6 +11,9 @@
   "DRV_UNVERIFIED_ENTRY_DISCLAIMER_DE": { "status": "PENDING" },
   "SOFTWARE_NOT_LEGAL_ADVICE_EN": { "status": "PENDING" },
   "SOFTWARE_NOT_LEGAL_ADVICE_DE": { "status": "PENDING" },
+  "CERT_ADVISER_VERIFY_EN": { "status": "PENDING" },
+  "CERT_ADVISER_VERIFY_DE": { "status": "PENDING" },
+  "CERT_ADVISER_VERIFY_PL": { "status": "PENDING" },
 
   "legal-signoff.ip_clauses.uk.hereby_assigns@v1": {
     "status": "PENDING",
