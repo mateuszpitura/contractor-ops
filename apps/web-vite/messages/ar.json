@@ -3485,6 +3485,10 @@
     "paymentRunNotDraft": "يمكن إزالة الفواتير فقط من تشغيلات الدفع المسوّدة.",
     "paymentInvoiceNotInRun": "لم يُعثر على الفاتورة في تشغيل الدفع هذا.",
     "paymentMixedCurrencies": "يجب أن تستخدم جميع الفواتير في تشغيل الدفع نفس العملة.",
+    "paymentSettlementRateUnavailable": "لا يتوفّر حاليًا سعر صرف لتسوية هذه الدفعة. يُرجى المحاولة مرة أخرى لاحقًا.",
+    "paymentAchPayoutsDisabled": "مدفوعات ACH غير مفعّلة لهذه المؤسسة.",
+    "paymentPayoutInProgress": "توجد بالفعل عملية دفع جارية لتشغيل الدفع هذا.",
+    "paymentAchReturnFileInvalid": "ملف مرتجعات ACH غير صالح أو تعذّرت معالجته.",
     "approvalChainNotFound": "Approval chain غير موجود.",
     "approvalChainHasActiveFlows": "لا يمكن حذف سلسلة بها تدفّقات موافقة نشطة.",
     "approvalStepNotFound": "Approval step غير موجود.",
@@ -3567,6 +3571,7 @@
     "classificationAssessmentIdRequired": "يلزم معرّف التقييم.",
     "classificationEngineDisabled": "محرك التصنيف معطّل لهذه المنظمة.",
     "usExpansionDisabled": "إدخال نماذج الضرائب الأمريكية غير مُفعّل لهذه المنظمة.",
+    "form1042sNotFound": "نموذج 1042-S غير موجود.",
     "workforceDisabled": "إدارة شؤون العاملين غير مُفعّلة لهذه المنظمة.",
     "treatyOverrideReasonRequired": "يلزم تقديم سبب لتجاوز معدل المعاهدة الضريبية.",
     "classificationOverrideReasonRequired": "يلزم تقديم سبب لتجاوز تصنيف العامل.",
@@ -3579,6 +3584,7 @@
     "sdsNotApproved": "لم يتم اعتماد SDS بعد.",
     "classificationDrvBundleNotCompleted": "يجب إكمال التقييم بلقطة من الأسئلة قبل توليد حزمة دفاع DRV.",
     "classificationDrvBundleDeOnly": "ينطبق generateDrvDefenseBundle فقط على تقييمات Scheinselbständigkeit (DE).",
+    "classificationDeterminationLetterUsOnly": "ينطبق generateUsDeterminationLetter فقط على تقييمات تصنيف العاملين في الولايات المتحدة.",
     "classificationAttestationRequired": "يلزم إقرار موقّع بشأن عملاء آخرين قبل توليد حزمة دفاع DRV.",
     "classificationDocumentNotFound": "لم يتم العثور على المستند.",
     "classificationDrvDeOnly": "تنطبق قرارات DRV فقط على تقييمات DE.",
@@ -3761,7 +3767,11 @@
     "deprovisioningIntegrationNotConfigured": "لم يتم تكوين تكامل مزود الهوية لإلغاء التزويد.",
     "complianceItemNotFound": "لم يتم العثور على عنصر الامتثال.",
     "complianceItemAlreadyWaived": "تم بالفعل التنازل عن عنصر الامتثال هذا.",
-    "complianceDocumentNotPendingReview": "مستند الامتثال هذا ليس قيد المراجعة."
+    "complianceDocumentNotPendingReview": "مستند الامتثال هذا ليس قيد المراجعة.",
+    "personnelFileNotFound": "ملف شؤون الموظفين غير موجود.",
+    "personnelFileDocumentNotFound": "المستند غير موجود في ملف شؤون الموظفين هذا.",
+    "personnelDocumentAlreadyAttached": "هذا المستند مرفق بالفعل بملف شؤون الموظفين.",
+    "personnelDocumentNotPendingReview": "هذا المستند ليس قيد المراجعة."
   },
   "Compliance": {
     "paymentBlockModal": {

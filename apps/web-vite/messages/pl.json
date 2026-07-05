@@ -3487,6 +3487,10 @@
     "paymentRunNotDraft": "Faktury można usuwać tylko z roboczych przebiegów płatności.",
     "paymentInvoiceNotInRun": "Nie znaleziono faktury w tym przebiegu płatności.",
     "paymentMixedCurrencies": "Wszystkie faktury w przebiegu płatności muszą mieć tę samą walutę.",
+    "paymentSettlementRateUnavailable": "Kurs wymiany do rozliczenia tej płatności jest obecnie niedostępny. Spróbuj ponownie później.",
+    "paymentAchPayoutsDisabled": "Wypłaty ACH nie są włączone dla tej organizacji.",
+    "paymentPayoutInProgress": "Wypłata dla tego przebiegu płatności jest już w toku.",
+    "paymentAchReturnFileInvalid": "Plik zwrotów ACH jest nieprawidłowy lub nie można go przetworzyć.",
     "approvalChainNotFound": "Nie znaleziono łańcucha zatwierdzania.",
     "approvalChainHasActiveFlows": "Nie można usunąć łańcucha z aktywnymi przepływami zatwierdzania.",
     "approvalStepNotFound": "Nie znaleziono kroku zatwierdzania.",
@@ -3567,6 +3571,7 @@
     "classificationAssessmentIdRequired": "Wymagany identyfikator oceny.",
     "classificationEngineDisabled": "Silnik klasyfikacji jest wyłączony dla tej organizacji.",
     "usExpansionDisabled": "Rejestracja amerykańskich formularzy podatkowych nie jest włączona dla tej organizacji.",
+    "form1042sNotFound": "Nie znaleziono formularza 1042-S.",
     "workforceDisabled": "Zarządzanie personelem nie jest włączone dla tej organizacji.",
     "treatyOverrideReasonRequired": "Aby zmienić stawkę z umowy o unikaniu podwójnego opodatkowania, wymagane jest podanie powodu.",
     "classificationOverrideReasonRequired": "Aby zmienić klasyfikację pracownika, wymagane jest podanie powodu.",
@@ -3579,6 +3584,7 @@
     "sdsNotApproved": "SDS nie został jeszcze zatwierdzony.",
     "classificationDrvBundleNotCompleted": "Ocena musi być ukończona ze zrzutem pytań przed wygenerowaniem pakietu obrony DRV.",
     "classificationDrvBundleDeOnly": "generateDrvDefenseBundle dotyczy tylko ocen Scheinselbständigkeit (DE).",
+    "classificationDeterminationLetterUsOnly": "generateUsDeterminationLetter dotyczy tylko amerykańskich ocen klasyfikacji pracowników.",
     "classificationAttestationRequired": "Wymagane podpisane oświadczenie o innych klientach przed wygenerowaniem pakietu obrony DRV.",
     "classificationDocumentNotFound": "Nie znaleziono dokumentu.",
     "classificationDrvDeOnly": "Decyzje DRV dotyczą wyłącznie ocen DE.",
@@ -3761,7 +3767,11 @@
     "deprovisioningIntegrationNotConfigured": "Integracja dostawcy tożsamości nie jest skonfigurowana do deprovisioningu.",
     "complianceItemNotFound": "Nie znaleziono elementu zgodności.",
     "complianceItemAlreadyWaived": "Ten element zgodności został już uchylony.",
-    "complianceDocumentNotPendingReview": "Ten dokument zgodności nie oczekuje na przegląd."
+    "complianceDocumentNotPendingReview": "Ten dokument zgodności nie oczekuje na przegląd.",
+    "personnelFileNotFound": "Nie znaleziono akt osobowych.",
+    "personnelFileDocumentNotFound": "Nie znaleziono dokumentu w tych aktach osobowych.",
+    "personnelDocumentAlreadyAttached": "Ten dokument jest już dołączony do akt osobowych.",
+    "personnelDocumentNotPendingReview": "Ten dokument nie oczekuje na przegląd."
   },
   "Compliance": {
     "paymentBlockModal": {

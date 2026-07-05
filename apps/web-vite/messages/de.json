@@ -3487,6 +3487,10 @@
     "paymentRunNotDraft": "Rechnungen können nur aus Entwurfs-Zahlungsläufen entfernt werden.",
     "paymentInvoiceNotInRun": "Rechnung in diesem Zahlungslauf nicht gefunden.",
     "paymentMixedCurrencies": "Alle Rechnungen in einem Zahlungslauf müssen dieselbe Währung verwenden.",
+    "paymentSettlementRateUnavailable": "Für die Abwicklung dieser Zahlung ist derzeit kein Wechselkurs verfügbar. Bitte versuchen Sie es später erneut.",
+    "paymentAchPayoutsDisabled": "ACH-Auszahlungen sind für diese Organisation nicht aktiviert.",
+    "paymentPayoutInProgress": "Eine Auszahlung für diesen Zahlungslauf wird bereits ausgeführt.",
+    "paymentAchReturnFileInvalid": "Die ACH-Rückläuferdatei ist ungültig oder konnte nicht verarbeitet werden.",
     "approvalChainNotFound": "Freigabekette nicht gefunden.",
     "approvalChainHasActiveFlows": "Kette mit aktiven Freigabe-Flows kann nicht gelöscht werden.",
     "approvalStepNotFound": "Freigabestufe nicht gefunden.",
@@ -3567,6 +3571,7 @@
     "classificationAssessmentIdRequired": "Bewertungs-ID erforderlich.",
     "classificationEngineDisabled": "Die Klassifizierungs-Engine ist für diese Organisation deaktiviert.",
     "usExpansionDisabled": "Die US-Steuerformularerfassung ist für diese Organisation nicht aktiviert.",
+    "form1042sNotFound": "Formular 1042-S nicht gefunden.",
     "workforceDisabled": "Die Personalverwaltung ist für diese Organisation nicht aktiviert.",
     "treatyOverrideReasonRequired": "Zum Überschreiben des Abkommenssatzes ist eine Begründung erforderlich.",
     "classificationOverrideReasonRequired": "Zum Überschreiben einer Arbeitnehmerklassifizierung ist eine Begründung erforderlich.",
@@ -3579,6 +3584,7 @@
     "sdsNotApproved": "Das SDS wurde noch nicht genehmigt.",
     "classificationDrvBundleNotCompleted": "Die Bewertung muss mit einem erfassten Fragen-Snapshot abgeschlossen sein, bevor ein DRV-Verteidigungspaket erzeugt werden kann.",
     "classificationDrvBundleDeOnly": "generateDrvDefenseBundle gilt nur für Scheinselbständigkeitsbewertungen (DE).",
+    "classificationDeterminationLetterUsOnly": "generateUsDeterminationLetter gilt nur für US-Arbeitnehmerklassifizierungsbewertungen.",
     "classificationAttestationRequired": "Eine unterzeichnete Erklärung über andere Auftraggeber ist erforderlich, bevor ein DRV-Verteidigungspaket erzeugt werden kann.",
     "classificationDocumentNotFound": "Dokument nicht gefunden.",
     "classificationDrvDeOnly": "DRV-Bescheide gelten nur für DE-Bewertungen.",
@@ -3761,7 +3767,11 @@
     "deprovisioningIntegrationNotConfigured": "Die Identitätsanbieter-Integration ist für das Deprovisioning nicht konfiguriert.",
     "complianceItemNotFound": "Compliance-Element nicht gefunden.",
     "complianceItemAlreadyWaived": "Dieses Compliance-Element wurde bereits erlassen.",
-    "complianceDocumentNotPendingReview": "Dieses Compliance-Dokument steht nicht zur Prüfung aus."
+    "complianceDocumentNotPendingReview": "Dieses Compliance-Dokument steht nicht zur Prüfung aus.",
+    "personnelFileNotFound": "Personalakte nicht gefunden.",
+    "personnelFileDocumentNotFound": "Dokument in dieser Personalakte nicht gefunden.",
+    "personnelDocumentAlreadyAttached": "Dieses Dokument ist der Personalakte bereits beigefügt.",
+    "personnelDocumentNotPendingReview": "Dieses Dokument steht nicht zur Prüfung aus."
   },
   "Compliance": {
     "paymentBlockModal": {

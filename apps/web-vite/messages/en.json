@@ -3487,6 +3487,10 @@
     "paymentRunNotDraft": "Can only remove invoices from draft payment runs.",
     "paymentInvoiceNotInRun": "Invoice not found in this payment run.",
     "paymentMixedCurrencies": "All invoices in a payment run must use the same currency.",
+    "paymentSettlementRateUnavailable": "An exchange rate to settle this payment is currently unavailable. Please try again later.",
+    "paymentAchPayoutsDisabled": "ACH payouts are not enabled for this organization.",
+    "paymentPayoutInProgress": "A payout for this payment run is already in progress.",
+    "paymentAchReturnFileInvalid": "The ACH return file is invalid or could not be parsed.",
     "approvalChainNotFound": "Approval chain not found.",
     "approvalChainHasActiveFlows": "Cannot delete chain with active approval flows.",
     "approvalStepNotFound": "Approval step not found.",
@@ -3567,6 +3571,7 @@
     "classificationAssessmentIdRequired": "Assessment ID is required.",
     "classificationEngineDisabled": "Classification engine is disabled for this organization.",
     "usExpansionDisabled": "US tax-form intake is not enabled for this organization.",
+    "form1042sNotFound": "1042-S form not found.",
     "workforceDisabled": "Workforce management is not enabled for this organization.",
     "treatyOverrideReasonRequired": "A reason is required to override the treaty rate.",
     "classificationOverrideReasonRequired": "A reason is required to override a worker classification.",
@@ -3579,6 +3584,7 @@
     "sdsNotApproved": "SDS has not been approved yet.",
     "classificationDrvBundleNotCompleted": "Assessment must be completed with a captured questions snapshot before generating a DRV defense bundle.",
     "classificationDrvBundleDeOnly": "generateDrvDefenseBundle only applies to Scheinselbständigkeit (DE) classification assessments.",
+    "classificationDeterminationLetterUsOnly": "generateUsDeterminationLetter only applies to US worker-classification assessments.",
     "classificationAttestationRequired": "Signed other-client attestation is required before generating a DRV defense bundle.",
     "classificationDocumentNotFound": "Document not found.",
     "classificationDrvDeOnly": "DRV decision letters are only applicable to DE assessments.",
@@ -3761,7 +3767,11 @@
     "deprovisioningIntegrationNotConfigured": "The identity-provider integration is not configured for deprovisioning.",
     "complianceItemNotFound": "Compliance item not found.",
     "complianceItemAlreadyWaived": "This compliance item has already been waived.",
-    "complianceDocumentNotPendingReview": "This compliance document is not pending review."
+    "complianceDocumentNotPendingReview": "This compliance document is not pending review.",
+    "personnelFileNotFound": "Personnel file not found.",
+    "personnelFileDocumentNotFound": "Document not found in this personnel file.",
+    "personnelDocumentAlreadyAttached": "This document is already attached to the personnel file.",
+    "personnelDocumentNotPendingReview": "This document is not pending review."
   },
   "Compliance": {
     "paymentBlockModal": {
