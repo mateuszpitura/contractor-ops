@@ -802,7 +802,9 @@ export const IntegrationProvider = {
   LINEAR: 'LINEAR',
   MICROSOFT_TEAMS: 'MICROSOFT_TEAMS',
   PEPPOL: 'PEPPOL',
-  ZATCA: 'ZATCA'
+  ZATCA: 'ZATCA',
+  PERSONIO: 'PERSONIO',
+  BAMBOOHR: 'BAMBOOHR'
 } as const
 
 export type IntegrationProvider = (typeof IntegrationProvider)[keyof typeof IntegrationProvider]
