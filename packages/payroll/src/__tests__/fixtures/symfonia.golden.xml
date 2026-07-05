@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Pracownicy>
+<Pracownik><Nazwisko>Kowalska</Nazwisko><Imie>Anna</Imie><PESEL>3210</PESEL><Stanowisko>Programista</Stanowisko><DataZatrudnienia>2024-01-15</DataZatrudnienia><DataZwolnienia></DataZwolnienia><Etat>1.00</Etat><UrzadSkarbowy>1471</UrzadSkarbowy><KodTytuluZUS>011000</KodTytuluZUS><OddzialNFZ>07</OddzialNFZ><StawkaBrutto>8500.00</StawkaBrutto></Pracownik>
+<Pracownik><Nazwisko>Nowak</Nazwisko><Imie>Jan</Imie><PESEL>7654</PESEL><Stanowisko>Analityk</Stanowisko><DataZatrudnienia>2023-06-01</DataZatrudnienia><DataZwolnienia>2025-03-31</DataZwolnienia><Etat>0.50</Etat><UrzadSkarbowy>1449</UrzadSkarbowy><KodTytuluZUS>011000</KodTytuluZUS><OddzialNFZ>13</OddzialNFZ><StawkaBrutto>4250.00</StawkaBrutto></Pracownik>
+</Pracownicy>

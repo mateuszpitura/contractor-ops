@@ -1,0 +1,3 @@
+Nachname;Vorname;Steuerklasse;Kirchensteuer;SteuerIdNr;SvNummer;Krankenkasse;Kinderfreibetrag;Eintrittsdatum;Austrittsdatum
+Müller;Max;1;ev;12345678901;65123456M789;TK;0.50;2024-02-01;
+Schaefer;Erika;3;rk;98765432109;65987654F321;AOK;2.00;2022-09-15;
