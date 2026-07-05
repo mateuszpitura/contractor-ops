@@ -9,13 +9,16 @@ import {
   UNAUTHORIZED,
 } from '../../errors';
 import { router } from '../../init';
+import { TIER_MONTHLY_REQUEST_QUOTA } from '../../lib/api-tier-limits';
 import { findOrThrow } from '../../lib/find-or-throw';
 import { PUBLIC_API_SCOPES } from '../../lib/scope-utils';
 import { requirePermission } from '../../middleware/rbac';
 import { tenantProcedure } from '../../middleware/tenant';
 import { requireTier } from '../../middleware/tier';
 import { generateApiKey } from '../../services/api-key-service';
+import { getMonthlyRequestCount } from '../../services/api-quota-counter';
 import { writeAuditLog } from '../../services/audit-writer';
+import { getSubscription } from '../../services/billing-service';
 import type { DbClient } from '../../services/types';
 
 // ---------------------------------------------------------------------------
@@ -174,6 +177,34 @@ export const apiKeyRouter = router({
     });
 
     return keys;
+  }),
+
+  /**
+   * Recent source-IP events for a key (Developer page). Read-only, org-scoped.
+   */
+  ipLog: apiKeyAdminProcedure.input(entityIdSchema).query(async ({ ctx, input }) => {
+    return ctx.db.apiKeyIpEvent.findMany({
+      where: { apiKeyId: input.id, organizationId: ctx.organizationId },
+      orderBy: { seenAt: 'desc' },
+      take: 50,
+      select: { id: true, ipAddress: true, userAgent: true, seenAt: true },
+    });
+  }),
+
+  /**
+   * Current calendar-month API request usage vs the org's tier quota. `quota` is
+   * null for the unlimited (Enterprise) tier.
+   */
+  usage: apiKeyAdminProcedure.query(async ({ ctx }) => {
+    const now = new Date();
+    const month = `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, '0')}`;
+    const [count, subscription] = await Promise.all([
+      getMonthlyRequestCount(ctx.organizationId),
+      getSubscription(ctx.organizationId),
+    ]);
+    const tier = subscription?.tier ?? 'STARTER';
+    const limit = TIER_MONTHLY_REQUEST_QUOTA[tier];
+    return { month, count, quota: Number.isFinite(limit) ? limit : null };
   }),
 
   /**

@@ -7280,7 +7280,11 @@
         "revoked": "Klucz API „{name}\" unieważniony",
         "revokeFailed": "Nie udało się unieważnić klucza",
         "updated": "Klucz API „{name}\" zaktualizowany",
-        "updateFailed": "Nie udało się zaktualizować klucza API"
+        "updateFailed": "Nie udało się zaktualizować klucza API",
+        "rotated": "Zrotowano „{name}”. Skopiuj nowy klucz teraz.",
+        "rotateFailed": "Nie udało się zrotować klucza.",
+        "rebound": "Zaktualizowano członka wykonującego.",
+        "rebindFailed": "Nie udało się zaktualizować członka wykonującego."
       },
       "aria": {
         "keyActions": "Akcje klucza",
@@ -7312,6 +7316,38 @@
         "title": "Unieważnij klucz API",
         "description": "Unieważnić klucz {name}? Jest to natychmiastowe i nieodwracalne. Wszelkie integracje używające tego klucza przestaną działać.",
         "confirmButton": "Unieważnij klucz"
+      },
+      "detailsAction": "Zobacz szczegóły",
+      "rotateAction": "Rotuj klucz",
+      "rotateDialog": {
+        "title": "Rotuj klucz API",
+        "description": "Wydaj nowy klucz i zostaw stary działający przez okres przejściowy.",
+        "graceLabel": "Okres przejściowy",
+        "graceOption": "{hours} h",
+        "graceExplain": "Bieżący klucz działa jeszcze przez {hours} godz. po rotacji, po czym przestaje.",
+        "submitButton": "Rotuj klucz",
+        "revealTitle": "Nowy klucz API",
+        "revealDescription": "Skopiuj nowy klucz teraz — nie zostanie ponownie pokazany.",
+        "securityWarning": "Przechowuj ten klucz bezpiecznie. Każdy, kto go ma, może wywoływać API jako ten klucz.",
+        "doneButton": "Gotowe"
+      },
+      "detail": {
+        "description": "Zakresy, członek wykonujący, użycie i ostatnie adresy IP źródłowe.",
+        "scopesHeading": "Zakresy",
+        "scopesEmpty": "Brak przyznanych zakresów.",
+        "scopeRead": "Odczyt",
+        "scopeWrite": "Zapis",
+        "actingUserHeading": "Członek wykonujący",
+        "actingUserHelp": "Zapisy są przypisywane temu członkowi. Zmiana przypisania nie zmienia zakresów klucza.",
+        "membersError": "Nie udało się wczytać członków.",
+        "usageHeading": "Użycie w tym miesiącu",
+        "usageError": "Nie udało się wczytać użycia.",
+        "usageUnlimited": "{count} żądań (bez limitu)",
+        "usageCount": "{count} z {quota} żądań",
+        "ipLogHeading": "Ostatnie adresy IP źródłowe",
+        "ipLogError": "Nie udało się wczytać dziennika adresów IP.",
+        "ipLogEmpty": "Nie zarejestrowano jeszcze żadnych żądań.",
+        "closeButton": "Zamknij"
       }
     },
     "featureFlags": {

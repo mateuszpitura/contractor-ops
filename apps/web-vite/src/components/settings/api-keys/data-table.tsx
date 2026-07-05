@@ -7,7 +7,7 @@ import {
   DropdownMenuTrigger,
 } from '@contractor-ops/ui/components/shadcn/dropdown-menu';
 import type { ColumnDef } from '@tanstack/react-table';
-import { Key, MoreHorizontal, Pencil, Plus, Trash2 } from 'lucide-react';
+import { Eye, Key, MoreHorizontal, Pencil, Plus, RefreshCw, Trash2 } from 'lucide-react';
 import { useCallback, useMemo, useState } from 'react';
 import { WorkbenchDataTable } from '../../table-kit/workbench-data-table.js';
 
@@ -28,6 +28,11 @@ export interface RevokeTarget {
   name: string;
 }
 
+export interface RotateTarget {
+  id: string;
+  name: string;
+}
+
 interface ApiKeysDataTableProps {
   t: TranslateFn;
   keys: readonly ApiKeyRow[];
@@ -35,6 +40,8 @@ interface ApiKeysDataTableProps {
   onCreate: () => void;
   onEdit: (target: EditTarget) => void;
   onRevoke: (target: RevokeTarget) => void;
+  onRotate: (target: RotateTarget) => void;
+  onViewDetails: (row: ApiKeyRow) => void;
 }
 
 type KeyStatus = 'active' | 'revoked' | 'expired';
@@ -73,9 +80,19 @@ interface ActionsCellProps {
   t: TranslateFn;
   onEdit: (target: EditTarget) => void;
   onRevoke: (target: RevokeTarget) => void;
+  onRotate: (target: RotateTarget) => void;
+  onViewDetails: (row: ApiKeyRow) => void;
 }
 
-function ActionsCell({ row, status, t, onEdit, onRevoke }: ActionsCellProps) {
+function ActionsCell({
+  row,
+  status,
+  t,
+  onEdit,
+  onRevoke,
+  onRotate,
+  onViewDetails,
+}: ActionsCellProps) {
   const handleEdit = useCallback(
     () => onEdit({ id: row.id, name: row.name, scopes: row.scopes }),
     [onEdit, row.id, row.name, row.scopes],
@@ -84,6 +101,11 @@ function ActionsCell({ row, status, t, onEdit, onRevoke }: ActionsCellProps) {
     () => onRevoke({ id: row.id, name: row.name }),
     [onRevoke, row.id, row.name],
   );
+  const handleRotate = useCallback(
+    () => onRotate({ id: row.id, name: row.name }),
+    [onRotate, row.id, row.name],
+  );
+  const handleViewDetails = useCallback(() => onViewDetails(row), [onViewDetails, row]);
 
   if (status !== 'active') return null;
 
@@ -94,9 +116,17 @@ function ActionsCell({ row, status, t, onEdit, onRevoke }: ActionsCellProps) {
         <MoreHorizontal className="size-4" />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
+        <DropdownMenuItem onClick={handleViewDetails}>
+          <Eye className="me-2 size-4" />
+          {t('detailsAction')}
+        </DropdownMenuItem>
         <DropdownMenuItem onClick={handleEdit}>
           <Pencil className="me-2 size-4" />
           {t('editAction')}
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={handleRotate}>
+          <RefreshCw className="me-2 size-4" />
+          {t('rotateAction')}
         </DropdownMenuItem>
         <DropdownMenuItem className="text-destructive" onClick={handleRevoke}>
           <Trash2 className="me-2 size-4" />
@@ -114,6 +144,8 @@ export function ApiKeysDataTable({
   onCreate,
   onEdit,
   onRevoke,
+  onRotate,
+  onViewDetails,
 }: ApiKeysDataTableProps) {
   const [pageIndex, setPageIndex] = useState(0);
   const [pageSize, setPageSize] = useState(25);
@@ -208,11 +240,13 @@ export function ApiKeysDataTable({
             t={t}
             onEdit={onEdit}
             onRevoke={onRevoke}
+            onRotate={onRotate}
+            onViewDetails={onViewDetails}
           />
         ),
       },
     ],
-    [t, onEdit, onRevoke],
+    [t, onEdit, onRevoke, onRotate, onViewDetails],
   );
 
   const data = useMemo(() => [...keys], [keys]);

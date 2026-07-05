@@ -7280,7 +7280,11 @@
         "revoked": "تم إلغاء مفتاح API \"{name}\"",
         "revokeFailed": "فشل إلغاء المفتاح",
         "updated": "تم تحديث مفتاح API \"{name}\"",
-        "updateFailed": "فشل تحديث مفتاح API"
+        "updateFailed": "فشل تحديث مفتاح API",
+        "rotated": "تم تدوير «{name}». انسخ المفتاح الجديد الآن.",
+        "rotateFailed": "تعذّر تدوير المفتاح.",
+        "rebound": "تم تحديث العضو المنفّذ.",
+        "rebindFailed": "تعذّر تحديث العضو المنفّذ."
       },
       "aria": {
         "keyActions": "إجراءات المفتاح",
@@ -7312,6 +7316,38 @@
         "title": "إلغاء مفتاح API",
         "description": "إلغاء {name}؟ هذا فوري ولا يمكن التراجع عنه. ستتوقف أي تكاملات تستخدم هذا المفتاح عن العمل.",
         "confirmButton": "إلغاء المفتاح"
+      },
+      "detailsAction": "عرض التفاصيل",
+      "rotateAction": "تدوير المفتاح",
+      "rotateDialog": {
+        "title": "تدوير مفتاح API",
+        "description": "أصدِر مفتاحًا جديدًا وأبقِ القديم فعّالًا خلال فترة سماح.",
+        "graceLabel": "فترة السماح",
+        "graceOption": "{hours} س",
+        "graceExplain": "يظل المفتاح الحالي فعّالًا لمدة {hours} ساعة بعد التدوير ثم يتوقف.",
+        "submitButton": "تدوير المفتاح",
+        "revealTitle": "مفتاح API جديد",
+        "revealDescription": "انسخ مفتاحك الجديد الآن — لن يُعرض مجددًا.",
+        "securityWarning": "احفظ هذا المفتاح بأمان. يمكن لأي شخص يمتلكه استدعاء واجهة API باسم هذا المفتاح.",
+        "doneButton": "تم"
+      },
+      "detail": {
+        "description": "النطاقات والعضو المنفّذ والاستخدام وأحدث عناوين IP المصدر.",
+        "scopesHeading": "النطاقات",
+        "scopesEmpty": "لا توجد نطاقات ممنوحة.",
+        "scopeRead": "قراءة",
+        "scopeWrite": "كتابة",
+        "actingUserHeading": "العضو المنفّذ",
+        "actingUserHelp": "تُنسَب عمليات الكتابة إلى هذا العضو. إعادة الربط لا تغيّر نطاقات المفتاح.",
+        "membersError": "تعذّر تحميل الأعضاء.",
+        "usageHeading": "استخدام هذا الشهر",
+        "usageError": "تعذّر تحميل الاستخدام.",
+        "usageUnlimited": "{count} طلب (غير محدود)",
+        "usageCount": "{count} من {quota} طلب",
+        "ipLogHeading": "أحدث عناوين IP المصدر",
+        "ipLogError": "تعذّر تحميل سجل عناوين IP.",
+        "ipLogEmpty": "لم تُسجّل أي طلبات بعد.",
+        "closeButton": "إغلاق"
       }
     },
     "featureFlags": {

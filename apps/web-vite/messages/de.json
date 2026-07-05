@@ -7280,7 +7280,11 @@
         "revoked": "API-Schlüssel „{name}\" widerrufen",
         "revokeFailed": "Schlüssel konnte nicht widerrufen werden",
         "updated": "API-Schlüssel „{name}\" aktualisiert",
-        "updateFailed": "API-Schlüssel konnte nicht aktualisiert werden"
+        "updateFailed": "API-Schlüssel konnte nicht aktualisiert werden",
+        "rotated": "„{name}“ rotiert. Kopieren Sie den neuen Schlüssel jetzt.",
+        "rotateFailed": "Der Schlüssel konnte nicht rotiert werden.",
+        "rebound": "Handelndes Mitglied aktualisiert.",
+        "rebindFailed": "Das handelnde Mitglied konnte nicht aktualisiert werden."
       },
       "aria": {
         "keyActions": "Schlüsselaktionen",
@@ -7312,6 +7316,38 @@
         "title": "API-Schlüssel widerrufen",
         "description": "Schlüssel {name} widerrufen? Dies ist sofortig und unwiderruflich. Alle Integrationen, die diesen Schlüssel verwenden, werden aufhören zu funktionieren.",
         "confirmButton": "Schlüssel widerrufen"
+      },
+      "detailsAction": "Details anzeigen",
+      "rotateAction": "Schlüssel rotieren",
+      "rotateDialog": {
+        "title": "API-Schlüssel rotieren",
+        "description": "Einen neuen Schlüssel ausstellen und den alten für eine Übergangsfrist weiter gültig lassen.",
+        "graceLabel": "Übergangsfrist",
+        "graceOption": "{hours} h",
+        "graceExplain": "Der aktuelle Schlüssel bleibt nach der Rotation noch {hours} Stunden gültig und wird dann ungültig.",
+        "submitButton": "Schlüssel rotieren",
+        "revealTitle": "Neuer API-Schlüssel",
+        "revealDescription": "Kopieren Sie Ihren neuen Schlüssel jetzt – er wird nicht erneut angezeigt.",
+        "securityWarning": "Bewahren Sie diesen Schlüssel sicher auf. Wer ihn besitzt, kann die API als dieser Schlüssel aufrufen.",
+        "doneButton": "Fertig"
+      },
+      "detail": {
+        "description": "Berechtigungen, handelndes Mitglied, Nutzung und letzte Quell-IPs.",
+        "scopesHeading": "Berechtigungen",
+        "scopesEmpty": "Keine Berechtigungen erteilt.",
+        "scopeRead": "Lesen",
+        "scopeWrite": "Schreiben",
+        "actingUserHeading": "Handelndes Mitglied",
+        "actingUserHelp": "Schreibvorgänge werden diesem Mitglied zugeordnet. Eine Neuzuordnung ändert die Berechtigungen des Schlüssels nicht.",
+        "membersError": "Mitglieder konnten nicht geladen werden.",
+        "usageHeading": "Nutzung diesen Monat",
+        "usageError": "Nutzung konnte nicht geladen werden.",
+        "usageUnlimited": "{count} Anfragen (unbegrenzt)",
+        "usageCount": "{count} von {quota} Anfragen",
+        "ipLogHeading": "Letzte Quell-IPs",
+        "ipLogError": "Das Quell-IP-Protokoll konnte nicht geladen werden.",
+        "ipLogEmpty": "Noch keine Anfragen erfasst.",
+        "closeButton": "Schließen"
       }
     },
     "featureFlags": {

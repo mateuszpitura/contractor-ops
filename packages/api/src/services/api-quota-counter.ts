@@ -79,3 +79,23 @@ export async function incrementMonthlyRequestCount(organizationId: string): Prom
   entry.count += 1;
   return entry.count;
 }
+
+/**
+ * Read the org's current calendar-month request count WITHOUT incrementing it.
+ * Used by the Developer page's usage display; returns 0 when no request has been
+ * counted this month.
+ */
+export async function getMonthlyRequestCount(organizationId: string): Promise<number> {
+  const now = new Date();
+  const key = `api-quota:${organizationId}:${currentMonthKey(now)}`;
+
+  const client = getRedis();
+  if (client) {
+    const value = await client.get<number>(key);
+    return typeof value === 'number' ? value : Number(value ?? 0);
+  }
+
+  const entry = memoryCounters.get(key);
+  if (!entry || now.getTime() >= entry.resetAtMs) return 0;
+  return entry.count;
+}

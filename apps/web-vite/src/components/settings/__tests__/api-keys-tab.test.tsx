@@ -23,6 +23,12 @@ vi.mock('../edit-api-key-dialog', () => ({
 vi.mock('../revoke-api-key-dialog', () => ({
   RevokeKeyDialog: () => null,
 }));
+vi.mock('../rotate-api-key-dialog', () => ({
+  RotateKeyDialog: () => null,
+}));
+vi.mock('../api-keys/key-detail-drawer', () => ({
+  KeyDetailDrawer: () => null,
+}));
 
 import { render, screen, setup } from '@/test/test-utils';
 import { ApiKeysTabView } from '../api-keys-tab';
@@ -104,5 +110,21 @@ describe('ApiKeysTabView', () => {
     }
     // No throw = handler wired; dialog itself is stubbed out.
     expect(cta).toBeInTheDocument();
+  });
+
+  it('renders the last-used column and a formatted timestamp', () => {
+    render(<ApiKeysTabView {...buildProps({ keys: [sampleKey] })} />);
+    expect(screen.getByText('tableHeaders.lastUsed')).toBeInTheDocument();
+    // The lastUsedAt cell formats the sample date's year.
+    expect(screen.getAllByText(/2026/).length).toBeGreaterThanOrEqual(1);
+  });
+
+  it('exposes View details and Rotate alongside Edit and Revoke on an active key menu', async () => {
+    const { user } = setup(<ApiKeysTabView {...buildProps({ keys: [sampleKey] })} />);
+    await user.click(screen.getByRole('button', { name: 'aria.keyActions' }));
+    expect(await screen.findByText('detailsAction')).toBeInTheDocument();
+    expect(await screen.findByText('rotateAction')).toBeInTheDocument();
+    expect(await screen.findByText('editAction')).toBeInTheDocument();
+    expect(await screen.findByText('revokeAction')).toBeInTheDocument();
   });
 });
