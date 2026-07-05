@@ -12,8 +12,13 @@ export type {
 } from './integration-events.js';
 export { logIntegrationCall, subscribeOpossumEvents } from './integration-events.js';
 export { LOG_BODY_INCLUDE_PREFIXES } from './log-body-include-prefixes.js';
-export type { PiiMaskKeyword } from './pii-mask.js';
-export { PII_MASK_KEYWORDS, PII_MASK_PATHS } from './pii-mask.js';
+export type { PiiMaskKeyword, PiiScrubKeyword } from './pii-mask.js';
+export {
+  isPiiScrubKey,
+  PII_MASK_KEYWORDS,
+  PII_MASK_PATHS,
+  PII_SCRUB_KEYWORDS,
+} from './pii-mask.js';
 export {
   buildContextFromHeaders,
   generateRequestId,

@@ -2,9 +2,9 @@
  * Sentry `beforeSend` PII scrubber for @contractor-ops/cron-worker.
  *
  * Mirror of `apps/api/src/lib/sentry-scrub.ts` and
- * `apps/web-vite/src/lib/sentry-scrub.ts` — keep the PII_KEYWORDS list
- * and scrubbing strategy in lock-step across runtimes so a sensitive
- * value redacted in one is also redacted in the others.
+ * `apps/web-vite/src/lib/sentry-scrub.ts` — PII keyword coverage is the
+ * single shared list `PII_SCRUB_KEYWORDS` from `@contractor-ops/logger`
+ * (applied via `isPiiScrubKey`), so the runtimes can no longer drift apart.
  *
  * Without this scrubber wired into `Sentry.init({ beforeSend })`, cron
  * handlers that capture webhook payloads (Stripe / QStash / Storecove /
@@ -13,45 +13,10 @@
  * query strings to Sentry verbatim.
  */
 
+import { isPiiScrubKey } from '@contractor-ops/logger/pii-mask';
 import type { ErrorEvent, EventHint } from '@sentry/node';
 
-const PII_KEYWORDS = [
-  'password',
-  'token',
-  'secret',
-  'authorization',
-  'cookie',
-  'apikey',
-  'api_key',
-  'bankaccount',
-  'bank_account',
-  'iban',
-  'swiftbic',
-  'swift_bic',
-  'taxid',
-  'tax_id',
-  'utr',
-  'ninumber',
-  'national_insurance',
-  'vatnumber',
-  'vatregistrationnumber',
-  'companieshousenumber',
-  'steuernummer',
-  'ustidnr',
-  'sozialversicherungsnummer',
-  'svnumber',
-  'svnr',
-] as const;
-
 const REDACTED = '[REDACTED]';
-
-function isPiiKey(key: string): boolean {
-  const lower = key.toLowerCase();
-  for (const kw of PII_KEYWORDS) {
-    if (lower.includes(kw)) return true;
-  }
-  return false;
-}
 
 const MAX_DEPTH = 6;
 function scrubObject(value: unknown, depth = 0): unknown {
@@ -66,7 +31,7 @@ function scrubObject(value: unknown, depth = 0): unknown {
   if (typeof value !== 'object') return value;
   const obj = value as Record<string, unknown>;
   for (const key of Object.keys(obj)) {
-    if (isPiiKey(key)) {
+    if (isPiiScrubKey(key)) {
       obj[key] = REDACTED;
       continue;
     }
@@ -98,7 +63,7 @@ function scrubRequest(request: NonNullable<ErrorEvent['request']>): void {
   if (request.query_string && typeof request.query_string === 'string') {
     request.query_string = request.query_string.replace(
       /([?&]?)([^=&?#]+)=([^&]*)/g,
-      (_, sep, key, val) => `${sep}${key}=${isPiiKey(key) ? REDACTED : val}`,
+      (_, sep, key, val) => `${sep}${key}=${isPiiScrubKey(key) ? REDACTED : val}`,
     );
   }
   if (request.headers) {

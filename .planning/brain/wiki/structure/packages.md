@@ -3,10 +3,11 @@ title: Shared packages
 type: structure
 tags: [structure, packages]
 source_commit: 18d6df46b
+source_commit: a691aface4b1b0f4ec333f2f69d9705e0c0338fa
 verify_with:
   - packages/
   - .planning/codebase/STRUCTURE.md
-updated: 2026-07-01
+updated: 2026-07-05
 ---
 
 # Shared packages
@@ -32,7 +33,7 @@ updated: 2026-07-01
 | `integrations` | `packages/integrations` | Adapter framework (+ `gusto-adapter`/`quickbooks-adapter` native payroll OAuth) |
 | `classification` | `packages/classification` | IR35 / Scheinselbständigkeit scoring |
 | `billing` | `packages/billing` | Stripe webhook handlers |
-| `logger` | `packages/logger` | Pino structured logging |
+| `logger` | `packages/logger` | Pino structured logging; PII redaction lists in `pii-mask.ts` — root export `PII_MASK_PATHS`/`PII_MASK_KEYWORDS`, plus dependency-free `./pii-mask` subpath (`PII_SCRUB_KEYWORDS` / `isPiiScrubKey`) that the four Sentry `sentry-scrub.ts` copies (incl. the browser SPA) share |
 | `test-utils` | `packages/test-utils` | MSW fixtures |
 | `lint-guards` | `packages/lint-guards` | Architecture CI guards |
 | `shared` | `packages/shared` | Money helpers, shared types |

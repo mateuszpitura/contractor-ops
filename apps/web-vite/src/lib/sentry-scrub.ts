@@ -1,46 +1,20 @@
 /**
- * Sentry `beforeSend` PII scrubber.
+ * Sentry `beforeSend` PII scrubber (browser SPA).
+ *
+ * Mirror of `apps/api`, `apps/public-api`, and `apps/cron-worker`
+ * `src/lib/sentry-scrub.ts` — PII keyword coverage is the single shared list
+ * `PII_SCRUB_KEYWORDS` from `@contractor-ops/logger` (applied via
+ * `isPiiScrubKey`), so the browser bundle and the Node services can no longer
+ * drift apart. Imported from the dependency-free `@contractor-ops/logger/pii-mask`
+ * subpath so the pino/Node internals never reach the browser bundle. The only
+ * per-runtime difference is the SDK import: `@sentry/react` here vs
+ * `@sentry/node` in the services.
  */
 
+import { isPiiScrubKey } from '@contractor-ops/logger/pii-mask';
 import type { ErrorEvent, EventHint } from '@sentry/react';
 
-const PII_KEYWORDS = [
-  'password',
-  'token',
-  'secret',
-  'authorization',
-  'cookie',
-  'apikey',
-  'api_key',
-  'bankaccount',
-  'bank_account',
-  'iban',
-  'swiftbic',
-  'swift_bic',
-  'taxid',
-  'tax_id',
-  'utr',
-  'ninumber',
-  'national_insurance',
-  'vatnumber',
-  'vatregistrationnumber',
-  'companieshousenumber',
-  'steuernummer',
-  'ustidnr',
-  'sozialversicherungsnummer',
-  'svnumber',
-  'svnr',
-] as const;
-
 const REDACTED = '[REDACTED]';
-
-function isPiiKey(key: string): boolean {
-  const lower = key.toLowerCase();
-  for (const kw of PII_KEYWORDS) {
-    if (lower.includes(kw)) return true;
-  }
-  return false;
-}
 
 const MAX_DEPTH = 6;
 function scrubObject(value: unknown, depth = 0): unknown {
@@ -55,7 +29,7 @@ function scrubObject(value: unknown, depth = 0): unknown {
   if (typeof value !== 'object') return value;
   const obj = value as Record<string, unknown>;
   for (const key of Object.keys(obj)) {
-    if (isPiiKey(key)) {
+    if (isPiiScrubKey(key)) {
       obj[key] = REDACTED;
       continue;
     }
@@ -87,7 +61,7 @@ function scrubRequest(request: NonNullable<ErrorEvent['request']>): void {
   if (request.query_string && typeof request.query_string === 'string') {
     request.query_string = request.query_string.replace(
       /([?&]?)([^=&?#]+)=([^&]*)/g,
-      (_, sep, key, val) => `${sep}${key}=${isPiiKey(key) ? REDACTED : val}`,
+      (_, sep, key, val) => `${sep}${key}=${isPiiScrubKey(key) ? REDACTED : val}`,
     );
   }
   if (request.headers) {

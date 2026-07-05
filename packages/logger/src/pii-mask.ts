@@ -127,3 +127,82 @@ export const PII_MASK_KEYWORDS = [
 ] as const;
 
 export type PiiMaskKeyword = (typeof PII_MASK_KEYWORDS)[number];
+
+/**
+ * Canonical PII keyword list for structured object scrubbers that run OUTSIDE
+ * the pino pipeline — the Sentry `beforeSend` scrubbers in every runtime
+ * (`apps/api`, `apps/public-api`, `apps/cron-worker`, and the browser SPA
+ * `apps/web-vite`, each `src/lib/sentry-scrub.ts`). Matching is
+ * case-insensitive substring (see {@link isPiiScrubKey}): a key is redacted
+ * when its lowercased form contains any entry.
+ *
+ * This is the SINGLE source of truth. The four Sentry scrub copies import
+ * {@link isPiiScrubKey} from here instead of hand-maintaining parallel lists,
+ * so a keyword added here redacts uniformly across the Node services and the
+ * browser bundle — they can no longer drift apart (the historical failure).
+ * Keep it aligned with {@link PII_MASK_PATHS} (the pino redact paths) so a
+ * value masked in logs is also masked in crash reports.
+ *
+ * Because matching is substring, short tokens are deliberately broad: e.g.
+ * `ein` (US EIN) also redacts a key like `eInvoiceId`. Over-redacting a crash
+ * report is the safe side of the trade — never ship an unmasked identifier.
+ */
+export const PII_SCRUB_KEYWORDS = [
+  // Authentication / secrets
+  'password',
+  'token',
+  'secret',
+  'authorization',
+  'cookie',
+  'apikey',
+  'api_key',
+  // Banking / payment instruments
+  'bankaccount',
+  'bank_account',
+  'accountnumber',
+  'routingnumber',
+  'sortcode',
+  'iban',
+  'swiftbic',
+  'swift_bic',
+  // Tax identifiers
+  'taxid',
+  'tax_id',
+  'ssn',
+  'ein',
+  'utr',
+  'vatnumber',
+  'vatregistrationnumber',
+  'companieshousenumber',
+  'steuernummer',
+  'ustidnr',
+  // Social-insurance / national-person identifiers
+  'ninumber',
+  'national_insurance',
+  'sozialversicherungsnummer',
+  'svnumber',
+  'svnr',
+  'pesel',
+  'iqama',
+  'emiratesid',
+  'nationalid',
+  // Other sensitive personal data
+  'dateofbirth',
+] as const;
+
+export type PiiScrubKeyword = (typeof PII_SCRUB_KEYWORDS)[number];
+
+/**
+ * Case-insensitive substring test the Sentry scrubbers use to decide whether an
+ * object key holds PII and must be redacted. Shared across all four scrub
+ * copies so their coverage cannot diverge.
+ */
+export function isPiiScrubKey(key: string): boolean {
+  const lower = key.toLowerCase();
+  for (const keyword of PII_SCRUB_KEYWORDS) {
+    if (lower.includes(keyword)) {
+      return true;
+    }
+  }
+  return false;
+}

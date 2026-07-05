@@ -31,6 +31,7 @@
     "@contractor-ops/einvoice": "workspace:*",
     "@contractor-ops/feature-flags": "workspace:*",
     "@contractor-ops/integrations": "workspace:*",
+    "@contractor-ops/logger": "workspace:*",
     "@contractor-ops/shared": "workspace:*",
     "@contractor-ops/ui": "workspace:*",
     "@contractor-ops/validators": "workspace:*",

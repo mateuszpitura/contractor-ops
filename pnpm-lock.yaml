@@ -453,6 +453,9 @@ importers:
       '@contractor-ops/integrations':
         specifier: workspace:*
         version: link:../../packages/integrations
+      '@contractor-ops/logger':
+        specifier: workspace:*
+        version: link:../../packages/logger
       '@contractor-ops/shared':
         specifier: workspace:*
         version: link:../../packages/shared
