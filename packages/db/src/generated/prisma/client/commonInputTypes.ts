@@ -2448,6 +2448,23 @@ export type EnumPersonnelDocClassificationMethodWithAggregatesFilter<$PrismaMode
   _max?: Prisma.NestedEnumPersonnelDocClassificationMethodFilter<$PrismaModel>
 }
 
+export type EnumPortalSubjectTypeFilter<$PrismaModel = never> = {
+  equals?: $Enums.PortalSubjectType | Prisma.EnumPortalSubjectTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.PortalSubjectType[] | Prisma.ListEnumPortalSubjectTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.PortalSubjectType[] | Prisma.ListEnumPortalSubjectTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumPortalSubjectTypeFilter<$PrismaModel> | $Enums.PortalSubjectType
+}
+
+export type EnumPortalSubjectTypeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.PortalSubjectType | Prisma.EnumPortalSubjectTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.PortalSubjectType[] | Prisma.ListEnumPortalSubjectTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.PortalSubjectType[] | Prisma.ListEnumPortalSubjectTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumPortalSubjectTypeWithAggregatesFilter<$PrismaModel> | $Enums.PortalSubjectType
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumPortalSubjectTypeFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumPortalSubjectTypeFilter<$PrismaModel>
+}
+
 export type EnumContractorChangeRequestStatusFilter<$PrismaModel = never> = {
   equals?: $Enums.ContractorChangeRequestStatus | Prisma.EnumContractorChangeRequestStatusFieldRefInput<$PrismaModel>
   in?: $Enums.ContractorChangeRequestStatus[] | Prisma.ListEnumContractorChangeRequestStatusFieldRefInput<$PrismaModel>
@@ -5264,6 +5281,23 @@ export type NestedEnumPersonnelDocClassificationMethodWithAggregatesFilter<$Pris
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumPersonnelDocClassificationMethodFilter<$PrismaModel>
   _max?: Prisma.NestedEnumPersonnelDocClassificationMethodFilter<$PrismaModel>
+}
+
+export type NestedEnumPortalSubjectTypeFilter<$PrismaModel = never> = {
+  equals?: $Enums.PortalSubjectType | Prisma.EnumPortalSubjectTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.PortalSubjectType[] | Prisma.ListEnumPortalSubjectTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.PortalSubjectType[] | Prisma.ListEnumPortalSubjectTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumPortalSubjectTypeFilter<$PrismaModel> | $Enums.PortalSubjectType
+}
+
+export type NestedEnumPortalSubjectTypeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.PortalSubjectType | Prisma.EnumPortalSubjectTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.PortalSubjectType[] | Prisma.ListEnumPortalSubjectTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.PortalSubjectType[] | Prisma.ListEnumPortalSubjectTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumPortalSubjectTypeWithAggregatesFilter<$PrismaModel> | $Enums.PortalSubjectType
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumPortalSubjectTypeFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumPortalSubjectTypeFilter<$PrismaModel>
 }
 
 export type NestedEnumContractorChangeRequestStatusFilter<$PrismaModel = never> = {

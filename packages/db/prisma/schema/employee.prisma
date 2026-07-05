@@ -48,15 +48,24 @@ model EmployeeProfile {
   // ContractorAssignment.endedAt. Written when transitioning to TERMINATED.
   terminatedAt        DateTime?
 
+  // Reporting-line edge: the Worker this employee reports to (their manager).
+  // Nullable self-relation (an employee may have no manager). Same-org integrity
+  // is enforced by the reports resolver (which always filters organizationId),
+  // not the FK — Worker rows are org-scoped and a cross-org edge can never be
+  // resolved into a report set.
+  managerWorkerId String?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  organization Organization @relation(fields: [organizationId], references: [id])
-  worker       Worker       @relation(fields: [workerId], references: [id])
+  organization  Organization @relation(fields: [organizationId], references: [id])
+  worker        Worker       @relation("EmployeeProfileWorker", fields: [workerId], references: [id])
+  managerWorker Worker?      @relation("EmployeeManager", fields: [managerWorkerId], references: [id])
 
   @@unique([organizationId, workerId])
   @@index([organizationId])
   @@index([organizationId, employmentStatus])
+  @@index([organizationId, managerWorkerId])
 }
 
 enum EmploymentStatus {

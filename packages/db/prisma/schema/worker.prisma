@@ -27,12 +27,15 @@ model Worker {
   updatedAt      DateTime   @updatedAt
   deletedAt      DateTime?
 
-  organization    Organization     @relation(fields: [organizationId], references: [id])
-  contractor      Contractor?
+  organization     Organization      @relation(fields: [organizationId], references: [id])
+  contractor       Contractor?
   // 1:1 sidecar carrying employee-specific data when workerType = EMPLOYEE.
-  employeeProfile EmployeeProfile?
+  employeeProfile  EmployeeProfile?  @relation("EmployeeProfileWorker")
+  // Employees whose reporting line points at this worker (the manager edge). A
+  // manager is any worker some other EmployeeProfile.managerWorkerId targets.
+  managedEmployees EmployeeProfile[] @relation("EmployeeManager")
   // 1:1 jurisdiction-correct personnel file ("akta osobowe") for employees.
-  personnelFile   PersonnelFile?
+  personnelFile    PersonnelFile?
 
   // Employee leave + statutory-time records (present when workerType = EMPLOYEE).
   leaveRequests       LeaveRequest[]
@@ -44,6 +47,8 @@ model Worker {
   // on WorkflowRun and DeprovisioningRun.
   workflowRuns        WorkflowRun[]
   deprovisioningRuns  DeprovisioningRun[]
+  // Portal sessions authenticated as this worker (EMPLOYEE portal subject).
+  portalSessions      PortalSession[]
 
   @@index([organizationId])
   @@index([organizationId, workerType])

@@ -27,7 +27,9 @@ export type AggregatePortalSession = {
 export type PortalSessionMinAggregateOutputType = {
   id: string | null
   token: string | null
+  subjectType: $Enums.PortalSubjectType | null
   contractorId: string | null
+  workerId: string | null
   organizationId: string | null
   email: string | null
   expiresAt: Date | null
@@ -40,7 +42,9 @@ export type PortalSessionMinAggregateOutputType = {
 export type PortalSessionMaxAggregateOutputType = {
   id: string | null
   token: string | null
+  subjectType: $Enums.PortalSubjectType | null
   contractorId: string | null
+  workerId: string | null
   organizationId: string | null
   email: string | null
   expiresAt: Date | null
@@ -53,7 +57,9 @@ export type PortalSessionMaxAggregateOutputType = {
 export type PortalSessionCountAggregateOutputType = {
   id: number
   token: number
+  subjectType: number
   contractorId: number
+  workerId: number
   organizationId: number
   email: number
   expiresAt: number
@@ -68,7 +74,9 @@ export type PortalSessionCountAggregateOutputType = {
 export type PortalSessionMinAggregateInputType = {
   id?: true
   token?: true
+  subjectType?: true
   contractorId?: true
+  workerId?: true
   organizationId?: true
   email?: true
   expiresAt?: true
@@ -81,7 +89,9 @@ export type PortalSessionMinAggregateInputType = {
 export type PortalSessionMaxAggregateInputType = {
   id?: true
   token?: true
+  subjectType?: true
   contractorId?: true
+  workerId?: true
   organizationId?: true
   email?: true
   expiresAt?: true
@@ -94,7 +104,9 @@ export type PortalSessionMaxAggregateInputType = {
 export type PortalSessionCountAggregateInputType = {
   id?: true
   token?: true
+  subjectType?: true
   contractorId?: true
+  workerId?: true
   organizationId?: true
   email?: true
   expiresAt?: true
@@ -180,7 +192,9 @@ export type PortalSessionGroupByArgs<ExtArgs extends runtime.Types.Extensions.In
 export type PortalSessionGroupByOutputType = {
   id: string
   token: string
-  contractorId: string
+  subjectType: $Enums.PortalSubjectType
+  contractorId: string | null
+  workerId: string | null
   organizationId: string
   email: string
   expiresAt: Date
@@ -214,7 +228,9 @@ export type PortalSessionWhereInput = {
   NOT?: Prisma.PortalSessionWhereInput | Prisma.PortalSessionWhereInput[]
   id?: Prisma.StringFilter<"PortalSession"> | string
   token?: Prisma.StringFilter<"PortalSession"> | string
-  contractorId?: Prisma.StringFilter<"PortalSession"> | string
+  subjectType?: Prisma.EnumPortalSubjectTypeFilter<"PortalSession"> | $Enums.PortalSubjectType
+  contractorId?: Prisma.StringNullableFilter<"PortalSession"> | string | null
+  workerId?: Prisma.StringNullableFilter<"PortalSession"> | string | null
   organizationId?: Prisma.StringFilter<"PortalSession"> | string
   email?: Prisma.StringFilter<"PortalSession"> | string
   expiresAt?: Prisma.DateTimeFilter<"PortalSession"> | Date | string
@@ -222,14 +238,17 @@ export type PortalSessionWhereInput = {
   userAgent?: Prisma.StringNullableFilter<"PortalSession"> | string | null
   createdAt?: Prisma.DateTimeFilter<"PortalSession"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"PortalSession"> | Date | string
-  contractor?: Prisma.XOR<Prisma.ContractorScalarRelationFilter, Prisma.ContractorWhereInput>
+  contractor?: Prisma.XOR<Prisma.ContractorNullableScalarRelationFilter, Prisma.ContractorWhereInput> | null
+  worker?: Prisma.XOR<Prisma.WorkerNullableScalarRelationFilter, Prisma.WorkerWhereInput> | null
   organization?: Prisma.XOR<Prisma.OrganizationScalarRelationFilter, Prisma.OrganizationWhereInput>
 }
 
 export type PortalSessionOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   token?: Prisma.SortOrder
-  contractorId?: Prisma.SortOrder
+  subjectType?: Prisma.SortOrder
+  contractorId?: Prisma.SortOrderInput | Prisma.SortOrder
+  workerId?: Prisma.SortOrderInput | Prisma.SortOrder
   organizationId?: Prisma.SortOrder
   email?: Prisma.SortOrder
   expiresAt?: Prisma.SortOrder
@@ -238,6 +257,7 @@ export type PortalSessionOrderByWithRelationInput = {
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   contractor?: Prisma.ContractorOrderByWithRelationInput
+  worker?: Prisma.WorkerOrderByWithRelationInput
   organization?: Prisma.OrganizationOrderByWithRelationInput
 }
 
@@ -247,7 +267,9 @@ export type PortalSessionWhereUniqueInput = Prisma.AtLeast<{
   AND?: Prisma.PortalSessionWhereInput | Prisma.PortalSessionWhereInput[]
   OR?: Prisma.PortalSessionWhereInput[]
   NOT?: Prisma.PortalSessionWhereInput | Prisma.PortalSessionWhereInput[]
-  contractorId?: Prisma.StringFilter<"PortalSession"> | string
+  subjectType?: Prisma.EnumPortalSubjectTypeFilter<"PortalSession"> | $Enums.PortalSubjectType
+  contractorId?: Prisma.StringNullableFilter<"PortalSession"> | string | null
+  workerId?: Prisma.StringNullableFilter<"PortalSession"> | string | null
   organizationId?: Prisma.StringFilter<"PortalSession"> | string
   email?: Prisma.StringFilter<"PortalSession"> | string
   expiresAt?: Prisma.DateTimeFilter<"PortalSession"> | Date | string
@@ -255,14 +277,17 @@ export type PortalSessionWhereUniqueInput = Prisma.AtLeast<{
   userAgent?: Prisma.StringNullableFilter<"PortalSession"> | string | null
   createdAt?: Prisma.DateTimeFilter<"PortalSession"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"PortalSession"> | Date | string
-  contractor?: Prisma.XOR<Prisma.ContractorScalarRelationFilter, Prisma.ContractorWhereInput>
+  contractor?: Prisma.XOR<Prisma.ContractorNullableScalarRelationFilter, Prisma.ContractorWhereInput> | null
+  worker?: Prisma.XOR<Prisma.WorkerNullableScalarRelationFilter, Prisma.WorkerWhereInput> | null
   organization?: Prisma.XOR<Prisma.OrganizationScalarRelationFilter, Prisma.OrganizationWhereInput>
 }, "id" | "token">
 
 export type PortalSessionOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   token?: Prisma.SortOrder
-  contractorId?: Prisma.SortOrder
+  subjectType?: Prisma.SortOrder
+  contractorId?: Prisma.SortOrderInput | Prisma.SortOrder
+  workerId?: Prisma.SortOrderInput | Prisma.SortOrder
   organizationId?: Prisma.SortOrder
   email?: Prisma.SortOrder
   expiresAt?: Prisma.SortOrder
@@ -281,7 +306,9 @@ export type PortalSessionScalarWhereWithAggregatesInput = {
   NOT?: Prisma.PortalSessionScalarWhereWithAggregatesInput | Prisma.PortalSessionScalarWhereWithAggregatesInput[]
   id?: Prisma.StringWithAggregatesFilter<"PortalSession"> | string
   token?: Prisma.StringWithAggregatesFilter<"PortalSession"> | string
-  contractorId?: Prisma.StringWithAggregatesFilter<"PortalSession"> | string
+  subjectType?: Prisma.EnumPortalSubjectTypeWithAggregatesFilter<"PortalSession"> | $Enums.PortalSubjectType
+  contractorId?: Prisma.StringNullableWithAggregatesFilter<"PortalSession"> | string | null
+  workerId?: Prisma.StringNullableWithAggregatesFilter<"PortalSession"> | string | null
   organizationId?: Prisma.StringWithAggregatesFilter<"PortalSession"> | string
   email?: Prisma.StringWithAggregatesFilter<"PortalSession"> | string
   expiresAt?: Prisma.DateTimeWithAggregatesFilter<"PortalSession"> | Date | string
@@ -294,20 +321,24 @@ export type PortalSessionScalarWhereWithAggregatesInput = {
 export type PortalSessionCreateInput = {
   id?: string
   token: string
+  subjectType?: $Enums.PortalSubjectType
   email: string
   expiresAt: Date | string
   ipAddress?: string | null
   userAgent?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
-  contractor: Prisma.ContractorCreateNestedOneWithoutPortalSessionsInput
+  contractor?: Prisma.ContractorCreateNestedOneWithoutPortalSessionsInput
+  worker?: Prisma.WorkerCreateNestedOneWithoutPortalSessionsInput
   organization: Prisma.OrganizationCreateNestedOneWithoutPortalSessionsInput
 }
 
 export type PortalSessionUncheckedCreateInput = {
   id?: string
   token: string
-  contractorId: string
+  subjectType?: $Enums.PortalSubjectType
+  contractorId?: string | null
+  workerId?: string | null
   organizationId: string
   email: string
   expiresAt: Date | string
@@ -320,20 +351,24 @@ export type PortalSessionUncheckedCreateInput = {
 export type PortalSessionUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   token?: Prisma.StringFieldUpdateOperationsInput | string
+  subjectType?: Prisma.EnumPortalSubjectTypeFieldUpdateOperationsInput | $Enums.PortalSubjectType
   email?: Prisma.StringFieldUpdateOperationsInput | string
   expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   ipAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   userAgent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  contractor?: Prisma.ContractorUpdateOneRequiredWithoutPortalSessionsNestedInput
+  contractor?: Prisma.ContractorUpdateOneWithoutPortalSessionsNestedInput
+  worker?: Prisma.WorkerUpdateOneWithoutPortalSessionsNestedInput
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutPortalSessionsNestedInput
 }
 
 export type PortalSessionUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   token?: Prisma.StringFieldUpdateOperationsInput | string
-  contractorId?: Prisma.StringFieldUpdateOperationsInput | string
+  subjectType?: Prisma.EnumPortalSubjectTypeFieldUpdateOperationsInput | $Enums.PortalSubjectType
+  contractorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  workerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   organizationId?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
   expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -346,7 +381,9 @@ export type PortalSessionUncheckedUpdateInput = {
 export type PortalSessionCreateManyInput = {
   id?: string
   token: string
-  contractorId: string
+  subjectType?: $Enums.PortalSubjectType
+  contractorId?: string | null
+  workerId?: string | null
   organizationId: string
   email: string
   expiresAt: Date | string
@@ -359,6 +396,7 @@ export type PortalSessionCreateManyInput = {
 export type PortalSessionUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   token?: Prisma.StringFieldUpdateOperationsInput | string
+  subjectType?: Prisma.EnumPortalSubjectTypeFieldUpdateOperationsInput | $Enums.PortalSubjectType
   email?: Prisma.StringFieldUpdateOperationsInput | string
   expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   ipAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -370,7 +408,9 @@ export type PortalSessionUpdateManyMutationInput = {
 export type PortalSessionUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   token?: Prisma.StringFieldUpdateOperationsInput | string
-  contractorId?: Prisma.StringFieldUpdateOperationsInput | string
+  subjectType?: Prisma.EnumPortalSubjectTypeFieldUpdateOperationsInput | $Enums.PortalSubjectType
+  contractorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  workerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   organizationId?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
   expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -393,7 +433,9 @@ export type PortalSessionOrderByRelationAggregateInput = {
 export type PortalSessionCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   token?: Prisma.SortOrder
+  subjectType?: Prisma.SortOrder
   contractorId?: Prisma.SortOrder
+  workerId?: Prisma.SortOrder
   organizationId?: Prisma.SortOrder
   email?: Prisma.SortOrder
   expiresAt?: Prisma.SortOrder
@@ -406,7 +448,9 @@ export type PortalSessionCountOrderByAggregateInput = {
 export type PortalSessionMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   token?: Prisma.SortOrder
+  subjectType?: Prisma.SortOrder
   contractorId?: Prisma.SortOrder
+  workerId?: Prisma.SortOrder
   organizationId?: Prisma.SortOrder
   email?: Prisma.SortOrder
   expiresAt?: Prisma.SortOrder
@@ -419,7 +463,9 @@ export type PortalSessionMaxOrderByAggregateInput = {
 export type PortalSessionMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   token?: Prisma.SortOrder
+  subjectType?: Prisma.SortOrder
   contractorId?: Prisma.SortOrder
+  workerId?: Prisma.SortOrder
   organizationId?: Prisma.SortOrder
   email?: Prisma.SortOrder
   expiresAt?: Prisma.SortOrder
@@ -513,21 +559,71 @@ export type PortalSessionUncheckedUpdateManyWithoutOrganizationNestedInput = {
   deleteMany?: Prisma.PortalSessionScalarWhereInput | Prisma.PortalSessionScalarWhereInput[]
 }
 
+export type EnumPortalSubjectTypeFieldUpdateOperationsInput = {
+  set?: $Enums.PortalSubjectType
+}
+
+export type PortalSessionCreateNestedManyWithoutWorkerInput = {
+  create?: Prisma.XOR<Prisma.PortalSessionCreateWithoutWorkerInput, Prisma.PortalSessionUncheckedCreateWithoutWorkerInput> | Prisma.PortalSessionCreateWithoutWorkerInput[] | Prisma.PortalSessionUncheckedCreateWithoutWorkerInput[]
+  connectOrCreate?: Prisma.PortalSessionCreateOrConnectWithoutWorkerInput | Prisma.PortalSessionCreateOrConnectWithoutWorkerInput[]
+  createMany?: Prisma.PortalSessionCreateManyWorkerInputEnvelope
+  connect?: Prisma.PortalSessionWhereUniqueInput | Prisma.PortalSessionWhereUniqueInput[]
+}
+
+export type PortalSessionUncheckedCreateNestedManyWithoutWorkerInput = {
+  create?: Prisma.XOR<Prisma.PortalSessionCreateWithoutWorkerInput, Prisma.PortalSessionUncheckedCreateWithoutWorkerInput> | Prisma.PortalSessionCreateWithoutWorkerInput[] | Prisma.PortalSessionUncheckedCreateWithoutWorkerInput[]
+  connectOrCreate?: Prisma.PortalSessionCreateOrConnectWithoutWorkerInput | Prisma.PortalSessionCreateOrConnectWithoutWorkerInput[]
+  createMany?: Prisma.PortalSessionCreateManyWorkerInputEnvelope
+  connect?: Prisma.PortalSessionWhereUniqueInput | Prisma.PortalSessionWhereUniqueInput[]
+}
+
+export type PortalSessionUpdateManyWithoutWorkerNestedInput = {
+  create?: Prisma.XOR<Prisma.PortalSessionCreateWithoutWorkerInput, Prisma.PortalSessionUncheckedCreateWithoutWorkerInput> | Prisma.PortalSessionCreateWithoutWorkerInput[] | Prisma.PortalSessionUncheckedCreateWithoutWorkerInput[]
+  connectOrCreate?: Prisma.PortalSessionCreateOrConnectWithoutWorkerInput | Prisma.PortalSessionCreateOrConnectWithoutWorkerInput[]
+  upsert?: Prisma.PortalSessionUpsertWithWhereUniqueWithoutWorkerInput | Prisma.PortalSessionUpsertWithWhereUniqueWithoutWorkerInput[]
+  createMany?: Prisma.PortalSessionCreateManyWorkerInputEnvelope
+  set?: Prisma.PortalSessionWhereUniqueInput | Prisma.PortalSessionWhereUniqueInput[]
+  disconnect?: Prisma.PortalSessionWhereUniqueInput | Prisma.PortalSessionWhereUniqueInput[]
+  delete?: Prisma.PortalSessionWhereUniqueInput | Prisma.PortalSessionWhereUniqueInput[]
+  connect?: Prisma.PortalSessionWhereUniqueInput | Prisma.PortalSessionWhereUniqueInput[]
+  update?: Prisma.PortalSessionUpdateWithWhereUniqueWithoutWorkerInput | Prisma.PortalSessionUpdateWithWhereUniqueWithoutWorkerInput[]
+  updateMany?: Prisma.PortalSessionUpdateManyWithWhereWithoutWorkerInput | Prisma.PortalSessionUpdateManyWithWhereWithoutWorkerInput[]
+  deleteMany?: Prisma.PortalSessionScalarWhereInput | Prisma.PortalSessionScalarWhereInput[]
+}
+
+export type PortalSessionUncheckedUpdateManyWithoutWorkerNestedInput = {
+  create?: Prisma.XOR<Prisma.PortalSessionCreateWithoutWorkerInput, Prisma.PortalSessionUncheckedCreateWithoutWorkerInput> | Prisma.PortalSessionCreateWithoutWorkerInput[] | Prisma.PortalSessionUncheckedCreateWithoutWorkerInput[]
+  connectOrCreate?: Prisma.PortalSessionCreateOrConnectWithoutWorkerInput | Prisma.PortalSessionCreateOrConnectWithoutWorkerInput[]
+  upsert?: Prisma.PortalSessionUpsertWithWhereUniqueWithoutWorkerInput | Prisma.PortalSessionUpsertWithWhereUniqueWithoutWorkerInput[]
+  createMany?: Prisma.PortalSessionCreateManyWorkerInputEnvelope
+  set?: Prisma.PortalSessionWhereUniqueInput | Prisma.PortalSessionWhereUniqueInput[]
+  disconnect?: Prisma.PortalSessionWhereUniqueInput | Prisma.PortalSessionWhereUniqueInput[]
+  delete?: Prisma.PortalSessionWhereUniqueInput | Prisma.PortalSessionWhereUniqueInput[]
+  connect?: Prisma.PortalSessionWhereUniqueInput | Prisma.PortalSessionWhereUniqueInput[]
+  update?: Prisma.PortalSessionUpdateWithWhereUniqueWithoutWorkerInput | Prisma.PortalSessionUpdateWithWhereUniqueWithoutWorkerInput[]
+  updateMany?: Prisma.PortalSessionUpdateManyWithWhereWithoutWorkerInput | Prisma.PortalSessionUpdateManyWithWhereWithoutWorkerInput[]
+  deleteMany?: Prisma.PortalSessionScalarWhereInput | Prisma.PortalSessionScalarWhereInput[]
+}
+
 export type PortalSessionCreateWithoutContractorInput = {
   id?: string
   token: string
+  subjectType?: $Enums.PortalSubjectType
   email: string
   expiresAt: Date | string
   ipAddress?: string | null
   userAgent?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  worker?: Prisma.WorkerCreateNestedOneWithoutPortalSessionsInput
   organization: Prisma.OrganizationCreateNestedOneWithoutPortalSessionsInput
 }
 
 export type PortalSessionUncheckedCreateWithoutContractorInput = {
   id?: string
   token: string
+  subjectType?: $Enums.PortalSubjectType
+  workerId?: string | null
   organizationId: string
   email: string
   expiresAt: Date | string
@@ -569,7 +665,9 @@ export type PortalSessionScalarWhereInput = {
   NOT?: Prisma.PortalSessionScalarWhereInput | Prisma.PortalSessionScalarWhereInput[]
   id?: Prisma.StringFilter<"PortalSession"> | string
   token?: Prisma.StringFilter<"PortalSession"> | string
-  contractorId?: Prisma.StringFilter<"PortalSession"> | string
+  subjectType?: Prisma.EnumPortalSubjectTypeFilter<"PortalSession"> | $Enums.PortalSubjectType
+  contractorId?: Prisma.StringNullableFilter<"PortalSession"> | string | null
+  workerId?: Prisma.StringNullableFilter<"PortalSession"> | string | null
   organizationId?: Prisma.StringFilter<"PortalSession"> | string
   email?: Prisma.StringFilter<"PortalSession"> | string
   expiresAt?: Prisma.DateTimeFilter<"PortalSession"> | Date | string
@@ -582,19 +680,23 @@ export type PortalSessionScalarWhereInput = {
 export type PortalSessionCreateWithoutOrganizationInput = {
   id?: string
   token: string
+  subjectType?: $Enums.PortalSubjectType
   email: string
   expiresAt: Date | string
   ipAddress?: string | null
   userAgent?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
-  contractor: Prisma.ContractorCreateNestedOneWithoutPortalSessionsInput
+  contractor?: Prisma.ContractorCreateNestedOneWithoutPortalSessionsInput
+  worker?: Prisma.WorkerCreateNestedOneWithoutPortalSessionsInput
 }
 
 export type PortalSessionUncheckedCreateWithoutOrganizationInput = {
   id?: string
   token: string
-  contractorId: string
+  subjectType?: $Enums.PortalSubjectType
+  contractorId?: string | null
+  workerId?: string | null
   email: string
   expiresAt: Date | string
   ipAddress?: string | null
@@ -629,9 +731,65 @@ export type PortalSessionUpdateManyWithWhereWithoutOrganizationInput = {
   data: Prisma.XOR<Prisma.PortalSessionUpdateManyMutationInput, Prisma.PortalSessionUncheckedUpdateManyWithoutOrganizationInput>
 }
 
+export type PortalSessionCreateWithoutWorkerInput = {
+  id?: string
+  token: string
+  subjectType?: $Enums.PortalSubjectType
+  email: string
+  expiresAt: Date | string
+  ipAddress?: string | null
+  userAgent?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  contractor?: Prisma.ContractorCreateNestedOneWithoutPortalSessionsInput
+  organization: Prisma.OrganizationCreateNestedOneWithoutPortalSessionsInput
+}
+
+export type PortalSessionUncheckedCreateWithoutWorkerInput = {
+  id?: string
+  token: string
+  subjectType?: $Enums.PortalSubjectType
+  contractorId?: string | null
+  organizationId: string
+  email: string
+  expiresAt: Date | string
+  ipAddress?: string | null
+  userAgent?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export type PortalSessionCreateOrConnectWithoutWorkerInput = {
+  where: Prisma.PortalSessionWhereUniqueInput
+  create: Prisma.XOR<Prisma.PortalSessionCreateWithoutWorkerInput, Prisma.PortalSessionUncheckedCreateWithoutWorkerInput>
+}
+
+export type PortalSessionCreateManyWorkerInputEnvelope = {
+  data: Prisma.PortalSessionCreateManyWorkerInput | Prisma.PortalSessionCreateManyWorkerInput[]
+  skipDuplicates?: boolean
+}
+
+export type PortalSessionUpsertWithWhereUniqueWithoutWorkerInput = {
+  where: Prisma.PortalSessionWhereUniqueInput
+  update: Prisma.XOR<Prisma.PortalSessionUpdateWithoutWorkerInput, Prisma.PortalSessionUncheckedUpdateWithoutWorkerInput>
+  create: Prisma.XOR<Prisma.PortalSessionCreateWithoutWorkerInput, Prisma.PortalSessionUncheckedCreateWithoutWorkerInput>
+}
+
+export type PortalSessionUpdateWithWhereUniqueWithoutWorkerInput = {
+  where: Prisma.PortalSessionWhereUniqueInput
+  data: Prisma.XOR<Prisma.PortalSessionUpdateWithoutWorkerInput, Prisma.PortalSessionUncheckedUpdateWithoutWorkerInput>
+}
+
+export type PortalSessionUpdateManyWithWhereWithoutWorkerInput = {
+  where: Prisma.PortalSessionScalarWhereInput
+  data: Prisma.XOR<Prisma.PortalSessionUpdateManyMutationInput, Prisma.PortalSessionUncheckedUpdateManyWithoutWorkerInput>
+}
+
 export type PortalSessionCreateManyContractorInput = {
   id?: string
   token: string
+  subjectType?: $Enums.PortalSubjectType
+  workerId?: string | null
   organizationId: string
   email: string
   expiresAt: Date | string
@@ -644,18 +802,22 @@ export type PortalSessionCreateManyContractorInput = {
 export type PortalSessionUpdateWithoutContractorInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   token?: Prisma.StringFieldUpdateOperationsInput | string
+  subjectType?: Prisma.EnumPortalSubjectTypeFieldUpdateOperationsInput | $Enums.PortalSubjectType
   email?: Prisma.StringFieldUpdateOperationsInput | string
   expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   ipAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   userAgent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  worker?: Prisma.WorkerUpdateOneWithoutPortalSessionsNestedInput
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutPortalSessionsNestedInput
 }
 
 export type PortalSessionUncheckedUpdateWithoutContractorInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   token?: Prisma.StringFieldUpdateOperationsInput | string
+  subjectType?: Prisma.EnumPortalSubjectTypeFieldUpdateOperationsInput | $Enums.PortalSubjectType
+  workerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   organizationId?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
   expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -668,6 +830,8 @@ export type PortalSessionUncheckedUpdateWithoutContractorInput = {
 export type PortalSessionUncheckedUpdateManyWithoutContractorInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   token?: Prisma.StringFieldUpdateOperationsInput | string
+  subjectType?: Prisma.EnumPortalSubjectTypeFieldUpdateOperationsInput | $Enums.PortalSubjectType
+  workerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   organizationId?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
   expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -680,7 +844,9 @@ export type PortalSessionUncheckedUpdateManyWithoutContractorInput = {
 export type PortalSessionCreateManyOrganizationInput = {
   id?: string
   token: string
-  contractorId: string
+  subjectType?: $Enums.PortalSubjectType
+  contractorId?: string | null
+  workerId?: string | null
   email: string
   expiresAt: Date | string
   ipAddress?: string | null
@@ -692,19 +858,23 @@ export type PortalSessionCreateManyOrganizationInput = {
 export type PortalSessionUpdateWithoutOrganizationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   token?: Prisma.StringFieldUpdateOperationsInput | string
+  subjectType?: Prisma.EnumPortalSubjectTypeFieldUpdateOperationsInput | $Enums.PortalSubjectType
   email?: Prisma.StringFieldUpdateOperationsInput | string
   expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   ipAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   userAgent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  contractor?: Prisma.ContractorUpdateOneRequiredWithoutPortalSessionsNestedInput
+  contractor?: Prisma.ContractorUpdateOneWithoutPortalSessionsNestedInput
+  worker?: Prisma.WorkerUpdateOneWithoutPortalSessionsNestedInput
 }
 
 export type PortalSessionUncheckedUpdateWithoutOrganizationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   token?: Prisma.StringFieldUpdateOperationsInput | string
-  contractorId?: Prisma.StringFieldUpdateOperationsInput | string
+  subjectType?: Prisma.EnumPortalSubjectTypeFieldUpdateOperationsInput | $Enums.PortalSubjectType
+  contractorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  workerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   email?: Prisma.StringFieldUpdateOperationsInput | string
   expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   ipAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -716,7 +886,65 @@ export type PortalSessionUncheckedUpdateWithoutOrganizationInput = {
 export type PortalSessionUncheckedUpdateManyWithoutOrganizationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   token?: Prisma.StringFieldUpdateOperationsInput | string
-  contractorId?: Prisma.StringFieldUpdateOperationsInput | string
+  subjectType?: Prisma.EnumPortalSubjectTypeFieldUpdateOperationsInput | $Enums.PortalSubjectType
+  contractorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  workerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  ipAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  userAgent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type PortalSessionCreateManyWorkerInput = {
+  id?: string
+  token: string
+  subjectType?: $Enums.PortalSubjectType
+  contractorId?: string | null
+  organizationId: string
+  email: string
+  expiresAt: Date | string
+  ipAddress?: string | null
+  userAgent?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export type PortalSessionUpdateWithoutWorkerInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  token?: Prisma.StringFieldUpdateOperationsInput | string
+  subjectType?: Prisma.EnumPortalSubjectTypeFieldUpdateOperationsInput | $Enums.PortalSubjectType
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  ipAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  userAgent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  contractor?: Prisma.ContractorUpdateOneWithoutPortalSessionsNestedInput
+  organization?: Prisma.OrganizationUpdateOneRequiredWithoutPortalSessionsNestedInput
+}
+
+export type PortalSessionUncheckedUpdateWithoutWorkerInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  token?: Prisma.StringFieldUpdateOperationsInput | string
+  subjectType?: Prisma.EnumPortalSubjectTypeFieldUpdateOperationsInput | $Enums.PortalSubjectType
+  contractorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  organizationId?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  ipAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  userAgent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type PortalSessionUncheckedUpdateManyWithoutWorkerInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  token?: Prisma.StringFieldUpdateOperationsInput | string
+  subjectType?: Prisma.EnumPortalSubjectTypeFieldUpdateOperationsInput | $Enums.PortalSubjectType
+  contractorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  organizationId?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
   expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   ipAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -730,7 +958,9 @@ export type PortalSessionUncheckedUpdateManyWithoutOrganizationInput = {
 export type PortalSessionSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   token?: boolean
+  subjectType?: boolean
   contractorId?: boolean
+  workerId?: boolean
   organizationId?: boolean
   email?: boolean
   expiresAt?: boolean
@@ -738,14 +968,17 @@ export type PortalSessionSelect<ExtArgs extends runtime.Types.Extensions.Interna
   userAgent?: boolean
   createdAt?: boolean
   updatedAt?: boolean
-  contractor?: boolean | Prisma.ContractorDefaultArgs<ExtArgs>
+  contractor?: boolean | Prisma.PortalSession$contractorArgs<ExtArgs>
+  worker?: boolean | Prisma.PortalSession$workerArgs<ExtArgs>
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["portalSession"]>
 
 export type PortalSessionSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   token?: boolean
+  subjectType?: boolean
   contractorId?: boolean
+  workerId?: boolean
   organizationId?: boolean
   email?: boolean
   expiresAt?: boolean
@@ -753,14 +986,17 @@ export type PortalSessionSelectCreateManyAndReturn<ExtArgs extends runtime.Types
   userAgent?: boolean
   createdAt?: boolean
   updatedAt?: boolean
-  contractor?: boolean | Prisma.ContractorDefaultArgs<ExtArgs>
+  contractor?: boolean | Prisma.PortalSession$contractorArgs<ExtArgs>
+  worker?: boolean | Prisma.PortalSession$workerArgs<ExtArgs>
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["portalSession"]>
 
 export type PortalSessionSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   token?: boolean
+  subjectType?: boolean
   contractorId?: boolean
+  workerId?: boolean
   organizationId?: boolean
   email?: boolean
   expiresAt?: boolean
@@ -768,14 +1004,17 @@ export type PortalSessionSelectUpdateManyAndReturn<ExtArgs extends runtime.Types
   userAgent?: boolean
   createdAt?: boolean
   updatedAt?: boolean
-  contractor?: boolean | Prisma.ContractorDefaultArgs<ExtArgs>
+  contractor?: boolean | Prisma.PortalSession$contractorArgs<ExtArgs>
+  worker?: boolean | Prisma.PortalSession$workerArgs<ExtArgs>
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["portalSession"]>
 
 export type PortalSessionSelectScalar = {
   id?: boolean
   token?: boolean
+  subjectType?: boolean
   contractorId?: boolean
+  workerId?: boolean
   organizationId?: boolean
   email?: boolean
   expiresAt?: boolean
@@ -785,30 +1024,36 @@ export type PortalSessionSelectScalar = {
   updatedAt?: boolean
 }
 
-export type PortalSessionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "token" | "contractorId" | "organizationId" | "email" | "expiresAt" | "ipAddress" | "userAgent" | "createdAt" | "updatedAt", ExtArgs["result"]["portalSession"]>
+export type PortalSessionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "token" | "subjectType" | "contractorId" | "workerId" | "organizationId" | "email" | "expiresAt" | "ipAddress" | "userAgent" | "createdAt" | "updatedAt", ExtArgs["result"]["portalSession"]>
 export type PortalSessionInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  contractor?: boolean | Prisma.ContractorDefaultArgs<ExtArgs>
+  contractor?: boolean | Prisma.PortalSession$contractorArgs<ExtArgs>
+  worker?: boolean | Prisma.PortalSession$workerArgs<ExtArgs>
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
 }
 export type PortalSessionIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  contractor?: boolean | Prisma.ContractorDefaultArgs<ExtArgs>
+  contractor?: boolean | Prisma.PortalSession$contractorArgs<ExtArgs>
+  worker?: boolean | Prisma.PortalSession$workerArgs<ExtArgs>
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
 }
 export type PortalSessionIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  contractor?: boolean | Prisma.ContractorDefaultArgs<ExtArgs>
+  contractor?: boolean | Prisma.PortalSession$contractorArgs<ExtArgs>
+  worker?: boolean | Prisma.PortalSession$workerArgs<ExtArgs>
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
 }
 
 export type $PortalSessionPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "PortalSession"
   objects: {
-    contractor: Prisma.$ContractorPayload<ExtArgs>
+    contractor: Prisma.$ContractorPayload<ExtArgs> | null
+    worker: Prisma.$WorkerPayload<ExtArgs> | null
     organization: Prisma.$OrganizationPayload<ExtArgs>
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
     token: string
-    contractorId: string
+    subjectType: $Enums.PortalSubjectType
+    contractorId: string | null
+    workerId: string | null
     organizationId: string
     email: string
     expiresAt: Date
@@ -1210,7 +1455,8 @@ readonly fields: PortalSessionFieldRefs;
  */
 export interface Prisma__PortalSessionClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
-  contractor<T extends Prisma.ContractorDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ContractorDefaultArgs<ExtArgs>>): Prisma.Prisma__ContractorClient<runtime.Types.Result.GetResult<Prisma.$ContractorPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  contractor<T extends Prisma.PortalSession$contractorArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.PortalSession$contractorArgs<ExtArgs>>): Prisma.Prisma__ContractorClient<runtime.Types.Result.GetResult<Prisma.$ContractorPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  worker<T extends Prisma.PortalSession$workerArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.PortalSession$workerArgs<ExtArgs>>): Prisma.Prisma__WorkerClient<runtime.Types.Result.GetResult<Prisma.$WorkerPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   organization<T extends Prisma.OrganizationDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.OrganizationDefaultArgs<ExtArgs>>): Prisma.Prisma__OrganizationClient<runtime.Types.Result.GetResult<Prisma.$OrganizationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -1243,7 +1489,9 @@ export interface Prisma__PortalSessionClient<T, Null = never, ExtArgs extends ru
 export interface PortalSessionFieldRefs {
   readonly id: Prisma.FieldRef<"PortalSession", 'String'>
   readonly token: Prisma.FieldRef<"PortalSession", 'String'>
+  readonly subjectType: Prisma.FieldRef<"PortalSession", 'PortalSubjectType'>
   readonly contractorId: Prisma.FieldRef<"PortalSession", 'String'>
+  readonly workerId: Prisma.FieldRef<"PortalSession", 'String'>
   readonly organizationId: Prisma.FieldRef<"PortalSession", 'String'>
   readonly email: Prisma.FieldRef<"PortalSession", 'String'>
   readonly expiresAt: Prisma.FieldRef<"PortalSession", 'DateTime'>
@@ -1649,6 +1897,44 @@ export type PortalSessionDeleteManyArgs<ExtArgs extends runtime.Types.Extensions
    * Limit how many PortalSessions to delete.
    */
   limit?: number
+}
+
+/**
+ * PortalSession.contractor
+ */
+export type PortalSession$contractorArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Contractor
+   */
+  select?: Prisma.ContractorSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Contractor
+   */
+  omit?: Prisma.ContractorOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ContractorInclude<ExtArgs> | null
+  where?: Prisma.ContractorWhereInput
+}
+
+/**
+ * PortalSession.worker
+ */
+export type PortalSession$workerArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Worker
+   */
+  select?: Prisma.WorkerSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Worker
+   */
+  omit?: Prisma.WorkerOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.WorkerInclude<ExtArgs> | null
+  where?: Prisma.WorkerWhereInput
 }
 
 /**

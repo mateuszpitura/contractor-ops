@@ -51,6 +51,7 @@ export type EmployeeProfileMinAggregateOutputType = {
   etat: runtime.Decimal | null
   employmentStatus: $Enums.EmploymentStatus | null
   terminatedAt: Date | null
+  managerWorkerId: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -72,6 +73,7 @@ export type EmployeeProfileMaxAggregateOutputType = {
   etat: runtime.Decimal | null
   employmentStatus: $Enums.EmploymentStatus | null
   terminatedAt: Date | null
+  managerWorkerId: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -94,6 +96,7 @@ export type EmployeeProfileCountAggregateOutputType = {
   etat: number
   employmentStatus: number
   terminatedAt: number
+  managerWorkerId: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -125,6 +128,7 @@ export type EmployeeProfileMinAggregateInputType = {
   etat?: true
   employmentStatus?: true
   terminatedAt?: true
+  managerWorkerId?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -146,6 +150,7 @@ export type EmployeeProfileMaxAggregateInputType = {
   etat?: true
   employmentStatus?: true
   terminatedAt?: true
+  managerWorkerId?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -168,6 +173,7 @@ export type EmployeeProfileCountAggregateInputType = {
   etat?: true
   employmentStatus?: true
   terminatedAt?: true
+  managerWorkerId?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -277,6 +283,7 @@ export type EmployeeProfileGroupByOutputType = {
   etat: runtime.Decimal | null
   employmentStatus: $Enums.EmploymentStatus | null
   terminatedAt: Date | null
+  managerWorkerId: string | null
   createdAt: Date
   updatedAt: Date
   _count: EmployeeProfileCountAggregateOutputType | null
@@ -322,10 +329,12 @@ export type EmployeeProfileWhereInput = {
   etat?: Prisma.DecimalNullableFilter<"EmployeeProfile"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   employmentStatus?: Prisma.EnumEmploymentStatusNullableFilter<"EmployeeProfile"> | $Enums.EmploymentStatus | null
   terminatedAt?: Prisma.DateTimeNullableFilter<"EmployeeProfile"> | Date | string | null
+  managerWorkerId?: Prisma.StringNullableFilter<"EmployeeProfile"> | string | null
   createdAt?: Prisma.DateTimeFilter<"EmployeeProfile"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"EmployeeProfile"> | Date | string
   organization?: Prisma.XOR<Prisma.OrganizationScalarRelationFilter, Prisma.OrganizationWhereInput>
   worker?: Prisma.XOR<Prisma.WorkerScalarRelationFilter, Prisma.WorkerWhereInput>
+  managerWorker?: Prisma.XOR<Prisma.WorkerNullableScalarRelationFilter, Prisma.WorkerWhereInput> | null
 }
 
 export type EmployeeProfileOrderByWithRelationInput = {
@@ -346,10 +355,12 @@ export type EmployeeProfileOrderByWithRelationInput = {
   etat?: Prisma.SortOrderInput | Prisma.SortOrder
   employmentStatus?: Prisma.SortOrderInput | Prisma.SortOrder
   terminatedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  managerWorkerId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   organization?: Prisma.OrganizationOrderByWithRelationInput
   worker?: Prisma.WorkerOrderByWithRelationInput
+  managerWorker?: Prisma.WorkerOrderByWithRelationInput
 }
 
 export type EmployeeProfileWhereUniqueInput = Prisma.AtLeast<{
@@ -374,10 +385,12 @@ export type EmployeeProfileWhereUniqueInput = Prisma.AtLeast<{
   etat?: Prisma.DecimalNullableFilter<"EmployeeProfile"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   employmentStatus?: Prisma.EnumEmploymentStatusNullableFilter<"EmployeeProfile"> | $Enums.EmploymentStatus | null
   terminatedAt?: Prisma.DateTimeNullableFilter<"EmployeeProfile"> | Date | string | null
+  managerWorkerId?: Prisma.StringNullableFilter<"EmployeeProfile"> | string | null
   createdAt?: Prisma.DateTimeFilter<"EmployeeProfile"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"EmployeeProfile"> | Date | string
   organization?: Prisma.XOR<Prisma.OrganizationScalarRelationFilter, Prisma.OrganizationWhereInput>
   worker?: Prisma.XOR<Prisma.WorkerScalarRelationFilter, Prisma.WorkerWhereInput>
+  managerWorker?: Prisma.XOR<Prisma.WorkerNullableScalarRelationFilter, Prisma.WorkerWhereInput> | null
 }, "id" | "workerId" | "organizationId_workerId">
 
 export type EmployeeProfileOrderByWithAggregationInput = {
@@ -398,6 +411,7 @@ export type EmployeeProfileOrderByWithAggregationInput = {
   etat?: Prisma.SortOrderInput | Prisma.SortOrder
   employmentStatus?: Prisma.SortOrderInput | Prisma.SortOrder
   terminatedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  managerWorkerId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.EmployeeProfileCountOrderByAggregateInput
@@ -428,6 +442,7 @@ export type EmployeeProfileScalarWhereWithAggregatesInput = {
   etat?: Prisma.DecimalNullableWithAggregatesFilter<"EmployeeProfile"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   employmentStatus?: Prisma.EnumEmploymentStatusNullableWithAggregatesFilter<"EmployeeProfile"> | $Enums.EmploymentStatus | null
   terminatedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"EmployeeProfile"> | Date | string | null
+  managerWorkerId?: Prisma.StringNullableWithAggregatesFilter<"EmployeeProfile"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"EmployeeProfile"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"EmployeeProfile"> | Date | string
 }
@@ -452,6 +467,7 @@ export type EmployeeProfileCreateInput = {
   updatedAt?: Date | string
   organization: Prisma.OrganizationCreateNestedOneWithoutEmployeeProfilesInput
   worker: Prisma.WorkerCreateNestedOneWithoutEmployeeProfileInput
+  managerWorker?: Prisma.WorkerCreateNestedOneWithoutManagedEmployeesInput
 }
 
 export type EmployeeProfileUncheckedCreateInput = {
@@ -472,6 +488,7 @@ export type EmployeeProfileUncheckedCreateInput = {
   etat?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   employmentStatus?: $Enums.EmploymentStatus | null
   terminatedAt?: Date | string | null
+  managerWorkerId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -496,6 +513,7 @@ export type EmployeeProfileUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutEmployeeProfilesNestedInput
   worker?: Prisma.WorkerUpdateOneRequiredWithoutEmployeeProfileNestedInput
+  managerWorker?: Prisma.WorkerUpdateOneWithoutManagedEmployeesNestedInput
 }
 
 export type EmployeeProfileUncheckedUpdateInput = {
@@ -516,6 +534,7 @@ export type EmployeeProfileUncheckedUpdateInput = {
   etat?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   employmentStatus?: Prisma.NullableEnumEmploymentStatusFieldUpdateOperationsInput | $Enums.EmploymentStatus | null
   terminatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  managerWorkerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -538,6 +557,7 @@ export type EmployeeProfileCreateManyInput = {
   etat?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   employmentStatus?: $Enums.EmploymentStatus | null
   terminatedAt?: Date | string | null
+  managerWorkerId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -580,6 +600,7 @@ export type EmployeeProfileUncheckedUpdateManyInput = {
   etat?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   employmentStatus?: Prisma.NullableEnumEmploymentStatusFieldUpdateOperationsInput | $Enums.EmploymentStatus | null
   terminatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  managerWorkerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -607,6 +628,7 @@ export type EmployeeProfileCountOrderByAggregateInput = {
   etat?: Prisma.SortOrder
   employmentStatus?: Prisma.SortOrder
   terminatedAt?: Prisma.SortOrder
+  managerWorkerId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -632,6 +654,7 @@ export type EmployeeProfileMaxOrderByAggregateInput = {
   etat?: Prisma.SortOrder
   employmentStatus?: Prisma.SortOrder
   terminatedAt?: Prisma.SortOrder
+  managerWorkerId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -653,6 +676,7 @@ export type EmployeeProfileMinOrderByAggregateInput = {
   etat?: Prisma.SortOrder
   employmentStatus?: Prisma.SortOrder
   terminatedAt?: Prisma.SortOrder
+  managerWorkerId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -732,10 +756,24 @@ export type EmployeeProfileCreateNestedOneWithoutWorkerInput = {
   connect?: Prisma.EmployeeProfileWhereUniqueInput
 }
 
+export type EmployeeProfileCreateNestedManyWithoutManagerWorkerInput = {
+  create?: Prisma.XOR<Prisma.EmployeeProfileCreateWithoutManagerWorkerInput, Prisma.EmployeeProfileUncheckedCreateWithoutManagerWorkerInput> | Prisma.EmployeeProfileCreateWithoutManagerWorkerInput[] | Prisma.EmployeeProfileUncheckedCreateWithoutManagerWorkerInput[]
+  connectOrCreate?: Prisma.EmployeeProfileCreateOrConnectWithoutManagerWorkerInput | Prisma.EmployeeProfileCreateOrConnectWithoutManagerWorkerInput[]
+  createMany?: Prisma.EmployeeProfileCreateManyManagerWorkerInputEnvelope
+  connect?: Prisma.EmployeeProfileWhereUniqueInput | Prisma.EmployeeProfileWhereUniqueInput[]
+}
+
 export type EmployeeProfileUncheckedCreateNestedOneWithoutWorkerInput = {
   create?: Prisma.XOR<Prisma.EmployeeProfileCreateWithoutWorkerInput, Prisma.EmployeeProfileUncheckedCreateWithoutWorkerInput>
   connectOrCreate?: Prisma.EmployeeProfileCreateOrConnectWithoutWorkerInput
   connect?: Prisma.EmployeeProfileWhereUniqueInput
+}
+
+export type EmployeeProfileUncheckedCreateNestedManyWithoutManagerWorkerInput = {
+  create?: Prisma.XOR<Prisma.EmployeeProfileCreateWithoutManagerWorkerInput, Prisma.EmployeeProfileUncheckedCreateWithoutManagerWorkerInput> | Prisma.EmployeeProfileCreateWithoutManagerWorkerInput[] | Prisma.EmployeeProfileUncheckedCreateWithoutManagerWorkerInput[]
+  connectOrCreate?: Prisma.EmployeeProfileCreateOrConnectWithoutManagerWorkerInput | Prisma.EmployeeProfileCreateOrConnectWithoutManagerWorkerInput[]
+  createMany?: Prisma.EmployeeProfileCreateManyManagerWorkerInputEnvelope
+  connect?: Prisma.EmployeeProfileWhereUniqueInput | Prisma.EmployeeProfileWhereUniqueInput[]
 }
 
 export type EmployeeProfileUpdateOneWithoutWorkerNestedInput = {
@@ -748,6 +786,20 @@ export type EmployeeProfileUpdateOneWithoutWorkerNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.EmployeeProfileUpdateToOneWithWhereWithoutWorkerInput, Prisma.EmployeeProfileUpdateWithoutWorkerInput>, Prisma.EmployeeProfileUncheckedUpdateWithoutWorkerInput>
 }
 
+export type EmployeeProfileUpdateManyWithoutManagerWorkerNestedInput = {
+  create?: Prisma.XOR<Prisma.EmployeeProfileCreateWithoutManagerWorkerInput, Prisma.EmployeeProfileUncheckedCreateWithoutManagerWorkerInput> | Prisma.EmployeeProfileCreateWithoutManagerWorkerInput[] | Prisma.EmployeeProfileUncheckedCreateWithoutManagerWorkerInput[]
+  connectOrCreate?: Prisma.EmployeeProfileCreateOrConnectWithoutManagerWorkerInput | Prisma.EmployeeProfileCreateOrConnectWithoutManagerWorkerInput[]
+  upsert?: Prisma.EmployeeProfileUpsertWithWhereUniqueWithoutManagerWorkerInput | Prisma.EmployeeProfileUpsertWithWhereUniqueWithoutManagerWorkerInput[]
+  createMany?: Prisma.EmployeeProfileCreateManyManagerWorkerInputEnvelope
+  set?: Prisma.EmployeeProfileWhereUniqueInput | Prisma.EmployeeProfileWhereUniqueInput[]
+  disconnect?: Prisma.EmployeeProfileWhereUniqueInput | Prisma.EmployeeProfileWhereUniqueInput[]
+  delete?: Prisma.EmployeeProfileWhereUniqueInput | Prisma.EmployeeProfileWhereUniqueInput[]
+  connect?: Prisma.EmployeeProfileWhereUniqueInput | Prisma.EmployeeProfileWhereUniqueInput[]
+  update?: Prisma.EmployeeProfileUpdateWithWhereUniqueWithoutManagerWorkerInput | Prisma.EmployeeProfileUpdateWithWhereUniqueWithoutManagerWorkerInput[]
+  updateMany?: Prisma.EmployeeProfileUpdateManyWithWhereWithoutManagerWorkerInput | Prisma.EmployeeProfileUpdateManyWithWhereWithoutManagerWorkerInput[]
+  deleteMany?: Prisma.EmployeeProfileScalarWhereInput | Prisma.EmployeeProfileScalarWhereInput[]
+}
+
 export type EmployeeProfileUncheckedUpdateOneWithoutWorkerNestedInput = {
   create?: Prisma.XOR<Prisma.EmployeeProfileCreateWithoutWorkerInput, Prisma.EmployeeProfileUncheckedCreateWithoutWorkerInput>
   connectOrCreate?: Prisma.EmployeeProfileCreateOrConnectWithoutWorkerInput
@@ -756,6 +808,20 @@ export type EmployeeProfileUncheckedUpdateOneWithoutWorkerNestedInput = {
   delete?: Prisma.EmployeeProfileWhereInput | boolean
   connect?: Prisma.EmployeeProfileWhereUniqueInput
   update?: Prisma.XOR<Prisma.XOR<Prisma.EmployeeProfileUpdateToOneWithWhereWithoutWorkerInput, Prisma.EmployeeProfileUpdateWithoutWorkerInput>, Prisma.EmployeeProfileUncheckedUpdateWithoutWorkerInput>
+}
+
+export type EmployeeProfileUncheckedUpdateManyWithoutManagerWorkerNestedInput = {
+  create?: Prisma.XOR<Prisma.EmployeeProfileCreateWithoutManagerWorkerInput, Prisma.EmployeeProfileUncheckedCreateWithoutManagerWorkerInput> | Prisma.EmployeeProfileCreateWithoutManagerWorkerInput[] | Prisma.EmployeeProfileUncheckedCreateWithoutManagerWorkerInput[]
+  connectOrCreate?: Prisma.EmployeeProfileCreateOrConnectWithoutManagerWorkerInput | Prisma.EmployeeProfileCreateOrConnectWithoutManagerWorkerInput[]
+  upsert?: Prisma.EmployeeProfileUpsertWithWhereUniqueWithoutManagerWorkerInput | Prisma.EmployeeProfileUpsertWithWhereUniqueWithoutManagerWorkerInput[]
+  createMany?: Prisma.EmployeeProfileCreateManyManagerWorkerInputEnvelope
+  set?: Prisma.EmployeeProfileWhereUniqueInput | Prisma.EmployeeProfileWhereUniqueInput[]
+  disconnect?: Prisma.EmployeeProfileWhereUniqueInput | Prisma.EmployeeProfileWhereUniqueInput[]
+  delete?: Prisma.EmployeeProfileWhereUniqueInput | Prisma.EmployeeProfileWhereUniqueInput[]
+  connect?: Prisma.EmployeeProfileWhereUniqueInput | Prisma.EmployeeProfileWhereUniqueInput[]
+  update?: Prisma.EmployeeProfileUpdateWithWhereUniqueWithoutManagerWorkerInput | Prisma.EmployeeProfileUpdateWithWhereUniqueWithoutManagerWorkerInput[]
+  updateMany?: Prisma.EmployeeProfileUpdateManyWithWhereWithoutManagerWorkerInput | Prisma.EmployeeProfileUpdateManyWithWhereWithoutManagerWorkerInput[]
+  deleteMany?: Prisma.EmployeeProfileScalarWhereInput | Prisma.EmployeeProfileScalarWhereInput[]
 }
 
 export type EmployeeProfileCreateWithoutOrganizationInput = {
@@ -777,6 +843,7 @@ export type EmployeeProfileCreateWithoutOrganizationInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   worker: Prisma.WorkerCreateNestedOneWithoutEmployeeProfileInput
+  managerWorker?: Prisma.WorkerCreateNestedOneWithoutManagedEmployeesInput
 }
 
 export type EmployeeProfileUncheckedCreateWithoutOrganizationInput = {
@@ -796,6 +863,7 @@ export type EmployeeProfileUncheckedCreateWithoutOrganizationInput = {
   etat?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   employmentStatus?: $Enums.EmploymentStatus | null
   terminatedAt?: Date | string | null
+  managerWorkerId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -847,6 +915,7 @@ export type EmployeeProfileScalarWhereInput = {
   etat?: Prisma.DecimalNullableFilter<"EmployeeProfile"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   employmentStatus?: Prisma.EnumEmploymentStatusNullableFilter<"EmployeeProfile"> | $Enums.EmploymentStatus | null
   terminatedAt?: Prisma.DateTimeNullableFilter<"EmployeeProfile"> | Date | string | null
+  managerWorkerId?: Prisma.StringNullableFilter<"EmployeeProfile"> | string | null
   createdAt?: Prisma.DateTimeFilter<"EmployeeProfile"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"EmployeeProfile"> | Date | string
 }
@@ -870,6 +939,7 @@ export type EmployeeProfileCreateWithoutWorkerInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   organization: Prisma.OrganizationCreateNestedOneWithoutEmployeeProfilesInput
+  managerWorker?: Prisma.WorkerCreateNestedOneWithoutManagedEmployeesInput
 }
 
 export type EmployeeProfileUncheckedCreateWithoutWorkerInput = {
@@ -889,6 +959,7 @@ export type EmployeeProfileUncheckedCreateWithoutWorkerInput = {
   etat?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   employmentStatus?: $Enums.EmploymentStatus | null
   terminatedAt?: Date | string | null
+  managerWorkerId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -896,6 +967,60 @@ export type EmployeeProfileUncheckedCreateWithoutWorkerInput = {
 export type EmployeeProfileCreateOrConnectWithoutWorkerInput = {
   where: Prisma.EmployeeProfileWhereUniqueInput
   create: Prisma.XOR<Prisma.EmployeeProfileCreateWithoutWorkerInput, Prisma.EmployeeProfileUncheckedCreateWithoutWorkerInput>
+}
+
+export type EmployeeProfileCreateWithoutManagerWorkerInput = {
+  id?: string
+  countryCode: string
+  countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  peselEncrypted?: string | null
+  peselLast4?: string | null
+  ssnEncrypted?: string | null
+  ssnLast4?: string | null
+  iqamaEncrypted?: string | null
+  iqamaLast4?: string | null
+  emiratesIdEncrypted?: string | null
+  emiratesIdLast4?: string | null
+  saudizationCategory?: $Enums.NitaqatBand | null
+  etat?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  employmentStatus?: $Enums.EmploymentStatus | null
+  terminatedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  organization: Prisma.OrganizationCreateNestedOneWithoutEmployeeProfilesInput
+  worker: Prisma.WorkerCreateNestedOneWithoutEmployeeProfileInput
+}
+
+export type EmployeeProfileUncheckedCreateWithoutManagerWorkerInput = {
+  id?: string
+  organizationId: string
+  workerId: string
+  countryCode: string
+  countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  peselEncrypted?: string | null
+  peselLast4?: string | null
+  ssnEncrypted?: string | null
+  ssnLast4?: string | null
+  iqamaEncrypted?: string | null
+  iqamaLast4?: string | null
+  emiratesIdEncrypted?: string | null
+  emiratesIdLast4?: string | null
+  saudizationCategory?: $Enums.NitaqatBand | null
+  etat?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  employmentStatus?: $Enums.EmploymentStatus | null
+  terminatedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export type EmployeeProfileCreateOrConnectWithoutManagerWorkerInput = {
+  where: Prisma.EmployeeProfileWhereUniqueInput
+  create: Prisma.XOR<Prisma.EmployeeProfileCreateWithoutManagerWorkerInput, Prisma.EmployeeProfileUncheckedCreateWithoutManagerWorkerInput>
+}
+
+export type EmployeeProfileCreateManyManagerWorkerInputEnvelope = {
+  data: Prisma.EmployeeProfileCreateManyManagerWorkerInput | Prisma.EmployeeProfileCreateManyManagerWorkerInput[]
+  skipDuplicates?: boolean
 }
 
 export type EmployeeProfileUpsertWithoutWorkerInput = {
@@ -928,6 +1053,7 @@ export type EmployeeProfileUpdateWithoutWorkerInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutEmployeeProfilesNestedInput
+  managerWorker?: Prisma.WorkerUpdateOneWithoutManagedEmployeesNestedInput
 }
 
 export type EmployeeProfileUncheckedUpdateWithoutWorkerInput = {
@@ -947,8 +1073,25 @@ export type EmployeeProfileUncheckedUpdateWithoutWorkerInput = {
   etat?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   employmentStatus?: Prisma.NullableEnumEmploymentStatusFieldUpdateOperationsInput | $Enums.EmploymentStatus | null
   terminatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  managerWorkerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type EmployeeProfileUpsertWithWhereUniqueWithoutManagerWorkerInput = {
+  where: Prisma.EmployeeProfileWhereUniqueInput
+  update: Prisma.XOR<Prisma.EmployeeProfileUpdateWithoutManagerWorkerInput, Prisma.EmployeeProfileUncheckedUpdateWithoutManagerWorkerInput>
+  create: Prisma.XOR<Prisma.EmployeeProfileCreateWithoutManagerWorkerInput, Prisma.EmployeeProfileUncheckedCreateWithoutManagerWorkerInput>
+}
+
+export type EmployeeProfileUpdateWithWhereUniqueWithoutManagerWorkerInput = {
+  where: Prisma.EmployeeProfileWhereUniqueInput
+  data: Prisma.XOR<Prisma.EmployeeProfileUpdateWithoutManagerWorkerInput, Prisma.EmployeeProfileUncheckedUpdateWithoutManagerWorkerInput>
+}
+
+export type EmployeeProfileUpdateManyWithWhereWithoutManagerWorkerInput = {
+  where: Prisma.EmployeeProfileScalarWhereInput
+  data: Prisma.XOR<Prisma.EmployeeProfileUpdateManyMutationInput, Prisma.EmployeeProfileUncheckedUpdateManyWithoutManagerWorkerInput>
 }
 
 export type EmployeeProfileCreateManyOrganizationInput = {
@@ -968,6 +1111,7 @@ export type EmployeeProfileCreateManyOrganizationInput = {
   etat?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   employmentStatus?: $Enums.EmploymentStatus | null
   terminatedAt?: Date | string | null
+  managerWorkerId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -991,6 +1135,7 @@ export type EmployeeProfileUpdateWithoutOrganizationInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   worker?: Prisma.WorkerUpdateOneRequiredWithoutEmployeeProfileNestedInput
+  managerWorker?: Prisma.WorkerUpdateOneWithoutManagedEmployeesNestedInput
 }
 
 export type EmployeeProfileUncheckedUpdateWithoutOrganizationInput = {
@@ -1010,12 +1155,102 @@ export type EmployeeProfileUncheckedUpdateWithoutOrganizationInput = {
   etat?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   employmentStatus?: Prisma.NullableEnumEmploymentStatusFieldUpdateOperationsInput | $Enums.EmploymentStatus | null
   terminatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  managerWorkerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type EmployeeProfileUncheckedUpdateManyWithoutOrganizationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  workerId?: Prisma.StringFieldUpdateOperationsInput | string
+  countryCode?: Prisma.StringFieldUpdateOperationsInput | string
+  countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  peselEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  peselLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ssnEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  iqamaEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  iqamaLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  emiratesIdEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  emiratesIdLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  saudizationCategory?: Prisma.NullableEnumNitaqatBandFieldUpdateOperationsInput | $Enums.NitaqatBand | null
+  etat?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  employmentStatus?: Prisma.NullableEnumEmploymentStatusFieldUpdateOperationsInput | $Enums.EmploymentStatus | null
+  terminatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  managerWorkerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type EmployeeProfileCreateManyManagerWorkerInput = {
+  id?: string
+  organizationId: string
+  workerId: string
+  countryCode: string
+  countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  peselEncrypted?: string | null
+  peselLast4?: string | null
+  ssnEncrypted?: string | null
+  ssnLast4?: string | null
+  iqamaEncrypted?: string | null
+  iqamaLast4?: string | null
+  emiratesIdEncrypted?: string | null
+  emiratesIdLast4?: string | null
+  saudizationCategory?: $Enums.NitaqatBand | null
+  etat?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  employmentStatus?: $Enums.EmploymentStatus | null
+  terminatedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export type EmployeeProfileUpdateWithoutManagerWorkerInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  countryCode?: Prisma.StringFieldUpdateOperationsInput | string
+  countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  peselEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  peselLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ssnEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  iqamaEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  iqamaLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  emiratesIdEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  emiratesIdLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  saudizationCategory?: Prisma.NullableEnumNitaqatBandFieldUpdateOperationsInput | $Enums.NitaqatBand | null
+  etat?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  employmentStatus?: Prisma.NullableEnumEmploymentStatusFieldUpdateOperationsInput | $Enums.EmploymentStatus | null
+  terminatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  organization?: Prisma.OrganizationUpdateOneRequiredWithoutEmployeeProfilesNestedInput
+  worker?: Prisma.WorkerUpdateOneRequiredWithoutEmployeeProfileNestedInput
+}
+
+export type EmployeeProfileUncheckedUpdateWithoutManagerWorkerInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  organizationId?: Prisma.StringFieldUpdateOperationsInput | string
+  workerId?: Prisma.StringFieldUpdateOperationsInput | string
+  countryCode?: Prisma.StringFieldUpdateOperationsInput | string
+  countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  peselEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  peselLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ssnEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  iqamaEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  iqamaLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  emiratesIdEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  emiratesIdLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  saudizationCategory?: Prisma.NullableEnumNitaqatBandFieldUpdateOperationsInput | $Enums.NitaqatBand | null
+  etat?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  employmentStatus?: Prisma.NullableEnumEmploymentStatusFieldUpdateOperationsInput | $Enums.EmploymentStatus | null
+  terminatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type EmployeeProfileUncheckedUpdateManyWithoutManagerWorkerInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  organizationId?: Prisma.StringFieldUpdateOperationsInput | string
   workerId?: Prisma.StringFieldUpdateOperationsInput | string
   countryCode?: Prisma.StringFieldUpdateOperationsInput | string
   countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1055,10 +1290,12 @@ export type EmployeeProfileSelect<ExtArgs extends runtime.Types.Extensions.Inter
   etat?: boolean
   employmentStatus?: boolean
   terminatedAt?: boolean
+  managerWorkerId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
   worker?: boolean | Prisma.WorkerDefaultArgs<ExtArgs>
+  managerWorker?: boolean | Prisma.EmployeeProfile$managerWorkerArgs<ExtArgs>
 }, ExtArgs["result"]["employeeProfile"]>
 
 export type EmployeeProfileSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -1079,10 +1316,12 @@ export type EmployeeProfileSelectCreateManyAndReturn<ExtArgs extends runtime.Typ
   etat?: boolean
   employmentStatus?: boolean
   terminatedAt?: boolean
+  managerWorkerId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
   worker?: boolean | Prisma.WorkerDefaultArgs<ExtArgs>
+  managerWorker?: boolean | Prisma.EmployeeProfile$managerWorkerArgs<ExtArgs>
 }, ExtArgs["result"]["employeeProfile"]>
 
 export type EmployeeProfileSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -1103,10 +1342,12 @@ export type EmployeeProfileSelectUpdateManyAndReturn<ExtArgs extends runtime.Typ
   etat?: boolean
   employmentStatus?: boolean
   terminatedAt?: boolean
+  managerWorkerId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
   worker?: boolean | Prisma.WorkerDefaultArgs<ExtArgs>
+  managerWorker?: boolean | Prisma.EmployeeProfile$managerWorkerArgs<ExtArgs>
 }, ExtArgs["result"]["employeeProfile"]>
 
 export type EmployeeProfileSelectScalar = {
@@ -1127,22 +1368,26 @@ export type EmployeeProfileSelectScalar = {
   etat?: boolean
   employmentStatus?: boolean
   terminatedAt?: boolean
+  managerWorkerId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type EmployeeProfileOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "organizationId" | "workerId" | "countryCode" | "countryFields" | "peselEncrypted" | "peselLast4" | "ssnEncrypted" | "ssnLast4" | "iqamaEncrypted" | "iqamaLast4" | "emiratesIdEncrypted" | "emiratesIdLast4" | "saudizationCategory" | "etat" | "employmentStatus" | "terminatedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["employeeProfile"]>
+export type EmployeeProfileOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "organizationId" | "workerId" | "countryCode" | "countryFields" | "peselEncrypted" | "peselLast4" | "ssnEncrypted" | "ssnLast4" | "iqamaEncrypted" | "iqamaLast4" | "emiratesIdEncrypted" | "emiratesIdLast4" | "saudizationCategory" | "etat" | "employmentStatus" | "terminatedAt" | "managerWorkerId" | "createdAt" | "updatedAt", ExtArgs["result"]["employeeProfile"]>
 export type EmployeeProfileInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
   worker?: boolean | Prisma.WorkerDefaultArgs<ExtArgs>
+  managerWorker?: boolean | Prisma.EmployeeProfile$managerWorkerArgs<ExtArgs>
 }
 export type EmployeeProfileIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
   worker?: boolean | Prisma.WorkerDefaultArgs<ExtArgs>
+  managerWorker?: boolean | Prisma.EmployeeProfile$managerWorkerArgs<ExtArgs>
 }
 export type EmployeeProfileIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
   worker?: boolean | Prisma.WorkerDefaultArgs<ExtArgs>
+  managerWorker?: boolean | Prisma.EmployeeProfile$managerWorkerArgs<ExtArgs>
 }
 
 export type $EmployeeProfilePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1150,6 +1395,7 @@ export type $EmployeeProfilePayload<ExtArgs extends runtime.Types.Extensions.Int
   objects: {
     organization: Prisma.$OrganizationPayload<ExtArgs>
     worker: Prisma.$WorkerPayload<ExtArgs>
+    managerWorker: Prisma.$WorkerPayload<ExtArgs> | null
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1169,6 +1415,7 @@ export type $EmployeeProfilePayload<ExtArgs extends runtime.Types.Extensions.Int
     etat: runtime.Decimal | null
     employmentStatus: $Enums.EmploymentStatus | null
     terminatedAt: Date | null
+    managerWorkerId: string | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["employeeProfile"]>
@@ -1567,6 +1814,7 @@ export interface Prisma__EmployeeProfileClient<T, Null = never, ExtArgs extends 
   readonly [Symbol.toStringTag]: "PrismaPromise"
   organization<T extends Prisma.OrganizationDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.OrganizationDefaultArgs<ExtArgs>>): Prisma.Prisma__OrganizationClient<runtime.Types.Result.GetResult<Prisma.$OrganizationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   worker<T extends Prisma.WorkerDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.WorkerDefaultArgs<ExtArgs>>): Prisma.Prisma__WorkerClient<runtime.Types.Result.GetResult<Prisma.$WorkerPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  managerWorker<T extends Prisma.EmployeeProfile$managerWorkerArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.EmployeeProfile$managerWorkerArgs<ExtArgs>>): Prisma.Prisma__WorkerClient<runtime.Types.Result.GetResult<Prisma.$WorkerPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1613,6 +1861,7 @@ export interface EmployeeProfileFieldRefs {
   readonly etat: Prisma.FieldRef<"EmployeeProfile", 'Decimal'>
   readonly employmentStatus: Prisma.FieldRef<"EmployeeProfile", 'EmploymentStatus'>
   readonly terminatedAt: Prisma.FieldRef<"EmployeeProfile", 'DateTime'>
+  readonly managerWorkerId: Prisma.FieldRef<"EmployeeProfile", 'String'>
   readonly createdAt: Prisma.FieldRef<"EmployeeProfile", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"EmployeeProfile", 'DateTime'>
 }
@@ -2013,6 +2262,25 @@ export type EmployeeProfileDeleteManyArgs<ExtArgs extends runtime.Types.Extensio
    * Limit how many EmployeeProfiles to delete.
    */
   limit?: number
+}
+
+/**
+ * EmployeeProfile.managerWorker
+ */
+export type EmployeeProfile$managerWorkerArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Worker
+   */
+  select?: Prisma.WorkerSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Worker
+   */
+  omit?: Prisma.WorkerOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.WorkerInclude<ExtArgs> | null
+  where?: Prisma.WorkerWhereInput
 }
 
 /**

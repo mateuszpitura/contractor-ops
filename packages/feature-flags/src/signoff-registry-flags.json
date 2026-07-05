@@ -103,6 +103,10 @@
     "status": "PENDING",
     "notes": "v7.0 Theme B — workforce/employee management gate. Ship dark; flip APPROVED post-deploy. Engineers dev with FLAG_SIGNOFF_BYPASS=local."
   },
+  "module.employee-portal": {
+    "status": "PENDING",
+    "notes": "v7.0 Theme B — employee self-service portal gate (/portal/employee/*). Layers on module.workforce-employees. Ship dark; flip APPROVED post-deploy after legal review of the self-service entitlement + machine-translated copy. Engineers dev with FLAG_SIGNOFF_BYPASS=local."
+  },
   "module.public-api": {
     "status": "PENDING",
     "notes": "v7.0 Theme C — public REST API surface gate. Ship dark; flip APPROVED post-deploy. Engineers dev with FLAG_SIGNOFF_BYPASS=local."

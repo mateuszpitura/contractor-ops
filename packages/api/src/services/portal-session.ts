@@ -77,6 +77,11 @@ export async function validatePortalSession(rawToken: string) {
   if (!session) return null;
   if (session.expiresAt < new Date()) return null;
 
+  // The session row's contractor relation is nullable at the schema level (an
+  // employee subject leaves it null). This validator serves the contractor path;
+  // a row without its contractor is treated as invalid.
+  if (!session.contractor) return null;
+
   // Block access if the contractor has been archived or deactivated
   if (session.contractor.status === 'ARCHIVED' || session.contractor.status === 'INACTIVE') {
     return null;

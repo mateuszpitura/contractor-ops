@@ -58,6 +58,16 @@ const portalAuthMiddleware = t.middleware(async ({ ctx, next }) => {
     throw new TRPCError({ code: 'UNAUTHORIZED' });
   }
 
+  // This middleware serves the contractor portal subject only. The session row's
+  // contractor id/relation are nullable at the schema level (an employee subject
+  // leaves them null), so narrow them to non-null here — a session reaching this
+  // middleware without a contractor is not a valid contractor session. Bound to
+  // const locals so the narrowing survives into the tenantStore.run closure.
+  const { contractorId, contractor } = session;
+  if (contractorId === null || contractor === null) {
+    throw new TRPCError({ code: 'UNAUTHORIZED' });
+  }
+
   // Read subdomain header set by Next.js middleware (supplementary context)
   // Session.organizationId remains authoritative for tenantStore scoping.
   // The subdomain is passed as context metadata for logging/audit/rate-limiting.
@@ -77,9 +87,9 @@ const portalAuthMiddleware = t.middleware(async ({ ctx, next }) => {
       ctx: {
         ...ctx,
         portalSession: session,
-        contractorId: session.contractorId,
+        contractorId,
         organizationId: session.organizationId,
-        contractor: session.contractor,
+        contractor,
         portalSubdomain,
         region,
         db: scopedClient,

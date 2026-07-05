@@ -1143,6 +1143,7 @@ export const EmployeeProfileScalarFieldEnum = {
   etat: 'etat',
   employmentStatus: 'employmentStatus',
   terminatedAt: 'terminatedAt',
+  managerWorkerId: 'managerWorkerId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -2378,7 +2379,9 @@ export type PersonnelFileDocumentScalarFieldEnum = (typeof PersonnelFileDocument
 export const PortalSessionScalarFieldEnum = {
   id: 'id',
   token: 'token',
+  subjectType: 'subjectType',
   contractorId: 'contractorId',
+  workerId: 'workerId',
   organizationId: 'organizationId',
   email: 'email',
   expiresAt: 'expiresAt',

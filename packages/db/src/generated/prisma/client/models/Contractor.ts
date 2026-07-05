@@ -1912,10 +1912,12 @@ export type ContractorCreateNestedOneWithoutPortalSessionsInput = {
   connect?: Prisma.ContractorWhereUniqueInput
 }
 
-export type ContractorUpdateOneRequiredWithoutPortalSessionsNestedInput = {
+export type ContractorUpdateOneWithoutPortalSessionsNestedInput = {
   create?: Prisma.XOR<Prisma.ContractorCreateWithoutPortalSessionsInput, Prisma.ContractorUncheckedCreateWithoutPortalSessionsInput>
   connectOrCreate?: Prisma.ContractorCreateOrConnectWithoutPortalSessionsInput
   upsert?: Prisma.ContractorUpsertWithoutPortalSessionsInput
+  disconnect?: Prisma.ContractorWhereInput | boolean
+  delete?: Prisma.ContractorWhereInput | boolean
   connect?: Prisma.ContractorWhereUniqueInput
   update?: Prisma.XOR<Prisma.XOR<Prisma.ContractorUpdateToOneWithWhereWithoutPortalSessionsInput, Prisma.ContractorUpdateWithoutPortalSessionsInput>, Prisma.ContractorUncheckedUpdateWithoutPortalSessionsInput>
 }

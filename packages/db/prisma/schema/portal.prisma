@@ -1,25 +1,40 @@
 // Portal authentication — PortalSession, PortalMagicToken
 // These are global models (not tenant-scoped) — see tenant.ts globalModels
 
+// A portal session authenticates exactly one subject: a Contractor OR an
+// employee Worker. `subjectType` discriminates; `contractorId` and `workerId`
+// are both nullable and mutually exclusive. The one-of invariant (exactly one
+// id set, matching subjectType) is a raw-SQL CHECK in the migration — Prisma
+// cannot express a multi-column CHECK. Existing rows all carry the CONTRACTOR
+// backfill default, so the contractor login path is untouched.
 model PortalSession {
-  id             String   @id @default(cuid())
-  token          String   @unique
-  contractorId   String
+  id             String            @id @default(cuid())
+  token          String            @unique
+  subjectType    PortalSubjectType @default(CONTRACTOR)
+  contractorId   String?
+  workerId       String?
   organizationId String
   email          String
   expiresAt      DateTime
   ipAddress      String?
   userAgent      String?
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
 
-  contractor   Contractor   @relation(fields: [contractorId], references: [id])
+  contractor   Contractor?  @relation(fields: [contractorId], references: [id])
+  worker       Worker?      @relation(fields: [workerId], references: [id])
   organization Organization @relation(fields: [organizationId], references: [id])
 
   @@index([token])
   @@index([email])
   @@index([contractorId, organizationId])
+  @@index([workerId, organizationId])
   @@index([expiresAt])
+}
+
+enum PortalSubjectType {
+  CONTRACTOR
+  EMPLOYEE
 }
 
 model PortalMagicToken {

@@ -236,6 +236,15 @@ export const FLAGS = deepFreeze({
     jurisdiction: 'ANY',
     owner: 'workforce-platform',
   },
+  'module.employee-portal': {
+    key: 'module.employee-portal',
+    description:
+      'Employee self-service portal (Theme B): /portal/employee/* employee + manager surfaces on the v2.0 portal shell. Layers on module.workforce-employees (the data prerequisite). Ship dark — requires signoff PENDING→APPROVED before enabling per-org.',
+    default: false,
+    category: 'module',
+    jurisdiction: 'ANY',
+    owner: 'workforce-platform',
+  },
   'module.public-api': {
     key: 'module.public-api',
     description:

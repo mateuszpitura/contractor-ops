@@ -51,6 +51,7 @@ try {
  * with no registry entry).
  *   - 'module.us-'              → US surface (module.us-expansion)
  *   - 'module.workforce-'       → Workforce module (module.workforce-employees)
+ *   - 'module.employee-'        → Employee portal (module.employee-portal)
  *   - 'module.iris-'            → IRIS A2A e-file (module.iris-efile)
  *   - 'module.public-api'       → Public API (module.public-api)
  *   - 'module.outbound-'        → Outbound webhooks (module.outbound-webhooks)
@@ -69,6 +70,7 @@ export const GATED_FLAG_NAMESPACE_PREFIXES = [
   'offboarding-ip-',
   'module.us-',
   'module.workforce-',
+  'module.employee-',
   'module.iris-',
   'module.public-api',
   'module.outbound-',

@@ -1233,6 +1233,14 @@ export const PersonnelDocClassificationMethod = {
 export type PersonnelDocClassificationMethod = (typeof PersonnelDocClassificationMethod)[keyof typeof PersonnelDocClassificationMethod]
 
 
+export const PortalSubjectType = {
+  CONTRACTOR: 'CONTRACTOR',
+  EMPLOYEE: 'EMPLOYEE'
+} as const
+
+export type PortalSubjectType = (typeof PortalSubjectType)[keyof typeof PortalSubjectType]
+
+
 export const ContractorChangeRequestStatus = {
   PENDING: 'PENDING',
   APPROVED: 'APPROVED',
