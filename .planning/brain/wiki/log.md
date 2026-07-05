@@ -5,6 +5,19 @@ type: log
 
 # Wiki log (append only)
 
+## 2026-07-05 — Staff HR dashboard UI (Phase 97, Theme B)
+
+New [[domains/hr-dashboard]]: the web-vite `/dashboard/hr` surface on the 97-03/04/05 `hrDashboard.*` procedures.
+Six wired sections (KPI header + headcount + vacation-utilization + doc-expiry + probation + Gulf nationalisation),
+each `page → wired section → hooks/use-hr-* (sole tRPC boundary) → *View`, with loading/empty/degraded/error states;
+watchlists use the canonical `WorkbenchDataTable`. Dark behind `module.hr-dashboard`. Gate correction recorded: the
+four HR roles are NOT in the client `MemberRole` union, so `can('employee','read')` is a client no-op — the page +
+nav match the raw role via `apps/web-vite/src/lib/hr-roles.ts` (new additive `NavItem.roles` predicate in
+`use-nav-items.ts`); the server stays authoritative. Doc-expiry renders only the server's section-filtered set; the
+Gulf rollup shows the "record manual headcount" prompt (never a derived rate). Full 5-locale `HrDashboard` i18n
+(en/en-US/de/pl/ar; de/pl/ar machine-assisted, native-review-flagged) + `Navigation.hr`. Updated
+[[structure/web-vite-domains]], [[domains/_index]], `.planning/MEMORY.md`.
+
 ## 2026-07-05 — Outbound webhooks + integration security (Phase 100)
 
 New [[domains/outbound-webhooks]]: signed (`X-CO-Signature` HMAC + 5-min replay), PII-safe (redact-before-persist),

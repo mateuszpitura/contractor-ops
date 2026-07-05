@@ -4812,7 +4812,162 @@
       "accepting": "Recording acceptance..."
     }
   },
+  "HrDashboard": {
+    "title": "HR dashboard",
+    "subtitle": "A read-only command view of your workforce — headcount, leave, documents, probation, and Gulf nationalization.",
+    "loadError": {
+      "heading": "Couldn't load this section",
+      "body": "Something went wrong loading the data. Try again.",
+      "retry": "Try again"
+    },
+    "header": {
+      "title": "Overview",
+      "totalHeadcount": "Total headcount",
+      "underUtilized": "Under-utilized leave",
+      "probationDue": "Probation ending soon",
+      "expiringDocs": "Documents expiring",
+      "empty": {
+        "heading": "No workforce data yet",
+        "body": "Once employees are registered, their headline metrics appear here."
+      }
+    },
+    "headcount": {
+      "title": "Headcount",
+      "description": "Active workforce broken down by department, jurisdiction, employment type, and contract end.",
+      "total": "Active headcount",
+      "noBreakdown": "No data",
+      "unspecified": "Unspecified",
+      "byDepartment": "By department",
+      "byJurisdiction": "By jurisdiction",
+      "byEmploymentType": "By employment type",
+      "byContractEnd": "By contract end",
+      "employmentType": {
+        "FULL_TIME": "Full-time",
+        "PART_TIME": "Part-time",
+        "FIXED_TERM": "Fixed-term",
+        "TEMPORARY": "Temporary",
+        "APPRENTICE": "Apprentice",
+        "SEASONAL": "Seasonal"
+      },
+      "contractEnd": {
+        "expiredOrPast": "Ended or overdue",
+        "soon30": "Ends within 30 days",
+        "soon90": "Ends within 90 days",
+        "later": "Later",
+        "none": "No end date"
+      },
+      "empty": {
+        "heading": "No active employees",
+        "body": "Register employees to see the headcount breakdown."
+      }
+    },
+    "utilization": {
+      "title": "Vacation utilization",
+      "description": "Leave taken versus entitled per employee, with under-utilization flagged near year-end.",
+      "underUtilized": {
+        "count": "{count, plural, one {# employee is under-utilizing leave} other {# employees are under-utilizing leave}}",
+        "body": "These employees still hold more than 10 unused days near the end of the leave year.",
+        "none": "No employees are under-utilizing their leave right now."
+      },
+      "degraded": {
+        "heading": "No leave balances yet",
+        "body": "Once leave tracking records balances, utilization appears here."
+      },
+      "table": {
+        "worker": "Employee",
+        "year": "Year",
+        "taken": "Taken (days)",
+        "entitled": "Entitled (days)",
+        "unused": "Unused (days)",
+        "entityLabel": "{count, plural, one {# employee} other {# employees}}",
+        "empty": "No leave balances",
+        "noResults": "No employees match"
+      }
+    },
+    "docExpiry": {
+      "title": "Document expiry",
+      "description": "Employee documents approaching expiry, grouped by urgency and category.",
+      "sectionNote": "Showing only documents in the personnel-file sections you can access.",
+      "bands": {
+        "expired": "Expired",
+        "soon30": "Within 30 days",
+        "soon60": "Within 60 days",
+        "soon90": "Within 90 days",
+        "later": "Later"
+      },
+      "categories": {
+        "VISA": "Visa",
+        "WORK_PERMIT": "Work permit",
+        "CONTRACT_RENEWAL": "Contract renewal",
+        "MEDICAL_CERT": "Medical certificate",
+        "TRAINING_CERT": "Training certificate",
+        "OTHER": "Other"
+      },
+      "empty": {
+        "heading": "No documents expiring",
+        "body": "No accessible documents have an upcoming expiry date."
+      },
+      "table": {
+        "worker": "Employee",
+        "category": "Category",
+        "expiresAt": "Expires",
+        "daysUntil": "Days left",
+        "band": "Urgency",
+        "entityLabel": "{count, plural, one {# document} other {# documents}}",
+        "empty": "No documents expiring",
+        "noResults": "No documents match"
+      }
+    },
+    "probation": {
+      "title": "Probation watchlist",
+      "description": "Employees whose probation period ends within the next 14 days.",
+      "buckets": {
+        "dueToday": "Due today",
+        "dueWithin7": "Within 7 days",
+        "dueWithin14": "Within 14 days"
+      },
+      "empty": {
+        "heading": "No probation periods ending soon",
+        "body": "No employee's probation ends within the next 14 days."
+      },
+      "table": {
+        "worker": "Employee",
+        "probationEnds": "Probation ends",
+        "daysRemaining": "Days left",
+        "severity": "Urgency",
+        "entityLabel": "{count, plural, one {# employee} other {# employees}}",
+        "empty": "Nothing due",
+        "noResults": "No employees match"
+      }
+    },
+    "nationalisation": {
+      "title": "Gulf nationalization",
+      "description": "Saudization and Emiratisation rates from your recorded manual headcount.",
+      "ksa": {
+        "title": "Saudization (KSA)"
+      },
+      "uae": {
+        "title": "Emiratisation (UAE)"
+      },
+      "rate": "Nationalization rate",
+      "rateNotAvailable": "Not available",
+      "band": "Band",
+      "bandNotSet": "Not set",
+      "totalHeadcount": "Total workforce",
+      "nationalHeadcount": "National employees",
+      "recordPrompt": {
+        "heading": "Record manual headcount",
+        "body": "Enter your total and national headcount to see the nationalization rate. The platform never computes it for you."
+      },
+      "iqama": {
+        "tracked": "Permits tracked",
+        "expired": "Expired",
+        "expiringSoon": "Expiring soon"
+      }
+    }
+  },
   "Navigation": {
+    "hr": "HR",
     "dashboard": "Dashboard",
     "contractors": "Contractors",
     "contracts": "Contracts",

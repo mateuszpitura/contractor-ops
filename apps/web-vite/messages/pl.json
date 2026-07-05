@@ -4813,7 +4813,162 @@
       "fileTooLarge": "Plik za duży (maks. 10 MB)"
     }
   },
+  "HrDashboard": {
+    "title": "Panel HR",
+    "subtitle": "Widok tylko do odczytu Twojego personelu — stan zatrudnienia, urlopy, dokumenty, okres próbny i nacjonalizacja w Zatoce.",
+    "loadError": {
+      "heading": "Nie udało się załadować tej sekcji",
+      "body": "Wystąpił błąd podczas ładowania danych. Spróbuj ponownie.",
+      "retry": "Spróbuj ponownie"
+    },
+    "header": {
+      "title": "Przegląd",
+      "totalHeadcount": "Łączny stan zatrudnienia",
+      "underUtilized": "Niewykorzystany urlop",
+      "probationDue": "Kończący się okres próbny",
+      "expiringDocs": "Wygasające dokumenty",
+      "empty": {
+        "heading": "Brak danych personelu",
+        "body": "Gdy pracownicy zostaną zarejestrowani, ich kluczowe wskaźniki pojawią się tutaj."
+      }
+    },
+    "headcount": {
+      "title": "Stan zatrudnienia",
+      "description": "Aktywny personel w podziale na dział, jurysdykcję, rodzaj zatrudnienia i koniec umowy.",
+      "total": "Aktywny stan zatrudnienia",
+      "noBreakdown": "Brak danych",
+      "unspecified": "Nieokreślone",
+      "byDepartment": "Według działu",
+      "byJurisdiction": "Według jurysdykcji",
+      "byEmploymentType": "Według rodzaju zatrudnienia",
+      "byContractEnd": "Według końca umowy",
+      "employmentType": {
+        "FULL_TIME": "Pełny etat",
+        "PART_TIME": "Niepełny etat",
+        "FIXED_TERM": "Na czas określony",
+        "TEMPORARY": "Tymczasowe",
+        "APPRENTICE": "Praktykant",
+        "SEASONAL": "Sezonowe"
+      },
+      "contractEnd": {
+        "expiredOrPast": "Zakończone lub zaległe",
+        "soon30": "Kończy się w 30 dni",
+        "soon90": "Kończy się w 90 dni",
+        "later": "Później",
+        "none": "Brak daty końca"
+      },
+      "empty": {
+        "heading": "Brak aktywnych pracowników",
+        "body": "Zarejestruj pracowników, aby zobaczyć podział zatrudnienia."
+      }
+    },
+    "utilization": {
+      "title": "Wykorzystanie urlopów",
+      "description": "Wykorzystany urlop w stosunku do przysługującego na pracownika, z oznaczeniem niskiego wykorzystania pod koniec roku.",
+      "underUtilized": {
+        "count": "{count, plural, one {# pracownik słabo wykorzystuje urlop} other {# pracowników słabo wykorzystuje urlop}}",
+        "body": "Ci pracownicy pod koniec roku urlopowego mają nadal ponad 10 niewykorzystanych dni.",
+        "none": "Obecnie nikt nie wykorzystuje urlopu zbyt słabo."
+      },
+      "degraded": {
+        "heading": "Brak sald urlopowych",
+        "body": "Gdy śledzenie urlopów zapisze salda, wykorzystanie pojawi się tutaj."
+      },
+      "table": {
+        "worker": "Pracownik",
+        "year": "Rok",
+        "taken": "Wykorzystane (dni)",
+        "entitled": "Przysługujące (dni)",
+        "unused": "Niewykorzystane (dni)",
+        "entityLabel": "{count, plural, one {# pracownik} other {# pracowników}}",
+        "empty": "Brak sald urlopowych",
+        "noResults": "Brak wyników"
+      }
+    },
+    "docExpiry": {
+      "title": "Wygasanie dokumentów",
+      "description": "Dokumenty pracowników zbliżające się do wygaśnięcia, pogrupowane według pilności i kategorii.",
+      "sectionNote": "Wyświetlane są tylko dokumenty z sekcji akt osobowych, do których masz dostęp.",
+      "bands": {
+        "expired": "Wygasłe",
+        "soon30": "W ciągu 30 dni",
+        "soon60": "W ciągu 60 dni",
+        "soon90": "W ciągu 90 dni",
+        "later": "Później"
+      },
+      "categories": {
+        "VISA": "Wiza",
+        "WORK_PERMIT": "Pozwolenie na pracę",
+        "CONTRACT_RENEWAL": "Odnowienie umowy",
+        "MEDICAL_CERT": "Zaświadczenie lekarskie",
+        "TRAINING_CERT": "Zaświadczenie o szkoleniu",
+        "OTHER": "Inne"
+      },
+      "empty": {
+        "heading": "Brak wygasających dokumentów",
+        "body": "Żaden dostępny dokument nie ma nadchodzącej daty wygaśnięcia."
+      },
+      "table": {
+        "worker": "Pracownik",
+        "category": "Kategoria",
+        "expiresAt": "Wygasa",
+        "daysUntil": "Pozostałe dni",
+        "band": "Pilność",
+        "entityLabel": "{count, plural, one {# dokument} other {# dokumentów}}",
+        "empty": "Brak wygasających dokumentów",
+        "noResults": "Brak wyników"
+      }
+    },
+    "probation": {
+      "title": "Lista obserwacyjna okresów próbnych",
+      "description": "Pracownicy, których okres próbny kończy się w ciągu najbliższych 14 dni.",
+      "buckets": {
+        "dueToday": "Kończy się dziś",
+        "dueWithin7": "W ciągu 7 dni",
+        "dueWithin14": "W ciągu 14 dni"
+      },
+      "empty": {
+        "heading": "Żaden okres próbny nie kończy się wkrótce",
+        "body": "Żaden okres próbny nie kończy się w ciągu najbliższych 14 dni."
+      },
+      "table": {
+        "worker": "Pracownik",
+        "probationEnds": "Koniec okresu próbnego",
+        "daysRemaining": "Pozostałe dni",
+        "severity": "Pilność",
+        "entityLabel": "{count, plural, one {# pracownik} other {# pracowników}}",
+        "empty": "Nic do wykonania",
+        "noResults": "Brak wyników"
+      }
+    },
+    "nationalisation": {
+      "title": "Nacjonalizacja w Zatoce",
+      "description": "Wskaźniki saudyzacji i emiratyzacji na podstawie ręcznie wprowadzonego stanu zatrudnienia.",
+      "ksa": {
+        "title": "Saudyzacja (KSA)"
+      },
+      "uae": {
+        "title": "Emiratyzacja (ZEA)"
+      },
+      "rate": "Wskaźnik nacjonalizacji",
+      "rateNotAvailable": "Niedostępne",
+      "band": "Poziom",
+      "bandNotSet": "Nie ustawiono",
+      "totalHeadcount": "Cały personel",
+      "nationalHeadcount": "Pracownicy krajowi",
+      "recordPrompt": {
+        "heading": "Wprowadź ręczny stan zatrudnienia",
+        "body": "Wprowadź całkowity i krajowy stan zatrudnienia, aby zobaczyć wskaźnik nacjonalizacji. Platforma nigdy nie oblicza go za Ciebie."
+      },
+      "iqama": {
+        "tracked": "Śledzone pozwolenia",
+        "expired": "Wygasłe",
+        "expiringSoon": "Wkrótce wygasają"
+      }
+    }
+  },
   "Navigation": {
+    "hr": "Kadry",
     "dashboard": "Pulpit",
     "contractors": "Kontrahenci",
     "contracts": "Umowy",

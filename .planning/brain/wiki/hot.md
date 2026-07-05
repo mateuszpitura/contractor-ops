@@ -2,7 +2,7 @@
 title: Hot cache
 type: hot-cache
 updated: 2026-07-05
-source_commit: 3126586be
+source_commit: 1e41c29d6
 ---
 
 # Hot cache
@@ -19,6 +19,11 @@ Discovery shortcuts for agents — not a changelog. History lives in `wiki/log.m
 
 - Loop-free by a DISJOINT field partition — pull writes the HRIS-owned allowlist (`HrisWritableEmployeePatch`), push carries CO-owned events; `assertNotHrisOwnedField` guards. Engine: `packages/api/src/services/hris-sync/*` + `outbox/hris-push*.ts`. Router: `hrisSync` (workforce, dark). Adapters: `personio-adapter.ts` (bearer), `bamboohr-adapter.ts` (OAuth). Full: [[domains/hris-sync]].
 - **Agent traps:** `invoice.paid` is NOT an outbox type (3 `hris.*.push` were added); one-HRIS-per-org is a raw-SQL partial index (`provider::text IN (...)`), not a Prisma `@@unique`; national-ID fields are never HRIS-writable; producers are EMPLOYEE-guarded.
+
+## Staff HR dashboard (Theme B, dark)
+
+- Read-only staff HR command view at `/dashboard/hr`. Router `hrDashboard.*` (`packages/api/src/routers/workforce/hr-dashboard.ts`) + pure services `services/hr-dashboard-{utilization,doc-expiry,probation}.ts` + `saudization-dashboard.ts`. UI `apps/web-vite/src/components/hr-dashboard/` (6 wired sections over `hooks/use-hr-*.ts`), page `pages/dashboard/hr.tsx`. Dark behind `module.hr-dashboard` (+ `module.workforce-employees`). Full: [[domains/hr-dashboard]].
+- **Agent traps:** gate is `employee:read` → the FOUR HR roles only, **owner excluded** (NOT `report:read`). On the client `can('employee','read')` is a NO-OP — those roles aren't in the `MemberRole` union; the page + nav match the raw role via `apps/web-vite/src/lib/hr-roles.ts` (`isHrDashboardRole`) + the additive `NavItem.roles` predicate. The HR-DASH aggregation columns were ADDED in 97-01 (NOT P90-promoted). Doc-expiry uses `compliance-policy` math (NOT `compliance-reminder-scan`) and is server-section-filtered — the UI renders only what it receives. The Gulf rate is manual-input only (F3) — a missing country shows the "record manual headcount" prompt, never a derived rate.
 
 ## Public API keys / scopes / rate limits / write surface (Theme C)
 

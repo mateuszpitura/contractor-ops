@@ -26,6 +26,7 @@ updated: 2026-06-09
 | [[worker-foundation]] | worker-model union (Worker root + workerType), backfill, per-type RBAC |
 | [[employee-registry]] | per-market employee onboarding — validators, encrypted national-ID PII, seeded reference lists |
 | [[personnel-file]] | jurisdiction-correct akta osobowe / Personalakte — 4 sections + per-section RBAC, retention clock, RODO erasure, doc classifier |
+| [[hr-dashboard]] | STAFF read-only HR command view (`/dashboard/hr`) — headcount, leave utilization, doc expiry, probation, Gulf nationalisation; `employee:read` (four HR roles), flag `module.hr-dashboard` |
 | [[contracts-lifecycle]] | wizard, esign, amendments, health |
 | [[portal-external]] | contractor portal (separate router) |
 
