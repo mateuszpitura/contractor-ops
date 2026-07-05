@@ -2,7 +2,7 @@
 title: Workflows and roles
 type: domain
 tags: [workflows, kt-roles, calendar]
-source_commit: 3ac579b1b
+source_commit: cbcf8a2bb
 verify_with:
   - packages/api/src/routers/workflow/
   - packages/api/src/routers/workflow/workflow-roles.ts
@@ -46,7 +46,7 @@ Every organization gets the 4 offboarding KT `WorkflowRoleTemplate` rows (+ thei
 
 ## Invariants
 
-- Starting a run enqueues each active assignee's `TASK_ASSIGNED` notification into the transactional outbox **inside** the run-creation tx (`enqueueNotificationDispatch({ tx })`, dedupKey `TASK_ASSIGNED:${taskRunId}`) — delivered exactly-once by the drain, not post-commit fire-and-forget. `reassignTask` still dispatches directly (single non-transactional `update`, no enclosing tx). See [[patterns/transactional-outbox]].
+- Starting a run enqueues each active assignee's `TASK_ASSIGNED` notification into the transactional outbox **inside** the run-creation tx (`enqueueNotificationDispatch({ tx })`, dedupKey `TASK_ASSIGNED:${taskRunId}`) — delivered exactly-once by the drain, not post-commit fire-and-forget. `reassignTask` now does the same: it wraps the assignee `update` + the `TASK_ASSIGNED` enqueue in one `$transaction` (no dedupKey — each reassignment is a distinct notice). See [[patterns/transactional-outbox]].
 - `WorkflowRoleTemplate` seeds are the source of truth for role auto-selection; a missing seed silently degrades a contractor to the NULL-`workflowRoleId` fallback. The seed hook fires at org creation (auth config), **not** from any tRPC router.
 
 ## Related

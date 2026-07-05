@@ -74,6 +74,9 @@ async function dispatchKsefSyncNotification(
   const recipientUserIds = members.map(m => m.userId);
   if (recipientUserIds.length === 0) return;
 
+  // Direct dispatch (not outboxed): this announces the aggregate outcome of a
+  // whole KSeF sync run (invoicesCreated across many invoice rows), not a single
+  // committed write — there is no enclosing $transaction to bind an enqueue to.
   try {
     await dispatch({
       organizationId,

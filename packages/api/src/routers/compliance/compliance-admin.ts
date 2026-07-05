@@ -17,7 +17,6 @@
 //   (defence-in-depth).
 
 import type { Prisma } from '@contractor-ops/db';
-import { createLogger } from '@contractor-ops/logger';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import {
@@ -38,10 +37,9 @@ import {
   listUpcomingRenewals,
 } from '../../services/compliance-dashboard';
 import { onComplianceItemSatisfied } from '../../services/compliance-recovery';
-import { dispatch } from '../../services/notification-service';
+import type { OutboxTransactionalClient } from '../../services/outbox';
+import { enqueueNotificationDispatch } from '../../services/outbox';
 import { resolveRbacRecipients } from '../../services/rbac-recipients';
-
-const logger = createLogger({ service: 'compliance-admin-router' });
 
 // Shared cuid validator — mirrors the idiom in sibling compliance routers.
 const cuid = z.string().min(1);
@@ -61,31 +59,36 @@ const overrideItemInput = z.object({
 });
 
 /**
- * Best-effort contractor-upload-outcome notification. Contractors authenticate
- * via portal sessions (email-based), not the platform `User` table, so there
- * is no direct contractor `recipientUserId`; we notify the org's compliance
- * admins (the actors who review uploads) and the contractor sees the outcome
- * in their portal list. Wrapped so a dispatch failure never rolls back or
- * surfaces from the approve/reject mutation.
+ * Contractor-upload-outcome notification. Contractors authenticate via portal
+ * sessions (email-based), not the platform `User` table, so there is no direct
+ * contractor `recipientUserId`; we notify the org's compliance admins (the
+ * actors who review uploads) and the contractor sees the outcome in their
+ * portal list. Enqueued into the transactional outbox INSIDE the approve/reject
+ * `$transaction` so the notice is durably scheduled iff the compliance-item
+ * write commits (the drain delivers it exactly-once). `dedupKey` is the
+ * reviewed document id, which is unique per upload decision.
  */
-async function dispatchComplianceUploadOutcome(
+async function enqueueComplianceUploadOutcome(
+  tx: OutboxTransactionalClient,
   organizationId: string,
   contractorId: string,
   payload: {
     type: 'compliance.upload.approved' | 'compliance.upload.rejected';
     itemId: string;
+    documentId: string;
     policyRuleId?: string | null;
     reasonCategory?: string;
   },
 ): Promise<void> {
-  try {
-    const recipientUserIds = await resolveRbacRecipients(organizationId, 'contractor:read');
-    if (recipientUserIds.length === 0) return;
-    const reuploadPath =
-      payload.type === 'compliance.upload.rejected'
-        ? `/portal/compliance/upload-replacement?itemId=${payload.itemId}&policyRuleId=${payload.policyRuleId ?? ''}`
-        : undefined;
-    await dispatch({
+  const recipientUserIds = await resolveRbacRecipients(organizationId, 'contractor:read');
+  if (recipientUserIds.length === 0) return;
+  const reuploadPath =
+    payload.type === 'compliance.upload.rejected'
+      ? `/portal/compliance/upload-replacement?itemId=${payload.itemId}&policyRuleId=${payload.policyRuleId ?? ''}`
+      : undefined;
+  await enqueueNotificationDispatch({
+    tx,
+    event: {
       organizationId,
       type: payload.type,
       recipientUserIds,
@@ -98,13 +101,9 @@ async function dispatchComplianceUploadOutcome(
         reasonCategory: payload.reasonCategory,
         reuploadPath,
       },
-    });
-  } catch (err) {
-    logger.warn(
-      { event: 'compliance.upload.notification_failed', err: String(err) },
-      'best-effort compliance upload-outcome notification failed',
-    );
-  }
+    },
+    dedupKey: `${payload.type}:${payload.documentId}`,
+  });
 }
 
 export const complianceAdminRouter = router({
@@ -232,9 +231,10 @@ export const complianceAdminRouter = router({
   // -------------------------------------------------------------------------
   // approveUploadReplacement — admin approve of a contractor PENDING_REVIEW
   // upload. One $transaction: item -> SATISFIED + satisfiedByDocumentId
-  // + admin-confirmed expiresAt; Document -> ACTIVE; forensic audit row. The
-  // contractor notification is best-effort (post-tx) so a dispatch failure
-  // never rolls back the approval.
+  // + admin-confirmed expiresAt; Document -> ACTIVE; forensic audit row; and the
+  // contractor-outcome notification enqueued into the transactional outbox — all
+  // atomic. The drain later delivers the notification exactly-once (a provider
+  // outage can never roll back the approval because the send is deferred).
   // -------------------------------------------------------------------------
   approveUploadReplacement: tenantProcedure
     .use(requirePermission({ compliance: ['override'] }))
@@ -317,30 +317,33 @@ export const complianceAdminRouter = router({
         // PENDING_COMPLIANCE ApprovalFlow holding it resumes to PENDING and the
         // contractor's payment unblocks. Per-item (exactly one item flips per
         // approval — not the all-BLOCKING supersession loop). In-tx so the
-        // resume is atomic with the SATISFIED flip; the post-tx contractor
-        // notification below stays best-effort.
+        // resume is atomic with the SATISFIED flip and the outbox enqueue below.
         await onComplianceItemSatisfied(tx as Parameters<typeof onComplianceItemSatisfied>[0], {
           itemId: input.itemId,
           contractorId: before.contractorId,
           organizationId: ctx.organizationId,
         });
 
+        await enqueueComplianceUploadOutcome(tx, ctx.organizationId, before.contractorId, {
+          type: 'compliance.upload.approved',
+          itemId: input.itemId,
+          documentId: input.documentId,
+        });
+
         return { item: updated, contractorId: before.contractorId };
       });
 
-      await dispatchComplianceUploadOutcome(ctx.organizationId, result.contractorId, {
-        type: 'compliance.upload.approved',
-        itemId: input.itemId,
-      });
       return result.item;
     }),
 
   // -------------------------------------------------------------------------
   // rejectUploadReplacement — admin reject of a PENDING_REVIEW upload.
   // One $transaction: Document -> ARCHIVED; item status UNCHANGED; forensic
-  // audit row with closed-enum reason + free text. Best-effort contractor
-  // notification carries a re-upload deep link. `Document.rejectionReason`
-  // schema column is DEFERRED — the reason is captured in the audit log only.
+  // audit row with closed-enum reason + free text; and the contractor-outcome
+  // notification (carrying a re-upload deep link) enqueued into the transactional
+  // outbox — all atomic, delivered exactly-once by the drain.
+  // `Document.rejectionReason` schema column is DEFERRED — the reason is captured
+  // in the audit log only.
   // -------------------------------------------------------------------------
   rejectUploadReplacement: tenantProcedure
     .use(requirePermission({ compliance: ['override'] }))
@@ -422,16 +425,18 @@ export const complianceAdminRouter = router({
           async () => item,
           tx,
         );
+        await enqueueComplianceUploadOutcome(tx, ctx.organizationId, item.contractorId, {
+          type: 'compliance.upload.rejected',
+          itemId: input.itemId,
+          documentId: input.documentId,
+          policyRuleId: item.policyRuleId,
+          reasonCategory: input.reasonCategory,
+        });
+
         // Item status intentionally unchanged — stays MISSING/EXPIRED.
         return { item, contractorId: item.contractorId, policyRuleId: item.policyRuleId };
       });
 
-      await dispatchComplianceUploadOutcome(ctx.organizationId, result.contractorId, {
-        type: 'compliance.upload.rejected',
-        itemId: input.itemId,
-        policyRuleId: result.policyRuleId,
-        reasonCategory: input.reasonCategory,
-      });
       return { itemId: result.item.id, status: result.item.status };
     }),
 });

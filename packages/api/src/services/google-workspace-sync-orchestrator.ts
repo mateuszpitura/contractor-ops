@@ -150,6 +150,10 @@ async function detectAndNotifyNewHires(
 
     if (adminUserIds.length === 0) continue;
 
+    // Direct dispatch (not outboxed): a directory-diff observation (Google user
+    // absent from the org) — not a committed DB write. The synced-email snapshot
+    // is persisted separately in persistSyncSuccess, so there is no single write
+    // to bind an enqueue to.
     await dispatch({
       organizationId,
       type: 'DIRECTORY_NEW_HIRE',
@@ -190,6 +194,10 @@ async function detectAndNotifyDepartures(
     const member = snapshot.orgMembers.find(m => m.user.email?.toLowerCase() === email);
     const memberName = member?.user.name ?? email;
 
+    // Direct dispatch (not outboxed): a directory-diff observation (previously
+    // synced email gone from Google) — not a committed DB write. The snapshot is
+    // persisted separately in persistSyncSuccess, so there is no single write to
+    // bind an enqueue to.
     await dispatch({
       organizationId,
       type: 'DIRECTORY_DEPARTURE',

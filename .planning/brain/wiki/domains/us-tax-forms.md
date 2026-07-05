@@ -7,6 +7,7 @@ source_commit: f9de62452
 source_commit: 28061f01e
 source_commit: 730cc8e69
 source_commit: 60258402c
+source_commit: cbcf8a2bb
 verify_with:
   - packages/db/prisma/schema/tax.prisma
   - packages/db/prisma/schema/migrations/20260705000000_us_tax_form_tables_plus_additive_integrity/
@@ -230,9 +231,12 @@ informational band SAFE → APPROACHING → OVER against the **tax-year-keyed `T
 federal 1099-K rule); `APPROACHING` is a proximity heads-up when either dimension reaches 80% of its
 threshold. `updateTrackerBandState` fires a proactive heads-up notification on an up-crossing and
 re-fires a sustained non-safe band only once the reminder cadence (30d) elapses (`lastReminderAt`
-dedup); a down-crossing resolves silently. The scan is bounded (`pLimit(10)`), logs via
-`createCronLogger` (no `console.*`), and writes `Form1099KTrackerState` (one row per
-`(contractorId, taxYear)`) as the **sole writer**. The platform is not the settlement entity (TPSO)
+dedup); a down-crossing resolves silently. The heads-up is **enqueued into the transactional outbox
+inside the same `$transaction` as the `Form1099KTrackerState` upsert** ([[patterns/transactional-outbox]]),
+so a crash can no longer bump `lastReminderAt` to "notified" while dropping the notice (exactly-once
+via the drain; no dedupKey — the cadence state machine gates emission). The scan is bounded
+(`pLimit(10)`), logs via `createCronLogger` (no `console.*`), and writes `Form1099KTrackerState` (one
+row per `(contractorId, taxYear)`) as the **sole writer**. The platform is not the settlement entity (TPSO)
 for these payouts — the scan has **no filing/generate/transmit call path**. The read-only
 `form1099kTracker.getTrackerState` procedure surfaces the band + totals + threshold for the
 contractor profile; it never mutates band state.

@@ -11,9 +11,51 @@
 //     (lastReminderAt dedup);
 //   - the scan is purely informational and NEVER files a 1099-K.
 
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+// The scan test below drives the real `processContractor` path, which upserts
+// tracker state and (on a crossing) enqueues the heads-up into the transactional
+// outbox. Mock the DB + recipient resolution + outbox producer so the enqueue is
+// observable; the pure-function suites above touch none of these.
+const { mockPrismaRaw, txClient } = vi.hoisted(() => {
+  const txClient = {
+    form1099KTrackerState: { upsert: vi.fn(async () => ({})) },
+  };
+  const mockPrismaRaw = {
+    tax1099KThreshold: { findUnique: vi.fn() },
+    paymentRunItem: { groupBy: vi.fn() },
+    form1099KTrackerState: { findUnique: vi.fn(async () => null) },
+    contractor: { findUnique: vi.fn(async () => ({ displayName: 'Acme LLC' })) },
+    $transaction: vi.fn(async (fn: (tx: typeof txClient) => unknown) => fn(txClient)),
+  };
+  return { mockPrismaRaw, txClient };
+});
+
+vi.mock('@contractor-ops/db', () => ({
+  prisma: mockPrismaRaw,
+  prismaRaw: mockPrismaRaw,
+}));
+
+vi.mock('../rbac-recipients', () => ({
+  resolveRbacRecipients: vi.fn(async () => ['admin-1']),
+}));
+
+vi.mock('../outbox', () => ({
+  enqueueNotificationDispatch: vi.fn(async () => 'oxe_test_1'),
+}));
+
+vi.mock('@contractor-ops/logger/metrics', () => ({
+  metrics: { increment: vi.fn(), gauge: vi.fn(), histogram: vi.fn(), distribution: vi.fn() },
+}));
+
 import type { Form1099KBand, Form1099KThresholdConfig } from '../form-1099k-tracker.service';
-import { bandFor1099K, updateTrackerBandState } from '../form-1099k-tracker.service';
+import {
+  bandFor1099K,
+  runForm1099KTrackerScan,
+  updateTrackerBandState,
+} from '../form-1099k-tracker.service';
+import { enqueueNotificationDispatch } from '../outbox';
+import { resolveRbacRecipients } from '../rbac-recipients';
 
 // OBBBA TY2026 threshold config: $20,000 gross AND 200 transactions.
 const TY2026_CONFIG: Form1099KThresholdConfig = {
@@ -83,5 +125,65 @@ describe('1099-K tracker — informational-only invariant', () => {
     const mod = await import('../form-1099k-tracker.service');
     const surface = Object.keys(mod);
     expect(surface.some(name => /file|generate|transmit|submit/i.test(name))).toBe(false);
+  });
+});
+
+describe('runForm1099KTrackerScan — heads-up rides inside the tracker-state tx', () => {
+  const TY2026_THRESHOLD = {
+    taxYear: 2026,
+    amountThresholdMinor: 2_000_000,
+    transactionCountThreshold: 200,
+  };
+  const NOW = new Date('2026-06-01T00:00:00.000Z');
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockPrismaRaw.tax1099KThreshold.findUnique.mockResolvedValue(TY2026_THRESHOLD);
+    mockPrismaRaw.form1099KTrackerState.findUnique.mockResolvedValue(null);
+    mockPrismaRaw.contractor.findUnique.mockResolvedValue({ displayName: 'Acme LLC' });
+    vi.mocked(resolveRbacRecipients).mockResolvedValue(['admin-1']);
+  });
+
+  it('upserts state and enqueues tax.form_1099k_over on an OVER up-crossing', async () => {
+    mockPrismaRaw.paymentRunItem.groupBy.mockResolvedValue([
+      {
+        contractorId: 'c-1',
+        organizationId: 'org-1',
+        _sum: { amountMinor: 2_100_000 },
+        _count: { _all: 205 },
+      },
+    ]);
+
+    const result = await runForm1099KTrackerScan(NOW);
+
+    expect(result).toMatchObject({ scanned: 1, notificationsDispatched: 1 });
+    // The band-state upsert ran on the tx client.
+    expect(txClient.form1099KTrackerState.upsert).toHaveBeenCalledOnce();
+    // The heads-up was enqueued on the SAME tx client — atomic with the upsert.
+    expect(enqueueNotificationDispatch).toHaveBeenCalledOnce();
+    const enqueueArg = vi.mocked(enqueueNotificationDispatch).mock.calls[0]?.[0];
+    expect(enqueueArg?.tx).toBe(txClient);
+    expect(enqueueArg?.event).toMatchObject({
+      type: 'tax.form_1099k_over',
+      entityType: 'CONTRACTOR',
+      entityId: 'c-1',
+      recipientUserIds: ['admin-1'],
+    });
+  });
+
+  it('upserts state but enqueues nothing when the band stays SAFE', async () => {
+    mockPrismaRaw.paymentRunItem.groupBy.mockResolvedValue([
+      {
+        contractorId: 'c-1',
+        organizationId: 'org-1',
+        _sum: { amountMinor: 100_000 },
+        _count: { _all: 5 },
+      },
+    ]);
+
+    await runForm1099KTrackerScan(NOW);
+
+    expect(txClient.form1099KTrackerState.upsert).toHaveBeenCalledOnce();
+    expect(enqueueNotificationDispatch).not.toHaveBeenCalled();
   });
 });

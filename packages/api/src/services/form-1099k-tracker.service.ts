@@ -28,7 +28,8 @@ import { pLimit } from '@contractor-ops/integrations/services/concurrency';
 import { createCronLogger } from '@contractor-ops/logger';
 import { metrics } from '@contractor-ops/logger/metrics';
 import type { NotificationType } from '@contractor-ops/validators';
-import { dispatch } from './notification-service';
+import type { NotificationEvent } from './notification-service';
+import { enqueueNotificationDispatch } from './outbox';
 import { resolveRbacRecipients } from './rbac-recipients';
 
 const log = createCronLogger('form-1099k-tracker');
@@ -285,17 +286,9 @@ async function processContractor(
     lastReminderAt: emitted ? now : (existing?.lastReminderAt ?? null),
   };
 
-  await prismaRaw.form1099KTrackerState.upsert({
-    where: { contractorId_taxYear: { contractorId: totals.contractorId, taxYear: config.taxYear } },
-    create: {
-      contractorId: totals.contractorId,
-      taxYear: config.taxYear,
-      ...stateData,
-    },
-    update: stateData,
-  });
-
-  let dispatched = false;
+  // Resolve recipients + build the heads-up event first (reads only) so the
+  // enqueue can ride inside the same tx as the tracker-state upsert.
+  let headsUpEvent: NotificationEvent | null = null;
   if (emitted && nextBand !== 'SAFE') {
     const recipients = await resolveRbacRecipients(totals.organizationId, 'contractor:read');
     if (recipients.length > 0) {
@@ -306,7 +299,7 @@ async function processContractor(
       const displayName = contractor?.displayName ?? totals.contractorId;
       const { title, body } = buildHeadsUpCopy(nextBand, displayName, config.taxYear);
 
-      await dispatch({
+      headsUpEvent = {
         organizationId: totals.organizationId,
         type: NOTIFICATION_TYPE_BY_BAND[nextBand],
         recipientUserIds: recipients,
@@ -322,12 +315,37 @@ async function processContractor(
           reason,
           informationalOnly: true,
         },
-      });
-      dispatched = true;
+      };
     }
   }
 
-  return { crossed: reason === 'cross-up' || reason === 'cross-down', dispatched };
+  // Upsert the band state and (when a heads-up fired) enqueue the notification
+  // atomically. The outbox row commits iff the upsert commits, so a crash can no
+  // longer bump lastReminderAt to "notified" while dropping the notice — closing
+  // a silent 30-day gap. No dedupKey: the state machine (lastReminderAt +
+  // cadence) already gates emission, and each emit deserves its own durable row.
+  await prismaRaw.$transaction(async tx => {
+    await tx.form1099KTrackerState.upsert({
+      where: {
+        contractorId_taxYear: { contractorId: totals.contractorId, taxYear: config.taxYear },
+      },
+      create: {
+        contractorId: totals.contractorId,
+        taxYear: config.taxYear,
+        ...stateData,
+      },
+      update: stateData,
+    });
+
+    if (headsUpEvent) {
+      await enqueueNotificationDispatch({ tx, event: headsUpEvent });
+    }
+  });
+
+  return {
+    crossed: reason === 'cross-up' || reason === 'cross-down',
+    dispatched: headsUpEvent !== null,
+  };
 }
 
 /**
@@ -386,4 +404,4 @@ export async function runForm1099KTrackerScan(
 
 // Re-export prisma bindings so tests can stub via the same module path.
 // biome-ignore lint/style/useNamingConvention: test-internals export uses double-underscore prefix
-export const __deps = { prisma, prismaRaw, dispatch, resolveRbacRecipients };
+export const __deps = { prisma, prismaRaw, resolveRbacRecipients };

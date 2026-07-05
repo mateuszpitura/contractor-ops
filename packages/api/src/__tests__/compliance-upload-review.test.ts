@@ -12,66 +12,79 @@ const ITEM_ID = 'clitemaaaaaaaaaaaaaaaaaaaaa';
 const DOC_ID = 'cldocaaaaaaaaaaaaaaaaaaaaaa';
 const CONTRACTOR_ID = 'clcontractoraaaaaaaaaaaaaaa';
 
-const { mockPrisma, auditWriteSpy, dispatchSpy, rbacSpy, approvalFlowUpdate, queryRaw } =
-  vi.hoisted(() => {
-    const item = {
-      id: 'clitemaaaaaaaaaaaaaaaaaaaaa',
-      contractorId: 'clcontractoraaaaaaaaaaaaaaa',
-      policyRuleId: 'uk.right_to_work@v1',
-      status: 'EXPIRED',
-    };
-    const contractorComplianceItem = {
-      findFirst: vi.fn(async () => ({ ...item })),
-      update: vi.fn(async (args: { data: Record<string, unknown> }) => ({ ...item, ...args.data })),
-      // onComplianceItemSatisfied re-asserts eligibility via the payment gate
-      // (compliance-payment-gate.assertContractorPaymentEligibility), which queries
-      // remaining EXPIRED+BLOCKING items. Empty ⇒ not blocked ⇒ the held flow is
-      // eligible to resume.
-      findMany: vi.fn(async () => [] as unknown[]),
-    };
-    // document.findFirst returns a PENDING_REVIEW doc by default.
-    const document = {
-      findFirst: vi.fn(async () => ({ id: DOC_ID, status: 'PENDING_REVIEW' })),
-      update: vi.fn(async () => ({ id: DOC_ID })),
-    };
-    // documentLink.findFirst returns the owner link by default.
-    const documentLink = {
-      findFirst: vi.fn(async () => ({ id: 'link_1' })),
-    };
-    const organization = {
-      findUnique: vi.fn(async () => ({ dataRegion: 'EU', status: 'ACTIVE' })),
-      findUniqueOrThrow: vi.fn(async () => ({ countryCode: 'GB' })),
-    };
-    // Held PENDING_COMPLIANCE flows the recovery hook's $queryRaw returns
-    // (JSONB-containment of the approved itemId). Default: one held flow.
-    const heldFlows: Array<{ id: string; resourceType: string; resourceId: string }> = [
-      { id: 'flow-held-1', resourceType: 'INVOICE', resourceId: 'inv-held-1' },
-    ];
-    const approvalFlowUpdate = vi.fn(async () => ({ id: 'flow-held-1', status: 'PENDING' }));
-    const approvalFlow = { update: approvalFlowUpdate };
-    // The recovery hook reads held flows via a raw tagged-template query.
-    const queryRaw = vi.fn(async () => heldFlows.slice());
-    const base = {
-      contractorComplianceItem,
-      document,
-      documentLink,
-      organization,
-      approvalFlow,
-      $queryRaw: queryRaw,
-    };
-    const mockPrisma = {
-      ...base,
-      $transaction: vi.fn(async (fn: (tx: typeof base) => unknown) => fn(base)),
-    };
-    return {
-      mockPrisma,
-      auditWriteSpy: vi.fn(async () => undefined),
-      dispatchSpy: vi.fn(async () => undefined),
-      rbacSpy: vi.fn(async () => ['admin_user_1']),
-      approvalFlowUpdate,
-      queryRaw,
-    };
-  });
+const {
+  mockPrisma,
+  auditWriteSpy,
+  dispatchSpy,
+  rbacSpy,
+  approvalFlowUpdate,
+  queryRaw,
+  execRawUnsafe,
+} = vi.hoisted(() => {
+  const item = {
+    id: 'clitemaaaaaaaaaaaaaaaaaaaaa',
+    contractorId: 'clcontractoraaaaaaaaaaaaaaa',
+    policyRuleId: 'uk.right_to_work@v1',
+    status: 'EXPIRED',
+  };
+  const contractorComplianceItem = {
+    findFirst: vi.fn(async () => ({ ...item })),
+    update: vi.fn(async (args: { data: Record<string, unknown> }) => ({ ...item, ...args.data })),
+    // onComplianceItemSatisfied re-asserts eligibility via the payment gate
+    // (compliance-payment-gate.assertContractorPaymentEligibility), which queries
+    // remaining EXPIRED+BLOCKING items. Empty ⇒ not blocked ⇒ the held flow is
+    // eligible to resume.
+    findMany: vi.fn(async () => [] as unknown[]),
+  };
+  // document.findFirst returns a PENDING_REVIEW doc by default.
+  const document = {
+    findFirst: vi.fn(async () => ({ id: DOC_ID, status: 'PENDING_REVIEW' })),
+    update: vi.fn(async () => ({ id: DOC_ID })),
+  };
+  // documentLink.findFirst returns the owner link by default.
+  const documentLink = {
+    findFirst: vi.fn(async () => ({ id: 'link_1' })),
+  };
+  const organization = {
+    findUnique: vi.fn(async () => ({ dataRegion: 'EU', status: 'ACTIVE' })),
+    findUniqueOrThrow: vi.fn(async () => ({ countryCode: 'GB' })),
+  };
+  // Held PENDING_COMPLIANCE flows the recovery hook's $queryRaw returns
+  // (JSONB-containment of the approved itemId). Default: one held flow.
+  const heldFlows: Array<{ id: string; resourceType: string; resourceId: string }> = [
+    { id: 'flow-held-1', resourceType: 'INVOICE', resourceId: 'inv-held-1' },
+  ];
+  const approvalFlowUpdate = vi.fn(async () => ({ id: 'flow-held-1', status: 'PENDING' }));
+  const approvalFlow = { update: approvalFlowUpdate };
+  // The recovery hook reads held flows via a raw tagged-template query.
+  const queryRaw = vi.fn(async () => heldFlows.slice());
+  // The transactional outbox enqueues the upload-outcome notice via
+  // `$executeRawUnsafe` on the tx client.
+  const execRawUnsafe = vi.fn(async () => 1);
+  const base = {
+    contractorComplianceItem,
+    document,
+    documentLink,
+    organization,
+    approvalFlow,
+    $queryRaw: queryRaw,
+    $executeRaw: vi.fn(async () => 1),
+    $executeRawUnsafe: execRawUnsafe,
+  };
+  const mockPrisma = {
+    ...base,
+    $transaction: vi.fn(async (fn: (tx: typeof base) => unknown) => fn(base)),
+  };
+  return {
+    mockPrisma,
+    auditWriteSpy: vi.fn(async () => undefined),
+    dispatchSpy: vi.fn(async () => undefined),
+    rbacSpy: vi.fn(async () => ['admin_user_1']),
+    approvalFlowUpdate,
+    queryRaw,
+    execRawUnsafe,
+  };
+});
 
 vi.mock('@contractor-ops/db', () => ({
   withRlsTransactions: <T>(c: T) => c,
@@ -392,16 +405,29 @@ describe('compliance-upload-review reject — happy path', () => {
     );
   });
 
-  it('dispatches a notification after the reject transaction', async () => {
+  it('enqueues a compliance.upload.rejected outbox notification inside the reject tx', async () => {
     const caller = makeCaller();
     await caller.complianceAdmin.rejectUploadReplacement({
       itemId: ITEM_ID,
       documentId: DOC_ID,
       reasonCategory: 'other',
     });
-    expect(dispatchSpy).toHaveBeenCalledWith(
-      expect.objectContaining({ type: 'compliance.upload.rejected' }),
+    // The contractor-outcome notice is enqueued into the transactional outbox
+    // INSIDE the reject tx (delivered exactly-once by the drain) rather than a
+    // post-commit best-effort dispatch. Assert the OutboxEvent INSERT.
+    const outboxCall = execRawUnsafe.mock.calls.find((c: unknown[]) =>
+      String(c[0]).includes('INSERT INTO "OutboxEvent"'),
     );
+    expect(outboxCall).toBeDefined();
+    expect(outboxCall?.[3]).toBe('notification.dispatch');
+    const payload = JSON.parse(String(outboxCall?.[6]));
+    expect(payload).toMatchObject({
+      type: 'compliance.upload.rejected',
+      recipientUserIds: ['admin_user_1'],
+      entityType: 'CONTRACTOR',
+      entityId: CONTRACTOR_ID,
+    });
+    expect(dispatchSpy).not.toHaveBeenCalled();
   });
 
   it('validates reasonCategory against the closed enum', async () => {
@@ -503,24 +529,34 @@ describe('compliance-upload-review approve — Phase 81 D-12 recovery fires (RED
   });
 });
 
-describe('compliance-upload-review approve — Phase 81 D-14 notification-failure isolation (RED)', () => {
-  it('a post-tx notification dispatch failure does NOT roll back the approval or the recovery flip', async () => {
-    // Make the best-effort post-tx contractor notification reject.
-    dispatchSpy.mockRejectedValueOnce(new Error('notification provider down'));
+describe('compliance-upload-review approve — notification delivery is deferred to the outbox drain', () => {
+  it('enqueues the contractor notice in-tx and a provider outage cannot roll back the approval', async () => {
+    // The provider send now happens in the drain, never in the mutation path, so
+    // a provider outage is structurally isolated from the approval: the mutation
+    // only inserts the durable OutboxEvent row alongside the SATISFIED flip and
+    // the recovery flip. `dispatch` is never invoked here.
     const caller = makeCaller();
     const out = (await caller.complianceAdmin.approveUploadReplacement({
       itemId: ITEM_ID,
       documentId: DOC_ID,
       expiresAt: '2027-01-15',
     })) as { status: string };
-    // The approval still commits — item SATISFIED, mutation returns normally.
+    // The approval commits — item SATISFIED, mutation returns normally.
     expect(out.status).toBe('SATISFIED');
-    // And the in-tx recovery flip is NOT undone by the post-tx notification failure.
+    // The in-tx recovery flip committed alongside it.
     expect(approvalFlowUpdate).toHaveBeenCalledWith(
       expect.objectContaining({
         where: { id: 'flow-held-1' },
         data: expect.objectContaining({ status: 'PENDING' }),
       }),
     );
+    // The notice was enqueued into the outbox inside the same tx.
+    const outboxCall = execRawUnsafe.mock.calls.find((c: unknown[]) =>
+      String(c[0]).includes('INSERT INTO "OutboxEvent"'),
+    );
+    expect(outboxCall).toBeDefined();
+    const payload = JSON.parse(String(outboxCall?.[6]));
+    expect(payload).toMatchObject({ type: 'compliance.upload.approved' });
+    expect(dispatchSpy).not.toHaveBeenCalled();
   });
 });

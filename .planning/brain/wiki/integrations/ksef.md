@@ -2,7 +2,7 @@
 title: KSeF Poland
 type: integration
 tags: [ksef, poland, einvoice]
-source_commit: 2612ccfab6a36dcb629d021e927af3fd1d520ae3
+source_commit: cbcf8a2bb
 verify_with:
   - packages/api/src/routers/integrations/ksef.ts
   - packages/einvoice/src/profiles/ksef/
@@ -52,6 +52,7 @@ Invoice KSeF references, settings e-invoicing, contractor e-invoicing section.
 - Token/certificate auth — not OAuth; **polling** only (`supportsWebhooks: false`)
 - Tenant-scoped org credentials via framework
 - **Metadata query is paginated.** `queryInvoices` returns one page plus a `hasMore` / `pageToken` cursor; `ksef-sync-orchestrator` drains every page (feeding `pageToken` into the next request) before finalizing. The sync checkpoint (`IntegrationConnection.lastSuccessAt`) advances **only** when the whole run ends with zero errors, so a mid-sync page failure — or a `hasMore` with no `pageToken` — leaves the checkpoint pinned and the window is re-queried next run. Per-invoice failures are isolated into `errors[]` (already-fetched invoices are skipped on re-query).
+- **`KSEF_SYNC_COMPLETE` stays a direct dispatch, not outboxed.** It announces the run's **aggregate** result (`invoicesCreated` across many invoice rows), not one committed write, so there is no enclosing `$transaction` to bind an enqueue to — see [[patterns/transactional-outbox]] "When NOT to convert".
 
 ## Related
 

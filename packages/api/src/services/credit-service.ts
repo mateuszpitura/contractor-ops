@@ -6,7 +6,7 @@ import type { BillingCreditDenialReason } from '@contractor-ops/validators';
 import { billingCreditDenialReason } from '@contractor-ops/validators';
 import { TIER_CREDIT_ALLOWANCE, TRIAL_CREDIT_ALLOWANCE } from './billing-constants';
 import { CacheKeys, CacheTTL, cached, invalidate } from './cache';
-import { dispatch } from './notification-service';
+import { enqueueNotificationDispatch } from './outbox';
 import { stripe } from './stripe-client';
 
 const log = createLogger({ service: 'credit-service' });
@@ -173,6 +173,18 @@ export async function checkAndDeductCredit(organizationId: string): Promise<Cred
         select: { id: true },
       });
 
+      // This deduction consumes the period's final credit — enqueue the admin
+      // heads-up durably inside the same tx so it is delivered iff the deduction
+      // commits (drain delivers it exactly-once). The dedupKey scopes it to one
+      // notice per billing period.
+      if (remaining - 1 === 0) {
+        await enqueueCreditExhaustedNotification(
+          tx,
+          organizationId,
+          subscription.currentPeriodStart,
+        );
+      }
+
       return {
         allowed: true as const,
         remaining: remaining - 1,
@@ -195,10 +207,10 @@ export async function checkAndDeductCredit(organizationId: string): Promise<Cred
     void invalidate(CacheKeys.creditBalance(organizationId));
   }
 
-  // Notify admins when credits are exhausted
+  // Metric only — the admin heads-up itself was enqueued into the outbox inside
+  // the deduction tx above (durable, exactly-once) rather than dispatched here.
   if (result.allowed && result.remaining === 0) {
     metrics.increment('billing.creditsExhausted', 1);
-    void notifyCreditExhausted(organizationId);
   }
 
   // Fire-and-forget Stripe Meter event after successful deduction (outside transaction)
@@ -288,32 +300,33 @@ export async function allocateTopUpCredits(params: {
 // Credit Exhaustion Notification
 // ---------------------------------------------------------------------------
 
-async function notifyCreditExhausted(organizationId: string): Promise<void> {
-  try {
-    const adminMembers = await prisma.member.findMany({
-      where: {
-        organizationId,
-        role: { in: ['owner', 'admin'] },
-      },
-      select: { userId: true },
-    });
-
-    const adminUserIds = adminMembers.map(m => m.userId);
-    if (adminUserIds.length === 0) return;
-
-    await dispatch({
+async function enqueueCreditExhaustedNotification(
+  tx: Prisma.TransactionClient,
+  organizationId: string,
+  periodStart: Date,
+): Promise<void> {
+  const adminMembers = await tx.member.findMany({
+    where: {
       organizationId,
-      type: 'CREDIT_EXHAUSTED' as const,
+      role: { in: ['owner', 'admin'] },
+    },
+    select: { userId: true },
+  });
+
+  const adminUserIds = adminMembers.map(m => m.userId);
+  if (adminUserIds.length === 0) return;
+
+  await enqueueNotificationDispatch({
+    tx,
+    event: {
+      organizationId,
+      type: 'CREDIT_EXHAUSTED',
       recipientUserIds: adminUserIds,
       title: 'OCR credits exhausted',
       body: 'Your organization has used all OCR credits for this billing period. Purchase additional credits to continue processing invoices.',
       entityType: 'ORGANIZATION',
       entityId: organizationId,
-    });
-  } catch (error) {
-    log.error(
-      { err: error, organizationId },
-      'failed to send credit exhaustion notification for org',
-    );
-  }
+    },
+    dedupKey: `CREDIT_EXHAUSTED:${organizationId}:${periodStart.toISOString()}`,
+  });
 }

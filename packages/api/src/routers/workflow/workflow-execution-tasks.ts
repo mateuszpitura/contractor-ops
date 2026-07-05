@@ -17,7 +17,7 @@ import { requirePermission } from '../../middleware/rbac';
 import { tenantProcedure } from '../../middleware/tenant';
 import { writeAuditLog } from '../../services/audit-writer';
 import { CacheKeys, invalidateByPrefix } from '../../services/cache';
-import { dispatch } from '../../services/notification-service';
+import { enqueueNotificationDispatch } from '../../services/outbox';
 import { syncTaskToExternalSystems } from './workflow-execution-shared';
 import { unblockDependentsAndRecomputeRun, validateTransition } from './workflow-shared';
 
@@ -275,39 +275,47 @@ export const workflowExecutionTasksRouter = router({
         });
       }
 
-      const updated = await ctx.db.workflowTaskRun.update({
-        where: { id: input.taskRunId },
-        data: { assigneeUserId: input.newAssigneeUserId },
-        include: {
-          workflowRun: {
-            select: {
-              id: true,
-              workflowTemplate: { select: { name: true } },
-              contractor: { select: { legalName: true, displayName: true } },
+      const updated = await ctx.db.$transaction(async tx => {
+        const row = await tx.workflowTaskRun.update({
+          where: { id: input.taskRunId },
+          data: { assigneeUserId: input.newAssigneeUserId },
+          include: {
+            workflowRun: {
+              select: {
+                id: true,
+                workflowTemplate: { select: { name: true } },
+                contractor: { select: { legalName: true, displayName: true } },
+              },
             },
           },
-        },
-      });
+        });
 
-      // Fire-and-forget: dispatch TASK_ASSIGNED to new assignee
-      dispatch({
-        organizationId: ctx.organizationId,
-        type: 'TASK_ASSIGNED',
-        recipientUserIds: [input.newAssigneeUserId],
-        title: `Task assigned: ${updated.title}`,
-        body: `Workflow: ${updated.workflowRun.workflowTemplate.name} for ${updated.workflowRun.contractor?.legalName ?? updated.workflowRun.contractor?.displayName ?? 'Unknown'}`,
-        entityType: 'WORKFLOW_RUN',
-        entityId: updated.workflowRun.id,
-        metadata: {
-          taskTitle: updated.title,
-          workflowName: updated.workflowRun.workflowTemplate.name,
-          contractorName:
-            updated.workflowRun.contractor?.legalName ??
-            updated.workflowRun.contractor?.displayName ??
-            'Unknown',
-        },
-      }).catch(_err => {
-        /* fire-and-forget */
+        const contractorName =
+          row.workflowRun.contractor?.legalName ??
+          row.workflowRun.contractor?.displayName ??
+          'Unknown';
+
+        // Enqueue TASK_ASSIGNED durably inside the tx so the new assignee is
+        // notified iff the reassignment commits (drain delivers exactly-once).
+        await enqueueNotificationDispatch({
+          tx,
+          event: {
+            organizationId: ctx.organizationId,
+            type: 'TASK_ASSIGNED',
+            recipientUserIds: [input.newAssigneeUserId],
+            title: `Task assigned: ${row.title}`,
+            body: `Workflow: ${row.workflowRun.workflowTemplate.name} for ${contractorName}`,
+            entityType: 'WORKFLOW_RUN',
+            entityId: row.workflowRun.id,
+            metadata: {
+              taskTitle: row.title,
+              workflowName: row.workflowRun.workflowTemplate.name,
+              contractorName,
+            },
+          },
+        });
+
+        return row;
       });
 
       return updated;

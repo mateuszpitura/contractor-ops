@@ -616,7 +616,7 @@ describe('workflowExecutionRouter', () => {
   // =========================================================================
 
   describe('reassignTask', () => {
-    it('updates task assignee and dispatches notification', async () => {
+    it('updates task assignee and enqueues a TASK_ASSIGNED outbox notification in-tx', async () => {
       mockPrisma.workflowTaskRun.findFirst.mockResolvedValueOnce({
         id: TASK_RUN_ID,
         organizationId: ORG_ID,
@@ -642,6 +642,24 @@ describe('workflowExecutionRouter', () => {
 
       const updateCall = mockPrisma.workflowTaskRun.update.mock.calls[0]?.[0];
       expect(updateCall.data.assigneeUserId).toBe('new-user-1');
+
+      // The notification is enqueued into the transactional outbox INSIDE the
+      // reassignment tx (delivered exactly-once by the drain) rather than a
+      // post-commit fire-and-forget dispatch. Assert the OutboxEvent INSERT.
+      const outboxCall = mockPrisma.$executeRawUnsafe.mock.calls.find((c: unknown[]) =>
+        String(c[0]).includes('INSERT INTO "OutboxEvent"'),
+      );
+      expect(outboxCall).toBeDefined();
+      expect(outboxCall?.[2]).toBe(ORG_ID);
+      expect(outboxCall?.[3]).toBe('notification.dispatch');
+      const payload = JSON.parse(String(outboxCall?.[6]));
+      expect(payload).toMatchObject({
+        organizationId: ORG_ID,
+        type: 'TASK_ASSIGNED',
+        recipientUserIds: ['new-user-1'],
+        entityType: 'WORKFLOW_RUN',
+        entityId: RUN_ID,
+      });
     });
 
     it('throws NOT_FOUND when task does not exist', async () => {

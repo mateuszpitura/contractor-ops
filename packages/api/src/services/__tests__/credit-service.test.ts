@@ -10,6 +10,10 @@ vi.mock('@contractor-ops/db', () => {
     ocrCreditLedger: { aggregate: vi.fn(), create: vi.fn() },
     member: { findMany: vi.fn() },
     $transaction: vi.fn(),
+    // The transactional outbox enqueues the CREDIT_EXHAUSTED heads-up via
+    // `$executeRawUnsafe` on the tx client.
+    $executeRaw: vi.fn(async () => 1),
+    $executeRawUnsafe: vi.fn(async () => 1),
   };
   return {
     withRlsTransactions: <T>(c: T) => c,
@@ -66,6 +70,7 @@ const mockPrisma = prisma as unknown as {
   };
   member: { findMany: ReturnType<typeof vi.fn> };
   $transaction: ReturnType<typeof vi.fn>;
+  $executeRawUnsafe: ReturnType<typeof vi.fn>;
 };
 
 const mockStripe = stripe as unknown as {
@@ -109,6 +114,10 @@ beforeEach(() => {
   mockPrisma.$transaction.mockImplementation(
     async (fn: (tx: typeof mockPrisma) => Promise<unknown>) => fn(mockPrisma),
   );
+
+  // Default: no admins → the exhaustion enqueue short-circuits. Tests that
+  // assert the CREDIT_EXHAUSTED enqueue override this with member rows.
+  mockPrisma.member.findMany.mockResolvedValue([]);
 
   mockStripe.billing.meterEvents.create.mockResolvedValue({});
 });
@@ -473,6 +482,54 @@ describe('checkAndDeductCredit', () => {
       expect(result.allowed).toBe(true);
       expect(result.remaining).toBe(0);
       expect(result.reason).toBeUndefined();
+    });
+
+    it('enqueues a CREDIT_EXHAUSTED outbox notification to owner/admin members in-tx', async () => {
+      mockPrisma.subscription.findUnique.mockResolvedValue(makeSubscription({ tier: 'STARTER' }));
+      // used=19 → remaining before deduct=1 → after deduct=0 (exhausted)
+      mockPrisma.ocrCreditLedger.aggregate.mockResolvedValue(agg(-19));
+      mockPrisma.ocrCreditLedger.create.mockResolvedValue({ id: 'ledger-1' });
+      mockPrisma.member.findMany.mockResolvedValue([{ userId: 'admin-1' }, { userId: 'admin-2' }]);
+
+      await checkAndDeductCredit(ORG_ID);
+
+      expect(mockPrisma.member.findMany).toHaveBeenCalledWith({
+        where: { organizationId: ORG_ID, role: { in: ['owner', 'admin'] } },
+        select: { userId: true },
+      });
+
+      // The heads-up is enqueued into the transactional outbox INSIDE the
+      // Serializable deduction tx (delivered exactly-once by the drain) rather
+      // than a post-commit best-effort dispatch. Assert the OutboxEvent INSERT.
+      const outboxCall = mockPrisma.$executeRawUnsafe.mock.calls.find((c: unknown[]) =>
+        String(c[0]).includes('INSERT INTO "OutboxEvent"'),
+      );
+      expect(outboxCall).toBeDefined();
+      expect(outboxCall?.[2]).toBe(ORG_ID);
+      expect(outboxCall?.[3]).toBe('notification.dispatch');
+      const payload = JSON.parse(String(outboxCall?.[6]));
+      expect(payload).toMatchObject({
+        type: 'CREDIT_EXHAUSTED',
+        recipientUserIds: ['admin-1', 'admin-2'],
+        entityType: 'ORGANIZATION',
+        entityId: ORG_ID,
+      });
+    });
+
+    it('does NOT enqueue when the deduction leaves credits remaining', async () => {
+      mockPrisma.subscription.findUnique.mockResolvedValue(makeSubscription({ tier: 'STARTER' }));
+      // used=5 → remaining after deduct=14 (not exhausted)
+      mockPrisma.ocrCreditLedger.aggregate.mockResolvedValue(agg(-5));
+      mockPrisma.ocrCreditLedger.create.mockResolvedValue({ id: 'ledger-1' });
+      mockPrisma.member.findMany.mockResolvedValue([{ userId: 'admin-1' }]);
+
+      await checkAndDeductCredit(ORG_ID);
+
+      const outboxCall = mockPrisma.$executeRawUnsafe.mock.calls.find((c: unknown[]) =>
+        String(c[0]).includes('INSERT INTO "OutboxEvent"'),
+      );
+      expect(outboxCall).toBeUndefined();
+      expect(mockPrisma.member.findMany).not.toHaveBeenCalled();
     });
   });
 

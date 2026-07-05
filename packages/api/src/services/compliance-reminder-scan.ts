@@ -559,6 +559,10 @@ async function dispatchDigest(client: ReminderScanClient, group: DigestGroup): P
     });
   });
 
+  // Direct dispatch (not outboxed): this is a per-recipient DIGEST aggregating
+  // many (document, band, expiresAt) fires into one notice — it announces the
+  // scan's rolled-up result, not a single committed row, so there is no
+  // enclosing $transaction to bind an enqueue to.
   await dispatch({
     organizationId: group.organizationId,
     type: 'compliance.expiry_digest',

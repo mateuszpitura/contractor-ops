@@ -2,7 +2,7 @@
 title: Notifications and reminders
 type: domain
 tags: [notifications, reminders, email, slack]
-source_commit: b618a39e5
+source_commit: cbcf8a2bb
 verify_with:
   - packages/api/src/routers/core/notification.ts
   - packages/api/src/routers/core/reminder.ts
@@ -84,6 +84,8 @@ the Resend `Idempotency-Key` collapse a redrive to a single delivery →
 - New notification sites: enqueue through the outbox inside the announcing `$transaction`, not post-commit `dispatch().catch()` (at-most-once). Direct `dispatch()` is tolerated only where no enclosing tx owns the state change — [[decisions/tech-debt-hotspots]]
 - **Durable notifications go through the transactional outbox.** Producers whose notification must fire iff a DB write commits call `enqueueNotificationDispatch({ tx, event, dedupKey? })` (`services/outbox/`) **inside** the enclosing `$transaction`; a global QStash schedule drains `/outbox/_drain` and delivers exactly-once keyed on the `OutboxEvent.id` (threaded into `dispatch(payload, { outboxEventId })` → `Notification.dedupKey` + Resend `Idempotency-Key`). A bare post-commit `dispatch(...)` is **at-most-once** (a crash between commit and dispatch drops it) — money-path sites (approvals, invoices, Stripe billing) use the outbox. See [[patterns/transactional-outbox]].
 - Silent catch in direct dispatch remains for non-durable sends (cross-org scans, digests) — [[decisions/tech-debt-hotspots]]
+- **Durable notifications go through the transactional outbox.** Producers whose notification must fire iff a DB write commits call `enqueueNotificationDispatch({ tx, event, dedupKey? })` (`services/outbox/`) **inside** the enclosing `$transaction`; a global QStash schedule drains `/outbox/_drain` and delivers exactly-once keyed on the `OutboxEvent.id` (threaded into `dispatch(payload, { outboxEventId })` → `Notification.dedupKey` + Resend `Idempotency-Key`). A bare post-commit `dispatch(...)` is **at-most-once** (a crash between commit and dispatch drops it). Wired producers include the money path (approvals, invoices, Stripe billing) plus task reassignment (`TASK_ASSIGNED`), credit exhaustion (`CREDIT_EXHAUSTED`), compliance upload approve/reject, and the 1099-K band heads-up — see the wired-sites table in [[patterns/transactional-outbox]].
+- Direct at-most-once `dispatch(...)` remains for sends with no single committed write to bind to — aggregate cron/sync results (KSeF sync-complete), per-recipient digests (compliance expiry), and directory-diff notices (Google Workspace new-hire/departure). The economic-dependency scan heads-up is a structural twin of the outboxed 1099-K tracker left as direct dispatch — [[patterns/transactional-outbox]] "When NOT to convert", [[decisions/tech-debt-hotspots]]
 - Teams/Slack channels via [[integrations/teams]] framework
 - Outbox is single-event-type (`notification.dispatch`) today; add a type in `services/outbox/handlers.ts` before outboxing a non-notification side effect
 - **A `ReminderInstance` is skipped only when `SENT`, never merely because it exists.** The reminder cron (`reminders/index.ts`) re-dispatches any row still `PENDING` (a prior tick's `dispatch` threw) rather than treating "row present" as done — otherwise the `(reminderRuleId, entityType, entityId, scheduledFor)` unique would strand the reminder forever. Per-rule try/catch isolates a poison rule/org from the rest of the run.

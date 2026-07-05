@@ -381,6 +381,10 @@ export async function runEconomicDependencyScan(now: Date = new Date()): Promise
                 percent,
               );
 
+              // Direct dispatch (not outboxed): advisory heads-up from the
+              // cross-org economic-dependency cron scan. Same per-assignment
+              // alert-state upsert shape as the outboxed form-1099k tracker;
+              // left as a direct at-most-once dispatch here.
               await dispatch({
                 organizationId: assignment.organizationId,
                 type,
