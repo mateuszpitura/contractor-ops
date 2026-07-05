@@ -24,6 +24,12 @@ updated: 2026-06-09
 | [[zatca]] | Saudi ZATCA Fatoorah |
 | [[einvoice-profiles]] | XRechnung, ZUGFeRD, country profiles |
 
+## US tax filing (IRS, flag-dark `module.us-expansion`)
+
+| Page | Provider |
+|------|----------|
+| [[irs-1042s]] | IRS Form 1042-S via IRIS (Pub 1187) — chapter-3 foreign withholding; transmit tail HELD on the P86 seam |
+
 ## Productivity & IdP
 
 | Page | Provider |

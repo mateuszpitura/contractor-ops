@@ -1,8 +1,8 @@
 ---
 title: Hot cache
 type: hot-cache
-updated: 2026-07-01
-source_commit: 105a8ccf6
+updated: 2026-07-05
+source_commit: 2aabc35c8
 ---
 
 # Hot cache
@@ -63,6 +63,10 @@ pnpm check:web-vite-presentational
 ## US W-form intake (W-9 / W-8BEN / W-8BEN-E)
 
 Portal-primary self-cert (beneficial owner signs). Portal procedures (`getTaxFormDetermination`, `saveTaxFormDraft`, `submitTaxForm`, `getMyTaxForms`) on `routers/portal/portal-tax-form-router.ts` — IDOR-scoped to `ctx.contractorId`; ESIGN ip/actorId/signedAt server-derived; submit = `applyTreaty` + `buildFormSnapshot` + `supersedeAndInsert` + CONTRACTOR audit in one `$transaction`. Append-only: only DRAFT mutable, re-cert supersedes. Full SSN never in `snapshotJson` (last-4 only). Staff get `taxForm` namespace (read/track + request) — no on-behalf signing; full-SSN reveal stays on `contractor.revealSsn`. Whole surface flag-gated on `module.us-expansion` (`middleware/require-us-expansion-flag.ts` + `root.ts` conditional-spread). Services: `treaty-rate.service.ts`, `tax-form.service.ts`, `tax-form-routing.ts`. **UI:** portal wizard `components/portal/tax-forms/` (`tax-form-wizard.tsx` container + `hooks/use-tax-form-wizard.ts` sole tRPC boundary + determination/W-9/W-8BEN/W-8BEN-E/attest/receipt steps; route `portal/tax-form`); attestation gate = real `<input type=checkbox>` perjury + typed-name match + legal-signature affirmation; treaty article/rate announced via `aria-live`. Staff card `components/contractors/tax-forms/tax-form-status-card.tsx` reuses `SsnMaskedReveal` + `UspsAddressStatusPill` idiom. i18n `TaxFormWizard`/`TaxFormStaff` en/de/pl/ar. Detail: [[domains/us-tax-forms]] · [[domains/portal-external]] · [[structure/api-routers-catalog]].
+
+## US 1042-S filing + worker classification (Theme A gate)
+
+Chapter-3 foreign-recipient withholding + US worker classification, all dark behind `module.us-expansion`. **1042-S:** `form-1042s.service` derives boxes server-side (box-2 = settled PAID/USD payouts; box-7 = box-2 × the §875(d)-gated rate — an incomplete W-8 chain → 30% statutory + escalation, **never** a treaty benefit and **never** a filing block); immutable supersede (`fileCorrection1042S`, one `$transaction`), idempotent + REPORTED-only `generateBatch1042S`; recipient PDF + IRIS `buildIris1042SXml` (sibling builder, not a parameterized 1099 builder) emit FTIN **last-4 only**. Staff router `form1042s` (`generateBatch`/`fileCorrection`/`getRecipientCopyUrl`/`list`/`revealRecipientFtin` `contractorPii:read`). **UI:** staff batch review `components/contractors/tax-filing/` (`tax-1042s-batch-panel` wired 4-state + `tax-1042s-batch-summary` + `treaty-rate-caption` amber-30%-advisory; `hooks/use-1042s-batch.ts` sole boundary → `form1042s.list`/`generateBatch`), mounted at `/tax-filing` (`pages/dashboard/tax-filing.tsx`, `module.us-expansion` + `contractor:read` gate, flag-gated Finance nav `Landmark`). i18n `Tax1042SBatch` en/de/pl/ar. **Cross-phase HOLD:** the staff filing card (download XML / ack upload) + the portal 1042-S consent-gated PDF reuse the P86 `iris-status-pill`/`ack-upload-field`/`step-edelivery-consent`/`use-edelivery-consent`/`copy-b-download` seam — not on disk, reused-not-rebuilt. **US classification:** `UsClassificationProfile` (registry plugin via `getProfileForCountry('US')`) scores IRS common-law + **dispositive** CA-AB5 overlay (`US_WORK_STATE` server-injected) + §530 relief flag → advisory, never a legal verdict; reason-required audited `classification.override` (AuditLog-only, no schema column); append-only `US_DETERMINATION_LETTER` react-pdf (frozen `ruleSetVersion`, no-LLM). **1099-K:** informational cron band only (`$20,000 + 200` OBBBA, both dimensions for OVER), never files. Detail: [[domains/us-tax-forms]] · [[domains/us-classification]] · [[integrations/irs-1042s]] · [[structure/prisma-schema-areas]] · [[structure/web-vite-domains]].
 
 ## First-run org onboarding
 
