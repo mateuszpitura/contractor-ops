@@ -11,12 +11,12 @@
  *   4. QStash create failure is non-fatal → returns false, Sentry-captured.
  */
 
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 type CreateReq = { scheduleId: string; destination: string; cron: string; retries?: number };
 type ScheduleRow = { scheduleId: string; cron: string; destination: string };
 
-const { mockCreate, mockGet, mockCaptureException } = vi.hoisted(() => ({
+const { mockCreate, mockGet, mockCaptureException, mockGetServerEnv } = vi.hoisted(() => ({
   mockCreate: vi.fn<(req: CreateReq) => Promise<{ scheduleId: string }>>(async () => ({
     scheduleId: 'outbox-drain',
   })),
@@ -26,6 +26,10 @@ const { mockCreate, mockGet, mockCaptureException } = vi.hoisted(() => ({
     destination: 'https://api.example.test/outbox/_drain',
   })),
   mockCaptureException: vi.fn(),
+  mockGetServerEnv: vi.fn<() => { QSTASH_TOKEN?: string; API_URL: string }>(() => ({
+    QSTASH_TOKEN: 'test-qstash-token',
+    API_URL: 'https://api.example.test',
+  })),
 }));
 
 vi.mock('@contractor-ops/integrations/services/qstash-client', () => ({
@@ -41,20 +45,22 @@ vi.mock('@sentry/node', () => ({
   captureException: (...a: unknown[]) => mockCaptureException(...(a as [])),
 }));
 
+vi.mock('@contractor-ops/validators', async importOriginal => ({
+  ...(await importOriginal<typeof import('@contractor-ops/validators')>()),
+  getServerEnv: () => mockGetServerEnv(),
+}));
+
 import {
   ensureOutboxDrainSchedule,
   OUTBOX_DRAIN_SCHEDULE_ID,
 } from '../lib/outbox-drain-schedule.js';
 
-const ORIGINAL_TOKEN = process.env.QSTASH_TOKEN;
-
 beforeEach(() => {
   vi.clearAllMocks();
-  process.env.QSTASH_TOKEN = 'test-qstash-token';
-});
-
-afterEach(() => {
-  process.env.QSTASH_TOKEN = ORIGINAL_TOKEN;
+  mockGetServerEnv.mockReturnValue({
+    QSTASH_TOKEN: 'test-qstash-token',
+    API_URL: 'https://api.example.test',
+  });
 });
 
 describe('ensureOutboxDrainSchedule', () => {
@@ -73,8 +79,12 @@ describe('ensureOutboxDrainSchedule', () => {
     expect(mockGet).toHaveBeenCalledWith(OUTBOX_DRAIN_SCHEDULE_ID);
   });
 
-  it('skips cleanly and returns false when QSTASH_TOKEN is unset', async () => {
-    delete process.env.QSTASH_TOKEN;
+  it('skips cleanly and returns false when server env is unavailable (QSTASH_TOKEN unset)', async () => {
+    // Required-field env validation throws when the token is absent; the
+    // bootstrap treats that as a clean skip, never calling QStash.
+    mockGetServerEnv.mockImplementationOnce(() => {
+      throw new Error('QSTASH_TOKEN is required');
+    });
 
     const ok = await ensureOutboxDrainSchedule();
 
