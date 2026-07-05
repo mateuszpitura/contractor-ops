@@ -24,6 +24,12 @@ export {
   registerDatevProfile,
 } from './profiles/datev/index.js';
 export { EnovaProfile, registerEnovaProfile } from './profiles/enova/index.js';
+// --- Profiles: US native OAuth bridges ---------------------------------------
+export {
+  type GustoBridgeContext,
+  GustoProfile,
+  registerGustoProfile,
+} from './profiles/gusto/index.js';
 export { GustoCsvProfile, registerGustoCsvProfile } from './profiles/gusto-csv/index.js';
 export {
   QuickbooksCsvProfile,

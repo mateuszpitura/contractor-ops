@@ -177,6 +177,17 @@ const linearSchema = z.object({
   LINEAR_WEBHOOK_SECRET: z.string().optional(),
 });
 
+// ── Payroll native OAuth (Gusto / QuickBooks) ──────────────────────────────
+// Optional: the native payroll push paths are dark by default (per-adapter
+// payroll.* flags). The CSV file-export is the shipping path, so the app boots
+// without these creds; the live adapters short-circuit when they are unset.
+const payrollIntegrationsSchema = z.object({
+  GUSTO_CLIENT_ID: z.string().optional(),
+  GUSTO_CLIENT_SECRET: z.string().optional(),
+  QUICKBOOKS_CLIENT_ID: z.string().optional(),
+  QUICKBOOKS_CLIENT_SECRET: z.string().optional(),
+});
+
 // ── Bank Account Encryption ─────────────────────────────────────────────────
 
 const bankEncryptionSchema = z.object({
@@ -400,6 +411,7 @@ export const serverEnvSchema = coreSchema
   .merge(googleCalendarSchema)
   .merge(outlookCalendarSchema)
   .merge(linearSchema)
+  .merge(payrollIntegrationsSchema)
   .merge(bankEncryptionSchema)
   .merge(usFieldsSchema)
   .merge(employeePiiEncryptionSchema)

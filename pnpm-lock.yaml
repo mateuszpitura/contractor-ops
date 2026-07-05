@@ -1144,6 +1144,9 @@ importers:
       '@contractor-ops/logger':
         specifier: workspace:*
         version: link:../logger
+      '@contractor-ops/payroll':
+        specifier: workspace:*
+        version: link:../payroll
       '@contractor-ops/secrets':
         specifier: workspace:*
         version: link:../secrets
