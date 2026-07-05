@@ -1,4 +1,8 @@
-import { publicApiInvoiceListInputSchema } from '@contractor-ops/validators/public-api';
+import {
+  publicApiInvoiceCreateInputSchema,
+  publicApiInvoiceListInputSchema,
+  publicApiInvoiceVoidInputSchema,
+} from '@contractor-ops/validators/public-api';
 import { createRoute, OpenAPIHono, z } from '@hono/zod-openapi';
 import { decodeCursor } from '../lib/openapi-cursor.js';
 import {
@@ -6,8 +10,10 @@ import {
   envelope,
   errorResponses,
   itemOkResponse,
+  jsonBody,
   listOkResponse,
   listQuery,
+  writeResponses,
 } from '../lib/openapi-route.js';
 
 const invoices = new OpenAPIHono();
@@ -67,6 +73,36 @@ invoices.openapi(getByIdRoute, async c => {
   const { id } = c.req.valid('param');
   const caller = createPublicCaller(c);
   const result = await caller.invoice.getById({ id });
+  return c.json({ data: result }, 200);
+});
+
+// --- Hidden write routes (double-dark) ---
+
+const createRouteDef = createRoute({
+  method: 'post',
+  path: '/',
+  hide: true,
+  request: { body: jsonBody(publicApiInvoiceCreateInputSchema) },
+  responses: writeResponses,
+});
+
+invoices.openapi(createRouteDef, async c => {
+  const body = c.req.valid('json');
+  const result = await createPublicCaller(c).invoice.create(body);
+  return c.json({ data: result }, 200);
+});
+
+const voidRouteDef = createRoute({
+  method: 'patch',
+  path: '/void',
+  hide: true,
+  request: { body: jsonBody(publicApiInvoiceVoidInputSchema) },
+  responses: writeResponses,
+});
+
+invoices.openapi(voidRouteDef, async c => {
+  const body = c.req.valid('json');
+  const result = await createPublicCaller(c).invoice.void(body);
   return c.json({ data: result }, 200);
 });
 

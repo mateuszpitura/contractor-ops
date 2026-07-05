@@ -22,6 +22,13 @@ const { mockPrisma, mockResolveApiKey, mockTouchLastUsed, mockGetSubscription } 
 vi.mock('../../services/api-key-service', () => ({
   resolveApiKey: mockResolveApiKey,
   touchLastUsed: mockTouchLastUsed,
+  appendApiKeyIpEvent: vi.fn(),
+}));
+
+// The chain carries the per-org `module.public-api` dark gate (default OFF); these
+// tests assert auth + tier behavior, so evaluate the flag as ON to reach them.
+vi.mock('@contractor-ops/feature-flags', () => ({
+  evaluate: vi.fn(() => ({ enabled: true, reason: 'test' })),
 }));
 
 vi.mock('../../services/billing-service', () => ({

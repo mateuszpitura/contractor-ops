@@ -314,6 +314,7 @@ export type UserWhereInput = {
   consentRecords?: Prisma.ConsentRecordListRelationFilter
   reviewedTimesheets?: Prisma.TimesheetListRelationFilter
   apiKeys?: Prisma.OrganizationApiKeyListRelationFilter
+  actingApiKeys?: Prisma.OrganizationApiKeyListRelationFilter
   generatedClassificationDocuments?: Prisma.ClassificationDocumentListRelationFilter
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerListRelationFilter
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerListRelationFilter
@@ -371,6 +372,7 @@ export type UserOrderByWithRelationInput = {
   consentRecords?: Prisma.ConsentRecordOrderByRelationAggregateInput
   reviewedTimesheets?: Prisma.TimesheetOrderByRelationAggregateInput
   apiKeys?: Prisma.OrganizationApiKeyOrderByRelationAggregateInput
+  actingApiKeys?: Prisma.OrganizationApiKeyOrderByRelationAggregateInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentOrderByRelationAggregateInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerOrderByRelationAggregateInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerOrderByRelationAggregateInput
@@ -431,6 +433,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   consentRecords?: Prisma.ConsentRecordListRelationFilter
   reviewedTimesheets?: Prisma.TimesheetListRelationFilter
   apiKeys?: Prisma.OrganizationApiKeyListRelationFilter
+  actingApiKeys?: Prisma.OrganizationApiKeyListRelationFilter
   generatedClassificationDocuments?: Prisma.ClassificationDocumentListRelationFilter
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerListRelationFilter
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerListRelationFilter
@@ -530,6 +533,7 @@ export type UserCreateInput = {
   consentRecords?: Prisma.ConsentRecordCreateNestedManyWithoutUserInput
   reviewedTimesheets?: Prisma.TimesheetCreateNestedManyWithoutReviewedByInput
   apiKeys?: Prisma.OrganizationApiKeyCreateNestedManyWithoutCreatedByInput
+  actingApiKeys?: Prisma.OrganizationApiKeyCreateNestedManyWithoutActingUserInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentCreateNestedManyWithoutGeneratedByInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerCreateNestedManyWithoutAcknowledgedByUserInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerCreateNestedManyWithoutDismissedByUserInput
@@ -587,6 +591,7 @@ export type UserUncheckedCreateInput = {
   consentRecords?: Prisma.ConsentRecordUncheckedCreateNestedManyWithoutUserInput
   reviewedTimesheets?: Prisma.TimesheetUncheckedCreateNestedManyWithoutReviewedByInput
   apiKeys?: Prisma.OrganizationApiKeyUncheckedCreateNestedManyWithoutCreatedByInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUncheckedCreateNestedManyWithoutActingUserInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUncheckedCreateNestedManyWithoutGeneratedByInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedCreateNestedManyWithoutAcknowledgedByUserInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedCreateNestedManyWithoutDismissedByUserInput
@@ -644,6 +649,7 @@ export type UserUpdateInput = {
   consentRecords?: Prisma.ConsentRecordUpdateManyWithoutUserNestedInput
   reviewedTimesheets?: Prisma.TimesheetUpdateManyWithoutReviewedByNestedInput
   apiKeys?: Prisma.OrganizationApiKeyUpdateManyWithoutCreatedByNestedInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUpdateManyWithoutActingUserNestedInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUpdateManyWithoutGeneratedByNestedInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUpdateManyWithoutAcknowledgedByUserNestedInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUpdateManyWithoutDismissedByUserNestedInput
@@ -701,6 +707,7 @@ export type UserUncheckedUpdateInput = {
   consentRecords?: Prisma.ConsentRecordUncheckedUpdateManyWithoutUserNestedInput
   reviewedTimesheets?: Prisma.TimesheetUncheckedUpdateManyWithoutReviewedByNestedInput
   apiKeys?: Prisma.OrganizationApiKeyUncheckedUpdateManyWithoutCreatedByNestedInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUncheckedUpdateManyWithoutActingUserNestedInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUncheckedUpdateManyWithoutGeneratedByNestedInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedUpdateManyWithoutAcknowledgedByUserNestedInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedUpdateManyWithoutDismissedByUserNestedInput
@@ -837,12 +844,26 @@ export type UserCreateNestedOneWithoutApiKeysInput = {
   connect?: Prisma.UserWhereUniqueInput
 }
 
+export type UserCreateNestedOneWithoutActingApiKeysInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutActingApiKeysInput, Prisma.UserUncheckedCreateWithoutActingApiKeysInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutActingApiKeysInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
 export type UserUpdateOneRequiredWithoutApiKeysNestedInput = {
   create?: Prisma.XOR<Prisma.UserCreateWithoutApiKeysInput, Prisma.UserUncheckedCreateWithoutApiKeysInput>
   connectOrCreate?: Prisma.UserCreateOrConnectWithoutApiKeysInput
   upsert?: Prisma.UserUpsertWithoutApiKeysInput
   connect?: Prisma.UserWhereUniqueInput
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutApiKeysInput, Prisma.UserUpdateWithoutApiKeysInput>, Prisma.UserUncheckedUpdateWithoutApiKeysInput>
+}
+
+export type UserUpdateOneRequiredWithoutActingApiKeysNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutActingApiKeysInput, Prisma.UserUncheckedCreateWithoutActingApiKeysInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutActingApiKeysInput
+  upsert?: Prisma.UserUpsertWithoutActingApiKeysInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutActingApiKeysInput, Prisma.UserUpdateWithoutActingApiKeysInput>, Prisma.UserUncheckedUpdateWithoutActingApiKeysInput>
 }
 
 export type UserCreateNestedOneWithoutCreatedApprovalFlowsInput = {
@@ -1471,6 +1492,7 @@ export type UserCreateWithoutApiKeysInput = {
   sentSigningEnvelopes?: Prisma.SigningEnvelopeCreateNestedManyWithoutSentByInput
   consentRecords?: Prisma.ConsentRecordCreateNestedManyWithoutUserInput
   reviewedTimesheets?: Prisma.TimesheetCreateNestedManyWithoutReviewedByInput
+  actingApiKeys?: Prisma.OrganizationApiKeyCreateNestedManyWithoutActingUserInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentCreateNestedManyWithoutGeneratedByInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerCreateNestedManyWithoutAcknowledgedByUserInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerCreateNestedManyWithoutDismissedByUserInput
@@ -1527,6 +1549,7 @@ export type UserUncheckedCreateWithoutApiKeysInput = {
   sentSigningEnvelopes?: Prisma.SigningEnvelopeUncheckedCreateNestedManyWithoutSentByInput
   consentRecords?: Prisma.ConsentRecordUncheckedCreateNestedManyWithoutUserInput
   reviewedTimesheets?: Prisma.TimesheetUncheckedCreateNestedManyWithoutReviewedByInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUncheckedCreateNestedManyWithoutActingUserInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUncheckedCreateNestedManyWithoutGeneratedByInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedCreateNestedManyWithoutAcknowledgedByUserInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedCreateNestedManyWithoutDismissedByUserInput
@@ -1542,6 +1565,125 @@ export type UserUncheckedCreateWithoutApiKeysInput = {
 export type UserCreateOrConnectWithoutApiKeysInput = {
   where: Prisma.UserWhereUniqueInput
   create: Prisma.XOR<Prisma.UserCreateWithoutApiKeysInput, Prisma.UserUncheckedCreateWithoutApiKeysInput>
+}
+
+export type UserCreateWithoutActingApiKeysInput = {
+  id?: string
+  name: string
+  email: string
+  emailVerified?: boolean
+  image?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  role?: string | null
+  banned?: boolean | null
+  banReason?: string | null
+  banExpires?: Date | string | null
+  failedLoginAttempts?: number
+  lockedUntil?: Date | string | null
+  outOfOffice?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+  members?: Prisma.MemberCreateNestedManyWithoutUserInput
+  invitations?: Prisma.InvitationCreateNestedManyWithoutInviterInput
+  ownedContractors?: Prisma.ContractorCreateNestedManyWithoutOwnerInput
+  managedTeams?: Prisma.TeamCreateNestedManyWithoutManagerInput
+  fallbackApprovedTeams?: Prisma.TeamCreateNestedManyWithoutFallbackApproverInput
+  ownedContracts?: Prisma.ContractCreateNestedManyWithoutInternalOwnerInput
+  startedWorkflowRuns?: Prisma.WorkflowRunCreateNestedManyWithoutStartedByInput
+  assignedWorkflowTasks?: Prisma.WorkflowTaskRunCreateNestedManyWithoutAssigneeInput
+  completedWorkflowTasks?: Prisma.WorkflowTaskRunCreateNestedManyWithoutCompletedByInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceCreateNestedManyWithoutSuccessorInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceCreateNestedManyWithoutRotatedByInput
+  createdApprovalFlows?: Prisma.ApprovalFlowCreateNestedManyWithoutCreatedByInput
+  approvalSteps?: Prisma.ApprovalStepCreateNestedManyWithoutApproverInput
+  approvalDecisions?: Prisma.ApprovalDecisionCreateNestedManyWithoutActorInput
+  createdPaymentRuns?: Prisma.PaymentRunCreateNestedManyWithoutCreatedByInput
+  approvedPaymentRuns?: Prisma.PaymentRunCreateNestedManyWithoutApprovedByInput
+  integrationConnections?: Prisma.IntegrationConnectionCreateNestedManyWithoutConnectedByInput
+  personalConnections?: Prisma.IntegrationConnectionCreateNestedManyWithoutUserInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
+  notificationPrefs?: Prisma.UserNotificationPreferenceCreateNestedManyWithoutUserInput
+  comments?: Prisma.CommentCreateNestedManyWithoutAuthorInput
+  paymentExports?: Prisma.PaymentExportCreateNestedManyWithoutGeneratedByInput
+  workflowComments?: Prisma.WorkflowCommentCreateNestedManyWithoutAuthorInput
+  reviewedChangeRequests?: Prisma.ContractorChangeRequestCreateNestedManyWithoutReviewedByInput
+  sentSigningEnvelopes?: Prisma.SigningEnvelopeCreateNestedManyWithoutSentByInput
+  consentRecords?: Prisma.ConsentRecordCreateNestedManyWithoutUserInput
+  reviewedTimesheets?: Prisma.TimesheetCreateNestedManyWithoutReviewedByInput
+  apiKeys?: Prisma.OrganizationApiKeyCreateNestedManyWithoutCreatedByInput
+  generatedClassificationDocuments?: Prisma.ClassificationDocumentCreateNestedManyWithoutGeneratedByInput
+  acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerCreateNestedManyWithoutAcknowledgedByUserInput
+  dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerCreateNestedManyWithoutDismissedByUserInput
+  uploadedIntakes?: Prisma.InvoiceIntakeRequestCreateNestedManyWithoutUploadedByInput
+  acknowledgedIntakes?: Prisma.InvoiceIntakeRequestCreateNestedManyWithoutValidationAcknowledgedByInput
+  classificationEscalationEvents?: Prisma.ClassificationEscalationEventCreateNestedManyWithoutUserInput
+  sdsApprovals?: Prisma.SdsApprovalCreateNestedManyWithoutApprovedByInput
+  consentEvents?: Prisma.ConsentEventCreateNestedManyWithoutUserInput
+  pinnedViews?: Prisma.UserPinnedViewCreateNestedManyWithoutUserInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutTriggeredByUserInput
+}
+
+export type UserUncheckedCreateWithoutActingApiKeysInput = {
+  id?: string
+  name: string
+  email: string
+  emailVerified?: boolean
+  image?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  role?: string | null
+  banned?: boolean | null
+  banReason?: string | null
+  banExpires?: Date | string | null
+  failedLoginAttempts?: number
+  lockedUntil?: Date | string | null
+  outOfOffice?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+  members?: Prisma.MemberUncheckedCreateNestedManyWithoutUserInput
+  invitations?: Prisma.InvitationUncheckedCreateNestedManyWithoutInviterInput
+  ownedContractors?: Prisma.ContractorUncheckedCreateNestedManyWithoutOwnerInput
+  managedTeams?: Prisma.TeamUncheckedCreateNestedManyWithoutManagerInput
+  fallbackApprovedTeams?: Prisma.TeamUncheckedCreateNestedManyWithoutFallbackApproverInput
+  ownedContracts?: Prisma.ContractUncheckedCreateNestedManyWithoutInternalOwnerInput
+  startedWorkflowRuns?: Prisma.WorkflowRunUncheckedCreateNestedManyWithoutStartedByInput
+  assignedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedCreateNestedManyWithoutAssigneeInput
+  completedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedCreateNestedManyWithoutCompletedByInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUncheckedCreateNestedManyWithoutSuccessorInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUncheckedCreateNestedManyWithoutRotatedByInput
+  createdApprovalFlows?: Prisma.ApprovalFlowUncheckedCreateNestedManyWithoutCreatedByInput
+  approvalSteps?: Prisma.ApprovalStepUncheckedCreateNestedManyWithoutApproverInput
+  approvalDecisions?: Prisma.ApprovalDecisionUncheckedCreateNestedManyWithoutActorInput
+  createdPaymentRuns?: Prisma.PaymentRunUncheckedCreateNestedManyWithoutCreatedByInput
+  approvedPaymentRuns?: Prisma.PaymentRunUncheckedCreateNestedManyWithoutApprovedByInput
+  integrationConnections?: Prisma.IntegrationConnectionUncheckedCreateNestedManyWithoutConnectedByInput
+  personalConnections?: Prisma.IntegrationConnectionUncheckedCreateNestedManyWithoutUserInput
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
+  notificationPrefs?: Prisma.UserNotificationPreferenceUncheckedCreateNestedManyWithoutUserInput
+  comments?: Prisma.CommentUncheckedCreateNestedManyWithoutAuthorInput
+  paymentExports?: Prisma.PaymentExportUncheckedCreateNestedManyWithoutGeneratedByInput
+  workflowComments?: Prisma.WorkflowCommentUncheckedCreateNestedManyWithoutAuthorInput
+  reviewedChangeRequests?: Prisma.ContractorChangeRequestUncheckedCreateNestedManyWithoutReviewedByInput
+  sentSigningEnvelopes?: Prisma.SigningEnvelopeUncheckedCreateNestedManyWithoutSentByInput
+  consentRecords?: Prisma.ConsentRecordUncheckedCreateNestedManyWithoutUserInput
+  reviewedTimesheets?: Prisma.TimesheetUncheckedCreateNestedManyWithoutReviewedByInput
+  apiKeys?: Prisma.OrganizationApiKeyUncheckedCreateNestedManyWithoutCreatedByInput
+  generatedClassificationDocuments?: Prisma.ClassificationDocumentUncheckedCreateNestedManyWithoutGeneratedByInput
+  acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedCreateNestedManyWithoutAcknowledgedByUserInput
+  dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedCreateNestedManyWithoutDismissedByUserInput
+  uploadedIntakes?: Prisma.InvoiceIntakeRequestUncheckedCreateNestedManyWithoutUploadedByInput
+  acknowledgedIntakes?: Prisma.InvoiceIntakeRequestUncheckedCreateNestedManyWithoutValidationAcknowledgedByInput
+  classificationEscalationEvents?: Prisma.ClassificationEscalationEventUncheckedCreateNestedManyWithoutUserInput
+  sdsApprovals?: Prisma.SdsApprovalUncheckedCreateNestedManyWithoutApprovedByInput
+  consentEvents?: Prisma.ConsentEventUncheckedCreateNestedManyWithoutUserInput
+  pinnedViews?: Prisma.UserPinnedViewUncheckedCreateNestedManyWithoutUserInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutTriggeredByUserInput
+}
+
+export type UserCreateOrConnectWithoutActingApiKeysInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutActingApiKeysInput, Prisma.UserUncheckedCreateWithoutActingApiKeysInput>
 }
 
 export type UserUpsertWithoutApiKeysInput = {
@@ -1599,6 +1741,7 @@ export type UserUpdateWithoutApiKeysInput = {
   sentSigningEnvelopes?: Prisma.SigningEnvelopeUpdateManyWithoutSentByNestedInput
   consentRecords?: Prisma.ConsentRecordUpdateManyWithoutUserNestedInput
   reviewedTimesheets?: Prisma.TimesheetUpdateManyWithoutReviewedByNestedInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUpdateManyWithoutActingUserNestedInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUpdateManyWithoutGeneratedByNestedInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUpdateManyWithoutAcknowledgedByUserNestedInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUpdateManyWithoutDismissedByUserNestedInput
@@ -1655,6 +1798,132 @@ export type UserUncheckedUpdateWithoutApiKeysInput = {
   sentSigningEnvelopes?: Prisma.SigningEnvelopeUncheckedUpdateManyWithoutSentByNestedInput
   consentRecords?: Prisma.ConsentRecordUncheckedUpdateManyWithoutUserNestedInput
   reviewedTimesheets?: Prisma.TimesheetUncheckedUpdateManyWithoutReviewedByNestedInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUncheckedUpdateManyWithoutActingUserNestedInput
+  generatedClassificationDocuments?: Prisma.ClassificationDocumentUncheckedUpdateManyWithoutGeneratedByNestedInput
+  acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedUpdateManyWithoutAcknowledgedByUserNestedInput
+  dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedUpdateManyWithoutDismissedByUserNestedInput
+  uploadedIntakes?: Prisma.InvoiceIntakeRequestUncheckedUpdateManyWithoutUploadedByNestedInput
+  acknowledgedIntakes?: Prisma.InvoiceIntakeRequestUncheckedUpdateManyWithoutValidationAcknowledgedByNestedInput
+  classificationEscalationEvents?: Prisma.ClassificationEscalationEventUncheckedUpdateManyWithoutUserNestedInput
+  sdsApprovals?: Prisma.SdsApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
+  consentEvents?: Prisma.ConsentEventUncheckedUpdateManyWithoutUserNestedInput
+  pinnedViews?: Prisma.UserPinnedViewUncheckedUpdateManyWithoutUserNestedInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutTriggeredByUserNestedInput
+}
+
+export type UserUpsertWithoutActingApiKeysInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutActingApiKeysInput, Prisma.UserUncheckedUpdateWithoutActingApiKeysInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutActingApiKeysInput, Prisma.UserUncheckedCreateWithoutActingApiKeysInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutActingApiKeysInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutActingApiKeysInput, Prisma.UserUncheckedUpdateWithoutActingApiKeysInput>
+}
+
+export type UserUpdateWithoutActingApiKeysInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  role?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  banned?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  banReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  failedLoginAttempts?: Prisma.IntFieldUpdateOperationsInput | number
+  lockedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  outOfOffice?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+  members?: Prisma.MemberUpdateManyWithoutUserNestedInput
+  invitations?: Prisma.InvitationUpdateManyWithoutInviterNestedInput
+  ownedContractors?: Prisma.ContractorUpdateManyWithoutOwnerNestedInput
+  managedTeams?: Prisma.TeamUpdateManyWithoutManagerNestedInput
+  fallbackApprovedTeams?: Prisma.TeamUpdateManyWithoutFallbackApproverNestedInput
+  ownedContracts?: Prisma.ContractUpdateManyWithoutInternalOwnerNestedInput
+  startedWorkflowRuns?: Prisma.WorkflowRunUpdateManyWithoutStartedByNestedInput
+  assignedWorkflowTasks?: Prisma.WorkflowTaskRunUpdateManyWithoutAssigneeNestedInput
+  completedWorkflowTasks?: Prisma.WorkflowTaskRunUpdateManyWithoutCompletedByNestedInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUpdateManyWithoutSuccessorNestedInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUpdateManyWithoutRotatedByNestedInput
+  createdApprovalFlows?: Prisma.ApprovalFlowUpdateManyWithoutCreatedByNestedInput
+  approvalSteps?: Prisma.ApprovalStepUpdateManyWithoutApproverNestedInput
+  approvalDecisions?: Prisma.ApprovalDecisionUpdateManyWithoutActorNestedInput
+  createdPaymentRuns?: Prisma.PaymentRunUpdateManyWithoutCreatedByNestedInput
+  approvedPaymentRuns?: Prisma.PaymentRunUpdateManyWithoutApprovedByNestedInput
+  integrationConnections?: Prisma.IntegrationConnectionUpdateManyWithoutConnectedByNestedInput
+  personalConnections?: Prisma.IntegrationConnectionUpdateManyWithoutUserNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
+  notificationPrefs?: Prisma.UserNotificationPreferenceUpdateManyWithoutUserNestedInput
+  comments?: Prisma.CommentUpdateManyWithoutAuthorNestedInput
+  paymentExports?: Prisma.PaymentExportUpdateManyWithoutGeneratedByNestedInput
+  workflowComments?: Prisma.WorkflowCommentUpdateManyWithoutAuthorNestedInput
+  reviewedChangeRequests?: Prisma.ContractorChangeRequestUpdateManyWithoutReviewedByNestedInput
+  sentSigningEnvelopes?: Prisma.SigningEnvelopeUpdateManyWithoutSentByNestedInput
+  consentRecords?: Prisma.ConsentRecordUpdateManyWithoutUserNestedInput
+  reviewedTimesheets?: Prisma.TimesheetUpdateManyWithoutReviewedByNestedInput
+  apiKeys?: Prisma.OrganizationApiKeyUpdateManyWithoutCreatedByNestedInput
+  generatedClassificationDocuments?: Prisma.ClassificationDocumentUpdateManyWithoutGeneratedByNestedInput
+  acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUpdateManyWithoutAcknowledgedByUserNestedInput
+  dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUpdateManyWithoutDismissedByUserNestedInput
+  uploadedIntakes?: Prisma.InvoiceIntakeRequestUpdateManyWithoutUploadedByNestedInput
+  acknowledgedIntakes?: Prisma.InvoiceIntakeRequestUpdateManyWithoutValidationAcknowledgedByNestedInput
+  classificationEscalationEvents?: Prisma.ClassificationEscalationEventUpdateManyWithoutUserNestedInput
+  sdsApprovals?: Prisma.SdsApprovalUpdateManyWithoutApprovedByNestedInput
+  consentEvents?: Prisma.ConsentEventUpdateManyWithoutUserNestedInput
+  pinnedViews?: Prisma.UserPinnedViewUpdateManyWithoutUserNestedInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutTriggeredByUserNestedInput
+}
+
+export type UserUncheckedUpdateWithoutActingApiKeysInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  role?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  banned?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  banReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  failedLoginAttempts?: Prisma.IntFieldUpdateOperationsInput | number
+  lockedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  outOfOffice?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+  members?: Prisma.MemberUncheckedUpdateManyWithoutUserNestedInput
+  invitations?: Prisma.InvitationUncheckedUpdateManyWithoutInviterNestedInput
+  ownedContractors?: Prisma.ContractorUncheckedUpdateManyWithoutOwnerNestedInput
+  managedTeams?: Prisma.TeamUncheckedUpdateManyWithoutManagerNestedInput
+  fallbackApprovedTeams?: Prisma.TeamUncheckedUpdateManyWithoutFallbackApproverNestedInput
+  ownedContracts?: Prisma.ContractUncheckedUpdateManyWithoutInternalOwnerNestedInput
+  startedWorkflowRuns?: Prisma.WorkflowRunUncheckedUpdateManyWithoutStartedByNestedInput
+  assignedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedUpdateManyWithoutAssigneeNestedInput
+  completedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedUpdateManyWithoutCompletedByNestedInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUncheckedUpdateManyWithoutSuccessorNestedInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUncheckedUpdateManyWithoutRotatedByNestedInput
+  createdApprovalFlows?: Prisma.ApprovalFlowUncheckedUpdateManyWithoutCreatedByNestedInput
+  approvalSteps?: Prisma.ApprovalStepUncheckedUpdateManyWithoutApproverNestedInput
+  approvalDecisions?: Prisma.ApprovalDecisionUncheckedUpdateManyWithoutActorNestedInput
+  createdPaymentRuns?: Prisma.PaymentRunUncheckedUpdateManyWithoutCreatedByNestedInput
+  approvedPaymentRuns?: Prisma.PaymentRunUncheckedUpdateManyWithoutApprovedByNestedInput
+  integrationConnections?: Prisma.IntegrationConnectionUncheckedUpdateManyWithoutConnectedByNestedInput
+  personalConnections?: Prisma.IntegrationConnectionUncheckedUpdateManyWithoutUserNestedInput
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
+  notificationPrefs?: Prisma.UserNotificationPreferenceUncheckedUpdateManyWithoutUserNestedInput
+  comments?: Prisma.CommentUncheckedUpdateManyWithoutAuthorNestedInput
+  paymentExports?: Prisma.PaymentExportUncheckedUpdateManyWithoutGeneratedByNestedInput
+  workflowComments?: Prisma.WorkflowCommentUncheckedUpdateManyWithoutAuthorNestedInput
+  reviewedChangeRequests?: Prisma.ContractorChangeRequestUncheckedUpdateManyWithoutReviewedByNestedInput
+  sentSigningEnvelopes?: Prisma.SigningEnvelopeUncheckedUpdateManyWithoutSentByNestedInput
+  consentRecords?: Prisma.ConsentRecordUncheckedUpdateManyWithoutUserNestedInput
+  reviewedTimesheets?: Prisma.TimesheetUncheckedUpdateManyWithoutReviewedByNestedInput
+  apiKeys?: Prisma.OrganizationApiKeyUncheckedUpdateManyWithoutCreatedByNestedInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUncheckedUpdateManyWithoutGeneratedByNestedInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedUpdateManyWithoutAcknowledgedByUserNestedInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedUpdateManyWithoutDismissedByUserNestedInput
@@ -1711,6 +1980,7 @@ export type UserCreateWithoutCreatedApprovalFlowsInput = {
   consentRecords?: Prisma.ConsentRecordCreateNestedManyWithoutUserInput
   reviewedTimesheets?: Prisma.TimesheetCreateNestedManyWithoutReviewedByInput
   apiKeys?: Prisma.OrganizationApiKeyCreateNestedManyWithoutCreatedByInput
+  actingApiKeys?: Prisma.OrganizationApiKeyCreateNestedManyWithoutActingUserInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentCreateNestedManyWithoutGeneratedByInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerCreateNestedManyWithoutAcknowledgedByUserInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerCreateNestedManyWithoutDismissedByUserInput
@@ -1767,6 +2037,7 @@ export type UserUncheckedCreateWithoutCreatedApprovalFlowsInput = {
   consentRecords?: Prisma.ConsentRecordUncheckedCreateNestedManyWithoutUserInput
   reviewedTimesheets?: Prisma.TimesheetUncheckedCreateNestedManyWithoutReviewedByInput
   apiKeys?: Prisma.OrganizationApiKeyUncheckedCreateNestedManyWithoutCreatedByInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUncheckedCreateNestedManyWithoutActingUserInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUncheckedCreateNestedManyWithoutGeneratedByInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedCreateNestedManyWithoutAcknowledgedByUserInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedCreateNestedManyWithoutDismissedByUserInput
@@ -1839,6 +2110,7 @@ export type UserUpdateWithoutCreatedApprovalFlowsInput = {
   consentRecords?: Prisma.ConsentRecordUpdateManyWithoutUserNestedInput
   reviewedTimesheets?: Prisma.TimesheetUpdateManyWithoutReviewedByNestedInput
   apiKeys?: Prisma.OrganizationApiKeyUpdateManyWithoutCreatedByNestedInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUpdateManyWithoutActingUserNestedInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUpdateManyWithoutGeneratedByNestedInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUpdateManyWithoutAcknowledgedByUserNestedInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUpdateManyWithoutDismissedByUserNestedInput
@@ -1895,6 +2167,7 @@ export type UserUncheckedUpdateWithoutCreatedApprovalFlowsInput = {
   consentRecords?: Prisma.ConsentRecordUncheckedUpdateManyWithoutUserNestedInput
   reviewedTimesheets?: Prisma.TimesheetUncheckedUpdateManyWithoutReviewedByNestedInput
   apiKeys?: Prisma.OrganizationApiKeyUncheckedUpdateManyWithoutCreatedByNestedInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUncheckedUpdateManyWithoutActingUserNestedInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUncheckedUpdateManyWithoutGeneratedByNestedInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedUpdateManyWithoutAcknowledgedByUserNestedInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedUpdateManyWithoutDismissedByUserNestedInput
@@ -1951,6 +2224,7 @@ export type UserCreateWithoutApprovalStepsInput = {
   consentRecords?: Prisma.ConsentRecordCreateNestedManyWithoutUserInput
   reviewedTimesheets?: Prisma.TimesheetCreateNestedManyWithoutReviewedByInput
   apiKeys?: Prisma.OrganizationApiKeyCreateNestedManyWithoutCreatedByInput
+  actingApiKeys?: Prisma.OrganizationApiKeyCreateNestedManyWithoutActingUserInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentCreateNestedManyWithoutGeneratedByInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerCreateNestedManyWithoutAcknowledgedByUserInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerCreateNestedManyWithoutDismissedByUserInput
@@ -2007,6 +2281,7 @@ export type UserUncheckedCreateWithoutApprovalStepsInput = {
   consentRecords?: Prisma.ConsentRecordUncheckedCreateNestedManyWithoutUserInput
   reviewedTimesheets?: Prisma.TimesheetUncheckedCreateNestedManyWithoutReviewedByInput
   apiKeys?: Prisma.OrganizationApiKeyUncheckedCreateNestedManyWithoutCreatedByInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUncheckedCreateNestedManyWithoutActingUserInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUncheckedCreateNestedManyWithoutGeneratedByInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedCreateNestedManyWithoutAcknowledgedByUserInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedCreateNestedManyWithoutDismissedByUserInput
@@ -2079,6 +2354,7 @@ export type UserUpdateWithoutApprovalStepsInput = {
   consentRecords?: Prisma.ConsentRecordUpdateManyWithoutUserNestedInput
   reviewedTimesheets?: Prisma.TimesheetUpdateManyWithoutReviewedByNestedInput
   apiKeys?: Prisma.OrganizationApiKeyUpdateManyWithoutCreatedByNestedInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUpdateManyWithoutActingUserNestedInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUpdateManyWithoutGeneratedByNestedInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUpdateManyWithoutAcknowledgedByUserNestedInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUpdateManyWithoutDismissedByUserNestedInput
@@ -2135,6 +2411,7 @@ export type UserUncheckedUpdateWithoutApprovalStepsInput = {
   consentRecords?: Prisma.ConsentRecordUncheckedUpdateManyWithoutUserNestedInput
   reviewedTimesheets?: Prisma.TimesheetUncheckedUpdateManyWithoutReviewedByNestedInput
   apiKeys?: Prisma.OrganizationApiKeyUncheckedUpdateManyWithoutCreatedByNestedInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUncheckedUpdateManyWithoutActingUserNestedInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUncheckedUpdateManyWithoutGeneratedByNestedInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedUpdateManyWithoutAcknowledgedByUserNestedInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedUpdateManyWithoutDismissedByUserNestedInput
@@ -2191,6 +2468,7 @@ export type UserCreateWithoutApprovalDecisionsInput = {
   consentRecords?: Prisma.ConsentRecordCreateNestedManyWithoutUserInput
   reviewedTimesheets?: Prisma.TimesheetCreateNestedManyWithoutReviewedByInput
   apiKeys?: Prisma.OrganizationApiKeyCreateNestedManyWithoutCreatedByInput
+  actingApiKeys?: Prisma.OrganizationApiKeyCreateNestedManyWithoutActingUserInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentCreateNestedManyWithoutGeneratedByInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerCreateNestedManyWithoutAcknowledgedByUserInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerCreateNestedManyWithoutDismissedByUserInput
@@ -2247,6 +2525,7 @@ export type UserUncheckedCreateWithoutApprovalDecisionsInput = {
   consentRecords?: Prisma.ConsentRecordUncheckedCreateNestedManyWithoutUserInput
   reviewedTimesheets?: Prisma.TimesheetUncheckedCreateNestedManyWithoutReviewedByInput
   apiKeys?: Prisma.OrganizationApiKeyUncheckedCreateNestedManyWithoutCreatedByInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUncheckedCreateNestedManyWithoutActingUserInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUncheckedCreateNestedManyWithoutGeneratedByInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedCreateNestedManyWithoutAcknowledgedByUserInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedCreateNestedManyWithoutDismissedByUserInput
@@ -2319,6 +2598,7 @@ export type UserUpdateWithoutApprovalDecisionsInput = {
   consentRecords?: Prisma.ConsentRecordUpdateManyWithoutUserNestedInput
   reviewedTimesheets?: Prisma.TimesheetUpdateManyWithoutReviewedByNestedInput
   apiKeys?: Prisma.OrganizationApiKeyUpdateManyWithoutCreatedByNestedInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUpdateManyWithoutActingUserNestedInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUpdateManyWithoutGeneratedByNestedInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUpdateManyWithoutAcknowledgedByUserNestedInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUpdateManyWithoutDismissedByUserNestedInput
@@ -2375,6 +2655,7 @@ export type UserUncheckedUpdateWithoutApprovalDecisionsInput = {
   consentRecords?: Prisma.ConsentRecordUncheckedUpdateManyWithoutUserNestedInput
   reviewedTimesheets?: Prisma.TimesheetUncheckedUpdateManyWithoutReviewedByNestedInput
   apiKeys?: Prisma.OrganizationApiKeyUncheckedUpdateManyWithoutCreatedByNestedInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUncheckedUpdateManyWithoutActingUserNestedInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUncheckedUpdateManyWithoutGeneratedByNestedInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedUpdateManyWithoutAcknowledgedByUserNestedInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedUpdateManyWithoutDismissedByUserNestedInput
@@ -2432,6 +2713,7 @@ export type UserCreateWithoutPinnedViewsInput = {
   consentRecords?: Prisma.ConsentRecordCreateNestedManyWithoutUserInput
   reviewedTimesheets?: Prisma.TimesheetCreateNestedManyWithoutReviewedByInput
   apiKeys?: Prisma.OrganizationApiKeyCreateNestedManyWithoutCreatedByInput
+  actingApiKeys?: Prisma.OrganizationApiKeyCreateNestedManyWithoutActingUserInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentCreateNestedManyWithoutGeneratedByInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerCreateNestedManyWithoutAcknowledgedByUserInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerCreateNestedManyWithoutDismissedByUserInput
@@ -2488,6 +2770,7 @@ export type UserUncheckedCreateWithoutPinnedViewsInput = {
   consentRecords?: Prisma.ConsentRecordUncheckedCreateNestedManyWithoutUserInput
   reviewedTimesheets?: Prisma.TimesheetUncheckedCreateNestedManyWithoutReviewedByInput
   apiKeys?: Prisma.OrganizationApiKeyUncheckedCreateNestedManyWithoutCreatedByInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUncheckedCreateNestedManyWithoutActingUserInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUncheckedCreateNestedManyWithoutGeneratedByInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedCreateNestedManyWithoutAcknowledgedByUserInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedCreateNestedManyWithoutDismissedByUserInput
@@ -2560,6 +2843,7 @@ export type UserUpdateWithoutPinnedViewsInput = {
   consentRecords?: Prisma.ConsentRecordUpdateManyWithoutUserNestedInput
   reviewedTimesheets?: Prisma.TimesheetUpdateManyWithoutReviewedByNestedInput
   apiKeys?: Prisma.OrganizationApiKeyUpdateManyWithoutCreatedByNestedInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUpdateManyWithoutActingUserNestedInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUpdateManyWithoutGeneratedByNestedInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUpdateManyWithoutAcknowledgedByUserNestedInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUpdateManyWithoutDismissedByUserNestedInput
@@ -2616,6 +2900,7 @@ export type UserUncheckedUpdateWithoutPinnedViewsInput = {
   consentRecords?: Prisma.ConsentRecordUncheckedUpdateManyWithoutUserNestedInput
   reviewedTimesheets?: Prisma.TimesheetUncheckedUpdateManyWithoutReviewedByNestedInput
   apiKeys?: Prisma.OrganizationApiKeyUncheckedUpdateManyWithoutCreatedByNestedInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUncheckedUpdateManyWithoutActingUserNestedInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUncheckedUpdateManyWithoutGeneratedByNestedInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedUpdateManyWithoutAcknowledgedByUserNestedInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedUpdateManyWithoutDismissedByUserNestedInput
@@ -2671,6 +2956,7 @@ export type UserCreateWithoutSessionsInput = {
   consentRecords?: Prisma.ConsentRecordCreateNestedManyWithoutUserInput
   reviewedTimesheets?: Prisma.TimesheetCreateNestedManyWithoutReviewedByInput
   apiKeys?: Prisma.OrganizationApiKeyCreateNestedManyWithoutCreatedByInput
+  actingApiKeys?: Prisma.OrganizationApiKeyCreateNestedManyWithoutActingUserInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentCreateNestedManyWithoutGeneratedByInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerCreateNestedManyWithoutAcknowledgedByUserInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerCreateNestedManyWithoutDismissedByUserInput
@@ -2727,6 +3013,7 @@ export type UserUncheckedCreateWithoutSessionsInput = {
   consentRecords?: Prisma.ConsentRecordUncheckedCreateNestedManyWithoutUserInput
   reviewedTimesheets?: Prisma.TimesheetUncheckedCreateNestedManyWithoutReviewedByInput
   apiKeys?: Prisma.OrganizationApiKeyUncheckedCreateNestedManyWithoutCreatedByInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUncheckedCreateNestedManyWithoutActingUserInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUncheckedCreateNestedManyWithoutGeneratedByInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedCreateNestedManyWithoutAcknowledgedByUserInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedCreateNestedManyWithoutDismissedByUserInput
@@ -2799,6 +3086,7 @@ export type UserUpdateWithoutSessionsInput = {
   consentRecords?: Prisma.ConsentRecordUpdateManyWithoutUserNestedInput
   reviewedTimesheets?: Prisma.TimesheetUpdateManyWithoutReviewedByNestedInput
   apiKeys?: Prisma.OrganizationApiKeyUpdateManyWithoutCreatedByNestedInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUpdateManyWithoutActingUserNestedInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUpdateManyWithoutGeneratedByNestedInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUpdateManyWithoutAcknowledgedByUserNestedInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUpdateManyWithoutDismissedByUserNestedInput
@@ -2855,6 +3143,7 @@ export type UserUncheckedUpdateWithoutSessionsInput = {
   consentRecords?: Prisma.ConsentRecordUncheckedUpdateManyWithoutUserNestedInput
   reviewedTimesheets?: Prisma.TimesheetUncheckedUpdateManyWithoutReviewedByNestedInput
   apiKeys?: Prisma.OrganizationApiKeyUncheckedUpdateManyWithoutCreatedByNestedInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUncheckedUpdateManyWithoutActingUserNestedInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUncheckedUpdateManyWithoutGeneratedByNestedInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedUpdateManyWithoutAcknowledgedByUserNestedInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedUpdateManyWithoutDismissedByUserNestedInput
@@ -2911,6 +3200,7 @@ export type UserCreateWithoutAccountsInput = {
   consentRecords?: Prisma.ConsentRecordCreateNestedManyWithoutUserInput
   reviewedTimesheets?: Prisma.TimesheetCreateNestedManyWithoutReviewedByInput
   apiKeys?: Prisma.OrganizationApiKeyCreateNestedManyWithoutCreatedByInput
+  actingApiKeys?: Prisma.OrganizationApiKeyCreateNestedManyWithoutActingUserInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentCreateNestedManyWithoutGeneratedByInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerCreateNestedManyWithoutAcknowledgedByUserInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerCreateNestedManyWithoutDismissedByUserInput
@@ -2967,6 +3257,7 @@ export type UserUncheckedCreateWithoutAccountsInput = {
   consentRecords?: Prisma.ConsentRecordUncheckedCreateNestedManyWithoutUserInput
   reviewedTimesheets?: Prisma.TimesheetUncheckedCreateNestedManyWithoutReviewedByInput
   apiKeys?: Prisma.OrganizationApiKeyUncheckedCreateNestedManyWithoutCreatedByInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUncheckedCreateNestedManyWithoutActingUserInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUncheckedCreateNestedManyWithoutGeneratedByInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedCreateNestedManyWithoutAcknowledgedByUserInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedCreateNestedManyWithoutDismissedByUserInput
@@ -3039,6 +3330,7 @@ export type UserUpdateWithoutAccountsInput = {
   consentRecords?: Prisma.ConsentRecordUpdateManyWithoutUserNestedInput
   reviewedTimesheets?: Prisma.TimesheetUpdateManyWithoutReviewedByNestedInput
   apiKeys?: Prisma.OrganizationApiKeyUpdateManyWithoutCreatedByNestedInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUpdateManyWithoutActingUserNestedInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUpdateManyWithoutGeneratedByNestedInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUpdateManyWithoutAcknowledgedByUserNestedInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUpdateManyWithoutDismissedByUserNestedInput
@@ -3095,6 +3387,7 @@ export type UserUncheckedUpdateWithoutAccountsInput = {
   consentRecords?: Prisma.ConsentRecordUncheckedUpdateManyWithoutUserNestedInput
   reviewedTimesheets?: Prisma.TimesheetUncheckedUpdateManyWithoutReviewedByNestedInput
   apiKeys?: Prisma.OrganizationApiKeyUncheckedUpdateManyWithoutCreatedByNestedInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUncheckedUpdateManyWithoutActingUserNestedInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUncheckedUpdateManyWithoutGeneratedByNestedInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedUpdateManyWithoutAcknowledgedByUserNestedInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedUpdateManyWithoutDismissedByUserNestedInput
@@ -3152,6 +3445,7 @@ export type UserCreateWithoutGeneratedClassificationDocumentsInput = {
   consentRecords?: Prisma.ConsentRecordCreateNestedManyWithoutUserInput
   reviewedTimesheets?: Prisma.TimesheetCreateNestedManyWithoutReviewedByInput
   apiKeys?: Prisma.OrganizationApiKeyCreateNestedManyWithoutCreatedByInput
+  actingApiKeys?: Prisma.OrganizationApiKeyCreateNestedManyWithoutActingUserInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerCreateNestedManyWithoutAcknowledgedByUserInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerCreateNestedManyWithoutDismissedByUserInput
   uploadedIntakes?: Prisma.InvoiceIntakeRequestCreateNestedManyWithoutUploadedByInput
@@ -3208,6 +3502,7 @@ export type UserUncheckedCreateWithoutGeneratedClassificationDocumentsInput = {
   consentRecords?: Prisma.ConsentRecordUncheckedCreateNestedManyWithoutUserInput
   reviewedTimesheets?: Prisma.TimesheetUncheckedCreateNestedManyWithoutReviewedByInput
   apiKeys?: Prisma.OrganizationApiKeyUncheckedCreateNestedManyWithoutCreatedByInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUncheckedCreateNestedManyWithoutActingUserInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedCreateNestedManyWithoutAcknowledgedByUserInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedCreateNestedManyWithoutDismissedByUserInput
   uploadedIntakes?: Prisma.InvoiceIntakeRequestUncheckedCreateNestedManyWithoutUploadedByInput
@@ -3280,6 +3575,7 @@ export type UserUpdateWithoutGeneratedClassificationDocumentsInput = {
   consentRecords?: Prisma.ConsentRecordUpdateManyWithoutUserNestedInput
   reviewedTimesheets?: Prisma.TimesheetUpdateManyWithoutReviewedByNestedInput
   apiKeys?: Prisma.OrganizationApiKeyUpdateManyWithoutCreatedByNestedInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUpdateManyWithoutActingUserNestedInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUpdateManyWithoutAcknowledgedByUserNestedInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUpdateManyWithoutDismissedByUserNestedInput
   uploadedIntakes?: Prisma.InvoiceIntakeRequestUpdateManyWithoutUploadedByNestedInput
@@ -3336,6 +3632,7 @@ export type UserUncheckedUpdateWithoutGeneratedClassificationDocumentsInput = {
   consentRecords?: Prisma.ConsentRecordUncheckedUpdateManyWithoutUserNestedInput
   reviewedTimesheets?: Prisma.TimesheetUncheckedUpdateManyWithoutReviewedByNestedInput
   apiKeys?: Prisma.OrganizationApiKeyUncheckedUpdateManyWithoutCreatedByNestedInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUncheckedUpdateManyWithoutActingUserNestedInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedUpdateManyWithoutAcknowledgedByUserNestedInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedUpdateManyWithoutDismissedByUserNestedInput
   uploadedIntakes?: Prisma.InvoiceIntakeRequestUncheckedUpdateManyWithoutUploadedByNestedInput
@@ -3392,6 +3689,7 @@ export type UserCreateWithoutAcknowledgedReassessmentTriggersInput = {
   consentRecords?: Prisma.ConsentRecordCreateNestedManyWithoutUserInput
   reviewedTimesheets?: Prisma.TimesheetCreateNestedManyWithoutReviewedByInput
   apiKeys?: Prisma.OrganizationApiKeyCreateNestedManyWithoutCreatedByInput
+  actingApiKeys?: Prisma.OrganizationApiKeyCreateNestedManyWithoutActingUserInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentCreateNestedManyWithoutGeneratedByInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerCreateNestedManyWithoutDismissedByUserInput
   uploadedIntakes?: Prisma.InvoiceIntakeRequestCreateNestedManyWithoutUploadedByInput
@@ -3448,6 +3746,7 @@ export type UserUncheckedCreateWithoutAcknowledgedReassessmentTriggersInput = {
   consentRecords?: Prisma.ConsentRecordUncheckedCreateNestedManyWithoutUserInput
   reviewedTimesheets?: Prisma.TimesheetUncheckedCreateNestedManyWithoutReviewedByInput
   apiKeys?: Prisma.OrganizationApiKeyUncheckedCreateNestedManyWithoutCreatedByInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUncheckedCreateNestedManyWithoutActingUserInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUncheckedCreateNestedManyWithoutGeneratedByInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedCreateNestedManyWithoutDismissedByUserInput
   uploadedIntakes?: Prisma.InvoiceIntakeRequestUncheckedCreateNestedManyWithoutUploadedByInput
@@ -3509,6 +3808,7 @@ export type UserCreateWithoutDismissedReassessmentTriggersInput = {
   consentRecords?: Prisma.ConsentRecordCreateNestedManyWithoutUserInput
   reviewedTimesheets?: Prisma.TimesheetCreateNestedManyWithoutReviewedByInput
   apiKeys?: Prisma.OrganizationApiKeyCreateNestedManyWithoutCreatedByInput
+  actingApiKeys?: Prisma.OrganizationApiKeyCreateNestedManyWithoutActingUserInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentCreateNestedManyWithoutGeneratedByInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerCreateNestedManyWithoutAcknowledgedByUserInput
   uploadedIntakes?: Prisma.InvoiceIntakeRequestCreateNestedManyWithoutUploadedByInput
@@ -3565,6 +3865,7 @@ export type UserUncheckedCreateWithoutDismissedReassessmentTriggersInput = {
   consentRecords?: Prisma.ConsentRecordUncheckedCreateNestedManyWithoutUserInput
   reviewedTimesheets?: Prisma.TimesheetUncheckedCreateNestedManyWithoutReviewedByInput
   apiKeys?: Prisma.OrganizationApiKeyUncheckedCreateNestedManyWithoutCreatedByInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUncheckedCreateNestedManyWithoutActingUserInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUncheckedCreateNestedManyWithoutGeneratedByInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedCreateNestedManyWithoutAcknowledgedByUserInput
   uploadedIntakes?: Prisma.InvoiceIntakeRequestUncheckedCreateNestedManyWithoutUploadedByInput
@@ -3637,6 +3938,7 @@ export type UserUpdateWithoutAcknowledgedReassessmentTriggersInput = {
   consentRecords?: Prisma.ConsentRecordUpdateManyWithoutUserNestedInput
   reviewedTimesheets?: Prisma.TimesheetUpdateManyWithoutReviewedByNestedInput
   apiKeys?: Prisma.OrganizationApiKeyUpdateManyWithoutCreatedByNestedInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUpdateManyWithoutActingUserNestedInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUpdateManyWithoutGeneratedByNestedInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUpdateManyWithoutDismissedByUserNestedInput
   uploadedIntakes?: Prisma.InvoiceIntakeRequestUpdateManyWithoutUploadedByNestedInput
@@ -3693,6 +3995,7 @@ export type UserUncheckedUpdateWithoutAcknowledgedReassessmentTriggersInput = {
   consentRecords?: Prisma.ConsentRecordUncheckedUpdateManyWithoutUserNestedInput
   reviewedTimesheets?: Prisma.TimesheetUncheckedUpdateManyWithoutReviewedByNestedInput
   apiKeys?: Prisma.OrganizationApiKeyUncheckedUpdateManyWithoutCreatedByNestedInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUncheckedUpdateManyWithoutActingUserNestedInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUncheckedUpdateManyWithoutGeneratedByNestedInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedUpdateManyWithoutDismissedByUserNestedInput
   uploadedIntakes?: Prisma.InvoiceIntakeRequestUncheckedUpdateManyWithoutUploadedByNestedInput
@@ -3760,6 +4063,7 @@ export type UserUpdateWithoutDismissedReassessmentTriggersInput = {
   consentRecords?: Prisma.ConsentRecordUpdateManyWithoutUserNestedInput
   reviewedTimesheets?: Prisma.TimesheetUpdateManyWithoutReviewedByNestedInput
   apiKeys?: Prisma.OrganizationApiKeyUpdateManyWithoutCreatedByNestedInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUpdateManyWithoutActingUserNestedInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUpdateManyWithoutGeneratedByNestedInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUpdateManyWithoutAcknowledgedByUserNestedInput
   uploadedIntakes?: Prisma.InvoiceIntakeRequestUpdateManyWithoutUploadedByNestedInput
@@ -3816,6 +4120,7 @@ export type UserUncheckedUpdateWithoutDismissedReassessmentTriggersInput = {
   consentRecords?: Prisma.ConsentRecordUncheckedUpdateManyWithoutUserNestedInput
   reviewedTimesheets?: Prisma.TimesheetUncheckedUpdateManyWithoutReviewedByNestedInput
   apiKeys?: Prisma.OrganizationApiKeyUncheckedUpdateManyWithoutCreatedByNestedInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUncheckedUpdateManyWithoutActingUserNestedInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUncheckedUpdateManyWithoutGeneratedByNestedInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedUpdateManyWithoutAcknowledgedByUserNestedInput
   uploadedIntakes?: Prisma.InvoiceIntakeRequestUncheckedUpdateManyWithoutUploadedByNestedInput
@@ -3872,6 +4177,7 @@ export type UserCreateWithoutClassificationEscalationEventsInput = {
   consentRecords?: Prisma.ConsentRecordCreateNestedManyWithoutUserInput
   reviewedTimesheets?: Prisma.TimesheetCreateNestedManyWithoutReviewedByInput
   apiKeys?: Prisma.OrganizationApiKeyCreateNestedManyWithoutCreatedByInput
+  actingApiKeys?: Prisma.OrganizationApiKeyCreateNestedManyWithoutActingUserInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentCreateNestedManyWithoutGeneratedByInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerCreateNestedManyWithoutAcknowledgedByUserInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerCreateNestedManyWithoutDismissedByUserInput
@@ -3928,6 +4234,7 @@ export type UserUncheckedCreateWithoutClassificationEscalationEventsInput = {
   consentRecords?: Prisma.ConsentRecordUncheckedCreateNestedManyWithoutUserInput
   reviewedTimesheets?: Prisma.TimesheetUncheckedCreateNestedManyWithoutReviewedByInput
   apiKeys?: Prisma.OrganizationApiKeyUncheckedCreateNestedManyWithoutCreatedByInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUncheckedCreateNestedManyWithoutActingUserInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUncheckedCreateNestedManyWithoutGeneratedByInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedCreateNestedManyWithoutAcknowledgedByUserInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedCreateNestedManyWithoutDismissedByUserInput
@@ -4000,6 +4307,7 @@ export type UserUpdateWithoutClassificationEscalationEventsInput = {
   consentRecords?: Prisma.ConsentRecordUpdateManyWithoutUserNestedInput
   reviewedTimesheets?: Prisma.TimesheetUpdateManyWithoutReviewedByNestedInput
   apiKeys?: Prisma.OrganizationApiKeyUpdateManyWithoutCreatedByNestedInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUpdateManyWithoutActingUserNestedInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUpdateManyWithoutGeneratedByNestedInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUpdateManyWithoutAcknowledgedByUserNestedInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUpdateManyWithoutDismissedByUserNestedInput
@@ -4056,6 +4364,7 @@ export type UserUncheckedUpdateWithoutClassificationEscalationEventsInput = {
   consentRecords?: Prisma.ConsentRecordUncheckedUpdateManyWithoutUserNestedInput
   reviewedTimesheets?: Prisma.TimesheetUncheckedUpdateManyWithoutReviewedByNestedInput
   apiKeys?: Prisma.OrganizationApiKeyUncheckedUpdateManyWithoutCreatedByNestedInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUncheckedUpdateManyWithoutActingUserNestedInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUncheckedUpdateManyWithoutGeneratedByNestedInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedUpdateManyWithoutAcknowledgedByUserNestedInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedUpdateManyWithoutDismissedByUserNestedInput
@@ -4112,6 +4421,7 @@ export type UserCreateWithoutSdsApprovalsInput = {
   consentRecords?: Prisma.ConsentRecordCreateNestedManyWithoutUserInput
   reviewedTimesheets?: Prisma.TimesheetCreateNestedManyWithoutReviewedByInput
   apiKeys?: Prisma.OrganizationApiKeyCreateNestedManyWithoutCreatedByInput
+  actingApiKeys?: Prisma.OrganizationApiKeyCreateNestedManyWithoutActingUserInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentCreateNestedManyWithoutGeneratedByInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerCreateNestedManyWithoutAcknowledgedByUserInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerCreateNestedManyWithoutDismissedByUserInput
@@ -4168,6 +4478,7 @@ export type UserUncheckedCreateWithoutSdsApprovalsInput = {
   consentRecords?: Prisma.ConsentRecordUncheckedCreateNestedManyWithoutUserInput
   reviewedTimesheets?: Prisma.TimesheetUncheckedCreateNestedManyWithoutReviewedByInput
   apiKeys?: Prisma.OrganizationApiKeyUncheckedCreateNestedManyWithoutCreatedByInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUncheckedCreateNestedManyWithoutActingUserInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUncheckedCreateNestedManyWithoutGeneratedByInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedCreateNestedManyWithoutAcknowledgedByUserInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedCreateNestedManyWithoutDismissedByUserInput
@@ -4240,6 +4551,7 @@ export type UserUpdateWithoutSdsApprovalsInput = {
   consentRecords?: Prisma.ConsentRecordUpdateManyWithoutUserNestedInput
   reviewedTimesheets?: Prisma.TimesheetUpdateManyWithoutReviewedByNestedInput
   apiKeys?: Prisma.OrganizationApiKeyUpdateManyWithoutCreatedByNestedInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUpdateManyWithoutActingUserNestedInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUpdateManyWithoutGeneratedByNestedInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUpdateManyWithoutAcknowledgedByUserNestedInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUpdateManyWithoutDismissedByUserNestedInput
@@ -4296,6 +4608,7 @@ export type UserUncheckedUpdateWithoutSdsApprovalsInput = {
   consentRecords?: Prisma.ConsentRecordUncheckedUpdateManyWithoutUserNestedInput
   reviewedTimesheets?: Prisma.TimesheetUncheckedUpdateManyWithoutReviewedByNestedInput
   apiKeys?: Prisma.OrganizationApiKeyUncheckedUpdateManyWithoutCreatedByNestedInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUncheckedUpdateManyWithoutActingUserNestedInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUncheckedUpdateManyWithoutGeneratedByNestedInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedUpdateManyWithoutAcknowledgedByUserNestedInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedUpdateManyWithoutDismissedByUserNestedInput
@@ -4351,6 +4664,7 @@ export type UserCreateWithoutConsentRecordsInput = {
   sentSigningEnvelopes?: Prisma.SigningEnvelopeCreateNestedManyWithoutSentByInput
   reviewedTimesheets?: Prisma.TimesheetCreateNestedManyWithoutReviewedByInput
   apiKeys?: Prisma.OrganizationApiKeyCreateNestedManyWithoutCreatedByInput
+  actingApiKeys?: Prisma.OrganizationApiKeyCreateNestedManyWithoutActingUserInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentCreateNestedManyWithoutGeneratedByInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerCreateNestedManyWithoutAcknowledgedByUserInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerCreateNestedManyWithoutDismissedByUserInput
@@ -4407,6 +4721,7 @@ export type UserUncheckedCreateWithoutConsentRecordsInput = {
   sentSigningEnvelopes?: Prisma.SigningEnvelopeUncheckedCreateNestedManyWithoutSentByInput
   reviewedTimesheets?: Prisma.TimesheetUncheckedCreateNestedManyWithoutReviewedByInput
   apiKeys?: Prisma.OrganizationApiKeyUncheckedCreateNestedManyWithoutCreatedByInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUncheckedCreateNestedManyWithoutActingUserInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUncheckedCreateNestedManyWithoutGeneratedByInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedCreateNestedManyWithoutAcknowledgedByUserInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedCreateNestedManyWithoutDismissedByUserInput
@@ -4479,6 +4794,7 @@ export type UserUpdateWithoutConsentRecordsInput = {
   sentSigningEnvelopes?: Prisma.SigningEnvelopeUpdateManyWithoutSentByNestedInput
   reviewedTimesheets?: Prisma.TimesheetUpdateManyWithoutReviewedByNestedInput
   apiKeys?: Prisma.OrganizationApiKeyUpdateManyWithoutCreatedByNestedInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUpdateManyWithoutActingUserNestedInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUpdateManyWithoutGeneratedByNestedInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUpdateManyWithoutAcknowledgedByUserNestedInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUpdateManyWithoutDismissedByUserNestedInput
@@ -4535,6 +4851,7 @@ export type UserUncheckedUpdateWithoutConsentRecordsInput = {
   sentSigningEnvelopes?: Prisma.SigningEnvelopeUncheckedUpdateManyWithoutSentByNestedInput
   reviewedTimesheets?: Prisma.TimesheetUncheckedUpdateManyWithoutReviewedByNestedInput
   apiKeys?: Prisma.OrganizationApiKeyUncheckedUpdateManyWithoutCreatedByNestedInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUncheckedUpdateManyWithoutActingUserNestedInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUncheckedUpdateManyWithoutGeneratedByNestedInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedUpdateManyWithoutAcknowledgedByUserNestedInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedUpdateManyWithoutDismissedByUserNestedInput
@@ -4592,6 +4909,7 @@ export type UserCreateWithoutConsentEventsInput = {
   consentRecords?: Prisma.ConsentRecordCreateNestedManyWithoutUserInput
   reviewedTimesheets?: Prisma.TimesheetCreateNestedManyWithoutReviewedByInput
   apiKeys?: Prisma.OrganizationApiKeyCreateNestedManyWithoutCreatedByInput
+  actingApiKeys?: Prisma.OrganizationApiKeyCreateNestedManyWithoutActingUserInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentCreateNestedManyWithoutGeneratedByInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerCreateNestedManyWithoutAcknowledgedByUserInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerCreateNestedManyWithoutDismissedByUserInput
@@ -4648,6 +4966,7 @@ export type UserUncheckedCreateWithoutConsentEventsInput = {
   consentRecords?: Prisma.ConsentRecordUncheckedCreateNestedManyWithoutUserInput
   reviewedTimesheets?: Prisma.TimesheetUncheckedCreateNestedManyWithoutReviewedByInput
   apiKeys?: Prisma.OrganizationApiKeyUncheckedCreateNestedManyWithoutCreatedByInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUncheckedCreateNestedManyWithoutActingUserInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUncheckedCreateNestedManyWithoutGeneratedByInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedCreateNestedManyWithoutAcknowledgedByUserInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedCreateNestedManyWithoutDismissedByUserInput
@@ -4720,6 +5039,7 @@ export type UserUpdateWithoutConsentEventsInput = {
   consentRecords?: Prisma.ConsentRecordUpdateManyWithoutUserNestedInput
   reviewedTimesheets?: Prisma.TimesheetUpdateManyWithoutReviewedByNestedInput
   apiKeys?: Prisma.OrganizationApiKeyUpdateManyWithoutCreatedByNestedInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUpdateManyWithoutActingUserNestedInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUpdateManyWithoutGeneratedByNestedInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUpdateManyWithoutAcknowledgedByUserNestedInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUpdateManyWithoutDismissedByUserNestedInput
@@ -4776,6 +5096,7 @@ export type UserUncheckedUpdateWithoutConsentEventsInput = {
   consentRecords?: Prisma.ConsentRecordUncheckedUpdateManyWithoutUserNestedInput
   reviewedTimesheets?: Prisma.TimesheetUncheckedUpdateManyWithoutReviewedByNestedInput
   apiKeys?: Prisma.OrganizationApiKeyUncheckedUpdateManyWithoutCreatedByNestedInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUncheckedUpdateManyWithoutActingUserNestedInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUncheckedUpdateManyWithoutGeneratedByNestedInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedUpdateManyWithoutAcknowledgedByUserNestedInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedUpdateManyWithoutDismissedByUserNestedInput
@@ -4831,6 +5152,7 @@ export type UserCreateWithoutOwnedContractsInput = {
   consentRecords?: Prisma.ConsentRecordCreateNestedManyWithoutUserInput
   reviewedTimesheets?: Prisma.TimesheetCreateNestedManyWithoutReviewedByInput
   apiKeys?: Prisma.OrganizationApiKeyCreateNestedManyWithoutCreatedByInput
+  actingApiKeys?: Prisma.OrganizationApiKeyCreateNestedManyWithoutActingUserInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentCreateNestedManyWithoutGeneratedByInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerCreateNestedManyWithoutAcknowledgedByUserInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerCreateNestedManyWithoutDismissedByUserInput
@@ -4887,6 +5209,7 @@ export type UserUncheckedCreateWithoutOwnedContractsInput = {
   consentRecords?: Prisma.ConsentRecordUncheckedCreateNestedManyWithoutUserInput
   reviewedTimesheets?: Prisma.TimesheetUncheckedCreateNestedManyWithoutReviewedByInput
   apiKeys?: Prisma.OrganizationApiKeyUncheckedCreateNestedManyWithoutCreatedByInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUncheckedCreateNestedManyWithoutActingUserInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUncheckedCreateNestedManyWithoutGeneratedByInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedCreateNestedManyWithoutAcknowledgedByUserInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedCreateNestedManyWithoutDismissedByUserInput
@@ -4959,6 +5282,7 @@ export type UserUpdateWithoutOwnedContractsInput = {
   consentRecords?: Prisma.ConsentRecordUpdateManyWithoutUserNestedInput
   reviewedTimesheets?: Prisma.TimesheetUpdateManyWithoutReviewedByNestedInput
   apiKeys?: Prisma.OrganizationApiKeyUpdateManyWithoutCreatedByNestedInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUpdateManyWithoutActingUserNestedInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUpdateManyWithoutGeneratedByNestedInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUpdateManyWithoutAcknowledgedByUserNestedInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUpdateManyWithoutDismissedByUserNestedInput
@@ -5015,6 +5339,7 @@ export type UserUncheckedUpdateWithoutOwnedContractsInput = {
   consentRecords?: Prisma.ConsentRecordUncheckedUpdateManyWithoutUserNestedInput
   reviewedTimesheets?: Prisma.TimesheetUncheckedUpdateManyWithoutReviewedByNestedInput
   apiKeys?: Prisma.OrganizationApiKeyUncheckedUpdateManyWithoutCreatedByNestedInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUncheckedUpdateManyWithoutActingUserNestedInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUncheckedUpdateManyWithoutGeneratedByNestedInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedUpdateManyWithoutAcknowledgedByUserNestedInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedUpdateManyWithoutDismissedByUserNestedInput
@@ -5071,6 +5396,7 @@ export type UserCreateWithoutOwnedContractorsInput = {
   consentRecords?: Prisma.ConsentRecordCreateNestedManyWithoutUserInput
   reviewedTimesheets?: Prisma.TimesheetCreateNestedManyWithoutReviewedByInput
   apiKeys?: Prisma.OrganizationApiKeyCreateNestedManyWithoutCreatedByInput
+  actingApiKeys?: Prisma.OrganizationApiKeyCreateNestedManyWithoutActingUserInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentCreateNestedManyWithoutGeneratedByInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerCreateNestedManyWithoutAcknowledgedByUserInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerCreateNestedManyWithoutDismissedByUserInput
@@ -5127,6 +5453,7 @@ export type UserUncheckedCreateWithoutOwnedContractorsInput = {
   consentRecords?: Prisma.ConsentRecordUncheckedCreateNestedManyWithoutUserInput
   reviewedTimesheets?: Prisma.TimesheetUncheckedCreateNestedManyWithoutReviewedByInput
   apiKeys?: Prisma.OrganizationApiKeyUncheckedCreateNestedManyWithoutCreatedByInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUncheckedCreateNestedManyWithoutActingUserInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUncheckedCreateNestedManyWithoutGeneratedByInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedCreateNestedManyWithoutAcknowledgedByUserInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedCreateNestedManyWithoutDismissedByUserInput
@@ -5199,6 +5526,7 @@ export type UserUpdateWithoutOwnedContractorsInput = {
   consentRecords?: Prisma.ConsentRecordUpdateManyWithoutUserNestedInput
   reviewedTimesheets?: Prisma.TimesheetUpdateManyWithoutReviewedByNestedInput
   apiKeys?: Prisma.OrganizationApiKeyUpdateManyWithoutCreatedByNestedInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUpdateManyWithoutActingUserNestedInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUpdateManyWithoutGeneratedByNestedInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUpdateManyWithoutAcknowledgedByUserNestedInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUpdateManyWithoutDismissedByUserNestedInput
@@ -5255,6 +5583,7 @@ export type UserUncheckedUpdateWithoutOwnedContractorsInput = {
   consentRecords?: Prisma.ConsentRecordUncheckedUpdateManyWithoutUserNestedInput
   reviewedTimesheets?: Prisma.TimesheetUncheckedUpdateManyWithoutReviewedByNestedInput
   apiKeys?: Prisma.OrganizationApiKeyUncheckedUpdateManyWithoutCreatedByNestedInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUncheckedUpdateManyWithoutActingUserNestedInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUncheckedUpdateManyWithoutGeneratedByNestedInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedUpdateManyWithoutAcknowledgedByUserNestedInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedUpdateManyWithoutDismissedByUserNestedInput
@@ -5311,6 +5640,7 @@ export type UserCreateWithoutSentSigningEnvelopesInput = {
   consentRecords?: Prisma.ConsentRecordCreateNestedManyWithoutUserInput
   reviewedTimesheets?: Prisma.TimesheetCreateNestedManyWithoutReviewedByInput
   apiKeys?: Prisma.OrganizationApiKeyCreateNestedManyWithoutCreatedByInput
+  actingApiKeys?: Prisma.OrganizationApiKeyCreateNestedManyWithoutActingUserInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentCreateNestedManyWithoutGeneratedByInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerCreateNestedManyWithoutAcknowledgedByUserInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerCreateNestedManyWithoutDismissedByUserInput
@@ -5367,6 +5697,7 @@ export type UserUncheckedCreateWithoutSentSigningEnvelopesInput = {
   consentRecords?: Prisma.ConsentRecordUncheckedCreateNestedManyWithoutUserInput
   reviewedTimesheets?: Prisma.TimesheetUncheckedCreateNestedManyWithoutReviewedByInput
   apiKeys?: Prisma.OrganizationApiKeyUncheckedCreateNestedManyWithoutCreatedByInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUncheckedCreateNestedManyWithoutActingUserInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUncheckedCreateNestedManyWithoutGeneratedByInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedCreateNestedManyWithoutAcknowledgedByUserInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedCreateNestedManyWithoutDismissedByUserInput
@@ -5439,6 +5770,7 @@ export type UserUpdateWithoutSentSigningEnvelopesInput = {
   consentRecords?: Prisma.ConsentRecordUpdateManyWithoutUserNestedInput
   reviewedTimesheets?: Prisma.TimesheetUpdateManyWithoutReviewedByNestedInput
   apiKeys?: Prisma.OrganizationApiKeyUpdateManyWithoutCreatedByNestedInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUpdateManyWithoutActingUserNestedInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUpdateManyWithoutGeneratedByNestedInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUpdateManyWithoutAcknowledgedByUserNestedInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUpdateManyWithoutDismissedByUserNestedInput
@@ -5495,6 +5827,7 @@ export type UserUncheckedUpdateWithoutSentSigningEnvelopesInput = {
   consentRecords?: Prisma.ConsentRecordUncheckedUpdateManyWithoutUserNestedInput
   reviewedTimesheets?: Prisma.TimesheetUncheckedUpdateManyWithoutReviewedByNestedInput
   apiKeys?: Prisma.OrganizationApiKeyUncheckedUpdateManyWithoutCreatedByNestedInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUncheckedUpdateManyWithoutActingUserNestedInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUncheckedUpdateManyWithoutGeneratedByNestedInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedUpdateManyWithoutAcknowledgedByUserNestedInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedUpdateManyWithoutDismissedByUserNestedInput
@@ -5552,6 +5885,7 @@ export type UserCreateWithoutTriggeredDeprovisioningRunsInput = {
   consentRecords?: Prisma.ConsentRecordCreateNestedManyWithoutUserInput
   reviewedTimesheets?: Prisma.TimesheetCreateNestedManyWithoutReviewedByInput
   apiKeys?: Prisma.OrganizationApiKeyCreateNestedManyWithoutCreatedByInput
+  actingApiKeys?: Prisma.OrganizationApiKeyCreateNestedManyWithoutActingUserInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentCreateNestedManyWithoutGeneratedByInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerCreateNestedManyWithoutAcknowledgedByUserInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerCreateNestedManyWithoutDismissedByUserInput
@@ -5608,6 +5942,7 @@ export type UserUncheckedCreateWithoutTriggeredDeprovisioningRunsInput = {
   consentRecords?: Prisma.ConsentRecordUncheckedCreateNestedManyWithoutUserInput
   reviewedTimesheets?: Prisma.TimesheetUncheckedCreateNestedManyWithoutReviewedByInput
   apiKeys?: Prisma.OrganizationApiKeyUncheckedCreateNestedManyWithoutCreatedByInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUncheckedCreateNestedManyWithoutActingUserInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUncheckedCreateNestedManyWithoutGeneratedByInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedCreateNestedManyWithoutAcknowledgedByUserInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedCreateNestedManyWithoutDismissedByUserInput
@@ -5680,6 +6015,7 @@ export type UserUpdateWithoutTriggeredDeprovisioningRunsInput = {
   consentRecords?: Prisma.ConsentRecordUpdateManyWithoutUserNestedInput
   reviewedTimesheets?: Prisma.TimesheetUpdateManyWithoutReviewedByNestedInput
   apiKeys?: Prisma.OrganizationApiKeyUpdateManyWithoutCreatedByNestedInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUpdateManyWithoutActingUserNestedInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUpdateManyWithoutGeneratedByNestedInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUpdateManyWithoutAcknowledgedByUserNestedInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUpdateManyWithoutDismissedByUserNestedInput
@@ -5736,6 +6072,7 @@ export type UserUncheckedUpdateWithoutTriggeredDeprovisioningRunsInput = {
   consentRecords?: Prisma.ConsentRecordUncheckedUpdateManyWithoutUserNestedInput
   reviewedTimesheets?: Prisma.TimesheetUncheckedUpdateManyWithoutReviewedByNestedInput
   apiKeys?: Prisma.OrganizationApiKeyUncheckedUpdateManyWithoutCreatedByNestedInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUncheckedUpdateManyWithoutActingUserNestedInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUncheckedUpdateManyWithoutGeneratedByNestedInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedUpdateManyWithoutAcknowledgedByUserNestedInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedUpdateManyWithoutDismissedByUserNestedInput
@@ -5791,6 +6128,7 @@ export type UserCreateWithoutIntegrationConnectionsInput = {
   consentRecords?: Prisma.ConsentRecordCreateNestedManyWithoutUserInput
   reviewedTimesheets?: Prisma.TimesheetCreateNestedManyWithoutReviewedByInput
   apiKeys?: Prisma.OrganizationApiKeyCreateNestedManyWithoutCreatedByInput
+  actingApiKeys?: Prisma.OrganizationApiKeyCreateNestedManyWithoutActingUserInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentCreateNestedManyWithoutGeneratedByInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerCreateNestedManyWithoutAcknowledgedByUserInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerCreateNestedManyWithoutDismissedByUserInput
@@ -5847,6 +6185,7 @@ export type UserUncheckedCreateWithoutIntegrationConnectionsInput = {
   consentRecords?: Prisma.ConsentRecordUncheckedCreateNestedManyWithoutUserInput
   reviewedTimesheets?: Prisma.TimesheetUncheckedCreateNestedManyWithoutReviewedByInput
   apiKeys?: Prisma.OrganizationApiKeyUncheckedCreateNestedManyWithoutCreatedByInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUncheckedCreateNestedManyWithoutActingUserInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUncheckedCreateNestedManyWithoutGeneratedByInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedCreateNestedManyWithoutAcknowledgedByUserInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedCreateNestedManyWithoutDismissedByUserInput
@@ -5908,6 +6247,7 @@ export type UserCreateWithoutPersonalConnectionsInput = {
   consentRecords?: Prisma.ConsentRecordCreateNestedManyWithoutUserInput
   reviewedTimesheets?: Prisma.TimesheetCreateNestedManyWithoutReviewedByInput
   apiKeys?: Prisma.OrganizationApiKeyCreateNestedManyWithoutCreatedByInput
+  actingApiKeys?: Prisma.OrganizationApiKeyCreateNestedManyWithoutActingUserInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentCreateNestedManyWithoutGeneratedByInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerCreateNestedManyWithoutAcknowledgedByUserInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerCreateNestedManyWithoutDismissedByUserInput
@@ -5964,6 +6304,7 @@ export type UserUncheckedCreateWithoutPersonalConnectionsInput = {
   consentRecords?: Prisma.ConsentRecordUncheckedCreateNestedManyWithoutUserInput
   reviewedTimesheets?: Prisma.TimesheetUncheckedCreateNestedManyWithoutReviewedByInput
   apiKeys?: Prisma.OrganizationApiKeyUncheckedCreateNestedManyWithoutCreatedByInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUncheckedCreateNestedManyWithoutActingUserInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUncheckedCreateNestedManyWithoutGeneratedByInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedCreateNestedManyWithoutAcknowledgedByUserInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedCreateNestedManyWithoutDismissedByUserInput
@@ -6036,6 +6377,7 @@ export type UserUpdateWithoutIntegrationConnectionsInput = {
   consentRecords?: Prisma.ConsentRecordUpdateManyWithoutUserNestedInput
   reviewedTimesheets?: Prisma.TimesheetUpdateManyWithoutReviewedByNestedInput
   apiKeys?: Prisma.OrganizationApiKeyUpdateManyWithoutCreatedByNestedInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUpdateManyWithoutActingUserNestedInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUpdateManyWithoutGeneratedByNestedInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUpdateManyWithoutAcknowledgedByUserNestedInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUpdateManyWithoutDismissedByUserNestedInput
@@ -6092,6 +6434,7 @@ export type UserUncheckedUpdateWithoutIntegrationConnectionsInput = {
   consentRecords?: Prisma.ConsentRecordUncheckedUpdateManyWithoutUserNestedInput
   reviewedTimesheets?: Prisma.TimesheetUncheckedUpdateManyWithoutReviewedByNestedInput
   apiKeys?: Prisma.OrganizationApiKeyUncheckedUpdateManyWithoutCreatedByNestedInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUncheckedUpdateManyWithoutActingUserNestedInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUncheckedUpdateManyWithoutGeneratedByNestedInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedUpdateManyWithoutAcknowledgedByUserNestedInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedUpdateManyWithoutDismissedByUserNestedInput
@@ -6159,6 +6502,7 @@ export type UserUpdateWithoutPersonalConnectionsInput = {
   consentRecords?: Prisma.ConsentRecordUpdateManyWithoutUserNestedInput
   reviewedTimesheets?: Prisma.TimesheetUpdateManyWithoutReviewedByNestedInput
   apiKeys?: Prisma.OrganizationApiKeyUpdateManyWithoutCreatedByNestedInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUpdateManyWithoutActingUserNestedInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUpdateManyWithoutGeneratedByNestedInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUpdateManyWithoutAcknowledgedByUserNestedInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUpdateManyWithoutDismissedByUserNestedInput
@@ -6215,6 +6559,7 @@ export type UserUncheckedUpdateWithoutPersonalConnectionsInput = {
   consentRecords?: Prisma.ConsentRecordUncheckedUpdateManyWithoutUserNestedInput
   reviewedTimesheets?: Prisma.TimesheetUncheckedUpdateManyWithoutReviewedByNestedInput
   apiKeys?: Prisma.OrganizationApiKeyUncheckedUpdateManyWithoutCreatedByNestedInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUncheckedUpdateManyWithoutActingUserNestedInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUncheckedUpdateManyWithoutGeneratedByNestedInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedUpdateManyWithoutAcknowledgedByUserNestedInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedUpdateManyWithoutDismissedByUserNestedInput
@@ -6272,6 +6617,7 @@ export type UserCreateWithoutUploadedIntakesInput = {
   consentRecords?: Prisma.ConsentRecordCreateNestedManyWithoutUserInput
   reviewedTimesheets?: Prisma.TimesheetCreateNestedManyWithoutReviewedByInput
   apiKeys?: Prisma.OrganizationApiKeyCreateNestedManyWithoutCreatedByInput
+  actingApiKeys?: Prisma.OrganizationApiKeyCreateNestedManyWithoutActingUserInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentCreateNestedManyWithoutGeneratedByInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerCreateNestedManyWithoutAcknowledgedByUserInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerCreateNestedManyWithoutDismissedByUserInput
@@ -6328,6 +6674,7 @@ export type UserUncheckedCreateWithoutUploadedIntakesInput = {
   consentRecords?: Prisma.ConsentRecordUncheckedCreateNestedManyWithoutUserInput
   reviewedTimesheets?: Prisma.TimesheetUncheckedCreateNestedManyWithoutReviewedByInput
   apiKeys?: Prisma.OrganizationApiKeyUncheckedCreateNestedManyWithoutCreatedByInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUncheckedCreateNestedManyWithoutActingUserInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUncheckedCreateNestedManyWithoutGeneratedByInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedCreateNestedManyWithoutAcknowledgedByUserInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedCreateNestedManyWithoutDismissedByUserInput
@@ -6389,6 +6736,7 @@ export type UserCreateWithoutAcknowledgedIntakesInput = {
   consentRecords?: Prisma.ConsentRecordCreateNestedManyWithoutUserInput
   reviewedTimesheets?: Prisma.TimesheetCreateNestedManyWithoutReviewedByInput
   apiKeys?: Prisma.OrganizationApiKeyCreateNestedManyWithoutCreatedByInput
+  actingApiKeys?: Prisma.OrganizationApiKeyCreateNestedManyWithoutActingUserInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentCreateNestedManyWithoutGeneratedByInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerCreateNestedManyWithoutAcknowledgedByUserInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerCreateNestedManyWithoutDismissedByUserInput
@@ -6445,6 +6793,7 @@ export type UserUncheckedCreateWithoutAcknowledgedIntakesInput = {
   consentRecords?: Prisma.ConsentRecordUncheckedCreateNestedManyWithoutUserInput
   reviewedTimesheets?: Prisma.TimesheetUncheckedCreateNestedManyWithoutReviewedByInput
   apiKeys?: Prisma.OrganizationApiKeyUncheckedCreateNestedManyWithoutCreatedByInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUncheckedCreateNestedManyWithoutActingUserInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUncheckedCreateNestedManyWithoutGeneratedByInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedCreateNestedManyWithoutAcknowledgedByUserInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedCreateNestedManyWithoutDismissedByUserInput
@@ -6517,6 +6866,7 @@ export type UserUpdateWithoutUploadedIntakesInput = {
   consentRecords?: Prisma.ConsentRecordUpdateManyWithoutUserNestedInput
   reviewedTimesheets?: Prisma.TimesheetUpdateManyWithoutReviewedByNestedInput
   apiKeys?: Prisma.OrganizationApiKeyUpdateManyWithoutCreatedByNestedInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUpdateManyWithoutActingUserNestedInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUpdateManyWithoutGeneratedByNestedInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUpdateManyWithoutAcknowledgedByUserNestedInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUpdateManyWithoutDismissedByUserNestedInput
@@ -6573,6 +6923,7 @@ export type UserUncheckedUpdateWithoutUploadedIntakesInput = {
   consentRecords?: Prisma.ConsentRecordUncheckedUpdateManyWithoutUserNestedInput
   reviewedTimesheets?: Prisma.TimesheetUncheckedUpdateManyWithoutReviewedByNestedInput
   apiKeys?: Prisma.OrganizationApiKeyUncheckedUpdateManyWithoutCreatedByNestedInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUncheckedUpdateManyWithoutActingUserNestedInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUncheckedUpdateManyWithoutGeneratedByNestedInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedUpdateManyWithoutAcknowledgedByUserNestedInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedUpdateManyWithoutDismissedByUserNestedInput
@@ -6640,6 +6991,7 @@ export type UserUpdateWithoutAcknowledgedIntakesInput = {
   consentRecords?: Prisma.ConsentRecordUpdateManyWithoutUserNestedInput
   reviewedTimesheets?: Prisma.TimesheetUpdateManyWithoutReviewedByNestedInput
   apiKeys?: Prisma.OrganizationApiKeyUpdateManyWithoutCreatedByNestedInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUpdateManyWithoutActingUserNestedInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUpdateManyWithoutGeneratedByNestedInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUpdateManyWithoutAcknowledgedByUserNestedInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUpdateManyWithoutDismissedByUserNestedInput
@@ -6696,6 +7048,7 @@ export type UserUncheckedUpdateWithoutAcknowledgedIntakesInput = {
   consentRecords?: Prisma.ConsentRecordUncheckedUpdateManyWithoutUserNestedInput
   reviewedTimesheets?: Prisma.TimesheetUncheckedUpdateManyWithoutReviewedByNestedInput
   apiKeys?: Prisma.OrganizationApiKeyUncheckedUpdateManyWithoutCreatedByNestedInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUncheckedUpdateManyWithoutActingUserNestedInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUncheckedUpdateManyWithoutGeneratedByNestedInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedUpdateManyWithoutAcknowledgedByUserNestedInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedUpdateManyWithoutDismissedByUserNestedInput
@@ -6751,6 +7104,7 @@ export type UserCreateWithoutNotificationsInput = {
   consentRecords?: Prisma.ConsentRecordCreateNestedManyWithoutUserInput
   reviewedTimesheets?: Prisma.TimesheetCreateNestedManyWithoutReviewedByInput
   apiKeys?: Prisma.OrganizationApiKeyCreateNestedManyWithoutCreatedByInput
+  actingApiKeys?: Prisma.OrganizationApiKeyCreateNestedManyWithoutActingUserInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentCreateNestedManyWithoutGeneratedByInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerCreateNestedManyWithoutAcknowledgedByUserInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerCreateNestedManyWithoutDismissedByUserInput
@@ -6807,6 +7161,7 @@ export type UserUncheckedCreateWithoutNotificationsInput = {
   consentRecords?: Prisma.ConsentRecordUncheckedCreateNestedManyWithoutUserInput
   reviewedTimesheets?: Prisma.TimesheetUncheckedCreateNestedManyWithoutReviewedByInput
   apiKeys?: Prisma.OrganizationApiKeyUncheckedCreateNestedManyWithoutCreatedByInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUncheckedCreateNestedManyWithoutActingUserInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUncheckedCreateNestedManyWithoutGeneratedByInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedCreateNestedManyWithoutAcknowledgedByUserInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedCreateNestedManyWithoutDismissedByUserInput
@@ -6879,6 +7234,7 @@ export type UserUpdateWithoutNotificationsInput = {
   consentRecords?: Prisma.ConsentRecordUpdateManyWithoutUserNestedInput
   reviewedTimesheets?: Prisma.TimesheetUpdateManyWithoutReviewedByNestedInput
   apiKeys?: Prisma.OrganizationApiKeyUpdateManyWithoutCreatedByNestedInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUpdateManyWithoutActingUserNestedInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUpdateManyWithoutGeneratedByNestedInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUpdateManyWithoutAcknowledgedByUserNestedInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUpdateManyWithoutDismissedByUserNestedInput
@@ -6935,6 +7291,7 @@ export type UserUncheckedUpdateWithoutNotificationsInput = {
   consentRecords?: Prisma.ConsentRecordUncheckedUpdateManyWithoutUserNestedInput
   reviewedTimesheets?: Prisma.TimesheetUncheckedUpdateManyWithoutReviewedByNestedInput
   apiKeys?: Prisma.OrganizationApiKeyUncheckedUpdateManyWithoutCreatedByNestedInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUncheckedUpdateManyWithoutActingUserNestedInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUncheckedUpdateManyWithoutGeneratedByNestedInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedUpdateManyWithoutAcknowledgedByUserNestedInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedUpdateManyWithoutDismissedByUserNestedInput
@@ -6991,6 +7348,7 @@ export type UserCreateWithoutNotificationPrefsInput = {
   consentRecords?: Prisma.ConsentRecordCreateNestedManyWithoutUserInput
   reviewedTimesheets?: Prisma.TimesheetCreateNestedManyWithoutReviewedByInput
   apiKeys?: Prisma.OrganizationApiKeyCreateNestedManyWithoutCreatedByInput
+  actingApiKeys?: Prisma.OrganizationApiKeyCreateNestedManyWithoutActingUserInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentCreateNestedManyWithoutGeneratedByInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerCreateNestedManyWithoutAcknowledgedByUserInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerCreateNestedManyWithoutDismissedByUserInput
@@ -7047,6 +7405,7 @@ export type UserUncheckedCreateWithoutNotificationPrefsInput = {
   consentRecords?: Prisma.ConsentRecordUncheckedCreateNestedManyWithoutUserInput
   reviewedTimesheets?: Prisma.TimesheetUncheckedCreateNestedManyWithoutReviewedByInput
   apiKeys?: Prisma.OrganizationApiKeyUncheckedCreateNestedManyWithoutCreatedByInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUncheckedCreateNestedManyWithoutActingUserInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUncheckedCreateNestedManyWithoutGeneratedByInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedCreateNestedManyWithoutAcknowledgedByUserInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedCreateNestedManyWithoutDismissedByUserInput
@@ -7119,6 +7478,7 @@ export type UserUpdateWithoutNotificationPrefsInput = {
   consentRecords?: Prisma.ConsentRecordUpdateManyWithoutUserNestedInput
   reviewedTimesheets?: Prisma.TimesheetUpdateManyWithoutReviewedByNestedInput
   apiKeys?: Prisma.OrganizationApiKeyUpdateManyWithoutCreatedByNestedInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUpdateManyWithoutActingUserNestedInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUpdateManyWithoutGeneratedByNestedInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUpdateManyWithoutAcknowledgedByUserNestedInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUpdateManyWithoutDismissedByUserNestedInput
@@ -7175,6 +7535,7 @@ export type UserUncheckedUpdateWithoutNotificationPrefsInput = {
   consentRecords?: Prisma.ConsentRecordUncheckedUpdateManyWithoutUserNestedInput
   reviewedTimesheets?: Prisma.TimesheetUncheckedUpdateManyWithoutReviewedByNestedInput
   apiKeys?: Prisma.OrganizationApiKeyUncheckedUpdateManyWithoutCreatedByNestedInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUncheckedUpdateManyWithoutActingUserNestedInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUncheckedUpdateManyWithoutGeneratedByNestedInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedUpdateManyWithoutAcknowledgedByUserNestedInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedUpdateManyWithoutDismissedByUserNestedInput
@@ -7231,6 +7592,7 @@ export type UserCreateWithoutCommentsInput = {
   consentRecords?: Prisma.ConsentRecordCreateNestedManyWithoutUserInput
   reviewedTimesheets?: Prisma.TimesheetCreateNestedManyWithoutReviewedByInput
   apiKeys?: Prisma.OrganizationApiKeyCreateNestedManyWithoutCreatedByInput
+  actingApiKeys?: Prisma.OrganizationApiKeyCreateNestedManyWithoutActingUserInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentCreateNestedManyWithoutGeneratedByInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerCreateNestedManyWithoutAcknowledgedByUserInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerCreateNestedManyWithoutDismissedByUserInput
@@ -7287,6 +7649,7 @@ export type UserUncheckedCreateWithoutCommentsInput = {
   consentRecords?: Prisma.ConsentRecordUncheckedCreateNestedManyWithoutUserInput
   reviewedTimesheets?: Prisma.TimesheetUncheckedCreateNestedManyWithoutReviewedByInput
   apiKeys?: Prisma.OrganizationApiKeyUncheckedCreateNestedManyWithoutCreatedByInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUncheckedCreateNestedManyWithoutActingUserInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUncheckedCreateNestedManyWithoutGeneratedByInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedCreateNestedManyWithoutAcknowledgedByUserInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedCreateNestedManyWithoutDismissedByUserInput
@@ -7359,6 +7722,7 @@ export type UserUpdateWithoutCommentsInput = {
   consentRecords?: Prisma.ConsentRecordUpdateManyWithoutUserNestedInput
   reviewedTimesheets?: Prisma.TimesheetUpdateManyWithoutReviewedByNestedInput
   apiKeys?: Prisma.OrganizationApiKeyUpdateManyWithoutCreatedByNestedInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUpdateManyWithoutActingUserNestedInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUpdateManyWithoutGeneratedByNestedInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUpdateManyWithoutAcknowledgedByUserNestedInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUpdateManyWithoutDismissedByUserNestedInput
@@ -7415,6 +7779,7 @@ export type UserUncheckedUpdateWithoutCommentsInput = {
   consentRecords?: Prisma.ConsentRecordUncheckedUpdateManyWithoutUserNestedInput
   reviewedTimesheets?: Prisma.TimesheetUncheckedUpdateManyWithoutReviewedByNestedInput
   apiKeys?: Prisma.OrganizationApiKeyUncheckedUpdateManyWithoutCreatedByNestedInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUncheckedUpdateManyWithoutActingUserNestedInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUncheckedUpdateManyWithoutGeneratedByNestedInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedUpdateManyWithoutAcknowledgedByUserNestedInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedUpdateManyWithoutDismissedByUserNestedInput
@@ -7471,6 +7836,7 @@ export type UserCreateWithoutMembersInput = {
   consentRecords?: Prisma.ConsentRecordCreateNestedManyWithoutUserInput
   reviewedTimesheets?: Prisma.TimesheetCreateNestedManyWithoutReviewedByInput
   apiKeys?: Prisma.OrganizationApiKeyCreateNestedManyWithoutCreatedByInput
+  actingApiKeys?: Prisma.OrganizationApiKeyCreateNestedManyWithoutActingUserInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentCreateNestedManyWithoutGeneratedByInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerCreateNestedManyWithoutAcknowledgedByUserInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerCreateNestedManyWithoutDismissedByUserInput
@@ -7527,6 +7893,7 @@ export type UserUncheckedCreateWithoutMembersInput = {
   consentRecords?: Prisma.ConsentRecordUncheckedCreateNestedManyWithoutUserInput
   reviewedTimesheets?: Prisma.TimesheetUncheckedCreateNestedManyWithoutReviewedByInput
   apiKeys?: Prisma.OrganizationApiKeyUncheckedCreateNestedManyWithoutCreatedByInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUncheckedCreateNestedManyWithoutActingUserInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUncheckedCreateNestedManyWithoutGeneratedByInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedCreateNestedManyWithoutAcknowledgedByUserInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedCreateNestedManyWithoutDismissedByUserInput
@@ -7599,6 +7966,7 @@ export type UserUpdateWithoutMembersInput = {
   consentRecords?: Prisma.ConsentRecordUpdateManyWithoutUserNestedInput
   reviewedTimesheets?: Prisma.TimesheetUpdateManyWithoutReviewedByNestedInput
   apiKeys?: Prisma.OrganizationApiKeyUpdateManyWithoutCreatedByNestedInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUpdateManyWithoutActingUserNestedInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUpdateManyWithoutGeneratedByNestedInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUpdateManyWithoutAcknowledgedByUserNestedInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUpdateManyWithoutDismissedByUserNestedInput
@@ -7655,6 +8023,7 @@ export type UserUncheckedUpdateWithoutMembersInput = {
   consentRecords?: Prisma.ConsentRecordUncheckedUpdateManyWithoutUserNestedInput
   reviewedTimesheets?: Prisma.TimesheetUncheckedUpdateManyWithoutReviewedByNestedInput
   apiKeys?: Prisma.OrganizationApiKeyUncheckedUpdateManyWithoutCreatedByNestedInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUncheckedUpdateManyWithoutActingUserNestedInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUncheckedUpdateManyWithoutGeneratedByNestedInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedUpdateManyWithoutAcknowledgedByUserNestedInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedUpdateManyWithoutDismissedByUserNestedInput
@@ -7711,6 +8080,7 @@ export type UserCreateWithoutInvitationsInput = {
   consentRecords?: Prisma.ConsentRecordCreateNestedManyWithoutUserInput
   reviewedTimesheets?: Prisma.TimesheetCreateNestedManyWithoutReviewedByInput
   apiKeys?: Prisma.OrganizationApiKeyCreateNestedManyWithoutCreatedByInput
+  actingApiKeys?: Prisma.OrganizationApiKeyCreateNestedManyWithoutActingUserInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentCreateNestedManyWithoutGeneratedByInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerCreateNestedManyWithoutAcknowledgedByUserInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerCreateNestedManyWithoutDismissedByUserInput
@@ -7767,6 +8137,7 @@ export type UserUncheckedCreateWithoutInvitationsInput = {
   consentRecords?: Prisma.ConsentRecordUncheckedCreateNestedManyWithoutUserInput
   reviewedTimesheets?: Prisma.TimesheetUncheckedCreateNestedManyWithoutReviewedByInput
   apiKeys?: Prisma.OrganizationApiKeyUncheckedCreateNestedManyWithoutCreatedByInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUncheckedCreateNestedManyWithoutActingUserInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUncheckedCreateNestedManyWithoutGeneratedByInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedCreateNestedManyWithoutAcknowledgedByUserInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedCreateNestedManyWithoutDismissedByUserInput
@@ -7839,6 +8210,7 @@ export type UserUpdateWithoutInvitationsInput = {
   consentRecords?: Prisma.ConsentRecordUpdateManyWithoutUserNestedInput
   reviewedTimesheets?: Prisma.TimesheetUpdateManyWithoutReviewedByNestedInput
   apiKeys?: Prisma.OrganizationApiKeyUpdateManyWithoutCreatedByNestedInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUpdateManyWithoutActingUserNestedInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUpdateManyWithoutGeneratedByNestedInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUpdateManyWithoutAcknowledgedByUserNestedInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUpdateManyWithoutDismissedByUserNestedInput
@@ -7895,6 +8267,7 @@ export type UserUncheckedUpdateWithoutInvitationsInput = {
   consentRecords?: Prisma.ConsentRecordUncheckedUpdateManyWithoutUserNestedInput
   reviewedTimesheets?: Prisma.TimesheetUncheckedUpdateManyWithoutReviewedByNestedInput
   apiKeys?: Prisma.OrganizationApiKeyUncheckedUpdateManyWithoutCreatedByNestedInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUncheckedUpdateManyWithoutActingUserNestedInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUncheckedUpdateManyWithoutGeneratedByNestedInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedUpdateManyWithoutAcknowledgedByUserNestedInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedUpdateManyWithoutDismissedByUserNestedInput
@@ -7951,6 +8324,7 @@ export type UserCreateWithoutManagedTeamsInput = {
   consentRecords?: Prisma.ConsentRecordCreateNestedManyWithoutUserInput
   reviewedTimesheets?: Prisma.TimesheetCreateNestedManyWithoutReviewedByInput
   apiKeys?: Prisma.OrganizationApiKeyCreateNestedManyWithoutCreatedByInput
+  actingApiKeys?: Prisma.OrganizationApiKeyCreateNestedManyWithoutActingUserInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentCreateNestedManyWithoutGeneratedByInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerCreateNestedManyWithoutAcknowledgedByUserInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerCreateNestedManyWithoutDismissedByUserInput
@@ -8007,6 +8381,7 @@ export type UserUncheckedCreateWithoutManagedTeamsInput = {
   consentRecords?: Prisma.ConsentRecordUncheckedCreateNestedManyWithoutUserInput
   reviewedTimesheets?: Prisma.TimesheetUncheckedCreateNestedManyWithoutReviewedByInput
   apiKeys?: Prisma.OrganizationApiKeyUncheckedCreateNestedManyWithoutCreatedByInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUncheckedCreateNestedManyWithoutActingUserInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUncheckedCreateNestedManyWithoutGeneratedByInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedCreateNestedManyWithoutAcknowledgedByUserInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedCreateNestedManyWithoutDismissedByUserInput
@@ -8068,6 +8443,7 @@ export type UserCreateWithoutFallbackApprovedTeamsInput = {
   consentRecords?: Prisma.ConsentRecordCreateNestedManyWithoutUserInput
   reviewedTimesheets?: Prisma.TimesheetCreateNestedManyWithoutReviewedByInput
   apiKeys?: Prisma.OrganizationApiKeyCreateNestedManyWithoutCreatedByInput
+  actingApiKeys?: Prisma.OrganizationApiKeyCreateNestedManyWithoutActingUserInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentCreateNestedManyWithoutGeneratedByInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerCreateNestedManyWithoutAcknowledgedByUserInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerCreateNestedManyWithoutDismissedByUserInput
@@ -8124,6 +8500,7 @@ export type UserUncheckedCreateWithoutFallbackApprovedTeamsInput = {
   consentRecords?: Prisma.ConsentRecordUncheckedCreateNestedManyWithoutUserInput
   reviewedTimesheets?: Prisma.TimesheetUncheckedCreateNestedManyWithoutReviewedByInput
   apiKeys?: Prisma.OrganizationApiKeyUncheckedCreateNestedManyWithoutCreatedByInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUncheckedCreateNestedManyWithoutActingUserInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUncheckedCreateNestedManyWithoutGeneratedByInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedCreateNestedManyWithoutAcknowledgedByUserInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedCreateNestedManyWithoutDismissedByUserInput
@@ -8196,6 +8573,7 @@ export type UserUpdateWithoutManagedTeamsInput = {
   consentRecords?: Prisma.ConsentRecordUpdateManyWithoutUserNestedInput
   reviewedTimesheets?: Prisma.TimesheetUpdateManyWithoutReviewedByNestedInput
   apiKeys?: Prisma.OrganizationApiKeyUpdateManyWithoutCreatedByNestedInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUpdateManyWithoutActingUserNestedInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUpdateManyWithoutGeneratedByNestedInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUpdateManyWithoutAcknowledgedByUserNestedInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUpdateManyWithoutDismissedByUserNestedInput
@@ -8252,6 +8630,7 @@ export type UserUncheckedUpdateWithoutManagedTeamsInput = {
   consentRecords?: Prisma.ConsentRecordUncheckedUpdateManyWithoutUserNestedInput
   reviewedTimesheets?: Prisma.TimesheetUncheckedUpdateManyWithoutReviewedByNestedInput
   apiKeys?: Prisma.OrganizationApiKeyUncheckedUpdateManyWithoutCreatedByNestedInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUncheckedUpdateManyWithoutActingUserNestedInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUncheckedUpdateManyWithoutGeneratedByNestedInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedUpdateManyWithoutAcknowledgedByUserNestedInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedUpdateManyWithoutDismissedByUserNestedInput
@@ -8319,6 +8698,7 @@ export type UserUpdateWithoutFallbackApprovedTeamsInput = {
   consentRecords?: Prisma.ConsentRecordUpdateManyWithoutUserNestedInput
   reviewedTimesheets?: Prisma.TimesheetUpdateManyWithoutReviewedByNestedInput
   apiKeys?: Prisma.OrganizationApiKeyUpdateManyWithoutCreatedByNestedInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUpdateManyWithoutActingUserNestedInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUpdateManyWithoutGeneratedByNestedInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUpdateManyWithoutAcknowledgedByUserNestedInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUpdateManyWithoutDismissedByUserNestedInput
@@ -8375,6 +8755,7 @@ export type UserUncheckedUpdateWithoutFallbackApprovedTeamsInput = {
   consentRecords?: Prisma.ConsentRecordUncheckedUpdateManyWithoutUserNestedInput
   reviewedTimesheets?: Prisma.TimesheetUncheckedUpdateManyWithoutReviewedByNestedInput
   apiKeys?: Prisma.OrganizationApiKeyUncheckedUpdateManyWithoutCreatedByNestedInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUncheckedUpdateManyWithoutActingUserNestedInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUncheckedUpdateManyWithoutGeneratedByNestedInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedUpdateManyWithoutAcknowledgedByUserNestedInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedUpdateManyWithoutDismissedByUserNestedInput
@@ -8431,6 +8812,7 @@ export type UserCreateWithoutCreatedPaymentRunsInput = {
   consentRecords?: Prisma.ConsentRecordCreateNestedManyWithoutUserInput
   reviewedTimesheets?: Prisma.TimesheetCreateNestedManyWithoutReviewedByInput
   apiKeys?: Prisma.OrganizationApiKeyCreateNestedManyWithoutCreatedByInput
+  actingApiKeys?: Prisma.OrganizationApiKeyCreateNestedManyWithoutActingUserInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentCreateNestedManyWithoutGeneratedByInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerCreateNestedManyWithoutAcknowledgedByUserInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerCreateNestedManyWithoutDismissedByUserInput
@@ -8487,6 +8869,7 @@ export type UserUncheckedCreateWithoutCreatedPaymentRunsInput = {
   consentRecords?: Prisma.ConsentRecordUncheckedCreateNestedManyWithoutUserInput
   reviewedTimesheets?: Prisma.TimesheetUncheckedCreateNestedManyWithoutReviewedByInput
   apiKeys?: Prisma.OrganizationApiKeyUncheckedCreateNestedManyWithoutCreatedByInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUncheckedCreateNestedManyWithoutActingUserInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUncheckedCreateNestedManyWithoutGeneratedByInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedCreateNestedManyWithoutAcknowledgedByUserInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedCreateNestedManyWithoutDismissedByUserInput
@@ -8548,6 +8931,7 @@ export type UserCreateWithoutApprovedPaymentRunsInput = {
   consentRecords?: Prisma.ConsentRecordCreateNestedManyWithoutUserInput
   reviewedTimesheets?: Prisma.TimesheetCreateNestedManyWithoutReviewedByInput
   apiKeys?: Prisma.OrganizationApiKeyCreateNestedManyWithoutCreatedByInput
+  actingApiKeys?: Prisma.OrganizationApiKeyCreateNestedManyWithoutActingUserInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentCreateNestedManyWithoutGeneratedByInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerCreateNestedManyWithoutAcknowledgedByUserInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerCreateNestedManyWithoutDismissedByUserInput
@@ -8604,6 +8988,7 @@ export type UserUncheckedCreateWithoutApprovedPaymentRunsInput = {
   consentRecords?: Prisma.ConsentRecordUncheckedCreateNestedManyWithoutUserInput
   reviewedTimesheets?: Prisma.TimesheetUncheckedCreateNestedManyWithoutReviewedByInput
   apiKeys?: Prisma.OrganizationApiKeyUncheckedCreateNestedManyWithoutCreatedByInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUncheckedCreateNestedManyWithoutActingUserInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUncheckedCreateNestedManyWithoutGeneratedByInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedCreateNestedManyWithoutAcknowledgedByUserInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedCreateNestedManyWithoutDismissedByUserInput
@@ -8676,6 +9061,7 @@ export type UserUpdateWithoutCreatedPaymentRunsInput = {
   consentRecords?: Prisma.ConsentRecordUpdateManyWithoutUserNestedInput
   reviewedTimesheets?: Prisma.TimesheetUpdateManyWithoutReviewedByNestedInput
   apiKeys?: Prisma.OrganizationApiKeyUpdateManyWithoutCreatedByNestedInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUpdateManyWithoutActingUserNestedInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUpdateManyWithoutGeneratedByNestedInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUpdateManyWithoutAcknowledgedByUserNestedInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUpdateManyWithoutDismissedByUserNestedInput
@@ -8732,6 +9118,7 @@ export type UserUncheckedUpdateWithoutCreatedPaymentRunsInput = {
   consentRecords?: Prisma.ConsentRecordUncheckedUpdateManyWithoutUserNestedInput
   reviewedTimesheets?: Prisma.TimesheetUncheckedUpdateManyWithoutReviewedByNestedInput
   apiKeys?: Prisma.OrganizationApiKeyUncheckedUpdateManyWithoutCreatedByNestedInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUncheckedUpdateManyWithoutActingUserNestedInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUncheckedUpdateManyWithoutGeneratedByNestedInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedUpdateManyWithoutAcknowledgedByUserNestedInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedUpdateManyWithoutDismissedByUserNestedInput
@@ -8799,6 +9186,7 @@ export type UserUpdateWithoutApprovedPaymentRunsInput = {
   consentRecords?: Prisma.ConsentRecordUpdateManyWithoutUserNestedInput
   reviewedTimesheets?: Prisma.TimesheetUpdateManyWithoutReviewedByNestedInput
   apiKeys?: Prisma.OrganizationApiKeyUpdateManyWithoutCreatedByNestedInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUpdateManyWithoutActingUserNestedInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUpdateManyWithoutGeneratedByNestedInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUpdateManyWithoutAcknowledgedByUserNestedInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUpdateManyWithoutDismissedByUserNestedInput
@@ -8855,6 +9243,7 @@ export type UserUncheckedUpdateWithoutApprovedPaymentRunsInput = {
   consentRecords?: Prisma.ConsentRecordUncheckedUpdateManyWithoutUserNestedInput
   reviewedTimesheets?: Prisma.TimesheetUncheckedUpdateManyWithoutReviewedByNestedInput
   apiKeys?: Prisma.OrganizationApiKeyUncheckedUpdateManyWithoutCreatedByNestedInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUncheckedUpdateManyWithoutActingUserNestedInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUncheckedUpdateManyWithoutGeneratedByNestedInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedUpdateManyWithoutAcknowledgedByUserNestedInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedUpdateManyWithoutDismissedByUserNestedInput
@@ -8911,6 +9300,7 @@ export type UserCreateWithoutPaymentExportsInput = {
   consentRecords?: Prisma.ConsentRecordCreateNestedManyWithoutUserInput
   reviewedTimesheets?: Prisma.TimesheetCreateNestedManyWithoutReviewedByInput
   apiKeys?: Prisma.OrganizationApiKeyCreateNestedManyWithoutCreatedByInput
+  actingApiKeys?: Prisma.OrganizationApiKeyCreateNestedManyWithoutActingUserInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentCreateNestedManyWithoutGeneratedByInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerCreateNestedManyWithoutAcknowledgedByUserInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerCreateNestedManyWithoutDismissedByUserInput
@@ -8967,6 +9357,7 @@ export type UserUncheckedCreateWithoutPaymentExportsInput = {
   consentRecords?: Prisma.ConsentRecordUncheckedCreateNestedManyWithoutUserInput
   reviewedTimesheets?: Prisma.TimesheetUncheckedCreateNestedManyWithoutReviewedByInput
   apiKeys?: Prisma.OrganizationApiKeyUncheckedCreateNestedManyWithoutCreatedByInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUncheckedCreateNestedManyWithoutActingUserInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUncheckedCreateNestedManyWithoutGeneratedByInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedCreateNestedManyWithoutAcknowledgedByUserInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedCreateNestedManyWithoutDismissedByUserInput
@@ -9039,6 +9430,7 @@ export type UserUpdateWithoutPaymentExportsInput = {
   consentRecords?: Prisma.ConsentRecordUpdateManyWithoutUserNestedInput
   reviewedTimesheets?: Prisma.TimesheetUpdateManyWithoutReviewedByNestedInput
   apiKeys?: Prisma.OrganizationApiKeyUpdateManyWithoutCreatedByNestedInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUpdateManyWithoutActingUserNestedInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUpdateManyWithoutGeneratedByNestedInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUpdateManyWithoutAcknowledgedByUserNestedInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUpdateManyWithoutDismissedByUserNestedInput
@@ -9095,6 +9487,7 @@ export type UserUncheckedUpdateWithoutPaymentExportsInput = {
   consentRecords?: Prisma.ConsentRecordUncheckedUpdateManyWithoutUserNestedInput
   reviewedTimesheets?: Prisma.TimesheetUncheckedUpdateManyWithoutReviewedByNestedInput
   apiKeys?: Prisma.OrganizationApiKeyUncheckedUpdateManyWithoutCreatedByNestedInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUncheckedUpdateManyWithoutActingUserNestedInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUncheckedUpdateManyWithoutGeneratedByNestedInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedUpdateManyWithoutAcknowledgedByUserNestedInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedUpdateManyWithoutDismissedByUserNestedInput
@@ -9151,6 +9544,7 @@ export type UserCreateWithoutReviewedChangeRequestsInput = {
   consentRecords?: Prisma.ConsentRecordCreateNestedManyWithoutUserInput
   reviewedTimesheets?: Prisma.TimesheetCreateNestedManyWithoutReviewedByInput
   apiKeys?: Prisma.OrganizationApiKeyCreateNestedManyWithoutCreatedByInput
+  actingApiKeys?: Prisma.OrganizationApiKeyCreateNestedManyWithoutActingUserInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentCreateNestedManyWithoutGeneratedByInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerCreateNestedManyWithoutAcknowledgedByUserInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerCreateNestedManyWithoutDismissedByUserInput
@@ -9207,6 +9601,7 @@ export type UserUncheckedCreateWithoutReviewedChangeRequestsInput = {
   consentRecords?: Prisma.ConsentRecordUncheckedCreateNestedManyWithoutUserInput
   reviewedTimesheets?: Prisma.TimesheetUncheckedCreateNestedManyWithoutReviewedByInput
   apiKeys?: Prisma.OrganizationApiKeyUncheckedCreateNestedManyWithoutCreatedByInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUncheckedCreateNestedManyWithoutActingUserInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUncheckedCreateNestedManyWithoutGeneratedByInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedCreateNestedManyWithoutAcknowledgedByUserInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedCreateNestedManyWithoutDismissedByUserInput
@@ -9279,6 +9674,7 @@ export type UserUpdateWithoutReviewedChangeRequestsInput = {
   consentRecords?: Prisma.ConsentRecordUpdateManyWithoutUserNestedInput
   reviewedTimesheets?: Prisma.TimesheetUpdateManyWithoutReviewedByNestedInput
   apiKeys?: Prisma.OrganizationApiKeyUpdateManyWithoutCreatedByNestedInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUpdateManyWithoutActingUserNestedInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUpdateManyWithoutGeneratedByNestedInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUpdateManyWithoutAcknowledgedByUserNestedInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUpdateManyWithoutDismissedByUserNestedInput
@@ -9335,6 +9731,7 @@ export type UserUncheckedUpdateWithoutReviewedChangeRequestsInput = {
   consentRecords?: Prisma.ConsentRecordUncheckedUpdateManyWithoutUserNestedInput
   reviewedTimesheets?: Prisma.TimesheetUncheckedUpdateManyWithoutReviewedByNestedInput
   apiKeys?: Prisma.OrganizationApiKeyUncheckedUpdateManyWithoutCreatedByNestedInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUncheckedUpdateManyWithoutActingUserNestedInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUncheckedUpdateManyWithoutGeneratedByNestedInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedUpdateManyWithoutAcknowledgedByUserNestedInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedUpdateManyWithoutDismissedByUserNestedInput
@@ -9391,6 +9788,7 @@ export type UserCreateWithoutReviewedTimesheetsInput = {
   sentSigningEnvelopes?: Prisma.SigningEnvelopeCreateNestedManyWithoutSentByInput
   consentRecords?: Prisma.ConsentRecordCreateNestedManyWithoutUserInput
   apiKeys?: Prisma.OrganizationApiKeyCreateNestedManyWithoutCreatedByInput
+  actingApiKeys?: Prisma.OrganizationApiKeyCreateNestedManyWithoutActingUserInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentCreateNestedManyWithoutGeneratedByInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerCreateNestedManyWithoutAcknowledgedByUserInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerCreateNestedManyWithoutDismissedByUserInput
@@ -9447,6 +9845,7 @@ export type UserUncheckedCreateWithoutReviewedTimesheetsInput = {
   sentSigningEnvelopes?: Prisma.SigningEnvelopeUncheckedCreateNestedManyWithoutSentByInput
   consentRecords?: Prisma.ConsentRecordUncheckedCreateNestedManyWithoutUserInput
   apiKeys?: Prisma.OrganizationApiKeyUncheckedCreateNestedManyWithoutCreatedByInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUncheckedCreateNestedManyWithoutActingUserInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUncheckedCreateNestedManyWithoutGeneratedByInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedCreateNestedManyWithoutAcknowledgedByUserInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedCreateNestedManyWithoutDismissedByUserInput
@@ -9519,6 +9918,7 @@ export type UserUpdateWithoutReviewedTimesheetsInput = {
   sentSigningEnvelopes?: Prisma.SigningEnvelopeUpdateManyWithoutSentByNestedInput
   consentRecords?: Prisma.ConsentRecordUpdateManyWithoutUserNestedInput
   apiKeys?: Prisma.OrganizationApiKeyUpdateManyWithoutCreatedByNestedInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUpdateManyWithoutActingUserNestedInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUpdateManyWithoutGeneratedByNestedInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUpdateManyWithoutAcknowledgedByUserNestedInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUpdateManyWithoutDismissedByUserNestedInput
@@ -9575,6 +9975,7 @@ export type UserUncheckedUpdateWithoutReviewedTimesheetsInput = {
   sentSigningEnvelopes?: Prisma.SigningEnvelopeUncheckedUpdateManyWithoutSentByNestedInput
   consentRecords?: Prisma.ConsentRecordUncheckedUpdateManyWithoutUserNestedInput
   apiKeys?: Prisma.OrganizationApiKeyUncheckedUpdateManyWithoutCreatedByNestedInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUncheckedUpdateManyWithoutActingUserNestedInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUncheckedUpdateManyWithoutGeneratedByNestedInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedUpdateManyWithoutAcknowledgedByUserNestedInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedUpdateManyWithoutDismissedByUserNestedInput
@@ -9631,6 +10032,7 @@ export type UserCreateWithoutStartedWorkflowRunsInput = {
   consentRecords?: Prisma.ConsentRecordCreateNestedManyWithoutUserInput
   reviewedTimesheets?: Prisma.TimesheetCreateNestedManyWithoutReviewedByInput
   apiKeys?: Prisma.OrganizationApiKeyCreateNestedManyWithoutCreatedByInput
+  actingApiKeys?: Prisma.OrganizationApiKeyCreateNestedManyWithoutActingUserInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentCreateNestedManyWithoutGeneratedByInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerCreateNestedManyWithoutAcknowledgedByUserInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerCreateNestedManyWithoutDismissedByUserInput
@@ -9687,6 +10089,7 @@ export type UserUncheckedCreateWithoutStartedWorkflowRunsInput = {
   consentRecords?: Prisma.ConsentRecordUncheckedCreateNestedManyWithoutUserInput
   reviewedTimesheets?: Prisma.TimesheetUncheckedCreateNestedManyWithoutReviewedByInput
   apiKeys?: Prisma.OrganizationApiKeyUncheckedCreateNestedManyWithoutCreatedByInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUncheckedCreateNestedManyWithoutActingUserInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUncheckedCreateNestedManyWithoutGeneratedByInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedCreateNestedManyWithoutAcknowledgedByUserInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedCreateNestedManyWithoutDismissedByUserInput
@@ -9759,6 +10162,7 @@ export type UserUpdateWithoutStartedWorkflowRunsInput = {
   consentRecords?: Prisma.ConsentRecordUpdateManyWithoutUserNestedInput
   reviewedTimesheets?: Prisma.TimesheetUpdateManyWithoutReviewedByNestedInput
   apiKeys?: Prisma.OrganizationApiKeyUpdateManyWithoutCreatedByNestedInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUpdateManyWithoutActingUserNestedInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUpdateManyWithoutGeneratedByNestedInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUpdateManyWithoutAcknowledgedByUserNestedInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUpdateManyWithoutDismissedByUserNestedInput
@@ -9815,6 +10219,7 @@ export type UserUncheckedUpdateWithoutStartedWorkflowRunsInput = {
   consentRecords?: Prisma.ConsentRecordUncheckedUpdateManyWithoutUserNestedInput
   reviewedTimesheets?: Prisma.TimesheetUncheckedUpdateManyWithoutReviewedByNestedInput
   apiKeys?: Prisma.OrganizationApiKeyUncheckedUpdateManyWithoutCreatedByNestedInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUncheckedUpdateManyWithoutActingUserNestedInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUncheckedUpdateManyWithoutGeneratedByNestedInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedUpdateManyWithoutAcknowledgedByUserNestedInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedUpdateManyWithoutDismissedByUserNestedInput
@@ -9871,6 +10276,7 @@ export type UserCreateWithoutAssignedWorkflowTasksInput = {
   consentRecords?: Prisma.ConsentRecordCreateNestedManyWithoutUserInput
   reviewedTimesheets?: Prisma.TimesheetCreateNestedManyWithoutReviewedByInput
   apiKeys?: Prisma.OrganizationApiKeyCreateNestedManyWithoutCreatedByInput
+  actingApiKeys?: Prisma.OrganizationApiKeyCreateNestedManyWithoutActingUserInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentCreateNestedManyWithoutGeneratedByInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerCreateNestedManyWithoutAcknowledgedByUserInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerCreateNestedManyWithoutDismissedByUserInput
@@ -9927,6 +10333,7 @@ export type UserUncheckedCreateWithoutAssignedWorkflowTasksInput = {
   consentRecords?: Prisma.ConsentRecordUncheckedCreateNestedManyWithoutUserInput
   reviewedTimesheets?: Prisma.TimesheetUncheckedCreateNestedManyWithoutReviewedByInput
   apiKeys?: Prisma.OrganizationApiKeyUncheckedCreateNestedManyWithoutCreatedByInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUncheckedCreateNestedManyWithoutActingUserInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUncheckedCreateNestedManyWithoutGeneratedByInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedCreateNestedManyWithoutAcknowledgedByUserInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedCreateNestedManyWithoutDismissedByUserInput
@@ -9988,6 +10395,7 @@ export type UserCreateWithoutCompletedWorkflowTasksInput = {
   consentRecords?: Prisma.ConsentRecordCreateNestedManyWithoutUserInput
   reviewedTimesheets?: Prisma.TimesheetCreateNestedManyWithoutReviewedByInput
   apiKeys?: Prisma.OrganizationApiKeyCreateNestedManyWithoutCreatedByInput
+  actingApiKeys?: Prisma.OrganizationApiKeyCreateNestedManyWithoutActingUserInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentCreateNestedManyWithoutGeneratedByInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerCreateNestedManyWithoutAcknowledgedByUserInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerCreateNestedManyWithoutDismissedByUserInput
@@ -10044,6 +10452,7 @@ export type UserUncheckedCreateWithoutCompletedWorkflowTasksInput = {
   consentRecords?: Prisma.ConsentRecordUncheckedCreateNestedManyWithoutUserInput
   reviewedTimesheets?: Prisma.TimesheetUncheckedCreateNestedManyWithoutReviewedByInput
   apiKeys?: Prisma.OrganizationApiKeyUncheckedCreateNestedManyWithoutCreatedByInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUncheckedCreateNestedManyWithoutActingUserInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUncheckedCreateNestedManyWithoutGeneratedByInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedCreateNestedManyWithoutAcknowledgedByUserInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedCreateNestedManyWithoutDismissedByUserInput
@@ -10116,6 +10525,7 @@ export type UserUpdateWithoutAssignedWorkflowTasksInput = {
   consentRecords?: Prisma.ConsentRecordUpdateManyWithoutUserNestedInput
   reviewedTimesheets?: Prisma.TimesheetUpdateManyWithoutReviewedByNestedInput
   apiKeys?: Prisma.OrganizationApiKeyUpdateManyWithoutCreatedByNestedInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUpdateManyWithoutActingUserNestedInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUpdateManyWithoutGeneratedByNestedInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUpdateManyWithoutAcknowledgedByUserNestedInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUpdateManyWithoutDismissedByUserNestedInput
@@ -10172,6 +10582,7 @@ export type UserUncheckedUpdateWithoutAssignedWorkflowTasksInput = {
   consentRecords?: Prisma.ConsentRecordUncheckedUpdateManyWithoutUserNestedInput
   reviewedTimesheets?: Prisma.TimesheetUncheckedUpdateManyWithoutReviewedByNestedInput
   apiKeys?: Prisma.OrganizationApiKeyUncheckedUpdateManyWithoutCreatedByNestedInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUncheckedUpdateManyWithoutActingUserNestedInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUncheckedUpdateManyWithoutGeneratedByNestedInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedUpdateManyWithoutAcknowledgedByUserNestedInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedUpdateManyWithoutDismissedByUserNestedInput
@@ -10239,6 +10650,7 @@ export type UserUpdateWithoutCompletedWorkflowTasksInput = {
   consentRecords?: Prisma.ConsentRecordUpdateManyWithoutUserNestedInput
   reviewedTimesheets?: Prisma.TimesheetUpdateManyWithoutReviewedByNestedInput
   apiKeys?: Prisma.OrganizationApiKeyUpdateManyWithoutCreatedByNestedInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUpdateManyWithoutActingUserNestedInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUpdateManyWithoutGeneratedByNestedInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUpdateManyWithoutAcknowledgedByUserNestedInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUpdateManyWithoutDismissedByUserNestedInput
@@ -10295,6 +10707,7 @@ export type UserUncheckedUpdateWithoutCompletedWorkflowTasksInput = {
   consentRecords?: Prisma.ConsentRecordUncheckedUpdateManyWithoutUserNestedInput
   reviewedTimesheets?: Prisma.TimesheetUncheckedUpdateManyWithoutReviewedByNestedInput
   apiKeys?: Prisma.OrganizationApiKeyUncheckedUpdateManyWithoutCreatedByNestedInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUncheckedUpdateManyWithoutActingUserNestedInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUncheckedUpdateManyWithoutGeneratedByNestedInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedUpdateManyWithoutAcknowledgedByUserNestedInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedUpdateManyWithoutDismissedByUserNestedInput
@@ -10351,6 +10764,7 @@ export type UserCreateWithoutWorkflowCommentsInput = {
   consentRecords?: Prisma.ConsentRecordCreateNestedManyWithoutUserInput
   reviewedTimesheets?: Prisma.TimesheetCreateNestedManyWithoutReviewedByInput
   apiKeys?: Prisma.OrganizationApiKeyCreateNestedManyWithoutCreatedByInput
+  actingApiKeys?: Prisma.OrganizationApiKeyCreateNestedManyWithoutActingUserInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentCreateNestedManyWithoutGeneratedByInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerCreateNestedManyWithoutAcknowledgedByUserInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerCreateNestedManyWithoutDismissedByUserInput
@@ -10407,6 +10821,7 @@ export type UserUncheckedCreateWithoutWorkflowCommentsInput = {
   consentRecords?: Prisma.ConsentRecordUncheckedCreateNestedManyWithoutUserInput
   reviewedTimesheets?: Prisma.TimesheetUncheckedCreateNestedManyWithoutReviewedByInput
   apiKeys?: Prisma.OrganizationApiKeyUncheckedCreateNestedManyWithoutCreatedByInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUncheckedCreateNestedManyWithoutActingUserInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUncheckedCreateNestedManyWithoutGeneratedByInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedCreateNestedManyWithoutAcknowledgedByUserInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedCreateNestedManyWithoutDismissedByUserInput
@@ -10479,6 +10894,7 @@ export type UserUpdateWithoutWorkflowCommentsInput = {
   consentRecords?: Prisma.ConsentRecordUpdateManyWithoutUserNestedInput
   reviewedTimesheets?: Prisma.TimesheetUpdateManyWithoutReviewedByNestedInput
   apiKeys?: Prisma.OrganizationApiKeyUpdateManyWithoutCreatedByNestedInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUpdateManyWithoutActingUserNestedInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUpdateManyWithoutGeneratedByNestedInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUpdateManyWithoutAcknowledgedByUserNestedInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUpdateManyWithoutDismissedByUserNestedInput
@@ -10535,6 +10951,7 @@ export type UserUncheckedUpdateWithoutWorkflowCommentsInput = {
   consentRecords?: Prisma.ConsentRecordUncheckedUpdateManyWithoutUserNestedInput
   reviewedTimesheets?: Prisma.TimesheetUncheckedUpdateManyWithoutReviewedByNestedInput
   apiKeys?: Prisma.OrganizationApiKeyUncheckedUpdateManyWithoutCreatedByNestedInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUncheckedUpdateManyWithoutActingUserNestedInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUncheckedUpdateManyWithoutGeneratedByNestedInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedUpdateManyWithoutAcknowledgedByUserNestedInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedUpdateManyWithoutDismissedByUserNestedInput
@@ -10591,6 +11008,7 @@ export type UserCreateWithoutCredentialReferencesAsSuccessorInput = {
   consentRecords?: Prisma.ConsentRecordCreateNestedManyWithoutUserInput
   reviewedTimesheets?: Prisma.TimesheetCreateNestedManyWithoutReviewedByInput
   apiKeys?: Prisma.OrganizationApiKeyCreateNestedManyWithoutCreatedByInput
+  actingApiKeys?: Prisma.OrganizationApiKeyCreateNestedManyWithoutActingUserInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentCreateNestedManyWithoutGeneratedByInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerCreateNestedManyWithoutAcknowledgedByUserInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerCreateNestedManyWithoutDismissedByUserInput
@@ -10647,6 +11065,7 @@ export type UserUncheckedCreateWithoutCredentialReferencesAsSuccessorInput = {
   consentRecords?: Prisma.ConsentRecordUncheckedCreateNestedManyWithoutUserInput
   reviewedTimesheets?: Prisma.TimesheetUncheckedCreateNestedManyWithoutReviewedByInput
   apiKeys?: Prisma.OrganizationApiKeyUncheckedCreateNestedManyWithoutCreatedByInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUncheckedCreateNestedManyWithoutActingUserInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUncheckedCreateNestedManyWithoutGeneratedByInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedCreateNestedManyWithoutAcknowledgedByUserInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedCreateNestedManyWithoutDismissedByUserInput
@@ -10708,6 +11127,7 @@ export type UserCreateWithoutCredentialReferencesRotatedInput = {
   consentRecords?: Prisma.ConsentRecordCreateNestedManyWithoutUserInput
   reviewedTimesheets?: Prisma.TimesheetCreateNestedManyWithoutReviewedByInput
   apiKeys?: Prisma.OrganizationApiKeyCreateNestedManyWithoutCreatedByInput
+  actingApiKeys?: Prisma.OrganizationApiKeyCreateNestedManyWithoutActingUserInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentCreateNestedManyWithoutGeneratedByInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerCreateNestedManyWithoutAcknowledgedByUserInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerCreateNestedManyWithoutDismissedByUserInput
@@ -10764,6 +11184,7 @@ export type UserUncheckedCreateWithoutCredentialReferencesRotatedInput = {
   consentRecords?: Prisma.ConsentRecordUncheckedCreateNestedManyWithoutUserInput
   reviewedTimesheets?: Prisma.TimesheetUncheckedCreateNestedManyWithoutReviewedByInput
   apiKeys?: Prisma.OrganizationApiKeyUncheckedCreateNestedManyWithoutCreatedByInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUncheckedCreateNestedManyWithoutActingUserInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUncheckedCreateNestedManyWithoutGeneratedByInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedCreateNestedManyWithoutAcknowledgedByUserInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedCreateNestedManyWithoutDismissedByUserInput
@@ -10836,6 +11257,7 @@ export type UserUpdateWithoutCredentialReferencesAsSuccessorInput = {
   consentRecords?: Prisma.ConsentRecordUpdateManyWithoutUserNestedInput
   reviewedTimesheets?: Prisma.TimesheetUpdateManyWithoutReviewedByNestedInput
   apiKeys?: Prisma.OrganizationApiKeyUpdateManyWithoutCreatedByNestedInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUpdateManyWithoutActingUserNestedInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUpdateManyWithoutGeneratedByNestedInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUpdateManyWithoutAcknowledgedByUserNestedInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUpdateManyWithoutDismissedByUserNestedInput
@@ -10892,6 +11314,7 @@ export type UserUncheckedUpdateWithoutCredentialReferencesAsSuccessorInput = {
   consentRecords?: Prisma.ConsentRecordUncheckedUpdateManyWithoutUserNestedInput
   reviewedTimesheets?: Prisma.TimesheetUncheckedUpdateManyWithoutReviewedByNestedInput
   apiKeys?: Prisma.OrganizationApiKeyUncheckedUpdateManyWithoutCreatedByNestedInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUncheckedUpdateManyWithoutActingUserNestedInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUncheckedUpdateManyWithoutGeneratedByNestedInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedUpdateManyWithoutAcknowledgedByUserNestedInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedUpdateManyWithoutDismissedByUserNestedInput
@@ -10959,6 +11382,7 @@ export type UserUpdateWithoutCredentialReferencesRotatedInput = {
   consentRecords?: Prisma.ConsentRecordUpdateManyWithoutUserNestedInput
   reviewedTimesheets?: Prisma.TimesheetUpdateManyWithoutReviewedByNestedInput
   apiKeys?: Prisma.OrganizationApiKeyUpdateManyWithoutCreatedByNestedInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUpdateManyWithoutActingUserNestedInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUpdateManyWithoutGeneratedByNestedInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUpdateManyWithoutAcknowledgedByUserNestedInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUpdateManyWithoutDismissedByUserNestedInput
@@ -11015,6 +11439,7 @@ export type UserUncheckedUpdateWithoutCredentialReferencesRotatedInput = {
   consentRecords?: Prisma.ConsentRecordUncheckedUpdateManyWithoutUserNestedInput
   reviewedTimesheets?: Prisma.TimesheetUncheckedUpdateManyWithoutReviewedByNestedInput
   apiKeys?: Prisma.OrganizationApiKeyUncheckedUpdateManyWithoutCreatedByNestedInput
+  actingApiKeys?: Prisma.OrganizationApiKeyUncheckedUpdateManyWithoutActingUserNestedInput
   generatedClassificationDocuments?: Prisma.ClassificationDocumentUncheckedUpdateManyWithoutGeneratedByNestedInput
   acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedUpdateManyWithoutAcknowledgedByUserNestedInput
   dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedUpdateManyWithoutDismissedByUserNestedInput
@@ -11063,6 +11488,7 @@ export type UserCountOutputType = {
   consentRecords: number
   reviewedTimesheets: number
   apiKeys: number
+  actingApiKeys: number
   generatedClassificationDocuments: number
   acknowledgedReassessmentTriggers: number
   dismissedReassessmentTriggers: number
@@ -11106,6 +11532,7 @@ export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.I
   consentRecords?: boolean | UserCountOutputTypeCountConsentRecordsArgs
   reviewedTimesheets?: boolean | UserCountOutputTypeCountReviewedTimesheetsArgs
   apiKeys?: boolean | UserCountOutputTypeCountApiKeysArgs
+  actingApiKeys?: boolean | UserCountOutputTypeCountActingApiKeysArgs
   generatedClassificationDocuments?: boolean | UserCountOutputTypeCountGeneratedClassificationDocumentsArgs
   acknowledgedReassessmentTriggers?: boolean | UserCountOutputTypeCountAcknowledgedReassessmentTriggersArgs
   dismissedReassessmentTriggers?: boolean | UserCountOutputTypeCountDismissedReassessmentTriggersArgs
@@ -11341,6 +11768,13 @@ export type UserCountOutputTypeCountApiKeysArgs<ExtArgs extends runtime.Types.Ex
 /**
  * UserCountOutputType without action
  */
+export type UserCountOutputTypeCountActingApiKeysArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.OrganizationApiKeyWhereInput
+}
+
+/**
+ * UserCountOutputType without action
+ */
 export type UserCountOutputTypeCountGeneratedClassificationDocumentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.ClassificationDocumentWhereInput
 }
@@ -11454,6 +11888,7 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   consentRecords?: boolean | Prisma.User$consentRecordsArgs<ExtArgs>
   reviewedTimesheets?: boolean | Prisma.User$reviewedTimesheetsArgs<ExtArgs>
   apiKeys?: boolean | Prisma.User$apiKeysArgs<ExtArgs>
+  actingApiKeys?: boolean | Prisma.User$actingApiKeysArgs<ExtArgs>
   generatedClassificationDocuments?: boolean | Prisma.User$generatedClassificationDocumentsArgs<ExtArgs>
   acknowledgedReassessmentTriggers?: boolean | Prisma.User$acknowledgedReassessmentTriggersArgs<ExtArgs>
   dismissedReassessmentTriggers?: boolean | Prisma.User$dismissedReassessmentTriggersArgs<ExtArgs>
@@ -11550,6 +11985,7 @@ export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   consentRecords?: boolean | Prisma.User$consentRecordsArgs<ExtArgs>
   reviewedTimesheets?: boolean | Prisma.User$reviewedTimesheetsArgs<ExtArgs>
   apiKeys?: boolean | Prisma.User$apiKeysArgs<ExtArgs>
+  actingApiKeys?: boolean | Prisma.User$actingApiKeysArgs<ExtArgs>
   generatedClassificationDocuments?: boolean | Prisma.User$generatedClassificationDocumentsArgs<ExtArgs>
   acknowledgedReassessmentTriggers?: boolean | Prisma.User$acknowledgedReassessmentTriggersArgs<ExtArgs>
   dismissedReassessmentTriggers?: boolean | Prisma.User$dismissedReassessmentTriggersArgs<ExtArgs>
@@ -11598,6 +12034,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     consentRecords: Prisma.$ConsentRecordPayload<ExtArgs>[]
     reviewedTimesheets: Prisma.$TimesheetPayload<ExtArgs>[]
     apiKeys: Prisma.$OrganizationApiKeyPayload<ExtArgs>[]
+    actingApiKeys: Prisma.$OrganizationApiKeyPayload<ExtArgs>[]
     generatedClassificationDocuments: Prisma.$ClassificationDocumentPayload<ExtArgs>[]
     acknowledgedReassessmentTriggers: Prisma.$ReassessmentTriggerPayload<ExtArgs>[]
     dismissedReassessmentTriggers: Prisma.$ReassessmentTriggerPayload<ExtArgs>[]
@@ -12048,6 +12485,7 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   consentRecords<T extends Prisma.User$consentRecordsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$consentRecordsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ConsentRecordPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   reviewedTimesheets<T extends Prisma.User$reviewedTimesheetsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$reviewedTimesheetsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$TimesheetPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   apiKeys<T extends Prisma.User$apiKeysArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$apiKeysArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$OrganizationApiKeyPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  actingApiKeys<T extends Prisma.User$actingApiKeysArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$actingApiKeysArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$OrganizationApiKeyPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   generatedClassificationDocuments<T extends Prisma.User$generatedClassificationDocumentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$generatedClassificationDocumentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ClassificationDocumentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   acknowledgedReassessmentTriggers<T extends Prisma.User$acknowledgedReassessmentTriggersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$acknowledgedReassessmentTriggersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ReassessmentTriggerPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   dismissedReassessmentTriggers<T extends Prisma.User$dismissedReassessmentTriggersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$dismissedReassessmentTriggersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ReassessmentTriggerPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -13193,6 +13631,30 @@ export type User$reviewedTimesheetsArgs<ExtArgs extends runtime.Types.Extensions
  * User.apiKeys
  */
 export type User$apiKeysArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the OrganizationApiKey
+   */
+  select?: Prisma.OrganizationApiKeySelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the OrganizationApiKey
+   */
+  omit?: Prisma.OrganizationApiKeyOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.OrganizationApiKeyInclude<ExtArgs> | null
+  where?: Prisma.OrganizationApiKeyWhereInput
+  orderBy?: Prisma.OrganizationApiKeyOrderByWithRelationInput | Prisma.OrganizationApiKeyOrderByWithRelationInput[]
+  cursor?: Prisma.OrganizationApiKeyWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.OrganizationApiKeyScalarFieldEnum | Prisma.OrganizationApiKeyScalarFieldEnum[]
+}
+
+/**
+ * User.actingApiKeys
+ */
+export type User$actingApiKeysArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   /**
    * Select specific fields to fetch from the OrganizationApiKey
    */

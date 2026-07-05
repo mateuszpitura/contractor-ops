@@ -53,6 +53,27 @@ export function itemOkResponse<T extends z.ZodTypeAny>(item: T, description: str
   };
 }
 
+/** A JSON request body spec for a write route, bound to a `.strict()` write DTO. */
+// biome-ignore lint/suspicious/noExplicitAny: generic over any Zod write DTO.
+export function jsonBody<T extends z.ZodType<any, any, any>>(schema: T) {
+  return { content: { 'application/json': { schema } }, required: true };
+}
+
+/**
+ * The documented responses for a hidden write route: the read error set plus
+ * 400 (bad body) and 429 (tier quota). The result shape is opaque here — writes
+ * are `hide:true`, so this never surfaces in the derived spec.
+ */
+export const writeResponses = {
+  200: {
+    content: { 'application/json': { schema: z.object({ data: z.unknown() }) } },
+    description: 'Write result',
+  },
+  400: { description: 'Invalid request body' },
+  429: { description: 'Rate limit or monthly quota exceeded' },
+  ...errorResponses,
+} as const;
+
 /**
  * Emits the standard cursor envelope from a tRPC list result, encoding the
  * plain-id nextCursor into an opaque token.

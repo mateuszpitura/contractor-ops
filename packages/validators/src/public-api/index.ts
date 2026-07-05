@@ -12,7 +12,11 @@ import {
   paginationSchema,
 } from '../common-inputs.js';
 import { contractStatusEnum } from '../contract.js';
-import { contractorLifecycleStageEnum, contractorStatusEnum } from '../contractor.js';
+import {
+  contractorLifecycleStageEnum,
+  contractorStatusEnum,
+  contractorTypeEnum,
+} from '../contractor.js';
 import { equipmentStatusEnum, equipmentTypeEnum } from '../equipment.js';
 import { invoiceStatusEnum } from '../invoice.js';
 
@@ -236,5 +240,122 @@ export const publicApiInvoiceListInputSchema = publicListBaseSchema
         '-totalMinor',
       ])
       .default('-createdAt'),
+  })
+  .strict();
+
+// ---------------------------------------------------------------------------
+// Write DTOs (.strict()) — the public WRITE surface (double-dark until P100).
+//
+// Every write DTO is `.strict()` and OMITS `organizationId`, `workerType`, and
+// any server-derived money field. Tenant + attribution actor come from the API
+// key, never the body. A key carrying an extra `organizationId`/`workerType`
+// field is rejected (mass-assignment defense).
+// ---------------------------------------------------------------------------
+
+const currencyCode = z.string().length(3);
+const countryCode2 = z.string().length(2);
+
+export const publicApiContractorCreateInputSchema = z
+  .object({
+    legalName: z.string().min(1).max(200),
+    displayName: z.string().min(1).max(200).optional(),
+    type: contractorTypeEnum,
+    taxId: z.string().max(100).optional(),
+    vatId: z.string().max(100).optional(),
+    registrationNumber: z.string().max(100).optional(),
+    email: z.string().email().max(255).optional(),
+    phone: z.string().max(50).optional(),
+    countryCode: countryCode2,
+    currency: currencyCode,
+    addressLine1: z.string().max(200).optional(),
+    addressLine2: z.string().max(200).optional(),
+    city: z.string().max(120).optional(),
+    postalCode: z.string().max(20).optional(),
+  })
+  .strict();
+
+export const publicApiContractorUpdateInputSchema = z
+  .object({
+    id: z.string().min(1),
+    legalName: z.string().min(1).max(200).optional(),
+    displayName: z.string().min(1).max(200).optional(),
+    email: z.string().email().max(255).optional(),
+    phone: z.string().max(50).optional(),
+    addressLine1: z.string().max(200).optional(),
+    addressLine2: z.string().max(200).optional(),
+    city: z.string().max(120).optional(),
+    postalCode: z.string().max(20).optional(),
+    status: contractorStatusEnum.optional(),
+  })
+  .strict();
+
+export const publicApiInvoiceCreateInputSchema = z
+  .object({
+    contractorId: z.string().min(1),
+    invoiceNumber: z.string().min(1).max(100),
+    issueDate: z.coerce.date(),
+    dueDate: z.coerce.date(),
+    currency: currencyCode,
+    // An invoice's amounts are legitimate client content (server-derived money is
+    // a payment-run concern, not an invoice one).
+    subtotalMinor: z.number().int().nonnegative(),
+    totalMinor: z.number().int().nonnegative(),
+    vatMinor: z.number().int().nonnegative().optional(),
+    sellerTaxId: z.string().max(100).optional(),
+    description: z.string().max(1000).optional(),
+  })
+  .strict();
+
+export const publicApiInvoiceVoidInputSchema = entityIdSchema;
+
+export const publicApiPaymentUpdateInputSchema = z
+  .object({
+    itemId: z.string().min(1),
+    status: z.enum(['PENDING', 'EXPORTED', 'PAID', 'FAILED']),
+    paymentReference: z.string().max(140).optional(),
+    failureReason: z.string().max(500).optional(),
+  })
+  .strict();
+
+export const publicApiPaymentRunCreateInputSchema = z
+  .object({
+    // Money is server-derived from the eligible invoices — the DTO omits it.
+    invoiceIds: z.array(z.string().min(1)).min(1).max(500),
+    name: z.string().max(140).optional(),
+    notes: z.string().max(1000).optional(),
+    currency: currencyCode.optional(),
+    groupByCurrency: z.boolean().optional(),
+  })
+  .strict();
+
+export const publicApiPaymentRunTransitionInputSchema = z
+  .object({
+    id: z.string().min(1),
+    status: z.enum(['CANCELLED', 'COMPLETED']),
+  })
+  .strict();
+
+export const publicApiPaymentRunExportInputSchema = z
+  .object({
+    id: z.string().min(1),
+    format: z.enum(['CSV', 'BANK_FILE', 'SWIFT_XML', 'SEPA_XML', 'ACH_NACHA', 'FEDWIRE']),
+  })
+  .strict();
+
+export const publicApiWorkflowCreateInputSchema = z
+  .object({
+    templateId: z.string().min(1),
+    contractorId: z.string().min(1),
+    contractId: z.string().min(1).optional(),
+  })
+  .strict();
+
+export const publicApiWorkflowExecuteInputSchema = publicApiWorkflowCreateInputSchema;
+
+export const publicApiWorkflowTaskTransitionInputSchema = z
+  .object({
+    taskRunId: z.string().min(1),
+    status: z.enum(['DONE', 'SKIPPED']),
+    reason: z.string().max(500).optional(),
   })
   .strict();

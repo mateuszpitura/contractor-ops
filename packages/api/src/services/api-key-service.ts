@@ -114,11 +114,18 @@ export function resolveApiKey(plaintext: string) {
 }
 
 async function resolveByPrefix(plaintext: string, prefix: string) {
+  const now = new Date();
   const candidates = await prisma.organizationApiKey.findMany({
     where: {
       prefix,
       revokedAt: null,
-      OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
+      AND: [
+        // Not expired.
+        { OR: [{ expiresAt: null }, { expiresAt: { gt: now } }] },
+        // Rotation grace: a superseded key resolves ONLY until graceExpiresAt,
+        // then hard-stops. A never-superseded key always passes this clause.
+        { OR: [{ supersededAt: null }, { graceExpiresAt: { gt: now } }] },
+      ],
     },
     take: MAX_PREFIX_CANDIDATES,
     include: {
@@ -172,6 +179,67 @@ setInterval(() => {
   for (const [keyId, timestamp] of lastTouchedAt) {
     if (now - timestamp > TOUCH_DEBOUNCE_MS * 2) {
       lastTouchedAt.delete(keyId);
+    }
+  }
+}, 10 * 60_000).unref();
+
+// ---------------------------------------------------------------------------
+// Source-IP log (fire-and-forget, debounced + pruned)
+// ---------------------------------------------------------------------------
+
+const IP_EVENT_DEBOUNCE_MS = 5 * 60_000;
+const IP_EVENTS_KEEP_PER_KEY = 50;
+const lastIpEventAt = new Map<string, number>();
+
+/**
+ * Append a bounded source-IP event for an authenticated API-key request.
+ * Debounced per `key+ip` (one row per 5 min) and pruned to the most recent
+ * {@link IP_EVENTS_KEEP_PER_KEY} rows per key, so the log stays a small rolling
+ * window (feeds the Developer page + the leak alarm). Fire-and-forget: a logging
+ * failure must never break the request.
+ */
+export function appendApiKeyIpEvent(
+  keyId: string,
+  organizationId: string,
+  ipAddress: string | undefined,
+  userAgent: string | undefined,
+): void {
+  if (!ipAddress) return;
+
+  const now = Date.now();
+  const debounceKey = `${keyId}:${ipAddress}`;
+  const last = lastIpEventAt.get(debounceKey) ?? 0;
+  if (now - last < IP_EVENT_DEBOUNCE_MS) return;
+  lastIpEventAt.set(debounceKey, now);
+
+  void (async () => {
+    try {
+      await prisma.apiKeyIpEvent.create({
+        data: { apiKeyId: keyId, organizationId, ipAddress, userAgent: userAgent ?? null },
+      });
+
+      // Prune older rows beyond the retained window (keep the newest N).
+      const stale = await prisma.apiKeyIpEvent.findMany({
+        where: { apiKeyId: keyId },
+        orderBy: { seenAt: 'desc' },
+        skip: IP_EVENTS_KEEP_PER_KEY,
+        select: { id: true },
+      });
+      if (stale.length > 0) {
+        await prisma.apiKeyIpEvent.deleteMany({ where: { id: { in: stale.map(r => r.id) } } });
+      }
+    } catch (err) {
+      log.error({ err, keyId }, 'failed to append ApiKeyIpEvent');
+    }
+  })();
+}
+
+// Cleanup stale ip-event debounce entries every 10 minutes
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, timestamp] of lastIpEventAt) {
+    if (now - timestamp > IP_EVENT_DEBOUNCE_MS * 2) {
+      lastIpEventAt.delete(key);
     }
   }
 }, 10 * 60_000).unref();

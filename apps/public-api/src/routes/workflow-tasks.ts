@@ -1,4 +1,7 @@
-import { publicApiWorkflowTaskListInputSchema } from '@contractor-ops/validators/public-api';
+import {
+  publicApiWorkflowTaskListInputSchema,
+  publicApiWorkflowTaskTransitionInputSchema,
+} from '@contractor-ops/validators/public-api';
 import { createRoute, OpenAPIHono, z } from '@hono/zod-openapi';
 import { decodeCursor } from '../lib/openapi-cursor.js';
 import {
@@ -6,8 +9,10 @@ import {
   envelope,
   errorResponses,
   itemOkResponse,
+  jsonBody,
   listOkResponse,
   listQuery,
+  writeResponses,
 } from '../lib/openapi-route.js';
 
 const workflowTasks = new OpenAPIHono();
@@ -56,6 +61,22 @@ workflowTasks.openapi(getByIdRoute, async c => {
   const { id } = c.req.valid('param');
   const caller = createPublicCaller(c);
   const result = await caller.workflowTask.getById({ id });
+  return c.json({ data: result }, 200);
+});
+
+// --- Hidden write route (double-dark) ---
+
+const transitionRouteDef = createRoute({
+  method: 'patch',
+  path: '/transition',
+  hide: true,
+  request: { body: jsonBody(publicApiWorkflowTaskTransitionInputSchema) },
+  responses: writeResponses,
+});
+
+workflowTasks.openapi(transitionRouteDef, async c => {
+  const body = c.req.valid('json');
+  const result = await createPublicCaller(c).workflowTask.transition(body);
   return c.json({ data: result }, 200);
 });
 

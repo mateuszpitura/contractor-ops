@@ -134,7 +134,7 @@ describe('resolveApiKey', () => {
     expect(result).toBeNull();
   });
 
-  it('filters expired and revoked keys in the DB query', async () => {
+  it('filters expired, revoked, and past-grace superseded keys in the DB query', async () => {
     const { plaintext } = generateApiKey();
     mockPrisma.organizationApiKey.findMany.mockResolvedValue([]);
 
@@ -142,8 +142,13 @@ describe('resolveApiKey', () => {
 
     const queryArgs = mockPrisma.organizationApiKey.findMany.mock.calls[0]?.[0];
     expect(queryArgs.where.revokedAt).toBeNull();
-    expect(queryArgs.where.OR).toEqual(
-      expect.arrayContaining([{ expiresAt: null }, { expiresAt: { gt: expect.any(Date) } }]),
+    // Expiry + rotation-grace are AND-composed: not expired AND (not superseded
+    // OR still within grace).
+    expect(queryArgs.where.AND).toEqual(
+      expect.arrayContaining([
+        { OR: [{ expiresAt: null }, { expiresAt: { gt: expect.any(Date) } }] },
+        { OR: [{ supersededAt: null }, { graceExpiresAt: { gt: expect.any(Date) } }] },
+      ]),
     );
   });
 });

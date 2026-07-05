@@ -19,12 +19,98 @@ interface UseCreateKeyDialogOptions {
   onOpenChange: (open: boolean) => void;
 }
 
+/** Default + max rotation grace window (hours), mirroring the backend clamp. */
+export const ROTATE_GRACE_DEFAULT_HOURS = 24;
+export const ROTATE_GRACE_OPTIONS = [1, 24, 72, 168] as const;
+
 export function useApiKeysTab() {
   const trpc = useTRPC();
   const t = useTranslations('Settings.apiKeys');
   const { data: keys, isLoading } = useQuery(trpc.apiKey.list.queryOptions());
 
   return { t, keys, isLoading } as const;
+}
+
+interface UseRotateKeyDialogOptions {
+  keyId: string;
+  keyName: string;
+  onOpenChange: (open: boolean) => void;
+}
+
+export function useRotateKeyDialog({ keyId, keyName, onOpenChange }: UseRotateKeyDialogOptions) {
+  const trpc = useTRPC();
+  const t = useTranslations('Settings.apiKeys');
+  const tCommon = useTranslations('Common');
+  const [graceHours, setGraceHours] = useState<number>(ROTATE_GRACE_DEFAULT_HOURS);
+  const [rotatedKey, setRotatedKey] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+
+  const rotateMutation = useResourceMutation(
+    trpc.apiKey.rotate.mutationOptions({
+      onSuccess: data => {
+        setRotatedKey(data.plaintext);
+      },
+    }),
+    {
+      invalidate: [trpc.apiKey.list.queryKey()],
+      successMessage: t('toast.rotated', { name: keyName }),
+      errorMessage: t('toast.rotateFailed'),
+    },
+  );
+
+  function handleRotate() {
+    rotateMutation.mutate({ id: keyId, graceHours });
+  }
+
+  function handleCopy() {
+    if (!rotatedKey) return;
+    void navigator.clipboard.writeText(rotatedKey);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
+
+  function handleClose(value: boolean) {
+    if (!value) {
+      setGraceHours(ROTATE_GRACE_DEFAULT_HOURS);
+      setRotatedKey(null);
+      setCopied(false);
+      rotateMutation.reset();
+    }
+    onOpenChange(value);
+  }
+
+  return {
+    t,
+    tCommon,
+    graceHours,
+    setGraceHours,
+    rotatedKey,
+    copied,
+    rotateMutation,
+    handleRotate,
+    handleCopy,
+    handleClose,
+  } as const;
+}
+
+export function useKeyDetail(keyId: string) {
+  const trpc = useTRPC();
+  const t = useTranslations('Settings.apiKeys');
+  const ipLogQuery = useQuery(trpc.apiKey.ipLog.queryOptions({ id: keyId }));
+  const usageQuery = useQuery(trpc.apiKey.usage.queryOptions());
+  const membersQuery = useQuery(trpc.user.list.queryOptions());
+
+  const rebindMutation = useResourceMutation(trpc.apiKey.update.mutationOptions(), {
+    invalidate: [trpc.apiKey.list.queryKey()],
+    successMessage: t('toast.rebound'),
+    errorMessage: t('toast.rebindFailed'),
+  });
+
+  function rebind(actingUserId: string) {
+    rebindMutation.mutate({ id: keyId, actingUserId });
+  }
+
+  return { t, ipLogQuery, usageQuery, membersQuery, rebindMutation, rebind } as const;
 }
 
 export function useCreateKeyDialog({ onOpenChange }: UseCreateKeyDialogOptions) {

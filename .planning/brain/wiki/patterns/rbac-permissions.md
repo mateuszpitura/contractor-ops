@@ -2,7 +2,7 @@
 title: RBAC permissions
 type: pattern
 tags: [rbac, permissions, auth]
-source_commit: 105a8ccf64b34c611493215eb3519e8922343839
+source_commit: 52012027d6d66885d746d018d5d8db422195e2fb
 verify_with:
   - packages/api/src/middleware/rbac.ts
   - packages/api/src/routers/core/auth-permissions.ts
@@ -79,10 +79,15 @@ Server: `tenantProcedure` → `requirePermission('domain:action')` → handler.
 
 Client: container checks `usePermissions()` → variant or `<Navigate to="/forbidden" />`.
 
+## apiKey-mode (public REST BFLA)
+
+`requirePermission` (`middleware/rbac.ts`) has an **apiKey branch**: when `ctx.authMode === 'apiKey'` it checks `permissionToScopes(permission) ⊆ ctx.apiKeyScopes` instead of a Better Auth session. This is the BFLA guard on every public write — a key WITHOUT the scope 403s. See [[domains/public-api-surface]].
+
 ## Related
 
 - [[trpc-procedure-stack]]
 - [[domains/workflows-and-roles]]
+- [[domains/public-api-surface]]
 - [[web-vite-data-layer]]
 
 ## Verify live

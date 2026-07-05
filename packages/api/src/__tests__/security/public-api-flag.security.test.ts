@@ -138,6 +138,7 @@ vi.mock('../../services/cache', () => ({
 // Imports (after mocks)
 // ---------------------------------------------------------------------------
 
+import { PUBLIC_API_DISABLED } from '../../errors';
 import { createCallerFactory } from '../../init';
 import { assertPublicApiEnabled } from '../../middleware/require-public-api-flag';
 import { publicContractorRouter } from '../../routers/public-api/contractor';
@@ -208,10 +209,32 @@ describe('module.public-api dark gate wired into apiKeyTenantProcedure', () => {
   });
 });
 
-// The write half inherits the SAME gate (apiKeyTenantProcedure). 98-09 builds
-// the write procedures; this asserts the double-dark write-404 then.
-describe.skip('module.public-api dark gate — write half (HOLD-until-98-09)', () => {
-  it('a write procedure throws NOT_FOUND when the flag is OFF', () => {
-    expect(true).toBe(true);
+// The write half inherits the SAME gate (apiKeyTenantProcedure). The write
+// procedures land in 99-04; this asserts the double-dark write-404 — a write is
+// invisible (NOT_FOUND) when the flag is off, ahead of any scope check.
+// RED until 99-04 adds `contractor.create` / `contractor.update`.
+describe('module.public-api dark gate — write half', () => {
+  it('a write (contractor.create) throws NOT_FOUND (dark) when the flag is OFF', async () => {
+    evaluateMock.mockReturnValue({ enabled: false, reason: 'disabled' });
+    const caller = makeCaller(['contractor:create']) as unknown as {
+      create: (i: unknown) => Promise<unknown>;
+    };
+    // Asserting the dark-gate message (not a bare NOT_FOUND) so a not-yet-built
+    // procedure — which also 404s as "No procedure found" — stays RED.
+    await expect(caller.create({})).rejects.toMatchObject({
+      code: 'NOT_FOUND',
+      message: PUBLIC_API_DISABLED,
+    });
+  });
+
+  it('a write (contractor.update) throws NOT_FOUND (dark) when the flag is OFF', async () => {
+    evaluateMock.mockReturnValue({ enabled: false, reason: 'disabled' });
+    const caller = makeCaller(['contractor:update']) as unknown as {
+      update: (i: unknown) => Promise<unknown>;
+    };
+    await expect(caller.update({})).rejects.toMatchObject({
+      code: 'NOT_FOUND',
+      message: PUBLIC_API_DISABLED,
+    });
   });
 });

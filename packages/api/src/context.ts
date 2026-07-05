@@ -21,6 +21,16 @@ export type ApiContext = {
   apiKeyId?: string;
   /** Scopes granted to the API key (only set when authMode === 'apiKey'). */
   apiKeyScopes?: string[];
+  /**
+   * Attribution actor bound to the API key — a real, active org member whose id
+   * fills non-null user FKs on API-key writes. Attribution ONLY, never an
+   * authorization source (scopes are). Set when authMode === 'apiKey'.
+   */
+  apiKeyActingUserId?: string;
+  /** Client source IP captured at the HTTP boundary (public API), for audit. */
+  sourceIp?: string;
+  /** Client User-Agent captured at the HTTP boundary (public API), for audit. */
+  userAgent?: string;
 };
 
 export async function createContext(opts: { headers: Headers }): Promise<ApiContext> {

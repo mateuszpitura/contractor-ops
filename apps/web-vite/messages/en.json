@@ -7284,7 +7284,11 @@
         "revoked": "API key \"{name}\" revoked",
         "revokeFailed": "Failed to revoke key",
         "updated": "API key \"{name}\" updated",
-        "updateFailed": "Failed to update API key"
+        "updateFailed": "Failed to update API key",
+        "rotated": "Rotated “{name}”. Copy the new key now.",
+        "rotateFailed": "Could not rotate the key.",
+        "rebound": "Acting member updated.",
+        "rebindFailed": "Could not update the acting member."
       },
       "aria": {
         "keyActions": "Key actions",
@@ -7316,6 +7320,38 @@
         "title": "Revoke API Key",
         "description": "Revoke {name}? This is immediate and irreversible. Any integrations using this key will stop working.",
         "confirmButton": "Revoke Key"
+      },
+      "detailsAction": "View details",
+      "rotateAction": "Rotate key",
+      "rotateDialog": {
+        "title": "Rotate API key",
+        "description": "Issue a new key and keep the old one working for a grace period.",
+        "graceLabel": "Grace period",
+        "graceOption": "{hours}h",
+        "graceExplain": "The current key keeps working for {hours} hours after rotation, then stops.",
+        "submitButton": "Rotate key",
+        "revealTitle": "New API key",
+        "revealDescription": "Copy your new key now — it won't be shown again.",
+        "securityWarning": "Store this key securely. Anyone with it can call the API as this key.",
+        "doneButton": "Done"
+      },
+      "detail": {
+        "description": "Scopes, acting member, usage, and recent source IPs.",
+        "scopesHeading": "Scopes",
+        "scopesEmpty": "No scopes granted.",
+        "scopeRead": "Read",
+        "scopeWrite": "Write",
+        "actingUserHeading": "Acting member",
+        "actingUserHelp": "Writes are attributed to this member. Rebinding does not change the key's scopes.",
+        "membersError": "Could not load members.",
+        "usageHeading": "This month's usage",
+        "usageError": "Could not load usage.",
+        "usageUnlimited": "{count} requests (unlimited)",
+        "usageCount": "{count} of {quota} requests",
+        "ipLogHeading": "Recent source IPs",
+        "ipLogError": "Could not load the source-IP log.",
+        "ipLogEmpty": "No requests recorded yet.",
+        "closeButton": "Close"
       }
     },
     "featureFlags": {

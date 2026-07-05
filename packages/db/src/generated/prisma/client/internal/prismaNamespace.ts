@@ -385,6 +385,7 @@ type FieldRefInputType<Model, FieldType> = Model extends never ? never : FieldRe
 
 export const ModelName = {
   OrganizationApiKey: 'OrganizationApiKey',
+  ApiKeyIpEvent: 'ApiKeyIpEvent',
   ApprovalChainConfig: 'ApprovalChainConfig',
   ApprovalFlow: 'ApprovalFlow',
   ApprovalStep: 'ApprovalStep',
@@ -546,7 +547,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "organizationApiKey" | "approvalChainConfig" | "approvalFlow" | "approvalStep" | "approvalDecision" | "auditLog" | "user" | "userPinnedView" | "session" | "account" | "verification" | "subscription" | "ocrCreditLedger" | "stripeEvent" | "classificationAssessment" | "classificationDocument" | "ir35ChainParticipant" | "ir35OtherClientAttestation" | "economicDependencyAlertState" | "reassessmentTrigger" | "cronScanState" | "statusfeststellungsverfahren" | "classificationEscalationEvent" | "sdsApproval" | "consentRecord" | "privacyNotice" | "consentEvent" | "contract" | "contractAmendment" | "contractRatePeriod" | "document" | "documentLink" | "contractHealthCheckRun" | "contractor" | "contractorContact" | "contractorBillingProfile" | "contractorAssignment" | "contractorTag" | "contractorTagLink" | "complianceRequirementTemplate" | "contractorComplianceItem" | "contractorComplianceReminderState" | "leitwegId" | "eInvoiceLifecycle" | "eInvoiceLifecycleEvent" | "peppolCapabilityCache" | "employeeTimeRecord" | "employeeProfile" | "equipment" | "equipmentAssignment" | "shipment" | "shipmentEvent" | "returnRequest" | "courierConfig" | "signingEnvelope" | "signingRecipient" | "signingEvent" | "ewidencjaSnapshot" | "exchangeRate" | "export" | "boEBaseRateHistory" | "skontoTerm" | "skontoSnapshot" | "skontoApplication" | "govApiAuditLog" | "freeZoneAssignment" | "saudizationConfig" | "saudiHeadcount" | "uaeFreeZone" | "deprovisioningRun" | "deprovisioningStep" | "idpChangeProvenance" | "integrationConnection" | "externalLink" | "integrationSyncLog" | "webhookDelivery" | "invoice" | "invoiceFile" | "invoiceLine" | "invoiceMatchResult" | "invoiceIntakeRequest" | "invoicePayment" | "invoiceInterestCompensation" | "invoiceInterestWaiver" | "invoiceInterestClaim" | "leaveType" | "blackoutPeriod" | "leaveRequest" | "leaveLedgerEntry" | "leaveBalance" | "notification" | "userNotificationPreference" | "comment" | "reminderRule" | "reminderInstance" | "notificationCronDedup" | "oAuthChallenge" | "ocrExtraction" | "organization" | "member" | "invitation" | "team" | "project" | "pendingProjectMerge" | "projectExternalLink" | "costCenter" | "outboxEvent" | "paymentRun" | "paymentRunItem" | "paymentExport" | "paymentRunComplianceCheck" | "peppolParticipant" | "peppolTransmission" | "personnelFile" | "personnelFileDocument" | "portalSession" | "portalMagicToken" | "contractorChangeRequest" | "contractorNotificationPreference" | "pendingUpload" | "publicHoliday" | "taxRate" | "withholdingTaxRate" | "whtCertificate" | "taxFormSubmission" | "form1099Nec" | "irisSubmission" | "irisAck" | "tax1099Threshold" | "stateFilingConfig" | "form1042S" | "form1099KTrackerState" | "tax1099KThreshold" | "taxIdValidation" | "timesheet" | "timeEntry" | "worker" | "workflowTemplate" | "workflowTaskTemplate" | "workflowRoleTemplate" | "workflowRoleTaskTemplate" | "workflowRun" | "workflowTaskRun" | "workflowComment" | "workflowAttachment" | "credentialReference" | "zatcaInvoiceChain"
+    modelProps: "organizationApiKey" | "apiKeyIpEvent" | "approvalChainConfig" | "approvalFlow" | "approvalStep" | "approvalDecision" | "auditLog" | "user" | "userPinnedView" | "session" | "account" | "verification" | "subscription" | "ocrCreditLedger" | "stripeEvent" | "classificationAssessment" | "classificationDocument" | "ir35ChainParticipant" | "ir35OtherClientAttestation" | "economicDependencyAlertState" | "reassessmentTrigger" | "cronScanState" | "statusfeststellungsverfahren" | "classificationEscalationEvent" | "sdsApproval" | "consentRecord" | "privacyNotice" | "consentEvent" | "contract" | "contractAmendment" | "contractRatePeriod" | "document" | "documentLink" | "contractHealthCheckRun" | "contractor" | "contractorContact" | "contractorBillingProfile" | "contractorAssignment" | "contractorTag" | "contractorTagLink" | "complianceRequirementTemplate" | "contractorComplianceItem" | "contractorComplianceReminderState" | "leitwegId" | "eInvoiceLifecycle" | "eInvoiceLifecycleEvent" | "peppolCapabilityCache" | "employeeTimeRecord" | "employeeProfile" | "equipment" | "equipmentAssignment" | "shipment" | "shipmentEvent" | "returnRequest" | "courierConfig" | "signingEnvelope" | "signingRecipient" | "signingEvent" | "ewidencjaSnapshot" | "exchangeRate" | "export" | "boEBaseRateHistory" | "skontoTerm" | "skontoSnapshot" | "skontoApplication" | "govApiAuditLog" | "freeZoneAssignment" | "saudizationConfig" | "saudiHeadcount" | "uaeFreeZone" | "deprovisioningRun" | "deprovisioningStep" | "idpChangeProvenance" | "integrationConnection" | "externalLink" | "integrationSyncLog" | "webhookDelivery" | "invoice" | "invoiceFile" | "invoiceLine" | "invoiceMatchResult" | "invoiceIntakeRequest" | "invoicePayment" | "invoiceInterestCompensation" | "invoiceInterestWaiver" | "invoiceInterestClaim" | "leaveType" | "blackoutPeriod" | "leaveRequest" | "leaveLedgerEntry" | "leaveBalance" | "notification" | "userNotificationPreference" | "comment" | "reminderRule" | "reminderInstance" | "notificationCronDedup" | "oAuthChallenge" | "ocrExtraction" | "organization" | "member" | "invitation" | "team" | "project" | "pendingProjectMerge" | "projectExternalLink" | "costCenter" | "outboxEvent" | "paymentRun" | "paymentRunItem" | "paymentExport" | "paymentRunComplianceCheck" | "peppolParticipant" | "peppolTransmission" | "personnelFile" | "personnelFileDocument" | "portalSession" | "portalMagicToken" | "contractorChangeRequest" | "contractorNotificationPreference" | "pendingUpload" | "publicHoliday" | "taxRate" | "withholdingTaxRate" | "whtCertificate" | "taxFormSubmission" | "form1099Nec" | "irisSubmission" | "irisAck" | "tax1099Threshold" | "stateFilingConfig" | "form1042S" | "form1099KTrackerState" | "tax1099KThreshold" | "taxIdValidation" | "timesheet" | "timeEntry" | "worker" | "workflowTemplate" | "workflowTaskTemplate" | "workflowRoleTemplate" | "workflowRoleTaskTemplate" | "workflowRun" | "workflowTaskRun" | "workflowComment" | "workflowAttachment" | "credentialReference" | "zatcaInvoiceChain"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -621,6 +622,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.OrganizationApiKeyCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.OrganizationApiKeyCountAggregateOutputType> | number
+        }
+      }
+    }
+    ApiKeyIpEvent: {
+      payload: Prisma.$ApiKeyIpEventPayload<ExtArgs>
+      fields: Prisma.ApiKeyIpEventFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ApiKeyIpEventFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ApiKeyIpEventPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ApiKeyIpEventFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ApiKeyIpEventPayload>
+        }
+        findFirst: {
+          args: Prisma.ApiKeyIpEventFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ApiKeyIpEventPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ApiKeyIpEventFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ApiKeyIpEventPayload>
+        }
+        findMany: {
+          args: Prisma.ApiKeyIpEventFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ApiKeyIpEventPayload>[]
+        }
+        create: {
+          args: Prisma.ApiKeyIpEventCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ApiKeyIpEventPayload>
+        }
+        createMany: {
+          args: Prisma.ApiKeyIpEventCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ApiKeyIpEventCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ApiKeyIpEventPayload>[]
+        }
+        delete: {
+          args: Prisma.ApiKeyIpEventDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ApiKeyIpEventPayload>
+        }
+        update: {
+          args: Prisma.ApiKeyIpEventUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ApiKeyIpEventPayload>
+        }
+        deleteMany: {
+          args: Prisma.ApiKeyIpEventDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ApiKeyIpEventUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ApiKeyIpEventUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ApiKeyIpEventPayload>[]
+        }
+        upsert: {
+          args: Prisma.ApiKeyIpEventUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ApiKeyIpEventPayload>
+        }
+        aggregate: {
+          args: Prisma.ApiKeyIpEventAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateApiKeyIpEvent>
+        }
+        groupBy: {
+          args: Prisma.ApiKeyIpEventGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ApiKeyIpEventGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ApiKeyIpEventCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ApiKeyIpEventCountAggregateOutputType> | number
         }
       }
     }
@@ -11475,14 +11550,30 @@ export const OrganizationApiKeyScalarFieldEnum = {
   hash: 'hash',
   scopes: 'scopes',
   createdByUserId: 'createdByUserId',
+  actingUserId: 'actingUserId',
   lastUsedAt: 'lastUsedAt',
   revokedAt: 'revokedAt',
   expiresAt: 'expiresAt',
+  supersededAt: 'supersededAt',
+  supersededByKeyId: 'supersededByKeyId',
+  graceExpiresAt: 'graceExpiresAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
 
 export type OrganizationApiKeyScalarFieldEnum = (typeof OrganizationApiKeyScalarFieldEnum)[keyof typeof OrganizationApiKeyScalarFieldEnum]
+
+
+export const ApiKeyIpEventScalarFieldEnum = {
+  id: 'id',
+  apiKeyId: 'apiKeyId',
+  organizationId: 'organizationId',
+  ipAddress: 'ipAddress',
+  userAgent: 'userAgent',
+  seenAt: 'seenAt'
+} as const
+
+export type ApiKeyIpEventScalarFieldEnum = (typeof ApiKeyIpEventScalarFieldEnum)[keyof typeof ApiKeyIpEventScalarFieldEnum]
 
 
 export const ApprovalChainConfigScalarFieldEnum = {
@@ -16321,6 +16412,7 @@ export type PrismaClientOptions = ({
 }
 export type GlobalOmitConfig = {
   organizationApiKey?: Prisma.OrganizationApiKeyOmit
+  apiKeyIpEvent?: Prisma.ApiKeyIpEventOmit
   approvalChainConfig?: Prisma.ApprovalChainConfigOmit
   approvalFlow?: Prisma.ApprovalFlowOmit
   approvalStep?: Prisma.ApprovalStepOmit

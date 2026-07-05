@@ -1,6 +1,8 @@
 import {
   entityIdSchema,
+  publicApiContractorCreateInputSchema,
   publicApiContractorListInputSchema,
+  publicApiContractorUpdateInputSchema,
 } from '@contractor-ops/validators/public-api';
 import { createRoute, OpenAPIHono, z } from '@hono/zod-openapi';
 import { decodeCursor } from '../lib/openapi-cursor.js';
@@ -9,8 +11,10 @@ import {
   envelope,
   errorResponses,
   itemOkResponse,
+  jsonBody,
   listOkResponse,
   listQuery,
+  writeResponses,
 } from '../lib/openapi-route.js';
 
 const contractors = new OpenAPIHono();
@@ -65,6 +69,37 @@ contractors.openapi(getByIdRoute, async c => {
   const { id } = c.req.valid('param');
   const caller = createPublicCaller(c);
   const result = await caller.contractor.getById(entityIdSchema.parse({ id }));
+  return c.json({ data: result }, 200);
+});
+
+// --- Hidden write routes (double-dark: hide:true keeps them out of the spec/SDK;
+//     the tRPC layer inherits the per-org flag gate + scope check + tier quota) ---
+
+const createRouteDef = createRoute({
+  method: 'post',
+  path: '/',
+  hide: true,
+  request: { body: jsonBody(publicApiContractorCreateInputSchema) },
+  responses: writeResponses,
+});
+
+contractors.openapi(createRouteDef, async c => {
+  const body = c.req.valid('json');
+  const result = await createPublicCaller(c).contractor.create(body);
+  return c.json({ data: result }, 200);
+});
+
+const updateRouteDef = createRoute({
+  method: 'patch',
+  path: '/',
+  hide: true,
+  request: { body: jsonBody(publicApiContractorUpdateInputSchema) },
+  responses: writeResponses,
+});
+
+contractors.openapi(updateRouteDef, async c => {
+  const body = c.req.valid('json');
+  const result = await createPublicCaller(c).contractor.update(body);
   return c.json({ data: result }, 200);
 });
 

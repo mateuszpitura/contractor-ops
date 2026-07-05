@@ -2,18 +2,23 @@
  * Wave-0 RED contract (INTEG-API-01) — mass-assignment defense.
  *
  * Every public write DTO must be `.strict()` and OMIT `organizationId`,
- * `workerType`, and money/minor fields entirely, so a client cannot forge the
- * tenant, worker classification, or an amount by piggy-backing extra body keys.
+ * `workerType`, and any server-derived money field entirely, so a client cannot
+ * forge the tenant, worker classification, or an amount by piggy-backing extra
+ * body keys.
  *
- * RED until 98-09 adds the write DTOs to `@contractor-ops/validators/public-api`
- * (Verdict A — validators is the single DTO source). Terminal Cannot-find-module
- * on the not-yet-existing exports is the accepted Wave-0 state.
+ * Per the 98-09 handoff: an invoice's amounts are legitimate content, so the
+ * money-rejection assertion belongs on the payment_run create DTO (where money
+ * is server-derived from eligible invoices), NOT on invoice. org/workerType
+ * rejection lives on the contractor create DTO.
+ *
+ * RED until 99-04 adds the write DTOs to `@contractor-ops/validators/public-api`.
  */
 
-// RED: these write DTOs do not exist yet (added in 98-09).
+// RED: these write DTOs do not exist yet (added in 99-04).
 import {
   publicApiContractorCreateInputSchema,
   publicApiInvoiceCreateInputSchema,
+  publicApiPaymentRunCreateInputSchema,
 } from '@contractor-ops/validators/public-api';
 import { describe, expect, it } from 'vitest';
 
@@ -30,14 +35,23 @@ describe('public write DTOs block mass-assignment (.strict())', () => {
     }
   });
 
-  it('invoice.create DTO rejects organizationId and money/minor extra keys', () => {
-    const clean = { contractorId: 'c-1', issueDate: '2026-01-01', dueDate: '2026-02-01' };
+  it('invoice.create DTO rejects a forged organizationId (tenant is server-owned)', () => {
+    // An invoice legitimately carries amounts, so money keys are NOT forbidden
+    // here — but the tenant must never be client-supplied.
+    expect(
+      publicApiInvoiceCreateInputSchema.safeParse({ organizationId: 'org-attacker' }).success,
+    ).toBe(false);
+  });
+
+  it('paymentRun.create DTO rejects organizationId + server-derived money keys', () => {
+    // A payment run's money is derived server-side from eligible invoices; the
+    // DTO omits money entirely, so any money/tenant key is a mass-assignment.
     for (const forged of [
-      { ...clean, organizationId: 'org-attacker' },
-      { ...clean, totalMinor: 999999 },
-      { ...clean, vatMinor: 12345 },
+      { organizationId: 'org-attacker' },
+      { totalMinor: 999999 },
+      { amountMinor: 12345 },
     ]) {
-      expect(publicApiInvoiceCreateInputSchema.safeParse(forged).success).toBe(false);
+      expect(publicApiPaymentRunCreateInputSchema.safeParse(forged).success).toBe(false);
     }
   });
 });

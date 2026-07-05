@@ -2,7 +2,7 @@
 title: Tenant scope and audit
 type: pattern
 tags: [tenant, audit, security]
-source_commit: 70f5782d78e33ba98c82e4ccda2cd4b0b4aff216
+source_commit: 52012027d6d66885d746d018d5d8db422195e2fb
 verify_with:
   - packages/api/src/middleware/tenant.ts
   - packages/api/src/services/audit-writer.ts
@@ -41,12 +41,17 @@ flowchart LR
 - AuditLog append-only — enforced at the DB level (UPDATE always rejected by trigger; DELETE only inside a tx that calls `allowAuditPurge`, used solely by GDPR erasure). See [[audit-log]]
 - `pnpm lint:audit-log` on sensitive models
 
+## API-key actor (public REST writes)
+
+`apiKeyTenantProcedure` has no `ctx.user`. Public writes audit as **`actorType:'API_KEY'`, `actorId = ctx.apiKeyId`**, plus the captured `ipAddress` (sourceIp) + `userAgent` and `metadata.actingUserId` — a single path via `routers/public-api/write-shared.ts` → `writeAuditLog`. The `actingUserId` is a mutable, membership-guarded **attribution FK** on the key (fills non-null user FKs on write-creates); it is **never an authorization source** — scopes are. `sourceIp`/`userAgent` are captured at the Hono boundary (`createPublicCaller`, `x-forwarded-for` left-most / `x-real-ip`) and threaded into `ctx`. See [[domains/public-api-surface]].
+
 ## Related
 
 - [[audit-log]] — mutation checklist + `pnpm lint:audit-log`
 - [[multi-region-db]]
 - [[trpc-procedure-stack]]
 - [[domains/invoice-to-payment]]
+- [[domains/public-api-surface]]
 
 ## Verify live
 
