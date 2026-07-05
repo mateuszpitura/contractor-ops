@@ -89,6 +89,7 @@ describe('createPortalSession', () => {
     mockSessionCreate.mockResolvedValueOnce({ id: 'session_1' });
 
     const result = await createPortalSession({
+      subjectType: 'CONTRACTOR',
       contractorId: 'contractor_1',
       organizationId: 'org_1',
       email: 'contractor@example.com',
@@ -124,6 +125,7 @@ describe('createPortalSession', () => {
     mockSessionCreate.mockResolvedValueOnce({ id: 'session_2' });
 
     await createPortalSession({
+      subjectType: 'CONTRACTOR',
       contractorId: 'contractor_1',
       organizationId: 'org_1',
       email: 'test@example.com',
@@ -143,21 +145,24 @@ describe('createPortalSession', () => {
 // ---------------------------------------------------------------------------
 
 describe('validatePortalSession', () => {
-  it('returns session when token is valid and not expired', async () => {
+  it('returns a CONTRACTOR-discriminated session when valid and not expired', async () => {
     const futureDate = new Date(Date.now() + 86400000);
+    const contractor = { status: 'ACTIVE' };
     const session = {
       id: 'session_1',
+      subjectType: 'CONTRACTOR',
       expiresAt: futureDate,
-      contractor: { status: 'ACTIVE' },
+      contractor,
+      worker: null,
     };
     mockSessionFindUnique.mockResolvedValueOnce(session);
 
     const result = await validatePortalSession('raw-token');
 
-    expect(result).toBe(session);
+    expect(result).toMatchObject({ id: 'session_1', subjectType: 'CONTRACTOR', contractor });
     expect(mockSessionFindUnique).toHaveBeenCalledWith({
       where: { token: hashToken('raw-token') },
-      include: { contractor: true },
+      include: { contractor: true, worker: { include: { employeeProfile: true } } },
     });
   });
 

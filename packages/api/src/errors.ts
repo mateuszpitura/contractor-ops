@@ -147,6 +147,8 @@ export const PORTAL_SECURITY_ALERTS_LOCKED = 'portalSecurityAlertsLocked';
 export const PORTAL_PENDING_CHANGE_EXISTS = 'portalPendingChangeExists';
 export const PORTAL_CHANGE_REQUEST_NOT_FOUND = 'portalChangeRequestNotFound';
 export const PORTAL_BILLING_PROFILE_NOT_FOUND = 'portalBillingProfileNotFound';
+export const EMPLOYEE_PORTAL_DISABLED = 'employeePortalDisabled';
+export const PORTAL_NOT_A_MANAGER = 'portalNotAManager';
 
 // ─── Integration ─────────────────────────────────────────────────
 export const INTEGRATION_NOT_FOUND = 'integrationNotFound';

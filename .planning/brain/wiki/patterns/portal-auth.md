@@ -7,14 +7,14 @@ verify_with:
   - packages/api/src/middleware/portal-auth.ts
   - packages/api/src/portal-root.ts
   - packages/api/src/services/portal-session.ts
-updated: 2026-06-09
+updated: 2026-07-05
 ---
 
 # Portal auth
 
 ## Purpose
 
-Contractor portal uses a separate router and cookie session — isolated from staff Better Auth + `tenantProcedure`.
+One portal, one magic-link + cookie session, isolated from staff Better Auth + `tenantProcedure`. The session authenticates a **discriminated subject** — a Contractor OR an employee `Worker(EMPLOYEE)`. `validatePortalSession` loads both relations in one `findUnique` and branches on the stored `subjectType`; the contractor path is byte-for-byte preserved (regression-fenced).
 
 ## Flow
 
@@ -35,7 +35,11 @@ sequenceDiagram
 |-------|------|
 | Router | `packages/api/src/portal-root.ts` |
 | Middleware | `packages/api/src/middleware/portal-auth.ts` |
-| Session service | `packages/api/src/services/portal-session.ts` |
+| Contractor procedure | `portalProcedure` — sets `ctx.contractorId` + `ctx.contractor` (never `workerId`) |
+| Employee procedure | `portalEmployeeProcedure` — sets `ctx.workerId` + `ctx.worker` + `ctx.employeeProfile` (never `ctx.contractorId`); asserts `module.employee-portal` |
+| Manager procedure | `portalManagerProcedure` — extends the employee procedure + asserts ≥1 direct report (`EmployeeProfile.managerWorkerId = ctx.workerId`) |
+| Session service | `packages/api/src/services/portal-session.ts` — discriminated `createPortalSession` + `validatePortalSession` |
+| Magic-link resolution | `packages/api/src/services/portal-magic-link.ts` — `findContractorsByEmail` + `findEmployeesByEmail`; verify returns the subject union for the org-picker |
 | Merged portal router | `packages/api/src/routers/portal/portal.ts` |
 | Mount | `apps/api/src/plugins/trpc.ts` — portal **first** |
 
@@ -47,6 +51,8 @@ sequenceDiagram
 
 - Portal procedures **not** in `appRouter` — smaller `AppRouter` type for dashboard
 - `portal` + `portalTime` namespaces only on portal mount
+- **Subject fence:** an employee handler sees ONLY `ctx.workerId`, never `ctx.contractorId` (and vice versa). The `PortalSession` one-of CHECK guarantees a row is exactly one subject; `validatePortalSession` rejects TERMINATED/deleted employees and ARCHIVED/INACTIVE contractors.
+- Magic-link never enumerates: `requestMagicLink` returns `{ success: true }` whether or not a contractor OR employee matched.
 
 ## Related
 

@@ -98,6 +98,32 @@ export async function findContractorsByEmail(email: string) {
   });
 }
 
+/**
+ * Find all active employee `Worker(workerType='EMPLOYEE')` records matching an
+ * email across ALL organizations — the employee sibling of
+ * {@link findContractorsByEmail}. Excludes soft-deleted workers and TERMINATED
+ * employees (they can no longer sign in). `workerType` is passed explicitly, so
+ * the raw client's CONTRACTOR default is overridden (explicit-where-wins).
+ *
+ * Returns empty array on no match — callers must still show the same
+ * "check your email" response to prevent enumeration.
+ */
+export async function findEmployeesByEmail(email: string) {
+  const workers = await prisma.worker.findMany({
+    where: {
+      workerType: 'EMPLOYEE',
+      email: email.toLowerCase().trim(),
+      deletedAt: null,
+    },
+    include: {
+      organization: { select: { id: true, name: true, logo: true } },
+      employeeProfile: { select: { employmentStatus: true } },
+    },
+  });
+
+  return workers.filter(w => w.employeeProfile?.employmentStatus !== 'TERMINATED');
+}
+
 // ---------------------------------------------------------------------------
 // Email sending
 // ---------------------------------------------------------------------------

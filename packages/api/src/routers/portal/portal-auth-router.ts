@@ -7,6 +7,7 @@ import { portalProcedure, portalPublicProcedure } from '../../middleware/portal-
 import {
   createMagicLinkToken,
   findContractorsByEmail,
+  findEmployeesByEmail,
   sendPortalMagicLink,
   verifyMagicLinkToken,
 } from '../../services/portal-magic-link';
@@ -32,9 +33,12 @@ export const portalAuthRouter = router({
     .input(z.object({ email: z.email() }))
     .mutation(async ({ input }) => {
       const email = input.email.toLowerCase().trim();
-      const contractors = await findContractorsByEmail(email);
+      const [contractors, employees] = await Promise.all([
+        findContractorsByEmail(email),
+        findEmployeesByEmail(email),
+      ]);
 
-      if (contractors.length > 0) {
+      if (contractors.length > 0 || employees.length > 0) {
         const { token } = await createMagicLinkToken(email);
         // Use trusted env URL only — never from `ctx.headers`.
         const baseUrl = deriveBaseUrl();
@@ -60,26 +64,61 @@ export const portalAuthRouter = router({
         });
       }
 
-      const contractors = await findContractorsByEmail(result.email);
+      const [contractors, employees] = await Promise.all([
+        findContractorsByEmail(result.email),
+        findEmployeesByEmail(result.email),
+      ]);
 
-      if (contractors.length === 0) {
+      // The union of portal subjects (contractor + employee) this email resolves.
+      // `subjects` carries the full subject-aware list; `orgs` (below) stays the
+      // contractor-only shape the existing picker UI consumes.
+      const subjects = [
+        ...contractors.map(c => ({
+          subjectType: 'CONTRACTOR' as const,
+          subjectId: c.id,
+          organizationId: c.organizationId,
+          orgName: c.organization.name,
+          orgLogo: c.organization.logo,
+        })),
+        ...employees.map(w => ({
+          subjectType: 'EMPLOYEE' as const,
+          subjectId: w.id,
+          organizationId: w.organizationId,
+          orgName: w.organization.name,
+          orgLogo: w.organization.logo,
+        })),
+      ];
+
+      if (subjects.length === 0) {
         throw new TRPCError({ code: 'NOT_FOUND' });
       }
 
-      // Single org -- auto-create session
-      if (contractors.length === 1) {
-        const c = contractors[0];
-        if (!c) throw new TRPCError({ code: 'NOT_FOUND' });
-        const ipAddress = ctx.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? undefined;
-        const userAgent = ctx.headers.get('user-agent') ?? undefined;
+      const ipAddress = ctx.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? undefined;
+      const userAgent = ctx.headers.get('user-agent') ?? undefined;
 
-        const session = await createPortalSession({
-          contractorId: c.id,
-          organizationId: c.organizationId,
-          email: result.email,
-          ipAddress,
-          userAgent,
-        });
+      // Single subject -- auto-create a session of the resolved subjectType.
+      if (subjects.length === 1) {
+        const s = subjects[0];
+        if (!s) throw new TRPCError({ code: 'NOT_FOUND' });
+
+        const session =
+          s.subjectType === 'CONTRACTOR'
+            ? await createPortalSession({
+                subjectType: 'CONTRACTOR',
+                contractorId: s.subjectId,
+                organizationId: s.organizationId,
+                email: result.email,
+                ipAddress,
+                userAgent,
+              })
+            : await createPortalSession({
+                subjectType: 'EMPLOYEE',
+                workerId: s.subjectId,
+                organizationId: s.organizationId,
+                email: result.email,
+                ipAddress,
+                userAgent,
+              });
 
         // Bind a server-issued HMAC to the (token, expiresAt) pair
         // so `/portal/set-session` can verify the cookie value really came
@@ -94,10 +133,11 @@ export const portalAuthRouter = router({
           },
           orgs: null,
           needsOrgPicker: false as const,
+          subjects,
         };
       }
 
-      // Multi-org -- create a short-lived verification nonce so selectOrg
+      // Multiple subjects -- create a short-lived verification nonce so selectOrg
       // can prove the email was actually verified (prevents IDOR).
       const { token: verificationNonce } = await createMagicLinkToken(result.email);
 
@@ -112,6 +152,7 @@ export const portalAuthRouter = router({
         needsOrgPicker: true as const,
         email: result.email,
         verificationNonce,
+        subjects,
       };
     }),
 
@@ -122,7 +163,11 @@ export const portalAuthRouter = router({
     .input(
       z.object({
         verificationNonce: z.string().min(1, 'Verification token required'),
-        contractorId: z.string(),
+        // Additive subject discriminator; defaults to CONTRACTOR so the existing
+        // contractor picker keeps working with `{ contractorId }` unchanged.
+        subjectType: z.enum(['CONTRACTOR', 'EMPLOYEE']).default('CONTRACTOR'),
+        contractorId: z.string().optional(),
+        workerId: z.string().optional(),
         organizationId: z.string(),
       }),
     )
@@ -139,6 +184,47 @@ export const portalAuthRouter = router({
       }
 
       const email = verification.email.toLowerCase().trim();
+      const ipAddress = ctx.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? undefined;
+      const userAgent = ctx.headers.get('user-agent') ?? undefined;
+
+      if (input.subjectType === 'EMPLOYEE') {
+        if (!input.workerId) {
+          throw new TRPCError({ code: 'BAD_REQUEST' });
+        }
+        // Verify the employee worker matches the verified email (regional DB);
+        // TERMINATED/deleted employees cannot mint a session.
+        const worker = await withOrgRegionalDb(input.organizationId, db =>
+          db.worker.findFirst({
+            where: {
+              id: input.workerId,
+              organizationId: input.organizationId,
+              workerType: 'EMPLOYEE',
+              email,
+              deletedAt: null,
+            },
+            include: { employeeProfile: { select: { employmentStatus: true } } },
+          }),
+        );
+
+        if (!worker || worker.employeeProfile?.employmentStatus === 'TERMINATED') {
+          throw new TRPCError({ code: 'NOT_FOUND' });
+        }
+
+        const session = await createPortalSession({
+          subjectType: 'EMPLOYEE',
+          workerId: worker.id,
+          organizationId: input.organizationId,
+          email,
+          ipAddress,
+          userAgent,
+        });
+        const signature = signPortalSessionToken(session.rawToken, session.expiresAt);
+        return { rawToken: session.rawToken, expiresAt: session.expiresAt, signature };
+      }
+
+      if (!input.contractorId) {
+        throw new TRPCError({ code: 'BAD_REQUEST' });
+      }
 
       // Verify contractor exists and matches the verified email (regional DB)
       const contractor = await withOrgRegionalDb(input.organizationId, db =>
@@ -160,10 +246,8 @@ export const portalAuthRouter = router({
         });
       }
 
-      const ipAddress = ctx.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? undefined;
-      const userAgent = ctx.headers.get('user-agent') ?? undefined;
-
       const session = await createPortalSession({
+        subjectType: 'CONTRACTOR',
         contractorId: input.contractorId,
         organizationId: input.organizationId,
         email,
@@ -274,6 +358,7 @@ export const portalAuthRouter = router({
       const userAgent = ctx.headers.get('user-agent') ?? undefined;
 
       const session = await createPortalSession({
+        subjectType: 'CONTRACTOR',
         contractorId: input.contractorId,
         organizationId: input.organizationId,
         email,
