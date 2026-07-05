@@ -18,6 +18,7 @@ import featureFlags from './routes/feature-flags.js';
 import invoices from './routes/invoices.js';
 import paymentRuns from './routes/payment-runs.js';
 import payments from './routes/payments.js';
+import { statusHandler } from './routes/status.js';
 import workflowTasks from './routes/workflow-tasks.js';
 import workflows from './routes/workflows.js';
 
@@ -131,6 +132,9 @@ app.route('/audit-log', auditLog);
 
 // --- Health check (outside auth) ---
 app.get('/health', c => c.json({ status: 'ok' }));
+
+// --- Public status page (outside auth; behind module.public-status-page) ---
+app.get('/status.json', statusHandler);
 
 // --- OpenAPI spec (derived from route definitions — no hand-written literal) ---
 app.get('/openapi.json', c => c.json(buildOpenApiDocument(app)));

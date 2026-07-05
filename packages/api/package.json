@@ -201,6 +201,11 @@
       "import": "./src/services/audit-writer.ts",
       "default": "./src/services/audit-writer.ts"
     },
+    "./services/status-aggregator": {
+      "types": "./src/services/status-aggregator.ts",
+      "import": "./src/services/status-aggregator.ts",
+      "default": "./src/services/status-aggregator.ts"
+    },
     "./services/idp-deprovisioning-step-runner": {
       "types": "./src/services/idp-deprovisioning-step-runner.ts",
       "import": "./src/services/idp-deprovisioning-step-runner.ts",

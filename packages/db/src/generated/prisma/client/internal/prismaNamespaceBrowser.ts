@@ -125,6 +125,7 @@ export const ModelName = {
   DeprovisioningRun: 'DeprovisioningRun',
   DeprovisioningStep: 'DeprovisioningStep',
   IdpChangeProvenance: 'IdpChangeProvenance',
+  IncidentReport: 'IncidentReport',
   IntegrationConnection: 'IntegrationConnection',
   ExternalLink: 'ExternalLink',
   IntegrationSyncLog: 'IntegrationSyncLog',
@@ -1567,6 +1568,24 @@ export const IdpChangeProvenanceScalarFieldEnum = {
 } as const
 
 export type IdpChangeProvenanceScalarFieldEnum = (typeof IdpChangeProvenanceScalarFieldEnum)[keyof typeof IdpChangeProvenanceScalarFieldEnum]
+
+
+export const IncidentReportScalarFieldEnum = {
+  id: 'id',
+  title: 'title',
+  status: 'status',
+  severity: 'severity',
+  componentsAffected: 'componentsAffected',
+  updates: 'updates',
+  startedAt: 'startedAt',
+  resolvedAt: 'resolvedAt',
+  createdByUserId: 'createdByUserId',
+  updatedByUserId: 'updatedByUserId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type IncidentReportScalarFieldEnum = (typeof IncidentReportScalarFieldEnum)[keyof typeof IncidentReportScalarFieldEnum]
 
 
 export const IntegrationConnectionScalarFieldEnum = {

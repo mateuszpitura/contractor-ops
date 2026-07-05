@@ -301,6 +301,7 @@ enum EntityType {
   WORKER
   EMPLOYEE
   MARKETPLACE_LISTING
+  INCIDENT
 }
 
 enum DocumentLinkRole {

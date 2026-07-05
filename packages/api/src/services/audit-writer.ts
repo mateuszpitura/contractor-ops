@@ -54,7 +54,8 @@ export type AuditEntityType =
   | 'WORKER'
   | 'EMPLOYEE'
   | 'WEBHOOK_SUBSCRIPTION'
-  | 'MARKETPLACE_LISTING';
+  | 'MARKETPLACE_LISTING'
+  | 'INCIDENT';
 
 /**
  * Thin shape accepted for `tx` — any Prisma client (base or transactional)

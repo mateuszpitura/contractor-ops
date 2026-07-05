@@ -388,6 +388,11 @@ export type DeprovisioningStep = Prisma.DeprovisioningStepModel
  */
 export type IdpChangeProvenance = Prisma.IdpChangeProvenanceModel
 /**
+ * Model IncidentReport
+ * 
+ */
+export type IncidentReport = Prisma.IncidentReportModel
+/**
  * Model IntegrationConnection
  * 
  */

@@ -35,6 +35,7 @@ import {
   esignRouter,
   featureFlagsRouter,
   importRouter,
+  incidentRouter,
   integrationRouter,
   legalRouter,
   leitwegIdRouter,
@@ -221,6 +222,7 @@ export const appRouter = router({
   adminBoeRate: adminBoeRateRouter, // adminBoeRate: Super-admin BoE base rate CRUD — list, insert, update, delete
   apiKey: apiKeyRouter, // apiKey: Enterprise API key management — create, list, update, revoke
   marketplaceListing: marketplaceListingRouter, // marketplaceListing: platform-operator dashboard for the Zapier/n8n/Make listing review state — list, update (state machine)
+  incident: incidentRouter, // incident: platform-operator incident history behind the public status page — list, create, addUpdate, resolve
   webhookSubscription: webhookSubscriptionRouter, // webhookSubscription: outbound webhook endpoints — create, list, update, rotateSecret, delete, testFire, listDeliveries
   bacs: bacsRouter, // bacs: BACS Std 18 file generation — getSubmitterMasks, previewExport, generateExport, validateSortCode, saveSubmitterConfig
   organization: organizationRouter,

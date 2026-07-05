@@ -19,6 +19,7 @@ export { employeeRouter } from './employee';
 export { esignRouter } from './esign';
 export { featureFlagsRouter } from './feature-flags';
 export { importRouter } from './import';
+export { incidentRouter } from './incident';
 export { integrationRouter } from './integration';
 export { legalRouter } from './legal';
 export { leitwegIdRouter } from './leitweg-id';

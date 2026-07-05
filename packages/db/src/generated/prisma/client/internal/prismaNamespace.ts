@@ -458,6 +458,7 @@ export const ModelName = {
   DeprovisioningRun: 'DeprovisioningRun',
   DeprovisioningStep: 'DeprovisioningStep',
   IdpChangeProvenance: 'IdpChangeProvenance',
+  IncidentReport: 'IncidentReport',
   IntegrationConnection: 'IntegrationConnection',
   ExternalLink: 'ExternalLink',
   IntegrationSyncLog: 'IntegrationSyncLog',
@@ -552,7 +553,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "organizationApiKey" | "apiKeyIpEvent" | "approvalChainConfig" | "approvalFlow" | "approvalStep" | "approvalDecision" | "auditLog" | "user" | "userPinnedView" | "session" | "account" | "verification" | "subscription" | "ocrCreditLedger" | "stripeEvent" | "classificationAssessment" | "classificationDocument" | "ir35ChainParticipant" | "ir35OtherClientAttestation" | "economicDependencyAlertState" | "reassessmentTrigger" | "cronScanState" | "statusfeststellungsverfahren" | "classificationEscalationEvent" | "sdsApproval" | "consentRecord" | "privacyNotice" | "consentEvent" | "contract" | "contractAmendment" | "contractRatePeriod" | "document" | "documentLink" | "contractHealthCheckRun" | "contractor" | "contractorContact" | "contractorBillingProfile" | "contractorAssignment" | "contractorTag" | "contractorTagLink" | "complianceRequirementTemplate" | "contractorComplianceItem" | "contractorComplianceReminderState" | "leitwegId" | "eInvoiceLifecycle" | "eInvoiceLifecycleEvent" | "peppolCapabilityCache" | "employeeTimeRecord" | "employeeProfile" | "statutoryCertificate" | "equipment" | "equipmentAssignment" | "shipment" | "shipmentEvent" | "returnRequest" | "courierConfig" | "signingEnvelope" | "signingRecipient" | "signingEvent" | "ewidencjaSnapshot" | "exchangeRate" | "export" | "boEBaseRateHistory" | "skontoTerm" | "skontoSnapshot" | "skontoApplication" | "govApiAuditLog" | "freeZoneAssignment" | "saudizationConfig" | "saudiHeadcount" | "uaeFreeZone" | "deprovisioningRun" | "deprovisioningStep" | "idpChangeProvenance" | "integrationConnection" | "externalLink" | "integrationSyncLog" | "webhookDelivery" | "invoice" | "invoiceFile" | "invoiceLine" | "invoiceMatchResult" | "invoiceIntakeRequest" | "invoicePayment" | "invoiceInterestCompensation" | "invoiceInterestWaiver" | "invoiceInterestClaim" | "leaveType" | "blackoutPeriod" | "leaveRequest" | "leaveLedgerEntry" | "leaveBalance" | "marketplaceListing" | "notification" | "userNotificationPreference" | "comment" | "reminderRule" | "reminderInstance" | "notificationCronDedup" | "oAuthChallenge" | "ocrExtraction" | "organization" | "member" | "invitation" | "team" | "project" | "pendingProjectMerge" | "projectExternalLink" | "costCenter" | "outboxEvent" | "paymentRun" | "paymentRunItem" | "paymentExport" | "paymentRunComplianceCheck" | "peppolParticipant" | "peppolTransmission" | "personnelFile" | "personnelFileDocument" | "portalSession" | "portalMagicToken" | "contractorChangeRequest" | "contractorNotificationPreference" | "pendingUpload" | "publicHoliday" | "taxRate" | "withholdingTaxRate" | "whtCertificate" | "taxFormSubmission" | "form1099Nec" | "irisSubmission" | "irisAck" | "tax1099Threshold" | "stateFilingConfig" | "form1042S" | "form1099KTrackerState" | "tax1099KThreshold" | "taxIdValidation" | "timesheet" | "timeEntry" | "webhookSubscription" | "webhookDeliveryAttempt" | "webhookDeadLetter" | "worker" | "workflowTemplate" | "workflowTaskTemplate" | "workflowRoleTemplate" | "workflowRoleTaskTemplate" | "workflowRun" | "workflowTaskRun" | "workflowComment" | "workflowAttachment" | "credentialReference" | "zatcaInvoiceChain"
+    modelProps: "organizationApiKey" | "apiKeyIpEvent" | "approvalChainConfig" | "approvalFlow" | "approvalStep" | "approvalDecision" | "auditLog" | "user" | "userPinnedView" | "session" | "account" | "verification" | "subscription" | "ocrCreditLedger" | "stripeEvent" | "classificationAssessment" | "classificationDocument" | "ir35ChainParticipant" | "ir35OtherClientAttestation" | "economicDependencyAlertState" | "reassessmentTrigger" | "cronScanState" | "statusfeststellungsverfahren" | "classificationEscalationEvent" | "sdsApproval" | "consentRecord" | "privacyNotice" | "consentEvent" | "contract" | "contractAmendment" | "contractRatePeriod" | "document" | "documentLink" | "contractHealthCheckRun" | "contractor" | "contractorContact" | "contractorBillingProfile" | "contractorAssignment" | "contractorTag" | "contractorTagLink" | "complianceRequirementTemplate" | "contractorComplianceItem" | "contractorComplianceReminderState" | "leitwegId" | "eInvoiceLifecycle" | "eInvoiceLifecycleEvent" | "peppolCapabilityCache" | "employeeTimeRecord" | "employeeProfile" | "statutoryCertificate" | "equipment" | "equipmentAssignment" | "shipment" | "shipmentEvent" | "returnRequest" | "courierConfig" | "signingEnvelope" | "signingRecipient" | "signingEvent" | "ewidencjaSnapshot" | "exchangeRate" | "export" | "boEBaseRateHistory" | "skontoTerm" | "skontoSnapshot" | "skontoApplication" | "govApiAuditLog" | "freeZoneAssignment" | "saudizationConfig" | "saudiHeadcount" | "uaeFreeZone" | "deprovisioningRun" | "deprovisioningStep" | "idpChangeProvenance" | "incidentReport" | "integrationConnection" | "externalLink" | "integrationSyncLog" | "webhookDelivery" | "invoice" | "invoiceFile" | "invoiceLine" | "invoiceMatchResult" | "invoiceIntakeRequest" | "invoicePayment" | "invoiceInterestCompensation" | "invoiceInterestWaiver" | "invoiceInterestClaim" | "leaveType" | "blackoutPeriod" | "leaveRequest" | "leaveLedgerEntry" | "leaveBalance" | "marketplaceListing" | "notification" | "userNotificationPreference" | "comment" | "reminderRule" | "reminderInstance" | "notificationCronDedup" | "oAuthChallenge" | "ocrExtraction" | "organization" | "member" | "invitation" | "team" | "project" | "pendingProjectMerge" | "projectExternalLink" | "costCenter" | "outboxEvent" | "paymentRun" | "paymentRunItem" | "paymentExport" | "paymentRunComplianceCheck" | "peppolParticipant" | "peppolTransmission" | "personnelFile" | "personnelFileDocument" | "portalSession" | "portalMagicToken" | "contractorChangeRequest" | "contractorNotificationPreference" | "pendingUpload" | "publicHoliday" | "taxRate" | "withholdingTaxRate" | "whtCertificate" | "taxFormSubmission" | "form1099Nec" | "irisSubmission" | "irisAck" | "tax1099Threshold" | "stateFilingConfig" | "form1042S" | "form1099KTrackerState" | "tax1099KThreshold" | "taxIdValidation" | "timesheet" | "timeEntry" | "webhookSubscription" | "webhookDeliveryAttempt" | "webhookDeadLetter" | "worker" | "workflowTemplate" | "workflowTaskTemplate" | "workflowRoleTemplate" | "workflowRoleTaskTemplate" | "workflowRun" | "workflowTaskRun" | "workflowComment" | "workflowAttachment" | "credentialReference" | "zatcaInvoiceChain"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -6029,6 +6030,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.IdpChangeProvenanceCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.IdpChangeProvenanceCountAggregateOutputType> | number
+        }
+      }
+    }
+    IncidentReport: {
+      payload: Prisma.$IncidentReportPayload<ExtArgs>
+      fields: Prisma.IncidentReportFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.IncidentReportFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IncidentReportPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.IncidentReportFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IncidentReportPayload>
+        }
+        findFirst: {
+          args: Prisma.IncidentReportFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IncidentReportPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.IncidentReportFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IncidentReportPayload>
+        }
+        findMany: {
+          args: Prisma.IncidentReportFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IncidentReportPayload>[]
+        }
+        create: {
+          args: Prisma.IncidentReportCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IncidentReportPayload>
+        }
+        createMany: {
+          args: Prisma.IncidentReportCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.IncidentReportCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IncidentReportPayload>[]
+        }
+        delete: {
+          args: Prisma.IncidentReportDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IncidentReportPayload>
+        }
+        update: {
+          args: Prisma.IncidentReportUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IncidentReportPayload>
+        }
+        deleteMany: {
+          args: Prisma.IncidentReportDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.IncidentReportUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.IncidentReportUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IncidentReportPayload>[]
+        }
+        upsert: {
+          args: Prisma.IncidentReportUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IncidentReportPayload>
+        }
+        aggregate: {
+          args: Prisma.IncidentReportAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateIncidentReport>
+        }
+        groupBy: {
+          args: Prisma.IncidentReportGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.IncidentReportGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.IncidentReportCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.IncidentReportCountAggregateOutputType> | number
         }
       }
     }
@@ -13264,6 +13339,24 @@ export const IdpChangeProvenanceScalarFieldEnum = {
 export type IdpChangeProvenanceScalarFieldEnum = (typeof IdpChangeProvenanceScalarFieldEnum)[keyof typeof IdpChangeProvenanceScalarFieldEnum]
 
 
+export const IncidentReportScalarFieldEnum = {
+  id: 'id',
+  title: 'title',
+  status: 'status',
+  severity: 'severity',
+  componentsAffected: 'componentsAffected',
+  updates: 'updates',
+  startedAt: 'startedAt',
+  resolvedAt: 'resolvedAt',
+  createdByUserId: 'createdByUserId',
+  updatedByUserId: 'updatedByUserId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type IncidentReportScalarFieldEnum = (typeof IncidentReportScalarFieldEnum)[keyof typeof IncidentReportScalarFieldEnum]
+
+
 export const IntegrationConnectionScalarFieldEnum = {
   id: 'id',
   organizationId: 'organizationId',
@@ -15927,6 +16020,41 @@ export type ListEnumIdpProvenanceActionKindFieldRefInput<$PrismaModel> = FieldRe
 
 
 /**
+ * Reference to a field of type 'IncidentStatus'
+ */
+export type EnumIncidentStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'IncidentStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'IncidentStatus[]'
+ */
+export type ListEnumIncidentStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'IncidentStatus[]'>
+    
+
+
+/**
+ * Reference to a field of type 'IncidentSeverity'
+ */
+export type EnumIncidentSeverityFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'IncidentSeverity'>
+    
+
+
+/**
+ * Reference to a field of type 'IncidentSeverity[]'
+ */
+export type ListEnumIncidentSeverityFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'IncidentSeverity[]'>
+    
+
+
+/**
+ * Reference to a field of type 'Json[]'
+ */
+export type ListJsonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Json[]'>
+    
+
+
+/**
  * Reference to a field of type 'IntegrationStatus'
  */
 export type EnumIntegrationStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'IntegrationStatus'>
@@ -17075,6 +17203,7 @@ export type GlobalOmitConfig = {
   deprovisioningRun?: Prisma.DeprovisioningRunOmit
   deprovisioningStep?: Prisma.DeprovisioningStepOmit
   idpChangeProvenance?: Prisma.IdpChangeProvenanceOmit
+  incidentReport?: Prisma.IncidentReportOmit
   integrationConnection?: Prisma.IntegrationConnectionOmit
   externalLink?: Prisma.ExternalLinkOmit
   integrationSyncLog?: Prisma.IntegrationSyncLogOmit

@@ -335,7 +335,8 @@ export const EntityType = {
   EMPLOYEE_TIME_RECORD: 'EMPLOYEE_TIME_RECORD',
   WORKER: 'WORKER',
   EMPLOYEE: 'EMPLOYEE',
-  MARKETPLACE_LISTING: 'MARKETPLACE_LISTING'
+  MARKETPLACE_LISTING: 'MARKETPLACE_LISTING',
+  INCIDENT: 'INCIDENT'
 } as const
 
 export type EntityType = (typeof EntityType)[keyof typeof EntityType]
@@ -801,6 +802,24 @@ export const IdpProvenanceActionKind = {
 } as const
 
 export type IdpProvenanceActionKind = (typeof IdpProvenanceActionKind)[keyof typeof IdpProvenanceActionKind]
+
+
+export const IncidentStatus = {
+  OPEN: 'OPEN',
+  MONITORING: 'MONITORING',
+  RESOLVED: 'RESOLVED'
+} as const
+
+export type IncidentStatus = (typeof IncidentStatus)[keyof typeof IncidentStatus]
+
+
+export const IncidentSeverity = {
+  MINOR: 'MINOR',
+  MAJOR: 'MAJOR',
+  CRITICAL: 'CRITICAL'
+} as const
+
+export type IncidentSeverity = (typeof IncidentSeverity)[keyof typeof IncidentSeverity]
 
 
 export const IntegrationProvider = {
