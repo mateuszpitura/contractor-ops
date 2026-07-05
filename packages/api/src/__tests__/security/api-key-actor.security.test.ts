@@ -47,6 +47,8 @@ const { mockPrisma, mockGenerateApiKey, mockResolveApiKey, mockTouchLastUsed, ev
       paymentRunItem: table(),
       workflowRun: table(),
       workflowTaskRun: table(),
+      workflowTemplate: table(),
+      contract: table(),
       member: { findFirst: vi.fn(async () => ({ id: 'm-1', role: 'admin', disabledAt: null })) },
       organization: {
         findUnique: vi.fn(async () => ({
@@ -106,6 +108,31 @@ vi.mock('../../services/api-key-service', () => ({
 
 vi.mock('../../services/billing-service', () => ({
   getSubscription: vi.fn(async () => ({ id: 'sub_1', status: 'ACTIVE', tier: 'ENTERPRISE' })),
+}));
+
+// The create invariant helpers are exercised by their own suites; here we only
+// assert the FK attribution + audit, so keep the create path trivial.
+vi.mock('../../routers/finance/payment-shared', () => ({
+  loadEligibleInvoices: vi.fn(async () => [
+    { id: 'inv-1', amountToPayMinor: 1000, currency: 'EUR' },
+  ]),
+  validateInvoicesForRun: vi.fn(),
+  groupInvoicesByCurrency: vi.fn(() => new Map([['EUR', [{ amountToPayMinor: 1000 }]]])),
+  allocateRunNumber: vi.fn(async () => 'PR-1'),
+  seedRunItems: vi.fn(async () => undefined),
+  autoCompleteRunIfTerminal: vi.fn(async () => undefined),
+  VALID_TRANSITIONS: { DRAFT: ['LOCKED', 'CANCELLED'] },
+}));
+
+vi.mock('../../routers/workflow/workflow-execution-shared', () => ({
+  computeMaxDueDate: vi.fn(() => new Date('2026-12-31')),
+  instantiateTaskRuns: vi.fn(async () => new Map()),
+}));
+
+vi.mock('../../routers/workflow/workflow-shared', () => ({
+  calculateProgress: vi.fn(() => ({ percent: 0, done: 0, total: 0 })),
+  validateTransition: vi.fn(() => true),
+  unblockDependentsAndRecomputeRun: vi.fn(async () => undefined),
 }));
 
 vi.mock('../../services/org-cache', () => ({
@@ -272,15 +299,13 @@ describe('actingUserId binding (apiKeyRouter, session)', () => {
 
 describe('actingUserId FK on public creates (apiKey)', () => {
   it('workflow.create sets WorkflowRun.startedByUserId to the key actingUserId', async () => {
+    mockPrisma.workflowTemplate.findFirst.mockResolvedValue({ id: 'wt-1', tasks: [] });
+    mockPrisma.contractor.findFirst.mockResolvedValue({ id: 'c-1', legalName: 'Acme' });
     const caller = makeApiKeyCaller(['workflow:create']) as unknown as {
       workflow: { create: (i: unknown) => Promise<unknown> };
     };
-    try {
-      await caller.workflow.create({ templateId: 'wt-1' });
-    } catch {
-      // The resolver may fail against the sparse mock DB — we only assert the
-      // FK wiring on whichever create call was reached.
-    }
+    await caller.workflow.create({ templateId: 'wt-1', contractorId: 'c-1' });
+
     const runCreate = mockPrisma.workflowRun.create.mock.calls[0]?.[0] as
       | { data: Record<string, unknown> }
       | undefined;

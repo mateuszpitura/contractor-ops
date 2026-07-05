@@ -23,24 +23,51 @@ const { mockDb, mockResolveApiKey, mockTouchLastUsed, mockGetSubscription, evalu
   vi.hoisted(() => {
     type Rec = Record<string, unknown>;
     const org = 'org-audit-001';
-    const table = () => ({
+    const table = (findRow?: Rec) => ({
       findMany: vi.fn(async () => []),
-      findFirst: vi.fn(async () => ({ id: 'row-1', organizationId: org, status: 'DRAFT' })),
-      findFirstOrThrow: vi.fn(async () => ({ id: 'row-1', organizationId: org, status: 'DRAFT' })),
-      findUnique: vi.fn(async () => ({ id: 'row-1', organizationId: org, status: 'DRAFT' })),
+      findFirst: vi.fn(async () => findRow ?? null),
+      findFirstOrThrow: vi.fn(async () => findRow ?? { id: 'row-1', organizationId: org }),
+      findUnique: vi.fn(async () => findRow ?? null),
       create: vi.fn(async (args: { data: Rec }) => ({ id: 'created-1', ...args.data })),
       update: vi.fn(async (args: { data: Rec }) => ({ id: 'row-1', ...args.data })),
       updateMany: vi.fn(async () => ({ count: 1 })),
+      delete: vi.fn(async () => ({ id: 'row-1' })),
       count: vi.fn(async () => 0),
     });
     const mockDb: Rec = {
-      contractor: table(),
-      invoice: table(),
+      contractor: table({ id: 'c-1', organizationId: org, status: 'ACTIVE' }),
+      worker: table(),
+      contractorBillingProfile: table(),
+      invoice: table({
+        id: 'inv-1',
+        organizationId: org,
+        invoiceNumber: 'INV-1',
+        status: 'RECEIVED',
+        paymentStatus: 'READY',
+      }),
       payment: table(),
-      paymentRun: table(),
-      paymentRunItem: table(),
+      paymentRun: table({
+        id: 'run-1',
+        organizationId: org,
+        status: 'DRAFT',
+        runNumber: 'PR-1',
+        items: [],
+      }),
+      paymentRunItem: table({
+        id: 'pay-1',
+        organizationId: org,
+        status: 'EXPORTED',
+        invoiceId: 'inv-1',
+        paymentRunId: 'run-1',
+      }),
       workflowRun: table(),
-      workflowTaskRun: table(),
+      workflowTaskRun: table({
+        id: 'task-1',
+        organizationId: org,
+        status: 'IN_PROGRESS',
+        startedAt: null,
+        workflowRun: { id: 'wfr-1', status: 'IN_PROGRESS' },
+      }),
       approvalFlow: table(),
       approvalStep: table(),
       auditLog: { create: vi.fn(async () => ({ id: 'audit-1' })) },
@@ -200,9 +227,9 @@ const REPRESENTATIVE_WRITES: Array<{ path: string; input: unknown }> = [
     input: { legalName: 'Acme GmbH', type: 'COMPANY', countryCode: 'DE', currency: 'EUR' },
   },
   { path: 'invoice.void', input: { id: 'inv-1' } },
-  { path: 'payment.update', input: { id: 'pay-1', status: 'PAID' } },
+  { path: 'payment.update', input: { itemId: 'pay-1', status: 'PAID' } },
   { path: 'paymentRun.transition', input: { id: 'run-1', status: 'CANCELLED' } },
-  { path: 'workflowTask.transition', input: { id: 'task-1', status: 'COMPLETED' } },
+  { path: 'workflowTask.transition', input: { taskRunId: 'task-1', status: 'DONE' } },
 ];
 
 beforeEach(() => {
