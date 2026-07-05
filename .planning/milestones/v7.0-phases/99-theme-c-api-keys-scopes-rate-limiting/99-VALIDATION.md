@@ -1,9 +1,9 @@
 ---
 phase: 99
 slug: theme-c-api-keys-scopes-rate-limiting
-status: draft
+status: complete
 nyquist_compliant: true
-wave_0_complete: false
+wave_0_complete: true
 created: 2026-07-05
 ---
 
@@ -44,14 +44,14 @@ created: 2026-07-05
 
 | Requirement | Wave | Behavior (secure) | Test Type | Automated Command | Status |
 |-------------|------|-------------------|-----------|-------------------|--------|
-| INTEG-AUTH-02 | 0 | every write 403s WITHOUT its scope, passes WITH it (live BFLA matrix) | security | `pnpm --filter @contractor-ops/api test public-api-write-scope` | ⬜ RED→99-04 |
-| INTEG-API-01 | 0 | `.strict()` write DTO rejects org/workerType (contractor) + server-derived money (paymentRun) | unit | `pnpm --filter @contractor-ops/public-api test strict-dto` | ⬜ RED→99-04 |
-| INTEG-AUTH-01 | 0 | superseded key usable within grace, 401 after; revoked → 401 | security | `pnpm --filter @contractor-ops/api test api-key-rotation` | ⬜ RED→99-05 |
-| INTEG-AUTH-04 | 0 | over-quota request → 429; Enterprise unlimited never 429 | security | `pnpm --filter @contractor-ops/api test api-tier-quota` | ⬜ RED→99-03 |
-| INTEG-AUTH-05 | 0 | every external mutation writes AuditLog with apiKeyId + sourceIp + userAgent | contract | `pnpm --filter @contractor-ops/api test public-api-mutation-audit` | ⬜ RED→99-04 |
-| D-01 (actor) | 0 | FK-creates set FK to actingUserId; audit records API_KEY + metadata.actingUserId; cross-org actingUserId rejected | contract | `pnpm --filter @contractor-ops/api test api-key-actor` | ⬜ RED→99-02 |
-| D-03 (dark) | 0 | write route 404 when flag off AND absent from `buildOpenApiDocument` | integration | `pnpm --filter @contractor-ops/public-api test write-routes-dark` | ⬜ RED→99-06 |
-| INTEG-AUTH-03 | — | Developer page renders keys + last-used + source-IP log + scope viz + rotation dialog (loading/empty/error) | component | `pnpm --filter @contractor-ops/web-vite test api-keys` | ⬜ →99-07 |
+| INTEG-AUTH-02 | 0 | every write 403s WITHOUT its scope, passes WITH it (live BFLA matrix) | security | `pnpm --filter @contractor-ops/api test public-api-write-scope` | ✅ 99-04 |
+| INTEG-API-01 | 0 | `.strict()` write DTO rejects org/workerType (contractor) + server-derived money (paymentRun) | unit | `pnpm --filter @contractor-ops/public-api test strict-dto` | ✅ 99-04 |
+| INTEG-AUTH-01 | 0 | superseded key usable within grace, 401 after; revoked → 401 | security | `pnpm --filter @contractor-ops/api test api-key-rotation` | ✅ 99-05 |
+| INTEG-AUTH-04 | 0 | over-quota request → 429; Enterprise unlimited never 429 | security | `pnpm --filter @contractor-ops/api test api-tier-quota` | ✅ 99-03 |
+| INTEG-AUTH-05 | 0 | every external mutation writes AuditLog with apiKeyId + sourceIp + userAgent | contract | `pnpm --filter @contractor-ops/api test public-api-mutation-audit` | ✅ 99-04 |
+| D-01 (actor) | 0 | FK-creates set FK to actingUserId; audit records API_KEY + metadata.actingUserId; cross-org actingUserId rejected | contract | `pnpm --filter @contractor-ops/api test api-key-actor` | ✅ 99-02/99-04 |
+| D-03 (dark) | 0 | write route 404 when flag off AND absent from `buildOpenApiDocument` | integration | `pnpm --filter @contractor-ops/public-api test write-routes-dark` | ✅ 99-06 |
+| INTEG-AUTH-03 | — | Developer page renders keys + last-used + source-IP log + scope viz + rotation dialog (loading/empty/error) | component | `pnpm --filter @contractor-ops/web-vite test api-keys` | ✅ 99-07 |
 
 *Status: ⬜ pending · ✅ green · ❌ red*
 
@@ -91,10 +91,11 @@ conditional-skip test + document; never a hard blocker in a plan.
 
 ## Validation Sign-Off
 
-- [ ] All requirements have an automated verify command or a Wave 0 RED dependency
-- [ ] No 3 consecutive tasks without an automated verify
-- [ ] Wave 0 covers all NEW security files + the 15 HOLD turn-green targets
-- [ ] No watch-mode flags (scoped `vitest run` only)
-- [ ] `nyquist_compliant: true` set after 99-01 lands the RED stubs
+- [x] All requirements have an automated verify command or a Wave 0 RED dependency
+- [x] No 3 consecutive tasks without an automated verify
+- [x] Wave 0 covers all NEW security files + the 15 HOLD turn-green targets
+- [x] No watch-mode flags (scoped `vitest run` only)
+- [x] `nyquist_compliant: true` set after 99-01 lands the RED stubs
 
-**Approval:** pending
+**Approval:** approved — every INTEG-AUTH/INTEG-API requirement maps to a GREEN automated test
+(api security + public-api + web-vite api-keys suites); the write surface stays double-dark.

@@ -2,7 +2,7 @@
 title: Key API services catalog
 type: structure
 tags: [structure, services, api]
-source_commit: 105a8ccf64b34c611493215eb3519e8922343839
+source_commit: 52012027d6d66885d746d018d5d8db422195e2fb
 verify_with:
   - packages/api/src/services/
   - packages/api/src/services/onboarding-import-service.ts
@@ -41,6 +41,9 @@ flowchart TB
 | Approval engine | `services/approval-engine.ts` | [[domains/approvals-engine]] |
 | Compliance payment gate | `services/compliance-payment-gate.ts` | [[domains/compliance-dashboard]] |
 | Audit writer | `services/audit-writer.ts` | [[patterns/tenant-and-audit]] |
+| API key service | `services/api-key-service.ts` | [[domains/public-api-surface]] — HMAC-SHA256 `co_live_*` gen/hash/verify + `resolveByPrefix` (grace-aware: a superseded key resolves only until `graceExpiresAt`) + `appendApiKeyIpEvent` (bounded per-key source-IP log) |
+| API tier limits | `lib/api-tier-limits.ts` | [[patterns/rate-limit]] — single source: monthly request quota (Starter 1k/Pro 10k/Ent ∞) + webhook-sub caps (defined; consumed in Phase 100) |
+| API quota counter | `services/api-quota-counter.ts` | [[patterns/rate-limit]] — Upstash calendar-month counter `api-quota:{org}:{YYYY-MM}` (+ month-end TTL); in-memory non-prod fallback; `incrementMonthlyRequestCount` / read-only `getMonthlyRequestCount` |
 | Portal session | `services/portal-session.ts` | [[patterns/portal-auth]] |
 | Notification dispatch | `services/notification-service.ts` | [[domains/notifications-and-reminders]] |
 | E-sign orchestrator | `services/esign-orchestrator.ts` | [[integrations/docusign-esign]] |

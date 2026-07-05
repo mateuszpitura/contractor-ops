@@ -2,7 +2,7 @@
 title: API routers catalog
 type: structure
 tags: [structure, api, trpc, catalog]
-source_commit: 2aabc35c8
+source_commit: 52012027d6d66885d746d018d5d8db422195e2fb
 verify_with:
   - packages/api/src/root.ts
   - packages/api/src/portal-root.ts
@@ -31,7 +31,7 @@ Complete namespace index for staff `appRouter` and contractor `portalAppRouter`.
 | Namespace | Summary |
 |-----------|---------|
 | `adminBoeRate` | Super-admin BoE base rate CRUD |
-| `apiKey` | Enterprise API key management |
+| `apiKey` | Enterprise API key management — create/list/update/revoke + **rotate** (grace window), **ipLog**, **usage**; keys bind a membership-guarded `actingUserId` |
 | `bacs` | BACS Std 18 file generation |
 | `organization` | Org CRUD, current org |
 | `organizationDefinitions` | Nested: `team`, `project`, `costCenter` |
@@ -245,12 +245,17 @@ Reachable ACH return-file ingestion (`payment-core.ts` → `parseNachaReturnFile
 
 Full flow: [[domains/us-payment-rail]] (ACH return-code handling).
 
+## Public API router (separate from `appRouter`)
+
+`packages/api/src/routers/public-api/*` (`publicApiRouter`) — read procedures for 9 entities + **write** procedures for 6 (contractor/invoice/payment/paymentRun/workflow/workflowTask), each under `apiKeyTenantProcedure` with a mandatory `requirePermission` scope. Writes stay **double-dark** (per-org `module.public-api` off + `hide:true` routes) until Phase 100. Full surface: [[domains/public-api-surface]].
+
 ## Related
 
 - [[api-router-groups]]
 - [[patterns/trpc-procedure-stack]]
 - [[patterns/portal-auth]]
 - [[domains/portal-external]]
+- [[domains/public-api-surface]]
 
 ## Verify live
 

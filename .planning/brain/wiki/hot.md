@@ -2,12 +2,16 @@
 title: Hot cache
 type: hot-cache
 updated: 2026-07-05
-source_commit: 2aabc35c8
+source_commit: 52012027d6d66885d746d018d5d8db422195e2fb
 ---
 
 # Hot cache
 
 Discovery shortcuts for agents — not a changelog. History lives in `wiki/log.md` and git.
+
+## Public API keys / scopes / rate limits / write surface (Theme C, double-dark)
+
+Full surface: [[domains/public-api-surface]]. Read = 9 entities live behind `module.public-api`; WRITE = 6 entities built but **double-dark** (flag off + `hide:true`) until Phase 100. Code: `apps/public-api/src/routes/*` (Hono, `hide:true` writes) + `packages/api/src/routers/public-api/*` (tRPC procedures + `write-shared.ts`), `middleware/api-key-auth.ts` (chain: apiKeyAuth → `publicApiFlagGate` → `requireTier` → `enforceApiTierQuota` → `demoReadOnly`), `services/api-key-service.ts` (HMAC + grace-aware `resolveByPrefix` + `appendApiKeyIpEvent`), `routers/core/api-key.ts` (create/rotate/ipLog/usage + `actingUserId` guard), `middleware/api-tier-quota.ts` + `lib/api-tier-limits.ts` + `services/api-quota-counter.ts`. Invariants: `actingUserId` is attribution-only (scopes authorize); every write carries a mandatory `requirePermission` scope; rotation grace default 24h/max 168h; per-tier monthly quota composes with the pre-auth burst limiter; **do NOT flip `module.public-api` or un-hide** (Phase 100). See [[patterns/rate-limit]], [[patterns/tenant-and-audit]].
 
 ## US tax year-end filing (Theme A, flag-dark)
 
