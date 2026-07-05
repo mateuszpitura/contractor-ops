@@ -61,6 +61,7 @@
 // See `packages/integrations/src/services/resilience.ts` for the per-
 // provider math and the worked Resend example.
 
+import { randomUUID } from 'node:crypto';
 import { prismaRaw } from '@contractor-ops/db';
 import { createLogger } from '@contractor-ops/logger';
 import * as Sentry from '@sentry/node';
@@ -553,13 +554,12 @@ export function computeBackoffMs(attempts: number): number {
   return base + jitter;
 }
 
-/** Generate a cuid-shaped id without taking a dep on cuid here. */
+/** Generate a collision-resistant, ops-greppable outbox id. */
 function newOutboxId(): string {
-  // Match the @default(cuid()) shape closely enough for ops-grep parity.
-  // Format: oxe_<timestamp36>_<random12>. Length ~ 26.
-  const ts = Date.now().toString(36);
-  const rand = Math.random().toString(36).slice(2, 14).padEnd(12, '0');
-  return `oxe_${ts}_${rand}`;
+  // The `oxe_` prefix keeps ops-grep parity with the @default(cuid()) rows.
+  // randomUUID() supplies 122 bits of CSPRNG entropy — Math.random() is not
+  // collision-safe for what doubles as the primary key + dedup correlation id.
+  return `oxe_${randomUUID()}`;
 }
 
 // ---------------------------------------------------------------------------
