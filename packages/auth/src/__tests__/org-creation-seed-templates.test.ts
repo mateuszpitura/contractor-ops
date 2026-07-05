@@ -10,6 +10,12 @@
 // Convention (mirrors org-creation-region.test.ts / config.test.ts): exercise
 // the exported `seedOrganizationDefaults` delegate against a mocked seed +
 // prisma instead of booting the full Better Auth server.
+//
+// The delegate tests alone do NOT gate the wiring: deleting the
+// `afterCreateOrganization` hook from `organizationHooks` would keep them green.
+// The wiring test below asserts the hook is actually registered on the exported
+// `organizationHooks` object AND that firing it reaches the seed — so removing
+// the hook line turns the suite red.
 
 import { describe, expect, it, vi } from 'vitest';
 
@@ -53,5 +59,24 @@ describe('organization creation → offboarding seed templates', () => {
     upsertMock.mockRejectedValueOnce(new Error('db down'));
 
     await expect(seedOrganizationDefaults('org_xyz')).resolves.toBeUndefined();
+  });
+
+  it('registers afterCreateOrganization on the org plugin hooks (deleting the wiring fails here)', async () => {
+    const { prisma } = await import('@contractor-ops/db');
+    const { upsertSeedTemplates } = await import('@contractor-ops/offboarding-templates');
+    const { organizationHooks } = await import('../config.js');
+    const upsertMock = upsertSeedTemplates as unknown as ReturnType<typeof vi.fn>;
+    upsertMock.mockReset();
+    upsertMock.mockResolvedValueOnce(undefined);
+
+    const afterCreate = organizationHooks.afterCreateOrganization;
+    expect(typeof afterCreate).toBe('function');
+
+    await afterCreate!({ organization: { id: 'org_wired' } } as unknown as Parameters<
+      NonNullable<typeof afterCreate>
+    >[0]);
+
+    expect(upsertMock).toHaveBeenCalledTimes(1);
+    expect(upsertMock).toHaveBeenCalledWith(prisma, 'org_wired');
   });
 });

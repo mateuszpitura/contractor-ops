@@ -9,6 +9,7 @@ import { APIError, createAuthMiddleware } from 'better-auth/api';
 import { nextCookies } from 'better-auth/next-js';
 import { admin } from 'better-auth/plugins/admin';
 import { magicLink } from 'better-auth/plugins/magic-link';
+import type { OrganizationOptions } from 'better-auth/plugins/organization';
 import { organization } from 'better-auth/plugins/organization';
 import { z } from 'zod';
 import {
@@ -176,6 +177,30 @@ export async function seedOrganizationDefaults(organizationId: string): Promise<
     );
   }
 }
+
+/**
+ * Organization plugin lifecycle hooks. Extracted (like `seedOrganizationDefaults`
+ * and `resolveDataRegionFromBilling`) so the WIRING — that each hook is actually
+ * registered, not merely that its delegate works — is unit-testable without
+ * booting the full Better Auth server.
+ *
+ * `beforeCreateOrganization` is the SINGLE origin of `dataRegion`: it maps the
+ * transient `billingCountry` input to a region and strips it so only real
+ * columns are written. `dataRegion` is immutable after creation (no update hook
+ * sets it). `afterCreateOrganization` seeds the per-org offboarding KT
+ * `WorkflowRoleTemplate` rows the moment an org is created — non-fatal (see
+ * `seedOrganizationDefaults`).
+ */
+export const organizationHooks: NonNullable<OrganizationOptions['organizationHooks']> = {
+  beforeCreateOrganization: async ({ organization: org }) => {
+    const { billingCountry, ...rest } = org as typeof org & { billingCountry?: string };
+    const dataRegion = resolveDataRegionFromBilling({ billingCountry });
+    return { data: { ...rest, dataRegion } };
+  },
+  afterCreateOrganization: async ({ organization: org }) => {
+    await seedOrganizationDefaults(org.id);
+  },
+};
 
 /**
  * Reject sessions whose active organization membership is soft-disabled.
@@ -563,22 +588,7 @@ export const auth = betterAuth({
           },
         },
       },
-      // The SINGLE origin of `dataRegion`. Maps the billing-country selection
-      // to a region and strips the transient `billingCountry` input so only
-      // real columns are written. `dataRegion` is immutable after creation:
-      // no update hook sets it.
-      organizationHooks: {
-        beforeCreateOrganization: async ({ organization: org }) => {
-          const { billingCountry, ...rest } = org as typeof org & { billingCountry?: string };
-          const dataRegion = resolveDataRegionFromBilling({ billingCountry });
-          return { data: { ...rest, dataRegion } };
-        },
-        // Seed the per-org offboarding KT `WorkflowRoleTemplate` rows the moment
-        // an organization is created. Non-fatal (see `seedOrganizationDefaults`).
-        afterCreateOrganization: async ({ organization: org }) => {
-          await seedOrganizationDefaults(org.id);
-        },
-      },
+      organizationHooks,
       roles: {
         owner: roles.owner,
         admin: roles.admin,
