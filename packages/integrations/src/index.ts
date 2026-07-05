@@ -2,6 +2,10 @@
 
 export { AutentiAdapter } from './adapters/autenti-adapter.js';
 // Adapters
+export {
+  BambooHrAdapter,
+  normalizeBambooDirectory,
+} from './adapters/bamboohr-adapter.js';
 export { BaseAdapter } from './adapters/base-adapter.js';
 export { Bir1CompanyRegistryAdapter } from './adapters/bir1-company-registry-adapter.js';
 // Contract health-check tool_use schema + Anthropic eval service
