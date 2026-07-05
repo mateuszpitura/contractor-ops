@@ -13,6 +13,10 @@ export {
 } from './adapters/contract-health-tools.js';
 export { DataportCompanyRegistryAdapter } from './adapters/dataport-company-registry-adapter.js';
 export { DocuSignAdapter } from './adapters/docusign-adapter.js';
+export {
+  createHrisRateLimiter,
+  RateLimiter,
+} from './adapters/hris-rate-limiter.js';
 export { KsefAdapter } from './adapters/ksef-adapter.js';
 // Programmatic-ACH payout-initiation seam (mock default + dark live originator + Stripe stub)
 export {
@@ -26,6 +30,10 @@ export {
   type PayoutWebhookEvent,
   StripeTreasuryAdapter,
 } from './adapters/payout/index.js';
+export {
+  normalizePersonioPersons,
+  PersonioAdapter,
+} from './adapters/personio-adapter.js';
 // Plaid Identity verification seam (mock default + dark live client; advisory fail-open)
 export {
   LivePlaidIdentityClient,
@@ -227,6 +235,14 @@ export type {
   SigningEnvelopeRequest,
   SigningEnvelopeResult,
 } from './types/esign.js';
+// HRIS provider wire contracts (Personio + BambooHR)
+export {
+  HRIS_PROVIDERS,
+  type HrisEmployeeRecord,
+  type HrisProvider,
+  type HrisPushInput,
+  type HrisPushPayload,
+} from './types/hris.js';
 export type {
   CredentialBlob,
   IntegrationProviderAdapter,

@@ -1,32 +1,18 @@
 // Shared, I/O-free contracts for the HRIS two-way sync engine.
 //
-// These are wire/DTO types only — no Prisma imports. The adapters (Personio,
-// BambooHR) normalize their provider payloads into `HrisEmployeeRecord`; the
-// pull orchestrator projects a record through the field-partition allowlist
-// into an `HrisWritableEmployeePatch`; the push handlers carry an
-// `HrisPushPayload` (a CO-owned business event) out to the connected HRIS.
+// The provider wire shapes (HrisEmployeeRecord, HrisPushPayload, HrisProvider)
+// live in the integrations layer — the api package depends on integrations, not
+// the reverse — and are re-exported here so the hris-sync services import them
+// from one place. The mapping + snapshot-diff state are api-domain concepts and
+// stay local.
 
-/** The two HRIS providers this engine supports. One HRIS per org (DB-enforced). */
-export const HRIS_PROVIDERS = ['PERSONIO', 'BAMBOOHR'] as const;
-export type HrisProvider = (typeof HRIS_PROVIDERS)[number];
-
-/**
- * A normalized raw provider record. The adapter flattens the provider's native
- * shape into a stable `externalId` + an untyped `attributes` bag keyed by the
- * provider's attribute name; the field-partition projection resolves those
- * attribute keys to the writable allowlist via the org's `HrisFieldMapping`.
- *
- * `attributes` is deliberately `Record<string, unknown>` — attribute-scoped
- * Personio credentials silently omit unpermitted fields, so any given key may
- * be absent. Absence is normal, never an error.
- */
-export interface HrisEmployeeRecord {
-  externalId: string;
-  provider: HrisProvider;
-  attributes: Record<string, unknown>;
-  /** Provider's own last-modified marker, when present (drives delta/snapshot-diff). */
-  updatedAt?: string;
-}
+export {
+  HRIS_PROVIDERS,
+  type HrisEmployeeRecord,
+  type HrisProvider,
+  type HrisPushInput,
+  type HrisPushPayload,
+} from '@contractor-ops/integrations';
 
 /**
  * The org's field mapping, persisted in `IntegrationConnection.configJson`.
@@ -56,37 +42,3 @@ export interface HrisSyncState {
   lastSuccessfulSyncAt?: string;
   hashes?: Record<string, string>;
 }
-
-/**
- * The three CO-owned business events the push carries out to the HRIS. Each
- * carries `workerId` plus the business id and minimal denormalized fields. By
- * construction these contain NO HRIS-owned registry key — the disjoint
- * partition is what breaks the write-back loop; `assertNotHrisOwnedField`
- * enforces it as defense-in-depth.
- */
-export type HrisPushPayload =
-  | {
-      kind: 'invoice-paid';
-      workerId: string;
-      invoiceId: string;
-      paidAt: string;
-      amount: string;
-      currency: string;
-      idempotencyKey?: string;
-    }
-  | {
-      kind: 'payment-status';
-      workerId: string;
-      paymentId: string;
-      status: string;
-      occurredAt: string;
-      idempotencyKey?: string;
-    }
-  | {
-      kind: 'classification-outcome';
-      workerId: string;
-      classificationId: string;
-      outcome: string;
-      decidedAt: string;
-      idempotencyKey?: string;
-    };
