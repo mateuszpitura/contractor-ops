@@ -9,6 +9,7 @@
  * 🟢 You can import this file directly.
  */
 export type * from './models/OrganizationApiKey.js'
+export type * from './models/ApiKeyIpEvent.js'
 export type * from './models/ApprovalChainConfig.js'
 export type * from './models/ApprovalFlow.js'
 export type * from './models/ApprovalStep.js'

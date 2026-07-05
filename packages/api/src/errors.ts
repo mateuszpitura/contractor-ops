@@ -168,6 +168,7 @@ export const INVALID_API_KEY = 'invalidApiKey';
 export const API_KEY_REVOKED = 'apiKeyRevoked';
 export const API_KEY_EXPIRED = 'apiKeyExpired';
 export const API_KEY_CANNOT_UPDATE_REVOKED = 'apiKeyCannotUpdateRevoked';
+export const INVALID_ACTING_USER = 'invalidActingUser';
 
 // ─── Tenant ─────────────────────────────────────────────────────
 export const ORG_SUSPENDED = 'orgSuspended';

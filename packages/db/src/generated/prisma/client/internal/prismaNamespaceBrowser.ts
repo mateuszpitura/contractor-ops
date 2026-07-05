@@ -52,6 +52,7 @@ export const AnyNull = runtime.AnyNull
 
 export const ModelName = {
   OrganizationApiKey: 'OrganizationApiKey',
+  ApiKeyIpEvent: 'ApiKeyIpEvent',
   ApprovalChainConfig: 'ApprovalChainConfig',
   ApprovalFlow: 'ApprovalFlow',
   ApprovalStep: 'ApprovalStep',
@@ -224,14 +225,30 @@ export const OrganizationApiKeyScalarFieldEnum = {
   hash: 'hash',
   scopes: 'scopes',
   createdByUserId: 'createdByUserId',
+  actingUserId: 'actingUserId',
   lastUsedAt: 'lastUsedAt',
   revokedAt: 'revokedAt',
   expiresAt: 'expiresAt',
+  supersededAt: 'supersededAt',
+  supersededByKeyId: 'supersededByKeyId',
+  graceExpiresAt: 'graceExpiresAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
 
 export type OrganizationApiKeyScalarFieldEnum = (typeof OrganizationApiKeyScalarFieldEnum)[keyof typeof OrganizationApiKeyScalarFieldEnum]
+
+
+export const ApiKeyIpEventScalarFieldEnum = {
+  id: 'id',
+  apiKeyId: 'apiKeyId',
+  organizationId: 'organizationId',
+  ipAddress: 'ipAddress',
+  userAgent: 'userAgent',
+  seenAt: 'seenAt'
+} as const
+
+export type ApiKeyIpEventScalarFieldEnum = (typeof ApiKeyIpEventScalarFieldEnum)[keyof typeof ApiKeyIpEventScalarFieldEnum]
 
 
 export const ApprovalChainConfigScalarFieldEnum = {

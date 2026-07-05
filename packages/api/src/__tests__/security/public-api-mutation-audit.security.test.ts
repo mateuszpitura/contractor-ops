@@ -89,6 +89,7 @@ vi.mock('@contractor-ops/db', () => ({
 vi.mock('../../services/api-key-service', () => ({
   resolveApiKey: mockResolveApiKey,
   touchLastUsed: mockTouchLastUsed,
+  appendApiKeyIpEvent: vi.fn(),
 }));
 
 vi.mock('../../services/billing-service', () => ({ getSubscription: mockGetSubscription }));

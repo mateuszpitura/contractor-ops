@@ -1,7 +1,7 @@
 import { TRPCError } from '@trpc/server';
 import * as E from '../errors';
 import { publicProcedure, t } from '../init';
-import { resolveApiKey, touchLastUsed } from '../services/api-key-service';
+import { appendApiKeyIpEvent, resolveApiKey, touchLastUsed } from '../services/api-key-service';
 import { demoReadOnly } from './demo';
 import { assertPublicApiEnabled } from './require-public-api-flag';
 import { runWithTenantContext } from './tenant';
@@ -59,6 +59,11 @@ const apiKeyAuthMiddleware = t.middleware(async ({ ctx, next }) => {
 
   // Fire-and-forget
   touchLastUsed(keyRecord.id);
+  // Fire-and-forget source-IP log — only when a client IP was captured at the
+  // HTTP boundary by createPublicCaller (absent for direct in-process callers).
+  if (ctx.sourceIp) {
+    appendApiKeyIpEvent(keyRecord.id, keyRecord.organizationId, ctx.sourceIp, ctx.userAgent);
+  }
 
   // Pass pre-resolved dataRegion to skip redundant org lookup
   const knownRegion = keyRecord.organization.dataRegion ?? undefined;
@@ -73,6 +78,8 @@ const apiKeyAuthMiddleware = t.middleware(async ({ ctx, next }) => {
           authMode: 'apiKey' as const,
           apiKeyId: keyRecord.id,
           apiKeyScopes: keyRecord.scopes,
+          // Attribution actor for FK-requiring creates (never authorization).
+          apiKeyActingUserId: keyRecord.actingUserId,
         },
       }),
     knownRegion,

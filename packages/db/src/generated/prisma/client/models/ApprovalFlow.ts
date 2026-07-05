@@ -571,10 +571,6 @@ export type EnumEntityTypeFieldUpdateOperationsInput = {
   set?: $Enums.EntityType
 }
 
-export type NullableStringFieldUpdateOperationsInput = {
-  set?: string | null
-}
-
 export type EnumApprovalStatusFieldUpdateOperationsInput = {
   set?: $Enums.ApprovalStatus
 }

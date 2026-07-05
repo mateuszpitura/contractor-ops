@@ -18,6 +18,7 @@
 | 8 | **Public API write endpoints** (Phase 98 → 99) | `module.public-api` (OFF) + `hide:true` on write routes | OFF | All write endpoints (double-dark: per-org flag 404 + absent from spec/SDK/portal) | BFLA + dark-gate contract tests (already GREEN, prove dark) | Phase 99 scope enforcement lands → flip `module.public-api` per org |
 | 9 | **de/pl/ar i18n native review** | deferred-items (per phase) | machine-translated | Native-quality copy for de/pl/ar (en/en-US are canonical) | i18n:parity (GREEN — parity, not quality) | Native-speaker review pass before US/EU GA |
 | 10 | **Human visual QA of new US surfaces** (e.g. P86-07 pills/RTL/consent) | deferred to US-enablement visual pass | built, unverified-by-eye | Nothing — code + i18n parity ship; only the eyeball confirmation defers | — | Founder renders + confirms status colors / amber-advisory / RTL / consent gate at US-enablement |
+| 11 | **API-key actor/rotation/IP-log migration apply** (Phase 99) | deploy-time human step | not applied | The `20260705000000_phase99_api_key_actor_rotation_ip_log` migration SQL is generated + committed; the Prisma client is regenerated so code compiles | schema/client typecheck (no live DB needed) | Apply the migration to each regional `DATABASE_URL_*` via `pnpm db:migrate:all` at deploy (adds `OrganizationApiKey.actingUserId` backfilled from `createdByUserId`, rotation columns, and `ApiKeyIpEvent`) |
 
 ## Notes
 

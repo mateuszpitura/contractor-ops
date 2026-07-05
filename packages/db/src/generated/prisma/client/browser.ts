@@ -23,6 +23,11 @@ export * from './enums.js';
  */
 export type OrganizationApiKey = Prisma.OrganizationApiKeyModel
 /**
+ * Model ApiKeyIpEvent
+ * 
+ */
+export type ApiKeyIpEvent = Prisma.ApiKeyIpEventModel
+/**
  * Model ApprovalChainConfig
  * 
  */

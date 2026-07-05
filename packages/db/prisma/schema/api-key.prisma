@@ -1,22 +1,51 @@
 // Organization API Keys — M2M authentication for Enterprise public REST API
 
 model OrganizationApiKey {
-  id              String    @id @default(cuid())
-  organizationId  String
-  name            String
-  prefix          String    @db.Char(12)
-  hash            String
-  scopes          String[]
-  createdByUserId String
-  lastUsedAt      DateTime?
-  revokedAt       DateTime?
-  expiresAt       DateTime?
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  id                String    @id @default(cuid())
+  organizationId    String
+  name              String
+  prefix            String    @db.Char(12)
+  hash              String
+  scopes            String[]
+  createdByUserId   String
+  // Mutable attribution actor for API-key writes: the real, ACTIVE org member
+  // whose id fills non-null user FKs (PaymentRun.createdByUserId,
+  // WorkflowRun.startedByUserId). Attribution ONLY — the key's authority is its
+  // scopes[]; nothing reads actingUserId to authorize. Defaults to the creator;
+  // rebindable so a key survives the creator's departure.
+  actingUserId      String
+  lastUsedAt        DateTime?
+  revokedAt         DateTime?
+  expiresAt         DateTime?
+  // Rotation with a grace window: a superseded key stays valid until
+  // graceExpiresAt, then hard-stops (resolveByPrefix enforces this).
+  supersededAt      DateTime?
+  supersededByKeyId String?
+  graceExpiresAt    DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
 
-  organization Organization @relation(fields: [organizationId], references: [id])
-  createdBy    User         @relation(fields: [createdByUserId], references: [id])
+  organization Organization    @relation(fields: [organizationId], references: [id])
+  createdBy    User            @relation("ApiKeyCreatedBy", fields: [createdByUserId], references: [id])
+  actingUser   User            @relation("ApiKeyActingUser", fields: [actingUserId], references: [id])
+  ipEvents     ApiKeyIpEvent[]
 
   @@index([prefix, revokedAt])
   @@index([organizationId, revokedAt])
+  @@index([actingUserId])
+}
+
+// Bounded per-key source-IP log for the Developer page's "source-IP log" and the
+// Phase-100 ">3 IPs in 24h" leak alarm. Append-on-auth (debounced + pruned).
+model ApiKeyIpEvent {
+  id             String   @id @default(cuid())
+  apiKeyId       String
+  organizationId String
+  ipAddress      String
+  userAgent      String?
+  seenAt         DateTime @default(now())
+
+  apiKey OrganizationApiKey @relation(fields: [apiKeyId], references: [id], onDelete: Cascade)
+
+  @@index([apiKeyId, seenAt])
 }
