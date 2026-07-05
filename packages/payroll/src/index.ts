@@ -22,6 +22,14 @@ export {
   registerDatevProfile,
 } from './profiles/datev/index.js';
 export { EnovaProfile, registerEnovaProfile } from './profiles/enova/index.js';
+// --- Profiles: UK RTI file-export --------------------------------------------
+export { RtiEpsProfile, registerRtiEpsProfile } from './profiles/rti-eps/index.js';
+export { RtiFpsProfile, registerRtiFpsProfile } from './profiles/rti-fps/index.js';
+export {
+  hasRtiXsdBundle,
+  type RtiValidationResult,
+  validateRtiXml,
+} from './profiles/rti-shared/xsd-validate.js';
 export { registerSageDeProfile, SageDeProfile } from './profiles/sage-de/index.js';
 export {
   registerSymfoniaProfile,
