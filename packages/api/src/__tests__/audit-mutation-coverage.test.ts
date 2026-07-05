@@ -255,6 +255,10 @@ const {
     ...base,
     $transaction: vi.fn(async (fn: (tx: Rec) => unknown) => fn(mockPrisma)),
     $queryRaw: vi.fn(async () => []),
+    // Sensitive mutations enqueue a transactional-outbox row via raw SQL in the
+    // same tx; the enqueue reports one affected row so the mutation proceeds.
+    $executeRawUnsafe: vi.fn(async () => 1),
+    $queryRawUnsafe: vi.fn(async () => []),
   };
 
   return {
@@ -716,7 +720,11 @@ describe('approval.resumeFromCompliance — same-tx audit row', () => {
       approvalFlow: { id: FLOW_ID, resourceId: 'inv_1', resourceType: 'INVOICE' },
     }));
     mockPrisma.approvalDecision = { create: vi.fn(async () => ({})) };
-    mockPrisma.approvalStep.update = vi.fn(async () => ({ id: 'step_1', status: 'APPROVED' }));
+    mockPrisma.approvalStep.updateMany = vi.fn(async () => ({ count: 1 }));
+    mockPrisma.approvalStep.findUniqueOrThrow = vi.fn(async () => ({
+      id: 'step_1',
+      status: 'APPROVED',
+    }));
     mockPrisma.approvalFlow.findUnique = vi.fn(async () => ({
       id: FLOW_ID,
       createdByUserId: USER_ID,
@@ -754,7 +762,11 @@ describe('approval.resumeFromCompliance — same-tx audit row', () => {
       approvalFlow: { id: FLOW_ID, resourceId: 'inv_1', resourceType: 'INVOICE' },
     }));
     mockPrisma.approvalDecision = { create: vi.fn(async () => ({})) };
-    mockPrisma.approvalStep.update = vi.fn(async () => ({ id: 'step_1', status: 'REJECTED' }));
+    mockPrisma.approvalStep.updateMany = vi.fn(async () => ({ count: 1 }));
+    mockPrisma.approvalStep.findUniqueOrThrow = vi.fn(async () => ({
+      id: 'step_1',
+      status: 'REJECTED',
+    }));
     mockPrisma.approvalFlow.update = vi.fn(async () => ({ id: FLOW_ID, status: 'REJECTED' }));
     mockPrisma.invoice.update = vi.fn(async () => ({ id: 'inv_1', status: 'REJECTED' }));
     mockPrisma.invoice.findUnique = vi.fn(async () => ({
