@@ -18,6 +18,7 @@ import {
   _generateExportFileForFormat,
   _resolveOrgBankInfo,
   log,
+  persistExportSettlements,
   VALID_TRANSITIONS,
 } from './payment-shared';
 
@@ -310,7 +311,7 @@ export const paymentExportRouter = router({
       // amount. The per-run settlement-currency override is threaded by the
       // programmatic payout path; the file export defaults to the contractor's
       // currency.
-      const exportItems = await _buildExportItems(
+      const { items: exportItems, settlements } = await _buildExportItems(
         ctx.db,
         prepared.run.items,
         prepared.transferTitleTemplate,
@@ -362,6 +363,8 @@ export const paymentExportRouter = router({
       // winner), but only the caller that actually flipped the run to EXPORTED may
       // return it. A race loser returns a null file with the idempotent flag so an
       // operator never receives a second copy of an already-exported payment file.
+      // The loser also skips the settlement-provenance write: those FX rates were
+      // computed while building the (discarded) file, and the winner persists them.
       if (!exportResult.exported) {
         return {
           run: exportResult.run,
@@ -370,6 +373,8 @@ export const paymentExportRouter = router({
           idempotent: true,
         };
       }
+
+      await persistExportSettlements(ctx.db, settlements);
 
       return {
         run: exportResult.run,

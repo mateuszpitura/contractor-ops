@@ -351,6 +351,38 @@ async function persistSettlementProvenance(
 }
 
 /**
+ * FX provenance of one settled export item, surfaced by `_buildExportItems` so
+ * the caller can persist it AFTER the export-race is decided — only the caller
+ * that won the DRAFT/LOCKED → EXPORTED transition should write settlement rates.
+ * A race loser must not repeat the (idempotent) write. Same-currency items carry
+ * no provenance and are never included.
+ */
+export interface ExportSettlementProvenance {
+  itemId: string;
+  fromCurrency: string;
+  settlementCurrency: string;
+  rate: number;
+  rateDate: Date;
+}
+
+/**
+ * Persist the FX provenance for the settled cross-currency items of a WON export
+ * (see {@link ExportSettlementProvenance}). Called on the transition winner only,
+ * so the loser's file-build no longer repeats these writes.
+ */
+export async function persistExportSettlements(
+  db: DbClient,
+  settlements: ExportSettlementProvenance[],
+): Promise<void> {
+  for (const s of settlements) {
+    await persistSettlementProvenance(db, s.itemId, s.fromCurrency, s.settlementCurrency, {
+      rate: s.rate,
+      rateDate: s.rateDate,
+    });
+  }
+}
+
+/**
  * Builds the ExportItem array from payment-run items with resolved transfer
  * titles, applying the per-payout settlement conversion BEFORE the export buffer
  * is generated (the file must carry the settled amount, not the raw run amount).
@@ -358,8 +390,12 @@ async function persistSettlementProvenance(
  * For each item the settlement currency is resolved (a per-run override wins,
  * else the contractor's own currency) and the gross is converted at the
  * payment-date ECB rate. A missing or stale rate throws rather than emitting a
- * zeroed amount — the payout is never silently settled to nothing. The applied
- * rate + as-of date are persisted onto the `PaymentRunItem` for FX provenance.
+ * zeroed amount — the payout is never silently settled to nothing.
+ *
+ * The applied rate + ECB observation date are NOT persisted here — they are
+ * returned as `settlements` so the caller can persist them ONLY after winning the
+ * export-race transition (`persistExportSettlements`). Persisting inline would
+ * make a race loser repeat the idempotent write for a file it never returns.
  */
 export async function _buildExportItems(
   db: DbClient,
@@ -384,8 +420,9 @@ export async function _buildExportItems(
   }>,
   transferTitleTemplate: string,
   settlement: { paymentDate: Date; perRunOverride?: string },
-): Promise<ExportItem[]> {
+): Promise<{ items: ExportItem[]; settlements: ExportSettlementProvenance[] }> {
   const exportItems: ExportItem[] = [];
+  const settlements: ExportSettlementProvenance[] = [];
 
   for (const item of items) {
     const billingPeriod =
@@ -414,7 +451,15 @@ export async function _buildExportItems(
       settlement.paymentDate,
     );
 
-    await persistSettlementProvenance(db, item.id, item.currency, settlementCurrency, settled);
+    if (item.currency !== settlementCurrency) {
+      settlements.push({
+        itemId: item.id,
+        fromCurrency: item.currency,
+        settlementCurrency,
+        rate: settled.rate,
+        rateDate: settled.rateDate,
+      });
+    }
 
     // Decrypt the US routing/account only when both are present. The plaintext
     // stays inside this function and reaches only the export file buffer — it is
@@ -442,7 +487,7 @@ export async function _buildExportItems(
     });
   }
 
-  return exportItems;
+  return { items: exportItems, settlements };
 }
 
 /**

@@ -393,7 +393,7 @@ vi.mock('../routers/finance/payment-shared', async importOriginal => {
       orgBank: { iban: 'PL00', bic: 'BREXPLPW' },
       transferTitleTemplate: '{invoice_number}',
     })),
-    _buildExportItems: vi.fn(() => []),
+    _buildExportItems: vi.fn(() => ({ items: [], settlements: [] })),
     _generateExportFileForFormat: vi.fn(async () => ({
       fileBuffer: Buffer.from('file'),
       ext: 'csv',

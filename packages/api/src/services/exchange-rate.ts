@@ -404,22 +404,30 @@ export async function convertAmount(
     };
   }
 
-  const rateDate = date ?? new Date();
+  const asOf = date ?? new Date();
 
   // Convert through EUR as base. `maxAgeDays` (when set) makes each leg throw a
-  // StaleExchangeRateError rather than convert at a stale rate.
+  // StaleExchangeRateError rather than convert at a stale rate. Each leg also
+  // yields the ECB observation date of the row actually used — on a
+  // weekend/holiday or a carried-forward gap that is EARLIER than the requested
+  // `asOf`. `rateDate` (below) is the OLDEST such observation, since a cross-rate
+  // is only as current as its stalest leg; this is what FX provenance persists so
+  // a settled payout reconstructs the actual rate observation, not the pay date.
+  const observedDates: Date[] = [];
   let fromToEur = 1; // If from is EUR, rate is 1
   if (fromCurrency !== 'EUR') {
-    const fromRate = await getRate(db, 'EUR', fromCurrency, rateDate, maxAgeDays);
+    const fromRate = await getRate(db, 'EUR', fromCurrency, asOf, maxAgeDays);
     if (!fromRate) return null;
     fromToEur = 1 / fromRate.rate; // Invert: EUR per 1 fromCurrency
+    observedDates.push(observationDate(fromRate));
   }
 
   let eurToTarget = 1; // If target is EUR, rate is 1
   if (toCurrency !== 'EUR') {
-    const toRate = await getRate(db, 'EUR', toCurrency, rateDate, maxAgeDays);
+    const toRate = await getRate(db, 'EUR', toCurrency, asOf, maxAgeDays);
     if (!toRate) return null;
     eurToTarget = toRate.rate; // EUR to target directly
+    observedDates.push(observationDate(toRate));
   }
 
   // Money-rounding policy (see wiki/patterns/money-rounding): no decimal.js in this service,
@@ -433,6 +441,11 @@ export async function convertAmount(
   }
   const combinedRate = fromToEur * eurToTarget;
   const convertedAmount = Math.round(amountMinor * combinedRate);
+
+  // `fromCurrency !== toCurrency` guarantees at least one non-EUR leg, so
+  // `observedDates` is non-empty here; the `asOf` fallback is defensive only.
+  const rateDate =
+    observedDates.length > 0 ? new Date(Math.min(...observedDates.map(d => d.getTime()))) : asOf;
 
   return {
     amountMinor: convertedAmount,

@@ -12,7 +12,11 @@
 
 import { describe, expect, it } from 'vitest';
 import type { ExportItem, OrgBankInfo } from '../../../services/payment-export';
-import { _buildExportItems, _generateExportFileForFormat } from '../payment-shared';
+import {
+  _buildExportItems,
+  _generateExportFileForFormat,
+  persistExportSettlements,
+} from '../payment-shared';
 
 /** Stored EUR->USD rate mirroring the ECB daily feed shape. */
 const EUR_USD = 1.0836;
@@ -69,18 +73,25 @@ const paymentDate = new Date('2026-04-11');
 
 describe('_buildExportItems settlement wiring', () => {
   it('leaves the amount unchanged when the settlement currency equals the run currency', async () => {
-    const { db, updates } = makeDbStub({});
-    const items = await _buildExportItems(db, [makeRunItem()], '{invoice_number}', { paymentDate });
+    const { db } = makeDbStub({});
+    const { items, settlements } = await _buildExportItems(
+      db,
+      [makeRunItem()],
+      '{invoice_number}',
+      {
+        paymentDate,
+      },
+    );
     expect(items).toHaveLength(1);
     expect(items[0]?.amountMinor).toBe(100_000);
     expect(items[0]?.currency).toBe('PLN');
-    // Same-currency settlement: no FX provenance persisted (rate 1, nothing to reconstruct).
-    expect(updates).toHaveLength(0);
+    // Same-currency settlement: no FX provenance to persist (rate 1, nothing to reconstruct).
+    expect(settlements).toHaveLength(0);
   });
 
   it('exports the converted amount when a per-run override differs from the run currency', async () => {
     const { db } = makeDbStub({ 'EUR->USD': EUR_USD });
-    const items = await _buildExportItems(
+    const { items } = await _buildExportItems(
       db,
       [
         makeRunItem({
@@ -99,7 +110,7 @@ describe('_buildExportItems settlement wiring', () => {
 
   it('defaults the settlement currency to the contractor currency and converts', async () => {
     const { db } = makeDbStub({ 'EUR->USD': EUR_USD });
-    const items = await _buildExportItems(
+    const { items } = await _buildExportItems(
       db,
       [
         makeRunItem({
@@ -115,9 +126,14 @@ describe('_buildExportItems settlement wiring', () => {
     expect(items[0]?.amountMinor).toBe(Math.round(100_000 * EUR_USD));
   });
 
-  it('persists FX provenance so the settled amount reconstructs from the stored columns', async () => {
+  it('stamps the ECB observation date (not the pay date) so the settled amount reconstructs', async () => {
     const { db, updates } = makeDbStub({ 'EUR->USD': EUR_USD });
-    const items = await _buildExportItems(
+    // Pay date deliberately AFTER the stored ECB observation (a weekend/holiday
+    // gap): the rate row the feed actually supplies is dated 2026-04-11, so the
+    // provenance must stamp THAT observation date, never the later pay date.
+    const settlementPayDate = new Date('2026-04-13');
+    const ecbObservationDate = new Date('2026-04-11');
+    const { items, settlements } = await _buildExportItems(
       db,
       [
         makeRunItem({
@@ -128,13 +144,22 @@ describe('_buildExportItems settlement wiring', () => {
         }),
       ],
       '{invoice_number}',
-      { paymentDate },
+      { paymentDate: settlementPayDate },
     );
+
+    // Building no longer writes provenance — the export-race winner persists it.
+    expect(updates).toHaveLength(0);
+    expect(settlements).toHaveLength(1);
+    expect(settlements[0]?.rateDate).toEqual(ecbObservationDate);
+
+    await persistExportSettlements(db, settlements);
 
     expect(updates).toHaveLength(1);
     expect(updates[0]?.id).toBe('item-42');
     const persistedRate = updates[0]?.data.settlementRate as number;
-    expect(updates[0]?.data.settlementRateDate).toEqual(paymentDate);
+    // Stamped the ECB observation date, NOT the (later) payment date.
+    expect(updates[0]?.data.settlementRateDate).toEqual(ecbObservationDate);
+    expect(updates[0]?.data.settlementRateDate).not.toEqual(settlementPayDate);
     // A payout audit reconstructs the settled amount from the persisted rate.
     expect(Math.round(100_000 * persistedRate)).toBe(items[0]?.amountMinor);
   });

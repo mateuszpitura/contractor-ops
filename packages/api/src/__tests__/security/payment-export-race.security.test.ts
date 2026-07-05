@@ -20,7 +20,7 @@ const ORG_ID = 'org-00000000-0000-0000-0000-000000000001';
 const USER_ID = 'user-00000000-0000-0000-0000-000000000001';
 const RUN_ID = 'cm5xj9k2a0000abcd1234efga';
 
-const { mockPrisma, exportCreate, complianceCreate } = vi.hoisted(() => {
+const { mockPrisma, exportCreate, complianceCreate, itemUpdate } = vi.hoisted(() => {
   type Rec = Record<string, unknown>;
 
   const draftRun: Rec = {
@@ -60,6 +60,9 @@ const { mockPrisma, exportCreate, complianceCreate } = vi.hoisted(() => {
 
   const exportCreate = vi.fn(async (a: { data: Rec }) => ({ id: 'export-1', ...a.data }));
   const complianceCreate = vi.fn(async (a: { data: Rec }) => ({ id: 'cc-1', ...a.data }));
+  // Settlement-provenance write. Only the transition winner may call it; a race
+  // loser must not repeat the (idempotent) update for a file it never returns.
+  const itemUpdate = vi.fn(async () => ({}));
 
   const orgRecord: Rec = {
     id: 'org-00000000-0000-0000-0000-000000000001',
@@ -92,6 +95,7 @@ const { mockPrisma, exportCreate, complianceCreate } = vi.hoisted(() => {
     paymentRunItem: {
       findMany: vi.fn(async () => [{ currency: 'PLN' }]),
       aggregate: vi.fn(async () => ({ _sum: { amountMinor: 100000 }, _count: 1 })),
+      update: itemUpdate,
     },
     paymentExport: { create: exportCreate },
     paymentRunComplianceCheck: { create: complianceCreate },
@@ -102,7 +106,7 @@ const { mockPrisma, exportCreate, complianceCreate } = vi.hoisted(() => {
     },
   };
 
-  return { mockPrisma, exportCreate, complianceCreate };
+  return { mockPrisma, exportCreate, complianceCreate, itemUpdate };
 });
 
 vi.mock('@contractor-ops/auth', () => ({
@@ -136,7 +140,20 @@ vi.mock('../../routers/finance/payment-shared', async importOriginal => {
   const actual = await importOriginal<typeof import('../../routers/finance/payment-shared')>();
   return {
     ...actual,
-    _buildExportItems: vi.fn(() => []),
+    // One cross-currency settlement so the winner persists exactly one provenance
+    // row; the loser must persist none (asserted below via `itemUpdate`).
+    _buildExportItems: vi.fn(async () => ({
+      items: [],
+      settlements: [
+        {
+          itemId: 'item-1',
+          fromCurrency: 'PLN',
+          settlementCurrency: 'USD',
+          rate: 0.25,
+          rateDate: new Date('2026-04-11'),
+        },
+      ],
+    })),
     _generateExportFileForFormat: vi.fn(async () => ({
       fileBuffer: Buffer.from('file'),
       ext: 'csv',
@@ -254,6 +271,21 @@ describe('payment.lockAndExport double-export TOCTOU (F4)', () => {
     // null, so an operator can never receive two copies of the same payment file.
     const filesReturned = [first, second].filter(r => r.fileBase64 != null);
     expect(filesReturned).toHaveLength(1);
+  });
+
+  it('only the transition winner persists settlement provenance (loser skips the write)', async () => {
+    const caller = makeCaller();
+
+    await Promise.all([
+      caller.payment.lockAndExport({ runId: RUN_ID, exportFormat: 'CSV' }),
+      caller.payment.lockAndExport({ runId: RUN_ID, exportFormat: 'CSV' }),
+    ]);
+
+    // Both racers built the file (and computed its cross-currency settlement
+    // rates), but only the winner reaches the provenance persist — the loser
+    // returns the null file first. So the idempotent settlement-rate write on
+    // `PaymentRunItem` happens exactly once, never twice.
+    expect(itemUpdate).toHaveBeenCalledTimes(1);
   });
 
   it('a second sequential call after export is idempotent and writes no new rows', async () => {
