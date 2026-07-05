@@ -65,10 +65,6 @@ export const leaveTypeUpsertInput = z
     leaveKind: leaveKindEnum,
     paid: z.boolean().default(true),
     requiresApproval: z.boolean().default(true),
-    colorHex: z
-      .string()
-      .regex(/^#[0-9a-fA-F]{6}$/, 'colorHex must be a #rrggbb value')
-      .optional(),
     active: z.boolean().default(true),
   })
   .strict();

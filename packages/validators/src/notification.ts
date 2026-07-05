@@ -41,6 +41,9 @@ export const NOTIFICATION_TYPES = [
   // contractor's tax-year USD payouts near or cross the $20,000 + 200 threshold
   'tax.form_1099k_approaching',
   'tax.form_1099k_over',
+  // Employee sick absence recorded (a direct notification to leave approvers /
+  // HR, never an approval request — sick is reported, not routed for approval).
+  'LEAVE_SICK_RECORDED',
 ] as const;
 
 export const notificationTypeEnum = z.enum(NOTIFICATION_TYPES);
