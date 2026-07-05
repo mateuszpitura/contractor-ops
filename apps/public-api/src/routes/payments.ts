@@ -1,4 +1,7 @@
-import { publicApiPaymentListInputSchema } from '@contractor-ops/validators/public-api';
+import {
+  publicApiPaymentListInputSchema,
+  publicApiPaymentUpdateInputSchema,
+} from '@contractor-ops/validators/public-api';
 import { createRoute, OpenAPIHono, z } from '@hono/zod-openapi';
 import { decodeCursor } from '../lib/openapi-cursor.js';
 import {
@@ -6,8 +9,10 @@ import {
   envelope,
   errorResponses,
   itemOkResponse,
+  jsonBody,
   listOkResponse,
   listQuery,
+  writeResponses,
 } from '../lib/openapi-route.js';
 
 const payments = new OpenAPIHono();
@@ -54,6 +59,22 @@ payments.openapi(getByIdRoute, async c => {
   const { id } = c.req.valid('param');
   const caller = createPublicCaller(c);
   const result = await caller.payment.getById({ id });
+  return c.json({ data: result }, 200);
+});
+
+// --- Hidden write route (double-dark) ---
+
+const updateRouteDef = createRoute({
+  method: 'patch',
+  path: '/',
+  hide: true,
+  request: { body: jsonBody(publicApiPaymentUpdateInputSchema) },
+  responses: writeResponses,
+});
+
+payments.openapi(updateRouteDef, async c => {
+  const body = c.req.valid('json');
+  const result = await createPublicCaller(c).payment.update(body);
   return c.json({ data: result }, 200);
 });
 

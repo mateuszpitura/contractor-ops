@@ -1,4 +1,8 @@
-import { publicApiWorkflowListInputSchema } from '@contractor-ops/validators/public-api';
+import {
+  publicApiWorkflowCreateInputSchema,
+  publicApiWorkflowExecuteInputSchema,
+  publicApiWorkflowListInputSchema,
+} from '@contractor-ops/validators/public-api';
 import { createRoute, OpenAPIHono, z } from '@hono/zod-openapi';
 import { decodeCursor } from '../lib/openapi-cursor.js';
 import {
@@ -6,8 +10,10 @@ import {
   envelope,
   errorResponses,
   itemOkResponse,
+  jsonBody,
   listOkResponse,
   listQuery,
+  writeResponses,
 } from '../lib/openapi-route.js';
 
 const workflows = new OpenAPIHono();
@@ -55,6 +61,36 @@ workflows.openapi(getByIdRoute, async c => {
   const { id } = c.req.valid('param');
   const caller = createPublicCaller(c);
   const result = await caller.workflow.getById({ id });
+  return c.json({ data: result }, 200);
+});
+
+// --- Hidden write routes (double-dark) ---
+
+const createRouteDef = createRoute({
+  method: 'post',
+  path: '/',
+  hide: true,
+  request: { body: jsonBody(publicApiWorkflowCreateInputSchema) },
+  responses: writeResponses,
+});
+
+workflows.openapi(createRouteDef, async c => {
+  const body = c.req.valid('json');
+  const result = await createPublicCaller(c).workflow.create(body);
+  return c.json({ data: result }, 200);
+});
+
+const executeRouteDef = createRoute({
+  method: 'post',
+  path: '/execute',
+  hide: true,
+  request: { body: jsonBody(publicApiWorkflowExecuteInputSchema) },
+  responses: writeResponses,
+});
+
+workflows.openapi(executeRouteDef, async c => {
+  const body = c.req.valid('json');
+  const result = await createPublicCaller(c).workflow.execute(body);
   return c.json({ data: result }, 200);
 });
 
