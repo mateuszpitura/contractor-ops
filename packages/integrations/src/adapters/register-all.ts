@@ -86,6 +86,7 @@ function startHeavyLoad(): Promise<void> {
       { OktaAdapter },
       { GitHubAdapter },
       { GustoAdapter },
+      { QuickBooksAdapter },
     ] = await Promise.all([
       import('./docusign-adapter.js'),
       import('./autenti-adapter.js'),
@@ -103,6 +104,7 @@ function startHeavyLoad(): Promise<void> {
       import('./okta-adapter.js'),
       import('./github-adapter.js'),
       import('./gusto-adapter.js'),
+      import('./quickbooks-adapter.js'),
     ]);
     registerAdapter(new DocuSignAdapter());
     registerAdapter(new AutentiAdapter());
@@ -138,6 +140,7 @@ function startHeavyLoad(): Promise<void> {
     // (default) dataport adapter.
     registerCompanyRegistryAdapter(new Bir1CompanyRegistryAdapter());
     registerAdapter(new GustoAdapter());
+    registerAdapter(new QuickBooksAdapter());
   })();
   return heavyLoadPromise;
 }

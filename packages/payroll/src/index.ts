@@ -32,6 +32,11 @@ export {
 } from './profiles/gusto/index.js';
 export { GustoCsvProfile, registerGustoCsvProfile } from './profiles/gusto-csv/index.js';
 export {
+  type QuickBooksBridgeContext,
+  QuickBooksProfile,
+  registerQuickBooksProfile,
+} from './profiles/quickbooks/index.js';
+export {
   QuickbooksCsvProfile,
   registerQuickbooksCsvProfile,
 } from './profiles/quickbooks-csv/index.js';
