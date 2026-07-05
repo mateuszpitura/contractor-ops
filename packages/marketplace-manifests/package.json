@@ -1,0 +1,41 @@
+{
+  "name": "@contractor-ops/marketplace-manifests",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "bin": {
+    "marketplace-manifests": "./dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "generate": "tsx src/cli.ts generate",
+    "generate:check": "tsx src/cli.ts generate --check",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
+    "typecheck": "tsc --noEmit",
+    "typecheck:fast": "tsgo --noEmit"
+  },
+  "dependencies": {
+    "@contractor-ops/logger": "workspace:*",
+    "@contractor-ops/validators": "workspace:*"
+  },
+  "devDependencies": {
+    "@vitest/coverage-v8": "^4.1.5",
+    "tsx": "^4.20.3",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.5"
+  }
+}

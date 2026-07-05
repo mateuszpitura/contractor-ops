@@ -1,8 +1,8 @@
 ---
 phase: 101
 slug: theme-c-marketplace-listings-developer-experience
-status: draft
-nyquist_compliant: false
+status: in-progress
+nyquist_compliant: true
 wave_0_complete: false
 created: 2026-07-05
 ---

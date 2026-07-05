@@ -2091,6 +2091,40 @@ export type EnumLeaveLedgerTypeWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedEnumLeaveLedgerTypeFilter<$PrismaModel>
 }
 
+export type EnumMarketplacePlatformFilter<$PrismaModel = never> = {
+  equals?: $Enums.MarketplacePlatform | Prisma.EnumMarketplacePlatformFieldRefInput<$PrismaModel>
+  in?: $Enums.MarketplacePlatform[] | Prisma.ListEnumMarketplacePlatformFieldRefInput<$PrismaModel>
+  notIn?: $Enums.MarketplacePlatform[] | Prisma.ListEnumMarketplacePlatformFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumMarketplacePlatformFilter<$PrismaModel> | $Enums.MarketplacePlatform
+}
+
+export type EnumMarketplaceListingStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.MarketplaceListingStatus | Prisma.EnumMarketplaceListingStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.MarketplaceListingStatus[] | Prisma.ListEnumMarketplaceListingStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.MarketplaceListingStatus[] | Prisma.ListEnumMarketplaceListingStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumMarketplaceListingStatusFilter<$PrismaModel> | $Enums.MarketplaceListingStatus
+}
+
+export type EnumMarketplacePlatformWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.MarketplacePlatform | Prisma.EnumMarketplacePlatformFieldRefInput<$PrismaModel>
+  in?: $Enums.MarketplacePlatform[] | Prisma.ListEnumMarketplacePlatformFieldRefInput<$PrismaModel>
+  notIn?: $Enums.MarketplacePlatform[] | Prisma.ListEnumMarketplacePlatformFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumMarketplacePlatformWithAggregatesFilter<$PrismaModel> | $Enums.MarketplacePlatform
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumMarketplacePlatformFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumMarketplacePlatformFilter<$PrismaModel>
+}
+
+export type EnumMarketplaceListingStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.MarketplaceListingStatus | Prisma.EnumMarketplaceListingStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.MarketplaceListingStatus[] | Prisma.ListEnumMarketplaceListingStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.MarketplaceListingStatus[] | Prisma.ListEnumMarketplaceListingStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumMarketplaceListingStatusWithAggregatesFilter<$PrismaModel> | $Enums.MarketplaceListingStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumMarketplaceListingStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumMarketplaceListingStatusFilter<$PrismaModel>
+}
+
 export type EnumNotificationChannelFilter<$PrismaModel = never> = {
   equals?: $Enums.NotificationChannel | Prisma.EnumNotificationChannelFieldRefInput<$PrismaModel>
   in?: $Enums.NotificationChannel[] | Prisma.ListEnumNotificationChannelFieldRefInput<$PrismaModel>
@@ -4958,6 +4992,40 @@ export type NestedEnumLeaveLedgerTypeWithAggregatesFilter<$PrismaModel = never> 
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumLeaveLedgerTypeFilter<$PrismaModel>
   _max?: Prisma.NestedEnumLeaveLedgerTypeFilter<$PrismaModel>
+}
+
+export type NestedEnumMarketplacePlatformFilter<$PrismaModel = never> = {
+  equals?: $Enums.MarketplacePlatform | Prisma.EnumMarketplacePlatformFieldRefInput<$PrismaModel>
+  in?: $Enums.MarketplacePlatform[] | Prisma.ListEnumMarketplacePlatformFieldRefInput<$PrismaModel>
+  notIn?: $Enums.MarketplacePlatform[] | Prisma.ListEnumMarketplacePlatformFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumMarketplacePlatformFilter<$PrismaModel> | $Enums.MarketplacePlatform
+}
+
+export type NestedEnumMarketplaceListingStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.MarketplaceListingStatus | Prisma.EnumMarketplaceListingStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.MarketplaceListingStatus[] | Prisma.ListEnumMarketplaceListingStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.MarketplaceListingStatus[] | Prisma.ListEnumMarketplaceListingStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumMarketplaceListingStatusFilter<$PrismaModel> | $Enums.MarketplaceListingStatus
+}
+
+export type NestedEnumMarketplacePlatformWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.MarketplacePlatform | Prisma.EnumMarketplacePlatformFieldRefInput<$PrismaModel>
+  in?: $Enums.MarketplacePlatform[] | Prisma.ListEnumMarketplacePlatformFieldRefInput<$PrismaModel>
+  notIn?: $Enums.MarketplacePlatform[] | Prisma.ListEnumMarketplacePlatformFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumMarketplacePlatformWithAggregatesFilter<$PrismaModel> | $Enums.MarketplacePlatform
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumMarketplacePlatformFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumMarketplacePlatformFilter<$PrismaModel>
+}
+
+export type NestedEnumMarketplaceListingStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.MarketplaceListingStatus | Prisma.EnumMarketplaceListingStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.MarketplaceListingStatus[] | Prisma.ListEnumMarketplaceListingStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.MarketplaceListingStatus[] | Prisma.ListEnumMarketplaceListingStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumMarketplaceListingStatusWithAggregatesFilter<$PrismaModel> | $Enums.MarketplaceListingStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumMarketplaceListingStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumMarketplaceListingStatusFilter<$PrismaModel>
 }
 
 export type NestedEnumNotificationChannelFilter<$PrismaModel = never> = {

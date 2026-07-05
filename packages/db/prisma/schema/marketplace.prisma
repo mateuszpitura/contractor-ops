@@ -1,0 +1,36 @@
+// Marketplace listing tracker — the internal listing-status dashboard's source.
+//
+// A global (NOT tenant-scoped) platform resource: one row per marketplace the
+// product's own integration is listed on. It records the external review state
+// (submission -> review -> live) so an operator tracks all three listings from
+// Settings -> Developer. Submission itself is a manual external step; this table
+// is the state machine that tracks it.
+
+model MarketplaceListing {
+  id                 String                   @id @default(cuid())
+  platform           MarketplacePlatform      @unique
+  status             MarketplaceListingStatus @default(DRAFT)
+  versionPin         String
+  lastReviewFeedback String?
+  listingUrl         String?
+  submittedAt        DateTime?
+  wentLiveAt         DateTime?
+  updatedByUserId    String?
+  createdAt          DateTime                 @default(now())
+  updatedAt          DateTime                 @updatedAt
+}
+
+enum MarketplacePlatform {
+  ZAPIER
+  N8N
+  MAKE
+}
+
+enum MarketplaceListingStatus {
+  DRAFT
+  SUBMITTED
+  IN_REVIEW
+  LIVE
+  REJECTED
+  NEEDS_CHANGES
+}

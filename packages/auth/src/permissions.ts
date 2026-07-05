@@ -62,6 +62,10 @@ export const accessControlStatement = {
   employeeFileC: ['read', 'write'],
   employeeFileD: ['read', 'write'],
   'admin:boe-rate': ['read', 'write'],
+  // Global platform resource: the product's own marketplace listings (Zapier /
+  // n8n / Make) + the public status page's incident history. Cross-tenant ops
+  // data, not customer data — granted to the platform-operator role only.
+  'admin:marketplace': ['read', 'write'],
   // Public REST read gate for worker-classification determinations. Read-only:
   // the API exposes classification results, never a write/verdict surface.
   classification: ['read'],

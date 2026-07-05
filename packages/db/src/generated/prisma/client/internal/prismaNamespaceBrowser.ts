@@ -143,6 +143,7 @@ export const ModelName = {
   LeaveRequest: 'LeaveRequest',
   LeaveLedgerEntry: 'LeaveLedgerEntry',
   LeaveBalance: 'LeaveBalance',
+  MarketplaceListing: 'MarketplaceListing',
   Notification: 'Notification',
   UserNotificationPreference: 'UserNotificationPreference',
   Comment: 'Comment',
@@ -1936,6 +1937,23 @@ export const LeaveBalanceScalarFieldEnum = {
 } as const
 
 export type LeaveBalanceScalarFieldEnum = (typeof LeaveBalanceScalarFieldEnum)[keyof typeof LeaveBalanceScalarFieldEnum]
+
+
+export const MarketplaceListingScalarFieldEnum = {
+  id: 'id',
+  platform: 'platform',
+  status: 'status',
+  versionPin: 'versionPin',
+  lastReviewFeedback: 'lastReviewFeedback',
+  listingUrl: 'listingUrl',
+  submittedAt: 'submittedAt',
+  wentLiveAt: 'wentLiveAt',
+  updatedByUserId: 'updatedByUserId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type MarketplaceListingScalarFieldEnum = (typeof MarketplaceListingScalarFieldEnum)[keyof typeof MarketplaceListingScalarFieldEnum]
 
 
 export const NotificationScalarFieldEnum = {

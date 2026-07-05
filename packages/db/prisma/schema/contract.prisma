@@ -300,6 +300,7 @@ enum EntityType {
   EMPLOYEE_TIME_RECORD
   WORKER
   EMPLOYEE
+  MARKETPLACE_LISTING
 }
 
 enum DocumentLinkRole {
