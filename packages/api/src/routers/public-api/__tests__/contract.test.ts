@@ -40,6 +40,10 @@ const { mockDb, mockResolveApiKey, mockTouchLastUsed, mockGetSubscription } = vi
 // Module mocks
 // ---------------------------------------------------------------------------
 
+vi.mock('@contractor-ops/feature-flags', () => ({
+  evaluate: vi.fn(() => ({ enabled: true, reason: 'unleash' })),
+}));
+
 vi.mock('@contractor-ops/auth', () => ({
   auth: {
     api: {

@@ -353,6 +353,7 @@ export const EMPLOYEE_EMIRATES_ID_CHECKSUM_ADVISORY = 'employeeEmiratesIdChecksu
 export const US_EXPANSION_DISABLED = 'usExpansionDisabled';
 export const FORM_1042S_NOT_FOUND = 'form1042sNotFound';
 export const WORKFORCE_DISABLED = 'workforceDisabled';
+export const PUBLIC_API_DISABLED = 'publicApiDisabled';
 export const TREATY_OVERRIDE_REASON_REQUIRED = 'treatyOverrideReasonRequired';
 export const CLASSIFICATION_OVERRIDE_REASON_REQUIRED = 'classificationOverrideReasonRequired';
 export const CLASSIFICATION_OVERRIDE_US_ONLY = 'classificationOverrideUsOnly';

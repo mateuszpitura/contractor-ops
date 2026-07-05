@@ -3,6 +3,7 @@ import * as E from '../errors';
 import { publicProcedure, t } from '../init';
 import { resolveApiKey, touchLastUsed } from '../services/api-key-service';
 import { demoReadOnly } from './demo';
+import { assertPublicApiEnabled } from './require-public-api-flag';
 import { runWithTenantContext } from './tenant';
 import { requireTier } from './tier';
 
@@ -79,18 +80,42 @@ const apiKeyAuthMiddleware = t.middleware(async ({ ctx, next }) => {
 });
 
 // ---------------------------------------------------------------------------
+// Per-org module.public-api dark gate
+// ---------------------------------------------------------------------------
+
+/**
+ * Re-evaluates `module.public-api` for the caller's resolved org/region and
+ * throws NOT_FOUND (dark) when off. Runs AFTER apiKeyAuth so org/region are
+ * known. Every public procedure — reads and the dark writes — inherits it, so
+ * the whole surface is invisible per-org until Phase 99 grants the flag.
+ */
+const publicApiFlagGate = t.middleware(async ({ ctx, next }) => {
+  // org/region are enriched by apiKeyAuthMiddleware (runs earlier in the chain);
+  // the standalone middleware type doesn't carry that, so read them explicitly
+  // — the same cast requireTier uses for ctx.organizationId.
+  const { organizationId, region } = ctx as unknown as {
+    organizationId: string;
+    region: string;
+  };
+  assertPublicApiEnabled(organizationId, region);
+  return next();
+});
+
+// ---------------------------------------------------------------------------
 // Exported procedure
 // ---------------------------------------------------------------------------
 
 /**
  * Procedure for public API endpoints authenticated via Organization API Key.
  *
- * Chain: publicProcedure → apiKeyAuth → requireTier(ENTERPRISE) → handler
+ * Chain: publicProcedure → apiKeyAuth → publicApiFlagGate → requireTier(ENTERPRISE)
+ *        → demoReadOnly → handler
  *
  * Provides: ctx.db, ctx.organizationId, ctx.region, ctx.authMode,
  *           ctx.apiKeyId, ctx.apiKeyScopes, ctx.subscription
  */
 export const apiKeyTenantProcedure = publicProcedure
   .use(apiKeyAuthMiddleware)
+  .use(publicApiFlagGate)
   .use(requireTier('ENTERPRISE'))
   .use(demoReadOnly);
