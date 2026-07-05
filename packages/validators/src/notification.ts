@@ -41,6 +41,8 @@ export const NOTIFICATION_TYPES = [
   // contractor's tax-year USD payouts near or cross the $20,000 + 200 threshold
   'tax.form_1099k_approaching',
   'tax.form_1099k_over',
+  // Year-end 1099-NEC batch-due reminder (notify-only — never generates or files)
+  'tax.form_1099_year_end_reminder',
 ] as const;
 
 export const notificationTypeEnum = z.enum(NOTIFICATION_TYPES);

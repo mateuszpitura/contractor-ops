@@ -66,6 +66,7 @@ import {
   latePaymentInterestRouter,
   paymentRouter,
   skontoRouter,
+  tax1099Router,
 } from './routers/finance/index';
 import { gulfRouter } from './routers/gulf/index';
 import {
@@ -164,6 +165,7 @@ const usExpansionRouters = {
   taxForm: taxFormRouter, // taxForm: staff read/track of US W-form submissions + request/remind (no on-behalf signing)
   form1042s: form1042sRouter, // form1042s: staff Form 1042-S generate/correct/recipient-copy + gated full-FTIN reveal
   form1099kTracker: form1099kTrackerRouter, // form1099kTracker: read-only informational 1099-K band for the contractor profile (cron-written, never files)
+  tax1099: tax1099Router, // tax1099: staff 1099-NEC year-end filing — batch generate, build/validate/download IRIS XML, upload ack, TIN-mismatch advisory, correction, per-state output
 } as const;
 
 const conditionalUsExpansionRouters = isUsExpansionRegistered()

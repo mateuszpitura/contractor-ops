@@ -181,6 +181,11 @@
       "import": "./src/services/form-1099k-tracker.service.ts",
       "default": "./src/services/form-1099k-tracker.service.ts"
     },
+    "./services/year-end-1099-reminder.service": {
+      "types": "./src/services/year-end-1099-reminder.service.ts",
+      "import": "./src/services/year-end-1099-reminder.service.ts",
+      "default": "./src/services/year-end-1099-reminder.service.ts"
+    },
     "./services/rbac-recipients": {
       "types": "./src/services/rbac-recipients.ts",
       "import": "./src/services/rbac-recipients.ts",

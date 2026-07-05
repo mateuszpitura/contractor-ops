@@ -52,6 +52,9 @@ const envSchema = z.object({
   CRON_LATE_INTEREST_PDF_REAPER_SCHEDULE: z.string().default('*/5 * * * *'),
   CRON_TRIAL_NOTIFICATIONS_SCHEDULE: z.string().default('0 9 * * *'),
   CRON_REMINDERS_SCHEDULE: z.string().default('0 9 * * *'),
+  // Year-end 1099-NEC batch-due reminder — mid-January (before the ~Jan 31
+  // furnish deadline). Notify-only; never generates or files.
+  CRON_YEAR_END_1099_REMINDER_SCHEDULE: z.string().default('0 8 15 1 *'),
 
   /** Observability. */
   SENTRY_DSN: z.string().url().optional(),
