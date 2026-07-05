@@ -49,7 +49,9 @@ flowchart TB
 | Approval engine | `services/approval-engine.ts` | [[domains/approvals-engine]] |
 | Compliance payment gate | `services/compliance-payment-gate.ts` | [[domains/compliance-dashboard]] |
 | Audit writer | `services/audit-writer.ts` | [[patterns/tenant-and-audit]] |
-| API key service | `services/api-key-service.ts` | [[domains/public-api-surface]] — HMAC-SHA256 `co_live_*` gen/hash/verify + `resolveByPrefix` (grace-aware: a superseded key resolves only until `graceExpiresAt`) + `appendApiKeyIpEvent` (bounded per-key source-IP log) |
+| API key service | `services/api-key-service.ts` | [[domains/public-api-surface]] — HMAC-SHA256 `co_live_*`/`co_test_*` gen/hash/verify + `resolveByPrefix` (grace-aware + **fail-closed on any environment↔`isSandbox` mismatch both ways**) + `appendApiKeyIpEvent` (bounded per-key source-IP log) |
+| Sandbox provisioning | `services/sandbox-provisioning.ts` | [[domains/developer-experience]] — `provisionSandboxOrg` (idempotent, seeds a fixture contractor) + `issueSandboxKey` (mints a read-only `co_test_` key + audits) |
+| Status aggregator | `services/status-aggregator.ts` | [[domains/developer-experience]] — `aggregateStatus()` maps the shipped health sources into 3 coarse component states + open-incident history; timeout-guarded, fail-safe, no tenant data (feeds `/v1/status.json`) |
 | API tier limits | `lib/api-tier-limits.ts` | [[patterns/rate-limit]] — single source: monthly request quota (Starter 1k/Pro 10k/Ent ∞) + webhook-sub caps (defined; consumed in Phase 100) |
 | API quota counter | `services/api-quota-counter.ts` | [[patterns/rate-limit]] — Upstash calendar-month counter `api-quota:{org}:{YYYY-MM}` (+ month-end TTL); in-memory non-prod fallback; `incrementMonthlyRequestCount` / read-only `getMonthlyRequestCount` |
 | Portal session | `services/portal-session.ts` | [[patterns/portal-auth]] |

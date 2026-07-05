@@ -1,18 +1,23 @@
 import { TRPCError } from '@trpc/server';
 import * as E from '../errors';
 import { publicProcedure, t } from '../init';
+import { SANDBOX_DAILY_REQUEST_QUOTA, TIER_MONTHLY_REQUEST_QUOTA } from '../lib/api-tier-limits';
 import { appendApiKeyIpEvent, resolveApiKey, touchLastUsed } from '../services/api-key-service';
-import { enforceApiTierQuota } from './api-tier-quota';
+import {
+  incrementDailyRequestCount,
+  incrementMonthlyRequestCount,
+} from '../services/api-quota-counter';
 import { demoReadOnly } from './demo';
-import { assertPublicApiEnabled } from './require-public-api-flag';
+import { assertApiSandboxEnabled, assertPublicApiEnabled } from './require-public-api-flag';
 import { runWithTenantContext } from './tenant';
-import { requireTier } from './tier';
+import { assertMinimumTier } from './tier';
 
 // ---------------------------------------------------------------------------
 // API Key authentication middleware
 // ---------------------------------------------------------------------------
 
-const KEY_PREFIX = 'co_live_';
+const LIVE_PREFIX = 'co_live_';
+const SANDBOX_PREFIX = 'co_test_';
 
 /**
  * Middleware that authenticates requests using an Organization API Key.
@@ -27,15 +32,16 @@ const KEY_PREFIX = 'co_live_';
  */
 const apiKeyAuthMiddleware = t.middleware(async ({ ctx, next }) => {
   const authHeader = ctx.headers.get('authorization') ?? '';
+  const BEARER = 'Bearer ';
 
-  if (!authHeader.startsWith(`Bearer ${KEY_PREFIX}`)) {
+  const plaintext = authHeader.startsWith(BEARER) ? authHeader.slice(BEARER.length) : '';
+  if (!(plaintext.startsWith(LIVE_PREFIX) || plaintext.startsWith(SANDBOX_PREFIX))) {
     throw new TRPCError({
       code: 'UNAUTHORIZED',
       message: E.INVALID_API_KEY,
     });
   }
 
-  const plaintext = authHeader.slice('Bearer '.length);
   const keyRecord = await resolveApiKey(plaintext);
 
   if (!keyRecord) {
@@ -79,6 +85,10 @@ const apiKeyAuthMiddleware = t.middleware(async ({ ctx, next }) => {
           authMode: 'apiKey' as const,
           apiKeyId: keyRecord.id,
           apiKeyScopes: keyRecord.scopes,
+          apiKeyEnvironment: keyRecord.environment,
+          // A sandbox key resolves only to a sandbox org (fail-closed); surface
+          // it so the demo read-only guard isolates the whole request.
+          isSandbox: keyRecord.organization.isSandbox,
           // Attribution actor for FK-requiring creates (never authorization).
           apiKeyActingUserId: keyRecord.actingUserId,
         },
@@ -88,25 +98,48 @@ const apiKeyAuthMiddleware = t.middleware(async ({ ctx, next }) => {
 });
 
 // ---------------------------------------------------------------------------
-// Per-org module.public-api dark gate
+// Environment-branching access gate (flag + tier + quota)
 // ---------------------------------------------------------------------------
 
 /**
- * Re-evaluates `module.public-api` for the caller's resolved org/region and
- * throws NOT_FOUND (dark) when off. Runs AFTER apiKeyAuth so org/region are
- * known. Every public procedure — reads and the dark writes — inherits it, so
- * the whole surface is invisible per-org until Phase 99 grants the flag.
+ * After the key resolves, gate the request by its environment:
+ *
+ *   - LIVE: the per-org `module.public-api` dark gate + Enterprise tier + the
+ *     monthly per-tier request quota (behaviour unchanged from before).
+ *   - SANDBOX: the global `module.api-sandbox` flag + the per-day 100-request
+ *     cap — NO tier requirement and NO per-org `module.public-api`, so a free
+ *     `co_test_` key works without a paid subscription.
+ *
+ * org/region/apiKeyEnvironment are enriched by apiKeyAuthMiddleware (earlier in
+ * the chain); the standalone middleware type doesn't carry them, so read them
+ * explicitly — the same cast the tier check uses for ctx.organizationId.
  */
-const publicApiFlagGate = t.middleware(async ({ ctx, next }) => {
-  // org/region are enriched by apiKeyAuthMiddleware (runs earlier in the chain);
-  // the standalone middleware type doesn't carry that, so read them explicitly
-  // — the same cast requireTier uses for ctx.organizationId.
-  const { organizationId, region } = ctx as unknown as {
+const apiKeyAccessGate = t.middleware(async ({ ctx, next }) => {
+  const { organizationId, region, apiKeyEnvironment } = ctx as unknown as {
     organizationId: string;
     region: string;
+    apiKeyEnvironment: 'LIVE' | 'SANDBOX';
   };
+
+  if (apiKeyEnvironment === 'SANDBOX') {
+    assertApiSandboxEnabled(organizationId, region);
+    const count = await incrementDailyRequestCount(organizationId);
+    if (count > SANDBOX_DAILY_REQUEST_QUOTA) {
+      throw new TRPCError({ code: 'TOO_MANY_REQUESTS', message: E.API_QUOTA_EXCEEDED });
+    }
+    return next({ ctx: { subscription: null } });
+  }
+
   assertPublicApiEnabled(organizationId, region);
-  return next();
+  const subscription = await assertMinimumTier(organizationId, 'ENTERPRISE');
+  const limit = TIER_MONTHLY_REQUEST_QUOTA[subscription.tier];
+  if (Number.isFinite(limit)) {
+    const count = await incrementMonthlyRequestCount(organizationId);
+    if (count > limit) {
+      throw new TRPCError({ code: 'TOO_MANY_REQUESTS', message: E.API_QUOTA_EXCEEDED });
+    }
+  }
+  return next({ ctx: { subscription } });
 });
 
 // ---------------------------------------------------------------------------
@@ -116,15 +149,14 @@ const publicApiFlagGate = t.middleware(async ({ ctx, next }) => {
 /**
  * Procedure for public API endpoints authenticated via Organization API Key.
  *
- * Chain: publicProcedure → apiKeyAuth → publicApiFlagGate → requireTier(ENTERPRISE)
- *        → enforceApiTierQuota → demoReadOnly → handler
+ * Chain: publicProcedure → apiKeyAuth → apiKeyAccessGate (flag + tier + quota,
+ *        branched on the key environment) → demoReadOnly → handler
  *
  * Provides: ctx.db, ctx.organizationId, ctx.region, ctx.authMode,
- *           ctx.apiKeyId, ctx.apiKeyScopes, ctx.apiKeyActingUserId, ctx.subscription
+ *           ctx.apiKeyId, ctx.apiKeyScopes, ctx.apiKeyActingUserId,
+ *           ctx.apiKeyEnvironment, ctx.isSandbox, ctx.subscription
  */
 export const apiKeyTenantProcedure = publicProcedure
   .use(apiKeyAuthMiddleware)
-  .use(publicApiFlagGate)
-  .use(requireTier('ENTERPRISE'))
-  .use(enforceApiTierQuota)
+  .use(apiKeyAccessGate)
   .use(demoReadOnly);

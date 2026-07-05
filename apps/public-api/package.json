@@ -19,6 +19,7 @@
     "@contractor-ops/db": "workspace:*",
     "@contractor-ops/feature-flags": "workspace:*",
     "@contractor-ops/logger": "workspace:*",
+    "@contractor-ops/marketplace-manifests": "workspace:*",
     "@contractor-ops/validators": "workspace:*",
     "@hono/node-server": "^2.0.1",
     "@hono/zod-openapi": "1.4.0",

@@ -13,11 +13,13 @@ import classifications from './routes/classifications.js';
 import complianceDocuments from './routes/compliance-documents.js';
 import contractors from './routes/contractors.js';
 import contracts from './routes/contracts.js';
+import { registerDeveloperPortal } from './routes/docs.js';
 import documents from './routes/documents.js';
 import featureFlags from './routes/feature-flags.js';
 import invoices from './routes/invoices.js';
 import paymentRuns from './routes/payment-runs.js';
 import payments from './routes/payments.js';
+import { statusHandler } from './routes/status.js';
 import workflowTasks from './routes/workflow-tasks.js';
 import workflows from './routes/workflows.js';
 
@@ -132,11 +134,17 @@ app.route('/audit-log', auditLog);
 // --- Health check (outside auth) ---
 app.get('/health', c => c.json({ status: 'ok' }));
 
+// --- Public status page (outside auth; behind module.public-status-page) ---
+app.get('/status.json', statusHandler);
+
 // --- OpenAPI spec (derived from route definitions — no hand-written literal) ---
 app.get('/openapi.json', c => c.json(buildOpenApiDocument(app)));
 
 // --- Interactive docs (Scalar via the vendored npm dep — no CDN/SRI) ---
 app.get('/docs', Scalar({ url: '/v1/openapi.json' }));
+
+// --- Developer portal (extends /docs; behind module.developer-portal) ---
+registerDeveloperPortal(app);
 
 // --- Error handler ---
 app.onError(handleError);

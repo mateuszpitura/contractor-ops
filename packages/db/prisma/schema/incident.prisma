@@ -1,0 +1,35 @@
+// Incident history for the public status page. Operator-authored, GLOBAL (NOT
+// tenant-scoped) — a platform-operator resource, never customer data. Open /
+// monitoring incidents surface in the public /status.json aggregator.
+
+model IncidentReport {
+  id                 String           @id @default(cuid())
+  title              String
+  status             IncidentStatus   @default(OPEN)
+  severity           IncidentSeverity @default(MINOR)
+  // Which public status components this incident affects
+  // (e.g. "api", "webhooks-dispatcher", "background-jobs").
+  componentsAffected String[]
+  // Append-only timeline entries: { at: ISO string, message: string }.
+  updates            Json[]
+  startedAt          DateTime         @default(now())
+  resolvedAt         DateTime?
+  createdByUserId    String?
+  updatedByUserId    String?
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+
+  @@index([status, startedAt])
+}
+
+enum IncidentStatus {
+  OPEN
+  MONITORING
+  RESOLVED
+}
+
+enum IncidentSeverity {
+  MINOR
+  MAJOR
+  CRITICAL
+}

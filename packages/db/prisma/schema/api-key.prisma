@@ -1,12 +1,22 @@
 // Organization API Keys — M2M authentication for Enterprise public REST API
 
+// Environment axis distinguishing production keys (`co_live_`, real tenant data)
+// from free sandbox keys (`co_test_`, an isSandbox org with fixture data only).
+enum ApiKeyEnvironment {
+  LIVE
+  SANDBOX
+}
+
 model OrganizationApiKey {
-  id                String    @id @default(cuid())
+  id                String            @id @default(cuid())
   organizationId    String
   name              String
-  prefix            String    @db.Char(12)
+  prefix            String            @db.Char(12)
   hash              String
   scopes            String[]
+  // LIVE keys mint `co_live_` and resolve only to non-sandbox orgs; SANDBOX keys
+  // mint `co_test_` and resolve only to isSandbox orgs (fail-closed both ways).
+  environment       ApiKeyEnvironment @default(LIVE)
   createdByUserId   String
   // Mutable attribution actor for API-key writes: the real, ACTIVE org member
   // whose id fills non-null user FKs (PaymentRun.createdByUserId,
@@ -22,8 +32,8 @@ model OrganizationApiKey {
   supersededAt      DateTime?
   supersededByKeyId String?
   graceExpiresAt    DateTime?
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
 
   organization Organization    @relation(fields: [organizationId], references: [id])
   createdBy    User            @relation("ApiKeyCreatedBy", fields: [createdByUserId], references: [id])

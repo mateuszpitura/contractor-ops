@@ -1,6 +1,7 @@
 import { createHmac, randomBytes, timingSafeEqual } from 'node:crypto';
 import { prisma } from '@contractor-ops/db';
 import { createLogger } from '@contractor-ops/logger';
+import { markSandboxOrg } from '../lib/demo';
 
 const log = createLogger({ service: 'api-key-service' });
 
@@ -8,7 +9,17 @@ const log = createLogger({ service: 'api-key-service' });
 // Constants
 // ---------------------------------------------------------------------------
 
-const KEY_PREFIX = 'co_live_';
+type ApiKeyEnvironment = 'LIVE' | 'SANDBOX';
+
+// The plaintext tag per environment. `co_test_` keys resolve ONLY to sandbox
+// orgs and `co_live_` keys ONLY to production orgs (resolveByPrefix fails closed
+// on any mismatch), so a sandbox key can never touch production data.
+const KEY_PREFIX: Record<ApiKeyEnvironment, string> = {
+  LIVE: 'co_live_',
+  SANDBOX: 'co_test_',
+};
+const LIVE_PREFIX = KEY_PREFIX.LIVE;
+const SANDBOX_PREFIX = KEY_PREFIX.SANDBOX;
 const RANDOM_BYTES = 32;
 export const PREFIX_LENGTH = 12;
 // 12-char base64url prefix → ~2.8e21 combinations.
@@ -41,19 +52,20 @@ function getHmacSecret(): string {
 /**
  * Generates a new API key with its hash for storage.
  *
- * Format: `co_live_<43-char-base64url>` (256 bits of entropy)
- * The first 12 chars after the prefix serve as a lookup prefix.
- * The full key is hashed with HMAC-SHA256 for secure storage.
+ * Format: `co_live_<43-char-base64url>` (LIVE) or `co_test_<43-char-base64url>`
+ * (SANDBOX) — 256 bits of entropy either way. The first 12 chars after the
+ * prefix serve as a lookup prefix. The full key is hashed with HMAC-SHA256.
  *
  * @returns plaintext (shown once), display prefix, and hash for DB storage
  */
-export function generateApiKey(): {
+export function generateApiKey(opts?: { environment?: ApiKeyEnvironment }): {
   plaintext: string;
   prefix: string;
   hash: string;
 } {
+  const environment = opts?.environment ?? 'LIVE';
   const random = randomBytes(RANDOM_BYTES).toString('base64url');
-  const plaintext = `${KEY_PREFIX}${random}`;
+  const plaintext = `${KEY_PREFIX[environment]}${random}`;
   const prefix = random.slice(0, PREFIX_LENGTH);
   const hash = hashKey(plaintext);
 
@@ -105,9 +117,14 @@ function verifyKey(plaintext: string, storedHash: string): boolean {
  * @returns The key record with organization, or null if invalid
  */
 export function resolveApiKey(plaintext: string) {
-  if (!plaintext.startsWith(KEY_PREFIX)) return null;
+  const tag = plaintext.startsWith(SANDBOX_PREFIX)
+    ? SANDBOX_PREFIX
+    : plaintext.startsWith(LIVE_PREFIX)
+      ? LIVE_PREFIX
+      : null;
+  if (!tag) return null;
 
-  const random = plaintext.slice(KEY_PREFIX.length);
+  const random = plaintext.slice(tag.length);
   const prefix = random.slice(0, PREFIX_LENGTH);
 
   return resolveByPrefix(plaintext, prefix);
@@ -130,15 +147,29 @@ async function resolveByPrefix(plaintext: string, prefix: string) {
     take: MAX_PREFIX_CANDIDATES,
     include: {
       organization: {
-        select: { id: true, dataRegion: true, status: true },
+        select: { id: true, dataRegion: true, status: true, isSandbox: true },
       },
     },
   });
 
   for (const candidate of candidates) {
-    if (verifyKey(plaintext, candidate.hash)) {
-      return candidate;
+    if (!verifyKey(plaintext, candidate.hash)) continue;
+
+    // Fail closed on any environment<->org mismatch: a SANDBOX key resolves ONLY
+    // to an isSandbox org and a LIVE key ONLY to a non-sandbox org. This is the
+    // load-bearing control that keeps a `co_test_` key off production data.
+    const keyIsSandbox = candidate.environment === 'SANDBOX';
+    if (keyIsSandbox !== (candidate.organization.isSandbox === true)) {
+      log.warn(
+        { keyId: candidate.id, environment: candidate.environment },
+        'API key environment<->org sandbox mismatch — rejecting (fail closed)',
+      );
+      return null;
     }
+
+    if (keyIsSandbox) markSandboxOrg(candidate.organizationId);
+
+    return candidate;
   }
 
   return null;

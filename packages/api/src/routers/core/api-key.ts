@@ -19,6 +19,7 @@ import { generateApiKey } from '../../services/api-key-service';
 import { getMonthlyRequestCount } from '../../services/api-quota-counter';
 import { writeAuditLog } from '../../services/audit-writer';
 import { getSubscription } from '../../services/billing-service';
+import { issueSandboxKey } from '../../services/sandbox-provisioning';
 import type { DbClient } from '../../services/types';
 
 // ---------------------------------------------------------------------------
@@ -48,6 +49,11 @@ const updateInput = z.object({
 const apiKeyAdminProcedure = tenantProcedure
   .use(requirePermission({ organization: ['update'] }))
   .use(requireTier('ENTERPRISE'));
+
+// Sandbox keys are free (no Enterprise tier) — an org admin can mint one from
+// the Developer page. The key is issued against a separate, auto-provisioned
+// sandbox org, never the caller's production tenant.
+const sandboxKeyProcedure = tenantProcedure.use(requirePermission({ organization: ['update'] }));
 
 /**
  * Guard the acting-user binding: the id MUST reference a User who is an ACTIVE
@@ -146,6 +152,21 @@ export const apiKeyRouter = router({
       plaintext,
     };
   }),
+
+  /**
+   * Mint a free sandbox (`co_test_`) key. Provisions the caller's sandbox org
+   * on demand (idempotent) and issues a read-only key against it — never the
+   * caller's production tenant. Returns the plaintext exactly once.
+   */
+  createSandboxKey: sandboxKeyProcedure
+    .input(z.object({ name: z.string().min(1).max(100) }))
+    .mutation(async ({ ctx, input }) => {
+      const userId = ctx.user?.id;
+      if (!userId) {
+        throw new TRPCError({ code: 'UNAUTHORIZED', message: UNAUTHORIZED });
+      }
+      return issueSandboxKey({ userId, userName: ctx.user?.name ?? null, name: input.name });
+    }),
 
   /**
    * List all API keys for the organization.

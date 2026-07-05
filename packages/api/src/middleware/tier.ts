@@ -28,36 +28,48 @@ const TIER_RANK: Record<SubscriptionTier, number> = {
  * @param minimumTier - The minimum subscription tier required to access the procedure
  * @returns tRPC middleware that adds `subscription` to context on success
  */
+/**
+ * Assert the org meets a minimum subscription tier, returning the resolved
+ * subscription. Throws the structured FORBIDDEN/TIER_REQUIRED error on failure.
+ * Shared by {@link requireTier} and the API-key access gate so the LIVE tier
+ * semantics have a single source of truth.
+ */
+export async function assertMinimumTier(organizationId: string, minimumTier: SubscriptionTier) {
+  const sub = await getSubscription(organizationId);
+
+  // No subscription or inactive status
+  if (!sub || (sub.status !== 'ACTIVE' && sub.status !== 'TRIALING')) {
+    throw new TRPCError({
+      code: 'FORBIDDEN',
+      message: JSON.stringify({
+        type: 'TIER_REQUIRED',
+        requiredTier: minimumTier,
+        currentTier: null,
+      }),
+    });
+  }
+
+  // Tier rank insufficient
+  if (TIER_RANK[sub.tier as SubscriptionTier] < TIER_RANK[minimumTier]) {
+    throw new TRPCError({
+      code: 'FORBIDDEN',
+      message: JSON.stringify({
+        type: 'TIER_REQUIRED',
+        requiredTier: minimumTier,
+        currentTier: sub.tier,
+      }),
+    });
+  }
+
+  return sub;
+}
+
 export function requireTier(minimumTier: SubscriptionTier) {
   return t.middleware(async ({ ctx, next }) => {
-    const sub = await getSubscription(
+    const sub = await assertMinimumTier(
       (ctx as unknown as { organizationId: string }).organizationId,
+      minimumTier,
     );
-
-    // No subscription or inactive status
-    if (!sub || (sub.status !== 'ACTIVE' && sub.status !== 'TRIALING')) {
-      throw new TRPCError({
-        code: 'FORBIDDEN',
-        message: JSON.stringify({
-          type: 'TIER_REQUIRED',
-          requiredTier: minimumTier,
-          currentTier: null,
-        }),
-      });
-    }
-
-    // Tier rank insufficient
-    if (TIER_RANK[sub.tier as SubscriptionTier] < TIER_RANK[minimumTier]) {
-      throw new TRPCError({
-        code: 'FORBIDDEN',
-        message: JSON.stringify({
-          type: 'TIER_REQUIRED',
-          requiredTier: minimumTier,
-          currentTier: sub.tier,
-        }),
-      });
-    }
-
     return next({
       ctx: { subscription: sub },
     });

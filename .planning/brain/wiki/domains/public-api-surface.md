@@ -2,7 +2,7 @@
 title: Public API surface
 type: domain
 tags: [public-api, rest, api-key, scopes, rate-limit, rotation]
-source_commit: 52012027d6d66885d746d018d5d8db422195e2fb
+source_commit: efb2b0794
 verify_with:
   - apps/public-api/src/app.ts
   - apps/public-api/src/routes/
@@ -59,6 +59,7 @@ DEFERRED (no procedure): `compliance_document.create` (append-only system artifa
 ## API keys, scopes, rotation, rate limits
 
 - **Keys** — HMAC-SHA256-hashed `co_live_*` (`api-key-service.ts`); the raw key is shown once, never stored. `apiKeyRouter` (`core/api-key.ts`) create/list/update/revoke/**rotate**/ipLog/usage under `apiKeyAdminProcedure` (organization:update + ENTERPRISE).
+- **Environment axis (sandbox)** — `OrganizationApiKey.environment` (`LIVE`|`SANDBOX`): a `co_test_` key resolves ONLY to an `Organization.isSandbox` org, `co_live_` ONLY to a non-sandbox org — `resolveByPrefix` fails closed both ways. Sandbox keys gate on the global `module.api-sandbox` flag + a 100/day cap instead of Enterprise + `module.public-api`, and inherit the demo read-only isolation. `apiKey.createSandboxKey` (no tier) mints one. Full: [[domains/developer-experience]].
 - **Actor model (D-01)** — each key binds a mutable, membership-guarded `actingUserId` (attribution FK, surfaced as `ctx.apiKeyActingUserId`) that fills the non-null user FKs on write-creates. **Attribution only — scopes are the sole authority.**
 - **Rotation with grace** — `rotate` issues a new key inheriting name/scopes/actingUserId, supersedes the old with a bounded grace window (default 24h, max 168h); `resolveByPrefix` admits a superseded key only until `graceExpiresAt`, then hard-stops.
 - **BFLA** — every write carries a mandatory `requirePermission` whose computed scope must be in `ctx.apiKeyScopes` (apiKey-mode of `rbac.ts`). See [[patterns/rbac-permissions]].

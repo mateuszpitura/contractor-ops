@@ -37,6 +37,7 @@ updated: 2026-07-01
 | `lint-guards` | `packages/lint-guards` | Architecture CI guards |
 | `shared` | `packages/shared` | Money helpers, shared types |
 | `gov-api` | `packages/gov-api` | Government API schemas |
+| `marketplace-manifests` | `packages/marketplace-manifests` | Generates the Zapier/n8n/Make marketplace definitions + Postman/Insomnia collections from the OpenAPI snapshot + the 16-event webhook catalog (triggers→events, actions→write operationIds); `generate --check` drift gate. Consumed by the developer portal's `/collections/*`. See [[domains/developer-experience]] |
 
 ## Invariants
 

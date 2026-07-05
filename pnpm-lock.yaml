@@ -383,6 +383,9 @@ importers:
       '@contractor-ops/logger':
         specifier: workspace:*
         version: link:../../packages/logger
+      '@contractor-ops/marketplace-manifests':
+        specifier: workspace:*
+        version: link:../../packages/marketplace-manifests
       '@contractor-ops/validators':
         specifier: workspace:*
         version: link:../../packages/validators

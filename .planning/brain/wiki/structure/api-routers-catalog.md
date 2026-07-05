@@ -2,7 +2,7 @@
 title: API routers catalog
 type: structure
 tags: [structure, api, trpc, catalog]
-source_commit: f0779951
+source_commit: efb2b079
 verify_with:
   - packages/api/src/root.ts
   - packages/api/src/portal-root.ts
@@ -39,7 +39,9 @@ Complete namespace index for staff `appRouter` and contractor `portalAppRouter`.
 | Namespace | Summary |
 |-----------|---------|
 | `adminBoeRate` | Super-admin BoE base rate CRUD |
-| `apiKey` | Enterprise API key management — create/list/update/revoke + **rotate** (grace window), **ipLog**, **usage**; keys bind a membership-guarded `actingUserId` |
+| `apiKey` | Enterprise API key management — create/list/update/revoke + **rotate** (grace window), **ipLog**, **usage**, **createSandboxKey** (free `co_test_` key against an auto-provisioned sandbox org); keys bind a membership-guarded `actingUserId`. See [[domains/developer-experience]] |
+| `marketplaceListing` | Platform-operator dashboard over the 3 marketplace listings (Zapier/n8n/Make) — list (seeds lazily)/update (DRAFT→SUBMITTED→IN_REVIEW→LIVE/REJECTED/NEEDS_CHANGES state machine); global resource, `admin:marketplace`-gated, audited. See [[domains/developer-experience]] |
+| `incident` | Platform-operator incident history behind the public status page — list/create/addUpdate/resolve; global resource, `admin:marketplace`-gated, audited `INCIDENT`. Open incidents surface in `/v1/status.json` |
 | `webhookSubscription` | Outbound webhook endpoints — create (SSRF-checked, reveal-once encrypted secret)/list/update/rotateSecret/delete/testFire/listDeliveries; admin-gated, tier-capped, audited. See [[domains/outbound-webhooks]] |
 | `bacs` | BACS Std 18 file generation |
 | `organization` | Org CRUD, current org |
