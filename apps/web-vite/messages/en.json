@@ -9229,5 +9229,114 @@
       "APPROACHING": "Approaching the 1099-K reporting threshold. This is informational — we don't file 1099-K.",
       "OVER": "Over the 1099-K reporting threshold. Your payment settlor — not this platform — files any 1099-K. This is a heads-up only."
     }
+  },
+  "Tax1099Batch": {
+    "heading": "1099-NEC batch",
+    "generate": "Generate 1099-NEC batch",
+    "generateError": "We couldn't generate the batch. Try again.",
+    "loadError": "We couldn't load this. Check your connection and try again.",
+    "reload": "Reload",
+    "empty": {
+      "heading": "No 1099-NEC batch for {taxYear} yet",
+      "body": "Generate a batch to review which recipients meet the {taxYear} threshold before you file. Nothing is filed automatically — you review first."
+    },
+    "summary": {
+      "aboveThreshold": "{count} recipients above the {taxYear} threshold.",
+      "recipient": "Recipient",
+      "box1": "Box 1 (nonemployee comp)",
+      "box4": "Box 4 (backup withholding)",
+      "total": "Total"
+    },
+    "adviserNote": "Figures and forms shown here need verification by a jurisdiction-specific tax adviser before you rely on them."
+  },
+  "Tax1099Filing": {
+    "heading": "IRS e-file",
+    "loadError": "We couldn't load this. Check your connection and try again.",
+    "reload": "Reload",
+    "empty": {
+      "heading": "Nothing filed yet",
+      "body": "Once you generate a batch, build and download the validated XML here, then upload the IRS acknowledgement to record the result."
+    },
+    "pillAriaLabel": "Filing status: {status}",
+    "status": {
+      "valid": "Validated",
+      "accepted": "Accepted",
+      "invalid": "Invalid",
+      "rejected": "Rejected",
+      "partiallyAccepted": "Partially accepted",
+      "acceptedWithErrors": "Accepted with errors",
+      "processing": "Processing",
+      "notFound": "Not found",
+      "bundleUnavailable": "Pending enablement"
+    },
+    "statusTooltip": {
+      "valid": "The IRIS file passed schema validation and is ready to file.",
+      "accepted": "The IRS accepted this submission.",
+      "invalid": "The IRIS file didn't pass schema validation.",
+      "rejected": "The IRS rejected this submission.",
+      "partiallyAccepted": "Some records were accepted; others need correction.",
+      "acceptedWithErrors": "Accepted, but some records carry errors to review.",
+      "processing": "The IRS is still processing this submission.",
+      "notFound": "The IRS has no record for this receipt yet.",
+      "bundleUnavailable": "Schema validation is pending IRS enablement — validity is not yet proven."
+    },
+    "bundleUnavailable": "Schema validation is pending IRS enablement — the file can't be filed yet.",
+    "validationFailed": "The IRIS file didn't pass schema validation and can't be filed. The validation errors are listed below — correct the recipient data and regenerate.",
+    "download": "Download validated XML",
+    "ackParseFailed": "We couldn't read this acknowledgement file. Confirm it's the file IRS returned for this submission, then upload it again.",
+    "rejected": "IRS rejected this submission. See the error detail per recipient below, file a correction, then re-transmit.",
+    "ackUpload": {
+      "label": "IRS acknowledgement file",
+      "help": "Upload the acknowledgement (.xml) the IRS returned for this submission."
+    },
+    "correction": {
+      "prompt": "File a correction for:",
+      "title": "File a correction",
+      "body": "File a correction: This supersedes the previously filed 1099-NEC for {recipient}. The original record is kept and never edited. Continue?",
+      "reasonLabel": "Reason",
+      "confirm": "File correction",
+      "cancel": "Cancel"
+    },
+    "state": {
+      "heading": "State filing",
+      "stateLabel": "State",
+      "lookup": "Look up",
+      "loading": "Loading state filing output…",
+      "prompt": "Enter a two-letter state code to see its filing output.",
+      "cfsfHandled": "Auto-forwarded to {state} via Combined Federal/State Filing — no separate state file needed.",
+      "download": "Download state filing file"
+    },
+    "adviserNote": "Figures and forms shown here need verification by a jurisdiction-specific tax adviser before you rely on them."
+  },
+  "TinMismatch": {
+    "heading": "TIN mismatches",
+    "advisoryBadge": "Advisory",
+    "advisory": "These recipients have backup withholding flagged. This is advisory — it never blocks filing.",
+    "loadError": "We couldn't load this. Check your connection and try again.",
+    "reload": "Reload",
+    "empty": {
+      "heading": "No TIN mismatches",
+      "body": "Every recipient's name and TIN matched IRS records. No action needed."
+    },
+    "tinMask": "TIN ending {last4}",
+    "escalate": "Escalate mismatch",
+    "resolve": "Mark resolved"
+  },
+  "Tax1099Consent": {
+    "heading": "Electronic delivery of your 1099-NEC",
+    "subtitle": "Choose how you receive your 1099-NEC.",
+    "consentLabel": "I consent to receive my 1099-NEC electronically. I confirm I can open and print a PDF, I understand I can request a paper copy, and I can withdraw this consent at any time.",
+    "affirm": "Consent and download my 1099-NEC",
+    "withdraw": "Withdraw electronic-delivery consent",
+    "withdrawConfirm": "Withdraw consent: You'll stop receiving your 1099-NEC electronically and will get a paper copy instead. You can re-consent at any time. Continue?",
+    "withdrawConfirmYes": "Withdraw consent",
+    "withdrawConfirmNo": "Keep electronic delivery",
+    "noConsent": "You haven't consented to electronic delivery. A paper copy of your 1099-NEC will be mailed to your address on file.",
+    "download": "Download my 1099-NEC (Copy B)",
+    "downloadError": "We couldn't prepare your download. Try again.",
+    "loadError": "We couldn't load this. Check your connection and try again.",
+    "reload": "Reload",
+    "tinMask": "TIN ending {last4}",
+    "adviserNote": "Figures and forms shown here need verification by a jurisdiction-specific tax adviser before you rely on them."
   }
 }

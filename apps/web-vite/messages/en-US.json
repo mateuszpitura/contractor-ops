@@ -32,5 +32,11 @@
       "section530": "§530 of the Revenue Act of 1978 — safe-harbor relief where reporting consistency, substantive consistency, and a reasonable basis are met."
     },
     "adviserVerify": "Figures, forms, and classifications shown here need verification by a jurisdiction-specific legal or tax advisor before you rely on them."
+  },
+  "Tax1099Batch": {
+    "generate": "Generate 1099-NEC batch"
+  },
+  "Tax1099Filing": {
+    "download": "Download validated XML"
   }
 }

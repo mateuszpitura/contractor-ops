@@ -9230,5 +9230,114 @@
       "APPROACHING": "Nähert sich der 1099-K-Meldeschwelle. Dies ist nur informativ — wir reichen keine 1099-K ein.",
       "OVER": "Über der 1099-K-Meldeschwelle. Ihre Zahlungsabwicklungsstelle — nicht diese Plattform — reicht eine etwaige 1099-K ein. Dies ist nur ein Hinweis."
     }
+  },
+  "Tax1099Batch": {
+    "heading": "1099-NEC-Stapel",
+    "generate": "1099-NEC-Stapel erstellen",
+    "generateError": "Der Stapel konnte nicht erstellt werden. Bitte erneut versuchen.",
+    "loadError": "Konnte nicht geladen werden. Verbindung prüfen und erneut versuchen.",
+    "reload": "Neu laden",
+    "empty": {
+      "heading": "Noch kein 1099-NEC-Stapel für {taxYear}",
+      "body": "Erstellen Sie einen Stapel, um vor der Einreichung zu prüfen, welche Empfänger die Schwelle {taxYear} erreichen. Es wird nichts automatisch eingereicht — Sie prüfen zuerst."
+    },
+    "summary": {
+      "aboveThreshold": "{count} Empfänger über der Schwelle {taxYear}.",
+      "recipient": "Empfänger",
+      "box1": "Feld 1 (Vergütung ohne Anstellung)",
+      "box4": "Feld 4 (Quellensteuer)",
+      "total": "Summe"
+    },
+    "adviserNote": "Die hier gezeigten Zahlen und Formulare müssen vor Verwendung von einem für die Jurisdiktion zuständigen Steuerberater geprüft werden."
+  },
+  "Tax1099Filing": {
+    "heading": "IRS-E-File",
+    "loadError": "Konnte nicht geladen werden. Verbindung prüfen und erneut versuchen.",
+    "reload": "Neu laden",
+    "empty": {
+      "heading": "Noch nichts eingereicht",
+      "body": "Sobald Sie einen Stapel erstellt haben, erstellen und laden Sie hier das validierte XML herunter und laden Sie anschließend die IRS-Bestätigung hoch."
+    },
+    "pillAriaLabel": "Einreichungsstatus: {status}",
+    "status": {
+      "valid": "Validiert",
+      "accepted": "Angenommen",
+      "invalid": "Ungültig",
+      "rejected": "Abgelehnt",
+      "partiallyAccepted": "Teilweise angenommen",
+      "acceptedWithErrors": "Angenommen mit Fehlern",
+      "processing": "In Bearbeitung",
+      "notFound": "Nicht gefunden",
+      "bundleUnavailable": "Freischaltung ausstehend"
+    },
+    "statusTooltip": {
+      "valid": "Die IRIS-Datei hat die Schemaprüfung bestanden und ist bereit zur Einreichung.",
+      "accepted": "Der IRS hat diese Einreichung angenommen.",
+      "invalid": "Die IRIS-Datei hat die Schemaprüfung nicht bestanden.",
+      "rejected": "Der IRS hat diese Einreichung abgelehnt.",
+      "partiallyAccepted": "Einige Datensätze wurden angenommen, andere müssen korrigiert werden.",
+      "acceptedWithErrors": "Angenommen, aber einige Datensätze enthalten zu prüfende Fehler.",
+      "processing": "Der IRS verarbeitet diese Einreichung noch.",
+      "notFound": "Der IRS hat für diese Quittung noch keinen Eintrag.",
+      "bundleUnavailable": "Die Schemaprüfung steht bis zur IRS-Freischaltung aus."
+    },
+    "bundleUnavailable": "Die Schemaprüfung steht bis zur IRS-Freischaltung aus — die Datei kann noch nicht eingereicht werden.",
+    "validationFailed": "Die IRIS-Datei hat die Schemaprüfung nicht bestanden und kann nicht eingereicht werden. Die Fehler sind unten aufgeführt — korrigieren Sie die Empfängerdaten und erstellen Sie neu.",
+    "download": "Validiertes XML herunterladen",
+    "ackParseFailed": "Diese Bestätigungsdatei konnte nicht gelesen werden. Bestätigen Sie, dass es die vom IRS zurückgegebene Datei ist, und laden Sie sie erneut hoch.",
+    "rejected": "Der IRS hat diese Einreichung abgelehnt. Sehen Sie die Fehlerdetails je Empfänger unten, reichen Sie eine Korrektur ein und übermitteln Sie erneut.",
+    "ackUpload": {
+      "label": "IRS-Bestätigungsdatei",
+      "help": "Laden Sie die vom IRS für diese Einreichung zurückgegebene Bestätigung (.xml) hoch."
+    },
+    "correction": {
+      "prompt": "Korrektur einreichen für:",
+      "title": "Korrektur einreichen",
+      "body": "Korrektur einreichen: Dies ersetzt das zuvor eingereichte 1099-NEC für {recipient}. Der ursprüngliche Datensatz bleibt erhalten und wird nie bearbeitet. Fortfahren?",
+      "reasonLabel": "Grund",
+      "confirm": "Korrektur einreichen",
+      "cancel": "Abbrechen"
+    },
+    "state": {
+      "heading": "Bundesstaatliche Einreichung",
+      "stateLabel": "Bundesstaat",
+      "lookup": "Nachschlagen",
+      "loading": "Bundesstaatliche Ausgabe wird geladen…",
+      "prompt": "Geben Sie einen zweistelligen Bundesstaatscode ein, um die Ausgabe zu sehen.",
+      "cfsfHandled": "Über das Combined Federal/State Filing automatisch an {state} weitergeleitet — keine separate Datei nötig.",
+      "download": "Bundesstaatliche Datei herunterladen"
+    },
+    "adviserNote": "Die hier gezeigten Zahlen und Formulare müssen vor Verwendung von einem für die Jurisdiktion zuständigen Steuerberater geprüft werden."
+  },
+  "TinMismatch": {
+    "heading": "TIN-Abweichungen",
+    "advisoryBadge": "Hinweis",
+    "advisory": "Für diese Empfänger ist Quellensteuer markiert. Dies ist ein Hinweis — er blockiert die Einreichung nie.",
+    "loadError": "Konnte nicht geladen werden. Verbindung prüfen und erneut versuchen.",
+    "reload": "Neu laden",
+    "empty": {
+      "heading": "Keine TIN-Abweichungen",
+      "body": "Name und TIN jedes Empfängers stimmten mit den IRS-Daten überein. Keine Maßnahme nötig."
+    },
+    "tinMask": "TIN endet auf {last4}",
+    "escalate": "Abweichung eskalieren",
+    "resolve": "Als erledigt markieren"
+  },
+  "Tax1099Consent": {
+    "heading": "Elektronische Zustellung Ihres 1099-NEC",
+    "subtitle": "Wählen Sie, wie Sie Ihr 1099-NEC erhalten.",
+    "consentLabel": "Ich stimme zu, mein 1099-NEC elektronisch zu erhalten. Ich bestätige, dass ich ein PDF öffnen und drucken kann, verstehe, dass ich eine Papierkopie anfordern kann, und kann diese Zustimmung jederzeit widerrufen.",
+    "affirm": "Zustimmen und mein 1099-NEC herunterladen",
+    "withdraw": "Zustimmung zur elektronischen Zustellung widerrufen",
+    "withdrawConfirm": "Zustimmung widerrufen: Sie erhalten Ihr 1099-NEC nicht mehr elektronisch, sondern eine Papierkopie. Sie können jederzeit erneut zustimmen. Fortfahren?",
+    "withdrawConfirmYes": "Zustimmung widerrufen",
+    "withdrawConfirmNo": "Elektronische Zustellung behalten",
+    "noConsent": "Sie haben der elektronischen Zustellung nicht zugestimmt. Eine Papierkopie Ihres 1099-NEC wird an Ihre hinterlegte Adresse gesendet.",
+    "download": "Mein 1099-NEC herunterladen (Kopie B)",
+    "downloadError": "Ihr Download konnte nicht vorbereitet werden. Bitte erneut versuchen.",
+    "loadError": "Konnte nicht geladen werden. Verbindung prüfen und erneut versuchen.",
+    "reload": "Neu laden",
+    "tinMask": "TIN endet auf {last4}",
+    "adviserNote": "Die hier gezeigten Zahlen und Formulare müssen vor Verwendung von einem für die Jurisdiktion zuständigen Steuerberater geprüft werden."
   }
 }
