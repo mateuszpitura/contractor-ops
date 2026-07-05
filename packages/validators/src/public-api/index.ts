@@ -70,3 +70,44 @@ export const publicApiInvoiceListInputSchema = paginationSchema.extend({
   sortBy: z.enum(['issueDate', 'dueDate', 'createdAt', 'totalMinor']).default('createdAt'),
   sortOrder: z.enum(['asc', 'desc']).default('desc'),
 });
+
+// ---------------------------------------------------------------------------
+// Cursor pagination base (public REST) — replaces offset for public lists.
+// ---------------------------------------------------------------------------
+
+/**
+ * Shared `.strict()` base for every public list input: an opaque `cursor` token
+ * + a bounded `limit`. Per-entity schemas extend this with a `.strict()`
+ * `filter` allowlist and a `sort` enum (leading `-` = desc, JSON:API convention):
+ *
+ *   publicListBaseSchema.extend({
+ *     filter: z.object({ status: fooStatusEnum.optional() }).strict().optional(),
+ *     sort: z.enum(['createdAt', '-createdAt']).default('-createdAt'),
+ *   }).strict()
+ *
+ * `.strict()` rejects unknown top-level + filter keys (mass-assignment / unknown
+ * filter injection). The offset `paginationSchema` above is retained until its
+ * call sites migrate to cursor (98-07) — do not reuse it for new public lists.
+ */
+export const publicListBaseSchema = z
+  .object({
+    cursor: z.string().optional(),
+    limit: z.coerce.number().int().min(1).max(100).default(25),
+  })
+  .strict();
+
+export type PublicListBaseInput = z.infer<typeof publicListBaseSchema>;
+
+/** Cursor-mode response meta — no `total` (COUNT is dropped in cursor mode). */
+export const publicListMetaSchema = z.object({
+  nextCursor: z.string().nullable(),
+  hasMore: z.boolean(),
+});
+
+/**
+ * Builds the standard public list response envelope schema `{ data, meta }` for
+ * a given item schema. Used by route `createRoute` response definitions.
+ */
+export function publicListEnvelope<T extends z.ZodTypeAny>(item: T) {
+  return z.object({ data: z.array(item), meta: publicListMetaSchema });
+}
