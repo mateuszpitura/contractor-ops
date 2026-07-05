@@ -59,6 +59,10 @@ export async function triggerOcrExtraction(params: {
       organizationId: params.organizationId,
       storageKey: params.storageKey,
     },
+    // Stable per-extraction dedup id so a QStash re-publish (or a duplicate
+    // trigger) collapses to a single in-flight job — a second delivery would
+    // otherwise re-run the Claude Vision call at cost.
+    deduplicationId: `ocr-extraction:${extraction.id}`,
     retries: 2,
     timeout: '60s',
   });
@@ -102,11 +106,24 @@ export async function processOcrExtraction(params: {
   organizationId: string;
   storageKey: string;
 }): Promise<void> {
-  // Mark as processing
-  await prisma.ocrExtraction.update({
-    where: { id: params.extractionId },
+  // Compare-and-swap claim: only a still-PENDING row is claimable. A QStash
+  // redelivery of an already-processed job (EXTRACTED / FAILED / SKIPPED /
+  // in-flight PROCESSING) claims nothing, so we abort before spending a second
+  // Claude Vision call and before clobbering a completed result back to
+  // PROCESSING. A flag-off retrigger creates a fresh PENDING row, so genuine
+  // re-runs are unaffected.
+  const claim = await prisma.ocrExtraction.updateMany({
+    where: { id: params.extractionId, status: 'PENDING' },
     data: { status: 'PROCESSING' },
   });
+
+  if (claim.count === 0) {
+    log.info(
+      { extractionId: params.extractionId, organizationId: params.organizationId },
+      'ocr extraction already claimed or terminal; skipping redelivery',
+    );
+    return;
+  }
 
   try {
     // Emergency kill-switch: when ops disables the AI invoice parser (or

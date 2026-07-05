@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 const {
   mockCreate,
   mockUpdate,
+  mockUpdateMany,
   mockFindFirst,
   mockOrgFindUnique,
   mockCheckCredit,
@@ -13,6 +14,7 @@ const {
 } = vi.hoisted(() => ({
   mockCreate: vi.fn(),
   mockUpdate: vi.fn(),
+  mockUpdateMany: vi.fn(),
   mockFindFirst: vi.fn(),
   mockOrgFindUnique: vi.fn(),
   mockCheckCredit: vi.fn(),
@@ -29,6 +31,7 @@ vi.mock('@contractor-ops/db', () => {
     ocrExtraction: {
       create: mockCreate,
       update: mockUpdate,
+      updateMany: mockUpdateMany,
       findFirst: mockFindFirst,
     },
     organization: {
@@ -145,6 +148,7 @@ describe('ocr-extraction', () => {
       overallConfidence: 90,
     });
     mockUpdate.mockResolvedValue({});
+    mockUpdateMany.mockResolvedValue({ count: 1 });
     mockOrgFindUnique.mockResolvedValue({ dataRegion: 'EU' });
     mockEvaluate.mockReturnValue({ enabled: true, reason: 'unleash' });
   });
@@ -202,6 +206,7 @@ describe('ocr-extraction', () => {
             organizationId: 'org-1',
             storageKey: 'k/pdf',
           },
+          deduplicationId: 'ocr-extraction:ext-new',
           retries: 2,
           timeout: '60s',
         }),
@@ -210,6 +215,48 @@ describe('ocr-extraction', () => {
   });
 
   describe('processOcrExtraction', () => {
+    it('claims the row via compare-and-swap on PENDING only', async () => {
+      vi.stubGlobal(
+        'fetch',
+        vi.fn().mockResolvedValue({
+          ok: true,
+          status: 200,
+          statusText: 'OK',
+          arrayBuffer: () => Promise.resolve(new Uint8Array([1, 2, 3]).buffer),
+        }),
+      );
+
+      await processOcrExtraction({
+        extractionId: 'ext-1',
+        organizationId: 'org-1',
+        storageKey: 'path/doc.pdf',
+      });
+
+      expect(mockUpdateMany).toHaveBeenCalledWith({
+        where: { id: 'ext-1', status: 'PENDING' },
+        data: { status: 'PROCESSING' },
+      });
+    });
+
+    it('aborts a redelivery when the row is no longer PENDING (no second extraction)', async () => {
+      mockUpdateMany.mockResolvedValueOnce({ count: 0 });
+      const fetchSpy = vi.fn();
+      vi.stubGlobal('fetch', fetchSpy);
+
+      await processOcrExtraction({
+        extractionId: 'ext-done',
+        organizationId: 'org-1',
+        storageKey: 'path/doc.pdf',
+      });
+
+      // Claim failed → no Claude Vision call, no PDF fetch, and the completed
+      // result is never clobbered back to PROCESSING.
+      expect(mockExtractInvoice).not.toHaveBeenCalled();
+      expect(mockPresignedUrl).not.toHaveBeenCalled();
+      expect(fetchSpy).not.toHaveBeenCalled();
+      expect(mockUpdate).not.toHaveBeenCalled();
+    });
+
     it('updates extraction with OCR result on success', async () => {
       vi.stubGlobal(
         'fetch',
