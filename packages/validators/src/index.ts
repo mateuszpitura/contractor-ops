@@ -751,6 +751,8 @@ export {
   retryTransmissionSchema,
   transmitInvoiceSchema,
 } from './peppol.js';
+export type { PortalLeaveBalanceQueryInput, PortalTimeOffRequestInput } from './portal-employee.js';
+export { portalLeaveBalanceQueryInput, portalTimeOffRequestInput } from './portal-employee.js';
 export { dePrivacyNotice } from './privacy-notices/de.js';
 export { euPrivacyNotice } from './privacy-notices/eu.js';
 export { gbPrivacyNotice } from './privacy-notices/gb.js';

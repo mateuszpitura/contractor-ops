@@ -22,7 +22,13 @@ import { createLogger } from '@contractor-ops/logger';
 const log = createLogger({ service: 'audit-writer' });
 
 /** Mirrors @contractor-ops/db ActorType Prisma enum. */
-export type AuditActorType = 'USER' | 'SYSTEM' | 'INTEGRATION' | 'API_KEY' | 'CONTRACTOR';
+export type AuditActorType =
+  | 'USER'
+  | 'SYSTEM'
+  | 'INTEGRATION'
+  | 'API_KEY'
+  | 'CONTRACTOR'
+  | 'EMPLOYEE';
 
 /** Mirrors EntityType enum in contract.prisma — only the subset this helper accepts. */
 export type AuditEntityType =

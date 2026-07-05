@@ -8,6 +8,7 @@ verify_with:
   - packages/api/src/portal-root.ts
   - packages/api/src/routers/finance/tax-1099-router.ts
   - packages/api/src/routers/portal/portal-tax-1099-router.ts
+  - packages/api/src/routers/portal/portal-employee-router.ts
   - packages/api/src/routers/compliance/classification-document.tsx
   - packages/validators/src/onboarding-import.ts
   - packages/api/src/routers/core/worker.ts
@@ -140,7 +141,7 @@ Gated by `module.workforce-employees` (or `QA_DEFAULT_ORG_ID`) in `root.ts`; eac
 
 When flag OFF: runtime `METHOD_NOT_FOUND`; the per-request guard also throws `FORBIDDEN` (`workforceDisabled`). When ON, the web client shows a flag-gated `/employees` entry (`dashboard-home.tsx` → `useFlag('module.workforce-employees')`). Both read cross-type `Worker` rows behind the `withWorkerTypeDefault` extension; per-type HR-only fields gate on the separate `employee` RBAC resource. Full model + flow: [[domains/worker-foundation]].
 
-## Portal portalAppRouter (2 namespaces)
+## Portal portalAppRouter (2 base + `portalEmployee` when `module.employee-portal` on)
 
 Mount: `/api/trpc/portal/*` (registered **before** staff wildcard).
 
@@ -148,6 +149,9 @@ Mount: `/api/trpc/portal/*` (registered **before** staff wildcard).
 |-----------|---------|
 | `portal` | auth, invoices, contracts, profile, equipment, US W-form self-cert (merged) |
 | `portalTime` | portal time entries + external sync |
+| `portalEmployee` | employee self-service (dark behind `module.employee-portal`, spread via `isEmployeePortalRegistered()`): `getDashboard`, `getLeaveBalance`, `listMyLeaveRequests`, `getMyTime`, `getMyEwidencja`, `submitTimeOffRequest`. Every read/write is scoped to the SESSION worker (`ctx.workerId` from `portalEmployeeProcedure`) — no procedure accepts a client `workerId`; the self-reads are `.strict()` so a smuggled `workerId` is a hard rejection. `submitTimeOffRequest` reuses the shared leave services (`computeLeaveBalance` + `routeToLeaveChain`/`createApprovalFlow`) and writes an `EMPLOYEE`-actor audit row in-tx. |
+
+The `portalEmployee` namespace is dark-mounted like the staff `conditionalWorkforceRouters` (absent → `METHOD_NOT_FOUND` when the flag is unregistered at boot); `portalEmployeeProcedure` re-asserts `module.employee-portal` per request (FORBIDDEN when dark). The manager surface (`portalManager`) lands with the manager plan.
 
 Portal W-form procedures (`getTaxFormDetermination`, `saveTaxFormDraft`, `submitTaxForm`, `getMyTaxForms`) self-gate on `module.us-expansion` per request — the flat portal merge cannot be conditionally spread. The portal recipient-tax procedures (`portal-tax-1099-router.ts`: `getEdeliveryConsent`, `recordEdeliveryConsent`, `withdrawConsent`, `downloadCopyB`, `downloadForm1042S`) are merged the same way — every read/write scoped to `ctx.contractorId` (IDOR); consent is a server-derived, append-only AuditLog fact; the recipient Copy-B (1099-NEC) and Copy-B (1042-S) PDFs are furnished only with the SAME stored consent (else a paper-copy flag).
 
