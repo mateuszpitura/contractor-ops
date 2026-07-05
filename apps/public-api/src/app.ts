@@ -13,6 +13,7 @@ import classifications from './routes/classifications.js';
 import complianceDocuments from './routes/compliance-documents.js';
 import contractors from './routes/contractors.js';
 import contracts from './routes/contracts.js';
+import { registerDeveloperPortal } from './routes/docs.js';
 import documents from './routes/documents.js';
 import featureFlags from './routes/feature-flags.js';
 import invoices from './routes/invoices.js';
@@ -141,6 +142,9 @@ app.get('/openapi.json', c => c.json(buildOpenApiDocument(app)));
 
 // --- Interactive docs (Scalar via the vendored npm dep — no CDN/SRI) ---
 app.get('/docs', Scalar({ url: '/v1/openapi.json' }));
+
+// --- Developer portal (extends /docs; behind module.developer-portal) ---
+registerDeveloperPortal(app);
 
 // --- Error handler ---
 app.onError(handleError);
