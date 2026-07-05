@@ -129,6 +129,84 @@ export const publicApiDocumentListInputSchema = publicListBaseSchema
   })
   .strict();
 
+// ---------------------------------------------------------------------------
+// Net-new public read list DTOs (payments, payment_runs, workflows,
+// workflow_tasks, classifications, compliance_documents, audit_log).
+//
+// Filter VALUES are `z.string()` for the 0.x prerelease surface — the field set
+// is still `.strict()`-allowlisted (unknown filters rejected), and the value is
+// forwarded to a tenant-scoped Prisma `where`. Enum-tighten before SDK 1.0.
+// ---------------------------------------------------------------------------
+
+const cursorSort = z.enum(['createdAt', '-createdAt']).default('-createdAt');
+
+export const publicApiPaymentListInputSchema = publicListBaseSchema
+  .extend({
+    filter: z
+      .object({ status: z.string().optional(), contractorId: z.string().optional() })
+      .strict()
+      .optional(),
+    sort: cursorSort,
+  })
+  .strict();
+
+export const publicApiPaymentRunListInputSchema = publicListBaseSchema
+  .extend({
+    filter: z.object({ status: z.string().optional() }).strict().optional(),
+    sort: cursorSort,
+  })
+  .strict();
+
+export const publicApiWorkflowListInputSchema = publicListBaseSchema
+  .extend({
+    filter: z
+      .object({ status: z.string().optional(), contractorId: z.string().optional() })
+      .strict()
+      .optional(),
+    sort: cursorSort,
+  })
+  .strict();
+
+export const publicApiWorkflowTaskListInputSchema = publicListBaseSchema
+  .extend({
+    filter: z
+      .object({ status: z.string().optional(), workflowRunId: z.string().optional() })
+      .strict()
+      .optional(),
+    sort: cursorSort,
+  })
+  .strict();
+
+export const publicApiClassificationListInputSchema = publicListBaseSchema
+  .extend({
+    filter: z
+      .object({ status: z.string().optional(), countryCode: z.string().optional() })
+      .strict()
+      .optional(),
+    sort: cursorSort,
+  })
+  .strict();
+
+export const publicApiComplianceDocumentListInputSchema = publicListBaseSchema
+  .extend({
+    filter: z
+      .object({ kind: z.string().optional(), classificationAssessmentId: z.string().optional() })
+      .strict()
+      .optional(),
+    sort: cursorSort,
+  })
+  .strict();
+
+export const publicApiAuditLogListInputSchema = publicListBaseSchema
+  .extend({
+    filter: z
+      .object({ action: z.string().optional(), resourceType: z.string().optional() })
+      .strict()
+      .optional(),
+    sort: cursorSort,
+  })
+  .strict();
+
 export const publicApiEquipmentListInputSchema = paginationSchema.extend({
   status: equipmentStatusEnum.optional(),
   type: equipmentTypeEnum.optional(),
