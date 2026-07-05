@@ -41,7 +41,9 @@ export type AuditEntityType =
   | 'EQUIPMENT'
   | 'SHIPMENT'
   | 'USER'
-  | 'RETURN_REQUEST';
+  | 'RETURN_REQUEST'
+  | 'LEAVE_REQUEST'
+  | 'EMPLOYEE_TIME_RECORD';
 
 /**
  * Thin shape accepted for `tx` — any Prisma client (base or transactional)

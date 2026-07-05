@@ -1,3 +1,4 @@
+import type { Permission } from '@contractor-ops/auth';
 import type { Prisma } from '@contractor-ops/db';
 import { Prisma as PrismaClient } from '@contractor-ops/db/generated/prisma/client';
 import { minorToMajor, minorUnitDigits } from '@contractor-ops/shared';
@@ -7,10 +8,14 @@ import { TRPCError } from '@trpc/server';
 import type { z } from 'zod';
 import * as E from '../../errors';
 import type { TenantScopedDb } from '../../lib/tenant-db';
+import type { PermissionCheckContext } from '../../middleware/rbac';
+import { hasPermission } from '../../middleware/rbac';
 import type { TxClient } from '../../services/approval-engine';
 import { approvalStatusToSqlConditions } from '../../services/approval-filters.js';
+import { writeAuditLog } from '../../services/audit-writer';
 import { CacheKeys, invalidateByPrefix } from '../../services/cache';
 import { syncPaymentDueDeadline } from '../../services/calendar-deadline-sync';
+import { recomputeBalanceCache } from '../../services/leave-balance';
 import { dispatch } from '../../services/notification-service';
 
 /**
@@ -293,6 +298,92 @@ export async function finalizeApprovedInvoice(
   }).catch(_err => {
     /* fire-and-forget */
   });
+}
+
+/**
+ * After a LEAVE_REQUEST approval flow completes, finalize the leave: mark the
+ * request APPROVED, insert the DEDUCTION ledger row, and refresh the balance
+ * cache — all inside the caller's transaction so a failure rolls back together.
+ * Audited via writeAuditLog(action:'leave.approved'). Sibling of
+ * finalizeApprovedInvoice; the invoice path is untouched.
+ */
+export async function finalizeApprovedLeave(
+  tx: TxClient,
+  opts: {
+    resourceId: string;
+    organizationId: string;
+    userId: string | undefined;
+  },
+) {
+  const leaveRequest = await tx.leaveRequest.findFirst({
+    where: { id: opts.resourceId, organizationId: opts.organizationId },
+    select: {
+      id: true,
+      workerId: true,
+      leaveTypeId: true,
+      requestedMinutes: true,
+      startDate: true,
+    },
+  });
+  if (!leaveRequest) {
+    throw new TRPCError({ code: 'NOT_FOUND', message: E.APPROVAL_FLOW_NOT_FOUND });
+  }
+
+  await tx.leaveRequest.update({
+    where: { id: leaveRequest.id },
+    data: { status: 'APPROVED' },
+  });
+
+  await tx.leaveLedgerEntry.create({
+    data: {
+      organizationId: opts.organizationId,
+      workerId: leaveRequest.workerId,
+      leaveTypeId: leaveRequest.leaveTypeId,
+      entryType: 'DEDUCTION',
+      minutes: -leaveRequest.requestedMinutes,
+      effectiveDate: leaveRequest.startDate,
+      sourceRef: leaveRequest.id,
+      createdByUserId: opts.userId ?? null,
+    },
+  });
+
+  await recomputeBalanceCache(tx, {
+    organizationId: opts.organizationId,
+    workerId: leaveRequest.workerId,
+    leaveTypeId: leaveRequest.leaveTypeId,
+    year: leaveRequest.startDate.getUTCFullYear(),
+  });
+
+  await writeAuditLog({
+    tx,
+    organizationId: opts.organizationId,
+    actorType: 'USER',
+    actorId: opts.userId,
+    action: 'leave.approved',
+    resourceType: 'LEAVE_REQUEST',
+    resourceId: leaveRequest.id,
+    newValues: { status: 'APPROVED' },
+    metadata: { deductedMinutes: leaveRequest.requestedMinutes },
+  });
+}
+
+/**
+ * Fine-grained, resource-aware permission gate for the shared approval
+ * procedures. The coarse `requireAnyPermission` middleware admits any caller
+ * holding invoice:approve OR employee:approve_leave; this body assertion then
+ * requires the EXACT permission the fetched step's resourceType demands, so a
+ * leave_approver cannot action an INVOICE and an invoice approver cannot action
+ * a LEAVE_REQUEST (no over-grant either direction).
+ */
+export async function assertApprovalActionPermission(
+  ctx: PermissionCheckContext,
+  resourceType: string,
+): Promise<void> {
+  const required: Permission =
+    resourceType === 'LEAVE_REQUEST' ? { employee: ['approve_leave'] } : { invoice: ['approve'] };
+  if (!(await hasPermission(ctx, required))) {
+    throw new TRPCError({ code: 'FORBIDDEN', message: E.PERMISSION_DENIED });
+  }
 }
 
 export type BulkStepRow = Prisma.ApprovalStepGetPayload<{ include: { approvalFlow: true } }>;

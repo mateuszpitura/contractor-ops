@@ -705,6 +705,7 @@ describe('approval router — delegate', () => {
       status: 'PENDING',
       approverUserId: USER_ID,
       approvalFlowId: FLOW_ID,
+      approvalFlow: { resourceType: 'INVOICE', resourceId: INV_ID },
     });
     mockPrisma.member.findFirst.mockResolvedValueOnce(null);
 
@@ -724,7 +725,7 @@ describe('approval router — delegate', () => {
       status: 'PENDING',
       approverUserId: USER_ID,
       approvalFlowId: FLOW_ID,
-      approvalFlow: { resourceId: INV_ID },
+      approvalFlow: { resourceType: 'INVOICE', resourceId: INV_ID },
     });
     mockPrisma.member.findFirst.mockResolvedValueOnce({ userId: DELEGATE_USER_ID });
     mockPrisma.approvalStep.update.mockResolvedValueOnce({
@@ -754,6 +755,7 @@ describe('approval router — requestClarification', () => {
       organizationId: ORG_ID,
       status: 'PENDING',
       approverUserId: USER_ID,
+      approvalFlow: { resourceType: 'INVOICE', resourceId: INV_ID },
     };
     mockPrisma.approvalStep.findFirst.mockResolvedValueOnce(stepRow);
 

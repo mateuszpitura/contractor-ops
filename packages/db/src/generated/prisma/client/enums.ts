@@ -24,7 +24,8 @@ export type ApprovalStatus = (typeof ApprovalStatus)[keyof typeof ApprovalStatus
 export const ApprovalResourceType = {
   INVOICE: 'INVOICE',
   DOCUMENT: 'DOCUMENT',
-  CONTRACT: 'CONTRACT'
+  CONTRACT: 'CONTRACT',
+  LEAVE_REQUEST: 'LEAVE_REQUEST'
 } as const
 
 export type ApprovalResourceType = (typeof ApprovalResourceType)[keyof typeof ApprovalResourceType]
@@ -320,7 +321,9 @@ export const EntityType = {
   EQUIPMENT: 'EQUIPMENT',
   SHIPMENT: 'SHIPMENT',
   USER: 'USER',
-  RETURN_REQUEST: 'RETURN_REQUEST'
+  RETURN_REQUEST: 'RETURN_REQUEST',
+  LEAVE_REQUEST: 'LEAVE_REQUEST',
+  EMPLOYEE_TIME_RECORD: 'EMPLOYEE_TIME_RECORD'
 } as const
 
 export type EntityType = (typeof EntityType)[keyof typeof EntityType]
@@ -492,6 +495,28 @@ export const EInvoiceLifecycleEventType = {
 export type EInvoiceLifecycleEventType = (typeof EInvoiceLifecycleEventType)[keyof typeof EInvoiceLifecycleEventType]
 
 
+export const EmployeeTimeSource = {
+  MANUAL: 'MANUAL',
+  IMPORTED: 'IMPORTED'
+} as const
+
+export type EmployeeTimeSource = (typeof EmployeeTimeSource)[keyof typeof EmployeeTimeSource]
+
+
+export const AbsenceKind = {
+  VACATION: 'VACATION',
+  SICK: 'SICK',
+  PARENTAL: 'PARENTAL',
+  BEREAVEMENT: 'BEREAVEMENT',
+  STUDY: 'STUDY',
+  UNPAID: 'UNPAID',
+  OTHER_JUSTIFIED: 'OTHER_JUSTIFIED',
+  UNJUSTIFIED: 'UNJUSTIFIED'
+} as const
+
+export type AbsenceKind = (typeof AbsenceKind)[keyof typeof AbsenceKind]
+
+
 export const EmploymentStatus = {
   ACTIVE: 'ACTIVE',
   ON_LEAVE: 'ON_LEAVE',
@@ -608,6 +633,14 @@ export const SigningEventType = {
 } as const
 
 export type SigningEventType = (typeof SigningEventType)[keyof typeof SigningEventType]
+
+
+export const EwidencjaStatus = {
+  ACTIVE: 'ACTIVE',
+  SUPERSEDED: 'SUPERSEDED'
+} as const
+
+export type EwidencjaStatus = (typeof EwidencjaStatus)[keyof typeof EwidencjaStatus]
 
 
 export const AsyncExportStatus = {
@@ -924,6 +957,39 @@ export const InvoiceInterestClaimPdfStatus = {
 } as const
 
 export type InvoiceInterestClaimPdfStatus = (typeof InvoiceInterestClaimPdfStatus)[keyof typeof InvoiceInterestClaimPdfStatus]
+
+
+export const LeaveKind = {
+  ANNUAL: 'ANNUAL',
+  SICK: 'SICK',
+  PARENTAL: 'PARENTAL',
+  BEREAVEMENT: 'BEREAVEMENT',
+  STUDY: 'STUDY',
+  UNPAID: 'UNPAID',
+  OTHER: 'OTHER'
+} as const
+
+export type LeaveKind = (typeof LeaveKind)[keyof typeof LeaveKind]
+
+
+export const LeaveRequestStatus = {
+  PENDING: 'PENDING',
+  APPROVED: 'APPROVED',
+  REJECTED: 'REJECTED',
+  CANCELLED: 'CANCELLED'
+} as const
+
+export type LeaveRequestStatus = (typeof LeaveRequestStatus)[keyof typeof LeaveRequestStatus]
+
+
+export const LeaveLedgerType = {
+  ACCRUAL: 'ACCRUAL',
+  DEDUCTION: 'DEDUCTION',
+  CARRYOVER: 'CARRYOVER',
+  ADJUSTMENT: 'ADJUSTMENT'
+} as const
+
+export type LeaveLedgerType = (typeof LeaveLedgerType)[keyof typeof LeaveLedgerType]
 
 
 export const NotificationChannel = {

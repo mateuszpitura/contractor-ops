@@ -39,6 +39,8 @@ const RETENTION_CITATIONS: Record<RetainedRecordType, string> = {
     'US Form I-9: retained 3 years after hire (8 CFR 274a.2; PENDING legal/tax adviser verification)',
   'us-i9-post-termination':
     'US Form I-9: retained 1 year after termination, whichever is later (8 CFR 274a.2; PENDING legal/tax adviser verification)',
+  'KP-ewidencja':
+    'PL ewidencja czasu pracy: 3-year DB-immutability floor (Kodeks pracy art. 291(1) claim limitation); the register is part of dokumentacja pracownicza retained 10 years (Kodeks pracy art. 94(4)), satisfied by non-deletion — the EwidencjaSnapshot table is append-only and never purged (PENDING legal/tax adviser verification)',
 };
 
 // ---------------------------------------------------------------------------

@@ -146,6 +146,25 @@ export async function routeToChain(
   return defaultChain ?? null;
 }
 
+/**
+ * Routes a leave request to the organization's default LEAVE_REQUEST approval
+ * chain. v7.0 ships a single default chain per org; duration/type-conditioned
+ * routing is out of scope. Returns the default active chain, or null.
+ */
+export async function routeToLeaveChain(tx: TxClient, organizationId: string) {
+  const chains = await tx.approvalChainConfig.findMany({
+    where: {
+      organizationId,
+      resourceType: 'LEAVE_REQUEST',
+      isActive: true,
+    },
+    orderBy: { createdAt: 'asc' },
+  });
+
+  const defaultChain = chains.find(c => c.isDefault);
+  return defaultChain ?? chains[0] ?? null;
+}
+
 // ---------------------------------------------------------------------------
 // Flow creation
 // ---------------------------------------------------------------------------
@@ -159,7 +178,7 @@ export async function createApprovalFlow(
   tx: TxClient,
   params: {
     organizationId: string;
-    resourceType: 'INVOICE';
+    resourceType: 'INVOICE' | 'LEAVE_REQUEST';
     resourceId: string;
     chainConfig: { id: string; stepsJson: unknown };
     createdByUserId: string;

@@ -13,7 +13,7 @@ import {
 import { TRPCError } from '@trpc/server';
 import * as E from '../../errors';
 import { router } from '../../init';
-import { requirePermission } from '../../middleware/rbac';
+import { requireAnyPermission, requirePermission } from '../../middleware/rbac';
 import { tenantProcedure } from '../../middleware/tenant';
 import type { TxClient } from '../../services/approval-engine';
 import { advanceFlow, computeSlaStatus } from '../../services/approval-engine';
@@ -23,9 +23,11 @@ import { CacheKeys, invalidateByPrefix } from '../../services/cache';
 import { syncPaymentDueDeadline } from '../../services/calendar-deadline-sync';
 import {
   approvalQueueSqlConditions,
+  assertApprovalActionPermission,
   dispatchDecisionNotification,
   dispatchNextApproverNotification,
   finalizeApprovedInvoice,
+  finalizeApprovedLeave,
   plain,
   processBulkApprovalSteps,
   validateStepForAction,
@@ -204,7 +206,7 @@ export const approvalQueueRouter = router({
     }),
 
   approve: tenantProcedure
-    .use(requirePermission({ invoice: ['approve'] }))
+    .use(requireAnyPermission({ invoice: ['approve'] }, { employee: ['approve_leave'] }))
     .input(approveStepSchema)
     .mutation(async ({ ctx, input }) => {
       const result = await ctx.db.$transaction(async tx => {
@@ -213,6 +215,7 @@ export const approvalQueueRouter = router({
           include: { approvalFlow: true },
         });
         validateStepForAction(step, ctx.user?.id);
+        await assertApprovalActionPermission(ctx, step.approvalFlow.resourceType);
 
         await tx.approvalDecision.create({
           data: {
@@ -255,16 +258,28 @@ export const approvalQueueRouter = router({
         const advanceResult = await advanceFlow(tx as TxClient, step.approvalFlowId);
 
         if (advanceResult.completed) {
-          await tx.invoice.update({
-            where: { id: step.approvalFlow.resourceId },
-            data: {
-              status: 'APPROVED',
-              paymentStatus: 'READY',
-              readyForPaymentAt: new Date(),
-            },
-          });
+          if (step.approvalFlow.resourceType === 'LEAVE_REQUEST') {
+            await finalizeApprovedLeave(tx as TxClient, {
+              resourceId: step.approvalFlow.resourceId,
+              organizationId: ctx.organizationId,
+              userId: ctx.user?.id,
+            });
+          } else {
+            await tx.invoice.update({
+              where: { id: step.approvalFlow.resourceId },
+              data: {
+                status: 'APPROVED',
+                paymentStatus: 'READY',
+                readyForPaymentAt: new Date(),
+              },
+            });
+          }
         }
 
+        // Invoice-specific lookup; returns null for a LEAVE_REQUEST, so the
+        // decision/next-approver notifications below are inert for leave. A
+        // future multi-step leave chain must resolve the resource via a
+        // flow-level lookup rather than tx.invoice.findUnique.
         const invoice = await tx.invoice.findUnique({
           where: { id: step.approvalFlow.resourceId },
           select: {
@@ -338,7 +353,7 @@ export const approvalQueueRouter = router({
     }),
 
   reject: tenantProcedure
-    .use(requirePermission({ invoice: ['approve'] }))
+    .use(requireAnyPermission({ invoice: ['approve'] }, { employee: ['approve_leave'] }))
     .input(rejectStepSchema)
     .mutation(async ({ ctx, input }) => {
       const result = await ctx.db.$transaction(async tx => {
@@ -347,6 +362,7 @@ export const approvalQueueRouter = router({
           include: { approvalFlow: true },
         });
         validateStepForAction(step, ctx.user?.id);
+        await assertApprovalActionPermission(ctx, step.approvalFlow.resourceType);
 
         await tx.approvalDecision.create({
           data: {
@@ -394,11 +410,20 @@ export const approvalQueueRouter = router({
           },
         });
 
-        await tx.invoice.update({
-          where: { id: step.approvalFlow.resourceId },
-          data: { status: 'REJECTED' },
-        });
+        if (step.approvalFlow.resourceType === 'LEAVE_REQUEST') {
+          await tx.leaveRequest.update({
+            where: { id: step.approvalFlow.resourceId },
+            data: { status: 'REJECTED' },
+          });
+        } else {
+          await tx.invoice.update({
+            where: { id: step.approvalFlow.resourceId },
+            data: { status: 'REJECTED' },
+          });
+        }
 
+        // Null for a LEAVE_REQUEST; dispatchDecisionNotification no-ops on a null
+        // invoice, so leave rejections skip the invoice-shaped notification.
         const invoice = await tx.invoice.findUnique({
           where: { id: step.approvalFlow.resourceId },
           select: { id: true, invoiceNumber: true },
@@ -425,14 +450,16 @@ export const approvalQueueRouter = router({
     }),
 
   delegate: tenantProcedure
-    .use(requirePermission({ invoice: ['approve'] }))
+    .use(requireAnyPermission({ invoice: ['approve'] }, { employee: ['approve_leave'] }))
     .input(delegateStepSchema)
     .mutation(async ({ ctx, input }) => {
       const result = await ctx.db.$transaction(async tx => {
         const step = await tx.approvalStep.findFirst({
           where: { id: input.stepId, organizationId: ctx.organizationId },
+          include: { approvalFlow: true },
         });
         validateStepForAction(step, ctx.user?.id);
+        await assertApprovalActionPermission(ctx, step.approvalFlow.resourceType);
 
         const delegateMember = await tx.member.findFirst({
           where: {
@@ -474,14 +501,16 @@ export const approvalQueueRouter = router({
     }),
 
   requestClarification: tenantProcedure
-    .use(requirePermission({ invoice: ['approve'] }))
+    .use(requireAnyPermission({ invoice: ['approve'] }, { employee: ['approve_leave'] }))
     .input(requestClarificationSchema)
     .mutation(async ({ ctx, input }) => {
       const result = await ctx.db.$transaction(async tx => {
         const step = await tx.approvalStep.findFirst({
           where: { id: input.stepId, organizationId: ctx.organizationId },
+          include: { approvalFlow: true },
         });
         validateStepForAction(step, ctx.user?.id);
+        await assertApprovalActionPermission(ctx, step.approvalFlow.resourceType);
 
         await tx.approvalDecision.create({
           data: {
@@ -500,10 +529,12 @@ export const approvalQueueRouter = router({
     }),
 
   bulkApprove: tenantProcedure
-    .use(requirePermission({ invoice: ['approve'] }))
+    .use(requireAnyPermission({ invoice: ['approve'] }, { employee: ['approve_leave'] }))
     .input(bulkApproveSchema)
     .mutation(({ ctx, input }) =>
       processBulkApprovalSteps(ctx, input.stepIds, async (tx, step) => {
+        await assertApprovalActionPermission(ctx, step.approvalFlow.resourceType);
+
         await tx.approvalDecision.create({
           data: {
             organizationId: ctx.organizationId,
@@ -525,21 +556,31 @@ export const approvalQueueRouter = router({
         const advanceResult = await advanceFlow(tx, step.approvalFlowId);
 
         if (advanceResult.completed) {
-          await finalizeApprovedInvoice(tx, {
-            resourceId: step.approvalFlow.resourceId,
-            organizationId: ctx.organizationId,
-            db: ctx.db,
-            userId: ctx.user?.id,
-          });
+          if (step.approvalFlow.resourceType === 'LEAVE_REQUEST') {
+            await finalizeApprovedLeave(tx, {
+              resourceId: step.approvalFlow.resourceId,
+              organizationId: ctx.organizationId,
+              userId: ctx.user?.id,
+            });
+          } else {
+            await finalizeApprovedInvoice(tx, {
+              resourceId: step.approvalFlow.resourceId,
+              organizationId: ctx.organizationId,
+              db: ctx.db,
+              userId: ctx.user?.id,
+            });
+          }
         }
       }),
     ),
 
   bulkReject: tenantProcedure
-    .use(requirePermission({ invoice: ['approve'] }))
+    .use(requireAnyPermission({ invoice: ['approve'] }, { employee: ['approve_leave'] }))
     .input(bulkRejectSchema)
     .mutation(({ ctx, input }) =>
       processBulkApprovalSteps(ctx, input.stepIds, async (tx, step) => {
+        await assertApprovalActionPermission(ctx, step.approvalFlow.resourceType);
+
         await tx.approvalDecision.create({
           data: {
             organizationId: ctx.organizationId,
@@ -568,10 +609,17 @@ export const approvalQueueRouter = router({
           },
         });
 
-        await tx.invoice.update({
-          where: { id: step.approvalFlow.resourceId },
-          data: { status: 'REJECTED' },
-        });
+        if (step.approvalFlow.resourceType === 'LEAVE_REQUEST') {
+          await tx.leaveRequest.update({
+            where: { id: step.approvalFlow.resourceId },
+            data: { status: 'REJECTED' },
+          });
+        } else {
+          await tx.invoice.update({
+            where: { id: step.approvalFlow.resourceId },
+            data: { status: 'REJECTED' },
+          });
+        }
       }),
     ),
 });
