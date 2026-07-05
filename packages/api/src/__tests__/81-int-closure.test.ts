@@ -68,6 +68,9 @@ const {
   runUpdate,
   approvalFlowUpdate,
   queryRaw,
+  // The transactional outbox enqueues the upload-outcome notice via
+  // `$executeRawUnsafe` on the tx client (Flow 2's approve path).
+  execRawUnsafe,
   // Held-flow store: the recovery hook's $queryRaw returns this; flow 2 mutates it
   // so a follow-up read reflects the resumed status (PENDING_COMPLIANCE → PENDING).
   heldFlows,
@@ -154,6 +157,10 @@ const {
     }),
   };
 
+  // Raw executors on the tx client — the compliance-outcome outbox enqueue runs
+  // via `$executeRawUnsafe` inside the approve tx.
+  const execRawUnsafe = vi.fn(async () => 1);
+
   const base = {
     // ── Flow 1 models ──
     contractorAssignment: {
@@ -197,6 +204,9 @@ const {
     },
     approvalFlow: { update: approvalFlowUpdate },
     $queryRaw: queryRaw,
+    $executeRaw: vi.fn(async () => 1),
+    $executeRawUnsafe: execRawUnsafe,
+    $queryRawUnsafe: vi.fn(async () => []),
   };
 
   const mockPrisma = {
@@ -213,6 +223,7 @@ const {
     runUpdate,
     approvalFlowUpdate,
     queryRaw,
+    execRawUnsafe,
     heldFlows,
     blockingItems,
   };
@@ -594,10 +605,9 @@ describe('Flow 2 (INT-02) — approveUploadReplacement → recovery → held flo
   );
 
   it(
-    'would FAIL against pre-81 code (D-14): a post-tx notification failure does NOT roll back the approval or the in-tx recovery flip',
+    'defers the outcome notification to the outbox drain: the approval + in-tx recovery flip commit atomically with a cheap outbox INSERT, so a provider outage cannot roll them back',
     async () => {
       seedHeldComplianceState();
-      dispatchSpy.mockRejectedValueOnce(new Error('notification provider down'));
       const caller = makeCaller('admin');
 
       const out = (await caller.complianceAdmin.approveUploadReplacement({
@@ -606,9 +616,17 @@ describe('Flow 2 (INT-02) — approveUploadReplacement → recovery → held flo
         expiresAt: '2027-01-15',
       })) as { status: string };
 
-      // Approval still commits and the in-tx recovery flip survives the post-tx failure.
+      // Approval commits and the in-tx recovery flip survives. The contractor
+      // outcome notice is now a cheap in-tx outbox INSERT rather than a post-tx
+      // dispatch: the provider send is deferred to the drain, so a provider
+      // outage is structurally isolated from the approval + recovery flip.
       expect(out.status).toBe('SATISFIED');
       expect(heldFlows.find(f => f.id === HELD_FLOW_ID)?.status).toBe('PENDING');
+      const outboxCall = execRawUnsafe.mock.calls.find((c: unknown[]) =>
+        String(c[0]).includes('INSERT INTO "OutboxEvent"'),
+      );
+      expect(outboxCall).toBeDefined();
+      expect(dispatchSpy).not.toHaveBeenCalled();
     },
     SLOW,
   );
