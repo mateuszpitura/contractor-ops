@@ -14,7 +14,9 @@ requires:
     provides: UsClassification + Form1099KTracker i18n namespaces (09 appends Tax1042SBatch to the same files)
 provides:
   - Staff 1042-S batch review surface MOUNTED and reachable (page /tax-filing + route + flag-gated Finance nav)
-  - Tax1042SBatch i18n namespace at en/de/pl/ar parity (en-US inherits en) + Navigation.taxFiling
+  - Staff 1042-S filing card (buildAndValidateXml / downloadValidatedXml / uploadAck / correction) reusing the shared IRIS status pill + ack-upload + correction dialog; transmit tail via form-1042s-transmit.service (Pub 1187 over the shared IRIS seam)
+  - Portal consent-gated 1042-S recipient PDF (portal.downloadForm1042S) reusing the SAME e-delivery consent gate (IDOR-scoped, FTIN last-4)
+  - Tax1042SBatch + Tax1042SFiling + Tax1042SConsent i18n namespaces at en/de/pl/ar parity (en-US inherits en) + Navigation.taxFiling
   - Review-before-file + never-hard-block (30% statutory = amber advisory) + FTIN last-4 only, proven on the mounted surface
 affects: [us-tax-forms, portal-1042s, 87-10]
 
@@ -44,7 +46,7 @@ key-decisions:
   - "i18n keys live at apps/web-vite/messages/*.json (real path); the plan's src/messages/ list was stale (same correction as Plan 08)."
   - "Only the Tax1042SBatch namespace landed. Tax1042SFiling + Tax1042SConsent are deferred WITH the Tasks 2-3 cross-phase HOLD — authoring them now would mean guessing key names for components that do not exist, risking drift against the real P86-reused components when they land."
 
-requirements-completed: [US-FORM-06 (UI, Task 1 only — Tasks 2-3 HOLD)]
+requirements-completed: [US-FORM-06 (UI — Task 1 batch + Tasks 2-3 filing card / portal consent-gated download; HOLD resolved)]
 
 # Metrics
 completed: 2026-07-05
@@ -53,6 +55,18 @@ completed: 2026-07-05
 # Phase 87 Plan 09: Staff 1042-S filing surface + portal recipient PDF Summary
 
 **Task 1 (staff 1042-S batch review) is COMPLETE and now MOUNTED: the recovered wired panel + summary + treaty-rate caption + hook are reachable via a new flag-gated `/tax-filing` page, and the `Tax1042SBatch` i18n namespace landed at en/de/pl/ar parity. Tasks 2-3 (the P86-reusing filing card + portal consent-gated download) are a recorded CROSS-PHASE HOLD — the P86 UI seam is not on disk and is reused-not-rebuilt.**
+
+## Addendum — 2026-07-05 (Tasks 2-3 completed, HOLD resolved)
+
+The P86 IRIS seam has since landed on main (`iris-status-pill`, `ack-upload-field`, `correction-dialog`, `step-edelivery-consent`, `use-edelivery-consent`, `copy-b-download`). A follow-up stream unblocked and completed Tasks 2-3, reusing those components verbatim — none were rebuilt:
+
+- **Staff 1042-S filing card** (`tax-1042s-filing-card.tsx` + `hooks/use-1042s-filing.ts`, mounted on `/tax-filing`): reuses the shared `IrisStatusPill` + `AckUploadField` + `CorrectionDialog` (the last two + `StepEdeliveryConsent` gained an optional `namespace` prop so the shared components read as 1042-S). Wired to a **new backend transmit tail** that completes 87-07 Task 2's own HOLD (now unblocked by the same landed seam): `services/form-1042s-transmit.service.ts` (`buildAndValidate1042S`, a sibling over `buildIris1042SXml`/`xsdValidate1042S`) + `form1042s.buildAndValidateXml` / `downloadValidatedXml` / `uploadAck` procedures mirroring the 1099 tail (idempotent download, shared `iris-ack-parser`, Pub 1187 schema version as the `IrisSubmission` discriminator — **no schema migration**). BUNDLE_UNAVAILABLE (non-throwing) until the human Pub 1187 XSD lands; review-before-file preserved (no auto-file control).
+- **Portal consent-gated 1042-S PDF** (`copy-1042s-download.tsx`): reuses the SAME `useEdeliveryConsent` + `StepEdeliveryConsent` gate and a new `portal.downloadForm1042S` procedure — recipient Copy B furnished only with stored consent (paper-copy messaging otherwise), IDOR-scoped to `ctx.contractorId`, FTIN last-4 only.
+- **i18n:** `Tax1042SFiling` + `Tax1042SConsent` namespaces added across en/de/pl/ar at parity (en canonical; en-US inherits en; de/pl/ar machine-translated, flagged for native review in `deferred-items.md`).
+- **Deferred (unchanged):** the XSD-validated transmit itself stays a human SOR enablement step (Pub 1187 bundle absent → BUNDLE_UNAVAILABLE), gated behind `module.us-expansion` + bundle presence.
+- **Verification:** `@contractor-ops/api` typecheck green; web-vite typecheck clean except the pre-existing Phase-92 `team-calendar` scaffold (another stream, untouched); `check:web-vite-data-layer` / `check:web-vite-dialog-pattern` OK; `i18n:parity` OK; scoped `form-1042s` + `iris-ack` tests 27/27. Wiki updated (`domains/us-tax-forms`, `structure/{web-vite-domains,api-routers-catalog,key-services}`, `log.md`, `hot.md`).
+
+The historical HOLD record below is preserved for provenance.
 
 ## Cross-phase HOLD (Tasks 2-3) — the load-bearing outcome
 
