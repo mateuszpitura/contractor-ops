@@ -3,11 +3,13 @@ title: Cron worker jobs
 type: structure
 tags: [structure, cron, background]
 source_commit: f0779951
+source_commit: f9de62452
 verify_with:
   - apps/cron-worker/src/jobs/handlers/
   - apps/cron-worker/src/jobs/handlers/reminders/wt-limit-scan.ts
   - packages/api/src/services/wt-limit-scan.ts
   - apps/api/src/lib/qstash-route.ts
+  - packages/db/prisma/schema/cron.prisma
 updated: 2026-07-05
 ---
 
@@ -55,6 +57,7 @@ sequenceDiagram
 
 ## Invariants
 
+- **Per-job last-success is persisted, not in-memory.** `CronJobRunState` (`packages/db/prisma/schema/cron.prisma`, global/non-tenant, keyed `jobName @unique`, `lastSuccessAt`/`lastRunAt`) survives cron-worker restarts (the previous in-memory `lastSuccessByJob` map was wiped on restart, hiding missed ticks). `job-health.ts` reads it to alert on staleness (`now - lastSuccessAt` beyond the schedule interval) — today job-health watches only `WebhookDelivery`, so a dead cron job is undetected. The runner-side write + health staleness comparison land in a later change set; the table + unique are the schema backstop.
 - `createCronLogger` — no `console.*`
 - QStash routes: `defineQStashRoute` + Zod body (`apps/api/src/lib/qstash-route.ts`)
 - `cronProcedure` with `Authorization: Bearer CRON_SECRET`

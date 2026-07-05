@@ -2482,6 +2482,23 @@ export type EnumEligibilityVerdictWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedEnumEligibilityVerdictFilter<$PrismaModel>
 }
 
+export type EnumAchReturnEntryTypeFilter<$PrismaModel = never> = {
+  equals?: $Enums.AchReturnEntryType | Prisma.EnumAchReturnEntryTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.AchReturnEntryType[] | Prisma.ListEnumAchReturnEntryTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.AchReturnEntryType[] | Prisma.ListEnumAchReturnEntryTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumAchReturnEntryTypeFilter<$PrismaModel> | $Enums.AchReturnEntryType
+}
+
+export type EnumAchReturnEntryTypeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.AchReturnEntryType | Prisma.EnumAchReturnEntryTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.AchReturnEntryType[] | Prisma.ListEnumAchReturnEntryTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.AchReturnEntryType[] | Prisma.ListEnumAchReturnEntryTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumAchReturnEntryTypeWithAggregatesFilter<$PrismaModel> | $Enums.AchReturnEntryType
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumAchReturnEntryTypeFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumAchReturnEntryTypeFilter<$PrismaModel>
+}
+
 export type EnumPeppolParticipantStatusFilter<$PrismaModel = never> = {
   equals?: $Enums.PeppolParticipantStatus | Prisma.EnumPeppolParticipantStatusFieldRefInput<$PrismaModel>
   in?: $Enums.PeppolParticipantStatus[] | Prisma.ListEnumPeppolParticipantStatusFieldRefInput<$PrismaModel>
@@ -5434,6 +5451,23 @@ export type NestedEnumEligibilityVerdictWithAggregatesFilter<$PrismaModel = neve
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumEligibilityVerdictFilter<$PrismaModel>
   _max?: Prisma.NestedEnumEligibilityVerdictFilter<$PrismaModel>
+}
+
+export type NestedEnumAchReturnEntryTypeFilter<$PrismaModel = never> = {
+  equals?: $Enums.AchReturnEntryType | Prisma.EnumAchReturnEntryTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.AchReturnEntryType[] | Prisma.ListEnumAchReturnEntryTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.AchReturnEntryType[] | Prisma.ListEnumAchReturnEntryTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumAchReturnEntryTypeFilter<$PrismaModel> | $Enums.AchReturnEntryType
+}
+
+export type NestedEnumAchReturnEntryTypeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.AchReturnEntryType | Prisma.EnumAchReturnEntryTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.AchReturnEntryType[] | Prisma.ListEnumAchReturnEntryTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.AchReturnEntryType[] | Prisma.ListEnumAchReturnEntryTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumAchReturnEntryTypeWithAggregatesFilter<$PrismaModel> | $Enums.AchReturnEntryType
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumAchReturnEntryTypeFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumAchReturnEntryTypeFilter<$PrismaModel>
 }
 
 export type NestedEnumPeppolParticipantStatusFilter<$PrismaModel = never> = {

@@ -1255,6 +1255,14 @@ export const EligibilityVerdict = {
 export type EligibilityVerdict = (typeof EligibilityVerdict)[keyof typeof EligibilityVerdict]
 
 
+export const AchReturnEntryType = {
+  RETURN: 'RETURN',
+  NOTIFICATION_OF_CHANGE: 'NOTIFICATION_OF_CHANGE'
+} as const
+
+export type AchReturnEntryType = (typeof AchReturnEntryType)[keyof typeof AchReturnEntryType]
+
+
 export const PeppolParticipantStatus = {
   PENDING: 'PENDING',
   REGISTERED: 'REGISTERED',

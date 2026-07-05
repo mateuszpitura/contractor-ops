@@ -279,12 +279,12 @@ export type PeppolTransmissionOrderByWithRelationInput = {
 
 export type PeppolTransmissionWhereUniqueInput = Prisma.AtLeast<{
   id?: string
+  invoiceId?: string
   AND?: Prisma.PeppolTransmissionWhereInput | Prisma.PeppolTransmissionWhereInput[]
   OR?: Prisma.PeppolTransmissionWhereInput[]
   NOT?: Prisma.PeppolTransmissionWhereInput | Prisma.PeppolTransmissionWhereInput[]
   organizationId?: Prisma.StringFilter<"PeppolTransmission"> | string
   peppolParticipantId?: Prisma.StringFilter<"PeppolTransmission"> | string
-  invoiceId?: Prisma.StringNullableFilter<"PeppolTransmission"> | string | null
   direction?: Prisma.EnumSyncDirectionFilter<"PeppolTransmission"> | $Enums.SyncDirection
   aspTransmissionId?: Prisma.StringNullableFilter<"PeppolTransmission"> | string | null
   documentTypeId?: Prisma.StringNullableFilter<"PeppolTransmission"> | string | null
@@ -297,7 +297,7 @@ export type PeppolTransmissionWhereUniqueInput = Prisma.AtLeast<{
   updatedAt?: Prisma.DateTimeFilter<"PeppolTransmission"> | Date | string
   organization?: Prisma.XOR<Prisma.OrganizationScalarRelationFilter, Prisma.OrganizationWhereInput>
   participant?: Prisma.XOR<Prisma.PeppolParticipantScalarRelationFilter, Prisma.PeppolParticipantWhereInput>
-}, "id">
+}, "id" | "invoiceId">
 
 export type PeppolTransmissionOrderByWithAggregationInput = {
   id?: Prisma.SortOrder

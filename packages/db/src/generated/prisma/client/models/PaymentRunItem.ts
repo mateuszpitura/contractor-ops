@@ -31,6 +31,7 @@ export type PaymentRunItemAvgAggregateOutputType = {
   whtAmountMinor: number | null
   whtRate: runtime.Decimal | null
   grossAmountMinor: number | null
+  settlementRate: runtime.Decimal | null
 }
 
 export type PaymentRunItemSumAggregateOutputType = {
@@ -38,6 +39,7 @@ export type PaymentRunItemSumAggregateOutputType = {
   whtAmountMinor: number | null
   whtRate: runtime.Decimal | null
   grossAmountMinor: number | null
+  settlementRate: runtime.Decimal | null
 }
 
 export type PaymentRunItemMinAggregateOutputType = {
@@ -59,6 +61,8 @@ export type PaymentRunItemMinAggregateOutputType = {
   whtTreatyReference: string | null
   whtServiceType: string | null
   grossAmountMinor: number | null
+  settlementRate: runtime.Decimal | null
+  settlementRateDate: Date | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -82,6 +86,8 @@ export type PaymentRunItemMaxAggregateOutputType = {
   whtTreatyReference: string | null
   whtServiceType: string | null
   grossAmountMinor: number | null
+  settlementRate: runtime.Decimal | null
+  settlementRateDate: Date | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -105,6 +111,8 @@ export type PaymentRunItemCountAggregateOutputType = {
   whtTreatyReference: number
   whtServiceType: number
   grossAmountMinor: number
+  settlementRate: number
+  settlementRateDate: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -116,6 +124,7 @@ export type PaymentRunItemAvgAggregateInputType = {
   whtAmountMinor?: true
   whtRate?: true
   grossAmountMinor?: true
+  settlementRate?: true
 }
 
 export type PaymentRunItemSumAggregateInputType = {
@@ -123,6 +132,7 @@ export type PaymentRunItemSumAggregateInputType = {
   whtAmountMinor?: true
   whtRate?: true
   grossAmountMinor?: true
+  settlementRate?: true
 }
 
 export type PaymentRunItemMinAggregateInputType = {
@@ -144,6 +154,8 @@ export type PaymentRunItemMinAggregateInputType = {
   whtTreatyReference?: true
   whtServiceType?: true
   grossAmountMinor?: true
+  settlementRate?: true
+  settlementRateDate?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -167,6 +179,8 @@ export type PaymentRunItemMaxAggregateInputType = {
   whtTreatyReference?: true
   whtServiceType?: true
   grossAmountMinor?: true
+  settlementRate?: true
+  settlementRateDate?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -190,6 +204,8 @@ export type PaymentRunItemCountAggregateInputType = {
   whtTreatyReference?: true
   whtServiceType?: true
   grossAmountMinor?: true
+  settlementRate?: true
+  settlementRateDate?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -300,6 +316,8 @@ export type PaymentRunItemGroupByOutputType = {
   whtTreatyReference: string | null
   whtServiceType: string | null
   grossAmountMinor: number | null
+  settlementRate: runtime.Decimal | null
+  settlementRateDate: Date | null
   createdAt: Date
   updatedAt: Date
   _count: PaymentRunItemCountAggregateOutputType | null
@@ -346,6 +364,8 @@ export type PaymentRunItemWhereInput = {
   whtTreatyReference?: Prisma.StringNullableFilter<"PaymentRunItem"> | string | null
   whtServiceType?: Prisma.StringNullableFilter<"PaymentRunItem"> | string | null
   grossAmountMinor?: Prisma.IntNullableFilter<"PaymentRunItem"> | number | null
+  settlementRate?: Prisma.DecimalNullableFilter<"PaymentRunItem"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  settlementRateDate?: Prisma.DateTimeNullableFilter<"PaymentRunItem"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"PaymentRunItem"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"PaymentRunItem"> | Date | string
   organization?: Prisma.XOR<Prisma.OrganizationScalarRelationFilter, Prisma.OrganizationWhereInput>
@@ -355,6 +375,7 @@ export type PaymentRunItemWhereInput = {
   billingProfile?: Prisma.XOR<Prisma.ContractorBillingProfileNullableScalarRelationFilter, Prisma.ContractorBillingProfileWhereInput> | null
   invoicePayments?: Prisma.InvoicePaymentListRelationFilter
   skontoApplication?: Prisma.XOR<Prisma.SkontoApplicationNullableScalarRelationFilter, Prisma.SkontoApplicationWhereInput> | null
+  achReturnLedgerEntries?: Prisma.AchReturnLedgerEntryListRelationFilter
 }
 
 export type PaymentRunItemOrderByWithRelationInput = {
@@ -376,6 +397,8 @@ export type PaymentRunItemOrderByWithRelationInput = {
   whtTreatyReference?: Prisma.SortOrderInput | Prisma.SortOrder
   whtServiceType?: Prisma.SortOrderInput | Prisma.SortOrder
   grossAmountMinor?: Prisma.SortOrderInput | Prisma.SortOrder
+  settlementRate?: Prisma.SortOrderInput | Prisma.SortOrder
+  settlementRateDate?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   organization?: Prisma.OrganizationOrderByWithRelationInput
@@ -385,6 +408,7 @@ export type PaymentRunItemOrderByWithRelationInput = {
   billingProfile?: Prisma.ContractorBillingProfileOrderByWithRelationInput
   invoicePayments?: Prisma.InvoicePaymentOrderByRelationAggregateInput
   skontoApplication?: Prisma.SkontoApplicationOrderByWithRelationInput
+  achReturnLedgerEntries?: Prisma.AchReturnLedgerEntryOrderByRelationAggregateInput
 }
 
 export type PaymentRunItemWhereUniqueInput = Prisma.AtLeast<{
@@ -410,6 +434,8 @@ export type PaymentRunItemWhereUniqueInput = Prisma.AtLeast<{
   whtTreatyReference?: Prisma.StringNullableFilter<"PaymentRunItem"> | string | null
   whtServiceType?: Prisma.StringNullableFilter<"PaymentRunItem"> | string | null
   grossAmountMinor?: Prisma.IntNullableFilter<"PaymentRunItem"> | number | null
+  settlementRate?: Prisma.DecimalNullableFilter<"PaymentRunItem"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  settlementRateDate?: Prisma.DateTimeNullableFilter<"PaymentRunItem"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"PaymentRunItem"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"PaymentRunItem"> | Date | string
   organization?: Prisma.XOR<Prisma.OrganizationScalarRelationFilter, Prisma.OrganizationWhereInput>
@@ -419,6 +445,7 @@ export type PaymentRunItemWhereUniqueInput = Prisma.AtLeast<{
   billingProfile?: Prisma.XOR<Prisma.ContractorBillingProfileNullableScalarRelationFilter, Prisma.ContractorBillingProfileWhereInput> | null
   invoicePayments?: Prisma.InvoicePaymentListRelationFilter
   skontoApplication?: Prisma.XOR<Prisma.SkontoApplicationNullableScalarRelationFilter, Prisma.SkontoApplicationWhereInput> | null
+  achReturnLedgerEntries?: Prisma.AchReturnLedgerEntryListRelationFilter
 }, "id" | "paymentRunId_invoiceId">
 
 export type PaymentRunItemOrderByWithAggregationInput = {
@@ -440,6 +467,8 @@ export type PaymentRunItemOrderByWithAggregationInput = {
   whtTreatyReference?: Prisma.SortOrderInput | Prisma.SortOrder
   whtServiceType?: Prisma.SortOrderInput | Prisma.SortOrder
   grossAmountMinor?: Prisma.SortOrderInput | Prisma.SortOrder
+  settlementRate?: Prisma.SortOrderInput | Prisma.SortOrder
+  settlementRateDate?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.PaymentRunItemCountOrderByAggregateInput
@@ -471,6 +500,8 @@ export type PaymentRunItemScalarWhereWithAggregatesInput = {
   whtTreatyReference?: Prisma.StringNullableWithAggregatesFilter<"PaymentRunItem"> | string | null
   whtServiceType?: Prisma.StringNullableWithAggregatesFilter<"PaymentRunItem"> | string | null
   grossAmountMinor?: Prisma.IntNullableWithAggregatesFilter<"PaymentRunItem"> | number | null
+  settlementRate?: Prisma.DecimalNullableWithAggregatesFilter<"PaymentRunItem"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  settlementRateDate?: Prisma.DateTimeNullableWithAggregatesFilter<"PaymentRunItem"> | Date | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"PaymentRunItem"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"PaymentRunItem"> | Date | string
 }
@@ -489,6 +520,8 @@ export type PaymentRunItemCreateInput = {
   whtTreatyReference?: string | null
   whtServiceType?: string | null
   grossAmountMinor?: number | null
+  settlementRate?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  settlementRateDate?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   organization: Prisma.OrganizationCreateNestedOneWithoutPaymentRunItemsInput
@@ -498,6 +531,7 @@ export type PaymentRunItemCreateInput = {
   billingProfile?: Prisma.ContractorBillingProfileCreateNestedOneWithoutPaymentRunItemsInput
   invoicePayments?: Prisma.InvoicePaymentCreateNestedManyWithoutSourcePaymentRunItemInput
   skontoApplication?: Prisma.SkontoApplicationCreateNestedOneWithoutPaymentRunItemInput
+  achReturnLedgerEntries?: Prisma.AchReturnLedgerEntryCreateNestedManyWithoutPaymentRunItemInput
 }
 
 export type PaymentRunItemUncheckedCreateInput = {
@@ -519,10 +553,13 @@ export type PaymentRunItemUncheckedCreateInput = {
   whtTreatyReference?: string | null
   whtServiceType?: string | null
   grossAmountMinor?: number | null
+  settlementRate?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  settlementRateDate?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   invoicePayments?: Prisma.InvoicePaymentUncheckedCreateNestedManyWithoutSourcePaymentRunItemInput
   skontoApplication?: Prisma.SkontoApplicationUncheckedCreateNestedOneWithoutPaymentRunItemInput
+  achReturnLedgerEntries?: Prisma.AchReturnLedgerEntryUncheckedCreateNestedManyWithoutPaymentRunItemInput
 }
 
 export type PaymentRunItemUpdateInput = {
@@ -539,6 +576,8 @@ export type PaymentRunItemUpdateInput = {
   whtTreatyReference?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   whtServiceType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   grossAmountMinor?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  settlementRate?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  settlementRateDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutPaymentRunItemsNestedInput
@@ -548,6 +587,7 @@ export type PaymentRunItemUpdateInput = {
   billingProfile?: Prisma.ContractorBillingProfileUpdateOneWithoutPaymentRunItemsNestedInput
   invoicePayments?: Prisma.InvoicePaymentUpdateManyWithoutSourcePaymentRunItemNestedInput
   skontoApplication?: Prisma.SkontoApplicationUpdateOneWithoutPaymentRunItemNestedInput
+  achReturnLedgerEntries?: Prisma.AchReturnLedgerEntryUpdateManyWithoutPaymentRunItemNestedInput
 }
 
 export type PaymentRunItemUncheckedUpdateInput = {
@@ -569,10 +609,13 @@ export type PaymentRunItemUncheckedUpdateInput = {
   whtTreatyReference?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   whtServiceType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   grossAmountMinor?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  settlementRate?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  settlementRateDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   invoicePayments?: Prisma.InvoicePaymentUncheckedUpdateManyWithoutSourcePaymentRunItemNestedInput
   skontoApplication?: Prisma.SkontoApplicationUncheckedUpdateOneWithoutPaymentRunItemNestedInput
+  achReturnLedgerEntries?: Prisma.AchReturnLedgerEntryUncheckedUpdateManyWithoutPaymentRunItemNestedInput
 }
 
 export type PaymentRunItemCreateManyInput = {
@@ -594,6 +637,8 @@ export type PaymentRunItemCreateManyInput = {
   whtTreatyReference?: string | null
   whtServiceType?: string | null
   grossAmountMinor?: number | null
+  settlementRate?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  settlementRateDate?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -612,6 +657,8 @@ export type PaymentRunItemUpdateManyMutationInput = {
   whtTreatyReference?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   whtServiceType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   grossAmountMinor?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  settlementRate?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  settlementRateDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -635,6 +682,8 @@ export type PaymentRunItemUncheckedUpdateManyInput = {
   whtTreatyReference?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   whtServiceType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   grossAmountMinor?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  settlementRate?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  settlementRateDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -683,6 +732,8 @@ export type PaymentRunItemCountOrderByAggregateInput = {
   whtTreatyReference?: Prisma.SortOrder
   whtServiceType?: Prisma.SortOrder
   grossAmountMinor?: Prisma.SortOrder
+  settlementRate?: Prisma.SortOrder
+  settlementRateDate?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -692,6 +743,7 @@ export type PaymentRunItemAvgOrderByAggregateInput = {
   whtAmountMinor?: Prisma.SortOrder
   whtRate?: Prisma.SortOrder
   grossAmountMinor?: Prisma.SortOrder
+  settlementRate?: Prisma.SortOrder
 }
 
 export type PaymentRunItemMaxOrderByAggregateInput = {
@@ -713,6 +765,8 @@ export type PaymentRunItemMaxOrderByAggregateInput = {
   whtTreatyReference?: Prisma.SortOrder
   whtServiceType?: Prisma.SortOrder
   grossAmountMinor?: Prisma.SortOrder
+  settlementRate?: Prisma.SortOrder
+  settlementRateDate?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -736,6 +790,8 @@ export type PaymentRunItemMinOrderByAggregateInput = {
   whtTreatyReference?: Prisma.SortOrder
   whtServiceType?: Prisma.SortOrder
   grossAmountMinor?: Prisma.SortOrder
+  settlementRate?: Prisma.SortOrder
+  settlementRateDate?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -745,6 +801,7 @@ export type PaymentRunItemSumOrderByAggregateInput = {
   whtAmountMinor?: Prisma.SortOrder
   whtRate?: Prisma.SortOrder
   grossAmountMinor?: Prisma.SortOrder
+  settlementRate?: Prisma.SortOrder
 }
 
 export type PaymentRunItemCreateNestedManyWithoutContractorInput = {
@@ -991,6 +1048,22 @@ export type EnumPaymentRunItemStatusFieldUpdateOperationsInput = {
   set?: $Enums.PaymentRunItemStatus
 }
 
+export type PaymentRunItemCreateNestedOneWithoutAchReturnLedgerEntriesInput = {
+  create?: Prisma.XOR<Prisma.PaymentRunItemCreateWithoutAchReturnLedgerEntriesInput, Prisma.PaymentRunItemUncheckedCreateWithoutAchReturnLedgerEntriesInput>
+  connectOrCreate?: Prisma.PaymentRunItemCreateOrConnectWithoutAchReturnLedgerEntriesInput
+  connect?: Prisma.PaymentRunItemWhereUniqueInput
+}
+
+export type PaymentRunItemUpdateOneWithoutAchReturnLedgerEntriesNestedInput = {
+  create?: Prisma.XOR<Prisma.PaymentRunItemCreateWithoutAchReturnLedgerEntriesInput, Prisma.PaymentRunItemUncheckedCreateWithoutAchReturnLedgerEntriesInput>
+  connectOrCreate?: Prisma.PaymentRunItemCreateOrConnectWithoutAchReturnLedgerEntriesInput
+  upsert?: Prisma.PaymentRunItemUpsertWithoutAchReturnLedgerEntriesInput
+  disconnect?: Prisma.PaymentRunItemWhereInput | boolean
+  delete?: Prisma.PaymentRunItemWhereInput | boolean
+  connect?: Prisma.PaymentRunItemWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.PaymentRunItemUpdateToOneWithWhereWithoutAchReturnLedgerEntriesInput, Prisma.PaymentRunItemUpdateWithoutAchReturnLedgerEntriesInput>, Prisma.PaymentRunItemUncheckedUpdateWithoutAchReturnLedgerEntriesInput>
+}
+
 export type PaymentRunItemCreateWithoutContractorInput = {
   id?: string
   amountMinor: number
@@ -1005,6 +1078,8 @@ export type PaymentRunItemCreateWithoutContractorInput = {
   whtTreatyReference?: string | null
   whtServiceType?: string | null
   grossAmountMinor?: number | null
+  settlementRate?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  settlementRateDate?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   organization: Prisma.OrganizationCreateNestedOneWithoutPaymentRunItemsInput
@@ -1013,6 +1088,7 @@ export type PaymentRunItemCreateWithoutContractorInput = {
   billingProfile?: Prisma.ContractorBillingProfileCreateNestedOneWithoutPaymentRunItemsInput
   invoicePayments?: Prisma.InvoicePaymentCreateNestedManyWithoutSourcePaymentRunItemInput
   skontoApplication?: Prisma.SkontoApplicationCreateNestedOneWithoutPaymentRunItemInput
+  achReturnLedgerEntries?: Prisma.AchReturnLedgerEntryCreateNestedManyWithoutPaymentRunItemInput
 }
 
 export type PaymentRunItemUncheckedCreateWithoutContractorInput = {
@@ -1033,10 +1109,13 @@ export type PaymentRunItemUncheckedCreateWithoutContractorInput = {
   whtTreatyReference?: string | null
   whtServiceType?: string | null
   grossAmountMinor?: number | null
+  settlementRate?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  settlementRateDate?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   invoicePayments?: Prisma.InvoicePaymentUncheckedCreateNestedManyWithoutSourcePaymentRunItemInput
   skontoApplication?: Prisma.SkontoApplicationUncheckedCreateNestedOneWithoutPaymentRunItemInput
+  achReturnLedgerEntries?: Prisma.AchReturnLedgerEntryUncheckedCreateNestedManyWithoutPaymentRunItemInput
 }
 
 export type PaymentRunItemCreateOrConnectWithoutContractorInput = {
@@ -1087,6 +1166,8 @@ export type PaymentRunItemScalarWhereInput = {
   whtTreatyReference?: Prisma.StringNullableFilter<"PaymentRunItem"> | string | null
   whtServiceType?: Prisma.StringNullableFilter<"PaymentRunItem"> | string | null
   grossAmountMinor?: Prisma.IntNullableFilter<"PaymentRunItem"> | number | null
+  settlementRate?: Prisma.DecimalNullableFilter<"PaymentRunItem"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  settlementRateDate?: Prisma.DateTimeNullableFilter<"PaymentRunItem"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"PaymentRunItem"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"PaymentRunItem"> | Date | string
 }
@@ -1105,6 +1186,8 @@ export type PaymentRunItemCreateWithoutBillingProfileInput = {
   whtTreatyReference?: string | null
   whtServiceType?: string | null
   grossAmountMinor?: number | null
+  settlementRate?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  settlementRateDate?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   organization: Prisma.OrganizationCreateNestedOneWithoutPaymentRunItemsInput
@@ -1113,6 +1196,7 @@ export type PaymentRunItemCreateWithoutBillingProfileInput = {
   contractor: Prisma.ContractorCreateNestedOneWithoutPaymentRunItemsInput
   invoicePayments?: Prisma.InvoicePaymentCreateNestedManyWithoutSourcePaymentRunItemInput
   skontoApplication?: Prisma.SkontoApplicationCreateNestedOneWithoutPaymentRunItemInput
+  achReturnLedgerEntries?: Prisma.AchReturnLedgerEntryCreateNestedManyWithoutPaymentRunItemInput
 }
 
 export type PaymentRunItemUncheckedCreateWithoutBillingProfileInput = {
@@ -1133,10 +1217,13 @@ export type PaymentRunItemUncheckedCreateWithoutBillingProfileInput = {
   whtTreatyReference?: string | null
   whtServiceType?: string | null
   grossAmountMinor?: number | null
+  settlementRate?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  settlementRateDate?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   invoicePayments?: Prisma.InvoicePaymentUncheckedCreateNestedManyWithoutSourcePaymentRunItemInput
   skontoApplication?: Prisma.SkontoApplicationUncheckedCreateNestedOneWithoutPaymentRunItemInput
+  achReturnLedgerEntries?: Prisma.AchReturnLedgerEntryUncheckedCreateNestedManyWithoutPaymentRunItemInput
 }
 
 export type PaymentRunItemCreateOrConnectWithoutBillingProfileInput = {
@@ -1179,6 +1266,8 @@ export type PaymentRunItemCreateWithoutSkontoApplicationInput = {
   whtTreatyReference?: string | null
   whtServiceType?: string | null
   grossAmountMinor?: number | null
+  settlementRate?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  settlementRateDate?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   organization: Prisma.OrganizationCreateNestedOneWithoutPaymentRunItemsInput
@@ -1187,6 +1276,7 @@ export type PaymentRunItemCreateWithoutSkontoApplicationInput = {
   contractor: Prisma.ContractorCreateNestedOneWithoutPaymentRunItemsInput
   billingProfile?: Prisma.ContractorBillingProfileCreateNestedOneWithoutPaymentRunItemsInput
   invoicePayments?: Prisma.InvoicePaymentCreateNestedManyWithoutSourcePaymentRunItemInput
+  achReturnLedgerEntries?: Prisma.AchReturnLedgerEntryCreateNestedManyWithoutPaymentRunItemInput
 }
 
 export type PaymentRunItemUncheckedCreateWithoutSkontoApplicationInput = {
@@ -1208,9 +1298,12 @@ export type PaymentRunItemUncheckedCreateWithoutSkontoApplicationInput = {
   whtTreatyReference?: string | null
   whtServiceType?: string | null
   grossAmountMinor?: number | null
+  settlementRate?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  settlementRateDate?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   invoicePayments?: Prisma.InvoicePaymentUncheckedCreateNestedManyWithoutSourcePaymentRunItemInput
+  achReturnLedgerEntries?: Prisma.AchReturnLedgerEntryUncheckedCreateNestedManyWithoutPaymentRunItemInput
 }
 
 export type PaymentRunItemCreateOrConnectWithoutSkontoApplicationInput = {
@@ -1243,6 +1336,8 @@ export type PaymentRunItemUpdateWithoutSkontoApplicationInput = {
   whtTreatyReference?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   whtServiceType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   grossAmountMinor?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  settlementRate?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  settlementRateDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutPaymentRunItemsNestedInput
@@ -1251,6 +1346,7 @@ export type PaymentRunItemUpdateWithoutSkontoApplicationInput = {
   contractor?: Prisma.ContractorUpdateOneRequiredWithoutPaymentRunItemsNestedInput
   billingProfile?: Prisma.ContractorBillingProfileUpdateOneWithoutPaymentRunItemsNestedInput
   invoicePayments?: Prisma.InvoicePaymentUpdateManyWithoutSourcePaymentRunItemNestedInput
+  achReturnLedgerEntries?: Prisma.AchReturnLedgerEntryUpdateManyWithoutPaymentRunItemNestedInput
 }
 
 export type PaymentRunItemUncheckedUpdateWithoutSkontoApplicationInput = {
@@ -1272,9 +1368,12 @@ export type PaymentRunItemUncheckedUpdateWithoutSkontoApplicationInput = {
   whtTreatyReference?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   whtServiceType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   grossAmountMinor?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  settlementRate?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  settlementRateDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   invoicePayments?: Prisma.InvoicePaymentUncheckedUpdateManyWithoutSourcePaymentRunItemNestedInput
+  achReturnLedgerEntries?: Prisma.AchReturnLedgerEntryUncheckedUpdateManyWithoutPaymentRunItemNestedInput
 }
 
 export type PaymentRunItemCreateWithoutInvoiceInput = {
@@ -1291,6 +1390,8 @@ export type PaymentRunItemCreateWithoutInvoiceInput = {
   whtTreatyReference?: string | null
   whtServiceType?: string | null
   grossAmountMinor?: number | null
+  settlementRate?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  settlementRateDate?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   organization: Prisma.OrganizationCreateNestedOneWithoutPaymentRunItemsInput
@@ -1299,6 +1400,7 @@ export type PaymentRunItemCreateWithoutInvoiceInput = {
   billingProfile?: Prisma.ContractorBillingProfileCreateNestedOneWithoutPaymentRunItemsInput
   invoicePayments?: Prisma.InvoicePaymentCreateNestedManyWithoutSourcePaymentRunItemInput
   skontoApplication?: Prisma.SkontoApplicationCreateNestedOneWithoutPaymentRunItemInput
+  achReturnLedgerEntries?: Prisma.AchReturnLedgerEntryCreateNestedManyWithoutPaymentRunItemInput
 }
 
 export type PaymentRunItemUncheckedCreateWithoutInvoiceInput = {
@@ -1319,10 +1421,13 @@ export type PaymentRunItemUncheckedCreateWithoutInvoiceInput = {
   whtTreatyReference?: string | null
   whtServiceType?: string | null
   grossAmountMinor?: number | null
+  settlementRate?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  settlementRateDate?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   invoicePayments?: Prisma.InvoicePaymentUncheckedCreateNestedManyWithoutSourcePaymentRunItemInput
   skontoApplication?: Prisma.SkontoApplicationUncheckedCreateNestedOneWithoutPaymentRunItemInput
+  achReturnLedgerEntries?: Prisma.AchReturnLedgerEntryUncheckedCreateNestedManyWithoutPaymentRunItemInput
 }
 
 export type PaymentRunItemCreateOrConnectWithoutInvoiceInput = {
@@ -1365,6 +1470,8 @@ export type PaymentRunItemCreateWithoutInvoicePaymentsInput = {
   whtTreatyReference?: string | null
   whtServiceType?: string | null
   grossAmountMinor?: number | null
+  settlementRate?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  settlementRateDate?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   organization: Prisma.OrganizationCreateNestedOneWithoutPaymentRunItemsInput
@@ -1373,6 +1480,7 @@ export type PaymentRunItemCreateWithoutInvoicePaymentsInput = {
   contractor: Prisma.ContractorCreateNestedOneWithoutPaymentRunItemsInput
   billingProfile?: Prisma.ContractorBillingProfileCreateNestedOneWithoutPaymentRunItemsInput
   skontoApplication?: Prisma.SkontoApplicationCreateNestedOneWithoutPaymentRunItemInput
+  achReturnLedgerEntries?: Prisma.AchReturnLedgerEntryCreateNestedManyWithoutPaymentRunItemInput
 }
 
 export type PaymentRunItemUncheckedCreateWithoutInvoicePaymentsInput = {
@@ -1394,9 +1502,12 @@ export type PaymentRunItemUncheckedCreateWithoutInvoicePaymentsInput = {
   whtTreatyReference?: string | null
   whtServiceType?: string | null
   grossAmountMinor?: number | null
+  settlementRate?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  settlementRateDate?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   skontoApplication?: Prisma.SkontoApplicationUncheckedCreateNestedOneWithoutPaymentRunItemInput
+  achReturnLedgerEntries?: Prisma.AchReturnLedgerEntryUncheckedCreateNestedManyWithoutPaymentRunItemInput
 }
 
 export type PaymentRunItemCreateOrConnectWithoutInvoicePaymentsInput = {
@@ -1429,6 +1540,8 @@ export type PaymentRunItemUpdateWithoutInvoicePaymentsInput = {
   whtTreatyReference?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   whtServiceType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   grossAmountMinor?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  settlementRate?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  settlementRateDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutPaymentRunItemsNestedInput
@@ -1437,6 +1550,7 @@ export type PaymentRunItemUpdateWithoutInvoicePaymentsInput = {
   contractor?: Prisma.ContractorUpdateOneRequiredWithoutPaymentRunItemsNestedInput
   billingProfile?: Prisma.ContractorBillingProfileUpdateOneWithoutPaymentRunItemsNestedInput
   skontoApplication?: Prisma.SkontoApplicationUpdateOneWithoutPaymentRunItemNestedInput
+  achReturnLedgerEntries?: Prisma.AchReturnLedgerEntryUpdateManyWithoutPaymentRunItemNestedInput
 }
 
 export type PaymentRunItemUncheckedUpdateWithoutInvoicePaymentsInput = {
@@ -1458,9 +1572,12 @@ export type PaymentRunItemUncheckedUpdateWithoutInvoicePaymentsInput = {
   whtTreatyReference?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   whtServiceType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   grossAmountMinor?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  settlementRate?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  settlementRateDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   skontoApplication?: Prisma.SkontoApplicationUncheckedUpdateOneWithoutPaymentRunItemNestedInput
+  achReturnLedgerEntries?: Prisma.AchReturnLedgerEntryUncheckedUpdateManyWithoutPaymentRunItemNestedInput
 }
 
 export type PaymentRunItemCreateWithoutOrganizationInput = {
@@ -1477,6 +1594,8 @@ export type PaymentRunItemCreateWithoutOrganizationInput = {
   whtTreatyReference?: string | null
   whtServiceType?: string | null
   grossAmountMinor?: number | null
+  settlementRate?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  settlementRateDate?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   paymentRun: Prisma.PaymentRunCreateNestedOneWithoutItemsInput
@@ -1485,6 +1604,7 @@ export type PaymentRunItemCreateWithoutOrganizationInput = {
   billingProfile?: Prisma.ContractorBillingProfileCreateNestedOneWithoutPaymentRunItemsInput
   invoicePayments?: Prisma.InvoicePaymentCreateNestedManyWithoutSourcePaymentRunItemInput
   skontoApplication?: Prisma.SkontoApplicationCreateNestedOneWithoutPaymentRunItemInput
+  achReturnLedgerEntries?: Prisma.AchReturnLedgerEntryCreateNestedManyWithoutPaymentRunItemInput
 }
 
 export type PaymentRunItemUncheckedCreateWithoutOrganizationInput = {
@@ -1505,10 +1625,13 @@ export type PaymentRunItemUncheckedCreateWithoutOrganizationInput = {
   whtTreatyReference?: string | null
   whtServiceType?: string | null
   grossAmountMinor?: number | null
+  settlementRate?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  settlementRateDate?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   invoicePayments?: Prisma.InvoicePaymentUncheckedCreateNestedManyWithoutSourcePaymentRunItemInput
   skontoApplication?: Prisma.SkontoApplicationUncheckedCreateNestedOneWithoutPaymentRunItemInput
+  achReturnLedgerEntries?: Prisma.AchReturnLedgerEntryUncheckedCreateNestedManyWithoutPaymentRunItemInput
 }
 
 export type PaymentRunItemCreateOrConnectWithoutOrganizationInput = {
@@ -1551,6 +1674,8 @@ export type PaymentRunItemCreateWithoutPaymentRunInput = {
   whtTreatyReference?: string | null
   whtServiceType?: string | null
   grossAmountMinor?: number | null
+  settlementRate?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  settlementRateDate?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   organization: Prisma.OrganizationCreateNestedOneWithoutPaymentRunItemsInput
@@ -1559,6 +1684,7 @@ export type PaymentRunItemCreateWithoutPaymentRunInput = {
   billingProfile?: Prisma.ContractorBillingProfileCreateNestedOneWithoutPaymentRunItemsInput
   invoicePayments?: Prisma.InvoicePaymentCreateNestedManyWithoutSourcePaymentRunItemInput
   skontoApplication?: Prisma.SkontoApplicationCreateNestedOneWithoutPaymentRunItemInput
+  achReturnLedgerEntries?: Prisma.AchReturnLedgerEntryCreateNestedManyWithoutPaymentRunItemInput
 }
 
 export type PaymentRunItemUncheckedCreateWithoutPaymentRunInput = {
@@ -1579,10 +1705,13 @@ export type PaymentRunItemUncheckedCreateWithoutPaymentRunInput = {
   whtTreatyReference?: string | null
   whtServiceType?: string | null
   grossAmountMinor?: number | null
+  settlementRate?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  settlementRateDate?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   invoicePayments?: Prisma.InvoicePaymentUncheckedCreateNestedManyWithoutSourcePaymentRunItemInput
   skontoApplication?: Prisma.SkontoApplicationUncheckedCreateNestedOneWithoutPaymentRunItemInput
+  achReturnLedgerEntries?: Prisma.AchReturnLedgerEntryUncheckedCreateNestedManyWithoutPaymentRunItemInput
 }
 
 export type PaymentRunItemCreateOrConnectWithoutPaymentRunInput = {
@@ -1611,6 +1740,130 @@ export type PaymentRunItemUpdateManyWithWhereWithoutPaymentRunInput = {
   data: Prisma.XOR<Prisma.PaymentRunItemUpdateManyMutationInput, Prisma.PaymentRunItemUncheckedUpdateManyWithoutPaymentRunInput>
 }
 
+export type PaymentRunItemCreateWithoutAchReturnLedgerEntriesInput = {
+  id?: string
+  amountMinor: number
+  currency: string
+  status?: $Enums.PaymentRunItemStatus
+  paymentReference?: string | null
+  markedPaidAt?: Date | string | null
+  failureReason?: string | null
+  whtAmountMinor?: number | null
+  whtRate?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  whtTreatyApplied?: boolean | null
+  whtTreatyReference?: string | null
+  whtServiceType?: string | null
+  grossAmountMinor?: number | null
+  settlementRate?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  settlementRateDate?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  organization: Prisma.OrganizationCreateNestedOneWithoutPaymentRunItemsInput
+  paymentRun: Prisma.PaymentRunCreateNestedOneWithoutItemsInput
+  invoice: Prisma.InvoiceCreateNestedOneWithoutPaymentRunItemsInput
+  contractor: Prisma.ContractorCreateNestedOneWithoutPaymentRunItemsInput
+  billingProfile?: Prisma.ContractorBillingProfileCreateNestedOneWithoutPaymentRunItemsInput
+  invoicePayments?: Prisma.InvoicePaymentCreateNestedManyWithoutSourcePaymentRunItemInput
+  skontoApplication?: Prisma.SkontoApplicationCreateNestedOneWithoutPaymentRunItemInput
+}
+
+export type PaymentRunItemUncheckedCreateWithoutAchReturnLedgerEntriesInput = {
+  id?: string
+  organizationId: string
+  paymentRunId: string
+  invoiceId: string
+  contractorId: string
+  billingProfileId?: string | null
+  amountMinor: number
+  currency: string
+  status?: $Enums.PaymentRunItemStatus
+  paymentReference?: string | null
+  markedPaidAt?: Date | string | null
+  failureReason?: string | null
+  whtAmountMinor?: number | null
+  whtRate?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  whtTreatyApplied?: boolean | null
+  whtTreatyReference?: string | null
+  whtServiceType?: string | null
+  grossAmountMinor?: number | null
+  settlementRate?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  settlementRateDate?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  invoicePayments?: Prisma.InvoicePaymentUncheckedCreateNestedManyWithoutSourcePaymentRunItemInput
+  skontoApplication?: Prisma.SkontoApplicationUncheckedCreateNestedOneWithoutPaymentRunItemInput
+}
+
+export type PaymentRunItemCreateOrConnectWithoutAchReturnLedgerEntriesInput = {
+  where: Prisma.PaymentRunItemWhereUniqueInput
+  create: Prisma.XOR<Prisma.PaymentRunItemCreateWithoutAchReturnLedgerEntriesInput, Prisma.PaymentRunItemUncheckedCreateWithoutAchReturnLedgerEntriesInput>
+}
+
+export type PaymentRunItemUpsertWithoutAchReturnLedgerEntriesInput = {
+  update: Prisma.XOR<Prisma.PaymentRunItemUpdateWithoutAchReturnLedgerEntriesInput, Prisma.PaymentRunItemUncheckedUpdateWithoutAchReturnLedgerEntriesInput>
+  create: Prisma.XOR<Prisma.PaymentRunItemCreateWithoutAchReturnLedgerEntriesInput, Prisma.PaymentRunItemUncheckedCreateWithoutAchReturnLedgerEntriesInput>
+  where?: Prisma.PaymentRunItemWhereInput
+}
+
+export type PaymentRunItemUpdateToOneWithWhereWithoutAchReturnLedgerEntriesInput = {
+  where?: Prisma.PaymentRunItemWhereInput
+  data: Prisma.XOR<Prisma.PaymentRunItemUpdateWithoutAchReturnLedgerEntriesInput, Prisma.PaymentRunItemUncheckedUpdateWithoutAchReturnLedgerEntriesInput>
+}
+
+export type PaymentRunItemUpdateWithoutAchReturnLedgerEntriesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  amountMinor?: Prisma.IntFieldUpdateOperationsInput | number
+  currency?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumPaymentRunItemStatusFieldUpdateOperationsInput | $Enums.PaymentRunItemStatus
+  paymentReference?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  markedPaidAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  failureReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whtAmountMinor?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  whtRate?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  whtTreatyApplied?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  whtTreatyReference?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whtServiceType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  grossAmountMinor?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  settlementRate?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  settlementRateDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  organization?: Prisma.OrganizationUpdateOneRequiredWithoutPaymentRunItemsNestedInput
+  paymentRun?: Prisma.PaymentRunUpdateOneRequiredWithoutItemsNestedInput
+  invoice?: Prisma.InvoiceUpdateOneRequiredWithoutPaymentRunItemsNestedInput
+  contractor?: Prisma.ContractorUpdateOneRequiredWithoutPaymentRunItemsNestedInput
+  billingProfile?: Prisma.ContractorBillingProfileUpdateOneWithoutPaymentRunItemsNestedInput
+  invoicePayments?: Prisma.InvoicePaymentUpdateManyWithoutSourcePaymentRunItemNestedInput
+  skontoApplication?: Prisma.SkontoApplicationUpdateOneWithoutPaymentRunItemNestedInput
+}
+
+export type PaymentRunItemUncheckedUpdateWithoutAchReturnLedgerEntriesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  organizationId?: Prisma.StringFieldUpdateOperationsInput | string
+  paymentRunId?: Prisma.StringFieldUpdateOperationsInput | string
+  invoiceId?: Prisma.StringFieldUpdateOperationsInput | string
+  contractorId?: Prisma.StringFieldUpdateOperationsInput | string
+  billingProfileId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  amountMinor?: Prisma.IntFieldUpdateOperationsInput | number
+  currency?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumPaymentRunItemStatusFieldUpdateOperationsInput | $Enums.PaymentRunItemStatus
+  paymentReference?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  markedPaidAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  failureReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whtAmountMinor?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  whtRate?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  whtTreatyApplied?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  whtTreatyReference?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  whtServiceType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  grossAmountMinor?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  settlementRate?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  settlementRateDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  invoicePayments?: Prisma.InvoicePaymentUncheckedUpdateManyWithoutSourcePaymentRunItemNestedInput
+  skontoApplication?: Prisma.SkontoApplicationUncheckedUpdateOneWithoutPaymentRunItemNestedInput
+}
+
 export type PaymentRunItemCreateManyContractorInput = {
   id?: string
   organizationId: string
@@ -1629,6 +1882,8 @@ export type PaymentRunItemCreateManyContractorInput = {
   whtTreatyReference?: string | null
   whtServiceType?: string | null
   grossAmountMinor?: number | null
+  settlementRate?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  settlementRateDate?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -1647,6 +1902,8 @@ export type PaymentRunItemUpdateWithoutContractorInput = {
   whtTreatyReference?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   whtServiceType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   grossAmountMinor?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  settlementRate?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  settlementRateDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutPaymentRunItemsNestedInput
@@ -1655,6 +1912,7 @@ export type PaymentRunItemUpdateWithoutContractorInput = {
   billingProfile?: Prisma.ContractorBillingProfileUpdateOneWithoutPaymentRunItemsNestedInput
   invoicePayments?: Prisma.InvoicePaymentUpdateManyWithoutSourcePaymentRunItemNestedInput
   skontoApplication?: Prisma.SkontoApplicationUpdateOneWithoutPaymentRunItemNestedInput
+  achReturnLedgerEntries?: Prisma.AchReturnLedgerEntryUpdateManyWithoutPaymentRunItemNestedInput
 }
 
 export type PaymentRunItemUncheckedUpdateWithoutContractorInput = {
@@ -1675,10 +1933,13 @@ export type PaymentRunItemUncheckedUpdateWithoutContractorInput = {
   whtTreatyReference?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   whtServiceType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   grossAmountMinor?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  settlementRate?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  settlementRateDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   invoicePayments?: Prisma.InvoicePaymentUncheckedUpdateManyWithoutSourcePaymentRunItemNestedInput
   skontoApplication?: Prisma.SkontoApplicationUncheckedUpdateOneWithoutPaymentRunItemNestedInput
+  achReturnLedgerEntries?: Prisma.AchReturnLedgerEntryUncheckedUpdateManyWithoutPaymentRunItemNestedInput
 }
 
 export type PaymentRunItemUncheckedUpdateManyWithoutContractorInput = {
@@ -1699,6 +1960,8 @@ export type PaymentRunItemUncheckedUpdateManyWithoutContractorInput = {
   whtTreatyReference?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   whtServiceType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   grossAmountMinor?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  settlementRate?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  settlementRateDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -1721,6 +1984,8 @@ export type PaymentRunItemCreateManyBillingProfileInput = {
   whtTreatyReference?: string | null
   whtServiceType?: string | null
   grossAmountMinor?: number | null
+  settlementRate?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  settlementRateDate?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -1739,6 +2004,8 @@ export type PaymentRunItemUpdateWithoutBillingProfileInput = {
   whtTreatyReference?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   whtServiceType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   grossAmountMinor?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  settlementRate?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  settlementRateDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutPaymentRunItemsNestedInput
@@ -1747,6 +2014,7 @@ export type PaymentRunItemUpdateWithoutBillingProfileInput = {
   contractor?: Prisma.ContractorUpdateOneRequiredWithoutPaymentRunItemsNestedInput
   invoicePayments?: Prisma.InvoicePaymentUpdateManyWithoutSourcePaymentRunItemNestedInput
   skontoApplication?: Prisma.SkontoApplicationUpdateOneWithoutPaymentRunItemNestedInput
+  achReturnLedgerEntries?: Prisma.AchReturnLedgerEntryUpdateManyWithoutPaymentRunItemNestedInput
 }
 
 export type PaymentRunItemUncheckedUpdateWithoutBillingProfileInput = {
@@ -1767,10 +2035,13 @@ export type PaymentRunItemUncheckedUpdateWithoutBillingProfileInput = {
   whtTreatyReference?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   whtServiceType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   grossAmountMinor?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  settlementRate?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  settlementRateDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   invoicePayments?: Prisma.InvoicePaymentUncheckedUpdateManyWithoutSourcePaymentRunItemNestedInput
   skontoApplication?: Prisma.SkontoApplicationUncheckedUpdateOneWithoutPaymentRunItemNestedInput
+  achReturnLedgerEntries?: Prisma.AchReturnLedgerEntryUncheckedUpdateManyWithoutPaymentRunItemNestedInput
 }
 
 export type PaymentRunItemUncheckedUpdateManyWithoutBillingProfileInput = {
@@ -1791,6 +2062,8 @@ export type PaymentRunItemUncheckedUpdateManyWithoutBillingProfileInput = {
   whtTreatyReference?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   whtServiceType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   grossAmountMinor?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  settlementRate?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  settlementRateDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -1813,6 +2086,8 @@ export type PaymentRunItemCreateManyInvoiceInput = {
   whtTreatyReference?: string | null
   whtServiceType?: string | null
   grossAmountMinor?: number | null
+  settlementRate?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  settlementRateDate?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -1831,6 +2106,8 @@ export type PaymentRunItemUpdateWithoutInvoiceInput = {
   whtTreatyReference?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   whtServiceType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   grossAmountMinor?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  settlementRate?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  settlementRateDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutPaymentRunItemsNestedInput
@@ -1839,6 +2116,7 @@ export type PaymentRunItemUpdateWithoutInvoiceInput = {
   billingProfile?: Prisma.ContractorBillingProfileUpdateOneWithoutPaymentRunItemsNestedInput
   invoicePayments?: Prisma.InvoicePaymentUpdateManyWithoutSourcePaymentRunItemNestedInput
   skontoApplication?: Prisma.SkontoApplicationUpdateOneWithoutPaymentRunItemNestedInput
+  achReturnLedgerEntries?: Prisma.AchReturnLedgerEntryUpdateManyWithoutPaymentRunItemNestedInput
 }
 
 export type PaymentRunItemUncheckedUpdateWithoutInvoiceInput = {
@@ -1859,10 +2137,13 @@ export type PaymentRunItemUncheckedUpdateWithoutInvoiceInput = {
   whtTreatyReference?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   whtServiceType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   grossAmountMinor?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  settlementRate?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  settlementRateDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   invoicePayments?: Prisma.InvoicePaymentUncheckedUpdateManyWithoutSourcePaymentRunItemNestedInput
   skontoApplication?: Prisma.SkontoApplicationUncheckedUpdateOneWithoutPaymentRunItemNestedInput
+  achReturnLedgerEntries?: Prisma.AchReturnLedgerEntryUncheckedUpdateManyWithoutPaymentRunItemNestedInput
 }
 
 export type PaymentRunItemUncheckedUpdateManyWithoutInvoiceInput = {
@@ -1883,6 +2164,8 @@ export type PaymentRunItemUncheckedUpdateManyWithoutInvoiceInput = {
   whtTreatyReference?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   whtServiceType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   grossAmountMinor?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  settlementRate?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  settlementRateDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -1905,6 +2188,8 @@ export type PaymentRunItemCreateManyOrganizationInput = {
   whtTreatyReference?: string | null
   whtServiceType?: string | null
   grossAmountMinor?: number | null
+  settlementRate?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  settlementRateDate?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -1923,6 +2208,8 @@ export type PaymentRunItemUpdateWithoutOrganizationInput = {
   whtTreatyReference?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   whtServiceType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   grossAmountMinor?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  settlementRate?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  settlementRateDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   paymentRun?: Prisma.PaymentRunUpdateOneRequiredWithoutItemsNestedInput
@@ -1931,6 +2218,7 @@ export type PaymentRunItemUpdateWithoutOrganizationInput = {
   billingProfile?: Prisma.ContractorBillingProfileUpdateOneWithoutPaymentRunItemsNestedInput
   invoicePayments?: Prisma.InvoicePaymentUpdateManyWithoutSourcePaymentRunItemNestedInput
   skontoApplication?: Prisma.SkontoApplicationUpdateOneWithoutPaymentRunItemNestedInput
+  achReturnLedgerEntries?: Prisma.AchReturnLedgerEntryUpdateManyWithoutPaymentRunItemNestedInput
 }
 
 export type PaymentRunItemUncheckedUpdateWithoutOrganizationInput = {
@@ -1951,10 +2239,13 @@ export type PaymentRunItemUncheckedUpdateWithoutOrganizationInput = {
   whtTreatyReference?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   whtServiceType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   grossAmountMinor?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  settlementRate?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  settlementRateDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   invoicePayments?: Prisma.InvoicePaymentUncheckedUpdateManyWithoutSourcePaymentRunItemNestedInput
   skontoApplication?: Prisma.SkontoApplicationUncheckedUpdateOneWithoutPaymentRunItemNestedInput
+  achReturnLedgerEntries?: Prisma.AchReturnLedgerEntryUncheckedUpdateManyWithoutPaymentRunItemNestedInput
 }
 
 export type PaymentRunItemUncheckedUpdateManyWithoutOrganizationInput = {
@@ -1975,6 +2266,8 @@ export type PaymentRunItemUncheckedUpdateManyWithoutOrganizationInput = {
   whtTreatyReference?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   whtServiceType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   grossAmountMinor?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  settlementRate?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  settlementRateDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -1997,6 +2290,8 @@ export type PaymentRunItemCreateManyPaymentRunInput = {
   whtTreatyReference?: string | null
   whtServiceType?: string | null
   grossAmountMinor?: number | null
+  settlementRate?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  settlementRateDate?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -2015,6 +2310,8 @@ export type PaymentRunItemUpdateWithoutPaymentRunInput = {
   whtTreatyReference?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   whtServiceType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   grossAmountMinor?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  settlementRate?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  settlementRateDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutPaymentRunItemsNestedInput
@@ -2023,6 +2320,7 @@ export type PaymentRunItemUpdateWithoutPaymentRunInput = {
   billingProfile?: Prisma.ContractorBillingProfileUpdateOneWithoutPaymentRunItemsNestedInput
   invoicePayments?: Prisma.InvoicePaymentUpdateManyWithoutSourcePaymentRunItemNestedInput
   skontoApplication?: Prisma.SkontoApplicationUpdateOneWithoutPaymentRunItemNestedInput
+  achReturnLedgerEntries?: Prisma.AchReturnLedgerEntryUpdateManyWithoutPaymentRunItemNestedInput
 }
 
 export type PaymentRunItemUncheckedUpdateWithoutPaymentRunInput = {
@@ -2043,10 +2341,13 @@ export type PaymentRunItemUncheckedUpdateWithoutPaymentRunInput = {
   whtTreatyReference?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   whtServiceType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   grossAmountMinor?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  settlementRate?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  settlementRateDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   invoicePayments?: Prisma.InvoicePaymentUncheckedUpdateManyWithoutSourcePaymentRunItemNestedInput
   skontoApplication?: Prisma.SkontoApplicationUncheckedUpdateOneWithoutPaymentRunItemNestedInput
+  achReturnLedgerEntries?: Prisma.AchReturnLedgerEntryUncheckedUpdateManyWithoutPaymentRunItemNestedInput
 }
 
 export type PaymentRunItemUncheckedUpdateManyWithoutPaymentRunInput = {
@@ -2067,6 +2368,8 @@ export type PaymentRunItemUncheckedUpdateManyWithoutPaymentRunInput = {
   whtTreatyReference?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   whtServiceType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   grossAmountMinor?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  settlementRate?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  settlementRateDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -2078,10 +2381,12 @@ export type PaymentRunItemUncheckedUpdateManyWithoutPaymentRunInput = {
 
 export type PaymentRunItemCountOutputType = {
   invoicePayments: number
+  achReturnLedgerEntries: number
 }
 
 export type PaymentRunItemCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   invoicePayments?: boolean | PaymentRunItemCountOutputTypeCountInvoicePaymentsArgs
+  achReturnLedgerEntries?: boolean | PaymentRunItemCountOutputTypeCountAchReturnLedgerEntriesArgs
 }
 
 /**
@@ -2099,6 +2404,13 @@ export type PaymentRunItemCountOutputTypeDefaultArgs<ExtArgs extends runtime.Typ
  */
 export type PaymentRunItemCountOutputTypeCountInvoicePaymentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.InvoicePaymentWhereInput
+}
+
+/**
+ * PaymentRunItemCountOutputType without action
+ */
+export type PaymentRunItemCountOutputTypeCountAchReturnLedgerEntriesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.AchReturnLedgerEntryWhereInput
 }
 
 
@@ -2121,6 +2433,8 @@ export type PaymentRunItemSelect<ExtArgs extends runtime.Types.Extensions.Intern
   whtTreatyReference?: boolean
   whtServiceType?: boolean
   grossAmountMinor?: boolean
+  settlementRate?: boolean
+  settlementRateDate?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
@@ -2130,6 +2444,7 @@ export type PaymentRunItemSelect<ExtArgs extends runtime.Types.Extensions.Intern
   billingProfile?: boolean | Prisma.PaymentRunItem$billingProfileArgs<ExtArgs>
   invoicePayments?: boolean | Prisma.PaymentRunItem$invoicePaymentsArgs<ExtArgs>
   skontoApplication?: boolean | Prisma.PaymentRunItem$skontoApplicationArgs<ExtArgs>
+  achReturnLedgerEntries?: boolean | Prisma.PaymentRunItem$achReturnLedgerEntriesArgs<ExtArgs>
   _count?: boolean | Prisma.PaymentRunItemCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["paymentRunItem"]>
 
@@ -2152,6 +2467,8 @@ export type PaymentRunItemSelectCreateManyAndReturn<ExtArgs extends runtime.Type
   whtTreatyReference?: boolean
   whtServiceType?: boolean
   grossAmountMinor?: boolean
+  settlementRate?: boolean
+  settlementRateDate?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
@@ -2180,6 +2497,8 @@ export type PaymentRunItemSelectUpdateManyAndReturn<ExtArgs extends runtime.Type
   whtTreatyReference?: boolean
   whtServiceType?: boolean
   grossAmountMinor?: boolean
+  settlementRate?: boolean
+  settlementRateDate?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
@@ -2208,11 +2527,13 @@ export type PaymentRunItemSelectScalar = {
   whtTreatyReference?: boolean
   whtServiceType?: boolean
   grossAmountMinor?: boolean
+  settlementRate?: boolean
+  settlementRateDate?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type PaymentRunItemOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "organizationId" | "paymentRunId" | "invoiceId" | "contractorId" | "billingProfileId" | "amountMinor" | "currency" | "status" | "paymentReference" | "markedPaidAt" | "failureReason" | "whtAmountMinor" | "whtRate" | "whtTreatyApplied" | "whtTreatyReference" | "whtServiceType" | "grossAmountMinor" | "createdAt" | "updatedAt", ExtArgs["result"]["paymentRunItem"]>
+export type PaymentRunItemOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "organizationId" | "paymentRunId" | "invoiceId" | "contractorId" | "billingProfileId" | "amountMinor" | "currency" | "status" | "paymentReference" | "markedPaidAt" | "failureReason" | "whtAmountMinor" | "whtRate" | "whtTreatyApplied" | "whtTreatyReference" | "whtServiceType" | "grossAmountMinor" | "settlementRate" | "settlementRateDate" | "createdAt" | "updatedAt", ExtArgs["result"]["paymentRunItem"]>
 export type PaymentRunItemInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
   paymentRun?: boolean | Prisma.PaymentRunDefaultArgs<ExtArgs>
@@ -2221,6 +2542,7 @@ export type PaymentRunItemInclude<ExtArgs extends runtime.Types.Extensions.Inter
   billingProfile?: boolean | Prisma.PaymentRunItem$billingProfileArgs<ExtArgs>
   invoicePayments?: boolean | Prisma.PaymentRunItem$invoicePaymentsArgs<ExtArgs>
   skontoApplication?: boolean | Prisma.PaymentRunItem$skontoApplicationArgs<ExtArgs>
+  achReturnLedgerEntries?: boolean | Prisma.PaymentRunItem$achReturnLedgerEntriesArgs<ExtArgs>
   _count?: boolean | Prisma.PaymentRunItemCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type PaymentRunItemIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -2248,6 +2570,7 @@ export type $PaymentRunItemPayload<ExtArgs extends runtime.Types.Extensions.Inte
     billingProfile: Prisma.$ContractorBillingProfilePayload<ExtArgs> | null
     invoicePayments: Prisma.$InvoicePaymentPayload<ExtArgs>[]
     skontoApplication: Prisma.$SkontoApplicationPayload<ExtArgs> | null
+    achReturnLedgerEntries: Prisma.$AchReturnLedgerEntryPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -2268,6 +2591,8 @@ export type $PaymentRunItemPayload<ExtArgs extends runtime.Types.Extensions.Inte
     whtTreatyReference: string | null
     whtServiceType: string | null
     grossAmountMinor: number | null
+    settlementRate: runtime.Decimal | null
+    settlementRateDate: Date | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["paymentRunItem"]>
@@ -2671,6 +2996,7 @@ export interface Prisma__PaymentRunItemClient<T, Null = never, ExtArgs extends r
   billingProfile<T extends Prisma.PaymentRunItem$billingProfileArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.PaymentRunItem$billingProfileArgs<ExtArgs>>): Prisma.Prisma__ContractorBillingProfileClient<runtime.Types.Result.GetResult<Prisma.$ContractorBillingProfilePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   invoicePayments<T extends Prisma.PaymentRunItem$invoicePaymentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.PaymentRunItem$invoicePaymentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InvoicePaymentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   skontoApplication<T extends Prisma.PaymentRunItem$skontoApplicationArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.PaymentRunItem$skontoApplicationArgs<ExtArgs>>): Prisma.Prisma__SkontoApplicationClient<runtime.Types.Result.GetResult<Prisma.$SkontoApplicationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  achReturnLedgerEntries<T extends Prisma.PaymentRunItem$achReturnLedgerEntriesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.PaymentRunItem$achReturnLedgerEntriesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AchReturnLedgerEntryPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2718,6 +3044,8 @@ export interface PaymentRunItemFieldRefs {
   readonly whtTreatyReference: Prisma.FieldRef<"PaymentRunItem", 'String'>
   readonly whtServiceType: Prisma.FieldRef<"PaymentRunItem", 'String'>
   readonly grossAmountMinor: Prisma.FieldRef<"PaymentRunItem", 'Int'>
+  readonly settlementRate: Prisma.FieldRef<"PaymentRunItem", 'Decimal'>
+  readonly settlementRateDate: Prisma.FieldRef<"PaymentRunItem", 'DateTime'>
   readonly createdAt: Prisma.FieldRef<"PaymentRunItem", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"PaymentRunItem", 'DateTime'>
 }
@@ -3180,6 +3508,30 @@ export type PaymentRunItem$skontoApplicationArgs<ExtArgs extends runtime.Types.E
    */
   include?: Prisma.SkontoApplicationInclude<ExtArgs> | null
   where?: Prisma.SkontoApplicationWhereInput
+}
+
+/**
+ * PaymentRunItem.achReturnLedgerEntries
+ */
+export type PaymentRunItem$achReturnLedgerEntriesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the AchReturnLedgerEntry
+   */
+  select?: Prisma.AchReturnLedgerEntrySelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the AchReturnLedgerEntry
+   */
+  omit?: Prisma.AchReturnLedgerEntryOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.AchReturnLedgerEntryInclude<ExtArgs> | null
+  where?: Prisma.AchReturnLedgerEntryWhereInput
+  orderBy?: Prisma.AchReturnLedgerEntryOrderByWithRelationInput | Prisma.AchReturnLedgerEntryOrderByWithRelationInput[]
+  cursor?: Prisma.AchReturnLedgerEntryWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.AchReturnLedgerEntryScalarFieldEnum | Prisma.AchReturnLedgerEntryScalarFieldEnum[]
 }
 
 /**

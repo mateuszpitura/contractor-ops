@@ -3,7 +3,10 @@ title: US tax forms (W-9 / W-8BEN / W-8BEN-E) and treaty engine
 type: domain
 tags: [us, tax, w-form, treaty, portal, esign, immutable-record]
 source_commit: 5d6e26a17
+source_commit: f9de62452
 verify_with:
+  - packages/db/prisma/schema/tax.prisma
+  - packages/db/prisma/schema/migrations/20260705000000_us_tax_form_tables_plus_additive_integrity/
   - apps/web-vite/src/components/portal/tax-forms/
   - apps/web-vite/src/components/contractors/tax-forms/
   - apps/web-vite/src/components/contractors/tax-filing/
@@ -332,6 +335,15 @@ contractor profile; it never mutates band state.
   idempotent and the ack lookup is scoped to the Pub 1187 schema version so a 1042-S ack never lands on
   a 1099 submission (no IrisSubmission form-type column). The portal recipient PDF reuses the SAME
   e-delivery consent gate (IDOR-scoped, FTIN last-4).
+  transmit tail + portal consent step reuse the P86 seam verbatim once it lands — never rebuilt.
+- **Schema↔migration:** the nine US tax-form tables (previously in `tax.prisma` with NO CREATE TABLE
+  migration → a fresh regional DB errored `relation does not exist`) now have a hand-authored additive
+  migration (`20260705000000_us_tax_form_tables_plus_additive_integrity`), guarded going forward by
+  `pnpm --filter @contractor-ops/db db:check-migration-drift`. `Form1042S` gains a partial UNIQUE
+  `Form1042S_active_key` on `(org, payerOrgId, recipientId, taxYear) WHERE status='ACTIVE'` — the DB
+  backstop making batch generation idempotent even under concurrency (only ACTIVE constrained; DRAFT +
+  SUPERSEDED unbounded). Wrapping the per-recipient persist in one `$transaction` + catching P2002 as an
+  idempotent skip is a later change set — the index is the schema half.
 
 ## Agent mistakes
 

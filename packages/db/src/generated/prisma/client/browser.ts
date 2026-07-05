@@ -233,6 +233,11 @@ export type ContractorComplianceItem = Prisma.ContractorComplianceItemModel
  */
 export type ContractorComplianceReminderState = Prisma.ContractorComplianceReminderStateModel
 /**
+ * Model CronJobRunState
+ * 
+ */
+export type CronJobRunState = Prisma.CronJobRunStateModel
+/**
  * Model LeitwegId
  * 
  */
@@ -593,6 +598,11 @@ export type PaymentExport = Prisma.PaymentExportModel
  * 
  */
 export type PaymentRunComplianceCheck = Prisma.PaymentRunComplianceCheckModel
+/**
+ * Model AchReturnLedgerEntry
+ * 
+ */
+export type AchReturnLedgerEntry = Prisma.AchReturnLedgerEntryModel
 /**
  * Model PeppolParticipant
  * 

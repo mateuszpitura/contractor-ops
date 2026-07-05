@@ -42,6 +42,11 @@
       "inputs": ["prisma/schema/**/*.prisma", "src/generated/prisma/client/**", "package.json"],
       "outputs": []
     },
+    "db:check-migration-drift": {
+      "inputs": ["prisma/schema/**/*.prisma", "prisma/schema/migrations/**", "package.json"],
+      "outputs": [],
+      "cache": false
+    },
     "db:migrate:dev": {
       "cache": false
     }

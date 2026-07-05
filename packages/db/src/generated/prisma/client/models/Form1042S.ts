@@ -420,6 +420,7 @@ export type Form1042SOrderByWithRelationInput = {
 export type Form1042SWhereUniqueInput = Prisma.AtLeast<{
   id?: string
   supersededById?: string
+  organizationId_payerOrgId_recipientId_taxYear?: Prisma.Form1042SOrganizationIdPayerOrgIdRecipientIdTaxYearCompoundUniqueInput
   AND?: Prisma.Form1042SWhereInput | Prisma.Form1042SWhereInput[]
   OR?: Prisma.Form1042SWhereInput[]
   NOT?: Prisma.Form1042SWhereInput | Prisma.Form1042SWhereInput[]
@@ -449,7 +450,7 @@ export type Form1042SWhereUniqueInput = Prisma.AtLeast<{
   recipient?: Prisma.XOR<Prisma.ContractorScalarRelationFilter, Prisma.ContractorWhereInput>
   supersededBy?: Prisma.XOR<Prisma.Form1042SNullableScalarRelationFilter, Prisma.Form1042SWhereInput> | null
   supersedes?: Prisma.XOR<Prisma.Form1042SNullableScalarRelationFilter, Prisma.Form1042SWhereInput> | null
-}, "id" | "supersededById">
+}, "id" | "supersededById" | "organizationId_payerOrgId_recipientId_taxYear">
 
 export type Form1042SOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
@@ -716,6 +717,13 @@ export type Form1042SOrderByRelationAggregateInput = {
 export type Form1042SNullableScalarRelationFilter = {
   is?: Prisma.Form1042SWhereInput | null
   isNot?: Prisma.Form1042SWhereInput | null
+}
+
+export type Form1042SOrganizationIdPayerOrgIdRecipientIdTaxYearCompoundUniqueInput = {
+  organizationId: string
+  payerOrgId: string
+  recipientId: string
+  taxYear: number
 }
 
 export type Form1042SCountOrderByAggregateInput = {

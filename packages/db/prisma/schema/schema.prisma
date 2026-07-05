@@ -9,4 +9,8 @@ generator client {
   moduleFormat           = "esm"
   generatedFileExtension = "ts"
   importFileExtension    = "js"
+  // Postgres partial (WHERE-filtered) unique indexes — used to enforce
+  // "one ACTIVE row per key" on immutable record-of-record tables (Form1042S)
+  // and "one in-flight row per invoice" on PeppolTransmission.
+  previewFeatures        = ["partialIndexes"]
 }

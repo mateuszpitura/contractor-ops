@@ -94,6 +94,7 @@ export const ModelName = {
   ComplianceRequirementTemplate: 'ComplianceRequirementTemplate',
   ContractorComplianceItem: 'ContractorComplianceItem',
   ContractorComplianceReminderState: 'ContractorComplianceReminderState',
+  CronJobRunState: 'CronJobRunState',
   LeitwegId: 'LeitwegId',
   EInvoiceLifecycle: 'EInvoiceLifecycle',
   EInvoiceLifecycleEvent: 'EInvoiceLifecycleEvent',
@@ -166,6 +167,7 @@ export const ModelName = {
   PaymentRunItem: 'PaymentRunItem',
   PaymentExport: 'PaymentExport',
   PaymentRunComplianceCheck: 'PaymentRunComplianceCheck',
+  AchReturnLedgerEntry: 'AchReturnLedgerEntry',
   PeppolParticipant: 'PeppolParticipant',
   PeppolTransmission: 'PeppolTransmission',
   PersonnelFile: 'PersonnelFile',
@@ -1028,6 +1030,18 @@ export const ContractorComplianceReminderStateScalarFieldEnum = {
 } as const
 
 export type ContractorComplianceReminderStateScalarFieldEnum = (typeof ContractorComplianceReminderStateScalarFieldEnum)[keyof typeof ContractorComplianceReminderStateScalarFieldEnum]
+
+
+export const CronJobRunStateScalarFieldEnum = {
+  id: 'id',
+  jobName: 'jobName',
+  lastSuccessAt: 'lastSuccessAt',
+  lastRunAt: 'lastRunAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type CronJobRunStateScalarFieldEnum = (typeof CronJobRunStateScalarFieldEnum)[keyof typeof CronJobRunStateScalarFieldEnum]
 
 
 export const LeitwegIdScalarFieldEnum = {
@@ -2308,6 +2322,8 @@ export const PaymentRunItemScalarFieldEnum = {
   whtTreatyReference: 'whtTreatyReference',
   whtServiceType: 'whtServiceType',
   grossAmountMinor: 'grossAmountMinor',
+  settlementRate: 'settlementRate',
+  settlementRateDate: 'settlementRateDate',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -2345,6 +2361,25 @@ export const PaymentRunComplianceCheckScalarFieldEnum = {
 } as const
 
 export type PaymentRunComplianceCheckScalarFieldEnum = (typeof PaymentRunComplianceCheckScalarFieldEnum)[keyof typeof PaymentRunComplianceCheckScalarFieldEnum]
+
+
+export const AchReturnLedgerEntryScalarFieldEnum = {
+  id: 'id',
+  organizationId: 'organizationId',
+  paymentRunId: 'paymentRunId',
+  paymentRunItemId: 'paymentRunItemId',
+  entryType: 'entryType',
+  traceNumber: 'traceNumber',
+  returnCode: 'returnCode',
+  individualId: 'individualId',
+  amountMinor: 'amountMinor',
+  addendaInfo: 'addendaInfo',
+  fileSha256: 'fileSha256',
+  appliedAt: 'appliedAt',
+  createdAt: 'createdAt'
+} as const
+
+export type AchReturnLedgerEntryScalarFieldEnum = (typeof AchReturnLedgerEntryScalarFieldEnum)[keyof typeof AchReturnLedgerEntryScalarFieldEnum]
 
 
 export const PeppolParticipantScalarFieldEnum = {

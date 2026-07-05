@@ -322,6 +322,7 @@ export type PaymentRunWhereInput = {
   items?: Prisma.PaymentRunItemListRelationFilter
   exports?: Prisma.PaymentExportListRelationFilter
   complianceChecks?: Prisma.PaymentRunComplianceCheckListRelationFilter
+  achReturnLedgerEntries?: Prisma.AchReturnLedgerEntryListRelationFilter
 }
 
 export type PaymentRunOrderByWithRelationInput = {
@@ -348,6 +349,7 @@ export type PaymentRunOrderByWithRelationInput = {
   items?: Prisma.PaymentRunItemOrderByRelationAggregateInput
   exports?: Prisma.PaymentExportOrderByRelationAggregateInput
   complianceChecks?: Prisma.PaymentRunComplianceCheckOrderByRelationAggregateInput
+  achReturnLedgerEntries?: Prisma.AchReturnLedgerEntryOrderByRelationAggregateInput
 }
 
 export type PaymentRunWhereUniqueInput = Prisma.AtLeast<{
@@ -378,6 +380,7 @@ export type PaymentRunWhereUniqueInput = Prisma.AtLeast<{
   items?: Prisma.PaymentRunItemListRelationFilter
   exports?: Prisma.PaymentExportListRelationFilter
   complianceChecks?: Prisma.PaymentRunComplianceCheckListRelationFilter
+  achReturnLedgerEntries?: Prisma.AchReturnLedgerEntryListRelationFilter
 }, "id" | "organizationId_runNumber">
 
 export type PaymentRunOrderByWithAggregationInput = {
@@ -449,6 +452,7 @@ export type PaymentRunCreateInput = {
   items?: Prisma.PaymentRunItemCreateNestedManyWithoutPaymentRunInput
   exports?: Prisma.PaymentExportCreateNestedManyWithoutPaymentRunInput
   complianceChecks?: Prisma.PaymentRunComplianceCheckCreateNestedManyWithoutPaymentRunInput
+  achReturnLedgerEntries?: Prisma.AchReturnLedgerEntryCreateNestedManyWithoutPaymentRunInput
 }
 
 export type PaymentRunUncheckedCreateInput = {
@@ -472,6 +476,7 @@ export type PaymentRunUncheckedCreateInput = {
   items?: Prisma.PaymentRunItemUncheckedCreateNestedManyWithoutPaymentRunInput
   exports?: Prisma.PaymentExportUncheckedCreateNestedManyWithoutPaymentRunInput
   complianceChecks?: Prisma.PaymentRunComplianceCheckUncheckedCreateNestedManyWithoutPaymentRunInput
+  achReturnLedgerEntries?: Prisma.AchReturnLedgerEntryUncheckedCreateNestedManyWithoutPaymentRunInput
 }
 
 export type PaymentRunUpdateInput = {
@@ -495,6 +500,7 @@ export type PaymentRunUpdateInput = {
   items?: Prisma.PaymentRunItemUpdateManyWithoutPaymentRunNestedInput
   exports?: Prisma.PaymentExportUpdateManyWithoutPaymentRunNestedInput
   complianceChecks?: Prisma.PaymentRunComplianceCheckUpdateManyWithoutPaymentRunNestedInput
+  achReturnLedgerEntries?: Prisma.AchReturnLedgerEntryUpdateManyWithoutPaymentRunNestedInput
 }
 
 export type PaymentRunUncheckedUpdateInput = {
@@ -518,6 +524,7 @@ export type PaymentRunUncheckedUpdateInput = {
   items?: Prisma.PaymentRunItemUncheckedUpdateManyWithoutPaymentRunNestedInput
   exports?: Prisma.PaymentExportUncheckedUpdateManyWithoutPaymentRunNestedInput
   complianceChecks?: Prisma.PaymentRunComplianceCheckUncheckedUpdateManyWithoutPaymentRunNestedInput
+  achReturnLedgerEntries?: Prisma.AchReturnLedgerEntryUncheckedUpdateManyWithoutPaymentRunNestedInput
 }
 
 export type PaymentRunCreateManyInput = {
@@ -843,6 +850,20 @@ export type PaymentRunUpdateOneRequiredWithoutComplianceChecksNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.PaymentRunUpdateToOneWithWhereWithoutComplianceChecksInput, Prisma.PaymentRunUpdateWithoutComplianceChecksInput>, Prisma.PaymentRunUncheckedUpdateWithoutComplianceChecksInput>
 }
 
+export type PaymentRunCreateNestedOneWithoutAchReturnLedgerEntriesInput = {
+  create?: Prisma.XOR<Prisma.PaymentRunCreateWithoutAchReturnLedgerEntriesInput, Prisma.PaymentRunUncheckedCreateWithoutAchReturnLedgerEntriesInput>
+  connectOrCreate?: Prisma.PaymentRunCreateOrConnectWithoutAchReturnLedgerEntriesInput
+  connect?: Prisma.PaymentRunWhereUniqueInput
+}
+
+export type PaymentRunUpdateOneRequiredWithoutAchReturnLedgerEntriesNestedInput = {
+  create?: Prisma.XOR<Prisma.PaymentRunCreateWithoutAchReturnLedgerEntriesInput, Prisma.PaymentRunUncheckedCreateWithoutAchReturnLedgerEntriesInput>
+  connectOrCreate?: Prisma.PaymentRunCreateOrConnectWithoutAchReturnLedgerEntriesInput
+  upsert?: Prisma.PaymentRunUpsertWithoutAchReturnLedgerEntriesInput
+  connect?: Prisma.PaymentRunWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.PaymentRunUpdateToOneWithWhereWithoutAchReturnLedgerEntriesInput, Prisma.PaymentRunUpdateWithoutAchReturnLedgerEntriesInput>, Prisma.PaymentRunUncheckedUpdateWithoutAchReturnLedgerEntriesInput>
+}
+
 export type PaymentRunCreateWithoutCreatedByInput = {
   id?: string
   runNumber?: string | null
@@ -863,6 +884,7 @@ export type PaymentRunCreateWithoutCreatedByInput = {
   items?: Prisma.PaymentRunItemCreateNestedManyWithoutPaymentRunInput
   exports?: Prisma.PaymentExportCreateNestedManyWithoutPaymentRunInput
   complianceChecks?: Prisma.PaymentRunComplianceCheckCreateNestedManyWithoutPaymentRunInput
+  achReturnLedgerEntries?: Prisma.AchReturnLedgerEntryCreateNestedManyWithoutPaymentRunInput
 }
 
 export type PaymentRunUncheckedCreateWithoutCreatedByInput = {
@@ -885,6 +907,7 @@ export type PaymentRunUncheckedCreateWithoutCreatedByInput = {
   items?: Prisma.PaymentRunItemUncheckedCreateNestedManyWithoutPaymentRunInput
   exports?: Prisma.PaymentExportUncheckedCreateNestedManyWithoutPaymentRunInput
   complianceChecks?: Prisma.PaymentRunComplianceCheckUncheckedCreateNestedManyWithoutPaymentRunInput
+  achReturnLedgerEntries?: Prisma.AchReturnLedgerEntryUncheckedCreateNestedManyWithoutPaymentRunInput
 }
 
 export type PaymentRunCreateOrConnectWithoutCreatedByInput = {
@@ -917,6 +940,7 @@ export type PaymentRunCreateWithoutApprovedByInput = {
   items?: Prisma.PaymentRunItemCreateNestedManyWithoutPaymentRunInput
   exports?: Prisma.PaymentExportCreateNestedManyWithoutPaymentRunInput
   complianceChecks?: Prisma.PaymentRunComplianceCheckCreateNestedManyWithoutPaymentRunInput
+  achReturnLedgerEntries?: Prisma.AchReturnLedgerEntryCreateNestedManyWithoutPaymentRunInput
 }
 
 export type PaymentRunUncheckedCreateWithoutApprovedByInput = {
@@ -939,6 +963,7 @@ export type PaymentRunUncheckedCreateWithoutApprovedByInput = {
   items?: Prisma.PaymentRunItemUncheckedCreateNestedManyWithoutPaymentRunInput
   exports?: Prisma.PaymentExportUncheckedCreateNestedManyWithoutPaymentRunInput
   complianceChecks?: Prisma.PaymentRunComplianceCheckUncheckedCreateNestedManyWithoutPaymentRunInput
+  achReturnLedgerEntries?: Prisma.AchReturnLedgerEntryUncheckedCreateNestedManyWithoutPaymentRunInput
 }
 
 export type PaymentRunCreateOrConnectWithoutApprovedByInput = {
@@ -1026,6 +1051,7 @@ export type PaymentRunCreateWithoutOrganizationInput = {
   items?: Prisma.PaymentRunItemCreateNestedManyWithoutPaymentRunInput
   exports?: Prisma.PaymentExportCreateNestedManyWithoutPaymentRunInput
   complianceChecks?: Prisma.PaymentRunComplianceCheckCreateNestedManyWithoutPaymentRunInput
+  achReturnLedgerEntries?: Prisma.AchReturnLedgerEntryCreateNestedManyWithoutPaymentRunInput
 }
 
 export type PaymentRunUncheckedCreateWithoutOrganizationInput = {
@@ -1048,6 +1074,7 @@ export type PaymentRunUncheckedCreateWithoutOrganizationInput = {
   items?: Prisma.PaymentRunItemUncheckedCreateNestedManyWithoutPaymentRunInput
   exports?: Prisma.PaymentExportUncheckedCreateNestedManyWithoutPaymentRunInput
   complianceChecks?: Prisma.PaymentRunComplianceCheckUncheckedCreateNestedManyWithoutPaymentRunInput
+  achReturnLedgerEntries?: Prisma.AchReturnLedgerEntryUncheckedCreateNestedManyWithoutPaymentRunInput
 }
 
 export type PaymentRunCreateOrConnectWithoutOrganizationInput = {
@@ -1096,6 +1123,7 @@ export type PaymentRunCreateWithoutItemsInput = {
   approvedBy?: Prisma.UserCreateNestedOneWithoutApprovedPaymentRunsInput
   exports?: Prisma.PaymentExportCreateNestedManyWithoutPaymentRunInput
   complianceChecks?: Prisma.PaymentRunComplianceCheckCreateNestedManyWithoutPaymentRunInput
+  achReturnLedgerEntries?: Prisma.AchReturnLedgerEntryCreateNestedManyWithoutPaymentRunInput
 }
 
 export type PaymentRunUncheckedCreateWithoutItemsInput = {
@@ -1118,6 +1146,7 @@ export type PaymentRunUncheckedCreateWithoutItemsInput = {
   updatedAt?: Date | string
   exports?: Prisma.PaymentExportUncheckedCreateNestedManyWithoutPaymentRunInput
   complianceChecks?: Prisma.PaymentRunComplianceCheckUncheckedCreateNestedManyWithoutPaymentRunInput
+  achReturnLedgerEntries?: Prisma.AchReturnLedgerEntryUncheckedCreateNestedManyWithoutPaymentRunInput
 }
 
 export type PaymentRunCreateOrConnectWithoutItemsInput = {
@@ -1156,6 +1185,7 @@ export type PaymentRunUpdateWithoutItemsInput = {
   approvedBy?: Prisma.UserUpdateOneWithoutApprovedPaymentRunsNestedInput
   exports?: Prisma.PaymentExportUpdateManyWithoutPaymentRunNestedInput
   complianceChecks?: Prisma.PaymentRunComplianceCheckUpdateManyWithoutPaymentRunNestedInput
+  achReturnLedgerEntries?: Prisma.AchReturnLedgerEntryUpdateManyWithoutPaymentRunNestedInput
 }
 
 export type PaymentRunUncheckedUpdateWithoutItemsInput = {
@@ -1178,6 +1208,7 @@ export type PaymentRunUncheckedUpdateWithoutItemsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   exports?: Prisma.PaymentExportUncheckedUpdateManyWithoutPaymentRunNestedInput
   complianceChecks?: Prisma.PaymentRunComplianceCheckUncheckedUpdateManyWithoutPaymentRunNestedInput
+  achReturnLedgerEntries?: Prisma.AchReturnLedgerEntryUncheckedUpdateManyWithoutPaymentRunNestedInput
 }
 
 export type PaymentRunCreateWithoutExportsInput = {
@@ -1200,6 +1231,7 @@ export type PaymentRunCreateWithoutExportsInput = {
   approvedBy?: Prisma.UserCreateNestedOneWithoutApprovedPaymentRunsInput
   items?: Prisma.PaymentRunItemCreateNestedManyWithoutPaymentRunInput
   complianceChecks?: Prisma.PaymentRunComplianceCheckCreateNestedManyWithoutPaymentRunInput
+  achReturnLedgerEntries?: Prisma.AchReturnLedgerEntryCreateNestedManyWithoutPaymentRunInput
 }
 
 export type PaymentRunUncheckedCreateWithoutExportsInput = {
@@ -1222,6 +1254,7 @@ export type PaymentRunUncheckedCreateWithoutExportsInput = {
   updatedAt?: Date | string
   items?: Prisma.PaymentRunItemUncheckedCreateNestedManyWithoutPaymentRunInput
   complianceChecks?: Prisma.PaymentRunComplianceCheckUncheckedCreateNestedManyWithoutPaymentRunInput
+  achReturnLedgerEntries?: Prisma.AchReturnLedgerEntryUncheckedCreateNestedManyWithoutPaymentRunInput
 }
 
 export type PaymentRunCreateOrConnectWithoutExportsInput = {
@@ -1260,6 +1293,7 @@ export type PaymentRunUpdateWithoutExportsInput = {
   approvedBy?: Prisma.UserUpdateOneWithoutApprovedPaymentRunsNestedInput
   items?: Prisma.PaymentRunItemUpdateManyWithoutPaymentRunNestedInput
   complianceChecks?: Prisma.PaymentRunComplianceCheckUpdateManyWithoutPaymentRunNestedInput
+  achReturnLedgerEntries?: Prisma.AchReturnLedgerEntryUpdateManyWithoutPaymentRunNestedInput
 }
 
 export type PaymentRunUncheckedUpdateWithoutExportsInput = {
@@ -1282,6 +1316,7 @@ export type PaymentRunUncheckedUpdateWithoutExportsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   items?: Prisma.PaymentRunItemUncheckedUpdateManyWithoutPaymentRunNestedInput
   complianceChecks?: Prisma.PaymentRunComplianceCheckUncheckedUpdateManyWithoutPaymentRunNestedInput
+  achReturnLedgerEntries?: Prisma.AchReturnLedgerEntryUncheckedUpdateManyWithoutPaymentRunNestedInput
 }
 
 export type PaymentRunCreateWithoutComplianceChecksInput = {
@@ -1304,6 +1339,7 @@ export type PaymentRunCreateWithoutComplianceChecksInput = {
   approvedBy?: Prisma.UserCreateNestedOneWithoutApprovedPaymentRunsInput
   items?: Prisma.PaymentRunItemCreateNestedManyWithoutPaymentRunInput
   exports?: Prisma.PaymentExportCreateNestedManyWithoutPaymentRunInput
+  achReturnLedgerEntries?: Prisma.AchReturnLedgerEntryCreateNestedManyWithoutPaymentRunInput
 }
 
 export type PaymentRunUncheckedCreateWithoutComplianceChecksInput = {
@@ -1326,6 +1362,7 @@ export type PaymentRunUncheckedCreateWithoutComplianceChecksInput = {
   updatedAt?: Date | string
   items?: Prisma.PaymentRunItemUncheckedCreateNestedManyWithoutPaymentRunInput
   exports?: Prisma.PaymentExportUncheckedCreateNestedManyWithoutPaymentRunInput
+  achReturnLedgerEntries?: Prisma.AchReturnLedgerEntryUncheckedCreateNestedManyWithoutPaymentRunInput
 }
 
 export type PaymentRunCreateOrConnectWithoutComplianceChecksInput = {
@@ -1364,6 +1401,7 @@ export type PaymentRunUpdateWithoutComplianceChecksInput = {
   approvedBy?: Prisma.UserUpdateOneWithoutApprovedPaymentRunsNestedInput
   items?: Prisma.PaymentRunItemUpdateManyWithoutPaymentRunNestedInput
   exports?: Prisma.PaymentExportUpdateManyWithoutPaymentRunNestedInput
+  achReturnLedgerEntries?: Prisma.AchReturnLedgerEntryUpdateManyWithoutPaymentRunNestedInput
 }
 
 export type PaymentRunUncheckedUpdateWithoutComplianceChecksInput = {
@@ -1386,6 +1424,115 @@ export type PaymentRunUncheckedUpdateWithoutComplianceChecksInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   items?: Prisma.PaymentRunItemUncheckedUpdateManyWithoutPaymentRunNestedInput
   exports?: Prisma.PaymentExportUncheckedUpdateManyWithoutPaymentRunNestedInput
+  achReturnLedgerEntries?: Prisma.AchReturnLedgerEntryUncheckedUpdateManyWithoutPaymentRunNestedInput
+}
+
+export type PaymentRunCreateWithoutAchReturnLedgerEntriesInput = {
+  id?: string
+  runNumber?: string | null
+  name?: string | null
+  status?: $Enums.PaymentRunStatus
+  currency?: string | null
+  totalMinor?: number
+  invoiceCount?: number
+  exportFormat?: $Enums.PaymentExportFormat | null
+  exportedAt?: Date | string | null
+  completedAt?: Date | string | null
+  failedAt?: Date | string | null
+  notes?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  organization: Prisma.OrganizationCreateNestedOneWithoutPaymentRunsInput
+  createdBy: Prisma.UserCreateNestedOneWithoutCreatedPaymentRunsInput
+  approvedBy?: Prisma.UserCreateNestedOneWithoutApprovedPaymentRunsInput
+  items?: Prisma.PaymentRunItemCreateNestedManyWithoutPaymentRunInput
+  exports?: Prisma.PaymentExportCreateNestedManyWithoutPaymentRunInput
+  complianceChecks?: Prisma.PaymentRunComplianceCheckCreateNestedManyWithoutPaymentRunInput
+}
+
+export type PaymentRunUncheckedCreateWithoutAchReturnLedgerEntriesInput = {
+  id?: string
+  organizationId: string
+  runNumber?: string | null
+  name?: string | null
+  status?: $Enums.PaymentRunStatus
+  currency?: string | null
+  createdByUserId: string
+  approvedByUserId?: string | null
+  totalMinor?: number
+  invoiceCount?: number
+  exportFormat?: $Enums.PaymentExportFormat | null
+  exportedAt?: Date | string | null
+  completedAt?: Date | string | null
+  failedAt?: Date | string | null
+  notes?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  items?: Prisma.PaymentRunItemUncheckedCreateNestedManyWithoutPaymentRunInput
+  exports?: Prisma.PaymentExportUncheckedCreateNestedManyWithoutPaymentRunInput
+  complianceChecks?: Prisma.PaymentRunComplianceCheckUncheckedCreateNestedManyWithoutPaymentRunInput
+}
+
+export type PaymentRunCreateOrConnectWithoutAchReturnLedgerEntriesInput = {
+  where: Prisma.PaymentRunWhereUniqueInput
+  create: Prisma.XOR<Prisma.PaymentRunCreateWithoutAchReturnLedgerEntriesInput, Prisma.PaymentRunUncheckedCreateWithoutAchReturnLedgerEntriesInput>
+}
+
+export type PaymentRunUpsertWithoutAchReturnLedgerEntriesInput = {
+  update: Prisma.XOR<Prisma.PaymentRunUpdateWithoutAchReturnLedgerEntriesInput, Prisma.PaymentRunUncheckedUpdateWithoutAchReturnLedgerEntriesInput>
+  create: Prisma.XOR<Prisma.PaymentRunCreateWithoutAchReturnLedgerEntriesInput, Prisma.PaymentRunUncheckedCreateWithoutAchReturnLedgerEntriesInput>
+  where?: Prisma.PaymentRunWhereInput
+}
+
+export type PaymentRunUpdateToOneWithWhereWithoutAchReturnLedgerEntriesInput = {
+  where?: Prisma.PaymentRunWhereInput
+  data: Prisma.XOR<Prisma.PaymentRunUpdateWithoutAchReturnLedgerEntriesInput, Prisma.PaymentRunUncheckedUpdateWithoutAchReturnLedgerEntriesInput>
+}
+
+export type PaymentRunUpdateWithoutAchReturnLedgerEntriesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  runNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumPaymentRunStatusFieldUpdateOperationsInput | $Enums.PaymentRunStatus
+  currency?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  totalMinor?: Prisma.IntFieldUpdateOperationsInput | number
+  invoiceCount?: Prisma.IntFieldUpdateOperationsInput | number
+  exportFormat?: Prisma.NullableEnumPaymentExportFormatFieldUpdateOperationsInput | $Enums.PaymentExportFormat | null
+  exportedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  failedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  organization?: Prisma.OrganizationUpdateOneRequiredWithoutPaymentRunsNestedInput
+  createdBy?: Prisma.UserUpdateOneRequiredWithoutCreatedPaymentRunsNestedInput
+  approvedBy?: Prisma.UserUpdateOneWithoutApprovedPaymentRunsNestedInput
+  items?: Prisma.PaymentRunItemUpdateManyWithoutPaymentRunNestedInput
+  exports?: Prisma.PaymentExportUpdateManyWithoutPaymentRunNestedInput
+  complianceChecks?: Prisma.PaymentRunComplianceCheckUpdateManyWithoutPaymentRunNestedInput
+}
+
+export type PaymentRunUncheckedUpdateWithoutAchReturnLedgerEntriesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  organizationId?: Prisma.StringFieldUpdateOperationsInput | string
+  runNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumPaymentRunStatusFieldUpdateOperationsInput | $Enums.PaymentRunStatus
+  currency?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdByUserId?: Prisma.StringFieldUpdateOperationsInput | string
+  approvedByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  totalMinor?: Prisma.IntFieldUpdateOperationsInput | number
+  invoiceCount?: Prisma.IntFieldUpdateOperationsInput | number
+  exportFormat?: Prisma.NullableEnumPaymentExportFormatFieldUpdateOperationsInput | $Enums.PaymentExportFormat | null
+  exportedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  failedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  items?: Prisma.PaymentRunItemUncheckedUpdateManyWithoutPaymentRunNestedInput
+  exports?: Prisma.PaymentExportUncheckedUpdateManyWithoutPaymentRunNestedInput
+  complianceChecks?: Prisma.PaymentRunComplianceCheckUncheckedUpdateManyWithoutPaymentRunNestedInput
 }
 
 export type PaymentRunCreateManyCreatedByInput = {
@@ -1446,6 +1593,7 @@ export type PaymentRunUpdateWithoutCreatedByInput = {
   items?: Prisma.PaymentRunItemUpdateManyWithoutPaymentRunNestedInput
   exports?: Prisma.PaymentExportUpdateManyWithoutPaymentRunNestedInput
   complianceChecks?: Prisma.PaymentRunComplianceCheckUpdateManyWithoutPaymentRunNestedInput
+  achReturnLedgerEntries?: Prisma.AchReturnLedgerEntryUpdateManyWithoutPaymentRunNestedInput
 }
 
 export type PaymentRunUncheckedUpdateWithoutCreatedByInput = {
@@ -1468,6 +1616,7 @@ export type PaymentRunUncheckedUpdateWithoutCreatedByInput = {
   items?: Prisma.PaymentRunItemUncheckedUpdateManyWithoutPaymentRunNestedInput
   exports?: Prisma.PaymentExportUncheckedUpdateManyWithoutPaymentRunNestedInput
   complianceChecks?: Prisma.PaymentRunComplianceCheckUncheckedUpdateManyWithoutPaymentRunNestedInput
+  achReturnLedgerEntries?: Prisma.AchReturnLedgerEntryUncheckedUpdateManyWithoutPaymentRunNestedInput
 }
 
 export type PaymentRunUncheckedUpdateManyWithoutCreatedByInput = {
@@ -1509,6 +1658,7 @@ export type PaymentRunUpdateWithoutApprovedByInput = {
   items?: Prisma.PaymentRunItemUpdateManyWithoutPaymentRunNestedInput
   exports?: Prisma.PaymentExportUpdateManyWithoutPaymentRunNestedInput
   complianceChecks?: Prisma.PaymentRunComplianceCheckUpdateManyWithoutPaymentRunNestedInput
+  achReturnLedgerEntries?: Prisma.AchReturnLedgerEntryUpdateManyWithoutPaymentRunNestedInput
 }
 
 export type PaymentRunUncheckedUpdateWithoutApprovedByInput = {
@@ -1531,6 +1681,7 @@ export type PaymentRunUncheckedUpdateWithoutApprovedByInput = {
   items?: Prisma.PaymentRunItemUncheckedUpdateManyWithoutPaymentRunNestedInput
   exports?: Prisma.PaymentExportUncheckedUpdateManyWithoutPaymentRunNestedInput
   complianceChecks?: Prisma.PaymentRunComplianceCheckUncheckedUpdateManyWithoutPaymentRunNestedInput
+  achReturnLedgerEntries?: Prisma.AchReturnLedgerEntryUncheckedUpdateManyWithoutPaymentRunNestedInput
 }
 
 export type PaymentRunUncheckedUpdateManyWithoutApprovedByInput = {
@@ -1591,6 +1742,7 @@ export type PaymentRunUpdateWithoutOrganizationInput = {
   items?: Prisma.PaymentRunItemUpdateManyWithoutPaymentRunNestedInput
   exports?: Prisma.PaymentExportUpdateManyWithoutPaymentRunNestedInput
   complianceChecks?: Prisma.PaymentRunComplianceCheckUpdateManyWithoutPaymentRunNestedInput
+  achReturnLedgerEntries?: Prisma.AchReturnLedgerEntryUpdateManyWithoutPaymentRunNestedInput
 }
 
 export type PaymentRunUncheckedUpdateWithoutOrganizationInput = {
@@ -1613,6 +1765,7 @@ export type PaymentRunUncheckedUpdateWithoutOrganizationInput = {
   items?: Prisma.PaymentRunItemUncheckedUpdateManyWithoutPaymentRunNestedInput
   exports?: Prisma.PaymentExportUncheckedUpdateManyWithoutPaymentRunNestedInput
   complianceChecks?: Prisma.PaymentRunComplianceCheckUncheckedUpdateManyWithoutPaymentRunNestedInput
+  achReturnLedgerEntries?: Prisma.AchReturnLedgerEntryUncheckedUpdateManyWithoutPaymentRunNestedInput
 }
 
 export type PaymentRunUncheckedUpdateManyWithoutOrganizationInput = {
@@ -1643,12 +1796,14 @@ export type PaymentRunCountOutputType = {
   items: number
   exports: number
   complianceChecks: number
+  achReturnLedgerEntries: number
 }
 
 export type PaymentRunCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   items?: boolean | PaymentRunCountOutputTypeCountItemsArgs
   exports?: boolean | PaymentRunCountOutputTypeCountExportsArgs
   complianceChecks?: boolean | PaymentRunCountOutputTypeCountComplianceChecksArgs
+  achReturnLedgerEntries?: boolean | PaymentRunCountOutputTypeCountAchReturnLedgerEntriesArgs
 }
 
 /**
@@ -1682,6 +1837,13 @@ export type PaymentRunCountOutputTypeCountComplianceChecksArgs<ExtArgs extends r
   where?: Prisma.PaymentRunComplianceCheckWhereInput
 }
 
+/**
+ * PaymentRunCountOutputType without action
+ */
+export type PaymentRunCountOutputTypeCountAchReturnLedgerEntriesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.AchReturnLedgerEntryWhereInput
+}
+
 
 export type PaymentRunSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -1707,6 +1869,7 @@ export type PaymentRunSelect<ExtArgs extends runtime.Types.Extensions.InternalAr
   items?: boolean | Prisma.PaymentRun$itemsArgs<ExtArgs>
   exports?: boolean | Prisma.PaymentRun$exportsArgs<ExtArgs>
   complianceChecks?: boolean | Prisma.PaymentRun$complianceChecksArgs<ExtArgs>
+  achReturnLedgerEntries?: boolean | Prisma.PaymentRun$achReturnLedgerEntriesArgs<ExtArgs>
   _count?: boolean | Prisma.PaymentRunCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["paymentRun"]>
 
@@ -1784,6 +1947,7 @@ export type PaymentRunInclude<ExtArgs extends runtime.Types.Extensions.InternalA
   items?: boolean | Prisma.PaymentRun$itemsArgs<ExtArgs>
   exports?: boolean | Prisma.PaymentRun$exportsArgs<ExtArgs>
   complianceChecks?: boolean | Prisma.PaymentRun$complianceChecksArgs<ExtArgs>
+  achReturnLedgerEntries?: boolean | Prisma.PaymentRun$achReturnLedgerEntriesArgs<ExtArgs>
   _count?: boolean | Prisma.PaymentRunCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type PaymentRunIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1806,6 +1970,7 @@ export type $PaymentRunPayload<ExtArgs extends runtime.Types.Extensions.Internal
     items: Prisma.$PaymentRunItemPayload<ExtArgs>[]
     exports: Prisma.$PaymentExportPayload<ExtArgs>[]
     complianceChecks: Prisma.$PaymentRunComplianceCheckPayload<ExtArgs>[]
+    achReturnLedgerEntries: Prisma.$AchReturnLedgerEntryPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -2225,6 +2390,7 @@ export interface Prisma__PaymentRunClient<T, Null = never, ExtArgs extends runti
   items<T extends Prisma.PaymentRun$itemsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.PaymentRun$itemsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PaymentRunItemPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   exports<T extends Prisma.PaymentRun$exportsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.PaymentRun$exportsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PaymentExportPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   complianceChecks<T extends Prisma.PaymentRun$complianceChecksArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.PaymentRun$complianceChecksArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PaymentRunComplianceCheckPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  achReturnLedgerEntries<T extends Prisma.PaymentRun$achReturnLedgerEntriesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.PaymentRun$achReturnLedgerEntriesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AchReturnLedgerEntryPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2760,6 +2926,30 @@ export type PaymentRun$complianceChecksArgs<ExtArgs extends runtime.Types.Extens
   take?: number
   skip?: number
   distinct?: Prisma.PaymentRunComplianceCheckScalarFieldEnum | Prisma.PaymentRunComplianceCheckScalarFieldEnum[]
+}
+
+/**
+ * PaymentRun.achReturnLedgerEntries
+ */
+export type PaymentRun$achReturnLedgerEntriesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the AchReturnLedgerEntry
+   */
+  select?: Prisma.AchReturnLedgerEntrySelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the AchReturnLedgerEntry
+   */
+  omit?: Prisma.AchReturnLedgerEntryOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.AchReturnLedgerEntryInclude<ExtArgs> | null
+  where?: Prisma.AchReturnLedgerEntryWhereInput
+  orderBy?: Prisma.AchReturnLedgerEntryOrderByWithRelationInput | Prisma.AchReturnLedgerEntryOrderByWithRelationInput[]
+  cursor?: Prisma.AchReturnLedgerEntryWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.AchReturnLedgerEntryScalarFieldEnum | Prisma.AchReturnLedgerEntryScalarFieldEnum[]
 }
 
 /**

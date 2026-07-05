@@ -1,0 +1,17 @@
+// CronJobRunState — per-job execution state for the cron-worker runner.
+//
+// One row per scheduled job, keyed by jobName. Global (not tenant-scoped): the
+// runner is a per-region singleton, so a job appears once per regional DB. The
+// runner persists lastSuccessAt here so state survives a process restart (the
+// previous in-memory last-success map was wiped on restart, hiding missed ticks),
+// and job-health reads it to alert when now - lastSuccessAt exceeds the job's
+// schedule interval — today job-health watches only WebhookDelivery, so a dead
+// cron job goes undetected.
+model CronJobRunState {
+  id            String    @id @default(cuid())
+  jobName       String    @unique
+  lastSuccessAt DateTime?
+  lastRunAt     DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}

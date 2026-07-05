@@ -43,6 +43,12 @@ jobs:
       - name: Verify committed Prisma client matches schema
         run: pnpm --filter @contractor-ops/db run db:check-drift
 
+      # Migrations must reproduce the schema (guards the "model in schema, no
+      # CREATE TABLE migration" class). Skips with a WARN unless a throwaway
+      # MIGRATE_SHADOW_DATABASE_URL is provisioned — never gates on infra absence.
+      - name: Verify migrations reproduce the schema
+        run: pnpm --filter @contractor-ops/db run db:check-migration-drift
+
       - name: Format check (biome)
         run: pnpm run format:check
 

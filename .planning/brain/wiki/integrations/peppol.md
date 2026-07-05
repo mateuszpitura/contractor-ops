@@ -2,11 +2,12 @@
 title: Peppol network
 type: integration
 tags: [peppol, uae, storecove]
-source_commit: 70f5782d78e33ba98c82e4ccda2cd4b0b4aff216
+source_commit: f9de62452
 verify_with:
   - packages/api/src/routers/integrations/peppol.ts
   - packages/einvoice/src/profiles/peppol-ae/
-updated: 2026-06-10
+  - packages/db/prisma/schema/peppol.prisma
+updated: 2026-07-05
 ---
 
 # Peppol (Gulf / AE)
@@ -38,6 +39,7 @@ flowchart LR
 
 - Storecove API key per org
 - VAT defaults in orchestrator — see [[decisions/tech-debt-hotspots]] if touching
+- **One in-flight `PeppolTransmission` per invoice** — DB partial unique `PeppolTransmission_invoiceId_active_key` on `(invoiceId) WHERE status IN (PENDING, TRANSMITTED)` (migration `20260705000000_...additive_integrity`). Terminal rows (DELIVERED/FAILED/REJECTED) and null `invoiceId` are excluded, so a failed attempt can be re-transmitted, but a retry landing before the first reaches a terminal state hits P2002 instead of creating a duplicate row. The orchestrator P2002-catch + stale-PENDING reaper land in a later change set.
 
 ## Related
 

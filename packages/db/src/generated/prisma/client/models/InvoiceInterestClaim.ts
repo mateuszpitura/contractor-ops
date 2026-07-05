@@ -336,11 +336,11 @@ export type InvoiceInterestClaimOrderByWithRelationInput = {
 
 export type InvoiceInterestClaimWhereUniqueInput = Prisma.AtLeast<{
   id?: string
+  invoiceId?: string
   AND?: Prisma.InvoiceInterestClaimWhereInput | Prisma.InvoiceInterestClaimWhereInput[]
   OR?: Prisma.InvoiceInterestClaimWhereInput[]
   NOT?: Prisma.InvoiceInterestClaimWhereInput | Prisma.InvoiceInterestClaimWhereInput[]
   organizationId?: Prisma.StringFilter<"InvoiceInterestClaim"> | string
-  invoiceId?: Prisma.StringFilter<"InvoiceInterestClaim"> | string
   claimedByUserId?: Prisma.StringFilter<"InvoiceInterestClaim"> | string
   claimedAt?: Prisma.DateTimeFilter<"InvoiceInterestClaim"> | Date | string
   snapshotInterestMinor?: Prisma.IntFilter<"InvoiceInterestClaim"> | number
@@ -356,7 +356,7 @@ export type InvoiceInterestClaimWhereUniqueInput = Prisma.AtLeast<{
   organization?: Prisma.XOR<Prisma.OrganizationScalarRelationFilter, Prisma.OrganizationWhereInput>
   invoice?: Prisma.XOR<Prisma.InvoiceScalarRelationFilter, Prisma.InvoiceWhereInput>
   secondaryInvoice?: Prisma.XOR<Prisma.InvoiceNullableScalarRelationFilter, Prisma.InvoiceWhereInput> | null
-}, "id">
+}, "id" | "invoiceId">
 
 export type InvoiceInterestClaimOrderByWithAggregationInput = {
   id?: Prisma.SortOrder

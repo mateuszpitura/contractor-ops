@@ -23,9 +23,10 @@ model PaymentRun {
   createdBy    User         @relation("PaymentRunCreator", fields: [createdByUserId], references: [id])
   approvedBy   User?        @relation("PaymentRunApprover", fields: [approvedByUserId], references: [id])
 
-  items            PaymentRunItem[]
-  exports          PaymentExport[]
-  complianceChecks PaymentRunComplianceCheck[] // Phase 72 D-16
+  items                  PaymentRunItem[]
+  exports                PaymentExport[]
+  complianceChecks       PaymentRunComplianceCheck[] // Phase 72 D-16
+  achReturnLedgerEntries AchReturnLedgerEntry[]
 
   @@unique([organizationId, runNumber])
   @@index([organizationId])
@@ -52,6 +53,11 @@ model PaymentRunItem {
   whtTreatyReference String?              @db.VarChar(100)
   whtServiceType     String?              @db.VarChar(50)
   grossAmountMinor   Int? // Original amount before WHT deduction
+  // FX provenance for a cross-currency settled payout: the rate (and its source
+  // date) actually applied at settlement time. Nullable — populated only for
+  // converted payouts by the settlement path; backfill-safe for existing rows.
+  settlementRate     Decimal?             @db.Decimal(18, 8)
+  settlementRateDate DateTime?            @db.Date
   createdAt          DateTime             @default(now())
   updatedAt          DateTime             @updatedAt
 
@@ -61,8 +67,9 @@ model PaymentRunItem {
   contractor     Contractor                @relation(fields: [contractorId], references: [id])
   billingProfile ContractorBillingProfile? @relation(fields: [billingProfileId], references: [id])
 
-  invoicePayments   InvoicePayment[]
-  skontoApplication SkontoApplication?
+  invoicePayments        InvoicePayment[]
+  skontoApplication      SkontoApplication?
+  achReturnLedgerEntries AchReturnLedgerEntry[]
 
   @@unique([paymentRunId, invoiceId])
   @@index([organizationId])
@@ -179,4 +186,41 @@ enum ExportStatus {
 enum EligibilityVerdict {
   PASS
   FAIL
+}
+
+// NACHA return-file entry kind: a Return (addenda type 99, R-codes) reverses a
+// payout; a Notification-of-Change (addenda type 98, C-codes) is advisory only.
+enum AchReturnEntryType {
+  RETURN
+  NOTIFICATION_OF_CHANGE
+}
+
+// Entry-level ledger of processed ACH return-file entries — the idempotency
+// backstop for return uploads. One row per distinct entry within a run
+// (traceNumber + returnCode); a re-uploaded or redelivered file short-circuits on
+// the unique constraint instead of re-flipping an item or duplicating advisory
+// audit rows. individualId/amountMinor/addendaInfo capture the parsed entry;
+// fileSha256 records which upload first applied it.
+model AchReturnLedgerEntry {
+  id               String             @id @default(cuid())
+  organizationId   String
+  paymentRunId     String
+  paymentRunItemId String?
+  entryType        AchReturnEntryType @default(RETURN)
+  traceNumber      String
+  returnCode       String             @db.VarChar(8)
+  individualId     String?
+  amountMinor      Int?
+  addendaInfo      String?
+  fileSha256       String?            @db.VarChar(64)
+  appliedAt        DateTime?
+  createdAt        DateTime           @default(now())
+
+  organization   Organization    @relation(fields: [organizationId], references: [id])
+  paymentRun     PaymentRun      @relation(fields: [paymentRunId], references: [id])
+  paymentRunItem PaymentRunItem? @relation(fields: [paymentRunItemId], references: [id])
+
+  @@unique([paymentRunId, traceNumber, returnCode], map: "ach_return_entry_run_trace_code_uniq")
+  @@index([organizationId])
+  @@index([paymentRunId])
 }

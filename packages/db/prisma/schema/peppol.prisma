@@ -42,6 +42,11 @@ model PeppolTransmission {
   organization Organization      @relation(fields: [organizationId], references: [id])
   participant  PeppolParticipant @relation(fields: [peppolParticipantId], references: [id])
 
+  // At most one in-flight transmission per invoice — blocks duplicate rows when a
+  // retry lands before the first attempt reaches a terminal state. Only PENDING and
+  // TRANSMITTED are constrained; terminal rows (DELIVERED/FAILED/REJECTED) and null
+  // invoiceId are excluded, so a failed attempt can be re-transmitted.
+  @@unique([invoiceId], map: "PeppolTransmission_invoiceId_active_key", where: raw("(status = ANY (ARRAY['PENDING'::\"PeppolTransmissionStatus\", 'TRANSMITTED'::\"PeppolTransmissionStatus\"]))"))
   @@index([organizationId])
   @@index([organizationId, status])
   @@index([organizationId, invoiceId])

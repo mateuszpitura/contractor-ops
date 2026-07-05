@@ -3,6 +3,8 @@ title: Hot cache
 type: hot-cache
 updated: 2026-07-06
 source_commit: efb2b0794
+updated: 2026-07-05
+source_commit: f9de62452
 ---
 
 # Hot cache

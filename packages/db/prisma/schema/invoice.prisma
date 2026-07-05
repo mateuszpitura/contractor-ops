@@ -361,6 +361,10 @@ model InvoiceInterestClaim {
   secondaryInvoice          Invoice?                      @relation("InterestClaimSecondaryInvoice", fields: [secondaryInvoiceId], references: [id])
   createdAt                 DateTime                      @default(now())
 
+  // One late-interest claim per invoice — the DB backstop for the concurrent
+  // double-claim guard (P2002 handled as a conflict). A claim is never voided,
+  // so a plain unique correctly caps it at one row (and one LPC-* secondary invoice).
+  @@unique([invoiceId])
   @@index([organizationId, invoiceId])
   @@index([pdfStatus, createdAt])
 }

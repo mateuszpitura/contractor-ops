@@ -385,7 +385,6 @@ type FieldRefInputType<Model, FieldType> = Model extends never ? never : FieldRe
 
 export const ModelName = {
   OrganizationApiKey: 'OrganizationApiKey',
-  ApiKeyIpEvent: 'ApiKeyIpEvent',
   ApprovalChainConfig: 'ApprovalChainConfig',
   ApprovalFlow: 'ApprovalFlow',
   ApprovalStep: 'ApprovalStep',
@@ -427,13 +426,13 @@ export const ModelName = {
   ComplianceRequirementTemplate: 'ComplianceRequirementTemplate',
   ContractorComplianceItem: 'ContractorComplianceItem',
   ContractorComplianceReminderState: 'ContractorComplianceReminderState',
+  CronJobRunState: 'CronJobRunState',
   LeitwegId: 'LeitwegId',
   EInvoiceLifecycle: 'EInvoiceLifecycle',
   EInvoiceLifecycleEvent: 'EInvoiceLifecycleEvent',
   PeppolCapabilityCache: 'PeppolCapabilityCache',
   EmployeeTimeRecord: 'EmployeeTimeRecord',
   EmployeeProfile: 'EmployeeProfile',
-  StatutoryCertificate: 'StatutoryCertificate',
   Equipment: 'Equipment',
   EquipmentAssignment: 'EquipmentAssignment',
   Shipment: 'Shipment',
@@ -458,7 +457,6 @@ export const ModelName = {
   DeprovisioningRun: 'DeprovisioningRun',
   DeprovisioningStep: 'DeprovisioningStep',
   IdpChangeProvenance: 'IdpChangeProvenance',
-  IncidentReport: 'IncidentReport',
   IntegrationConnection: 'IntegrationConnection',
   ExternalLink: 'ExternalLink',
   IntegrationSyncLog: 'IntegrationSyncLog',
@@ -477,7 +475,6 @@ export const ModelName = {
   LeaveRequest: 'LeaveRequest',
   LeaveLedgerEntry: 'LeaveLedgerEntry',
   LeaveBalance: 'LeaveBalance',
-  MarketplaceListing: 'MarketplaceListing',
   Notification: 'Notification',
   UserNotificationPreference: 'UserNotificationPreference',
   Comment: 'Comment',
@@ -499,6 +496,7 @@ export const ModelName = {
   PaymentRunItem: 'PaymentRunItem',
   PaymentExport: 'PaymentExport',
   PaymentRunComplianceCheck: 'PaymentRunComplianceCheck',
+  AchReturnLedgerEntry: 'AchReturnLedgerEntry',
   PeppolParticipant: 'PeppolParticipant',
   PeppolTransmission: 'PeppolTransmission',
   PersonnelFile: 'PersonnelFile',
@@ -524,9 +522,6 @@ export const ModelName = {
   TaxIdValidation: 'TaxIdValidation',
   Timesheet: 'Timesheet',
   TimeEntry: 'TimeEntry',
-  WebhookSubscription: 'WebhookSubscription',
-  WebhookDeliveryAttempt: 'WebhookDeliveryAttempt',
-  WebhookDeadLetter: 'WebhookDeadLetter',
   Worker: 'Worker',
   WorkflowTemplate: 'WorkflowTemplate',
   WorkflowTaskTemplate: 'WorkflowTaskTemplate',
@@ -553,7 +548,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "organizationApiKey" | "apiKeyIpEvent" | "approvalChainConfig" | "approvalFlow" | "approvalStep" | "approvalDecision" | "auditLog" | "user" | "userPinnedView" | "session" | "account" | "verification" | "subscription" | "ocrCreditLedger" | "stripeEvent" | "classificationAssessment" | "classificationDocument" | "ir35ChainParticipant" | "ir35OtherClientAttestation" | "economicDependencyAlertState" | "reassessmentTrigger" | "cronScanState" | "statusfeststellungsverfahren" | "classificationEscalationEvent" | "sdsApproval" | "consentRecord" | "privacyNotice" | "consentEvent" | "contract" | "contractAmendment" | "contractRatePeriod" | "document" | "documentLink" | "contractHealthCheckRun" | "contractor" | "contractorContact" | "contractorBillingProfile" | "contractorAssignment" | "contractorTag" | "contractorTagLink" | "complianceRequirementTemplate" | "contractorComplianceItem" | "contractorComplianceReminderState" | "leitwegId" | "eInvoiceLifecycle" | "eInvoiceLifecycleEvent" | "peppolCapabilityCache" | "employeeTimeRecord" | "employeeProfile" | "statutoryCertificate" | "equipment" | "equipmentAssignment" | "shipment" | "shipmentEvent" | "returnRequest" | "courierConfig" | "signingEnvelope" | "signingRecipient" | "signingEvent" | "ewidencjaSnapshot" | "exchangeRate" | "export" | "boEBaseRateHistory" | "skontoTerm" | "skontoSnapshot" | "skontoApplication" | "govApiAuditLog" | "freeZoneAssignment" | "saudizationConfig" | "saudiHeadcount" | "uaeFreeZone" | "deprovisioningRun" | "deprovisioningStep" | "idpChangeProvenance" | "incidentReport" | "integrationConnection" | "externalLink" | "integrationSyncLog" | "webhookDelivery" | "invoice" | "invoiceFile" | "invoiceLine" | "invoiceMatchResult" | "invoiceIntakeRequest" | "invoicePayment" | "invoiceInterestCompensation" | "invoiceInterestWaiver" | "invoiceInterestClaim" | "leaveType" | "blackoutPeriod" | "leaveRequest" | "leaveLedgerEntry" | "leaveBalance" | "marketplaceListing" | "notification" | "userNotificationPreference" | "comment" | "reminderRule" | "reminderInstance" | "notificationCronDedup" | "oAuthChallenge" | "ocrExtraction" | "organization" | "member" | "invitation" | "team" | "project" | "pendingProjectMerge" | "projectExternalLink" | "costCenter" | "outboxEvent" | "paymentRun" | "paymentRunItem" | "paymentExport" | "paymentRunComplianceCheck" | "peppolParticipant" | "peppolTransmission" | "personnelFile" | "personnelFileDocument" | "portalSession" | "portalMagicToken" | "contractorChangeRequest" | "contractorNotificationPreference" | "pendingUpload" | "publicHoliday" | "taxRate" | "withholdingTaxRate" | "whtCertificate" | "taxFormSubmission" | "form1099Nec" | "irisSubmission" | "irisAck" | "tax1099Threshold" | "stateFilingConfig" | "form1042S" | "form1099KTrackerState" | "tax1099KThreshold" | "taxIdValidation" | "timesheet" | "timeEntry" | "webhookSubscription" | "webhookDeliveryAttempt" | "webhookDeadLetter" | "worker" | "workflowTemplate" | "workflowTaskTemplate" | "workflowRoleTemplate" | "workflowRoleTaskTemplate" | "workflowRun" | "workflowTaskRun" | "workflowComment" | "workflowAttachment" | "credentialReference" | "zatcaInvoiceChain"
+    modelProps: "organizationApiKey" | "approvalChainConfig" | "approvalFlow" | "approvalStep" | "approvalDecision" | "auditLog" | "user" | "userPinnedView" | "session" | "account" | "verification" | "subscription" | "ocrCreditLedger" | "stripeEvent" | "classificationAssessment" | "classificationDocument" | "ir35ChainParticipant" | "ir35OtherClientAttestation" | "economicDependencyAlertState" | "reassessmentTrigger" | "cronScanState" | "statusfeststellungsverfahren" | "classificationEscalationEvent" | "sdsApproval" | "consentRecord" | "privacyNotice" | "consentEvent" | "contract" | "contractAmendment" | "contractRatePeriod" | "document" | "documentLink" | "contractHealthCheckRun" | "contractor" | "contractorContact" | "contractorBillingProfile" | "contractorAssignment" | "contractorTag" | "contractorTagLink" | "complianceRequirementTemplate" | "contractorComplianceItem" | "contractorComplianceReminderState" | "cronJobRunState" | "leitwegId" | "eInvoiceLifecycle" | "eInvoiceLifecycleEvent" | "peppolCapabilityCache" | "employeeTimeRecord" | "employeeProfile" | "equipment" | "equipmentAssignment" | "shipment" | "shipmentEvent" | "returnRequest" | "courierConfig" | "signingEnvelope" | "signingRecipient" | "signingEvent" | "ewidencjaSnapshot" | "exchangeRate" | "export" | "boEBaseRateHistory" | "skontoTerm" | "skontoSnapshot" | "skontoApplication" | "govApiAuditLog" | "freeZoneAssignment" | "saudizationConfig" | "saudiHeadcount" | "uaeFreeZone" | "deprovisioningRun" | "deprovisioningStep" | "idpChangeProvenance" | "integrationConnection" | "externalLink" | "integrationSyncLog" | "webhookDelivery" | "invoice" | "invoiceFile" | "invoiceLine" | "invoiceMatchResult" | "invoiceIntakeRequest" | "invoicePayment" | "invoiceInterestCompensation" | "invoiceInterestWaiver" | "invoiceInterestClaim" | "leaveType" | "blackoutPeriod" | "leaveRequest" | "leaveLedgerEntry" | "leaveBalance" | "notification" | "userNotificationPreference" | "comment" | "reminderRule" | "reminderInstance" | "notificationCronDedup" | "oAuthChallenge" | "ocrExtraction" | "organization" | "member" | "invitation" | "team" | "project" | "pendingProjectMerge" | "projectExternalLink" | "costCenter" | "outboxEvent" | "paymentRun" | "paymentRunItem" | "paymentExport" | "paymentRunComplianceCheck" | "achReturnLedgerEntry" | "peppolParticipant" | "peppolTransmission" | "personnelFile" | "personnelFileDocument" | "portalSession" | "portalMagicToken" | "contractorChangeRequest" | "contractorNotificationPreference" | "pendingUpload" | "publicHoliday" | "taxRate" | "withholdingTaxRate" | "whtCertificate" | "taxFormSubmission" | "form1099Nec" | "irisSubmission" | "irisAck" | "tax1099Threshold" | "stateFilingConfig" | "form1042S" | "form1099KTrackerState" | "tax1099KThreshold" | "taxIdValidation" | "timesheet" | "timeEntry" | "worker" | "workflowTemplate" | "workflowTaskTemplate" | "workflowRoleTemplate" | "workflowRoleTaskTemplate" | "workflowRun" | "workflowTaskRun" | "workflowComment" | "workflowAttachment" | "credentialReference" | "zatcaInvoiceChain"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -628,80 +623,6 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.OrganizationApiKeyCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.OrganizationApiKeyCountAggregateOutputType> | number
-        }
-      }
-    }
-    ApiKeyIpEvent: {
-      payload: Prisma.$ApiKeyIpEventPayload<ExtArgs>
-      fields: Prisma.ApiKeyIpEventFieldRefs
-      operations: {
-        findUnique: {
-          args: Prisma.ApiKeyIpEventFindUniqueArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$ApiKeyIpEventPayload> | null
-        }
-        findUniqueOrThrow: {
-          args: Prisma.ApiKeyIpEventFindUniqueOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$ApiKeyIpEventPayload>
-        }
-        findFirst: {
-          args: Prisma.ApiKeyIpEventFindFirstArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$ApiKeyIpEventPayload> | null
-        }
-        findFirstOrThrow: {
-          args: Prisma.ApiKeyIpEventFindFirstOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$ApiKeyIpEventPayload>
-        }
-        findMany: {
-          args: Prisma.ApiKeyIpEventFindManyArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$ApiKeyIpEventPayload>[]
-        }
-        create: {
-          args: Prisma.ApiKeyIpEventCreateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$ApiKeyIpEventPayload>
-        }
-        createMany: {
-          args: Prisma.ApiKeyIpEventCreateManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        createManyAndReturn: {
-          args: Prisma.ApiKeyIpEventCreateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$ApiKeyIpEventPayload>[]
-        }
-        delete: {
-          args: Prisma.ApiKeyIpEventDeleteArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$ApiKeyIpEventPayload>
-        }
-        update: {
-          args: Prisma.ApiKeyIpEventUpdateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$ApiKeyIpEventPayload>
-        }
-        deleteMany: {
-          args: Prisma.ApiKeyIpEventDeleteManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        updateMany: {
-          args: Prisma.ApiKeyIpEventUpdateManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        updateManyAndReturn: {
-          args: Prisma.ApiKeyIpEventUpdateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$ApiKeyIpEventPayload>[]
-        }
-        upsert: {
-          args: Prisma.ApiKeyIpEventUpsertArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$ApiKeyIpEventPayload>
-        }
-        aggregate: {
-          args: Prisma.ApiKeyIpEventAggregateArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.AggregateApiKeyIpEvent>
-        }
-        groupBy: {
-          args: Prisma.ApiKeyIpEventGroupByArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.ApiKeyIpEventGroupByOutputType>[]
-        }
-        count: {
-          args: Prisma.ApiKeyIpEventCountArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.ApiKeyIpEventCountAggregateOutputType> | number
         }
       }
     }
@@ -3739,6 +3660,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    CronJobRunState: {
+      payload: Prisma.$CronJobRunStatePayload<ExtArgs>
+      fields: Prisma.CronJobRunStateFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.CronJobRunStateFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CronJobRunStatePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.CronJobRunStateFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CronJobRunStatePayload>
+        }
+        findFirst: {
+          args: Prisma.CronJobRunStateFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CronJobRunStatePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.CronJobRunStateFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CronJobRunStatePayload>
+        }
+        findMany: {
+          args: Prisma.CronJobRunStateFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CronJobRunStatePayload>[]
+        }
+        create: {
+          args: Prisma.CronJobRunStateCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CronJobRunStatePayload>
+        }
+        createMany: {
+          args: Prisma.CronJobRunStateCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.CronJobRunStateCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CronJobRunStatePayload>[]
+        }
+        delete: {
+          args: Prisma.CronJobRunStateDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CronJobRunStatePayload>
+        }
+        update: {
+          args: Prisma.CronJobRunStateUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CronJobRunStatePayload>
+        }
+        deleteMany: {
+          args: Prisma.CronJobRunStateDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.CronJobRunStateUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.CronJobRunStateUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CronJobRunStatePayload>[]
+        }
+        upsert: {
+          args: Prisma.CronJobRunStateUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CronJobRunStatePayload>
+        }
+        aggregate: {
+          args: Prisma.CronJobRunStateAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateCronJobRunState>
+        }
+        groupBy: {
+          args: Prisma.CronJobRunStateGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CronJobRunStateGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.CronJobRunStateCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CronJobRunStateCountAggregateOutputType> | number
+        }
+      }
+    }
     LeitwegId: {
       payload: Prisma.$LeitwegIdPayload<ExtArgs>
       fields: Prisma.LeitwegIdFieldRefs
@@ -4180,80 +4175,6 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.EmployeeProfileCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.EmployeeProfileCountAggregateOutputType> | number
-        }
-      }
-    }
-    StatutoryCertificate: {
-      payload: Prisma.$StatutoryCertificatePayload<ExtArgs>
-      fields: Prisma.StatutoryCertificateFieldRefs
-      operations: {
-        findUnique: {
-          args: Prisma.StatutoryCertificateFindUniqueArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$StatutoryCertificatePayload> | null
-        }
-        findUniqueOrThrow: {
-          args: Prisma.StatutoryCertificateFindUniqueOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$StatutoryCertificatePayload>
-        }
-        findFirst: {
-          args: Prisma.StatutoryCertificateFindFirstArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$StatutoryCertificatePayload> | null
-        }
-        findFirstOrThrow: {
-          args: Prisma.StatutoryCertificateFindFirstOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$StatutoryCertificatePayload>
-        }
-        findMany: {
-          args: Prisma.StatutoryCertificateFindManyArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$StatutoryCertificatePayload>[]
-        }
-        create: {
-          args: Prisma.StatutoryCertificateCreateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$StatutoryCertificatePayload>
-        }
-        createMany: {
-          args: Prisma.StatutoryCertificateCreateManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        createManyAndReturn: {
-          args: Prisma.StatutoryCertificateCreateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$StatutoryCertificatePayload>[]
-        }
-        delete: {
-          args: Prisma.StatutoryCertificateDeleteArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$StatutoryCertificatePayload>
-        }
-        update: {
-          args: Prisma.StatutoryCertificateUpdateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$StatutoryCertificatePayload>
-        }
-        deleteMany: {
-          args: Prisma.StatutoryCertificateDeleteManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        updateMany: {
-          args: Prisma.StatutoryCertificateUpdateManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        updateManyAndReturn: {
-          args: Prisma.StatutoryCertificateUpdateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$StatutoryCertificatePayload>[]
-        }
-        upsert: {
-          args: Prisma.StatutoryCertificateUpsertArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$StatutoryCertificatePayload>
-        }
-        aggregate: {
-          args: Prisma.StatutoryCertificateAggregateArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.AggregateStatutoryCertificate>
-        }
-        groupBy: {
-          args: Prisma.StatutoryCertificateGroupByArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.StatutoryCertificateGroupByOutputType>[]
-        }
-        count: {
-          args: Prisma.StatutoryCertificateCountArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.StatutoryCertificateCountAggregateOutputType> | number
         }
       }
     }
@@ -6033,80 +5954,6 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
-    IncidentReport: {
-      payload: Prisma.$IncidentReportPayload<ExtArgs>
-      fields: Prisma.IncidentReportFieldRefs
-      operations: {
-        findUnique: {
-          args: Prisma.IncidentReportFindUniqueArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$IncidentReportPayload> | null
-        }
-        findUniqueOrThrow: {
-          args: Prisma.IncidentReportFindUniqueOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$IncidentReportPayload>
-        }
-        findFirst: {
-          args: Prisma.IncidentReportFindFirstArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$IncidentReportPayload> | null
-        }
-        findFirstOrThrow: {
-          args: Prisma.IncidentReportFindFirstOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$IncidentReportPayload>
-        }
-        findMany: {
-          args: Prisma.IncidentReportFindManyArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$IncidentReportPayload>[]
-        }
-        create: {
-          args: Prisma.IncidentReportCreateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$IncidentReportPayload>
-        }
-        createMany: {
-          args: Prisma.IncidentReportCreateManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        createManyAndReturn: {
-          args: Prisma.IncidentReportCreateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$IncidentReportPayload>[]
-        }
-        delete: {
-          args: Prisma.IncidentReportDeleteArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$IncidentReportPayload>
-        }
-        update: {
-          args: Prisma.IncidentReportUpdateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$IncidentReportPayload>
-        }
-        deleteMany: {
-          args: Prisma.IncidentReportDeleteManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        updateMany: {
-          args: Prisma.IncidentReportUpdateManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        updateManyAndReturn: {
-          args: Prisma.IncidentReportUpdateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$IncidentReportPayload>[]
-        }
-        upsert: {
-          args: Prisma.IncidentReportUpsertArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$IncidentReportPayload>
-        }
-        aggregate: {
-          args: Prisma.IncidentReportAggregateArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.AggregateIncidentReport>
-        }
-        groupBy: {
-          args: Prisma.IncidentReportGroupByArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.IncidentReportGroupByOutputType>[]
-        }
-        count: {
-          args: Prisma.IncidentReportCountArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.IncidentReportCountAggregateOutputType> | number
-        }
-      }
-    }
     IntegrationConnection: {
       payload: Prisma.$IntegrationConnectionPayload<ExtArgs>
       fields: Prisma.IntegrationConnectionFieldRefs
@@ -7436,80 +7283,6 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.LeaveBalanceCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.LeaveBalanceCountAggregateOutputType> | number
-        }
-      }
-    }
-    MarketplaceListing: {
-      payload: Prisma.$MarketplaceListingPayload<ExtArgs>
-      fields: Prisma.MarketplaceListingFieldRefs
-      operations: {
-        findUnique: {
-          args: Prisma.MarketplaceListingFindUniqueArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$MarketplaceListingPayload> | null
-        }
-        findUniqueOrThrow: {
-          args: Prisma.MarketplaceListingFindUniqueOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$MarketplaceListingPayload>
-        }
-        findFirst: {
-          args: Prisma.MarketplaceListingFindFirstArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$MarketplaceListingPayload> | null
-        }
-        findFirstOrThrow: {
-          args: Prisma.MarketplaceListingFindFirstOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$MarketplaceListingPayload>
-        }
-        findMany: {
-          args: Prisma.MarketplaceListingFindManyArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$MarketplaceListingPayload>[]
-        }
-        create: {
-          args: Prisma.MarketplaceListingCreateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$MarketplaceListingPayload>
-        }
-        createMany: {
-          args: Prisma.MarketplaceListingCreateManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        createManyAndReturn: {
-          args: Prisma.MarketplaceListingCreateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$MarketplaceListingPayload>[]
-        }
-        delete: {
-          args: Prisma.MarketplaceListingDeleteArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$MarketplaceListingPayload>
-        }
-        update: {
-          args: Prisma.MarketplaceListingUpdateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$MarketplaceListingPayload>
-        }
-        deleteMany: {
-          args: Prisma.MarketplaceListingDeleteManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        updateMany: {
-          args: Prisma.MarketplaceListingUpdateManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        updateManyAndReturn: {
-          args: Prisma.MarketplaceListingUpdateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$MarketplaceListingPayload>[]
-        }
-        upsert: {
-          args: Prisma.MarketplaceListingUpsertArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$MarketplaceListingPayload>
-        }
-        aggregate: {
-          args: Prisma.MarketplaceListingAggregateArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.AggregateMarketplaceListing>
-        }
-        groupBy: {
-          args: Prisma.MarketplaceListingGroupByArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.MarketplaceListingGroupByOutputType>[]
-        }
-        count: {
-          args: Prisma.MarketplaceListingCountArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.MarketplaceListingCountAggregateOutputType> | number
         }
       }
     }
@@ -9064,6 +8837,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.PaymentRunComplianceCheckCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.PaymentRunComplianceCheckCountAggregateOutputType> | number
+        }
+      }
+    }
+    AchReturnLedgerEntry: {
+      payload: Prisma.$AchReturnLedgerEntryPayload<ExtArgs>
+      fields: Prisma.AchReturnLedgerEntryFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.AchReturnLedgerEntryFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AchReturnLedgerEntryPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.AchReturnLedgerEntryFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AchReturnLedgerEntryPayload>
+        }
+        findFirst: {
+          args: Prisma.AchReturnLedgerEntryFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AchReturnLedgerEntryPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.AchReturnLedgerEntryFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AchReturnLedgerEntryPayload>
+        }
+        findMany: {
+          args: Prisma.AchReturnLedgerEntryFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AchReturnLedgerEntryPayload>[]
+        }
+        create: {
+          args: Prisma.AchReturnLedgerEntryCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AchReturnLedgerEntryPayload>
+        }
+        createMany: {
+          args: Prisma.AchReturnLedgerEntryCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.AchReturnLedgerEntryCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AchReturnLedgerEntryPayload>[]
+        }
+        delete: {
+          args: Prisma.AchReturnLedgerEntryDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AchReturnLedgerEntryPayload>
+        }
+        update: {
+          args: Prisma.AchReturnLedgerEntryUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AchReturnLedgerEntryPayload>
+        }
+        deleteMany: {
+          args: Prisma.AchReturnLedgerEntryDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.AchReturnLedgerEntryUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.AchReturnLedgerEntryUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AchReturnLedgerEntryPayload>[]
+        }
+        upsert: {
+          args: Prisma.AchReturnLedgerEntryUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AchReturnLedgerEntryPayload>
+        }
+        aggregate: {
+          args: Prisma.AchReturnLedgerEntryAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateAchReturnLedgerEntry>
+        }
+        groupBy: {
+          args: Prisma.AchReturnLedgerEntryGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AchReturnLedgerEntryGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.AchReturnLedgerEntryCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AchReturnLedgerEntryCountAggregateOutputType> | number
         }
       }
     }
@@ -10917,228 +10764,6 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
-    WebhookSubscription: {
-      payload: Prisma.$WebhookSubscriptionPayload<ExtArgs>
-      fields: Prisma.WebhookSubscriptionFieldRefs
-      operations: {
-        findUnique: {
-          args: Prisma.WebhookSubscriptionFindUniqueArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebhookSubscriptionPayload> | null
-        }
-        findUniqueOrThrow: {
-          args: Prisma.WebhookSubscriptionFindUniqueOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebhookSubscriptionPayload>
-        }
-        findFirst: {
-          args: Prisma.WebhookSubscriptionFindFirstArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebhookSubscriptionPayload> | null
-        }
-        findFirstOrThrow: {
-          args: Prisma.WebhookSubscriptionFindFirstOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebhookSubscriptionPayload>
-        }
-        findMany: {
-          args: Prisma.WebhookSubscriptionFindManyArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebhookSubscriptionPayload>[]
-        }
-        create: {
-          args: Prisma.WebhookSubscriptionCreateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebhookSubscriptionPayload>
-        }
-        createMany: {
-          args: Prisma.WebhookSubscriptionCreateManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        createManyAndReturn: {
-          args: Prisma.WebhookSubscriptionCreateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebhookSubscriptionPayload>[]
-        }
-        delete: {
-          args: Prisma.WebhookSubscriptionDeleteArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebhookSubscriptionPayload>
-        }
-        update: {
-          args: Prisma.WebhookSubscriptionUpdateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebhookSubscriptionPayload>
-        }
-        deleteMany: {
-          args: Prisma.WebhookSubscriptionDeleteManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        updateMany: {
-          args: Prisma.WebhookSubscriptionUpdateManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        updateManyAndReturn: {
-          args: Prisma.WebhookSubscriptionUpdateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebhookSubscriptionPayload>[]
-        }
-        upsert: {
-          args: Prisma.WebhookSubscriptionUpsertArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebhookSubscriptionPayload>
-        }
-        aggregate: {
-          args: Prisma.WebhookSubscriptionAggregateArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.AggregateWebhookSubscription>
-        }
-        groupBy: {
-          args: Prisma.WebhookSubscriptionGroupByArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.WebhookSubscriptionGroupByOutputType>[]
-        }
-        count: {
-          args: Prisma.WebhookSubscriptionCountArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.WebhookSubscriptionCountAggregateOutputType> | number
-        }
-      }
-    }
-    WebhookDeliveryAttempt: {
-      payload: Prisma.$WebhookDeliveryAttemptPayload<ExtArgs>
-      fields: Prisma.WebhookDeliveryAttemptFieldRefs
-      operations: {
-        findUnique: {
-          args: Prisma.WebhookDeliveryAttemptFindUniqueArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebhookDeliveryAttemptPayload> | null
-        }
-        findUniqueOrThrow: {
-          args: Prisma.WebhookDeliveryAttemptFindUniqueOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebhookDeliveryAttemptPayload>
-        }
-        findFirst: {
-          args: Prisma.WebhookDeliveryAttemptFindFirstArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebhookDeliveryAttemptPayload> | null
-        }
-        findFirstOrThrow: {
-          args: Prisma.WebhookDeliveryAttemptFindFirstOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebhookDeliveryAttemptPayload>
-        }
-        findMany: {
-          args: Prisma.WebhookDeliveryAttemptFindManyArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebhookDeliveryAttemptPayload>[]
-        }
-        create: {
-          args: Prisma.WebhookDeliveryAttemptCreateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebhookDeliveryAttemptPayload>
-        }
-        createMany: {
-          args: Prisma.WebhookDeliveryAttemptCreateManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        createManyAndReturn: {
-          args: Prisma.WebhookDeliveryAttemptCreateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebhookDeliveryAttemptPayload>[]
-        }
-        delete: {
-          args: Prisma.WebhookDeliveryAttemptDeleteArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebhookDeliveryAttemptPayload>
-        }
-        update: {
-          args: Prisma.WebhookDeliveryAttemptUpdateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebhookDeliveryAttemptPayload>
-        }
-        deleteMany: {
-          args: Prisma.WebhookDeliveryAttemptDeleteManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        updateMany: {
-          args: Prisma.WebhookDeliveryAttemptUpdateManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        updateManyAndReturn: {
-          args: Prisma.WebhookDeliveryAttemptUpdateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebhookDeliveryAttemptPayload>[]
-        }
-        upsert: {
-          args: Prisma.WebhookDeliveryAttemptUpsertArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebhookDeliveryAttemptPayload>
-        }
-        aggregate: {
-          args: Prisma.WebhookDeliveryAttemptAggregateArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.AggregateWebhookDeliveryAttempt>
-        }
-        groupBy: {
-          args: Prisma.WebhookDeliveryAttemptGroupByArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.WebhookDeliveryAttemptGroupByOutputType>[]
-        }
-        count: {
-          args: Prisma.WebhookDeliveryAttemptCountArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.WebhookDeliveryAttemptCountAggregateOutputType> | number
-        }
-      }
-    }
-    WebhookDeadLetter: {
-      payload: Prisma.$WebhookDeadLetterPayload<ExtArgs>
-      fields: Prisma.WebhookDeadLetterFieldRefs
-      operations: {
-        findUnique: {
-          args: Prisma.WebhookDeadLetterFindUniqueArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebhookDeadLetterPayload> | null
-        }
-        findUniqueOrThrow: {
-          args: Prisma.WebhookDeadLetterFindUniqueOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebhookDeadLetterPayload>
-        }
-        findFirst: {
-          args: Prisma.WebhookDeadLetterFindFirstArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebhookDeadLetterPayload> | null
-        }
-        findFirstOrThrow: {
-          args: Prisma.WebhookDeadLetterFindFirstOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebhookDeadLetterPayload>
-        }
-        findMany: {
-          args: Prisma.WebhookDeadLetterFindManyArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebhookDeadLetterPayload>[]
-        }
-        create: {
-          args: Prisma.WebhookDeadLetterCreateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebhookDeadLetterPayload>
-        }
-        createMany: {
-          args: Prisma.WebhookDeadLetterCreateManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        createManyAndReturn: {
-          args: Prisma.WebhookDeadLetterCreateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebhookDeadLetterPayload>[]
-        }
-        delete: {
-          args: Prisma.WebhookDeadLetterDeleteArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebhookDeadLetterPayload>
-        }
-        update: {
-          args: Prisma.WebhookDeadLetterUpdateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebhookDeadLetterPayload>
-        }
-        deleteMany: {
-          args: Prisma.WebhookDeadLetterDeleteManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        updateMany: {
-          args: Prisma.WebhookDeadLetterUpdateManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        updateManyAndReturn: {
-          args: Prisma.WebhookDeadLetterUpdateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebhookDeadLetterPayload>[]
-        }
-        upsert: {
-          args: Prisma.WebhookDeadLetterUpsertArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebhookDeadLetterPayload>
-        }
-        aggregate: {
-          args: Prisma.WebhookDeadLetterAggregateArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.AggregateWebhookDeadLetter>
-        }
-        groupBy: {
-          args: Prisma.WebhookDeadLetterGroupByArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.WebhookDeadLetterGroupByOutputType>[]
-        }
-        count: {
-          args: Prisma.WebhookDeadLetterCountArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.WebhookDeadLetterCountAggregateOutputType> | number
-        }
-      }
-    }
     Worker: {
       payload: Prisma.$WorkerPayload<ExtArgs>
       fields: Prisma.WorkerFieldRefs
@@ -11999,32 +11624,15 @@ export const OrganizationApiKeyScalarFieldEnum = {
   prefix: 'prefix',
   hash: 'hash',
   scopes: 'scopes',
-  environment: 'environment',
   createdByUserId: 'createdByUserId',
-  actingUserId: 'actingUserId',
   lastUsedAt: 'lastUsedAt',
   revokedAt: 'revokedAt',
   expiresAt: 'expiresAt',
-  supersededAt: 'supersededAt',
-  supersededByKeyId: 'supersededByKeyId',
-  graceExpiresAt: 'graceExpiresAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
 
 export type OrganizationApiKeyScalarFieldEnum = (typeof OrganizationApiKeyScalarFieldEnum)[keyof typeof OrganizationApiKeyScalarFieldEnum]
-
-
-export const ApiKeyIpEventScalarFieldEnum = {
-  id: 'id',
-  apiKeyId: 'apiKeyId',
-  organizationId: 'organizationId',
-  ipAddress: 'ipAddress',
-  userAgent: 'userAgent',
-  seenAt: 'seenAt'
-} as const
-
-export type ApiKeyIpEventScalarFieldEnum = (typeof ApiKeyIpEventScalarFieldEnum)[keyof typeof ApiKeyIpEventScalarFieldEnum]
 
 
 export const ApprovalChainConfigScalarFieldEnum = {
@@ -12799,6 +12407,18 @@ export const ContractorComplianceReminderStateScalarFieldEnum = {
 export type ContractorComplianceReminderStateScalarFieldEnum = (typeof ContractorComplianceReminderStateScalarFieldEnum)[keyof typeof ContractorComplianceReminderStateScalarFieldEnum]
 
 
+export const CronJobRunStateScalarFieldEnum = {
+  id: 'id',
+  jobName: 'jobName',
+  lastSuccessAt: 'lastSuccessAt',
+  lastRunAt: 'lastRunAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type CronJobRunStateScalarFieldEnum = (typeof CronJobRunStateScalarFieldEnum)[keyof typeof CronJobRunStateScalarFieldEnum]
+
+
 export const LeitwegIdScalarFieldEnum = {
   id: 'id',
   organizationId: 'organizationId',
@@ -12914,33 +12534,11 @@ export const EmployeeProfileScalarFieldEnum = {
   saudizationCategory: 'saudizationCategory',
   etat: 'etat',
   employmentStatus: 'employmentStatus',
-  terminatedAt: 'terminatedAt',
-  department: 'department',
-  employmentType: 'employmentType',
-  contractEndDate: 'contractEndDate',
-  probationEndsAt: 'probationEndsAt',
-  managerWorkerId: 'managerWorkerId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
 
 export type EmployeeProfileScalarFieldEnum = (typeof EmployeeProfileScalarFieldEnum)[keyof typeof EmployeeProfileScalarFieldEnum]
-
-
-export const StatutoryCertificateScalarFieldEnum = {
-  id: 'id',
-  organizationId: 'organizationId',
-  workflowRunId: 'workflowRunId',
-  workerId: 'workerId',
-  certType: 'certType',
-  jurisdiction: 'jurisdiction',
-  status: 'status',
-  snapshotJson: 'snapshotJson',
-  pdfArchiveKey: 'pdfArchiveKey',
-  createdAt: 'createdAt'
-} as const
-
-export type StatutoryCertificateScalarFieldEnum = (typeof StatutoryCertificateScalarFieldEnum)[keyof typeof StatutoryCertificateScalarFieldEnum]
 
 
 export const EquipmentScalarFieldEnum = {
@@ -13289,7 +12887,6 @@ export const DeprovisioningRunScalarFieldEnum = {
   organizationId: 'organizationId',
   contractorId: 'contractorId',
   assignmentId: 'assignmentId',
-  workerId: 'workerId',
   status: 'status',
   startedAt: 'startedAt',
   finishedAt: 'finishedAt',
@@ -13337,24 +12934,6 @@ export const IdpChangeProvenanceScalarFieldEnum = {
 } as const
 
 export type IdpChangeProvenanceScalarFieldEnum = (typeof IdpChangeProvenanceScalarFieldEnum)[keyof typeof IdpChangeProvenanceScalarFieldEnum]
-
-
-export const IncidentReportScalarFieldEnum = {
-  id: 'id',
-  title: 'title',
-  status: 'status',
-  severity: 'severity',
-  componentsAffected: 'componentsAffected',
-  updates: 'updates',
-  startedAt: 'startedAt',
-  resolvedAt: 'resolvedAt',
-  createdByUserId: 'createdByUserId',
-  updatedByUserId: 'updatedByUserId',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
-} as const
-
-export type IncidentReportScalarFieldEnum = (typeof IncidentReportScalarFieldEnum)[keyof typeof IncidentReportScalarFieldEnum]
 
 
 export const IntegrationConnectionScalarFieldEnum = {
@@ -13728,23 +13307,6 @@ export const LeaveBalanceScalarFieldEnum = {
 export type LeaveBalanceScalarFieldEnum = (typeof LeaveBalanceScalarFieldEnum)[keyof typeof LeaveBalanceScalarFieldEnum]
 
 
-export const MarketplaceListingScalarFieldEnum = {
-  id: 'id',
-  platform: 'platform',
-  status: 'status',
-  versionPin: 'versionPin',
-  lastReviewFeedback: 'lastReviewFeedback',
-  listingUrl: 'listingUrl',
-  submittedAt: 'submittedAt',
-  wentLiveAt: 'wentLiveAt',
-  updatedByUserId: 'updatedByUserId',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
-} as const
-
-export type MarketplaceListingScalarFieldEnum = (typeof MarketplaceListingScalarFieldEnum)[keyof typeof MarketplaceListingScalarFieldEnum]
-
-
 export const NotificationScalarFieldEnum = {
   id: 'id',
   organizationId: 'organizationId',
@@ -13890,7 +13452,6 @@ export const OrganizationScalarFieldEnum = {
   language: 'language',
   fiscalYearStartMonth: 'fiscalYearStartMonth',
   status: 'status',
-  isSandbox: 'isSandbox',
   isKleinunternehmer: 'isKleinunternehmer',
   billingEmail: 'billingEmail',
   bacsServiceUserNumberEncrypted: 'bacsServiceUserNumberEncrypted',
@@ -14077,6 +13638,8 @@ export const PaymentRunItemScalarFieldEnum = {
   whtTreatyReference: 'whtTreatyReference',
   whtServiceType: 'whtServiceType',
   grossAmountMinor: 'grossAmountMinor',
+  settlementRate: 'settlementRate',
+  settlementRateDate: 'settlementRateDate',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -14114,6 +13677,25 @@ export const PaymentRunComplianceCheckScalarFieldEnum = {
 } as const
 
 export type PaymentRunComplianceCheckScalarFieldEnum = (typeof PaymentRunComplianceCheckScalarFieldEnum)[keyof typeof PaymentRunComplianceCheckScalarFieldEnum]
+
+
+export const AchReturnLedgerEntryScalarFieldEnum = {
+  id: 'id',
+  organizationId: 'organizationId',
+  paymentRunId: 'paymentRunId',
+  paymentRunItemId: 'paymentRunItemId',
+  entryType: 'entryType',
+  traceNumber: 'traceNumber',
+  returnCode: 'returnCode',
+  individualId: 'individualId',
+  amountMinor: 'amountMinor',
+  addendaInfo: 'addendaInfo',
+  fileSha256: 'fileSha256',
+  appliedAt: 'appliedAt',
+  createdAt: 'createdAt'
+} as const
+
+export type AchReturnLedgerEntryScalarFieldEnum = (typeof AchReturnLedgerEntryScalarFieldEnum)[keyof typeof AchReturnLedgerEntryScalarFieldEnum]
 
 
 export const PeppolParticipantScalarFieldEnum = {
@@ -14180,8 +13762,6 @@ export const PersonnelFileDocumentScalarFieldEnum = {
   classificationMethod: 'classificationMethod',
   aiSectionGuess: 'aiSectionGuess',
   aiConfidence: 'aiConfidence',
-  expiresAt: 'expiresAt',
-  docCategory: 'docCategory',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   deletedAt: 'deletedAt'
@@ -14193,9 +13773,7 @@ export type PersonnelFileDocumentScalarFieldEnum = (typeof PersonnelFileDocument
 export const PortalSessionScalarFieldEnum = {
   id: 'id',
   token: 'token',
-  subjectType: 'subjectType',
   contractorId: 'contractorId',
-  workerId: 'workerId',
   organizationId: 'organizationId',
   email: 'email',
   expiresAt: 'expiresAt',
@@ -14552,60 +14130,6 @@ export const TimeEntryScalarFieldEnum = {
 export type TimeEntryScalarFieldEnum = (typeof TimeEntryScalarFieldEnum)[keyof typeof TimeEntryScalarFieldEnum]
 
 
-export const WebhookSubscriptionScalarFieldEnum = {
-  id: 'id',
-  organizationId: 'organizationId',
-  url: 'url',
-  eventFilter: 'eventFilter',
-  secretEncrypted: 'secretEncrypted',
-  includePii: 'includePii',
-  httpAllowed: 'httpAllowed',
-  enabled: 'enabled',
-  maxRetries: 'maxRetries',
-  lastSuccessAt: 'lastSuccessAt',
-  lastFailureAt: 'lastFailureAt',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
-} as const
-
-export type WebhookSubscriptionScalarFieldEnum = (typeof WebhookSubscriptionScalarFieldEnum)[keyof typeof WebhookSubscriptionScalarFieldEnum]
-
-
-export const WebhookDeliveryAttemptScalarFieldEnum = {
-  id: 'id',
-  subscriptionId: 'subscriptionId',
-  organizationId: 'organizationId',
-  outboxEventId: 'outboxEventId',
-  eventType: 'eventType',
-  payloadJson: 'payloadJson',
-  status: 'status',
-  attempts: 'attempts',
-  nextAttemptAt: 'nextAttemptAt',
-  responseStatus: 'responseStatus',
-  lastError: 'lastError',
-  deliveredAt: 'deliveredAt',
-  createdAt: 'createdAt'
-} as const
-
-export type WebhookDeliveryAttemptScalarFieldEnum = (typeof WebhookDeliveryAttemptScalarFieldEnum)[keyof typeof WebhookDeliveryAttemptScalarFieldEnum]
-
-
-export const WebhookDeadLetterScalarFieldEnum = {
-  id: 'id',
-  subscriptionId: 'subscriptionId',
-  organizationId: 'organizationId',
-  attemptId: 'attemptId',
-  eventType: 'eventType',
-  payloadJson: 'payloadJson',
-  lastError: 'lastError',
-  attempts: 'attempts',
-  failedAt: 'failedAt',
-  replayedAt: 'replayedAt'
-} as const
-
-export type WebhookDeadLetterScalarFieldEnum = (typeof WebhookDeadLetterScalarFieldEnum)[keyof typeof WebhookDeadLetterScalarFieldEnum]
-
-
 export const WorkerScalarFieldEnum = {
   id: 'id',
   organizationId: 'organizationId',
@@ -14630,8 +14154,6 @@ export const WorkflowTemplateScalarFieldEnum = {
   version: 'version',
   status: 'status',
   appliesToEntityType: 'appliesToEntityType',
-  jurisdiction: 'jurisdiction',
-  seedKey: 'seedKey',
   createdByUserId: 'createdByUserId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
@@ -14710,7 +14232,6 @@ export const WorkflowRunScalarFieldEnum = {
   entityId: 'entityId',
   contractorId: 'contractorId',
   contractId: 'contractId',
-  workerId: 'workerId',
   status: 'status',
   startedByUserId: 'startedByUserId',
   startedAt: 'startedAt',
@@ -14889,20 +14410,6 @@ export type StringFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 
  * Reference to a field of type 'String[]'
  */
 export type ListStringFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'String[]'>
-    
-
-
-/**
- * Reference to a field of type 'ApiKeyEnvironment'
- */
-export type EnumApiKeyEnvironmentFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ApiKeyEnvironment'>
-    
-
-
-/**
- * Reference to a field of type 'ApiKeyEnvironment[]'
- */
-export type ListEnumApiKeyEnvironmentFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ApiKeyEnvironment[]'>
     
 
 
@@ -15684,34 +15191,6 @@ export type ListEnumEmploymentStatusFieldRefInput<$PrismaModel> = FieldRefInputT
 
 
 /**
- * Reference to a field of type 'EmploymentType'
- */
-export type EnumEmploymentTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'EmploymentType'>
-    
-
-
-/**
- * Reference to a field of type 'EmploymentType[]'
- */
-export type ListEnumEmploymentTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'EmploymentType[]'>
-    
-
-
-/**
- * Reference to a field of type 'StatutoryCertificateStatus'
- */
-export type EnumStatutoryCertificateStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'StatutoryCertificateStatus'>
-    
-
-
-/**
- * Reference to a field of type 'StatutoryCertificateStatus[]'
- */
-export type ListEnumStatutoryCertificateStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'StatutoryCertificateStatus[]'>
-    
-
-
-/**
  * Reference to a field of type 'EquipmentType'
  */
 export type EnumEquipmentTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'EquipmentType'>
@@ -16020,41 +15499,6 @@ export type ListEnumIdpProvenanceActionKindFieldRefInput<$PrismaModel> = FieldRe
 
 
 /**
- * Reference to a field of type 'IncidentStatus'
- */
-export type EnumIncidentStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'IncidentStatus'>
-    
-
-
-/**
- * Reference to a field of type 'IncidentStatus[]'
- */
-export type ListEnumIncidentStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'IncidentStatus[]'>
-    
-
-
-/**
- * Reference to a field of type 'IncidentSeverity'
- */
-export type EnumIncidentSeverityFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'IncidentSeverity'>
-    
-
-
-/**
- * Reference to a field of type 'IncidentSeverity[]'
- */
-export type ListEnumIncidentSeverityFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'IncidentSeverity[]'>
-    
-
-
-/**
- * Reference to a field of type 'Json[]'
- */
-export type ListJsonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Json[]'>
-    
-
-
-/**
  * Reference to a field of type 'IntegrationStatus'
  */
 export type EnumIntegrationStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'IntegrationStatus'>
@@ -16335,34 +15779,6 @@ export type ListEnumLeaveLedgerTypeFieldRefInput<$PrismaModel> = FieldRefInputTy
 
 
 /**
- * Reference to a field of type 'MarketplacePlatform'
- */
-export type EnumMarketplacePlatformFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'MarketplacePlatform'>
-    
-
-
-/**
- * Reference to a field of type 'MarketplacePlatform[]'
- */
-export type ListEnumMarketplacePlatformFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'MarketplacePlatform[]'>
-    
-
-
-/**
- * Reference to a field of type 'MarketplaceListingStatus'
- */
-export type EnumMarketplaceListingStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'MarketplaceListingStatus'>
-    
-
-
-/**
- * Reference to a field of type 'MarketplaceListingStatus[]'
- */
-export type ListEnumMarketplaceListingStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'MarketplaceListingStatus[]'>
-    
-
-
-/**
  * Reference to a field of type 'NotificationChannel'
  */
 export type EnumNotificationChannelFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'NotificationChannel'>
@@ -16601,6 +16017,20 @@ export type ListEnumEligibilityVerdictFieldRefInput<$PrismaModel> = FieldRefInpu
 
 
 /**
+ * Reference to a field of type 'AchReturnEntryType'
+ */
+export type EnumAchReturnEntryTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AchReturnEntryType'>
+    
+
+
+/**
+ * Reference to a field of type 'AchReturnEntryType[]'
+ */
+export type ListEnumAchReturnEntryTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AchReturnEntryType[]'>
+    
+
+
+/**
  * Reference to a field of type 'PeppolParticipantStatus'
  */
 export type EnumPeppolParticipantStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PeppolParticipantStatus'>
@@ -16653,34 +16083,6 @@ export type EnumPersonnelDocClassificationMethodFieldRefInput<$PrismaModel> = Fi
  * Reference to a field of type 'PersonnelDocClassificationMethod[]'
  */
 export type ListEnumPersonnelDocClassificationMethodFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PersonnelDocClassificationMethod[]'>
-    
-
-
-/**
- * Reference to a field of type 'EmployeeDocCategory'
- */
-export type EnumEmployeeDocCategoryFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'EmployeeDocCategory'>
-    
-
-
-/**
- * Reference to a field of type 'EmployeeDocCategory[]'
- */
-export type ListEnumEmployeeDocCategoryFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'EmployeeDocCategory[]'>
-    
-
-
-/**
- * Reference to a field of type 'PortalSubjectType'
- */
-export type EnumPortalSubjectTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PortalSubjectType'>
-    
-
-
-/**
- * Reference to a field of type 'PortalSubjectType[]'
- */
-export type ListEnumPortalSubjectTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PortalSubjectType[]'>
     
 
 
@@ -16835,20 +16237,6 @@ export type EnumTimeEntrySourceFieldRefInput<$PrismaModel> = FieldRefInputType<$
  * Reference to a field of type 'TimeEntrySource[]'
  */
 export type ListEnumTimeEntrySourceFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'TimeEntrySource[]'>
-    
-
-
-/**
- * Reference to a field of type 'OutboundWebhookStatus'
- */
-export type EnumOutboundWebhookStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'OutboundWebhookStatus'>
-    
-
-
-/**
- * Reference to a field of type 'OutboundWebhookStatus[]'
- */
-export type ListEnumOutboundWebhookStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'OutboundWebhookStatus[]'>
     
 
 
@@ -17130,7 +16518,6 @@ export type PrismaClientOptions = ({
 }
 export type GlobalOmitConfig = {
   organizationApiKey?: Prisma.OrganizationApiKeyOmit
-  apiKeyIpEvent?: Prisma.ApiKeyIpEventOmit
   approvalChainConfig?: Prisma.ApprovalChainConfigOmit
   approvalFlow?: Prisma.ApprovalFlowOmit
   approvalStep?: Prisma.ApprovalStepOmit
@@ -17172,13 +16559,13 @@ export type GlobalOmitConfig = {
   complianceRequirementTemplate?: Prisma.ComplianceRequirementTemplateOmit
   contractorComplianceItem?: Prisma.ContractorComplianceItemOmit
   contractorComplianceReminderState?: Prisma.ContractorComplianceReminderStateOmit
+  cronJobRunState?: Prisma.CronJobRunStateOmit
   leitwegId?: Prisma.LeitwegIdOmit
   eInvoiceLifecycle?: Prisma.EInvoiceLifecycleOmit
   eInvoiceLifecycleEvent?: Prisma.EInvoiceLifecycleEventOmit
   peppolCapabilityCache?: Prisma.PeppolCapabilityCacheOmit
   employeeTimeRecord?: Prisma.EmployeeTimeRecordOmit
   employeeProfile?: Prisma.EmployeeProfileOmit
-  statutoryCertificate?: Prisma.StatutoryCertificateOmit
   equipment?: Prisma.EquipmentOmit
   equipmentAssignment?: Prisma.EquipmentAssignmentOmit
   shipment?: Prisma.ShipmentOmit
@@ -17203,7 +16590,6 @@ export type GlobalOmitConfig = {
   deprovisioningRun?: Prisma.DeprovisioningRunOmit
   deprovisioningStep?: Prisma.DeprovisioningStepOmit
   idpChangeProvenance?: Prisma.IdpChangeProvenanceOmit
-  incidentReport?: Prisma.IncidentReportOmit
   integrationConnection?: Prisma.IntegrationConnectionOmit
   externalLink?: Prisma.ExternalLinkOmit
   integrationSyncLog?: Prisma.IntegrationSyncLogOmit
@@ -17222,7 +16608,6 @@ export type GlobalOmitConfig = {
   leaveRequest?: Prisma.LeaveRequestOmit
   leaveLedgerEntry?: Prisma.LeaveLedgerEntryOmit
   leaveBalance?: Prisma.LeaveBalanceOmit
-  marketplaceListing?: Prisma.MarketplaceListingOmit
   notification?: Prisma.NotificationOmit
   userNotificationPreference?: Prisma.UserNotificationPreferenceOmit
   comment?: Prisma.CommentOmit
@@ -17244,6 +16629,7 @@ export type GlobalOmitConfig = {
   paymentRunItem?: Prisma.PaymentRunItemOmit
   paymentExport?: Prisma.PaymentExportOmit
   paymentRunComplianceCheck?: Prisma.PaymentRunComplianceCheckOmit
+  achReturnLedgerEntry?: Prisma.AchReturnLedgerEntryOmit
   peppolParticipant?: Prisma.PeppolParticipantOmit
   peppolTransmission?: Prisma.PeppolTransmissionOmit
   personnelFile?: Prisma.PersonnelFileOmit
@@ -17269,9 +16655,6 @@ export type GlobalOmitConfig = {
   taxIdValidation?: Prisma.TaxIdValidationOmit
   timesheet?: Prisma.TimesheetOmit
   timeEntry?: Prisma.TimeEntryOmit
-  webhookSubscription?: Prisma.WebhookSubscriptionOmit
-  webhookDeliveryAttempt?: Prisma.WebhookDeliveryAttemptOmit
-  webhookDeadLetter?: Prisma.WebhookDeadLetterOmit
   worker?: Prisma.WorkerOmit
   workflowTemplate?: Prisma.WorkflowTemplateOmit
   workflowTaskTemplate?: Prisma.WorkflowTaskTemplateOmit

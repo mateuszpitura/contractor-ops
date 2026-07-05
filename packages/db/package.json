@@ -29,6 +29,7 @@
     "db:migrate:status": "prisma migrate status",
     "db:migrate:all": "tsx scripts/migrate-all-regions.ts",
     "db:check-drift": "tsx scripts/check-generated-drift.ts",
+    "db:check-migration-drift": "tsx scripts/check-migration-schema-drift.ts",
     "db:audit-enum-casing": "tsx scripts/audit-enum-casing.ts",
     "db:lint:region-leakage": "tsx scripts/lint-region-leakage.ts",
     "db:seed:dev": "PRISMA_SLOW_QUERY_THRESHOLD_MS=999999 tsx scripts/seed-dev.ts",

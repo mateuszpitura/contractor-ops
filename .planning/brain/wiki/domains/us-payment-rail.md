@@ -2,8 +2,9 @@
 title: US payment rail
 type: domain
 tags: [payments, ach, nacha, fedwire, pacs008, withholding, usd, plaid, modern-treasury, ach-return]
-source_commit: cec2745a3d4b4b9234b54d1ea9c77be24705f803
+source_commit: f9de62452
 verify_with:
+  - packages/db/prisma/schema/payment.prisma
   - packages/api/src/services/payment-export.ts
   - packages/api/src/services/payment-format-detection.ts
   - packages/api/src/services/payment-settlement.ts
@@ -11,7 +12,7 @@ verify_with:
   - packages/api/src/routers/finance/payment-core.ts
   - packages/api/src/services/ach-return.service.ts
   - packages/api/src/services/tin-match.service.ts
-updated: 2026-07-01
+updated: 2026-07-05
 ---
 
 # US payment rail
@@ -55,6 +56,7 @@ flowchart TD
 
 - USD is a normal ECB currency (`EUR→USD` in the feed); `convertAmount` already cross-rates and short-circuits same-currency — there is **no `USD=1.0` short-circuit** (adding one would mask a genuinely missing rate on a holiday).
 - `resolveSettlementCurrency({ contractorCurrency, perRunOverride? })` — the per-run override wins, else `Contractor.currency`; a blank override is treated as unset. `convertForSettlement` delegates verbatim to `convertAmount` at the payment-date ECB rate (rate 1 same-currency; `null` on a missing rate — never a silently zeroed payout). `_buildExportItems` settles each item before the buffer is built; a missing rate throws `UNPROCESSABLE_CONTENT` (`E.PAYMENT_SETTLEMENT_RATE_UNAVAILABLE`).
+- **FX provenance columns** (`payment.prisma`): `PaymentRunItem.settlementRate Decimal? @db.Decimal(18,8)` + `settlementRateDate DateTime? @db.Date` — the rate and its source date actually applied to a converted payout, so a settled payout's audit can reconstruct the FX used. Nullable/backfill-safe; `_buildExportItems` / `_initiatePayoutForRun` currently discard `settled.rate`/`rateDate`, so wiring the settlement path to stamp these columns is a later change set — this migration adds the columns.
 
 ## Programmatic ACH + Plaid seams
 
@@ -70,7 +72,7 @@ When an RDFI cannot post a credit it returns the entry with an R-code. The file-
 - **Reachable entry point** — `payment.ingestAchReturnFile` (`payment-core.ts`): same gate as `initiatePayout` (`tenantProcedure` + `requirePermission({ payment: ['export'] })` + `assertUsExpansionEnabled`, applied **before** any parse/apply), `.strict()` Zod (`runId` cuid, `returnFileText` bounded `min(1).max(5_000_000)`). It calls `parseNachaReturnFile` → `applyAchReturns` and returns the `{ failed, advisory, skipped, unmatched }` summary **verbatim**.
 - **Disposition** — `mapReturnCodeToStatus` (`ach-return.service.ts`): R01 (insufficient funds), R02 (account closed), R03 (no account) and the rest of the R-family → **FAILED** with a human reason; NOC / C-code corrections → **advisory** (the payout settled; the bank is asking for corrected account details next time) and never fail a payout. An unrecognised non-correction code defaults to FAILED (fail-safe — an unposted credit is never silently treated as settled).
 - **Apply** — `applyAchReturns` loads run items tenant-scoped (`where { paymentRunId, organizationId }`), matches each entry `individualId → invoice.invoiceNumber` (fallback `paymentReference`), flips a transitionable matched item (`PENDING/EXPORTED/PAID`) to `status='FAILED' + failureReason`, and writes one masked `payment_run.ach_return_applied` audit row per transition — all inside a single `$transaction`.
-- **Idempotent + never-un-fail** — an already-`FAILED` item is skipped, so a re-uploaded / re-delivered file is a no-op and a return can never revert a failure.
+- **Idempotent + never-un-fail** — an already-`FAILED` item is skipped, so a re-uploaded / re-delivered file is a no-op and a return can never revert a failure. Today idempotency is **terminal-status-skip only**, which misses a corrected-then-re-run item (FAILED→DRAFT→re-run) being re-flipped by a stale file and re-writes advisory (NOC) audit rows on every upload. The schema backstop is the new **`AchReturnLedgerEntry`** table (`payment.prisma`): a processed entry is keyed `@@unique([paymentRunId, traceNumber, returnCode])` (`ach_return_entry_run_trace_code_uniq`, or `fileSha256` for file-level dedup) so a redelivery short-circuits at entry level and advisory audits dedup. `entryType` distinguishes `RETURN` (addenda-99 R-codes) from `NOTIFICATION_OF_CHANGE` (addenda-98 C-codes). The service that writes/short-circuits on the ledger is a later change set — this migration adds the table + unique.
 - **`unmatched` is the operator-safety signal** — a FAILED-disposition entry that matches no live item is counted `unmatched` (never silently dropped). `unmatched:0` = the file applied cleanly to this run; `unmatched > 0` = a wrong-`runId` / mis-uploaded file (a foreign-org run flips nothing — every entry surfaces as unmatched), distinguishable from an indistinguishable all-zeros no-op. A high unmatched proportion logs a warn inside `applyAchReturns`.
 - **Malformed vs. benign** — a benign empty / non-return upload parses to zero entries and returns all-zeros without throwing; a file that carries return addenda-99 records yet parses to nothing is structurally broken and rejected `BAD_REQUEST` (`E.PAYMENT_ACH_RETURN_FILE_INVALID`). The procedure also writes a masked ingestion-summary audit (`payment_run.ach_return_ingested`) carrying only sizes + the disposition tallies — no bank data, no raw file text.
 - **Deferred seam** — the live Modern Treasury return-webhook (`PayoutInitiationAdapter.handleWebhook`) would feed the same `applyAchReturns` once the programmatic-ACH live path is enabled; it is referenced, not built (programmatic ACH stays dark/opt-in), so file upload is the only reachable return path today.
