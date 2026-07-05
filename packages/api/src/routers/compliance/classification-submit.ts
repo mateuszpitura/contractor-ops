@@ -7,6 +7,7 @@ import { TRPCError } from '@trpc/server';
 import { CLASSIFICATION_ASSESSMENT_NOT_FOUND } from '../../errors';
 import { router } from '../../init';
 import { findOrThrow } from '../../lib/find-or-throw';
+import { enqueueHrisEmployeePush } from '../../services/outbox/hris-push-producer';
 import type { DbClient } from '../../services/types';
 import type { Outcome, Prisma } from './classification-shared';
 import {
@@ -195,6 +196,30 @@ export const classificationSubmitRouter = router({
             status: { in: ['OPEN', 'ACKNOWLEDGED'] },
           },
           data: { status: 'RESOLVED', resolvedAt: now },
+        });
+      }
+
+      // Push the classification outcome to a connected HRIS iff the assessed
+      // worker is an EMPLOYEE (contractor assessments never push). No-op for
+      // contractors; only enqueues an outbox row — the adapter is never called
+      // inline.
+      const assignment = await tx.contractorAssignment.findUnique({
+        where: { id: row.contractorAssignmentId },
+        select: { contractor: { select: { workerId: true } } },
+      });
+      const workerId = assignment?.contractor?.workerId;
+      if (workerId) {
+        await enqueueHrisEmployeePush(tx, {
+          organizationId: row.organizationId,
+          workerId,
+          eventType: 'hris.classification-outcome.push',
+          payload: {
+            workerId,
+            classificationId: updated.id,
+            outcome: String((validatedOutcome as { verdict?: unknown }).verdict ?? row.countryCode),
+            decidedAt: now.toISOString(),
+          },
+          businessEventId: updated.id,
         });
       }
 

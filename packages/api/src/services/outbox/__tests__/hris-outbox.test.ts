@@ -20,10 +20,7 @@ vi.mock('@contractor-ops/integrations', () => ({
   loadHeavyAdapters: mockLoadHeavy,
 }));
 vi.mock('../../audit-writer', () => ({ writeAuditLog: mockAudit }));
-vi.mock('../hris-push', async () => {
-  const actual = await vi.importActual<typeof import('../hris-push')>('../hris-push');
-  return { ...actual, resolveHrisPushTarget: mockResolveTarget };
-});
+vi.mock('../hris-push-target', () => ({ resolveHrisPushTarget: mockResolveTarget }));
 
 import { dispatchOutboxEvent } from '../handlers';
 
