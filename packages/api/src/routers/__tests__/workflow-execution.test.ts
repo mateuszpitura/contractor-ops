@@ -138,6 +138,10 @@ vi.mock('../../services/notification-service', () => ({
   dispatch: vi.fn(async () => undefined),
 }));
 
+vi.mock('../../services/outbox', () => ({
+  enqueueNotificationOutboxEvent: vi.fn(async () => 'oxe_test'),
+}));
+
 vi.mock('../../services/equipment-workflow', () => ({
   checkShipmentTaskCompletion: vi.fn(async () => undefined),
   handleEquipmentTaskStart: vi.fn(async () => undefined),

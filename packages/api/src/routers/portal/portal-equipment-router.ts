@@ -6,7 +6,8 @@ import { router } from '../../init';
 import { portalProcedure } from '../../middleware/portal-auth';
 import { writeAuditLog } from '../../services/audit-writer';
 import { loadCourierClient } from '../../services/courier/carrier-factory';
-import { dispatch } from '../../services/notification-service';
+import type { OutboxTransactionalClient } from '../../services/outbox';
+import { enqueueNotificationOutboxEvent } from '../../services/outbox';
 
 export const portalEquipmentRouter = router({
   // =========================================================================
@@ -176,24 +177,27 @@ export const portalEquipmentRouter = router({
           },
         });
 
-        return returnRequest;
-      });
+        // Enqueue the admin notification INSIDE the tx so it commits
+        // atomically with the return-request create (exactly-once).
+        await enqueueNotificationOutboxEvent({
+          tx: tx as unknown as OutboxTransactionalClient,
+          event: {
+            organizationId: ctx.organizationId,
+            type: 'EQUIPMENT_RETURN_REQUESTED',
+            recipientUserIds: [],
+            title: 'notifications.equipment.returnRequested.title',
+            body: 'notifications.equipment.returnRequested.body',
+            entityType: 'RETURN_REQUEST',
+            entityId: returnRequest.id,
+            metadata: {
+              contractorId: ctx.contractorId,
+              targetPoint: input.targetPointName,
+            },
+          },
+          dedupKey: `equipment-return-requested:${returnRequest.id}`,
+        });
 
-      // Fire-and-forget: notify admins about pending return request
-      void dispatch({
-        organizationId: ctx.organizationId,
-        type: 'EQUIPMENT_RETURN_REQUESTED',
-        recipientUserIds: [],
-        title: 'notifications.equipment.returnRequested.title',
-        body: 'notifications.equipment.returnRequested.body',
-        entityType: 'RETURN_REQUEST',
-        entityId: result.id,
-        metadata: {
-          contractorId: ctx.contractorId,
-          targetPoint: input.targetPointName,
-        },
-      }).catch(_err => {
-        /* fire-and-forget */
+        return returnRequest;
       });
 
       return result;

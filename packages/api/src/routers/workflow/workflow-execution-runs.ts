@@ -18,7 +18,8 @@ import { tenantProcedure } from '../../middleware/tenant';
 import { writeAuditLog } from '../../services/audit-writer';
 import { CacheKeys, invalidateByPrefix } from '../../services/cache';
 import { handleEquipmentTaskStart } from '../../services/equipment-workflow';
-import { dispatch } from '../../services/notification-service';
+import type { OutboxTransactionalClient } from '../../services/outbox';
+import { enqueueNotificationOutboxEvent } from '../../services/outbox';
 import {
   buildIntegrationEligibility,
   computeMaxDueDate,
@@ -29,6 +30,45 @@ import {
   syncTaskToExternalSystems,
 } from './workflow-execution-shared';
 import { calculateProgress } from './workflow-shared';
+
+/**
+ * Enqueue a TASK_ASSIGNED notification per active (non-skipped, assigned)
+ * task INSIDE the caller's transaction, so the notifications commit
+ * atomically with the run + task-run inserts and are delivered exactly-once
+ * by the outbox drain.
+ */
+async function enqueueTaskAssignedNotifications(
+  tx: OutboxTransactionalClient,
+  input: {
+    organizationId: string;
+    workflowRunId: string;
+    workflowName: string;
+    contractorName: string;
+    tasks: { id: string; title: string; status: string; assigneeUserId: string | null }[];
+  },
+): Promise<void> {
+  for (const task of input.tasks) {
+    if (task.status === 'SKIPPED' || !task.assigneeUserId) continue;
+    await enqueueNotificationOutboxEvent({
+      tx,
+      event: {
+        organizationId: input.organizationId,
+        type: 'TASK_ASSIGNED',
+        recipientUserIds: [task.assigneeUserId],
+        title: `Task assigned: ${task.title}`,
+        body: `Workflow: ${input.workflowName} for ${input.contractorName}`,
+        entityType: 'WORKFLOW_RUN',
+        entityId: input.workflowRunId,
+        metadata: {
+          taskTitle: task.title,
+          workflowName: input.workflowName,
+          contractorName: input.contractorName,
+        },
+      },
+      dedupKey: `task-assigned:${task.id}`,
+    });
+  }
+}
 
 export const workflowExecutionRunsRouter = router({
   /**
@@ -133,9 +173,20 @@ export const workflowExecutionRunsRouter = router({
           equipmentEligibleTaskRunIds,
         } = buildIntegrationEligibility(template.tasks, taskIdMap);
 
+        // Enqueue TASK_ASSIGNED notifications INSIDE the tx (exactly-once)
+        // instead of the old post-commit fire-and-forget loop.
+        const contractorName = contractor.legalName ?? contractor.displayName ?? 'Unknown';
+        await enqueueTaskAssignedNotifications(tx as unknown as OutboxTransactionalClient, {
+          organizationId: ctx.organizationId,
+          workflowRunId: fullRun.id,
+          workflowName: fullRun.workflowTemplate.name,
+          contractorName,
+          tasks: fullRun.tasks,
+        });
+
         return {
           run: fullRun,
-          contractorName: contractor.legalName ?? contractor.displayName ?? 'Unknown',
+          contractorName,
           jiraEligibleTaskRunIds,
           linearEligibleTaskRuns,
           calendarConfigMap,
@@ -145,27 +196,6 @@ export const workflowExecutionRunsRouter = router({
           templateType: template.type,
         };
       });
-
-      // Fire-and-forget: dispatch TASK_ASSIGNED to each task assignee
-      const activeTasks = run.run.tasks.filter(t => t.status !== 'SKIPPED' && t.assigneeUserId);
-      for (const task of activeTasks) {
-        dispatch({
-          organizationId: ctx.organizationId,
-          type: 'TASK_ASSIGNED',
-          recipientUserIds: [task.assigneeUserId as string],
-          title: `Task assigned: ${task.title}`,
-          body: `Workflow: ${run.run.workflowTemplate.name} for ${run.contractorName}`,
-          entityType: 'WORKFLOW_RUN',
-          entityId: run.run.id,
-          metadata: {
-            taskTitle: task.title,
-            workflowName: run.run.workflowTemplate.name,
-            contractorName: run.contractorName,
-          },
-        }).catch(_err => {
-          /* fire-and-forget */
-        });
-      }
 
       // Fire-and-forget: sync eligible tasks to external integrations
       void syncJiraTasksAfterStart(

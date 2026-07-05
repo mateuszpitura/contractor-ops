@@ -131,6 +131,10 @@ vi.mock('../../services/notification-service', () => ({
   getOrCreatePreferences: vi.fn(async () => ({})),
 }));
 
+vi.mock('../../services/outbox', () => ({
+  enqueueNotificationOutboxEvent: vi.fn(async () => 'oxe_test'),
+}));
+
 vi.mock('../../services/cache', () => ({
   cacheKey: vi.fn((...s: string[]) => s.join(':')),
   cachedSingleflight: vi.fn(async (_k: string, _t: number, fn: () => Promise<unknown>) => fn()),

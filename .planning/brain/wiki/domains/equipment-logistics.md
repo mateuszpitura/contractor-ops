@@ -28,6 +28,7 @@ Equipment CRUD, contractor assignment, shipment tracking (InPost/DPD/UPS), retur
 
 - Shipment create / status event / delete — `auditedMutation` + `auditMutationCtx` (same txn as audit row)
 - Return approve / reject — DB writes + audit in one txn (InPost label call stays pre-txn)
+- Return notifications (APPROVED/REJECTED/REQUESTED, `equipment-returns.ts` + `portal-equipment-router.ts`) are enqueued through the outbox INSIDE that same txn (`enqueueNotificationOutboxEvent`, dedupKey `equipment-return-*:<id>`) — exactly-once, not post-commit fire-and-forget. See [[notifications-and-reminders]]
 - Courier shipment creates (`equipment-couriers`) — same pattern
 
 ## Related

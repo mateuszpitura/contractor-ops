@@ -192,6 +192,10 @@ vi.mock('../../services/notification-service', () => ({
   dispatch: vi.fn(async () => undefined),
 }));
 
+vi.mock('../../services/outbox', () => ({
+  enqueueNotificationOutboxEvent: vi.fn(async () => 'oxe_test'),
+}));
+
 vi.mock('../../services/courier/inpost-client', () => ({
   InPostClient: class MockInPostClient {
     createShipment = mockInPostClient.createShipment;

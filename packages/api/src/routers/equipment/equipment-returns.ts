@@ -17,7 +17,8 @@ import { findOrThrow } from '../../lib/find-or-throw';
 import { requirePermission } from '../../middleware/rbac';
 import { tenantProcedure } from '../../middleware/tenant';
 import { loadCourierClient } from '../../services/courier/carrier-factory';
-import { dispatch } from '../../services/notification-service';
+import type { OutboxTransactionalClient } from '../../services/outbox';
+import { enqueueNotificationOutboxEvent } from '../../services/outbox';
 import { NOTIFICATION_KEYS } from './equipment-shared';
 
 // ---------------------------------------------------------------------------
@@ -165,7 +166,7 @@ export const equipmentReturnsRouter = router({
             ]);
           }
 
-          return tx.returnRequest.update({
+          const updated = await tx.returnRequest.update({
             where: { id: input.id },
             data: {
               status: 'SHIPMENT_CREATED',
@@ -180,26 +181,31 @@ export const equipmentReturnsRouter = router({
               shipment: true,
             },
           });
+
+          // Enqueue the approval notification INSIDE the tx so it commits
+          // atomically with the SHIPMENT_CREATED transition (exactly-once).
+          await enqueueNotificationOutboxEvent({
+            tx: tx as unknown as OutboxTransactionalClient,
+            event: {
+              organizationId: ctx.organizationId,
+              type: 'EQUIPMENT_RETURN_APPROVED',
+              recipientUserIds: [],
+              title: NOTIFICATION_KEYS.equipment.returnApproved.title,
+              body: NOTIFICATION_KEYS.equipment.returnApproved.body,
+              entityType: 'RETURN_REQUEST',
+              entityId: returnRequest.id,
+              metadata: {
+                contractorId: returnRequest.contractorId,
+                trackingNumber: shipmentResult.trackingNumber,
+                targetPoint: returnRequest.targetPointName,
+              },
+            },
+            dedupKey: `equipment-return-approved:${returnRequest.id}`,
+          });
+
+          return updated;
         },
       );
-
-      // Fire-and-forget: notify contractor about approved return with label info
-      void dispatch({
-        organizationId: ctx.organizationId,
-        type: 'EQUIPMENT_RETURN_APPROVED',
-        recipientUserIds: [],
-        title: NOTIFICATION_KEYS.equipment.returnApproved.title,
-        body: NOTIFICATION_KEYS.equipment.returnApproved.body,
-        entityType: 'RETURN_REQUEST',
-        entityId: returnRequest.id,
-        metadata: {
-          contractorId: returnRequest.contractorId,
-          trackingNumber: shipmentResult.trackingNumber,
-          targetPoint: returnRequest.targetPointName,
-        },
-      }).catch(_err => {
-        /* fire-and-forget */
-      });
 
       return result;
     }),
@@ -271,26 +277,29 @@ export const equipmentReturnsRouter = router({
             data: { status: 'ASSIGNED' },
           });
 
+          // Enqueue the rejection notification INSIDE the tx so it commits
+          // atomically with the REJECTED transition (exactly-once).
+          await enqueueNotificationOutboxEvent({
+            tx: tx as unknown as OutboxTransactionalClient,
+            event: {
+              organizationId: ctx.organizationId,
+              type: 'EQUIPMENT_RETURN_REJECTED',
+              recipientUserIds: [],
+              title: NOTIFICATION_KEYS.equipment.returnRejected.title,
+              body: NOTIFICATION_KEYS.equipment.returnRejected.body,
+              entityType: 'RETURN_REQUEST',
+              entityId: returnRequest.id,
+              metadata: {
+                contractorId: returnRequest.contractorId,
+                reason: input.reason,
+              },
+            },
+            dedupKey: `equipment-return-rejected:${returnRequest.id}`,
+          });
+
           return updated;
         },
       );
-
-      // Fire-and-forget: notify contractor about rejection
-      void dispatch({
-        organizationId: ctx.organizationId,
-        type: 'EQUIPMENT_RETURN_REJECTED',
-        recipientUserIds: [],
-        title: NOTIFICATION_KEYS.equipment.returnRejected.title,
-        body: NOTIFICATION_KEYS.equipment.returnRejected.body,
-        entityType: 'RETURN_REQUEST',
-        entityId: returnRequest.id,
-        metadata: {
-          contractorId: returnRequest.contractorId,
-          reason: input.reason,
-        },
-      }).catch(_err => {
-        /* fire-and-forget */
-      });
 
       return result;
     }),

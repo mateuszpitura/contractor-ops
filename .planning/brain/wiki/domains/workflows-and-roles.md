@@ -43,6 +43,7 @@ semble search "workflowRoles"
 
 ## Agent mistakes
 
+- `startRun` TASK_ASSIGNED notifications are enqueued through the outbox INSIDE the run-create tx (`enqueueNotificationOutboxEvent`, dedupKey `task-assigned:<taskRunId>`) — exactly-once. Don't reintroduce a post-commit `dispatch().catch()` loop. See [[notifications-and-reminders]]
 - Hardcoding approver users instead of role templates
 - Jira/Linear task linking is **bidirectional**: outbound pushes issue + status, and inbound webhooks write back to `WorkflowTaskRun` (`jira-webhook-handler.ts`, `linear-webhook-handler.ts` — `workflowTaskRun.update` with loop-suppress + dedup). Notion is read-only (search/picker), **not** bi-di — do not pitch or assume Notion status sync.
 - A completing OFFBOARDING run does **not** trigger deprovisioning — the access-revoke task is a marker only. See [[idp-deprovisioning]].
