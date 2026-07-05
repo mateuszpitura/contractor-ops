@@ -27,6 +27,7 @@ const LeavePage = lazy(() => import('../pages/dashboard/leave.js'));
 const TeamCalendarPage = lazy(() => import('../pages/dashboard/leave/team-calendar.js'));
 const EmployeeTimePage = lazy(() => import('../pages/dashboard/employee-time.js'));
 const EwidencjaPage = lazy(() => import('../pages/dashboard/employee-time/ewidencja.js'));
+const PayrollExportPage = lazy(() => import('../pages/dashboard/payroll-export.js'));
 const SettingsIndexPage = lazy(() => import('../pages/dashboard/settings/index.js'));
 const CalendarSettingsPage = lazy(() => import('../pages/dashboard/settings/calendar.js'));
 const EInvoicingSettingsPage = lazy(() => import('../pages/dashboard/settings/e-invoicing.js'));
@@ -106,6 +107,7 @@ export const dashboardRoutes = [
   { path: 'leave/calendar', element: page(<TeamCalendarPage />) },
   { path: 'employee-time', element: page(<EmployeeTimePage />) },
   { path: 'employee-time/ewidencja', element: page(<EwidencjaPage />) },
+  { path: 'payroll-export', element: page(<PayrollExportPage />) },
   { path: 'settings', element: page(<SettingsIndexPage />) },
   { path: 'settings/calendar', element: page(<CalendarSettingsPage />) },
   { path: 'settings/e-invoicing', element: page(<EInvoicingSettingsPage />) },

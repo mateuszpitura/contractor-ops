@@ -24,4 +24,5 @@ export const vitestProject = {
   webVite: { name: 'web-vite', groupOrder: 16 },
   idpSaga: { name: 'idp-saga', groupOrder: 17 },
   iris: { name: 'iris', groupOrder: 18 },
+  payroll: { name: 'payroll', groupOrder: 19 },
 } as const;

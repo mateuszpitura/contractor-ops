@@ -9880,5 +9880,33 @@
       "generated": "Arbeitszeitnachweis erstellt.",
       "regenerated": "Arbeitszeitnachweis neu erstellt."
     }
+  },
+  "PayrollExport": {
+    "pageTitle": "Lohnabrechnung-Export",
+    "pageDescription": "Exportieren Sie Mitarbeiterstammdaten für jeden Markt in Ihr Lohnsystem.",
+    "empty": "Es sind noch keine Lohnabrechnungsziele verfügbar.",
+    "employeeIds": {
+      "label": "Zu exportierende Mitarbeiter",
+      "placeholder": "mitarbeiter-id-1\nmitarbeiter-id-2",
+      "hint": "Geben Sie eine Mitarbeiter-ID pro Zeile ein oder trennen Sie sie durch Leerzeichen oder Kommas."
+    },
+    "targets": {
+      "heading": "Exportziele",
+      "notEnabled": "Für Ihre Organisation noch nicht aktiviert."
+    },
+    "actions": {
+      "exportCsv": "CSV exportieren",
+      "exportXml": "XML exportieren",
+      "exporting": "Wird exportiert…"
+    },
+    "toasts": {
+      "exported": "Export heruntergeladen.",
+      "exportedWithWarnings": "Export mit {count} Warnung(en) heruntergeladen."
+    },
+    "errors": {
+      "load": "Lohnabrechnungsziele konnten nicht geladen werden.",
+      "retry": "Erneut versuchen",
+      "generic": "Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut."
+    }
   }
 }

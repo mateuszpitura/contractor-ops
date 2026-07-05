@@ -9880,5 +9880,33 @@
       "generated": "Ewidencja czasu pracy wygenerowana.",
       "regenerated": "Ewidencja czasu pracy wygenerowana ponownie."
     }
+  },
+  "PayrollExport": {
+    "pageTitle": "Eksport płac",
+    "pageDescription": "Eksportuj dane kadrowe pracowników do systemu płacowego dla każdego rynku.",
+    "empty": "Brak dostępnych celów eksportu płac.",
+    "employeeIds": {
+      "label": "Pracownicy do eksportu",
+      "placeholder": "id-pracownika-1\nid-pracownika-2",
+      "hint": "Wprowadź jeden identyfikator pracownika w wierszu lub rozdziel je spacjami albo przecinkami."
+    },
+    "targets": {
+      "heading": "Cele eksportu",
+      "notEnabled": "Jeszcze nie włączone dla Twojej organizacji."
+    },
+    "actions": {
+      "exportCsv": "Eksportuj CSV",
+      "exportXml": "Eksportuj XML",
+      "exporting": "Eksportowanie…"
+    },
+    "toasts": {
+      "exported": "Pobrano eksport.",
+      "exportedWithWarnings": "Pobrano eksport z {count} ostrzeżeniami."
+    },
+    "errors": {
+      "load": "Nie udało się załadować celów eksportu płac.",
+      "retry": "Spróbuj ponownie",
+      "generic": "Coś poszło nie tak. Spróbuj ponownie."
+    }
   }
 }

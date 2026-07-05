@@ -28,7 +28,8 @@ updated: 2026-07-01
 | `compliance-policy` | `packages/compliance-policy` | Payment eligibility rules |
 | `einvoice` | `packages/einvoice` | Country e-invoice profiles |
 | `iris` | `packages/iris` | IRS IRIS e-file XML — `buildIrisXml` (1099-NEC) + `buildIris1042SXml` (sibling builder), fast-xml-parser `XMLBuilder`, masked last-4 TIN + CFSF state code; `xsdValidate` / `xsdValidate1042S` (libxmljs2, SSRF/XXE-safe). A missing pinned-checksum XSD bundle (human-action SOR checkpoint) returns a non-throwing `BUNDLE_UNAVAILABLE` report — nothing files. See [[domains/us-tax-year-end-filing]], [[integrations/irs-iris]] |
-| `integrations` | `packages/integrations` | Adapter framework |
+| `payroll` | `packages/payroll` | Per-market payroll EXPORT profiles — a structural clone of the `einvoice` registry engine (`PayrollExportProfile` + `PayrollFeed` DTO + registry + engine), NOT the payment-run bank-file factory. 10 targets: PL Symfonia (CSV+XML)/Comarch/Enova, DE DATEV Lohn ASCII (fixed 121-char + dark DATEVconnect seam)/Sage-DE, UK RTI FPS/EPS XML (non-throwing XSD seam), US ADP/Gusto/QuickBooks CSV + Gusto/QuickBooks native OAuth bridges. Pure `PayrollFeed → {buffer,ext,mime}`, golden-fixture tested, last-4 PII only. See [[domains/payroll-export]] |
+| `integrations` | `packages/integrations` | Adapter framework (+ `gusto-adapter`/`quickbooks-adapter` native payroll OAuth) |
 | `classification` | `packages/classification` | IR35 / Scheinselbständigkeit scoring |
 | `billing` | `packages/billing` | Stripe webhook handlers |
 | `logger` | `packages/logger` | Pino structured logging |

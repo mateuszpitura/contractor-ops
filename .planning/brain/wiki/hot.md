@@ -9,6 +9,12 @@ source_commit: 3126586be
 
 Discovery shortcuts for agents — not a changelog. History lives in `wiki/log.md` and git.
 
+## Payroll export adapters (Theme B, dark)
+
+- Package `@contractor-ops/payroll` — payroll EXPORT profile-registry (clone of `einvoice`, NOT the payment-run factory). `PayrollExportProfile`/`PayrollFeed`/registry/engine in `packages/payroll/src/{types,registry,engine}`; 10 targets in `profiles/*` (PL Symfonia/Comarch/Enova, DE DATEV/Sage-DE, UK RTI FPS/EPS, US ADP/Gusto/QuickBooks + native bridges).
+- Feed = `Worker`+`EmployeeProfile`+`PersonnelFile` join in `services/payroll-feed.ts` (`buildPayrollFeed`); hire/`terminatedAt` on **PersonnelFile**, national IDs last-4 only. Router `routers/workforce/payroll-export-router.ts` (`payrollExport.*`) dark in `conditionalWorkforceRouters` + per-target `payroll.*` flag. UI `apps/web-vite/src/components/payroll/`.
+- Native Gusto/QuickBooks OAuth adapters in `packages/integrations/src/adapters/{gusto,quickbooks}-adapter.ts` (flag-deferred; CSV is the shipping path). Detail: [[domains/payroll-export]].
+
 ## Public API keys / scopes / rate limits / write surface (Theme C)
 
 Full surface: [[domains/public-api-surface]]. Read = 9 entities; WRITE = 6 entities (contractor/invoice/payment/paymentRun/workflow/workflowTask). **Phase 100 passed the OWASP gate and UN-HID the 11 write routes** (now in the spec/SDK); the per-org `module.public-api` flag gate still 404s a non-granted org — the grant is a manual Unleash act. `_initiatePayoutForRun` stays deferred. Code: `apps/public-api/src/routes/*` (Hono) + `packages/api/src/routers/public-api/*` (tRPC + `write-shared.ts`), `middleware/api-key-auth.ts` (chain: apiKeyAuth → `publicApiFlagGate` → `requireTier` → `enforceApiTierQuota` → `demoReadOnly`), `services/api-key-service.ts` (HMAC + grace-aware `resolveByPrefix` + `appendApiKeyIpEvent`), `routers/core/api-key.ts` (create/rotate/ipLog/usage + `actingUserId` guard). Invariants: `actingUserId` is attribution-only (scopes authorize); every write carries a mandatory `requirePermission` scope; rotation grace default 24h/max 168h; per-tier monthly quota composes with the pre-auth burst limiter. See [[patterns/rate-limit]], [[patterns/tenant-and-audit]].

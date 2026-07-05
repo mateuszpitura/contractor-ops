@@ -155,6 +155,10 @@
     "status": "PENDING",
     "notes": "v7.0 Theme B — DATEV (DE) payroll adapter gate. Ship dark; flip APPROVED post-deploy. Engineers dev with FLAG_SIGNOFF_BYPASS=local."
   },
+  "payroll.sage-de": {
+    "status": "PENDING",
+    "notes": "v7.0 Theme B — Sage HR / Personalwirtschaft (DE) payroll adapter gate. Distinct from DATEV. Ship dark; flip APPROVED post-deploy. Engineers dev with FLAG_SIGNOFF_BYPASS=local."
+  },
   "payroll.sage-uk": {
     "status": "PENDING",
     "notes": "v7.0 Theme B — Sage (UK) payroll adapter gate. Ship dark; flip APPROVED post-deploy. Engineers dev with FLAG_SIGNOFF_BYPASS=local."

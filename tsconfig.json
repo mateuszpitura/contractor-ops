@@ -6,6 +6,7 @@
     { "path": "./packages/auth" },
     { "path": "./packages/billing" },
     { "path": "./packages/api" },
-    { "path": "./packages/ui" }
+    { "path": "./packages/ui" },
+    { "path": "./packages/payroll" }
   ]
 }

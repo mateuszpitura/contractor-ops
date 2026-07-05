@@ -10,7 +10,7 @@ import { FLAGS, getFlagSignoff, regionSchema, V7_FLAG_KEYS } from '../index';
 
 const DOT_NAMESPACED = /^[a-z0-9]+(\.[a-z0-9-]+)+$/;
 
-// The canonical 19-key cohort. Duplicated here as the test's source of truth
+// The canonical 20-key cohort. Duplicated here as the test's source of truth
 // so a drift in V7_FLAG_KEYS is caught, not masked.
 const EXPECTED_V7_KEYS = [
   'module.us-expansion',
@@ -27,6 +27,7 @@ const EXPECTED_V7_KEYS = [
   'payroll.comarch',
   'payroll.enova',
   'payroll.datev',
+  'payroll.sage-de',
   'payroll.sage-uk',
   'payroll.gusto',
   'payroll.quickbooks',
@@ -35,11 +36,11 @@ const EXPECTED_V7_KEYS = [
 ] as const;
 
 describe('V7_FLAG_KEYS cohort', () => {
-  it('exports exactly 19 keys', () => {
-    expect(V7_FLAG_KEYS).toHaveLength(19);
+  it('exports exactly 20 keys', () => {
+    expect(V7_FLAG_KEYS).toHaveLength(20);
   });
 
-  it('matches the canonical 19-key set', () => {
+  it('matches the canonical 20-key set', () => {
     expect(new Set(V7_FLAG_KEYS as readonly string[])).toEqual(new Set(EXPECTED_V7_KEYS));
   });
 

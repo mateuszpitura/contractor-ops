@@ -144,6 +144,7 @@
     "@contractor-ops/einvoice": "workspace:*",
     "@contractor-ops/idp-saga": "workspace:*",
     "@contractor-ops/logger": "workspace:*",
+    "@contractor-ops/payroll": "workspace:*",
     "@contractor-ops/secrets": "workspace:*",
     "@contractor-ops/validators": "workspace:*",
     "@infisical/sdk": "^5.0.2",

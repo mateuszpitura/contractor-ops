@@ -85,6 +85,8 @@ function startHeavyLoad(): Promise<void> {
       { EntraIdAdapter },
       { OktaAdapter },
       { GitHubAdapter },
+      { GustoAdapter },
+      { QuickBooksAdapter },
     ] = await Promise.all([
       import('./docusign-adapter.js'),
       import('./autenti-adapter.js'),
@@ -101,6 +103,8 @@ function startHeavyLoad(): Promise<void> {
       import('./entra-id-adapter.js'),
       import('./okta-adapter.js'),
       import('./github-adapter.js'),
+      import('./gusto-adapter.js'),
+      import('./quickbooks-adapter.js'),
     ]);
     registerAdapter(new DocuSignAdapter());
     registerAdapter(new AutentiAdapter());
@@ -135,6 +139,8 @@ function startHeavyLoad(): Promise<void> {
     // module graph stays out of cold-start for routes that only ever use the
     // (default) dataport adapter.
     registerCompanyRegistryAdapter(new Bir1CompanyRegistryAdapter());
+    registerAdapter(new GustoAdapter());
+    registerAdapter(new QuickBooksAdapter());
   })();
   return heavyLoadPromise;
 }
