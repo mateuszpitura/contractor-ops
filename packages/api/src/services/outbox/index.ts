@@ -65,6 +65,7 @@ import { prismaRaw } from '@contractor-ops/db';
 import { createLogger } from '@contractor-ops/logger';
 import * as Sentry from '@sentry/node';
 import { isDemoOrg } from '../../lib/demo';
+import type { NotificationEvent } from '../notification-service';
 import type { OutboxEventType } from './handlers';
 import { dispatchOutboxEvent } from './handlers';
 
@@ -246,6 +247,45 @@ export async function enqueueOutboxEvent<TPayload extends Record<string, unknown
 
   log.debug({ outboxEventId: id, organizationId, eventType, dedupKey }, 'outbox enqueue ok');
   return id;
+}
+
+/**
+ * Typed convenience wrapper for the `notification.dispatch` event.
+ *
+ * Producers enqueue a `NotificationEvent` inside their existing
+ * `$transaction` so the notification is durably scheduled iff the triggering
+ * business write commits — replacing the post-commit fire-and-forget
+ * `dispatch(...).catch(...)` shape (at-most-once, lost on a crash between
+ * commit and dispatch) with the outbox's at-least-once drain. The handler
+ * threads the OutboxEvent.id into `notification-service`, whose
+ * `(organizationId, dedupKey)` unique + Resend `Idempotency-Key` collapse a
+ * redrive to a single delivery.
+ *
+ * `dedupKey`, when supplied, dedups the ENQUEUE itself via the
+ * `(organizationId, dedupKey)` constraint on `OutboxEvent` — set it to a
+ * stable natural key of the announcing state change (e.g.
+ * `approval-request:<flowId>`) so a retried producer transaction does not
+ * enqueue the same notification twice. Aggregate fields default to the
+ * event's entity for trace correlation.
+ */
+export function enqueueNotificationOutboxEvent(input: {
+  tx: OutboxTransactionalClient;
+  event: NotificationEvent;
+  dedupKey?: string;
+}): Promise<string | null> {
+  return enqueueOutboxEvent({
+    tx: input.tx,
+    organizationId: input.event.organizationId,
+    eventType: 'notification.dispatch',
+    // NotificationEvent is a closed interface (no index signature), so it is
+    // not structurally a Record<string, unknown>; the cast is safe because
+    // the payload is serialized to jsonb and the handler re-narrows it to
+    // NotificationEvent via OutboxEventPayloadMap.
+    payload: input.event as unknown as Record<string, unknown>,
+    dedupKey: input.dedupKey,
+    aggregateType: input.event.entityType,
+    aggregateId: input.event.entityId,
+  });
 }
 
 // ---------------------------------------------------------------------------

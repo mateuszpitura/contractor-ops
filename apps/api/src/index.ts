@@ -12,6 +12,7 @@ import {
 } from '@contractor-ops/integrations/adapters/register-all';
 import { createLogger } from '@contractor-ops/logger';
 import { loadEnv } from './env.js';
+import { ensureOutboxDrainSchedule } from './lib/outbox-schedule.js';
 import { buildServer } from './server.js';
 
 const log = createLogger({ service: 'api-server' });
@@ -62,6 +63,23 @@ async function main(): Promise<void> {
 
   await app.listen({ host: env.HOST, port: env.PORT });
   log.info({ host: env.HOST, port: env.PORT }, 'api-server listening');
+
+  // Ensure the transactional-outbox drain is scheduled. Without this poll the
+  // outbox accumulates PENDING rows and no notification is ever delivered
+  // (the "built but unwired" failure mode). Create-with-fixed-id is
+  // idempotent; a failure is logged + Sentry-captured but must NOT abort boot
+  // — a QStash blip shouldn't take the API down, and the next boot re-ensures.
+  // Gated on QSTASH_TOKEN so dev/test boxes without QStash wired stay quiet.
+  if (env.QSTASH_TOKEN) {
+    void ensureOutboxDrainSchedule({ apiUrl: env.API_URL })
+      .then(scheduleId => log.info({ scheduleId }, 'outbox drain schedule ready'))
+      .catch(err => {
+        log.error({ err }, 'outbox drain schedule ensure failed');
+        Sentry.captureException(err);
+      });
+  } else {
+    log.warn('QSTASH_TOKEN unset — skipping outbox drain schedule ensure (outbox will not drain)');
+  }
 
   const shutdown = async (signal: NodeJS.Signals): Promise<void> => {
     log.info({ signal }, 'shutdown signal received');

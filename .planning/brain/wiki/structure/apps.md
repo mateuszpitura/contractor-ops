@@ -32,6 +32,10 @@ Six runnable services in `apps/`. Each has a distinct HTTP/runtime role; shared 
 - `apps/api/src/plugins/auth.ts` — `/api/auth/**`
 - `apps/api/src/plugins/webhooks.ts` — Stripe, courier, provider callbacks
 
+## Boot side-effects (api)
+
+`src/index.ts` `main()` — after `listen` — ensures the global QStash schedule that polls the transactional-outbox drain (`lib/outbox-schedule.ts` → `ensureOutboxDrainSchedule`, fixed id `outbox-drain`, `* * * * *` → `POST /outbox/_drain`). Idempotent upsert + list-assert; failure is logged + Sentry-captured, never fatal. Gated on `QSTASH_TOKEN` (dev/test skip). Unlike per-org peppol/ksef/google-workspace schedules created on `connect`, the drain is a singleton created at boot. See [[domains/notifications-and-reminders]].
+
 ## UI surface
 
 Staff + portal UI: **only** `apps/web-vite`. See [[web-vite-domains]]. CMS + landing: [[cms-and-landing]].

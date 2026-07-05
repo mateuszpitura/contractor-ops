@@ -79,6 +79,7 @@ vi.mock('../../notification-service', () => ({
 import {
   computeBackoffMs,
   drainOutboxBatch,
+  enqueueNotificationOutboxEvent,
   enqueueOutboxEvent,
   MAX_OUTBOX_ATTEMPTS,
 } from '../index';
@@ -309,6 +310,82 @@ describe('drainOutboxBatch', () => {
 
     expect(result.dispatched).toBe(0);
     expect(result.retried).toBe(1);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// enqueueNotificationOutboxEvent — exactly-once across commit → drain
+// ---------------------------------------------------------------------------
+
+describe('enqueueNotificationOutboxEvent (exactly-once)', () => {
+  const event = {
+    organizationId: 'org_1',
+    type: 'INVOICE_RECEIVED' as const,
+    recipientUserIds: ['u1'],
+    title: 't',
+    body: 'b',
+    entityType: 'INVOICE' as const,
+    entityId: 'inv_1',
+  };
+
+  it('delivers a notification exactly once when the producer commits then the process dies before dispatching', async () => {
+    // 1. Producer enqueues INSIDE its (committed) transaction. This is the
+    //    ONLY notification-related work the producer does — it never calls
+    //    dispatch itself, so a crash here loses nothing.
+    const insertedId = await enqueueNotificationOutboxEvent({
+      tx: {
+        $executeRaw: vi.fn().mockResolvedValue(1),
+        $executeRawUnsafe: mockExecuteRawUnsafe,
+      },
+      event,
+      dedupKey: 'invoice-received:inv_1',
+    });
+    expect(insertedId).toMatch(/^oxe_/);
+    // Commit happened; the process is "killed" before any dispatch.
+    expect(mockDispatchNotification).not.toHaveBeenCalled();
+
+    // 2. Recovery: the drain claims the still-PENDING row and dispatches it.
+    mockQueryRawUnsafe.mockResolvedValueOnce([
+      {
+        id: insertedId,
+        organizationId: event.organizationId,
+        eventType: 'notification.dispatch',
+        payloadJson: event,
+        attempts: 0,
+      },
+    ]);
+    const first = await drainOutboxBatch();
+    expect(first.dispatched).toBe(1);
+    expect(mockDispatchNotification).toHaveBeenCalledTimes(1);
+    // Dispatched with the OutboxEvent.id as the idempotency key.
+    expect(mockDispatchNotification).toHaveBeenCalledWith(event, { outboxEventId: insertedId });
+    const marked = mockExecuteRawUnsafe.mock.calls.some(call =>
+      String(call[0]).includes('SET "status" = \'DISPATCHED\''),
+    );
+    expect(marked).toBe(true);
+
+    // 3. A second drain finds no eligible row (the row is now DISPATCHED, so
+    //    the `status = 'PENDING'` claim predicate skips it) — the total
+    //    delivery count stays at exactly one.
+    mockQueryRawUnsafe.mockResolvedValueOnce([]);
+    const second = await drainOutboxBatch();
+    expect(second.dispatched).toBe(0);
+    expect(mockDispatchNotification).toHaveBeenCalledTimes(1);
+  });
+
+  it('dedups the enqueue itself when the producer transaction is retried (ON CONFLICT)', async () => {
+    mockExecuteRawUnsafe.mockResolvedValueOnce(0); // dedupKey collision
+
+    const id = await enqueueNotificationOutboxEvent({
+      tx: {
+        $executeRaw: vi.fn(),
+        $executeRawUnsafe: mockExecuteRawUnsafe,
+      },
+      event,
+      dedupKey: 'invoice-received:inv_1',
+    });
+
+    expect(id).toBeNull();
   });
 });
 
