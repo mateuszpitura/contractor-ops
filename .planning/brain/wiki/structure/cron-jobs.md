@@ -5,8 +5,10 @@ tags: [structure, cron, background]
 source_commit: 01c17af08
 verify_with:
   - apps/cron-worker/src/jobs/handlers/
+  - apps/cron-worker/src/jobs/handlers/reminders/wt-limit-scan.ts
+  - packages/api/src/services/wt-limit-scan.ts
   - apps/api/src/lib/qstash-route.ts
-updated: 2026-07-01
+updated: 2026-07-05
 ---
 
 # Cron worker jobs
@@ -40,6 +42,7 @@ sequenceDiagram
 | `form-1099k-tracker.ts` | informational 1099-K band scan (`module.us-expansion`; never files) | [[domains/us-tax-forms]] |
 | `classification-reassessment-triggers.ts` | IR35 triggers | [[domains/classification-ir35]] |
 | `reminders/` + `drv-clearance-expiries.ts` | DRV expiry | [[domains/classification-ir35]] |
+| `reminders/wt-limit-scan.ts` (`runWtLimitScan`) | daily working-time-limit scan — region fan-out, per-worker rolling weekly average, ONE `employee.wt_limit_breach` digest per recipient/day (region-prefixed dedup key); `module.workforce-employees` | [[domains/leave-and-time]] |
 | `token-refresh.ts` | OAuth token refresh | [[integrations/framework-core]] |
 | `org-definition-sync.ts` | org definitions | [[domains/settings-and-org-admin]] |
 | `trial-notifications.ts` | billing trial | [[domains/billing-and-feature-gates]] |
