@@ -5,6 +5,7 @@ updated: 2026-07-06
 source_commit: efb2b0794
 updated: 2026-07-05
 source_commit: 5a1d59bf2
+source_commit: 1585093b5
 ---
 
 # Hot cache
@@ -138,6 +139,10 @@ The four `sentry-scrub.ts` `beforeSend` copies (`apps/api`, `apps/public-api`, `
 ## E-sign envelope creation = intent-row idempotent
 
 `sendForSignature` (`packages/api/src/services/esign-orchestrator.ts`) creates the provider envelope BEFORE its local `$transaction`, so a rolled-back tx would orphan the process and let a retry duplicate it. DocuSign is safe on its own (`X-DocuSign-Idempotency-Key`); **Autenti's `document-processes` POSTs honor no idempotency header** — dedup lives on our side. Every send claims an `EsignEnvelopeIntent` row (unique `(organizationId, documentId, signerSetHash)`, `signerSetHash = sha256(documentId | sorted(email:role:routingOrder))`) **before** the provider call and stamps `externalEnvelopeId` back onto it **before** the tx. Retry paths: intent already has an id → return the persisted `SigningEnvelope` (via `(provider, externalEnvelopeId)` unique) or re-drive **only** persistence against the existing process (`reuseProviderEnvelope`) — never a second provider create; concurrent claim → P2002 caught → reuse the winner, or fail closed `CONFLICT` if the winner is mid-flight. Do NOT move the provider call after the tx or drop the intent claim. Detail: [[integrations/docusign-esign]].
+
+## Stripe subscription writes = uniform out-of-order watermark
+
+Every state-changing handler in `billing-webhook.ts` shares `isStaleSubscriptionEvent(stored, incoming)`: it (a) skips when the incoming event's `created` predates `Subscription.lastEventCreated` and (b) advances that watermark on write. Covers `handleSubscriptionUpdated`, `handlePaymentFailed` (→ PAST_DUE), `handleSubscriptionPaused` (→ PAUSED), `handleSubscriptionDeleted` (→ CANCELED). If you add a new subscription-status writer, it MUST do both or the guard silently stops protecting the row — the bug this closed was payment-failed/paused mutating status WITHOUT advancing the watermark, letting a stale `subscription.updated` redelivery resurrect a delinquent org back to ACTIVE. Event-id dedup (StripeEvent) does not catch distinct delayed first-deliveries (Stripe retries 3 days). Detail: [[integrations/stripe-billing]].
 
 ## OCR AI kill-switch
 

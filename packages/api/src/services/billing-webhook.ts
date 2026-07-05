@@ -131,7 +131,7 @@ export async function routeStripeEvent(
 
     case 'invoice.payment_failed': {
       const invoice = event.data.object as Stripe.Invoice;
-      await handlePaymentFailed(invoice, tx, pendingNotifications);
+      await handlePaymentFailed(invoice, tx, pendingNotifications, eventCreated);
       break;
     }
 
@@ -143,7 +143,7 @@ export async function routeStripeEvent(
 
     case 'customer.subscription.paused': {
       const subscription = event.data.object as Stripe.Subscription;
-      await handleSubscriptionPaused(subscription, tx);
+      await handleSubscriptionPaused(subscription, tx, eventCreated);
       break;
     }
 
@@ -191,6 +191,24 @@ export async function dispatchStripeWebhookNotifications(
 // ---------------------------------------------------------------------------
 // Handlers
 // ---------------------------------------------------------------------------
+
+/**
+ * Out-of-order guard shared by every subscription state-changing handler.
+ * StripeEvent id-dedup blocks exact retries, but a DISTINCT older event whose
+ * first delivery was delayed (Stripe retries for up to 3 days) can still land
+ * after a newer one already updated the row. Returns true when the incoming
+ * event predates the last one we applied — applying it would resurrect stale
+ * state (e.g. a late `subscription.updated` clobbering a newer PAST_DUE /
+ * PAUSED / CANCELED row back to ACTIVE). Every writer must both honour this
+ * guard AND advance `lastEventCreated` on write, or the watermark drifts and
+ * the guard silently stops protecting the row.
+ */
+function isStaleSubscriptionEvent(
+  lastEventCreated: Date | null | undefined,
+  eventCreated: Date,
+): boolean {
+  return Boolean(lastEventCreated) && eventCreated < (lastEventCreated as Date);
+}
 
 /**
  * Handles checkout.session.completed:
@@ -351,23 +369,19 @@ async function handleSubscriptionUpdated(
   );
 
   // Fetch the current row for (a) the tier-change notification and (b) the
-  // out-of-order guard. Event-id dedup (StripeEvent) blocks exact retries, but a
-  // distinct OLDER event whose first delivery was delayed (Stripe retries for up
-  // to 3 days) can still land after a newer one already updated the row. Applying
-  // it would resurrect stale state (e.g. ACTIVE clobbering a newer PAST_DUE /
-  // CANCELED). Skip when the incoming event predates the last one we applied.
+  // out-of-order guard (see isStaleSubscriptionEvent).
   const previousSub = await tx.subscription.findUnique({
     where: { stripeSubscriptionId: subscription.id },
     select: { tier: true, lastEventCreated: true },
   });
 
-  if (previousSub?.lastEventCreated && eventCreated < previousSub.lastEventCreated) {
+  if (isStaleSubscriptionEvent(previousSub?.lastEventCreated, eventCreated)) {
     log.info(
       {
         subscriptionId: subscription.id,
         organizationId,
         eventCreated: eventCreated.toISOString(),
-        lastEventCreated: previousSub.lastEventCreated.toISOString(),
+        lastEventCreated: previousSub?.lastEventCreated?.toISOString(),
       },
       'skipping stale out-of-order subscription event',
     );
@@ -436,6 +450,19 @@ async function handleSubscriptionDeleted(
   tx: TxClient,
   eventCreated: Date,
 ): Promise<void> {
+  const existing = await tx.subscription.findUnique({
+    where: { stripeSubscriptionId: subscription.id },
+    select: { lastEventCreated: true },
+  });
+
+  if (isStaleSubscriptionEvent(existing?.lastEventCreated, eventCreated)) {
+    log.info(
+      { subscriptionId: subscription.id },
+      'skipping stale out-of-order subscription delete',
+    );
+    return;
+  }
+
   const result = await markSubscriptionDeleted(subscription, tx);
   if (!result) {
     log.warn(
@@ -576,6 +603,7 @@ async function handlePaymentFailed(
   invoice: Stripe.Invoice,
   tx: TxClient,
   pendingNotifications: NotificationEvent[],
+  eventCreated: Date,
 ): Promise<void> {
   const subscriptionId = getSubscriptionIdFromInvoice(invoice);
   if (!subscriptionId) return;
@@ -587,9 +615,19 @@ async function handlePaymentFailed(
 
   if (!sub) return;
 
+  if (isStaleSubscriptionEvent(sub.lastEventCreated, eventCreated)) {
+    log.info(
+      { subscriptionId, organizationId: sub.organizationId },
+      'skipping stale out-of-order payment-failed event',
+    );
+    return;
+  }
+
   await tx.subscription.update({
     where: { stripeSubscriptionId: subscriptionId },
-    data: { status: 'PAST_DUE' },
+    data: { status: 'PAST_DUE', lastEventCreated: eventCreated } as Parameters<
+      typeof tx.subscription.update
+    >[0]['data'],
   });
 
   void invalidate(
@@ -682,10 +720,11 @@ async function queueBillingAdminNotification(
 async function handleSubscriptionPaused(
   subscription: Stripe.Subscription,
   tx: TxClient,
+  eventCreated: Date,
 ): Promise<void> {
   const existing = await tx.subscription.findUnique({
     where: { stripeSubscriptionId: subscription.id },
-    select: { id: true },
+    select: { id: true, lastEventCreated: true },
   });
 
   if (!existing) {
@@ -696,9 +735,19 @@ async function handleSubscriptionPaused(
     return;
   }
 
+  if (isStaleSubscriptionEvent(existing.lastEventCreated, eventCreated)) {
+    log.info(
+      { subscriptionId: subscription.id },
+      'skipping stale out-of-order subscription-paused event',
+    );
+    return;
+  }
+
   const sub = await tx.subscription.update({
     where: { stripeSubscriptionId: subscription.id },
-    data: { status: 'PAUSED' },
+    data: { status: 'PAUSED', lastEventCreated: eventCreated } as Parameters<
+      typeof tx.subscription.update
+    >[0]['data'],
   });
 
   void invalidate(

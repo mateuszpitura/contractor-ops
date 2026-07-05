@@ -289,7 +289,7 @@ describe('billing-webhook', () => {
 
       expect(tx.subscription.update).toHaveBeenCalledWith(
         expect.objectContaining({
-          data: { status: 'PAST_DUE' },
+          data: expect.objectContaining({ status: 'PAST_DUE' }),
         }),
       );
     });
@@ -767,7 +767,7 @@ describe('billing-webhook', () => {
 
       expect(tx.subscription.update).toHaveBeenCalledWith({
         where: { stripeSubscriptionId: 'sub_123' },
-        data: { status: 'PAST_DUE' },
+        data: expect.objectContaining({ status: 'PAST_DUE' }),
       });
     });
 
@@ -1068,7 +1068,7 @@ describe('billing-webhook', () => {
 
       expect(tx.subscription.update).toHaveBeenCalledWith({
         where: { stripeSubscriptionId: 'sub_123' },
-        data: { status: 'PAUSED' },
+        data: expect.objectContaining({ status: 'PAUSED' }),
       });
       expect(mockInvalidate).toHaveBeenCalled();
     });
@@ -1312,6 +1312,121 @@ describe('billing-webhook', () => {
         where: { stripeSubscriptionId: 'sub_123' },
         data: { lastEventCreated: new Date(900 * 1000) },
       });
+    });
+  });
+
+  // =========================================================================
+  // Uniform ordering guard across ALL subscription state changes
+  //
+  // payment-failed / paused / deleted must each (a) reject an event whose
+  // `created` predates the stored watermark and (b) advance the watermark on
+  // write. Otherwise a late age-gate-exempt `subscription.updated` redelivery
+  // could resurrect a delinquent/paused/cancelled org back to ACTIVE.
+  // =========================================================================
+
+  describe('subscription watermark — uniform ordering guard', () => {
+    function withCreated(
+      type: string,
+      dataObject: Record<string, unknown>,
+      createdSeconds: number,
+    ) {
+      return { ...makeEvent(type, dataObject), created: createdSeconds } as Stripe.Event;
+    }
+
+    describe('handlePaymentFailed', () => {
+      it('advances lastEventCreated to the event created on write', async () => {
+        tx.subscription.findUnique.mockResolvedValue({
+          organizationId: 'org_1',
+          lastEventCreated: null,
+          organization: { id: 'org_1', billingEmail: null },
+        });
+
+        await routeStripeEvent(withCreated('invoice.payment_failed', makeInvoice(), 200), tx);
+
+        expect(tx.subscription.update).toHaveBeenCalledWith({
+          where: { stripeSubscriptionId: 'sub_123' },
+          data: { status: 'PAST_DUE', lastEventCreated: new Date(200 * 1000) },
+        });
+      });
+
+      it('skips writing PAST_DUE when the event predates the watermark', async () => {
+        tx.subscription.findUnique.mockResolvedValue({
+          organizationId: 'org_1',
+          lastEventCreated: new Date(300 * 1000),
+          organization: { id: 'org_1', billingEmail: null },
+        });
+
+        await routeStripeEvent(withCreated('invoice.payment_failed', makeInvoice(), 100), tx);
+
+        expect(tx.subscription.update).not.toHaveBeenCalled();
+        expect(mockDispatch).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('handleSubscriptionPaused', () => {
+      it('advances lastEventCreated to the event created on write', async () => {
+        tx.subscription.findUnique.mockResolvedValue({ id: 'db_sub_1', lastEventCreated: null });
+        tx.subscription.update.mockResolvedValue({ organizationId: 'org_1' });
+
+        await routeStripeEvent(
+          withCreated('customer.subscription.paused', makeSubscription(), 250),
+          tx,
+        );
+
+        expect(tx.subscription.update).toHaveBeenCalledWith({
+          where: { stripeSubscriptionId: 'sub_123' },
+          data: { status: 'PAUSED', lastEventCreated: new Date(250 * 1000) },
+        });
+      });
+
+      it('skips writing PAUSED when the event predates the watermark', async () => {
+        tx.subscription.findUnique.mockResolvedValue({
+          id: 'db_sub_1',
+          lastEventCreated: new Date(600 * 1000),
+        });
+
+        await routeStripeEvent(
+          withCreated('customer.subscription.paused', makeSubscription(), 100),
+          tx,
+        );
+
+        expect(tx.subscription.update).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('handleSubscriptionDeleted', () => {
+      it('skips a stale delete whose created predates the watermark', async () => {
+        tx.subscription.findUnique.mockResolvedValue({
+          id: 'db_sub_1',
+          organizationId: 'org_1',
+          lastEventCreated: new Date(900 * 1000),
+        });
+
+        await routeStripeEvent(
+          withCreated('customer.subscription.deleted', makeSubscription(), 100),
+          tx,
+        );
+
+        expect(tx.subscription.update).not.toHaveBeenCalled();
+      });
+    });
+
+    it('a stale subscription.updated cannot resurrect ACTIVE once a newer state advanced the watermark', async () => {
+      // Watermark already advanced (e.g. by a payment-failed / paused / delete
+      // at created=500). A late `subscription.updated` created=400 carrying an
+      // ACTIVE status must be a no-op.
+      tx.subscription.findUnique.mockResolvedValue({
+        tier: 'PRO',
+        lastEventCreated: new Date(500 * 1000),
+      });
+      mockResolveTierFromPriceId.mockReturnValue('PRO');
+
+      await routeStripeEvent(
+        withCreated('customer.subscription.updated', makeSubscription({ status: 'active' }), 400),
+        tx,
+      );
+
+      expect(tx.subscription.upsert).not.toHaveBeenCalled();
     });
   });
 
