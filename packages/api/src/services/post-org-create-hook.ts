@@ -6,6 +6,7 @@
 // if a seed row is somehow missing.
 
 import type { PrismaClient } from '@contractor-ops/db';
+import { upsertEmployeeMarketTemplates } from '@contractor-ops/employee-templates';
 import { createLogger } from '@contractor-ops/logger';
 import { upsertSeedTemplates } from '@contractor-ops/offboarding-templates';
 
@@ -17,7 +18,8 @@ export async function runPostOrganizationCreateHooks(
 ): Promise<void> {
   try {
     await upsertSeedTemplates(prisma, organizationId);
-    logger.info({ organizationId }, 'offboarding seed templates upserted');
+    await upsertEmployeeMarketTemplates(prisma, organizationId);
+    logger.info({ organizationId }, 'offboarding + employee market seed templates upserted');
   } catch (err) {
     logger.error(
       { organizationId, err },
