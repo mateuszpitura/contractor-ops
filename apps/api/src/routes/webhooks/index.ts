@@ -35,6 +35,7 @@ import { registerKsefSyncRoute } from '../ksef.js';
 import { registerLateInterestRenderRoute } from '../late-interest.js';
 import { registerOcrProcessRoute } from '../ocr.js';
 import { registerOutboxDrainRoute } from '../outbox.js';
+import { registerOutboundWebhookDeliverRoute } from '../webhooks-outbound.js';
 import {
   registerPeppolInboundRoute,
   registerPeppolOutboundRoute,
@@ -80,6 +81,7 @@ const webhookPluginImpl: FastifyPluginAsync = async (app: FastifyInstance) => {
   registerPeppolOutboundRoute(app);
   registerKsefSyncRoute(app);
   registerOutboxDrainRoute(app);
+  registerOutboundWebhookDeliverRoute(app);
   registerOcrProcessRoute(app);
   registerExportsProcessRoute(app);
   registerGoogleWorkspaceSyncRoute(app);

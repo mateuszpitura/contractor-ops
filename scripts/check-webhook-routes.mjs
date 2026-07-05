@@ -125,6 +125,11 @@ const EXPECTED_ROUTES = {
     publisher: 'qstash',
     signature: 'guardQStashRequest',
   },
+  'POST /webhooks-outbound/_deliver': {
+    provider: 'qstash',
+    publisher: 'qstash',
+    signature: 'guardQStashRequest',
+  },
   'POST /ocr/_process': {
     provider: 'qstash',
     publisher: 'qstash',

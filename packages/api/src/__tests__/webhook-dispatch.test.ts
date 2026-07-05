@@ -60,14 +60,11 @@ beforeEach(() => {
   vi.clearAllMocks();
 });
 
-describe('fan-out poison isolation (INTEG-WEBHOOK-03) — RED until 100-06', () => {
+describe('fan-out poison isolation (INTEG-WEBHOOK-03)', () => {
   it('a subscription whose attempt-create throws does not stall its siblings', async () => {
-    const mod = (await import('../services/outbox/handlers')) as Record<string, unknown>;
-    const registry = mod.outboxHandlerRegistry as
-      | Record<string, (payload: unknown, ctx: unknown) => Promise<void>>
-      | undefined;
-    const handler = registry?.['integration.webhook.publish'];
-    expect(handler).toBeDefined();
+    const { handleWebhookPublish } = (await import('../services/webhooks/fan-out')) as {
+      handleWebhookPublish: (payload: unknown, ctx: unknown) => Promise<void>;
+    };
 
     prismaMock.webhookSubscription.findMany.mockResolvedValue([
       { id: 'whsub_poison', url: 'https://a.example.com', includePii: false, enabled: true },
@@ -77,7 +74,7 @@ describe('fan-out poison isolation (INTEG-WEBHOOK-03) — RED until 100-06', () 
       .mockRejectedValueOnce(new Error('poison row'))
       .mockResolvedValueOnce({ id: 'whatt_ok' });
 
-    await handler?.(
+    await handleWebhookPublish(
       { eventType: 'invoice.paid', data: { invoiceId: 'inv_1' } },
       { outboxEventId: 'oxe_1', organizationId: 'org_1' },
     );

@@ -207,6 +207,17 @@ const employeePiiEncryptionSchema = z.object({
   EMPLOYEE_PII_ENCRYPTION_KEY: hex32,
 });
 
+// ── Outbound webhook secret encryption ──────────────────────────────────────
+// Recoverable (NOT one-way) per-subscription HMAC secret, encrypted at rest with
+// its own hex-32 key so it has an independent blast radius. Optional in-schema so
+// local dev without outbound webhooks boots; the secret-store throws a loud error
+// if a create/dispatch path runs without it. Set before enabling
+// `module.outbound-webhooks`.
+
+const webhookEncryptionSchema = z.object({
+  WEBHOOK_SECRET_ENCRYPTION_KEY: hex32.optional(),
+});
+
 // ── Cloudflare Turnstile (signup bot protection) ───────────────────────────
 // Optional in development so contributors don't need a Cloudflare app to run
 // the app locally; the signup `before` hook short-circuits the verification
@@ -403,6 +414,7 @@ export const serverEnvSchema = coreSchema
   .merge(bankEncryptionSchema)
   .merge(usFieldsSchema)
   .merge(employeePiiEncryptionSchema)
+  .merge(webhookEncryptionSchema)
   .merge(ocrSchema)
   .merge(qstashSchema)
   .merge(cronSchema)
