@@ -4,4 +4,5 @@
 
 export { portalRouter } from './portal';
 export { portalEmployeeRouter } from './portal-employee-router';
+export { portalManagerRouter } from './portal-manager-router';
 export { portalTimeRouter } from './portal-time';

@@ -6008,6 +6008,142 @@
     }
   },
   "Portal": {
+    "employee": {
+      "dashboard": {
+        "title": "My workspace",
+        "subtitle": "Your leave, time, documents, and pay in one place.",
+        "availableLeave": "Available leave",
+        "pendingRequests": "Pending requests",
+        "recentEntries": "Recent time entries",
+        "unavailableTitle": "Not available",
+        "unavailable": "The employee portal isn't enabled for your organization yet.",
+        "errorTitle": "Something went wrong",
+        "error": "We couldn't load your workspace. Try again in a moment."
+      },
+      "leave": {
+        "title": "Leave",
+        "description": "Check your balance and request time off.",
+        "requestButton": "Request time off",
+        "balancesHeading": "Balances",
+        "noBalances": "No leave balances yet.",
+        "available": "Available",
+        "requestsHeading": "My requests",
+        "noRequests": "You haven't requested any time off yet.",
+        "unavailableTitle": "Not available",
+        "unavailable": "Leave isn't available in your portal yet.",
+        "errorTitle": "Something went wrong",
+        "error": "We couldn't load your leave. Try again in a moment.",
+        "status": {
+          "PENDING": "Pending",
+          "APPROVED": "Approved",
+          "REJECTED": "Rejected",
+          "CANCELLED": "Cancelled"
+        },
+        "form": {
+          "title": "Request time off",
+          "description": "Pick a leave type and the dates you'll be away.",
+          "leaveType": "Leave type",
+          "leaveTypePlaceholder": "Select leave",
+          "leaveTypeOption": "{available} available",
+          "leaveTypeRequired": "Choose a leave type.",
+          "startDate": "Start date",
+          "endDate": "End date",
+          "endAfterStart": "End date must be on or after the start date.",
+          "hours": "Hours",
+          "hoursRequired": "Enter how many hours you need.",
+          "note": "Note",
+          "notePlaceholder": "Optional note for your manager",
+          "cancel": "Cancel",
+          "submit": "Send request",
+          "successToast": "Time-off request sent.",
+          "errorToast": "We couldn't send your request. Try again."
+        }
+      },
+      "time": {
+        "title": "Time",
+        "description": "Your recorded hours and working-time records.",
+        "recentHeading": "Recent entries",
+        "noTime": "No time recorded yet.",
+        "ewidencjaHeading": "Working-time records",
+        "noEwidencja": "No working-time records yet.",
+        "version": "Version {version}",
+        "unavailableTitle": "Not available",
+        "unavailable": "Time isn't available in your portal yet.",
+        "errorTitle": "Something went wrong",
+        "error": "We couldn't load your time. Try again in a moment."
+      },
+      "documents": {
+        "title": "Documents",
+        "description": "Your personnel file documents.",
+        "section": {
+          "SECTION_A": "Recruitment",
+          "SECTION_B": "Employment",
+          "SECTION_C": "Pay",
+          "SECTION_D": "Records"
+        },
+        "unnamedDocument": "Document",
+        "downloadAria": "Download {name}",
+        "downloadError": "We couldn't open that document. Try again.",
+        "emptyTitle": "No documents",
+        "empty": "There are no documents in your file yet.",
+        "unavailableTitle": "Not available",
+        "unavailable": "Documents aren't available in your portal yet.",
+        "errorTitle": "Something went wrong",
+        "error": "We couldn't load your documents. Try again in a moment."
+      },
+      "pay": {
+        "title": "Pay",
+        "subtitle": "Where to find your pay stubs.",
+        "unavailableTitle": "Pay stubs live in payroll",
+        "externalPayroll": "Your pay stubs are issued by your payroll system. Ask your HR team for access."
+      },
+      "team": {
+        "title": "My team",
+        "subtitle": "Your direct reports and their pending requests.",
+        "overview": {
+          "title": "Team",
+          "description": "Your direct reports.",
+          "unnamedReport": "Team member",
+          "pendingLeave": "{count} pending",
+          "forbiddenTitle": "Not a manager",
+          "forbidden": "You don't have any direct reports yet.",
+          "errorTitle": "Something went wrong",
+          "error": "We couldn't load your team. Try again in a moment.",
+          "emptyTitle": "No reports",
+          "empty": "You don't have any direct reports yet."
+        },
+        "approvals": {
+          "title": "Approvals",
+          "description": "Review and act on your reports' time-off requests.",
+          "unnamedReport": "Team member",
+          "approve": "Approve",
+          "approvedToast": "Request approved.",
+          "rejectedToast": "Request rejected.",
+          "actionError": "We couldn't complete that. Try again.",
+          "forbiddenTitle": "Not a manager",
+          "forbidden": "You don't have any direct reports yet.",
+          "errorTitle": "Something went wrong",
+          "error": "We couldn't load approvals. Try again in a moment.",
+          "emptyTitle": "All caught up",
+          "empty": "There are no pending requests to review.",
+          "status": {
+            "PENDING": "Pending",
+            "APPROVED": "Approved",
+            "REJECTED": "Rejected",
+            "CANCELLED": "Cancelled"
+          },
+          "reject": {
+            "action": "Reject",
+            "title": "Reject request",
+            "description": "Reject {name}'s time-off request?",
+            "reason": "Reason",
+            "reasonPlaceholder": "Optional note for your report",
+            "cancel": "Cancel",
+            "confirm": "Reject request"
+          }
+        }
+      }
+    },
     "nav": {
       "overview": "Overview",
       "contracts": "Contracts",

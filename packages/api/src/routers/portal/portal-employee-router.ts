@@ -27,6 +27,7 @@ import type { TxClient } from '../../services/approval-engine';
 import { createApprovalFlow, routeToLeaveChain } from '../../services/approval-engine';
 import { writeAuditLog } from '../../services/audit-writer';
 import { computeLeaveBalance } from '../../services/leave-balance';
+import { portalEmployeeAktaProcedures } from './portal-employee-akta';
 
 /**
  * Strips the Prisma class prototype so inferred router output types never
@@ -275,4 +276,6 @@ export const portalEmployeeRouter = router({
 
       return plain(result);
     }),
+
+  ...portalEmployeeAktaProcedures,
 });

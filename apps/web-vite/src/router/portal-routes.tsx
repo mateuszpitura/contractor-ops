@@ -23,6 +23,13 @@ const PortalComplianceUploadReplacementPage = lazy(
   () => import('../pages/portal/compliance-upload-replacement.js'),
 );
 const PortalTaxFormPage = lazy(() => import('../pages/portal/tax-form-page.js'));
+const EmployeePortalPage = lazy(() => import('../pages/portal/employee/index.js'));
+const EmployeeLeavePage = lazy(() => import('../pages/portal/employee/leave.js'));
+const EmployeeTimePage = lazy(() => import('../pages/portal/employee/time.js'));
+const EmployeeDocumentsPage = lazy(() => import('../pages/portal/employee/documents.js'));
+const EmployeePayPage = lazy(() => import('../pages/portal/employee/pay.js'));
+const ManagerTeamPage = lazy(() => import('../pages/portal/employee/team/index.js'));
+const ManagerApprovalsPage = lazy(() => import('../pages/portal/employee/team/approvals.js'));
 
 function page(element: ReactNode) {
   return <Suspense fallback={null}>{element}</Suspense>;
@@ -47,4 +54,11 @@ export const portalRoutes = [
     element: page(<PortalComplianceUploadReplacementPage />),
   },
   { path: 'portal/tax-form', element: page(<PortalTaxFormPage />) },
+  { path: 'portal/employee', element: page(<EmployeePortalPage />) },
+  { path: 'portal/employee/leave', element: page(<EmployeeLeavePage />) },
+  { path: 'portal/employee/time', element: page(<EmployeeTimePage />) },
+  { path: 'portal/employee/documents', element: page(<EmployeeDocumentsPage />) },
+  { path: 'portal/employee/pay', element: page(<EmployeePayPage />) },
+  { path: 'portal/employee/team', element: page(<ManagerTeamPage />) },
+  { path: 'portal/employee/team/approvals', element: page(<ManagerApprovalsPage />) },
 ];

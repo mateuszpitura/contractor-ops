@@ -133,6 +133,7 @@ const {
 
 vi.mock('../../services/portal-magic-link', () => ({
   findContractorsByEmail: mockFindContractorsByEmail,
+  findEmployeesByEmail: () => Promise.resolve([]),
   createMagicLinkToken: mockCreateMagicLinkToken,
   verifyMagicLinkToken: mockVerifyMagicLinkToken,
   sendPortalMagicLink: mockSendPortalMagicLink,

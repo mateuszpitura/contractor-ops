@@ -6009,6 +6009,142 @@
     }
   },
   "Portal": {
+    "employee": {
+      "dashboard": {
+        "title": "مساحة عملي",
+        "subtitle": "إجازتك ووقتك ومستنداتك وراتبك في مكان واحد.",
+        "availableLeave": "الإجازة المتاحة",
+        "pendingRequests": "الطلبات المعلقة",
+        "recentEntries": "أحدث إدخالات الوقت",
+        "unavailableTitle": "غير متاح",
+        "unavailable": "لم يتم تفعيل بوابة الموظف لمؤسستك بعد.",
+        "errorTitle": "حدث خطأ ما",
+        "error": "تعذّر تحميل مساحة عملك. حاول مرة أخرى بعد قليل."
+      },
+      "leave": {
+        "title": "الإجازة",
+        "description": "تحقق من رصيدك واطلب إجازة.",
+        "requestButton": "طلب إجازة",
+        "balancesHeading": "الأرصدة",
+        "noBalances": "لا توجد أرصدة إجازات بعد.",
+        "available": "متاح",
+        "requestsHeading": "طلباتي",
+        "noRequests": "لم تطلب أي إجازة بعد.",
+        "unavailableTitle": "غير متاح",
+        "unavailable": "الإجازة غير متاحة في بوابتك بعد.",
+        "errorTitle": "حدث خطأ ما",
+        "error": "تعذّر تحميل إجازتك. حاول مرة أخرى بعد قليل.",
+        "status": {
+          "PENDING": "قيد الانتظار",
+          "APPROVED": "معتمد",
+          "REJECTED": "مرفوض",
+          "CANCELLED": "ملغى"
+        },
+        "form": {
+          "title": "طلب إجازة",
+          "description": "اختر نوع الإجازة والأيام التي ستغيب فيها.",
+          "leaveType": "نوع الإجازة",
+          "leaveTypePlaceholder": "اختر الإجازة",
+          "leaveTypeOption": "{available} متاح",
+          "leaveTypeRequired": "اختر نوع الإجازة.",
+          "startDate": "تاريخ البدء",
+          "endDate": "تاريخ الانتهاء",
+          "endAfterStart": "يجب أن يكون تاريخ الانتهاء في تاريخ البدء أو بعده.",
+          "hours": "الساعات",
+          "hoursRequired": "أدخل عدد الساعات التي تحتاجها.",
+          "note": "ملاحظة",
+          "notePlaceholder": "ملاحظة اختيارية لمديرك",
+          "cancel": "إلغاء",
+          "submit": "إرسال الطلب",
+          "successToast": "تم إرسال طلب الإجازة.",
+          "errorToast": "تعذّر إرسال طلبك. حاول مرة أخرى."
+        }
+      },
+      "time": {
+        "title": "الوقت",
+        "description": "ساعاتك المسجلة وسجلات وقت العمل.",
+        "recentHeading": "أحدث الإدخالات",
+        "noTime": "لم يُسجّل أي وقت بعد.",
+        "ewidencjaHeading": "سجلات وقت العمل",
+        "noEwidencja": "لا توجد سجلات وقت عمل بعد.",
+        "version": "الإصدار {version}",
+        "unavailableTitle": "غير متاح",
+        "unavailable": "الوقت غير متاح في بوابتك بعد.",
+        "errorTitle": "حدث خطأ ما",
+        "error": "تعذّر تحميل وقتك. حاول مرة أخرى بعد قليل."
+      },
+      "documents": {
+        "title": "المستندات",
+        "description": "مستندات ملفك الشخصي.",
+        "section": {
+          "SECTION_A": "التوظيف",
+          "SECTION_B": "التعيين",
+          "SECTION_C": "الأجور",
+          "SECTION_D": "السجلات"
+        },
+        "unnamedDocument": "مستند",
+        "downloadAria": "تنزيل {name}",
+        "downloadError": "تعذّر فتح هذا المستند. حاول مرة أخرى.",
+        "emptyTitle": "لا توجد مستندات",
+        "empty": "لا توجد مستندات في ملفك بعد.",
+        "unavailableTitle": "غير متاح",
+        "unavailable": "المستندات غير متاحة في بوابتك بعد.",
+        "errorTitle": "حدث خطأ ما",
+        "error": "تعذّر تحميل مستنداتك. حاول مرة أخرى بعد قليل."
+      },
+      "pay": {
+        "title": "الراتب",
+        "subtitle": "أين تجد كشوف رواتبك.",
+        "unavailableTitle": "كشوف الرواتب في نظام الرواتب",
+        "externalPayroll": "تصدر كشوف رواتبك من نظام الرواتب. اطلب الوصول من فريق الموارد البشرية."
+      },
+      "team": {
+        "title": "فريقي",
+        "subtitle": "مرؤوسوك المباشرون وطلباتهم المعلقة.",
+        "overview": {
+          "title": "الفريق",
+          "description": "مرؤوسوك المباشرون.",
+          "unnamedReport": "عضو الفريق",
+          "pendingLeave": "{count} معلق",
+          "forbiddenTitle": "لست مديرًا",
+          "forbidden": "ليس لديك مرؤوسون مباشرون بعد.",
+          "errorTitle": "حدث خطأ ما",
+          "error": "تعذّر تحميل فريقك. حاول مرة أخرى بعد قليل.",
+          "emptyTitle": "لا يوجد مرؤوسون",
+          "empty": "ليس لديك مرؤوسون مباشرون بعد."
+        },
+        "approvals": {
+          "title": "الموافقات",
+          "description": "راجع طلبات إجازات مرؤوسيك واتخذ إجراءً بشأنها.",
+          "unnamedReport": "عضو الفريق",
+          "approve": "موافقة",
+          "approvedToast": "تمت الموافقة على الطلب.",
+          "rejectedToast": "تم رفض الطلب.",
+          "actionError": "تعذّر إتمام ذلك. حاول مرة أخرى.",
+          "forbiddenTitle": "لست مديرًا",
+          "forbidden": "ليس لديك مرؤوسون مباشرون بعد.",
+          "errorTitle": "حدث خطأ ما",
+          "error": "تعذّر تحميل الموافقات. حاول مرة أخرى بعد قليل.",
+          "emptyTitle": "كل شيء منجز",
+          "empty": "لا توجد طلبات معلقة للمراجعة.",
+          "status": {
+            "PENDING": "قيد الانتظار",
+            "APPROVED": "معتمد",
+            "REJECTED": "مرفوض",
+            "CANCELLED": "ملغى"
+          },
+          "reject": {
+            "action": "رفض",
+            "title": "رفض الطلب",
+            "description": "رفض طلب إجازة {name}؟",
+            "reason": "السبب",
+            "reasonPlaceholder": "ملاحظة اختيارية لمرؤوسك",
+            "cancel": "إلغاء",
+            "confirm": "رفض الطلب"
+          }
+        }
+      }
+    },
     "nav": {
       "overview": "نظرة عامة",
       "contracts": "العقود",

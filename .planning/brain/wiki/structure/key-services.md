@@ -53,6 +53,7 @@ flowchart TB
 | API tier limits | `lib/api-tier-limits.ts` | [[patterns/rate-limit]] — single source: monthly request quota (Starter 1k/Pro 10k/Ent ∞) + webhook-sub caps (defined; consumed in Phase 100) |
 | API quota counter | `services/api-quota-counter.ts` | [[patterns/rate-limit]] — Upstash calendar-month counter `api-quota:{org}:{YYYY-MM}` (+ month-end TTL); in-memory non-prod fallback; `incrementMonthlyRequestCount` / read-only `getMonthlyRequestCount` |
 | Portal session | `services/portal-session.ts` | [[patterns/portal-auth]] |
+| Portal manager reports scope | `services/portal-reports.ts` | [[domains/employee-portal]] — `resolveDirectReports` / `assertIsDirectReport`: the employee-portal manager reporting-line scope, resolved SERVER-SIDE from `EmployeeProfile.managerWorkerId = ctx.workerId` (same org; the reference is deliberately not an FK so `organizationId` is enforced here). A manager may only read/act on their own direct reports; `assertIsDirectReport` throws FORBIDDEN before any state change |
 | Notification dispatch | `services/notification-service.ts` | [[domains/notifications-and-reminders]] |
 | E-sign orchestrator | `services/esign-orchestrator.ts` | [[integrations/docusign-esign]] |
 | OCR extraction | `services/ocr-extraction.ts` | [[domains/documents-and-ocr]] — `processOcrExtraction` gated by `killswitch.ai-invoice-parser`; `resolveOrgRegion(orgId)` reads `Organization.dataRegion` (default EU) to pick the regional Unleash client (QStash callback carries no tenant ctx) |

@@ -6009,6 +6009,142 @@
     }
   },
   "Portal": {
+    "employee": {
+      "dashboard": {
+        "title": "Mój obszar roboczy",
+        "subtitle": "Twój urlop, czas pracy, dokumenty i wynagrodzenie w jednym miejscu.",
+        "availableLeave": "Dostępny urlop",
+        "pendingRequests": "Oczekujące wnioski",
+        "recentEntries": "Ostatnie wpisy czasu",
+        "unavailableTitle": "Niedostępne",
+        "unavailable": "Portal pracownika nie jest jeszcze włączony dla Twojej organizacji.",
+        "errorTitle": "Coś poszło nie tak",
+        "error": "Nie udało się załadować obszaru roboczego. Spróbuj ponownie za chwilę."
+      },
+      "leave": {
+        "title": "Urlop",
+        "description": "Sprawdź saldo i złóż wniosek o wolne.",
+        "requestButton": "Złóż wniosek o wolne",
+        "balancesHeading": "Salda",
+        "noBalances": "Brak sald urlopowych.",
+        "available": "Dostępne",
+        "requestsHeading": "Moje wnioski",
+        "noRequests": "Nie złożono jeszcze wniosków o wolne.",
+        "unavailableTitle": "Niedostępne",
+        "unavailable": "Urlop nie jest jeszcze dostępny w Twoim portalu.",
+        "errorTitle": "Coś poszło nie tak",
+        "error": "Nie udało się załadować urlopu. Spróbuj ponownie za chwilę.",
+        "status": {
+          "PENDING": "Oczekujący",
+          "APPROVED": "Zatwierdzony",
+          "REJECTED": "Odrzucony",
+          "CANCELLED": "Anulowany"
+        },
+        "form": {
+          "title": "Wniosek o wolne",
+          "description": "Wybierz rodzaj urlopu i dni nieobecności.",
+          "leaveType": "Rodzaj urlopu",
+          "leaveTypePlaceholder": "Wybierz urlop",
+          "leaveTypeOption": "dostępne: {available}",
+          "leaveTypeRequired": "Wybierz rodzaj urlopu.",
+          "startDate": "Data początkowa",
+          "endDate": "Data końcowa",
+          "endAfterStart": "Data końcowa musi być taka sama lub późniejsza niż początkowa.",
+          "hours": "Godziny",
+          "hoursRequired": "Podaj, ile godzin potrzebujesz.",
+          "note": "Notatka",
+          "notePlaceholder": "Opcjonalna notatka dla przełożonego",
+          "cancel": "Anuluj",
+          "submit": "Wyślij wniosek",
+          "successToast": "Wniosek o wolne wysłany.",
+          "errorToast": "Nie udało się wysłać wniosku. Spróbuj ponownie."
+        }
+      },
+      "time": {
+        "title": "Czas pracy",
+        "description": "Twoje zarejestrowane godziny i ewidencja czasu pracy.",
+        "recentHeading": "Ostatnie wpisy",
+        "noTime": "Brak zarejestrowanego czasu.",
+        "ewidencjaHeading": "Ewidencja czasu pracy",
+        "noEwidencja": "Brak ewidencji czasu pracy.",
+        "version": "Wersja {version}",
+        "unavailableTitle": "Niedostępne",
+        "unavailable": "Czas pracy nie jest jeszcze dostępny w Twoim portalu.",
+        "errorTitle": "Coś poszło nie tak",
+        "error": "Nie udało się załadować czasu pracy. Spróbuj ponownie za chwilę."
+      },
+      "documents": {
+        "title": "Dokumenty",
+        "description": "Dokumenty Twoich akt osobowych.",
+        "section": {
+          "SECTION_A": "Rekrutacja",
+          "SECTION_B": "Zatrudnienie",
+          "SECTION_C": "Wynagrodzenie",
+          "SECTION_D": "Dokumentacja"
+        },
+        "unnamedDocument": "Dokument",
+        "downloadAria": "Pobierz {name}",
+        "downloadError": "Nie udało się otworzyć dokumentu. Spróbuj ponownie.",
+        "emptyTitle": "Brak dokumentów",
+        "empty": "W Twoich aktach nie ma jeszcze dokumentów.",
+        "unavailableTitle": "Niedostępne",
+        "unavailable": "Dokumenty nie są jeszcze dostępne w Twoim portalu.",
+        "errorTitle": "Coś poszło nie tak",
+        "error": "Nie udało się załadować dokumentów. Spróbuj ponownie za chwilę."
+      },
+      "pay": {
+        "title": "Wynagrodzenie",
+        "subtitle": "Gdzie znajdziesz swoje paski wypłat.",
+        "unavailableTitle": "Paski wypłat są w systemie płacowym",
+        "externalPayroll": "Twoje paski wypłat są wystawiane przez system płacowy. Poproś zespół HR o dostęp."
+      },
+      "team": {
+        "title": "Mój zespół",
+        "subtitle": "Twoi podwładni i ich oczekujące wnioski.",
+        "overview": {
+          "title": "Zespół",
+          "description": "Twoi bezpośredni podwładni.",
+          "unnamedReport": "Członek zespołu",
+          "pendingLeave": "oczekujące: {count}",
+          "forbiddenTitle": "Brak uprawnień kierownika",
+          "forbidden": "Nie masz jeszcze bezpośrednich podwładnych.",
+          "errorTitle": "Coś poszło nie tak",
+          "error": "Nie udało się załadować zespołu. Spróbuj ponownie za chwilę.",
+          "emptyTitle": "Brak podwładnych",
+          "empty": "Nie masz jeszcze bezpośrednich podwładnych."
+        },
+        "approvals": {
+          "title": "Zatwierdzenia",
+          "description": "Przeglądaj i rozpatruj wnioski urlopowe podwładnych.",
+          "unnamedReport": "Członek zespołu",
+          "approve": "Zatwierdź",
+          "approvedToast": "Wniosek zatwierdzony.",
+          "rejectedToast": "Wniosek odrzucony.",
+          "actionError": "Nie udało się wykonać akcji. Spróbuj ponownie.",
+          "forbiddenTitle": "Brak uprawnień kierownika",
+          "forbidden": "Nie masz jeszcze bezpośrednich podwładnych.",
+          "errorTitle": "Coś poszło nie tak",
+          "error": "Nie udało się załadować zatwierdzeń. Spróbuj ponownie za chwilę.",
+          "emptyTitle": "Wszystko załatwione",
+          "empty": "Brak oczekujących wniosków do rozpatrzenia.",
+          "status": {
+            "PENDING": "Oczekujący",
+            "APPROVED": "Zatwierdzony",
+            "REJECTED": "Odrzucony",
+            "CANCELLED": "Anulowany"
+          },
+          "reject": {
+            "action": "Odrzuć",
+            "title": "Odrzuć wniosek",
+            "description": "Odrzucić wniosek urlopowy pracownika {name}?",
+            "reason": "Powód",
+            "reasonPlaceholder": "Opcjonalna notatka dla podwładnego",
+            "cancel": "Anuluj",
+            "confirm": "Odrzuć wniosek"
+          }
+        }
+      }
+    },
     "nav": {
       "overview": "Przegląd",
       "contracts": "Umowy",

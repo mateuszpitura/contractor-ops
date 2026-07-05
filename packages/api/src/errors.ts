@@ -149,6 +149,7 @@ export const PORTAL_CHANGE_REQUEST_NOT_FOUND = 'portalChangeRequestNotFound';
 export const PORTAL_BILLING_PROFILE_NOT_FOUND = 'portalBillingProfileNotFound';
 export const EMPLOYEE_PORTAL_DISABLED = 'employeePortalDisabled';
 export const PORTAL_NOT_A_MANAGER = 'portalNotAManager';
+export const PORTAL_NOT_A_DIRECT_REPORT = 'portalNotADirectReport';
 
 // ─── Integration ─────────────────────────────────────────────────
 export const INTEGRATION_NOT_FOUND = 'integrationNotFound';
@@ -374,6 +375,7 @@ export const LEAVE_BLACKOUT_OVERLAP = 'leaveBlackoutOverlap';
 export const LEAVE_INSUFFICIENT_BALANCE = 'leaveInsufficientBalance';
 export const LEAVE_NO_CHAIN_CONFIGURED = 'leaveNoChainConfigured';
 export const LEAVE_REQUEST_NOT_FOUND = 'leaveRequestNotFound';
+export const LEAVE_REQUEST_NOT_PENDING = 'leaveRequestNotPending';
 export const BLACKOUT_PERIOD_NOT_FOUND = 'blackoutPeriodNotFound';
 export const EMPLOYEE_WORKER_NOT_FOUND = 'employeeWorkerNotFound';
 export const PUBLIC_API_DISABLED = 'publicApiDisabled';
