@@ -13,6 +13,8 @@ const { mockPrisma } = vi.hoisted(() => {
       findFirst: vi.fn(),
     },
     zatcaInvoiceChain: {
+      findUnique: vi.fn().mockResolvedValue(null),
+      findMany: vi.fn().mockResolvedValue([]),
       update: vi.fn().mockResolvedValue({}),
     },
     $transaction: vi.fn(),
@@ -111,7 +113,12 @@ vi.mock('../zatca-hash-chain', () => ({
   recordChainEntry: vi.fn().mockResolvedValue({ id: 'chain_1' }),
 }));
 
-import { handleZatcaSubmissionJob, queueZatcaSubmission, submitToZatca } from '../zatca-submission';
+import {
+  handleZatcaSubmissionJob,
+  queueZatcaSubmission,
+  reconcilePendingZatcaChains,
+  submitToZatca,
+} from '../zatca-submission';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -156,6 +163,8 @@ function baseInvoice(overrides: Record<string, unknown> = {}) {
 /** Restore default mock return values after clearAllMocks resets them. */
 function restoreDefaults() {
   mockSecretStore.get.mockResolvedValue('mock-secret');
+  mockPrisma.zatcaInvoiceChain.findUnique.mockResolvedValue(null);
+  mockPrisma.zatcaInvoiceChain.findMany.mockResolvedValue([]);
   mockPrisma.zatcaInvoiceChain.update.mockResolvedValue({});
   mockQStashPublishJSON.mockResolvedValue({});
   apiClientBehavior.submitForClearance.mockResolvedValue({
@@ -297,6 +306,133 @@ describe('submitToZatca', () => {
         rejectionReason: expect.stringContaining('API Error 400'),
       }),
     });
+  });
+
+  it('keeps the chain PENDING on a transient 503 (no REJECTED write)', async () => {
+    mockPrisma.invoice.findUniqueOrThrow.mockResolvedValue(baseInvoice());
+    mockPrisma.integrationConnection.findFirst.mockResolvedValue({
+      configJson: { environment: 'test' },
+    });
+    apiClientBehavior.submitForClearance.mockRejectedValue(
+      new MockZatcaApiError('Service unavailable', 503, 'retryable'),
+    );
+    mockPrisma.$transaction.mockImplementation(async (fn: (tx: unknown) => Promise<unknown>) => {
+      return fn(mockPrisma);
+    });
+
+    await expect(submitToZatca({ invoiceId: 'inv_1', organizationId: 'org_1' })).rejects.toThrow();
+
+    // Transient failure must not settle the row — no REJECTED (or any) write.
+    expect(mockPrisma.zatcaInvoiceChain.update).not.toHaveBeenCalled();
+  });
+
+  it('resubmits an existing PENDING chain without recreating it (no P2002 path)', async () => {
+    mockPrisma.invoice.findUniqueOrThrow.mockResolvedValue(baseInvoice());
+    mockPrisma.integrationConnection.findFirst.mockResolvedValue({
+      configJson: { environment: 'test' },
+    });
+    mockPrisma.zatcaInvoiceChain.findUnique.mockResolvedValue({
+      id: 'chain_existing',
+      icv: 7,
+      previousHash: 'prev-hash',
+      zatcaUuid: 'uuid-existing',
+      zatcaStatus: 'PENDING',
+    });
+
+    await submitToZatca({ invoiceId: 'inv_1', organizationId: 'org_1' });
+
+    // Reuse path: no advisory-lock transaction, so no second chain row / P2002.
+    expect(mockPrisma.$transaction).not.toHaveBeenCalled();
+    // Resubmitted with the SAME persisted uuid (ZATCA idempotency key).
+    expect(apiClientBehavior.submitForClearance).toHaveBeenCalledWith(
+      expect.objectContaining({ uuid: 'uuid-existing' }),
+      'org_1',
+    );
+    // Settled on the existing row.
+    expect(mockPrisma.zatcaInvoiceChain.update).toHaveBeenCalledWith({
+      where: { id: 'chain_existing' },
+      data: expect.objectContaining({ zatcaStatus: 'CLEARED' }),
+    });
+  });
+
+  it('skips resubmission when the chain is already settled', async () => {
+    mockPrisma.invoice.findUniqueOrThrow.mockResolvedValue(baseInvoice());
+    mockPrisma.integrationConnection.findFirst.mockResolvedValue({
+      configJson: { environment: 'test' },
+    });
+    mockPrisma.zatcaInvoiceChain.findUnique.mockResolvedValue({
+      id: 'chain_done',
+      icv: 3,
+      previousHash: 'prev',
+      zatcaUuid: 'uuid-done',
+      zatcaStatus: 'CLEARED',
+    });
+
+    await submitToZatca({ invoiceId: 'inv_1', organizationId: 'org_1' });
+
+    expect(apiClientBehavior.submitForClearance).not.toHaveBeenCalled();
+    expect(mockPrisma.zatcaInvoiceChain.update).not.toHaveBeenCalled();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Tests: reconcilePendingZatcaChains
+// ---------------------------------------------------------------------------
+
+describe('reconcilePendingZatcaChains', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    restoreDefaults();
+  });
+
+  it('settles a stale PENDING chain by resubmitting it', async () => {
+    mockPrisma.zatcaInvoiceChain.findMany.mockResolvedValue([
+      { invoiceId: 'inv_1', organizationId: 'org_1' },
+    ]);
+    mockPrisma.invoice.findUniqueOrThrow.mockResolvedValue(baseInvoice());
+    mockPrisma.integrationConnection.findFirst.mockResolvedValue({
+      configJson: { environment: 'test' },
+    });
+    mockPrisma.zatcaInvoiceChain.findUnique.mockResolvedValue({
+      id: 'chain_1',
+      icv: 1,
+      previousHash: 'genesis',
+      zatcaUuid: 'uuid-1',
+      zatcaStatus: 'PENDING',
+    });
+
+    const result = await reconcilePendingZatcaChains({ olderThanMinutes: 15 });
+
+    expect(result).toEqual({ scanned: 1, settled: 1, failed: 0 });
+    expect(mockPrisma.zatcaInvoiceChain.update).toHaveBeenCalledWith({
+      where: { id: 'chain_1' },
+      data: expect.objectContaining({ zatcaStatus: 'CLEARED' }),
+    });
+  });
+
+  it('counts a still-failing chain as failed without aborting the sweep', async () => {
+    mockPrisma.zatcaInvoiceChain.findMany.mockResolvedValue([
+      { invoiceId: 'inv_1', organizationId: 'org_1' },
+      { invoiceId: 'inv_2', organizationId: 'org_1' },
+    ]);
+    mockPrisma.invoice.findUniqueOrThrow.mockResolvedValue(baseInvoice());
+    mockPrisma.integrationConnection.findFirst.mockResolvedValue({
+      configJson: { environment: 'test' },
+    });
+    mockPrisma.zatcaInvoiceChain.findUnique.mockResolvedValue({
+      id: 'chain_x',
+      icv: 1,
+      previousHash: 'genesis',
+      zatcaUuid: 'uuid-x',
+      zatcaStatus: 'PENDING',
+    });
+    apiClientBehavior.submitForClearance
+      .mockResolvedValueOnce({ clearanceStatus: 'CLEARED', validationResults: {} })
+      .mockRejectedValueOnce(new MockZatcaApiError('Service unavailable', 503, 'retryable'));
+
+    const result = await reconcilePendingZatcaChains({ olderThanMinutes: 15 });
+
+    expect(result).toEqual({ scanned: 2, settled: 1, failed: 1 });
   });
 });
 

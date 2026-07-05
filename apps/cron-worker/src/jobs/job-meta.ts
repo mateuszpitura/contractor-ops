@@ -42,6 +42,7 @@ export const JOB_STATIC_META: Record<string, StaticJobMeta> = {
   'trial-notifications': { intervalMs: DAY, catchUpOnBoot: true },
   reminders: { intervalMs: DAY, catchUpOnBoot: true, maxMs: 10 * MINUTE },
   'stripe-reconcile': { intervalMs: DAY, catchUpOnBoot: true },
+  'zatca-reconcile': { intervalMs: 15 * MINUTE },
 };
 
 /** jobName → nominal cadence (ms). Consumed by `job-health` staleness detection. */

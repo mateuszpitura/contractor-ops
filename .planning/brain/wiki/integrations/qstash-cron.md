@@ -2,7 +2,7 @@
 title: QStash and cron
 type: integration
 tags: [qstash, cron, upstash]
-source_commit: 70f5782d78e33ba98c82e4ccda2cd4b0b4aff216
+source_commit: 5d5aff4c6
 verify_with:
   - apps/api/src/lib/qstash-route.ts
   - apps/api/src/lib/outbox-drain-schedule.ts
@@ -53,6 +53,7 @@ Two kinds of QStash schedule exist:
 - `cronProcedure` + `CRON_SECRET` for internal triggers
 - Handler bodies validated with Zod
 - Boot-time global schedules use a **fixed** `scheduleId` (upsert) so re-deploys never accumulate duplicates.
+- **QStash retries are the fast path; a scheduled reconcile cron is the backstop.** When a job's per-message QStash retries can be exhausted by a longer outage (ZATCA submissions, Stripe drift), a scheduled `*-reconcile` handler re-derives the stuck rows and resettles them idempotently — see `zatca-reconcile.ts` / `stripe-reconcile.ts` in [[structure/cron-jobs]].
 
 ## Related
 

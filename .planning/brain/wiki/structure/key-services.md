@@ -4,6 +4,7 @@ type: structure
 tags: [structure, services, api]
 source_commit: 5d6e26a17
 source_commit: b618a39e5
+source_commit: 5d5aff4c6
 verify_with:
   - packages/api/src/services/
   - packages/api/src/services/onboarding-import-service.ts
@@ -61,6 +62,7 @@ flowchart TB
 | E-sign orchestrator | `services/esign-orchestrator.ts` | [[integrations/docusign-esign]] |
 | OCR extraction | `services/ocr-extraction.ts` | [[domains/documents-and-ocr]] — `processOcrExtraction` gated by `killswitch.ai-invoice-parser`; `resolveOrgRegion(orgId)` reads `Organization.dataRegion` (default EU) to pick the regional Unleash client (QStash callback carries no tenant ctx) |
 | Peppol orchestrator | `services/peppol-orchestrator.ts` | [[integrations/peppol]] |
+| ZATCA submission | `services/zatca-submission.ts` | [[integrations/zatca]] — advisory-locked hash-chain build → sign → submit; a transient failure (network/timeout/5xx/auth) stays PENDING, only a validation/4xx `ZatcaApiError` → REJECTED; an idempotent retry reuses the row's `zatcaUuid` instead of recreating it (no `@unique(invoiceId)` P2002); `reconcilePendingZatcaChains` is the `zatca-reconcile` cron backstop |
 | Tax ID validation | `services/tax-id-validation.service.ts` | [[integrations/gov-api]] |
 | US treaty rate | `services/treaty-rate.service.ts` | US treaty rate + article resolution (mirrors reverse-charge; 30% statutory default + reasoned override) |
 | US W-form record | `services/tax-form.service.ts` | immutable W-9/W-8BEN/W-8BEN-E snapshot builder + supersede chain + expiry; full SSN never in snapshot |

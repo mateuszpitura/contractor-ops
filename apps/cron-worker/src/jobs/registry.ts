@@ -24,6 +24,7 @@ import { stripeReconcileHandler } from './handlers/stripe-reconcile.js';
 import { tokenRefreshHandler } from './handlers/token-refresh.js';
 import { trialNotificationsHandler } from './handlers/trial-notifications.js';
 import { yearEnd1099ReminderHandler } from './handlers/year-end-1099-reminder.js';
+import { zatcaReconcileHandler } from './handlers/zatca-reconcile.js';
 import { buildJobMeta } from './job-meta.js';
 import type { JobHandler, JobMeta } from './runner.js';
 
@@ -50,6 +51,7 @@ export function getJobDefinitions(env: {
   CRON_REMINDERS_SCHEDULE: string;
   CRON_YEAR_END_1099_REMINDER_SCHEDULE: string;
   CRON_STRIPE_RECONCILE_SCHEDULE: string;
+  CRON_ZATCA_RECONCILE_SCHEDULE: string;
   CRON_JOB_DEFAULT_MAX_MS: number;
 }): JobDefinition[] {
   const defaultMaxMs = env.CRON_JOB_DEFAULT_MAX_MS;
@@ -129,6 +131,10 @@ export function getJobDefinitions(env: {
     {
       meta: meta('stripe-reconcile', env.CRON_STRIPE_RECONCILE_SCHEDULE),
       handler: stripeReconcileHandler,
+    },
+    {
+      meta: meta('zatca-reconcile', env.CRON_ZATCA_RECONCILE_SCHEDULE),
+      handler: zatcaReconcileHandler,
     },
   ];
 }

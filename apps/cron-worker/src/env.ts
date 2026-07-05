@@ -58,6 +58,14 @@ const envSchema = z.object({
   // furnish deadline). Notify-only; never generates or files.
   CRON_YEAR_END_1099_REMINDER_SCHEDULE: z.string().default('0 8 15 1 *'),
   CRON_STRIPE_RECONCILE_SCHEDULE: z.string().default('0 1 * * *'),
+  CRON_ZATCA_RECONCILE_SCHEDULE: z.string().default('*/15 * * * *'),
+
+  /**
+   * Age (minutes) after which a still-PENDING ZATCA chain is resubmitted by the
+   * reconcile cron. Slightly above the QStash retry horizon so the cron only
+   * touches submissions those retries have already given up on.
+   */
+  CRON_ZATCA_RECONCILE_STALE_MINUTES: z.coerce.number().int().positive().default(15),
 
   /**
    * Default per-run wall-clock budget (ms) for a cron tick. The runner races

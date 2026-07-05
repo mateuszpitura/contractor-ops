@@ -2,11 +2,13 @@
 title: ZATCA Saudi
 type: integration
 tags: [zatca, saudi, fatoorah]
-source_commit: 70f5782d78e33ba98c82e4ccda2cd4b0b4aff216
+source_commit: 5d5aff4c6
 verify_with:
   - packages/api/src/routers/compliance/zatca.ts
+  - packages/api/src/services/zatca-submission.ts
+  - apps/api/src/routes/zatca.ts
   - packages/einvoice/src/profiles/zatca/
-updated: 2026-06-10
+updated: 2026-07-05
 ---
 
 # ZATCA (Saudi Arabia)
@@ -34,11 +36,15 @@ stateDiagram-v2
 | API routes | `apps/api/src/routes/zatca.ts` |
 | Status widget | `einvoice` router + `components/zatca/` |
 | Signing | `profiles/zatca/signer.ts` (XML DSig) |
+| Submission pipeline | `packages/api/src/services/zatca-submission.ts` |
 
 ## Invariants
 
 - ME region tenants — [[patterns/multi-region-db]]
 - Signer errors must not silent-catch — lint scope gap in einvoice package
+- **A transient submission failure stays PENDING, never REJECTED.** `submitToZatca` (`services/zatca-submission.ts`) only writes REJECTED for a validation/4xx `ZatcaApiError` (`non-retryable`); a network error, timeout, 5xx/429 (`retryable`), or auth failure leaves the `ZatcaInvoiceChain` row PENDING with `submittedAt` unset — a transport failure does not mean ZATCA rejected the invoice (it may have cleared it), so it must not be branded rejected.
+- **Retries reuse the chain row, never recreate it.** `ZatcaInvoiceChain.invoiceId` is `@unique`; a queued retry (or the reconcile cron) that recreated the row would P2002 in `recordChainEntry` before reaching ZATCA. When a row already exists, `submitToZatca` resubmits a PENDING one with its original `zatcaUuid` (ZATCA dedups on the uuid) and no-ops an already-settled one. The `apps/api/src/routes/zatca.ts` fast-path still skips when `submittedAt` is set.
+- **The `zatca-reconcile` cron settles stranded submissions.** `reconcilePendingZatcaChains` requeries ZATCA for chains PENDING past `CRON_ZATCA_RECONCILE_STALE_MINUTES` (default 15) and resettles them — the backstop for a transient failure that outlived its QStash retries. See [[structure/cron-jobs]].
 
 ## Related
 

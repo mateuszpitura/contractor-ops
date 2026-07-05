@@ -56,6 +56,36 @@ interface ZatcaConnectionConfig {
   environment: 'test' | 'prod';
 }
 
+/** Hash-chain coordinates that pin a single invoice into the org's chain. */
+interface ChainCoords {
+  icv: number;
+  pih: string;
+  zatcaUuid: string;
+}
+
+/** Signed-XML artifacts produced for one submission attempt. */
+interface SubmissionArtifacts {
+  invoiceXml: string;
+  invoiceHash: string;
+  qrBase64: string;
+}
+
+/** A persisted (or freshly built) chain row ready to submit to ZATCA. */
+interface ChainSubmission extends SubmissionArtifacts {
+  id: string;
+  zatcaUuid: string;
+}
+
+/** Outcome of a `reconcilePendingZatcaChains` sweep. */
+export interface ReconcileResult {
+  /** PENDING chains found older than the cutoff. */
+  scanned: number;
+  /** Chains that reached a settled status this run (any non-PENDING outcome). */
+  settled: number;
+  /** Chains whose resubmission still threw (left PENDING for the next run). */
+  failed: number;
+}
+
 // ---------------------------------------------------------------------------
 // QStash Configuration
 // ---------------------------------------------------------------------------
@@ -72,17 +102,18 @@ const QSTASH_CONFIG = {
 // ---------------------------------------------------------------------------
 
 /**
- * Full ZATCA invoice submission pipeline (10-step):
+ * ZATCA invoice submission pipeline.
  *
- * 1. Prisma transaction with advisory lock
- * 2. getNextChainEntry -> ICV + PIH
- * 3. Build EInvoice with ZATCA extensions
- * 4. generate -> sign -> hash -> QR -> record
- * 5. Commit transaction
- * 6. Submit to ZATCA (clearance for standard, reporting for simplified)
- * 7. Update chain entry with response
+ * First submit: advisory-locked transaction builds the next chain entry
+ * (ICV + PIH), generates → signs → hashes → QR, records the row PENDING, then
+ * submits to ZATCA and settles the status.
+ *
+ * Retry / reconcile: when a chain row for the invoice already exists it is
+ * reused rather than recreated — `ZatcaInvoiceChain.invoiceId` is @unique, so a
+ * re-run that recreated it would P2002 before reaching ZATCA. A PENDING row is
+ * resubmitted with its original `zatcaUuid` (ZATCA dedups on the uuid); any
+ * already-settled row is a no-op.
  */
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: ZATCA submission pipeline — demo-guard → load → build → generate/sign/hash/QR → commit tx → clearance-vs-reporting submit → chain update; the numbered steps are one regulated contract with strict side-effect order.
 export async function submitToZatca(
   options: SubmitToZatcaOptions,
   db?: PrismaClient,
@@ -140,67 +171,145 @@ export async function submitToZatca(
     );
   }
 
-  // Step 1-5: Transaction with advisory lock
-  const chainRecord = await prisma.$transaction(async tx => {
-    const txClient = tx as unknown as PrismaLike;
-    // Step 1: Acquire advisory lock
-    await acquireChainLock(txClient, organizationId);
+  const certInfo: CertificateInfo = { certificate, privateKey };
 
-    // Step 2: Get next ICV + PIH
-    const { icv, pih } = await getNextChainEntry(txClient, organizationId);
-
-    // Step 3-4: Generate invoice XML with ZATCA extensions
-    const zatcaUuid = randomUUID();
-
-    // Build EInvoice from Prisma record
-    const eInvoice = buildEInvoiceFromPrisma(invoice, { icv, pih, zatcaUuid });
-
-    // Step 3: Generate UBL 2.1 XML with ZATCA extensions
-    const profile = new ZatcaProfile();
-    const unsignedXml = await profile.generate(eInvoice);
-
-    // Step 4a: Sign with XAdES-BES
-    const certInfo: CertificateInfo = { certificate, privateKey };
-    const signedXml = await profile.sign.sign(unsignedXml, certInfo);
-
-    // Step 4b: Compute hash of signed XML
-    const invoiceHash = createHash('sha256').update(signedXml).digest('hex');
-
-    // Step 4c: Generate TLV QR code
-    const qrEInvoice: EInvoice = {
-      ...eInvoice,
-      extensions: {
-        ...eInvoice.extensions,
-        invoiceHash,
-        signatureValue: signedXml,
-        publicKey: certificate,
-      },
-    };
-    const qrBuffer = await profile.qrCode.generateQR(qrEInvoice);
-    const qrBase64 = qrBuffer.toString('base64');
-
-    // Step 5: Record chain entry
-    const record = await recordChainEntry(txClient, {
-      organizationId,
-      icv,
-      invoiceId,
-      invoiceHash,
-      previousHash: pih,
-      zatcaUuid,
-    });
-
-    return {
-      id: record.id,
-      icv,
-      pih,
-      zatcaUuid,
-      invoiceXml: signedXml,
-      invoiceHash,
-      qrBase64,
-    };
+  // Reuse an existing chain row instead of creating a second one. A QStash
+  // retry (or the reconcile cron) that recreated the row would P2002 on the
+  // @unique(invoiceId) constraint before ever reaching ZATCA, so the retry
+  // could never make progress.
+  const existingChain = await prisma.zatcaInvoiceChain.findUnique({
+    where: { invoiceId },
+    select: { id: true, icv: true, previousHash: true, zatcaUuid: true, zatcaStatus: true },
   });
 
-  // Step 6: Submit to ZATCA (outside transaction -- network call)
+  let chainRecord: ChainSubmission;
+
+  if (existingChain) {
+    // Only a PENDING row is safe to (re)submit. Any settled state
+    // (CLEARED/REPORTED/WARNING/REJECTED/SUBMITTED) is terminal — resubmitting
+    // would duplicate a ZATCA call or resurrect a rejected invoice.
+    if (existingChain.zatcaStatus !== 'PENDING') {
+      log.info(
+        { organizationId, invoiceId, status: existingChain.zatcaStatus },
+        'ZATCA chain already settled — skipping resubmission',
+      );
+      return;
+    }
+
+    // Rebuild the submission from the persisted chain coordinates, reusing the
+    // original zatcaUuid so ZATCA treats the resubmit as idempotent. The signed
+    // XML is regenerated (it is not persisted) but carries the original
+    // icv/pih/uuid, so the hash chain stays anchored on this invoice.
+    const artifacts = await buildSubmissionArtifacts(
+      invoice,
+      {
+        icv: existingChain.icv,
+        pih: existingChain.previousHash,
+        zatcaUuid: existingChain.zatcaUuid,
+      },
+      certInfo,
+      certificate,
+    );
+    chainRecord = { id: existingChain.id, zatcaUuid: existingChain.zatcaUuid, ...artifacts };
+  } else {
+    // First submit: advisory-locked transaction allocates the next ICV/PIH,
+    // builds + signs the invoice, and records the chain row PENDING.
+    chainRecord = await prisma.$transaction(async tx => {
+      const txClient = tx as unknown as PrismaLike;
+      await acquireChainLock(txClient, organizationId);
+
+      const { icv, pih } = await getNextChainEntry(txClient, organizationId);
+      const zatcaUuid = randomUUID();
+
+      const artifacts = await buildSubmissionArtifacts(
+        invoice,
+        { icv, pih, zatcaUuid },
+        certInfo,
+        certificate,
+      );
+
+      const record = await recordChainEntry(txClient, {
+        organizationId,
+        icv,
+        invoiceId,
+        invoiceHash: artifacts.invoiceHash,
+        previousHash: pih,
+        zatcaUuid,
+      });
+
+      return { id: record.id, zatcaUuid, ...artifacts };
+    });
+  }
+
+  await submitAndSettle({
+    prisma,
+    invoice: invoice as unknown as Record<string, unknown>,
+    organizationId,
+    environment,
+    certificate,
+    apiSecret,
+    chainRecord,
+  });
+}
+
+/**
+ * Generate → sign → hash → QR for one invoice against fixed chain coordinates.
+ * Free of DB writes so both the first-submit transaction and the idempotent
+ * retry path can call it; the retry path passes the persisted coordinates so
+ * the resubmission carries the original zatcaUuid.
+ */
+async function buildSubmissionArtifacts(
+  invoice: Parameters<typeof buildEInvoiceFromPrisma>[0],
+  coords: ChainCoords,
+  certInfo: CertificateInfo,
+  certificate: string,
+): Promise<SubmissionArtifacts> {
+  const eInvoice = buildEInvoiceFromPrisma(invoice, coords);
+  const profile = new ZatcaProfile();
+
+  const unsignedXml = await profile.generate(eInvoice);
+  const signedXml = await profile.sign.sign(unsignedXml, certInfo);
+  const invoiceHash = createHash('sha256').update(signedXml).digest('hex');
+
+  const qrEInvoice: EInvoice = {
+    ...eInvoice,
+    extensions: {
+      ...eInvoice.extensions,
+      invoiceHash,
+      signatureValue: signedXml,
+      publicKey: certificate,
+    },
+  };
+  const qrBuffer = await profile.qrCode.generateQR(qrEInvoice);
+
+  return { invoiceXml: signedXml, invoiceHash, qrBase64: qrBuffer.toString('base64') };
+}
+
+/**
+ * Submit the built invoice to ZATCA (clearance for standard, reporting for
+ * simplified) and settle the chain row.
+ *
+ * Error classification decides the row's fate:
+ *   - A validation/4xx rejection (`ZatcaApiError` `non-retryable`) is permanent
+ *     → mark REJECTED.
+ *   - Anything else — network error, timeout, 5xx/429 (`retryable`), or an auth
+ *     failure — is transient → leave the row PENDING (`submittedAt` unset) so a
+ *     QStash retry or the reconcile cron can resettle it. A transport failure
+ *     does NOT mean ZATCA rejected the invoice; it may have cleared, so we must
+ *     never brand it REJECTED here.
+ */
+async function submitAndSettle(args: {
+  prisma: PrismaClient;
+  invoice: Record<string, unknown>;
+  organizationId: string;
+  environment: 'test' | 'prod';
+  certificate: string;
+  apiSecret: string;
+  chainRecord: ChainSubmission;
+}): Promise<void> {
+  const { prisma, invoice, organizationId, environment, certificate, apiSecret, chainRecord } =
+    args;
+
   const apiClient = new ZatcaApiClient({
     baseUrl: environment === 'prod' ? ZATCA_PRODUCTION_URL : ZATCA_SANDBOX_URL,
     binarySecurityToken: certificate,
@@ -214,9 +323,8 @@ export async function submitToZatca(
   };
 
   try {
-    // Determine B2B (standard/clearance) vs B2C (simplified/reporting)
-    // Standard invoices have subtypes starting with "01", simplified with "02"
-    const isStandard = isStandardInvoice(invoice as unknown as Record<string, unknown>);
+    // Standard invoices (subtype "01") clear; simplified ("02") report.
+    const isStandard = isStandardInvoice(invoice);
 
     let response: ZatcaClearanceResponse | ZatcaReportingResponse;
     let status: string;
@@ -229,7 +337,6 @@ export async function submitToZatca(
       status = (response as ZatcaReportingResponse).reportingStatus;
     }
 
-    // Step 7: Update chain entry with response
     const now = new Date();
     await prisma.zatcaInvoiceChain.update({
       where: { id: chainRecord.id },
@@ -246,25 +353,71 @@ export async function submitToZatca(
       },
     });
   } catch (error) {
-    // Update chain entry with error
-    const isApiError = error instanceof ZatcaApiError;
-    await prisma.zatcaInvoiceChain.update({
-      where: { id: chainRecord.id },
-      data: {
-        zatcaStatus: 'REJECTED',
-        submittedAt: new Date(),
-        rejectedAt: new Date(),
-        rejectionReason: isApiError
-          ? `API Error ${error.statusCode}: ${error.errorType}`
-          : error instanceof Error
-            ? error.message
-            : 'Unknown error',
-      },
-    });
+    if (error instanceof ZatcaApiError && error.errorType === 'non-retryable') {
+      const now = new Date();
+      await prisma.zatcaInvoiceChain.update({
+        where: { id: chainRecord.id },
+        data: {
+          zatcaStatus: 'REJECTED',
+          submittedAt: now,
+          rejectedAt: now,
+          rejectionReason: `API Error ${error.statusCode}: ${error.errorType}`,
+        },
+      });
+    } else {
+      log.warn(
+        {
+          err: error,
+          organizationId,
+          chainId: chainRecord.id,
+          errorType: error instanceof ZatcaApiError ? error.errorType : 'network',
+        },
+        'ZATCA submission transient failure — chain stays PENDING for retry',
+      );
+    }
 
-    // Rethrow for QStash retry logic
+    // Rethrow so the QStash handler decides retry vs dead-letter.
     throw error;
   }
+}
+
+/**
+ * Requery ZATCA for chains stuck PENDING past `olderThanMinutes` and settle
+ * them. Backstop for a transient failure that outlived its QStash retries: each
+ * resubmission reuses the row's original zatcaUuid, so ZATCA treats it
+ * idempotently and a since-cleared invoice simply settles.
+ */
+export async function reconcilePendingZatcaChains(
+  opts: { olderThanMinutes: number; limit?: number },
+  db?: PrismaClient,
+): Promise<ReconcileResult> {
+  const prisma = db ?? defaultPrisma;
+  const cutoff = new Date(Date.now() - opts.olderThanMinutes * 60_000);
+
+  const stale = await prisma.zatcaInvoiceChain.findMany({
+    where: { zatcaStatus: 'PENDING', createdAt: { lt: cutoff } },
+    select: { invoiceId: true, organizationId: true },
+    orderBy: { createdAt: 'asc' },
+    take: opts.limit ?? 100,
+  });
+
+  let settled = 0;
+  let failed = 0;
+
+  for (const row of stale) {
+    try {
+      await submitToZatca({ invoiceId: row.invoiceId, organizationId: row.organizationId }, prisma);
+      settled += 1;
+    } catch (error) {
+      failed += 1;
+      log.warn(
+        { err: error, invoiceId: row.invoiceId, organizationId: row.organizationId },
+        'ZATCA reconcile: chain still failing, will retry next run',
+      );
+    }
+  }
+
+  return { scanned: stale.length, settled, failed };
 }
 
 // ---------------------------------------------------------------------------

@@ -43,10 +43,11 @@ export function registerZatcaSubmitRoute(app: FastifyInstance): void {
       const { invoiceId, organizationId, attempt } = body;
 
       try {
-        // Idempotency: chain row is created inside `submitToZatca`'s tx, so
-        // when `submittedAt` is set the ZATCA network call already happened.
-        // Re-running would either duplicate the API call or hit the
-        // @unique(invoiceId) constraint with P2002.
+        // Fast-path idempotency: once `submittedAt` is set the ZATCA network
+        // call already settled this invoice, so skip re-running it. (A still-
+        // PENDING row with no `submittedAt` is a transient failure — that is
+        // safe to resubmit; `submitToZatca` reuses the row instead of
+        // recreating it, so the @unique(invoiceId) P2002 no longer applies.)
         const existing = await prisma.zatcaInvoiceChain.findUnique({
           where: { invoiceId },
           select: { submittedAt: true, zatcaStatus: true },
