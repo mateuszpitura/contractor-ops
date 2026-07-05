@@ -24,7 +24,11 @@
  */
 
 import { withQueueObservability } from '@contractor-ops/api/services/cron-monitor';
-import { handleSigningCompletion } from '@contractor-ops/api/services/esign-orchestrator';
+import {
+  EsignCompletionError,
+  handleSigningCompletion,
+  isSignedCopyPending,
+} from '@contractor-ops/api/services/esign-orchestrator';
 import { processResendWebhookDelivery } from '@contractor-ops/api/services/resend-email-intake';
 import { prisma } from '@contractor-ops/db';
 import { registerAllAdapters } from '@contractor-ops/integrations/adapters/register-all';
@@ -96,32 +100,51 @@ async function dispatchProviderHandlers(
   if (isESignProvider) {
     const esignResult = webhookResult as { envelopeId: string; completed: boolean } | undefined;
 
-    if (esignResult?.completed && delivery.integrationConnectionId) {
-      // safe-swallow: a completion side-effect failure must NOT mark the
-      // delivery FAILED — that would re-deliver and re-invoke the
-      // idempotent adapter. Log + Sentry-capture so operators can replay
-      // completion manually via the dead-letter dashboard.
-      try {
-        await handleSigningCompletion(
-          esignResult.envelopeId,
-          delivery.integrationConnectionId,
-          provider.toUpperCase() as 'DOCUSIGN' | 'AUTENTI',
-        );
-      } catch (completionError) {
-        log.error(
-          {
-            err: completionError,
-            envelopeId: esignResult.envelopeId,
-            provider,
-            deliveryId,
-            requestId: getRequestId(),
-          },
-          'failed to handle signing completion',
-        );
-        Sentry.captureException(completionError, {
-          tags: { 'webhook.provider': provider, 'webhook.stage': 'esign-completion' },
-          extra: { deliveryId, envelopeId: esignResult.envelopeId },
-        });
+    if (esignResult?.envelopeId && delivery.integrationConnectionId) {
+      // Drive completion when this webhook reports completion OR when the
+      // envelope is already terminal-completed with no signed PDF saved yet.
+      // The latter covers a QStash retry after a prior R2 failure: the
+      // provider's completed event was already recorded, so the redelivery
+      // dedups to completed=false, yet the PDF still needs saving.
+      const shouldComplete =
+        esignResult.completed || (await isSignedCopyPending(esignResult.envelopeId));
+
+      if (shouldComplete) {
+        try {
+          await handleSigningCompletion(
+            esignResult.envelopeId,
+            delivery.integrationConnectionId,
+            provider.toUpperCase() as 'DOCUSIGN' | 'AUTENTI',
+          );
+        } catch (completionError) {
+          const retriable =
+            completionError instanceof EsignCompletionError ? completionError.retriable : true;
+
+          if (retriable) {
+            // Fail the delivery (propagates to the 500 path) so QStash / the
+            // stale-reaper re-drive completion. Swallowing here would flip the
+            // delivery PROCESSED and lose the signed PDF on a transient blip.
+            throw completionError;
+          }
+
+          // Permanent failure (envelope never reached the provider): retrying
+          // can never succeed, so let the delivery flip PROCESSED. Log + Sentry
+          // so operators can investigate / replay manually.
+          log.error(
+            {
+              err: completionError,
+              envelopeId: esignResult.envelopeId,
+              provider,
+              deliveryId,
+              requestId: getRequestId(),
+            },
+            'permanent signing-completion failure; not retrying',
+          );
+          Sentry.captureException(completionError, {
+            tags: { 'webhook.provider': provider, 'webhook.stage': 'esign-completion' },
+            extra: { deliveryId, envelopeId: esignResult.envelopeId },
+          });
+        }
       }
     }
   }

@@ -27,14 +27,30 @@ const {
   mockUpdate,
   mockUpdateMany,
   mockIntegrationConnectionFindUnique,
-} = vi.hoisted(() => ({
-  mockVerify: vi.fn(async (_req: { signature: string; body: string; url: string }) => true),
-  mockGetAdapter: vi.fn(),
-  mockFindUnique: vi.fn(),
-  mockUpdate: vi.fn(async () => ({})),
-  mockUpdateMany: vi.fn(async () => ({ count: 1 })),
-  mockIntegrationConnectionFindUnique: vi.fn(),
-}));
+  mockHandleSigningCompletion,
+  mockIsSignedCopyPending,
+  EsignCompletionError,
+} = vi.hoisted(() => {
+  class EsignCompletionError extends Error {
+    retriable: boolean;
+    constructor(message: string, retriable: boolean) {
+      super(message);
+      this.name = 'EsignCompletionError';
+      this.retriable = retriable;
+    }
+  }
+  return {
+    mockVerify: vi.fn(async (_req: { signature: string; body: string; url: string }) => true),
+    mockGetAdapter: vi.fn(),
+    mockFindUnique: vi.fn(),
+    mockUpdate: vi.fn(async () => ({})),
+    mockUpdateMany: vi.fn(async () => ({ count: 1 })),
+    mockIntegrationConnectionFindUnique: vi.fn(),
+    mockHandleSigningCompletion: vi.fn(async () => undefined),
+    mockIsSignedCopyPending: vi.fn(async () => false),
+    EsignCompletionError,
+  };
+});
 
 vi.mock('@upstash/qstash', () => ({
   Receiver: class {
@@ -77,7 +93,11 @@ vi.mock('@contractor-ops/api/services/cron-monitor', () => ({
 }));
 
 vi.mock('@contractor-ops/api/services/esign-orchestrator', () => ({
-  handleSigningCompletion: vi.fn(async () => undefined),
+  handleSigningCompletion: (...a: unknown[]) =>
+    (mockHandleSigningCompletion as (...a: unknown[]) => unknown)(...a),
+  isSignedCopyPending: (...a: unknown[]) =>
+    (mockIsSignedCopyPending as (...a: unknown[]) => unknown)(...a),
+  EsignCompletionError,
 }));
 
 vi.mock('@contractor-ops/api/services/resend-email-intake', () => ({
@@ -110,6 +130,8 @@ beforeEach(() => {
   mockUpdate.mockResolvedValue({});
   mockUpdateMany.mockResolvedValue({ count: 1 });
   mockIntegrationConnectionFindUnique.mockResolvedValue(null);
+  mockHandleSigningCompletion.mockResolvedValue(undefined);
+  mockIsSignedCopyPending.mockResolvedValue(false);
 });
 
 function post(body: unknown, headers: Record<string, string> = {}) {
@@ -308,5 +330,88 @@ describe('POST /webhooks/_process', () => {
         data: expect.objectContaining({ deliveryStatus: 'PROCESSED' }),
       }),
     );
+  });
+
+  // ---------------------------------------------------------------------------
+  // E-sign completion dispatch — idempotency + retriable-vs-permanent handling.
+  // ---------------------------------------------------------------------------
+
+  function esignDelivery(status = 'RECEIVED') {
+    return {
+      id: 'd1',
+      organizationId: 'org-1',
+      deliveryStatus: status,
+      payloadJson: {},
+      integrationConnectionId: 'conn-1',
+      eventType: 'envelope.completed',
+    };
+  }
+
+  it('esign: retriable completion failure fails the delivery (500 + FAILED, NOT PROCESSED)', async () => {
+    mockGetAdapter.mockReturnValue({
+      handleWebhook: vi.fn(async () => ({ envelopeId: 'env-1', completed: true })),
+    });
+    mockFindUnique.mockResolvedValue(esignDelivery());
+    mockHandleSigningCompletion.mockRejectedValueOnce(
+      new EsignCompletionError('Failed to upload signed PDF to R2: 503', true),
+    );
+
+    const res = await post({ deliveryId: 'd1', provider: 'docusign' });
+
+    expect(res.statusCode).toBe(500);
+    expect(mockHandleSigningCompletion).toHaveBeenCalledWith('env-1', 'conn-1', 'DOCUSIGN');
+    // FAILED, never PROCESSED — QStash re-delivers on the 500.
+    expect(mockUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({ data: expect.objectContaining({ deliveryStatus: 'FAILED' }) }),
+    );
+    expect(mockUpdate).not.toHaveBeenCalledWith(
+      expect.objectContaining({ data: expect.objectContaining({ deliveryStatus: 'PROCESSED' }) }),
+    );
+  });
+
+  it('esign: permanent completion failure is swallowed (200 + PROCESSED, no retry)', async () => {
+    mockGetAdapter.mockReturnValue({
+      handleWebhook: vi.fn(async () => ({ envelopeId: 'env-1', completed: true })),
+    });
+    mockFindUnique.mockResolvedValue(esignDelivery());
+    mockHandleSigningCompletion.mockRejectedValueOnce(
+      new EsignCompletionError('envelope env-1 not found or missing external ID', false),
+    );
+
+    const res = await post({ deliveryId: 'd1', provider: 'docusign' });
+
+    expect(res.statusCode).toBe(200);
+    expect(mockUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({ data: expect.objectContaining({ deliveryStatus: 'PROCESSED' }) }),
+    );
+  });
+
+  it('esign: re-drives completion on retry when webhook dedups (completed=false) but copy pending', async () => {
+    mockGetAdapter.mockReturnValue({
+      handleWebhook: vi.fn(async () => ({ envelopeId: 'env-1', completed: false })),
+    });
+    mockFindUnique.mockResolvedValue(esignDelivery('FAILED'));
+    mockIsSignedCopyPending.mockResolvedValueOnce(true);
+
+    const res = await post({ deliveryId: 'd1', provider: 'docusign' });
+
+    expect(res.statusCode).toBe(200);
+    expect(mockHandleSigningCompletion).toHaveBeenCalledWith('env-1', 'conn-1', 'DOCUSIGN');
+    expect(mockUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({ data: expect.objectContaining({ deliveryStatus: 'PROCESSED' }) }),
+    );
+  });
+
+  it('esign: skips completion when webhook not completed and no signed copy is pending', async () => {
+    mockGetAdapter.mockReturnValue({
+      handleWebhook: vi.fn(async () => ({ envelopeId: 'env-1', completed: false })),
+    });
+    mockFindUnique.mockResolvedValue(esignDelivery());
+    mockIsSignedCopyPending.mockResolvedValueOnce(false);
+
+    const res = await post({ deliveryId: 'd1', provider: 'docusign' });
+
+    expect(res.statusCode).toBe(200);
+    expect(mockHandleSigningCompletion).not.toHaveBeenCalled();
   });
 });

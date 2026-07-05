@@ -18,6 +18,8 @@ const {
   mockSigningEnvelopeFindFirst,
   mockDocumentFindUnique,
   mockSigningEventCreate,
+  mockSigningEventFindFirst,
+  mockDocumentLinkFindFirst,
   mockTx,
   mockTransaction,
 } = vi.hoisted(() => {
@@ -33,6 +35,8 @@ const {
     mockSigningEnvelopeFindFirst: vi.fn(),
     mockDocumentFindUnique: vi.fn(),
     mockSigningEventCreate: vi.fn().mockResolvedValue({}),
+    mockSigningEventFindFirst: vi.fn(),
+    mockDocumentLinkFindFirst: vi.fn(),
     mockTx,
     mockTransaction,
   };
@@ -48,6 +52,10 @@ vi.mock('@contractor-ops/db', () => {
     },
     signingEvent: {
       create: mockSigningEventCreate,
+      findFirst: mockSigningEventFindFirst,
+    },
+    documentLink: {
+      findFirst: mockDocumentLinkFindFirst,
     },
     $transaction: mockTransaction,
   };
@@ -168,6 +176,8 @@ describe('handleSigningCompletion', () => {
     mockTx.document.create.mockResolvedValue({ id: 'doc-signed-1' });
     mockTx.documentLink.create.mockResolvedValue({});
     mockTx.signingEvent.create.mockResolvedValue({});
+    mockSigningEventFindFirst.mockResolvedValue(null);
+    mockDocumentLinkFindFirst.mockResolvedValue(null);
     mockDocumentFindUnique.mockResolvedValue({ documentType: 'CONTRACT' });
     vi.mocked(downloadSignedDocument).mockResolvedValue({
       documentBase64: Buffer.from('%PDF-1 signed').toString('base64'),
@@ -236,6 +246,45 @@ describe('handleSigningCompletion', () => {
         data: expect.objectContaining({ eventType: 'SIGNED_PDF_SAVED' }),
       }),
     );
+  });
+
+  it('is idempotent: a redelivery after SIGNED_PDF_SAVED skips download and creates no duplicate', async () => {
+    mockSigningEnvelopeFindFirst.mockResolvedValue({
+      id: 'env-int-1',
+      externalEnvelopeId: 'ext-out-1',
+      organizationId: 'o1',
+      contractId: null,
+      documentId: 'orig-doc',
+      recipients: [],
+    });
+    // A prior completion already persisted the signed copy.
+    mockSigningEventFindFirst.mockResolvedValue({ id: 'evt-saved' });
+
+    const result = await handleSigningCompletion('env-int-1', 'c1', 'DOCUSIGN');
+
+    expect(result).toBeNull();
+    expect(downloadSignedDocument).not.toHaveBeenCalled();
+    expect(mockTx.document.create).not.toHaveBeenCalled();
+    expect(mockTx.documentLink.create).not.toHaveBeenCalled();
+  });
+
+  it('returns the already-saved signed Document via SIGNED_COPY link on redelivery', async () => {
+    mockSigningEnvelopeFindFirst.mockResolvedValue({
+      id: 'env-int-1',
+      externalEnvelopeId: 'ext-out-1',
+      organizationId: 'o1',
+      contractId: 'contract-1',
+      documentId: 'orig-doc',
+      recipients: [],
+    });
+    mockSigningEventFindFirst.mockResolvedValue({ id: 'evt-saved' });
+    mockDocumentLinkFindFirst.mockResolvedValue({ document: { id: 'doc-signed-existing' } });
+
+    const result = await handleSigningCompletion('env-int-1', 'c1', 'DOCUSIGN');
+
+    expect(result).toEqual({ id: 'doc-signed-existing' });
+    expect(downloadSignedDocument).not.toHaveBeenCalled();
+    expect(mockTx.document.create).not.toHaveBeenCalled();
   });
 
   it('throws when R2 upload fails', async () => {

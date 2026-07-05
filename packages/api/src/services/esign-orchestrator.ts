@@ -56,6 +56,22 @@ export interface ResendToRecipientParams {
   recipientEmail: string;
 }
 
+/**
+ * Raised by {@link handleSigningCompletion} so the webhook drain can tell a
+ * transient failure (R2 outage, network) from a permanent one (envelope never
+ * reached the provider). Retriable failures must FAIL the delivery so QStash /
+ * the reaper re-drive completion; permanent ones must be swallowed so the
+ * delivery isn't retried forever.
+ */
+export class EsignCompletionError extends Error {
+  readonly retriable: boolean;
+  constructor(message: string, retriable: boolean) {
+    super(message);
+    this.name = 'EsignCompletionError';
+    this.retriable = retriable;
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
@@ -315,9 +331,42 @@ export async function handleSigningCompletion(
   });
 
   if (!envelope?.externalEnvelopeId) {
-    throw new Error(
+    // Permanent: an envelope that never received a provider external id can
+    // never yield a signed PDF. Retrying re-reads the same broken state.
+    throw new EsignCompletionError(
       `Cannot handle signing completion: envelope ${envelopeId} not found or missing external ID`,
+      false,
     );
+  }
+
+  // Idempotency: a redelivered "completed" webhook (or a provider firing the
+  // completed status more than once) must not re-download the signed PDF or
+  // insert a duplicate signed Document. SIGNED_PDF_SAVED is written in the same
+  // transaction as the Document + DocumentLink, so its presence proves the
+  // signed copy is already persisted.
+  const alreadySaved = await prisma.signingEvent.findFirst({
+    where: {
+      organizationId: envelope.organizationId,
+      signingEnvelopeId: envelope.id,
+      eventType: 'SIGNED_PDF_SAVED',
+    },
+    select: { id: true },
+  });
+
+  if (alreadySaved) {
+    if (envelope.contractId) {
+      const existingLink = await prisma.documentLink.findFirst({
+        where: {
+          organizationId: envelope.organizationId,
+          entityType: 'CONTRACT',
+          entityId: envelope.contractId,
+          linkRole: 'SIGNED_COPY',
+        },
+        include: { document: true },
+      });
+      return existingLink?.document ?? null;
+    }
+    return null;
   }
 
   // Download signed PDF from the provider
@@ -353,7 +402,12 @@ export async function handleSigningCompletion(
   );
 
   if (!uploadResponse.ok) {
-    throw new Error(`Failed to upload signed PDF to R2: ${uploadResponse.status}`);
+    // Retriable: an R2 write failure is transient — fail the delivery so the
+    // signed PDF save is re-driven instead of being silently lost.
+    throw new EsignCompletionError(
+      `Failed to upload signed PDF to R2: ${uploadResponse.status}`,
+      true,
+    );
   }
 
   // Determine document type from original document if available
@@ -413,6 +467,35 @@ export async function handleSigningCompletion(
   });
 
   return document;
+}
+
+/**
+ * True when an envelope has reached terminal COMPLETED but its signed PDF has
+ * not been persisted yet (no SIGNED_PDF_SAVED event).
+ *
+ * The webhook drain uses this to re-drive {@link handleSigningCompletion} on a
+ * QStash retry: the provider's "completed" event is recorded in the webhook
+ * handler's own transaction, so a redelivery of that event dedups to
+ * `completed = false`. Without this durable check a completion that failed at
+ * R2 on the first attempt would never be retried, and the delivery would flip
+ * PROCESSED with the signed PDF permanently missing.
+ */
+export async function isSignedCopyPending(envelopeId: string): Promise<boolean> {
+  const envelope = await prisma.signingEnvelope.findFirst({
+    where: { id: envelopeId },
+    select: { id: true, status: true, organizationId: true },
+  });
+  if (!envelope || envelope.status !== 'COMPLETED') return false;
+
+  const saved = await prisma.signingEvent.findFirst({
+    where: {
+      organizationId: envelope.organizationId,
+      signingEnvelopeId: envelope.id,
+      eventType: 'SIGNED_PDF_SAVED',
+    },
+    select: { id: true },
+  });
+  return !saved;
 }
 
 // ---------------------------------------------------------------------------
