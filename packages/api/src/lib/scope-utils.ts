@@ -59,6 +59,7 @@ export const PUBLIC_API_SCOPES = [
   'workflow:execute',
   'workflow:read',
   'workflow:update',
+  'webhooks:manage',
 ] as const;
 
 export type PublicApiScope = (typeof PUBLIC_API_SCOPES)[number];

@@ -886,6 +886,13 @@ export {
   w8benFormSchema,
   w9FormSchema,
 } from './w-form-validators.js';
+export {
+  WEBHOOK_EVENT_TYPES,
+  type WebhookEventEnvelope,
+  type WebhookEventType,
+  webhookEventEnvelopeSchema,
+  webhookEventTypeSchema,
+} from './webhooks/index.js';
 export type {
   AddCommentInput,
   CancelRunInput,

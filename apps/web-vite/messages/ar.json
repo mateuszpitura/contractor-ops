@@ -6495,6 +6495,7 @@
       "auditLog": "سجل التدقيق",
       "billing": "الفوترة",
       "apiKeys": "مفاتيح API",
+      "webhooks": "Webhooks",
       "featureFlags": "إعلامات الميزات",
       "privacy": "الخصوصية",
       "workflowRoles": "أدوار سير العمل",
@@ -7306,6 +7307,70 @@
       "subtitle": "أضف كلمات مفتاحية خاصة بكل لغة. تُعامَل أحداث التقويم التي تتطابق عناوينها مع هذه الكلمات باعتبارها إجازة مدفوعة.",
       "empty": "لا توجد كلمات مفتاحية إضافية. الكلمات المدمجة لا تزال فعّالة.",
       "addCta": "إضافة كلمة مفتاحية"
+    },
+    "webhooks": {
+      "title": "Webhooks",
+      "description": "Send signed, PII-safe events to your endpoints when things happen in your account.",
+      "createButton": "Add endpoint",
+      "loading": "Loading webhooks",
+      "empty": {
+        "title": "No webhook endpoints yet",
+        "description": "Add an endpoint to start receiving signed event deliveries."
+      },
+      "table": {
+        "url": "Endpoint URL",
+        "events": "Events",
+        "status": "Status",
+        "lastSuccess": "Last success",
+        "lastFailure": "Last failure",
+        "actions": "Actions",
+        "eventCount": "{count} events"
+      },
+      "status": {
+        "enabled": "Active",
+        "disabled": "Paused"
+      },
+      "actions": {
+        "testFire": "Send test event",
+        "rotateSecret": "Rotate secret",
+        "delete": "Delete"
+      },
+      "createDialog": {
+        "title": "Add webhook endpoint",
+        "description": "We'll POST signed events to this URL.",
+        "urlLabel": "Endpoint URL",
+        "httpWarning": "This URL is not HTTPS. Deliveries will be sent over an unencrypted connection.",
+        "eventsLabel": "Events to send",
+        "includePiiLabel": "Include personal data",
+        "includePiiHint": "Off by default. National IDs and contact details are redacted unless you opt in.",
+        "submit": "Add endpoint"
+      },
+      "createdDialog": {
+        "title": "Endpoint created",
+        "description": "Copy your signing secret now — it won't be shown again.",
+        "copy": "Copy secret",
+        "securityWarning": "Store this secret securely. You'll use it to verify the X-CO-Signature header on every delivery.",
+        "done": "Done"
+      },
+      "rotatedDialog": {
+        "title": "Secret rotated",
+        "description": "Copy the new signing secret now — the old one is already invalid."
+      },
+      "deleteDialog": {
+        "title": "Delete this endpoint?",
+        "description": "Deliveries to {url} will stop immediately. This can't be undone.",
+        "confirm": "Delete endpoint"
+      },
+      "toast": {
+        "created": "Webhook endpoint created",
+        "createFailed": "Couldn't create the endpoint",
+        "deleted": "Webhook endpoint deleted",
+        "deleteFailed": "Couldn't delete the endpoint",
+        "tested": "Test event queued",
+        "testFailed": "Couldn't send a test event",
+        "rotated": "Signing secret rotated",
+        "rotateFailed": "Couldn't rotate the secret"
+      }
     },
     "apiKeys": {
       "title": "مفاتيح API",

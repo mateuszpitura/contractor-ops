@@ -36,4 +36,5 @@ export { taxFormRouter } from './tax-form-router';
 export { teamRouter } from './team';
 export { timeRouter } from './time';
 export { userRouter } from './user';
+export { webhookSubscriptionRouter } from './webhook-subscription';
 export { workerRouter } from './worker';

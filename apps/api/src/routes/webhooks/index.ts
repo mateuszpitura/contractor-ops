@@ -41,6 +41,7 @@ import {
   registerPeppolPollRoute,
 } from '../peppol.js';
 import { registerRevalidateLegalRoute } from '../revalidate-legal.js';
+import { registerOutboundWebhookDeliverRoute } from '../webhooks-outbound.js';
 import { registerZatcaSubmitRoute } from '../zatca.js';
 import { registerInPostWebhookRoute } from './inpost.js';
 import { registerMultiProviderWebhookRoute } from './multi-provider.js';
@@ -80,6 +81,7 @@ const webhookPluginImpl: FastifyPluginAsync = async (app: FastifyInstance) => {
   registerPeppolOutboundRoute(app);
   registerKsefSyncRoute(app);
   registerOutboxDrainRoute(app);
+  registerOutboundWebhookDeliverRoute(app);
   registerOcrProcessRoute(app);
   registerExportsProcessRoute(app);
   registerGoogleWorkspaceSyncRoute(app);

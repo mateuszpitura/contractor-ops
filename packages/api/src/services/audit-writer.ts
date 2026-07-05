@@ -46,7 +46,8 @@ export type AuditEntityType =
   | 'EMPLOYEE_TIME_RECORD'
   | 'EWIDENCJA_SNAPSHOT'
   | 'WORKER'
-  | 'EMPLOYEE';
+  | 'EMPLOYEE'
+  | 'WEBHOOK_SUBSCRIPTION';
 
 /**
  * Thin shape accepted for `tx` — any Prisma client (base or transactional)

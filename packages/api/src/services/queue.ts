@@ -48,6 +48,7 @@ export interface JobRegistry {
     submissionId: string;
   };
   'outbox.drain': Record<string, never>;
+  'webhook.deliver': { attemptId: string };
 }
 
 export type JobName = keyof JobRegistry;
@@ -81,6 +82,10 @@ const JOB_CONFIG: Record<JobName, JobConfig> = {
   },
   'zatca.submit': { route: '/zatca/_submit', retries: 3 },
   'outbox.drain': { route: '/outbox/_drain', retries: 3 },
+  // The DB row owns the authoritative webhook backoff; QStash retries are a thin
+  // safety net for the route itself crashing (the handler returns 200 even on a
+  // delivery failure, which it records + re-enqueues).
+  'webhook.deliver': { route: '/webhooks-outbound/_deliver', retries: 2 },
 };
 
 // ---------------------------------------------------------------------------

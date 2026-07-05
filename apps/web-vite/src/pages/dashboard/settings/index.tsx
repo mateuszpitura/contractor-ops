@@ -38,6 +38,7 @@ import { PortalSubdomainSection } from '../../../components/settings/portal-subd
 import { ReminderRulesSection } from '../../../components/settings/reminder-rules-section.js';
 import { SettingsTabsScroller } from '../../../components/settings/settings-tabs-scroller.js';
 import { TransferTitleSettings } from '../../../components/settings/transfer-title-settings.js';
+import { WebhooksTab } from '../../../components/settings/webhooks-tab.js';
 import { AnimateIn } from '../../../components/shared/animate-in.js';
 import { PageLoadingSpinner } from '../../../components/shared/page-loading-spinner.js';
 import { WorkbenchPageHeader } from '../../../components/shared/workbench-page-header.js';
@@ -198,6 +199,12 @@ function SettingsIndexContent() {
           {canManageIntegrations ? (
             <TabsContent value="api-keys" className="mt-6">
               <ApiKeysTab />
+            </TabsContent>
+          ) : null}
+
+          {canManageIntegrations ? (
+            <TabsContent value="webhooks" className="mt-6">
+              <WebhooksTab />
             </TabsContent>
           ) : null}
 

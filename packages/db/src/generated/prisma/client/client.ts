@@ -733,6 +733,21 @@ export type Timesheet = Prisma.TimesheetModel
  */
 export type TimeEntry = Prisma.TimeEntryModel
 /**
+ * Model WebhookSubscription
+ * 
+ */
+export type WebhookSubscription = Prisma.WebhookSubscriptionModel
+/**
+ * Model WebhookDeliveryAttempt
+ * 
+ */
+export type WebhookDeliveryAttempt = Prisma.WebhookDeliveryAttemptModel
+/**
+ * Model WebhookDeadLetter
+ * 
+ */
+export type WebhookDeadLetter = Prisma.WebhookDeadLetterModel
+/**
  * Model Worker
  * 
  */

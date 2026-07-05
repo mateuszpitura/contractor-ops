@@ -14,6 +14,8 @@ import { createLogger } from '@contractor-ops/logger';
 
 import type { NotificationEvent } from '../notification-service';
 import { dispatch as dispatchNotification } from '../notification-service';
+import type { WebhookPublishPayload } from '../webhooks/fan-out';
+import { handleWebhookPublish } from '../webhooks/fan-out';
 
 const log = createLogger({ service: 'outbox-handlers' });
 
@@ -25,8 +27,8 @@ const log = createLogger({ service: 'outbox-handlers' });
  * The typed event-type catalogue. Add a literal here when introducing a new
  * outboxed side effect.
  */
-export type OutboxEventType = 'notification.dispatch';
-// Future: 'integration.webhook.publish' | 'search.reindex' | etc.
+export type OutboxEventType = 'notification.dispatch' | 'integration.webhook.publish';
+// Future: 'search.reindex' | etc.
 
 /**
  * Per-event payload contract. The handler signature is statically tied to
@@ -34,6 +36,7 @@ export type OutboxEventType = 'notification.dispatch';
  */
 export interface OutboxEventPayloadMap {
   'notification.dispatch': NotificationEvent;
+  'integration.webhook.publish': WebhookPublishPayload;
 }
 
 export interface OutboxHandlerContext {
@@ -81,6 +84,7 @@ const handleNotificationDispatch: OutboxHandler<'notification.dispatch'> = async
 
 const outboxHandlerRegistry: OutboxHandlerRegistry = {
   'notification.dispatch': handleNotificationDispatch,
+  'integration.webhook.publish': handleWebhookPublish,
 };
 
 interface DispatchOutboxEventInput {
@@ -108,8 +112,13 @@ export async function dispatchOutboxEvent(input: DispatchOutboxEventInput): Prom
   // A schema drift here would still surface as a runtime error inside the
   // handler (e.g. "Cannot read property 'recipientUserIds' of undefined")
   // which the drain treats as transient → retry → exhaust → Sentry.
-  const typedPayload = input.payload as OutboxEventPayloadMap[typeof input.eventType];
-  await handler(typedPayload, {
+  // The registry value is a union of per-event handler signatures; TS collapses
+  // the call to the parameter intersection. The (orgId, eventType)-keyed row
+  // guarantees the payload matches this handler, so we invoke through an
+  // unknown-payload signature. A schema drift still surfaces as a runtime error
+  // inside the handler, which the drain treats as transient → retry → Sentry.
+  const invoke = handler as (payload: unknown, ctx: OutboxHandlerContext) => Promise<void>;
+  await invoke(input.payload, {
     outboxEventId: input.id,
     organizationId: input.organizationId,
   });

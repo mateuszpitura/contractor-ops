@@ -211,6 +211,11 @@
       "import": "./src/services/outbox/index.ts",
       "default": "./src/services/outbox/index.ts"
     },
+    "./services/webhooks/dispatcher": {
+      "types": "./src/services/webhooks/dispatcher.ts",
+      "import": "./src/services/webhooks/dispatcher.ts",
+      "default": "./src/services/webhooks/dispatcher.ts"
+    },
     "./services/exports": {
       "types": "./src/services/exports/index.ts",
       "import": "./src/services/exports/index.ts",

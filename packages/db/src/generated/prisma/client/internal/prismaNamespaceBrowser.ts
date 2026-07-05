@@ -189,6 +189,9 @@ export const ModelName = {
   TaxIdValidation: 'TaxIdValidation',
   Timesheet: 'Timesheet',
   TimeEntry: 'TimeEntry',
+  WebhookSubscription: 'WebhookSubscription',
+  WebhookDeliveryAttempt: 'WebhookDeliveryAttempt',
+  WebhookDeadLetter: 'WebhookDeadLetter',
   Worker: 'Worker',
   WorkflowTemplate: 'WorkflowTemplate',
   WorkflowTaskTemplate: 'WorkflowTaskTemplate',
@@ -2730,6 +2733,60 @@ export const TimeEntryScalarFieldEnum = {
 } as const
 
 export type TimeEntryScalarFieldEnum = (typeof TimeEntryScalarFieldEnum)[keyof typeof TimeEntryScalarFieldEnum]
+
+
+export const WebhookSubscriptionScalarFieldEnum = {
+  id: 'id',
+  organizationId: 'organizationId',
+  url: 'url',
+  eventFilter: 'eventFilter',
+  secretEncrypted: 'secretEncrypted',
+  includePii: 'includePii',
+  httpAllowed: 'httpAllowed',
+  enabled: 'enabled',
+  maxRetries: 'maxRetries',
+  lastSuccessAt: 'lastSuccessAt',
+  lastFailureAt: 'lastFailureAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type WebhookSubscriptionScalarFieldEnum = (typeof WebhookSubscriptionScalarFieldEnum)[keyof typeof WebhookSubscriptionScalarFieldEnum]
+
+
+export const WebhookDeliveryAttemptScalarFieldEnum = {
+  id: 'id',
+  subscriptionId: 'subscriptionId',
+  organizationId: 'organizationId',
+  outboxEventId: 'outboxEventId',
+  eventType: 'eventType',
+  payloadJson: 'payloadJson',
+  status: 'status',
+  attempts: 'attempts',
+  nextAttemptAt: 'nextAttemptAt',
+  responseStatus: 'responseStatus',
+  lastError: 'lastError',
+  deliveredAt: 'deliveredAt',
+  createdAt: 'createdAt'
+} as const
+
+export type WebhookDeliveryAttemptScalarFieldEnum = (typeof WebhookDeliveryAttemptScalarFieldEnum)[keyof typeof WebhookDeliveryAttemptScalarFieldEnum]
+
+
+export const WebhookDeadLetterScalarFieldEnum = {
+  id: 'id',
+  subscriptionId: 'subscriptionId',
+  organizationId: 'organizationId',
+  attemptId: 'attemptId',
+  eventType: 'eventType',
+  payloadJson: 'payloadJson',
+  lastError: 'lastError',
+  attempts: 'attempts',
+  failedAt: 'failedAt',
+  replayedAt: 'replayedAt'
+} as const
+
+export type WebhookDeadLetterScalarFieldEnum = (typeof WebhookDeadLetterScalarFieldEnum)[keyof typeof WebhookDeadLetterScalarFieldEnum]
 
 
 export const WorkerScalarFieldEnum = {

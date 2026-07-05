@@ -62,12 +62,11 @@ payments.openapi(getByIdRoute, async c => {
   return c.json({ data: result }, 200);
 });
 
-// --- Hidden write route (double-dark) ---
+// --- Write route (live behind the per-org module.public-api flag gate) ---
 
 const updateRouteDef = createRoute({
   method: 'patch',
   path: '/',
-  hide: true,
   request: { body: jsonBody(publicApiPaymentUpdateInputSchema) },
   responses: writeResponses,
 });

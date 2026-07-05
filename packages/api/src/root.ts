@@ -51,6 +51,7 @@ import {
   teamRouter,
   timeRouter,
   userRouter,
+  webhookSubscriptionRouter,
   workerRouter,
 } from './routers/core/index';
 import { personnelFileRouter } from './routers/core/personnel-file/index';
@@ -200,6 +201,7 @@ const conditionalWorkforceRouters = isWorkforceRegistered()
 export const appRouter = router({
   adminBoeRate: adminBoeRateRouter, // adminBoeRate: Super-admin BoE base rate CRUD — list, insert, update, delete
   apiKey: apiKeyRouter, // apiKey: Enterprise API key management — create, list, update, revoke
+  webhookSubscription: webhookSubscriptionRouter, // webhookSubscription: outbound webhook endpoints — create, list, update, rotateSecret, delete, testFire, listDeliveries
   bacs: bacsRouter, // bacs: BACS Std 18 file generation — getSubmitterMasks, previewExport, generateExport, validateSortCode, saveSubmitterConfig
   organization: organizationRouter,
   // Organization Definitions Management — Teams / Projects / Cost Centers
