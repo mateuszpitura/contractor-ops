@@ -98,9 +98,11 @@ interface ExportTransactionParams {
 /**
  * The export transaction body: re-verify eligibility, perform the atomic
  * DRAFT/LOCKED → EXPORTED transition, and (only on the winning transition)
- * write the export + compliance rows. Returns the run as it stands after the
- * transaction — the freshly EXPORTED row for the winner, or the already-advanced
- * row for a loser that found `count: 0`.
+ * write the export + compliance rows. Signals whether THIS call won the
+ * transition (`exported: true`) or lost the race to a concurrent caller that
+ * already advanced the run (`exported: false`). The caller must not return a
+ * bank file for a loser — the file buffer is built before the transition, so a
+ * lost race would otherwise hand out a second copy of the same payment file.
  */
 async function runExportTransaction(tx: TxClient, params: ExportTransactionParams) {
   await assertContractorPaymentEligibility(params.contractorIds, {
@@ -136,7 +138,7 @@ async function runExportTransaction(tx: TxClient, params: ExportTransactionParam
     if (!current) {
       throw new TRPCError({ code: 'NOT_FOUND', message: E.PAYMENT_RUN_NOT_FOUND });
     }
-    return current;
+    return { run: current, exported: false as const };
   }
 
   const updated = await tx.paymentRun.findFirstOrThrow({
@@ -145,7 +147,7 @@ async function runExportTransaction(tx: TxClient, params: ExportTransactionParam
 
   await writeExportAndComplianceRows(tx, params);
 
-  return updated;
+  return { run: updated, exported: true as const };
 }
 
 /**
@@ -326,9 +328,9 @@ export const paymentExportRouter = router({
       );
       const exportDateUtc = new Date().toISOString().slice(0, 10);
 
-      let updatedRun: Awaited<ReturnType<typeof ctx.db.paymentRun.update>> | typeof prepared.run;
+      let exportResult: Awaited<ReturnType<typeof runExportTransaction>>;
       try {
-        updatedRun = await ctx.db.$transaction(tx =>
+        exportResult = await ctx.db.$transaction(tx =>
           runExportTransaction(tx, {
             organizationId: ctx.organizationId,
             userId: ctx.user.id,
@@ -356,8 +358,21 @@ export const paymentExportRouter = router({
         throw err;
       }
 
+      // The bank file was built before the transition (it has to exist for the
+      // winner), but only the caller that actually flipped the run to EXPORTED may
+      // return it. A race loser returns a null file with the idempotent flag so an
+      // operator never receives a second copy of an already-exported payment file.
+      if (!exportResult.exported) {
+        return {
+          run: exportResult.run,
+          fileBase64: null,
+          fileName: null,
+          idempotent: true,
+        };
+      }
+
       return {
-        run: updatedRun,
+        run: exportResult.run,
         fileBase64: fileBuffer.toString('base64'),
         fileName: `${prepared.run.runNumber ?? prepared.run.id}.${ext}`,
       };

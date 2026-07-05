@@ -247,6 +247,13 @@ describe('payment.lockAndExport double-export TOCTOU (F4)', () => {
     // double-export.
     expect(first.run).toBeDefined();
     expect(second.run).toBeDefined();
+
+    // The bank file is generated before the guarded transition, so both racers
+    // hold a buffer — but only the transition winner may return it. Exactly one
+    // of the two responses carries a non-null `fileBase64`; the loser's file is
+    // null, so an operator can never receive two copies of the same payment file.
+    const filesReturned = [first, second].filter(r => r.fileBase64 != null);
+    expect(filesReturned).toHaveLength(1);
   });
 
   it('a second sequential call after export is idempotent and writes no new rows', async () => {

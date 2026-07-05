@@ -5,8 +5,9 @@ tags: [payments, bacs, skonto, banking]
 source_commit: 70f5782d78e33ba98c82e4ccda2cd4b0b4aff216
 verify_with:
   - packages/api/src/routers/finance/payment.ts
+  - packages/api/src/routers/finance/payment-export-router.ts
   - packages/api/src/routers/finance/bacs.ts
-updated: 2026-06-09
+updated: 2026-07-05
 ---
 
 # Payments and bank files
@@ -31,6 +32,7 @@ Payment runs, lock+export (CSV/Elixir/SEPA/BACS), bank statement import, skonto,
 - `compliance-payment-gate` on run creation
 - [[patterns/entity-id-and-money]] in UI
 - Audit gap on some payment mutations — [[decisions/tech-debt-hotspots]]
+- `lockAndExport` exports the bank file exactly once per run. The DRAFT/LOCKED → EXPORTED flip is a guarded `updateMany` (single winner); the file buffer is built *before* the flip, so a concurrent race loser returns `{ fileBase64: null, fileName: null, idempotent: true }` — never a second copy of the payment file.
 
 ## Related
 
