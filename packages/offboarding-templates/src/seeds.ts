@@ -4,7 +4,7 @@
 // IP_ASSIGNMENT will be hooked into the `requiredDocs` arrays where each
 // seed currently declares HANDOVER_DOCUMENT.
 
-import type { Seed } from './types';
+import type { Seed } from './types.js';
 
 export const OFFBOARDING_TEMPLATE_SEEDS: readonly Seed[] = [
   {

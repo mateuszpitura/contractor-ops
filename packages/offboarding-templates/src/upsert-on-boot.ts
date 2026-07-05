@@ -5,7 +5,7 @@
 
 import type { PrismaClient } from '@contractor-ops/db';
 import { Prisma } from '@contractor-ops/db/generated/prisma/client';
-import { OFFBOARDING_TEMPLATE_SEEDS } from './seeds';
+import { OFFBOARDING_TEMPLATE_SEEDS } from './seeds.js';
 
 /**
  * Upserts the 4 KT seed templates for an organization. Idempotent — re-running

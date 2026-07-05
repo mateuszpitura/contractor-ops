@@ -35,6 +35,7 @@
   "dependencies": {
     "@contractor-ops/db": "workspace:*",
     "@contractor-ops/logger": "workspace:*",
+    "@contractor-ops/offboarding-templates": "workspace:*",
     "better-auth": "^1.6.9",
     "resend": "^6.12.3",
     "zod": "^4.4.3"

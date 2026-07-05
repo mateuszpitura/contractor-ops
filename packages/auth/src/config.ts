@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto';
 import type { DataRegion } from '@contractor-ops/db';
 import { prisma } from '@contractor-ops/db';
 import { createLogger } from '@contractor-ops/logger';
+import { upsertSeedTemplates } from '@contractor-ops/offboarding-templates';
 import { betterAuth } from 'better-auth';
 import { prismaAdapter } from 'better-auth/adapters/prisma';
 import { APIError, createAuthMiddleware } from 'better-auth/api';
@@ -138,6 +139,42 @@ export function resolveDataRegionFromBilling(input: { billingCountry?: string })
   const parsed = billingCountrySchema.safeParse(input.billingCountry);
   if (parsed.success && parsed.data === 'US') return 'US';
   return 'EU';
+}
+
+/**
+ * Materialise the offboarding KT seed templates (`WorkflowRoleTemplate` rows +
+ * their task children) for a freshly-created organization. Wired into the
+ * organization plugin's `afterCreateOrganization` hook so EVERY org — not just
+ * dev-seeded ones — gets its seed rows; without them `selectForContractor`
+ * degrades to the NULL `workflowRoleId` fallback.
+ *
+ * Non-fatal by design: Better Auth does not roll the organization back when an
+ * `afterCreate` hook throws, so a failed seed must not surface as a create
+ * error. The failure is logged (never silently swallowed) and the org proceeds
+ * on the fallback path. Idempotent — `upsertSeedTemplates` keys on the canonical
+ * unique constraints, so a retry/replay is safe.
+ *
+ * Uses the un-scoped base `prisma` (the `@contractor-ops/db` barrel export is
+ * NOT tenant-wrapped — tenant scope is applied per-request via
+ * `createTenantClient` in the API layer), so this cross-org bootstrap write for
+ * the brand-new org is not rejected by the tenant-frame guard.
+ *
+ * Exported so the seeding contract is unit-testable without booting the full
+ * Better Auth server (mirrors `resolveDataRegionFromBilling`).
+ */
+export async function seedOrganizationDefaults(organizationId: string): Promise<void> {
+  try {
+    await upsertSeedTemplates(prisma, organizationId);
+    log.info(
+      { event: 'auth.org.seed_templates', organizationId },
+      'offboarding seed templates upserted for new organization',
+    );
+  } catch (err) {
+    log.error(
+      { event: 'auth.org.seed_templates_failed', organizationId, err },
+      'seed upsert failed; org will use NULL workflowRoleId fallback',
+    );
+  }
 }
 
 /**
@@ -535,6 +572,11 @@ export const auth = betterAuth({
           const { billingCountry, ...rest } = org as typeof org & { billingCountry?: string };
           const dataRegion = resolveDataRegionFromBilling({ billingCountry });
           return { data: { ...rest, dataRegion } };
+        },
+        // Seed the per-org offboarding KT `WorkflowRoleTemplate` rows the moment
+        // an organization is created. Non-fatal (see `seedOrganizationDefaults`).
+        afterCreateOrganization: async ({ organization: org }) => {
+          await seedOrganizationDefaults(org.id);
         },
       },
       roles: {

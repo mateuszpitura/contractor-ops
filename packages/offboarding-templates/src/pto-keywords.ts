@@ -3,7 +3,7 @@
 // Admin-managed per-locale additions are handled separately; this file is the
 // static seed that bootstraps detection.
 
-import type { PtoKeywords } from './types';
+import type { PtoKeywords } from './types.js';
 
 export const PTO_KEYWORDS: PtoKeywords = {
   en: ['PTO', 'OOO', 'Out of Office', 'Vacation'],

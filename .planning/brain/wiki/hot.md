@@ -121,7 +121,7 @@ Chapter-3 foreign-recipient withholding + US worker classification, all dark beh
 
 ## First-run org onboarding
 
-New user with no org → `DashboardShellContainer` (`components/layout/dashboard-shell.tsx`) renders `OrganizationOnboardingContainer` (`components/onboarding/organization-onboarding.tsx`) instead of the shell, so tenant procedures never throw `tenantNoActiveOrganization`. Create via Better Auth `authClient.organization.create` + `setActive` (no tRPC), then reload. Detail: [[domains/onboarding-and-import]].
+New user with no org → `DashboardShellContainer` (`components/layout/dashboard-shell.tsx`) renders `OrganizationOnboardingContainer` (`components/onboarding/organization-onboarding.tsx`) instead of the shell, so tenant procedures never throw `tenantNoActiveOrganization`. Create via Better Auth `authClient.organization.create` + `setActive` (no tRPC), then reload. On the server the org plugin's `afterCreateOrganization` hook (`packages/auth/src/config.ts` → `seedOrganizationDefaults`) materialises the 4 KT `WorkflowRoleTemplate` seed rows for the new org (non-fatal, idempotent, un-scoped `prisma`); existing orgs → `tsx packages/api/scripts/backfill-workflow-role-templates.ts`. The hook can't call `runPostOrganizationCreateHooks` directly (it lives in `packages/api`, which depends on `auth` → cycle) so it calls `upsertSeedTemplates` from the leaf `@contractor-ops/offboarding-templates`. Detail: [[domains/onboarding-and-import]] · [[domains/workflows-and-roles]].
 
 ## AuditLog is DB-level append-only
 
