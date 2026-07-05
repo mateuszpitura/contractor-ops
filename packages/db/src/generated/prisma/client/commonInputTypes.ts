@@ -1279,6 +1279,13 @@ export type EnumEmploymentStatusNullableFilter<$PrismaModel = never> = {
   not?: Prisma.NestedEnumEmploymentStatusNullableFilter<$PrismaModel> | $Enums.EmploymentStatus | null
 }
 
+export type EnumEmploymentTypeNullableFilter<$PrismaModel = never> = {
+  equals?: $Enums.EmploymentType | Prisma.EnumEmploymentTypeFieldRefInput<$PrismaModel> | null
+  in?: $Enums.EmploymentType[] | Prisma.ListEnumEmploymentTypeFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.EmploymentType[] | Prisma.ListEnumEmploymentTypeFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumEmploymentTypeNullableFilter<$PrismaModel> | $Enums.EmploymentType | null
+}
+
 export type EnumNitaqatBandNullableWithAggregatesFilter<$PrismaModel = never> = {
   equals?: $Enums.NitaqatBand | Prisma.EnumNitaqatBandFieldRefInput<$PrismaModel> | null
   in?: $Enums.NitaqatBand[] | Prisma.ListEnumNitaqatBandFieldRefInput<$PrismaModel> | null
@@ -1297,6 +1304,16 @@ export type EnumEmploymentStatusNullableWithAggregatesFilter<$PrismaModel = neve
   _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
   _min?: Prisma.NestedEnumEmploymentStatusNullableFilter<$PrismaModel>
   _max?: Prisma.NestedEnumEmploymentStatusNullableFilter<$PrismaModel>
+}
+
+export type EnumEmploymentTypeNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.EmploymentType | Prisma.EnumEmploymentTypeFieldRefInput<$PrismaModel> | null
+  in?: $Enums.EmploymentType[] | Prisma.ListEnumEmploymentTypeFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.EmploymentType[] | Prisma.ListEnumEmploymentTypeFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumEmploymentTypeNullableWithAggregatesFilter<$PrismaModel> | $Enums.EmploymentType | null
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumEmploymentTypeNullableFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumEmploymentTypeNullableFilter<$PrismaModel>
 }
 
 export type EnumStatutoryCertificateStatusFilter<$PrismaModel = never> = {
@@ -2428,6 +2445,13 @@ export type EnumPersonnelDocClassificationMethodFilter<$PrismaModel = never> = {
   not?: Prisma.NestedEnumPersonnelDocClassificationMethodFilter<$PrismaModel> | $Enums.PersonnelDocClassificationMethod
 }
 
+export type EnumEmployeeDocCategoryNullableFilter<$PrismaModel = never> = {
+  equals?: $Enums.EmployeeDocCategory | Prisma.EnumEmployeeDocCategoryFieldRefInput<$PrismaModel> | null
+  in?: $Enums.EmployeeDocCategory[] | Prisma.ListEnumEmployeeDocCategoryFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.EmployeeDocCategory[] | Prisma.ListEnumEmployeeDocCategoryFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumEmployeeDocCategoryNullableFilter<$PrismaModel> | $Enums.EmployeeDocCategory | null
+}
+
 export type EnumPersonnelFileSectionNullableWithAggregatesFilter<$PrismaModel = never> = {
   equals?: $Enums.PersonnelFileSection | Prisma.EnumPersonnelFileSectionFieldRefInput<$PrismaModel> | null
   in?: $Enums.PersonnelFileSection[] | Prisma.ListEnumPersonnelFileSectionFieldRefInput<$PrismaModel> | null
@@ -2446,6 +2470,16 @@ export type EnumPersonnelDocClassificationMethodWithAggregatesFilter<$PrismaMode
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumPersonnelDocClassificationMethodFilter<$PrismaModel>
   _max?: Prisma.NestedEnumPersonnelDocClassificationMethodFilter<$PrismaModel>
+}
+
+export type EnumEmployeeDocCategoryNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.EmployeeDocCategory | Prisma.EnumEmployeeDocCategoryFieldRefInput<$PrismaModel> | null
+  in?: $Enums.EmployeeDocCategory[] | Prisma.ListEnumEmployeeDocCategoryFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.EmployeeDocCategory[] | Prisma.ListEnumEmployeeDocCategoryFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumEmployeeDocCategoryNullableWithAggregatesFilter<$PrismaModel> | $Enums.EmployeeDocCategory | null
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumEmployeeDocCategoryNullableFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumEmployeeDocCategoryNullableFilter<$PrismaModel>
 }
 
 export type EnumPortalSubjectTypeFilter<$PrismaModel = never> = {
@@ -4114,6 +4148,13 @@ export type NestedEnumEmploymentStatusNullableFilter<$PrismaModel = never> = {
   not?: Prisma.NestedEnumEmploymentStatusNullableFilter<$PrismaModel> | $Enums.EmploymentStatus | null
 }
 
+export type NestedEnumEmploymentTypeNullableFilter<$PrismaModel = never> = {
+  equals?: $Enums.EmploymentType | Prisma.EnumEmploymentTypeFieldRefInput<$PrismaModel> | null
+  in?: $Enums.EmploymentType[] | Prisma.ListEnumEmploymentTypeFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.EmploymentType[] | Prisma.ListEnumEmploymentTypeFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumEmploymentTypeNullableFilter<$PrismaModel> | $Enums.EmploymentType | null
+}
+
 export type NestedEnumNitaqatBandNullableWithAggregatesFilter<$PrismaModel = never> = {
   equals?: $Enums.NitaqatBand | Prisma.EnumNitaqatBandFieldRefInput<$PrismaModel> | null
   in?: $Enums.NitaqatBand[] | Prisma.ListEnumNitaqatBandFieldRefInput<$PrismaModel> | null
@@ -4132,6 +4173,16 @@ export type NestedEnumEmploymentStatusNullableWithAggregatesFilter<$PrismaModel 
   _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
   _min?: Prisma.NestedEnumEmploymentStatusNullableFilter<$PrismaModel>
   _max?: Prisma.NestedEnumEmploymentStatusNullableFilter<$PrismaModel>
+}
+
+export type NestedEnumEmploymentTypeNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.EmploymentType | Prisma.EnumEmploymentTypeFieldRefInput<$PrismaModel> | null
+  in?: $Enums.EmploymentType[] | Prisma.ListEnumEmploymentTypeFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.EmploymentType[] | Prisma.ListEnumEmploymentTypeFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumEmploymentTypeNullableWithAggregatesFilter<$PrismaModel> | $Enums.EmploymentType | null
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumEmploymentTypeNullableFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumEmploymentTypeNullableFilter<$PrismaModel>
 }
 
 export type NestedEnumStatutoryCertificateStatusFilter<$PrismaModel = never> = {
@@ -5263,6 +5314,13 @@ export type NestedEnumPersonnelDocClassificationMethodFilter<$PrismaModel = neve
   not?: Prisma.NestedEnumPersonnelDocClassificationMethodFilter<$PrismaModel> | $Enums.PersonnelDocClassificationMethod
 }
 
+export type NestedEnumEmployeeDocCategoryNullableFilter<$PrismaModel = never> = {
+  equals?: $Enums.EmployeeDocCategory | Prisma.EnumEmployeeDocCategoryFieldRefInput<$PrismaModel> | null
+  in?: $Enums.EmployeeDocCategory[] | Prisma.ListEnumEmployeeDocCategoryFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.EmployeeDocCategory[] | Prisma.ListEnumEmployeeDocCategoryFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumEmployeeDocCategoryNullableFilter<$PrismaModel> | $Enums.EmployeeDocCategory | null
+}
+
 export type NestedEnumPersonnelFileSectionNullableWithAggregatesFilter<$PrismaModel = never> = {
   equals?: $Enums.PersonnelFileSection | Prisma.EnumPersonnelFileSectionFieldRefInput<$PrismaModel> | null
   in?: $Enums.PersonnelFileSection[] | Prisma.ListEnumPersonnelFileSectionFieldRefInput<$PrismaModel> | null
@@ -5281,6 +5339,16 @@ export type NestedEnumPersonnelDocClassificationMethodWithAggregatesFilter<$Pris
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumPersonnelDocClassificationMethodFilter<$PrismaModel>
   _max?: Prisma.NestedEnumPersonnelDocClassificationMethodFilter<$PrismaModel>
+}
+
+export type NestedEnumEmployeeDocCategoryNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.EmployeeDocCategory | Prisma.EnumEmployeeDocCategoryFieldRefInput<$PrismaModel> | null
+  in?: $Enums.EmployeeDocCategory[] | Prisma.ListEnumEmployeeDocCategoryFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.EmployeeDocCategory[] | Prisma.ListEnumEmployeeDocCategoryFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumEmployeeDocCategoryNullableWithAggregatesFilter<$PrismaModel> | $Enums.EmployeeDocCategory | null
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumEmployeeDocCategoryNullableFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumEmployeeDocCategoryNullableFilter<$PrismaModel>
 }
 
 export type NestedEnumPortalSubjectTypeFilter<$PrismaModel = never> = {

@@ -44,6 +44,8 @@ export type PersonnelFileDocumentMinAggregateOutputType = {
   classificationMethod: $Enums.PersonnelDocClassificationMethod | null
   aiSectionGuess: $Enums.PersonnelFileSection | null
   aiConfidence: number | null
+  expiresAt: Date | null
+  docCategory: $Enums.EmployeeDocCategory | null
   createdAt: Date | null
   updatedAt: Date | null
   deletedAt: Date | null
@@ -59,6 +61,8 @@ export type PersonnelFileDocumentMaxAggregateOutputType = {
   classificationMethod: $Enums.PersonnelDocClassificationMethod | null
   aiSectionGuess: $Enums.PersonnelFileSection | null
   aiConfidence: number | null
+  expiresAt: Date | null
+  docCategory: $Enums.EmployeeDocCategory | null
   createdAt: Date | null
   updatedAt: Date | null
   deletedAt: Date | null
@@ -74,6 +78,8 @@ export type PersonnelFileDocumentCountAggregateOutputType = {
   classificationMethod: number
   aiSectionGuess: number
   aiConfidence: number
+  expiresAt: number
+  docCategory: number
   createdAt: number
   updatedAt: number
   deletedAt: number
@@ -99,6 +105,8 @@ export type PersonnelFileDocumentMinAggregateInputType = {
   classificationMethod?: true
   aiSectionGuess?: true
   aiConfidence?: true
+  expiresAt?: true
+  docCategory?: true
   createdAt?: true
   updatedAt?: true
   deletedAt?: true
@@ -114,6 +122,8 @@ export type PersonnelFileDocumentMaxAggregateInputType = {
   classificationMethod?: true
   aiSectionGuess?: true
   aiConfidence?: true
+  expiresAt?: true
+  docCategory?: true
   createdAt?: true
   updatedAt?: true
   deletedAt?: true
@@ -129,6 +139,8 @@ export type PersonnelFileDocumentCountAggregateInputType = {
   classificationMethod?: true
   aiSectionGuess?: true
   aiConfidence?: true
+  expiresAt?: true
+  docCategory?: true
   createdAt?: true
   updatedAt?: true
   deletedAt?: true
@@ -231,6 +243,8 @@ export type PersonnelFileDocumentGroupByOutputType = {
   classificationMethod: $Enums.PersonnelDocClassificationMethod
   aiSectionGuess: $Enums.PersonnelFileSection | null
   aiConfidence: number | null
+  expiresAt: Date | null
+  docCategory: $Enums.EmployeeDocCategory | null
   createdAt: Date
   updatedAt: Date
   deletedAt: Date | null
@@ -269,6 +283,8 @@ export type PersonnelFileDocumentWhereInput = {
   classificationMethod?: Prisma.EnumPersonnelDocClassificationMethodFilter<"PersonnelFileDocument"> | $Enums.PersonnelDocClassificationMethod
   aiSectionGuess?: Prisma.EnumPersonnelFileSectionNullableFilter<"PersonnelFileDocument"> | $Enums.PersonnelFileSection | null
   aiConfidence?: Prisma.IntNullableFilter<"PersonnelFileDocument"> | number | null
+  expiresAt?: Prisma.DateTimeNullableFilter<"PersonnelFileDocument"> | Date | string | null
+  docCategory?: Prisma.EnumEmployeeDocCategoryNullableFilter<"PersonnelFileDocument"> | $Enums.EmployeeDocCategory | null
   createdAt?: Prisma.DateTimeFilter<"PersonnelFileDocument"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"PersonnelFileDocument"> | Date | string
   deletedAt?: Prisma.DateTimeNullableFilter<"PersonnelFileDocument"> | Date | string | null
@@ -287,6 +303,8 @@ export type PersonnelFileDocumentOrderByWithRelationInput = {
   classificationMethod?: Prisma.SortOrder
   aiSectionGuess?: Prisma.SortOrderInput | Prisma.SortOrder
   aiConfidence?: Prisma.SortOrderInput | Prisma.SortOrder
+  expiresAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  docCategory?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -308,6 +326,8 @@ export type PersonnelFileDocumentWhereUniqueInput = Prisma.AtLeast<{
   classificationMethod?: Prisma.EnumPersonnelDocClassificationMethodFilter<"PersonnelFileDocument"> | $Enums.PersonnelDocClassificationMethod
   aiSectionGuess?: Prisma.EnumPersonnelFileSectionNullableFilter<"PersonnelFileDocument"> | $Enums.PersonnelFileSection | null
   aiConfidence?: Prisma.IntNullableFilter<"PersonnelFileDocument"> | number | null
+  expiresAt?: Prisma.DateTimeNullableFilter<"PersonnelFileDocument"> | Date | string | null
+  docCategory?: Prisma.EnumEmployeeDocCategoryNullableFilter<"PersonnelFileDocument"> | $Enums.EmployeeDocCategory | null
   createdAt?: Prisma.DateTimeFilter<"PersonnelFileDocument"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"PersonnelFileDocument"> | Date | string
   deletedAt?: Prisma.DateTimeNullableFilter<"PersonnelFileDocument"> | Date | string | null
@@ -326,6 +346,8 @@ export type PersonnelFileDocumentOrderByWithAggregationInput = {
   classificationMethod?: Prisma.SortOrder
   aiSectionGuess?: Prisma.SortOrderInput | Prisma.SortOrder
   aiConfidence?: Prisma.SortOrderInput | Prisma.SortOrder
+  expiresAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  docCategory?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -349,6 +371,8 @@ export type PersonnelFileDocumentScalarWhereWithAggregatesInput = {
   classificationMethod?: Prisma.EnumPersonnelDocClassificationMethodWithAggregatesFilter<"PersonnelFileDocument"> | $Enums.PersonnelDocClassificationMethod
   aiSectionGuess?: Prisma.EnumPersonnelFileSectionNullableWithAggregatesFilter<"PersonnelFileDocument"> | $Enums.PersonnelFileSection | null
   aiConfidence?: Prisma.IntNullableWithAggregatesFilter<"PersonnelFileDocument"> | number | null
+  expiresAt?: Prisma.DateTimeNullableWithAggregatesFilter<"PersonnelFileDocument"> | Date | string | null
+  docCategory?: Prisma.EnumEmployeeDocCategoryNullableWithAggregatesFilter<"PersonnelFileDocument"> | $Enums.EmployeeDocCategory | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"PersonnelFileDocument"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"PersonnelFileDocument"> | Date | string
   deletedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"PersonnelFileDocument"> | Date | string | null
@@ -361,6 +385,8 @@ export type PersonnelFileDocumentCreateInput = {
   classificationMethod?: $Enums.PersonnelDocClassificationMethod
   aiSectionGuess?: $Enums.PersonnelFileSection | null
   aiConfidence?: number | null
+  expiresAt?: Date | string | null
+  docCategory?: $Enums.EmployeeDocCategory | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -379,6 +405,8 @@ export type PersonnelFileDocumentUncheckedCreateInput = {
   classificationMethod?: $Enums.PersonnelDocClassificationMethod
   aiSectionGuess?: $Enums.PersonnelFileSection | null
   aiConfidence?: number | null
+  expiresAt?: Date | string | null
+  docCategory?: $Enums.EmployeeDocCategory | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -391,6 +419,8 @@ export type PersonnelFileDocumentUpdateInput = {
   classificationMethod?: Prisma.EnumPersonnelDocClassificationMethodFieldUpdateOperationsInput | $Enums.PersonnelDocClassificationMethod
   aiSectionGuess?: Prisma.NullableEnumPersonnelFileSectionFieldUpdateOperationsInput | $Enums.PersonnelFileSection | null
   aiConfidence?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  expiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  docCategory?: Prisma.NullableEnumEmployeeDocCategoryFieldUpdateOperationsInput | $Enums.EmployeeDocCategory | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -409,6 +439,8 @@ export type PersonnelFileDocumentUncheckedUpdateInput = {
   classificationMethod?: Prisma.EnumPersonnelDocClassificationMethodFieldUpdateOperationsInput | $Enums.PersonnelDocClassificationMethod
   aiSectionGuess?: Prisma.NullableEnumPersonnelFileSectionFieldUpdateOperationsInput | $Enums.PersonnelFileSection | null
   aiConfidence?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  expiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  docCategory?: Prisma.NullableEnumEmployeeDocCategoryFieldUpdateOperationsInput | $Enums.EmployeeDocCategory | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -424,6 +456,8 @@ export type PersonnelFileDocumentCreateManyInput = {
   classificationMethod?: $Enums.PersonnelDocClassificationMethod
   aiSectionGuess?: $Enums.PersonnelFileSection | null
   aiConfidence?: number | null
+  expiresAt?: Date | string | null
+  docCategory?: $Enums.EmployeeDocCategory | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -436,6 +470,8 @@ export type PersonnelFileDocumentUpdateManyMutationInput = {
   classificationMethod?: Prisma.EnumPersonnelDocClassificationMethodFieldUpdateOperationsInput | $Enums.PersonnelDocClassificationMethod
   aiSectionGuess?: Prisma.NullableEnumPersonnelFileSectionFieldUpdateOperationsInput | $Enums.PersonnelFileSection | null
   aiConfidence?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  expiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  docCategory?: Prisma.NullableEnumEmployeeDocCategoryFieldUpdateOperationsInput | $Enums.EmployeeDocCategory | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -451,6 +487,8 @@ export type PersonnelFileDocumentUncheckedUpdateManyInput = {
   classificationMethod?: Prisma.EnumPersonnelDocClassificationMethodFieldUpdateOperationsInput | $Enums.PersonnelDocClassificationMethod
   aiSectionGuess?: Prisma.NullableEnumPersonnelFileSectionFieldUpdateOperationsInput | $Enums.PersonnelFileSection | null
   aiConfidence?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  expiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  docCategory?: Prisma.NullableEnumEmployeeDocCategoryFieldUpdateOperationsInput | $Enums.EmployeeDocCategory | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -481,6 +519,8 @@ export type PersonnelFileDocumentCountOrderByAggregateInput = {
   classificationMethod?: Prisma.SortOrder
   aiSectionGuess?: Prisma.SortOrder
   aiConfidence?: Prisma.SortOrder
+  expiresAt?: Prisma.SortOrder
+  docCategory?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrder
@@ -500,6 +540,8 @@ export type PersonnelFileDocumentMaxOrderByAggregateInput = {
   classificationMethod?: Prisma.SortOrder
   aiSectionGuess?: Prisma.SortOrder
   aiConfidence?: Prisma.SortOrder
+  expiresAt?: Prisma.SortOrder
+  docCategory?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrder
@@ -515,6 +557,8 @@ export type PersonnelFileDocumentMinOrderByAggregateInput = {
   classificationMethod?: Prisma.SortOrder
   aiSectionGuess?: Prisma.SortOrder
   aiConfidence?: Prisma.SortOrder
+  expiresAt?: Prisma.SortOrder
+  docCategory?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrder
@@ -648,6 +692,10 @@ export type EnumPersonnelDocClassificationMethodFieldUpdateOperationsInput = {
   set?: $Enums.PersonnelDocClassificationMethod
 }
 
+export type NullableEnumEmployeeDocCategoryFieldUpdateOperationsInput = {
+  set?: $Enums.EmployeeDocCategory | null
+}
+
 export type PersonnelFileDocumentCreateWithoutDocumentInput = {
   id?: string
   section?: $Enums.PersonnelFileSection | null
@@ -655,6 +703,8 @@ export type PersonnelFileDocumentCreateWithoutDocumentInput = {
   classificationMethod?: $Enums.PersonnelDocClassificationMethod
   aiSectionGuess?: $Enums.PersonnelFileSection | null
   aiConfidence?: number | null
+  expiresAt?: Date | string | null
+  docCategory?: $Enums.EmployeeDocCategory | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -671,6 +721,8 @@ export type PersonnelFileDocumentUncheckedCreateWithoutDocumentInput = {
   classificationMethod?: $Enums.PersonnelDocClassificationMethod
   aiSectionGuess?: $Enums.PersonnelFileSection | null
   aiConfidence?: number | null
+  expiresAt?: Date | string | null
+  docCategory?: $Enums.EmployeeDocCategory | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -699,6 +751,8 @@ export type PersonnelFileDocumentUpdateWithoutDocumentInput = {
   classificationMethod?: Prisma.EnumPersonnelDocClassificationMethodFieldUpdateOperationsInput | $Enums.PersonnelDocClassificationMethod
   aiSectionGuess?: Prisma.NullableEnumPersonnelFileSectionFieldUpdateOperationsInput | $Enums.PersonnelFileSection | null
   aiConfidence?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  expiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  docCategory?: Prisma.NullableEnumEmployeeDocCategoryFieldUpdateOperationsInput | $Enums.EmployeeDocCategory | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -715,6 +769,8 @@ export type PersonnelFileDocumentUncheckedUpdateWithoutDocumentInput = {
   classificationMethod?: Prisma.EnumPersonnelDocClassificationMethodFieldUpdateOperationsInput | $Enums.PersonnelDocClassificationMethod
   aiSectionGuess?: Prisma.NullableEnumPersonnelFileSectionFieldUpdateOperationsInput | $Enums.PersonnelFileSection | null
   aiConfidence?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  expiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  docCategory?: Prisma.NullableEnumEmployeeDocCategoryFieldUpdateOperationsInput | $Enums.EmployeeDocCategory | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -727,6 +783,8 @@ export type PersonnelFileDocumentCreateWithoutOrganizationInput = {
   classificationMethod?: $Enums.PersonnelDocClassificationMethod
   aiSectionGuess?: $Enums.PersonnelFileSection | null
   aiConfidence?: number | null
+  expiresAt?: Date | string | null
+  docCategory?: $Enums.EmployeeDocCategory | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -743,6 +801,8 @@ export type PersonnelFileDocumentUncheckedCreateWithoutOrganizationInput = {
   classificationMethod?: $Enums.PersonnelDocClassificationMethod
   aiSectionGuess?: $Enums.PersonnelFileSection | null
   aiConfidence?: number | null
+  expiresAt?: Date | string | null
+  docCategory?: $Enums.EmployeeDocCategory | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -787,6 +847,8 @@ export type PersonnelFileDocumentScalarWhereInput = {
   classificationMethod?: Prisma.EnumPersonnelDocClassificationMethodFilter<"PersonnelFileDocument"> | $Enums.PersonnelDocClassificationMethod
   aiSectionGuess?: Prisma.EnumPersonnelFileSectionNullableFilter<"PersonnelFileDocument"> | $Enums.PersonnelFileSection | null
   aiConfidence?: Prisma.IntNullableFilter<"PersonnelFileDocument"> | number | null
+  expiresAt?: Prisma.DateTimeNullableFilter<"PersonnelFileDocument"> | Date | string | null
+  docCategory?: Prisma.EnumEmployeeDocCategoryNullableFilter<"PersonnelFileDocument"> | $Enums.EmployeeDocCategory | null
   createdAt?: Prisma.DateTimeFilter<"PersonnelFileDocument"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"PersonnelFileDocument"> | Date | string
   deletedAt?: Prisma.DateTimeNullableFilter<"PersonnelFileDocument"> | Date | string | null
@@ -799,6 +861,8 @@ export type PersonnelFileDocumentCreateWithoutPersonnelFileInput = {
   classificationMethod?: $Enums.PersonnelDocClassificationMethod
   aiSectionGuess?: $Enums.PersonnelFileSection | null
   aiConfidence?: number | null
+  expiresAt?: Date | string | null
+  docCategory?: $Enums.EmployeeDocCategory | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -815,6 +879,8 @@ export type PersonnelFileDocumentUncheckedCreateWithoutPersonnelFileInput = {
   classificationMethod?: $Enums.PersonnelDocClassificationMethod
   aiSectionGuess?: $Enums.PersonnelFileSection | null
   aiConfidence?: number | null
+  expiresAt?: Date | string | null
+  docCategory?: $Enums.EmployeeDocCategory | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -855,6 +921,8 @@ export type PersonnelFileDocumentCreateManyOrganizationInput = {
   classificationMethod?: $Enums.PersonnelDocClassificationMethod
   aiSectionGuess?: $Enums.PersonnelFileSection | null
   aiConfidence?: number | null
+  expiresAt?: Date | string | null
+  docCategory?: $Enums.EmployeeDocCategory | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -867,6 +935,8 @@ export type PersonnelFileDocumentUpdateWithoutOrganizationInput = {
   classificationMethod?: Prisma.EnumPersonnelDocClassificationMethodFieldUpdateOperationsInput | $Enums.PersonnelDocClassificationMethod
   aiSectionGuess?: Prisma.NullableEnumPersonnelFileSectionFieldUpdateOperationsInput | $Enums.PersonnelFileSection | null
   aiConfidence?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  expiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  docCategory?: Prisma.NullableEnumEmployeeDocCategoryFieldUpdateOperationsInput | $Enums.EmployeeDocCategory | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -883,6 +953,8 @@ export type PersonnelFileDocumentUncheckedUpdateWithoutOrganizationInput = {
   classificationMethod?: Prisma.EnumPersonnelDocClassificationMethodFieldUpdateOperationsInput | $Enums.PersonnelDocClassificationMethod
   aiSectionGuess?: Prisma.NullableEnumPersonnelFileSectionFieldUpdateOperationsInput | $Enums.PersonnelFileSection | null
   aiConfidence?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  expiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  docCategory?: Prisma.NullableEnumEmployeeDocCategoryFieldUpdateOperationsInput | $Enums.EmployeeDocCategory | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -897,6 +969,8 @@ export type PersonnelFileDocumentUncheckedUpdateManyWithoutOrganizationInput = {
   classificationMethod?: Prisma.EnumPersonnelDocClassificationMethodFieldUpdateOperationsInput | $Enums.PersonnelDocClassificationMethod
   aiSectionGuess?: Prisma.NullableEnumPersonnelFileSectionFieldUpdateOperationsInput | $Enums.PersonnelFileSection | null
   aiConfidence?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  expiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  docCategory?: Prisma.NullableEnumEmployeeDocCategoryFieldUpdateOperationsInput | $Enums.EmployeeDocCategory | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -911,6 +985,8 @@ export type PersonnelFileDocumentCreateManyPersonnelFileInput = {
   classificationMethod?: $Enums.PersonnelDocClassificationMethod
   aiSectionGuess?: $Enums.PersonnelFileSection | null
   aiConfidence?: number | null
+  expiresAt?: Date | string | null
+  docCategory?: $Enums.EmployeeDocCategory | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -923,6 +999,8 @@ export type PersonnelFileDocumentUpdateWithoutPersonnelFileInput = {
   classificationMethod?: Prisma.EnumPersonnelDocClassificationMethodFieldUpdateOperationsInput | $Enums.PersonnelDocClassificationMethod
   aiSectionGuess?: Prisma.NullableEnumPersonnelFileSectionFieldUpdateOperationsInput | $Enums.PersonnelFileSection | null
   aiConfidence?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  expiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  docCategory?: Prisma.NullableEnumEmployeeDocCategoryFieldUpdateOperationsInput | $Enums.EmployeeDocCategory | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -939,6 +1017,8 @@ export type PersonnelFileDocumentUncheckedUpdateWithoutPersonnelFileInput = {
   classificationMethod?: Prisma.EnumPersonnelDocClassificationMethodFieldUpdateOperationsInput | $Enums.PersonnelDocClassificationMethod
   aiSectionGuess?: Prisma.NullableEnumPersonnelFileSectionFieldUpdateOperationsInput | $Enums.PersonnelFileSection | null
   aiConfidence?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  expiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  docCategory?: Prisma.NullableEnumEmployeeDocCategoryFieldUpdateOperationsInput | $Enums.EmployeeDocCategory | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -953,6 +1033,8 @@ export type PersonnelFileDocumentUncheckedUpdateManyWithoutPersonnelFileInput = 
   classificationMethod?: Prisma.EnumPersonnelDocClassificationMethodFieldUpdateOperationsInput | $Enums.PersonnelDocClassificationMethod
   aiSectionGuess?: Prisma.NullableEnumPersonnelFileSectionFieldUpdateOperationsInput | $Enums.PersonnelFileSection | null
   aiConfidence?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  expiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  docCategory?: Prisma.NullableEnumEmployeeDocCategoryFieldUpdateOperationsInput | $Enums.EmployeeDocCategory | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -970,6 +1052,8 @@ export type PersonnelFileDocumentSelect<ExtArgs extends runtime.Types.Extensions
   classificationMethod?: boolean
   aiSectionGuess?: boolean
   aiConfidence?: boolean
+  expiresAt?: boolean
+  docCategory?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   deletedAt?: boolean
@@ -988,6 +1072,8 @@ export type PersonnelFileDocumentSelectCreateManyAndReturn<ExtArgs extends runti
   classificationMethod?: boolean
   aiSectionGuess?: boolean
   aiConfidence?: boolean
+  expiresAt?: boolean
+  docCategory?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   deletedAt?: boolean
@@ -1006,6 +1092,8 @@ export type PersonnelFileDocumentSelectUpdateManyAndReturn<ExtArgs extends runti
   classificationMethod?: boolean
   aiSectionGuess?: boolean
   aiConfidence?: boolean
+  expiresAt?: boolean
+  docCategory?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   deletedAt?: boolean
@@ -1024,12 +1112,14 @@ export type PersonnelFileDocumentSelectScalar = {
   classificationMethod?: boolean
   aiSectionGuess?: boolean
   aiConfidence?: boolean
+  expiresAt?: boolean
+  docCategory?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   deletedAt?: boolean
 }
 
-export type PersonnelFileDocumentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "organizationId" | "personnelFileId" | "documentId" | "section" | "documentDate" | "classificationMethod" | "aiSectionGuess" | "aiConfidence" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["personnelFileDocument"]>
+export type PersonnelFileDocumentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "organizationId" | "personnelFileId" | "documentId" | "section" | "documentDate" | "classificationMethod" | "aiSectionGuess" | "aiConfidence" | "expiresAt" | "docCategory" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["personnelFileDocument"]>
 export type PersonnelFileDocumentInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   personnelFile?: boolean | Prisma.PersonnelFileDefaultArgs<ExtArgs>
   document?: boolean | Prisma.DocumentDefaultArgs<ExtArgs>
@@ -1063,6 +1153,8 @@ export type $PersonnelFileDocumentPayload<ExtArgs extends runtime.Types.Extensio
     classificationMethod: $Enums.PersonnelDocClassificationMethod
     aiSectionGuess: $Enums.PersonnelFileSection | null
     aiConfidence: number | null
+    expiresAt: Date | null
+    docCategory: $Enums.EmployeeDocCategory | null
     createdAt: Date
     updatedAt: Date
     deletedAt: Date | null
@@ -1501,6 +1593,8 @@ export interface PersonnelFileDocumentFieldRefs {
   readonly classificationMethod: Prisma.FieldRef<"PersonnelFileDocument", 'PersonnelDocClassificationMethod'>
   readonly aiSectionGuess: Prisma.FieldRef<"PersonnelFileDocument", 'PersonnelFileSection'>
   readonly aiConfidence: Prisma.FieldRef<"PersonnelFileDocument", 'Int'>
+  readonly expiresAt: Prisma.FieldRef<"PersonnelFileDocument", 'DateTime'>
+  readonly docCategory: Prisma.FieldRef<"PersonnelFileDocument", 'EmployeeDocCategory'>
   readonly createdAt: Prisma.FieldRef<"PersonnelFileDocument", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"PersonnelFileDocument", 'DateTime'>
   readonly deletedAt: Prisma.FieldRef<"PersonnelFileDocument", 'DateTime'>

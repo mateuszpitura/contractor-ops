@@ -245,6 +245,15 @@ export const FLAGS = deepFreeze({
     jurisdiction: 'ANY',
     owner: 'workforce-platform',
   },
+  'module.hr-dashboard': {
+    key: 'module.hr-dashboard',
+    description:
+      'Staff HR command dashboard (Theme B): dashboard/hr headcount / vacation-utilization / document-expiry / probation-watchlist / Gulf-nationalisation widgets. Layers on module.workforce-employees (the data prerequisite). Ship dark — requires signoff PENDING→APPROVED before enabling per-org.',
+    default: false,
+    category: 'module',
+    jurisdiction: 'ANY',
+    owner: 'workforce-platform',
+  },
   'module.public-api': {
     key: 'module.public-api',
     description:

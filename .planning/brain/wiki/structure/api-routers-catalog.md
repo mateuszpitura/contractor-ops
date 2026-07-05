@@ -20,6 +20,8 @@ verify_with:
   - packages/api/src/routers/workforce/employee-time.ts
   - packages/api/src/routers/workforce/ewidencja.ts
   - packages/api/src/routers/workforce/hris-sync-router.ts
+  - packages/api/src/routers/workforce/hr-dashboard.ts
+  - packages/api/src/middleware/require-hr-dashboard-flag.ts
   - packages/api/src/routers/finance/payment-core.ts
 updated: 2026-07-05
 ---
@@ -140,6 +142,14 @@ Gated by `module.workforce-employees` (or `QA_DEFAULT_ORG_ID`) in `root.ts`; eac
 `contractor.*` is **not** gated — it is the always-on existing surface; the split adds `worker`/`employee` without changing the contractor route shape (locked by `contractor-contract-snapshot.test.ts`).
 
 When flag OFF: runtime `METHOD_NOT_FOUND`; the per-request guard also throws `FORBIDDEN` (`workforceDisabled`). When ON, the web client shows a flag-gated `/employees` entry (`dashboard-home.tsx` → `useFlag('module.workforce-employees')`). Both read cross-type `Worker` rows behind the `withWorkerTypeDefault` extension; per-type HR-only fields gate on the separate `employee` RBAC resource. Full model + flow: [[domains/worker-foundation]].
+
+## Conditional HR dashboard (1 namespace)
+
+Doubly gated: spread into `appRouter` only when BOTH `isWorkforceRegistered()` (data prerequisite) AND `isHrDashboardRegistered()` (`middleware/require-hr-dashboard-flag.ts` — `module.hr-dashboard`) are on; absent either flag → `METHOD_NOT_FOUND`. Every procedure runs `hrDashboardProcedure = tenantProcedure.use(requirePermission({ employee: ['read'] })).use(assertHrDashboardEnabled).use(reportRateLimitMiddleware)` — the `employee:read` gate resolves to the four HR roles ONLY (owner is excluded — the BFLA fence omits `employee` from `allPermissions`). Read-only aggregation; every `where` restates `organizationId`.
+
+| Namespace | Summary |
+|-----------|---------|
+| `hrDashboard` | staff HR command dashboard (`routers/workforce/hr-dashboard.ts`): `getHeadcount` (active total + `employeeProfile.groupBy` by department/countryCode/employmentType + a contractEndDate date-window bucket; null grouping key → `'unspecified'`; TERMINATED excluded via a shared `activeWhere`), `getVacationUtilization` (reads the `LeaveBalance` cache directly — taken=usedMinutes, entitled=entitled+carryover — via the pure `deriveVacationUtilization`; >10-unused-days flag windowed near year-end; NO ledger re-sum), `getDocumentExpiry` (pure `compliance-policy` `daysUntilExpiryInTz` over `PersonnelFileDocument.expiresAt`, TZ from `PersonnelFile.countryCode`, **section-filtered by `hasSectionPermission` per row** — payroll_officer sees only section C, leave_approver only A), `getProbationWatchlist` (date-window over `EmployeeProfile.probationEndsAt`, 14/7/0 buckets, read-only — no reminder cron), `getNationalisationRollup` (per-country KSA + UAE via `computeNationalisationDashboard`; manual-headcount rate + read-through band only, never EmployeeProfile-derived; UAE surfaces once a manual headcount store lands), `getSummary` (KPI headline counts). Full model + flow: [[domains/hr-dashboard]] |
 
 ## Portal portalAppRouter (2 base + `portalEmployee` when `module.employee-portal` on)
 

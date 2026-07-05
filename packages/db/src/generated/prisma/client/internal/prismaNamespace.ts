@@ -12764,6 +12764,10 @@ export const EmployeeProfileScalarFieldEnum = {
   etat: 'etat',
   employmentStatus: 'employmentStatus',
   terminatedAt: 'terminatedAt',
+  department: 'department',
+  employmentType: 'employmentType',
+  contractEndDate: 'contractEndDate',
+  probationEndsAt: 'probationEndsAt',
   managerWorkerId: 'managerWorkerId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
@@ -13989,6 +13993,8 @@ export const PersonnelFileDocumentScalarFieldEnum = {
   classificationMethod: 'classificationMethod',
   aiSectionGuess: 'aiSectionGuess',
   aiConfidence: 'aiConfidence',
+  expiresAt: 'expiresAt',
+  docCategory: 'docCategory',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   deletedAt: 'deletedAt'
@@ -15477,6 +15483,20 @@ export type ListEnumEmploymentStatusFieldRefInput<$PrismaModel> = FieldRefInputT
 
 
 /**
+ * Reference to a field of type 'EmploymentType'
+ */
+export type EnumEmploymentTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'EmploymentType'>
+    
+
+
+/**
+ * Reference to a field of type 'EmploymentType[]'
+ */
+export type ListEnumEmploymentTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'EmploymentType[]'>
+    
+
+
+/**
  * Reference to a field of type 'StatutoryCertificateStatus'
  */
 export type EnumStatutoryCertificateStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'StatutoryCertificateStatus'>
@@ -16369,6 +16389,20 @@ export type EnumPersonnelDocClassificationMethodFieldRefInput<$PrismaModel> = Fi
  * Reference to a field of type 'PersonnelDocClassificationMethod[]'
  */
 export type ListEnumPersonnelDocClassificationMethodFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PersonnelDocClassificationMethod[]'>
+    
+
+
+/**
+ * Reference to a field of type 'EmployeeDocCategory'
+ */
+export type EnumEmployeeDocCategoryFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'EmployeeDocCategory'>
+    
+
+
+/**
+ * Reference to a field of type 'EmployeeDocCategory[]'
+ */
+export type ListEnumEmployeeDocCategoryFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'EmployeeDocCategory[]'>
     
 
 

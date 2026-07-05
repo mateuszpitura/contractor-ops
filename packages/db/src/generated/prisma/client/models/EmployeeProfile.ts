@@ -51,6 +51,10 @@ export type EmployeeProfileMinAggregateOutputType = {
   etat: runtime.Decimal | null
   employmentStatus: $Enums.EmploymentStatus | null
   terminatedAt: Date | null
+  department: string | null
+  employmentType: $Enums.EmploymentType | null
+  contractEndDate: Date | null
+  probationEndsAt: Date | null
   managerWorkerId: string | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -73,6 +77,10 @@ export type EmployeeProfileMaxAggregateOutputType = {
   etat: runtime.Decimal | null
   employmentStatus: $Enums.EmploymentStatus | null
   terminatedAt: Date | null
+  department: string | null
+  employmentType: $Enums.EmploymentType | null
+  contractEndDate: Date | null
+  probationEndsAt: Date | null
   managerWorkerId: string | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -96,6 +104,10 @@ export type EmployeeProfileCountAggregateOutputType = {
   etat: number
   employmentStatus: number
   terminatedAt: number
+  department: number
+  employmentType: number
+  contractEndDate: number
+  probationEndsAt: number
   managerWorkerId: number
   createdAt: number
   updatedAt: number
@@ -128,6 +140,10 @@ export type EmployeeProfileMinAggregateInputType = {
   etat?: true
   employmentStatus?: true
   terminatedAt?: true
+  department?: true
+  employmentType?: true
+  contractEndDate?: true
+  probationEndsAt?: true
   managerWorkerId?: true
   createdAt?: true
   updatedAt?: true
@@ -150,6 +166,10 @@ export type EmployeeProfileMaxAggregateInputType = {
   etat?: true
   employmentStatus?: true
   terminatedAt?: true
+  department?: true
+  employmentType?: true
+  contractEndDate?: true
+  probationEndsAt?: true
   managerWorkerId?: true
   createdAt?: true
   updatedAt?: true
@@ -173,6 +193,10 @@ export type EmployeeProfileCountAggregateInputType = {
   etat?: true
   employmentStatus?: true
   terminatedAt?: true
+  department?: true
+  employmentType?: true
+  contractEndDate?: true
+  probationEndsAt?: true
   managerWorkerId?: true
   createdAt?: true
   updatedAt?: true
@@ -283,6 +307,10 @@ export type EmployeeProfileGroupByOutputType = {
   etat: runtime.Decimal | null
   employmentStatus: $Enums.EmploymentStatus | null
   terminatedAt: Date | null
+  department: string | null
+  employmentType: $Enums.EmploymentType | null
+  contractEndDate: Date | null
+  probationEndsAt: Date | null
   managerWorkerId: string | null
   createdAt: Date
   updatedAt: Date
@@ -329,6 +357,10 @@ export type EmployeeProfileWhereInput = {
   etat?: Prisma.DecimalNullableFilter<"EmployeeProfile"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   employmentStatus?: Prisma.EnumEmploymentStatusNullableFilter<"EmployeeProfile"> | $Enums.EmploymentStatus | null
   terminatedAt?: Prisma.DateTimeNullableFilter<"EmployeeProfile"> | Date | string | null
+  department?: Prisma.StringNullableFilter<"EmployeeProfile"> | string | null
+  employmentType?: Prisma.EnumEmploymentTypeNullableFilter<"EmployeeProfile"> | $Enums.EmploymentType | null
+  contractEndDate?: Prisma.DateTimeNullableFilter<"EmployeeProfile"> | Date | string | null
+  probationEndsAt?: Prisma.DateTimeNullableFilter<"EmployeeProfile"> | Date | string | null
   managerWorkerId?: Prisma.StringNullableFilter<"EmployeeProfile"> | string | null
   createdAt?: Prisma.DateTimeFilter<"EmployeeProfile"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"EmployeeProfile"> | Date | string
@@ -355,6 +387,10 @@ export type EmployeeProfileOrderByWithRelationInput = {
   etat?: Prisma.SortOrderInput | Prisma.SortOrder
   employmentStatus?: Prisma.SortOrderInput | Prisma.SortOrder
   terminatedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  department?: Prisma.SortOrderInput | Prisma.SortOrder
+  employmentType?: Prisma.SortOrderInput | Prisma.SortOrder
+  contractEndDate?: Prisma.SortOrderInput | Prisma.SortOrder
+  probationEndsAt?: Prisma.SortOrderInput | Prisma.SortOrder
   managerWorkerId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -385,6 +421,10 @@ export type EmployeeProfileWhereUniqueInput = Prisma.AtLeast<{
   etat?: Prisma.DecimalNullableFilter<"EmployeeProfile"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   employmentStatus?: Prisma.EnumEmploymentStatusNullableFilter<"EmployeeProfile"> | $Enums.EmploymentStatus | null
   terminatedAt?: Prisma.DateTimeNullableFilter<"EmployeeProfile"> | Date | string | null
+  department?: Prisma.StringNullableFilter<"EmployeeProfile"> | string | null
+  employmentType?: Prisma.EnumEmploymentTypeNullableFilter<"EmployeeProfile"> | $Enums.EmploymentType | null
+  contractEndDate?: Prisma.DateTimeNullableFilter<"EmployeeProfile"> | Date | string | null
+  probationEndsAt?: Prisma.DateTimeNullableFilter<"EmployeeProfile"> | Date | string | null
   managerWorkerId?: Prisma.StringNullableFilter<"EmployeeProfile"> | string | null
   createdAt?: Prisma.DateTimeFilter<"EmployeeProfile"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"EmployeeProfile"> | Date | string
@@ -411,6 +451,10 @@ export type EmployeeProfileOrderByWithAggregationInput = {
   etat?: Prisma.SortOrderInput | Prisma.SortOrder
   employmentStatus?: Prisma.SortOrderInput | Prisma.SortOrder
   terminatedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  department?: Prisma.SortOrderInput | Prisma.SortOrder
+  employmentType?: Prisma.SortOrderInput | Prisma.SortOrder
+  contractEndDate?: Prisma.SortOrderInput | Prisma.SortOrder
+  probationEndsAt?: Prisma.SortOrderInput | Prisma.SortOrder
   managerWorkerId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -442,6 +486,10 @@ export type EmployeeProfileScalarWhereWithAggregatesInput = {
   etat?: Prisma.DecimalNullableWithAggregatesFilter<"EmployeeProfile"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   employmentStatus?: Prisma.EnumEmploymentStatusNullableWithAggregatesFilter<"EmployeeProfile"> | $Enums.EmploymentStatus | null
   terminatedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"EmployeeProfile"> | Date | string | null
+  department?: Prisma.StringNullableWithAggregatesFilter<"EmployeeProfile"> | string | null
+  employmentType?: Prisma.EnumEmploymentTypeNullableWithAggregatesFilter<"EmployeeProfile"> | $Enums.EmploymentType | null
+  contractEndDate?: Prisma.DateTimeNullableWithAggregatesFilter<"EmployeeProfile"> | Date | string | null
+  probationEndsAt?: Prisma.DateTimeNullableWithAggregatesFilter<"EmployeeProfile"> | Date | string | null
   managerWorkerId?: Prisma.StringNullableWithAggregatesFilter<"EmployeeProfile"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"EmployeeProfile"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"EmployeeProfile"> | Date | string
@@ -463,6 +511,10 @@ export type EmployeeProfileCreateInput = {
   etat?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   employmentStatus?: $Enums.EmploymentStatus | null
   terminatedAt?: Date | string | null
+  department?: string | null
+  employmentType?: $Enums.EmploymentType | null
+  contractEndDate?: Date | string | null
+  probationEndsAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   organization: Prisma.OrganizationCreateNestedOneWithoutEmployeeProfilesInput
@@ -488,6 +540,10 @@ export type EmployeeProfileUncheckedCreateInput = {
   etat?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   employmentStatus?: $Enums.EmploymentStatus | null
   terminatedAt?: Date | string | null
+  department?: string | null
+  employmentType?: $Enums.EmploymentType | null
+  contractEndDate?: Date | string | null
+  probationEndsAt?: Date | string | null
   managerWorkerId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -509,6 +565,10 @@ export type EmployeeProfileUpdateInput = {
   etat?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   employmentStatus?: Prisma.NullableEnumEmploymentStatusFieldUpdateOperationsInput | $Enums.EmploymentStatus | null
   terminatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  employmentType?: Prisma.NullableEnumEmploymentTypeFieldUpdateOperationsInput | $Enums.EmploymentType | null
+  contractEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  probationEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutEmployeeProfilesNestedInput
@@ -534,6 +594,10 @@ export type EmployeeProfileUncheckedUpdateInput = {
   etat?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   employmentStatus?: Prisma.NullableEnumEmploymentStatusFieldUpdateOperationsInput | $Enums.EmploymentStatus | null
   terminatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  employmentType?: Prisma.NullableEnumEmploymentTypeFieldUpdateOperationsInput | $Enums.EmploymentType | null
+  contractEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  probationEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   managerWorkerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -557,6 +621,10 @@ export type EmployeeProfileCreateManyInput = {
   etat?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   employmentStatus?: $Enums.EmploymentStatus | null
   terminatedAt?: Date | string | null
+  department?: string | null
+  employmentType?: $Enums.EmploymentType | null
+  contractEndDate?: Date | string | null
+  probationEndsAt?: Date | string | null
   managerWorkerId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -578,6 +646,10 @@ export type EmployeeProfileUpdateManyMutationInput = {
   etat?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   employmentStatus?: Prisma.NullableEnumEmploymentStatusFieldUpdateOperationsInput | $Enums.EmploymentStatus | null
   terminatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  employmentType?: Prisma.NullableEnumEmploymentTypeFieldUpdateOperationsInput | $Enums.EmploymentType | null
+  contractEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  probationEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -600,6 +672,10 @@ export type EmployeeProfileUncheckedUpdateManyInput = {
   etat?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   employmentStatus?: Prisma.NullableEnumEmploymentStatusFieldUpdateOperationsInput | $Enums.EmploymentStatus | null
   terminatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  employmentType?: Prisma.NullableEnumEmploymentTypeFieldUpdateOperationsInput | $Enums.EmploymentType | null
+  contractEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  probationEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   managerWorkerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -628,6 +704,10 @@ export type EmployeeProfileCountOrderByAggregateInput = {
   etat?: Prisma.SortOrder
   employmentStatus?: Prisma.SortOrder
   terminatedAt?: Prisma.SortOrder
+  department?: Prisma.SortOrder
+  employmentType?: Prisma.SortOrder
+  contractEndDate?: Prisma.SortOrder
+  probationEndsAt?: Prisma.SortOrder
   managerWorkerId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -654,6 +734,10 @@ export type EmployeeProfileMaxOrderByAggregateInput = {
   etat?: Prisma.SortOrder
   employmentStatus?: Prisma.SortOrder
   terminatedAt?: Prisma.SortOrder
+  department?: Prisma.SortOrder
+  employmentType?: Prisma.SortOrder
+  contractEndDate?: Prisma.SortOrder
+  probationEndsAt?: Prisma.SortOrder
   managerWorkerId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -676,6 +760,10 @@ export type EmployeeProfileMinOrderByAggregateInput = {
   etat?: Prisma.SortOrder
   employmentStatus?: Prisma.SortOrder
   terminatedAt?: Prisma.SortOrder
+  department?: Prisma.SortOrder
+  employmentType?: Prisma.SortOrder
+  contractEndDate?: Prisma.SortOrder
+  probationEndsAt?: Prisma.SortOrder
   managerWorkerId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -706,6 +794,10 @@ export type NullableEnumNitaqatBandFieldUpdateOperationsInput = {
 
 export type NullableEnumEmploymentStatusFieldUpdateOperationsInput = {
   set?: $Enums.EmploymentStatus | null
+}
+
+export type NullableEnumEmploymentTypeFieldUpdateOperationsInput = {
+  set?: $Enums.EmploymentType | null
 }
 
 export type EmployeeProfileCreateNestedManyWithoutOrganizationInput = {
@@ -840,6 +932,10 @@ export type EmployeeProfileCreateWithoutOrganizationInput = {
   etat?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   employmentStatus?: $Enums.EmploymentStatus | null
   terminatedAt?: Date | string | null
+  department?: string | null
+  employmentType?: $Enums.EmploymentType | null
+  contractEndDate?: Date | string | null
+  probationEndsAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   worker: Prisma.WorkerCreateNestedOneWithoutEmployeeProfileInput
@@ -863,6 +959,10 @@ export type EmployeeProfileUncheckedCreateWithoutOrganizationInput = {
   etat?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   employmentStatus?: $Enums.EmploymentStatus | null
   terminatedAt?: Date | string | null
+  department?: string | null
+  employmentType?: $Enums.EmploymentType | null
+  contractEndDate?: Date | string | null
+  probationEndsAt?: Date | string | null
   managerWorkerId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -915,6 +1015,10 @@ export type EmployeeProfileScalarWhereInput = {
   etat?: Prisma.DecimalNullableFilter<"EmployeeProfile"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   employmentStatus?: Prisma.EnumEmploymentStatusNullableFilter<"EmployeeProfile"> | $Enums.EmploymentStatus | null
   terminatedAt?: Prisma.DateTimeNullableFilter<"EmployeeProfile"> | Date | string | null
+  department?: Prisma.StringNullableFilter<"EmployeeProfile"> | string | null
+  employmentType?: Prisma.EnumEmploymentTypeNullableFilter<"EmployeeProfile"> | $Enums.EmploymentType | null
+  contractEndDate?: Prisma.DateTimeNullableFilter<"EmployeeProfile"> | Date | string | null
+  probationEndsAt?: Prisma.DateTimeNullableFilter<"EmployeeProfile"> | Date | string | null
   managerWorkerId?: Prisma.StringNullableFilter<"EmployeeProfile"> | string | null
   createdAt?: Prisma.DateTimeFilter<"EmployeeProfile"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"EmployeeProfile"> | Date | string
@@ -936,6 +1040,10 @@ export type EmployeeProfileCreateWithoutWorkerInput = {
   etat?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   employmentStatus?: $Enums.EmploymentStatus | null
   terminatedAt?: Date | string | null
+  department?: string | null
+  employmentType?: $Enums.EmploymentType | null
+  contractEndDate?: Date | string | null
+  probationEndsAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   organization: Prisma.OrganizationCreateNestedOneWithoutEmployeeProfilesInput
@@ -959,6 +1067,10 @@ export type EmployeeProfileUncheckedCreateWithoutWorkerInput = {
   etat?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   employmentStatus?: $Enums.EmploymentStatus | null
   terminatedAt?: Date | string | null
+  department?: string | null
+  employmentType?: $Enums.EmploymentType | null
+  contractEndDate?: Date | string | null
+  probationEndsAt?: Date | string | null
   managerWorkerId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -985,6 +1097,10 @@ export type EmployeeProfileCreateWithoutManagerWorkerInput = {
   etat?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   employmentStatus?: $Enums.EmploymentStatus | null
   terminatedAt?: Date | string | null
+  department?: string | null
+  employmentType?: $Enums.EmploymentType | null
+  contractEndDate?: Date | string | null
+  probationEndsAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   organization: Prisma.OrganizationCreateNestedOneWithoutEmployeeProfilesInput
@@ -1009,6 +1125,10 @@ export type EmployeeProfileUncheckedCreateWithoutManagerWorkerInput = {
   etat?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   employmentStatus?: $Enums.EmploymentStatus | null
   terminatedAt?: Date | string | null
+  department?: string | null
+  employmentType?: $Enums.EmploymentType | null
+  contractEndDate?: Date | string | null
+  probationEndsAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -1050,6 +1170,10 @@ export type EmployeeProfileUpdateWithoutWorkerInput = {
   etat?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   employmentStatus?: Prisma.NullableEnumEmploymentStatusFieldUpdateOperationsInput | $Enums.EmploymentStatus | null
   terminatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  employmentType?: Prisma.NullableEnumEmploymentTypeFieldUpdateOperationsInput | $Enums.EmploymentType | null
+  contractEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  probationEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutEmployeeProfilesNestedInput
@@ -1073,6 +1197,10 @@ export type EmployeeProfileUncheckedUpdateWithoutWorkerInput = {
   etat?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   employmentStatus?: Prisma.NullableEnumEmploymentStatusFieldUpdateOperationsInput | $Enums.EmploymentStatus | null
   terminatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  employmentType?: Prisma.NullableEnumEmploymentTypeFieldUpdateOperationsInput | $Enums.EmploymentType | null
+  contractEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  probationEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   managerWorkerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1111,6 +1239,10 @@ export type EmployeeProfileCreateManyOrganizationInput = {
   etat?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   employmentStatus?: $Enums.EmploymentStatus | null
   terminatedAt?: Date | string | null
+  department?: string | null
+  employmentType?: $Enums.EmploymentType | null
+  contractEndDate?: Date | string | null
+  probationEndsAt?: Date | string | null
   managerWorkerId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1132,6 +1264,10 @@ export type EmployeeProfileUpdateWithoutOrganizationInput = {
   etat?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   employmentStatus?: Prisma.NullableEnumEmploymentStatusFieldUpdateOperationsInput | $Enums.EmploymentStatus | null
   terminatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  employmentType?: Prisma.NullableEnumEmploymentTypeFieldUpdateOperationsInput | $Enums.EmploymentType | null
+  contractEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  probationEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   worker?: Prisma.WorkerUpdateOneRequiredWithoutEmployeeProfileNestedInput
@@ -1155,6 +1291,10 @@ export type EmployeeProfileUncheckedUpdateWithoutOrganizationInput = {
   etat?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   employmentStatus?: Prisma.NullableEnumEmploymentStatusFieldUpdateOperationsInput | $Enums.EmploymentStatus | null
   terminatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  employmentType?: Prisma.NullableEnumEmploymentTypeFieldUpdateOperationsInput | $Enums.EmploymentType | null
+  contractEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  probationEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   managerWorkerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1177,6 +1317,10 @@ export type EmployeeProfileUncheckedUpdateManyWithoutOrganizationInput = {
   etat?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   employmentStatus?: Prisma.NullableEnumEmploymentStatusFieldUpdateOperationsInput | $Enums.EmploymentStatus | null
   terminatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  employmentType?: Prisma.NullableEnumEmploymentTypeFieldUpdateOperationsInput | $Enums.EmploymentType | null
+  contractEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  probationEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   managerWorkerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1200,6 +1344,10 @@ export type EmployeeProfileCreateManyManagerWorkerInput = {
   etat?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   employmentStatus?: $Enums.EmploymentStatus | null
   terminatedAt?: Date | string | null
+  department?: string | null
+  employmentType?: $Enums.EmploymentType | null
+  contractEndDate?: Date | string | null
+  probationEndsAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -1220,6 +1368,10 @@ export type EmployeeProfileUpdateWithoutManagerWorkerInput = {
   etat?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   employmentStatus?: Prisma.NullableEnumEmploymentStatusFieldUpdateOperationsInput | $Enums.EmploymentStatus | null
   terminatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  employmentType?: Prisma.NullableEnumEmploymentTypeFieldUpdateOperationsInput | $Enums.EmploymentType | null
+  contractEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  probationEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutEmployeeProfilesNestedInput
@@ -1244,6 +1396,10 @@ export type EmployeeProfileUncheckedUpdateWithoutManagerWorkerInput = {
   etat?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   employmentStatus?: Prisma.NullableEnumEmploymentStatusFieldUpdateOperationsInput | $Enums.EmploymentStatus | null
   terminatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  employmentType?: Prisma.NullableEnumEmploymentTypeFieldUpdateOperationsInput | $Enums.EmploymentType | null
+  contractEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  probationEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -1266,6 +1422,10 @@ export type EmployeeProfileUncheckedUpdateManyWithoutManagerWorkerInput = {
   etat?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   employmentStatus?: Prisma.NullableEnumEmploymentStatusFieldUpdateOperationsInput | $Enums.EmploymentStatus | null
   terminatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  employmentType?: Prisma.NullableEnumEmploymentTypeFieldUpdateOperationsInput | $Enums.EmploymentType | null
+  contractEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  probationEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -1290,6 +1450,10 @@ export type EmployeeProfileSelect<ExtArgs extends runtime.Types.Extensions.Inter
   etat?: boolean
   employmentStatus?: boolean
   terminatedAt?: boolean
+  department?: boolean
+  employmentType?: boolean
+  contractEndDate?: boolean
+  probationEndsAt?: boolean
   managerWorkerId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -1316,6 +1480,10 @@ export type EmployeeProfileSelectCreateManyAndReturn<ExtArgs extends runtime.Typ
   etat?: boolean
   employmentStatus?: boolean
   terminatedAt?: boolean
+  department?: boolean
+  employmentType?: boolean
+  contractEndDate?: boolean
+  probationEndsAt?: boolean
   managerWorkerId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -1342,6 +1510,10 @@ export type EmployeeProfileSelectUpdateManyAndReturn<ExtArgs extends runtime.Typ
   etat?: boolean
   employmentStatus?: boolean
   terminatedAt?: boolean
+  department?: boolean
+  employmentType?: boolean
+  contractEndDate?: boolean
+  probationEndsAt?: boolean
   managerWorkerId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -1368,12 +1540,16 @@ export type EmployeeProfileSelectScalar = {
   etat?: boolean
   employmentStatus?: boolean
   terminatedAt?: boolean
+  department?: boolean
+  employmentType?: boolean
+  contractEndDate?: boolean
+  probationEndsAt?: boolean
   managerWorkerId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type EmployeeProfileOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "organizationId" | "workerId" | "countryCode" | "countryFields" | "peselEncrypted" | "peselLast4" | "ssnEncrypted" | "ssnLast4" | "iqamaEncrypted" | "iqamaLast4" | "emiratesIdEncrypted" | "emiratesIdLast4" | "saudizationCategory" | "etat" | "employmentStatus" | "terminatedAt" | "managerWorkerId" | "createdAt" | "updatedAt", ExtArgs["result"]["employeeProfile"]>
+export type EmployeeProfileOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "organizationId" | "workerId" | "countryCode" | "countryFields" | "peselEncrypted" | "peselLast4" | "ssnEncrypted" | "ssnLast4" | "iqamaEncrypted" | "iqamaLast4" | "emiratesIdEncrypted" | "emiratesIdLast4" | "saudizationCategory" | "etat" | "employmentStatus" | "terminatedAt" | "department" | "employmentType" | "contractEndDate" | "probationEndsAt" | "managerWorkerId" | "createdAt" | "updatedAt", ExtArgs["result"]["employeeProfile"]>
 export type EmployeeProfileInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
   worker?: boolean | Prisma.WorkerDefaultArgs<ExtArgs>
@@ -1415,6 +1591,10 @@ export type $EmployeeProfilePayload<ExtArgs extends runtime.Types.Extensions.Int
     etat: runtime.Decimal | null
     employmentStatus: $Enums.EmploymentStatus | null
     terminatedAt: Date | null
+    department: string | null
+    employmentType: $Enums.EmploymentType | null
+    contractEndDate: Date | null
+    probationEndsAt: Date | null
     managerWorkerId: string | null
     createdAt: Date
     updatedAt: Date
@@ -1861,6 +2041,10 @@ export interface EmployeeProfileFieldRefs {
   readonly etat: Prisma.FieldRef<"EmployeeProfile", 'Decimal'>
   readonly employmentStatus: Prisma.FieldRef<"EmployeeProfile", 'EmploymentStatus'>
   readonly terminatedAt: Prisma.FieldRef<"EmployeeProfile", 'DateTime'>
+  readonly department: Prisma.FieldRef<"EmployeeProfile", 'String'>
+  readonly employmentType: Prisma.FieldRef<"EmployeeProfile", 'EmploymentType'>
+  readonly contractEndDate: Prisma.FieldRef<"EmployeeProfile", 'DateTime'>
+  readonly probationEndsAt: Prisma.FieldRef<"EmployeeProfile", 'DateTime'>
   readonly managerWorkerId: Prisma.FieldRef<"EmployeeProfile", 'String'>
   readonly createdAt: Prisma.FieldRef<"EmployeeProfile", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"EmployeeProfile", 'DateTime'>

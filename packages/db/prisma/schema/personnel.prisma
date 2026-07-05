@@ -82,6 +82,13 @@ model PersonnelFileDocument {
   aiSectionGuess       PersonnelFileSection?
   aiConfidence         Int?
 
+  // TZ-correct expiry anchor the HR-dashboard doc-expiry widget reads through the
+  // pure compliance-policy date math (TZ resolved from PersonnelFile.countryCode);
+  // null = a non-expiring document, excluded from every expiry band. docCategory
+  // is the compliance taxonomy the widget groups the bands by.
+  expiresAt   DateTime?            @db.Date
+  docCategory EmployeeDocCategory?
+
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
@@ -92,4 +99,17 @@ model PersonnelFileDocument {
 
   @@index([organizationId])
   @@index([personnelFileId])
+  @@index([organizationId, expiresAt])
+}
+
+// Compliance taxonomy for an employee personnel-file document, driving the
+// HR-dashboard document-expiry bands (visa / work-permit / contract-renewal /
+// medical-cert / training-cert).
+enum EmployeeDocCategory {
+  VISA
+  WORK_PERMIT
+  CONTRACT_RENEWAL
+  MEDICAL_CERT
+  TRAINING_CERT
+  OTHER
 }

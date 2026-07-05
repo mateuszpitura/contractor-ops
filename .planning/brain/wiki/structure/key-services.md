@@ -10,6 +10,10 @@ verify_with:
   - packages/db/scripts/backfill-worker.ts
   - packages/api/src/services/personnel-classifier.ts
   - packages/api/src/services/leave-balance.ts
+  - packages/api/src/services/hr-dashboard-utilization.ts
+  - packages/api/src/services/hr-dashboard-doc-expiry.ts
+  - packages/api/src/services/hr-dashboard-probation.ts
+  - packages/api/src/services/saudization-dashboard.ts
   - packages/api/src/services/wt-limit-check.ts
   - packages/api/src/services/wt-limit-scan.ts
   - packages/api/src/services/ewidencja-builder.ts
@@ -103,6 +107,15 @@ ls packages/api/src/services/
 - **Gov stub seams** — `{i9-everify,zus-zwua,abmeldung-sv,hmrc-rti,pit-filing}-stub.ts` (+ shared `gov-stub-types.ts` `GovStubResult`/`maskLast2`): typed, network-free `{source:'STUB',available:false,note}` with PII last-2; mirror `elstam-stub`. Steuer-ID reuses `lookupElstam`.
 - **`@contractor-ops/employee-templates`** — `upsertEmployeeMarketTemplates(prisma, orgId)` boot-upserts 8 per-market DRAFT `WorkflowTemplate` seeds (register-on-import `content/{pl,de,uk,us}.ts`) on the compound unique; wired fail-soft into `post-org-create-hook.ts` alongside the KT seeds.
 - **`startWorkflowRun`** (in `workflow-execution-runs.ts`) — the single subject-agnostic run-create helper both `workflow.startRun` and `employeeLifecycleRouter` delegate to. Detail: [[domains/worker-onboarding-offboarding]].
+
+## HR-dashboard services
+
+Pure derivation helpers (params in, structured out, no DB, no throws) behind the `hrDashboard.*` read procedures ([[domains/hr-dashboard]]):
+
+- **`hr-dashboard-utilization.ts`** — `deriveVacationUtilization(balances, now)`: reads the `LeaveBalance` cache directly (taken=`usedMinutes`, entitled=`entitledMinutes+carryoverMinutes`) per worker-year; flags >10 unused days ONLY inside the year-end window (`isWithinYearEndWindow`). Reuses `MINUTES_PER_LEAVE_DAY` (480). NO ledger re-sum.
+- **`hr-dashboard-doc-expiry.ts`** — `deriveEmployeeDocExpiry(docs, now)`: composes the v6.0 F1 `compliance-policy` `daysUntilExpiryInTz` (NOT the contractor `compliance-reminder-scan`) into expired/30/60/90/later bands; TZ from `PersonnelFile.countryCode` via `tzForCountry` (per-jurisdiction map mirroring the policy rule TZs); null `expiresAt` excluded. The router applies the `hasSectionPermission` section filter BEFORE calling it — the service is grant-agnostic.
+- **`hr-dashboard-probation.ts`** — `deriveProbationWatchlist(rows, now)`: 14/7/0 buckets over `probationEndsAt` at the TZ start-of-day boundary; >14 days excluded; read-only (no cron).
+- **`saudization-dashboard.ts`** — `computeNationalisationDashboard(country, params)` generalizes the F3 Saudization rollup per country (KSA + UAE Emiratisation). The KSA path is `computeSaudizationDashboard` unchanged; the wrapper preserves the locked anti-features for BOTH countries — the nationalisation rate comes ONLY from the manual headcount (never an `EmployeeProfile` groupBy) and the band is read-through, never inferred.
 
 ## Payroll export services (Phase 94)
 
