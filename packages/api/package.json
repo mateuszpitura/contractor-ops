@@ -56,6 +56,11 @@
       "import": "./src/services/r2.ts",
       "default": "./src/services/r2.ts"
     },
+    "./services/regional-storage": {
+      "types": "./src/services/regional-storage.ts",
+      "import": "./src/services/regional-storage.ts",
+      "default": "./src/services/regional-storage.ts"
+    },
     "./services/oauth-challenge": {
       "types": "./src/services/oauth-challenge.ts",
       "import": "./src/services/oauth-challenge.ts",
